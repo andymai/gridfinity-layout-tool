@@ -9,6 +9,7 @@ import { binHandlers } from './binHandlers';
 import { layerHandlers } from './layerHandlers';
 import { categoryHandlers } from './categoryHandlers';
 import { drawerHandlers } from './drawerHandlers';
+import { libraryHandlers } from './libraryHandlers';
 
 export { resetVersionCounters } from './shared';
 
@@ -19,6 +20,7 @@ const handlerRegistry: Record<string, HandlerFn> = {
   ...layerHandlers,
   ...categoryHandlers,
   ...drawerHandlers,
+  ...libraryHandlers,
 };
 
 export function getHandler(
