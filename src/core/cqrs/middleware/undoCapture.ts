@@ -24,8 +24,8 @@ export function undoCaptureMiddleware(
   command: Command,
   next: NextFn<Command, DomainEvent>
 ): CommandResult<unknown, DomainEvent> {
-  // Skip undo capture for replayed commands
-  if (command.meta.source === 'replay') {
+  // Skip undo capture for replayed and cascaded commands
+  if (command.meta.source === 'replay' || command.meta.source === 'cascade') {
     return next(command);
   }
 
