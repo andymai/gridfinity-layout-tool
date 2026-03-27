@@ -1,9 +1,11 @@
+import type { TFunction } from '@/i18n';
+
 /** Resolve the overlay status message, avoiding a nested ternary in JSX. */
 export function overlayStatusText(
   isWasmLoading: boolean,
   splitProgress: { current: number; total: number } | null,
   dedupStats: { uniqueCount: number; duplicatesSkipped: number } | null,
-  t: (key: string, params?: Record<string, unknown>) => string
+  t: TFunction
 ): string {
   if (isWasmLoading) return t('baseplate.initializingEngine');
   if (splitProgress) {
