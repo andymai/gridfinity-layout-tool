@@ -44,7 +44,7 @@ src/
 | `layout.ts`          | Layout data (bins, layers, categories, drawer). Returns `Result<T, LayoutError>` |
 | `library.ts`         | Multi-layout library, `activeLayoutId`, thumbnails                               |
 | `settings.ts`        | User preferences (localStorage: `gridfinity-settings-v1`)                        |
-| `history.ts`         | Undo/redo (max 100). Use `useUndoableAction()`                                   |
+| `history.ts`         | Undo/redo (max 100). Automatic via CQRS undo capture middleware                  |
 | `selection.ts`       | Selected bins, active layer/category                                             |
 | `interaction.ts`     | Current interaction, drop targets, layer view mode                               |
 | `ui.ts`              | Panel visibility, sidebar state, UI toggles                                      |
