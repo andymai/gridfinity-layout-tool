@@ -1,96 +1,22 @@
-import type { PointerEvent } from 'react';
-import { memo, useRef, useState, useCallback, useMemo } from 'react';
+import { memo, useState, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import type { Bin as BinType, BinId, Category, Layer, Drawer, ResizeHandle } from '@/core/types';
-import {
-  useLayoutStore,
-  useSelectionStore,
-  useViewStore,
-  useInteractionStore,
-  useMobileStore,
-} from '@/core/store';
-import { useToastStore } from '@/core/store/toast';
-import { useSettingsStore } from '@/core/store/settings';
+import { useLayoutStore, useInteractionStore } from '@/core/store';
 import { useResponsive } from '@/shared/hooks';
-import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
-import { getBinTextColors, clamp, formatDimension } from '@/shared/utils';
-import { calcFractionalPixelSize } from '@/features/grid-editor/utils/fractionalPixels';
-import { ResizeHandles } from '../ResizeHandles';
 import { useTranslation } from '@/i18n';
+import { calcMaxGridUnits, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { getBinTextColors } from '@/shared/utils';
+import { ResizeHandles } from '../ResizeHandles';
+import { calculateBinLayout } from './calculateBinLayout';
+import { calculateBinText } from './calculateBinText';
+import { BinBadge } from './BinBadge';
+import { ICON_PATHS, WARNING_ICON } from './binConstants';
+import type { BinProps } from './binPropsAreEqual';
+import { binPropsAreEqual } from './binPropsAreEqual';
+import { useBinHighlighting } from './useBinHighlighting';
+import { useBinSelection } from './useBinSelection';
+import { useBinPointerInteraction } from './useBinPointerInteraction';
 
-const LONG_PRESS_DURATION = 500; // ms
-const DOUBLE_TAP_THRESHOLD = 300; // ms
-const WARNING_ICON = '\u26A0'; // Unicode warning sign
-
-const ICON_PATHS = {
-  tallArrow:
-    'M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L6.707 7.707a1 1 0 01-1.414 0z',
-  notes:
-    'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z',
-  tag: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z',
-  link: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1',
-} as const;
-
-interface BinBadgeProps {
-  small: boolean;
-  label: string;
-  path: string;
-  colorClass?: string;
-  fillRule?: 'evenodd';
-}
-
-function BinBadge({
-  small,
-  label,
-  path,
-  colorClass = 'text-content-tertiary',
-  fillRule,
-}: BinBadgeProps) {
-  const sizeClass = small ? 'w-2.5 h-2.5' : 'w-3 h-3';
-  const strokeWidth = small ? 2.5 : 2;
-  return (
-    <div
-      className={`${small ? 'p-px' : 'p-0.5'} rounded-sm bg-surface/80`}
-      style={{ boxShadow: 'var(--shadow-sm)' }}
-    >
-      <svg
-        className={`${sizeClass} ${colorClass}`}
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        aria-label={label}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d={path}
-          {...(fillRule ? { fillRule, clipRule: fillRule } : {})}
-        />
-      </svg>
-    </div>
-  );
-}
-
-interface BinProps {
-  bin: BinType;
-  category?: Category;
-  layer?: Layer;
-  drawer: Drawer;
-  cellSize: number;
-  gap?: number;
-  isGhost: boolean;
-  isSelected: boolean;
-  onStartDrag: (
-    binId: BinId,
-    clientX: number,
-    clientY: number,
-    pointerId?: number,
-    duplicate?: boolean,
-    swapMode?: boolean
-  ) => void;
-  onStartResize: (binId: BinId, handle: ResizeHandle, pointerId?: number) => void;
-}
+export type { BinProps } from './binPropsAreEqual';
 
 /**
  * Single bin with selection ring and resize handles.
@@ -111,65 +37,30 @@ function BinComponent({
   const t = useTranslation();
   const { isTouchDevice } = useResponsive();
 
-  const { selectedBinIds, focusedBinId } = useSelectionStore(
-    useShallow((state) => ({
-      selectedBinIds: state.selectedBinIds,
-      focusedBinId: state.focusedBinId,
-    }))
-  );
+  const {
+    selectedBinIds,
+    focusedBinId,
+    setSelectedBin,
+    toggleSelection,
+    setFocusedBin,
+    showQuickLabel,
+  } = useBinSelection();
 
   const interaction = useInteractionStore((state) => state.interaction);
 
-  // Performance: Use derived selector for category highlighting.
-  // This only re-renders bins whose highlight state actually changes.
-  const isCategoryHighlighted = useViewStore(
-    (state) => state.highlightedCategoryId !== null && state.highlightedCategoryId === bin.category
-  );
-  const isAnyCategoryHighlighted = useViewStore((state) => state.highlightedCategoryId !== null);
-
-  // Performance: Use derived selector for row/column label highlighting.
-  // Check if this bin overlaps with the highlighted row or column (1-indexed).
-  const isRowColHighlighted = useViewStore((state) => {
-    const { highlightedRowLabel, highlightedColLabel } = state;
-    if (highlightedRowLabel === null && highlightedColLabel === null) return false;
-
-    // Check row overlap: row N (1-indexed) corresponds to grid y = N-1
-    // Bin occupies rows where bin.y <= rowY < bin.y + bin.depth
-    if (highlightedRowLabel !== null) {
-      const rowY = highlightedRowLabel - 1; // Convert 1-indexed to 0-indexed
-      if (rowY >= bin.y && rowY < bin.y + bin.depth) return true;
-    }
-
-    // Check column overlap: column N (1-indexed) corresponds to grid x = N-1
-    // Bin occupies columns where bin.x <= colX < bin.x + bin.width
-    if (highlightedColLabel !== null) {
-      const colX = highlightedColLabel - 1; // Convert 1-indexed to 0-indexed
-      if (colX >= bin.x && colX < bin.x + bin.width) return true;
-    }
-
-    return false;
+  const {
+    isCategoryHighlighted,
+    isAnyCategoryHighlighted,
+    isRowColHighlighted,
+    isAnyRowColHighlighted,
+  } = useBinHighlighting({
+    binX: bin.x,
+    binY: bin.y,
+    binWidth: bin.width,
+    binDepth: bin.depth,
+    categoryId: bin.category,
   });
-  const isAnyRowColHighlighted = useViewStore(
-    (state) => state.highlightedRowLabel !== null || state.highlightedColLabel !== null
-  );
 
-  // Selection actions - from useSelectionStore
-  const setSelectedBin = useSelectionStore((state) => state.setSelectedBin);
-  const toggleSelection = useSelectionStore((state) => state.toggleSelection);
-  const setFocusedBin = useSelectionStore((state) => state.setFocusedBin);
-  const showQuickLabel = useSelectionStore((state) => state.showQuickLabel);
-
-  // View actions - from useViewStore
-  const showContextMenu = useViewStore((state) => state.showContextMenu);
-
-  // Interaction state and actions - from useInteractionStore
-  const paintSize = useInteractionStore((state) => state.paintSize);
-  const setPaintSize = useInteractionStore((state) => state.setPaintSize);
-
-  // Mobile actions - from useMobileStore
-  const setActiveMobilePanel = useMobileStore((state) => state.setActiveMobilePanel);
-
-  // Consolidate layout state selectors with shallow comparison
   const { printBedSize, gridUnitMm } = useLayoutStore(
     useShallow((state) => ({
       printBedSize: state.layout.printBedSize,
@@ -177,18 +68,26 @@ function BinComponent({
     }))
   );
 
-  // Long-press detection for mobile context menu
-  const longPressTimerRef = useRef<number | null>(null);
-  const longPressTriggeredRef = useRef(false);
-  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
-  // Double-tap detection for mobile
-  const lastTapTimeRef = useRef<number>(0);
-  // Track pointer ID for passing to useInteraction
-  const activePointerIdRef = useRef<number | null>(null);
+  const {
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    handlePointerCancel,
+    handleContextMenu,
+    handleResizePointerDown,
+  } = useBinPointerInteraction({
+    binId: bin.id,
+    isGhost,
+    isSelected,
+    onStartDrag,
+    onStartResize,
+    setSelectedBin,
+    toggleSelection,
+    showQuickLabel,
+  });
 
   // Hover state for ghost handles (desktop only)
   const [isHovered, setIsHovered] = useState(false);
-  const addToast = useToastStore((state) => state.addToast);
 
   const isBeingDragged = interaction?.type === 'drag' && interaction.binIds.includes(bin.id);
   const isFocused = focusedBinId === bin.id;
@@ -203,149 +102,33 @@ function BinComponent({
 
   // All heavy grid positioning and pixel sizing calculations are memoized together
   // to prevent recalculation when only UI state (hover, focus, etc.) changes.
-  const layoutCalcs = useMemo(() => {
-    const dimensionsText = `${formatDimension(bin.width)}×${formatDimension(bin.depth)}`;
-
-    // Calculate grid position (always use standard grid, no scaling)
-    const hasFractionalX = bin.x % 1 !== 0;
-    const hasFractionalY = bin.y % 1 !== 0;
-    const hasFractionalWidth = bin.width % 1 !== 0;
-    const hasFractionalDepth = bin.depth % 1 !== 0;
-    const hasFractionalDims =
-      hasFractionalX || hasFractionalY || hasFractionalWidth || hasFractionalDepth;
-
-    // CSS Grid positioning with configurable fractional edge placement
-    const integerWidth = Math.floor(drawer.width);
-    const integerDepth = Math.floor(drawer.depth);
-    const hasFractionalDrawerWidth = drawer.width % 1 !== 0;
-    const hasFractionalDrawerDepth = drawer.depth % 1 !== 0;
-    const fractionalEdgeX = drawer.fractionalEdgeX ?? 'end';
-    const fractionalEdgeY = drawer.fractionalEdgeY ?? 'end';
-    const fractionalWidthPart = drawer.width - integerWidth;
-    const fractionalDepthPart = drawer.depth - integerDepth;
-    const gridRows = Math.ceil(drawer.depth);
-
-    // Helper: Get CSS column for a grid x coordinate
-    const getCssColForX = (x: number): number => {
-      if (hasFractionalDrawerWidth && fractionalEdgeX === 'start') {
-        if (x < fractionalWidthPart) return 1;
-        return Math.floor(x - fractionalWidthPart) + 2;
-      }
-      return Math.floor(x) + 1;
-    };
-
-    // Helper: Get CSS row for a grid y coordinate (y=0 at bottom, CSS row 1 at top)
-    const getCssRowForY = (y: number): number => {
-      if (hasFractionalDrawerDepth) {
-        if (fractionalEdgeY === 'start') {
-          if (y < fractionalDepthPart) return gridRows;
-          return integerDepth - Math.floor(y - fractionalDepthPart);
-        } else {
-          if (y >= integerDepth) return 1;
-          return integerDepth - Math.floor(y) + 1;
-        }
-      }
-      return integerDepth - Math.floor(y);
-    };
-
-    // Calculate CSS column placement
-    const binEndX = bin.x + bin.width;
-    const startCol = getCssColForX(bin.x);
-    const endCol = getCssColForX(binEndX > 0 ? binEndX - 0.001 : binEndX);
-    const gridCol = startCol;
-    const gridColSpan = Math.max(1, endCol - startCol + 1);
-
-    // Calculate CSS row placement
-    const binEndY = bin.y + bin.depth;
-    const topRow = getCssRowForY(binEndY > 0 ? binEndY - 0.001 : binEndY);
-    const bottomRow = getCssRowForY(bin.y);
-    const gridRowStart = topRow;
-    const gridRowSpan = Math.max(1, bottomRow - topRow + 1);
-
-    // Calculate actual pixel dimensions using shared fractional pixel utility
-    const fractionalCellWidth = fractionalWidthPart * (cellSize + gap) - gap;
-    const fractionalCellHeight = fractionalDepthPart * (cellSize + gap) - gap;
-
-    const binPixelWidth = calcFractionalPixelSize(bin.x, bin.width, {
-      drawerDimension: drawer.width,
-      fractionalEdge: fractionalEdgeX,
+  const layoutCalcs = useMemo(
+    () =>
+      calculateBinLayout({
+        binX: bin.x,
+        binY: bin.y,
+        binWidth: bin.width,
+        binDepth: bin.depth,
+        drawerWidth: drawer.width,
+        drawerDepth: drawer.depth,
+        fractionalEdgeX: drawer.fractionalEdgeX,
+        fractionalEdgeY: drawer.fractionalEdgeY,
+        cellSize,
+        gap,
+      }),
+    [
+      bin.x,
+      bin.y,
+      bin.width,
+      bin.depth,
+      drawer.width,
+      drawer.depth,
+      drawer.fractionalEdgeX,
+      drawer.fractionalEdgeY,
       cellSize,
       gap,
-    });
-
-    const binPixelHeight = calcFractionalPixelSize(bin.y, bin.depth, {
-      drawerDimension: drawer.depth,
-      fractionalEdge: fractionalEdgeY,
-      cellSize,
-      gap,
-    });
-
-    // Need custom sizing when drawer has fractional dimensions or bin has fractional coords
-    const needsCustomSizing =
-      hasFractionalDims || hasFractionalDrawerWidth || hasFractionalDrawerDepth;
-
-    // Calculate pixel offset for fractional positions
-    let offsetX = 0;
-    let offsetY = 0;
-    if (needsCustomSizing) {
-      // X offset
-      if (hasFractionalDrawerWidth && fractionalEdgeX === 'start') {
-        if (bin.x < fractionalWidthPart) {
-          offsetX = (bin.x / fractionalWidthPart) * fractionalCellWidth;
-        } else {
-          const integerX = bin.x - fractionalWidthPart;
-          offsetX = (integerX - Math.floor(integerX)) * (cellSize + gap);
-        }
-      } else {
-        offsetX = (bin.x - Math.floor(bin.x)) * (cellSize + gap);
-      }
-
-      // Y offset
-      if (hasFractionalDrawerDepth && fractionalEdgeY === 'start') {
-        if (binEndY <= fractionalDepthPart) {
-          offsetY = ((fractionalDepthPart - binEndY) / fractionalDepthPart) * fractionalCellHeight;
-        } else {
-          const integerY = binEndY - fractionalDepthPart;
-          offsetY = (Math.ceil(integerY) - integerY) * (cellSize + gap);
-        }
-      } else if (hasFractionalDrawerDepth && fractionalEdgeY === 'end') {
-        if (binEndY > integerDepth) {
-          const fractionalY = binEndY - integerDepth;
-          offsetY =
-            ((fractionalDepthPart - fractionalY) / fractionalDepthPart) * fractionalCellHeight;
-        } else {
-          offsetY = (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
-        }
-      } else {
-        offsetY = (Math.ceil(binEndY) - binEndY) * (cellSize + gap);
-      }
-    }
-
-    return {
-      dimensionsText,
-      gridCol,
-      gridColSpan,
-      gridRowStart,
-      gridRowSpan,
-      binPixelWidth,
-      binPixelHeight,
-      binPixelMin: Math.min(binPixelWidth, binPixelHeight),
-      needsCustomSizing,
-      offsetX,
-      offsetY,
-    };
-  }, [
-    bin.x,
-    bin.y,
-    bin.width,
-    bin.depth,
-    drawer.width,
-    drawer.depth,
-    drawer.fractionalEdgeX,
-    drawer.fractionalEdgeY,
-    cellSize,
-    gap,
-  ]);
+    ]
+  );
 
   // Destructure memoized values for readability
   const {
@@ -362,7 +145,6 @@ function BinComponent({
     offsetY,
   } = layoutCalcs;
 
-  const hasLabel = !!bin.label;
   const hasNotes = bin.notes.trim().length > 0;
   const hasCustomProps =
     bin.customProperties !== undefined && Object.keys(bin.customProperties).length > 0;
@@ -370,62 +152,19 @@ function BinComponent({
   const hasMetadata = hasNotes || hasCustomProps;
 
   // Memoize font size and label visibility calculations
-  const textCalcs = useMemo(() => {
-    const minFontSize = 9;
-    const maxFontSize = clamp(Math.round(binPixelMin * 0.28), 9, 20);
-
-    // Smart rotation: use taller dimension for text if significantly taller
-    const shouldRotate = bin.depth > bin.width * 1.5;
-
-    // Available width for text (very conservative: 75% of bin width to account for padding)
-    const rawAvailableWidth = shouldRotate ? binPixelHeight : binPixelWidth;
-    const effectiveAvailableWidth = rawAvailableWidth * 0.75;
-
-    // Calculate if label fits and at what font size
-    let labelFits = false;
-    let labelFontSize = maxFontSize;
-
-    if (hasLabel && bin.label) {
-      const labelLength = bin.label.length;
-      const neededFontSize = effectiveAvailableWidth / (labelLength * 0.6);
-
-      if (neededFontSize >= minFontSize) {
-        labelFits = true;
-        labelFontSize = clamp(Math.floor(neededFontSize), minFontSize, maxFontSize);
-      }
-    }
-
-    const primaryFontSize = labelFits ? labelFontSize : maxFontSize;
-    const secondaryFontSize = clamp(Math.round(primaryFontSize * 0.75), 8, 14);
-
-    // Visibility thresholds
-    const rawAvailableHeight = shouldRotate ? binPixelWidth : binPixelHeight;
-    const hasSpaceForSecondary = rawAvailableHeight * 0.75 >= primaryFontSize * 2.5;
-
-    // Show label if it fits, otherwise show dimensions
-    const showLabel = hasLabel && labelFits;
-    const primaryText = showLabel && bin.label ? bin.label : dimensionsText;
-    const secondaryText = showLabel && hasSpaceForSecondary ? dimensionsText : null;
-
-    return {
-      shouldRotate,
-      primaryFontSize,
-      secondaryFontSize,
-      showLabel,
-      primaryText,
-      secondaryText,
-      letterSpacing: primaryFontSize < 11 ? ('0.02em' as const) : ('normal' as const),
-    };
-  }, [
-    binPixelMin,
-    binPixelWidth,
-    binPixelHeight,
-    bin.depth,
-    bin.width,
-    bin.label,
-    hasLabel,
-    dimensionsText,
-  ]);
+  const textCalcs = useMemo(
+    () =>
+      calculateBinText({
+        binPixelMin,
+        binPixelWidth,
+        binPixelHeight,
+        binDepth: bin.depth,
+        binWidth: bin.width,
+        label: bin.label,
+        dimensionsText,
+      }),
+    [binPixelMin, binPixelWidth, binPixelHeight, bin.depth, bin.width, bin.label, dimensionsText]
+  );
 
   const {
     shouldRotate,
@@ -442,163 +181,6 @@ function BinComponent({
   // Badges need more space than text - hide on very small bins, use smaller icons on medium bins
   const showBadges = binPixelMin >= 36 && !isGhost;
   const useSmallBadges = binPixelMin < 56;
-
-  const clearLongPress = () => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-  };
-
-  const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    if (isGhost) return;
-    // Ignore non-primary pointer (second finger) - allow two-finger pan
-    if (!e.isPrimary) return;
-
-    // Defense-in-depth: if the event originated from a resize handle, bail out.
-    // The ResizeHandle's own handler should fire first via React bubbling and
-    // call stopPropagation, but on mobile touch devices event ordering can be
-    // unpredictable. This guard ensures the Bin never intercepts resize events.
-    const target = e.target as HTMLElement;
-    if (target.closest('.resize-handle')) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Store pointer ID for passing to useInteraction when drag starts
-    activePointerIdRef.current = e.pointerId;
-
-    // Reset long-press state
-    longPressTriggeredRef.current = false;
-    pointerStartRef.current = { x: e.clientX, y: e.clientY };
-
-    // Start long-press timer on touch devices
-    if (isTouchDevice && e.button === 0) {
-      clearLongPress();
-      longPressTimerRef.current = window.setTimeout(() => {
-        longPressTriggeredRef.current = true;
-        // Vibrate if supported (haptic feedback)
-        if (typeof navigator.vibrate === 'function') {
-          navigator.vibrate(50);
-        }
-        // Show context menu
-        showContextMenu([bin.id], { x: e.clientX, y: e.clientY }, 'grid');
-      }, LONG_PRESS_DURATION);
-    }
-
-    if (e.button === 0) {
-      const isMultiSelectKey = e.ctrlKey || e.metaKey;
-
-      // Exit paint mode when selecting a bin
-      if (paintSize) {
-        setPaintSize(null);
-      }
-
-      if (isMultiSelectKey) {
-        // Ctrl/Cmd+click: toggle this bin in selection
-        toggleSelection(bin.id);
-        clearLongPress();
-      } else if (!isTouchDevice) {
-        // Desktop: Normal click - single select and start drag immediately
-        // Alt+drag starts a duplicate operation
-        // Shift+drag starts swap mode (swap with compatible bin)
-        const isDuplicateDrag = e.altKey && !e.shiftKey;
-        const isSwapDrag = e.shiftKey && !e.altKey;
-        if (!isSelected) {
-          setSelectedBin(bin.id);
-          // Show first-time hint about resize handles
-          const { settings, updateSetting } = useSettingsStore.getState();
-          if (!settings.dismissedHints.includes('bin-resize')) {
-            addToast(t('toast.resizeTip'), 'info');
-            updateSetting('dismissedHints', [...settings.dismissedHints, 'bin-resize']);
-          }
-        }
-        onStartDrag(bin.id, e.clientX, e.clientY, e.pointerId, isDuplicateDrag, isSwapDrag);
-      } else {
-        // Touch: Select on pointer down, drag starts on move
-        if (!isSelected) {
-          setSelectedBin(bin.id);
-        }
-      }
-    }
-  };
-
-  const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
-    // Cancel long-press if pointer moved too far (10px threshold)
-    if (pointerStartRef.current) {
-      const dx = e.clientX - pointerStartRef.current.x;
-      const dy = e.clientY - pointerStartRef.current.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance > 10) {
-        clearLongPress();
-        // Start drag on move for touch devices (pass pointer ID for capture management)
-        if (isTouchDevice && !longPressTriggeredRef.current) {
-          onStartDrag(bin.id, e.clientX, e.clientY, activePointerIdRef.current ?? e.pointerId);
-        }
-      }
-    }
-  };
-
-  const handlePointerUp = (e: PointerEvent<HTMLDivElement>) => {
-    clearLongPress();
-    activePointerIdRef.current = null;
-
-    // Double-tap detection for mobile - open inspector
-    if (isTouchDevice && !longPressTriggeredRef.current && pointerStartRef.current) {
-      // Check if pointer didn't move much (wasn't a drag)
-      const dx = e.clientX - pointerStartRef.current.x;
-      const dy = e.clientY - pointerStartRef.current.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (distance <= 10) {
-        const now = Date.now();
-        if (now - lastTapTimeRef.current < DOUBLE_TAP_THRESHOLD) {
-          // Double-tap detected - open inspector
-          setActiveMobilePanel('inspector');
-          lastTapTimeRef.current = 0; // Reset to prevent triple-tap
-        } else {
-          lastTapTimeRef.current = now;
-        }
-      }
-    }
-
-    pointerStartRef.current = null;
-  };
-
-  const handlePointerCancel = () => {
-    clearLongPress();
-    activePointerIdRef.current = null;
-    pointerStartRef.current = null;
-  };
-
-  // Right-click context menu for desktop
-  const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isGhost) return;
-    e.preventDefault();
-    e.stopPropagation();
-    // Select the bin if not already selected
-    if (!isSelected) {
-      setSelectedBin(bin.id);
-    }
-    showContextMenu([bin.id], { x: e.clientX, y: e.clientY }, 'grid');
-  };
-
-  const handleResizePointerDown = useCallback(
-    (e: PointerEvent<HTMLDivElement>, handle: ResizeHandle) => {
-      // Ignore secondary touches (allow two-finger pan)
-      if (!e.isPrimary) return;
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.button === 0) {
-        // Haptic feedback on touch devices when starting resize
-        if (isTouchDevice && typeof navigator.vibrate === 'function') {
-          navigator.vibrate(30);
-        }
-        onStartResize(bin.id, handle, e.pointerId);
-      }
-    },
-    [onStartResize, bin.id, isTouchDevice]
-  );
 
   const bgColor = category?.color || DEFAULT_CATEGORY_COLOR;
   const textColors = getBinTextColors(bgColor);
@@ -865,66 +447,6 @@ function BinComponent({
         )}
     </div>
   );
-}
-
-/**
- * Custom comparison function for React.memo.
- * Only re-render if props that affect visual appearance change.
- */
-function binPropsAreEqual(prevProps: BinProps, nextProps: BinProps): boolean {
-  const { bin: prevBin, category: prevCat, layer: prevLayer, drawer: prevDrawer } = prevProps;
-  const { bin: nextBin, category: nextCat, layer: nextLayer, drawer: nextDrawer } = nextProps;
-
-  // Selection/ghost state
-  if (prevProps.isSelected !== nextProps.isSelected) return false;
-  if (prevProps.isGhost !== nextProps.isGhost) return false;
-
-  // Bin visual properties
-  if (
-    prevBin.id !== nextBin.id ||
-    prevBin.x !== nextBin.x ||
-    prevBin.y !== nextBin.y ||
-    prevBin.width !== nextBin.width ||
-    prevBin.depth !== nextBin.depth ||
-    prevBin.height !== nextBin.height ||
-    prevBin.label !== nextBin.label ||
-    prevBin.category !== nextBin.category ||
-    prevBin.notes !== nextBin.notes ||
-    prevBin.linkedDesignId !== nextBin.linkedDesignId
-  ) {
-    return false;
-  }
-
-  // Custom properties - shallow object comparison
-  const prevCustom = prevBin.customProperties;
-  const nextCustom = nextBin.customProperties;
-  if (prevCustom !== nextCustom) {
-    const prevKeys = prevCustom ? Object.keys(prevCustom) : [];
-    const nextKeys = nextCustom ? Object.keys(nextCustom) : [];
-    if (prevKeys.length !== nextKeys.length) return false;
-    if (prevCustom && nextCustom) {
-      for (const key of prevKeys) {
-        if (prevCustom[key] !== nextCustom[key]) return false;
-      }
-    }
-  }
-
-  // Category/layer/drawer - only compare visual-affecting properties
-  if (prevCat?.id !== nextCat?.id || prevCat?.color !== nextCat?.color) return false;
-  if (prevLayer?.id !== nextLayer?.id || prevLayer?.height !== nextLayer?.height) return false;
-  if (
-    prevDrawer.width !== nextDrawer.width ||
-    prevDrawer.depth !== nextDrawer.depth ||
-    prevDrawer.fractionalEdgeX !== nextDrawer.fractionalEdgeX ||
-    prevDrawer.fractionalEdgeY !== nextDrawer.fractionalEdgeY
-  ) {
-    return false;
-  }
-
-  // Cell sizing
-  if (prevProps.cellSize !== nextProps.cellSize || prevProps.gap !== nextProps.gap) return false;
-
-  return true;
 }
 
 export const Bin = memo(BinComponent, binPropsAreEqual);
