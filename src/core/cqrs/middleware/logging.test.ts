@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { loggingMiddleware } from './logging';
 import { ok, err } from '@/core/result';
 import type { Command } from '../commands';
@@ -35,8 +35,15 @@ function makeEvent(type: string): DomainEvent {
 }
 
 describe('loggingMiddleware', () => {
+  let debugSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    debugSpy.mockRestore();
   });
 
   it('passes command through and returns result', () => {

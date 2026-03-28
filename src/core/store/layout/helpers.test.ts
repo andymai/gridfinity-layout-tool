@@ -58,9 +58,15 @@ describe('helpers', () => {
       expect(isErr(result)).toBe(true);
     });
 
-    it('includes bin id and operation in error message', () => {
+    it('includes operation and bin id in error fields', () => {
       const result = requireBin([], binId('xyz'), 'updateBin');
       expect(isErr(result)).toBe(true);
+      if (isErr(result)) {
+        expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
+        const error = result.error as unknown as { operation: string; reason: string };
+        expect(error.operation).toBe('updateBin');
+        expect(error.reason).toContain('xyz');
+      }
     });
   });
 

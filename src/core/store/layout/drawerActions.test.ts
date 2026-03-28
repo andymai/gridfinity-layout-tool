@@ -111,14 +111,14 @@ describe('drawerActions', () => {
 
     it('updates fractionalEdgeX', () => {
       const { updateDrawer } = useLayoutStore.getState();
-      updateDrawer({ fractionalEdgeX: true });
-      expect(useLayoutStore.getState().layout.drawer.fractionalEdgeX).toBe(true);
+      updateDrawer({ fractionalEdgeX: 'start' });
+      expect(useLayoutStore.getState().layout.drawer.fractionalEdgeX).toBe('start');
     });
 
     it('updates fractionalEdgeY', () => {
       const { updateDrawer } = useLayoutStore.getState();
-      updateDrawer({ fractionalEdgeY: true });
-      expect(useLayoutStore.getState().layout.drawer.fractionalEdgeY).toBe(true);
+      updateDrawer({ fractionalEdgeY: 'end' });
+      expect(useLayoutStore.getState().layout.drawer.fractionalEdgeY).toBe('end');
     });
   });
 });

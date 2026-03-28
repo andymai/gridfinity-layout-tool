@@ -41,13 +41,18 @@ describe('analyticsMiddleware', () => {
     expect(result).toBe(expected);
   });
 
-  it('does not track analytics for replay commands', () => {
+  it('does not track analytics for replay commands', async () => {
+    const { trackEvent } = await import('@/shared/analytics/posthog');
+    vi.mocked(trackEvent).mockClear();
+
     const next: NextFn<Command, DomainEvent> = vi.fn(() => makeSuccessResult());
     const cmd = makeCommand('bin.add', 'replay');
 
     analyticsMiddleware(cmd, next);
-    // Should not have imported posthog for replay
-    // (the dynamic import is fire-and-forget, so we just verify no crash)
+    // Allow any pending microtasks (dynamic import) to settle
+    await vi.waitFor(() => {
+      expect(trackEvent).not.toHaveBeenCalled();
+    });
   });
 
   it('returns error result unchanged', () => {

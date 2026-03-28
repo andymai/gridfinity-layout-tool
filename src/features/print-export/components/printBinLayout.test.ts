@@ -28,8 +28,7 @@ describe('printBinLayout', () => {
     });
 
     it('handles colors without # prefix', () => {
-      // The function strips # so this also works internally
-      const colors = getPrintTextColors('#334155'); // charcoal
+      const colors = getPrintTextColors('334155'); // charcoal without #
       expect(colors.primary).toContain('255, 255, 255'); // dark color → light text
     });
 

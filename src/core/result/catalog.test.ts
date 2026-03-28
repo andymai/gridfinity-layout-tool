@@ -12,42 +12,24 @@ import type { ErrorCode } from './errors';
 
 describe('error catalog', () => {
   describe('ERROR_CATALOG', () => {
-    it('has an entry for every ErrorCode', () => {
-      const codes: ErrorCode[] = [
-        'STORAGE_QUOTA_EXCEEDED',
-        'STORAGE_NOT_FOUND',
-        'STORAGE_CORRUPTED',
-        'STORAGE_UNAVAILABLE',
-        'STORAGE_NETWORK_ERROR',
-        'VALIDATION_OUT_OF_BOUNDS',
-        'VALIDATION_COLLISION',
-        'VALIDATION_INVALID_LAYER',
-        'VALIDATION_HEIGHT_EXCEEDED',
-        'VALIDATION_BLOCKED_ZONE',
-        'VALIDATION_IMPORT_FAILED',
-        'LAYOUT_LAYER_LIMIT',
-        'LAYOUT_CATEGORY_LIMIT',
-        'LAYOUT_LIBRARY_LIMIT',
-        'LAYOUT_LAST_ENTITY',
-        'LAYOUT_INVALID_OPERATION',
-        'API_RATE_LIMITED',
-        'API_UNAUTHORIZED',
-        'API_NOT_FOUND',
-        'API_SERVER_ERROR',
-        'API_NETWORK_ERROR',
-        'API_TIMEOUT',
-        'API_VALIDATION_ERROR',
-        'API_CONTENT_BLOCKED',
-        'API_SIZE_LIMIT',
-        'API_BIN_LIMIT',
-        'API_EXPIRED',
-        'API_INVALID_EXPIRATION',
-        'UNKNOWN_ERROR',
-      ];
-      for (const code of codes) {
-        expect(ERROR_CATALOG[code]).toBeDefined();
+    it('has an entry for every ErrorCode (exhaustive check via catalog keys)', () => {
+      // Use the catalog's own keys as the source of truth — every key must match its entry's code
+      const catalogKeys = Object.keys(ERROR_CATALOG) as ErrorCode[];
+      expect(catalogKeys.length).toBeGreaterThan(0);
+      for (const code of catalogKeys) {
         expect(ERROR_CATALOG[code].code).toBe(code);
       }
+
+      // Compile-time exhaustiveness: if a new ErrorCode is added to the union
+      // but not to ERROR_CATALOG, TypeScript will error here since the catalog
+      // is Record<ErrorCode, ...> and must have all keys.
+      // Runtime check: verify known domains are represented
+      const domains = catalogKeys.map((k) => k.split('_')[0]);
+      expect(domains).toContain('STORAGE');
+      expect(domains).toContain('VALIDATION');
+      expect(domains).toContain('LAYOUT');
+      expect(domains).toContain('API');
+      expect(domains).toContain('UNKNOWN');
     });
 
     it('every entry has required fields', () => {

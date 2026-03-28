@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useLayoutStore } from '@/core/store/layout';
-import { resetAllStores } from '@/test/testUtils';
+import { resetAllStores, expectOk } from '@/test/testUtils';
 
 describe('bulkActions', () => {
   beforeEach(() => {
@@ -53,9 +53,7 @@ describe('bulkActions', () => {
       const cid = layout.categories[0].id;
 
       // Add second layer
-      const addLayerResult = addLayer();
-      // @ts-expect-error accessing value directly for test
-      const lid2 = addLayerResult.value;
+      const lid2 = expectOk(addLayer());
 
       addBin({
         layerId: lid1,
