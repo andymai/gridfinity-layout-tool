@@ -62,7 +62,7 @@ describe('undoCaptureMiddleware', () => {
 
     const history = useHistoryStore.getState();
     expect(history.past).toHaveLength(1);
-    expect(history.past[0].name).toBe('Before mutation');
+    expect(history.past[0].layout.name).toBe('Before mutation');
     expect(history.canUndo).toBe(true);
   });
 
@@ -112,7 +112,7 @@ describe('undoCaptureMiddleware', () => {
 
     const history = useHistoryStore.getState();
     expect(history.past).toHaveLength(1);
-    expect(history.past[0].name).toBe('Original');
+    expect(history.past[0].layout.name).toBe('Original');
   });
 
   it('resets re-entrancy guard after command completes', () => {
@@ -131,8 +131,8 @@ describe('undoCaptureMiddleware', () => {
 
     const history = useHistoryStore.getState();
     expect(history.past).toHaveLength(2);
-    expect(history.past[0].name).toBe('First');
-    expect(history.past[1].name).toBe('Second');
+    expect(history.past[0].layout.name).toBe('First');
+    expect(history.past[1].layout.name).toBe('Second');
   });
 
   it('resets re-entrancy guard even when command throws', () => {
@@ -156,7 +156,7 @@ describe('undoCaptureMiddleware', () => {
 
     const history = useHistoryStore.getState();
     expect(history.past).toHaveLength(1);
-    expect(history.past[0].name).toBe('After error');
+    expect(history.past[0].layout.name).toBe('After error');
   });
 
   it('snapshots layout before handler mutates it', () => {
@@ -174,6 +174,6 @@ describe('undoCaptureMiddleware', () => {
     const history = useHistoryStore.getState();
     expect(history.past).toHaveLength(1);
     // The snapshot should be the state BEFORE the handler ran
-    expect(history.past[0].name).toBe('Before');
+    expect(history.past[0].layout.name).toBe('Before');
   });
 });

@@ -21,6 +21,9 @@ import { getMiddlewareFlags } from './middlewareConfig';
 /** When true, a batch is active — middleware skips individual snapshots */
 let isBatching = false;
 
+/** Tracks the first command type dispatched during a batch */
+let batchCommandType: string | null = null;
+
 export function undoCaptureMiddleware(
   command: Command,
   next: NextFn<Command, DomainEvent>
@@ -38,6 +41,10 @@ export function undoCaptureMiddleware(
 
   // Skip if inside a batch — batch() handles the snapshot
   if (isBatching) {
+    // Track the first command type for the batch's undo description
+    if (batchCommandType === null) {
+      batchCommandType = command.type;
+    }
     return next(command);
   }
 
@@ -50,7 +57,7 @@ export function undoCaptureMiddleware(
   const result = next(command);
 
   if (isOk(result)) {
-    useHistoryStore.getState().push(snapshot);
+    useHistoryStore.getState().push(snapshot, command.type);
     mlTracking.recordAction?.();
   }
 
@@ -92,19 +99,21 @@ export function batch<T>(fn: () => T): T {
   const snapshot = structuredClone(layout);
 
   isBatching = true;
+  batchCommandType = null;
   try {
     const result = fn();
 
     // Check if layout actually changed (Immer produces new reference on mutation)
     const currentLayout = useLayoutStore.getState().layout;
     if (currentLayout !== layout) {
-      useHistoryStore.getState().push(snapshot);
+      useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown');
       mlTracking.recordAction?.();
     }
 
     return result;
   } finally {
     isBatching = false;
+    batchCommandType = null;
   }
 }
 
@@ -114,4 +123,5 @@ export function batch<T>(fn: () => T): T {
  */
 export function _resetUndoCaptureState(): void {
   isBatching = false;
+  batchCommandType = null;
 }
