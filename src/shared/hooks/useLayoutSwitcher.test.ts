@@ -339,8 +339,8 @@ describe('useLayoutSwitcher', () => {
     it('clears undo history on switch', async () => {
       // Set up initial history state
       useHistoryStore.setState({
-        past: [createDefaultLayout()],
-        future: [createDefaultLayout()],
+        past: [{ layout: createDefaultLayout(), commandType: 'bin.add' as const }],
+        future: [{ layout: createDefaultLayout(), commandType: 'bin.add' as const }],
         canUndo: true,
         canRedo: true,
       });

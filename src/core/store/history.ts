@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Layout, BinId, LayerId, CategoryId } from '@/core/types';
+import type { CommandType } from '@/core/cqrs/commands';
 import { useLayoutStore } from './layout';
 import { useSelectionStore } from './selection';
 import { useToastStore } from './toast';
@@ -60,7 +61,7 @@ function pruneStaleSelections(restoredLayout: Layout): void {
 
 export interface HistoryEntry {
   layout: Layout;
-  commandType: string;
+  commandType: CommandType | 'unknown';
 }
 
 interface HistoryState {
@@ -70,7 +71,7 @@ interface HistoryState {
   canUndo: boolean;
   canRedo: boolean;
 
-  push: (layout: Layout, commandType: string) => void;
+  push: (layout: Layout, commandType?: CommandType | 'unknown') => void;
   undo: () => void;
   redo: () => void;
   clear: () => void;
@@ -87,7 +88,7 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   canUndo: false,
   canRedo: false,
 
-  push: (layout, commandType) => {
+  push: (layout, commandType = 'unknown') => {
     set((state) => {
       const entry: HistoryEntry = { layout, commandType };
       const newPast = [...state.past, entry];
@@ -122,6 +123,8 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     pruneStaleSelections(previous);
 
     // Show undo toast with action description
+    // NOTE: getStaticTranslation uses English only. Full locale support
+    // requires a locale-aware static helper or toast i18n key support.
     const descKey = getCommandDescriptionKey(commandType);
     const action = getStaticTranslation(descKey);
     useToastStore.getState().addToast({

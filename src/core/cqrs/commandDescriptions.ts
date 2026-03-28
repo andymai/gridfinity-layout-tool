@@ -4,7 +4,9 @@
  * Used by the history store to show what action is being undone/redone.
  */
 
-const DESCRIPTIONS: Readonly<Record<string, string>> = {
+import type { CommandType } from './commands';
+
+const DESCRIPTIONS: Readonly<Partial<Record<CommandType, string>>> = {
   'bin.add': 'undo.binAdded',
   'bin.update': 'undo.binUpdated',
   'bin.delete': 'undo.binDeleted',
@@ -30,6 +32,7 @@ const DESCRIPTIONS: Readonly<Record<string, string>> = {
   'layout.setBaseplateParams': 'undo.baseplateParamsChanged',
 };
 
-export function getCommandDescriptionKey(commandType: string): string {
+export function getCommandDescriptionKey(commandType: CommandType | 'unknown'): string {
+  if (commandType === 'unknown') return 'undo.unknownAction';
   return DESCRIPTIONS[commandType] ?? 'undo.unknownAction';
 }
