@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.34.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.34.1...gridfinity-layout-tool-v4.34.2) (2026-03-28)
+
+
+### Bug Fixes
+
+* **tests:** add missing trackEvent to 12 incomplete posthog mocks ([#1281](https://github.com/andymai/gridfinity-layout-tool/issues/1281)) ([faacb1c](https://github.com/andymai/gridfinity-layout-tool/commit/faacb1c72e26f4d11a21703e8424e4a89307788c))
+
 ## [4.34.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.34.0...gridfinity-layout-tool-v4.34.1) (2026-03-28)
 
 
