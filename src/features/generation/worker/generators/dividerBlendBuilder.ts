@@ -17,7 +17,7 @@ import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './utils/shapeOps';
 import { findWallSegments } from './compartmentBuilder';
-import { buildSingleCutout } from './wallCutoutBuilder';
+import { buildSingleCutout } from './featureBuilder';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import { LIP_HEIGHT, COPLANAR_MARGIN } from './generatorConstants';
 
