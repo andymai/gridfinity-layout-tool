@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.34.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.33.0...gridfinity-layout-tool-v4.34.0) (2026-03-28)
+
+
+### Features
+
+* **undo:** show smart undo/redo toasts with action descriptions ([#1277](https://github.com/andymai/gridfinity-layout-tool/issues/1277)) ([2f92910](https://github.com/andymai/gridfinity-layout-tool/commit/2f929109e716d60cd1b23846a2d4cadd53250787))
+
 ## [4.33.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.32.2...gridfinity-layout-tool-v4.33.0) (2026-03-27)
 
 
