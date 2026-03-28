@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.34.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.34.2...gridfinity-layout-tool-v4.34.3) (2026-03-28)
+
+
+### Bug Fixes
+
+* **baseplate:** respect fractional values in padding and dimension display ([#1284](https://github.com/andymai/gridfinity-layout-tool/issues/1284)) ([2aec81a](https://github.com/andymai/gridfinity-layout-tool/commit/2aec81aa0bc2f33367d403655496a4960e311ebb))
+
 ## [4.34.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.34.1...gridfinity-layout-tool-v4.34.2) (2026-03-28)
 
 
