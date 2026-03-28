@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.34.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.34.3...gridfinity-layout-tool-v4.34.4) (2026-03-28)
+
+
+### Bug Fixes
+
+* **labs:** responsive toggles + updated copy ([#1287](https://github.com/andymai/gridfinity-layout-tool/issues/1287)) ([11a56c5](https://github.com/andymai/gridfinity-layout-tool/commit/11a56c59b916830dec724a4fe8d173d6e5fb807a))
+
 ## [4.34.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.34.2...gridfinity-layout-tool-v4.34.3) (2026-03-28)
 
 
