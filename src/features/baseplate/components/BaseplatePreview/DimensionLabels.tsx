@@ -92,7 +92,7 @@ export function DimensionLabels({
         anchorX="center"
         anchorY="top"
       >
-        {`${Math.round(totalW)}mm`}
+        {`${totalW.toFixed(1)}mm`}
       </Text>
 
       {/* Depth label */}
@@ -104,7 +104,7 @@ export function DimensionLabels({
         anchorX="right"
         anchorY="middle"
       >
-        {`${Math.round(totalD)}mm`}
+        {`${totalD.toFixed(1)}mm`}
       </Text>
     </group>
   );

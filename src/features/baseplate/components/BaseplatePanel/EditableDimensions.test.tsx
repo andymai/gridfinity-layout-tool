@@ -17,7 +17,7 @@ describe('EditableDimensions', () => {
   it('renders as a button with formatted dimensions at rest', () => {
     render(<EditableDimensions {...defaultProps} />);
     const btn = screen.getByRole('button', { name: 'Edit dimensions' });
-    expect(btn).toHaveTextContent(/441\s*×\s*357\s*mm/);
+    expect(btn).toHaveTextContent(/441\.0\s*×\s*357\.0\s*mm/);
   });
 
   it('shows hover affordance classes on the button', () => {
@@ -128,9 +128,9 @@ describe('EditableDimensions', () => {
     expect(onCommit).not.toHaveBeenCalled();
   });
 
-  it('rounds display values to integers', () => {
+  it('shows display values with one decimal place', () => {
     render(<EditableDimensions {...defaultProps} widthMm={441.6} depthMm={357.2} />);
     const btn = screen.getByRole('button');
-    expect(btn).toHaveTextContent(/442\s*×\s*357\s*mm/);
+    expect(btn).toHaveTextContent(/441\.6\s*×\s*357\.2\s*mm/);
   });
 });

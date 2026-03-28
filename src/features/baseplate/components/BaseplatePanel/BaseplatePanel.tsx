@@ -102,7 +102,7 @@ export function BaseplatePanel() {
     baseplateParams.paddingBack > 0;
 
   const paddingSummary = hasPadding
-    ? `L:${baseplateParams.paddingLeft} R:${baseplateParams.paddingRight} F:${baseplateParams.paddingFront} B:${baseplateParams.paddingBack}`
+    ? `L:${baseplateParams.paddingLeft.toFixed(2)} R:${baseplateParams.paddingRight.toFixed(2)} F:${baseplateParams.paddingFront.toFixed(2)} B:${baseplateParams.paddingBack.toFixed(2)}`
     : undefined;
 
   const minMm = CONSTRAINTS.GRID_MIN * gridUnitMm;
@@ -134,8 +134,8 @@ export function BaseplatePanel() {
       const remainderWidth = Math.max(0, targetWidthMm - snappedWidth * gridUnitMm);
       const remainderDepth = Math.max(0, targetDepthMm - snappedDepth * gridUnitMm);
 
-      const halfPadWidth = Math.floor((remainderWidth / 2) * 10) / 10;
-      const halfPadDepth = Math.floor((remainderDepth / 2) * 10) / 10;
+      const halfPadWidth = Math.round((remainderWidth / 2) * 100) / 100;
+      const halfPadDepth = Math.round((remainderDepth / 2) * 100) / 100;
 
       const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
       useLayoutStore.getState().setBaseplateParams({
@@ -599,8 +599,8 @@ function PaddingSchematic({
 
       <p className="text-center text-xs tabular-nums text-content-tertiary">
         {t('baseplate.totalDimensions', {
-          width: Math.round(totalWidthMm),
-          depth: Math.round(totalDepthMm),
+          width: totalWidthMm.toFixed(1),
+          depth: totalDepthMm.toFixed(1),
         })}
       </p>
     </div>
@@ -613,8 +613,8 @@ interface SideStepperProps {
   readonly onChange: (value: number) => void;
 }
 
-const PADDING_BUTTON_STEP = 1;
-const PADDING_INPUT_STEP = 0.1;
+const PADDING_BUTTON_STEP = 0.25;
+const PADDING_INPUT_STEP = 0.01;
 const PADDING_MIN = 0;
 const PADDING_MAX = 100;
 
@@ -627,7 +627,7 @@ function SideStepper({ ariaLabel, value, onChange }: SideStepperProps) {
   const [isFocused, setIsFocused] = useState(false);
   const skipBlurCommit = useRef(false);
 
-  const displayValue = Math.round(value * 10) / 10;
+  const displayValue = Math.round(value * 100) / 100;
 
   const commit = useCallback(
     (text: string) => {
@@ -654,10 +654,10 @@ function SideStepper({ ariaLabel, value, onChange }: SideStepperProps) {
         type="text"
         inputMode="decimal"
         className="w-8 border border-stroke-subtle bg-surface px-0 py-0.5 text-center text-xs tabular-nums text-content-secondary outline-none focus:ring-1 focus:ring-accent"
-        value={isFocused ? localText : displayValue}
+        value={isFocused ? localText : displayValue.toFixed(2)}
         onChange={(e) => setLocalText(e.target.value)}
         onFocus={() => {
-          setLocalText(String(displayValue));
+          setLocalText(displayValue.toFixed(2));
           setIsFocused(true);
         }}
         onBlur={() => {
@@ -674,7 +674,7 @@ function SideStepper({ ariaLabel, value, onChange }: SideStepperProps) {
             e.currentTarget.blur();
           }
           if (e.key === 'Escape') {
-            setLocalText(String(displayValue));
+            setLocalText(displayValue.toFixed(2));
             skipBlurCommit.current = true;
             e.currentTarget.blur();
           }
@@ -709,7 +709,11 @@ function PaddingStepper({ label, value, onChange }: PaddingStepperProps) {
         size="sm"
         value={value}
         onChange={onChange}
-        onStep={(delta) => onChange(Math.max(PADDING_MIN, value + delta))}
+        onStep={(delta) =>
+          onChange(
+            Math.max(PADDING_MIN, Math.min(PADDING_MAX, value + delta * PADDING_BUTTON_STEP))
+          )
+        }
         min={PADDING_MIN}
         max={PADDING_MAX}
         step={PADDING_INPUT_STEP}

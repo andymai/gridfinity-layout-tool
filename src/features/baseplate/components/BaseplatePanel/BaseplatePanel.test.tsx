@@ -122,7 +122,7 @@ describe('BaseplatePanel', () => {
     // No padding: single line with grid units and editable mm dimensions
     expect(screen.getByText('baseplate.dimensionsUnits')).toBeInTheDocument();
     const editBtn = screen.getByRole('button', { name: 'baseplate.editDimensions' });
-    expect(editBtn).toHaveTextContent(/168\s*×\s*252\s*mm/);
+    expect(editBtn).toHaveTextContent(/168\.0\s*×\s*252\.0\s*mm/);
   });
 
   it('renders hero total dimensions when padding is set', () => {
@@ -302,7 +302,7 @@ describe('BaseplatePanel', () => {
     it('renders editable dimension button in no-padding mode', () => {
       render(<BaseplatePanel />);
       const editBtn = screen.getByRole('button', { name: 'baseplate.editDimensions' });
-      expect(editBtn).toHaveTextContent(/168\s*×\s*252\s*mm/);
+      expect(editBtn).toHaveTextContent(/168\.0\s*×\s*252\.0\s*mm/);
     });
 
     it('enters edit mode on click and shows two inputs', () => {
@@ -348,7 +348,7 @@ describe('BaseplatePanel', () => {
       render(<BaseplatePanel />);
       const editBtn = screen.getByRole('button', { name: 'baseplate.editDimensions' });
       // Total: 168 (grid) + 5 + 3 (padding) = 176mm wide
-      expect(editBtn).toHaveTextContent(/176\s*×\s*252\s*mm/);
+      expect(editBtn).toHaveTextContent(/176\.0\s*×\s*252\.0\s*mm/);
     });
 
     it('exact grid multiple produces zero padding', () => {
@@ -467,7 +467,7 @@ describe('BaseplatePanel', () => {
       const incBtn = screen.getByLabelText('baseplate.paddingLeft increment');
       fireEvent.click(incBtn);
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
-        expect.objectContaining({ paddingLeft: 1 })
+        expect.objectContaining({ paddingLeft: 0.25 })
       );
     });
 

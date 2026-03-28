@@ -47,8 +47,8 @@ export function EditableDimensions({
 
   // When entering edit mode, seed inputs with current rounded values
   const enterEditMode = useCallback(() => {
-    setLocalWidth(String(Math.round(widthMm)));
-    setLocalDepth(String(Math.round(depthMm)));
+    setLocalWidth(widthMm.toFixed(1));
+    setLocalDepth(depthMm.toFixed(1));
     setEditing(true);
   }, [widthMm, depthMm]);
 
@@ -145,7 +145,7 @@ export function EditableDimensions({
       className={`cursor-pointer text-sm font-semibold tabular-nums text-content decoration-content-tertiary underline-offset-2 hover:underline ${className ?? ''}`}
       aria-label={ariaLabel}
     >
-      {Math.round(widthMm)} &times; {Math.round(depthMm)} mm
+      {widthMm.toFixed(1)} &times; {depthMm.toFixed(1)} mm
     </button>
   );
 }
