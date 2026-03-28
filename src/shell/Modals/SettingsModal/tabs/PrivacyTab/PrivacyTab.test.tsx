@@ -32,6 +32,7 @@ vi.mock('@/shared/components/Checkbox', () => ({
 }));
 
 vi.mock('@/shared/analytics/posthog', () => ({
+  trackEvent: vi.fn(),
   optInAnalytics: mockOptIn,
   optOutAnalytics: mockOptOut,
   pruneAnalyticsData: mockPruneAnalytics,

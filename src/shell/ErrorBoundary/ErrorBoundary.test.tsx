@@ -4,6 +4,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 
 // Mock analytics
 vi.mock('@/shared/analytics/posthog', () => ({
+  trackEvent: vi.fn(),
   captureException: vi.fn(),
   track3DRenderError: vi.fn(),
 }));

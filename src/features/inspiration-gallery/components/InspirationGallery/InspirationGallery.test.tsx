@@ -18,6 +18,7 @@ const mockTrackGalleryOpened = vi.fn();
 const mockTrackGalleryClosed = vi.fn();
 const mockTrackTemplateLoadError = vi.fn();
 vi.mock('@/shared/analytics/posthog', () => ({
+  trackEvent: vi.fn(),
   trackBinCreated: (...args: unknown[]) => mockTrackBinCreated(...args),
   trackGalleryOpened: (...args: unknown[]) => mockTrackGalleryOpened(...args),
   trackGalleryClosed: (...args: unknown[]) => mockTrackGalleryClosed(...args),
