@@ -60,6 +60,10 @@ export type { InputProps } from './Input';
 export { Select } from './Select';
 export type { SelectProps, SelectOption } from './Select';
 
+// Switch
+export { Switch } from './Switch';
+export type { SwitchProps } from './Switch';
+
 // Spinner
 export { Spinner } from './Spinner';
 export type { SpinnerProps } from './Spinner';

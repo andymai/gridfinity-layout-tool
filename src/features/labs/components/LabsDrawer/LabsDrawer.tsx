@@ -94,8 +94,7 @@ export function LabsDrawer() {
           <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
             {/* Description */}
             <p className="text-sm text-content-secondary leading-relaxed mb-6" data-nosnippet>
-              Try new features before they're released to everyone. Features may change based on
-              feedback.
+              {t('labs.description')}
             </p>
 
             {/* Feature Cards */}
