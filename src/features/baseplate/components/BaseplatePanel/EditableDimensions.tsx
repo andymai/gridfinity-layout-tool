@@ -113,6 +113,7 @@ export function EditableDimensions({
           ref={widthRef}
           type="number"
           inputMode="decimal"
+          step={0.1}
           value={localWidth}
           onChange={(e) => setLocalWidth(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -125,6 +126,7 @@ export function EditableDimensions({
         <input
           type="number"
           inputMode="decimal"
+          step={0.1}
           value={localDepth}
           onChange={(e) => setLocalDepth(e.target.value)}
           onKeyDown={handleKeyDown}

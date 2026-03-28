@@ -134,8 +134,8 @@ export function BaseplatePanel() {
       const remainderWidth = Math.max(0, targetWidthMm - snappedWidth * gridUnitMm);
       const remainderDepth = Math.max(0, targetDepthMm - snappedDepth * gridUnitMm);
 
-      const halfPadWidth = Math.round((remainderWidth / 2) * 100) / 100;
-      const halfPadDepth = Math.round((remainderDepth / 2) * 100) / 100;
+      const halfPadWidth = Math.floor((remainderWidth / 2) * 100) / 100;
+      const halfPadDepth = Math.floor((remainderDepth / 2) * 100) / 100;
 
       const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
       useLayoutStore.getState().setBaseplateParams({
@@ -708,7 +708,6 @@ function PaddingStepper({ label, value, onChange }: PaddingStepperProps) {
       <Stepper
         size="sm"
         value={value}
-        onChange={onChange}
         onStep={(delta) =>
           onChange(
             Math.max(PADDING_MIN, Math.min(PADDING_MAX, value + delta * PADDING_BUTTON_STEP))
@@ -716,7 +715,7 @@ function PaddingStepper({ label, value, onChange }: PaddingStepperProps) {
         }
         min={PADDING_MIN}
         max={PADDING_MAX}
-        step={PADDING_INPUT_STEP}
+        displayValue={value.toFixed(2)}
         aria-label={label}
       />
     </div>
