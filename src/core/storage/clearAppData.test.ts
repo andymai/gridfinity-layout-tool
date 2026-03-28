@@ -11,6 +11,7 @@ vi.mock('./backends/indexedDB', () => ({
 }));
 
 vi.mock('@/shared/analytics/posthog', () => ({
+  trackEvent: vi.fn(),
   pruneAnalyticsData: mockPruneAnalyticsData,
 }));
 

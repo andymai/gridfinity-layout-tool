@@ -84,6 +84,7 @@ vi.mock('@/shared/hooks/useDrawerSettings', () => ({
 }));
 
 vi.mock('@/shared/analytics/posthog', () => ({
+  trackEvent: vi.fn(),
   optInAnalytics: vi.fn(),
   optOutAnalytics: vi.fn(),
 }));

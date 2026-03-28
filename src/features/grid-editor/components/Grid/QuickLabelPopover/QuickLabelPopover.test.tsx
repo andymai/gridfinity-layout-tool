@@ -26,6 +26,7 @@ vi.mock('@/shared/analytics/useMLTracking', () => ({
 }));
 
 vi.mock('@/shared/analytics/posthog', () => ({
+  trackEvent: vi.fn(),
   markFeatureUsed: vi.fn(),
 }));
 

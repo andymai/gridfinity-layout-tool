@@ -11,6 +11,7 @@ import { layerId } from '@/core/types';
 
 // Mock analytics to avoid side effects
 vi.mock('@/shared/analytics/posthog', () => ({
+  trackEvent: vi.fn(),
   markFeatureUsed: vi.fn(),
 }));
 

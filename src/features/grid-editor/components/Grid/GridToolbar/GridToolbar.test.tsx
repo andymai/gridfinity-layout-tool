@@ -8,6 +8,7 @@ import type { GridZoomState } from '@/features/grid-editor/hooks/useGridZoom';
 
 // Mock analytics
 vi.mock('@/shared/analytics/posthog', () => ({
+  trackEvent: vi.fn(),
   track3DPreview: vi.fn(),
   markFeatureUsed: vi.fn(),
 }));

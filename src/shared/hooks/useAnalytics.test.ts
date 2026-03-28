@@ -7,6 +7,7 @@ import * as analytics from '@/shared/analytics/posthog';
 
 // Mock the analytics module
 vi.mock('@/shared/analytics/posthog', () => ({
+  trackEvent: vi.fn(),
   trackLayoutSnapshot: vi.fn(),
   trackHeartbeat: vi.fn(),
   getActivityContext: vi.fn(() => 'viewing'),
