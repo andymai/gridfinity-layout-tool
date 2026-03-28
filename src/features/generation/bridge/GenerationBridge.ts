@@ -168,12 +168,17 @@ interface PendingExport<T> {
  * - Cancels in-flight requests when a new one arrives
  * - Provides Promise-based API over the message-passing protocol
  */
+
+/** Maximum time (ms) for a generation (bin or baseplate) before timeout. */
+const GENERATION_TIMEOUT_MS = 30_000;
+
 export class GenerationBridge {
   private readonly kernel: KernelName;
   private worker: Worker | null = null;
   private initPromise: Promise<void> | null = null;
   private currentRequestId: string | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private generationTimer: ReturnType<typeof setTimeout> | null = null;
   private pendingResolve: ((result: GenerationResult) => void) | null = null;
   private pendingReject: ((error: Error) => void) | null = null;
   private onProgress: ProgressCallback | null = null;
@@ -243,20 +248,7 @@ export class GenerationBridge {
           type: 'module',
         });
 
-        const onInitMessage = (event: MessageEvent<WorkerResponse>) => {
-          if (event.data.type === 'INIT_READY') {
-            this.worker?.removeEventListener('message', onInitMessage);
-            this.threadingInfo = extractThreadingInfo(event.data);
-            this.setupMessageHandler();
-            resolve();
-          } else if (event.data.type === 'ERROR') {
-            this.worker?.removeEventListener('message', onInitMessage);
-            reject(new Error(event.data.error));
-          }
-        };
-
-        this.worker.addEventListener('message', onInitMessage);
-        this.worker.addEventListener('error', (e) => {
+        const onInitError = (e: ErrorEvent): void => {
           // When a worker script fails to load (network error, CSP block, missing module),
           // the ErrorEvent.message is often empty. Build a diagnostic message from whatever
           // fields are available so the error is actionable in telemetry.
@@ -265,7 +257,24 @@ export class GenerationBridge {
             (e.filename ? `loading ${e.filename}${e.lineno ? `:${e.lineno}` : ''}` : '') ||
             'script failed to load (possible network error, CSP restriction, or unsupported browser)';
           reject(new Error(`Worker failed to initialize: ${detail}`));
-        });
+        };
+
+        const onInitMessage = (event: MessageEvent<WorkerResponse>) => {
+          if (event.data.type === 'INIT_READY') {
+            this.worker?.removeEventListener('message', onInitMessage);
+            this.worker?.removeEventListener('error', onInitError);
+            this.threadingInfo = extractThreadingInfo(event.data);
+            this.setupMessageHandler();
+            resolve();
+          } else if (event.data.type === 'ERROR') {
+            this.worker?.removeEventListener('message', onInitMessage);
+            this.worker?.removeEventListener('error', onInitError);
+            reject(new Error(event.data.error));
+          }
+        };
+
+        this.worker.addEventListener('message', onInitMessage);
+        this.worker.addEventListener('error', onInitError);
 
         this.postMessage({ type: 'INIT', kernel: this.kernel });
       } catch (e) {
@@ -627,6 +636,7 @@ export class GenerationBridge {
         const requestId = this.nextRequestId();
         this.currentRequestId = requestId;
         this.baseplateCache.pendingFingerprint = fingerprint;
+        this.startGenerationTimeout(requestId);
         this.postMessage({
           type: 'GENERATE_BASEPLATE',
           payload: { params, requestId },
@@ -736,14 +746,67 @@ export class GenerationBridge {
     this.currentRequestId = requestId;
     this.binCache.pendingFingerprint = fingerprint;
 
+    this.startGenerationTimeout(requestId);
+
     this.postMessage({
       type: 'GENERATE',
       payload: { params, requestId },
     });
   }
 
+  /**
+   * Start a timeout to recover from unresponsive workers (WASM OOM, infinite loops).
+   * Cleared in clearPending() when the worker responds (success, error, or cancel).
+   */
+  private startGenerationTimeout(requestId: string): void {
+    this.clearGenerationTimer();
+    this.generationTimer = setTimeout(() => {
+      if (this.currentRequestId === requestId && this.pendingReject) {
+        const reject = this.pendingReject;
+        this.clearPending();
+        // Send cancel so the worker can abort if it's still alive
+        this.postMessage({ type: 'CANCEL', requestId });
+        reject(
+          new Error(
+            'Generation timed out — this bin may be too complex. Try reducing compartments or disabling features like scoops and labels.'
+          )
+        );
+      }
+    }, GENERATION_TIMEOUT_MS);
+  }
+
   private setupMessageHandler(): void {
     if (!this.worker) return;
+
+    // Handle worker crashes (WASM OOM, unrecoverable kernel errors).
+    // Without this, a worker crash leaves pending Promises unresolved
+    // and the UI stuck in "generating" state forever.
+    this.worker.addEventListener('error', (e) => {
+      e.preventDefault();
+      const message = e.message || 'Worker crashed unexpectedly (possible out-of-memory)';
+
+      // Tear down the dead worker so subsequent calls don't post to it.
+      // Clearing initPromise allows re-init on the next generate() call.
+      if (this.worker) {
+        this.worker.terminate();
+        this.worker = null;
+      }
+      this.initPromise = null;
+      this.threadingInfo = null;
+
+      // Reject the pending generation promise so the UI can show an error
+      if (this.pendingReject) {
+        const reject = this.pendingReject;
+        this.clearPending();
+        reject(new Error(message));
+      }
+
+      // Reject all pending exports
+      for (const pending of this.pendingExports.values()) {
+        pending.reject(new Error(message));
+      }
+      this.pendingExports.clear();
+    });
 
     this.worker.addEventListener('message', (event: MessageEvent<WorkerResponse>) => {
       const response = event.data;
@@ -896,12 +959,20 @@ export class GenerationBridge {
   }
 
   private clearPending(): void {
+    this.clearGenerationTimer();
     this.pendingResolve = null;
     this.pendingReject = null;
     this.currentRequestId = null;
     this.onProgress = null;
     this.binCache.pendingFingerprint = null;
     this.baseplateCache.pendingFingerprint = null;
+  }
+
+  private clearGenerationTimer(): void {
+    if (this.generationTimer !== null) {
+      clearTimeout(this.generationTimer);
+      this.generationTimer = null;
+    }
   }
 
   private postMessage(message: WorkerMessage): void {
