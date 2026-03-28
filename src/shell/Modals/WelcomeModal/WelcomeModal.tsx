@@ -5,7 +5,7 @@ import { useMobileStore } from '@/core/store/mobile';
 import { useInteractionStore } from '@/core/store/interaction';
 import { isOk } from '@/core/result';
 import { layoutId } from '@/core/types';
-import { trackEvent } from '@/shared/analytics/posthog';
+import { commandBus, createCommand } from '@/core/cqrs';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 import { INSPIRATION_LAYOUTS } from '@/features/inspiration-gallery/data';
@@ -70,7 +70,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
 
   // Track modal shown
   useEffect(() => {
-    trackEvent('onboarding_welcome_shown', { template_count: CURATED_TEMPLATES.length });
+    commandBus.dispatch(createCommand('ui.onboardingStep', { step: 'welcome_shown' }));
   }, []);
 
   // Focus trap: focus modal on mount
@@ -95,12 +95,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
       if (isImporting) return;
 
       setIsImporting(true);
-      trackEvent('onboarding_template_selected', {
-        template_id: layout.id,
-        template_name: layout.name,
-        template_theme: layout.theme,
-        bin_count: layout.metrics.binCount,
-      });
+      commandBus.dispatch(createCommand('ui.templateApplied', { templateId: layout.id }));
 
       try {
         const result = await importLayoutFromJSON(
@@ -113,21 +108,12 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
           if (isOk(switchResult)) {
             addToast(t('toast.galleryAdded', { name: layout.name }), 'success');
             announceToScreenReader(t('toast.galleryAdded', { name: layout.name }));
-            trackEvent('onboarding_template_imported', {
-              template_id: layout.id,
-              template_name: layout.name,
-              success: true,
-            });
+            commandBus.dispatch(createCommand('ui.onboardingStep', { step: 'template_imported' }));
           }
           closeMobilePanel();
           onClose('template');
         } else {
           addToast(t('toast.galleryAddFailed'), 'error');
-          trackEvent('onboarding_template_imported', {
-            template_id: layout.id,
-            template_name: layout.name,
-            success: false,
-          });
         }
       } finally {
         setIsImporting(false);

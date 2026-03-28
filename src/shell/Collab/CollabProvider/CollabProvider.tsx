@@ -27,7 +27,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { generateId } from '@/core/constants';
 import { generateGuestName, generateGuestColor } from '@/shared/utils/guestNames';
-import { trackEvent } from '@/shared/analytics/posthog';
+import { commandBus, createCommand } from '@/core/cqrs';
 import {
   PresenceContext,
   type CollabPresenceActions,
@@ -110,12 +110,7 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
 
   // Track collab session start
   useEffect(() => {
-    trackEvent('collab_session_started', {
-      share_id: shareId,
-      room_id: roomId,
-      bin_count: layout.bins.length,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only track on mount
+    commandBus.dispatch(createCommand('ui.featureUsed', { feature: 'collab_session' }));
   }, []);
 
   // Check if user is owner (layout exists in their library with matching ID)

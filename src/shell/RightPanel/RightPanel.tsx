@@ -1,10 +1,9 @@
 import React, { Suspense, useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore } from '@/core/store';
 import { useViewStore } from '@/core/store/view';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { exportPrintListTSV } from '@/core/storage';
-import { trackLayoutSnapshot } from '@/shared/analytics/posthog';
+import { commandBus, createCommand } from '@/core/cqrs';
 import { ConfirmDialog, CollapsibleSection } from '@/shared/components';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
@@ -244,7 +243,7 @@ export function RightPanel() {
                         });
                         void navigator.clipboard.writeText(tsv);
                         setCopyFeedback(true);
-                        trackLayoutSnapshot(useLayoutStore.getState().layout, 'export_tsv');
+                        commandBus.dispatch(createCommand('ui.layoutExported', { format: 'tsv' }));
                         setTimeout(() => setCopyFeedback(false), 2000);
                       }}
                       className="btn btn-ghost p-1.5 min-w-0 min-h-0"
