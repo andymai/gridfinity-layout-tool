@@ -1,5 +1,9 @@
 # Gridfinity Layout Tool
 
+[![CI](https://github.com/andymai/gridfinity-layout-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/andymai/gridfinity-layout-tool/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/andymai/gridfinity-layout-tool)](https://github.com/andymai/gridfinity-layout-tool/releases)
+[![License: AGPL-3.0](https://img.shields.io/github/license/andymai/gridfinity-layout-tool)](./LICENSE)
+
 Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer organizer layouts for 3D printing — right in your browser.
 
 **Live:** [gridfinitylayouttool.com](https://gridfinitylayouttool.com)

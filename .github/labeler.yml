@@ -1,0 +1,140 @@
+# PR auto-labeler configuration
+# See: https://github.com/actions/labeler
+
+# --- Features ---
+'feature: grid-editor':
+  - changed-files:
+      - any-glob-to-any-file: src/features/grid-editor/**
+
+'feature: generation':
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/features/generation/**
+          - src/shared/generation/**
+
+'feature: bin-designer':
+  - changed-files:
+      - any-glob-to-any-file: src/features/bin-designer/**
+
+'feature: bin-inspector':
+  - changed-files:
+      - any-glob-to-any-file: src/features/bin-inspector/**
+
+'feature: layers':
+  - changed-files:
+      - any-glob-to-any-file: src/features/layers/**
+
+'feature: categories':
+  - changed-files:
+      - any-glob-to-any-file: src/features/categories/**
+
+'feature: print-export':
+  - changed-files:
+      - any-glob-to-any-file: src/features/print-export/**
+
+'feature: cloud-share':
+  - changed-files:
+      - any-glob-to-any-file: src/features/cloud-share/**
+
+'feature: layout-library':
+  - changed-files:
+      - any-glob-to-any-file: src/features/layout-library/**
+
+'feature: onboarding':
+  - changed-files:
+      - any-glob-to-any-file: src/features/onboarding/**
+
+'feature: inspiration-gallery':
+  - changed-files:
+      - any-glob-to-any-file: src/features/inspiration-gallery/**
+
+'feature: command-palette':
+  - changed-files:
+      - any-glob-to-any-file: src/features/command-palette/**
+
+'feature: labs':
+  - changed-files:
+      - any-glob-to-any-file: src/features/labs/**
+
+'feature: staging':
+  - changed-files:
+      - any-glob-to-any-file: src/features/staging/**
+
+'feature: design-linking':
+  - changed-files:
+      - any-glob-to-any-file: src/features/design-linking/**
+
+'feature: baseplate':
+  - changed-files:
+      - any-glob-to-any-file: src/features/baseplate/**
+
+'feature: snapshots':
+  - changed-files:
+      - any-glob-to-any-file: src/features/snapshots/**
+
+'feature: engagement':
+  - changed-files:
+      - any-glob-to-any-file: src/features/engagement/**
+
+# --- Areas ---
+'area: core':
+  - changed-files:
+      - any-glob-to-any-file: src/core/**
+
+'area: design-system':
+  - changed-files:
+      - any-glob-to-any-file: src/design-system/**
+
+'area: shell':
+  - changed-files:
+      - any-glob-to-any-file: src/shell/**
+
+'area: i18n':
+  - changed-files:
+      - any-glob-to-any-file: src/i18n/**
+
+'area: shared':
+  - changed-files:
+      - any-glob-to-any-file: src/shared/**
+
+# --- Infrastructure ---
+'infra: api':
+  - changed-files:
+      - any-glob-to-any-file: api/**
+
+'infra: ci':
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/**
+          - .husky/**
+
+'infra: config':
+  - changed-files:
+      - any-glob-to-any-file:
+          - vite.config.*
+          - vitest.config.*
+          - tsconfig.*
+          - tailwind.config.*
+          - eslint.config.*
+          - package.json
+          - pnpm-lock.yaml
+
+'infra: e2e':
+  - changed-files:
+      - any-glob-to-any-file:
+          - e2e/**
+          - playwright.config.*
+
+# --- Cross-cutting ---
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/**/*.test.ts
+          - src/**/*.test.tsx
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '*.md'
+          - docs/**
+          - src/**/README.md
