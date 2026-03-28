@@ -1,17 +1,9 @@
 import { forwardRef, useId, useState, useRef, useImperativeHandle } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../cn';
-import { disabledStyles } from '../variants';
 
 const trackVariants = cva(
-  [
-    'relative',
-    'inline-flex items-center',
-    'rounded-full',
-    'transition-colors duration-200',
-    'cursor-pointer',
-    ...disabledStyles,
-  ],
+  ['relative', 'inline-flex items-center', 'rounded-full', 'transition-colors duration-200'],
   {
     variants: {
       size: {
@@ -141,8 +133,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
     },
     forwardedRef
   ) => {
-    const generatedId = useId();
-    const id = name ?? generatedId;
+    const id = useId();
     const inputRef = useRef<HTMLInputElement>(null);
 
     useImperativeHandle(forwardedRef, () => inputRef.current as HTMLInputElement);
