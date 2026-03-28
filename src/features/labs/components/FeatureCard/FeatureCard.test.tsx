@@ -62,14 +62,13 @@ describe('FeatureCard', () => {
 
     const toggle = screen.getByRole('switch');
     expect(toggle).toBeInTheDocument();
-    expect(toggle).toHaveAttribute('aria-checked', 'false');
+    expect(toggle).not.toBeChecked();
   });
 
   it('calls onToggle when switch is clicked', () => {
     render(<FeatureCard feature={baseFeature} isEnabled={false} onToggle={mockToggle} />);
 
-    const toggle = screen.getByRole('switch');
-    fireEvent.click(toggle);
+    fireEvent.click(screen.getByRole('switch'));
 
     expect(mockToggle).toHaveBeenCalledTimes(1);
   });
@@ -78,7 +77,7 @@ describe('FeatureCard', () => {
     render(<FeatureCard feature={baseFeature} isEnabled onToggle={mockToggle} />);
 
     const toggle = screen.getByRole('switch');
-    expect(toggle).toHaveAttribute('aria-checked', 'true');
+    expect(toggle).toBeChecked();
   });
 
   it('shows warning for medium risk features', () => {

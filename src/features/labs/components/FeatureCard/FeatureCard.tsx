@@ -1,6 +1,7 @@
 import type { FeatureFlag } from '@/core/labs';
 import { FeatureStatusBadge } from '../FeatureStatusBadge';
 import { SparklesIcon } from '../icons';
+import { Switch } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface FeatureCardProps {
@@ -74,25 +75,14 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
             <span>{t('labs.inDevelopment')}</span>
           </div>
         ) : isToggleable ? (
-          <button
-            type="button"
-            role="switch"
-            aria-checked={isEnabled}
+          <Switch
+            checked={isEnabled}
+            onChange={() => onToggle()}
             aria-label={t('labs.featureToggle', {
               name: feature.name,
               status: isEnabled ? t('labs.enabled') : t('labs.disabled'),
             })}
-            onClick={onToggle}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface ${
-              isEnabled ? 'bg-accent' : 'bg-surface-secondary border border-stroke'
-            }`}
-          >
-            <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${
-                isEnabled ? 'translate-x-5' : 'translate-x-0.5'
-              }`}
-            />
-          </button>
+          />
         ) : isGraduated ? (
           <div className="flex items-center gap-2 text-xs text-success">
             <CheckIcon className="w-4 h-4" />

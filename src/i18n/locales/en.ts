@@ -596,8 +596,7 @@ const en: Record<string, string> = {
   'settings.languageHint': 'Choose your preferred language',
   'settings.autoDetect': 'Auto (browser default)',
   'settings.labs': 'Labs',
-  'settings.labsHint':
-    'Get early access to features still in the works. Your feedback helps shape what ships next.',
+  'settings.labsHint': 'Preview features still in development. Some may change or be removed.',
   'settings.labsEmpty': 'Nothing new to try right now.',
   'settings.labsCheckBack': 'Check back soon — new features are always in the works!',
   'settings.privacyPolicy': 'Privacy Policy',
@@ -1554,6 +1553,7 @@ const en: Record<string, string> = {
   'labs.checkBackLater': 'Check back soon',
   'labs.closeLabs': 'Close labs',
   'labs.comingSoon': 'Coming soon',
+  'labs.description': 'Preview features still in development. Some may change or be removed.',
   'labs.disabled': 'Off',
   'labs.enabled': 'On',
   'labs.featureToggle': 'Turn {name} {status}',

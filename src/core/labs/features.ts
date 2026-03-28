@@ -27,7 +27,7 @@ export const FEATURE_FLAGS = [
     status: 'experimental',
     risk: 'medium',
     warning:
-      'Good to know: Real-time sync may occasionally have small delays when multiple people edit the same area.',
+      'Real-time sync may occasionally have small delays when multiple people edit the same area.',
     addedAt: '2026-01',
     requiresRefresh: false,
     comingSoon: false,
@@ -47,11 +47,11 @@ export const FEATURE_FLAGS = [
     id: 'brepkit_kernel',
     name: 'Alternative 3D Engine',
     description:
-      'Try a faster, lighter 3D engine for generating your bin models. Uses less memory and loads quicker than the default engine.',
+      'Try an alternative 3D engine for generating your bin models. Uses less memory and loads quicker than the default engine.',
     status: 'experimental',
     risk: 'high',
     warning:
-      'Good to know: Your exported files may look slightly different with this engine. Reload the page after toggling.',
+      'This engine is still in development. Exported models may have geometry defects or look different than expected. Reload the page after toggling.',
     addedAt: '2026-03',
     requiresRefresh: true,
   },
