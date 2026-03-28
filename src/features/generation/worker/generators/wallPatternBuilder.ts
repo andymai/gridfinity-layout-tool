@@ -507,12 +507,9 @@ function buildWallPatternShape(
         // Position: centered on zone offset along wall span, at top of wall
         const centerZ = rampClip.wallHeight - zone.height / 2;
         rbox = translate(rbox, [zone.offsetAlongWall, rampClip.clipExtrudeDepth / 2, centerZ]);
-        // Rotate to match wall orientation
-        if (wall.side === 'left' || wall.side === 'right') {
-          const wallRotateZ = wall.side === 'left' ? 90 : -90;
-          rbox = rotate(rbox, wallRotateZ, { axis: [0, 0, 1] });
-        } else if (wall.side === 'back') {
-          rbox = rotate(rbox, 180, { axis: [0, 0, 1] });
+        // Rotate to match wall orientation (use descriptor's zRotation)
+        if (wall.zRotation !== undefined) {
+          rbox = rotate(rbox, wall.zRotation, { axis: [0, 0, 1] });
         }
         rbox = translate(rbox, [wall.translateX, wall.translateY, 0]);
         rampBoxes.push(rbox);

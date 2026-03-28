@@ -200,19 +200,27 @@ describe('computeRampZones', () => {
   });
 
   it('returns ramp zones for adjacent dividers', () => {
-    // 3×1 grid with front cutout centered at 33% width — divider at 1/3 is adjacent
+    // 3×1 grid: dividers at ±INNER_W/3 (~±13.6mm).
+    // Narrow cutout (15% width = 12.24mm): edges at ±6.12mm.
+    // Distance from cutout edge to divider1: 13.6 - 6.12 = 7.48mm.
+    // userCutHeight at 80% depth: (21-1.2)*0.8 = 15.84mm > 7.48mm → adjacent!
     const params = makeParams({
       compartments: { enabled: true, rows: 1, cols: 3, thickness: 1.2, cells: [0, 1, 2] },
       walls: {
         ...BASE_PARAMS.walls,
-        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 20, depth: 50 },
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 15, depth: 80 },
       },
     });
     const zones = computeRampZones('front', params, INNER_W, INNER_D, WALL_HEIGHT);
-    // Some dividers may be adjacent to the centered cutout
-    // The center of the cutout is at 0, cutWidth = 20% of INNER_W
-    // Dividers are at -INNER_W/6 and +INNER_W/6
-    // Whether they're adjacent depends on userCutHeight vs distance
-    expect(Array.isArray(zones)).toBe(true);
+    expect(zones.length).toBeGreaterThan(0);
+    for (const zone of zones) {
+      expect(zone).toEqual(
+        expect.objectContaining({
+          offsetAlongWall: expect.any(Number),
+          width: expect.any(Number),
+          height: expect.any(Number),
+        })
+      );
+    }
   });
 });

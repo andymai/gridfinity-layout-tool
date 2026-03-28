@@ -140,45 +140,55 @@ export function collectDividers(params: BinParams, innerW: number, innerD: numbe
 
   const cellW = innerW / cols;
   const cellD = innerD / rows;
+
+  // Mirror buildCompartmentWalls small-cell guard:
+  // skip axes where cells are too narrow for viable divider geometry.
+  const effectiveCellW = (innerW - (cols - 1) * thickness) / cols;
+  const effectiveCellD = (innerD - (rows - 1) * thickness) / rows;
+  const canBuildVertical = effectiveCellW >= thickness * 2;
+  const canBuildHorizontal = effectiveCellD >= thickness * 2;
+
   const dividers: DividerInfo[] = [];
 
   // Vertical dividers (between columns, run along Y)
-  for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
-    const xPos = -innerW / 2 + colBoundary * cellW;
-    const segments = findWallSegments(rows, (row) => {
-      const leftId = cells[row * cols + (colBoundary - 1)];
-      const rightId = cells[row * cols + colBoundary];
-      return leftId !== rightId;
-    });
-    for (const [start, end] of segments) {
-      dividers.push({
-        axis: 'vertical',
-        posAlongPerp: xPos,
-        spanStart: -innerD / 2 + start * cellD,
-        spanEnd: -innerD / 2 + end * cellD,
-        thickness,
+  if (canBuildVertical)
+    for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
+      const xPos = -innerW / 2 + colBoundary * cellW;
+      const segments = findWallSegments(rows, (row) => {
+        const leftId = cells[row * cols + (colBoundary - 1)];
+        const rightId = cells[row * cols + colBoundary];
+        return leftId !== rightId;
       });
+      for (const [start, end] of segments) {
+        dividers.push({
+          axis: 'vertical',
+          posAlongPerp: xPos,
+          spanStart: -innerD / 2 + start * cellD,
+          spanEnd: -innerD / 2 + end * cellD,
+          thickness,
+        });
+      }
     }
-  }
 
   // Horizontal dividers (between rows, run along X)
-  for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
-    const yPos = -innerD / 2 + rowBoundary * cellD;
-    const segments = findWallSegments(cols, (col) => {
-      const topId = cells[(rowBoundary - 1) * cols + col];
-      const bottomId = cells[rowBoundary * cols + col];
-      return topId !== bottomId;
-    });
-    for (const [start, end] of segments) {
-      dividers.push({
-        axis: 'horizontal',
-        posAlongPerp: yPos,
-        spanStart: -innerW / 2 + start * cellW,
-        spanEnd: -innerW / 2 + end * cellW,
-        thickness,
+  if (canBuildHorizontal)
+    for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
+      const yPos = -innerD / 2 + rowBoundary * cellD;
+      const segments = findWallSegments(cols, (col) => {
+        const topId = cells[(rowBoundary - 1) * cols + col];
+        const bottomId = cells[rowBoundary * cols + col];
+        return topId !== bottomId;
       });
+      for (const [start, end] of segments) {
+        dividers.push({
+          axis: 'horizontal',
+          posAlongPerp: yPos,
+          spanStart: -innerW / 2 + start * cellW,
+          spanEnd: -innerW / 2 + end * cellW,
+          thickness,
+        });
+      }
     }
-  }
 
   return dividers;
 }
@@ -279,8 +289,8 @@ function buildRampCut(
   const extrudeLen = divider.thickness + 2 * COPLANAR_MARGIN;
   let shape = sketch(profile, 'XZ').extrude(extrudeLen);
 
-  // Center the extrusion so it straddles the divider position
-  shape = translate(shape, [0, -extrudeLen / 2, 0]);
+  // Center the extrusion around Y=0 (brepjs extrudes XZ along -Y)
+  shape = translate(shape, [0, extrudeLen / 2, 0]);
 
   // Rotate and translate so X (inward) maps to the correct bin axis.
   // Rotation around Z: +90° maps (x,y) → (-y, x), -90° maps (x,y) → (y, -x).
