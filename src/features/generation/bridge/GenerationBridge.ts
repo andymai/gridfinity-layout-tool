@@ -169,7 +169,7 @@ interface PendingExport<T> {
  * - Provides Promise-based API over the message-passing protocol
  */
 
-/** Maximum time (ms) for a preview generation before timeout. */
+/** Maximum time (ms) for a generation (bin or baseplate) before timeout. */
 const GENERATION_TIMEOUT_MS = 30_000;
 
 export class GenerationBridge {
@@ -248,20 +248,7 @@ export class GenerationBridge {
           type: 'module',
         });
 
-        const onInitMessage = (event: MessageEvent<WorkerResponse>) => {
-          if (event.data.type === 'INIT_READY') {
-            this.worker?.removeEventListener('message', onInitMessage);
-            this.threadingInfo = extractThreadingInfo(event.data);
-            this.setupMessageHandler();
-            resolve();
-          } else if (event.data.type === 'ERROR') {
-            this.worker?.removeEventListener('message', onInitMessage);
-            reject(new Error(event.data.error));
-          }
-        };
-
-        this.worker.addEventListener('message', onInitMessage);
-        this.worker.addEventListener('error', (e) => {
+        const onInitError = (e: ErrorEvent): void => {
           // When a worker script fails to load (network error, CSP block, missing module),
           // the ErrorEvent.message is often empty. Build a diagnostic message from whatever
           // fields are available so the error is actionable in telemetry.
@@ -270,7 +257,24 @@ export class GenerationBridge {
             (e.filename ? `loading ${e.filename}${e.lineno ? `:${e.lineno}` : ''}` : '') ||
             'script failed to load (possible network error, CSP restriction, or unsupported browser)';
           reject(new Error(`Worker failed to initialize: ${detail}`));
-        });
+        };
+
+        const onInitMessage = (event: MessageEvent<WorkerResponse>) => {
+          if (event.data.type === 'INIT_READY') {
+            this.worker?.removeEventListener('message', onInitMessage);
+            this.worker?.removeEventListener('error', onInitError);
+            this.threadingInfo = extractThreadingInfo(event.data);
+            this.setupMessageHandler();
+            resolve();
+          } else if (event.data.type === 'ERROR') {
+            this.worker?.removeEventListener('message', onInitMessage);
+            this.worker?.removeEventListener('error', onInitError);
+            reject(new Error(event.data.error));
+          }
+        };
+
+        this.worker.addEventListener('message', onInitMessage);
+        this.worker.addEventListener('error', onInitError);
 
         this.postMessage({ type: 'INIT', kernel: this.kernel });
       } catch (e) {
@@ -632,6 +636,7 @@ export class GenerationBridge {
         const requestId = this.nextRequestId();
         this.currentRequestId = requestId;
         this.baseplateCache.pendingFingerprint = fingerprint;
+        this.startGenerationTimeout(requestId);
         this.postMessage({
           type: 'GENERATE_BASEPLATE',
           payload: { params, requestId },
@@ -741,8 +746,19 @@ export class GenerationBridge {
     this.currentRequestId = requestId;
     this.binCache.pendingFingerprint = fingerprint;
 
-    // Start a timeout to recover from unresponsive workers (WASM OOM, infinite loops).
-    // Cleared in clearPending() when the worker responds (success, error, or cancel).
+    this.startGenerationTimeout(requestId);
+
+    this.postMessage({
+      type: 'GENERATE',
+      payload: { params, requestId },
+    });
+  }
+
+  /**
+   * Start a timeout to recover from unresponsive workers (WASM OOM, infinite loops).
+   * Cleared in clearPending() when the worker responds (success, error, or cancel).
+   */
+  private startGenerationTimeout(requestId: string): void {
     this.clearGenerationTimer();
     this.generationTimer = setTimeout(() => {
       if (this.currentRequestId === requestId && this.pendingReject) {
@@ -757,11 +773,6 @@ export class GenerationBridge {
         );
       }
     }, GENERATION_TIMEOUT_MS);
-
-    this.postMessage({
-      type: 'GENERATE',
-      payload: { params, requestId },
-    });
   }
 
   private setupMessageHandler(): void {
@@ -773,6 +784,15 @@ export class GenerationBridge {
     this.worker.addEventListener('error', (e) => {
       e.preventDefault();
       const message = e.message || 'Worker crashed unexpectedly (possible out-of-memory)';
+
+      // Tear down the dead worker so subsequent calls don't post to it.
+      // Clearing initPromise allows re-init on the next generate() call.
+      if (this.worker) {
+        this.worker.terminate();
+        this.worker = null;
+      }
+      this.initPromise = null;
+      this.threadingInfo = null;
 
       // Reject the pending generation promise so the UI can show an error
       if (this.pendingReject) {
