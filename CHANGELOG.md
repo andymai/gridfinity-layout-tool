@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.35.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.34.4...gridfinity-layout-tool-v4.35.0) (2026-03-28)
+
+
+### Features
+
+* **generation:** aesthetic divider-cutout blending ([#1289](https://github.com/andymai/gridfinity-layout-tool/issues/1289)) ([c44da70](https://github.com/andymai/gridfinity-layout-tool/commit/c44da702a8c516bc8517bedd3aa7332a01cdbd80))
+
 ## [4.34.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.34.3...gridfinity-layout-tool-v4.34.4) (2026-03-28)
 
 
