@@ -168,12 +168,17 @@ interface PendingExport<T> {
  * - Cancels in-flight requests when a new one arrives
  * - Provides Promise-based API over the message-passing protocol
  */
+
+/** Maximum time (ms) for a preview generation before timeout. */
+const GENERATION_TIMEOUT_MS = 30_000;
+
 export class GenerationBridge {
   private readonly kernel: KernelName;
   private worker: Worker | null = null;
   private initPromise: Promise<void> | null = null;
   private currentRequestId: string | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private generationTimer: ReturnType<typeof setTimeout> | null = null;
   private pendingResolve: ((result: GenerationResult) => void) | null = null;
   private pendingReject: ((error: Error) => void) | null = null;
   private onProgress: ProgressCallback | null = null;
@@ -736,6 +741,23 @@ export class GenerationBridge {
     this.currentRequestId = requestId;
     this.binCache.pendingFingerprint = fingerprint;
 
+    // Start a timeout to recover from unresponsive workers (WASM OOM, infinite loops).
+    // Cleared in clearPending() when the worker responds (success, error, or cancel).
+    this.clearGenerationTimer();
+    this.generationTimer = setTimeout(() => {
+      if (this.currentRequestId === requestId && this.pendingReject) {
+        const reject = this.pendingReject;
+        this.clearPending();
+        // Send cancel so the worker can abort if it's still alive
+        this.postMessage({ type: 'CANCEL', requestId });
+        reject(
+          new Error(
+            'Generation timed out — this bin may be too complex. Try reducing compartments or disabling features like scoops and labels.'
+          )
+        );
+      }
+    }, GENERATION_TIMEOUT_MS);
+
     this.postMessage({
       type: 'GENERATE',
       payload: { params, requestId },
@@ -744,6 +766,27 @@ export class GenerationBridge {
 
   private setupMessageHandler(): void {
     if (!this.worker) return;
+
+    // Handle worker crashes (WASM OOM, unrecoverable kernel errors).
+    // Without this, a worker crash leaves pending Promises unresolved
+    // and the UI stuck in "generating" state forever.
+    this.worker.addEventListener('error', (e) => {
+      e.preventDefault();
+      const message = e.message || 'Worker crashed unexpectedly (possible out-of-memory)';
+
+      // Reject the pending generation promise so the UI can show an error
+      if (this.pendingReject) {
+        const reject = this.pendingReject;
+        this.clearPending();
+        reject(new Error(message));
+      }
+
+      // Reject all pending exports
+      for (const pending of this.pendingExports.values()) {
+        pending.reject(new Error(message));
+      }
+      this.pendingExports.clear();
+    });
 
     this.worker.addEventListener('message', (event: MessageEvent<WorkerResponse>) => {
       const response = event.data;
@@ -896,12 +939,20 @@ export class GenerationBridge {
   }
 
   private clearPending(): void {
+    this.clearGenerationTimer();
     this.pendingResolve = null;
     this.pendingReject = null;
     this.currentRequestId = null;
     this.onProgress = null;
     this.binCache.pendingFingerprint = null;
     this.baseplateCache.pendingFingerprint = null;
+  }
+
+  private clearGenerationTimer(): void {
+    if (this.generationTimer !== null) {
+      clearTimeout(this.generationTimer);
+      this.generationTimer = null;
+    }
   }
 
   private postMessage(message: WorkerMessage): void {

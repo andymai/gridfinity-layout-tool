@@ -21,6 +21,15 @@ class MockWorker {
     }
   }
 
+  /** Control: simulate a worker error event (e.g., WASM crash) */
+  simulateError(message = 'Worker crashed'): void {
+    const event = { message, preventDefault: vi.fn() } as unknown as ErrorEvent;
+    const handlers = this.listeners.get('error') ?? [];
+    for (const handler of handlers) {
+      handler(event);
+    }
+  }
+
   postMessage(data: unknown): void {
     this.messages.push(data);
 
@@ -664,6 +673,113 @@ describe('GenerationBridge', () => {
       bridge.destroy();
       bridge.destroy(); // Should not throw
       expect(bridge.isDestroyed).toBe(true);
+    });
+  });
+
+  describe('worker crash recovery', () => {
+    it('rejects pending generation when worker fires error event', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const genPromise = bridge.generate(DEFAULT_BIN_PARAMS);
+      // Advance past debounce
+      await vi.advanceTimersByTimeAsync(300);
+
+      // Simulate worker crash (WASM OOM)
+      getWorker().simulateError('Out of memory');
+
+      await expect(genPromise).rejects.toThrow('Out of memory');
+    });
+
+    it('rejects pending generation with default message when error event has no message', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const genPromise = bridge.generate(DEFAULT_BIN_PARAMS);
+      await vi.advanceTimersByTimeAsync(300);
+
+      getWorker().simulateError('');
+
+      await expect(genPromise).rejects.toThrow('out-of-memory');
+    });
+  });
+
+  describe('generation timeout', () => {
+    it('rejects with timeout error when worker does not respond within 30s', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const genPromise = bridge.generate(DEFAULT_BIN_PARAMS);
+      // Attach rejection handler before advancing timers so it doesn't become unhandled
+      const rejection = genPromise.catch((e: unknown) => e as Error);
+      // Advance past debounce + timeout
+      await vi.advanceTimersByTimeAsync(31_000);
+
+      const error = await rejection;
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toContain('timed out');
+    });
+
+    it('does not timeout when generation completes in time', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const genPromise = bridge.generate(DEFAULT_BIN_PARAMS);
+      await vi.advanceTimersByTimeAsync(300);
+
+      // Find the requestId from the GENERATE message
+      const worker = getWorker();
+      const generateMsg = worker.messages.find(
+        (m) => (m as { type: string }).type === 'GENERATE'
+      ) as { type: string; payload: { requestId: string } };
+
+      // Respond before timeout
+      worker.simulateResponse({
+        type: 'MESH_RESULT',
+        requestId: generateMsg.payload.requestId,
+        vertices: new Float32Array(0),
+        normals: new Float32Array(0),
+        indices: new Uint32Array(0),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 0,
+        timingMs: 100,
+      } as MeshResultResponse);
+
+      const result = await genPromise;
+      expect(result.timingMs).toBe(100);
+
+      // Advancing past timeout should not cause issues
+      await vi.advanceTimersByTimeAsync(30_000);
+    });
+
+    it('sends CANCEL message to worker on timeout', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const _genPromise = bridge.generate(DEFAULT_BIN_PARAMS).catch(() => {});
+      await vi.advanceTimersByTimeAsync(300);
+
+      const worker = getWorker();
+      const generateMsg = worker.messages.find(
+        (m) => (m as { type: string }).type === 'GENERATE'
+      ) as { type: string; payload: { requestId: string } };
+      const requestId = generateMsg.payload.requestId;
+
+      // Trigger timeout
+      await vi.advanceTimersByTimeAsync(30_000);
+
+      // Should have sent CANCEL to the worker
+      const cancelMsg = worker.messages.find(
+        (m) =>
+          (m as { type: string }).type === 'CANCEL' &&
+          (m as { requestId: string }).requestId === requestId
+      );
+      expect(cancelMsg).toBeDefined();
     });
   });
 });
