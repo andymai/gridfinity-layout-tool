@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / Support
+    url: https://github.com/andymai/gridfinity-layout-tool/discussions/categories/q-a
+    about: Ask questions and get help from the community
+  - name: Ideas & Suggestions
+    url: https://github.com/andymai/gridfinity-layout-tool/discussions/categories/ideas
+    about: Share ideas that aren't fully-formed feature requests yet
+  - name: Show & Tell
+    url: https://github.com/andymai/gridfinity-layout-tool/discussions/categories/show-and-tell
+    about: Share your Gridfinity layouts and setups
