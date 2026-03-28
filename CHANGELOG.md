@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.34.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.34.0...gridfinity-layout-tool-v4.34.1) (2026-03-28)
+
+
+### Bug Fixes
+
+* **generation:** recover from worker crashes and generation timeouts ([#1279](https://github.com/andymai/gridfinity-layout-tool/issues/1279)) ([8f3776b](https://github.com/andymai/gridfinity-layout-tool/commit/8f3776b6dcae72ac3f426c746d011c029e074f18))
+
 ## [4.34.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.33.0...gridfinity-layout-tool-v4.34.0) (2026-03-28)
 
 
