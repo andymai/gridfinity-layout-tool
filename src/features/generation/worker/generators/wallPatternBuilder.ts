@@ -41,6 +41,8 @@ import {
   getExpandedCutoutDimensions,
 } from './wallPatterns';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
+import { computeRampZones } from './dividerBlendBuilder';
+import type { RampZone } from './dividerBlendBuilder';
 import type { WallCutoutShape } from '@/shared/types/bin';
 import { buildSingleCutout } from './featureBuilder';
 import { FeatureTag } from './featureTags';
@@ -276,9 +278,25 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
         )
       : 'nohdl';
 
+    // Ramp zone clipping for divider-cutout blends
+    const rampZones = computeRampZones(wall.side, params, innerW, innerD, dim.wallHeight);
+    const rampClip: RampZoneClipParams | null =
+      rampZones.length > 0
+        ? { zones: rampZones, clipExtrudeDepth: clipExtrudeDepth, wallHeight: dim.wallHeight }
+        : null;
+
+    const rampKeyPart = rampClip
+      ? buildCacheKey(
+          'ramp',
+          rampClip.zones
+            .map((z) => `${quantize(z.offsetAlongWall)}:${quantize(z.width)}:${quantize(z.height)}`)
+            .join(',')
+        )
+      : 'noramp';
+
     const wallKey = compactKey(
       buildCacheKey(
-        'v4', // bumped: handle border clipping added
+        'v5', // bumped: ramp zone clipping added
         patternType,
         quantize(shapeRadius),
         quantize(cutDepth),
@@ -290,14 +308,22 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
         quantize(wall.translateZ),
         wall.zRotation ?? 0,
         cutoutKeyPart,
-        handleKeyPart
+        handleKeyPart,
+        rampKeyPart
       )
     );
 
     // Use the existing cachedFeature-style pattern: cache owns original, caller gets clone
     let shape = getFeatureCache('wallPattern', wallKey);
     if (!shape) {
-      const built = buildWallPatternShape(shapeTemplate, wall, halfDepth, clip, handleClip);
+      const built = buildWallPatternShape(
+        shapeTemplate,
+        wall,
+        halfDepth,
+        clip,
+        handleClip,
+        rampClip
+      );
       if (built) {
         setFeatureCache('wallPattern', wallKey, built);
         shape = unwrap(clone(built));
@@ -344,13 +370,21 @@ interface HandleClipParams {
   readonly handleWall: HandleWallDef;
 }
 
-/** Build a single wall's pattern compound with optional cutout/handle clipping. */
+/** Pre-computed ramp zone clipping parameters for a single wall. */
+interface RampZoneClipParams {
+  readonly zones: readonly RampZone[];
+  readonly clipExtrudeDepth: number;
+  readonly wallHeight: number;
+}
+
+/** Build a single wall's pattern compound with optional cutout/handle/ramp clipping. */
 function buildWallPatternShape(
   shapeTemplate: Shape3D,
   wall: WallPatternDescriptor,
   halfDepth: number,
   clip: CutoutClipParams | null,
-  handleClip: HandleClipParams | null
+  handleClip: HandleClipParams | null,
+  rampClip: RampZoneClipParams | null
 ): Shape3D | null {
   const hexCompound = buildWallPatternCompound(shapeTemplate, wall, halfDepth);
   if (!hexCompound) return null;
@@ -397,69 +431,126 @@ function buildWallPatternShape(
   }
 
   // --- Handle border clipping ---
-  if (!handleClip || handleClip.segments.length === 0) {
-    return result;
-  }
+  if (handleClip && handleClip.segments.length > 0) {
+    const border = CUTOUT_BORDER_WIDTH;
+    const clipBoxes: Shape3D[] = [];
 
-  const border = CUTOUT_BORDER_WIDTH;
-  const clipBoxes: Shape3D[] = [];
-
-  const hw = handleClip.handleWall;
-  try {
-    for (const seg of handleClip.segments) {
-      const boxW = seg.width + 2 * border;
-      const boxH = handleClip.effectiveHeight + 2 * border;
-      const profile = drawRectangle(boxW, boxH);
-      let box = sketch(profile, 'XZ').extrude(handleClip.clipExtrudeDepth);
-      box = translate(box, [seg.offset, handleClip.clipExtrudeDepth / 2, handleClip.centerZ]);
-      // Use handleBuilder coordinate convention (not pattern descriptor)
-      if (hw.rotateZ !== 0) {
-        box = rotate(box, hw.rotateZ, { axis: [0, 0, 1] });
-      }
-      box = translate(box, [hw.x, hw.y, 0]);
-      clipBoxes.push(box);
-    }
-
-    let handleClipSolid: Shape3D;
-    if (clipBoxes.length === 1) {
-      handleClipSolid = clipBoxes[0];
-    } else {
-      handleClipSolid = unwrap(fuse(clipBoxes[0], clipBoxes[1]));
-      clipBoxes[0].delete();
-      clipBoxes[1].delete();
-      for (let i = 2; i < clipBoxes.length; i++) {
-        const merged = unwrap(fuse(handleClipSolid, clipBoxes[i]));
-        handleClipSolid.delete();
-        clipBoxes[i].delete();
-        handleClipSolid = merged;
-      }
-    }
-
+    const hw = handleClip.handleWall;
     try {
-      const handleClipped = unwrap(cut(result, handleClipSolid));
-      result.delete();
-      return handleClipped;
+      for (const seg of handleClip.segments) {
+        const boxW = seg.width + 2 * border;
+        const boxH = handleClip.effectiveHeight + 2 * border;
+        const profile = drawRectangle(boxW, boxH);
+        let hbox = sketch(profile, 'XZ').extrude(handleClip.clipExtrudeDepth);
+        hbox = translate(hbox, [seg.offset, handleClip.clipExtrudeDepth / 2, handleClip.centerZ]);
+        if (hw.rotateZ !== 0) {
+          hbox = rotate(hbox, hw.rotateZ, { axis: [0, 0, 1] });
+        }
+        hbox = translate(hbox, [hw.x, hw.y, 0]);
+        clipBoxes.push(hbox);
+      }
+
+      let handleClipSolid: Shape3D;
+      if (clipBoxes.length === 1) {
+        handleClipSolid = clipBoxes[0];
+      } else {
+        handleClipSolid = unwrap(fuse(clipBoxes[0], clipBoxes[1]));
+        clipBoxes[0].delete();
+        clipBoxes[1].delete();
+        for (let i = 2; i < clipBoxes.length; i++) {
+          const merged = unwrap(fuse(handleClipSolid, clipBoxes[i]));
+          handleClipSolid.delete();
+          clipBoxes[i].delete();
+          handleClipSolid = merged;
+        }
+      }
+
+      try {
+        const handleClipped = unwrap(cut(result, handleClipSolid));
+        result.delete();
+        result = handleClipped;
+      } catch (err: unknown) {
+        if (isAbortError(err)) {
+          result.delete();
+          throw err;
+        }
+        // On non-abort failure, keep result as-is
+      } finally {
+        handleClipSolid.delete();
+      }
     } catch (err: unknown) {
+      for (const b of clipBoxes) {
+        try {
+          b.delete();
+        } catch {
+          /* already cleaned */
+        }
+      }
       if (isAbortError(err)) {
         result.delete();
         throw err;
       }
-      return result;
-    } finally {
-      handleClipSolid.delete();
     }
-  } catch (err: unknown) {
-    for (const box of clipBoxes) {
-      try {
-        box.delete();
-      } catch {
-        /* already cleaned */
+  }
+
+  // --- Ramp zone border clipping ---
+  if (rampClip && rampClip.zones.length > 0) {
+    const border = CUTOUT_BORDER_WIDTH;
+    const rampBoxes: Shape3D[] = [];
+
+    try {
+      for (const zone of rampClip.zones) {
+        const rboxW = zone.width + 2 * border;
+        const rboxH = zone.height + 2 * border;
+        const profile = drawRectangle(rboxW, rboxH);
+        let rbox = sketch(profile, 'XZ').extrude(rampClip.clipExtrudeDepth);
+        // Position: centered on zone offset along wall span, at top of wall
+        const centerZ = rampClip.wallHeight - zone.height / 2;
+        rbox = translate(rbox, [zone.offsetAlongWall, rampClip.clipExtrudeDepth / 2, centerZ]);
+        // Rotate to match wall orientation (use descriptor's zRotation)
+        if (wall.zRotation !== undefined) {
+          rbox = rotate(rbox, wall.zRotation, { axis: [0, 0, 1] });
+        }
+        rbox = translate(rbox, [wall.translateX, wall.translateY, 0]);
+        rampBoxes.push(rbox);
+      }
+
+      if (rampBoxes.length > 0) {
+        let rampClipSolid = rampBoxes[0];
+        for (let i = 1; i < rampBoxes.length; i++) {
+          const merged = unwrap(fuse(rampClipSolid, rampBoxes[i]));
+          rampClipSolid.delete();
+          rampBoxes[i].delete();
+          rampClipSolid = merged;
+        }
+
+        try {
+          const rampClipped = unwrap(cut(result, rampClipSolid));
+          result.delete();
+          result = rampClipped;
+        } catch (err: unknown) {
+          if (isAbortError(err)) {
+            result.delete();
+            throw err;
+          }
+        } finally {
+          rampClipSolid.delete();
+        }
+      }
+    } catch (err: unknown) {
+      for (const b of rampBoxes) {
+        try {
+          b.delete();
+        } catch {
+          /* already cleaned */
+        }
+      }
+      if (isAbortError(err)) {
+        result.delete();
+        throw err;
       }
     }
-    if (isAbortError(err)) {
-      result.delete();
-      throw err;
-    }
-    return result;
   }
+
+  return result;
 }

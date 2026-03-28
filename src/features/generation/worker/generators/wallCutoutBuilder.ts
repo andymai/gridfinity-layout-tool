@@ -35,7 +35,7 @@ const FUNNEL_TAPER_RATIO = 0.6;
  * @param userCutHeight - User-visible height (depth from wall top) in mm
  * @param overshoot - Extra height above wall top for clean boolean cuts
  */
-function buildCutoutProfile(
+export function buildCutoutProfile(
   cutoutShape: WallCutoutShape,
   cutWidth: number,
   userCutHeight: number,

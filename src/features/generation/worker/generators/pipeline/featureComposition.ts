@@ -18,6 +18,7 @@ import { labelTabsFeature } from '../labelTabBuilder';
 import { handlesFeature } from '../handleBuilder';
 import { scoopRampsFeature } from '../scoopRampBuilder';
 import { wallCutoutsFeature } from '../wallCutoutBuilder';
+import { dividerBlendFeature } from '../dividerBlendBuilder';
 
 export const BIN_FEATURE_BUILDERS: readonly FeatureBuilder[] = [
   compartmentWallsFeature,
@@ -27,4 +28,5 @@ export const BIN_FEATURE_BUILDERS: readonly FeatureBuilder[] = [
   handlesFeature,
   scoopRampsFeature,
   wallCutoutsFeature,
+  dividerBlendFeature,
 ] as const;
