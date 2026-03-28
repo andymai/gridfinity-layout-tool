@@ -128,7 +128,9 @@
 # --- Cross-cutting ---
 tests:
   - changed-files:
-      - any-glob-to-any-file: src/**/*.test.ts
+      - any-glob-to-any-file:
+          - src/**/*.test.ts
+          - src/**/*.test.tsx
 
 docs:
   - changed-files:
