@@ -21,7 +21,7 @@ describe('history store', () => {
       const { push } = useHistoryStore.getState();
       const layout = useLayoutStore.getState().layout;
 
-      push(JSON.parse(JSON.stringify(layout)));
+      push(JSON.parse(JSON.stringify(layout)), 'bin.add');
 
       const state = useHistoryStore.getState();
       expect(state.past).toHaveLength(1);
@@ -33,15 +33,15 @@ describe('history store', () => {
       const layout = useLayoutStore.getState().layout;
 
       // Push twice, then undo
-      push(JSON.parse(JSON.stringify(layout)));
+      push(JSON.parse(JSON.stringify(layout)), 'bin.add');
       useLayoutStore.getState().setName('State 2');
-      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)));
+      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)), 'bin.add');
 
       undo();
       expect(useHistoryStore.getState().canRedo).toBe(true);
 
       // Push new state - should clear future
-      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)));
+      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)), 'bin.add');
       expect(useHistoryStore.getState().canRedo).toBe(false);
       expect(useHistoryStore.getState().future).toHaveLength(0);
     });
@@ -52,7 +52,7 @@ describe('history store', () => {
       // Push more than the limit
       for (let i = 0; i < CONSTRAINTS.UNDO_LIMIT + 10; i++) {
         const layout = { ...createDefaultLayout(), name: `State ${i}` };
-        push(layout);
+        push(layout, 'bin.add');
       }
 
       const state = useHistoryStore.getState();
@@ -66,7 +66,7 @@ describe('history store', () => {
       const originalLayout = useLayoutStore.getState().layout;
 
       // Save original state
-      push(JSON.parse(JSON.stringify(originalLayout)));
+      push(JSON.parse(JSON.stringify(originalLayout)), 'bin.add');
 
       // Modify layout
       useLayoutStore.getState().setName('Modified Name');
@@ -81,14 +81,14 @@ describe('history store', () => {
       const { push, undo } = useHistoryStore.getState();
       const layout = useLayoutStore.getState().layout;
 
-      push(JSON.parse(JSON.stringify(layout)));
+      push(JSON.parse(JSON.stringify(layout)), 'bin.add');
       useLayoutStore.getState().setName('Modified');
 
       undo();
 
       const state = useHistoryStore.getState();
       expect(state.future).toHaveLength(1);
-      expect(state.future[0].name).toBe('Modified');
+      expect(state.future[0].layout.name).toBe('Modified');
       expect(state.canRedo).toBe(true);
     });
 
@@ -106,8 +106,8 @@ describe('history store', () => {
       const { push, undo } = useHistoryStore.getState();
 
       // Push two states
-      push(JSON.parse(JSON.stringify(createDefaultLayout())));
-      push(JSON.parse(JSON.stringify({ ...createDefaultLayout(), name: 'Second' })));
+      push(JSON.parse(JSON.stringify(createDefaultLayout())), 'bin.add');
+      push(JSON.parse(JSON.stringify({ ...createDefaultLayout(), name: 'Second' })), 'bin.add');
 
       expect(useHistoryStore.getState().canUndo).toBe(true);
 
@@ -123,7 +123,7 @@ describe('history store', () => {
     it('restores next layout state', () => {
       const { push, undo, redo } = useHistoryStore.getState();
 
-      push(JSON.parse(JSON.stringify(createDefaultLayout())));
+      push(JSON.parse(JSON.stringify(createDefaultLayout())), 'bin.add');
       useLayoutStore.getState().setName('Modified');
 
       undo();
@@ -136,7 +136,7 @@ describe('history store', () => {
     it('moves current state to past', () => {
       const { push, undo, redo } = useHistoryStore.getState();
 
-      push(JSON.parse(JSON.stringify(createDefaultLayout())));
+      push(JSON.parse(JSON.stringify(createDefaultLayout())), 'bin.add');
       useLayoutStore.getState().setName('Modified');
 
       undo();
@@ -159,9 +159,9 @@ describe('history store', () => {
     it('updates canRedo correctly after redo', () => {
       const { push, undo, redo } = useHistoryStore.getState();
 
-      push(JSON.parse(JSON.stringify(createDefaultLayout())));
+      push(JSON.parse(JSON.stringify(createDefaultLayout())), 'bin.add');
       useLayoutStore.getState().setName('State 2');
-      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)));
+      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)), 'bin.add');
       useLayoutStore.getState().setName('State 3');
 
       undo();
@@ -182,8 +182,8 @@ describe('history store', () => {
     it('clears all history', () => {
       const { push, undo, clear } = useHistoryStore.getState();
 
-      push(JSON.parse(JSON.stringify(createDefaultLayout())));
-      push(JSON.parse(JSON.stringify({ ...createDefaultLayout(), name: 'Second' })));
+      push(JSON.parse(JSON.stringify(createDefaultLayout())), 'bin.add');
+      push(JSON.parse(JSON.stringify({ ...createDefaultLayout(), name: 'Second' })), 'bin.add');
       undo();
 
       expect(useHistoryStore.getState().past.length).toBeGreaterThan(0);
@@ -204,7 +204,7 @@ describe('history store', () => {
       const { push, undo } = useHistoryStore.getState();
       const layout = useLayoutStore.getState().layout;
 
-      push(JSON.parse(JSON.stringify(layout)));
+      push(JSON.parse(JSON.stringify(layout)), 'bin.add');
       useLayoutStore.getState().setName('Modified');
 
       const restoreSpy = vi.spyOn(useLayoutStore.getState(), 'restoreLayout');
@@ -218,7 +218,7 @@ describe('history store', () => {
       const { push } = useHistoryStore.getState();
       const layout = useLayoutStore.getState().layout;
 
-      push(JSON.parse(JSON.stringify(layout)));
+      push(JSON.parse(JSON.stringify(layout)), 'bin.add');
       useLayoutStore.getState().setName('Modified');
 
       // Set up spy before any undo/redo
@@ -239,7 +239,7 @@ describe('history store', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      push(JSON.parse(JSON.stringify(layout)));
+      push(JSON.parse(JSON.stringify(layout)), 'bin.add');
 
       const addResult = useLayoutStore.getState().addBin({
         layerId,
@@ -299,7 +299,10 @@ describe('history store', () => {
       // Measure time for 10 push operations (simulating 10 undoable actions)
       const startPush = performance.now();
       for (let i = 0; i < 10; i++) {
-        push(structuredClone ? structuredClone(layout) : JSON.parse(JSON.stringify(layout)));
+        push(
+          structuredClone ? structuredClone(layout) : JSON.parse(JSON.stringify(layout)),
+          'bin.add'
+        );
       }
       const pushDuration = performance.now() - startPush;
 
@@ -328,7 +331,7 @@ describe('history store', () => {
 
       // Initial state
       const initial = useLayoutStore.getState().layout;
-      push(JSON.parse(JSON.stringify(initial)));
+      push(JSON.parse(JSON.stringify(initial)), 'bin.add');
 
       // State 1: Add a bin
       useLayoutStore.getState().addBin({
@@ -342,7 +345,7 @@ describe('history store', () => {
         label: 'Bin 1',
         notes: '',
       });
-      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)));
+      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)), 'bin.add');
 
       // State 2: Add another bin
       useLayoutStore.getState().addBin({
@@ -386,7 +389,7 @@ describe('history store', () => {
       const categoryId = layout.categories[0].id;
 
       // Save state before adding bin
-      push(JSON.parse(JSON.stringify(layout)));
+      push(JSON.parse(JSON.stringify(layout)), 'bin.add');
 
       // Add a bin
       const addResult = useLayoutStore.getState().addBin({
@@ -423,7 +426,7 @@ describe('history store', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      push(JSON.parse(JSON.stringify(layout)));
+      push(JSON.parse(JSON.stringify(layout)), 'bin.add');
 
       const addResult = useLayoutStore.getState().addBin({
         layerId,
@@ -453,7 +456,7 @@ describe('history store', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      push(JSON.parse(JSON.stringify(layout)));
+      push(JSON.parse(JSON.stringify(layout)), 'bin.add');
 
       const addResult = useLayoutStore.getState().addBin({
         layerId,
@@ -499,7 +502,7 @@ describe('history store', () => {
       const bin1Id = result1.value;
 
       // Save state with 1 bin
-      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)));
+      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)), 'bin.add');
 
       // Add second bin
       const result2 = useLayoutStore.getState().addBin({
@@ -530,7 +533,7 @@ describe('history store', () => {
       const { push, undo } = useHistoryStore.getState();
       const layout = useLayoutStore.getState().layout;
       // Save state with only the default layer
-      push(JSON.parse(JSON.stringify(layout)));
+      push(JSON.parse(JSON.stringify(layout)), 'bin.add');
 
       // Add a new layer and switch to it
       const addLayerResult = useLayoutStore.getState().addLayer('Layer 2');
@@ -556,7 +559,7 @@ describe('history store', () => {
       const layout = useLayoutStore.getState().layout;
 
       // Save state
-      push(JSON.parse(JSON.stringify(layout)));
+      push(JSON.parse(JSON.stringify(layout)), 'bin.add');
 
       // Add a new category and switch to it
       const addCatResult = useLayoutStore.getState().addCategory('Custom Cat');
@@ -597,7 +600,7 @@ describe('history store', () => {
       const binId = addResult.value;
 
       // Save state with 1 bin
-      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)));
+      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)), 'bin.add');
 
       // Delete the bin
       useLayoutStore.getState().deleteBin(binId);

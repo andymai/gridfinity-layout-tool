@@ -1,9 +1,13 @@
 import { create } from 'zustand';
 import type { Layout, BinId, LayerId, CategoryId } from '@/core/types';
+import type { CommandType } from '@/core/cqrs/commands';
 import { useLayoutStore } from './layout';
 import { useSelectionStore } from './selection';
+import { useToastStore } from './toast';
 import { CONSTRAINTS } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { getCommandDescriptionKey } from '@/core/cqrs/commandDescriptions';
+import { getStaticTranslation } from '@/i18n';
 
 /**
  * Remove stale bin references from the selection store after layout restoration.
@@ -55,14 +59,19 @@ function pruneStaleSelections(restoredLayout: Layout): void {
   }
 }
 
+export interface HistoryEntry {
+  layout: Layout;
+  commandType: CommandType | 'unknown';
+}
+
 interface HistoryState {
-  past: Layout[];
-  future: Layout[];
+  past: HistoryEntry[];
+  future: HistoryEntry[];
 
   canUndo: boolean;
   canRedo: boolean;
 
-  push: (layout: Layout) => void;
+  push: (layout: Layout, commandType?: CommandType | 'unknown') => void;
   undo: () => void;
   redo: () => void;
   clear: () => void;
@@ -79,9 +88,10 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   canUndo: false,
   canRedo: false,
 
-  push: (layout) => {
+  push: (layout, commandType = 'unknown') => {
     set((state) => {
-      const newPast = [...state.past, layout];
+      const entry: HistoryEntry = { layout, commandType };
+      const newPast = [...state.past, entry];
       if (newPast.length > CONSTRAINTS.UNDO_LIMIT) {
         newPast.shift();
       }
@@ -99,17 +109,29 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     if (past.length === 0) return;
 
     const current = useLayoutStore.getState().layout;
-    const previous = past[past.length - 1];
+    const previousEntry = past[past.length - 1];
+    const { layout: previous, commandType } = previousEntry;
 
     set((state) => ({
       past: state.past.slice(0, -1),
-      future: [current, ...state.future],
+      future: [{ layout: current, commandType }, ...state.future],
       canUndo: state.past.length > 1,
       canRedo: true,
     }));
 
     useLayoutStore.getState().restoreLayout(previous);
     pruneStaleSelections(previous);
+
+    // Show undo toast with action description
+    // NOTE: getStaticTranslation uses English only. Full locale support
+    // requires a locale-aware static helper or toast i18n key support.
+    const descKey = getCommandDescriptionKey(commandType);
+    const action = getStaticTranslation(descKey);
+    useToastStore.getState().addToast({
+      message: getStaticTranslation('undo.undid', { action }),
+      type: 'info',
+      duration: 2000,
+    });
 
     // Track undo for ML telemetry
     // previousLayout = state we're reverting TO, currentLayout = state we had BEFORE undo
@@ -121,10 +143,11 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
     if (future.length === 0) return;
 
     const current = useLayoutStore.getState().layout;
-    const next = future[0];
+    const nextEntry = future[0];
+    const { layout: next, commandType } = nextEntry;
 
     set((state) => ({
-      past: [...state.past, current],
+      past: [...state.past, { layout: current, commandType }],
       future: state.future.slice(1),
       canUndo: true,
       canRedo: state.future.length > 1,
@@ -132,6 +155,15 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
 
     useLayoutStore.getState().restoreLayout(next);
     pruneStaleSelections(next);
+
+    // Show redo toast with action description
+    const descKey = getCommandDescriptionKey(commandType);
+    const action = getStaticTranslation(descKey);
+    useToastStore.getState().addToast({
+      message: getStaticTranslation('undo.redid', { action }),
+      type: 'info',
+      duration: 2000,
+    });
   },
 
   clear: () => {
