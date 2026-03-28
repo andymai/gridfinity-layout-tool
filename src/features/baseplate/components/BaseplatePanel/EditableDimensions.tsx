@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+/** Format mm for display: minimum needed decimals, no trailing zeros. */
+function formatMm(v: number): string {
+  const rounded = Math.round(v * 100) / 100;
+  return String(rounded);
+}
+
 interface EditableDimensionsProps {
   /** Total width in mm (grid + padding) when hasPadding, or grid-only mm otherwise. */
   readonly widthMm: number;
@@ -47,8 +53,8 @@ export function EditableDimensions({
 
   // When entering edit mode, seed inputs with current rounded values
   const enterEditMode = useCallback(() => {
-    setLocalWidth(String(Math.round(widthMm)));
-    setLocalDepth(String(Math.round(depthMm)));
+    setLocalWidth(formatMm(widthMm));
+    setLocalDepth(formatMm(depthMm));
     setEditing(true);
   }, [widthMm, depthMm]);
 
@@ -113,6 +119,7 @@ export function EditableDimensions({
           ref={widthRef}
           type="number"
           inputMode="decimal"
+          step={0.1}
           value={localWidth}
           onChange={(e) => setLocalWidth(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -125,6 +132,7 @@ export function EditableDimensions({
         <input
           type="number"
           inputMode="decimal"
+          step={0.1}
           value={localDepth}
           onChange={(e) => setLocalDepth(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -145,7 +153,7 @@ export function EditableDimensions({
       className={`cursor-pointer text-sm font-semibold tabular-nums text-content decoration-content-tertiary underline-offset-2 hover:underline ${className ?? ''}`}
       aria-label={ariaLabel}
     >
-      {Math.round(widthMm)} &times; {Math.round(depthMm)} mm
+      {formatMm(widthMm)} &times; {formatMm(depthMm)} mm
     </button>
   );
 }

@@ -467,7 +467,7 @@ describe('BaseplatePanel', () => {
       const incBtn = screen.getByLabelText('baseplate.paddingLeft increment');
       fireEvent.click(incBtn);
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
-        expect.objectContaining({ paddingLeft: 1 })
+        expect.objectContaining({ paddingLeft: 0.25 })
       );
     });
 

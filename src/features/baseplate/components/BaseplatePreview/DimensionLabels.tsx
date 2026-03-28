@@ -9,6 +9,12 @@ const DIM_OFFSET = 8; // mm from slab edge to label
 const DIM_LINE_OPACITY = 0.25;
 const DIM_TICK_SIZE = 3;
 
+/** Format mm for display: minimum needed decimals, no trailing zeros. */
+function formatMm(v: number): string {
+  const rounded = Math.round(v * 100) / 100;
+  return String(rounded);
+}
+
 /**
  * Width and depth dimension annotations along the baseplate edges.
  * Shows total mm including padding with leader lines and tick marks.
@@ -92,7 +98,7 @@ export function DimensionLabels({
         anchorX="center"
         anchorY="top"
       >
-        {`${Math.round(totalW)}mm`}
+        {`${formatMm(totalW)}mm`}
       </Text>
 
       {/* Depth label */}
@@ -104,7 +110,7 @@ export function DimensionLabels({
         anchorX="right"
         anchorY="middle"
       >
-        {`${Math.round(totalD)}mm`}
+        {`${formatMm(totalD)}mm`}
       </Text>
     </group>
   );

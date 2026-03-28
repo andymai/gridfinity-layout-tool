@@ -128,9 +128,9 @@ describe('EditableDimensions', () => {
     expect(onCommit).not.toHaveBeenCalled();
   });
 
-  it('rounds display values to integers', () => {
+  it('shows fractional display values without trailing zeros', () => {
     render(<EditableDimensions {...defaultProps} widthMm={441.6} depthMm={357.2} />);
     const btn = screen.getByRole('button');
-    expect(btn).toHaveTextContent(/442\s*×\s*357\s*mm/);
+    expect(btn).toHaveTextContent(/441\.6\s*×\s*357\.2\s*mm/);
   });
 });
