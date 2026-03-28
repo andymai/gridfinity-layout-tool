@@ -102,7 +102,7 @@ export function BaseplatePanel() {
     baseplateParams.paddingBack > 0;
 
   const paddingSummary = hasPadding
-    ? `L:${baseplateParams.paddingLeft.toFixed(2)} R:${baseplateParams.paddingRight.toFixed(2)} F:${baseplateParams.paddingFront.toFixed(2)} B:${baseplateParams.paddingBack.toFixed(2)}`
+    ? `L:${formatMm(baseplateParams.paddingLeft)} R:${formatMm(baseplateParams.paddingRight)} F:${formatMm(baseplateParams.paddingFront)} B:${formatMm(baseplateParams.paddingBack)}`
     : undefined;
 
   const minMm = CONSTRAINTS.GRID_MIN * gridUnitMm;
@@ -599,8 +599,8 @@ function PaddingSchematic({
 
       <p className="text-center text-xs tabular-nums text-content-tertiary">
         {t('baseplate.totalDimensions', {
-          width: totalWidthMm.toFixed(1),
-          depth: totalDepthMm.toFixed(1),
+          width: formatMm(totalWidthMm),
+          depth: formatMm(totalDepthMm),
         })}
       </p>
     </div>
@@ -611,6 +611,13 @@ interface SideStepperProps {
   readonly ariaLabel: string;
   readonly value: number;
   readonly onChange: (value: number) => void;
+}
+
+/** Format mm for display: minimum needed decimals, no trailing zeros. */
+function formatMm(v: number): string {
+  // Round to 2 decimal places to avoid floating-point noise, then drop trailing zeros
+  const rounded = Math.round(v * 100) / 100;
+  return String(rounded);
 }
 
 const PADDING_BUTTON_STEP = 0.25;
@@ -654,10 +661,10 @@ function SideStepper({ ariaLabel, value, onChange }: SideStepperProps) {
         type="text"
         inputMode="decimal"
         className="w-8 border border-stroke-subtle bg-surface px-0 py-0.5 text-center text-xs tabular-nums text-content-secondary outline-none focus:ring-1 focus:ring-accent"
-        value={isFocused ? localText : displayValue.toFixed(2)}
+        value={isFocused ? localText : formatMm(displayValue)}
         onChange={(e) => setLocalText(e.target.value)}
         onFocus={() => {
-          setLocalText(displayValue.toFixed(2));
+          setLocalText(formatMm(displayValue));
           setIsFocused(true);
         }}
         onBlur={() => {
@@ -674,7 +681,7 @@ function SideStepper({ ariaLabel, value, onChange }: SideStepperProps) {
             e.currentTarget.blur();
           }
           if (e.key === 'Escape') {
-            setLocalText(displayValue.toFixed(2));
+            setLocalText(formatMm(displayValue));
             skipBlurCommit.current = true;
             e.currentTarget.blur();
           }
@@ -715,7 +722,7 @@ function PaddingStepper({ label, value, onChange }: PaddingStepperProps) {
         }
         min={PADDING_MIN}
         max={PADDING_MAX}
-        displayValue={value.toFixed(2)}
+        displayValue={formatMm(value)}
         aria-label={label}
       />
     </div>
