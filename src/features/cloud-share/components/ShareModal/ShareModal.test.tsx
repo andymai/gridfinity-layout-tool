@@ -5,8 +5,6 @@ import { useLayoutStore, useLibraryStore, useLabsStore } from '@/core/store';
 import { useInteractionStore } from '@/core/store/interaction';
 import { resetAllStores } from '@/test/testUtils';
 import * as storage from '@/core/storage';
-import * as analytics from '@/shared/analytics/posthog';
-
 // Mock CloudShareTab since it's a complex component
 vi.mock('@/features/cloud-share/components/CloudShareTab', () => ({
   CloudShareTab: ({ onSwitchToUrlTab }: { onSwitchToUrlTab: () => void }) => (
@@ -26,10 +24,11 @@ vi.mock('@/core/storage', () => ({
   getCloudShareIdFromURL: vi.fn(() => null),
 }));
 
-// Mock analytics
-vi.mock('@/shared/analytics/posthog', () => ({
-  trackLayoutSnapshot: vi.fn(),
-  trackEvent: vi.fn(),
+// Mock CQRS command bus (analytics now dispatched through CQRS)
+const mockDispatch = vi.fn();
+vi.mock('@/core/cqrs', () => ({
+  commandBus: { dispatch: (...args: unknown[]) => mockDispatch(...args) },
+  createCommand: (type: string, payload: unknown) => ({ type, payload, meta: {} }),
 }));
 
 describe('ShareModal', () => {
@@ -188,7 +187,9 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByText('Copy'));
 
       await waitFor(() => {
-        expect(analytics.trackLayoutSnapshot).toHaveBeenCalledWith(mockLayout, 'export_url');
+        expect(mockDispatch).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'ui.layoutExported' })
+        );
       });
     });
 
@@ -234,7 +235,9 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByText('Download'));
 
       await waitFor(() => {
-        expect(analytics.trackLayoutSnapshot).toHaveBeenCalledWith(mockLayout, 'export_json');
+        expect(mockDispatch).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'ui.layoutExported' })
+        );
       });
     });
   });
@@ -267,7 +270,9 @@ describe('ShareModal', () => {
       fireEvent.click(screen.getByText('Copy JSON'));
 
       await waitFor(() => {
-        expect(analytics.trackLayoutSnapshot).toHaveBeenCalledWith(mockLayout, 'export_json');
+        expect(mockDispatch).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'ui.layoutExported' })
+        );
       });
     });
 
@@ -427,46 +432,53 @@ describe('ShareModal', () => {
   });
 
   describe('analytics tracking', () => {
-    it('tracks share_modal_opened on mount', () => {
+    it('dispatches ui.modalOpen on mount', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
 
-      expect(analytics.trackEvent).toHaveBeenCalledWith('share_modal_opened', {
-        default_tab: 'cloud',
-        bin_count: 1,
-      });
+      expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'ui.modalOpen' }));
     });
 
-    it('tracks share_tab_selected when switching tabs', () => {
+    it('dispatches ui.featureUsed when switching tabs', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-      vi.mocked(analytics.trackEvent).mockClear();
+      mockDispatch.mockClear();
 
       fireEvent.click(screen.getByRole('tab', { name: 'Link' }));
 
-      expect(analytics.trackEvent).toHaveBeenCalledWith('share_tab_selected', { tab: 'url' });
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'ui.featureUsed' })
+      );
     });
 
-    it('tracks share_tab_selected for all tab types', () => {
+    it('dispatches ui.featureUsed for all tab types', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-      vi.mocked(analytics.trackEvent).mockClear();
+      mockDispatch.mockClear();
 
       fireEvent.click(screen.getByRole('tab', { name: 'File' }));
-      expect(analytics.trackEvent).toHaveBeenCalledWith('share_tab_selected', { tab: 'file' });
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'ui.featureUsed' })
+      );
 
       fireEvent.click(screen.getByRole('tab', { name: 'JSON' }));
-      expect(analytics.trackEvent).toHaveBeenCalledWith('share_tab_selected', { tab: 'json' });
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'ui.featureUsed' })
+      );
 
       fireEvent.click(screen.getByRole('tab', { name: 'Cloud' }));
-      expect(analytics.trackEvent).toHaveBeenCalledWith('share_tab_selected', { tab: 'cloud' });
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'ui.featureUsed' })
+      );
     });
 
-    it('tracks share_tab_selected when CloudShareTab triggers URL switch', () => {
+    it('dispatches ui.featureUsed when CloudShareTab triggers URL switch', () => {
       render(<ShareModal isOpen={true} onClose={mockOnClose} />);
-      vi.mocked(analytics.trackEvent).mockClear();
+      mockDispatch.mockClear();
 
       // Click the switch button in the mocked CloudShareTab
       fireEvent.click(screen.getByText('Switch to URL'));
 
-      expect(analytics.trackEvent).toHaveBeenCalledWith('share_tab_selected', { tab: 'url' });
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'ui.featureUsed' })
+      );
     });
   });
 });

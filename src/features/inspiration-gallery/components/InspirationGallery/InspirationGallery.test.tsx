@@ -13,18 +13,27 @@ vi.mock('@/shared/hooks', async (importOriginal) => ({
 }));
 
 // Mock analytics
-const mockTrackEvent = vi.fn();
 const mockTrackBinCreated = vi.fn();
 const mockTrackGalleryOpened = vi.fn();
 const mockTrackGalleryClosed = vi.fn();
 const mockTrackTemplateLoadError = vi.fn();
 vi.mock('@/shared/analytics/posthog', () => ({
-  trackEvent: (...args: unknown[]) => mockTrackEvent(...args),
   trackBinCreated: (...args: unknown[]) => mockTrackBinCreated(...args),
   trackGalleryOpened: (...args: unknown[]) => mockTrackGalleryOpened(...args),
   trackGalleryClosed: (...args: unknown[]) => mockTrackGalleryClosed(...args),
   trackTemplateLoadError: (...args: unknown[]) => mockTrackTemplateLoadError(...args),
 }));
+
+const mockDispatch = vi.fn();
+vi.mock('@/core/cqrs', async (importOriginal) => {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- dynamic import for mock
+  const actual = await importOriginal<typeof import('@/core/cqrs')>();
+  return {
+    ...actual,
+    commandBus: { ...actual.commandBus, dispatch: (...args: unknown[]) => mockDispatch(...args) },
+    createCommand: (type: string, payload: unknown) => ({ type, payload, meta: {} }),
+  };
+});
 
 const mockImportLayoutFromJSON = vi.fn();
 const mockSwitchLayout = vi.fn();
@@ -606,30 +615,26 @@ describe('InspirationGallery', () => {
 
     it('tracks gallery_filter_changed when theme filter changes', () => {
       render(<InspirationGallery {...defaultProps} />);
-      mockTrackEvent.mockClear();
+      mockDispatch.mockClear();
 
       // Click workshop filter
       fireEvent.click(screen.getByText('Workshop (2)'));
 
-      expect(mockTrackEvent).toHaveBeenCalledWith('gallery_filter_changed', {
-        theme: 'workshop',
-        result_count: 2,
-      });
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'ui.featureUsed' })
+      );
     });
 
     it('tracks template_preview when layout card is clicked', () => {
       render(<InspirationGallery {...defaultProps} />);
-      mockTrackEvent.mockClear();
+      mockDispatch.mockClear();
 
       // Click a layout card to preview it
       fireEvent.click(screen.getByTestId('layout-card-workshop-1'));
 
-      expect(mockTrackEvent).toHaveBeenCalledWith('template_preview', {
-        template_id: 'workshop-1',
-        template_name: 'Workshop Layout 1',
-        template_theme: 'workshop',
-        bin_count: 10,
-      });
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'ui.featureUsed' })
+      );
     });
 
     it('tracks template_applied when layout is used', async () => {
@@ -637,20 +642,16 @@ describe('InspirationGallery', () => {
 
       // Open preview
       fireEvent.click(screen.getByTestId('layout-card-workshop-1'));
-      mockTrackEvent.mockClear();
+      mockDispatch.mockClear();
 
       // Click "Use Layout" button (mocked preview overlay button)
       const useButton = screen.getByTestId('preview-use');
       fireEvent.click(useButton);
 
       await waitFor(() => {
-        expect(mockTrackEvent).toHaveBeenCalledWith('template_applied', {
-          template_id: 'workshop-1',
-          template_name: 'Workshop Layout 1',
-          template_theme: 'workshop',
-          bin_count: 10,
-          layer_count: 1,
-        });
+        expect(mockDispatch).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'ui.templateApplied' })
+        );
       });
     });
   });

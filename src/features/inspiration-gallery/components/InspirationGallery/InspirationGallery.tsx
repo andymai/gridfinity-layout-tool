@@ -6,8 +6,8 @@ import { useMobileStore } from '@/core/store/mobile';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
 import { layoutId } from '@/core/types';
+import { commandBus, createCommand } from '@/core/cqrs';
 import {
-  trackEvent,
   trackBinCreated,
   trackGalleryOpened,
   trackGalleryClosed,
@@ -148,22 +148,16 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
       const count = themeCounts[theme];
       const label = theme === 'all' ? 'all themes' : THEME_CONFIG[theme].label;
       announceToScreenReader(`Showing ${count} ${label} layouts`);
-      trackEvent('gallery_filter_changed', {
-        theme,
-        result_count: count,
-      });
+      commandBus.dispatch(createCommand('ui.featureUsed', { feature: `gallery_filter_${theme}` }));
     },
     [announceToScreenReader, themeCounts]
   );
 
   const handleSelectLayout = useCallback((layout: InspirationLayout) => {
     setPreviewLayout(layout);
-    trackEvent('template_preview', {
-      template_id: layout.id,
-      template_name: layout.name,
-      template_theme: layout.theme,
-      bin_count: layout.metrics.binCount,
-    });
+    commandBus.dispatch(
+      createCommand('ui.featureUsed', { feature: `template_preview_${layout.id}` })
+    );
   }, []);
 
   const handleClosePreview = useCallback(() => {
@@ -187,13 +181,9 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
           setTemplateApplied(true);
           addToast(t('toast.galleryAdded', { name: previewLayout.name }), 'success');
           announceToScreenReader(`${previewLayout.name} added to your library`);
-          trackEvent('template_applied', {
-            template_id: previewLayout.id,
-            template_name: previewLayout.name,
-            template_theme: previewLayout.theme,
-            bin_count: previewLayout.metrics.binCount,
-            layer_count: previewLayout.metrics.layerCount,
-          });
+          commandBus.dispatch(
+            createCommand('ui.templateApplied', { templateId: previewLayout.id })
+          );
           trackBinCreated({
             method: 'import',
             count: previewLayout.metrics.binCount,
