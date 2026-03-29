@@ -48,12 +48,18 @@ import {
 
 /** Initialize the geometry kernel selected by the INIT message. */
 async function initKernel(kernel: KernelName = 'opencascade'): Promise<void> {
-  const loaders: Record<KernelName, () => Promise<WasmLoadResult>> = {
-    opencascade: loadOpenCascade,
-    'occt-wasm': loadOcctWasm,
-    brepkit: loadBrepkit,
-  };
-  const result = await loaders[kernel]();
+  let result: WasmLoadResult;
+  switch (kernel) {
+    case 'opencascade':
+      result = await loadOpenCascade();
+      break;
+    case 'occt-wasm':
+      result = await loadOcctWasm();
+      break;
+    case 'brepkit':
+      result = await loadBrepkit();
+      break;
+  }
   setKernelInitialized(kernel, result.isThreaded, result.hardwareConcurrency);
 }
 
