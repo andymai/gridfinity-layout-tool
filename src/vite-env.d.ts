@@ -23,6 +23,12 @@ declare module 'virtual:pwa-register/react' {
   };
 }
 
+// occt-wasm raw Emscripten module (no bundled types for this deep path)
+declare module 'occt-wasm/dist/occt-wasm.js' {
+  const createModule: unknown;
+  export default createModule;
+}
+
 // Global Privacy Control — experimental, not yet in lib.dom.d.ts
 // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/globalPrivacyControl
 interface Navigator {
