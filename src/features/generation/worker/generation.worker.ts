@@ -17,7 +17,12 @@ import './symbolDisposePolyfill';
 
 import type { WorkerMessage } from '../bridge/types';
 import type { KernelName } from '../bridge/types';
-import { loadOpenCascade, loadBrepkit } from './wasmInstantiator';
+import {
+  loadOpenCascade,
+  loadOcctWasm,
+  loadBrepkit,
+  type WasmLoadResult,
+} from './wasmInstantiator';
 import { clearAllCaches } from './generators/shapeCache';
 import { clearBaseplateCaches } from './generators/baseplateGenerator';
 import {
@@ -43,7 +48,12 @@ import {
 
 /** Initialize the geometry kernel selected by the INIT message. */
 async function initKernel(kernel: KernelName = 'opencascade'): Promise<void> {
-  const result = kernel === 'brepkit' ? await loadBrepkit() : await loadOpenCascade();
+  const loaders: Record<KernelName, () => Promise<WasmLoadResult>> = {
+    opencascade: loadOpenCascade,
+    'occt-wasm': loadOcctWasm,
+    brepkit: loadBrepkit,
+  };
+  const result = await loaders[kernel]();
   setKernelInitialized(kernel, result.isThreaded, result.hardwareConcurrency);
 }
 

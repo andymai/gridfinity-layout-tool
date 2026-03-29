@@ -1,16 +1,21 @@
 /**
- * Orchestrates WASM loading for OpenCascade.
+ * Orchestrates WASM loading for geometry kernels.
  *
- * The Emscripten-generated JS uses environment detection (window, importScripts)
- * to locate the .wasm file. In Vite's ES module workers, neither exists, so the
- * WASM path resolves incorrectly. We provide explicit locateFile overrides using
- * Vite's ?url imports to ensure the correct path in all environments.
+ * Each loader initialises an Emscripten module, wraps it with the appropriate
+ * brepjs adapter, and registers it via `registerKernel`. All three follow the
+ * same pattern: load WASM → create adapter → register.
+ *
+ * Vite's ?url imports provide explicit paths because Emscripten's environment
+ * detection (window, importScripts) doesn't work in ES module workers.
  */
 
-import { initFromOC, registerKernel, BrepkitAdapter } from 'brepjs';
+import { initFromOC, registerKernel, BrepkitAdapter, OcctWasmAdapter } from 'brepjs';
+import type { OcctWasmModule } from 'brepjs';
 
 import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
 import singleWasmUrl from 'brepjs-opencascade/src/brepjs_single.wasm?url';
+import occtWasmInit from 'occt-wasm/dist/occt-wasm.js';
+import occtWasmUrl from 'occt-wasm/dist/occt-wasm.wasm?url';
 
 export interface WasmLoadResult {
   /** Whether multi-threaded WASM is being used */
@@ -29,9 +34,7 @@ function getHardwareConcurrency(): number {
 }
 
 /**
- * Load and initialize OpenCascade.
- *
- * Initialises the brepjs kernel with the loaded OpenCascade instance.
+ * Load and initialize the OpenCascade (brepjs-opencascade) geometry kernel.
  */
 export async function loadOpenCascade(): Promise<WasmLoadResult> {
   const hardwareConcurrency = getHardwareConcurrency();
@@ -49,23 +52,35 @@ export async function loadOpenCascade(): Promise<WasmLoadResult> {
 }
 
 /**
+ * Load and initialize the occt-wasm (arena-based OCCT V8) geometry kernel.
+ */
+export async function loadOcctWasm(): Promise<WasmLoadResult> {
+  const hardwareConcurrency = getHardwareConcurrency();
+
+  const moduleConfig = {
+    locateFile: (path: string) => (path.endsWith('.wasm') ? occtWasmUrl : path),
+  };
+  const Module = await (occtWasmInit as (config: typeof moduleConfig) => Promise<unknown>)(
+    moduleConfig
+  );
+
+  const mod = Module as OcctWasmModule;
+  const kernel = new mod.OcctKernel();
+  registerKernel('occt-wasm', new OcctWasmAdapter(mod, kernel));
+
+  return { isThreaded: false, hardwareConcurrency };
+}
+
+/**
  * Load and initialize the brepkit (Rust-native) geometry kernel.
- *
- * Dynamically imports brepkit-wasm (which loads its own WASM binary),
- * wraps it with brepjs's `BrepkitAdapter`, and registers it as the active kernel.
- * Brepkit does not support threading, so `isThreaded` is always false.
  */
 export async function loadBrepkit(): Promise<WasmLoadResult> {
   const hardwareConcurrency = getHardwareConcurrency();
 
-  // Dynamic import to keep the brepkit WASM out of the main chunk.
-  // brepkit-wasm's entry JS handles its own WASM instantiation internally.
   const { BrepKernel } = await import('brepkit-wasm');
   const kernel = new BrepKernel();
-  // BrepkitAdapter accepts KernelInstance (typed as `any` in brepjs)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- KernelInstance is typed as any in brepjs
-  const adapter = new BrepkitAdapter(kernel as any);
-  registerKernel('brepkit', adapter);
+  registerKernel('brepkit', new BrepkitAdapter(kernel as any));
 
   return { isThreaded: false, hardwareConcurrency };
 }

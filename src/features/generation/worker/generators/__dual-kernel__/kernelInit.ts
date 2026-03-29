@@ -3,7 +3,11 @@
  *
  * Both `wasmInit.ts` (single-kernel mode) and `dualKernelInit.ts` (dual-kernel
  * mode) delegate to these helpers to avoid duplicating WASM loading logic.
+ *
+ * All three kernels follow the same pattern: load WASM → create adapter → register.
  */
+
+import type { OcctWasmModule } from 'brepjs';
 
 /** Initialize OCCT via brepjs-opencascade WASM binary. */
 export async function initOcctKernel(): Promise<void> {
@@ -19,12 +23,27 @@ export async function initOcctKernel(): Promise<void> {
   initFromOC(OC);
 }
 
-/** Initialize brepkit-wasm kernel and register it with brepjs. */
+/** Initialize occt-wasm (arena-based OCCT V8) kernel. */
+export async function initOcctWasmKernel(): Promise<void> {
+  const { registerKernel, OcctWasmAdapter } = await import('brepjs');
+  const { readFileSync } = await import('fs');
+  const { join } = await import('path');
+  const wasmPath = join(process.cwd(), 'node_modules/occt-wasm/dist/occt-wasm.wasm');
+  const wasmBinary = readFileSync(wasmPath);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- Emscripten module loaded dynamically
+  const createModule = (await import('occt-wasm/dist/occt-wasm.js')).default;
+  const Module = await (createModule as (opts?: Record<string, unknown>) => Promise<unknown>)({
+    wasmBinary,
+  });
+  const mod = Module as OcctWasmModule;
+  const kernel = new mod.OcctKernel();
+  registerKernel('occt-wasm', new OcctWasmAdapter(mod, kernel));
+}
+
+/** Initialize brepkit-wasm (Rust-native) kernel. */
 export async function initBrepkitKernel(): Promise<void> {
   const { registerKernel, BrepkitAdapter } = await import('brepjs');
   const brepkitWasm = await import('brepkit-wasm');
-  // Web target requires explicit WASM init before use; the default export
-  // is an init function but brepkit-wasm's types don't declare it.
   const wasmInit = (brepkitWasm as Record<string, unknown>)['default'];
   if (typeof wasmInit === 'function') {
     const { readFileSync } = await import('fs');
@@ -35,6 +54,5 @@ export async function initBrepkitKernel(): Promise<void> {
   }
   const kernel = new brepkitWasm.BrepKernel();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- KernelInstance is typed as any in brepjs
-  const adapter = new BrepkitAdapter(kernel as any);
-  registerKernel('brepkit', adapter);
+  registerKernel('brepkit', new BrepkitAdapter(kernel as any));
 }

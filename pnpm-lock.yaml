@@ -50,7 +50,7 @@ importers:
         version: 2.3.1
       brepjs:
         specifier: 15.1.7
-        version: 15.1.7(brepjs-opencascade@0.15.6)(brepkit-wasm@2.43.2)(occt-wasm@1.0.2)
+        version: 15.1.7(brepjs-opencascade@0.15.6)(brepkit-wasm@2.43.2)(occt-wasm@1.2.1)
       brepjs-opencascade:
         specifier: 0.15.6
         version: 0.15.6
@@ -85,8 +85,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       occt-wasm:
-        specifier: 1.0.2
-        version: 1.0.2
+        specifier: 1.2.1
+        version: 1.2.1
       posthog-js:
         specifier: ^1.363.3
         version: 1.363.3
@@ -279,10 +279,10 @@ packages:
         integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==,
       }
 
-  '@apideck/better-ajv-errors@0.3.6':
+  '@apideck/better-ajv-errors@0.3.7':
     resolution:
       {
-        integrity: sha512-P+ZygBLZtkp0qqOAJJVX4oX/sFo5JR3eBWwwuqHHhK0GIgQOKWrAfiAaWX0aArHkRWHMuggFEgAZNxVPwPZYaA==,
+        integrity: sha512-TajUJwGWbDwkCx/CZi7tRE8PVB7simCvKJfHUsSdvps+aTM/PDPP4gkLmKnc+x3CE//y9i/nj74GqdL/hwk7Iw==,
       }
     engines: { node: '>=10' }
     peerDependencies:
@@ -6330,12 +6330,6 @@ packages:
         integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==,
       }
 
-  json-schema@0.4.0:
-    resolution:
-      {
-        integrity: sha512-es94M3nTIfsEPisRafak+HDLfHXnKBhV3vU5eqPcS3flIWqcxJWgXHXiey3YrpaNsanY5ei1VoYEbOzijuq9BA==,
-      }
-
   json-stable-stringify-without-jsonify@1.0.1:
     resolution:
       {
@@ -6931,10 +6925,10 @@ packages:
         integrity: sha512-uTqF9MuPraAQ+IsnPf366RG4cP9RtUi7MLO1N3KEc+wb0a6yKpeL0lmk2IB1jY5KHPAlTc6T/JRdC/YqxHNwkQ==,
       }
 
-  occt-wasm@1.0.2:
+  occt-wasm@1.2.1:
     resolution:
       {
-        integrity: sha512-4maxDyrgF8M7XaU0q2gozq88Ux/sr2iFR11zoptgUYp4I4AODEJEb6/9y9ReKqJhVw3memKHZ1S3MLoP+gMVfg==,
+        integrity: sha512-/37BHdn/s2U1hginbKrOaWN8ayIUcB0ERqwrd4X4yP/SeJJ5Rw3TGAWxm+4ftNDj8rObPwRDRUTlX+WuWveCEw==,
       }
 
   onetime@7.0.0:
@@ -8951,10 +8945,9 @@ packages:
 snapshots:
   '@adobe/css-tools@4.4.4': {}
 
-  '@apideck/better-ajv-errors@0.3.6(ajv@8.18.0)':
+  '@apideck/better-ajv-errors@0.3.7(ajv@8.18.0)':
     dependencies:
       ajv: 8.18.0
-      json-schema: 0.4.0
       jsonpointer: 5.0.1
       leven: 3.1.0
 
@@ -11471,14 +11464,14 @@ snapshots:
 
   brepjs-opencascade@0.15.6: {}
 
-  brepjs@15.1.7(brepjs-opencascade@0.15.6)(brepkit-wasm@2.43.2)(occt-wasm@1.0.2):
+  brepjs@15.1.7(brepjs-opencascade@0.15.6)(brepkit-wasm@2.43.2)(occt-wasm@1.2.1):
     dependencies:
       flatbush: 4.5.1
       opentype.js: 1.3.4
     optionalDependencies:
       brepjs-opencascade: 0.15.6
       brepkit-wasm: 2.43.2
-      occt-wasm: 1.0.2
+      occt-wasm: 1.2.1
 
   brepkit-wasm@2.43.2: {}
 
@@ -12638,8 +12631,6 @@ snapshots:
 
   json-schema-traverse@1.0.0: {}
 
-  json-schema@0.4.0: {}
-
   json-stable-stringify-without-jsonify@1.0.1: {}
 
   json5@2.2.3: {}
@@ -12943,7 +12934,7 @@ snapshots:
 
   obug@2.1.1: {}
 
-  occt-wasm@1.0.2: {}
+  occt-wasm@1.2.1: {}
 
   onetime@7.0.0:
     dependencies:
@@ -14084,7 +14075,7 @@ snapshots:
 
   workbox-build@7.4.0(@types/babel__core@7.20.5):
     dependencies:
-      '@apideck/better-ajv-errors': 0.3.6(ajv@8.18.0)
+      '@apideck/better-ajv-errors': 0.3.7(ajv@8.18.0)
       '@babel/core': 7.29.0
       '@babel/preset-env': 7.29.2(@babel/core@7.29.0)
       '@babel/runtime': 7.29.2

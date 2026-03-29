@@ -88,13 +88,14 @@ export function runGeneration(
 
   try {
     // brepjs perf stats are only meaningful for the opencascade kernel
-    if (activeKernel === 'opencascade') resetPerformanceStats();
+    if (activeKernel === 'opencascade' || activeKernel === 'occt-wasm') resetPerformanceStats();
     const meshData = generator(signal);
 
     if (activeRequestId !== requestId) return;
 
     const timingMs = performance.now() - startTime;
-    const kernelPerfStats = activeKernel === 'opencascade' ? getPerformanceStats() : {};
+    const kernelPerfStats =
+      activeKernel === 'opencascade' || activeKernel === 'occt-wasm' ? getPerformanceStats() : {};
 
     const maybeCopy = <T extends Float32Array | Uint32Array>(buf: T): T =>
       (copyBuffers ? buf.slice() : buf) as T;
@@ -138,7 +139,7 @@ export function runGeneration(
     resetAllShapeCacheStats();
     resetBaseplateCacheStats();
 
-    if (activeKernel === 'opencascade') {
+    if (activeKernel === 'opencascade' || activeKernel === 'occt-wasm') {
       respond({ type: 'KERNEL_PERF_STATS', requestId, stats: kernelPerfStats });
     }
   } catch (e) {
