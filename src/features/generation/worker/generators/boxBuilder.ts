@@ -124,20 +124,18 @@ export function buildBinBox(
  * Constructs the lip taper as a ruled loft through rounded-rectangle sections
  * at each profile breakpoint, then boolean-subtracts an inner frustum to create
  * a hollow ring. This produces analytic surfaces (planar + conical) instead of
- * the NURBS surfaces from sweepSketch, making it dramatically faster for boolean
- * and tessellation — especially with the brepkit kernel.
+ * the NURBS surfaces from sweepSketch, making it faster for boolean ops and
+ * tessellation.
  */
 function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean): Shape3D {
   const LIP_EXTENSION = includeLip ? 1.2 : 0;
 
-  // The lip is a thin ring whose cross-section tapers from 2.6mm wall at the
-  // base to 0mm at the peak. We build it as two concentric frustums (outer −
-  // inner = ring). Both follow the taper — the outer at the profile's outer
-  // boundary, the inner at the profile's inner boundary.
+  // The lip is a tapered ring built from two concentric frustums (outer − inner = ring).
   //
-  // Sweep profile coordinates (X = radial distance inward from bin edge):
-  //   Outer boundary: 0mm inset at all heights
-  //   Inner boundary: 2.6mm at base → 1.9mm after first taper → 0mm at peak
+  // At Z_BASE both frustums share the same inset (2.6mm) so the ring starts with zero
+  // radial thickness and closes against the bin wall. As Z increases toward Z_PEAK the
+  // outer frustum flares out to 0mm inset (the bin's full outer edge) while the inner
+  // stays fixed at 2.6mm, so the ring widens to 2.6mm at the very top.
   //
   // Outer insets from bin edge at each Z breakpoint:
   const OUTER_EXT = LIP_TAPER_WIDTH; // 2.6mm — extension matches base width
@@ -277,9 +275,10 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
 /**
  * Build the stacking lip at the top of the bin.
  *
- * Uses loft-cut as the primary path (ruled loft + boolean cut produces analytic
- * surfaces — planar + conical — that are faster for boolean ops and more robust
- * for split-bin intersections). Falls back to sweep on loft failure.
+ * Uses loft-cut as the primary path for all kernels (ruled loft + boolean cut
+ * produces analytic surfaces — planar + conical — that are faster for boolean
+ * ops and more robust for split-bin intersections). Falls back to sweep on
+ * loft failure.
  *
  * Profile per Gridfinity spec v5: 0.7mm + 1.8mm + 1.9mm = 4.4mm total height.
  * Built at Z=0 locally, caller translates to wallHeight.
