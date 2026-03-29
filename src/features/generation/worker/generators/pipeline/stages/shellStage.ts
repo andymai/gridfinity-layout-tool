@@ -8,7 +8,7 @@
  * context holds a mutable copy.
  */
 
-import { unwrap, isOk, fuse, clone, translate, withScope } from 'brepjs';
+import { unwrap, isOk, fuse, clone, translate, simplify, withScope } from 'brepjs';
 import type { DisposalScope } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
@@ -74,7 +74,9 @@ export const shellStage: PipelineStage = {
             // Register binBody only after fuse succeeds — if fuse throws,
             // the catch block returns binBody which must not be disposed.
             scope.register(binBody);
-            return fused;
+            // Merge coplanar/co-cylindrical faces at the lip–wall junction
+            // so the exterior wall flows seamlessly into the lip.
+            return unwrap(simplify(fused));
           } catch (e: unknown) {
             if (isAbortError(e)) throw e;
             return binBody; // fuse failed — binBody is NOT registered, safe to return
@@ -117,12 +119,14 @@ export const shellStage: PipelineStage = {
           );
           collectOrigins(top, FeatureTag.LIP, originToTag);
           const baseAndBody = scope.register(unwrap(fuse(base, binBody)));
-          return unwrap(
+          const withLip = unwrap(
             fuse(
               baseAndBody,
               top /* no commonFace: box (3.75mm corners) and socket/lip profiles differ */
             )
           );
+          // Merge coplanar/co-cylindrical faces at the lip–wall junction.
+          return unwrap(simplify(withLip));
         } catch (e: unknown) {
           if (isAbortError(e)) throw e;
           return unwrap(fuse(base, binBody));

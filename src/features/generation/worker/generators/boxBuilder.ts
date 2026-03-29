@@ -131,21 +131,15 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
   const LIP_EXTENSION = includeLip ? 1.2 : 0;
 
   // The lip is a tapered ring built from two concentric frustums (outer − inner = ring).
-  //
-  // At Z_BASE both frustums share the same inset (2.6mm) so the ring starts with zero
-  // radial thickness and closes against the bin wall. As Z increases toward Z_PEAK the
-  // outer frustum flares out to 0mm inset (the bin's full outer edge) while the inner
-  // stays fixed at 2.6mm, so the ring widens to 2.6mm at the very top.
+  // The inner frustum tracks the outer with a constant WALL offset, producing a
+  // uniform-thickness ring at every height. Ring thickness = WALL = 2.6mm everywhere.
   //
   // Outer insets from bin edge at each Z breakpoint:
+  const WALL = LIP_TAPER_WIDTH; // 2.6mm ring wall thickness
   const OUTER_EXT = LIP_TAPER_WIDTH; // 2.6mm — extension matches base width
   const OUTER_BASE = LIP_TAPER_WIDTH; // 2.6mm
   const OUTER_MID = LIP_BIG_TAPER; // 1.9mm — after first taper
   const OUTER_TOP = 0; // 0mm — peak at bin outer edge
-
-  // Inner insets — constant at LIP_TAPER_WIDTH (the inner wall face).
-  // At the peak, inner=outer so the ring closes to zero thickness.
-  const INNER_INSET = LIP_TAPER_WIDTH; // 2.6mm at all heights
 
   const Z_EXT = -LIP_EXTENSION;
   const Z_BASE = 0;
@@ -174,15 +168,15 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
     const [outerFirst, ...outerRest] = outerSections;
     const outerFrustum = scope.register(outerFirst.loftWith(outerRest, { ruled: true }));
 
-    // Inner frustum: constant inset (vertical inner wall).
+    // Inner frustum: tracks outer with constant WALL offset (uniform ring thickness).
     const innerSections: Sketch[] = [];
     if (includeLip) {
-      innerSections.push(sectionAt(Z_EXT, INNER_INSET));
+      innerSections.push(sectionAt(Z_EXT, OUTER_EXT + WALL));
     }
-    innerSections.push(sectionAt(Z_BASE, INNER_INSET));
-    innerSections.push(sectionAt(Z_TAPER1, INNER_INSET));
-    innerSections.push(sectionAt(Z_VERT, INNER_INSET));
-    innerSections.push(sectionAt(Z_PEAK, INNER_INSET));
+    innerSections.push(sectionAt(Z_BASE, OUTER_BASE + WALL));
+    innerSections.push(sectionAt(Z_TAPER1, OUTER_MID + WALL));
+    innerSections.push(sectionAt(Z_VERT, OUTER_MID + WALL));
+    innerSections.push(sectionAt(Z_PEAK, OUTER_TOP + WALL));
 
     const [innerFirst, ...innerRest] = innerSections;
     const innerFrustum = scope.register(innerFirst.loftWith(innerRest, { ruled: true }));
