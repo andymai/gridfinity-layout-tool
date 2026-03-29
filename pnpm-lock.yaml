@@ -49,8 +49,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       brepjs:
-        specifier: 15.1.7
-        version: 15.1.7(brepjs-opencascade@0.15.6)(brepkit-wasm@2.43.2)(occt-wasm@1.2.1)
+        specifier: 15.1.8
+        version: 15.1.8(brepjs-opencascade@0.15.6)(brepkit-wasm@2.43.2)(occt-wasm@1.2.2)
       brepjs-opencascade:
         specifier: 0.15.6
         version: 0.15.6
@@ -85,8 +85,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
       occt-wasm:
-        specifier: 1.2.1
-        version: 1.2.1
+        specifier: 1.2.2
+        version: 1.2.2
       posthog-js:
         specifier: ^1.363.3
         version: 1.363.3
@@ -4516,10 +4516,10 @@ packages:
       }
     engines: { node: '>=24 <25' }
 
-  brepjs@15.1.7:
+  brepjs@15.1.8:
     resolution:
       {
-        integrity: sha512-JfRSpwlqrC0joeU1XGJzMgHuiHeWnNkMGx2K7QgiasA//PUHHztsTGdATW28IdV6OUexdi6Gnpx00yCWufsxpg==,
+        integrity: sha512-dd2c8a6xLZzbHdouAb/S5BQn6fYtVbu91Dv2dSgMd/xE0xsIShRjPOkzESGrJCA+XAyRj/8eqyt3nzv2RVACmw==,
       }
     engines: { node: '>=24' }
     peerDependencies:
@@ -6925,10 +6925,10 @@ packages:
         integrity: sha512-uTqF9MuPraAQ+IsnPf366RG4cP9RtUi7MLO1N3KEc+wb0a6yKpeL0lmk2IB1jY5KHPAlTc6T/JRdC/YqxHNwkQ==,
       }
 
-  occt-wasm@1.2.1:
+  occt-wasm@1.2.2:
     resolution:
       {
-        integrity: sha512-/37BHdn/s2U1hginbKrOaWN8ayIUcB0ERqwrd4X4yP/SeJJ5Rw3TGAWxm+4ftNDj8rObPwRDRUTlX+WuWveCEw==,
+        integrity: sha512-BDnKpU9B/Z9FCQRtqshsxvnwwdIPbpdXbMk8ursVN1eNyiTAhxmq2W/X3MaGx9ZysvApBHfD3TG2r67+BVunFA==,
       }
 
   onetime@7.0.0:
@@ -11464,14 +11464,14 @@ snapshots:
 
   brepjs-opencascade@0.15.6: {}
 
-  brepjs@15.1.7(brepjs-opencascade@0.15.6)(brepkit-wasm@2.43.2)(occt-wasm@1.2.1):
+  brepjs@15.1.8(brepjs-opencascade@0.15.6)(brepkit-wasm@2.43.2)(occt-wasm@1.2.2):
     dependencies:
       flatbush: 4.5.1
       opentype.js: 1.3.4
     optionalDependencies:
       brepjs-opencascade: 0.15.6
       brepkit-wasm: 2.43.2
-      occt-wasm: 1.2.1
+      occt-wasm: 1.2.2
 
   brepkit-wasm@2.43.2: {}
 
@@ -12934,7 +12934,7 @@ snapshots:
 
   obug@2.1.1: {}
 
-  occt-wasm@1.2.1: {}
+  occt-wasm@1.2.2: {}
 
   onetime@7.0.0:
     dependencies:
