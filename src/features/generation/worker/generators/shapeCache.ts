@@ -16,7 +16,7 @@
  * - patternTemplateCache: pattern shape template (single-entry, cheap to rebuild)
  */
 
-import { clone, unwrap, isOk } from 'brepjs';
+import { clone, isOk } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { CacheStats } from './lruCache';
 import { LRUCache } from './lruCache';
@@ -33,9 +33,11 @@ function cloneFromCache(cache: LRUCache<Shape3D>, key: string): Shape3D | null {
   const shape = cache.get(key);
   if (shape === undefined) return null;
   const result = clone(shape);
+  if (isOk(result)) return result.value;
   // brepjs v15: clone() returns Result<T>. A disposed handle yields Err —
-  // treat as cache miss so the caller rebuilds the shape.
-  return isOk(result) ? result.value : null;
+  // evict the stale entry so future lookups are true misses.
+  cache.delete(key);
+  return null;
 }
 
 /**
@@ -52,8 +54,10 @@ function createCloningAccessors(cache: LRUCache<Shape3D>): {
       return cloneFromCache(cache, key);
     },
     set(key: string, shape: Shape3D): Shape3D {
+      const result = clone(shape);
+      if (!isOk(result)) throw new Error('[shapeCache] clone() failed on freshly built shape');
       cache.set(key, shape);
-      return unwrap(clone(shape));
+      return result.value;
     },
   };
 }

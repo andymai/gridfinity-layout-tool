@@ -67,6 +67,16 @@ export class LRUCache<T> {
     this.map.set(key, value);
   }
 
+  /** Remove a specific entry, calling onEvict if present. */
+  delete(key: string): boolean {
+    const value = this.map.get(key);
+    if (value === undefined) return false;
+    this.map.delete(key);
+    this._evictions++;
+    this.onEvict?.(key, value);
+    return true;
+  }
+
   get size(): number {
     return this.map.size;
   }

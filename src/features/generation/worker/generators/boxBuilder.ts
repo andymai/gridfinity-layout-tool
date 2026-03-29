@@ -264,9 +264,9 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
 /**
  * Build the stacking lip at the top of the bin.
  *
- * Uses kernel-optimized construction:
- * - brepkit: loft + boolean cut (analytic surfaces, avoids slow shell)
- * - OCCT: sweep + fillet (robust, avoids loft-shell failures)
+ * Uses loft-cut as the primary path (ruled loft + boolean cut produces analytic
+ * surfaces — planar + conical — that are faster for boolean ops and more robust
+ * for split-bin intersections). Falls back to sweep on loft failure.
  *
  * Profile per Gridfinity spec v5: 0.7mm + 1.8mm + 1.9mm = 4.4mm total height.
  * Built at Z=0 locally, caller translates to wallHeight.
