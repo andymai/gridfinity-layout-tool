@@ -21,7 +21,6 @@ import {
   edgeFinder,
   getBounds,
   shell,
-  getKernel,
   withScope,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Plane, Vec3, Sketch, DisposalScope } from 'brepjs';
@@ -293,20 +292,16 @@ export function buildTopShape(
   const outerW = gridW * gridUnitMm - CLEARANCE;
   const outerD = gridD * gridUnitMm - CLEARANCE;
 
+  // Loft-cut produces analytic surfaces (planar + conical) that are faster
+  // for boolean operations and more robust for downstream intersections
+  // (e.g. split-bin cutting). Sweep is the fallback for edge cases where
+  // the loft path fails.
   let result: Shape3D;
-  if (getKernel().kernelId === 'brepkit') {
-    // brepkit: loft-cut is ~5-50x faster than sweep (analytic surfaces)
-    try {
-      result = buildTopShapeLoft(outerW, outerD, includeLip);
-    } catch (e: unknown) {
-      // Loft failed — fall back to sweep path. Log for diagnostics since this
-      // indicates a kernel regression (loft should always succeed).
-      const msg = e instanceof Error ? e.message : String(e);
-      console.warn(`[boxBuilder] brepkit loft failed, falling back to sweep: ${msg}`);
-      result = buildTopShapeSweep(outerW, outerD, includeLip);
-    }
-  } else {
-    // OCCT: sweep is faster and more robust (loft-shell fails, loft-cut is slow)
+  try {
+    result = buildTopShapeLoft(outerW, outerD, includeLip);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.warn(`[boxBuilder] loft failed, falling back to sweep: ${msg}`);
     result = buildTopShapeSweep(outerW, outerD, includeLip);
   }
 

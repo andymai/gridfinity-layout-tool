@@ -8,7 +8,7 @@
  * context holds a mutable copy.
  */
 
-import { unwrap, fuse, clone, translate, withScope } from 'brepjs';
+import { unwrap, isOk, fuse, clone, translate, withScope } from 'brepjs';
 import type { DisposalScope } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
@@ -65,16 +65,19 @@ export const shellStage: PipelineStage = {
               ])
             );
             collectOrigins(top, FeatureTag.LIP, originToTag);
-            scope.register(binBody); // consumed by fuse
-            return unwrap(
+            const fused = unwrap(
               fuse(
                 binBody,
                 top /* no commonFace: box (3.75mm corners) and socket/lip profiles differ */
               )
             );
+            // Register binBody only after fuse succeeds — if fuse throws,
+            // the catch block returns binBody which must not be disposed.
+            scope.register(binBody);
+            return fused;
           } catch (e: unknown) {
             if (isAbortError(e)) throw e;
-            return binBody; // fuse failed — withScope exempts returned value from disposal
+            return binBody; // fuse failed — binBody is NOT registered, safe to return
           }
         }
         return binBody; // no lip — binBody is the result (NOT registered)
@@ -129,8 +132,14 @@ export const shellStage: PipelineStage = {
       return unwrap(fuse(base, binBody));
     });
 
-    setShellCache(dim.shellKey, bin);
-
-    return { ...ctx, solid: unwrap(clone(bin)) };
+    // Clone for the pipeline; cache the original.
+    // brepjs v15: clone() returns Result<T> — handle Err gracefully.
+    const cloneResult = clone(bin);
+    if (isOk(cloneResult)) {
+      setShellCache(dim.shellKey, bin);
+      return { ...ctx, solid: cloneResult.value };
+    }
+    // Clone failed — skip caching, use original directly.
+    return { ...ctx, solid: bin };
   },
 };
