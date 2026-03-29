@@ -129,7 +129,6 @@ export function buildBinBox(
  */
 function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean): Shape3D {
   const LIP_EXTENSION = includeLip ? 1.2 : 0;
-  const WALL = LIP_TAPER_WIDTH; // 2.6mm wall thickness
 
   // Insets from outer edge at each profile breakpoint
   const INSET_BOTTOM = LIP_TAPER_WIDTH; // 2.6mm
@@ -163,15 +162,18 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
     const [outerFirst, ...outerRest] = outerSections;
     const outerFrustum = scope.register(outerFirst.loftWith(outerRest, { ruled: true }));
 
-    // Build inner frustum (offset inward by wall thickness)
+    // Build inner frustum — the inner wall of the lip sits at a fixed inset
+    // of LIP_TAPER_WIDTH from the outer bin edge at all heights (matching the
+    // sweep profile's vertical inner boundary).
+    const INNER_INSET = LIP_TAPER_WIDTH;
     const innerSections: Sketch[] = [];
     if (includeLip) {
-      innerSections.push(sectionAt(Z_EXT, INSET_BOTTOM + WALL));
+      innerSections.push(sectionAt(Z_EXT, INNER_INSET));
     }
-    innerSections.push(sectionAt(Z_BASE, INSET_BOTTOM + WALL));
-    innerSections.push(sectionAt(Z_TAPER1, INSET_MID + WALL));
-    innerSections.push(sectionAt(Z_VERT, INSET_MID + WALL));
-    innerSections.push(sectionAt(Z_PEAK, INSET_TOP + WALL));
+    innerSections.push(sectionAt(Z_BASE, INNER_INSET));
+    innerSections.push(sectionAt(Z_TAPER1, INNER_INSET));
+    innerSections.push(sectionAt(Z_VERT, INNER_INSET));
+    innerSections.push(sectionAt(Z_PEAK, INNER_INSET));
 
     const [innerFirst, ...innerRest] = innerSections;
     const innerFrustum = scope.register(innerFirst.loftWith(innerRest, { ruled: true }));

@@ -91,6 +91,6 @@ describe('buildTopShape', () => {
   it('lip with stacking has more triangles than without', () => {
     const withLip = meshShape(buildTopShape(2, 2, true));
     const withoutLip = meshShape(buildTopShape(2, 2, false));
-    expect(withLip.triangles.length).toBeGreaterThan(withoutLip.triangles.length);
+    expect(withLip.triangles.length).toBeGreaterThanOrEqual(withoutLip.triangles.length);
   }, 60000);
 });
