@@ -130,14 +130,24 @@ export function buildBinBox(
 function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean): Shape3D {
   const LIP_EXTENSION = includeLip ? 1.2 : 0;
 
-  // The lip cross-section (sweep profile) has:
-  //   outer face: at the bin outer edge (inset=0) at all heights
-  //   inner face: tapers inward from the bottom to the peak
+  // The lip is a thin ring whose cross-section tapers from 2.6mm wall at the
+  // base to 0mm at the peak. We build it as two concentric frustums (outer −
+  // inner = ring). Both follow the taper — the outer at the profile's outer
+  // boundary, the inner at the profile's inner boundary.
   //
-  // Inner insets from outer edge at each profile breakpoint:
-  const INNER_BOTTOM = LIP_TAPER_WIDTH; // 2.6mm (widest, at base)
-  const INNER_MID = LIP_TAPER_WIDTH - LIP_SMALL_TAPER; // 1.9mm (after first taper)
-  const INNER_TOP = 0; // 0mm (peak — inner meets outer)
+  // Sweep profile coordinates (X = radial distance inward from bin edge):
+  //   Outer boundary: 0mm inset at all heights
+  //   Inner boundary: 2.6mm at base → 1.9mm after first taper → 0mm at peak
+  //
+  // Outer insets from bin edge at each Z breakpoint:
+  const OUTER_EXT = LIP_TAPER_WIDTH; // 2.6mm — extension matches base width
+  const OUTER_BASE = LIP_TAPER_WIDTH; // 2.6mm
+  const OUTER_MID = LIP_BIG_TAPER; // 1.9mm — after first taper
+  const OUTER_TOP = 0; // 0mm — peak at bin outer edge
+
+  // Inner insets — constant at LIP_TAPER_WIDTH (the inner wall face).
+  // At the peak, inner=outer so the ring closes to zero thickness.
+  const INNER_INSET = LIP_TAPER_WIDTH; // 2.6mm at all heights
 
   const Z_EXT = -LIP_EXTENSION;
   const Z_BASE = 0;
@@ -152,31 +162,29 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
     return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
   };
 
-  // Outer frustum: at the bin outer edge (inset=0) for all heights.
-  // This is a straight extrusion (cylinder) since inset doesn't change.
-  const OUTER_INSET = 0;
+  // Outer frustum: follows the taper profile outward.
   const outerSections: Sketch[] = [];
   if (includeLip) {
-    outerSections.push(sectionAt(Z_EXT, OUTER_INSET));
+    outerSections.push(sectionAt(Z_EXT, OUTER_EXT));
   }
-  outerSections.push(sectionAt(Z_BASE, OUTER_INSET));
-  outerSections.push(sectionAt(Z_TAPER1, OUTER_INSET));
-  outerSections.push(sectionAt(Z_VERT, OUTER_INSET));
-  outerSections.push(sectionAt(Z_PEAK, OUTER_INSET));
+  outerSections.push(sectionAt(Z_BASE, OUTER_BASE));
+  outerSections.push(sectionAt(Z_TAPER1, OUTER_MID));
+  outerSections.push(sectionAt(Z_VERT, OUTER_MID));
+  outerSections.push(sectionAt(Z_PEAK, OUTER_TOP));
 
   return withScope((scope: DisposalScope) => {
     const [outerFirst, ...outerRest] = outerSections;
     const outerFrustum = scope.register(outerFirst.loftWith(outerRest, { ruled: true }));
 
-    // Inner frustum: follows the taper profile inward.
+    // Inner frustum: constant inset (vertical inner wall).
     const innerSections: Sketch[] = [];
     if (includeLip) {
-      innerSections.push(sectionAt(Z_EXT, INNER_BOTTOM));
+      innerSections.push(sectionAt(Z_EXT, INNER_INSET));
     }
-    innerSections.push(sectionAt(Z_BASE, INNER_BOTTOM));
-    innerSections.push(sectionAt(Z_TAPER1, INNER_MID));
-    innerSections.push(sectionAt(Z_VERT, INNER_MID));
-    innerSections.push(sectionAt(Z_PEAK, INNER_TOP));
+    innerSections.push(sectionAt(Z_BASE, INNER_INSET));
+    innerSections.push(sectionAt(Z_TAPER1, INNER_INSET));
+    innerSections.push(sectionAt(Z_VERT, INNER_INSET));
+    innerSections.push(sectionAt(Z_PEAK, INNER_INSET));
 
     const [innerFirst, ...innerRest] = innerSections;
     const innerFrustum = scope.register(innerFirst.loftWith(innerRest, { ruled: true }));
