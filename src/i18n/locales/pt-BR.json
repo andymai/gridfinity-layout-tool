@@ -366,6 +366,8 @@
   "binDesigner.wallThickness.2.6": "Rigidez máxima para bins grandes",
   "binDesigner.wallThickness.nozzleTip": "Para melhores resultados, use um múltiplo do tamanho do bico (ex: 1,2mm = 3× bico 0,4mm)",
   "binDesigner.walls.pattern.allSlotted": "Todas as paredes têm ranhuras divisórias",
+  "binDesigner.walls.pattern.corrugated": "Corrugado",
+  "binDesigner.walls.pattern.corrugatedThinWall": "O padrão corrugado requer espessura de parede ≥ 1,6mm",
   "binDesigner.walls.pattern.honeycomb": "Colmeia",
   "binDesigner.walls.pattern.label": "Padrão de parede",
   "binDesigner.walls.pattern.none": "Sólido",

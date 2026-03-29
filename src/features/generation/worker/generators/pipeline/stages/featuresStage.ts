@@ -13,6 +13,7 @@
  */
 
 import { unwrap, cut } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { buildCutoutCuts } from '../../featureBuilder';
 import { FeatureTag } from '../../featureTags';
@@ -20,6 +21,8 @@ import { collectOrigins } from '../collectOrigins';
 import { runFeatureBuilders } from '../featureRunner';
 import { BIN_FEATURE_BUILDERS } from '../featureComposition';
 import { buildWallPatterns } from '../../wallPatternBuilder';
+import { buildCorrugatedWalls } from '../../corrugatedWallBuilder';
+import { getPatternMode } from '../../patterns/registry';
 
 export const featuresStage: PipelineStage = {
   name: 'features',
@@ -58,9 +61,18 @@ export const featuresStage: PipelineStage = {
     const targets = runFeatureBuilders(BIN_FEATURE_BUILDERS, ctx);
 
     // Wall patterns: special case with per-wall caching + cutout clipping
+    const wallReplaceTargets: { cut: Shape3D; fuse: Shape3D }[] = [];
     if (params.wallPattern.enabled) {
-      const patternShapes = buildWallPatterns(ctx);
-      targets.patternCutTargets.push(...patternShapes);
+      const mode = getPatternMode(params.wallPattern.pattern);
+      if (mode === 'cut') {
+        const patternShapes = buildWallPatterns(ctx);
+        targets.patternCutTargets.push(...patternShapes);
+      } else {
+        const { cuts, fuses } = buildCorrugatedWalls(ctx);
+        for (let i = 0; i < cuts.length; i++) {
+          wallReplaceTargets.push({ cut: cuts[i], fuse: fuses[i] });
+        }
+      }
     }
 
     return {
@@ -68,6 +80,7 @@ export const featuresStage: PipelineStage = {
       fuseTargets: targets.fuseTargets,
       cutTargets: targets.cutTargets,
       patternCutTargets: targets.patternCutTargets,
+      wallReplaceTargets,
     };
   },
 };

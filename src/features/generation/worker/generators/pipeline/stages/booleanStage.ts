@@ -70,7 +70,10 @@ export const booleanStage: PipelineStage = {
 
   shouldRun(ctx: PipelineContext): boolean {
     return (
-      ctx.fuseTargets.length > 0 || ctx.cutTargets.length > 0 || ctx.patternCutTargets.length > 0
+      ctx.fuseTargets.length > 0 ||
+      ctx.cutTargets.length > 0 ||
+      ctx.patternCutTargets.length > 0 ||
+      ctx.wallReplaceTargets.length > 0
     );
   },
 
@@ -107,10 +110,56 @@ export const booleanStage: PipelineStage = {
       bin = applyCutPass(bin, originalSolid, ctx.patternCutTargets, cutOpts);
     }
 
+    // Wall replacement pass: cut away flat wall, then fuse corrugated replacement.
+    // Sequential per-wall (max 4 walls) — pairwise is safe here.
+    if (ctx.wallReplaceTargets.length > 0) {
+      checkCancelled(signal);
+      for (const { cut: cutShape, fuse: fuseShape } of ctx.wallReplaceTargets) {
+        try {
+          const prev = bin;
+          bin = unwrap(cut(bin as ValidSolid, cutShape as ValidSolid));
+          if (prev !== originalSolid) prev.delete();
+        } catch (e: unknown) {
+          if (isAbortError(e)) throw e;
+          // If cut fails, skip this wall replacement
+          fuseShape.delete();
+          cutShape.delete();
+          continue;
+        }
+        try {
+          const prev = bin;
+          bin = unwrap(fuse(bin as ValidSolid, fuseShape as ValidSolid));
+          if (prev !== originalSolid) prev.delete();
+        } catch (e: unknown) {
+          if (isAbortError(e)) throw e;
+          // If fuse fails, keep the cut result (flat wall is removed, no corrugated added)
+        }
+      }
+    }
+
     if (bin !== originalSolid) originalSolid.delete();
     const allTargets = [...ctx.fuseTargets, ...ctx.cutTargets, ...ctx.patternCutTargets];
     for (const t of allTargets) t.delete();
+    for (const { cut: c, fuse: f } of ctx.wallReplaceTargets) {
+      try {
+        c.delete();
+      } catch {
+        /* already disposed */
+      }
+      try {
+        f.delete();
+      } catch {
+        /* already disposed */
+      }
+    }
 
-    return { ...ctx, solid: bin, fuseTargets: [], cutTargets: [], patternCutTargets: [] };
+    return {
+      ...ctx,
+      solid: bin,
+      fuseTargets: [],
+      cutTargets: [],
+      patternCutTargets: [],
+      wallReplaceTargets: [],
+    };
   },
 };

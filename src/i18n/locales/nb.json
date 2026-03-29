@@ -366,6 +366,8 @@
   "binDesigner.wallThickness.2.6": "Maksimal stivhet for store bins",
   "binDesigner.wallThickness.nozzleTip": "For beste resultater, bruk et multiplum av dysestørrelsen din (f.eks. 1.2mm = 3× 0.4mm dyse)",
   "binDesigner.walls.pattern.allSlotted": "Alle vegger har skillesporene",
+  "binDesigner.walls.pattern.corrugated": "Bølget",
+  "binDesigner.walls.pattern.corrugatedThinWall": "Bølget mønster krever veggtykkelse ≥ 1,6mm",
   "binDesigner.walls.pattern.honeycomb": "Bikube",
   "binDesigner.walls.pattern.label": "Veggmønster",
   "binDesigner.walls.pattern.none": "Solid",

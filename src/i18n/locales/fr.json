@@ -366,6 +366,8 @@
   "binDesigner.wallThickness.2.6": "Rigidité maximale pour grands bins",
   "binDesigner.wallThickness.nozzleTip": "Pour de meilleurs résultats, utilisez un multiple de la taille de buse (ex: 1,2mm = 3× buse 0,4mm)",
   "binDesigner.walls.pattern.allSlotted": "Tous les murs ont des fentes de séparation",
+  "binDesigner.walls.pattern.corrugated": "Ondulé",
+  "binDesigner.walls.pattern.corrugatedThinWall": "Le motif ondulé nécessite une épaisseur de paroi ≥ 1,6mm",
   "binDesigner.walls.pattern.honeycomb": "Alvéoles",
   "binDesigner.walls.pattern.label": "Motif de mur",
   "binDesigner.walls.pattern.none": "Plein",

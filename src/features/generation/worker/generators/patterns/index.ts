@@ -19,10 +19,20 @@ export {
   DEFAULT_HEX_WEB_THICKNESS,
 } from './honeycombPattern';
 
+// Corrugated pattern
+export {
+  createCorrugatedSpec,
+  generateInnerFacePoints,
+  CORRUGATED_MIN_WALL_THICKNESS,
+} from './corrugatedPattern';
+export type { CorrugatedWallSpec } from './corrugatedPattern';
+
 // Registry
 export {
   PATTERN_REGISTRY,
   getPatternCalculator,
+  getPatternMode,
   isHoneycombCalculator,
   getAvailablePatterns,
 } from './registry';
+export type { CutPatternEntry, ReplacePatternEntry, PatternRegistryEntry } from './registry';

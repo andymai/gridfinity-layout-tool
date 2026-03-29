@@ -99,6 +99,7 @@ export function createInitialContext(
     fuseTargets: [],
     cutTargets: [],
     patternCutTargets: [],
+    wallReplaceTargets: [],
     mesh: null,
     coarseMesh: null,
   };

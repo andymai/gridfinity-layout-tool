@@ -1293,6 +1293,9 @@ const en: Record<string, string> = {
   'binDesigner.walls.pattern.label': 'Wall pattern',
   'binDesigner.walls.pattern.none': 'Solid',
   'binDesigner.walls.pattern.honeycomb': 'Honeycomb',
+  'binDesigner.walls.pattern.corrugated': 'Corrugated',
+  'binDesigner.walls.pattern.corrugatedThinWall':
+    'Corrugated pattern requires wall thickness ≥ 1.6mm',
   'binDesigner.walls.pattern.allSlotted': 'All walls have divider slots',
   'binDesigner.walls.pattern.someSlotted': 'Walls with divider slots will keep solid walls',
   'binDesigner.wallCutouts': 'Wall Cutouts',

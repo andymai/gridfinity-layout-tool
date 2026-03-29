@@ -26,6 +26,22 @@ function HoneycombIcon({ className }: { className?: string }) {
   );
 }
 
+/** SVG icon for corrugated pattern (sine wave) */
+function CorrugatedIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <path d="M3 12 C6 6, 9 6, 12 12 S18 18, 21 12" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 /** Pattern option configuration */
 interface PatternOption {
   value: WallPatternType | null;
@@ -37,6 +53,7 @@ interface PatternOption {
 const PATTERN_OPTIONS: PatternOption[] = [
   { value: null, labelKey: 'binDesigner.walls.pattern.none', icon: SolidIcon },
   { value: 'honeycomb', labelKey: 'binDesigner.walls.pattern.honeycomb', icon: HoneycombIcon },
+  { value: 'corrugated', labelKey: 'binDesigner.walls.pattern.corrugated', icon: CorrugatedIcon },
 ];
 
 interface PatternSelectorProps {
@@ -48,6 +65,8 @@ interface PatternSelectorProps {
   disabled?: boolean;
   /** Reason why the selector is disabled */
   disabledReason?: string;
+  /** Set of pattern types that are individually disabled (e.g., corrugated needs thick walls) */
+  disabledPatterns?: ReadonlySet<WallPatternType>;
 }
 
 export function PatternSelector({
@@ -55,6 +74,7 @@ export function PatternSelector({
   onChange,
   disabled = false,
   disabledReason,
+  disabledPatterns,
 }: PatternSelectorProps) {
   const t = useTranslation();
 
@@ -84,7 +104,11 @@ export function PatternSelector({
           className="w-full appearance-none rounded-md bg-surface-secondary text-content-primary text-sm py-2 pl-9 pr-8 border border-stroke-subtle disabled:cursor-not-allowed"
         >
           {PATTERN_OPTIONS.map(({ value, labelKey }) => (
-            <option key={value ?? 'none'} value={value ?? 'none'}>
+            <option
+              key={value ?? 'none'}
+              value={value ?? 'none'}
+              disabled={value !== null && disabledPatterns?.has(value)}
+            >
               {t(labelKey)}
             </option>
           ))}
@@ -106,6 +130,11 @@ export function PatternSelector({
       </div>
       {disabled && disabledReason && (
         <p className="text-[11px] text-content-tertiary mt-1.5">{disabledReason}</p>
+      )}
+      {!disabled && disabledPatterns && disabledPatterns.size > 0 && (
+        <p className="text-[11px] text-content-tertiary mt-1.5">
+          {t('binDesigner.walls.pattern.corrugatedThinWall')}
+        </p>
       )}
     </div>
   );

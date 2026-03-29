@@ -32,6 +32,7 @@ export function WallsSection() {
           onChange={handlers.handlePatternChange}
           disabled={state.patternDisabled}
           disabledReason={state.patternDisabledReason}
+          disabledPatterns={state.disabledPatterns}
         />
         {state.patternPartialNote && state.patternEnabled && (
           <p className="text-[11px] text-content-tertiary mt-1">{state.patternPartialNote}</p>

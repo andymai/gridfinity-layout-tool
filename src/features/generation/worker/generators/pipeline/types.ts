@@ -51,6 +51,8 @@ export interface PipelineContext {
   readonly cutTargets: readonly Shape3D[];
   /** Pattern cut targets — applied in a separate boolean pass after cutTargets */
   readonly patternCutTargets: readonly Shape3D[];
+  /** Wall replacement targets — flat wall section cut + corrugated fuse pairs */
+  readonly wallReplaceTargets: readonly { readonly cut: Shape3D; readonly fuse: Shape3D }[];
   /** Final mesh output (set by tessellate stage) */
   readonly mesh: MeshData | null;
   /** Coarse LOD mesh for distance-based rendering (preview only) */

@@ -9,6 +9,7 @@ vi.mock('@/i18n', () => ({
       'binDesigner.walls.pattern.label': 'Wall pattern',
       'binDesigner.walls.pattern.none': 'Solid walls',
       'binDesigner.walls.pattern.honeycomb': 'Honeycomb',
+      'binDesigner.walls.pattern.corrugated': 'Corrugated',
     };
     return translations[key] ?? key;
   },
@@ -28,9 +29,10 @@ describe('PatternSelector', () => {
     const select = screen.getByRole('combobox');
     const options = select.querySelectorAll('option');
 
-    expect(options).toHaveLength(2);
+    expect(options).toHaveLength(3);
     expect(options[0]).toHaveTextContent('Solid walls');
     expect(options[1]).toHaveTextContent('Honeycomb');
+    expect(options[2]).toHaveTextContent('Corrugated');
   });
 
   it('shows "none" as selected when pattern is null', () => {
@@ -85,6 +87,23 @@ describe('PatternSelector', () => {
     );
 
     expect(screen.getByText('All walls have slots')).toBeInTheDocument();
+  });
+
+  it('disables individual pattern options via disabledPatterns', () => {
+    const disabledPatterns = new Set<'honeycomb' | 'corrugated'>(['corrugated']);
+    render(
+      <PatternSelector
+        selectedPattern={null}
+        onChange={() => {}}
+        disabledPatterns={disabledPatterns}
+      />
+    );
+
+    const select = screen.getByRole('combobox');
+    const options = select.querySelectorAll('option');
+    expect(options[0]).not.toBeDisabled(); // Solid
+    expect(options[1]).not.toBeDisabled(); // Honeycomb
+    expect(options[2]).toBeDisabled(); // Corrugated
   });
 
   it('does not show disabled reason when enabled', () => {

@@ -366,6 +366,8 @@
   "binDesigner.wallThickness.2.6": "Maximale Steifigkeit für große Bins",
   "binDesigner.wallThickness.nozzleTip": "Für beste Ergebnisse ein Vielfaches der Düsengröße verwenden (z.B. 1,2mm = 3× 0,4mm Düse)",
   "binDesigner.walls.pattern.allSlotted": "Alle Wände haben Trennschlitze",
+  "binDesigner.walls.pattern.corrugated": "Wellblech",
+  "binDesigner.walls.pattern.corrugatedThinWall": "Wellblech-Muster erfordert Wandstärke ≥ 1,6mm",
   "binDesigner.walls.pattern.honeycomb": "Waben",
   "binDesigner.walls.pattern.label": "Wandmuster",
   "binDesigner.walls.pattern.none": "Massiv",

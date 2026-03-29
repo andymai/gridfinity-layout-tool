@@ -16,22 +16,40 @@ import type { HoneycombPatternCalculator } from './honeycombPattern';
 import { createHoneycombCalculator } from './honeycombPattern';
 
 /**
- * Registry entry for a pattern type.
+ * Registry entry for a cut-through pattern (repeating elements subtracted from walls).
  */
-export interface PatternRegistryEntry {
+export interface CutPatternEntry {
+  readonly mode: 'cut';
   /** Factory function to create calculator with size-adaptive parameters */
-  createCalculator: (binHeight: number) => PatternCalculator;
+  readonly createCalculator: (binHeight: number) => PatternCalculator;
   /** Human-readable display name (for debugging) */
-  displayName: string;
+  readonly displayName: string;
 }
+
+/**
+ * Registry entry for a wall-replacement pattern (wall geometry is rebuilt).
+ */
+export interface ReplacePatternEntry {
+  readonly mode: 'replace';
+  /** Human-readable display name (for debugging) */
+  readonly displayName: string;
+}
+
+/** Discriminated union for pattern registry entries. */
+export type PatternRegistryEntry = CutPatternEntry | ReplacePatternEntry;
 
 /**
  * Pattern registry mapping pattern types to their calculator factories.
  */
 export const PATTERN_REGISTRY: Record<WallPatternType, PatternRegistryEntry> = {
   honeycomb: {
+    mode: 'cut',
     createCalculator: createHoneycombCalculator,
     displayName: 'Honeycomb',
+  },
+  corrugated: {
+    mode: 'replace',
+    displayName: 'Corrugated',
   },
 };
 
@@ -52,6 +70,9 @@ export function getPatternCalculator(
     const available = Object.keys(PATTERN_REGISTRY).join(', ');
     throw new Error(`Unknown wall pattern type: "${pattern}". Available patterns: ${available}`);
   }
+  if (entry.mode !== 'cut') {
+    throw new Error(`Pattern "${pattern}" is a replacement pattern, not a cut pattern`);
+  }
   return entry.createCalculator(binHeight);
 }
 
@@ -62,6 +83,14 @@ export function isHoneycombCalculator(
   calculator: PatternCalculator
 ): calculator is HoneycombPatternCalculator {
   return calculator.getPatternType() === 'honeycomb';
+}
+
+/**
+ * Get the pattern mode for a given pattern type.
+ */
+export function getPatternMode(pattern: WallPatternType): 'cut' | 'replace' {
+  const entry = (PATTERN_REGISTRY as Record<string, PatternRegistryEntry | undefined>)[pattern];
+  return entry?.mode ?? 'cut';
 }
 
 /**

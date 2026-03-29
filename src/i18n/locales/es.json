@@ -366,6 +366,8 @@
   "binDesigner.wallThickness.2.6": "Máxima rigidez para bins grandes",
   "binDesigner.wallThickness.nozzleTip": "Para mejores resultados, usa un múltiplo del tamaño de boquilla (ej: 1,2mm = 3× boquilla 0,4mm)",
   "binDesigner.walls.pattern.allSlotted": "Todas las paredes tienen ranuras divisoras",
+  "binDesigner.walls.pattern.corrugated": "Corrugado",
+  "binDesigner.walls.pattern.corrugatedThinWall": "El patrón corrugado requiere un grosor de pared ≥ 1,6mm",
   "binDesigner.walls.pattern.honeycomb": "Panal",
   "binDesigner.walls.pattern.label": "Patrón de pared",
   "binDesigner.walls.pattern.none": "Sólido",

@@ -366,6 +366,8 @@
   "binDesigner.wallThickness.2.6": "Maximale stijfheid voor grote bins",
   "binDesigner.wallThickness.nozzleTip": "Voor beste resultaten, gebruik een veelvoud van je nozzle grootte (bijv. 1,2mm = 3× 0,4mm nozzle)",
   "binDesigner.walls.pattern.allSlotted": "Alle wanden hebben verdeelsleuven",
+  "binDesigner.walls.pattern.corrugated": "Gegolfd",
+  "binDesigner.walls.pattern.corrugatedThinWall": "Gegolfd patroon vereist wanddikte ≥ 1,6mm",
   "binDesigner.walls.pattern.honeycomb": "Honingraat",
   "binDesigner.walls.pattern.label": "Wandpatroon",
   "binDesigner.walls.pattern.none": "Massief",

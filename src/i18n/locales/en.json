@@ -367,6 +367,8 @@
   "binDesigner.wallThickness.2.6": "Maximum rigidity for large bins",
   "binDesigner.wallThickness.nozzleTip": "For best results, use a multiple of your nozzle size (e.g., 1.2mm = 3× 0.4mm nozzle)",
   "binDesigner.walls.pattern.allSlotted": "All walls have divider slots",
+  "binDesigner.walls.pattern.corrugated": "Corrugated",
+  "binDesigner.walls.pattern.corrugatedThinWall": "Corrugated pattern requires wall thickness ≥ 1.6mm",
   "binDesigner.walls.pattern.honeycomb": "Honeycomb",
   "binDesigner.walls.pattern.label": "Wall pattern",
   "binDesigner.walls.pattern.none": "Solid",

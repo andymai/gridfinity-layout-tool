@@ -206,7 +206,7 @@ export interface WallConfig {
 // Wall Pattern Types
 
 /** Supported wall pattern types. Extensible via pattern registry. */
-export type WallPatternType = 'honeycomb';
+export type WallPatternType = 'honeycomb' | 'corrugated';
 
 /** Wall pattern configuration — stored per design in BinParams */
 export interface WallPatternConfig {
