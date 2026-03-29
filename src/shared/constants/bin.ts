@@ -11,3 +11,6 @@ export {
   DISABLED_WALL_CUTOUT,
 } from '@/features/bin-designer/constants/defaults';
 export { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+
+/** Minimum wall thickness for corrugated pattern (mm). Used by both UI and generation. */
+export const CORRUGATED_MIN_WALL_THICKNESS = 1.6;

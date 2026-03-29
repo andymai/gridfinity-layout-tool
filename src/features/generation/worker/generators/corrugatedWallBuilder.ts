@@ -69,27 +69,26 @@ function buildCorrugatedProfile(spec: CorrugatedWallSpec): Drawing {
   const innerPoints = generateInnerFacePoints(spec);
   const halfSpan = spec.wallSpan / 2;
 
-  // In the bin's coordinate system, walls extend outward (negative Y from
-  // the inner face for the front wall). The profile Y axis is negated so
-  // the geometry occupies the wall region, not the bin cavity.
+  // Outer face is at Y=0 (flat, at the existing shell boundary).
+  // Inner face follows the sine wave inward (positive Y = towards bin interior).
   //
-  // Y=0 = inner face (wall anchor point)
-  // Y=-wallThickness = outer face (flat, at grid boundary)
-  // Y=-wallThickness-amplitude = deepest corrugation point
+  // Y=0 = outer face (grid boundary, flat)
+  // Y=wallThickness = nominal inner face (at wave troughs)
+  // Y=wallThickness+amplitude = deepest corrugation point (at wave crests)
 
-  // Start at bottom-left of inner face
+  // Start at left of outer face
   let pen = draw([-halfSpan, 0]);
 
-  // Inner face: left to right (flat line at Y=0, the inner face boundary)
+  // Outer face: left to right (flat line at Y=0)
   pen = pen.lineTo([halfSpan, 0]);
 
-  // Right edge: step outward to outer sinusoidal face
+  // Right edge: step inward to inner sinusoidal face
   const lastInner = innerPoints[innerPoints.length - 1];
-  pen = pen.lineTo([lastInner[0], -lastInner[1]]);
+  pen = pen.lineTo([lastInner[0], lastInner[1]]);
 
-  // Outer face: right to left (sinusoidal wave, negated Y)
+  // Inner face: right to left (sinusoidal wave, depth from outer face)
   for (let i = innerPoints.length - 2; i >= 0; i--) {
-    pen = pen.lineTo([innerPoints[i][0], -innerPoints[i][1]]);
+    pen = pen.lineTo([innerPoints[i][0], innerPoints[i][1]]);
   }
 
   // Close: left edge back to start
@@ -109,10 +108,11 @@ function buildCorrugatedSolid(spec: CorrugatedWallSpec, wallPos: WallPosition): 
   // Sketch in XY plane at Z=bottomZ, extrude upward by patternH
   let solid = sketch(profile, 'XY', spec.bottomZ).extrude(spec.patternH);
 
-  // The profile is centered on the wall span. The Y axis in the profile
-  // maps to the wall's perpendicular direction. For the front wall,
-  // the outer face (Y=0) should be at -innerD/2 (the wall position).
-  // We need to shift so outer face aligns with the wall's inner surface.
+  // Profile has outer face at Y=0, inner face at positive Y.
+  // Wall anchors (translateX/Y) are at the INNER face position.
+  // Shift so the inner face (Y≈wallThickness) aligns with the anchor,
+  // meaning outer face (Y=0) ends up at anchor - wallThickness (the shell boundary).
+  solid = translate(solid, [0, -spec.wallThickness, 0]);
 
   // Rotate and translate to wall position
   if (wallPos.zRotation !== undefined) {
@@ -139,9 +139,9 @@ function buildFlatWallSlab(spec: CorrugatedWallSpec, wallPos: WallPosition): Sha
   const profile = drawRectangle(spec.wallSpan, slabDepth);
   let slab = sketch(profile, 'XY', spec.bottomZ - COPLANAR_MARGIN).extrude(slabHeight);
 
-  // Position slab to cover the wall region in negative Y direction.
-  // Y=0 = inner face, slab extends to -(wallThickness + amplitude + margin)
-  slab = translate(slab, [0, -slabDepth / 2, 0]);
+  // Match corrugated profile coordinate system: shift so slab is centered
+  // on the wall thickness region (same -wallThickness offset as the solid).
+  slab = translate(slab, [0, -spec.wallThickness, 0]);
 
   if (wallPos.zRotation !== undefined) {
     slab = rotate(slab, wallPos.zRotation, { axis: [0, 0, 1] });
@@ -449,7 +449,50 @@ export function buildCorrugatedWalls(ctx: PipelineContext): { cuts: Shape3D[]; f
     );
     if (!spec) continue;
 
-    // Cache key
+    // Cache key — must include all inputs that affect final clipped geometry
+    const cutoutCfg = params.walls.enabled ? params.walls[wallPos.side] : undefined;
+    const rampZones = computeRampZones(wallPos.side, params, innerW, innerD, wallHeight);
+
+    const cutoutKeyPart = cutoutCfg?.enabled
+      ? buildCacheKey(
+          'clip',
+          params.walls.shape,
+          cutoutCfg.widthMm !== null ? 'mm' : 'pct',
+          cutoutCfg.widthMm !== null ? quantize(cutoutCfg.widthMm) : quantize(cutoutCfg.width),
+          quantize(cutoutCfg.depth),
+          cutoutCfg.alignment,
+          quantize(cutoutCfg.offset),
+          dim.hasLip,
+          quantize(params.compartments.thickness)
+        )
+      : 'noclip';
+
+    const handleKeyPart =
+      params.handles.enabled &&
+      params.handles[wallPos.side]?.enabled &&
+      !(wallPos.side === 'back' && params.label.enabled)
+        ? buildCacheKey(
+            'hdl',
+            params.handles.shape,
+            params.handles.count,
+            quantize(params.handles[wallPos.side].width ?? params.handles.width),
+            quantize(params.handles[wallPos.side].height ?? params.handles.height),
+            quantize(params.handles.verticalPosition ?? 0)
+          )
+        : 'nohdl';
+
+    const rampKeyPart =
+      rampZones.length > 0
+        ? buildCacheKey(
+            'ramp',
+            rampZones
+              .map(
+                (z) => `${quantize(z.offsetAlongWall)}:${quantize(z.width)}:${quantize(z.height)}`
+              )
+              .join(',')
+          )
+        : 'noramp';
+
     const wallKey = compactKey(
       buildCacheKey(
         'v1',
@@ -464,27 +507,9 @@ export function buildCorrugatedWalls(ctx: PipelineContext): { cuts: Shape3D[]; f
         quantize(wallPos.translateX),
         quantize(wallPos.translateY),
         wallPos.zRotation ?? 0,
-        // Include cutout/handle config in cache key for clear zones
-        params.walls.enabled && params.walls[wallPos.side]?.enabled
-          ? buildCacheKey(
-              'clip',
-              params.walls.shape,
-              quantize(params.walls[wallPos.side].width),
-              quantize(params.walls[wallPos.side].depth),
-              params.walls[wallPos.side].alignment,
-              quantize(params.walls[wallPos.side].offset)
-            )
-          : 'noclip',
-        params.handles.enabled && params.handles[wallPos.side]?.enabled
-          ? buildCacheKey(
-              'hdl',
-              params.handles.shape,
-              params.handles.count,
-              quantize(params.handles[wallPos.side].width ?? params.handles.width),
-              quantize(params.handles[wallPos.side].height ?? params.handles.height),
-              quantize(params.handles.verticalPosition ?? 0)
-            )
-          : 'nohdl'
+        cutoutKeyPart,
+        handleKeyPart,
+        rampKeyPart
       )
     );
 

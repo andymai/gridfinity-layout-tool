@@ -40,8 +40,8 @@ describe('createCorrugatedSpec', () => {
     expect(spec?.wavelength).toBeCloseTo(40 / 3);
   });
 
-  it('returns null when pattern height is too short for half a wavelength', () => {
-    // Very short wall: wallHeight=4, bottomKeepOut=1.6, topKeepOut=1.5 → patternH=0.9
+  it('returns null when pattern height is too short', () => {
+    // Very short wall: wallHeight=4, bottomKeepOut=1.6, topKeepOut=1.5 → patternH=0.9 < 2mm min
     const spec = createCorrugatedSpec(1.6, 4, 40, 4);
     expect(spec).toBeNull();
   });

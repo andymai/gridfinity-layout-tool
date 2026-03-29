@@ -110,29 +110,45 @@ export const booleanStage: PipelineStage = {
       bin = applyCutPass(bin, originalSolid, ctx.patternCutTargets, cutOpts);
     }
 
-    // Wall replacement pass: cut away flat wall, then fuse corrugated replacement.
-    // Sequential per-wall (max 4 walls) — pairwise is safe here.
+    // Wall replacement pass: cut flat wall, then fuse corrugated replacement.
+    // Atomic per-wall: only update bin if BOTH cut and fuse succeed,
+    // otherwise keep the original bin intact (no holes from partial ops).
     if (ctx.wallReplaceTargets.length > 0) {
       checkCancelled(signal);
       for (const { cut: cutShape, fuse: fuseShape } of ctx.wallReplaceTargets) {
+        let cutResult: Shape3D;
         try {
-          const prev = bin;
-          bin = unwrap(cut(bin as ValidSolid, cutShape as ValidSolid));
-          if (prev !== originalSolid) prev.delete();
+          cutResult = unwrap(cut(bin as ValidSolid, cutShape as ValidSolid));
         } catch (e: unknown) {
           if (isAbortError(e)) throw e;
-          // If cut fails, skip this wall replacement
-          fuseShape.delete();
-          cutShape.delete();
           continue;
         }
         try {
-          const prev = bin;
-          bin = unwrap(fuse(bin as ValidSolid, fuseShape as ValidSolid));
-          if (prev !== originalSolid) prev.delete();
+          const fused: Shape3D = unwrap(fuse(cutResult as ValidSolid, fuseShape as ValidSolid));
+          // Both succeeded — atomically update bin
+          if (bin !== originalSolid && bin) {
+            try {
+              bin.delete();
+            } catch {
+              /* already disposed */
+            }
+          }
+          try {
+            cutResult.delete();
+          } catch {
+            /* already disposed */
+          }
+          bin = fused;
         } catch (e: unknown) {
           if (isAbortError(e)) throw e;
-          // If fuse fails, keep the cut result (flat wall is removed, no corrugated added)
+          // Fuse failed — discard cut result, keep original bin intact
+          if (cutResult) {
+            try {
+              cutResult.delete();
+            } catch {
+              /* already disposed */
+            }
+          }
         }
       }
     }

@@ -20,9 +20,9 @@
  */
 
 import { TOP_KEEP_OUT, MIN_BOTTOM_KEEP_OUT } from '../wallPatterns';
+import { CORRUGATED_MIN_WALL_THICKNESS } from '@/shared/constants/bin';
 
-/** Minimum wall thickness required for corrugation (mm). */
-export const CORRUGATED_MIN_WALL_THICKNESS = 1.6;
+export { CORRUGATED_MIN_WALL_THICKNESS };
 
 /** Amplitude multiplier: amplitude = wallThickness × this factor. */
 const AMPLITUDE_RATIO = 0.4;
@@ -91,8 +91,8 @@ export function createCorrugatedSpec(
   const waveCount = Math.max(1, Math.round(wallSpan / baseWavelength));
   const wavelength = wallSpan / waveCount;
 
-  // Must fit at least one half-wave vertically
-  if (patternH < wavelength / 2) return null;
+  // Must have enough height for a visible corrugated band (at least 2mm)
+  if (patternH < 2) return null;
 
   // Wall span must be meaningful (need at least one full wave)
   if (wallSpan < baseWavelength / 2) return null;

@@ -6,8 +6,7 @@ import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
 import type { WallPatternType } from '@/features/bin-designer/types';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
-/** Minimum wall thickness for corrugated pattern (mm). Must match corrugatedPattern.ts. */
-const CORRUGATED_MIN_WALL_THICKNESS = 1.6;
+import { CORRUGATED_MIN_WALL_THICKNESS } from '@/shared/constants/bin';
 
 export function useWallsSection() {
   const { wallThickness, wallPattern, params, setParam, updateWallPattern } = useDesignerStore(
