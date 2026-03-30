@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.35.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.35.1...gridfinity-layout-tool-v4.35.2) (2026-03-30)
+
+
+### Bug Fixes
+
+* **bin-designer:** allow closer pinch-zoom on mobile preview ([#1303](https://github.com/andymai/gridfinity-layout-tool/issues/1303)) ([8abcacf](https://github.com/andymai/gridfinity-layout-tool/commit/8abcacfe950df3b86b7826d389f512529fd312bb))
+* **bin-designer:** disable label tabs at 2u bin height ([#1305](https://github.com/andymai/gridfinity-layout-tool/issues/1305)) ([e548495](https://github.com/andymai/gridfinity-layout-tool/commit/e5484951614958ccf5d8acd09710114e106b2b01))
+
 ## [4.35.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.35.0...gridfinity-layout-tool-v4.35.1) (2026-03-30)
 
 
