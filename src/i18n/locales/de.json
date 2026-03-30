@@ -246,6 +246,7 @@
   "binDesigner.invalidDesignFile": "Ungültige Design-Datei",
   "binDesigner.labelTabs": "Etikettenhalter",
   "binDesigner.labelTabsUnavailableSlotted": "Nicht verfügbar für Schlitz-Bins",
+  "binDesigner.labelTabsUnavailableMinHeight": "Nicht genug Platz bei 2u Höhe",
   "binDesigner.listView": "Listenansicht",
   "binDesigner.load": "Laden",
   "binDesigner.loadSharedDesign": "Geteiltes Design laden",

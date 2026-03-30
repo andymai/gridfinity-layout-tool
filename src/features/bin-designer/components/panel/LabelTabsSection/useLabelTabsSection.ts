@@ -1,26 +1,32 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { GRIDFINITY } from '../../../constants';
+import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '../../../constants';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
 import type { LabelTabAlignment, LabelTabSupport } from '../../../types';
 
 export function useLabelTabsSection() {
-  const { compartments, label, width, wallThickness, updateLabel, params } = useDesignerStore(
-    useShallow((s) => ({
-      compartments: s.params.compartments,
-      label: s.params.label,
-      width: s.params.width,
-      wallThickness: s.params.wallThickness,
-      updateLabel: s.updateLabel,
-      params: s.params,
-    }))
-  );
+  const { compartments, label, width, height, wallThickness, updateLabel, params } =
+    useDesignerStore(
+      useShallow((s) => ({
+        compartments: s.params.compartments,
+        label: s.params.label,
+        width: s.params.width,
+        height: s.params.height,
+        wallThickness: s.params.wallThickness,
+        updateLabel: s.updateLabel,
+        params: s.params,
+      }))
+    );
   const t = useTranslation();
 
   const labelStatus = getFeatureStatus(params, 'label');
-  const isUnavailable = !labelStatus.available;
+  // Dimensional constraint: cavity too shallow for label tab support at min height.
+  // Handled here (not in constraint engine) because ConstraintRule.source requires a
+  // FeatureKey, and "height" is a dimension, not a toggleable feature.
+  const tooShort = height <= DESIGNER_CONSTRAINTS.MIN_HEIGHT;
+  const isUnavailable = !labelStatus.available || tooShort;
 
   const toggleLabelTabs = useCallback(() => {
     updateLabel({ enabled: !label.enabled });
@@ -77,7 +83,11 @@ export function useLabelTabsSection() {
     return parts.join(' \u00b7 ');
   }, [label.enabled, label.support, label.width, label.alignment, t]);
 
-  const disabledReason = labelStatus.reason ? t(labelStatus.reason) : undefined;
+  const disabledReason = tooShort
+    ? t('binDesigner.labelTabsUnavailableMinHeight')
+    : labelStatus.reason
+      ? t(labelStatus.reason)
+      : undefined;
 
   const meta = useMemo(
     () => ({

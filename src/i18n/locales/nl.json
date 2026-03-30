@@ -246,6 +246,7 @@
   "binDesigner.invalidDesignFile": "Ongeldig ontwerpbestand",
   "binDesigner.labelTabs": "Labeltabs",
   "binDesigner.labelTabsUnavailableSlotted": "Niet beschikbaar voor bins met sleuven",
+  "binDesigner.labelTabsUnavailableMinHeight": "Niet genoeg ruimte bij 2u hoogte",
   "binDesigner.listView": "Lijstweergave",
   "binDesigner.load": "Laden",
   "binDesigner.loadSharedDesign": "Gedeeld design laden",

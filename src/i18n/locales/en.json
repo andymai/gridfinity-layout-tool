@@ -247,6 +247,7 @@
   "binDesigner.invalidDesignFile": "Invalid design file",
   "binDesigner.labelTabs": "Label tabs",
   "binDesigner.labelTabsUnavailableSlotted": "Not available for slotted bins",
+  "binDesigner.labelTabsUnavailableMinHeight": "Not enough room at 2u height",
   "binDesigner.listView": "List view",
   "binDesigner.load": "Load",
   "binDesigner.loadSharedDesign": "Load Shared Design",

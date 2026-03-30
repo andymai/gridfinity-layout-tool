@@ -246,6 +246,7 @@
   "binDesigner.invalidDesignFile": "Fichier de design invalide",
   "binDesigner.labelTabs": "Onglets d'étiquette",
   "binDesigner.labelTabsUnavailableSlotted": "Non disponible pour les bacs à fentes",
+  "binDesigner.labelTabsUnavailableMinHeight": "Pas assez de place à 2u de hauteur",
   "binDesigner.listView": "Vue en liste",
   "binDesigner.load": "Charger",
   "binDesigner.loadSharedDesign": "Charger un design partagé",
