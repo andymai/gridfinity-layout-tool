@@ -81,6 +81,28 @@ describe('useLabelTabsSection', () => {
     expect(useDesignerStore.getState().params.label.alignment).toBe('center');
   });
 
+  it('disabledReason set when height is at minimum (2u)', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, height: 2 },
+    });
+
+    const { result } = renderHook(() => useLabelTabsSection());
+
+    expect(result.current.state.isUnavailable).toBe(true);
+    expect(result.current.meta.disabledReason).toBeDefined();
+  });
+
+  it('no disabledReason when height is above minimum', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, height: 3 },
+    });
+
+    const { result } = renderHook(() => useLabelTabsSection());
+
+    expect(result.current.state.isUnavailable).toBe(false);
+    expect(result.current.meta.disabledReason).toBeUndefined();
+  });
+
   it('computes tab width in mm', () => {
     const { result } = renderHook(() => useLabelTabsSection());
 
