@@ -246,6 +246,7 @@
   "binDesigner.invalidDesignFile": "Ugyldig designfil",
   "binDesigner.labelTabs": "Etikettfaner",
   "binDesigner.labelTabsUnavailableSlotted": "Ikke tilgjengelig for spor-bokser",
+  "binDesigner.labelTabsUnavailableMinHeight": "Ikke nok plass ved 2u høyde",
   "binDesigner.listView": "Listevisning",
   "binDesigner.load": "Last",
   "binDesigner.loadSharedDesign": "Last delt design",

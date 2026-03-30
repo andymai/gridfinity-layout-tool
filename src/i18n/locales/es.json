@@ -246,6 +246,7 @@
   "binDesigner.invalidDesignFile": "Archivo de diseño no válido",
   "binDesigner.labelTabs": "Pestañas de etiqueta",
   "binDesigner.labelTabsUnavailableSlotted": "No disponible para contenedores ranurados",
+  "binDesigner.labelTabsUnavailableMinHeight": "No hay suficiente espacio a 2u de altura",
   "binDesigner.listView": "Vista de lista",
   "binDesigner.load": "Cargar",
   "binDesigner.loadSharedDesign": "Cargar Diseño Compartido",

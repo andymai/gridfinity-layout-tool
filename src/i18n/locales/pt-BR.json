@@ -246,6 +246,7 @@
   "binDesigner.invalidDesignFile": "Arquivo de design inválido",
   "binDesigner.labelTabs": "Abas de etiqueta",
   "binDesigner.labelTabsUnavailableSlotted": "Não disponível para caixas com ranhuras",
+  "binDesigner.labelTabsUnavailableMinHeight": "Espaço insuficiente a 2u de altura",
   "binDesigner.listView": "Visualização em lista",
   "binDesigner.load": "Carregar",
   "binDesigner.loadSharedDesign": "Carregar Design Compartilhado",
