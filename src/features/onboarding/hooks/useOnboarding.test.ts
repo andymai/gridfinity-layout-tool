@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { afterEach, describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useOnboarding, resetOnboarding, syncOnboardingFlags } from './useOnboarding';
 import { useLayoutStore, useLibraryStore } from '@/core/store';
@@ -73,6 +73,42 @@ describe('useOnboarding', () => {
       initStoresWithBins(1);
       const { result } = renderHook(() => useOnboarding());
       expect(result.current.shouldShowWelcome).toBe(false);
+    });
+
+    describe('deep-link routes', () => {
+      const originalLocation = window.location;
+
+      afterEach(() => {
+        Object.defineProperty(window, 'location', {
+          value: originalLocation,
+          writable: true,
+        });
+      });
+
+      function setPathname(path: string) {
+        Object.defineProperty(window, 'location', {
+          value: { ...originalLocation, pathname: path },
+          writable: true,
+        });
+      }
+
+      it('does not show welcome on /designer route', () => {
+        setPathname('/designer');
+        const { result } = renderHook(() => useOnboarding());
+        expect(result.current.shouldShowWelcome).toBe(false);
+      });
+
+      it('does not show welcome on /baseplate route', () => {
+        setPathname('/baseplate');
+        const { result } = renderHook(() => useOnboarding());
+        expect(result.current.shouldShowWelcome).toBe(false);
+      });
+
+      it('auto-marks welcome seen for deep-link users to prevent later popup', () => {
+        setPathname('/designer');
+        renderHook(() => useOnboarding());
+        expect(localStorage.getItem('gridfinity-onboarding-welcome-seen')).toBe('true');
+      });
     });
   });
 
