@@ -582,7 +582,7 @@ export function PreviewCanvas() {
               enableDamping
               dampingFactor={0.12}
               rotateSpeed={0.8}
-              minDistance={20}
+              minDistance={isDesktop ? 20 : 5}
               maxDistance={800}
               maxPolarAngle={Math.PI * 0.85}
               minPolarAngle={Math.PI * 0.05}
