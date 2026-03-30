@@ -50,8 +50,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       brepjs:
-        specifier: 14.6.9
-        version: 14.6.9(brepjs-opencascade@0.15.6)(brepkit-wasm@2.33.0)
+        specifier: 15.2.2
+        version: 15.2.2(brepjs-opencascade@0.15.6)(brepkit-wasm@2.33.0)
       brepjs-opencascade:
         specifier: 0.15.6
         version: 0.15.6
@@ -275,8 +275,8 @@ packages:
   '@adobe/css-tools@4.4.4':
     resolution: {integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==}
 
-  '@apideck/better-ajv-errors@0.3.6':
-    resolution: {integrity: sha512-P+ZygBLZtkp0qqOAJJVX4oX/sFo5JR3eBWwwuqHHhK0GIgQOKWrAfiAaWX0aArHkRWHMuggFEgAZNxVPwPZYaA==}
+  '@apideck/better-ajv-errors@0.3.7':
+    resolution: {integrity: sha512-TajUJwGWbDwkCx/CZi7tRE8PVB7simCvKJfHUsSdvps+aTM/PDPP4gkLmKnc+x3CE//y9i/nj74GqdL/hwk7Iw==}
     engines: {node: '>=10'}
     peerDependencies:
       ajv: ^8.17.1
@@ -2997,16 +2997,19 @@ packages:
     resolution: {integrity: sha512-ZbniSoYWCk29Wl1pkA4Ua6O8ZxtQVdmOYqTcQhEnmySDjyNpUTBcj6GRkdaZ+gJwCb21hSdNp6FwNvD5MdzTvQ==}
     engines: {node: '>=24 <25'}
 
-  brepjs@14.6.9:
-    resolution: {integrity: sha512-5BkJ7e6qEHubZKF3fni7QXagsrTqTBippC458dwlKa2X4Ajt9qmS2oXURdAwCtJP8UxQITkk8jj+dx1UktlO7g==}
+  brepjs@15.2.2:
+    resolution: {integrity: sha512-5SeGzVTiRHbR7n3qHHqhMKxgdExf+LZp09QxsY76K8SUCEtfroeZmR7PG9pi5PMA7sJ1Eex1424uBvg0NAs+2A==}
     engines: {node: '>=24'}
     peerDependencies:
       brepjs-opencascade: ^0.5.1 || ^0.6.0 || ^0.7.0 || ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^0.14.0 || ^0.15.0
       brepkit-wasm: ^0.10.1 || ^1.0.0 || ^2.0.0
+      occt-wasm: ^0.1.0 || ^1.0.0
     peerDependenciesMeta:
       brepjs-opencascade:
         optional: true
       brepkit-wasm:
+        optional: true
+      occt-wasm:
         optional: true
 
   brepkit-wasm@2.33.0:
@@ -4036,9 +4039,6 @@ packages:
 
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
-
-  json-schema@0.4.0:
-    resolution: {integrity: sha512-es94M3nTIfsEPisRafak+HDLfHXnKBhV3vU5eqPcS3flIWqcxJWgXHXiey3YrpaNsanY5ei1VoYEbOzijuq9BA==}
 
   json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
@@ -5603,10 +5603,9 @@ snapshots:
 
   '@adobe/css-tools@4.4.4': {}
 
-  '@apideck/better-ajv-errors@0.3.6(ajv@8.18.0)':
+  '@apideck/better-ajv-errors@0.3.7(ajv@8.18.0)':
     dependencies:
       ajv: 8.18.0
-      json-schema: 0.4.0
       jsonpointer: 5.0.1
       leven: 3.1.0
 
@@ -8123,7 +8122,7 @@ snapshots:
 
   brepjs-opencascade@0.15.6: {}
 
-  brepjs@14.6.9(brepjs-opencascade@0.15.6)(brepkit-wasm@2.33.0):
+  brepjs@15.2.2(brepjs-opencascade@0.15.6)(brepkit-wasm@2.33.0):
     dependencies:
       flatbush: 4.5.1
       opentype.js: 1.3.4
@@ -9288,8 +9287,6 @@ snapshots:
   json-schema-traverse@0.4.1: {}
 
   json-schema-traverse@1.0.0: {}
-
-  json-schema@0.4.0: {}
 
   json-stable-stringify-without-jsonify@1.0.1: {}
 
@@ -10733,7 +10730,7 @@ snapshots:
 
   workbox-build@7.4.0(@types/babel__core@7.20.5):
     dependencies:
-      '@apideck/better-ajv-errors': 0.3.6(ajv@8.18.0)
+      '@apideck/better-ajv-errors': 0.3.7(ajv@8.18.0)
       '@babel/core': 7.29.0
       '@babel/preset-env': 7.29.2(@babel/core@7.29.0)
       '@babel/runtime': 7.29.2
