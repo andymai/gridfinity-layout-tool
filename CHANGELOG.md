@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.35.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.35.0...gridfinity-layout-tool-v4.35.1) (2026-03-30)
+
+
+### Bug Fixes
+
+* **onboarding:** skip welcome modal on deep-link routes ([#1301](https://github.com/andymai/gridfinity-layout-tool/issues/1301)) ([38550a0](https://github.com/andymai/gridfinity-layout-tool/commit/38550a01472e09ff955afd2effa0ee56c6bd8ef2))
+
 ## [4.35.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.34.4...gridfinity-layout-tool-v4.35.0) (2026-03-28)
 
 
