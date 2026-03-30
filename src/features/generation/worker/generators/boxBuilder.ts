@@ -238,10 +238,14 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
   };
 
   return withScope((scope: DisposalScope) => {
+    // Inset spine so the lip's outward extent (2.6mm from sweep contact point)
+    // lands flush with the bin's outer wall. Min corner radius of 2mm avoids
+    // OCCT boolean failures with complex cutout shapes (e.g., ellipses).
+    const spineInset = LIP_TAPER_WIDTH;
     const boxSketch = drawRoundedRectangle(
-      outerW,
-      outerD,
-      BOX_CORNER_RADIUS
+      outerW - 2 * spineInset,
+      outerD - 2 * spineInset,
+      Math.max(BOX_CORNER_RADIUS - spineInset, 2)
     ).sketchOnPlane() as Sketch;
     const swept = boxSketch.sweepSketch(topProfile, { withContact: true });
 
