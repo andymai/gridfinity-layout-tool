@@ -150,7 +150,7 @@ export function useOnboarding(): UseOnboardingReturn {
   const isDev = import.meta.env.DEV && !import.meta.env.VITEST;
 
   // Welcome: show only for brand-new users on the root route (1 layout, 0 bins, never seen).
-  // Deep links to /designer or /baseplate skip the modal so users land directly in that tool.
+  // Any non-root deep link skips the modal so users land directly in their target tool.
   const isRootRoute = window.location.pathname === '/';
   const shouldShowWelcome =
     !isDev && isRootRoute && !flags.welcomeSeen && entryCount === 1 && binCount === 0;
@@ -175,11 +175,11 @@ export function useOnboarding(): UseOnboardingReturn {
 
   // Auto-dismiss welcome for deep-link users so it doesn't appear on later navigation to /
   useEffect(() => {
-    if (!isRootRoute && !flags.welcomeSeen && entryCount === 1 && binCount === 0) {
+    if (!isDev && !isRootRoute && !flags.welcomeSeen && entryCount === 1 && binCount === 0) {
       setFlag(WELCOME_SEEN_KEY, 'true');
-      trackEvent('onboarding_welcome_completed', { method: 'deep_link_skip' });
+      trackEvent('onboarding_welcome_skipped', { method: 'deep_link' });
     }
-  }, [isRootRoute, flags.welcomeSeen, entryCount, binCount]);
+  }, [isDev, isRootRoute, flags.welcomeSeen, entryCount, binCount]);
 
   // Auto-dismiss draw tutorial when first bin is created
   useEffect(() => {
