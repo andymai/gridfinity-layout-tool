@@ -149,8 +149,11 @@ export function useOnboarding(): UseOnboardingReturn {
   // Exclude Vitest so unit tests can still verify onboarding logic.
   const isDev = import.meta.env.DEV && !import.meta.env.VITEST;
 
-  // Welcome: show only for brand-new users (1 layout, 0 bins, never seen)
-  const shouldShowWelcome = !isDev && !flags.welcomeSeen && entryCount === 1 && binCount === 0;
+  // Welcome: show only for brand-new users on the root route (1 layout, 0 bins, never seen).
+  // Deep links to /designer or /baseplate skip the modal so users land directly in that tool.
+  const isRootRoute = window.location.pathname === '/';
+  const shouldShowWelcome =
+    !isDev && isRootRoute && !flags.welcomeSeen && entryCount === 1 && binCount === 0;
 
   // Draw tutorial: show on any empty grid until user creates their first bin
   const shouldShowDrawTutorial = !isDev && !flags.drawTutorialSeen && binCount === 0;
@@ -169,6 +172,14 @@ export function useOnboarding(): UseOnboardingReturn {
       });
     }
   }, [binCount, flags.pulseDismissed, flags.welcomeSeen]);
+
+  // Auto-dismiss welcome for deep-link users so it doesn't appear on later navigation to /
+  useEffect(() => {
+    if (!isRootRoute && !flags.welcomeSeen && entryCount === 1 && binCount === 0) {
+      setFlag(WELCOME_SEEN_KEY, 'true');
+      trackEvent('onboarding_welcome_completed', { method: 'deep_link_skip' });
+    }
+  }, [isRootRoute, flags.welcomeSeen, entryCount, binCount]);
 
   // Auto-dismiss draw tutorial when first bin is created
   useEffect(() => {

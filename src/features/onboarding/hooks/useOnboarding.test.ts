@@ -74,6 +74,48 @@ describe('useOnboarding', () => {
       const { result } = renderHook(() => useOnboarding());
       expect(result.current.shouldShowWelcome).toBe(false);
     });
+
+    it('does not show welcome on /designer route', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...window.location, pathname: '/designer' },
+        writable: true,
+      });
+      const { result } = renderHook(() => useOnboarding());
+      expect(result.current.shouldShowWelcome).toBe(false);
+      // Restore
+      Object.defineProperty(window, 'location', {
+        value: { ...window.location, pathname: '/' },
+        writable: true,
+      });
+    });
+
+    it('does not show welcome on /baseplate route', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...window.location, pathname: '/baseplate' },
+        writable: true,
+      });
+      const { result } = renderHook(() => useOnboarding());
+      expect(result.current.shouldShowWelcome).toBe(false);
+      // Restore
+      Object.defineProperty(window, 'location', {
+        value: { ...window.location, pathname: '/' },
+        writable: true,
+      });
+    });
+
+    it('auto-marks welcome seen for deep-link users to prevent later popup', () => {
+      Object.defineProperty(window, 'location', {
+        value: { ...window.location, pathname: '/designer' },
+        writable: true,
+      });
+      renderHook(() => useOnboarding());
+      expect(localStorage.getItem('gridfinity-onboarding-welcome-seen')).toBe('true');
+      // Restore
+      Object.defineProperty(window, 'location', {
+        value: { ...window.location, pathname: '/' },
+        writable: true,
+      });
+    });
   });
 
   describe('shouldShowDrawTutorial', () => {
