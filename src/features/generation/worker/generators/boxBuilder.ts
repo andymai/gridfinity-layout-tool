@@ -264,9 +264,10 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
 /**
  * Build the stacking lip at the top of the bin.
  *
- * Uses kernel-optimized construction:
- * - brepkit: loft + boolean cut (analytic surfaces, avoids slow shell)
- * - OCCT: sweep + fillet (robust, avoids loft-shell failures)
+ * Uses loft-cut for all kernels: constructs explicit cross-sections at each
+ * profile breakpoint so the lip matches the box outer bounds exactly.
+ * Falls back to sweep if the loft fails (produces oversized lip on non-square
+ * bins due to OCCT profile orientation issues — logged as a warning).
  *
  * Profile per Gridfinity spec v5: 0.7mm + 1.8mm + 1.9mm = 4.4mm total height.
  * Built at Z=0 locally, caller translates to wallHeight.
@@ -292,10 +293,8 @@ export function buildTopShape(
   const outerW = gridW * gridUnitMm - CLEARANCE;
   const outerD = gridD * gridUnitMm - CLEARANCE;
 
-  // Use loft-cut for all kernels. The loft constructs explicit cross-sections at
-  // each profile breakpoint, guaranteeing the lip never exceeds box outer bounds.
-  // The sweep path (buildTopShapeSweep) produces a 2.6mm overhang on non-square
-  // bins due to profile orientation issues in OCCT's BRepOffsetAPI_MakePipeShell.
+  // Loft-cut for all kernels — explicit cross-sections keep the lip within box
+  // bounds. Sweep fallback may overshoot on non-square bins (OCCT profile bug).
   let result: Shape3D;
   try {
     result = buildTopShapeLoft(outerW, outerD, includeLip);

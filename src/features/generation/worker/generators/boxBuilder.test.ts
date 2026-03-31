@@ -110,6 +110,8 @@ describe('buildTopShape', () => {
 
       expect(lb.xMax - bb.xMax).toBeLessThanOrEqual(TOLERANCE);
       expect(lb.yMax - bb.yMax).toBeLessThanOrEqual(TOLERANCE);
+      expect(bb.xMin - lb.xMin).toBeLessThanOrEqual(TOLERANCE);
+      expect(bb.yMin - lb.yMin).toBeLessThanOrEqual(TOLERANCE);
     }
   }, 60000);
 });
