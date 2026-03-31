@@ -21,6 +21,7 @@ import {
   edgeFinder,
   getBounds,
   shell,
+  getKernel,
   withScope,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Plane, Vec3, Sketch, DisposalScope } from 'brepjs';
@@ -264,10 +265,9 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
 /**
  * Build the stacking lip at the top of the bin.
  *
- * Uses loft-cut for all kernels: constructs explicit cross-sections at each
- * profile breakpoint so the lip matches the box outer bounds exactly.
- * Falls back to sweep if the loft fails (produces oversized lip on non-square
- * bins due to OCCT profile orientation issues — logged as a warning).
+ * Uses kernel-optimized construction:
+ * - brepkit: loft + boolean cut (analytic surfaces, avoids slow shell)
+ * - OCCT: sweep + fillet (robust, avoids loft-shell failures)
  *
  * Profile per Gridfinity spec v5: 0.7mm + 1.8mm + 1.9mm = 4.4mm total height.
  * Built at Z=0 locally, caller translates to wallHeight.
@@ -279,7 +279,7 @@ export function buildTopShape(
   gridUnitMm: number = SIZE
 ): Shape3D {
   const lipKey = buildCacheKey(
-    'v3',
+    'v2',
     quantize(gridW),
     quantize(gridD),
     quantize(gridUnitMm),
@@ -293,14 +293,20 @@ export function buildTopShape(
   const outerW = gridW * gridUnitMm - CLEARANCE;
   const outerD = gridD * gridUnitMm - CLEARANCE;
 
-  // Loft-cut for all kernels — explicit cross-sections keep the lip within box
-  // bounds. Sweep fallback may overshoot on non-square bins (OCCT profile bug).
   let result: Shape3D;
-  try {
-    result = buildTopShapeLoft(outerW, outerD, includeLip);
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
-    console.warn(`[boxBuilder] loft failed, falling back to sweep: ${msg}`);
+  if (getKernel().kernelId === 'brepkit') {
+    // brepkit: loft-cut is ~5-50x faster than sweep (analytic surfaces)
+    try {
+      result = buildTopShapeLoft(outerW, outerD, includeLip);
+    } catch (e: unknown) {
+      // Loft failed — fall back to sweep path. Log for diagnostics since this
+      // indicates a kernel regression (loft should always succeed).
+      const msg = e instanceof Error ? e.message : String(e);
+      console.warn(`[boxBuilder] brepkit loft failed, falling back to sweep: ${msg}`);
+      result = buildTopShapeSweep(outerW, outerD, includeLip);
+    }
+  } else {
+    // OCCT: sweep is faster and more robust (loft-shell fails, loft-cut is slow)
     result = buildTopShapeSweep(outerW, outerD, includeLip);
   }
 
