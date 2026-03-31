@@ -21,7 +21,6 @@ import {
   edgeFinder,
   getBounds,
   shell,
-  getKernel,
   withScope,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Plane, Vec3, Sketch, DisposalScope } from 'brepjs';
@@ -279,7 +278,7 @@ export function buildTopShape(
   gridUnitMm: number = SIZE
 ): Shape3D {
   const lipKey = buildCacheKey(
-    'v2',
+    'v3',
     quantize(gridW),
     quantize(gridD),
     quantize(gridUnitMm),
@@ -293,20 +292,16 @@ export function buildTopShape(
   const outerW = gridW * gridUnitMm - CLEARANCE;
   const outerD = gridD * gridUnitMm - CLEARANCE;
 
+  // Use loft-cut for all kernels. The loft constructs explicit cross-sections at
+  // each profile breakpoint, guaranteeing the lip never exceeds box outer bounds.
+  // The sweep path (buildTopShapeSweep) produces a 2.6mm overhang on non-square
+  // bins due to profile orientation issues in OCCT's BRepOffsetAPI_MakePipeShell.
   let result: Shape3D;
-  if (getKernel().kernelId === 'brepkit') {
-    // brepkit: loft-cut is ~5-50x faster than sweep (analytic surfaces)
-    try {
-      result = buildTopShapeLoft(outerW, outerD, includeLip);
-    } catch (e: unknown) {
-      // Loft failed — fall back to sweep path. Log for diagnostics since this
-      // indicates a kernel regression (loft should always succeed).
-      const msg = e instanceof Error ? e.message : String(e);
-      console.warn(`[boxBuilder] brepkit loft failed, falling back to sweep: ${msg}`);
-      result = buildTopShapeSweep(outerW, outerD, includeLip);
-    }
-  } else {
-    // OCCT: sweep is faster and more robust (loft-shell fails, loft-cut is slow)
+  try {
+    result = buildTopShapeLoft(outerW, outerD, includeLip);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.warn(`[boxBuilder] loft failed, falling back to sweep: ${msg}`);
     result = buildTopShapeSweep(outerW, outerD, includeLip);
   }
 
