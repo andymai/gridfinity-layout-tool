@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.35.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.35.2...gridfinity-layout-tool-v4.35.3) (2026-03-31)
+
+
+### Bug Fixes
+
+* **generation:** stacking lip overhang on rectangular bins ([#1306](https://github.com/andymai/gridfinity-layout-tool/issues/1306)) ([76832cb](https://github.com/andymai/gridfinity-layout-tool/commit/76832cb8e0434ea7116da4e742f07d8133afddbd))
+
 ## [4.35.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.35.1...gridfinity-layout-tool-v4.35.2) (2026-03-30)
 
 
