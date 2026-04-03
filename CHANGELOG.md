@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.36.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.35.3...gridfinity-layout-tool-v4.36.0) (2026-04-03)
+
+
+### Features
+
+* **labs:** experimental kernel disclaimer in 3D previews ([#1311](https://github.com/andymai/gridfinity-layout-tool/issues/1311)) ([36aa91b](https://github.com/andymai/gridfinity-layout-tool/commit/36aa91b0cda3b41684d2942c37244e6aed1063a3))
+
 ## [4.35.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.35.2...gridfinity-layout-tool-v4.35.3) (2026-03-31)
 
 
