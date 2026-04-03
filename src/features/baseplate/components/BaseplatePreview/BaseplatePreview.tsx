@@ -33,7 +33,7 @@ import { useBaseplatePresetTransition } from './useBaseplatePresetTransition';
 import { BaseplatePreviewControls } from './BaseplatePreviewControls';
 import { overlayStatusText } from './overlayStatusText';
 import { useGenerationElapsed } from './useGenerationElapsed';
-import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge/ExperimentalKernelBadge';
+import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge';
 
 interface BaseplatePreviewProps {
   width: number;

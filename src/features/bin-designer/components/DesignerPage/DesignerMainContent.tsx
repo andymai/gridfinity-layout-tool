@@ -15,7 +15,7 @@ import { CutoutWorkspace } from '@/features/bin-designer/components/CutoutWorksp
 import { ResizeDivider } from '@/features/bin-designer/components/CutoutWorkspace/ResizeDivider';
 import { loadSplitRatio } from '@/features/bin-designer/components/CutoutWorkspace/splitRatioStorage';
 import { CutoutDesktopOnlyBanner } from './CutoutDesktopOnlyBanner';
-import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge/ExperimentalKernelBadge';
+import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge';
 
 interface DesignerMainContentProps {
   isDesktop: boolean;
