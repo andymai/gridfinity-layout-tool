@@ -38,12 +38,14 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   const maxDimension = Math.max(params.width, params.depth) * gridUnit;
 
   const hasLip = params.base.stackingLip;
+  // Safety: LIP_OVERLAP (0.1mm) < LIP_SMALL_TAPER (0.7mm) so interiorHeight
+  // already clears the actual lip base at wallHeight - LIP_OVERLAP.
   const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
 
   // Shell cache key — versioned + quantized for deterministic matching
   const shellKey = compactKey(
     buildCacheKey(
-      'v4',
+      'v5',
       quantize(params.width),
       quantize(params.depth),
       quantize(gridUnit),

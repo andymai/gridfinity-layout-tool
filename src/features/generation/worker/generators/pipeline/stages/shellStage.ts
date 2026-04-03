@@ -15,6 +15,7 @@ import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket } from '../../socketBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
 import { getShellCache, setShellCache } from '../../shapeCache';
+import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
 
@@ -61,7 +62,7 @@ export const shellStage: PipelineStage = {
               translate(buildTopShape(params.width, params.depth, true, params.gridUnitMm), [
                 0,
                 0,
-                dim.wallHeight,
+                dim.wallHeight - LIP_OVERLAP,
               ])
             );
             collectOrigins(top, FeatureTag.LIP, originToTag);
@@ -109,7 +110,7 @@ export const shellStage: PipelineStage = {
             translate(buildTopShape(params.width, params.depth, true, params.gridUnitMm), [
               0,
               0,
-              dim.wallHeight,
+              dim.wallHeight - LIP_OVERLAP,
             ])
           );
           collectOrigins(top, FeatureTag.LIP, originToTag);
