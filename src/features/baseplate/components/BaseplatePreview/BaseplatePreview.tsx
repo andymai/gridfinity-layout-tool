@@ -33,6 +33,7 @@ import { useBaseplatePresetTransition } from './useBaseplatePresetTransition';
 import { BaseplatePreviewControls } from './BaseplatePreviewControls';
 import { overlayStatusText } from './overlayStatusText';
 import { useGenerationElapsed } from './useGenerationElapsed';
+import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge/ExperimentalKernelBadge';
 
 interface BaseplatePreviewProps {
   width: number;
@@ -147,6 +148,8 @@ export function BaseplatePreview({
       role="img"
       aria-label={t('baseplate.title')}
     >
+      <ExperimentalKernelBadge />
+
       {/* Initial load skeleton -- matches bin designer PreviewSkeleton */}
       {isWasmLoading && !hasAnyMesh && (
         <div
