@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.36.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.36.1...gridfinity-layout-tool-v4.36.2) (2026-04-03)
+
+
+### Bug Fixes
+
+* **ci:** delete stale scenario snapshots for CI regeneration ([3d1fccb](https://github.com/andymai/gridfinity-layout-tool/commit/3d1fccb77409d78373100b47b132d9c677b277f8))
+
 ## [4.36.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.36.0...gridfinity-layout-tool-v4.36.1) (2026-04-03)
 
 
