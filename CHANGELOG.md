@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.36.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.36.0...gridfinity-layout-tool-v4.36.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* **generation:** eliminate wall-to-lip seam ([#1314](https://github.com/andymai/gridfinity-layout-tool/issues/1314)) ([54210ce](https://github.com/andymai/gridfinity-layout-tool/commit/54210cefb0b14f82eafe9e8700f259b108b6667b))
+
 ## [4.36.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.35.3...gridfinity-layout-tool-v4.36.0) (2026-04-03)
 
 
