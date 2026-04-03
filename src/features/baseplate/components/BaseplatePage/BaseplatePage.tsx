@@ -29,6 +29,7 @@ import { buildFullParams } from '../../utils/buildFullParams';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
 import { BaseplatePreview } from '../BaseplatePreview/BaseplatePreview';
 import { ExportDialog } from '@/shared/components/ExportDialog';
+import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge';
 import type { ExportFileFormat } from '@/shared/types/bin';
 
 /** File extension display for each format */
@@ -204,12 +205,18 @@ export function BaseplatePage() {
           <aside className="w-72 shrink-0 overflow-hidden border-r border-stroke-subtle bg-surface-secondary">
             {panel}
           </aside>
-          <main className="relative flex-1 overflow-hidden">{preview}</main>
+          <main className="relative flex-1 overflow-hidden">
+            {preview}
+            <ExperimentalKernelBadge />
+          </main>
         </div>
       ) : isLandscape ? (
         /* Landscape tablet/mobile: side-by-side, panel right */
         <div className="flex flex-1 overflow-hidden">
-          <main className="relative flex-1 overflow-hidden">{preview}</main>
+          <main className="relative flex-1 overflow-hidden">
+            {preview}
+            <ExperimentalKernelBadge />
+          </main>
           <aside className="w-64 shrink-0 overflow-hidden border-l border-stroke-subtle bg-surface-secondary">
             {panel}
           </aside>
@@ -222,6 +229,7 @@ export function BaseplatePage() {
             style={{ height: isMobile ? '40vh' : '50vh' }}
           >
             {preview}
+            <ExperimentalKernelBadge />
           </main>
           <aside className="flex-1 overflow-hidden bg-surface-secondary">{panel}</aside>
         </div>

@@ -1566,6 +1566,11 @@ const en: Record<string, string> = {
   'labs.tryExperimentalFeatures': 'Try early access features',
   'labs.whatsNew': 'Now for everyone ({count})',
 
+  // Labs — Experimental Kernel Badge
+  'labs.experimentalKernel.title': 'Alternative 3D engine active',
+  'labs.experimentalKernel.warning': 'Exports may have geometry defects.',
+  'labs.experimentalKernel.labsSettings': 'Labs settings',
+
   // Layout (Collaboration)
   'layout.collaborativeEditingIsNotActive': 'Collaborative editing is not active',
 
