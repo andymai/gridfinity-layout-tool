@@ -93,4 +93,25 @@ describe('buildTopShape', () => {
     const withoutLip = meshShape(buildTopShape(2, 2, false));
     expect(withLip.triangles.length).toBeGreaterThan(withoutLip.triangles.length);
   }, 60000);
+
+  it('rectangular lip does not exceed box bounds', async () => {
+    const { getBounds } = await import('brepjs');
+    const TOLERANCE = 0.02;
+
+    for (const [gw, gd] of [
+      [1, 2],
+      [1, 4],
+      [2, 3],
+    ] as const) {
+      const lip = buildTopShape(gw, gd, true);
+      const box = buildBinBox(gw, gd, 16, 1.2, false);
+      const lb = getBounds(lip as never);
+      const bb = getBounds(box as never);
+
+      expect(lb.xMax - bb.xMax).toBeLessThanOrEqual(TOLERANCE);
+      expect(lb.yMax - bb.yMax).toBeLessThanOrEqual(TOLERANCE);
+      expect(bb.xMin - lb.xMin).toBeLessThanOrEqual(TOLERANCE);
+      expect(bb.yMin - lb.yMin).toBeLessThanOrEqual(TOLERANCE);
+    }
+  }, 60000);
 });
