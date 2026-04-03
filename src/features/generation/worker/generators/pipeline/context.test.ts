@@ -104,13 +104,13 @@ describe('createInitialContext', () => {
     expect(ctx.dimensions.wallHeight).toBe(21); // No socket deduction for flat
   });
 
-  it('produces versioned shellKey with v4 prefix including gridUnitMm', () => {
+  it('produces versioned shellKey with v5 prefix including gridUnitMm', () => {
     const ctx = createInitialContext(createTestParams());
 
-    // shellKey uses buildCacheKey with v4 prefix, gridUnitMm, and quantized floats
+    // shellKey uses buildCacheKey with v5 prefix, gridUnitMm, and quantized floats
     // forExport is no longer in the key since shell geometry is identical for preview/export
     const expected = [
-      'v4',
+      'v5',
       2,
       2,
       42, // gridUnitMm

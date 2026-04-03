@@ -21,6 +21,15 @@ export const LIP_VERTICAL_PART = GRIDFINITY.LIP_VERTICAL_PART; // 1.8mm vertical
 export const LIP_BIG_TAPER = GRIDFINITY.LIP_BIG_TAPER; // 1.9mm top chamfer
 export const LIP_HEIGHT = LIP_SMALL_TAPER + LIP_VERTICAL_PART + LIP_BIG_TAPER; // 4.4mm total
 export const LIP_TAPER_WIDTH = LIP_SMALL_TAPER + LIP_BIG_TAPER; // 2.6mm horizontal inset
+
+/**
+ * Z overlap (mm) when fusing the stacking lip onto the bin shell.
+ * Prevents a coplanar face at Z=wallHeight that the boolean would preserve
+ * as a visible seam. Must remain < LIP_SMALL_TAPER (0.7mm) so that
+ * interiorHeight still clears the actual lip base.
+ */
+export const LIP_OVERLAP = 0.1;
+
 /** Corner radius for baseplate outer perimeter (same as socket corner radius) */
 export const PLATE_CORNER_RADIUS = CORNER_RADIUS;
 

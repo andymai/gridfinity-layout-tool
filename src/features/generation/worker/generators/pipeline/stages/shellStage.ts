@@ -15,16 +15,9 @@ import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket } from '../../socketBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
 import { getShellCache, setShellCache } from '../../shapeCache';
+import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
-
-/**
- * Small Z offset (mm) to push the lip below the box wall top so they overlap
- * instead of meeting at a coplanar face. Without this, the fuse produces a
- * visible seam at the wall-to-lip junction. 0.1mm is sub-layer-height for
- * FDM so it has no effect on printed geometry.
- */
-const LIP_OVERLAP = 0.1;
 
 export const shellStage: PipelineStage = {
   name: 'base',
