@@ -18,6 +18,14 @@ import { getShellCache, setShellCache } from '../../shapeCache';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
 
+/**
+ * Small Z offset (mm) to push the lip below the box wall top so they overlap
+ * instead of meeting at a coplanar face. Without this, the fuse produces a
+ * visible seam at the wall-to-lip junction. 0.1mm is sub-layer-height for
+ * FDM so it has no effect on printed geometry.
+ */
+const LIP_OVERLAP = 0.1;
+
 export const shellStage: PipelineStage = {
   name: 'base',
   progressValue: 0.1,
@@ -61,7 +69,7 @@ export const shellStage: PipelineStage = {
               translate(buildTopShape(params.width, params.depth, true, params.gridUnitMm), [
                 0,
                 0,
-                dim.wallHeight,
+                dim.wallHeight - LIP_OVERLAP,
               ])
             );
             collectOrigins(top, FeatureTag.LIP, originToTag);
@@ -109,7 +117,7 @@ export const shellStage: PipelineStage = {
             translate(buildTopShape(params.width, params.depth, true, params.gridUnitMm), [
               0,
               0,
-              dim.wallHeight,
+              dim.wallHeight - LIP_OVERLAP,
             ])
           );
           collectOrigins(top, FeatureTag.LIP, originToTag);

@@ -43,7 +43,7 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // Shell cache key — versioned + quantized for deterministic matching
   const shellKey = compactKey(
     buildCacheKey(
-      'v4',
+      'v5',
       quantize(params.width),
       quantize(params.depth),
       quantize(gridUnit),
