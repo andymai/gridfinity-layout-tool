@@ -42,13 +42,14 @@ describe('ExperimentalKernelBadge', () => {
   });
 
   it('renders Labs settings link that opens the drawer', async () => {
+    const user = userEvent.setup();
     enableBrepkit();
     render(<ExperimentalKernelBadge />);
 
     const link = screen.getByRole('button', { name: /labs settings/i });
     expect(link).toBeInTheDocument();
 
-    await userEvent.click(link);
+    await user.click(link);
     expect(useLabsStore.getState().isDrawerOpen).toBe(true);
   });
 });
