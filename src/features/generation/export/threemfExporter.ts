@@ -80,7 +80,7 @@ export function export3MF(
   options: ThreeMFOptions
 ): Blob {
   const buffer = build3MFBuffer(vertices, normals, options);
-  return new Blob([buffer.buffer.slice(0) as ArrayBuffer], {
+  return new Blob([toArrayBuffer(buffer)], {
     type: 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml',
   });
 }
@@ -97,7 +97,7 @@ export function export3MFMultiObject(
   options: ThreeMFOptions
 ): Blob {
   const buffer = build3MFMultiObjectBuffer(objects, options);
-  return new Blob([buffer.buffer.slice(0) as ArrayBuffer], {
+  return new Blob([toArrayBuffer(buffer)], {
     type: 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml',
   });
 }
@@ -425,6 +425,18 @@ function escapeXml(str: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+/**
+ * Safely extract the viewed portion of a Uint8Array as an ArrayBuffer.
+ *
+ * fflate's browser WASM path can return a Uint8Array backed by a larger
+ * pre-allocated ArrayBuffer. Slicing to the view's range avoids including
+ * trailing garbage, and produces an ArrayBuffer (not ArrayBufferLike)
+ * which satisfies the TS6 BlobPart constraint.
+ */
+function toArrayBuffer(view: Uint8Array): ArrayBuffer {
+  return view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength) as ArrayBuffer;
 }
 
 /**
