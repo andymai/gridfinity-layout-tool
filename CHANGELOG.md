@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.36.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.36.2...gridfinity-layout-tool-v4.36.3) (2026-04-04)
+
+
+### Bug Fixes
+
+* **ci:** pass --update on main so vitest writes fresh snapshots ([10be545](https://github.com/andymai/gridfinity-layout-tool/commit/10be545cd3b570a55e2292d1492f860451dfc05b))
+
 ## [4.36.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.36.1...gridfinity-layout-tool-v4.36.2) (2026-04-03)
 
 
