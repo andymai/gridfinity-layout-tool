@@ -547,6 +547,109 @@ describe('threemfExporter', () => {
     });
   });
 
+  describe('realistic mesh sizes', () => {
+    /** Generate a box-like mesh with the given number of triangles. */
+    function createLargeMesh(triangleCount: number) {
+      const vertices = new Float32Array(triangleCount * 9);
+      const normals = new Float32Array(triangleCount * 9);
+
+      for (let i = 0; i < triangleCount; i++) {
+        const base = i * 9;
+        // Spread vertices across a realistic coordinate range (0-200mm)
+        const ox = (i % 50) * 4;
+        const oy = Math.floor(i / 50) * 4;
+        const oz = (i % 7) * 3;
+
+        vertices[base] = ox;
+        vertices[base + 1] = oy;
+        vertices[base + 2] = oz;
+        vertices[base + 3] = ox + 4;
+        vertices[base + 4] = oy;
+        vertices[base + 5] = oz;
+        vertices[base + 6] = ox + 2;
+        vertices[base + 7] = oy + 4;
+        vertices[base + 8] = oz + 3;
+
+        normals[base] = 0;
+        normals[base + 1] = 0;
+        normals[base + 2] = 1;
+        normals[base + 3] = 0;
+        normals[base + 4] = 0;
+        normals[base + 5] = 1;
+        normals[base + 6] = 0;
+        normals[base + 7] = 0;
+        normals[base + 8] = 1;
+      }
+      return { vertices, normals };
+    }
+
+    it('handles a 5000-triangle mesh (typical bin)', () => {
+      const { vertices, normals } = createLargeMesh(5000);
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'gridfinity-2x3x6',
+        printSettings: {
+          layerHeight: 0.2,
+          infillPercent: 15,
+          material: 'PLA',
+          supportRequired: false,
+        },
+      });
+
+      const files = unzipSync(buffer);
+      const model = strFromU8(files['3D/3dmodel.model']);
+
+      const vertexMatches = model.match(/<vertex /g);
+      const triangleMatches = model.match(/<triangle /g);
+      expect(vertexMatches!.length).toBeGreaterThan(0);
+      expect(vertexMatches!.length).toBeLessThanOrEqual(5000 * 3); // deduplication reduces this
+      expect(triangleMatches).toHaveLength(5000);
+
+      // Verify no NaN or Infinity snuck in
+      expect(model).not.toContain('NaN');
+      expect(model).not.toContain('Infinity');
+    });
+
+    it('handles a 20000-triangle mesh (complex bin with features)', () => {
+      const { vertices, normals } = createLargeMesh(20000);
+      const buffer = build3MFBuffer(vertices, normals, { name: 'complex-bin' });
+
+      const files = unzipSync(buffer);
+      const model = strFromU8(files['3D/3dmodel.model']);
+      const triangleMatches = model.match(/<triangle /g);
+      expect(triangleMatches).toHaveLength(20000);
+    });
+
+    it('multi-object with large meshes for bin + dividers', () => {
+      const binMesh = createLargeMesh(8000);
+      const divHMesh = createLargeMesh(500);
+      const divVMesh = createLargeMesh(500);
+
+      const buffer = build3MFMultiObjectBuffer(
+        [
+          { vertices: binMesh.vertices, normals: binMesh.normals, name: 'Bin 4x3x6' },
+          {
+            vertices: divHMesh.vertices,
+            normals: divHMesh.normals,
+            name: 'Divider Horizontal',
+          },
+          { vertices: divVMesh.vertices, normals: divVMesh.normals, name: 'Divider Vertical' },
+        ],
+        { name: 'slotted-bin' }
+      );
+
+      const files = unzipSync(buffer);
+      const model = strFromU8(files['3D/3dmodel.model']);
+
+      // 3 objects + 3 build items
+      expect((model.match(/<object /g) ?? []).length).toBe(3);
+      expect((model.match(/<item /g) ?? []).length).toBe(3);
+
+      // Total triangles across all objects
+      const triangleMatches = model.match(/<triangle /g);
+      expect(triangleMatches).toHaveLength(9000);
+    });
+  });
+
   describe('OPC relationships', () => {
     it('references 3D model in relationships', () => {
       const { vertices, normals } = createSingleTriangle();
