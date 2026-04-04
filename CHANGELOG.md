@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.36.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.36.5...gridfinity-layout-tool-v4.36.6) (2026-04-04)
+
+
+### Bug Fixes
+
+* **ci:** pass -u on PR shards so missing snapshots don't fail ([#1321](https://github.com/andymai/gridfinity-layout-tool/issues/1321)) ([b456ba4](https://github.com/andymai/gridfinity-layout-tool/commit/b456ba4a11a0dbae0ce07557ab71b86de4fd6e78))
+
 ## [4.36.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.36.4...gridfinity-layout-tool-v4.36.5) (2026-04-04)
 
 
