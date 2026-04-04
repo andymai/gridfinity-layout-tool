@@ -91,8 +91,8 @@ jobs:
           SHARD: ${{ matrix.shard }}
         run: |
           if [ "$GIT_REF" = "refs/heads/main" ]; then
-            echo "Running with coverage (main branch, --update to accept new snapshots)"
-            pnpm run test:coverage -- --update
+            echo "Running with coverage (main branch, -u to accept new snapshots)"
+            pnpm vitest run --coverage -u
           else
             echo "Running without coverage (PR, shard $SHARD)"
             pnpm run test:run -- --shard="$SHARD"
