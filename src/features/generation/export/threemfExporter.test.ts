@@ -3,7 +3,9 @@ import { describe, it, expect } from 'vitest';
 import { unzipSync, strFromU8 } from 'fflate';
 import {
   export3MF,
+  export3MFMultiObject,
   build3MFBuffer,
+  build3MFMultiObjectBuffer,
   deduplicateVertices,
   estimate3MFFileSize,
 } from '@/features/generation/export/threemfExporter';
@@ -446,6 +448,102 @@ describe('threemfExporter', () => {
 
       expect(model).not.toContain('basematerials');
       expect(model).not.toContain('pid=');
+    });
+  });
+
+  describe('multi-object 3MF', () => {
+    function createSingleTriangle() {
+      const vertices = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]);
+      return { vertices, normals };
+    }
+
+    it('produces a valid ZIP with multiple objects', () => {
+      const tri = createSingleTriangle();
+      const objects = [
+        { vertices: tri.vertices, normals: tri.normals, name: 'Bin 2x2x3' },
+        { vertices: tri.vertices, normals: tri.normals, name: 'Divider Horizontal' },
+      ];
+      const buffer = build3MFMultiObjectBuffer(objects, { name: 'test' });
+      const files = unzipSync(buffer);
+      const model = strFromU8(files['3D/3dmodel.model']);
+
+      expect(model).toContain('object id="1"');
+      expect(model).toContain('object id="2"');
+      expect(model).toContain('name="Bin 2x2x3"');
+      expect(model).toContain('name="Divider Horizontal"');
+    });
+
+    it('emits build items for each object', () => {
+      const tri = createSingleTriangle();
+      const objects = [
+        { vertices: tri.vertices, normals: tri.normals, name: 'A' },
+        { vertices: tri.vertices, normals: tri.normals, name: 'B' },
+        { vertices: tri.vertices, normals: tri.normals, name: 'C' },
+      ];
+      const buffer = build3MFMultiObjectBuffer(objects, { name: 'multi' });
+      const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
+
+      expect(model).toContain('objectid="1"');
+      expect(model).toContain('objectid="2"');
+      expect(model).toContain('objectid="3"');
+    });
+
+    it('assigns sequential IDs with per-object basematerials', () => {
+      const tri = createSingleTriangle();
+      const objects = [
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'Colored Bin',
+          colorConfig: {
+            materials: [{ name: 'Red', color: '#ff0000' }],
+            triangleMaterialIndices: [0],
+          },
+        },
+        { vertices: tri.vertices, normals: tri.normals, name: 'Divider' },
+      ];
+      const buffer = build3MFMultiObjectBuffer(objects, { name: 'test' });
+      const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
+
+      // basematerials=1, colored object=2, plain object=3
+      expect(model).toContain('basematerials id="1"');
+      expect(model).toContain('object id="2"');
+      expect(model).toContain('object id="3"');
+      expect(model).toContain('objectid="2"');
+      expect(model).toContain('objectid="3"');
+    });
+
+    it('export3MFMultiObject produces a Blob with correct MIME', () => {
+      const tri = createSingleTriangle();
+      const blob = export3MFMultiObject(
+        [{ vertices: tri.vertices, normals: tri.normals, name: 'test' }],
+        { name: 'test' }
+      );
+      expect(blob).toBeInstanceOf(Blob);
+      expect(blob.type).toBe('application/vnd.ms-package.3dmanufacturing-3dmodel+xml');
+      expect(blob.size).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Blob correctness', () => {
+    it('produces valid ZIP even when Uint8Array is a sub-view of a larger buffer', async () => {
+      const { vertices, normals } = createSingleTriangle();
+      const blob = export3MF(vertices, normals, { name: 'subview-test' });
+
+      // Read back the blob and verify it's a valid ZIP
+      const arrayBuffer = await blob.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+
+      // ZIP magic bytes: PK\x03\x04
+      expect(bytes[0]).toBe(0x50); // P
+      expect(bytes[1]).toBe(0x4b); // K
+      expect(bytes[2]).toBe(0x03);
+      expect(bytes[3]).toBe(0x04);
+
+      // Should be extractable
+      const files = unzipSync(bytes);
+      expect(files['3D/3dmodel.model']).toBeDefined();
     });
   });
 

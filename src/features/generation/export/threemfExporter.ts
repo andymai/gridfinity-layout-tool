@@ -80,7 +80,7 @@ export function export3MF(
   options: ThreeMFOptions
 ): Blob {
   const buffer = build3MFBuffer(vertices, normals, options);
-  return new Blob([buffer.buffer.slice(0) as ArrayBuffer], {
+  return new Blob([buffer], {
     type: 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml',
   });
 }
@@ -97,7 +97,7 @@ export function export3MFMultiObject(
   options: ThreeMFOptions
 ): Blob {
   const buffer = build3MFMultiObjectBuffer(objects, options);
-  return new Blob([buffer.buffer.slice(0) as ArrayBuffer], {
+  return new Blob([buffer], {
     type: 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml',
   });
 }
