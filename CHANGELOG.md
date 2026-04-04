@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.36.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.36.4...gridfinity-layout-tool-v4.36.5) (2026-04-04)
+
+
+### Bug Fixes
+
+* **export:** fix 3MF blob corruption from unsafe ArrayBuffer access ([#1319](https://github.com/andymai/gridfinity-layout-tool/issues/1319)) ([0390765](https://github.com/andymai/gridfinity-layout-tool/commit/039076536064c67b14384e91ad32e683fcd4de96))
+
 ## [4.36.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.36.3...gridfinity-layout-tool-v4.36.4) (2026-04-04)
 
 
