@@ -452,12 +452,6 @@ describe('threemfExporter', () => {
   });
 
   describe('multi-object 3MF', () => {
-    function createSingleTriangle() {
-      const vertices = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
-      const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]);
-      return { vertices, normals };
-    }
-
     it('produces a valid ZIP with multiple objects', () => {
       const tri = createSingleTriangle();
       const objects = [
@@ -527,11 +521,10 @@ describe('threemfExporter', () => {
   });
 
   describe('Blob correctness', () => {
-    it('produces valid ZIP even when Uint8Array is a sub-view of a larger buffer', async () => {
+    it('Blob round-trip produces a valid extractable ZIP', async () => {
       const { vertices, normals } = createSingleTriangle();
-      const blob = export3MF(vertices, normals, { name: 'subview-test' });
+      const blob = export3MF(vertices, normals, { name: 'roundtrip-test' });
 
-      // Read back the blob and verify it's a valid ZIP
       const arrayBuffer = await blob.arrayBuffer();
       const bytes = new Uint8Array(arrayBuffer);
 
@@ -544,6 +537,38 @@ describe('threemfExporter', () => {
       // Should be extractable
       const files = unzipSync(bytes);
       expect(files['3D/3dmodel.model']).toBeDefined();
+    });
+
+    it('toArrayBuffer correctly scopes to the view range of a sub-view', () => {
+      // Simulate fflate returning a Uint8Array sub-view of a larger buffer
+      const { vertices, normals } = createSingleTriangle();
+      const fullZip = build3MFBuffer(vertices, normals, { name: 'test' });
+
+      // Embed the ZIP in a larger buffer at an offset (mimics WASM pre-allocation)
+      const padding = 1024;
+      const large = new Uint8Array(padding + fullZip.byteLength + padding);
+      large.set(fullZip, padding);
+      const subView = large.subarray(padding, padding + fullZip.byteLength);
+
+      // The sub-view's .buffer is the entire large ArrayBuffer
+      expect(subView.buffer.byteLength).toBe(large.byteLength);
+      expect(subView.byteLength).toBe(fullZip.byteLength);
+
+      // Extract only the view's portion — should be a valid ZIP
+      const scoped = subView.buffer.slice(
+        subView.byteOffset,
+        subView.byteOffset + subView.byteLength
+      );
+      const extracted = unzipSync(new Uint8Array(scoped));
+      expect(extracted['3D/3dmodel.model']).toBeDefined();
+
+      // The naive .buffer.slice(0) includes leading garbage (padding bytes)
+      // that shifts the ZIP signature away from offset 0
+      const naive = new Uint8Array(subView.buffer.slice(0));
+      expect(naive.byteLength).toBe(large.byteLength);
+      // First bytes are padding zeros, not the PK signature
+      expect(naive[0]).toBe(0);
+      expect(naive[1]).toBe(0);
     });
   });
 
@@ -600,8 +625,8 @@ describe('threemfExporter', () => {
 
       const vertexMatches = model.match(/<vertex /g);
       const triangleMatches = model.match(/<triangle /g);
-      expect(vertexMatches!.length).toBeGreaterThan(0);
-      expect(vertexMatches!.length).toBeLessThanOrEqual(5000 * 3); // deduplication reduces this
+      expect(vertexMatches?.length ?? 0).toBeGreaterThan(0);
+      expect(vertexMatches?.length ?? 0).toBeLessThanOrEqual(5000 * 3); // deduplication reduces this
       expect(triangleMatches).toHaveLength(5000);
 
       // Verify no NaN or Infinity snuck in
