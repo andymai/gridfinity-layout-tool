@@ -342,23 +342,10 @@ export function BaseplatePanel() {
                 tooltip={t('baseplate.printBedTooltip')}
               >
                 <PrintBedInput
+                  id="bp-printBedSize"
                   width={printBedSize}
                   depth={printBedDepth ?? printBedSize}
-                  onWidthChange={(w) =>
-                    useLayoutStore
-                      .getState()
-                      .setPrintBedSize(
-                        w,
-                        (printBedDepth ?? printBedSize) !== w
-                          ? (printBedDepth ?? printBedSize)
-                          : undefined
-                      )
-                  }
-                  onDepthChange={(d) =>
-                    useLayoutStore
-                      .getState()
-                      .setPrintBedSize(printBedSize, d !== printBedSize ? d : undefined)
-                  }
+                  onChange={(w, d) => useLayoutStore.getState().setPrintBedSize(w, d)}
                   variant="compact"
                 />
               </SettingsRow>

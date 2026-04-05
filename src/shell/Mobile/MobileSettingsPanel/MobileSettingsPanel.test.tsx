@@ -44,10 +44,11 @@ vi.mock('@/shared/hooks/useDrawerSettings', () => ({
     widthStep: 1,
     depthStep: 1,
     realWorldDimensions: { width: 252, depth: 168, height: 42 },
-    maxGridUnits: 5,
+    maxGridUnits: { width: 5, depth: 5 },
     gridUnitMm: 42,
     heightUnitMm: 7,
     printBedSize: 256,
+    printBedDepth: 256,
     halfBinMode: false,
     settings: {
       stlSearchSites: [],

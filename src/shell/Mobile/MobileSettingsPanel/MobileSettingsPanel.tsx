@@ -196,12 +196,7 @@ export function MobileSettingsPanel() {
             <PrintBedInput
               width={printBedSize}
               depth={printBedDepth}
-              onWidthChange={(w) =>
-                setPrintBedSize(w, printBedDepth !== w ? printBedDepth : undefined)
-              }
-              onDepthChange={(d) =>
-                setPrintBedSize(printBedSize, d !== printBedSize ? d : undefined)
-              }
+              onChange={setPrintBedSize}
               variant="mobile"
             />
           </SettingsRow>

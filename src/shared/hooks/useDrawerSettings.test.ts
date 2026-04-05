@@ -427,7 +427,7 @@ describe('useDrawerSettings', () => {
 
       // Default: printBedSize=256, gridUnitMm=42
       // maxGridUnits = floor(256 / 42) = 6
-      expect(result.current.maxGridUnits).toBe(6);
+      expect(result.current.maxGridUnits).toEqual({ width: 6, depth: 6 });
     });
   });
 

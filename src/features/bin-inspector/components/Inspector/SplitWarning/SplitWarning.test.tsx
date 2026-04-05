@@ -6,9 +6,10 @@ describe('SplitWarning', () => {
   const defaultProps = {
     binWidth: 2,
     binDepth: 2,
-    maxGridUnits: 6,
+    maxGridUnits: { width: 6, depth: 6 },
     gridUnitMm: 42,
     printBedSize: 256,
+    printBedDepth: 256,
   };
 
   describe('when bin fits print bed', () => {
@@ -127,7 +128,7 @@ describe('SplitWarning', () => {
         <SplitWarning
           {...defaultProps}
           gridUnitMm={50}
-          maxGridUnits={5}
+          maxGridUnits={{ width: 5, depth: 5 }}
           binWidth={6}
           binDepth={3}
           compact

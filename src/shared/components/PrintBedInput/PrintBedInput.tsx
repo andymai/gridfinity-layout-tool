@@ -7,10 +7,10 @@ export interface PrintBedInputProps {
   width: number;
   /** Print bed depth in mm */
   depth: number;
-  /** Called when width changes (blur/Enter) */
-  onWidthChange: (value: number) => void;
-  /** Called when depth changes (blur/Enter) */
-  onDepthChange: (value: number) => void;
+  /** Called with (width, depth?) — depth is undefined when linked (square bed) */
+  onChange: (width: number, depth?: number) => void;
+  /** Optional id forwarded to the first input (for htmlFor label association) */
+  id?: string;
   /** 'compact' = sidebar/defaults, 'mobile' = mobile panel */
   variant?: 'compact' | 'mobile';
   min?: number;
@@ -29,8 +29,8 @@ const UNLINK_ICON_PATHS = [
 export function PrintBedInput({
   width,
   depth,
-  onWidthChange,
-  onDepthChange,
+  onChange,
+  id,
   variant = 'compact',
   min = 42,
   max = 500,
@@ -46,10 +46,23 @@ export function PrintBedInput({
 
   const handleLinkedChange = useCallback(
     (value: number) => {
-      onWidthChange(value);
-      onDepthChange(value);
+      onChange(value);
     },
-    [onWidthChange, onDepthChange]
+    [onChange]
+  );
+
+  const handleWidthChange = useCallback(
+    (value: number) => {
+      onChange(value, depth !== value ? depth : undefined);
+    },
+    [onChange, depth]
+  );
+
+  const handleDepthChange = useCallback(
+    (value: number) => {
+      onChange(width, value !== width ? value : undefined);
+    },
+    [onChange, width]
   );
 
   const handleToggleLink = useCallback(() => {
@@ -57,9 +70,9 @@ export function PrintBedInput({
       setExpanded(true);
     } else {
       setExpanded(false);
-      onDepthChange(width);
+      onChange(width);
     }
-  }, [showSingleInput, width, onDepthChange]);
+  }, [showSingleInput, width, onChange]);
 
   const isCompact = variant === 'compact';
   const inputClass = isCompact
@@ -99,6 +112,7 @@ export function PrintBedInput({
     return (
       <div className="flex items-center gap-1">
         <DeferredNumberInput
+          id={id}
           value={width}
           onChange={handleLinkedChange}
           min={min}
@@ -115,8 +129,9 @@ export function PrintBedInput({
   return (
     <div className="flex items-center gap-1">
       <DeferredNumberInput
+        id={id}
         value={width}
-        onChange={onWidthChange}
+        onChange={handleWidthChange}
         min={min}
         max={max}
         step={step}
@@ -126,7 +141,7 @@ export function PrintBedInput({
       <span className="text-[10px] text-content-tertiary">×</span>
       <DeferredNumberInput
         value={depth}
-        onChange={onDepthChange}
+        onChange={handleDepthChange}
         min={min}
         max={max}
         step={step}

@@ -36,13 +36,17 @@ function createBinRenderData(overrides: Partial<BinRenderData> = {}): BinRenderD
 describe('BinOverlayGroup', () => {
   it('renders without crashing', () => {
     const binData = createBinRenderData();
-    const { container } = render(<BinOverlayGroup binData={binData} maxGridUnits={6} />);
+    const { container } = render(
+      <BinOverlayGroup binData={binData} maxGridUnits={{ width: 6, depth: 6 }} />
+    );
     expect(container).toBeTruthy();
   });
 
   it('renders with clearance height', () => {
     const binData = createBinRenderData({ clearanceHeight: 1.5 });
-    const { container } = render(<BinOverlayGroup binData={binData} maxGridUnits={6} />);
+    const { container } = render(
+      <BinOverlayGroup binData={binData} maxGridUnits={{ width: 6, depth: 6 }} />
+    );
     expect(container).toBeTruthy();
   });
 
@@ -60,7 +64,9 @@ describe('BinOverlayGroup', () => {
         clearanceHeight: 0,
       } as Bin,
     });
-    const { container } = render(<BinOverlayGroup binData={binData} maxGridUnits={6} />);
+    const { container } = render(
+      <BinOverlayGroup binData={binData} maxGridUnits={{ width: 6, depth: 6 }} />
+    );
     expect(container).toBeTruthy();
   });
 });

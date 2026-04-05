@@ -437,14 +437,10 @@ export function Sidebar() {
                     unit="mm"
                   >
                     <PrintBedInput
+                      id="printBedSize"
                       width={printBedSize}
                       depth={printBedDepth}
-                      onWidthChange={(w) =>
-                        setPrintBedSize(w, printBedDepth !== w ? printBedDepth : undefined)
-                      }
-                      onDepthChange={(d) =>
-                        setPrintBedSize(printBedSize, d !== printBedSize ? d : undefined)
-                      }
+                      onChange={setPrintBedSize}
                       variant="compact"
                     />
                   </SettingsRow>

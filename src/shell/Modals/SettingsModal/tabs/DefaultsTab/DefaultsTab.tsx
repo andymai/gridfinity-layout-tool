@@ -170,16 +170,14 @@ export function DefaultsTab() {
             unit="mm"
           >
             <PrintBedInput
+              id="defaultPrintBed"
               width={settings.defaultPrintBedSize}
               depth={settings.defaultPrintBedDepth ?? settings.defaultPrintBedSize}
-              onWidthChange={(w) => {
+              onChange={(w, d) => {
                 updateSetting('defaultPrintBedSize', Math.max(42, Math.min(500, w)));
-              }}
-              onDepthChange={(d) => {
-                const clamped = Math.max(42, Math.min(500, d));
                 updateSetting(
                   'defaultPrintBedDepth',
-                  clamped !== settings.defaultPrintBedSize ? clamped : undefined
+                  d !== undefined ? Math.max(42, Math.min(500, d)) : undefined
                 );
               }}
               variant="compact"
