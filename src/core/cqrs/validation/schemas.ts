@@ -200,7 +200,7 @@ const drawerUpdateSchema = z
 const layoutSetNameSchema = z.object({ name: nameStr });
 
 /** layout.setPrintBedSize */
-const layoutSetPrintBedSizeSchema = z.object({ size: positiveMm });
+const layoutSetPrintBedSizeSchema = z.object({ size: positiveMm, depth: positiveMm.optional() });
 
 /** layout.setGridUnitMm */
 const layoutSetGridUnitMmSchema = z.object({ mm: positiveMm });

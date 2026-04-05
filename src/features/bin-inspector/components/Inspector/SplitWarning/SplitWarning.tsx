@@ -3,9 +3,10 @@ import { useTranslation } from '@/i18n';
 interface SplitWarningProps {
   binWidth: number;
   binDepth: number;
-  maxGridUnits: number;
+  maxGridUnits: { width: number; depth: number };
   gridUnitMm: number;
   printBedSize: number;
+  printBedDepth: number;
   /** Compact mode shows less detail (for mobile) */
   compact?: boolean;
 }
@@ -13,48 +14,60 @@ interface SplitWarningProps {
 /**
  * Small visual showing how a bin compares to max print bed size.
  * Shows print bed outline with bin overlaid, scaled proportionally.
+ * Supports rectangular (asymmetric) print beds.
  */
 function PrintBedIndicator({
   binWidth,
   binDepth,
   maxUnits,
   gridUnitMm,
-  printBedSize,
+  printBedWidth,
+  printBedDepth,
 }: {
   binWidth: number;
   binDepth: number;
-  maxUnits: number;
+  maxUnits: { width: number; depth: number };
   gridUnitMm: number;
-  printBedSize: number;
+  printBedWidth: number;
+  printBedDepth: number;
 }) {
   const size = 64;
   const padding = 4;
   const innerSize = size - padding * 2;
 
-  // Scale: print bed = full inner size
-  const scale = innerSize / printBedSize;
+  // Scale: fit the larger bed dimension into innerSize
+  const maxBedDim = Math.max(printBedWidth, printBedDepth);
+  const scale = innerSize / maxBedDim;
+
+  // Bed dimensions scaled
+  const bedW = printBedWidth * scale;
+  const bedD = printBedDepth * scale;
 
   // Bin dimensions in mm
   const binWidthMm = binWidth * gridUnitMm;
   const binDepthMm = binDepth * gridUnitMm;
 
   // Max printable area
-  const maxMm = maxUnits * gridUnitMm;
+  const maxWidthMm = maxUnits.width * gridUnitMm;
+  const maxDepthMm = maxUnits.depth * gridUnitMm;
+
+  const isAsymmetric = printBedWidth !== printBedDepth;
+  const bedLabel = isAsymmetric ? `${printBedWidth}×${printBedDepth}mm` : `${printBedWidth}mm`;
 
   return (
     <div
       className="relative flex-shrink-0"
       style={{ width: size, height: size }}
-      title={`Print bed: ${printBedSize}×${printBedSize}mm, Max bin: ${maxUnits}×${maxUnits} units`}
+      title={`Print bed: ${printBedWidth}×${printBedDepth}mm, Max bin: ${maxUnits.width}×${maxUnits.depth} units`}
     >
       {/* Print bed outline */}
       <div
         className="absolute border-2 border-dashed border-stroke rounded-sm"
         style={{
           left: padding,
-          top: padding,
-          width: innerSize,
-          height: innerSize,
+          bottom: padding,
+          width: Math.min(bedW, innerSize),
+          height: Math.min(bedD, innerSize),
         }}
       />
 
@@ -64,8 +77,8 @@ function PrintBedIndicator({
         style={{
           left: padding,
           bottom: padding,
-          width: Math.min(maxMm * scale, innerSize),
-          height: Math.min(maxMm * scale, innerSize),
+          width: Math.min(maxWidthMm * scale, innerSize),
+          height: Math.min(maxDepthMm * scale, innerSize),
         }}
       />
 
@@ -82,7 +95,7 @@ function PrintBedIndicator({
 
       {/* Label */}
       <div className="absolute bottom-0 right-0 text-[8px] text-content-disabled px-0.5">
-        {printBedSize}mm
+        {bedLabel}
       </div>
     </div>
   );
@@ -98,11 +111,13 @@ export function SplitWarning({
   maxGridUnits,
   gridUnitMm,
   printBedSize,
+  printBedDepth,
   compact = false,
 }: SplitWarningProps) {
   const t = useTranslation();
-  const needsSplit = binWidth > maxGridUnits || binDepth > maxGridUnits;
-  const pieces = Math.ceil(binWidth / maxGridUnits) * Math.ceil(binDepth / maxGridUnits);
+  const needsSplit = binWidth > maxGridUnits.width || binDepth > maxGridUnits.depth;
+  const pieces =
+    Math.ceil(binWidth / maxGridUnits.width) * Math.ceil(binDepth / maxGridUnits.depth);
 
   if (!needsSplit) {
     // Show success state - bin fits print bed
@@ -116,7 +131,13 @@ export function SplitWarning({
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
-        <span className="text-xs text-content-tertiary">{t('inspector.fitsPrintBedDimensions', { binWidth, binDepth, max: maxGridUnits })}</span>
+        <span className="text-xs text-content-tertiary">
+          {t('inspector.fitsPrintBedDimensions', {
+            binWidth,
+            binDepth,
+            max: `${maxGridUnits.width}×${maxGridUnits.depth}`,
+          })}
+        </span>
       </div>
     );
   }
@@ -150,7 +171,8 @@ export function SplitWarning({
         binDepth={binDepth}
         maxUnits={maxGridUnits}
         gridUnitMm={gridUnitMm}
-        printBedSize={printBedSize}
+        printBedWidth={printBedSize}
+        printBedDepth={printBedDepth}
       />
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1">
@@ -175,7 +197,7 @@ export function SplitWarning({
             depth: binDepth,
             widthMm: binWidth * gridUnitMm,
             depthMm: binDepth * gridUnitMm,
-            bedSize: printBedSize,
+            bedSize: `${printBedSize}×${printBedDepth}`,
           })}
         </p>
       </div>

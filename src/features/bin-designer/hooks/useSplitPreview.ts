@@ -34,15 +34,16 @@ export function useSplitPreview(): void {
     }))
   );
 
-  const { defaultPrintBedSize, defaultGridUnitMm } = useSettingsStore(
+  const { defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm } = useSettingsStore(
     useShallow((s) => ({
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
+      defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
       defaultGridUnitMm: s.settings.defaultGridUnitMm,
     }))
   );
 
-  const maxGridUnits = calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm);
-  const needsSplit = params.width > maxGridUnits || params.depth > maxGridUnits;
+  const maxGrid = calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm, defaultPrintBedDepth);
+  const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;
 
   const requestIdRef = useRef(0);
   const prevStatusRef = useRef(generationStatus);
@@ -71,10 +72,15 @@ export function useSplitPreview(): void {
     if (!bridge) return;
 
     const requestId = ++requestIdRef.current;
-    const cutPlanesX = getSplitPlanePositionsMm(params.width, maxGridUnits, params.gridUnitMm);
-    const cutPlanesY = getSplitPlanePositionsMm(params.depth, maxGridUnits, params.gridUnitMm);
+    const cutPlanesX = getSplitPlanePositionsMm(params.width, maxGrid.width, params.gridUnitMm);
+    const cutPlanesY = getSplitPlanePositionsMm(params.depth, maxGrid.depth, params.gridUnitMm);
     const connectorConfig = params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
-    const totalPieceCount = getSplitPieceCount(params.width, params.depth, maxGridUnits);
+    const totalPieceCount = getSplitPieceCount(
+      params.width,
+      params.depth,
+      maxGrid.width,
+      maxGrid.depth
+    );
 
     // Try to acquire the pool for parallel generation, fall back to single bridge.
     // acquire() is ref-counted so the pool stays alive for the duration of the operation.
@@ -119,5 +125,5 @@ export function useSplitPreview(): void {
       .finally(() => {
         if (usingPool) workerPoolManager.release();
       });
-  }, [needsSplit, generationStatus, params, maxGridUnits]);
+  }, [needsSplit, generationStatus, params, maxGrid]);
 }

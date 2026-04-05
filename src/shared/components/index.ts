@@ -6,6 +6,7 @@ export { CollapsibleSection } from './CollapsibleSection';
 export { ConfirmDialog } from './ConfirmDialog';
 export { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from './ContextMenu';
 export { DeferredNumberInput } from './DeferredNumberInput';
+export { PrintBedInput } from './PrintBedInput';
 export { StepperControl } from './StepperControl';
 export type { StepperVariant } from './StepperControl';
 export { ToastContainer } from './Toast';

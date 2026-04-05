@@ -21,7 +21,12 @@ export type LayoutNameSetEvent = BaseDomainEvent<
 
 export type PrintBedSizeSetEvent = BaseDomainEvent<
   'layout.printBedSizeSet',
-  { readonly size: number; readonly previousSize: number }
+  {
+    readonly size: number;
+    readonly previousSize: number;
+    readonly depth?: number;
+    readonly previousDepth?: number;
+  }
 >;
 
 export type GridUnitMmSetEvent = BaseDomainEvent<

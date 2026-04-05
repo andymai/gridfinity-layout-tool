@@ -17,36 +17,46 @@ describe('calcMaxGridUnits', () => {
   it('calculates max units for typical print bed', () => {
     // 256mm bed, 42mm grid
     // N ≤ 256 / 42 = 6.09 → 6 (bin size = 252mm fits on 256mm bed)
-    expect(calcMaxGridUnits(256, 42)).toBe(6);
+    expect(calcMaxGridUnits(256, 42)).toEqual({ width: 6, depth: 6 });
   });
 
   it('returns 1 for small print bed', () => {
     // 40mm bed can only fit 1 unit of 42mm grid (clamped to minimum)
-    expect(calcMaxGridUnits(40, 42)).toBe(1);
+    expect(calcMaxGridUnits(40, 42)).toEqual({ width: 1, depth: 1 });
   });
 
   it('calculates correctly for large print bed', () => {
     // 300mm bed, 42mm grid
     // N ≤ 300 / 42 = 7.14 → 7 (bin size = 294mm fits on 300mm bed)
-    expect(calcMaxGridUnits(300, 42)).toBe(7);
+    expect(calcMaxGridUnits(300, 42)).toEqual({ width: 7, depth: 7 });
   });
 
   it('handles exact fit scenarios', () => {
     // 126mm bed fits exactly 3 units: 3 * 42 = 126mm
-    expect(calcMaxGridUnits(126, 42)).toBe(3);
+    expect(calcMaxGridUnits(126, 42)).toEqual({ width: 3, depth: 3 });
     // 125mm bed fits only 2 units: floor(125 / 42) = 2
-    expect(calcMaxGridUnits(125, 42)).toBe(2);
+    expect(calcMaxGridUnits(125, 42)).toEqual({ width: 2, depth: 2 });
   });
 
   it('handles small grid units', () => {
     // 256mm bed, 20mm grid
     // N ≤ 256 / 20 = 12.8 → 12 (bin size = 240mm fits on 256mm bed)
-    expect(calcMaxGridUnits(256, 20)).toBe(12);
+    expect(calcMaxGridUnits(256, 20)).toEqual({ width: 12, depth: 12 });
   });
 
   it('never returns less than 1', () => {
     // Even impossible scenarios return at least 1
-    expect(calcMaxGridUnits(1, 100)).toBe(1);
+    expect(calcMaxGridUnits(1, 100)).toEqual({ width: 1, depth: 1 });
+  });
+
+  it('supports asymmetric print bed', () => {
+    // 256mm wide × 210mm deep bed, 42mm grid
+    expect(calcMaxGridUnits(256, 42, 210)).toEqual({ width: 6, depth: 5 });
+  });
+
+  it('uses width for depth when depth is omitted', () => {
+    expect(calcMaxGridUnits(300, 42)).toEqual({ width: 7, depth: 7 });
+    expect(calcMaxGridUnits(300, 42, undefined)).toEqual({ width: 7, depth: 7 });
   });
 });
 

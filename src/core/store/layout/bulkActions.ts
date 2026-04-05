@@ -35,8 +35,18 @@ export function createBulkActions(setLocal: SetLocal, get: GetState) {
 
     fillLayerGaps: (layerId: LayerId, categoryId: CategoryId, halfBinMode = false): number => {
       const { layout } = get();
-      const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
-      const result = fillGaps(layout, layerId, categoryId, maxGridUnits, halfBinMode);
+      const maxGrid = calcMaxGridUnits(
+        layout.printBedSize,
+        layout.gridUnitMm,
+        layout.printBedDepth
+      );
+      const result = fillGaps(
+        layout,
+        layerId,
+        categoryId,
+        Math.min(maxGrid.width, maxGrid.depth),
+        halfBinMode
+      );
 
       if (result.bins.length > 0) {
         setLocal((state) => {

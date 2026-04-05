@@ -140,7 +140,8 @@ function allPiecesFit(
   colSizes: number[],
   rowSizes: number[],
   gridUnitMm: number,
-  printBedMm: number,
+  printBedWidthMm: number,
+  printBedDepthMm: number,
   pL: number,
   pR: number,
   pF: number,
@@ -150,14 +151,14 @@ function allPiecesFit(
     const padLeft = c === 0 ? pL : 0;
     const padRight = c === colSizes.length - 1 ? pR : 0;
     const widthMm = colSizes[c] * gridUnitMm + padLeft + padRight;
-    if (widthMm > printBedMm + 0.001) return false;
+    if (widthMm > printBedWidthMm + 0.001) return false;
   }
 
   for (let r = 0; r < rowSizes.length; r++) {
     const padFront = r === 0 ? pF : 0;
     const padBack = r === rowSizes.length - 1 ? pB : 0;
     const depthMm = rowSizes[r] * gridUnitMm + padFront + padBack;
-    if (depthMm > printBedMm + 0.001) return false;
+    if (depthMm > printBedDepthMm + 0.001) return false;
   }
 
   return true;
@@ -187,7 +188,8 @@ function findOptimalTiling(
   totalWidth: number,
   totalDepth: number,
   gridUnitMm: number,
-  printBedMm: number,
+  printBedWidthMm: number,
+  printBedDepthMm: number,
   pL: number,
   pR: number,
   pF: number,
@@ -203,17 +205,29 @@ function findOptimalTiling(
     // Use > not >= so we still evaluate nc×1 candidates for symmetry tiebreaks.
     if (best && nc > best.pieceCount) break;
 
-    const colSizes = partitionAxis(totalWidth, nc, gridUnitMm, printBedMm, pL, pR);
+    const colSizes = partitionAxis(totalWidth, nc, gridUnitMm, printBedWidthMm, pL, pR);
     if (!colSizes) continue;
 
     for (let nr = 1; nr <= maxRows; nr++) {
       const pieceCount = nc * nr;
       if (best && pieceCount > best.pieceCount) break;
 
-      const rowSizes = partitionAxis(totalDepth, nr, gridUnitMm, printBedMm, pF, pB);
+      const rowSizes = partitionAxis(totalDepth, nr, gridUnitMm, printBedDepthMm, pF, pB);
       if (!rowSizes) continue;
 
-      if (allPiecesFit(colSizes, rowSizes, gridUnitMm, printBedMm, pL, pR, pF, pB)) {
+      if (
+        allPiecesFit(
+          colSizes,
+          rowSizes,
+          gridUnitMm,
+          printBedWidthMm,
+          printBedDepthMm,
+          pL,
+          pR,
+          pF,
+          pB
+        )
+      ) {
         const score = symmetryScore(colSizes) + symmetryScore(rowSizes);
         if (
           !best ||
@@ -244,7 +258,8 @@ function computePaddingReductionHint(
   totalWidth: number,
   totalDepth: number,
   gridUnitMm: number,
-  printBedMm: number,
+  printBedWidthMm: number,
+  printBedDepthMm: number,
   pL: number,
   pR: number,
   pF: number,
@@ -262,7 +277,8 @@ function computePaddingReductionHint(
       totalWidth,
       totalDepth,
       gridUnitMm,
-      printBedMm,
+      printBedWidthMm,
+      printBedDepthMm,
       pL - r,
       pR - r,
       pF,
@@ -282,7 +298,8 @@ function computePaddingReductionHint(
       totalWidth,
       totalDepth,
       gridUnitMm,
-      printBedMm,
+      printBedWidthMm,
+      printBedDepthMm,
       pL,
       pR,
       pF - r,
@@ -302,7 +319,8 @@ function computePaddingReductionHint(
       totalWidth,
       totalDepth,
       gridUnitMm,
-      printBedMm,
+      printBedWidthMm,
+      printBedDepthMm,
       pL - r,
       pR - r,
       pF - r,
@@ -330,7 +348,8 @@ function computePaddingReductionHint(
  */
 export function computeBaseplateTiling(
   params: BaseplateParams,
-  printBedMm: number
+  printBedWidthMm: number,
+  printBedDepthMm: number = printBedWidthMm
 ): BaseplateTiling {
   const {
     width,
@@ -349,7 +368,8 @@ export function computeBaseplateTiling(
     width,
     depth,
     gridUnitMm,
-    printBedMm,
+    printBedWidthMm,
+    printBedDepthMm,
     paddingLeft,
     paddingRight,
     paddingFront,
@@ -360,7 +380,7 @@ export function computeBaseplateTiling(
   const colSizes = reorderForDisplay(
     rawColSizes,
     gridUnitMm,
-    printBedMm,
+    printBedWidthMm,
     paddingLeft,
     paddingRight,
     fractionalEdgeX === 'start'
@@ -368,7 +388,7 @@ export function computeBaseplateTiling(
   const rowSizes = reorderForDisplay(
     rawRowSizes,
     gridUnitMm,
-    printBedMm,
+    printBedDepthMm,
     paddingFront,
     paddingBack,
     fractionalEdgeY === 'start'
@@ -422,7 +442,8 @@ export function computeBaseplateTiling(
     width,
     depth,
     gridUnitMm,
-    printBedMm,
+    printBedWidthMm,
+    printBedDepthMm,
     paddingLeft,
     paddingRight,
     paddingFront,

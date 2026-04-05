@@ -61,9 +61,10 @@ function BinComponent({
     categoryId: bin.category,
   });
 
-  const { printBedSize, gridUnitMm } = useLayoutStore(
+  const { printBedSize, printBedDepth, gridUnitMm } = useLayoutStore(
     useShallow((state) => ({
       printBedSize: state.layout.printBedSize,
+      printBedDepth: state.layout.printBedDepth,
       gridUnitMm: state.layout.gridUnitMm,
     }))
   );
@@ -96,8 +97,8 @@ function BinComponent({
   const isMultiSelect = selectedBinIds.length > 1;
 
   // Calculate max grid units that fit on print bed (accounting for gaps)
-  const maxGridUnits = calcMaxGridUnits(printBedSize, gridUnitMm);
-  const needsSplit = bin.width > maxGridUnits || bin.depth > maxGridUnits;
+  const maxGrid = calcMaxGridUnits(printBedSize, gridUnitMm, printBedDepth);
+  const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
   const isTall = layer && bin.height > layer.height;
 
   // All heavy grid positioning and pixel sizing calculations are memoized together

@@ -3,7 +3,7 @@ import { SplitLineOverlay } from './SplitLineOverlay';
 
 interface BinOverlayGroupProps {
   binData: BinRenderData;
-  maxGridUnits: number;
+  maxGridUnits: { width: number; depth: number };
 }
 
 /**
@@ -34,7 +34,7 @@ export function BinOverlayGroup({ binData, maxGridUnits }: BinOverlayGroupProps)
         </mesh>
       )}
       {/* Split lines for oversized bins */}
-      {(binData.bin.width > maxGridUnits || binData.bin.depth > maxGridUnits) && (
+      {(binData.bin.width > maxGridUnits.width || binData.bin.depth > maxGridUnits.depth) && (
         <SplitLineOverlay
           x={binData.x}
           y={binData.y}

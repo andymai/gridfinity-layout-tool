@@ -48,7 +48,8 @@ interface SettingsState {
     printBedSize: number,
     gridUnitMm: number,
     heightUnitMm: number,
-    layerHeight: number
+    layerHeight: number,
+    printBedDepth?: number
   ) => Result<void, StorageError>;
 
   /** Save categories as defaults for new layouts. Returns Result indicating persistence success. */
@@ -80,7 +81,14 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     return saveSettings(newSettings);
   },
 
-  saveCurrentAsDefaults: (drawer, printBedSize, gridUnitMm, heightUnitMm, layerHeight) => {
+  saveCurrentAsDefaults: (
+    drawer,
+    printBedSize,
+    gridUnitMm,
+    heightUnitMm,
+    layerHeight,
+    printBedDepth
+  ) => {
     const newSettings = {
       ...get().settings,
       defaultDrawerWidth: drawer.width,
@@ -88,6 +96,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       defaultDrawerHeight: drawer.height,
       defaultLayerHeight: layerHeight,
       defaultPrintBedSize: printBedSize,
+      defaultPrintBedDepth: printBedDepth,
       defaultGridUnitMm: gridUnitMm,
       defaultHeightUnitMm: heightUnitMm,
     };

@@ -1558,5 +1558,9 @@
   "undo.printBedSizeChanged": "Print bed-grootte gewijzigd",
   "undo.redid": "↪ Redid: {action}",
   "undo.undid": "↩ Undid: {action}",
-  "undo.unknownAction": "Actie"
+  "undo.unknownAction": "Actie",
+  "printBedInput.linkAriaLabel": "Breedte en diepte koppelen",
+  "printBedInput.unlinkAriaLabel": "Breedte en diepte ontkoppelen",
+  "printBedInput.widthAriaLabel": "Printbed-breedte",
+  "printBedInput.depthAriaLabel": "Printbed-diepte"
 }

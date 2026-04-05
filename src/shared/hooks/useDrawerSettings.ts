@@ -50,12 +50,13 @@ export interface UseDrawerSettingsReturn {
     depth: number;
     height: number;
   };
-  maxGridUnits: number;
+  maxGridUnits: { width: number; depth: number };
 
   // Physical units
   gridUnitMm: number;
   heightUnitMm: number;
   printBedSize: number;
+  printBedDepth: number;
 
   // Half-bin mode
   halfBinMode: boolean;
@@ -86,7 +87,7 @@ export interface UseDrawerSettingsReturn {
   // Physical unit handlers
   setGridUnitMm: (value: number) => void;
   setHeightUnitMm: (value: number) => void;
-  setPrintBedSize: (value: number) => void;
+  setPrintBedSize: (value: number, depth?: number) => void;
 
   // STL site toggle
   toggleSTLSite: (siteId: string) => void;
@@ -151,6 +152,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     gridUnitMm,
     heightUnitMm,
     printBedSize,
+    printBedDepth,
     drawerWidth,
     drawerDepth,
     drawerHeight,
@@ -162,6 +164,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
       gridUnitMm: state.layout.gridUnitMm,
       heightUnitMm: state.layout.heightUnitMm,
       printBedSize: state.layout.printBedSize,
+      printBedDepth: state.layout.printBedDepth ?? state.layout.printBedSize,
       drawerWidth: state.layout.drawer.width,
       drawerDepth: state.layout.drawer.depth,
       drawerHeight: state.layout.drawer.height,
@@ -217,7 +220,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   const hasFractionalDepth = drawerDepth % 1 !== 0;
   const widthStep = halfBinMode || hasFractionalWidth ? 0.5 : 1;
   const depthStep = halfBinMode || hasFractionalDepth ? 0.5 : 1;
-  const maxGridUnits = calcMaxGridUnits(printBedSize, gridUnitMm);
+  const maxGridUnits = calcMaxGridUnits(printBedSize, gridUnitMm, printBedDepth);
 
   const realWorldDimensions = useMemo(
     () => ({
@@ -338,7 +341,8 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
       printBedSize,
       gridUnitMm,
       heightUnitMm,
-      activeLayerHeight
+      activeLayerHeight,
+      printBedDepth !== printBedSize ? printBedDepth : undefined
     );
     setShowSaveDefaultsConfirm(false);
   }, [
@@ -347,6 +351,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     drawerDepth,
     drawerHeight,
     printBedSize,
+    printBedDepth,
     gridUnitMm,
     heightUnitMm,
     activeLayerHeight,
@@ -394,6 +399,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     gridUnitMm,
     heightUnitMm,
     printBedSize,
+    printBedDepth,
 
     // Half-bin mode
     halfBinMode,

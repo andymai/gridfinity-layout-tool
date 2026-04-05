@@ -73,7 +73,7 @@ export interface UsePrintListReturn {
 
 export function usePrintList(): UsePrintListReturn {
   const t = useTranslation();
-  const [filters, setFilters] = useState<PrintListFilters>(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
   const printSettings = useSettingsStore((s) => s.settings.printSettings);
 
@@ -95,7 +95,11 @@ export function usePrintList(): UsePrintListReturn {
 
   const setSelectedBins = useSelectionStore((state) => state.setSelectedBins);
 
-  const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
+  const maxGridUnits = calcMaxGridUnits(
+    layout.printBedSize,
+    layout.gridUnitMm,
+    layout.printBedDepth
+  );
 
   // Base enhanced rows (memoized - expensive operation)
   const baseRows = useMemo(

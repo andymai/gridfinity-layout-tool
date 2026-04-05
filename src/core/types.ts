@@ -17,7 +17,8 @@ export interface Layout {
   version: string; // "1.0"
   name: string; // max 64 chars
   drawer: Drawer;
-  printBedSize: Mm; // print bed size in mm (e.g., 256 for Prusa MK3)
+  printBedSize: Mm; // print bed width in mm (e.g., 256 for Prusa MK3)
+  printBedDepth?: Mm; // print bed depth in mm (undefined = same as printBedSize)
   gridUnitMm: Mm; // mm per grid unit (default 42)
   heightUnitMm: Mm; // mm per height unit (default 7)
   categories: Category[]; // 1-20 items

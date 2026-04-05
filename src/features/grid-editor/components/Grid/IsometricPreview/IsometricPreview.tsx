@@ -83,19 +83,29 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   );
 
   // Select only needed layout properties to prevent unnecessary re-renders
-  const { bins, layers, categories, drawer, printBedSize, gridUnitMm, heightUnitMm, layoutName } =
-    useLayoutStore(
-      useShallow((state) => ({
-        bins: state.layout.bins,
-        layers: state.layout.layers,
-        categories: state.layout.categories,
-        drawer: state.layout.drawer,
-        printBedSize: state.layout.printBedSize,
-        gridUnitMm: state.layout.gridUnitMm,
-        heightUnitMm: state.layout.heightUnitMm,
-        layoutName: state.layout.name,
-      }))
-    );
+  const {
+    bins,
+    layers,
+    categories,
+    drawer,
+    printBedSize,
+    printBedDepth,
+    gridUnitMm,
+    heightUnitMm,
+    layoutName,
+  } = useLayoutStore(
+    useShallow((state) => ({
+      bins: state.layout.bins,
+      layers: state.layout.layers,
+      categories: state.layout.categories,
+      drawer: state.layout.drawer,
+      printBedSize: state.layout.printBedSize,
+      printBedDepth: state.layout.printBedDepth,
+      gridUnitMm: state.layout.gridUnitMm,
+      heightUnitMm: state.layout.heightUnitMm,
+      layoutName: state.layout.name,
+    }))
+  );
 
   // Calculate height-to-grid scale from user settings
   const heightToGridScale = heightUnitMm / gridUnitMm;
@@ -120,8 +130,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
 
   // Calculate max print size for split line visualization
   const maxGridUnits = useMemo(
-    () => calcMaxGridUnits(printBedSize, gridUnitMm),
-    [printBedSize, gridUnitMm]
+    () => calcMaxGridUnits(printBedSize, gridUnitMm, printBedDepth),
+    [printBedSize, printBedDepth, gridUnitMm]
   );
 
   const binsToRender = useBinsToRender({
@@ -148,7 +158,8 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
 
       // Only include bins that need overlays (clearance or split lines)
       const needsClearance = binData.clearanceHeight > 0;
-      const needsSplitLines = binData.bin.width > maxGridUnits || binData.bin.depth > maxGridUnits;
+      const needsSplitLines =
+        binData.bin.width > maxGridUnits.width || binData.bin.depth > maxGridUnits.depth;
       if (needsClearance || needsSplitLines) {
         withOverlays.push(binData);
       }

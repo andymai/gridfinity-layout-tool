@@ -153,8 +153,8 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       bus.dispatch(createCommand('layout.setName', { name }));
     },
 
-    setPrintBedSize(size: number): void {
-      bus.dispatch(createCommand('layout.setPrintBedSize', { size }));
+    setPrintBedSize(size: number, depth?: number): void {
+      bus.dispatch(createCommand('layout.setPrintBedSize', { size, depth }));
     },
 
     setGridUnitMm(mm: number): void {

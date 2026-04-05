@@ -7,6 +7,7 @@ import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import type { PrintSettings } from '@/shared/printSettings';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
@@ -168,16 +169,20 @@ export function DefaultsTab() {
             htmlFor="defaultPrintBed"
             unit="mm"
           >
-            <DeferredNumberInput
-              id="defaultPrintBed"
-              value={settings.defaultPrintBedSize}
-              onChange={(value) =>
-                updateSetting('defaultPrintBedSize', Math.max(42, Math.min(500, value)))
-              }
-              min={42}
-              max={500}
-              step={10}
-              className="input w-14 py-0.5 px-1 text-xs text-right"
+            <PrintBedInput
+              width={settings.defaultPrintBedSize}
+              depth={settings.defaultPrintBedDepth ?? settings.defaultPrintBedSize}
+              onWidthChange={(w) => {
+                updateSetting('defaultPrintBedSize', Math.max(42, Math.min(500, w)));
+              }}
+              onDepthChange={(d) => {
+                const clamped = Math.max(42, Math.min(500, d));
+                updateSetting(
+                  'defaultPrintBedDepth',
+                  clamped !== settings.defaultPrintBedSize ? clamped : undefined
+                );
+              }}
+              variant="compact"
             />
           </SettingsRow>
           <SettingsRow label={t('settings.defaultGridUnit')} htmlFor="defaultGridUnit" unit="mm">
