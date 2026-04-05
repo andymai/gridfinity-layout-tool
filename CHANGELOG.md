@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.37.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.36.6...gridfinity-layout-tool-v4.37.0) (2026-04-05)
+
+
+### Features
+
+* support asymmetric print bed sizes (width × depth) ([#1323](https://github.com/andymai/gridfinity-layout-tool/issues/1323)) ([5202855](https://github.com/andymai/gridfinity-layout-tool/commit/5202855c3c67bacb029487c70e324b6fea330aab))
+
 ## [4.36.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.36.5...gridfinity-layout-tool-v4.36.6) (2026-04-04)
 
 
