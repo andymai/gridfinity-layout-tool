@@ -29,7 +29,7 @@ interface SplitLineOverlayProps {
   width: number;
   depth: number;
   height: number;
-  maxGridUnits: number;
+  maxGridUnits: { width: number; depth: number };
   opacity: number;
 }
 
@@ -48,15 +48,15 @@ export const SplitLineOverlay = memo(function SplitLineOverlay({
   opacity,
 }: SplitLineOverlayProps) {
   // Only render if bin is oversized
-  if (width <= maxGridUnits && depth <= maxGridUnits) {
+  if (width <= maxGridUnits.width && depth <= maxGridUnits.depth) {
     return null;
   }
 
   const topZ = z + height;
 
   // Get split positions for width (X axis) and depth (Y axis)
-  const xSplits = getSplitPositions(width, maxGridUnits);
-  const ySplits = getSplitPositions(depth, maxGridUnits);
+  const xSplits = getSplitPositions(width, maxGridUnits.width);
+  const ySplits = getSplitPositions(depth, maxGridUnits.depth);
 
   // Amber color matching UI warning, with opacity for dimmed bins
   const lineOpacity = opacity < 1 ? 0.4 : 0.9;

@@ -21,33 +21,34 @@ export function useSplitOptionsSection() {
       }))
     );
 
-  const { defaultPrintBedSize, defaultGridUnitMm } = useSettingsStore(
+  const { defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm } = useSettingsStore(
     useShallow((s) => ({
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
+      defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
       defaultGridUnitMm: s.settings.defaultGridUnitMm,
     }))
   );
 
-  const maxGridUnits = useMemo(
-    () => calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm),
-    [defaultPrintBedSize, defaultGridUnitMm]
+  const maxGrid = useMemo(
+    () => calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm, defaultPrintBedDepth),
+    [defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm]
   );
 
-  const needsSplit = width > maxGridUnits || depth > maxGridUnits;
+  const needsSplit = width > maxGrid.width || depth > maxGrid.depth;
 
   const pieceCount = useMemo(
-    () => (needsSplit ? getSplitPieceCount(width, depth, maxGridUnits) : 1),
-    [width, depth, maxGridUnits, needsSplit]
+    () => (needsSplit ? getSplitPieceCount(width, depth, maxGrid.width, maxGrid.depth) : 1),
+    [width, depth, maxGrid.width, maxGrid.depth, needsSplit]
   );
 
   const splitAxis: SplitAxis = useMemo(() => {
     if (!needsSplit) return 'width';
-    const splitW = width > maxGridUnits;
-    const splitD = depth > maxGridUnits;
+    const splitW = width > maxGrid.width;
+    const splitD = depth > maxGrid.depth;
     if (splitW && splitD) return 'both';
     if (splitD) return 'depth';
     return 'width';
-  }, [needsSplit, width, depth, maxGridUnits]);
+  }, [needsSplit, width, depth, maxGrid.width, maxGrid.depth]);
 
   const config = splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
 

@@ -385,7 +385,7 @@ describe('useExport', () => {
   it('maxGridUnits derives from settings', () => {
     // Default: 256mm / 42mm = 6 grid units
     const { result } = renderHook(() => useExport());
-    expect(result.current.maxGridUnits).toBe(6);
+    expect(result.current.maxGridUnits).toEqual({ width: 6, depth: 6 });
   });
 
   it('provides downloadSplit function', () => {

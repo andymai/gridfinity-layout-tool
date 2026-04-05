@@ -166,7 +166,7 @@ describe('SplitLineOverlay', () => {
         width={15}
         depth={8}
         height={3}
-        maxGridUnits={10}
+        maxGridUnits={{ width: 10, depth: 10 }}
         opacity={1}
       />
     );
@@ -182,7 +182,7 @@ describe('SplitLineOverlay', () => {
         width={5}
         depth={5}
         height={3}
-        maxGridUnits={10}
+        maxGridUnits={{ width: 10, depth: 10 }}
         opacity={1}
       />
     );
@@ -198,7 +198,7 @@ describe('SplitLineOverlay', () => {
         width={15}
         depth={5}
         height={3}
-        maxGridUnits={10}
+        maxGridUnits={{ width: 10, depth: 10 }}
         opacity={1}
       />
     );
@@ -215,7 +215,7 @@ describe('SplitLineOverlay', () => {
         width={5}
         depth={15}
         height={3}
-        maxGridUnits={10}
+        maxGridUnits={{ width: 10, depth: 10 }}
         opacity={1}
       />
     );
@@ -232,7 +232,7 @@ describe('SplitLineOverlay', () => {
         width={15}
         depth={15}
         height={3}
-        maxGridUnits={10}
+        maxGridUnits={{ width: 10, depth: 10 }}
         opacity={1}
       />
     );
@@ -249,7 +249,7 @@ describe('SplitLineOverlay', () => {
         width={15}
         depth={8}
         height={3}
-        maxGridUnits={10}
+        maxGridUnits={{ width: 10, depth: 10 }}
         opacity={0.5}
       />
     );
@@ -265,7 +265,7 @@ describe('SplitLineOverlay', () => {
         width={15}
         depth={8}
         height={4}
-        maxGridUnits={10}
+        maxGridUnits={{ width: 10, depth: 10 }}
         opacity={1}
       />
     );

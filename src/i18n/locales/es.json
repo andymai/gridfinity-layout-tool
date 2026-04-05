@@ -1558,5 +1558,9 @@
   "undo.printBedSizeChanged": "Tamaño del print bed cambiado",
   "undo.redid": "↪ Redid: {action}",
   "undo.undid": "↩ Undid: {action}",
-  "undo.unknownAction": "Acción"
+  "undo.unknownAction": "Acción",
+  "printBedInput.linkAriaLabel": "Vincular ancho y profundidad",
+  "printBedInput.unlinkAriaLabel": "Desvincular ancho y profundidad",
+  "printBedInput.widthAriaLabel": "Ancho de la cama de impresión",
+  "printBedInput.depthAriaLabel": "Profundidad de la cama de impresión"
 }

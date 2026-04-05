@@ -46,6 +46,7 @@ export interface LayoutMetrics {
   grid_unit_mm: number;
   height_unit_mm: number;
   print_bed_size: number;
+  print_bed_depth: number;
   drawer_is_default: boolean;
 
   // Bins summary
@@ -79,6 +80,7 @@ export interface LayoutMetrics {
   feature_notes: boolean;
   feature_custom_drawer: boolean;
   feature_custom_print_bed: boolean;
+  feature_asymmetric_bed: boolean;
 
   // Print readiness
   has_oversized_bins: boolean;
@@ -162,8 +164,9 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
   ).length;
 
   // Print bed check
-  const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
-  const hasOversizedBins = maxWidth > maxGridUnits || maxDepth > maxGridUnits;
+  const printBedDepth = layout.printBedDepth ?? layout.printBedSize;
+  const maxGrid = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm, printBedDepth);
+  const hasOversizedBins = maxWidth > maxGrid.width || maxDepth > maxGrid.depth;
 
   // Drawer defaults check
   const isDefaultDrawer =
@@ -179,6 +182,7 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     grid_unit_mm: layout.gridUnitMm,
     height_unit_mm: layout.heightUnitMm,
     print_bed_size: layout.printBedSize,
+    print_bed_depth: printBedDepth,
     drawer_is_default: isDefaultDrawer,
 
     // Bins
@@ -212,6 +216,7 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     feature_notes: withNotes > 0,
     feature_custom_drawer: !isDefaultDrawer,
     feature_custom_print_bed: layout.printBedSize !== DEFAULT_PRINT_BED,
+    feature_asymmetric_bed: printBedDepth !== layout.printBedSize,
 
     // Print
     has_oversized_bins: hasOversizedBins,

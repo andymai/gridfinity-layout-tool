@@ -1558,5 +1558,9 @@
   "undo.printBedSizeChanged": "Print Bed-Größe geändert",
   "undo.redid": "↪ Redid: {action}",
   "undo.undid": "↩ Undid: {action}",
-  "undo.unknownAction": "Aktion"
+  "undo.unknownAction": "Aktion",
+  "printBedInput.linkAriaLabel": "Breite und Tiefe verknüpfen",
+  "printBedInput.unlinkAriaLabel": "Breite und Tiefe trennen",
+  "printBedInput.widthAriaLabel": "Druckbett-Breite",
+  "printBedInput.depthAriaLabel": "Druckbett-Tiefe"
 }

@@ -1558,5 +1558,9 @@
   "undo.printBedSizeChanged": "Taille du print bed modifiée",
   "undo.redid": "↪ Redid: {action}",
   "undo.undid": "↩ Undid: {action}",
-  "undo.unknownAction": "Action effectuée"
+  "undo.unknownAction": "Action effectuée",
+  "printBedInput.linkAriaLabel": "Lier largeur et profondeur",
+  "printBedInput.unlinkAriaLabel": "Délier largeur et profondeur",
+  "printBedInput.widthAriaLabel": "Largeur du plateau",
+  "printBedInput.depthAriaLabel": "Profondeur du plateau"
 }

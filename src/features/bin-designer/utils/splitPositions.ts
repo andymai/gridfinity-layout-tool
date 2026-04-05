@@ -16,11 +16,16 @@ export function getSplitPositions(size: number, maxSize: number, offset = 0): nu
   return positions;
 }
 
-export function getSplitPieceCount(width: number, depth: number, maxSize: number): number {
-  if (width <= maxSize && depth <= maxSize) return 1;
+export function getSplitPieceCount(
+  width: number,
+  depth: number,
+  maxWidth: number,
+  maxDepth: number = maxWidth
+): number {
+  if (width <= maxWidth && depth <= maxDepth) return 1;
 
-  const xSplits = getSplitPositions(width, maxSize).length;
-  const ySplits = getSplitPositions(depth, maxSize).length;
+  const xSplits = getSplitPositions(width, maxWidth).length;
+  const ySplits = getSplitPositions(depth, maxDepth).length;
 
   return (xSplits + 1) * (ySplits + 1);
 }

@@ -59,12 +59,34 @@ export const RESERVED_PROPERTY_KEYS = [
 ] as const;
 
 /**
- * Calculate max grid units for a single bin that fits on a print bed.
- * A bin of N grid units has size N * gridUnitMm, which must fit on the bed.
- * Formula: N * gridUnitMm ≤ printBedSizeMm → N ≤ printBedSizeMm / gridUnitMm
+ * Max grid units for a single axis.
+ * N * gridUnitMm ≤ bedMm → N ≤ bedMm / gridUnitMm
  */
-export function calcMaxGridUnits(printBedSizeMm: number, gridUnitMm: number): number {
-  return Math.max(1, Math.floor(printBedSizeMm / gridUnitMm));
+function calcMaxGridUnitsForAxis(bedMm: number, gridUnitMm: number): number {
+  return Math.max(1, Math.floor(bedMm / gridUnitMm));
+}
+
+/**
+ * Calculate max grid units that fit on a print bed for each axis.
+ * When printBedDepthMm is omitted, depth uses the same value as width (square bed).
+ */
+export function calcMaxGridUnits(
+  printBedWidthMm: number,
+  gridUnitMm: number,
+  printBedDepthMm?: number
+): { width: number; depth: number } {
+  return {
+    width: calcMaxGridUnitsForAxis(printBedWidthMm, gridUnitMm),
+    depth: calcMaxGridUnitsForAxis(printBedDepthMm ?? printBedWidthMm, gridUnitMm),
+  };
+}
+
+/** Resolve effective print bed depth, falling back to width when undefined. */
+export function getEffectivePrintBedDepth(layout: {
+  printBedSize: number;
+  printBedDepth?: number;
+}): number {
+  return layout.printBedDepth ?? layout.printBedSize;
 }
 export const STAGING_ID = '__staging__' as LayerId;
 /** Sentinel layout ID used when viewing a shared layout in preview mode. */
@@ -319,6 +341,7 @@ export interface LayoutSettings {
   defaultDrawerHeight: number;
   defaultLayerHeight: number;
   defaultPrintBedSize: number;
+  defaultPrintBedDepth?: number;
   defaultGridUnitMm: number;
   defaultHeightUnitMm: number;
   /** Custom default categories. null means use DEFAULT_CATEGORIES. */
@@ -340,6 +363,8 @@ export const createLayoutWithSettings = (settings: LayoutSettings): Layout => {
       height: heightUnits(settings.defaultDrawerHeight),
     },
     printBedSize: mm(settings.defaultPrintBedSize),
+    printBedDepth:
+      settings.defaultPrintBedDepth !== undefined ? mm(settings.defaultPrintBedDepth) : undefined,
     gridUnitMm: mm(settings.defaultGridUnitMm),
     heightUnitMm: mm(settings.defaultHeightUnitMm),
     categories,

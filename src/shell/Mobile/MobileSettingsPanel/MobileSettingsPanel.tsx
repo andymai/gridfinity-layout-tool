@@ -5,6 +5,7 @@ import { CONSTRAINTS } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { HalfBinModeBlockedModal } from '@/shell/Modals';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SectionHeader } from '@/shared/components/SectionHeader';
@@ -38,6 +39,7 @@ export function MobileSettingsPanel() {
     gridUnitMm,
     heightUnitMm,
     printBedSize,
+    printBedDepth,
     halfBinMode,
     activeLayerHeight,
     handleDrawerWidthChange,
@@ -191,19 +193,17 @@ export function MobileSettingsPanel() {
           </SettingsRow>
 
           <SettingsRow label="Print bed size" unit="mm" variant="mobile">
-            <DeferredNumberInput
-              value={printBedSize}
+            <PrintBedInput
+              width={printBedSize}
+              depth={printBedDepth}
               onChange={setPrintBedSize}
-              className="input w-20 h-10 text-center"
-              min={42}
-              max={500}
-              step={10}
+              variant="mobile"
             />
           </SettingsRow>
 
           <div className="text-sm text-right text-content-disabled">
             {t('mobile.settings.maxBinSize')}
-            {maxGridUnits}×{maxGridUnits}
+            {maxGridUnits.width}×{maxGridUnits.depth}
           </div>
         </div>
       </section>

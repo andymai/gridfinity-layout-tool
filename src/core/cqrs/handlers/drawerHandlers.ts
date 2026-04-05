@@ -70,15 +70,21 @@ export function handleSetPrintBedSize(
 ): CommandResult<void, DomainEvent> {
   const store = useLayoutStore.getState();
   const previousSize = store.layout.printBedSize;
+  const previousDepth = store.layout.printBedDepth;
 
-  store.setPrintBedSize(command.payload.size);
+  store.setPrintBedSize(command.payload.size, command.payload.depth);
 
   return ok({
     value: undefined,
     events: [
       {
         type: 'layout.printBedSizeSet' as const,
-        payload: { size: command.payload.size, previousSize },
+        payload: {
+          size: command.payload.size,
+          previousSize,
+          depth: command.payload.depth,
+          previousDepth,
+        },
         meta: createEventMeta(command.meta, 'layout.printBedSizeSet'),
       },
     ],

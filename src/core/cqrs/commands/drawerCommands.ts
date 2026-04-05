@@ -11,7 +11,7 @@ export type SetNameCommand = BaseCommand<'layout.setName', { readonly name: stri
 
 export type SetPrintBedSizeCommand = BaseCommand<
   'layout.setPrintBedSize',
-  { readonly size: number }
+  { readonly size: number; readonly depth?: number }
 >;
 
 export type SetGridUnitMmCommand = BaseCommand<'layout.setGridUnitMm', { readonly mm: number }>;

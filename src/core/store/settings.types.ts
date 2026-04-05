@@ -159,6 +159,7 @@ export interface UserSettings {
   defaultDrawerHeight: number;
   defaultLayerHeight: number; // Default height for new layers (in height units)
   defaultPrintBedSize: number;
+  defaultPrintBedDepth?: number; // undefined = linked (same as defaultPrintBedSize)
   defaultGridUnitMm: number;
   defaultHeightUnitMm: number;
 

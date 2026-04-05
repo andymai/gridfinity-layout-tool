@@ -23,6 +23,7 @@ import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { SliderInput } from '@/shared/components/SliderInput';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
@@ -40,15 +41,17 @@ const PADDING_HINT_AXIS_KEYS: Record<PaddingReductionHint['axis'], string> = {
 export function BaseplatePanel() {
   const t = useTranslation();
 
-  const { drawerWidth, drawerDepth, gridUnitMm, printBedSize, baseplateParams } = useLayoutStore(
-    useShallow((state) => ({
-      drawerWidth: state.layout.drawer.width,
-      drawerDepth: state.layout.drawer.depth,
-      gridUnitMm: state.layout.gridUnitMm,
-      printBedSize: state.layout.printBedSize,
-      baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
-    }))
-  );
+  const { drawerWidth, drawerDepth, gridUnitMm, printBedSize, printBedDepth, baseplateParams } =
+    useLayoutStore(
+      useShallow((state) => ({
+        drawerWidth: state.layout.drawer.width,
+        drawerDepth: state.layout.drawer.depth,
+        gridUnitMm: state.layout.gridUnitMm,
+        printBedSize: state.layout.printBedSize,
+        printBedDepth: state.layout.printBedDepth,
+        baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+      }))
+    );
 
   const { tiling, hoveredPieceLabel, selectedPieceLabel } = useBaseplatePageStore(
     useShallow((s) => ({
@@ -338,14 +341,12 @@ export function BaseplatePanel() {
                 unit="mm"
                 tooltip={t('baseplate.printBedTooltip')}
               >
-                <DeferredNumberInput
+                <PrintBedInput
                   id="bp-printBedSize"
-                  value={printBedSize}
-                  onChange={(size) => useLayoutStore.getState().setPrintBedSize(size)}
-                  min={42}
-                  max={500}
-                  step={10}
-                  className="input w-14 py-0.5 px-1 text-xs text-right"
+                  width={printBedSize}
+                  depth={printBedDepth ?? printBedSize}
+                  onChange={(w, d) => useLayoutStore.getState().setPrintBedSize(w, d)}
+                  variant="compact"
                 />
               </SettingsRow>
             </div>

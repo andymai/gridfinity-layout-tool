@@ -102,7 +102,7 @@ describe('useBinInspector', () => {
         minHeight: 2,
         maxHeight: 2,
         maxClearance: 0,
-        maxGridUnits: 5,
+        maxGridUnits: { width: 5, depth: 5 },
         needsSplit: false,
         heightRange: '2u',
         minHeightReason: 'global_minimum',

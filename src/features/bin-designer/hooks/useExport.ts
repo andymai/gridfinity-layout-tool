@@ -77,7 +77,7 @@ interface UseExportReturn {
   /** Number of pieces the bin would be split into */
   readonly splitPieceCount: number;
   /** Maximum grid units that fit on the print bed */
-  readonly maxGridUnits: number;
+  readonly maxGridUnits: { width: number; depth: number };
   /** Trigger split export download as ZIP via worker bridge */
   readonly downloadSplit: (
     format: ExportFileFormat,
@@ -94,13 +94,15 @@ export function useExport(): UseExportReturn {
     }))
   );
 
-  const { printSettings, defaultPrintBedSize, defaultGridUnitMm } = useSettingsStore(
-    useShallow((s) => ({
-      printSettings: s.settings.printSettings,
-      defaultPrintBedSize: s.settings.defaultPrintBedSize,
-      defaultGridUnitMm: s.settings.defaultGridUnitMm,
-    }))
-  );
+  const { printSettings, defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm } =
+    useSettingsStore(
+      useShallow((s) => ({
+        printSettings: s.settings.printSettings,
+        defaultPrintBedSize: s.settings.defaultPrintBedSize,
+        defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
+        defaultGridUnitMm: s.settings.defaultGridUnitMm,
+      }))
+    );
 
   const [isExportingBin, setIsExportingBin] = useState(false);
   const isExporting = isExportingBin;
@@ -115,16 +117,17 @@ export function useExport(): UseExportReturn {
   const estimates = useMemo(() => estimatePrint(params, printSettings), [params, printSettings]);
 
   // Split detection
-  const maxGridUnits = useMemo(
-    () => calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm),
-    [defaultPrintBedSize, defaultGridUnitMm]
+  const maxGrid = useMemo(
+    () => calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm, defaultPrintBedDepth),
+    [defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm]
   );
 
-  const needsSplit = params.width > maxGridUnits || params.depth > maxGridUnits;
+  const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;
 
   const splitPieceCount = useMemo(
-    () => (needsSplit ? getSplitPieceCount(params.width, params.depth, maxGridUnits) : 1),
-    [params.width, params.depth, maxGridUnits, needsSplit]
+    () =>
+      needsSplit ? getSplitPieceCount(params.width, params.depth, maxGrid.width, maxGrid.depth) : 1,
+    [params.width, params.depth, maxGrid.width, maxGrid.depth, needsSplit]
   );
 
   /**
@@ -291,10 +294,15 @@ export function useExport(): UseExportReturn {
 
       try {
         const gridSizeMm = params.gridUnitMm;
-        const cutPlanesX = getSplitPlanePositionsMm(params.width, maxGridUnits, gridSizeMm);
-        const cutPlanesY = getSplitPlanePositionsMm(params.depth, maxGridUnits, gridSizeMm);
+        const cutPlanesX = getSplitPlanePositionsMm(params.width, maxGrid.width, gridSizeMm);
+        const cutPlanesY = getSplitPlanePositionsMm(params.depth, maxGrid.depth, gridSizeMm);
         const connectorConfig = params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
-        const totalPieceCount = getSplitPieceCount(params.width, params.depth, maxGridUnits);
+        const totalPieceCount = getSplitPieceCount(
+          params.width,
+          params.depth,
+          maxGrid.width,
+          maxGrid.depth
+        );
 
         let result;
         let poolAcquired = false;
@@ -405,7 +413,7 @@ export function useExport(): UseExportReturn {
         setIsExportingBin(false);
       }
     },
-    [params, maxGridUnits, hasDividers]
+    [params, maxGrid, hasDividers]
   );
 
   return {
@@ -417,7 +425,7 @@ export function useExport(): UseExportReturn {
     downloadBin,
     needsSplit,
     splitPieceCount,
-    maxGridUnits,
+    maxGridUnits: maxGrid,
     downloadSplit,
   };
 }

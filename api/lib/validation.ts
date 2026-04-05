@@ -87,6 +87,7 @@ interface LayoutShape {
   bins: BinShape[];
   categories: CategoryShape[];
   printBedSize?: number;
+  printBedDepth?: number;
   gridUnitMm?: number;
   heightUnitMm?: number;
 }
@@ -312,6 +313,7 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       bins: validatedBins,
       categories: validatedCategories,
       printBedSize: isNumber(layout.printBedSize) ? layout.printBedSize : undefined,
+      printBedDepth: isNumber(layout.printBedDepth) ? layout.printBedDepth : undefined,
       gridUnitMm: isNumber(layout.gridUnitMm) ? layout.gridUnitMm : undefined,
       heightUnitMm: isNumber(layout.heightUnitMm) ? layout.heightUnitMm : undefined,
     },

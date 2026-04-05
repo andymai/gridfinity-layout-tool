@@ -30,6 +30,7 @@ export function createLayoutFingerprint(layout: Layout): string {
     name: layout.name,
     purpose: layout.purpose,
     printBedSize: layout.printBedSize,
+    printBedDepth: layout.printBedDepth,
     gridUnitMm: layout.gridUnitMm,
     heightUnitMm: layout.heightUnitMm,
   });

@@ -39,28 +39,29 @@ export const BinSplitLines = memo(function BinSplitLines() {
     }))
   );
 
-  const { defaultPrintBedSize, defaultGridUnitMm } = useSettingsStore(
+  const { defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm } = useSettingsStore(
     useShallow((s) => ({
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
+      defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
       defaultGridUnitMm: s.settings.defaultGridUnitMm,
     }))
   );
 
-  const maxGridUnits = useMemo(
-    () => calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm),
-    [defaultPrintBedSize, defaultGridUnitMm]
+  const maxGrid = useMemo(
+    () => calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm, defaultPrintBedDepth),
+    [defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm]
   );
 
-  const needsSplit = width > maxGridUnits || depth > maxGridUnits;
+  const needsSplit = width > maxGrid.width || depth > maxGrid.depth;
 
   const xSplits = useMemo(
-    () => (needsSplit ? getSplitPlanePositionsMm(width, maxGridUnits, gridUnitMm) : []),
-    [width, maxGridUnits, gridUnitMm, needsSplit]
+    () => (needsSplit ? getSplitPlanePositionsMm(width, maxGrid.width, gridUnitMm) : []),
+    [width, maxGrid.width, gridUnitMm, needsSplit]
   );
 
   const ySplits = useMemo(
-    () => (needsSplit ? getSplitPlanePositionsMm(depth, maxGridUnits, gridUnitMm) : []),
-    [depth, maxGridUnits, gridUnitMm, needsSplit]
+    () => (needsSplit ? getSplitPlanePositionsMm(depth, maxGrid.depth, gridUnitMm) : []),
+    [depth, maxGrid.depth, gridUnitMm, needsSplit]
   );
 
   if (!needsSplit) return null;

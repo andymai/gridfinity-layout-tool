@@ -118,6 +118,7 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
 
     case 'layout.printBedSizeSet':
       next.printBedSize = mm(event.payload.size);
+      next.printBedDepth = event.payload.depth !== undefined ? mm(event.payload.depth) : undefined;
       break;
 
     case 'layout.gridUnitMmSet':

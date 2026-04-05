@@ -49,9 +49,11 @@ export function createCoreActions(setLocal: SetLocal, set: ImmerSet, _get: GetSt
       });
     },
 
-    setPrintBedSize: (size: number): void => {
+    setPrintBedSize: (size: number, depth?: number): void => {
       setLocal((state) => {
         state.layout.printBedSize = clamp(size, 42, 500) as Mm;
+        state.layout.printBedDepth =
+          depth !== undefined ? (clamp(depth, 42, 500) as Mm) : undefined;
       });
     },
 

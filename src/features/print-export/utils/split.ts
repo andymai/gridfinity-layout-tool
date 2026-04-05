@@ -53,28 +53,33 @@ function splitHalf(dimension: number, useCeil: boolean): number {
  * - 5×6 → [3×3, 2×3, 3×3, 2×3]
  * - 1.5×1.5 (maxSize=1) → [1×1, 0.5×1, 1×0.5, 0.5×0.5]
  */
-export function splitBinSize(width: number, depth: number, maxSize: number): PrintPiece[] {
-  if (width <= maxSize && depth <= maxSize) {
+export function splitBinSize(
+  width: number,
+  depth: number,
+  maxWidth: number,
+  maxDepth: number = maxWidth
+): PrintPiece[] {
+  if (width <= maxWidth && depth <= maxDepth) {
     return [{ width: width as GridUnits, depth: depth as GridUnits, count: 1 }];
   }
 
   const pieces: PrintPiece[] = [];
 
-  if (width > maxSize && depth <= maxSize) {
+  if (width > maxWidth && depth <= maxDepth) {
     // Split width only - preserves integer vs fractional behavior
     const left = splitHalf(width, true);
     const right = splitHalf(width, false);
-    pieces.push(...splitBinSize(left, depth, maxSize));
+    pieces.push(...splitBinSize(left, depth, maxWidth, maxDepth));
     if (right > 0) {
-      pieces.push(...splitBinSize(right, depth, maxSize));
+      pieces.push(...splitBinSize(right, depth, maxWidth, maxDepth));
     }
-  } else if (width <= maxSize && depth > maxSize) {
+  } else if (width <= maxWidth && depth > maxDepth) {
     // Split depth only
     const top = splitHalf(depth, true);
     const bottom = splitHalf(depth, false);
-    pieces.push(...splitBinSize(width, top, maxSize));
+    pieces.push(...splitBinSize(width, top, maxWidth, maxDepth));
     if (bottom > 0) {
-      pieces.push(...splitBinSize(width, bottom, maxSize));
+      pieces.push(...splitBinSize(width, bottom, maxWidth, maxDepth));
     }
   } else {
     // Split both dimensions
@@ -83,10 +88,11 @@ export function splitBinSize(width: number, depth: number, maxSize: number): Pri
     const topD = splitHalf(depth, true);
     const bottomD = splitHalf(depth, false);
 
-    pieces.push(...splitBinSize(leftW, topD, maxSize));
-    if (rightW > 0) pieces.push(...splitBinSize(rightW, topD, maxSize));
-    if (bottomD > 0) pieces.push(...splitBinSize(leftW, bottomD, maxSize));
-    if (rightW > 0 && bottomD > 0) pieces.push(...splitBinSize(rightW, bottomD, maxSize));
+    pieces.push(...splitBinSize(leftW, topD, maxWidth, maxDepth));
+    if (rightW > 0) pieces.push(...splitBinSize(rightW, topD, maxWidth, maxDepth));
+    if (bottomD > 0) pieces.push(...splitBinSize(leftW, bottomD, maxWidth, maxDepth));
+    if (rightW > 0 && bottomD > 0)
+      pieces.push(...splitBinSize(rightW, bottomD, maxWidth, maxDepth));
   }
 
   return pieces.filter((p) => p.width > 0 && p.depth > 0);
@@ -166,9 +172,11 @@ function mergeCustomProperties(
  */
 export function generatePrintList(
   bins: Bin[],
-  maxPrintSize: number,
+  maxPrintSize: number | { width: number; depth: number },
   printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS
 ): PrintRow[] {
+  const maxW = typeof maxPrintSize === 'number' ? maxPrintSize : maxPrintSize.width;
+  const maxD = typeof maxPrintSize === 'number' ? maxPrintSize : maxPrintSize.depth;
   const placedBins = getGridBins(bins);
 
   // Group by size, height, label, and category (consolidate same dimensions + label + category)
@@ -215,9 +223,9 @@ export function generatePrintList(
   const rows: PrintRow[] = [];
 
   for (const [, group] of groups) {
-    const pieces = splitBinSize(group.width, group.depth, maxPrintSize);
+    const pieces = splitBinSize(group.width, group.depth, maxW, maxD);
     const mergedPieces = mergePieces(pieces);
-    const needsSplit = group.width > maxPrintSize || group.depth > maxPrintSize;
+    const needsSplit = group.width > maxW || group.depth > maxD;
     const totalPieces = mergedPieces.reduce((sum, p) => sum + p.count, 0) * group.count;
 
     // Calculate filament for all pieces in this row (analytical volume model)
@@ -296,7 +304,7 @@ export function getSpoolEstimate(totalFilament: number): number {
  */
 export function generateEnhancedPrintList(
   bins: Bin[],
-  maxPrintSize: number,
+  maxPrintSize: number | { width: number; depth: number },
   printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS,
   config: PrintListConfig = {
     filamentCostPerKg: DEFAULT_COST_PER_KG,

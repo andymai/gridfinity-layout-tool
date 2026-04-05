@@ -1559,5 +1559,9 @@
   "undo.printBedSizeChanged": "Changed print bed size",
   "undo.redid": "↪ Redid: {action}",
   "undo.undid": "↩ Undid: {action}",
-  "undo.unknownAction": "Action"
+  "undo.unknownAction": "Action",
+  "printBedInput.linkAriaLabel": "Link width and depth",
+  "printBedInput.unlinkAriaLabel": "Unlink width and depth",
+  "printBedInput.widthAriaLabel": "Print bed width",
+  "printBedInput.depthAriaLabel": "Print bed depth"
 }

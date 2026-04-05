@@ -158,8 +158,8 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
   const showRotate = locationContext.canRotate && !(isInStash && isDesktop);
 
   // Check if bin needs splitting for STL search
-  const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
-  const needsSplit = bin.width > maxGridUnits || bin.depth > maxGridUnits;
+  const maxGrid = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm, layout.printBedDepth);
+  const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 
   return (
     <ContextMenuContainer

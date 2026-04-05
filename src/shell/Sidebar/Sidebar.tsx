@@ -8,6 +8,7 @@ import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel'
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
 import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { HalfBinModeBlockedModal } from '@/shell/Modals';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
@@ -71,6 +72,8 @@ export function Sidebar() {
     gridUnitMm,
     heightUnitMm,
     printBedSize,
+    printBedDepth,
+    maxGridUnits,
     halfBinMode,
     handleDrawerWidthChange,
     handleDrawerDepthChange,
@@ -430,17 +433,15 @@ export function Sidebar() {
                   <SettingsRow
                     label="Print bed"
                     htmlFor="printBedSize"
-                    tooltip={`Bins larger than ${Math.floor((printBedSize - 10) / gridUnitMm)}×${Math.floor((printBedSize - 10) / gridUnitMm)} will be split for printing`}
+                    tooltip={`Bins wider than ${maxGridUnits.width} or deeper than ${maxGridUnits.depth} will be split for printing`}
                     unit="mm"
                   >
-                    <DeferredNumberInput
+                    <PrintBedInput
                       id="printBedSize"
-                      value={printBedSize}
+                      width={printBedSize}
+                      depth={printBedDepth}
                       onChange={setPrintBedSize}
-                      min={42}
-                      max={500}
-                      step={10}
-                      className="input w-14 py-0.5 px-1 text-xs text-right"
+                      variant="compact"
                     />
                   </SettingsRow>
                 </div>

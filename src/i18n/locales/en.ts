@@ -1801,6 +1801,12 @@ const en: Record<string, string> = {
   'undo.undid': '\u21a9 Undid: {action}',
   'undo.redid': '\u21aa Redid: {action}',
 
+  // Print Bed Input
+  'printBedInput.linkAriaLabel': 'Link width and depth',
+  'printBedInput.unlinkAriaLabel': 'Unlink width and depth',
+  'printBedInput.widthAriaLabel': 'Print bed width',
+  'printBedInput.depthAriaLabel': 'Print bed depth',
+
   // Engagement Nudges
   'engagement.feedbackNudge': 'Have ideas for the tool? Your feedback shapes what gets built next.',
   'engagement.giveFeedback': 'Share Feedback',

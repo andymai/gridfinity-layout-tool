@@ -368,14 +368,22 @@ export function PreviewCanvas() {
     }))
   );
 
-  const { defaultPrintBedSize: bedSize, defaultGridUnitMm: gridUnit } = useSettingsStore(
+  const {
+    defaultPrintBedSize: bedSize,
+    defaultPrintBedDepth: bedDepth,
+    defaultGridUnitMm: gridUnit,
+  } = useSettingsStore(
     useShallow((s) => ({
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
+      defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
       defaultGridUnitMm: s.settings.defaultGridUnitMm,
     }))
   );
-  const maxGridUnits = useMemo(() => calcMaxGridUnits(bedSize, gridUnit), [bedSize, gridUnit]);
-  const needsSplit = params.width > maxGridUnits || params.depth > maxGridUnits;
+  const maxGrid = useMemo(
+    () => calcMaxGridUnits(bedSize, gridUnit, bedDepth),
+    [bedSize, bedDepth, gridUnit]
+  );
+  const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;
 
   // Drive split piece mesh generation when bin exceeds print bed
   useSplitPreview();

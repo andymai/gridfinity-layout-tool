@@ -103,6 +103,7 @@ export function useBaseplateGeneration(): void {
     drawerDepth,
     gridUnitMm,
     printBedSize,
+    printBedDepth,
     fractionalEdgeX,
     fractionalEdgeY,
     magnetHoles,
@@ -126,6 +127,7 @@ export function useBaseplateGeneration(): void {
         drawerDepth: state.layout.drawer.depth,
         gridUnitMm: state.layout.gridUnitMm,
         printBedSize: state.layout.printBedSize,
+        printBedDepth: state.layout.printBedDepth,
         fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
         fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
         magnetHoles: bp.magnetHoles,
@@ -154,7 +156,7 @@ export function useBaseplateGeneration(): void {
   const setDedupStats = useBaseplatePageStore((s) => s.setDedupStats);
 
   const runGeneration = useCallback(
-    async (fullParams: FullBaseplateParams, bedSizeMm: number) => {
+    async (fullParams: FullBaseplateParams, bedWidthMm: number, bedDepthMm: number) => {
       const bridge = bridgeRef.current;
       if (!bridge || bridge.isDestroyed) return;
 
@@ -163,7 +165,7 @@ export function useBaseplateGeneration(): void {
       const epoch = ++generationEpochRef.current;
 
       // Compute tiling plan
-      const tiling = computeBaseplateTiling(fullParams, bedSizeMm);
+      const tiling = computeBaseplateTiling(fullParams, bedWidthMm, bedDepthMm);
       setTiling(tiling);
 
       setGenerationStatus('generating');
@@ -331,7 +333,11 @@ export function useBaseplateGeneration(): void {
           layoutState.layout.drawer.fractionalEdgeX ?? 'end',
           layoutState.layout.drawer.fractionalEdgeY ?? 'end'
         );
-        void runGeneration(params, layoutState.layout.printBedSize);
+        void runGeneration(
+          params,
+          layoutState.layout.printBedSize,
+          layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize
+        );
       })
       .catch((e: unknown) => {
         if (cancelled) return;
@@ -366,12 +372,13 @@ export function useBaseplateGeneration(): void {
       fractionalEdgeX,
       fractionalEdgeY
     );
-    void runGeneration(params, printBedSize);
+    void runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
   }, [
     drawerWidth,
     drawerDepth,
     gridUnitMm,
     printBedSize,
+    printBedDepth,
     fractionalEdgeX,
     fractionalEdgeY,
     magnetHoles,

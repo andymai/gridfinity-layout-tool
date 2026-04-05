@@ -62,7 +62,7 @@ export interface BinConstraints {
   minHeight: number;
   maxHeight: number;
   maxClearance: number;
-  maxGridUnits: number;
+  maxGridUnits: { width: number; depth: number };
   needsSplit: boolean;
   heightRange: string;
   /** Why the minimum height is what it is */
@@ -146,7 +146,7 @@ export function useBinInspector(): UseBinInspectorReturn {
         minHeight: CONSTRAINTS.MIN_BIN_HEIGHT,
         maxHeight: CONSTRAINTS.MIN_BIN_HEIGHT,
         maxClearance: 0,
-        maxGridUnits: 5,
+        maxGridUnits: { width: 5, depth: 5 },
         needsSplit: false,
         heightRange: `${CONSTRAINTS.MIN_BIN_HEIGHT}u`,
         minHeightReason: 'global_minimum',
@@ -154,8 +154,8 @@ export function useBinInspector(): UseBinInspectorReturn {
       };
     }
 
-    const maxGridUnits = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm);
-    const needsSplit = bin.width > maxGridUnits || bin.depth > maxGridUnits;
+    const maxGrid = calcMaxGridUnits(layout.printBedSize, layout.gridUnitMm, layout.printBedDepth);
+    const needsSplit = bin.width > maxGrid.width || bin.depth > maxGrid.depth;
 
     // For bins in staging, use full drawer height range
     // They're not on a layer yet, so no layer-based constraints apply
@@ -167,7 +167,7 @@ export function useBinInspector(): UseBinInspectorReturn {
         minHeight,
         maxHeight,
         maxClearance,
-        maxGridUnits,
+        maxGridUnits: maxGrid,
         needsSplit,
         heightRange: `${minHeight}u – ${maxHeight}u`,
         minHeightReason: 'global_minimum',
@@ -185,14 +185,22 @@ export function useBinInspector(): UseBinInspectorReturn {
       minHeight,
       maxHeight,
       maxClearance,
-      maxGridUnits,
+      maxGridUnits: maxGrid,
       needsSplit,
       heightRange: `${minHeight}u – ${maxHeight}u`,
       minHeightReason:
         layer.height > CONSTRAINTS.MIN_BIN_HEIGHT ? 'layer_height' : 'global_minimum',
       maxHeightReason: 'remaining_space',
     };
-  }, [bin, layer, layout.drawer.height, layout.layers, layout.printBedSize, layout.gridUnitMm]);
+  }, [
+    bin,
+    layer,
+    layout.drawer.height,
+    layout.layers,
+    layout.printBedSize,
+    layout.printBedDepth,
+    layout.gridUnitMm,
+  ]);
 
   // Collect all unique custom property keys from all bins in the layout (for suggestions)
   const existingPropertyKeys = useMemo(() => {
