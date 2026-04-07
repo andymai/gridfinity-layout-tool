@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.37.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.0...gridfinity-layout-tool-v4.37.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* **ci:** invoke vitest directly so -u actually updates snapshots on PRs ([#1329](https://github.com/andymai/gridfinity-layout-tool/issues/1329)) ([4534477](https://github.com/andymai/gridfinity-layout-tool/commit/45344776a77abb0c85b61c68846c1653b270b0f8))
+
 ## [4.37.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.36.6...gridfinity-layout-tool-v4.37.0) (2026-04-05)
 
 
