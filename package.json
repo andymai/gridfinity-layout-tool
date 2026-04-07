@@ -161,7 +161,7 @@
     "@vitest/coverage-v8": "^4.1.2",
     "@vitest/ui": "^4.1.2",
     "axe-core": "^4.11.1",
-    "eslint": "^10.1.0",
+    "eslint": "^10.2.0",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-boundaries": "^6.0.2",
     "eslint-plugin-i18next": "^6.1.3",
