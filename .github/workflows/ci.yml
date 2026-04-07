@@ -95,7 +95,7 @@ jobs:
             pnpm vitest run --coverage -u
           else
             echo "Running without coverage (PR, shard $SHARD)"
-            pnpm run test:run -- --shard="$SHARD" -u
+            pnpm vitest run --shard="$SHARD" -u
           fi
 
       - name: Upload coverage report
