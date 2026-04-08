@@ -103,7 +103,9 @@ function buildCutoutShape(cutout: {
 
   // Apply rotation around Z axis (at origin, before translation)
   if (cutout.rotation !== 0) {
-    shape = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });
+    const rotated = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });
+    shape.delete();
+    shape = rotated;
   }
 
   return shape;
@@ -368,15 +370,23 @@ function buildUngroupedCutout(
       maxY: halfD,
     });
     if (scoopEdges.length > 0) {
-      shape = applyFilletWithFallback(shape, scoopEdges, scoopR);
+      const filleted = applyFilletWithFallback(shape, scoopEdges, scoopR);
+      // applyFilletWithFallback returns the same shape on total failure;
+      // only dispose when it actually allocated a new handle.
+      if (filleted !== shape) {
+        shape.delete();
+        shape = filleted;
+      }
     }
   }
 
-  return translate(shape, [
+  const positioned = translate(shape, [
     originX + cutout.x + cutout.width / 2,
     originY + cutout.y + cutout.depth / 2,
     solidSurfaceZ - effectiveDepth,
   ]);
+  shape.delete();
+  return positioned;
 }
 
 /** Build and fuse grouped cutouts with a shared adaptive scoop fillet. */
@@ -401,18 +411,24 @@ function buildGroupedCutouts(
 
     builtMembers.push(cutout);
     builtDepths.push(effectiveDepth);
-    memberShapes.push(
-      translate(shape, [
-        originX + cutout.x + cutout.width / 2,
-        originY + cutout.y + cutout.depth / 2,
-        solidSurfaceZ - effectiveDepth,
-      ])
-    );
+    const positioned = translate(shape, [
+      originX + cutout.x + cutout.width / 2,
+      originY + cutout.y + cutout.depth / 2,
+      solidSurfaceZ - effectiveDepth,
+    ]);
+    shape.delete();
+    memberShapes.push(positioned);
   }
   if (memberShapes.length === 0) return null;
 
-  let fused =
-    memberShapes.length === 1 ? memberShapes[0] : unwrap(fuseAll(memberShapes as ValidSolid[]));
+  let fused: Shape3D;
+  if (memberShapes.length === 1) {
+    fused = memberShapes[0];
+  } else {
+    fused = unwrap(fuseAll(memberShapes as ValidSolid[]));
+    // fuseAll allocates a new handle; dispose the input member shapes.
+    for (const s of memberShapes) s.delete();
+  }
 
   // Determine group scoop radius and cut depth from built members only
   const groupScoopRadius = Math.max(...builtMembers.map((c) => c.scoopRadius ?? 0));
@@ -443,7 +459,11 @@ function buildGroupedCutouts(
     const zBottom = solidSurfaceZ - groupCutDepth;
     const groupScoopEdges = findBottomEdges(fused, zBottom, groupBounds);
     if (groupScoopEdges.length > 0) {
-      fused = applyAdaptiveScoop(fused, groupScoopEdges, scoopR, memberAABBs);
+      const filleted = applyAdaptiveScoop(fused, groupScoopEdges, scoopR, memberAABBs);
+      if (filleted !== fused) {
+        fused.delete();
+        fused = filleted;
+      }
     }
   }
 
@@ -507,9 +527,17 @@ export function buildCutoutCuts(
 
   const fusedResult = fuseAllOrNull(cutoutShapes);
   if (!fusedResult) return null;
+  // fuseAllOrNull may return cutoutShapes[0] directly when length === 1;
+  // dispose the other inputs that were consumed by the fuse.
+  if (cutoutShapes.length > 1) {
+    for (const s of cutoutShapes) s.delete();
+  }
 
   // Clip cutout union to bin interior so cutouts extending past walls don't
   // cut through them. The clip boundary covers from floor to the solid surface.
   const clipBoundary = box(innerW, innerD, solidSurfaceZ, { at: [0, 0, solidSurfaceZ / 2] });
-  return unwrap(intersect(fusedResult, clipBoundary));
+  const clipped = unwrap(intersect(fusedResult, clipBoundary));
+  fusedResult.delete();
+  clipBoundary.delete();
+  return clipped;
 }

@@ -13,7 +13,8 @@
  * boolean cut operation on the bin — critical for performance.
  */
 
-import { box, unwrap, fuseAll } from 'brepjs';
+import { box, unwrap, fuseAll, withScope, clone } from 'brepjs';
+import type { DisposalScope } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import {
@@ -169,6 +170,20 @@ export function buildSlotCuts(
   // Wall too thin for functional slots — skip to avoid cutting through
   if (params.wallThickness < MIN_WALL_FOR_SLOTS) return null;
 
+  return withScope((scope: DisposalScope): Shape3D | null => {
+    const fused = buildSlotCutsInScope(scope, params, innerW, innerD, wallHeight, lipInfo);
+    return fused ? unwrap(clone(fused)) : null;
+  });
+}
+
+function buildSlotCutsInScope(
+  scope: DisposalScope,
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  lipInfo?: LipCutInfo
+): Shape3D | null {
   const { slotConfig } = params;
   const { slotWidth, slotDepth } = getEffectiveSlotDimensions(params);
 
@@ -199,25 +214,31 @@ export function buildSlotCuts(
 
     for (const crossPos of positions) {
       // Wall slots (narrow, for tab engagement) — start at floor surface
-      slots.push(
-        ...createMirroredCutters(slotDepth, slotWidth, slotHeight, halfSpan, crossPos, floorZ, axis)
+      const wallCutters = createMirroredCutters(
+        slotDepth,
+        slotWidth,
+        slotHeight,
+        halfSpan,
+        crossPos,
+        floorZ,
+        axis
       );
+      for (const c of wallCutters) slots.push(scope.register(c));
 
       // Lip cutouts: remove the interior overhang above AND below wallHeight.
       // The lip profile extends below wallHeight (wall-replacement extension),
       // so the cutout must reach down to wallHeight - lipTaperWidth.
       if (lipInfo && lipOverhang > 0) {
-        slots.push(
-          ...createMirroredLipCutters(
-            lipOverhang,
-            slotWidth,
-            lipCutHeight,
-            halfSpan,
-            crossPos,
-            lipCutStartZ,
-            axis
-          )
+        const lipCutters = createMirroredLipCutters(
+          lipOverhang,
+          slotWidth,
+          lipCutHeight,
+          halfSpan,
+          crossPos,
+          lipCutStartZ,
+          axis
         );
+        for (const c of lipCutters) slots.push(scope.register(c));
       }
     }
   };
@@ -235,9 +256,10 @@ export function buildSlotCuts(
   }
 
   if (slots.length === 0) return null;
+  if (slots.length === 1) return slots[0];
 
   // Batch-fuse all slots into a single compound for one boolean cut
-  return unwrap(fuseAll(slots as ValidSolid[]));
+  return scope.register(unwrap(fuseAll(slots as ValidSolid[])));
 }
 
 // --- FeatureBuilder protocol ---

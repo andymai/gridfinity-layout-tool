@@ -238,14 +238,18 @@ function buildMagnetHoles(
       if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
 
       for (const [dx, dy] of MAGNET_OFFSETS) {
-        holes.push(
-          translate(unwrap(clone(magnetTemplate)), [cell.centerX + dx, cell.centerY + dy, 0])
-        );
+        const cloned = unwrap(clone(magnetTemplate));
+        const positioned = translate(cloned, [cell.centerX + dx, cell.centerY + dy, 0]);
+        cloned.delete();
+        holes.push(positioned);
       }
     },
     cellOpts
   );
 
+  // Template is only used to stamp clones per cell — dispose once the loop
+  // is done so its WASM handle is released.
+  magnetTemplate.delete();
   return holes;
 }
 /**
@@ -999,10 +1003,11 @@ function buildBaseplateSolid(
     // and apply corner rounding as a post-cache step. This avoids expensive
     // pocket re-cuts when only corner radius changes.
     const rectProfile = drawRectangle(totalW, totalD);
-    baseplate = (rectProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }).extrude(
-      -totalHeight
-    );
-    baseplate = translate(baseplate, [slabOffsetX, slabOffsetY, 0]);
+    const extrudedSlab = (
+      rectProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
+    ).extrude(-totalHeight);
+    baseplate = translate(extrudedSlab, [slabOffsetX, slabOffsetY, 0]);
+    extrudedSlab.delete();
 
     onProgress?.(0.2);
 
@@ -1016,13 +1021,22 @@ function buildBaseplateSolid(
         const cellW_mm = cell.widthUnits * gridUnitMm;
         const cellD_mm = cell.depthUnits * gridUnitMm;
         const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
-        pockets.push(translate(pocket, [cell.centerX, cell.centerY, 0]));
+        // pocket from getPocketTemplate is a clone owned by caller — translate
+        // produces a new shape, so dispose the pre-translation clone.
+        const positioned = translate(pocket, [cell.centerX, cell.centerY, 0]);
+        pocket.delete();
+        pockets.push(positioned);
       },
       cellOpts
     );
 
     if (pockets.length > 0) {
+      const preCut = baseplate;
       baseplate = unwrap(cutAll(baseplate as ValidSolid, pockets as ValidSolid[]));
+      // cutAll allocates a fresh handle for the result and does not dispose
+      // its inputs — free the pre-cut slab and every pocket cutter now.
+      preCut.delete();
+      for (const p of pockets) p.delete();
     }
 
     slabWithPocketsCache.set(spKey, baseplate);
@@ -1053,9 +1067,13 @@ function buildBaseplateSolid(
       roundedProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
     ).extrude(-totalHeight);
     const roundedTranslated = translate(roundedSlab, [slabOffsetX, slabOffsetY, 0]);
+    roundedSlab.delete();
     // Intersect: keep only material that's inside both the cached rectangular
     // slab-with-pockets AND the rounded profile.
+    const oldBaseplate = baseplate;
     baseplate = unwrap(intersect(baseplate, roundedTranslated));
+    oldBaseplate.delete();
+    roundedTranslated.delete();
   }
 
   // into a single array for one batched cutAll operation.
@@ -1099,6 +1117,7 @@ function buildBaseplateSolid(
       ...nubs.map((n): BooleanPipelineStep => ({ op: 'fuse', tool: n })),
       ...allCuts.map((c): BooleanPipelineStep => ({ op: 'cut', tool: c })),
     ];
+    const preBoolean = baseplate;
     const pipelineResult = booleanPipeline(baseplate, steps);
     if (isOk(pipelineResult)) {
       baseplate = pipelineResult.value;
@@ -1108,18 +1127,25 @@ function buildBaseplateSolid(
         baseplate = unwrap(fuseAll([baseplate, ...nubs] as ValidSolid[]));
       }
       if (allCuts.length > 0) {
+        const preCut = baseplate;
         baseplate = unwrap(cutAll(baseplate as ValidSolid, allCuts as ValidSolid[]));
+        if (preCut !== preBoolean) preCut.delete();
       }
     }
+    // Dispose the pre-boolean baseplate (replaced by the pipeline result)
+    // and every tool shape consumed by the boolean pass.
+    if (baseplate !== preBoolean) preBoolean.delete();
+    for (const n of nubs) n.delete();
+    for (const c of allCuts) c.delete();
   }
 
   onProgress?.(0.6);
 
   onProgress?.(0.8);
 
-  baseplate = translate(baseplate, [0, 0, totalHeight]);
-
-  return baseplate;
+  const finalBaseplate = translate(baseplate, [0, 0, totalHeight]);
+  baseplate.delete();
+  return finalBaseplate;
 }
 
 /**

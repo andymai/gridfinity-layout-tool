@@ -5,8 +5,8 @@
  * to help slide items out of the bin.
  */
 
-import { draw, edgeFinder, getBounds, translate } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import { draw, edgeFinder, getBounds, translate, withScope, clone, unwrap, fuseAll } from 'brepjs';
+import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import {
@@ -15,7 +15,7 @@ import {
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
 import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
-import { fuseAllOrNull, findCompartmentBounds } from './compartmentBuilder';
+import { findCompartmentBounds } from './compartmentBuilder';
 import { applyFilletWithFallback } from './cutoutBuilder';
 /**
  * Build finger scoop ramps that curve from the bin floor up to the front wall.
@@ -50,6 +50,21 @@ export function buildScoopRamps(
   if (!params.scoop.enabled) return null;
   if (params.style !== 'standard') return null;
 
+  return withScope((scope: DisposalScope): Shape3D | null => {
+    const fused = buildScoopRampsInScope(scope, params, innerW, innerD, wallHeight, wallThickness);
+    // Clone so scope can dispose the fused original on exit.
+    return fused ? unwrap(clone(fused)) : null;
+  });
+}
+
+function buildScoopRampsInScope(
+  scope: DisposalScope,
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  wallThickness: number
+): Shape3D | null {
   const hasLip = params.base.stackingLip;
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER);
 
@@ -132,7 +147,7 @@ export function buildScoopRamps(
       const profile = pen.close();
 
       // Sketch on YZ plane and extrude along X for the compartment width
-      let scoopSolid = sketch(profile, 'YZ', -compW / 2).extrude(compW);
+      let scoopSolid = scope.register(sketch(profile, 'YZ', -compW / 2).extrude(compW));
 
       // Fillet the two longitudinal edges where the ramp meets the wall and floor.
       // Before translation, the scoop solid spans X=[-compW/2, +compW/2] with
@@ -162,8 +177,18 @@ export function buildScoopRamps(
             return isTop || isFloor;
           })
           .findAll(scoopSolid);
+        // Note: edges returned by findAll come from brepjs's per-shape
+        // topology cache — they're NOT owned by the caller. Disposing them
+        // here would double-free. They're released when the parent shape
+        // (registered below) is disposed by the scope.
         if (smoothEdges.length > 0) {
-          scoopSolid = applyFilletWithFallback(scoopSolid, smoothEdges, filletR);
+          const filleted = applyFilletWithFallback(scoopSolid, smoothEdges, filletR);
+          // applyFilletWithFallback returns either a new shape (success) or
+          // the same shape (all fallbacks failed). Only register when it's
+          // a new allocation; otherwise we'd double-register.
+          if (filleted !== scoopSolid) {
+            scoopSolid = scope.register(filleted);
+          }
         }
       }
 
@@ -171,11 +196,14 @@ export function buildScoopRamps(
       const compCenterX = -innerW / 2 + (minCol + compCols / 2) * cellW;
       const frontEdgeY = -innerD / 2 + minRow * cellD;
 
-      scoopShapes.push(translate(scoopSolid, [compCenterX, frontEdgeY, 0]));
+      scoopShapes.push(scope.register(translate(scoopSolid, [compCenterX, frontEdgeY, 0])));
     }
   }
 
-  return fuseAllOrNull(scoopShapes);
+  // Inline fuse so the fused handle is registered in scope.
+  if (scoopShapes.length === 0) return null;
+  if (scoopShapes.length === 1) return scoopShapes[0]; // already scope-registered
+  return scope.register(unwrap(fuseAll(scoopShapes as ValidSolid[])));
 }
 
 // --- FeatureBuilder protocol ---

@@ -5,10 +5,9 @@
  * Walls appear at boundaries between cells with different compartment IDs.
  */
 
-import { box } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import { box, withScope, clone, unwrap, fuseAll } from 'brepjs';
+import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-import { fuseAllOrNull } from './utils/shapeOps';
 
 // Re-export for backwards compatibility with existing imports
 export { fuseAllOrNull } from './utils/shapeOps';
@@ -85,11 +84,26 @@ export function buildCompartmentWalls(
   innerD: number,
   wallHeight: number
 ): Shape3D | null {
-  const { cols, rows, thickness, cells } = params.compartments;
+  const { cols, rows, cells } = params.compartments;
 
   // Single compartment = no walls needed
   if (cols <= 1 && rows <= 1) return null;
   if (new Set(cells).size <= 1) return null;
+
+  return withScope((scope: DisposalScope): Shape3D | null => {
+    const fused = buildCompartmentWallsInScope(scope, params, innerW, innerD, wallHeight);
+    return fused ? unwrap(clone(fused)) : null;
+  });
+}
+
+function buildCompartmentWallsInScope(
+  scope: DisposalScope,
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number
+): Shape3D | null {
+  const { cols, rows, thickness, cells } = params.compartments;
 
   const cellW = innerW / cols;
   const cellD = innerD / rows;
@@ -115,7 +129,9 @@ export function buildCompartmentWalls(
     for (const [start, end] of segments) {
       const segLength = (end - start) * cellD;
       const yCenter = -innerD / 2 + (start + (end - start) / 2) * cellD;
-      wallSegments.push(buildWallSegment(thickness, segLength, wallHeight, xPos, yCenter));
+      wallSegments.push(
+        scope.register(buildWallSegment(thickness, segLength, wallHeight, xPos, yCenter))
+      );
     }
   }
 
@@ -131,11 +147,15 @@ export function buildCompartmentWalls(
     for (const [start, end] of segments) {
       const segLength = (end - start) * cellW;
       const xCenter = -innerW / 2 + (start + (end - start) / 2) * cellW;
-      wallSegments.push(buildWallSegment(segLength, thickness, wallHeight, xCenter, yPos));
+      wallSegments.push(
+        scope.register(buildWallSegment(segLength, thickness, wallHeight, xCenter, yPos))
+      );
     }
   }
 
-  return fuseAllOrNull(wallSegments);
+  if (wallSegments.length === 0) return null;
+  if (wallSegments.length === 1) return wallSegments[0];
+  return scope.register(unwrap(fuseAll(wallSegments as ValidSolid[])));
 }
 
 // --- FeatureBuilder protocol ---

@@ -2,18 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { CutFace, BinGeometryContext } from './splitConnectorBuilder';
 import type { applySplitConnectors as ApplySplitConnectorsFn } from './splitConnectorBuilder';
 
-// Mock brepjs to avoid WASM loading
+// Mock brepjs to avoid WASM loading.
+// All mock shapes have a delete() stub so disposal calls in production code
+// (added to plug WASM handle leaks) succeed in unit tests.
+const mockShape = (extra?: object) => ({ delete: vi.fn(), ...extra });
 vi.mock('brepjs', () => ({
   drawRectangle: vi.fn(() => ({
     sketchOnPlane: vi.fn(() => ({
-      loftWith: vi.fn(() => 'lofted-shape'),
+      loftWith: vi.fn(() => mockShape()),
     })),
   })),
   translateDrawing: vi.fn((drawing) => drawing),
   unwrap: vi.fn((v) => v),
   fuse: vi.fn((_a, b) => b),
   cut: vi.fn((a) => a),
-  translate: vi.fn((_s, pos) => ({ translated: pos })),
+  translate: vi.fn((_s, pos) => mockShape({ translated: pos })),
   getBounds: vi.fn(() => ({ xMin: 0, xMax: 10, yMin: 0, yMax: 10, zMin: 0, zMax: 10 })),
 }));
 

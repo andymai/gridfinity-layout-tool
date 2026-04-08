@@ -5,16 +5,22 @@ import { getEffectiveSlotDimensions, buildSlotCuts } from './slotBuilder';
 
 // Mock brepjs — slotBuilder imports it at module level.
 // Vitest hoists vi.mock calls above imports automatically.
+// withScope/clone stubs are required because slotBuilder now wraps its
+// allocations in a DisposalScope to prevent WASM handle leaks.
 vi.mock('brepjs', () => {
-  const mockShape = {};
+  const makeShape = () => ({ delete: vi.fn() });
   return {
-    box: vi.fn(() => mockShape),
+    box: vi.fn(() => makeShape()),
     unwrap: vi.fn((result: unknown) =>
       result && typeof result === 'object' && 'value' in result
         ? (result as { value: unknown }).value
         : result
     ),
-    fuseAll: vi.fn(() => ({ value: mockShape })),
+    fuseAll: vi.fn(() => ({ value: makeShape() })),
+    clone: vi.fn((shape: unknown) => ({ value: shape })),
+    withScope: vi.fn(<T>(fn: (scope: { register: <S>(s: S) => S }) => T) =>
+      fn({ register: <S>(s: S) => s })
+    ),
   };
 });
 

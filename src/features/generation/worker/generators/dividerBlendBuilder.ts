@@ -287,10 +287,12 @@ function buildRampCut(
     .close();
 
   const extrudeLen = divider.thickness + 2 * COPLANAR_MARGIN;
-  let shape = sketch(profile, 'XZ').extrude(extrudeLen);
-
-  // Center the extrusion around Y=0 (brepjs extrudes XZ along -Y)
-  shape = translate(shape, [0, extrudeLen / 2, 0]);
+  // Each transform allocates a new WASM handle while the previous becomes
+  // garbage. Dispose intermediates so only the final positioned shape lives.
+  const extruded = sketch(profile, 'XZ').extrude(extrudeLen);
+  const centered = translate(extruded, [0, extrudeLen / 2, 0]);
+  extruded.delete();
+  let shape = centered;
 
   // Rotate and translate so X (inward) maps to the correct bin axis.
   // Rotation around Z: +90° maps (x,y) → (-y, x), -90° maps (x,y) → (y, -x).
@@ -304,21 +306,26 @@ function buildRampCut(
 
     // Front wall (inwardSign=+1): inward = +Y → rotate +90° maps X → +Y
     // Back wall (inwardSign=-1): inward = -Y → rotate -90° maps X → -Y (via y=-x flip)
-    shape = rotate(shape, cutout.inwardSign > 0 ? 90 : -90, { axis: [0, 0, 1] });
-    shape = translate(shape, [divider.posAlongPerp, wallEnd, 0]);
-  } else {
-    // Horizontal divider near left/right wall.
-    // Profile X (inward) stays as bin X for left wall (+X inward).
-    // For right wall (-X inward), rotate 180° to flip.
-    const wallEnd = cutout.inwardSign > 0 ? divider.spanStart : divider.spanEnd;
-
-    if (cutout.inwardSign < 0) {
-      shape = rotate(shape, 180, { axis: [0, 0, 1] });
-    }
-    shape = translate(shape, [wallEnd, divider.posAlongPerp, 0]);
+    const rotated = rotate(shape, cutout.inwardSign > 0 ? 90 : -90, { axis: [0, 0, 1] });
+    shape.delete();
+    const positioned = translate(rotated, [divider.posAlongPerp, wallEnd, 0]);
+    rotated.delete();
+    return positioned;
   }
 
-  return shape;
+  // Horizontal divider near left/right wall.
+  // Profile X (inward) stays as bin X for left wall (+X inward).
+  // For right wall (-X inward), rotate 180° to flip.
+  const wallEnd = cutout.inwardSign > 0 ? divider.spanStart : divider.spanEnd;
+
+  if (cutout.inwardSign < 0) {
+    const rotated = rotate(shape, 180, { axis: [0, 0, 1] });
+    shape.delete();
+    shape = rotated;
+  }
+  const positioned = translate(shape, [wallEnd, divider.posAlongPerp, 0]);
+  shape.delete();
+  return positioned;
 }
 
 /**
@@ -442,7 +449,14 @@ export function buildDividerBlends(
     }
   }
 
-  return fuseAllOrNull(cuts);
+  // fuseAllOrNull allocates a new WASM handle for the fused result (when
+  // cuts.length > 1) but does not dispose its inputs. Free them explicitly
+  // to match the leak-plugging pattern used across the other builders.
+  const fused = fuseAllOrNull(cuts);
+  if (cuts.length > 1) {
+    for (const s of cuts) s.delete();
+  }
+  return fused;
 }
 
 // --- Ramp zone data for wall pattern clipping ---
