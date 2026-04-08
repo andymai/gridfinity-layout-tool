@@ -225,7 +225,9 @@ function buildScarfWedge(
   const xOffset = cutAxis === 'x' ? sketchPos : edgeOffset;
   const yOffset = cutAxis === 'x' ? edgeOffset : sketchPos + extrudeLen;
 
-  return translate(lofted, [xOffset, yOffset, bottomZ + baseHeight / 2]);
+  const positioned = translate(lofted, [xOffset, yOffset, bottomZ + baseHeight / 2]);
+  lofted.delete();
+  return positioned;
 }
 
 // ── Floor Scarf Lap ─────────────────────────────────────────────────────────

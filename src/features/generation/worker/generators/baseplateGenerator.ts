@@ -238,9 +238,10 @@ function buildMagnetHoles(
       if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
 
       for (const [dx, dy] of MAGNET_OFFSETS) {
-        holes.push(
-          translate(unwrap(clone(magnetTemplate)), [cell.centerX + dx, cell.centerY + dy, 0])
-        );
+        const cloned = unwrap(clone(magnetTemplate));
+        const positioned = translate(cloned, [cell.centerX + dx, cell.centerY + dy, 0]);
+        cloned.delete();
+        holes.push(positioned);
       }
     },
     cellOpts
@@ -999,10 +1000,11 @@ function buildBaseplateSolid(
     // and apply corner rounding as a post-cache step. This avoids expensive
     // pocket re-cuts when only corner radius changes.
     const rectProfile = drawRectangle(totalW, totalD);
-    baseplate = (rectProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }).extrude(
-      -totalHeight
-    );
-    baseplate = translate(baseplate, [slabOffsetX, slabOffsetY, 0]);
+    const extrudedSlab = (
+      rectProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
+    ).extrude(-totalHeight);
+    baseplate = translate(extrudedSlab, [slabOffsetX, slabOffsetY, 0]);
+    extrudedSlab.delete();
 
     onProgress?.(0.2);
 
@@ -1016,7 +1018,11 @@ function buildBaseplateSolid(
         const cellW_mm = cell.widthUnits * gridUnitMm;
         const cellD_mm = cell.depthUnits * gridUnitMm;
         const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
-        pockets.push(translate(pocket, [cell.centerX, cell.centerY, 0]));
+        // pocket from getPocketTemplate is a clone owned by caller — translate
+        // produces a new shape, so dispose the pre-translation clone.
+        const positioned = translate(pocket, [cell.centerX, cell.centerY, 0]);
+        pocket.delete();
+        pockets.push(positioned);
       },
       cellOpts
     );
@@ -1053,9 +1059,13 @@ function buildBaseplateSolid(
       roundedProfile.sketchOnPlane('XY', 0) as { extrude: (h: number) => Shape3D }
     ).extrude(-totalHeight);
     const roundedTranslated = translate(roundedSlab, [slabOffsetX, slabOffsetY, 0]);
+    roundedSlab.delete();
     // Intersect: keep only material that's inside both the cached rectangular
     // slab-with-pockets AND the rounded profile.
+    const oldBaseplate = baseplate;
     baseplate = unwrap(intersect(baseplate, roundedTranslated));
+    oldBaseplate.delete();
+    roundedTranslated.delete();
   }
 
   // into a single array for one batched cutAll operation.
@@ -1117,9 +1127,9 @@ function buildBaseplateSolid(
 
   onProgress?.(0.8);
 
-  baseplate = translate(baseplate, [0, 0, totalHeight]);
-
-  return baseplate;
+  const finalBaseplate = translate(baseplate, [0, 0, totalHeight]);
+  baseplate.delete();
+  return finalBaseplate;
 }
 
 /**

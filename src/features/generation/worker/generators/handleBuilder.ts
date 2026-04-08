@@ -10,11 +10,11 @@
  * checks for overlap and splits or skips as needed.
  */
 
-import { translate, rotate } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import { translate, rotate, withScope, clone, unwrap, fuseAll } from 'brepjs';
+import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import type { BinParams, HandleCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
-import { fuseAllOrNull, findWallSegments } from './compartmentBuilder';
+import { findWallSegments } from './compartmentBuilder';
 import {
   buildHandleWallDefs,
   computeHandleHoleGeometry,
@@ -33,6 +33,7 @@ import { LIP_TAPER_WIDTH } from './generatorConstants';
  * and positions at the correct wall location and Z height.
  */
 function buildHoleCut(
+  scope: DisposalScope,
   shape: HandleCutoutShape,
   segmentWidth: number,
   segmentOffset: number,
@@ -49,14 +50,14 @@ function buildHoleCut(
   });
   if (!profile) return null;
 
-  let cutShape = sketch(profile, 'XZ').extrude(extrudeDepth);
-  cutShape = translate(cutShape, [segmentOffset, extrudeDepth / 2, centerZ]);
+  let cutShape = scope.register(sketch(profile, 'XZ').extrude(extrudeDepth));
+  cutShape = scope.register(translate(cutShape, [segmentOffset, extrudeDepth / 2, centerZ]));
 
   if (wall.rotateZ !== 0) {
-    cutShape = rotate(cutShape, wall.rotateZ, { axis: [0, 0, 1] });
+    cutShape = scope.register(rotate(cutShape, wall.rotateZ, { axis: [0, 0, 1] }));
   }
 
-  return translate(cutShape, [wall.x, wall.y, 0]);
+  return scope.register(translate(cutShape, [wall.x, wall.y, 0]));
 }
 
 /** Chamfer distance in mm. */
@@ -69,6 +70,7 @@ const CHAMFER_DISTANCE = 0.8;
  * already creates the void, this larger cut creates a beveled edge automatically.
  */
 function buildChamferCut(
+  scope: DisposalScope,
   shape: HandleCutoutShape,
   segmentWidth: number,
   segmentOffset: number,
@@ -84,13 +86,13 @@ function buildChamferCut(
   });
   if (!profile) return null;
 
-  let chamfer = sketch(profile, 'XZ').extrude(CHAMFER_DISTANCE);
-  chamfer = translate(chamfer, [segmentOffset, CHAMFER_DISTANCE / 2, centerZ]);
+  let chamfer = scope.register(sketch(profile, 'XZ').extrude(CHAMFER_DISTANCE));
+  chamfer = scope.register(translate(chamfer, [segmentOffset, CHAMFER_DISTANCE / 2, centerZ]));
 
   if (wall.rotateZ !== 0) {
-    chamfer = rotate(chamfer, wall.rotateZ, { axis: [0, 0, 1] });
+    chamfer = scope.register(rotate(chamfer, wall.rotateZ, { axis: [0, 0, 1] }));
   }
-  return translate(chamfer, [wall.x, wall.y, 0]);
+  return scope.register(translate(chamfer, [wall.x, wall.y, 0]));
 }
 
 /**
@@ -108,6 +110,29 @@ export function buildHandleHoles(
 ): Shape3D | null {
   if (!params.handles.enabled) return null;
 
+  return withScope((scope: DisposalScope): Shape3D | null => {
+    const fused = buildHandleHolesInScope(
+      scope,
+      params,
+      innerW,
+      innerD,
+      interiorHeight,
+      wallThickness,
+      hasLip
+    );
+    return fused ? unwrap(clone(fused)) : null;
+  });
+}
+
+function buildHandleHolesInScope(
+  scope: DisposalScope,
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  interiorHeight: number,
+  wallThickness: number,
+  hasLip: boolean
+): Shape3D | null {
   const {
     shape,
     width: globalWidth,
@@ -164,6 +189,7 @@ export function buildHandleHoles(
     for (const handleOffset of offsets) {
       for (const seg of segments) {
         const hole = buildHoleCut(
+          scope,
           shape,
           seg.width,
           seg.offset + handleOffset,
@@ -176,6 +202,7 @@ export function buildHandleHoles(
         if (hole) allHoles.push(hole);
         if (chamfer) {
           const chamferHole = buildChamferCut(
+            scope,
             shape,
             seg.width,
             seg.offset + handleOffset,
@@ -220,6 +247,7 @@ export function buildHandleHoles(
 
               for (const offset of offsets) {
                 const hole = buildHoleCut(
+                  scope,
                   shape,
                   handleW,
                   offset,
@@ -269,7 +297,9 @@ export function buildHandleHoles(
     }
   }
 
-  return fuseAllOrNull(allHoles);
+  if (allHoles.length === 0) return null;
+  if (allHoles.length === 1) return allHoles[0]; // already scope-registered
+  return scope.register(unwrap(fuseAll(allHoles as ValidSolid[])));
 }
 
 // --- FeatureBuilder protocol ---

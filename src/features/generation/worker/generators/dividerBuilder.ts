@@ -68,7 +68,11 @@ export function buildUniqueDividerPieces(
     const length = calculateDividerLength(innerD, slotDepth, clearance);
     const piece = buildDividerPiece(length, thickness, dividerHeight);
     const yOffset = pieces.length > 0 ? dividerHeight + 5 : 0;
-    pieces.push(translate(piece, [0, yOffset, 0]));
+    // translate() creates a new shape — dispose the pre-translation piece
+    // to prevent leaking its intermediate handle across regenerations.
+    const translated = translate(piece, [0, yOffset, 0]);
+    piece.delete();
+    pieces.push(translated);
   }
 
   return pieces;

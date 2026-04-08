@@ -5,12 +5,12 @@ import { buildDividerPiece, buildUniqueDividerPieces } from './dividerBuilder';
 
 // Mock brepjs — dividerBuilder imports it at module level.
 // Vitest hoists vi.mock calls above imports automatically.
+// Each mock shape has a delete() stub so disposal calls succeed in tests.
 vi.mock('brepjs', () => {
-  const mockShape = {};
-  const mockTranslate = vi.fn(() => mockShape);
+  const makeShape = () => ({ delete: vi.fn() });
   return {
-    box: vi.fn(() => mockShape),
-    translate: mockTranslate,
+    box: vi.fn(() => makeShape()),
+    translate: vi.fn(() => makeShape()),
   };
 });
 

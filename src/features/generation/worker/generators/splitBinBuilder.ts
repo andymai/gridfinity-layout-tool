@@ -141,11 +141,9 @@ function splitSolidIntoPieces(
   // LIP_FUSE_OVERLAP to ensure a volumetric overlap for clean fusing.
   let lipSolid: Shape3D | undefined;
   if (hasLip) {
-    lipSolid = translate(buildTopShape(params.width, params.depth, true, params.gridUnitMm), [
-      0,
-      0,
-      wallTopZ - LIP_FUSE_OVERLAP,
-    ]);
+    const lipBase = buildTopShape(params.width, params.depth, true, params.gridUnitMm);
+    lipSolid = translate(lipBase, [0, 0, wallTopZ - LIP_FUSE_OVERLAP]);
+    lipBase.delete();
   }
 
   // Boundary arrays: [left edge, ...cut planes, right edge]

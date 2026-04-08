@@ -441,13 +441,25 @@ function buildWallPatternShape(
         const boxW = seg.width + 2 * border;
         const boxH = handleClip.effectiveHeight + 2 * border;
         const profile = drawRectangle(boxW, boxH);
-        let hbox = sketch(profile, 'XZ').extrude(handleClip.clipExtrudeDepth);
-        hbox = translate(hbox, [seg.offset, handleClip.clipExtrudeDepth / 2, handleClip.centerZ]);
+        // Each transform allocates a new WASM handle while the previous
+        // becomes garbage. Dispose the intermediates explicitly so only
+        // the final handle survives in clipBoxes.
+        const extruded = sketch(profile, 'XZ').extrude(handleClip.clipExtrudeDepth);
+        const centered = translate(extruded, [
+          seg.offset,
+          handleClip.clipExtrudeDepth / 2,
+          handleClip.centerZ,
+        ]);
+        extruded.delete();
+        let hbox = centered;
         if (hw.rotateZ !== 0) {
-          hbox = rotate(hbox, hw.rotateZ, { axis: [0, 0, 1] });
+          const rotated = rotate(hbox, hw.rotateZ, { axis: [0, 0, 1] });
+          hbox.delete();
+          hbox = rotated;
         }
-        hbox = translate(hbox, [hw.x, hw.y, 0]);
-        clipBoxes.push(hbox);
+        const positioned = translate(hbox, [hw.x, hw.y, 0]);
+        hbox.delete();
+        clipBoxes.push(positioned);
       }
 
       let handleClipSolid: Shape3D;
@@ -503,16 +515,24 @@ function buildWallPatternShape(
         const rboxW = zone.width + 2 * border;
         const rboxH = zone.height + 2 * border;
         const profile = drawRectangle(rboxW, rboxH);
-        let rbox = sketch(profile, 'XZ').extrude(rampClip.clipExtrudeDepth);
-        // Position: centered on zone offset along wall span, at top of wall
+        // Dispose intermediates from each transform.
+        const extruded = sketch(profile, 'XZ').extrude(rampClip.clipExtrudeDepth);
         const centerZ = rampClip.wallHeight - zone.height / 2;
-        rbox = translate(rbox, [zone.offsetAlongWall, rampClip.clipExtrudeDepth / 2, centerZ]);
-        // Rotate to match wall orientation (use descriptor's zRotation)
+        const centered = translate(extruded, [
+          zone.offsetAlongWall,
+          rampClip.clipExtrudeDepth / 2,
+          centerZ,
+        ]);
+        extruded.delete();
+        let rbox = centered;
         if (wall.zRotation !== undefined) {
-          rbox = rotate(rbox, wall.zRotation, { axis: [0, 0, 1] });
+          const rotated = rotate(rbox, wall.zRotation, { axis: [0, 0, 1] });
+          rbox.delete();
+          rbox = rotated;
         }
-        rbox = translate(rbox, [wall.translateX, wall.translateY, 0]);
-        rampBoxes.push(rbox);
+        const positioned = translate(rbox, [wall.translateX, wall.translateY, 0]);
+        rbox.delete();
+        rampBoxes.push(positioned);
       }
 
       if (rampBoxes.length > 0) {

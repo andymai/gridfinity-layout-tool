@@ -79,7 +79,9 @@ export function buildBinBox(
     // Solid mode: return the raw extrusion, optionally with lowered interior fill
     if (solid) {
       if (cutoutTopOffset > 0) {
-        // Build hollow walls extending to full wallHeight
+        // Build hollow walls extending to full wallHeight.
+        // Faces returned by faceFinder come from the per-shape topology
+        // cache and share their parent shape's lifecycle — do not dispose.
         const topFaces = faceFinder()
           .parallelTo('Z')
           .atDistance(wallHeight, [0, 0, 0])

@@ -5,12 +5,22 @@
  * for u-shape, scoop (semicircle), and funnel (tapered U) profiles.
  */
 
-import { draw, drawRoundedRectangle, drawRectangle, translate, rotate } from 'brepjs';
-import type { Shape3D, Drawing } from 'brepjs';
+import {
+  draw,
+  drawRoundedRectangle,
+  drawRectangle,
+  translate,
+  rotate,
+  clone,
+  unwrap,
+  withScope,
+  fuseAll,
+} from 'brepjs';
+import type { Shape3D, Drawing, DisposalScope, ValidSolid } from 'brepjs';
 import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
-import { fuseAllOrNull, findWallSegments } from './compartmentBuilder';
+import { findWallSegments } from './compartmentBuilder';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 
 // Re-export for consumers that were importing from this module
@@ -90,11 +100,16 @@ export function buildCutoutProfile(
 }
 
 /**
- * Build a single cutout solid from a 2D profile, extruded and positioned.
+ * Internal: build a cutout solid, registering every intermediate in `scope`.
  *
- * @returns Positioned Shape3D ready for boolean subtraction
+ * Each brepjs transform (extrude, translate, rotate) allocates a new WASM
+ * handle while the previous shape becomes garbage. Without scope tracking
+ * those intermediates leak across regenerations and eventually exhaust the
+ * WASM heap, surfacing as `RuntimeError: memory access out of bounds` on
+ * long bins (1×10 with wall cutouts was the reported repro).
  */
-export function buildSingleCutout(
+function buildSingleCutoutInScope(
+  scope: DisposalScope,
   cutoutShape: WallCutoutShape,
   cutWidth: number,
   userCutHeight: number,
@@ -107,19 +122,54 @@ export function buildSingleCutout(
 
   // Sketch on XZ plane: X = horizontal span, Z = vertical height.
   // Extrusion goes along -Y (through the wall).
-  let shape = sketch(profile, 'XZ').extrude(extrudeDepth);
+  let shape = scope.register(sketch(profile, 'XZ').extrude(extrudeDepth));
 
   // Center extrusion around Y=0 so the cut straddles the wall face.
-  shape = translate(shape, [0, extrudeDepth / 2, 0]);
+  shape = scope.register(translate(shape, [0, extrudeDepth / 2, 0]));
 
   if (position.rotateZ !== 0) {
-    shape = rotate(shape, position.rotateZ, { axis: [0, 0, 1] });
+    shape = scope.register(rotate(shape, position.rotateZ, { axis: [0, 0, 1] }));
   }
 
   // Position: bottom of visible cutout at (wallHeight - userCutHeight),
   // shape center is offset upward by overshoot/2 from the visual center
   const cutZ = wallHeight - userCutHeight / 2 + overshoot / 2;
-  return translate(shape, [position.x, position.y, cutZ]);
+  return scope.register(translate(shape, [position.x, position.y, cutZ]));
+}
+
+/**
+ * Build a single cutout solid from a 2D profile, extruded and positioned.
+ *
+ * Caller owns the returned shape and must dispose it via `.delete()` (or
+ * register it with their own DisposalScope). All intermediate WASM handles
+ * allocated during construction are disposed internally before returning.
+ *
+ * @returns Positioned Shape3D ready for boolean subtraction
+ */
+export function buildSingleCutout(
+  cutoutShape: WallCutoutShape,
+  cutWidth: number,
+  userCutHeight: number,
+  overshoot: number,
+  extrudeDepth: number,
+  wallHeight: number,
+  position: { x: number; y: number; rotateZ: number }
+): Shape3D {
+  return withScope((scope: DisposalScope) => {
+    const tracked = buildSingleCutoutInScope(
+      scope,
+      cutoutShape,
+      cutWidth,
+      userCutHeight,
+      overshoot,
+      extrudeDepth,
+      wallHeight,
+      position
+    );
+    // Clone so the scope-owned original can be safely disposed while the
+    // caller receives a fresh, independently-owned handle.
+    return unwrap(clone(tracked));
+  });
 }
 
 /**
@@ -137,6 +187,24 @@ export function buildWallCutoutCuts(
 ): Shape3D | null {
   if (!params.walls.enabled) return null;
 
+  return withScope((scope: DisposalScope): Shape3D | null => {
+    const result = buildWallCutoutCutsInScope(scope, params, innerW, innerD, wallHeight, hasLip);
+    // The fused/returned shape is registered in `scope` (directly or via
+    // fuseAllOrNull's single-element passthrough). Clone it so the original
+    // can be safely disposed when the scope exits, while the caller receives
+    // a fresh, independently-owned handle.
+    return result ? unwrap(clone(result)) : null;
+  });
+}
+
+function buildWallCutoutCutsInScope(
+  scope: DisposalScope,
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  hasLip: boolean
+): Shape3D | null {
   const wallThickness = params.wallThickness;
   const cutShapes: Shape3D[] = [];
   const cutoutShape = params.walls.shape;
@@ -191,11 +259,20 @@ export function buildWallCutoutCuts(
     );
 
     cutShapes.push(
-      buildSingleCutout(cutoutShape, cutWidth, userCutHeight, overshoot, extrudeDepth, wallHeight, {
-        x: side.rotateZ === 0 ? side.x + centerOffset : side.x,
-        y: side.rotateZ !== 0 ? side.y + centerOffset : side.y,
-        rotateZ: side.rotateZ,
-      })
+      buildSingleCutoutInScope(
+        scope,
+        cutoutShape,
+        cutWidth,
+        userCutHeight,
+        overshoot,
+        extrudeDepth,
+        wallHeight,
+        {
+          x: side.rotateZ === 0 ? side.x + centerOffset : side.x,
+          y: side.rotateZ !== 0 ? side.y + centerOffset : side.y,
+          rotateZ: side.rotateZ,
+        }
+      )
     );
   }
 
@@ -233,7 +310,8 @@ export function buildWallCutoutCuts(
               if (cutW < 0.1 || cutH < 0.1) continue;
 
               cutShapes.push(
-                buildSingleCutout(
+                buildSingleCutoutInScope(
+                  scope,
                   cutoutShape,
                   cutW,
                   cutH,
@@ -276,7 +354,12 @@ export function buildWallCutoutCuts(
     }
   }
 
-  return fuseAllOrNull(cutShapes);
+  // Inline fuse so the fused intermediate is registered in `scope` — the
+  // shared fuseAllOrNull allocates a new WASM handle that would otherwise
+  // escape the scope and leak.
+  if (cutShapes.length === 0) return null;
+  if (cutShapes.length === 1) return cutShapes[0]; // already scope-registered
+  return scope.register(unwrap(fuseAll(cutShapes as ValidSolid[])));
 }
 
 // --- FeatureBuilder protocol ---

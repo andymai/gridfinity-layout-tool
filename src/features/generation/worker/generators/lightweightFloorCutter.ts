@@ -82,7 +82,10 @@ export function buildLightweightFloorCutters(
           fractionalTemplate = sketch(rectProfile, 'XY', cutterZ).extrude(-cutterDepth);
           templates.set(fractionalKey, fractionalTemplate);
         }
-        cutters.push(translate(unwrap(clone(fractionalTemplate)), [cell.centerX, cell.centerY, 0]));
+        const cloned = unwrap(clone(fractionalTemplate));
+        const positioned = translate(cloned, [cell.centerX, cell.centerY, 0]);
+        cloned.delete();
+        cutters.push(positioned);
         return;
       }
 
@@ -126,10 +129,16 @@ export function buildLightweightFloorCutters(
         templates.set(cacheKey, template);
       }
 
-      cutters.push(translate(unwrap(clone(template)), [cell.centerX, cell.centerY, 0]));
+      const cloned = unwrap(clone(template));
+      const positioned = translate(cloned, [cell.centerX, cell.centerY, 0]);
+      cloned.delete();
+      cutters.push(positioned);
     },
     cellOpts
   );
+
+  // Dispose template shapes — they were allocated for this build only.
+  for (const t of templates.values()) t.delete();
 
   return cutters;
 }

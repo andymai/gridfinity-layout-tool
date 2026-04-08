@@ -5,11 +5,10 @@
  * at the back edge of each compartment.
  */
 
-import { draw, unwrap, fuseAll, fuse, translate } from 'brepjs';
-import type { Shape3D, ValidSolid, Drawing } from 'brepjs';
+import { draw, unwrap, fuseAll, fuse, translate, withScope, clone } from 'brepjs';
+import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
-import { fuseAllOrNull } from './compartmentBuilder';
 import { buildFilletProfile } from './filletProfile';
 /**
  * Build a right-triangle profile for label tab gusset supports.
@@ -55,6 +54,20 @@ export function buildLabelTabs(
 ): Shape3D | null {
   if (!params.label.enabled) return null;
 
+  return withScope((scope: DisposalScope): Shape3D | null => {
+    const fused = buildLabelTabsInScope(scope, params, innerW, innerD, wallHeight, wallThickness);
+    return fused ? unwrap(clone(fused)) : null;
+  });
+}
+
+function buildLabelTabsInScope(
+  scope: DisposalScope,
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number,
+  wallThickness: number
+): Shape3D | null {
   const { cols, rows, thickness, cells } = params.compartments;
   const tabDepth = params.label.depth;
   const widthPercent = params.label.width; // 1-100%
@@ -159,7 +172,7 @@ export function buildLabelTabs(
       if (!touchesRight) pen = pen.customCorner(cornerR);
       pen = pen.lineTo([0, -tabDepth]);
       if (!touchesLeft) pen = pen.customCorner(cornerR);
-      const shelf = sketch(pen.close(), 'XY', tabHeight - wt).extrude(wt);
+      const shelf = scope.register(sketch(pen.close(), 'XY', tabHeight - wt).extrude(wt));
 
       // -- Gussets: 45deg triangular supports under the shelf --
       // Free ends get edge gussets for structural support.
@@ -194,36 +207,36 @@ export function buildLabelTabs(
         if (params.label.support === 'solid') {
           // Solid style: single continuous right-triangle prism under the shelf.
           // Depth leg = tabDepth so support reaches the shelf front edge.
-          const solidSupport = sketch(gussetProfile, 'YZ', 0).extrude(tabWidth);
-          tabSolid = unwrap(fuse(tabSolid, solidSupport));
+          const solidSupport = scope.register(sketch(gussetProfile, 'YZ', 0).extrude(tabWidth));
+          tabSolid = scope.register(unwrap(fuse(tabSolid, solidSupport)));
         } else if (params.label.support === 'fillet') {
           // Fillet style: continuous concave prism under the shelf.
           // The fillet profile spans from Z=0 downward, so we translate it up
           // by gussetLeg to align the top edge with the shelf underside.
           const filletR = Math.min(gussetLeg, tabDepth * 0.8);
           const filletProfile = buildFilletProfile(filletR, gussetLeg, tabDepth);
-          const filletSupport = translate(sketch(filletProfile, 'YZ', 0).extrude(tabWidth), [
-            0,
-            0,
-            gussetLeg,
-          ]);
-          tabSolid = unwrap(fuse(tabSolid as ValidSolid, filletSupport as ValidSolid));
+          const filletExtrude = scope.register(sketch(filletProfile, 'YZ', 0).extrude(tabWidth));
+          const filletSupport = scope.register(translate(filletExtrude, [0, 0, gussetLeg]));
+          tabSolid = scope.register(
+            unwrap(fuse(tabSolid as ValidSolid, filletSupport as ValidSolid))
+          );
         } else if (gussetPositions.length > 0) {
           // Bracket style: discrete triangular gussets at edges + every <=10mm.
           // Uses same profile with depth = tabDepth so gussets reach the shelf edge.
           const gussetShapes: Shape3D[] = gussetPositions.map((gx) => {
-            const gusset = sketch(gussetProfile, 'YZ', 0).extrude(gt);
-            return translate(gusset, [gx, 0, 0]);
+            const gusset = scope.register(sketch(gussetProfile, 'YZ', 0).extrude(gt));
+            return scope.register(translate(gusset, [gx, 0, 0]));
           });
 
-          tabSolid = unwrap(
-            fuse(tabSolid as ValidSolid, unwrap(fuseAll(gussetShapes as ValidSolid[])))
-          );
+          const fusedGussets = scope.register(unwrap(fuseAll(gussetShapes as ValidSolid[])));
+          tabSolid = scope.register(unwrap(fuse(tabSolid as ValidSolid, fusedGussets)));
         }
       }
 
       // Position: X at alignment offset, Y at compartment back edge, Z at tab base
-      tabSolid = translate(tabSolid, [tabXStart, backEdgeY, wallHeight - tabHeight]);
+      tabSolid = scope.register(
+        translate(tabSolid, [tabXStart, backEdgeY, wallHeight - tabHeight])
+      );
 
       allTabs.push(tabSolid);
 
@@ -231,7 +244,9 @@ export function buildLabelTabs(
     }
   }
 
-  return fuseAllOrNull(allTabs);
+  if (allTabs.length === 0) return null;
+  if (allTabs.length === 1) return allTabs[0]; // already scope-registered
+  return scope.register(unwrap(fuseAll(allTabs as ValidSolid[])));
 }
 
 // --- FeatureBuilder protocol ---
