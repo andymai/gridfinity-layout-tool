@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.37.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.2...gridfinity-layout-tool-v4.37.3) (2026-04-08)
+
+
+### Bug Fixes
+
+* **generation:** plug remaining WASM leaks in shellStage and dividerExport ([#1336](https://github.com/andymai/gridfinity-layout-tool/issues/1336)) ([2ce7dee](https://github.com/andymai/gridfinity-layout-tool/commit/2ce7dee2d08f220d8543ba15ececda2e596b44de))
+
 ## [4.37.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.1...gridfinity-layout-tool-v4.37.2) (2026-04-08)
 
 
