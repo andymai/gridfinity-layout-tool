@@ -58,13 +58,13 @@ export const shellStage: PipelineStage = {
         onProgress?.('features', 0.4);
         if (dim.hasLip) {
           try {
-            const top = scope.register(
-              translate(buildTopShape(params.width, params.depth, true, params.gridUnitMm), [
-                0,
-                0,
-                dim.wallHeight - LIP_OVERLAP,
-              ])
+            // buildTopShape returns a cache-owned clone — register it so
+            // the scope disposes that intermediate after translate produces
+            // the positioned copy.
+            const lipBase = scope.register(
+              buildTopShape(params.width, params.depth, true, params.gridUnitMm)
             );
+            const top = scope.register(translate(lipBase, [0, 0, dim.wallHeight - LIP_OVERLAP]));
             collectOrigins(top, FeatureTag.LIP, originToTag);
             scope.register(binBody); // consumed by fuse
             return unwrap(
@@ -106,13 +106,13 @@ export const shellStage: PipelineStage = {
       onProgress?.('features', 0.4);
       if (dim.hasLip) {
         try {
-          const top = scope.register(
-            translate(buildTopShape(params.width, params.depth, true, params.gridUnitMm), [
-              0,
-              0,
-              dim.wallHeight - LIP_OVERLAP,
-            ])
+          // buildTopShape returns a cache-owned clone — register it so
+          // the scope disposes that intermediate after translate produces
+          // the positioned copy.
+          const lipBase = scope.register(
+            buildTopShape(params.width, params.depth, true, params.gridUnitMm)
           );
+          const top = scope.register(translate(lipBase, [0, 0, dim.wallHeight - LIP_OVERLAP]));
           collectOrigins(top, FeatureTag.LIP, originToTag);
           const baseAndBody = scope.register(unwrap(fuse(base, binBody)));
           return unwrap(

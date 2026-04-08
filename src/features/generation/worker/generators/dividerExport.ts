@@ -41,23 +41,42 @@ export async function exportDividers(
     throw new Error('No divider pieces to export');
   }
 
-  // Fuse unique pieces into a single solid
+  // Fuse unique pieces into a single solid. Each fuse() creates a new
+  // handle without disposing its inputs — explicitly free the prior
+  // intermediate and the consumed piece after each step.
+  //
+  // nextPieceToFree tracks the first index still owned by the array: on a
+  // mid-loop throw (BREP boolean failure), the finally block disposes
+  // `combined` (current live fused handle) plus every piece from that
+  // index onward that hasn't been consumed yet.
   let combined = pieces[0];
-  for (let i = 1; i < pieces.length; i++) {
-    combined = unwrap(fuse(combined, pieces[i]));
+  let nextPieceToFree = 1;
+  try {
+    for (let i = 1; i < pieces.length; i++) {
+      const prev = combined;
+      combined = unwrap(fuse(combined, pieces[i]));
+      prev.delete();
+      pieces[i].delete();
+      nextPieceToFree = i + 1;
+    }
+
+    const blob = unwrap(
+      exportSTL(combined, {
+        tolerance: 0.01,
+        angularTolerance: 5,
+        binary: true,
+      })
+    );
+    const data = await blob.arrayBuffer();
+
+    const name = `gridfinity-${params.width}x${params.depth}-divider`;
+    return { data, fileName: `${name}.stl` };
+  } finally {
+    combined.delete();
+    for (let i = nextPieceToFree; i < pieces.length; i++) {
+      pieces[i].delete();
+    }
   }
-
-  const blob = unwrap(
-    exportSTL(combined, {
-      tolerance: 0.01,
-      angularTolerance: 5,
-      binary: true,
-    })
-  );
-  const data = await blob.arrayBuffer();
-
-  const name = `gridfinity-${params.width}x${params.depth}-divider`;
-  return { data, fileName: `${name}.stl` };
 }
 
 /**
@@ -93,14 +112,18 @@ export async function exportDividerPiecesSeparately(
   if (params.slotConfig.y.enabled) labels.push('divider-vertical');
 
   const results: CombinedExportPiece[] = [];
-  for (let i = 0; i < pieces.length; i++) {
-    if (format === 'step') {
-      const blob = unwrap(exportSTEP(pieces[i]));
-      results.push({ data: await blob.arrayBuffer(), label: labels[i] });
-    } else {
-      const blob = unwrap(exportSTL(pieces[i], { tolerance, angularTolerance, binary: true }));
-      results.push({ data: await blob.arrayBuffer(), label: labels[i] });
+  try {
+    for (let i = 0; i < pieces.length; i++) {
+      if (format === 'step') {
+        const blob = unwrap(exportSTEP(pieces[i]));
+        results.push({ data: await blob.arrayBuffer(), label: labels[i] });
+      } else {
+        const blob = unwrap(exportSTL(pieces[i], { tolerance, angularTolerance, binary: true }));
+        results.push({ data: await blob.arrayBuffer(), label: labels[i] });
+      }
     }
+  } finally {
+    for (const p of pieces) p.delete();
   }
   return results;
 }
