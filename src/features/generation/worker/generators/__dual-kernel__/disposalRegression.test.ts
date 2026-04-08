@@ -216,6 +216,17 @@ describe('WASM disposal regression', () => {
         }))
       );
 
+      // Combined path: walls + compartments activates buildDividerBlends,
+      // which is not exercised by any single-feature probe above.
+      results.push(
+        await churn('wall cutouts + compartments', (w, d) => ({
+          gridW: w,
+          gridD: d,
+          walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true, width: 70, depth: 50 },
+          compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] },
+        }))
+      );
+
       process.stderr.write(`[diag] feature matrix (base=${base}):\n`);
       for (const r of results) {
         process.stderr.write(`  ${r.name.padEnd(20)} delta=${r.delta}\n`);
@@ -236,6 +247,7 @@ describe('WASM disposal regression', () => {
         'label tabs': 60,
         'compartments 2x2': 10,
         'wall pattern': 20,
+        'wall cutouts + compartments': 60,
       };
       for (const r of results) {
         const budget = budgets[r.name];

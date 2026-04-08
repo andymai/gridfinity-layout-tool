@@ -449,7 +449,14 @@ export function buildDividerBlends(
     }
   }
 
-  return fuseAllOrNull(cuts);
+  // fuseAllOrNull allocates a new WASM handle for the fused result (when
+  // cuts.length > 1) but does not dispose its inputs. Free them explicitly
+  // to match the leak-plugging pattern used across the other builders.
+  const fused = fuseAllOrNull(cuts);
+  if (cuts.length > 1) {
+    for (const s of cuts) s.delete();
+  }
+  return fused;
 }
 
 // --- Ramp zone data for wall pattern clipping ---
