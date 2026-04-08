@@ -247,6 +247,9 @@ function buildMagnetHoles(
     cellOpts
   );
 
+  // Template is only used to stamp clones per cell — dispose once the loop
+  // is done so its WASM handle is released.
+  magnetTemplate.delete();
   return holes;
 }
 /**
@@ -1028,7 +1031,12 @@ function buildBaseplateSolid(
     );
 
     if (pockets.length > 0) {
+      const preCut = baseplate;
       baseplate = unwrap(cutAll(baseplate as ValidSolid, pockets as ValidSolid[]));
+      // cutAll allocates a fresh handle for the result and does not dispose
+      // its inputs — free the pre-cut slab and every pocket cutter now.
+      preCut.delete();
+      for (const p of pockets) p.delete();
     }
 
     slabWithPocketsCache.set(spKey, baseplate);
@@ -1109,6 +1117,7 @@ function buildBaseplateSolid(
       ...nubs.map((n): BooleanPipelineStep => ({ op: 'fuse', tool: n })),
       ...allCuts.map((c): BooleanPipelineStep => ({ op: 'cut', tool: c })),
     ];
+    const preBoolean = baseplate;
     const pipelineResult = booleanPipeline(baseplate, steps);
     if (isOk(pipelineResult)) {
       baseplate = pipelineResult.value;
@@ -1118,9 +1127,16 @@ function buildBaseplateSolid(
         baseplate = unwrap(fuseAll([baseplate, ...nubs] as ValidSolid[]));
       }
       if (allCuts.length > 0) {
+        const preCut = baseplate;
         baseplate = unwrap(cutAll(baseplate as ValidSolid, allCuts as ValidSolid[]));
+        if (preCut !== preBoolean) preCut.delete();
       }
     }
+    // Dispose the pre-boolean baseplate (replaced by the pipeline result)
+    // and every tool shape consumed by the boolean pass.
+    if (baseplate !== preBoolean) preBoolean.delete();
+    for (const n of nubs) n.delete();
+    for (const c of allCuts) c.delete();
   }
 
   onProgress?.(0.6);
