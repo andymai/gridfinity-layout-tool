@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.37.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.1...gridfinity-layout-tool-v4.37.2) (2026-04-08)
+
+
+### Bug Fixes
+
+* **generation:** plug WASM handle leaks causing memory access OOB in bin designer ([#1334](https://github.com/andymai/gridfinity-layout-tool/issues/1334)) ([038aaff](https://github.com/andymai/gridfinity-layout-tool/commit/038aaffbae46436fa97cb171e82cb8a3c065684f))
+
 ## [4.37.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.0...gridfinity-layout-tool-v4.37.1) (2026-04-07)
 
 
