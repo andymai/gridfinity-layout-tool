@@ -44,15 +44,22 @@ export async function exportDividers(
   // Fuse unique pieces into a single solid. Each fuse() creates a new
   // handle without disposing its inputs — explicitly free the prior
   // intermediate and the consumed piece after each step.
+  //
+  // nextPieceToFree tracks the first index still owned by the array: on a
+  // mid-loop throw (BREP boolean failure), the finally block disposes
+  // `combined` (current live fused handle) plus every piece from that
+  // index onward that hasn't been consumed yet.
   let combined = pieces[0];
-  for (let i = 1; i < pieces.length; i++) {
-    const prev = combined;
-    combined = unwrap(fuse(combined, pieces[i]));
-    prev.delete();
-    pieces[i].delete();
-  }
-
+  let nextPieceToFree = 1;
   try {
+    for (let i = 1; i < pieces.length; i++) {
+      const prev = combined;
+      combined = unwrap(fuse(combined, pieces[i]));
+      prev.delete();
+      pieces[i].delete();
+      nextPieceToFree = i + 1;
+    }
+
     const blob = unwrap(
       exportSTL(combined, {
         tolerance: 0.01,
@@ -66,6 +73,9 @@ export async function exportDividers(
     return { data, fileName: `${name}.stl` };
   } finally {
     combined.delete();
+    for (let i = nextPieceToFree; i < pieces.length; i++) {
+      pieces[i].delete();
+    }
   }
 }
 
