@@ -206,7 +206,15 @@ export function clearAllCaches(): void {
     patternTemplateCache = null;
   }
   if (lastSolid) {
-    lastSolid.delete();
+    // Same defensive rationale as setLastSolid: the handle may be corrupt
+    // (e.g. mid-retry teardown after an export failure). Always null the
+    // pointer even if .delete() throws.
+    try {
+      lastSolid.delete();
+    } catch {
+      // Swallow — leaking one WASM handle is better than leaving the
+      // cache in an inconsistent state.
+    }
     lastSolid = null;
   }
   lastSolidIsExportQuality = false;
