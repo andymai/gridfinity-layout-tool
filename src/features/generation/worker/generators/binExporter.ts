@@ -7,7 +7,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 
 import { generateBin } from './binOrchestrator';
-import { getLastSolid } from './shapeCache';
+import { getLastSolid, isLastSolidExportQuality } from './shapeCache';
 
 /** Export result with binary data and suggested file name. */
 export interface ExportResult {
@@ -18,7 +18,13 @@ export interface ExportResult {
 
 /**
  * Export the last generated solid in the requested format.
- * If no solid is cached (e.g., worker restarted), regenerates from params.
+ *
+ * Regenerates with full-fidelity geometry (`forExport=true`) whenever the
+ * cached solid is absent OR was produced by a preview pass. A cached solid
+ * left behind by a preview has coarse triangulation attached from the
+ * preview `mesh()` call, and brepjs's exporter can reuse that stale
+ * triangulation instead of re-meshing at export tolerance — causing
+ * intermittent STL write failures. See GH #1339.
  *
  * STL: binary mesh with configurable tessellation quality
  * STEP: exact BREP geometry (lossless, CAD-interoperable)
@@ -29,8 +35,11 @@ export async function exportBin(
   tolerance = 0.01,
   angularTolerance = 5
 ): Promise<ExportResult> {
-  // Regenerate if no cached solid (with forExport=true for full-fidelity geometry)
-  if (!getLastSolid()) {
+  // Regenerate whenever the cached solid is missing OR was produced by a
+  // preview pass. The preview's coarse tessellation attaches stale
+  // triangulation to the solid, which can make exportSTL skip re-meshing
+  // at export tolerance and fail intermittently. See GH #1339.
+  if (!isLastSolidExportQuality()) {
     generateBin(params, undefined, true);
   }
 

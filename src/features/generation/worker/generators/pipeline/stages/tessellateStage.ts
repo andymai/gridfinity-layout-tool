@@ -26,7 +26,7 @@ export const tessellateStage: PipelineStage = {
     const { solid, dimensions: dim, forExport } = ctx;
     if (!solid) return ctx;
 
-    setLastSolid(solid);
+    setLastSolid(solid, forExport);
 
     const { tolerance, angularTolerance } = computeTessellationTolerances(
       forExport,
