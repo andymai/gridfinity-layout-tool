@@ -148,7 +148,6 @@ export function ExportDialog() {
         has_dividers: hasDividers,
         cutout_count: params.cutouts.length,
         insert_count: params.inserts.length,
-        has_footprint_mask: params.footprint !== undefined,
         // Include original error chain (from binExporter's retry path)
         // — the cause is set to the first-attempt error when retry fails.
         first_attempt_message: error.cause instanceof Error ? error.cause.message : undefined,
