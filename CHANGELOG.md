@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.37.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.4...gridfinity-layout-tool-v4.37.5) (2026-04-09)
+
+
+### Bug Fixes
+
+* **generation:** export retry + PostHog telemetry for [#1339](https://github.com/andymai/gridfinity-layout-tool/issues/1339) failures ([#1342](https://github.com/andymai/gridfinity-layout-tool/issues/1342)) ([0eff596](https://github.com/andymai/gridfinity-layout-tool/commit/0eff596eadbdf2c0a78d5b13306c87f7e988c08e))
+
 ## [4.37.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.3...gridfinity-layout-tool-v4.37.4) (2026-04-09)
 
 
