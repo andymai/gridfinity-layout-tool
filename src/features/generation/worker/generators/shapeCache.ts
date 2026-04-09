@@ -154,12 +154,15 @@ export function getLastSolid(): Shape3D | null {
 }
 
 /**
- * Whether the cached `lastSolid` was generated with `forExport=true`.
+ * Whether the cached `lastSolid` was produced by a `forExport=true` pass.
  *
- * Preview-quality solids use simplified geometry (e.g. 3-section socket
- * profile instead of 5-section) that is fine for rendering but can cause
- * intermittent STL export failures. Export paths should check this and
- * regenerate when the cached solid is not export-grade.
+ * Distinguishes solids generated for export from solids left behind by a
+ * preview pass. Preview passes run `mesh()` at coarse tolerances, which
+ * attaches triangulation to the solid's faces. A subsequent `exportSTL()`
+ * call can reuse that stale coarse triangulation instead of re-meshing at
+ * export tolerance, causing intermittent STL write failures. Export paths
+ * should check this predicate and regenerate when the cached solid is not
+ * marked export-quality. See GH #1339.
  */
 export function isLastSolidExportQuality(): boolean {
   return lastSolid !== null && lastSolidIsExportQuality;
