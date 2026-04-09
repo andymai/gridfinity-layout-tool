@@ -17,6 +17,7 @@ import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/p
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
 import { useToastStore } from '@/core/store/toast';
+import { captureException } from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
 import { ExportDialog as SharedExportDialog } from '@/shared/components/ExportDialog';
 import type { ExportFileFormat } from '@/features/bin-designer/types';
@@ -120,6 +121,37 @@ export function ExportDialog() {
       });
       closeDialog();
     } catch (err) {
+      // Report to PostHog FIRST so the toast path can't mask the capture.
+      // Rich bin-config context makes it possible to reproduce from the
+      // failure report — GH #1339 was only catchable manually because
+      // this catch previously swallowed the error without telemetry.
+      const error = err instanceof Error ? err : new Error(String(err));
+      captureException(error, {
+        source: 'bin_export',
+        export_format: activeFormat,
+        use_split_export: useSplitExport,
+        split_piece_count: useSplitExport ? splitPieceCount : undefined,
+        bin_width: params.width,
+        bin_depth: params.depth,
+        bin_height: params.height,
+        bin_style: params.style,
+        grid_unit_mm: params.gridUnitMm,
+        has_lip: params.base.stackingLip,
+        base_style: params.base.style,
+        magnet_diameter: params.base.magnetDiameter,
+        screw_diameter: params.base.screwDiameter,
+        solid_fill: params.base.solid,
+        half_sockets: params.base.halfSockets,
+        wall_pattern_enabled: params.wallPattern.enabled,
+        wall_pattern: params.wallPattern.pattern,
+        handles_enabled: params.handles.enabled,
+        has_dividers: hasDividers,
+        cutout_count: params.cutouts.length,
+        insert_count: params.inserts.length,
+        // Include original error chain (from binExporter's retry path)
+        // — the cause is set to the first-attempt error when retry fails.
+        first_attempt_message: error.cause instanceof Error ? error.cause.message : undefined,
+      });
       addToast({
         message: err instanceof Error ? err.message : t('binDesigner.exportFailed'),
         type: 'error',
@@ -137,6 +169,8 @@ export function ExportDialog() {
     addToast,
     closeDialog,
     t,
+    params,
+    hasDividers,
   ]);
 
   let downloadLabel: string;
