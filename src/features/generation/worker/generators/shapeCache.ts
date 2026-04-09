@@ -72,6 +72,7 @@ interface CacheEntry {
 
 let patternTemplateCache: CacheEntry | null = null;
 let lastSolid: Shape3D | null = null;
+let lastSolidIsExportQuality = false;
 
 /**
  * Feature tool caches — created lazily by builder name.
@@ -152,9 +153,22 @@ export function getLastSolid(): Shape3D | null {
   return lastSolid;
 }
 
-export function setLastSolid(shape: Shape3D | null): void {
+/**
+ * Whether the cached `lastSolid` was generated with `forExport=true`.
+ *
+ * Preview-quality solids use simplified geometry (e.g. 3-section socket
+ * profile instead of 5-section) that is fine for rendering but can cause
+ * intermittent STL export failures. Export paths should check this and
+ * regenerate when the cached solid is not export-grade.
+ */
+export function isLastSolidExportQuality(): boolean {
+  return lastSolid !== null && lastSolidIsExportQuality;
+}
+
+export function setLastSolid(shape: Shape3D | null, isExportQuality = false): void {
   if (lastSolid && lastSolid !== shape) lastSolid.delete();
   lastSolid = shape;
+  lastSolidIsExportQuality = shape !== null && isExportQuality;
 }
 
 export function getFeatureCache(feature: string, key: string): Shape3D | null {
@@ -181,6 +195,7 @@ export function clearAllCaches(): void {
     lastSolid.delete();
     lastSolid = null;
   }
+  lastSolidIsExportQuality = false;
 }
 
 /** Collect stats from all shape LRU caches. */

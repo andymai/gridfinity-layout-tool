@@ -7,7 +7,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 
 import { generateBin } from './binOrchestrator';
-import { getLastSolid } from './shapeCache';
+import { getLastSolid, isLastSolidExportQuality } from './shapeCache';
 
 /** Export result with binary data and suggested file name. */
 export interface ExportResult {
@@ -29,8 +29,11 @@ export async function exportBin(
   tolerance = 0.01,
   angularTolerance = 5
 ): Promise<ExportResult> {
-  // Regenerate if no cached solid (with forExport=true for full-fidelity geometry)
-  if (!getLastSolid()) {
+  // Regenerate whenever the cached solid is missing OR was produced by a
+  // preview pass (forExport=false). Preview geometry uses a simplified socket
+  // profile that can cause intermittent STL write failures — exports must
+  // always run on full-fidelity geometry. See GH #1339.
+  if (!isLastSolidExportQuality()) {
     generateBin(params, undefined, true);
   }
 
