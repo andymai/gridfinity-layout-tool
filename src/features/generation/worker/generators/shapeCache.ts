@@ -169,7 +169,18 @@ export function isLastSolidExportQuality(): boolean {
 }
 
 export function setLastSolid(shape: Shape3D | null, isExportQuality = false): void {
-  if (lastSolid && lastSolid !== shape) lastSolid.delete();
+  if (lastSolid && lastSolid !== shape) {
+    // Defensive: the prior solid may already be disposed or in a corrupt
+    // state (e.g. after an export retry path), in which case .delete()
+    // can throw. We still want to null the pointer — leaking one WASM
+    // handle on an error path is better than failing the retry.
+    try {
+      lastSolid.delete();
+    } catch {
+      // Swallow — the handle is unusable either way, and rethrowing would
+      // block callers (notably exportBin's retry-after-failure path).
+    }
+  }
   lastSolid = shape;
   lastSolidIsExportQuality = shape !== null && isExportQuality;
 }

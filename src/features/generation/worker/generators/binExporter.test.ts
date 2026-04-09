@@ -71,6 +71,32 @@ describe('exportBin: full-fidelity regeneration guard', () => {
     expect(result.data.byteLength).toBeGreaterThan(0);
   }, 60000);
 
+  it('retries once after first attempt fails on a corrupted cached solid', async () => {
+    // Generate a real export-quality solid, then corrupt the cache by
+    // disposing the Shape3D handle while leaving the export-quality flag
+    // true. This simulates the class of failure the retry path exists
+    // for: cached solid in an unusable state that regeneration recovers.
+    const firstResult = await exportBin(DEFAULT_BIN_PARAMS, 'stl');
+    expect(firstResult.data.byteLength).toBeGreaterThan(0);
+
+    const cachedSolid = getLastSolid();
+    expect(cachedSolid).not.toBeNull();
+    // Dispose the underlying WASM handle without clearing lastSolid/flag.
+    // The next export attempt will try to use a dead handle and throw.
+    cachedSolid?.delete();
+    // Flag is still true — exportBin will skip the quality regen check,
+    // hit the dead handle on the first attempt, then retry after
+    // setLastSolid(null) clears the cache.
+
+    const result = await exportBin(DEFAULT_BIN_PARAMS, 'stl');
+
+    // Retry must succeed end-to-end and leave the cache in a healthy state.
+    expect(result.data.byteLength).toBeGreaterThan(0);
+    expect(result.fileName).toMatch(/\.stl$/);
+    expect(isLastSolidExportQuality()).toBe(true);
+    expect(getLastSolid()).not.toBeNull();
+  }, 60000);
+
   it('STEP export also regenerates when cache is preview-quality', async () => {
     generateBin(DEFAULT_BIN_PARAMS, undefined, false);
     expect(isLastSolidExportQuality()).toBe(false);
