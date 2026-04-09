@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.37.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.3...gridfinity-layout-tool-v4.37.4) (2026-04-09)
+
+
+### Bug Fixes
+
+* **generation:** full-fidelity regeneration for exports ([#1339](https://github.com/andymai/gridfinity-layout-tool/issues/1339)) ([#1340](https://github.com/andymai/gridfinity-layout-tool/issues/1340)) ([9b52816](https://github.com/andymai/gridfinity-layout-tool/commit/9b5281690996f1a7fe0cad7651e5ec1ad60048ac))
+
 ## [4.37.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.2...gridfinity-layout-tool-v4.37.3) (2026-04-08)
 
 
