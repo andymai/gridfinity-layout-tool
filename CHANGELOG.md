@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.37.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.5...gridfinity-layout-tool-v4.37.6) (2026-04-11)
+
+
+### Bug Fixes
+
+* **bin-designer:** use diameter instead of radius for magnet/screw UI ([#1346](https://github.com/andymai/gridfinity-layout-tool/issues/1346)) ([dbeef9e](https://github.com/andymai/gridfinity-layout-tool/commit/dbeef9e02ac3c891a142a7a622772a76827ee89b))
+
 ## [4.37.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.4...gridfinity-layout-tool-v4.37.5) (2026-04-09)
 
 
