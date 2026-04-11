@@ -4,6 +4,7 @@ import {
   collectDividers,
   buildDividerBlends,
   computeRampZones,
+  computeDividerJunctionZones,
 } from './dividerBlendBuilder';
 import type { BinParams } from '@/shared/types/bin';
 import { DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
@@ -199,7 +200,7 @@ describe('computeRampZones', () => {
     expect(computeRampZones('back', BASE_PARAMS, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
   });
 
-  it('returns ramp zones for adjacent dividers', () => {
+  it('returns ramp zones for adjacent dividers (#1345 note: junction zones handle non-cutout case)', () => {
     // 3×1 grid: dividers at ±INNER_W/3 (~±13.6mm).
     // Narrow cutout (15% width = 12.24mm): edges at ±6.12mm.
     // Distance from cutout edge to divider1: 13.6 - 6.12 = 7.48mm.
@@ -222,5 +223,94 @@ describe('computeRampZones', () => {
         })
       );
     }
+  });
+});
+
+describe('computeDividerJunctionZones (#1345)', () => {
+  it('returns empty for slotted bins', () => {
+    const params = makeParams({ style: 'slotted' });
+    expect(computeDividerJunctionZones('front', params, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
+  });
+
+  it('returns empty when no dividers exist', () => {
+    const params = makeParams({
+      compartments: { enabled: true, rows: 1, cols: 1, thickness: 1.2, cells: [0] },
+    });
+    expect(computeDividerJunctionZones('front', params, INNER_W, INNER_D, WALL_HEIGHT)).toEqual([]);
+  });
+
+  it('returns zones for perpendicular dividers touching the wall', () => {
+    // 2×1 grid: one vertical divider at x=0, spanning full depth.
+    // Vertical dividers are perpendicular to front/back walls.
+    const params = makeParams({
+      walls: { ...BASE_PARAMS.walls, front: DISABLED_WALL_CUTOUT },
+    });
+    const zones = computeDividerJunctionZones('front', params, INNER_W, INNER_D, WALL_HEIGHT);
+    expect(zones).toHaveLength(1);
+    expect(zones[0].offsetAlongWall).toBeCloseTo(0, 1); // centered divider
+    expect(zones[0].height).toBe(WALL_HEIGHT);
+    expect(zones[0].width).toBeGreaterThan(BASE_PARAMS.wallThickness);
+  });
+
+  it('returns zones for back wall too', () => {
+    const params = makeParams({
+      walls: { ...BASE_PARAMS.walls, front: DISABLED_WALL_CUTOUT },
+    });
+    const zones = computeDividerJunctionZones('back', params, INNER_W, INNER_D, WALL_HEIGHT);
+    expect(zones).toHaveLength(1);
+    expect(zones[0].offsetAlongWall).toBeCloseTo(0, 1);
+  });
+
+  it('returns empty for walls parallel to the divider', () => {
+    // 2×1 grid: vertical divider is parallel to left/right walls.
+    const zones = computeDividerJunctionZones('left', BASE_PARAMS, INNER_W, INNER_D, WALL_HEIGHT);
+    expect(zones).toEqual([]);
+  });
+
+  it('returns zones for horizontal dividers touching left/right walls', () => {
+    const params = makeParams({
+      compartments: { enabled: true, rows: 2, cols: 1, thickness: 1.2, cells: [0, 1] },
+      walls: { ...BASE_PARAMS.walls, front: DISABLED_WALL_CUTOUT },
+    });
+    const leftZones = computeDividerJunctionZones('left', params, INNER_W, INNER_D, WALL_HEIGHT);
+    expect(leftZones).toHaveLength(1);
+    expect(leftZones[0].offsetAlongWall).toBeCloseTo(0, 1);
+
+    const rightZones = computeDividerJunctionZones('right', params, INNER_W, INNER_D, WALL_HEIGHT);
+    expect(rightZones).toHaveLength(1);
+  });
+
+  it('returns multiple zones for multi-column grids', () => {
+    const params = makeParams({
+      compartments: { enabled: true, rows: 1, cols: 3, thickness: 1.2, cells: [0, 1, 2] },
+      walls: { ...BASE_PARAMS.walls, front: DISABLED_WALL_CUTOUT },
+    });
+    const zones = computeDividerJunctionZones('front', params, INNER_W, INNER_D, WALL_HEIGHT);
+    expect(zones).toHaveLength(2); // two vertical dividers
+    // Dividers at -INNER_W/6 and +INNER_W/6 from center
+    expect(zones[0].offsetAlongWall).not.toBeCloseTo(zones[1].offsetAlongWall, 1);
+  });
+
+  it('works independently of wall cutout configuration', () => {
+    // Same compartments, different cutout configs → same junction zones
+    const paramsNoCutout = makeParams({
+      walls: { ...BASE_PARAMS.walls, front: DISABLED_WALL_CUTOUT },
+    });
+    const paramsWithCutout = makeParams(); // front cutout enabled
+    const zonesNoCutout = computeDividerJunctionZones(
+      'front',
+      paramsNoCutout,
+      INNER_W,
+      INNER_D,
+      WALL_HEIGHT
+    );
+    const zonesWithCutout = computeDividerJunctionZones(
+      'front',
+      paramsWithCutout,
+      INNER_W,
+      INNER_D,
+      WALL_HEIGHT
+    );
+    expect(zonesNoCutout).toEqual(zonesWithCutout);
   });
 });

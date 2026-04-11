@@ -63,6 +63,31 @@ interface DividerInfo {
 /** Minimum geometry dimension to avoid degenerate shapes (mm). */
 const MIN_DIM = 0.5;
 
+/** Tolerance for matching divider endpoints to wall face coordinates (mm). */
+const WALL_TOUCH_TOL = 0.01;
+
+/** Minimal wall face descriptor shared by cutout info and junction detection. */
+interface WallFaceInfo {
+  readonly wallFaceCoord: number;
+  readonly inwardSign: number;
+  readonly spanAxis: 'x' | 'y';
+}
+
+/** Build a WallFaceInfo for a given side from bin inner dimensions. */
+function getWallFaceInfo(
+  side: 'front' | 'back' | 'left' | 'right',
+  innerW: number,
+  innerD: number
+): WallFaceInfo {
+  const info: Record<string, WallFaceInfo> = {
+    front: { wallFaceCoord: -innerD / 2, inwardSign: 1, spanAxis: 'x' },
+    back: { wallFaceCoord: innerD / 2, inwardSign: -1, spanAxis: 'x' },
+    left: { wallFaceCoord: -innerW / 2, inwardSign: 1, spanAxis: 'y' },
+    right: { wallFaceCoord: innerW / 2, inwardSign: -1, spanAxis: 'y' },
+  };
+  return info[side];
+}
+
 /**
  * Resolve outer-wall cutout geometry for all enabled sides.
  * Pure function — no brepjs dependency.
@@ -194,29 +219,30 @@ export function collectDividers(params: BinParams, innerW: number, innerD: numbe
 }
 
 /**
- * Check if a divider is perpendicular to a given wall cutout.
+ * Check if a divider is perpendicular to a given wall face.
  * Vertical dividers (run along Y) are perpendicular to front/back walls.
  * Horizontal dividers (run along X) are perpendicular to left/right walls.
  */
-function isPerpendicular(divider: DividerInfo, cutout: OuterWallCutoutInfo): boolean {
-  if (divider.axis === 'vertical') return cutout.spanAxis === 'x'; // front/back
-  return cutout.spanAxis === 'y'; // left/right
+function isPerpendicular(divider: DividerInfo, wall: WallFaceInfo): boolean {
+  if (divider.axis === 'vertical') return wall.spanAxis === 'x'; // front/back
+  return wall.spanAxis === 'y'; // left/right
 }
 
 /**
  * Check if a divider's end touches a specific wall face.
  */
-function dividerTouchesWall(divider: DividerInfo, cutout: OuterWallCutoutInfo): boolean {
-  const tol = 0.01;
-  if (divider.axis === 'vertical' && cutout.spanAxis === 'x') {
+function dividerTouchesWall(divider: DividerInfo, wall: WallFaceInfo): boolean {
+  if (divider.axis === 'vertical' && wall.spanAxis === 'x') {
     // Vertical divider, front/back wall
-    if (cutout.inwardSign > 0) return Math.abs(divider.spanStart - cutout.wallFaceCoord) < tol;
-    return Math.abs(divider.spanEnd - cutout.wallFaceCoord) < tol;
+    if (wall.inwardSign > 0)
+      return Math.abs(divider.spanStart - wall.wallFaceCoord) < WALL_TOUCH_TOL;
+    return Math.abs(divider.spanEnd - wall.wallFaceCoord) < WALL_TOUCH_TOL;
   }
-  if (divider.axis === 'horizontal' && cutout.spanAxis === 'y') {
+  if (divider.axis === 'horizontal' && wall.spanAxis === 'y') {
     // Horizontal divider, left/right wall
-    if (cutout.inwardSign > 0) return Math.abs(divider.spanStart - cutout.wallFaceCoord) < tol;
-    return Math.abs(divider.spanEnd - cutout.wallFaceCoord) < tol;
+    if (wall.inwardSign > 0)
+      return Math.abs(divider.spanStart - wall.wallFaceCoord) < WALL_TOUCH_TOL;
+    return Math.abs(divider.spanEnd - wall.wallFaceCoord) < WALL_TOUCH_TOL;
   }
   return false;
 }
@@ -527,6 +553,47 @@ export function computeRampZones(
         });
       }
     }
+  }
+
+  return zones;
+}
+
+/**
+ * Compute zones where perpendicular dividers meet a specific outer wall,
+ * for blocking honeycomb pattern at the junction (full wall height).
+ *
+ * Unlike computeRampZones (which only produces zones near cutout edges),
+ * this returns a zone for every perpendicular divider touching the wall,
+ * regardless of whether a cutout exists. This ensures the hex pattern is
+ * cleared where divider walls connect to the outer wall for structural
+ * integrity (see issue #1345).
+ */
+export function computeDividerJunctionZones(
+  wallSide: 'front' | 'back' | 'left' | 'right',
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number
+): RampZone[] {
+  // 'solid' intentionally included — junction blocking applies to any fused-wall style
+  if (params.style === 'slotted') return [];
+  if (!params.walls.enabled) return [];
+
+  const dividers = collectDividers(params, innerW, innerD);
+  if (dividers.length === 0) return [];
+
+  const wall = getWallFaceInfo(wallSide, innerW, innerD);
+  const zones: RampZone[] = [];
+
+  for (const divider of dividers) {
+    if (!isPerpendicular(divider, wall)) continue;
+    if (!dividerTouchesWall(divider, wall)) continue;
+
+    zones.push({
+      offsetAlongWall: divider.posAlongPerp,
+      width: divider.thickness + 2 * COPLANAR_MARGIN,
+      height: wallHeight,
+    });
   }
 
   return zones;
