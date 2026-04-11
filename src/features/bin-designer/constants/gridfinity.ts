@@ -43,17 +43,17 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_WALL_THICKNESS: 0.4, // mm (1-wall for 0.4mm nozzle)
   MAX_WALL_THICKNESS: 2.4, // mm (3-wall for 0.8mm nozzle)
   WALL_THICKNESS_STEP: 0.1, // mm (legacy — use WALL_THICKNESS_OPTIONS)
-  // Magnet holes (radius in UI, diameter in store)
-  MIN_MAGNET_RADIUS: 2.0, // mm (diameter 4mm)
-  MAX_MAGNET_RADIUS: 5.0, // mm (diameter 10mm)
-  MAGNET_RADIUS_STEP: 0.25, // mm
+  // Magnet holes (diameter in UI and store)
+  MIN_MAGNET_DIAMETER: 4.0, // mm
+  MAX_MAGNET_DIAMETER: 10.0, // mm
+  MAGNET_DIAMETER_STEP: 0.1, // mm
   MIN_MAGNET_HEIGHT: 1.0, // mm
   MAX_MAGNET_HEIGHT: 4.0, // mm
   MAGNET_HEIGHT_STEP: 0.5, // mm
-  // Screw holes (radius in UI, diameter in store)
-  MIN_SCREW_RADIUS: 1.0, // mm (diameter 2mm)
-  MAX_SCREW_RADIUS: 3.0, // mm (diameter 6mm)
-  SCREW_RADIUS_STEP: 0.25, // mm
+  // Screw holes (diameter in UI and store)
+  MIN_SCREW_DIAMETER: 2.0, // mm
+  MAX_SCREW_DIAMETER: 6.0, // mm
+  SCREW_DIAMETER_STEP: 0.1, // mm
   // Slot configuration (slotted style)
   MIN_SLOT_PITCH: 10, // mm between slot centers
   MAX_SLOT_PITCH: 50, // mm

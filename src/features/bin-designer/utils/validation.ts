@@ -105,14 +105,13 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
 
   // Magnet dimension checks (only when magnet is enabled)
   if (params.base.style === 'magnet' || params.base.style === 'magnet_and_screw') {
-    const magnetRadius = params.base.magnetDiameter / 2;
     if (
-      magnetRadius < DESIGNER_CONSTRAINTS.MIN_MAGNET_RADIUS ||
-      magnetRadius > DESIGNER_CONSTRAINTS.MAX_MAGNET_RADIUS
+      params.base.magnetDiameter < DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER ||
+      params.base.magnetDiameter > DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER
     ) {
       return err({
-        code: 'MAGNET_RADIUS_OUT_OF_RANGE',
-        message: `Magnet radius must be between ${DESIGNER_CONSTRAINTS.MIN_MAGNET_RADIUS}mm and ${DESIGNER_CONSTRAINTS.MAX_MAGNET_RADIUS}mm`,
+        code: 'MAGNET_DIAMETER_OUT_OF_RANGE',
+        message: `Magnet diameter must be between ${DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER}mm and ${DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER}mm`,
         field: 'base.magnetDiameter',
       });
     }
@@ -130,14 +129,13 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
 
   // Screw dimension check (only when screw is enabled)
   if (params.base.style === 'screw' || params.base.style === 'magnet_and_screw') {
-    const screwRadius = params.base.screwDiameter / 2;
     if (
-      screwRadius < DESIGNER_CONSTRAINTS.MIN_SCREW_RADIUS ||
-      screwRadius > DESIGNER_CONSTRAINTS.MAX_SCREW_RADIUS
+      params.base.screwDiameter < DESIGNER_CONSTRAINTS.MIN_SCREW_DIAMETER ||
+      params.base.screwDiameter > DESIGNER_CONSTRAINTS.MAX_SCREW_DIAMETER
     ) {
       return err({
-        code: 'SCREW_RADIUS_OUT_OF_RANGE',
-        message: `Screw radius must be between ${DESIGNER_CONSTRAINTS.MIN_SCREW_RADIUS}mm and ${DESIGNER_CONSTRAINTS.MAX_SCREW_RADIUS}mm`,
+        code: 'SCREW_DIAMETER_OUT_OF_RANGE',
+        message: `Screw diameter must be between ${DESIGNER_CONSTRAINTS.MIN_SCREW_DIAMETER}mm and ${DESIGNER_CONSTRAINTS.MAX_SCREW_DIAMETER}mm`,
         field: 'base.screwDiameter',
       });
     }

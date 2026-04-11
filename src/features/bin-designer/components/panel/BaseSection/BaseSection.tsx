@@ -33,12 +33,12 @@ export function BaseSection() {
         valueSummary={`\u00f8${state.base.magnetDiameter}mm \u00d7 ${state.base.magnetDepth}mm deep`}
       >
         <SliderInput
-          label="Magnet radius"
-          value={state.base.magnetDiameter / 2}
-          onChange={handlers.setMagnetRadius}
-          min={DESIGNER_CONSTRAINTS.MIN_MAGNET_RADIUS}
-          max={DESIGNER_CONSTRAINTS.MAX_MAGNET_RADIUS}
-          step={DESIGNER_CONSTRAINTS.MAGNET_RADIUS_STEP}
+          label="Magnet diameter"
+          value={state.base.magnetDiameter}
+          onChange={handlers.setMagnetDiameter}
+          min={DESIGNER_CONSTRAINTS.MIN_MAGNET_DIAMETER}
+          max={DESIGNER_CONSTRAINTS.MAX_MAGNET_DIAMETER}
+          step={DESIGNER_CONSTRAINTS.MAGNET_DIAMETER_STEP}
           unit="mm"
         />
         <SliderInput
@@ -57,15 +57,15 @@ export function BaseSection() {
         checked={state.hasScrew}
         onChange={handlers.toggleScrew}
         disabledReason={handlers.screwDisabledReason}
-        valueSummary={`\u00f8${state.base.screwDiameter}mm (M${state.base.screwDiameter})`}
+        valueSummary={`\u00f8${state.base.screwDiameter}mm`}
       >
         <SliderInput
-          label="Screw radius"
-          value={state.base.screwDiameter / 2}
-          onChange={handlers.setScrewRadius}
-          min={DESIGNER_CONSTRAINTS.MIN_SCREW_RADIUS}
-          max={DESIGNER_CONSTRAINTS.MAX_SCREW_RADIUS}
-          step={DESIGNER_CONSTRAINTS.SCREW_RADIUS_STEP}
+          label="Screw diameter"
+          value={state.base.screwDiameter}
+          onChange={handlers.setScrewDiameter}
+          min={DESIGNER_CONSTRAINTS.MIN_SCREW_DIAMETER}
+          max={DESIGNER_CONSTRAINTS.MAX_SCREW_DIAMETER}
+          step={DESIGNER_CONSTRAINTS.SCREW_DIAMETER_STEP}
           unit="mm"
         />
       </FeatureToggle>

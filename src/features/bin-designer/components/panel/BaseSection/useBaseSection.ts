@@ -73,9 +73,9 @@ export function useBaseSection() {
     setParams(resolved);
   }, [params, isFlat, setParams]);
 
-  const setMagnetRadius = useCallback(
-    (radius: number) => {
-      updateBase({ magnetDiameter: radius * 2 });
+  const setMagnetDiameter = useCallback(
+    (diameter: number) => {
+      updateBase({ magnetDiameter: diameter });
     },
     [updateBase]
   );
@@ -87,9 +87,9 @@ export function useBaseSection() {
     [updateBase]
   );
 
-  const setScrewRadius = useCallback(
-    (radius: number) => {
-      updateBase({ screwDiameter: radius * 2 });
+  const setScrewDiameter = useCallback(
+    (diameter: number) => {
+      updateBase({ screwDiameter: diameter });
     },
     [updateBase]
   );
@@ -102,9 +102,9 @@ export function useBaseSection() {
       toggleStackingLip,
       toggleHalfSockets,
       toggleFlat,
-      setMagnetRadius,
+      setMagnetDiameter,
       setMagnetHeight,
-      setScrewRadius,
+      setScrewDiameter,
       magnetDisabledReason,
       screwDisabledReason,
       flatDisabledReason,
