@@ -195,7 +195,7 @@ describe('ParameterPanel', () => {
     it('does not show magnet sliders when magnet is off', () => {
       render(<ParameterPanel />);
 
-      expect(screen.queryByLabelText('Magnet radius')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Magnet diameter')).not.toBeInTheDocument();
       expect(screen.queryByLabelText('Magnet depth')).not.toBeInTheDocument();
     });
 
@@ -209,14 +209,14 @@ describe('ParameterPanel', () => {
       const customizeBtn = screen.getAllByText('Customize')[0];
       fireEvent.click(customizeBtn);
 
-      expect(screen.getByRole('slider', { name: 'Magnet radius' })).toBeInTheDocument();
+      expect(screen.getByRole('slider', { name: 'Magnet diameter' })).toBeInTheDocument();
       expect(screen.getByRole('slider', { name: 'Magnet depth' })).toBeInTheDocument();
     });
 
     it('does not show screw slider when screw is off', () => {
       render(<ParameterPanel />);
 
-      expect(screen.queryByLabelText('Screw radius')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Screw diameter')).not.toBeInTheDocument();
     });
 
     it('shows screw slider when screw is toggled on and Customize clicked', () => {
@@ -229,10 +229,10 @@ describe('ParameterPanel', () => {
       const customizeBtns = screen.getAllByText('Customize');
       fireEvent.click(customizeBtns[0]);
 
-      expect(screen.getByRole('slider', { name: 'Screw radius' })).toBeInTheDocument();
+      expect(screen.getByRole('slider', { name: 'Screw diameter' })).toBeInTheDocument();
     });
 
-    it('magnet radius slider updates magnetDiameter (radius × 2)', () => {
+    it('magnet diameter slider updates magnetDiameter directly', () => {
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -246,10 +246,10 @@ describe('ParameterPanel', () => {
       const customizeBtn = screen.getAllByText('Customize')[0];
       fireEvent.click(customizeBtn);
 
-      const radiusSlider = screen.getByRole('slider', { name: 'Magnet radius' });
-      fireEvent.change(radiusSlider, { target: { value: '4.0' } });
+      const diameterSlider = screen.getByRole('slider', { name: 'Magnet diameter' });
+      fireEvent.change(diameterSlider, { target: { value: '6.5' } });
 
-      expect(useDesignerStore.getState().params.base.magnetDiameter).toBe(8.0);
+      expect(useDesignerStore.getState().params.base.magnetDiameter).toBe(6.5);
     });
 
     it('magnet depth slider updates magnetDepth', () => {
@@ -272,7 +272,7 @@ describe('ParameterPanel', () => {
       expect(useDesignerStore.getState().params.base.magnetDepth).toBe(3.0);
     });
 
-    it('screw radius slider updates screwDiameter (radius × 2)', () => {
+    it('screw diameter slider updates screwDiameter directly', () => {
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -286,8 +286,8 @@ describe('ParameterPanel', () => {
       const customizeBtn = screen.getAllByText('Customize')[0];
       fireEvent.click(customizeBtn);
 
-      const radiusSlider = screen.getByRole('slider', { name: 'Screw radius' });
-      fireEvent.change(radiusSlider, { target: { value: '2.0' } });
+      const diameterSlider = screen.getByRole('slider', { name: 'Screw diameter' });
+      fireEvent.change(diameterSlider, { target: { value: '4.0' } });
 
       expect(useDesignerStore.getState().params.base.screwDiameter).toBe(4.0);
     });

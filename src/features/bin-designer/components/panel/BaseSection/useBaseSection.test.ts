@@ -65,21 +65,21 @@ describe('useBaseSection', () => {
     expect(useDesignerStore.getState().params.base.stackingLip).toBe(false);
   });
 
-  it('setMagnetRadius updates magnetDiameter (radius × 2)', () => {
+  it('setMagnetDiameter updates magnetDiameter directly', () => {
     const { result } = renderHook(() => useBaseSection());
 
     act(() => {
-      result.current.handlers.setMagnetRadius(4.0);
+      result.current.handlers.setMagnetDiameter(6.5);
     });
 
-    expect(useDesignerStore.getState().params.base.magnetDiameter).toBe(8.0);
+    expect(useDesignerStore.getState().params.base.magnetDiameter).toBe(6.5);
   });
 
-  it('setScrewRadius updates screwDiameter (radius × 2)', () => {
+  it('setScrewDiameter updates screwDiameter directly', () => {
     const { result } = renderHook(() => useBaseSection());
 
     act(() => {
-      result.current.handlers.setScrewRadius(2.0);
+      result.current.handlers.setScrewDiameter(4.0);
     });
 
     expect(useDesignerStore.getState().params.base.screwDiameter).toBe(4.0);
