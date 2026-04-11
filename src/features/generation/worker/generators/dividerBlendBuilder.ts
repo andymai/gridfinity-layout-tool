@@ -532,6 +532,66 @@ export function computeRampZones(
   return zones;
 }
 
+/**
+ * Compute zones where perpendicular dividers meet a specific outer wall,
+ * for blocking honeycomb pattern at the junction (full wall height).
+ *
+ * Unlike computeRampZones (which only produces zones near cutout edges),
+ * this returns a zone for every perpendicular divider touching the wall,
+ * regardless of whether a cutout exists. This ensures the hex pattern is
+ * cleared where divider walls connect to the outer wall for structural
+ * integrity (see issue #1345).
+ */
+export function computeDividerJunctionZones(
+  wallSide: 'front' | 'back' | 'left' | 'right',
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number
+): RampZone[] {
+  if (params.style === 'slotted') return [];
+
+  const dividers = collectDividers(params, innerW, innerD);
+  if (dividers.length === 0) return [];
+
+  const wallMeta: Record<
+    string,
+    { wallFaceCoord: number; inwardSign: number; spanAxis: 'x' | 'y' }
+  > = {
+    front: { wallFaceCoord: -innerD / 2, inwardSign: 1, spanAxis: 'x' },
+    back: { wallFaceCoord: innerD / 2, inwardSign: -1, spanAxis: 'x' },
+    left: { wallFaceCoord: -innerW / 2, inwardSign: 1, spanAxis: 'y' },
+    right: { wallFaceCoord: innerW / 2, inwardSign: -1, spanAxis: 'y' },
+  };
+
+  const meta = wallMeta[wallSide];
+  const zones: RampZone[] = [];
+  const tol = 0.01;
+
+  for (const divider of dividers) {
+    // Only perpendicular dividers (vertical dividers ⊥ front/back, horizontal ⊥ left/right)
+    const perp =
+      (divider.axis === 'vertical' && meta.spanAxis === 'x') ||
+      (divider.axis === 'horizontal' && meta.spanAxis === 'y');
+    if (!perp) continue;
+
+    // Check if divider end touches this wall face
+    const touches =
+      meta.inwardSign > 0
+        ? Math.abs(divider.spanStart - meta.wallFaceCoord) < tol
+        : Math.abs(divider.spanEnd - meta.wallFaceCoord) < tol;
+    if (!touches) continue;
+
+    zones.push({
+      offsetAlongWall: divider.posAlongPerp,
+      width: divider.thickness + 2 * COPLANAR_MARGIN,
+      height: wallHeight,
+    });
+  }
+
+  return zones;
+}
+
 // --- FeatureBuilder protocol ---
 
 import type { FeatureBuilder } from './pipeline/featureBuilder';

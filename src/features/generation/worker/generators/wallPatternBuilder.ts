@@ -41,7 +41,7 @@ import {
   getExpandedCutoutDimensions,
 } from './wallPatterns';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
-import { computeRampZones } from './dividerBlendBuilder';
+import { computeRampZones, computeDividerJunctionZones } from './dividerBlendBuilder';
 import type { RampZone } from './dividerBlendBuilder';
 import type { WallCutoutShape } from '@/shared/types/bin';
 import { buildSingleCutout } from './featureBuilder';
@@ -278,11 +278,19 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
         )
       : 'nohdl';
 
-    // Ramp zone clipping for divider-cutout blends
+    // Ramp zone clipping for divider-cutout blends + divider junction blocking (#1345)
     const rampZones = computeRampZones(wall.side, params, innerW, innerD, dim.wallHeight);
+    const junctionZones = computeDividerJunctionZones(
+      wall.side,
+      params,
+      innerW,
+      innerD,
+      dim.wallHeight
+    );
+    const combinedZones = [...rampZones, ...junctionZones];
     const rampClip: RampZoneClipParams | null =
-      rampZones.length > 0
-        ? { zones: rampZones, clipExtrudeDepth: clipExtrudeDepth, wallHeight: dim.wallHeight }
+      combinedZones.length > 0
+        ? { zones: combinedZones, clipExtrudeDepth: clipExtrudeDepth, wallHeight: dim.wallHeight }
         : null;
 
     const rampKeyPart = rampClip
@@ -296,7 +304,7 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
 
     const wallKey = compactKey(
       buildCacheKey(
-        'v5', // bumped: ramp zone clipping added
+        'v6', // bumped: divider junction zone clipping (#1345)
         patternType,
         quantize(shapeRadius),
         quantize(cutDepth),
