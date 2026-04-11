@@ -287,7 +287,12 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       innerD,
       dim.wallHeight
     );
-    const combinedZones = [...rampZones, ...junctionZones];
+    // Deduplicate: junction zones (full height) subsume ramp zones at the same offset
+    const junctionOffsets = new Set(junctionZones.map((z) => quantize(z.offsetAlongWall)));
+    const uniqueRampZones = rampZones.filter(
+      (z) => !junctionOffsets.has(quantize(z.offsetAlongWall))
+    );
+    const combinedZones = [...uniqueRampZones, ...junctionZones];
     const rampClip: RampZoneClipParams | null =
       combinedZones.length > 0
         ? { zones: combinedZones, clipExtrudeDepth: clipExtrudeDepth, wallHeight: dim.wallHeight }
