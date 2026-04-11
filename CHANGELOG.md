@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.37.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.6...gridfinity-layout-tool-v4.37.7) (2026-04-11)
+
+
+### Bug Fixes
+
+* **generation:** block honeycomb pattern at divider-wall junctions ([#1348](https://github.com/andymai/gridfinity-layout-tool/issues/1348)) ([5ad5336](https://github.com/andymai/gridfinity-layout-tool/commit/5ad53360b21781719716ff6518524fdcc4d618ea))
+
 ## [4.37.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.5...gridfinity-layout-tool-v4.37.6) (2026-04-11)
 
 
