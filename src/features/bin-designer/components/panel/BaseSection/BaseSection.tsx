@@ -57,7 +57,7 @@ export function BaseSection() {
         checked={state.hasScrew}
         onChange={handlers.toggleScrew}
         disabledReason={handlers.screwDisabledReason}
-        valueSummary={`\u00f8${state.base.screwDiameter}mm (M${state.base.screwDiameter})`}
+        valueSummary={`\u00f8${state.base.screwDiameter}mm`}
       >
         <SliderInput
           label="Screw diameter"
