@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.37.9](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.8...gridfinity-layout-tool-v4.37.9) (2026-04-12)
+
+
+### Bug Fixes
+
+* **generation:** ensure clip depth covers hex prism extrusion at thick walls ([#1354](https://github.com/andymai/gridfinity-layout-tool/issues/1354)) ([#1355](https://github.com/andymai/gridfinity-layout-tool/issues/1355)) ([8405f57](https://github.com/andymai/gridfinity-layout-tool/commit/8405f577fb332fa541e929c7f304e52aa0bed68c))
+
 ## [4.37.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.7...gridfinity-layout-tool-v4.37.8) (2026-04-12)
 
 
