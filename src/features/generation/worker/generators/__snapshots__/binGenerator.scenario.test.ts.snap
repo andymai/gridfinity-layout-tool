@@ -82,17 +82,17 @@ exports[`height > 2×2 height minimum (2u) 1`] = `2940`;
 
 exports[`height > 2×2 height tall (10u) 1`] = `2940`;
 
-exports[`honeycomb junction > 2×1 honeycomb + divider + front + interior cutouts 1`] = `7012`;
+exports[`honeycomb junction > 2×2 bin, 2×1 compartments + front + interior cutouts 1`] = `7012`;
 
-exports[`honeycomb junction > 2×1 honeycomb + divider + front cutout 1`] = `6948`;
+exports[`honeycomb junction > 2×2 bin, 2×1 compartments + front cutout 1`] = `6948`;
 
-exports[`honeycomb junction > 2×1 honeycomb + divider, cutouts on (sides off) 1`] = `7104`;
+exports[`honeycomb junction > 2×2 bin, 2×1 compartments, cutouts on (sides off) 1`] = `7104`;
 
-exports[`honeycomb junction > 2×1 honeycomb + divider, no cutouts 1`] = `7104`;
+exports[`honeycomb junction > 2×2 bin, 2×1 compartments, no cutouts 1`] = `7104`;
 
-exports[`honeycomb junction > 2×2 honeycomb + 2×2 dividers, no cutouts 1`] = `7232`;
+exports[`honeycomb junction > 2×2 bin, 2×2 compartments + interior cutouts 1`] = `7376`;
 
-exports[`honeycomb junction > 2×2 honeycomb + dividers + interior cutouts 1`] = `7376`;
+exports[`honeycomb junction > 2×2 bin, 2×2 compartments, no cutouts 1`] = `7232`;
 
 exports[`honeycomb junction > 2×2×4 honeycomb baseline (no dividers) 1`] = `7068`;
 

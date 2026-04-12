@@ -12,6 +12,17 @@ import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin
 import { defineScenario } from '../__dual-kernel__/scenarioTypes';
 import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
 
+/** All cutout sides explicitly disabled — used as the canonical "no cutouts" walls config. */
+const ALL_SIDES_OFF = {
+  ...DEFAULT_BIN_PARAMS.walls,
+  enabled: false,
+  front: DISABLED_WALL_CUTOUT,
+  back: DISABLED_WALL_CUTOUT,
+  left: DISABLED_WALL_CUTOUT,
+  right: DISABLED_WALL_CUTOUT,
+  interior: DISABLED_WALL_CUTOUT,
+} as const;
+
 export const honeycombJunction: ScenarioCase[] = [
   // ── Baseline: honeycomb without dividers ─────────────────────────────────
 
@@ -21,61 +32,54 @@ export const honeycombJunction: ScenarioCase[] = [
       depth: 2,
       height: 4,
       wallPattern: { enabled: true, pattern: 'honeycomb' },
-      walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: false },
+      walls: ALL_SIDES_OFF,
     },
     timeout: 60_000,
   }),
 
   // ── Bug 1: junction blocking must work without wall cutouts ──────────────
 
-  defineScenario('honeycomb junction', '2×1 honeycomb + divider, no cutouts', {
+  defineScenario('honeycomb junction', '2×2 bin, 2×1 compartments, no cutouts', {
     params: {
       width: 2,
       depth: 2,
       height: 4,
       wallPattern: { enabled: true, pattern: 'honeycomb' },
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
-      walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: false },
+      walls: ALL_SIDES_OFF,
     },
     timeout: 60_000,
   }),
 
-  defineScenario('honeycomb junction', '2×2 honeycomb + 2×2 dividers, no cutouts', {
+  defineScenario('honeycomb junction', '2×2 bin, 2×2 compartments, no cutouts', {
     params: {
       width: 2,
       depth: 2,
       height: 4,
       wallPattern: { enabled: true, pattern: 'honeycomb' },
       compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
-      walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: false },
+      walls: ALL_SIDES_OFF,
     },
     timeout: 60_000,
   }),
 
   // ── Bug 2: no mesh holes when cutouts enabled but all sides off ──────────
 
-  defineScenario('honeycomb junction', '2×1 honeycomb + divider, cutouts on (sides off)', {
+  defineScenario('honeycomb junction', '2×2 bin, 2×1 compartments, cutouts on (sides off)', {
     params: {
       width: 2,
       depth: 2,
       height: 4,
       wallPattern: { enabled: true, pattern: 'honeycomb' },
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
-      walls: {
-        ...DEFAULT_BIN_PARAMS.walls,
-        enabled: true,
-        front: DISABLED_WALL_CUTOUT,
-        back: DISABLED_WALL_CUTOUT,
-        left: DISABLED_WALL_CUTOUT,
-        right: DISABLED_WALL_CUTOUT,
-      },
+      walls: { ...ALL_SIDES_OFF, enabled: true },
     },
     timeout: 60_000,
   }),
 
   // ── Junction + active cutout on one side ─────────────────────────────────
 
-  defineScenario('honeycomb junction', '2×1 honeycomb + divider + front cutout', {
+  defineScenario('honeycomb junction', '2×2 bin, 2×1 compartments + front cutout', {
     params: {
       width: 2,
       depth: 2,
@@ -83,12 +87,9 @@ export const honeycombJunction: ScenarioCase[] = [
       wallPattern: { enabled: true, pattern: 'honeycomb' },
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
       walls: {
-        ...DEFAULT_BIN_PARAMS.walls,
+        ...ALL_SIDES_OFF,
         enabled: true,
         front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
-        back: DISABLED_WALL_CUTOUT,
-        left: DISABLED_WALL_CUTOUT,
-        right: DISABLED_WALL_CUTOUT,
       },
     },
     timeout: 60_000,
@@ -96,7 +97,7 @@ export const honeycombJunction: ScenarioCase[] = [
 
   // ── Honeycomb + dividers + interior wall cutouts ──────────────────────────
 
-  defineScenario('honeycomb junction', '2×2 honeycomb + dividers + interior cutouts', {
+  defineScenario('honeycomb junction', '2×2 bin, 2×2 compartments + interior cutouts', {
     params: {
       width: 2,
       depth: 2,
@@ -104,12 +105,8 @@ export const honeycombJunction: ScenarioCase[] = [
       wallPattern: { enabled: true, pattern: 'honeycomb' },
       compartments: { cols: 2, rows: 2, cells: [0, 1, 2, 3], thickness: 1.2 },
       walls: {
-        ...DEFAULT_BIN_PARAMS.walls,
+        ...ALL_SIDES_OFF,
         enabled: true,
-        front: DISABLED_WALL_CUTOUT,
-        back: DISABLED_WALL_CUTOUT,
-        left: DISABLED_WALL_CUTOUT,
-        right: DISABLED_WALL_CUTOUT,
         interior: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
       },
     },
@@ -118,7 +115,7 @@ export const honeycombJunction: ScenarioCase[] = [
 
   // ── Honeycomb + dividers + outer + interior cutouts ──────────────────────
 
-  defineScenario('honeycomb junction', '2×1 honeycomb + divider + front + interior cutouts', {
+  defineScenario('honeycomb junction', '2×2 bin, 2×1 compartments + front + interior cutouts', {
     params: {
       width: 2,
       depth: 2,
@@ -126,12 +123,9 @@ export const honeycombJunction: ScenarioCase[] = [
       wallPattern: { enabled: true, pattern: 'honeycomb' },
       compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
       walls: {
-        ...DEFAULT_BIN_PARAMS.walls,
+        ...ALL_SIDES_OFF,
         enabled: true,
         front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
-        back: DISABLED_WALL_CUTOUT,
-        left: DISABLED_WALL_CUTOUT,
-        right: DISABLED_WALL_CUTOUT,
         interior: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
       },
     },
@@ -152,7 +146,7 @@ export const honeycombJunction: ScenarioCase[] = [
         depth: 2,
         height: 4,
         wallPattern: { enabled: true, pattern: 'honeycomb' },
-        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: false },
+        walls: ALL_SIDES_OFF,
       },
       compareWith: {
         params: {
@@ -161,7 +155,7 @@ export const honeycombJunction: ScenarioCase[] = [
           height: 4,
           wallPattern: { enabled: true, pattern: 'honeycomb' },
           compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
-          walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: false },
+          walls: ALL_SIDES_OFF,
         },
         assert: (noDivider, withDivider) => {
           // Divider adds geometry, so withDivider > noDivider
@@ -184,8 +178,8 @@ export const honeycombJunction: ScenarioCase[] = [
   ),
 
   // ── Triangle count must match regardless of cutout toggle ────────────────
-  // The junction zone geometry is identical whether walls.enabled is true or
-  // false (with all sides off), so the triangle counts must be equal.
+  // Both configs have all sides explicitly DISABLED_WALL_CUTOUT; the only
+  // difference is walls.enabled (false vs true). Triangle counts must match.
 
   defineScenario(
     'honeycomb junction',
@@ -198,7 +192,7 @@ export const honeycombJunction: ScenarioCase[] = [
         height: 4,
         wallPattern: { enabled: true, pattern: 'honeycomb' },
         compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
-        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: false },
+        walls: ALL_SIDES_OFF,
       },
       compareWith: {
         params: {
@@ -207,14 +201,7 @@ export const honeycombJunction: ScenarioCase[] = [
           height: 4,
           wallPattern: { enabled: true, pattern: 'honeycomb' },
           compartments: { cols: 2, rows: 1, cells: [0, 1], thickness: 1.2 },
-          walls: {
-            ...DEFAULT_BIN_PARAMS.walls,
-            enabled: true,
-            front: DISABLED_WALL_CUTOUT,
-            back: DISABLED_WALL_CUTOUT,
-            left: DISABLED_WALL_CUTOUT,
-            right: DISABLED_WALL_CUTOUT,
-          },
+          walls: { ...ALL_SIDES_OFF, enabled: true },
         },
         assert: (cutoutsOff, cutoutsOnSidesOff) => {
           expect(
