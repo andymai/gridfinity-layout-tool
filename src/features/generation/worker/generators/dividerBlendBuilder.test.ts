@@ -313,4 +313,18 @@ describe('computeDividerJunctionZones (#1345)', () => {
     );
     expect(zonesNoCutout).toEqual(zonesWithCutout);
   });
+
+  it('works when wall cutouts feature is entirely disabled (#1350)', () => {
+    // walls.enabled = false (cutout feature off) should still produce junction zones
+    const params = makeParams({
+      walls: {
+        ...BASE_PARAMS.walls,
+        enabled: false,
+        front: DISABLED_WALL_CUTOUT,
+      },
+    });
+    const zones = computeDividerJunctionZones('front', params, INNER_W, INNER_D, WALL_HEIGHT);
+    expect(zones).toHaveLength(1);
+    expect(zones[0].height).toBe(WALL_HEIGHT);
+  });
 });

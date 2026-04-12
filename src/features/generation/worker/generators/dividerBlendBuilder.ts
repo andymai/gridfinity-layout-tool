@@ -577,7 +577,6 @@ export function computeDividerJunctionZones(
 ): RampZone[] {
   // 'solid' intentionally included — junction blocking applies to any fused-wall style
   if (params.style === 'slotted') return [];
-  if (!params.walls.enabled) return [];
 
   const dividers = collectDividers(params, innerW, innerD);
   if (dividers.length === 0) return [];

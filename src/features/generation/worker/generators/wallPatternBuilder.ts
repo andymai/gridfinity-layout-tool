@@ -293,9 +293,16 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       (z) => !junctionOffsets.has(quantize(z.offsetAlongWall))
     );
     const combinedZones = [...uniqueRampZones, ...junctionZones];
+    // Ensure border is at least shapeRadius so hex prisms can't bleed into divider walls (#1350).
+    const zoneBorder = Math.max(CUTOUT_BORDER_WIDTH, shapeRadius);
     const rampClip: RampZoneClipParams | null =
       combinedZones.length > 0
-        ? { zones: combinedZones, clipExtrudeDepth: clipExtrudeDepth, wallHeight: dim.wallHeight }
+        ? {
+            zones: combinedZones,
+            clipExtrudeDepth,
+            wallHeight: dim.wallHeight,
+            border: zoneBorder,
+          }
         : null;
 
     const rampKeyPart = rampClip
@@ -309,7 +316,7 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
 
     const wallKey = compactKey(
       buildCacheKey(
-        'v6', // bumped: divider junction zone clipping (#1345)
+        'v7', // bumped: shape-radius-aware junction border (#1350)
         patternType,
         quantize(shapeRadius),
         quantize(cutDepth),
@@ -388,6 +395,9 @@ interface RampZoneClipParams {
   readonly zones: readonly RampZone[];
   readonly clipExtrudeDepth: number;
   readonly wallHeight: number;
+  /** Border width for clip boxes — max(CUTOUT_BORDER_WIDTH, shapeRadius)
+   *  so hex prisms don't extend into divider walls at junctions. */
+  readonly border: number;
 }
 
 /** Build a single wall's pattern compound with optional cutout/handle/ramp clipping. */
@@ -520,22 +530,18 @@ function buildWallPatternShape(
 
   // --- Ramp zone border clipping ---
   if (rampClip && rampClip.zones.length > 0) {
-    const border = CUTOUT_BORDER_WIDTH;
+    const { border, clipExtrudeDepth: rampExtrudeDepth, wallHeight, zones } = rampClip;
     const rampBoxes: Shape3D[] = [];
 
     try {
-      for (const zone of rampClip.zones) {
+      for (const zone of zones) {
         const rboxW = zone.width + 2 * border;
         const rboxH = zone.height + 2 * border;
         const profile = drawRectangle(rboxW, rboxH);
         // Dispose intermediates from each transform.
-        const extruded = sketch(profile, 'XZ').extrude(rampClip.clipExtrudeDepth);
-        const centerZ = rampClip.wallHeight - zone.height / 2;
-        const centered = translate(extruded, [
-          zone.offsetAlongWall,
-          rampClip.clipExtrudeDepth / 2,
-          centerZ,
-        ]);
+        const extruded = sketch(profile, 'XZ').extrude(rampExtrudeDepth);
+        const centerZ = wallHeight - zone.height / 2;
+        const centered = translate(extruded, [zone.offsetAlongWall, rampExtrudeDepth / 2, centerZ]);
         extruded.delete();
         let rbox = centered;
         if (wall.zRotation !== undefined) {
