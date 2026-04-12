@@ -140,7 +140,9 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
 
   const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
   const maxThickness = Math.max(params.wallThickness, params.compartments.thickness);
-  const clipExtrudeDepth = (maxThickness + lipOverhang) * 2 + 1;
+  // Clip boxes must be at least as deep as the hex prism extrusion (cutDepth)
+  // so they fully envelop hex prisms at junction/cutout boundaries (#1354).
+  const clipExtrudeDepth = Math.max((maxThickness + lipOverhang) * 2 + 1, cutDepth + 1);
   const clipOvershoot = (hasLip ? LIP_HEIGHT : 0) + 2;
 
   // Build handle wall defs for clip positioning (uses handleBuilder coordinate convention)
@@ -316,7 +318,7 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
 
     const wallKey = compactKey(
       buildCacheKey(
-        'v7', // bumped: shape-radius-aware junction border (#1350)
+        'v8', // bumped: clip depth covers hex prism extrusion (#1354)
         patternType,
         quantize(shapeRadius),
         quantize(cutDepth),
