@@ -7,6 +7,7 @@
  * triangle count because extra cut faces appear or solid wall geometry is
  * removed.
  */
+import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import { defineScenario } from '../__dual-kernel__/scenarioTypes';
 import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
