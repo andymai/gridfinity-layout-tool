@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.37.10](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.9...gridfinity-layout-tool-v4.37.10) (2026-04-13)
+
+
+### Bug Fixes
+
+* harden store mutations, geometry guard, and error handling ([#1358](https://github.com/andymai/gridfinity-layout-tool/issues/1358)) ([523f4ea](https://github.com/andymai/gridfinity-layout-tool/commit/523f4eac96a9fc285f6841a8a04026a32c5b2d1e))
+
 ## [4.37.9](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.8...gridfinity-layout-tool-v4.37.9) (2026-04-12)
 
 
