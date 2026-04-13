@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.37.11](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.10...gridfinity-layout-tool-v4.37.11) (2026-04-13)
+
+
+### Bug Fixes
+
+* floor max grid units to 0.5 increments for half-bin mode ([#1361](https://github.com/andymai/gridfinity-layout-tool/issues/1361)) ([97f53dc](https://github.com/andymai/gridfinity-layout-tool/commit/97f53dcbfa75d4ded5531693fef2cbe53ec130fc))
+
 ## [4.37.10](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.9...gridfinity-layout-tool-v4.37.10) (2026-04-13)
 
 
