@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.38.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.11...gridfinity-layout-tool-v4.38.0) (2026-04-13)
+
+
+### Features
+
+* add animated bin transitions in 3D preview ([#1369](https://github.com/andymai/gridfinity-layout-tool/issues/1369)) ([d4d36a7](https://github.com/andymai/gridfinity-layout-tool/commit/d4d36a77c97f3ae488eeb106cd2173f51f544e79))
+
 ## [4.37.11](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.10...gridfinity-layout-tool-v4.37.11) (2026-04-13)
 
 
