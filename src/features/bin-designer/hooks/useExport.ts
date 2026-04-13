@@ -94,15 +94,13 @@ export function useExport(): UseExportReturn {
     }))
   );
 
-  const { printSettings, defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm } =
-    useSettingsStore(
-      useShallow((s) => ({
-        printSettings: s.settings.printSettings,
-        defaultPrintBedSize: s.settings.defaultPrintBedSize,
-        defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
-        defaultGridUnitMm: s.settings.defaultGridUnitMm,
-      }))
-    );
+  const { printSettings, defaultPrintBedSize, defaultPrintBedDepth } = useSettingsStore(
+    useShallow((s) => ({
+      printSettings: s.settings.printSettings,
+      defaultPrintBedSize: s.settings.defaultPrintBedSize,
+      defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
+    }))
+  );
 
   const [isExportingBin, setIsExportingBin] = useState(false);
   const isExporting = isExportingBin;
@@ -116,10 +114,11 @@ export function useExport(): UseExportReturn {
 
   const estimates = useMemo(() => estimatePrint(params, printSettings), [params, printSettings]);
 
-  // Split detection
+  // Split detection — use params.gridUnitMm (the bin's actual grid unit)
+  // rather than defaultGridUnitMm from settings, which may be stale
   const maxGrid = useMemo(
-    () => calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm, defaultPrintBedDepth),
-    [defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm]
+    () => calcMaxGridUnits(defaultPrintBedSize, params.gridUnitMm, defaultPrintBedDepth),
+    [defaultPrintBedSize, defaultPrintBedDepth, params.gridUnitMm]
   );
 
   const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;

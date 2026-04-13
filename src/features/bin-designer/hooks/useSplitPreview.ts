@@ -34,15 +34,16 @@ export function useSplitPreview(): void {
     }))
   );
 
-  const { defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm } = useSettingsStore(
+  const { defaultPrintBedSize, defaultPrintBedDepth } = useSettingsStore(
     useShallow((s) => ({
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
       defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
-      defaultGridUnitMm: s.settings.defaultGridUnitMm,
     }))
   );
 
-  const maxGrid = calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm, defaultPrintBedDepth);
+  // Use params.gridUnitMm (the bin's actual grid unit) rather than
+  // defaultGridUnitMm from settings, which may be stale
+  const maxGrid = calcMaxGridUnits(defaultPrintBedSize, params.gridUnitMm, defaultPrintBedDepth);
   const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;
 
   const requestIdRef = useRef(0);
