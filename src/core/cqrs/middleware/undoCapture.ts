@@ -116,6 +116,7 @@ export function batch<T>(fn: () => T): T {
     const currentLayout = useLayoutStore.getState().layout;
     if (currentLayout !== layout) {
       useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown');
+      mlTracking.recordAction?.();
     }
     throw e;
   } finally {

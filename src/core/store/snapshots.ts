@@ -59,8 +59,11 @@ export const useSnapshotStore = create<SnapshotState>((set) => ({
       // Reload from IndexedDB to mirror any rolling-window evictions
       const snapshots = await loadSnapshotsService(layoutId);
       set({ snapshots });
-    } catch {
-      // Snapshot creation is non-critical — degrade silently when IndexedDB is unavailable
+    } catch (e: unknown) {
+      // Snapshot creation is non-critical — degrade gracefully when IndexedDB is unavailable
+      if (import.meta.env.DEV) {
+        console.error('[snapshots] addSnapshot failed:', e);
+      }
     }
   },
 
