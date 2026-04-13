@@ -159,6 +159,46 @@ describe('undoCaptureMiddleware', () => {
     expect(history.past[0].layout.name).toBe('After error');
   });
 
+  it('batch() pushes undo snapshot when callback throws after partial mutations', () => {
+    const layout = createTestLayout({ name: 'Original' });
+    useLayoutStore.setState({ layout });
+
+    const mutatingNext: NextFn<Command, DomainEvent> = () => {
+      useLayoutStore.setState({
+        layout: { ...useLayoutStore.getState().layout, name: 'Mutated' },
+      });
+      return ok({ value: undefined, events: [] }) as CommandResult<unknown, DomainEvent>;
+    };
+
+    // Run a batch where a mutation succeeds and then the callback throws
+    expect(() => {
+      batch(() => {
+        undoCaptureMiddleware(createTestCommand(), mutatingNext);
+        throw new Error('mid-batch failure');
+      });
+    }).toThrow('mid-batch failure');
+
+    // Despite the throw, the pre-batch snapshot must have been pushed
+    const history = useHistoryStore.getState();
+    expect(history.past).toHaveLength(1);
+    expect(history.past[0].layout.name).toBe('Original');
+  });
+
+  it('batch() does not push undo snapshot when callback throws without any mutations', () => {
+    const layout = createTestLayout({ name: 'Original' });
+    useLayoutStore.setState({ layout });
+
+    expect(() => {
+      batch(() => {
+        throw new Error('immediate failure');
+      });
+    }).toThrow('immediate failure');
+
+    // No mutations occurred, so no undo entry should be recorded
+    const history = useHistoryStore.getState();
+    expect(history.past).toHaveLength(0);
+  });
+
   it('snapshots layout before handler mutates it', () => {
     const layout = createTestLayout({ name: 'Before' });
     useLayoutStore.setState({ layout });

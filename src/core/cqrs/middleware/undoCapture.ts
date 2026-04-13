@@ -111,6 +111,14 @@ export function batch<T>(fn: () => T): T {
     }
 
     return result;
+  } catch (e: unknown) {
+    // Push undo snapshot even on error so partial mutations can be reverted
+    const currentLayout = useLayoutStore.getState().layout;
+    if (currentLayout !== layout) {
+      useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown');
+      mlTracking.recordAction?.();
+    }
+    throw e;
   } finally {
     isBatching = false;
     batchCommandType = null;

@@ -54,10 +54,17 @@ export const useSnapshotStore = create<SnapshotState>((set) => ({
   },
 
   addSnapshot: async (layoutId: string, layout: Layout, label?: string) => {
-    await createSnapshotService(layoutId, layout, label);
-    // Reload from IndexedDB to mirror any rolling-window evictions
-    const snapshots = await loadSnapshotsService(layoutId);
-    set({ snapshots });
+    try {
+      await createSnapshotService(layoutId, layout, label);
+      // Reload from IndexedDB to mirror any rolling-window evictions
+      const snapshots = await loadSnapshotsService(layoutId);
+      set({ snapshots });
+    } catch (e: unknown) {
+      // Snapshot creation is non-critical — degrade gracefully when IndexedDB is unavailable
+      if (import.meta.env.DEV) {
+        console.error('[snapshots] addSnapshot failed:', e);
+      }
+    }
   },
 
   removeSnapshot: async (snapshotId: string) => {

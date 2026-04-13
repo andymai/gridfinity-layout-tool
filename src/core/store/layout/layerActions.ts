@@ -65,7 +65,8 @@ export function createLayerActions(setLocal: SetLocal, get: GetState) {
               maxHeight
             ) as HeightUnits;
           }
-          Object.assign(l, updates);
+          const { id: _stripId, ...safeUpdates } = updates;
+          Object.assign(l, safeUpdates);
         }
       });
 
