@@ -33,9 +33,10 @@ export function createCategoryActions(setLocal: SetLocal, get: GetState) {
       const found = requireCategory(layout.categories, id, 'updateCategory');
       if (!isOk(found)) return found;
 
+      const { id: _stripId, ...safeUpdates } = updates;
       setLocal((state) => {
         const c = state.layout.categories.find((c) => c.id === id);
-        if (c) Object.assign(c, updates);
+        if (c) Object.assign(c, safeUpdates);
       });
 
       return OK;

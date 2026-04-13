@@ -188,6 +188,134 @@ describe('layout store', () => {
       expect(bin.label).toBe('Updated');
       expect(bin.notes).toBe('New notes');
     });
+
+    it('rejects width that exceeds drawer bounds', () => {
+      const { addBin, updateBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      // Default drawer is 10x8 — a width of 2 fits fine at x:0
+      const addResult = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+      const binId = expectOk(addResult);
+
+      // Expanding to width 50 would far exceed the 10-unit drawer width
+      const updateResult = updateBin(binId, { width: 50 });
+
+      expectErr(updateResult);
+      // Bin should be unchanged
+      expect(useLayoutStore.getState().layout.bins[0].width).toBe(2);
+    });
+
+    it('rejects position that puts bin out of bounds', () => {
+      const { addBin, updateBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const addResult = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+      const binId = expectOk(addResult);
+
+      // Moving x to 100 puts the bin entirely out of bounds
+      const updateResult = updateBin(binId, { x: 100 });
+
+      expectErr(updateResult);
+      expect(useLayoutStore.getState().layout.bins[0].x).toBe(0);
+    });
+
+    it('allows non-spatial updates (label, category) without placement validation', () => {
+      const { addBin, updateBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const addResult = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: 'Original',
+        notes: '',
+      });
+      const binId = expectOk(addResult);
+
+      const updateResult = updateBin(binId, { label: 'Renamed', notes: 'some notes' });
+
+      expectOk(updateResult);
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.label).toBe('Renamed');
+      expect(bin.notes).toBe('some notes');
+    });
+
+    it('allows spatial updates on staging bins without validation', () => {
+      const { addBin, updateBin, layout } = useLayoutStore.getState();
+      const categoryId = layout.categories[0].id;
+
+      // Add to staging — oversized dimensions that would fail on-grid
+      const addResult = addBin({
+        layerId: STAGING_ID,
+        x: 0,
+        y: 0,
+        width: 50,
+        depth: 50,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+      const binId = expectOk(addResult);
+
+      // Moving a staging bin to an absurd position should not be blocked
+      const updateResult = updateBin(binId, { x: 999 });
+
+      expectOk(updateResult);
+      expect(useLayoutStore.getState().layout.bins[0].x).toBe(999);
+    });
+
+    it('strips id from updates so bin identity cannot change', () => {
+      const { addBin, updateBin, layout } = useLayoutStore.getState();
+      const layerId = layout.layers[0].id;
+      const categoryId = layout.categories[0].id;
+
+      const addResult = addBin({
+        layerId,
+        x: 0,
+        y: 0,
+        width: 2,
+        depth: 2,
+        height: 3,
+        category: categoryId,
+        label: '',
+        notes: '',
+      });
+      const originalId = expectOk(addResult);
+
+      // Attempt to overwrite the bin's id via the updates object
+      updateBin(originalId, { id: 'hijacked-id' as typeof originalId });
+
+      const bin = useLayoutStore.getState().layout.bins[0];
+      expect(bin.id).toBe(originalId);
+    });
   });
 
   describe('duplicateBin', () => {

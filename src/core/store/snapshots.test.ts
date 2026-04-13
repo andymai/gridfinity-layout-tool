@@ -84,6 +84,29 @@ describe('useSnapshotStore', () => {
       expect(snapshots[1].id).toBe('layout-1-1000');
     });
 
+    it('does not throw when createSnapshot rejects (IndexedDB unavailable)', async () => {
+      mockService.createSnapshot.mockRejectedValue(new Error('IndexedDB unavailable'));
+
+      const layout = createTestLayout();
+      // Must not throw — snapshot creation is non-critical
+      await expect(
+        useSnapshotStore.getState().addSnapshot('layout-1', layout)
+      ).resolves.toBeUndefined();
+
+      // State should remain unchanged
+      expect(useSnapshotStore.getState().snapshots).toHaveLength(0);
+    });
+
+    it('does not throw when loadSnapshots rejects after createSnapshot succeeds', async () => {
+      mockService.createSnapshot.mockResolvedValue(makeSnapshot());
+      mockService.loadSnapshots.mockRejectedValue(new Error('IndexedDB read failure'));
+
+      const layout = createTestLayout();
+      await expect(
+        useSnapshotStore.getState().addSnapshot('layout-1', layout)
+      ).resolves.toBeUndefined();
+    });
+
     it('passes label to createSnapshot', async () => {
       mockService.createSnapshot.mockResolvedValue(makeSnapshot({ label: 'Before change' }));
       mockService.loadSnapshots.mockResolvedValue([makeSnapshot({ label: 'Before change' })]);

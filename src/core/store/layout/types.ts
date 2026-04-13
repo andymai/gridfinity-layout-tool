@@ -33,7 +33,7 @@ export interface LayoutState {
 
   // Bin operations - all return Result for consistent error handling
   addBin: (bin: Omit<Bin, 'id'>) => Result<BinId, ValidationError>;
-  updateBin: (id: BinId, updates: Partial<Bin>) => Result<void, LayoutError>;
+  updateBin: (id: BinId, updates: Partial<Bin>) => Result<void, LayoutError | ValidationError>;
   deleteBin: (id: BinId) => Result<void, LayoutError>;
   deleteBins: (ids: BinId[]) => Result<void, LayoutError>;
   duplicateBin: (id: BinId) => Result<BinId, ValidationError | LayoutError>;

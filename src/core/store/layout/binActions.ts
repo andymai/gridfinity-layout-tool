@@ -34,14 +34,40 @@ export function createBinActions(setLocal: SetLocal, get: GetState) {
       return ok(id);
     },
 
-    updateBin: (id: BinId, updates: Partial<Bin>): Result<void, LayoutError> => {
+    updateBin: (id: BinId, updates: Partial<Bin>): Result<void, LayoutError | ValidationError> => {
       const { layout } = get();
       const found = requireBin(layout.bins, id, 'updateBin');
       if (!isOk(found)) return found;
+      const bin = found.value;
+
+      // Strip id to prevent identity corruption
+      const { id: _stripId, ...safeUpdates } = updates;
+
+      // Validate placement when spatial properties change for on-grid bins
+      const merged = { ...bin, ...safeUpdates };
+      if (
+        merged.layerId !== STAGING_ID &&
+        (updates.x !== undefined ||
+          updates.y !== undefined ||
+          updates.width !== undefined ||
+          updates.depth !== undefined ||
+          updates.layerId !== undefined)
+      ) {
+        const rect = { x: merged.x, y: merged.y, width: merged.width, depth: merged.depth };
+        const validationResult = canPlaceBin(
+          { ...rect, height: merged.height },
+          merged.layerId,
+          layout,
+          id
+        );
+        if (!validationResult.valid) {
+          return err(toPlacementError(validationResult.reason, rect));
+        }
+      }
 
       setLocal((state) => {
         const b = state.layout.bins.find((b) => b.id === id);
-        if (b) Object.assign(b, updates);
+        if (b) Object.assign(b, safeUpdates);
       });
 
       return OK;

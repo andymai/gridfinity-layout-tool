@@ -178,10 +178,7 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
           // In fractional column - treat as x=0
           x = 0;
         } else {
-          x =
-            hasFractionalWidth && fractionalEdgeX === 'start'
-              ? cellX // Integer cells start at x=0 when fractional is on left
-              : cellX;
+          x = cellX;
         }
 
         let y: number;

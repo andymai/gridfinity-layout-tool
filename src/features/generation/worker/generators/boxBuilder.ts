@@ -115,6 +115,13 @@ export function buildBinBox(
       return setBoxCache(boxKey, box);
     }
 
+    // Guard: if wall thickness leaves no interior, return the solid box
+    const innerW = outerW - 2 * wallThickness;
+    const innerD = outerD - 2 * wallThickness;
+    if (innerW <= 0 || innerD <= 0) {
+      return setBoxCache(boxKey, box);
+    }
+
     const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
     const result = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
     scope.register(box); // consumed by shell
@@ -300,11 +307,8 @@ export function buildTopShape(
     // brepkit: loft-cut is ~5-50x faster than sweep (analytic surfaces)
     try {
       result = buildTopShapeLoft(outerW, outerD, includeLip);
-    } catch (e: unknown) {
-      // Loft failed — fall back to sweep path. Log for diagnostics since this
-      // indicates a kernel regression (loft should always succeed).
-      const msg = e instanceof Error ? e.message : String(e);
-      console.warn(`[boxBuilder] brepkit loft failed, falling back to sweep: ${msg}`);
+    } catch {
+      // Loft failed — fall back to sweep path (kernel regression)
       result = buildTopShapeSweep(outerW, outerD, includeLip);
     }
   } else {
