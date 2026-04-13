@@ -9,6 +9,7 @@ export { usePrefetchChunks } from './usePrefetchChunks';
 export { useFocusTrap } from './useFocusTrap';
 export { useInlineEdit } from './useInlineEdit';
 export { useKeyboard } from './useKeyboard';
+export { usePrefersReducedMotion } from './usePrefersReducedMotion';
 
 // Grid & layout hooks
 export { useGridTemplate } from './useGridTemplate';
