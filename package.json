@@ -175,7 +175,7 @@
     "jsdom": "^29.0.2",
     "knip": "^6.4.1",
     "lint-staged": "^16.3.1",
-    "marked": "^17.0.5",
+    "marked": "^18.0.0",
     "postcss": "^8.5.9",
     "prettier": "^3.5.0",
     "rollup-plugin-visualizer": "^7.0.0",
