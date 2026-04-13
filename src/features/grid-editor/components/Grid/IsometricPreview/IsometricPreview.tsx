@@ -20,6 +20,10 @@ import { useBinsToRender } from './useBinsToRender';
 import { usePreviewSize } from './usePreviewSize';
 import { IsometricPreviewControls } from './IsometricPreviewControls';
 import { BinOverlayGroup } from './BinOverlayGroup';
+import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
+import { useBinTransitions } from './useBinTransitions';
+import { AnimatedBinMesh } from './AnimatedBinMesh';
+import { BinTransitionTicker } from './BinTransitionTicker';
 
 interface IsometricPreviewProps {
   inline?: boolean; // When true, fills container instead of using fixed sizing
@@ -143,20 +147,30 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
     heightToGridScale,
   });
 
-  // Memoize filtered bin arrays to prevent recalculation on every render
+  // Animated bin transitions (spring drop-in, shrink+fade exit).
+  const reducedMotion = usePrefersReducedMotion();
+  const { stableBins, enteringBins, exitingGhosts, tick } = useBinTransitions(
+    binsToRender,
+    reducedMotion
+  );
+
+  // Memoize filtered bin arrays to prevent recalculation on every render.
+  // Uses stableBins (excludes currently-animating bins) instead of binsToRender.
   const { selectedBins, nonSelectedBins, binsWithOverlays } = useMemo(() => {
-    const selected: typeof binsToRender = [];
-    const nonSelected: typeof binsToRender = [];
+    const selected: typeof stableBins = [];
+    const nonSelected: typeof stableBins = [];
     const withOverlays: typeof binsToRender = [];
 
-    for (const binData of binsToRender) {
+    for (const binData of stableBins) {
       if (selectedBinIds.includes(binData.bin.id)) {
         selected.push(binData);
       } else {
         nonSelected.push(binData);
       }
+    }
 
-      // Only include bins that need overlays (clearance or split lines)
+    // Overlays computed from all binsToRender (including animating) — positions are stable.
+    for (const binData of binsToRender) {
       const needsClearance = binData.clearanceHeight > 0;
       const needsSplitLines =
         binData.bin.width > maxGridUnits.width || binData.bin.depth > maxGridUnits.depth;
@@ -170,7 +184,7 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
       nonSelectedBins: nonSelected,
       binsWithOverlays: withOverlays,
     };
-  }, [binsToRender, selectedBinIds, maxGridUnits]);
+  }, [stableBins, binsToRender, selectedBinIds, maxGridUnits]);
 
   // Track exit animation — keep groups mounted with offset=0 so useFrame can lerp back.
   // The cleanup function fires when isExplodedView goes from true→false, starting exit animation.
@@ -300,6 +314,27 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
                   isSelected={true}
                 />
               ))}
+
+              {/* Entering bins: spring drop animation */}
+              {enteringBins.map(({ binData, transition }) => (
+                <AnimatedBinMesh
+                  key={`enter-${binData.bin.id}`}
+                  binData={binData}
+                  transition={transition}
+                />
+              ))}
+
+              {/* Exiting ghosts: shrink + fade animation */}
+              {exitingGhosts.map(({ binData, transition }) => (
+                <AnimatedBinMesh
+                  key={`exit-${binData.bin.id}`}
+                  binData={binData}
+                  transition={transition}
+                />
+              ))}
+
+              {/* Drives transition animations each frame */}
+              <BinTransitionTicker tick={tick} />
             </>
           )}
 
