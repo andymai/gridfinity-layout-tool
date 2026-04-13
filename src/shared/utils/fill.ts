@@ -173,10 +173,11 @@ export function fillGaps(
   const newBins: Bin[] = [];
 
   // Generate sizes sorted by area (largest first)
-  // Clamp to drawer dimensions since bins can't exceed the drawer
-  // In half-bin mode, include 0.5 increment sizes
-  const effectiveMaxW = Math.min(maxPrintSize, layout.drawer.width);
-  const effectiveMaxD = Math.min(maxPrintSize, layout.drawer.depth);
+  // Clamp to drawer dimensions since bins can't exceed the drawer.
+  // Floor to step so we never generate fractional sizes in integer-only mode
+  // (maxPrintSize may be a 0.5-increment from calcMaxGridUnits).
+  const effectiveMaxW = Math.floor(Math.min(maxPrintSize, layout.drawer.width) / step) * step;
+  const effectiveMaxD = Math.floor(Math.min(maxPrintSize, layout.drawer.depth) / step) * step;
   const sizes: Array<{ w: number; d: number }> = [];
   for (let w = effectiveMaxW; w >= minSize; w -= step) {
     for (let d = effectiveMaxD; d >= minSize; d -= step) {
