@@ -368,20 +368,15 @@ export function PreviewCanvas() {
     }))
   );
 
-  const {
-    defaultPrintBedSize: bedSize,
-    defaultPrintBedDepth: bedDepth,
-    defaultGridUnitMm: gridUnit,
-  } = useSettingsStore(
+  const { defaultPrintBedSize: bedSize, defaultPrintBedDepth: bedDepth } = useSettingsStore(
     useShallow((s) => ({
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
       defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
-      defaultGridUnitMm: s.settings.defaultGridUnitMm,
     }))
   );
   const maxGrid = useMemo(
-    () => calcMaxGridUnits(bedSize, gridUnit, bedDepth),
-    [bedSize, bedDepth, gridUnit]
+    () => calcMaxGridUnits(bedSize, params.gridUnitMm, bedDepth),
+    [bedSize, bedDepth, params.gridUnitMm]
   );
   const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;
 

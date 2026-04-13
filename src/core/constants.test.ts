@@ -34,14 +34,14 @@ describe('calcMaxGridUnits', () => {
   it('handles exact fit scenarios', () => {
     // 126mm bed fits exactly 3 units: 3 * 42 = 126mm
     expect(calcMaxGridUnits(126, 42)).toEqual({ width: 3, depth: 3 });
-    // 125mm bed fits only 2 units: floor(125 / 42) = 2
-    expect(calcMaxGridUnits(125, 42)).toEqual({ width: 2, depth: 2 });
+    // 125mm bed: floor(125/42 * 2) / 2 = 2.5 (2.5 * 42 = 105mm fits on 125mm bed)
+    expect(calcMaxGridUnits(125, 42)).toEqual({ width: 2.5, depth: 2.5 });
   });
 
   it('handles small grid units', () => {
     // 256mm bed, 20mm grid
-    // N ≤ 256 / 20 = 12.8 → 12 (bin size = 240mm fits on 256mm bed)
-    expect(calcMaxGridUnits(256, 20)).toEqual({ width: 12, depth: 12 });
+    // N ≤ 256 / 20 = 12.8 → 12.5 (bin size = 250mm fits on 256mm bed)
+    expect(calcMaxGridUnits(256, 20)).toEqual({ width: 12.5, depth: 12.5 });
   });
 
   it('never returns less than 1', () => {
@@ -57,6 +57,25 @@ describe('calcMaxGridUnits', () => {
   it('uses width for depth when depth is omitted', () => {
     expect(calcMaxGridUnits(300, 42)).toEqual({ width: 7, depth: 7 });
     expect(calcMaxGridUnits(300, 42, undefined)).toEqual({ width: 7, depth: 7 });
+  });
+
+  it('floors to half-unit increments for half-bin mode support', () => {
+    // 280mm bed, 42mm grid: 280/42 = 6.667 → 6.5
+    // A 6.5-unit bin = 273mm fits on 280mm bed
+    expect(calcMaxGridUnits(280, 42)).toEqual({ width: 6.5, depth: 6.5 });
+  });
+
+  it('handles non-standard grid unit (25mm) with 300mm bed', () => {
+    // 300mm bed, 25mm grid: 300/25 = 12 exactly
+    expect(calcMaxGridUnits(300, 25)).toEqual({ width: 12, depth: 12 });
+  });
+
+  it('allows half-unit bins that fit in mm but not in whole units', () => {
+    // 313mm bed, 25mm grid: 313/25 = 12.52 → 12.5
+    // A 12.5-unit bin = 312.5mm fits on 313mm bed
+    expect(calcMaxGridUnits(313, 25)).toEqual({ width: 12.5, depth: 12.5 });
+    // A 13-unit bin = 325mm does NOT fit, so max should be 12.5
+    expect(calcMaxGridUnits(313, 25).width).toBeLessThan(13);
   });
 });
 

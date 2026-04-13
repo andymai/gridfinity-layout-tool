@@ -150,6 +150,19 @@ describe('splitBinSize with fractional dimensions (half-bin mode)', () => {
     expect(pieces.some((p) => p.width === 1.5 || p.width === 1)).toBe(true);
     expect(pieces.every((p) => p.width <= 2 && p.depth <= 2)).toBe(true);
   });
+
+  it('does not split when bin fits with half-unit max (6.5 max)', () => {
+    // A 6.5-unit bin should not split when maxWidth is 6.5
+    const pieces = splitBinSize(6.5, 3, 6.5);
+    expect(pieces).toEqual([{ width: 6.5, depth: 3, count: 1 }]);
+  });
+
+  it('splits correctly when exceeding half-unit max', () => {
+    // A 7-unit bin with max 6.5 should split
+    const pieces = splitBinSize(7, 3, 6.5);
+    expect(pieces).toHaveLength(2);
+    expect(pieces.every((p) => p.width <= 6.5 && p.depth <= 6.5)).toBe(true);
+  });
 });
 
 describe('generatePrintList', () => {

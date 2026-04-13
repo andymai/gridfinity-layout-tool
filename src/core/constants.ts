@@ -61,9 +61,14 @@ export const RESERVED_PROPERTY_KEYS = [
 /**
  * Max grid units for a single axis.
  * N * gridUnitMm ≤ bedMm → N ≤ bedMm / gridUnitMm
+ *
+ * Floors down to the next lower 0.5 increment so that half-bin sizes
+ * (e.g. 6.5 units) are correctly recognized as fitting when their mm
+ * footprint is within the bed. Integer-only layouts are unaffected
+ * because ⌊x⌋ === ⌊2x⌋/2 whenever x is already an integer.
  */
 function calcMaxGridUnitsForAxis(bedMm: number, gridUnitMm: number): number {
-  return Math.max(1, Math.floor(bedMm / gridUnitMm));
+  return Math.max(1, Math.floor((bedMm / gridUnitMm) * 2) / 2);
 }
 
 /**

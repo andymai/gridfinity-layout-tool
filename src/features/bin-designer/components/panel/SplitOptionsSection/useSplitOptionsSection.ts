@@ -9,11 +9,12 @@ import { getSplitPieceCount } from '@/features/bin-designer/utils/splitPositions
 export type SplitAxis = 'width' | 'depth' | 'both';
 
 export function useSplitOptionsSection() {
-  const { width, depth, splitConnectors, splitViewMode, setParam, setSplitViewMode } =
+  const { width, depth, gridUnitMm, splitConnectors, splitViewMode, setParam, setSplitViewMode } =
     useDesignerStore(
       useShallow((s) => ({
         width: s.params.width,
         depth: s.params.depth,
+        gridUnitMm: s.params.gridUnitMm,
         splitConnectors: s.params.splitConnectors,
         splitViewMode: s.ui.splitViewMode,
         setParam: s.setParam,
@@ -21,17 +22,17 @@ export function useSplitOptionsSection() {
       }))
     );
 
-  const { defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm } = useSettingsStore(
+  const { defaultPrintBedSize, defaultPrintBedDepth } = useSettingsStore(
     useShallow((s) => ({
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
       defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
-      defaultGridUnitMm: s.settings.defaultGridUnitMm,
     }))
   );
 
+  // Use the bin's actual grid unit rather than defaultGridUnitMm from settings
   const maxGrid = useMemo(
-    () => calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm, defaultPrintBedDepth),
-    [defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm]
+    () => calcMaxGridUnits(defaultPrintBedSize, gridUnitMm, defaultPrintBedDepth),
+    [defaultPrintBedSize, defaultPrintBedDepth, gridUnitMm]
   );
 
   const needsSplit = width > maxGrid.width || depth > maxGrid.depth;

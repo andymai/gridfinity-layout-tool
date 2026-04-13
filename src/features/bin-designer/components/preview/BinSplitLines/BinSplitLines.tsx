@@ -39,17 +39,16 @@ export const BinSplitLines = memo(function BinSplitLines() {
     }))
   );
 
-  const { defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm } = useSettingsStore(
+  const { defaultPrintBedSize, defaultPrintBedDepth } = useSettingsStore(
     useShallow((s) => ({
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
       defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
-      defaultGridUnitMm: s.settings.defaultGridUnitMm,
     }))
   );
 
   const maxGrid = useMemo(
-    () => calcMaxGridUnits(defaultPrintBedSize, defaultGridUnitMm, defaultPrintBedDepth),
-    [defaultPrintBedSize, defaultPrintBedDepth, defaultGridUnitMm]
+    () => calcMaxGridUnits(defaultPrintBedSize, gridUnitMm, defaultPrintBedDepth),
+    [defaultPrintBedSize, defaultPrintBedDepth, gridUnitMm]
   );
 
   const needsSplit = width > maxGrid.width || depth > maxGrid.depth;
