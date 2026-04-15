@@ -156,36 +156,20 @@ describe('groupPiecesByFingerprint', () => {
     }
   });
 
-  it('inverted pieces are not grouped with identical non-inverted pieces', () => {
-    // 2x2 split: pieces at (0,0), (1,0), (0,1), (1,1).
-    // Mark piece "1,0" as inverted — it is otherwise a mirror of "0,0".
-    // The inverted piece must land in a separate fingerprint group.
-    const params = makeParams({
-      width: 10,
-      depth: 8,
-      invertedPieces: { '1,0': true },
-    });
-    const tiling = computeBaseplateTiling(params, 256);
-    expect(tiling.isSplit).toBe(true);
+  it('invertDovetails propagates to all piece fingerprints', () => {
+    const normal = makeParams({ width: 10, depth: 8 });
+    const inverted = makeParams({ width: 10, depth: 8, invertDovetails: true });
+    const tilingNormal = computeBaseplateTiling(normal, 256);
+    const tilingInverted = computeBaseplateTiling(inverted, 256);
+    expect(tilingNormal.isSplit).toBe(true);
 
-    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    const groupsNormal = groupPiecesByFingerprint(tilingNormal.pieces, normal);
+    const groupsInverted = groupPiecesByFingerprint(tilingInverted.pieces, inverted);
 
-    // Collect fingerprints for each piece by col,row
-    const fpByKey = new Map<string, string>();
-    let idx = 0;
-    for (const piece of tiling.pieces) {
-      const pieceParams = Array.from(groups.values()).find((g) => g.indices.includes(idx));
-      if (pieceParams) {
-        fpByKey.set(`${piece.col},${piece.row}`, pieceParams.fingerprint);
-      }
-      idx++;
+    // Every fingerprint in the inverted set should differ from every normal one
+    const normalFps = new Set([...groupsNormal.keys()]);
+    for (const fp of groupsInverted.keys()) {
+      expect(normalFps.has(fp)).toBe(false);
     }
-
-    const invertedFp = fpByKey.get('1,0');
-    const normalFp = fpByKey.get('0,0');
-
-    expect(invertedFp).toBeDefined();
-    expect(normalFp).toBeDefined();
-    expect(invertedFp).not.toBe(normalFp);
   });
 });

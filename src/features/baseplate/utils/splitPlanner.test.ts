@@ -674,38 +674,21 @@ describe('pieceToBaseplateParams', () => {
     expect(result.connectorNubs).toBeUndefined();
   });
 
-  it('sets invertDovetails: true when the piece key is in invertedPieces', () => {
-    // 2x2 split produces pieces at (0,0), (1,0), (0,1), (1,1).
-    // Mark piece "1,1" as inverted via invertedPieces.
-    const parent = makeParams({
-      width: 10,
-      depth: 8,
-      invertedPieces: { '1,1': true },
-    });
+  it('passes through invertDovetails from parent params', () => {
+    const parent = makeParams({ width: 10, depth: 8, invertDovetails: true });
     const tiling = computeBaseplateTiling(parent, 256);
-    expect(tiling.cols).toBe(2);
-    expect(tiling.rows).toBe(2);
+    const piece = tiling.pieces[0];
 
-    const targetPiece = tiling.pieces.find((p) => p.col === 1 && p.row === 1);
-    expect(targetPiece).toBeDefined();
-
-    const result = pieceToBaseplateParams(targetPiece!, parent);
+    const result = pieceToBaseplateParams(piece, parent);
     expect(result.invertDovetails).toBe(true);
   });
 
-  it('leaves invertDovetails undefined when the piece key is not in invertedPieces', () => {
-    // Only piece "1,1" is inverted; piece "0,0" must have invertDovetails: undefined.
-    const parent = makeParams({
-      width: 10,
-      depth: 8,
-      invertedPieces: { '1,1': true },
-    });
+  it('leaves invertDovetails undefined when parent does not set it', () => {
+    const parent = makeParams({ width: 10, depth: 8 });
     const tiling = computeBaseplateTiling(parent, 256);
+    const piece = tiling.pieces[0];
 
-    const normalPiece = tiling.pieces.find((p) => p.col === 0 && p.row === 0);
-    expect(normalPiece).toBeDefined();
-
-    const result = pieceToBaseplateParams(normalPiece!, parent);
+    const result = pieceToBaseplateParams(piece, parent);
     expect(result.invertDovetails).toBeUndefined();
   });
 });

@@ -36,9 +36,9 @@ export function buildFullParams(
     fractionalEdgeX,
     fractionalEdgeY,
     connectorNubs: stored.connectorNubs,
+    invertDovetails: stored.invertDovetails,
     lightweight: stored.lightweight,
     cornerRadius: stored.cornerRadius,
     cornerRadii: stored.cornerRadii,
-    invertedPieces: stored.invertedPieces,
   };
 }

@@ -478,10 +478,6 @@ export function pieceToBaseplateParams(
   const fractionalEdgeX = piece.fractionalEdgeX === 'none' ? 'end' : piece.fractionalEdgeX;
   const fractionalEdgeY = piece.fractionalEdgeY === 'none' ? 'end' : piece.fractionalEdgeY;
 
-  // Resolve per-piece dovetail inversion from the parent's invertedPieces map
-  const pieceKey = `${piece.col},${piece.row}`;
-  const invertDovetails = parentParams.invertedPieces?.[pieceKey] ?? undefined;
-
   return {
     width: piece.widthUnits,
     depth: piece.depthUnits,
@@ -497,7 +493,7 @@ export function pieceToBaseplateParams(
     fractionalEdgeY,
     edges: piece.edges,
     connectorNubs: parentParams.connectorNubs,
-    invertDovetails,
+    invertDovetails: parentParams.invertDovetails,
     lightweight: parentParams.lightweight,
     cornerRadius: parentParams.cornerRadius,
     cornerRadii: parentParams.cornerRadii,

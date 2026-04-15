@@ -1,9 +1,7 @@
 {
   "app.skipToGridEditor": "Pular para o planejador de grade",
   "baseplate.connectorNubs": "Dovetail connectors",
-  "baseplate.dovetails.invertAll": "Inverter todas",
-  "baseplate.dovetails.invertTooltip": "Clique em uma peça para trocar espigas e ranhuras",
-  "baseplate.dovetails.inverted": "Invertida",
+  "baseplate.dovetails.invert": "Inverter encaixes",
   "baseplate.cornerRadius": "Raio de canto",
   "baseplate.cornerRadiusBL": "Inferior esquerdo",
   "baseplate.cornerRadiusBR": "Inferior direito",
