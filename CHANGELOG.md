@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.38.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.38.0...gridfinity-layout-tool-v4.38.1) (2026-04-15)
+
+
+### Bug Fixes
+
+* prevent OOM and WASM leaks in baseplate generator ([#1373](https://github.com/andymai/gridfinity-layout-tool/issues/1373)) ([d825a81](https://github.com/andymai/gridfinity-layout-tool/commit/d825a81d57da98d29c88167abf213dec2599abba))
+
 ## [4.38.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.37.11...gridfinity-layout-tool-v4.38.0) (2026-04-13)
 
 
