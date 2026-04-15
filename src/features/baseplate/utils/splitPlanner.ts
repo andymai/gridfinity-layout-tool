@@ -480,7 +480,7 @@ export function pieceToBaseplateParams(
 
   // Resolve per-piece dovetail inversion from the parent's invertedPieces map
   const pieceKey = `${piece.col},${piece.row}`;
-  const invertDovetails = parentParams.invertedPieces?.[pieceKey] === true ? true : undefined;
+  const invertDovetails = parentParams.invertedPieces?.[pieceKey] ?? undefined;
 
   return {
     width: piece.widthUnits,

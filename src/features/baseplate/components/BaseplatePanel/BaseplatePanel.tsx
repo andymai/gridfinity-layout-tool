@@ -75,13 +75,8 @@ export function BaseplatePanel() {
     const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
     const prev = current.invertedPieces ?? {};
     const pieceKey = `${col},${row}`;
-    const wasInverted = prev[pieceKey];
-    // Build new map excluding the toggled key if it was set, or adding it if not
-    const next: Record<string, true> = {};
-    for (const [k, v] of Object.entries(prev)) {
-      if (k !== pieceKey) next[k] = v;
-    }
-    if (!wasInverted) next[pieceKey] = true;
+    const { [pieceKey]: wasInverted, ...rest } = prev;
+    const next = wasInverted ? rest : { ...rest, [pieceKey]: true as const };
     const hasEntries = Object.keys(next).length > 0;
     useLayoutStore.getState().setBaseplateParams({
       ...current,
@@ -94,23 +89,11 @@ export function BaseplatePanel() {
     const tilingState = useBaseplatePageStore.getState().tiling;
     if (!tilingState?.isSplit) return;
     const prev = current.invertedPieces ?? {};
-    // If all pieces are already inverted, clear all; otherwise invert all
     const allInverted = tilingState.pieces.every((p) => prev[`${p.col},${p.row}`]);
-    if (allInverted) {
-      useLayoutStore.getState().setBaseplateParams({
-        ...current,
-        invertedPieces: undefined,
-      });
-    } else {
-      const next: Record<string, true> = {};
-      for (const p of tilingState.pieces) {
-        next[`${p.col},${p.row}`] = true;
-      }
-      useLayoutStore.getState().setBaseplateParams({
-        ...current,
-        invertedPieces: next,
-      });
-    }
+    const invertedPieces = allInverted
+      ? undefined
+      : Object.fromEntries(tilingState.pieces.map((p) => [`${p.col},${p.row}`, true as const]));
+    useLayoutStore.getState().setBaseplateParams({ ...current, invertedPieces });
   }, []);
 
   const halfBinMode = useHalfBinModeStore((s) => s.halfBinMode);
@@ -481,7 +464,7 @@ function SplitViewStrip({
               const label = `${colToLetter(c)}${r + 1}`;
               const isHovered = hoveredPieceLabel === label;
               const isSelected = selectedPieceLabel === label;
-              const isInverted = connectorNubs && invertedPieces?.[`${c},${r}`] === true;
+              const isInverted = connectorNubs && !!invertedPieces?.[`${c},${r}`];
 
               return (
                 <button

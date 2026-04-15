@@ -294,9 +294,7 @@ function buildConnectors(
 
   if (!connectorNubs || !edges) return { nubs: tongues, holes: grooves };
 
-  // When invertDovetails is set, flip which edges are male vs female.
-  // This lets a reprinted piece mate with parts from a prior print run.
-  const invert = invertDovetails === true;
+  const invert = !!invertDovetails;
 
   const halfW = totalW / 2;
   const halfD = totalD / 2;
