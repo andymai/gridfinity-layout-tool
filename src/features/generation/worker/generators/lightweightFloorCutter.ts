@@ -84,9 +84,12 @@ export function buildLightweightFloorCutters(
             templates.set(fractionalKey, fractionalTemplate);
           }
           const cloned = unwrap(clone(fractionalTemplate));
-          const positioned = translate(cloned, [cell.centerX, cell.centerY, 0]);
-          cloned.delete();
-          cutters.push(positioned);
+          try {
+            const positioned = translate(cloned, [cell.centerX, cell.centerY, 0]);
+            cutters.push(positioned);
+          } finally {
+            cloned.delete();
+          }
           return;
         }
 
@@ -131,12 +134,18 @@ export function buildLightweightFloorCutters(
         }
 
         const cloned = unwrap(clone(template));
-        const positioned = translate(cloned, [cell.centerX, cell.centerY, 0]);
-        cloned.delete();
-        cutters.push(positioned);
+        try {
+          const positioned = translate(cloned, [cell.centerX, cell.centerY, 0]);
+          cutters.push(positioned);
+        } finally {
+          cloned.delete();
+        }
       },
       cellOpts
     );
+  } catch (e) {
+    for (const c of cutters) c.delete();
+    throw e;
   } finally {
     // Dispose template shapes — they were allocated for this build only.
     // In a finally block so WASM handles are freed even if a BREP op throws.

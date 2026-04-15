@@ -240,13 +240,19 @@ function buildMagnetHoles(
 
         for (const [dx, dy] of MAGNET_OFFSETS) {
           const cloned = unwrap(clone(magnetTemplate));
-          const positioned = translate(cloned, [cell.centerX + dx, cell.centerY + dy, 0]);
-          cloned.delete();
-          holes.push(positioned);
+          try {
+            const positioned = translate(cloned, [cell.centerX + dx, cell.centerY + dy, 0]);
+            holes.push(positioned);
+          } finally {
+            cloned.delete();
+          }
         }
       },
       cellOpts
     );
+  } catch (e) {
+    for (const h of holes) h.delete();
+    throw e;
   } finally {
     magnetTemplate.delete();
   }
@@ -902,14 +908,17 @@ function sanitizeParams(params: BaseplateParams): BaseplateParams {
   ) {
     throw new Error(`Invalid baseplate dimensions: ${params.width}x${params.depth}`);
   }
+  if (params.width > MAX_BASEPLATE_GRID || params.depth > MAX_BASEPLATE_GRID) {
+    throw new Error(
+      `Baseplate dimensions ${params.width}x${params.depth} exceed maximum ${MAX_BASEPLATE_GRID}`
+    );
+  }
 
   const clamp = (v: number, min: number, max: number): number =>
     Number.isFinite(v) ? Math.max(min, Math.min(max, v)) : min;
 
   return {
     ...params,
-    width: Math.min(params.width, MAX_BASEPLATE_GRID),
-    depth: Math.min(params.depth, MAX_BASEPLATE_GRID),
     gridUnitMm: clamp(params.gridUnitMm, 1, 200),
     magnetDiameter: clamp(params.magnetDiameter, 0.5, 20),
     magnetDepth: clamp(params.magnetDepth, 0.5, 10),
@@ -997,6 +1006,10 @@ const BOOLEAN_BATCH_SIZE = 64;
  * Cut an array of tool shapes from a solid in batches.
  * Each batch cuts up to BOOLEAN_BATCH_SIZE shapes, then disposes them
  * before building the next batch. This bounds peak WASM memory usage.
+ *
+ * Consumes `solid` on both success and failure — callers must not
+ * reference it after this call. On error, disposes `result` and all
+ * remaining unprocessed tools before rethrowing.
  */
 function cutInBatches(solid: Shape3D, tools: Shape3D[]): Shape3D {
   if (tools.length === 0) return solid;
@@ -1015,8 +1028,9 @@ function cutInBatches(solid: Shape3D, tools: Shape3D[]): Shape3D {
       processed = end;
     }
   } catch (e) {
-    // Dispose any remaining tool shapes not yet processed to prevent WASM leaks
+    // Dispose remaining unprocessed tools and the current result solid
     for (let j = processed; j < tools.length; j++) tools[j].delete();
+    result.delete();
     throw e;
   }
 
