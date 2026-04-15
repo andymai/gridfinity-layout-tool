@@ -23,8 +23,11 @@ const PORTRAIT_HEIGHT_PX = 960; // 11" - 1" margins = 10" ≈ 960px
 const LANDSCAPE_HEIGHT_PX = 720; // 8.5" - 1" margins = 7.5" ≈ 720px
 const ROW_LABELS_WIDTH = 22; // Width reserved for row labels
 const COL_LABELS_HEIGHT = 20; // Height reserved for column labels
-const HEADER_HEIGHT_ESTIMATE = 80; // Approximate header section height
-const LAYER_HEADER_HEIGHT = 24; // Layer name header when multiple layers shown
+// Conservative estimates based on print CSS (pt sizes at 96 DPI).
+// Intentionally over-budget so the grid doesn't overflow onto a second page.
+// Note: legend and bin list are excluded — "fit to page" constrains the grid only.
+const HEADER_HEIGHT_ESTIMATE = 100; // h1 (18pt) + info row + margins/padding/border
+const LAYER_HEADER_HEIGHT = 48; // 12pt font + 12pt top margin + 8pt bottom margin
 const MIN_CELL_SIZE = 20;
 const MAX_CELL_SIZE = 120;
 const DEFAULT_GAP = 1;
@@ -67,20 +70,26 @@ export function PrintLayout({
   // Solving for cellSize: cellSize = (gridWidth - (gridCols - 1) * gap) / gridCols
   const widthConstrainedSize = (gridAreaWidth - (gridCols - 1) * gap) / gridCols;
 
-  // When fitToPage is enabled, also constrain by page height so the grid fits on one page
-  // Only apply for actual print (availableWidth undefined), not modal preview (which scrolls)
+  // When fitToPage is enabled, constrain by page height so the grid fits on one page.
+  // For the modal preview, scale proportionally so the preview matches the printed output.
   const numLayers = selectedLayerIds.length;
   let calculatedCellSize = widthConstrainedSize;
-  if (settings.fitToPage && availableWidth === undefined) {
+  if (settings.fitToPage && numLayers > 0) {
+    const defaultPageWidth =
+      settings.orientation === 'landscape' ? LANDSCAPE_WIDTH_PX : PORTRAIT_WIDTH_PX;
     const pageHeight =
       settings.orientation === 'landscape' ? LANDSCAPE_HEIGHT_PX : PORTRAIT_HEIGHT_PX;
+    // Scale page height proportionally when rendering in the modal preview
+    const scaledPageHeight =
+      availableWidth !== undefined ? pageHeight * (availableWidth / defaultPageWidth) : pageHeight;
     const reservedHeight = settings.showHeader ? HEADER_HEIGHT_ESTIMATE : 0;
     // Each layer grid has its own column labels and layer header when multiple layers shown
     const perGridOverhead =
       (settings.showGridCoordinates ? COL_LABELS_HEIGHT : 0) +
       (numLayers > 1 ? LAYER_HEADER_HEIGHT : 0);
     // Divide remaining height equally among all layer grids
-    const gridAreaHeight = (pageHeight - reservedHeight - perGridOverhead * numLayers) / numLayers;
+    const gridAreaHeight =
+      (scaledPageHeight - reservedHeight - perGridOverhead * numLayers) / numLayers;
     const heightConstrainedSize = (gridAreaHeight - (drawerRows - 1) * gap) / drawerRows;
     calculatedCellSize = Math.min(widthConstrainedSize, heightConstrainedSize);
   }

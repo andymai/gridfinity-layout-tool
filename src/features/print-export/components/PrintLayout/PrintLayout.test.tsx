@@ -300,7 +300,7 @@ describe('PrintLayout', () => {
     expect(cellHeight).toBeGreaterThan(25); // Much larger than height-constrained
   });
 
-  it('does not apply height constraint when availableWidth is provided (modal preview)', () => {
+  it('applies proportional height constraint in modal preview when fitToPage is enabled', () => {
     const deepLayout = createTestLayout({
       drawer: { width: 5, depth: 40, height: 12 },
       bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
@@ -317,8 +317,31 @@ describe('PrintLayout', () => {
 
     const cell = container.querySelector('.print-grid-cell');
     expect(cell).toBeInTheDocument();
-    // With availableWidth provided, fitToPage height constraint is skipped
+    // With availableWidth matching default page width, height constraint scales 1:1
+    // so the preview should match print output — cells constrained by height
     const cellHeight = parseInt((cell as HTMLElement).style.height);
-    expect(cellHeight).toBeGreaterThan(25);
+    expect(cellHeight).toBeLessThanOrEqual(25);
+    expect(cellHeight).toBeGreaterThanOrEqual(20); // MIN_CELL_SIZE
+  });
+
+  it('renders safely when no layers are selected with fitToPage enabled', () => {
+    const layout = createTestLayout({
+      drawer: { width: 5, depth: 5, height: 12 },
+      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+    });
+
+    // Should not throw (no divide-by-zero)
+    expect(() =>
+      render(
+        <PrintLayout
+          layout={layout}
+          selectedLayerIds={[]}
+          settings={{ ...defaultSettings, fitToPage: true, orientation: 'portrait' }}
+        />
+      )
+    ).not.toThrow();
+
+    // Empty state rendered, no bins shown
+    expect(screen.queryByTestId('print-bin-bin-1')).not.toBeInTheDocument();
   });
 });
