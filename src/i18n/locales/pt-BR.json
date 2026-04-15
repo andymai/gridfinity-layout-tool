@@ -1112,6 +1112,7 @@
   "print.headerOptions": "Cabeçalho",
   "print.heightValue": "{height}u ({mm}mm)",
   "print.landscape": "Paisagem",
+  "print.fitToPage": "Ajustar grade à página",
   "print.layer": "Camada",
   "print.layoutOptions": "Layout",
   "print.noBinsToPrintInSelectedLayerS": "Nenhum bin para imprimir no(s) layer(s) selecionado(s)",

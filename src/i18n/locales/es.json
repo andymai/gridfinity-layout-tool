@@ -1112,6 +1112,7 @@
   "print.headerOptions": "Encabezado",
   "print.heightValue": "{height}u ({mm}mm)",
   "print.landscape": "Horizontal",
+  "print.fitToPage": "Ajustar cuadrícula a la página",
   "print.layer": "Capa",
   "print.layoutOptions": "Disposición",
   "print.noBinsToPrintInSelectedLayerS": "No hay bins para imprimir en el/los layer(s) seleccionado(s)",

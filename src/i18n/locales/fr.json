@@ -1112,6 +1112,7 @@
   "print.headerOptions": "En-tête",
   "print.heightValue": "{height}u ({mm}mm)",
   "print.landscape": "Paysage",
+  "print.fitToPage": "Ajuster la grille à la page",
   "print.layer": "Couche",
   "print.layoutOptions": "Agencement",
   "print.noBinsToPrintInSelectedLayerS": "Aucun bin à imprimer dans le(s) layer(s) sélectionné(s)",

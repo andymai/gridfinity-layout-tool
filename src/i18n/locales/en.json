@@ -387,6 +387,7 @@
   "print.orientation": "Page orientation",
   "print.portrait": "Portrait",
   "print.landscape": "Landscape",
+  "print.fitToPage": "Fit grid to page",
   "share.title": "Share Layout",
   "share.tabs.cloud": "Cloud",
   "share.tabs.link": "Link",

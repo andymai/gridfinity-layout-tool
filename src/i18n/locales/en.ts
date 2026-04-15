@@ -439,6 +439,7 @@ const en: Record<string, string> = {
   'print.orientation': 'Page orientation',
   'print.portrait': 'Portrait',
   'print.landscape': 'Landscape',
+  'print.fitToPage': 'Fit grid to page',
 
   // Cloud Share
   'share.title': 'Share Layout',

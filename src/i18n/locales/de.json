@@ -1112,6 +1112,7 @@
   "print.headerOptions": "Kopfzeile",
   "print.heightValue": "{height}u ({mm}mm)",
   "print.landscape": "Querformat",
+  "print.fitToPage": "Raster auf Seite einpassen",
   "print.layer": "Ebene",
   "print.layoutOptions": "Layout",
   "print.noBinsToPrintInSelectedLayerS": "Keine Bins zum Drucken in ausgewählten Layer(n)",

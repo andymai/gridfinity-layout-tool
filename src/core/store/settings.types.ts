@@ -115,8 +115,10 @@ export interface PrintViewSettings {
   showGridCoordinates: boolean;
   showLegend: boolean;
   showBinList: boolean;
-  // Page orientation (affects grid sizing for print)
+  // Page options
   orientation: PrintOrientation;
+  /** Scale the grid to fit on a single printed page */
+  fitToPage: boolean;
   // Bin list sorting
   binListSortOrder: BinListSortOrder;
 }
@@ -141,8 +143,9 @@ export const DEFAULT_PRINT_VIEW_SETTINGS: PrintViewSettings = {
   showGridCoordinates: true,
   showLegend: false,
   showBinList: false,
-  // Page orientation for print sizing
+  // Page options
   orientation: 'landscape',
+  fitToPage: true,
   // Bin list sorting - category then position by default
   binListSortOrder: [...DEFAULT_BIN_LIST_SORT_ORDER],
 };
