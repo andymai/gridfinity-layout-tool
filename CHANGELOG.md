@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.39.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.38.1...gridfinity-layout-tool-v4.39.0) (2026-04-15)
+
+
+### Features
+
+* add fit-to-page option for print layout ([#1378](https://github.com/andymai/gridfinity-layout-tool/issues/1378)) ([8af52a3](https://github.com/andymai/gridfinity-layout-tool/commit/8af52a3fb1626f957eef7de0e16834671decf017))
+* add per-piece dovetail inversion for split baseplates ([#1376](https://github.com/andymai/gridfinity-layout-tool/issues/1376)) ([07f0b60](https://github.com/andymai/gridfinity-layout-tool/commit/07f0b606891dde6771f08c86ea04f66525a4900e))
+
 ## [4.38.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.38.0...gridfinity-layout-tool-v4.38.1) (2026-04-15)
 
 
