@@ -1,6 +1,9 @@
 {
   "app.skipToGridEditor": "Ir al planificador de cuadrícula",
   "baseplate.connectorNubs": "Dovetail connectors",
+  "baseplate.dovetails.invertAll": "Invertir todas",
+  "baseplate.dovetails.invertTooltip": "Haga clic en una pieza para intercambiar lengüetas y ranuras",
+  "baseplate.dovetails.inverted": "Invertida",
   "baseplate.cornerRadius": "Radio de esquina",
   "baseplate.cornerRadiusBL": "Inferior izquierda",
   "baseplate.cornerRadiusBR": "Inferior derecha",

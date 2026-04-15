@@ -76,6 +76,12 @@ describe('computePieceFingerprint', () => {
     expect(computePieceFingerprint(a)).not.toBe(computePieceFingerprint(b));
   });
 
+  it('produces different keys when invertDovetails differs', () => {
+    const inverted = makeParams({ width: 3, depth: 3, invertDovetails: true });
+    const normal = makeParams({ width: 3, depth: 3 });
+    expect(computePieceFingerprint(inverted)).not.toBe(computePieceFingerprint(normal));
+  });
+
   it('produces different keys when cornerRadii differ', () => {
     const a = makeParams({
       width: 3,
@@ -148,5 +154,38 @@ describe('groupPiecesByFingerprint', () => {
       expect(group.params.magnetHoles).toBe(true);
       expect(group.params.gridUnitMm).toBe(42);
     }
+  });
+
+  it('inverted pieces are not grouped with identical non-inverted pieces', () => {
+    // 2x2 split: pieces at (0,0), (1,0), (0,1), (1,1).
+    // Mark piece "1,0" as inverted — it is otherwise a mirror of "0,0".
+    // The inverted piece must land in a separate fingerprint group.
+    const params = makeParams({
+      width: 10,
+      depth: 8,
+      invertedPieces: { '1,0': true },
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.isSplit).toBe(true);
+
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+
+    // Collect fingerprints for each piece by col,row
+    const fpByKey = new Map<string, string>();
+    let idx = 0;
+    for (const piece of tiling.pieces) {
+      const pieceParams = Array.from(groups.values()).find((g) => g.indices.includes(idx));
+      if (pieceParams) {
+        fpByKey.set(`${piece.col},${piece.row}`, pieceParams.fingerprint);
+      }
+      idx++;
+    }
+
+    const invertedFp = fpByKey.get('1,0');
+    const normalFp = fpByKey.get('0,0');
+
+    expect(invertedFp).toBeDefined();
+    expect(normalFp).toBeDefined();
+    expect(invertedFp).not.toBe(normalFp);
   });
 });

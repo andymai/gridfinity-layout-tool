@@ -1,6 +1,9 @@
 {
   "app.skipToGridEditor": "Passer au planificateur de grille",
   "baseplate.connectorNubs": "Dovetail connectors",
+  "baseplate.dovetails.invertAll": "Tout inverser",
+  "baseplate.dovetails.invertTooltip": "Cliquez sur une pièce pour échanger tenons et mortaises",
+  "baseplate.dovetails.inverted": "Inversée",
   "baseplate.cornerRadius": "Rayon de coin",
   "baseplate.cornerRadiusBL": "Bas-gauche",
   "baseplate.cornerRadiusBR": "Bas-droit",

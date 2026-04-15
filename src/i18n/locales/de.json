@@ -1,6 +1,9 @@
 {
   "app.skipToGridEditor": "Zum Grid-Planner springen",
   "baseplate.connectorNubs": "Dovetail connectors",
+  "baseplate.dovetails.invertAll": "Alle umkehren",
+  "baseplate.dovetails.invertTooltip": "Klicken Sie auf ein Teil, um Zapfen und Nuten zu tauschen",
+  "baseplate.dovetails.inverted": "Umgekehrt",
   "baseplate.cornerRadius": "Eckenradius",
   "baseplate.cornerRadiusBL": "Unten-links",
   "baseplate.cornerRadiusBR": "Unten-rechts",

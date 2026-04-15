@@ -76,6 +76,10 @@ export interface BaseplateParams {
   readonly edges?: BaseplateEdges;
   /** Enable registration nubs/holes on join edges for split piece alignment. */
   readonly connectorNubs?: boolean;
+  /** When true, swap tongue/groove on all join edges for this piece. */
+  readonly invertDovetails?: boolean;
+  /** Per-piece dovetail inversion map — keyed by "col,row" (e.g. "0,1"). Resolved per-piece by pieceToBaseplateParams. */
+  readonly invertedPieces?: Readonly<Record<string, boolean>>;
   /** Remove center floor material, keeping only magnet pads. */
   readonly lightweight?: boolean;
   /** Uniform outer corner radius in mm. */

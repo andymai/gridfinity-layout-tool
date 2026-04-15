@@ -1,6 +1,9 @@
 {
   "app.skipToGridEditor": "Gå til rutenettplanlegger",
   "baseplate.connectorNubs": "Dovetail connectors",
+  "baseplate.dovetails.invertAll": "Inverter alle",
+  "baseplate.dovetails.invertTooltip": "Klikk på en del for å bytte tapper og spor",
+  "baseplate.dovetails.inverted": "Invertert",
   "baseplate.cornerRadius": "Hjørneradius",
   "baseplate.cornerRadiusBL": "Nederst venstre",
   "baseplate.cornerRadiusBR": "Nederst høyre",

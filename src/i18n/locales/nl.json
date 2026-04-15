@@ -1,6 +1,9 @@
 {
   "app.skipToGridEditor": "Ga naar grid planner",
   "baseplate.connectorNubs": "Dovetail connectors",
+  "baseplate.dovetails.invertAll": "Alles omkeren",
+  "baseplate.dovetails.invertTooltip": "Klik op een deel om tongen en groeven om te wisselen",
+  "baseplate.dovetails.inverted": "Omgekeerd",
   "baseplate.cornerRadius": "Hoekradius",
   "baseplate.cornerRadiusBL": "Linksonder",
   "baseplate.cornerRadiusBR": "Rechtsonder",

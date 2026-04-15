@@ -39,5 +39,6 @@ export function buildFullParams(
     lightweight: stored.lightweight,
     cornerRadius: stored.cornerRadius,
     cornerRadii: stored.cornerRadii,
+    invertedPieces: stored.invertedPieces,
   };
 }

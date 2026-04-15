@@ -71,6 +71,48 @@ export function BaseplatePanel() {
     []
   );
 
+  const handleToggleInvert = useCallback((col: number, row: number) => {
+    const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+    const prev = current.invertedPieces ?? {};
+    const pieceKey = `${col},${row}`;
+    const wasInverted = prev[pieceKey];
+    // Build new map excluding the toggled key if it was set, or adding it if not
+    const next = Object.fromEntries(
+      wasInverted
+        ? Object.entries(prev).filter(([k]) => k !== pieceKey)
+        : [...Object.entries(prev), [pieceKey, true]]
+    );
+    const hasEntries = Object.keys(next).length > 0;
+    useLayoutStore.getState().setBaseplateParams({
+      ...current,
+      invertedPieces: hasEntries ? next : undefined,
+    });
+  }, []);
+
+  const handleInvertAll = useCallback(() => {
+    const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+    const tilingState = useBaseplatePageStore.getState().tiling;
+    if (!tilingState?.isSplit) return;
+    const prev = current.invertedPieces ?? {};
+    // If all pieces are already inverted, clear all; otherwise invert all
+    const allInverted = tilingState.pieces.every((p) => prev[`${p.col},${p.row}`]);
+    if (allInverted) {
+      useLayoutStore.getState().setBaseplateParams({
+        ...current,
+        invertedPieces: undefined,
+      });
+    } else {
+      const next: Record<string, boolean> = {};
+      for (const p of tilingState.pieces) {
+        next[`${p.col},${p.row}`] = true;
+      }
+      useLayoutStore.getState().setBaseplateParams({
+        ...current,
+        invertedPieces: next,
+      });
+    }
+  }, []);
+
   const halfBinMode = useHalfBinModeStore((s) => s.halfBinMode);
   const synced = baseplateParams.syncWithLayout !== false;
   const effectiveWidth = synced ? drawerWidth : (baseplateParams.baseplateWidth ?? drawerWidth);
@@ -362,6 +404,10 @@ export function BaseplatePanel() {
             onHoverPiece={setHoveredPieceLabel}
             onSelectPiece={setSelectedPieceLabel}
             printBedSize={printBedSize}
+            connectorNubs={baseplateParams.connectorNubs === true}
+            invertedPieces={baseplateParams.invertedPieces}
+            onToggleInvert={handleToggleInvert}
+            onInvertAll={handleInvertAll}
           />
         )}
       </div>
@@ -375,6 +421,10 @@ interface SplitViewStripProps {
   readonly onHoverPiece: (label: string | null) => void;
   readonly onSelectPiece: (label: string | null) => void;
   readonly printBedSize: number;
+  readonly connectorNubs: boolean;
+  readonly invertedPieces: Readonly<Record<string, boolean>> | undefined;
+  readonly onToggleInvert: (col: number, row: number) => void;
+  readonly onInvertAll: () => void;
 }
 
 /** Non-collapsible inline strip for the split view control. */
@@ -385,6 +435,10 @@ function SplitViewStrip({
   onHoverPiece,
   onSelectPiece,
   printBedSize,
+  connectorNubs,
+  invertedPieces,
+  onToggleInvert,
+  onInvertAll,
 }: SplitViewStripProps) {
   const t = useTranslation();
 
@@ -427,6 +481,7 @@ function SplitViewStrip({
               const label = `${colToLetter(c)}${r + 1}`;
               const isHovered = hoveredPieceLabel === label;
               const isSelected = selectedPieceLabel === label;
+              const isInverted = connectorNubs && invertedPieces?.[`${c},${r}`] === true;
 
               return (
                 <button
@@ -437,20 +492,64 @@ function SplitViewStrip({
                       ? 'ring-2 ring-accent border-accent text-content-primary'
                       : isHovered
                         ? 'ring-1 ring-accent/50 border-accent/50 text-content-secondary'
-                        : 'border-stroke-subtle text-content-tertiary'
+                        : isInverted
+                          ? 'border-warning/50 text-warning'
+                          : 'border-stroke-subtle text-content-tertiary'
                   }`}
                   onPointerEnter={() => onHoverPiece(label)}
                   onPointerLeave={() => onHoverPiece(null)}
-                  onClick={() => onSelectPiece(selectedPieceLabel === label ? null : label)}
+                  onClick={() => {
+                    if (connectorNubs) {
+                      onToggleInvert(c, r);
+                    } else {
+                      onSelectPiece(selectedPieceLabel === label ? null : label);
+                    }
+                  }}
                   aria-pressed={isSelected}
-                  aria-label={t('baseplate.pieceLabel', { label })}
+                  aria-label={
+                    connectorNubs
+                      ? `${t('baseplate.pieceLabel', { label })}${isInverted ? ` — ${t('baseplate.dovetails.inverted')}` : ''}`
+                      : t('baseplate.pieceLabel', { label })
+                  }
+                  title={connectorNubs ? t('baseplate.dovetails.invertTooltip') : undefined}
                 >
-                  {label}
+                  {isInverted ? (
+                    <span className="flex items-center gap-0.5">
+                      {label}
+                      <svg
+                        className="w-2.5 h-2.5"
+                        viewBox="0 0 10 10"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      >
+                        <path d="M1 5h8M6.5 2.5L9 5l-2.5 2.5M3.5 2.5L1 5l2.5 2.5" />
+                      </svg>
+                    </span>
+                  ) : (
+                    label
+                  )}
                 </button>
               );
             });
           })}
         </div>
+
+        {/* Invert all button — only when dovetail connectors are enabled */}
+        {connectorNubs && (
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-[11px] text-content-tertiary">
+              {t('baseplate.dovetails.invertTooltip')}
+            </span>
+            <button
+              type="button"
+              className="rounded px-2 py-0.5 text-[11px] text-content-secondary hover:bg-surface-hover transition-colors"
+              onClick={onInvertAll}
+            >
+              {t('baseplate.dovetails.invertAll')}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

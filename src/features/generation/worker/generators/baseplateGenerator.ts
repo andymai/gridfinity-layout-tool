@@ -393,6 +393,12 @@ function buildConnectors(
     }
   }
 
+  // When invertDovetails is set, swap: tongues become cuts, grooves become fuses.
+  // This lets a reprinted piece mate with pieces from a prior print run.
+  if (params.invertDovetails) {
+    return { nubs: grooves, holes: tongues };
+  }
+
   return { nubs: tongues, holes: grooves };
 }
 /** Segments per rounded corner arc for edge lines */
@@ -787,6 +793,7 @@ function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
     params.edges?.front ?? '',
     params.edges?.back ?? '',
     params.connectorNubs ?? false,
+    params.invertDovetails ?? false,
     params.lightweight ?? true,
     quantize(params.cornerRadius ?? -1),
     quantize(params.cornerRadii?.tl ?? -1),
