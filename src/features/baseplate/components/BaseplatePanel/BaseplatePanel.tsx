@@ -77,11 +77,11 @@ export function BaseplatePanel() {
     const pieceKey = `${col},${row}`;
     const wasInverted = prev[pieceKey];
     // Build new map excluding the toggled key if it was set, or adding it if not
-    const next = Object.fromEntries(
-      wasInverted
-        ? Object.entries(prev).filter(([k]) => k !== pieceKey)
-        : [...Object.entries(prev), [pieceKey, true]]
-    );
+    const next: Record<string, true> = {};
+    for (const [k, v] of Object.entries(prev)) {
+      if (k !== pieceKey) next[k] = v;
+    }
+    if (!wasInverted) next[pieceKey] = true;
     const hasEntries = Object.keys(next).length > 0;
     useLayoutStore.getState().setBaseplateParams({
       ...current,
@@ -102,7 +102,7 @@ export function BaseplatePanel() {
         invertedPieces: undefined,
       });
     } else {
-      const next: Record<string, boolean> = {};
+      const next: Record<string, true> = {};
       for (const p of tilingState.pieces) {
         next[`${p.col},${p.row}`] = true;
       }
@@ -422,7 +422,7 @@ interface SplitViewStripProps {
   readonly onSelectPiece: (label: string | null) => void;
   readonly printBedSize: number;
   readonly connectorNubs: boolean;
-  readonly invertedPieces: Readonly<Record<string, boolean>> | undefined;
+  readonly invertedPieces: Readonly<Record<string, true>> | undefined;
   readonly onToggleInvert: (col: number, row: number) => void;
   readonly onInvertAll: () => void;
 }
@@ -505,7 +505,7 @@ function SplitViewStrip({
                       onSelectPiece(selectedPieceLabel === label ? null : label);
                     }
                   }}
-                  aria-pressed={isSelected}
+                  aria-pressed={connectorNubs ? isInverted : isSelected}
                   aria-label={
                     connectorNubs
                       ? `${t('baseplate.pieceLabel', { label })}${isInverted ? ` — ${t('baseplate.dovetails.inverted')}` : ''}`

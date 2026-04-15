@@ -51,7 +51,7 @@ export interface BaseplateParams {
   /** Custom grid depth in units, only used when syncWithLayout is false. */
   readonly baseplateDepth?: GridUnits;
   /** Per-piece dovetail inversion map — keyed by "col,row" (e.g. "0,1"). */
-  readonly invertedPieces?: Readonly<Record<string, boolean>>;
+  readonly invertedPieces?: Readonly<Record<string, true>>;
   /** Uniform outer corner radius in mm (default: Gridfinity spec 2.5mm). */
   readonly cornerRadius?: Mm;
   /** Per-corner radius overrides. When set, takes precedence over cornerRadius. */

@@ -288,11 +288,15 @@ function buildConnectors(
   slabOffsetX: number,
   slabOffsetY: number
 ): { nubs: Shape3D[]; holes: Shape3D[] } {
-  const { edges, connectorNubs } = params;
+  const { edges, connectorNubs, invertDovetails } = params;
   const tongues: Shape3D[] = [];
   const grooves: Shape3D[] = [];
 
   if (!connectorNubs || !edges) return { nubs: tongues, holes: grooves };
+
+  // When invertDovetails is set, flip which edges are male vs female.
+  // This lets a reprinted piece mate with parts from a prior print run.
+  const invert = invertDovetails === true;
 
   const halfW = totalW / 2;
   const halfD = totalD / 2;
@@ -316,7 +320,7 @@ function buildConnectors(
   }> = [
     {
       side: 'left',
-      isMale: true,
+      isMale: !invert,
       wallPos: -halfW + slabOffsetX,
       numBoundaries: Math.ceil(params.depth) - 1,
       boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
@@ -325,7 +329,7 @@ function buildConnectors(
     },
     {
       side: 'right',
-      isMale: false,
+      isMale: invert,
       wallPos: halfW + slabOffsetX,
       numBoundaries: Math.ceil(params.depth) - 1,
       boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
@@ -334,7 +338,7 @@ function buildConnectors(
     },
     {
       side: 'front',
-      isMale: true,
+      isMale: !invert,
       wallPos: -halfD + slabOffsetY,
       numBoundaries: Math.ceil(params.width) - 1,
       boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
@@ -343,7 +347,7 @@ function buildConnectors(
     },
     {
       side: 'back',
-      isMale: false,
+      isMale: invert,
       wallPos: halfD + slabOffsetY,
       numBoundaries: Math.ceil(params.width) - 1,
       boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
@@ -391,12 +395,6 @@ function buildConnectors(
         );
       }
     }
-  }
-
-  // When invertDovetails is set, swap: tongues become cuts, grooves become fuses.
-  // This lets a reprinted piece mate with pieces from a prior print run.
-  if (params.invertDovetails) {
-    return { nubs: grooves, holes: tongues };
   }
 
   return { nubs: tongues, holes: grooves };
