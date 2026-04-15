@@ -773,6 +773,16 @@ export function generateBaseplateDirect(
   onProgress: ProgressFn,
   signal?: AbortSignal
 ): MeshData {
+  // Guard against NaN/negative/infinite values that would produce degenerate geometry
+  if (
+    !Number.isFinite(params.width) ||
+    params.width <= 0 ||
+    !Number.isFinite(params.depth) ||
+    params.depth <= 0
+  ) {
+    throw new Error(`Invalid baseplate dimensions: ${params.width}x${params.depth}`);
+  }
+
   onProgress('base', 0);
   checkCancelled(signal);
 
