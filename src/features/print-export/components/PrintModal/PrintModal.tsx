@@ -96,7 +96,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
 
   // Measure preview container for scaling
   const previewRef = useRef<HTMLDivElement>(null);
-  const [previewWidth, setPreviewWidth] = useState<number>(600);
+  const [previewWidth, setPreviewWidth] = useState(600);
 
   useEffect(() => {
     if (!isOpen || !previewRef.current) return;
@@ -402,7 +402,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                   </div>
                 </div>
 
-                {/* Page Orientation */}
+                {/* Page Options */}
                 <div className="mt-4">
                   <div className="text-xs text-content-tertiary mb-2 uppercase tracking-wide">
                     {t('print.orientation')}
@@ -421,6 +421,13 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                         {t(`print.${o}`)}
                       </button>
                     ))}
+                  </div>
+                  <div className="mt-2">
+                    <CheckboxOption
+                      label={t('print.fitToPage')}
+                      checked={printViewSettings.fitToPage}
+                      onChange={(v) => updatePrintSetting('fitToPage', v)}
+                    />
                   </div>
                 </div>
               </div>

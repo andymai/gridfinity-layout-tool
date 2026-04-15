@@ -69,7 +69,13 @@ describe('PrintLayout', () => {
     showBinList: true,
     showGridCoordinates: true,
     showCategoryColor: true,
+    showLabel: true,
+    showSize: true,
+    showHeight: true,
+    showNotes: true,
+    showCustomProperties: true,
     orientation: 'portrait',
+    fitToPage: true,
     binListSortOrder: 'position',
   };
 
@@ -246,5 +252,73 @@ describe('PrintLayout', () => {
     );
 
     expect(screen.getByTestId('print-bin-bin-1')).toBeInTheDocument();
+  });
+
+  it('constrains cell size by page height when fitToPage is enabled', () => {
+    // A very deep drawer (40 rows) in portrait mode should produce smaller cells
+    // than a shallow drawer, since the grid must fit the page height
+    const deepLayout = createTestLayout({
+      drawer: { width: 5, depth: 40, height: 12 },
+      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+    });
+
+    const { container } = render(
+      <PrintLayout
+        layout={deepLayout}
+        selectedLayerIds={['layer1']}
+        settings={{ ...defaultSettings, fitToPage: true, orientation: 'portrait' }}
+      />
+    );
+
+    const cell = container.querySelector('.print-grid-cell');
+    expect(cell).toBeInTheDocument();
+    // With 40 rows in portrait (960px page - overhead), cells should be ~21px
+    // Width-only would give ~130px for 5 cols in 670px, so height is the constraint
+    const cellHeight = parseInt((cell as HTMLElement).style.height);
+    expect(cellHeight).toBeLessThanOrEqual(25);
+    expect(cellHeight).toBeGreaterThanOrEqual(20); // MIN_CELL_SIZE
+  });
+
+  it('does not constrain by height when fitToPage is disabled', () => {
+    const deepLayout = createTestLayout({
+      drawer: { width: 5, depth: 40, height: 12 },
+      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+    });
+
+    const { container } = render(
+      <PrintLayout
+        layout={deepLayout}
+        selectedLayerIds={['layer1']}
+        settings={{ ...defaultSettings, fitToPage: false, orientation: 'portrait' }}
+      />
+    );
+
+    const cell = container.querySelector('.print-grid-cell');
+    expect(cell).toBeInTheDocument();
+    // Without fitToPage, width-only constraint: (670 - 22) / 5 ≈ 120px (capped at MAX)
+    const cellHeight = parseInt((cell as HTMLElement).style.height);
+    expect(cellHeight).toBeGreaterThan(25); // Much larger than height-constrained
+  });
+
+  it('does not apply height constraint when availableWidth is provided (modal preview)', () => {
+    const deepLayout = createTestLayout({
+      drawer: { width: 5, depth: 40, height: 12 },
+      bins: [createTestBin({ id: 'bin-1', layerId: 'layer1' })],
+    });
+
+    const { container } = render(
+      <PrintLayout
+        layout={deepLayout}
+        selectedLayerIds={['layer1']}
+        settings={{ ...defaultSettings, fitToPage: true, orientation: 'portrait' }}
+        availableWidth={670}
+      />
+    );
+
+    const cell = container.querySelector('.print-grid-cell');
+    expect(cell).toBeInTheDocument();
+    // With availableWidth provided, fitToPage height constraint is skipped
+    const cellHeight = parseInt((cell as HTMLElement).style.height);
+    expect(cellHeight).toBeGreaterThan(25);
   });
 });

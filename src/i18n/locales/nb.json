@@ -1112,6 +1112,7 @@
   "print.headerOptions": "Topptekst",
   "print.heightValue": "{height}u ({mm}mm)",
   "print.landscape": "Liggende",
+  "print.fitToPage": "Tilpass rutenett til side",
   "print.layer": "Lag",
   "print.layoutOptions": "Oppsett",
   "print.noBinsToPrintInSelectedLayerS": "Ingen bins å skrive ut i valgte lag",

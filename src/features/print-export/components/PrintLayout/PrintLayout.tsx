@@ -16,10 +16,15 @@ import { useTranslation } from '@/i18n';
 
 const LIST_SEPARATOR = ', ';
 
-// Page widths for print (in pixels at 96 DPI, accounting for 0.5" margins)
+// Page dimensions for print (in pixels at 96 DPI, accounting for 0.5" margins)
 const PORTRAIT_WIDTH_PX = 670; // 8.5" - 1" margins = 7" ≈ 670px
 const LANDSCAPE_WIDTH_PX = 950; // 11" - 1" margins = 10" ≈ 950px
+const PORTRAIT_HEIGHT_PX = 960; // 11" - 1" margins = 10" ≈ 960px
+const LANDSCAPE_HEIGHT_PX = 720; // 8.5" - 1" margins = 7.5" ≈ 720px
 const ROW_LABELS_WIDTH = 22; // Width reserved for row labels
+const COL_LABELS_HEIGHT = 20; // Height reserved for column labels
+const HEADER_HEIGHT_ESTIMATE = 80; // Approximate header section height
+const LAYER_HEADER_HEIGHT = 24; // Layer name header when multiple layers shown
 const MIN_CELL_SIZE = 20;
 const MAX_CELL_SIZE = 120;
 const DEFAULT_GAP = 1;
@@ -47,6 +52,7 @@ export function PrintLayout({
 
   // Calculate grid dimensions
   const gridCols = Math.ceil(drawer.width);
+  const drawerRows = Math.ceil(drawer.depth);
 
   // Determine target width: use measured width if available, otherwise use orientation setting
   const defaultWidth =
@@ -59,7 +65,26 @@ export function PrintLayout({
   const gridAreaWidth = targetWidth - labelsWidth;
   // Formula: gridWidth = gridCols * cellSize + (gridCols - 1) * gap
   // Solving for cellSize: cellSize = (gridWidth - (gridCols - 1) * gap) / gridCols
-  const calculatedCellSize = (gridAreaWidth - (gridCols - 1) * gap) / gridCols;
+  const widthConstrainedSize = (gridAreaWidth - (gridCols - 1) * gap) / gridCols;
+
+  // When fitToPage is enabled, also constrain by page height so the grid fits on one page
+  // Only apply for actual print (availableWidth undefined), not modal preview (which scrolls)
+  const numLayers = selectedLayerIds.length;
+  let calculatedCellSize = widthConstrainedSize;
+  if (settings.fitToPage && availableWidth === undefined) {
+    const pageHeight =
+      settings.orientation === 'landscape' ? LANDSCAPE_HEIGHT_PX : PORTRAIT_HEIGHT_PX;
+    const reservedHeight = settings.showHeader ? HEADER_HEIGHT_ESTIMATE : 0;
+    // Each layer grid has its own column labels and layer header when multiple layers shown
+    const perGridOverhead =
+      (settings.showGridCoordinates ? COL_LABELS_HEIGHT : 0) +
+      (numLayers > 1 ? LAYER_HEADER_HEIGHT : 0);
+    // Divide remaining height equally among all layer grids
+    const gridAreaHeight = (pageHeight - reservedHeight - perGridOverhead * numLayers) / numLayers;
+    const heightConstrainedSize = (gridAreaHeight - (drawerRows - 1) * gap) / drawerRows;
+    calculatedCellSize = Math.min(widthConstrainedSize, heightConstrainedSize);
+  }
+
   const cellSize = Math.max(MIN_CELL_SIZE, Math.min(MAX_CELL_SIZE, Math.floor(calculatedCellSize)));
 
   // Get visible layers in display order (top layer first, matching editor UI)

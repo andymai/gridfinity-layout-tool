@@ -1112,6 +1112,7 @@
   "print.headerOptions": "Koptekst",
   "print.heightValue": "{height}u ({mm}mm)",
   "print.landscape": "Liggend",
+  "print.fitToPage": "Raster op pagina passen",
   "print.layer": "Laag",
   "print.layoutOptions": "Indeling",
   "print.noBinsToPrintInSelectedLayerS": "Geen bins om af te drukken in geselecteerde layer(s)",
