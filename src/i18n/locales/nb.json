@@ -1,6 +1,7 @@
 {
   "app.skipToGridEditor": "Gå til rutenettplanlegger",
   "baseplate.connectorNubs": "Dovetail connectors",
+  "baseplate.dovetails.invert": "Inverter svalehaler",
   "baseplate.cornerRadius": "Hjørneradius",
   "baseplate.cornerRadiusBL": "Nederst venstre",
   "baseplate.cornerRadiusBR": "Nederst høyre",

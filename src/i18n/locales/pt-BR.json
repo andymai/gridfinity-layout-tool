@@ -1,6 +1,7 @@
 {
   "app.skipToGridEditor": "Pular para o planejador de grade",
   "baseplate.connectorNubs": "Dovetail connectors",
+  "baseplate.dovetails.invert": "Inverter encaixes",
   "baseplate.cornerRadius": "Raio de canto",
   "baseplate.cornerRadiusBL": "Inferior esquerdo",
   "baseplate.cornerRadiusBR": "Inferior direito",

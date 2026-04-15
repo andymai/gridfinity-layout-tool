@@ -218,6 +218,7 @@ const baseplateParamsSchema = z.object({
   paddingFront: z.number().min(0).max(100),
   paddingBack: z.number().min(0).max(100),
   connectorNubs: z.boolean().optional(),
+  invertDovetails: z.boolean().optional(),
   syncWithLayout: z.boolean().optional(),
   baseplateWidth: z.number().min(CONSTRAINTS.GRID_MIN).max(CONSTRAINTS.GRID_MAX).optional(),
   baseplateDepth: z.number().min(CONSTRAINTS.GRID_MIN).max(CONSTRAINTS.GRID_MAX).optional(),

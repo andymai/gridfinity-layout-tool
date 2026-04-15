@@ -493,6 +493,7 @@ export function pieceToBaseplateParams(
     fractionalEdgeY,
     edges: piece.edges,
     connectorNubs: parentParams.connectorNubs,
+    invertDovetails: parentParams.invertDovetails,
     lightweight: parentParams.lightweight,
     cornerRadius: parentParams.cornerRadius,
     cornerRadii: parentParams.cornerRadii,

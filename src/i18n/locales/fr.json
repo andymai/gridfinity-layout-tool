@@ -1,6 +1,7 @@
 {
   "app.skipToGridEditor": "Passer au planificateur de grille",
   "baseplate.connectorNubs": "Dovetail connectors",
+  "baseplate.dovetails.invert": "Inverser les queues d'aronde",
   "baseplate.cornerRadius": "Rayon de coin",
   "baseplate.cornerRadiusBL": "Bas-gauche",
   "baseplate.cornerRadiusBR": "Bas-droit",

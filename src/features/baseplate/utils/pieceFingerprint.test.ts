@@ -76,6 +76,12 @@ describe('computePieceFingerprint', () => {
     expect(computePieceFingerprint(a)).not.toBe(computePieceFingerprint(b));
   });
 
+  it('produces different keys when invertDovetails differs', () => {
+    const inverted = makeParams({ width: 3, depth: 3, invertDovetails: true });
+    const normal = makeParams({ width: 3, depth: 3 });
+    expect(computePieceFingerprint(inverted)).not.toBe(computePieceFingerprint(normal));
+  });
+
   it('produces different keys when cornerRadii differ', () => {
     const a = makeParams({
       width: 3,
@@ -147,6 +153,23 @@ describe('groupPiecesByFingerprint', () => {
     for (const group of groups.values()) {
       expect(group.params.magnetHoles).toBe(true);
       expect(group.params.gridUnitMm).toBe(42);
+    }
+  });
+
+  it('invertDovetails propagates to all piece fingerprints', () => {
+    const normal = makeParams({ width: 10, depth: 8 });
+    const inverted = makeParams({ width: 10, depth: 8, invertDovetails: true });
+    const tilingNormal = computeBaseplateTiling(normal, 256);
+    const tilingInverted = computeBaseplateTiling(inverted, 256);
+    expect(tilingNormal.isSplit).toBe(true);
+
+    const groupsNormal = groupPiecesByFingerprint(tilingNormal.pieces, normal);
+    const groupsInverted = groupPiecesByFingerprint(tilingInverted.pieces, inverted);
+
+    // Every fingerprint in the inverted set should differ from every normal one
+    const normalFps = new Set([...groupsNormal.keys()]);
+    for (const fp of groupsInverted.keys()) {
+      expect(normalFps.has(fp)).toBe(false);
     }
   });
 });

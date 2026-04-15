@@ -33,6 +33,7 @@ export function computePieceFingerprint(params: BaseplateParams): string {
     `fx:${params.fractionalEdgeX}`,
     `fy:${params.fractionalEdgeY}`,
     `cn:${params.connectorNubs ? 1 : 0}`,
+    `id:${params.invertDovetails ? 1 : 0}`,
     `lw:${params.lightweight ? 1 : 0}`,
     params.cornerRadius === undefined ? 'cr:default' : `cr:${params.cornerRadius}`,
   ];

@@ -255,13 +255,22 @@ export function BaseplatePanel() {
         >
           <div className="space-y-3 px-4 py-3">
             {tiling?.isSplit && (
-              <FeatureToggle
-                label={t('baseplate.connectorNubs')}
-                checked={baseplateParams.connectorNubs === true}
-                onChange={() =>
-                  updateParam('connectorNubs', baseplateParams.connectorNubs !== true)
-                }
-              />
+              <>
+                <FeatureToggle
+                  label={t('baseplate.connectorNubs')}
+                  checked={baseplateParams.connectorNubs === true}
+                  onChange={() =>
+                    updateParam('connectorNubs', baseplateParams.connectorNubs !== true)
+                  }
+                />
+                {baseplateParams.connectorNubs === true && (
+                  <Checkbox
+                    checked={baseplateParams.invertDovetails === true}
+                    onChange={(checked) => updateParam('invertDovetails', checked || undefined)}
+                    label={t('baseplate.dovetails.invert')}
+                  />
+                )}
+              </>
             )}
             <FeatureToggle
               label={t('baseplate.magnetHoles')}
@@ -427,7 +436,6 @@ function SplitViewStrip({
               const label = `${colToLetter(c)}${r + 1}`;
               const isHovered = hoveredPieceLabel === label;
               const isSelected = selectedPieceLabel === label;
-
               return (
                 <button
                   key={label}

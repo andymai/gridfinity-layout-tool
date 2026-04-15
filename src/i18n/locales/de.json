@@ -1,6 +1,7 @@
 {
   "app.skipToGridEditor": "Zum Grid-Planner springen",
   "baseplate.connectorNubs": "Dovetail connectors",
+  "baseplate.dovetails.invert": "Dovetails umkehren",
   "baseplate.cornerRadius": "Eckenradius",
   "baseplate.cornerRadiusBL": "Unten-links",
   "baseplate.cornerRadiusBR": "Unten-rechts",

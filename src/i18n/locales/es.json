@@ -1,6 +1,7 @@
 {
   "app.skipToGridEditor": "Ir al planificador de cuadrícula",
   "baseplate.connectorNubs": "Dovetail connectors",
+  "baseplate.dovetails.invert": "Invertir colas de milano",
   "baseplate.cornerRadius": "Radio de esquina",
   "baseplate.cornerRadiusBL": "Inferior izquierda",
   "baseplate.cornerRadiusBR": "Inferior derecha",

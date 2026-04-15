@@ -1,6 +1,7 @@
 {
   "app.skipToGridEditor": "Ga naar grid planner",
   "baseplate.connectorNubs": "Dovetail connectors",
+  "baseplate.dovetails.invert": "Zwaluwstaarten omkeren",
   "baseplate.cornerRadius": "Hoekradius",
   "baseplate.cornerRadiusBL": "Linksonder",
   "baseplate.cornerRadiusBR": "Rechtsonder",

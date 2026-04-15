@@ -119,6 +119,7 @@ export function useBaseplateGeneration(): void {
     baseplateDepth,
     cornerRadius,
     cornerRadii,
+    invertDovetails,
   } = useLayoutStore(
     useShallow((state) => {
       const bp = state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
@@ -143,6 +144,7 @@ export function useBaseplateGeneration(): void {
         baseplateDepth: bp.baseplateDepth,
         cornerRadius: bp.cornerRadius,
         cornerRadii: bp.cornerRadii,
+        invertDovetails: bp.invertDovetails,
       };
     })
   );
@@ -394,6 +396,7 @@ export function useBaseplateGeneration(): void {
     baseplateDepth,
     cornerRadius,
     cornerRadii,
+    invertDovetails,
     runGeneration,
   ]);
 }

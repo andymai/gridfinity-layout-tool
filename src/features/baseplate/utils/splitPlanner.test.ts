@@ -673,4 +673,22 @@ describe('pieceToBaseplateParams', () => {
     const result = pieceToBaseplateParams(piece, parent);
     expect(result.connectorNubs).toBeUndefined();
   });
+
+  it('passes through invertDovetails from parent params', () => {
+    const parent = makeParams({ width: 10, depth: 8, invertDovetails: true });
+    const tiling = computeBaseplateTiling(parent, 256);
+    const piece = tiling.pieces[0];
+
+    const result = pieceToBaseplateParams(piece, parent);
+    expect(result.invertDovetails).toBe(true);
+  });
+
+  it('leaves invertDovetails undefined when parent does not set it', () => {
+    const parent = makeParams({ width: 10, depth: 8 });
+    const tiling = computeBaseplateTiling(parent, 256);
+    const piece = tiling.pieces[0];
+
+    const result = pieceToBaseplateParams(piece, parent);
+    expect(result.invertDovetails).toBeUndefined();
+  });
 });

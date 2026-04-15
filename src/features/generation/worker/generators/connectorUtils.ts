@@ -23,12 +23,14 @@ export function computeConnectorPositions(
   totalD: number,
   slabOffsetX: number,
   slabOffsetY: number,
-  edges: { left: string; right: string; front: string; back: string }
+  edges: { left: string; right: string; front: string; back: string },
+  invertDovetails?: boolean
 ): ConnectorPos[] {
   const positions: ConnectorPos[] = [];
   const zCenter = totalHeight / 2;
   const halfW = totalW / 2;
   const halfD = totalD / 2;
+  const invert = !!invertDovetails;
 
   const edgeDefs: ReadonlyArray<{
     side: keyof typeof edges;
@@ -47,7 +49,7 @@ export function computeConnectorPositions(
       }),
       nx: -1,
       ny: 0,
-      isMale: true,
+      isMale: !invert,
     },
     {
       side: 'right',
@@ -58,7 +60,7 @@ export function computeConnectorPositions(
       }),
       nx: 1,
       ny: 0,
-      isMale: false,
+      isMale: invert,
     },
     {
       side: 'front',
@@ -69,7 +71,7 @@ export function computeConnectorPositions(
       }),
       nx: 0,
       ny: -1,
-      isMale: true,
+      isMale: !invert,
     },
     {
       side: 'back',
@@ -80,7 +82,7 @@ export function computeConnectorPositions(
       }),
       nx: 0,
       ny: 1,
-      isMale: false,
+      isMale: invert,
     },
   ];
 

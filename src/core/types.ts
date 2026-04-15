@@ -50,6 +50,8 @@ export interface BaseplateParams {
   readonly baseplateWidth?: GridUnits;
   /** Custom grid depth in units, only used when syncWithLayout is false. */
   readonly baseplateDepth?: GridUnits;
+  /** Swap tongue/groove convention on all join edges (default false). */
+  readonly invertDovetails?: boolean;
   /** Uniform outer corner radius in mm (default: Gridfinity spec 2.5mm). */
   readonly cornerRadius?: Mm;
   /** Per-corner radius overrides. When set, takes precedence over cornerRadius. */

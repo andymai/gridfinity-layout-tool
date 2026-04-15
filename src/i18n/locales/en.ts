@@ -1495,6 +1495,7 @@ const en: Record<string, string> = {
   'baseplate.topView': 'Top',
   'baseplate.isoView': 'Iso',
   'baseplate.connectorNubs': 'Dovetail connectors',
+  'baseplate.dovetails.invert': 'Invert dovetails',
   'baseplate.cornerRadius': 'Corner radius',
   'baseplate.cornerRadiusInfo': 'Outer corner radius for fitting in rounded enclosures',
   'baseplate.cornerRadiusTL': 'Top-left',
