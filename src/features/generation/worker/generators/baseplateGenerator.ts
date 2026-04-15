@@ -231,25 +231,31 @@ function buildMagnetHoles(
   });
 
   const holes: Shape3D[] = [];
-  forEachCell(
-    gridW,
-    gridD,
-    (cell) => {
-      if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+  try {
+    forEachCell(
+      gridW,
+      gridD,
+      (cell) => {
+        if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
 
-      for (const [dx, dy] of MAGNET_OFFSETS) {
-        const cloned = unwrap(clone(magnetTemplate));
-        const positioned = translate(cloned, [cell.centerX + dx, cell.centerY + dy, 0]);
-        cloned.delete();
-        holes.push(positioned);
-      }
-    },
-    cellOpts
-  );
-
-  // Template is only used to stamp clones per cell — dispose once the loop
-  // is done so its WASM handle is released.
-  magnetTemplate.delete();
+        for (const [dx, dy] of MAGNET_OFFSETS) {
+          const cloned = unwrap(clone(magnetTemplate));
+          try {
+            const positioned = translate(cloned, [cell.centerX + dx, cell.centerY + dy, 0]);
+            holes.push(positioned);
+          } finally {
+            cloned.delete();
+          }
+        }
+      },
+      cellOpts
+    );
+  } catch (e) {
+    for (const h of holes) h.delete();
+    throw e;
+  } finally {
+    magnetTemplate.delete();
+  }
   return holes;
 }
 /**
@@ -885,15 +891,54 @@ function buildSlabProfile(
   return pen.close();
 }
 
+/** Maximum grid dimension for baseplate generation (units). */
+const MAX_BASEPLATE_GRID = 50;
+
+/**
+ * Validate and clamp baseplate params to safe ranges.
+ * Throws on clearly invalid dimensions (NaN, zero, negative) to surface
+ * upstream bugs. Clamps other fields to safe ranges to prevent OOM.
+ */
+function sanitizeParams(params: BaseplateParams): BaseplateParams {
+  if (
+    !Number.isFinite(params.width) ||
+    params.width <= 0 ||
+    !Number.isFinite(params.depth) ||
+    params.depth <= 0
+  ) {
+    throw new Error(`Invalid baseplate dimensions: ${params.width}x${params.depth}`);
+  }
+  if (params.width > MAX_BASEPLATE_GRID || params.depth > MAX_BASEPLATE_GRID) {
+    throw new Error(
+      `Baseplate dimensions ${params.width}x${params.depth} exceed maximum ${MAX_BASEPLATE_GRID}`
+    );
+  }
+
+  const clamp = (v: number, min: number, max: number): number =>
+    Number.isFinite(v) ? Math.max(min, Math.min(max, v)) : min;
+
+  return {
+    ...params,
+    gridUnitMm: clamp(params.gridUnitMm, 1, 200),
+    magnetDiameter: clamp(params.magnetDiameter, 0.5, 20),
+    magnetDepth: clamp(params.magnetDepth, 0.5, 10),
+    paddingLeft: clamp(params.paddingLeft, 0, 100),
+    paddingRight: clamp(params.paddingRight, 0, 100),
+    paddingFront: clamp(params.paddingFront, 0, 100),
+    paddingBack: clamp(params.paddingBack, 0, 100),
+  };
+}
+
 /**
  * Generate baseplate mesh for preview or export.
  */
 export function generateBaseplate(
-  params: BaseplateParams,
+  rawParams: BaseplateParams,
   onProgress: ProgressFn,
   forExport: boolean,
   signal?: AbortSignal
 ): MeshData {
+  const params = sanitizeParams(rawParams);
   onProgress('base', 0);
   checkCancelled(signal);
 
@@ -934,14 +979,61 @@ export function generateBaseplate(
     tolerance = Math.min(0.4, Math.max(0.15, maxDimension / 600));
     angularTolerance = 12;
   }
-  const meshResult = mesh(baseplate, { tolerance, angularTolerance });
-  // Compute edge lines procedurally from params (avoids expensive meshEdges() on BREP)
-  const edgeVerts = computeBaseplateEdgeLines(params);
 
-  onProgress('base', 1);
+  try {
+    const meshResult = mesh(baseplate, { tolerance, angularTolerance });
+    // Compute edge lines procedurally from params (avoids expensive meshEdges() on BREP)
+    const edgeVerts = computeBaseplateEdgeLines(params);
 
-  const result = toIndexedMeshData(meshResult, edgeVerts);
-  meshResultCache.set(cacheKey, result);
+    onProgress('base', 1);
+
+    const result = toIndexedMeshData(meshResult, edgeVerts);
+    meshResultCache.set(cacheKey, result);
+    return result;
+  } finally {
+    baseplate.delete();
+  }
+}
+
+/**
+ * Maximum number of BREP tool shapes to cut in a single boolean pass.
+ * Keeps WASM heap bounded — larger grids (16x16 = 1024 magnet holes)
+ * would otherwise hold all shapes simultaneously, causing OOM.
+ */
+const BOOLEAN_BATCH_SIZE = 64;
+
+/**
+ * Cut an array of tool shapes from a solid in batches.
+ * Each batch cuts up to BOOLEAN_BATCH_SIZE shapes, then disposes them
+ * before building the next batch. This bounds peak WASM memory usage.
+ *
+ * Consumes `solid` on both success and failure — callers must not
+ * reference it after this call. On error, disposes `result` and all
+ * remaining unprocessed tools before rethrowing.
+ */
+function cutInBatches(solid: Shape3D, tools: Shape3D[]): Shape3D {
+  if (tools.length === 0) return solid;
+
+  let result = solid;
+  let processed = 0;
+
+  try {
+    for (let i = 0; i < tools.length; i += BOOLEAN_BATCH_SIZE) {
+      const end = Math.min(i + BOOLEAN_BATCH_SIZE, tools.length);
+      const batch = tools.slice(i, end);
+      const prev = result;
+      result = unwrap(cutAll(result as ValidSolid, batch as ValidSolid[]));
+      prev.delete();
+      for (const t of batch) t.delete();
+      processed = end;
+    }
+  } catch (e) {
+    // Dispose remaining unprocessed tools and the current result solid
+    for (let j = processed; j < tools.length; j++) tools[j].delete();
+    result.delete();
+    throw e;
+  }
+
   return result;
 }
 
@@ -1031,12 +1123,7 @@ function buildBaseplateSolid(
     );
 
     if (pockets.length > 0) {
-      const preCut = baseplate;
-      baseplate = unwrap(cutAll(baseplate as ValidSolid, pockets as ValidSolid[]));
-      // cutAll allocates a fresh handle for the result and does not dispose
-      // its inputs — free the pre-cut slab and every pocket cutter now.
-      preCut.delete();
-      for (const p of pockets) p.delete();
+      baseplate = cutInBatches(baseplate, pockets);
     }
 
     slabWithPocketsCache.set(spKey, baseplate);
@@ -1076,13 +1163,11 @@ function buildBaseplateSolid(
     roundedTranslated.delete();
   }
 
-  // into a single array for one batched cutAll operation.
-  const allCuts: Shape3D[] = [];
-
-  // 2a. Magnet hole cutters
+  // 2a. Magnet hole cutters — built and cut in batches to limit WASM memory.
+  // A 16x16 grid produces 1024 magnet holes; holding all simultaneously can OOM.
   if (magnetHoles) {
     const holes = buildMagnetHoles(width, depth, magnetDiameter / 2, magnetDepth, cellOpts);
-    allCuts.push(...holes);
+    baseplate = cutInBatches(baseplate, holes);
   }
 
   // 2a-ii. Lightweight floor cutters (cross-shaped material removal)
@@ -1094,12 +1179,12 @@ function buildBaseplateSolid(
       magnetDepth,
       cellOpts
     );
-    allCuts.push(...floorCutters);
+    baseplate = cutInBatches(baseplate, floorCutters);
   }
 
   onProgress?.(0.4);
 
-  // 2b. Connector groove cutters
+  // 2b. Connector groove cutters (small count — no batching needed)
   const { nubs, holes: connHoles } = buildConnectors(
     params,
     totalHeight,
@@ -1108,14 +1193,11 @@ function buildBaseplateSolid(
     slabOffsetX,
     slabOffsetY
   );
-  allCuts.push(...connHoles);
 
-  // Primary path: single-call pipeline fuses nubs then cuts holes,
-  // skipping intermediate UnifySameDomain between the fuse and cut passes.
-  if (nubs.length > 0 || allCuts.length > 0) {
+  if (nubs.length > 0 || connHoles.length > 0) {
     const steps: BooleanPipelineStep[] = [
       ...nubs.map((n): BooleanPipelineStep => ({ op: 'fuse', tool: n })),
-      ...allCuts.map((c): BooleanPipelineStep => ({ op: 'cut', tool: c })),
+      ...connHoles.map((c): BooleanPipelineStep => ({ op: 'cut', tool: c })),
     ];
     const preBoolean = baseplate;
     const pipelineResult = booleanPipeline(baseplate, steps);
@@ -1126,17 +1208,15 @@ function buildBaseplateSolid(
       if (nubs.length > 0) {
         baseplate = unwrap(fuseAll([baseplate, ...nubs] as ValidSolid[]));
       }
-      if (allCuts.length > 0) {
+      if (connHoles.length > 0) {
         const preCut = baseplate;
-        baseplate = unwrap(cutAll(baseplate as ValidSolid, allCuts as ValidSolid[]));
+        baseplate = unwrap(cutAll(baseplate as ValidSolid, connHoles as ValidSolid[]));
         if (preCut !== preBoolean) preCut.delete();
       }
     }
-    // Dispose the pre-boolean baseplate (replaced by the pipeline result)
-    // and every tool shape consumed by the boolean pass.
     if (baseplate !== preBoolean) preBoolean.delete();
     for (const n of nubs) n.delete();
-    for (const c of allCuts) c.delete();
+    for (const c of connHoles) c.delete();
   }
 
   onProgress?.(0.6);
@@ -1152,34 +1232,39 @@ function buildBaseplateSolid(
  * Export baseplate as STL or STEP file.
  */
 export async function exportBaseplate(
-  params: BaseplateParams,
+  rawParams: BaseplateParams,
   format: ExportFormat,
   tolerance?: number,
   angularTolerance?: number
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
+  const params = sanitizeParams(rawParams);
   // Use simplified pocket cutter (forExport=false) — the full-detail
   // multi-section loft creates BREP topologies that OCCT can't reliably
   // tessellate or export. The simplified version is geometrically equivalent
   // for 3D printing (same outer profile, slightly simplified taper).
   const baseplate = buildBaseplateSolid(params, false);
-  const totalW = params.width * params.gridUnitMm + params.paddingLeft + params.paddingRight;
-  const totalD = params.depth * params.gridUnitMm + params.paddingFront + params.paddingBack;
-  const name = `baseplate_${params.width}x${params.depth}_${Math.round(totalW)}x${Math.round(totalD)}mm`;
+  try {
+    const totalW = params.width * params.gridUnitMm + params.paddingLeft + params.paddingRight;
+    const totalD = params.depth * params.gridUnitMm + params.paddingFront + params.paddingBack;
+    const name = `baseplate_${params.width}x${params.depth}_${Math.round(totalW)}x${Math.round(totalD)}mm`;
 
-  if (format === 'step') {
-    const blob = unwrap(exportSTEP(baseplate));
-    const data = await blob.arrayBuffer();
-    return { data, fileName: `${name}.step` };
+    if (format === 'step') {
+      const blob = unwrap(exportSTEP(baseplate));
+      const data = await blob.arrayBuffer();
+      return { data, fileName: `${name}.step` };
+    }
+
+    // STL — mesh the BREP and build binary STL with winding correction.
+    // OCCT's StlAPI.Write fails on baseplate geometries, so we tessellate
+    // manually and fix triangle winding to match the STL right-hand rule.
+    const tol = tolerance ?? 0.01;
+    const angTol = angularTolerance ?? 5;
+    const meshResult = mesh(baseplate, { tolerance: tol, angularTolerance: angTol });
+    const data = buildBaseplateSTL(meshResult, name);
+    return { data, fileName: `${name}.stl` };
+  } finally {
+    baseplate.delete();
   }
-
-  // STL — mesh the BREP and build binary STL with winding correction.
-  // OCCT's StlAPI.Write fails on baseplate geometries, so we tessellate
-  // manually and fix triangle winding to match the STL right-hand rule.
-  const tol = tolerance ?? 0.01;
-  const angTol = angularTolerance ?? 5;
-  const meshResult = mesh(baseplate, { tolerance: tol, angularTolerance: angTol });
-  const data = buildBaseplateSTL(meshResult, name);
-  return { data, fileName: `${name}.stl` };
 }
 
 /**

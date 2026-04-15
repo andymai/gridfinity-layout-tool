@@ -62,83 +62,95 @@ export function buildLightweightFloorCutters(
   const cutters: Shape3D[] = [];
   const templates = new Map<string, Shape3D>();
 
-  forEachCell(
-    gridW,
-    gridD,
-    (cell) => {
-      const cellW_mm = cell.widthUnits * gridUnitMm;
-      const cellD_mm = cell.depthUnits * gridUnitMm;
+  try {
+    forEachCell(
+      gridW,
+      gridD,
+      (cell) => {
+        const cellW_mm = cell.widthUnits * gridUnitMm;
+        const cellD_mm = cell.depthUnits * gridUnitMm;
 
-      // Fractional cells (half-unit) have no magnets — cut through their
-      // entire floor since the solid material serves no purpose.
-      if (cell.widthUnits < 1 || cell.depthUnits < 1) {
-        const fhw = cellW_mm / 2 - INSET_BOT;
-        const fhd = cellD_mm / 2 - INSET_BOT;
-        if (fhw <= 0 || fhd <= 0) return;
-        const fractionalKey = `frac-${cell.widthUnits}x${cell.depthUnits}`;
-        let fractionalTemplate = templates.get(fractionalKey);
-        if (!fractionalTemplate) {
-          const rectProfile = drawRectangle(fhw * 2, fhd * 2);
-          fractionalTemplate = sketch(rectProfile, 'XY', cutterZ).extrude(-cutterDepth);
-          templates.set(fractionalKey, fractionalTemplate);
+        // Fractional cells (half-unit) have no magnets — cut through their
+        // entire floor since the solid material serves no purpose.
+        if (cell.widthUnits < 1 || cell.depthUnits < 1) {
+          const fhw = cellW_mm / 2 - INSET_BOT;
+          const fhd = cellD_mm / 2 - INSET_BOT;
+          if (fhw <= 0 || fhd <= 0) return;
+          const fractionalKey = `frac-${cell.widthUnits}x${cell.depthUnits}`;
+          let fractionalTemplate = templates.get(fractionalKey);
+          if (!fractionalTemplate) {
+            const rectProfile = drawRectangle(fhw * 2, fhd * 2);
+            fractionalTemplate = sketch(rectProfile, 'XY', cutterZ).extrude(-cutterDepth);
+            templates.set(fractionalKey, fractionalTemplate);
+          }
+          const cloned = unwrap(clone(fractionalTemplate));
+          try {
+            const positioned = translate(cloned, [cell.centerX, cell.centerY, 0]);
+            cutters.push(positioned);
+          } finally {
+            cloned.delete();
+          }
+          return;
         }
-        const cloned = unwrap(clone(fractionalTemplate));
-        const positioned = translate(cloned, [cell.centerX, cell.centerY, 0]);
-        cloned.delete();
-        cutters.push(positioned);
-        return;
-      }
 
-      // Inset by INSET_BOT so the cutout stays within the flat pocket floor
-      // and doesn't undercut the tapered pocket walls (which would create overhangs).
-      const hw = cellW_mm / 2 - INSET_BOT;
-      const hd = cellD_mm / 2 - INSET_BOT;
+        // Inset by INSET_BOT so the cutout stays within the flat pocket floor
+        // and doesn't undercut the tapered pocket walls (which would create overhangs).
+        const hw = cellW_mm / 2 - INSET_BOT;
+        const hd = cellD_mm / 2 - INSET_BOT;
 
-      // Guard: skip if cross arms would be too narrow
-      const armW = hw - padHalf;
-      const armD = hd - padHalf;
-      if (armW < MIN_ARM_WIDTH || armD < MIN_ARM_WIDTH) return;
+        // Guard: skip if cross arms would be too narrow
+        const armW = hw - padHalf;
+        const armD = hd - padHalf;
+        if (armW < MIN_ARM_WIDTH || armD < MIN_ARM_WIDTH) return;
 
-      const cacheKey = `${cell.widthUnits}x${cell.depthUnits}`;
-      let template = templates.get(cacheKey);
+        const cacheKey = `${cell.widthUnits}x${cell.depthUnits}`;
+        let template = templates.get(cacheKey);
 
-      if (!template) {
-        const r = Math.min(magnetRadius, Math.min(armW, armD));
+        if (!template) {
+          const r = Math.min(magnetRadius, Math.min(armW, armD));
 
-        // Cross-shaped profile (CCW), 12 segments + 4 inner corner fillets.
-        // Walking CCW from top-right of vertical arm:
-        const profile = draw([padHalf, hd])
-          .lineTo([-padHalf, hd])
-          .lineTo([-padHalf, padHalf])
-          .customCorner(r)
-          .lineTo([-hw, padHalf])
-          .lineTo([-hw, -padHalf])
-          .lineTo([-padHalf, -padHalf])
-          .customCorner(r)
-          .lineTo([-padHalf, -hd])
-          .lineTo([padHalf, -hd])
-          .lineTo([padHalf, -padHalf])
-          .customCorner(r)
-          .lineTo([hw, -padHalf])
-          .lineTo([hw, padHalf])
-          .lineTo([padHalf, padHalf])
-          .customCorner(r)
-          .close();
+          // Cross-shaped profile (CCW), 12 segments + 4 inner corner fillets.
+          // Walking CCW from top-right of vertical arm:
+          const profile = draw([padHalf, hd])
+            .lineTo([-padHalf, hd])
+            .lineTo([-padHalf, padHalf])
+            .customCorner(r)
+            .lineTo([-hw, padHalf])
+            .lineTo([-hw, -padHalf])
+            .lineTo([-padHalf, -padHalf])
+            .customCorner(r)
+            .lineTo([-padHalf, -hd])
+            .lineTo([padHalf, -hd])
+            .lineTo([padHalf, -padHalf])
+            .customCorner(r)
+            .lineTo([hw, -padHalf])
+            .lineTo([hw, padHalf])
+            .lineTo([padHalf, padHalf])
+            .customCorner(r)
+            .close();
 
-        template = sketch(profile, 'XY', cutterZ).extrude(-cutterDepth);
-        templates.set(cacheKey, template);
-      }
+          template = sketch(profile, 'XY', cutterZ).extrude(-cutterDepth);
+          templates.set(cacheKey, template);
+        }
 
-      const cloned = unwrap(clone(template));
-      const positioned = translate(cloned, [cell.centerX, cell.centerY, 0]);
-      cloned.delete();
-      cutters.push(positioned);
-    },
-    cellOpts
-  );
-
-  // Dispose template shapes — they were allocated for this build only.
-  for (const t of templates.values()) t.delete();
+        const cloned = unwrap(clone(template));
+        try {
+          const positioned = translate(cloned, [cell.centerX, cell.centerY, 0]);
+          cutters.push(positioned);
+        } finally {
+          cloned.delete();
+        }
+      },
+      cellOpts
+    );
+  } catch (e) {
+    for (const c of cutters) c.delete();
+    throw e;
+  } finally {
+    // Dispose template shapes — they were allocated for this build only.
+    // In a finally block so WASM handles are freed even if a BREP op throws.
+    for (const t of templates.values()) t.delete();
+  }
 
   return cutters;
 }
