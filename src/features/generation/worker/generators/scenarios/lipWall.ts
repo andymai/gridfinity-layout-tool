@@ -1,6 +1,6 @@
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
-import { countWallVerticesInZone } from '../__dual-kernel__/meshAssertions';
+import { boundingBox, countWallVerticesInZone } from '../__dual-kernel__/meshAssertions';
 import { defineScenario } from '../__dual-kernel__/scenarioTypes';
 import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
 
@@ -13,6 +13,8 @@ const lipWallCases = [
   { width: 4, depth: 4, label: '4x4 (threshold)' },
   { width: 5, depth: 4, label: '5x4 (above threshold)' },
   { width: 8, depth: 2, label: '8x2 (large, elongated)' },
+  { width: 4, depth: 3, label: '4x3 (reported in #1379)' },
+  { width: 3, depth: 4, label: '3x4 (inverse of #1379)' },
 ];
 
 export const lipWall: ScenarioCase[] = lipWallCases.map(({ width, depth, label }) => {
@@ -42,6 +44,16 @@ export const lipWall: ScenarioCase[] = lipWallCases.map(({ width, depth, label }
       expect(stats.right).toBeGreaterThanOrEqual(2);
       expect(stats.front).toBeGreaterThanOrEqual(2);
       expect(stats.back).toBeGreaterThanOrEqual(2);
+
+      // #1379: lip must not overhang the box outer boundary
+      const bb = boundingBox(result.vertices);
+      const TOL = 1.0; // tessellation tolerance
+      expect(bb.maxX - bb.minX, 'lip X extent must not exceed outerW').toBeLessThanOrEqual(
+        outerW + TOL
+      );
+      expect(bb.maxY - bb.minY, 'lip Y extent must not exceed outerD').toBeLessThanOrEqual(
+        outerD + TOL
+      );
     },
   });
 });

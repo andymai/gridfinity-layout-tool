@@ -16,9 +16,17 @@ let buildBinBox: BuildBinBoxFn;
 let buildTopShape: BuildTopShapeFn;
 
 let meshShape: (shape: unknown) => { vertices: ArrayLike<number>; triangles: ArrayLike<number> };
+let shapeBounds: (shape: unknown) => {
+  xMin: number;
+  xMax: number;
+  yMin: number;
+  yMax: number;
+  zMin: number;
+  zMax: number;
+};
 
 beforeAll(async () => {
-  const { initFromOC, mesh: meshFn } = await import('brepjs');
+  const { initFromOC, mesh: meshFn, getBounds } = await import('brepjs');
   const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
   const { readFileSync } = await import('fs');
   const { join } = await import('path');
@@ -33,6 +41,7 @@ beforeAll(async () => {
   buildTopShape = mod.buildTopShape;
 
   meshShape = (shape) => meshFn(shape as never, { tolerance: 1, angularTolerance: 30 });
+  shapeBounds = (shape) => getBounds(shape as never);
 }, 30000);
 
 describe('buildBinBox', () => {
@@ -93,4 +102,44 @@ describe('buildTopShape', () => {
     const withoutLip = meshShape(buildTopShape(2, 2, false));
     expect(withLip.triangles.length).toBeGreaterThan(withoutLip.triangles.length);
   }, 60000);
+
+  // Regression: #1379 — lip must not overhang the box boundary on non-square bins
+  it.each([
+    [4, 3, '4x3'],
+    [3, 4, '3x4'],
+    [1, 4, '1x4'],
+    [2, 3, '2x3'],
+  ])(
+    'rectangular %sx%s lip does not exceed box bounds',
+    (gridW, gridD, _label) => {
+      const SIZE = 42;
+      const CLEARANCE = 0.5;
+      const outerW = gridW * SIZE - CLEARANCE;
+      const outerD = gridD * SIZE - CLEARANCE;
+
+      const shape = buildTopShape(gridW, gridD, true);
+      const bounds = shapeBounds(shape);
+      const TOL = 0.5;
+
+      expect(bounds.xMax - bounds.xMin).toBeLessThanOrEqual(outerW + TOL);
+      expect(bounds.yMax - bounds.yMin).toBeLessThanOrEqual(outerD + TOL);
+    },
+    30000
+  );
+
+  // Regression: lip outer face should be flush with bin outer edge
+  it('lip outer face is flush with bin wall (not tapered)', () => {
+    const SIZE = 42;
+    const CLEARANCE = 0.5;
+    const outerW = 4 * SIZE - CLEARANCE;
+    const outerD = 3 * SIZE - CLEARANCE;
+
+    const lip = buildTopShape(4, 3, true);
+    const lipBounds = shapeBounds(lip);
+
+    // Lip X/Y extent should match outerW/outerD (flush with bin wall)
+    const TOL = 0.5;
+    expect(lipBounds.xMax - lipBounds.xMin).toBeGreaterThan(outerW - TOL);
+    expect(lipBounds.yMax - lipBounds.yMin).toBeGreaterThan(outerD - TOL);
+  }, 30000);
 });
