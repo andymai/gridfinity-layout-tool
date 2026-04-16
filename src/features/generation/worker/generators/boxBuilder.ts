@@ -138,12 +138,14 @@ export function buildBinBox(
  */
 function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean): Shape3D {
   const LIP_EXTENSION = includeLip ? 1.2 : 0;
-  const WALL = LIP_TAPER_WIDTH; // 2.6mm wall thickness
 
-  // Insets from outer edge at each profile breakpoint
-  const INSET_BOTTOM = LIP_TAPER_WIDTH; // 2.6mm
-  const INSET_MID = LIP_BIG_TAPER; // 1.9mm
-  const INSET_TOP = 0; // 0mm (peak at outer edge)
+  // Inner contour insets — trace the lip profile's inner face.
+  // The lip profile tapers from INSET_BOTTOM at the base inward toward
+  // the outer edge at the peak. The outer face is flush with the bin
+  // wall (inset=0) at all Z levels.
+  const INNER_BASE = LIP_TAPER_WIDTH; // 2.6mm
+  const INNER_MID = LIP_BIG_TAPER; // 1.9mm
+  const INNER_TOP = 0; // 0mm (inner meets outer at peak)
 
   const Z_EXT = -LIP_EXTENSION;
   const Z_BASE = 0;
@@ -158,29 +160,29 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
     return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
   };
 
-  // Build outer frustum
+  // Build outer frustum — flush with bin wall (inset=0) at all Z levels
   const outerSections: Sketch[] = [];
   if (includeLip) {
-    outerSections.push(sectionAt(Z_EXT, INSET_BOTTOM));
+    outerSections.push(sectionAt(Z_EXT, 0));
   }
-  outerSections.push(sectionAt(Z_BASE, INSET_BOTTOM));
-  outerSections.push(sectionAt(Z_TAPER1, INSET_MID));
-  outerSections.push(sectionAt(Z_VERT, INSET_MID));
-  outerSections.push(sectionAt(Z_PEAK, INSET_TOP));
+  outerSections.push(sectionAt(Z_BASE, 0));
+  outerSections.push(sectionAt(Z_TAPER1, 0));
+  outerSections.push(sectionAt(Z_VERT, 0));
+  outerSections.push(sectionAt(Z_PEAK, 0));
 
   return withScope((scope: DisposalScope) => {
     const [outerFirst, ...outerRest] = outerSections;
     const outerFrustum = scope.register(outerFirst.loftWith(outerRest, { ruled: true }));
 
-    // Build inner frustum (offset inward by wall thickness)
+    // Build inner frustum — traces the lip profile's inner contour
     const innerSections: Sketch[] = [];
     if (includeLip) {
-      innerSections.push(sectionAt(Z_EXT, INSET_BOTTOM + WALL));
+      innerSections.push(sectionAt(Z_EXT, INNER_BASE));
     }
-    innerSections.push(sectionAt(Z_BASE, INSET_BOTTOM + WALL));
-    innerSections.push(sectionAt(Z_TAPER1, INSET_MID + WALL));
-    innerSections.push(sectionAt(Z_VERT, INSET_MID + WALL));
-    innerSections.push(sectionAt(Z_PEAK, INSET_TOP + WALL));
+    innerSections.push(sectionAt(Z_BASE, INNER_BASE));
+    innerSections.push(sectionAt(Z_TAPER1, INNER_MID));
+    innerSections.push(sectionAt(Z_VERT, INNER_MID));
+    innerSections.push(sectionAt(Z_PEAK, INNER_TOP));
 
     const [innerFirst, ...innerRest] = innerSections;
     const innerFrustum = scope.register(innerFirst.loftWith(innerRest, { ruled: true }));
