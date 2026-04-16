@@ -128,24 +128,19 @@ export function buildBinBox(
   });
 }
 /**
- * Build the stacking lip using a ruled loft + boolean cut (fast path).
+ * Build the stacking lip using a ruled loft + boolean cut.
  *
- * Constructs the lip taper as a ruled loft through rounded-rectangle sections
- * at each profile breakpoint, then boolean-subtracts an inner frustum to create
- * a hollow ring. This produces analytic surfaces (planar + conical) instead of
- * the NURBS surfaces from sweepSketch, making it dramatically faster for boolean
- * and tessellation — especially with the brepkit kernel.
+ * Outer frustum is a rectangular tube flush with the bin wall (inset=0).
+ * Inner frustum traces the lip profile's inner contour, tapering from
+ * 2.6mm at the base to 0mm at the peak. The cut produces a wedge-shaped
+ * ring whose exterior is smooth and flush with the bin wall.
  */
 function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean): Shape3D {
   const LIP_EXTENSION = includeLip ? 1.2 : 0;
 
-  // Inner contour insets — trace the lip profile's inner face.
-  // The lip profile tapers from INSET_BOTTOM at the base inward toward
-  // the outer edge at the peak. The outer face is flush with the bin
-  // wall (inset=0) at all Z levels.
   const INNER_BASE = LIP_TAPER_WIDTH; // 2.6mm
   const INNER_MID = LIP_BIG_TAPER; // 1.9mm
-  const INNER_TOP = 0; // 0mm (inner meets outer at peak)
+  const INNER_TOP = 0;
 
   const Z_EXT = -LIP_EXTENSION;
   const Z_BASE = 0;
@@ -160,21 +155,15 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
     return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
   };
 
-  // Build outer frustum — flush with bin wall (inset=0) at all Z levels
-  const outerSections: Sketch[] = [];
-  if (includeLip) {
-    outerSections.push(sectionAt(Z_EXT, 0));
-  }
-  outerSections.push(sectionAt(Z_BASE, 0));
-  outerSections.push(sectionAt(Z_TAPER1, 0));
-  outerSections.push(sectionAt(Z_VERT, 0));
-  outerSections.push(sectionAt(Z_PEAK, 0));
+  // Outer: rectangular tube at bin outer edge (2 sections → no extra edges)
+  const zBottom = includeLip ? Z_EXT : Z_BASE;
+  const outerSections: Sketch[] = [sectionAt(zBottom, 0), sectionAt(Z_PEAK, 0)];
 
   return withScope((scope: DisposalScope) => {
     const [outerFirst, ...outerRest] = outerSections;
     const outerFrustum = scope.register(outerFirst.loftWith(outerRest, { ruled: true }));
 
-    // Build inner frustum — traces the lip profile's inner contour
+    // Inner: tapered frustum tracing the lip profile
     const innerSections: Sketch[] = [];
     if (includeLip) {
       innerSections.push(sectionAt(Z_EXT, INNER_BASE));
