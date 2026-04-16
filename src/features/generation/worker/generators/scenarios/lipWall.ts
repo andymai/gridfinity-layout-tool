@@ -48,8 +48,12 @@ export const lipWall: ScenarioCase[] = lipWallCases.map(({ width, depth, label }
       // #1379: lip must not overhang the box outer boundary
       const bb = boundingBox(result.vertices);
       const TOL = 1.0; // tessellation tolerance
-      expect(bb.maxX - bb.minX, 'lip X extent must not exceed outerW').toBeLessThan(outerW + TOL);
-      expect(bb.maxY - bb.minY, 'lip Y extent must not exceed outerD').toBeLessThan(outerD + TOL);
+      expect(bb.maxX - bb.minX, 'lip X extent must not exceed outerW').toBeLessThanOrEqual(
+        outerW + TOL
+      );
+      expect(bb.maxY - bb.minY, 'lip Y extent must not exceed outerD').toBeLessThanOrEqual(
+        outerD + TOL
+      );
     },
   });
 });
