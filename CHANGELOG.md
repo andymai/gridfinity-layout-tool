@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.39.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.39.0...gridfinity-layout-tool-v4.39.1) (2026-04-16)
+
+
+### Bug Fixes
+
+* **generation:** use loft for stacking lip on all kernels ([#1380](https://github.com/andymai/gridfinity-layout-tool/issues/1380)) ([a6a5218](https://github.com/andymai/gridfinity-layout-tool/commit/a6a5218d60c388de30bdf5f34f4f4b047cea9627))
+
 ## [4.39.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.38.1...gridfinity-layout-tool-v4.39.0) (2026-04-15)
 
 
