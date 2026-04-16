@@ -21,7 +21,6 @@ import {
   edgeFinder,
   getBounds,
   shell,
-  getKernel,
   withScope,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Plane, Vec3, Sketch, DisposalScope } from 'brepjs';
@@ -146,6 +145,10 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
   const INSET_MID = LIP_BIG_TAPER; // 1.9mm
   const INSET_TOP = 0; // 0mm (peak at outer edge)
 
+  // Extension flange: no inset so it spans the full outer edge,
+  // guaranteeing overlap with the box walls at the fuse junction.
+  const INSET_EXT = 0;
+
   const Z_EXT = -LIP_EXTENSION;
   const Z_BASE = 0;
   const Z_TAPER1 = LIP_SMALL_TAPER; // 0.7
@@ -162,7 +165,7 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
   // Build outer frustum
   const outerSections: Sketch[] = [];
   if (includeLip) {
-    outerSections.push(sectionAt(Z_EXT, INSET_BOTTOM));
+    outerSections.push(sectionAt(Z_EXT, INSET_EXT));
   }
   outerSections.push(sectionAt(Z_BASE, INSET_BOTTOM));
   outerSections.push(sectionAt(Z_TAPER1, INSET_MID));
@@ -176,7 +179,7 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
     // Build inner frustum (offset inward by wall thickness)
     const innerSections: Sketch[] = [];
     if (includeLip) {
-      innerSections.push(sectionAt(Z_EXT, INSET_BOTTOM + WALL));
+      innerSections.push(sectionAt(Z_EXT, INSET_EXT + WALL));
     }
     innerSections.push(sectionAt(Z_BASE, INSET_BOTTOM + WALL));
     innerSections.push(sectionAt(Z_TAPER1, INSET_MID + WALL));
@@ -274,9 +277,10 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
 /**
  * Build the stacking lip at the top of the bin.
  *
- * Uses kernel-optimized construction:
- * - brepkit: loft + boolean cut (analytic surfaces, avoids slow shell)
- * - OCCT: sweep + fillet (robust, avoids loft-shell failures)
+ * Uses loft-cut for all kernels: constructs explicit rounded-rectangle
+ * cross-sections at each profile breakpoint, avoiding an OCCT sweep bug
+ * that flips the profile on non-square spines (#1379). Sweep retained as
+ * fallback if loft throws.
  *
  * Profile per Gridfinity spec v5: 0.7mm + 1.8mm + 1.9mm = 4.4mm total height.
  * Built at Z=0 locally, caller translates to wallHeight.
@@ -288,7 +292,7 @@ export function buildTopShape(
   gridUnitMm: number = SIZE
 ): Shape3D {
   const lipKey = buildCacheKey(
-    'v2',
+    'v3',
     quantize(gridW),
     quantize(gridD),
     quantize(gridUnitMm),
@@ -302,17 +306,14 @@ export function buildTopShape(
   const outerW = gridW * gridUnitMm - CLEARANCE;
   const outerD = gridD * gridUnitMm - CLEARANCE;
 
+  // Loft-cut for all kernels: produces analytic surfaces and avoids an OCCT
+  // BRepOffsetAPI_MakePipeShell bug where the profile direction flips on
+  // certain non-square aspect ratios, causing the lip to overhang (#1379).
   let result: Shape3D;
-  if (getKernel().kernelId === 'brepkit') {
-    // brepkit: loft-cut is ~5-50x faster than sweep (analytic surfaces)
-    try {
-      result = buildTopShapeLoft(outerW, outerD, includeLip);
-    } catch {
-      // Loft failed — fall back to sweep path (kernel regression)
-      result = buildTopShapeSweep(outerW, outerD, includeLip);
-    }
-  } else {
-    // OCCT: sweep is faster and more robust (loft-shell fails, loft-cut is slow)
+  try {
+    result = buildTopShapeLoft(outerW, outerD, includeLip);
+  } catch {
+    // Loft failed — fall back to sweep path (kernel regression)
     result = buildTopShapeSweep(outerW, outerD, includeLip);
   }
 
