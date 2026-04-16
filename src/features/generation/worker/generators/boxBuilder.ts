@@ -313,7 +313,8 @@ export function buildTopShape(
   try {
     result = buildTopShapeLoft(outerW, outerD, includeLip);
   } catch {
-    // Loft failed — fall back to sweep path (kernel regression)
+    // Loft failed — fall back to sweep path (kernel regression).
+    // NOTE: sweep has the OCCT profile-flip bug on non-square spines (#1379)
     result = buildTopShapeSweep(outerW, outerD, includeLip);
   }
 
