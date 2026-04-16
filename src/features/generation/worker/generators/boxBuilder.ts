@@ -145,10 +145,6 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
   const INSET_MID = LIP_BIG_TAPER; // 1.9mm
   const INSET_TOP = 0; // 0mm (peak at outer edge)
 
-  // Extension flange: no inset so it spans the full outer edge,
-  // guaranteeing overlap with the box walls at the fuse junction.
-  const INSET_EXT = 0;
-
   const Z_EXT = -LIP_EXTENSION;
   const Z_BASE = 0;
   const Z_TAPER1 = LIP_SMALL_TAPER; // 0.7
@@ -165,7 +161,7 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
   // Build outer frustum
   const outerSections: Sketch[] = [];
   if (includeLip) {
-    outerSections.push(sectionAt(Z_EXT, INSET_EXT));
+    outerSections.push(sectionAt(Z_EXT, INSET_BOTTOM));
   }
   outerSections.push(sectionAt(Z_BASE, INSET_BOTTOM));
   outerSections.push(sectionAt(Z_TAPER1, INSET_MID));
@@ -179,7 +175,7 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
     // Build inner frustum (offset inward by wall thickness)
     const innerSections: Sketch[] = [];
     if (includeLip) {
-      innerSections.push(sectionAt(Z_EXT, INSET_EXT + WALL));
+      innerSections.push(sectionAt(Z_EXT, INSET_BOTTOM + WALL));
     }
     innerSections.push(sectionAt(Z_BASE, INSET_BOTTOM + WALL));
     innerSections.push(sectionAt(Z_TAPER1, INSET_MID + WALL));
