@@ -459,8 +459,11 @@ export function PreviewCanvas() {
 
   // Double-tap to reset view (touch only). The hook ignores multi-touch
   // gestures so pinch-to-zoom never misfires as a double-tap.
-  const { onPointerDown: onDoubleTapPointerDown, onPointerUp: onDoubleTapPointerUp } =
-    useDoubleTapReset({ onDoubleTap: resetView, disabled: isDesktop });
+  const {
+    onPointerDown: onDoubleTapPointerDown,
+    onPointerUp: onDoubleTapPointerUp,
+    onPointerCancel: onDoubleTapPointerCancel,
+  } = useDoubleTapReset({ onDoubleTap: resetView, disabled: isDesktop });
 
   // Scene dimensions
   const width = params.width;
@@ -478,6 +481,7 @@ export function PreviewCanvas() {
       aria-label={binDescription}
       onPointerDown={onDoubleTapPointerDown}
       onPointerUp={onDoubleTapPointerUp}
+      onPointerCancel={onDoubleTapPointerCancel}
     >
       {/* ARIA live region for status announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">

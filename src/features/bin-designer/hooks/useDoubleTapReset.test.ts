@@ -9,6 +9,7 @@ interface PointerStub {
   isPrimary?: boolean;
   clientX?: number;
   clientY?: number;
+  preventDefault?: () => void;
 }
 
 function pointerEvent(stub: PointerStub): PointerEvent {
@@ -18,7 +19,7 @@ function pointerEvent(stub: PointerStub): PointerEvent {
     isPrimary: stub.isPrimary ?? true,
     clientX: stub.clientX ?? 100,
     clientY: stub.clientY ?? 100,
-    preventDefault: () => undefined,
+    preventDefault: stub.preventDefault ?? (() => undefined),
   } as unknown as PointerEvent;
 }
 
@@ -165,6 +166,70 @@ describe('useDoubleTapReset', () => {
       result.current.onPointerUp(pointerEvent({ pointerId: 1 }));
     });
     expect(onDoubleTap).not.toHaveBeenCalled();
+  });
+
+  it('calls preventDefault on the second tap when firing', () => {
+    // Parity with the old inline handler: prevent synthesized click / legacy
+    // double-tap-zoom on the triggering pointerup event.
+    const { result } = render();
+    const firstPreventDefault = vi.fn();
+    const secondPreventDefault = vi.fn();
+    act(() => {
+      result.current.onPointerDown(pointerEvent({ pointerId: 1 }));
+      result.current.onPointerUp(
+        pointerEvent({ pointerId: 1, preventDefault: firstPreventDefault })
+      );
+    });
+    act(() => {
+      vi.advanceTimersByTime(150);
+      result.current.onPointerDown(pointerEvent({ pointerId: 2 }));
+      result.current.onPointerUp(
+        pointerEvent({ pointerId: 2, preventDefault: secondPreventDefault })
+      );
+    });
+    expect(onDoubleTap).toHaveBeenCalledOnce();
+    expect(firstPreventDefault).not.toHaveBeenCalled();
+    expect(secondPreventDefault).toHaveBeenCalledOnce();
+  });
+
+  it('recovers after a cancelled touch so subsequent taps still detect', () => {
+    // Regression: without onPointerCancel, an interrupted touch leaves the
+    // pointerId in the active set forever and disables double-tap detection.
+    const { result } = render();
+    act(() => {
+      result.current.onPointerDown(pointerEvent({ pointerId: 1 }));
+      // OS yanks the gesture — pointerup never arrives, pointercancel does.
+      result.current.onPointerCancel(pointerEvent({ pointerId: 1 }));
+    });
+    act(() => {
+      vi.advanceTimersByTime(100);
+      result.current.onPointerDown(pointerEvent({ pointerId: 2 }));
+      result.current.onPointerUp(pointerEvent({ pointerId: 2 }));
+      vi.advanceTimersByTime(150);
+      result.current.onPointerDown(pointerEvent({ pointerId: 3 }));
+      result.current.onPointerUp(pointerEvent({ pointerId: 3 }));
+    });
+    expect(onDoubleTap).toHaveBeenCalledOnce();
+  });
+
+  it('clears state when the last of several pointers is cancelled mid-pinch', () => {
+    const { result } = render();
+    act(() => {
+      result.current.onPointerDown(pointerEvent({ pointerId: 1 }));
+      result.current.onPointerDown(pointerEvent({ pointerId: 2, isPrimary: false }));
+      // First finger lifts normally, second is cancelled.
+      result.current.onPointerUp(pointerEvent({ pointerId: 1 }));
+      result.current.onPointerCancel(pointerEvent({ pointerId: 2, isPrimary: false }));
+    });
+    act(() => {
+      vi.advanceTimersByTime(100);
+      result.current.onPointerDown(pointerEvent({ pointerId: 3 }));
+      result.current.onPointerUp(pointerEvent({ pointerId: 3 }));
+      vi.advanceTimersByTime(150);
+      result.current.onPointerDown(pointerEvent({ pointerId: 4 }));
+      result.current.onPointerUp(pointerEvent({ pointerId: 4 }));
+    });
+    expect(onDoubleTap).toHaveBeenCalledOnce();
   });
 
   it('fires after a pinch gesture is fully completed', () => {

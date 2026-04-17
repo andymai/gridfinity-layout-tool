@@ -31,6 +31,12 @@ interface UseDoubleTapResetOptions {
 interface DoubleTapHandlers {
   onPointerDown: (e: PointerEvent) => void;
   onPointerUp: (e: PointerEvent) => void;
+  /**
+   * Must be wired to `onPointerCancel`. Without it, a browser-interrupted touch
+   * (system notification, app switch, etc.) leaves stale pointer IDs in the
+   * active set and permanently blocks future tap detection.
+   */
+  onPointerCancel: (e: PointerEvent) => void;
 }
 
 /**
@@ -86,6 +92,7 @@ export function useDoubleTapReset({
       }
 
       if (lastTapTimeRef.current && now - lastTapTimeRef.current < windowMs) {
+        e.preventDefault();
         onDoubleTap();
         lastTapTimeRef.current = 0;
       } else {
@@ -95,5 +102,20 @@ export function useDoubleTapReset({
     [disabled, windowMs, onDoubleTap]
   );
 
-  return { onPointerDown, onPointerUp };
+  const onPointerCancel = useCallback(
+    (e: PointerEvent) => {
+      if (disabled || e.pointerType !== 'touch') return;
+      activePointersRef.current.delete(e.pointerId);
+      // If the interrupted finger was the last active one, reset the whole
+      // gesture so a subsequent clean single-tap starts from scratch.
+      if (activePointersRef.current.size === 0) {
+        wasMultiTouchRef.current = false;
+        tapStartRef.current = null;
+        lastTapTimeRef.current = 0;
+      }
+    },
+    [disabled]
+  );
+
+  return { onPointerDown, onPointerUp, onPointerCancel };
 }
