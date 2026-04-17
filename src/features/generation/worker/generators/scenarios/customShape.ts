@@ -55,14 +55,14 @@ const T_SHAPE_MASK: CellMask = buildMask([
 ]);
 
 /**
- * 3×3 U-shape: outer frame filled, center middle cell empty.
- *   [ 1 1 1 ]
+ * 3×3 U-shape: left/right columns + bottom row filled, open at the top.
+ *   [ 1 0 1 ]
  *   [ 1 0 1 ]
  *   [ 1 1 1 ]
  */
 const U_SHAPE_MASK: CellMask = buildMask([
-  [1, 1, 1, 1, 1, 1],
-  [1, 1, 1, 1, 1, 1],
+  [1, 1, 0, 0, 1, 1],
+  [1, 1, 0, 0, 1, 1],
   [1, 1, 0, 0, 1, 1],
   [1, 1, 0, 0, 1, 1],
   [1, 1, 1, 1, 1, 1],

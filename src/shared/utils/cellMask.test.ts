@@ -104,6 +104,33 @@ describe('validateMask', () => {
     expect(err?.kind).toBe('disconnected');
   });
 
+  it('rejects masks with interior holes (donut / ring)', () => {
+    // 3×3 ring: outer frame filled, center empty — the center cell is
+    // enclosed by filled cells on all four sides.
+    const err = validateMask(
+      mask([
+        [1, 1, 1],
+        [1, 0, 1],
+        [1, 1, 1],
+      ])
+    );
+    expect(err?.kind).toBe('has_holes');
+  });
+
+  it('accepts a true U-shape (empty region reaches the boundary)', () => {
+    // 3×3 U: open at the top. The center cell is empty but reaches
+    // the top edge via the empty cell above it.
+    expect(
+      validateMask(
+        mask([
+          [1, 0, 1],
+          [1, 0, 1],
+          [1, 1, 1],
+        ])
+      )
+    ).toBeNull();
+  });
+
   it('rejects masks exceeding MAX_MASK_DIMENSION', () => {
     const tooBig = MAX_MASK_DIMENSION + 1;
     const err = validateMask({ cols: tooBig, rows: 1, cells: new Array(tooBig).fill(1) });

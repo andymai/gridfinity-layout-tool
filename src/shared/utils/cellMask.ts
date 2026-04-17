@@ -37,6 +37,7 @@ export type MaskValidationErrorKind =
   | 'dimension_mismatch'
   | 'empty'
   | 'disconnected'
+  | 'has_holes'
   | 'out_of_bounds'
   | 'invalid_cell_value';
 
@@ -162,6 +163,62 @@ export function validateMask(mask: CellMask): MaskValidationError | null {
     };
   }
 
+  // Hole check: flood-fill empty cells from the outside (conceptually adding
+  // an empty border around the mask, then BFS). Any empty cell not reached is
+  // enclosed by filled cells, which would produce an invalid polygon since
+  // `maskToPolygon` only walks the outer boundary.
+  const emptyCount = cells.length - filledCount;
+  if (emptyCount > 0) {
+    const emptyVisited = new Uint8Array(cells.length);
+    const emptyQueue: number[] = [];
+    for (let c = 0; c < cols; c++) {
+      for (const r of [0, rows - 1]) {
+        const idx = r * cols + c;
+        if (cells[idx] !== 1 && !emptyVisited[idx]) {
+          emptyVisited[idx] = 1;
+          emptyQueue.push(idx);
+        }
+      }
+    }
+    for (let r = 0; r < rows; r++) {
+      for (const c of [0, cols - 1]) {
+        const idx = r * cols + c;
+        if (cells[idx] !== 1 && !emptyVisited[idx]) {
+          emptyVisited[idx] = 1;
+          emptyQueue.push(idx);
+        }
+      }
+    }
+    let emptyReached = emptyQueue.length;
+    while (emptyQueue.length > 0) {
+      const idx = emptyQueue.pop();
+      if (idx === undefined) break;
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      const neighbors: Array<[number, number]> = [
+        [col - 1, row],
+        [col + 1, row],
+        [col, row - 1],
+        [col, row + 1],
+      ];
+      for (const [nc, nr] of neighbors) {
+        if (nc < 0 || nc >= cols || nr < 0 || nr >= rows) continue;
+        const nIdx = nr * cols + nc;
+        if (emptyVisited[nIdx]) continue;
+        if (cells[nIdx] === 1) continue;
+        emptyVisited[nIdx] = 1;
+        emptyReached++;
+        emptyQueue.push(nIdx);
+      }
+    }
+    if (emptyReached !== emptyCount) {
+      return {
+        kind: 'has_holes',
+        message: `mask has ${emptyCount - emptyReached} enclosed empty cell(s); interior holes are not supported`,
+      };
+    }
+  }
+
   return null;
 }
 
@@ -261,6 +318,15 @@ export function maskToPolygon(mask: CellMask): readonly Point2[] {
     seen.add(k);
     ordered.push(cur);
     cur = byStart.get(key(cur.tx, cur.ty));
+  }
+
+  // Defensive: a single-loop walk must consume every boundary edge. If not,
+  // the mask has holes or multiple disjoint components — both are rejected
+  // by `validateMask`, so reaching here means the caller skipped validation.
+  if (ordered.length !== edges.length) {
+    throw new Error(
+      `maskToPolygon consumed ${ordered.length}/${edges.length} boundary edges; mask has holes or multiple loops (run validateMask first)`
+    );
   }
 
   // Collapse collinear runs: keep only points where direction changes.

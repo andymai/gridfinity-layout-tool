@@ -139,7 +139,14 @@ export function buildBinBox(
           return setBoxCache(boxKey, hollowWalls);
         }
 
-        const innerFill = scope.register(sketch(innerFootprint(), 'XY').extrude(fillHeight));
+        // For polygon masks the offset can collapse on narrow features or
+        // oversized wallThickness; catch and fall back to hollow walls.
+        let innerFill: Shape3D;
+        try {
+          innerFill = scope.register(sketch(innerFootprint(), 'XY').extrude(fillHeight));
+        } catch {
+          return setBoxCache(boxKey, hollowWalls);
+        }
         scope.register(hollowWalls); // consumed by fuse
 
         // Combine walls with lowered interior fill
@@ -161,7 +168,15 @@ export function buildBinBox(
     }
 
     const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
-    const result = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
+    // For polygon masks the shell operation can fail on narrow features
+    // where wallThickness consumes the interior; fall back to the solid
+    // extrusion in that case.
+    let result: Shape3D;
+    try {
+      result = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
+    } catch {
+      return setBoxCache(boxKey, box);
+    }
     scope.register(box); // consumed by shell
     return setBoxCache(boxKey, result);
   });
