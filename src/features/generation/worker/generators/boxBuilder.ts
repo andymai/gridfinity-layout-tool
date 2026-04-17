@@ -38,19 +38,8 @@ import {
 } from './generatorTypes';
 import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
-import { hashMask, isAllFilled, type CellMask } from '@/shared/utils/cellMask';
+import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { buildMaskDrawing, buildMaskDrawingInset } from './maskPolygon';
-/**
- * Determine whether a mask represents the rectangle fast-path.
- *
- * Undefined or fully-filled masks reuse the existing rounded-rectangle
- * code path (preserving cache keys and the BOX_CORNER_RADIUS fillet).
- * Only partial masks take the polygon path.
- */
-function isPolygonPath(cellMask: CellMask | undefined): cellMask is CellMask {
-  return cellMask !== undefined && !isAllFilled(cellMask);
-}
-
 /**
  * Build the bin box: a rounded-rectangle extrusion, shelled from the top.
  * The box starts at Z=0 (socket interface) and goes up to wallHeight.
@@ -72,7 +61,7 @@ export function buildBinBox(
   gridUnitMm: number = SIZE,
   cellMask?: CellMask
 ): Shape3D {
-  const polygon = isPolygonPath(cellMask);
+  const polygon = isPartialMask(cellMask);
   const boxKey = buildCacheKey(
     'v2',
     quantize(gridW),
@@ -197,7 +186,7 @@ function buildTopShapeLoft(
   gridUnitMm: number = SIZE
 ): Shape3D {
   const LIP_EXTENSION = includeLip ? 1.2 : 0;
-  const polygon = isPolygonPath(cellMask);
+  const polygon = isPartialMask(cellMask);
 
   const INNER_BASE = LIP_TAPER_WIDTH; // 2.6mm
   const INNER_MID = LIP_BIG_TAPER; // 1.9mm
@@ -281,7 +270,7 @@ function buildTopShapeSweep(
   cellMask?: CellMask,
   gridUnitMm: number = SIZE
 ): Shape3D {
-  const polygon = isPolygonPath(cellMask);
+  const polygon = isPartialMask(cellMask);
   const topProfile = (plane: Plane, _origin: Vec3): Sketch => {
     let sketcher = draw([-LIP_TAPER_WIDTH, 0])
       .line(LIP_SMALL_TAPER, LIP_SMALL_TAPER)
@@ -354,7 +343,7 @@ export function buildTopShape(
   gridUnitMm: number = SIZE,
   cellMask?: CellMask
 ): Shape3D {
-  const polygon = isPolygonPath(cellMask);
+  const polygon = isPartialMask(cellMask);
   const lipKey = buildCacheKey(
     'v3',
     quantize(gridW),

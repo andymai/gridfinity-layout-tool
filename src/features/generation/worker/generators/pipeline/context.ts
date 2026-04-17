@@ -7,7 +7,7 @@
 
 import type { BinParams } from '@/shared/types/bin';
 import { GRIDFINITY } from '@/shared/constants/bin';
-import { hashMask, isAllFilled } from '@/shared/utils/cellMask';
+import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
 import { SIZE, CLEARANCE, SOCKET_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
 // SIZE is kept as a fallback default for backwards compatibility with callers
 // that construct BinParams without gridUnitMm.
@@ -47,8 +47,7 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // Mask hash is included only when the mask triggers the polygon path so
   // rectangular bins continue to share the existing cache bucket.
   const { cellMask } = params;
-  const maskKeySegment =
-    cellMask !== undefined && !isAllFilled(cellMask) ? hashMask(cellMask) : 'rect';
+  const maskKeySegment = isPartialMask(cellMask) ? hashMask(cellMask) : 'rect';
   const shellKey = compactKey(
     buildCacheKey(
       'v5',

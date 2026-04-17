@@ -34,7 +34,7 @@ import {
   forEachCell,
 } from './generatorTypes';
 import { socketCacheKey, getSocketCache, setSocketCache } from './shapeCache';
-import { hashMask, isAllFilled, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
+import { hashMask, isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
 /**
  * Build a single socket cell solid at the origin using multi-section loft.
  *
@@ -160,7 +160,7 @@ export function buildBaseSocket(
 ): Shape3D {
   // Treat a fully-filled mask as a rectangle so the cache key and iteration
   // path match the existing rectangular code.
-  const usingMask = cellMask !== undefined && !isAllFilled(cellMask);
+  const usingMask = isPartialMask(cellMask);
 
   // Check socket cache -- skip entire build if params haven't changed
   const key = socketCacheKey(

@@ -65,6 +65,16 @@ export function isAllFilled(mask: CellMask): boolean {
   return true;
 }
 
+/**
+ * Type guard: `true` when the mask is defined AND has at least one empty
+ * cell — i.e., the generator should take the polygon path rather than the
+ * rectangle fast-path. An undefined mask or a fully-filled one both
+ * produce rectangles and share the existing cache bucket.
+ */
+export function isPartialMask(mask: CellMask | undefined): mask is CellMask {
+  return mask !== undefined && !isAllFilled(mask);
+}
+
 /** Count filled cells in the mask. */
 export function countFilled(mask: CellMask): number {
   let n = 0;
