@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.39.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.39.1...gridfinity-layout-tool-v4.39.2) (2026-04-17)
+
+
+### Bug Fixes
+
+* **bin-designer:** stop pinch-zoom from snapping camera back to isometric on mobile ([#1384](https://github.com/andymai/gridfinity-layout-tool/issues/1384)) ([4cd4570](https://github.com/andymai/gridfinity-layout-tool/commit/4cd457032a24f22ad6d4c0b8d053b0f7f12ac072))
+
 ## [4.39.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.39.0...gridfinity-layout-tool-v4.39.1) (2026-04-16)
 
 
