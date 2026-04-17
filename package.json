@@ -1,7 +1,7 @@
 {
   "name": "gridfinity-layout-tool",
   "private": true,
-  "version": "4.39.0",
+  "version": "4.39.2",
   "description": "A web app for designing and planning Gridfinity drawer organizer layouts",
   "license": "AGPL-3.0-only",
   "type": "module",
@@ -137,7 +137,11 @@
       "@vercel/python-analysis>minimatch": "^10.2.3",
       "@vercel/static-config>ajv": "^8.18.0",
       "glob>minimatch": "^10.2.3",
-      "flatted": "^3.4.2"
+      "flatted": "^3.4.2",
+      "posthog-js>dompurify": "^3.4.0",
+      "eslint-plugin-i18next>lodash": "^4.18.1",
+      "vitest-axe>lodash-es": "^4.18.1",
+      "picomatch@>=4.0.0 <4.0.4": "^4.0.4"
     }
   },
   "devDependencies": {
