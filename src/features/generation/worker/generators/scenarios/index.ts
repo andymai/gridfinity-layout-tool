@@ -30,6 +30,7 @@ import { groupedScoop } from './groupedScoop';
 import { lipWall } from './lipWall';
 import { handles } from './handles';
 import { honeycombJunction } from './honeycombJunction';
+import { customShapes } from './customShape';
 
 export type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
 
@@ -61,4 +62,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...lipWall,
   ...handles,
   ...honeycombJunction,
+  ...customShapes,
 ];

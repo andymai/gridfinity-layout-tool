@@ -13,6 +13,7 @@
  */
 
 import { unwrap, cut } from 'brepjs';
+import { isAllFilled } from '@/shared/utils/cellMask';
 import type { PipelineContext, PipelineStage } from '../types';
 import { buildCutoutCuts } from '../../featureBuilder';
 import { FeatureTag } from '../../featureTags';
@@ -27,6 +28,12 @@ export const featuresStage: PipelineStage = {
 
   shouldRun(ctx: PipelineContext): boolean {
     const { innerW, innerD } = ctx.dimensions;
+    // Non-rectangular footprints skip all interior features in v1.
+    // The shape-model refactor does not yet teach compartments, cutouts,
+    // walls, handles, inserts, scoops, or label tabs how to operate on a
+    // non-rectangular bounding region. Follow-up PRs will lift this.
+    const usingMask = ctx.params.cellMask !== undefined && !isAllFilled(ctx.params.cellMask);
+    if (usingMask) return false;
     return innerW > 0 && innerD > 0;
   },
 

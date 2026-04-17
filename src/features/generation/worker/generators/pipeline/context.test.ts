@@ -108,7 +108,8 @@ describe('createInitialContext', () => {
     const ctx = createInitialContext(createTestParams());
 
     // shellKey uses buildCacheKey with v5 prefix, gridUnitMm, and quantized floats
-    // forExport is no longer in the key since shell geometry is identical for preview/export
+    // forExport is no longer in the key since shell geometry is identical for preview/export.
+    // Final segment is 'rect' when no cellMask is in use; mask hash otherwise.
     const expected = [
       'v5',
       2,
@@ -125,6 +126,7 @@ describe('createInitialContext', () => {
       1.2,
       false,
       false,
+      'rect',
     ].join('|');
 
     expect(ctx.dimensions.shellKey).toBe(expected);

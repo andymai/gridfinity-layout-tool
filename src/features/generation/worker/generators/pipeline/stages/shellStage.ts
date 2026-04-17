@@ -49,7 +49,8 @@ export const shellStage: PipelineStage = {
         params.wallThickness,
         dim.solid,
         cutoutTopOffset,
-        params.gridUnitMm
+        params.gridUnitMm,
+        params.cellMask
       );
       collectOrigins(binBody, FeatureTag.BASE, originToTag);
 
@@ -62,7 +63,7 @@ export const shellStage: PipelineStage = {
             // the scope disposes that intermediate after translate produces
             // the positioned copy.
             const lipBase = scope.register(
-              buildTopShape(params.width, params.depth, true, params.gridUnitMm)
+              buildTopShape(params.width, params.depth, true, params.gridUnitMm, params.cellMask)
             );
             const top = scope.register(translate(lipBase, [0, 0, dim.wallHeight - LIP_OVERLAP]));
             collectOrigins(top, FeatureTag.LIP, originToTag);
@@ -97,7 +98,8 @@ export const shellStage: PipelineStage = {
           params.base.screwDiameter / 2,
           true, // Always use full 5-section socket profile (OCCT v8 is fast enough)
           dim.halfSockets,
-          params.gridUnitMm
+          params.gridUnitMm,
+          params.cellMask
         )
       );
       collectOrigins(base, FeatureTag.SOCKET, originToTag);
@@ -110,7 +112,7 @@ export const shellStage: PipelineStage = {
           // the scope disposes that intermediate after translate produces
           // the positioned copy.
           const lipBase = scope.register(
-            buildTopShape(params.width, params.depth, true, params.gridUnitMm)
+            buildTopShape(params.width, params.depth, true, params.gridUnitMm, params.cellMask)
           );
           const top = scope.register(translate(lipBase, [0, 0, dim.wallHeight - LIP_OVERLAP]));
           collectOrigins(top, FeatureTag.LIP, originToTag);
