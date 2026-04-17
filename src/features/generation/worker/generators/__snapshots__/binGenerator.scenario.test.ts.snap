@@ -50,13 +50,13 @@ exports[`compartments > 2×2 bin with 3×2 merged top-left compartments 1`] = `3
 
 exports[`compartments > 2×2 bin with 4×4 dense grid compartments 1`] = `5188`;
 
-exports[`custom-shape > 1.5×1.5 half-bin L with lip 1`] = `4110`;
+exports[`custom-shape > 1.5×1.5 half-bin L with lip 1`] = `4102`;
 
 exports[`custom-shape > 3×3 L flat base no lip 1`] = `68`;
 
-exports[`custom-shape > 3×3 L with lip 1`] = `4110`;
+exports[`custom-shape > 3×3 L with lip 1`] = `4098`;
 
-exports[`custom-shape > 3×3 T with lip 1`] = `2864`;
+exports[`custom-shape > 3×3 T with lip 1`] = `2834`;
 
 exports[`custom-shape > 3×3 U with lip 1`] = `3916`;
 

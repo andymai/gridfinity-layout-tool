@@ -10,6 +10,11 @@
  * Adding outer-corner fillets so L-shapes match rectangular `BOX_CORNER_RADIUS`
  * is a follow-up — brepjs's `Drawing.fillet(radius, filter)` needs a
  * convex-vs-concave corner finder, which we leave for a separate PR.
+ *
+ * All insets are applied in a SINGLE `offset()` call on the raw sharp
+ * polygon. Chaining two `.offset(...)` calls on the same concave polygon
+ * triggers brepjs's `POINT_NOT_ON_CURVE` error (rounded corners from the
+ * first offset split edge curves, making subsequent offsets degenerate).
  */
 import { draw } from 'brepjs';
 import type { Drawing } from 'brepjs';
@@ -17,16 +22,10 @@ import { CLEARANCE } from './generatorConstants';
 import { MASK_CELL_SIZE, maskToPolygon, type CellMask } from '@/shared/utils/cellMask';
 
 /**
- * Build a Drawing of the mask's outer polygon, centered on the origin,
- * inset by `CLEARANCE / 2` on each side (matching the rectangle path).
- *
- * The returned Drawing is closed (first vertex == last vertex logically)
- * and suitable for `.sketchOnPlane(...)` + `.extrude(...)` or `.loftWith(...)`.
- *
- * @throws if the polygon has fewer than 3 vertices (caller should
- *   validate the mask first).
+ * Build the raw sharp-cornered polygon for the mask, centered on origin.
+ * Internal helper; callers choose the total inset applied via `.offset()`.
  */
-export function buildMaskDrawing(mask: CellMask, gridUnitMm: number): Drawing {
+function buildRawMaskPolygon(mask: CellMask, gridUnitMm: number): Drawing {
   const vertices = maskToPolygon(mask);
   if (vertices.length < 3) {
     throw new Error(`mask polygon has only ${vertices.length} vertices (need 3+)`);
@@ -45,19 +44,25 @@ export function buildMaskDrawing(mask: CellMask, gridUnitMm: number): Drawing {
   for (let i = 1; i < vertices.length; i++) {
     pen = pen.lineTo(toMm(vertices[i]));
   }
-  const polygon = pen.close();
-
-  // Inset by CLEARANCE/2 so the polygon's nominal dimensions match what
-  // `drawRoundedRectangle(w - CLEARANCE, d - CLEARANCE)` produces for the
-  // rectangle path. The spike confirmed brepjs handles concave offsets.
-  return polygon.offset(-CLEARANCE / 2);
+  return pen.close();
 }
 
 /**
- * Build an inner polygon Drawing offset inward by `inset` mm.
- * Used by the lip builder for inner frustum sections.
+ * Outer polygon: sharp perimeter inset by `CLEARANCE / 2` to match the
+ * tolerance gap used by the rectangle path (`w - CLEARANCE`).
+ *
+ * @throws if the polygon has fewer than 3 vertices (caller should
+ *   validate the mask first).
+ */
+export function buildMaskDrawing(mask: CellMask, gridUnitMm: number): Drawing {
+  return buildRawMaskPolygon(mask, gridUnitMm).offset(-CLEARANCE / 2);
+}
+
+/**
+ * Inner polygon: sharp perimeter inset by `CLEARANCE / 2 + inset` in a
+ * single `offset()` call. Used by the lip builder for inner frustum
+ * sections where each Z level insets a different amount.
  */
 export function buildMaskDrawingInset(mask: CellMask, gridUnitMm: number, inset: number): Drawing {
-  const outer = buildMaskDrawing(mask, gridUnitMm);
-  return outer.offset(-inset);
+  return buildRawMaskPolygon(mask, gridUnitMm).offset(-(CLEARANCE / 2 + inset));
 }
