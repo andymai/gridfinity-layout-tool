@@ -40,6 +40,7 @@ import {
 import { GradientBackground } from '../preview/GradientBackground';
 import { FootprintGrid } from '../preview/FootprintGrid';
 import { useDesignerKeyboard } from '../../hooks/useDesignerKeyboard';
+import { useDoubleTapReset } from '../../hooks/useDoubleTapReset';
 import { useSplitPreview } from '../../hooks/useSplitPreview';
 import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../utils/thumbnail';
 import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
@@ -454,24 +455,15 @@ export function PreviewCanvas() {
   const showColors = useFeatureFlag('multi_color_export');
 
   // Responsive state for touch optimizations
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isTouchDevice } = useResponsive();
 
-  // Double-tap to reset view (mobile only)
-  const lastTapRef = useRef(0);
-  const handleCanvasDoubleTouch = useCallback(
-    (e: React.PointerEvent) => {
-      if (isDesktop || e.pointerType !== 'touch') return;
-      const now = Date.now();
-      if (now - lastTapRef.current < 300) {
-        e.preventDefault();
-        resetView();
-        lastTapRef.current = 0;
-      } else {
-        lastTapRef.current = now;
-      }
-    },
-    [isDesktop, resetView]
-  );
+  // Double-tap to reset view (touch only). The hook ignores multi-touch
+  // gestures so pinch-to-zoom never misfires as a double-tap.
+  const {
+    onPointerDown: onDoubleTapPointerDown,
+    onPointerUp: onDoubleTapPointerUp,
+    onPointerCancel: onDoubleTapPointerCancel,
+  } = useDoubleTapReset({ onDoubleTap: resetView, disabled: isDesktop });
 
   // Scene dimensions
   const width = params.width;
@@ -487,7 +479,9 @@ export function PreviewCanvas() {
       className="relative h-full w-full touch-manipulation"
       role="img"
       aria-label={binDescription}
-      onPointerUp={handleCanvasDoubleTouch}
+      onPointerDown={onDoubleTapPointerDown}
+      onPointerUp={onDoubleTapPointerUp}
+      onPointerCancel={onDoubleTapPointerCancel}
     >
       {/* ARIA live region for status announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
@@ -584,8 +578,9 @@ export function PreviewCanvas() {
               target={[0, 0, totalH / 2]}
               enableDamping
               dampingFactor={0.12}
-              rotateSpeed={0.8}
-              minDistance={isDesktop ? 20 : 5}
+              rotateSpeed={isTouchDevice ? 1.0 : 0.8}
+              zoomSpeed={isTouchDevice ? 1.2 : 1.0}
+              minDistance={20}
               maxDistance={800}
               maxPolarAngle={Math.PI * 0.85}
               minPolarAngle={Math.PI * 0.05}
