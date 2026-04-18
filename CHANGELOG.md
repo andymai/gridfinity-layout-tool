@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.40.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.40.0...gridfinity-layout-tool-v4.40.1) (2026-04-18)
+
+
+### Bug Fixes
+
+* **bin-designer:** shrink-to-fit long bin names in 3D preview ([#1390](https://github.com/andymai/gridfinity-layout-tool/issues/1390)) ([615ddf9](https://github.com/andymai/gridfinity-layout-tool/commit/615ddf9aba2bf22f923ab9e70c3decffcc3dd1cf))
+
 ## [4.40.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.39.2...gridfinity-layout-tool-v4.40.0) (2026-04-18)
 
 
