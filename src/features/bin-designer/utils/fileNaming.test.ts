@@ -264,4 +264,8 @@ describe('DEFAULT_EXPORT_FILE_NAME_CONFIG', () => {
   it('should have empty custom name by default', () => {
     expect(DEFAULT_EXPORT_FILE_NAME_CONFIG.customName).toBe('');
   });
+
+  it('should have stl format by default', () => {
+    expect(DEFAULT_EXPORT_FILE_NAME_CONFIG.format).toBe('stl');
+  });
 });
