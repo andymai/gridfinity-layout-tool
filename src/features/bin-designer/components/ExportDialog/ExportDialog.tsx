@@ -69,7 +69,7 @@ export function ExportDialog() {
 
   const closeDialog = useCallback(() => setExportDialogOpen(false), [setExportDialogOpen]);
 
-  const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? '3mf';
+  const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
   const showSplitBanner = needsSplit && activeFormat !== 'step';
   const useSplitExport = showSplitBanner && splitEnabled;
 

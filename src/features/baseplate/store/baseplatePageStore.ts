@@ -105,7 +105,7 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     hoveredPieceLabel: null,
     selectedPieceLabel: null,
     exportDialogOpen: false,
-    exportFileNameConfig: { style: 'descriptive', customName: '', format: '3mf' },
+    exportFileNameConfig: { style: 'descriptive', customName: '', format: 'stl' },
     exportProgress: null,
 
     setGenerationStatus: (status) => {

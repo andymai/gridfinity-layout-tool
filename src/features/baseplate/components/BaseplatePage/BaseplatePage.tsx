@@ -93,7 +93,7 @@ export function BaseplatePage() {
 
   const [splitEnabled, setSplitEnabled] = useState(true);
 
-  const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? '3mf';
+  const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
 
   const fullParams = useMemo(
     () =>

@@ -11,7 +11,7 @@ import type { BinParams, FileNameStyle, ExportFileNameConfig } from '../types';
 export const DEFAULT_EXPORT_FILE_NAME_CONFIG: ExportFileNameConfig = {
   style: 'descriptive',
   customName: '',
-  format: '3mf',
+  format: 'stl',
 };
 
 /** Characters not allowed in filenames (replaced with underscore) */
