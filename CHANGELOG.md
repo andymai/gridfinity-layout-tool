@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.40.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.39.2...gridfinity-layout-tool-v4.40.0) (2026-04-18)
+
+
+### Features
+
+* **export:** default export format to STL instead of 3MF ([#1388](https://github.com/andymai/gridfinity-layout-tool/issues/1388)) ([404562f](https://github.com/andymai/gridfinity-layout-tool/commit/404562f686ad3c7b35fda84b27b5eba5e96e49ba))
+
 ## [4.39.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.39.1...gridfinity-layout-tool-v4.39.2) (2026-04-17)
 
 ### Bug Fixes
