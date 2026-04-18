@@ -140,7 +140,7 @@ exports[`solid cutouts > 2×2 solid with circle cutout 1`] = `2784`;
 
 exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`] = `2700`;
 
-exports[`solid cutouts > 2×2 solid with ellipse cutout 1`] = `2822`;
+exports[`solid cutouts > 2×2 solid with ellipse cutout 1`] = `3166`;
 
 exports[`solid cutouts > 2×2 solid with grouped cutouts 1`] = `2578`;
 
