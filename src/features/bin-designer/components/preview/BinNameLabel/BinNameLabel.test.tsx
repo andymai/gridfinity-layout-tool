@@ -28,11 +28,7 @@ interface MockTextProps {
 
 vi.mock('@react-three/drei', () => ({
   Text: ({ children, fontSize, maxWidth }: MockTextProps) => (
-    <div
-      data-testid="r3f-text"
-      data-font-size={fontSize}
-      data-max-width={maxWidth === Infinity ? 'Infinity' : maxWidth}
-    >
+    <div data-testid="r3f-text" data-font-size={fontSize} data-max-width={maxWidth ?? 'none'}>
       {children}
     </div>
   ),
@@ -67,7 +63,7 @@ describe('BinNameLabel', () => {
     render(<BinNameLabel width={2} depth={3} name="Bin" />);
     const text = screen.getByTestId('r3f-text');
     expect(text.dataset.fontSize).toBe('7');
-    expect(text.dataset.maxWidth).toBe('Infinity');
+    expect(text.dataset.maxWidth).toBe('none');
   });
 
   it('shrinks font size for medium-long names on a small bin', () => {
@@ -78,7 +74,7 @@ describe('BinNameLabel', () => {
     const fontSize = Number(text.dataset.fontSize);
     expect(fontSize).toBeGreaterThanOrEqual(5);
     expect(fontSize).toBeLessThan(7);
-    expect(text.dataset.maxWidth).toBe('Infinity');
+    expect(text.dataset.maxWidth).toBe('none');
   });
 
   it('falls back to 2-line wrap for very long names on a small bin', () => {
@@ -86,7 +82,7 @@ describe('BinNameLabel', () => {
     render(<BinNameLabel width={1} depth={1} name={veryLongName} />);
     const text = screen.getByTestId('r3f-text');
     expect(text.dataset.fontSize).toBe('7');
-    expect(text.dataset.maxWidth).not.toBe('Infinity');
+    expect(text.dataset.maxWidth).not.toBe('none');
     expect(Number(text.dataset.maxWidth)).toBeGreaterThan(0);
   });
 
@@ -96,6 +92,6 @@ describe('BinNameLabel', () => {
     render(<BinNameLabel width={1} depth={1} name="SCREWS M3 SHORT" />);
     const text = screen.getByTestId('r3f-text');
     expect(text.dataset.fontSize).toBe('7');
-    expect(text.dataset.maxWidth).toBe('Infinity');
+    expect(text.dataset.maxWidth).toBe('none');
   });
 });

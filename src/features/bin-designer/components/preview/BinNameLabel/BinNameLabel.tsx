@@ -31,10 +31,12 @@ const CHAR_WIDTH_RATIO = 0.6;
 
 /**
  * Estimate rendered width of uppercase text at a given font size, accounting for letter spacing.
+ * Letter spacing applies between glyphs (charCount - 1 gaps), not after each glyph.
  * Approximation — drei's SDF <Text> only exposes accurate widths via async onSync.
  */
 function estimateTextWidth(charCount: number, fontSize: number): number {
-  return charCount * fontSize * (CHAR_WIDTH_RATIO + LETTER_SPACING);
+  if (charCount <= 0) return 0;
+  return fontSize * (charCount * CHAR_WIDTH_RATIO + (charCount - 1) * LETTER_SPACING);
 }
 
 /**
@@ -57,16 +59,16 @@ export function BinNameLabel({ width, depth, name }: BinNameLabelProps) {
   const defaultWidth = estimateTextWidth(upperName.length, DEFAULT_FONT_SIZE);
 
   let fontSize: number;
-  let maxWidth: number;
+  let maxWidth: number | undefined;
 
   if (defaultWidth <= availableWidth) {
     fontSize = DEFAULT_FONT_SIZE;
-    maxWidth = Infinity;
+    maxWidth = undefined;
   } else {
-    const idealFontSize = availableWidth / (upperName.length * (CHAR_WIDTH_RATIO + LETTER_SPACING));
+    const idealFontSize = availableWidth / estimateTextWidth(upperName.length, 1);
     if (idealFontSize >= MIN_FONT_SIZE) {
       fontSize = idealFontSize;
-      maxWidth = Infinity;
+      maxWidth = undefined;
     } else {
       fontSize = DEFAULT_FONT_SIZE;
       maxWidth = availableWidth;
