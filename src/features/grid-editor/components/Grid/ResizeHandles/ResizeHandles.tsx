@@ -48,6 +48,5 @@ function ResizeHandlesComponent({
   );
 }
 
-// memo's default shallow prop comparison matches this component's needs
-// (all 4 props compared by reference equality).
+// React.memo's default shallow per-prop comparison (Object.is) matches this component's needs.
 export const ResizeHandles = memo(ResizeHandlesComponent);

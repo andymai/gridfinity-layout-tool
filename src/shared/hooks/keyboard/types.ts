@@ -7,7 +7,7 @@
  */
 
 import type { Layout, Bin, BinId, LayerId, CategoryId } from '@/core/types';
-import type { Result, LayoutError, StorageError, ValidationError } from '@/core/result';
+import type { Result, LayoutError, ValidationError } from '@/core/result';
 import type { TFunction } from '@/i18n';
 
 /**
@@ -49,7 +49,7 @@ export interface KeyboardContext {
   updateBin: (id: BinId, updates: Partial<Bin>) => void;
 
   // Mode toggles
-  toggleHalfBinMode: () => Result<undefined, LayoutError | StorageError>;
+  toggleHalfBinMode: () => Result<undefined, LayoutError>;
 
   // Navigation
   handleNavigationKey: (key: string) => void;
