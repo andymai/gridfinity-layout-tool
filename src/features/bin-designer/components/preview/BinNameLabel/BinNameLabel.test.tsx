@@ -67,8 +67,8 @@ describe('BinNameLabel', () => {
   });
 
   it('shrinks font size for medium-long names on a small bin', () => {
-    // 25 chars × 7mm × 0.68 ≈ 119mm, exceeds the 100mm floor → shrink.
-    // Ideal: 100 / (25 × 0.68) ≈ 5.88mm, which is above the 5mm minimum.
+    // 25 chars → estimateTextWidth(25, 7) ≈ 118mm (char ratio 0.6 + letter-spacing 0.08),
+    // exceeds the 100mm floor → shrink. Shrunk font ≈ 5.9mm, above the 5mm minimum.
     render(<BinNameLabel width={1} depth={1} name="Screws M3 x 12mm Flat Set" />);
     const text = screen.getByTestId('r3f-text');
     const fontSize = Number(text.dataset.fontSize);

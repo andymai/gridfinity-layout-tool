@@ -768,6 +768,8 @@ function tangentVectors(nx: number, ny: number): [number, number, number, number
  * Produces a waffle-grid slab with tapered pockets, optional magnet holes in a
  * solid floor, and a rounded outer perimeter. Targets <50ms for any grid size.
  */
+const MAX_BASEPLATE_GRID_DIRECT = 50;
+
 export function generateBaseplateDirect(
   params: BaseplateParams,
   onProgress: ProgressFn,
@@ -781,6 +783,11 @@ export function generateBaseplateDirect(
     params.depth <= 0
   ) {
     throw new Error(`Invalid baseplate dimensions: ${params.width}x${params.depth}`);
+  }
+  if (params.width > MAX_BASEPLATE_GRID_DIRECT || params.depth > MAX_BASEPLATE_GRID_DIRECT) {
+    throw new Error(
+      `Baseplate dimensions ${params.width}x${params.depth} exceed maximum ${MAX_BASEPLATE_GRID_DIRECT}`
+    );
   }
 
   onProgress('base', 0);

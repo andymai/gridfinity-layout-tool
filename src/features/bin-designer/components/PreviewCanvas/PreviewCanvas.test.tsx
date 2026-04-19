@@ -187,6 +187,7 @@ vi.mock('three/examples/jsm/lines/LineSegments2.js', () => ({
 
 vi.mock('three/examples/jsm/lines/LineMaterial.js', () => ({
   LineMaterial: class MockLineMaterial {
+    resolution = { set: vi.fn() };
     dispose = vi.fn();
   },
 }));

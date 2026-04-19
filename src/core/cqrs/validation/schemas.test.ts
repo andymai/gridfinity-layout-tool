@@ -490,4 +490,54 @@ describe('layout.setBaseplateParams schema', () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it('accepts lightweight, cornerRadius, and cornerRadii', () => {
+    const result = z.safeParse(schema, {
+      params: {
+        magnetHoles: true,
+        magnetDiameter: 6.5,
+        magnetDepth: 2,
+        paddingLeft: 0,
+        paddingRight: 0,
+        paddingFront: 0,
+        paddingBack: 0,
+        lightweight: true,
+        cornerRadius: 2.5,
+        cornerRadii: { tl: 2.5, tr: 2.5, bl: 2.5, br: 2.5 },
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects negative cornerRadius', () => {
+    const result = z.safeParse(schema, {
+      params: {
+        magnetHoles: true,
+        magnetDiameter: 6.5,
+        magnetDepth: 2,
+        paddingLeft: 0,
+        paddingRight: 0,
+        paddingFront: 0,
+        paddingBack: 0,
+        cornerRadius: -1,
+      },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects cornerRadii missing a corner', () => {
+    const result = z.safeParse(schema, {
+      params: {
+        magnetHoles: true,
+        magnetDiameter: 6.5,
+        magnetDepth: 2,
+        paddingLeft: 0,
+        paddingRight: 0,
+        paddingFront: 0,
+        paddingBack: 0,
+        cornerRadii: { tl: 2, tr: 2, bl: 2 },
+      },
+    });
+    expect(result.success).toBe(false);
+  });
 });

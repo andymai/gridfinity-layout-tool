@@ -619,12 +619,11 @@ function TouchHint() {
   const t = useTranslation();
   const { isTouchDevice, isDesktop } = useResponsive();
   const [dismissed, setDismissed] = useState(false);
+  const alreadyDismissed = useSettingsStore((s) =>
+    s.settings.dismissedHints.includes('designer-touch')
+  );
 
-  const visible =
-    !dismissed &&
-    isTouchDevice &&
-    !isDesktop &&
-    !useSettingsStore.getState().settings.dismissedHints.includes('designer-touch');
+  const visible = !dismissed && isTouchDevice && !isDesktop && !alreadyDismissed;
 
   const dismiss = useCallback(() => {
     setDismissed(true);
