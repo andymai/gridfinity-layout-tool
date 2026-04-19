@@ -21,7 +21,7 @@
     "!**/__mocks__/**",
     "!**/types.ts"
   ],
-  "timeoutMS": 60000,
+  "timeoutMS": 120000,
   "concurrency": 2,
   "incremental": true,
   "incrementalFile": "reports/mutation/incremental.json",
