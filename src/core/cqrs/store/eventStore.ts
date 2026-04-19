@@ -206,8 +206,3 @@ export function connectEventStoreToBus(): () => void {
     })();
   });
 }
-
-/** Reset the cached DB instance (for testing) */
-export function resetEventStoreDb(): void {
-  dbInstance = null;
-}

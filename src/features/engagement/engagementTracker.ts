@@ -12,11 +12,11 @@
  */
 
 import { useLibraryStore } from '@/core/store/library';
+import { ANALYTICS_STORAGE_KEY } from '@/shared/analytics/posthog/identity';
 
 // Storage
 
 const NUDGE_STORAGE_KEY = 'gridfinity-nudges-v1';
-const ANALYTICS_STORAGE_KEY = 'gridfinity-analytics-v1';
 
 export type NudgeType = 'feedback_rating' | 'kofi_support' | 'layout_promotion';
 
@@ -90,7 +90,8 @@ export function getSessionMinutes(): number {
   return Math.floor(elapsed / 60_000);
 }
 
-// Feature breadth (reads from existing analytics data)
+// Feature breadth (reads from existing analytics data; bypasses identity.ts cache
+// intentionally so tests can seed fresh values via localStorage without a reset hook).
 
 interface AnalyticsData {
   featureFlags: Record<string, boolean>;

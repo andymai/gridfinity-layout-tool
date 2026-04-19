@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import { validateHalfBinModeToggle } from '@/shared/utils/halfBinConstraints';
 import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { useLayoutStore } from './layout';
+import { useToastStore } from './toast';
 import type { Result, Unit, LayoutError, StorageError } from '@/core/result';
-import { err, isOk, layoutInvalidOperation, OK } from '@/core/result';
+import { err, getUserMessage, isOk, layoutInvalidOperation, OK } from '@/core/result';
 import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backends/localStorage';
 
 /**
@@ -47,10 +48,15 @@ interface HalfBinModeState {
 interface HalfBinModeActions {
   /**
    * Toggle half-bin mode with validation.
-   * Returns Result<Unit, LayoutError> for type-safe error handling.
    *
-   * When turning OFF, validates that no bins have fractional dimensions.
-   * If validation fails, returns Err with details.
+   * The Result channel carries the validation outcome only:
+   * - Ok: toggle applied (in memory; persistence may have failed — see below).
+   * - Err(LayoutError): turning OFF was blocked because bins have fractional dimensions.
+   *
+   * Persistence failures (quota, private browsing, etc.) are surfaced via a toast
+   * inside the store rather than returned, so callers don't need to distinguish
+   * storage errors from validation errors when deciding whether to show the
+   * "fractional bins" blocking UI.
    */
   toggleHalfBinMode: () => Result<Unit, LayoutError>;
 
@@ -68,6 +74,18 @@ export const INITIAL_HALF_BIN_MODE_STATE = {
   halfBinMode: false,
 } as const;
 
+/**
+ * Toast a storage error so the user learns the preference wasn't persisted,
+ * instead of flipping silently when quota/private-browsing blocks writes.
+ */
+function toastStorageFailure(error: StorageError): void {
+  useToastStore.getState().addToast({
+    message: getUserMessage(error),
+    type: 'error',
+    duration: 4000,
+  });
+}
+
 export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
   halfBinMode: loadFromStorage(),
 
@@ -77,9 +95,10 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
 
     // Turning ON: no validation needed
     if (targetState) {
-      saveToStorage(true);
+      const saveResult = saveToStorage(true);
       set({ halfBinMode: true });
       markFeatureUsed('half_bins');
+      if (!isOk(saveResult)) toastStorageFailure(saveResult.error);
       return OK;
     }
 
@@ -96,8 +115,9 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
       );
     }
 
-    saveToStorage(false);
+    const saveResult = saveToStorage(false);
     set({ halfBinMode: false });
+    if (!isOk(saveResult)) toastStorageFailure(saveResult.error);
     return OK;
   },
 

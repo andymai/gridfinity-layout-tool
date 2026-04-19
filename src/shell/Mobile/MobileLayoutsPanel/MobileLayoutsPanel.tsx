@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useMobileStore } from '@/core/store/mobile';
 import { useInteractionStore } from '@/core/store/interaction';
@@ -6,8 +6,14 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useLayoutSwitcher } from '@/shared/hooks';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
-import { InspirationGallery } from '@/features/inspiration-gallery';
+import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
+
+// Lazy load gallery - only loaded when opened (matches Sidebar pattern)
+const InspirationGallery = lazyWithRetry(() =>
+  import('@/features/inspiration-gallery').then(namedExport('InspirationGallery'))
+);
 import {
   loadLayoutAsync,
   generateShareableURL,
@@ -737,10 +743,12 @@ export function MobileLayoutsPanel() {
 
       {showInspirationGallery &&
         createPortal(
-          <InspirationGallery
-            isOpen={showInspirationGallery}
-            onClose={() => setShowInspirationGallery(false)}
-          />,
+          <Suspense fallback={<LoadingFallback variant="overlay" label={t('loading.gallery')} />}>
+            <InspirationGallery
+              isOpen={showInspirationGallery}
+              onClose={() => setShowInspirationGallery(false)}
+            />
+          </Suspense>,
           document.body
         )}
     </div>

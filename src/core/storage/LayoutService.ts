@@ -16,7 +16,12 @@
 import * as backend from './backend';
 import * as indexedDB from './backends/indexedDB';
 import { salvageImport } from '@/shared/utils/validation';
-import { generateCategoryId, generateLayerId, getDefaultDrawerSize } from '@/core/constants';
+import {
+  DEFAULT_LAYOUT_NAME,
+  generateCategoryId,
+  generateLayerId,
+  getDefaultDrawerSize,
+} from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import { computePreview } from './preview';
 import type { Layout, LayoutId, LayoutLibrary, LayoutEntry } from '@/core/types';
@@ -451,7 +456,7 @@ function createLibraryEntry(layoutId: LayoutId, layout: Layout): LayoutEntry {
   const now = Date.now();
   return {
     id: layoutId,
-    name: layout.name || 'Untitled layout',
+    name: layout.name || DEFAULT_LAYOUT_NAME,
     createdAt: now,
     modifiedAt: now,
     preview: computePreview(layout),
@@ -518,7 +523,7 @@ export async function initializeLayoutLibrary(): Promise<{
     const { width, depth, height } = getDefaultDrawerSize();
     const defaultLayout: Layout = {
       version: '1.0',
-      name: 'Untitled layout',
+      name: DEFAULT_LAYOUT_NAME,
       drawer: { width: gridUnits(width), depth: gridUnits(depth), height: heightUnits(height) },
       printBedSize: mm(256),
       gridUnitMm: mm(42),

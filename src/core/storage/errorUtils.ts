@@ -24,19 +24,6 @@ const QUOTA_ERROR_PATTERNS = [
 ] as const;
 
 /**
- * Patterns that indicate storage is unavailable or inaccessible.
- * These can occur due to security restrictions, private browsing, etc.
- */
-const UNAVAILABLE_ERROR_PATTERNS = [
-  'unavailable',
-  'SecurityError',
-  'access denied',
-  'not allowed',
-  'blocked',
-  'NS_ERROR_FILE_CORRUPTED',
-] as const;
-
-/**
  * Extract error message from unknown error value.
  *
  * @param error - The caught error value (may be Error, string, or other)
@@ -67,7 +54,8 @@ function matchesAnyPattern(message: string, patterns: readonly string[]): boolea
  *
  * This function centralizes the error classification logic that was previously
  * duplicated across multiple storage functions. It examines the error message
- * to determine whether it's a quota error, unavailability error, or generic error.
+ * to determine whether it's a quota exceeded error; everything else is treated
+ * as a generic storage-unavailable condition.
  *
  * @param error - The caught error (unknown type from catch block)
  * @param storageType - The storage backend type (e.g., 'indexedDB', 'localStorage')
@@ -89,17 +77,10 @@ export function classifyStorageError(
   const message = extractErrorMessage(error);
   const originalError = error instanceof Error ? error : undefined;
 
-  // Check for quota exceeded errors
   if (matchesAnyPattern(message, QUOTA_ERROR_PATTERNS)) {
     return storageQuotaExceeded(undefined, undefined, originalError);
   }
 
-  // Check for storage unavailable errors
-  if (matchesAnyPattern(message, UNAVAILABLE_ERROR_PATTERNS)) {
-    return storageUnavailable(storageType, originalError);
-  }
-
-  // Default to unavailable with the original error context
   return storageUnavailable(storageType, originalError);
 }
 

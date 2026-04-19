@@ -33,11 +33,9 @@ function ResizeHandlesComponent({
     ? 'external'
     : 'internal';
 
-  const handles = getAllHandles();
-
   return (
     <>
-      {handles.map((handle) => (
+      {getAllHandles().map((handle) => (
         <ResizeHandle
           key={handle}
           handle={handle}
@@ -50,16 +48,5 @@ function ResizeHandlesComponent({
   );
 }
 
-/**
- * Custom comparison for memo optimization.
- */
-function propsAreEqual(prev: ResizeHandlesProps, next: ResizeHandlesProps): boolean {
-  return (
-    prev.binWidth === next.binWidth &&
-    prev.binDepth === next.binDepth &&
-    prev.variant === next.variant &&
-    prev.onResizePointerDown === next.onResizePointerDown
-  );
-}
-
-export const ResizeHandles = memo(ResizeHandlesComponent, propsAreEqual);
+// React.memo's default shallow per-prop comparison (Object.is) matches this component's needs.
+export const ResizeHandles = memo(ResizeHandlesComponent);

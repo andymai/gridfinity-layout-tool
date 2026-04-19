@@ -144,7 +144,7 @@ export type { CommandBus } from './bus/commandBus';
 export { eventBus, createEventBus } from './bus/eventBus';
 export type { EventBus } from './bus/eventBus';
 
-export { eventStore, connectEventStoreToBus, resetEventStoreDb } from './store/eventStore';
+export { eventStore, connectEventStoreToBus } from './store/eventStore';
 export type { EventStore, EventStoreQuery } from './store/eventStore';
 
 export { getPendingRetryCount, clearRetryQueue } from './store/retryQueue';
@@ -161,6 +161,6 @@ export type { MiddlewareFlags, MiddlewareProfile } from './middleware/middleware
 
 export { createCqrsMutations } from './integration/mutationsAdapter';
 
-export { applyEvent, replayEvents, replayFromStore } from './projection/replay';
+export { applyEvent, replayEvents } from './projection/replay';
 
 export { connectSelectionPruning } from './subscribers';

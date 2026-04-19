@@ -16,8 +16,7 @@ export function useFeatureFlag(featureId: FeatureId): boolean {
     if (feature?.comingSoon) return false;
 
     // Read directly from state.preferences so Zustand tracks the dependency
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureId may not exist in enabledFeatures
-    return state.preferences.enabledFeatures[featureId] ?? feature?.defaultEnabled ?? false;
+    return state.preferences.enabledFeatures[featureId] ?? false;
   });
 }
 
