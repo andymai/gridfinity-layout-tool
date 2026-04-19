@@ -25,13 +25,6 @@ const GHOST_OPACITY = 0.4;
 
 export function GhostHandles() {
   const { invalidate } = useThree();
-  const { params, generationStatus } = useDesignerStore(
-    useShallow((s) => ({
-      params: s.params,
-      generationStatus: s.generation.status,
-    }))
-  );
-
   const {
     width,
     depth,
@@ -41,8 +34,22 @@ export function GhostHandles() {
     handles,
     label,
     base,
-    walls: wallConfig,
-  } = params;
+    wallConfig,
+    generationStatus,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      width: s.params.width,
+      depth: s.params.depth,
+      height: s.params.height,
+      wallThickness: s.params.wallThickness,
+      style: s.params.style,
+      handles: s.params.handles,
+      label: s.params.label,
+      base: s.params.base,
+      wallConfig: s.params.walls,
+      generationStatus: s.generation.status,
+    }))
+  );
 
   const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;

@@ -40,13 +40,19 @@ const DEFAULT_COLOR = '#d4d8dc';
 export function GhostDividerPieces() {
   const { invalidate } = useThree();
 
-  const { params } = useDesignerStore(
-    useShallow((s) => ({
-      params: s.params,
-    }))
-  );
-
-  const { width, depth, height, wallThickness, style, slotConfig, dividerPieces } = params;
+  const { width, depth, height, wallThickness, style, slotConfig, dividerPieces, hasLip } =
+    useDesignerStore(
+      useShallow((s) => ({
+        width: s.params.width,
+        depth: s.params.depth,
+        height: s.params.height,
+        wallThickness: s.params.wallThickness,
+        style: s.params.style,
+        slotConfig: s.params.slotConfig,
+        dividerPieces: s.params.dividerPieces,
+        hasLip: s.params.base.stackingLip,
+      }))
+    );
 
   const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
@@ -57,7 +63,6 @@ export function GhostDividerPieces() {
   // In preview space, the bin is translated up by SOCKET_HEIGHT, so the
   // cavity floor (inner surface after shelling) is at SOCKET_HEIGHT + wallThickness.
   const floorZ = GRIDFINITY.SOCKET_HEIGHT + wallThickness;
-  const hasLip = params.base.stackingLip;
 
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
   const lipOverhang = hasLip ? Math.max(0, lipTaperWidth - wallThickness) : 0;
