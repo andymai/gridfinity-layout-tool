@@ -19,6 +19,7 @@ describe('COMMAND_SCHEMAS', () => {
     'bin.moveToStaging',
     'bin.moveFromStaging',
     'bin.fillLayer',
+    'bin.fillGaps',
     'bin.clearLayer',
     'layer.add',
     'layer.update',

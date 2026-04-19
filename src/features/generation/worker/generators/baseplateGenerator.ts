@@ -66,6 +66,7 @@ import type { CacheStats } from './lruCache';
 import { LRUCache } from './lruCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { buildLightweightFloorCutters } from './lightweightFloorCutter';
+import { CONSTRAINTS } from '@/core/constants';
 
 // LRU cache for pocket templates keyed by cell size + forExport + floorDepth.
 // Build one loft per unique cell size, then clone+translate for each grid position.
@@ -894,9 +895,6 @@ function buildSlabProfile(
   return pen.close();
 }
 
-/** Maximum grid dimension for baseplate generation (units). */
-const MAX_BASEPLATE_GRID = 50;
-
 /**
  * Validate and clamp baseplate params to safe ranges.
  * Throws on clearly invalid dimensions (NaN, zero, negative) to surface
@@ -911,9 +909,9 @@ function sanitizeParams(params: BaseplateParams): BaseplateParams {
   ) {
     throw new Error(`Invalid baseplate dimensions: ${params.width}x${params.depth}`);
   }
-  if (params.width > MAX_BASEPLATE_GRID || params.depth > MAX_BASEPLATE_GRID) {
+  if (params.width > CONSTRAINTS.GRID_MAX || params.depth > CONSTRAINTS.GRID_MAX) {
     throw new Error(
-      `Baseplate dimensions ${params.width}x${params.depth} exceed maximum ${MAX_BASEPLATE_GRID}`
+      `Baseplate dimensions ${params.width}x${params.depth} exceed maximum ${CONSTRAINTS.GRID_MAX}`
     );
   }
 

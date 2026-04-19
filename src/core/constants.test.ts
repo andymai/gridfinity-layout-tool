@@ -324,6 +324,59 @@ describe('migrateBaseplateParams', () => {
     expect(result.paddingLeft).toBe(0);
     expect(result.connectorNubs).toBeUndefined();
   });
+
+  it('preserves invertDovetails, lightweight, cornerRadius, and cornerRadii', () => {
+    const stored = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+      invertDovetails: true,
+      lightweight: false,
+      cornerRadius: 3.5,
+      cornerRadii: { tl: 1, tr: 2, bl: 3, br: 4 },
+    };
+    const result = migrateBaseplateParams(stored);
+    expect(result.invertDovetails).toBe(true);
+    expect(result.lightweight).toBe(false);
+    expect(result.cornerRadius).toBe(3.5);
+    expect(result.cornerRadii).toEqual({ tl: 1, tr: 2, bl: 3, br: 4 });
+  });
+
+  it('clamps cornerRadius and cornerRadii to [0, 200] mm', () => {
+    const stored = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+      cornerRadius: 9999,
+      cornerRadii: { tl: -5, tr: 500, bl: 10, br: 10 },
+    };
+    const result = migrateBaseplateParams(stored);
+    expect(result.cornerRadius).toBe(200);
+    expect(result.cornerRadii).toEqual({ tl: 0, tr: 200, bl: 10, br: 10 });
+  });
+
+  it('ignores invalid cornerRadii shape', () => {
+    const stored = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+      cornerRadii: { tl: 'oops' },
+    };
+    const result = migrateBaseplateParams(stored);
+    expect(result.cornerRadii).toBeUndefined();
+  });
 });
 
 describe('getDefaultDrawerSize', () => {

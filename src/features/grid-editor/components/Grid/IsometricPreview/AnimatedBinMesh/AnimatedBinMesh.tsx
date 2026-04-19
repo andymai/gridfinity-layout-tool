@@ -31,22 +31,26 @@ export function AnimatedBinMesh({ binData, transition }: AnimatedBinMeshProps) {
     const material = materialRef.current;
     if (!mesh || !material) return;
 
+    let z: number;
+    let scale: number;
+    let opacity: number;
     if (transition.phase === 'entering') {
-      // Position: target z + spring offset (spring settles toward 0).
-      mesh.position.set(binData.x, binData.y, binData.z + transition.springPos);
-      mesh.scale.set(1, 1, 1);
-      material.opacity = 1;
-      material.transparent = false;
-      material.depthWrite = true;
+      // Spring settles toward 0 above target z.
+      z = binData.z + transition.springPos;
+      scale = 1;
+      opacity = binData.opacity;
     } else {
-      // Exiting: shrink and fade.
-      mesh.position.set(binData.x, binData.y, binData.z);
-      const s = transition.scale;
-      mesh.scale.set(s, s, s);
-      material.opacity = transition.opacity;
-      material.transparent = transition.opacity < 1;
-      material.depthWrite = transition.opacity === 1;
+      // Exiting: shrink and fade; compose with any dimming in binData.opacity.
+      z = binData.z;
+      scale = transition.scale;
+      opacity = transition.opacity * binData.opacity;
     }
+
+    mesh.position.set(binData.x, binData.y, z);
+    mesh.scale.set(scale, scale, scale);
+    material.opacity = opacity;
+    material.transparent = opacity < 1;
+    material.depthWrite = opacity === 1;
   });
 
   // Initial position for entering bins (before first useFrame tick).

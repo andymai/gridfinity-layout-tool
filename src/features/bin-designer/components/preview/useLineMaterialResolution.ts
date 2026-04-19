@@ -14,6 +14,9 @@ export function useLineMaterialResolution(material: LineMaterial | null): void {
   const { size, invalidate } = useThree();
   useLayoutEffect(() => {
     if (!material) return;
+    // Skip pre-measurement frames (0×0) — some drivers render NaN line widths
+    // when resolution is zero. r3f will fire a second effect once size is real.
+    if (size.width === 0 || size.height === 0) return;
     material.resolution.set(size.width, size.height);
     invalidate();
   }, [material, size.width, size.height, invalidate]);
