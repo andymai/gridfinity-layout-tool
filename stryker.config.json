@@ -22,7 +22,7 @@
     "!**/types.ts"
   ],
   "timeoutMS": 60000,
-  "concurrency": 4,
+  "concurrency": 2,
   "incremental": true,
   "incrementalFile": "reports/mutation/incremental.json",
   "reporters": ["html", "json", "progress", "clear-text"],

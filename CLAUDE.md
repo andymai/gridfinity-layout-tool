@@ -155,11 +155,11 @@ Complements coverage. Runs nightly via `.github/workflows/mutation-testing.yml`.
 
 **Scope:** `src/core/result`, `src/core/cqrs/{handlers,middleware}`, `src/features/generation/worker/generators`, `src/shared/{utils,generation}` (~148 files). Stores, components, and features outside this list are not yet mutated.
 
-| Command                              | Purpose                                         |
-| ------------------------------------ | ----------------------------------------------- |
-| `pnpm run test:mutation`             | Full targeted run (~5-10 min with warm cache)   |
-| `pnpm run test:mutation:changed`     | Mutates only files changed vs `main` (~2-5 min) |
-| `pnpm run test:mutation:file <path>` | Single file — iterate on one test quickly       |
+| Command                                 | Purpose                                         |
+| --------------------------------------- | ----------------------------------------------- |
+| `pnpm run test:mutation`                | Full targeted run (~5-10 min with warm cache)   |
+| `pnpm run test:mutation:changed`        | Mutates only files changed vs `main` (~2-5 min) |
+| `pnpm run test:mutation:file -- <path>` | Single file — iterate on one test quickly       |
 
 Reports land in `reports/mutation/mutation.html`. The incremental baseline (`incremental.json`) flows through CI artifacts — **not committed to git** (~100MB+). The nightly workflow restores the prior baseline, runs Stryker, and uploads the updated one. Locally, your cache builds up after the first run.
 

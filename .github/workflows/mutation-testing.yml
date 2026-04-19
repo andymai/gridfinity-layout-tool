@@ -50,8 +50,8 @@ jobs:
         run: pnpm run test:mutation
 
       - name: Upload incremental baseline
-        if: always()
-        uses: actions/upload-artifact@v4
+        if: success()
+        uses: actions/upload-artifact@v7
         with:
           name: mutation-incremental
           path: reports/mutation/incremental.json
@@ -59,7 +59,7 @@ jobs:
 
       - name: Upload mutation report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mutation-report
           path: |
