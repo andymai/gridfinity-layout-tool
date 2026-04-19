@@ -56,4 +56,26 @@ describe('useLineMaterialResolution', () => {
     rerender({ material: second });
     expect(second.resolution.set).toHaveBeenCalledWith(800, 600);
   });
+
+  it('skips setting resolution when canvas size is 0×0 (pre-measurement)', () => {
+    sizeMock.width = 0;
+    sizeMock.height = 0;
+    const material = makeMaterial();
+    renderHook(() => useLineMaterialResolution(material));
+    expect(material.resolution.set).not.toHaveBeenCalled();
+    expect(invalidateMock).not.toHaveBeenCalled();
+  });
+
+  it('applies resolution once size becomes non-zero after a 0×0 pre-measurement', () => {
+    sizeMock.width = 0;
+    sizeMock.height = 0;
+    const material = makeMaterial();
+    const { rerender } = renderHook(() => useLineMaterialResolution(material));
+    expect(material.resolution.set).not.toHaveBeenCalled();
+
+    sizeMock.width = 800;
+    sizeMock.height = 600;
+    rerender();
+    expect(material.resolution.set).toHaveBeenCalledWith(800, 600);
+  });
 });

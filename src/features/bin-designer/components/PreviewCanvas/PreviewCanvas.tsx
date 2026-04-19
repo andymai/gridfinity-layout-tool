@@ -46,6 +46,7 @@ import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../u
 import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
@@ -674,6 +675,9 @@ const LOADING_MESSAGE_COUNT = 12;
  */
 function GeneratingIndicator() {
   const t = useTranslation();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const reduceMotionSetting = useSettingsStore((s) => s.settings.reduceMotion);
+  const reduceMotion = prefersReducedMotion || reduceMotionSetting;
 
   const loadingMessages = useMemo(
     () =>
@@ -685,13 +689,14 @@ function GeneratingIndicator() {
     Math.floor(Math.random() * LOADING_MESSAGE_COUNT)
   );
 
-  // Cycle through messages every 1.5 seconds
+  // Cycle through messages every 1.5 seconds; skip when motion is reduced.
   useEffect(() => {
+    if (reduceMotion) return;
     const interval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGE_COUNT);
     }, 1500);
     return () => clearInterval(interval);
-  }, []);
+  }, [reduceMotion]);
 
   return (
     <div

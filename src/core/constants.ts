@@ -243,6 +243,14 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     };
   }
   // Validate and clamp all fields from persisted/imported data
+  const radii = obj.cornerRadii;
+  const hasRadii =
+    radii !== null &&
+    typeof radii === 'object' &&
+    typeof (radii as Record<string, unknown>).tl === 'number' &&
+    typeof (radii as Record<string, unknown>).tr === 'number' &&
+    typeof (radii as Record<string, unknown>).bl === 'number' &&
+    typeof (radii as Record<string, unknown>).br === 'number';
   return {
     magnetHoles: typeof obj.magnetHoles === 'boolean' ? obj.magnetHoles : false,
     magnetDiameter: mm(clampNumber(obj.magnetDiameter, 0.5, 20, 6.5)),
@@ -252,12 +260,35 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     paddingFront: mm(clampNumber(obj.paddingFront, 0, 100, 0)),
     paddingBack: mm(clampNumber(obj.paddingBack, 0, 100, 0)),
     ...(typeof obj.connectorNubs === 'boolean' ? { connectorNubs: obj.connectorNubs } : {}),
+    ...(typeof obj.invertDovetails === 'boolean' ? { invertDovetails: obj.invertDovetails } : {}),
+    ...(typeof obj.lightweight === 'boolean' ? { lightweight: obj.lightweight } : {}),
     ...(typeof obj.syncWithLayout === 'boolean' ? { syncWithLayout: obj.syncWithLayout } : {}),
     ...(typeof obj.baseplateWidth === 'number'
-      ? { baseplateWidth: gridUnits(Math.min(50, Math.max(0.5, obj.baseplateWidth))) }
+      ? {
+          baseplateWidth: gridUnits(
+            Math.min(CONSTRAINTS.GRID_MAX, Math.max(CONSTRAINTS.GRID_MIN, obj.baseplateWidth))
+          ),
+        }
       : {}),
     ...(typeof obj.baseplateDepth === 'number'
-      ? { baseplateDepth: gridUnits(Math.min(50, Math.max(0.5, obj.baseplateDepth))) }
+      ? {
+          baseplateDepth: gridUnits(
+            Math.min(CONSTRAINTS.GRID_MAX, Math.max(CONSTRAINTS.GRID_MIN, obj.baseplateDepth))
+          ),
+        }
+      : {}),
+    ...(typeof obj.cornerRadius === 'number'
+      ? { cornerRadius: mm(clampNumber(obj.cornerRadius, 0, 200, 0)) }
+      : {}),
+    ...(hasRadii
+      ? {
+          cornerRadii: {
+            tl: mm(clampNumber((radii as Record<string, unknown>).tl, 0, 200, 0)),
+            tr: mm(clampNumber((radii as Record<string, unknown>).tr, 0, 200, 0)),
+            bl: mm(clampNumber((radii as Record<string, unknown>).bl, 0, 200, 0)),
+            br: mm(clampNumber((radii as Record<string, unknown>).br, 0, 200, 0)),
+          },
+        }
       : {}),
   };
 }

@@ -189,13 +189,29 @@ export function IsometricPreview({ inline = false }: IsometricPreviewProps) {
   // Track exit animation — keep groups mounted with offset=0 so useFrame can lerp back.
   // The cleanup function fires when isExplodedView goes from true→false, starting exit animation.
   const [isExplodeExiting, setIsExplodeExiting] = useState(false);
+  const exitTimerRef = useRef<number | null>(null);
   useEffect(() => {
     if (!isExplodedView) return;
     return () => {
       setIsExplodeExiting(true);
-      setTimeout(() => setIsExplodeExiting(false), 600);
+      if (exitTimerRef.current !== null) {
+        window.clearTimeout(exitTimerRef.current);
+      }
+      exitTimerRef.current = window.setTimeout(() => {
+        setIsExplodeExiting(false);
+        exitTimerRef.current = null;
+      }, 600);
     };
   }, [isExplodedView]);
+  useEffect(() => {
+    // Clear pending exit-animation timer on unmount to avoid setState-after-unmount.
+    return () => {
+      if (exitTimerRef.current !== null) {
+        window.clearTimeout(exitTimerRef.current);
+        exitTimerRef.current = null;
+      }
+    };
+  }, []);
 
   // Exploded layer view: per-layer bin groups with Z offsets and opacity
   const explodedLayerGroups = useExplodedLayerView({
