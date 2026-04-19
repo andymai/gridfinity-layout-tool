@@ -7,12 +7,13 @@
 
 import { useMemo, useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { useThree, useFrame } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLineMaterialResolution } from '../useLineMaterialResolution';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { cellIndex } from '@/features/bin-designer/utils/compartments';
 
@@ -26,23 +27,22 @@ const SPLIT_OPACITY = 0.85;
 const LINE_WIDTH = 3;
 
 export function GhostCompartmentPreview() {
-  const { invalidate, size } = useThree();
+  const { invalidate } = useThree();
   const lineRef = useRef<LineSegments2 | null>(null);
-  const materialRef = useRef<LineMaterial | null>(null);
 
-  const canvasWidth = size.width;
-  const canvasHeight = size.height;
-
-  const { params, previewCompartments, previewSelection } = useDesignerStore(
-    useShallow((s) => ({
-      params: s.params,
-      previewCompartments: s.ui.previewCompartments,
-      previewSelection: s.ui.previewSelection,
-    }))
-  );
-
-  const { width, depth, height, wallThickness } = params;
-  const { cols, rows } = params.compartments;
+  const { width, depth, height, wallThickness, cols, rows, previewCompartments, previewSelection } =
+    useDesignerStore(
+      useShallow((s) => ({
+        width: s.params.width,
+        depth: s.params.depth,
+        height: s.params.height,
+        wallThickness: s.params.wallThickness,
+        cols: s.params.compartments.cols,
+        rows: s.params.compartments.rows,
+        previewCompartments: s.ui.previewCompartments,
+        previewSelection: s.ui.previewSelection,
+      }))
+    );
 
   // Calculate bin dimensions
   const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
@@ -149,21 +149,11 @@ export function GhostCompartmentPreview() {
       transparent: true,
       opacity: SPLIT_OPACITY,
       depthTest: true,
-      resolution: new THREE.Vector2(canvasWidth, canvasHeight),
+      resolution: new THREE.Vector2(),
     });
-  }, [shouldShow, isMerge, canvasWidth, canvasHeight]);
+  }, [shouldShow, isMerge]);
 
-  // Store material ref for resolution updates
-  useEffect(() => {
-    materialRef.current = splitMaterial;
-  }, [splitMaterial]);
-
-  // Update resolution on resize
-  useFrame(() => {
-    if (materialRef.current) {
-      materialRef.current.resolution.set(canvasWidth, canvasHeight);
-    }
-  });
+  useLineMaterialResolution(splitMaterial);
 
   // Dispose resources
   useEffect(() => {
@@ -182,6 +172,11 @@ export function GhostCompartmentPreview() {
     }
   }, [mergePlane, mergeMaterial, splitGeometry, splitMaterial, invalidate]);
 
+  const splitLineSegments = useMemo(
+    () => (splitGeometry && splitMaterial ? new LineSegments2(splitGeometry, splitMaterial) : null),
+    [splitGeometry, splitMaterial]
+  );
+
   if (!shouldShow) return null;
 
   // Render merge preview (flat amber plane)
@@ -197,14 +192,9 @@ export function GhostCompartmentPreview() {
   }
 
   // Render split preview (cyan divider lines)
-  if (!isMerge && splitGeometry && splitMaterial) {
+  if (!isMerge && splitLineSegments) {
     return (
-      <primitive
-        ref={lineRef}
-        object={new LineSegments2(splitGeometry, splitMaterial)}
-        position={[0, 0, 0.2]}
-        renderOrder={3}
-      />
+      <primitive ref={lineRef} object={splitLineSegments} position={[0, 0, 0.2]} renderOrder={3} />
     );
   }
 

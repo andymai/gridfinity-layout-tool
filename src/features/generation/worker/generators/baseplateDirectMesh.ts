@@ -22,6 +22,7 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
+import { CONSTRAINTS } from '@/core/constants';
 import { resolveCornerRadii } from './generatorConstants';
 import type { MeshData } from '../../bridge/types';
 import {
@@ -781,6 +782,11 @@ export function generateBaseplateDirect(
     params.depth <= 0
   ) {
     throw new Error(`Invalid baseplate dimensions: ${params.width}x${params.depth}`);
+  }
+  if (params.width > CONSTRAINTS.GRID_MAX || params.depth > CONSTRAINTS.GRID_MAX) {
+    throw new Error(
+      `Baseplate dimensions ${params.width}x${params.depth} exceed maximum ${CONSTRAINTS.GRID_MAX}`
+    );
   }
 
   onProgress('base', 0);

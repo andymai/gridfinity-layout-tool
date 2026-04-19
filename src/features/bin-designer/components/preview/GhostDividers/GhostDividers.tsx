@@ -10,12 +10,13 @@
 
 import { useMemo, useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { useThree, useFrame } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLineMaterialResolution } from '../useLineMaterialResolution';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 
 /** Ghost line color (matches selection ring yellow used in 2D grid editor) */
@@ -25,22 +26,20 @@ const GHOST_OPACITY = 0.75;
 const LINE_WIDTH = 2;
 
 export function GhostDividers() {
-  const { invalidate, size } = useThree();
+  const { invalidate } = useThree();
   const lineRef = useRef<LineSegments2 | null>(null);
-  const materialRef = useRef<LineMaterial | null>(null);
 
-  const canvasWidth = size.width;
-  const canvasHeight = size.height;
-
-  const { params, generationStatus } = useDesignerStore(
+  const { width, depth, height, wallThickness, cols, rows, generationStatus } = useDesignerStore(
     useShallow((s) => ({
-      params: s.params,
+      width: s.params.width,
+      depth: s.params.depth,
+      height: s.params.height,
+      wallThickness: s.params.wallThickness,
+      cols: s.params.compartments.cols,
+      rows: s.params.compartments.rows,
       generationStatus: s.generation.status,
     }))
   );
-
-  const { width, depth, height, wallThickness, compartments } = params;
-  const { cols, rows } = compartments;
 
   // Calculate bin dimensions
   const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
@@ -84,7 +83,7 @@ export function GhostDividers() {
     return geo;
   }, [shouldShow, cols, rows, innerW, innerD, topZ]);
 
-  // Create material
+  // Create material (resolution set via effect — avoids recreating on resize)
   const material = useMemo(() => {
     if (!shouldShow || (cols <= 1 && rows <= 1)) return null;
 
@@ -94,21 +93,11 @@ export function GhostDividers() {
       transparent: true,
       opacity: GHOST_OPACITY,
       depthTest: true,
-      resolution: new THREE.Vector2(canvasWidth, canvasHeight),
+      resolution: new THREE.Vector2(),
     });
-  }, [shouldShow, cols, rows, canvasWidth, canvasHeight]);
+  }, [shouldShow, cols, rows]);
 
-  // Sync material ref after render (not during render)
-  useEffect(() => {
-    materialRef.current = material;
-  }, [material]);
-
-  // Update resolution on resize
-  useFrame(() => {
-    if (materialRef.current) {
-      materialRef.current.resolution.set(canvasWidth, canvasHeight);
-    }
-  });
+  useLineMaterialResolution(material);
 
   // Dispose resources on unmount or change
   useEffect(() => {
@@ -123,14 +112,12 @@ export function GhostDividers() {
     if (geometry && material) invalidate();
   }, [geometry, material, invalidate]);
 
-  if (!geometry || !material) return null;
-
-  return (
-    <primitive
-      ref={lineRef}
-      object={new LineSegments2(geometry, material)}
-      position={[0, 0, 0.1]}
-      renderOrder={2}
-    />
+  const lineSegments = useMemo(
+    () => (geometry && material ? new LineSegments2(geometry, material) : null),
+    [geometry, material]
   );
+
+  if (!lineSegments) return null;
+
+  return <primitive ref={lineRef} object={lineSegments} position={[0, 0, 0.1]} renderOrder={2} />;
 }

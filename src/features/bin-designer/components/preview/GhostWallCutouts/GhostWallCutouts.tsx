@@ -9,12 +9,13 @@
 
 import { useMemo, useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { useThree, useFrame } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLineMaterialResolution } from '../useLineMaterialResolution';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 
@@ -23,28 +24,28 @@ const GHOST_OPACITY = 0.75;
 const LINE_WIDTH = 2;
 
 export function GhostWallCutouts() {
-  const { invalidate, size } = useThree();
+  const { invalidate } = useThree();
   const lineRef = useRef<LineSegments2 | null>(null);
-  const materialRef = useRef<LineMaterial | null>(null);
 
-  const canvasWidth = size.width;
-  const canvasHeight = size.height;
-
-  const { params, generationStatus } = useDesignerStore(
-    useShallow((s) => ({
-      params: s.params,
-      generationStatus: s.generation.status,
-    }))
-  );
-
-  const { width, depth, height, wallThickness, walls } = params;
+  const { width, depth, height, wallThickness, walls, baseStyle, generationStatus } =
+    useDesignerStore(
+      useShallow((s) => ({
+        width: s.params.width,
+        depth: s.params.depth,
+        height: s.params.height,
+        wallThickness: s.params.wallThickness,
+        walls: s.params.walls,
+        baseStyle: s.params.base.style,
+        generationStatus: s.generation.status,
+      }))
+    );
 
   const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const totalH = height * GRIDFINITY.HEIGHT_UNIT;
-  const isFlat = params.base.style === 'flat';
+  const isFlat = baseStyle === 'flat';
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
 
   const shouldShow = walls.enabled && generationStatus === 'generating';
@@ -218,19 +219,11 @@ export function GhostWallCutouts() {
       transparent: true,
       opacity: GHOST_OPACITY,
       depthTest: true,
-      resolution: new THREE.Vector2(canvasWidth, canvasHeight),
+      resolution: new THREE.Vector2(),
     });
-  }, [shouldShow, canvasWidth, canvasHeight]);
+  }, [shouldShow]);
 
-  useEffect(() => {
-    materialRef.current = material;
-  }, [material]);
-
-  useFrame(() => {
-    if (materialRef.current) {
-      materialRef.current.resolution.set(canvasWidth, canvasHeight);
-    }
-  });
+  useLineMaterialResolution(material);
 
   useEffect(() => {
     return () => {
@@ -243,14 +236,12 @@ export function GhostWallCutouts() {
     if (geometry && material) invalidate();
   }, [geometry, material, invalidate]);
 
-  if (!geometry || !material) return null;
-
-  return (
-    <primitive
-      ref={lineRef}
-      object={new LineSegments2(geometry, material)}
-      position={[0, 0, 0.1]}
-      renderOrder={2}
-    />
+  const lineSegments = useMemo(
+    () => (geometry && material ? new LineSegments2(geometry, material) : null),
+    [geometry, material]
   );
+
+  if (!lineSegments) return null;
+
+  return <primitive ref={lineRef} object={lineSegments} position={[0, 0, 0.1]} renderOrder={2} />;
 }

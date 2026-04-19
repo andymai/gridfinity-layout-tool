@@ -373,6 +373,21 @@ describe('baseplateDirectMesh', () => {
     expect(bbWith.maxX).toBeCloseTo(bbWithout.maxX, 1);
   });
 
+  // ─── Validation ────────────────────────────────────────────────────────
+  it('throws for zero or negative dimensions', () => {
+    expect(() => generateDirect(defaults({ width: 0 }), noop)).toThrow(
+      /Invalid baseplate dimensions/
+    );
+    expect(() => generateDirect(defaults({ depth: -1 }), noop)).toThrow(
+      /Invalid baseplate dimensions/
+    );
+  });
+
+  it('throws when dimensions exceed MAX_BASEPLATE_GRID', () => {
+    expect(() => generateDirect(defaults({ width: 51 }), noop)).toThrow(/exceed maximum/);
+    expect(() => generateDirect(defaults({ depth: 999 }), noop)).toThrow(/exceed maximum/);
+  });
+
   // ─── Speed comparison ──────────────────────────────────────────────────
   it('4×4 with magnets: direct is at least 10x faster than BREP', () => {
     const params = defaults({ width: 4, depth: 4, magnetHoles: true });

@@ -9,12 +9,13 @@
 
 import { useMemo, useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { useThree, useFrame } from '@react-three/fiber';
+import { useThree } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useLineMaterialResolution } from '../useLineMaterialResolution';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import {
   calculateSlotPositions,
@@ -27,21 +28,32 @@ const GHOST_OPACITY = 0.75;
 const LINE_WIDTH = 2;
 
 export function GhostSlotLines() {
-  const { invalidate, size } = useThree();
+  const { invalidate } = useThree();
   const lineRef = useRef<LineSegments2 | null>(null);
-  const materialRef = useRef<LineMaterial | null>(null);
 
-  const canvasWidth = size.width;
-  const canvasHeight = size.height;
-
-  const { params, generationStatus } = useDesignerStore(
+  const {
+    width,
+    depth,
+    height,
+    wallThickness,
+    style,
+    slotConfig,
+    dividerPieces,
+    hasLip,
+    generationStatus,
+  } = useDesignerStore(
     useShallow((s) => ({
-      params: s.params,
+      width: s.params.width,
+      depth: s.params.depth,
+      height: s.params.height,
+      wallThickness: s.params.wallThickness,
+      style: s.params.style,
+      slotConfig: s.params.slotConfig,
+      dividerPieces: s.params.dividerPieces,
+      hasLip: s.params.base.stackingLip,
       generationStatus: s.generation.status,
     }))
   );
-
-  const { width, depth, height, wallThickness, style, slotConfig, dividerPieces } = params;
 
   const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
@@ -49,8 +61,6 @@ export function GhostSlotLines() {
   const innerD = outerD - 2 * wallThickness;
   const totalH = height * GRIDFINITY.HEIGHT_UNIT;
   const topZ = totalH;
-
-  const hasLip = params.base.stackingLip;
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
   const lipOverhang = hasLip ? Math.max(0, lipTaperWidth - wallThickness) : 0;
 
@@ -118,20 +128,11 @@ export function GhostSlotLines() {
       transparent: true,
       opacity: GHOST_OPACITY,
       depthTest: true,
-      resolution: new THREE.Vector2(canvasWidth, canvasHeight),
+      resolution: new THREE.Vector2(),
     });
-  }, [shouldShow, canvasWidth, canvasHeight]);
+  }, [shouldShow]);
 
-  // Keep materialRef in sync via effect (not during render)
-  useEffect(() => {
-    materialRef.current = material;
-  }, [material]);
-
-  useFrame(() => {
-    if (materialRef.current) {
-      materialRef.current.resolution.set(canvasWidth, canvasHeight);
-    }
-  });
+  useLineMaterialResolution(material);
 
   useEffect(() => {
     return () => {
@@ -144,14 +145,12 @@ export function GhostSlotLines() {
     if (geometry && material) invalidate();
   }, [geometry, material, invalidate]);
 
-  if (!geometry || !material) return null;
-
-  return (
-    <primitive
-      ref={lineRef}
-      object={new LineSegments2(geometry, material)}
-      position={[0, 0, 0.1]}
-      renderOrder={2}
-    />
+  const lineSegments = useMemo(
+    () => (geometry && material ? new LineSegments2(geometry, material) : null),
+    [geometry, material]
   );
+
+  if (!lineSegments) return null;
+
+  return <primitive ref={lineRef} object={lineSegments} position={[0, 0, 0.1]} renderOrder={2} />;
 }

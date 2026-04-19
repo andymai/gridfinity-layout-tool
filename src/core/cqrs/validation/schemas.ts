@@ -209,6 +209,8 @@ const layoutSetGridUnitMmSchema = z.object({ mm: positiveMm });
 const layoutSetHeightUnitMmSchema = z.object({ mm: positiveMm });
 
 /** Baseplate params schema */
+// Max = gridUnitMm/2 (capped at 200mm) + max padding (100mm). UI derives a tighter bound per-layout.
+const cornerRadiusMm = z.number().min(0).max(200);
 const baseplateParamsSchema = z.object({
   magnetHoles: z.boolean(),
   magnetDiameter: z.number().min(0.5).max(20),
@@ -219,9 +221,19 @@ const baseplateParamsSchema = z.object({
   paddingBack: z.number().min(0).max(100),
   connectorNubs: z.boolean().optional(),
   invertDovetails: z.boolean().optional(),
+  lightweight: z.boolean().optional(),
   syncWithLayout: z.boolean().optional(),
   baseplateWidth: z.number().min(CONSTRAINTS.GRID_MIN).max(CONSTRAINTS.GRID_MAX).optional(),
   baseplateDepth: z.number().min(CONSTRAINTS.GRID_MIN).max(CONSTRAINTS.GRID_MAX).optional(),
+  cornerRadius: cornerRadiusMm.optional(),
+  cornerRadii: z
+    .object({
+      tl: cornerRadiusMm,
+      tr: cornerRadiusMm,
+      bl: cornerRadiusMm,
+      br: cornerRadiusMm,
+    })
+    .optional(),
 });
 
 /** layout.setBaseplateParams */

@@ -28,14 +28,29 @@ const ARC_SEGMENTS = 16;
 export function GhostScoops() {
   const { invalidate } = useThree();
 
-  const { params, generationStatus } = useDesignerStore(
+  const {
+    width,
+    depth,
+    height,
+    wallThickness,
+    style,
+    compartments,
+    scoop,
+    base,
+    generationStatus,
+  } = useDesignerStore(
     useShallow((s) => ({
-      params: s.params,
+      width: s.params.width,
+      depth: s.params.depth,
+      height: s.params.height,
+      wallThickness: s.params.wallThickness,
+      style: s.params.style,
+      compartments: s.params.compartments,
+      scoop: s.params.scoop,
+      base: s.params.base,
       generationStatus: s.generation.status,
     }))
   );
-
-  const { width, depth, height, wallThickness, style, compartments, scoop, base } = params;
   const { cols, rows, cells } = compartments;
 
   const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
