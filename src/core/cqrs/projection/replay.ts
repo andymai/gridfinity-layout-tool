@@ -5,11 +5,10 @@
  * to a base layout state to reconstruct what happened.
  */
 
-import type { Layout, LayoutId } from '@/core/types';
+import type { Layout } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import type { DomainEvent } from '../events';
-import { eventStore } from '../store/eventStore';
 
 /**
  * Apply a single domain event to a layout, producing a new layout.
@@ -142,23 +141,4 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
  */
 export function replayEvents(baseLayout: Layout, events: ReadonlyArray<DomainEvent>): Layout {
   return events.reduce<Layout>((layout, event) => applyEvent(layout, event), baseLayout);
-}
-
-/**
- * Load events from the event store and replay them onto a base layout.
- *
- * @param aggregateId - The layout to replay events for
- * @param baseLayout - Starting state to apply events to
- * @param options.upTo - Only replay events up to this timestamp
- */
-export async function replayFromStore(
-  aggregateId: LayoutId,
-  baseLayout: Layout,
-  options?: { upTo?: number }
-): Promise<Layout> {
-  const events = await eventStore.getByAggregate(aggregateId, {
-    before: options?.upTo,
-  });
-
-  return replayEvents(baseLayout, events);
 }

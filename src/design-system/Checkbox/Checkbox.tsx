@@ -201,6 +201,25 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       lg: 'w-4 h-4',
     }[size ?? 'md'];
 
+    // Shared check/indeterminate icon. Rendered inside the visual box; only
+    // visible when the box should show a mark.
+    const showMark = isChecked || indeterminate;
+    const markIcon = showMark ? (
+      <svg
+        className={cn('absolute inset-0 m-auto text-white', iconClass)}
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={3}
+      >
+        {indeterminate ? (
+          <line x1="5" y1="12" x2="19" y2="12" />
+        ) : (
+          <polyline points="5 13 10 17 19 7" />
+        )}
+      </svg>
+    ) : null;
+
     // Display-only mode: render just the visual with aria-hidden
     if (isDisplayOnly) {
       return (
@@ -211,21 +230,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
               'cursor-default'
             )}
           >
-            {(isChecked || indeterminate) && (
-              <svg
-                className={cn('absolute inset-0 m-auto text-white', iconClass)}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={3}
-              >
-                {indeterminate ? (
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                ) : (
-                  <polyline points="5 13 10 17 19 7" />
-                )}
-              </svg>
-            )}
+            {markIcon}
           </div>
           {label && <span className={labelVariants({ size, checked: isChecked })}>{label}</span>}
         </div>
@@ -269,21 +274,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           )}
           aria-hidden="true"
         >
-          {(isChecked || indeterminate) && (
-            <svg
-              className={cn('absolute inset-0 m-auto text-white', iconClass)}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={3}
-            >
-              {indeterminate ? (
-                <line x1="5" y1="12" x2="19" y2="12" />
-              ) : (
-                <polyline points="5 13 10 17 19 7" />
-              )}
-            </svg>
-          )}
+          {markIcon}
         </div>
 
         {/* Optional visible label */}

@@ -33,7 +33,7 @@ export function DeferredNumberInput({
   id,
   'aria-label': ariaLabel,
 }: DeferredNumberInputProps) {
-  const [localValue, setLocalValue] = useState(String(value));
+  const [localValue, setLocalValue] = useState(() => formatValue(value));
 
   // Sync local state when external value changes from outside (e.g., undo/redo, keyboard nudge).
   // We intentionally call setState in useEffect here to keep the input synchronized with

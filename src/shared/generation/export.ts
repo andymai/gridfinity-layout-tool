@@ -6,7 +6,6 @@
  * export and file size estimation functions without a cross-feature import violation.
  */
 export {
-  exportSTL,
   buildSTLBuffer,
   buildSTLBufferFromIndexed,
   getSTLFileSize,

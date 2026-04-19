@@ -105,25 +105,6 @@ describe('FEATURE_FLAGS', () => {
       }
     });
   });
-
-  it('dependencies is an array of strings if present', () => {
-    FEATURE_FLAGS.forEach((feature) => {
-      if (feature.dependencies !== undefined) {
-        expect(Array.isArray(feature.dependencies)).toBe(true);
-        feature.dependencies.forEach((dep) => {
-          expect(typeof dep).toBe('string');
-        });
-      }
-    });
-  });
-
-  it('defaultEnabled is boolean if present', () => {
-    FEATURE_FLAGS.forEach((feature) => {
-      if (feature.defaultEnabled !== undefined) {
-        expect(typeof feature.defaultEnabled).toBe('boolean');
-      }
-    });
-  });
 });
 
 describe('getFeature()', () => {

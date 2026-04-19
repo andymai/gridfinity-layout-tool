@@ -8,7 +8,7 @@ import type {
   LayoutId,
 } from '@/core/types';
 import { gridUnits, heightUnits } from '@/core/types';
-import { CONSTRAINTS, getDefaultDrawerSize } from '@/core/constants';
+import { CONSTRAINTS, DEFAULT_LAYOUT_NAME, getDefaultDrawerSize } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import type { Result, Unit, LayoutError } from '@/core/result';
 import { err, layoutLastEntity, OK, isErr } from '@/core/result';
@@ -96,7 +96,7 @@ interface LibraryState {
  */
 export const useLibraryStore = create<LibraryState>()(
   immer((set, get) => ({
-    library: createDefaultLibrary(generateLayoutId(), 'Untitled layout'),
+    library: createDefaultLibrary(generateLayoutId(), DEFAULT_LAYOUT_NAME),
     isLoaded: false,
 
     initLibrary: (library) => {

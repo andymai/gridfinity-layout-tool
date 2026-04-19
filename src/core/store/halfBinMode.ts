@@ -47,12 +47,14 @@ interface HalfBinModeState {
 interface HalfBinModeActions {
   /**
    * Toggle half-bin mode with validation.
-   * Returns Result<Unit, LayoutError> for type-safe error handling.
+   * Returns Result for type-safe error handling.
    *
    * When turning OFF, validates that no bins have fractional dimensions.
    * If validation fails, returns Err with details.
+   * If persistence fails (quota, private browsing, etc.), returns the StorageError so
+   * callers can surface it instead of silently losing the preference.
    */
-  toggleHalfBinMode: () => Result<Unit, LayoutError>;
+  toggleHalfBinMode: () => Result<Unit, LayoutError | StorageError>;
 
   /**
    * Set half-bin mode directly without validation.
@@ -77,9 +79,10 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
 
     // Turning ON: no validation needed
     if (targetState) {
-      saveToStorage(true);
+      const saveResult = saveToStorage(true);
       set({ halfBinMode: true });
       markFeatureUsed('half_bins');
+      if (!isOk(saveResult)) return saveResult;
       return OK;
     }
 
@@ -96,8 +99,9 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
       );
     }
 
-    saveToStorage(false);
+    const saveResult = saveToStorage(false);
     set({ halfBinMode: false });
+    if (!isOk(saveResult)) return saveResult;
     return OK;
   },
 

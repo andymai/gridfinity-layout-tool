@@ -175,8 +175,7 @@ export const useLabsStore = create<LabsState>()((set, get) => ({
     // Coming Soon features are always disabled
     if (feature?.comingSoon) return false;
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureId may not exist in enabledFeatures
-    return preferences.enabledFeatures[featureId] ?? feature?.defaultEnabled ?? false;
+    return preferences.enabledFeatures[featureId] ?? false;
   },
 
   getEnabledCount: () => {

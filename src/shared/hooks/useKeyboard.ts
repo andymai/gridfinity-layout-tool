@@ -152,6 +152,12 @@ export function useKeyboard() {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
+      if (
+        e.target instanceof HTMLElement &&
+        (e.target.isContentEditable || e.target.tagName === 'SELECT')
+      ) {
+        return;
+      }
 
       const ctx: KeyboardContext = {
         layout,

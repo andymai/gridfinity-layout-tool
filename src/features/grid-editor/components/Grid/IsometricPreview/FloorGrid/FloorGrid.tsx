@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import type { FractionalEdge } from '@/core/types';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
@@ -135,6 +135,11 @@ export function FloorGrid({
     fractionalEdgeX,
     fractionalEdgeY,
   ]);
+
+  // Dispose geometries on change or unmount to avoid GPU memory leaks
+  useEffect(() => () => gridGeometry.dispose(), [gridGeometry]);
+  useEffect(() => () => fractionalEdgeGeometry?.dispose(), [fractionalEdgeGeometry]);
+  useEffect(() => () => halfBinGeometry?.dispose(), [halfBinGeometry]);
 
   return (
     <group>

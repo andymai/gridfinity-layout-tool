@@ -16,7 +16,12 @@ import {
   renameLayoutEntry,
 } from '@/core/storage';
 import { setLayoutURL } from '@/shared/utils/url';
-import { createLayoutWithSettings, SHARED_PREVIEW_ID, isRealLayoutId } from '@/core/constants';
+import {
+  createLayoutWithSettings,
+  DEFAULT_LAYOUT_NAME,
+  SHARED_PREVIEW_ID,
+  isRealLayoutId,
+} from '@/core/constants';
 import { trackLayoutAction } from '@/shared/analytics/posthog';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type {
@@ -160,7 +165,7 @@ export function useLayoutSwitcher() {
 
       // Create new layout with user's default settings
       const newLayout = createLayoutWithSettings(settings);
-      newLayout.name = name || 'Untitled layout';
+      newLayout.name = name || DEFAULT_LAYOUT_NAME;
 
       try {
         // Get fresh library state after saveCurrentLayout (may have updated it)
