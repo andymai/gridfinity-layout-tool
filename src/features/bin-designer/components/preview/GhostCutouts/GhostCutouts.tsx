@@ -243,14 +243,12 @@ export function GhostCutouts() {
     if (geometry && material) invalidate();
   }, [geometry, material, invalidate]);
 
-  if (!geometry || !material) return null;
-
-  return (
-    <primitive
-      ref={lineRef}
-      object={new LineSegments2(geometry, material)}
-      position={[0, 0, 0.1]}
-      renderOrder={3}
-    />
+  const lineSegments = useMemo(
+    () => (geometry && material ? new LineSegments2(geometry, material) : null),
+    [geometry, material]
   );
+
+  if (!lineSegments) return null;
+
+  return <primitive ref={lineRef} object={lineSegments} position={[0, 0, 0.1]} renderOrder={3} />;
 }

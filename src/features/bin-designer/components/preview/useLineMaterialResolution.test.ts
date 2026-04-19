@@ -4,9 +4,10 @@ import type { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { useLineMaterialResolution } from './useLineMaterialResolution';
 
 const sizeMock = { width: 0, height: 0 };
+const invalidateMock = vi.fn();
 
 vi.mock('@react-three/fiber', () => ({
-  useThree: () => ({ size: sizeMock }),
+  useThree: () => ({ size: sizeMock, invalidate: invalidateMock }),
 }));
 
 function makeMaterial() {
@@ -17,12 +18,14 @@ describe('useLineMaterialResolution', () => {
   beforeEach(() => {
     sizeMock.width = 800;
     sizeMock.height = 600;
+    invalidateMock.mockClear();
   });
 
   it('sets resolution on mount when material is non-null', () => {
     const material = makeMaterial();
     renderHook(() => useLineMaterialResolution(material));
     expect(material.resolution.set).toHaveBeenCalledWith(800, 600);
+    expect(invalidateMock).toHaveBeenCalled();
   });
 
   it('is a no-op when material is null', () => {

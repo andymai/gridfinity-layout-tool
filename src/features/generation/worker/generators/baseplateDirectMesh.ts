@@ -22,6 +22,7 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
+import { CONSTRAINTS } from '@/core/constants';
 import { resolveCornerRadii } from './generatorConstants';
 import type { MeshData } from '../../bridge/types';
 import {
@@ -768,8 +769,6 @@ function tangentVectors(nx: number, ny: number): [number, number, number, number
  * Produces a waffle-grid slab with tapered pockets, optional magnet holes in a
  * solid floor, and a rounded outer perimeter. Targets <50ms for any grid size.
  */
-const MAX_BASEPLATE_GRID_DIRECT = 50;
-
 export function generateBaseplateDirect(
   params: BaseplateParams,
   onProgress: ProgressFn,
@@ -784,9 +783,9 @@ export function generateBaseplateDirect(
   ) {
     throw new Error(`Invalid baseplate dimensions: ${params.width}x${params.depth}`);
   }
-  if (params.width > MAX_BASEPLATE_GRID_DIRECT || params.depth > MAX_BASEPLATE_GRID_DIRECT) {
+  if (params.width > CONSTRAINTS.GRID_MAX || params.depth > CONSTRAINTS.GRID_MAX) {
     throw new Error(
-      `Baseplate dimensions ${params.width}x${params.depth} exceed maximum ${MAX_BASEPLATE_GRID_DIRECT}`
+      `Baseplate dimensions ${params.width}x${params.depth} exceed maximum ${CONSTRAINTS.GRID_MAX}`
     );
   }
 

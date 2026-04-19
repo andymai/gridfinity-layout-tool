@@ -172,6 +172,11 @@ export function GhostCompartmentPreview() {
     }
   }, [mergePlane, mergeMaterial, splitGeometry, splitMaterial, invalidate]);
 
+  const splitLineSegments = useMemo(
+    () => (splitGeometry && splitMaterial ? new LineSegments2(splitGeometry, splitMaterial) : null),
+    [splitGeometry, splitMaterial]
+  );
+
   if (!shouldShow) return null;
 
   // Render merge preview (flat amber plane)
@@ -187,14 +192,9 @@ export function GhostCompartmentPreview() {
   }
 
   // Render split preview (cyan divider lines)
-  if (!isMerge && splitGeometry && splitMaterial) {
+  if (!isMerge && splitLineSegments) {
     return (
-      <primitive
-        ref={lineRef}
-        object={new LineSegments2(splitGeometry, splitMaterial)}
-        position={[0, 0, 0.2]}
-        renderOrder={3}
-      />
+      <primitive ref={lineRef} object={splitLineSegments} position={[0, 0, 0.2]} renderOrder={3} />
     );
   }
 
