@@ -1,0 +1,68 @@
+name: Mutation Testing
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24
+
+jobs:
+  mutation:
+    name: Stryker
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore incremental baseline
+        uses: dawidd6/action-download-artifact@v8
+        continue-on-error: true
+        with:
+          workflow: mutation-testing.yml
+          branch: main
+          name: mutation-incremental
+          path: reports/mutation/
+          if_no_artifact_found: warn
+
+      - name: Run Stryker
+        run: pnpm run test:mutation
+
+      - name: Upload incremental baseline
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutation-incremental
+          path: reports/mutation/incremental.json
+          retention-days: 90
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutation-report
+          path: |
+            reports/mutation/mutation.html
+            reports/mutation/mutation.json
+          retention-days: 30

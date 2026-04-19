@@ -149,6 +149,26 @@ Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Loc
 - Pre-commit **blocks** if edited component file has no sibling test
 - Run `pnpm run test:coverage` before commit
 
+## Mutation Testing
+
+Complements coverage. Runs nightly via `.github/workflows/mutation-testing.yml`.
+
+**Scope:** `src/core/result`, `src/core/cqrs/{handlers,middleware}`, `src/features/generation/worker/generators`, `src/shared/{utils,generation}` (~148 files). Stores, components, and features outside this list are not yet mutated.
+
+| Command                                 | Purpose                                         |
+| --------------------------------------- | ----------------------------------------------- |
+| `pnpm run test:mutation`                | Full targeted run (~5-10 min with warm cache)   |
+| `pnpm run test:mutation:changed`        | Mutates only files changed vs `main` (~2-5 min) |
+| `pnpm run test:mutation:file -- <path>` | Single file — iterate on one test quickly       |
+
+Reports land in `reports/mutation/mutation.html`. The incremental baseline (`incremental.json`) flows through CI artifacts — **not committed to git** (~100MB+). The nightly workflow restores the prior baseline, runs Stryker, and uploads the updated one. Locally, your cache builds up after the first run.
+
+**Surviving mutants** indicate tests whose assertions don't cover the mutated logic. Add assertions rather than deleting mutants. Use `// Stryker disable next-line <mutator>` only for genuinely equivalent mutants (e.g., unobservable optimizations).
+
+**Note:** The TypeScript checker is disabled due to a pre-existing `TS2883` portability warning in `src/liveblocks.config.ts` that only surfaces under composite declaration emit. Re-enable by adding `"@stryker-mutator/typescript-checker"` to `plugins` and `"typescript"` to `checkers` in `stryker.config.json` after annotating the `useEventListener` export type.
+
+Threshold is currently **advisory** — PRs are not blocked by mutation score. Will tighten after baseline stabilizes.
+
 ## Debugging & Bug Fixing
 
 - **Real dependencies only** — never substitute mocks/stubs for runtime libraries (brepjs, Three.js) to bypass setup issues. Fix the loading problem instead.
@@ -168,6 +188,7 @@ pnpm run dev           # Dev server
 pnpm run build         # TypeScript + production build
 pnpm run test:coverage # Tests with coverage
 pnpm run test:e2e      # Playwright E2E
+pnpm run test:mutation # Stryker mutation testing (targeted scope, incremental)
 pnpm run quality       # typecheck + lint + knip (dead code)
 pnpm run typecheck     # TypeScript check (no emit)
 pnpm run lint          # ESLint
