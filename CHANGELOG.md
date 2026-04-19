@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.40.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.40.1...gridfinity-layout-tool-v4.40.2) (2026-04-19)
+
+
+### Bug Fixes
+
+* **mutation-testing:** relax vite fs.strict so Stryker sandbox can resolve WASM asset imports ([#1396](https://github.com/andymai/gridfinity-layout-tool/issues/1396)) ([081c0f5](https://github.com/andymai/gridfinity-layout-tool/commit/081c0f5b08656771ce3d03fbaedac08c0d92ba10))
+
 ## [4.40.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.40.0...gridfinity-layout-tool-v4.40.1) (2026-04-18)
 
 
