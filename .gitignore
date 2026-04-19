@@ -58,3 +58,7 @@ src/i18n/locales/en.json
 
 # Transient benchmark output (baselines are tracked)
 benchmarks/latest.json
+
+# Stryker mutation testing (all outputs; incremental baseline flows via CI artifact)
+reports/mutation/
+.stryker-tmp/
