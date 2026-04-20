@@ -39,6 +39,14 @@ export const MAGNET_FLOOR = 0.5;
 /** Z extension above/below to avoid coplanar boolean failures (mm). */
 export const COPLANAR_MARGIN = 1;
 
+/**
+ * Tiny volumetric overlap between mating solids at a fuse/cut interface.
+ * Defeats OCCT's coplanar-face handling, which otherwise produces
+ * non-manifold topology that slicers repair as solid infill.
+ * Used by slot cutters (slotBuilder) and dovetail tongues (baseplateGenerator).
+ */
+export const COPLANAR_OVERLAP = 0.01;
+
 /** Distance from cell center to magnet position (Gridfinity spec, mm) */
 export const HOLE_OFFSET = 13;
 
