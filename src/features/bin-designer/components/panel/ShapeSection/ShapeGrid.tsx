@@ -93,11 +93,16 @@ export function ShapeGrid({ mask, onToggleCell, ariaLabel, cellLabel }: ShapeGri
       aria-label={ariaLabel}
       aria-rowcount={rows}
       aria-colcount={cols}
-      className="inline-grid select-none gap-px rounded border border-stroke-subtle bg-stroke-subtle p-px"
+      className="grid select-none gap-px rounded border border-stroke-subtle bg-stroke-subtle p-px mx-auto"
       style={{
         gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
         gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
         direction: 'ltr',
+        // Give the grid concrete dimensions. Without width+aspectRatio the
+        // inline-grid shape with minmax(0, 1fr) columns collapses to 0px.
+        width: '100%',
+        maxWidth: `${cols * 36}px`,
+        aspectRatio: `${cols} / ${rows}`,
         // Prevent the browser from hijacking the drag for panning/scrolling,
         // which would cancel the paint stroke mid-gesture on touch devices.
         touchAction: 'none',
