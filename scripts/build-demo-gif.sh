@@ -5,6 +5,11 @@ set -euo pipefail
 SRC=".demo-recording/demo.webm"
 OUT="docs/demo.gif"
 
+command -v ffmpeg >/dev/null 2>&1 || {
+  echo "ffmpeg not found — install it (macOS: 'brew install ffmpeg', Debian/Ubuntu: 'apt install ffmpeg', Fedora: 'dnf install ffmpeg')" >&2
+  exit 1
+}
+
 [[ -f "$SRC" ]] || { echo "missing $SRC — run 'pnpm demo:record' first" >&2; exit 1; }
 
 # Trim the blank intro, scale, drop to 15fps, and do a single-pass palette.

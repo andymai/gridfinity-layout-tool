@@ -38,7 +38,13 @@ async function run() {
   });
   const page = await context.newPage();
 
-  await page.goto(URL, { waitUntil: 'domcontentloaded' });
+  try {
+    await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 10000 });
+  } catch (error) {
+    throw new Error(
+      `Could not reach ${URL}. Start the dev server with 'pnpm dev' first, or set DEMO_URL. (${error instanceof Error ? error.message : String(error)})`
+    );
+  }
   await page.evaluate(() => {
     localStorage.clear();
     sessionStorage.clear();
@@ -62,12 +68,16 @@ async function run() {
 
   // ---- 2. Fill layer — the reveal ----
   const sidebar = page.locator('[data-sidebar]');
+  await sidebar.waitFor({ state: 'visible', timeout: 8000 });
   const fillBtn = sidebar.getByRole('button', { name: /fill.*2.*2/i });
   await cinematicClick(page, fillBtn);
-  await page
-    .getByText(/added \d+ bins/i)
-    .waitFor({ timeout: 8000 })
-    .catch(() => {});
+  try {
+    await page.getByText(/added \d+ bins/i).waitFor({ timeout: 8000 });
+  } catch (error) {
+    throw new Error(
+      `Fill action did not complete: timed out waiting for the "added N bins" toast. Demo pipeline aborted to avoid publishing an incorrect GIF. (${error instanceof Error ? error.message : String(error)})`
+    );
+  }
   // Let the viewer appreciate the filled layer
   await pause(page, 2200);
 
