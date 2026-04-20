@@ -58,7 +58,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
   } = nameEditor;
 
   return (
-    <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
+    <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle">
       {isDesktop ? (
         /* ---- Desktop action bar ---- */
         <>

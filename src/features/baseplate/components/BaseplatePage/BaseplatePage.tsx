@@ -145,7 +145,7 @@ export function BaseplatePage() {
   return (
     <div className="flex h-screen flex-col bg-surface">
       {/* Header */}
-      <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle overflow-hidden">
+      <header className="h-12 flex items-center justify-between px-4 bg-surface-secondary border-b border-stroke-subtle">
         <div className="flex items-center gap-3 min-w-0">
           <ToolSwitcher compact={isMobile} iconOnly={isMobile || isTablet} />
 
