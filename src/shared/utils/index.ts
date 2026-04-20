@@ -25,6 +25,8 @@ export {
 
 export { throttleRAF, cancelThrottledRAF, throttle } from './throttle';
 
+export { getSplitPositions, getSplitPieceCount, getSplitPlanePositionsMm } from './splitPositions';
+
 export { scheduleIdleCallback, cancelIdleCallback } from './idle';
 
 export {

@@ -7,6 +7,9 @@
  *
  * Equal pieces guarantee the minimum split count and a symmetric result,
  * which prints and glues together more predictably than uneven halves.
+ *
+ * Shared between bin-designer (split export/preview) and grid-editor
+ * (split line overlay on the isometric preview).
  */
 
 /** Split line positions along an axis (grid units, relative to 0). */
