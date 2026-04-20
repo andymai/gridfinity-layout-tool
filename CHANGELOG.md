@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.41.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.40.5...gridfinity-layout-tool-v4.41.0) (2026-04-20)
+
+
+### Features
+
+* **generation:** support non-rectangular bin footprints via cellMask ([#1386](https://github.com/andymai/gridfinity-layout-tool/issues/1386)) ([2da27ba](https://github.com/andymai/gridfinity-layout-tool/commit/2da27ba527d6aac983c0cdf9932384ce0cdc5894))
+
 ## [4.40.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.40.4...gridfinity-layout-tool-v4.40.5) (2026-04-20)
 
 
