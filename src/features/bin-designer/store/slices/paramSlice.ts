@@ -92,6 +92,16 @@ export function createParamSlice(set: Set, get: Get) {
       set((state) => {
         pushHistoryEntry(state);
         Object.assign(state.params, partial);
+        // Keep cellMask aligned with the resulting width/depth. Matters for
+        // the dimension-swap button and share-load, both of which route
+        // through setParams without going via setParam('width'|'depth').
+        if (state.params.cellMask) {
+          state.params.cellMask = reshapeOrClearMask(
+            state.params.cellMask,
+            state.params.width,
+            state.params.depth
+          );
+        }
       });
     },
 
@@ -319,9 +329,10 @@ export function createParamSlice(set: Set, get: Get) {
         if (mask.cols !== expectedCols || mask.rows !== expectedRows) return;
         if (validateMask(mask) !== null) return;
       }
+      const next = mask !== undefined && isAllFilled(mask) ? undefined : mask;
       set((state) => {
         pushHistoryEntry(state);
-        state.params.cellMask = mask === undefined || isAllFilled(mask) ? undefined : mask;
+        state.params.cellMask = next;
       });
     },
   };

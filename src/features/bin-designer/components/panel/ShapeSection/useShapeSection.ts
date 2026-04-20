@@ -10,6 +10,16 @@ import {
 import { useTranslation } from '@/i18n';
 import { SHAPE_PRESETS, type ShapePresetId } from './shapePresets';
 
+function masksMatch(a: CellMask | undefined, b: CellMask | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if (a.cols !== b.cols || a.rows !== b.rows) return false;
+  for (let i = 0; i < a.cells.length; i++) {
+    if (a.cells[i] !== b.cells[i]) return false;
+  }
+  return true;
+}
+
 export function useShapeSection() {
   const { width, depth, cellMask, setCellMask } = useDesignerStore(
     useShallow((s) => ({
@@ -25,8 +35,9 @@ export function useShapeSection() {
   const rows = Math.round(depth * MASK_CELLS_PER_UNIT);
 
   // A mask always exists for the UI. When the store has `undefined` (fast
-  // path) we synthesize a full mask so the paint grid always has something
-  // to render against current dimensions.
+  // path) — or a mask whose dimensions lag the latest width/depth because
+  // it was written via setParams without reshape — we synthesize a full
+  // mask so the paint grid always renders against current dimensions.
   const displayMask: CellMask = useMemo(
     () =>
       cellMask && cellMask.cols === cols && cellMask.rows === rows
@@ -37,13 +48,19 @@ export function useShapeSection() {
 
   const isCustom = cellMask !== undefined && !isAllFilled(cellMask);
 
+  // Read latest params at call time so a dimension change between render
+  // and click doesn't produce a stale-dimensions mask that setCellMask
+  // would then silently reject.
   const applyPreset = useCallback(
     (id: ShapePresetId) => {
       const preset = SHAPE_PRESETS.find((p) => p.id === id);
       if (!preset) return;
-      setCellMask(preset.build(width, depth));
+      const { width: w, depth: d, cellMask: current } = useDesignerStore.getState().params;
+      const next = preset.build(w, d);
+      if (masksMatch(current, next)) return;
+      setCellMask(next);
     },
-    [setCellMask, width, depth]
+    [setCellMask]
   );
 
   /**
@@ -53,17 +70,21 @@ export function useShapeSection() {
    */
   const toggleCell = useCallback(
     (col: number, row: number) => {
-      if (col < 0 || col >= cols || row < 0 || row >= rows) return;
-      const idx = row * cols + col;
-      const current = displayMask.cells[idx];
-      const next: (0 | 1)[] = displayMask.cells.slice();
-      next[idx] = current === 1 ? 0 : 1;
-      setCellMask({ cols, rows, cells: next });
+      const { width: w, depth: d, cellMask: stored } = useDesignerStore.getState().params;
+      const currentCols = Math.round(w * MASK_CELLS_PER_UNIT);
+      const currentRows = Math.round(d * MASK_CELLS_PER_UNIT);
+      if (col < 0 || col >= currentCols || row < 0 || row >= currentRows) return;
+      const base =
+        stored && stored.cols === currentCols && stored.rows === currentRows
+          ? stored
+          : buildFullMask(w, d);
+      const idx = row * currentCols + col;
+      const next: (0 | 1)[] = base.cells.slice();
+      next[idx] = base.cells[idx] === 1 ? 0 : 1;
+      setCellMask({ cols: currentCols, rows: currentRows, cells: next });
     },
-    [cols, rows, displayMask, setCellMask]
+    [setCellMask]
   );
-
-  const resetToRectangle = useCallback(() => setCellMask(undefined), [setCellMask]);
 
   const presets = useMemo(
     () =>
@@ -86,7 +107,6 @@ export function useShapeSection() {
     handlers: {
       applyPreset,
       toggleCell,
-      resetToRectangle,
     },
     t,
   };

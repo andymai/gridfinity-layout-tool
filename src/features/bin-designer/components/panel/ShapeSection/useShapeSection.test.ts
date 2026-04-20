@@ -26,12 +26,20 @@ describe('useShapeSection', () => {
     expect(result.current.state.isCustom).toBe(true);
   });
 
-  it('resetToRectangle clears the mask', () => {
+  it('applyPreset("rectangle") clears the mask (rectangle fast-path)', () => {
     const { result } = renderHook(() => useShapeSection());
     act(() => result.current.handlers.applyPreset('l'));
     expect(result.current.state.isCustom).toBe(true);
-    act(() => result.current.handlers.resetToRectangle());
+    act(() => result.current.handlers.applyPreset('rectangle'));
     expect(result.current.state.isCustom).toBe(false);
+  });
+
+  it('applyPreset skips no-op when current mask already matches preset', () => {
+    const { result } = renderHook(() => useShapeSection());
+    act(() => result.current.handlers.applyPreset('l'));
+    const initialHistoryLength = useDesignerStore.getState().history.past.length;
+    act(() => result.current.handlers.applyPreset('l'));
+    expect(useDesignerStore.getState().history.past.length).toBe(initialHistoryLength);
   });
 
   it('toggleCell clears a filled cell (producing a valid partial mask)', () => {

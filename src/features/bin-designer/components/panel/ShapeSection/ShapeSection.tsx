@@ -5,20 +5,23 @@
  * grid, or pick from common presets (L, T, U). Rectangular bins take the
  * fast generator path; partial masks produce polygon footprints.
  */
+import { useCallback } from 'react';
 import { useShapeSection } from './useShapeSection';
 import { ShapeGrid } from './ShapeGrid';
 
 export function ShapeSection() {
   const { state, handlers, t } = useShapeSection();
 
-  const cellLabel = (col: number, row: number, filled: boolean): string =>
-    t(
-      filled ? 'binDesigner.shape.grid.cellLabel.filled' : 'binDesigner.shape.grid.cellLabel.empty',
-      {
-        col,
-        row,
-      }
-    );
+  const cellLabel = useCallback(
+    (col: number, row: number, filled: boolean): string =>
+      t(
+        filled
+          ? 'binDesigner.shape.grid.cellLabel.filled'
+          : 'binDesigner.shape.grid.cellLabel.empty',
+        { col, row }
+      ),
+    [t]
+  );
 
   return (
     <div className="space-y-3">

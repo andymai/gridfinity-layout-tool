@@ -8,7 +8,7 @@
  * 1×1 footprint has no room for a stem) report `isAvailable: false` and
  * leave the mask untouched.
  */
-import { MASK_CELLS_PER_UNIT, buildFullMask, type CellMask } from '@/shared/utils/cellMask';
+import { MASK_CELLS_PER_UNIT, type CellMask } from '@/shared/utils/cellMask';
 
 export type ShapePresetId = 'rectangle' | 'l' | 't' | 'u';
 
@@ -111,9 +111,4 @@ export const SHAPE_PRESETS: readonly ShapePreset[] = [
 
 export function getPreset(id: ShapePresetId): ShapePreset {
   return SHAPE_PRESETS.find((p) => p.id === id) ?? RECTANGLE_PRESET;
-}
-
-/** Convenience for tests and presets: build a full-mask sized to the bin. */
-export function fullPresetMask(widthUnits: number, depthUnits: number): CellMask {
-  return buildFullMask(widthUnits, depthUnits);
 }

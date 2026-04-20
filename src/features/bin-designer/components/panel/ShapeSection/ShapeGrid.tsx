@@ -106,30 +106,30 @@ export function ShapeGrid({ mask, onToggleCell, ariaLabel, cellLabel }: ShapeGri
       onPointerLeave={endDrag}
       onPointerCancel={endDrag}
     >
-      {Array.from({ length: rows * cols }, (_, i) => {
+      {Array.from({ length: rows }, (_, visualRow) => {
         // Render rows top-to-bottom visually but store row 0 is at bottom,
         // so invert: visualRow 0 = top = mask row (rows - 1).
-        const visualRow = Math.floor(i / cols);
-        const col = i % cols;
         const row = rows - 1 - visualRow;
-        const filled = cells[row * cols + col] === 1;
-        return (
-          <button
-            key={`${col}-${row}`}
-            type="button"
-            role="gridcell"
-            aria-rowindex={visualRow + 1}
-            aria-colindex={col + 1}
-            aria-selected={filled}
-            aria-label={cellLabel(col + 1, visualRow + 1, filled)}
-            onPointerDown={() => handlePointerDown(col, row)}
-            onPointerEnter={() => handlePointerEnter(col, row)}
-            onKeyDown={(e) => handleCellKeyDown(e, col, row)}
-            className={`aspect-square transition-colors ${
-              filled ? 'bg-accent-subtle hover:bg-accent' : 'bg-surface hover:bg-surface-hover'
-            }`}
-          />
-        );
+        return Array.from({ length: cols }, (_, col) => {
+          const filled = cells[row * cols + col] === 1;
+          return (
+            <button
+              key={`${col}-${row}`}
+              type="button"
+              role="gridcell"
+              aria-rowindex={visualRow + 1}
+              aria-colindex={col + 1}
+              aria-selected={filled}
+              aria-label={cellLabel(col + 1, visualRow + 1, filled)}
+              onPointerDown={() => handlePointerDown(col, row)}
+              onPointerEnter={() => handlePointerEnter(col, row)}
+              onKeyDown={(e) => handleCellKeyDown(e, col, row)}
+              className={`aspect-square transition-colors ${
+                filled ? 'bg-accent-subtle hover:bg-accent' : 'bg-surface hover:bg-surface-hover'
+              }`}
+            />
+          );
+        });
       })}
     </div>
   );
