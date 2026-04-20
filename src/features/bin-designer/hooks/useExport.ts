@@ -19,10 +19,7 @@ import { calcMaxGridUnits } from '@/core/constants';
 import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
-import {
-  getSplitPieceCount,
-  getSplitPlanePositionsMm,
-} from '@/features/bin-designer/utils/splitPositions';
+import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { export3MF, export3MFMultiObject } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';

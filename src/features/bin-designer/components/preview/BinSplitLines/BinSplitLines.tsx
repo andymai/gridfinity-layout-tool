@@ -15,7 +15,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { calcMaxGridUnits } from '@/core/constants';
-import { getSplitPlanePositionsMm } from '@/features/bin-designer/utils/splitPositions';
+import { getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 
 const AMBER_COLOR = new Color(0xfbbf24);

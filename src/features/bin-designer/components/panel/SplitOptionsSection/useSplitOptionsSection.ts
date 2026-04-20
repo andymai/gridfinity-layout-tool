@@ -4,7 +4,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
 import { calcMaxGridUnits } from '@/core/constants';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
-import { getSplitPieceCount } from '@/features/bin-designer/utils/splitPositions';
+import { getSplitPieceCount } from '@/shared/utils/splitPositions';
 
 export type SplitAxis = 'width' | 'depth' | 'both';
 

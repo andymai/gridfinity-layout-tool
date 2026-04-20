@@ -1,26 +1,10 @@
 import { memo } from 'react';
 import { Line } from '@react-three/drei';
 import * as THREE from 'three';
+import { getSplitPositions } from '@/shared/utils/splitPositions';
 
 // Hoisted constant to avoid allocation on every render
 const AMBER_COLOR = new THREE.Color(0xfbbf24); // rgb(251, 191, 36)
-
-/**
- * Calculate split line positions along an axis using greedy halving.
- * Returns positions relative to 0 (start of bin).
- */
-function getSplitPositions(size: number, maxSize: number, offset: number = 0): number[] {
-  if (size <= maxSize) return [];
-
-  const splitAt = Math.ceil(size / 2);
-  const positions: number[] = [offset + splitAt];
-
-  // Recursively get splits for left and right halves
-  positions.push(...getSplitPositions(splitAt, maxSize, offset));
-  positions.push(...getSplitPositions(size - splitAt, maxSize, offset + splitAt));
-
-  return positions;
-}
 
 interface SplitLineOverlayProps {
   x: number;
@@ -34,8 +18,8 @@ interface SplitLineOverlayProps {
 }
 
 /**
- * Renders dashed amber split lines on the top face of oversized bins.
- * Uses the same greedy halving algorithm as the original Canvas implementation.
+ * Renders dashed amber split lines on the top face of oversized bins,
+ * matching the pieces `getSplitPositions` will produce at export time.
  */
 export const SplitLineOverlay = memo(function SplitLineOverlay({
   x,
