@@ -104,7 +104,7 @@
     "react-dom": "^19.2.5",
     "svg-pathdata": "^9.0.0",
     "tailwind-merge": "^3.5.0",
-    "three": "^0.183.2",
+    "three": "^0.184.0",
     "three-stdlib": "^2.36.1",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
@@ -164,7 +164,7 @@
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@types/three": "^0.183.1",
+    "@types/three": "^0.184.0",
     "@vercel/node": "^5.7.12",
     "@vitejs/plugin-react": "^5.1.4",
     "@vitest/coverage-v8": "^4.1.4",
