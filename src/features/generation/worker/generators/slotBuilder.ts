@@ -22,6 +22,7 @@ import {
   getEffectiveSlotDimensions as getEffectiveSlotDimensionsRaw,
   MIN_WALL_FOR_SLOTS,
 } from '@/shared/utils/slotMath';
+import { COPLANAR_OVERLAP } from './generatorConstants';
 
 // Re-export shared math for generation-internal consumers
 export { calculateSlotPositions };
@@ -52,12 +53,12 @@ export interface LipCutInfo {
 
 /**
  * Slight extension past the inner wall surface into the (hollow) bin interior.
- * Avoids coplanar faces between the cutter and the bin's inner wall, which
- * cause OCCT to produce ambiguous/non-manifold topology — leading to slicers
- * dropping one side of the groove on repair.
- * The extension cuts into empty space so geometry is unchanged.
+ * Uses the shared COPLANAR_OVERLAP — avoids coplanar faces between the cutter
+ * and the bin's inner wall, which cause OCCT to produce non-manifold topology
+ * (slicers then drop one side on repair). The extension cuts into empty space
+ * so geometry is unchanged.
  */
-const SLOT_EXTENSION = 0.01;
+const SLOT_EXTENSION = COPLANAR_OVERLAP;
 
 /**
  * Create a mirrored pair of extruded rectangular cutters along one axis.

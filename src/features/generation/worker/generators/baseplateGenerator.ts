@@ -60,6 +60,7 @@ import {
   TONGUE_TIP_HALF,
   TONGUE_CLEARANCE,
   COPLANAR_MARGIN,
+  COPLANAR_OVERLAP,
 } from './generatorTypes';
 import type { ProgressFn, ForEachCellOptions } from './generatorTypes';
 import type { CacheStats } from './lruCache';
@@ -372,10 +373,14 @@ function buildConnectors(
 
       if (def.isMale) {
         // Dovetail tongue: trapezoidal plan view, wider at tip.
-        const profile = draw(pt(w, bp + bW))
+        // The base edge is extended COPLANAR_OVERLAP into the slab so the fuse
+        // has shared volume rather than a degenerate coplanar interface at the
+        // wall face. Coplanar fuses cause OCCT to produce non-manifold topology,
+        // which slicers repair as solid infill (issue #1407).
+        const profile = draw(pt(w - d * COPLANAR_OVERLAP, bp + bW))
           .lineTo(pt(w + d * P, bp + tW))
           .lineTo(pt(w + d * P, bp - tW))
-          .lineTo(pt(w, bp - bW))
+          .lineTo(pt(w - d * COPLANAR_OVERLAP, bp - bW))
           .close();
         tongues.push(sketch(profile, 'XY', 0).extrude(-totalHeight));
       } else {
