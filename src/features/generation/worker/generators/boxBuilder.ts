@@ -34,6 +34,7 @@ import {
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
   TOP_FILLET,
+  COPLANAR_MARGIN,
   sketch,
 } from './generatorTypes';
 import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache';
@@ -101,21 +102,46 @@ export function buildBinBox(
           Math.max(BOX_CORNER_RADIUS - wallThickness, 0)
         );
 
+  /**
+   * Build a hollow-walls + closed-floor shell without relying on brepjs
+   * `shell()`. brepjs 15.x's shell operation fails on concave-perimeter
+   * solids (bins with L/T/U-shaped footprints), so we compose the shell
+   * explicitly as `outer ⊖ inner` where:
+   *   - outer: footprint extruded floor-to-top (Z=0 to Z=wallHeight)
+   *   - inner: inner-footprint extruded from Z=wallThickness (top of
+   *     floor) up past Z=wallHeight so the cut opens the top cleanly.
+   * Used for every non-rectangular bin; rectangles keep the existing
+   * shell() path because it's well-tested there.
+   */
+  const buildHollowPolygon = (scope: DisposalScope, totalHeight: number): Shape3D => {
+    const outer = scope.register(sketch(footprint(), 'XY').extrude(totalHeight));
+    const inner = scope.register(
+      sketch(innerFootprint(), 'XY', wallThickness).extrude(
+        totalHeight - wallThickness + COPLANAR_MARGIN
+      )
+    );
+    return unwrap(cut(outer, inner));
+  };
+
   return withScope((scope: DisposalScope) => {
     const box = sketch(footprint()).extrude(wallHeight);
 
     // Solid mode: return the raw extrusion, optionally with lowered interior fill
     if (solid) {
       if (cutoutTopOffset > 0) {
-        // Build hollow walls extending to full wallHeight.
-        // Faces returned by faceFinder come from the per-shape topology
-        // cache and share their parent shape's lifecycle — do not dispose.
-        const topFaces = faceFinder()
-          .parallelTo('Z')
-          .atDistance(wallHeight, [0, 0, 0])
-          .findAll(box);
-        const hollowWalls = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
-        scope.register(box); // consumed by shell
+        let hollowWalls: Shape3D;
+        if (polygon) {
+          scope.register(box); // not consumed below; dispose via scope
+          hollowWalls = buildHollowPolygon(scope, wallHeight);
+        } else {
+          // Rectangular path — brepjs shell is reliable on convex perimeters.
+          const topFaces = faceFinder()
+            .parallelTo('Z')
+            .atDistance(wallHeight, [0, 0, 0])
+            .findAll(box);
+          hollowWalls = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
+          scope.register(box); // consumed by shell
+        }
 
         // Build interior solid block stopping at wallHeight - cutoutTopOffset
         const innerW = outerW - 2 * wallThickness;
@@ -156,10 +182,19 @@ export function buildBinBox(
       }
     }
 
+    if (polygon) {
+      // Polygon path: compose shell explicitly — brepjs shell() fails on
+      // concave perimeters. Caught error still falls back to solid so a
+      // pathological narrow-feature mask never crashes generation.
+      scope.register(box); // not consumed; dispose via scope
+      try {
+        return setBoxCache(boxKey, buildHollowPolygon(scope, wallHeight));
+      } catch {
+        return setBoxCache(boxKey, box);
+      }
+    }
+
     const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
-    // For polygon masks the shell operation can fail on narrow features
-    // where wallThickness consumes the interior; fall back to the solid
-    // extrusion in that case.
     let result: Shape3D;
     try {
       result = unwrap(shell(box as ValidSolid, topFaces, wallThickness));

@@ -20,37 +20,63 @@ function masksMatch(a: CellMask | undefined, b: CellMask | undefined): boolean {
   return true;
 }
 
+/** Indices of the four half-bin sub-cells that compose one 1u grid square. */
+function subCellIndices(
+  col1u: number,
+  row1u: number,
+  hbCols: number
+): [number, number, number, number] {
+  const c = col1u * 2;
+  const r = row1u * 2;
+  return [r * hbCols + c, r * hbCols + c + 1, (r + 1) * hbCols + c, (r + 1) * hbCols + c + 1];
+}
+
+/**
+ * Coarsen a half-bin mask to 1u display resolution. A 1u cell displays as
+ * filled only when all four sub-cells are filled; any sub-cell empty → 1u
+ * cell appears empty. Stored data is not modified.
+ */
+function coarsenToGridUnits(hb: CellMask): CellMask {
+  const cols = hb.cols / 2;
+  const rows = hb.rows / 2;
+  const cells: (0 | 1)[] = new Array(cols * rows);
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const [a, b, d, e] = subCellIndices(c, r, hb.cols);
+      cells[r * cols + c] =
+        hb.cells[a] === 1 && hb.cells[b] === 1 && hb.cells[d] === 1 && hb.cells[e] === 1 ? 1 : 0;
+    }
+  }
+  return { cols, rows, cells };
+}
+
 export function useShapeSection() {
-  const { width, depth, cellMask, setCellMask } = useDesignerStore(
+  const { width, depth, cellMask, halfBinMode, setCellMask } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
       depth: s.params.depth,
       cellMask: s.params.cellMask,
+      halfBinMode: s.ui.halfBinMode,
       setCellMask: s.setCellMask,
     }))
   );
   const t = useTranslation();
 
-  const cols = Math.round(width * MASK_CELLS_PER_UNIT);
-  const rows = Math.round(depth * MASK_CELLS_PER_UNIT);
+  // Stored masks are always at half-bin resolution. UI resolution depends on
+  // halfBinMode: 0.5u when on, 1u when off. Stored data is never coarsened.
+  const hbCols = Math.round(width * MASK_CELLS_PER_UNIT);
+  const hbRows = Math.round(depth * MASK_CELLS_PER_UNIT);
 
-  // A mask always exists for the UI. When the store has `undefined` (fast
-  // path) — or a mask whose dimensions lag the latest width/depth because
-  // it was written via setParams without reshape — we synthesize a full
-  // mask so the paint grid always renders against current dimensions.
-  const displayMask: CellMask = useMemo(
-    () =>
-      cellMask && cellMask.cols === cols && cellMask.rows === rows
-        ? cellMask
-        : buildFullMask(width, depth),
-    [cellMask, cols, rows, width, depth]
-  );
+  const storedMask =
+    cellMask && cellMask.cols === hbCols && cellMask.rows === hbRows ? cellMask : undefined;
+
+  const displayMask: CellMask = useMemo(() => {
+    const source = storedMask ?? buildFullMask(width, depth);
+    return halfBinMode ? source : coarsenToGridUnits(source);
+  }, [storedMask, halfBinMode, width, depth]);
 
   const isCustom = cellMask !== undefined && !isAllFilled(cellMask);
 
-  // Read latest params at call time so a dimension change between render
-  // and click doesn't produce a stale-dimensions mask that setCellMask
-  // would then silently reject.
   const applyPreset = useCallback(
     (id: ShapePresetId) => {
       const preset = SHAPE_PRESETS.find((p) => p.id === id);
@@ -64,24 +90,45 @@ export function useShapeSection() {
   );
 
   /**
-   * Toggle a single half-cell (col, row). The store validates the resulting
-   * mask and silently rejects structurally invalid shapes (disconnected /
-   * empty / hole), so the generator never sees a broken shape.
+   * Toggle a cell at the current UI resolution. In 0.5u (halfBinMode on) a
+   * toggle flips one sub-cell. In 1u a toggle flips all four sub-cells of
+   * the grid square together, so the coarse display always stays in sync
+   * with the underlying half-bin store. Store rejects masks that would
+   * create holes / disconnects / empty shapes.
    */
   const toggleCell = useCallback(
     (col: number, row: number) => {
-      const { width: w, depth: d, cellMask: stored } = useDesignerStore.getState().params;
-      const currentCols = Math.round(w * MASK_CELLS_PER_UNIT);
-      const currentRows = Math.round(d * MASK_CELLS_PER_UNIT);
-      if (col < 0 || col >= currentCols || row < 0 || row >= currentRows) return;
+      const store = useDesignerStore.getState();
+      const w = store.params.width;
+      const d = store.params.depth;
+      const hbm = store.ui.halfBinMode;
+      const currentHbCols = Math.round(w * MASK_CELLS_PER_UNIT);
+      const currentHbRows = Math.round(d * MASK_CELLS_PER_UNIT);
+      const currentStored = store.params.cellMask;
       const base =
-        stored && stored.cols === currentCols && stored.rows === currentRows
-          ? stored
+        currentStored &&
+        currentStored.cols === currentHbCols &&
+        currentStored.rows === currentHbRows
+          ? currentStored
           : buildFullMask(w, d);
-      const idx = row * currentCols + col;
-      const next: (0 | 1)[] = base.cells.slice();
-      next[idx] = base.cells[idx] === 1 ? 0 : 1;
-      setCellMask({ cols: currentCols, rows: currentRows, cells: next });
+
+      const next = base.cells.slice();
+
+      if (hbm) {
+        if (col < 0 || col >= currentHbCols || row < 0 || row >= currentHbRows) return;
+        const idx = row * currentHbCols + col;
+        next[idx] = next[idx] === 1 ? 0 : 1;
+      } else {
+        const coarseCols = currentHbCols / 2;
+        const coarseRows = currentHbRows / 2;
+        if (col < 0 || col >= coarseCols || row < 0 || row >= coarseRows) return;
+        const subs = subCellIndices(col, row, currentHbCols);
+        const allFilled = subs.every((i) => base.cells[i] === 1);
+        const target: 0 | 1 = allFilled ? 0 : 1;
+        for (const i of subs) next[i] = target;
+      }
+
+      setCellMask({ cols: currentHbCols, rows: currentHbRows, cells: next });
     },
     [setCellMask]
   );
@@ -98,8 +145,8 @@ export function useShapeSection() {
 
   return {
     state: {
-      cols,
-      rows,
+      cols: displayMask.cols,
+      rows: displayMask.rows,
       mask: displayMask,
       isCustom,
       presets,
