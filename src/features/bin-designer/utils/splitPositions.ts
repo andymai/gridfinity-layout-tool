@@ -1,18 +1,25 @@
 /**
  * Split position calculator for oversized bin splitting.
- * Uses greedy halving to determine where to cut bins into printable pieces.
+ *
+ * Splits a bin into the minimum number of equal-width pieces that each
+ * fit within the print bed. For a size S and max M, produces
+ * ceil(S / M) pieces, each of width S / ceil(S / M).
+ *
+ * Equal pieces guarantee the minimum split count and a symmetric result,
+ * which prints and glues together more predictably than uneven halves.
  */
 
-/** Split line positions along an axis using greedy halving (grid units, relative to 0). */
+/** Split line positions along an axis (grid units, relative to 0). */
 export function getSplitPositions(size: number, maxSize: number, offset = 0): number[] {
   if (size <= maxSize) return [];
 
-  const splitAt = Math.ceil(size / 2);
-  const positions: number[] = [offset + splitAt];
+  const pieceCount = Math.ceil(size / maxSize);
+  const pieceSize = size / pieceCount;
 
-  positions.push(...getSplitPositions(splitAt, maxSize, offset));
-  positions.push(...getSplitPositions(size - splitAt, maxSize, offset + splitAt));
-
+  const positions: number[] = [];
+  for (let i = 1; i < pieceCount; i++) {
+    positions.push(offset + i * pieceSize);
+  }
   return positions;
 }
 
@@ -22,12 +29,9 @@ export function getSplitPieceCount(
   maxWidth: number,
   maxDepth: number = maxWidth
 ): number {
-  if (width <= maxWidth && depth <= maxDepth) return 1;
-
-  const xSplits = getSplitPositions(width, maxWidth).length;
-  const ySplits = getSplitPositions(depth, maxDepth).length;
-
-  return (xSplits + 1) * (ySplits + 1);
+  const widthPieces = width <= maxWidth ? 1 : Math.ceil(width / maxWidth);
+  const depthPieces = depth <= maxDepth ? 1 : Math.ceil(depth / maxDepth);
+  return widthPieces * depthPieces;
 }
 
 /** Convert split positions from grid units to mm, relative to bin center. */
