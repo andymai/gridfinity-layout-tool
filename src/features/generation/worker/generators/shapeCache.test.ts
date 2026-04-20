@@ -20,7 +20,7 @@ function mockShape(): Shape3D & { delete: ReturnType<typeof vi.fn> } {
 describe('socketCacheKey', () => {
   it('produces deterministic versioned key from parameters', () => {
     const key = socketCacheKey(2, 2, true, false, 3.1, 2.0, 1.5, false, false);
-    expect(key).toBe('v2|2|2|42|true|false|3.1|2|1.5|false|false');
+    expect(key).toBe('v2|2|2|42|true|false|3.1|2|1.5|false|false|rect');
   });
 
   it('differs when magnet flag changes', () => {

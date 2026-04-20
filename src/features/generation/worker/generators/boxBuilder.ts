@@ -23,7 +23,7 @@ import {
   shell,
   withScope,
 } from 'brepjs';
-import type { Shape3D, ValidSolid, Plane, Vec3, Sketch, DisposalScope } from 'brepjs';
+import type { Shape3D, ValidSolid, Plane, Sketch, Vec3, DisposalScope, Drawing } from 'brepjs';
 import {
   SIZE,
   CLEARANCE,
@@ -38,10 +38,16 @@ import {
 } from './generatorTypes';
 import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
+import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
+import { buildMaskDrawing, buildMaskDrawingInset } from './maskPolygon';
 /**
  * Build the bin box: a rounded-rectangle extrusion, shelled from the top.
  * The box starts at Z=0 (socket interface) and goes up to wallHeight.
  * Shell removes the top face, leaving walls + solid floor.
+ *
+ * When `cellMask` is provided and is not all-filled, the box is built from
+ * the mask's polygon outline instead of a rectangle (sharp corners, no
+ * outer fillet in v1). Undefined/full masks use the existing rectangle path.
  *
  * @param cutoutTopOffset - For solid mode: lowers the interior fill by this amount (mm)
  */
@@ -52,8 +58,10 @@ export function buildBinBox(
   wallThickness: number,
   solid: boolean,
   cutoutTopOffset: number = 0,
-  gridUnitMm: number = SIZE
+  gridUnitMm: number = SIZE,
+  cellMask?: CellMask
 ): Shape3D {
+  const polygon = isPartialMask(cellMask);
   const boxKey = buildCacheKey(
     'v2',
     quantize(gridW),
@@ -62,7 +70,8 @@ export function buildBinBox(
     quantize(wallHeight),
     quantize(wallThickness),
     solid,
-    quantize(cutoutTopOffset)
+    quantize(cutoutTopOffset),
+    polygon ? hashMask(cellMask) : 'rect'
   );
   const cached = getBoxCache(boxKey);
   if (cached) {
@@ -72,8 +81,28 @@ export function buildBinBox(
   const outerW = gridW * gridUnitMm - CLEARANCE;
   const outerD = gridD * gridUnitMm - CLEARANCE;
 
+  /**
+   * Footprint sketch: rounded rectangle for rectangular bins, polygon
+   * (via mask) for custom shapes. The mask polygon already accounts for
+   * CLEARANCE via its inward offset; inner offsets below subtract
+   * `wallThickness` directly.
+   */
+  const footprint = (): Drawing =>
+    polygon
+      ? buildMaskDrawing(cellMask, gridUnitMm)
+      : drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS);
+
+  const innerFootprint = (): Drawing =>
+    polygon
+      ? buildMaskDrawingInset(cellMask, gridUnitMm, wallThickness)
+      : drawRoundedRectangle(
+          Math.max(outerW - 2 * wallThickness, 0.1),
+          Math.max(outerD - 2 * wallThickness, 0.1),
+          Math.max(BOX_CORNER_RADIUS - wallThickness, 0)
+        );
+
   return withScope((scope: DisposalScope) => {
-    const box = sketch(drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS)).extrude(wallHeight);
+    const box = sketch(footprint()).extrude(wallHeight);
 
     // Solid mode: return the raw extrusion, optionally with lowered interior fill
     if (solid) {
@@ -95,16 +124,18 @@ export function buildBinBox(
 
         // Guard: if fillHeight or inner dimensions are non-positive, the interior fill
         // would produce degenerate geometry that crashes WASM. Return hollow walls only.
-        if (fillHeight <= 0 || innerW <= 0 || innerD <= 0) {
+        if (fillHeight <= 0 || (!polygon && (innerW <= 0 || innerD <= 0))) {
           return setBoxCache(boxKey, hollowWalls);
         }
 
-        const innerFill = scope.register(
-          sketch(
-            drawRoundedRectangle(innerW, innerD, Math.max(0, BOX_CORNER_RADIUS - wallThickness)),
-            'XY'
-          ).extrude(fillHeight)
-        );
+        // For polygon masks the offset can collapse on narrow features or
+        // oversized wallThickness; catch and fall back to hollow walls.
+        let innerFill: Shape3D;
+        try {
+          innerFill = scope.register(sketch(innerFootprint(), 'XY').extrude(fillHeight));
+        } catch {
+          return setBoxCache(boxKey, hollowWalls);
+        }
         scope.register(hollowWalls); // consumed by fuse
 
         // Combine walls with lowered interior fill
@@ -114,15 +145,27 @@ export function buildBinBox(
       return setBoxCache(boxKey, box);
     }
 
-    // Guard: if wall thickness leaves no interior, return the solid box
-    const innerW = outerW - 2 * wallThickness;
-    const innerD = outerD - 2 * wallThickness;
-    if (innerW <= 0 || innerD <= 0) {
-      return setBoxCache(boxKey, box);
+    // Guard: if wall thickness leaves no interior, return the solid box.
+    // For polygon masks we trust the inward offset; only rectangle path
+    // can produce the degenerate condition this catches.
+    if (!polygon) {
+      const innerW = outerW - 2 * wallThickness;
+      const innerD = outerD - 2 * wallThickness;
+      if (innerW <= 0 || innerD <= 0) {
+        return setBoxCache(boxKey, box);
+      }
     }
 
     const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
-    const result = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
+    // For polygon masks the shell operation can fail on narrow features
+    // where wallThickness consumes the interior; fall back to the solid
+    // extrusion in that case.
+    let result: Shape3D;
+    try {
+      result = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
+    } catch {
+      return setBoxCache(boxKey, box);
+    }
     scope.register(box); // consumed by shell
     return setBoxCache(boxKey, result);
   });
@@ -135,8 +178,15 @@ export function buildBinBox(
  * 2.6mm at the base to 0mm at the peak. The cut produces a wedge-shaped
  * ring whose exterior is smooth and flush with the bin wall.
  */
-function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean): Shape3D {
+function buildTopShapeLoft(
+  outerW: number,
+  outerD: number,
+  includeLip: boolean,
+  cellMask?: CellMask,
+  gridUnitMm: number = SIZE
+): Shape3D {
   const LIP_EXTENSION = includeLip ? 1.2 : 0;
+  const polygon = isPartialMask(cellMask);
 
   const INNER_BASE = LIP_TAPER_WIDTH; // 2.6mm
   const INNER_MID = LIP_BIG_TAPER; // 1.9mm
@@ -149,6 +199,15 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
   const Z_PEAK = LIP_HEIGHT; // 4.4
 
   const sectionAt = (z: number, inset: number): Sketch => {
+    if (polygon) {
+      // Polygon path: offset mask drawing inward by `inset`.
+      // inset === 0 returns the outer drawing directly.
+      const d =
+        inset === 0
+          ? buildMaskDrawing(cellMask, gridUnitMm)
+          : buildMaskDrawingInset(cellMask, gridUnitMm, inset);
+      return d.sketchOnPlane('XY', z) as Sketch;
+    }
     const w = outerW - 2 * inset;
     const d = outerD - 2 * inset;
     const r = Math.max(BOX_CORNER_RADIUS - inset, 0.1);
@@ -204,7 +263,14 @@ function buildTopShapeLoft(outerW: number, outerD: number, includeLip: boolean):
  * Sweeps the lip profile around the bin perimeter, then fillets the peak.
  * This creates NURBS surfaces that are slower for brepkit but robust for OCCT.
  */
-function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean): Shape3D {
+function buildTopShapeSweep(
+  outerW: number,
+  outerD: number,
+  includeLip: boolean,
+  cellMask?: CellMask,
+  gridUnitMm: number = SIZE
+): Shape3D {
+  const polygon = isPartialMask(cellMask);
   const topProfile = (plane: Plane, _origin: Vec3): Sketch => {
     let sketcher = draw([-LIP_TAPER_WIDTH, 0])
       .line(LIP_SMALL_TAPER, LIP_SMALL_TAPER)
@@ -237,11 +303,9 @@ function buildTopShapeSweep(outerW: number, outerD: number, includeLip: boolean)
   };
 
   return withScope((scope: DisposalScope) => {
-    const boxSketch = drawRoundedRectangle(
-      outerW,
-      outerD,
-      BOX_CORNER_RADIUS
-    ).sketchOnPlane() as Sketch;
+    const boxSketch = polygon
+      ? (buildMaskDrawing(cellMask, gridUnitMm).sketchOnPlane() as Sketch)
+      : (drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS).sketchOnPlane() as Sketch);
     const swept = boxSketch.sweepSketch(topProfile, { withContact: true });
 
     if (TOP_FILLET > 0) {
@@ -276,14 +340,17 @@ export function buildTopShape(
   gridW: number,
   gridD: number,
   includeLip: boolean,
-  gridUnitMm: number = SIZE
+  gridUnitMm: number = SIZE,
+  cellMask?: CellMask
 ): Shape3D {
+  const polygon = isPartialMask(cellMask);
   const lipKey = buildCacheKey(
     'v3',
     quantize(gridW),
     quantize(gridD),
     quantize(gridUnitMm),
-    includeLip
+    includeLip,
+    polygon ? hashMask(cellMask) : 'rect'
   );
   const cached = getLipCache(lipKey);
   if (cached) {
@@ -298,11 +365,11 @@ export function buildTopShape(
   // certain non-square aspect ratios, causing the lip to overhang (#1379).
   let result: Shape3D;
   try {
-    result = buildTopShapeLoft(outerW, outerD, includeLip);
+    result = buildTopShapeLoft(outerW, outerD, includeLip, cellMask, gridUnitMm);
   } catch {
     // Loft failed — fall back to sweep path (kernel regression).
     // NOTE: sweep has the OCCT profile-flip bug on non-square spines (#1379)
-    result = buildTopShapeSweep(outerW, outerD, includeLip);
+    result = buildTopShapeSweep(outerW, outerD, includeLip, cellMask, gridUnitMm);
   }
 
   return setLipCache(lipKey, result);

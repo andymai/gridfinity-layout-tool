@@ -103,7 +103,8 @@ export function socketCacheKey(
   screwRadius: number,
   forExport: boolean,
   halfSockets: boolean,
-  gridUnitMm: number = GRIDFINITY.GRID_SIZE
+  gridUnitMm: number = GRIDFINITY.GRID_SIZE,
+  maskHash?: string
 ): string {
   return compactKey(
     buildCacheKey(
@@ -117,7 +118,8 @@ export function socketCacheKey(
       quantize(magnetDepth),
       quantize(screwRadius),
       forExport,
-      halfSockets
+      halfSockets,
+      maskHash ?? 'rect'
     )
   );
 }

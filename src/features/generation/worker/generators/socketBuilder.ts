@@ -34,6 +34,7 @@ import {
   forEachCell,
 } from './generatorTypes';
 import { socketCacheKey, getSocketCache, setSocketCache } from './shapeCache';
+import { hashMask, isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
 /**
  * Build a single socket cell solid at the origin using multi-section loft.
  *
@@ -154,8 +155,13 @@ export function buildBaseSocket(
   screwRadius: number,
   forExport = false,
   halfSockets = false,
-  gridUnitMm: number = SIZE
+  gridUnitMm: number = SIZE,
+  cellMask?: CellMask
 ): Shape3D {
+  // Treat a fully-filled mask as a rectangle so the cache key and iteration
+  // path match the existing rectangular code.
+  const usingMask = isPartialMask(cellMask);
+
   // Check socket cache -- skip entire build if params haven't changed
   const key = socketCacheKey(
     gridW,
@@ -167,12 +173,32 @@ export function buildBaseSocket(
     screwRadius,
     forExport,
     halfSockets,
-    gridUnitMm
+    gridUnitMm,
+    usingMask ? hashMask(cellMask) : undefined
   );
   const cached = getSocketCache(key);
   if (cached) {
     return cached;
   }
+
+  /**
+   * True when the cell with center `(centerX, centerY)` in bin-centered mm
+   * coordinates and size `wUnits × dUnits` lies entirely inside the filled
+   * region of the mask. Returns true when no mask is in use.
+   */
+  const cellInMask = (
+    centerX: number,
+    centerY: number,
+    wUnits: number,
+    dUnits: number
+  ): boolean => {
+    if (!usingMask) return true;
+    const totalW_mm = gridW * gridUnitMm;
+    const totalD_mm = gridD * gridUnitMm;
+    const leftUnit = (centerX + totalW_mm / 2 - (wUnits * gridUnitMm) / 2) / gridUnitMm;
+    const bottomUnit = (centerY + totalD_mm / 2 - (dUnits * gridUnitMm) / 2) / gridUnitMm;
+    return isRegionFilled(cellMask, leftUnit, bottomUnit, wUnits, dUnits);
+  };
 
   return withScope((scope: DisposalScope) => {
     // Build and position each cell socket
@@ -182,6 +208,7 @@ export function buildBaseSocket(
       gridW,
       gridD,
       (cell) => {
+        if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
         const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
         const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
         // Use simplified 3-section socket for preview, full 5-section for export
@@ -231,6 +258,7 @@ export function buildBaseSocket(
         gridD,
         (cell) => {
           if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
+          if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
           for (const [dx, dy] of holeOffsets) {
             holeTools.push(
               translate(scope.register(unwrap(clone(cutout))), [

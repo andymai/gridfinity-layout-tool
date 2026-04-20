@@ -7,6 +7,7 @@
 
 import type { BinParams } from '@/shared/types/bin';
 import { GRIDFINITY } from '@/shared/constants/bin';
+import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
 import { SIZE, CLEARANCE, SOCKET_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
 // SIZE is kept as a fallback default for backwards compatibility with callers
 // that construct BinParams without gridUnitMm.
@@ -42,7 +43,11 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // already clears the actual lip base at wallHeight - LIP_OVERLAP.
   const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
 
-  // Shell cache key — versioned + quantized for deterministic matching
+  // Shell cache key — versioned + quantized for deterministic matching.
+  // Mask hash is included only when the mask triggers the polygon path so
+  // rectangular bins continue to share the existing cache bucket.
+  const { cellMask } = params;
+  const maskKeySegment = isPartialMask(cellMask) ? hashMask(cellMask) : 'rect';
   const shellKey = compactKey(
     buildCacheKey(
       'v5',
@@ -59,7 +64,8 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
       quantize(wallHeight),
       quantize(params.wallThickness),
       params.base.stackingLip,
-      solid
+      solid,
+      maskKeySegment
     )
   );
 

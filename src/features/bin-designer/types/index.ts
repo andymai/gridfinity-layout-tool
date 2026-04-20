@@ -7,6 +7,7 @@
 
 import type { FaceGroupData, CoarseLODData } from '@/shared/types/generation';
 import type { DesignId } from '@/core/types';
+import type { CellMask } from '@/shared/utils/cellMask';
 import type { FeatureColorConfig, ColorZone } from './featureColors';
 
 // Bin Configuration Types
@@ -258,6 +259,20 @@ export interface BinParams {
   readonly splitConnectors?: SplitConnectorConfig;
   /** Per-feature filament color assignment for multi-color 3MF export. */
   readonly featureColors: FeatureColorConfig;
+  /**
+   * Optional custom footprint mask (non-rectangular bins).
+   *
+   * When omitted or when every cell is filled, the bin is treated as a
+   * rectangle and uses the rectangle code path (no perf regression).
+   * When present and partial, the generator builds a polygon footprint
+   * and places sockets only on filled cells. Features that cannot yet
+   * operate on non-rectangular footprints (compartments, cutouts, walls,
+   * handles, inserts, scoops, label tabs) are skipped.
+   *
+   * Stored at half-bin resolution unconditionally — a `width × depth`
+   * bin has a `(2*width) × (2*depth)` mask.
+   */
+  readonly cellMask?: CellMask;
 }
 
 // Insert Types

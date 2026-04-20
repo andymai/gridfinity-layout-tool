@@ -1,70 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { createInitialContext } from './context';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 
-function createTestParams(overrides?: Record<string, unknown>): BinParams {
+// Source from DEFAULT_BIN_PARAMS so the fixture tracks the real BinParams
+// shape automatically. Tests below expect a no-lip baseline, so override
+// base.stackingLip off; all other fields flow through the defaults.
+function createTestParams(overrides?: Partial<BinParams>): BinParams {
   return {
-    width: 2,
-    depth: 2,
-    height: 3,
-    wallThickness: 1.2,
-    style: 'standard',
-    base: {
-      style: 'plain',
-      stackingLip: false,
-      halfSockets: false,
-      solid: false,
-      magnetDiameter: 6,
-      magnetDepth: 2,
-      screwDiameter: 3,
-    },
-    compartments: {
-      cols: 1,
-      rows: 1,
-      thickness: 1.2,
-      cells: [0],
-    },
-    label: {
-      enabled: false,
-      depth: 12,
-      width: 100,
-      alignment: 'center',
-      support: 'bracket',
-    },
-    scoop: { enabled: false, radius: 21 },
-    inserts: [],
-    cutoutConfig: {
-      topOffset: 0,
-      shape: 'roundedRect',
-      cornerRadius: 3.75,
-      enabled: false,
-      widthPercent: 100,
-      depthPercent: 100,
-      isGrouped: false,
-    },
-    walls: {
-      enabled: false,
-      height: 50,
-      cornerRadius: 2,
-      sides: { front: true, back: true, left: true, right: true },
-    },
-    wallPattern: {
-      enabled: false,
-      pattern: 'honeycomb',
-      size: 5,
-      spacing: 1.5,
-      sides: { front: true, back: true, left: true, right: true },
-    },
-    slotConfig: {
-      width: 5,
-      depth: 10,
-      spacing: 10,
-      sides: { front: false, back: false, left: false, right: false },
-    },
-    gridUnitMm: 42,
-    heightUnitMm: 7,
+    ...DEFAULT_BIN_PARAMS,
+    base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
     ...overrides,
-  } as BinParams;
+  };
 }
 
 describe('createInitialContext', () => {
@@ -108,7 +55,8 @@ describe('createInitialContext', () => {
     const ctx = createInitialContext(createTestParams());
 
     // shellKey uses buildCacheKey with v5 prefix, gridUnitMm, and quantized floats
-    // forExport is no longer in the key since shell geometry is identical for preview/export
+    // forExport is no longer in the key since shell geometry is identical for preview/export.
+    // Final segment is 'rect' when no cellMask is in use; mask hash otherwise.
     const expected = [
       'v5',
       2,
@@ -118,13 +66,14 @@ describe('createInitialContext', () => {
       false,
       false,
       false,
-      6,
+      6.5,
       2,
       3,
       16,
       1.2,
       false,
       false,
+      'rect',
     ].join('|');
 
     expect(ctx.dimensions.shellKey).toBe(expected);
