@@ -2,11 +2,10 @@
 /**
  * Tests for the mask → brepjs Drawing converter.
  *
- * These tests require a live brepjs kernel because `Drawing.offset(...)`
- * must succeed to produce the inward-inset polygon. The spike test already
- * confirmed offset works for concave shapes; here we verify the helper
- * wires gridUnit → mm correctly and preserves the rectangle/L/T bbox after
- * offset inset.
+ * Verifies the helper wires gridUnit → mm correctly and preserves the
+ * rectangle/L/T bbox after inset. Requires a live brepjs kernel because
+ * the output is a brepjs Drawing; the inset itself is computed
+ * geometrically (see `insetAxisAlignedPolygon` in `maskPolygon.ts`).
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__dual-kernel__/wasmInit';
