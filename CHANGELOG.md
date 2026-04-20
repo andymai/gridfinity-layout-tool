@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.40.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.40.3...gridfinity-layout-tool-v4.40.4) (2026-04-20)
+
+
+### Bug Fixes
+
+* **bin-designer:** split oversized bins into minimum equal pieces ([#1404](https://github.com/andymai/gridfinity-layout-tool/issues/1404)) ([d96b842](https://github.com/andymai/gridfinity-layout-tool/commit/d96b842d16e3fbd90c6cd052fafda5cfab303249)), closes [#1400](https://github.com/andymai/gridfinity-layout-tool/issues/1400)
+
 ## [4.40.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.40.2...gridfinity-layout-tool-v4.40.3) (2026-04-20)
 
 
