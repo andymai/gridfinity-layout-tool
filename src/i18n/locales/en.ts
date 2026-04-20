@@ -1209,6 +1209,19 @@ const en: Record<string, string> = {
   'binDesigner.colors.hexColor': 'Hex color',
   'binDesigner.colors.hexInvalid': 'Invalid hex color',
 
+  'binDesigner.shape.presets': 'Shape:',
+  'binDesigner.shape.preset.rectangle': 'Rectangle',
+  'binDesigner.shape.preset.l': 'L',
+  'binDesigner.shape.preset.t': 'T',
+  'binDesigner.shape.preset.u': 'U',
+  'binDesigner.shape.grid.ariaLabel': 'Bin shape editor. Click a cell to toggle it.',
+  'binDesigner.shape.grid.cellLabel.filled': 'Cell {col}, {row}: filled',
+  'binDesigner.shape.grid.cellLabel.empty': 'Cell {col}, {row}: empty',
+  'binDesigner.shape.rectangle.hint':
+    'Rectangular footprint. Pick a preset or paint a custom shape.',
+  'binDesigner.shape.custom.hint':
+    'Custom shape. Interior features (walls, cutouts, handles) are disabled until the shape is rectangular.',
+
   'binDesigner.splitAxisInfo': 'Split along {axis} into {count} pieces',
 
   'binDesigner.splitAxisWidth': 'width',

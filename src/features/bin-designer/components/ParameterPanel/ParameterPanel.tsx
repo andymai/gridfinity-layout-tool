@@ -12,6 +12,7 @@
 
 import { useShallow } from 'zustand/react/shallow';
 import { DimensionsSection } from '../panel/DimensionsSection';
+import { ShapeSection } from '../panel/ShapeSection';
 import { InteriorSection } from '../panel/InteriorSection';
 import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
@@ -48,6 +49,9 @@ export function ParameterPanel() {
         >
           <div className="px-4 py-4 border-b border-stroke-subtle/50">
             <DimensionsSection />
+          </div>
+          <div className="px-4 py-4 border-b border-stroke-subtle/50">
+            <ShapeSection />
           </div>
           {needsSplit && (
             <div className="px-4 py-4 border-b border-stroke-subtle/50">

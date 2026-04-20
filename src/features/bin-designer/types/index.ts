@@ -590,6 +590,9 @@ export interface DesignerState {
   updateInsert: (id: string, updates: Partial<Insert>) => void;
   clearInserts: () => void;
 
+  // Custom bin shape
+  setCellMask: (mask: CellMask | undefined) => void;
+
   // Cutout actions
   addCutout: (cutout: Cutout) => void;
   removeCutout: (id: string) => void;

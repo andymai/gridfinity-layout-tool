@@ -2,6 +2,10 @@
   "maxShortValueLength": 3,
   "keys": [
     "binDesigner.cart.cost",
+    "binDesigner.shape.preset.rectangle",
+    "binDesigner.shape.preset.l",
+    "binDesigner.shape.preset.t",
+    "binDesigner.shape.preset.u",
     "binDesigner.handles.shape.oval",
     "binDesigner.handles.shape.rectangle",
     "binDesigner.handles.summary",
