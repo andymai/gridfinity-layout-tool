@@ -56,26 +56,29 @@ async function run() {
   await pause(page, 1600);
 
   // ---- 1. Open bin palette, pick 2×2 (deliberate pacing) ----
-  const palette = page.getByRole('button', { name: /Bin Palette/i });
-  if (await palette.isVisible().catch(() => false)) {
-    await cinematicClick(page, palette);
-    await pause(page, 700);
-  }
+  const activeLayerPanel = page.locator('[data-active-layer-panel]');
+  await activeLayerPanel.waitFor({ state: 'visible', timeout: 8000 });
+
+  const palette = activeLayerPanel.getByRole('button', { name: /Bin Palette/i });
+  await palette.waitFor({ state: 'visible', timeout: 8000 });
+  await cinematicClick(page, palette);
+  await pause(page, 700);
 
   const size2x2 = page.getByRole('button', { name: /select paint size: 2×2/i }).first();
+  await size2x2.waitFor({ state: 'visible', timeout: 8000 });
   await cinematicClick(page, size2x2);
   await pause(page, 900);
 
   // ---- 2. Fill layer — the reveal ----
-  const sidebar = page.locator('[data-sidebar]');
-  await sidebar.waitFor({ state: 'visible', timeout: 8000 });
-  const fillBtn = sidebar.getByRole('button', { name: /fill.*2.*2/i });
+  // After selecting paint size, Row 2 becomes "Fill with 2×2"
+  const fillBtn = activeLayerPanel.getByRole('button', { name: /fill with 2×2/i });
+  await fillBtn.waitFor({ state: 'visible', timeout: 8000 });
   await cinematicClick(page, fillBtn);
   try {
-    await page.getByText(/added \d+ bins/i).waitFor({ timeout: 8000 });
+    await page.getByText(/added \d+.*bin/i).waitFor({ timeout: 8000 });
   } catch (error) {
     throw new Error(
-      `Fill action did not complete: timed out waiting for the "added N bins" toast. Demo pipeline aborted to avoid publishing an incorrect GIF. (${error instanceof Error ? error.message : String(error)})`
+      `Fill action did not complete: timed out waiting for the "Added N …bins" toast. Demo pipeline aborted to avoid publishing an incorrect GIF. (${error instanceof Error ? error.message : String(error)})`
     );
   }
   // Let the viewer appreciate the filled layer
