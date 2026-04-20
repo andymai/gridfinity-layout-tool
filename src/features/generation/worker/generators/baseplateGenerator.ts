@@ -305,6 +305,10 @@ function buildConnectors(
   const tW = TONGUE_TIP_HALF; // half-width at tip (wide)
   const cl = TONGUE_CLEARANCE;
   const ext = COPLANAR_MARGIN;
+  // Overlap between tongue base and slab wall — large enough to defeat OCCT's
+  // coplanar-face handling, small enough to leave zero visual impact on pocket
+  // cavities. Same 0.01mm value used by SLOT_EXTENSION in slotBuilder.ts.
+  const WALL_OVERLAP = 0.01;
 
   type Side = 'left' | 'right' | 'front' | 'back';
 
@@ -372,10 +376,14 @@ function buildConnectors(
 
       if (def.isMale) {
         // Dovetail tongue: trapezoidal plan view, wider at tip.
-        const profile = draw(pt(w, bp + bW))
+        // The base edge is extended WALL_OVERLAP into the slab so the fuse has
+        // shared volume rather than a degenerate coplanar interface at the wall
+        // face. Coplanar fuses cause OCCT to produce non-manifold topology,
+        // which slicers repair as solid infill (issue #1407).
+        const profile = draw(pt(w - d * WALL_OVERLAP, bp + bW))
           .lineTo(pt(w + d * P, bp + tW))
           .lineTo(pt(w + d * P, bp - tW))
-          .lineTo(pt(w, bp - bW))
+          .lineTo(pt(w - d * WALL_OVERLAP, bp - bW))
           .close();
         tongues.push(sketch(profile, 'XY', 0).extrude(-totalHeight));
       } else {
