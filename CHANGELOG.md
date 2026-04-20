@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.40.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.40.2...gridfinity-layout-tool-v4.40.3) (2026-04-20)
+
+
+### Bug Fixes
+
+* **designer,baseplate:** unclip language dropdown in page headers ([#1402](https://github.com/andymai/gridfinity-layout-tool/issues/1402)) ([a8b1f72](https://github.com/andymai/gridfinity-layout-tool/commit/a8b1f722084f2af52b45b13c6dd407129ef34152)), closes [#1399](https://github.com/andymai/gridfinity-layout-tool/issues/1399)
+
 ## [4.40.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.40.1...gridfinity-layout-tool-v4.40.2) (2026-04-19)
 
 
