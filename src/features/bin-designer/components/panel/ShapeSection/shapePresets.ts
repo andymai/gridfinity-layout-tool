@@ -114,6 +114,6 @@ export function getPreset(id: ShapePresetId): ShapePreset {
 }
 
 /** Convenience for tests and presets: build a full-mask sized to the bin. */
-export function emptyPresetMask(widthUnits: number, depthUnits: number): CellMask {
+export function fullPresetMask(widthUnits: number, depthUnits: number): CellMask {
   return buildFullMask(widthUnits, depthUnits);
 }

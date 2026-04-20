@@ -5,7 +5,6 @@ import {
   MASK_CELLS_PER_UNIT,
   buildFullMask,
   isAllFilled,
-  validateMask,
   type CellMask,
 } from '@/shared/utils/cellMask';
 import { useTranslation } from '@/i18n';
@@ -48,9 +47,9 @@ export function useShapeSection() {
   );
 
   /**
-   * Toggle a single half-cell (col, row). If the resulting mask is
-   * structurally invalid (disconnected / empty / creates a hole) the toggle
-   * is silently rejected so the generator never sees a broken shape.
+   * Toggle a single half-cell (col, row). The store validates the resulting
+   * mask and silently rejects structurally invalid shapes (disconnected /
+   * empty / hole), so the generator never sees a broken shape.
    */
   const toggleCell = useCallback(
     (col: number, row: number) => {
@@ -59,9 +58,7 @@ export function useShapeSection() {
       const current = displayMask.cells[idx];
       const next: (0 | 1)[] = displayMask.cells.slice();
       next[idx] = current === 1 ? 0 : 1;
-      const candidate: CellMask = { cols, rows, cells: next };
-      if (validateMask(candidate) !== null) return;
-      setCellMask(candidate);
+      setCellMask({ cols, rows, cells: next });
     },
     [cols, rows, displayMask, setCellMask]
   );

@@ -308,10 +308,17 @@ export function createParamSlice(set: Set, get: Get) {
     // Custom bin shape (cellMask). Setting undefined or a fully-filled mask
     // routes the generator through the rectangle fast-path. Partial masks
     // produce a polygon footprint. Rejects masks that fail structural
-    // validation (empty / disconnected / holes / dimension mismatch) so the
-    // UI is expected to validate before calling.
+    // validation (empty / disconnected / holes) or whose dimensions don't
+    // match the current width/depth at half-bin resolution — a mismatched
+    // mask would otherwise trip assertValidMask in the generator.
     setCellMask: (mask: CellMask | undefined) => {
-      if (mask !== undefined && validateMask(mask) !== null) return;
+      if (mask !== undefined) {
+        const { width, depth } = get().params;
+        const expectedCols = Math.round(width * MASK_CELLS_PER_UNIT);
+        const expectedRows = Math.round(depth * MASK_CELLS_PER_UNIT);
+        if (mask.cols !== expectedCols || mask.rows !== expectedRows) return;
+        if (validateMask(mask) !== null) return;
+      }
       set((state) => {
         pushHistoryEntry(state);
         state.params.cellMask = mask === undefined || isAllFilled(mask) ? undefined : mask;

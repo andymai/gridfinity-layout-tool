@@ -1,4 +1,5 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
+import type { KeyboardEvent } from 'react';
 import type { CellMask } from '@/shared/utils/cellMask';
 
 interface ShapeGridProps {
@@ -20,12 +21,30 @@ interface ShapeGridProps {
  *   - Click-drag to paint continuously: the drag direction locks to
  *     the first toggle (fill → empty or empty → fill) so running over a
  *     mix of cells during the drag doesn't ping-pong.
+ *   - Enter/Space on a focused cell toggles that cell for keyboard users.
  */
 export function ShapeGrid({ mask, onToggleCell, ariaLabel, cellLabel }: ShapeGridProps) {
   const dragModeRef = useRef<'fill' | 'clear' | null>(null);
   const draggedRef = useRef(new Set<number>());
 
   const { cols, rows, cells } = mask;
+
+  const endDrag = useCallback(() => {
+    dragModeRef.current = null;
+    draggedRef.current.clear();
+  }, []);
+
+  // Safety net: pointerleave on the container won't fire if the pointer is
+  // released inside an overlapping scrollable/overflow region, leaving drag
+  // state stuck. A window-level release listener guarantees we always clear.
+  useEffect(() => {
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+    return () => {
+      window.removeEventListener('pointerup', endDrag);
+      window.removeEventListener('pointercancel', endDrag);
+    };
+  }, [endDrag]);
 
   const handlePointerDown = useCallback(
     (col: number, row: number) => {
@@ -58,10 +77,15 @@ export function ShapeGrid({ mask, onToggleCell, ariaLabel, cellLabel }: ShapeGri
     [cells, cols, onToggleCell]
   );
 
-  const handlePointerUp = useCallback(() => {
-    dragModeRef.current = null;
-    draggedRef.current.clear();
-  }, []);
+  const handleCellKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLButtonElement>, col: number, row: number) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onToggleCell(col, row);
+      }
+    },
+    [onToggleCell]
+  );
 
   return (
     <div
@@ -74,9 +98,13 @@ export function ShapeGrid({ mask, onToggleCell, ariaLabel, cellLabel }: ShapeGri
         gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
         gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
         direction: 'ltr',
+        // Prevent the browser from hijacking the drag for panning/scrolling,
+        // which would cancel the paint stroke mid-gesture on touch devices.
+        touchAction: 'none',
       }}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
+      onPointerUp={endDrag}
+      onPointerLeave={endDrag}
+      onPointerCancel={endDrag}
     >
       {Array.from({ length: rows * cols }, (_, i) => {
         // Render rows top-to-bottom visually but store row 0 is at bottom,
@@ -96,6 +124,7 @@ export function ShapeGrid({ mask, onToggleCell, ariaLabel, cellLabel }: ShapeGri
             aria-label={cellLabel(col + 1, visualRow + 1, filled)}
             onPointerDown={() => handlePointerDown(col, row)}
             onPointerEnter={() => handlePointerEnter(col, row)}
+            onKeyDown={(e) => handleCellKeyDown(e, col, row)}
             className={`aspect-square transition-colors ${
               filled ? 'bg-accent-subtle hover:bg-accent' : 'bg-surface hover:bg-surface-hover'
             }`}
