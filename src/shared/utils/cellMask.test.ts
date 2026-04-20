@@ -5,6 +5,7 @@ import {
   countFilled,
   hashMask,
   isAllFilled,
+  isPartialMask,
   isRegionFilled,
   MASK_CELL_SIZE,
   MASK_CELLS_PER_UNIT,
@@ -53,6 +54,24 @@ describe('isAllFilled / countFilled', () => {
     ]);
     expect(isAllFilled(m)).toBe(false);
     expect(countFilled(m)).toBe(8);
+  });
+});
+
+describe('isPartialMask', () => {
+  it('returns false for undefined', () => {
+    expect(isPartialMask(undefined)).toBe(false);
+  });
+
+  it('returns false for a fully-filled mask', () => {
+    expect(isPartialMask(buildFullMask(2, 2))).toBe(false);
+  });
+
+  it('returns true for a mask with at least one empty cell', () => {
+    const m = mask([
+      [1, 1],
+      [1, 0],
+    ]);
+    expect(isPartialMask(m)).toBe(true);
   });
 });
 
