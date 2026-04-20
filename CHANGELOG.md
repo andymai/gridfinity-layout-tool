@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.40.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.40.4...gridfinity-layout-tool-v4.40.5) (2026-04-20)
+
+
+### Bug Fixes
+
+* **baseplate:** overlap dovetail tongue into slab to prevent solid-infill export ([#1411](https://github.com/andymai/gridfinity-layout-tool/issues/1411)) ([d6775bd](https://github.com/andymai/gridfinity-layout-tool/commit/d6775bd60936db41f5943ff1ead15d4e9afa1789))
+
 ## [4.40.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.40.3...gridfinity-layout-tool-v4.40.4) (2026-04-20)
 
 
