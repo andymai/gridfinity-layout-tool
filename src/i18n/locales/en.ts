@@ -1220,7 +1220,7 @@ const en: Record<string, string> = {
   'binDesigner.shape.rectangle.hint':
     'Rectangular footprint. Pick a preset or paint a custom shape.',
   'binDesigner.shape.custom.hint':
-    'Custom shape. Interior features (walls, cutouts, handles) are disabled until the shape is rectangular.',
+    'Custom shape. Walls, cutouts, handles, dividers, label tabs, and scoop are unavailable for non-rectangular bins.',
 
   'binDesigner.splitAxisInfo': 'Split along {axis} into {count} pieces',
 

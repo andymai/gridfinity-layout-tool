@@ -89,7 +89,7 @@
   "binDesigner.shape.grid.cellLabel.filled": "Cellule {col}, {row} : remplie",
   "binDesigner.shape.grid.cellLabel.empty": "Cellule {col}, {row} : vide",
   "binDesigner.shape.rectangle.hint": "Empreinte rectangulaire. Choisissez un modèle ou peignez une forme personnalisée.",
-  "binDesigner.shape.custom.hint": "Forme personnalisée. Les éléments intérieurs (parois, découpes, poignées) sont désactivés tant que la forme n'est pas rectangulaire.",
+  "binDesigner.shape.custom.hint": "Forme personnalisée. Parois, découpes, poignées, séparateurs, onglets d'étiquette et pelle sont indisponibles pour les bacs non rectangulaires.",
   "binDesigner.colors.labelTab": "Languette d'étiquette",
   "binDesigner.colors.lip": "Lèvre d'empilage",
   "binDesigner.colors.presets": "Préréglages",

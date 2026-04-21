@@ -89,7 +89,7 @@
   "binDesigner.shape.grid.cellLabel.filled": "Zelle {col}, {row}: gefüllt",
   "binDesigner.shape.grid.cellLabel.empty": "Zelle {col}, {row}: leer",
   "binDesigner.shape.rectangle.hint": "Rechteckiger Grundriss. Wähle eine Vorlage oder zeichne eine eigene Form.",
-  "binDesigner.shape.custom.hint": "Benutzerdefinierte Form. Innenelemente (Wände, Aussparungen, Griffe) sind deaktiviert, bis die Form rechteckig ist.",
+  "binDesigner.shape.custom.hint": "Benutzerdefinierte Form. Wände, Aussparungen, Griffe, Trennwände, Etikettenlaschen und Schaufel sind für nicht-rechteckige Behälter nicht verfügbar.",
   "binDesigner.colors.labelTab": "Beschriftungslasche",
   "binDesigner.colors.lip": "Stapellippe",
   "binDesigner.colors.presets": "Voreinstellungen",

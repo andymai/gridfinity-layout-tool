@@ -10,6 +10,7 @@
  * - Base: Base attachments, Physical Units
  */
 
+import type { ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { DimensionsSection } from '../panel/DimensionsSection';
 import { ShapeSection } from '../panel/ShapeSection';
@@ -29,15 +30,54 @@ import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOptionsSection';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { isPartialMask } from '@/shared/utils/cellMask';
+
+/**
+ * Wrap a panel section so it visually de-emphasizes and stops accepting
+ * input when the bin's footprint isn't rectangular. The features blocked
+ * by this gate (wall patterns, cutouts, handles, dividers, label tabs,
+ * scoop, split options) currently position from the bin's bounding box
+ * rather than the actual cellMask polygon, so applying them to a custom
+ * shape would produce features that don't align with the wall.
+ *
+ * `inert` (React 19) removes descendants from the focus order and blocks
+ * pointer events without disabling each input individually.
+ */
+function FeatureGate({
+  disabled,
+  reason,
+  children,
+}: {
+  readonly disabled: boolean;
+  readonly reason: string;
+  readonly children: ReactNode;
+}) {
+  return (
+    <div
+      inert={disabled}
+      title={disabled ? reason : undefined}
+      aria-disabled={disabled}
+      className={disabled ? 'opacity-50 cursor-not-allowed' : undefined}
+    >
+      {children}
+    </div>
+  );
+}
 
 export function ParameterPanel() {
   const t = useTranslation();
   const shapeSummary = useShapeGroupSummary();
   const interiorSummary = useInteriorGroupSummary();
   const baseSummary = useBaseGroupSummary();
-  const showLabelTabs = useDesignerStore(useShallow((s) => s.params.style === 'standard'));
+  const { showLabelTabs, isCustomShape } = useDesignerStore(
+    useShallow((s) => ({
+      showLabelTabs: s.params.style === 'standard',
+      isCustomShape: isPartialMask(s.params.cellMask),
+    }))
+  );
   const { needsSplit } = useSplitOptionsSection();
   const showColors = useFeatureFlag('multi_color_export');
+  const customShapeReason = t('binDesigner.shape.custom.hint');
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-scroll scrollbar-thin">
@@ -55,11 +95,15 @@ export function ParameterPanel() {
           </div>
           {needsSplit && (
             <div className="px-4 py-4 border-b border-stroke-subtle/50">
-              <SplitOptionsSection />
+              <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
+                <SplitOptionsSection />
+              </FeatureGate>
             </div>
           )}
           <div className="px-4 py-4">
-            <WallsSection />
+            <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
+              <WallsSection />
+            </FeatureGate>
           </div>
         </StickyGroupHeader>
 
@@ -79,15 +123,21 @@ export function ParameterPanel() {
           summary={interiorSummary}
         >
           <div className="px-4 py-4">
-            <InteriorSection />
+            <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
+              <InteriorSection />
+            </FeatureGate>
           </div>
           {showLabelTabs && (
             <div className="px-4 py-4 border-t border-stroke-subtle/50">
-              <LabelTabsSection />
+              <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
+                <LabelTabsSection />
+              </FeatureGate>
             </div>
           )}
           <div className="px-4 py-4 border-t border-stroke-subtle/50">
-            <ScoopSection />
+            <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
+              <ScoopSection />
+            </FeatureGate>
           </div>
         </StickyGroupHeader>
 

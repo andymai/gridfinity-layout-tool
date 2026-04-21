@@ -89,7 +89,7 @@
   "binDesigner.shape.grid.cellLabel.filled": "Célula {col}, {row}: preenchida",
   "binDesigner.shape.grid.cellLabel.empty": "Célula {col}, {row}: vazia",
   "binDesigner.shape.rectangle.hint": "Base retangular. Escolha um modelo ou desenhe uma forma personalizada.",
-  "binDesigner.shape.custom.hint": "Forma personalizada. Os recursos internos (paredes, recortes, alças) estão desativados até que a forma seja retangular.",
+  "binDesigner.shape.custom.hint": "Forma personalizada. Paredes, recortes, alças, divisórias, abas de etiqueta e concha não estão disponíveis para caixas não retangulares.",
   "binDesigner.colors.labelTab": "Aba de etiqueta",
   "binDesigner.colors.lip": "Lábio de empilhamento",
   "binDesigner.colors.presets": "Predefinidos",

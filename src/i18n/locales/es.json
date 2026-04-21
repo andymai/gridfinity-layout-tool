@@ -89,7 +89,7 @@
   "binDesigner.shape.grid.cellLabel.filled": "Celda {col}, {row}: rellena",
   "binDesigner.shape.grid.cellLabel.empty": "Celda {col}, {row}: vacía",
   "binDesigner.shape.rectangle.hint": "Huella rectangular. Elige una plantilla o dibuja una forma personalizada.",
-  "binDesigner.shape.custom.hint": "Forma personalizada. Las características interiores (paredes, recortes, asas) están deshabilitadas hasta que la forma sea rectangular.",
+  "binDesigner.shape.custom.hint": "Forma personalizada. Las paredes, los recortes, las asas, los divisores, las pestañas de etiqueta y la pala no están disponibles para los contenedores no rectangulares.",
   "binDesigner.colors.labelTab": "Pestaña de etiqueta",
   "binDesigner.colors.lip": "Labio de apilamiento",
   "binDesigner.colors.presets": "Preajustes",

@@ -89,7 +89,7 @@
   "binDesigner.shape.grid.cellLabel.filled": "Celle {col}, {row}: fylt",
   "binDesigner.shape.grid.cellLabel.empty": "Celle {col}, {row}: tom",
   "binDesigner.shape.rectangle.hint": "Rektangulært avtrykk. Velg en forhåndsinnstilling eller tegn en egendefinert form.",
-  "binDesigner.shape.custom.hint": "Egendefinert form. Innvendige funksjoner (vegger, utskjæringer, håndtak) er deaktivert inntil formen er rektangulær.",
+  "binDesigner.shape.custom.hint": "Egendefinert form. Vegger, utskjæringer, håndtak, skillevegger, etikettfaner og skje er ikke tilgjengelige for ikke-rektangulære beholdere.",
   "binDesigner.colors.labelTab": "Etikett-fane",
   "binDesigner.colors.lip": "Stablelippe",
   "binDesigner.colors.presets": "Forhåndsvalg",

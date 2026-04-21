@@ -89,7 +89,7 @@
   "binDesigner.shape.grid.cellLabel.filled": "Cel {col}, {row}: gevuld",
   "binDesigner.shape.grid.cellLabel.empty": "Cel {col}, {row}: leeg",
   "binDesigner.shape.rectangle.hint": "Rechthoekige voetafdruk. Kies een voorinstelling of teken een aangepaste vorm.",
-  "binDesigner.shape.custom.hint": "Aangepaste vorm. Interieurfuncties (wanden, uitsparingen, handgrepen) zijn uitgeschakeld totdat de vorm rechthoekig is.",
+  "binDesigner.shape.custom.hint": "Aangepaste vorm. Wanden, uitsparingen, handgrepen, scheidingen, labeltabs en scheppen zijn niet beschikbaar voor niet-rechthoekige bakken.",
   "binDesigner.colors.labelTab": "Labeltab",
   "binDesigner.colors.lip": "Stapelrand",
   "binDesigner.colors.presets": "Voorinstellingen",
