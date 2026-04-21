@@ -204,6 +204,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   splitViewMode: 'exploded',
   splitPieceMeshes: [],
   hoveredColorZone: null,
+  shapeEditorOpen: false,
 };
 
 /** Default empty history */

@@ -75,6 +75,42 @@ describe('buildMaskDrawing', () => {
   });
 });
 
+describe('buildMaskHoleDrawings', () => {
+  it('returns one drawing per inner hole, sized to the grown cavity', async () => {
+    const { buildMaskHoleDrawings } = await import('./maskPolygon');
+    const oMask = mask([
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 0, 0, 1, 1],
+      [1, 1, 0, 0, 1, 1],
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1],
+    ]);
+    const holes = buildMaskHoleDrawings(oMask, 42);
+    expect(holes).toHaveLength(1);
+
+    // Nominal hole is 1u × 1u = 42×42mm. Grown by CLEARANCE/2 (0.25mm)
+    // on each side → 42.5×42.5mm centred at origin.
+    const bb = holes[0].boundingBox;
+    expect(bb.bounds[1][0] - bb.bounds[0][0]).toBeCloseTo(42.5, 1);
+    expect(bb.bounds[1][1] - bb.bounds[0][1]).toBeCloseTo(42.5, 1);
+    expect((bb.bounds[0][0] + bb.bounds[1][0]) / 2).toBeCloseTo(0, 3);
+  });
+
+  it('returns an empty array for a mask without holes', async () => {
+    const { buildMaskHoleDrawings } = await import('./maskPolygon');
+    const lMask = mask([
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 0, 0],
+      [1, 1, 1, 1, 0, 0],
+    ]);
+    expect(buildMaskHoleDrawings(lMask, 42)).toHaveLength(0);
+  });
+});
+
 describe('buildMaskDrawingInset', () => {
   it('produces a smaller polygon than the outer drawing', async () => {
     const { buildMaskDrawing, buildMaskDrawingInset } = await import('./maskPolygon');

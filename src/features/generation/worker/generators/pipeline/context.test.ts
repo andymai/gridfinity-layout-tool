@@ -115,4 +115,60 @@ describe('createInitialContext', () => {
     // interiorHeight = wallHeight - LIP_SMALL_TAPER (0.7)
     expect(ctx.dimensions.interiorHeight).toBeCloseTo(15.3);
   });
+
+  describe('halfSockets flag in dimensions', () => {
+    it('stays off for an unset user toggle on a 1u-aligned L preset mask', () => {
+      // 3×3 L-shape at 1u resolution — no half-bin detail.
+      const cellMask = {
+        cols: 6,
+        rows: 6,
+        cells: [
+          // row 0 (bottom)
+          1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0,
+          // remaining rows — all filled
+          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        ] as (0 | 1)[],
+      };
+      const ctx = createInitialContext(createTestParams({ width: 3, depth: 3, cellMask }));
+      expect(ctx.dimensions.halfSockets).toBe(false);
+    });
+
+    it('leaves halfSockets off when mask has half-bin detail but user opt-in is off', () => {
+      // 2×2 bin (4×4 mask) with one half-cell cleared — mixed 1u block.
+      // The socket builder does a per-cell dispatch for mask-mixed 1u cells,
+      // so the global dimensions.halfSockets flag only reflects the user
+      // toggle. It stays false here.
+      const cells = new Array<0 | 1>(16).fill(1);
+      cells[3] = 0;
+      const cellMask = { cols: 4, rows: 4, cells };
+      const ctx = createInitialContext(createTestParams({ width: 2, depth: 2, cellMask }));
+      expect(ctx.dimensions.halfSockets).toBe(false);
+    });
+
+    it('respects the user opt-in flag on a rectangular bin', () => {
+      const ctx = createInitialContext(
+        createTestParams({
+          base: {
+            ...DEFAULT_BIN_PARAMS.base,
+            halfSockets: true,
+          },
+        })
+      );
+      expect(ctx.dimensions.halfSockets).toBe(true);
+    });
+
+    it('never enables halfSockets on a flat-base bin', () => {
+      const ctx = createInitialContext(
+        createTestParams({
+          base: {
+            ...DEFAULT_BIN_PARAMS.base,
+            style: 'flat',
+            stackingLip: false,
+            halfSockets: true,
+          },
+        })
+      );
+      expect(ctx.dimensions.halfSockets).toBe(false);
+    });
+  });
 });

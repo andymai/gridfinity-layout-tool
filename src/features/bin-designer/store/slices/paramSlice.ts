@@ -25,6 +25,13 @@ import { isErr } from '@/core/result';
 import { isRectangularSelection, normalizeIds } from '../../utils/compartments';
 import { validateCompartmentSizes } from '../../utils/validation';
 import { pushHistoryEntry } from '../helpers';
+import {
+  MASK_CELLS_PER_UNIT,
+  type CellMask,
+  resizeMask,
+  isAllFilled,
+  validateMask,
+} from '@/shared/utils/cellMask';
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
 type Get = () => DesignerState;
@@ -51,6 +58,16 @@ export function createParamSlice(set: Set, get: Get) {
       set((state) => {
         pushHistoryEntry(state);
         state.params[key] = value;
+        // When the bin footprint grows or shrinks, keep a custom shape mask
+        // aligned to the new dimensions. New cells default to filled so a
+        // resize never silently erases the user's existing shape.
+        if ((key === 'width' || key === 'depth') && state.params.cellMask) {
+          state.params.cellMask = reshapeOrClearMask(
+            state.params.cellMask,
+            state.params.width,
+            state.params.depth
+          );
+        }
       });
     },
 
@@ -75,6 +92,16 @@ export function createParamSlice(set: Set, get: Get) {
       set((state) => {
         pushHistoryEntry(state);
         Object.assign(state.params, partial);
+        // Keep cellMask aligned with the resulting width/depth. Matters for
+        // the dimension-swap button and share-load, both of which route
+        // through setParams without going via setParam('width'|'depth').
+        if (state.params.cellMask) {
+          state.params.cellMask = reshapeOrClearMask(
+            state.params.cellMask,
+            state.params.width,
+            state.params.depth
+          );
+        }
       });
     },
 
@@ -287,5 +314,49 @@ export function createParamSlice(set: Set, get: Get) {
         state.params.inserts = [];
       });
     },
+
+    // Custom bin shape (cellMask). Setting undefined or a fully-filled mask
+    // routes the generator through the rectangle fast-path. Partial masks
+    // produce a polygon footprint. Rejects masks that fail structural
+    // validation (empty / disconnected / holes) or whose dimensions don't
+    // match the current width/depth at half-bin resolution — a mismatched
+    // mask would otherwise trip assertValidMask in the generator.
+    setCellMask: (mask: CellMask | undefined) => {
+      let next: CellMask | undefined;
+      if (mask === undefined || isAllFilled(mask)) {
+        next = undefined;
+      } else {
+        const { width, depth } = get().params;
+        if (mask.cols !== Math.round(width * MASK_CELLS_PER_UNIT)) return;
+        if (mask.rows !== Math.round(depth * MASK_CELLS_PER_UNIT)) return;
+        if (validateMask(mask) !== null) return;
+        next = mask;
+      }
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.cellMask = next;
+      });
+    },
   };
+}
+
+/**
+ * Resize a cellMask to match new `width × depth` (in grid units). If the
+ * resized mask turns out to be structurally invalid (very rare — the caller
+ * changed dimensions in a way that disconnects the shape) or if it now
+ * covers the full footprint, return `undefined` so the generator drops back
+ * to the rectangle fast-path.
+ */
+function reshapeOrClearMask(
+  mask: CellMask,
+  widthUnits: number,
+  depthUnits: number
+): CellMask | undefined {
+  const cols = Math.round(widthUnits * MASK_CELLS_PER_UNIT);
+  const rows = Math.round(depthUnits * MASK_CELLS_PER_UNIT);
+  if (mask.cols === cols && mask.rows === rows) return mask;
+  const resized = resizeMask(mask, cols, rows);
+  if (isAllFilled(resized)) return undefined;
+  if (validateMask(resized) !== null) return undefined;
+  return resized;
 }

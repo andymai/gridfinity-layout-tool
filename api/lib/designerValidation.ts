@@ -45,6 +45,9 @@ const CONSTRAINTS = {
   MAX_INSERT_DIMENSION: 200,
   MAX_INSERT_DEPTH: 50,
   MAX_PAYLOAD_BYTES: 100_000, // 100KB max for designer shares
+  // Mask cells are half-bin resolution: 10 grid units × 2 = 20 cells per
+  // side. Mirrors MAX_MASK_DIMENSION in `src/shared/utils/cellMask.ts`.
+  MAX_MASK_DIMENSION: 20,
 } as const;
 
 export interface DesignerSharePayload {
@@ -107,6 +110,46 @@ function validateDividers(dividers: unknown): string | null {
     )
   ) {
     return `dividers.thickness must be ${CONSTRAINTS.MIN_DIVIDER_THICKNESS}-${CONSTRAINTS.MAX_DIVIDER_THICKNESS}`;
+  }
+  return null;
+}
+
+/**
+ * Validates a cellMask object for share payloads.
+ *
+ * Mirrors the client-side `validateMask` in `src/shared/utils/cellMask.ts`
+ * minus the expensive flood-fill checks — server-side we only need to
+ * guard dimensions + cell-array size so a crafted share can't allocate
+ * unbounded memory when a viewer loads it. The full structural check
+ * runs client-side once the generator touches the mask.
+ *
+ * @param mask - The value to validate as a cellMask (expected `{ cols, rows, cells }`).
+ * @returns An error string, or `null` if the mask is structurally sound.
+ */
+function validateCellMask(mask: unknown): string | null {
+  if (!isObject(mask)) return 'cellMask must be an object';
+  if (
+    !isNumber(mask.cols) ||
+    !inRange(mask.cols, 1, CONSTRAINTS.MAX_MASK_DIMENSION) ||
+    !Number.isInteger(mask.cols)
+  ) {
+    return `cellMask.cols must be integer 1-${CONSTRAINTS.MAX_MASK_DIMENSION}`;
+  }
+  if (
+    !isNumber(mask.rows) ||
+    !inRange(mask.rows, 1, CONSTRAINTS.MAX_MASK_DIMENSION) ||
+    !Number.isInteger(mask.rows)
+  ) {
+    return `cellMask.rows must be integer 1-${CONSTRAINTS.MAX_MASK_DIMENSION}`;
+  }
+  if (!Array.isArray(mask.cells)) return 'cellMask.cells must be an array';
+  const expected = mask.cols * mask.rows;
+  if (mask.cells.length !== expected) {
+    return `cellMask.cells length must be cols × rows (${expected})`;
+  }
+  for (let i = 0; i < mask.cells.length; i++) {
+    const v = mask.cells[i];
+    if (v !== 0 && v !== 1) return `cellMask.cells[${i}] must be 0 or 1`;
   }
   return null;
 }
@@ -342,6 +385,14 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   if (params.walls !== undefined) {
     const wallsErr = validateWalls(params.walls);
     if (wallsErr) return validationError('INVALID_PARAMS', wallsErr);
+  }
+
+  // Custom-shape footprint: structurally-valid masks are enforced here so
+  // a crafted share can't ship an oversized `cells` array that the viewer
+  // would have to allocate on load.
+  if (params.cellMask !== undefined) {
+    const maskErr = validateCellMask(params.cellMask);
+    if (maskErr) return validationError('INVALID_PARAMS', maskErr);
   }
 
   // Inserts

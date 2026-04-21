@@ -7,7 +7,8 @@ import type { DesignerState, SaveStatus, ExportFileNameConfig, SavedDesign } fro
 import { THUMBNAIL_VERSION } from '../../types';
 import { DEFAULT_BIN_PARAMS, migrateParams } from '../../constants';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '../../utils/fileNaming';
-import { setPendingMeshCache } from '../helpers';
+import { paramsNeedHalfBinMode, setPendingMeshCache } from '../helpers';
+import { isPartialMask, validateMask } from '@/shared/utils/cellMask';
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
 
@@ -67,6 +68,10 @@ export function createPersistenceSlice(set: Set) {
         state.pendingBinLink = null;
         state.needsThumbnailUpdate = false;
         state.generation.epoch += 1;
+        // Reset UI toggles that are derived from params so the new design
+        // starts clean instead of inheriting the previous session's state.
+        state.ui.halfBinMode = false;
+        state.ui.shapeEditorOpen = false;
         setPendingMeshCache(null);
       });
     },
@@ -76,8 +81,18 @@ export function createPersistenceSlice(set: Set) {
       const needsNewThumbnail =
         !design.thumbnail || (design.thumbnailVersion ?? 0) < THUMBNAIL_VERSION;
 
+      let migrated = migrateParams(design.params);
+      // Belt-and-braces: `setCellMask` would reject a malformed mask, but
+      // `state.params = migrated` bypasses that action. If a persisted or
+      // shared design carries a structurally-invalid cellMask (crafted
+      // payload, data corruption, schema drift), drop it back to the
+      // rectangle fast-path rather than hand an invalid polygon to the
+      // generator.
+      if (isPartialMask(migrated.cellMask) && validateMask(migrated.cellMask) !== null) {
+        migrated = { ...migrated, cellMask: undefined };
+      }
       set((state) => {
-        state.params = migrateParams(design.params);
+        state.params = migrated;
         state.currentDesignId = design.id;
         state.designName = design.name;
         state.exportFileNameConfig = design.exportFileNameConfig ?? {
@@ -88,6 +103,14 @@ export function createPersistenceSlice(set: Set) {
         state.pendingBinLink = null;
         state.needsThumbnailUpdate = needsNewThumbnail;
         state.generation.epoch += 1;
+        // halfBinMode and shapeEditorOpen live in UI state (not in
+        // SavedDesign), so derive them from the loaded params. Without
+        // this, a half-bin design opens in a 1u UI that can't represent
+        // its own state, and a custom-masked design opens with its shape
+        // editor collapsed. Normalize both ways so switching between
+        // saved designs doesn't leak the previous session's toggles.
+        state.ui.halfBinMode = paramsNeedHalfBinMode(migrated);
+        state.ui.shapeEditorOpen = isPartialMask(migrated.cellMask);
         setPendingMeshCache(null);
       });
     },

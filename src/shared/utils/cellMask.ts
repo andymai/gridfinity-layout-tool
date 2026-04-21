@@ -37,7 +37,6 @@ export type MaskValidationErrorKind =
   | 'dimension_mismatch'
   | 'empty'
   | 'disconnected'
-  | 'has_holes'
   | 'out_of_bounds'
   | 'invalid_cell_value';
 
@@ -75,6 +74,41 @@ export function isPartialMask(mask: CellMask | undefined): mask is CellMask {
   return mask !== undefined && !isAllFilled(mask);
 }
 
+/**
+ * True when any 1u grid square has a mix of filled and empty half-bin
+ * sub-cells. Cells that are uniformly filled or uniformly empty don't
+ * count. A half-bin-only bin boundary (e.g. a half-cell cut into the side
+ * of an otherwise-full 1u cell) makes the base generator switch to
+ * half-sockets for that cell so the floor has a socket in every filled
+ * half-cell region instead of a single full socket that would overhang
+ * the cut.
+ *
+ * Trailing odd-dimension edges (the 0.5u fringe on a 1.5×1.5 bin) do
+ * NOT count — those half-cells are already modelled as natural 0.5u
+ * cells by the generator, so a fully-filled fractional bin returns
+ * false here.
+ */
+export function hasHalfBinDetail(mask: CellMask): boolean {
+  const { cols, rows, cells } = mask;
+  // Inspect only origin-aligned full 2×2 blocks; the trailing odd
+  // column/row is the fractional-edge fringe and gets half-cells
+  // naturally — it doesn't indicate mixed-detail inside a 1u region.
+  const wholeCols = cols - (cols % 2);
+  const wholeRows = rows - (rows % 2);
+  for (let r = 0; r < wholeRows; r += 2) {
+    for (let c = 0; c < wholeCols; c += 2) {
+      const topLeft = cells[r * cols + c];
+      const topRight = cells[r * cols + c + 1];
+      const bottomLeft = cells[(r + 1) * cols + c];
+      const bottomRight = cells[(r + 1) * cols + c + 1];
+      if (topLeft !== topRight || topLeft !== bottomLeft || topLeft !== bottomRight) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 /** Count filled cells in the mask. */
 export function countFilled(mask: CellMask): number {
   let n = 0;
@@ -93,6 +127,10 @@ export function countFilled(mask: CellMask): number {
  * - At least one filled cell
  * - Within MAX_MASK_DIMENSION bounds
  * - All filled cells form one 4-connected component
+ *
+ * Enclosed empty cells (holes) are allowed — O-shapes and other
+ * ring-topology footprints are valid; the generator builds a polygon
+ * with inner hole loops.
  */
 export function validateMask(mask: CellMask): MaskValidationError | null {
   const { cols, rows, cells } = mask;
@@ -173,62 +211,6 @@ export function validateMask(mask: CellMask): MaskValidationError | null {
     };
   }
 
-  // Hole check: flood-fill empty cells from the outside (conceptually adding
-  // an empty border around the mask, then BFS). Any empty cell not reached is
-  // enclosed by filled cells, which would produce an invalid polygon since
-  // `maskToPolygon` only walks the outer boundary.
-  const emptyCount = cells.length - filledCount;
-  if (emptyCount > 0) {
-    const emptyVisited = new Uint8Array(cells.length);
-    const emptyQueue: number[] = [];
-    for (let c = 0; c < cols; c++) {
-      for (const r of [0, rows - 1]) {
-        const idx = r * cols + c;
-        if (cells[idx] !== 1 && !emptyVisited[idx]) {
-          emptyVisited[idx] = 1;
-          emptyQueue.push(idx);
-        }
-      }
-    }
-    for (let r = 0; r < rows; r++) {
-      for (const c of [0, cols - 1]) {
-        const idx = r * cols + c;
-        if (cells[idx] !== 1 && !emptyVisited[idx]) {
-          emptyVisited[idx] = 1;
-          emptyQueue.push(idx);
-        }
-      }
-    }
-    let emptyReached = emptyQueue.length;
-    while (emptyQueue.length > 0) {
-      const idx = emptyQueue.pop();
-      if (idx === undefined) break;
-      const col = idx % cols;
-      const row = Math.floor(idx / cols);
-      const neighbors: Array<[number, number]> = [
-        [col - 1, row],
-        [col + 1, row],
-        [col, row - 1],
-        [col, row + 1],
-      ];
-      for (const [nc, nr] of neighbors) {
-        if (nc < 0 || nc >= cols || nr < 0 || nr >= rows) continue;
-        const nIdx = nr * cols + nc;
-        if (emptyVisited[nIdx]) continue;
-        if (cells[nIdx] === 1) continue;
-        emptyVisited[nIdx] = 1;
-        emptyReached++;
-        emptyQueue.push(nIdx);
-      }
-    }
-    if (emptyReached !== emptyCount) {
-      return {
-        kind: 'has_holes',
-        message: `mask has ${emptyCount - emptyReached} enclosed empty cell(s); interior holes are not supported`,
-      };
-    }
-  }
-
   return null;
 }
 
@@ -259,28 +241,35 @@ export interface Point2 {
 }
 
 /**
- * Convert a cell mask to the outer polygon of its filled region.
- *
- * Returns vertices in counter-clockwise order, origin at (0, 0) in grid
- * units (NOT mm — caller multiplies by `gridUnitMm`). Vertices land only at
- * corners where the perimeter direction changes; collinear points are
- * elided so downstream sketch APIs see minimum-complexity polygons.
+ * A closed boundary loop of a mask — row-major origin at (0, 0), values in
+ * grid units. For `maskToPolygon`, the first element is the outer CCW
+ * perimeter; subsequent elements are inner hole perimeters traversed CW
+ * from the filled material's point of view.
+ */
+export type MaskLoop = readonly Point2[];
+
+/**
+ * Convert a cell mask to its polygon loops: one outer (CCW) plus zero or
+ * more inner holes (CW). Origin at (0, 0) in grid units (NOT mm — caller
+ * multiplies by `gridUnitMm`). Vertices land only at corners where the
+ * perimeter direction changes; collinear points are elided so downstream
+ * sketch APIs see minimum-complexity polygons.
  *
  * Algorithm: collect every boundary edge (between filled and empty or
- * filled and out-of-bounds), connect them head-to-tail starting from the
- * first boundary edge at the bottom-left, and drop collinear midpoints.
+ * filled and out-of-bounds) with filled-region on the LEFT, then chain
+ * edges into loops starting from unused edges until all are consumed.
+ * The loop that encloses every other loop is the outer boundary; the
+ * rest are holes.
  *
  * Preconditions: `validateMask(mask)` must return null. Passing an
  * invalid mask yields undefined results.
  */
-export function maskToPolygon(mask: CellMask): readonly Point2[] {
+export function maskToPolygon(mask: CellMask): readonly MaskLoop[] {
   const { cols, rows, cells } = mask;
   const s = MASK_CELL_SIZE;
   const filled = (c: number, r: number): boolean =>
     c >= 0 && c < cols && r >= 0 && r < rows && cells[r * cols + c] === 1;
 
-  // Edge: directed segment on the perimeter. Stored as {from: Point2, to: Point2}.
-  // Boundary edges are emitted with the filled region on the LEFT (so CCW ordering).
   type Edge = {
     readonly fx: number;
     readonly fy: number;
@@ -290,7 +279,8 @@ export function maskToPolygon(mask: CellMask): readonly Point2[] {
   const edges: Edge[] = [];
 
   // For each filled cell, emit boundary edges (sides adjacent to empty/outside).
-  // Directions chosen so filled is on the LEFT of the edge direction (CCW hull).
+  // Directions chosen so filled is on the LEFT of the edge direction — this
+  // makes the outer perimeter CCW and each enclosed hole CW.
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       if (cells[r * cols + c] !== 1) continue;
@@ -309,50 +299,72 @@ export function maskToPolygon(mask: CellMask): readonly Point2[] {
     }
   }
 
-  // Index edges by start point for chaining.
   const key = (x: number, y: number): string => `${x},${y}`;
   const byStart = new Map<string, Edge>();
   for (const e of edges) byStart.set(key(e.fx, e.fy), e);
 
-  // Start at the bottom-most, then left-most edge endpoint (canonical start).
-  edges.sort((a, b) => a.fy - b.fy || a.fx - b.fx);
-  const start = edges[0];
-
-  // Walk the chain.
-  const ordered: Edge[] = [];
-  let cur: Edge | undefined = start;
-  const seen = new Set<string>();
-  while (cur) {
-    const k = key(cur.fx, cur.fy);
-    if (seen.has(k)) break;
-    seen.add(k);
-    ordered.push(cur);
-    cur = byStart.get(key(cur.tx, cur.ty));
-  }
-
-  // Defensive: a single-loop walk must consume every boundary edge. If not,
-  // the mask has holes or multiple disjoint components — both are rejected
-  // by `validateMask`, so reaching here means the caller skipped validation.
-  if (ordered.length !== edges.length) {
-    throw new Error(
-      `maskToPolygon consumed ${ordered.length}/${edges.length} boundary edges; mask has holes or multiple loops (run validateMask first)`
-    );
-  }
-
-  // Collapse collinear runs: keep only points where direction changes.
-  const result: Point2[] = [];
-  for (let i = 0; i < ordered.length; i++) {
-    const prev = ordered[(i - 1 + ordered.length) % ordered.length];
-    const e = ordered[i];
-    const prevDx = Math.sign(prev.tx - prev.fx);
-    const prevDy = Math.sign(prev.ty - prev.fy);
-    const curDx = Math.sign(e.tx - e.fx);
-    const curDy = Math.sign(e.ty - e.fy);
-    if (prevDx !== curDx || prevDy !== curDy) {
-      result.push({ x: e.fx, y: e.fy });
+  /** Collapse collinear runs → keep only vertices where direction changes. */
+  const collapse = (walk: Edge[]): Point2[] => {
+    const out: Point2[] = [];
+    const n = walk.length;
+    for (let i = 0; i < n; i++) {
+      const prev = walk[(i - 1 + n) % n];
+      const e = walk[i];
+      if (Math.sign(prev.tx - prev.fx) !== Math.sign(e.tx - e.fx)) {
+        out.push({ x: e.fx, y: e.fy });
+        continue;
+      }
+      if (Math.sign(prev.ty - prev.fy) !== Math.sign(e.ty - e.fy)) {
+        out.push({ x: e.fx, y: e.fy });
+      }
     }
+    return out;
+  };
+
+  /** Signed area of a closed polygon — positive for CCW, negative for CW. */
+  const signedArea = (poly: readonly Point2[]): number => {
+    let a = 0;
+    const n = poly.length;
+    for (let i = 0; i < n; i++) {
+      const p = poly[i];
+      const q = poly[(i + 1) % n];
+      a += p.x * q.y - q.x * p.y;
+    }
+    return a / 2;
+  };
+
+  // Chain edges into every closed loop — each connected boundary (outer or
+  // hole) consumes its edges exactly once.
+  const loops: Point2[][] = [];
+  const consumed = new Set<string>();
+  for (const startEdge of edges) {
+    const k = key(startEdge.fx, startEdge.fy);
+    if (consumed.has(k)) continue;
+    const walk: Edge[] = [];
+    let cur: Edge | undefined = startEdge;
+    while (cur) {
+      const ck = key(cur.fx, cur.fy);
+      if (consumed.has(ck)) break;
+      consumed.add(ck);
+      walk.push(cur);
+      cur = byStart.get(key(cur.tx, cur.ty));
+    }
+    if (walk.length > 0) loops.push(collapse(walk));
   }
-  return result;
+
+  if (loops.length === 0) {
+    throw new Error('maskToPolygon produced zero loops — mask may be empty');
+  }
+
+  // The outer boundary is the single CCW loop (positive signed area); every
+  // other loop is a hole (CW, negative area). Having no CCW loop means the
+  // filled region has no outer boundary, which shouldn't happen post-validation.
+  const outerIdx = loops.findIndex((l) => signedArea(l) > 0);
+  if (outerIdx < 0) {
+    throw new Error('maskToPolygon found no outer (CCW) loop');
+  }
+  const holes = loops.filter((_, i) => i !== outerIdx);
+  return [loops[outerIdx], ...holes];
 }
 
 /**

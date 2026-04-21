@@ -12,6 +12,7 @@
 
 import { useShallow } from 'zustand/react/shallow';
 import { DimensionsSection } from '../panel/DimensionsSection';
+import { ShapeSection } from '../panel/ShapeSection';
 import { InteriorSection } from '../panel/InteriorSection';
 import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
@@ -21,6 +22,7 @@ import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
 import { SplitOptionsSection } from '../panel/SplitOptionsSection';
 import { StickyGroupHeader } from '../panel/StickyGroupHeader';
 import { ColorsSection } from '../panel/ColorsSection';
+import { FeatureGate } from '../panel/FeatureGate';
 import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
@@ -28,15 +30,22 @@ import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOptionsSection';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { isPartialMask } from '@/shared/utils/cellMask';
 
 export function ParameterPanel() {
   const t = useTranslation();
   const shapeSummary = useShapeGroupSummary();
   const interiorSummary = useInteriorGroupSummary();
   const baseSummary = useBaseGroupSummary();
-  const showLabelTabs = useDesignerStore(useShallow((s) => s.params.style === 'standard'));
+  const { showLabelTabs, isCustomShape } = useDesignerStore(
+    useShallow((s) => ({
+      showLabelTabs: s.params.style === 'standard',
+      isCustomShape: isPartialMask(s.params.cellMask),
+    }))
+  );
   const { needsSplit } = useSplitOptionsSection();
   const showColors = useFeatureFlag('multi_color_export');
+  const customShapeReason = t('binDesigner.shape.custom.hint');
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-scroll scrollbar-thin">
@@ -49,12 +58,21 @@ export function ParameterPanel() {
           <div className="px-4 py-4 border-b border-stroke-subtle/50">
             <DimensionsSection />
           </div>
+          <div className="px-4 py-4 border-b border-stroke-subtle/50">
+            <ShapeSection />
+          </div>
           {needsSplit && (
             <div className="px-4 py-4 border-b border-stroke-subtle/50">
+              {/* Splits work for any footprint — axis-aligned cut planes
+                  intersect the polygon naturally. Pieces may be irregular
+                  but each has positive volume; tested in the polygon
+                  scenario suite. */}
               <SplitOptionsSection />
             </div>
           )}
           <div className="px-4 py-4">
+            {/* Wall thickness works for any footprint; pattern/cutouts/handle
+                gate themselves inside WallsSection. */}
             <WallsSection />
           </div>
         </StickyGroupHeader>
@@ -75,15 +93,21 @@ export function ParameterPanel() {
           summary={interiorSummary}
         >
           <div className="px-4 py-4">
-            <InteriorSection />
+            <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
+              <InteriorSection />
+            </FeatureGate>
           </div>
           {showLabelTabs && (
             <div className="px-4 py-4 border-t border-stroke-subtle/50">
-              <LabelTabsSection />
+              <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
+                <LabelTabsSection />
+              </FeatureGate>
             </div>
           )}
           <div className="px-4 py-4 border-t border-stroke-subtle/50">
-            <ScoopSection />
+            <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
+              <ScoopSection />
+            </FeatureGate>
           </div>
         </StickyGroupHeader>
 

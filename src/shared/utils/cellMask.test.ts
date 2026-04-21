@@ -4,6 +4,7 @@ import {
   classifyShape,
   countFilled,
   hashMask,
+  hasHalfBinDetail,
   isAllFilled,
   isPartialMask,
   isRegionFilled,
@@ -54,6 +55,183 @@ describe('isAllFilled / countFilled', () => {
     ]);
     expect(isAllFilled(m)).toBe(false);
     expect(countFilled(m)).toBe(8);
+  });
+});
+
+describe('hasHalfBinDetail', () => {
+  interface Case {
+    readonly name: string;
+    readonly rows: (0 | 1)[][];
+    readonly expected: boolean;
+  }
+
+  const cases: readonly Case[] = [
+    // 1u-aligned masks (no half-bin detail) — every 1u block is uniform.
+    {
+      name: '2×2 fully filled',
+      rows: [
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+      ],
+      expected: false,
+    },
+    {
+      name: '2×2 bottom-right 1u cleared (1u L-shape)',
+      rows: [
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 0, 0],
+        [1, 1, 0, 0],
+      ],
+      expected: false,
+    },
+    {
+      name: '3×3 L preset (1u corner cut)',
+      rows: [
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 0, 0],
+        [1, 1, 1, 1, 0, 0],
+      ],
+      expected: false,
+    },
+    {
+      name: '4×4 checkerboard at 1u granularity',
+      rows: [
+        [1, 1, 0, 0, 1, 1, 0, 0],
+        [1, 1, 0, 0, 1, 1, 0, 0],
+        [0, 0, 1, 1, 0, 0, 1, 1],
+        [0, 0, 1, 1, 0, 0, 1, 1],
+        [1, 1, 0, 0, 1, 1, 0, 0],
+        [1, 1, 0, 0, 1, 1, 0, 0],
+        [0, 0, 1, 1, 0, 0, 1, 1],
+        [0, 0, 1, 1, 0, 0, 1, 1],
+      ],
+      expected: false,
+    },
+
+    // Half-bin detail present — any 1u block with mixed sub-cells.
+    {
+      name: '2×2 with one half-cell cleared',
+      rows: [
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 0],
+      ],
+      expected: true,
+    },
+    {
+      name: '2×2 with a half-cell row cleared',
+      rows: [
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [0, 0, 0, 0],
+      ],
+      expected: true,
+    },
+    {
+      name: '3×3 with a diagonal half-cell cut',
+      rows: [
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [0, 1, 1, 1, 1, 1],
+      ],
+      expected: true,
+    },
+
+    // Odd dimensions — the trailing 0.5u fringe is natural half-cells, not
+    // half-bin detail. Only mixed 1u blocks trigger the predicate.
+    {
+      name: '1.5×1.5 fully filled (3×3 mask) — fringe only, no mixed 1u',
+      rows: [
+        [1, 1, 1],
+        [1, 1, 1],
+        [1, 1, 1],
+      ],
+      expected: false,
+    },
+    {
+      name: '2×1.5 (4×3 mask) fully filled — fringe only',
+      rows: [
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+      ],
+      expected: false,
+    },
+    {
+      name: '2×2 with a single interior half-cell cut inside an odd-dim mask (5×5)',
+      // 5×5 mask: the bottom-left 2×2 block has three filled + one empty =
+      // mixed → true, regardless of the trailing odd fringe.
+      rows: [
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1],
+        [0, 1, 1, 1, 1],
+      ],
+      expected: true,
+    },
+  ];
+
+  it.each(cases)('$name → $expected', ({ rows, expected }) => {
+    expect(hasHalfBinDetail(mask(rows))).toBe(expected);
+  });
+
+  it('returns false when every 1u grid square has all four sub-cells matching', () => {
+    // 2×2 bin (4×4 mask) with the whole bottom-right 1u cell cleared — each
+    // 1u square is uniform (all 4 filled or all 4 empty).
+    const m = mask([
+      [1, 1, 1, 1],
+      [1, 1, 1, 1],
+      [1, 1, 0, 0],
+      [1, 1, 0, 0],
+    ]);
+    expect(hasHalfBinDetail(m)).toBe(false);
+  });
+
+  it('returns true when any 1u grid square has mixed sub-cells', () => {
+    // One cleared half-cell inside an otherwise-full 2×2 bin.
+    const m = mask([
+      [1, 1, 1, 1],
+      [1, 1, 1, 1],
+      [1, 1, 1, 1],
+      [1, 1, 1, 0],
+    ]);
+    expect(hasHalfBinDetail(m)).toBe(true);
+  });
+
+  it('returns false for a fully-filled odd-dim mask (fringe is not detail)', () => {
+    // 1.5×1.5 bin = 3×3 mask. Trailing fringe cells are natural half-cells;
+    // no 1u block has mixed filled/empty sub-cells.
+    const m = mask([
+      [1, 1, 1],
+      [1, 1, 1],
+      [1, 1, 1],
+    ]);
+    expect(hasHalfBinDetail(m)).toBe(false);
+  });
+
+  it('preset L at 3\u00d73 (half-bin mask 6\u00d76) has no half-bin detail', () => {
+    // L preset clears a full 1u corner — every 1u square stays uniform.
+    const m = mask([
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 0, 0],
+      [1, 1, 1, 1, 0, 0],
+    ]);
+    expect(hasHalfBinDetail(m)).toBe(false);
   });
 });
 
@@ -123,17 +301,19 @@ describe('validateMask', () => {
     expect(err?.kind).toBe('disconnected');
   });
 
-  it('rejects masks with interior holes (donut / ring)', () => {
-    // 3×3 ring: outer frame filled, center empty — the center cell is
-    // enclosed by filled cells on all four sides.
-    const err = validateMask(
-      mask([
-        [1, 1, 1],
-        [1, 0, 1],
-        [1, 1, 1],
-      ])
-    );
-    expect(err?.kind).toBe('has_holes');
+  it('accepts masks with interior holes (O/ring-shaped bins)', () => {
+    // 3×3 ring: outer frame filled, center empty. Validates because the
+    // filled region is still one 4-connected component; the hole becomes
+    // an inner loop in the generator's polygon output.
+    expect(
+      validateMask(
+        mask([
+          [1, 1, 1],
+          [1, 0, 1],
+          [1, 1, 1],
+        ])
+      )
+    ).toBeNull();
   });
 
   it('accepts a true U-shape (empty region reaches the boundary)', () => {
@@ -199,7 +379,9 @@ describe('resizeMask', () => {
 describe('maskToPolygon', () => {
   it('returns 4 corners for a 1×1 rectangle', () => {
     const m = buildFullMask(0.5, 0.5); // exactly one half-cell
-    const poly = maskToPolygon(m);
+    const loops = maskToPolygon(m);
+    expect(loops).toHaveLength(1);
+    const poly = loops[0];
     expect(poly).toHaveLength(4);
     // CCW from bottom-left
     expect(poly[0]).toEqual({ x: 0, y: 0 });
@@ -214,7 +396,9 @@ describe('maskToPolygon', () => {
 
   it('collapses collinear cells into 4 corners for a larger rectangle', () => {
     const m = buildFullMask(2, 1); // 4×2 mask cells = one rectangle
-    const poly = maskToPolygon(m);
+    const loops = maskToPolygon(m);
+    expect(loops).toHaveLength(1);
+    const poly = loops[0];
     expect(poly).toHaveLength(4);
     const xs = poly.map((p) => p.x);
     const ys = poly.map((p) => p.y);
@@ -233,7 +417,9 @@ describe('maskToPolygon', () => {
       [1, 1, 1, 1, 0, 0],
       [1, 1, 1, 1, 0, 0],
     ]);
-    const poly = maskToPolygon(m);
+    const loops = maskToPolygon(m);
+    expect(loops).toHaveLength(1);
+    const poly = loops[0];
     expect(poly).toHaveLength(6);
 
     // Bounds: 3 grid units wide, 3 grid units tall
@@ -263,8 +449,38 @@ describe('maskToPolygon', () => {
       [0, 0, 1, 1, 0, 0],
       [0, 0, 1, 1, 0, 0],
     ]);
-    const poly = maskToPolygon(m);
-    expect(poly).toHaveLength(8);
+    const loops = maskToPolygon(m);
+    expect(loops).toHaveLength(1);
+    expect(loops[0]).toHaveLength(8);
+  });
+
+  it('returns outer + inner hole loop for an O-shape (3×3 ring)', () => {
+    // 3×3 mask (mid-point): outer frame filled, center empty.
+    const m = mask([
+      [1, 1, 1],
+      [1, 0, 1],
+      [1, 1, 1],
+    ]);
+    const loops = maskToPolygon(m);
+    expect(loops).toHaveLength(2);
+
+    // Outer loop: CCW, bounds 0..1.5 in grid units (3 half-cells × 0.5).
+    const outer = loops[0];
+    expect(outer).toHaveLength(4);
+    const outerXs = outer.map((p) => p.x);
+    expect(Math.min(...outerXs)).toBe(0);
+    expect(Math.max(...outerXs)).toBeCloseTo(1.5);
+
+    // Inner hole loop: the empty center cell is one half-cell at (0.5..1.0,
+    // 0.5..1.0) in grid units.
+    const hole = loops[1];
+    expect(hole).toHaveLength(4);
+    const holeXs = hole.map((p) => p.x);
+    const holeYs = hole.map((p) => p.y);
+    expect(Math.min(...holeXs)).toBeCloseTo(0.5);
+    expect(Math.max(...holeXs)).toBeCloseTo(1.0);
+    expect(Math.min(...holeYs)).toBeCloseTo(0.5);
+    expect(Math.max(...holeYs)).toBeCloseTo(1.0);
   });
 });
 

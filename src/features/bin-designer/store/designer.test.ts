@@ -253,4 +253,88 @@ describe('useDesignerStore', () => {
       expect(useDesignerStore.getState().wasmStatus).toBe('ready');
     });
   });
+
+  describe('setCellMask', () => {
+    it('accepts a valid partial mask', () => {
+      useDesignerStore.getState().setParam('width', 2);
+      useDesignerStore.getState().setParam('depth', 2);
+      const mask = {
+        cols: 4,
+        rows: 4,
+        cells: [1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] as (0 | 1)[],
+      };
+      useDesignerStore.getState().setCellMask(mask);
+      expect(useDesignerStore.getState().params.cellMask).toBe(mask);
+    });
+
+    it('clears a fully-filled mask back to undefined (fast path)', () => {
+      useDesignerStore.getState().setCellMask({
+        cols: 4,
+        rows: 4,
+        cells: new Array(16).fill(1) as (0 | 1)[],
+      });
+      expect(useDesignerStore.getState().params.cellMask).toBeUndefined();
+    });
+
+    it('rejects an invalid mask (disconnected components) without throwing', () => {
+      // Two isolated cells in opposite corners.
+      useDesignerStore.getState().setCellMask({
+        cols: 4,
+        rows: 4,
+        cells: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1] as (0 | 1)[],
+      });
+      expect(useDesignerStore.getState().params.cellMask).toBeUndefined();
+    });
+  });
+
+  describe('width/depth change auto-resizes cellMask', () => {
+    it('preserves the existing mask shape when growing the bin', () => {
+      useDesignerStore.getState().setParam('width', 2);
+      useDesignerStore.getState().setParam('depth', 2);
+      useDesignerStore.getState().setCellMask({
+        cols: 4,
+        rows: 4,
+        cells: [1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] as (0 | 1)[],
+      });
+      useDesignerStore.getState().setParam('width', 3);
+      const mask = useDesignerStore.getState().params.cellMask;
+      expect(mask).toBeDefined();
+      expect(mask!.cols).toBe(6);
+      expect(mask!.rows).toBe(4);
+      // Original cleared cell must still be cleared.
+      expect(mask!.cells[0 * 6 + 3]).toBe(0);
+    });
+
+    it('clears the mask when a resize would leave every cell filled', () => {
+      useDesignerStore.getState().setParam('width', 2);
+      useDesignerStore.getState().setParam('depth', 2);
+      // Clear only the bottom-right cell at 2×2.
+      useDesignerStore.getState().setCellMask({
+        cols: 4,
+        rows: 4,
+        cells: [1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] as (0 | 1)[],
+      });
+      // Shrink back so the cleared cell falls outside the new bounds.
+      useDesignerStore.getState().setParam('width', 1);
+      expect(useDesignerStore.getState().params.cellMask).toBeUndefined();
+    });
+
+    it('setParams (bulk) also reshapes the mask — covers the dimension-swap path', () => {
+      useDesignerStore.getState().setParam('width', 3);
+      useDesignerStore.getState().setParam('depth', 2);
+      // 3×2 bin = 6×4 mask. Clear the bottom-left corner cell — on the
+      // boundary so no hole is created and validateMask accepts it. The
+      // cell stays in-bounds after swap to 2×3 (new 4×6 mask).
+      const cells = new Array<0 | 1>(24).fill(1);
+      cells[0] = 0;
+      useDesignerStore.getState().setCellMask({ cols: 6, rows: 4, cells });
+      // Simulate DimensionsSection swap: width<->depth via setParams.
+      useDesignerStore.getState().setParams({ width: 2, depth: 3 });
+      const mask = useDesignerStore.getState().params.cellMask;
+      expect(mask).toBeDefined();
+      expect(mask!.cols).toBe(4);
+      expect(mask!.rows).toBe(6);
+      expect(mask!.cells[0]).toBe(0);
+    });
+  });
 });

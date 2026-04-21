@@ -34,12 +34,88 @@ import {
   LIP_HEIGHT,
   LIP_TAPER_WIDTH,
   TOP_FILLET,
+  COPLANAR_MARGIN,
   sketch,
 } from './generatorTypes';
 import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
-import { buildMaskDrawing, buildMaskDrawingInset } from './maskPolygon';
+import { buildMaskDrawing, buildMaskDrawingInset, buildMaskHoleDrawings } from './maskPolygon';
+
+/**
+ * Build a hollow-walls + closed-floor shell without relying on brepjs
+ * `shell()`. brepjs 15.x's shell operation fails on concave-perimeter
+ * solids (bins with L/T/U-shaped footprints), so we compose the shell
+ * explicitly as `outer ⊖ inner` where:
+ *   - outer: footprint extruded floor-to-top (Z=0 to Z=totalHeight)
+ *   - inner: inner-footprint extruded from Z=wallThickness (top of
+ *     floor) up past Z=totalHeight so the cut opens the top cleanly.
+ * Used for every non-rectangular bin; rectangles keep the existing
+ * shell() path because it's well-tested there.
+ */
+function buildHollowPolygon(
+  scope: DisposalScope,
+  footprint: Drawing,
+  innerFootprint: Drawing,
+  totalHeight: number,
+  wallThickness: number,
+  outerHoleDrawings: readonly Drawing[] = [],
+  innerHoleDrawings: readonly Drawing[] = []
+): Shape3D {
+  const rawOuter = sketch(footprint, 'XY').extrude(totalHeight);
+  const outer = scope.register(
+    subtractHolesFromSolid(scope, rawOuter, outerHoleDrawings, totalHeight)
+  );
+
+  const rawInner = sketch(innerFootprint, 'XY', wallThickness).extrude(
+    totalHeight - wallThickness + COPLANAR_MARGIN
+  );
+  const inner = scope.register(
+    subtractHolesFromSolid(
+      scope,
+      rawInner,
+      innerHoleDrawings,
+      totalHeight - wallThickness + COPLANAR_MARGIN,
+      wallThickness
+    )
+  );
+
+  return unwrap(cut(outer, inner));
+}
+
+/**
+ * Subtract each O-shape interior hole from a bin body as a 3D boolean
+ * cut. Hole drawings carry the correct outward growth (CLEARANCE/2 for
+ * the outer face, CLEARANCE/2 + wallThickness for the inner face). When
+ * `holeDrawings` is empty this returns the input unchanged.
+ *
+ * `plugOriginZ` defaults to 0 (cut runs from the floor through the top)
+ * and `plugHeight` is the height the plug extends — extruding a hair
+ * past the bin height with `COPLANAR_MARGIN` keeps the coplanar top
+ * face from breaking the cut.
+ */
+function subtractHolesFromSolid(
+  scope: DisposalScope,
+  body: Shape3D,
+  holeDrawings: readonly Drawing[],
+  plugHeight: number,
+  plugOriginZ: number = 0
+): Shape3D {
+  if (holeDrawings.length === 0) return body;
+  let result = body;
+  for (const hole of holeDrawings) {
+    const plug = scope.register(
+      sketch(hole, 'XY', plugOriginZ).extrude(plugHeight + COPLANAR_MARGIN)
+    );
+    const next = unwrap(cut(result, plug));
+    if (next !== result) {
+      scope.register(result);
+      result = next;
+    }
+  }
+  return result;
+}
+
 /**
  * Build the bin box: a rounded-rectangle extrusion, shelled from the top.
  * The box starts at Z=0 (socket interface) and goes up to wallHeight.
@@ -82,17 +158,18 @@ export function buildBinBox(
   const outerD = gridD * gridUnitMm - CLEARANCE;
 
   /**
-   * Footprint sketch: rounded rectangle for rectangular bins, polygon
+   * Footprint drawings: rounded rectangle for rectangular bins, polygon
    * (via mask) for custom shapes. The mask polygon already accounts for
-   * CLEARANCE via its inward offset; inner offsets below subtract
-   * `wallThickness` directly.
+   * CLEARANCE via its inward offset; inner offsets subtract `wallThickness`
+   * directly. Built as factories so we only pay for a drawing when the
+   * branch that needs it actually runs.
    */
-  const footprint = (): Drawing =>
+  const makeFootprint = (): Drawing =>
     polygon
       ? buildMaskDrawing(cellMask, gridUnitMm)
       : drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS);
 
-  const innerFootprint = (): Drawing =>
+  const makeInnerFootprint = (): Drawing =>
     polygon
       ? buildMaskDrawingInset(cellMask, gridUnitMm, wallThickness)
       : drawRoundedRectangle(
@@ -101,21 +178,58 @@ export function buildBinBox(
           Math.max(BOX_CORNER_RADIUS - wallThickness, 0)
         );
 
+  // Holes in the mask (O-shape-style interiors) — pre-extracted so every
+  // branch below can decide whether it needs to subtract them. Empty for
+  // rectangular masks and simple non-rectangular masks without holes.
+  //
+  // The outer set uses CLEARANCE/2 of outward growth (clearance on the
+  // cavity's outer face). The inner set grows by an extra wallThickness
+  // so the hollow ring around the cavity has `wallThickness` of material.
+  const outerHoleDrawings: readonly Drawing[] = polygon
+    ? buildMaskHoleDrawings(cellMask, gridUnitMm)
+    : [];
+  const innerHoleDrawings: readonly Drawing[] = polygon
+    ? buildMaskHoleDrawings(cellMask, gridUnitMm, CLEARANCE / 2 + wallThickness)
+    : [];
+
   return withScope((scope: DisposalScope) => {
-    const box = sketch(footprint()).extrude(wallHeight);
+    const rawBox = sketch(makeFootprint()).extrude(wallHeight);
+    // Punch O-shape holes through the outer extrusion. When there are no
+    // holes this is a no-op and returns the same shape. `subtractHolesFromSolid`
+    // already registers intermediates with the scope via `scope.register`.
+    const box = subtractHolesFromSolid(scope, rawBox, outerHoleDrawings, wallHeight);
 
     // Solid mode: return the raw extrusion, optionally with lowered interior fill
     if (solid) {
       if (cutoutTopOffset > 0) {
-        // Build hollow walls extending to full wallHeight.
-        // Faces returned by faceFinder come from the per-shape topology
-        // cache and share their parent shape's lifecycle — do not dispose.
-        const topFaces = faceFinder()
-          .parallelTo('Z')
-          .atDistance(wallHeight, [0, 0, 0])
-          .findAll(box);
-        const hollowWalls = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
-        scope.register(box); // consumed by shell
+        let hollowWalls: Shape3D;
+        if (polygon) {
+          scope.register(box); // not consumed below; dispose via scope
+          try {
+            hollowWalls = buildHollowPolygon(
+              scope,
+              makeFootprint(),
+              makeInnerFootprint(),
+              wallHeight,
+              wallThickness,
+              outerHoleDrawings,
+              innerHoleDrawings
+            );
+          } catch {
+            // Narrow-feature polygon or degenerate inner offset — fall back
+            // to the raw solid box so generation never crashes in
+            // cutoutTopOffset mode. Mirrors the non-solid polygon branch.
+            return setBoxCache(boxKey, box);
+          }
+        } else {
+          // Rectangular path — brepjs shell is reliable on convex perimeters.
+          const topFaces = faceFinder()
+            .parallelTo('Z')
+            .atDistance(wallHeight, [0, 0, 0])
+            .findAll(box);
+          hollowWalls = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
+          scope.register(box); // consumed by shell
+        }
 
         // Build interior solid block stopping at wallHeight - cutoutTopOffset
         const innerW = outerW - 2 * wallThickness;
@@ -132,7 +246,12 @@ export function buildBinBox(
         // oversized wallThickness; catch and fall back to hollow walls.
         let innerFill: Shape3D;
         try {
-          innerFill = scope.register(sketch(innerFootprint(), 'XY').extrude(fillHeight));
+          const rawFill = sketch(makeInnerFootprint(), 'XY').extrude(fillHeight);
+          // Punch O-shape holes through the interior fill too, grown by
+          // wallThickness so the surrounding ring wall has material.
+          innerFill = scope.register(
+            subtractHolesFromSolid(scope, rawFill, innerHoleDrawings, fillHeight)
+          );
         } catch {
           return setBoxCache(boxKey, hollowWalls);
         }
@@ -156,10 +275,30 @@ export function buildBinBox(
       }
     }
 
+    if (polygon) {
+      // Polygon path: compose shell explicitly — brepjs shell() fails on
+      // concave perimeters. Caught error still falls back to solid so a
+      // pathological narrow-feature mask never crashes generation.
+      scope.register(box); // not consumed; dispose via scope
+      try {
+        return setBoxCache(
+          boxKey,
+          buildHollowPolygon(
+            scope,
+            makeFootprint(),
+            makeInnerFootprint(),
+            wallHeight,
+            wallThickness,
+            outerHoleDrawings,
+            innerHoleDrawings
+          )
+        );
+      } catch {
+        return setBoxCache(boxKey, box);
+      }
+    }
+
     const topFaces = faceFinder().parallelTo('Z').atDistance(wallHeight, [0, 0, 0]).findAll(box);
-    // For polygon masks the shell operation can fail on narrow features
-    // where wallThickness consumes the interior; fall back to the solid
-    // extrusion in that case.
     let result: Shape3D;
     try {
       result = unwrap(shell(box as ValidSolid, topFaces, wallThickness));
@@ -218,6 +357,19 @@ function buildTopShapeLoft(
   const zBottom = includeLip ? Z_EXT : Z_BASE;
   const outerSections: Sketch[] = [sectionAt(zBottom, 0), sectionAt(Z_PEAK, 0)];
 
+  // For O-shape footprints, pre-compute three sets of hole drawings at
+  // different inset levels so each Z-section of the hole lip can reach
+  // directly for the right one. holesCavity matches the cavity boundary
+  // (bin's outer face); holesInnerBase/Mid are the same boundary grown
+  // further into the filled material by the standard lip offsets.
+  const holesCavity = polygon ? buildMaskHoleDrawings(cellMask, gridUnitMm) : [];
+  const holesInnerBase = polygon
+    ? buildMaskHoleDrawings(cellMask, gridUnitMm, CLEARANCE / 2 + INNER_BASE)
+    : [];
+  const holesInnerMid = polygon
+    ? buildMaskHoleDrawings(cellMask, gridUnitMm, CLEARANCE / 2 + INNER_MID)
+    : [];
+
   return withScope((scope: DisposalScope) => {
     const [outerFirst, ...outerRest] = outerSections;
     const outerFrustum = scope.register(outerFirst.loftWith(outerRest, { ruled: true }));
@@ -237,6 +389,38 @@ function buildTopShapeLoft(
 
     // Boolean subtract inner from outer to create hollow ring
     let result = unwrap(cut(outerFrustum, innerFrustum));
+
+    // Add a lip ring around each interior hole. Mirrors the outer lip's
+    // profile: the lip's "outer" face (facing the filled material) grows
+    // from INNER_BASE at Z_BASE to 0 at Z_PEAK; its "inner" face (facing
+    // the cavity) stays at the cavity boundary.  cut(outerFrustum,
+    // innerFrustum) is then fused onto the outer lip so a bin stacked on
+    // top sits flush over both the outer perimeter and the hole.
+    for (let h = 0; h < holesCavity.length; h++) {
+      const cavity = holesCavity[h];
+      const atBase = holesInnerBase[h];
+      const atMid = holesInnerMid[h];
+
+      const bigSections: Sketch[] = [];
+      if (includeLip) bigSections.push(atBase.sketchOnPlane('XY', Z_EXT) as Sketch);
+      bigSections.push(atBase.sketchOnPlane('XY', Z_BASE) as Sketch);
+      bigSections.push(atMid.sketchOnPlane('XY', Z_TAPER1) as Sketch);
+      bigSections.push(atMid.sketchOnPlane('XY', Z_VERT) as Sketch);
+      bigSections.push(cavity.sketchOnPlane('XY', Z_PEAK) as Sketch);
+
+      const smallSections: Sketch[] = [
+        cavity.sketchOnPlane('XY', zBottom) as Sketch,
+        cavity.sketchOnPlane('XY', Z_PEAK) as Sketch,
+      ];
+
+      const [bigFirst, ...bigRest] = bigSections;
+      const big = scope.register(bigFirst.loftWith(bigRest, { ruled: true }));
+      const [smallFirst, ...smallRest] = smallSections;
+      const small = scope.register(smallFirst.loftWith(smallRest, { ruled: true }));
+      const holeRing = scope.register(unwrap(cut(big, small)));
+      scope.register(result); // consumed by fuse
+      result = unwrap(fuse(result, holeRing));
+    }
 
     // Fillet the peak edge (only when TOP_FILLET > 0; spec default is 0)
     if (TOP_FILLET > 0) {
@@ -302,11 +486,24 @@ function buildTopShapeSweep(
     return topProfileShape.sketchOnPlane(plane) as Sketch;
   };
 
+  // O-shape lip around any interior holes. `buildMaskDrawing` returns the
+  // outer perimeter only (no 2D hole cut), so the sweep would otherwise
+  // skip the cavity. Sweep the hole boundaries too and fuse onto the
+  // outer lip so a bin stacked on top mates across the hole.
+  const holeDrawings = polygon ? buildMaskHoleDrawings(cellMask, gridUnitMm) : [];
+
   return withScope((scope: DisposalScope) => {
     const boxSketch = polygon
       ? (buildMaskDrawing(cellMask, gridUnitMm).sketchOnPlane() as Sketch)
       : (drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS).sketchOnPlane() as Sketch);
-    const swept = boxSketch.sweepSketch(topProfile, { withContact: true });
+    let swept: Shape3D = boxSketch.sweepSketch(topProfile, { withContact: true });
+
+    for (const hole of holeDrawings) {
+      const holeSketch = hole.sketchOnPlane() as Sketch;
+      const holeLip = scope.register(holeSketch.sweepSketch(topProfile, { withContact: true }));
+      scope.register(swept);
+      swept = unwrap(fuse(swept, holeLip));
+    }
 
     if (TOP_FILLET > 0) {
       const lipEdges = edgeFinder()

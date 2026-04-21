@@ -19,6 +19,11 @@ import type { BinDimensions, PipelineContext } from './types';
 function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isFlat = params.base.style === 'flat';
+  // User flag only. When the mask has mixed half-bin detail, the socket
+  // builder does a per-cell dispatch using the mask — it splits only
+  // those 1u cells that straddle a half-bin boundary into quarter
+  // sockets, leaving uniform 1u cells as one full socket. This avoids
+  // decomposing every cell unnecessarily.
   const halfSockets = params.base.halfSockets && !isFlat;
   const solid = params.base.solid;
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
