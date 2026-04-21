@@ -37,6 +37,11 @@ const PADDING_HINT_AXIS_KEYS: Record<PaddingReductionHint['axis'], string> = {
   both: 'baseplate.paddingHintAxisBoth',
 };
 
+const PADDING_BUTTON_STEP = 0.25;
+const PADDING_INPUT_STEP = 0.01;
+const PADDING_MIN = 0;
+const PADDING_MAX = 100;
+
 export function BaseplatePanel() {
   const t = useTranslation();
 
@@ -596,11 +601,6 @@ function formatPrintSettingsSummary(gridUnitMm: number, bedW: number, bedD: numb
   const bed = bedW === bedD ? `${bedW}mm` : `${bedW}\u00d7${bedD}mm`;
   return `${gridUnitMm}mm \u00b7 ${bed}`;
 }
-
-const PADDING_BUTTON_STEP = 0.25;
-const PADDING_INPUT_STEP = 0.01;
-const PADDING_MIN = 0;
-const PADDING_MAX = 100;
 
 const sideStepperBtnClass =
   'flex h-6 w-8 items-center justify-center border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:bg-surface-hover hover:text-content disabled:opacity-50';
