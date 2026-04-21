@@ -7,6 +7,7 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { constrainGroupDrag, computeBounds, findAlignmentGuides } from '../geometry';
+import { cutoutFitsInMask } from '../maskFit';
 import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters, DeadZoneRef } from './types';
 
@@ -70,6 +71,20 @@ export function handleDragMove(
       y: Math.max(0, Math.min(snap(mode.startY + dy + offset.dy), bounds.binDepth - cutout.depth)),
     });
   }
+
+  // Polygon mask: hard-reject moves that would overhang the polygon — preview
+  // stays at its last valid state so the drag "sticks" like the bin-bounds clamp.
+  if (bounds.cellMask && bounds.maskCellSize) {
+    for (const [id, updates] of nextPreview) {
+      const orig = cutouts.find((c) => c.id === id);
+      if (!orig) continue;
+      const candidate = { ...orig, ...updates } as Cutout;
+      if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize)) {
+        return;
+      }
+    }
+  }
+
   setters.setPreview(nextPreview);
 
   // Compute alignment guides

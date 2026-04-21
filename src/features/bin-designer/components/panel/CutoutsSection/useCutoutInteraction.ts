@@ -11,6 +11,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
+import type { CellMask } from '@/shared/utils/cellMask';
 import { useCutoutSelection } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
@@ -21,6 +22,7 @@ import {
   getRotatedBounds,
   type AlignmentGuide,
 } from './geometry';
+import { cutoutFitsInMask, rectFitsInMask, type MaskCellSize } from './maskFit';
 import {
   getPathBounds,
   CLOSE_SNAP_THRESHOLD,
@@ -152,6 +154,10 @@ interface UseCutoutInteractionOptions {
   readonly binWidth: number;
   readonly binDepth: number;
   readonly gridSize?: number;
+  /** Non-rectangular footprint mask — when present, rejects placements outside the polygon. */
+  readonly cellMask?: CellMask;
+  /** Mm per mask cell. Required alongside cellMask; X/Y differ on non-square bins. */
+  readonly maskCellSize?: MaskCellSize;
 }
 
 /** Paste offset in mm — each successive paste shifts by this amount */
@@ -262,6 +268,8 @@ export function useCutoutInteraction({
   binWidth,
   binDepth,
   gridSize = 0.5,
+  cellMask,
+  maskCellSize,
 }: UseCutoutInteractionOptions) {
   const addToast = useToastStore((s) => s.addToast);
   const t = useTranslation();
@@ -405,6 +413,18 @@ export function useCutoutInteraction({
           y: Math.max(minY, Math.min(cutout.y + dy, maxY)),
         });
       }
+
+      // Polygon mask: reject the whole nudge if any cutout would overhang,
+      // matching the "stuck" semantics of drag against the polygon edge.
+      if (cellMask && maskCellSize) {
+        for (const [id, patch] of updates) {
+          const orig = cutouts.find((c) => c.id === id);
+          if (!orig) continue;
+          const candidate = { ...orig, ...patch } as Cutout;
+          if (!cutoutFitsInMask(candidate, cellMask, maskCellSize)) return;
+        }
+      }
+
       if (onUpdateBatch) {
         onUpdateBatch(updates);
       } else {
@@ -413,7 +433,7 @@ export function useCutoutInteraction({
         }
       }
     },
-    [selection, cutouts, onUpdate, onUpdateBatch, binWidth, binDepth]
+    [selection, cutouts, onUpdate, onUpdateBatch, binWidth, binDepth, cellMask, maskCellSize]
   );
 
   // ── Clipboard ──────────────────────────────────────────────────────
@@ -436,19 +456,39 @@ export function useCutoutInteraction({
     pasteCountRef.current += 1;
     const offset = PASTE_OFFSET * pasteCountRef.current;
 
-    addClonedCutouts(clipboard, onAdd, setSelection, (original) =>
+    // Polygon bins: drop originals whose offset clone would overhang the mask.
+    // User can re-paste at a different location rather than losing the clipboard.
+    const placeable =
+      cellMask && maskCellSize
+        ? clipboard.filter((orig) => {
+            const pos = clampedOffset(orig, offset, binWidth, binDepth);
+            return cutoutFitsInMask({ ...orig, ...pos } as Cutout, cellMask, maskCellSize);
+          })
+        : clipboard;
+    if (placeable.length === 0) return;
+
+    addClonedCutouts(placeable, onAdd, setSelection, (original) =>
       clampedOffset(original, offset, binWidth, binDepth)
     );
-  }, [clipboard, onAdd, binWidth, binDepth]);
+  }, [clipboard, onAdd, binWidth, binDepth, cellMask, maskCellSize]);
 
   const duplicateSelected = useCallback(() => {
     const selected = cutouts.filter((c) => selection.has(c.id));
     if (selected.length === 0) return;
 
-    addClonedCutouts(selected, onAdd, setSelection, (original) =>
+    const placeable =
+      cellMask && maskCellSize
+        ? selected.filter((orig) => {
+            const pos = clampedOffset(orig, PASTE_OFFSET, binWidth, binDepth);
+            return cutoutFitsInMask({ ...orig, ...pos } as Cutout, cellMask, maskCellSize);
+          })
+        : selected;
+    if (placeable.length === 0) return;
+
+    addClonedCutouts(placeable, onAdd, setSelection, (original) =>
       clampedOffset(original, PASTE_OFFSET, binWidth, binDepth)
     );
-  }, [cutouts, selection, onAdd, binWidth, binDepth]);
+  }, [cutouts, selection, onAdd, binWidth, binDepth, cellMask, maskCellSize]);
 
   // ── Path tool ────────────────────────────────────────────────────
 
@@ -466,6 +506,18 @@ export function useCutoutInteraction({
       }
 
       const { minX, minY, maxX, maxY } = getPathBounds(clamped);
+
+      // Polygon bins: reject paths whose bounds overhang the mask.
+      if (
+        cellMask &&
+        maskCellSize &&
+        !rectFitsInMask(cellMask, minX, minY, maxX - minX, maxY - minY, maskCellSize)
+      ) {
+        setPathDrawingPreview(null);
+        setMode({ type: 'idle' });
+        return;
+      }
+
       const newId = crypto.randomUUID();
       onAdd({
         ...createDefaultCutout(newId, 'path', minX, minY, maxX - minX, maxY - minY),
@@ -475,13 +527,13 @@ export function useCutoutInteraction({
       setMode({ type: 'idle' });
       setPathDrawingPreview(null);
     },
-    [onAdd, binWidth, binDepth]
+    [onAdd, binWidth, binDepth, cellMask, maskCellSize]
   );
 
   /** Handle path background click (first click or subsequent). */
   const handlePathBackgroundDown = useCallback(
     (mmX: number, mmY: number, shiftKey: boolean) => {
-      const bounds = { binWidth, binDepth };
+      const bounds = { binWidth, binDepth, cellMask, maskCellSize };
       const pathMode = mode.type === 'path-drawing' ? mode : null;
       handlePathDrawingPointerDown(pathMode, mmX, mmY, shiftKey, bounds, snap, {
         setMode,
@@ -489,7 +541,7 @@ export function useCutoutInteraction({
         commitPath,
       });
     },
-    [mode, binWidth, binDepth, snap, commitPath]
+    [mode, binWidth, binDepth, cellMask, maskCellSize, snap, commitPath]
   );
 
   /** Handle clicking an existing vertex while drawing (to reposition or close). */
@@ -738,7 +790,7 @@ export function useCutoutInteraction({
   const handlePointerMove = useCallback(
     (mmX: number, mmY: number, shiftKey?: boolean, altKey?: boolean) => {
       const event = { mmX, mmY, shiftKey, altKey };
-      const bounds = { binWidth, binDepth };
+      const bounds = { binWidth, binDepth, cellMask, maskCellSize };
 
       switch (mode.type) {
         case 'pending-place':
@@ -765,13 +817,13 @@ export function useCutoutInteraction({
           break;
 
         case 'group-rotating':
-          handleGroupRotateMove(mode, event, cutouts, pastDeadZoneRef, {
+          handleGroupRotateMove(mode, event, cutouts, bounds, pastDeadZoneRef, {
             setPreview,
           });
           break;
 
         case 'group-scaling':
-          handleGroupScaleMove(mode, event, pastDeadZoneRef, {
+          handleGroupScaleMove(mode, event, cutouts, bounds, pastDeadZoneRef, {
             setPreview,
           });
           break;
@@ -808,7 +860,7 @@ export function useCutoutInteraction({
         }
       }
     },
-    [mode, cutouts, binWidth, binDepth, snap, commitPath, rulerSnapTargets]
+    [mode, cutouts, binWidth, binDepth, cellMask, maskCellSize, snap, commitPath, rulerSnapTargets]
   );
 
   // ── Pointer up (commit) ────────────────────────────────────────────
@@ -825,12 +877,23 @@ export function useCutoutInteraction({
         0,
         Math.min(snap(placeMode.startMmY - defaultSize / 2), binDepth - defaultSize)
       );
+
+      // Polygon mask: reject click-to-place inside an unfilled notch.
+      if (
+        cellMask &&
+        maskCellSize &&
+        !rectFitsInMask(cellMask, x, y, defaultSize, defaultSize, maskCellSize)
+      ) {
+        setMode({ type: 'idle' });
+        return;
+      }
+
       const newId = crypto.randomUUID();
       onAdd(createDefaultCutout(newId, placeMode.shape, x, y, defaultSize, defaultSize));
       setSelection(new Set([newId]));
       setMode({ type: 'idle' });
     },
-    [snap, binWidth, binDepth, onAdd]
+    [snap, binWidth, binDepth, cellMask, maskCellSize, onAdd]
   );
 
   /**

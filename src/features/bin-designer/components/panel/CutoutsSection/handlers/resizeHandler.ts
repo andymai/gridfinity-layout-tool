@@ -7,6 +7,7 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { calculateCutoutResize, MIN_CUTOUT_SIZE } from '../geometry';
+import { cutoutFitsInMask } from '../maskFit';
 import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters, DeadZoneRef } from './types';
 
@@ -63,17 +64,20 @@ export function handleResizeMove(
   // Snap, then clamp to bin bounds (snap can round past non-integer edges)
   const snappedW = Math.max(MIN_CUTOUT_SIZE, snap(resized.width));
   const snappedD = Math.max(MIN_CUTOUT_SIZE, snap(resized.depth));
-  setters.setPreview(
-    new Map([
-      [
-        mode.cutoutId,
-        {
-          x: Math.max(0, Math.min(snap(resized.x), bounds.binWidth - snappedW)),
-          y: Math.max(0, Math.min(snap(resized.y), bounds.binDepth - snappedD)),
-          width: snappedW,
-          depth: snappedD,
-        },
-      ],
-    ])
-  );
+  const nextPatch = {
+    x: Math.max(0, Math.min(snap(resized.x), bounds.binWidth - snappedW)),
+    y: Math.max(0, Math.min(snap(resized.y), bounds.binDepth - snappedD)),
+    width: snappedW,
+    depth: snappedD,
+  };
+
+  // Polygon mask: hard-reject resizes that would overhang the polygon.
+  if (bounds.cellMask && bounds.maskCellSize) {
+    const candidate = { ...cutout, ...nextPatch } as Cutout;
+    if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize)) {
+      return;
+    }
+  }
+
+  setters.setPreview(new Map([[mode.cutoutId, nextPatch]]));
 }

@@ -7,6 +7,7 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { clampRotationToBounds } from '../geometry';
+import { cutoutFitsInMask } from '../maskFit';
 import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, BinBounds, PreviewSetters, DeadZoneRef } from './types';
 
@@ -52,6 +53,14 @@ export function handleRotateMove(
 
   // Clamp rotation to keep within bin bounds
   newRotation = clampRotationToBounds(cutout, newRotation, bounds.binWidth, bounds.binDepth);
+
+  // Polygon mask: hard-reject rotations whose rotated AABB overhangs the polygon.
+  if (bounds.cellMask && bounds.maskCellSize) {
+    const candidate = { ...cutout, rotation: newRotation } as Cutout;
+    if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize)) {
+      return;
+    }
+  }
 
   setters.setPreview(new Map([[mode.cutoutId, { rotation: newRotation }]]));
 }

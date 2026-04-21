@@ -6,6 +6,7 @@
  */
 
 import { MIN_CUTOUT_SIZE } from '../geometry';
+import { rectFitsInMask } from '../maskFit';
 import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters } from './types';
 
@@ -47,11 +48,29 @@ export function handleDrawMove(
     d = Math.min(d, bounds.binDepth - y);
   }
 
-  setters.setDrawingPreview({
+  const preview = {
     x: snap(x),
     y: snap(y),
     width: Math.max(MIN_CUTOUT_SIZE, snap(w)),
     depth: Math.max(MIN_CUTOUT_SIZE, snap(d)),
     shape: mode.shape,
-  });
+  };
+
+  // Polygon mask: hard-reject draw preview that overhangs the polygon.
+  if (
+    bounds.cellMask &&
+    bounds.maskCellSize &&
+    !rectFitsInMask(
+      bounds.cellMask,
+      preview.x,
+      preview.y,
+      preview.width,
+      preview.depth,
+      bounds.maskCellSize
+    )
+  ) {
+    return;
+  }
+
+  setters.setDrawingPreview(preview);
 }

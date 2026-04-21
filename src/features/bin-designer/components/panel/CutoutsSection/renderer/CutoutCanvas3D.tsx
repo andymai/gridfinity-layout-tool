@@ -15,6 +15,7 @@ import type {
   CutoutShape as CutoutShapeType,
   PathPoint,
 } from '@/features/bin-designer/types';
+import type { CellMask } from '@/shared/utils/cellMask';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
 import type { SegmentHoverInfo } from '../handlers';
 import type { RulerMeasurement } from '../handlers/rulerHandler';
@@ -56,6 +57,8 @@ export interface CutoutCanvas3DProps {
   readonly cutouts: readonly Cutout[];
   readonly binWidth: number;
   readonly binDepth: number;
+  /** Non-rectangular footprint mask — when present the background renders the polygon shape. */
+  readonly cellMask?: CellMask;
   readonly canvasWidth: number;
   readonly canvasHeight: number;
   readonly selection: ReadonlySet<string>;
@@ -109,6 +112,7 @@ export function CutoutCanvas3D({
   cutouts,
   binWidth,
   binDepth,
+  cellMask,
   canvasWidth,
   canvasHeight,
   selection,
@@ -283,6 +287,7 @@ export function CutoutCanvas3D({
         cutouts={cutouts}
         binWidth={binWidth}
         binDepth={binDepth}
+        cellMask={cellMask}
         binColor={binColor}
         selection={selection}
         preview={preview}
