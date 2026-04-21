@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.46.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.46.0...gridfinity-layout-tool-v4.46.1) (2026-04-21)
+
+
+### Bug Fixes
+
+* stacking lip missing from STL export after split preview ([#1424](https://github.com/andymai/gridfinity-layout-tool/issues/1424)) ([1da4e83](https://github.com/andymai/gridfinity-layout-tool/commit/1da4e837a419482c994d0b3fe666564cbea28be3))
+
 ## [4.46.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.45.1...gridfinity-layout-tool-v4.46.0) (2026-04-21)
 
 
