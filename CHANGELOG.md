@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.42.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.41.0...gridfinity-layout-tool-v4.42.0) (2026-04-21)
+
+
+### Features
+
+* **bin-designer:** shape editor for non-rectangular bin footprints ([#1415](https://github.com/andymai/gridfinity-layout-tool/issues/1415)) ([6982bfe](https://github.com/andymai/gridfinity-layout-tool/commit/6982bfea4c8949a753d5cc4b5101f20b334fb607))
+
 ## [4.41.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.40.5...gridfinity-layout-tool-v4.41.0) (2026-04-20)
 
 
