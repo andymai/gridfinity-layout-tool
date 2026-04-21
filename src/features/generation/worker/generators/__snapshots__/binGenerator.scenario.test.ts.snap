@@ -62,6 +62,10 @@ exports[`custom-shape > 3×3 L with front cutout (polygon-aware side mapping) 1`
 
 exports[`custom-shape > 3×3 L with front handle (polygon-aware side mapping) 1`] = `5568`;
 
+exports[`custom-shape > 3×3 L with honeycomb + front cutout (outermost-edge clip) 1`] = `14000`;
+
+exports[`custom-shape > 3×3 L with honeycomb pattern (polygon edge enumeration) 1`] = `14284`;
+
 exports[`custom-shape > 3×3 L with lip 1`] = `5124`;
 
 exports[`custom-shape > 3×3 O-shape (ring) with lip 1`] = `5464`;
@@ -71,6 +75,8 @@ exports[`custom-shape > 3×3 T with lip 1`] = `4156`;
 exports[`custom-shape > 3×3 U with front + left handles (multi-side polygon) 1`] = `5570`;
 
 exports[`custom-shape > 3×3 U with front cutout (single candidate edge) 1`] = `5206`;
+
+exports[`custom-shape > 3×3 U with honeycomb pattern (multi-side polygon pattern) 1`] = `17286`;
 
 exports[`custom-shape > 3×3 U with lip 1`] = `5126`;
 

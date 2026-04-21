@@ -90,7 +90,7 @@
   "binDesigner.shape.grid.ariaLabel": "Behälterform-Editor. Klicke auf eine Zelle, um sie umzuschalten.",
   "binDesigner.shape.grid.cellLabel.filled": "Zelle {col}, {row}: gefüllt",
   "binDesigner.shape.grid.cellLabel.empty": "Zelle {col}, {row}: leer",
-  "binDesigner.shape.custom.hint": "Benutzerdefinierte Form. Wandmuster, Fächer, Trennwände, Etikettenlaschen und Schaufel sind für nicht-rechteckige Behälter nicht verfügbar.",
+  "binDesigner.shape.custom.hint": "Benutzerdefinierte Form. Fächer, Trennwände, Etikettenlaschen und Schaufel sind für nicht-rechteckige Behälter nicht verfügbar.",
   "binDesigner.colors.labelTab": "Beschriftungslasche",
   "binDesigner.colors.lip": "Stapellippe",
   "binDesigner.colors.presets": "Voreinstellungen",

@@ -55,6 +55,8 @@ import {
 } from '@/shared/utils/handleCutoutClip';
 import type { HandleSegment, HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
+import { isPartialMask } from '@/shared/utils/cellMask';
+import { resolvePolygonSideGeometry } from './maskPolygonEdges';
 
 /**
  * Build a compound of positioned hex prisms for a single wall.
@@ -141,13 +143,6 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
     setPatternTemplateCache(templateKey, shapeTemplate);
   }
 
-  const wallSpanForSide: Record<string, number> = {
-    front: innerW,
-    back: innerW,
-    left: innerD,
-    right: innerD,
-  };
-
   const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
   const maxThickness = Math.max(params.wallThickness, params.compartments.thickness);
   // Clip boxes must be at least as deep as the hex prism extrusion (cutDepth)
@@ -155,15 +150,44 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
   const clipExtrudeDepth = Math.max((maxThickness + lipOverhang) * 2 + 1, cutDepth + 1);
   const clipOvershoot = (hasLip ? LIP_HEIGHT : 0) + 2;
 
-  // Build handle wall defs for clip positioning (uses handleBuilder coordinate convention)
-  const handleWallDefs = params.handles.enabled ? buildHandleWallDefs(innerW, innerD) : [];
+  // Build handle wall defs for clip positioning. Polygon bins use the
+  // outermost edge per cardinal (matches handleBuilder), so clip boxes land
+  // on the actual handle cutout location rather than the AABB wall center.
+  const cellMask = params.cellMask;
+  const isPolygon = isPartialMask(cellMask);
+  const handleWallDefs: readonly HandleWallDef[] = !params.handles.enabled
+    ? []
+    : isPolygon
+      ? (['front', 'back', 'left', 'right'] as const)
+          .map((side) => {
+            const geom = resolvePolygonSideGeometry(
+              cellMask,
+              params.gridUnitMm,
+              params.wallThickness,
+              side
+            );
+            return geom
+              ? ({
+                  side,
+                  wallSpan: geom.wallSpan,
+                  x: geom.x,
+                  y: geom.y,
+                  rotateZ: geom.rotateZ,
+                } satisfies HandleWallDef)
+              : null;
+          })
+          .filter((w): w is HandleWallDef => w !== null)
+      : buildHandleWallDefs(innerW, innerD);
   const handleWallDefForSide = new Map(handleWallDefs.map((d) => [d.side, d]));
 
   for (const wall of wallDescriptors) {
     checkCancelled(signal);
 
-    const cutoutCfg = params.walls.enabled ? params.walls[wall.side] : undefined;
-    const wallSpan = wallSpanForSide[wall.side];
+    // Polygon non-outermost edges: no cutout/handle/ramp lives there, so
+    // emit pure pattern without any clip lookup. Prevents a cardinal-side
+    // cutout/handle config from being projected onto an inner step wall.
+    const cutoutCfg = wall.allowClip && params.walls.enabled ? params.walls[wall.side] : undefined;
+    const wallSpan = wall.wallSpan;
 
     let cutWidth = 0;
     let userCutHeight = 0;
@@ -206,6 +230,7 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
     let handleClip: HandleClipParams | null = null;
     const handleWall = handleWallDefForSide.get(wall.side);
     if (
+      wall.allowClip &&
       params.handles.enabled &&
       !dim.isSlotted &&
       handleWall &&
@@ -290,15 +315,15 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
         )
       : 'nohdl';
 
-    // Ramp zone clipping for divider-cutout blends + divider junction blocking (#1345)
-    const rampZones = computeRampZones(wall.side, params, innerW, innerD, dim.wallHeight);
-    const junctionZones = computeDividerJunctionZones(
-      wall.side,
-      params,
-      innerW,
-      innerD,
-      dim.wallHeight
-    );
+    // Ramp zone clipping for divider-cutout blends + divider junction blocking (#1345).
+    // Polygon bins skip both: dividers are filtered out of the feature pipeline
+    // on custom shapes so there's nothing to blend against or block.
+    const rampZones = isPolygon
+      ? []
+      : computeRampZones(wall.side, params, innerW, innerD, dim.wallHeight);
+    const junctionZones = isPolygon
+      ? []
+      : computeDividerJunctionZones(wall.side, params, innerW, innerD, dim.wallHeight);
     // Deduplicate: junction zones (full height) subsume ramp zones at the same offset
     const junctionOffsets = new Set(junctionZones.map((z) => quantize(z.offsetAlongWall)));
     const uniqueRampZones = rampZones.filter(
