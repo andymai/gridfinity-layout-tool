@@ -45,7 +45,8 @@ graph TB
 - `worker/generators/scoopRampBuilder.ts` — scoop ramp geometry
 - `worker/generators/wallCutoutBuilder.ts` — wall U-notch cutouts
 - `worker/generators/handleBuilder.ts` — handle hole through-cuts in bin walls
-- `worker/generators/wallPatternBuilder.ts` — per-wall hex pattern compounds with cutout/handle clipping
+- `worker/generators/wallPatternBuilder.ts` — per-wall hex pattern compounds with two-layer caching (uncut base + clipped result) and optional cutout/handle/ramp clipping
+- `bridge/generationTimeout.ts` — complexity-aware per-request timeout (30-90 s based on pattern, cutouts, height)
 - `worker/generators/featureBuilder.ts` — barrel re-export of all builder modules
 - `worker/generators/dividerBuilder.ts` — divider piece generation
 - `worker/generators/dividerExport.ts` — standalone divider STL export
@@ -114,3 +115,7 @@ Add new patterns by implementing `PatternCalculator` interface and registering i
 ## Adaptive Debounce
 
 Fast generations → 50ms delay, slow generations → 300ms delay
+
+## Generation Timeout
+
+`computeGenerationTimeoutMs(params)` scales the per-request watchdog: 30s base, +15s for hex pattern, +15s when paired with active wall cutouts, +15s per 2u of height over 4u, capped at 90s. Baseplates keep the flat 30s fallback.
