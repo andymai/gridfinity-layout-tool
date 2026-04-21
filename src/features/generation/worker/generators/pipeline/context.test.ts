@@ -116,10 +116,9 @@ describe('createInitialContext', () => {
     expect(ctx.dimensions.interiorHeight).toBeCloseTo(15.3);
   });
 
-  describe('auto-enabled halfSockets for mask half-bin detail', () => {
-    it('leaves halfSockets off for a 1u-aligned L preset mask', () => {
-      // 3×3 L-shape at 1u resolution — every 1u square is uniform, so no
-      // half-bin detail exists and auto-half-sockets should not trigger.
+  describe('halfSockets flag in dimensions', () => {
+    it('stays off for an unset user toggle on a 1u-aligned L preset mask', () => {
+      // 3×3 L-shape at 1u resolution — no half-bin detail.
       const cellMask = {
         cols: 6,
         rows: 6,
@@ -134,33 +133,38 @@ describe('createInitialContext', () => {
       expect(ctx.dimensions.halfSockets).toBe(false);
     });
 
-    it('auto-enables halfSockets when the mask has half-bin detail', () => {
-      // 2×2 bin (4×4 mask) with one half-cell cleared: sub-cell (3, 0).
-      // The bottom-right 1u square is mixed (3 filled, 1 empty) → half-bin
-      // detail exists → halfSockets must flip on so the floor has a proper
-      // socket in the remaining half-cells.
+    it('leaves halfSockets off when mask has half-bin detail but user opt-in is off', () => {
+      // 2×2 bin (4×4 mask) with one half-cell cleared — mixed 1u block.
+      // The socket builder does a per-cell dispatch for mask-mixed 1u cells,
+      // so the global dimensions.halfSockets flag only reflects the user
+      // toggle. It stays false here.
       const cells = new Array<0 | 1>(16).fill(1);
       cells[3] = 0;
       const cellMask = { cols: 4, rows: 4, cells };
       const ctx = createInitialContext(createTestParams({ width: 2, depth: 2, cellMask }));
+      expect(ctx.dimensions.halfSockets).toBe(false);
+    });
+
+    it('respects the user opt-in flag on a rectangular bin', () => {
+      const ctx = createInitialContext(
+        createTestParams({
+          base: {
+            ...DEFAULT_BIN_PARAMS.base,
+            halfSockets: true,
+          },
+        })
+      );
       expect(ctx.dimensions.halfSockets).toBe(true);
     });
 
-    it('never enables halfSockets on a flat-base bin even with half-bin detail', () => {
-      // Flat base has no sockets to speak of — halfSockets is meaningless.
-      const cells = new Array<0 | 1>(16).fill(1);
-      cells[3] = 0;
-      const cellMask = { cols: 4, rows: 4, cells };
+    it('never enables halfSockets on a flat-base bin', () => {
       const ctx = createInitialContext(
         createTestParams({
-          width: 2,
-          depth: 2,
-          cellMask,
           base: {
             ...DEFAULT_BIN_PARAMS.base,
             style: 'flat',
             stackingLip: false,
-            halfSockets: false,
+            halfSockets: true,
           },
         })
       );

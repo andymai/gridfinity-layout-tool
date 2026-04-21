@@ -24,7 +24,7 @@
 import { draw } from 'brepjs';
 import type { Drawing } from 'brepjs';
 import { CLEARANCE, BOX_CORNER_RADIUS } from './generatorConstants';
-import { MASK_CELL_SIZE, maskToPolygon, type CellMask } from '@/shared/utils/cellMask';
+import { MASK_CELL_SIZE, maskToPolygon, type CellMask, type Point2 } from '@/shared/utils/cellMask';
 
 interface Point2Mm {
   readonly x: number;
@@ -148,14 +148,57 @@ function buildRoundedDrawing(vertices: readonly Point2Mm[], radius: number): Dra
   return pen.close();
 }
 
+/** Convert a grid-unit loop to mm, centred on the bin origin. */
+function loopToMm(
+  loop: readonly Point2[],
+  halfWidthMm: number,
+  halfDepthMm: number,
+  gridUnitMm: number
+): Point2Mm[] {
+  return loop.map((p) => ({
+    x: p.x * gridUnitMm - halfWidthMm,
+    y: p.y * gridUnitMm - halfDepthMm,
+  }));
+}
+
 /**
- * Build a closed Drawing from a mask at the given inset and corner radius.
+ * Build a closed Drawing for one loop at the given inset and corner
+ * radius. Expects the loop in CCW orientation: `insetAxisAlignedPolygon`
+ * then shifts each vertex inward by the sum of the two adjacent edges'
+ * left-normals, so `+inset` shrinks the polygon and `-inset` grows it.
  *
- * Both convex and concave corners use the same radius so that adjacent
- * bins on a baseplate share tangent-continuous curves at the cell
- * boundary. Radius is clamped to the shorter of (requested, minEdge/2).
- * If the clamped radius falls below `MIN_ARC_RADIUS` we emit sharp
- * corners — this keeps lofts well-formed at extreme insets.
+ * Radius is clamped to min(requested, shortestEdge/2 − ε). When the
+ * clamp falls below `MIN_ARC_RADIUS` the function emits sharp corners so
+ * narrow features can't collapse the loft.
+ */
+function buildLoopDrawing(
+  loopMm: readonly Point2Mm[],
+  insetMm: number,
+  cornerRadiusMm: number
+): Drawing {
+  const shifted: readonly Point2Mm[] =
+    insetMm !== 0 ? insetAxisAlignedPolygon(loopMm, insetMm) : loopMm;
+
+  const maxRadius = minEdgeLength(shifted) / 2 - 0.01;
+  const r = Math.min(cornerRadiusMm, maxRadius);
+
+  if (r < MIN_ARC_RADIUS) {
+    return buildSharpDrawing(shifted);
+  }
+  return buildRoundedDrawing(shifted, r);
+}
+
+/**
+ * Build a closed Drawing for the mask's outer perimeter at the given inset
+ * and corner radius. Inner-hole loops are NOT subtracted here — callers
+ * that need the holes build separate hole drawings via
+ * `buildMaskHoleDrawings` and cut them at the 3D stage, which the bin
+ * generator already does reliably for other subtractive features.
+ *
+ * (Earlier revisions tried `drawingCut` on the holes at the 2D stage, but
+ * cut2D's curve-relationship detection doesn't always recognise our pen-
+ * built rounded polygons as strictly-inside — the cut returns the outer
+ * unchanged. A 3D boolean cut avoids that path entirely.)
  */
 function buildMaskDrawingAtInset(
   mask: CellMask,
@@ -163,28 +206,49 @@ function buildMaskDrawingAtInset(
   insetMm: number,
   cornerRadiusMm: number
 ): Drawing {
-  const gridVertices = maskToPolygon(mask);
-  if (gridVertices.length < 3) {
-    throw new Error(`mask polygon has only ${gridVertices.length} vertices (need 3+)`);
+  const loops = maskToPolygon(mask);
+  const outer = loops[0];
+  if (outer.length < 3) {
+    throw new Error(`mask polygon has only ${outer.length} vertices (need 3+)`);
   }
 
   const halfWidthMm = (mask.cols * MASK_CELL_SIZE * gridUnitMm) / 2;
   const halfDepthMm = (mask.rows * MASK_CELL_SIZE * gridUnitMm) / 2;
 
-  const mmVertices: Point2Mm[] = gridVertices.map((p) => ({
-    x: p.x * gridUnitMm - halfWidthMm,
-    y: p.y * gridUnitMm - halfDepthMm,
-  }));
+  const outerMm = loopToMm(outer, halfWidthMm, halfDepthMm, gridUnitMm);
+  return buildLoopDrawing(outerMm, insetMm, cornerRadiusMm);
+}
 
-  const shrunk = insetMm > 0 ? insetAxisAlignedPolygon(mmVertices, insetMm) : mmVertices;
+/**
+ * Build one Drawing per inner hole in the mask. Each drawing represents
+ * the cavity region in CCW orientation, grown outward from the nominal
+ * hole boundary by `insetMm` so the extruded cut carries clearance on
+ * the cavity's inside face. Callers extrude and 3D-cut these from the
+ * bin body to produce an O-shape.
+ */
+export function buildMaskHoleDrawings(
+  mask: CellMask,
+  gridUnitMm: number,
+  insetMm: number = CLEARANCE / 2
+): Drawing[] {
+  const loops = maskToPolygon(mask);
+  if (loops.length <= 1) return [];
 
-  const maxRadius = minEdgeLength(shrunk) / 2 - 0.01;
-  const r = Math.min(cornerRadiusMm, maxRadius);
+  const halfWidthMm = (mask.cols * MASK_CELL_SIZE * gridUnitMm) / 2;
+  const halfDepthMm = (mask.rows * MASK_CELL_SIZE * gridUnitMm) / 2;
 
-  if (r < MIN_ARC_RADIUS) {
-    return buildSharpDrawing(shrunk);
+  const holes: Drawing[] = [];
+  for (let i = 1; i < loops.length; i++) {
+    // `maskToPolygon` returns holes CW (filled-on-left). Reverse to CCW
+    // so the drawing represents the cavity region; then pass `-insetMm`
+    // to grow the cavity outward into the filled material.
+    const holeReversed = [...loops[i]].reverse();
+    const holeMm = loopToMm(holeReversed, halfWidthMm, halfDepthMm, gridUnitMm);
+    // Rounded corners inside a hole point toward the material-facing
+    // edge, so use the standard BOX_CORNER_RADIUS here too.
+    holes.push(buildLoopDrawing(holeMm, -insetMm, BOX_CORNER_RADIUS));
   }
-  return buildRoundedDrawing(shrunk, r);
+  return holes;
 }
 
 /**

@@ -82,6 +82,36 @@ const HALF_L_MASK: CellMask = buildMask([
   [1, 1, 0],
 ]);
 
+/**
+ * 2×2 bin with one interior half-cell cleared from the bottom-right 1u
+ * block. Exercises per-cell half-socket dispatch: three 1u cells emit a
+ * full socket each; the mixed 1u emits three quarter sockets.
+ *   [ 1 1 1 1 ]
+ *   [ 1 1 1 1 ]
+ *   [ 1 1 1 1 ]
+ *   [ 1 1 1 0 ]
+ */
+const MIXED_HALF_BIN_MASK: CellMask = buildMask([
+  [1, 1, 1, 1],
+  [1, 1, 1, 1],
+  [1, 1, 1, 1],
+  [1, 1, 1, 0],
+]);
+
+/**
+ * 3×3 O-shape (ring): outer frame filled, centre 1u empty. Exercises the
+ * polygon generator's inner-hole path — outer CCW loop plus one CW hole
+ * loop, cut together into a single Drawing and extruded.
+ */
+const O_SHAPE_MASK: CellMask = buildMask([
+  [1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1],
+  [1, 1, 0, 0, 1, 1],
+  [1, 1, 0, 0, 1, 1],
+  [1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1],
+]);
+
 export const customShapes: ScenarioCase[] = [
   defineScenario('custom-shape', '3×3 L with lip', {
     params: {
@@ -121,6 +151,37 @@ export const customShapes: ScenarioCase[] = [
       depth: 1.5,
       cellMask: HALF_L_MASK,
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true, halfSockets: true },
+    },
+  }),
+  defineScenario('custom-shape', '1.5×1.5 half-bin L user halfSockets off', {
+    // Same mask, but user left halfSockets off. The 3×3 mask has no mixed
+    // 1u block (only fringe half-cells), so the socket builder uses natural
+    // [1, 0.5] × [1, 0.5] decomposition — no quarter sockets.
+    params: {
+      width: 1.5,
+      depth: 1.5,
+      cellMask: HALF_L_MASK,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true, halfSockets: false },
+    },
+  }),
+  defineScenario('custom-shape', '2×2 mixed-detail per-cell half sockets', {
+    // 1u block at the bottom-right is mixed (3 filled, 1 empty) — triggers
+    // per-cell dispatch: three full sockets + three quarter sockets.
+    params: {
+      width: 2,
+      depth: 2,
+      cellMask: MIXED_HALF_BIN_MASK,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true, halfSockets: false },
+    },
+  }),
+  defineScenario('custom-shape', '3×3 O-shape (ring) with lip', {
+    // Outer frame + hole in the middle. Exercises the polygon path's
+    // inner-loop handling — generator produces an extruded ring.
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: O_SHAPE_MASK,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
     },
   }),
 ];

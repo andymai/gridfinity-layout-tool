@@ -32,9 +32,92 @@ import {
   SOCKET_VERTICAL_PART,
   SOCKET_TAPER_WIDTH,
   forEachCell,
+  type CellInfo,
 } from './generatorTypes';
 import { socketCacheKey, getSocketCache, setSocketCache } from './shapeCache';
-import { hashMask, isPartialMask, isRegionFilled, type CellMask } from '@/shared/utils/cellMask';
+import {
+  hasHalfBinDetail,
+  hashMask,
+  isPartialMask,
+  isRegionFilled,
+  type CellMask,
+} from '@/shared/utils/cellMask';
+
+/**
+ * Walk the grid the same way `forEachCell` does, but for 1u cells in a
+ * mask with mixed half-bin detail, split into four 0.5u quarter-sub-cells.
+ * Uniform 1u cells stay as a single full socket; the trailing fractional
+ * fringe (natural 0.5u cells from `decomposeCells`) is untouched.
+ *
+ * When `globalHalfSockets` is true (user opt-in) every cell is halved
+ * regardless of mask detail — preserves the existing `base.halfSockets`
+ * toggle behaviour.
+ */
+function forEachSocketCell(
+  gridW: number,
+  gridD: number,
+  mask: CellMask | undefined,
+  gridUnitMm: number,
+  globalHalfSockets: boolean,
+  callback: (cell: CellInfo) => void
+): void {
+  if (globalHalfSockets) {
+    forEachCell(gridW, gridD, callback, { halfSockets: true, gridUnitMm });
+    return;
+  }
+
+  const needsPerCellSplit = mask !== undefined && isPartialMask(mask) && hasHalfBinDetail(mask);
+
+  if (!needsPerCellSplit) {
+    forEachCell(gridW, gridD, callback, { gridUnitMm });
+    return;
+  }
+
+  const totalW_mm = gridW * gridUnitMm;
+  const totalD_mm = gridD * gridUnitMm;
+
+  forEachCell(
+    gridW,
+    gridD,
+    (cell) => {
+      // Fractional-edge cells (0.5u) are already half-cells; emit them as-is.
+      if (cell.widthUnits !== 1 || cell.depthUnits !== 1) {
+        callback(cell);
+        return;
+      }
+
+      // Map cell center back to bottom-left of the mask region (in grid units).
+      const leftUnit = (cell.centerX + totalW_mm / 2 - gridUnitMm / 2) / gridUnitMm;
+      const bottomUnit = (cell.centerY + totalD_mm / 2 - gridUnitMm / 2) / gridUnitMm;
+
+      // A 1u cell is "mixed" when its 1u mask region is neither fully
+      // filled nor fully empty. Uniform-filled emits one full socket;
+      // uniform-empty is caught by the outer `cellInMask` filter.
+      if (isRegionFilled(mask, leftUnit, bottomUnit, 1, 1)) {
+        callback(cell);
+        return;
+      }
+
+      // Split into four 0.5u quarter-sub-cells. The outer cellInMask check
+      // filters empty quarters so only filled half-cells produce sockets.
+      const q = gridUnitMm / 4;
+      for (const [dx, dy] of [
+        [-q, -q],
+        [q, -q],
+        [-q, q],
+        [q, q],
+      ] as const) {
+        callback({
+          widthUnits: 0.5,
+          depthUnits: 0.5,
+          centerX: cell.centerX + dx,
+          centerY: cell.centerY + dy,
+        });
+      }
+    },
+    { gridUnitMm }
+  );
+}
 /**
  * Build a single socket cell solid at the origin using multi-section loft.
  *
@@ -204,28 +287,23 @@ export function buildBaseSocket(
     // Build and position each cell socket
     const cellSockets: Shape3D[] = [];
 
-    forEachCell(
-      gridW,
-      gridD,
-      (cell) => {
-        if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
-        const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
-        const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
-        // Use simplified 3-section socket for preview, full 5-section for export
-        // NOTE: cellSockets are NOT scope-registered because fuseAll may return
-        // one of its inputs when given a single element. They're deleted manually.
-        const cellSocket = translate(
-          scope.register(
-            forExport
-              ? buildSingleCellSocket(cellW_mm, cellD_mm)
-              : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
-          ),
-          [cell.centerX, cell.centerY, 0]
-        );
-        cellSockets.push(cellSocket);
-      },
-      { halfSockets, gridUnitMm }
-    );
+    forEachSocketCell(gridW, gridD, cellMask, gridUnitMm, halfSockets, (cell) => {
+      if (!cellInMask(cell.centerX, cell.centerY, cell.widthUnits, cell.depthUnits)) return;
+      const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
+      const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
+      // Use simplified 3-section socket for preview, full 5-section for export
+      // NOTE: cellSockets are NOT scope-registered because fuseAll may return
+      // one of its inputs when given a single element. They're deleted manually.
+      const cellSocket = translate(
+        scope.register(
+          forExport
+            ? buildSingleCellSocket(cellW_mm, cellD_mm)
+            : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
+        ),
+        [cell.centerX, cell.centerY, 0]
+      );
+      cellSockets.push(cellSocket);
+    });
 
     if (cellSockets.length === 0) {
       throw new Error('Invalid grid dimensions: at least one cell required');
