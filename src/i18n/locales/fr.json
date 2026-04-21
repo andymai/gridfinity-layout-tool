@@ -90,7 +90,7 @@
   "binDesigner.shape.grid.ariaLabel": "Éditeur de forme du bac. Cliquez sur une cellule pour la basculer.",
   "binDesigner.shape.grid.cellLabel.filled": "Cellule {col}, {row} : remplie",
   "binDesigner.shape.grid.cellLabel.empty": "Cellule {col}, {row} : vide",
-  "binDesigner.shape.custom.hint": "Forme personnalisée. Motifs de paroi, poignées, compartiments, séparateurs, onglets d'étiquette et pelle sont indisponibles pour les bacs non rectangulaires.",
+  "binDesigner.shape.custom.hint": "Forme personnalisée. Motifs de paroi, compartiments, séparateurs, onglets d'étiquette et pelle sont indisponibles pour les bacs non rectangulaires.",
   "binDesigner.colors.labelTab": "Languette d'étiquette",
   "binDesigner.colors.lip": "Lèvre d'empilage",
   "binDesigner.colors.presets": "Préréglages",

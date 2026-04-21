@@ -11,7 +11,11 @@
  * verified visually correct, update with:
  *   pnpm run test:run -- -u src/features/generation/worker/generators/binGenerator.scenario.test
  */
-import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
+import {
+  DEFAULT_BIN_PARAMS,
+  DEFAULT_HANDLE_SIDE,
+  DISABLED_WALL_CUTOUT,
+} from '@/shared/constants/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { defineScenario } from '../__dual-kernel__/scenarioTypes';
 import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
@@ -221,6 +225,35 @@ export const customShapes: ScenarioCase[] = [
         left: DISABLED_WALL_CUTOUT,
         right: DISABLED_WALL_CUTOUT,
         interior: DISABLED_WALL_CUTOUT,
+      },
+    },
+  }),
+  defineScenario('custom-shape', '3×3 L with front handle (polygon-aware side mapping)', {
+    // Exercises polygon-aware handleBuilder: the front edge spans only 2u of
+    // the 3u bin, so the handle must be centered on the L's short front arm.
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: L_SHAPE_MASK,
+      handles: {
+        ...DEFAULT_BIN_PARAMS.handles,
+        enabled: true,
+        front: { ...DEFAULT_HANDLE_SIDE, enabled: true },
+      },
+    },
+  }),
+  defineScenario('custom-shape', '3×3 U with front + left handles (multi-side polygon)', {
+    // U-shape exposes distinct front/left/right outer edges; validates that
+    // each side resolves to its outermost matching polygon segment.
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: U_SHAPE_MASK,
+      handles: {
+        ...DEFAULT_BIN_PARAMS.handles,
+        enabled: true,
+        front: { ...DEFAULT_HANDLE_SIDE, enabled: true },
+        left: { ...DEFAULT_HANDLE_SIDE, enabled: true },
       },
     },
   }),

@@ -60,11 +60,15 @@ exports[`custom-shape > 3×3 L flat base no lip 1`] = `260`;
 
 exports[`custom-shape > 3×3 L with front cutout (polygon-aware side mapping) 1`] = `5204`;
 
+exports[`custom-shape > 3×3 L with front handle (polygon-aware side mapping) 1`] = `5568`;
+
 exports[`custom-shape > 3×3 L with lip 1`] = `5124`;
 
 exports[`custom-shape > 3×3 O-shape (ring) with lip 1`] = `5464`;
 
 exports[`custom-shape > 3×3 T with lip 1`] = `4156`;
+
+exports[`custom-shape > 3×3 U with front + left handles (multi-side polygon) 1`] = `5570`;
 
 exports[`custom-shape > 3×3 U with front cutout (single candidate edge) 1`] = `5206`;
 
