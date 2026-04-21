@@ -59,6 +59,120 @@ describe('isAllFilled / countFilled', () => {
 });
 
 describe('hasHalfBinDetail', () => {
+  interface Case {
+    readonly name: string;
+    readonly rows: (0 | 1)[][];
+    readonly expected: boolean;
+  }
+
+  const cases: readonly Case[] = [
+    // 1u-aligned masks (no half-bin detail) — every 1u block is uniform.
+    {
+      name: '2×2 fully filled',
+      rows: [
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+      ],
+      expected: false,
+    },
+    {
+      name: '2×2 bottom-right 1u cleared (1u L-shape)',
+      rows: [
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 0, 0],
+        [1, 1, 0, 0],
+      ],
+      expected: false,
+    },
+    {
+      name: '3×3 L preset (1u corner cut)',
+      rows: [
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 0, 0],
+        [1, 1, 1, 1, 0, 0],
+      ],
+      expected: false,
+    },
+    {
+      name: '4×4 checkerboard at 1u granularity',
+      rows: [
+        [1, 1, 0, 0, 1, 1, 0, 0],
+        [1, 1, 0, 0, 1, 1, 0, 0],
+        [0, 0, 1, 1, 0, 0, 1, 1],
+        [0, 0, 1, 1, 0, 0, 1, 1],
+        [1, 1, 0, 0, 1, 1, 0, 0],
+        [1, 1, 0, 0, 1, 1, 0, 0],
+        [0, 0, 1, 1, 0, 0, 1, 1],
+        [0, 0, 1, 1, 0, 0, 1, 1],
+      ],
+      expected: false,
+    },
+
+    // Half-bin detail present — any 1u block with mixed sub-cells.
+    {
+      name: '2×2 with one half-cell cleared',
+      rows: [
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 0],
+      ],
+      expected: true,
+    },
+    {
+      name: '2×2 with a half-cell row cleared',
+      rows: [
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [0, 0, 0, 0],
+      ],
+      expected: true,
+    },
+    {
+      name: '3×3 with a diagonal half-cell cut',
+      rows: [
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [0, 1, 1, 1, 1, 1],
+      ],
+      expected: true,
+    },
+
+    // Odd dimensions can't be grouped into 1u squares — conservatively true.
+    {
+      name: '1.5×1.5 fully filled (3×3 mask)',
+      rows: [
+        [1, 1, 1],
+        [1, 1, 1],
+        [1, 1, 1],
+      ],
+      expected: true,
+    },
+    {
+      name: '2×1.5 (4×3 mask)',
+      rows: [
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+      ],
+      expected: true,
+    },
+  ];
+
+  it.each(cases)('$name → $expected', ({ rows, expected }) => {
+    expect(hasHalfBinDetail(mask(rows))).toBe(expected);
+  });
+
   it('returns false when every 1u grid square has all four sub-cells matching', () => {
     // 2×2 bin (4×4 mask) with the whole bottom-right 1u cell cleared — each
     // 1u square is uniform (all 4 filled or all 4 empty).
