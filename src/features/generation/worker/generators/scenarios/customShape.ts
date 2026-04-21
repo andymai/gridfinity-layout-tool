@@ -11,7 +11,7 @@
  * verified visually correct, update with:
  *   pnpm run test:run -- -u src/features/generation/worker/generators/binGenerator.scenario.test
  */
-import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { defineScenario } from '../__dual-kernel__/scenarioTypes';
 import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
@@ -182,6 +182,46 @@ export const customShapes: ScenarioCase[] = [
       depth: 3,
       cellMask: O_SHAPE_MASK,
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    },
+  }),
+  defineScenario('custom-shape', '3×3 L with front cutout (polygon-aware side mapping)', {
+    // Exercises polygon-aware wallCutoutBuilder for the front edge, which
+    // spans only 2u of a 3u bin (notch bottom-right truncates the front wall).
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: L_SHAPE_MASK,
+      walls: {
+        enabled: true,
+        shape: 'u-shape',
+        width: 0,
+        depth: 0,
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
+      },
+    },
+  }),
+  defineScenario('custom-shape', '3×3 U with front cutout (single candidate edge)', {
+    // U-shape front edge spans the full bottom; polygon resolver picks it
+    // cleanly regardless of the multiple back/side candidates.
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: U_SHAPE_MASK,
+      walls: {
+        enabled: true,
+        shape: 'u-shape',
+        width: 0,
+        depth: 0,
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
+      },
     },
   }),
 ];

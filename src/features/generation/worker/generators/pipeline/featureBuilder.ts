@@ -46,6 +46,12 @@ export interface FeatureBuilder {
   readonly tag: FeatureTag;
   /** Which boolean pass this feature's shapes participate in. */
   readonly target: FeatureTarget;
+  /**
+   * Whether this builder handles non-rectangular (cellMask) footprints.
+   * Defaults to false — unsupported builders are filtered out before running.
+   * Opt in per feature as polygon-awareness is added.
+   */
+  readonly supportsCellMask?: boolean;
   /** Fast check — return false to skip cache lookup and build entirely. */
   shouldBuild(ctx: PipelineContext): boolean;
   /** Deterministic cache key for this feature's current parameters. */

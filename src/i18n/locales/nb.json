@@ -90,7 +90,7 @@
   "binDesigner.shape.grid.ariaLabel": "Redigerer for beholderform. Klikk på en celle for å veksle den.",
   "binDesigner.shape.grid.cellLabel.filled": "Celle {col}, {row}: fylt",
   "binDesigner.shape.grid.cellLabel.empty": "Celle {col}, {row}: tom",
-  "binDesigner.shape.custom.hint": "Egendefinert form. Veggmønstre, veggutskjæringer, håndtak, rom, skillevegger, etikettfaner og skje er ikke tilgjengelige for ikke-rektangulære beholdere.",
+  "binDesigner.shape.custom.hint": "Egendefinert form. Veggmønstre, håndtak, rom, skillevegger, etikettfaner og skje er ikke tilgjengelige for ikke-rektangulære beholdere.",
   "binDesigner.colors.labelTab": "Etikett-fane",
   "binDesigner.colors.lip": "Stablelippe",
   "binDesigner.colors.presets": "Forhåndsvalg",

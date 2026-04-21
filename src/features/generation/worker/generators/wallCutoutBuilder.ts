@@ -21,6 +21,8 @@ import type { BinParams, WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { findWallSegments } from './compartmentBuilder';
+import { resolvePolygonSideGeometry, type PolygonSideGeometry } from './maskPolygonEdges';
+import { isPartialMask } from '@/shared/utils/cellMask';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 
 // Re-export for consumers that were importing from this module
@@ -221,18 +223,20 @@ function buildWallCutoutCutsInScope(
   const extrudeDepth = (maxThickness + lipOverhang) * 2 + 1;
   const overshoot = (hasLip ? LIP_HEIGHT : 0) + 2;
 
-  const sides: Array<{
-    key: 'front' | 'back' | 'left' | 'right';
-    wallSpan: number;
-    x: number;
-    y: number;
-    rotateZ: number;
-  }> = [
-    { key: 'front', wallSpan: innerW, x: 0, y: -innerD / 2, rotateZ: 0 },
-    { key: 'back', wallSpan: innerW, x: 0, y: innerD / 2, rotateZ: 0 },
-    { key: 'left', wallSpan: innerD, x: -innerW / 2, y: 0, rotateZ: 90 },
-    { key: 'right', wallSpan: innerD, x: innerW / 2, y: 0, rotateZ: 90 },
-  ];
+  // For non-rectangular bins, map each side to the outermost polygon edge
+  // facing that direction (silently skipping sides with no matching edge).
+  // Rectangular fallback uses the bin AABB.
+  const cellMask = params.cellMask;
+  const sides: PolygonSideGeometry[] = isPartialMask(cellMask)
+    ? (['front', 'back', 'left', 'right'] as const)
+        .map((key) => resolvePolygonSideGeometry(cellMask, params.gridUnitMm, wallThickness, key))
+        .filter((g): g is PolygonSideGeometry => g !== null)
+    : [
+        { key: 'front', wallSpan: innerW, x: 0, y: -innerD / 2, rotateZ: 0 },
+        { key: 'back', wallSpan: innerW, x: 0, y: innerD / 2, rotateZ: 0 },
+        { key: 'left', wallSpan: innerD, x: -innerW / 2, y: 0, rotateZ: 90 },
+        { key: 'right', wallSpan: innerD, x: innerW / 2, y: 0, rotateZ: 90 },
+      ];
 
   for (const side of sides) {
     const cfg = params.walls[side.key];
@@ -372,9 +376,13 @@ export const wallCutoutsFeature: FeatureBuilder = {
   name: 'wallCutoutCuts',
   tag: FeatureTag.WALL_CUTOUT,
   target: 'cut',
+  supportsCellMask: true,
   shouldBuild: (ctx) => ctx.params.walls.enabled,
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
+    // cellMask presence + shape affect the polygon-edge resolution, so
+    // include the mask hash (via context's derived maskKey) to prevent
+    // rect-bin cache bleed into polygon bins with identical wall config.
     return compactKey(
       buildCacheKey(
         'v1',

@@ -1220,7 +1220,7 @@ const en: Record<string, string> = {
   'binDesigner.shape.grid.cellLabel.filled': 'Cell {col}, {row}: filled',
   'binDesigner.shape.grid.cellLabel.empty': 'Cell {col}, {row}: empty',
   'binDesigner.shape.custom.hint':
-    'Custom shape. Wall patterns, wall cutouts, handles, compartments, dividers, label tabs, and scoop are unavailable for non-rectangular bins.',
+    'Custom shape. Wall patterns, handles, compartments, dividers, label tabs, and scoop are unavailable for non-rectangular bins.',
 
   'binDesigner.splitAxisInfo': 'Split along {axis} into {count} pieces',
 
