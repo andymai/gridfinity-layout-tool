@@ -45,11 +45,16 @@ export function StickyGroupHeader({
         <span className="text-[11px] font-bold text-content-tertiary uppercase tracking-widest">
           {title}
         </span>
+        {summary && (
+          <span
+            className={`ml-auto min-w-0 truncate text-xs tabular-nums transition-colors ${
+              expanded ? 'text-content-tertiary/70' : 'text-content-tertiary'
+            }`}
+          >
+            {summary}
+          </span>
+        )}
       </button>
-
-      {summary && !expanded && (
-        <div className="px-4 pb-3 -mt-1 text-xs text-content-tertiary truncate">{summary}</div>
-      )}
 
       <div
         id={contentId}

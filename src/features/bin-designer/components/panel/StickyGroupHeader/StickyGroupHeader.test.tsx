@@ -41,13 +41,13 @@ describe('StickyGroupHeader', () => {
     expect(screen.getByText('2×2×3u · 0.8mm walls')).toBeInTheDocument();
   });
 
-  it('hides summary when expanded', () => {
+  it('keeps summary visible when expanded for quick-glance context', () => {
     render(
       <StickyGroupHeader title="Shape" defaultExpanded summary="2×2×3u · 0.8mm walls">
         <div>content</div>
       </StickyGroupHeader>
     );
 
-    expect(screen.queryByText('2×2×3u · 0.8mm walls')).not.toBeInTheDocument();
+    expect(screen.getByText('2×2×3u · 0.8mm walls')).toBeInTheDocument();
   });
 });
