@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 
@@ -8,6 +9,19 @@ import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
  * - 'mobile': Large h-12 touch-friendly stepper for mobile
  */
 export type StepperVariant = 'compact' | 'desktop' | 'mobile';
+
+/**
+ * Commit strategy for +/- button clicks:
+ * - 'immediate' (default): every click calls `onStep` synchronously.
+ * - 'deferred': clicks accumulate locally for 250ms before being flushed as a
+ *   single `onStep(totalDelta)` call. Intended for heavy params (e.g. wall
+ *   cutouts with hex pattern enabled) where each click triggers a slow
+ *   regeneration and rapid tweaking piled up pending work (#1422).
+ */
+export type StepperCommitMode = 'immediate' | 'deferred';
+
+/** Idle window for coalescing step clicks in 'deferred' commit mode. */
+export const DEFERRED_COMMIT_DELAY_MS = 250;
 
 interface StepperControlProps {
   /** Current numeric value */
@@ -35,6 +49,11 @@ interface StepperControlProps {
   disabled?: boolean;
   /** Additional class for the container */
   className?: string;
+  /**
+   * Controls when step-button clicks flow through to `onStep`. Defaults to
+   * `'immediate'`. See {@link StepperCommitMode}.
+   */
+  commitMode?: StepperCommitMode;
 }
 
 /**
@@ -122,14 +141,62 @@ export function StepperControl({
   displayValue,
   disabled = false,
   className = '',
+  commitMode = 'immediate',
 }: StepperControlProps) {
   const isCompact = variant === 'compact';
   const isMobile = variant === 'mobile';
   const iconSize = isCompact ? 'sm' : isMobile ? 'lg' : 'md';
 
-  // Determine if buttons should be disabled
-  const decreaseDisabled = disabled || value <= min;
-  const increaseDisabled = disabled || value >= max;
+  // Deferred mode accumulates +/- clicks into `pendingDelta` and flushes it
+  // as a single onStep after a short idle. The UI shows the optimistic value
+  // so the user gets immediate feedback while the expensive downstream regen
+  // is held off.
+  const [pendingDelta, setPendingDelta] = useState(0);
+  const [lastSeenValue, setLastSeenValue] = useState(value);
+  const onStepRef = useRef(onStep);
+  useEffect(() => {
+    onStepRef.current = onStep;
+  }, [onStep]);
+
+  // External value updates (commit landed, undo/redo) invalidate the optimistic
+  // delta. Reset `pendingDelta` during render using React's supported
+  // "adjusting state based on props" pattern: a guarded setState during render
+  // is how React docs recommend resyncing derived state without an effect.
+  // The `if` guard prevents infinite loops; StrictMode's double-render is
+  // handled because React discards the extra render and only commits once.
+  // See https://react.dev/reference/react/useState#storing-information-from-previous-renders
+  if (value !== lastSeenValue) {
+    setLastSeenValue(value);
+    if (pendingDelta !== 0) setPendingDelta(0);
+  }
+
+  // Whenever pendingDelta goes non-zero, schedule a flush. The cleanup cancels
+  // the pending timer if another click arrives (extending the idle window) or
+  // the external value changes (resetting pendingDelta to 0 via the render-time
+  // reset above).
+  useEffect(() => {
+    if (commitMode !== 'deferred' || pendingDelta === 0) return;
+    const timer = setTimeout(() => {
+      onStepRef.current(pendingDelta);
+      setPendingDelta(0);
+    }, DEFERRED_COMMIT_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [commitMode, pendingDelta]);
+
+  const handleStep = (delta: number) => {
+    if (commitMode === 'immediate') onStep(delta);
+    else setPendingDelta((prev) => prev + delta);
+  };
+
+  // Optimistic value for display, clamped so the user can't visually overshoot
+  // the bounds while a deferred commit is pending.
+  const optimisticValue =
+    commitMode === 'deferred' && pendingDelta !== 0
+      ? Math.max(min, Math.min(max, value + pendingDelta * step))
+      : value;
+
+  const decreaseDisabled = disabled || optimisticValue <= min;
+  const increaseDisabled = disabled || optimisticValue >= max;
 
   // Button styles based on variant
   const buttonBaseClass = isMobile
@@ -164,7 +231,7 @@ export function StepperControl({
       {/* Decrease button */}
       <button
         type="button"
-        onClick={() => onStep(-1)}
+        onClick={() => handleStep(-1)}
         disabled={decreaseDisabled}
         className={decreaseButtonClass}
         aria-label={`Decrease ${ariaLabel}`}
@@ -179,7 +246,7 @@ export function StepperControl({
         </span>
       ) : onChange ? (
         <DeferredNumberInput
-          value={value}
+          value={optimisticValue}
           onChange={onChange}
           min={min}
           max={max}
@@ -189,14 +256,14 @@ export function StepperControl({
         />
       ) : (
         <span className={displayClass} aria-label={ariaLabel}>
-          {value}
+          {optimisticValue}
         </span>
       )}
 
       {/* Increase button */}
       <button
         type="button"
-        onClick={() => onStep(1)}
+        onClick={() => handleStep(1)}
         disabled={increaseDisabled}
         className={increaseButtonClass}
         aria-label={`Increase ${ariaLabel}`}

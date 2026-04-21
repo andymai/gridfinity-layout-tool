@@ -9,7 +9,7 @@
  *   BREPJS_KERNEL=wasm pnpm exec vitest bench binGenerator
  */
 import { bench, describe, beforeAll } from 'vitest';
-import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import { initBrepjs, getGenerateBin } from './__dual-kernel__/wasmInit';
 import { buildParams as params, makeInsert, makeCutout } from './__dual-kernel__/scenarioTypes';
 
@@ -150,6 +150,57 @@ describe('half-bin mode', () => {
       getGenerateBin()(params({ width: 0.5, depth: 1.5, height: 2 }));
     },
     { iterations: 5, warmupIterations: 1 }
+  );
+});
+
+// ─── Wall pattern + cutout cache behaviour (#1422) ───────────────────────────
+//
+// The cutout-param-change path previously blew past the 30s worker timeout on
+// tall bins because the per-wall hex compound was invalidated on every tweak.
+// These benches pin a measurable gap between the first build and a cutout-only
+// nudge so the cache split doesn't silently regress.
+describe('wall pattern + cutout cache reuse', () => {
+  const HONEYCOMB_4X2X6 = params({
+    width: 4,
+    depth: 2,
+    height: 6,
+    wallPattern: { enabled: true, pattern: 'honeycomb' },
+    walls: {
+      ...DEFAULT_BIN_PARAMS.walls,
+      enabled: true,
+      front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+      back: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+      left: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+      right: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+      interior: DISABLED_WALL_CUTOUT,
+    },
+  });
+
+  bench(
+    'first build (cold): 4×2×6 honeycomb + cutouts',
+    () => {
+      getGenerateBin()(HONEYCOMB_4X2X6);
+    },
+    { iterations: 3, warmupIterations: 0 }
+  );
+
+  bench(
+    'cutout-width nudge (warm): base compound should hit cache',
+    () => {
+      // Warm the base compound cache, then nudge the cutout widths.
+      getGenerateBin()(HONEYCOMB_4X2X6);
+      getGenerateBin()({
+        ...HONEYCOMB_4X2X6,
+        walls: {
+          ...HONEYCOMB_4X2X6.walls,
+          front: { ...HONEYCOMB_4X2X6.walls.front, width: 65 },
+          back: { ...HONEYCOMB_4X2X6.walls.back, width: 65 },
+          left: { ...HONEYCOMB_4X2X6.walls.left, width: 65 },
+          right: { ...HONEYCOMB_4X2X6.walls.right, width: 65 },
+        },
+      });
+    },
+    { iterations: 3, warmupIterations: 1 }
   );
 });
 

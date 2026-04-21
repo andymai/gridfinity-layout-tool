@@ -61,6 +61,11 @@ import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
  *
  * Creates one transformCopy per hex center, then groups them with compound()
  * (O(n) topology grouping, not O(n²) fuseAll). Returns null if no elements.
+ *
+ * This is the expensive part of wall pattern construction (up to ~1000 hex
+ * prisms on tall, wide bins). The result is cached in
+ * `feature-wallPatternBase` keyed on wall geometry only, so cutout/handle/ramp
+ * clip-parameter nudges don't force a rebuild — see buildWallPatterns.
  */
 function buildWallPatternCompound(
   shapeTemplate: Shape3D,
@@ -101,6 +106,11 @@ function buildWallPatternCompound(
     return null;
   }
 }
+
+/** Cache name for the uncut per-wall hex compound (shared across cutout/handle/ramp nudges). */
+const WALL_PATTERN_BASE_CACHE = 'wallPatternBase';
+/** Cache name for the post-clip per-wall compound (varies with cutout/handle/ramp params). */
+const WALL_PATTERN_CLIPPED_CACHE = 'wallPatternClipped';
 
 /**
  * Build wall pattern shapes for all walls with per-wall caching
@@ -316,9 +326,12 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
         )
       : 'noramp';
 
-    const wallKey = compactKey(
+    // Base-compound key: wall geometry + pattern template only. Cutout/handle/
+    // ramp nudges MUST NOT affect this key so the expensive hex compound is
+    // reused across parameter tweaks (#1422).
+    const baseKey = compactKey(
       buildCacheKey(
-        'v8', // bumped: clip depth covers hex prism extrusion (#1354)
+        'v1',
         patternType,
         quantize(shapeRadius),
         quantize(cutDepth),
@@ -328,26 +341,29 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
         quantize(wall.translateX),
         quantize(wall.translateY),
         quantize(wall.translateZ),
-        wall.zRotation ?? 0,
-        cutoutKeyPart,
-        handleKeyPart,
-        rampKeyPart
+        wall.zRotation ?? 0
       )
     );
 
-    // Use the existing cachedFeature-style pattern: cache owns original, caller gets clone
-    let shape = getFeatureCache('wallPattern', wallKey);
+    // Clipped-result key: derived from baseKey so cache entries for different
+    // wall geometries can't collide via matching clip params.
+    const clippedKey = compactKey(
+      buildCacheKey('v1', baseKey, cutoutKeyPart, handleKeyPart, rampKeyPart)
+    );
+
+    let shape = getFeatureCache(WALL_PATTERN_CLIPPED_CACHE, clippedKey);
     if (!shape) {
-      const built = buildWallPatternShape(
+      const built = buildClippedWallPattern(
         shapeTemplate,
         wall,
         halfDepth,
+        baseKey,
         clip,
         handleClip,
         rampClip
       );
       if (built) {
-        setFeatureCache('wallPattern', wallKey, built);
+        setFeatureCache(WALL_PATTERN_CLIPPED_CACHE, clippedKey, built);
         shape = unwrap(clone(built));
       }
     }
@@ -358,6 +374,47 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
   }
 
   return patternCutTargets;
+}
+
+/**
+ * Return the base (uncut) hex compound for a wall, cached by wall geometry.
+ *
+ * The caller receives an owned clone; the cache retains the original. When the
+ * compound has no clips to apply, the clipped pipeline will cache this same
+ * clone directly — two cache hits for the price of one.
+ */
+function getCachedBaseCompound(
+  shapeTemplate: Shape3D,
+  wall: WallPatternDescriptor,
+  halfDepth: number,
+  baseKey: string
+): Shape3D | null {
+  const cached = getFeatureCache(WALL_PATTERN_BASE_CACHE, baseKey);
+  if (cached) return cached;
+
+  const built = buildWallPatternCompound(shapeTemplate, wall, halfDepth);
+  if (!built) return null;
+  setFeatureCache(WALL_PATTERN_BASE_CACHE, baseKey, built);
+  return unwrap(clone(built));
+}
+
+/**
+ * Build a fully-clipped wall pattern by cloning the cached base compound and
+ * applying cutout, handle, and ramp-zone cuts. Returns null when the base
+ * compound can't be built (degenerate wall).
+ */
+function buildClippedWallPattern(
+  shapeTemplate: Shape3D,
+  wall: WallPatternDescriptor,
+  halfDepth: number,
+  baseKey: string,
+  clip: CutoutClipParams | null,
+  handleClip: HandleClipParams | null,
+  rampClip: RampZoneClipParams | null
+): Shape3D | null {
+  const base = getCachedBaseCompound(shapeTemplate, wall, halfDepth, baseKey);
+  if (!base) return null;
+  return applyWallPatternClips(base, wall, clip, handleClip, rampClip);
 }
 
 /** Pre-computed cutout clipping parameters passed to buildWallPatternShape. */
@@ -402,20 +459,21 @@ interface RampZoneClipParams {
   readonly border: number;
 }
 
-/** Build a single wall's pattern compound with optional cutout/handle/ramp clipping. */
-function buildWallPatternShape(
-  shapeTemplate: Shape3D,
+/**
+ * Apply optional cutout/handle/ramp clipping to an owned base hex compound.
+ *
+ * Takes ownership of `base` and returns either `base` itself (no clips) or a
+ * new shape with `base` disposed. Callers must not reuse the original handle.
+ */
+function applyWallPatternClips(
+  base: Shape3D,
   wall: WallPatternDescriptor,
-  halfDepth: number,
   clip: CutoutClipParams | null,
   handleClip: HandleClipParams | null,
   rampClip: RampZoneClipParams | null
 ): Shape3D | null {
-  const hexCompound = buildWallPatternCompound(shapeTemplate, wall, halfDepth);
-  if (!hexCompound) return null;
-
   // --- Cutout border clipping ---
-  let result = hexCompound;
+  let result = base;
   if (clip && clip.cutWidth >= 0.1 && clip.userCutHeight >= 0.1) {
     const rotateZ = wall.side === 'left' || wall.side === 'right' ? 90 : 0;
     const centerOffset = computeCutoutCenter(

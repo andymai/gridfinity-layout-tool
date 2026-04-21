@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { StepperControl } from '@/shared/components/StepperControl';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { act, render, screen, fireEvent } from '@testing-library/react';
+import { StepperControl, DEFERRED_COMMIT_DELAY_MS } from '@/shared/components/StepperControl';
 
 describe('StepperControl', () => {
   const mockOnStep = vi.fn();
@@ -185,6 +185,79 @@ describe('StepperControl', () => {
 
       const wrapper = container.firstChild as HTMLElement;
       expect(wrapper).toHaveClass('custom-class');
+    });
+  });
+
+  describe("commitMode: 'deferred'", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      // Drop any in-flight deferred-commit timers instead of firing them.
+      // Running them here would trigger React state updates outside of act(),
+      // producing testing-library warnings and occasional flakiness.
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    });
+
+    it('coalesces rapid clicks into a single onStep call', () => {
+      render(
+        <StepperControl {...defaultProps} commitMode="deferred" onChange={mockOnChange} step={1} />
+      );
+      const increase = screen.getByRole('button', { name: 'Increase Test value' });
+
+      // Three rapid clicks — none should fire onStep yet.
+      fireEvent.click(increase);
+      fireEvent.click(increase);
+      fireEvent.click(increase);
+      expect(mockOnStep).not.toHaveBeenCalled();
+
+      // Flush the debounce window.
+      act(() => {
+        vi.advanceTimersByTime(DEFERRED_COMMIT_DELAY_MS);
+      });
+
+      expect(mockOnStep).toHaveBeenCalledTimes(1);
+      expect(mockOnStep).toHaveBeenCalledWith(3);
+    });
+
+    it('shows the optimistic value while the commit is pending', () => {
+      render(
+        <StepperControl {...defaultProps} commitMode="deferred" onChange={mockOnChange} step={1} />
+      );
+      const increase = screen.getByRole('button', { name: 'Increase Test value' });
+      fireEvent.click(increase);
+      fireEvent.click(increase);
+
+      // Input mirrors the pending delta until the debounce fires.
+      expect(screen.getByRole('spinbutton')).toHaveValue(7);
+    });
+
+    it('drops the pending delta if the parent value changes externally', () => {
+      const { rerender } = render(
+        <StepperControl {...defaultProps} commitMode="deferred" onChange={mockOnChange} />
+      );
+      const increase = screen.getByRole('button', { name: 'Increase Test value' });
+      fireEvent.click(increase);
+
+      // External update (e.g. undo) lands before the debounce fires.
+      rerender(
+        <StepperControl {...defaultProps} value={9} commitMode="deferred" onChange={mockOnChange} />
+      );
+
+      act(() => {
+        vi.advanceTimersByTime(DEFERRED_COMMIT_DELAY_MS);
+      });
+
+      // Pending delta discarded — the stale click must not fire onStep.
+      expect(mockOnStep).not.toHaveBeenCalled();
+    });
+
+    it("does not debounce when commitMode is 'immediate' (default)", () => {
+      render(<StepperControl {...defaultProps} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Increase Test value' }));
+      expect(mockOnStep).toHaveBeenCalledWith(1);
     });
   });
 });
