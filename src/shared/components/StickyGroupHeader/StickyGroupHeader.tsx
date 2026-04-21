@@ -3,7 +3,9 @@
  *
  * Shows a title bar that sticks to the top of its scroll container.
  * Clicking it collapses/expands the children with a smooth transition.
- * An optional summary string is shown when collapsed.
+ * An optional summary string is rendered inline in the header row; it is
+ * always visible (dimmer when expanded, full color when collapsed) so users
+ * retain quick-glance context regardless of state.
  */
 
 import { useState, useId, type ReactNode } from 'react';

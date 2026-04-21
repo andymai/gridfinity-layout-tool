@@ -103,7 +103,7 @@ export function BaseplatePanel() {
 
   /**
    * When the user enters target mm dimensions:
-   * 1. Snap to the nearest valid grid size (half-unit or whole-unit)
+   * 1. Snap down to the largest valid grid size that fits (half-unit or whole-unit)
    * 2. Distribute remaining mm evenly as padding (left=right, front=back)
    * 3. Auto-uncheck "Match drawer size"
    */
@@ -297,7 +297,11 @@ export function BaseplatePanel() {
         {/* 3. Print Settings — advanced, rarely changed */}
         <StickyGroupHeader
           title={t('baseplate.sectionPrintSettings')}
-          summary={`${gridUnitMm}mm \u00b7 ${printBedSize}mm`}
+          summary={formatPrintSettingsSummary(
+            gridUnitMm,
+            printBedSize,
+            printBedDepth ?? printBedSize
+          )}
         >
           <div className="space-y-3 px-4 py-3">
             <div className="text-xs text-content-secondary space-y-2">
@@ -585,6 +589,12 @@ function formatMm(v: number): string {
   // Round to 2 decimal places to avoid floating-point noise, then drop trailing zeros
   const rounded = Math.round(v * 100) / 100;
   return String(rounded);
+}
+
+/** Print Settings header summary: "{gridUnit}mm · {bed}mm" or "{gridUnit}mm · {w}×{d}mm" for asymmetric beds. */
+function formatPrintSettingsSummary(gridUnitMm: number, bedW: number, bedD: number): string {
+  const bed = bedW === bedD ? `${bedW}mm` : `${bedW}\u00d7${bedD}mm`;
+  return `${gridUnitMm}mm \u00b7 ${bed}`;
 }
 
 const PADDING_BUTTON_STEP = 0.25;
