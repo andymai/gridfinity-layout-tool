@@ -28,6 +28,8 @@ import { initBrepjs } from './__dual-kernel__/wasmInit';
 import { exportBin } from './binExporter';
 import { generateSplitPreview } from './splitBinBuilder';
 import { clearAllCaches, isLastSolidExportQuality } from './shapeCache';
+import { parseSTLBinary } from '@/shared/generation/stlParser';
+import { isOk } from '@/core/result';
 
 beforeAll(async () => {
   await initBrepjs();
@@ -123,8 +125,6 @@ describe('exportBin after generateSplitPreview: STL write must succeed', () => {
     // Validate that the exported STL actually contains the stacking lip
     // by parsing it and checking the Z extent. The lip adds ~4.4 mm above
     // the wall-top (wallTopZ = height × HEIGHT_UNIT).
-    const { parseSTLBinary } = await import('@/shared/generation/stlParser');
-    const { isOk } = await import('@/core/result');
     const parsed = parseSTLBinary(result.data);
     expect(isOk(parsed)).toBe(true);
     if (!isOk(parsed)) throw new Error('unreachable');
@@ -205,8 +205,6 @@ describe('exportBin after generateSplitPreview: STL write must succeed', () => {
     const result = await exportBin(params, 'stl');
     expect(result.data.byteLength).toBeGreaterThan(0);
 
-    const { parseSTLBinary } = await import('@/shared/generation/stlParser');
-    const { isOk } = await import('@/core/result');
     const parsed = parseSTLBinary(result.data);
     if (!isOk(parsed)) throw new Error('STL parse failed');
 
