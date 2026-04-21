@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.44.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.43.0...gridfinity-layout-tool-v4.44.0) (2026-04-21)
+
+
+### Features
+
+* **bin-designer:** polygon-aware wall cutouts on custom bin shapes ([#1420](https://github.com/andymai/gridfinity-layout-tool/issues/1420)) ([a7397b3](https://github.com/andymai/gridfinity-layout-tool/commit/a7397b3f9c396a11d505e7c147edff411ed844a9))
+
 ## [4.43.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.42.0...gridfinity-layout-tool-v4.43.0) (2026-04-21)
 
 
