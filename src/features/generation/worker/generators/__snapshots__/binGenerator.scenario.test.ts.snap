@@ -58,11 +58,15 @@ exports[`custom-shape > 2×2 mixed-detail per-cell half sockets 1`] = `4202`;
 
 exports[`custom-shape > 3×3 L flat base no lip 1`] = `260`;
 
+exports[`custom-shape > 3×3 L with front cutout (polygon-aware side mapping) 1`] = `5204`;
+
 exports[`custom-shape > 3×3 L with lip 1`] = `5124`;
 
 exports[`custom-shape > 3×3 O-shape (ring) with lip 1`] = `5464`;
 
 exports[`custom-shape > 3×3 T with lip 1`] = `4156`;
+
+exports[`custom-shape > 3×3 U with front cutout (single candidate edge) 1`] = `5206`;
 
 exports[`custom-shape > 3×3 U with lip 1`] = `5126`;
 

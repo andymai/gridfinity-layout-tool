@@ -90,7 +90,7 @@
   "binDesigner.shape.grid.ariaLabel": "Vakvorm-editor. Klik op een cel om deze te wisselen.",
   "binDesigner.shape.grid.cellLabel.filled": "Cel {col}, {row}: gevuld",
   "binDesigner.shape.grid.cellLabel.empty": "Cel {col}, {row}: leeg",
-  "binDesigner.shape.custom.hint": "Aangepaste vorm. Wandpatronen, wanduitsparingen, handgrepen, compartimenten, scheidingen, labeltabs en scheppen zijn niet beschikbaar voor niet-rechthoekige bakken.",
+  "binDesigner.shape.custom.hint": "Aangepaste vorm. Wandpatronen, handgrepen, compartimenten, scheidingen, labeltabs en scheppen zijn niet beschikbaar voor niet-rechthoekige bakken.",
   "binDesigner.colors.labelTab": "Labeltab",
   "binDesigner.colors.lip": "Stapelrand",
   "binDesigner.colors.presets": "Voorinstellingen",

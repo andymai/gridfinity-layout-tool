@@ -28,11 +28,6 @@ export const featuresStage: PipelineStage = {
 
   shouldRun(ctx: PipelineContext): boolean {
     const { innerW, innerD } = ctx.dimensions;
-    // Non-rectangular footprints skip all interior features in v1.
-    // The shape-model refactor does not yet teach compartments, cutouts,
-    // walls, handles, inserts, scoops, or label tabs how to operate on a
-    // non-rectangular bounding region. Follow-up PRs will lift this.
-    if (isPartialMask(ctx.params.cellMask)) return false;
     return innerW > 0 && innerD > 0;
   },
 
@@ -60,11 +55,20 @@ export const featuresStage: PipelineStage = {
       return ctx;
     }
 
-    // Standard mode: run all feature builders via composition root
-    const targets = runFeatureBuilders(BIN_FEATURE_BUILDERS, ctx);
+    // For non-rectangular (cellMask) bins, run only builders that have
+    // opted in. Most interior features still assume a rectangular interior
+    // (compartments, inserts, slots, label tabs, handles, scoops); each gets
+    // polygon support in its own follow-up PR.
+    const isPolygon = isPartialMask(params.cellMask);
+    const builders = isPolygon
+      ? BIN_FEATURE_BUILDERS.filter((b) => b.supportsCellMask === true)
+      : BIN_FEATURE_BUILDERS;
 
-    // Wall patterns: special case with per-wall caching + cutout clipping
-    if (params.wallPattern.enabled) {
+    const targets = runFeatureBuilders(builders, ctx);
+
+    // Wall patterns: special case with per-wall caching + cutout clipping.
+    // Polygon support for wall patterns is tracked separately in issue #1416.
+    if (params.wallPattern.enabled && !isPolygon) {
       const patternShapes = buildWallPatterns(ctx);
       targets.patternCutTargets.push(...patternShapes);
     }
