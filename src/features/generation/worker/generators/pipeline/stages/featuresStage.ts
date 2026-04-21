@@ -67,8 +67,10 @@ export const featuresStage: PipelineStage = {
     const targets = runFeatureBuilders(builders, ctx);
 
     // Wall patterns: special case with per-wall caching + cutout clipping.
-    // Polygon support for wall patterns is tracked separately in issue #1416.
-    if (params.wallPattern.enabled && !isPolygon) {
+    // Polygon bins enumerate outer polygon edges (see wallPatterns.ts) and
+    // only bind clipping to the outermost edge per cardinal — non-outermost
+    // step walls get pure pattern.
+    if (params.wallPattern.enabled) {
       const patternShapes = buildWallPatterns(ctx);
       targets.patternCutTargets.push(...patternShapes);
     }

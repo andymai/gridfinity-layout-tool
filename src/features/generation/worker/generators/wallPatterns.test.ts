@@ -7,6 +7,7 @@ import {
 } from './wallPatterns';
 import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import type { BinParams } from '@/shared/types/bin';
+import type { CellMask } from '@/shared/utils/cellMask';
 import { DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 
 /** Minimal BinParams stub for testing wallPatterns functions. */
@@ -217,5 +218,97 @@ describe('getPatternDescriptors — cutout-aware walls', () => {
     // (clipping happens in featuresStage, not here)
     const sides = result!.descriptors.map((d) => d.side);
     expect(sides).toContain('front');
+  });
+});
+
+describe('getPatternDescriptors — polygon (cellMask) bins', () => {
+  // 3×3 L-shape at half-bin resolution (6×6 mask): bottom-right 1u cell empty.
+  // Outer loop has 6 axis-aligned edges: 1 back, 1 left, 2 front (notch + long
+  // arm), 2 right (long arm + notch).
+  function buildMask(rows: (0 | 1)[][]): CellMask {
+    const bottomFirst = rows.slice().reverse();
+    const cols = bottomFirst[0]?.length ?? 0;
+    return { cols, rows: bottomFirst.length, cells: bottomFirst.flat() };
+  }
+  const L_SHAPE: CellMask = buildMask([
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 0, 0],
+    [1, 1, 1, 1, 0, 0],
+  ]);
+
+  const innerW = 42 * 3 - 2 * 1.2; // 3u AABB inner
+  const innerD = 42 * 3 - 2 * 1.2;
+  const wallHeight = 5 * 7;
+
+  const POLYGON_PARAMS = (extra: Partial<BinParams> = {}): BinParams =>
+    makeParams({
+      width: 3,
+      depth: 3,
+      height: 5,
+      cellMask: L_SHAPE,
+      wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      ...extra,
+    });
+
+  it('emits one descriptor per axis-aligned outer edge', () => {
+    const result = getPatternDescriptors(POLYGON_PARAMS(), innerW, innerD, wallHeight);
+    expect(result).not.toBeNull();
+    // L-shape outer loop has 6 edges; each produces a descriptor provided the
+    // wall span is wide enough for at least one pattern element.
+    const { descriptors } = result!;
+    expect(descriptors.length).toBeGreaterThanOrEqual(4);
+    expect(descriptors.length).toBeLessThanOrEqual(6);
+  });
+
+  it('flags exactly one descriptor per cardinal as outermost (allowClip)', () => {
+    const result = getPatternDescriptors(POLYGON_PARAMS(), innerW, innerD, wallHeight);
+    expect(result).not.toBeNull();
+    const { descriptors } = result!;
+    // Group by side so we catch the case where a cardinal has descriptors
+    // but *zero* allowClip (would mean cutout/handle clipping has no edge
+    // to bind to on that side — a real bug, silent without this assert).
+    const bySide = new Map<string, { total: number; clip: number }>();
+    for (const d of descriptors) {
+      const counts = bySide.get(d.side) ?? { total: 0, clip: 0 };
+      counts.total += 1;
+      if (d.allowClip) counts.clip += 1;
+      bySide.set(d.side, counts);
+    }
+    expect(bySide.size).toBeGreaterThan(0);
+    for (const { total, clip } of bySide.values()) {
+      expect(total).toBeGreaterThan(0);
+      expect(clip).toBe(1);
+    }
+  });
+
+  it('each descriptor carries its own wallSpan (not a single-side lookup)', () => {
+    const result = getPatternDescriptors(POLYGON_PARAMS(), innerW, innerD, wallHeight);
+    expect(result).not.toBeNull();
+    const { descriptors } = result!;
+    // L-shape: front cardinal has two edges of different spans (long arm vs notch step).
+    const frontSpans = descriptors
+      .filter((d) => d.side === 'front')
+      .map((d) => d.wallSpan)
+      .sort((a, b) => a - b);
+    if (frontSpans.length === 2) {
+      expect(frontSpans[1]).toBeGreaterThan(frontSpans[0]);
+    }
+    // Every wallSpan must be positive.
+    for (const d of descriptors) expect(d.wallSpan).toBeGreaterThan(0);
+  });
+
+  it('rect bins mark every descriptor as allowClip: true', () => {
+    const rectParams = makeParams({
+      wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      height: 5,
+    });
+    const result = getPatternDescriptors(rectParams, 42 - 2 * 1.2, 42 - 2 * 1.2, wallHeight);
+    expect(result).not.toBeNull();
+    for (const d of result!.descriptors) {
+      expect(d.allowClip).toBe(true);
+    }
   });
 });

@@ -7,22 +7,18 @@
  * Also allows selection of wall patterns (honeycomb, etc.) via dropdown.
  */
 
-import { useDesignerStore } from '@/features/bin-designer/store';
-import { isPartialMask } from '@/shared/utils/cellMask';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import { useWallsSection } from './useWallsSection';
 import { PatternSelector } from './PatternSelector';
 import { WallCutoutsSection } from '../WallCutoutsSection';
 import { HandleSection } from '../HandleSection';
-import { FeatureGate } from '../FeatureGate';
 
 export function WallsSection() {
   const { state, handlers, t } = useWallsSection();
-  // Wall pattern still tiles across rectangular walls only. Wall cutouts and
-  // handles are polygon-aware (auto-snap to the outermost matching polygon
-  // edge) and stay interactive on custom shapes.
-  const isCustomShape = useDesignerStore((s) => isPartialMask(s.params.cellMask));
-  const customShapeReason = t('binDesigner.shape.custom.hint');
+  // Wall cutouts and handles auto-snap to the outermost matching polygon
+  // edge on custom shapes. Wall patterns tile across *every* axis-aligned
+  // outer edge; outermost-per-cardinal matching is used only for border
+  // clipping around cutouts/handles, not to limit tiling itself.
 
   return (
     <div className="space-y-4">
@@ -36,17 +32,15 @@ export function WallsSection() {
       />
       <div className="space-y-4">
         <div className="pt-3 border-t border-stroke-subtle/50">
-          <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
-            <PatternSelector
-              selectedPattern={state.patternEnabled ? state.pattern : null}
-              onChange={handlers.handlePatternChange}
-              disabled={state.patternDisabled}
-              disabledReason={state.patternDisabledReason}
-            />
-            {state.patternPartialNote && state.patternEnabled && (
-              <p className="text-[11px] text-content-tertiary mt-1">{state.patternPartialNote}</p>
-            )}
-          </FeatureGate>
+          <PatternSelector
+            selectedPattern={state.patternEnabled ? state.pattern : null}
+            onChange={handlers.handlePatternChange}
+            disabled={state.patternDisabled}
+            disabledReason={state.patternDisabledReason}
+          />
+          {state.patternPartialNote && state.patternEnabled && (
+            <p className="text-[11px] text-content-tertiary mt-1">{state.patternPartialNote}</p>
+          )}
         </div>
         <div className="pt-3 border-t border-stroke-subtle/50">
           <WallCutoutsSection />

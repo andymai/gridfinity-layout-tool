@@ -45,7 +45,7 @@ graph TB
 - `worker/generators/scoopRampBuilder.ts` — scoop ramp geometry
 - `worker/generators/wallCutoutBuilder.ts` — wall U-notch cutouts
 - `worker/generators/handleBuilder.ts` — handle hole through-cuts in bin walls
-- `worker/generators/wallPatternBuilder.ts` — per-wall hex pattern compounds with two-layer caching (uncut base + clipped result) and optional cutout/handle/ramp clipping
+- `worker/generators/wallPatternBuilder.ts` — per-wall hex pattern compounds with two-layer caching (uncut base + clipped result) and optional cutout/handle/ramp clipping. Polygon bins consume per-edge descriptors from `wallPatterns.collectPolygonWallSegments`: one descriptor per axis-aligned outer edge, with an `allowClip` flag that binds cutout/handle clipping only to the outermost edge per cardinal (matching `findPolygonEdgeForSide`). Divider ramp/junction zones are unconditionally empty on polygon bins — dividers are filtered out at `featuresStage`.
 - `bridge/generationTimeout.ts` — complexity-aware per-request timeout (30-90 s based on pattern, cutouts, height)
 - `worker/generators/featureBuilder.ts` — barrel re-export of all builder modules
 - `worker/generators/dividerBuilder.ts` — divider piece generation

@@ -257,4 +257,46 @@ export const customShapes: ScenarioCase[] = [
       },
     },
   }),
+  defineScenario('custom-shape', '3×3 L with honeycomb pattern (polygon edge enumeration)', {
+    // L-shape produces six outer edges (back/left full, front/right each split
+    // into a long and short segment by the notch). Every edge gets pattern;
+    // only the outermost per cardinal participates in cutout/handle clipping.
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: L_SHAPE_MASK,
+      wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+    },
+  }),
+  defineScenario('custom-shape', '3×3 L with honeycomb + front cutout (outermost-edge clip)', {
+    // Validates that the cutout border clip lands on the L's short front arm
+    // (the outermost front edge) and not on the inner step wall.
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: L_SHAPE_MASK,
+      wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+      walls: {
+        enabled: true,
+        shape: 'u-shape',
+        width: 0,
+        depth: 0,
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        back: DISABLED_WALL_CUTOUT,
+        left: DISABLED_WALL_CUTOUT,
+        right: DISABLED_WALL_CUTOUT,
+        interior: DISABLED_WALL_CUTOUT,
+      },
+    },
+  }),
+  defineScenario('custom-shape', '3×3 U with honeycomb pattern (multi-side polygon pattern)', {
+    // U-shape produces more edges (two front extensions + inner step walls);
+    // validates that all axis-aligned outer edges are tiled independently.
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: U_SHAPE_MASK,
+      wallPattern: { enabled: true, pattern: 'honeycomb' as const },
+    },
+  }),
 ];
