@@ -474,6 +474,13 @@ export interface DesignerUIState {
   readonly splitPieceMeshes: readonly SplitPieceMeshEntry[];
   /** Currently hovered color zone in the panel (for 3D preview glow feedback) */
   readonly hoveredColorZone: ColorZone | null;
+  /**
+   * Whether the Custom-shape editor section is expanded. Tracks the toggle
+   * independently of the mask because the store auto-clears fully-filled
+   * masks to undefined (fast path) — we can't infer "editor should be open"
+   * from `params.cellMask` alone when the user hasn't painted anything yet.
+   */
+  readonly shapeEditorOpen: boolean;
 }
 
 /** Undo/redo history for bin parameters with optional mesh cache */
@@ -634,6 +641,7 @@ export interface DesignerState {
   setDesignListOpen: (open: boolean) => void;
   setWireframeMode: (enabled: boolean) => void;
   setCutoutEditorOpen: (open: boolean) => void;
+  setShapeEditorOpen: (open: boolean) => void;
   setSplitViewMode: (mode: SplitViewMode) => void;
   setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => void;
   setHoveredColorZone: (zone: ColorZone | null) => void;

@@ -351,4 +351,58 @@ describe('validateDesignerShare', () => {
       }
     });
   });
+
+  describe('cellMask validation', () => {
+    it('accepts a structurally-valid mask', () => {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cellMask = {
+        cols: 4,
+        rows: 4,
+        cells: [1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      };
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects cells whose length doesn’t match cols × rows', () => {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cellMask = {
+        cols: 4,
+        rows: 4,
+        cells: [1, 1, 1],
+      };
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects oversized cols / rows (DoS guard)', () => {
+      // 21 exceeds MAX_MASK_DIMENSION (20).
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cellMask = {
+        cols: 21,
+        rows: 2,
+        cells: new Array(42).fill(1),
+      };
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects non-binary cell values', () => {
+      const payload = validPayload();
+      (payload.params as Record<string, unknown>).cellMask = {
+        cols: 2,
+        rows: 2,
+        cells: [1, 1, 1, 2],
+      };
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('accepts payloads with no cellMask (rectangular fast path)', () => {
+      const payload = validPayload();
+      // No cellMask key → valid.
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+    });
+  });
 });

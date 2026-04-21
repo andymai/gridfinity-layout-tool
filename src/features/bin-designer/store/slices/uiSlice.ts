@@ -86,6 +86,12 @@ export function createUISlice(set: Set) {
       });
     },
 
+    setShapeEditorOpen: (open: boolean) => {
+      set((state) => {
+        state.ui.shapeEditorOpen = open;
+      });
+    },
+
     toggleHalfBinMode: () => {
       set((state) => {
         const enabling = !state.ui.halfBinMode;

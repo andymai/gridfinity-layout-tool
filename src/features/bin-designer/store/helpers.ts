@@ -8,15 +8,29 @@
  */
 
 import { current, type Draft } from 'immer';
-import type { DesignerState, HistoryEntry, CachedMesh, Cutout } from '../types';
+import type { BinParams, DesignerState, HistoryEntry, CachedMesh, Cutout } from '../types';
 import { DESIGNER_CONSTRAINTS } from '../constants';
 import { evictIfNeeded } from './meshCacheManager';
+import { isFractional } from '@/core/constants';
+import { hasHalfBinDetail, isPartialMask } from '@/shared/utils/cellMask';
 
 /**
  * Module-level pending mesh cache: stores the mesh generated for the current
  * params, to be attached to the next history entry when params change.
  */
 let pendingMeshCache: CachedMesh | null = null;
+
+/**
+ * Shared with `persistenceSlice.loadDesign`: `halfBinMode` must be on
+ * whenever the params require 0.5u granularity (fractional dimensions or
+ * a cellMask with mixed-detail 1u blocks). Kept here so both load paths
+ * and history restore pick up the same rule.
+ */
+export function paramsNeedHalfBinMode(params: BinParams): boolean {
+  if (isFractional(params.width) || isFractional(params.depth)) return true;
+  if (isPartialMask(params.cellMask) && hasHalfBinDetail(params.cellMask)) return true;
+  return false;
+}
 
 /** Get the current pending mesh cache. */
 export function getPendingMeshCache(): CachedMesh | null {
@@ -89,6 +103,13 @@ export function dissolveSingletonGroups(cutouts: Cutout[]): Cutout[] {
  */
 export function restoreHistoryEntry(state: Draft<DesignerState>, entry: HistoryEntry): void {
   state.params = entry.params;
+  // Keep UI toggles consistent with the restored params. Without this,
+  // undoing across a custom-shape paint leaves `shapeEditorOpen` stuck on
+  // after the mask is gone, and undoing across a dimension change can
+  // leave `halfBinMode` out of sync with the new dimensions. Mirrors the
+  // normalisation in `loadDesign`.
+  state.ui.halfBinMode = paramsNeedHalfBinMode(entry.params);
+  state.ui.shapeEditorOpen = isPartialMask(entry.params.cellMask);
 
   if (entry.mesh) {
     // Cache hit: restore mesh directly, no regeneration needed
