@@ -25,7 +25,7 @@ import { SIZE, CLEARANCE, SOCKET_HEIGHT } from './generatorTypes';
 import { toIndexedMeshData } from './utils/mesh';
 import { buildTopShape } from './boxBuilder';
 import { generateBin } from './binOrchestrator';
-import { getLastSolid } from './shapeCache';
+import { getLastSolid, setLastSolid } from './shapeCache';
 import { applySplitConnectors, computeCutFaces } from './splitConnectorBuilder';
 import type { BinGeometryContext } from './splitConnectorBuilder';
 import { isAbortError } from './utils/abort';
@@ -265,6 +265,17 @@ function splitSolidIntoPieces(
       });
     }
   }
+
+  if (lipSolid) lipSolid.delete();
+
+  // The solid cached in lastSolid was generated for bodyParams (which strips
+  // the stacking lip to avoid OCCT boolean crashes). Mark it as NOT
+  // export-quality so that a subsequent exportBin(params) call regenerates
+  // with the caller's full params instead of reusing the body-only solid.
+  // Without this, exportBin would export a bin missing its stacking lip, and
+  // the mixed tessellation left by the boolean operations can cause
+  // StlAPI.Write to fail with "Failed to write STL file".
+  setLastSolid(getLastSolid(), false);
 
   return pieces;
 }

@@ -39,6 +39,35 @@ const SPLIT_WIDTH = 6; // 6 units — needs 2 pieces on a 4-unit max bed
 const CUT_PLANES_X = [0]; // single cut at center
 const CONNECTORS_OFF = { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: false };
 
+/** Compute axis-aligned bounding box from interleaved [x,y,z,...] vertices. */
+function getVertexBounds(vertices: Float32Array): {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  minZ: number;
+  maxZ: number;
+} {
+  let minX = Infinity,
+    maxX = -Infinity,
+    minY = Infinity,
+    maxY = -Infinity,
+    minZ = Infinity,
+    maxZ = -Infinity;
+  for (let i = 0; i < vertices.length; i += 3) {
+    const x = vertices[i];
+    const y = vertices[i + 1];
+    const z = vertices[i + 2];
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+    if (z < minZ) minZ = z;
+    if (z > maxZ) maxZ = z;
+  }
+  return { minX, maxX, minY, maxY, minZ, maxZ };
+}
+
 describe('exportBin after generateSplitPreview: STL write must succeed', () => {
   beforeEach(() => {
     clearAllCaches();
@@ -58,9 +87,9 @@ describe('exportBin after generateSplitPreview: STL write must succeed', () => {
     // lastSolid pointing at the body solid.
     generateSplitPreview(params, CUT_PLANES_X, [], CONNECTORS_OFF);
 
-    // The split preview marks the cache as export-quality (which is the
-    // condition that triggers the bug).
-    expect(isLastSolidExportQuality()).toBe(true);
+    // After the fix: split preview marks the solid as NOT export-quality,
+    // forcing exportBin to regenerate with the correct full params.
+    expect(isLastSolidExportQuality()).toBe(false);
 
     // Now simulate the user exporting without split (checkbox unchecked).
     // This was previously failing with "Failed to write STL file".
@@ -83,7 +112,8 @@ describe('exportBin after generateSplitPreview: STL write must succeed', () => {
     };
 
     generateSplitPreview(params, CUT_PLANES_X, [], CONNECTORS_OFF);
-    expect(isLastSolidExportQuality()).toBe(true);
+    // After the fix: flag must be false so exportBin regenerates.
+    expect(isLastSolidExportQuality()).toBe(false);
 
     const result = await exportBin(params, 'stl');
 
@@ -99,10 +129,7 @@ describe('exportBin after generateSplitPreview: STL write must succeed', () => {
     expect(isOk(parsed)).toBe(true);
     if (!isOk(parsed)) throw new Error('unreachable');
 
-    const verts = parsed.value.vertices;
-    let maxZ = -Infinity;
-    for (let i = 2; i < verts.length; i += 3) maxZ = Math.max(maxZ, verts[i]);
-
+    const { maxZ } = getVertexBounds(parsed.value.vertices);
     const wallTopZ = params.height * GRIDFINITY.HEIGHT_UNIT;
     // The exported solid must extend above the wall top (lip present).
     expect(maxZ).toBeGreaterThan(wallTopZ + 1);
@@ -118,7 +145,7 @@ describe('exportBin after generateSplitPreview: STL write must succeed', () => {
     };
 
     generateSplitPreview(params, CUT_PLANES_X, [], CONNECTORS_OFF);
-    expect(isLastSolidExportQuality()).toBe(true);
+    expect(isLastSolidExportQuality()).toBe(false);
 
     const result = await exportBin(params, 'stl');
 
@@ -135,7 +162,7 @@ describe('exportBin after generateSplitPreview: STL write must succeed', () => {
     };
 
     generateSplitPreview(params, CUT_PLANES_X, [], CONNECTORS_OFF);
-    expect(isLastSolidExportQuality()).toBe(true);
+    expect(isLastSolidExportQuality()).toBe(false);
 
     const result = await exportBin(params, 'step');
 
@@ -154,7 +181,7 @@ describe('exportBin after generateSplitPreview: STL write must succeed', () => {
     // With connectors the pieces include fuse+cut booleans, exercising
     // more complex tessellation state on the body solid.
     generateSplitPreview(params, CUT_PLANES_X, [], DEFAULT_SPLIT_CONNECTOR_CONFIG);
-    expect(isLastSolidExportQuality()).toBe(true);
+    expect(isLastSolidExportQuality()).toBe(false);
 
     const result = await exportBin(params, 'stl');
 
@@ -183,13 +210,7 @@ describe('exportBin after generateSplitPreview: STL write must succeed', () => {
     const parsed = parseSTLBinary(result.data);
     if (!isOk(parsed)) throw new Error('STL parse failed');
 
-    const verts = parsed.value.vertices;
-    let minZ = Infinity;
-    let maxZ = -Infinity;
-    for (let i = 2; i < verts.length; i += 3) {
-      minZ = Math.min(minZ, verts[i]);
-      maxZ = Math.max(maxZ, verts[i]);
-    }
+    const { minZ, maxZ, minX, maxX } = getVertexBounds(parsed.value.vertices);
     const exportedZ = maxZ - minZ;
     const expectedWallTopZ = params.height * GRIDFINITY.HEIGHT_UNIT;
     // The exported bin (full, not split) must have full height + lip.
@@ -198,12 +219,6 @@ describe('exportBin after generateSplitPreview: STL write must succeed', () => {
     // Width should span the full bin width (not just half — this catches
     // accidentally exporting a single split piece instead of the full bin).
     const outerW = params.width * GRID_UNIT;
-    let minX = Infinity;
-    let maxX = -Infinity;
-    for (let i = 0; i < verts.length; i += 3) {
-      minX = Math.min(minX, verts[i]);
-      maxX = Math.max(maxX, verts[i]);
-    }
     const exportedX = maxX - minX;
     expect(exportedX).toBeGreaterThan(outerW * 0.8);
   }, 90000);
