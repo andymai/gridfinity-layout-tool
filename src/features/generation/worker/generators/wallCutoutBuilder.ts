@@ -280,8 +280,12 @@ function buildWallCutoutCutsInScope(
     );
   }
 
-  // Interior divider walls
-  if (params.walls.interior.enabled) {
+  // Interior divider walls — skip entirely on polygon bins, since
+  // compartmentWallsFeature is filtered out for custom shapes and the
+  // corresponding divider walls won't exist. Cutting where there's no
+  // material would be wasted boolean work (and risks carving the shell
+  // if a cut crosses it).
+  if (params.walls.interior.enabled && !isPartialMask(params.cellMask)) {
     const { effectiveWidth, effectiveDepth } = resolveEffective('interior');
     if (effectiveWidth > 0 && effectiveDepth > 0) {
       const { cols, rows, cells } = params.compartments;

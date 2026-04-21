@@ -101,12 +101,21 @@ export function findPolygonEdgeForSide(mask: CellMask, side: WallSideKey): Polyg
       best = candidate;
       continue;
     }
-    // Prefer more extreme perpendicular coord; tie-break on longer span.
+    // Ranking: (1) more extreme perpendicular coord, (2) longer span, (3) lower
+    // midpoint along the edge direction. (3) makes the result deterministic for
+    // symmetric shapes (e.g. U-shape back = left arm, not traversal-dependent).
     const extremeDelta = (perpU - best.perpU) * config.extremeSign;
     if (extremeDelta > 1e-9) {
       best = candidate;
-    } else if (extremeDelta > -1e-9 && spanU > best.spanU) {
-      best = candidate;
+    } else if (extremeDelta > -1e-9) {
+      if (spanU > best.spanU + 1e-9) {
+        best = candidate;
+      } else if (spanU > best.spanU - 1e-9) {
+        // Deterministic tiebreak on midpoint coordinate along the edge axis.
+        const edgeAxisCoord = config.perpAxis === 'y' ? midU.x : midU.y;
+        const bestAxisCoord = config.perpAxis === 'y' ? best.midU.x : best.midU.y;
+        if (edgeAxisCoord < bestAxisCoord) best = candidate;
+      }
     }
   }
 

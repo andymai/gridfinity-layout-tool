@@ -117,13 +117,15 @@ describe('findPolygonEdgeForSide', () => {
       expect(edge!.spanU).toBe(3);
     });
 
-    it('picks the tallest back edge (tiebreak on length, equal extremum)', () => {
+    it('picks the left arm for back on a symmetric U (deterministic tiebreak)', () => {
       // Back edges at y=2 (left arm and right arm, each span 1u) — both outermost.
-      // Tiebreak on length: both are 1u, so the one found first wins (order depends
-      // on polygon traversal). Either is acceptable — both are symmetrically valid.
+      // Length ties, so the deterministic midpoint-X tiebreak wins: the LEFT arm
+      // (smaller midpoint X) is selected consistently, regardless of polygon
+      // traversal order. Users get reproducible results on symmetric shapes.
       const edge = findPolygonEdgeForSide(uMask, 'back');
       expect(edge!.perpU).toBe(2);
       expect(edge!.spanU).toBe(1);
+      expect(edge!.midU.x).toBe(0.5); // left arm midpoint, not 2.5 (right arm)
     });
 
     it('picks the outermost left edge', () => {
@@ -189,12 +191,13 @@ describe('resolvePolygonSideGeometry', () => {
     expect(back!.wallSpan).toBeCloseTo(42 - 0.5 - 2 * WALL, 5);
   });
 
-  it('returns null for a side with no matching edge (pathological)', () => {
-    // Single-cell mask: has all four sides, so not pathological. We can't easily
-    // construct a polygon with no edge facing a side via the mask API, so test
-    // the null path via the underlying edge finder directly instead.
+  it('resolves all four sides for a trivial single-cell mask', () => {
+    // Sanity check that even the smallest valid mask has matching edges on
+    // every side — any axis-aligned CCW polygon traversal must include all
+    // four cardinal directions to close, so the null-return path is only
+    // reachable for invalid (<3-vertex) polygons, which `maskToPolygon`
+    // rejects upstream. We keep the null guard defensively.
     const mask = makeMask([[1]]);
-    // All four sides should have an edge on a trivial mask.
     expect(findPolygonEdgeForSide(mask, 'front')).not.toBeNull();
     expect(findPolygonEdgeForSide(mask, 'back')).not.toBeNull();
     expect(findPolygonEdgeForSide(mask, 'left')).not.toBeNull();
