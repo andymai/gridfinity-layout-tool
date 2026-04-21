@@ -85,14 +85,18 @@ export function isPartialMask(mask: CellMask | undefined): mask is CellMask {
  */
 export function hasHalfBinDetail(mask: CellMask): boolean {
   const { cols, rows, cells } = mask;
+  // Odd dimensions can't be tiled into 2×2 blocks, so at least one block
+  // must straddle a 1u boundary — half-bin detail by definition.
   if (cols % 2 !== 0 || rows % 2 !== 0) return true;
   for (let r = 0; r < rows; r += 2) {
     for (let c = 0; c < cols; c += 2) {
-      const a = cells[r * cols + c];
-      const b = cells[r * cols + c + 1];
-      const d = cells[(r + 1) * cols + c];
-      const e = cells[(r + 1) * cols + c + 1];
-      if (a !== b || a !== d || a !== e) return true;
+      const topLeft = cells[r * cols + c];
+      const topRight = cells[r * cols + c + 1];
+      const bottomLeft = cells[(r + 1) * cols + c];
+      const bottomRight = cells[(r + 1) * cols + c + 1];
+      if (topLeft !== topRight || topLeft !== bottomLeft || topLeft !== bottomRight) {
+        return true;
+      }
     }
   }
   return false;

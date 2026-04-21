@@ -72,7 +72,14 @@ export function useShapeSection() {
 
   const displayMask: CellMask = useMemo(() => {
     const source = storedMask ?? buildFullMask(width, depth);
-    return halfBinMode ? source : coarsenToGridUnits(source);
+    // Coarsening requires even mask dimensions (half-bin cells group into
+    // 1u squares). Fractional-width bins like 1.5×1.5 have odd dims; fall
+    // through to the raw half-bin source — the editor will still render,
+    // just at 0.5u granularity regardless of halfBinMode.
+    if (!halfBinMode && source.cols % 2 === 0 && source.rows % 2 === 0) {
+      return coarsenToGridUnits(source);
+    }
+    return source;
   }, [storedMask, halfBinMode, width, depth]);
 
   const isCustom = cellMask !== undefined && !isAllFilled(cellMask);
@@ -114,7 +121,11 @@ export function useShapeSection() {
 
       const next = base.cells.slice();
 
-      if (hbm) {
+      // Coarse 1u toggle needs even mask dims to group 2×2 sub-cells cleanly.
+      // If halfBinMode is off but the bin has fractional sides (odd dims),
+      // the UI renders at 0.5u anyway — fall through to the half-bin branch.
+      const coarsableOff = !hbm && currentHbCols % 2 === 0 && currentHbRows % 2 === 0;
+      if (!coarsableOff) {
         if (col < 0 || col >= currentHbCols || row < 0 || row >= currentHbRows) return;
         const idx = row * currentHbCols + col;
         next[idx] = next[idx] === 1 ? 0 : 1;

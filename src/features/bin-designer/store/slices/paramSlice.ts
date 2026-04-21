@@ -322,14 +322,16 @@ export function createParamSlice(set: Set, get: Get) {
     // match the current width/depth at half-bin resolution — a mismatched
     // mask would otherwise trip assertValidMask in the generator.
     setCellMask: (mask: CellMask | undefined) => {
-      if (mask !== undefined) {
+      let next: CellMask | undefined;
+      if (mask === undefined || isAllFilled(mask)) {
+        next = undefined;
+      } else {
         const { width, depth } = get().params;
-        const expectedCols = Math.round(width * MASK_CELLS_PER_UNIT);
-        const expectedRows = Math.round(depth * MASK_CELLS_PER_UNIT);
-        if (mask.cols !== expectedCols || mask.rows !== expectedRows) return;
+        if (mask.cols !== Math.round(width * MASK_CELLS_PER_UNIT)) return;
+        if (mask.rows !== Math.round(depth * MASK_CELLS_PER_UNIT)) return;
         if (validateMask(mask) !== null) return;
+        next = mask;
       }
-      const next = mask !== undefined && isAllFilled(mask) ? undefined : mask;
       set((state) => {
         pushHistoryEntry(state);
         state.params.cellMask = next;

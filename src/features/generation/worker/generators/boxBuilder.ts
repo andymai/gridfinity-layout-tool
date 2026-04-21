@@ -41,6 +41,34 @@ import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import { buildMaskDrawing, buildMaskDrawingInset } from './maskPolygon';
+
+/**
+ * Build a hollow-walls + closed-floor shell without relying on brepjs
+ * `shell()`. brepjs 15.x's shell operation fails on concave-perimeter
+ * solids (bins with L/T/U-shaped footprints), so we compose the shell
+ * explicitly as `outer ⊖ inner` where:
+ *   - outer: footprint extruded floor-to-top (Z=0 to Z=totalHeight)
+ *   - inner: inner-footprint extruded from Z=wallThickness (top of
+ *     floor) up past Z=totalHeight so the cut opens the top cleanly.
+ * Used for every non-rectangular bin; rectangles keep the existing
+ * shell() path because it's well-tested there.
+ */
+function buildHollowPolygon(
+  scope: DisposalScope,
+  footprint: Drawing,
+  innerFootprint: Drawing,
+  totalHeight: number,
+  wallThickness: number
+): Shape3D {
+  const outer = scope.register(sketch(footprint, 'XY').extrude(totalHeight));
+  const inner = scope.register(
+    sketch(innerFootprint, 'XY', wallThickness).extrude(
+      totalHeight - wallThickness + COPLANAR_MARGIN
+    )
+  );
+  return unwrap(cut(outer, inner));
+}
+
 /**
  * Build the bin box: a rounded-rectangle extrusion, shelled from the top.
  * The box starts at Z=0 (socket interface) and goes up to wallHeight.
@@ -83,17 +111,18 @@ export function buildBinBox(
   const outerD = gridD * gridUnitMm - CLEARANCE;
 
   /**
-   * Footprint sketch: rounded rectangle for rectangular bins, polygon
+   * Footprint drawings: rounded rectangle for rectangular bins, polygon
    * (via mask) for custom shapes. The mask polygon already accounts for
-   * CLEARANCE via its inward offset; inner offsets below subtract
-   * `wallThickness` directly.
+   * CLEARANCE via its inward offset; inner offsets subtract `wallThickness`
+   * directly. Built as factories so we only pay for a drawing when the
+   * branch that needs it actually runs.
    */
-  const footprint = (): Drawing =>
+  const makeFootprint = (): Drawing =>
     polygon
       ? buildMaskDrawing(cellMask, gridUnitMm)
       : drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS);
 
-  const innerFootprint = (): Drawing =>
+  const makeInnerFootprint = (): Drawing =>
     polygon
       ? buildMaskDrawingInset(cellMask, gridUnitMm, wallThickness)
       : drawRoundedRectangle(
@@ -102,29 +131,8 @@ export function buildBinBox(
           Math.max(BOX_CORNER_RADIUS - wallThickness, 0)
         );
 
-  /**
-   * Build a hollow-walls + closed-floor shell without relying on brepjs
-   * `shell()`. brepjs 15.x's shell operation fails on concave-perimeter
-   * solids (bins with L/T/U-shaped footprints), so we compose the shell
-   * explicitly as `outer ⊖ inner` where:
-   *   - outer: footprint extruded floor-to-top (Z=0 to Z=wallHeight)
-   *   - inner: inner-footprint extruded from Z=wallThickness (top of
-   *     floor) up past Z=wallHeight so the cut opens the top cleanly.
-   * Used for every non-rectangular bin; rectangles keep the existing
-   * shell() path because it's well-tested there.
-   */
-  const buildHollowPolygon = (scope: DisposalScope, totalHeight: number): Shape3D => {
-    const outer = scope.register(sketch(footprint(), 'XY').extrude(totalHeight));
-    const inner = scope.register(
-      sketch(innerFootprint(), 'XY', wallThickness).extrude(
-        totalHeight - wallThickness + COPLANAR_MARGIN
-      )
-    );
-    return unwrap(cut(outer, inner));
-  };
-
   return withScope((scope: DisposalScope) => {
-    const box = sketch(footprint()).extrude(wallHeight);
+    const box = sketch(makeFootprint()).extrude(wallHeight);
 
     // Solid mode: return the raw extrusion, optionally with lowered interior fill
     if (solid) {
@@ -132,7 +140,20 @@ export function buildBinBox(
         let hollowWalls: Shape3D;
         if (polygon) {
           scope.register(box); // not consumed below; dispose via scope
-          hollowWalls = buildHollowPolygon(scope, wallHeight);
+          try {
+            hollowWalls = buildHollowPolygon(
+              scope,
+              makeFootprint(),
+              makeInnerFootprint(),
+              wallHeight,
+              wallThickness
+            );
+          } catch {
+            // Narrow-feature polygon or degenerate inner offset — fall back
+            // to the raw solid box so generation never crashes in
+            // cutoutTopOffset mode. Mirrors the non-solid polygon branch.
+            return setBoxCache(boxKey, box);
+          }
         } else {
           // Rectangular path — brepjs shell is reliable on convex perimeters.
           const topFaces = faceFinder()
@@ -158,7 +179,7 @@ export function buildBinBox(
         // oversized wallThickness; catch and fall back to hollow walls.
         let innerFill: Shape3D;
         try {
-          innerFill = scope.register(sketch(innerFootprint(), 'XY').extrude(fillHeight));
+          innerFill = scope.register(sketch(makeInnerFootprint(), 'XY').extrude(fillHeight));
         } catch {
           return setBoxCache(boxKey, hollowWalls);
         }
@@ -188,7 +209,16 @@ export function buildBinBox(
       // pathological narrow-feature mask never crashes generation.
       scope.register(box); // not consumed; dispose via scope
       try {
-        return setBoxCache(boxKey, buildHollowPolygon(scope, wallHeight));
+        return setBoxCache(
+          boxKey,
+          buildHollowPolygon(
+            scope,
+            makeFootprint(),
+            makeInnerFootprint(),
+            wallHeight,
+            wallThickness
+          )
+        );
       } catch {
         return setBoxCache(boxKey, box);
       }

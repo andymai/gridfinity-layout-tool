@@ -93,6 +93,23 @@ describe('useShapeSection', () => {
     expect(result.current.state.isCustom).toBe(false);
   });
 
+  it('falls back to half-bin display when bin dims are odd (fractional-size bins)', () => {
+    // A 1.5×1.5 bin has a 3×3 mask — can't be cleanly grouped into 1u
+    // squares. With halfBinMode off, the UI should still render at 0.5u
+    // granularity instead of throwing a RangeError inside coarsenToGridUnits.
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 1.5, depth: 1.5 },
+      ui: { ...useDesignerStore.getState().ui, halfBinMode: false },
+    });
+    const { result } = renderHook(() => useShapeSection());
+    expect(result.current.state.cols).toBe(3);
+    expect(result.current.state.rows).toBe(3);
+    // Toggling a cell at 0.5u-granularity coords must not throw either.
+    expect(() => {
+      act(() => result.current.handlers.toggleCell(2, 0));
+    }).not.toThrow();
+  });
+
   it('coarse display hides half-bin detail while preserving stored data', () => {
     // Paint a single 0.5u cell clear with halfBinMode on.
     useDesignerStore.setState({
