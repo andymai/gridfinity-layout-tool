@@ -4,6 +4,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '../../../constants';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
+import { isPartialMask } from '@/shared/utils/cellMask';
 import { DEFAULT_HANDLE_SIDE } from '../../../constants/defaults';
 import type { HandleWallSide, HandleCutoutShape, HandleSide } from '@/features/bin-designer/types';
 import type { SectionMeta } from '../types';
@@ -152,7 +153,11 @@ export function useHandleSection() {
 
   const isUShape = handles.shape === 'u-shape';
   const showCornerRadius = handles.shape === 'rectangle' || handles.shape === 'u-shape';
-  const hasCompartments = params.compartments.cols > 1 || params.compartments.rows > 1;
+  const isCustomShape = isPartialMask(params.cellMask);
+  // Interior handles are skipped on polygon bins (no compartment walls exist
+  // for custom shapes), so hide the toggle there to prevent a silent no-op.
+  const hasCompartments =
+    !isCustomShape && (params.compartments.cols > 1 || params.compartments.rows > 1);
 
   return {
     state: {

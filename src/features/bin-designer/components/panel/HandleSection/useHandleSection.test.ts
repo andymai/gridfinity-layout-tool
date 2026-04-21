@@ -195,4 +195,27 @@ describe('useHandleSection', () => {
     const { result } = renderHook(() => useHandleSection());
     expect(result.current.meta.summary).toContain('20');
   });
+
+  it('hides Interior toggle on polygon bins even when compartments exist', () => {
+    // Previously-configured compartments stay on the params when switching to
+    // a custom shape; the generator skips interior handles on polygon bins, so
+    // the toggle must hide to prevent a silent no-op.
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 2, cells: [0, 1, 2, 3] },
+        cellMask: {
+          cols: 6,
+          rows: 6,
+          cells: [
+            1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1,
+          ],
+        },
+      },
+    });
+
+    const { result } = renderHook(() => useHandleSection());
+    expect(result.current.state.hasCompartments).toBe(false);
+  });
 });
