@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.43.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.42.0...gridfinity-layout-tool-v4.43.0) (2026-04-21)
+
+
+### Features
+
+* **bin-designer:** mask-aware cutouts for non-rectangular footprints ([#1418](https://github.com/andymai/gridfinity-layout-tool/issues/1418)) ([74fc80b](https://github.com/andymai/gridfinity-layout-tool/commit/74fc80bec982dd425c286abfddfe90e3647f1b6d))
+
 ## [4.42.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.41.0...gridfinity-layout-tool-v4.42.0) (2026-04-21)
 
 
