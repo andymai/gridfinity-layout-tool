@@ -95,9 +95,11 @@ export function ParameterPanel() {
           </div>
           {needsSplit && (
             <div className="px-4 py-4 border-b border-stroke-subtle/50">
-              <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
-                <SplitOptionsSection />
-              </FeatureGate>
+              {/* Splits work for any footprint — axis-aligned cut planes
+                  intersect the polygon naturally. Pieces may be irregular
+                  but each has positive volume; tested in the polygon
+                  scenario suite. */}
+              <SplitOptionsSection />
             </div>
           )}
           <div className="px-4 py-4">
