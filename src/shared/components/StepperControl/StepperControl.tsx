@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 
@@ -167,10 +167,10 @@ export function StepperControl({
     if (pendingDelta !== 0) setPendingDelta(0);
   }
 
-  // Single source of truth for the pending commit: whenever pendingDelta goes
-  // non-zero, schedule a flush. The cleanup cancels the flush if another click
-  // arrives (extending the idle window) or the external value changes
-  // (resetting pendingDelta to 0 via the render-time reset above).
+  // Whenever pendingDelta goes non-zero, schedule a flush. The cleanup cancels
+  // the pending timer if another click arrives (extending the idle window) or
+  // the external value changes (resetting pendingDelta to 0 via the render-time
+  // reset above).
   useEffect(() => {
     if (commitMode !== 'deferred' || pendingDelta === 0) return;
     const timer = setTimeout(() => {
@@ -180,16 +180,10 @@ export function StepperControl({
     return () => clearTimeout(timer);
   }, [commitMode, pendingDelta]);
 
-  const handleStep = useCallback(
-    (delta: number) => {
-      if (commitMode === 'immediate') {
-        onStep(delta);
-        return;
-      }
-      setPendingDelta((prev) => prev + delta);
-    },
-    [commitMode, onStep]
-  );
+  const handleStep = (delta: number) => {
+    if (commitMode === 'immediate') onStep(delta);
+    else setPendingDelta((prev) => prev + delta);
+  };
 
   // Optimistic value for display, clamped so the user can't visually overshoot
   // the bounds while a deferred commit is pending.
