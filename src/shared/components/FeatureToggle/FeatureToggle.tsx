@@ -28,6 +28,8 @@ interface FeatureToggleProps {
   disabledReason?: string;
   /** Override the "Customize" button label. Defaults to t('common.customize'). */
   customizeLabel?: string;
+  /** Optional badge rendered next to the label (e.g., an "Experimental" pill). */
+  badge?: ReactNode;
 }
 
 export function FeatureToggle({
@@ -40,6 +42,7 @@ export function FeatureToggle({
   comingSoon = false,
   disabledReason,
   customizeLabel,
+  badge,
 }: FeatureToggleProps) {
   const t = useTranslation();
   const [customizeOpen, setCustomizeOpen] = useState(false);
@@ -59,6 +62,7 @@ export function FeatureToggle({
               {t('common.soon')}
             </span>
           )}
+          {badge}
         </div>
         <button
           type="button"

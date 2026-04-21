@@ -41,9 +41,21 @@ export const RECTANGLE_PRESET: ShapePreset = {
 };
 
 /**
- * L-shape: clears the bottom-right quarter of the footprint. Requires
- * W ≥ 2 and D ≥ 2 so both the kept and the cut regions are at least one
- * full grid cell.
+ * Prefer cuts that land on integer grid-unit boundaries so presets don't
+ * leak half-bin detail (mixed-filled 1u regions) into the generator. For
+ * fractional widths/depths the trailing 0.5u fringe stays filled.
+ *
+ * Central stem/gap width: 1u when the integer dimension is odd (so
+ * shoulders stay equal), 2u when even.
+ */
+function stemUnits(wholeUnits: number): number {
+  return wholeUnits % 2 === 1 ? 1 : 2;
+}
+
+/**
+ * L-shape: clears a floor(W/2) × floor(D/2) grid-unit corner from the
+ * bottom-right. Requires W ≥ 2 and D ≥ 2 so both the kept and the cut
+ * regions are at least one full grid cell.
  */
 export const L_PRESET: ShapePreset = {
   id: 'l',
@@ -51,16 +63,24 @@ export const L_PRESET: ShapePreset = {
   build: (w, d) => {
     const cols = Math.round(w * MASK_CELLS_PER_UNIT);
     const rows = Math.round(d * MASK_CELLS_PER_UNIT);
+    const wWhole = Math.floor(w);
+    const dWhole = Math.floor(d);
     const cells = new Array<0 | 1>(cols * rows).fill(1);
-    const cutW = Math.floor(cols / 2);
-    const cutD = Math.floor(rows / 2);
-    clearRect(cells, cols, cols - cutW, 0, cutW, cutD);
+    const cutWUnits = Math.max(1, Math.floor(wWhole / 2));
+    const cutDUnits = Math.max(1, Math.floor(dWhole / 2));
+    const cutWCols = cutWUnits * MASK_CELLS_PER_UNIT;
+    const cutDRows = cutDUnits * MASK_CELLS_PER_UNIT;
+    // Anchor to the bottom-right 1u-aligned corner. For fractional widths
+    // the trailing 0.5u fringe column stays filled so the cut edge lands
+    // on a whole-grid boundary.
+    const colStart = wWhole * MASK_CELLS_PER_UNIT - cutWCols;
+    clearRect(cells, cols, colStart, 0, cutWCols, cutDRows);
     return { cols, rows, cells };
   },
 };
 
 /**
- * T-shape: top row band full, bottom rows keep only the centre stem.
+ * T-shape: top 1u row band full, lower rows keep only the centred stem.
  * Requires W ≥ 3 and D ≥ 2 so the stem plus two cut shoulders all exist.
  */
 export const T_PRESET: ShapePreset = {
@@ -69,12 +89,16 @@ export const T_PRESET: ShapePreset = {
   build: (w, d) => {
     const cols = Math.round(w * MASK_CELLS_PER_UNIT);
     const rows = Math.round(d * MASK_CELLS_PER_UNIT);
+    const wWhole = Math.floor(w);
     const cells = new Array<0 | 1>(cols * rows).fill(1);
-    const stemHalf = Math.max(1, Math.floor(cols / 6)); // stem width in cells from centre
-    const stemStart = Math.floor(cols / 2) - stemHalf;
-    const stemCols = stemHalf * 2;
-    const shoulderRows = Math.floor(rows / 2);
-    // Clear left and right shoulders below the top band.
+    const stemWidthUnits = stemUnits(wWhole);
+    const stemCols = stemWidthUnits * MASK_CELLS_PER_UNIT;
+    // Floor the left shoulder to 1u so the stem lands on a whole-grid
+    // boundary. Any trailing 0.5u fringe falls onto the right shoulder.
+    const leftShoulderUnits = Math.floor((wWhole - stemWidthUnits) / 2);
+    const stemStart = leftShoulderUnits * MASK_CELLS_PER_UNIT;
+    // Top band = exactly 1u; shoulders occupy the rest.
+    const shoulderRows = rows - MASK_CELLS_PER_UNIT;
     clearRect(cells, cols, 0, 0, stemStart, shoulderRows);
     clearRect(cells, cols, stemStart + stemCols, 0, cols - stemStart - stemCols, shoulderRows);
     return { cols, rows, cells };
@@ -82,7 +106,7 @@ export const T_PRESET: ShapePreset = {
 };
 
 /**
- * U-shape: bottom band full, upper rows split by a central gap.
+ * U-shape: bottom 1u row band full, upper rows split by a centred gap.
  * Requires W ≥ 3 and D ≥ 2 so the two arms plus the gap all exist.
  */
 export const U_PRESET: ShapePreset = {
@@ -91,23 +115,25 @@ export const U_PRESET: ShapePreset = {
   build: (w, d) => {
     const cols = Math.round(w * MASK_CELLS_PER_UNIT);
     const rows = Math.round(d * MASK_CELLS_PER_UNIT);
+    const wWhole = Math.floor(w);
     const cells = new Array<0 | 1>(cols * rows).fill(1);
-    const gapHalf = Math.max(1, Math.floor(cols / 6));
-    const gapStart = Math.floor(cols / 2) - gapHalf;
-    const gapCols = gapHalf * 2;
-    const gapRowStart = Math.floor(rows / 2);
-    // Clear the central gap from halfway up to the top edge.
+    const gapWidthUnits = stemUnits(wWhole);
+    const gapCols = gapWidthUnits * MASK_CELLS_PER_UNIT;
+    const leftArmUnits = Math.floor((wWhole - gapWidthUnits) / 2);
+    const gapStart = leftArmUnits * MASK_CELLS_PER_UNIT;
+    // Bottom band = exactly 1u; gap opens from 1u above the bottom up.
+    const gapRowStart = MASK_CELLS_PER_UNIT;
     clearRect(cells, cols, gapStart, gapRowStart, gapCols, rows - gapRowStart);
     return { cols, rows, cells };
   },
 };
 
-export const SHAPE_PRESETS: readonly ShapePreset[] = [
-  RECTANGLE_PRESET,
-  L_PRESET,
-  T_PRESET,
-  U_PRESET,
-];
+/**
+ * Preset palette shown inside the Custom-shape editor. Rectangle is
+ * intentionally omitted — disabling the Custom-shape toggle itself clears
+ * the mask back to the fast path, so offering it here would be redundant.
+ */
+export const SHAPE_PRESETS: readonly ShapePreset[] = [L_PRESET, T_PRESET, U_PRESET];
 
 export function getPreset(id: ShapePresetId): ShapePreset {
   return SHAPE_PRESETS.find((p) => p.id === id) ?? RECTANGLE_PRESET;

@@ -1209,7 +1209,9 @@ const en: Record<string, string> = {
   'binDesigner.colors.hexColor': 'Hex color',
   'binDesigner.colors.hexInvalid': 'Invalid hex color',
 
-  'binDesigner.shape.presets': 'Shape:',
+  'binDesigner.shape.customShape': 'Custom shape',
+  'binDesigner.shape.gridHelp': 'Click to toggle grid cells',
+  'binDesigner.shape.presets': 'Presets:',
   'binDesigner.shape.preset.rectangle': 'Rectangle',
   'binDesigner.shape.preset.l': 'L',
   'binDesigner.shape.preset.t': 'T',
@@ -1217,10 +1219,8 @@ const en: Record<string, string> = {
   'binDesigner.shape.grid.ariaLabel': 'Bin shape editor. Click a cell to toggle it.',
   'binDesigner.shape.grid.cellLabel.filled': 'Cell {col}, {row}: filled',
   'binDesigner.shape.grid.cellLabel.empty': 'Cell {col}, {row}: empty',
-  'binDesigner.shape.rectangle.hint':
-    'Rectangular footprint. Pick a preset or paint a custom shape.',
   'binDesigner.shape.custom.hint':
-    'Custom shape. Walls, cutouts, handles, dividers, label tabs, and scoop are unavailable for non-rectangular bins.',
+    'Custom shape. Wall patterns, cutouts, handles, compartments, label tabs, and scoop are unavailable for non-rectangular bins.',
 
   'binDesigner.splitAxisInfo': 'Split along {axis} into {count} pieces',
 

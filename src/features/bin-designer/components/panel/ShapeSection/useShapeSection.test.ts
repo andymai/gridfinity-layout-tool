@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { useShapeSection } from './useShapeSection';
 
 describe('useShapeSection', () => {
   beforeEach(() => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 3, depth: 3 },
-      ui: { ...useDesignerStore.getState().ui, halfBinMode: false },
+      ui: { ...DEFAULT_UI_STATE },
     });
   });
 
@@ -38,12 +38,25 @@ describe('useShapeSection', () => {
     expect(result.current.state.isCustom).toBe(true);
   });
 
-  it('applyPreset("rectangle") clears the mask (rectangle fast-path)', () => {
+  it('toggleEditingEnabled opens the editor without painting a mask', () => {
+    const { result } = renderHook(() => useShapeSection());
+    expect(result.current.state.editingEnabled).toBe(false);
+    act(() => result.current.handlers.toggleEditingEnabled());
+    expect(result.current.state.editingEnabled).toBe(true);
+    // No painting yet — stays on the rectangle fast path.
+    expect(result.current.state.isCustom).toBe(false);
+    expect(useDesignerStore.getState().params.cellMask).toBeUndefined();
+    expect(useDesignerStore.getState().ui.shapeEditorOpen).toBe(true);
+  });
+
+  it('toggleEditingEnabled clears the mask and closes the editor when turning off', () => {
     const { result } = renderHook(() => useShapeSection());
     act(() => result.current.handlers.applyPreset('l'));
     expect(result.current.state.isCustom).toBe(true);
-    act(() => result.current.handlers.applyPreset('rectangle'));
-    expect(result.current.state.isCustom).toBe(false);
+    act(() => result.current.handlers.toggleEditingEnabled());
+    expect(result.current.state.editingEnabled).toBe(false);
+    expect(useDesignerStore.getState().params.cellMask).toBeUndefined();
+    expect(useDesignerStore.getState().ui.shapeEditorOpen).toBe(false);
   });
 
   it('applyPreset skips no-op when current mask already matches preset', () => {
@@ -85,12 +98,20 @@ describe('useShapeSection', () => {
     expect(stored!.cells[1 * 6 + 5]).toBe(1);
   });
 
-  it('1u toggleCell rejects changes that would create a hole', () => {
+  it('1u toggleCell clearing the centre produces a valid O-shape (ring)', () => {
     const { result } = renderHook(() => useShapeSection());
-    // Clearing a fully-interior grid square (col=1, row=1) would enclose
-    // a void at the centre of the 3×3 bin — rejected by validateMask.
+    // Clearing a fully-interior grid square (col=1, row=1) encloses a
+    // void at the centre of the 3×3 bin. Holes are valid — the filled
+    // region remains 4-connected and the generator handles inner loops.
     act(() => result.current.handlers.toggleCell(1, 1));
-    expect(result.current.state.isCustom).toBe(false);
+    expect(result.current.state.isCustom).toBe(true);
+    const stored = useDesignerStore.getState().params.cellMask;
+    expect(stored).toBeDefined();
+    // Centre 1u block (all four half-bin sub-cells at col 2-3, row 2-3) cleared.
+    expect(stored!.cells[2 * 6 + 2]).toBe(0);
+    expect(stored!.cells[2 * 6 + 3]).toBe(0);
+    expect(stored!.cells[3 * 6 + 2]).toBe(0);
+    expect(stored!.cells[3 * 6 + 3]).toBe(0);
   });
 
   it('falls back to half-bin display when bin dims are odd (fractional-size bins)', () => {

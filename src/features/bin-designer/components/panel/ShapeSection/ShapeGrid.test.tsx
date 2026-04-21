@@ -44,12 +44,13 @@ describe('ShapeGrid', () => {
     const onToggleCell = vi.fn();
     renderGrid({ onToggleCell });
     const cells = screen.getAllByRole('gridcell');
-    // First DOM cell is visualRow 0, col 0 → mask row (rows-1)=1, col=0
+    // DOM order matches data order (row 0 first); flex-col-reverse flips only
+    // the visual stacking, so cells[0] = mask (col 0, row 0) = bottom-left.
     fireEvent.pointerDown(cells[0]);
     expect(onToggleCell).toHaveBeenCalledTimes(1);
     const [col, row] = onToggleCell.mock.calls[0];
     expect(col).toBe(0);
-    expect(row).toBe(3); // top visual row inverted to mask row 3 (origin bottom)
+    expect(row).toBe(0);
   });
 
   it('drag-paints: subsequent pointer-enter cells follow the drag mode', () => {

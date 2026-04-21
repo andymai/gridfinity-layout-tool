@@ -10,7 +10,6 @@
  * - Base: Base attachments, Physical Units
  */
 
-import type { ReactNode } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { DimensionsSection } from '../panel/DimensionsSection';
 import { ShapeSection } from '../panel/ShapeSection';
@@ -23,6 +22,7 @@ import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
 import { SplitOptionsSection } from '../panel/SplitOptionsSection';
 import { StickyGroupHeader } from '../panel/StickyGroupHeader';
 import { ColorsSection } from '../panel/ColorsSection';
+import { FeatureGate } from '../panel/FeatureGate';
 import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
@@ -31,38 +31,6 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOptionsSection';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { isPartialMask } from '@/shared/utils/cellMask';
-
-/**
- * Wrap a panel section so it visually de-emphasizes and stops accepting
- * input when the bin's footprint isn't rectangular. The features blocked
- * by this gate (wall patterns, cutouts, handles, dividers, label tabs,
- * scoop, split options) currently position from the bin's bounding box
- * rather than the actual cellMask polygon, so applying them to a custom
- * shape would produce features that don't align with the wall.
- *
- * `inert` (React 19) removes descendants from the focus order and blocks
- * pointer events without disabling each input individually.
- */
-function FeatureGate({
-  disabled,
-  reason,
-  children,
-}: {
-  readonly disabled: boolean;
-  readonly reason: string;
-  readonly children: ReactNode;
-}) {
-  return (
-    <div
-      inert={disabled}
-      title={disabled ? reason : undefined}
-      aria-disabled={disabled}
-      className={disabled ? 'opacity-50 cursor-not-allowed' : undefined}
-    >
-      {children}
-    </div>
-  );
-}
 
 export function ParameterPanel() {
   const t = useTranslation();
@@ -103,9 +71,9 @@ export function ParameterPanel() {
             </div>
           )}
           <div className="px-4 py-4">
-            <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
-              <WallsSection />
-            </FeatureGate>
+            {/* Wall thickness works for any footprint; pattern/cutouts/handle
+                gate themselves inside WallsSection. */}
+            <WallsSection />
           </div>
         </StickyGroupHeader>
 

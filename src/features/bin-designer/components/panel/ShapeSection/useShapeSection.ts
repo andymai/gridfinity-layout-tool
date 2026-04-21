@@ -51,15 +51,18 @@ function coarsenToGridUnits(hb: CellMask): CellMask {
 }
 
 export function useShapeSection() {
-  const { width, depth, cellMask, halfBinMode, setCellMask } = useDesignerStore(
-    useShallow((s) => ({
-      width: s.params.width,
-      depth: s.params.depth,
-      cellMask: s.params.cellMask,
-      halfBinMode: s.ui.halfBinMode,
-      setCellMask: s.setCellMask,
-    }))
-  );
+  const { width, depth, cellMask, halfBinMode, shapeEditorOpen, setCellMask, setShapeEditorOpen } =
+    useDesignerStore(
+      useShallow((s) => ({
+        width: s.params.width,
+        depth: s.params.depth,
+        cellMask: s.params.cellMask,
+        halfBinMode: s.ui.halfBinMode,
+        shapeEditorOpen: s.ui.shapeEditorOpen,
+        setCellMask: s.setCellMask,
+        setShapeEditorOpen: s.setShapeEditorOpen,
+      }))
+    );
   const t = useTranslation();
 
   // Stored masks are always at half-bin resolution. UI resolution depends on
@@ -82,7 +85,11 @@ export function useShapeSection() {
     return source;
   }, [storedMask, halfBinMode, width, depth]);
 
+  // "Editing" (toggle on) = editor is open. A painted mask implies editing,
+  // but the editor can also be open with no mask yet (user just toggled on).
+  // "Custom" (hint text) = the mask has been carved into a non-rectangle.
   const isCustom = cellMask !== undefined && !isAllFilled(cellMask);
+  const editingEnabled = shapeEditorOpen || isCustom;
 
   const applyPreset = useCallback(
     (id: ShapePresetId) => {
@@ -95,6 +102,32 @@ export function useShapeSection() {
     },
     [setCellMask]
   );
+
+  /**
+   * Toggle the Custom-shape editor. Turning on opens the grid with a
+   * fully-filled display mask (still fast-path until the user paints
+   * something); turning off clears both the mask and the editor flag.
+   */
+  const toggleEditingEnabled = useCallback(() => {
+    const store = useDesignerStore.getState();
+    const isOpen = store.ui.shapeEditorOpen || store.params.cellMask !== undefined;
+    if (isOpen) {
+      setCellMask(undefined);
+      setShapeEditorOpen(false);
+    } else {
+      setShapeEditorOpen(true);
+    }
+  }, [setCellMask, setShapeEditorOpen]);
+
+  /**
+   * Reset the current shape back to a full rectangle while keeping the
+   * editor open — clears any painted carving but leaves the grid visible
+   * so the user can paint again without reopening the section.
+   */
+  const resetShape = useCallback(() => {
+    setCellMask(undefined);
+    setShapeEditorOpen(true);
+  }, [setCellMask, setShapeEditorOpen]);
 
   /**
    * Toggle a cell at the current UI resolution. In 0.5u (halfBinMode on) a
@@ -124,12 +157,8 @@ export function useShapeSection() {
       // Coarse 1u toggle needs even mask dims to group 2×2 sub-cells cleanly.
       // If halfBinMode is off but the bin has fractional sides (odd dims),
       // the UI renders at 0.5u anyway — fall through to the half-bin branch.
-      const coarsableOff = !hbm && currentHbCols % 2 === 0 && currentHbRows % 2 === 0;
-      if (!coarsableOff) {
-        if (col < 0 || col >= currentHbCols || row < 0 || row >= currentHbRows) return;
-        const idx = row * currentHbCols + col;
-        next[idx] = next[idx] === 1 ? 0 : 1;
-      } else {
+      const isCoarseMode = !hbm && currentHbCols % 2 === 0 && currentHbRows % 2 === 0;
+      if (isCoarseMode) {
         const coarseCols = currentHbCols / 2;
         const coarseRows = currentHbRows / 2;
         if (col < 0 || col >= coarseCols || row < 0 || row >= coarseRows) return;
@@ -137,6 +166,10 @@ export function useShapeSection() {
         const allFilled = subs.every((i) => base.cells[i] === 1);
         const target: 0 | 1 = allFilled ? 0 : 1;
         for (const i of subs) next[i] = target;
+      } else {
+        if (col < 0 || col >= currentHbCols || row < 0 || row >= currentHbRows) return;
+        const idx = row * currentHbCols + col;
+        next[idx] = next[idx] === 1 ? 0 : 1;
       }
 
       setCellMask({ cols: currentHbCols, rows: currentHbRows, cells: next });
@@ -159,12 +192,15 @@ export function useShapeSection() {
       cols: displayMask.cols,
       rows: displayMask.rows,
       mask: displayMask,
+      editingEnabled,
       isCustom,
       presets,
     },
     handlers: {
       applyPreset,
       toggleCell,
+      toggleEditingEnabled,
+      resetShape,
     },
     t,
   };

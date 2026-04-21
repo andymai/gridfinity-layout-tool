@@ -1,11 +1,13 @@
 /**
- * Shape section: custom bin footprint editor.
+ * Shape section: "Custom shape" toggle + paint-style footprint editor.
  *
- * Lets the user paint a non-rectangular shape on a half-bin-resolution
- * grid, or pick from common presets (L, T, U). Rectangular bins take the
- * fast generator path; partial masks produce polygon footprints.
+ * Off: pure rectangle (fast generator path, cellMask undefined).
+ * On: reveals preset buttons + half-bin paint grid + context hint. A
+ * fully-filled mask is still counted as "rectangle" for generation, so
+ * flipping the toggle on without painting doesn't slow anything down.
  */
 import { useCallback } from 'react';
+import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { useShapeSection } from './useShapeSection';
 import { ShapeGrid } from './ShapeGrid';
 
@@ -24,34 +26,53 @@ export function ShapeSection() {
   );
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-content-tertiary">{t('binDesigner.shape.presets')}</span>
-        {state.presets.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            onClick={() => handlers.applyPreset(p.id)}
-            disabled={!p.available}
-            className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
-      <div>
-        <ShapeGrid
-          mask={state.mask}
-          onToggleCell={handlers.toggleCell}
-          ariaLabel={t('binDesigner.shape.grid.ariaLabel')}
-          cellLabel={cellLabel}
-        />
-      </div>
-      <p className="text-[11px] text-content-tertiary">
-        {state.isCustom
-          ? t('binDesigner.shape.custom.hint')
-          : t('binDesigner.shape.rectangle.hint')}
-      </p>
-    </div>
+    <FeatureToggle
+      label={t('binDesigner.shape.customShape')}
+      checked={state.editingEnabled}
+      onChange={handlers.toggleEditingEnabled}
+      badge={
+        <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
+          {t('settings.experimental')}
+        </span>
+      }
+      primaryControls={
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-content-tertiary">{t('binDesigner.shape.presets')}</span>
+            {state.presets.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => handlers.applyPreset(p.id)}
+                disabled={!p.available}
+                className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {p.label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={handlers.resetShape}
+              disabled={!state.isCustom}
+              className="ml-auto text-[11px] font-medium text-accent transition-colors hover:text-accent/80 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {t('common.reset')}
+            </button>
+          </div>
+          <p className="text-[11px] text-content-tertiary">{t('binDesigner.shape.gridHelp')}</p>
+          <ShapeGrid
+            mask={state.mask}
+            onToggleCell={handlers.toggleCell}
+            ariaLabel={t('binDesigner.shape.grid.ariaLabel')}
+            cellLabel={cellLabel}
+          />
+          {state.isCustom && (
+            <p className="text-[11px] text-content-tertiary">
+              {t('binDesigner.shape.custom.hint')}
+            </p>
+          )}
+        </div>
+      }
+    />
   );
 }
