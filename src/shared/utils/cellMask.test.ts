@@ -4,6 +4,7 @@ import {
   classifyShape,
   countFilled,
   hashMask,
+  hasHalfBinDetail,
   isAllFilled,
   isPartialMask,
   isRegionFilled,
@@ -54,6 +55,54 @@ describe('isAllFilled / countFilled', () => {
     ]);
     expect(isAllFilled(m)).toBe(false);
     expect(countFilled(m)).toBe(8);
+  });
+});
+
+describe('hasHalfBinDetail', () => {
+  it('returns false when every 1u grid square has all four sub-cells matching', () => {
+    // 2×2 bin (4×4 mask) with the whole bottom-right 1u cell cleared — each
+    // 1u square is uniform (all 4 filled or all 4 empty).
+    const m = mask([
+      [1, 1, 1, 1],
+      [1, 1, 1, 1],
+      [1, 1, 0, 0],
+      [1, 1, 0, 0],
+    ]);
+    expect(hasHalfBinDetail(m)).toBe(false);
+  });
+
+  it('returns true when any 1u grid square has mixed sub-cells', () => {
+    // One cleared half-cell inside an otherwise-full 2×2 bin.
+    const m = mask([
+      [1, 1, 1, 1],
+      [1, 1, 1, 1],
+      [1, 1, 1, 1],
+      [1, 1, 1, 0],
+    ]);
+    expect(hasHalfBinDetail(m)).toBe(true);
+  });
+
+  it('returns true for masks whose dimensions are odd (can\u2019t group into 1u squares)', () => {
+    // 1.5×1.5 bin = 3×3 mask. No clean 1u grouping.
+    const m = mask([
+      [1, 1, 1],
+      [1, 1, 1],
+      [1, 1, 1],
+    ]);
+    expect(hasHalfBinDetail(m)).toBe(true);
+  });
+
+  it('preset L at 3\u00d73 (half-bin mask 6\u00d76) has no half-bin detail', () => {
+    // L preset clears a full 1u corner — every 1u square stays uniform.
+    const m = mask([
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 0, 0],
+      [1, 1, 1, 1, 0, 0],
+    ]);
+    expect(hasHalfBinDetail(m)).toBe(false);
   });
 });
 

@@ -75,6 +75,29 @@ export function isPartialMask(mask: CellMask | undefined): mask is CellMask {
   return mask !== undefined && !isAllFilled(mask);
 }
 
+/**
+ * True when any 1u grid square has a mix of filled and empty half-bin
+ * sub-cells. Cells that are uniformly filled or uniformly empty don't
+ * count. A half-bin-only bin boundary (e.g. a half-cell cut into a corner)
+ * makes the base generator switch to half-sockets so the floor has a
+ * socket in every filled half-cell region instead of a single full socket
+ * that would overhang the cut.
+ */
+export function hasHalfBinDetail(mask: CellMask): boolean {
+  const { cols, rows, cells } = mask;
+  if (cols % 2 !== 0 || rows % 2 !== 0) return true;
+  for (let r = 0; r < rows; r += 2) {
+    for (let c = 0; c < cols; c += 2) {
+      const a = cells[r * cols + c];
+      const b = cells[r * cols + c + 1];
+      const d = cells[(r + 1) * cols + c];
+      const e = cells[(r + 1) * cols + c + 1];
+      if (a !== b || a !== d || a !== e) return true;
+    }
+  }
+  return false;
+}
+
 /** Count filled cells in the mask. */
 export function countFilled(mask: CellMask): number {
   let n = 0;

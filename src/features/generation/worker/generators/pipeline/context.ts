@@ -7,7 +7,7 @@
 
 import type { BinParams } from '@/shared/types/bin';
 import { GRIDFINITY } from '@/shared/constants/bin';
-import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
+import { hashMask, hasHalfBinDetail, isPartialMask } from '@/shared/utils/cellMask';
 import { SIZE, CLEARANCE, SOCKET_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
 // SIZE is kept as a fallback default for backwards compatibility with callers
 // that construct BinParams without gridUnitMm.
@@ -19,7 +19,11 @@ import type { BinDimensions, PipelineContext } from './types';
 function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isFlat = params.base.style === 'flat';
-  const halfSockets = params.base.halfSockets && !isFlat;
+  // Auto-enable half-sockets when the cellMask has half-bin detail so
+  // half-cell regions get proper sockets instead of an overhanging full
+  // one. Users can still opt in via `base.halfSockets` for any bin.
+  const maskForcesHalfSockets = isPartialMask(params.cellMask) && hasHalfBinDetail(params.cellMask);
+  const halfSockets = (params.base.halfSockets || maskForcesHalfSockets) && !isFlat;
   const solid = params.base.solid;
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
