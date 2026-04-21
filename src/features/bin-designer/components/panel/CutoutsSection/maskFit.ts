@@ -8,12 +8,25 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import { MASK_CELLS_PER_UNIT, type CellMask } from '@/shared/utils/cellMask';
+import type { CellMask } from '@/shared/utils/cellMask';
 import { getRotatedBounds } from './geometry';
 import { getPathBounds } from './pathGeometry';
 
 /** Tolerance for mask-cell boundary rounding (mm). */
 const MASK_FIT_EPSILON = 0.01;
+
+/**
+ * Mm-per-mask-cell in the editor's interior coordinate system. X and Y scales
+ * differ whenever `params.width !== params.depth` (non-square bins), since the
+ * interior is shrunk by wall thickness + baseplate tolerance — an absolute mm
+ * amount — on both axes. Callers derive from `binWidth/mask.cols` (= editor mm
+ * per mask column) and `binDepth/mask.rows` to keep validator and polygon
+ * rendering aligned.
+ */
+export interface MaskCellSize {
+  readonly cellMmX: number;
+  readonly cellMmY: number;
+}
 
 /**
  * Check whether an axis-aligned rectangle (in bin-interior mm) lies entirely
@@ -28,13 +41,13 @@ export function rectFitsInMask(
   yMm: number,
   widthMm: number,
   depthMm: number,
-  gridUnitMm: number
+  cellSize: MaskCellSize
 ): boolean {
-  const cellMm = gridUnitMm / MASK_CELLS_PER_UNIT;
-  const colStart = Math.floor((xMm + MASK_FIT_EPSILON) / cellMm);
-  const rowStart = Math.floor((yMm + MASK_FIT_EPSILON) / cellMm);
-  const colEnd = Math.ceil((xMm + widthMm - MASK_FIT_EPSILON) / cellMm);
-  const rowEnd = Math.ceil((yMm + depthMm - MASK_FIT_EPSILON) / cellMm);
+  const { cellMmX, cellMmY } = cellSize;
+  const colStart = Math.floor((xMm + MASK_FIT_EPSILON) / cellMmX);
+  const rowStart = Math.floor((yMm + MASK_FIT_EPSILON) / cellMmY);
+  const colEnd = Math.ceil((xMm + widthMm - MASK_FIT_EPSILON) / cellMmX);
+  const rowEnd = Math.ceil((yMm + depthMm - MASK_FIT_EPSILON) / cellMmY);
   if (colStart < 0 || rowStart < 0 || colEnd > mask.cols || rowEnd > mask.rows) {
     return false;
   }
@@ -53,7 +66,7 @@ export function rectFitsInMask(
  * path cutouts — all shapes are validated via their axis-aligned bounding box
  * for consistency with the existing bin-bound clamping.
  */
-export function cutoutFitsInMask(cutout: Cutout, mask: CellMask, gridUnitMm: number): boolean {
+export function cutoutFitsInMask(cutout: Cutout, mask: CellMask, cellSize: MaskCellSize): boolean {
   let minX: number;
   let minY: number;
   let maxX: number;
@@ -71,5 +84,5 @@ export function cutoutFitsInMask(cutout: Cutout, mask: CellMask, gridUnitMm: num
     maxX = b.maxX;
     maxY = b.maxY;
   }
-  return rectFitsInMask(mask, minX, minY, maxX - minX, maxY - minY, gridUnitMm);
+  return rectFitsInMask(mask, minX, minY, maxX - minX, maxY - minY, cellSize);
 }

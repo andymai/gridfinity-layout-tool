@@ -90,7 +90,7 @@
   "binDesigner.shape.grid.ariaLabel": "Editor de forma do compartimento. Clique em uma célula para alterná-la.",
   "binDesigner.shape.grid.cellLabel.filled": "Célula {col}, {row}: preenchida",
   "binDesigner.shape.grid.cellLabel.empty": "Célula {col}, {row}: vazia",
-  "binDesigner.shape.custom.hint": "Forma personalizada. Padrões de parede, recortes, alças, compartimentos, abas de etiqueta e concha não estão disponíveis para caixas não retangulares.",
+  "binDesigner.shape.custom.hint": "Forma personalizada. Padrões de parede, recortes de parede, alças, compartimentos, divisores, abas de etiqueta e concha não estão disponíveis para caixas não retangulares.",
   "binDesigner.colors.labelTab": "Aba de etiqueta",
   "binDesigner.colors.lip": "Lábio de empilhamento",
   "binDesigner.colors.presets": "Predefinidos",

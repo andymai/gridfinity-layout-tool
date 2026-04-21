@@ -9,6 +9,7 @@
 import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { AlignmentGuide } from '../geometry';
+import type { MaskCellSize } from '../maskFit';
 import type { InteractionMode } from '../useCutoutInteraction';
 
 // ── Pointer event context shared by all move handlers ────────────────────────
@@ -29,8 +30,8 @@ export interface BinBounds {
   readonly binDepth: number;
   /** Present only when the bin has a non-rectangular (custom) footprint. */
   readonly cellMask?: CellMask;
-  /** mm per grid unit — required when cellMask is present (mm ↔ mask conversion). */
-  readonly gridUnitMm?: number;
+  /** Mm per mask cell. Required alongside cellMask; separate X/Y for non-square bins. */
+  readonly maskCellSize?: MaskCellSize;
 }
 
 /** Snap function that respects the current snap-enabled state. */

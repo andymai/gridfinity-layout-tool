@@ -72,9 +72,9 @@ export function handleResizeMove(
   };
 
   // Polygon mask: hard-reject resizes that would overhang the polygon.
-  if (bounds.cellMask && bounds.gridUnitMm !== undefined) {
+  if (bounds.cellMask && bounds.maskCellSize) {
     const candidate = { ...cutout, ...nextPatch } as Cutout;
-    if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.gridUnitMm)) {
+    if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize)) {
       return;
     }
   }

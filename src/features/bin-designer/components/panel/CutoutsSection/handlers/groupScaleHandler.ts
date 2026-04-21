@@ -7,8 +7,9 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { MIN_CUTOUT_SIZE } from '../geometry';
+import { cutoutFitsInMask } from '../maskFit';
 import type { InteractionMode } from '../useCutoutInteraction';
-import type { PointerMoveEvent, PreviewSetters, DeadZoneRef } from './types';
+import type { PointerMoveEvent, BinBounds, PreviewSetters, DeadZoneRef } from './types';
 
 /** Dead zone in mm before scale starts updating preview. */
 const DEAD_ZONE_MM = 0.5;
@@ -22,6 +23,8 @@ type GroupScalingMode = Extract<InteractionMode, { type: 'group-scaling' }>;
 export function handleGroupScaleMove(
   mode: GroupScalingMode,
   event: PointerMoveEvent,
+  cutouts: readonly Cutout[],
+  bounds: BinBounds,
   deadZoneRef: DeadZoneRef,
   setters: Pick<PreviewSetters, 'setPreview'>
 ): void {
@@ -51,5 +54,16 @@ export function handleGroupScaleMove(
       depth: newD,
     });
   }
+
+  // Polygon mask: reject the scale step if any member would overhang the polygon.
+  if (bounds.cellMask && bounds.maskCellSize) {
+    for (const [id, patch] of nextPreview) {
+      const orig = cutouts.find((c) => c.id === id);
+      if (!orig) continue;
+      const candidate = { ...orig, ...patch } as Cutout;
+      if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize)) return;
+    }
+  }
+
   setters.setPreview(nextPreview);
 }

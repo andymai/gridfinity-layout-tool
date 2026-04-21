@@ -55,9 +55,9 @@ export function handleRotateMove(
   newRotation = clampRotationToBounds(cutout, newRotation, bounds.binWidth, bounds.binDepth);
 
   // Polygon mask: hard-reject rotations whose rotated AABB overhangs the polygon.
-  if (bounds.cellMask && bounds.gridUnitMm !== undefined) {
+  if (bounds.cellMask && bounds.maskCellSize) {
     const candidate = { ...cutout, rotation: newRotation } as Cutout;
-    if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.gridUnitMm)) {
+    if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize)) {
       return;
     }
   }

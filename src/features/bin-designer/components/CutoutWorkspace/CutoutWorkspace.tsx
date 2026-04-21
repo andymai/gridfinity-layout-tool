@@ -91,8 +91,11 @@ export function CutoutWorkspace() {
   const outerD = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const binWidth = outerW - 2 * params.wallThickness;
   const binDepth = outerD - 2 * params.wallThickness;
-  // See CutoutEditor for rationale — keeps validator and polygon rendering aligned.
-  const editorGridUnitMm = binWidth / params.width;
+  // See CutoutEditor for rationale — separate X/Y cell sizes keep validator and
+  // polygon rendering aligned for non-square bins.
+  const maskCellSize = params.cellMask
+    ? { cellMmX: binWidth / params.cellMask.cols, cellMmY: binDepth / params.cellMask.rows }
+    : undefined;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isFlat = params.base.style === 'flat';
   const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.BASE_HEIGHT;
@@ -241,7 +244,7 @@ export function CutoutWorkspace() {
     binDepth,
     gridSize,
     cellMask: params.cellMask,
-    gridUnitMm: editorGridUnitMm,
+    maskCellSize,
   });
 
   // Marquee state — now in mm world coordinates (no SVG pixel conversion needed)

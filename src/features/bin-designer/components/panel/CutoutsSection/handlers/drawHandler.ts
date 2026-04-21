@@ -59,14 +59,14 @@ export function handleDrawMove(
   // Polygon mask: hard-reject draw preview that overhangs the polygon.
   if (
     bounds.cellMask &&
-    bounds.gridUnitMm !== undefined &&
+    bounds.maskCellSize &&
     !rectFitsInMask(
       bounds.cellMask,
       preview.x,
       preview.y,
       preview.width,
       preview.depth,
-      bounds.gridUnitMm
+      bounds.maskCellSize
     )
   ) {
     return;

@@ -7,8 +7,9 @@
 
 import type { Cutout } from '@/features/bin-designer/types';
 import { rotatePoint } from '../geometry';
+import { cutoutFitsInMask } from '../maskFit';
 import type { InteractionMode } from '../useCutoutInteraction';
-import type { PointerMoveEvent, PreviewSetters, DeadZoneRef } from './types';
+import type { PointerMoveEvent, BinBounds, PreviewSetters, DeadZoneRef } from './types';
 
 /** Mode state for group rotation, derived from the global InteractionMode union. */
 type GroupRotatingMode = Extract<InteractionMode, { type: 'group-rotating' }>;
@@ -20,6 +21,7 @@ export function handleGroupRotateMove(
   mode: GroupRotatingMode,
   event: PointerMoveEvent,
   cutouts: readonly Cutout[],
+  bounds: BinBounds,
   deadZoneRef: DeadZoneRef,
   setters: Pick<PreviewSetters, 'setPreview'>
 ): void {
@@ -51,5 +53,16 @@ export function handleGroupRotateMove(
       rotation: (((initial.rotation + delta) % 360) + 360) % 360,
     });
   }
+
+  // Polygon mask: reject the rotation if any member would overhang the polygon.
+  if (bounds.cellMask && bounds.maskCellSize) {
+    for (const [id, patch] of nextPreview) {
+      const orig = cutouts.find((c) => c.id === id);
+      if (!orig) continue;
+      const candidate = { ...orig, ...patch } as Cutout;
+      if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize)) return;
+    }
+  }
+
   setters.setPreview(nextPreview);
 }

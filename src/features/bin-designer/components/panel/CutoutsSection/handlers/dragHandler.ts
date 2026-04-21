@@ -74,12 +74,12 @@ export function handleDragMove(
 
   // Polygon mask: hard-reject moves that would overhang the polygon — preview
   // stays at its last valid state so the drag "sticks" like the bin-bounds clamp.
-  if (bounds.cellMask && bounds.gridUnitMm !== undefined) {
+  if (bounds.cellMask && bounds.maskCellSize) {
     for (const [id, updates] of nextPreview) {
       const orig = cutouts.find((c) => c.id === id);
       if (!orig) continue;
       const candidate = { ...orig, ...updates } as Cutout;
-      if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.gridUnitMm)) {
+      if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize)) {
         return;
       }
     }
