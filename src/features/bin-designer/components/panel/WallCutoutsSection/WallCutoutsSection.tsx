@@ -117,6 +117,7 @@ function SizeControls({
             step={1}
             variant="desktop"
             ariaLabel="Span mm"
+            commitMode="deferred"
           />
         ) : (
           <StepperControl
@@ -130,6 +131,7 @@ function SizeControls({
             step={step}
             variant="desktop"
             ariaLabel="Span %"
+            commitMode="deferred"
           />
         )}
       </div>
@@ -162,6 +164,7 @@ function SizeControls({
             step={step}
             variant="desktop"
             ariaLabel="Height %"
+            commitMode="deferred"
           />
         </div>
       )}
@@ -237,6 +240,7 @@ function PositionDisclosure({
                 step={OFFSET_STEP}
                 variant="desktop"
                 ariaLabel="Offset mm"
+                commitMode="deferred"
               />
             </div>
           )}

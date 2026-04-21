@@ -25,6 +25,7 @@ import type {
   KernelPerfCategory,
 } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
+import { computeGenerationTimeoutMs } from './generationTimeout';
 
 /**
  * Deterministic fingerprint for generation params.
@@ -169,8 +170,12 @@ interface PendingExport<T> {
  * - Provides Promise-based API over the message-passing protocol
  */
 
-/** Maximum time (ms) for a generation (bin or baseplate) before timeout. */
-const GENERATION_TIMEOUT_MS = 30_000;
+/**
+ * Fallback timeout for generations with no params to inspect (e.g. baseplates).
+ * Bin generations use {@link computeGenerationTimeoutMs} for a complexity-aware
+ * budget (#1422).
+ */
+const DEFAULT_GENERATION_TIMEOUT_MS = 30_000;
 
 export class GenerationBridge {
   private readonly kernel: KernelName;
@@ -746,7 +751,7 @@ export class GenerationBridge {
     this.currentRequestId = requestId;
     this.binCache.pendingFingerprint = fingerprint;
 
-    this.startGenerationTimeout(requestId);
+    this.startGenerationTimeout(requestId, computeGenerationTimeoutMs(params));
 
     this.postMessage({
       type: 'GENERATE',
@@ -757,8 +762,14 @@ export class GenerationBridge {
   /**
    * Start a timeout to recover from unresponsive workers (WASM OOM, infinite loops).
    * Cleared in clearPending() when the worker responds (success, error, or cancel).
+   *
+   * Bin generations pass a complexity-aware budget; callers without params
+   * (baseplates) fall back to {@link DEFAULT_GENERATION_TIMEOUT_MS}.
    */
-  private startGenerationTimeout(requestId: string): void {
+  private startGenerationTimeout(
+    requestId: string,
+    timeoutMs: number = DEFAULT_GENERATION_TIMEOUT_MS
+  ): void {
     this.clearGenerationTimer();
     this.generationTimer = setTimeout(() => {
       if (this.currentRequestId === requestId && this.pendingReject) {
@@ -772,7 +783,7 @@ export class GenerationBridge {
           )
         );
       }
-    }, GENERATION_TIMEOUT_MS);
+    }, timeoutMs);
   }
 
   private setupMessageHandler(): void {
