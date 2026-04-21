@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.45.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.45.0...gridfinity-layout-tool-v4.45.1) (2026-04-21)
+
+
+### Performance
+
+* **bin-designer:** cache split + deferred commits for hex pattern + cutout timeouts ([#1425](https://github.com/andymai/gridfinity-layout-tool/issues/1425)) ([e58de58](https://github.com/andymai/gridfinity-layout-tool/commit/e58de58dc9b10ee3348ec7c855775d4a9db9aff2))
+
 ## [4.45.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.44.0...gridfinity-layout-tool-v4.45.0) (2026-04-21)
 
 
