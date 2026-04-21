@@ -10,6 +10,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
 import { MASK_CELL_SIZE, isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
 import { CLEARANCE } from './generatorConstants';
+import { findPolygonEdgeForSide } from './maskPolygonEdges';
 import type { PatternCenter, PatternCalculator } from './patterns';
 import { getPatternCalculator, PATTERN_REGISTRY } from './patterns';
 
@@ -249,20 +250,24 @@ function collectPolygonWallSegments(
     }
   }
 
-  // Outermost per cardinal: most extreme perpendicular coord (front = lowest y,
-  // back = highest y, left = lowest x, right = highest x). Tiebreak on longest
-  // span so the cutout/handle binding lands on the widest wall.
-  const extremeSign = { front: -1, back: 1, left: -1, right: 1 } as const;
-  const outermostKey = new Map<string, RawSegment>();
-  for (const seg of segments) {
-    const cur = outermostKey.get(seg.side);
-    if (!cur) {
-      outermostKey.set(seg.side, seg);
-      continue;
-    }
-    const delta = (seg.perpU - cur.perpU) * extremeSign[seg.side];
-    if (delta > 1e-9 || (delta > -1e-9 && seg.spanU > cur.spanU + 1e-9)) {
-      outermostKey.set(seg.side, seg);
+  // Outermost per cardinal: reuse findPolygonEdgeForSide so the edge flagged
+  // allowClip is the same one wallCutoutBuilder and handleBuilder place their
+  // geometry on. Matching on our own ranking would risk diverging on symmetric
+  // shapes (e.g. the two candidate back edges on a U-shape) where that function
+  // applies a midpoint tiebreak — if the two paths disagreed, clip would land
+  // on the wrong segment.
+  const outermostKey = new Map<'front' | 'back' | 'left' | 'right', RawSegment>();
+  for (const side of ['front', 'back', 'left', 'right'] as const) {
+    const canonical = findPolygonEdgeForSide(mask, side);
+    if (!canonical) continue;
+    for (const seg of segments) {
+      if (seg.side !== side) continue;
+      if (Math.abs(seg.perpU - canonical.perpU) > 1e-9) continue;
+      if (Math.abs(seg.spanU - canonical.spanU) > 1e-9) continue;
+      if (Math.abs(seg.midU.x - canonical.midU.x) > 1e-9) continue;
+      if (Math.abs(seg.midU.y - canonical.midU.y) > 1e-9) continue;
+      outermostKey.set(side, seg);
+      break;
     }
   }
 

@@ -267,15 +267,20 @@ describe('getPatternDescriptors — polygon (cellMask) bins', () => {
     const result = getPatternDescriptors(POLYGON_PARAMS(), innerW, innerD, wallHeight);
     expect(result).not.toBeNull();
     const { descriptors } = result!;
-    const outermostBySide = new Map<string, number>();
+    // Group by side so we catch the case where a cardinal has descriptors
+    // but *zero* allowClip (would mean cutout/handle clipping has no edge
+    // to bind to on that side — a real bug, silent without this assert).
+    const bySide = new Map<string, { total: number; clip: number }>();
     for (const d of descriptors) {
-      if (d.allowClip) {
-        outermostBySide.set(d.side, (outermostBySide.get(d.side) ?? 0) + 1);
-      }
+      const counts = bySide.get(d.side) ?? { total: 0, clip: 0 };
+      counts.total += 1;
+      if (d.allowClip) counts.clip += 1;
+      bySide.set(d.side, counts);
     }
-    // Each cardinal with at least one descriptor has exactly one outermost.
-    for (const count of outermostBySide.values()) {
-      expect(count).toBe(1);
+    expect(bySide.size).toBeGreaterThan(0);
+    for (const { total, clip } of bySide.values()) {
+      expect(total).toBeGreaterThan(0);
+      expect(clip).toBe(1);
     }
   });
 

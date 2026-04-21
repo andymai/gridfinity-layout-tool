@@ -15,8 +15,10 @@ import { HandleSection } from '../HandleSection';
 
 export function WallsSection() {
   const { state, handlers, t } = useWallsSection();
-  // Wall cutouts, handles, and pattern are all polygon-aware (each auto-snaps
-  // to the outermost matching external edge on custom shapes).
+  // Wall cutouts and handles auto-snap to the outermost matching polygon
+  // edge on custom shapes. Wall patterns tile across *every* axis-aligned
+  // outer edge; outermost-per-cardinal matching is used only for border
+  // clipping around cutouts/handles, not to limit tiling itself.
 
   return (
     <div className="space-y-4">
