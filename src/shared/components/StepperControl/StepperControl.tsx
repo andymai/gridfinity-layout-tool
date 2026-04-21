@@ -159,9 +159,12 @@ export function StepperControl({
   }, [onStep]);
 
   // External value updates (commit landed, undo/redo) invalidate the optimistic
-  // delta. Detect the change during render — React's "derive from props"
-  // pattern — so the pending-commit effect below cleans up automatically when
-  // pendingDelta drops back to 0.
+  // delta. Reset `pendingDelta` during render using React's supported
+  // "adjusting state based on props" pattern: a guarded setState during render
+  // is how React docs recommend resyncing derived state without an effect.
+  // The `if` guard prevents infinite loops; StrictMode's double-render is
+  // handled because React discards the extra render and only commits once.
+  // See https://react.dev/reference/react/useState#storing-information-from-previous-renders
   if (value !== lastSeenValue) {
     setLastSeenValue(value);
     if (pendingDelta !== 0) setPendingDelta(0);

@@ -19,7 +19,14 @@ export const HEX_PATTERN_BONUS_MS = 15_000;
 /** Additional time when hex pattern combines with any active wall cutout. */
 export const HEX_PLUS_CUTOUT_BONUS_MS = 15_000;
 
-/** Bonus per 2 height units above the reference height. */
+/**
+ * Bonus per 2 height units above the reference height.
+ *
+ * Applied **unconditionally** (not gated on the hex pattern) because tessellation
+ * and boolean passes scale with wall area and feature count even on plain
+ * extrusions — a 10u bin with only compartments still takes noticeably longer
+ * than a 4u one. Hex-pattern bonuses stack on top when both apply.
+ */
 export const HEIGHT_BONUS_MS = 15_000;
 
 /** Height (grid units) at which height bonuses start accruing. */

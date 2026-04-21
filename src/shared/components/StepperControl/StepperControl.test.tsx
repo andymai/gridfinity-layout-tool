@@ -194,7 +194,10 @@ describe('StepperControl', () => {
     });
 
     afterEach(() => {
-      vi.runOnlyPendingTimers();
+      // Drop any in-flight deferred-commit timers instead of firing them.
+      // Running them here would trigger React state updates outside of act(),
+      // producing testing-library warnings and occasional flakiness.
+      vi.clearAllTimers();
       vi.useRealTimers();
     });
 
