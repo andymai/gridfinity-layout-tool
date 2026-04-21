@@ -25,6 +25,8 @@ import {
   flipSelectionHorizontal,
   flipSelectionVertical,
 } from './geometry';
+import { rectFitsInMask, cutoutFitsInMask } from './maskFit';
+import type { CellMask } from '@/shared/utils/cellMask';
 
 const createCutout = (overrides: Partial<Cutout> = {}): Cutout => ({
   id: 'test',
@@ -925,6 +927,185 @@ describe('geometry', () => {
       const pathAPoints = patchA.path as PathPoint[];
       expect(pathAPoints[0].y).toBeCloseTo(40);
       expect(pathAPoints[1].y).toBeCloseTo(30);
+    });
+  });
+
+  describe('rectFitsInMask', () => {
+    const GRID_UNIT = 42;
+    // Mask helper: fill from a 2D array of 0/1 rows, read top-to-bottom so tests
+    // read naturally. cellMask rows run bottom→top (grid origin), so flip on build.
+    const makeMask = (rows: ReadonlyArray<ReadonlyArray<0 | 1>>): CellMask => {
+      const rowCount = rows.length;
+      const colCount = rows[0].length;
+      const cells = new Uint8Array(rowCount * colCount);
+      for (let r = 0; r < rowCount; r++) {
+        const sourceRow = rows[rowCount - 1 - r];
+        for (let c = 0; c < colCount; c++) {
+          cells[r * colCount + c] = sourceRow[c];
+        }
+      }
+      return { cols: colCount, rows: rowCount, cells };
+    };
+
+    it('accepts a rect entirely inside a fully filled mask', () => {
+      // 2x2 grid unit bin = 4x4 mask cells
+      const fullMask = makeMask([
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+      ]);
+      expect(rectFitsInMask(fullMask, 20, 20, 30, 30, GRID_UNIT)).toBe(true);
+    });
+
+    it('rejects a rect that extends beyond the mask bounds', () => {
+      const fullMask = makeMask([
+        [1, 1],
+        [1, 1],
+      ]);
+      // 1x1 bin = 2x2 cells = 42mm. A rect at 40mm spanning 10mm exits the mask.
+      expect(rectFitsInMask(fullMask, 40, 0, 10, 10, GRID_UNIT)).toBe(false);
+    });
+
+    it('rejects a rect straddling an unfilled notch in an L-shape', () => {
+      // L-shape: top-right cell empty (3x3 grid units = 6x6 cells with 1u notch)
+      // Actually simpler: 2x2 units, top-right unit (2 cells wide) empty.
+      // Rows (top→bottom): [[1,1,0,0],[1,1,0,0],[1,1,1,1],[1,1,1,1]]
+      const lMask = makeMask([
+        [1, 1, 0, 0],
+        [1, 1, 0, 0],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+      ]);
+      // Rect in the notch area: top-right 1u × 1u region = x=42-84, y=42-84
+      expect(rectFitsInMask(lMask, 42, 42, 42, 42, GRID_UNIT)).toBe(false);
+    });
+
+    it('accepts a rect flush against a filled region in an L-shape', () => {
+      const lMask = makeMask([
+        [1, 1, 0, 0],
+        [1, 1, 0, 0],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+      ]);
+      // Bottom-left 2u × 2u is fully filled → rect inside it should fit
+      expect(rectFitsInMask(lMask, 5, 5, 30, 30, GRID_UNIT)).toBe(true);
+    });
+
+    it('accepts a rect exactly spanning a filled region edge-to-edge', () => {
+      const lMask = makeMask([
+        [1, 1, 0, 0],
+        [1, 1, 0, 0],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+      ]);
+      // Bottom 2 rows span full 4 cells wide × 2 cells tall (= 84 × 42 mm)
+      expect(rectFitsInMask(lMask, 0, 0, 84, 42, GRID_UNIT)).toBe(true);
+    });
+
+    it('tolerates sub-epsilon floating-point slack at cell boundaries', () => {
+      // 2x2 cells = 42x42 mm. A rect snapped to the exact right edge with tiny
+      // overshoot (42 + sub-epsilon) is accepted; normal float noise won't trip it.
+      const fullMask = makeMask([
+        [1, 1],
+        [1, 1],
+      ]);
+      expect(rectFitsInMask(fullMask, 0, 0, 42 + 0.005, 21, GRID_UNIT)).toBe(true);
+    });
+
+    it('honours a non-default gridUnitMm', () => {
+      const fullMask = makeMask([
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+      ]);
+      // gridUnit = 30 → cell = 15 mm. Mask is 2x4 cells = 60x30 mm.
+      expect(rectFitsInMask(fullMask, 0, 0, 60, 30, 30)).toBe(true);
+      expect(rectFitsInMask(fullMask, 0, 0, 65, 30, 30)).toBe(false);
+    });
+
+    it('rejects a rect with negative origin', () => {
+      const fullMask = makeMask([[1]]);
+      expect(rectFitsInMask(fullMask, -5, 0, 10, 10, GRID_UNIT)).toBe(false);
+    });
+  });
+
+  describe('cutoutFitsInMask', () => {
+    const GRID_UNIT = 42;
+    const lMask: CellMask = {
+      cols: 4,
+      rows: 4,
+      // Rows bottom→top. Top two rows have right half empty (L-shape notch).
+      cells: new Uint8Array([
+        1,
+        1,
+        1,
+        1, // row 0 (bottom)
+        1,
+        1,
+        1,
+        1, // row 1
+        1,
+        1,
+        0,
+        0, // row 2
+        1,
+        1,
+        0,
+        0, // row 3 (top)
+      ]),
+    };
+
+    it('accepts a rectangle cutout in the filled region', () => {
+      const cutout = createCutout({ x: 10, y: 10, width: 30, depth: 30 });
+      expect(cutoutFitsInMask(cutout, lMask, GRID_UNIT)).toBe(true);
+    });
+
+    it('rejects a rectangle cutout in the notch', () => {
+      const cutout = createCutout({ x: 50, y: 50, width: 30, depth: 30 });
+      expect(cutoutFitsInMask(cutout, lMask, GRID_UNIT)).toBe(false);
+    });
+
+    it('uses rotated AABB for rotated cutouts', () => {
+      // A 30x30 square rotated 45° has an AABB ~42x42 mm (30*sqrt(2)).
+      // Centered at (42, 42), so the AABB extends to ~63, reaching into the notch.
+      const cutout = createCutout({ x: 27, y: 27, width: 30, depth: 30, rotation: 45 });
+      expect(cutoutFitsInMask(cutout, lMask, GRID_UNIT)).toBe(false);
+    });
+
+    it('uses path bounds for path cutouts', () => {
+      const path: PathPoint[] = [
+        { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+        { x: 40, y: 10, handleIn: null, handleOut: null, symmetric: false },
+        { x: 40, y: 40, handleIn: null, handleOut: null, symmetric: false },
+        { x: 10, y: 40, handleIn: null, handleOut: null, symmetric: false },
+      ];
+      const cutout = createCutout({
+        shape: 'path',
+        x: 10,
+        y: 10,
+        width: 30,
+        depth: 30,
+        path,
+      });
+      expect(cutoutFitsInMask(cutout, lMask, GRID_UNIT)).toBe(true);
+    });
+
+    it('rejects a path cutout whose bounds overhang the notch', () => {
+      const path: PathPoint[] = [
+        { x: 50, y: 50, handleIn: null, handleOut: null, symmetric: false },
+        { x: 80, y: 50, handleIn: null, handleOut: null, symmetric: false },
+        { x: 80, y: 80, handleIn: null, handleOut: null, symmetric: false },
+        { x: 50, y: 80, handleIn: null, handleOut: null, symmetric: false },
+      ];
+      const cutout = createCutout({
+        shape: 'path',
+        x: 50,
+        y: 50,
+        width: 30,
+        depth: 30,
+        path,
+      });
+      expect(cutoutFitsInMask(cutout, lMask, GRID_UNIT)).toBe(false);
     });
   });
 });

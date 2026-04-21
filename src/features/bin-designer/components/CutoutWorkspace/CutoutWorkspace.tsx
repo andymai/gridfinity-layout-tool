@@ -91,6 +91,8 @@ export function CutoutWorkspace() {
   const outerD = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const binWidth = outerW - 2 * params.wallThickness;
   const binDepth = outerD - 2 * params.wallThickness;
+  // See CutoutEditor for rationale — keeps validator and polygon rendering aligned.
+  const editorGridUnitMm = binWidth / params.width;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isFlat = params.base.style === 'flat';
   const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.BASE_HEIGHT;
@@ -238,6 +240,8 @@ export function CutoutWorkspace() {
     binWidth,
     binDepth,
     gridSize,
+    cellMask: params.cellMask,
+    gridUnitMm: editorGridUnitMm,
   });
 
   // Marquee state — now in mm world coordinates (no SVG pixel conversion needed)
@@ -692,6 +696,7 @@ export function CutoutWorkspace() {
                 cutouts={cutouts}
                 binWidth={binWidth}
                 binDepth={binDepth}
+                cellMask={params.cellMask}
                 canvasWidth={canvasWidth}
                 canvasHeight={canvasHeight}
                 selection={selection}

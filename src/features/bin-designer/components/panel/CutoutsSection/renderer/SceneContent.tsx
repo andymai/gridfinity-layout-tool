@@ -13,6 +13,7 @@ import type {
   CutoutShape as CutoutShapeType,
   PathPoint,
 } from '@/features/bin-designer/types';
+import type { CellMask } from '@/shared/utils/cellMask';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
 import type { SegmentHoverInfo } from '../handlers';
 import type { AlignmentGuide } from '../geometry';
@@ -71,6 +72,8 @@ export interface SceneContentProps {
   readonly cutouts: readonly Cutout[];
   readonly binWidth: number;
   readonly binDepth: number;
+  /** Non-rectangular footprint mask — when present background renders the polygon. */
+  readonly cellMask?: CellMask;
   readonly binColor: string;
   readonly selection: ReadonlySet<string>;
   readonly preview: PreviewMap;
@@ -126,6 +129,7 @@ export function SceneContent({
   cutouts,
   binWidth,
   binDepth,
+  cellMask,
   binColor,
   selection,
   preview,
@@ -201,6 +205,7 @@ export function SceneContent({
       <EditorBackground3D
         binWidth={binWidth}
         binDepth={binDepth}
+        cellMask={cellMask}
         zoom={camera.zoom}
         binColor={binColor}
       />

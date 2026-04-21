@@ -73,6 +73,11 @@ export function CutoutEditor() {
   const outerD = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const binWidth = outerW - 2 * params.wallThickness;
   const binDepth = outerD - 2 * params.wallThickness;
+  // Mm-per-grid-unit in the editor's interior coordinate system. Differs
+  // slightly from `params.gridUnitMm` (42) because interior space excludes the
+  // wall shell + baseplate clearance. Keeping this in sync between validator
+  // and renderer ensures the polygon outline matches the rejection region.
+  const editorGridUnitMm = binWidth / params.width;
   const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
   const isFlat = params.base.style === 'flat';
   const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.BASE_HEIGHT;
@@ -139,6 +144,8 @@ export function CutoutEditor() {
     binWidth,
     binDepth,
     gridSize,
+    cellMask: params.cellMask,
+    gridUnitMm: editorGridUnitMm,
   });
 
   const t = useTranslation();
@@ -461,6 +468,7 @@ export function CutoutEditor() {
           cutouts={cutouts}
           binWidth={binWidth}
           binDepth={binDepth}
+          cellMask={params.cellMask}
           canvasWidth={CANVAS_WIDTH}
           canvasHeight={canvasHeight}
           selection={selection}

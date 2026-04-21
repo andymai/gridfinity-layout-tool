@@ -93,9 +93,9 @@ export function ParameterPanel() {
           summary={interiorSummary}
         >
           <div className="px-4 py-4">
-            <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
-              <InteriorSection />
-            </FeatureGate>
+            {/* Per-mode gating lives inside InteriorSection: Solid (cutouts) stays
+                interactive on custom shapes; Standard/Slotted remain gated. */}
+            <InteriorSection />
           </div>
           {showLabelTabs && (
             <div className="px-4 py-4 border-t border-stroke-subtle/50">

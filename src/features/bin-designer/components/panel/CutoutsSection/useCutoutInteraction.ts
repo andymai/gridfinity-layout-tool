@@ -11,6 +11,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
+import type { CellMask } from '@/shared/utils/cellMask';
 import { useCutoutSelection } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
@@ -21,6 +22,7 @@ import {
   getRotatedBounds,
   type AlignmentGuide,
 } from './geometry';
+import { rectFitsInMask } from './maskFit';
 import {
   getPathBounds,
   CLOSE_SNAP_THRESHOLD,
@@ -152,6 +154,10 @@ interface UseCutoutInteractionOptions {
   readonly binWidth: number;
   readonly binDepth: number;
   readonly gridSize?: number;
+  /** Non-rectangular footprint mask — when present, rejects placements outside the polygon. */
+  readonly cellMask?: CellMask;
+  /** mm per grid unit. Required alongside cellMask for mm ↔ mask conversion. */
+  readonly gridUnitMm?: number;
 }
 
 /** Paste offset in mm — each successive paste shifts by this amount */
@@ -262,6 +268,8 @@ export function useCutoutInteraction({
   binWidth,
   binDepth,
   gridSize = 0.5,
+  cellMask,
+  gridUnitMm,
 }: UseCutoutInteractionOptions) {
   const addToast = useToastStore((s) => s.addToast);
   const t = useTranslation();
@@ -481,7 +489,7 @@ export function useCutoutInteraction({
   /** Handle path background click (first click or subsequent). */
   const handlePathBackgroundDown = useCallback(
     (mmX: number, mmY: number, shiftKey: boolean) => {
-      const bounds = { binWidth, binDepth };
+      const bounds = { binWidth, binDepth, cellMask, gridUnitMm };
       const pathMode = mode.type === 'path-drawing' ? mode : null;
       handlePathDrawingPointerDown(pathMode, mmX, mmY, shiftKey, bounds, snap, {
         setMode,
@@ -489,7 +497,7 @@ export function useCutoutInteraction({
         commitPath,
       });
     },
-    [mode, binWidth, binDepth, snap, commitPath]
+    [mode, binWidth, binDepth, cellMask, gridUnitMm, snap, commitPath]
   );
 
   /** Handle clicking an existing vertex while drawing (to reposition or close). */
@@ -738,7 +746,7 @@ export function useCutoutInteraction({
   const handlePointerMove = useCallback(
     (mmX: number, mmY: number, shiftKey?: boolean, altKey?: boolean) => {
       const event = { mmX, mmY, shiftKey, altKey };
-      const bounds = { binWidth, binDepth };
+      const bounds = { binWidth, binDepth, cellMask, gridUnitMm };
 
       switch (mode.type) {
         case 'pending-place':
@@ -808,7 +816,7 @@ export function useCutoutInteraction({
         }
       }
     },
-    [mode, cutouts, binWidth, binDepth, snap, commitPath, rulerSnapTargets]
+    [mode, cutouts, binWidth, binDepth, cellMask, gridUnitMm, snap, commitPath, rulerSnapTargets]
   );
 
   // ── Pointer up (commit) ────────────────────────────────────────────
@@ -825,12 +833,23 @@ export function useCutoutInteraction({
         0,
         Math.min(snap(placeMode.startMmY - defaultSize / 2), binDepth - defaultSize)
       );
+
+      // Polygon mask: reject click-to-place inside an unfilled notch.
+      if (
+        cellMask &&
+        gridUnitMm !== undefined &&
+        !rectFitsInMask(cellMask, x, y, defaultSize, defaultSize, gridUnitMm)
+      ) {
+        setMode({ type: 'idle' });
+        return;
+      }
+
       const newId = crypto.randomUUID();
       onAdd(createDefaultCutout(newId, placeMode.shape, x, y, defaultSize, defaultSize));
       setSelection(new Set([newId]));
       setMode({ type: 'idle' });
     },
-    [snap, binWidth, binDepth, onAdd]
+    [snap, binWidth, binDepth, cellMask, gridUnitMm, onAdd]
   );
 
   /**
