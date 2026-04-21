@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.47.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.46.1...gridfinity-layout-tool-v4.47.0) (2026-04-21)
+
+
+### Features
+
+* **baseplate:** unify top panel into single Dimensions section ([#1430](https://github.com/andymai/gridfinity-layout-tool/issues/1430)) ([6475d75](https://github.com/andymai/gridfinity-layout-tool/commit/6475d75023fad50d3fc9c048b9efe62cfc0549b9))
+
 ## [4.46.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.46.0...gridfinity-layout-tool-v4.46.1) (2026-04-21)
 
 
