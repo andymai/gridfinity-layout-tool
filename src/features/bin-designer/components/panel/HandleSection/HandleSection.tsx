@@ -201,25 +201,28 @@ export function HandleSection() {
                     </div>
                   </div>
 
-                  {/* Physical dimensions readout */}
-                  <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
-                    <svg
-                      className="h-3.5 w-3.5 flex-shrink-0"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2"
-                      />
-                    </svg>
-                    <span className="tabular-nums">
-                      {handleWidthMm} × {handles.height} mm
-                    </span>
-                  </div>
+                  {/* Physical dimensions readout — hidden on custom shapes
+                      where the actual span is a polygon edge, not the AABB. */}
+                  {handleWidthMm !== null && (
+                    <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
+                      <svg
+                        className="h-3.5 w-3.5 flex-shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2"
+                        />
+                      </svg>
+                      <span className="tabular-nums">
+                        {handleWidthMm} × {handles.height} mm
+                      </span>
+                    </div>
+                  )}
 
                   {/* Corner radius — only for rectangle and u-shape */}
                   {showCornerRadius && (
