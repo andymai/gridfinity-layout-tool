@@ -41,13 +41,13 @@ describe('StickyGroupHeader', () => {
     expect(screen.getByText('2x2x3u')).toBeInTheDocument();
   });
 
-  it('hides summary when expanded', () => {
+  it('keeps summary visible when expanded for quick-glance context', () => {
     render(
       <StickyGroupHeader title="Shape" defaultExpanded summary="2x2x3u">
         <div>content</div>
       </StickyGroupHeader>
     );
 
-    expect(screen.queryByText('2x2x3u')).not.toBeInTheDocument();
+    expect(screen.getByText('2x2x3u')).toBeInTheDocument();
   });
 });

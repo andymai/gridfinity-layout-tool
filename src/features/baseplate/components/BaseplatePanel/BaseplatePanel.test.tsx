@@ -117,25 +117,24 @@ describe('BaseplatePanel', () => {
     mockSelectedPieceLabel = null;
   });
 
-  it('renders dimensions strip with grid and mm values (no padding)', () => {
+  it('renders dimensions section with grid units primary and mm secondary (no padding)', () => {
     render(<BaseplatePanel />);
-    // No padding: single line with grid units and editable mm dimensions
+    // Dimensions section exposes both grid units and click-to-edit mm
     expect(screen.getByText('baseplate.dimensionsUnits')).toBeInTheDocument();
     const editBtn = screen.getByRole('button', { name: 'baseplate.editDimensions' });
     expect(editBtn).toHaveTextContent(/168\s*×\s*252\s*mm/);
   });
 
-  it('renders hero total dimensions when padding is set', () => {
+  it('hero mm line reflects total when padding is set', () => {
     mockLayoutState.layout.baseplateParams = {
       ...DEFAULT_BASEPLATE_PARAMS,
       paddingLeft: 5,
       paddingRight: 3,
     };
     render(<BaseplatePanel />);
-    // With padding: total mm is primary (hero) + schematic caption
-    const totalDims = screen.getAllByText('baseplate.totalDimensions');
-    expect(totalDims.length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('baseplate.gridPlusPadding')).toBeInTheDocument();
+    // Total: 168 (grid) + 5 + 3 (padding) = 176 wide, 252 deep
+    const editBtn = screen.getByRole('button', { name: 'baseplate.editDimensions' });
+    expect(editBtn).toHaveTextContent(/176\s*×\s*252\s*mm/);
   });
 
   it('renders print settings section', () => {
@@ -143,9 +142,9 @@ describe('BaseplatePanel', () => {
     expect(screen.getByText('baseplate.sectionPrintSettings')).toBeInTheDocument();
   });
 
-  it('renders edge padding section', () => {
+  it('renders unified dimensions section', () => {
     render(<BaseplatePanel />);
-    expect(screen.getByText('baseplate.sectionFitToDrawer')).toBeInTheDocument();
+    expect(screen.getByText('baseplate.sectionDimensions')).toBeInTheDocument();
   });
 
   it('renders base section', () => {
@@ -226,16 +225,15 @@ describe('BaseplatePanel', () => {
     });
   });
 
-  describe('grid size sync toggle', () => {
-    it('renders grid size section with sync checkbox checked by default', () => {
+  describe('match drawer size toggle', () => {
+    it('renders match-drawer checkbox checked by default', () => {
       render(<BaseplatePanel />);
-      expect(screen.getByText('baseplate.sectionGridSize')).toBeInTheDocument();
-      expect(screen.getByText('baseplate.syncWithLayout')).toBeInTheDocument();
-      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
+      expect(screen.getByText('baseplate.matchDrawerSize')).toBeInTheDocument();
+      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.matchDrawerSize' });
       expect(checkbox).toBeChecked();
     });
 
-    it('renders width/depth steppers disabled when synced', () => {
+    it('renders width/depth steppers disabled when matching drawer', () => {
       render(<BaseplatePanel />);
       const widthStepper = screen.getByRole('textbox', { name: 'baseplate.gridWidth' });
       const depthStepper = screen.getByRole('textbox', { name: 'baseplate.gridDepth' });
@@ -243,7 +241,7 @@ describe('BaseplatePanel', () => {
       expect(depthStepper).toBeDisabled();
     });
 
-    it('shows drawer values in steppers when synced', () => {
+    it('shows drawer values in steppers when matching drawer', () => {
       render(<BaseplatePanel />);
       const widthStepper = screen.getByRole('textbox', { name: 'baseplate.gridWidth' });
       const depthStepper = screen.getByRole('textbox', { name: 'baseplate.gridDepth' });
@@ -251,7 +249,7 @@ describe('BaseplatePanel', () => {
       expect(depthStepper).toHaveValue('6');
     });
 
-    it('enables steppers when sync is unchecked', () => {
+    it('enables steppers when match-drawer is unchecked', () => {
       mockLayoutState.layout.baseplateParams = {
         ...DEFAULT_BASEPLATE_PARAMS,
         syncWithLayout: false,
@@ -259,7 +257,7 @@ describe('BaseplatePanel', () => {
         baseplateDepth: 10,
       };
       render(<BaseplatePanel />);
-      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
+      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.matchDrawerSize' });
       expect(checkbox).not.toBeChecked();
       const widthStepper = screen.getByRole('textbox', { name: 'baseplate.gridWidth' });
       const depthStepper = screen.getByRole('textbox', { name: 'baseplate.gridDepth' });
@@ -269,9 +267,9 @@ describe('BaseplatePanel', () => {
       expect(depthStepper).toHaveValue('10');
     });
 
-    it('initializes custom dims from drawer when unchecking sync', () => {
+    it('initializes custom dims from drawer when unchecking match-drawer', () => {
       render(<BaseplatePanel />);
-      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
+      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.matchDrawerSize' });
       fireEvent.click(checkbox);
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -282,7 +280,7 @@ describe('BaseplatePanel', () => {
       );
     });
 
-    it('sets syncWithLayout true when re-checking sync', () => {
+    it('sets syncWithLayout true when re-checking match-drawer', () => {
       mockLayoutState.layout.baseplateParams = {
         ...DEFAULT_BASEPLATE_PARAMS,
         syncWithLayout: false,
@@ -290,7 +288,7 @@ describe('BaseplatePanel', () => {
         baseplateDepth: 10,
       };
       render(<BaseplatePanel />);
-      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
+      const checkbox = screen.getByRole('checkbox', { name: 'baseplate.matchDrawerSize' });
       fireEvent.click(checkbox);
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({ syncWithLayout: true })

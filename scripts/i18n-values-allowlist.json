@@ -152,7 +152,7 @@
     "baseplate.paddingRight",
     "baseplate.paddingFront",
     "baseplate.paddingBack",
-    "baseplate.totalDimensions",
+    "baseplate.sectionDimensions",
     "baseplate.magnetDiameterInfo",
     "baseplate.magnetDepthInfo",
     "baseplate.gridUnitTooltip",

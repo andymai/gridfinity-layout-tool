@@ -19,6 +19,8 @@ interface EditableDimensionsProps {
   readonly onCommit: (widthMm: number, depthMm: number) => void;
   /** Extra CSS classes for the outer wrapper. */
   readonly className?: string;
+  /** Visual weight. 'primary' (default) matches the section headline; 'secondary' is a smaller/lighter companion to another primary value. */
+  readonly variant?: 'primary' | 'secondary';
   /** Accessible label for the editable region. */
   readonly 'aria-label': string;
   /** Accessible label for the width input. */
@@ -41,10 +43,25 @@ export function EditableDimensions({
   maxMm,
   onCommit,
   className,
+  variant = 'primary',
   'aria-label': ariaLabel,
   widthLabel,
   depthLabel,
 }: EditableDimensionsProps) {
+  const restClass =
+    variant === 'secondary'
+      ? 'text-xs tabular-nums text-content-secondary'
+      : 'text-sm font-semibold tabular-nums text-content';
+  const separatorClass =
+    variant === 'secondary' ? 'text-xs text-content-tertiary' : 'text-sm text-content-secondary';
+  const suffixClass =
+    variant === 'secondary'
+      ? 'text-xs text-content-secondary'
+      : 'text-sm font-semibold text-content';
+  const inputClass =
+    variant === 'secondary'
+      ? 'w-14 rounded border border-accent bg-surface px-1 py-0.5 text-center text-xs tabular-nums text-content outline-none ring-1 ring-accent'
+      : 'w-14 rounded border border-accent bg-surface px-1 py-0.5 text-center text-sm font-semibold tabular-nums text-content outline-none ring-1 ring-accent';
   const [editing, setEditing] = useState(false);
   const [localWidth, setLocalWidth] = useState('');
   const [localDepth, setLocalDepth] = useState('');
@@ -125,10 +142,10 @@ export function EditableDimensions({
           onKeyDown={handleKeyDown}
           min={minMm}
           max={maxMm}
-          className="w-14 rounded border border-accent bg-surface px-1 py-0.5 text-center text-sm font-semibold tabular-nums text-content outline-none ring-1 ring-accent"
+          className={inputClass}
           aria-label={widthLabel}
         />
-        <span className="text-sm text-content-secondary">&times;</span>
+        <span className={separatorClass}>&times;</span>
         <input
           type="number"
           inputMode="decimal"
@@ -138,10 +155,10 @@ export function EditableDimensions({
           onKeyDown={handleKeyDown}
           min={minMm}
           max={maxMm}
-          className="w-14 rounded border border-accent bg-surface px-1 py-0.5 text-center text-sm font-semibold tabular-nums text-content outline-none ring-1 ring-accent"
+          className={inputClass}
           aria-label={depthLabel}
         />
-        <span className="text-sm font-semibold text-content">mm</span>
+        <span className={suffixClass}>mm</span>
       </div>
     );
   }
@@ -150,7 +167,7 @@ export function EditableDimensions({
     <button
       type="button"
       onClick={enterEditMode}
-      className={`cursor-pointer text-sm font-semibold tabular-nums text-content decoration-content-tertiary underline-offset-2 hover:underline ${className ?? ''}`}
+      className={`cursor-pointer decoration-content-tertiary underline-offset-2 hover:underline ${restClass} ${className ?? ''}`}
       aria-label={ariaLabel}
     >
       {formatMm(widthMm)} &times; {formatMm(depthMm)} mm

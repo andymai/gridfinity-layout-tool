@@ -2,13 +2,11 @@
  * Parameter panel for the standalone baseplate page.
  *
  * Top-to-bottom information hierarchy:
- * 1. Hero dimensions strip (total mm primary, grid context secondary — always visible)
- * 2. Fit to Drawer: per-side padding steppers
- * 3. Base: magnet holes toggle with customize expand
- * 4. Print Settings: grid unit, print bed size (rarely changed)
- *
- * Uses shared components (StickyGroupHeader, FeatureToggle, SliderInput,
- * SegmentedControl) for consistency with the bin designer.
+ * 1. Dimensions: dual-emphasis hero (grid units + mm) + match-drawer toggle
+ *    + grid steppers + spatial padding schematic. Single unified section.
+ * 2. Base: magnet holes, dovetails (when split), corner radius
+ * 3. Print Settings: grid unit, print bed size (rarely changed)
+ * 4. Split pieces mini-map (only when baseplate is split across print beds)
  */
 
 import { useCallback, useRef, useState } from 'react';
@@ -38,6 +36,12 @@ const PADDING_HINT_AXIS_KEYS: Record<PaddingReductionHint['axis'], string> = {
   y: 'baseplate.paddingHintAxisY',
   both: 'baseplate.paddingHintAxisBoth',
 };
+
+const PADDING_BUTTON_STEP = 0.25;
+const PADDING_INPUT_STEP = 0.01;
+const PADDING_MIN = 0;
+const PADDING_MAX = 100;
+
 export function BaseplatePanel() {
   const t = useTranslation();
 
@@ -98,24 +102,15 @@ export function BaseplatePanel() {
 
   const totalWidthMm = gridWidthMm + baseplateParams.paddingLeft + baseplateParams.paddingRight;
   const totalDepthMm = gridDepthMm + baseplateParams.paddingFront + baseplateParams.paddingBack;
-  const hasPadding =
-    baseplateParams.paddingLeft > 0 ||
-    baseplateParams.paddingRight > 0 ||
-    baseplateParams.paddingFront > 0 ||
-    baseplateParams.paddingBack > 0;
-
-  const paddingSummary = hasPadding
-    ? `L:${formatMm(baseplateParams.paddingLeft)} R:${formatMm(baseplateParams.paddingRight)} F:${formatMm(baseplateParams.paddingFront)} B:${formatMm(baseplateParams.paddingBack)}`
-    : undefined;
 
   const minMm = CONSTRAINTS.GRID_MIN * gridUnitMm;
   const maxMm = CONSTRAINTS.GRID_MAX * gridUnitMm + PADDING_MAX * 2;
 
   /**
    * When the user enters target mm dimensions:
-   * 1. Snap to the nearest valid grid size (half-unit or whole-unit)
+   * 1. Snap down to the largest valid grid size that fits (half-unit or whole-unit)
    * 2. Distribute remaining mm evenly as padding (left=right, front=back)
-   * 3. Auto-uncheck "Synced with layout"
+   * 3. Auto-uncheck "Match drawer size"
    */
   const handleDimensionCommit = useCallback(
     (targetWidthMm: number, targetDepthMm: number) => {
@@ -158,10 +153,23 @@ export function BaseplatePanel() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        {/* 1. Dimensions strip — always visible, non-collapsible hero */}
-        <div className="border-b border-stroke-subtle px-4 py-2.5">
-          {hasPadding ? (
-            <>
+        {/* 1. Dimensions — unified: hero + match-drawer + grid steppers + padding */}
+        <StickyGroupHeader
+          title={t('baseplate.sectionDimensions')}
+          summary={t('baseplate.dimensionsMm', {
+            width: formatMm(totalWidthMm),
+            depth: formatMm(totalDepthMm),
+          })}
+        >
+          <div className="space-y-4 px-4 py-3">
+            {/* Hero: grid units primary, mm secondary (click-to-edit) */}
+            <div className="flex flex-col gap-0.5">
+              <span className="text-base font-semibold tabular-nums text-content">
+                {t('baseplate.dimensionsUnits', {
+                  width: effectiveWidth,
+                  depth: effectiveDepth,
+                })}
+              </span>
               <EditableDimensions
                 widthMm={totalWidthMm}
                 depthMm={totalDepthMm}
@@ -171,80 +179,46 @@ export function BaseplatePanel() {
                 aria-label={t('baseplate.editDimensions')}
                 widthLabel={t('baseplate.editDimensionsWidth')}
                 depthLabel={t('baseplate.editDimensionsDepth')}
+                variant="secondary"
               />
-              <div className="text-xs tabular-nums text-content-tertiary">
-                {t('baseplate.gridPlusPadding', {
-                  width: effectiveWidth,
-                  depth: effectiveDepth,
-                })}
+            </div>
+
+            {/* Match-drawer toggle + grid steppers */}
+            <div className="space-y-2">
+              <Checkbox
+                checked={synced}
+                onChange={handleSyncToggle}
+                label={t('baseplate.matchDrawerSize')}
+              />
+              <div className={`grid grid-cols-2 gap-x-3 gap-y-2${synced ? ' opacity-50' : ''}`}>
+                <GridDimensionStepper
+                  label={t('baseplate.gridWidth')}
+                  value={effectiveWidth}
+                  onChange={(v) => updateParam('baseplateWidth', gridUnits(v))}
+                  halfBinMode={halfBinMode}
+                  disabled={synced}
+                />
+                <GridDimensionStepper
+                  label={t('baseplate.gridDepth')}
+                  value={effectiveDepth}
+                  onChange={(v) => updateParam('baseplateDepth', gridUnits(v))}
+                  halfBinMode={halfBinMode}
+                  disabled={synced}
+                />
               </div>
-            </>
-          ) : (
-            <div className="flex items-baseline justify-between">
-              <span className="text-xs tabular-nums text-content-secondary">
-                {t('baseplate.dimensionsUnits', {
-                  width: effectiveWidth,
-                  depth: effectiveDepth,
-                })}
-              </span>
-              <EditableDimensions
-                widthMm={gridWidthMm}
-                depthMm={gridDepthMm}
-                minMm={minMm}
-                maxMm={maxMm}
-                onCommit={handleDimensionCommit}
-                aria-label={t('baseplate.editDimensions')}
-                widthLabel={t('baseplate.editDimensionsWidth')}
-                depthLabel={t('baseplate.editDimensionsDepth')}
-              />
             </div>
-          )}
-        </div>
 
-        {/* 2. Grid Size — sync toggle + optional custom width/depth */}
-        <StickyGroupHeader
-          title={t('baseplate.sectionGridSize')}
-          summary={`${effectiveWidth}×${effectiveDepth}`}
-        >
-          <div className="space-y-3 px-4 py-3">
-            <Checkbox
-              checked={synced}
-              onChange={handleSyncToggle}
-              label={t('baseplate.syncWithLayout')}
-            />
-            <div className={`grid grid-cols-2 gap-x-3 gap-y-2${synced ? ' opacity-50' : ''}`}>
-              <GridDimensionStepper
-                label={t('baseplate.gridWidth')}
-                value={effectiveWidth}
-                onChange={(v) => updateParam('baseplateWidth', gridUnits(v))}
-                halfBinMode={halfBinMode}
-                disabled={synced}
-              />
-              <GridDimensionStepper
-                label={t('baseplate.gridDepth')}
-                value={effectiveDepth}
-                onChange={(v) => updateParam('baseplateDepth', gridUnits(v))}
-                halfBinMode={halfBinMode}
-                disabled={synced}
-              />
+            {/* Padding — spatial schematic */}
+            <div className="space-y-2 border-t border-stroke-subtle pt-3">
+              <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
+                {t('baseplate.padding')}
+              </div>
+              <PaddingSchematic baseplateParams={baseplateParams} updateParam={updateParam} />
             </div>
           </div>
         </StickyGroupHeader>
 
-        {/* 3. Drawer Fit — primary configuration */}
-        <StickyGroupHeader title={t('baseplate.sectionFitToDrawer')} summary={paddingSummary}>
-          <div className="space-y-3 px-4 py-3">
-            <p className="text-xs text-content-tertiary">{t('baseplate.paddingHelp')}</p>
-            <PaddingSchematic
-              baseplateParams={baseplateParams}
-              updateParam={updateParam}
-              totalWidthMm={totalWidthMm}
-              totalDepthMm={totalDepthMm}
-            />
-          </div>
-        </StickyGroupHeader>
-
-        {/* 3. Base — magnet holes toggle */}
+        {/* 2. Base — magnet holes, dovetails, corner radius */}
         <StickyGroupHeader
           title={t('baseplate.sectionBase')}
           summary={
@@ -325,8 +299,15 @@ export function BaseplatePanel() {
           </div>
         </StickyGroupHeader>
 
-        {/* 4. Print Settings — advanced, rarely changed */}
-        <StickyGroupHeader title={t('baseplate.sectionPrintSettings')}>
+        {/* 3. Print Settings — advanced, rarely changed */}
+        <StickyGroupHeader
+          title={t('baseplate.sectionPrintSettings')}
+          summary={formatPrintSettingsSummary(
+            gridUnitMm,
+            printBedSize,
+            printBedDepth ?? printBedSize
+          )}
+        >
           <div className="space-y-3 px-4 py-3">
             <div className="text-xs text-content-secondary space-y-2">
               <SettingsRow
@@ -362,7 +343,7 @@ export function BaseplatePanel() {
           </div>
         </StickyGroupHeader>
 
-        {/* 6. Split pieces mini-map — only when baseplate is split */}
+        {/* 4. Split pieces mini-map — only when baseplate is split */}
         {tiling?.isSplit && (
           <SplitViewStrip
             tiling={tiling}
@@ -558,21 +539,14 @@ interface PaddingSchematicProps {
     key: K,
     value: BaseplateParams[K]
   ) => void;
-  readonly totalWidthMm: number;
-  readonly totalDepthMm: number;
 }
 
 /** Spatial schematic showing padding steppers positioned around a baseplate rectangle. */
-function PaddingSchematic({
-  baseplateParams,
-  updateParam,
-  totalWidthMm,
-  totalDepthMm,
-}: PaddingSchematicProps) {
+function PaddingSchematic({ baseplateParams, updateParam }: PaddingSchematicProps) {
   const t = useTranslation();
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1">
       {/* Back stepper — centered above */}
       <div className="flex justify-center">
         <PaddingStepper
@@ -589,7 +563,7 @@ function PaddingSchematic({
           value={baseplateParams.paddingLeft}
           onChange={(v) => updateParam('paddingLeft', mm(v))}
         />
-        <div className="flex-1 min-h-14 rounded-md border border-dashed border-stroke-subtle bg-surface-secondary/50" />
+        <div className="flex-1 min-h-12 rounded border border-dashed border-stroke-subtle bg-surface-secondary/50" />
         <SideStepper
           ariaLabel={t('baseplate.paddingRight')}
           value={baseplateParams.paddingRight}
@@ -605,13 +579,6 @@ function PaddingSchematic({
           onChange={(v) => updateParam('paddingFront', mm(v))}
         />
       </div>
-
-      <p className="text-center text-xs tabular-nums text-content-tertiary">
-        {t('baseplate.totalDimensions', {
-          width: formatMm(totalWidthMm),
-          depth: formatMm(totalDepthMm),
-        })}
-      </p>
     </div>
   );
 }
@@ -629,10 +596,11 @@ function formatMm(v: number): string {
   return String(rounded);
 }
 
-const PADDING_BUTTON_STEP = 0.25;
-const PADDING_INPUT_STEP = 0.01;
-const PADDING_MIN = 0;
-const PADDING_MAX = 100;
+/** Print Settings header summary: "{gridUnit}mm · {bed}mm" or "{gridUnit}mm · {w}×{d}mm" for asymmetric beds. */
+function formatPrintSettingsSummary(gridUnitMm: number, bedW: number, bedD: number): string {
+  const bed = bedW === bedD ? `${bedW}mm` : `${bedW}\u00d7${bedD}mm`;
+  return `${gridUnitMm}mm \u00b7 ${bed}`;
+}
 
 const sideStepperBtnClass =
   'flex h-6 w-8 items-center justify-center border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:bg-surface-hover hover:text-content disabled:opacity-50';
