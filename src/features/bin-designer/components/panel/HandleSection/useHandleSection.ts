@@ -4,6 +4,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '../../../constants';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
+import { isPartialMask } from '@/shared/utils/cellMask';
 import { DEFAULT_HANDLE_SIDE } from '../../../constants/defaults';
 import type { HandleWallSide, HandleCutoutShape, HandleSide } from '@/features/bin-designer/types';
 import type { SectionMeta } from '../types';
@@ -110,7 +111,13 @@ export function useHandleSection() {
     [applySideUpdate]
   );
 
+  const isCustomShape = isPartialMask(params.cellMask);
+
+  // On polygon bins the actual handle spans a polygon-edge wallSpan (computed
+  // by the generator), not the AABB — so the AABB-derived preview would lie.
+  // Returning null here lets the UI suppress the mm readout for custom shapes.
   const handleWidthMm = useMemo(() => {
+    if (isCustomShape) return null;
     const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
     const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
     const innerW = outerW - 2 * wallThickness;
@@ -124,7 +131,7 @@ export function useHandleSection() {
       span = innerD;
     }
     return Math.round(span * (handles.width / 100) * 10) / 10;
-  }, [width, depth, wallThickness, handles, isBackDisabled]);
+  }, [width, depth, wallThickness, handles, isBackDisabled, isCustomShape]);
 
   const summary = useMemo(() => {
     if (!handles.enabled || activeSides.length === 0) return undefined;
@@ -152,7 +159,10 @@ export function useHandleSection() {
 
   const isUShape = handles.shape === 'u-shape';
   const showCornerRadius = handles.shape === 'rectangle' || handles.shape === 'u-shape';
-  const hasCompartments = params.compartments.cols > 1 || params.compartments.rows > 1;
+  // Interior handles are skipped on polygon bins (no compartment walls exist
+  // for custom shapes), so hide the toggle there to prevent a silent no-op.
+  const hasCompartments =
+    !isCustomShape && (params.compartments.cols > 1 || params.compartments.rows > 1);
 
   return {
     state: {

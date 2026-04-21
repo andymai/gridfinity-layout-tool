@@ -6,6 +6,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__dual-kernel__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, HandleConfig } from '@/shared/types/bin';
+import type { CellMask } from '@/shared/utils/cellMask';
 
 function makeParams(handles: Partial<HandleConfig>, label?: { enabled: boolean }): BinParams {
   return {
@@ -142,5 +143,64 @@ describe('buildHandleHoles', () => {
     });
     const result = buildHandleHoles(params, 40, 40, 20, 1.2, false);
     expect(result).not.toBeNull();
+  });
+
+  describe('polygon (cellMask) footprints', () => {
+    // 3×3 L-shape at half-bin resolution: bottom-right 1u removed.
+    const L_MASK: CellMask = {
+      cols: 6,
+      rows: 6,
+      cells: [
+        // bottom row first (grid origin is bottom-left)
+        1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+      ],
+    };
+
+    it('produces front-handle geometry on a 3×3 L footprint', async () => {
+      const { buildHandleHoles } = await import('./handleBuilder');
+      const params: BinParams = {
+        ...makeParams({
+          enabled: true,
+          front: { enabled: true },
+          back: { enabled: false },
+          left: { enabled: false },
+          right: { enabled: false },
+        }),
+        width: 3,
+        depth: 3,
+        cellMask: L_MASK,
+      };
+      // innerW/D reflect the bin AABB (3u × 3u minus walls/clearance).
+      const result = buildHandleHoles(params, 120, 120, 30, 1.2, false);
+      expect(result).not.toBeNull();
+    });
+
+    it('skips interior handles on polygon bins even when interior=true', async () => {
+      const { buildHandleHoles } = await import('./handleBuilder');
+      const params: BinParams = {
+        ...makeParams({
+          enabled: true,
+          interior: true,
+          front: { enabled: false },
+          back: { enabled: false },
+          left: { enabled: false },
+          right: { enabled: false },
+        }),
+        width: 3,
+        depth: 3,
+        cellMask: L_MASK,
+        compartments: {
+          ...DEFAULT_BIN_PARAMS.compartments,
+          cols: 2,
+          rows: 2,
+          cells: [0, 1, 2, 3],
+        },
+      };
+      // With all outer sides off and only `interior` requested, polygon bins
+      // must return null (compartments don't exist for custom shapes).
+      const result = buildHandleHoles(params, 120, 120, 30, 1.2, false);
+      expect(result).toBeNull();
+    });
   });
 });

@@ -195,4 +195,49 @@ describe('useHandleSection', () => {
     const { result } = renderHook(() => useHandleSection());
     expect(result.current.meta.summary).toContain('20');
   });
+
+  it('returns null handleWidthMm on polygon bins to avoid misleading mm preview', () => {
+    // AABB-based mm preview would misrepresent the actual polygon-edge span
+    // (e.g. 61mm shown vs 40mm generated on a 3×3 L front).
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        cellMask: {
+          cols: 6,
+          rows: 6,
+          cells: [
+            1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1,
+          ],
+        },
+        handles: { ...DEFAULT_BIN_PARAMS.handles, enabled: true, front: { enabled: true } },
+      },
+    });
+
+    const { result } = renderHook(() => useHandleSection());
+    expect(result.current.state.handleWidthMm).toBeNull();
+  });
+
+  it('hides Interior toggle on polygon bins even when compartments exist', () => {
+    // Previously-configured compartments stay on the params when switching to
+    // a custom shape; the generator skips interior handles on polygon bins, so
+    // the toggle must hide to prevent a silent no-op.
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 2, cells: [0, 1, 2, 3] },
+        cellMask: {
+          cols: 6,
+          rows: 6,
+          cells: [
+            1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1,
+          ],
+        },
+      },
+    });
+
+    const { result } = renderHook(() => useHandleSection());
+    expect(result.current.state.hasCompartments).toBe(false);
+  });
 });

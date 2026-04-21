@@ -25,6 +25,8 @@ import type { HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 import { buildHandleProfile } from './handleProfiles';
 import { LIP_TAPER_WIDTH } from './generatorConstants';
+import { resolvePolygonSideGeometry } from './maskPolygonEdges';
+import { isPartialMask } from '@/shared/utils/cellMask';
 
 /**
  * Build a single hole cut solid from a profile.
@@ -149,7 +151,28 @@ function buildHandleHolesInScope(
   const extrudeDepth = (wallThickness + lipOverhang) * 2 + 1;
   const isUShape = shape === 'u-shape';
 
-  const walls = buildHandleWallDefs(innerW, innerD);
+  // Non-rectangular footprints map each outer side to its outermost matching
+  // polygon edge (silently skipping sides with no edge). Rect bins use the
+  // AABB-derived defs. Interior handles are skipped on polygon bins since
+  // compartment walls are filtered out for custom shapes (see featuresStage).
+  const cellMask = params.cellMask;
+  const isPolygon = isPartialMask(cellMask);
+  const walls: readonly HandleWallDef[] = isPolygon
+    ? (['front', 'back', 'left', 'right'] as const)
+        .map((side) => {
+          const geom = resolvePolygonSideGeometry(cellMask, params.gridUnitMm, wallThickness, side);
+          return geom
+            ? ({
+                side,
+                wallSpan: geom.wallSpan,
+                x: geom.x,
+                y: geom.y,
+                rotateZ: geom.rotateZ,
+              } satisfies HandleWallDef)
+            : null;
+        })
+        .filter((w): w is HandleWallDef => w !== null)
+    : buildHandleWallDefs(innerW, innerD);
   const allHoles: Shape3D[] = [];
 
   for (const wall of walls) {
@@ -217,8 +240,9 @@ function buildHandleHolesInScope(
     }
   }
 
-  // Interior wall handles
-  if (interior && !isUShape) {
+  // Interior wall handles — skipped on polygon bins (compartment walls are
+  // filtered out for custom shapes, so there's nothing to cut through).
+  if (interior && !isUShape && !isPolygon) {
     const { cols, rows, cells } = params.compartments;
     if (cols > 1 || rows > 1) {
       const cellW = innerW / cols;
@@ -312,6 +336,7 @@ export const handlesFeature: FeatureBuilder = {
   name: 'handles',
   tag: FeatureTag.HANDLE,
   target: 'cut',
+  supportsCellMask: true,
   shouldBuild: (ctx) => ctx.params.handles.enabled && !ctx.dimensions.isSlotted,
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;

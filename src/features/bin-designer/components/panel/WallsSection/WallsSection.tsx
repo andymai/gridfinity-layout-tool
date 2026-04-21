@@ -18,9 +18,9 @@ import { FeatureGate } from '../FeatureGate';
 
 export function WallsSection() {
   const { state, handlers, t } = useWallsSection();
-  // Pattern and handles still position from the axis-aligned bounding box, so
-  // they don't align with custom polygons. Wall cutouts are now polygon-aware
-  // (auto-snap to the outermost matching polygon edge) and stay interactive.
+  // Wall pattern still tiles across rectangular walls only. Wall cutouts and
+  // handles are polygon-aware (auto-snap to the outermost matching polygon
+  // edge) and stay interactive on custom shapes.
   const isCustomShape = useDesignerStore((s) => isPartialMask(s.params.cellMask));
   const customShapeReason = t('binDesigner.shape.custom.hint');
 
@@ -52,9 +52,7 @@ export function WallsSection() {
           <WallCutoutsSection />
         </div>
         <div className="pt-3 border-t border-stroke-subtle/50">
-          <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
-            <HandleSection />
-          </FeatureGate>
+          <HandleSection />
         </div>
       </div>
     </div>
