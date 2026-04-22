@@ -10,7 +10,7 @@
  */
 
 import { useLayoutStore } from '@/core/store/layout';
-import { useHistoryStore } from '@/core/store/history';
+import { useHistoryStore, captureSelectionSnapshot } from '@/core/store/history';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Command } from '../commands';
@@ -51,13 +51,17 @@ export function undoCaptureMiddleware(
   // Clone BEFORE next() — Immer produces a new state object on mutation,
   // so the pre-mutation reference stays immutable, but we need a deep copy
   // for the undo stack (the snapshot must survive future mutations).
+  // Selection is captured at the same moment so undo restores the user's
+  // activeLayerId/activeCategoryId/focus rather than silently resetting to
+  // `layers[0]` via post-hoc pruning.
   const layout = useLayoutStore.getState().layout;
   const snapshot = structuredClone(layout);
+  const selectionSnapshot = captureSelectionSnapshot();
 
   const result = next(command);
 
   if (isOk(result)) {
-    useHistoryStore.getState().push(snapshot, command.type);
+    useHistoryStore.getState().push(snapshot, command.type, selectionSnapshot);
     mlTracking.recordAction?.();
   }
 
@@ -97,6 +101,7 @@ export function batch<T>(fn: () => T): T {
 
   const layout = useLayoutStore.getState().layout;
   const snapshot = structuredClone(layout);
+  const selectionSnapshot = captureSelectionSnapshot();
 
   isBatching = true;
   batchCommandType = null;
@@ -106,7 +111,7 @@ export function batch<T>(fn: () => T): T {
     // Check if layout actually changed (Immer produces new reference on mutation)
     const currentLayout = useLayoutStore.getState().layout;
     if (currentLayout !== layout) {
-      useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown');
+      useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown', selectionSnapshot);
       mlTracking.recordAction?.();
     }
 
@@ -115,7 +120,7 @@ export function batch<T>(fn: () => T): T {
     // Push undo snapshot even on error so partial mutations can be reverted
     const currentLayout = useLayoutStore.getState().layout;
     if (currentLayout !== layout) {
-      useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown');
+      useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown', selectionSnapshot);
       mlTracking.recordAction?.();
     }
     throw e;

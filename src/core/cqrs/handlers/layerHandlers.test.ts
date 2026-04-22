@@ -96,6 +96,18 @@ describe('Layer Handlers', () => {
         }
       }
     });
+
+    it('returns error when layer not found without touching the store', () => {
+      const cmd = createCommand('layer.update', {
+        id: layerId('nonexistent'),
+        updates: { name: 'X' },
+      });
+
+      const result = handleUpdateLayer(cmd);
+
+      expect(isErr(result)).toBe(true);
+      expect(mockStore.updateLayer).not.toHaveBeenCalled();
+    });
   });
 
   describe('handleDeleteLayer', () => {
