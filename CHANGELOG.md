@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.47.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.3...gridfinity-layout-tool-v4.47.4) (2026-04-22)
+
+
+### Performance
+
+* **generation:** speed up custom-shape bin regen ([#1442](https://github.com/andymai/gridfinity-layout-tool/issues/1442)) ([cf2f08f](https://github.com/andymai/gridfinity-layout-tool/commit/cf2f08fb18fe928e31a02e96c7c77c7b4d94f094))
+
 ## [4.47.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.2...gridfinity-layout-tool-v4.47.3) (2026-04-22)
 
 
