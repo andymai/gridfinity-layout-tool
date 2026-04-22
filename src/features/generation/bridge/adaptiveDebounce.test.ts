@@ -31,13 +31,13 @@ describe('AdaptiveDebounce', () => {
     expect(ad.getDelay()).toBe(175);
   });
 
-  it('produces max delay for slow generations', () => {
+  it('produces proportional delay for slow generations', () => {
     const ad = new AdaptiveDebounce();
     ad.recordTiming(900);
     ad.recordTiming(1000);
     ad.recordTiming(1100);
-    // avg=1000, delay=1000*0.35=350 → clamped to 300
-    expect(ad.getDelay()).toBe(300);
+    // avg=1000, delay=1000*0.35=350 (under 800ms ceiling)
+    expect(ad.getDelay()).toBe(350);
   });
 
   it('uses rolling window of 5 entries', () => {
@@ -46,7 +46,7 @@ describe('AdaptiveDebounce', () => {
     for (let i = 0; i < 5; i++) {
       ad.recordTiming(1000);
     }
-    expect(ad.getDelay()).toBe(300); // clamped max
+    expect(ad.getDelay()).toBe(350); // avg=1000 → 350ms (no clamp)
 
     // Add 5 fast timings to push out the slow ones
     for (let i = 0; i < 5; i++) {
@@ -74,10 +74,10 @@ describe('AdaptiveDebounce', () => {
     expect(ad.getDelay()).toBe(50);
   });
 
-  it('clamps maximum delay to 300ms', () => {
+  it('clamps maximum delay to 800ms', () => {
     const ad = new AdaptiveDebounce();
-    ad.recordTiming(5000); // avg=5000, delay=1750 → clamped to 300
-    expect(ad.getDelay()).toBe(300);
+    ad.recordTiming(5000); // avg=5000, delay=1750 → clamped to 800
+    expect(ad.getDelay()).toBe(800);
   });
 
   it('handles mixed timings correctly', () => {

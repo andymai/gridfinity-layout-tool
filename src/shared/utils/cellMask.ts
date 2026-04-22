@@ -15,7 +15,16 @@
  * case of rectangular bins).
  */
 
-/** Always-half-bin-resolution cell mask. `cells` is row-major, origin bottom-left. */
+/**
+ * Always-half-bin-resolution cell mask. `cells` is row-major, origin bottom-left.
+ *
+ * Immutability contract: `cells` is typed as a mutable array so Immer's
+ * `WritableDraft<CellMask>` continues to work in store slices, but callers
+ * MUST NOT mutate elements in place — the array is frozen the first time
+ * `maskToPolygon` sees a mask, and downstream features memoize on the
+ * CellMask reference. Updates should construct a fresh mask (see
+ * `buildFullMask` / `resizeMask`) rather than patch `cells[i]`.
+ */
 export interface CellMask {
   readonly cols: number;
   readonly rows: number;
@@ -249,6 +258,14 @@ export interface Point2 {
 export type MaskLoop = readonly Point2[];
 
 /**
+ * Per-mask polygon cache — keyed by reference so pure-function callers
+ * (socket/feature builders, wall patterns, mask drawing) skip the O(cells)
+ * edge scan and loop chaining on repeated calls within one generation.
+ * CellMask is declared immutable, so reference identity is sufficient.
+ */
+const maskToPolygonCache = new WeakMap<CellMask, readonly MaskLoop[]>();
+
+/**
  * Convert a cell mask to its polygon loops: one outer (CCW) plus zero or
  * more inner holes (CW). Origin at (0, 0) in grid units (NOT mm — caller
  * multiplies by `gridUnitMm`). Vertices land only at corners where the
@@ -261,11 +278,21 @@ export type MaskLoop = readonly Point2[];
  * The loop that encloses every other loop is the outer boundary; the
  * rest are holes.
  *
+ * Result is memoized on the mask reference. To keep the cache sound we
+ * also freeze `mask.cells` on first use — any subsequent in-place element
+ * mutation throws in strict mode instead of silently returning a stale
+ * polygon. Callers that need a modified mask must construct a new one.
+ *
  * Preconditions: `validateMask(mask)` must return null. Passing an
  * invalid mask yields undefined results.
  */
 export function maskToPolygon(mask: CellMask): readonly MaskLoop[] {
+  const cached = maskToPolygonCache.get(mask);
+  if (cached) return cached;
   const { cols, rows, cells } = mask;
+  if (!Object.isFrozen(cells)) {
+    Object.freeze(cells);
+  }
   const s = MASK_CELL_SIZE;
   const filled = (c: number, r: number): boolean =>
     c >= 0 && c < cols && r >= 0 && r < rows && cells[r * cols + c] === 1;
@@ -364,7 +391,9 @@ export function maskToPolygon(mask: CellMask): readonly MaskLoop[] {
     throw new Error('maskToPolygon found no outer (CCW) loop');
   }
   const holes = loops.filter((_, i) => i !== outerIdx);
-  return [loops[outerIdx], ...holes];
+  const result: readonly MaskLoop[] = [loops[outerIdx], ...holes];
+  maskToPolygonCache.set(mask, result);
+  return result;
 }
 
 /**

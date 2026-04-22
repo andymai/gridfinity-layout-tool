@@ -4,10 +4,13 @@
  * Adjusts the debounce delay based on recent generation timings:
  * - Fast generations (<150ms) → ~50ms debounce (snappy UX)
  * - Medium generations (200-600ms) → ~100-200ms debounce
- * - Slow generations (>800ms) → ~280-300ms debounce (avoid stacking)
+ * - Slow generations (~1s) → ~350ms debounce
+ * - Very slow generations (>2s, e.g. custom-shape custom bins) → up to 800ms
  *
  * Uses a rolling window of the last 5 timings to compute the average,
- * then returns avg * 0.35 clamped to [50, 300].
+ * then returns avg * 0.35 clamped to [50, 800]. A higher ceiling than the
+ * typical regen time lets slow custom-shape regens actually debounce
+ * instead of stacking one request per slider tick.
  */
 
 /** Rolling window size for averaging timings */
@@ -20,7 +23,7 @@ const TIMING_FACTOR = 0.35;
 const MIN_DELAY = 50;
 
 /** Maximum debounce delay (ms) */
-const MAX_DELAY = 300;
+const MAX_DELAY = 800;
 
 /** Default delay when no timing history exists */
 const DEFAULT_DELAY = 200;
