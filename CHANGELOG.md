@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.47.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.1...gridfinity-layout-tool-v4.47.2) (2026-04-22)
+
+
+### Bug Fixes
+
+* **collab:** race + stale closure + remote-undo absorption ([#1436](https://github.com/andymai/gridfinity-layout-tool/issues/1436)) ([0154477](https://github.com/andymai/gridfinity-layout-tool/commit/01544770f679ceae73ab456a6a17f5ecd4f5724d))
+
 ## [4.47.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.0...gridfinity-layout-tool-v4.47.1) (2026-04-22)
 
 
