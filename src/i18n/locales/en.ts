@@ -1310,7 +1310,7 @@ const en: Record<string, string> = {
   'binDesigner.walls.pattern.honeycomb': 'Honeycomb',
   'binDesigner.walls.pattern.allSlotted': 'All walls have divider slots',
   'binDesigner.walls.pattern.someSlotted': 'Walls with divider slots will keep solid walls',
-  'binDesigner.wallCutouts': 'Wall Cutouts',
+  'binDesigner.wallCutouts': 'Wall cutouts',
   'binDesigner.wallCutouts.span': 'Span',
   'binDesigner.wallCutouts.height': 'Height',
   'binDesigner.wallCutouts.front': 'Front',
