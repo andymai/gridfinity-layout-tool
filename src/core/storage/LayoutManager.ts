@@ -409,12 +409,13 @@ export async function deleteLayoutWithEntry(
   // what happens to the blob. Treat blob deletion as best-effort so the
   // caller still receives the updated library (and newActiveId, if the
   // deleted layout was active) and can update its in-memory state to match
-  // the persisted library. An orphaned blob is harmless and will be cleaned
-  // up by reconcileLibraryAsync on next load.
+  // the persisted library. The orphan blob is harmless (nothing references
+  // it in the library) but is NOT automatically cleaned up — reconciliation
+  // only removes library entries that point to missing blobs, not the reverse.
   const deleteResult = await deleteLayoutInternal(layoutId);
   if (isErr(deleteResult)) {
     console.warn(
-      `[LayoutManager] deleteLayoutWithEntry: library updated but blob ${layoutId} failed to delete; will reconcile on next load`,
+      `[LayoutManager] deleteLayoutWithEntry: library updated but blob ${layoutId} failed to delete; an orphaned blob remains in storage until explicitly cleared`,
       deleteResult.error
     );
   }

@@ -365,6 +365,36 @@ describe('storage-library', () => {
 
       expect(result).toBeNull();
     });
+
+    it('rolls back the blob and keeps legacy key intact when library save fails', async () => {
+      // Regression for #1434 review: previously the library was written
+      // first, leaving a persisted library whose activeLayoutId pointed at
+      // a non-existent blob if the library save succeeded but the blob
+      // failed — or, in the reverse ordering, orphan blobs accumulating on
+      // every retry when library saves kept failing. The atomic sequence
+      // writes blob first, then library, and rolls back the blob on library
+      // failure. Legacy key stays authoritative until both writes succeed.
+      const legacyLayout = createTestLayout('Legacy Layout');
+      localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(legacyLayout));
+
+      const indexedDBBackend = await import('@/core/storage/backends/indexedDB');
+      vi.spyOn(indexedDBBackend, 'saveLibraryIndex').mockRejectedValueOnce(
+        new Error('Library save failed')
+      );
+
+      const result = await migrateFromLegacyStorage();
+
+      expect(result).toBeNull();
+      // Legacy key must remain intact for clean retry on next launch.
+      expect(localStorage.getItem(LEGACY_STORAGE_KEY)).not.toBeNull();
+      // Every localStorage key beginning with the layout prefix is either
+      // the legacy key itself or an orphan blob — there must be no orphans.
+      const layoutKeys = Object.keys(localStorage).filter((k) =>
+        k.startsWith('gridfinity-layout-')
+      );
+      // Only the legacy key (gridfinity-layout-v1) should remain.
+      expect(layoutKeys.filter((k) => k !== LEGACY_STORAGE_KEY)).toHaveLength(0);
+    });
   });
 
   describe('initializeLayoutLibrary', () => {

@@ -384,12 +384,24 @@ function loadLegacyLayout(): Layout | null {
 
 /**
  * Migrate from legacy single-layout storage to library system.
- * Returns the migrated library, or null if no legacy layout exists.
+ * Returns the migrated library, or null if no legacy layout exists or the
+ * migration failed to persist.
  *
- * Order of operations matters: the library is written FIRST (awaited). If it
- * fails we abort before touching either the new layout blob or the legacy
- * key, so the next launch retries cleanly without leaking orphan blobs or
- * losing the user's data.
+ * Atomic sequence:
+ *   1. Save the layout blob (can be rolled back via deleteSync on the key).
+ *   2. Save the library index (the commit point — a successful library write
+ *      makes the layout discoverable on next launch).
+ *   3. Delete the legacy key.
+ *
+ * Failure paths:
+ *   - Blob save fails: nothing persisted, legacy key still authoritative,
+ *     returns null so the next launch can retry cleanly.
+ *   - Library save fails: roll back the just-written blob so no orphan
+ *     accumulates across repeated retries, legacy key still authoritative,
+ *     returns null. (Greptile flagged orphan accumulation if we returned
+ *     success here; Copilot flagged that returning the in-memory library
+ *     causes `initializeLayoutLibrary` to proceed with an activeLayoutId
+ *     whose blob was never persisted. Returning null addresses both.)
  */
 export async function migrateFromLegacyStorage(): Promise<LayoutLibrary | null> {
   const legacyLayout = loadLegacyLayout();
@@ -398,21 +410,22 @@ export async function migrateFromLegacyStorage(): Promise<LayoutLibrary | null> 
   const layoutId = generateLayoutId();
   const library = createLibraryWithLayout(layoutId, legacyLayout);
 
-  // Library first. On failure, the legacy key is still intact and no new
-  // orphan blob has been written, so the next launch can retry from scratch.
-  const librarySaveResult = await saveLibrary(library);
-  if (isErr(librarySaveResult)) {
-    return library;
-  }
-
-  // Then the new layout blob. If this fails (quota exceeded), abort — the
-  // library would otherwise reference a non-existent layout.
+  // 1. Blob first so it can be rolled back if the library write fails.
   const layoutSaveResult = saveLayoutSync(layoutId, legacyLayout);
   if (isErr(layoutSaveResult)) {
-    return library;
+    return null;
   }
 
-  // Only once both writes have succeeded is it safe to delete the legacy key.
+  // 2. Library commit point.
+  const librarySaveResult = await saveLibrary(library);
+  if (isErr(librarySaveResult)) {
+    // Roll back the blob — otherwise a new layoutId gets generated on every
+    // retry and orphan blobs accumulate.
+    backend.deleteSync(getLayoutStorageKey(layoutId));
+    return null;
+  }
+
+  // 3. Only now is it safe to drop the legacy key.
   backend.deleteSync(LEGACY_STORAGE_KEY);
   return library;
 }
@@ -460,17 +473,18 @@ export async function migrateFromLegacyStorageResult(): Promise<
   const layoutId = generateLayoutId();
   const library = createLibraryWithLayout(layoutId, legacyData);
 
-  // Library first — if it fails we bail out before writing a new blob, so
-  // the legacy key remains the source of truth for a clean retry.
-  const librarySaveResult = await saveLibrary(library);
-  if (isErr(librarySaveResult)) {
-    return err(librarySaveResult.error);
-  }
-
-  // Then the layout blob. Quota failure here should surface to the caller.
+  // 1. Blob first so it can be rolled back if the library write fails.
   const layoutSaveResult = saveLayoutSync(layoutId, legacyData);
   if (isErr(layoutSaveResult)) {
     return err(layoutSaveResult.error);
+  }
+
+  // 2. Library commit point. Roll back the blob on failure so a new
+  //    layoutId on retry doesn't leave the previous orphan behind.
+  const librarySaveResult = await saveLibrary(library);
+  if (isErr(librarySaveResult)) {
+    backend.deleteSync(getLayoutStorageKey(layoutId));
+    return err(librarySaveResult.error);
   }
   backend.deleteSync(LEGACY_STORAGE_KEY);
 

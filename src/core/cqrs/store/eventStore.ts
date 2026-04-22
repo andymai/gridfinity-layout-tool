@@ -78,6 +78,19 @@ export interface EventStore {
   clear(): Promise<void>;
 }
 
+/**
+ * Return true when two events with the same id represent the same fact.
+ * Compares type, aggregateId, version, and payload shape — enough to tell
+ * an idempotent retry (byte-identical) from a true id collision (same id,
+ * different content) without a full deep-equal.
+ */
+function eventsMatch(a: DomainEvent, b: DomainEvent): boolean {
+  if (a.type !== b.type) return false;
+  if (a.meta.aggregateId !== b.meta.aggregateId) return false;
+  if (a.meta.version !== b.meta.version) return false;
+  return JSON.stringify(a.payload) === JSON.stringify(b.payload);
+}
+
 function createEventStore(): EventStore {
   return {
     async append(events) {
@@ -87,14 +100,26 @@ function createEventStore(): EventStore {
         // Idempotent append-only semantics: if an event with the same id is
         // already persisted (retry-queue replaying after a connection drop
         // that ACKed on disk but rejected the promise), treat it as a no-op
-        // instead of failing. `put` would silently overwrite — which would
-        // weaken the audit-log invariant if two different events ever reused
-        // an id. A read-then-add inside the same transaction preserves the
-        // invariant and stays idempotent under retry.
-        const existing = await tx.store.get(event.meta.id);
-        if (!existing) {
-          await tx.store.add(event);
+        // instead of failing. But if the persisted event is actually
+        // DIFFERENT — a real id collision — surface the problem loudly
+        // rather than silently dropping one of the two events. `put` would
+        // silently overwrite; plain `add` would mis-classify idempotent
+        // retries as failures. Read-then-compare threads that needle.
+        const existing = (await tx.store.get(event.meta.id)) as DomainEvent | undefined;
+        if (existing) {
+          if (!eventsMatch(existing, event)) {
+            log.warn(
+              'Event id collision: incoming event differs from persisted event with the same id',
+              {
+                eventId: event.meta.id,
+                persistedType: existing.type,
+                incomingType: event.type,
+              }
+            );
+          }
+          continue;
         }
+        await tx.store.add(event);
       }
       await tx.done;
     },
