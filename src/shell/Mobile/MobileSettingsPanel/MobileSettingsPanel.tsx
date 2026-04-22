@@ -2,6 +2,7 @@ import { useState, Suspense } from 'react';
 // Import stores directly to avoid circular dependency via barrel export
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';
+import { RulerIcon } from '@/design-system/Icon';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { HalfBinModeBlockedModal } from '@/shell/Modals';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
@@ -119,19 +120,7 @@ export function MobileSettingsPanel() {
 
         {/* Real-world drawer dimensions */}
         <div className="mt-3 flex items-center gap-1.5 text-sm text-content-tertiary">
-          <svg
-            className="w-4 h-4 flex-shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2"
-            />
-          </svg>
+          <RulerIcon size="sm" />
           <span className="tabular-nums">
             {realWorldDimensions.width.toFixed(0)} × {realWorldDimensions.depth.toFixed(0)} ×{' '}
             {realWorldDimensions.height.toFixed(0)} mm

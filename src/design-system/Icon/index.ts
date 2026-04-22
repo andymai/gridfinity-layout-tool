@@ -44,3 +44,9 @@ export type { MagnetIconProps } from './icons/Magnet';
 
 export { RotateCcwIcon } from './icons/RotateCcw';
 export type { RotateCcwIconProps } from './icons/RotateCcw';
+
+export { PencilIcon } from './icons/Pencil';
+export type { PencilIconProps } from './icons/Pencil';
+
+export { RulerIcon } from './icons/Ruler';
+export type { RulerIconProps } from './icons/Ruler';

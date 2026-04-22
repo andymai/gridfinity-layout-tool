@@ -2,8 +2,8 @@
  * Parameter panel for the standalone baseplate page.
  *
  * Top-to-bottom information hierarchy:
- * 1. Dimensions: dual-emphasis hero (grid units + mm) + match-drawer toggle
- *    + grid steppers + spatial padding schematic. Single unified section.
+ * 1. Dimensions: sync-with-layout toggle + grid steppers (the unit readout)
+ *    + click-to-edit mm summary + spatial padding schematic. Single unified section.
  * 2. Base: magnet holes, dovetails (when split), corner radius
  * 3. Print Settings: grid unit, print bed size (rarely changed)
  * 4. Split pieces mini-map (only when baseplate is split across print beds)
@@ -15,7 +15,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
-import { ChevronDownIcon } from '@/design-system/Icon';
+import { ChevronDownIcon, RulerIcon } from '@/design-system/Icon';
 import { Stepper } from '@/design-system/Stepper';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
@@ -102,6 +102,11 @@ export function BaseplatePanel() {
 
   const totalWidthMm = gridWidthMm + baseplateParams.paddingLeft + baseplateParams.paddingRight;
   const totalDepthMm = gridDepthMm + baseplateParams.paddingFront + baseplateParams.paddingBack;
+  const hasPadding =
+    baseplateParams.paddingLeft > 0 ||
+    baseplateParams.paddingRight > 0 ||
+    baseplateParams.paddingFront > 0 ||
+    baseplateParams.paddingBack > 0;
 
   const minMm = CONSTRAINTS.GRID_MIN * gridUnitMm;
   const maxMm = CONSTRAINTS.GRID_MAX * gridUnitMm + PADDING_MAX * 2;
@@ -110,7 +115,7 @@ export function BaseplatePanel() {
    * When the user enters target mm dimensions:
    * 1. Snap down to the largest valid grid size that fits (half-unit or whole-unit)
    * 2. Distribute remaining mm evenly as padding (left=right, front=back)
-   * 3. Auto-uncheck "Match drawer size"
+   * 3. Auto-uncheck "Sync with layout"
    */
   const handleDimensionCommit = useCallback(
     (targetWidthMm: number, targetDepthMm: number) => {
@@ -153,59 +158,53 @@ export function BaseplatePanel() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        {/* 1. Dimensions — unified: hero + match-drawer + grid steppers + padding */}
-        <StickyGroupHeader
-          title={t('baseplate.sectionDimensions')}
-          summary={t('baseplate.dimensionsMm', {
-            width: formatMm(totalWidthMm),
-            depth: formatMm(totalDepthMm),
-          })}
-        >
-          <div className="space-y-4 px-4 py-3">
-            {/* Hero: grid units primary, mm secondary (click-to-edit) */}
-            <div className="flex flex-col gap-0.5">
-              <span className="text-base font-semibold tabular-nums text-content">
-                {t('baseplate.dimensionsUnits', {
-                  width: effectiveWidth,
-                  depth: effectiveDepth,
-                })}
-              </span>
-              <EditableDimensions
-                widthMm={totalWidthMm}
-                depthMm={totalDepthMm}
-                minMm={minMm}
-                maxMm={maxMm}
-                onCommit={handleDimensionCommit}
-                aria-label={t('baseplate.editDimensions')}
-                widthLabel={t('baseplate.editDimensionsWidth')}
-                depthLabel={t('baseplate.editDimensionsDepth')}
-                variant="secondary"
+        {/* 1. Dimensions — sync toggle + grid steppers (steppers = units readout) + mm summary */}
+        <StickyGroupHeader title={t('baseplate.sectionDimensions')}>
+          <div className="space-y-3 px-4 py-3">
+            <Checkbox
+              checked={synced}
+              onChange={handleSyncToggle}
+              label={t('baseplate.syncWithLayout')}
+            />
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+              <GridDimensionStepper
+                label={t('baseplate.gridWidth')}
+                value={effectiveWidth}
+                onChange={(v) => updateParam('baseplateWidth', gridUnits(v))}
+                halfBinMode={halfBinMode}
+                disabled={synced}
+              />
+              <GridDimensionStepper
+                label={t('baseplate.gridDepth')}
+                value={effectiveDepth}
+                onChange={(v) => updateParam('baseplateDepth', gridUnits(v))}
+                halfBinMode={halfBinMode}
+                disabled={synced}
               />
             </div>
-
-            {/* Match-drawer toggle + grid steppers */}
-            <div className="space-y-2">
-              <Checkbox
-                checked={synced}
-                onChange={handleSyncToggle}
-                label={t('baseplate.matchDrawerSize')}
-              />
-              <div className={`grid grid-cols-2 gap-x-3 gap-y-2${synced ? ' opacity-50' : ''}`}>
-                <GridDimensionStepper
-                  label={t('baseplate.gridWidth')}
-                  value={effectiveWidth}
-                  onChange={(v) => updateParam('baseplateWidth', gridUnits(v))}
-                  halfBinMode={halfBinMode}
-                  disabled={synced}
-                />
-                <GridDimensionStepper
-                  label={t('baseplate.gridDepth')}
-                  value={effectiveDepth}
-                  onChange={(v) => updateParam('baseplateDepth', gridUnits(v))}
-                  halfBinMode={halfBinMode}
-                  disabled={synced}
+            {/* mm summary under steppers — matches the layout-mode drawer dimensions pattern.
+                When padding > 0, show a trailing 'incl. padding' note so users see the total
+                is grid + padding, not grid alone. */}
+            <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 pt-1 text-content-tertiary">
+              <div className="flex items-center gap-1">
+                <RulerIcon size="xs" className="flex-shrink-0" />
+                <EditableDimensions
+                  widthMm={totalWidthMm}
+                  depthMm={totalDepthMm}
+                  minMm={minMm}
+                  maxMm={maxMm}
+                  onCommit={handleDimensionCommit}
+                  aria-label={t('baseplate.editDimensions')}
+                  widthLabel={t('baseplate.editDimensionsWidth')}
+                  depthLabel={t('baseplate.editDimensionsDepth')}
+                  variant="secondary"
                 />
               </div>
+              {hasPadding && (
+                <span className="text-[11px] italic text-content-tertiary">
+                  {t('baseplate.inclPadding')}
+                </span>
+              )}
             </div>
 
             {/* Padding — spatial schematic */}

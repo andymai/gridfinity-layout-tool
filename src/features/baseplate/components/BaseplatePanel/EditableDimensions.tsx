@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { PencilIcon } from '@/design-system/Icon';
 
 /** Format mm for display: minimum needed decimals, no trailing zeros. */
 function formatMm(v: number): string {
@@ -167,10 +168,16 @@ export function EditableDimensions({
     <button
       type="button"
       onClick={enterEditMode}
-      className={`cursor-pointer decoration-content-tertiary underline-offset-2 hover:underline ${restClass} ${className ?? ''}`}
+      className={`group inline-flex cursor-pointer items-center gap-1 underline decoration-dotted decoration-content-tertiary underline-offset-4 hover:decoration-content-secondary focus-visible:decoration-accent ${restClass} ${className ?? ''}`}
       aria-label={ariaLabel}
     >
-      {formatMm(widthMm)} &times; {formatMm(depthMm)} mm
+      <span>
+        {formatMm(widthMm)} &times; {formatMm(depthMm)} mm
+      </span>
+      <PencilIcon
+        size="xs"
+        className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+      />
     </button>
   );
 }

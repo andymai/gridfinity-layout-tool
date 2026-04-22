@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
+import { RulerIcon } from '@/design-system/Icon';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { getBinLocationContext } from '@/shared/utils/binLocation';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
@@ -162,19 +163,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
         {/* Real-world dimensions */}
         <div className="flex items-center gap-1.5 text-sm text-content-tertiary">
-          <svg
-            className="w-4 h-4 flex-shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2"
-            />
-          </svg>
+          <RulerIcon size="sm" />
           <span className="tabular-nums">
             {(bin.width * layout.gridUnitMm).toFixed(0)} ×{' '}
             {(bin.depth * layout.gridUnitMm).toFixed(0)} ×{' '}
