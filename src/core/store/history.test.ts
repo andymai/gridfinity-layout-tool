@@ -622,4 +622,50 @@ describe('history store', () => {
       expect(useSelectionStore.getState().selectedBinIds).not.toContain(binId);
     });
   });
+
+  describe('selection snapshot restoration', () => {
+    it('undo restores the captured activeLayerId, not layers[0]', () => {
+      const { push, undo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+      const addLayerResult = useLayoutStore.getState().addLayer();
+      if (!isOk(addLayerResult)) throw new Error('addLayer failed');
+      const topLayerId = addLayerResult.value;
+
+      // User has the top layer active.
+      useSelectionStore.getState().setActiveLayer(topLayerId);
+
+      // Snapshot at this moment: layout has both layers, active = topLayerId.
+      push(JSON.parse(JSON.stringify(useLayoutStore.getState().layout)), 'bin.add', {
+        activeLayerId: topLayerId,
+        activeCategoryId: useSelectionStore.getState().activeCategoryId,
+        selectedBinIds: [],
+        focusedBinId: null,
+        quickLabelBinId: null,
+      });
+
+      // User performs some other action that would reset active layer via pruning
+      // (simulate by directly changing active layer first)
+      useSelectionStore.getState().setActiveLayer(layout.layers[0].id);
+
+      undo();
+
+      // Previously undo fell back to layers[0] because it used pruning on the
+      // current selection. With the snapshot, the user's prior active layer is
+      // restored faithfully.
+      expect(useSelectionStore.getState().activeLayerId).toBe(topLayerId);
+    });
+
+    it('falls back to pruning when a history entry has no selection snapshot', () => {
+      const { push, undo } = useHistoryStore.getState();
+      const layout = useLayoutStore.getState().layout;
+
+      // Legacy-style push (no selection snapshot) — should still work.
+      push(JSON.parse(JSON.stringify(layout)), 'bin.add');
+
+      useLayoutStore.getState().setName('Modified');
+      undo();
+
+      expect(useLayoutStore.getState().layout.name).toBe(layout.name);
+    });
+  });
 });

@@ -7,7 +7,7 @@
  */
 
 import { useLayoutStore } from '@/core/store/layout';
-import { ok, err, isErr } from '@/core/result';
+import { ok, err, isErr, layoutInvalidOperation } from '@/core/result';
 import type { CommandResult } from '../types';
 import type {
   AddBinCommand,
@@ -51,11 +51,12 @@ export function handleUpdateBin(command: UpdateBinCommand): CommandResult<void, 
   const store = useLayoutStore.getState();
   const { id, updates } = command.payload;
 
+  // Fail fast if the bin is gone. Previously the handler fell through to
+  // `store.updateBin` with no `previous` capture and would have emitted no
+  // event even on a hypothetical success — a silent audit gap.
   const existingBin = store.layout.bins.find((b) => b.id === id);
   if (!existingBin) {
-    const storeResult = store.updateBin(id, updates);
-    if (isErr(storeResult)) return err(storeResult.error);
-    return ok({ value: undefined, events: [] });
+    return err(layoutInvalidOperation('updateBin', `Bin ${id} not found`));
   }
 
   const previous = capturePrevious(existingBin, updates);

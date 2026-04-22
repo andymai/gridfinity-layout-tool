@@ -146,18 +146,19 @@ describe('Bin Handlers', () => {
       }
     });
 
-    it('returns error when bin not found', () => {
-      mockStore.updateBin.mockReturnValueOnce({
-        ok: false,
-        error: { code: 'LAYOUT_INVALID_OPERATION' },
-      });
+    it('returns error when bin not found without touching the store', () => {
       const cmd = createCommand('bin.update', {
         id: binId('nonexistent'),
         updates: { x: 1 },
       });
 
       const result = handleUpdateBin(cmd);
+
       expect(isErr(result)).toBe(true);
+      // Must not call updateBin when the bin is missing — previously the
+      // handler fell through, mutated on the assumption of success, and
+      // returned ok with an empty events array (silent audit gap).
+      expect(mockStore.updateBin).not.toHaveBeenCalled();
     });
   });
 

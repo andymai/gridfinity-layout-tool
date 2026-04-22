@@ -3,7 +3,7 @@
  */
 
 import { useLayoutStore } from '@/core/store/layout';
-import { ok, err, isErr } from '@/core/result';
+import { ok, err, isErr, layoutInvalidOperation } from '@/core/result';
 import { STAGING_ID } from '@/core/constants';
 import type { CommandResult } from '../types';
 import type {
@@ -42,11 +42,10 @@ export function handleUpdateLayer(command: UpdateLayerCommand): CommandResult<vo
   const store = useLayoutStore.getState();
   const { id, updates } = command.payload;
 
+  // Fail fast if the layer is missing (symmetry with handleUpdateBin).
   const existing = store.layout.layers.find((l) => l.id === id);
   if (!existing) {
-    const result = store.updateLayer(id, updates);
-    if (isErr(result)) return err(result.error);
-    return ok({ value: undefined, events: [] });
+    return err(layoutInvalidOperation('updateLayer', `Layer ${id} not found`));
   }
 
   const previous = capturePrevious(existing, updates);

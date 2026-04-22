@@ -81,8 +81,12 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
     case 'layer.deleted': {
       const deletedLayerId = event.payload.layer.id;
       next.layers = next.layers.filter((l) => l.id !== deletedLayerId);
-      // Store deletes bins on the layer (not staging displacement)
-      next.bins = next.bins.filter((b) => b.layerId !== deletedLayerId);
+      // Match store behavior (layerActions.ts): bins on the deleted layer are
+      // displaced to staging, not removed. Prior versions of this case filtered
+      // the bins out, which silently lost data during replay-based debugging.
+      next.bins = next.bins.map((b) =>
+        b.layerId === deletedLayerId ? { ...b, layerId: STAGING_ID } : b
+      );
       break;
     }
 

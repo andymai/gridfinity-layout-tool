@@ -51,9 +51,9 @@ export function registerMigration(
  */
 export function migrateEvent(event: DomainEvent): DomainEvent {
   const eventType = event.type;
-  const currentVersion = (
-    CURRENT_EVENT_VERSIONS as Readonly<Record<string, number | undefined>>
-  )[eventType];
+  const currentVersion = (CURRENT_EVENT_VERSIONS as Readonly<Record<string, number | undefined>>)[
+    eventType
+  ];
 
   // Unknown event type (e.g., removed from the codebase) — return as-is
   if (currentVersion === undefined) return event;
@@ -65,24 +65,31 @@ export function migrateEvent(event: DomainEvent): DomainEvent {
   if (eventVersion >= currentVersion) return event;
 
   let migrated: unknown = event;
-  let reachedVersion = eventVersion;
   for (let v = eventVersion; v < currentVersion; v++) {
     const key = migrationKey(eventType, v, v + 1);
     const fn = migrationRegistry.get(key);
-    if (fn) {
-      migrated = fn(migrated);
-      reachedVersion = v + 1;
-    } else {
-      // Gap in migration chain — stop at the last successfully migrated version
-      break;
+    if (!fn) {
+      // Gap in the migration chain. Previously this silently stopped at the
+      // last successful step AND stamped the partial version, which meant the
+      // same event looped through a broken migration on every read. Instead,
+      // log loudly and return the ORIGINAL event with its original version
+      // untouched — any earlier v→v+1 steps that succeeded in this call are
+      // also discarded, because persisting a partially-migrated event at a
+      // bogus intermediate version is worse than a fresh retry next time.
+      // Callers can detect `schemaVersion !== currentVersion` to handle the
+      // inconsistency.
+      console.error(
+        `[migrations] Missing migration ${eventType} v${String(v)}→v${String(v + 1)}; event returned unmigrated at v${String(eventVersion)} (any earlier migration steps completed in this call were also discarded).`
+      );
+      return event;
     }
+    migrated = fn(migrated);
   }
 
-  // Only stamp schemaVersion if migrations actually ran or we're already current
   const result = migrated as DomainEvent;
   return {
     ...result,
-    meta: { ...result.meta, schemaVersion: reachedVersion },
+    meta: { ...result.meta, schemaVersion: currentVersion },
   };
 }
 
