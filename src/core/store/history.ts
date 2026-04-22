@@ -38,6 +38,17 @@ export function captureSelectionSnapshot(): SelectionSnapshot {
  * A snapshotted ID that no longer exists in the restored layout falls back to
  * the same pruning logic used before snapshots were captured.
  */
+/**
+ * Fallback active-layer id when the snapshotted/current id is no longer in
+ * the restored layout. Matches `handleRestoreLayout` in restoreHandlers.ts:
+ * use the last layer in data order (= top layer in the UI, since the UI
+ * reverses via `getDisplayLayers()`). New bins typically land on the top
+ * layer, so this is the least-surprising fallback.
+ */
+function fallbackActiveLayerId(restoredLayout: Layout): LayerId {
+  return restoredLayout.layers[restoredLayout.layers.length - 1].id;
+}
+
 function restoreSelectionFromSnapshot(restoredLayout: Layout, snapshot: SelectionSnapshot): void {
   const binIds = new Set(restoredLayout.bins.map((b) => b.id));
   const layerIds = new Set(restoredLayout.layers.map((l) => l.id));
@@ -46,7 +57,7 @@ function restoreSelectionFromSnapshot(restoredLayout: Layout, snapshot: Selectio
   const activeLayerId =
     layerIds.has(snapshot.activeLayerId) || restoredLayout.layers.length === 0
       ? snapshot.activeLayerId
-      : restoredLayout.layers[0].id;
+      : fallbackActiveLayerId(restoredLayout);
 
   const activeCategoryId =
     categoryIds.has(snapshot.activeCategoryId) || restoredLayout.categories.length === 0
@@ -98,7 +109,7 @@ function pruneStaleSelections(restoredLayout: Layout): void {
   }
 
   if (!layerIds.has(selectionState.activeLayerId) && restoredLayout.layers.length > 0) {
-    updates.activeLayerId = restoredLayout.layers[0].id;
+    updates.activeLayerId = fallbackActiveLayerId(restoredLayout);
   }
 
   if (!categoryIds.has(selectionState.activeCategoryId) && restoredLayout.categories.length > 0) {

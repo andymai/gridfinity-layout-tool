@@ -72,11 +72,14 @@ export function migrateEvent(event: DomainEvent): DomainEvent {
       // Gap in the migration chain. Previously this silently stopped at the
       // last successful step AND stamped the partial version, which meant the
       // same event looped through a broken migration on every read. Instead,
-      // log loudly and return the event with its original version untouched
-      // so callers can still detect `schemaVersion !== currentVersion` and
-      // handle or surface the inconsistency.
+      // log loudly and return the ORIGINAL event with its original version
+      // untouched — any earlier v→v+1 steps that succeeded in this call are
+      // also discarded, because persisting a partially-migrated event at a
+      // bogus intermediate version is worse than a fresh retry next time.
+      // Callers can detect `schemaVersion !== currentVersion` to handle the
+      // inconsistency.
       console.error(
-        `[migrations] Missing migration ${eventType} v${String(v)}→v${String(v + 1)}; event returned unmigrated at v${String(eventVersion)}.`
+        `[migrations] Missing migration ${eventType} v${String(v)}→v${String(v + 1)}; event returned unmigrated at v${String(eventVersion)} (any earlier migration steps completed in this call were also discarded).`
       );
       return event;
     }
