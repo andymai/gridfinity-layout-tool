@@ -143,7 +143,7 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
 
   wallCutouts: {
     key: 'wallCutouts',
-    label: 'Wall Cutouts',
+    label: 'Wall cutouts',
     isEnabled: (p) => p.walls.enabled,
     apply: (p, enabled) => ({ walls: { ...p.walls, enabled } }),
   },

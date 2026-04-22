@@ -14,7 +14,7 @@ describe('WallCutoutsSection', () => {
 
   it('renders wall cutouts toggle', () => {
     render(<WallCutoutsSection />);
-    const labels = screen.getAllByText('Wall Cutouts');
+    const labels = screen.getAllByText('Wall cutouts');
     expect(labels.length).toBeGreaterThanOrEqual(1);
   });
 
