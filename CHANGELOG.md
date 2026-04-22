@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.47.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.0...gridfinity-layout-tool-v4.47.1) (2026-04-22)
+
+
+### Bug Fixes
+
+* **storage:** address review findings from [#1432](https://github.com/andymai/gridfinity-layout-tool/issues/1432) ([#1434](https://github.com/andymai/gridfinity-layout-tool/issues/1434)) ([6b137c2](https://github.com/andymai/gridfinity-layout-tool/commit/6b137c29a661b71e7f084438ea57d3860a1d74cf))
+* **storage:** four atomicity bugs that leak data or corrupt state ([#1432](https://github.com/andymai/gridfinity-layout-tool/issues/1432)) ([5db2c13](https://github.com/andymai/gridfinity-layout-tool/commit/5db2c13dc63500c23e4cd7facc6ac9305520ec37))
+
 ## [4.47.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.46.1...gridfinity-layout-tool-v4.47.0) (2026-04-21)
 
 
