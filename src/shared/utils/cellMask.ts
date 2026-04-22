@@ -249,6 +249,14 @@ export interface Point2 {
 export type MaskLoop = readonly Point2[];
 
 /**
+ * Per-mask polygon cache — keyed by reference so pure-function callers
+ * (socket/feature builders, wall patterns, mask drawing) skip the O(cells)
+ * edge scan and loop chaining on repeated calls within one generation.
+ * CellMask is declared immutable, so reference identity is sufficient.
+ */
+const maskToPolygonCache = new WeakMap<CellMask, readonly MaskLoop[]>();
+
+/**
  * Convert a cell mask to its polygon loops: one outer (CCW) plus zero or
  * more inner holes (CW). Origin at (0, 0) in grid units (NOT mm — caller
  * multiplies by `gridUnitMm`). Vertices land only at corners where the
@@ -261,10 +269,16 @@ export type MaskLoop = readonly Point2[];
  * The loop that encloses every other loop is the outer boundary; the
  * rest are holes.
  *
+ * Result is memoized on the mask reference — callers that mutate `cells`
+ * after first computing polygons will see stale results (the interface
+ * declares `cells` readonly to prevent this).
+ *
  * Preconditions: `validateMask(mask)` must return null. Passing an
  * invalid mask yields undefined results.
  */
 export function maskToPolygon(mask: CellMask): readonly MaskLoop[] {
+  const cached = maskToPolygonCache.get(mask);
+  if (cached) return cached;
   const { cols, rows, cells } = mask;
   const s = MASK_CELL_SIZE;
   const filled = (c: number, r: number): boolean =>
@@ -364,7 +378,9 @@ export function maskToPolygon(mask: CellMask): readonly MaskLoop[] {
     throw new Error('maskToPolygon found no outer (CCW) loop');
   }
   const holes = loops.filter((_, i) => i !== outerIdx);
-  return [loops[outerIdx], ...holes];
+  const result: readonly MaskLoop[] = [loops[outerIdx], ...holes];
+  maskToPolygonCache.set(mask, result);
+  return result;
 }
 
 /**

@@ -68,6 +68,16 @@ interface PolygonEdgeRaw {
 }
 
 /**
+ * Per-mask side cache — feature builders (wall cutouts, handles, wall
+ * patterns) and `wallPatterns.collectPolygonWallSegments` all invoke
+ * `findPolygonEdgeForSide` once per cardinal direction. A single generation
+ * produces up to ~16 redundant calls for the same (mask, side) pair; this
+ * WeakMap collapses them to one scan per side.
+ */
+type SideEdgeResults = Partial<Record<WallSideKey, PolygonEdgeRaw | null>>;
+const maskSideEdgeCache = new WeakMap<CellMask, SideEdgeResults>();
+
+/**
  * Find the polygon edge that best represents `side` on a custom mask.
  *
  * Returns null when no polygon edge faces the requested direction — which
@@ -78,9 +88,19 @@ interface PolygonEdgeRaw {
  * Exported for unit testing; production code should prefer `resolvePolygonSideGeometry`.
  */
 export function findPolygonEdgeForSide(mask: CellMask, side: WallSideKey): PolygonEdgeRaw | null {
+  const cached = maskSideEdgeCache.get(mask);
+  if (cached && side in cached) {
+    return cached[side] ?? null;
+  }
+
   const loops = maskToPolygon(mask);
   const outer = loops[0];
-  if (outer.length < 3) return null;
+  if (outer.length < 3) {
+    const entry = cached ?? {};
+    entry[side] = null;
+    maskSideEdgeCache.set(mask, entry);
+    return null;
+  }
 
   const config = SIDE_CONFIG[side];
   let best: PolygonEdgeRaw | null = null;
@@ -119,6 +139,9 @@ export function findPolygonEdgeForSide(mask: CellMask, side: WallSideKey): Polyg
     }
   }
 
+  const entry = cached ?? {};
+  entry[side] = best;
+  maskSideEdgeCache.set(mask, entry);
   return best;
 }
 
