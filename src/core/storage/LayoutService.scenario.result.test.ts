@@ -247,22 +247,22 @@ describe('Result-based storage functions', () => {
   });
 
   describe('migrateFromLegacyStorageResult', () => {
-    it('returns Ok with null when no legacy layout exists', () => {
+    it('returns Ok with null when no legacy layout exists', async () => {
       vi.mocked(backend.loadSync).mockReturnValue(null);
 
-      const result = migrateFromLegacyStorageResult();
+      const result = await migrateFromLegacyStorageResult();
 
       const value = expectOk(result);
       expect(value).toBeNull();
     });
 
-    it('returns Ok with migrated library on successful migration', () => {
+    it('returns Ok with migrated library on successful migration', async () => {
       vi.mocked(backend.loadSync).mockReturnValue(defaultLayout);
       vi.mocked(backend.saveSync).mockReturnValue(ok(undefined));
       vi.mocked(backend.saveSyncGeneric).mockReturnValue(ok(undefined));
       vi.mocked(backend.deleteSync).mockImplementation(() => {});
 
-      const result = migrateFromLegacyStorageResult();
+      const result = await migrateFromLegacyStorageResult();
 
       const value = expectOk(result);
       if (value) {
@@ -271,21 +271,21 @@ describe('Result-based storage functions', () => {
       }
     });
 
-    it('returns Err with corrupted error for invalid legacy layout', () => {
+    it('returns Err with corrupted error for invalid legacy layout', async () => {
       vi.mocked(backend.loadSync).mockReturnValue({
         invalid: 'data',
       } as Layout);
 
-      const result = migrateFromLegacyStorageResult();
+      const result = await migrateFromLegacyStorageResult();
 
       expect(expectErr(result).code).toBe('STORAGE_CORRUPTED');
     });
 
-    it('returns Err with quota exceeded on storage full', () => {
+    it('returns Err with quota exceeded on storage full', async () => {
       vi.mocked(backend.loadSync).mockReturnValue(defaultLayout);
       vi.mocked(backend.saveSync).mockReturnValue(err(storageQuotaExceeded()));
 
-      const result = migrateFromLegacyStorageResult();
+      const result = await migrateFromLegacyStorageResult();
 
       expect(expectErr(result).code).toBe('STORAGE_QUOTA_EXCEEDED');
     });

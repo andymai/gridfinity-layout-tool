@@ -84,7 +84,11 @@ function createEventStore(): EventStore {
       const db = await getDb();
       const tx = db.transaction(EVENTS_STORE, 'readwrite');
       for (const event of events) {
-        await tx.store.add(event);
+        // `put` (upsert) instead of `add` so retry-queue replays of an
+        // already-persisted event are idempotent — `add` throws
+        // ConstraintError on duplicate keyPath, which the retry queue
+        // would misinterpret as a transient failure and eventually drop.
+        await tx.store.put(event);
       }
       await tx.done;
     },

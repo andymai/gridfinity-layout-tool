@@ -380,16 +380,6 @@ export async function deleteLayoutWithEntry(
     return err(storageNotFound(getLayoutStorageKey(layoutId)));
   }
 
-  const deleteResult = await deleteLayoutInternal(layoutId);
-  if (isErr(deleteResult)) {
-    return deleteResult;
-  }
-
-  // 2b. Delete associated snapshots (fire-and-forget, non-critical)
-  void deleteSnapshotsForLayout(layoutId).catch(() => {
-    // Snapshot cleanup is best-effort; orphaned snapshots don't cause issues
-  });
-
   const remainingEntries = library.entries.filter((e) => e.id !== layoutId);
   let newActiveId: string | undefined;
 
@@ -406,12 +396,26 @@ export async function deleteLayoutWithEntry(
     entries: remainingEntries,
   };
 
+  // Save the updated library BEFORE deleting the blob. If the library save
+  // fails, the blob is still intact and the library still references it, so
+  // the user can retry cleanly. The reverse ordering (blob first) leaves the
+  // library pointing to a deleted blob if the library save fails.
   const librarySaveResult = await saveLibraryAsync(updatedLibrary);
   if (isErr(librarySaveResult)) {
-    // Layout already deleted, but library save failed
-    // This leaves us in an inconsistent state, but the entry will be cleaned up on next load
     return librarySaveResult;
   }
+
+  const deleteResult = await deleteLayoutInternal(layoutId);
+  if (isErr(deleteResult)) {
+    // Library already excludes this layout, so it will be reconciled as an
+    // orphan on next load (no user-visible dangling reference).
+    return deleteResult;
+  }
+
+  // Delete associated snapshots (fire-and-forget, non-critical)
+  void deleteSnapshotsForLayout(layoutId).catch(() => {
+    // Snapshot cleanup is best-effort; orphaned snapshots don't cause issues
+  });
 
   return ok({
     library: updatedLibrary,

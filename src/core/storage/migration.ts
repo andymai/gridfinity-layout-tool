@@ -285,7 +285,11 @@ export async function migrateAllLayoutsToIndexedDBResult(): Promise<
   // Get existing IndexedDB layout IDs to avoid overwriting
   const indexedDBIds = new Set(await backend.getIndexedDBLayoutIds());
 
-  // Migrate each layout
+  // Migrate each layout. Track failures so the migration flag is only set
+  // when every layout moved successfully — otherwise a partial failure would
+  // permanently block retry and silently strand the remaining localStorage
+  // layouts.
+  let failureCount = 0;
   for (const layoutId of localStorageIds) {
     // Skip if already in IndexedDB
     if (indexedDBIds.has(layoutId)) {
@@ -297,12 +301,16 @@ export async function migrateAllLayoutsToIndexedDBResult(): Promise<
 
     if (isOk(migrationResult)) {
       stats.migratedCount++;
+    } else {
+      failureCount++;
     }
-    // Note: Individual failures are silently skipped - use legacy API for error details
   }
 
-  // Set migration flag
-  window.localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
+  // Only mark migration complete when every layout succeeded. Mirrors the
+  // non-Result variant above.
+  if (failureCount === 0) {
+    window.localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
+  }
 
   return ok(stats);
 }

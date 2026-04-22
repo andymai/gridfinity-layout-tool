@@ -533,6 +533,20 @@ describe('deleteLayoutWithEntry', () => {
 
     expect(backend.deleteAsync).toHaveBeenCalledWith('gridfinity-layout-layout-2');
   });
+
+  it('does not delete blob when library save fails (leaves recoverable state)', async () => {
+    const library = createTestLibrary([
+      createTestEntry('layout-1', 'Layout 1'),
+      createTestEntry('layout-2', 'Layout 2'),
+    ]);
+    vi.mocked(indexedDBBackend.saveLibraryIndex).mockRejectedValueOnce(new Error('Storage full'));
+
+    const result = await deleteLayoutWithEntry('layout-2', library);
+
+    expect(expectErr(result).code).toBeDefined();
+    // Blob delete must not have been called — the user's data is still reachable.
+    expect(backend.deleteAsync).not.toHaveBeenCalledWith('gridfinity-layout-layout-2');
+  });
 });
 
 // === duplicateLayoutEntry Tests ===

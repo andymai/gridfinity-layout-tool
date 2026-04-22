@@ -320,37 +320,37 @@ describe('storage-library', () => {
   });
 
   describe('migrateFromLegacyStorage', () => {
-    it('returns null if no legacy layout', () => {
-      const result = migrateFromLegacyStorage();
+    it('returns null if no legacy layout', async () => {
+      const result = await migrateFromLegacyStorage();
 
       expect(result).toBeNull();
     });
 
-    it('migrates valid legacy layout to library', () => {
+    it('migrates valid legacy layout to library', async () => {
       const legacyLayout = createTestLayout('Legacy Layout');
       localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(legacyLayout));
 
-      const library = migrateFromLegacyStorage();
+      const library = await migrateFromLegacyStorage();
 
       expect(library).not.toBeNull();
       expect(library!.entries).toHaveLength(1);
       expect(library!.entries[0].name).toBe('Legacy Layout');
     });
 
-    it('removes legacy key after migration', () => {
+    it('removes legacy key after migration', async () => {
       const legacyLayout = createTestLayout();
       localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(legacyLayout));
 
-      migrateFromLegacyStorage();
+      await migrateFromLegacyStorage();
 
       expect(localStorage.getItem(LEGACY_STORAGE_KEY)).toBeNull();
     });
 
-    it('saves migrated layout under new key', () => {
+    it('saves migrated layout under new key', async () => {
       const legacyLayout = createTestLayout('Legacy');
       localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(legacyLayout));
 
-      const library = migrateFromLegacyStorage();
+      const library = await migrateFromLegacyStorage();
 
       // Should be able to load it with new system
       const loaded = loadLayoutSync(library!.activeLayoutId);
@@ -358,10 +358,10 @@ describe('storage-library', () => {
       expect(loaded!.name).toBe('Legacy');
     });
 
-    it('returns null for corrupted legacy layout', () => {
+    it('returns null for corrupted legacy layout', async () => {
       localStorage.setItem(LEGACY_STORAGE_KEY, 'not valid json');
 
-      const result = migrateFromLegacyStorage();
+      const result = await migrateFromLegacyStorage();
 
       expect(result).toBeNull();
     });
