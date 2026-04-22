@@ -2,8 +2,8 @@
  * Parameter panel for the standalone baseplate page.
  *
  * Top-to-bottom information hierarchy:
- * 1. Dimensions: dual-emphasis hero (grid units + mm) + match-drawer toggle
- *    + grid steppers + spatial padding schematic. Single unified section.
+ * 1. Dimensions: sync-with-layout toggle + grid steppers (the unit readout)
+ *    + click-to-edit mm summary + spatial padding schematic. Single unified section.
  * 2. Base: magnet holes, dovetails (when split), corner radius
  * 3. Print Settings: grid unit, print bed size (rarely changed)
  * 4. Split pieces mini-map (only when baseplate is split across print beds)
@@ -15,7 +15,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
-import { ChevronDownIcon } from '@/design-system/Icon';
+import { ChevronDownIcon, RulerIcon } from '@/design-system/Icon';
 import { Stepper } from '@/design-system/Stepper';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
@@ -187,7 +187,7 @@ export function BaseplatePanel() {
                 is grid + padding, not grid alone. */}
             <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 pt-1 text-content-tertiary">
               <div className="flex items-center gap-1">
-                <RulerIcon />
+                <RulerIcon size="xs" className="flex-shrink-0" />
                 <EditableDimensions
                   widthMm={totalWidthMm}
                   depthMm={totalDepthMm}
@@ -741,25 +741,5 @@ function GridDimensionStepper({
         aria-label={label}
       />
     </div>
-  );
-}
-
-/** Tiny ruler glyph to precede the mm summary — matches the layout-mode drawer dimensions pattern. */
-function RulerIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="w-3.5 h-3.5 flex-shrink-0"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2"
-      />
-    </svg>
   );
 }

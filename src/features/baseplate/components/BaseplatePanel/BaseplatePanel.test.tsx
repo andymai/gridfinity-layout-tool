@@ -138,6 +138,29 @@ describe('BaseplatePanel', () => {
     expect(editBtn).toHaveTextContent(/176\s*×\s*252\s*mm/);
   });
 
+  it('hides the "incl. padding" note when all padding is zero', () => {
+    render(<BaseplatePanel />);
+    expect(screen.queryByText('baseplate.inclPadding')).toBeNull();
+  });
+
+  it('shows the "incl. padding" note when any padding side is non-zero', () => {
+    mockLayoutState.layout.baseplateParams = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingLeft: 4,
+    };
+    render(<BaseplatePanel />);
+    expect(screen.getByText('baseplate.inclPadding')).toBeInTheDocument();
+  });
+
+  it('shows the "incl. padding" note when only back padding is non-zero', () => {
+    mockLayoutState.layout.baseplateParams = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingBack: 2.5,
+    };
+    render(<BaseplatePanel />);
+    expect(screen.getByText('baseplate.inclPadding')).toBeInTheDocument();
+  });
+
   it('renders print settings section', () => {
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.sectionPrintSettings')).toBeInTheDocument();

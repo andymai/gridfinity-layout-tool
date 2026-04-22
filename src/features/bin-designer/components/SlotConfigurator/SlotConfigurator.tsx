@@ -11,6 +11,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '@/features/bin-designer/constants';
 import { StepperControl } from '@/shared/components/StepperControl';
+import { RulerIcon } from '@/design-system/Icon';
 import {
   calculateSlotPositions,
   calculateDividerLength,
@@ -319,19 +320,7 @@ export function SlotConfigurator() {
 
       {/* Calculated divider dimensions */}
       <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
-        <svg
-          className="h-3.5 w-3.5 flex-shrink-0"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M4 12h16M4 12v-2M8 12v-1M12 12v-2M16 12v-1M20 12v-2"
-          />
-        </svg>
+        <RulerIcon size="xs" />
         <span className="tabular-nums">
           {dividerLength !== null
             ? t('binDesigner.dividerDimensions', {
