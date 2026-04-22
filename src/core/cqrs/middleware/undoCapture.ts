@@ -36,13 +36,20 @@ export function undoCaptureMiddleware(
 
   // Skip undo capture for replayed, cascaded, and collab commands.
   //
-  // `collab` is important here: when Liveblocks delivers a remote peer's
-  // mutation, it arrives as a dispatched command. With a global `isBatching`
-  // flag (below), a remote command landing mid-way through a local user's
-  // `batch()` would be silently absorbed into the local user's undo slot —
-  // so `undo` would revert *both* the local edit and a remote peer's edit
-  // the local user never made. Remote mutations should never produce a
-  // local undo entry at all; let them pass through untouched.
+  // `collab` was added here because `CommandSource` already reserves it for
+  // remote Liveblocks mutations. Today remote mutations bypass the command
+  // bus entirely (useCollabSync applies them via useLayoutStore.importLayout),
+  // so this is defense-in-depth for the day collab commands flow through
+  // the pipeline — without the skip they would pick up their own undo
+  // entry, and a local undo would revert a remote peer's edit.
+  //
+  // NOTE: if a collab command is dispatched *during* a local `batch()`, the
+  // skip here only prevents a per-command entry. The batch itself still
+  // captures a pre-batch snapshot, so the undo-the-batch path would ALSO
+  // revert any mutations that landed during the batch, including a collab
+  // one. Full batch isolation of remote commands needs a separate change
+  // (e.g. re-snapshot mid-batch on remote mutation); the safe interim
+  // behavior is that collab mutations bypass this path entirely.
   if (
     command.meta.source === 'replay' ||
     command.meta.source === 'cascade' ||

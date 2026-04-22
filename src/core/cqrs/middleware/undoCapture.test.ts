@@ -106,37 +106,36 @@ describe('undoCaptureMiddleware', () => {
     expect(history.past).toHaveLength(0);
   });
 
-  it('does not absorb a collab command arriving mid-batch into the local undo slot', () => {
-    // Regression: previously a remote mutation arriving during a local
-    // batch() would be silently swallowed by the global isBatching flag,
-    // producing a single undo entry that also reverted the remote change.
+  it('collab command outside any batch does not push its own undo entry', () => {
+    // Without the `source === 'collab'` skip, a remote mutation dispatched
+    // through the command bus outside a batch would gain its own undo slot
+    // — so a local user's next undo would silently revert a remote peer's
+    // edit the user never made. With the skip, collab commands pass through
+    // without contributing to the local history stack.
+    //
+    // NOTE: this does NOT prevent a collab command dispatched DURING a
+    // local `batch()` from being reverted when the user undoes the batch
+    // — the batch snapshot captures pre-batch state. Full batch isolation
+    // of remote commands is a separate, bigger change. Today remote
+    // mutations bypass the command bus via useLayoutStore.importLayout,
+    // so the batch scenario is latent rather than live.
     const layout = createTestLayout({ name: 'Original' });
     useLayoutStore.setState({ layout });
 
     const mutatingNext: NextFn<Command, DomainEvent> = () => {
       useLayoutStore.setState({
-        layout: { ...useLayoutStore.getState().layout, name: 'Local edit' },
+        layout: { ...useLayoutStore.getState().layout, name: 'Remote change' },
       });
       return ok({ value: undefined, events: [] }) as CommandResult<unknown, DomainEvent>;
     };
 
-    batch(() => {
-      // Local user action inside the batch.
-      undoCaptureMiddleware(createTestCommand({ source: 'user' }), mutatingNext);
-      // Remote mutation arriving during the local batch — must NOT push its
-      // own entry and must NOT be absorbed into the local batch's undo slot.
-      const remoteResult = undoCaptureMiddleware(
-        createTestCommand({ source: 'collab' }),
-        mutatingNext
-      );
-      expect(remoteResult.ok).toBe(true);
-    });
+    const result = undoCaptureMiddleware(createTestCommand({ source: 'collab' }), mutatingNext);
 
-    const history = useHistoryStore.getState();
-    // Exactly one entry — for the local batch. The remote command did not
-    // contribute an undo entry (correctly) and did not prevent the batch
-    // from pushing its own snapshot.
-    expect(history.past).toHaveLength(1);
+    expect(result.ok).toBe(true);
+    // Store was mutated by the command pipeline…
+    expect(useLayoutStore.getState().layout.name).toBe('Remote change');
+    // …but the collab command did NOT produce a local undo entry.
+    expect(useHistoryStore.getState().past).toHaveLength(0);
   });
 
   it('batch() groups multiple dispatches into one undo snapshot', () => {
