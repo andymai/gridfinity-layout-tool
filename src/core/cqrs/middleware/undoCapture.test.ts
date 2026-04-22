@@ -93,6 +93,52 @@ describe('undoCaptureMiddleware', () => {
     expect(history.past).toHaveLength(0);
   });
 
+  it('skips undo capture for collab commands (remote Liveblocks mutations)', () => {
+    const layout = createTestLayout();
+    useLayoutStore.setState({ layout });
+
+    const command = createTestCommand({ source: 'collab' });
+    const result = undoCaptureMiddleware(command, successNext());
+
+    expect(result.ok).toBe(true);
+
+    const history = useHistoryStore.getState();
+    expect(history.past).toHaveLength(0);
+  });
+
+  it('does not absorb a collab command arriving mid-batch into the local undo slot', () => {
+    // Regression: previously a remote mutation arriving during a local
+    // batch() would be silently swallowed by the global isBatching flag,
+    // producing a single undo entry that also reverted the remote change.
+    const layout = createTestLayout({ name: 'Original' });
+    useLayoutStore.setState({ layout });
+
+    const mutatingNext: NextFn<Command, DomainEvent> = () => {
+      useLayoutStore.setState({
+        layout: { ...useLayoutStore.getState().layout, name: 'Local edit' },
+      });
+      return ok({ value: undefined, events: [] }) as CommandResult<unknown, DomainEvent>;
+    };
+
+    batch(() => {
+      // Local user action inside the batch.
+      undoCaptureMiddleware(createTestCommand({ source: 'user' }), mutatingNext);
+      // Remote mutation arriving during the local batch — must NOT push its
+      // own entry and must NOT be absorbed into the local batch's undo slot.
+      const remoteResult = undoCaptureMiddleware(
+        createTestCommand({ source: 'collab' }),
+        mutatingNext
+      );
+      expect(remoteResult.ok).toBe(true);
+    });
+
+    const history = useHistoryStore.getState();
+    // Exactly one entry — for the local batch. The remote command did not
+    // contribute an undo entry (correctly) and did not prevent the batch
+    // from pushing its own snapshot.
+    expect(history.past).toHaveLength(1);
+  });
+
   it('batch() groups multiple dispatches into one undo snapshot', () => {
     const layout = createTestLayout({ name: 'Original' });
     useLayoutStore.setState({ layout });

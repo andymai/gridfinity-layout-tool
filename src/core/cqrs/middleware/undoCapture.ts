@@ -34,8 +34,20 @@ export function undoCaptureMiddleware(
     return next(command);
   }
 
-  // Skip undo capture for replayed and cascaded commands
-  if (command.meta.source === 'replay' || command.meta.source === 'cascade') {
+  // Skip undo capture for replayed, cascaded, and collab commands.
+  //
+  // `collab` is important here: when Liveblocks delivers a remote peer's
+  // mutation, it arrives as a dispatched command. With a global `isBatching`
+  // flag (below), a remote command landing mid-way through a local user's
+  // `batch()` would be silently absorbed into the local user's undo slot —
+  // so `undo` would revert *both* the local edit and a remote peer's edit
+  // the local user never made. Remote mutations should never produce a
+  // local undo entry at all; let them pass through untouched.
+  if (
+    command.meta.source === 'replay' ||
+    command.meta.source === 'cascade' ||
+    command.meta.source === 'collab'
+  ) {
     return next(command);
   }
 
