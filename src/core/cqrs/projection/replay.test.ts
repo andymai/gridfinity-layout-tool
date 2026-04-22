@@ -4,6 +4,7 @@ import type { Layout, Bin } from '@/core/types';
 import { binId, layerId, categoryId, layoutId } from '@/core/types';
 import { eventId, correlationId, commandId } from '../types';
 import type { DomainEvent } from '../events';
+import { STAGING_ID } from '@/core/constants';
 
 const baseMeta = {
   id: eventId('evt_1'),
@@ -103,7 +104,7 @@ describe('applyEvent', () => {
     expect(result.layers).toHaveLength(2);
   });
 
-  it('applies layer.deleted — removes layer and its bins', () => {
+  it('applies layer.deleted — removes layer and moves its bins to staging', () => {
     const bin1 = makeBin({ id: binId('bin_1'), layerId: layerId('layer_1') });
     const bin2 = makeBin({ id: binId('bin_2'), layerId: layerId('layer_2') });
     const layout = makeLayout([bin1, bin2]);
@@ -113,7 +114,7 @@ describe('applyEvent', () => {
       type: 'layer.deleted',
       payload: {
         layer: { id: layerId('layer_1'), name: 'Layer 1', height: 1 },
-        deletedBinCount: 0,
+        deletedBinCount: 1,
       },
       meta: baseMeta,
     };
@@ -121,9 +122,14 @@ describe('applyEvent', () => {
     const result = applyEvent(layout, event);
     expect(result.layers).toHaveLength(1);
     expect(result.layers[0].id).toBe('layer_2');
-    // Bins on deleted layer are removed, not displaced to staging
-    expect(result.bins).toHaveLength(1);
-    expect(result.bins[0].id).toBe('bin_2');
+    // Match the live store (layerActions.ts): bins on the deleted layer are
+    // displaced to staging, not deleted. Replay must preserve this or users
+    // debugging via event replay silently lose bins that the real user still has.
+    expect(result.bins).toHaveLength(2);
+    const displaced = result.bins.find((b) => b.id === 'bin_1');
+    expect(displaced?.layerId).toBe(STAGING_ID);
+    const untouched = result.bins.find((b) => b.id === 'bin_2');
+    expect(untouched?.layerId).toBe('layer_2');
   });
 
   it('applies category.deleted — removes category only', () => {

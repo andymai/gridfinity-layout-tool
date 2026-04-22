@@ -547,6 +547,28 @@ describe('deleteLayoutWithEntry', () => {
     // Blob delete must not have been called — the user's data is still reachable.
     expect(backend.deleteAsync).not.toHaveBeenCalledWith('gridfinity-layout-layout-2');
   });
+
+  it('returns ok with updated library when blob delete fails after library save succeeds', async () => {
+    // Library has already been persisted, so the deletion is user-visible
+    // regardless. The caller needs the updated library (and newActiveId if
+    // the deleted layout was active) to keep in-memory state in sync with
+    // storage; an orphan blob is harmless and gets reconciled on next load.
+    const library = createTestLibrary([
+      createTestEntry('layout-1', 'Layout 1'),
+      createTestEntry('layout-2', 'Layout 2'),
+    ]);
+    library.activeLayoutId = 'layout-1';
+    vi.mocked(backend.deleteAsync).mockRejectedValueOnce(new Error('Blob gone'));
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const result = await deleteLayoutWithEntry('layout-1', library);
+
+    const value = expectOk(result);
+    expect(value.newActiveId).toBe('layout-2');
+    expect(value.library.entries.map((e) => e.id)).toEqual(['layout-2']);
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
 });
 
 // === duplicateLayoutEntry Tests ===

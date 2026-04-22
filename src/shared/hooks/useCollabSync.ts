@@ -67,7 +67,15 @@ export function useCollabSync(): void {
   }, []);
 
   // Effect: Remote → Local sync
-  // When remote layout changes, update local store
+  // When remote layout changes, update local store.
+  //
+  // `localLayout` is intentionally NOT in the deps: it's only read during the
+  // one-time `pending` branch, and including it caused the effect to re-fire
+  // on every keystroke. That re-fire captured a possibly-stale `lastEditSource`
+  // snapshot from the previous render, which could race with a freshly-arrived
+  // remote update and overwrite an in-flight local edit. In the `pending`
+  // branch below we read `localLayout` directly from the store so we always
+  // get the freshest value.
   useEffect(() => {
     if (!remoteLayout) {
       return;
@@ -78,14 +86,17 @@ export function useCollabSync(): void {
     if (syncStateRef.current === 'pending') {
       syncStateRef.current = 'initializing';
 
+      // Read local layout fresh from the store, not from closure — that way
+      // this branch doesn't need `localLayout` in the effect's dep array.
+      const currentLocal = useLayoutStore.getState().layout;
       const remoteHasContent = layoutHasContent(remoteLayout);
-      const localHasContent = layoutHasContent(localLayout);
+      const localHasContent = layoutHasContent(currentLocal);
 
       // If local has content (from API fetch), push it to remote
       // This ensures API-fetched data takes precedence over potentially stale remote
       if (localHasContent) {
-        lastSyncedLayoutRef.current = localLayout;
-        updateRemoteLayout(localLayout);
+        lastSyncedLayoutRef.current = currentLocal;
+        updateRemoteLayout(currentLocal);
         // Move to ready state after a brief delay to let the push complete
         // Store timeout ID for cleanup on unmount
         initTimeoutRef.current = setTimeout(() => {
@@ -133,7 +144,7 @@ export function useCollabSync(): void {
     // Remote change detected - update local store
     lastSyncedLayoutRef.current = remoteLayout;
     importLayout(remoteLayout, undefined, 'remote');
-  }, [remoteLayout, lastEditSource, importLayout, localLayout, updateRemoteLayout]);
+  }, [remoteLayout, lastEditSource, importLayout, updateRemoteLayout]);
 
   // Effect: Local → Remote sync
   // When local layout changes, push to Liveblocks

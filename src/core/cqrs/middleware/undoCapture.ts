@@ -10,7 +10,7 @@
  */
 
 import { useLayoutStore } from '@/core/store/layout';
-import { useHistoryStore } from '@/core/store/history';
+import { useHistoryStore, captureSelectionSnapshot } from '@/core/store/history';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Command } from '../commands';
@@ -34,8 +34,27 @@ export function undoCaptureMiddleware(
     return next(command);
   }
 
-  // Skip undo capture for replayed and cascaded commands
-  if (command.meta.source === 'replay' || command.meta.source === 'cascade') {
+  // Skip undo capture for replayed, cascaded, and collab commands.
+  //
+  // `collab` was added here because `CommandSource` already reserves it for
+  // remote Liveblocks mutations. Today remote mutations bypass the command
+  // bus entirely (useCollabSync applies them via useLayoutStore.importLayout),
+  // so this is defense-in-depth for the day collab commands flow through
+  // the pipeline — without the skip they would pick up their own undo
+  // entry, and a local undo would revert a remote peer's edit.
+  //
+  // NOTE: if a collab command is dispatched *during* a local `batch()`, the
+  // skip here only prevents a per-command entry. The batch itself still
+  // captures a pre-batch snapshot, so the undo-the-batch path would ALSO
+  // revert any mutations that landed during the batch, including a collab
+  // one. Full batch isolation of remote commands needs a separate change
+  // (e.g. re-snapshot mid-batch on remote mutation); the safe interim
+  // behavior is that collab mutations bypass this path entirely.
+  if (
+    command.meta.source === 'replay' ||
+    command.meta.source === 'cascade' ||
+    command.meta.source === 'collab'
+  ) {
     return next(command);
   }
 
@@ -51,13 +70,17 @@ export function undoCaptureMiddleware(
   // Clone BEFORE next() — Immer produces a new state object on mutation,
   // so the pre-mutation reference stays immutable, but we need a deep copy
   // for the undo stack (the snapshot must survive future mutations).
+  // Selection is captured at the same moment so undo restores the user's
+  // activeLayerId/activeCategoryId/focus rather than silently resetting to
+  // `layers[0]` via post-hoc pruning.
   const layout = useLayoutStore.getState().layout;
   const snapshot = structuredClone(layout);
+  const selectionSnapshot = captureSelectionSnapshot();
 
   const result = next(command);
 
   if (isOk(result)) {
-    useHistoryStore.getState().push(snapshot, command.type);
+    useHistoryStore.getState().push(snapshot, command.type, selectionSnapshot);
     mlTracking.recordAction?.();
   }
 
@@ -97,6 +120,7 @@ export function batch<T>(fn: () => T): T {
 
   const layout = useLayoutStore.getState().layout;
   const snapshot = structuredClone(layout);
+  const selectionSnapshot = captureSelectionSnapshot();
 
   isBatching = true;
   batchCommandType = null;
@@ -106,7 +130,7 @@ export function batch<T>(fn: () => T): T {
     // Check if layout actually changed (Immer produces new reference on mutation)
     const currentLayout = useLayoutStore.getState().layout;
     if (currentLayout !== layout) {
-      useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown');
+      useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown', selectionSnapshot);
       mlTracking.recordAction?.();
     }
 
@@ -115,7 +139,7 @@ export function batch<T>(fn: () => T): T {
     // Push undo snapshot even on error so partial mutations can be reverted
     const currentLayout = useLayoutStore.getState().layout;
     if (currentLayout !== layout) {
-      useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown');
+      useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown', selectionSnapshot);
       mlTracking.recordAction?.();
     }
     throw e;

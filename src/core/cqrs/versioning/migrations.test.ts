@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import type { DomainEvent, DomainEventType } from '../events';
 import type { EventMeta } from '../types';
 import { eventId, commandId, correlationId } from '../types';
@@ -124,7 +124,8 @@ describe('migrateEvent', () => {
     CURRENT_EVENT_VERSIONS['category.added'] = original;
   });
 
-  it('stops at a gap in the migration chain and stamps the version actually reached', () => {
+  it('logs and returns the event unmigrated when the chain has a gap', () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const original = CURRENT_EVENT_VERSIONS['drawer.updated'];
     CURRENT_EVENT_VERSIONS['drawer.updated'] = 3;
 
@@ -142,11 +143,21 @@ describe('migrateEvent', () => {
     });
     const result = migrateEvent(event);
 
-    // v1->v2 step is missing — migration stops at v1, v2->v3 never runs
+    // Gap at v1→v2: no migration runs, the event is returned AS-IS so the
+    // stored schemaVersion still reflects reality (v1). Previously the code
+    // stamped a partial version (v1) AND the event later re-entered the same
+    // broken migration on every read, silently looping.
     expect((result.payload as Record<string, unknown>)['addedInV3']).toBeUndefined();
     expect(result.meta.schemaVersion).toBe(1);
+    expect(result).toBe(event); // returned unchanged
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('Missing migration'));
 
     CURRENT_EVENT_VERSIONS['drawer.updated'] = original;
+    errorSpy.mockRestore();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 });
 

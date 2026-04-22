@@ -7,7 +7,7 @@
  * MUST NOT throw — otherwise the retry queue drops the event silently.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { eventStore } from './eventStore';
 import type { DomainEvent } from '../events';
 import { eventId, correlationId, commandId } from '../types';
@@ -53,5 +53,31 @@ describe('eventStore.append', () => {
     const events = await eventStore.getByAggregate(event.meta.aggregateId);
     expect(events).toHaveLength(1);
     expect(events[0].meta.id).toBe(event.meta.id);
+  });
+
+  it('logs a warning when a different event collides with a persisted id', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const original = makeEvent('evt_collision');
+    await eventStore.append([original]);
+
+    // Same id, different payload — a true collision, NOT an idempotent retry.
+    const collider: DomainEvent = {
+      ...original,
+      payload: { different: 'payload' },
+    } as DomainEvent;
+
+    await eventStore.append([collider]);
+
+    // Surface the collision loudly. The first event stays — we don't want
+    // silent overwrite, which would mask a real bug.
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Event id collision'),
+      expect.objectContaining({ eventId: 'evt_collision' })
+    );
+    const events = await eventStore.getByAggregate(original.meta.aggregateId);
+    expect(events).toHaveLength(1);
+    expect(events[0].payload).toEqual(original.payload);
+
+    warnSpy.mockRestore();
   });
 });

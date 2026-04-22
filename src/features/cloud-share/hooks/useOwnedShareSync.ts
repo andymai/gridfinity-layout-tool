@@ -96,9 +96,13 @@ export function useOwnedShareSync(): void {
       clearTimeout(debounceTimerRef.current);
     }
 
-    // Schedule new sync
+    // Schedule new sync. Always go through `syncToCloudRef.current` — the
+    // captured `syncToCloud` closure may have baked in a stale cloudShare
+    // (e.g., the share was deleted between the timer scheduling and it
+    // firing), which would then call `updateShare` with a stale delete token.
+    // The ref always points at the latest `useCallback` result.
     debounceTimerRef.current = setTimeout(() => {
-      void syncToCloud();
+      void syncToCloudRef.current();
     }, CLOUD_SYNC_DEBOUNCE_MS);
 
     return () => {
