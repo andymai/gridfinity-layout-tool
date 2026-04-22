@@ -385,8 +385,11 @@ function loadLegacyLayout(): Layout | null {
 /**
  * Migrate from legacy single-layout storage to library system.
  * Returns the migrated library, or null if no legacy layout exists.
+ *
+ * Awaits the library write before deleting the legacy key so a refresh
+ * mid-migration cannot lose the user's only copy of the layout.
  */
-export function migrateFromLegacyStorage(): LayoutLibrary | null {
+export async function migrateFromLegacyStorage(): Promise<LayoutLibrary | null> {
   const legacyLayout = loadLegacyLayout();
   if (!legacyLayout) return null;
 
@@ -394,7 +397,12 @@ export function migrateFromLegacyStorage(): LayoutLibrary | null {
   const library = createLibraryWithLayout(layoutId, legacyLayout);
 
   saveLayoutSync(layoutId, legacyLayout);
-  void saveLibrary(library);
+  const librarySaveResult = await saveLibrary(library);
+  if (isErr(librarySaveResult)) {
+    // Leave legacy key intact — the user's original data is still reachable
+    // on the next launch and we can retry migration then.
+    return library;
+  }
   backend.deleteSync(LEGACY_STORAGE_KEY);
 
   return library;
@@ -420,7 +428,9 @@ export function migrateFromLegacyStorage(): LayoutLibrary | null {
  * });
  * ```
  */
-export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, StorageError> {
+export async function migrateFromLegacyStorageResult(): Promise<
+  Result<LayoutLibrary | null, StorageError>
+> {
   // Try to load legacy layout
   let legacyData: Layout;
   try {
@@ -446,7 +456,12 @@ export function migrateFromLegacyStorageResult(): Result<LayoutLibrary | null, S
   if (isErr(layoutSaveResult)) {
     return err(layoutSaveResult.error);
   }
-  void saveLibrary(library);
+  // Await the library write so that a page refresh between the legacy-key
+  // delete and the library flush cannot drop the user's data.
+  const librarySaveResult = await saveLibrary(library);
+  if (isErr(librarySaveResult)) {
+    return err(librarySaveResult.error);
+  }
   backend.deleteSync(LEGACY_STORAGE_KEY);
 
   return ok(library);
@@ -501,7 +516,7 @@ export async function initializeLayoutLibrary(): Promise<{
 }> {
   // Try IndexedDB first (primary), then localStorage fallback, then legacy migration
   const idbLibrary = await loadLibraryAsync();
-  let library = idbLibrary ?? loadLibrary() ?? migrateFromLegacyStorage();
+  let library = idbLibrary ?? loadLibrary() ?? (await migrateFromLegacyStorage());
 
   // If library came from localStorage (not IDB), migrate it to IndexedDB now
   if (library && !idbLibrary) {

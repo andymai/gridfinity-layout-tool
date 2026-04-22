@@ -441,12 +441,12 @@ describe('storage error handling', () => {
   });
 
   describe('migrateFromLegacyStorage', () => {
-    it('returns null when no legacy layout exists', () => {
-      const result = migrateFromLegacyStorage();
+    it('returns null when no legacy layout exists', async () => {
+      const result = await migrateFromLegacyStorage();
       expect(result).toBeNull();
     });
 
-    it('migrates legacy layout to library format', () => {
+    it('migrates legacy layout to library format', async () => {
       const legacyLayout: Layout = {
         ...defaultLayout,
         name: 'Legacy Layout',
@@ -454,17 +454,17 @@ describe('storage error handling', () => {
 
       localStorageMock.setItem('gridfinity-layout-v1', JSON.stringify(legacyLayout));
 
-      const result = migrateFromLegacyStorage();
+      const result = await migrateFromLegacyStorage();
 
       expect(result).not.toBeNull();
       expect(result?.entries).toHaveLength(1);
       expect(result?.entries[0].name).toBe('Legacy Layout');
     });
 
-    it('removes legacy key after migration', () => {
+    it('removes legacy key after migration', async () => {
       localStorageMock.setItem('gridfinity-layout-v1', JSON.stringify(defaultLayout));
 
-      migrateFromLegacyStorage();
+      await migrateFromLegacyStorage();
 
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('gridfinity-layout-v1');
     });

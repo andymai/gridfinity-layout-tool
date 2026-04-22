@@ -357,6 +357,33 @@ describe('migration.ts', () => {
       expect(value.migratedCount).toBe(1);
       // Note: failed migrations don't increment skippedCount
     });
+
+    it('does NOT set the migration flag when any layout fails', async () => {
+      vi.mocked(backend.isIndexedDBAvailable).mockResolvedValue(true);
+      vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1', 'layout-2']);
+      vi.mocked(backend.getIndexedDBLayoutIds).mockResolvedValue([]);
+      vi.mocked(localStorageBackend.loadLayout)
+        .mockReturnValueOnce(ok(null)) // layout-1 fails
+        .mockReturnValueOnce(ok(createTestLayout())); // layout-2 succeeds
+      vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
+
+      await migrateAllLayoutsToIndexedDBResult();
+
+      // Flag must remain unset so the next launch retries the failed layout.
+      expect(localStorage.getItem(MIGRATION_FLAG_KEY)).toBeNull();
+    });
+
+    it('sets the migration flag when every layout succeeds', async () => {
+      vi.mocked(backend.isIndexedDBAvailable).mockResolvedValue(true);
+      vi.mocked(localStorageBackend.getAllLayoutIds).mockReturnValue(['layout-1']);
+      vi.mocked(backend.getIndexedDBLayoutIds).mockResolvedValue([]);
+      vi.mocked(localStorageBackend.loadLayout).mockReturnValue(ok(createTestLayout()));
+      vi.mocked(indexedDBBackend.saveLayout).mockResolvedValue(undefined);
+
+      await migrateAllLayoutsToIndexedDBResult();
+
+      expect(localStorage.getItem(MIGRATION_FLAG_KEY)).toBe('true');
+    });
   });
 
   describe('getMigrationStatusResult', () => {
