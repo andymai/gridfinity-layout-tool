@@ -386,8 +386,10 @@ function loadLegacyLayout(): Layout | null {
  * Migrate from legacy single-layout storage to library system.
  * Returns the migrated library, or null if no legacy layout exists.
  *
- * Awaits the library write before deleting the legacy key so a refresh
- * mid-migration cannot lose the user's only copy of the layout.
+ * Order of operations matters: the library is written FIRST (awaited). If it
+ * fails we abort before touching either the new layout blob or the legacy
+ * key, so the next launch retries cleanly without leaking orphan blobs or
+ * losing the user's data.
  */
 export async function migrateFromLegacyStorage(): Promise<LayoutLibrary | null> {
   const legacyLayout = loadLegacyLayout();
@@ -396,35 +398,42 @@ export async function migrateFromLegacyStorage(): Promise<LayoutLibrary | null> 
   const layoutId = generateLayoutId();
   const library = createLibraryWithLayout(layoutId, legacyLayout);
 
-  saveLayoutSync(layoutId, legacyLayout);
+  // Library first. On failure, the legacy key is still intact and no new
+  // orphan blob has been written, so the next launch can retry from scratch.
   const librarySaveResult = await saveLibrary(library);
   if (isErr(librarySaveResult)) {
-    // Leave legacy key intact — the user's original data is still reachable
-    // on the next launch and we can retry migration then.
     return library;
   }
-  backend.deleteSync(LEGACY_STORAGE_KEY);
 
+  // Then the new layout blob. If this fails (quota exceeded), abort — the
+  // library would otherwise reference a non-existent layout.
+  const layoutSaveResult = saveLayoutSync(layoutId, legacyLayout);
+  if (isErr(layoutSaveResult)) {
+    return library;
+  }
+
+  // Only once both writes have succeeded is it safe to delete the legacy key.
+  backend.deleteSync(LEGACY_STORAGE_KEY);
   return library;
 }
 
 /**
  * Migrate from legacy single-layout storage with Result-based error handling.
  * Returns Ok with the migrated library, or Err if migration fails.
- * Returns Ok(undefined) if no legacy layout exists (nothing to migrate).
+ * Returns `Ok(null)` if no legacy layout exists (nothing to migrate).
  *
  * @example
  * ```ts
- * const result = migrateFromLegacyStorageResult();
+ * const result = await migrateFromLegacyStorageResult();
  * match(result, {
- *   ok: (library) => library ? initializeWithLibrary(library) : createFresh(),
+ *   ok: (library) => (library ? initializeWithLibrary(library) : createFresh()),
  *   err: (error) => {
  *     if (error.code === 'STORAGE_CORRUPTED') {
  *       console.warn('Legacy layout corrupted, starting fresh');
  *     } else {
  *       console.error('Migration failed:', getUserMessage(error));
  *     }
- *   }
+ *   },
  * });
  * ```
  */
@@ -451,16 +460,17 @@ export async function migrateFromLegacyStorageResult(): Promise<
   const layoutId = generateLayoutId();
   const library = createLibraryWithLayout(layoutId, legacyData);
 
-  // Save layout and library
-  const layoutSaveResult = saveLayoutSync(layoutId, legacyData);
-  if (isErr(layoutSaveResult)) {
-    return err(layoutSaveResult.error);
-  }
-  // Await the library write so that a page refresh between the legacy-key
-  // delete and the library flush cannot drop the user's data.
+  // Library first — if it fails we bail out before writing a new blob, so
+  // the legacy key remains the source of truth for a clean retry.
   const librarySaveResult = await saveLibrary(library);
   if (isErr(librarySaveResult)) {
     return err(librarySaveResult.error);
+  }
+
+  // Then the layout blob. Quota failure here should surface to the caller.
+  const layoutSaveResult = saveLayoutSync(layoutId, legacyData);
+  if (isErr(layoutSaveResult)) {
+    return err(layoutSaveResult.error);
   }
   backend.deleteSync(LEGACY_STORAGE_KEY);
 

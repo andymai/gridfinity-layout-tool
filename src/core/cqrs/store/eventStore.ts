@@ -84,11 +84,17 @@ function createEventStore(): EventStore {
       const db = await getDb();
       const tx = db.transaction(EVENTS_STORE, 'readwrite');
       for (const event of events) {
-        // `put` (upsert) instead of `add` so retry-queue replays of an
-        // already-persisted event are idempotent — `add` throws
-        // ConstraintError on duplicate keyPath, which the retry queue
-        // would misinterpret as a transient failure and eventually drop.
-        await tx.store.put(event);
+        // Idempotent append-only semantics: if an event with the same id is
+        // already persisted (retry-queue replaying after a connection drop
+        // that ACKed on disk but rejected the promise), treat it as a no-op
+        // instead of failing. `put` would silently overwrite — which would
+        // weaken the audit-log invariant if two different events ever reused
+        // an id. A read-then-add inside the same transaction preserves the
+        // invariant and stays idempotent under retry.
+        const existing = await tx.store.get(event.meta.id);
+        if (!existing) {
+          await tx.store.add(event);
+        }
       }
       await tx.done;
     },
