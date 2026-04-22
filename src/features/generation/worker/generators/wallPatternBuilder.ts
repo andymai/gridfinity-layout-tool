@@ -626,7 +626,20 @@ function applyWallPatternClips(
         // Dispose intermediates from each transform.
         const extruded = sketch(profile, 'XZ').extrude(rampExtrudeDepth);
         const centerZ = wallHeight - zone.height / 2;
-        const centered = translate(extruded, [zone.offsetAlongWall, rampExtrudeDepth / 2, centerZ]);
+
+        // Build the box at the ORIGIN (not at offsetAlongWall), rotate to
+        // align with the wall, THEN translate to the wall midpoint plus the
+        // axial offset. Applying the rotation to a pre-offset box negates
+        // the offset for back (zRotation=180) and right (zRotation=-90)
+        // walls because rotation around Z negates the axial component —
+        // so a divider at global X=+a produced a clip box at X=-a on the
+        // back wall, leaving the actual junction unclipped and producing
+        // hex-prism bleed near divider-wall junctions on asymmetric bins.
+        // `offsetAlongWall` is a GLOBAL coordinate (posAlongPerp from
+        // dividerBlendBuilder), so it must be added AFTER rotation, along
+        // whichever global axis the wall runs (X for front/back, Y for
+        // left/right).
+        const centered = translate(extruded, [0, rampExtrudeDepth / 2, centerZ]);
         extruded.delete();
         let rbox = centered;
         if (wall.zRotation !== undefined) {
@@ -634,7 +647,14 @@ function applyWallPatternClips(
           rbox.delete();
           rbox = rotated;
         }
-        const positioned = translate(rbox, [wall.translateX, wall.translateY, 0]);
+        const rotZ = wall.zRotation ?? 0;
+        const offsetX = rotZ === 90 || rotZ === -90 ? 0 : zone.offsetAlongWall;
+        const offsetY = rotZ === 90 || rotZ === -90 ? zone.offsetAlongWall : 0;
+        const positioned = translate(rbox, [
+          wall.translateX + offsetX,
+          wall.translateY + offsetY,
+          0,
+        ]);
         rbox.delete();
         rampBoxes.push(positioned);
       }

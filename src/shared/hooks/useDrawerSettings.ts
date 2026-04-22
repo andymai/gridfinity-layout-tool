@@ -203,16 +203,20 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
   // Undo support
 
-  // Get active layer's height (for save as defaults)
-  const layers = useLayoutStore((state) => state.layout.layers);
+  // Derive layers/categories from the `layout` already selected in the
+  // useShallow above. Prior code opened two additional bare subscriptions
+  // to the same store, which signaled "changed" on every layout mutation
+  // (each array gets a new reference from Immer) and wasted React work on
+  // large layouts.
+  const layers = layout.layers;
   const activeLayer = useMemo(
     () => layers.find((l) => l.id === activeLayerId),
     [layers, activeLayerId]
   );
   const activeLayerHeight = activeLayer?.height ?? 3;
 
-  // Get current categories from layout (for save as defaults)
-  const currentCategories = useLayoutStore((state) => state.layout.categories);
+  // Current categories from the same selected layout (no separate subscription)
+  const currentCategories = layout.categories;
   const hasCustomCategoryDefaults = settings.defaultCategories !== null;
 
   // Computed values

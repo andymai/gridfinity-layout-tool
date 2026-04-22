@@ -425,37 +425,42 @@ export function buildDividerBlends(
         const dividerPos = divider.posAlongPerp;
         const halfThick = divider.thickness / 2;
 
-        // Case 1: Divider end within cutout span
-        if (
+        // Case 1: Divider fully inside the cutout span — trim the end flush.
+        const insideSpan =
           dividerPos + halfThick <= cutout.cutRight + 0.01 &&
-          dividerPos - halfThick >= cutout.cutLeft - 0.01
-        ) {
+          dividerPos - halfThick >= cutout.cutLeft - 0.01;
+
+        if (insideSpan) {
           try {
             const cut = buildEndTrimCut(divider, cutout, cutoutShape, wallHeight, hasLip);
             if (cut) cuts.push(cut);
           } catch {
             /* graceful degradation */
           }
-        }
+        } else {
+          // Case 2: Divider adjacent to (but outside) a cutout edge — ramp.
+          // Guarded by `else` so that a divider exactly on the boundary (the
+          // ±0.01 tolerance above) doesn't trigger BOTH an end-trim AND a
+          // ramp cut — their solids overlap and subtracting the fused union
+          // yields a different trim profile than either cut alone.
+          const distToLeft = cutout.cutLeft - dividerPos;
+          const distToRight = dividerPos - cutout.cutRight;
 
-        // Case 2: Divider adjacent to cutout edge — ramp
-        const distToLeft = cutout.cutLeft - dividerPos;
-        const distToRight = dividerPos - cutout.cutRight;
-
-        if (distToLeft > -halfThick && distToLeft < cutout.userCutHeight) {
-          try {
-            const cut = buildRampCut(divider, cutout, wallHeight);
-            if (cut) cuts.push(cut);
-          } catch {
-            /* graceful degradation */
+          if (distToLeft > -halfThick && distToLeft < cutout.userCutHeight) {
+            try {
+              const cut = buildRampCut(divider, cutout, wallHeight);
+              if (cut) cuts.push(cut);
+            } catch {
+              /* graceful degradation */
+            }
           }
-        }
-        if (distToRight > -halfThick && distToRight < cutout.userCutHeight) {
-          try {
-            const cut = buildRampCut(divider, cutout, wallHeight);
-            if (cut) cuts.push(cut);
-          } catch {
-            /* graceful degradation */
+          if (distToRight > -halfThick && distToRight < cutout.userCutHeight) {
+            try {
+              const cut = buildRampCut(divider, cutout, wallHeight);
+              if (cut) cuts.push(cut);
+            } catch {
+              /* graceful degradation */
+            }
           }
         }
       } else if (!perp) {
