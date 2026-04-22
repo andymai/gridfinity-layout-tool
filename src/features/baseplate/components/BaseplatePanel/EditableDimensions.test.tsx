@@ -20,10 +20,11 @@ describe('EditableDimensions', () => {
     expect(btn).toHaveTextContent(/441\s*×\s*357\s*mm/);
   });
 
-  it('shows hover affordance classes on the button', () => {
+  it('shows persistent edit affordance classes on the button', () => {
     render(<EditableDimensions {...defaultProps} />);
     const btn = screen.getByRole('button', { name: 'Edit dimensions' });
-    expect(btn.className).toContain('hover:underline');
+    expect(btn.className).toContain('underline');
+    expect(btn.className).toContain('decoration-dotted');
     expect(btn.className).toContain('cursor-pointer');
   });
 
