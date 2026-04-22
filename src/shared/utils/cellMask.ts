@@ -15,7 +15,16 @@
  * case of rectangular bins).
  */
 
-/** Always-half-bin-resolution cell mask. `cells` is row-major, origin bottom-left. */
+/**
+ * Always-half-bin-resolution cell mask. `cells` is row-major, origin bottom-left.
+ *
+ * Immutability contract: `cells` is typed as a mutable array so Immer's
+ * `WritableDraft<CellMask>` continues to work in store slices, but callers
+ * MUST NOT mutate elements in place — the array is frozen the first time
+ * `maskToPolygon` sees a mask, and downstream features memoize on the
+ * CellMask reference. Updates should construct a fresh mask (see
+ * `buildFullMask` / `resizeMask`) rather than patch `cells[i]`.
+ */
 export interface CellMask {
   readonly cols: number;
   readonly rows: number;
@@ -269,9 +278,10 @@ const maskToPolygonCache = new WeakMap<CellMask, readonly MaskLoop[]>();
  * The loop that encloses every other loop is the outer boundary; the
  * rest are holes.
  *
- * Result is memoized on the mask reference — callers that mutate `cells`
- * after first computing polygons will see stale results (the interface
- * declares `cells` readonly to prevent this).
+ * Result is memoized on the mask reference. To keep the cache sound we
+ * also freeze `mask.cells` on first use — any subsequent in-place element
+ * mutation throws in strict mode instead of silently returning a stale
+ * polygon. Callers that need a modified mask must construct a new one.
  *
  * Preconditions: `validateMask(mask)` must return null. Passing an
  * invalid mask yields undefined results.
@@ -280,6 +290,9 @@ export function maskToPolygon(mask: CellMask): readonly MaskLoop[] {
   const cached = maskToPolygonCache.get(mask);
   if (cached) return cached;
   const { cols, rows, cells } = mask;
+  if (!Object.isFrozen(cells)) {
+    Object.freeze(cells);
+  }
   const s = MASK_CELL_SIZE;
   const filled = (c: number, r: number): boolean =>
     c >= 0 && c < cols && r >= 0 && r < rows && cells[r * cols + c] === 1;
