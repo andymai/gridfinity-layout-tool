@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.47.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.2...gridfinity-layout-tool-v4.47.3) (2026-04-22)
+
+
+### Bug Fixes
+
+* **geometry,hooks:** wall pattern mirror + divider overlap + subscription consolidation ([#1437](https://github.com/andymai/gridfinity-layout-tool/issues/1437)) ([25c1d08](https://github.com/andymai/gridfinity-layout-tool/commit/25c1d08000e4c5fe766c068f8766b7292e928942))
+
 ## [4.47.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.1...gridfinity-layout-tool-v4.47.2) (2026-04-22)
 
 
