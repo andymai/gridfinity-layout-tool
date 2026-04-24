@@ -35,7 +35,6 @@
   "baseplate.gridUnitTooltip": "Bredden på én rutenettcelle (standard: 42mm)",
   "baseplate.gridWidth": "Bredde",
   "baseplate.inclPadding": "inkl. kantluft",
-  "baseplate.initializingEngine": "Initialiserer 3D-motor...",
   "baseplate.isoView": "Iso",
   "baseplate.loadingEngine": "Laster 3D-motor...",
   "baseplate.magnetDepth": "Magnetdybde",

@@ -35,7 +35,6 @@
   "baseplate.gridUnitTooltip": "Largeur d'un carré de grille (standard : 42mm)",
   "baseplate.gridWidth": "Largeur",
   "baseplate.inclPadding": "avec marge",
-  "baseplate.initializingEngine": "Initialisation du moteur 3D...",
   "baseplate.isoView": "Iso",
   "baseplate.loadingEngine": "Chargement du moteur 3D...",
   "baseplate.magnetDepth": "Profondeur de l'aimant",

@@ -572,7 +572,7 @@ export function trackKernelPerformance(payload: {
  */
 export function trackBaseplatePreviewTiming(payload: {
   directMeshMs: number;
-  brepMs: number | null;
+  brepMs: number;
   pieceCount: number;
   isSplit: boolean;
   wasmCold: boolean;
@@ -580,7 +580,7 @@ export function trackBaseplatePreviewTiming(payload: {
 }): void {
   trackEvent('baseplate_preview_timing', {
     direct_mesh_ms: Math.round(payload.directMeshMs * 10) / 10,
-    brep_ms: payload.brepMs !== null ? Math.round(payload.brepMs * 10) / 10 : null,
+    brep_ms: Math.round(payload.brepMs * 10) / 10,
     piece_count: payload.pieceCount,
     is_split: payload.isSplit,
     wasm_cold: payload.wasmCold,

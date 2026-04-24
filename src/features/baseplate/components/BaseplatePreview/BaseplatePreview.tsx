@@ -187,7 +187,7 @@ export function BaseplatePreview({
               </svg>
             </div>
             <p className="text-sm font-medium text-content-tertiary">
-              {t('baseplate.initializingEngine')}
+              {t('baseplate.loadingEngine')}
             </p>
           </div>
         </div>

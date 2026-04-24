@@ -35,7 +35,6 @@
   "baseplate.gridUnitTooltip": "Ancho de un cuadrado de la cuadrícula (estándar: 42mm)",
   "baseplate.gridWidth": "Ancho",
   "baseplate.inclPadding": "incl. margen",
-  "baseplate.initializingEngine": "Inicializando motor 3D...",
   "baseplate.isoView": "Iso",
   "baseplate.loadingEngine": "Cargando motor 3D...",
   "baseplate.magnetDepth": "Profundidad del imán",

@@ -35,7 +35,6 @@
   "baseplate.gridUnitTooltip": "Breite eines Gitterquadrats (Standard: 42mm)",
   "baseplate.gridWidth": "Breite",
   "baseplate.inclPadding": "inkl. Rand",
-  "baseplate.initializingEngine": "3D-Engine wird initialisiert...",
   "baseplate.isoView": "Iso",
   "baseplate.loadingEngine": "3D-Engine wird geladen...",
   "baseplate.magnetDepth": "Magnettiefe",

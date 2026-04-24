@@ -35,7 +35,6 @@
   "baseplate.gridUnitTooltip": "Breedte van één rastervak (standaard: 42mm)",
   "baseplate.gridWidth": "Breedte",
   "baseplate.inclPadding": "incl. marge",
-  "baseplate.initializingEngine": "3D-engine initialiseren...",
   "baseplate.isoView": "Iso",
   "baseplate.loadingEngine": "3D-engine laden...",
   "baseplate.magnetDepth": "Magneetdiepte",

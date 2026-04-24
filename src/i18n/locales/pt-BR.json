@@ -35,7 +35,6 @@
   "baseplate.gridUnitTooltip": "Largura de um quadrado da grade (padrão: 42mm)",
   "baseplate.gridWidth": "Largura",
   "baseplate.inclPadding": "incl. margem",
-  "baseplate.initializingEngine": "Inicializando motor 3D...",
   "baseplate.isoView": "Iso",
   "baseplate.loadingEngine": "Carregando motor 3D...",
   "baseplate.magnetDepth": "Profundidade do ímã",

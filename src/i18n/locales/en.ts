@@ -1521,7 +1521,6 @@ const en: Record<string, string> = {
   'baseplate.gridWidth': 'Width',
   'baseplate.gridDepth': 'Depth',
   'baseplate.filamentColor': 'Filament color',
-  'baseplate.initializingEngine': 'Initializing 3D engine...',
   'baseplate.loadingEngine': 'Loading 3D engine...',
   'baseplate.computingGeometry': 'Computing high-fidelity geometry...',
   'baseplate.brepFinalizeFailed':
