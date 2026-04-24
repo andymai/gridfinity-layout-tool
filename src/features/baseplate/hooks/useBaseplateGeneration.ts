@@ -109,6 +109,27 @@ function wrapMeshAsResult(mesh: MeshData, timingMs: number): GenerationResult {
   return { mesh, timingMs };
 }
 
+/**
+ * True when there is a visible mesh on the canvas (single OR any split piece).
+ *
+ * Drives the "graceful BREP failure" branch: if a preview is on screen we keep
+ * it visible and surface the BREP error as a toast instead of replacing the
+ * canvas with a red error overlay.
+ *
+ * The null-check expansion is deliberate: an earlier version used
+ * `mesh?.vertices !== null`, which short-circuits to `undefined !== null` (i.e.
+ * `true`) when `mesh` itself is `null` — wrongly reporting a preview on a
+ * blank canvas. Exported for regression test.
+ */
+export function hasMeshOnScreen(state: {
+  pieceMeshes: { length: number };
+  generation: { mesh: { vertices: Float32Array | null } | null };
+}): boolean {
+  if (state.pieceMeshes.length > 0) return true;
+  const mesh = state.generation.mesh;
+  return mesh !== null && mesh.vertices !== null;
+}
+
 const NO_OP_PROGRESS = (_stage: string, _progress: number): void => {};
 
 /**
@@ -119,6 +140,13 @@ export function useBaseplateGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
   const poolRef = useRef<WorkerPool | null>(null);
   const initializedRef = useRef(false);
+  /**
+   * Flips to true after the first BREP run completes (success or failure).
+   * Used to label the very first BREP as a cold-WASM start in analytics —
+   * `initializedRef` would always be `true` here because the bridge sets
+   * it before kicking off that first BREP.
+   */
+  const firstBrepDoneRef = useRef(false);
   const generationEpochRef = useRef(0);
   /** Time the most recent direct-mesh phase started — used to compute BREP elapsed for analytics. */
   const directMeshStartRef = useRef<number>(0);
@@ -281,7 +309,11 @@ export function useBaseplateGeneration(): void {
       if (!bridge || bridge.isDestroyed) return;
 
       const brepStart = performance.now();
-      const wasmCold = !initializedRef.current;
+      // Cold = first BREP this session. Captured here (not via initializedRef)
+      // because the mount handler sets initializedRef BEFORE kicking off this
+      // very first BREP, so reading initializedRef would always say "warm".
+      const wasmCold = !firstBrepDoneRef.current;
+      let succeeded = false;
       setGenerationStatus('generating');
 
       try {
@@ -354,27 +386,18 @@ export function useBaseplateGeneration(): void {
           setGenerationResult(EMPTY_MESH);
           setGenerationStatus('complete');
         }
-
-        trackBaseplatePreviewTiming({
-          directMeshMs: directMeshDurationRef.current,
-          brepMs: performance.now() - brepStart,
-          pieceCount: tiling.pieces.length,
-          isSplit: tiling.isSplit,
-          wasmCold,
-        });
+        succeeded = true;
       } catch (e: unknown) {
         if (e instanceof Error && e.message === 'Generation cancelled') return;
         if (e instanceof DOMException && e.name === 'AbortError') return;
         if (generationEpochRef.current !== epoch) return;
 
         const message = e instanceof Error ? e.message : String(e);
-        const hasDirectPreview =
-          useBaseplatePageStore.getState().pieceMeshes.length > 0 ||
-          useBaseplatePageStore.getState().generation.mesh?.vertices !== null;
+        const previewVisible = hasMeshOnScreen(useBaseplatePageStore.getState());
 
         setSplitProgress(null);
 
-        if (hasDirectPreview) {
+        if (previewVisible) {
           // Preview is already usable — keep it visible, surface a non-blocking
           // toast instead of replacing the canvas with a red error overlay.
           setBrepFailureMessage(message);
@@ -390,6 +413,20 @@ export function useBaseplateGeneration(): void {
           });
           setPieceMeshes([]);
           setGenerationStatus('error');
+        }
+      } finally {
+        // Skip cancelled/superseded runs (early-returned above without flipping
+        // succeeded). Track everything else so failures show up in PostHog too.
+        if (generationEpochRef.current === epoch) {
+          firstBrepDoneRef.current = true;
+          trackBaseplatePreviewTiming({
+            directMeshMs: directMeshDurationRef.current,
+            brepMs: performance.now() - brepStart,
+            pieceCount: tiling.pieces.length,
+            isSplit: tiling.isSplit,
+            wasmCold,
+            success: succeeded,
+          });
         }
       }
     },
@@ -411,10 +448,15 @@ export function useBaseplateGeneration(): void {
   const runGeneration = useCallback(
     (fullParams: FullBaseplateParams, bedWidthMm: number, bedDepthMm: number) => {
       const epoch = ++generationEpochRef.current;
+      // Flip to 'generating' before BREP starts so the bottom pill is visible
+      // during the direct-mesh-only window (when the bridge isn't ready yet).
+      // Without this, the pill is hidden for the whole 4-8 s WASM-load period
+      // even though the user can see the direct-mesh preview.
+      setGenerationStatus('generating');
       const tiling = runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
       void runBrepGeneration(fullParams, tiling, epoch);
     },
-    [runDirectMeshPreview, runBrepGeneration]
+    [setGenerationStatus, runDirectMeshPreview, runBrepGeneration]
   );
 
   // Initialize bridge via BridgeManager + worker pool on mount

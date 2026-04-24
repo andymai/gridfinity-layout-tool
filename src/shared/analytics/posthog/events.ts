@@ -567,6 +567,8 @@ export function trackKernelPerformance(payload: {
  * `directMeshMs` is the synchronous procedural path (~50-200 ms typical).
  * `brepMs` is the WASM BREP path (~1-3 s warm, +2-4 s cold for WASM init).
  * `pieceCount` is 1 for unsplit baseplates; >1 for split tilings.
+ * `success` distinguishes completed BREP from errored/timed-out runs so
+ * failures are visible in PostHog dashboards.
  */
 export function trackBaseplatePreviewTiming(payload: {
   directMeshMs: number;
@@ -574,6 +576,7 @@ export function trackBaseplatePreviewTiming(payload: {
   pieceCount: number;
   isSplit: boolean;
   wasmCold: boolean;
+  success: boolean;
 }): void {
   trackEvent('baseplate_preview_timing', {
     direct_mesh_ms: Math.round(payload.directMeshMs * 10) / 10,
@@ -581,6 +584,7 @@ export function trackBaseplatePreviewTiming(payload: {
     piece_count: payload.pieceCount,
     is_split: payload.isSplit,
     wasm_cold: payload.wasmCold,
+    success: payload.success,
   });
 }
 
