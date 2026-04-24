@@ -173,7 +173,8 @@ function mergeCustomProperties(
 export function generatePrintList(
   bins: Bin[],
   maxPrintSize: number | { width: number; depth: number },
-  printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS
+  printSettings: PrintSettings = DEFAULT_PRINT_SETTINGS,
+  layoutUnits?: { gridUnitMm: number; heightUnitMm: number }
 ): PrintRow[] {
   const maxW = typeof maxPrintSize === 'number' ? maxPrintSize : maxPrintSize.width;
   const maxD = typeof maxPrintSize === 'number' ? maxPrintSize : maxPrintSize.depth;
@@ -232,7 +233,14 @@ export function generatePrintList(
     const filamentPerBin = mergedPieces.reduce(
       (sum, p) =>
         sum +
-        estimateStandardBinFilament(p.width, p.depth, group.height, printSettings).metersFilament *
+        estimateStandardBinFilament(
+          p.width,
+          p.depth,
+          group.height,
+          printSettings,
+          layoutUnits?.gridUnitMm,
+          layoutUnits?.heightUnitMm
+        ).metersFilament *
           p.count,
       0
     );
@@ -309,9 +317,10 @@ export function generateEnhancedPrintList(
   config: PrintListConfig = {
     filamentCostPerKg: DEFAULT_COST_PER_KG,
     metersPerKg: DEFAULT_METERS_PER_KG,
-  }
+  },
+  layoutUnits?: { gridUnitMm: number; heightUnitMm: number }
 ): EnhancedPrintRow[] {
-  const baseRows = generatePrintList(bins, maxPrintSize, printSettings);
+  const baseRows = generatePrintList(bins, maxPrintSize, printSettings, layoutUnits);
 
   return baseRows.map((row) => {
     const [width, depth] = row.size.split('×').map(Number);

@@ -21,7 +21,7 @@ export function useScoopSection() {
   );
   const t = useTranslation();
 
-  const { width, depth, height, wallThickness, base, compartments } = params;
+  const { width, depth, height, heightUnitMm, wallThickness, base, compartments } = params;
   const scoopStatus = getFeatureStatus(params, 'scoop');
   const isUnavailable = !scoopStatus.available;
   const isAutoRadius = scoop.radius === 'auto';
@@ -38,7 +38,7 @@ export function useScoopSection() {
     const cellD = innerD / compartments.rows;
 
     const isFlat = base.style === 'flat';
-    const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+    const totalH = height * heightUnitMm;
     const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
     const hasLip = base.stackingLip;
     const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
@@ -86,7 +86,7 @@ export function useScoopSection() {
       return t('binDesigner.scoopRadiusAutoValue', { value: String(min) });
     }
     return t('binDesigner.scoopRadiusAutoRange', { min: String(min), max: String(max) });
-  }, [isAutoRadius, width, depth, height, wallThickness, base, compartments, t]);
+  }, [isAutoRadius, width, depth, height, heightUnitMm, wallThickness, base, compartments, t]);
 
   const toggleScoop = useCallback(() => {
     updateScoop({ enabled: !scoop.enabled });

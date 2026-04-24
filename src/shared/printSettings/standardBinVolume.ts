@@ -64,20 +64,24 @@ export interface StandardBinEstimate {
  * @param depthUnits - Bin depth in grid units
  * @param heightUnits - Bin height in height units (includes base)
  * @param nozzleSizeMm - Nozzle diameter for wall thickness calculation
+ * @param gridUnitMm - Grid unit size in mm (defaults to standard 42mm)
+ * @param heightUnitMm - Height unit size in mm (defaults to standard 7mm)
  * @returns Volume in mm³
  */
 export function estimateStandardBinVolume(
   widthUnits: number,
   depthUnits: number,
   heightUnits: number,
-  nozzleSizeMm: number = 0.4
+  nozzleSizeMm: number = 0.4,
+  gridUnitMm: number = GRIDFINITY_SPEC.GRID_SIZE,
+  heightUnitMm: number = GRIDFINITY_SPEC.HEIGHT_UNIT
 ): number {
   const wall = wallThicknessForNozzle(nozzleSizeMm);
 
   // Outer dimensions in mm
-  const outerW = widthUnits * GRIDFINITY_SPEC.GRID_SIZE - GRIDFINITY_SPEC.TOLERANCE;
-  const outerD = depthUnits * GRIDFINITY_SPEC.GRID_SIZE - GRIDFINITY_SPEC.TOLERANCE;
-  const totalH = heightUnits * GRIDFINITY_SPEC.HEIGHT_UNIT;
+  const outerW = widthUnits * gridUnitMm - GRIDFINITY_SPEC.TOLERANCE;
+  const outerD = depthUnits * gridUnitMm - GRIDFINITY_SPEC.TOLERANCE;
+  const totalH = heightUnits * heightUnitMm;
 
   let volume = 0;
 
@@ -107,13 +111,17 @@ export function estimateStandardBinFilament(
   widthUnits: number,
   depthUnits: number,
   heightUnits: number,
-  settings: PrintSettings = DEFAULT_PRINT_SETTINGS
+  settings: PrintSettings = DEFAULT_PRINT_SETTINGS,
+  gridUnitMm: number = GRIDFINITY_SPEC.GRID_SIZE,
+  heightUnitMm: number = GRIDFINITY_SPEC.HEIGHT_UNIT
 ): StandardBinEstimate {
   const volumeMm3 = estimateStandardBinVolume(
     widthUnits,
     depthUnits,
     heightUnits,
-    settings.nozzleSizeMm
+    settings.nozzleSizeMm,
+    gridUnitMm,
+    heightUnitMm
   );
 
   const volumeCm3 = volumeMm3 / 1000;

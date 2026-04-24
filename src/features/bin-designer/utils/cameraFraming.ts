@@ -24,11 +24,13 @@ export function calculateIdealDistance(
   width: number,
   depth: number,
   height: number,
-  fov: number
+  fov: number,
+  gridUnitMm: number = GRIDFINITY.GRID_SIZE,
+  heightUnitMm: number = GRIDFINITY.HEIGHT_UNIT
 ): number {
-  const outerW = width * GRIDFINITY.GRID_SIZE;
-  const outerD = depth * GRIDFINITY.GRID_SIZE;
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+  const outerW = width * gridUnitMm;
+  const outerD = depth * gridUnitMm;
+  const totalH = height * heightUnitMm;
 
   const halfW = outerW / 2;
   const halfD = outerD / 2;

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createInitialContext } from './context';
-import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 
 // Source from DEFAULT_BIN_PARAMS so the fixture tracks the real BinParams
@@ -102,10 +102,14 @@ describe('createInitialContext', () => {
   // Z dimension. The dimensions flowing through the pipeline (and into the
   // shellKey cache) must reflect the user-configured unit.
   it('should use params.heightUnitMm instead of hardcoded 7mm', () => {
-    const ctx = createInitialContext(createTestParams({ height: 3, heightUnitMm: 10 }));
+    const customHeightUnit = 10; // ≠ GRIDFINITY.HEIGHT_UNIT (7mm)
+    const heightUnits = 3;
+    const ctx = createInitialContext(
+      createTestParams({ height: heightUnits, heightUnitMm: customHeightUnit })
+    );
     const dim = ctx.dimensions;
-    expect(dim.totalHeight).toBe(30); // 3 * 10, not 3 * 7
-    expect(dim.wallHeight).toBe(25); // 30 - 5 (SOCKET_HEIGHT)
+    expect(dim.totalHeight).toBe(heightUnits * customHeightUnit);
+    expect(dim.wallHeight).toBe(heightUnits * customHeightUnit - GRIDFINITY.SOCKET_HEIGHT);
   });
 
   it('produces different shellKeys for different heightUnitMm values', () => {

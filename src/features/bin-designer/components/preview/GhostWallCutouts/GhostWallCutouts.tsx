@@ -27,12 +27,13 @@ export function GhostWallCutouts() {
   const { invalidate } = useThree();
   const lineRef = useRef<LineSegments2 | null>(null);
 
-  const { width, depth, height, wallThickness, walls, baseStyle, generationStatus } =
+  const { width, depth, height, heightUnitMm, wallThickness, walls, baseStyle, generationStatus } =
     useDesignerStore(
       useShallow((s) => ({
         width: s.params.width,
         depth: s.params.depth,
         height: s.params.height,
+        heightUnitMm: s.params.heightUnitMm,
         wallThickness: s.params.wallThickness,
         walls: s.params.walls,
         baseStyle: s.params.base.style,
@@ -44,7 +45,7 @@ export function GhostWallCutouts() {
   const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+  const totalH = height * heightUnitMm;
   const isFlat = baseStyle === 'flat';
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
 

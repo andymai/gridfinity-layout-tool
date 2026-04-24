@@ -110,6 +110,8 @@ export function useAutoSave(): void {
         width: paramsToSave.width,
         depth: paramsToSave.depth,
         height: paramsToSave.height,
+        gridUnitMm: paramsToSave.gridUnitMm,
+        heightUnitMm: paramsToSave.heightUnitMm,
       });
 
       const result = await updateDesignParams(

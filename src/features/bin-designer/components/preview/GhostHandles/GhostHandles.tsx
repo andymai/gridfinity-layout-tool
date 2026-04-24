@@ -29,6 +29,7 @@ export function GhostHandles() {
     width,
     depth,
     height,
+    heightUnitMm,
     wallThickness,
     style,
     handles,
@@ -41,6 +42,7 @@ export function GhostHandles() {
       width: s.params.width,
       depth: s.params.depth,
       height: s.params.height,
+      heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       style: s.params.style,
       handles: s.params.handles,
@@ -57,7 +59,7 @@ export function GhostHandles() {
   const innerD = outerD - 2 * wallThickness;
 
   const isFlat = base.style === 'flat';
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+  const totalH = height * heightUnitMm;
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
   const hasLip = base.stackingLip;
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);

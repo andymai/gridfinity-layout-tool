@@ -40,29 +40,42 @@ const DEFAULT_COLOR = '#d4d8dc';
 export function GhostDividerPieces() {
   const { invalidate } = useThree();
 
-  const { width, depth, height, wallThickness, style, slotConfig, dividerPieces, hasLip } =
-    useDesignerStore(
-      useShallow((s) => ({
-        width: s.params.width,
-        depth: s.params.depth,
-        height: s.params.height,
-        wallThickness: s.params.wallThickness,
-        style: s.params.style,
-        slotConfig: s.params.slotConfig,
-        dividerPieces: s.params.dividerPieces,
-        hasLip: s.params.base.stackingLip,
-      }))
-    );
+  const {
+    width,
+    depth,
+    height,
+    heightUnitMm,
+    wallThickness,
+    style,
+    slotConfig,
+    dividerPieces,
+    hasLip,
+    baseStyle,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      width: s.params.width,
+      depth: s.params.depth,
+      height: s.params.height,
+      heightUnitMm: s.params.heightUnitMm,
+      wallThickness: s.params.wallThickness,
+      style: s.params.style,
+      slotConfig: s.params.slotConfig,
+      dividerPieces: s.params.dividerPieces,
+      hasLip: s.params.base.stackingLip,
+      baseStyle: s.params.base.style,
+    }))
+  );
 
   const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
-  const wallHeight = totalH - GRIDFINITY.SOCKET_HEIGHT;
-  // In preview space, the bin is translated up by SOCKET_HEIGHT, so the
-  // cavity floor (inner surface after shelling) is at SOCKET_HEIGHT + wallThickness.
-  const floorZ = GRIDFINITY.SOCKET_HEIGHT + wallThickness;
+  const totalH = height * heightUnitMm;
+  const isFlat = baseStyle === 'flat';
+  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  // Socketed bases are translated up by SOCKET_HEIGHT in preview, placing the
+  // cavity floor at SOCKET_HEIGHT + wallThickness. Flat bases have no offset.
+  const floorZ = (isFlat ? 0 : GRIDFINITY.SOCKET_HEIGHT) + wallThickness;
 
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
   const lipOverhang = hasLip ? Math.max(0, lipTaperWidth - wallThickness) : 0;
