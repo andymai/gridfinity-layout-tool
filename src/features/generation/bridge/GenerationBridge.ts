@@ -171,10 +171,11 @@ interface PendingExport<T> {
  */
 
 /**
- * Fallback timeout for requests that have no params to inspect (e.g. exports,
- * ad-hoc requests). Both {@link computeGenerationTimeoutMs} (bins, #1422) and
- * {@link computeBaseplateTimeoutMs} (baseplates) supply complexity-aware
- * budgets at their respective call sites.
+ * Defensive fallback timeout for {@link startGenerationTimeout} when a caller
+ * omits an explicit budget. Current callers (bin and baseplate generation)
+ * pass complexity-aware budgets from {@link computeGenerationTimeoutMs} and
+ * {@link computeBaseplateTimeoutMs} respectively; the default is kept so a
+ * future caller added without a budget still cancels on unresponsive workers.
  */
 const DEFAULT_GENERATION_TIMEOUT_MS = 30_000;
 

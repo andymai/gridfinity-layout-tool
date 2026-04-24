@@ -107,18 +107,31 @@ export const BASEPLATE_MAX_TIMEOUT_MS = 120_000;
  * Clamped to `[BASE_TIMEOUT_MS, BASEPLATE_MAX_TIMEOUT_MS]`.
  */
 export function computeBaseplateTimeoutMs(params: BaseplateParams): number {
+  // Defensive against transient bad inputs — mid-edit UI state can briefly
+  // present NaN/negative dimensions. The generator's sanitizeParams will
+  // reject them, but the bridge computes this timeout first and setTimeout
+  // coerces NaN to 0, which would cancel the request before the worker can
+  // surface a real error. Floor bad dims to 0 cells (no magnet bonus).
+  const safeWidth = Number.isFinite(params.width) && params.width > 0 ? params.width : 0;
+  const safeDepth = Number.isFinite(params.depth) && params.depth > 0 ? params.depth : 0;
+
   let timeout = BASE_TIMEOUT_MS;
 
   if (params.magnetHoles) {
-    const cells = Math.ceil(params.width) * Math.ceil(params.depth);
+    const cells = Math.ceil(safeWidth) * Math.ceil(safeDepth);
     timeout += Math.min(BASEPLATE_MAGNET_BONUS_CAP_MS, cells * BASEPLATE_MAGNET_MS_PER_CELL);
   }
   if (params.connectorNubs) {
     timeout += BASEPLATE_CONNECTOR_BONUS_MS;
   }
-  if (params.lightweight) {
+  // Match the generator's own convention — `baseplateGenerator.ts` runs the
+  // lightweight floor-cut whenever `lightweight !== false`, so an omitted
+  // field triggers the work and must earn the timeout allowance too.
+  if (params.lightweight !== false) {
     timeout += BASEPLATE_LIGHTWEIGHT_BONUS_MS;
   }
 
-  return Math.min(BASEPLATE_MAX_TIMEOUT_MS, timeout);
+  // Clamp to [BASE, MAX]. Redundant given the guards above, but makes the
+  // documented contract self-enforcing if bonuses are ever signed or reworked.
+  return Math.max(BASE_TIMEOUT_MS, Math.min(BASEPLATE_MAX_TIMEOUT_MS, timeout));
 }

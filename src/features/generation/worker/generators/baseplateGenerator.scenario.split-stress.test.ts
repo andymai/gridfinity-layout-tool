@@ -186,13 +186,9 @@ describe('baseplateGenerator — split stress (recent code paths stacked)', () =
     async () => {
       // 100 cells × 4 magnet holes per cell = 400 boolean subtractions,
       // batched through `cutInBatches`. Sized to stay under the test budget
-      // while still exercising the batched-cut code path.
-      //
-      // NOTE: 16×16 with magnets does not complete within 60s in Node. In
-      // production the bridge cancels at `DEFAULT_GENERATION_TIMEOUT_MS`
-      // (30s) with no complexity-aware override — see
-      // `bridge/generationTimeout.ts` (bin-only) and
-      // `GenerationBridge.ts:178, 771`.
+      // while still exercising the batched-cut code path. Larger grids
+      // (e.g. 16×16) take longer than 60s in Node; production budgets those
+      // via `computeBaseplateTimeoutMs` in `GenerationBridge`.
       const params = defaults({
         width: 10,
         depth: 10,

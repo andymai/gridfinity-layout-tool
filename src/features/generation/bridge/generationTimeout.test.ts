@@ -21,6 +21,9 @@ function params(overrides: Partial<BinParams> = {}): BinParams {
 }
 
 function bpParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
+  // lightweight defaults to `false` here so base-case assertions aren't
+  // polluted by the implicit "undefined = on" bonus. Tests that care about
+  // the lightweight bonus opt in explicitly.
   return {
     width: 2,
     depth: 2,
@@ -34,6 +37,7 @@ function bpParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
     paddingBack: 0,
     fractionalEdgeX: 'end',
     fractionalEdgeY: 'end',
+    lightweight: false,
     ...overrides,
   };
 }
@@ -200,6 +204,33 @@ describe('computeBaseplateTimeoutMs', () => {
       })
     );
     expect(t).toBeLessThanOrEqual(BASEPLATE_MAX_TIMEOUT_MS);
+  });
+
+  it('clamps non-finite and invalid dimensions into the supported timeout range', () => {
+    const cases = [
+      bpParams({ width: Number.NaN, depth: 3, magnetHoles: true }),
+      bpParams({ width: 3, depth: Number.NaN, magnetHoles: true }),
+      bpParams({ width: -1, depth: 3, magnetHoles: true }),
+      bpParams({ width: 3, depth: -1, magnetHoles: true }),
+      bpParams({ width: Number.POSITIVE_INFINITY, depth: 3, magnetHoles: true }),
+      bpParams({ width: 3, depth: Number.POSITIVE_INFINITY, magnetHoles: true }),
+    ];
+
+    for (const baseplateParams of cases) {
+      const timeout = computeBaseplateTimeoutMs(baseplateParams);
+      expect(Number.isFinite(timeout)).toBe(true);
+      expect(timeout).toBeGreaterThanOrEqual(BASE_TIMEOUT_MS);
+      expect(timeout).toBeLessThanOrEqual(BASEPLATE_MAX_TIMEOUT_MS);
+    }
+  });
+
+  it('treats omitted lightweight field as enabled (matches generator default)', () => {
+    // `baseplateGenerator.ts` runs the lightweight floor-cut whenever
+    // `lightweight !== false`, so omitting the field triggers the work and
+    // must also grant the bonus — otherwise the budget undercounts.
+    const { lightweight: _omit, ...rest } = bpParams();
+    void _omit;
+    expect(computeBaseplateTimeoutMs(rest)).toBe(BASE_TIMEOUT_MS + BASEPLATE_LIGHTWEIGHT_BONUS_MS);
   });
 
   it('has a higher ceiling than bins (dense magnet grids outlast bin pipelines)', () => {
