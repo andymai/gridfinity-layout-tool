@@ -1522,6 +1522,10 @@ const en: Record<string, string> = {
   'baseplate.gridDepth': 'Depth',
   'baseplate.filamentColor': 'Filament color',
   'baseplate.initializingEngine': 'Initializing 3D engine...',
+  'baseplate.loadingEngine': 'Loading 3D engine...',
+  'baseplate.computingGeometry': 'Computing high-fidelity geometry...',
+  'baseplate.brepFinalizeFailed':
+    "Couldn't finalize high-fidelity preview — exported file may differ slightly.",
   'baseplate.elapsed': '{seconds}s',
 
   // Collaboration

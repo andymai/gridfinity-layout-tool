@@ -1,5 +1,7 @@
 {
   "app.skipToGridEditor": "Zum Grid-Planner springen",
+  "baseplate.brepFinalizeFailed": "Hochauflösende Vorschau konnte nicht abgeschlossen werden — die exportierte Datei kann leicht abweichen.",
+  "baseplate.computingGeometry": "Hochauflösende Geometrie wird berechnet...",
   "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.cornerRadius": "Eckenradius",
   "baseplate.cornerRadiusBL": "Unten-links",
@@ -35,6 +37,7 @@
   "baseplate.inclPadding": "inkl. Rand",
   "baseplate.initializingEngine": "3D-Engine wird initialisiert...",
   "baseplate.isoView": "Iso",
+  "baseplate.loadingEngine": "3D-Engine wird geladen...",
   "baseplate.magnetDepth": "Magnettiefe",
   "baseplate.magnetDepthInfo": "2mm für typische 6×2mm-Magnete",
   "baseplate.magnetDiameter": "Magnetdurchmesser",

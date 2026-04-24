@@ -24,6 +24,13 @@ interface MeshResult {
   readonly edgeVertices: Float32Array | null;
   readonly error: string | null;
   readonly timingMs: number;
+  /**
+   * Which generation path produced this mesh. `direct` is the synchronous
+   * procedural fast path (<100ms placeholder); `brep` is the high-fidelity
+   * WASM result. UI uses this to suppress the "loading" overlay once a
+   * direct-mesh preview is on screen, even while BREP is still in flight.
+   */
+  readonly source?: 'direct' | 'brep';
 }
 
 /** A generated mesh for a single piece in a split baseplate. */
@@ -61,6 +68,13 @@ interface BaseplatePageState {
   /** Deduplication statistics for current split generation */
   dedupStats: DedupStats | null;
 
+  /**
+   * Set when BREP generation failed but a direct-mesh preview is already
+   * visible. UI surfaces this as a non-blocking toast with a retry CTA
+   * instead of replacing the preview with a red error overlay.
+   */
+  brepFailureMessage: string | null;
+
   /** Currently hovered piece label (e.g. "A1"), synced between panel and 3D */
   hoveredPieceLabel: string | null;
   /** Currently selected (sticky) piece label */
@@ -87,6 +101,7 @@ interface BaseplatePageState {
   setExportFileNameConfig: (config: ExportFileNameConfig) => void;
   setExportProgress: (progress: { current: number; total: number } | null) => void;
   setDedupStats: (stats: DedupStats | null) => void;
+  setBrepFailureMessage: (message: string | null) => void;
 }
 
 export const useBaseplatePageStore = create<BaseplatePageState>()(
@@ -102,6 +117,7 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     splitViewMode: 'exploded',
     splitProgress: null,
     dedupStats: null,
+    brepFailureMessage: null,
     hoveredPieceLabel: null,
     selectedPieceLabel: null,
     exportDialogOpen: false,
@@ -195,6 +211,12 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     setDedupStats: (stats) => {
       set((state) => {
         state.dedupStats = stats;
+      });
+    },
+
+    setBrepFailureMessage: (message) => {
+      set((state) => {
+        state.brepFailureMessage = message;
       });
     },
   }))

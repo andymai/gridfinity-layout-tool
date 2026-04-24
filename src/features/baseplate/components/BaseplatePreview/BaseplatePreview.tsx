@@ -136,10 +136,23 @@ export function BaseplatePreview({
   const hasError = wasmStatus === 'error' || generationStatus === 'error';
   const isWasmLoading = !hasError && wasmStatus !== 'ready';
   const isGenerating = generationStatus === 'generating';
-  const showOverlay = isWasmLoading || isGenerating;
+  /**
+   * Direct-mesh preview is on screen while BREP is still in flight. The
+   * canvas is interactive; the user just doesn't have the high-fidelity
+   * geometry yet. Used to soften the loading indicator from a centered
+   * blocking spinner into a subtle pill.
+   */
+  const hasDirectPreview = hasAnyMesh && isGenerating;
+  /**
+   * Big initial-load skeleton appears only when the canvas is genuinely
+   * blank — direct-mesh normally lands within ~100ms so this is rare in
+   * practice (kept as fallback for the very first render frame and for
+   * the unhappy path where direct-mesh fails before BREP completes).
+   */
+  const showInitSkeleton = isWasmLoading && !hasAnyMesh;
 
   // Elapsed time tracking for generation
-  const elapsedSec = useGenerationElapsed(generationStatus === 'generating');
+  const elapsedSec = useGenerationElapsed(isGenerating);
 
   return (
     <div
@@ -147,8 +160,10 @@ export function BaseplatePreview({
       role="img"
       aria-label={t('baseplate.title')}
     >
-      {/* Initial load skeleton -- matches bin designer PreviewSkeleton */}
-      {isWasmLoading && !hasAnyMesh && (
+      {/* Initial load skeleton -- matches bin designer PreviewSkeleton.
+          Only shown when the canvas is genuinely blank; direct-mesh preview
+          normally hides this within ~100ms. */}
+      {showInitSkeleton && (
         <div
           className="absolute inset-0 z-10 flex items-center justify-center bg-surface"
           role="status"
@@ -297,7 +312,9 @@ export function BaseplatePreview({
         </div>
       )}
 
-      {showOverlay && (
+      {/* Bottom-center status pill. Suppressed when the canvas is blank
+          (the big skeleton is showing instead) to avoid double-loading UI. */}
+      {isGenerating && !showInitSkeleton && (
         <div
           className="absolute inset-x-0 bottom-4 flex justify-center"
           role="status"
@@ -324,8 +341,8 @@ export function BaseplatePreview({
               />
             </svg>
             <span className="text-content-secondary">
-              {overlayStatusText(isWasmLoading, splitProgress, dedupStats, t)}
-              {elapsedSec !== null && (
+              {overlayStatusText(isWasmLoading, splitProgress, dedupStats, hasDirectPreview, t)}
+              {elapsedSec !== null && elapsedSec >= 1 && (
                 <span className="ml-1.5 text-content-tertiary">
                   {t('baseplate.elapsed', { seconds: elapsedSec })}
                 </span>

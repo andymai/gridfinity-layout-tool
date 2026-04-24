@@ -1,5 +1,7 @@
 {
   "app.skipToGridEditor": "Passer au planificateur de grille",
+  "baseplate.brepFinalizeFailed": "Impossible de finaliser l'aperçu haute fidélité — le fichier exporté peut légèrement différer.",
+  "baseplate.computingGeometry": "Calcul de la géométrie haute fidélité...",
   "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.cornerRadius": "Rayon de coin",
   "baseplate.cornerRadiusBL": "Bas-gauche",
@@ -35,6 +37,7 @@
   "baseplate.inclPadding": "avec marge",
   "baseplate.initializingEngine": "Initialisation du moteur 3D...",
   "baseplate.isoView": "Iso",
+  "baseplate.loadingEngine": "Chargement du moteur 3D...",
   "baseplate.magnetDepth": "Profondeur de l'aimant",
   "baseplate.magnetDepthInfo": "2mm pour aimants typiques de 6×2mm",
   "baseplate.magnetDiameter": "Diamètre de l'aimant",

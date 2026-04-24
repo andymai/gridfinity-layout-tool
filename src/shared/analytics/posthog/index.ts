@@ -51,6 +51,7 @@ export {
   trackWasmThreadingStatus,
   trackCachePerformance,
   trackKernelPerformance,
+  trackBaseplatePreviewTiming,
   trackGalleryOpened,
   trackGalleryClosed,
   listenForPwaInstall,

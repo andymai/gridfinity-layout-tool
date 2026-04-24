@@ -1,5 +1,7 @@
 {
   "app.skipToGridEditor": "Ir al planificador de cuadrícula",
+  "baseplate.brepFinalizeFailed": "No se pudo finalizar la vista previa de alta fidelidad — el archivo exportado puede diferir ligeramente.",
+  "baseplate.computingGeometry": "Calculando geometría de alta fidelidad...",
   "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.cornerRadius": "Radio de esquina",
   "baseplate.cornerRadiusBL": "Inferior izquierda",
@@ -35,6 +37,7 @@
   "baseplate.inclPadding": "incl. margen",
   "baseplate.initializingEngine": "Inicializando motor 3D...",
   "baseplate.isoView": "Iso",
+  "baseplate.loadingEngine": "Cargando motor 3D...",
   "baseplate.magnetDepth": "Profundidad del imán",
   "baseplate.magnetDepthInfo": "2mm para imanes típicos de 6×2mm",
   "baseplate.magnetDiameter": "Diámetro del imán",

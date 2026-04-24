@@ -1,5 +1,7 @@
 {
   "app.skipToGridEditor": "Ga naar grid planner",
+  "baseplate.brepFinalizeFailed": "Kon hoogwaardige voorbeeldweergave niet voltooien — het geëxporteerde bestand kan licht afwijken.",
+  "baseplate.computingGeometry": "Hoogwaardige geometrie berekenen...",
   "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.cornerRadius": "Hoekradius",
   "baseplate.cornerRadiusBL": "Linksonder",
@@ -35,6 +37,7 @@
   "baseplate.inclPadding": "incl. marge",
   "baseplate.initializingEngine": "3D-engine initialiseren...",
   "baseplate.isoView": "Iso",
+  "baseplate.loadingEngine": "3D-engine laden...",
   "baseplate.magnetDepth": "Magneetdiepte",
   "baseplate.magnetDepthInfo": "2mm voor typische 6×2mm-magneten",
   "baseplate.magnetDiameter": "Magneetdiameter",

@@ -1,5 +1,7 @@
 {
   "app.skipToGridEditor": "Pular para o planejador de grade",
+  "baseplate.brepFinalizeFailed": "Não foi possível finalizar a pré-visualização de alta fidelidade — o arquivo exportado pode diferir ligeiramente.",
+  "baseplate.computingGeometry": "Computando geometria de alta fidelidade...",
   "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.cornerRadius": "Raio de canto",
   "baseplate.cornerRadiusBL": "Inferior esquerdo",
@@ -35,6 +37,7 @@
   "baseplate.inclPadding": "incl. margem",
   "baseplate.initializingEngine": "Inicializando motor 3D...",
   "baseplate.isoView": "Iso",
+  "baseplate.loadingEngine": "Carregando motor 3D...",
   "baseplate.magnetDepth": "Profundidade do ímã",
   "baseplate.magnetDepthInfo": "2mm para ímãs típicos de 6×2mm",
   "baseplate.magnetDiameter": "Diâmetro do ímã",
