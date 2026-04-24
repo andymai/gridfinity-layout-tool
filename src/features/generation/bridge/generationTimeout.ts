@@ -1,14 +1,16 @@
 /**
- * Complexity-aware timeout for bin generation requests.
+ * Complexity-aware timeouts for worker generation requests.
  *
  * The worker's CSG pipeline scales super-linearly with wall-pattern count and
  * bin height. A flat 30s timeout killed legitimate generations on tall bins
- * that combine hex patterns with wall cutouts (#1422). This module computes a
- * per-request timeout from the BinParams before the worker dispatches, capped
- * so a runaway WASM loop can't hang the UI forever.
+ * that combine hex patterns with wall cutouts (#1422). Baseplates hit the same
+ * class of failure on large magnet grids — `cutInBatches` subtracts four holes
+ * per cell and OCCT boolean time scales with cell count. This module computes
+ * per-request timeouts from the params before the worker dispatches, each
+ * capped so a runaway WASM loop can't hang the UI forever.
  */
 
-import type { BinParams } from '@/shared/types/bin';
+import type { BaseplateParams, BinParams } from '@/shared/types/bin';
 
 /** Minimum timeout for trivial bins (no heavy features). */
 export const BASE_TIMEOUT_MS = 30_000;
@@ -71,4 +73,65 @@ export function computeGenerationTimeoutMs(params: BinParams): number {
   timeout += heightBuckets * HEIGHT_BONUS_MS;
 
   return Math.min(MAX_TIMEOUT_MS, timeout);
+}
+
+/** Per-cell cost of magnet-hole boolean subtractions, in ms. */
+export const BASEPLATE_MAGNET_MS_PER_CELL = 200;
+
+/** Upper bound on the magnet-hole bonus, even for very large grids. */
+export const BASEPLATE_MAGNET_BONUS_CAP_MS = 60_000;
+
+/** Bonus for split pieces with dovetail connector nubs/holes. */
+export const BASEPLATE_CONNECTOR_BONUS_MS = 10_000;
+
+/** Bonus for the lightweight floor-cut path. */
+export const BASEPLATE_LIGHTWEIGHT_BONUS_MS = 5_000;
+
+/**
+ * Hard ceiling for baseplates. Higher than {@link MAX_TIMEOUT_MS} because
+ * dense magnet grids (10u+ with holes) legitimately run longer than any
+ * bin shape does — the batched-cut pipeline is serial per batch and OCCT
+ * numerical precision work dominates.
+ */
+export const BASEPLATE_MAX_TIMEOUT_MS = 120_000;
+
+/**
+ * Compute the timeout budget for a baseplate generation, in milliseconds.
+ *
+ * Formula:
+ *   BASE_TIMEOUT_MS
+ * + min(BASEPLATE_MAGNET_BONUS_CAP_MS, ceil(w) * ceil(d) * BASEPLATE_MAGNET_MS_PER_CELL)  [if magnetHoles]
+ * + BASEPLATE_CONNECTOR_BONUS_MS  [if connectorNubs]
+ * + BASEPLATE_LIGHTWEIGHT_BONUS_MS  [if lightweight]
+ *
+ * Clamped to `[BASE_TIMEOUT_MS, BASEPLATE_MAX_TIMEOUT_MS]`.
+ */
+export function computeBaseplateTimeoutMs(params: BaseplateParams): number {
+  // Defensive against transient bad inputs — mid-edit UI state can briefly
+  // present NaN/negative dimensions. The generator's sanitizeParams will
+  // reject them, but the bridge computes this timeout first and setTimeout
+  // coerces NaN to 0, which would cancel the request before the worker can
+  // surface a real error. Floor bad dims to 0 cells (no magnet bonus).
+  const safeWidth = Number.isFinite(params.width) && params.width > 0 ? params.width : 0;
+  const safeDepth = Number.isFinite(params.depth) && params.depth > 0 ? params.depth : 0;
+
+  let timeout = BASE_TIMEOUT_MS;
+
+  if (params.magnetHoles) {
+    const cells = Math.ceil(safeWidth) * Math.ceil(safeDepth);
+    timeout += Math.min(BASEPLATE_MAGNET_BONUS_CAP_MS, cells * BASEPLATE_MAGNET_MS_PER_CELL);
+  }
+  if (params.connectorNubs) {
+    timeout += BASEPLATE_CONNECTOR_BONUS_MS;
+  }
+  // Match the generator's own convention — `baseplateGenerator.ts` runs the
+  // lightweight floor-cut whenever `lightweight !== false`, so an omitted
+  // field triggers the work and must earn the timeout allowance too.
+  if (params.lightweight !== false) {
+    timeout += BASEPLATE_LIGHTWEIGHT_BONUS_MS;
+  }
+
+  // Clamp to [BASE, MAX]. Redundant given the guards above, but makes the
+  // documented contract self-enforcing if bonuses are ever signed or reworked.
+  return Math.max(BASE_TIMEOUT_MS, Math.min(BASEPLATE_MAX_TIMEOUT_MS, timeout));
 }

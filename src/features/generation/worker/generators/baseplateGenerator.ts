@@ -901,6 +901,22 @@ function buildSlabProfile(
 }
 
 /**
+ * Wrap a BREP boolean expression and retag any thrown error with a named
+ * operation prefix. Errors reach the worker's top-level handler as
+ * `baseplate.<op>: <inner>`, which gives support reports a handle for which
+ * boolean in the pipeline failed — OCCT/brepjs failures otherwise come back
+ * as generic `Called unwrap on an Err: ...` strings.
+ */
+function tagOp<T>(op: string, fn: () => T): T {
+  try {
+    return fn();
+  } catch (e) {
+    const inner = e instanceof Error ? e.message : String(e);
+    throw new Error(`baseplate.${op}: ${inner}`, { cause: e });
+  }
+}
+
+/**
  * Validate and clamp baseplate params to safe ranges.
  * Throws on clearly invalid dimensions (NaN, zero, negative) to surface
  * upstream bugs. Clamps other fields to safe ranges to prevent OOM.
@@ -1164,7 +1180,7 @@ function buildBaseplateSolid(
     // Intersect: keep only material that's inside both the cached rectangular
     // slab-with-pockets AND the rounded profile.
     const oldBaseplate = baseplate;
-    baseplate = unwrap(intersect(baseplate, roundedTranslated));
+    baseplate = tagOp('cornerClipIntersect', () => unwrap(intersect(baseplate, roundedTranslated)));
     oldBaseplate.delete();
     roundedTranslated.delete();
   }
@@ -1212,11 +1228,15 @@ function buildBaseplateSolid(
     } else {
       // Fallback: sequential fuseAll then cutAll
       if (nubs.length > 0) {
-        baseplate = unwrap(fuseAll([baseplate, ...nubs] as ValidSolid[]));
+        baseplate = tagOp('connectorFuse', () =>
+          unwrap(fuseAll([baseplate, ...nubs] as ValidSolid[]))
+        );
       }
       if (connHoles.length > 0) {
         const preCut = baseplate;
-        baseplate = unwrap(cutAll(baseplate as ValidSolid, connHoles as ValidSolid[]));
+        baseplate = tagOp('connectorCut', () =>
+          unwrap(cutAll(baseplate as ValidSolid, connHoles as ValidSolid[]))
+        );
         if (preCut !== preBoolean) preCut.delete();
       }
     }

@@ -25,7 +25,7 @@ import type {
   KernelPerfCategory,
 } from './types';
 import { AdaptiveDebounce } from './adaptiveDebounce';
-import { computeGenerationTimeoutMs } from './generationTimeout';
+import { computeBaseplateTimeoutMs, computeGenerationTimeoutMs } from './generationTimeout';
 
 /**
  * Deterministic fingerprint for generation params.
@@ -171,9 +171,11 @@ interface PendingExport<T> {
  */
 
 /**
- * Fallback timeout for generations with no params to inspect (e.g. baseplates).
- * Bin generations use {@link computeGenerationTimeoutMs} for a complexity-aware
- * budget (#1422).
+ * Defensive fallback timeout for {@link startGenerationTimeout} when a caller
+ * omits an explicit budget. Current callers (bin and baseplate generation)
+ * pass complexity-aware budgets from {@link computeGenerationTimeoutMs} and
+ * {@link computeBaseplateTimeoutMs} respectively; the default is kept so a
+ * future caller added without a budget still cancels on unresponsive workers.
  */
 const DEFAULT_GENERATION_TIMEOUT_MS = 30_000;
 
@@ -641,7 +643,7 @@ export class GenerationBridge {
         const requestId = this.nextRequestId();
         this.currentRequestId = requestId;
         this.baseplateCache.pendingFingerprint = fingerprint;
-        this.startGenerationTimeout(requestId);
+        this.startGenerationTimeout(requestId, computeBaseplateTimeoutMs(params));
         this.postMessage({
           type: 'GENERATE_BASEPLATE',
           payload: { params, requestId },
@@ -763,8 +765,8 @@ export class GenerationBridge {
    * Start a timeout to recover from unresponsive workers (WASM OOM, infinite loops).
    * Cleared in clearPending() when the worker responds (success, error, or cancel).
    *
-   * Bin generations pass a complexity-aware budget; callers without params
-   * (baseplates) fall back to {@link DEFAULT_GENERATION_TIMEOUT_MS}.
+   * Bin and baseplate generations pass complexity-aware budgets; callers
+   * without params fall back to {@link DEFAULT_GENERATION_TIMEOUT_MS}.
    */
   private startGenerationTimeout(
     requestId: string,
@@ -779,7 +781,7 @@ export class GenerationBridge {
         this.postMessage({ type: 'CANCEL', requestId });
         reject(
           new Error(
-            'Generation timed out — this bin may be too complex. Try reducing compartments or disabling features like scoops and labels.'
+            'Generation timed out — this design may be too complex. Try reducing grid size or disabling features like magnets, compartments, or wall patterns.'
           )
         );
       }
