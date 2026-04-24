@@ -6,7 +6,6 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
-import { GRIDFINITY } from '@/shared/constants/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
 import { SIZE, CLEARANCE, SOCKET_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
 // SIZE is kept as a fallback default for backwards compatibility with callers
@@ -17,7 +16,9 @@ import type { BinDimensions, PipelineContext } from './types';
 
 /** Derive all dimensions from bin parameters. */
 function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
-  const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
+  // Height uses params.heightUnitMm (user-configurable) — not the Gridfinity
+  // default constant — so custom unit values flow into the generated solid.
+  const totalHeight = params.height * params.heightUnitMm;
   const isFlat = params.base.style === 'flat';
   // User flag only. When the mask has mixed half-bin detail, the socket
   // builder does a per-cell dispatch using the mask — it splits only

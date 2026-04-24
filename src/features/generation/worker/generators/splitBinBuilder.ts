@@ -19,7 +19,6 @@ import {
 } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
-import { GRIDFINITY } from '@/shared/constants/bin';
 
 import { SIZE, CLEARANCE, SOCKET_HEIGHT } from './generatorTypes';
 import { toIndexedMeshData } from './utils/mesh';
@@ -130,7 +129,7 @@ function splitSolidIntoPieces(
 
   // Bin geometry context for connector placement
   const isFlat = params.base.style === 'flat';
-  const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
+  const totalHeight = params.height * params.heightUnitMm;
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
   const floorZ = isFlat ? 0 : SOCKET_HEIGHT;
   const wallTopZ = floorZ + wallHeight;
@@ -164,108 +163,108 @@ function splitSolidIntoPieces(
   const pieces: SplitPieceInfo[] = [];
 
   try {
-  for (let col = 0; col < xBounds.length - 1; col++) {
-    for (let row = 0; row < yBounds.length - 1; row++) {
-      const xMin = xBounds[col];
-      const xMax = xBounds[col + 1];
-      const yMin = yBounds[row];
-      const yMax = yBounds[row + 1];
+    for (let col = 0; col < xBounds.length - 1; col++) {
+      for (let row = 0; row < yBounds.length - 1; row++) {
+        const xMin = xBounds[col];
+        const xMax = xBounds[col + 1];
+        const yMin = yBounds[row];
+        const yMax = yBounds[row + 1];
 
-      const pieceW = xMax - xMin;
-      const pieceD = yMax - yMin;
-      const centerX = (xMin + xMax) / 2;
-      const centerY = (yMin + yMax) / 2;
-      const colLabel = String.fromCharCode(65 + col); // A, B, C...
+        const pieceW = xMax - xMin;
+        const pieceD = yMax - yMin;
+        const centerX = (xMin + xMax) / 2;
+        const centerY = (yMin + yMax) / 2;
+        const colLabel = String.fromCharCode(65 + col); // A, B, C...
 
-      // Expand cutting box at outer bin edges to avoid coplanar booleans;
-      // interior faces get a smaller margin to break socket wall coplanarity.
-      const marginL = col === 0 ? EDGE_MARGIN : INTERIOR_MARGIN;
-      const marginR = col === xBounds.length - 2 ? EDGE_MARGIN : INTERIOR_MARGIN;
-      const marginB = row === 0 ? EDGE_MARGIN : INTERIOR_MARGIN;
-      const marginT = row === yBounds.length - 2 ? EDGE_MARGIN : INTERIOR_MARGIN;
-      const boxW = pieceW + marginL + marginR;
-      const boxD = pieceD + marginB + marginT;
-      const boxCenterX = centerX + (marginR - marginL) / 2;
-      const boxCenterY = centerY + (marginT - marginB) / 2;
+        // Expand cutting box at outer bin edges to avoid coplanar booleans;
+        // interior faces get a smaller margin to break socket wall coplanarity.
+        const marginL = col === 0 ? EDGE_MARGIN : INTERIOR_MARGIN;
+        const marginR = col === xBounds.length - 2 ? EDGE_MARGIN : INTERIOR_MARGIN;
+        const marginB = row === 0 ? EDGE_MARGIN : INTERIOR_MARGIN;
+        const marginT = row === yBounds.length - 2 ? EDGE_MARGIN : INTERIOR_MARGIN;
+        const boxW = pieceW + marginL + marginR;
+        const boxD = pieceD + marginB + marginT;
+        const boxCenterX = centerX + (marginR - marginL) / 2;
+        const boxCenterY = centerY + (marginT - marginB) / 2;
 
-      const cuttingBox = box(boxW, boxD, CUTTING_BOX_HEIGHT, {
-        at: [boxCenterX, boxCenterY, 0],
-      });
+        const cuttingBox = box(boxW, boxD, CUTTING_BOX_HEIGHT, {
+          at: [boxCenterX, boxCenterY, 0],
+        });
 
-      // Split body with cutting box — intersect creates new shape, inputs persist
-      const bodyClone = unwrap(clone(bodySolid));
-      let piece = unwrap(intersect(bodyClone, cuttingBox));
-      bodyClone.delete();
+        // Split body with cutting box — intersect creates new shape, inputs persist
+        const bodyClone = unwrap(clone(bodySolid));
+        let piece = unwrap(intersect(bodyClone, cuttingBox));
+        bodyClone.delete();
 
-      // Validate that the boolean intersection preserved the full geometry.
-      // If OCCT silently dropped walls/lip due to coplanarity, the Z extent
-      // will be far shorter than expected (e.g. ~5mm socket-only vs ~25mm).
-      const pieceBounds = getBounds(piece);
-      const actualZ = pieceBounds.zMax - pieceBounds.zMin;
-      if (actualZ < totalHeight * 0.8) {
-        piece.delete();
-        cuttingBox.delete();
-        throw new Error(
-          `Split piece ${colLabel}${row + 1} lost geometry: ` +
-            `expected body Z≈${totalHeight.toFixed(1)}mm (lip fused separately), got ${actualZ.toFixed(1)}mm. ` +
-            `This is likely caused by a coplanar cut plane — please report this bug.`
-        );
-      }
-
-      // Split and fuse lip piece using a clone of the same cutting box
-      if (lipSolid) {
-        try {
-          const lipClone = unwrap(clone(lipSolid));
-          const boxClone = unwrap(clone(cuttingBox));
-          const lipPiece = unwrap(intersect(lipClone, boxClone));
-          lipClone.delete();
-          boxClone.delete();
-          const oldPiece = piece;
-          piece = unwrap(fuse(oldPiece, lipPiece));
-          oldPiece.delete();
-          lipPiece.delete();
-        } catch (e) {
-          if (isAbortError(e)) throw e;
-          // Lip fuse failed — export piece without lip (non-critical degradation)
+        // Validate that the boolean intersection preserved the full geometry.
+        // If OCCT silently dropped walls/lip due to coplanarity, the Z extent
+        // will be far shorter than expected (e.g. ~5mm socket-only vs ~25mm).
+        const pieceBounds = getBounds(piece);
+        const actualZ = pieceBounds.zMax - pieceBounds.zMin;
+        if (actualZ < totalHeight * 0.8) {
+          piece.delete();
+          cuttingBox.delete();
+          throw new Error(
+            `Split piece ${colLabel}${row + 1} lost geometry: ` +
+              `expected body Z≈${totalHeight.toFixed(1)}mm (lip fused separately), got ${actualZ.toFixed(1)}mm. ` +
+              `This is likely caused by a coplanar cut plane — please report this bug.`
+          );
         }
+
+        // Split and fuse lip piece using a clone of the same cutting box
+        if (lipSolid) {
+          try {
+            const lipClone = unwrap(clone(lipSolid));
+            const boxClone = unwrap(clone(cuttingBox));
+            const lipPiece = unwrap(intersect(lipClone, boxClone));
+            lipClone.delete();
+            boxClone.delete();
+            const oldPiece = piece;
+            piece = unwrap(fuse(oldPiece, lipPiece));
+            oldPiece.delete();
+            lipPiece.delete();
+          } catch (e) {
+            if (isAbortError(e)) throw e;
+            // Lip fuse failed — export piece without lip (non-critical degradation)
+          }
+        }
+
+        cuttingBox.delete();
+
+        if (connectorConfig?.enabled) {
+          const cutFaces = computeCutFaces(
+            col,
+            row,
+            cutPlanesX,
+            cutPlanesY,
+            outerW,
+            outerD,
+            pieceW,
+            pieceD,
+            centerX,
+            centerY
+          );
+          const geometryContext: BinGeometryContext = {
+            floorZ,
+            wallTopZ,
+            wallThickness: params.wallThickness,
+            floorThickness: params.wallThickness,
+          };
+          piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
+        }
+
+        pieces.push({
+          solid: piece,
+          label: `${colLabel}${row + 1}`,
+          col: col + 1,
+          row: row + 1,
+          widthMm: pieceW,
+          depthMm: pieceD,
+          xMinFromOrigin: xMin + outerW / 2,
+          yMinFromOrigin: yMin + outerD / 2,
+        });
       }
-
-      cuttingBox.delete();
-
-      if (connectorConfig?.enabled) {
-        const cutFaces = computeCutFaces(
-          col,
-          row,
-          cutPlanesX,
-          cutPlanesY,
-          outerW,
-          outerD,
-          pieceW,
-          pieceD,
-          centerX,
-          centerY
-        );
-        const geometryContext: BinGeometryContext = {
-          floorZ,
-          wallTopZ,
-          wallThickness: params.wallThickness,
-          floorThickness: params.wallThickness,
-        };
-        piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
-      }
-
-      pieces.push({
-        solid: piece,
-        label: `${colLabel}${row + 1}`,
-        col: col + 1,
-        row: row + 1,
-        widthMm: pieceW,
-        depthMm: pieceD,
-        xMinFromOrigin: xMin + outerW / 2,
-        yMinFromOrigin: yMin + outerD / 2,
-      });
     }
-  }
   } finally {
     if (lipSolid) lipSolid.delete();
 

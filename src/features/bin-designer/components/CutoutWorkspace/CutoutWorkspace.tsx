@@ -96,7 +96,7 @@ export function CutoutWorkspace() {
   const maskCellSize = params.cellMask
     ? { cellMmX: binWidth / params.cellMask.cols, cellMmY: binDepth / params.cellMask.rows }
     : undefined;
-  const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
+  const totalHeight = params.height * params.heightUnitMm;
   const isFlat = params.base.style === 'flat';
   const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.BASE_HEIGHT;
 
