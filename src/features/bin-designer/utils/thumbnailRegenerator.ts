@@ -11,7 +11,6 @@
 
 import * as THREE from 'three';
 import { bridgeManager } from '@/shared/generation/bridge';
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import type { BinParams } from '@/features/bin-designer/types';
 import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
 import { THREE_COLORS } from '@/shared/hooks/useThemeEffect';
@@ -123,10 +122,17 @@ export async function regenerateThumbnail(
     const camera = new THREE.PerspectiveCamera(fov, 1, 0.1, 2000);
     camera.up.set(0, 0, 1);
 
-    const { width, depth, height } = params;
-    const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+    const { width, depth, height, gridUnitMm, heightUnitMm } = params;
+    const totalH = height * heightUnitMm;
     const binCenter = new THREE.Vector3(0, 0, totalH / 2);
-    const idealDistance = calculateIdealDistance(width, depth, height, fov);
+    const idealDistance = calculateIdealDistance(
+      width,
+      depth,
+      height,
+      fov,
+      gridUnitMm,
+      heightUnitMm
+    );
 
     const cameraPos = ISOMETRIC_DIRECTION.clone().multiplyScalar(idealDistance).add(binCenter);
     camera.position.copy(cameraPos);

@@ -145,7 +145,7 @@ export function SplitBinMeshes({ color, wireframe }: SplitBinMeshesProps) {
   const gridUnitMm = params.gridUnitMm;
   const totalWidthMm = params.width * gridUnitMm - GRIDFINITY.TOLERANCE;
   const totalDepthMm = params.depth * gridUnitMm - GRIDFINITY.TOLERANCE;
-  const totalH = params.height * GRIDFINITY.HEIGHT_UNIT;
+  const totalH = params.height * params.heightUnitMm;
   const isExploded = splitViewMode === 'exploded';
 
   // Compute max col/row for centering the explosion offsets

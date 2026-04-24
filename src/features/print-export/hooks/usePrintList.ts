@@ -103,8 +103,12 @@ export function usePrintList(): UsePrintListReturn {
 
   // Base enhanced rows (memoized - expensive operation)
   const baseRows = useMemo(
-    () => generateEnhancedPrintList(layout.bins, maxGridUnits, printSettings, config),
-    [layout.bins, maxGridUnits, printSettings, config]
+    () =>
+      generateEnhancedPrintList(layout.bins, maxGridUnits, printSettings, config, {
+        gridUnitMm: layout.gridUnitMm,
+        heightUnitMm: layout.heightUnitMm,
+      }),
+    [layout.bins, maxGridUnits, printSettings, config, layout.gridUnitMm, layout.heightUnitMm]
   );
 
   // Filtered and sorted rows

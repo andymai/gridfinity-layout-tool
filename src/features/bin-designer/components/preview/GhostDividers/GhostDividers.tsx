@@ -29,24 +29,26 @@ export function GhostDividers() {
   const { invalidate } = useThree();
   const lineRef = useRef<LineSegments2 | null>(null);
 
-  const { width, depth, height, wallThickness, cols, rows, generationStatus } = useDesignerStore(
-    useShallow((s) => ({
-      width: s.params.width,
-      depth: s.params.depth,
-      height: s.params.height,
-      wallThickness: s.params.wallThickness,
-      cols: s.params.compartments.cols,
-      rows: s.params.compartments.rows,
-      generationStatus: s.generation.status,
-    }))
-  );
+  const { width, depth, height, heightUnitMm, wallThickness, cols, rows, generationStatus } =
+    useDesignerStore(
+      useShallow((s) => ({
+        width: s.params.width,
+        depth: s.params.depth,
+        height: s.params.height,
+        heightUnitMm: s.params.heightUnitMm,
+        wallThickness: s.params.wallThickness,
+        cols: s.params.compartments.cols,
+        rows: s.params.compartments.rows,
+        generationStatus: s.generation.status,
+      }))
+    );
 
   // Calculate bin dimensions
   const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+  const totalH = height * heightUnitMm;
   const floorZ = GRIDFINITY.BASE_HEIGHT;
   const wallHeight = totalH - floorZ;
   const topZ = floorZ + wallHeight;

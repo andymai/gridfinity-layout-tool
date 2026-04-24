@@ -35,6 +35,7 @@ export function GhostSlotLines() {
     width,
     depth,
     height,
+    heightUnitMm,
     wallThickness,
     style,
     slotConfig,
@@ -46,6 +47,7 @@ export function GhostSlotLines() {
       width: s.params.width,
       depth: s.params.depth,
       height: s.params.height,
+      heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       style: s.params.style,
       slotConfig: s.params.slotConfig,
@@ -59,7 +61,7 @@ export function GhostSlotLines() {
   const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+  const totalH = height * heightUnitMm;
   const topZ = totalH;
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
   const lipOverhang = hasLip ? Math.max(0, lipTaperWidth - wallThickness) : 0;

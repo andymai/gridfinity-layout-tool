@@ -14,7 +14,6 @@ import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { calcMaxGridUnits } from '@/core/constants';
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
 import {
   BinMesh,
@@ -77,10 +76,17 @@ const REFRAME_THRESHOLD = 0.1; // 10% change
  * Calculate ideal camera distance to frame a bin of the given dimensions.
  * Uses perspective camera FOV geometry to ensure the bin fills ~65% of viewport.
  */
-function calculateIdealDistance(width: number, depth: number, height: number, fov: number): number {
-  const outerW = width * GRIDFINITY.GRID_SIZE;
-  const outerD = depth * GRIDFINITY.GRID_SIZE;
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+function calculateIdealDistance(
+  width: number,
+  depth: number,
+  height: number,
+  fov: number,
+  gridUnitMm: number,
+  heightUnitMm: number
+): number {
+  const outerW = width * gridUnitMm;
+  const outerD = depth * gridUnitMm;
+  const totalH = height * heightUnitMm;
 
   // Bounding sphere radius (from center of bin)
   const halfW = outerW / 2;
@@ -97,8 +103,13 @@ function calculateIdealDistance(width: number, depth: number, height: number, fo
  * Calculate the bin's center point in 3D space (for camera target).
  * Mesh is centered at (0, 0) in XY, base at Z=0 — only height affects the target.
  */
-function calculateBinCenter(_width: number, _depth: number, height: number): Vector3 {
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+function calculateBinCenter(
+  _width: number,
+  _depth: number,
+  height: number,
+  heightUnitMm: number
+): Vector3 {
+  const totalH = height * heightUnitMm;
   return new Vector3(0, 0, totalH / 2);
 }
 
@@ -112,12 +123,16 @@ function CameraController({
   width,
   depth,
   height,
+  gridUnitMm,
+  heightUnitMm,
 }: {
   controlsRef: React.RefObject<OrbitControlsType | null>;
   invalidateRef: React.RefObject<(() => void) | null>;
   width: number;
   depth: number;
   height: number;
+  gridUnitMm: number;
+  heightUnitMm: number;
 }) {
   const { camera, invalidate } = useThree();
 
@@ -135,10 +150,13 @@ function CameraController({
   const initializedRef = useRef(false);
 
   const fov = 45;
-  const binCenter = useMemo(() => calculateBinCenter(width, depth, height), [width, depth, height]);
+  const binCenter = useMemo(
+    () => calculateBinCenter(width, depth, height, heightUnitMm),
+    [width, depth, height, heightUnitMm]
+  );
   const idealDistance = useMemo(
-    () => calculateIdealDistance(width, depth, height, fov),
-    [width, depth, height, fov]
+    () => calculateIdealDistance(width, depth, height, fov, gridUnitMm, heightUnitMm),
+    [width, depth, height, fov, gridUnitMm, heightUnitMm]
   );
 
   // Auto-frame: when bin dimensions change, smoothly adjust camera distance
@@ -217,7 +235,9 @@ function usePresetTransition(
   invalidateRef: React.RefObject<(() => void) | null>,
   width: number,
   depth: number,
-  height: number
+  height: number,
+  gridUnitMm: number,
+  heightUnitMm: number
 ) {
   const animFrameRef = useRef<number | null>(null);
 
@@ -228,8 +248,15 @@ function usePresetTransition(
 
       const camera = controls.object;
       const fov = 45;
-      const binCenter = calculateBinCenter(width, depth, height);
-      const idealDistance = calculateIdealDistance(width, depth, height, fov);
+      const binCenter = calculateBinCenter(width, depth, height, heightUnitMm);
+      const idealDistance = calculateIdealDistance(
+        width,
+        depth,
+        height,
+        fov,
+        gridUnitMm,
+        heightUnitMm
+      );
 
       // Calculate target position from preset direction
       const direction = new Vector3(...CAMERA_PRESETS[preset]).normalize();
@@ -281,7 +308,7 @@ function usePresetTransition(
 
       animate();
     },
-    [controlsRef, invalidateRef, width, depth, height]
+    [controlsRef, invalidateRef, width, depth, height, gridUnitMm, heightUnitMm]
   );
 
   // Cleanup on unmount
@@ -409,7 +436,9 @@ export function PreviewCanvas() {
     invalidateRef,
     params.width,
     params.depth,
-    params.height
+    params.height,
+    params.gridUnitMm,
+    params.heightUnitMm
   );
 
   const setCameraPreset = useCallback(
@@ -470,7 +499,7 @@ export function PreviewCanvas() {
   const width = params.width;
   const depth = params.depth;
   const height = params.height;
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+  const totalH = height * params.heightUnitMm;
 
   const showSkeleton = !hasMesh || wasmStatus !== 'ready';
   const showOverlay = generationStatus === 'generating' && hasMesh;
@@ -529,6 +558,8 @@ export function PreviewCanvas() {
               width={width}
               depth={depth}
               height={height}
+              gridUnitMm={params.gridUnitMm}
+              heightUnitMm={params.heightUnitMm}
             />
 
             {/* Bin mesh — swap for per-piece meshes when split */}

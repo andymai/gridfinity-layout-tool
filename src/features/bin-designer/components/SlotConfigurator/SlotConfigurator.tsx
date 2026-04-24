@@ -25,19 +25,31 @@ import type { DividerPieceConfig } from '../../types';
 type SlotDirection = 'vertical' | 'horizontal';
 
 export function SlotConfigurator() {
-  const { slotConfig, dividerPieces, width, depth, height, wallThickness, stackingLip, setParam } =
-    useDesignerStore(
-      useShallow((s) => ({
-        slotConfig: s.params.slotConfig,
-        dividerPieces: s.params.dividerPieces,
-        width: s.params.width,
-        depth: s.params.depth,
-        height: s.params.height,
-        wallThickness: s.params.wallThickness,
-        stackingLip: s.params.base.stackingLip,
-        setParam: s.setParam,
-      }))
-    );
+  const {
+    slotConfig,
+    dividerPieces,
+    width,
+    depth,
+    height,
+    heightUnitMm,
+    wallThickness,
+    stackingLip,
+    baseStyle,
+    setParam,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      slotConfig: s.params.slotConfig,
+      dividerPieces: s.params.dividerPieces,
+      width: s.params.width,
+      depth: s.params.depth,
+      height: s.params.height,
+      heightUnitMm: s.params.heightUnitMm,
+      wallThickness: s.params.wallThickness,
+      stackingLip: s.params.base.stackingLip,
+      baseStyle: s.params.base.style,
+      setParam: s.setParam,
+    }))
+  );
   const t = useTranslation();
 
   // ── Dimension calculations ──────────────────────────────────────────
@@ -45,8 +57,9 @@ export function SlotConfigurator() {
   const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
-  const wallHeight = totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const totalH = height * heightUnitMm;
+  const isFlat = baseStyle === 'flat';
+  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
 
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
   const lipOverhang = stackingLip ? Math.max(0, lipTaperWidth - wallThickness) : 0;

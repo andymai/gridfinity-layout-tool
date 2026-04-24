@@ -153,5 +153,19 @@ describe('cameraFraming', () => {
       expect(distance).toBeGreaterThan(0);
       expect(distance).toBeLessThan(100); // Should be relatively small
     });
+
+    // GH #1445 — a non-default heightUnitMm must change the framing distance,
+    // otherwise thumbnails would re-regress to the 7mm-per-unit assumption.
+    it('reflects custom heightUnitMm in framing distance', () => {
+      const atDefault = calculateIdealDistance(1, 1, 3, 50);
+      const atTaller = calculateIdealDistance(1, 1, 3, 50, 42, 14);
+      expect(atTaller).toBeGreaterThan(atDefault);
+    });
+
+    it('reflects custom gridUnitMm in framing distance', () => {
+      const atDefault = calculateIdealDistance(2, 2, 3, 50);
+      const atLarger = calculateIdealDistance(2, 2, 3, 50, 50, 7);
+      expect(atLarger).toBeGreaterThan(atDefault);
+    });
   });
 });

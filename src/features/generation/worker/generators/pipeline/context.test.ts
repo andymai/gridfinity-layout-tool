@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createInitialContext } from './context';
-import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 
 // Source from DEFAULT_BIN_PARAMS so the fixture tracks the real BinParams
@@ -95,6 +95,29 @@ describe('createInitialContext', () => {
     expect(dim.outerW).toBeCloseTo(99.5);
     expect(dim.outerD).toBeCloseTo(99.5);
     expect(dim.maxDimension).toBeCloseTo(100);
+  });
+
+  // GH #1445 — bin generator was using the Gridfinity 7mm default for height
+  // even when the user set a custom heightUnitMm, so exports had the wrong
+  // Z dimension. The dimensions flowing through the pipeline (and into the
+  // shellKey cache) must reflect the user-configured unit.
+  it('should use params.heightUnitMm instead of hardcoded 7mm', () => {
+    const customHeightUnit = 10; // ≠ GRIDFINITY.HEIGHT_UNIT (7mm)
+    const heightUnits = 3;
+    const ctx = createInitialContext(
+      createTestParams({ height: heightUnits, heightUnitMm: customHeightUnit })
+    );
+    const dim = ctx.dimensions;
+    expect(dim.totalHeight).toBe(heightUnits * customHeightUnit);
+    expect(dim.wallHeight).toBe(heightUnits * customHeightUnit - GRIDFINITY.SOCKET_HEIGHT);
+  });
+
+  it('produces different shellKeys for different heightUnitMm values', () => {
+    const ctxDefault = createInitialContext(createTestParams({ heightUnitMm: 7 }));
+    const ctxCustom = createInitialContext(createTestParams({ heightUnitMm: 10 }));
+    // Cache key discriminates on heightUnitMm via quantized wallHeight,
+    // so the two solids don't collide in the shape cache.
+    expect(ctxDefault.dimensions.shellKey).not.toBe(ctxCustom.dimensions.shellKey);
   });
 
   it('computes interiorHeight with lip deduction', () => {

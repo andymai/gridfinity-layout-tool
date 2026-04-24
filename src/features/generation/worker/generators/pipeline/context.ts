@@ -6,18 +6,25 @@
  */
 
 import type { BinParams } from '@/shared/types/bin';
-import { GRIDFINITY } from '@/shared/constants/bin';
 import { hashMask, isPartialMask } from '@/shared/utils/cellMask';
-import { SIZE, CLEARANCE, SOCKET_HEIGHT, LIP_SMALL_TAPER } from '../generatorConstants';
-// SIZE is kept as a fallback default for backwards compatibility with callers
-// that construct BinParams without gridUnitMm.
+import {
+  SIZE,
+  HEIGHT_UNIT,
+  CLEARANCE,
+  SOCKET_HEIGHT,
+  LIP_SMALL_TAPER,
+} from '../generatorConstants';
+// SIZE and HEIGHT_UNIT are kept as fallback defaults for backwards compatibility
+// with callers (or serialized designs) that predate gridUnitMm/heightUnitMm.
 import type { ProgressFn } from '../meshUtils';
 import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
 import type { BinDimensions, PipelineContext } from './types';
 
 /** Derive all dimensions from bin parameters. */
 function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
-  const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- fallback for legacy BinParams without heightUnitMm
+  const heightUnit = params.heightUnitMm ?? HEIGHT_UNIT;
+  const totalHeight = params.height * heightUnit;
   const isFlat = params.base.style === 'flat';
   // User flag only. When the mask has mixed half-bin detail, the socket
   // builder does a per-cell dispatch using the mask — it splits only

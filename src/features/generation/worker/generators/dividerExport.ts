@@ -24,8 +24,9 @@ export async function exportDividers(
   params: BinParams
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
   const wallThickness = params.wallThickness;
-  const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
-  const wallHeight = totalHeight - SOCKET_HEIGHT;
+  const totalHeight = params.height * params.heightUnitMm;
+  const isFlat = params.base.style === 'flat';
+  const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
   const gridUnitMm = params.gridUnitMm ?? GRIDFINITY.GRID_SIZE;
@@ -92,8 +93,9 @@ export async function exportDividerPiecesSeparately(
   angularTolerance = 5
 ): Promise<CombinedExportPiece[]> {
   const wallThickness = params.wallThickness;
-  const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
-  const wallHeight = totalHeight - SOCKET_HEIGHT;
+  const totalHeight = params.height * params.heightUnitMm;
+  const isFlat = params.base.style === 'flat';
+  const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
   const gridUnitMm = params.gridUnitMm ?? GRIDFINITY.GRID_SIZE;

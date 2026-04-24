@@ -60,6 +60,8 @@ export function useThumbnailCapture(): void {
         width: params.width,
         depth: params.depth,
         height: params.height,
+        gridUnitMm: params.gridUnitMm,
+        heightUnitMm: params.heightUnitMm,
       });
       if (!thumbnail) return;
 
@@ -94,6 +96,8 @@ export function useThumbnailCapture(): void {
     params.width,
     params.depth,
     params.height,
+    params.gridUnitMm,
+    params.heightUnitMm,
     designName,
     setNeedsThumbnailUpdate,
   ]);

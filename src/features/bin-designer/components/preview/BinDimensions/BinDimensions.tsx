@@ -52,17 +52,15 @@ export function BinDimensions({
 }: BinDimensionsProps) {
   const colors = useThreeColors();
   // Bin extents in mm (mesh is centered at origin)
-  const outerW = width * GRIDFINITY.GRID_SIZE;
-  const outerD = depth * GRIDFINITY.GRID_SIZE;
+  const outerW = width * gridUnitMm;
+  const outerD = depth * gridUnitMm;
   const lipHeight = stackingLip ? GRIDFINITY.LIP_HEIGHT : 0;
-  // Total height per Gridfinity spec: height units + lip
-  // e.g., 3u + lip = 21 + 4.4 = 25.4mm
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT + lipHeight;
+  // Total height matches the generated mesh (heightUnitMm + lip)
+  const totalH = height * heightUnitMm + lipHeight;
 
   // Display labels use the user's configured unit sizes
   const widthMm = Math.round(width * gridUnitMm);
   const depthMm = Math.round(depth * gridUnitMm);
-  // Height uses user's heightUnitMm setting + lip
   const heightMmRaw = height * heightUnitMm + lipHeight;
   const heightMm = Number.isInteger(heightMmRaw) ? heightMmRaw : heightMmRaw.toFixed(1);
 

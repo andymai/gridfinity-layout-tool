@@ -7,7 +7,6 @@
 
 import type { WebGLRenderer, Scene, PerspectiveCamera, Object3D } from 'three';
 import { Vector3 } from 'three';
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
 
 /** Thumbnail size for IndexedDB storage (high res for crisp display at any size) */
@@ -157,6 +156,8 @@ export function captureThumbnailAtPreset(binDimensions: {
   width: number;
   depth: number;
   height: number;
+  gridUnitMm: number;
+  heightUnitMm: number;
 }): string | null {
   if (!previewRenderer || !previewScene || !previewCamera) {
     // Context not registered — fall back to current-view capture
@@ -164,11 +165,18 @@ export function captureThumbnailAtPreset(binDimensions: {
   }
 
   try {
-    const { width, depth, height } = binDimensions;
-    const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+    const { width, depth, height, gridUnitMm, heightUnitMm } = binDimensions;
+    const totalH = height * heightUnitMm;
     const binCenter = new Vector3(0, 0, totalH / 2);
     const fov = previewCamera.fov;
-    const idealDistance = calculateIdealDistance(width, depth, height, fov);
+    const idealDistance = calculateIdealDistance(
+      width,
+      depth,
+      height,
+      fov,
+      gridUnitMm,
+      heightUnitMm
+    );
 
     // Save current camera state (position, up, and orientation quaternion)
     const savedPosition = previewCamera.position.clone();

@@ -32,6 +32,7 @@ export function GhostScoops() {
     width,
     depth,
     height,
+    heightUnitMm,
     wallThickness,
     style,
     compartments,
@@ -43,6 +44,7 @@ export function GhostScoops() {
       width: s.params.width,
       depth: s.params.depth,
       height: s.params.height,
+      heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       style: s.params.style,
       compartments: s.params.compartments,
@@ -60,7 +62,7 @@ export function GhostScoops() {
 
   const hasLip = base.stackingLip;
   const isFlat = base.style === 'flat';
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+  const totalH = height * heightUnitMm;
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;

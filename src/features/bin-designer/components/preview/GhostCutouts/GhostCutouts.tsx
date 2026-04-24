@@ -155,23 +155,25 @@ export function GhostCutouts() {
   const { invalidate } = useThree();
   const lineRef = useRef<LineSegments2 | null>(null);
 
-  const { width, depth, height, wallThickness, cutouts, base, generationStatus } = useDesignerStore(
-    useShallow((s) => ({
-      width: s.params.width,
-      depth: s.params.depth,
-      height: s.params.height,
-      wallThickness: s.params.wallThickness,
-      cutouts: s.params.cutouts,
-      base: s.params.base,
-      generationStatus: s.generation.status,
-    }))
-  );
+  const { width, depth, height, heightUnitMm, wallThickness, cutouts, base, generationStatus } =
+    useDesignerStore(
+      useShallow((s) => ({
+        width: s.params.width,
+        depth: s.params.depth,
+        height: s.params.height,
+        heightUnitMm: s.params.heightUnitMm,
+        wallThickness: s.params.wallThickness,
+        cutouts: s.params.cutouts,
+        base: s.params.base,
+        generationStatus: s.generation.status,
+      }))
+    );
 
   const selectedIds = useCutoutSelection((s) => s.selectedIds);
   const previewOverrides = useCutoutSelection((s) => s.previewOverrides);
 
   const isSolid = base.solid;
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+  const totalH = height * heightUnitMm;
   const isFlat = base.style === 'flat';
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.BASE_HEIGHT;
   const floorZ = isFlat ? 0 : GRIDFINITY.BASE_HEIGHT;

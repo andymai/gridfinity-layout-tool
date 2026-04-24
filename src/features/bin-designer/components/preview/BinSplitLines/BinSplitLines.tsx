@@ -30,11 +30,12 @@ const DASHED_LINE_SHARED = {
 } as const;
 
 export const BinSplitLines = memo(function BinSplitLines() {
-  const { width, depth, height, gridUnitMm } = useDesignerStore(
+  const { width, depth, height, heightUnitMm, gridUnitMm } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
       depth: s.params.depth,
       height: s.params.height,
+      heightUnitMm: s.params.heightUnitMm,
       gridUnitMm: s.params.gridUnitMm,
     }))
   );
@@ -65,7 +66,7 @@ export const BinSplitLines = memo(function BinSplitLines() {
 
   if (!needsSplit) return null;
 
-  const totalH = height * GRIDFINITY.HEIGHT_UNIT;
+  const totalH = height * heightUnitMm;
   const halfW = (width * gridUnitMm - GRIDFINITY.TOLERANCE) / 2;
   const halfD = (depth * gridUnitMm - GRIDFINITY.TOLERANCE) / 2;
 

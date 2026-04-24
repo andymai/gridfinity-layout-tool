@@ -102,10 +102,10 @@ export function formatFilament(meters: number): string {
 function computeBinVolume(params: BinParams): number {
   const wallThickness = STYLE_WALL_THICKNESS[params.style] ?? GRIDFINITY.WALL_THICKNESS;
   // Outer dimensions in mm
-  const outerW = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const outerD = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+  const outerW = params.width * params.gridUnitMm - GRIDFINITY.TOLERANCE;
+  const outerD = params.depth * params.gridUnitMm - GRIDFINITY.TOLERANCE;
   // Height units INCLUDE the base (first unit = base, no cavity)
-  const totalH = params.height * GRIDFINITY.HEIGHT_UNIT;
+  const totalH = params.height * params.heightUnitMm;
 
   // Base height (7mm dead space: profile + bridge + floor, no cavity here)
   const bottomH = GRIDFINITY.BASE_HEIGHT;
@@ -302,7 +302,7 @@ function computeScoopVolume(
 
   const hasLip = params.base.stackingLip;
   const isFlat = params.base.style === 'flat';
-  const totalH = params.height * GRIDFINITY.HEIGHT_UNIT;
+  const totalH = params.height * params.heightUnitMm;
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
   const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;

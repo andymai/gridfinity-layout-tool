@@ -114,7 +114,9 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         const outerD = params.depth * gridUnitMm - GRIDFINITY.TOLERANCE;
         const innerW = outerW - 2 * params.wallThickness;
         const innerD = outerD - 2 * params.wallThickness;
-        const wallHeight = params.height * GRIDFINITY.HEIGHT_UNIT - GRIDFINITY.SOCKET_HEIGHT;
+        const totalHeight = params.height * params.heightUnitMm;
+        const isFlat = params.base.style === 'flat';
+        const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.SOCKET_HEIGHT;
         const hasLip = params.base.stackingLip;
 
         const dividerSolids = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip);
