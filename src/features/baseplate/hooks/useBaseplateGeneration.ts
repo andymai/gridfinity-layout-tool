@@ -210,7 +210,6 @@ export function useBaseplateGeneration(): void {
   const setPieceMeshes = useBaseplatePageStore((s) => s.setPieceMeshes);
   const setSplitProgress = useBaseplatePageStore((s) => s.setSplitProgress);
   const setDedupStats = useBaseplatePageStore((s) => s.setDedupStats);
-  const setBrepFailureMessage = useBaseplatePageStore((s) => s.setBrepFailureMessage);
 
   /**
    * Phase 1: Synchronous direct-mesh preview.
@@ -234,7 +233,6 @@ export function useBaseplateGeneration(): void {
       setTiling(tiling);
       setSplitProgress(null);
       setDedupStats(null);
-      setBrepFailureMessage(null);
 
       try {
         if (!tiling.isSplit) {
@@ -284,14 +282,7 @@ export function useBaseplateGeneration(): void {
       directMeshDurationRef.current = performance.now() - directMeshStartRef.current;
       return tiling;
     },
-    [
-      setTiling,
-      setGenerationResult,
-      setPieceMeshes,
-      setSplitProgress,
-      setDedupStats,
-      setBrepFailureMessage,
-    ]
+    [setTiling, setGenerationResult, setPieceMeshes, setSplitProgress, setDedupStats]
   );
 
   /**
@@ -313,6 +304,9 @@ export function useBaseplateGeneration(): void {
       // because the mount handler sets initializedRef BEFORE kicking off this
       // very first BREP, so reading initializedRef would always say "warm".
       const wasmCold = !firstBrepDoneRef.current;
+      // `shouldTrack` stays false for cancellation/unmount paths so PostHog
+      // isn't polluted by `success:false` events that aren't real failures.
+      let shouldTrack = false;
       let succeeded = false;
       setGenerationStatus('generating');
 
@@ -386,8 +380,13 @@ export function useBaseplateGeneration(): void {
           setGenerationResult(EMPTY_MESH);
           setGenerationStatus('complete');
         }
+        shouldTrack = true;
         succeeded = true;
       } catch (e: unknown) {
+        // These three early returns are intentional non-events: bridge
+        // cancellation (e.g. unmount) and superseded epochs aren't user-
+        // visible failures, so they don't get tracked or counted as a
+        // real BREP completion.
         if (e instanceof Error && e.message === 'Generation cancelled') return;
         if (e instanceof DOMException && e.name === 'AbortError') return;
         if (generationEpochRef.current !== epoch) return;
@@ -400,7 +399,6 @@ export function useBaseplateGeneration(): void {
         if (previewVisible) {
           // Preview is already usable — keep it visible, surface a non-blocking
           // toast instead of replacing the canvas with a red error overlay.
-          setBrepFailureMessage(message);
           setGenerationStatus('complete');
           useToastStore
             .getState()
@@ -414,10 +412,9 @@ export function useBaseplateGeneration(): void {
           setPieceMeshes([]);
           setGenerationStatus('error');
         }
+        shouldTrack = true;
       } finally {
-        // Skip cancelled/superseded runs (early-returned above without flipping
-        // succeeded). Track everything else so failures show up in PostHog too.
-        if (generationEpochRef.current === epoch) {
+        if (shouldTrack) {
           firstBrepDoneRef.current = true;
           trackBaseplatePreviewTiming({
             directMeshMs: directMeshDurationRef.current,
@@ -430,14 +427,7 @@ export function useBaseplateGeneration(): void {
         }
       }
     },
-    [
-      setGenerationStatus,
-      setGenerationResult,
-      setPieceMeshes,
-      setSplitProgress,
-      setDedupStats,
-      setBrepFailureMessage,
-    ]
+    [setGenerationStatus, setGenerationResult, setPieceMeshes, setSplitProgress, setDedupStats]
   );
 
   /**
