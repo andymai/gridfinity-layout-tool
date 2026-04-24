@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.47.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.4...gridfinity-layout-tool-v4.47.5) (2026-04-24)
+
+
+### Bug Fixes
+
+* **baseplate:** complexity-aware generation timeout + tagged boolean errors ([#1446](https://github.com/andymai/gridfinity-layout-tool/issues/1446)) ([c05e9ac](https://github.com/andymai/gridfinity-layout-tool/commit/c05e9aca2718b9b9236b6844fc9cba9cba76d711))
+
 ## [4.47.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.3...gridfinity-layout-tool-v4.47.4) (2026-04-22)
 
 
