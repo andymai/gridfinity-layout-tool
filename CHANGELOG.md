@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.47.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.5...gridfinity-layout-tool-v4.47.6) (2026-04-24)
+
+
+### Bug Fixes
+
+* **generation:** respect custom heightUnitMm in bin export ([#1448](https://github.com/andymai/gridfinity-layout-tool/issues/1448)) ([dcd3fac](https://github.com/andymai/gridfinity-layout-tool/commit/dcd3fac8c4b0409ab5c3c237a33609c8042b3208))
+
 ## [4.47.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.4...gridfinity-layout-tool-v4.47.5) (2026-04-24)
 
 
