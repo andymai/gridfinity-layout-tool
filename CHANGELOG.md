@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.47.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.6...gridfinity-layout-tool-v4.47.7) (2026-04-25)
+
+
+### Bug Fixes
+
+* **baseplate:** editable input fields for all padding steppers ([#1451](https://github.com/andymai/gridfinity-layout-tool/issues/1451)) ([6579fbb](https://github.com/andymai/gridfinity-layout-tool/commit/6579fbb00701cad2d1533aa3f7a7c0707fde9f06))
+
 ## [4.47.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.5...gridfinity-layout-tool-v4.47.6) (2026-04-24)
 
 
