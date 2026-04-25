@@ -1,108 +1,35 @@
 import type { ConfidenceBreakdown, EdgeUsage, MLTelemetryEvent, SpatialPattern } from './types.js';
-
-// ============================================
-// VALIDATION
-// ============================================
-
-const VALID_BIN_SIZE_REGEX = /^\d+(\.\d+)?x\d+(\.\d+)?x\d+(\.\d+)?$/;
-const VALID_DRAWER_SIZE_REGEX = /^\d+(\.\d+)?x\d+(\.\d+)?x\d+(\.\d+)?$/;
-const VALID_GAP_FIT = new Set(['exact', 'partial', 'none']);
-const VALID_METHODS = new Set(['draw', 'fill', 'duplicate', 'staging', 'paint']);
-
-// Security: Strict validation for fields used in Redis keys to prevent injection
-const VALID_LABEL_HASH_REGEX = /^[a-f0-9]{8}$/; // 8-char hex hash
-const VALID_LAYOUT_HASH_REGEX = /^[a-f0-9]{8}$/; // 8-char hex hash
-const VALID_NORMALIZED_LABEL_REGEX = /^[a-z][a-z0-9_]{0,31}$/; // lowercase, alphanumeric + underscore
-const VALID_CATEGORY_ID_REGEX = /^[a-zA-Z0-9_-]{1,36}$/; // UUID-like or simple ID
-const VALID_EMBEDDING_BUCKET_REGEX = /^[a-f0-9]{4}$/; // 4-char hex embedding bucket
-const VALID_DOMAINS = new Set([
-  'tools',
-  'fasteners',
-  'electronics',
-  'office',
-  'craft',
-  'printing_3d',
-  'cosmetics',
-  'misc',
-]);
-
-// Layout snapshot validation
-const VALID_TRIGGERS = new Set([
-  'save',
-  'export_json',
-  'export_tsv',
-  'share',
-  'print',
-  'session_end',
-  'layout_switch',
-  'idle',
-  'print_preview',
-]);
-const VALID_QUALITY_SIGNALS = new Set([
-  'shared',
-  'exported',
-  'duplicated',
-  'deleted',
-  'revisited_edited',
-  'revisited_kept',
-  'modified',
-]);
-const VALID_ABANDONMENT_TYPES = new Set(['incomplete', 'deleted', 'dormant', 'superseded']);
-const VALID_PURPOSES = new Set([
-  'workshop',
-  'electronics',
-  'office',
-  'craft',
-  'kitchen',
-  'bathroom',
-  'garage',
-  'other',
-]);
-const VALID_PURPOSE_REGEX = /^[a-z][a-z0-9_-]{0,31}$/; // For custom purposes
-const VALID_QUALITY_TIERS = new Set(['high', 'medium', 'low', 'skip']);
-const VALID_DELETE_METHODS = new Set(['key', 'context_menu', 'bulk', 'inspector']);
-const VALID_MOVE_METHODS = new Set(['drag', 'nudge']);
-const VALID_POSITION_REGEX = /^\d+(\.\d+)?,\d+(\.\d+)?$/; // e.g., "3,5" or "3.5,2.5"
-const VALID_FILL_METHODS = new Set(['uniform', 'gaps']);
-const VALID_LAYER_MOVE_METHODS = new Set(['inspector', 'drag', 'keyboard', 'context_menu']);
-const VALID_FILL_SIZE_REGEX = /^\d+(\.\d+)?x\d+(\.\d+)?$/; // WxD (no height)
-
-// Negative signal validation
-const VALID_REJECTION_REASONS = new Set([
-  'cancelled',
-  'second_touch',
-  'outside_bounds',
-  'too_small',
-]);
-const VALID_DRAW_MODES = new Set(['draw', 'paint']);
-const VALID_UNDO_ACTIONS = new Set([
-  'placement',
-  'deletion',
-  'move',
-  'resize',
-  'fill',
-  'layer_change',
-  'drawer_resize',
-  'other',
-]);
-const VALID_CORRECTION_TYPES = new Set(['delete', 'resize', 'move']);
-const VALID_RESIZE_DIRECTIONS = new Set(['grow', 'shrink', 'mixed']);
-
-// Pattern detection validation
-const VALID_ARCHETYPES = new Set([
-  'uniform',
-  'mixed',
-  'border_fill',
-  'compartmentalized',
-  'layered',
-]);
-const VALID_SPATIAL_PATTERNS = new Set([
-  'corner_start',
-  'large_first',
-  'category_grouped',
-  'edge_aligned',
-  'center_out',
-]);
+import {
+  VALID_ABANDONMENT_TYPES,
+  VALID_ARCHETYPES,
+  VALID_BIN_SIZE_REGEX,
+  VALID_CATEGORY_ID_REGEX,
+  VALID_CORRECTION_TYPES,
+  VALID_DELETE_METHODS,
+  VALID_DOMAINS,
+  VALID_DRAW_MODES,
+  VALID_DRAWER_SIZE_REGEX,
+  VALID_EMBEDDING_BUCKET_REGEX,
+  VALID_FILL_METHODS,
+  VALID_FILL_SIZE_REGEX,
+  VALID_GAP_FIT,
+  VALID_LABEL_HASH_REGEX,
+  VALID_LAYER_MOVE_METHODS,
+  VALID_LAYOUT_HASH_REGEX,
+  VALID_METHODS,
+  VALID_MOVE_METHODS,
+  VALID_NORMALIZED_LABEL_REGEX,
+  VALID_POSITION_REGEX,
+  VALID_PURPOSE_REGEX,
+  VALID_PURPOSES,
+  VALID_QUALITY_SIGNALS,
+  VALID_QUALITY_TIERS,
+  VALID_REJECTION_REASONS,
+  VALID_RESIZE_DIRECTIONS,
+  VALID_SPATIAL_PATTERNS,
+  VALID_TRIGGERS,
+  VALID_UNDO_ACTIONS,
+} from './validators.constants.js';
 
 /**
  * Validate spatial patterns array.
