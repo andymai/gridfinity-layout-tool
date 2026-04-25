@@ -157,8 +157,11 @@ export default defineConfig([
     },
     rules: {
       // Primary rule: features cannot import from OTHER features (same feature is OK).
-      // This matches the existing bash script's scope. All other module relationships
-      // (core↔shared, shared→features, etc.) are unrestricted.
+      // This is a STRICTER superset of the bash mirror in scripts/check-module-boundaries.sh:
+      // (1) it inspects dynamic imports too (not just static — see boundaries/dependency-nodes
+      // above), and (2) it has explicit exceptions for design-linking -> bin-designer and
+      // bin-inspector -> design-linking. All other module relationships (core↔shared,
+      // shared→features, etc.) are unrestricted.
       'boundaries/dependencies': ['error', {
         default: 'allow',
         rules: [

@@ -111,7 +111,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "NODE_OPTIONS=--max-old-space-size=8192 eslint --fix",
+      "eslint --fix",
       "prettier --write"
     ],
     "*.{json,md,yml,yaml}": [
