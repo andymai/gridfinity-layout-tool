@@ -9,6 +9,7 @@
   "include": [
     "src/**/*.test.ts",
     "src/**/*.test.tsx",
+    "src/**/*.testUtils.ts",
     "src/**/*.bench.ts",
     "src/test/**/*.ts",
     "src/test/**/*.tsx",
