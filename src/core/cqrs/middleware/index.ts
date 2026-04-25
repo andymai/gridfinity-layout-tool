@@ -19,16 +19,6 @@ import { analyticsMiddleware } from './analytics';
 import { undoCaptureMiddleware } from './undoCapture';
 
 /**
- * @deprecated Use `getDefaultPipeline()` instead.
- */
-export const defaultPipeline: ReadonlyArray<Middleware<Command, DomainEvent>> = [
-  validationMiddleware,
-  undoCaptureMiddleware,
-  analyticsMiddleware,
-  loggingMiddleware,
-];
-
-/**
  * Build the default middleware pipeline.
  *
  * Order: validation (fail-fast) -> undoCapture -> analytics -> logging.

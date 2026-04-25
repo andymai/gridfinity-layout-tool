@@ -152,8 +152,7 @@ export { getPendingRetryCount, clearRetryQueue } from './store/retryQueue';
 export { undoCaptureMiddleware, batch, _resetUndoCaptureState } from './middleware/undoCapture';
 export { loggingMiddleware } from './middleware/logging';
 export { analyticsMiddleware } from './middleware/analytics';
-/** @deprecated Use `getDefaultPipeline()` instead */
-export { defaultPipeline, getDefaultPipeline } from './middleware';
+export { getDefaultPipeline } from './middleware';
 
 export { validationMiddleware, COMMAND_SCHEMAS, getCommandSchema } from './validation';
 export { getMiddlewareFlags } from './middleware/middlewareConfig';
