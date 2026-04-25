@@ -159,19 +159,26 @@ export default defineConfig([
       // Primary rule: features cannot import from OTHER features (same feature is OK).
       // This matches the existing bash script's scope. All other module relationships
       // (core↔shared, shared→features, etc.) are unrestricted.
-      'boundaries/element-types': ['error', {
+      'boundaries/dependencies': ['error', {
         default: 'allow',
         rules: [
           // Features: disallow importing other features (cross-feature coupling)
-          { from: ['feature'], disallow: ['feature'] },
+          { from: [{ type: 'feature' }], disallow: [{ to: { type: 'feature' } }] },
           // Same feature is OK
-          { from: ['feature'], allow: [['feature', { featureName: '${from.featureName}' }]] },
+          {
+            from: [{ type: 'feature' }],
+            allow: [{ to: { type: 'feature', captured: { featureName: '{{ from.captured.featureName }}' } } }],
+          },
           // Exception: design-linking -> bin-designer (integration layer)
-          { from: [['feature', { featureName: 'design-linking' }]],
-            allow: [['feature', { featureName: 'bin-designer' }]] },
+          {
+            from: [{ type: 'feature', captured: { featureName: 'design-linking' } }],
+            allow: [{ to: { type: 'feature', captured: { featureName: 'bin-designer' } } }],
+          },
           // Exception: bin-inspector -> design-linking (lazy-loaded linked design section)
-          { from: [['feature', { featureName: 'bin-inspector' }]],
-            allow: [['feature', { featureName: 'design-linking' }]] },
+          {
+            from: [{ type: 'feature', captured: { featureName: 'bin-inspector' } }],
+            allow: [{ to: { type: 'feature', captured: { featureName: 'design-linking' } } }],
+          },
         ],
       }],
     },
