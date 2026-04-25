@@ -3,7 +3,7 @@
   "entry": ["api/**/*.ts", "scripts/**/*.ts"],
   "project": ["src/**/*.{ts,tsx}", "api/**/*.ts", "scripts/**/*.ts"],
   "ignore": ["src/test/**", "**/*.test.{ts,tsx}", "**/index.ts"],
-  "ignoreDependencies": ["three-stdlib", "axe-core", "postcss"],
+  "ignoreDependencies": ["axe-core", "postcss"],
   "exclude": ["exports", "types", "duplicates"],
   "vite": {
     "config": ["vite.config.ts"]
