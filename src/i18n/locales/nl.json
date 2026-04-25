@@ -54,6 +54,7 @@
   "baseplate.paddingLeft": "Links",
   "baseplate.paddingRight": "Rechts",
   "baseplate.pieceLabel": "Stuk {label}",
+  "baseplate.preview": "Voorbeeld",
   "baseplate.printBedSize": "Printbedgrootte",
   "baseplate.printBedTooltip": "Basisplaten groter dan dit worden automatisch gesplitst.",
   "baseplate.resetView": "Weergave resetten",

@@ -54,6 +54,7 @@
   "baseplate.paddingLeft": "Links",
   "baseplate.paddingRight": "Rechts",
   "baseplate.pieceLabel": "Teil {label}",
+  "baseplate.preview": "Vorschau",
   "baseplate.printBedSize": "Druckbettgröße",
   "baseplate.printBedTooltip": "Grundplatten größer als dies werden automatisch aufgeteilt.",
   "baseplate.resetView": "Ansicht zurücksetzen",

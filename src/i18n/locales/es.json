@@ -54,6 +54,7 @@
   "baseplate.paddingLeft": "Izquierda",
   "baseplate.paddingRight": "Derecha",
   "baseplate.pieceLabel": "Pieza {label}",
+  "baseplate.preview": "Vista previa",
   "baseplate.printBedSize": "Tamaño de la cama",
   "baseplate.printBedTooltip": "Las placas más grandes se dividen automáticamente.",
   "baseplate.resetView": "Restablecer vista",

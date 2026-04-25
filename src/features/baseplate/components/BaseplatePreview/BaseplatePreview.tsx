@@ -231,9 +231,10 @@ export function BaseplatePreview({
               totalWidthUnits={width}
               totalDepthUnits={depth}
               gridUnitMm={gridUnitMm}
+              isPreview={hasDirectPreview}
             />
           ) : (
-            <BaseplateMesh color={filamentColor} />
+            <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} />
           )}
 
           {/* Ghost outline only in assembled mode -- exploded scatters pieces beyond slab bounds */}
@@ -312,15 +313,22 @@ export function BaseplatePreview({
         </div>
       )}
 
-      {/* Bottom-center status pill. Suppressed when the canvas is blank
-          (the big skeleton is showing instead) to avoid double-loading UI. */}
+      {/* Top-center status chip. Pairs with the desaturated mesh tint so the
+          two preview signals reinforce each other (geometry says "draft," chip
+          spells out why). Suppressed when the canvas is blank — the initial
+          skeleton already conveys "loading." */}
       {isGenerating && !showInitSkeleton && (
         <div
-          className="absolute inset-x-0 bottom-4 flex justify-center"
+          className="pointer-events-none absolute inset-x-0 top-4 flex justify-center"
           role="status"
           aria-live="polite"
         >
-          <div className="flex items-center gap-2.5 rounded-lg border border-stroke-subtle bg-surface-elevated/95 px-4 py-2 font-mono text-xs shadow-lg backdrop-blur-sm">
+          <div className="pointer-events-auto flex items-center gap-2.5 rounded-lg border border-accent/40 bg-surface-elevated/95 px-3 py-2 font-mono text-xs shadow-lg backdrop-blur-sm">
+            {hasDirectPreview && (
+              <span className="rounded bg-accent/15 px-1.5 py-0.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-accent">
+                {t('baseplate.preview')}
+              </span>
+            )}
             <svg
               className="h-4 w-4 shrink-0 text-accent animate-spin"
               viewBox="0 0 24 24"

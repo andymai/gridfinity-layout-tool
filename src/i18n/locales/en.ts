@@ -1526,6 +1526,7 @@ const en: Record<string, string> = {
   'baseplate.brepFinalizeFailed':
     "Couldn't finalize high-fidelity preview — exported file may differ slightly.",
   'baseplate.elapsed': '{seconds}s',
+  'baseplate.preview': 'Preview',
 
   // Collaboration
   'collab.connected': 'Connected',

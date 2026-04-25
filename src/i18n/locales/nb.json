@@ -54,6 +54,7 @@
   "baseplate.paddingLeft": "Venstre",
   "baseplate.paddingRight": "Høyre",
   "baseplate.pieceLabel": "Del {label}",
+  "baseplate.preview": "Forhåndsvisning",
   "baseplate.printBedSize": "Printbordstørrelse",
   "baseplate.printBedTooltip": "Bunnplater større enn dette deles automatisk.",
   "baseplate.resetView": "Tilbakestill visning",

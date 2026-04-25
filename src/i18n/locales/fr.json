@@ -54,6 +54,7 @@
   "baseplate.paddingLeft": "Gauche",
   "baseplate.paddingRight": "Droite",
   "baseplate.pieceLabel": "Pièce {label}",
+  "baseplate.preview": "Aperçu",
   "baseplate.printBedSize": "Taille du plateau",
   "baseplate.printBedTooltip": "Les plaques plus grandes sont découpées automatiquement.",
   "baseplate.resetView": "Réinitialiser la vue",

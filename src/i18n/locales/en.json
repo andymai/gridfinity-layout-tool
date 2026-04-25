@@ -1360,6 +1360,7 @@
   "baseplate.computingGeometry": "Computing high-fidelity geometry...",
   "baseplate.brepFinalizeFailed": "Couldn't finalize high-fidelity preview — exported file may differ slightly.",
   "baseplate.elapsed": "{seconds}s",
+  "baseplate.preview": "Preview",
   "collab.connected": "Connected",
   "collab.reconnecting": "Reconnecting",
   "collab.connecting": "Connecting",

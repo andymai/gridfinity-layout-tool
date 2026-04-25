@@ -54,6 +54,7 @@
   "baseplate.paddingLeft": "Esquerda",
   "baseplate.paddingRight": "Direita",
   "baseplate.pieceLabel": "Peça {label}",
+  "baseplate.preview": "Pré-visualização",
   "baseplate.printBedSize": "Tamanho da mesa",
   "baseplate.printBedTooltip": "Placas maiores que isso são divididas automaticamente.",
   "baseplate.resetView": "Redefinir vista",
