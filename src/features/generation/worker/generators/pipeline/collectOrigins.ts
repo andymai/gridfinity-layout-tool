@@ -29,7 +29,6 @@ export function collectOrigins(shape: Shape3D, tag: FeatureTag, map: Map<number,
     if (origin === undefined) {
       // Runtime guard: brepjs API may change and stop exposing origin field
       if (!originWarningLogged) {
-        // eslint-disable-next-line no-console -- one-time diagnostic warning
         console.warn(
           '[collectOrigins] face group missing origin field — color tagging may be incorrect'
         );

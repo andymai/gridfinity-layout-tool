@@ -42,7 +42,6 @@ export function ColorZoneRow({ zone, label, color, onChange, onHover }: ColorZon
         onClick={() => setIsOpen(!isOpen)}
         className="group flex items-center gap-2 rounded-md px-1.5 py-1 -mx-1.5 transition-colors hover:bg-surface-hover"
         aria-expanded={isOpen}
-        // eslint-disable-next-line i18next/no-literal-string -- dynamic zone label + hex
         aria-label={`${label}: ${color}`}
       >
         <span

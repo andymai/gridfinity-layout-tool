@@ -25,8 +25,8 @@
     "build": "pnpm run build:content && pnpm run build:en-locale && tsc -b && vite build",
     "build:content": "tsx scripts/build-content.ts",
     "build:en-locale": "tsx scripts/build-en-locale.ts",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "NODE_OPTIONS=--max-old-space-size=8192 eslint .",
+    "lint:fix": "NODE_OPTIONS=--max-old-space-size=8192 eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"e2e/**/*.ts\" \"*.{json,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"e2e/**/*.ts\" \"*.{json,md}\"",
     "preview": "vite preview",
@@ -111,7 +111,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --fix",
+      "NODE_OPTIONS=--max-old-space-size=8192 eslint --fix",
       "prettier --write"
     ],
     "*.{json,md,yml,yaml}": [
