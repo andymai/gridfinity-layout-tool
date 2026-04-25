@@ -10,7 +10,7 @@
  * like Google Docs where the shared version is always current.
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
@@ -78,17 +78,18 @@ export function useOwnedShareSync(): void {
     }
   }, [cloudShare, layout]);
 
-  // Keep both refs aligned with the latest committed values. Doing this in a
-  // commit-time effect (instead of during render) is required by
-  // `react-hooks/refs`: mutating `.current` during render breaks concurrent
-  // React's bailout/replay logic. The unmount-sync effect below relies on these
-  // refs holding the latest values, which works because effects run in
-  // declaration order — this one writes the refs before any other effect
-  // captures them.
-  useEffect(() => {
+  // Keep both refs aligned with the latest committed values. Uses
+  // `useLayoutEffect` (not `useEffect`) so the refs update synchronously
+  // during commit, before any subsequent unmount can fire its cleanup. With
+  // a passive effect there's a window where a render commits, the parent
+  // immediately unmounts this component, and the unmount cleanup reads
+  // refs that the not-yet-flushed passive effect would have updated.
+  // `react-hooks/refs` forbids `.current = ...` during render; this is the
+  // canonical workaround.
+  useLayoutEffect(() => {
     cloudShareRef.current = cloudShare;
     syncToCloudRef.current = syncToCloud;
-  });
+  }, [cloudShare, syncToCloud]);
 
   // Debounced sync effect
   useEffect(() => {
