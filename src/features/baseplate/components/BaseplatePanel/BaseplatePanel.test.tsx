@@ -486,7 +486,7 @@ describe('BaseplatePanel', () => {
 
     it('side stepper increment updates padding value', () => {
       render(<BaseplatePanel />);
-      const incBtn = screen.getByLabelText('baseplate.paddingLeft increment');
+      const incBtn = screen.getByLabelText('Increase baseplate.paddingLeft');
       fireEvent.click(incBtn);
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({ paddingLeft: 0.25 })
@@ -495,7 +495,7 @@ describe('BaseplatePanel', () => {
 
     it('side stepper decrement is disabled at minimum', () => {
       render(<BaseplatePanel />);
-      const decBtn = screen.getByLabelText('baseplate.paddingLeft decrement');
+      const decBtn = screen.getByLabelText('Decrease baseplate.paddingLeft');
       expect(decBtn).toBeDisabled();
       fireEvent.click(decBtn);
       expect(mockSetBaseplateParams).not.toHaveBeenCalled();
