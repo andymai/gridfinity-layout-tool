@@ -118,6 +118,9 @@ export function collectTopologyStatsRaw(
   // (boundary edges from edge splitting, non-shared edges at face junctions).
   // Strict validation would flag these as errors. Relaxed checks only for
   // degenerate faces, matching OCCT's effective validation level.
+  // rawKernel is the WASM module export; its return types aren't fully
+  // declared in the kernel binding shim.
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const validationIssues = rawKernel.validateSolidRelaxed(solidId);
   return {
     isValid: validationIssues === 0,

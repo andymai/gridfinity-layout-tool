@@ -252,14 +252,14 @@ export function IsometricPreviewControls({
                   toggleExplodedView();
                 }}
                 className={`flex items-center justify-center transition-colors ${
-                  isPreviewExpanded && !isMobile
+                  isPreviewExpanded
                     ? `btn ${isExplodedView ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
                     : `w-7 h-7 ${isExplodedView ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
                 }`}
                 title={t('grid.explodedView.toggle')}
               >
                 <svg
-                  className={isPreviewExpanded && !isMobile ? 'w-5 h-5' : 'w-3.5 h-3.5'}
+                  className={isPreviewExpanded ? 'w-5 h-5' : 'w-3.5 h-3.5'}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -272,7 +272,7 @@ export function IsometricPreviewControls({
                   <path d="M2 14l10 5 10-5" />
                   <path d="M2 20l10 5 10-5" />
                 </svg>
-                {isPreviewExpanded && !isMobile && (
+                {isPreviewExpanded && (
                   <span className="text-xs">{t('grid.explodedView.label')}</span>
                 )}
               </button>

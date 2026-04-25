@@ -176,11 +176,16 @@ export function useExport(): UseExportReturn {
 
             // Build multi-color config when Labs flag is enabled
             let colorConfig: ThreeMFColorConfig | undefined;
+            // result.faceGroups & params.featureColors are typed as non-null
+            // here, but the runtime guard is intentional belt-and-suspenders
+            // against shape drift in the generation pipeline.
+            /* eslint-disable @typescript-eslint/no-unnecessary-condition */
             if (
               isFeatureEnabled('multi_color_export') &&
               result.faceGroups &&
               params.featureColors
             ) {
+              /* eslint-enable @typescript-eslint/no-unnecessary-condition */
               const triangleCount = vertices.length / 9;
               colorConfig =
                 buildTriangleMaterialIndices(
@@ -209,12 +214,17 @@ export function useExport(): UseExportReturn {
 
               // Only apply color config to the bin piece (first piece)
               let colorConfig: ThreeMFColorConfig | undefined;
+              // result.faceGroups & params.featureColors are typed as non-null
+              // here, but the runtime guard mirrors the single-piece branch
+              // above as belt-and-suspenders against pipeline shape drift.
+              /* eslint-disable @typescript-eslint/no-unnecessary-condition */
               if (
                 i === 0 &&
                 isFeatureEnabled('multi_color_export') &&
                 result.faceGroups &&
                 params.featureColors
               ) {
+                /* eslint-enable @typescript-eslint/no-unnecessary-condition */
                 const triangleCount = parseResult.value.vertices.length / 9;
                 colorConfig =
                   buildTriangleMaterialIndices(

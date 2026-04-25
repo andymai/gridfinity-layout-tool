@@ -109,6 +109,9 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         const binSolid = getLastSolid();
         if (!binSolid) throw new Error('Failed to get bin solid for compound assembly');
 
+        // gridUnitMm is typed required, but persisted configs predating the
+        // field may not have it; preserve the runtime fallback.
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const gridUnitMm = params.gridUnitMm ?? GRIDFINITY.GRID_SIZE;
         const outerW = params.width * gridUnitMm - GRIDFINITY.TOLERANCE;
         const outerD = params.depth * gridUnitMm - GRIDFINITY.TOLERANCE;
