@@ -1,3 +1,5 @@
+/* eslint-disable no-console -- this file tests the logger by mocking and
+ * asserting against console.log/warn/error; references are intentional. */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { logger } from './logger';
 

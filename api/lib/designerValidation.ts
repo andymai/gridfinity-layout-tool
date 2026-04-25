@@ -143,12 +143,13 @@ function validateCellMask(mask: unknown): string | null {
     return `cellMask.rows must be integer 1-${CONSTRAINTS.MAX_MASK_DIMENSION}`;
   }
   if (!Array.isArray(mask.cells)) return 'cellMask.cells must be an array';
+  const cells = mask.cells as unknown[];
   const expected = mask.cols * mask.rows;
-  if (mask.cells.length !== expected) {
+  if (cells.length !== expected) {
     return `cellMask.cells length must be cols × rows (${expected})`;
   }
-  for (let i = 0; i < mask.cells.length; i++) {
-    const v = mask.cells[i];
+  for (let i = 0; i < cells.length; i++) {
+    const v = cells[i];
     if (v !== 0 && v !== 1) return `cellMask.cells[${i}] must be 0 or 1`;
   }
   return null;
