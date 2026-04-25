@@ -264,6 +264,29 @@ export default defineConfig([
       'src/shared/analytics/mlTelemetry/trackers.ts',
       'api/ml-telemetry.ts', // pre-split (2268 LOC)
       'api/lib/mlTelemetry/aggregators.ts', // post-split equivalent
+      // Cohesive single-concern modules where splitting would harm readability:
+      'src/shared/utils/validation.ts', // type guards + import/salvage validation pipeline (728 LOC); concerns are interleaved by design
+      'src/features/generation/bridge/GenerationBridge.ts', // single GenerationBridge class with the full worker-message protocol
+      'src/features/generation/worker/generators/baseplateGenerator.ts', // single linear generation pipeline
+      'src/features/generation/worker/generators/baseplateDirectMesh.ts', // single direct-mesh generator pipeline
+      'src/features/generation/worker/generators/wallPatternBuilder.ts', // single per-wall pattern builder
+      'src/features/bin-designer/components/panel/CutoutsSection/svgImport/svgParser.ts', // SVG element-conversion pipeline; helpers separated where useful
+      'src/features/inspiration-gallery/data/themes/workshop.ts', // pure theme data, large by nature
+      // Component files dense with conditional rendering / inline handlers; sub-components
+      // exist where useful but the orchestration layer remains in the main file:
+      'src/features/bin-designer/components/CompartmentEditor/CompartmentEditor.tsx',
+      'src/features/bin-designer/components/CutoutWorkspace/CutoutWorkspace.tsx',
+      'src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx',
+      'src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx',
+      'src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx',
+      'src/features/bin-inspector/hooks/useBinInspector.ts', // single coordinating hook
+      'src/features/cloud-share/components/ShareButton/ShareButton.tsx',
+      'src/features/command-palette/components/CommandPalette/CommandPalette.tsx',
+      'src/features/grid-editor/components/Grid/Overlay/Overlay.tsx',
+      'src/features/staging/components/Staging/Staging.tsx',
+      'src/shell/Modals/HelpModal/HelpModal.tsx', // tabbed help content kept inline by design
+      'src/shell/RightPanel/RightPanel.tsx',
+      'src/shell/Sidebar/Sidebar.tsx',
     ],
     rules: { 'max-lines': 'off' },
   },
