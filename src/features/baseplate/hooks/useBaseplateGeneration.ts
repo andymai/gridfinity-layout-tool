@@ -277,9 +277,15 @@ export function useBaseplateGeneration(): void {
         // Direct-mesh failed — extremely rare (only on invalid params that
         // would also fail BREP). Leave existing mesh in place; let BREP
         // either succeed (overwriting it) or surface the real error.
+      } finally {
+        // Stamp the duration on every exit (success, early epoch return, or
+        // throw) so the BREP timing event always reads a fresh value. Today
+        // `generateBaseplateDirect` is synchronous and the epoch checks are
+        // unreachable, but moving this out of the success-only path hardens
+        // it against any future async refactor of the direct-mesh generator.
+        directMeshDurationRef.current = performance.now() - directMeshStartRef.current;
       }
 
-      directMeshDurationRef.current = performance.now() - directMeshStartRef.current;
       return tiling;
     },
     [setTiling, setGenerationResult, setPieceMeshes, setSplitProgress, setDedupStats]
@@ -395,6 +401,12 @@ export function useBaseplateGeneration(): void {
         const previewVisible = hasMeshOnScreen(useBaseplatePageStore.getState());
 
         setSplitProgress(null);
+        // Always clear dedup stats on BREP exit. They're only read by the
+        // status pill (which hides on 'complete'/'error'), so it's harmless
+        // today, but leaving stale split-piece counts in the store would
+        // surface as a phantom dedup pill the next time some unrelated code
+        // happened to flip generationStatus back to 'generating'.
+        setDedupStats(null);
 
         if (previewVisible) {
           // Preview is already usable — keep it visible, surface a non-blocking
@@ -404,7 +416,6 @@ export function useBaseplateGeneration(): void {
             .getState()
             .addToast(getStaticTranslation('baseplate.brepFinalizeFailed'), 'error');
         } else {
-          setDedupStats(null);
           setGenerationResult({
             ...EMPTY_MESH,
             error: message,
