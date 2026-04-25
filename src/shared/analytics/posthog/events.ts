@@ -645,7 +645,8 @@ export function captureUtmParameters(): void {
     for (const key of utmKeys) {
       url.searchParams.delete(key);
     }
-    const currentState = window.history.state ?? null;
+    // window.history.state is typed as `any` by the DOM lib; widen to `unknown`.
+    const currentState: unknown = window.history.state ?? null;
     window.history.replaceState(currentState, '', url.toString());
   } catch {
     // Fail silently

@@ -85,5 +85,8 @@ const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {
 
 /** Look up middleware flags for a command type. Defaults to domain profile. */
 export function getMiddlewareFlags(type: CommandType): MiddlewareFlags {
+  // Records are typed exhaustively but the runtime fallback is exercised by
+  // tests that pass unregistered command types — keep it.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return PROFILES[COMMAND_PROFILES[type]] ?? PROFILES.domain;
 }

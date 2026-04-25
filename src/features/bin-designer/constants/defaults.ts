@@ -110,6 +110,11 @@ const LEGACY_SLOT_COLORS: Record<string, string> = {
 /** Migrate featureColors from old slot-based format to direct hex colors */
 function migrateFeatureColors(raw: Partial<FeatureColorConfig> | undefined): FeatureColorConfig {
   if (!raw) return DEFAULT_FEATURE_COLOR_CONFIG;
+  // LEGACY_SLOT_COLORS is `Record<string, string>` so TS treats every lookup
+  // as defined; at runtime an unmapped legacy slot returns undefined and we
+  // fall through to the direct color or default. The `??` chain encodes
+  // that fallback ladder.
+  /* eslint-disable @typescript-eslint/no-unnecessary-condition */
   return {
     body: LEGACY_SLOT_COLORS[raw.body as string] ?? raw.body ?? DEFAULT_FEATURE_COLOR_CONFIG.body,
     lip: LEGACY_SLOT_COLORS[raw.lip as string] ?? raw.lip ?? DEFAULT_FEATURE_COLOR_CONFIG.lip,
@@ -118,6 +123,7 @@ function migrateFeatureColors(raw: Partial<FeatureColorConfig> | undefined): Fea
       raw.labelTab ??
       DEFAULT_FEATURE_COLOR_CONFIG.labelTab,
   };
+  /* eslint-enable @typescript-eslint/no-unnecessary-condition */
 }
 
 /** Default feature color config: all zones use the default bin color (light grey) */

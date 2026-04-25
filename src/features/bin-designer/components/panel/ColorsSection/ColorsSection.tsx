@@ -28,6 +28,9 @@ export function ColorsSection() {
     }))
   );
 
+  // featureColors is typed as required, but legacy persisted configs may
+  // omit it; preserve the runtime fallback.
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const featureColors = rawColors ?? DEFAULT_FEATURE_COLOR_CONFIG;
   const updateFeatureColors = useDesignerStore((s) => s.updateFeatureColors);
   const setHoveredColorZone = useDesignerStore((s) => s.setHoveredColorZone);

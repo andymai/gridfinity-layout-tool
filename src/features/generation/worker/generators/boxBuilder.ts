@@ -423,6 +423,7 @@ function buildTopShapeLoft(
     }
 
     // Fillet the peak edge (only when TOP_FILLET > 0; spec default is 0)
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TOP_FILLET is a tunable constant; default is 0 but build can override
     if (TOP_FILLET > 0) {
       const lipEdges = edgeFinder()
         .when((e) => {
@@ -505,6 +506,7 @@ function buildTopShapeSweep(
       swept = unwrap(fuse(swept, holeLip));
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- TOP_FILLET is a tunable constant; default is 0 but build can override
     if (TOP_FILLET > 0) {
       const lipEdges = edgeFinder()
         .when((e) => {

@@ -229,7 +229,9 @@ export function useBaseplateGeneration(): void {
             }
           }
 
-          // Build mesh entries: original for first piece in group, clone for duplicates
+          // Build mesh entries: original for first piece in group, clone for duplicates.
+          // `new Array(n)` returns `any[]`; we pre-size the typed slot.
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const meshEntries: PieceMeshEntry[] = new Array(totalCount);
 
           for (let groupIdx = 0; groupIdx < uniqueGroups.length; groupIdx++) {

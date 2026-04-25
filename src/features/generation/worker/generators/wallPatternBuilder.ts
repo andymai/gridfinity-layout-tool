@@ -234,6 +234,9 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       params.handles.enabled &&
       !dim.isSlotted &&
       handleWall &&
+      // Record<Side, HandleSide> is exhaustive in the type system, but
+      // legacy persisted configs may have missing keys.
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       params.handles[wall.side]?.enabled &&
       !(wall.side === 'back' && params.label.enabled)
     ) {

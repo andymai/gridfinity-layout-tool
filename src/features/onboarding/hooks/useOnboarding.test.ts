@@ -86,7 +86,11 @@ describe('useOnboarding', () => {
       });
 
       function setPathname(path: string) {
+        // Spreading the Location class instance is intentional here — the
+        // test only reads enumerable string properties on the result, never
+        // calls prototype methods (assign/replace/reload).
         Object.defineProperty(window, 'location', {
+          // eslint-disable-next-line @typescript-eslint/no-misused-spread
           value: { ...originalLocation, pathname: path },
           writable: true,
         });
