@@ -173,7 +173,6 @@ export const Scene = forwardRef<SceneHandle, SceneProps>(
           size.width,
           size.height
         );
-        // eslint-disable-next-line react-hooks/immutability -- Three.js requires direct mutation of camera properties
         camera.zoom = fitZoom;
         camera.updateProjectionMatrix();
         hasInitializedRef.current = true;

@@ -10,7 +10,7 @@
  * like Google Docs where the shared version is always current.
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
@@ -51,9 +51,6 @@ export function useOwnedShareSync(): void {
   // Find cloudShare info for the active layout
   const cloudShare = entries.find((e) => e.id === activeLayoutId)?.cloudShare ?? null;
 
-  // Keep ref in sync with current cloudShare value
-  cloudShareRef.current = cloudShare;
-
   const syncToCloud = useCallback(async () => {
     if (!cloudShare || isSyncingRef.current) return;
 
@@ -81,8 +78,18 @@ export function useOwnedShareSync(): void {
     }
   }, [cloudShare, layout]);
 
-  // Keep sync function ref updated to always call the latest version
-  syncToCloudRef.current = syncToCloud;
+  // Keep both refs aligned with the latest committed values. Uses
+  // `useLayoutEffect` (not `useEffect`) so the refs update synchronously
+  // during commit, before any subsequent unmount can fire its cleanup. With
+  // a passive effect there's a window where a render commits, the parent
+  // immediately unmounts this component, and the unmount cleanup reads
+  // refs that the not-yet-flushed passive effect would have updated.
+  // `react-hooks/refs` forbids `.current = ...` during render; this is the
+  // canonical workaround.
+  useLayoutEffect(() => {
+    cloudShareRef.current = cloudShare;
+    syncToCloudRef.current = syncToCloud;
+  }, [cloudShare, syncToCloud]);
 
   // Debounced sync effect
   useEffect(() => {

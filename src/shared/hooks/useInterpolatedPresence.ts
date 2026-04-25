@@ -195,11 +195,16 @@ export function useInterpolatedPresence(
     };
   }, [others, gridWidth, gridHeight]);
 
-  // Convert internal state to public API
-  // Memoize to prevent unnecessary downstream re-renders
+  // Convert internal state to public API. The "mutable ref + bumped counter"
+  // pattern below is intentional: the RAF loop mutates `stateRef.current` at
+  // 60fps, but only bumps `updateTrigger` when something visible changed —
+  // letting the memo recompute the public snapshot on real changes only,
+  // without re-rendering on every frame. The rule flags reading `.current`
+  // during render, but this read is correctly synchronized with the trigger.
   return useMemo(() => {
     const result = new Map<number, InterpolatedPosition>();
 
+    // eslint-disable-next-line react-hooks/refs -- See note above: read is gated by updateTrigger and runs in the same render the RAF loop scheduled.
     for (const [id, state] of stateRef.current.entries()) {
       result.set(id, {
         x: state.current.x,

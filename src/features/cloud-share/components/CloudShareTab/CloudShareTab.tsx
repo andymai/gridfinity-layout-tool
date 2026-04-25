@@ -38,11 +38,16 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
   const permission: SharePermission = existingShare?.permission ?? 'view';
   // Track local permission for new shares (before first share)
   const [localPermission, setLocalPermission] = useState<SharePermission>(permission);
-
-  // Sync local permission when existing share changes
-  useEffect(() => {
+  // Adjust local permission when the server-derived value changes — done during
+  // render rather than in an effect, per React docs: a conditional setState in
+  // render bails out and re-runs in a single pass, instead of the two-render
+  // cascade an effect would produce.
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [lastSyncedPermission, setLastSyncedPermission] = useState<SharePermission>(permission);
+  if (permission !== lastSyncedPermission) {
+    setLastSyncedPermission(permission);
     setLocalPermission(permission);
-  }, [permission]);
+  }
 
   // Auto-focus URL on success
   useEffect(() => {
