@@ -9,13 +9,13 @@
  * 4. Split pieces mini-map (only when baseplate is split across print beds)
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
-import { ChevronDownIcon, RulerIcon } from '@/design-system/Icon';
+import { RulerIcon } from '@/design-system/Icon';
 import { Stepper } from '@/design-system/Stepper';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
@@ -25,22 +25,12 @@ import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { SliderInput } from '@/shared/components/SliderInput';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
-import { colToLetter } from '../../utils/splitPlanner';
 import { EditableDimensions } from './EditableDimensions';
+import { PaddingSchematic } from './PaddingSchematic';
+import { SplitViewStrip } from './SplitViewStrip';
+import { PADDING_MAX } from '../PaddingStepper';
 import type { BaseplateParams } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
-import type { BaseplateTiling, PaddingReductionHint } from '../../types/tiling';
-
-const PADDING_HINT_AXIS_KEYS: Record<PaddingReductionHint['axis'], string> = {
-  x: 'baseplate.paddingHintAxisX',
-  y: 'baseplate.paddingHintAxisY',
-  both: 'baseplate.paddingHintAxisBoth',
-};
-
-const PADDING_BUTTON_STEP = 0.25;
-const PADDING_INPUT_STEP = 0.01;
-const PADDING_MIN = 0;
-const PADDING_MAX = 100;
 
 export function BaseplatePanel() {
   const t = useTranslation();
@@ -357,93 +347,6 @@ export function BaseplatePanel() {
     </div>
   );
 }
-interface SplitViewStripProps {
-  readonly tiling: BaseplateTiling;
-  readonly hoveredPieceLabel: string | null;
-  readonly selectedPieceLabel: string | null;
-  readonly onHoverPiece: (label: string | null) => void;
-  readonly onSelectPiece: (label: string | null) => void;
-  readonly printBedSize: number;
-}
-
-/** Non-collapsible inline strip for the split view control. */
-function SplitViewStrip({
-  tiling,
-  hoveredPieceLabel,
-  selectedPieceLabel,
-  onHoverPiece,
-  onSelectPiece,
-  printBedSize,
-}: SplitViewStripProps) {
-  const t = useTranslation();
-
-  return (
-    <div className="border-b border-stroke-subtle">
-      {/* Info + reason */}
-      <div className="flex items-baseline justify-between gap-2 px-4 pt-3 pb-1">
-        <span className="text-xs text-content-secondary">
-          {t('baseplate.splitInfo', { count: tiling.pieces.length })}
-        </span>
-        <span className="text-[11px] text-content-tertiary whitespace-nowrap">
-          {t('baseplate.splitReason', { printBed: printBedSize })}
-        </span>
-      </div>
-
-      {/* Padding reduction hint */}
-      {tiling.paddingReductionHint && (
-        <div className="mx-4 mb-2 rounded bg-accent/10 px-2.5 py-1.5 text-[11px] text-accent">
-          {t('baseplate.paddingHint', {
-            axis: t(PADDING_HINT_AXIS_KEYS[tiling.paddingReductionHint.axis]),
-            mm: tiling.paddingReductionHint.reductionMm,
-            count: tiling.paddingReductionHint.piecesSaved,
-          })}
-        </div>
-      )}
-
-      {/* Piece mini-map */}
-      <div className="px-4 pb-3">
-        <div
-          className="grid gap-1"
-          aria-label={t('baseplate.sectionView')}
-          style={{
-            gridTemplateColumns: `repeat(${tiling.cols}, 1fr)`,
-          }}
-        >
-          {Array.from({ length: tiling.rows }, (_, ri) => {
-            // Flip Y so row 1 (front/bottom in 3D) is at the bottom of the mini-map
-            const r = tiling.rows - 1 - ri;
-            return Array.from({ length: tiling.cols }, (_, c) => {
-              const label = `${colToLetter(c)}${r + 1}`;
-              const isHovered = hoveredPieceLabel === label;
-              const isSelected = selectedPieceLabel === label;
-              return (
-                <button
-                  key={label}
-                  type="button"
-                  className={`flex items-center justify-center rounded border bg-surface-elevated py-1 text-[10px] font-mono transition-shadow ${
-                    isSelected
-                      ? 'ring-2 ring-accent border-accent text-content-primary'
-                      : isHovered
-                        ? 'ring-1 ring-accent/50 border-accent/50 text-content-secondary'
-                        : 'border-stroke-subtle text-content-tertiary'
-                  }`}
-                  onPointerEnter={() => onHoverPiece(label)}
-                  onPointerLeave={() => onHoverPiece(null)}
-                  onClick={() => onSelectPiece(selectedPieceLabel === label ? null : label)}
-                  aria-pressed={isSelected}
-                  aria-label={t('baseplate.pieceLabel', { label })}
-                >
-                  {label}
-                </button>
-              );
-            });
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /** Corner radius controls with optional per-corner mode. */
 function CornerRadiusControl({
   cornerRadius,
@@ -532,177 +435,10 @@ function CornerRadiusControl({
   );
 }
 
-interface PaddingSchematicProps {
-  readonly baseplateParams: BaseplateParams;
-  readonly updateParam: <K extends keyof BaseplateParams>(
-    key: K,
-    value: BaseplateParams[K]
-  ) => void;
-}
-
-/** Spatial schematic showing padding steppers positioned around a baseplate rectangle. */
-function PaddingSchematic({ baseplateParams, updateParam }: PaddingSchematicProps) {
-  const t = useTranslation();
-
-  return (
-    <div className="space-y-1">
-      {/* Back stepper — centered above */}
-      <div className="flex justify-center">
-        <PaddingStepper
-          label={t('baseplate.paddingBack')}
-          value={baseplateParams.paddingBack}
-          onChange={(v) => updateParam('paddingBack', mm(v))}
-        />
-      </div>
-
-      {/* Middle row: Left stepper | rectangle | Right stepper */}
-      <div className="flex items-center gap-1.5">
-        <SideStepper
-          ariaLabel={t('baseplate.paddingLeft')}
-          value={baseplateParams.paddingLeft}
-          onChange={(v) => updateParam('paddingLeft', mm(v))}
-        />
-        <div className="flex-1 min-h-12 rounded border border-dashed border-stroke-subtle bg-surface-secondary/50" />
-        <SideStepper
-          ariaLabel={t('baseplate.paddingRight')}
-          value={baseplateParams.paddingRight}
-          onChange={(v) => updateParam('paddingRight', mm(v))}
-        />
-      </div>
-
-      {/* Front stepper — centered below */}
-      <div className="flex justify-center">
-        <PaddingStepper
-          label={t('baseplate.paddingFront')}
-          value={baseplateParams.paddingFront}
-          onChange={(v) => updateParam('paddingFront', mm(v))}
-        />
-      </div>
-    </div>
-  );
-}
-
-interface SideStepperProps {
-  readonly ariaLabel: string;
-  readonly value: number;
-  readonly onChange: (value: number) => void;
-}
-
-/** Format mm for display: minimum needed decimals, no trailing zeros. */
-function formatMm(v: number): string {
-  // Round to 2 decimal places to avoid floating-point noise, then drop trailing zeros
-  const rounded = Math.round(v * 100) / 100;
-  return String(rounded);
-}
-
 /** Print Settings header summary: "{gridUnit}mm · {bed}mm" or "{gridUnit}mm · {w}×{d}mm" for asymmetric beds. */
 function formatPrintSettingsSummary(gridUnitMm: number, bedW: number, bedD: number): string {
   const bed = bedW === bedD ? `${bedW}mm` : `${bedW}\u00d7${bedD}mm`;
   return `${gridUnitMm}mm \u00b7 ${bed}`;
-}
-
-const sideStepperBtnClass =
-  'flex h-6 w-8 items-center justify-center border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:bg-surface-hover hover:text-content disabled:opacity-50';
-
-/** Compact vertical stepper for left/right edges — value + buttons stacked to save width. */
-function SideStepper({ ariaLabel, value, onChange }: SideStepperProps) {
-  const [localText, setLocalText] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
-  const skipBlurCommit = useRef(false);
-
-  const displayValue = Math.round(value * 100) / 100;
-
-  const commit = useCallback(
-    (text: string) => {
-      const v = parseFloat(text);
-      if (!Number.isNaN(v) && v >= PADDING_MIN && v <= PADDING_MAX) {
-        onChange(Math.round(v / PADDING_INPUT_STEP) * PADDING_INPUT_STEP);
-      }
-    },
-    [onChange]
-  );
-
-  return (
-    <div className="flex flex-col items-center">
-      <button
-        type="button"
-        className={`${sideStepperBtnClass} rounded-t-md border-b-0`}
-        onClick={() => onChange(Math.min(PADDING_MAX, value + PADDING_BUTTON_STEP))}
-        disabled={value >= PADDING_MAX}
-        aria-label={`${ariaLabel} increment`}
-      >
-        <ChevronDownIcon size="xs" className="rotate-180" />
-      </button>
-      <input
-        type="text"
-        inputMode="decimal"
-        className="w-8 border border-stroke-subtle bg-surface px-0 py-0.5 text-center text-xs tabular-nums text-content-secondary outline-none focus:ring-1 focus:ring-accent"
-        value={isFocused ? localText : formatMm(displayValue)}
-        onChange={(e) => setLocalText(e.target.value)}
-        onFocus={() => {
-          setLocalText(formatMm(displayValue));
-          setIsFocused(true);
-        }}
-        onBlur={() => {
-          if (!skipBlurCommit.current) {
-            commit(localText);
-          }
-          skipBlurCommit.current = false;
-          setIsFocused(false);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            commit(localText);
-            skipBlurCommit.current = true;
-            e.currentTarget.blur();
-          }
-          if (e.key === 'Escape') {
-            setLocalText(formatMm(displayValue));
-            skipBlurCommit.current = true;
-            e.currentTarget.blur();
-          }
-        }}
-        aria-label={ariaLabel}
-      />
-      <button
-        type="button"
-        className={`${sideStepperBtnClass} rounded-b-md border-t-0`}
-        onClick={() => onChange(Math.max(PADDING_MIN, value - PADDING_BUTTON_STEP))}
-        disabled={value <= PADDING_MIN}
-        aria-label={`${ariaLabel} decrement`}
-      >
-        <ChevronDownIcon size="xs" />
-      </button>
-    </div>
-  );
-}
-
-interface PaddingStepperProps {
-  readonly label: string;
-  readonly value: number;
-  readonly onChange: (value: number) => void;
-}
-
-/** Compact stepper for a single padding value (mm). */
-function PaddingStepper({ label, value, onChange }: PaddingStepperProps) {
-  return (
-    <div className="w-fit flex flex-col items-center gap-0.5">
-      <span className="text-xs text-content-tertiary">{label}</span>
-      <Stepper
-        size="sm"
-        value={value}
-        onStep={(delta) =>
-          onChange(
-            Math.max(PADDING_MIN, Math.min(PADDING_MAX, value + delta * PADDING_BUTTON_STEP))
-          )
-        }
-        min={PADDING_MIN}
-        max={PADDING_MAX}
-        displayValue={formatMm(value)}
-        aria-label={label}
-      />
-    </div>
-  );
 }
 
 interface GridDimensionStepperProps {

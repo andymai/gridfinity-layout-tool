@@ -41,6 +41,8 @@
   "baseplate.magnetDiameterInfo": "6mm est le standard pour Gridfinity",
   "baseplate.magnetHoles": "Trous d'aimant",
   "baseplate.padding": "Marge",
+  "baseplate.decreasePadding": "Diminuer {label}",
+  "baseplate.increasePadding": "Augmenter {label}",
   "baseplate.paddingBack": "Arrière",
   "baseplate.paddingFront": "Avant",
   "baseplate.paddingHint": "Réduire la marge {axis} de {mm}mm économiserait {count} pièce(s)",

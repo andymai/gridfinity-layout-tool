@@ -41,6 +41,8 @@
   "baseplate.magnetDiameterInfo": "6mm is standaard voor Gridfinity",
   "baseplate.magnetHoles": "Magneetgaten",
   "baseplate.padding": "Vulling",
+  "baseplate.decreasePadding": "{label} verkleinen",
+  "baseplate.increasePadding": "{label} vergroten",
   "baseplate.paddingBack": "Achter",
   "baseplate.paddingFront": "Voor",
   "baseplate.paddingHint": "{axis}-opvulling met {mm}mm verminderen bespaart {count} stuk(s)",

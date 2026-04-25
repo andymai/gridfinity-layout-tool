@@ -1471,6 +1471,8 @@ const en: Record<string, string> = {
   'baseplate.paddingRight': 'Right',
   'baseplate.paddingFront': 'Front',
   'baseplate.paddingBack': 'Back',
+  'baseplate.increasePadding': 'Increase {label}',
+  'baseplate.decreasePadding': 'Decrease {label}',
   'baseplate.editDimensions': 'Edit baseplate dimensions',
   'baseplate.inclPadding': 'incl. padding',
   'baseplate.editDimensionsWidth': 'Baseplate width in mm',

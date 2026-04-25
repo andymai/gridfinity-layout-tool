@@ -41,6 +41,8 @@
   "baseplate.magnetDiameterInfo": "6mm ist Standard für Gridfinity",
   "baseplate.magnetHoles": "Magnetlöcher",
   "baseplate.padding": "Polsterung",
+  "baseplate.decreasePadding": "{label} verkleinern",
+  "baseplate.increasePadding": "{label} vergrößern",
   "baseplate.paddingBack": "Hinten",
   "baseplate.paddingFront": "Vorne",
   "baseplate.paddingHint": "{axis}-Abstand um {mm}mm reduzieren würde {count} Teil(e) sparen",

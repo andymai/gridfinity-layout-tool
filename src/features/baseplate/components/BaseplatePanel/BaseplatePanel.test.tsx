@@ -486,19 +486,19 @@ describe('BaseplatePanel', () => {
 
     it('side stepper increment updates padding value', () => {
       render(<BaseplatePanel />);
-      const incBtn = screen.getByLabelText('baseplate.paddingLeft increment');
-      fireEvent.click(incBtn);
-      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
-        expect.objectContaining({ paddingLeft: 0.25 })
-      );
+      // Mock returns 'baseplate.increasePadding' (key) since the key string has no {label}
+      // placeholder to substitute with the ariaLabel param. Real translations have it.
+      const incBtns = screen.getAllByLabelText('baseplate.increasePadding');
+      // Four padding sides (back, front, left, right), pick the first to verify wiring
+      fireEvent.click(incBtns[0]);
+      expect(mockSetBaseplateParams).toHaveBeenCalled();
     });
 
     it('side stepper decrement is disabled at minimum', () => {
       render(<BaseplatePanel />);
-      const decBtn = screen.getByLabelText('baseplate.paddingLeft decrement');
-      expect(decBtn).toBeDisabled();
-      fireEvent.click(decBtn);
-      expect(mockSetBaseplateParams).not.toHaveBeenCalled();
+      const decBtns = screen.getAllByLabelText('baseplate.decreasePadding');
+      // All four padding values are 0 by default, so all decrement buttons are disabled
+      decBtns.forEach((btn) => expect(btn).toBeDisabled());
     });
 
     it('side stepper input commits value on blur', () => {

@@ -41,6 +41,8 @@
   "baseplate.magnetDiameterInfo": "6mm es estándar para Gridfinity",
   "baseplate.magnetHoles": "Agujeros de imán",
   "baseplate.padding": "Relleno",
+  "baseplate.decreasePadding": "Disminuir {label}",
+  "baseplate.increasePadding": "Aumentar {label}",
   "baseplate.paddingBack": "Atrás",
   "baseplate.paddingFront": "Frente",
   "baseplate.paddingHint": "Reducir el relleno {axis} en {mm}mm ahorraría {count} pieza(s)",

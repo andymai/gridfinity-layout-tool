@@ -41,6 +41,8 @@
   "baseplate.magnetDiameterInfo": "6mm é padrão para Gridfinity",
   "baseplate.magnetHoles": "Furos de ímã",
   "baseplate.padding": "Preenchimento",
+  "baseplate.decreasePadding": "Diminuir {label}",
+  "baseplate.increasePadding": "Aumentar {label}",
   "baseplate.paddingBack": "Trás",
   "baseplate.paddingFront": "Frente",
   "baseplate.paddingHint": "Reduzir o preenchimento {axis} em {mm}mm economizaria {count} peça(s)",
