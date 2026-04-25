@@ -238,8 +238,13 @@ export const useMutation = context?.useMutation ?? createUnconfiguredHook('useMu
 export const useRoom = context?.useRoom ?? createUnconfiguredHook('useRoom');
 export const useBroadcastEvent =
   context?.useBroadcastEvent ?? createUnconfiguredHook('useBroadcastEvent');
-export const useEventListener =
-  context?.useEventListener ?? createUnconfiguredHook('useEventListener');
+// Explicit type annotation prevents TS2883 ("Property has or is using private name X")
+// when emitting declarations for composite projects: the inferred type would reference
+// private Liveblocks internals (RoomEventMessage<P, U, E>) that the public d.ts cannot
+// resolve. Required to re-enable Stryker's typescript-checker.
+export const useEventListener: (
+  callback: (data: { event: unknown; user: unknown; connectionId: number }) => void
+) => void = context?.useEventListener ?? createUnconfiguredHook('useEventListener');
 
 export const useStatus = createSafeHook(
   context?.useStatus as (() => string) | undefined,
