@@ -95,10 +95,10 @@ export default defineConfig({
         },
       },
     ],
-  },
-  benchmark: {
-    include: ['**/*.bench.ts'],
-    exclude: ['node_modules/**', '.worktrees/**'],
+    benchmark: {
+      include: ['**/*.bench.ts'],
+      exclude: ['node_modules/**', '.worktrees/**'],
+    },
   },
   resolve: {
     alias: {

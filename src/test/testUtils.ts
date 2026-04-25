@@ -2,7 +2,7 @@ import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import { expect } from 'vitest';
 import type { Bin, Layout, LayoutLibrary, BinId, LayoutId } from '@/core/types';
-import { binId, layerId, categoryId, layoutId } from '@/core/types';
+import { binId, layerId, categoryId, layoutId, heightUnits } from '@/core/types';
 import type { Result } from '@/core/result/types';
 import { isOk, isErr } from '@/core/result';
 import { createDefaultLayout } from '@/core/constants';
@@ -243,7 +243,7 @@ export function createTestLayout(overrides?: Partial<Layout>): Layout {
     gridUnitMm: 42,
     heightUnitMm: 7,
     categories: [{ id: categoryId('cat1'), name: 'General', color: '#3b82f6' }],
-    layers: [{ id: layerId('layer1'), name: 'Layer 1', height: 3 }],
+    layers: [{ id: layerId('layer1'), name: 'Layer 1', height: heightUnits(3) }],
     bins: [],
   };
 
