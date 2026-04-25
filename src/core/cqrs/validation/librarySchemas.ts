@@ -33,7 +33,7 @@ export const librarySetAuthorNameSchema = z.object({ name: nameStr });
 
 export const librarySetCloudShareSchema = z.object({
   layoutId: layoutIdSchema,
-  shareInfo: z.object({ id: z.string(), url: z.string() }).passthrough(),
+  shareInfo: z.object({ id: z.string(), url: z.string() }).loose(),
 });
 
 export const libraryClearCloudShareSchema = z.object({ layoutId: layoutIdSchema });
