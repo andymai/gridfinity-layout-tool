@@ -172,7 +172,7 @@ describe('Result-based storage functions', () => {
       delete (oldLayout as Record<string, unknown>).gridUnitMm;
       delete (oldLayout as Record<string, unknown>).heightUnitMm;
 
-      vi.mocked(backend.loadAsync).mockResolvedValue(oldLayout as Layout);
+      vi.mocked(backend.loadAsync).mockResolvedValue(oldLayout);
 
       const result = await loadLayoutResult('old-layout');
 

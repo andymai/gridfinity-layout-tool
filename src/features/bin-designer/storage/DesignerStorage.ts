@@ -125,7 +125,7 @@ export async function loadDesign(id: DesignId): Promise<Result<SavedDesign, Stor
     }
 
     // Apply migration for backward compatibility with old designs
-    const migratedParams = migrateParams(design.params as Partial<BinParams>);
+    const migratedParams = migrateParams(design.params);
 
     return ok({
       ...design,

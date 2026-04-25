@@ -76,7 +76,7 @@ describe('useUnsavedWarning', () => {
       ([event]) => event === 'beforeunload'
     )?.[1] as EventListener;
 
-    const event = new Event('beforeunload') as BeforeUnloadEvent;
+    const event = new Event('beforeunload');
     const preventSpy = vi.spyOn(event, 'preventDefault');
 
     handler(event);

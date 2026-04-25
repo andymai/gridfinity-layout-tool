@@ -7,7 +7,7 @@
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { DesignerState, SaveStatus, WasmStatus } from '../types';
+import type { DesignerState } from '../types';
 import {
   DEFAULT_BIN_PARAMS,
   DEFAULT_GENERATION_STATE,
@@ -29,14 +29,14 @@ export const useDesignerStore = create<DesignerState>()(
     params: { ...DEFAULT_BIN_PARAMS },
     generation: { ...DEFAULT_GENERATION_STATE },
     history: { ...DEFAULT_HISTORY },
-    wasmStatus: 'unloaded' as WasmStatus,
+    wasmStatus: 'unloaded',
     ui: { ...DEFAULT_UI_STATE },
     transactionDepth: 0,
 
     // Persistence state
     currentDesignId: null as string | null,
     designName: 'Untitled Bin',
-    saveStatus: 'idle' as SaveStatus,
+    saveStatus: 'idle',
     exportFileNameConfig: { ...DEFAULT_EXPORT_FILE_NAME_CONFIG },
     pendingBinLink: null as string | null,
     needsThumbnailUpdate: false,

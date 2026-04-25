@@ -208,8 +208,8 @@ export const useMyPresence = (context?.useMyPresence ??
   UserPresence,
   (patch: Partial<UserPresence>) => void,
 ];
-export const useUpdateMyPresence = (context?.useUpdateMyPresence ??
-  createUnconfiguredHook('useUpdateMyPresence')) as () => (patch: Partial<UserPresence>) => void;
+export const useUpdateMyPresence =
+  context?.useUpdateMyPresence ?? createUnconfiguredHook('useUpdateMyPresence');
 // Safe hooks that return defaults when not configured OR when called outside RoomProvider
 // These can be called unconditionally - they catch RoomProvider errors and return safe defaults
 export const useOthers = createSafeHook(
@@ -217,7 +217,7 @@ export const useOthers = createSafeHook(
     | (() => readonly { connectionId: number; presence: UserPresence }[])
     | undefined,
   safeStubHooks.useOthers
-) as () => readonly { connectionId: number; presence: UserPresence }[];
+);
 
 export const useOthersMapped =
   context?.useOthersMapped ?? createUnconfiguredHook('useOthersMapped');
@@ -228,7 +228,7 @@ export const useOther = context?.useOther ?? createUnconfiguredHook('useOther');
 export const useSelf = createSafeHook(
   context?.useSelf as (() => { connectionId: number; presence: UserPresence } | null) | undefined,
   safeStubHooks.useSelf
-) as () => { connectionId: number; presence: UserPresence } | null;
+);
 
 export const useStorage = createSafeHook(
   context?.useStorage as (<T>(selector: (root: LiveblocksStorage) => T) => T | null) | undefined,
@@ -249,7 +249,7 @@ export const useEventListener: (
 export const useStatus = createSafeHook(
   context?.useStatus as (() => string) | undefined,
   safeStubHooks.useStatus
-) as () => string;
+);
 export const useHistory = context?.useHistory ?? createUnconfiguredHook('useHistory');
 export const useUndo = context?.useUndo ?? createUnconfiguredHook('useUndo');
 export const useRedo = context?.useRedo ?? createUnconfiguredHook('useRedo');

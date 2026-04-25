@@ -116,7 +116,7 @@ export function EditableDimensions({
     (e: React.FocusEvent) => {
       // relatedTarget is the element receiving focus — if it's still inside our
       // container, the user is tabbing between width/depth inputs, so don't commit yet.
-      if (containerRef.current?.contains(e.relatedTarget as Node)) {
+      if (containerRef.current?.contains(e.relatedTarget)) {
         return;
       }
       commit();

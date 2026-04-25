@@ -97,5 +97,5 @@ export function groupPiecesByFingerprint(
     }
   }
 
-  return groups as Map<string, PieceGroup>;
+  return groups;
 }

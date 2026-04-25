@@ -12,9 +12,7 @@ vi.mock('brepjs', () => {
   return {
     box: vi.fn(() => makeShape()),
     unwrap: vi.fn((result: unknown) =>
-      result && typeof result === 'object' && 'value' in result
-        ? (result as { value: unknown }).value
-        : result
+      result && typeof result === 'object' && 'value' in result ? result.value : result
     ),
     fuseAll: vi.fn(() => ({ value: makeShape() })),
     clone: vi.fn((shape: unknown) => ({ value: shape })),

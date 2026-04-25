@@ -482,5 +482,5 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ...(params.splitConnectors !== undefined
       ? { splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, ...params.splitConnectors } }
       : {}),
-  } as BinParams;
+  };
 }

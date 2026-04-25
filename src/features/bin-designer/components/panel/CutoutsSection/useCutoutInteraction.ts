@@ -420,7 +420,7 @@ export function useCutoutInteraction({
         for (const [id, patch] of updates) {
           const orig = cutouts.find((c) => c.id === id);
           if (!orig) continue;
-          const candidate = { ...orig, ...patch } as Cutout;
+          const candidate = { ...orig, ...patch };
           if (!cutoutFitsInMask(candidate, cellMask, maskCellSize)) return;
         }
       }
@@ -462,7 +462,7 @@ export function useCutoutInteraction({
       cellMask && maskCellSize
         ? clipboard.filter((orig) => {
             const pos = clampedOffset(orig, offset, binWidth, binDepth);
-            return cutoutFitsInMask({ ...orig, ...pos } as Cutout, cellMask, maskCellSize);
+            return cutoutFitsInMask({ ...orig, ...pos }, cellMask, maskCellSize);
           })
         : clipboard;
     if (placeable.length === 0) return;
@@ -480,7 +480,7 @@ export function useCutoutInteraction({
       cellMask && maskCellSize
         ? selected.filter((orig) => {
             const pos = clampedOffset(orig, PASTE_OFFSET, binWidth, binDepth);
-            return cutoutFitsInMask({ ...orig, ...pos } as Cutout, cellMask, maskCellSize);
+            return cutoutFitsInMask({ ...orig, ...pos }, cellMask, maskCellSize);
           })
         : selected;
     if (placeable.length === 0) return;
@@ -1143,7 +1143,7 @@ export function useCutoutInteraction({
     for (const id of selection) {
       if (cutoutIds.has(id)) cleaned.add(id);
     }
-    return cleaned as ReadonlySet<string>;
+    return cleaned;
   }, [cutouts, selection]);
 
   // ── Store sync ─────────────────────────────────────────────────────

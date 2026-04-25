@@ -253,7 +253,7 @@ describe('printEstimates', () => {
       const baseParams: BinParams = {
         ...DEFAULT_BIN_PARAMS,
         height: 6,
-        style: 'slotted' as BinParams['style'],
+        style: 'slotted',
         wallPattern: { enabled: true, pattern: 'honeycomb' as const },
       };
       const bothAxes = estimatePrint({

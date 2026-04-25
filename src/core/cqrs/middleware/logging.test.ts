@@ -13,7 +13,7 @@ function makeCommand(type: string): Command {
       id: 'cmd-1' as CommandMeta['id'],
       timestamp: Date.now(),
       correlationId: 'corr-1' as CommandMeta['correlationId'],
-      source: 'user' as CommandMeta['source'],
+      source: 'user',
     },
   } as Command;
 }

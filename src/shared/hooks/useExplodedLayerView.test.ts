@@ -27,7 +27,7 @@ function makeBin(overrides: Partial<Bin> & { id: string; layerId: string }): Bin
     label: '',
     notes: '',
     ...overrides,
-  } as Bin;
+  };
 }
 
 const defaultLayers = [makeLayer('layer0', 'Bottom', 3), makeLayer('layer1', 'Top', 3)];

@@ -4,9 +4,9 @@ import { AppearanceTab } from './AppearanceTab';
 
 const mockUpdateSetting = vi.hoisted(() => vi.fn());
 const mockState = vi.hoisted(() => ({
-  theme: 'dark' as string,
-  accentColor: 'amber' as string,
-  uiDensity: 'default' as string,
+  theme: 'dark',
+  accentColor: 'amber',
+  uiDensity: 'default',
   reduceMotion: false,
 }));
 

@@ -61,7 +61,7 @@ export function isArchiveFormat(data: unknown): data is LayoutArchive {
   if (typeof data !== 'object' || data === null) return false;
   if (!('_archive' in data) || !('layouts' in data)) return false;
 
-  const root = data as { _archive: unknown; layouts: unknown };
+  const root = data;
 
   // Validate _archive metadata
   if (typeof root._archive !== 'object' || root._archive === null) return false;

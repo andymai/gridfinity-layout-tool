@@ -372,7 +372,7 @@ const STRESS_CASES: readonly StressCase[] = [
     overrides: {
       width: 2,
       depth: 2,
-      style: 'solid' as BinParams['style'],
+      style: 'solid',
       base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat', stackingLip: false, solid: true },
       cutouts: [
         {
@@ -438,7 +438,7 @@ describe('brepkit stress test', () => {
 
     for (const tc of STRESS_CASES) {
       clearAllCaches();
-      const params = { ...DEFAULT_BIN_PARAMS, ...tc.overrides } as BinParams;
+      const params = { ...DEFAULT_BIN_PARAMS, ...tc.overrides };
       const occt = withKernel('occt', () =>
         tryGenerate(generateBin, params, tc.forExport ?? false)
       );
@@ -447,7 +447,7 @@ describe('brepkit stress test', () => {
 
     for (const tc of STRESS_CASES) {
       clearAllCaches();
-      const params = { ...DEFAULT_BIN_PARAMS, ...tc.overrides } as BinParams;
+      const params = { ...DEFAULT_BIN_PARAMS, ...tc.overrides };
       const bk = withKernel('brepkit', () =>
         tryGenerate(generateBin, params, tc.forExport ?? false)
       );
