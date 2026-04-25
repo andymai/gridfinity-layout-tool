@@ -195,6 +195,7 @@ vi.mock('@/shared/analytics/useMLTracking', () => ({
     trackSession: vi.fn(),
     incrementEdit: vi.fn(),
     markActivity: vi.fn(),
+    recordAction: vi.fn(),
   },
 }));
 
