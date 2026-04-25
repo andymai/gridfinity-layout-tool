@@ -201,8 +201,8 @@ importers:
         specifier: ^6.10.2
         version: 6.10.2(eslint@10.2.1(jiti@2.6.1))
       eslint-plugin-react-hooks:
-        specifier: ~7.0.1
-        version: 7.0.1(eslint@10.2.1(jiti@2.6.1))
+        specifier: ~7.1.1
+        version: 7.1.1(eslint@10.2.1(jiti@2.6.1))
       eslint-plugin-react-refresh:
         specifier: ^0.5.2
         version: 0.5.2(eslint@10.2.1(jiti@2.6.1))
@@ -5673,10 +5673,10 @@ packages:
     peerDependencies:
       eslint: ^10.0.3
 
-  eslint-plugin-react-hooks@7.0.1:
+  eslint-plugin-react-hooks@7.1.1:
     resolution:
       {
-        integrity: sha512-O0d0m04evaNzEPoSW+59Mezf8Qt0InfgGIBJnpC0h3NH/WjUAR7BIKUfysC6todmtiZ/A0oUVS8Gce0WhBrHsA==,
+        integrity: sha512-f2I7Gw6JbvCexzIInuSbZpfdQ44D7iqdWX01FKLvrPgqxoE7oMj8clOfto8U6vYiz4yd5oKu39rRSVOe1zRu0g==,
       }
     engines: { node: '>=18' }
     peerDependencies:
@@ -13067,7 +13067,7 @@ snapshots:
       safe-regex-test: 1.1.0
       string.prototype.includes: 2.0.1
 
-  eslint-plugin-react-hooks@7.0.1(eslint@10.2.1(jiti@2.6.1)):
+  eslint-plugin-react-hooks@7.1.1(eslint@10.2.1(jiti@2.6.1)):
     dependencies:
       '@babel/core': 7.29.0
       '@babel/parser': 7.29.2

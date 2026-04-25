@@ -194,12 +194,15 @@ function SharePopover({
     return { top, right };
   }, [buttonRef]);
 
-  // Calculate position on mount - this is an acceptable use case for setState
-  // in effect because we need the DOM ref which isn't available during render
+  // Calculate position on mount and on resize. Initial setState here is needed
+  // because `calculatePosition` measures the buttonRef DOM node, which isn't
+  // attached during render. The handleResize setState is in an external-event
+  // callback, which `set-state-in-effect` allows; the initial-mount call is
+  // disabled inline with justification.
   useEffect(() => {
-    // Calculate initial position after mount when ref is available
     const position = calculatePosition();
     if (position) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- DOM measurement after mount; ref isn't available during render
       setPopoverPosition(position);
     }
 
@@ -249,11 +252,17 @@ function SharePopover({
 
   // Local permission state for new shares (before first share)
   const [localPermission, setLocalPermission] = useState<SharePermission>(serverPermission);
-
-  // Sync local permission when server state changes (e.g., after sharing, or switching layouts)
-  useEffect(() => {
+  // Adjust local permission when the server-derived value changes — done during
+  // render rather than in an effect, per React docs: a conditional setState in
+  // render bails out and re-runs in a single pass, instead of the two-render
+  // cascade an effect would produce.
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [lastSyncedPermission, setLastSyncedPermission] =
+    useState<SharePermission>(serverPermission);
+  if (serverPermission !== lastSyncedPermission) {
+    setLastSyncedPermission(serverPermission);
     setLocalPermission(serverPermission);
-  }, [serverPermission]);
+  }
 
   // Reset copy state after timeout
   useEffect(() => {

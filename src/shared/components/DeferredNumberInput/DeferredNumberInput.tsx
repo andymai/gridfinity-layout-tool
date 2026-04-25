@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 interface DeferredNumberInputProps {
   value: number;
@@ -34,13 +34,16 @@ export function DeferredNumberInput({
   'aria-label': ariaLabel,
 }: DeferredNumberInputProps) {
   const [localValue, setLocalValue] = useState(() => formatValue(value));
-
-  // Sync local state when external value changes from outside (e.g., undo/redo, keyboard nudge).
-  // We intentionally call setState in useEffect here to keep the input synchronized with
-  // the controlled value when it changes externally, not from user typing.
-  useEffect(() => {
+  // Sync local state when external value changes (e.g., undo/redo, keyboard nudge).
+  // Done during render rather than in an effect, per React docs: a conditional
+  // setState in render bails out and re-runs in a single pass instead of the
+  // two-render cascade an effect would produce.
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [lastSyncedValue, setLastSyncedValue] = useState(value);
+  if (value !== lastSyncedValue) {
+    setLastSyncedValue(value);
     setLocalValue(formatValue(value));
-  }, [value]);
+  }
 
   const commit = useCallback(() => {
     const parsed = parseFloat(localValue);

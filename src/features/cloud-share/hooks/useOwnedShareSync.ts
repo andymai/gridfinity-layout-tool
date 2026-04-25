@@ -51,9 +51,6 @@ export function useOwnedShareSync(): void {
   // Find cloudShare info for the active layout
   const cloudShare = entries.find((e) => e.id === activeLayoutId)?.cloudShare ?? null;
 
-  // Keep ref in sync with current cloudShare value
-  cloudShareRef.current = cloudShare;
-
   const syncToCloud = useCallback(async () => {
     if (!cloudShare || isSyncingRef.current) return;
 
@@ -81,8 +78,17 @@ export function useOwnedShareSync(): void {
     }
   }, [cloudShare, layout]);
 
-  // Keep sync function ref updated to always call the latest version
-  syncToCloudRef.current = syncToCloud;
+  // Keep both refs aligned with the latest committed values. Doing this in a
+  // commit-time effect (instead of during render) is required by
+  // `react-hooks/refs`: mutating `.current` during render breaks concurrent
+  // React's bailout/replay logic. The unmount-sync effect below relies on these
+  // refs holding the latest values, which works because effects run in
+  // declaration order — this one writes the refs before any other effect
+  // captures them.
+  useEffect(() => {
+    cloudShareRef.current = cloudShare;
+    syncToCloudRef.current = syncToCloud;
+  });
 
   // Debounced sync effect
   useEffect(() => {
