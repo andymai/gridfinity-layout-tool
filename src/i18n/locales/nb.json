@@ -41,6 +41,8 @@
   "baseplate.magnetDiameterInfo": "6mm er standard for Gridfinity",
   "baseplate.magnetHoles": "Magnethull",
   "baseplate.padding": "Polstring",
+  "baseplate.decreasePadding": "Reduser {label}",
+  "baseplate.increasePadding": "Øk {label}",
   "baseplate.paddingBack": "Bak",
   "baseplate.paddingFront": "Foran",
   "baseplate.paddingHint": "Reduser {axis}-margin med {mm}mm for å spare {count} del(er)",

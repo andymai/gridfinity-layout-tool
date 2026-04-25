@@ -26,13 +26,8 @@ import {
 import { cn } from '@/design-system/cn';
 import { MinusIcon, PlusIcon } from '@/design-system/Icon';
 import { disabledStyles, focusRing, interactiveTransition } from '@/design-system/variants';
-import {
-  formatMm,
-  PADDING_BUTTON_STEP,
-  PADDING_INPUT_STEP,
-  PADDING_MAX,
-  PADDING_MIN,
-} from './constants';
+import { useTranslation } from '@/i18n';
+import { formatMm, PADDING_BUTTON_STEP, PADDING_MAX, PADDING_MIN, roundMm } from './constants';
 
 interface PaddingStepperProps {
   readonly value: number;
@@ -65,9 +60,9 @@ function useEditablePaddingInput(value: number, onChange: (v: number) => void) {
     (text: string) => {
       const parsed = parseFloat(text);
       if (Number.isNaN(parsed)) return;
-      const snapped = Math.round(parsed / PADDING_INPUT_STEP) * PADDING_INPUT_STEP;
-      const clamped = Math.max(PADDING_MIN, Math.min(PADDING_MAX, snapped));
-      onChange(clamped);
+      const clamped = Math.max(PADDING_MIN, Math.min(PADDING_MAX, parsed));
+      // roundMm both snaps to 0.01 step and absorbs IEEE-754 noise.
+      onChange(roundMm(clamped));
     },
     [onChange]
   );
@@ -141,19 +136,25 @@ export const PaddingStepper = forwardRef<HTMLDivElement, PaddingStepperProps>(
     { value, onChange, orientation, 'aria-label': ariaLabel, label, disabled, className },
     ref
   ) {
+    const t = useTranslation();
     const inputId = useId();
     const inputProps = useEditablePaddingInput(value, onChange);
 
     const isDecreaseDisabled = disabled === true || value <= PADDING_MIN;
     const isIncreaseDisabled = disabled === true || value >= PADDING_MAX;
 
+    // roundMm prevents IEEE-754 noise from accumulating across repeated +/- clicks
+    // (e.g. 0.25 + 0.25 + ... drifting into values like 1.2500000000000002).
     const handleIncrement = useCallback(() => {
-      onChange(Math.min(PADDING_MAX, value + PADDING_BUTTON_STEP));
+      onChange(roundMm(Math.min(PADDING_MAX, value + PADDING_BUTTON_STEP)));
     }, [onChange, value]);
 
     const handleDecrement = useCallback(() => {
-      onChange(Math.max(PADDING_MIN, value - PADDING_BUTTON_STEP));
+      onChange(roundMm(Math.max(PADDING_MIN, value - PADDING_BUTTON_STEP)));
     }, [onChange, value]);
+
+    const increaseLabel = t('baseplate.increasePadding', { label: ariaLabel });
+    const decreaseLabel = t('baseplate.decreasePadding', { label: ariaLabel });
 
     if (orientation === 'vertical') {
       return (
@@ -163,7 +164,7 @@ export const PaddingStepper = forwardRef<HTMLDivElement, PaddingStepperProps>(
             onClick={handleIncrement}
             disabled={isIncreaseDisabled}
             className={cn(buttonBase, 'h-6 w-8 rounded-t-md border-b-0')}
-            aria-label={`Increase ${ariaLabel}`}
+            aria-label={increaseLabel}
           >
             <PlusIcon size="sm" className={iconClass} strokeWidth={iconStrokeWidth} />
           </button>
@@ -181,7 +182,7 @@ export const PaddingStepper = forwardRef<HTMLDivElement, PaddingStepperProps>(
             onClick={handleDecrement}
             disabled={isDecreaseDisabled}
             className={cn(buttonBase, 'h-6 w-8 rounded-b-md border-t-0')}
-            aria-label={`Decrease ${ariaLabel}`}
+            aria-label={decreaseLabel}
           >
             <MinusIcon size="sm" className={iconClass} strokeWidth={iconStrokeWidth} />
           </button>
@@ -202,7 +203,7 @@ export const PaddingStepper = forwardRef<HTMLDivElement, PaddingStepperProps>(
             onClick={handleDecrement}
             disabled={isDecreaseDisabled}
             className={cn(buttonBase, 'h-6 rounded-l-md border-r-0 px-1')}
-            aria-label={`Decrease ${ariaLabel}`}
+            aria-label={decreaseLabel}
           >
             <MinusIcon size="sm" className={iconClass} strokeWidth={iconStrokeWidth} />
           </button>
@@ -220,7 +221,7 @@ export const PaddingStepper = forwardRef<HTMLDivElement, PaddingStepperProps>(
             onClick={handleIncrement}
             disabled={isIncreaseDisabled}
             className={cn(buttonBase, 'h-6 rounded-r-md border-l-0 px-1')}
-            aria-label={`Increase ${ariaLabel}`}
+            aria-label={increaseLabel}
           >
             <PlusIcon size="sm" className={iconClass} strokeWidth={iconStrokeWidth} />
           </button>

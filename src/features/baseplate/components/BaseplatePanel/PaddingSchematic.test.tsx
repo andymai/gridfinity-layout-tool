@@ -7,8 +7,15 @@ import { mm } from '@/core/types';
 vi.mock('@/i18n', () => ({
   useTranslation:
     () =>
-    (key: string): string =>
-      key,
+    (key: string, params?: Record<string, unknown>): string => {
+      if (key === 'baseplate.increasePadding' && typeof params?.label === 'string') {
+        return `Increase ${params.label}`;
+      }
+      if (key === 'baseplate.decreasePadding' && typeof params?.label === 'string') {
+        return `Decrease ${params.label}`;
+      }
+      return key;
+    },
 }));
 
 describe('PaddingSchematic', () => {
