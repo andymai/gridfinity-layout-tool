@@ -162,12 +162,10 @@ export function useInteraction(gridRef: RefObject<HTMLDivElement | null>) {
   const stagingDragMode = useStagingDragInteraction(interactionContext);
 
   // Refs to hold current mode handlers — allows stable callbacks while using current handlers
-  /* eslint-disable @typescript-eslint/no-unnecessary-type-arguments -- generic default [] != specific tuple */
   const drawModeRef = useRef<ModeHandlers<DrawStartArgs>>(drawMode);
   const dragModeRef = useRef<ModeHandlers<DragStartArgs>>(dragMode);
   const resizeModeRef = useRef<ModeHandlers<ResizeStartArgs>>(resizeMode);
   const stagingDragModeRef = useRef<ModeHandlers<StagingDragStartArgs>>(stagingDragMode);
-  /* eslint-enable @typescript-eslint/no-unnecessary-type-arguments */
 
   // Keep refs in sync with current mode handlers (useLayoutEffect runs before any event handlers)
   useLayoutEffect(() => {

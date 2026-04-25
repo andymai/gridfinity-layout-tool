@@ -32,10 +32,8 @@ export function createLogger(tag: string): Logger {
   return {
     warn(message: string, context?: LogContext): void {
       if (context) {
-        // eslint-disable-next-line no-console -- Structured logger internals
         console.warn(formatMessage(tag, message), context);
       } else {
-        // eslint-disable-next-line no-console -- Structured logger internals
         console.warn(formatMessage(tag, message));
       }
     },
