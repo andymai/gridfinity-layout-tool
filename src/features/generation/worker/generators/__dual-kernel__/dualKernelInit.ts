@@ -58,7 +58,7 @@ export { initOcctKernel, initBrepkitKernel } from './kernelInit';
 /** Import and return the generateBin function. Call after kernel init. */
 export async function loadGenerateBin(): Promise<GenerateBinFn> {
   const binMod = await import('@/features/generation/worker/generators/binGenerator');
-  return binMod.generateBin as GenerateBinFn;
+  return binMod.generateBin;
 }
 
 // ─── Mesh volume helper ─────────────────────────────────────────────────────

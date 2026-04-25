@@ -29,12 +29,7 @@ vi.mock('@/features/grid-editor/components/Grid/ResizeHandles', () => ({
     onResizePointerDown: (e: React.PointerEvent, handle: string) => void;
   }) => (
     <div data-testid={`resize-handles-${variant}`}>
-      <button
-        data-testid="resize-handle-se"
-        onPointerDown={(e) =>
-          onResizePointerDown(e as unknown as React.PointerEvent<HTMLDivElement>, 'se')
-        }
-      >
+      <button data-testid="resize-handle-se" onPointerDown={(e) => onResizePointerDown(e, 'se')}>
         SE Handle
       </button>
     </div>

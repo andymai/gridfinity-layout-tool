@@ -208,6 +208,11 @@ export const useMyPresence = (context?.useMyPresence ??
   UserPresence,
   (patch: Partial<UserPresence>) => void,
 ];
+// `context?.useUpdateMyPresence` is `any` (context is typed `createRoomContext<any, any>`),
+// so the cast is load-bearing — without it, callers like `CollabProvider` lose the
+// `(patch: Partial<UserPresence>) => void` signature and silently fall back to `any`.
+// The lint rule's "unnecessary" reading is a false positive for `any`-sourced expressions.
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 export const useUpdateMyPresence = (context?.useUpdateMyPresence ??
   createUnconfiguredHook('useUpdateMyPresence')) as () => (patch: Partial<UserPresence>) => void;
 // Safe hooks that return defaults when not configured OR when called outside RoomProvider
@@ -217,7 +222,7 @@ export const useOthers = createSafeHook(
     | (() => readonly { connectionId: number; presence: UserPresence }[])
     | undefined,
   safeStubHooks.useOthers
-) as () => readonly { connectionId: number; presence: UserPresence }[];
+);
 
 export const useOthersMapped =
   context?.useOthersMapped ?? createUnconfiguredHook('useOthersMapped');
@@ -228,7 +233,7 @@ export const useOther = context?.useOther ?? createUnconfiguredHook('useOther');
 export const useSelf = createSafeHook(
   context?.useSelf as (() => { connectionId: number; presence: UserPresence } | null) | undefined,
   safeStubHooks.useSelf
-) as () => { connectionId: number; presence: UserPresence } | null;
+);
 
 export const useStorage = createSafeHook(
   context?.useStorage as (<T>(selector: (root: LiveblocksStorage) => T) => T | null) | undefined,
@@ -249,7 +254,7 @@ export const useEventListener: (
 export const useStatus = createSafeHook(
   context?.useStatus as (() => string) | undefined,
   safeStubHooks.useStatus
-) as () => string;
+);
 export const useHistory = context?.useHistory ?? createUnconfiguredHook('useHistory');
 export const useUndo = context?.useUndo ?? createUnconfiguredHook('useUndo');
 export const useRedo = context?.useRedo ?? createUnconfiguredHook('useRedo');

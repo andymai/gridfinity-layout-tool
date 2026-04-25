@@ -202,7 +202,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       roughness: 0.45,
       metalness: 0,
       wireframe,
-      side: THREE.DoubleSide as THREE.Side,
+      side: THREE.DoubleSide,
       emissive: new THREE.Color(baseColor),
       emissiveIntensity: 0.08,
       flatShading: !hasPrecomputedNormals,

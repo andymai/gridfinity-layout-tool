@@ -158,7 +158,7 @@ describe('captureThumbnailPNG', () => {
       _cb: BlobCallback
     ) {
       _cb(mockBlob);
-    } as typeof HTMLCanvasElement.prototype.toBlob);
+    });
 
     await captureThumbnailPNG();
 
@@ -178,7 +178,7 @@ describe('captureThumbnailPNG', () => {
       _cb: BlobCallback
     ) {
       _cb(mockBlob);
-    } as typeof HTMLCanvasElement.prototype.toBlob);
+    });
 
     const result = await captureThumbnailPNG();
     expect(result).toBeInstanceOf(Uint8Array);
@@ -192,7 +192,7 @@ describe('captureThumbnailPNG', () => {
       _cb: BlobCallback
     ) {
       _cb(null);
-    } as typeof HTMLCanvasElement.prototype.toBlob);
+    });
 
     const result = await captureThumbnailPNG();
     expect(result).toBeNull();
@@ -209,7 +209,7 @@ describe('captureThumbnailPNG', () => {
       _cb: BlobCallback
     ) {
       _cb(mockBlob);
-    } as typeof HTMLCanvasElement.prototype.toBlob);
+    });
 
     const result = await captureThumbnailPNG();
     expect(result).toBeNull();

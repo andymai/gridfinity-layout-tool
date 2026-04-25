@@ -155,7 +155,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
           if (isOk(result)) {
             setSelectedBin(result.value);
             // Track for ML telemetry (placement + quick-correction detection)
-            mlTracking.trackBinCreation({ ...binData, id: result.value } as Bin, 'draw');
+            mlTracking.trackBinCreation({ ...binData, id: result.value }, 'draw');
             // Track for PostHog analytics
             trackBinCreated({ method: 'draw', count: 1, width, depth, height: layer.height });
           }
@@ -196,7 +196,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
           const result = addBin(binData);
           if (isOk(result)) {
             setSelectedBin(result.value);
-            mlTracking.trackBinCreation({ ...binData, id: result.value } as Bin, 'paint');
+            mlTracking.trackBinCreation({ ...binData, id: result.value }, 'paint');
             trackBinCreated({
               method: 'paint',
               count: 1,
@@ -264,7 +264,7 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
                   const addResult = addBin(binData);
                   if (isOk(addResult)) {
                     placedBinIds.push(addResult.value);
-                    placedBins.push({ ...binData, id: addResult.value } as Bin);
+                    placedBins.push({ ...binData, id: addResult.value });
                   }
                 }
               }

@@ -48,7 +48,7 @@ function makeLayer(id: string): Layer {
 }
 
 function makeCategory(id: string): Category {
-  return { id: categoryId(id), name: id, color: '#ff0000' } as Category;
+  return { id: categoryId(id), name: id, color: '#ff0000' };
 }
 
 describe('selectionPruning subscriber', () => {

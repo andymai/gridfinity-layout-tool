@@ -7,7 +7,7 @@ import { resetLayoutStore, resetHistoryStore, createTestLayout } from '@/test/te
 import { undoCaptureMiddleware, batch, _resetUndoCaptureState } from './undoCapture';
 import type { Command } from '../commands';
 import type { DomainEvent } from '../events';
-import type { CommandResult, NextFn } from '../types';
+import type { NextFn } from '../types';
 
 /** Create a minimal command for testing */
 function createTestCommand(
@@ -35,13 +35,12 @@ function createTestCommand(
 
 /** Create a next function that succeeds with empty events */
 function successNext(): NextFn<Command, DomainEvent> {
-  return () => ok({ value: undefined, events: [] }) as CommandResult<unknown, DomainEvent>;
+  return () => ok({ value: undefined, events: [] });
 }
 
 /** Create a next function that returns an error */
 function failureNext(): NextFn<Command, DomainEvent> {
-  return () =>
-    err(layoutInvalidOperation('bin.add', 'test failure')) as CommandResult<unknown, DomainEvent>;
+  return () => err(layoutInvalidOperation('bin.add', 'test failure'));
 }
 
 describe('undoCaptureMiddleware', () => {
@@ -126,7 +125,7 @@ describe('undoCaptureMiddleware', () => {
       useLayoutStore.setState({
         layout: { ...useLayoutStore.getState().layout, name: 'Remote change' },
       });
-      return ok({ value: undefined, events: [] }) as CommandResult<unknown, DomainEvent>;
+      return ok({ value: undefined, events: [] });
     };
 
     const result = undoCaptureMiddleware(createTestCommand({ source: 'collab' }), mutatingNext);
@@ -147,7 +146,7 @@ describe('undoCaptureMiddleware', () => {
       useLayoutStore.setState({
         layout: { ...useLayoutStore.getState().layout, name: 'Changed' },
       });
-      return ok({ value: undefined, events: [] }) as CommandResult<unknown, DomainEvent>;
+      return ok({ value: undefined, events: [] });
     };
 
     batch(() => {
@@ -212,7 +211,7 @@ describe('undoCaptureMiddleware', () => {
       useLayoutStore.setState({
         layout: { ...useLayoutStore.getState().layout, name: 'Mutated' },
       });
-      return ok({ value: undefined, events: [] }) as CommandResult<unknown, DomainEvent>;
+      return ok({ value: undefined, events: [] });
     };
 
     // Run a batch where a mutation succeeds and then the callback throws
@@ -251,7 +250,7 @@ describe('undoCaptureMiddleware', () => {
     // next() mutates the store, simulating what a real handler does
     const mutatingNext: NextFn<Command, DomainEvent> = () => {
       useLayoutStore.setState({ layout: createTestLayout({ name: 'After' }) });
-      return ok({ value: undefined, events: [] }) as CommandResult<unknown, DomainEvent>;
+      return ok({ value: undefined, events: [] });
     };
 
     undoCaptureMiddleware(createTestCommand(), mutatingNext);

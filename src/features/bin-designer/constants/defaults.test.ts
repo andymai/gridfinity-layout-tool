@@ -82,7 +82,7 @@ describe('migrateParams', () => {
   it('should pass through valid ScoopConfig', () => {
     const config = { enabled: true, radius: 10 };
 
-    const result = migrateParams({ scoop: config as any });
+    const result = migrateParams({ scoop: config });
     expect(result.scoop).toEqual({ enabled: true, radius: 10 });
   });
 
@@ -132,7 +132,7 @@ describe('migrateParams', () => {
   });
 
   it('should migrate legacy dividers to compartments', () => {
-    const result = migrateParams({ dividers: { x: 2, y: 1, thickness: 1.5 } } as any);
+    const result = migrateParams({ dividers: { x: 2, y: 1, thickness: 1.5 } });
     expect(result.compartments.cols).toBe(3);
     expect(result.compartments.rows).toBe(2);
     expect(result.compartments.thickness).toBe(1.5);
@@ -189,7 +189,7 @@ describe('migrateParams', () => {
   it('should migrate legacy eco mode string to wallPattern enabled', () => {
     const result = migrateParams({
       eco: { honeycombWall: { mode: 'pocketed' } },
-    } as any);
+    });
     expect(result.wallPattern.enabled).toBe(true);
     expect(result.wallPattern.pattern).toBe('honeycomb');
   });
@@ -197,7 +197,7 @@ describe('migrateParams', () => {
   it('should migrate legacy eco mode "none" to wallPattern disabled', () => {
     const result = migrateParams({
       eco: { honeycombWall: { mode: 'none' } },
-    } as any);
+    });
     expect(result.wallPattern.enabled).toBe(false);
     expect(result.wallPattern.pattern).toBe('honeycomb');
   });
@@ -205,7 +205,7 @@ describe('migrateParams', () => {
   it('should migrate legacy eco enabled boolean to wallPattern', () => {
     const result = migrateParams({
       eco: { honeycombWall: { enabled: true } },
-    } as any);
+    });
     expect(result.wallPattern.enabled).toBe(true);
     expect(result.wallPattern.pattern).toBe('honeycomb');
   });
@@ -381,7 +381,7 @@ describe('migrateParams', () => {
   it('should migrate legacy slot IDs to hex colors', () => {
     const legacy = { body: 'slot2' as const, lip: 'slot3' as const, labelTab: 'slot1' as const };
     const result = migrateParams({
-      featureColors: legacy as unknown as typeof result.featureColors,
+      featureColors: legacy,
     });
     expect(result.featureColors).toEqual({
       body: '#3b82f6',

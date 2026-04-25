@@ -78,7 +78,7 @@ export function handleDragMove(
     for (const [id, updates] of nextPreview) {
       const orig = cutouts.find((c) => c.id === id);
       if (!orig) continue;
-      const candidate = { ...orig, ...updates } as Cutout;
+      const candidate = { ...orig, ...updates };
       if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize)) {
         return;
       }
@@ -96,7 +96,7 @@ export function handleDragMove(
   const movingCutouts = [...nextPreview.entries()]
     .map(([id, updates]) => {
       const orig = cutouts.find((c) => c.id === id);
-      return orig ? ({ ...orig, ...updates } as Cutout) : null;
+      return orig ? { ...orig, ...updates } : null;
     })
     .filter((c): c is Cutout => c !== null);
 

@@ -60,7 +60,7 @@ export function handleGroupScaleMove(
     for (const [id, patch] of nextPreview) {
       const orig = cutouts.find((c) => c.id === id);
       if (!orig) continue;
-      const candidate = { ...orig, ...patch } as Cutout;
+      const candidate = { ...orig, ...patch };
       if (!cutoutFitsInMask(candidate, bounds.cellMask, bounds.maskCellSize)) return;
     }
   }

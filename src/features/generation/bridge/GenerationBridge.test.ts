@@ -747,7 +747,7 @@ describe('GenerationBridge', () => {
         edgeVertices: new Float32Array(0),
         triangleCount: 0,
         timingMs: 100,
-      } as MeshResultResponse);
+      });
 
       const result = await genPromise;
       expect(result.timingMs).toBe(100);

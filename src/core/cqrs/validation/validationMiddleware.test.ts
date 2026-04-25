@@ -26,8 +26,8 @@ describe('validationMiddleware', () => {
       depth: 2 as never,
       height: 3 as never,
       category: 'cat-1' as never,
-      label: 'Test' as never,
-      notes: '' as never,
+      label: 'Test',
+      notes: '',
     });
 
     const result = validationMiddleware(cmd, next);
@@ -46,8 +46,8 @@ describe('validationMiddleware', () => {
       depth: 1 as never,
       height: 1 as never, // below MIN_BIN_HEIGHT
       category: 'cat-1' as never,
-      label: '' as never,
-      notes: '' as never,
+      label: '',
+      notes: '',
     });
 
     const result = validationMiddleware(cmd, next);
@@ -74,7 +74,7 @@ describe('validationMiddleware', () => {
 
   it('passes valid layer.add command (empty payload)', () => {
     const next = createSuccessNext();
-    const cmd = createCommand('layer.add', {} as never);
+    const cmd = createCommand('layer.add', {});
 
     const result = validationMiddleware(cmd, next);
 
@@ -130,8 +130,8 @@ describe('validationMiddleware', () => {
   it('passes valid category.add command', () => {
     const next = createSuccessNext();
     const cmd = createCommand('category.add', {
-      name: 'Tools' as never,
-      color: '#ff0000' as never,
+      name: 'Tools',
+      color: '#ff0000',
     });
 
     const result = validationMiddleware(cmd, next);

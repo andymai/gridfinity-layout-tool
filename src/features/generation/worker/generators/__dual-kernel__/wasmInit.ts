@@ -131,12 +131,12 @@ export async function initBrepjs(): Promise<void> {
   }
 
   const binMod = await import('@/features/generation/worker/generators/binGenerator');
-  generateBin = binMod.generateBin as GenerateBinFn;
-  generateSplitPreview = binMod.generateSplitPreview as GenerateSplitPreviewFn;
-  exportSplitBinFn = binMod.exportSplitBin as ExportSplitBinFn;
+  generateBin = binMod.generateBin;
+  generateSplitPreview = binMod.generateSplitPreview;
+  exportSplitBinFn = binMod.exportSplitBin;
 
   const baseplateMod = await import('@/features/generation/worker/generators/baseplateGenerator');
-  generateBaseplate = baseplateMod.generateBaseplate as GenerateBaseplateFn;
+  generateBaseplate = baseplateMod.generateBaseplate;
 }
 
 /** Returns the cached `generateBin` function. Throws if `initBrepjs()` was not called. */

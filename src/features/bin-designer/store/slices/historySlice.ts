@@ -38,7 +38,7 @@ export function createHistorySlice(set: Set, get: Get) {
         // Snapshot history as plain objects to avoid draft proxy revocation
         const historySnapshot = current(state.history);
         const previous = historySnapshot.past[historySnapshot.past.length - 1];
-        state.history.past = historySnapshot.past.slice(0, -1) as HistoryEntry[];
+        state.history.past = historySnapshot.past.slice(0, -1);
 
         // Push current state (with pending mesh) to future
         const currentEntry: HistoryEntry = {
@@ -59,7 +59,7 @@ export function createHistorySlice(set: Set, get: Get) {
         // Snapshot history as plain objects to avoid draft proxy revocation
         const historySnapshot = current(state.history);
         const next = historySnapshot.future[0];
-        state.history.future = historySnapshot.future.slice(1) as HistoryEntry[];
+        state.history.future = historySnapshot.future.slice(1);
 
         // Push current state (with pending mesh) to past
         const currentEntry: HistoryEntry = {

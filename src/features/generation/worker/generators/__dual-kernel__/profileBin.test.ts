@@ -44,7 +44,7 @@ afterAll(() => {
 
 function runBin(name: string, overrides: Partial<BinParams>, forExport = false): void {
   const gen = getGenerateBin();
-  const params = { ...DEFAULT_BIN_PARAMS, ...overrides } as BinParams;
+  const params = { ...DEFAULT_BIN_PARAMS, ...overrides };
   const start = performance.now();
   const result = gen(params, undefined, forExport);
   entries.push({ name, ms: performance.now() - start, triangles: result.triangleCount });

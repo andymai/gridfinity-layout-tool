@@ -37,7 +37,7 @@ function paramsFingerprint(params: unknown): string {
   return JSON.stringify(params, (_, value: unknown) => {
     if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
       const sorted: Record<string, unknown> = {};
-      for (const key of Object.keys(value as Record<string, unknown>).sort()) {
+      for (const key of Object.keys(value).sort()) {
         sorted[key] = (value as Record<string, unknown>)[key];
       }
       return sorted;

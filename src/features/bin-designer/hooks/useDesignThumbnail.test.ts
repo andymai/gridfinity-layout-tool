@@ -96,7 +96,7 @@ describe('useDesignThumbnail', () => {
       .mockResolvedValueOnce(ok(makeSavedDesign({ id: 'b', thumbnail: 'thumb-b' })));
 
     const { result, rerender } = renderHook(({ id }) => useDesignThumbnail(id), {
-      initialProps: { id: 'a' as string | undefined },
+      initialProps: { id: 'a' },
     });
 
     await waitFor(() => {

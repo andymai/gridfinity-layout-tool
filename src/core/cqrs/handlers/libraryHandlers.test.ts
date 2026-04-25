@@ -33,28 +33,22 @@ const mockLibraryStore = {
     settings: { authorName: 'Test Author' },
   },
   isLoaded: true,
-  createEntry: vi.fn(
-    (name: string, layoutId: LayoutId, preview: LayoutPreview) =>
-      ({
-        id: layoutId,
-        name,
-        createdAt: Date.now(),
-        modifiedAt: Date.now(),
-        preview,
-      }) as LayoutEntry
-  ),
+  createEntry: vi.fn((name: string, layoutId: LayoutId, preview: LayoutPreview) => ({
+    id: layoutId,
+    name,
+    createdAt: Date.now(),
+    modifiedAt: Date.now(),
+    preview,
+  })),
   deleteEntry: vi.fn(() => ({ ok: true, value: undefined })),
   updateEntry: vi.fn(),
-  duplicateEntry: vi.fn(
-    (_sourceEntry: LayoutEntry, newLayoutId: LayoutId) =>
-      ({
-        id: newLayoutId,
-        name: 'Test Layout (copy)',
-        createdAt: Date.now(),
-        modifiedAt: Date.now(),
-        preview: testPreview,
-      }) as LayoutEntry
-  ),
+  duplicateEntry: vi.fn((_sourceEntry: LayoutEntry, newLayoutId: LayoutId) => ({
+    id: newLayoutId,
+    name: 'Test Layout (copy)',
+    createdAt: Date.now(),
+    modifiedAt: Date.now(),
+    preview: testPreview,
+  })),
   getEntry: vi.fn((id: LayoutId) => entries.find((e) => e.id === id)),
   setActiveLayoutId: vi.fn(),
   setAuthorName: vi.fn(),

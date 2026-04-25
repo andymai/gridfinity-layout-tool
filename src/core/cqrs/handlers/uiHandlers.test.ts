@@ -25,7 +25,7 @@ describe('UI Handlers', () => {
         step: 's',
         templateId: 't',
         format: 'json',
-      } as never);
+      });
       const handler = uiHandlers[type];
       const result = handler(cmd);
 

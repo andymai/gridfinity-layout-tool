@@ -36,7 +36,7 @@ beforeAll(async () => {
   initFromOC(OC);
 
   const mod = await import('@/features/generation/worker/generators/binGenerator');
-  generateBin = mod.generateBin as GenerateFn;
+  generateBin = mod.generateBin;
 }, 30000);
 
 /**

@@ -129,7 +129,7 @@ export function getCanonicalRedirect(layoutId: string, layoutName: string): stri
  */
 export function getLayoutIdFromHistoryState(state: unknown): string | null {
   if (state && typeof state === 'object' && 'layoutId' in state) {
-    const layoutId = (state as { layoutId: unknown }).layoutId;
+    const layoutId = state.layoutId;
     if (typeof layoutId === 'string' && layoutId.length > 0) {
       return layoutId;
     }

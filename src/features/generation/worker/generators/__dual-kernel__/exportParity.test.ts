@@ -13,7 +13,6 @@ import { clearAllCaches } from '@/features/generation/worker/generators/shapeCac
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
 import { build3MFBuffer } from '@/features/generation/export/threemfExporter';
-import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
 import {
   initOcctKernel,
@@ -94,14 +93,14 @@ describe('export parity: brepkit vs OCCT', () => {
 
     for (const tc of TEST_CASES) {
       clearAllCaches();
-      const params = { ...DEFAULT_BIN_PARAMS, ...tc.overrides } as BinParams;
+      const params = { ...DEFAULT_BIN_PARAMS, ...tc.overrides };
       const mesh = withKernel('occt', () => generateBin(params, undefined, true));
       occtResults.set(tc.name, collectStats(mesh));
     }
 
     for (const tc of TEST_CASES) {
       clearAllCaches();
-      const params = { ...DEFAULT_BIN_PARAMS, ...tc.overrides } as BinParams;
+      const params = { ...DEFAULT_BIN_PARAMS, ...tc.overrides };
       const mesh = withKernel('brepkit', () => generateBin(params, undefined, true));
       brepkitResults.set(tc.name, collectStats(mesh));
     }

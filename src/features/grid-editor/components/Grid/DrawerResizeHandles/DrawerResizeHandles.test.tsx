@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { DrawerResizeHandles } from './DrawerResizeHandles';
-import type { ResizeDirection } from '@/features/grid-editor/hooks/useGridResize';
 
 // Mock i18n
 vi.mock('@/i18n', () => ({
@@ -123,7 +122,7 @@ describe('DrawerResizeHandles', () => {
         gridHeight={320}
         columnLabelHeight={24}
         axisLabelsVisible={true}
-        resizeDirection={'width' as ResizeDirection}
+        resizeDirection={'width'}
         shouldPulse={false}
         onResizeStart={mockOnResizeStart}
       />
@@ -138,7 +137,7 @@ describe('DrawerResizeHandles', () => {
         gridHeight={320}
         columnLabelHeight={24}
         axisLabelsVisible={true}
-        resizeDirection={'depth' as ResizeDirection}
+        resizeDirection={'depth'}
         shouldPulse={false}
         onResizeStart={mockOnResizeStart}
       />
@@ -153,7 +152,7 @@ describe('DrawerResizeHandles', () => {
         gridHeight={320}
         columnLabelHeight={24}
         axisLabelsVisible={true}
-        resizeDirection={'both' as ResizeDirection}
+        resizeDirection={'both'}
         shouldPulse={false}
         onResizeStart={mockOnResizeStart}
       />
