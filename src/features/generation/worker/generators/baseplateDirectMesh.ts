@@ -41,8 +41,18 @@ import {
   computeConnectorPositions,
 } from './generatorTypes';
 import type { ProgressFn, CellInfo, ForEachCellOptions } from './generatorTypes';
-/** Number of line segments per rounded corner arc */
-const CORNER_SEGMENTS = 4;
+/**
+ * Line segments per rounded-corner quarter-arc.
+ *
+ * Tuned to roughly match BREP's preview-tessellation density (tolerance 0.5mm,
+ * angular 45°), which yields ~8 segments per quarter on a 4mm corner radius.
+ * Matching keeps the direct-mesh and BREP visually congruent so the swap on
+ * line 145 (`hasDirectPreview`) doesn't pop. Used for both the slab perimeter
+ * and the per-pocket arcs — the latter must agree with the gusset arcs in
+ * {@link addCellCornerGussets} so the top-face lattice meets the pocket walls
+ * without a seam.
+ */
+const CORNER_SEGMENTS = 8;
 
 /** Number of segments for magnet hole circle approximation */
 const CIRCLE_SEGMENTS = 16;
@@ -384,17 +394,26 @@ function addOuterWalls(
   }
 }
 /**
- * Add the top face of the slab (Z=totalHeight).
+ * Add a horizontal slab face (Z=z) facing ±Z, covering the slab outline minus
+ * the pocket openings.
  *
- * The top face is the outer perimeter minus the pocket top openings.
- * Pocket openings ARE the full cell size (no inset at top), so between
- * adjacent pockets there is ZERO wall width at the top. The only top-face
- * material is the padding margin around the grid.
+ * The face is composed of two pieces:
+ *   1. **Padding ring** between the outer perimeter and the grid bounding
+ *      rectangle (skipped when there's no padding).
+ *   2. **Per-cell corner gussets** — the small fillet-complement regions
+ *      between each pocket's rounded corner and its cell's sharp corner.
+ *      Adjacent cells' gussets meet at shared corners and tile the full
+ *      inter-pocket lattice, so no inter-cell strips need to be emitted
+ *      separately.
  *
- * Generated as a ring mesh (outer profile → inner grid rectangle) to avoid
- * z-fighting from coplanar geometry over pocket openings.
+ * Splitting along the cell boundaries (rather than emitting one giant
+ * polygon-with-holes) avoids needing a triangulator and keeps the math
+ * closed-form. Equivalent to BREP's `outer_face − ⋃(pocket_openings)`.
+ *
+ * `faceUp` selects the normal direction: `true` for the top face (+Z),
+ * `false` for the through-cut bottom mirror (-Z, with reversed winding).
  */
-function addTopFace(
+function addPlateFace(
   mb: MeshBuilder,
   outerPts: ReadonlyArray<readonly [number, number]>,
   offsetX: number,
@@ -402,41 +421,172 @@ function addTopFace(
   gridUnitMm: number,
   gridW: number,
   gridD: number,
-  totalHeight: number
+  cells: ReadonlyArray<CellInfo>,
+  z: number,
+  faceUp: boolean
 ): void {
-  const z = totalHeight;
-  const nx = 0,
-    ny = 0,
-    nz = 1;
-
-  // If there's no padding beyond the grid, the pocket openings tile the entire
-  // top face, leaving nothing to fill.
+  const nz = faceUp ? 1 : -1;
   const gridHalfW = (gridW * gridUnitMm) / 2;
   const gridHalfD = (gridD * gridUnitMm) / 2;
 
+  // Padding ring is needed only when the outer perimeter actually extends
+  // beyond the grid bounding box (i.e. there is non-zero padding on at least
+  // one side). The grid is centered at the origin; the slab is offset by
+  // (offsetX, offsetY) when padding is asymmetric.
   const hasPadding = outerPts.some((pt) => {
     const x = pt[0] + offsetX;
     const y = pt[1] + offsetY;
     return (
-      x < -gridHalfW + offsetX - 0.01 ||
-      x > gridHalfW + offsetX + 0.01 ||
-      y < -gridHalfD + offsetY - 0.01 ||
-      y > gridHalfD + offsetY + 0.01
+      x < -gridHalfW - 0.01 || x > gridHalfW + 0.01 || y < -gridHalfD - 0.01 || y > gridHalfD + 0.01
     );
   });
 
-  if (!hasPadding) return;
+  if (hasPadding) {
+    addRingFace(mb, outerPts, offsetX, offsetY, gridHalfW, gridHalfD, z, 0, 0, nz, faceUp);
+  }
 
-  // Ring mesh: connect each outer perimeter point to its projection on the
-  // inner grid rectangle, producing a strip that covers only the padding.
-  addRingFace(mb, outerPts, offsetX, offsetY, gridHalfW, gridHalfD, z, nx, ny, nz);
+  for (const cell of cells) {
+    addCellCornerGussets(
+      mb,
+      cell.centerX,
+      cell.centerY,
+      cell.widthUnits * gridUnitMm,
+      cell.depthUnits * gridUnitMm,
+      z,
+      faceUp,
+      outerPts,
+      offsetX,
+      offsetY
+    );
+  }
+}
+
+/**
+ * Even-odd ray cast for point-in-polygon. The polygon is given in local
+ * coordinates with a translation offset — slab outer profiles are kept in
+ * grid-relative form so the same `outerPts` array drives outer walls,
+ * padding ring, and gusset clipping.
+ */
+function pointInPolygon(
+  px: number,
+  py: number,
+  polygon: ReadonlyArray<readonly [number, number]>,
+  offsetX: number,
+  offsetY: number
+): boolean {
+  let inside = false;
+  const n = polygon.length;
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const xi = polygon[i][0] + offsetX;
+    const yi = polygon[i][1] + offsetY;
+    const xj = polygon[j][0] + offsetX;
+    const yj = polygon[j][1] + offsetY;
+    if (yi > py !== yj > py) {
+      const xCross = ((xj - xi) * (py - yi)) / (yj - yi) + xi;
+      if (px < xCross) inside = !inside;
+    }
+  }
+  return inside;
+}
+
+/**
+ * Emit the four per-corner fillet-complement gussets for one cell.
+ *
+ * Each pocket opening is a rounded rectangle inset from the cell's sharp
+ * corner by `pocketCornerRadius`. The triangular-ish region between the
+ * sharp corner and the rounded arc is solid material on the slab's top
+ * (and bottom, in through-cut mode). Adjacent cells' gussets share their
+ * cell-corner vertices, so emitting them per-cell produces a coherent
+ * lattice across the whole grid without overlap or gaps.
+ *
+ * Each gusset is triangulated as a fan from the cell corner to the arc
+ * samples — valid because the cell corner sees the entire arc with no
+ * occlusion (the gusset is convex from that anchor).
+ */
+function addCellCornerGussets(
+  mb: MeshBuilder,
+  cx: number,
+  cy: number,
+  cellW_mm: number,
+  cellD_mm: number,
+  z: number,
+  faceUp: boolean,
+  slabOuter: ReadonlyArray<readonly [number, number]>,
+  slabOffsetX: number,
+  slabOffsetY: number
+): void {
+  const r = pocketCornerRadius(cellW_mm, cellD_mm);
+  if (r < 0.01) return;
+
+  const hw = cellW_mm / 2;
+  const hd = cellD_mm / 2;
+  const nz = faceUp ? 1 : -1;
+
+  // For each cell corner: anchor (sharp corner), arc center, and the angle at
+  // which the rounded-rect's CCW arc *ends* at that corner. The gusset is
+  // bounded by walking the arc backwards from that endpoint.
+  const corners: ReadonlyArray<readonly [number, number, number, number, number]> = [
+    // [cornerX, cornerY, arcCenterX, arcCenterY, arcEndAngle]
+    [cx - hw, cy - hd, cx - hw + r, cy - hd + r, (3 * Math.PI) / 2], // front-left
+    [cx + hw, cy - hd, cx + hw - r, cy - hd + r, 2 * Math.PI], // front-right
+    [cx + hw, cy + hd, cx + hw - r, cy + hd - r, Math.PI / 2], // back-right
+    [cx - hw, cy + hd, cx - hw + r, cy + hd - r, Math.PI], // back-left
+  ];
+
+  /**
+   * Skip the gusset when the cell corner falls outside the slab outline.
+   *
+   * This happens at *grid-corner cells with no padding* — the slab outer
+   * arc and the pocket arc share the same center and radius (both default
+   * to SOCKET_CORNER_RADIUS), so the cell rectangle's corner sticks out
+   * past the rounded slab boundary into empty space. Without this check
+   * we'd emit a triangle of "ghost material" hanging off the slab.
+   *
+   * We test a point nudged slightly inward (toward the cell center) so a
+   * corner *exactly* on a flat slab edge — paddingLeft=0 with a flush
+   * grid-edge cell, for example — still counts as inside and gets its
+   * gusset, since the slab edge there is the same as the cell edge and
+   * the gusset is genuine material.
+   */
+  const insetEps = 0.1;
+  for (const [cornerX, cornerY, arcCx, arcCy, arcEndAngle] of corners) {
+    const dx = cx - cornerX;
+    const dy = cy - cornerY;
+    const len = Math.hypot(dx, dy) || 1;
+    const probeX = cornerX + (dx / len) * insetEps;
+    const probeY = cornerY + (dy / len) * insetEps;
+    if (!pointInPolygon(probeX, probeY, slabOuter, slabOffsetX, slabOffsetY)) continue;
+
+    const anchor = mb.pushVertex(cornerX, cornerY, z, 0, 0, nz);
+    const arcVerts: number[] = [];
+    // Walk arc from end angle backward by π/2 — keeps gusset CCW from +Z.
+    for (let i = 0; i <= CORNER_SEGMENTS; i++) {
+      const angle = arcEndAngle - (i / CORNER_SEGMENTS) * (Math.PI / 2);
+      const ax = arcCx + r * Math.cos(angle);
+      const ay = arcCy + r * Math.sin(angle);
+      arcVerts.push(mb.pushVertex(ax, ay, z, 0, 0, nz));
+    }
+    for (let i = 0; i < CORNER_SEGMENTS; i++) {
+      if (faceUp) {
+        mb.pushTriangle(anchor, arcVerts[i], arcVerts[i + 1]);
+      } else {
+        mb.pushTriangle(anchor, arcVerts[i + 1], arcVerts[i]);
+      }
+    }
+  }
 }
 
 /**
  * Generate a ring mesh between an outer polygon and an inner axis-aligned
- * rectangle at a fixed Z, with a given face normal. Each outer point is
- * projected onto the nearest edge of the inner rectangle, and quads are
- * formed between consecutive outer-inner pairs.
+ * rectangle at a fixed Z. Each outer point is projected onto the nearest
+ * edge of the inner rectangle, and quads are formed between consecutive
+ * outer-inner pairs.
+ *
+ * The inner rectangle is in the **grid frame** (centered at the origin), not
+ * the slab frame — the grid stays at the origin while the slab shifts under
+ * asymmetric padding (slabOffsetX/Y). Clamping to the slab-shifted rectangle
+ * was a bug that placed the padding ring's inner edge in the wrong spot
+ * whenever paddingLeft ≠ paddingRight or paddingFront ≠ paddingBack.
  */
 function addRingFace(
   mb: MeshBuilder,
@@ -448,30 +598,30 @@ function addRingFace(
   z: number,
   fnx: number,
   fny: number,
-  fnz: number
+  fnz: number,
+  faceUp: boolean
 ): void {
   const n = outerPts.length;
 
-  // For each outer point, compute its projection onto the inner rectangle.
-  // The projection clamps the point to the nearest edge of the rectangle.
   const outerVerts: number[] = [];
   const innerVerts: number[] = [];
 
   for (const pt of outerPts) {
     const ox = pt[0] + offsetX;
     const oy = pt[1] + offsetY;
-    // Clamp to inner rectangle (grid boundary, centered at offset)
-    const ix = Math.max(-innerHalfW + offsetX, Math.min(innerHalfW + offsetX, ox));
-    const iy = Math.max(-innerHalfD + offsetY, Math.min(innerHalfD + offsetY, oy));
+    const ix = Math.max(-innerHalfW, Math.min(innerHalfW, ox));
+    const iy = Math.max(-innerHalfD, Math.min(innerHalfD, oy));
     outerVerts.push(mb.pushVertex(ox, oy, z, fnx, fny, fnz));
     innerVerts.push(mb.pushVertex(ix, iy, z, fnx, fny, fnz));
   }
 
-  // Connect consecutive outer-inner pairs as quads (or degenerate tris).
-  // Winding: outer[i], outer[j], inner[j], inner[i] (CCW from +Z for fnz=+1).
   for (let i = 0; i < n; i++) {
     const j = (i + 1) % n;
-    mb.pushQuad(outerVerts[i], outerVerts[j], innerVerts[j], innerVerts[i]);
+    if (faceUp) {
+      mb.pushQuad(outerVerts[i], outerVerts[j], innerVerts[j], innerVerts[i]);
+    } else {
+      mb.pushQuad(outerVerts[i], innerVerts[i], innerVerts[j], outerVerts[j]);
+    }
   }
 }
 /**
@@ -849,15 +999,31 @@ export function generateBaseplateDirect(
   onProgress('base', 0.5);
   checkCancelled(signal);
 
-  addTopFace(mb, outerPts, slabOffsetX, slabOffsetY, gridUnitMm, width, depth, totalHeight);
+  addPlateFace(
+    mb,
+    outerPts,
+    slabOffsetX,
+    slabOffsetY,
+    gridUnitMm,
+    width,
+    depth,
+    cells,
+    totalHeight,
+    true
+  );
 
   onProgress('base', 0.6);
   checkCancelled(signal);
 
-  // Through-cut (no magnets): pockets are open at bottom, no bottom face needed.
-  // This eliminates z-fighting from the old cancellation mesh approach.
+  // Bottom: magnet variants get a fully-closed slab bottom (the floor under the
+  // pockets is solid, so a single fan from the slab center is correct). Through-
+  // cut variants mirror the top lattice instead — the slab is solid only between
+  // pockets, and a flat bottom face there closes the slab band visible from
+  // below.
   if (magnetHoles) {
     addSolidBottomFace(mb, outerPts, slabOffsetX, slabOffsetY);
+  } else {
+    addPlateFace(mb, outerPts, slabOffsetX, slabOffsetY, gridUnitMm, width, depth, cells, 0, false);
   }
 
   onProgress('base', 0.7);
