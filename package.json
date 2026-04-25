@@ -155,6 +155,7 @@
     "@playwright/test": "^1.59.1",
     "@size-limit/file": "^12.1.0",
     "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/typescript-checker": "^9.6.1",
     "@stryker-mutator/vitest-runner": "^9.6.1",
     "@tailwindcss/vite": "^4.2.2",
     "@testing-library/dom": "^10.4.1",
