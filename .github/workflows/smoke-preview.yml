@@ -1,15 +1,15 @@
 name: Smoke Preview
 
-# Boot-smoke the Vercel preview for every PR, before allowing merge to main.
+# Boot-smoke the Vercel preview for every PR before allowing merge to main.
 # Catches the class of bug from issue #1466 — chunks that build successfully
 # but throw an uncaught exception during initial evaluation, leaving a blank
 # page in production.
 #
-# Uses a `pull_request` trigger so the workflow runs from the PR branch
-# itself (deployment_status events only fire workflows on the default
-# branch, which would prevent this PR from self-testing). The wait-for-
-# preview step polls GitHub deployment_status events for the Vercel
-# preview URL, then runs the smoke spec against it.
+# How it discovers the preview URL: this Vercel install posts a commit
+# status (context "Vercel") and a PR comment (from vercel[bot]) but does
+# NOT publish GitHub deployment events. So we (a) poll the commit status
+# until success, and (b) parse the [Preview](URL) link from the bot's
+# comment. No Vercel API token needed.
 
 on:
   pull_request:
@@ -17,7 +17,6 @@ on:
 
 permissions:
   contents: read
-  deployments: read
   statuses: read
   pull-requests: read
 
@@ -35,13 +34,38 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Wait for Vercel preview
-        id: wait-for-preview
-        uses: patrickedqvist/wait-for-vercel-preview@v1.3.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          max_timeout: 600
-          check_interval: 10
+      - name: Wait for Vercel preview & extract URL
+        id: preview
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          deadline=$(( $(date +%s) + 600 ))
+          while true; do
+            state=$(gh api "repos/$REPO/commits/$SHA/statuses" \
+              --jq '[.[] | select(.context=="Vercel")] | .[0].state // "missing"')
+            echo "vercel status: $state"
+            case "$state" in
+              success) break ;;
+              failure|error) echo "Vercel reported $state"; exit 1 ;;
+            esac
+            [ "$(date +%s)" -ge "$deadline" ] && { echo "timed out waiting for Vercel"; exit 1; }
+            sleep 15
+          done
+
+          url=$(gh api "repos/$REPO/issues/$PR_NUMBER/comments" \
+            --jq '[.[] | select(.user.login=="vercel[bot]")] | last | .body' \
+            | grep -oE 'https://[a-z0-9.-]+\.vercel\.app' \
+            | grep -E '\-git\-' \
+            | head -n1)
+          if [ -z "$url" ]; then
+            echo "could not extract preview URL from Vercel comment"; exit 1
+          fi
+          echo "preview url: $url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v5
@@ -60,7 +84,7 @@ jobs:
 
       - name: Run boot smoke against preview
         env:
-          PREVIEW_URL: ${{ steps.wait-for-preview.outputs.url }}
+          PREVIEW_URL: ${{ steps.preview.outputs.url }}
         run: pnpm exec playwright test --config=playwright.smoke.config.ts
 
       - name: Upload Playwright artifacts on failure
