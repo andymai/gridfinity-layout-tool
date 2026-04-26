@@ -46,6 +46,22 @@ jobs:
           path: reports/mutation/
           if_no_artifact_found: warn
 
+      - name: Validate incremental baseline
+        env:
+          BASELINE_PATH: reports/mutation/incremental.json
+        run: |
+          set -eu
+          if [ -f "$BASELINE_PATH" ]; then
+            if ! jq empty "$BASELINE_PATH" >/dev/null 2>&1; then
+              echo "::warning::Restored incremental baseline is not valid JSON; deleting so Stryker performs a clean full run."
+              rm -f "$BASELINE_PATH"
+            else
+              echo "Incremental baseline restored and validated."
+            fi
+          else
+            echo "No incremental baseline restored; Stryker will perform a full run."
+          fi
+
       - name: Run Stryker
         run: pnpm run test:mutation
 
