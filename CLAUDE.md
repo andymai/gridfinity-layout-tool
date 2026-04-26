@@ -153,7 +153,7 @@ Add keys to `en.ts` first, then all locale JSONs. Run `pnpm run check:i18n`. Loc
 
 Complements coverage. Runs nightly via `.github/workflows/mutation-testing.yml`.
 
-**Scope:** `src/core/result`, `src/core/cqrs/{handlers,middleware}`, `src/features/generation/worker/generators`, `src/shared/{utils,generation}` (~148 files). Stores, components, and features outside this list are not yet mutated.
+**Scope:** `src/core/result`, `src/core/cqrs/{handlers,middleware}`, `src/shared/{utils,generation}`. Generators (`src/features/generation/worker/generators`) are excluded — their scenario tests are too slow to multiply across mutants. Stores, components, and features outside this list are not yet mutated.
 
 | Command                                 | Purpose                                         |
 | --------------------------------------- | ----------------------------------------------- |

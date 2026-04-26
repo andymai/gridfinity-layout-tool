@@ -12,15 +12,13 @@
     "src/core/result/**/*.ts",
     "src/core/cqrs/handlers/**/*.ts",
     "src/core/cqrs/middleware/**/*.ts",
-    "src/features/generation/worker/generators/**/*.ts",
     "src/shared/utils/**/*.ts",
     "src/shared/generation/**/*.ts",
     "!**/*.test.ts",
     "!**/*.test.tsx",
     "!**/*.bench.ts",
     "!**/*.d.ts",
-    "!**/types.ts",
-    "!**/__dual-kernel__/**"
+    "!**/types.ts"
   ],
   "timeoutMS": 120000,
   "dryRunTimeoutMinutes": 15,
