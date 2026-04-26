@@ -1,0 +1,137 @@
+name: Smoke (Preview)
+
+# Runs the PWA smoke spec against the Vercel preview deployment for every PR.
+# Catches deploy-time bugs (broken precache, missing assets, wwwMigration-class
+# hash mismatches) before merge. Mark this as a required status check in branch
+# protection to block merges on smoke failure.
+#
+# When the Vercel deploy is "ignored" by `scripts/vercel-ignore.sh` (e.g. a
+# PR that touches only CI / docs), there is no preview to smoke against.
+# The workflow exits success with a clear warning in that case.
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.github/CODEOWNERS'
+
+permissions:
+  contents: read
+  pull-requests: read
+  deployments: read
+  statuses: read
+
+concurrency:
+  group: smoke-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24
+
+jobs:
+  smoke:
+    name: PWA Smoke Test
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    runs-on: ubuntu-latest
+    env:
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Resolve Vercel preview URL
+        id: preview
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Poll GitHub deployments API for up to 5 min looking for a successful
+          # Vercel preview matching this PR's head SHA. We can't use the third-party
+          # wait-for-vercel-preview action because (a) it pins to a tag and (b) it
+          # fails hard when Vercel's ignore step legitimately skips a deploy.
+          deadline=$(( $(date +%s) + 300 ))
+          url=""
+          ignored=""
+          while [ "$(date +%s)" -lt "$deadline" ]; do
+            # First: any deployment for this SHA?
+            deployment_id=$(gh api "repos/$GITHUB_REPOSITORY/deployments?sha=$HEAD_SHA&per_page=20" \
+              --jq '[.[] | select(.environment != "Production")] | .[0].id // empty')
+
+            if [ -n "$deployment_id" ]; then
+              status_json=$(gh api "repos/$GITHUB_REPOSITORY/deployments/$deployment_id/statuses?per_page=10")
+              state=$(echo "$status_json" | jq -r '.[0].state // ""')
+              candidate=$(echo "$status_json" | jq -r '.[0].environment_url // ""')
+              if [ "$state" = "success" ] && [[ "$candidate" == *.vercel.app* ]]; then
+                url="$candidate"
+                break
+              fi
+            fi
+
+            # Detect the Vercel "ignored build" case via PR-bot comment so we can
+            # exit cleanly instead of timing out.
+            if gh api "repos/$GITHUB_REPOSITORY/issues/${{ github.event.pull_request.number }}/comments" \
+                --jq '.[].body' \
+                | grep -qE 'Skipped Deployment|Ignored Build Step'; then
+              ignored=1
+              break
+            fi
+
+            sleep 10
+          done
+
+          if [ -n "$url" ]; then
+            echo "url=$url" >> "$GITHUB_OUTPUT"
+            echo "status=ready" >> "$GITHUB_OUTPUT"
+            echo "Resolved preview URL: $url"
+          elif [ -n "$ignored" ]; then
+            echo "status=ignored" >> "$GITHUB_OUTPUT"
+            echo "::warning::Vercel build was ignored for this PR — no preview to smoke against."
+          else
+            echo "status=timeout" >> "$GITHUB_OUTPUT"
+            echo "::error::Timed out waiting for Vercel preview after 5 min."
+            exit 1
+          fi
+
+      - name: Skip — no preview deployed
+        if: steps.preview.outputs.status == 'ignored'
+        run: |
+          echo "Vercel ignored this build (likely a CI/infra-only PR). Smoke is N/A."
+          echo "If this PR DOES touch SPA code, check scripts/vercel-ignore.sh."
+
+      - name: Install pnpm
+        if: steps.preview.outputs.status == 'ready'
+        uses: pnpm/action-setup@v5
+
+      - name: Setup Node.js
+        if: steps.preview.outputs.status == 'ready'
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        if: steps.preview.outputs.status == 'ready'
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        if: steps.preview.outputs.status == 'ready'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run smoke spec against preview
+        if: steps.preview.outputs.status == 'ready'
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: ${{ steps.preview.outputs.url }}
+          # Required when Vercel deployment protection is enabled (it is by default
+          # for paid plans). Generate via Vercel project Settings → Deployment
+          # Protection → Protection Bypass for Automation.
+          VERCEL_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          CI: '1'
+        run: pnpm exec playwright test --config=playwright.smoke.config.ts
+
+      - name: Upload trace on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-preview-trace
+          path: test-results/
+          retention-days: 7

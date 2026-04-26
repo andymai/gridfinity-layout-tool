@@ -5,6 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import wasm from 'vite-plugin-wasm';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath, URL } from 'node:url';
+import { versionPlugin } from './scripts/vite-plugin-version';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -40,8 +41,11 @@ export default defineConfig({
     wasm(),
     react(),
     tailwindcss(),
+    versionPlugin(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt' so the smoke gate (src/shared/pwa/smokeGate.ts) controls activation.
+      // With 'autoUpdate' the new SW would auto-skip-waiting on install, defeating the gate.
+      registerType: 'prompt',
       // Note: Don't use includeAssets here - icons are precached via globPatterns,
       // except manifest icons (icon-192, icon-512) which are excluded via globIgnores
       // since they're auto-added by vite-plugin-pwa from manifest.icons below.
@@ -85,15 +89,24 @@ export default defineConfig({
           // deployments: the new SW's manifest still references the old hash which
           // 404s, leaving the old SW in control and blocking the fix from reaching users.
           'assets/wwwMigration-*.js',
+          // smokeBoot is loaded only via `?smoke=1`. Real users never need it, and
+          // precaching it adds the same hash-mismatch risk that bit wwwMigration.
+          'assets/smokeBoot-*.js',
+          // version.json is fetched by the PWA smoke gate to verify a fresh deploy is
+          // reachable. Must always hit the network — precaching would mask stale CDN.
+          'version.json',
         ],
         // Prefix all cache names to prevent conflicts
         cacheId: 'gridfinity-v1',
         // Prevent accidentally precaching huge assets
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB per file
-        // Force the new service worker to activate immediately
-        skipWaiting: true,
-        // Take control of pages that were controlled by an old SW
-        clientsClaim: true,
+        // Don't auto-skip-waiting — the smoke gate sends SKIP_WAITING manually
+        // after a hidden-iframe smoke against the new bundle passes.
+        skipWaiting: false,
+        // Don't claim existing tabs on activation — keep them on the old SW until they
+        // reload, so an in-flight session is unaffected by a brand-new (potentially
+        // broken) bundle's runtime caching strategy.
+        clientsClaim: false,
         // Clean up old caches from previous versions
         cleanupOutdatedCaches: true,
         // SPA navigation fallback - serve index.html for all navigation requests
