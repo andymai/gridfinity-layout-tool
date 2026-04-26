@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.49.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.49.2...gridfinity-layout-tool-v4.49.3) (2026-04-26)
+
+
+### Bug Fixes
+
+* **generation:** restore angled support beneath stacking lip overhang ([#1491](https://github.com/andymai/gridfinity-layout-tool/issues/1491)) ([dc0e7d3](https://github.com/andymai/gridfinity-layout-tool/commit/dc0e7d3b143983551441bc0c658be88a2f7c7e32))
+* **stryker:** exclude __dual-kernel__ from mutation set ([#1488](https://github.com/andymai/gridfinity-layout-tool/issues/1488)) ([133a09b](https://github.com/andymai/gridfinity-layout-tool/commit/133a09b9a0394311cd250a83e07c0462f92dd116))
+
 ## [4.49.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.49.1...gridfinity-layout-tool-v4.49.2) (2026-04-26)
 
 
