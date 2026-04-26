@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.47.9](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.8...gridfinity-layout-tool-v4.47.9) (2026-04-26)
+
+
+### Bug Fixes
+
+* **baseplate:** solid-infill slicing — broken STL winding heuristic ([#1472](https://github.com/andymai/gridfinity-layout-tool/issues/1472)) ([#1473](https://github.com/andymai/gridfinity-layout-tool/issues/1473)) ([32f89cf](https://github.com/andymai/gridfinity-layout-tool/commit/32f89cf0fb842d24cabd0c2849dfb69b249cc00a))
+
 ## [4.47.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.7...gridfinity-layout-tool-v4.47.8) (2026-04-26)
 
 
