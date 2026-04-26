@@ -70,7 +70,6 @@ export function getStableUserId(): string {
   try {
     const data = loadAnalyticsData();
     if (!data.userId) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated -- user IDs must remain UUIDs for PostHog identity stability
       data.userId = generateUUID();
       if (!data.firstSeen) {
         data.firstSeen = new Date().toISOString();
@@ -81,7 +80,6 @@ export function getStableUserId(): string {
   } catch {
     // localStorage unavailable (private browsing, storage full, etc.)
     // Fall back to a session-only ID
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- user IDs must remain UUIDs for PostHog identity stability
     return generateUUID();
   }
 }

@@ -1,11 +1,15 @@
 import type { LayoutId } from '@/core/types';
 
 /**
- * Generate a UUID v4 for layout identification.
- * Uses crypto.randomUUID() when available, falls back to manual generation.
+ * Generate a UUID v4 (RFC 4122) for contexts that need a globally unique
+ * 122-bit identifier — e.g. PostHog analytics user IDs, where stability and
+ * standard format matter more than URL-friendliness.
  *
- * @deprecated Use generateLayoutId() for new layouts. UUIDs are kept for
- * backward compatibility with existing layouts.
+ * For layout IDs, prefer `generateLayoutId()` instead: it produces a shorter
+ * 12-char alphanumeric ID better suited to share URLs.
+ *
+ * Uses crypto.randomUUID() when available, falls back to manual generation
+ * via crypto.getRandomValues for older environments.
  */
 export function generateUUID(): string {
   const c = globalThis.crypto;
