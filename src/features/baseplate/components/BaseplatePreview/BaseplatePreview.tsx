@@ -324,11 +324,6 @@ export function BaseplatePreview({
           aria-live="polite"
         >
           <div className="pointer-events-auto flex items-center gap-2.5 rounded-lg border border-accent/40 bg-surface-elevated/95 px-3 py-2 font-mono text-xs shadow-lg backdrop-blur-sm">
-            {hasDirectPreview && (
-              <span className="rounded bg-accent/15 px-1.5 py-0.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-accent">
-                {t('baseplate.preview')}
-              </span>
-            )}
             <svg
               className="h-4 w-4 shrink-0 text-accent animate-spin"
               viewBox="0 0 24 24"
@@ -350,7 +345,7 @@ export function BaseplatePreview({
             </svg>
             <span className="text-content-secondary">
               {overlayStatusText(isWasmLoading, splitProgress, dedupStats, hasDirectPreview, t)}
-              {elapsedSec !== null && elapsedSec >= 1 && (
+              {elapsedSec !== null && elapsedSec >= 3 && (
                 <span className="ml-1.5 text-content-tertiary">
                   {t('baseplate.elapsed', { seconds: elapsedSec })}
                 </span>
