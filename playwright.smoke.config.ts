@@ -13,6 +13,16 @@ if (!previewUrl) {
   throw new Error('PREVIEW_URL env var is required for the smoke config');
 }
 
+// Vercel Deployment Protection on previews returns HTTP 401 unless the
+// caller presents a bypass token. When VERCEL_AUTOMATION_BYPASS_SECRET is
+// set, send it as both a header (for the initial request) and a cookie
+// (for subsequent SPA navigations). See:
+// https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/protection-bypass-automation
+const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+const extraHTTPHeaders = bypassSecret
+  ? { 'x-vercel-protection-bypass': bypassSecret, 'x-vercel-set-bypass-cookie': 'true' }
+  : undefined;
+
 export default defineConfig({
   testDir: './e2e',
   testMatch: 'smoke-preview.spec.ts',
@@ -25,6 +35,7 @@ export default defineConfig({
     baseURL: previewUrl,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    extraHTTPHeaders,
   },
   projects: [
     {

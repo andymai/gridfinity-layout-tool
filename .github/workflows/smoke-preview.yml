@@ -7,9 +7,13 @@ name: Smoke Preview
 #
 # How it discovers the preview URL: this Vercel install posts a commit
 # status (context "Vercel") and a PR comment (from vercel[bot]) but does
-# NOT publish GitHub deployment events. So we (a) poll the commit status
-# until success, and (b) parse the [Preview](URL) link from the bot's
-# comment. No Vercel API token needed.
+# NOT publish GitHub deployment events. We poll the commit status until
+# success, then extract the preview URL from the [Preview](URL) link in
+# the bot's comment.
+#
+# Vercel Deployment Protection is enabled for previews, so the smoke needs
+# the VERCEL_AUTOMATION_BYPASS_SECRET (Project Settings → Deployment
+# Protection → Protection Bypass for Automation) to authenticate.
 
 on:
   pull_request:
@@ -85,6 +89,7 @@ jobs:
       - name: Run boot smoke against preview
         env:
           PREVIEW_URL: ${{ steps.preview.outputs.url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: pnpm exec playwright test --config=playwright.smoke.config.ts
 
       - name: Upload Playwright artifacts on failure
