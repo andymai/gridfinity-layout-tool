@@ -4,7 +4,6 @@
  */
 
 import type { Layout } from '@/core/types';
-import { BREAKPOINTS } from '@/core/constants';
 import { useInteractionStore } from '@/core/store/interaction';
 import type { LayerViewMode } from '@/core/store/view';
 import { useLayoutStore } from '@/core/store/layout';
@@ -15,18 +14,14 @@ import { splitBinsByLocation, getGridBins } from '@/shared/utils';
 import { isFirstSession, loadAnalyticsData, saveAnalyticsData, getFirstSeenDate } from './identity';
 import { capture, getPosthogInstance } from './init';
 import { computeLayoutMetrics, computeLabsMetrics } from './metrics';
+import { getDeviceType, trackEvent } from './trackEvent';
+
+// Re-export so callers using the barrel keep working
+export { getDeviceType, trackEvent };
 
 // TRACKING FUNCTIONS
 
 export type AnalyticsTrigger = 'export_json' | 'export_url' | 'export_tsv' | 'session_engaged';
-
-export function getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
-  if (typeof window === 'undefined') return 'desktop';
-  const width = window.innerWidth;
-  if (width < BREAKPOINTS.MD) return 'mobile';
-  if (width < BREAKPOINTS.LG) return 'tablet';
-  return 'desktop';
-}
 
 /**
  * Track a comprehensive layout snapshot.
@@ -56,23 +51,6 @@ export function trackLayoutSnapshot(
     });
   } catch {
     // Analytics should never break the app
-  }
-}
-
-/**
- * Track a discrete event (feature usage, actions).
- */
-export function trackEvent(
-  name: string,
-  properties?: Record<string, string | number | boolean | null>
-): void {
-  try {
-    capture(name, {
-      device_type: getDeviceType(),
-      ...properties,
-    });
-  } catch {
-    // Fail silently
   }
 }
 
