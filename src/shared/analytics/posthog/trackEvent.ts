@@ -3,12 +3,15 @@
  *
  * Lives in its own module so consumers (notably src/core/store/labs.ts) can
  * import `trackEvent` without dragging in `./events` or `./metrics`. Those
- * modules transitively read core stores, which would re-import this package
- * and form a static-import cycle in the production bundle. See issue #1466.
+ * modules import `useLabsStore`, which closes a static-import cycle that
+ * the production bundler can project to a chunk-level cycle and crash on
+ * boot. See issue #1466.
  *
- * Keep this file's imports minimal: only `./init` (the capture primitive)
- * and pure constants. Do NOT import any store or any module that imports
- * one — that's the whole point.
+ * Constraint when extending this file: do not introduce any import edge
+ * that transitively reaches `./metrics` or any module that imports
+ * `@/core/store/labs`. The current `./init` dependency is fine — it pulls
+ * in the settings store, but neither settings nor anything it imports
+ * reaches back into labs/metrics, so the graph stays acyclic.
  */
 
 import { BREAKPOINTS } from '@/core/constants';
