@@ -1,0 +1,68 @@
+name: Smoke Preview
+
+# Boot-smoke the Vercel preview for every PR, before allowing merge to main.
+# Catches the class of bug from issue #1466 — chunks that build successfully
+# but throw an uncaught exception during initial evaluation, leaving a blank
+# page in production.
+#
+# Triggered by deployment_status events that Vercel posts when a PR preview
+# is ready. We filter to state=success + non-production targets so we only
+# run on actual preview readiness.
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+  deployments: read
+  statuses: read
+
+concurrency:
+  group: smoke-preview-${{ github.event.deployment.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24
+
+jobs:
+  smoke:
+    name: smoke-preview
+    if: |
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment != 'production' &&
+      contains(github.event.deployment_status.target_url, 'vercel.app')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.deployment.sha }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run boot smoke against preview
+        env:
+          PREVIEW_URL: ${{ github.event.deployment_status.target_url }}
+        run: pnpm exec playwright test --config=playwright.smoke.config.ts
+
+      - name: Upload Playwright artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-preview-trace
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
