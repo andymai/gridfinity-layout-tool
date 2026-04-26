@@ -166,10 +166,12 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
   // the GPU resources when the material is replaced or the component unmounts.
   useEffect(() => () => material.dispose(), [material]);
 
-  // Update uniforms reactively without recreating material
+  // Populate (and re-populate) the material's uniforms whenever any of them
+  // change OR when the material itself is replaced — without `material` in
+  // the deps, a renderMode change would yield a fresh material with the
+  // zero-value placeholder uniforms, leaving the cutout invisible.
   useEffect(() => {
-    if (!materialRef.current) return;
-    const u = materialRef.current.uniforms;
+    const u = material.uniforms;
     (u.u_size.value as THREE.Vector2).set(effective.width, effective.depth);
     u.u_cornerRadius.value = effective.cornerRadius;
     (u.u_fillColor.value as THREE.Vector4).set(
@@ -181,7 +183,7 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
     (u.u_strokeColor.value as THREE.Vector4).set(strokeColor.r, strokeColor.g, strokeColor.b, 1);
     u.u_strokeWidth.value = strokeWidth;
     u.u_shapeType.value = shapeType;
-  }, [effective, fillOpacity, cutFillColor, strokeColor, strokeWidth, shapeType]);
+  }, [material, effective, fillOpacity, cutFillColor, strokeColor, strokeWidth, shapeType]);
 
   // Geometry sized to the shape
   const geometry = useMemo(() => {
