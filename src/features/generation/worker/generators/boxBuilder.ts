@@ -373,10 +373,14 @@ function buildTopShapeLoft(
   // level the loft sections need. holesCavity matches the cavity boundary
   // (bin's outer face); holesInnerAngle/Base/Mid are the same boundary grown
   // further into the filled material by the corresponding lip offsets.
+  // holesInnerAngle is only needed when stacking is included (its only
+  // consumer is inside `if (includeLip)`), so skip the offset-and-tessellate
+  // work for non-stacking bins.
   const holesCavity = polygon ? buildMaskHoleDrawings(cellMask, gridUnitMm) : [];
-  const holesInnerAngle = polygon
-    ? buildMaskHoleDrawings(cellMask, gridUnitMm, CLEARANCE / 2 + INNER_ANGLE)
-    : [];
+  const holesInnerAngle =
+    polygon && includeLip
+      ? buildMaskHoleDrawings(cellMask, gridUnitMm, CLEARANCE / 2 + INNER_ANGLE)
+      : [];
   const holesInnerBase = polygon
     ? buildMaskHoleDrawings(cellMask, gridUnitMm, CLEARANCE / 2 + INNER_BASE)
     : [];
