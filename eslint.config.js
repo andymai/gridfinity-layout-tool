@@ -10,7 +10,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage', 'e2e', 'scripts', 'benchmarks', '.stryker-tmp', 'playwright.config.ts', 'playwright-ct.config.ts', 'playwright', '**/*.visual.tsx']),
+  globalIgnores(['dist', 'coverage', 'e2e', 'scripts', 'benchmarks', '.stryker-tmp', 'playwright.config.ts', 'playwright.smoke.config.ts', 'playwright-ct.config.ts', 'playwright', '**/*.visual.tsx']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

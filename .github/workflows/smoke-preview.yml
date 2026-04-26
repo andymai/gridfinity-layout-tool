@@ -1,0 +1,74 @@
+name: Smoke (Preview)
+
+# Runs the PWA smoke spec against the Vercel preview deployment for every PR.
+# Catches deploy-time bugs (broken precache, missing assets, wwwMigration-class
+# hash mismatches) before merge. Mark this as a required status check in branch
+# protection to block merges on smoke failure.
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.github/CODEOWNERS'
+
+permissions:
+  contents: read
+  pull-requests: read
+  deployments: read
+  statuses: read
+
+concurrency:
+  group: smoke-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24
+
+jobs:
+  smoke:
+    name: PWA Smoke Test
+    if: ${{ !startsWith(github.head_ref, 'release-please--') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Wait for Vercel preview
+        id: wait
+        # Polls the GitHub deployment_status API for the PR head SHA until a
+        # successful preview deployment appears. Returns its URL.
+        uses: patrickedqvist/wait-for-vercel-preview@v1.3.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          max_timeout: 600
+          allow_inactive: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run smoke spec against preview
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: ${{ steps.wait.outputs.url }}
+          CI: '1'
+        run: pnpm exec playwright test --config=playwright.smoke.config.ts
+
+      - name: Upload trace on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-preview-trace
+          path: test-results/
+          retention-days: 7
