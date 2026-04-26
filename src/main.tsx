@@ -19,13 +19,13 @@ import { connectEventStoreToBus, connectSelectionPruning, eventBus } from '@/cor
 import { connectDesignLinking } from '@/features/design-linking/subscribers';
 import { InitErrorFallback } from '@/shell/InitErrorFallback';
 import { isSmokeMode } from '@/shared/utils/smokeMode';
-import { runSmokeBoot } from '@/shell/smokeBoot';
 
 // Smoke mode (?smoke=1) boots a synthetic fixture and reports back to a parent listener.
 // Must short-circuit ahead of www-migration paths, which would otherwise reload/redirect
-// during a smoke harness run.
+// during a smoke harness run. The boot module is dynamically imported so it doesn't
+// bloat the main bundle (smoke runs only in CI / iframe gate, never in user browsers).
 if (isSmokeMode()) {
-  runSmokeBoot();
+  void import('./shell/smokeBoot').then(({ runSmokeBoot }) => runSmokeBoot());
 } else if (recoverFromBadWwwMigration()) {
   // Reload triggered — stop all further initialization.
 } else if ((window as unknown as { __wwwMigrationPending?: boolean }).__wwwMigrationPending) {

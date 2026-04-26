@@ -99,24 +99,33 @@ export function runSmokeBoot(): void {
   }
 
   // Surface unexpected boot errors to the parent before the React error boundary catches them.
-  window.addEventListener('error', (event) => {
-    postSmokeResult({
-      smokeOk: false,
-      version: __APP_VERSION__,
-      gitSha: __GIT_SHA__,
-      buildTime: __BUILD_TIME__,
-      reason: `error:${event.message}`,
-    });
-  });
-  window.addEventListener('unhandledrejection', (event) => {
-    postSmokeResult({
-      smokeOk: false,
-      version: __APP_VERSION__,
-      gitSha: __GIT_SHA__,
-      buildTime: __BUILD_TIME__,
-      reason: `rejection:${String(event.reason)}`,
-    });
-  });
+  // `once: true` so a single fixture that emits multiple errors doesn't spam the parent.
+  window.addEventListener(
+    'error',
+    (event) => {
+      postSmokeResult({
+        smokeOk: false,
+        version: __APP_VERSION__,
+        gitSha: __GIT_SHA__,
+        buildTime: __BUILD_TIME__,
+        reason: `error:${event.message}`,
+      });
+    },
+    { once: true }
+  );
+  window.addEventListener(
+    'unhandledrejection',
+    (event) => {
+      postSmokeResult({
+        smokeOk: false,
+        version: __APP_VERSION__,
+        gitSha: __GIT_SHA__,
+        buildTime: __BUILD_TIME__,
+        reason: `rejection:${String(event.reason)}`,
+      });
+    },
+    { once: true }
+  );
 
   const { layout, library, id } = buildSmokeLayout();
   useLibraryStore.getState().initLibrary(library);

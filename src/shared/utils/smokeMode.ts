@@ -1,7 +1,11 @@
 /**
- * Smoke mode is triggered by `?smoke=1` in the URL. It boots the app with a synthetic
- * fixture (no storage reads) so a Playwright/iframe harness can verify a deploy without
- * touching real user state. See `src/shell/smokeBoot.ts` for the boot sequence and
+ * Smoke mode is triggered by `?smoke=1` in the URL. It enables a stripped-down boot
+ * path used by the Playwright/iframe harness to verify a deploy: skips IndexedDB
+ * layout/library hydration, the wwwMigration recovery + redirect paths, PostHog
+ * init, and ML telemetry. Settings-store reads of `localStorage` (locale prefs)
+ * still happen — that's fine for a smoke target.
+ *
+ * See `src/shell/smokeBoot.tsx` for the boot sequence and
  * `.github/workflows/smoke-*.yml` / `src/shared/pwa/smokeGate.ts` (PR #2) for callers.
  */
 export function isSmokeMode(): boolean {

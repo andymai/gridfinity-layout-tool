@@ -57,13 +57,15 @@ A two-tier smoke harness verifies that a deploy is healthy before users see it:
 2. **Client smoke** (PR #2 — pending) — gates an existing user's reload into
    the new bundle behind a hidden-iframe boot test.
 
-Both rely on `?smoke=1`, which boots a synthetic fixture without touching
-storage. See `src/shell/smokeBoot.tsx` and `e2e/smoke/`.
+Both rely on `?smoke=1`, which boots a synthetic fixture while skipping
+layout/library hydration, www-migration recovery, PostHog, and ML telemetry.
+See `src/shell/smokeBoot.tsx` and `e2e/smoke/`.
 
 **One-time setup required for `smoke-postpromote.yml`:**
 
-- Add `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` secrets so
-  `vercel rollback` can run on smoke failure.
+- Add `VERCEL_TOKEN` and `VERCEL_ORG_ID` secrets so `vercel rollback` can run
+  on smoke failure (`vercel rollback` reads the linked project from the
+  deployment URL — no separate project ID needed).
 - Add `smoke-preview` to branch protection's required status checks (Settings
   → Branches → main → Require status checks).
 
