@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.48.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.48.0...gridfinity-layout-tool-v4.48.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* **pwa:** repair post-promote smoke + revert README smoke section ([#1477](https://github.com/andymai/gridfinity-layout-tool/issues/1477)) ([6f301b6](https://github.com/andymai/gridfinity-layout-tool/commit/6f301b6cdc01582f7519f7d50ed1330665f8e347))
+
 ## [4.48.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.9...gridfinity-layout-tool-v4.48.0) (2026-04-26)
 
 
