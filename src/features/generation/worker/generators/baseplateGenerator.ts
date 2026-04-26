@@ -1280,9 +1280,11 @@ export async function exportBaseplate(
       return { data, fileName: `${name}.step` };
     }
 
-    // STL — mesh the BREP and build binary STL with winding correction.
+    // STL — mesh the BREP and pack the triangles into a binary STL.
     // OCCT's StlAPI.Write fails on baseplate geometries, so we tessellate
-    // manually and fix triangle winding to match the STL right-hand rule.
+    // via brepjs `mesh()` and emit the records ourselves; brepjs already
+    // produces face-consistent winding so no per-triangle correction is
+    // applied (see #1472).
     const tol = tolerance ?? 0.01;
     const angTol = angularTolerance ?? 5;
     const meshResult = mesh(baseplate, { tolerance: tol, angularTolerance: angTol });
