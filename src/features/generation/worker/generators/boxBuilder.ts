@@ -313,9 +313,15 @@ export function buildBinBox(
  * Build the stacking lip using a ruled loft + boolean cut.
  *
  * Outer frustum is a rectangular tube flush with the bin wall (inset=0).
- * Inner frustum traces the lip profile's inner contour, tapering from
- * 2.6mm at the base to 0mm at the peak. The cut produces a wedge-shaped
- * ring whose exterior is smooth and flush with the bin wall.
+ * Inner frustum traces the lip profile's inner contour, including the
+ * angled support face that the sweep version produces by sweeping the
+ * lip-extension polygon: from INNER_BASE (2.6mm) at Z_EXT down to a
+ * narrower inset (LIP_EXTENSION, 1.2mm) at Z_ANGLE_BOTTOM (-2.6mm).
+ * After the loft is cut from the outer and fused with the bin wall, the
+ * portion of the ring that overlaps the wall thickness is absorbed; what
+ * remains is the visible lip overhang plus an angled support that goes
+ * from zero overhang at Z_ANGLE_BOTTOM up to (LIP_TAPER_WIDTH −
+ * wallThickness) overhang at Z_EXT — printable without supports. (#1487)
  */
 function buildTopShapeLoft(
   outerW: number,
@@ -330,7 +336,13 @@ function buildTopShapeLoft(
   const INNER_BASE = LIP_TAPER_WIDTH; // 2.6mm
   const INNER_MID = LIP_BIG_TAPER; // 1.9mm
   const INNER_TOP = 0;
+  // Inset at the bottom of the angled support: matches the sweep profile,
+  // where the support's inner edge sits at X = -LIP_EXTENSION (1.2mm).
+  const INNER_ANGLE = LIP_EXTENSION;
 
+  // Z_ANGLE_BOTTOM matches the sweep profile's deepest Y (-LIP_TAPER_WIDTH);
+  // the angled support spans Z = [Z_ANGLE_BOTTOM, Z_EXT] = [-2.6, -1.2].
+  const Z_ANGLE_BOTTOM = includeLip ? -LIP_TAPER_WIDTH : 0;
   const Z_EXT = -LIP_EXTENSION;
   const Z_BASE = 0;
   const Z_TAPER1 = LIP_SMALL_TAPER; // 0.7
@@ -354,15 +366,21 @@ function buildTopShapeLoft(
   };
 
   // Outer: rectangular tube at bin outer edge (2 sections → no extra edges)
-  const zBottom = includeLip ? Z_EXT : Z_BASE;
+  const zBottom = includeLip ? Z_ANGLE_BOTTOM : Z_BASE;
   const outerSections: Sketch[] = [sectionAt(zBottom, 0), sectionAt(Z_PEAK, 0)];
 
-  // For O-shape footprints, pre-compute three sets of hole drawings at
-  // different inset levels so each Z-section of the hole lip can reach
-  // directly for the right one. holesCavity matches the cavity boundary
-  // (bin's outer face); holesInnerBase/Mid are the same boundary grown
-  // further into the filled material by the standard lip offsets.
+  // For O-shape footprints, pre-compute the hole drawings at every inset
+  // level the loft sections need. holesCavity matches the cavity boundary
+  // (bin's outer face); holesInnerAngle/Base/Mid are the same boundary grown
+  // further into the filled material by the corresponding lip offsets.
+  // holesInnerAngle is only needed when stacking is included (its only
+  // consumer is inside `if (includeLip)`), so skip the offset-and-tessellate
+  // work for non-stacking bins.
   const holesCavity = polygon ? buildMaskHoleDrawings(cellMask, gridUnitMm) : [];
+  const holesInnerAngle =
+    polygon && includeLip
+      ? buildMaskHoleDrawings(cellMask, gridUnitMm, CLEARANCE / 2 + INNER_ANGLE)
+      : [];
   const holesInnerBase = polygon
     ? buildMaskHoleDrawings(cellMask, gridUnitMm, CLEARANCE / 2 + INNER_BASE)
     : [];
@@ -374,9 +392,11 @@ function buildTopShapeLoft(
     const [outerFirst, ...outerRest] = outerSections;
     const outerFrustum = scope.register(outerFirst.loftWith(outerRest, { ruled: true }));
 
-    // Inner: tapered frustum tracing the lip profile
+    // Inner: tapered frustum tracing the lip profile, including the angled
+    // support face below Z_EXT.
     const innerSections: Sketch[] = [];
     if (includeLip) {
+      innerSections.push(sectionAt(Z_ANGLE_BOTTOM, INNER_ANGLE));
       innerSections.push(sectionAt(Z_EXT, INNER_BASE));
     }
     innerSections.push(sectionAt(Z_BASE, INNER_BASE));
@@ -391,18 +411,23 @@ function buildTopShapeLoft(
     let result = unwrap(cut(outerFrustum, innerFrustum));
 
     // Add a lip ring around each interior hole. Mirrors the outer lip's
-    // profile: the lip's "outer" face (facing the filled material) grows
-    // from INNER_BASE at Z_BASE to 0 at Z_PEAK; its "inner" face (facing
-    // the cavity) stays at the cavity boundary.  cut(outerFrustum,
+    // profile, including the angled support: the lip's "outer" face (facing
+    // the filled material) grows from INNER_ANGLE at Z_ANGLE_BOTTOM, through
+    // INNER_BASE at Z_EXT/Z_BASE, to 0 at Z_PEAK; its "inner" face (facing
+    // the cavity) stays at the cavity boundary. cut(outerFrustum,
     // innerFrustum) is then fused onto the outer lip so a bin stacked on
     // top sits flush over both the outer perimeter and the hole.
     for (let h = 0; h < holesCavity.length; h++) {
       const cavity = holesCavity[h];
+      const atAngle = holesInnerAngle[h];
       const atBase = holesInnerBase[h];
       const atMid = holesInnerMid[h];
 
       const bigSections: Sketch[] = [];
-      if (includeLip) bigSections.push(atBase.sketchOnPlane('XY', Z_EXT) as Sketch);
+      if (includeLip) {
+        bigSections.push(atAngle.sketchOnPlane('XY', Z_ANGLE_BOTTOM) as Sketch);
+        bigSections.push(atBase.sketchOnPlane('XY', Z_EXT) as Sketch);
+      }
       bigSections.push(atBase.sketchOnPlane('XY', Z_BASE) as Sketch);
       bigSections.push(atMid.sketchOnPlane('XY', Z_TAPER1) as Sketch);
       bigSections.push(atMid.sketchOnPlane('XY', Z_VERT) as Sketch);
@@ -544,7 +569,7 @@ export function buildTopShape(
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
   const lipKey = buildCacheKey(
-    'v3',
+    'v4',
     quantize(gridW),
     quantize(gridD),
     quantize(gridUnitMm),

@@ -142,4 +142,30 @@ describe('buildTopShape', () => {
     expect(lipBounds.xMax - lipBounds.xMin).toBeGreaterThan(outerW - TOL);
     expect(lipBounds.yMax - lipBounds.yMin).toBeGreaterThan(outerD - TOL);
   }, 30000);
+
+  // Regression: #1487 — the lip extension must include an angled support
+  // face below the overhang so it can be FDM-printed without strings. The
+  // sweep version produced this naturally; the original loft (#1380) only
+  // built sections at Z_EXT (-1.2) and above, leaving the underside of the
+  // overhang as a flat horizontal shelf with nothing below it. Verify that
+  // when stacking is enabled the lip reaches down to Z = -LIP_TAPER_WIDTH
+  // (-2.6mm) — at least 1mm deeper than the previous loft, which stopped
+  // at -1.2 (LIP_EXTENSION) and would not pass the lower bound below.
+  it('lip extends below Z_EXT with angled support (no flat overhang)', () => {
+    const lipNoStack = buildTopShape(2, 2, false);
+    const lipWithStack = buildTopShape(2, 2, true);
+    const noStackBounds = shapeBounds(lipNoStack);
+    const withStackBounds = shapeBounds(lipWithStack);
+
+    // The added depth of the stacking lip below Z = 0 is the lip
+    // extension PLUS the angled support, which spans LIP_TAPER_WIDTH
+    // (2.6mm). The pre-fix loft only built the extension flange and
+    // produced a delta of LIP_EXTENSION (1.2mm), which would fail the
+    // lower bound below. Comparing the delta cancels out the small
+    // BREP getBounds tolerance epsilon (~0.3mm) that's present in
+    // both the with-stack and no-stack cases.
+    const lipDepthDelta = noStackBounds.zMin - withStackBounds.zMin;
+    expect(lipDepthDelta).toBeGreaterThan(2.5); // ≈ LIP_TAPER_WIDTH (2.6)
+    expect(lipDepthDelta).toBeLessThan(2.7);
+  }, 60000);
 });
