@@ -19,7 +19,8 @@
     "!**/*.test.tsx",
     "!**/*.bench.ts",
     "!**/*.d.ts",
-    "!**/types.ts"
+    "!**/types.ts",
+    "!**/__dual-kernel__/**"
   ],
   "timeoutMS": 120000,
   "dryRunTimeoutMinutes": 15,
