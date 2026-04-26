@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.49.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.49.1...gridfinity-layout-tool-v4.49.2) (2026-04-26)
+
+
+### Bug Fixes
+
+* **ci:** unblock nightly mutation testing — bump dry-run timeout + cache hygiene ([#1482](https://github.com/andymai/gridfinity-layout-tool/issues/1482)) ([6aee4f8](https://github.com/andymai/gridfinity-layout-tool/commit/6aee4f89e3ee3df26f513ac1dbfd0f335cbae19f))
+
 ## [4.49.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.49.0...gridfinity-layout-tool-v4.49.1) (2026-04-26)
 
 
