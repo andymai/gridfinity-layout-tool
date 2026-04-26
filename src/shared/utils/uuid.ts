@@ -24,26 +24,30 @@ export function generateUUID(): string {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
-/** Character set for short IDs: a-z, A-Z, 0-9 (62 chars) */
-const ID_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
-/** Length of layout IDs (62^12 ≈ 3.2×10²¹ combinations) */
-export const LAYOUT_ID_LENGTH = 12;
-
 /**
  * Generate a short alphanumeric ID for layouts.
  *
  * Format: 12-character alphanumeric (a-z, A-Z, 0-9)
  * Collision probability: ~1 in 320 billion at 100k layouts
  *
- * Uses crypto.getRandomValues for secure randomness.
+ * Uses globalThis.crypto.getRandomValues for secure randomness.
+ *
+ * The character set and length live inside the function rather than at
+ * module scope. This makes the function safe to call from any
+ * module-init context (e.g. Zustand store creators that run eagerly):
+ * a chunk-level static-import cycle can leave imported `var` bindings
+ * as `undefined` until the producing module finishes its top-level
+ * statements, which crashes (or silently miscomputes) anything that
+ * reads them at call time. Self-contained = cycle-immune. See #1466.
  */
 export function generateLayoutId(): LayoutId {
-  const bytes = new Uint8Array(LAYOUT_ID_LENGTH);
-  crypto.getRandomValues(bytes);
+  const ID_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const LENGTH = 12;
+  const bytes = new Uint8Array(LENGTH);
+  globalThis.crypto.getRandomValues(bytes);
 
   let id = '';
-  for (let i = 0; i < LAYOUT_ID_LENGTH; i++) {
+  for (let i = 0; i < LENGTH; i++) {
     id += ID_CHARS[bytes[i] % ID_CHARS.length];
   }
   return id as LayoutId;

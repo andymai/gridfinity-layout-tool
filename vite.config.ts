@@ -200,6 +200,19 @@ export default defineConfig({
         },
         // Use function-based manualChunks for more reliable splitting
         manualChunks(id) {
+          // Pin foundational constants/types into a dedicated leaf chunk that
+          // imports nothing from other app chunks. Many modules read these at
+          // module-init time (Zod schemas, store creators, etc); keeping them
+          // in a leaf chunk guarantees they are fully evaluated before any
+          // dependent chunk runs, eliminating chunk-level static-import cycles
+          // that would otherwise leave imported bindings undefined. See #1466.
+          if (
+            id.endsWith('/src/core/constants.ts') ||
+            id.endsWith('/src/core/types.ts') ||
+            id.includes('packages/branded-types/src/')
+          ) {
+            return 'core-foundation';
+          }
           // Three.js ecosystem - only loaded when 3D preview is used
           if (id.includes('node_modules/three/')) {
             return 'three';

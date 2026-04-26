@@ -8,8 +8,7 @@ import type {
   LayoutId,
 } from '@/core/types';
 import { gridUnits, heightUnits } from '@/core/types';
-import { CONSTRAINTS, DEFAULT_LAYOUT_NAME, getDefaultDrawerSize } from '@/core/constants';
-import { generateLayoutId } from '@/shared/utils';
+import { CONSTRAINTS, getDefaultDrawerSize } from '@/core/constants';
 import type { Result, Unit, LayoutError } from '@/core/result';
 import { err, layoutLastEntity, OK, isErr } from '@/core/result';
 import { saveLibrary } from '@/core/storage';
@@ -89,6 +88,22 @@ interface LibraryState {
 }
 
 /**
+ * Empty placeholder library used as the initial state.
+ *
+ * Pure literal — calls no imported functions. This matters because Zustand
+ * runs the store creator eagerly at module-init, and any cross-module
+ * function call there can hit undefined imported bindings under chunk-level
+ * static-import cycles (see issue #1466). The real library is loaded via
+ * `initLibrary` during app bootstrap (main.tsx).
+ */
+const PLACEHOLDER_LIBRARY: LayoutLibrary = {
+  version: '1.0',
+  activeLayoutId: '' as LayoutId,
+  settings: {},
+  entries: [],
+};
+
+/**
  * Library store — manages the multi-layout library index.
  * Tracks `activeLayoutId`, layout entries (metadata + thumbnails), and sorting.
  * Persisted to IndexedDB via {@link saveLibrary}. A small breadcrumb
@@ -96,7 +111,7 @@ interface LibraryState {
  */
 export const useLibraryStore = create<LibraryState>()(
   immer((set, get) => ({
-    library: createDefaultLibrary(generateLayoutId(), DEFAULT_LAYOUT_NAME),
+    library: PLACEHOLDER_LIBRARY,
     isLoaded: false,
 
     initLibrary: (library) => {

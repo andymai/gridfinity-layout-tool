@@ -9,7 +9,12 @@
 import { create } from 'zustand';
 import type { LabsPreferences, FeatureId } from '@/core/labs';
 import { createDefaultLabsPreferences, getFeature } from '@/core/labs';
-import { trackEvent } from '@/shared/analytics/posthog';
+// Deep-import the leaf module (not the barrel) to keep this store off the
+// `metrics.ts` import path. metrics.ts imports `useLabsStore` from this file;
+// going through the barrel would close the cycle, which under some chunking
+// strategies projects to a chunk-level static-import cycle that crashes app
+// boot. See issue #1466.
+import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import type { Result, StorageError } from '@/core/result';
 import { isOk, OK } from '@/core/result';
 import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backends/localStorage';
