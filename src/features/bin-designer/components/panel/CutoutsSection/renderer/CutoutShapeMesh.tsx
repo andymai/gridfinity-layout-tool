@@ -117,28 +117,30 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
   const strokeWidth = strokeWidthPx / zoom; // Convert screen px to world mm
   const shapeType = effective.shape === 'circle' ? 1 : 0;
 
-  // Select fragment shader based on render mode
-  const fragmentShader =
-    renderMode === 'fill'
-      ? sdfFragmentShaderFillOnly
-      : renderMode === 'stroke'
-        ? sdfFragmentShaderStrokeOnly
-        : sdfFragmentShader;
-
-  // SDF material with uniforms
+  // SDF material — recreated only when renderMode changes (which picks both
+  // the fragment shader and the stencil config). All numeric/color uniforms
+  // start at neutral defaults; the reactive useEffect below populates them
+  // and keeps them in sync on every render. This keeps material identity
+  // stable for the common case (renderMode is fixed per mesh in current
+  // callers), without leaking the rest of the prop set into the dep array.
   const material = useMemo(() => {
+    const fragmentShader =
+      renderMode === 'fill'
+        ? sdfFragmentShaderFillOnly
+        : renderMode === 'stroke'
+          ? sdfFragmentShaderStrokeOnly
+          : sdfFragmentShader;
+
     const mat = new THREE.ShaderMaterial({
       vertexShader: sdfVertexShader,
       fragmentShader,
       uniforms: {
-        u_size: { value: new THREE.Vector2(effective.width, effective.depth) },
-        u_cornerRadius: { value: effective.cornerRadius },
-        u_fillColor: {
-          value: new THREE.Vector4(cutFillColor.r, cutFillColor.g, cutFillColor.b, fillOpacity),
-        },
-        u_strokeColor: { value: new THREE.Vector4(strokeColor.r, strokeColor.g, strokeColor.b, 1) },
-        u_strokeWidth: { value: isGrouped ? 0.8 : 0.5 },
-        u_shapeType: { value: shapeType },
+        u_size: { value: new THREE.Vector2() },
+        u_cornerRadius: { value: 0 },
+        u_fillColor: { value: new THREE.Vector4() },
+        u_strokeColor: { value: new THREE.Vector4() },
+        u_strokeWidth: { value: 0 },
+        u_shapeType: { value: 0 },
       },
       transparent: true,
       depthTest: false,
@@ -158,9 +160,11 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
     }
 
     return mat;
-    // renderMode is stable per instance — grouped cutouts always have fixed modes
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- TECH-DEBT: intentional empty deps for stable material identity
-  }, []);
+  }, [renderMode]);
+
+  // r3f's <primitive> tag does not auto-dispose attached objects, so release
+  // the GPU resources when the material is replaced or the component unmounts.
+  useEffect(() => () => material.dispose(), [material]);
 
   // Update uniforms reactively without recreating material
   useEffect(() => {
