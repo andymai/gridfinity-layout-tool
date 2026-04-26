@@ -5,20 +5,24 @@ name: Smoke Preview
 # but throw an uncaught exception during initial evaluation, leaving a blank
 # page in production.
 #
-# Triggered by deployment_status events that Vercel posts when a PR preview
-# is ready. We filter to state=success + non-production targets so we only
-# run on actual preview readiness.
+# Uses a `pull_request` trigger so the workflow runs from the PR branch
+# itself (deployment_status events only fire workflows on the default
+# branch, which would prevent this PR from self-testing). The wait-for-
+# preview step polls GitHub deployment_status events for the Vercel
+# preview URL, then runs the smoke spec against it.
 
 on:
-  deployment_status:
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
   deployments: read
   statuses: read
+  pull-requests: read
 
 concurrency:
-  group: smoke-preview-${{ github.event.deployment.ref }}
+  group: smoke-preview-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 env:
@@ -27,15 +31,17 @@ env:
 jobs:
   smoke:
     name: smoke-preview
-    if: |
-      github.event.deployment_status.state == 'success' &&
-      github.event.deployment.environment != 'production' &&
-      contains(github.event.deployment_status.target_url, 'vercel.app')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+
+      - name: Wait for Vercel preview
+        id: wait-for-preview
+        uses: patrickedqvist/wait-for-vercel-preview@v1.3.2
         with:
-          ref: ${{ github.event.deployment.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          max_timeout: 600
+          check_interval: 10
 
       - name: Install pnpm
         uses: pnpm/action-setup@v5
@@ -54,7 +60,7 @@ jobs:
 
       - name: Run boot smoke against preview
         env:
-          PREVIEW_URL: ${{ github.event.deployment_status.target_url }}
+          PREVIEW_URL: ${{ steps.wait-for-preview.outputs.url }}
         run: pnpm exec playwright test --config=playwright.smoke.config.ts
 
       - name: Upload Playwright artifacts on failure
