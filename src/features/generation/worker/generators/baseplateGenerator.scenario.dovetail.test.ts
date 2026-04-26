@@ -218,3 +218,82 @@ describe('baseplateGenerator — dovetail export (issue #1407)', () => {
     TEST_TIMEOUT_MS
   );
 });
+
+/**
+ * Watertight regression for the fractional + padded configurations from
+ * issue #1472. The actual root cause of #1472 (directed-edge winding
+ * collisions from a faulty STL writer heuristic) is covered by
+ * `baseplateGenerator.scenario.winding.test.ts`; this block only asserts
+ * the undirected/2-manifold property — boundary and non-manifold edge
+ * counts — for the half-cell + asymmetric-padding pieces from the user's
+ * 19.5×9.5 split-into-8 reproducer, which the existing #1407 dovetail
+ * tests didn't cover.
+ */
+describe('baseplateGenerator — fractional + dovetail export (issue #1472)', () => {
+  const TEST_TIMEOUT_MS = 60_000;
+
+  function expectWatertight(stats: StlStats, label: string): void {
+    expect(stats.nonManifoldEdges, `${label}: non-manifold edges`).toBe(0);
+    expect(stats.boundaryEdges, `${label}: boundary edges`).toBe(0);
+  }
+
+  it(
+    'fractional corner tile (4.5×4.5, padding, grooves only)',
+    async () => {
+      // corner-1 from the user's 19.5×9.5 split: front-left, half-cells
+      // on both axes, paddingLeft, only grooves (right + back are joins).
+      const params = defaults({
+        width: 4.5,
+        depth: 4.5,
+        paddingLeft: 7,
+        fractionalEdgeX: 'start',
+        fractionalEdgeY: 'start',
+        connectorNubs: true,
+        edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'join' },
+      });
+
+      const { data } = await exportBaseplate(params, 'stl');
+      expectWatertight(analyzeManifold(data), '4.5×4.5 corner-1');
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it(
+    'fractional edge tile (5×4.5, tongue + grooves)',
+    async () => {
+      // edge-y-1: front edge of split, fractional in Y, all three of
+      // left/right/back are joins → tongue on left, grooves on right + back.
+      const params = defaults({
+        width: 5,
+        depth: 4.5,
+        fractionalEdgeY: 'start',
+        connectorNubs: true,
+        edges: { left: 'join', right: 'join', front: 'exterior', back: 'join' },
+      });
+
+      const { data } = await exportBaseplate(params, 'stl');
+      expectWatertight(analyzeManifold(data), '5×4.5 edge-y-1');
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it(
+    'fractional corner tile (4.5×5, padding both axes)',
+    async () => {
+      // corner-3: back-left of split, fractional in X, padding on left + back.
+      const params = defaults({
+        width: 4.5,
+        depth: 5,
+        paddingLeft: 7,
+        paddingBack: 6,
+        fractionalEdgeX: 'start',
+        connectorNubs: true,
+        edges: { left: 'exterior', right: 'join', front: 'join', back: 'exterior' },
+      });
+
+      const { data } = await exportBaseplate(params, 'stl');
+      expectWatertight(analyzeManifold(data), '4.5×5 corner-3');
+    },
+    TEST_TIMEOUT_MS
+  );
+});

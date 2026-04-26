@@ -1280,9 +1280,11 @@ export async function exportBaseplate(
       return { data, fileName: `${name}.step` };
     }
 
-    // STL — mesh the BREP and build binary STL with winding correction.
+    // STL — mesh the BREP and pack the triangles into a binary STL.
     // OCCT's StlAPI.Write fails on baseplate geometries, so we tessellate
-    // manually and fix triangle winding to match the STL right-hand rule.
+    // via brepjs `mesh()` and emit the records ourselves; brepjs already
+    // produces face-consistent winding so no per-triangle correction is
+    // applied (see #1472).
     const tol = tolerance ?? 0.01;
     const angTol = angularTolerance ?? 5;
     const meshResult = mesh(baseplate, { tolerance: tol, angularTolerance: angTol });
@@ -1294,23 +1296,29 @@ export async function exportBaseplate(
 }
 
 /**
- * Build binary STL from brepjs mesh output, correcting triangle winding.
+ * Build binary STL from brepjs mesh output.
  *
- * brepjs mesh() produces vertex normals that point outward from the solid,
- * but the triangle winding may not match STL's right-hand rule convention.
- * For each triangle we compute the cross-product normal from the winding
- * and flip the vertex order if it disagrees with the BREP normal.
+ * brepjs's `mesh()` already tessellates each face with winding consistent
+ * with that face's BREP orientation, so we trust its triangle order verbatim.
+ * The face normal we emit in the STL record is the cross-product of the
+ * winding edges — the same convention slicers reconstruct anyway.
+ *
+ * An earlier version flipped winding whenever
+ *   (cross · sum-of-vertex-normals) < 0
+ * to "fix" supposedly-bad output. brepjs returns averaged vertex normals at
+ * shared/curved edges (cell-corner gussets, magnet-hole rims, dovetail
+ * groove walls), so along ~7% of triangles the heuristic fired and emitted
+ * the triangle reversed. Bambu Studio + Cura then flagged thousands of
+ * "non-manifold edges" and repaired the result as solid infill (#1472).
  */
 function buildBaseplateSTL(
   meshResult: {
     vertices: ArrayLike<number>;
-    normals: ArrayLike<number>;
     triangles: ArrayLike<number>;
   },
   name: string
 ): ArrayBuffer {
   const verts = meshResult.vertices;
-  const norms = meshResult.normals;
   const tris = meshResult.triangles;
   const triangleCount = tris.length / 3;
 
@@ -1320,7 +1328,6 @@ function buildBaseplateSTL(
   const buffer = new ArrayBuffer(HEADER_SIZE + COUNT_SIZE + triangleCount * TRIANGLE_SIZE);
   const view = new DataView(buffer);
 
-  // Header
   const header = `Exported by Gridfinity Layout Tool - ${name}`;
   const headerBytes = new TextEncoder().encode(header);
   for (let i = 0; i < 80; i++) {
@@ -1331,56 +1338,35 @@ function buildBaseplateSTL(
   let offset = HEADER_SIZE + COUNT_SIZE;
   for (let t = 0; t < triangleCount; t++) {
     const i0 = tris[t * 3];
-    let i1 = tris[t * 3 + 1];
-    let i2 = tris[t * 3 + 2];
+    const i1 = tris[t * 3 + 1];
+    const i2 = tris[t * 3 + 2];
 
-    // Vertex positions
-    const v0x = verts[i0 * 3],
-      v0y = verts[i0 * 3 + 1],
-      v0z = verts[i0 * 3 + 2];
-    const v1x = verts[i1 * 3],
-      v1y = verts[i1 * 3 + 1],
-      v1z = verts[i1 * 3 + 2];
-    const v2x = verts[i2 * 3],
-      v2y = verts[i2 * 3 + 1],
-      v2z = verts[i2 * 3 + 2];
+    const v0x = verts[i0 * 3];
+    const v0y = verts[i0 * 3 + 1];
+    const v0z = verts[i0 * 3 + 2];
+    const v1x = verts[i1 * 3];
+    const v1y = verts[i1 * 3 + 1];
+    const v1z = verts[i1 * 3 + 2];
+    const v2x = verts[i2 * 3];
+    const v2y = verts[i2 * 3 + 1];
+    const v2z = verts[i2 * 3 + 2];
 
-    // Cross-product normal from winding order
-    const ex = v1x - v0x,
-      ey = v1y - v0y,
-      ez = v1z - v0z;
-    const fx = v2x - v0x,
-      fy = v2y - v0y,
-      fz = v2z - v0z;
-    let cx = ey * fz - ez * fy;
-    let cy = ez * fx - ex * fz;
-    let cz = ex * fy - ey * fx;
+    const ex = v1x - v0x;
+    const ey = v1y - v0y;
+    const ez = v1z - v0z;
+    const fx = v2x - v0x;
+    const fy = v2y - v0y;
+    const fz = v2z - v0z;
+    const cx = ey * fz - ez * fy;
+    const cy = ez * fx - ex * fz;
+    const cz = ex * fy - ey * fx;
 
-    // BREP vertex normal (average of triangle's vertex normals for comparison)
-    const bnx = norms[i0 * 3] + norms[i1 * 3] + norms[i2 * 3];
-    const bny = norms[i0 * 3 + 1] + norms[i1 * 3 + 1] + norms[i2 * 3 + 1];
-    const bnz = norms[i0 * 3 + 2] + norms[i1 * 3 + 2] + norms[i2 * 3 + 2];
-
-    // If cross-product disagrees with BREP normal, flip winding
-    const dot = cx * bnx + cy * bny + cz * bnz;
-    if (dot < 0) {
-      // Swap i1 and i2 to reverse winding
-      const tmp = i1;
-      i1 = i2;
-      i2 = tmp;
-      cx = -cx;
-      cy = -cy;
-      cz = -cz;
-    }
-
-    // Normalize for STL face normal
     const len = Math.sqrt(cx * cx + cy * cy + cz * cz) || 1;
     view.setFloat32(offset, cx / len, true);
     view.setFloat32(offset + 4, cy / len, true);
     view.setFloat32(offset + 8, cz / len, true);
     offset += 12;
 
-    // Vertices (using possibly-swapped order)
     for (const vi of [i0, i1, i2]) {
       view.setFloat32(offset, verts[vi * 3], true);
       view.setFloat32(offset + 4, verts[vi * 3 + 1], true);
