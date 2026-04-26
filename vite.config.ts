@@ -5,6 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import wasm from 'vite-plugin-wasm';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath, URL } from 'node:url';
+import { versionPlugin } from './scripts/vite-plugin-version';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -40,6 +41,7 @@ export default defineConfig({
     wasm(),
     react(),
     tailwindcss(),
+    versionPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       // Note: Don't use includeAssets here - icons are precached via globPatterns,
@@ -85,6 +87,12 @@ export default defineConfig({
           // deployments: the new SW's manifest still references the old hash which
           // 404s, leaving the old SW in control and blocking the fix from reaching users.
           'assets/wwwMigration-*.js',
+          // smokeBoot is loaded only via `?smoke=1`. Real users never need it, and
+          // precaching it adds the same hash-mismatch risk that bit wwwMigration.
+          'assets/smokeBoot-*.js',
+          // version.json is fetched by the PWA smoke gate to verify a fresh deploy is
+          // reachable. Must always hit the network — precaching would mask stale CDN.
+          'version.json',
         ],
         // Prefix all cache names to prevent conflicts
         cacheId: 'gridfinity-v1',

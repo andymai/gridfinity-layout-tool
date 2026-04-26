@@ -14,6 +14,7 @@ import {
 import { binId, layerId, categoryId } from '@/core/types';
 import type { BinId } from '@/core/types';
 import { useTranslation } from '@/i18n';
+import { isSmokeMode } from '@/shared/utils/smokeMode';
 
 // Toast duration for update notification
 const UPDATE_TOAST_MS = 5000;
@@ -289,11 +290,18 @@ export function usePWAUpdate(): void {
     }
   }, []);
 
+  // Smoke mode runs inside a hidden iframe and must NOT register a service worker —
+  // doing so would re-trigger the update gate from inside the gate, and any SW the
+  // iframe registered would persist beyond the smoke run.
+  const skipRegistration = isSmokeMode();
+
   const {
     needRefresh: [needRefresh],
     updateServiceWorker,
   } = useRegisterSW({
+    immediate: !skipRegistration,
     onRegisteredSW(_swUrl, registration) {
+      if (skipRegistration) return;
       // Store reference for update checks
       registrationRef.current = registration;
 
@@ -313,6 +321,7 @@ export function usePWAUpdate(): void {
       }, UPDATE_CHECK_INTERVAL_MS);
     },
     onRegisterError(error) {
+      if (skipRegistration) return;
       console.error('SW registration failed:', error);
 
       // App still works without SW, but offline features won't be available
@@ -325,6 +334,8 @@ export function usePWAUpdate(): void {
 
   // Listen for online/offline transitions
   useEffect(() => {
+    if (skipRegistration) return;
+
     const handleOnline = () => {
       if (wasOfflineRef.current) {
         wasOfflineRef.current = false;
@@ -348,10 +359,12 @@ export function usePWAUpdate(): void {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [addToast, checkForUpdate, t]);
+  }, [addToast, checkForUpdate, t, skipRegistration]);
 
   // Set up visibility listener for update checks (not focus - fires too often)
   useEffect(() => {
+    if (skipRegistration) return;
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         void checkForUpdate();
@@ -366,7 +379,7 @@ export function usePWAUpdate(): void {
         clearInterval(intervalRef.current);
       }
     };
-  }, [checkForUpdate]);
+  }, [checkForUpdate, skipRegistration]);
 
   // Handle update notification and auto-reload when idle
   useEffect(() => {
@@ -441,6 +454,7 @@ export function usePWAUpdate(): void {
 
   // Restore ephemeral state on mount (after PWA update reload)
   useEffect(() => {
+    if (skipRegistration) return;
     // Small delay to ensure layout store is initialized
     const timeoutId = setTimeout(() => {
       const restored = restoreEphemeralState();
@@ -450,5 +464,5 @@ export function usePWAUpdate(): void {
     }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [addToast, t]);
+  }, [addToast, t, skipRegistration]);
 }

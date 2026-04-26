@@ -47,6 +47,32 @@ pnpm run test:coverage # Unit tests with coverage
 pnpm run test:e2e      # Playwright end-to-end tests
 ```
 
+### PWA Update Smoke Gate
+
+A two-tier smoke harness verifies that a deploy is healthy before users see it:
+
+1. **CI smoke** — `.github/workflows/smoke-preview.yml` runs Playwright against
+   the Vercel PR preview (required check for merge); `smoke-postpromote.yml`
+   runs against production and auto-rolls-back on failure.
+2. **Client smoke** (PR #2 — pending) — gates an existing user's reload into
+   the new bundle behind a hidden-iframe boot test.
+
+Both rely on `?smoke=1`, which boots a synthetic fixture while skipping
+layout/library hydration, www-migration recovery, PostHog, and ML telemetry.
+See `src/shell/smokeBoot.tsx` and `e2e/smoke/`.
+
+**One-time setup required for the smoke workflows:**
+
+- `VERCEL_AUTOMATION_BYPASS_SECRET` — required by **both** smoke workflows when
+  the Vercel project has Deployment Protection enabled (default on paid plans).
+  Generate via Vercel project Settings → Deployment Protection → Protection
+  Bypass for Automation, then add as a GitHub Actions secret.
+- `VERCEL_TOKEN` and `VERCEL_ORG_ID` — required by `smoke-postpromote.yml` so
+  `vercel rollback` can run on smoke failure (`vercel rollback` reads the
+  linked project from the deployment URL — no separate project ID needed).
+- Add `smoke-preview` to branch protection's required status checks (Settings
+  → Branches → main → Require status checks).
+
 ## Contributing
 
 This project is open source but not open contribution — see [CONTRIBUTING.md](./CONTRIBUTING.md) for details on bug reports, feature requests, and the pull request policy.

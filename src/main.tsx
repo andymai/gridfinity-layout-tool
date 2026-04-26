@@ -18,12 +18,15 @@ import { recoverFromBadWwwMigration } from '@/core/storage/wwwMigrationRecovery'
 import { connectEventStoreToBus, connectSelectionPruning, eventBus } from '@/core/cqrs';
 import { connectDesignLinking } from '@/features/design-linking/subscribers';
 import { InitErrorFallback } from '@/shell/InitErrorFallback';
+import { isSmokeMode } from '@/shared/utils/smokeMode';
 
-// Recovery for canonical users who went through a broken www→canonical migration
-// (before the fix that excluded migration-state flags from bridge LS copy).
-// Must run before React boots so corrected flags take effect during store hydration.
-// Returns true and triggers a page reload if stranded LS layouts are detected.
-if (recoverFromBadWwwMigration()) {
+// Smoke mode (?smoke=1) boots a synthetic fixture and reports back to a parent listener.
+// Must short-circuit ahead of www-migration paths, which would otherwise reload/redirect
+// during a smoke harness run. The boot module is dynamically imported so it doesn't
+// bloat the main bundle (smoke runs only in CI / iframe gate, never in user browsers).
+if (isSmokeMode()) {
+  void import('./shell/smokeBoot').then(({ runSmokeBoot }) => runSmokeBoot());
+} else if (recoverFromBadWwwMigration()) {
   // Reload triggered — stop all further initialization.
 } else if ((window as unknown as { __wwwMigrationPending?: boolean }).__wwwMigrationPending) {
   void import('./core/storage/wwwMigration')

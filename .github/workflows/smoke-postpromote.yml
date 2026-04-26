@@ -1,0 +1,122 @@
+name: Smoke (Post-Promote)
+
+# Runs the PWA smoke spec against production immediately after a successful
+# production deployment. On failure, rolls the production alias back to the
+# previous deployment and opens a GitHub issue with logs and version metadata.
+#
+# Requires VERCEL_TOKEN secret (and VERCEL_ORG_ID + VERCEL_PROJECT_ID for
+# `vercel rollback`). Add via the repo's Actions secrets.
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+  deployments: read
+  issues: write
+
+concurrency:
+  group: smoke-postpromote-${{ github.event.deployment.environment }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 24
+
+jobs:
+  smoke:
+    name: Production Smoke + Rollback
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    # Pin all event-derived inputs as env vars to dodge command-injection vectors
+    # if an attacker manages to influence the deployment payload.
+    env:
+      DEPLOY_URL: ${{ github.event.deployment_status.environment_url }}
+      DEPLOY_TARGET_URL: ${{ github.event.deployment_status.target_url }}
+      DEPLOY_SHA: ${{ github.event.deployment.sha }}
+      DEPLOY_ID: ${{ github.event.deployment.id }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Resolve smoke target URL
+        id: target
+        run: |
+          url="${DEPLOY_URL:-$DEPLOY_TARGET_URL}"
+          if [ -z "$url" ]; then
+            echo "::error::No deployment URL in payload"
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for CDN warm-up
+        # Vercel marks deploy success before the production alias is fully
+        # propagated through the CDN edge. 30s is empirically enough.
+        run: sleep 30
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run smoke spec against production
+        id: smoke
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: ${{ steps.target.outputs.url }}
+          # Production typically isn't protected, but pass the bypass header anyway
+          # in case the project is configured with "All Deployments" protection.
+          VERCEL_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          CI: '1'
+        run: pnpm exec playwright test --config=playwright.smoke.config.ts
+
+      - name: Roll back production
+        if: failure() && steps.smoke.outcome == 'failure'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        run: |
+          # Don't await rollback completion — the alert is the actionable signal.
+          npx --yes vercel@latest rollback \
+            --token "$VERCEL_TOKEN" \
+            --scope "$VERCEL_ORG_ID" \
+            --yes || echo "rollback exited non-zero (continuing — issue will still be filed)"
+
+      - name: Open incident issue
+        if: failure() && steps.smoke.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          short_sha="${DEPLOY_SHA:0:7}"
+          gh issue create \
+            --label incident \
+            --title "Production smoke failed: $short_sha" \
+            --body "$(cat <<EOF
+          Post-promote smoke test failed. Production alias has been rolled back to the previous deployment (verify in Vercel dashboard).
+
+          - Failed deployment URL: ${DEPLOY_URL:-$DEPLOY_TARGET_URL}
+          - Failed deployment SHA: $DEPLOY_SHA
+          - Failed deployment ID: $DEPLOY_ID
+          - CI run: $RUN_URL
+
+          Investigate the smoke trace artifact, fix forward, and re-deploy.
+          EOF
+          )"
+
+      - name: Upload trace on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-postpromote-trace
+          path: test-results/
+          retention-days: 30

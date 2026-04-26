@@ -28,3 +28,8 @@ declare module 'virtual:pwa-register/react' {
 interface Navigator {
   readonly globalPrivacyControl?: boolean;
 }
+
+// Build-time defines injected by scripts/vite-plugin-version.ts.
+declare const __APP_VERSION__: string;
+declare const __GIT_SHA__: string;
+declare const __BUILD_TIME__: string;
