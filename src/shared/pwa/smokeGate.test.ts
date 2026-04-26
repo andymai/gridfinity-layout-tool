@@ -50,21 +50,26 @@ const FRESH_VERSION = {
 
 function mockFetchVersion(payload: typeof FRESH_VERSION | { ok: false; status?: number }): void {
   // Build a minimal duck-typed Response to avoid the jsdom Response constructor's
-  // internal stream timers, which clash with vi.useFakeTimers().
-  global.fetch = vi.fn().mockImplementation(() => {
-    if ('ok' in payload && !payload.ok) {
+  // internal stream timers, which clash with vi.useFakeTimers(). vi.stubGlobal
+  // is restored automatically by vi.unstubAllGlobals() in afterEach so the
+  // fetch override doesn't leak into other test files.
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockImplementation(() => {
+      if ('ok' in payload && !payload.ok) {
+        return Promise.resolve({
+          ok: false,
+          status: payload.status ?? 500,
+          json: () => Promise.resolve({}),
+        });
+      }
       return Promise.resolve({
-        ok: false,
-        status: payload.status ?? 500,
-        json: () => Promise.resolve({}),
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(payload),
       });
-    }
-    return Promise.resolve({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(payload),
-    });
-  });
+    })
+  );
 }
 
 /**
@@ -100,6 +105,7 @@ describe('runUpdateSmokeTest', () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
     document.body.replaceChildren();
   });
 

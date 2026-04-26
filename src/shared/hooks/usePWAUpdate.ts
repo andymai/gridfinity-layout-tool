@@ -465,7 +465,11 @@ export function usePWAUpdate(): void {
             duration_ms: result.durationMs,
             retries: result.retries,
             ua: navigator.userAgent,
-            is_pwa_installed: window.matchMedia('(display-mode: standalone)').matches,
+            // matchMedia is virtually always available in real browsers, but
+            // guard so a missing implementation can't take out the cleanup.
+            is_pwa_installed:
+              typeof window.matchMedia === 'function' &&
+              window.matchMedia('(display-mode: standalone)').matches,
             is_offline: !navigator.onLine,
             has_active_interaction: useInteractionStore.getState().interaction !== null,
           });
@@ -493,6 +497,10 @@ export function usePWAUpdate(): void {
 
       // Common reload path — used by both the gated-success branch and the
       // flag-disabled / iOS-bypass / no-waiting-worker fall-through.
+      // Re-check abort: getSmokeGateFlag can take up to 2s, plenty of time
+      // for the component to unmount.
+      if (abortController.signal.aborted) return;
+
       try {
         sessionStorage.setItem(RELOAD_FLAG_KEY, Date.now().toString());
       } catch {
@@ -500,6 +508,7 @@ export function usePWAUpdate(): void {
       }
 
       const wasSafe = await waitForSafeReload(MAX_IDLE_WAIT_MS, abortController.signal);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- signal can flip between awaits
       if (abortController.signal.aborted) return;
       if (!wasSafe) {
         console.warn('Timed out waiting for idle, proceeding with update');

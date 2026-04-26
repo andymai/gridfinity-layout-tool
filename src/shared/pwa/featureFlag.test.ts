@@ -5,7 +5,7 @@ vi.mock('@/shared/analytics/posthog/init', () => ({
   getPosthogInstance: vi.fn(),
 }));
 
-import { getSmokeGateFlag } from './featureFlag';
+import { getSmokeGateFlag, _resetSmokeGateFlagCache } from './featureFlag';
 import { getPosthogInstance } from '@/shared/analytics/posthog/init';
 
 const FLAG_KEY = 'pwa-smoke-gate-enabled';
@@ -13,11 +13,13 @@ const FLAG_KEY = 'pwa-smoke-gate-enabled';
 describe('getSmokeGateFlag', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    _resetSmokeGateFlagCache();
   });
 
   afterEach(() => {
     vi.useRealTimers();
     vi.clearAllMocks();
+    _resetSmokeGateFlagCache();
   });
 
   it('returns false when PostHog is not initialized', async () => {

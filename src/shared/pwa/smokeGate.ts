@@ -1,16 +1,16 @@
 import { SMOKE_MESSAGE_TYPE, type SmokeResultMessage } from '@/shared/utils/smokeMode';
 
 /**
- * One smoke attempt has 10s to complete: SW activation + iframe boot + fixture
- * render + postMessage. Realistic in normal conditions; longer than that almost
- * always means a real problem.
+ * Per-attempt budget for the iframe phase only (load + fixture render +
+ * postMessage). Activation runs once before the retry loop with its own budget.
+ * Total worst-case wall time: ACTIVATE_TIMEOUT_MS + (1 + SMOKE_RETRIES) * SMOKE_ATTEMPT_TIMEOUT_MS.
  */
 const SMOKE_ATTEMPT_TIMEOUT_MS = 10_000;
 
 /** Activation alone (SKIP_WAITING → state=activated) shouldn't take more than this. */
 const ACTIVATE_TIMEOUT_MS = 5_000;
 
-/** Number of retries on iframe boot failure. Total budget = (1 + retries) * ATTEMPT_TIMEOUT. */
+/** Number of retries on transient iframe failures. Activation is not retried. */
 const SMOKE_RETRIES = 1;
 
 export interface SmokeGateResult {
@@ -180,7 +180,14 @@ function runIframeSmoke(): Promise<IframeSmokeOutcome> {
   return new Promise((resolve) => {
     const iframe = document.createElement('iframe');
     iframe.setAttribute('aria-hidden', 'true');
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+    // No sandbox attribute set on purpose. We considered
+    // `sandbox="allow-scripts allow-same-origin"`, but per the HTML spec that
+    // combination is equivalent to no sandbox at all (the same-origin script
+    // can call out to its parent and remove the sandbox via document mutation).
+    // The iframe loads our own bundle from our own origin under our own SW,
+    // so there's no security boundary a stricter sandbox could enforce. A
+    // sandbox that omitted `allow-same-origin` would also break the smoke
+    // boot, which uses localStorage for locale.
     iframe.style.position = 'absolute';
     iframe.style.width = '1280px';
     iframe.style.height = '720px';
