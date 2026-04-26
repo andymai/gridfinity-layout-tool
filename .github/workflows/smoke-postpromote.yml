@@ -42,13 +42,19 @@ jobs:
 
       - name: Resolve smoke target URL
         id: target
+        # We deliberately smoke the canonical production domain, not the
+        # deployment-specific URL from the payload. The deployment URL
+        # (gridfinity-layout-tool-<hash>-collective-context.vercel.app) is gated
+        # by Vercel deployment protection (returns 401 to unauthenticated
+        # automation), whereas the canonical alias is public and is what users
+        # actually visit. Smoking that gives us the most realistic post-promote
+        # signal.
+        env:
+          PRODUCTION_URL: 'https://gridfinitylayouttool.com'
         run: |
-          url="${DEPLOY_URL:-$DEPLOY_TARGET_URL}"
-          if [ -z "$url" ]; then
-            echo "::error::No deployment URL in payload"
-            exit 1
-          fi
-          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "url=$PRODUCTION_URL" >> "$GITHUB_OUTPUT"
+          echo "Smoke target: $PRODUCTION_URL"
+          echo "Deployment URL (informational): ${DEPLOY_URL:-$DEPLOY_TARGET_URL}"
 
       - name: Wait for CDN warm-up
         # Vercel marks deploy success before the production alias is fully
@@ -99,7 +105,8 @@ jobs:
         run: |
           short_sha="${DEPLOY_SHA:0:7}"
           gh issue create \
-            --label incident \
+            --label "bug" \
+            --label "priority: critical" \
             --title "Production smoke failed: $short_sha" \
             --body "$(cat <<EOF
           Post-promote smoke test failed. Production alias has been rolled back to the previous deployment (verify in Vercel dashboard).
