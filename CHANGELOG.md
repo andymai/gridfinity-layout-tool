@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.48.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.9...gridfinity-layout-tool-v4.48.0) (2026-04-26)
+
+
+### Features
+
+* **pwa:** add tier-1 update smoke gate (CI) ([#1475](https://github.com/andymai/gridfinity-layout-tool/issues/1475)) ([2ef144b](https://github.com/andymai/gridfinity-layout-tool/commit/2ef144baf69c1ca7c7b49f6f100f32405291ff27))
+
 ## [4.47.9](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.8...gridfinity-layout-tool-v4.47.9) (2026-04-26)
 
 
