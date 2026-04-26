@@ -37,8 +37,11 @@ export function BaseplateMesh({
   // While the direct-mesh preview is on screen, desaturate the user's filament
   // color and drop the emissive so the slab reads as "draft." When BREP swaps
   // in, the existing 300ms crossfade naturally transitions back to full color.
+  // Smooth normals + edge wireframes brought the preview close to BREP-quality
+  // visually, so we lean into a stronger 0.7 gray-blend (was 0.5) to keep the
+  // "this is provisional" cue legible.
   const displayColor = useMemo(
-    () => (isPreview ? desaturateColor(color, 0.5) : color),
+    () => (isPreview ? desaturateColor(color, 0.7) : color),
     [color, isPreview]
   );
   const emissiveIntensity = isPreview

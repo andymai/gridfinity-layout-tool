@@ -297,7 +297,11 @@ function roundedRectPointsSelective(
  * When floorDepth > 0 (magnets enabled), a solid floor is added at Z=floorDepth.
  * When floorDepth = 0 (no magnets), the pocket is through-cut (no floor).
  *
- * Walls face INWARD (normals point toward cell center = into the pocket).
+ * Walls face INWARD (normals point toward cell center = into the pocket). Adjacent
+ * quads along the rounded-corner arcs share their perimeter vertices so that
+ * `useMeshGeometry`'s `computeVertexNormals` + `toCreasedNormals(35°)` produces
+ * smooth shading across each quarter-arc while preserving crisp creases at the
+ * corner→edge transitions and at the pocket rim.
  */
 function addPocketWalls(
   mb: MeshBuilder,
@@ -323,26 +327,27 @@ function addPocketWalls(
 
   const n = topPts.length;
 
+  // Build top + bottom perimeter rings once and share vertex indices across
+  // the adjacent wall quads. Normals are intentionally zeroed; they'll be
+  // overwritten by `computeVertexNormals` downstream.
+  const topRing: number[] = new Array(n);
+  const botRing: number[] = new Array(n);
+  for (let i = 0; i < n; i++) {
+    topRing[i] = mb.pushVertex(topPts[i][0] + cx, topPts[i][1] + cy, zTop, 0, 0, 0);
+    botRing[i] = mb.pushVertex(botPts[i][0] + cx, botPts[i][1] + cy, zBot, 0, 0, 0);
+  }
+
   // Tapered wall quads from top to bottom of pocket.
-  // Normals point INWARD (toward pocket center).
+  // Inward-facing winding from inside the pocket: top_{i+1}, top_i, bot_i, bot_{i+1}.
   for (let i = 0; i < n; i++) {
     const j = (i + 1) % n;
-
-    const tx0 = topPts[i][0] + cx,
-      ty0 = topPts[i][1] + cy;
-    const tx1 = topPts[j][0] + cx,
-      ty1 = topPts[j][1] + cy;
-    const bx0 = botPts[i][0] + cx,
-      by0 = botPts[i][1] + cy;
-    const bx1 = botPts[j][0] + cx,
-      by1 = botPts[j][1] + cy;
-
-    // From outside the solid (= inside the pocket), CCW is: top1, top0, bot0, bot1
-    mb.pushFlatQuad(tx1, ty1, zTop, tx0, ty0, zTop, bx0, by0, zBot, bx1, by1, zBot);
+    mb.pushQuad(topRing[j], topRing[i], botRing[i], botRing[j]);
   }
 
   // Pocket floor: when floorDepth > 0 (magnets enabled), cap the pocket bottom
-  // with a solid face at Z=floorDepth facing UP into the pocket.
+  // with a solid face at Z=floorDepth facing UP into the pocket. Floor vertices
+  // are emitted separately from the wall ring so the 90° crease at the floor
+  // edge stays crisp (different normals: wall tilts inward+up, floor is flat +Z).
   if (floorDepth > 0) {
     const nx = 0,
       ny = 0,
@@ -381,16 +386,23 @@ function addOuterWalls(
   const zTop = totalHeight;
   const zBot = 0;
 
+  // Shared top + bottom rings — adjacent wall quads reuse the same vertex
+  // indices so `computeVertexNormals` averages face normals across the rounded
+  // slab corners (smooth shading) while the 35° crease threshold keeps the
+  // arc→flat-edge tangent points crisp where the dihedral exceeds threshold.
+  const topRing: number[] = new Array(n);
+  const botRing: number[] = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = outerPts[i][0] + offsetX;
+    const y = outerPts[i][1] + offsetY;
+    topRing[i] = mb.pushVertex(x, y, zTop, 0, 0, 0);
+    botRing[i] = mb.pushVertex(x, y, zBot, 0, 0, 0);
+  }
+
+  // CCW from outside: top_i, top_j, bot_j, bot_i.
   for (let i = 0; i < n; i++) {
     const j = (i + 1) % n;
-
-    const x0 = outerPts[i][0] + offsetX,
-      y0 = outerPts[i][1] + offsetY;
-    const x1 = outerPts[j][0] + offsetX,
-      y1 = outerPts[j][1] + offsetY;
-
-    // CCW from outside: top_i, top_j, bot_j, bot_i
-    mb.pushFlatQuad(x0, y0, zTop, x1, y1, zTop, x1, y1, zBot, x0, y0, zBot);
+    mb.pushQuad(topRing[i], topRing[j], botRing[j], botRing[i]);
   }
 }
 /**
@@ -714,16 +726,22 @@ function addMagnetHoles(
       }
     }
 
+    // Cylinder walls — share top/bottom ring vertices across adjacent quads so
+    // the magnet hole reads as a smooth cylinder (vs. the prior 16-segment
+    // facets the per-quad face normals produced).
+    const wallTop: number[] = new Array(CIRCLE_SEGMENTS);
+    const wallBot: number[] = new Array(CIRCLE_SEGMENTS);
+    for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
+      const px = circlePts[i][0] + mx;
+      const py = circlePts[i][1] + my;
+      wallTop[i] = mb.pushVertex(px, py, zTop, 0, 0, 0);
+      wallBot[i] = mb.pushVertex(px, py, zBot, 0, 0, 0);
+    }
     for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
       const j = (i + 1) % CIRCLE_SEGMENTS;
-      const px0 = circlePts[i][0] + mx,
-        py0 = circlePts[i][1] + my;
-      const px1 = circlePts[j][0] + mx,
-        py1 = circlePts[j][1] + my;
-
-      // Inward-facing: from inside the cylinder looking outward.
-      // Circle goes CCW from +Z, so inward quad: top_j, top_i, bot_i, bot_j
-      mb.pushFlatQuad(px1, py1, zTop, px0, py0, zTop, px0, py0, zBot, px1, py1, zBot);
+      // Inward-facing winding (from inside the cylinder looking outward):
+      // top_{j}, top_{i}, bot_{i}, bot_{j}.
+      mb.pushQuad(wallTop[j], wallTop[i], wallBot[i], wallBot[j]);
     }
 
     {
@@ -862,26 +880,21 @@ function addConnectorHole(
     }
   }
 
+  // Cylinder walls — share surface/floor ring vertices across adjacent quads
+  // so the connector hole appears as a smooth cylinder rather than a faceted
+  // prism.
+  const surfRing: number[] = new Array(NUB_CIRCLE_SEGMENTS);
+  const floorRing: number[] = new Array(NUB_CIRCLE_SEGMENTS);
+  for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
+    const [dx, dy, dz] = circlePts[i];
+    surfRing[i] = mb.pushVertex(cx + dx, cy + dy, cz + dz, 0, 0, 0);
+    floorRing[i] = mb.pushVertex(floorX + dx, floorY + dy, floorZ + dz, 0, 0, 0);
+  }
   for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
     const j = (i + 1) % NUB_CIRCLE_SEGMENTS;
-    const [dx0, dy0, dz0] = circlePts[i];
-    const [dx1, dy1, dz1] = circlePts[j];
-
-    const sx0 = cx + dx0,
-      sy0 = cy + dy0,
-      sz0 = cz + dz0;
-    const sx1 = cx + dx1,
-      sy1 = cy + dy1,
-      sz1 = cz + dz1;
-    const fx0 = floorX + dx0,
-      fy0 = floorY + dy0,
-      fz0 = floorZ + dz0;
-    const fx1 = floorX + dx1,
-      fy1 = floorY + dy1,
-      fz1 = floorZ + dz1;
-
-    // Inward-facing: from inside cylinder looking out, CW winding
-    mb.pushFlatQuad(sx1, sy1, sz1, sx0, sy0, sz0, fx0, fy0, fz0, fx1, fy1, fz1);
+    // Inward-facing winding from inside the cylinder looking outward:
+    // surf_{j}, surf_{i}, floor_{i}, floor_{j}.
+    mb.pushQuad(surfRing[j], surfRing[i], floorRing[i], floorRing[j]);
   }
 
   {
