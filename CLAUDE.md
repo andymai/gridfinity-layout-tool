@@ -165,8 +165,6 @@ Reports land in `reports/mutation/mutation.html`. The incremental baseline (`inc
 
 **Surviving mutants** indicate tests whose assertions don't cover the mutated logic. Add assertions rather than deleting mutants. Use `// Stryker disable next-line <mutator>` only for genuinely equivalent mutants (e.g., unobservable optimizations).
 
-**Note:** The TypeScript checker is disabled due to a pre-existing `TS2883` portability warning in `src/liveblocks.config.ts` that only surfaces under composite declaration emit. Re-enable by adding `"@stryker-mutator/typescript-checker"` to `plugins` and `"typescript"` to `checkers` in `stryker.config.json` after annotating the `useEventListener` export type.
-
 Threshold is currently **advisory** — PRs are not blocked by mutation score. Will tighten after baseline stabilizes.
 
 ## Debugging & Bug Fixing

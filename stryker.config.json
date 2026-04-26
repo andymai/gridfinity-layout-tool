@@ -19,11 +19,11 @@
     "!**/*.test.tsx",
     "!**/*.bench.ts",
     "!**/*.d.ts",
-    "!**/__mocks__/**",
     "!**/types.ts"
   ],
   "timeoutMS": 120000,
-  "concurrency": 2,
+  "dryRunTimeoutMinutes": 15,
+  "concurrency": 4,
   "incremental": true,
   "incrementalFile": "reports/mutation/incremental.json",
   "reporters": ["html", "json", "progress", "clear-text"],
