@@ -23,13 +23,12 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     actionTimeout: 10_000,
     navigationTimeout: 10_000,
-    // Vercel preview deployments are gated behind deployment protection by default.
-    // Pass the bypass secret on every request (page navigation + APIRequestContext)
-    // when running against a protected preview. See:
-    // https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/protection-bypass-automation
-    extraHTTPHeaders: process.env.VERCEL_BYPASS_SECRET
-      ? { 'x-vercel-protection-bypass': process.env.VERCEL_BYPASS_SECRET }
-      : undefined,
+    // NOTE: don't set extraHTTPHeaders for the Vercel bypass token here.
+    // Playwright sends `extraHTTPHeaders` on EVERY outgoing request including
+    // third-party (fonts.gstatic.com etc.), and those origins reject unknown
+    // headers via CORS preflight, breaking asset loading. The smoke spec sets
+    // a same-origin bypass cookie via the navigation query string instead, and
+    // includes the header explicitly only on direct same-origin API calls.
   },
   projects: [
     {
