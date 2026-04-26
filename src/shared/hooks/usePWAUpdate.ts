@@ -15,6 +15,38 @@ import { binId, layerId, categoryId } from '@/core/types';
 import type { BinId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { isSmokeMode } from '@/shared/utils/smokeMode';
+import { runUpdateSmokeTest, type SmokeGateResult } from '@/shared/pwa/smokeGate';
+import { getSmokeGateFlag } from '@/shared/pwa/featureFlag';
+import { isIosStandalonePwa } from '@/shared/pwa/iosBypass';
+import { getPosthogInstance } from '@/shared/analytics/posthog/init';
+
+/**
+ * Module-level flag so the periodic checkForUpdate() doesn't fire a second
+ * smoke run while one is already in flight. Reset by `gatedUpdate()` on exit.
+ */
+let smokeInProgress = false;
+
+/** Cache name prefix used by Workbox precache (matches `cacheId: 'gridfinity-v1'`). */
+const PRECACHE_PREFIX = 'gridfinity-v1-precache-';
+
+async function clearPrecaches(): Promise<void> {
+  try {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys.filter((k) => k.startsWith(PRECACHE_PREFIX)).map((k) => caches.delete(k))
+    );
+  } catch {
+    // best-effort
+  }
+}
+
+function captureSmokeEvent(name: string, props: Record<string, unknown>): void {
+  try {
+    getPosthogInstance()?.capture(name, props);
+  } catch {
+    // never let telemetry crash the gate
+  }
+}
 
 // Toast duration for update notification
 const UPDATE_TOAST_MS = 5000;
@@ -274,6 +306,10 @@ export function usePWAUpdate(): void {
     // Skip if SW is currently installing
     if (registration.installing) return;
 
+    // Skip if a smoke gate run is in flight — racing a second update detection
+    // could SKIP_WAITING a different worker mid-iframe and corrupt the gate.
+    if (smokeInProgress) return;
+
     // Skip if offline
     if (!navigator.onLine) return;
 
@@ -381,7 +417,10 @@ export function usePWAUpdate(): void {
     };
   }, [checkForUpdate, skipRegistration]);
 
-  // Handle update notification and auto-reload when idle
+  // Handle update notification and auto-reload when idle.
+  // The smoke gate (when enabled via PostHog flag) runs first: it activates the
+  // new SW manually, spawns a hidden iframe to verify the new bundle boots,
+  // and either green-lights the reload or rolls back the precache.
   useEffect(() => {
     if (!needRefresh || hasTriggeredReload.current) return;
 
@@ -397,32 +436,87 @@ export function usePWAUpdate(): void {
 
     hasTriggeredReload.current = true;
 
-    // Set flag before attempting reload
-    try {
-      sessionStorage.setItem(RELOAD_FLAG_KEY, Date.now().toString());
-    } catch {
-      // best-effort
-    }
-
     // Use AbortController for cleanup on unmount
     const abortController = new AbortController();
     let toastTimeoutId: number | undefined;
 
-    // Wait for safe state before reloading
-    const performUpdate = async () => {
-      const wasSafe = await waitForSafeReload(MAX_IDLE_WAIT_MS, abortController.signal);
+    const gatedUpdate = async (): Promise<void> => {
+      const registration = registrationRef.current;
+      const flagEnabled = await getSmokeGateFlag();
+      const useGate = flagEnabled && !isIosStandalonePwa() && Boolean(registration?.waiting);
 
-      // Don't proceed if aborted during wait
+      if (useGate && registration) {
+        smokeInProgress = true;
+        let result: SmokeGateResult;
+        try {
+          result = await runUpdateSmokeTest(registration);
+        } finally {
+          smokeInProgress = false;
+        }
+
+        if (abortController.signal.aborted) return;
+
+        if (!result.ok) {
+          captureSmokeEvent('pwa_smoke_failed', {
+            reason: result.reason,
+            from_version: __APP_VERSION__,
+            to_version: result.version,
+            expected_version: result.expectedVersion,
+            duration_ms: result.durationMs,
+            retries: result.retries,
+            ua: navigator.userAgent,
+            // matchMedia is virtually always available in real browsers, but
+            // guard so a missing implementation can't take out the cleanup.
+            is_pwa_installed:
+              typeof window.matchMedia === 'function' &&
+              window.matchMedia('(display-mode: standalone)').matches,
+            is_offline: !navigator.onLine,
+            has_active_interaction: useInteractionStore.getState().interaction !== null,
+          });
+          // Drop the new SW + its precache. Existing tab keeps its in-memory bundle;
+          // next reload will fetch from network without a SW until a fix re-deploys.
+          await clearPrecaches();
+          try {
+            await registration.unregister();
+          } catch {
+            // best-effort
+          }
+          // Allow a future update attempt (don't leave RELOAD_FLAG_KEY set since
+          // we never actually reloaded).
+          hasTriggeredReload.current = false;
+          return;
+        }
+
+        captureSmokeEvent('pwa_smoke_passed', {
+          from_version: __APP_VERSION__,
+          to_version: result.version,
+          duration_ms: result.durationMs,
+          retries: result.retries,
+        });
+      }
+
+      // Common reload path — used by both the gated-success branch and the
+      // flag-disabled / iOS-bypass / no-waiting-worker fall-through.
+      // Re-check abort: getSmokeGateFlag can take up to 2s, plenty of time
+      // for the component to unmount.
       if (abortController.signal.aborted) return;
 
+      try {
+        sessionStorage.setItem(RELOAD_FLAG_KEY, Date.now().toString());
+      } catch {
+        // best-effort
+      }
+
+      const wasSafe = await waitForSafeReload(MAX_IDLE_WAIT_MS, abortController.signal);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- signal can flip between awaits
+      if (abortController.signal.aborted) return;
       if (!wasSafe) {
         console.warn('Timed out waiting for idle, proceeding with update');
       }
 
-      // Show toast notification
       addToast(t('toast.updating'), 'info', UPDATE_TOAST_MS);
 
-      // Brief delay to let user see the toast (cancellable)
+      // Brief delay so the user actually sees the toast (cancellable).
       await new Promise<void>((resolve) => {
         if (abortController.signal.aborted) {
           resolve();
@@ -435,14 +529,17 @@ export function usePWAUpdate(): void {
         });
       });
 
-      // Save current UI state before reload so we can restore it
+      // Save UI state right before reload (after smoke success in the gated path,
+      // so we never leave stale ephemeral state behind a failed gate run).
       saveEphemeralState(gatherEphemeralState());
 
-      // Trigger the update (reloads the page)
+      // updateServiceWorker(true) sends SKIP_WAITING + reloads. In the gated
+      // path the new SW is already 'activated', so SKIP_WAITING is a no-op
+      // and only the reload runs.
       void updateServiceWorker(true);
     };
 
-    void performUpdate();
+    void gatedUpdate();
 
     return () => {
       abortController.abort();

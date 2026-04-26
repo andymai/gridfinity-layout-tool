@@ -23,6 +23,19 @@ let mockOnRegisteredSW:
   | undefined;
 let mockOnRegisterError: ((error: Error) => void) | undefined;
 
+// Mock the new PWA-gate modules so existing tests exercise the original
+// flag-disabled flow with the same timing they were written for. The gate
+// itself is covered by src/shared/pwa/smokeGate.test.ts.
+vi.mock('@/shared/pwa/featureFlag', () => ({
+  getSmokeGateFlag: vi.fn().mockResolvedValue(false),
+}));
+vi.mock('@/shared/pwa/iosBypass', () => ({
+  isIosStandalonePwa: vi.fn().mockReturnValue(false),
+}));
+vi.mock('@/shared/pwa/smokeGate', () => ({
+  runUpdateSmokeTest: vi.fn(),
+}));
+
 // Mock the virtual:pwa-register/react module
 vi.mock('virtual:pwa-register/react', () => ({
   useRegisterSW: (options?: {
@@ -254,15 +267,18 @@ describe('usePWAUpdate', () => {
         mockOnRegisteredSW?.('/sw.js', mockRegistration);
       });
 
-      // Flush pending promises and advance through idle check + toast duration
+      // Flush pending promises and advance through idle check + toast duration.
+      // The first microtask flush resolves the awaited getSmokeGateFlag() promise
+      // (mocked to resolve `false`); subsequent flushes drive the rest of the chain.
       await act(async () => {
-        // Advance time for idle check
-        timerUtils.advanceTime(IDLE_CHECK_INTERVAL_MS);
-        await Promise.resolve(); // Flush microtasks
+        await Promise.resolve(); // Flush getSmokeGateFlag()
+        await Promise.resolve(); // Flush waitForSafeReload's initial resolve
 
-        // Advance time for toast duration
+        timerUtils.advanceTime(IDLE_CHECK_INTERVAL_MS);
+        await Promise.resolve();
+
         timerUtils.advanceTime(UPDATE_TOAST_MS);
-        await Promise.resolve(); // Flush microtasks
+        await Promise.resolve();
       });
 
       expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true);
@@ -595,6 +611,9 @@ describe('usePWAUpdate', () => {
       // Advance through all the idle checks until timeout
       // The check runs every 1 second, so we need to advance in steps
       await act(async () => {
+        // Flush gate-flag + initial isSafeToReload check before driving the loop.
+        await Promise.resolve();
+        await Promise.resolve();
         for (let elapsed = 0; elapsed <= MAX_IDLE_WAIT_MS; elapsed += IDLE_CHECK_INTERVAL_MS) {
           timerUtils.advanceTime(IDLE_CHECK_INTERVAL_MS);
           await Promise.resolve();
@@ -629,8 +648,12 @@ describe('usePWAUpdate', () => {
         mockOnRegisteredSW?.('/sw.js', mockRegistration);
       });
 
-      // Complete the update flow
+      // Complete the update flow. Extra flushes account for the awaited
+      // getSmokeGateFlag() and waitForSafeReload() promises in the gatedUpdate
+      // chain (gate is mocked to disabled, so it falls straight through).
       await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
         timerUtils.advanceTime(IDLE_CHECK_INTERVAL_MS);
         await Promise.resolve();
         timerUtils.advanceTime(UPDATE_TOAST_MS);

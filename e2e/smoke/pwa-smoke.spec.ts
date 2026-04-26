@@ -37,10 +37,18 @@ test('boots ?smoke=1 fixture and exposes a fresh /version.json', async ({ page, 
   });
   page.on('pageerror', (err) => errors.push(`pageerror: ${err.message}`));
 
+  // Build the per-request bypass header for direct API calls — same-origin only.
+  // We avoid Playwright's `extraHTTPHeaders` because that would pollute every
+  // outgoing request, including third-party (fonts.gstatic.com), where CORS
+  // preflight rejects unknown headers and breaks asset loading.
+  const bypass = process.env.VERCEL_BYPASS_SECRET ?? '';
+  const apiHeaders: Record<string, string> = { 'Cache-Control': 'no-store' };
+  if (bypass) apiHeaders['x-vercel-protection-bypass'] = bypass;
+
   // /version.json must be reachable and parseable. Bypass any service worker by
   // requesting from the API context.
   const versionRes = await page.request.get(`${baseURL ?? ''}/version.json`, {
-    headers: { 'Cache-Control': 'no-store' },
+    headers: apiHeaders,
   });
   expect(versionRes.status()).toBe(200);
   const versionJson = (await versionRes.json()) as VersionJson;
@@ -48,8 +56,17 @@ test('boots ?smoke=1 fixture and exposes a fresh /version.json', async ({ page, 
   expect(versionJson.gitSha).toBeTruthy();
   expect(versionJson.buildTime).toBeTruthy();
 
-  // Boot the smoke fixture.
-  await page.goto('/?smoke=1', { waitUntil: 'domcontentloaded' });
+  // Boot the smoke fixture. When the preview is gated by Vercel deployment
+  // protection, attach the bypass secret as a query string with
+  // `x-vercel-set-bypass-cookie=true` — Vercel responds with a same-origin
+  // cookie that grants access for the rest of the session WITHOUT polluting
+  // third-party requests with a bypass header.
+  // https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/protection-bypass-automation
+  const sep = '?smoke=1';
+  const bootUrl = bypass
+    ? `${sep}&x-vercel-protection-bypass=${encodeURIComponent(bypass)}&x-vercel-set-bypass-cookie=true`
+    : sep;
+  await page.goto(bootUrl, { waitUntil: 'domcontentloaded' });
 
   // Mirror waitForAppReady from e2e/fixtures.ts but tighter — the smoke harness
   // mounts the same App tree, so the same selectors apply.

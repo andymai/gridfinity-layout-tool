@@ -43,7 +43,9 @@ export default defineConfig({
     tailwindcss(),
     versionPlugin(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt' so the smoke gate (src/shared/pwa/smokeGate.ts) controls activation.
+      // With 'autoUpdate' the new SW would auto-skip-waiting on install, defeating the gate.
+      registerType: 'prompt',
       // Note: Don't use includeAssets here - icons are precached via globPatterns,
       // except manifest icons (icon-192, icon-512) which are excluded via globIgnores
       // since they're auto-added by vite-plugin-pwa from manifest.icons below.
@@ -98,10 +100,13 @@ export default defineConfig({
         cacheId: 'gridfinity-v1',
         // Prevent accidentally precaching huge assets
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB per file
-        // Force the new service worker to activate immediately
-        skipWaiting: true,
-        // Take control of pages that were controlled by an old SW
-        clientsClaim: true,
+        // Don't auto-skip-waiting — the smoke gate sends SKIP_WAITING manually
+        // after a hidden-iframe smoke against the new bundle passes.
+        skipWaiting: false,
+        // Don't claim existing tabs on activation — keep them on the old SW until they
+        // reload, so an in-flight session is unaffected by a brand-new (potentially
+        // broken) bundle's runtime caching strategy.
+        clientsClaim: false,
         // Clean up old caches from previous versions
         cleanupOutdatedCaches: true,
         // SPA navigation fallback - serve index.html for all navigation requests
