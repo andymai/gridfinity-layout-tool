@@ -110,6 +110,19 @@ export function BaseplateMesh({
     }
   });
 
+  // useFrame stops running on unmount, so a fade in progress would leak its
+  // cloned BufferGeometry buffers (GPU + CPU). Dispose any in-flight snapshot
+  // when the component unmounts.
+  useEffect(() => {
+    return () => {
+      setFadeSnapshot((prev) => {
+        prev?.oldGeo.dispose();
+        prev?.oldEdges?.dispose();
+        return null;
+      });
+    };
+  }, []);
+
   if (!geometry) return null;
 
   const isFading = fadeSnapshot !== null;

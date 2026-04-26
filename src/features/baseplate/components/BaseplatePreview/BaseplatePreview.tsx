@@ -313,13 +313,13 @@ export function BaseplatePreview({
         </div>
       )}
 
-      {/* Top-center status chip. Pairs with the desaturated mesh tint so the
+      {/* Bottom-center status chip. Pairs with the desaturated mesh tint so the
           two preview signals reinforce each other (geometry says "draft," chip
           spells out why). Suppressed when the canvas is blank — the initial
           skeleton already conveys "loading." */}
       {isGenerating && !showInitSkeleton && (
         <div
-          className="pointer-events-none absolute inset-x-0 top-4 flex justify-center"
+          className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center"
           role="status"
           aria-live="polite"
         >
