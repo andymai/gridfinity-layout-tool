@@ -61,11 +61,15 @@ Both rely on `?smoke=1`, which boots a synthetic fixture while skipping
 layout/library hydration, www-migration recovery, PostHog, and ML telemetry.
 See `src/shell/smokeBoot.tsx` and `e2e/smoke/`.
 
-**One-time setup required for `smoke-postpromote.yml`:**
+**One-time setup required for the smoke workflows:**
 
-- Add `VERCEL_TOKEN` and `VERCEL_ORG_ID` secrets so `vercel rollback` can run
-  on smoke failure (`vercel rollback` reads the linked project from the
-  deployment URL — no separate project ID needed).
+- `VERCEL_AUTOMATION_BYPASS_SECRET` — required by **both** smoke workflows when
+  the Vercel project has Deployment Protection enabled (default on paid plans).
+  Generate via Vercel project Settings → Deployment Protection → Protection
+  Bypass for Automation, then add as a GitHub Actions secret.
+- `VERCEL_TOKEN` and `VERCEL_ORG_ID` — required by `smoke-postpromote.yml` so
+  `vercel rollback` can run on smoke failure (`vercel rollback` reads the
+  linked project from the deployment URL — no separate project ID needed).
 - Add `smoke-preview` to branch protection's required status checks (Settings
   → Branches → main → Require status checks).
 

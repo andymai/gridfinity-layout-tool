@@ -74,6 +74,9 @@ jobs:
         id: smoke
         env:
           PLAYWRIGHT_TEST_BASE_URL: ${{ steps.target.outputs.url }}
+          # Production typically isn't protected, but pass the bypass header anyway
+          # in case the project is configured with "All Deployments" protection.
+          VERCEL_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
           CI: '1'
         run: pnpm exec playwright test --config=playwright.smoke.config.ts
 

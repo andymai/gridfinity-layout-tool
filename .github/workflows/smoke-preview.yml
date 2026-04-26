@@ -121,6 +121,10 @@ jobs:
         if: steps.preview.outputs.status == 'ready'
         env:
           PLAYWRIGHT_TEST_BASE_URL: ${{ steps.preview.outputs.url }}
+          # Required when Vercel deployment protection is enabled (it is by default
+          # for paid plans). Generate via Vercel project Settings → Deployment
+          # Protection → Protection Bypass for Automation.
+          VERCEL_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
           CI: '1'
         run: pnpm exec playwright test --config=playwright.smoke.config.ts
 

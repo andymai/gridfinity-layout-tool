@@ -23,6 +23,13 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     actionTimeout: 10_000,
     navigationTimeout: 10_000,
+    // Vercel preview deployments are gated behind deployment protection by default.
+    // Pass the bypass secret on every request (page navigation + APIRequestContext)
+    // when running against a protected preview. See:
+    // https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/protection-bypass-automation
+    extraHTTPHeaders: process.env.VERCEL_BYPASS_SECRET
+      ? { 'x-vercel-protection-bypass': process.env.VERCEL_BYPASS_SECRET }
+      : undefined,
   },
   projects: [
     {
