@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.47.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.7...gridfinity-layout-tool-v4.47.8) (2026-04-26)
+
+
+### Bug Fixes
+
+* **analytics:** defer DEFAULT_CATEGORIES read to avoid blank-page on boot ([#1467](https://github.com/andymai/gridfinity-layout-tool/issues/1467)) ([600573a](https://github.com/andymai/gridfinity-layout-tool/commit/600573a2024f60388e1eae86d099288e9a57d119))
+
 ## [4.47.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.47.6...gridfinity-layout-tool-v4.47.7) (2026-04-25)
 
 
