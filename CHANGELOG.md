@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.49.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.49.0...gridfinity-layout-tool-v4.49.1) (2026-04-26)
+
+
+### Performance
+
+* **baseplate:** instant direct-mesh preview while BREP runs ([#1450](https://github.com/andymai/gridfinity-layout-tool/issues/1450)) ([2a8cb8a](https://github.com/andymai/gridfinity-layout-tool/commit/2a8cb8a40ec58cebaa6fbaff59f2fb511e09bf8f))
+
 ## [4.49.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.48.1...gridfinity-layout-tool-v4.49.0) (2026-04-26)
 
 
