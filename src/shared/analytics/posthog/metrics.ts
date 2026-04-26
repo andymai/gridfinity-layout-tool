@@ -96,7 +96,19 @@ export interface LayoutMetrics {
 
 export const DEFAULT_DRAWER = { width: 10, depth: 8, height: 12 };
 export const DEFAULT_PRINT_BED = 256;
-export const DEFAULT_CATEGORY_NAMES = new Set(DEFAULT_CATEGORIES.map((c) => c.name.toLowerCase()));
+
+// Lazily computed to avoid a top-level read of the imported DEFAULT_CATEGORIES
+// binding. In production, this module and src/core/constants land in chunks
+// that participate in a static-import cycle; reading the binding at module-init
+// time can resolve to undefined and crash app boot with a TypeError on .map.
+// See issue #1466.
+let defaultCategoryNamesCache: ReadonlySet<string> | null = null;
+export function getDefaultCategoryNames(): ReadonlySet<string> {
+  if (defaultCategoryNamesCache === null) {
+    defaultCategoryNamesCache = new Set(DEFAULT_CATEGORIES.map((c) => c.name.toLowerCase()));
+  }
+  return defaultCategoryNamesCache;
+}
 
 export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
   const { gridBins, stagingBins } = splitBinsByLocation(layout.bins);
@@ -159,8 +171,9 @@ export function computeLayoutMetrics(layout: Layout): LayoutMetrics {
     .map(([id, count]) => ({ name: categoryIdToName.get(id as CategoryId) || 'Unknown', count }));
 
   // Custom categories (not matching default names)
+  const defaultCategoryNames = getDefaultCategoryNames();
   const customCategoryCount = layout.categories.filter(
-    (c) => !DEFAULT_CATEGORY_NAMES.has(c.name.toLowerCase())
+    (c) => !defaultCategoryNames.has(c.name.toLowerCase())
   ).length;
 
   // Print bed check
