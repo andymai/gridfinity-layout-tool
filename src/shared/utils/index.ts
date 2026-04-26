@@ -20,7 +20,6 @@ export {
   generateLayoutId,
   isValidLayoutId,
   isLegacyUUID,
-  LAYOUT_ID_LENGTH,
 } from './uuid';
 
 export { throttleRAF, cancelThrottledRAF, throttle } from './throttle';
