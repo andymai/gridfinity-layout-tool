@@ -1062,7 +1062,7 @@ const en: Record<string, string> = {
   'baseplate.export.threeDModelDescription': 'Export a printable baseplate model',
   'baseplate.export.dedupSuccess': 'Baseplate exported ({unique} unique pieces, {total} total)',
   'baseplate.generation.dedupProgress':
-    'Generating {unique} unique pieces ({skipped} duplicates skipped)',
+    'Refining {unique} unique pieces ({skipped} duplicates skipped)',
 
   // Drawer Settings
 
@@ -1478,7 +1478,7 @@ const en: Record<string, string> = {
   'baseplate.editDimensionsWidth': 'Baseplate width in mm',
   'baseplate.editDimensionsDepth': 'Baseplate depth in mm',
   'baseplate.generating': 'Generating...',
-  'baseplate.generatingSplit': 'Generating {current}/{total}...',
+  'baseplate.generatingSplit': 'Refining piece {current} of {total}...',
   'baseplate.printBedSize': 'Print bed size',
   'baseplate.sectionDimensions': 'Dimensions',
   'baseplate.syncWithLayout': 'Sync with layout',
@@ -1521,7 +1521,10 @@ const en: Record<string, string> = {
   'baseplate.gridWidth': 'Width',
   'baseplate.gridDepth': 'Depth',
   'baseplate.filamentColor': 'Filament color',
-  'baseplate.initializingEngine': 'Initializing 3D engine...',
+  'baseplate.loadingEngine': 'Loading engine...',
+  'baseplate.computingGeometry': 'Refining...',
+  'baseplate.brepFinalizeFailed':
+    "Couldn't finalize high-fidelity preview — exported file may differ slightly.",
   'baseplate.elapsed': '{seconds}s',
 
   // Collaboration

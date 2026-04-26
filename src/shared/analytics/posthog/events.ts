@@ -557,6 +557,37 @@ export function trackKernelPerformance(payload: {
   }
 }
 
+// BASEPLATE PREVIEW TIMING
+
+/**
+ * Track time-to-first-mesh (direct-mesh placeholder) and time-to-final-mesh
+ * (BREP) for the baseplate page. Lets us validate the perceived-perf win
+ * post-launch and catch regressions if the direct-mesh path stalls.
+ *
+ * `directMeshMs` is the synchronous procedural path (~50-200 ms typical).
+ * `brepMs` is the WASM BREP path (~1-3 s warm, +2-4 s cold for WASM init).
+ * `pieceCount` is 1 for unsplit baseplates; >1 for split tilings.
+ * `success` distinguishes completed BREP from errored/timed-out runs so
+ * failures are visible in PostHog dashboards.
+ */
+export function trackBaseplatePreviewTiming(payload: {
+  directMeshMs: number;
+  brepMs: number;
+  pieceCount: number;
+  isSplit: boolean;
+  wasmCold: boolean;
+  success: boolean;
+}): void {
+  trackEvent('baseplate_preview_timing', {
+    direct_mesh_ms: Math.round(payload.directMeshMs * 10) / 10,
+    brep_ms: Math.round(payload.brepMs * 10) / 10,
+    piece_count: payload.pieceCount,
+    is_split: payload.isSplit,
+    wasm_cold: payload.wasmCold,
+    success: payload.success,
+  });
+}
+
 // PWA INSTALL TRACKING
 
 /**

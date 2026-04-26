@@ -10,10 +10,12 @@ graph TB
     end
     Input --> Params[BaseplateParams]
     Params --> Tiling[splitPlanner]
+    Tiling --> Direct[Direct mesh ~50ms]
+    Direct --> Preview[3D Preview]
     Tiling -->|single| Gen[WASM BREP generation]
     Tiling -->|multi-piece| Pool[Worker pool parallel gen]
-    Gen --> Preview[3D Preview]
-    Pool --> Preview
+    Gen -->|swap| Preview
+    Pool -->|swap per-piece| Preview
     Preview --> Export[STL / STEP / 3MF / ZIP]
 ```
 
@@ -22,7 +24,7 @@ graph TB
 - `components/BaseplatePage.tsx` — responsive layout shell (desktop side-by-side, mobile stacked)
 - `components/BaseplatePanel.tsx` — parameter controls: grid size, padding, magnets, split mini-map
 - `components/BaseplatePreview.tsx` — Three.js 3D preview with assembled/exploded split views
-- `hooks/useBaseplateGeneration.ts` — lifecycle: WASM bridge acquisition, auto-regeneration, epoch-based stale detection
+- `hooks/useBaseplateGeneration.ts` — two-phase lifecycle: synchronous direct-mesh preview (sub-100ms) + async BREP swap once WASM bridge ready, epoch-based stale detection
 - `hooks/useBaseplateExport.ts` — export pipeline: single-piece or parallel split with ZIP packaging
 - `store/baseplatePageStore.ts` — ephemeral UI state (generation status, tiling, piece selection)
 - `utils/splitPlanner.ts` — 2D optimal tiling: partitions grid into print-bed-sized pieces
@@ -34,7 +36,9 @@ graph TB
 
 - **Sync mode**: `syncWithLayout: true` reads drawer dims from layout store; `false` uses custom grid size
 - **Split tiling**: baseplates exceeding print bed are partitioned into labeled pieces (A1, B2, etc.)
-- **Epoch detection**: rapid param changes bump an epoch counter; stale in-flight results are discarded
+- **Two-phase preview**: direct-mesh (procedural, no WASM) renders immediately on every params change; BREP (high-fidelity) silently swaps in once ready. `MeshResult.source` records which path produced the visible mesh
+- **Graceful BREP failure**: if BREP errors after a direct-mesh preview is on screen, the preview stays visible and a non-blocking toast surfaces the failure — avoids the red error overlay swallowing a still-usable canvas
+- **Epoch detection**: rapid param changes bump an epoch counter; stale in-flight results (direct or BREP) are discarded
 - **Ephemeral store**: `baseplatePageStore` resets on unmount; persistent params live in layout store
 
 ## Gotchas

@@ -1,13 +1,25 @@
 /**
  * Hook that manages the GenerationBridge lifecycle for the standalone baseplate page.
  *
- * Lifecycle:
- * 1. Mount: Acquire bridge + worker pool via shared managers
- * 2. Params change: Compute tiling, regenerate BREP (single or multi-piece)
- * 3. Unmount: Release bridge + pool references
+ * Two-phase generation:
  *
- * When the baseplate exceeds print bed size, it's split into a tiling grid.
- * Pieces are generated in parallel across the shared worker pool.
+ *   1. Direct-mesh preview — synchronous procedural generation that runs on
+ *      every params change, before WASM is even loaded. Produces a visually
+ *      equivalent placeholder mesh in <100 ms (versus 2-8 s for BREP cold-start).
+ *      The user sees something orbitable immediately.
+ *
+ *   2. BREP generation — runs in the background once the WASM bridge is ready.
+ *      The high-fidelity result silently replaces the direct-mesh once it lands.
+ *      For split tilings, BREP pieces are generated in parallel via the worker
+ *      pool and replace direct-mesh tiles one-by-one as they complete.
+ *
+ * Lifecycle:
+ *   1. Mount: kick off direct-mesh immediately + acquire bridge in background
+ *   2. Params change: direct-mesh syncs immediately; BREP regen if bridge ready
+ *   3. Bridge becomes ready: BREP regen for current params
+ *   4. Unmount: release bridge + pool references
+ *
+ * Epoch counter discards stale results when params change mid-flight.
  */
 
 import { useEffect, useRef, useCallback } from 'react';
@@ -21,15 +33,19 @@ import {
   trackWasmThreadingStatus,
   trackCachePerformance,
   trackKernelPerformance,
+  trackBaseplatePreviewTiming,
 } from '@/shared/analytics/posthog';
 import { useToastStore } from '@/core/store/toast';
+import { getStaticTranslation } from '@/i18n';
+import { generateBaseplateDirect } from '@/shared/generation/directMesh';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { computeBaseplateTiling } from '../utils/splitPlanner';
 import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
 import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
 import type { PieceMeshEntry } from '../store/baseplatePageStore';
-import type { GenerationResult } from '@/shared/generation/bridge';
+import type { GenerationResult, MeshData } from '@/shared/generation/bridge';
+import type { BaseplateTiling } from '../types/tiling';
 
 /** Build a PieceMeshEntry from a generation result and tiling piece metadata */
 function buildPieceMeshEntry(
@@ -42,7 +58,8 @@ function buildPieceMeshEntry(
     gridOffsetY: number;
     widthUnits: number;
     depthUnits: number;
-  }
+  },
+  source: 'direct' | 'brep'
 ): PieceMeshEntry {
   return {
     label: piece.label,
@@ -55,6 +72,7 @@ function buildPieceMeshEntry(
       edgeVertices: result.mesh.edgeVertices,
       error: null,
       timingMs: result.timingMs,
+      source,
     },
     offsetX: piece.gridOffsetX,
     offsetY: piece.gridOffsetY,
@@ -86,6 +104,32 @@ function cloneGenerationResult(result: GenerationResult): GenerationResult {
   };
 }
 
+/** Wrap a MeshData in a GenerationResult shape so the same builders work for both paths. */
+function wrapMeshAsResult(mesh: MeshData, timingMs: number): GenerationResult {
+  return { mesh, timingMs };
+}
+
+/**
+ * True when there is a visible mesh on the canvas (single OR any split piece).
+ *
+ * Drives the "graceful BREP failure" branch: if a preview is on screen we keep
+ * it visible and surface the BREP error as a toast instead of replacing the
+ * canvas with a red error overlay.
+ *
+ * The null-check expansion is deliberate: an earlier version used
+ * `mesh?.vertices !== null`, which short-circuits to `undefined !== null` (i.e.
+ * `true`) when `mesh` itself is `null` — wrongly reporting a preview on a
+ * blank canvas. Exported for regression test.
+ */
+export function hasMeshOnScreen(state: {
+  pieceMeshes: { length: number };
+  generation: { mesh: { vertices: Float32Array | null } | null };
+}): boolean {
+  if (state.pieceMeshes.length > 0) return true;
+  const mesh = state.generation.mesh;
+  return mesh !== null && mesh.vertices !== null;
+}
+
 const NO_OP_PROGRESS = (_stage: string, _progress: number): void => {};
 
 /**
@@ -96,7 +140,17 @@ export function useBaseplateGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
   const poolRef = useRef<WorkerPool | null>(null);
   const initializedRef = useRef(false);
+  /**
+   * Flips to true after the first BREP run completes (success or failure).
+   * Used to label the very first BREP as a cold-WASM start in analytics —
+   * `initializedRef` would always be `true` here because the bridge sets
+   * it before kicking off that first BREP.
+   */
+  const firstBrepDoneRef = useRef(false);
   const generationEpochRef = useRef(0);
+  /** Time the most recent direct-mesh phase started — used to compute BREP elapsed for analytics. */
+  const directMeshStartRef = useRef<number>(0);
+  const directMeshDurationRef = useRef<number>(0);
 
   const {
     drawerWidth,
@@ -157,28 +211,114 @@ export function useBaseplateGeneration(): void {
   const setSplitProgress = useBaseplatePageStore((s) => s.setSplitProgress);
   const setDedupStats = useBaseplatePageStore((s) => s.setDedupStats);
 
-  const runGeneration = useCallback(
-    async (fullParams: FullBaseplateParams, bedWidthMm: number, bedDepthMm: number) => {
-      const bridge = bridgeRef.current;
-      if (!bridge || bridge.isDestroyed) return;
+  /**
+   * Phase 1: Synchronous direct-mesh preview.
+   *
+   * Runs on every params change before BREP. Pure procedural generation —
+   * no worker, no WASM, no awaits. Populates store immediately so the
+   * canvas renders something orbitable while BREP catches up.
+   *
+   * Returns the tiling so the caller (BREP phase) can reuse it.
+   */
+  const runDirectMeshPreview = useCallback(
+    (
+      fullParams: FullBaseplateParams,
+      bedWidthMm: number,
+      bedDepthMm: number,
+      epoch: number
+    ): BaseplateTiling => {
+      directMeshStartRef.current = performance.now();
 
-      // Increment epoch — any in-flight generation with a stale epoch
-      // will discard its results instead of overwriting the new generation.
-      const epoch = ++generationEpochRef.current;
-
-      // Compute tiling plan
       const tiling = computeBaseplateTiling(fullParams, bedWidthMm, bedDepthMm);
       setTiling(tiling);
-
-      setGenerationStatus('generating');
+      setSplitProgress(null);
       setDedupStats(null);
 
       try {
         if (!tiling.isSplit) {
-          // Single piece — use the primary bridge
-          const result = await bridge.generateBaseplate(fullParams, NO_OP_PROGRESS);
+          const mesh = generateBaseplateDirect(fullParams, NO_OP_PROGRESS);
+          if (generationEpochRef.current !== epoch) return tiling;
 
-          // Discard if superseded
+          setGenerationResult({
+            vertices: mesh.vertices,
+            normals: mesh.normals,
+            indices: mesh.indices,
+            edgeVertices: mesh.edgeVertices,
+            error: null,
+            timingMs: performance.now() - directMeshStartRef.current,
+            source: 'direct',
+          });
+          setPieceMeshes([]);
+        } else {
+          // Split: generate one direct-mesh per unique piece group, clone for duplicates.
+          const groups = groupPiecesByFingerprint(tiling.pieces, fullParams);
+          // `new Array(n)` returns `any[]`; we pre-size the typed slot.
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          const meshEntries: PieceMeshEntry[] = new Array(tiling.pieces.length);
+
+          for (const group of groups.values()) {
+            const baseMesh = generateBaseplateDirect(group.params, NO_OP_PROGRESS);
+            const baseResult = wrapMeshAsResult(baseMesh, 0);
+
+            for (let j = 0; j < group.indices.length; j++) {
+              const pieceIdx = group.indices[j];
+              const piece = tiling.pieces[pieceIdx];
+              const result = j === 0 ? baseResult : cloneGenerationResult(baseResult);
+              meshEntries[pieceIdx] = buildPieceMeshEntry(result, piece, 'direct');
+            }
+          }
+
+          if (generationEpochRef.current !== epoch) return tiling;
+
+          setPieceMeshes(meshEntries);
+          setGenerationResult(EMPTY_MESH);
+        }
+      } catch {
+        // Direct-mesh failed — extremely rare (only on invalid params that
+        // would also fail BREP). Leave existing mesh in place; let BREP
+        // either succeed (overwriting it) or surface the real error.
+      } finally {
+        // Stamp the duration on every exit (success, early epoch return, or
+        // throw) so the BREP timing event always reads a fresh value. Today
+        // `generateBaseplateDirect` is synchronous and the epoch checks are
+        // unreachable, but moving this out of the success-only path hardens
+        // it against any future async refactor of the direct-mesh generator.
+        directMeshDurationRef.current = performance.now() - directMeshStartRef.current;
+      }
+
+      return tiling;
+    },
+    [setTiling, setGenerationResult, setPieceMeshes, setSplitProgress, setDedupStats]
+  );
+
+  /**
+   * Phase 2: BREP generation via WASM bridge. Replaces direct-mesh on success.
+   *
+   * Uses the precomputed tiling from the direct-mesh phase. For splits, runs
+   * pieces in parallel via the worker pool and overwrites pieceMeshes per group
+   * as results land — so the user sees pieces "upgrade" from direct to BREP one
+   * at a time. On failure with a direct-mesh preview already on screen, surfaces
+   * a non-blocking retry message instead of replacing the preview.
+   */
+  const runBrepGeneration = useCallback(
+    async (fullParams: FullBaseplateParams, tiling: BaseplateTiling, epoch: number) => {
+      const bridge = bridgeRef.current;
+      if (!bridge || bridge.isDestroyed) return;
+
+      const brepStart = performance.now();
+      // Cold = first BREP this session. Captured here (not via initializedRef)
+      // because the mount handler sets initializedRef BEFORE kicking off this
+      // very first BREP, so reading initializedRef would always say "warm".
+      const wasmCold = !firstBrepDoneRef.current;
+      // `shouldTrack` stays false for cancellation/unmount paths so PostHog
+      // isn't polluted by `success:false` events that aren't real failures.
+      let shouldTrack = false;
+      let succeeded = false;
+      setGenerationStatus('generating');
+
+      try {
+        if (!tiling.isSplit) {
+          const result = await bridge.generateBaseplate(fullParams, NO_OP_PROGRESS);
           if (generationEpochRef.current !== epoch) return;
 
           setGenerationResult({
@@ -188,11 +328,11 @@ export function useBaseplateGeneration(): void {
             edgeVertices: result.mesh.edgeVertices,
             error: null,
             timingMs: result.timingMs,
+            source: 'brep',
           });
           setPieceMeshes([]);
           setGenerationStatus('complete');
         } else {
-          // Multi-piece — deduplicate then generate unique shapes only
           const pool = poolRef.current;
           const groups = groupPiecesByFingerprint(tiling.pieces, fullParams);
           const uniqueGroups = [...groups.values()];
@@ -203,7 +343,6 @@ export function useBaseplateGeneration(): void {
           setDedupStats({ uniqueCount, totalCount, duplicatesSkipped });
           setSplitProgress({ current: 0, total: uniqueCount });
 
-          // Generate only unique shapes
           const uniqueParams = uniqueGroups.map((g) => g.params);
           let uniqueResults: GenerationResult[];
 
@@ -211,18 +350,15 @@ export function useBaseplateGeneration(): void {
             uniqueResults = await pool.generateBaseplates(uniqueParams, (completed, pieceTotal) =>
               setSplitProgress({ current: completed, total: pieceTotal })
             );
-
             if (generationEpochRef.current !== epoch) return;
           } else {
             uniqueResults = [];
-
             for (let i = 0; i < uniqueParams.length; i++) {
               setSplitProgress({ current: i + 1, total: uniqueCount });
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- re-check between async iterations
               if (bridge.isDestroyed || generationEpochRef.current !== epoch) return;
 
               const result = await bridge.generateBaseplate(uniqueParams[i], NO_OP_PROGRESS);
-
               if (generationEpochRef.current !== epoch) return;
 
               uniqueResults.push(result);
@@ -233,7 +369,6 @@ export function useBaseplateGeneration(): void {
           // `new Array(n)` returns `any[]`; we pre-size the typed slot.
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const meshEntries: PieceMeshEntry[] = new Array(totalCount);
-
           for (let groupIdx = 0; groupIdx < uniqueGroups.length; groupIdx++) {
             const group = uniqueGroups[groupIdx];
             const result = uniqueResults[groupIdx];
@@ -241,12 +376,8 @@ export function useBaseplateGeneration(): void {
             for (let j = 0; j < group.indices.length; j++) {
               const pieceIdx = group.indices[j];
               const piece = tiling.pieces[pieceIdx];
-
-              if (j === 0) {
-                meshEntries[pieceIdx] = buildPieceMeshEntry(result, piece);
-              } else {
-                meshEntries[pieceIdx] = buildPieceMeshEntry(cloneGenerationResult(result), piece);
-              }
+              const pieceResult = j === 0 ? result : cloneGenerationResult(result);
+              meshEntries[pieceIdx] = buildPieceMeshEntry(pieceResult, piece, 'brep');
             }
           }
 
@@ -255,35 +386,78 @@ export function useBaseplateGeneration(): void {
           setGenerationResult(EMPTY_MESH);
           setGenerationStatus('complete');
         }
+        shouldTrack = true;
+        succeeded = true;
       } catch (e: unknown) {
-        if (e instanceof Error && e.message === 'Generation cancelled') {
-          return;
-        }
-        if (e instanceof DOMException && e.name === 'AbortError') {
-          return;
-        }
-
-        // Only update error state if this is still the active generation
+        // These three early returns are intentional non-events: bridge
+        // cancellation (e.g. unmount) and superseded epochs aren't user-
+        // visible failures, so they don't get tracked or counted as a
+        // real BREP completion.
+        if (e instanceof Error && e.message === 'Generation cancelled') return;
+        if (e instanceof DOMException && e.name === 'AbortError') return;
         if (generationEpochRef.current !== epoch) return;
 
+        const message = e instanceof Error ? e.message : String(e);
+        const previewVisible = hasMeshOnScreen(useBaseplatePageStore.getState());
+
         setSplitProgress(null);
+        // Always clear dedup stats on BREP exit. They're only read by the
+        // status pill (which hides on 'complete'/'error'), so it's harmless
+        // today, but leaving stale split-piece counts in the store would
+        // surface as a phantom dedup pill the next time some unrelated code
+        // happened to flip generationStatus back to 'generating'.
         setDedupStats(null);
-        setGenerationResult({
-          ...EMPTY_MESH,
-          error: e instanceof Error ? e.message : String(e),
-        });
-        setPieceMeshes([]);
-        setGenerationStatus('error');
+
+        if (previewVisible) {
+          // Preview is already usable — keep it visible, surface a non-blocking
+          // toast instead of replacing the canvas with a red error overlay.
+          setGenerationStatus('complete');
+          useToastStore
+            .getState()
+            .addToast(getStaticTranslation('baseplate.brepFinalizeFailed'), 'error');
+        } else {
+          setGenerationResult({
+            ...EMPTY_MESH,
+            error: message,
+          });
+          setPieceMeshes([]);
+          setGenerationStatus('error');
+        }
+        shouldTrack = true;
+      } finally {
+        if (shouldTrack) {
+          firstBrepDoneRef.current = true;
+          trackBaseplatePreviewTiming({
+            directMeshMs: directMeshDurationRef.current,
+            brepMs: performance.now() - brepStart,
+            pieceCount: tiling.pieces.length,
+            isSplit: tiling.isSplit,
+            wasmCold,
+            success: succeeded,
+          });
+        }
       }
     },
-    [
-      setGenerationStatus,
-      setGenerationResult,
-      setTiling,
-      setPieceMeshes,
-      setSplitProgress,
-      setDedupStats,
-    ]
+    [setGenerationStatus, setGenerationResult, setPieceMeshes, setSplitProgress, setDedupStats]
+  );
+
+  /**
+   * Combined flow: direct-mesh always runs; BREP only if bridge is ready.
+   * If the bridge isn't ready yet, the direct-mesh preview stays on screen
+   * and BREP kicks in once `bridgeManager.acquire()` resolves (mount effect).
+   */
+  const runGeneration = useCallback(
+    (fullParams: FullBaseplateParams, bedWidthMm: number, bedDepthMm: number) => {
+      const epoch = ++generationEpochRef.current;
+      // Flip to 'generating' before BREP starts so the bottom pill is visible
+      // during the direct-mesh-only window (when the bridge isn't ready yet).
+      // Without this, the pill is hidden for the whole 4-8 s WASM-load period
+      // even though the user can see the direct-mesh preview.
+      setGenerationStatus('generating');
+      const tiling = runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
+      void runBrepGeneration(fullParams, tiling, epoch);
+    },
+    [setGenerationStatus, runDirectMeshPreview, runBrepGeneration]
   );
 
   // Initialize bridge via BridgeManager + worker pool on mount
@@ -326,7 +500,8 @@ export function useBaseplateGeneration(): void {
             // Non-fatal — falls back to sequential generation
           });
 
-        // Trigger initial generation
+        // Bridge is ready — kick off BREP for the current params. Direct-mesh
+        // has already populated the canvas via the params-change effect.
         const layoutState = useLayoutStore.getState();
         const stored = layoutState.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
         const params = buildFullParams(
@@ -337,11 +512,11 @@ export function useBaseplateGeneration(): void {
           layoutState.layout.drawer.fractionalEdgeX ?? 'end',
           layoutState.layout.drawer.fractionalEdgeY ?? 'end'
         );
-        void runGeneration(
-          params,
-          layoutState.layout.printBedSize,
-          layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize
-        );
+        const bedW = layoutState.layout.printBedSize;
+        const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
+        const epoch = ++generationEpochRef.current;
+        const tiling = computeBaseplateTiling(params, bedW, bedD);
+        void runBrepGeneration(params, tiling, epoch);
       })
       .catch((e: unknown) => {
         if (cancelled) return;
@@ -361,12 +536,11 @@ export function useBaseplateGeneration(): void {
         workerPoolManager.release();
       }
     };
-  }, [setWasmStatus, runGeneration]);
+  }, [setWasmStatus, runBrepGeneration]);
 
-  // Re-generate when any param changes
+  // Re-generate on every params change. Direct-mesh runs synchronously here
+  // (renders before bridge is ready); BREP runs in background once bridge exists.
   useEffect(() => {
-    if (!initializedRef.current) return;
-
     const stored = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
     const params = buildFullParams(
       stored,
@@ -376,7 +550,7 @@ export function useBaseplateGeneration(): void {
       fractionalEdgeX,
       fractionalEdgeY
     );
-    void runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
+    runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
   }, [
     drawerWidth,
     drawerDepth,

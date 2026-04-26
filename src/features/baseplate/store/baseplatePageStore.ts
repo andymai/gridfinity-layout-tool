@@ -24,6 +24,13 @@ interface MeshResult {
   readonly edgeVertices: Float32Array | null;
   readonly error: string | null;
   readonly timingMs: number;
+  /**
+   * Which generation path produced this mesh. `direct` is the synchronous
+   * procedural fast path (<100ms placeholder); `brep` is the high-fidelity
+   * WASM result. UI uses this to suppress the "loading" overlay once a
+   * direct-mesh preview is on screen, even while BREP is still in flight.
+   */
+  readonly source?: 'direct' | 'brep';
 }
 
 /** A generated mesh for a single piece in a split baseplate. */

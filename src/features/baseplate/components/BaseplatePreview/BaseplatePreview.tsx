@@ -136,10 +136,23 @@ export function BaseplatePreview({
   const hasError = wasmStatus === 'error' || generationStatus === 'error';
   const isWasmLoading = !hasError && wasmStatus !== 'ready';
   const isGenerating = generationStatus === 'generating';
-  const showOverlay = isWasmLoading || isGenerating;
+  /**
+   * Direct-mesh preview is on screen while BREP is still in flight. The
+   * canvas is interactive; the user just doesn't have the high-fidelity
+   * geometry yet. Used to soften the loading indicator from a centered
+   * blocking spinner into a subtle pill.
+   */
+  const hasDirectPreview = hasAnyMesh && isGenerating;
+  /**
+   * Big initial-load skeleton appears only when the canvas is genuinely
+   * blank — direct-mesh normally lands within ~100ms so this is rare in
+   * practice (kept as fallback for the very first render frame and for
+   * the unhappy path where direct-mesh fails before BREP completes).
+   */
+  const showInitSkeleton = isWasmLoading && !hasAnyMesh;
 
   // Elapsed time tracking for generation
-  const elapsedSec = useGenerationElapsed(generationStatus === 'generating');
+  const elapsedSec = useGenerationElapsed(isGenerating);
 
   return (
     <div
@@ -147,8 +160,10 @@ export function BaseplatePreview({
       role="img"
       aria-label={t('baseplate.title')}
     >
-      {/* Initial load skeleton -- matches bin designer PreviewSkeleton */}
-      {isWasmLoading && !hasAnyMesh && (
+      {/* Initial load skeleton -- matches bin designer PreviewSkeleton.
+          Only shown when the canvas is genuinely blank; direct-mesh preview
+          normally hides this within ~100ms. */}
+      {showInitSkeleton && (
         <div
           className="absolute inset-0 z-10 flex items-center justify-center bg-surface"
           role="status"
@@ -172,7 +187,7 @@ export function BaseplatePreview({
               </svg>
             </div>
             <p className="text-sm font-medium text-content-tertiary">
-              {t('baseplate.initializingEngine')}
+              {t('baseplate.loadingEngine')}
             </p>
           </div>
         </div>
@@ -216,9 +231,10 @@ export function BaseplatePreview({
               totalWidthUnits={width}
               totalDepthUnits={depth}
               gridUnitMm={gridUnitMm}
+              isPreview={hasDirectPreview}
             />
           ) : (
-            <BaseplateMesh color={filamentColor} />
+            <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} />
           )}
 
           {/* Ghost outline only in assembled mode -- exploded scatters pieces beyond slab bounds */}
@@ -297,13 +313,17 @@ export function BaseplatePreview({
         </div>
       )}
 
-      {showOverlay && (
+      {/* Bottom-center status chip. Pairs with the desaturated mesh tint so the
+          two preview signals reinforce each other (geometry says "draft," chip
+          spells out why). Suppressed when the canvas is blank — the initial
+          skeleton already conveys "loading." */}
+      {isGenerating && !showInitSkeleton && (
         <div
-          className="absolute inset-x-0 bottom-4 flex justify-center"
+          className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center"
           role="status"
           aria-live="polite"
         >
-          <div className="flex items-center gap-2.5 rounded-lg border border-stroke-subtle bg-surface-elevated/95 px-4 py-2 font-mono text-xs shadow-lg backdrop-blur-sm">
+          <div className="pointer-events-auto flex items-center gap-2.5 rounded-lg border border-accent/40 bg-surface-elevated/95 px-3 py-2 font-mono text-xs shadow-lg backdrop-blur-sm">
             <svg
               className="h-4 w-4 shrink-0 text-accent animate-spin"
               viewBox="0 0 24 24"
@@ -324,8 +344,8 @@ export function BaseplatePreview({
               />
             </svg>
             <span className="text-content-secondary">
-              {overlayStatusText(isWasmLoading, splitProgress, dedupStats, t)}
-              {elapsedSec !== null && (
+              {overlayStatusText(isWasmLoading, splitProgress, dedupStats, hasDirectPreview, t)}
+              {elapsedSec !== null && elapsedSec >= 3 && (
                 <span className="ml-1.5 text-content-tertiary">
                   {t('baseplate.elapsed', { seconds: elapsedSec })}
                 </span>

@@ -86,11 +86,23 @@ export function useMeshGeometry(arrays: MeshArrays): MeshGeometryResult {
   }, [vertices, indices, hasPrecomputedNormals, faceGroups]);
 
   const edgesGeometry = useMemo(() => {
-    if (!edgeVertices || edgeVertices.length === 0) return null;
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
-    return geo;
-  }, [edgeVertices]);
+    // Precomputed edges from BREP win — they're authored from analytic curves
+    // and exactly represent the model's silhouette/feature lines.
+    if (edgeVertices && edgeVertices.length > 0) {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
+      return geo;
+    }
+    // Direct-mesh fallback: derive edges from the assembled geometry using the
+    // same crease angle that drove normal splitting. EdgesGeometry walks every
+    // triangle pair and emits the shared edge wherever the dihedral exceeds
+    // the threshold — i.e. exactly the creases that survived `toCreasedNormals`.
+    // This gives the direct-mesh preview crisp BREP-style outlines without
+    // requiring the generator to author edge geometry by hand.
+    if (!geometry) return null;
+    const CREASE_ANGLE_DEGREES = 35;
+    return new THREE.EdgesGeometry(geometry, CREASE_ANGLE_DEGREES);
+  }, [edgeVertices, geometry]);
 
   useEffect(() => {
     return () => {

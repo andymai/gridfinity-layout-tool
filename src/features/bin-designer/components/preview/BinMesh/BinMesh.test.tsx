@@ -59,6 +59,10 @@ vi.mock('three', () => {
     Vector3,
     Color,
     BufferGeometry: MockBufferGeometry,
+    // EdgesGeometry is consumed by the shared `useMeshGeometry` hook as the
+    // direct-mesh fallback when `edgeVertices` is empty. The hook expects a
+    // BufferGeometry-shaped instance back, so reuse the mock class.
+    EdgesGeometry: MockBufferGeometry,
     MeshStandardMaterial: vi.fn(),
     BufferAttribute: vi.fn(),
     Float32BufferAttribute: vi.fn(),

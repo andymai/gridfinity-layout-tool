@@ -15,7 +15,12 @@ import { useShallow } from 'zustand/react/shallow';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { EXPLODE_GAP_MM } from '../../constants';
-import { MESH_MATERIAL_PROPS, EDGE_MATERIAL_PROPS } from './materialProps';
+import {
+  MESH_MATERIAL_PROPS,
+  EDGE_MATERIAL_PROPS,
+  PREVIEW_EMISSIVE_INTENSITY,
+  desaturateColor,
+} from './materialProps';
 import { useMeshGeometry } from './useMeshGeometry';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import { useSettingsStore } from '@/core/store';
@@ -41,6 +46,7 @@ interface PieceMeshProps {
   readonly splitViewMode: SplitViewMode;
   readonly hoveredPieceLabel: string | null;
   readonly selectedPieceLabel: string | null;
+  readonly isPreview: boolean;
 }
 
 /** Renders a single piece mesh with position offset, color, and interaction. */
@@ -54,10 +60,21 @@ function PieceMesh({
   splitViewMode,
   hoveredPieceLabel,
   selectedPieceLabel,
+  isPreview,
 }: PieceMeshProps) {
   const { invalidate } = useThree();
   const colors = useThreeColors();
   const filamentColor = useSettingsStore((s) => s.settings.baseplateFilamentColor);
+  const displayColor = useMemo(
+    // 0.7 gray-blend (was 0.5) — smooth normals + edge wireframes pulled the
+    // preview close to BREP-quality, so a stronger desaturation keeps the
+    // "draft" affordance legible.
+    () => (isPreview ? desaturateColor(filamentColor, 0.7) : filamentColor),
+    [filamentColor, isPreview]
+  );
+  const emissiveIntensity = isPreview
+    ? PREVIEW_EMISSIVE_INTENSITY
+    : MESH_MATERIAL_PROPS.emissiveIntensity;
   const accentHex = useMemo(() => getAccentHex(), []);
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry(entry.mesh);
@@ -140,8 +157,9 @@ function PieceMesh({
       <mesh geometry={geometry}>
         <meshStandardMaterial
           {...MESH_MATERIAL_PROPS}
-          color={filamentColor}
-          emissive={filamentColor}
+          color={displayColor}
+          emissive={displayColor}
+          emissiveIntensity={emissiveIntensity}
           flatShading={!hasPrecomputedNormals}
           transparent={isDimmed}
           opacity={isDimmed ? 0.55 : 1}
@@ -176,6 +194,7 @@ interface SplitBaseplateMeshesProps {
   readonly totalWidthUnits: number;
   readonly totalDepthUnits: number;
   readonly gridUnitMm: number;
+  readonly isPreview?: boolean;
 }
 
 /**
@@ -185,6 +204,7 @@ export function SplitBaseplateMeshes({
   totalWidthUnits,
   totalDepthUnits,
   gridUnitMm,
+  isPreview = false,
 }: SplitBaseplateMeshesProps) {
   const { pieceMeshes, splitViewMode, hoveredPieceLabel, selectedPieceLabel } =
     useBaseplatePageStore(
@@ -217,6 +237,7 @@ export function SplitBaseplateMeshes({
             splitViewMode={splitViewMode}
             hoveredPieceLabel={hoveredPieceLabel}
             selectedPieceLabel={selectedPieceLabel}
+            isPreview={isPreview}
           />
         );
       })}
