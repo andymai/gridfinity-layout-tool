@@ -1,3 +1,5 @@
+<div align="center">
+
 # Gridfinity Layout Tool
 
 [![CI](https://github.com/andymai/gridfinity-layout-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/andymai/gridfinity-layout-tool/actions/workflows/ci.yml)
@@ -6,13 +8,16 @@
 
 Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer organizer layouts for 3D printing — right in your browser.
 
-**Live:** [gridfinitylayouttool.com](https://gridfinitylayouttool.com)
+### → [**gridfinitylayouttool.com**](https://gridfinitylayouttool.com)
+
+</div>
 
 ## Features
 
-- **Layout Planner** — Drag-and-drop bin placement with multi-layer support
+- **Layout Planner** — Drag-and-drop bin placement with stacked layers and color-coded categories
 - **3D Preview** — Isometric visualization of your drawer layout
 - **Bin Designer** — Parametric 3D bin generator with STL export
+- **Baseplate Generator** — 3D-printable Gridfinity baseplates with automatic splitting and STL / STEP / 3MF export
 - **Print List** — Optimized print list with filament, time, and cost estimates
 - **Inspiration Gallery** — Browse curated example layouts across workshop, kitchen, office, hobby, and personal themes
 - **Cloud Sharing** — Share layouts via link with optional real-time collaboration
@@ -20,21 +25,12 @@ Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer orga
 
 ## Built With
 
-| Technology                                   | Purpose                                                |
-| -------------------------------------------- | ------------------------------------------------------ |
-| [React 19](https://react.dev)                | UI framework                                           |
-| [TypeScript](https://www.typescriptlang.org) | Type safety                                            |
-| [Zustand](https://github.com/pmndrs/zustand) | State management                                       |
-| [Three.js](https://threejs.org)              | 3D visualization                                       |
-| [brepjs](https://github.com/andymai/brepjs)  | Parametric 3D geometry & STL export (OpenCascade WASM) |
-| [Tailwind CSS 4](https://tailwindcss.com)    | Styling                                                |
-| [Vitest](https://vitest.dev)                 | Unit testing                                           |
-| [Playwright](https://playwright.dev)         | End-to-end testing                                     |
-| [Vercel](https://vercel.com)                 | Hosting & serverless API                               |
+- **[brepjs](https://github.com/andymai/brepjs)** — Parametric 3D geometry & STL export (OpenCascade WASM)
+- **[Three.js](https://threejs.org)** — 3D visualization
 
 ## Local Development
 
-Requires **Node.js 20+** and **pnpm 10+**. Use `nvm use` to switch to the correct version (requires [nvm](https://github.com/nvm-sh/nvm)).
+Requires **Node.js 24+** and **pnpm 10+**. Use `nvm use` to switch to the correct version (requires [nvm](https://github.com/nvm-sh/nvm)).
 
 ```bash
 git clone https://github.com/andymai/gridfinity-layout-tool.git
