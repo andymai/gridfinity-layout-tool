@@ -120,4 +120,21 @@ describe('generatePrintGuide', () => {
     expect(guide).toContain('padding:');
     expect(guide).toContain('3mm');
   });
+
+  it('Size line includes dovetail tongue protrusion when connectorNubs is enabled (#1498)', () => {
+    // 4×4 grid, no padding, dovetails on. 4 units * 42mm = 168mm slab.
+    // Edge piece with one male join edge → bbox 168 + 1.5 = 169.5mm.
+    const params = makeParams({
+      width: 8,
+      depth: 4,
+      connectorNubs: true,
+    });
+    const guide = buildGuide(params);
+
+    // Each piece (4 wide) has one male join edge with invertDovetails=false:
+    // - left piece: right=join is female (no protrusion) → 168.0mm
+    // - right piece: left=join is male (1.5mm protrusion) → 169.5mm
+    expect(guide).toContain('168.0 × 168.0');
+    expect(guide).toContain('169.5 × 168.0');
+  });
 });

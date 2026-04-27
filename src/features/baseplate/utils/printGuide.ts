@@ -16,6 +16,9 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 const SOCKET_HEIGHT = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 /** Retaining floor thickness above magnet holes (generation-specific, not in GRIDFINITY_SPEC) */
 const MAGNET_FLOOR = 0.5;
+/** Dovetail tongue protrusion past the slab wall on a male join edge (mm).
+ *  Mirrors `TONGUE_PROTRUSION` in `features/generation/.../generatorConstants.ts`. */
+const TONGUE_PROTRUSION_MM = 1.5;
 
 export interface PrintGuideInput {
   readonly tiling: BaseplateTiling;
@@ -93,8 +96,22 @@ function generatePieceTable(
     const params = group.params;
     const count = group.indices.length;
 
-    const widthMm = params.width * params.gridUnitMm + params.paddingLeft + params.paddingRight;
-    const depthMm = params.depth * params.gridUnitMm + params.paddingFront + params.paddingBack;
+    // Slab dimensions plus dovetail tongue protrusion on join edges where the
+    // tongue is male — matches the actual STL bbox so users know what fits the bed.
+    const tongue = parentParams.connectorNubs ? TONGUE_PROTRUSION_MM : 0;
+    const startMale = !parentParams.invertDovetails;
+    const widthMm =
+      params.width * params.gridUnitMm +
+      params.paddingLeft +
+      params.paddingRight +
+      (params.edges?.left === 'join' && startMale ? tongue : 0) +
+      (params.edges?.right === 'join' && !startMale ? tongue : 0);
+    const depthMm =
+      params.depth * params.gridUnitMm +
+      params.paddingFront +
+      params.paddingBack +
+      (params.edges?.front === 'join' && startMale ? tongue : 0) +
+      (params.edges?.back === 'join' && !startMale ? tongue : 0);
     const heightMm =
       SOCKET_HEIGHT + (parentParams.magnetHoles ? MAGNET_FLOOR + parentParams.magnetDepth : 0);
 

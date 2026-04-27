@@ -17,10 +17,75 @@ import type { BaseplatePiece, BaseplateTiling, PaddingReductionHint } from '../t
 /** Threshold for detecting a fractional half-unit (avoids floating-point noise). */
 const FRACTIONAL_THRESHOLD = 0.49;
 
+/**
+ * How far the dovetail tongue protrudes past the slab wall on a join edge.
+ * Mirrors `TONGUE_PROTRUSION` in `features/generation/.../generatorConstants.ts`
+ * (cross-feature import is forbidden by module boundaries; keep these in sync).
+ *
+ * The fit checker must subtract this from the bed budget on any join edge whose
+ * tongue is male — otherwise pieces that compute to exactly the bed width on
+ * paper exceed it as STLs (#1498).
+ */
+const TONGUE_PROTRUSION_MM = 1.5;
+
+/**
+ * Per-axis configuration: bed budget, padding, and dovetail overhang on each end.
+ *
+ * `startMaleMm` / `endMaleMm` are the mm reserved for a male tongue when that
+ * side is a join edge. Convention (matches `buildConnectors` in baseplateGenerator):
+ *   left/front are male when invertDovetails=false; right/back are male otherwise.
+ * Females cut into the slab and don't extend its bbox, so they cost nothing.
+ */
+interface AxisConfig {
+  readonly bedMm: number;
+  readonly paddingStart: number;
+  readonly paddingEnd: number;
+  readonly startMaleMm: number;
+  readonly endMaleMm: number;
+}
+
+function makeAxisConfig(
+  bedMm: number,
+  paddingStart: number,
+  paddingEnd: number,
+  connectorNubs: boolean | undefined,
+  invertDovetails: boolean | undefined
+): AxisConfig {
+  // Both axes follow the same rule: the start side (left / front) is male iff !invertDovetails.
+  const tongue = connectorNubs ? TONGUE_PROTRUSION_MM : 0;
+  const startMale = !invertDovetails;
+  return {
+    bedMm,
+    paddingStart,
+    paddingEnd,
+    startMaleMm: startMale ? tongue : 0,
+    endMaleMm: startMale ? 0 : tongue,
+  };
+}
+
+/**
+ * Per-position max grid-unit capacity for a multi-chunk axis.
+ * Multi-piece pieces give up bed-budget on each join edge whose tongue is male.
+ * Middle chunks have both sides joined, but exactly one is male regardless of
+ * invert orientation, so this collapses to a single TONGUE_PROTRUSION.
+ */
+function axisCapacity(
+  gridUnitMm: number,
+  axis: AxisConfig
+): { maxFirst: number; maxLast: number; maxMiddle: number } {
+  const { bedMm, paddingStart, paddingEnd, startMaleMm, endMaleMm } = axis;
+  return {
+    maxFirst: Math.floor((bedMm - paddingStart - endMaleMm) / gridUnitMm),
+    maxLast: Math.floor((bedMm - paddingEnd - startMaleMm) / gridUnitMm),
+    maxMiddle: Math.floor((bedMm - startMaleMm - endMaleMm) / gridUnitMm),
+  };
+}
+
 /** Convert a zero-based column index to a letter: 0→A, 1→B, ..., 25→Z */
 export function colToLetter(col: number): string {
   return String.fromCharCode(65 + col);
 }
+
 /**
  * Partition `totalUnits` into exactly `numChunks` pieces that each fit the bed.
  *
@@ -34,40 +99,36 @@ function partitionAxis(
   totalUnits: number,
   numChunks: number,
   gridUnitMm: number,
-  printBedMm: number,
-  paddingStart: number,
-  paddingEnd: number
+  axis: AxisConfig
 ): number[] | null {
+  const { bedMm, paddingStart, paddingEnd, startMaleMm } = axis;
   const intPart = Math.floor(totalUnits);
   const hasFrac = totalUnits - intPart >= FRACTIONAL_THRESHOLD;
 
-  const maxWithBoth = Math.floor((printBedMm - paddingStart - paddingEnd) / gridUnitMm);
-  const maxWithStart = Math.floor((printBedMm - paddingStart) / gridUnitMm);
-  const maxWithEnd = Math.floor((printBedMm - paddingEnd) / gridUnitMm);
-  const maxMiddle = Math.floor(printBedMm / gridUnitMm);
+  // Single-piece (numChunks=1) has no joins, so no tongue overhead.
+  const maxWithBoth = Math.floor((bedMm - paddingStart - paddingEnd) / gridUnitMm);
+  const { maxFirst, maxLast, maxMiddle } = axisCapacity(gridUnitMm, axis);
 
   // Degenerate: bed can't hold even 1 unit in any position
-  if (maxWithBoth < 1 || maxWithStart < 1 || maxWithEnd < 1 || maxMiddle < 1) {
+  if (maxWithBoth < 1 || maxFirst < 1 || maxLast < 1 || maxMiddle < 1) {
     return numChunks === 1 ? [totalUnits] : null;
   }
 
   if (numChunks === 1) {
-    // Single piece must fit with both paddings
     if (intPart > maxWithBoth) return null;
     if (hasFrac) {
-      if ((intPart + 0.5) * gridUnitMm + paddingStart + paddingEnd <= printBedMm) {
+      if ((intPart + 0.5) * gridUnitMm + paddingStart + paddingEnd <= bedMm) {
         return [totalUnits];
       }
-      return null; // fraction doesn't fit
+      return null;
     }
     return intPart > 0 ? [intPart] : null;
   }
 
   // For numChunks >= 2, distribute integer units as evenly as possible.
-  // Compute per-position max capacities (first and last carry edge padding).
   const maxPerPos: number[] = Array.from({ length: numChunks }, (_, i) => {
-    if (i === 0) return maxWithStart;
-    if (i === numChunks - 1) return maxWithEnd;
+    if (i === 0) return maxFirst;
+    if (i === numChunks - 1) return maxLast;
     return maxMiddle;
   });
 
@@ -82,7 +143,6 @@ function partitionAxis(
   const sizes: number[] = new Array<number>(numChunks).fill(baseSize);
   let remainder = intPart - baseSize * numChunks;
 
-  // Clamp base sizes that exceed position capacity
   for (let i = 0; i < numChunks; i++) {
     if (sizes[i] > maxPerPos[i]) {
       remainder += sizes[i] - maxPerPos[i];
@@ -90,7 +150,6 @@ function partitionAxis(
     }
   }
 
-  // Distribute remainder one unit at a time
   for (let i = 0; i < numChunks && remainder > 0; i++) {
     const canAdd = maxPerPos[i] - sizes[i];
     if (canAdd > 0) {
@@ -101,7 +160,6 @@ function partitionAxis(
   }
 
   // Pass 2: redistribute any remaining units into slots that still have capacity.
-  // This handles cases where the first-come distribution was capped by maxPerPos.
   for (let i = 0; i < numChunks && remainder > 0; i++) {
     const canAdd = maxPerPos[i] - sizes[i];
     const add = Math.min(canAdd, remainder);
@@ -109,19 +167,17 @@ function partitionAxis(
     remainder -= add;
   }
 
-  if (remainder > 0) return null; // infeasible even with full capacity
-
-  // Any chunk with 0 units means we have more chunks than needed
+  if (remainder > 0) return null;
   if (sizes.some((s) => s <= 0)) return null;
 
   // Handle fractional 0.5 unit — absorb into last chunk if it fits
   if (hasFrac) {
     const lastIdx = numChunks - 1;
-    const lastOverhead = paddingEnd;
-    if ((sizes[lastIdx] + 0.5) * gridUnitMm + lastOverhead <= printBedMm) {
+    const lastOverhead = paddingEnd + startMaleMm;
+    if ((sizes[lastIdx] + 0.5) * gridUnitMm + lastOverhead <= bedMm) {
       sizes[lastIdx] += 0.5;
     } else {
-      return null; // fraction doesn't fit, caller should try numChunks+1
+      return null;
     }
   }
 
@@ -129,38 +185,32 @@ function partitionAxis(
 }
 
 /**
- * Verify every piece in a cols × rows grid fits the bed considering its
- * edge-specific padding. Corner pieces get padding on two sides.
- *
- * Because each piece's physical width depends only on its column index and its
- * physical depth depends only on its row index, the two axes are independent —
- * checking each axis separately is sufficient without a cross-product.
+ * Verify every piece fits the bed. Each piece's physical width depends only
+ * on its column index and depth on its row index, so the two axes are
+ * independent — checking each axis separately is sufficient.
  */
 function allPiecesFit(
   colSizes: number[],
   rowSizes: number[],
   gridUnitMm: number,
-  printBedWidthMm: number,
-  printBedDepthMm: number,
-  pL: number,
-  pR: number,
-  pF: number,
-  pB: number
+  xAxis: AxisConfig,
+  yAxis: AxisConfig
 ): boolean {
-  for (let c = 0; c < colSizes.length; c++) {
-    const padLeft = c === 0 ? pL : 0;
-    const padRight = c === colSizes.length - 1 ? pR : 0;
-    const widthMm = colSizes[c] * gridUnitMm + padLeft + padRight;
-    if (widthMm > printBedWidthMm + 0.001) return false;
-  }
+  return chunkSizesFit(colSizes, gridUnitMm, xAxis) && chunkSizesFit(rowSizes, gridUnitMm, yAxis);
+}
 
-  for (let r = 0; r < rowSizes.length; r++) {
-    const padFront = r === 0 ? pF : 0;
-    const padBack = r === rowSizes.length - 1 ? pB : 0;
-    const depthMm = rowSizes[r] * gridUnitMm + padFront + padBack;
-    if (depthMm > printBedDepthMm + 0.001) return false;
+function chunkSizesFit(sizes: number[], gridUnitMm: number, axis: AxisConfig): boolean {
+  const last = sizes.length - 1;
+  for (let i = 0; i < sizes.length; i++) {
+    const padStart = i === 0 ? axis.paddingStart : 0;
+    const padEnd = i === last ? axis.paddingEnd : 0;
+    // Join edges (interior sides) carry a male tongue's protrusion if the convention
+    // assigns male to that side. Female sides cut into the slab and add nothing.
+    const tongueStart = i === 0 ? 0 : axis.startMaleMm;
+    const tongueEnd = i === last ? 0 : axis.endMaleMm;
+    const sizeMm = sizes[i] * gridUnitMm + padStart + padEnd + tongueStart + tongueEnd;
+    if (sizeMm > axis.bedMm + 0.001) return false;
   }
-
   return true;
 }
 
@@ -175,7 +225,7 @@ interface TilingCandidate {
   colSizes: number[];
   rowSizes: number[];
   pieceCount: number;
-  score: number; // lower = better symmetry
+  score: number;
 }
 
 /**
@@ -188,14 +238,10 @@ function findOptimalTiling(
   totalWidth: number,
   totalDepth: number,
   gridUnitMm: number,
-  printBedWidthMm: number,
-  printBedDepthMm: number,
-  pL: number,
-  pR: number,
-  pF: number,
-  pB: number
+  xAxis: AxisConfig,
+  yAxis: AxisConfig
 ): { colSizes: number[]; rowSizes: number[] } {
-  const maxCols = Math.ceil(totalWidth); // absolute upper bound
+  const maxCols = Math.ceil(totalWidth);
   const maxRows = Math.ceil(totalDepth);
 
   let best: TilingCandidate | null = null;
@@ -205,29 +251,17 @@ function findOptimalTiling(
     // Use > not >= so we still evaluate nc×1 candidates for symmetry tiebreaks.
     if (best && nc > best.pieceCount) break;
 
-    const colSizes = partitionAxis(totalWidth, nc, gridUnitMm, printBedWidthMm, pL, pR);
+    const colSizes = partitionAxis(totalWidth, nc, gridUnitMm, xAxis);
     if (!colSizes) continue;
 
     for (let nr = 1; nr <= maxRows; nr++) {
       const pieceCount = nc * nr;
       if (best && pieceCount > best.pieceCount) break;
 
-      const rowSizes = partitionAxis(totalDepth, nr, gridUnitMm, printBedDepthMm, pF, pB);
+      const rowSizes = partitionAxis(totalDepth, nr, gridUnitMm, yAxis);
       if (!rowSizes) continue;
 
-      if (
-        allPiecesFit(
-          colSizes,
-          rowSizes,
-          gridUnitMm,
-          printBedWidthMm,
-          printBedDepthMm,
-          pL,
-          pR,
-          pF,
-          pB
-        )
-      ) {
+      if (allPiecesFit(colSizes, rowSizes, gridUnitMm, xAxis, yAxis)) {
         const score = symmetryScore(colSizes) + symmetryScore(rowSizes);
         if (
           !best ||
@@ -236,102 +270,59 @@ function findOptimalTiling(
         ) {
           best = { colSizes, rowSizes, pieceCount, score };
         }
-        break; // found valid nr for this nc, smaller nr won't help (already pruned above)
+        break;
       }
     }
   }
 
-  // Fallback: single piece (degenerate bed)
-  if (!best) {
-    return { colSizes: [totalWidth], rowSizes: [totalDepth] };
-  }
-
+  if (!best) return { colSizes: [totalWidth], rowSizes: [totalDepth] };
   return { colSizes: best.colSizes, rowSizes: best.rowSizes };
 }
+
 /**
  * Check if reducing padding would eliminate a split or save pieces.
- *
- * Tests X-axis (left+right) and Y-axis (front+back) independently,
- * reducing each by 1mm increments down to 0.
+ * Tries X-only, Y-only, then both axes together; picks the best result.
  */
 function computePaddingReductionHint(
   totalWidth: number,
   totalDepth: number,
   gridUnitMm: number,
-  printBedWidthMm: number,
-  printBedDepthMm: number,
-  pL: number,
-  pR: number,
-  pF: number,
-  pB: number,
+  xAxis: AxisConfig,
+  yAxis: AxisConfig,
   currentPieceCount: number
 ): PaddingReductionHint | null {
   if (currentPieceCount <= 1) return null;
 
+  const reduceX = Math.min(xAxis.paddingStart, xAxis.paddingEnd);
+  const reduceY = Math.min(yAxis.paddingStart, yAxis.paddingEnd);
+
+  // Find smallest reduction along an axis that saves pieces; null if none works.
+  const trySaving = (maxR: number, build: (r: number) => { x: AxisConfig; y: AxisConfig }) => {
+    for (let r = 1; r <= maxR; r++) {
+      const { x, y } = build(r);
+      const result = findOptimalTiling(totalWidth, totalDepth, gridUnitMm, x, y);
+      const saved = currentPieceCount - result.colSizes.length * result.rowSizes.length;
+      if (saved > 0) return { reductionMm: r, piecesSaved: saved };
+    }
+    return null;
+  };
+
+  const reduce = (axis: AxisConfig, r: number): AxisConfig => ({
+    ...axis,
+    paddingStart: axis.paddingStart - r,
+    paddingEnd: axis.paddingEnd - r,
+  });
+
   const candidates: PaddingReductionHint[] = [];
-
-  // Try reducing X-axis padding (left + right equally)
-  const maxReduceX = Math.min(pL, pR);
-  for (let r = 1; r <= maxReduceX; r++) {
-    const result = findOptimalTiling(
-      totalWidth,
-      totalDepth,
-      gridUnitMm,
-      printBedWidthMm,
-      printBedDepthMm,
-      pL - r,
-      pR - r,
-      pF,
-      pB
-    );
-    const saved = currentPieceCount - result.colSizes.length * result.rowSizes.length;
-    if (saved > 0) {
-      candidates.push({ axis: 'x', reductionMm: r, piecesSaved: saved });
-      break;
-    }
-  }
-
-  // Try reducing Y-axis padding (front + back equally)
-  const maxReduceY = Math.min(pF, pB);
-  for (let r = 1; r <= maxReduceY; r++) {
-    const result = findOptimalTiling(
-      totalWidth,
-      totalDepth,
-      gridUnitMm,
-      printBedWidthMm,
-      printBedDepthMm,
-      pL,
-      pR,
-      pF - r,
-      pB - r
-    );
-    const saved = currentPieceCount - result.colSizes.length * result.rowSizes.length;
-    if (saved > 0) {
-      candidates.push({ axis: 'y', reductionMm: r, piecesSaved: saved });
-      break;
-    }
-  }
-
-  // Try reducing both axes
-  const maxReduceBoth = Math.min(maxReduceX, maxReduceY);
-  for (let r = 1; r <= maxReduceBoth; r++) {
-    const result = findOptimalTiling(
-      totalWidth,
-      totalDepth,
-      gridUnitMm,
-      printBedWidthMm,
-      printBedDepthMm,
-      pL - r,
-      pR - r,
-      pF - r,
-      pB - r
-    );
-    const saved = currentPieceCount - result.colSizes.length * result.rowSizes.length;
-    if (saved > 0) {
-      candidates.push({ axis: 'both', reductionMm: r, piecesSaved: saved });
-      break;
-    }
-  }
+  const x = trySaving(reduceX, (r) => ({ x: reduce(xAxis, r), y: yAxis }));
+  if (x) candidates.push({ axis: 'x', ...x });
+  const y = trySaving(reduceY, (r) => ({ x: xAxis, y: reduce(yAxis, r) }));
+  if (y) candidates.push({ axis: 'y', ...y });
+  const both = trySaving(Math.min(reduceX, reduceY), (r) => ({
+    x: reduce(xAxis, r),
+    y: reduce(yAxis, r),
+  }));
+  if (both) candidates.push({ axis: 'both', ...both });
 
   if (candidates.length === 0) return null;
 
@@ -339,6 +330,7 @@ function computePaddingReductionHint(
   candidates.sort((a, b) => b.piecesSaved - a.piecesSaved || a.reductionMm - b.reductionMm);
   return candidates[0];
 }
+
 /**
  * Compute the full 2D tiling for a baseplate.
  *
@@ -361,42 +353,41 @@ export function computeBaseplateTiling(
     paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
+    connectorNubs,
+    invertDovetails,
   } = params;
 
-  // Find optimal tiling using 2D joint search
+  // Pieces with dovetail connectors include male tongue protrusions in their bbox
+  // (#1498). The planner reserves bed budget for those tongues so the resulting
+  // STLs actually fit the bed.
+  const xAxis = makeAxisConfig(
+    printBedWidthMm,
+    paddingLeft,
+    paddingRight,
+    connectorNubs,
+    invertDovetails
+  );
+  const yAxis = makeAxisConfig(
+    printBedDepthMm,
+    paddingFront,
+    paddingBack,
+    connectorNubs,
+    invertDovetails
+  );
+
   const { colSizes: rawColSizes, rowSizes: rawRowSizes } = findOptimalTiling(
     width,
     depth,
     gridUnitMm,
-    printBedWidthMm,
-    printBedDepthMm,
-    paddingLeft,
-    paddingRight,
-    paddingFront,
-    paddingBack
+    xAxis,
+    yAxis
   );
 
   // Reorder for display: largest pieces at front/left, fractional edges pinned
-  const colSizes = reorderForDisplay(
-    rawColSizes,
-    gridUnitMm,
-    printBedWidthMm,
-    paddingLeft,
-    paddingRight,
-    fractionalEdgeX === 'start'
-  );
-  const rowSizes = reorderForDisplay(
-    rawRowSizes,
-    gridUnitMm,
-    printBedDepthMm,
-    paddingFront,
-    paddingBack,
-    fractionalEdgeY === 'start'
-  );
+  const colSizes = reorderForDisplay(rawColSizes, gridUnitMm, xAxis, fractionalEdgeX === 'start');
+  const rowSizes = reorderForDisplay(rawRowSizes, gridUnitMm, yAxis, fractionalEdgeY === 'start');
 
   const isSplit = colSizes.length > 1 || rowSizes.length > 1;
-
-  // Precompute cumulative offsets
   const colOffsets = cumulativeOffsets(colSizes);
   const rowOffsets = cumulativeOffsets(rowSizes);
 
@@ -436,18 +427,13 @@ export function computeBaseplateTiling(
     }
   }
 
-  // Compute padding reduction hint
   const pieceCount = colSizes.length * rowSizes.length;
   const paddingReductionHint = computePaddingReductionHint(
     width,
     depth,
     gridUnitMm,
-    printBedWidthMm,
-    printBedDepthMm,
-    paddingLeft,
-    paddingRight,
-    paddingFront,
-    paddingBack,
+    xAxis,
+    yAxis,
     pieceCount
   );
 
@@ -499,6 +485,7 @@ export function pieceToBaseplateParams(
     cornerRadii: parentParams.cornerRadii,
   };
 }
+
 /**
  * Reorder sizes for display: largest pieces at lowest indices (front/left),
  * while respecting edge constraints and fractional edge placement.
@@ -509,39 +496,29 @@ export function pieceToBaseplateParams(
 function reorderForDisplay(
   sizes: number[],
   gridUnitMm: number,
-  printBedMm: number,
-  paddingFirst: number,
-  paddingLast: number,
+  axis: AxisConfig,
   fractionAtStart: boolean
 ): number[] {
   if (sizes.length <= 1) return sizes;
 
-  const maxAtFirst = Math.floor((printBedMm - paddingFirst) / gridUnitMm);
-  const maxAtLast = Math.floor((printBedMm - paddingLast) / gridUnitMm);
-
+  // Use the same per-position constraints as partitionAxis so dovetail tongues
+  // are accounted for when reshuffling chunks across positions (#1498).
+  const { maxFirst, maxLast, maxMiddle } = axisCapacity(gridUnitMm, axis);
   const fracIdx = sizes.findIndex(isFractional);
 
-  // When fractionAtStart, pin the fractional piece to position 0 —
-  // but only if it actually fits with paddingFirst at that position.
-  if (fractionAtStart) {
-    if (fracIdx >= 0 && sizes[fracIdx] <= maxAtFirst) {
-      const maxMiddle = Math.floor(printBedMm / gridUnitMm);
-      const rest = sizes.filter((_, i) => i !== fracIdx);
-      const sortedRest = sortDescWithEdges(rest, maxMiddle, maxAtLast);
-      return [sizes[fracIdx], ...sortedRest];
-    }
-  }
-
-  // When fraction exists and belongs at the end, pin it to the last position
-  // to prevent sortDescWithEdges from placing it in the middle.
-  if (!fractionAtStart && fracIdx >= 0 && sizes[fracIdx] <= maxAtLast) {
-    const maxMiddle = Math.floor(printBedMm / gridUnitMm);
+  // Pin fractional piece to position 0 (only if it fits there).
+  if (fractionAtStart && fracIdx >= 0 && sizes[fracIdx] <= maxFirst) {
     const rest = sizes.filter((_, i) => i !== fracIdx);
-    const sortedRest = sortDescWithEdges(rest, maxAtFirst, maxMiddle);
-    return [...sortedRest, sizes[fracIdx]];
+    return [sizes[fracIdx], ...sortDescWithEdges(rest, maxMiddle, maxLast)];
   }
 
-  return sortDescWithEdges(sizes, maxAtFirst, maxAtLast);
+  // Pin fractional piece to last position (prevents middle placement).
+  if (!fractionAtStart && fracIdx >= 0 && sizes[fracIdx] <= maxLast) {
+    const rest = sizes.filter((_, i) => i !== fracIdx);
+    return [...sortDescWithEdges(rest, maxFirst, maxMiddle), sizes[fracIdx]];
+  }
+
+  return sortDescWithEdges(sizes, maxFirst, maxLast);
 }
 
 /**
@@ -553,17 +530,14 @@ function reorderForDisplay(
 function sortDescWithEdges(sizes: number[], maxFirst: number, maxLast: number): number[] {
   const pool = [...sizes].sort((a, b) => b - a);
 
-  // Position 0: largest piece that fits with paddingFirst
   const firstIdx = pool.findIndex((v) => v <= maxFirst);
   if (firstIdx < 0) return sizes;
   const first = pool.splice(firstIdx, 1)[0];
 
-  // If the smallest remaining piece already fits paddingLast, we're done
   if (pool.length === 0 || pool[pool.length - 1] <= maxLast) {
     return [first, ...pool];
   }
 
-  // Last element too large — find a valid one and move it to the end
   const validLastIdx = pool.findIndex((v) => v <= maxLast);
   if (validLastIdx < 0) return sizes;
   const lastPiece = pool.splice(validLastIdx, 1)[0];

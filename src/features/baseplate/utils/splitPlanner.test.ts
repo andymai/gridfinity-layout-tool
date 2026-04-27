@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeBaseplateTiling, pieceToBaseplateParams, colToLetter } from './splitPlanner';
+import { TONGUE_PROTRUSION } from '@/features/generation/worker/generators/generatorConstants';
 import type { BaseplateParams } from '@/shared/types/bin';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -549,6 +550,155 @@ describe('computeBaseplateTiling', () => {
       expect(widthMm).toBeLessThanOrEqual(256);
       expect(depthMm).toBeLessThanOrEqual(256);
     }
+  });
+
+  // ─── Dovetail tongue protrusion (#1498) ────────────────────────────────
+
+  /**
+   * Real STL bbox of a piece, given the male/female convention of `buildConnectors`:
+   * - left/front edges are male tongues when invertDovetails=false; female grooves otherwise.
+   * - Female grooves cut into the slab and don't extend its bbox.
+   */
+  function actualPieceBbox(
+    piece: {
+      widthUnits: number;
+      depthUnits: number;
+      paddingLeft: number;
+      paddingRight: number;
+      paddingFront: number;
+      paddingBack: number;
+      edges: { left: string; right: string; front: string; back: string };
+    },
+    invert: boolean
+  ): { widthMm: number; depthMm: number } {
+    const startMale = !invert;
+    const leftTongue = piece.edges.left === 'join' && startMale ? TONGUE_PROTRUSION : 0;
+    const rightTongue = piece.edges.right === 'join' && !startMale ? TONGUE_PROTRUSION : 0;
+    const frontTongue = piece.edges.front === 'join' && startMale ? TONGUE_PROTRUSION : 0;
+    const backTongue = piece.edges.back === 'join' && !startMale ? TONGUE_PROTRUSION : 0;
+    return {
+      widthMm:
+        piece.widthUnits * 42 + piece.paddingLeft + piece.paddingRight + leftTongue + rightTongue,
+      depthMm:
+        piece.depthUnits * 42 + piece.paddingFront + piece.paddingBack + frontTongue + backTongue,
+    };
+  }
+
+  it('TONGUE_PROTRUSION_MM mirrors the generator constant exactly', () => {
+    // splitPlanner duplicates TONGUE_PROTRUSION locally because module
+    // boundaries forbid features/baseplate from importing features/generation.
+    // If the generator constant ever changes, this assertion forces the planner
+    // copy to be updated in lockstep so split fits stay correct.
+    expect(TONGUE_PROTRUSION).toBe(1.5);
+  });
+
+  it('accounts for dovetail tongue protrusion when splitting (#1498)', () => {
+    // Repro: 512×324mm incl. padding on a 256mm bed with dovetail connectors.
+    // Width 512mm = 12 units * 42 + 4mm L/R padding. Depth 324mm = 7 units * 42 + 15mm F/B padding.
+    // Without dovetail accounting the planner picks [6, 6] — but the join edge has
+    // a 1.5mm tongue, making the actual STL 257.5mm wide, exceeding the 256mm bed.
+    const params = makeParams({
+      width: 12,
+      depth: 7,
+      paddingLeft: 4,
+      paddingRight: 4,
+      paddingFront: 15,
+      paddingBack: 15,
+      connectorNubs: true,
+    });
+
+    const tiling = computeBaseplateTiling(params, 256);
+
+    for (const piece of tiling.pieces) {
+      const { widthMm, depthMm } = actualPieceBbox(piece, false);
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
+  });
+
+  it('accounts for dovetail tongue protrusion with invertDovetails=true', () => {
+    // With invert, the tongue moves to right/back. The planner must reserve bed
+    // space on the opposite side of every join edge.
+    const params = makeParams({
+      width: 12,
+      depth: 7,
+      paddingLeft: 4,
+      paddingRight: 4,
+      paddingFront: 15,
+      paddingBack: 15,
+      connectorNubs: true,
+      invertDovetails: true,
+    });
+
+    const tiling = computeBaseplateTiling(params, 256);
+
+    for (const piece of tiling.pieces) {
+      const { widthMm, depthMm } = actualPieceBbox(piece, true);
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
+  });
+
+  it('ignores dovetail protrusion when connectorNubs is disabled', () => {
+    // Same dimensions as above — without dovetails, 6+6 fits exactly at 256mm.
+    const params = makeParams({
+      width: 12,
+      depth: 4,
+      paddingLeft: 4,
+      paddingRight: 4,
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.cols).toBe(2);
+    const widths = colWidths(params);
+    expect(widths).toEqual([6, 6]);
+  });
+
+  it('handles invertDovetails + asymmetric padding without overflow', () => {
+    // Asymmetric padding stresses the per-position capacity calculation.
+    // With invert=true, the male tongue moves to the right/back side, so the
+    // last chunk's exterior side carries paddingEnd while its interior left
+    // is female (no protrusion). Verify pieces still fit.
+    const params = makeParams({
+      width: 12,
+      depth: 7,
+      paddingLeft: 30,
+      paddingRight: 2,
+      paddingFront: 3,
+      paddingBack: 20,
+      connectorNubs: true,
+      invertDovetails: true,
+    });
+
+    const tiling = computeBaseplateTiling(params, 256);
+
+    for (const piece of tiling.pieces) {
+      const { widthMm, depthMm } = actualPieceBbox(piece, true);
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
+  });
+
+  it('handles fractional dimensions with connectorNubs enabled', () => {
+    // Half-bin pieces interact with the tongue-aware capacity check at the
+    // last chunk. Verify the planner still produces a valid partition.
+    const params = makeParams({
+      width: 13.5,
+      depth: 4,
+      paddingLeft: 3,
+      paddingRight: 3,
+      connectorNubs: true,
+    });
+
+    const tiling = computeBaseplateTiling(params, 256);
+
+    for (const piece of tiling.pieces) {
+      const { widthMm, depthMm } = actualPieceBbox(piece, false);
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
+    // Total should still equal the requested dimensions
+    const totalWidth = colWidths(params).reduce((a, b) => a + b, 0);
+    expect(totalWidth).toBe(13.5);
   });
 
   // ─── All pieces always fit on bed ──────────────────────────────────────
