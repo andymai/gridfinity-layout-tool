@@ -17,6 +17,46 @@ import type { BaseplatePiece, BaseplateTiling, PaddingReductionHint } from '../t
 /** Threshold for detecting a fractional half-unit (avoids floating-point noise). */
 const FRACTIONAL_THRESHOLD = 0.49;
 
+/**
+ * How far the dovetail tongue protrudes past the slab wall on a join edge.
+ * Mirrors `TONGUE_PROTRUSION` in `features/generation/.../generatorConstants.ts`
+ * (cross-feature import is forbidden by module boundaries; keep these in sync).
+ *
+ * The fit checker must subtract this from the bed budget on any join edge whose
+ * tongue is male — otherwise pieces that compute to exactly the bed width on
+ * paper exceed it as STLs (#1498).
+ */
+const TONGUE_PROTRUSION_MM = 1.5;
+
+/**
+ * Per-axis dovetail overhang model: which axis-end carries the male tongue.
+ *
+ * Convention (matches `buildConnectors` in baseplateGenerator):
+ *   left/front are male when invertDovetails=false; right/back are male otherwise.
+ * Females cut into the slab and don't extend its bbox, so they cost nothing.
+ */
+interface DovetailOverhang {
+  /** mm reserved on the start side (low index) when this side is a join edge. */
+  startMaleMm: number;
+  /** mm reserved on the end side (high index) when this side is a join edge. */
+  endMaleMm: number;
+}
+
+const NO_OVERHANG: DovetailOverhang = { startMaleMm: 0, endMaleMm: 0 };
+
+function overhangFor(
+  connectorNubs: boolean | undefined,
+  invertDovetails: boolean | undefined
+): DovetailOverhang {
+  if (!connectorNubs) return NO_OVERHANG;
+  // Both axes follow the same rule: the start side (left / front) is male iff !invertDovetails.
+  const startMale = !invertDovetails;
+  return {
+    startMaleMm: startMale ? TONGUE_PROTRUSION_MM : 0,
+    endMaleMm: startMale ? 0 : TONGUE_PROTRUSION_MM,
+  };
+}
+
 /** Convert a zero-based column index to a letter: 0→A, 1→B, ..., 25→Z */
 export function colToLetter(col: number): string {
   return String.fromCharCode(65 + col);
@@ -36,15 +76,22 @@ function partitionAxis(
   gridUnitMm: number,
   printBedMm: number,
   paddingStart: number,
-  paddingEnd: number
+  paddingEnd: number,
+  overhang: DovetailOverhang = NO_OVERHANG
 ): number[] | null {
   const intPart = Math.floor(totalUnits);
   const hasFrac = totalUnits - intPart >= FRACTIONAL_THRESHOLD;
 
+  // Single-piece (numChunks=1) has no joins, so no tongue overhead.
+  // Multi-piece pieces give up bed-budget on each join edge whose tongue is male.
+  // The middle-piece reservation collapses to a single TONGUE_PROTRUSION because
+  // exactly one of left/right is male regardless of invert orientation.
+  const innerMale = overhang.startMaleMm + overhang.endMaleMm;
+
   const maxWithBoth = Math.floor((printBedMm - paddingStart - paddingEnd) / gridUnitMm);
-  const maxWithStart = Math.floor((printBedMm - paddingStart) / gridUnitMm);
-  const maxWithEnd = Math.floor((printBedMm - paddingEnd) / gridUnitMm);
-  const maxMiddle = Math.floor(printBedMm / gridUnitMm);
+  const maxWithStart = Math.floor((printBedMm - paddingStart - overhang.endMaleMm) / gridUnitMm);
+  const maxWithEnd = Math.floor((printBedMm - paddingEnd - overhang.startMaleMm) / gridUnitMm);
+  const maxMiddle = Math.floor((printBedMm - innerMale) / gridUnitMm);
 
   // Degenerate: bed can't hold even 1 unit in any position
   if (maxWithBoth < 1 || maxWithStart < 1 || maxWithEnd < 1 || maxMiddle < 1) {
@@ -117,7 +164,7 @@ function partitionAxis(
   // Handle fractional 0.5 unit — absorb into last chunk if it fits
   if (hasFrac) {
     const lastIdx = numChunks - 1;
-    const lastOverhead = paddingEnd;
+    const lastOverhead = paddingEnd + overhang.startMaleMm;
     if ((sizes[lastIdx] + 0.5) * gridUnitMm + lastOverhead <= printBedMm) {
       sizes[lastIdx] += 0.5;
     } else {
@@ -145,19 +192,27 @@ function allPiecesFit(
   pL: number,
   pR: number,
   pF: number,
-  pB: number
+  pB: number,
+  xOverhang: DovetailOverhang = NO_OVERHANG,
+  yOverhang: DovetailOverhang = NO_OVERHANG
 ): boolean {
   for (let c = 0; c < colSizes.length; c++) {
     const padLeft = c === 0 ? pL : 0;
     const padRight = c === colSizes.length - 1 ? pR : 0;
-    const widthMm = colSizes[c] * gridUnitMm + padLeft + padRight;
+    // Join edges (interior sides) carry a male tongue's protrusion if the convention
+    // assigns male to that side. Female sides cut into the slab and add nothing.
+    const tongueLeft = c === 0 ? 0 : xOverhang.startMaleMm;
+    const tongueRight = c === colSizes.length - 1 ? 0 : xOverhang.endMaleMm;
+    const widthMm = colSizes[c] * gridUnitMm + padLeft + padRight + tongueLeft + tongueRight;
     if (widthMm > printBedWidthMm + 0.001) return false;
   }
 
   for (let r = 0; r < rowSizes.length; r++) {
     const padFront = r === 0 ? pF : 0;
     const padBack = r === rowSizes.length - 1 ? pB : 0;
-    const depthMm = rowSizes[r] * gridUnitMm + padFront + padBack;
+    const tongueFront = r === 0 ? 0 : yOverhang.startMaleMm;
+    const tongueBack = r === rowSizes.length - 1 ? 0 : yOverhang.endMaleMm;
+    const depthMm = rowSizes[r] * gridUnitMm + padFront + padBack + tongueFront + tongueBack;
     if (depthMm > printBedDepthMm + 0.001) return false;
   }
 
@@ -193,7 +248,9 @@ function findOptimalTiling(
   pL: number,
   pR: number,
   pF: number,
-  pB: number
+  pB: number,
+  xOverhang: DovetailOverhang = NO_OVERHANG,
+  yOverhang: DovetailOverhang = NO_OVERHANG
 ): { colSizes: number[]; rowSizes: number[] } {
   const maxCols = Math.ceil(totalWidth); // absolute upper bound
   const maxRows = Math.ceil(totalDepth);
@@ -205,14 +262,22 @@ function findOptimalTiling(
     // Use > not >= so we still evaluate nc×1 candidates for symmetry tiebreaks.
     if (best && nc > best.pieceCount) break;
 
-    const colSizes = partitionAxis(totalWidth, nc, gridUnitMm, printBedWidthMm, pL, pR);
+    const colSizes = partitionAxis(totalWidth, nc, gridUnitMm, printBedWidthMm, pL, pR, xOverhang);
     if (!colSizes) continue;
 
     for (let nr = 1; nr <= maxRows; nr++) {
       const pieceCount = nc * nr;
       if (best && pieceCount > best.pieceCount) break;
 
-      const rowSizes = partitionAxis(totalDepth, nr, gridUnitMm, printBedDepthMm, pF, pB);
+      const rowSizes = partitionAxis(
+        totalDepth,
+        nr,
+        gridUnitMm,
+        printBedDepthMm,
+        pF,
+        pB,
+        yOverhang
+      );
       if (!rowSizes) continue;
 
       if (
@@ -225,7 +290,9 @@ function findOptimalTiling(
           pL,
           pR,
           pF,
-          pB
+          pB,
+          xOverhang,
+          yOverhang
         )
       ) {
         const score = symmetryScore(colSizes) + symmetryScore(rowSizes);
@@ -264,7 +331,9 @@ function computePaddingReductionHint(
   pR: number,
   pF: number,
   pB: number,
-  currentPieceCount: number
+  currentPieceCount: number,
+  xOverhang: DovetailOverhang = NO_OVERHANG,
+  yOverhang: DovetailOverhang = NO_OVERHANG
 ): PaddingReductionHint | null {
   if (currentPieceCount <= 1) return null;
 
@@ -282,7 +351,9 @@ function computePaddingReductionHint(
       pL - r,
       pR - r,
       pF,
-      pB
+      pB,
+      xOverhang,
+      yOverhang
     );
     const saved = currentPieceCount - result.colSizes.length * result.rowSizes.length;
     if (saved > 0) {
@@ -303,7 +374,9 @@ function computePaddingReductionHint(
       pL,
       pR,
       pF - r,
-      pB - r
+      pB - r,
+      xOverhang,
+      yOverhang
     );
     const saved = currentPieceCount - result.colSizes.length * result.rowSizes.length;
     if (saved > 0) {
@@ -324,7 +397,9 @@ function computePaddingReductionHint(
       pL - r,
       pR - r,
       pF - r,
-      pB - r
+      pB - r,
+      xOverhang,
+      yOverhang
     );
     const saved = currentPieceCount - result.colSizes.length * result.rowSizes.length;
     if (saved > 0) {
@@ -361,7 +436,15 @@ export function computeBaseplateTiling(
     paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
+    connectorNubs,
+    invertDovetails,
   } = params;
+
+  // Pieces with dovetail connectors include male tongue protrusions in their bbox
+  // (#1498). The planner reserves bed budget for those tongues so the resulting
+  // STLs actually fit the bed.
+  const xOverhang = overhangFor(connectorNubs, invertDovetails);
+  const yOverhang = xOverhang;
 
   // Find optimal tiling using 2D joint search
   const { colSizes: rawColSizes, rowSizes: rawRowSizes } = findOptimalTiling(
@@ -373,7 +456,9 @@ export function computeBaseplateTiling(
     paddingLeft,
     paddingRight,
     paddingFront,
-    paddingBack
+    paddingBack,
+    xOverhang,
+    yOverhang
   );
 
   // Reorder for display: largest pieces at front/left, fractional edges pinned
@@ -448,7 +533,9 @@ export function computeBaseplateTiling(
     paddingRight,
     paddingFront,
     paddingBack,
-    pieceCount
+    pieceCount,
+    xOverhang,
+    yOverhang
   );
 
   return {

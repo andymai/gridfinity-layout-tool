@@ -551,6 +551,54 @@ describe('computeBaseplateTiling', () => {
     }
   });
 
+  // ─── Dovetail tongue protrusion (#1498) ────────────────────────────────
+
+  it('accounts for dovetail tongue protrusion when splitting (#1498)', () => {
+    // Repro: 512×324mm incl. padding on a 256mm bed with dovetail connectors.
+    // Width 512mm = 12 units * 42 + 4mm L/R padding. Depth 324mm = 7 units * 42 + 15mm F/B padding.
+    // Without dovetail accounting the planner picks [6, 6] — but the join edge has
+    // a 1.5mm tongue, making the actual STL 257.5mm wide, exceeding the 256mm bed.
+    const params = makeParams({
+      width: 12,
+      depth: 7,
+      paddingLeft: 4,
+      paddingRight: 4,
+      paddingFront: 15,
+      paddingBack: 15,
+      connectorNubs: true,
+    });
+    const TONGUE_PROTRUSION = 1.5;
+
+    const tiling = computeBaseplateTiling(params, 256);
+
+    for (const piece of tiling.pieces) {
+      const tongueX =
+        (piece.edges.left === 'join' ? TONGUE_PROTRUSION : 0) +
+        (piece.edges.right === 'join' ? TONGUE_PROTRUSION : 0);
+      const tongueY =
+        (piece.edges.front === 'join' ? TONGUE_PROTRUSION : 0) +
+        (piece.edges.back === 'join' ? TONGUE_PROTRUSION : 0);
+      const widthMm = piece.widthUnits * 42 + piece.paddingLeft + piece.paddingRight + tongueX;
+      const depthMm = piece.depthUnits * 42 + piece.paddingFront + piece.paddingBack + tongueY;
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
+  });
+
+  it('ignores dovetail protrusion when connectorNubs is disabled', () => {
+    // Same dimensions as above — without dovetails, 6+6 fits exactly at 256mm.
+    const params = makeParams({
+      width: 12,
+      depth: 4,
+      paddingLeft: 4,
+      paddingRight: 4,
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.cols).toBe(2);
+    const widths = colWidths(params);
+    expect(widths).toEqual([6, 6]);
+  });
+
   // ─── All pieces always fit on bed ──────────────────────────────────────
 
   it.each([
