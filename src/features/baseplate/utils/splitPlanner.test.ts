@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeBaseplateTiling, pieceToBaseplateParams, colToLetter } from './splitPlanner';
+import { TONGUE_PROTRUSION } from '@/features/generation/worker/generators/generatorConstants';
 import type { BaseplateParams } from '@/shared/types/bin';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -570,12 +571,11 @@ describe('computeBaseplateTiling', () => {
     },
     invert: boolean
   ): { widthMm: number; depthMm: number } {
-    const TONGUE = 1.5;
     const startMale = !invert;
-    const leftTongue = piece.edges.left === 'join' && startMale ? TONGUE : 0;
-    const rightTongue = piece.edges.right === 'join' && !startMale ? TONGUE : 0;
-    const frontTongue = piece.edges.front === 'join' && startMale ? TONGUE : 0;
-    const backTongue = piece.edges.back === 'join' && !startMale ? TONGUE : 0;
+    const leftTongue = piece.edges.left === 'join' && startMale ? TONGUE_PROTRUSION : 0;
+    const rightTongue = piece.edges.right === 'join' && !startMale ? TONGUE_PROTRUSION : 0;
+    const frontTongue = piece.edges.front === 'join' && startMale ? TONGUE_PROTRUSION : 0;
+    const backTongue = piece.edges.back === 'join' && !startMale ? TONGUE_PROTRUSION : 0;
     return {
       widthMm:
         piece.widthUnits * 42 + piece.paddingLeft + piece.paddingRight + leftTongue + rightTongue,
@@ -583,6 +583,14 @@ describe('computeBaseplateTiling', () => {
         piece.depthUnits * 42 + piece.paddingFront + piece.paddingBack + frontTongue + backTongue,
     };
   }
+
+  it('TONGUE_PROTRUSION_MM mirrors the generator constant exactly', () => {
+    // splitPlanner duplicates TONGUE_PROTRUSION locally because module
+    // boundaries forbid features/baseplate from importing features/generation.
+    // If the generator constant ever changes, this assertion forces the planner
+    // copy to be updated in lockstep so split fits stay correct.
+    expect(TONGUE_PROTRUSION).toBe(1.5);
+  });
 
   it('accounts for dovetail tongue protrusion when splitting (#1498)', () => {
     // Repro: 512×324mm incl. padding on a 256mm bed with dovetail connectors.
@@ -643,6 +651,54 @@ describe('computeBaseplateTiling', () => {
     expect(tiling.cols).toBe(2);
     const widths = colWidths(params);
     expect(widths).toEqual([6, 6]);
+  });
+
+  it('handles invertDovetails + asymmetric padding without overflow', () => {
+    // Asymmetric padding stresses the per-position capacity calculation.
+    // With invert=true, the male tongue moves to the right/back side, so the
+    // last chunk's exterior side carries paddingEnd while its interior left
+    // is female (no protrusion). Verify pieces still fit.
+    const params = makeParams({
+      width: 12,
+      depth: 7,
+      paddingLeft: 30,
+      paddingRight: 2,
+      paddingFront: 3,
+      paddingBack: 20,
+      connectorNubs: true,
+      invertDovetails: true,
+    });
+
+    const tiling = computeBaseplateTiling(params, 256);
+
+    for (const piece of tiling.pieces) {
+      const { widthMm, depthMm } = actualPieceBbox(piece, true);
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
+  });
+
+  it('handles fractional dimensions with connectorNubs enabled', () => {
+    // Half-bin pieces interact with the tongue-aware capacity check at the
+    // last chunk. Verify the planner still produces a valid partition.
+    const params = makeParams({
+      width: 13.5,
+      depth: 4,
+      paddingLeft: 3,
+      paddingRight: 3,
+      connectorNubs: true,
+    });
+
+    const tiling = computeBaseplateTiling(params, 256);
+
+    for (const piece of tiling.pieces) {
+      const { widthMm, depthMm } = actualPieceBbox(piece, false);
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
+    // Total should still equal the requested dimensions
+    const totalWidth = colWidths(params).reduce((a, b) => a + b, 0);
+    expect(totalWidth).toBe(13.5);
   });
 
   // ─── All pieces always fit on bed ──────────────────────────────────────
