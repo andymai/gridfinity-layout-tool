@@ -246,7 +246,7 @@ export const useBroadcastEvent =
 // Explicit type annotation prevents TS2883 ("Property has or is using private name X")
 // when emitting declarations for composite projects: the inferred type would reference
 // private Liveblocks internals (RoomEventMessage<P, U, E>) that the public d.ts cannot
-// resolve. Required to re-enable Stryker's typescript-checker.
+// resolve.
 export const useEventListener: (
   callback: (data: { event: unknown; user: unknown; connectionId: number }) => void
 ) => void = context?.useEventListener ?? createUnconfiguredHook('useEventListener');
