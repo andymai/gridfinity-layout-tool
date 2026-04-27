@@ -553,6 +553,37 @@ describe('computeBaseplateTiling', () => {
 
   // ─── Dovetail tongue protrusion (#1498) ────────────────────────────────
 
+  /**
+   * Real STL bbox of a piece, given the male/female convention of `buildConnectors`:
+   * - left/front edges are male tongues when invertDovetails=false; female grooves otherwise.
+   * - Female grooves cut into the slab and don't extend its bbox.
+   */
+  function actualPieceBbox(
+    piece: {
+      widthUnits: number;
+      depthUnits: number;
+      paddingLeft: number;
+      paddingRight: number;
+      paddingFront: number;
+      paddingBack: number;
+      edges: { left: string; right: string; front: string; back: string };
+    },
+    invert: boolean
+  ): { widthMm: number; depthMm: number } {
+    const TONGUE = 1.5;
+    const startMale = !invert;
+    const leftTongue = piece.edges.left === 'join' && startMale ? TONGUE : 0;
+    const rightTongue = piece.edges.right === 'join' && !startMale ? TONGUE : 0;
+    const frontTongue = piece.edges.front === 'join' && startMale ? TONGUE : 0;
+    const backTongue = piece.edges.back === 'join' && !startMale ? TONGUE : 0;
+    return {
+      widthMm:
+        piece.widthUnits * 42 + piece.paddingLeft + piece.paddingRight + leftTongue + rightTongue,
+      depthMm:
+        piece.depthUnits * 42 + piece.paddingFront + piece.paddingBack + frontTongue + backTongue,
+    };
+  }
+
   it('accounts for dovetail tongue protrusion when splitting (#1498)', () => {
     // Repro: 512×324mm incl. padding on a 256mm bed with dovetail connectors.
     // Width 512mm = 12 units * 42 + 4mm L/R padding. Depth 324mm = 7 units * 42 + 15mm F/B padding.
@@ -567,19 +598,34 @@ describe('computeBaseplateTiling', () => {
       paddingBack: 15,
       connectorNubs: true,
     });
-    const TONGUE_PROTRUSION = 1.5;
 
     const tiling = computeBaseplateTiling(params, 256);
 
     for (const piece of tiling.pieces) {
-      const tongueX =
-        (piece.edges.left === 'join' ? TONGUE_PROTRUSION : 0) +
-        (piece.edges.right === 'join' ? TONGUE_PROTRUSION : 0);
-      const tongueY =
-        (piece.edges.front === 'join' ? TONGUE_PROTRUSION : 0) +
-        (piece.edges.back === 'join' ? TONGUE_PROTRUSION : 0);
-      const widthMm = piece.widthUnits * 42 + piece.paddingLeft + piece.paddingRight + tongueX;
-      const depthMm = piece.depthUnits * 42 + piece.paddingFront + piece.paddingBack + tongueY;
+      const { widthMm, depthMm } = actualPieceBbox(piece, false);
+      expect(widthMm).toBeLessThanOrEqual(256);
+      expect(depthMm).toBeLessThanOrEqual(256);
+    }
+  });
+
+  it('accounts for dovetail tongue protrusion with invertDovetails=true', () => {
+    // With invert, the tongue moves to right/back. The planner must reserve bed
+    // space on the opposite side of every join edge.
+    const params = makeParams({
+      width: 12,
+      depth: 7,
+      paddingLeft: 4,
+      paddingRight: 4,
+      paddingFront: 15,
+      paddingBack: 15,
+      connectorNubs: true,
+      invertDovetails: true,
+    });
+
+    const tiling = computeBaseplateTiling(params, 256);
+
+    for (const piece of tiling.pieces) {
+      const { widthMm, depthMm } = actualPieceBbox(piece, true);
       expect(widthMm).toBeLessThanOrEqual(256);
       expect(depthMm).toBeLessThanOrEqual(256);
     }

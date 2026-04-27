@@ -57,6 +57,33 @@ function overhangFor(
   };
 }
 
+/** Per-position max grid-unit capacity for a multi-chunk axis. */
+interface AxisCapacity {
+  /** Capacity at the start (low-index) chunk: outer=paddingStart, inner=join. */
+  maxFirst: number;
+  /** Capacity at the end (high-index) chunk: inner=join, outer=paddingEnd. */
+  maxLast: number;
+  /** Capacity at any interior chunk: joins on both sides. */
+  maxMiddle: number;
+}
+
+function axisCapacity(
+  printBedMm: number,
+  gridUnitMm: number,
+  paddingStart: number,
+  paddingEnd: number,
+  overhang: DovetailOverhang
+): AxisCapacity {
+  // Multi-piece pieces give up bed-budget on each join edge whose tongue is male.
+  // Middle chunks have both sides joined, but exactly one is male regardless of
+  // invert orientation, so this collapses to a single TONGUE_PROTRUSION.
+  return {
+    maxFirst: Math.floor((printBedMm - paddingStart - overhang.endMaleMm) / gridUnitMm),
+    maxLast: Math.floor((printBedMm - paddingEnd - overhang.startMaleMm) / gridUnitMm),
+    maxMiddle: Math.floor((printBedMm - overhang.startMaleMm - overhang.endMaleMm) / gridUnitMm),
+  };
+}
+
 /** Convert a zero-based column index to a letter: 0→A, 1→B, ..., 25→Z */
 export function colToLetter(col: number): string {
   return String.fromCharCode(65 + col);
@@ -83,18 +110,17 @@ function partitionAxis(
   const hasFrac = totalUnits - intPart >= FRACTIONAL_THRESHOLD;
 
   // Single-piece (numChunks=1) has no joins, so no tongue overhead.
-  // Multi-piece pieces give up bed-budget on each join edge whose tongue is male.
-  // The middle-piece reservation collapses to a single TONGUE_PROTRUSION because
-  // exactly one of left/right is male regardless of invert orientation.
-  const innerMale = overhang.startMaleMm + overhang.endMaleMm;
-
   const maxWithBoth = Math.floor((printBedMm - paddingStart - paddingEnd) / gridUnitMm);
-  const maxWithStart = Math.floor((printBedMm - paddingStart - overhang.endMaleMm) / gridUnitMm);
-  const maxWithEnd = Math.floor((printBedMm - paddingEnd - overhang.startMaleMm) / gridUnitMm);
-  const maxMiddle = Math.floor((printBedMm - innerMale) / gridUnitMm);
+  const { maxFirst, maxLast, maxMiddle } = axisCapacity(
+    printBedMm,
+    gridUnitMm,
+    paddingStart,
+    paddingEnd,
+    overhang
+  );
 
   // Degenerate: bed can't hold even 1 unit in any position
-  if (maxWithBoth < 1 || maxWithStart < 1 || maxWithEnd < 1 || maxMiddle < 1) {
+  if (maxWithBoth < 1 || maxFirst < 1 || maxLast < 1 || maxMiddle < 1) {
     return numChunks === 1 ? [totalUnits] : null;
   }
 
@@ -113,8 +139,8 @@ function partitionAxis(
   // For numChunks >= 2, distribute integer units as evenly as possible.
   // Compute per-position max capacities (first and last carry edge padding).
   const maxPerPos: number[] = Array.from({ length: numChunks }, (_, i) => {
-    if (i === 0) return maxWithStart;
-    if (i === numChunks - 1) return maxWithEnd;
+    if (i === 0) return maxFirst;
+    if (i === numChunks - 1) return maxLast;
     return maxMiddle;
   });
 
@@ -468,7 +494,8 @@ export function computeBaseplateTiling(
     printBedWidthMm,
     paddingLeft,
     paddingRight,
-    fractionalEdgeX === 'start'
+    fractionalEdgeX === 'start',
+    xOverhang
   );
   const rowSizes = reorderForDisplay(
     rawRowSizes,
@@ -476,7 +503,8 @@ export function computeBaseplateTiling(
     printBedDepthMm,
     paddingFront,
     paddingBack,
-    fractionalEdgeY === 'start'
+    fractionalEdgeY === 'start',
+    yOverhang
   );
 
   const isSplit = colSizes.length > 1 || rowSizes.length > 1;
@@ -599,36 +627,42 @@ function reorderForDisplay(
   printBedMm: number,
   paddingFirst: number,
   paddingLast: number,
-  fractionAtStart: boolean
+  fractionAtStart: boolean,
+  overhang: DovetailOverhang = NO_OVERHANG
 ): number[] {
   if (sizes.length <= 1) return sizes;
 
-  const maxAtFirst = Math.floor((printBedMm - paddingFirst) / gridUnitMm);
-  const maxAtLast = Math.floor((printBedMm - paddingLast) / gridUnitMm);
+  // Use the same per-position constraints as partitionAxis so dovetail tongues
+  // are accounted for when reshuffling chunks across positions (#1498).
+  const { maxFirst, maxLast, maxMiddle } = axisCapacity(
+    printBedMm,
+    gridUnitMm,
+    paddingFirst,
+    paddingLast,
+    overhang
+  );
 
   const fracIdx = sizes.findIndex(isFractional);
 
   // When fractionAtStart, pin the fractional piece to position 0 —
   // but only if it actually fits with paddingFirst at that position.
   if (fractionAtStart) {
-    if (fracIdx >= 0 && sizes[fracIdx] <= maxAtFirst) {
-      const maxMiddle = Math.floor(printBedMm / gridUnitMm);
+    if (fracIdx >= 0 && sizes[fracIdx] <= maxFirst) {
       const rest = sizes.filter((_, i) => i !== fracIdx);
-      const sortedRest = sortDescWithEdges(rest, maxMiddle, maxAtLast);
+      const sortedRest = sortDescWithEdges(rest, maxMiddle, maxLast);
       return [sizes[fracIdx], ...sortedRest];
     }
   }
 
   // When fraction exists and belongs at the end, pin it to the last position
   // to prevent sortDescWithEdges from placing it in the middle.
-  if (!fractionAtStart && fracIdx >= 0 && sizes[fracIdx] <= maxAtLast) {
-    const maxMiddle = Math.floor(printBedMm / gridUnitMm);
+  if (!fractionAtStart && fracIdx >= 0 && sizes[fracIdx] <= maxLast) {
     const rest = sizes.filter((_, i) => i !== fracIdx);
-    const sortedRest = sortDescWithEdges(rest, maxAtFirst, maxMiddle);
+    const sortedRest = sortDescWithEdges(rest, maxFirst, maxMiddle);
     return [...sortedRest, sizes[fracIdx]];
   }
 
-  return sortDescWithEdges(sizes, maxAtFirst, maxAtLast);
+  return sortDescWithEdges(sizes, maxFirst, maxLast);
 }
 
 /**
