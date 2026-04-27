@@ -40,8 +40,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      # Dependabot PR runs do not have access to repo Actions secrets, including
+      # VERCEL_AUTOMATION_BYPASS_SECRET — so the preview will return 401 and the
+      # smoke spec cannot run. Short-circuit cleanly: dep bumps still get
+      # coverage from Build, Unit Tests, Quality, and CodeQL.
+      - name: Skip — Dependabot PR
+        if: github.actor == 'dependabot[bot]'
+        run: |
+          echo "::warning::Dependabot PR — VERCEL_AUTOMATION_BYPASS_SECRET unavailable; preview smoke is N/A."
+          echo "Coverage for this PR comes from CI Build, Unit Tests, Quality, and CodeQL."
+
       - name: Resolve Vercel preview URL
         id: preview
+        if: github.actor != 'dependabot[bot]'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
