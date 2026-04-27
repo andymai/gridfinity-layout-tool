@@ -36,7 +36,22 @@ const logger = createLogger('repairMeshWinding');
 
 /**
  * Repair triangle winding so every directed edge appears at most once and
- * the signed volume is positive.
+ * the (global) signed volume is positive.
+ *
+ * BFS-walks every triangle starting from the global "best" seed (top-face
+ * triangle with strongest +z normal). Meshes whose connectivity graph is
+ * disconnected — either truly multi-component or because brepjs emits
+ * per-face vertex ranges with no index sharing across face boundaries —
+ * are still fully walked: any unvisited triangle after the first BFS
+ * spawns a new BFS pass, so no triangle is left unflipped if it needed to
+ * be.
+ *
+ * The signed-volume safety net is applied **globally**, not per-component.
+ * For brepjs's per-face-indexed output, individual face components have
+ * meaningless or near-zero volume contributions (e.g., a flat z=0 face
+ * contributes exactly 0); a per-component flip would mis-decide those
+ * cases. The global integral aggregates contributions across all faces,
+ * giving a reliable signal of whether the whole mesh is inverted.
  *
  * @param vertices Flat XYZ array (length = vertexCount * 3).
  * @param triangles Flat indexed-triangle array (length = triangleCount * 3).
@@ -46,6 +61,12 @@ export function repairMeshWinding(
   vertices: ArrayLike<number>,
   triangles: ArrayLike<number>
 ): Uint32Array {
+  if (triangles.length % 3 !== 0) {
+    throw new Error(
+      `repairMeshWinding: triangles.length=${triangles.length} is not a multiple of 3`
+    );
+  }
+
   const triCount = triangles.length / 3;
   const out = new Uint32Array(triangles.length);
   for (let i = 0; i < triangles.length; i++) {
@@ -65,29 +86,28 @@ export function repairMeshWinding(
     addEdge(edgeMap, c, a, t);
   }
 
-  const seedIdx = findSeedTriangle(vertices, out, triCount);
-
-  // BFS from the seed, flipping any neighbor whose shared edge has the wrong
-  // direction relative to the visited side.
   const visited = new Uint8Array(triCount);
-  const queue: number[] = [seedIdx];
-  visited[seedIdx] = 1;
   let nonManifoldEdges = 0;
+  const recordNonManifold = (n: number): void => {
+    nonManifoldEdges += n;
+  };
 
-  while (queue.length > 0) {
-    const t = queue.shift() as number;
-    const a = out[t * 3];
-    const b = out[t * 3 + 1];
-    const c = out[t * 3 + 2];
-
-    nonManifoldEdges += processEdge(out, edgeMap, visited, queue, t, a, b);
-    nonManifoldEdges += processEdge(out, edgeMap, visited, queue, t, b, c);
-    nonManifoldEdges += processEdge(out, edgeMap, visited, queue, t, c, a);
+  // First BFS uses the global best seed (top-face strongest +z). Subsequent
+  // BFS passes pick up any triangles not reachable from the first seed
+  // (multi-component meshes, or brepjs per-face-indexed output where faces
+  // don't share vertex indices across their boundaries).
+  const firstSeed = findSeedTriangle(vertices, out, triCount);
+  bfsComponent(out, edgeMap, visited, firstSeed, recordNonManifold);
+  for (let t = 0; t < triCount; t++) {
+    if (visited[t]) continue;
+    bfsComponent(out, edgeMap, visited, t, recordNonManifold);
   }
 
-  // Safety net: if seed itself was wound backwards (e.g., the entire top face
-  // was inverted), BFS propagated the wrong winding everywhere. Detect via
-  // signed-volume sign and globally flip if needed.
+  // Global safety net: if the seed itself was wound backwards (e.g., the
+  // entire top face was inverted, leading BFS to propagate the wrong
+  // direction everywhere), the global signed volume is negative — flip all
+  // triangles. Per-component flipping would mis-decide individual flat
+  // faces whose volume contribution is near zero.
   if (signedVolume(vertices, out, triCount) < 0) {
     for (let t = 0; t < triCount; t++) {
       const tmp = out[t * 3 + 1];
@@ -104,6 +124,39 @@ export function repairMeshWinding(
   }
 
   return out;
+}
+
+/**
+ * BFS-walk one connected component starting from `seed`. Uses a head-pointer
+ * queue (O(n) total dequeues) instead of Array.shift (which is O(n) each).
+ * Flips any neighbor whose shared-edge direction matches the visited side's.
+ *
+ * @returns The list of triangle indices visited in this component.
+ */
+function bfsComponent(
+  out: Uint32Array,
+  edgeMap: Map<number, number[]>,
+  visited: Uint8Array,
+  seed: number,
+  recordNonManifold: (n: number) => void
+): void {
+  const queue: number[] = [seed];
+  visited[seed] = 1;
+  let head = 0;
+  let nonManifold = 0;
+
+  while (head < queue.length) {
+    const t = queue[head++];
+    const a = out[t * 3];
+    const b = out[t * 3 + 1];
+    const c = out[t * 3 + 2];
+
+    nonManifold += processEdge(out, edgeMap, visited, queue, t, a, b);
+    nonManifold += processEdge(out, edgeMap, visited, queue, t, b, c);
+    nonManifold += processEdge(out, edgeMap, visited, queue, t, c, a);
+  }
+
+  recordNonManifold(nonManifold);
 }
 
 function edgeKey(u: number, v: number): number {

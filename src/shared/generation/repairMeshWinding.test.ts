@@ -168,4 +168,42 @@ describe('repairMeshWinding', () => {
 
     warnSpy.mockRestore();
   });
+
+  it('throws when triangles.length is not a multiple of 3', () => {
+    const malformed = new Uint32Array([0, 1, 2, 3, 4]); // length 5
+    expect(() => repairMeshWinding(CUBE_VERTS, malformed)).toThrow(/multiple of 3/);
+  });
+
+  it('walks every component so each one is internally consistent', () => {
+    // Build two cubes side-by-side using disjoint vertex index ranges. The
+    // mesh's edge-adjacency graph is disconnected — without per-component
+    // BFS, the second cube's triangles would never be visited. With it,
+    // every triangle is walked and each component is internally consistent.
+    const verts2 = new Float32Array([
+      // cube A (indices 0..7, x range [0,1])
+      0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1,
+      // cube B (indices 8..15, x range [2,3])
+      2, 0, 0, 3, 0, 0, 3, 1, 0, 2, 1, 0, 2, 0, 1, 3, 0, 1, 3, 1, 1, 2, 1, 1,
+    ]);
+    const cubeATris = new Uint32Array(CUBE_TRIS_CORRECT);
+    const cubeBTris = new Uint32Array(CUBE_TRIS_CORRECT.length);
+    // Cube B: same topology, indices offset by 8, but with one triangle
+    // flipped so this component requires repair to be internally consistent.
+    for (let i = 0; i < CUBE_TRIS_CORRECT.length; i++) {
+      cubeBTris[i] = CUBE_TRIS_CORRECT[i] + 8;
+    }
+    // Flip one cube-B triangle to introduce a within-component winding error.
+    const tmp = cubeBTris[1];
+    cubeBTris[1] = cubeBTris[2];
+    cubeBTris[2] = tmp;
+
+    const combined = new Uint32Array(cubeATris.length + cubeBTris.length);
+    combined.set(cubeATris, 0);
+    combined.set(cubeBTris, cubeATris.length);
+    expect(countDirectedEdgeCollisions(combined)).toBeGreaterThan(0);
+
+    const result = repairMeshWinding(verts2, combined);
+    // BFS reaches both components; each is now internally consistent.
+    expect(countDirectedEdgeCollisions(result)).toBe(0);
+  });
 });

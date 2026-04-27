@@ -1310,7 +1310,8 @@ export async function exportBaseplate(
  *
  * (An even earlier version applied a per-triangle (cross · sum-of-vertex-
  * normals) heuristic which mis-fired on ~7% of triangles at curved/shared
- * edges and was removed in #1472.)
+ * edges; that was the issue tracked in #1472 and the heuristic was removed
+ * in #1473.)
  *
  * The STL face normal is the cross-product of the (corrected) winding
  * edges, the same convention slicers reconstruct anyway.
