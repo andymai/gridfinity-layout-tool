@@ -28,6 +28,16 @@
  * Reusable for any flat-indexed triangle mesh (vertex stride 3, tri stride 3).
  * Currently only wired into baseplate STL export; bins/dividers use the same
  * brepjs meshing path and can adopt this if the same symptom surfaces there.
+ *
+ * **Status (issue #1494):** as of brepjs 15.6.1 + OCCT kernel, this repair is
+ * a no-op for every known piece config — the corner-3/corner-4/edge-x-1
+ * scenario tests pass with the repair disabled, and the
+ * `__dual-kernel__/diagnoseBaseplateWinding` step-walker shows
+ * `triangles-flipped=0` even on the 13×9 magnet+lightweight reproducer that
+ * originally motivated this code. Kept as a defensive net for any future
+ * regression in brepjs/OCCT tessellation: if a downstream version reintroduces
+ * the inconsistency, this pass will silently absorb it before the user sees
+ * Bambu Studio errors.
  */
 
 import { createLogger } from '@/core/logger';

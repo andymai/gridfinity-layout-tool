@@ -1061,6 +1061,18 @@ function cutInBatches(solid: Shape3D, tools: Shape3D[]): Shape3D {
 }
 
 /**
+ * Diagnostic probe invoked at each baseplate construction milestone.
+ *
+ * Test-only: pass to `buildBaseplateSolid` to inspect intermediate solids
+ * without modifying production code. The probe receives a *borrowed* handle
+ * to the current baseplate solid — the caller must not delete or mutate it,
+ * but may call non-mutating queries (mesh, measureVolume, describe). Used by
+ * `__dual-kernel__/diagnoseBaseplateWinding.test.ts` to identify which BREP
+ * op introduces face-orientation inconsistency in #1490-class configs.
+ */
+export type BaseplateProbe = (label: string, shape: Shape3D) => void;
+
+/**
  * Build the complete baseplate BREP solid.
  *
  * Without magnets: slab height = SOCKET_HEIGHT (5mm). Pockets are through-cut
@@ -1074,10 +1086,11 @@ function cutInBatches(solid: Shape3D, tools: Shape3D[]): Shape3D {
  * The slab profile has rounded exterior corners (PLATE_CORNER_RADIUS),
  * which carry through the full height including the magnet floor.
  */
-function buildBaseplateSolid(
+export function buildBaseplateSolid(
   params: BaseplateParams,
   forExport: boolean = true,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  probe?: BaseplateProbe
 ): Shape3D {
   const {
     width,
@@ -1123,6 +1136,7 @@ function buildBaseplateSolid(
     ).extrude(-totalHeight);
     baseplate = translate(extrudedSlab, [slabOffsetX, slabOffsetY, 0]);
     extrudedSlab.delete();
+    probe?.('slabExtruded', baseplate);
 
     onProgress?.(0.2);
 
@@ -1154,6 +1168,7 @@ function buildBaseplateSolid(
     baseplate = unwrap(clone(baseplate));
     onProgress?.(0.5);
   }
+  probe?.('pocketsCut', baseplate);
 
   // Apply corner rounding as a post-cache step — this is fast (single boolean
   // cut) and avoids redoing expensive pocket cuts when corner radius changes.
@@ -1184,6 +1199,7 @@ function buildBaseplateSolid(
     baseplate = tagOp('cornerClipIntersect', () => unwrap(intersect(baseplate, roundedTranslated)));
     oldBaseplate.delete();
     roundedTranslated.delete();
+    probe?.('cornerIntersected', baseplate);
   }
 
   // 2a. Magnet hole cutters — built and cut in batches to limit WASM memory.
@@ -1191,6 +1207,7 @@ function buildBaseplateSolid(
   if (magnetHoles) {
     const holes = buildMagnetHoles(width, depth, magnetDiameter / 2, magnetDepth, cellOpts);
     baseplate = cutInBatches(baseplate, holes);
+    probe?.('magnetHolesCut', baseplate);
   }
 
   // 2a-ii. Lightweight floor cutters (cross-shaped material removal)
@@ -1203,6 +1220,7 @@ function buildBaseplateSolid(
       cellOpts
     );
     baseplate = cutInBatches(baseplate, floorCutters);
+    probe?.('lightweightFloorCut', baseplate);
   }
 
   onProgress?.(0.4);
@@ -1244,6 +1262,7 @@ function buildBaseplateSolid(
     if (baseplate !== preBoolean) preBoolean.delete();
     for (const n of nubs) n.delete();
     for (const c of connHoles) c.delete();
+    probe?.('connectorPipeline', baseplate);
   }
 
   onProgress?.(0.6);
@@ -1252,6 +1271,7 @@ function buildBaseplateSolid(
 
   const finalBaseplate = translate(baseplate, [0, 0, totalHeight]);
   baseplate.delete();
+  probe?.('final', finalBaseplate);
   return finalBaseplate;
 }
 
@@ -1299,14 +1319,17 @@ export async function exportBaseplate(
 /**
  * Build binary STL from brepjs mesh output.
  *
- * brepjs/OCCT can emit tessellated meshes whose face orientations aren't
- * consistent across the whole solid: for some baseplate piece configs
+ * brepjs/OCCT historically emitted tessellated meshes whose face orientations
+ * weren't consistent across the whole solid: for some baseplate piece configs
  * (corner-3, corner-4, edge-x-1) the bottom face and parts of the
- * dovetail/pocket walls are wound backwards, causing slicers to flag
- * thousands of "non-manifold edges" (#1490). Which BREP op produces the
- * inversion is still under investigation upstream — see the tracking issue
- * linked from #1490 — so we run a downstream BFS winding repair before
- * emitting the STL.
+ * dovetail/pocket walls were wound backwards, causing slicers to flag
+ * thousands of "non-manifold edges" (#1490). The downstream `repairMeshWinding`
+ * BFS pass corrects this before emitting the STL.
+ *
+ * Investigation status (#1494): with brepjs 15.6.1 + OCCT kernel, the repair
+ * is currently a no-op for every known piece config — see
+ * `__dual-kernel__/diagnoseBaseplateWinding.test.ts`. The pass is kept as a
+ * defensive net for any future regression in brepjs/OCCT tessellation.
  *
  * (An even earlier version applied a per-triangle (cross · sum-of-vertex-
  * normals) heuristic which mis-fired on ~7% of triangles at curved/shared
