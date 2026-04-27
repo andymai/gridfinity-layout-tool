@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.49.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.49.4...gridfinity-layout-tool-v4.49.5) (2026-04-27)
+
+
+### Bug Fixes
+
+* **baseplate:** split planner reserves bed budget for dovetail tongues ([#1498](https://github.com/andymai/gridfinity-layout-tool/issues/1498)) ([#1499](https://github.com/andymai/gridfinity-layout-tool/issues/1499)) ([bb5e23f](https://github.com/andymai/gridfinity-layout-tool/commit/bb5e23f2d3aae9e674e9aa9fd063ce0903e89b12))
+
 ## [4.49.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.49.3...gridfinity-layout-tool-v4.49.4) (2026-04-27)
 
 
