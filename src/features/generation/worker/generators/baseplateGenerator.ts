@@ -67,6 +67,7 @@ import type { CacheStats } from './lruCache';
 import { LRUCache } from './lruCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { buildLightweightFloorCutters } from './lightweightFloorCutter';
+import { repairMeshWinding } from '@/shared/generation/repairMeshWinding';
 import { CONSTRAINTS } from '@/core/constants';
 
 // LRU cache for pocket templates keyed by cell size + forExport + floorDepth.
@@ -1298,18 +1299,21 @@ export async function exportBaseplate(
 /**
  * Build binary STL from brepjs mesh output.
  *
- * brepjs's `mesh()` already tessellates each face with winding consistent
- * with that face's BREP orientation, so we trust its triangle order verbatim.
- * The face normal we emit in the STL record is the cross-product of the
- * winding edges — the same convention slicers reconstruct anyway.
+ * brepjs/OCCT can emit tessellated meshes whose face orientations aren't
+ * consistent across the whole solid: for some baseplate piece configs
+ * (corner-3, corner-4, edge-x-1) the bottom face and parts of the
+ * dovetail/pocket walls are wound backwards, causing slicers to flag
+ * thousands of "non-manifold edges" (#1490). Which BREP op produces the
+ * inversion is still under investigation upstream — see the tracking issue
+ * linked from #1490 — so we run a downstream BFS winding repair before
+ * emitting the STL.
  *
- * An earlier version flipped winding whenever
- *   (cross · sum-of-vertex-normals) < 0
- * to "fix" supposedly-bad output. brepjs returns averaged vertex normals at
- * shared/curved edges (cell-corner gussets, magnet-hole rims, dovetail
- * groove walls), so along ~7% of triangles the heuristic fired and emitted
- * the triangle reversed. Bambu Studio + Cura then flagged thousands of
- * "non-manifold edges" and repaired the result as solid infill (#1472).
+ * (An even earlier version applied a per-triangle (cross · sum-of-vertex-
+ * normals) heuristic which mis-fired on ~7% of triangles at curved/shared
+ * edges and was removed in #1472.)
+ *
+ * The STL face normal is the cross-product of the (corrected) winding
+ * edges, the same convention slicers reconstruct anyway.
  */
 function buildBaseplateSTL(
   meshResult: {
@@ -1319,7 +1323,7 @@ function buildBaseplateSTL(
   name: string
 ): ArrayBuffer {
   const verts = meshResult.vertices;
-  const tris = meshResult.triangles;
+  const tris = repairMeshWinding(meshResult.vertices, meshResult.triangles);
   const triangleCount = tris.length / 3;
 
   const HEADER_SIZE = 80;
