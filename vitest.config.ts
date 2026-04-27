@@ -30,15 +30,6 @@ const domIncludes = [
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    fs: {
-      // pnpm's symlinked node_modules resolve outside the project root;
-      // Stryker's sandbox copy trips vite's fs.strict when tests import
-      // `?url` WASM assets. Tests don't run a dev server, so relaxing
-      // this is safe.
-      strict: false,
-    },
-  },
   test: {
     globals: true,
     testTimeout: 30000,
