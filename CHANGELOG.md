@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.49.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.49.3...gridfinity-layout-tool-v4.49.4) (2026-04-27)
+
+
+### Bug Fixes
+
+* **baseplate:** repair mesh winding before STL export ([#1490](https://github.com/andymai/gridfinity-layout-tool/issues/1490)) ([#1493](https://github.com/andymai/gridfinity-layout-tool/issues/1493)) ([6a4270b](https://github.com/andymai/gridfinity-layout-tool/commit/6a4270b97c9c021ae9f7d09b8488a9556c14ffb1))
+
 ## [4.49.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.49.2...gridfinity-layout-tool-v4.49.3) (2026-04-26)
 
 
