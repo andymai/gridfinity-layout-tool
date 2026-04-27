@@ -52,8 +52,9 @@ interface StepMetrics {
 }
 
 const QUANTIZE = 1e4;
-const vKey = (x: number, y: number, z: number): string =>
-  `${Math.round(x * QUANTIZE)},${Math.round(y * QUANTIZE)},${Math.round(z * QUANTIZE)}`;
+function vKey(x: number, y: number, z: number): string {
+  return `${Math.round(x * QUANTIZE)},${Math.round(y * QUANTIZE)},${Math.round(z * QUANTIZE)}`;
+}
 
 /**
  * Count directed-edge collisions and divergence-theorem volume on a flat
@@ -85,10 +86,15 @@ function metricsFromMesh(
     const a = vKey(ax, ay, az);
     const b = vKey(bx, by, bz);
     const c = vKey(cx, cy, cz);
-    for (const e of [`${a}->${b}`, `${b}->${c}`, `${c}->${a}`]) {
-      if (seen.has(e)) collisions++;
-      else seen.add(e);
-    }
+    const ab = `${a}->${b}`;
+    const bc = `${b}->${c}`;
+    const ca = `${c}->${a}`;
+    if (seen.has(ab)) collisions++;
+    else seen.add(ab);
+    if (seen.has(bc)) collisions++;
+    else seen.add(bc);
+    if (seen.has(ca)) collisions++;
+    else seen.add(ca);
     volume += ax * (by * cz - bz * cy) + bx * (cy * az - cz * ay) + cx * (ay * bz - az * by);
   }
   return { collisions, volume: volume / 6 };
@@ -106,22 +112,24 @@ function measureStep(label: string, shape: Shape3D): StepMetrics {
   };
 }
 
-const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => ({
-  width: 4.5,
-  depth: 4.5,
-  gridUnitMm: 42,
-  magnetHoles: false,
-  magnetDiameter: 6.5,
-  magnetDepth: 2.4,
-  paddingLeft: 0,
-  paddingRight: 0,
-  paddingFront: 0,
-  paddingBack: 0,
-  fractionalEdgeX: 'end',
-  fractionalEdgeY: 'end',
-  lightweight: true,
-  ...overrides,
-});
+function defaults(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
+  return {
+    width: 4.5,
+    depth: 4.5,
+    gridUnitMm: 42,
+    magnetHoles: false,
+    magnetDiameter: 6.5,
+    magnetDepth: 2.4,
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingFront: 0,
+    paddingBack: 0,
+    fractionalEdgeX: 'end',
+    fractionalEdgeY: 'end',
+    lightweight: true,
+    ...overrides,
+  };
+}
 
 interface NamedConfig {
   readonly name: string;
@@ -195,11 +203,13 @@ const CONFIGS: readonly NamedConfig[] = [
 ];
 
 function formatStepRow(m: StepMetrics): string {
-  const tris = m.triangleCount.toString().padStart(6);
-  const groups = m.faceGroupCount.toString().padStart(5);
-  const collisions = m.directedEdgeCollisions.toString().padStart(6);
-  const vol = m.signedVolume.toFixed(0).padStart(10);
-  return `  ${m.label.padEnd(22)}  tris=${tris}  faces=${groups}  edge-dupes=${collisions}  vol=${vol}`;
+  return (
+    `  ${m.label.padEnd(22)}` +
+    `  tris=${m.triangleCount.toString().padStart(6)}` +
+    `  faces=${m.faceGroupCount.toString().padStart(5)}` +
+    `  edge-dupes=${m.directedEdgeCollisions.toString().padStart(6)}` +
+    `  vol=${m.signedVolume.toFixed(0).padStart(10)}`
+  );
 }
 
 beforeAll(async () => {
@@ -271,7 +281,13 @@ test('diagnose buildBaseplateSolid winding step-by-step', () => {
   console.log('                  (>0 means inconsistent triangle winding)');
   console.log('    vol         = signed mesh volume (negative => mesh is globally inverted)');
 
+  const failures: string[] = [];
   for (const cfg of CONFIGS) {
+    // `slabExtruded` only fires on the cache-miss path; clearing between
+    // configs guarantees every config walks every milestone, even if two
+    // ever shared a `slabWithPocketsCache` key.
+    clearBaseplateCaches();
+
     console.log('\n------------------------------------------------------------------------');
     console.log(`  ${cfg.name}`);
     console.log('------------------------------------------------------------------------');
@@ -286,9 +302,16 @@ test('diagnose buildBaseplateSolid winding step-by-step', () => {
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       console.log(`  ! buildBaseplateSolid threw: ${msg}`);
+      failures.push(`${cfg.name}: ${msg}`);
     }
     for (const m of steps) console.log(formatStepRow(m));
   }
   console.log('\n========================================================================\n');
   /* eslint-enable no-console */
+
+  // Surface any per-config throws as a real test failure rather than only
+  // a console line — silence is success-shaped in CI.
+  if (failures.length > 0) {
+    throw new Error(`buildBaseplateSolid threw for: ${failures.join('; ')}`);
+  }
 }, 300_000);

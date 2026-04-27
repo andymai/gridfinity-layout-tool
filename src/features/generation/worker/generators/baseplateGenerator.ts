@@ -1063,17 +1063,10 @@ function cutInBatches(solid: Shape3D, tools: Shape3D[]): Shape3D {
 /**
  * Diagnostic probe invoked at each baseplate construction milestone.
  *
- * Test-only: pass to `buildBaseplateSolid` to inspect intermediate solids
- * without modifying production code. The probe receives a *borrowed* handle
- * to the current baseplate solid that is valid only synchronously for the
- * duration of the callback invocation. The callback must not delete or
- * mutate it, and may only perform immediate non-mutating queries (mesh,
- * measureVolume, describe). Do not store, return, or otherwise retain
- * `shape`, and do not use it after the callback returns — later build
- * steps may replace and dispose the underlying WASM object, leaving any
- * retained reference as a use-after-free. Used by
- * `__dual-kernel__/diagnoseBaseplateWinding.test.ts` to identify which BREP
- * op introduces face-orientation inconsistency in #1490-class configs.
+ * Test-only. `shape` is a *borrowed* handle valid only for the synchronous
+ * duration of the call — do not retain, delete, or mutate it. Later build
+ * steps may dispose the underlying WASM object, making any retained reference
+ * a use-after-free.
  */
 export type BaseplateProbe = (label: string, shape: Shape3D) => void;
 
@@ -1247,10 +1240,13 @@ export function buildBaseplateSolid(
     ];
     const preBoolean = baseplate;
     const pipelineResult = booleanPipeline(baseplate, steps);
+    let pipelineLabel = 'connectorPipeline';
     if (isOk(pipelineResult)) {
       baseplate = pipelineResult.value;
     } else {
-      // Fallback: sequential fuseAll then cutAll
+      // Fallback: sequential fuseAll then cutAll. Tag the probe so the
+      // diagnostic can tell which path produced the final solid (#1494).
+      pipelineLabel = 'connectorPipelineFallback';
       if (nubs.length > 0) {
         baseplate = tagOp('connectorFuse', () =>
           unwrap(fuseAll([baseplate, ...nubs] as ValidSolid[]))
@@ -1267,16 +1263,21 @@ export function buildBaseplateSolid(
     if (baseplate !== preBoolean) preBoolean.delete();
     for (const n of nubs) n.delete();
     for (const c of connHoles) c.delete();
-    probe?.('connectorPipeline', baseplate);
+    probe?.(pipelineLabel, baseplate);
   }
 
   onProgress?.(0.6);
 
   onProgress?.(0.8);
 
+  // Probe before the final translate: the +Z shift preserves topology,
+  // orientation, and signed volume, so the diagnostic sees identical
+  // metrics either way — and a probe throw here can't strand `baseplate`
+  // (already in scope, freed after `translate` returns) or `finalBaseplate`
+  // (not yet created).
+  probe?.('final', baseplate);
   const finalBaseplate = translate(baseplate, [0, 0, totalHeight]);
   baseplate.delete();
-  probe?.('final', finalBaseplate);
   return finalBaseplate;
 }
 
