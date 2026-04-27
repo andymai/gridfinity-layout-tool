@@ -31,13 +31,14 @@
  * config (corner-3 / corner-4 / edge-x-1) diverges from a passing one
  * (corner-1).
  */
-import { test, beforeAll } from 'vitest';
+import { test, beforeAll, beforeEach } from 'vitest';
 import { mesh } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
 import { initBrepjs } from './wasmInit';
 import {
   buildBaseplateSolid,
+  clearBaseplateCaches,
   type BaseplateProbe,
 } from '@/features/generation/worker/generators/baseplateGenerator';
 import { repairMeshWinding } from '@/shared/generation/repairMeshWinding';
@@ -204,6 +205,16 @@ function formatStepRow(m: StepMetrics): string {
 beforeAll(async () => {
   await initBrepjs();
 }, 60_000);
+
+// `buildBaseplateSolid` memoizes the rectangular slab + pockets via
+// `slabWithPocketsCache`. Without clearing between configs (and between the
+// two tests), the second invocation of any config short-circuits past the
+// `slabExtruded` and `pocketsCut` probe events — defeating the step-walker's
+// purpose. Clear before every test so each diagnostic walks the full
+// construction path.
+beforeEach(() => {
+  clearBaseplateCaches();
+});
 
 test('diagnose: does repairMeshWinding actually flip triangles for these configs?', () => {
   /* eslint-disable no-console */

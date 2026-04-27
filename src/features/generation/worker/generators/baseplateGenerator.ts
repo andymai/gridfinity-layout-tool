@@ -1065,8 +1065,13 @@ function cutInBatches(solid: Shape3D, tools: Shape3D[]): Shape3D {
  *
  * Test-only: pass to `buildBaseplateSolid` to inspect intermediate solids
  * without modifying production code. The probe receives a *borrowed* handle
- * to the current baseplate solid — the caller must not delete or mutate it,
- * but may call non-mutating queries (mesh, measureVolume, describe). Used by
+ * to the current baseplate solid that is valid only synchronously for the
+ * duration of the callback invocation. The callback must not delete or
+ * mutate it, and may only perform immediate non-mutating queries (mesh,
+ * measureVolume, describe). Do not store, return, or otherwise retain
+ * `shape`, and do not use it after the callback returns — later build
+ * steps may replace and dispose the underlying WASM object, leaving any
+ * retained reference as a use-after-free. Used by
  * `__dual-kernel__/diagnoseBaseplateWinding.test.ts` to identify which BREP
  * op introduces face-orientation inconsistency in #1490-class configs.
  */
