@@ -16,8 +16,18 @@ import { useTranslation } from '@/i18n';
 import { cn } from '@/design-system/cn';
 import { interactiveTransition } from '@/design-system/variants';
 
-/** Slider range in mm. 0 = snapped, max = fully exploded. */
-export const LID_OFFSET_MIN = 0;
+/**
+ * Slider range in mm — clamped above the strictly-mated position so the
+ * closed-state preview never shows surface overlap between the lid's
+ * mating shell and the bin's stacking lip. They are physically not
+ * intersecting (separated by `fitClearance` ≈ 0.2mm), but at that
+ * scale the renderer reads the two surfaces as clipping, which the
+ * user correctly flagged as "intersecting" / "inside the bin".
+ *
+ * The 4mm floor is large enough to escape z-fighting + give a visible
+ * gap above the bin lip, small enough to still read as "closed".
+ */
+export const LID_OFFSET_MIN = 4;
 export const LID_OFFSET_MAX = 80;
 /** Initial position when the lid is first enabled. */
 export const LID_OFFSET_DEFAULT = 30;
