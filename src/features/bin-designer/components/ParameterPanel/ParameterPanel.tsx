@@ -18,6 +18,7 @@ import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { ScoopSection } from '../panel/ScoopSection';
 import { WallsSection } from '../panel/WallsSection';
+import { LidSection } from '../panel/LidSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
 import { SplitOptionsSection } from '../panel/SplitOptionsSection';
 import { StickyGroupHeader } from '../panel/StickyGroupHeader';
@@ -70,10 +71,15 @@ export function ParameterPanel() {
               <SplitOptionsSection />
             </div>
           )}
-          <div className="px-4 py-4">
+          <div className="px-4 py-4 border-b border-stroke-subtle/50">
             {/* Wall thickness works for any footprint; pattern/cutouts/handle
                 gate themselves inside WallsSection. */}
             <WallsSection />
+          </div>
+          <div className="px-4 py-4">
+            {/* Lid is a companion piece auto-fit to the bin's lip. Internally
+                gated when params.base.stackingLip is off (lid mates with lip). */}
+            <LidSection />
           </div>
         </StickyGroupHeader>
 
