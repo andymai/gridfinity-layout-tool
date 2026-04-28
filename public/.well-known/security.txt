@@ -1,0 +1,8 @@
+# Security policy for gridfinitylayouttool.com
+# https://datatracker.ietf.org/doc/html/rfc9116
+
+Contact: https://github.com/andymai/gridfinity-layout-tool/security/advisories/new
+Expires: 2027-04-27T00:00:00Z
+Preferred-Languages: en
+Policy: https://github.com/andymai/gridfinity-layout-tool/blob/main/SECURITY.md
+Canonical: https://gridfinitylayouttool.com/.well-known/security.txt
