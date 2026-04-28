@@ -6,6 +6,7 @@ import type { GenerateMessage, GenerateBaseplateMessage, MeshData } from '../../
 import { generateBin } from '../generators/binGenerator';
 import { generateBaseplate } from '../generators/baseplateGenerator';
 import { generateLid } from '../generators/lidOrchestrator';
+import { isAbortError } from '../generators/utils/abort';
 import { runGeneration, reportProgress, getActiveRequestId } from './workerContext';
 
 export function handleGenerate(message: GenerateMessage): void {
@@ -18,8 +19,18 @@ export function handleGenerate(message: GenerateMessage): void {
       };
       const binMesh = generateBin(params, onProgress, false, signal);
       // Lid runs sequentially after the bin so a single abort cancels both.
-      // Returns null when lid is disabled or the bin has no stacking lip.
-      const lidMesh = generateLid(params, onProgress, false, signal);
+      // The lid is a SECONDARY feature: an OCCT exception during lid build
+      // (e.g., on a degenerate polygon footprint) must not poison the
+      // already-computed bin mesh. Wrap to fall back to bin-only output;
+      // re-throw cancellations so abort still aborts the whole request.
+      let lidMesh: MeshData | null = null;
+      try {
+        lidMesh = generateLid(params, onProgress, false, signal);
+      } catch (e) {
+        if (isAbortError(e)) throw e;
+
+        console.warn('[BinGen] Lid generation failed; falling back to bin-only:', e);
+      }
       return lidMesh ? { ...binMesh, lidMesh } : binMesh;
     },
     requestId,

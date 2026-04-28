@@ -404,6 +404,18 @@ export function PreviewCanvas() {
     }))
   );
 
+  // Reset the explode slider to its default whenever the lid transitions
+  // off → on. Without this, a stale value (e.g. 80mm from a previous session)
+  // persists across the slider's unmount/remount cycle — disabling the lid
+  // hides the slider but doesn't clear the parent-owned `lidOffsetMm`.
+  const wasLidEnabledRef = useRef(params.lid.enabled);
+  useEffect(() => {
+    if (params.lid.enabled && !wasLidEnabledRef.current) {
+      setLidOffsetMm(LID_OFFSET_DEFAULT);
+    }
+    wasLidEnabledRef.current = params.lid.enabled;
+  }, [params.lid.enabled]);
+
   const { defaultPrintBedSize: bedSize, defaultPrintBedDepth: bedDepth } = useSettingsStore(
     useShallow((s) => ({
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
