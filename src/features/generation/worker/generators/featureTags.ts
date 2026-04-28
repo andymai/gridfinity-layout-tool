@@ -17,6 +17,8 @@ export const FeatureTag = {
   CUTOUT: 9,
   WALL_PATTERN: 10,
   HANDLE: 11,
+  LID_BODY: 12,
+  LID_RAIL: 13,
   UNKNOWN: 255,
 } as const;
 
