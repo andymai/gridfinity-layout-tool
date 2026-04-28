@@ -158,6 +158,59 @@ describe('checkLidCompatibility', () => {
     });
   });
 
+  describe('compartment dividers', () => {
+    it('flags when the bin has multiple compartments (dividers are built)', () => {
+      const params = withOverrides({
+        compartments: {
+          cols: 2,
+          rows: 1,
+          thickness: 1.2,
+          cells: [0, 1], // two distinct compartments → divider between them
+        },
+      });
+      const issue = checkLidCompatibility(params).find((i) => i.id === 'compartmentDividers');
+      expect(issue?.severity).toBe('warning');
+    });
+
+    it('does not flag when all cells share one compartment (no dividers)', () => {
+      const params = withOverrides({
+        compartments: {
+          cols: 2,
+          rows: 1,
+          thickness: 1.2,
+          cells: [0, 0],
+        },
+      });
+      expect(
+        checkLidCompatibility(params).find((i) => i.id === 'compartmentDividers')
+      ).toBeUndefined();
+    });
+
+    it('does not flag solid bins (no compartments are built)', () => {
+      const params = withOverrides({
+        style: 'solid',
+        compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] },
+      });
+      expect(
+        checkLidCompatibility(params).find((i) => i.id === 'compartmentDividers')
+      ).toBeUndefined();
+    });
+
+    it('does not flag polygon bins (compartments are gated off by FeatureGate)', () => {
+      const cells = Array<number>(64).fill(1);
+      cells[0] = 0;
+      const params = withOverrides({
+        width: 4,
+        depth: 4,
+        cellMask: { cols: 8, rows: 8, cells },
+        compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] },
+      });
+      expect(
+        checkLidCompatibility(params).find((i) => i.id === 'compartmentDividers')
+      ).toBeUndefined();
+    });
+  });
+
   describe('cellMask interior holes (O-shape)', () => {
     it('flags O-shape masks (multi-loop polygon)', () => {
       // 4×4 mask with a 2×2 hole in the middle (mask is half-bin resolution: 8×8)

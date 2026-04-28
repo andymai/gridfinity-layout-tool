@@ -1203,6 +1203,8 @@ const en: Record<string, string> = {
     'Divider pieces are taller than the bin interior — the lid will not seat with them inserted.',
   'binDesigner.lid.compat.cellMaskHoles':
     'Custom shape has interior holes — those inner edges have lip but no rails (asymmetric grip).',
+  'binDesigner.lid.compat.compartmentDividers':
+    'Compartment dividers extend up to the lip — they may press against the lid’s mating shell where they meet the bin walls.',
   'binDesigner.lid.compat.disabledOne': 'Resolve the conflict to enable lid: {detail}',
   'binDesigner.lid.compat.disabledMany': 'Resolve {count} conflicts to enable lid',
   'binDesigner.lid.compat.fix.wallCutoutsAllSides': 'disable some wall cutouts',

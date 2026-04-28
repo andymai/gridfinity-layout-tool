@@ -218,6 +218,7 @@
   "binDesigner.lid.compat.shortBin": "Caixa tem apenas 1U de altura — a tampa se assenta mas a fixação é marginal.",
   "binDesigner.lid.compat.tallDividerPieces": "Divisórias são mais altas que o interior da caixa — a tampa não se assentará com elas inseridas.",
   "binDesigner.lid.compat.cellMaskHoles": "Forma personalizada tem furos internos — essas bordas internas têm lábio mas sem trilhos (fixação assimétrica).",
+  "binDesigner.lid.compat.compartmentDividers": "As divisórias dos compartimentos sobem até o lábio — podem pressionar a casca de encaixe da tampa onde encontram as paredes da caixa.",
   "binDesigner.lid.compat.disabledOne": "Resolva o conflito para ativar a tampa: {detail}",
   "binDesigner.lid.compat.disabledMany": "Resolva {count} conflitos para ativar a tampa",
   "binDesigner.lid.compat.fix.wallCutoutsAllSides": "desative alguns recortes de parede",

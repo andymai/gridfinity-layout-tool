@@ -218,6 +218,7 @@
   "binDesigner.lid.compat.shortBin": "El contenedor mide 1U de alto — la tapa se asienta pero la sujeción es marginal.",
   "binDesigner.lid.compat.tallDividerPieces": "Las piezas divisorias son más altas que el interior — la tapa no se asentará con ellas insertadas.",
   "binDesigner.lid.compat.cellMaskHoles": "La forma personalizada tiene agujeros interiores — esos bordes internos tienen labio pero no rieles (sujeción asimétrica).",
+  "binDesigner.lid.compat.compartmentDividers": "Las divisorias de los compartimentos llegan hasta el labio — pueden presionar contra la cubierta de acoplamiento de la tapa donde tocan las paredes.",
   "binDesigner.lid.compat.disabledOne": "Resuelve el conflicto para activar la tapa: {detail}",
   "binDesigner.lid.compat.disabledMany": "Resuelve {count} conflictos para activar la tapa",
   "binDesigner.lid.compat.fix.wallCutoutsAllSides": "desactiva algunos recortes de pared",

@@ -40,7 +40,8 @@ export type LidCompatibilityId =
   | 'wallPattern'
   | 'shortBin'
   | 'tallDividerPieces'
-  | 'cellMaskHoles';
+  | 'cellMaskHoles'
+  | 'compartmentDividers';
 
 export interface LidCompatibilityIssue {
   readonly id: LidCompatibilityId;
@@ -126,6 +127,19 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    the click is uneven.
   if (isPolygon && maskToPolygon(params.cellMask).length > 1) {
     issues.push({ id: 'cellMaskHoles', severity: 'warning' });
+  }
+
+  // 6. Compartment dividers. `compartmentBuilder` builds divider walls
+  //    from `Z=0` (floor) up to `Z=wallHeight` — the full wall height,
+  //    INCLUDING the lip Z range. Where the divider meets the bin's
+  //    inner wall, the divider material at lip-area Z occupies the
+  //    same radial space as the lid's mating shell. The lid still
+  //    seats around the perimeter, but the divider's top corners can
+  //    interfere with the cavity wall at the contact points. Skipped
+  //    on polygon (cellMask) bins (compartments are gated off there)
+  //    and solid bins (no compartments built).
+  if (!isPolygon && params.style !== 'solid' && new Set(params.compartments.cells).size > 1) {
+    issues.push({ id: 'compartmentDividers', severity: 'warning' });
   }
 
   // Sort by severity so blockers always appear first in the panel.

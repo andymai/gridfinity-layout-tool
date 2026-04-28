@@ -218,6 +218,7 @@
   "binDesigner.lid.compat.shortBin": "Boksen er bare 1U høy — lokket sitter, men grepet er marginalt.",
   "binDesigner.lid.compat.tallDividerPieces": "Skilleplater er høyere enn boksens innside — lokket vil ikke sitte med dem satt inn.",
   "binDesigner.lid.compat.cellMaskHoles": "Tilpasset form har innvendige hull — de indre kantene har stablekant, men ingen skinner (asymmetrisk grep).",
+  "binDesigner.lid.compat.compartmentDividers": "Skilleveggene strekker seg opp til stablekanten — de kan presse mot lokkets festekappe der de møter boksveggene.",
   "binDesigner.lid.compat.disabledOne": "Løs konflikten for å aktivere lokket: {detail}",
   "binDesigner.lid.compat.disabledMany": "Løs {count} konflikter for å aktivere lokket",
   "binDesigner.lid.compat.fix.wallCutoutsAllSides": "deaktiver noen veggutskjæringer",
