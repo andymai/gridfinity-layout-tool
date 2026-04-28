@@ -96,9 +96,16 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false }: LidMeshProps)
       transparent: true,
       opacity: opacityForOffset(lidOffsetMm),
       flatShading: !hasPrecomputedNormals,
+      // Bias the lid's depth values so it consistently loses depth tests
+      // against the bin where their surfaces overlap (lid outer wall vs
+      // bin lip outer face, separated by only 0.2mm horizontally over the
+      // 4.4mm-tall lip Z-range). Without enough bias, those near-coplanar
+      // surfaces z-fight at typical preview camera distances. Factor of 4
+      // gives clean rendering even at the closed offset (LID_OFFSET_MIN = 1)
+      // without affecting other view angles.
       polygonOffset: true,
-      polygonOffsetFactor: 1,
-      polygonOffsetUnits: 1,
+      polygonOffsetFactor: 4,
+      polygonOffsetUnits: 4,
     }),
     [color, wireframe, hasPrecomputedNormals, lidOffsetMm]
   );

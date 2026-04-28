@@ -17,17 +17,19 @@ import { cn } from '@/design-system/cn';
 import { interactiveTransition } from '@/design-system/variants';
 
 /**
- * Slider range in mm — clamped above the strictly-mated position so the
- * closed-state preview never shows surface overlap between the lid's
- * mating shell and the bin's stacking lip. They are physically not
- * intersecting (separated by `fitClearance` ≈ 0.2mm), but at that
- * scale the renderer reads the two surfaces as clipping, which the
- * user correctly flagged as "intersecting" / "inside the bin".
+ * Slider range in mm — small positive floor instead of strict zero. At
+ * exactly 0, the click rails physically engage the lip's small taper
+ * (0.7mm chamfer), which produces real surface overlap that no depth-
+ * bias trick can hide. Lifting 1mm pulls the rails clear of that
+ * engagement zone while keeping the lid's exterior walls visually
+ * flush with the bin's — the closed look the user expects.
  *
- * The 4mm floor is large enough to escape z-fighting + give a visible
- * gap above the bin lip, small enough to still read as "closed".
+ * The remaining near-coplanar overlap between the lid's outer wall and
+ * the bin's lip outer face (separated by `fitClearance` ≈ 0.2mm in X
+ * over the lip Z-range) is handled by `polygonOffset` on the lid's
+ * material — see `LidMesh.tsx`.
  */
-export const LID_OFFSET_MIN = 4;
+export const LID_OFFSET_MIN = 1;
 export const LID_OFFSET_MAX = 80;
 /** Initial position when the lid is first enabled. */
 export const LID_OFFSET_DEFAULT = 30;
