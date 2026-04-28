@@ -27,17 +27,22 @@ graph TB
 
 - `components/DesignerPage.tsx` — main UI entry point
 - `components/ParameterPanel.tsx` — parameter editing sidebar with collapsible sections
-- `components/PreviewCanvas.tsx` — 3D preview with Three.js
+- `components/PreviewCanvas.tsx` — 3D preview with Three.js (renders bin + optional lid + explode slider)
 - `components/CutoutWorkspace` — dedicated 3D editor for floor/wall cutouts
 - `components/panel/ShapeSection/` — "Custom shape" toggle + paint-style half-bin grid editor
   (L/T/U presets, reset-to-rectangle link, O-shape-capable cellMask painting)
+- `components/panel/LidSection/` — click-lock lid toggle, fit pills, magnet/grid toggles, thickness sliders
+- `components/preview/LidMesh/` — renders the lid mesh in the preview, with explode-aware
+  positioning, opacity interpolation, and mutual hover highlight pairing with `BinMesh`
+- `components/preview/LidGuideLine/` — visual cue connecting bin and lid in exploded views
+- `components/preview/LidExplodeSlider/` — slider that lifts the lid off the bin (replaces view-mode pills)
 - `store/designer.ts` — design state and parameter mutations (composed from slices)
 - `store/customBinRegistry.ts` — syncs saved designs to layout planner palette
 - `store/cutoutSelection.ts` — cutout editor selection state
-- `hooks/useGeneration.ts` — triggers geometry regeneration via bridge
+- `hooks/useGeneration.ts` — triggers geometry regeneration via bridge (bin + optional companion lid)
 - `storage/DesignerStorage.ts` — IndexedDB persistence for saved designs
 - `constants/` — Gridfinity geometry constants, default params, designer constraints
-- `types/` — TypeScript types for designer state, cutouts, compartments
+- `types/` — TypeScript types for designer state, cutouts, compartments, lid config
 - `utils/` — validation, print estimates, file naming, design JSON serialization
 
 ## Critical Concepts
@@ -62,6 +67,16 @@ graph TB
   `paramsNeedHalfBinMode` (fractional dimensions OR `hasHalfBinDetail(mask)`),
   so reopening a design or undoing past a dimension change never leaves the
   UI toggles out of sync with the underlying shape.
+- **Click-lock lid**: optional companion piece generated alongside the bin
+  when `params.lid.enabled && params.base.stackingLip`. Source of truth lives
+  in the worker (`generation/worker/generators/lidBuilder.ts` +
+  `lidConstants.ts` + `lidOrchestrator.ts`); the result rides back as
+  `lidMesh` on the same `MESH_RESULT` payload. The lid is rendered in
+  preview with explode-aware Z and opacity (`LidMesh.tsx`); when exporting,
+  STL/3MF emit it as a separate piece in the ZIP and STEP folds it into a
+  compound assembly translated to its mated position. `LidSection` exposes
+  fit (`tight`/`standard`/`loose` → fit-clearance table in `types/lid.ts`),
+  toggles for stack grid + magnets, and floor/wall thickness.
 
 ## Gotchas
 
@@ -81,6 +96,20 @@ graph TB
    - visual de-emphasis) blocks pattern/cutouts/handle/compartments/label
      tabs/scoop on `isPartialMask(cellMask)`. Wall thickness and stacking
      lip still work for any footprint.
+9. **Lid requires a stacking lip** — `params.lid.enabled` is gated on
+   `params.base.stackingLip` at every layer (orchestrator, export handler,
+   `useLidSection`). The mating cavity wraps the lip; without a lip there is
+   nothing for the lid to clip onto, so the lid is silently skipped.
+10. **Two-piece export** — when `hasLid`, the `EXPORT_COMBINED` flow emits the
+    lid as its own labeled piece for STL/3MF (main thread ZIPs them) and
+    folds it into the STEP compound. The STEP path must `translate()` the
+    lid solid by `totalHeight - lidAnchorZ(...)`; the lid is built in
+    lid-local coordinates (Z=0 = lid floor top).
+11. **`lidAnchorZ` is duplicated across the worker boundary** — the canonical
+    formula lives in `generation/worker/generators/lidConstants.ts`; the
+    main-thread copy in `LidMesh.tsx` mirrors it because the worker module
+    isn't importable here. **Update both in lockstep** — silent drift causes
+    the preview to misalign vs. the exported geometry.
 
 ## Integration
 

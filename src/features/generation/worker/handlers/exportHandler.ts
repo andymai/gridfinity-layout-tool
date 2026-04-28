@@ -2,7 +2,7 @@
  * EXPORT, EXPORT_BASEPLATE, EXPORT_DIVIDERS, and EXPORT_COMBINED message handlers.
  */
 
-import { unwrap, compound, exportSTEP } from 'brepjs';
+import { unwrap, compound, exportSTEP, translate } from 'brepjs';
 import type {
   ExportMessage,
   ExportBaseplateMessage,
@@ -17,7 +17,9 @@ import { exportDividers, exportDividerPiecesSeparately } from '../generators/div
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
 import { exportLid } from '../generators/lidOrchestrator';
 import { buildLid } from '../generators/lidBuilder';
+import { lidAnchorZ } from '../generators/lidConstants';
 import { GRIDFINITY } from '@/shared/constants/bin';
+import { LID_FIT_CLEARANCE } from '@/shared/types/bin';
 import { runExport } from './workerContext';
 
 export async function handleExport(message: ExportMessage): Promise<void> {
@@ -130,7 +132,17 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         const dividerSolids = hasDividers
           ? buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip)
           : [];
-        const lidSolid = hasLid ? buildLid(params) : null;
+        // Lid is built in lid-local Z (Y=0 = lid floor top). Lift it so the
+        // mating cavity (Y = anchorZ, negative) sits at world Z = totalHeight
+        // (the bin's stacking lip top), matching the preview's lidGroupZ.
+        let lidSolid = hasLid ? buildLid(params) : null;
+        if (lidSolid) {
+          const fitClearance = LID_FIT_CLEARANCE[params.lid.fit];
+          const lidZ = totalHeight - lidAnchorZ(params.heightUnitMm, fitClearance);
+          const positioned = translate(lidSolid, [0, 0, lidZ]);
+          lidSolid.delete();
+          lidSolid = positioned;
+        }
         const assembly = compound([binSolid, ...dividerSolids, ...(lidSolid ? [lidSolid] : [])]);
         const blob = unwrap(exportSTEP(assembly));
 

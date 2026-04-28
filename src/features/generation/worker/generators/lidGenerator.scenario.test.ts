@@ -152,6 +152,23 @@ describe('generateLid scenarios', () => {
     expect(withMagnets!.triangleCount).not.toBe(without!.triangleCount);
   });
 
+  it('builds a valid mesh for half-bin width (2.5×2) with magnets', async () => {
+    // Regression: prior to the forEachCell-based magnet iteration, the
+    // hole loop ran `for (cx = 0; cx < cellsX; cx++)` over a fractional
+    // `cellsX = 2.5`, placing the trailing-cell magnets OUTSIDE the lid
+    // footprint. cutAll silently drops cutters that miss the body, so the
+    // bug was invisible to a structural check — but the lid's magnet
+    // pattern was asymmetric and didn't mate with the bin's base sockets.
+    // Today the lid uses `forEachCell` and skips non-1u cells, matching
+    // the bin's base-socket convention.
+    const { generateLid } = await import('./lidOrchestrator');
+    const result = generateLid(
+      makeParams({ magnetHoles: true }, { width: 2.5, depth: 2, height: 3 })
+    );
+    expect(result).not.toBeNull();
+    assertStructurallyValid(result!, '2.5×2 lid');
+  });
+
   it('all three fit presets produce valid meshes', async () => {
     const { generateLid } = await import('./lidOrchestrator');
     for (const fit of ['loose', 'standard', 'tight'] as const) {

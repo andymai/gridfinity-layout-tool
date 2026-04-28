@@ -73,6 +73,7 @@ import {
 } from '@/shared/utils/cellMask';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
+import { forEachCell } from './cellDecomposition';
 
 /** Minimum click-rail length — below this we skip rails on that edge. */
 const MIN_RAIL_LENGTH = 4;
@@ -207,19 +208,16 @@ function sectionAt(inputs: LidInputs, z: number, outerInset: number): Sketch {
 
 function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
   const { cavityInset, anchorZ, wallBottomZ } = inputs;
-  const Z_TOP = 0;
-  const Z_ANCHOR = anchorZ;
-  const Z_VERT_TOP = anchorZ - LIP_BIG_TAPER;
-  const Z_BOTTOM = wallBottomZ;
+  const zVertTop = anchorZ - LIP_BIG_TAPER;
 
   // OUTER profile — 4 sections in ASCENDING Z (loftWith expects this):
-  //  Z=wallBottom and Z=Z_VERT_TOP : chamfered inward by LIP_BIG_TAPER
-  //  Z=anchor and Z=0              : full outer (no chamfer)
+  //  Z=wallBottom and Z=zVertTop : chamfered inward by LIP_BIG_TAPER
+  //  Z=anchor and Z=0            : full outer (no chamfer)
   const outerSections: readonly Sketch[] = [
-    sectionAt(inputs, Z_BOTTOM, LIP_BIG_TAPER),
-    sectionAt(inputs, Z_VERT_TOP, LIP_BIG_TAPER),
-    sectionAt(inputs, Z_ANCHOR, 0),
-    sectionAt(inputs, Z_TOP, 0),
+    sectionAt(inputs, wallBottomZ, LIP_BIG_TAPER),
+    sectionAt(inputs, zVertTop, LIP_BIG_TAPER),
+    sectionAt(inputs, anchorZ, 0),
+    sectionAt(inputs, 0, 0),
   ];
 
   // INNER profile — constant inset at `cavityInset` (= wallThickness +
@@ -228,8 +226,8 @@ function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
   // Two sections in ASCENDING Z with COPLANAR margin so the cut bites
   // cleanly through the outer.
   const innerSections: readonly Sketch[] = [
-    sectionAt(inputs, Z_BOTTOM - LID_COPLANAR_MARGIN, cavityInset),
-    sectionAt(inputs, Z_TOP + LID_COPLANAR_MARGIN, cavityInset),
+    sectionAt(inputs, wallBottomZ - LID_COPLANAR_MARGIN, cavityInset),
+    sectionAt(inputs, LID_COPLANAR_MARGIN, cavityInset),
   ];
 
   const [oFirst, ...oRest] = outerSections;
@@ -543,9 +541,6 @@ function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs):
   const { cellsX, cellsY, gridUnitMm, magnetDiameter, magnetDepth, topThickness, cellMask } =
     inputs;
   const radius = magnetDiameter / 2;
-  // Cells centered on lid center.
-  const cellOriginX = -((cellsX - 1) / 2) * gridUnitMm;
-  const cellOriginY = -((cellsY - 1) / 2) * gridUnitMm;
 
   // Hole spans floor + a bit extra so the cut bites cleanly.
   const holeZ = -topThickness - LID_COPLANAR_MARGIN;
@@ -555,19 +550,35 @@ function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs):
   // Faster than per-magnet cut() for non-trivial lids — a 10×10 polygon lid
   // has ~400 holes; per-cut would be 400 boolean ops vs one batched op here.
   const cutters: Shape3D[] = [];
-  for (let cx = 0; cx < cellsX; cx++) {
-    for (let cy = 0; cy < cellsY; cy++) {
-      if (cellMask && !isCellFilled(cellMask, cx, cy)) continue;
-      const centerX = cellOriginX + cx * gridUnitMm;
-      const centerY = cellOriginY + cy * gridUnitMm;
+  // forEachCell handles fractional dimensions (half-bin mode): it decomposes
+  // the lid footprint into 1u full cells + a trailing 0.5u half-cell. Skip
+  // half-cells — Gridfinity doesn't define magnet positions for fractional
+  // cells (matches `socketBuilder.buildBaseSocket`), so the lid magnets line
+  // up with the bin's base sockets.
+  const halfTotalW = (cellsX * gridUnitMm) / 2;
+  const halfTotalD = (cellsY * gridUnitMm) / 2;
+  forEachCell(
+    cellsX,
+    cellsY,
+    (cell) => {
+      if (cell.widthUnits !== 1 || cell.depthUnits !== 1) return;
+      if (cellMask) {
+        // Convert full-cell center → integer cellMask cell index.
+        const cellX = Math.round((cell.centerX + halfTotalW - gridUnitMm / 2) / gridUnitMm);
+        const cellY = Math.round((cell.centerY + halfTotalD - gridUnitMm / 2) / gridUnitMm);
+        if (!isCellFilled(cellMask, cellX, cellY)) return;
+      }
       for (const [ox, oy] of LID_MAGNET_OFFSETS) {
         const cylinder = drawCircle(radius)
           .sketchOnPlane('XY', holeZ)
           .extrude(holeHeight) as Shape3D;
-        cutters.push(scope.register(translate(cylinder, [centerX + ox, centerY + oy, 0])));
+        cutters.push(
+          scope.register(translate(cylinder, [cell.centerX + ox, cell.centerY + oy, 0]))
+        );
       }
-    }
-  }
+    },
+    { gridUnitMm }
+  );
 
   if (cutters.length === 0) return body;
 

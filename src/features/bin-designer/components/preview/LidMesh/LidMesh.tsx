@@ -45,7 +45,11 @@ const OPACITY_INTERP_END_MM = 5;
 /**
  * Anchor Z in lid-local coords — the Y position where the lid's mating
  * cavity opens up to meet the bin's stacking lip when snapped.
- * Mirrors `lidAnchorZ()` in lidConstants.ts (worker-side, can't import).
+ *
+ * MUST MATCH `lidAnchorZ()` in `lidConstants.ts` EXACTLY. This is duplicated
+ * because the worker-side module can't be imported on the main thread; if
+ * either copy changes (formula, constants, sign), update both in lockstep
+ * — silent drift produces a misaligned preview vs. exported geometry.
  */
 function lidAnchorZ(heightUnitMm: number, fitClearance: number): number {
   return -heightUnitMm - LID_EXTRA_HEIGHT + GRIDFINITY.LIP_HEIGHT + Math.SQRT2 * fitClearance * 2;
@@ -101,15 +105,6 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, onHoverChange }
     edgeVertices: lidMesh?.edgeVertices ?? null,
   });
 
-  useEffect(() => {
-    if (geometry) invalidate();
-  }, [geometry, invalidate]);
-
-  // Re-render when offset changes (opacity interpolates with it)
-  useEffect(() => {
-    invalidate();
-  }, [lidOffsetMm, invalidate]);
-
   const matProps = useMemo(
     () => ({
       color,
@@ -149,10 +144,11 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, onHoverChange }
     [onHoverChange]
   );
 
-  // Re-render when hover changes (emissive intensity updates)
+  // Invalidate the R3F frame whenever any visual input changes (geometry,
+  // offset-driven opacity, or hover-driven emissive intensity).
   useEffect(() => {
     invalidate();
-  }, [hovered, invalidate]);
+  }, [geometry, lidOffsetMm, hovered, invalidate]);
 
   if (!geometry) return null;
 
