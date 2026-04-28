@@ -162,7 +162,10 @@
     "baseplate.connectorNubs",
     "baseplate.connectorNubsHelp",
     "export.format",
-    "export.nameStyle.compact"
+    "export.nameStyle.compact",
+    "binDesigner.lid.outerDimensions",
+    "binDesigner.lid.summary",
+    "binDesigner.lid.railsTwoAxis"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

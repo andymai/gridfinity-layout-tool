@@ -1174,7 +1174,6 @@ const en: Record<string, string> = {
   'binDesigner.alignment.right': 'Right',
   'binDesigner.lid': 'Lid',
   'binDesigner.lid.requiresStackingLip': 'Requires stacking lip',
-  'binDesigner.lid.fitLabel': 'Fit',
   'binDesigner.lid.fit.loose': 'Loose',
   'binDesigner.lid.fit.standard': 'Standard',
   'binDesigner.lid.fit.tight': 'Tight',
@@ -1188,6 +1187,13 @@ const en: Record<string, string> = {
   'binDesigner.lid.clickRailCoverage.100': 'Edge-to-edge rails — maximum grip',
   'binDesigner.lid.printNote':
     'Print with supports — the mating cavity and click rails are downward-facing overhangs.',
+  'binDesigner.lid.summary': '{fit} · {coverage}% rails · {wall}mm',
+  'binDesigner.lid.outerDimensions': '{width} × {depth} × {height} mm',
+  'binDesigner.lid.railsCount': 'Rails: {length} mm × {count} walls',
+  'binDesigner.lid.railsTwoAxis':
+    'Rails: {longCount} × {longLength} mm + {shortCount} × {shortLength} mm',
+  'binDesigner.lid.railsRange': 'Rails: {count} walls, {min}–{max} mm',
+  'binDesigner.lid.railsNone': 'No rails (walls too short)',
   'binDesigner.preview.lidClosed': 'Closed',
   'binDesigner.preview.lidOpen': 'Open',
   'binDesigner.preview.lidExplodeSlider': 'Lid open/close',
