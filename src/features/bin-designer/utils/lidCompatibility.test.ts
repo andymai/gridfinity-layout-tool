@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '../constants';
 import type { BinParams } from '../types';
 import type { CellMask } from '@/shared/utils/cellMask';
-import { checkLidCompatibility, hasLidBlocker } from './lidCompatibility';
+import { checkLidCompatibility, hasLidBlocker, isLidBlockedBySection } from './lidCompatibility';
 
 function withOverrides(overrides: Partial<BinParams>): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
@@ -196,6 +196,80 @@ describe('checkLidCompatibility', () => {
       // First issue must be the blocker; remaining must all be warnings.
       expect(issues[0]?.severity).toBe('blocker');
       expect(issues.slice(1).every((i) => i.severity === 'warning')).toBe(true);
+    });
+  });
+
+  describe('isLidBlockedBySection', () => {
+    function lidEnabled(overrides: Partial<BinParams> = {}): BinParams {
+      return withOverrides({
+        ...overrides,
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+      });
+    }
+
+    it('returns false when the lid is disabled (no point flagging)', () => {
+      const params = withOverrides({
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true },
+          back: { ...DEFAULT_BIN_PARAMS.walls.back, enabled: true },
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
+          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: true },
+        },
+      });
+      expect(isLidBlockedBySection(params, 'walls')).toBe(false);
+    });
+
+    it('returns false when the bin has no stacking lip (lid is gated separately)', () => {
+      const params = lidEnabled({
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true },
+          back: { ...DEFAULT_BIN_PARAMS.walls.back, enabled: true },
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
+          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: true },
+        },
+      });
+      expect(isLidBlockedBySection(params, 'walls')).toBe(false);
+    });
+
+    it('returns true when wall cutouts on all 4 sides block an enabled lid', () => {
+      const params = lidEnabled({
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true },
+          back: { ...DEFAULT_BIN_PARAMS.walls.back, enabled: true },
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
+          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: true },
+        },
+      });
+      expect(isLidBlockedBySection(params, 'walls')).toBe(true);
+    });
+
+    it('returns false for warning-only (non-blocker) wall cutouts', () => {
+      const params = lidEnabled({
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
+        },
+      });
+      // This is a warning, not a blocker — section badge is for blockers only.
+      expect(isLidBlockedBySection(params, 'walls')).toBe(false);
+    });
+
+    it('reports per-section, not blanket — wallPattern blocker would not flag walls section', () => {
+      // Currently no wallPattern blockers exist (only warning); confirm
+      // that even hypothetically, asking about walls returns false when
+      // the conflict is actually owned by another section.
+      const params = lidEnabled({
+        wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true },
+      });
+      expect(isLidBlockedBySection(params, 'walls')).toBe(false);
     });
   });
 

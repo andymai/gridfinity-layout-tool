@@ -138,3 +138,30 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
 export function hasLidBlocker(issues: readonly LidCompatibilityIssue[]): boolean {
   return issues.some((i) => i.severity === 'blocker');
 }
+
+/**
+ * UI-side groupings: which feature section "owns" each compatibility ID.
+ * Used by individual feature sections to ask "am I blocking the lid right
+ * now?" so they can render a small conflict badge on their own header.
+ */
+export type LidConflictSection = 'walls' | 'wallPattern' | 'dividerPieces';
+
+const ID_TO_SECTION: Partial<Record<LidCompatibilityId, LidConflictSection>> = {
+  wallCutouts: 'walls',
+  wallCutoutsAllSides: 'walls',
+  wallPattern: 'wallPattern',
+  tallDividerPieces: 'dividerPieces',
+};
+
+/**
+ * Is the user's currently-enabled lid blocked because of this feature
+ * section? Returns false when the lid isn't intended to be active
+ * (`lid.enabled` off, or no stacking lip) — sections shouldn't display
+ * lid-conflict badges if the user isn't trying to use the lid.
+ */
+export function isLidBlockedBySection(params: BinParams, section: LidConflictSection): boolean {
+  if (!params.lid.enabled || !params.base.stackingLip) return false;
+  return checkLidCompatibility(params).some(
+    (i) => i.severity === 'blocker' && ID_TO_SECTION[i.id] === section
+  );
+}

@@ -43,7 +43,7 @@ export function LidSection() {
       label={t('binDesigner.lid')}
       checked={state.enabled}
       onChange={handlers.toggleEnabled}
-      disabledReason={state.requiresStackingLipReason}
+      disabledReason={state.disabledReason}
       valueSummary={state.valueSummary}
       badge={
         <span className="rounded bg-warning-muted px-1.5 py-0.5 text-[10px] font-medium text-warning">

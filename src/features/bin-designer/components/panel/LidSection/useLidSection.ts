@@ -11,10 +11,32 @@ import {
 } from '@/features/bin-designer/types';
 import { isPartialMask, maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
 import type { CellMask } from '@/shared/utils/cellMask';
-import { checkLidCompatibility } from '@/features/bin-designer/utils/lidCompatibility';
+import {
+  checkLidCompatibility,
+  hasLidBlocker,
+} from '@/features/bin-designer/utils/lidCompatibility';
+import type { LidCompatibilityIssue } from '@/features/bin-designer/utils/lidCompatibility';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 
 export const FIT_OPTIONS: readonly LidFit[] = ['loose', 'standard', 'tight'] as const;
+
+/**
+ * Build the `disabledReason` text shown on the lid toggle when blockers
+ * are present. Single blocker → specific fix instruction; multiple →
+ * generic "{count} conflicts" message so the tooltip stays compact.
+ * Returns null when there are no blockers.
+ */
+function buildBlockerReason(
+  blockers: readonly LidCompatibilityIssue[],
+  t: ReturnType<typeof useTranslation>
+): string | null {
+  if (blockers.length === 0) return null;
+  if (blockers.length === 1) {
+    const fixKey = `binDesigner.lid.compat.fix.${blockers[0].id}`;
+    return t('binDesigner.lid.compat.disabledOne', { detail: t(fixKey) });
+  }
+  return t('binDesigner.lid.compat.disabledMany', { count: blockers.length });
+}
 
 /**
  * Minimum rail length (mm) below which the worker skips rendering — must
@@ -108,15 +130,29 @@ export function useLidSection() {
     }))
   );
 
-  const requiresStackingLipReason = !base.stackingLip
-    ? t('binDesigner.lid.requiresStackingLip')
-    : undefined;
+  // Compatibility issues (computed early so disabledReason and effective
+  // enabled gate can both reference them).
+  const compatibilityIssues = useMemo(() => checkLidCompatibility(params), [params]);
+  const blockers = useMemo(
+    () => compatibilityIssues.filter((i) => i.severity === 'blocker'),
+    [compatibilityIssues]
+  );
+  const blocked = hasLidBlocker(compatibilityIssues);
 
-  // Effective enabled: the lid only renders/exports when both `lid.enabled`
-  // is set AND the bin has a stacking lip to mate with. The persisted flag
-  // is preserved so flipping the lip back on restores the user's choice;
-  // the UI just reflects the gated state until then.
-  const effectiveEnabled = lid.enabled && base.stackingLip;
+  const blockerReason = useMemo(() => buildBlockerReason(blockers, t), [blockers, t]);
+
+  // The toggle is disabled either because the bin has no stacking lip
+  // (existing gate) or because a feature blocker prevents the lid from
+  // working. Stacking-lip wins precedence — fix that first, then revisit.
+  const disabledReason = !base.stackingLip
+    ? t('binDesigner.lid.requiresStackingLip')
+    : (blockerReason ?? undefined);
+
+  // Effective enabled: the lid only renders/exports when the persisted
+  // flag is set AND the bin has a stacking lip AND there are no blocker
+  // conflicts. Persisted state is preserved across all gating so the
+  // user's intent is retained when conflicts are resolved.
+  const effectiveEnabled = lid.enabled && base.stackingLip && !blocked;
 
   // Bin has magnets when its base style includes them. Used as the smart
   // default for lid magnetHoles each time the lid is enabled.
@@ -290,11 +326,6 @@ export function useLidSection() {
     });
   }, [t, lid.fit, lid.clickRails, lid.clickRailCoverage, lid.wallThickness]);
 
-  // Compatibility issues — features that conflict with the click-lock
-  // lid (wall cutouts, wall pattern, tall dividers, etc.). The panel
-  // surfaces these inline as warnings so users see the trade-offs.
-  const compatibilityIssues = useMemo(() => checkLidCompatibility(params), [params]);
-
   return {
     state: {
       enabled: effectiveEnabled,
@@ -305,7 +336,7 @@ export function useLidSection() {
       topThickness: lid.topThickness,
       clickRails: lid.clickRails,
       clickRailCoverage: lid.clickRailCoverage,
-      requiresStackingLipReason,
+      disabledReason,
       thicknessOptions,
       railCoverageOptions,
       valueSummary,
