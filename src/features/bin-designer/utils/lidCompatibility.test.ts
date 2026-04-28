@@ -196,6 +196,20 @@ describe('checkLidCompatibility', () => {
       ).toBeUndefined();
     });
 
+    it('does not flag slotted bins (uses slot rails, not compartment walls)', () => {
+      // Greptile flagged this false positive: switching from a compartment
+      // style to 'slotted' leaves stale `compartments.cells` data, which
+      // would otherwise trigger the warning even though slotted bins
+      // never generate divider walls.
+      const params = withOverrides({
+        style: 'slotted',
+        compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] },
+      });
+      expect(
+        checkLidCompatibility(params).find((i) => i.id === 'compartmentDividers')
+      ).toBeUndefined();
+    });
+
     it('does not flag polygon bins (compartments are gated off by FeatureGate)', () => {
       const cells = Array<number>(64).fill(1);
       cells[0] = 0;

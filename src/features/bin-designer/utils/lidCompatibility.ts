@@ -135,10 +135,20 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    inner wall, the divider material at lip-area Z occupies the
   //    same radial space as the lid's mating shell. The lid still
   //    seats around the perimeter, but the divider's top corners can
-  //    interfere with the cavity wall at the contact points. Skipped
-  //    on polygon (cellMask) bins (compartments are gated off there)
-  //    and solid bins (no compartments built).
-  if (!isPolygon && params.style !== 'solid' && new Set(params.compartments.cells).size > 1) {
+  //    interfere with the cavity wall at the contact points.
+  //
+  //    Skipped when divider walls aren't actually generated:
+  //    - polygon (cellMask) bins: compartments are gated off entirely
+  //    - 'solid' style: no interior cavity, no compartments
+  //    - 'slotted' style: uses slot rails instead of compartment walls
+  //    Otherwise a stale `compartments.cells` array (left over from a
+  //    previous style) would fire a false-positive warning.
+  if (
+    !isPolygon &&
+    params.style !== 'solid' &&
+    params.style !== 'slotted' &&
+    new Set(params.compartments.cells).size > 1
+  ) {
     issues.push({ id: 'compartmentDividers', severity: 'warning' });
   }
 

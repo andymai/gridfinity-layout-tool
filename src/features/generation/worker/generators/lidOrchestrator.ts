@@ -91,6 +91,16 @@ export interface LidExportResult {
 /**
  * Export the lid in the requested format. Builds a fresh export-quality
  * solid each time. Returns null when the lid is not enabled.
+ *
+ * Format convention (matches `exportDividerPiecesSeparately`): only
+ * `'step'` returns a STEP buffer with a `.step` filename. Every other
+ * format — including `'3mf'` — returns binary-STL bytes with a `.stl`
+ * filename. The worker never produces 3MF directly; main-thread code
+ * (`exportHandler.handleExportCombined`'s STL/3MF path) collects the
+ * STL pieces and assembles the 3MF zip there. Today's only caller
+ * discards `fileName` and uses a label, so the .stl extension is
+ * harmless; the convention is documented here so a future caller
+ * doesn't trip over the apparent format/filename mismatch.
  */
 export async function exportLid(
   params: BinParams,
