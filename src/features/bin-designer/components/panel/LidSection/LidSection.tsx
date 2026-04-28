@@ -22,6 +22,12 @@ export function LidSection() {
       disabledReason={state.requiresStackingLipReason}
       valueSummary={state.valueSummary}
     >
+      {/* Print-time hint — the mating cavity and click rails are
+          downward-facing overhangs that need supports for a clean print. */}
+      <p className="text-[11px] text-content-tertiary leading-relaxed">
+        {t('binDesigner.lid.printNote')}
+      </p>
+
       {/* Fit picker */}
       <div>
         <label className="text-xs font-medium text-content-secondary mb-1 block">
@@ -74,6 +80,16 @@ export function LidSection() {
         value={state.topThickness}
         onChange={handlers.setTopThickness}
         options={state.thicknessOptions}
+      />
+
+      {/* Click-rail coverage — shorter rails save filament; rails always
+          stay centered on each wall so engagement stays symmetric. */}
+      <SnappingSlider
+        label={t('binDesigner.lid.clickRailCoverage')}
+        value={state.clickRailCoverage}
+        onChange={handlers.setClickRailCoverage}
+        options={state.railCoverageOptions}
+        unit="%"
       />
     </FeatureToggle>
   );

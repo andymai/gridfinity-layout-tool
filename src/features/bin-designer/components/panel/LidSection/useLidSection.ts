@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { useTranslation } from '@/i18n';
-import type { LidFit } from '@/features/bin-designer/types';
+import { LID_CLICK_RAIL_COVERAGE_OPTIONS, type LidFit } from '@/features/bin-designer/types';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 
 export const FIT_OPTIONS: readonly LidFit[] = ['loose', 'standard', 'tight'] as const;
@@ -37,6 +37,15 @@ export function useLidSection() {
       WALL_THICKNESS_OPTIONS.map((value) => ({
         value,
         description: t(`binDesigner.wallThickness.${value}`),
+      })),
+    [t]
+  );
+
+  const railCoverageOptions: SnappingSliderOption[] = useMemo(
+    () =>
+      LID_CLICK_RAIL_COVERAGE_OPTIONS.map((value) => ({
+        value,
+        description: t(`binDesigner.lid.clickRailCoverage.${value}`),
       })),
     [t]
   );
@@ -80,6 +89,13 @@ export function useLidSection() {
     [updateLid]
   );
 
+  const setClickRailCoverage = useCallback(
+    (clickRailCoverage: number) => {
+      updateLid({ clickRailCoverage });
+    },
+    [updateLid]
+  );
+
   const valueSummary = useMemo(() => t(`binDesigner.lid.fit.${lid.fit}`), [t, lid.fit]);
 
   return {
@@ -90,8 +106,10 @@ export function useLidSection() {
       magnetHoles: lid.magnetHoles,
       wallThickness: lid.wallThickness,
       topThickness: lid.topThickness,
+      clickRailCoverage: lid.clickRailCoverage,
       requiresStackingLipReason,
       thicknessOptions,
+      railCoverageOptions,
       valueSummary,
     },
     handlers: {
@@ -101,6 +119,7 @@ export function useLidSection() {
       toggleMagnetHoles,
       setWallThickness,
       setTopThickness,
+      setClickRailCoverage,
     },
     t,
   };

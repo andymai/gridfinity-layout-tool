@@ -3,6 +3,7 @@ import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT, migrateParams } from '../cons
 import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { validateBinParams } from '../utils/validation';
 import { expectOk } from '@/test/testUtils';
+import type { BinParams } from '../types';
 
 describe('DEFAULT_BIN_PARAMS', () => {
   it('should pass validation', () => {
@@ -432,9 +433,26 @@ describe('migrateParams', () => {
       magnetHoles: true,
       wallThickness: 1.6,
       topThickness: 1.6,
+      clickRailCoverage: 75,
     };
     const result = migrateParams({ lid });
     expect(result.lid).toEqual(lid);
+  });
+
+  it('backfills clickRailCoverage to 100 (edge-to-edge) for legacy lid configs', () => {
+    const result = migrateParams({
+      lid: {
+        enabled: true,
+        fit: 'standard',
+        stackableTop: true,
+        magnetHoles: false,
+        wallThickness: 1.2,
+        topThickness: 1.2,
+        // clickRailCoverage missing — pre-feature saved designs must keep
+        // their historical edge-to-edge rail behavior.
+      } as unknown as BinParams['lid'],
+    });
+    expect(result.lid.clickRailCoverage).toBe(100);
   });
 });
 

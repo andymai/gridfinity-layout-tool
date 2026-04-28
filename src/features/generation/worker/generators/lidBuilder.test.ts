@@ -72,4 +72,10 @@ describe('resolveLidInputs', () => {
     expect(inputs.anchorZ).toBeLessThan(0);
     expect(inputs.anchorZ).toBeGreaterThan(inputs.wallBottomZ);
   });
+
+  it('converts clickRailCoverage from percent (0–100) to fraction (0–1)', () => {
+    expect(resolveLidInputs(makeParams({ clickRailCoverage: 100 })).clickRailCoverage).toBe(1);
+    expect(resolveLidInputs(makeParams({ clickRailCoverage: 75 })).clickRailCoverage).toBe(0.75);
+    expect(resolveLidInputs(makeParams({ clickRailCoverage: 50 })).clickRailCoverage).toBe(0.5);
+  });
 });

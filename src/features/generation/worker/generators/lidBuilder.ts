@@ -105,6 +105,13 @@ interface LidInputs {
   readonly heightUnitMm: number;
   /** Bin has a label on its back wall — disable click rails on the front/back walls. */
   readonly omitFrontBackRails: boolean;
+  /**
+   * Click-rail coverage as a fraction (0..1) of each wall's edge length.
+   * Rails are always centered; a value of 1 keeps the historical
+   * edge-to-edge behavior, lower values shrink the rail toward the
+   * midpoint to save filament.
+   */
+  readonly clickRailCoverage: number;
   /** Z of the bin's lip top in lid-local coords when snapped (the "anchor" line). */
   readonly anchorZ: number;
   /** Z of the bottom of the mating wall (where the wall ends and rails begin). */
@@ -154,6 +161,9 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     // Disable click rails along the bin's depth axis (front/back) so they
     // don't collide with the printed label tab.
     omitFrontBackRails: params.label.enabled,
+    // Coverage stored as 0–100 percentage on LidConfig; converted to
+    // a 0–1 fraction here for direct multiplication against rail lengths.
+    clickRailCoverage: params.lid.clickRailCoverage / 100,
     anchorZ: lidAnchorZ(heightUnitMm, fitClearance),
     wallBottomZ: lidWallBottomZ(heightUnitMm, fitClearance),
     cellMask,
@@ -339,7 +349,8 @@ interface RailPlacement {
  *     outward (-1, 0) → 90°      (+Y → -X via 90°)
  */
 function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
-  const { cellMask, gridUnitMm, lidCornerR, fitClearance, omitFrontBackRails } = inputs;
+  const { cellMask, gridUnitMm, lidCornerR, fitClearance, omitFrontBackRails, clickRailCoverage } =
+    inputs;
   if (!cellMask) return [];
 
   const loops = maskToPolygon(cellMask);
@@ -369,8 +380,10 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
     const dy = b.y - a.y;
     const edgeLen = Math.abs(dx) + Math.abs(dy); // axis-aligned
 
-    // Rail spans the edge minus 2× corner radius (clear of corners).
-    const railLen = edgeLen - 2 * lidCornerR;
+    // Rail spans the edge minus 2× corner radius (clear of corners), then
+    // shrunk to `clickRailCoverage` (centered on the wall). Skip if the
+    // resulting rail is too short to be useful.
+    const railLen = (edgeLen - 2 * lidCornerR) * clickRailCoverage;
     if (railLen < MIN_RAIL_LENGTH) continue;
 
     // Edge direction unit (axis-aligned, so just sign).
@@ -414,9 +427,11 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
 
 /** Compute rail placements for a rectangular bin (4 walls). */
 function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
-  const { lidOuterW, lidOuterD, lidCornerR, omitFrontBackRails } = inputs;
-  const railLengthX = lidOuterW - 2 * lidCornerR;
-  const railLengthY = lidOuterD - 2 * lidCornerR;
+  const { lidOuterW, lidOuterD, lidCornerR, omitFrontBackRails, clickRailCoverage } = inputs;
+  // Rail spans wall length minus corner radii on both ends, then shrunk
+  // to `clickRailCoverage` (centered on the wall) to save filament.
+  const railLengthX = (lidOuterW - 2 * lidCornerR) * clickRailCoverage;
+  const railLengthY = (lidOuterD - 2 * lidCornerR) * clickRailCoverage;
   const corneredOuterX = lidOuterW / 2 - lidCornerR;
   const corneredOuterY = lidOuterD / 2 - lidCornerR;
 

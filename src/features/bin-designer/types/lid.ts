@@ -21,6 +21,13 @@ export const LID_FIT_CLEARANCE: Record<LidFit, number> = {
   tight: 0.1,
 } as const;
 
+/**
+ * Available click-rail coverage options as a percentage of edge length.
+ * Lower values save filament; higher values give more grip surface.
+ * 100% = the historical edge-to-edge behavior.
+ */
+export const LID_CLICK_RAIL_COVERAGE_OPTIONS: readonly number[] = [50, 75, 100] as const;
+
 /** Click-lock lid configuration. Stored as a sub-object on `BinParams`. */
 export interface LidConfig {
   /** Master toggle. When false, no lid is generated regardless of other fields. */
@@ -35,6 +42,13 @@ export interface LidConfig {
   readonly wallThickness: number;
   /** Lid top plate thickness in mm. Use a value from WALL_THICKNESS_OPTIONS. */
   readonly topThickness: number;
+  /**
+   * Click-rail coverage as a percentage of each wall's edge length (50–100).
+   * Rails are always centered on their wall; lower values shorten them
+   * symmetrically to save filament. Use a value from
+   * `LID_CLICK_RAIL_COVERAGE_OPTIONS`.
+   */
+  readonly clickRailCoverage: number;
 }
 
 /** Default lid config: disabled. Sensible values for first-enable. */
@@ -45,4 +59,5 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
   magnetHoles: false,
   wallThickness: 1.2,
   topThickness: 1.2,
+  clickRailCoverage: 100,
 } as const;
