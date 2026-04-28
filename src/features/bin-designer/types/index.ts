@@ -26,8 +26,13 @@ import type { CellMask } from '@/shared/utils/cellMask';
 import type { FeatureColorConfig, ColorZone } from './featureColors';
 import type { LidConfig } from './lid';
 
-export type { LidConfig, LidFit } from './lid';
-export { DEFAULT_LID_CONFIG, LID_FIT_CLEARANCE, LID_CLICK_RAIL_COVERAGE_OPTIONS } from './lid';
+export type { LidConfig, LidFit, LidClickRails, LidRailSide } from './lid';
+export {
+  DEFAULT_LID_CONFIG,
+  LID_FIT_CLEARANCE,
+  LID_CLICK_RAIL_COVERAGE_OPTIONS,
+  LID_RAIL_SIDES,
+} from './lid';
 
 // Bin Configuration Types
 

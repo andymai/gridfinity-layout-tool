@@ -19,8 +19,13 @@ describe('DEFAULT_LID_CONFIG', () => {
     expect(DEFAULT_LID_CONFIG.clickRailCoverage).toBe(50);
   });
 
-  it('enables click rails by default (preserves the click-lock semantics that gave the feature its name)', () => {
-    expect(DEFAULT_LID_CONFIG.clickRails).toBe(true);
+  it('enables click rails on all four sides by default (preserves the click-lock semantics that gave the feature its name)', () => {
+    expect(DEFAULT_LID_CONFIG.clickRails).toEqual({
+      front: true,
+      back: true,
+      left: true,
+      right: true,
+    });
   });
 
   it('disables magnet holes by default', () => {

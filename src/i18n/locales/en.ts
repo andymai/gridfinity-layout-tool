@@ -1187,8 +1187,13 @@ const en: Record<string, string> = {
   'binDesigner.lid.clickRailCoverage.100': 'Edge-to-edge rails — maximum grip',
   'binDesigner.lid.printNote':
     'Exports in print-ready orientation (rails up). Default config prints supports-free; the stack-grid option is the main thing that may need them.',
-  'binDesigner.lid.clickRails': 'Snap-fit',
+  'binDesigner.lid.clickRails': 'Snap-fit sides',
+  'binDesigner.lid.side.front': 'Front',
+  'binDesigner.lid.side.back': 'Back',
+  'binDesigner.lid.side.left': 'Left',
+  'binDesigner.lid.side.right': 'Right',
   'binDesigner.lid.summary': '{fit} · {coverage}% rails · {wall}mm',
+  'binDesigner.lid.summaryPartialRails': '{fit} · {coverage}% rails on {sides}/4 · {wall}mm',
   'binDesigner.lid.summaryNoRails': '{fit} · no rails · {wall}mm',
   'binDesigner.lid.compat.heading': 'Compatibility notes',
   'binDesigner.lid.compat.wallCutouts':

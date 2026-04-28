@@ -106,11 +106,16 @@ interface LidInputs {
   /** Bin has a label on its back wall — disable click rails on the front/back walls. */
   readonly omitFrontBackRails: boolean;
   /**
-   * Whether to add click-lock rails to the mating shell. When `false` the
-   * lid is a friction-fit cap with no positive snap — `clickRailCoverage`
-   * is then unused.
+   * Per-side click-rail engagement. When all four are `false` the lid
+   * is friction-fit (no positive snap). Combined with `omitFrontBackRails`
+   * to produce the effective per-side rail set during placement.
    */
-  readonly clickRails: boolean;
+  readonly clickRails: {
+    readonly front: boolean;
+    readonly back: boolean;
+    readonly left: boolean;
+    readonly right: boolean;
+  };
   /**
    * Click-rail coverage as a fraction (0..1) of each wall's edge length.
    * Rails are always centered; a value of 1 keeps the historical
@@ -356,8 +361,15 @@ interface RailPlacement {
  *     outward (-1, 0) → 90°      (+Y → -X via 90°)
  */
 function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
-  const { cellMask, gridUnitMm, lidCornerR, fitClearance, omitFrontBackRails, clickRailCoverage } =
-    inputs;
+  const {
+    cellMask,
+    gridUnitMm,
+    lidCornerR,
+    fitClearance,
+    omitFrontBackRails,
+    clickRails,
+    clickRailCoverage,
+  } = inputs;
   if (!cellMask) return [];
 
   const loops = maskToPolygon(cellMask);
@@ -403,23 +415,39 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
     const inX = -outX;
     const inY = -outY;
 
-    // Skip front/back rails (along X edges, outward ±Y) when label tabs
-    // would collide. Label tabs sit on the back wall; we skip both front
-    // and back to keep symmetry, matching the rectangular path.
-    if (omitFrontBackRails && outY !== 0) continue;
+    // Classify the edge by outward direction so we can apply the
+    // user's per-side toggle. Non-axis-aligned edges (shouldn't happen
+    // for cellMask polygons) are skipped before this check.
+    let rotationDeg: number;
+    let side: 'front' | 'back' | 'left' | 'right';
+    if (outX === 0 && outY === 1) {
+      rotationDeg = 0;
+      side = 'back';
+    } else if (outX === 0 && outY === -1) {
+      rotationDeg = 180;
+      side = 'front';
+    } else if (outX === 1 && outY === 0) {
+      rotationDeg = -90;
+      side = 'right';
+    } else if (outX === -1 && outY === 0) {
+      rotationDeg = 90;
+      side = 'left';
+    } else {
+      continue;
+    }
+
+    // User per-side toggle: skip if this side's rail is disabled.
+    if (!clickRails[side]) continue;
+
+    // Skip front/back rails when label tabs would collide. Label tabs
+    // sit on the back wall; we skip both front and back to keep symmetry,
+    // matching the rectangular path.
+    if (omitFrontBackRails && (side === 'front' || side === 'back')) continue;
 
     // Rail center: edge midpoint shifted INWARD by railInset (perpendicular
     // to edge direction). This places the rail spine on the corner-radius line.
     const midX = (a.x + b.x) / 2 + inX * railInset;
     const midY = (a.y + b.y) / 2 + inY * railInset;
-
-    // Determine rotation: canonical bar bumps in +Y. Map outward → +Y.
-    let rotationDeg: number;
-    if (outX === 0 && outY === 1) rotationDeg = 0;
-    else if (outX === 0 && outY === -1) rotationDeg = 180;
-    else if (outX === 1 && outY === 0) rotationDeg = -90;
-    else if (outX === -1 && outY === 0) rotationDeg = 90;
-    else continue; // non-axis-aligned (shouldn't happen for cellMask polygons)
 
     placements.push({
       centerX: midX,
@@ -434,7 +462,8 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
 
 /** Compute rail placements for a rectangular bin (4 walls). */
 function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
-  const { lidOuterW, lidOuterD, lidCornerR, omitFrontBackRails, clickRailCoverage } = inputs;
+  const { lidOuterW, lidOuterD, lidCornerR, omitFrontBackRails, clickRails, clickRailCoverage } =
+    inputs;
   // Rail spans wall length minus corner radii on both ends, then shrunk
   // to `clickRailCoverage` (centered on the wall) to save filament.
   const railLengthX = (lidOuterW - 2 * lidCornerR) * clickRailCoverage;
@@ -444,9 +473,19 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
 
   const placements: RailPlacement[] = [];
 
-  if (!omitFrontBackRails && railLengthX >= MIN_RAIL_LENGTH) {
+  // Each side is independently gated by `clickRails[side]` AND the
+  // label-tab override (`omitFrontBackRails` skips front+back). The min-
+  // length guard skips edges too short to print a useful rail.
+  const wantBack = clickRails.back && !omitFrontBackRails && railLengthX >= MIN_RAIL_LENGTH;
+  const wantFront = clickRails.front && !omitFrontBackRails && railLengthX >= MIN_RAIL_LENGTH;
+  const wantRight = clickRails.right && railLengthY >= MIN_RAIL_LENGTH;
+  const wantLeft = clickRails.left && railLengthY >= MIN_RAIL_LENGTH;
+
+  if (wantBack) {
     // Back wall: outward +Y, rotation 0°
     placements.push({ centerX: 0, centerY: corneredOuterY, length: railLengthX, rotationDeg: 0 });
+  }
+  if (wantFront) {
     // Front wall: outward -Y, rotation 180°
     placements.push({
       centerX: 0,
@@ -456,7 +495,7 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
     });
   }
 
-  if (railLengthY >= MIN_RAIL_LENGTH) {
+  if (wantRight) {
     // Right wall: outward +X, rotation -90°
     placements.push({
       centerX: corneredOuterX,
@@ -464,6 +503,8 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
       length: railLengthY,
       rotationDeg: -90,
     });
+  }
+  if (wantLeft) {
     // Left wall: outward -X, rotation 90°
     placements.push({
       centerX: -corneredOuterX,
@@ -636,9 +677,13 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
     let body: Shape3D = unwrap(fuse(floor, matingShell));
 
     // 2. Click rails — fuse onto the mating shell from outside (tags rails).
-    // Skipped entirely when `clickRails: false`, producing a friction-fit
-    // lid (mating cavity still wraps the lip; just no positive snap).
-    if (inputs.clickRails) {
+    // Skipped entirely when no side has rails enabled, producing a
+    // friction-fit lid (mating cavity still wraps the lip; just no
+    // positive snap). The placement functions also gate per-side, but
+    // the early skip avoids the boolean-op overhead for friction-fit lids.
+    const { clickRails } = inputs;
+    const anyRail = clickRails.front || clickRails.back || clickRails.left || clickRails.right;
+    if (anyRail) {
       body = addClickRails(scope, body, inputs, originToTag);
     }
 

@@ -169,6 +169,51 @@ describe('generateLid scenarios', () => {
     assertStructurallyValid(result!, '2.5×2 lid');
   });
 
+  it('per-side click rails — disabling sides reduces the rail count monotonically', async () => {
+    // Regression for the per-side rail refactor: each disabled side
+    // should remove exactly one rail's worth of geometry. We don't need
+    // exact triangle counts — just monotonic ordering: all-on > 3-on >
+    // 2-on > 1-on > 0-on (friction-fit). At 0-on the rail-fuse step is
+    // skipped entirely, so the mesh is the smallest of the set.
+    const { generateLid } = await import('./lidOrchestrator');
+    const allOn = generateLid(
+      makeParams(
+        { clickRails: { front: true, back: true, left: true, right: true } },
+        { width: 3, depth: 2, height: 3 }
+      )
+    );
+    const threeOn = generateLid(
+      makeParams(
+        { clickRails: { front: true, back: true, left: true, right: false } },
+        { width: 3, depth: 2, height: 3 }
+      )
+    );
+    const oneOn = generateLid(
+      makeParams(
+        { clickRails: { front: false, back: true, left: false, right: false } },
+        { width: 3, depth: 2, height: 3 }
+      )
+    );
+    const noneOn = generateLid(
+      makeParams(
+        { clickRails: { front: false, back: false, left: false, right: false } },
+        { width: 3, depth: 2, height: 3 }
+      )
+    );
+    expect(allOn).not.toBeNull();
+    expect(threeOn).not.toBeNull();
+    expect(oneOn).not.toBeNull();
+    expect(noneOn).not.toBeNull();
+    assertStructurallyValid(allOn!, 'all-on rails');
+    assertStructurallyValid(threeOn!, '3-on rails');
+    assertStructurallyValid(oneOn!, '1-on rails');
+    assertStructurallyValid(noneOn!, 'no rails (friction-fit)');
+    // Each rail adds geometry; fewer rails ⇒ fewer triangles.
+    expect(allOn!.triangleCount).toBeGreaterThan(threeOn!.triangleCount);
+    expect(threeOn!.triangleCount).toBeGreaterThan(oneOn!.triangleCount);
+    expect(oneOn!.triangleCount).toBeGreaterThan(noneOn!.triangleCount);
+  });
+
   it('all three fit presets produce valid meshes', async () => {
     const { generateLid } = await import('./lidOrchestrator');
     for (const fit of ['loose', 'standard', 'tight'] as const) {

@@ -12,6 +12,7 @@ import { Switch } from '@/design-system/Switch';
 import { RulerIcon } from '@/design-system/Icon';
 import { SnappingSlider } from '../../controls/SnappingSlider';
 import type { LidCompatibilityIssue } from '@/features/bin-designer/utils/lidCompatibility';
+import { LID_RAIL_SIDES } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
 import { useLidSection, FIT_OPTIONS } from './useLidSection';
 
@@ -131,17 +132,39 @@ export function LidSection() {
         onChange={handlers.toggleMagnetHoles}
       />
 
-      {/* Click rails — positive snap engagement. When off, the lid is a
-          friction-fit cap (mating cavity still wraps the lip). The rail
-          coverage slider only renders while rails are on; with rails off
-          there's nothing to dial. */}
-      <Switch
-        label={t('binDesigner.lid.clickRails')}
-        checked={state.clickRails}
-        onChange={handlers.toggleClickRails}
-      />
+      {/* Click rails — per-side. Each chip is an independent toggle: a
+          user can ship a hinge-feel lid (one side only), a label-tab-
+          friendly L+R pair, or all four for symmetric snap. All four off
+          ⇒ friction-fit lid (mating cavity still wraps the lip; no
+          positive snap). Mirrors HandleSection's side-chip pattern. */}
+      <div>
+        <span className="mb-1 block text-xs font-medium text-content-secondary">
+          {t('binDesigner.lid.clickRails')}
+        </span>
+        <div className="flex gap-1">
+          {LID_RAIL_SIDES.map((side) => {
+            const isActive = state.clickRails[side];
+            return (
+              <button
+                key={side}
+                type="button"
+                role="switch"
+                aria-checked={isActive}
+                onClick={() => handlers.toggleClickRailSide(side)}
+                className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                  isActive
+                    ? 'bg-accent text-on-accent'
+                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+                }`}
+              >
+                {t(`binDesigner.lid.side.${side}`)}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-      {state.clickRails && (
+      {state.anyRail && (
         <div className="space-y-1">
           <SnappingSlider
             label={t('binDesigner.lid.clickRailCoverage')}

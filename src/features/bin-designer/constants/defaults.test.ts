@@ -433,14 +433,14 @@ describe('migrateParams', () => {
       magnetHoles: true,
       wallThickness: 1.6,
       topThickness: 1.6,
-      clickRails: false,
+      clickRails: { front: false, back: true, left: true, right: false },
       clickRailCoverage: 75,
     };
     const result = migrateParams({ lid });
     expect(result.lid).toEqual(lid);
   });
 
-  it('backfills clickRails to true (default) for legacy lid configs missing the field', () => {
+  it('backfills clickRails (object) for legacy lid configs missing the field', () => {
     const result = migrateParams({
       lid: {
         enabled: true,
@@ -451,10 +451,61 @@ describe('migrateParams', () => {
         topThickness: 1.2,
         clickRailCoverage: 50,
         // clickRails missing — pre-feature designs were always built
-        // with rails, so the backfill must restore that behavior.
+        // with rails, so the backfill restores all four sides on.
       } as unknown as BinParams['lid'],
     });
-    expect(result.lid.clickRails).toBe(true);
+    expect(result.lid.clickRails).toEqual({
+      front: true,
+      back: true,
+      left: true,
+      right: true,
+    });
+  });
+
+  it('migrates legacy clickRails: true to all four sides on', () => {
+    const result = migrateParams({
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        clickRails: true as unknown as BinParams['lid']['clickRails'],
+      },
+    });
+    expect(result.lid.clickRails).toEqual({
+      front: true,
+      back: true,
+      left: true,
+      right: true,
+    });
+  });
+
+  it('migrates legacy clickRails: false to all four sides off (friction-fit)', () => {
+    const result = migrateParams({
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        clickRails: false as unknown as BinParams['lid']['clickRails'],
+      },
+    });
+    expect(result.lid.clickRails).toEqual({
+      front: false,
+      back: false,
+      left: false,
+      right: false,
+    });
+  });
+
+  it('backfills missing per-side flags from defaults when clickRails is a partial object', () => {
+    const result = migrateParams({
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        // Only `front` set; the other three should fall back to default (true).
+        clickRails: { front: false } as unknown as BinParams['lid']['clickRails'],
+      },
+    });
+    expect(result.lid.clickRails).toEqual({
+      front: false,
+      back: true,
+      left: true,
+      right: true,
+    });
   });
 
   it('backfills clickRailCoverage from defaults for legacy lid configs missing the field', () => {

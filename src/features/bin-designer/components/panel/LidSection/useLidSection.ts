@@ -7,7 +7,9 @@ import { useTranslation } from '@/i18n';
 import {
   LID_CLICK_RAIL_COVERAGE_OPTIONS,
   LID_FIT_CLEARANCE,
+  type LidClickRails,
   type LidFit,
+  type LidRailSide,
 } from '@/features/bin-designer/types';
 import { isPartialMask, maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -67,7 +69,8 @@ function computeRailSummary(
   fit: LidFit,
   coveragePercent: number,
   labelEnabled: boolean,
-  cellMask: CellMask | undefined
+  cellMask: CellMask | undefined,
+  clickRails: LidClickRails
 ): RailSummary {
   const fitClearance = LID_FIT_CLEARANCE[fit];
   const lidCornerR = GRIDFINITY.BOX_CORNER_RADIUS - fitClearance;
@@ -88,9 +91,20 @@ function computeRailSummary(
       const by = b.y * gridUnitMm - halfD;
       const dx = bx - ax;
       const dy = by - ay;
-      const isXAxisEdge = dy === 0;
-      // Match railPlacementsForPolygon's omitFrontBackRails skip (X-aligned edges).
-      if (labelEnabled && isXAxisEdge) continue;
+      // Classify by outward direction to apply the per-side toggle and
+      // the label-tab skip — mirrors the worker's railPlacementsForPolygon.
+      const edgeDirX = Math.sign(dx);
+      const edgeDirY = Math.sign(dy);
+      const outX = edgeDirY;
+      const outY = -edgeDirX;
+      let side: LidRailSide;
+      if (outX === 0 && outY === 1) side = 'back';
+      else if (outX === 0 && outY === -1) side = 'front';
+      else if (outX === 1 && outY === 0) side = 'right';
+      else if (outX === -1 && outY === 0) side = 'left';
+      else continue;
+      if (!clickRails[side]) continue;
+      if (labelEnabled && (side === 'front' || side === 'back')) continue;
       const railLen = (Math.abs(dx) + Math.abs(dy) - 2 * lidCornerR) * coverage;
       if (railLen >= MIN_RAIL_LENGTH_MM) lengths.push(railLen);
     }
@@ -108,9 +122,11 @@ function computeRailSummary(
   const lidOuterD = depth * gridUnitMm - 2 * fitClearance;
   const railLenX = (lidOuterW - 2 * lidCornerR) * coverage;
   const railLenY = (lidOuterD - 2 * lidCornerR) * coverage;
-  // Front + back walls run along X-axis, omitted when label tabs are enabled.
-  const countX = labelEnabled ? 0 : 2;
-  const countY = 2;
+  // Per-side count: 1 if that wall has a rail enabled (and isn't omitted
+  // by the label-tab gate); 0 otherwise. Front+back run along X axis.
+  const fbAllowed = !labelEnabled;
+  const countX = (clickRails.back && fbAllowed ? 1 : 0) + (clickRails.front && fbAllowed ? 1 : 0);
+  const countY = (clickRails.right ? 1 : 0) + (clickRails.left ? 1 : 0);
   const xValid = railLenX >= MIN_RAIL_LENGTH_MM ? countX : 0;
   const yValid = railLenY >= MIN_RAIL_LENGTH_MM ? countY : 0;
   const lengths: number[] = [];
@@ -222,9 +238,20 @@ export function useLidSection() {
     [updateLid]
   );
 
-  const toggleClickRails = useCallback(() => {
-    updateLid({ clickRails: !lid.clickRails });
-  }, [lid.clickRails, updateLid]);
+  const toggleClickRailSide = useCallback(
+    (side: LidRailSide) => {
+      updateLid({
+        clickRails: { ...lid.clickRails, [side]: !lid.clickRails[side] },
+      });
+    },
+    [lid.clickRails, updateLid]
+  );
+
+  // Convenience flag: true when at least one side has a rail. Drives the
+  // rail-coverage slider visibility (no rails → nothing to dial) and the
+  // valueSummary's "no rails" branch.
+  const anyRail =
+    lid.clickRails.front || lid.clickRails.back || lid.clickRails.left || lid.clickRails.right;
 
   // Lid outer footprint mirrors `lidBuilder.resolveLidInputs` so the panel
   // readout matches the generated geometry.
@@ -250,7 +277,7 @@ export function useLidSection() {
 
   const railSummary = useMemo(
     () =>
-      lid.clickRails
+      anyRail
         ? computeRailSummary(
             params.width,
             params.depth,
@@ -258,10 +285,12 @@ export function useLidSection() {
             lid.fit,
             lid.clickRailCoverage,
             params.label.enabled,
-            params.cellMask
+            params.cellMask,
+            lid.clickRails
           )
         : { count: 0, lengths: [] as readonly number[] },
     [
+      anyRail,
       params.width,
       params.depth,
       params.gridUnitMm,
@@ -308,14 +337,32 @@ export function useLidSection() {
     });
   }, [t, railSummary]);
 
+  // Number of rail-enabled sides (out of 4). Used by valueSummary to
+  // distinguish the all-on, none-on, and partial cases without leaking
+  // the per-side flags into the summary string.
+  const railSideCount =
+    (lid.clickRails.front ? 1 : 0) +
+    (lid.clickRails.back ? 1 : 0) +
+    (lid.clickRails.left ? 1 : 0) +
+    (lid.clickRails.right ? 1 : 0);
+
   // Rich value summary for the collapsed FeatureToggle header — fit +
-  // rail coverage (or "no rails" when disabled) + wall thickness,
-  // separated by middle dots. Matches BaseSection's information density.
+  // rail status + wall thickness, separated by middle dots. Three
+  // branches: all sides on (concise "{coverage}% rails"), partial
+  // ("{coverage}% rails on N sides"), none ("no rails").
   const valueSummary = useMemo(() => {
     const fitLabel = t(`binDesigner.lid.fit.${lid.fit}`);
-    if (!lid.clickRails) {
+    if (railSideCount === 0) {
       return t('binDesigner.lid.summaryNoRails', {
         fit: fitLabel,
+        wall: lid.wallThickness,
+      });
+    }
+    if (railSideCount < 4) {
+      return t('binDesigner.lid.summaryPartialRails', {
+        fit: fitLabel,
+        coverage: lid.clickRailCoverage,
+        sides: railSideCount,
         wall: lid.wallThickness,
       });
     }
@@ -324,7 +371,7 @@ export function useLidSection() {
       coverage: lid.clickRailCoverage,
       wall: lid.wallThickness,
     });
-  }, [t, lid.fit, lid.clickRails, lid.clickRailCoverage, lid.wallThickness]);
+  }, [t, lid.fit, railSideCount, lid.clickRailCoverage, lid.wallThickness]);
 
   return {
     state: {
@@ -335,6 +382,7 @@ export function useLidSection() {
       wallThickness: lid.wallThickness,
       topThickness: lid.topThickness,
       clickRails: lid.clickRails,
+      anyRail,
       clickRailCoverage: lid.clickRailCoverage,
       disabledReason,
       thicknessOptions,
@@ -351,7 +399,7 @@ export function useLidSection() {
       toggleMagnetHoles,
       setWallThickness,
       setTopThickness,
-      toggleClickRails,
+      toggleClickRailSide,
       setClickRailCoverage,
     },
     t,

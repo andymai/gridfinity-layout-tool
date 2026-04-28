@@ -21,6 +21,7 @@ import type {
 import type { FeatureColorConfig } from '../types/featureColors';
 import type { LidConfig } from '../types/lid';
 import { DEFAULT_LID_CONFIG } from '../types/lid';
+import type { LidClickRails } from '../types/lid';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
 const DEFAULT_SLOT_CONFIG: SlotConfig = {
@@ -100,6 +101,22 @@ const DEFAULT_HANDLE_CONFIG: HandleConfig = {
   left: { ...DEFAULT_HANDLE_SIDE, enabled: true },
   right: { ...DEFAULT_HANDLE_SIDE, enabled: true },
 } as const;
+
+/**
+ * Expand a legacy `clickRails: boolean` into the per-side object shape.
+ * Pre-v4.50 designs stored a single boolean; the new model is one flag
+ * per wall. `true` → all four sides on; `false` → all four off; an
+ * object is passed through (with missing sides backfilled from the
+ * default).
+ */
+function migrateClickRails(raw: unknown): LidClickRails {
+  if (raw === true) return { front: true, back: true, left: true, right: true };
+  if (raw === false) return { front: false, back: false, left: false, right: false };
+  if (raw && typeof raw === 'object') {
+    return { ...DEFAULT_LID_CONFIG.clickRails, ...(raw as Partial<LidClickRails>) };
+  }
+  return DEFAULT_LID_CONFIG.clickRails;
+}
 
 /** Map legacy FilamentSlotId values (from pre-v4.30 designs) to hex colors for migration */
 const LEGACY_SLOT_COLORS: Record<string, string> = {
@@ -482,7 +499,17 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     cutoutConfig,
     wallPattern: wallPatternConfig,
     featureColors: migrateFeatureColors(params.featureColors),
-    lid: { ...DEFAULT_LID_CONFIG, ...((params.lid as Partial<LidConfig> | undefined) ?? {}) },
+    lid: (() => {
+      const stored = (params.lid as Partial<LidConfig> | undefined) ?? {};
+      return {
+        ...DEFAULT_LID_CONFIG,
+        ...stored,
+        // `clickRails` evolved from boolean → per-side object. Always
+        // route through the migrator so the field is the right shape
+        // regardless of how it was persisted.
+        clickRails: migrateClickRails(stored.clickRails),
+      };
+    })(),
     ...(params.splitConnectors !== undefined
       ? { splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, ...params.splitConnectors } }
       : {}),

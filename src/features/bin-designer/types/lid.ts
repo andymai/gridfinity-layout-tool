@@ -28,6 +28,23 @@ export const LID_FIT_CLEARANCE: Record<LidFit, number> = {
  */
 export const LID_CLICK_RAIL_COVERAGE_OPTIONS: readonly number[] = [50, 75, 100] as const;
 
+/** Wall sides that can carry a click rail. Same axis convention as the bin. */
+export type LidRailSide = 'front' | 'back' | 'left' | 'right';
+export const LID_RAIL_SIDES: readonly LidRailSide[] = ['front', 'back', 'left', 'right'] as const;
+
+/**
+ * Per-side click-rail toggle. Each wall is independent — users can ship
+ * a one-sided "hinge" lid (only front/back), a label-friendly symmetric
+ * pair (left/right only), or any other combination. All four false ⇒
+ * friction-fit lid (no snap engagement at all).
+ */
+export interface LidClickRails {
+  readonly front: boolean;
+  readonly back: boolean;
+  readonly left: boolean;
+  readonly right: boolean;
+}
+
 /** Click-lock lid configuration. Stored as a sub-object on `BinParams`. */
 export interface LidConfig {
   /** Master toggle. When false, no lid is generated regardless of other fields. */
@@ -43,17 +60,23 @@ export interface LidConfig {
   /** Lid top plate thickness in mm. Use a value from WALL_THICKNESS_OPTIONS. */
   readonly topThickness: number;
   /**
-   * Include click-lock rails on the lid's mating shell. When false, the
-   * lid mates by friction only (mating cavity wraps the bin's lip with
-   * fitClearance) — easier to remove, no positive snap. The
-   * `clickRailCoverage` field is irrelevant when this is `false`.
+   * Per-side click-rail engagement. Each wall is independent. When all
+   * four are `false`, the lid is friction-fit only (mating cavity wraps
+   * the lip with fitClearance, no positive snap). When some are `false`
+   * the lid clicks asymmetrically — useful for hinged-feel removal or
+   * for designs where one wall has cutouts/labels that conflict with a
+   * rail. `clickRailCoverage` applies to whichever sides are enabled.
+   *
+   * Migration: legacy `boolean` values get expanded by `migrateParams`:
+   * `true` → all four sides true, `false` → all four false.
    */
-  readonly clickRails: boolean;
+  readonly clickRails: LidClickRails;
   /**
    * Click-rail coverage as a percentage of each wall's edge length (50–100).
    * Rails are always centered on their wall; lower values shorten them
    * symmetrically to save filament. Use a value from
-   * `LID_CLICK_RAIL_COVERAGE_OPTIONS`. Ignored when `clickRails === false`.
+   * `LID_CLICK_RAIL_COVERAGE_OPTIONS`. Only affects sides where
+   * `clickRails[side]` is `true`.
    */
   readonly clickRailCoverage: number;
 }
@@ -75,6 +98,6 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
   magnetHoles: false,
   wallThickness: 1.2,
   topThickness: 1.2,
-  clickRails: true,
+  clickRails: { front: true, back: true, left: true, right: true },
   clickRailCoverage: 50,
 } as const;
