@@ -5,13 +5,12 @@
  * stacking lip. The lid is built in lid-local coordinates so it can be
  * positioned and exported independently of the bin.
  *
- * Reference: AnyLid OpenSCAD by rngcntr (gridfinity-bin-lids.scad). Each
- * piece below is a faithful translation of one SCAD module:
- *   - `BaseSurface` → `buildLidFloor`
- *   - `BottomCorners` + `BottomStraights` → `buildMatingShell` (loft path)
- *   - `ClickStraights` → `buildClickRails`
- *   - `TopWithClearance` → `buildStackGrid`
- *   - `MagnetHoles` → `cutMagnetHoles`
+ * Geometry breakdown:
+ *   - `buildLidFloor`     — flat plate at the top
+ *   - `buildMatingShell`  — inverted-lip wall built via outer/inner lofts
+ *   - `buildClickRails`   — tapered snap rails on each straight wall
+ *   - `buildStackGrid`    — Gridfinity lip profile on top (optional)
+ *   - `cutMagnetHoles`    — standard magnet pattern through the floor
  *
  * Coordinate convention:
  *   Z = 0          : top of lid floor
@@ -110,7 +109,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
 
   // Lid outer footprint matches bin outer footprint (flush exterior on
   // straight walls; lid corners are slightly inside bin corners by the
-  // fitClearance amount per the AnyLid reference).
+  // fitClearance amount).
   const lidOuterW = params.width * gridUnitMm - 2 * fitClearance;
   const lidOuterD = params.depth * gridUnitMm - 2 * fitClearance;
   const lidCornerR = BOX_CORNER_RADIUS - fitClearance;
@@ -172,9 +171,9 @@ function sectionAt(inputs: LidInputs, z: number, outerInset: number): Sketch {
 }
 
 /* ──────────────────────────────────────────────────────────────────────
- * Mating shell — translates SCAD's BottomCorners + BottomStraights.
+ * Mating shell — the inverted-lip wall that wraps the bin's stacking lip.
  *
- * The SCAD's BottomShape polygon, in cross-section:
+ * Cross-section (Y vertical, going up from wall bottom to floor top):
  *   - Y ∈ [anchor, 0]: wall thickness = lidCornerR (full corner-radius)
  *   - Y ∈ [anchor - LIP_BIG_TAPER, anchor]: outer face chamfers inward by
  *     LIP_BIG_TAPER (matches the lip's top chamfer)
@@ -207,9 +206,9 @@ function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
     sectionAt(inputs, Z_TOP, 0),
   ];
 
-  // INNER profile — constant inset at lidCornerR (the SCAD polygon's left
-  // edge stays at X = -lidCornerR throughout). Two sections in ASCENDING Z
-  // with COPLANAR margin so the cut bites cleanly through the outer.
+  // INNER profile — constant inset at lidCornerR (the cavity inner face
+  // sits at the corner-radius line at every Z). Two sections in ASCENDING
+  // Z with COPLANAR margin so the cut bites cleanly through the outer.
   const innerSections: readonly Sketch[] = [
     sectionAt(inputs, Z_BOTTOM - LID_COPLANAR_MARGIN, lidCornerR),
     sectionAt(inputs, Z_TOP + LID_COPLANAR_MARGIN, lidCornerR),
@@ -224,7 +223,7 @@ function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
 }
 
 /* ──────────────────────────────────────────────────────────────────────
- * Floor plate — translates SCAD's BaseSurface.
+ * Floor plate — flat top of the lid.
  *
  * Flat plate at Z ∈ [-topThickness, 0] in the full lid-outer outline. Fuses
  * with the mating shell to seal the cavity at the top.
@@ -240,9 +239,9 @@ function buildLidFloor(scope: DisposalScope, inputs: LidInputs): Shape3D {
 }
 
 /* ──────────────────────────────────────────────────────────────────────
- * Click rails — translates SCAD's ClickStraights.
+ * Click rails — snap features extruded along each straight wall.
  *
- * SCAD ClickShape (X = outward from corner-radius line, Y = vertical):
+ * Cross-section (X = outward from corner-radius line, Y = vertical):
  *   The polygon has its top at Z=wallBottom (just below the mating wall),
  *   protrudes OUTWARD by LID_CLICK_RAIL_OUT to form the rail bump that
  *   catches the lip's bottom chamfer, drops down, then has an inner shelf
@@ -256,7 +255,7 @@ function buildLidFloor(scope: DisposalScope, inputs: LidInputs): Shape3D {
 function clickShape2D(wallBottomZ: number): Drawing {
   // Top of polygon = top of rail = bottom of mating wall.
   const yTop = wallBottomZ;
-  // Heights derived directly from SCAD's polygon Y math.
+  // Y heights stepping down from the rail's top.
   const y1 = yTop - LID_CLICK_RAIL_ENTRY_CHAMFER; // -0.8
   const y2 = y1 - LID_CLICK_RAIL_BUMP - 0.1; // rail body bottom
   const y3 = y2 - LID_CLICK_RAIL_EXIT_CHAMFER; // exit chamfer
@@ -459,11 +458,11 @@ function addClickRails(scope: DisposalScope, body: Shape3D, inputs: LidInputs): 
 }
 
 /* ──────────────────────────────────────────────────────────────────────
- * Stack grid — translates SCAD's TopWithClearance.
+ * Stack grid — Gridfinity stacking-lip profile on top of the lid.
  *
- * Uses the same Gridfinity stacking-lip profile as a bin (so other bins can
- * stack on top of the lid identically to bin-on-bin). Built via sweepSketch
- * along the lid's outer perimeter, mirroring the bin's `buildTopShapeSweep`.
+ * Uses the same lip profile as a bin (so other bins can stack on top of
+ * the lid identically to bin-on-bin). Built via sweepSketch along the
+ * lid's outer perimeter, mirroring the bin's `buildTopShapeSweep`.
  * ──────────────────────────────────────────────────────────────────────── */
 
 function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
@@ -486,10 +485,10 @@ function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
 }
 
 /* ──────────────────────────────────────────────────────────────────────
- * Magnet holes — translates SCAD's MagnetHoles.
+ * Magnet holes — standard Gridfinity magnet pattern.
  *
- * Standard Gridfinity magnet pattern: 4 holes per cell at ±13mm from the
- * cell center. For polygon bins, only filled cells get magnets.
+ * 4 holes per cell at ±13mm from the cell center. For polygon bins, only
+ * filled cells get magnets.
  * ──────────────────────────────────────────────────────────────────────── */
 
 function isCellFilled(mask: CellMask, cellX: number, cellY: number): boolean {
