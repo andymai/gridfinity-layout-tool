@@ -27,33 +27,17 @@ import type { ThreeEvent } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
+import { lidAnchorZ } from './lidAnchorZ';
 
 /** Z offset BinMesh applies to its rendered group — keep the lid in lockstep. */
 const PREVIEW_Z_OFFSET = 0.1;
-
-/** Extra clearance baked into the anchor calculation (matches lidConstants.LID_EXTRA_HEIGHT). */
-const LID_EXTRA_HEIGHT = 0.2;
 
 /** Opacity bands for closed vs exploded views. */
 const OPACITY_CLOSED = 0.7;
 const OPACITY_OPEN = 0.95;
 const OPACITY_INTERP_START_MM = 2;
 const OPACITY_INTERP_END_MM = 5;
-
-/**
- * Anchor Z in lid-local coords — the Y position where the lid's mating
- * cavity opens up to meet the bin's stacking lip when snapped.
- *
- * MUST MATCH `lidAnchorZ()` in `lidConstants.ts` EXACTLY. This is duplicated
- * because the worker-side module can't be imported on the main thread; if
- * either copy changes (formula, constants, sign), update both in lockstep
- * — silent drift produces a misaligned preview vs. exported geometry.
- */
-function lidAnchorZ(heightUnitMm: number, fitClearance: number): number {
-  return -heightUnitMm - LID_EXTRA_HEIGHT + GRIDFINITY.LIP_HEIGHT + Math.SQRT2 * fitClearance * 2;
-}
 
 /** Linear interpolation: 30% closed → 70% open over [2mm, 5mm]. */
 function opacityForOffset(offsetMm: number): number {

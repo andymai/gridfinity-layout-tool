@@ -4,6 +4,9 @@ import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { LidMesh } from './LidMesh';
+import { lidAnchorZ as lidAnchorZMain } from './lidAnchorZ';
+import { lidAnchorZ as lidAnchorZWorker } from '@/features/generation/worker/generators/lidConstants';
+import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
 
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
@@ -54,4 +57,23 @@ describe('LidMesh', () => {
     const { container } = render(<LidMesh color="#cccccc" lidOffsetMm={15} wireframe={false} />);
     expect(container.firstChild).toBeNull();
   });
+});
+
+describe('lidAnchorZ cross-thread agreement', () => {
+  // The lidAnchorZ formula is duplicated between the worker (lidConstants.ts)
+  // and the main thread (LidMesh.tsx) because the worker module can't be
+  // imported into the rendered preview bundle. This test compares both
+  // implementations across representative inputs so silent drift fails fast.
+  const HEIGHT_UNITS = [4, 7, 10] as const; // common Gridfinity values + edges
+  for (const heightUnitMm of HEIGHT_UNITS) {
+    for (const fit of ['loose', 'standard', 'tight'] as const) {
+      it(`agrees for heightUnitMm=${heightUnitMm}, fit=${fit}`, () => {
+        const fitClearance = LID_FIT_CLEARANCE[fit];
+        const main = lidAnchorZMain(heightUnitMm, fitClearance);
+        const worker = lidAnchorZWorker(heightUnitMm, fitClearance);
+        // Both formulas use Math.SQRT2 → exact equality is reasonable.
+        expect(main).toBe(worker);
+      });
+    }
+  }
 });

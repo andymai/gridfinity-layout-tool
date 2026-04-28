@@ -10,6 +10,7 @@ import {
   type LidFit,
 } from '@/features/bin-designer/types';
 import { isPartialMask, maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
+import type { CellMask } from '@/shared/utils/cellMask';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 
 export const FIT_OPTIONS: readonly LidFit[] = ['loose', 'standard', 'tight'] as const;
@@ -43,18 +44,17 @@ function computeRailSummary(
   fit: LidFit,
   coveragePercent: number,
   labelEnabled: boolean,
-  cellMask: ReturnType<typeof isPartialMask> extends true ? never : unknown
+  cellMask: CellMask | undefined
 ): RailSummary {
   const fitClearance = LID_FIT_CLEARANCE[fit];
   const lidCornerR = GRIDFINITY.BOX_CORNER_RADIUS - fitClearance;
   const coverage = coveragePercent / 100;
 
   // Polygon path: per-edge length analysis from the mask outline.
-  if (isPartialMask(cellMask as Parameters<typeof isPartialMask>[0])) {
-    const mask = cellMask as Parameters<typeof maskToPolygon>[0];
-    const outer = maskToPolygon(mask)[0] ?? [];
-    const halfW = (mask.cols * MASK_CELL_SIZE * gridUnitMm) / 2;
-    const halfD = (mask.rows * MASK_CELL_SIZE * gridUnitMm) / 2;
+  if (isPartialMask(cellMask)) {
+    const outer = maskToPolygon(cellMask)[0] ?? [];
+    const halfW = (cellMask.cols * MASK_CELL_SIZE * gridUnitMm) / 2;
+    const halfD = (cellMask.rows * MASK_CELL_SIZE * gridUnitMm) / 2;
     const lengths: number[] = [];
     for (let i = 0; i < outer.length; i++) {
       const a = outer[i];
@@ -216,7 +216,7 @@ export function useLidSection() {
         lid.fit,
         lid.clickRailCoverage,
         params.label.enabled,
-        params.cellMask as never
+        params.cellMask
       ),
     [
       params.width,
