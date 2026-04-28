@@ -19,6 +19,8 @@ import type {
   SplitConnectorConfig,
 } from '../types';
 import type { FeatureColorConfig } from '../types/featureColors';
+import type { LidConfig } from '../types/lid';
+import { DEFAULT_LID_CONFIG } from '../types/lid';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
 const DEFAULT_SLOT_CONFIG: SlotConfig = {
@@ -187,6 +189,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   cutoutConfig: DEFAULT_CUTOUT_CONFIG,
   wallPattern: DEFAULT_WALL_PATTERN_CONFIG,
   featureColors: DEFAULT_FEATURE_COLOR_CONFIG,
+  lid: DEFAULT_LID_CONFIG,
 } as const;
 
 /** Default generation state */
@@ -479,6 +482,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     cutoutConfig,
     wallPattern: wallPatternConfig,
     featureColors: migrateFeatureColors(params.featureColors),
+    lid: { ...DEFAULT_LID_CONFIG, ...((params.lid as Partial<LidConfig> | undefined) ?? {}) },
     ...(params.splitConnectors !== undefined
       ? { splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, ...params.splitConnectors } }
       : {}),

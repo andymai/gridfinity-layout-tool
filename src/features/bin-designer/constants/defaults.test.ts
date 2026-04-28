@@ -404,6 +404,38 @@ describe('migrateParams', () => {
     expect(result.featureColors.lip).toBe('#d4d8dc');
     expect(result.featureColors.labelTab).toBe('#d4d8dc');
   });
+
+  it('backfills lid with defaults for designs saved before lid feature existed', () => {
+    const result = migrateParams({ width: 2, depth: 2, height: 3 });
+    expect(result.lid).toEqual(DEFAULT_BIN_PARAMS.lid);
+    expect(result.lid.enabled).toBe(false);
+  });
+
+  it('preserves stored lid config and fills missing fields from defaults', () => {
+    const result = migrateParams({
+      lid: { enabled: true, fit: 'tight' } as any,
+    });
+    expect(result.lid.enabled).toBe(true);
+    expect(result.lid.fit).toBe('tight');
+    // Unspecified fields fall back to DEFAULT_LID_CONFIG
+    expect(result.lid.stackableTop).toBe(DEFAULT_BIN_PARAMS.lid.stackableTop);
+    expect(result.lid.magnetHoles).toBe(DEFAULT_BIN_PARAMS.lid.magnetHoles);
+    expect(result.lid.wallThickness).toBe(DEFAULT_BIN_PARAMS.lid.wallThickness);
+    expect(result.lid.topThickness).toBe(DEFAULT_BIN_PARAMS.lid.topThickness);
+  });
+
+  it('passes through fully-specified lid config', () => {
+    const lid = {
+      enabled: true,
+      fit: 'loose' as const,
+      stackableTop: false,
+      magnetHoles: true,
+      wallThickness: 1.6,
+      topThickness: 1.6,
+    };
+    const result = migrateParams({ lid });
+    expect(result.lid).toEqual(lid);
+  });
 });
 
 describe('GRIDFINITY constants', () => {

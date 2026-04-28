@@ -9,6 +9,10 @@ import type { FaceGroupData, CoarseLODData } from '@/shared/types/generation';
 import type { DesignId } from '@/core/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { FeatureColorConfig, ColorZone } from './featureColors';
+import type { LidConfig } from './lid';
+
+export type { LidConfig, LidFit } from './lid';
+export { DEFAULT_LID_CONFIG, LID_FIT_CLEARANCE } from './lid';
 
 // Bin Configuration Types
 
@@ -259,6 +263,8 @@ export interface BinParams {
   readonly splitConnectors?: SplitConnectorConfig;
   /** Per-feature filament color assignment for multi-color 3MF export. */
   readonly featureColors: FeatureColorConfig;
+  /** Click-lock lid configuration. Lid is generated as a separate companion solid. */
+  readonly lid: LidConfig;
   /**
    * Optional custom footprint mask (non-rectangular bins).
    *
@@ -562,6 +568,7 @@ export interface DesignerState {
   updateHandles: (partial: Partial<HandleConfig>) => void;
   updateHandleSide: (side: HandleWallSide, partial: Partial<HandleSide>) => void;
   updateFeatureColors: (partial: Partial<FeatureColorConfig>) => void;
+  updateLid: (partial: Partial<LidConfig>) => void;
 
   // History actions
   undo: () => void;
