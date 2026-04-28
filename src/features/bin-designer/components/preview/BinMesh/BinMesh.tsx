@@ -34,12 +34,6 @@ interface BinMeshProps {
   wireframe: boolean;
   /** Base color for the bin (user-selectable) */
   color: string;
-  /**
-   * When true, the lid is being hovered in the preview — brighten the bin's
-   * emissive so the bin visually pairs with the highlighted lid. The pairing
-   * tells users which two parts mate.
-   */
-  lidHovered?: boolean;
 }
 
 /**
@@ -86,7 +80,7 @@ function buildMultiColorGroups(
   return { groups, colors, colorToIndex };
 }
 
-export function BinMesh({ wireframe, color, lidHovered = false }: BinMeshProps) {
+export function BinMesh({ wireframe, color }: BinMeshProps) {
   const { invalidate } = useThree();
   const multiColorEnabled = useFeatureFlag('multi_color_export');
 
@@ -202,8 +196,6 @@ export function BinMesh({ wireframe, color, lidHovered = false }: BinMeshProps) 
   const baseColor = multiColorEnabled && featureColors ? featureColors.body : color;
 
   // Single-color material props shared between fine mesh and coarse LOD.
-  // When the lid is hovered, the bin brightens emissively so the two parts
-  // visually pair (mutual highlight communicating the mating relationship).
   const singleMatProps = useMemo(
     () => ({
       color: baseColor,
@@ -211,14 +203,12 @@ export function BinMesh({ wireframe, color, lidHovered = false }: BinMeshProps) 
       metalness: 0,
       wireframe,
       side: THREE.DoubleSide,
-      emissive: new THREE.Color(baseColor),
-      emissiveIntensity: lidHovered ? 0.3 : 0.08,
       flatShading: !hasPrecomputedNormals,
       polygonOffset: true,
       polygonOffsetFactor: 1,
       polygonOffsetUnits: 1,
     }),
-    [baseColor, wireframe, hasPrecomputedNormals, lidHovered]
+    [baseColor, wireframe, hasPrecomputedNormals]
   );
 
   if (!geometry) return null;

@@ -22,10 +22,9 @@
  *   - Linear interpolation between 2mm and 5mm.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
-import type { ThreeEvent } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
@@ -56,16 +55,10 @@ interface LidMeshProps {
   /** Distance the lid is lifted above its mated position, in mm. 0 = closed. */
   lidOffsetMm: number;
   wireframe?: boolean;
-  /**
-   * Called when the pointer enters/leaves the lid mesh. Used to drive a
-   * paired highlight on the bin (so users see which two parts mate).
-   */
-  onHoverChange?: (hovered: boolean) => void;
 }
 
-export function LidMesh({ color, lidOffsetMm, wireframe = false, onHoverChange }: LidMeshProps) {
+export function LidMesh({ color, lidOffsetMm, wireframe = false }: LidMeshProps) {
   const { invalidate } = useThree();
-  const [hovered, setHovered] = useState(false);
 
   const { lidMesh, lidGroupZ } = useDesignerStore(
     useShallow((s) => {
@@ -106,37 +99,14 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, onHoverChange }
       polygonOffset: true,
       polygonOffsetFactor: 1,
       polygonOffsetUnits: 1,
-      // On hover, brighten the lid emissively so it visually pairs with the
-      // bin (which boosts its emissive in response — see BinMesh's lidHovered).
-      emissive: new THREE.Color(color),
-      emissiveIntensity: hovered ? 0.4 : 0.08,
     }),
-    [color, wireframe, hasPrecomputedNormals, lidOffsetMm, hovered]
+    [color, wireframe, hasPrecomputedNormals, lidOffsetMm]
   );
 
-  const handlePointerOver = useCallback(
-    (e: ThreeEvent<PointerEvent>) => {
-      e.stopPropagation();
-      setHovered(true);
-      onHoverChange?.(true);
-    },
-    [onHoverChange]
-  );
-
-  const handlePointerOut = useCallback(
-    (e: ThreeEvent<PointerEvent>) => {
-      e.stopPropagation();
-      setHovered(false);
-      onHoverChange?.(false);
-    },
-    [onHoverChange]
-  );
-
-  // Invalidate the R3F frame whenever any visual input changes (geometry,
-  // offset-driven opacity, or hover-driven emissive intensity).
+  // Invalidate the R3F frame when any visual input changes.
   useEffect(() => {
     invalidate();
-  }, [geometry, lidOffsetMm, hovered, invalidate]);
+  }, [geometry, lidOffsetMm, invalidate]);
 
   if (!geometry) return null;
 
@@ -144,7 +114,7 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, onHoverChange }
 
   return (
     <group position={[0, 0, positionZ]}>
-      <mesh geometry={geometry} onPointerOver={handlePointerOver} onPointerOut={handlePointerOut}>
+      <mesh geometry={geometry}>
         <meshStandardMaterial {...matProps} />
       </mesh>
       {!wireframe && edgesGeometry && (
