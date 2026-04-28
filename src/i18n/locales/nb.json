@@ -207,7 +207,7 @@
   "binDesigner.lid.clickRailCoverage.50": "Kompakte skinner — sparer mest filament",
   "binDesigner.lid.clickRailCoverage.75": "Tre-fjerdedels skinner — balansert grep og innsparing",
   "binDesigner.lid.clickRailCoverage.100": "Kant-til-kant skinner — maksimalt grep",
-  "binDesigner.lid.printNote": "Skriv ut med støtter — låsekaviteten og klikkskinnene er nedovervendte overheng.",
+  "binDesigner.lid.printNote": "Eksporteres i utskriftsklar orientering (skinner opp). Standardkonfigurasjonen skrives ut uten støtter; stableristen er det eneste som vanligvis trenger dem.",
   "binDesigner.lid.summary": "{fit} · {coverage}% skinner · {wall}mm",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",
   "binDesigner.lid.railsCount": "Skinner: {length} mm × {count} vegger",

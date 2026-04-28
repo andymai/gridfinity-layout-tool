@@ -7,7 +7,8 @@
  * so it's pointless without one).
  */
 
-import { mesh, meshEdges, unwrap, exportSTL, exportSTEP } from 'brepjs';
+import { mesh, meshEdges, rotate, unwrap, exportSTL, exportSTEP } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData, ExportFormat } from '../../bridge/types';
 import type { ProgressFn } from './generatorTypes';
@@ -16,6 +17,25 @@ import { toIndexedMeshData } from './utils/mesh';
 import { computeTessellationTolerances } from './utils/tolerances';
 import { checkCancelled } from './meshUtils';
 import { SIZE } from './generatorConstants';
+
+/**
+ * Rotate the lid 180° around the X axis so the floor's outer surface
+ * faces DOWN (sits on the slicer's build plate) and the mating shell
+ * + click rails face UP. This converts the lid's downward-facing
+ * mating-cavity overhang into a plain upward-opening pocket and the
+ * rails into vertical-wall details — both print without supports.
+ *
+ * Applied only on the standalone export path (`exportLid`), NOT on
+ * the STEP compound assembly path in `exportHandler` where the lid
+ * must remain in mating orientation to nest correctly above the bin.
+ *
+ * Caller owns the returned solid; this function deletes the input.
+ */
+function orientForPrint(lidSolid: Shape3D): Shape3D {
+  const oriented = rotate(lidSolid, 180, { axis: [1, 0, 0] });
+  lidSolid.delete();
+  return oriented;
+}
 
 export function generateLid(
   params: BinParams,
@@ -72,7 +92,7 @@ export async function exportLid(
   if (!params.lid.enabled) return null;
   if (!params.base.stackingLip) return null;
 
-  const solid = buildLid(params);
+  const solid = orientForPrint(buildLid(params));
   const name = `gridfinity-${params.width}x${params.depth}-lid`;
 
   if (format === 'step') {

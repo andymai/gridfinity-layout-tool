@@ -207,7 +207,7 @@
   "binDesigner.lid.clickRailCoverage.50": "Rieles compactos — ahorra más filamento",
   "binDesigner.lid.clickRailCoverage.75": "Rieles a tres cuartos — equilibrio entre agarre y ahorro",
   "binDesigner.lid.clickRailCoverage.100": "Rieles de borde a borde — máximo agarre",
-  "binDesigner.lid.printNote": "Imprime con soportes — la cavidad de acoplamiento y los rieles son voladizos hacia abajo.",
+  "binDesigner.lid.printNote": "Se exporta en orientación lista para imprimir (rieles hacia arriba). La configuración predeterminada imprime sin soportes; la rejilla apilable es lo único que suele necesitarlos.",
   "binDesigner.lid.summary": "{fit} · {coverage}% rieles · {wall}mm",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",
   "binDesigner.lid.railsCount": "Rieles: {length} mm × {count} paredes",

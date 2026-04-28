@@ -1186,7 +1186,7 @@ const en: Record<string, string> = {
   'binDesigner.lid.clickRailCoverage.75': 'Three-quarter rails — balanced grip and savings',
   'binDesigner.lid.clickRailCoverage.100': 'Edge-to-edge rails — maximum grip',
   'binDesigner.lid.printNote':
-    'Print with supports — the mating cavity and click rails are downward-facing overhangs.',
+    'Exports in print-ready orientation (rails up). Default config prints supports-free; the stack-grid option is the main thing that may need them.',
   'binDesigner.lid.summary': '{fit} · {coverage}% rails · {wall}mm',
   'binDesigner.lid.outerDimensions': '{width} × {depth} × {height} mm',
   'binDesigner.lid.railsCount': 'Rails: {length} mm × {count} walls',

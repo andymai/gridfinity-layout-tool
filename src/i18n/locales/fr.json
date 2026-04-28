@@ -207,7 +207,7 @@
   "binDesigner.lid.clickRailCoverage.50": "Rails compacts — économise le plus de filament",
   "binDesigner.lid.clickRailCoverage.75": "Rails aux trois quarts — équilibre entre prise et économie",
   "binDesigner.lid.clickRailCoverage.100": "Rails bord à bord — prise maximale",
-  "binDesigner.lid.printNote": "Imprimer avec supports — la cavité d'emboîtement et les rails sont des porte-à-faux orientés vers le bas.",
+  "binDesigner.lid.printNote": "Exporté dans l'orientation prête à l'impression (rails vers le haut). La configuration par défaut s'imprime sans supports ; la grille d'empilage est généralement la seule fonctionnalité qui peut en nécessiter.",
   "binDesigner.lid.summary": "{fit} · {coverage}% rails · {wall}mm",
   "binDesigner.lid.outerDimensions": "{width} × {depth} × {height} mm",
   "binDesigner.lid.railsCount": "Rails : {length} mm × {count} parois",

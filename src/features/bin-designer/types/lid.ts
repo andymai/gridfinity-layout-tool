@@ -51,13 +51,22 @@ export interface LidConfig {
   readonly clickRailCoverage: number;
 }
 
-/** Default lid config: disabled. Sensible values for first-enable. */
+/**
+ * Default lid config: disabled. Sensible first-enable values:
+ * - `clickRailCoverage: 50` — half-length rails save filament without
+ *   sacrificing the click-lock function (rails are centered on each wall).
+ * - `stackableTop: false` — keeps the lid's print-ready orientation
+ *   (`exportLid` rotates 180° around X so the floor sits on the bed) free
+ *   of features that fight that rotation; users opt in if they need
+ *   stackability.
+ * Other defaults preserve the standard fit, no magnets, and 1.2mm walls/top.
+ */
 export const DEFAULT_LID_CONFIG: LidConfig = {
   enabled: false,
   fit: 'standard',
-  stackableTop: true,
+  stackableTop: false,
   magnetHoles: false,
   wallThickness: 1.2,
   topThickness: 1.2,
-  clickRailCoverage: 100,
+  clickRailCoverage: 50,
 } as const;

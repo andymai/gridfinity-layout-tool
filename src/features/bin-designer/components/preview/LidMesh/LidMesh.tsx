@@ -1,16 +1,17 @@
 /**
  * Renders the click-lock lid mesh in the 3D preview.
  *
- * Coordinate alignment when snapped onto the bin:
- *   - The lid is built in lid-local coords with Y = 0 at the lid floor's
- *     TOP surface and Y = anchorZ (≈ -2.1mm) at the lid's mating-cavity
- *     opening — i.e., the line that should line up with the bin's stacking
- *     lip top when the lid is mated.
- *   - When snapped (lidOffsetMm = 0): lid local Y = anchorZ aligns with the
- *     bin's lip top (world Z = totalHeight + PREVIEW_Z_OFFSET). The lid
- *     floor top sits |anchorZ| (~2.1mm) ABOVE the bin's lip top, with the
- *     mating cavity wrapping the lip from there down.
- *   - Exploded views add `lidOffsetMm` on top of the snapped position.
+ * Coordinate alignment when "closed" (lidOffsetMm = 0):
+ *   - The lid is built in lid-local coords with Z = 0 at the floor's
+ *     TOP surface, the mating-cavity opening at Z = anchorZ (~-2.1mm),
+ *     and the click-rail tail tips at Z = lidLowestZ (~-7.9mm).
+ *   - At offset = 0 the lid is positioned so its RAIL TIPS rest at the
+ *     bin's lip top (world Z = totalHeight + PREVIEW_Z_OFFSET). The
+ *     entire lid sits visibly ABOVE the bin in this state — we trade
+ *     the geometrically-mated view for a glanceable separation, since
+ *     the mating-cavity-wraps-the-lip view hid most of the lid inside
+ *     the bin's vertical extent and read as "the lid is in the bin".
+ *   - `lidOffsetMm` lifts the lid further above this resting position.
  *
  * Opacity:
  *   - When closed (offset ≤ 2mm): 70% opacity — the lid reads as a solid
@@ -28,7 +29,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
-import { lidAnchorZ } from './lidAnchorZ';
+import { lidLowestZ } from './lidAnchorZ';
 
 /** Z offset BinMesh applies to its rendered group — keep the lid in lockstep. */
 const PREVIEW_Z_OFFSET = 0.1;
@@ -71,13 +72,15 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, onHoverChange }
       const heightUnit = s.params.heightUnitMm ?? 7;
       const fitClearance = LID_FIT_CLEARANCE[s.params.lid.fit];
       const binLipTopWorldZ = s.params.height * heightUnit + PREVIEW_Z_OFFSET;
-      const anchorZ = lidAnchorZ(heightUnit, fitClearance);
+      const lowestZ = lidLowestZ(heightUnit, fitClearance);
       return {
         lidMesh: s.generation.mesh?.lidMesh ?? null,
-        // Snapped position: lid Y=anchor sits at bin lip top, so the lid
-        // group (where Y=0 lands) is binLipTopWorldZ - anchorZ. anchorZ is
-        // negative, so this lifts the group ~2.1mm above the lip.
-        lidGroupZ: binLipTopWorldZ - anchorZ,
+        // Closed position: rail tips (lid-local Z = lowestZ, ~-7.9mm) sit
+        // at the bin's lip top. So the lid group (where local Z=0 lands)
+        // is binLipTopWorldZ - lowestZ. lowestZ is negative, so this
+        // lifts the lid floor ~8mm above the lip — the entire lid is
+        // visibly above the bin.
+        lidGroupZ: binLipTopWorldZ - lowestZ,
       };
     })
   );

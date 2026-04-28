@@ -439,7 +439,7 @@ describe('migrateParams', () => {
     expect(result.lid).toEqual(lid);
   });
 
-  it('backfills clickRailCoverage to 100 (edge-to-edge) for legacy lid configs', () => {
+  it('backfills clickRailCoverage from defaults for legacy lid configs missing the field', () => {
     const result = migrateParams({
       lid: {
         enabled: true,
@@ -448,11 +448,13 @@ describe('migrateParams', () => {
         magnetHoles: false,
         wallThickness: 1.2,
         topThickness: 1.2,
-        // clickRailCoverage missing — pre-feature saved designs must keep
-        // their historical edge-to-edge rail behavior.
+        // clickRailCoverage missing — should fall back to whatever
+        // DEFAULT_LID_CONFIG ships, NOT a hard-coded value, since the
+        // first-enable default has shifted over time (started at 100%
+        // edge-to-edge, then moved to 50% for filament economy).
       } as unknown as BinParams['lid'],
     });
-    expect(result.lid.clickRailCoverage).toBe(100);
+    expect(result.lid.clickRailCoverage).toBe(DEFAULT_BIN_PARAMS.lid.clickRailCoverage);
   });
 });
 
