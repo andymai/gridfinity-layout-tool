@@ -11,8 +11,12 @@ describe('DEFAULT_LID_CONFIG', () => {
     expect(DEFAULT_LID_CONFIG.fit).toBe('standard');
   });
 
-  it('enables stackable top by default', () => {
-    expect(DEFAULT_LID_CONFIG.stackableTop).toBe(true);
+  it('disables stackable top by default (the lid prints rails-up; stack grid would land on the build plate)', () => {
+    expect(DEFAULT_LID_CONFIG.stackableTop).toBe(false);
+  });
+
+  it('uses 50% click-rail coverage by default (filament-economy default; users can dial up for more grip)', () => {
+    expect(DEFAULT_LID_CONFIG.clickRailCoverage).toBe(50);
   });
 
   it('disables magnet holes by default', () => {

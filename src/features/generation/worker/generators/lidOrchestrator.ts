@@ -52,25 +52,34 @@ export function generateLid(
   const originToTag = new Map<number, number>();
   const solid = buildLid(params, originToTag);
 
-  checkCancelled(signal);
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for legacy params
-  const gridUnit = params.gridUnitMm ?? SIZE;
-  const maxDimension = Math.max(params.width, params.depth) * gridUnit;
-  // Lid always has lip-mating geometry → use the "has lip" tolerance tier.
-  const { tolerance, angularTolerance } = computeTessellationTolerances(
-    forExport,
-    true,
-    maxDimension
-  );
+  // `buildLid` returns a caller-owned WASM solid; once we've tessellated
+  // it into JS-side mesh data, the OCCT shape is no longer needed and
+  // must be `.delete()`'d or it leaks into the WASM heap (every param
+  // change runs `generateLid`, so this would accumulate quickly). The
+  // try/finally pattern mirrors `baseplateGenerator`'s lifecycle.
+  try {
+    checkCancelled(signal);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for legacy params
+    const gridUnit = params.gridUnitMm ?? SIZE;
+    const maxDimension = Math.max(params.width, params.depth) * gridUnit;
+    // Lid always has lip-mating geometry → use the "has lip" tolerance tier.
+    const { tolerance, angularTolerance } = computeTessellationTolerances(
+      forExport,
+      true,
+      maxDimension
+    );
 
-  const shapeMesh = mesh(solid, { tolerance, angularTolerance });
-  const edgeMesh = meshEdges(solid, {
-    tolerance,
-    angularTolerance: angularTolerance * 0.5,
-  });
-  onProgress?.('merge', 1.0);
+    const shapeMesh = mesh(solid, { tolerance, angularTolerance });
+    const edgeMesh = meshEdges(solid, {
+      tolerance,
+      angularTolerance: angularTolerance * 0.5,
+    });
+    onProgress?.('merge', 1.0);
 
-  return toIndexedMeshData(shapeMesh, edgeMesh.lines, originToTag);
+    return toIndexedMeshData(shapeMesh, edgeMesh.lines, originToTag);
+  } finally {
+    solid.delete();
+  }
 }
 
 /** Export result for the lid (binary STL or STEP buffer). */
@@ -95,19 +104,25 @@ export async function exportLid(
   const solid = orientForPrint(buildLid(params));
   const name = `gridfinity-${params.width}x${params.depth}-lid`;
 
-  if (format === 'step') {
-    const blob = unwrap(exportSTEP(solid));
-    const data = await blob.arrayBuffer();
-    return { data, fileName: `${name}.step` };
-  }
+  // Same WASM-heap discipline as `generateLid`: the oriented solid is
+  // caller-owned and must be released once the export buffer is built.
+  try {
+    if (format === 'step') {
+      const blob = unwrap(exportSTEP(solid));
+      const data = await blob.arrayBuffer();
+      return { data, fileName: `${name}.step` };
+    }
 
-  const blob = unwrap(
-    exportSTL(solid, {
-      tolerance,
-      angularTolerance,
-      binary: true,
-    })
-  );
-  const data = await blob.arrayBuffer();
-  return { data, fileName: `${name}.stl` };
+    const blob = unwrap(
+      exportSTL(solid, {
+        tolerance,
+        angularTolerance,
+        binary: true,
+      })
+    );
+    const data = await blob.arrayBuffer();
+    return { data, fileName: `${name}.stl` };
+  } finally {
+    solid.delete();
+  }
 }
