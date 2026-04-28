@@ -4,16 +4,8 @@ import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { LidMesh } from './LidMesh';
-import { lidAnchorZ as lidAnchorZMain, LID_RAIL_BELOW_ANCHOR_MM } from './lidAnchorZ';
-import {
-  lidAnchorZ as lidAnchorZWorker,
-  LID_CLICK_RAIL_DROP,
-  LID_CLICK_RAIL_TAIL,
-} from '@/features/generation/worker/generators/lidConstants';
-import {
-  LIP_BIG_TAPER,
-  LIP_VERTICAL_PART,
-} from '@/features/generation/worker/generators/generatorConstants';
+import { lidAnchorZ as lidAnchorZMain } from './lidAnchorZ';
+import { lidAnchorZ as lidAnchorZWorker } from '@/features/generation/worker/generators/lidConstants';
 import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
 
 vi.mock('@react-three/fiber', () => ({
@@ -84,13 +76,4 @@ describe('lidAnchorZ cross-thread agreement', () => {
       });
     }
   }
-
-  it('LID_RAIL_BELOW_ANCHOR_MM matches the sum of worker rail constants', () => {
-    // Drift guard: the preview's "closed" position math depends on the
-    // total vertical extent below the lid's anchor line. If any of the
-    // four worker constants changes, this constant must change too —
-    // this test makes that lockstep relationship a CI gate.
-    const expected = LIP_BIG_TAPER + LIP_VERTICAL_PART + LID_CLICK_RAIL_DROP + LID_CLICK_RAIL_TAIL;
-    expect(LID_RAIL_BELOW_ANCHOR_MM).toBeCloseTo(expected, 6);
-  });
 });

@@ -3,15 +3,16 @@
  *
  * Coordinate alignment when "closed" (lidOffsetMm = 0):
  *   - The lid is built in lid-local coords with Z = 0 at the floor's
- *     TOP surface, the mating-cavity opening at Z = anchorZ (~-2.1mm),
- *     and the click-rail tail tips at Z = lidLowestZ (~-7.9mm).
- *   - At offset = 0 the lid is positioned so its RAIL TIPS rest at the
- *     bin's lip top (world Z = totalHeight + PREVIEW_Z_OFFSET). The
- *     entire lid sits visibly ABOVE the bin in this state — we trade
- *     the geometrically-mated view for a glanceable separation, since
- *     the mating-cavity-wraps-the-lip view hid most of the lid inside
- *     the bin's vertical extent and read as "the lid is in the bin".
- *   - `lidOffsetMm` lifts the lid further above this resting position.
+ *     TOP surface and Z = anchorZ (~-2.1mm) at the lid's mating-cavity
+ *     opening — the line that lines up with the bin's stacking lip top.
+ *   - At offset = 0 the lid is in its true mated position: the mating
+ *     cavity opening (lid local Z = anchorZ) sits at the bin's lip top
+ *     (world Z = totalHeight + PREVIEW_Z_OFFSET). The floor's outer
+ *     face sits ~2.1mm above the lip top, with the rails wrapping the
+ *     lip from outside. This matches how the printed lid actually sits
+ *     on the bin.
+ *   - `lidOffsetMm` lifts the lid above this mated position to expose
+ *     the cavity for inspection.
  *
  * Opacity:
  *   - When closed (offset ≤ 2mm): 70% opacity — the lid reads as a solid
@@ -29,7 +30,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
-import { lidLowestZ } from './lidAnchorZ';
+import { lidAnchorZ } from './lidAnchorZ';
 
 /** Z offset BinMesh applies to its rendered group — keep the lid in lockstep. */
 const PREVIEW_Z_OFFSET = 0.1;
@@ -72,15 +73,15 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, onHoverChange }
       const heightUnit = s.params.heightUnitMm ?? 7;
       const fitClearance = LID_FIT_CLEARANCE[s.params.lid.fit];
       const binLipTopWorldZ = s.params.height * heightUnit + PREVIEW_Z_OFFSET;
-      const lowestZ = lidLowestZ(heightUnit, fitClearance);
+      const anchorZ = lidAnchorZ(heightUnit, fitClearance);
       return {
         lidMesh: s.generation.mesh?.lidMesh ?? null,
-        // Closed position: rail tips (lid-local Z = lowestZ, ~-7.9mm) sit
-        // at the bin's lip top. So the lid group (where local Z=0 lands)
-        // is binLipTopWorldZ - lowestZ. lowestZ is negative, so this
-        // lifts the lid floor ~8mm above the lip — the entire lid is
-        // visibly above the bin.
-        lidGroupZ: binLipTopWorldZ - lowestZ,
+        // Mated position: lid local Z = anchorZ aligns with the bin's
+        // lip top. The lid group (where local Z=0 lands) is then
+        // binLipTopWorldZ - anchorZ; anchorZ is negative, so the lid
+        // floor sits ~2.1mm above the lip with the mating cavity
+        // wrapping the lip from outside — true closed state.
+        lidGroupZ: binLipTopWorldZ - anchorZ,
       };
     })
   );
