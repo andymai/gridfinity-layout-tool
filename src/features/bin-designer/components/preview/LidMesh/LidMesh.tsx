@@ -13,10 +13,10 @@
  *   - Exploded views add `lidOffsetMm` on top of the snapped position.
  *
  * Opacity:
- *   - When closed (offset ≤ 2mm): 30% opacity so the bin's interior is
- *     clearly visible THROUGH the lid.
- *   - When exploded (offset > 5mm): 70% opacity (lid material reads more
- *     clearly when separated from the bin).
+ *   - When closed (offset ≤ 2mm): 70% opacity — the lid reads as a solid
+ *     part while still allowing a hint of the bin's interior through.
+ *   - When exploded (offset > 5mm): 95% opacity (effectively solid; the
+ *     bin is plainly visible alongside).
  *   - Linear interpolation between 2mm and 5mm.
  */
 
@@ -37,8 +37,8 @@ const PREVIEW_Z_OFFSET = 0.1;
 const LID_EXTRA_HEIGHT = 0.2;
 
 /** Opacity bands for closed vs exploded views. */
-const OPACITY_CLOSED = 0.3;
-const OPACITY_OPEN = 0.7;
+const OPACITY_CLOSED = 0.7;
+const OPACITY_OPEN = 0.95;
 const OPACITY_INTERP_START_MM = 2;
 const OPACITY_INTERP_END_MM = 5;
 
