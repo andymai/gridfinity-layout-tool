@@ -23,6 +23,11 @@ export function LidSection() {
       onChange={handlers.toggleEnabled}
       disabledReason={state.requiresStackingLipReason}
       valueSummary={state.valueSummary}
+      badge={
+        <span className="rounded bg-warning-muted px-1.5 py-0.5 text-[10px] font-medium text-warning">
+          {t('settings.experimental')}
+        </span>
+      }
       primaryControls={
         // Fit is the most consequential lid choice — keep it always visible
         // when the lid is on, before the "Customize" gate. Mirrors
