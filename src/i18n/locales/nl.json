@@ -213,6 +213,7 @@
   "binDesigner.lid.summaryNoRails": "{fit} · geen rails · {wall}mm",
   "binDesigner.lid.compat.heading": "Compatibiliteitsnotities",
   "binDesigner.lid.compat.wallCutouts": "Wanduitsparingen ({sides}) verwijderen de stapelrand op die wanden — het deksel verliest de klikbevestiging daar.",
+  "binDesigner.lid.compat.wallCutoutsAllSides": "Wanduitsparingen op alle vier de zijden verwijderen de volledige stapelrand — het deksel heeft geen oppervlak om mee te koppelen.",
   "binDesigner.lid.compat.wallPattern": "Wandpatroon kan de stapelrand doorboren — de klik kan rammelen of los zitten.",
   "binDesigner.lid.compat.shortBin": "Bak is slechts 1U hoog — het deksel zit, maar de klikbevestiging is marginaal.",
   "binDesigner.lid.compat.tallDividerPieces": "Verdeelstukken zijn hoger dan de bakbinnenkant — het deksel zal niet zitten met ze geplaatst.",

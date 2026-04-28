@@ -213,6 +213,7 @@
   "binDesigner.lid.summaryNoRails": "{fit} · ingen skinner · {wall}mm",
   "binDesigner.lid.compat.heading": "Kompatibilitetsnotater",
   "binDesigner.lid.compat.wallCutouts": "Veggutskjæringer ({sides}) fjerner stablekanten på disse veggene — lokket mister klikkfeste der.",
+  "binDesigner.lid.compat.wallCutoutsAllSides": "Veggutskjæringer på alle fire sider fjerner hele stablekanten — lokket har ingen flate å feste seg til.",
   "binDesigner.lid.compat.wallPattern": "Veggmønster kan perforere stablekanten — klikket kan skrangle eller sitte løst.",
   "binDesigner.lid.compat.shortBin": "Boksen er bare 1U høy — lokket sitter, men klikkfestet er marginalt.",
   "binDesigner.lid.compat.tallDividerPieces": "Skilleplater er høyere enn boksens innside — lokket vil ikke sitte med dem satt inn.",

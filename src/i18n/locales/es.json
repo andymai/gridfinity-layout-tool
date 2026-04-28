@@ -213,6 +213,7 @@
   "binDesigner.lid.summaryNoRails": "{fit} · sin rieles · {wall}mm",
   "binDesigner.lid.compat.heading": "Notas de compatibilidad",
   "binDesigner.lid.compat.wallCutouts": "Los recortes en las paredes ({sides}) eliminan el labio en esas paredes — la tapa pierde el enganche a presión allí.",
+  "binDesigner.lid.compat.wallCutoutsAllSides": "Los recortes en las cuatro paredes eliminan todo el labio — la tapa no tiene superficie con la que encajar.",
   "binDesigner.lid.compat.wallPattern": "El patrón de pared puede perforar el labio — el cierre puede vibrar o quedar flojo.",
   "binDesigner.lid.compat.shortBin": "El contenedor mide 1U de alto — la tapa se asienta pero el enganche es marginal.",
   "binDesigner.lid.compat.tallDividerPieces": "Las piezas divisorias son más altas que el interior — la tapa no se asentará con ellas insertadas.",

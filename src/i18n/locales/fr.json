@@ -213,6 +213,7 @@
   "binDesigner.lid.summaryNoRails": "{fit} · sans rails · {wall}mm",
   "binDesigner.lid.compat.heading": "Notes de compatibilité",
   "binDesigner.lid.compat.wallCutouts": "Les découpes de paroi ({sides}) suppriment la lèvre sur ces parois — le couvercle y perd l'engagement à clic.",
+  "binDesigner.lid.compat.wallCutoutsAllSides": "Les découpes sur les quatre parois suppriment toute la lèvre — le couvercle n'a aucune surface d'engagement.",
   "binDesigner.lid.compat.wallPattern": "Le motif de paroi peut perforer la lèvre — le clic peut osciller ou être lâche.",
   "binDesigner.lid.compat.shortBin": "Le bac fait 1U de haut — le couvercle se pose mais l'engagement est marginal.",
   "binDesigner.lid.compat.tallDividerPieces": "Les séparateurs sont plus hauts que l'intérieur du bac — le couvercle ne s'assied pas avec eux insérés.",

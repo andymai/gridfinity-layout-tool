@@ -36,6 +36,7 @@ export type LidCompatibilitySeverity = 'blocker' | 'warning';
  */
 export type LidCompatibilityId =
   | 'wallCutouts'
+  | 'wallCutoutsAllSides'
   | 'wallPattern'
   | 'shortBin'
   | 'tallDividerPieces'
@@ -58,18 +59,35 @@ const WALL_SIDES = ['front', 'back', 'left', 'right'] as const;
  * the function makes no assumption about whether the lid is actually
  * being generated, it just reports geometric incompatibilities.
  */
+/** Severity rank for stable sorting (lower number = higher priority). */
+const SEVERITY_RANK: Record<LidCompatibilitySeverity, number> = {
+  blocker: 0,
+  warning: 1,
+};
+
 export function checkLidCompatibility(params: BinParams): readonly LidCompatibilityIssue[] {
   const issues: LidCompatibilityIssue[] = [];
+  // Polygon (custom-shape) bins auto-disable wall cutouts + wall pattern
+  // via `FeatureGate` even if the stored flags are still `true`. Don't
+  // warn about features the bin generator silently skips — false
+  // positives erode trust in the rest of the warnings.
+  const isPolygon = isPartialMask(params.cellMask);
 
-  // 1. Wall cutouts. Each enabled side removes lip material on that wall,
-  //    so the click rail on that wall has nothing to grip — the lid still
-  //    mates around the remaining walls but with reduced engagement.
-  if (params.walls.enabled) {
+  // 1. Wall cutouts. Each enabled side removes lip material on that wall.
+  //    All four sides cut → no lip anywhere → blocker (lid has nothing to
+  //    grip). Some-sides cut → warning (lid still mates on remaining walls).
+  if (params.walls.enabled && !isPolygon) {
     const cutSides: LidCompatibilitySide[] = [];
     for (const side of WALL_SIDES) {
       if (params.walls[side].enabled) cutSides.push(side);
     }
-    if (cutSides.length > 0) {
+    if (cutSides.length === WALL_SIDES.length) {
+      issues.push({
+        id: 'wallCutoutsAllSides',
+        severity: 'blocker',
+        sides: cutSides,
+      });
+    } else if (cutSides.length > 0) {
       issues.push({ id: 'wallCutouts', severity: 'warning', sides: cutSides });
     }
   }
@@ -77,7 +95,7 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   // 2. Wall pattern. Patterns extend up to (LIP_HEIGHT + 2)mm into the
   //    lip Z range (see `wallPatternBuilder.clipOvershoot`), perforating
   //    the lip's inner face that the lid's rails grip.
-  if (params.wallPattern.enabled) {
+  if (params.wallPattern.enabled && !isPolygon) {
     issues.push({ id: 'wallPattern', severity: 'warning' });
   }
 
@@ -106,11 +124,14 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    hole edges have lip material but no rails. Lid mates asymmetrically
   //    — fine functionally, worth flagging so users aren't confused why
   //    the click is uneven.
-  if (isPartialMask(params.cellMask) && maskToPolygon(params.cellMask).length > 1) {
+  if (isPolygon && maskToPolygon(params.cellMask).length > 1) {
     issues.push({ id: 'cellMaskHoles', severity: 'warning' });
   }
 
-  return issues;
+  // Sort by severity so blockers always appear first in the panel.
+  // Issues within the same severity tier preserve their insertion order
+  // (the checks above are listed in approximate user-impact order).
+  return issues.sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]);
 }
 
 /** Convenience: any blocker = the lid effectively can't be used. */

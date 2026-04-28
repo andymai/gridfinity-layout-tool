@@ -1193,6 +1193,8 @@ const en: Record<string, string> = {
   'binDesigner.lid.compat.heading': 'Compatibility notes',
   'binDesigner.lid.compat.wallCutouts':
     'Wall cutouts ({sides}) remove the lip on those walls — the lid loses click engagement there.',
+  'binDesigner.lid.compat.wallCutoutsAllSides':
+    'Wall cutouts on all four sides remove the entire lip — the lid has no surface to mate with.',
   'binDesigner.lid.compat.wallPattern':
     'Wall pattern can perforate the lip — the click may rattle or fit loosely.',
   'binDesigner.lid.compat.shortBin':

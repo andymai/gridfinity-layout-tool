@@ -14,7 +14,7 @@ describe('checkLidCompatibility', () => {
   });
 
   describe('wall cutouts', () => {
-    it('flags each enabled side', () => {
+    it('flags each enabled side as a warning', () => {
       const params = withOverrides({
         walls: {
           ...DEFAULT_BIN_PARAMS.walls,
@@ -30,6 +30,25 @@ describe('checkLidCompatibility', () => {
       expect(wallIssue).toBeDefined();
       expect(wallIssue?.severity).toBe('warning');
       expect(wallIssue?.sides).toEqual(['left', 'right']);
+    });
+
+    it('upgrades to a blocker when ALL four sides have cutouts (no lip remaining)', () => {
+      const params = withOverrides({
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.walls.front, enabled: true },
+          back: { ...DEFAULT_BIN_PARAMS.walls.back, enabled: true },
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
+          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: true },
+        },
+      });
+      const issues = checkLidCompatibility(params);
+      const allSidesIssue = issues.find((i) => i.id === 'wallCutoutsAllSides');
+      expect(allSidesIssue?.severity).toBe('blocker');
+      expect(allSidesIssue?.sides).toEqual(['front', 'back', 'left', 'right']);
+      // The "some sides" warning shouldn't ALSO fire on the same params.
+      expect(issues.find((i) => i.id === 'wallCutouts')).toBeUndefined();
     });
 
     it('skips when wall cutouts are disabled at the top level', () => {
@@ -54,6 +73,22 @@ describe('checkLidCompatibility', () => {
       });
       expect(checkLidCompatibility(params).find((i) => i.id === 'wallCutouts')).toBeUndefined();
     });
+
+    it('skips on polygon (cellMask) bins — wall cutouts are gated off by FeatureGate even when the flag is true', () => {
+      const cells = Array<number>(64).fill(1);
+      cells[0] = 0; // any partial mask qualifies
+      const params = withOverrides({
+        width: 4,
+        depth: 4,
+        cellMask: { cols: 8, rows: 8, cells },
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
+        },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'wallCutouts')).toBeUndefined();
+    });
   });
 
   describe('wall pattern', () => {
@@ -63,6 +98,18 @@ describe('checkLidCompatibility', () => {
       });
       const issue = checkLidCompatibility(params).find((i) => i.id === 'wallPattern');
       expect(issue?.severity).toBe('warning');
+    });
+
+    it('skips on polygon bins — wall pattern is gated off by FeatureGate', () => {
+      const cells = Array<number>(64).fill(1);
+      cells[0] = 0;
+      const params = withOverrides({
+        width: 4,
+        depth: 4,
+        cellMask: { cols: 8, rows: 8, cells },
+        wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'wallPattern')).toBeUndefined();
     });
   });
 
@@ -132,6 +179,23 @@ describe('checkLidCompatibility', () => {
       expect(
         checkLidCompatibility(DEFAULT_BIN_PARAMS).find((i) => i.id === 'cellMaskHoles')
       ).toBeUndefined();
+    });
+  });
+
+  describe('severity ordering', () => {
+    it('sorts blockers before warnings', () => {
+      // Build a bin that triggers both a blocker (tallDividerPieces) AND
+      // multiple warnings (shortBin + wallPattern).
+      const params = withOverrides({
+        height: 1, // shortBin warning
+        wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true }, // warning
+        style: 'slotted',
+        dividerPieces: { ...DEFAULT_BIN_PARAMS.dividerPieces, height: 100 }, // blocker
+      });
+      const issues = checkLidCompatibility(params);
+      // First issue must be the blocker; remaining must all be warnings.
+      expect(issues[0]?.severity).toBe('blocker');
+      expect(issues.slice(1).every((i) => i.severity === 'warning')).toBe(true);
     });
   });
 

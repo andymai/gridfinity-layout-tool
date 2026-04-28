@@ -213,6 +213,7 @@
   "binDesigner.lid.summaryNoRails": "{fit} · keine Schienen · {wall}mm",
   "binDesigner.lid.compat.heading": "Kompatibilitätshinweise",
   "binDesigner.lid.compat.wallCutouts": "Wandausschnitte ({sides}) entfernen den Stapelrand an diesen Wänden — der Deckel verliert dort den Klick-Eingriff.",
+  "binDesigner.lid.compat.wallCutoutsAllSides": "Wandausschnitte auf allen vier Seiten entfernen den gesamten Stapelrand — der Deckel hat keine Auflagefläche.",
   "binDesigner.lid.compat.wallPattern": "Wandmuster können den Stapelrand perforieren — der Klick kann klappern oder lose sitzen.",
   "binDesigner.lid.compat.shortBin": "Behälter ist nur 1U hoch — der Deckel sitzt zwar, aber der Klick-Eingriff ist grenzwertig.",
   "binDesigner.lid.compat.tallDividerPieces": "Trennwände sind höher als der Behälter-Innenraum — der Deckel passt nicht, wenn sie eingesetzt sind.",
