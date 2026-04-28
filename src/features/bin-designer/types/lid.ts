@@ -43,10 +43,17 @@ export interface LidConfig {
   /** Lid top plate thickness in mm. Use a value from WALL_THICKNESS_OPTIONS. */
   readonly topThickness: number;
   /**
+   * Include click-lock rails on the lid's mating shell. When false, the
+   * lid mates by friction only (mating cavity wraps the bin's lip with
+   * fitClearance) — easier to remove, no positive snap. The
+   * `clickRailCoverage` field is irrelevant when this is `false`.
+   */
+  readonly clickRails: boolean;
+  /**
    * Click-rail coverage as a percentage of each wall's edge length (50–100).
    * Rails are always centered on their wall; lower values shorten them
    * symmetrically to save filament. Use a value from
-   * `LID_CLICK_RAIL_COVERAGE_OPTIONS`.
+   * `LID_CLICK_RAIL_COVERAGE_OPTIONS`. Ignored when `clickRails === false`.
    */
   readonly clickRailCoverage: number;
 }
@@ -68,5 +75,6 @@ export const DEFAULT_LID_CONFIG: LidConfig = {
   magnetHoles: false,
   wallThickness: 1.2,
   topThickness: 1.2,
+  clickRails: true,
   clickRailCoverage: 50,
 } as const;

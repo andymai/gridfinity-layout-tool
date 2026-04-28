@@ -93,21 +93,31 @@ export function LidSection() {
         onChange={handlers.toggleMagnetHoles}
       />
 
-      {/* Click-rail coverage — shorter rails save filament; rails always
-          stay centered on each wall so engagement stays symmetric. */}
-      <div className="space-y-1">
-        <SnappingSlider
-          label={t('binDesigner.lid.clickRailCoverage')}
-          value={state.clickRailCoverage}
-          onChange={handlers.setClickRailCoverage}
-          options={state.railCoverageOptions}
-          unit="%"
-        />
-        <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
-          <RulerIcon size="xs" />
-          <span className="tabular-nums">{state.railsReadout}</span>
+      {/* Click rails — positive snap engagement. When off, the lid is a
+          friction-fit cap (mating cavity still wraps the lip). The rail
+          coverage slider only renders while rails are on; with rails off
+          there's nothing to dial. */}
+      <Switch
+        label={t('binDesigner.lid.clickRails')}
+        checked={state.clickRails}
+        onChange={handlers.toggleClickRails}
+      />
+
+      {state.clickRails && (
+        <div className="space-y-1">
+          <SnappingSlider
+            label={t('binDesigner.lid.clickRailCoverage')}
+            value={state.clickRailCoverage}
+            onChange={handlers.setClickRailCoverage}
+            options={state.railCoverageOptions}
+            unit="%"
+          />
+          <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
+            <RulerIcon size="xs" />
+            <span className="tabular-nums">{state.railsReadout}</span>
+          </div>
         </div>
-      </div>
+      )}
     </FeatureToggle>
   );
 }

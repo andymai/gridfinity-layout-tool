@@ -106,10 +106,16 @@ interface LidInputs {
   /** Bin has a label on its back wall — disable click rails on the front/back walls. */
   readonly omitFrontBackRails: boolean;
   /**
+   * Whether to add click-lock rails to the mating shell. When `false` the
+   * lid is a friction-fit cap with no positive snap — `clickRailCoverage`
+   * is then unused.
+   */
+  readonly clickRails: boolean;
+  /**
    * Click-rail coverage as a fraction (0..1) of each wall's edge length.
    * Rails are always centered; a value of 1 keeps the historical
    * edge-to-edge behavior, lower values shrink the rail toward the
-   * midpoint to save filament.
+   * midpoint to save filament. Ignored when `clickRails === false`.
    */
   readonly clickRailCoverage: number;
   /** Z of the bin's lip top in lid-local coords when snapped (the "anchor" line). */
@@ -161,6 +167,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     // Disable click rails along the bin's depth axis (front/back) so they
     // don't collide with the printed label tab.
     omitFrontBackRails: params.label.enabled,
+    clickRails: params.lid.clickRails,
     // Coverage stored as 0–100 percentage on LidConfig; converted to
     // a 0–1 fraction here for direct multiplication against rail lengths.
     clickRailCoverage: params.lid.clickRailCoverage / 100,
@@ -628,8 +635,12 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
     }
     let body: Shape3D = unwrap(fuse(floor, matingShell));
 
-    // 2. Click rails — fuse onto the mating shell from outside (tags rails)
-    body = addClickRails(scope, body, inputs, originToTag);
+    // 2. Click rails — fuse onto the mating shell from outside (tags rails).
+    // Skipped entirely when `clickRails: false`, producing a friction-fit
+    // lid (mating cavity still wraps the lip; just no positive snap).
+    if (inputs.clickRails) {
+      body = addClickRails(scope, body, inputs, originToTag);
+    }
 
     // 3. Optional Gridfinity stack grid on top
     if (inputs.stackableTop) {

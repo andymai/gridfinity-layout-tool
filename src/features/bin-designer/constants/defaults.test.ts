@@ -433,10 +433,28 @@ describe('migrateParams', () => {
       magnetHoles: true,
       wallThickness: 1.6,
       topThickness: 1.6,
+      clickRails: false,
       clickRailCoverage: 75,
     };
     const result = migrateParams({ lid });
     expect(result.lid).toEqual(lid);
+  });
+
+  it('backfills clickRails to true (default) for legacy lid configs missing the field', () => {
+    const result = migrateParams({
+      lid: {
+        enabled: true,
+        fit: 'standard',
+        stackableTop: false,
+        magnetHoles: false,
+        wallThickness: 1.2,
+        topThickness: 1.2,
+        clickRailCoverage: 50,
+        // clickRails missing — pre-feature designs were always built
+        // with rails, so the backfill must restore that behavior.
+      } as unknown as BinParams['lid'],
+    });
+    expect(result.lid.clickRails).toBe(true);
   });
 
   it('backfills clickRailCoverage from defaults for legacy lid configs missing the field', () => {

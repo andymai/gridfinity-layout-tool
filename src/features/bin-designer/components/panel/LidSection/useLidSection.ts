@@ -185,6 +185,10 @@ export function useLidSection() {
     [updateLid]
   );
 
+  const toggleClickRails = useCallback(() => {
+    updateLid({ clickRails: !lid.clickRails });
+  }, [lid.clickRails, updateLid]);
+
   // Lid outer footprint mirrors `lidBuilder.resolveLidInputs` so the panel
   // readout matches the generated geometry.
   const lidDimensions = useMemo(() => {
@@ -209,15 +213,17 @@ export function useLidSection() {
 
   const railSummary = useMemo(
     () =>
-      computeRailSummary(
-        params.width,
-        params.depth,
-        params.gridUnitMm,
-        lid.fit,
-        lid.clickRailCoverage,
-        params.label.enabled,
-        params.cellMask
-      ),
+      lid.clickRails
+        ? computeRailSummary(
+            params.width,
+            params.depth,
+            params.gridUnitMm,
+            lid.fit,
+            lid.clickRailCoverage,
+            params.label.enabled,
+            params.cellMask
+          )
+        : { count: 0, lengths: [] as readonly number[] },
     [
       params.width,
       params.depth,
@@ -225,6 +231,7 @@ export function useLidSection() {
       params.cellMask,
       params.label.enabled,
       lid.fit,
+      lid.clickRails,
       lid.clickRailCoverage,
     ]
   );
@@ -265,17 +272,22 @@ export function useLidSection() {
   }, [t, railSummary]);
 
   // Rich value summary for the collapsed FeatureToggle header — fit +
-  // rail coverage + wall thickness, separated by middle dots. Matches
-  // BaseSection's information density.
-  const valueSummary = useMemo(
-    () =>
-      t('binDesigner.lid.summary', {
-        fit: t(`binDesigner.lid.fit.${lid.fit}`),
-        coverage: lid.clickRailCoverage,
+  // rail coverage (or "no rails" when disabled) + wall thickness,
+  // separated by middle dots. Matches BaseSection's information density.
+  const valueSummary = useMemo(() => {
+    const fitLabel = t(`binDesigner.lid.fit.${lid.fit}`);
+    if (!lid.clickRails) {
+      return t('binDesigner.lid.summaryNoRails', {
+        fit: fitLabel,
         wall: lid.wallThickness,
-      }),
-    [t, lid.fit, lid.clickRailCoverage, lid.wallThickness]
-  );
+      });
+    }
+    return t('binDesigner.lid.summary', {
+      fit: fitLabel,
+      coverage: lid.clickRailCoverage,
+      wall: lid.wallThickness,
+    });
+  }, [t, lid.fit, lid.clickRails, lid.clickRailCoverage, lid.wallThickness]);
 
   return {
     state: {
@@ -285,6 +297,7 @@ export function useLidSection() {
       magnetHoles: lid.magnetHoles,
       wallThickness: lid.wallThickness,
       topThickness: lid.topThickness,
+      clickRails: lid.clickRails,
       clickRailCoverage: lid.clickRailCoverage,
       requiresStackingLipReason,
       thicknessOptions,
@@ -300,6 +313,7 @@ export function useLidSection() {
       toggleMagnetHoles,
       setWallThickness,
       setTopThickness,
+      toggleClickRails,
       setClickRailCoverage,
     },
     t,
