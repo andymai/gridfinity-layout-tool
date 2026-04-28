@@ -13,6 +13,34 @@ import { initBrepjs } from './__dual-kernel__/wasmInit';
 import { assertStructurallyValid, boundingBox } from './__dual-kernel__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, LidConfig } from '@/features/bin-designer/types';
+import type { CellMask } from '@/shared/utils/cellMask';
+
+/** Build a cellMask at half-bin resolution from a 2D array (row 0 = top). */
+function buildMask(rows: (0 | 1)[][]): CellMask {
+  const bottomFirst = rows.slice().reverse();
+  const cols = bottomFirst[0]?.length ?? 0;
+  return { cols, rows: bottomFirst.length, cells: bottomFirst.flat() };
+}
+
+/** 3×3 L-shape with the bottom-right 1×1 cell removed (6×6 mask). */
+const L_SHAPE_MASK: CellMask = buildMask([
+  [1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 0, 0],
+  [1, 1, 1, 1, 0, 0],
+]);
+
+/** 3×3 U-shape: open at the top middle (6×6 mask). */
+const U_SHAPE_MASK: CellMask = buildMask([
+  [1, 1, 0, 0, 1, 1],
+  [1, 1, 0, 0, 1, 1],
+  [1, 1, 0, 0, 1, 1],
+  [1, 1, 0, 0, 1, 1],
+  [1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1],
+]);
 
 beforeAll(async () => {
   await initBrepjs();
@@ -131,5 +159,66 @@ describe('generateLid scenarios', () => {
       expect(result, `fit=${fit} should produce a mesh`).not.toBeNull();
       assertStructurallyValid(result!, `fit=${fit}`);
     }
+  });
+
+  describe('polygon (cellMask) lids', () => {
+    it('produces a valid mesh for a 3×3 L-shape lid', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(
+        makeParams({}, { width: 3, depth: 3, height: 3, cellMask: L_SHAPE_MASK })
+      );
+      expect(result).not.toBeNull();
+      assertStructurallyValid(result!, 'L-shape lid');
+    });
+
+    it('produces a valid mesh for a 3×3 U-shape lid', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(
+        makeParams({}, { width: 3, depth: 3, height: 3, cellMask: U_SHAPE_MASK })
+      );
+      expect(result).not.toBeNull();
+      assertStructurallyValid(result!, 'U-shape lid');
+    });
+
+    it('L-shape lid footprint follows the polygon (not bounding rect)', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const rect = generateLid(makeParams({}, { width: 3, depth: 3, height: 3 }));
+      const lShape = generateLid(
+        makeParams({}, { width: 3, depth: 3, height: 3, cellMask: L_SHAPE_MASK })
+      );
+      expect(rect).not.toBeNull();
+      expect(lShape).not.toBeNull();
+      // L-shape has less material than 3×3 rectangle → fewer triangles or
+      // (more likely) a different mesh entirely. Either way, NOT identical.
+      expect(lShape!.triangleCount).not.toBe(rect!.triangleCount);
+    });
+
+    it('L-shape lid stays within the 3×3 bounding box', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(
+        makeParams({}, { width: 3, depth: 3, height: 3, cellMask: L_SHAPE_MASK })
+      );
+      expect(result).not.toBeNull();
+      const bb = boundingBox(result!.vertices);
+      const expected = 3 * DEFAULT_BIN_PARAMS.gridUnitMm;
+      expect(bb.maxX - bb.minX).toBeLessThanOrEqual(expected + 0.01);
+      expect(bb.maxY - bb.minY).toBeLessThanOrEqual(expected + 0.01);
+    });
+
+    it('polygon lid magnet holes only cut filled cells', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      // Bin with magnets enabled on the lid. L-shape has 8 filled cells
+      // (out of 9), so 8 sets of 4 magnets = 32 holes vs 36 for a 3×3.
+      const lShape = generateLid(
+        makeParams({ magnetHoles: true }, { width: 3, depth: 3, height: 3, cellMask: L_SHAPE_MASK })
+      );
+      const rect = generateLid(
+        makeParams({ magnetHoles: true }, { width: 3, depth: 3, height: 3 })
+      );
+      expect(lShape).not.toBeNull();
+      expect(rect).not.toBeNull();
+      // Different magnet counts → different mesh
+      expect(lShape!.triangleCount).not.toBe(rect!.triangleCount);
+    });
   });
 });

@@ -200,7 +200,7 @@ function buildLoopDrawing(
  * built rounded polygons as strictly-inside — the cut returns the outer
  * unchanged. A 3D boolean cut avoids that path entirely.)
  */
-function buildMaskDrawingAtInset(
+export function buildMaskDrawingAtInset(
   mask: CellMask,
   gridUnitMm: number,
   insetMm: number,

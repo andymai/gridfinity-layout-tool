@@ -18,6 +18,11 @@
  *   Z = -topThickness : bottom of lid floor (top of mating cavity)
  *   Z negative     : mating shell + click rails (extend down over bin lip)
  *   Z positive     : optional Gridfinity stack grid
+ *
+ * Supports both rectangular and non-rectangular (cellMask polygon) bin
+ * footprints. For polygon bins, all profiles follow the polygon outline,
+ * click rails are placed per straight edge, and magnet holes are skipped
+ * in unfilled cells.
  */
 
 import {
@@ -59,6 +64,16 @@ import {
 } from './lidConstants';
 import type { BinParams } from '@/shared/types/bin';
 import { LID_FIT_CLEARANCE } from '@/shared/types/bin';
+import { buildMaskDrawingAtInset } from './maskPolygon';
+import {
+  isPartialMask,
+  maskToPolygon,
+  MASK_CELL_SIZE,
+  type CellMask,
+} from '@/shared/utils/cellMask';
+
+/** Minimum click-rail length — below this we skip rails on that edge. */
+const MIN_RAIL_LENGTH = 4;
 
 /** Geometric inputs derived from BinParams. */
 interface LidInputs {
@@ -82,6 +97,8 @@ interface LidInputs {
   readonly anchorZ: number;
   /** Z of the bottom of the mating wall (where the wall ends and rails begin). */
   readonly wallBottomZ: number;
+  /** Custom-shape mask if the bin has one. Undefined = rectangular. */
+  readonly cellMask: CellMask | undefined;
 }
 
 export function resolveLidInputs(params: BinParams): LidInputs {
@@ -97,6 +114,10 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   const lidOuterW = params.width * gridUnitMm - 2 * fitClearance;
   const lidOuterD = params.depth * gridUnitMm - 2 * fitClearance;
   const lidCornerR = BOX_CORNER_RADIUS - fitClearance;
+
+  // Polygon path activates when the mask is partially filled. A fully-filled
+  // mask is treated as rectangular (matches the bin generator's convention).
+  const cellMask = isPartialMask(params.cellMask) ? params.cellMask : undefined;
 
   return {
     lidOuterW,
@@ -119,7 +140,35 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     omitFrontBackRails: params.label.enabled,
     anchorZ: lidAnchorZ(heightUnitMm, fitClearance),
     wallBottomZ: lidWallBottomZ(heightUnitMm, fitClearance),
+    cellMask,
   };
+}
+
+/**
+ * Build a 2D outline at the requested inset from the lid's outer perimeter.
+ * Returns either a rounded-rectangle drawing (rectangular bins) or a polygon
+ * drawing (cellMask bins). Corner radius decreases with inset so all
+ * loft sections in the same series remain topologically consistent.
+ */
+function buildOutlineDrawing(inputs: LidInputs, outerInset: number): Drawing {
+  const { lidOuterW, lidOuterD, lidCornerR, gridUnitMm, fitClearance, cellMask } = inputs;
+  const radius = Math.max(lidCornerR - outerInset, LID_MIN_CORNER_RADIUS);
+
+  if (cellMask) {
+    // Polygon path: total inset from the base (full grid) polygon =
+    // fitClearance + outerInset. The polygon helper handles the inset and
+    // corner rounding in closed form for axis-aligned polygons.
+    return buildMaskDrawingAtInset(cellMask, gridUnitMm, fitClearance + outerInset, radius);
+  }
+
+  // Rectangular path
+  const w = lidOuterW - 2 * outerInset;
+  const d = lidOuterD - 2 * outerInset;
+  return drawRoundedRectangle(w, d, radius);
+}
+
+function sectionAt(inputs: LidInputs, z: number, outerInset: number): Sketch {
+  return buildOutlineDrawing(inputs, outerInset).sketchOnPlane('XY', z) as Sketch;
 }
 
 /* ──────────────────────────────────────────────────────────────────────
@@ -129,8 +178,8 @@ export function resolveLidInputs(params: BinParams): LidInputs {
  *   - Y ∈ [anchor, 0]: wall thickness = lidCornerR (full corner-radius)
  *   - Y ∈ [anchor - LIP_BIG_TAPER, anchor]: outer face chamfers inward by
  *     LIP_BIG_TAPER (matches the lip's top chamfer)
- *   - Y ∈ [wallBottom, anchor - LIP_BIG_TAPER]: wall thickness = lidCornerR -
- *     LIP_BIG_TAPER (1.85mm in standard fit), matching the lip's vertical part
+ *   - Y ∈ [wallBottom, anchor - LIP_BIG_TAPER]: wall thickness =
+ *     lidCornerR - LIP_BIG_TAPER, matching the lip's vertical part
  *
  * Inner cavity boundary is constant at lidCornerR inset from outer (so the
  * lid corners are solid pillars that don't engage the bin's lip — engagement
@@ -142,39 +191,28 @@ export function resolveLidInputs(params: BinParams): LidInputs {
  * ──────────────────────────────────────────────────────────────────────── */
 
 function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
-  const { lidOuterW, lidOuterD, lidCornerR, anchorZ, wallBottomZ } = inputs;
+  const { lidCornerR, anchorZ, wallBottomZ } = inputs;
   const Z_TOP = 0;
   const Z_ANCHOR = anchorZ;
   const Z_VERT_TOP = anchorZ - LIP_BIG_TAPER;
   const Z_BOTTOM = wallBottomZ;
 
-  // Returns a sketch at the given Z with the rounded-rectangle outline
-  // inset from the lid's outer perimeter by `outerInset`. Corner radius
-  // shrinks with inset so the outer profile remains rounded all the way down.
-  const sectionAt = (z: number, outerInset: number): Sketch => {
-    const w = lidOuterW - 2 * outerInset;
-    const d = lidOuterD - 2 * outerInset;
-    const r = Math.max(lidCornerR - outerInset, LID_MIN_CORNER_RADIUS);
-    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
-  };
-
-  // OUTER profile — 4 sections in ASCENDING Z (loftWith expects this).
-  // Translates SCAD BottomShape's right edge:
+  // OUTER profile — 4 sections in ASCENDING Z (loftWith expects this):
   //  Z=wallBottom and Z=Z_VERT_TOP : chamfered inward by LIP_BIG_TAPER
   //  Z=anchor and Z=0              : full outer (no chamfer)
   const outerSections: readonly Sketch[] = [
-    sectionAt(Z_BOTTOM, LIP_BIG_TAPER),
-    sectionAt(Z_VERT_TOP, LIP_BIG_TAPER),
-    sectionAt(Z_ANCHOR, 0),
-    sectionAt(Z_TOP, 0),
+    sectionAt(inputs, Z_BOTTOM, LIP_BIG_TAPER),
+    sectionAt(inputs, Z_VERT_TOP, LIP_BIG_TAPER),
+    sectionAt(inputs, Z_ANCHOR, 0),
+    sectionAt(inputs, Z_TOP, 0),
   ];
 
   // INNER profile — constant inset at lidCornerR (the SCAD polygon's left
   // edge stays at X = -lidCornerR throughout). Two sections in ASCENDING Z
   // with COPLANAR margin so the cut bites cleanly through the outer.
   const innerSections: readonly Sketch[] = [
-    sectionAt(Z_BOTTOM - LID_COPLANAR_MARGIN, lidCornerR),
-    sectionAt(Z_TOP + LID_COPLANAR_MARGIN, lidCornerR),
+    sectionAt(inputs, Z_BOTTOM - LID_COPLANAR_MARGIN, lidCornerR),
+    sectionAt(inputs, Z_TOP + LID_COPLANAR_MARGIN, lidCornerR),
   ];
 
   const [oFirst, ...oRest] = outerSections;
@@ -193,9 +231,9 @@ function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
  * ──────────────────────────────────────────────────────────────────────── */
 
 function buildLidFloor(scope: DisposalScope, inputs: LidInputs): Shape3D {
-  const { lidOuterW, lidOuterD, lidCornerR, topThickness } = inputs;
+  const { topThickness } = inputs;
   return scope.register(
-    drawRoundedRectangle(lidOuterW, lidOuterD, lidCornerR)
+    buildOutlineDrawing(inputs, 0)
       .sketchOnPlane('XY', -topThickness)
       .extrude(topThickness) as Shape3D
   );
@@ -247,72 +285,176 @@ function clickShape2D(wallBottomZ: number): Drawing {
 function buildClickRailBar(scope: DisposalScope, wallBottomZ: number, length: number): Shape3D {
   // Build polygon in a 2D plane where local X = outward, local Y = vertical.
   // Sketch on YZ plane (perpendicular to wall direction = X axis).
-  // sketchOnPlane('YZ') puts the 2D X axis along world Y, 2D Y axis along world Z.
   const profile = clickShape2D(wallBottomZ);
   const sketch = profile.sketchOnPlane('YZ', -length / 2);
   return scope.register(sketch.extrude(length) as Shape3D);
 }
 
-function addClickRails(scope: DisposalScope, body: Shape3D, inputs: LidInputs): Shape3D {
-  const { lidOuterW, lidOuterD, lidCornerR, wallBottomZ, omitFrontBackRails } = inputs;
+/**
+ * One rail to place on a wall: along which axis does the rail extrude
+ * ('x' or 'y') and which way does the bump point (+1 or -1 along the
+ * perpendicular axis).
+ */
+interface RailPlacement {
+  /** Rail center position in world coords. */
+  readonly centerX: number;
+  readonly centerY: number;
+  /** Length along the extrusion axis. */
+  readonly length: number;
+  /** Z rotation in degrees that maps the canonical bar to the target orientation. */
+  readonly rotationDeg: number;
+}
 
-  // Rail length = wall length minus 2× corner radius (rails don't enter corners).
-  // Wall along X direction has length lidOuterW; along Y direction has length lidOuterD.
+/**
+ * Compute rail placements for a polygon bin.
+ *
+ * Walks the polygon's outer loop. For each axis-aligned edge:
+ *  - Computes inward normal (interior is on LEFT of edge direction in CCW)
+ *  - Outward = -inward
+ *  - Insets the edge by `lidCornerR` from each end so the rail stays clear
+ *    of corners (which are filled mating-shell pillars)
+ *  - Skips edges shorter than MIN_RAIL_LENGTH after inset
+ *  - Honors `omitFrontBackRails` for edges whose outward normal is along Y
+ *
+ * Bump direction (canonical bar bumps in +Y):
+ *   Z rotation that maps +Y → outward (rule from boxBuilder convention):
+ *     outward (0, +1) → 0°       (+Y stays +Y)
+ *     outward (0, -1) → 180°     (+Y → -Y)
+ *     outward (+1, 0) → -90°     (+Y → +X via -90°)
+ *     outward (-1, 0) → 90°      (+Y → -X via 90°)
+ */
+function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
+  const { cellMask, gridUnitMm, lidCornerR, fitClearance, omitFrontBackRails } = inputs;
+  if (!cellMask) return [];
+
+  const loops = maskToPolygon(cellMask);
+  const outer = loops[0];
+  const halfWidthMm = (cellMask.cols * MASK_CELL_SIZE * gridUnitMm) / 2;
+  const halfDepthMm = (cellMask.rows * MASK_CELL_SIZE * gridUnitMm) / 2;
+
+  // Convert to mm, centered on the lid origin (matching the rectangular path).
+  const verticesMm = outer.map((p) => ({
+    x: p.x * gridUnitMm - halfWidthMm,
+    y: p.y * gridUnitMm - halfDepthMm,
+  }));
+
+  // For each polygon edge, compute the rail's position independently. The
+  // rail spine sits `(fitClearance + lidCornerR)` perpendicular-inward from
+  // the polygon edge (matching `lidOuterW/2 - lidCornerR` in the rectangular
+  // path), inset along the edge by `lidCornerR` from each end so it stays
+  // clear of corner radii on both sides.
+  const railInset = fitClearance + lidCornerR;
+  const n = verticesMm.length;
+  const placements: RailPlacement[] = [];
+
+  for (let i = 0; i < n; i++) {
+    const a = verticesMm[i];
+    const b = verticesMm[(i + 1) % n];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const edgeLen = Math.abs(dx) + Math.abs(dy); // axis-aligned
+
+    // Rail spans the edge minus 2× corner radius (clear of corners).
+    const railLen = edgeLen - 2 * lidCornerR;
+    if (railLen < MIN_RAIL_LENGTH) continue;
+
+    // Edge direction unit (axis-aligned, so just sign).
+    const edgeDirX = Math.sign(dx);
+    const edgeDirY = Math.sign(dy);
+    // Outward normal: right-perpendicular of edge direction (CCW polygon).
+    const outX = edgeDirY;
+    const outY = -edgeDirX;
+    // Inward normal: opposite of outward (= left-perpendicular).
+    const inX = -outX;
+    const inY = -outY;
+
+    // Skip front/back rails (along X edges, outward ±Y) when label tabs
+    // would collide. Label tabs sit on the back wall; we skip both front
+    // and back to keep symmetry, matching the rectangular path.
+    if (omitFrontBackRails && outY !== 0) continue;
+
+    // Rail center: edge midpoint shifted INWARD by railInset (perpendicular
+    // to edge direction). This places the rail spine on the corner-radius line.
+    const midX = (a.x + b.x) / 2 + inX * railInset;
+    const midY = (a.y + b.y) / 2 + inY * railInset;
+
+    // Determine rotation: canonical bar bumps in +Y. Map outward → +Y.
+    let rotationDeg: number;
+    if (outX === 0 && outY === 1) rotationDeg = 0;
+    else if (outX === 0 && outY === -1) rotationDeg = 180;
+    else if (outX === 1 && outY === 0) rotationDeg = -90;
+    else if (outX === -1 && outY === 0) rotationDeg = 90;
+    else continue; // non-axis-aligned (shouldn't happen for cellMask polygons)
+
+    placements.push({
+      centerX: midX,
+      centerY: midY,
+      length: railLen,
+      rotationDeg,
+    });
+  }
+
+  return placements;
+}
+
+/** Compute rail placements for a rectangular bin (4 walls). */
+function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
+  const { lidOuterW, lidOuterD, lidCornerR, omitFrontBackRails } = inputs;
   const railLengthX = lidOuterW - 2 * lidCornerR;
   const railLengthY = lidOuterD - 2 * lidCornerR;
-
   const corneredOuterX = lidOuterW / 2 - lidCornerR;
   const corneredOuterY = lidOuterD / 2 - lidCornerR;
 
-  let result = body;
+  const placements: RailPlacement[] = [];
 
-  /**
-   * Add one rail at the given world position, with an optional 180° rotation
-   * around the wall-axis to flip the bump direction.
-   *
-   * Reusing buildClickRailBar's canonical form (extrude along X, bump in +Y).
-   * A rail on the +Y wall (back wall) needs the bump in -Y direction — so we
-   * rotate 180° around X axis. A rail on the +X wall needs the bar's extrude
-   * direction to be Y instead of X — so we rotate 90° around Z.
-   */
-  const fuseRail = (rail: Shape3D, place: (s: Shape3D) => Shape3D) => {
-    const positioned = scope.register(place(rail));
-    scope.register(result);
-    result = unwrap(fuse(result, positioned));
-  };
-
-  // Bump direction convention: each rail's bump points AWAY from lid center
-  // (toward the lid's outer edge), so it can catch the lip's bottom chamfer.
-  // The canonical bar (built by buildClickRailBar) extrudes along X with the
-  // bump pointing +Y. Rotation rule: +90° around Z maps +Y → -X (right-hand
-  // rule). So:
-  //   - Back wall  (at +Y): bump +Y    → no rotation
-  //   - Front wall (at -Y): bump -Y    → 180° around Z
-  //   - Right wall (at +X): bump +X    → -90° around Z (maps +Y → +X)
-  //   - Left wall  (at -X): bump -X    →  90° around Z (maps +Y → -X)
-
-  if (!omitFrontBackRails) {
-    // Back wall: bump +Y, no rotation
-    const railBack = buildClickRailBar(scope, wallBottomZ, railLengthX);
-    fuseRail(railBack, (r) => translate(r, [0, corneredOuterY, 0]));
-
-    // Front wall: bump -Y via 180° Z rotation
-    const railFront = buildClickRailBar(scope, wallBottomZ, railLengthX);
-    fuseRail(railFront, (r) =>
-      translate(rotate(r, 180, { axis: [0, 0, 1] }), [0, -corneredOuterY, 0])
-    );
+  if (!omitFrontBackRails && railLengthX >= MIN_RAIL_LENGTH) {
+    // Back wall: outward +Y, rotation 0°
+    placements.push({ centerX: 0, centerY: corneredOuterY, length: railLengthX, rotationDeg: 0 });
+    // Front wall: outward -Y, rotation 180°
+    placements.push({
+      centerX: 0,
+      centerY: -corneredOuterY,
+      length: railLengthX,
+      rotationDeg: 180,
+    });
   }
 
-  // Right wall: bump +X via -90° Z rotation
-  const railRight = buildClickRailBar(scope, wallBottomZ, railLengthY);
-  fuseRail(railRight, (r) =>
-    translate(rotate(r, -90, { axis: [0, 0, 1] }), [corneredOuterX, 0, 0])
-  );
+  if (railLengthY >= MIN_RAIL_LENGTH) {
+    // Right wall: outward +X, rotation -90°
+    placements.push({
+      centerX: corneredOuterX,
+      centerY: 0,
+      length: railLengthY,
+      rotationDeg: -90,
+    });
+    // Left wall: outward -X, rotation 90°
+    placements.push({
+      centerX: -corneredOuterX,
+      centerY: 0,
+      length: railLengthY,
+      rotationDeg: 90,
+    });
+  }
 
-  // Left wall: bump -X via +90° Z rotation
-  const railLeft = buildClickRailBar(scope, wallBottomZ, railLengthY);
-  fuseRail(railLeft, (r) => translate(rotate(r, 90, { axis: [0, 0, 1] }), [-corneredOuterX, 0, 0]));
+  return placements;
+}
 
+function addClickRails(scope: DisposalScope, body: Shape3D, inputs: LidInputs): Shape3D {
+  const placements = inputs.cellMask
+    ? railPlacementsForPolygon(inputs)
+    : railPlacementsForRectangle(inputs);
+
+  let result = body;
+  for (const place of placements) {
+    const rail = buildClickRailBar(scope, inputs.wallBottomZ, place.length);
+    const oriented =
+      place.rotationDeg === 0
+        ? rail
+        : scope.register(rotate(rail, place.rotationDeg, { axis: [0, 0, 1] }));
+    const positioned = scope.register(translate(oriented, [place.centerX, place.centerY, 0]));
+    scope.register(result);
+    result = unwrap(fuse(result, positioned));
+  }
   return result;
 }
 
@@ -325,8 +467,6 @@ function addClickRails(scope: DisposalScope, body: Shape3D, inputs: LidInputs): 
  * ──────────────────────────────────────────────────────────────────────── */
 
 function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
-  const { lidOuterW, lidOuterD, lidCornerR } = inputs;
-
   // Standard Gridfinity lip profile (no extension — just the stacking ring).
   // Identical to the bin's TopShape so a stacked bin mates perfectly.
   const topProfile = (plane: Plane, _origin: Vec3): Sketch => {
@@ -339,12 +479,9 @@ function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
       .sketchOnPlane(plane) as Sketch;
   };
 
-  // Sweep around the lid's outer perimeter — uses the lid's corner radius.
-  const lidPerimeter = drawRoundedRectangle(
-    lidOuterW,
-    lidOuterD,
-    lidCornerR
-  ).sketchOnPlane() as Sketch;
+  // Sweep around the lid's outer perimeter — uses the lid's corner radius for
+  // rectangles or the polygon outline for cellMask bins.
+  const lidPerimeter = buildOutlineDrawing(inputs, 0).sketchOnPlane() as Sketch;
   return scope.register(lidPerimeter.sweepSketch(topProfile, { withContact: true }));
 }
 
@@ -352,11 +489,29 @@ function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
  * Magnet holes — translates SCAD's MagnetHoles.
  *
  * Standard Gridfinity magnet pattern: 4 holes per cell at ±13mm from the
- * cell center. Holes go upward through the floor from below.
+ * cell center. For polygon bins, only filled cells get magnets.
  * ──────────────────────────────────────────────────────────────────────── */
 
+function isCellFilled(mask: CellMask, cellX: number, cellY: number): boolean {
+  // Each whole grid cell maps to a 2×2 mask region. Treat the whole cell as
+  // filled only when ALL four mask cells are set; otherwise skip magnets to
+  // avoid placing a hole that would clip the polygon boundary.
+  const baseCol = cellX * 2;
+  const baseRow = cellY * 2;
+  for (let dr = 0; dr < 2; dr++) {
+    for (let dc = 0; dc < 2; dc++) {
+      const c = baseCol + dc;
+      const r = baseRow + dr;
+      if (c < 0 || c >= mask.cols || r < 0 || r >= mask.rows) return false;
+      if (mask.cells[r * mask.cols + c] !== 1) return false;
+    }
+  }
+  return true;
+}
+
 function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs): Shape3D {
-  const { cellsX, cellsY, gridUnitMm, magnetDiameter, magnetDepth, topThickness } = inputs;
+  const { cellsX, cellsY, gridUnitMm, magnetDiameter, magnetDepth, topThickness, cellMask } =
+    inputs;
   const radius = magnetDiameter / 2;
   // Cells centered on lid center.
   const cellOriginX = -((cellsX - 1) / 2) * gridUnitMm;
@@ -369,6 +524,7 @@ function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs):
   let result = body;
   for (let cx = 0; cx < cellsX; cx++) {
     for (let cy = 0; cy < cellsY; cy++) {
+      if (cellMask && !isCellFilled(cellMask, cx, cy)) continue;
       const centerX = cellOriginX + cx * gridUnitMm;
       const centerY = cellOriginY + cy * gridUnitMm;
       for (const [ox, oy] of LID_MAGNET_OFFSETS) {
