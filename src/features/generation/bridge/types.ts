@@ -284,6 +284,7 @@ export interface MeshResultResponse {
   readonly lidIndices?: Uint32Array;
   readonly lidEdgeVertices?: Float32Array;
   readonly lidTriangleCount?: number;
+  readonly lidFaceGroups?: readonly FaceGroupData[];
 }
 
 export interface ExportResultResponse {
@@ -394,4 +395,6 @@ export interface LidMeshData {
   readonly indices: Uint32Array;
   readonly edgeVertices: Float32Array;
   readonly triangleCount: number;
+  /** Per-face provenance for rail vs body rendering. */
+  readonly faceGroups?: readonly FaceGroupData[];
 }

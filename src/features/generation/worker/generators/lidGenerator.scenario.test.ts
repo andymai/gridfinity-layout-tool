@@ -205,6 +205,19 @@ describe('generateLid scenarios', () => {
       expect(bb.maxY - bb.minY).toBeLessThanOrEqual(expected + 0.01);
     });
 
+    it('lid mesh exposes face groups for downstream rendering', async () => {
+      // We populate face-group provenance via collectOrigins (LID_BODY,
+      // LID_RAIL) so consumers have face-level structure even though brepjs
+      // currently collapses fresh-shape origins to 0 (last-writer-wins).
+      // The hover-glow path renders whole-mesh emissive instead of relying
+      // on per-face tags — see LidMesh.tsx.
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(makeParams({}, { width: 2, depth: 2, height: 3 }));
+      expect(result).not.toBeNull();
+      expect(result!.faceGroups).toBeDefined();
+      expect(result!.faceGroups!.length).toBeGreaterThan(0);
+    });
+
     it('polygon lid magnet holes only cut filled cells', async () => {
       const { generateLid } = await import('./lidOrchestrator');
       // Bin with magnets enabled on the lid. L-shape has 8 filled cells

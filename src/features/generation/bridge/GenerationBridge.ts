@@ -849,6 +849,7 @@ export class GenerationBridge {
                     indices: response.lidIndices,
                     edgeVertices: response.lidEdgeVertices,
                     triangleCount: response.lidTriangleCount,
+                    faceGroups: response.lidFaceGroups,
                   }
                 : undefined;
             const result: GenerationResult = {

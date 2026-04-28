@@ -75,7 +75,16 @@ export function useGeneration(): void {
           edgeVertices: result.mesh.edgeVertices,
           faceGroups: result.mesh.faceGroups ? [...result.mesh.faceGroups] : undefined,
           coarseLOD: result.mesh.coarseLOD,
-          lidMesh: result.mesh.lidMesh,
+          // Spread lid faceGroups into a mutable array so the Immer store
+          // can ingest it (the worker payload is `readonly`).
+          lidMesh: result.mesh.lidMesh
+            ? {
+                ...result.mesh.lidMesh,
+                faceGroups: result.mesh.lidMesh.faceGroups
+                  ? [...result.mesh.lidMesh.faceGroups]
+                  : undefined,
+              }
+            : undefined,
           error: null,
           timingMs: result.timingMs,
         });

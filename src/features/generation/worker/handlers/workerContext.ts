@@ -121,6 +121,7 @@ export function runGeneration(
           indices: maybeCopy(meshData.lidMesh.indices),
           edgeVertices: maybeCopy(meshData.lidMesh.edgeVertices),
           triangleCount: meshData.lidMesh.triangleCount,
+          faceGroups: meshData.lidMesh.faceGroups,
         }
       : undefined;
 
@@ -142,6 +143,7 @@ export function runGeneration(
             lidIndices: lid.indices,
             lidEdgeVertices: lid.edgeVertices,
             lidTriangleCount: lid.triangleCount,
+            lidFaceGroups: lid.faceGroups,
           }
         : {}),
     };

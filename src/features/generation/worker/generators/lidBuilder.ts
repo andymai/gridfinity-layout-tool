@@ -31,6 +31,7 @@ import {
   unwrap,
   fuse,
   cut,
+  cutAll,
   translate,
   rotate,
   withScope,
@@ -70,6 +71,8 @@ import {
   MASK_CELL_SIZE,
   type CellMask,
 } from '@/shared/utils/cellMask';
+import { FeatureTag } from './featureTags';
+import { collectOrigins } from './pipeline/collectOrigins';
 
 /** Minimum click-rail length — below this we skip rails on that edge. */
 const MIN_RAIL_LENGTH = 4;
@@ -453,7 +456,12 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
   return placements;
 }
 
-function addClickRails(scope: DisposalScope, body: Shape3D, inputs: LidInputs): Shape3D {
+function addClickRails(
+  scope: DisposalScope,
+  body: Shape3D,
+  inputs: LidInputs,
+  originToTag?: Map<number, number>
+): Shape3D {
   const placements = inputs.cellMask
     ? railPlacementsForPolygon(inputs)
     : railPlacementsForRectangle(inputs);
@@ -466,6 +474,14 @@ function addClickRails(scope: DisposalScope, body: Shape3D, inputs: LidInputs): 
         ? rail
         : scope.register(rotate(rail, place.rotationDeg, { axis: [0, 0, 1] }));
     const positioned = scope.register(translate(oriented, [place.centerX, place.centerY, 0]));
+    // Tag each rail's faces as LID_RAIL before it gets fused into the body.
+    // (Note: brepjs's face-origin tracking currently maps every fresh shape's
+    // faces to origin=0, so this map collapses to last-writer-wins in practice.
+    // We populate it anyway so consumers downstream can use it once brepjs's
+    // origin tracking improves; today's hover effect uses whole-mesh glow.)
+    if (originToTag) {
+      collectOrigins(positioned, FeatureTag.LID_RAIL, originToTag);
+    }
     scope.register(result);
     result = unwrap(fuse(result, positioned));
   }
@@ -535,23 +551,28 @@ function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs):
   const holeZ = -topThickness - LID_COPLANAR_MARGIN;
   const holeHeight = magnetDepth + 2 * LID_COPLANAR_MARGIN;
 
-  let result = body;
+  // Build all cylinder cutters first, then apply them in a single cutAll.
+  // Faster than per-magnet cut() for non-trivial lids — a 10×10 polygon lid
+  // has ~400 holes; per-cut would be 400 boolean ops vs one batched op here.
+  const cutters: Shape3D[] = [];
   for (let cx = 0; cx < cellsX; cx++) {
     for (let cy = 0; cy < cellsY; cy++) {
       if (cellMask && !isCellFilled(cellMask, cx, cy)) continue;
       const centerX = cellOriginX + cx * gridUnitMm;
       const centerY = cellOriginY + cy * gridUnitMm;
       for (const [ox, oy] of LID_MAGNET_OFFSETS) {
-        const cylinder = scope.register(
-          drawCircle(radius).sketchOnPlane('XY', holeZ).extrude(holeHeight) as Shape3D
-        );
-        const positioned = scope.register(translate(cylinder, [centerX + ox, centerY + oy, 0]));
-        scope.register(result);
-        result = unwrap(cut(result, positioned));
+        const cylinder = drawCircle(radius)
+          .sketchOnPlane('XY', holeZ)
+          .extrude(holeHeight) as Shape3D;
+        cutters.push(scope.register(translate(cylinder, [centerX + ox, centerY + oy, 0])));
       }
     }
   }
-  return result;
+
+  if (cutters.length === 0) return body;
+
+  scope.register(body);
+  return unwrap(cutAll(body as ValidSolid, cutters as ValidSolid[]));
 }
 
 /**
@@ -559,22 +580,37 @@ function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs):
  *
  * Caller is responsible for the returned solid's lifetime; this function
  * uses an internal `withScope` so all intermediates are released.
+ *
+ * @param params bin params (reads `params.lid` and related)
+ * @param originToTag optional map populated with face-origin → FeatureTag
+ *   entries. Pass an empty Map to receive face-group provenance for the
+ *   built lid; rails get tagged `LID_RAIL`, body shapes get `LID_BODY`,
+ *   so consumers can render the lid with rail-precision hover effects.
  */
-export function buildLid(params: BinParams): Shape3D {
+export function buildLid(params: BinParams, originToTag?: Map<number, number>): Shape3D {
   const inputs = resolveLidInputs(params);
 
   return withScope((scope: DisposalScope) => {
     // 1. Floor + mating shell — fused into the main body
     const floor = buildLidFloor(scope, inputs);
     const matingShell = scope.register(buildMatingShell(scope, inputs));
+    if (originToTag) {
+      // Tag the body shapes BEFORE fusing — origins from these shapes are
+      // what surface in the post-fuse face groups.
+      collectOrigins(floor, FeatureTag.LID_BODY, originToTag);
+      collectOrigins(matingShell, FeatureTag.LID_BODY, originToTag);
+    }
     let body: Shape3D = unwrap(fuse(floor, matingShell));
 
-    // 2. Click rails — fuse onto the mating shell from outside
-    body = addClickRails(scope, body, inputs);
+    // 2. Click rails — fuse onto the mating shell from outside (tags rails)
+    body = addClickRails(scope, body, inputs, originToTag);
 
     // 3. Optional Gridfinity stack grid on top
     if (inputs.stackableTop) {
       const stackGrid = scope.register(buildStackGrid(scope, inputs));
+      if (originToTag) {
+        collectOrigins(stackGrid, FeatureTag.LID_BODY, originToTag);
+      }
       scope.register(body);
       body = unwrap(fuse(body, stackGrid));
     }

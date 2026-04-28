@@ -27,7 +27,10 @@ export function generateLid(
   if (!params.base.stackingLip) return null;
 
   checkCancelled(signal);
-  const solid = buildLid(params);
+  // Build the lid with face-origin → FeatureTag tracking so the rendered
+  // mesh's face groups carry rail vs body provenance (used by hover-glow).
+  const originToTag = new Map<number, number>();
+  const solid = buildLid(params, originToTag);
 
   checkCancelled(signal);
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for legacy params
@@ -47,7 +50,7 @@ export function generateLid(
   });
   onProgress?.('merge', 1.0);
 
-  return toIndexedMeshData(shapeMesh, edgeMesh.lines);
+  return toIndexedMeshData(shapeMesh, edgeMesh.lines, originToTag);
 }
 
 /** Export result for the lid (binary STL or STEP buffer). */

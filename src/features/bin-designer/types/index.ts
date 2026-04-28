@@ -5,7 +5,22 @@
  * generation state, and designer UI state.
  */
 
-import type { FaceGroupData, CoarseLODData, LidMeshData } from '@/shared/types/generation';
+import type { FaceGroupData, CoarseLODData } from '@/shared/types/generation';
+
+/**
+ * Lid mesh data as stored in the designer store. Mirrors the shared
+ * `LidMeshData` shape but with a mutable `faceGroups` array so the
+ * Immer-backed store can ingest it. The bridge converts the worker's
+ * readonly payload into this shape via spread in `useGeneration`.
+ */
+export interface LidMeshDataState {
+  readonly vertices: Float32Array;
+  readonly normals: Float32Array;
+  readonly indices: Uint32Array;
+  readonly edgeVertices: Float32Array;
+  readonly triangleCount: number;
+  readonly faceGroups?: FaceGroupData[];
+}
 import type { DesignId } from '@/core/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { FeatureColorConfig, ColorZone } from './featureColors';
@@ -398,7 +413,7 @@ export interface GenerationResult {
   /** Coarse LOD mesh for distance-based rendering (preview only) */
   readonly coarseLOD?: CoarseLODData;
   /** Optional companion lid mesh, present only when the bin has a lid enabled. */
-  readonly lidMesh?: LidMeshData;
+  readonly lidMesh?: LidMeshDataState;
 }
 
 /** Generation state tracked in the store */

@@ -360,6 +360,9 @@ export function PreviewCanvas() {
   // Lid explode slider (mm above the snapped position). Default = mid-explode
   // so both the lid and the bin's interior are visible when a lid is enabled.
   const [lidOffsetMm, setLidOffsetMm] = useState<number>(LID_OFFSET_DEFAULT);
+  // Mutual hover highlight: when the lid is hovered, the bin brightens too
+  // so users see the two parts mate.
+  const [lidHovered, setLidHovered] = useState(false);
 
   // Preview color persisted in localStorage
   const [previewColor, setPreviewColor] = useState(() => {
@@ -573,12 +576,17 @@ export function PreviewCanvas() {
             {showSplitPieces ? (
               <SplitBinMeshes color={previewColor} wireframe={wireframe} />
             ) : (
-              <BinMesh wireframe={wireframe} color={previewColor} />
+              <BinMesh wireframe={wireframe} color={previewColor} lidHovered={lidHovered} />
             )}
 
             {/* Click-lock lid (renders only when params.lid.enabled produced
                 a mesh). `lidOffsetMm` controls position + opacity in lockstep. */}
-            <LidMesh color={previewColor} lidOffsetMm={lidOffsetMm} wireframe={wireframe} />
+            <LidMesh
+              color={previewColor}
+              lidOffsetMm={lidOffsetMm}
+              wireframe={wireframe}
+              onHoverChange={setLidHovered}
+            />
             {/* Dashed guide line between bin's lip top and lid's mating opening,
                 visible only when the lid is meaningfully exploded. */}
             {params.lid.enabled && params.base.stackingLip && (
