@@ -25,6 +25,11 @@ const IGNORED_CONSOLE_PATTERNS: RegExp[] = [
   /posthog/i,
   // React DevTools nag
   /Download the React DevTools/i,
+  // CSP-Report-Only violations are by design surfaced (not enforced) so the
+  // soak window can collect signal. They show up as console errors but are
+  // not actual bugs. Enforced-CSP violations (without "report-only") are
+  // still caught by this assertion.
+  /report-only Content Security Policy/i,
 ];
 
 test('boots ?smoke=1 fixture and exposes a fresh /version.json', async ({ page, baseURL }) => {
