@@ -6,11 +6,18 @@
  *     TOP surface and Y = anchorZ (≈ -2.1mm) at the lid's mating-cavity
  *     opening — i.e., the line that should line up with the bin's stacking
  *     lip top when the lid is mated.
- *   - When snapped: lid local Y = anchorZ aligns with the bin's lip top
- *     (world Z = totalHeight + PREVIEW_Z_OFFSET). The lid floor top sits
- *     |anchorZ| (~2.1mm) ABOVE the bin's lip top, with the mating cavity
- *     wrapping the lip from there down.
+ *   - When snapped (lidOffsetMm = 0): lid local Y = anchorZ aligns with the
+ *     bin's lip top (world Z = totalHeight + PREVIEW_Z_OFFSET). The lid
+ *     floor top sits |anchorZ| (~2.1mm) ABOVE the bin's lip top, with the
+ *     mating cavity wrapping the lip from there down.
  *   - Exploded views add `lidOffsetMm` on top of the snapped position.
+ *
+ * Opacity:
+ *   - When closed (offset ≤ 2mm): 30% opacity so the bin's interior is
+ *     clearly visible THROUGH the lid.
+ *   - When exploded (offset > 5mm): 70% opacity (lid material reads more
+ *     clearly when separated from the bin).
+ *   - Linear interpolation between 2mm and 5mm.
  */
 
 import { useEffect, useMemo } from 'react';
@@ -28,6 +35,12 @@ const PREVIEW_Z_OFFSET = 0.1;
 /** Extra clearance baked into the anchor calculation (matches lidConstants.LID_EXTRA_HEIGHT). */
 const LID_EXTRA_HEIGHT = 0.2;
 
+/** Opacity bands for closed vs exploded views. */
+const OPACITY_CLOSED = 0.3;
+const OPACITY_OPEN = 0.7;
+const OPACITY_INTERP_START_MM = 2;
+const OPACITY_INTERP_END_MM = 5;
+
 /**
  * Anchor Z in lid-local coords — the Y position where the lid's mating
  * cavity opens up to meet the bin's stacking lip when snapped.
@@ -37,20 +50,24 @@ function lidAnchorZ(heightUnitMm: number, fitClearance: number): number {
   return -heightUnitMm - LID_EXTRA_HEIGHT + GRIDFINITY.LIP_HEIGHT + Math.SQRT2 * fitClearance * 2;
 }
 
+/** Linear interpolation: 30% closed → 70% open over [2mm, 5mm]. */
+function opacityForOffset(offsetMm: number): number {
+  if (offsetMm <= OPACITY_INTERP_START_MM) return OPACITY_CLOSED;
+  if (offsetMm >= OPACITY_INTERP_END_MM) return OPACITY_OPEN;
+  const t =
+    (offsetMm - OPACITY_INTERP_START_MM) / (OPACITY_INTERP_END_MM - OPACITY_INTERP_START_MM);
+  return OPACITY_CLOSED + t * (OPACITY_OPEN - OPACITY_CLOSED);
+}
+
 interface LidMeshProps {
   /** Base color for the lid (matches bin material). */
   color: string;
-  /** Hide the lid even when generated. */
-  visible: boolean;
-  /** When true, lid sits on the lip; when false, lift by EXPLODED_LIFT_MM. */
-  snapped: boolean;
+  /** Distance the lid is lifted above its mated position, in mm. 0 = closed. */
+  lidOffsetMm: number;
   wireframe?: boolean;
 }
 
-/** Default lift between bin and lid in exploded view (mm). */
-const EXPLODED_LIFT_MM = 5;
-
-export function LidMesh({ color, visible, snapped, wireframe = false }: LidMeshProps) {
+export function LidMesh({ color, lidOffsetMm, wireframe = false }: LidMeshProps) {
   const { invalidate } = useThree();
 
   const { lidMesh, lidGroupZ } = useDesignerStore(
@@ -58,16 +75,13 @@ export function LidMesh({ color, visible, snapped, wireframe = false }: LidMeshP
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for legacy params
       const heightUnit = s.params.heightUnitMm ?? 7;
       const fitClearance = LID_FIT_CLEARANCE[s.params.lid.fit];
-      // Bin's lip top in world Z (after the bin's translateStage moves Z=0
-      // to baseplate top, plus the PREVIEW_Z_OFFSET BinMesh adds).
       const binLipTopWorldZ = s.params.height * heightUnit + PREVIEW_Z_OFFSET;
-      // The lid's group must be positioned so lid local Y = anchorZ aligns
-      // with binLipTopWorldZ. Since rendering at group position P puts lid
-      // Y=0 at world Z=P, we need P = binLipTopWorldZ - anchorZ. anchorZ is
-      // negative (~-2.1), so this lifts the group by ~2.1mm above the lip.
       const anchorZ = lidAnchorZ(heightUnit, fitClearance);
       return {
         lidMesh: s.generation.mesh?.lidMesh ?? null,
+        // Snapped position: lid Y=anchor sits at bin lip top, so the lid
+        // group (where Y=0 lands) is binLipTopWorldZ - anchorZ. anchorZ is
+        // negative, so this lifts the group ~2.1mm above the lip.
         lidGroupZ: binLipTopWorldZ - anchorZ,
       };
     })
@@ -84,6 +98,11 @@ export function LidMesh({ color, visible, snapped, wireframe = false }: LidMeshP
     if (geometry) invalidate();
   }, [geometry, invalidate]);
 
+  // Re-render when offset changes (opacity interpolates with it)
+  useEffect(() => {
+    invalidate();
+  }, [lidOffsetMm, invalidate]);
+
   const matProps = useMemo(
     () => ({
       color,
@@ -92,19 +111,18 @@ export function LidMesh({ color, visible, snapped, wireframe = false }: LidMeshP
       wireframe,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.7,
+      opacity: opacityForOffset(lidOffsetMm),
       flatShading: !hasPrecomputedNormals,
       polygonOffset: true,
       polygonOffsetFactor: 1,
       polygonOffsetUnits: 1,
     }),
-    [color, wireframe, hasPrecomputedNormals]
+    [color, wireframe, hasPrecomputedNormals, lidOffsetMm]
   );
 
-  if (!visible || !geometry) return null;
+  if (!geometry) return null;
 
-  const liftZ = snapped ? 0 : EXPLODED_LIFT_MM;
-  const positionZ = lidGroupZ + liftZ;
+  const positionZ = lidGroupZ + lidOffsetMm;
 
   return (
     <group position={[0, 0, positionZ]}>
@@ -113,7 +131,12 @@ export function LidMesh({ color, visible, snapped, wireframe = false }: LidMeshP
       </mesh>
       {!wireframe && edgesGeometry && (
         <lineSegments geometry={edgesGeometry} renderOrder={1}>
-          <lineBasicMaterial color="#000000" depthTest={true} transparent opacity={0.5} />
+          <lineBasicMaterial
+            color="#000000"
+            depthTest={true}
+            transparent
+            opacity={Math.min(0.5, opacityForOffset(lidOffsetMm) + 0.2)}
+          />
         </lineSegments>
       )}
     </group>

@@ -18,6 +18,9 @@ import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
 import {
   BinMesh,
   LidMesh,
+  LidGuideLine,
+  LidExplodeSlider,
+  LID_OFFSET_DEFAULT,
   BinAxisLabels,
   BinDimensions,
   BinNameLabel,
@@ -354,12 +357,9 @@ export function PreviewCanvas() {
   const invalidateRef = useRef<(() => void) | null>(null);
   const [wireframe, setWireframe] = useState(false);
   const [activePreset, setActivePreset] = useState<CameraPreset | null>('isometric');
-  // Lid preview toggles. `showBin` and `showLid` independently hide each part
-  // so users can inspect either in isolation. `lidSnapped` puts the lid in
-  // its mated position; otherwise the lid floats above the bin.
-  const [showBin, setShowBin] = useState(true);
-  const [showLid, setShowLid] = useState(true);
-  const [lidSnapped, setLidSnapped] = useState(false);
+  // Lid explode slider (mm above the snapped position). Default = mid-explode
+  // so both the lid and the bin's interior are visible when a lid is enabled.
+  const [lidOffsetMm, setLidOffsetMm] = useState<number>(LID_OFFSET_DEFAULT);
 
   // Preview color persisted in localStorage
   const [previewColor, setPreviewColor] = useState(() => {
@@ -569,22 +569,21 @@ export function PreviewCanvas() {
               heightUnitMm={params.heightUnitMm}
             />
 
-            {/* Bin mesh — swap for per-piece meshes when split. The
-                showBin pill toggle hides the bin in either rendering path. */}
-            {showBin &&
-              (showSplitPieces ? (
-                <SplitBinMeshes color={previewColor} wireframe={wireframe} />
-              ) : (
-                <BinMesh wireframe={wireframe} color={previewColor} />
-              ))}
+            {/* Bin mesh — swap for per-piece meshes when split */}
+            {showSplitPieces ? (
+              <SplitBinMeshes color={previewColor} wireframe={wireframe} />
+            ) : (
+              <BinMesh wireframe={wireframe} color={previewColor} />
+            )}
 
-            {/* Click-lock lid (renders only when params.lid.enabled produced a mesh) */}
-            <LidMesh
-              color={previewColor}
-              visible={showLid}
-              snapped={lidSnapped}
-              wireframe={wireframe}
-            />
+            {/* Click-lock lid (renders only when params.lid.enabled produced
+                a mesh). `lidOffsetMm` controls position + opacity in lockstep. */}
+            <LidMesh color={previewColor} lidOffsetMm={lidOffsetMm} wireframe={wireframe} />
+            {/* Dashed guide line between bin's lip top and lid's mating opening,
+                visible only when the lid is meaningfully exploded. */}
+            {params.lid.enabled && params.base.stackingLip && (
+              <LidGuideLine lidOffsetMm={lidOffsetMm} />
+            )}
 
             {/* Ghost outlines during generation */}
             <GhostWireframe />
@@ -641,17 +640,10 @@ export function PreviewCanvas() {
           {/* Nostalgic loading indicator (bottom center) */}
           {showOverlay && <GeneratingIndicator />}
 
-          {/* Lid view toggles — only when the bin has a lid configured AND
+          {/* Lid explode slider — only when the bin has a lid configured AND
               its stacking lip is on (lid won't render/export without lip). */}
           {params.lid.enabled && params.base.stackingLip && (
-            <LidViewToggles
-              showBin={showBin}
-              showLid={showLid}
-              snapped={lidSnapped}
-              onToggleBin={() => setShowBin((v) => !v)}
-              onToggleLid={() => setShowLid((v) => !v)}
-              onToggleSnapped={() => setLidSnapped((v) => !v)}
-            />
+            <LidExplodeSlider value={lidOffsetMm} onChange={setLidOffsetMm} />
           )}
 
           {/* Control buttons */}
@@ -673,61 +665,6 @@ export function PreviewCanvas() {
           <TouchHint />
         </PanelErrorBoundary>
       )}
-    </div>
-  );
-}
-
-interface LidViewTogglesProps {
-  showBin: boolean;
-  showLid: boolean;
-  snapped: boolean;
-  onToggleBin: () => void;
-  onToggleLid: () => void;
-  onToggleSnapped: () => void;
-}
-
-function LidViewToggles({
-  showBin,
-  showLid,
-  snapped,
-  onToggleBin,
-  onToggleLid,
-  onToggleSnapped,
-}: LidViewTogglesProps) {
-  const t = useTranslation();
-  const pillBase =
-    'rounded-full px-3 py-1 text-[11px] transition-colors min-h-[28px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent';
-  const pillOn = 'bg-accent text-on-accent';
-  const pillOff = 'bg-surface-elevated text-content-secondary border border-stroke-subtle';
-
-  return (
-    <div className="absolute right-3 top-3 flex flex-col items-end gap-1.5">
-      <div className="flex items-center gap-1.5 rounded-full bg-surface-elevated/95 px-2 py-1.5 shadow-md backdrop-blur-sm">
-        <button
-          type="button"
-          aria-pressed={showBin}
-          onClick={onToggleBin}
-          className={`${pillBase} ${showBin ? pillOn : pillOff}`}
-        >
-          {t('binDesigner.preview.showBin')}
-        </button>
-        <button
-          type="button"
-          aria-pressed={showLid}
-          onClick={onToggleLid}
-          className={`${pillBase} ${showLid ? pillOn : pillOff}`}
-        >
-          {t('binDesigner.preview.showLid')}
-        </button>
-        <button
-          type="button"
-          aria-pressed={snapped}
-          onClick={onToggleSnapped}
-          className={`${pillBase} ${snapped ? pillOn : pillOff}`}
-        >
-          {t('binDesigner.preview.snapped')}
-        </button>
-      </div>
     </div>
   );
 }

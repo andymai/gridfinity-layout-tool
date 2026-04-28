@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
-import { LidMesh } from './LidMesh';
+import { LidGuideLine } from './LidGuideLine';
 
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
@@ -20,22 +20,13 @@ vi.mock('@react-three/fiber', () => ({
 vi.mock('three', () => {
   class MockBufferGeometry {
     setAttribute = vi.fn();
-    setIndex = vi.fn();
-    computeVertexNormals = vi.fn();
     dispose = vi.fn();
   }
   return {
     BufferGeometry: MockBufferGeometry,
     BufferAttribute: vi.fn(),
-    Color: vi.fn(),
-    DoubleSide: 'DoubleSide',
-    FrontSide: 'FrontSide',
   };
 });
-
-vi.mock('three/examples/jsm/utils/BufferGeometryUtils.js', () => ({
-  toCreasedNormals: vi.fn((geo: unknown) => geo),
-}));
 
 beforeEach(() => {
   useDesignerStore.setState({
@@ -44,14 +35,14 @@ beforeEach(() => {
   });
 });
 
-describe('LidMesh', () => {
-  it('renders nothing when no lidMesh is in the store', () => {
-    const { container } = render(<LidMesh color="#cccccc" lidOffsetMm={0} wireframe={false} />);
+describe('LidGuideLine', () => {
+  it('renders nothing when offset is below the visible threshold', () => {
+    const { container } = render(<LidGuideLine lidOffsetMm={1} />);
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders nothing when no mesh is generated yet (regardless of offset)', () => {
-    const { container } = render(<LidMesh color="#cccccc" lidOffsetMm={15} wireframe={false} />);
+  it('renders nothing when offset is exactly 0 (snapped)', () => {
+    const { container } = render(<LidGuideLine lidOffsetMm={0} />);
     expect(container.firstChild).toBeNull();
   });
 });
