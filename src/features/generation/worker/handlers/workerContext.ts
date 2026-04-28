@@ -113,6 +113,17 @@ export function runGeneration(
         }
       : undefined;
 
+    // Prepare lid buffers when present (lid runs alongside bin generation)
+    const lid = meshData.lidMesh
+      ? {
+          vertices: maybeCopy(meshData.lidMesh.vertices),
+          normals: maybeCopy(meshData.lidMesh.normals),
+          indices: maybeCopy(meshData.lidMesh.indices),
+          edgeVertices: maybeCopy(meshData.lidMesh.edgeVertices),
+          triangleCount: meshData.lidMesh.triangleCount,
+        }
+      : undefined;
+
     const response: WorkerResponse = {
       type: 'MESH_RESULT',
       requestId,
@@ -124,11 +135,28 @@ export function runGeneration(
       timingMs,
       faceGroups: meshData.faceGroups,
       coarseLOD,
+      ...(lid
+        ? {
+            lidVertices: lid.vertices,
+            lidNormals: lid.normals,
+            lidIndices: lid.indices,
+            lidEdgeVertices: lid.edgeVertices,
+            lidTriangleCount: lid.triangleCount,
+          }
+        : {}),
     };
 
     const transfer = [verts.buffer, norms.buffer, idxs.buffer, edges.buffer];
     if (coarseLOD) {
       transfer.push(coarseLOD.vertices.buffer, coarseLOD.indices.buffer);
+    }
+    if (lid) {
+      transfer.push(
+        lid.vertices.buffer,
+        lid.normals.buffer,
+        lid.indices.buffer,
+        lid.edgeVertices.buffer
+      );
     }
     const nonEmptyTransfer = transfer.filter((b) => b.byteLength > 0);
     self.postMessage(response, { transfer: nonEmptyTransfer });

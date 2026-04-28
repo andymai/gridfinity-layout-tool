@@ -41,6 +41,8 @@ function formatPieceDisplayName(
   switch (label) {
     case 'bin':
       return `Bin ${dims}`;
+    case 'lid':
+      return `Lid ${dims}`;
     case 'divider-horizontal':
       return 'Divider Horizontal';
     case 'divider-vertical':
@@ -258,11 +260,11 @@ export function useExport(): UseExportReturn {
           const result = await bridge.exportCombined(params, 'stl');
 
           if (result.pieces.length === 1) {
-            // No dividers — plain STL
+            // Single-piece (no dividers, no lid) → plain STL
             const blob = new Blob([result.pieces[0].data], { type: FORMAT_MIME_TYPES.stl });
             triggerDownload(blob, fileName);
           } else {
-            // Dividers present — ZIP of separate STLs
+            // Multi-piece (dividers and/or lid) → ZIP of separate STLs
             const baseName = fileName.replace(/\.stl$/, '');
             const zip = await packagePiecesAsZip(
               result.pieces.map((p) => ({ data: p.data, label: p.label })),

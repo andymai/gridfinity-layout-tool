@@ -5,7 +5,7 @@
  * generation state, and designer UI state.
  */
 
-import type { FaceGroupData, CoarseLODData } from '@/shared/types/generation';
+import type { FaceGroupData, CoarseLODData, LidMeshData } from '@/shared/types/generation';
 import type { DesignId } from '@/core/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { FeatureColorConfig, ColorZone } from './featureColors';
@@ -397,6 +397,8 @@ export interface GenerationResult {
   readonly faceGroups?: FaceGroupData[];
   /** Coarse LOD mesh for distance-based rendering (preview only) */
   readonly coarseLOD?: CoarseLODData;
+  /** Optional companion lid mesh, present only when the bin has a lid enabled. */
+  readonly lidMesh?: LidMeshData;
 }
 
 /** Generation state tracked in the store */

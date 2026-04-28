@@ -1,0 +1,1 @@
+export { LidMesh } from './LidMesh';

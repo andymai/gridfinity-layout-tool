@@ -1,4 +1,5 @@
 export { BinMesh } from './BinMesh';
+export { LidMesh } from './LidMesh';
 export { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
 export { BinDimensions } from './BinDimensions';
 export { BinNameLabel } from '@/shared/components/preview/BinNameLabel';

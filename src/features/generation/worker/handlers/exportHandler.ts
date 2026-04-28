@@ -15,6 +15,8 @@ import { getLastSolid } from '../generators/shapeCache';
 import { exportBaseplate } from '../generators/baseplateGenerator';
 import { exportDividers, exportDividerPiecesSeparately } from '../generators/dividerExport';
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
+import { exportLid } from '../generators/lidOrchestrator';
+import { buildLid } from '../generators/lidBuilder';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { runExport } from './workerContext';
 
@@ -95,8 +97,11 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
 
       const hasDividers =
         params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
+      // Lid emits a separate solid alongside the bin; included as its own
+      // labeled piece for STL/3MF and folded into the STEP compound below.
+      const hasLid = params.lid.enabled && params.base.stackingLip;
 
-      if (!hasDividers) {
+      if (!hasDividers && !hasLid) {
         return {
           pieces: [{ data: binResult.data, label: 'bin' }] as CombinedExportPiece[],
           format,
@@ -105,7 +110,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
       }
 
       if (format === 'step') {
-        // STEP: create compound assembly of bin + divider solids
+        // STEP: create compound assembly of bin + divider solids + lid
         const binSolid = getLastSolid();
         if (!binSolid) throw new Error('Failed to get bin solid for compound assembly');
 
@@ -122,8 +127,11 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.SOCKET_HEIGHT;
         const hasLip = params.base.stackingLip;
 
-        const dividerSolids = buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip);
-        const assembly = compound([binSolid, ...dividerSolids]);
+        const dividerSolids = hasDividers
+          ? buildUniqueDividerPieces(params, innerW, innerD, wallHeight, hasLip)
+          : [];
+        const lidSolid = hasLid ? buildLid(params) : null;
+        const assembly = compound([binSolid, ...dividerSolids, ...(lidSolid ? [lidSolid] : [])]);
         const blob = unwrap(exportSTEP(assembly));
 
         return {
@@ -132,15 +140,23 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         };
       }
 
-      // STL: export bin + each divider piece separately
+      // STL/3MF: export bin + dividers + lid as separate labeled pieces
       const pieces: CombinedExportPiece[] = [{ data: binResult.data, label: 'bin' }];
-      const dividerPieces = await exportDividerPiecesSeparately(
-        params,
-        format,
-        tolerance,
-        angularTolerance
-      );
-      pieces.push(...dividerPieces);
+      if (hasDividers) {
+        const dividerPieces = await exportDividerPiecesSeparately(
+          params,
+          format,
+          tolerance,
+          angularTolerance
+        );
+        pieces.push(...dividerPieces);
+      }
+      if (hasLid) {
+        const lidExport = await exportLid(params, format, tolerance, angularTolerance);
+        if (lidExport) {
+          pieces.push({ data: lidExport.data, label: 'lid' });
+        }
+      }
 
       return { pieces, format, faceGroups: binResult.faceGroups };
     },

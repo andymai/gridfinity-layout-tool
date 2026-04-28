@@ -36,9 +36,11 @@ export type {
   HandleCutoutShape,
   HandleSide,
   HandleWallSide,
+  LidConfig,
+  LidFit,
 } from '@/features/bin-designer/types';
 
-export { MIN_PATH_POINTS } from '@/features/bin-designer/types';
+export { MIN_PATH_POINTS, LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
 
 /** Whether an edge is exterior (outside baseplate) or a join between split pieces. */
 export type BaseplateEdgeKind = 'join' | 'exterior';
