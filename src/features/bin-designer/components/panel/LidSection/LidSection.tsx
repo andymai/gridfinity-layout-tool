@@ -11,7 +11,29 @@ import { FeatureToggle } from '../FeatureToggle';
 import { Switch } from '@/design-system/Switch';
 import { RulerIcon } from '@/design-system/Icon';
 import { SnappingSlider } from '../../controls/SnappingSlider';
+import type { LidCompatibilityIssue } from '@/features/bin-designer/utils/lidCompatibility';
+import type { useTranslation } from '@/i18n';
 import { useLidSection, FIT_OPTIONS } from './useLidSection';
+
+type Translator = ReturnType<typeof useTranslation>;
+
+/** Render a single compatibility issue as a colored bullet line. */
+function CompatibilityIssue({ issue, t }: { issue: LidCompatibilityIssue; t: Translator }) {
+  const sides = issue.sides ? issue.sides.join(', ') : '';
+  const message = t(`binDesigner.lid.compat.${issue.id}`, { sides });
+  // Blockers are rendered with the danger token (red); warnings are
+  // amber. Both use a small filled dot so the row reads as a list
+  // item rather than body copy.
+  const isBlocker = issue.severity === 'blocker';
+  const dotColor = isBlocker ? 'bg-danger' : 'bg-warning';
+  const textColor = isBlocker ? 'text-danger' : 'text-warning';
+  return (
+    <li className={`flex gap-1.5 text-[11px] leading-relaxed ${textColor}`}>
+      <span className={`mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full ${dotColor}`} />
+      <span>{message}</span>
+    </li>
+  );
+}
 
 export function LidSection() {
   const { state, handlers, t } = useLidSection();
@@ -56,6 +78,22 @@ export function LidSection() {
       <p className="text-[11px] leading-relaxed text-content-tertiary">
         {t('binDesigner.lid.printNote')}
       </p>
+
+      {/* Compatibility notes — features that conflict with click-lock
+          mating. Only renders when there are issues; blockers and
+          warnings share the list and are color-coded by severity. */}
+      {state.compatibilityIssues.length > 0 && (
+        <div className="space-y-1 rounded-md border border-stroke-subtle bg-surface-secondary px-2.5 py-2">
+          <p className="text-[11px] font-medium text-content-secondary">
+            {t('binDesigner.lid.compat.heading')}
+          </p>
+          <ul className="space-y-1">
+            {state.compatibilityIssues.map((issue) => (
+              <CompatibilityIssue key={issue.id} issue={issue} t={t} />
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Wall + Top thickness paired side-by-side (LabelTabsSection pattern). */}
       <div className="grid grid-cols-2 gap-3">

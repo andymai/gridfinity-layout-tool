@@ -1,0 +1,119 @@
+/**
+ * Click-lock lid feature compatibility checks.
+ *
+ * The lid's mating shell drops INTO the bin's mouth and grips the
+ * stacking lip's inner face. That makes the lid sensitive to anything
+ * that:
+ *   1. Removes lip material on a wall (wall cutouts, certain patterns) —
+ *      the click rail on that wall has nothing to grip.
+ *   2. Adds upward-projecting material inside the bin (tall divider
+ *      pieces, very tall inserts) — the lid's mating shell physically
+ *      collides with it.
+ *   3. Makes the bin too short for the rail extension (1U bins).
+ *
+ * `checkLidCompatibility(params)` returns a typed list of issues so
+ * `LidSection` can render warnings inline. Each issue has an `id`
+ * matching the i18n key suffix `binDesigner.lid.compat.{id}`, a
+ * severity, and (when applicable) a list of affected sides.
+ *
+ * The helper is geometry-only — it's pure (no React) and runs cheaply
+ * enough to evaluate on every params change.
+ */
+
+import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
+import type { BinParams } from '../types';
+
+/** Wall side affected by a per-side issue (e.g. wall cutouts). */
+export type LidCompatibilitySide = 'front' | 'back' | 'left' | 'right';
+
+/** Severity of a compatibility issue. */
+export type LidCompatibilitySeverity = 'blocker' | 'warning';
+
+/**
+ * Stable IDs for compatibility issues. Each maps to an i18n key under
+ * `binDesigner.lid.compat.{id}` for the user-facing message.
+ */
+export type LidCompatibilityId =
+  | 'wallCutouts'
+  | 'wallPattern'
+  | 'shortBin'
+  | 'tallDividerPieces'
+  | 'cellMaskHoles';
+
+export interface LidCompatibilityIssue {
+  readonly id: LidCompatibilityId;
+  readonly severity: LidCompatibilitySeverity;
+  /** When set, the issue applies only to specific walls (e.g. wall cutouts). */
+  readonly sides?: readonly LidCompatibilitySide[];
+}
+
+const WALL_SIDES = ['front', 'back', 'left', 'right'] as const;
+
+/**
+ * Inspect a `BinParams` and return all click-lock-lid compatibility issues
+ * that apply. Returns an empty array when the lid would mate without caveats.
+ *
+ * Callers should ignore the result when `params.lid.enabled === false` —
+ * the function makes no assumption about whether the lid is actually
+ * being generated, it just reports geometric incompatibilities.
+ */
+export function checkLidCompatibility(params: BinParams): readonly LidCompatibilityIssue[] {
+  const issues: LidCompatibilityIssue[] = [];
+
+  // 1. Wall cutouts. Each enabled side removes lip material on that wall,
+  //    so the click rail on that wall has nothing to grip — the lid still
+  //    mates around the remaining walls but with reduced engagement.
+  if (params.walls.enabled) {
+    const cutSides: LidCompatibilitySide[] = [];
+    for (const side of WALL_SIDES) {
+      if (params.walls[side].enabled) cutSides.push(side);
+    }
+    if (cutSides.length > 0) {
+      issues.push({ id: 'wallCutouts', severity: 'warning', sides: cutSides });
+    }
+  }
+
+  // 2. Wall pattern. Patterns extend up to (LIP_HEIGHT + 2)mm into the
+  //    lip Z range (see `wallPatternBuilder.clipOvershoot`), perforating
+  //    the lip's inner face that the lid's rails grip.
+  if (params.wallPattern.enabled) {
+    issues.push({ id: 'wallPattern', severity: 'warning' });
+  }
+
+  // 3. Very short bins (1U). The rail extends ~5.7mm below the lip top,
+  //    leaving only ~1.3mm of overlap with the bin's main wall on a 1U
+  //    bin (totalH=7mm). The lid still seats but the click is marginal.
+  if (params.height <= 1) {
+    issues.push({ id: 'shortBin', severity: 'warning' });
+  }
+
+  // 4. Tall divider pieces. Slotted bins use separately-printed dividers
+  //    that slide into floor slots. When the user sets a manual mm height
+  //    larger than the bin's interior, the divider protrudes above the
+  //    lip and physically blocks the lid from seating. 'auto' fits.
+  const interiorHeight = params.height * params.heightUnitMm - GRIDFINITY.SOCKET_HEIGHT;
+  if (
+    params.style === 'slotted' &&
+    typeof params.dividerPieces.height === 'number' &&
+    params.dividerPieces.height > interiorHeight
+  ) {
+    issues.push({ id: 'tallDividerPieces', severity: 'blocker' });
+  }
+
+  // 5. Custom shape with interior holes (O-shape / ring topology). The
+  //    polygon rail-placement walks only the OUTER perimeter, so inner
+  //    hole edges have lip material but no rails. Lid mates asymmetrically
+  //    — fine functionally, worth flagging so users aren't confused why
+  //    the click is uneven.
+  if (isPartialMask(params.cellMask) && maskToPolygon(params.cellMask).length > 1) {
+    issues.push({ id: 'cellMaskHoles', severity: 'warning' });
+  }
+
+  return issues;
+}
+
+/** Convenience: any blocker = the lid effectively can't be used. */
+export function hasLidBlocker(issues: readonly LidCompatibilityIssue[]): boolean {
+  return issues.some((i) => i.severity === 'blocker');
+}

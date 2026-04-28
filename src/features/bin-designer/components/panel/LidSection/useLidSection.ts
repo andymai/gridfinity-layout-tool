@@ -11,6 +11,7 @@ import {
 } from '@/features/bin-designer/types';
 import { isPartialMask, maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
 import type { CellMask } from '@/shared/utils/cellMask';
+import { checkLidCompatibility } from '@/features/bin-designer/utils/lidCompatibility';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 
 export const FIT_OPTIONS: readonly LidFit[] = ['loose', 'standard', 'tight'] as const;
@@ -289,6 +290,11 @@ export function useLidSection() {
     });
   }, [t, lid.fit, lid.clickRails, lid.clickRailCoverage, lid.wallThickness]);
 
+  // Compatibility issues — features that conflict with the click-lock
+  // lid (wall cutouts, wall pattern, tall dividers, etc.). The panel
+  // surfaces these inline as warnings so users see the trade-offs.
+  const compatibilityIssues = useMemo(() => checkLidCompatibility(params), [params]);
+
   return {
     state: {
       enabled: effectiveEnabled,
@@ -305,6 +311,7 @@ export function useLidSection() {
       valueSummary,
       dimensionsReadout,
       railsReadout,
+      compatibilityIssues,
     },
     handlers: {
       toggleEnabled,
