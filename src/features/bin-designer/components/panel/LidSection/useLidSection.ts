@@ -22,6 +22,12 @@ export function useLidSection() {
     ? t('binDesigner.lid.requiresStackingLip')
     : undefined;
 
+  // Effective enabled: the lid only renders/exports when both `lid.enabled`
+  // is set AND the bin has a stacking lip to mate with. The persisted flag
+  // is preserved so flipping the lip back on restores the user's choice;
+  // the UI just reflects the gated state until then.
+  const effectiveEnabled = lid.enabled && base.stackingLip;
+
   // Bin has magnets when its base style includes them. Used as the smart
   // default for lid magnetHoles each time the lid is enabled.
   const binHasMagnets = base.style === 'magnet' || base.style === 'magnet_and_screw';
@@ -78,7 +84,7 @@ export function useLidSection() {
 
   return {
     state: {
-      enabled: lid.enabled,
+      enabled: effectiveEnabled,
       fit: lid.fit,
       stackableTop: lid.stackableTop,
       magnetHoles: lid.magnetHoles,

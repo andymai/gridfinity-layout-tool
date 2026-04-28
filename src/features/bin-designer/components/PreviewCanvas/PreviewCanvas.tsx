@@ -569,12 +569,14 @@ export function PreviewCanvas() {
               heightUnitMm={params.heightUnitMm}
             />
 
-            {/* Bin mesh — swap for per-piece meshes when split */}
-            {showSplitPieces ? (
-              <SplitBinMeshes color={previewColor} wireframe={wireframe} />
-            ) : (
-              showBin && <BinMesh wireframe={wireframe} color={previewColor} />
-            )}
+            {/* Bin mesh — swap for per-piece meshes when split. The
+                showBin pill toggle hides the bin in either rendering path. */}
+            {showBin &&
+              (showSplitPieces ? (
+                <SplitBinMeshes color={previewColor} wireframe={wireframe} />
+              ) : (
+                <BinMesh wireframe={wireframe} color={previewColor} />
+              ))}
 
             {/* Click-lock lid (renders only when params.lid.enabled produced a mesh) */}
             <LidMesh
@@ -639,8 +641,9 @@ export function PreviewCanvas() {
           {/* Nostalgic loading indicator (bottom center) */}
           {showOverlay && <GeneratingIndicator />}
 
-          {/* Lid view toggles — only when the bin has a lid configured */}
-          {params.lid.enabled && (
+          {/* Lid view toggles — only when the bin has a lid configured AND
+              its stacking lip is on (lid won't render/export without lip). */}
+          {params.lid.enabled && params.base.stackingLip && (
             <LidViewToggles
               showBin={showBin}
               showLid={showLid}

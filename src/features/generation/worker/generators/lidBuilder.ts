@@ -82,6 +82,15 @@ interface LidInputs {
   readonly fitClearance: number;
   readonly topThickness: number;
   readonly wallThickness: number;
+  /**
+   * Cavity inner-face inset from the lid's outer perimeter. Equals
+   * `wallThickness + LIP_BIG_TAPER`: the user-chosen wallThickness becomes
+   * the literal wall thickness in the lip-mating zone, where the outer face
+   * is already chamfered inward by LIP_BIG_TAPER. In the floor zone (above
+   * the lip) the wall is `cavityInset` thick — naturally fatter, since the
+   * chamfer hasn't kicked in yet.
+   */
+  readonly cavityInset: number;
   readonly stackableTop: boolean;
   readonly magnetHoles: boolean;
   readonly magnetDiameter: number;
@@ -113,6 +122,9 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   const lidOuterW = params.width * gridUnitMm - 2 * fitClearance;
   const lidOuterD = params.depth * gridUnitMm - 2 * fitClearance;
   const lidCornerR = BOX_CORNER_RADIUS - fitClearance;
+  // Cavity inner inset = user-controlled wallThickness + the lip's chamfer
+  // depth. See comment on LidInputs.cavityInset for details.
+  const cavityInset = params.lid.wallThickness + LIP_BIG_TAPER;
 
   // Polygon path activates when the mask is partially filled. A fully-filled
   // mask is treated as rectangular (matches the bin generator's convention).
@@ -125,6 +137,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     fitClearance,
     topThickness: params.lid.topThickness,
     wallThickness: params.lid.wallThickness,
+    cavityInset,
     stackableTop: params.lid.stackableTop,
     magnetHoles: params.lid.magnetHoles,
     magnetDiameter: params.base.magnetDiameter,
@@ -190,7 +203,7 @@ function sectionAt(inputs: LidInputs, z: number, outerInset: number): Sketch {
  * ──────────────────────────────────────────────────────────────────────── */
 
 function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
-  const { lidCornerR, anchorZ, wallBottomZ } = inputs;
+  const { cavityInset, anchorZ, wallBottomZ } = inputs;
   const Z_TOP = 0;
   const Z_ANCHOR = anchorZ;
   const Z_VERT_TOP = anchorZ - LIP_BIG_TAPER;
@@ -206,12 +219,14 @@ function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
     sectionAt(inputs, Z_TOP, 0),
   ];
 
-  // INNER profile — constant inset at lidCornerR (the cavity inner face
-  // sits at the corner-radius line at every Z). Two sections in ASCENDING
-  // Z with COPLANAR margin so the cut bites cleanly through the outer.
+  // INNER profile — constant inset at `cavityInset` (= wallThickness +
+  // LIP_BIG_TAPER). The cavity inner face sits at the same inset for every
+  // Z; the user's wallThickness becomes the literal lip-mating wall thickness.
+  // Two sections in ASCENDING Z with COPLANAR margin so the cut bites
+  // cleanly through the outer.
   const innerSections: readonly Sketch[] = [
-    sectionAt(inputs, Z_BOTTOM - LID_COPLANAR_MARGIN, lidCornerR),
-    sectionAt(inputs, Z_TOP + LID_COPLANAR_MARGIN, lidCornerR),
+    sectionAt(inputs, Z_BOTTOM - LID_COPLANAR_MARGIN, cavityInset),
+    sectionAt(inputs, Z_TOP + LID_COPLANAR_MARGIN, cavityInset),
   ];
 
   const [oFirst, ...oRest] = outerSections;

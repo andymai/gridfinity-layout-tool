@@ -16,6 +16,9 @@ import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 /** Default lift between bin and lid in exploded view (mm). */
 const EXPLODED_LIFT_MM = 5;
 
+/** Z offset BinMesh applies to its rendered group — keep the lid in lockstep. */
+const PREVIEW_Z_OFFSET = 0.1;
+
 interface LidMeshProps {
   /** Base color for the lid (matches bin material). */
   color: string;
@@ -33,11 +36,11 @@ export function LidMesh({ color, visible, snapped, wireframe = false }: LidMeshP
     useShallow((s) => ({
       lidMesh: s.generation.mesh?.lidMesh ?? null,
       // Bin's lip top in world space (after the bin's translateStage moves
-      // Z=0 to baseplate top): totalHeight = height × heightUnitMm. The lid's
-      // local Z=0 is the lip's top surface when snapped, so we render the lid
-      // at world Z = totalHeight.
+      // Z=0 to baseplate top): totalHeight = height × heightUnitMm, plus the
+      // PREVIEW_Z_OFFSET that BinMesh adds (so the lid sits exactly on the
+      // bin's rendered lip in snapped view).
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for legacy params
-      lipTopZ: s.params.height * (s.params.heightUnitMm ?? 7),
+      lipTopZ: s.params.height * (s.params.heightUnitMm ?? 7) + PREVIEW_Z_OFFSET,
     }))
   );
 
