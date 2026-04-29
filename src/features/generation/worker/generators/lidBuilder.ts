@@ -36,14 +36,14 @@ import {
   rotate,
   withScope,
 } from 'brepjs';
-import type { Shape3D, DisposalScope, Plane, Vec3, Sketch, ValidSolid, Drawing } from 'brepjs';
+import type { Shape3D, DisposalScope, Sketch, ValidSolid, Drawing } from 'brepjs';
 import {
   SIZE,
   HEIGHT_UNIT,
   LIP_SMALL_TAPER,
-  LIP_VERTICAL_PART,
   LIP_BIG_TAPER,
   LIP_TAPER_WIDTH,
+  LIP_HEIGHT,
 } from './generatorConstants';
 import {
   LID_CLICK_RAIL_BUMP,
@@ -611,93 +611,106 @@ function addClickRails(
 }
 
 /* ──────────────────────────────────────────────────────────────────────
- * Stack grid — Gridfinity baseplate-style lip pattern on top of the lid.
+ * Stack grid — slab-minus-pockets, mirroring `baseplateGenerator`.
  *
- * Mirrors SCAD's `TopWithClearance`: an outer ring around the lid's
- * perimeter PLUS inner divider strips at every grid line, so a bin
- * stacked on top engages the lid like it would a baseplate. Earlier
- * implementations only built the outer ring, leaving multi-cell lids
- * looking like a single big stacking lip with no internal structure.
+ * Build a `LIP_HEIGHT`-tall slab covering the lid's outer footprint,
+ * then cut a tapered pocket per cell using the inverse of the
+ * Gridfinity LIP profile (the baseplate uses SOCKET dimensions; we use
+ * LIP since we're cutting an upper-bin's-base-socket-shaped hole).
+ * The remaining slab material forms the grid pattern of lips between
+ * cells — outer ring along the perimeter, dividers between adjacent
+ * cells — and a bin stacked on top engages it the same way its base
+ * socket engages a baseplate's pocket.
  *
- * Shape:
- *   - Outer ring: sweepSketch of the (asymmetric) Gridfinity lip
- *     profile around the lid's outer perimeter — rounded corners.
- *   - Inner dividers: linear-extruded copies of a SYMMETRIC lip profile
- *     (mirrored across the strip's centerline) at each interior grid
- *     line. Symmetric so the divider has lip material on BOTH sides,
- *     matching SCAD's pair of mirrored TopStraights per grid line.
+ * Pocket cross-section (Z is vertical above the lid floor):
+ *   Z=LIP_HEIGHT       inset = LID_FIT_CLEARANCE              (top opening)
+ *   Z=LIP_HEIGHT-1.9   inset = LIP_BIG_TAPER + Clearance       (top chamfer end)
+ *   Z=LIP_SMALL_TAPER  inset = LIP_BIG_TAPER + Clearance       (vertical wall)
+ *   Z=0                inset = LIP_TAPER_WIDTH + Clearance     (bottom)
+ * Plus coplanar-margin caps above and below the slab so the boolean
+ * cut bites cleanly through both faces.
  * ──────────────────────────────────────────────────────────────────────── */
 
-function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
-  const { cellsX, cellsY, gridUnitMm, lidOuterW, lidOuterD } = inputs;
-
-  // Asymmetric lip profile (lip material extends INWARD from the
-  // perimeter only). Identical to the bin's TopShape so a stacked bin
-  // mates perfectly along the outer ring.
-  const outerProfile = (plane: Plane, _origin: Vec3): Sketch => {
-    return draw([-LIP_TAPER_WIDTH, 0])
-      .line(LIP_SMALL_TAPER, LIP_SMALL_TAPER)
-      .vLine(LIP_VERTICAL_PART)
-      .line(LIP_BIG_TAPER, LIP_BIG_TAPER)
-      .vLineTo(0)
-      .close()
-      .sketchOnPlane(plane) as Sketch;
+/**
+ * Build a single pocket cutter for one cell, multi-section loft of the
+ * inverse-LIP profile. Mirrors `baseplateGenerator.buildPocketCutter`'s
+ * shape and section count, but with LIP_* constants instead of SOCKET_*.
+ */
+function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D {
+  // Pocket corner radius — keep the cell's interior square-ish but
+  // soften the corners so the boolean cut and tessellation stay clean.
+  const cornerR = 1;
+  const section = (z: number, inset: number): Sketch => {
+    const w = Math.max(cellW_mm - 2 * inset, 0.1);
+    const d = Math.max(cellD_mm - 2 * inset, 0.1);
+    const r = Math.max(cornerR - inset, 0.1);
+    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
   };
 
-  // SYMMETRIC lip profile for inner dividers: mirror the outer profile
-  // across X=0 so the strip has lip material on both sides. Drawn in
-  // (X, Y) where X is perpendicular to the strip and Y is vertical.
-  const symmetricProfile = (): Drawing =>
-    draw([-LIP_TAPER_WIDTH, 0])
-      .line(LIP_SMALL_TAPER, LIP_SMALL_TAPER)
-      .vLine(LIP_VERTICAL_PART)
-      .line(LIP_BIG_TAPER, LIP_BIG_TAPER)
-      .line(LIP_BIG_TAPER, -LIP_BIG_TAPER)
-      .vLine(-LIP_VERTICAL_PART)
-      .line(LIP_SMALL_TAPER, -LIP_SMALL_TAPER)
-      .close();
+  // Insets at each Z breakpoint — derived from SCAD's TopShape vertices
+  // (which are themselves the LIP profile shifted INWARD by Clearance):
+  //   top:    inset = Clearance                   = 0.25
+  //   mid:    inset = LIP_BIG_TAPER + Clearance   = 2.15
+  //   bot:    inset = LIP_TAPER_WIDTH + Clearance = 2.85
+  const INSET_TOP = LID_FIT_CLEARANCE;
+  const INSET_MID = LIP_BIG_TAPER + LID_FIT_CLEARANCE;
+  const INSET_BOT = LIP_TAPER_WIDTH + LID_FIT_CLEARANCE;
 
-  // 1. Outer ring — sweep around the lid perimeter (preserves rounded
-  //    corners). Uses the lid's outer footprint via `buildOutlineDrawing`.
-  const lidPerimeter = buildOutlineDrawing(inputs, 0).sketchOnPlane() as Sketch;
-  let stackGrid: Shape3D = scope.register(
-    lidPerimeter.sweepSketch(outerProfile, { withContact: true })
+  // First section sits ABOVE the slab top by LID_COPLANAR_MARGIN so the
+  // cut exits cleanly through the slab's top face. Last section sits
+  // BELOW the slab bottom for the same reason at the bottom face.
+  const s0 = section(LIP_HEIGHT + LID_COPLANAR_MARGIN, INSET_TOP);
+  const sections: Sketch[] = [
+    section(LIP_HEIGHT, INSET_TOP),
+    section(LIP_HEIGHT - LIP_BIG_TAPER, INSET_MID),
+    section(LIP_SMALL_TAPER, INSET_MID),
+    section(0, INSET_BOT),
+    section(-LID_COPLANAR_MARGIN, INSET_BOT),
+  ];
+  return s0.loftWith(sections, { ruled: true });
+}
+
+function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
+  const { cellsX, cellsY, gridUnitMm } = inputs;
+
+  // 1. Slab — lid's outer footprint extruded UP by LIP_HEIGHT.
+  //    `buildOutlineDrawing(inputs, 0)` gives the full perimeter,
+  //    rounded for plain bins, polygon for cellMask bins.
+  const slabSketch = buildOutlineDrawing(inputs, 0).sketchOnPlane('XY', 0) as Sketch;
+  let slab: Shape3D = scope.register(slabSketch.extrude(LIP_HEIGHT));
+
+  // 2. Pocket cutters — one per filled cell. `forEachCell` decomposes
+  //    half-bin grids into 1u + 0.5u sub-cells; we cut a pocket sized
+  //    to whichever sub-cell appears at each position. Polygon
+  //    (cellMask) bins skip pockets in unfilled cells so the lip
+  //    pattern only covers material that actually exists.
+  const halfTotalW = (cellsX * gridUnitMm) / 2;
+  const halfTotalD = (cellsY * gridUnitMm) / 2;
+  const pockets: Shape3D[] = [];
+  forEachCell(
+    cellsX,
+    cellsY,
+    (cell) => {
+      const cellW = cell.widthUnits * gridUnitMm;
+      const cellD = cell.depthUnits * gridUnitMm;
+      if (inputs.cellMask) {
+        const cellX = Math.round((cell.centerX + halfTotalW - gridUnitMm / 2) / gridUnitMm);
+        const cellY = Math.round((cell.centerY + halfTotalD - gridUnitMm / 2) / gridUnitMm);
+        if (!isCellFilled(inputs.cellMask, cellX, cellY)) return;
+      }
+      const pocket = buildLidStackPocketCutter(cellW, cellD);
+      const positioned = scope.register(translate(pocket, [cell.centerX, cell.centerY, 0]));
+      pocket.delete();
+      pockets.push(positioned);
+    },
+    { gridUnitMm }
   );
 
-  // 2. Inner dividers — one per interior grid line. For W cells in X
-  //    there are W-1 inner X-direction grid lines (vertical strips
-  //    running along Y), and similarly L-1 inner Y-direction strips.
-  //
-  //    Each strip is a linear extrusion of the symmetric profile
-  //    along the strip's axis. The strip's CENTER is at the grid line
-  //    in world coords; `lidOuterW`/`lidOuterD` set the strip length
-  //    so it spans the lid edge to edge, where it fuses into the
-  //    outer ring.
-  for (let i = 1; i < cellsX; i++) {
-    // Vertical strip running along Y at world X = -W/2*GU + i*GU.
-    const xPos = -(cellsX * gridUnitMm) / 2 + i * gridUnitMm;
-    const length = lidOuterD;
-    // Profile sketched on XZ plane (X = perpendicular to strip, Z =
-    // vertical), then extruded along Y by `length`.
-    const sketch = symmetricProfile().sketchOnPlane('XZ', -length / 2) as Sketch;
-    const strip = scope.register(sketch.extrude(length));
-    const positioned = scope.register(translate(strip, [xPos, 0, 0]));
-    scope.register(stackGrid);
-    stackGrid = unwrap(fuse(stackGrid, positioned));
+  if (pockets.length > 0) {
+    scope.register(slab);
+    slab = unwrap(cutAll(slab as ValidSolid, pockets as ValidSolid[]));
   }
-  for (let j = 1; j < cellsY; j++) {
-    // Horizontal strip running along X at world Y = -L/2*GU + j*GU.
-    const yPos = -(cellsY * gridUnitMm) / 2 + j * gridUnitMm;
-    const length = lidOuterW;
-    // Profile sketched on YZ plane, extruded along X by `length`.
-    const sketch = symmetricProfile().sketchOnPlane('YZ', -length / 2) as Sketch;
-    const strip = scope.register(sketch.extrude(length));
-    const positioned = scope.register(translate(strip, [0, yPos, 0]));
-    scope.register(stackGrid);
-    stackGrid = unwrap(fuse(stackGrid, positioned));
-  }
-
-  return stackGrid;
+  return slab;
 }
 
 /* ──────────────────────────────────────────────────────────────────────
