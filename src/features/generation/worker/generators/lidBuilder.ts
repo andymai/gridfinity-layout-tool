@@ -37,14 +37,8 @@ import {
   withScope,
 } from 'brepjs';
 import type { Shape3D, DisposalScope, Sketch, ValidSolid, Drawing } from 'brepjs';
-import {
-  SIZE,
-  HEIGHT_UNIT,
-  LIP_SMALL_TAPER,
-  LIP_BIG_TAPER,
-  LIP_TAPER_WIDTH,
-  LIP_HEIGHT,
-} from './generatorConstants';
+import { SIZE, HEIGHT_UNIT, LIP_BIG_TAPER } from './generatorConstants';
+import { SOCKET_HEIGHT, SOCKET_BIG_TAPER, SOCKET_TAPER_WIDTH, CLEARANCE } from './generatorTypes';
 import {
   LID_CLICK_RAIL_BUMP,
   LID_CLICK_RAIL_ENTRY_CHAMFER,
@@ -611,30 +605,37 @@ function addClickRails(
 }
 
 /* ──────────────────────────────────────────────────────────────────────
- * Stack grid — slab-minus-pockets, mirroring `baseplateGenerator`.
+ * Stack grid — slab-minus-pockets, mirroring `baseplateGenerator` exactly.
  *
- * Build a `LIP_HEIGHT`-tall slab covering the lid's outer footprint,
- * then cut a tapered pocket per cell using the inverse of the
- * Gridfinity LIP profile (the baseplate uses SOCKET dimensions; we use
- * LIP since we're cutting an upper-bin's-base-socket-shaped hole).
- * The remaining slab material forms the grid pattern of lips between
- * cells — outer ring along the perimeter, dividers between adjacent
- * cells — and a bin stacked on top engages it the same way its base
- * socket engages a baseplate's pocket.
+ * Build a `SOCKET_HEIGHT`-tall slab covering the lid's outer footprint,
+ * then cut a baseplate-style tapered pocket per cell. The pocket
+ * dimensions match the baseplate's `buildPocketCutter` exactly — same
+ * SOCKET_BIG_TAPER chamfer, SOCKET_HEIGHT depth, and CLEARANCE/2 wall
+ * step at the top — so an upper bin's base socket engages the lid the
+ * same way it engages a baseplate. The remaining slab material between
+ * pockets forms the outer ring + inner dividers naturally.
  *
  * Pocket cross-section (Z is vertical above the lid floor):
- *   Z=LIP_HEIGHT       inset = LID_FIT_CLEARANCE              (top opening)
- *   Z=LIP_HEIGHT-1.9   inset = LIP_BIG_TAPER + Clearance       (top chamfer end)
- *   Z=LIP_SMALL_TAPER  inset = LIP_BIG_TAPER + Clearance       (vertical wall)
- *   Z=0                inset = LIP_TAPER_WIDTH + Clearance     (bottom)
+ *   Z=SOCKET_HEIGHT             inset = 0                   (top opening)
+ *   Z=SOCKET_HEIGHT-CLEARANCE/2 inset = 0                   (clearance step)
+ *   Z=SOCKET_HEIGHT-2.4         inset = INSET_MID = 2.15    (top chamfer end)
+ *   Z=SOCKET_TAPER_WIDTH-CL/2   inset = INSET_MID            (vertical wall)
+ *   Z=0                         inset = INSET_BOT = 2.95    (bottom)
  * Plus coplanar-margin caps above and below the slab so the boolean
  * cut bites cleanly through both faces.
  * ──────────────────────────────────────────────────────────────────────── */
 
+/** Insets at each Z breakpoint — same values as `baseplateGenerator`. */
+const STACK_INSET_TOP = 0;
+const STACK_INSET_MID = SOCKET_BIG_TAPER - CLEARANCE / 2; // 2.15mm
+const STACK_INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
+
 /**
- * Build a single pocket cutter for one cell, multi-section loft of the
- * inverse-LIP profile. Mirrors `baseplateGenerator.buildPocketCutter`'s
- * shape and section count, but with LIP_* constants instead of SOCKET_*.
+ * Build a single pocket cutter for one cell. Multi-section loft with
+ * the same five sections + two coplanar caps that
+ * `baseplateGenerator.buildPocketCutter` uses, just translated UP by
+ * `SOCKET_HEIGHT` so the slab sits at Z ∈ [0, SOCKET_HEIGHT] rather
+ * than the baseplate's Z ∈ [-SOCKET_HEIGHT, 0].
  */
 function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D {
   // Pocket corner radius — keep the cell's interior square-ish but
@@ -647,25 +648,17 @@ function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D 
     return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
   };
 
-  // Insets at each Z breakpoint — derived from SCAD's TopShape vertices
-  // (which are themselves the LIP profile shifted INWARD by Clearance):
-  //   top:    inset = Clearance                   = 0.25
-  //   mid:    inset = LIP_BIG_TAPER + Clearance   = 2.15
-  //   bot:    inset = LIP_TAPER_WIDTH + Clearance = 2.85
-  const INSET_TOP = LID_FIT_CLEARANCE;
-  const INSET_MID = LIP_BIG_TAPER + LID_FIT_CLEARANCE;
-  const INSET_BOT = LIP_TAPER_WIDTH + LID_FIT_CLEARANCE;
-
-  // First section sits ABOVE the slab top by LID_COPLANAR_MARGIN so the
-  // cut exits cleanly through the slab's top face. Last section sits
-  // BELOW the slab bottom for the same reason at the bottom face.
-  const s0 = section(LIP_HEIGHT + LID_COPLANAR_MARGIN, INSET_TOP);
+  // Slab top sits at Z=SOCKET_HEIGHT (5mm above the lid floor); pocket
+  // breakpoints walk DOWN from there mirroring the baseplate's profile.
+  const TOP = SOCKET_HEIGHT;
+  const s0 = section(TOP + LID_COPLANAR_MARGIN, STACK_INSET_TOP);
   const sections: Sketch[] = [
-    section(LIP_HEIGHT, INSET_TOP),
-    section(LIP_HEIGHT - LIP_BIG_TAPER, INSET_MID),
-    section(LIP_SMALL_TAPER, INSET_MID),
-    section(0, INSET_BOT),
-    section(-LID_COPLANAR_MARGIN, INSET_BOT),
+    section(TOP, STACK_INSET_TOP),
+    section(TOP - CLEARANCE / 2, STACK_INSET_TOP),
+    section(TOP - SOCKET_BIG_TAPER, STACK_INSET_MID),
+    section(TOP - SOCKET_BIG_TAPER - (SOCKET_HEIGHT - SOCKET_TAPER_WIDTH), STACK_INSET_MID),
+    section(0, STACK_INSET_BOT),
+    section(-LID_COPLANAR_MARGIN, STACK_INSET_BOT),
   ];
   return s0.loftWith(sections, { ruled: true });
 }
@@ -673,11 +666,12 @@ function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D 
 function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
   const { cellsX, cellsY, gridUnitMm } = inputs;
 
-  // 1. Slab — lid's outer footprint extruded UP by LIP_HEIGHT.
-  //    `buildOutlineDrawing(inputs, 0)` gives the full perimeter,
-  //    rounded for plain bins, polygon for cellMask bins.
+  // 1. Slab — lid's outer footprint extruded UP by SOCKET_HEIGHT (5mm,
+  //    matching the baseplate's slab depth). `buildOutlineDrawing(inputs, 0)`
+  //    gives the full perimeter — rounded for plain bins, polygon for
+  //    cellMask bins.
   const slabSketch = buildOutlineDrawing(inputs, 0).sketchOnPlane('XY', 0) as Sketch;
-  let slab: Shape3D = scope.register(slabSketch.extrude(LIP_HEIGHT));
+  let slab: Shape3D = scope.register(slabSketch.extrude(SOCKET_HEIGHT));
 
   // 2. Pocket cutters — one per filled cell. `forEachCell` decomposes
   //    half-bin grids into 1u + 0.5u sub-cells; we cut a pocket sized
