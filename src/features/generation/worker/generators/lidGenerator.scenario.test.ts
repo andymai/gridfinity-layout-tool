@@ -240,15 +240,6 @@ describe('generateLid scenarios', () => {
     expect(oneOn!.triangleCount).toBeGreaterThan(noneOn!.triangleCount);
   });
 
-  it('all three fit presets produce valid meshes', async () => {
-    const { generateLid } = await import('./lidOrchestrator');
-    for (const fit of ['loose', 'standard', 'tight'] as const) {
-      const result = generateLid(makeParams({ fit }, { width: 2, depth: 2, height: 3 }));
-      expect(result, `fit=${fit} should produce a mesh`).not.toBeNull();
-      assertStructurallyValid(result!, `fit=${fit}`);
-    }
-  });
-
   describe('polygon (cellMask) lids', () => {
     it('produces a valid mesh for a 3×3 L-shape lid', async () => {
       const { generateLid } = await import('./lidOrchestrator');

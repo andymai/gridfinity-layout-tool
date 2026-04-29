@@ -15,42 +15,26 @@
  */
 
 import { LIP_BIG_TAPER, LIP_VERTICAL_PART, LIP_HEIGHT } from './generatorConstants';
+import {
+  LID_CORNER_RADIUS,
+  LID_FIT_CLEARANCE,
+  LID_TOP_THICKNESS_BASE,
+  LID_MAGNET_CEILING,
+} from '@/shared/types/bin';
 
 /* ──────────────────────────────────────────────────────────────────────
- * Opinionated lid dimensions, sourced from the AnyLid OpenSCAD reference
- * (gridfinity-bin-lids.scad by rngcntr). The bin uses Kennetek's 3.75mm
- * BOX_CORNER_RADIUS, but the lid SCAD uses its own 4mm `Corner_Radius`
- * with `Clearance = 0.25` — using the bin's value (3.75mm) for the lid
- * shifts the click rails 0.25mm outward and shrinks the wall thickness
- * by 0.65mm, which is why earlier renders had the lid "wider on top" and
- * not engaging the lip correctly.
+ * Public lid dimensions live in `@/features/bin-designer/types/lid.ts`
+ * (single source of truth shared with the panel/preview). Re-exported
+ * here so worker callers keep their existing import path.
  * ──────────────────────────────────────────────────────────────────────── */
 
-/** SCAD: `Corner_Radius_mm = 4` — the lid's outer corner radius BEFORE
- *  clearance subtraction. Lid-specific; do NOT reuse `BOX_CORNER_RADIUS`
- *  (3.75mm) which is the bin's spec. */
-export const LID_CORNER_RADIUS = 4;
+export { LID_CORNER_RADIUS, LID_FIT_CLEARANCE, LID_TOP_THICKNESS_BASE, LID_MAGNET_CEILING };
 
-/** Per-side clearance between the lid's mating profile and the bin's
- *  stacking lip. SCAD: `Clearance_mm = 0.25`. Replaces the old
- *  loose/standard/tight preset map — one validated value, no UI knob. */
-export const LID_FIT_CLEARANCE = 0.25;
-
-/** Floor plate thickness when no magnet pockets are needed.
- *  SCAD: `Thickness_mm = 0.8`. */
-export const LID_TOP_THICKNESS_BASE = 0.8;
-
-/** Side-wall thickness in the lip-mating zone — derived from SCAD's
- *  BottomShape geometry: outer chamfer steps inward by `LIP_BIG_TAPER`
- *  and the inner cavity face sits at `LID_CORNER_RADIUS - Clearance`,
- *  so the wall is `(LID_CORNER_RADIUS - LID_FIT_CLEARANCE) -
- *  LIP_BIG_TAPER = 1.85mm` thick. Implicit in SCAD; we keep it as a
- *  named constant so the rail/cavity helpers can reference it. */
+/** Side-wall thickness in the lip-mating zone. Derived: the outer chamfer
+ *  steps inward by `LIP_BIG_TAPER` and the inner cavity face sits at
+ *  `LID_CORNER_RADIUS - LID_FIT_CLEARANCE`, so the wall is
+ *  `(LID_CORNER_RADIUS - LID_FIT_CLEARANCE) - LIP_BIG_TAPER = 1.85mm`. */
 export const LID_WALL_THICKNESS = LID_CORNER_RADIUS - LID_FIT_CLEARANCE - LIP_BIG_TAPER;
-
-/** Minimum solid material above a magnet pocket so it can't punch through
- *  to the cavity face — keeps the lid sealed at typical FDM settings. */
-export const LID_MAGNET_CEILING = 0.6;
 
 /**
  * Floor plate thickness when magnet pockets are enabled. The pocket

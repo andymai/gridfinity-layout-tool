@@ -15,16 +15,29 @@
 
 /**
  * Per-side clearance in mm between the lid's mating profile and the bin's
- * stacking lip surface. Single validated value — no UI knob (formerly a
- * loose/standard/tight preset). Mirrors `LID_FIT_CLEARANCE` in the worker
- * `lidConstants.ts`.
+ * stacking lip surface. Single FDM-validated value — no UI knob.
  */
 export const LID_FIT_CLEARANCE = 0.25;
+
+/** Lid outer corner radius (mm) BEFORE clearance subtraction. Lid-specific —
+ *  do NOT use the bin's `BOX_CORNER_RADIUS` (3.75mm), which would shrink
+ *  the wall and shift rails. */
+export const LID_CORNER_RADIUS = 4;
+
+/** Floor plate thickness (mm) when no magnet pockets are needed. */
+export const LID_TOP_THICKNESS_BASE = 0.8;
+
+/** Minimum solid material above a magnet pocket (mm) so it can't punch
+ *  through to the cavity face. */
+export const LID_MAGNET_CEILING = 0.6;
+
+/** Minimum rail length (mm) below which the worker drops the rail. */
+export const LID_MIN_RAIL_LENGTH = 4;
 
 /**
  * Available click-rail coverage options as a percentage of edge length.
  * Lower values save filament; higher values give more grip surface.
- * 100% = the historical edge-to-edge behavior.
+ * 100% = full edge-to-edge rails.
  */
 export const LID_CLICK_RAIL_COVERAGE_OPTIONS: readonly number[] = [50, 75, 100] as const;
 

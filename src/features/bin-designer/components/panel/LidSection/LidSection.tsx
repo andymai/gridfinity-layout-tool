@@ -1,11 +1,10 @@
 /**
  * Click-lock lid section.
  *
- * Wall thickness, top thickness, and the loose/standard/tight fit picker
- * have been retired — those numbers are locked down in `lidConstants.ts`
- * since the click-lock geometry only works with one validated set. The
- * remaining knobs are real choices: stackable top, magnets (gated on
- * stackable top), and per-side click rails.
+ * Wall thickness, top thickness, and fit clearance are intentionally NOT
+ * exposed: the click-lock geometry only works with one validated numeric
+ * set (see `lidConstants.ts`). The user-facing knobs are stackable top,
+ * magnets (gated on stackable top), and per-side click rails.
  */
 
 import { FeatureToggle } from '../FeatureToggle';

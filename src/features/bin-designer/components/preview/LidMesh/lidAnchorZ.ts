@@ -48,3 +48,27 @@ export function lidWallBottomZ(heightUnitMm: number, fitClearance: number): numb
     lidAnchorZ(heightUnitMm, fitClearance) - GRIDFINITY.LIP_BIG_TAPER - GRIDFINITY.LIP_VERTICAL_PART
   );
 }
+
+/** R3F preview offset BinMesh applies to its rendered group. */
+export const PREVIEW_Z_OFFSET = 0.1;
+
+/**
+ * World-Z of the bin's stacking-lip top in the R3F preview frame.
+ *
+ * In the final mesh frame the wall top sits at `height * heightUnitMm`
+ * (the pipeline's translate stage already shifted non-flat bins up by
+ * SOCKET_HEIGHT). With the stacking lip the top face lands `LIP_HEIGHT
+ * − LIP_OVERLAP` above; without it the lid mates with the bare wall.
+ * `PREVIEW_Z_OFFSET` accounts for BinMesh's group offset.
+ */
+export function binLipTopWorldZ(
+  height: number,
+  heightUnitMm: number,
+  hasStackingLip: boolean
+): number {
+  const wallTop = height * heightUnitMm;
+  const lipTopZ = hasStackingLip
+    ? wallTop + GRIDFINITY.LIP_HEIGHT - GRIDFINITY.LIP_OVERLAP
+    : wallTop;
+  return lipTopZ + PREVIEW_Z_OFFSET;
+}

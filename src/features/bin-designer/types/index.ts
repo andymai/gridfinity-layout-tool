@@ -30,6 +30,10 @@ export type { LidConfig, LidClickRails, LidRailSide } from './lid';
 export {
   DEFAULT_LID_CONFIG,
   LID_FIT_CLEARANCE,
+  LID_CORNER_RADIUS,
+  LID_TOP_THICKNESS_BASE,
+  LID_MAGNET_CEILING,
+  LID_MIN_RAIL_LENGTH,
   LID_CLICK_RAIL_COVERAGE_OPTIONS,
   LID_RAIL_SIDES,
 } from './lid';

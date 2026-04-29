@@ -12,8 +12,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { binLipTopWorldZ } from '../LidMesh/lidAnchorZ';
 
-const PREVIEW_Z_OFFSET = 0.1;
 /** Below this lid offset, the guide line is hidden (avoids noise in snapped view). */
 const MIN_VISIBLE_OFFSET_MM = 2;
 
@@ -29,22 +29,20 @@ export function LidGuideLine({ lidOffsetMm, color = '#9ca3af' }: LidGuideLinePro
   const lineRef = useRef<THREE.LineSegments>(null);
 
   // Bin lip top in world Z. The lid's mating-cavity opening sits at
-  // (binLipTopWorldZ + lidOffsetMm) when the lid is lifted by lidOffsetMm.
-  const binLipTopWorldZ = useDesignerStore((s) => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for legacy params
-    const heightUnit = s.params.heightUnitMm ?? 7;
-    return s.params.height * heightUnit + PREVIEW_Z_OFFSET;
-  });
-  const lidBottomWorldZ = binLipTopWorldZ + lidOffsetMm;
+  // (lipTopZ + lidOffsetMm) when the lid is lifted by lidOffsetMm.
+  const lipTopZ = useDesignerStore((s) =>
+    binLipTopWorldZ(s.params.height, s.params.heightUnitMm, s.params.base.stackingLip)
+  );
+  const lidBottomWorldZ = lipTopZ + lidOffsetMm;
 
   // Build the dashed line geometry: a single segment from bin lip top to
   // lid mating-cavity opening, both at the lid center (X=0, Y=0).
   const geometry = useMemo(() => {
     const geom = new THREE.BufferGeometry();
-    const positions = new Float32Array([0, 0, binLipTopWorldZ, 0, 0, lidBottomWorldZ]);
+    const positions = new Float32Array([0, 0, lipTopZ, 0, 0, lidBottomWorldZ]);
     geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     return geom;
-  }, [binLipTopWorldZ, lidBottomWorldZ]);
+  }, [lipTopZ, lidBottomWorldZ]);
 
   // Recompute line distances when the geometry changes — required for
   // LineDashedMaterial to render the dash pattern at correct intervals.

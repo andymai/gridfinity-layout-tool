@@ -20,7 +20,7 @@ import type {
 } from '../types';
 import type { FeatureColorConfig } from '../types/featureColors';
 import type { LidConfig } from '../types/lid';
-import { DEFAULT_LID_CONFIG } from '../types/lid';
+import { DEFAULT_LID_CONFIG, LID_CLICK_RAIL_COVERAGE_OPTIONS } from '../types/lid';
 import type { LidClickRails } from '../types/lid';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
@@ -116,6 +116,28 @@ function migrateClickRails(raw: unknown): LidClickRails {
     return { ...DEFAULT_LID_CONFIG.clickRails, ...(raw as Partial<LidClickRails>) };
   }
   return DEFAULT_LID_CONFIG.clickRails;
+}
+
+/**
+ * Snap a persisted `clickRailCoverage` to the nearest supported option.
+ * Out-of-range or non-numeric values fall back to the default. Worker
+ * geometry breaks if this slips through (rails 2× the wall length etc.).
+ */
+function migrateClickRailCoverage(raw: unknown): number {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) {
+    return DEFAULT_LID_CONFIG.clickRailCoverage;
+  }
+  if (LID_CLICK_RAIL_COVERAGE_OPTIONS.includes(raw)) return raw;
+  let nearest = LID_CLICK_RAIL_COVERAGE_OPTIONS[0];
+  let bestDiff = Math.abs(raw - nearest);
+  for (const option of LID_CLICK_RAIL_COVERAGE_OPTIONS) {
+    const diff = Math.abs(raw - option);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      nearest = option;
+    }
+  }
+  return nearest;
 }
 
 /** Map legacy FilamentSlotId values (from pre-v4.30 designs) to hex colors for migration */
@@ -510,6 +532,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         wallThickness: _legacyWall,
         topThickness: _legacyTop,
         clickRails: rawClickRails,
+        clickRailCoverage: rawCoverage,
         ...stored
       } = raw;
       return {
@@ -519,6 +542,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
         // route through the migrator so the field is the right shape
         // regardless of how it was persisted.
         clickRails: migrateClickRails(rawClickRails),
+        clickRailCoverage: migrateClickRailCoverage(rawCoverage),
       };
     })(),
     ...(params.splitConnectors !== undefined

@@ -3,22 +3,18 @@
  *
  * Coordinate alignment when "closed" (lidOffsetMm = 0):
  *   - The lid is built in lid-local coords with Z = 0 at the floor's
- *     TOP surface and Z = anchorZ (~-2.1mm) at the lid's mating-cavity
- *     opening — the line that lines up with the bin's stacking lip top.
- *   - At offset = 0 the lid is in its true mated position: the mating
- *     cavity opening (lid local Z = anchorZ) sits at the bin's lip top
- *     (world Z = totalHeight + PREVIEW_Z_OFFSET). The floor's outer
- *     face sits ~2.1mm above the lip top, with the rails wrapping the
- *     lip from outside. This matches how the printed lid actually sits
- *     on the bin.
+ *     TOP surface and Z = anchorZ (~-2.1mm) at the mating-cavity opening,
+ *     which lines up with the bin's stacking lip top.
+ *   - The mating cavity opening sits at the lip top world Z; the floor's
+ *     outer face sits ~2.1mm above, with the rails wrapping the lip from
+ *     outside. This matches how the printed lid sits on the bin.
  *   - `lidOffsetMm` lifts the lid above this mated position to expose
  *     the cavity for inspection.
  *
  * Opacity:
- *   - When closed (offset ≤ 2mm): 70% opacity — the lid reads as a solid
- *     part while still allowing a hint of the bin's interior through.
- *   - When exploded (offset > 5mm): 95% opacity (effectively solid; the
- *     bin is plainly visible alongside).
+ *   - Closed (offset ≤ 2mm): 70% — the lid reads as a solid part while
+ *     hinting at the bin's interior.
+ *   - Exploded (offset > 5mm): 95% — effectively solid; bin visible alongside.
  *   - Linear interpolation between 2mm and 5mm.
  */
 
@@ -29,10 +25,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry } from '@/shared/components/preview/useMeshGeometry';
 import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
-import { lidAnchorZ } from './lidAnchorZ';
-
-/** Z offset BinMesh applies to its rendered group — keep the lid in lockstep. */
-const PREVIEW_Z_OFFSET = 0.1;
+import { binLipTopWorldZ, lidAnchorZ } from './lidAnchorZ';
 
 /** Opacity bands for closed vs exploded views. */
 const OPACITY_CLOSED = 0.7;
@@ -62,19 +55,17 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false }: LidMeshProps)
 
   const { lidMesh, lidGroupZ } = useDesignerStore(
     useShallow((s) => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for legacy params
-      const heightUnit = s.params.heightUnitMm ?? 7;
-      const fitClearance = LID_FIT_CLEARANCE;
-      const binLipTopWorldZ = s.params.height * heightUnit + PREVIEW_Z_OFFSET;
-      const anchorZ = lidAnchorZ(heightUnit, fitClearance);
+      const { height, heightUnitMm, base } = s.params;
+      const lipTopZ = binLipTopWorldZ(height, heightUnitMm, base.stackingLip);
+      const anchorZ = lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE);
       return {
         lidMesh: s.generation.mesh?.lidMesh ?? null,
         // Mated position: lid local Z = anchorZ aligns with the bin's
         // lip top. The lid group (where local Z=0 lands) is then
-        // binLipTopWorldZ - anchorZ; anchorZ is negative, so the lid
-        // floor sits ~2.1mm above the lip with the mating cavity
-        // wrapping the lip from outside — true closed state.
-        lidGroupZ: binLipTopWorldZ - anchorZ,
+        // lipTopZ - anchorZ; anchorZ is negative, so the lid floor sits
+        // ~2.1mm above the lip with the mating cavity wrapping the lip
+        // from outside — true closed state.
+        lidGroupZ: lipTopZ - anchorZ,
       };
     })
   );
@@ -101,8 +92,8 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false }: LidMeshProps)
       // bin lip outer face, separated by only 0.2mm horizontally over the
       // 4.4mm-tall lip Z-range). Without enough bias, those near-coplanar
       // surfaces z-fight at typical preview camera distances. Factor of 4
-      // gives clean rendering even at the closed offset (LID_OFFSET_MIN = 1)
-      // without affecting other view angles.
+      // gives clean rendering even at the fully closed offset
+      // (LID_OFFSET_MIN = 0) without affecting other view angles.
       polygonOffset: true,
       polygonOffsetFactor: 4,
       polygonOffsetUnits: 4,

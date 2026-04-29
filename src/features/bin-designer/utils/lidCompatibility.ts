@@ -164,16 +164,32 @@ export function hasLidBlocker(issues: readonly LidCompatibilityIssue[]): boolean
 }
 
 /**
+ * Should the worker actually generate/export a lid for these params?
+ *
+ * Single source of truth shared by `useLidSection.effectiveEnabled` (UI),
+ * `lidOrchestrator.generateLid` (preview), and `exportHandler` (export).
+ * Without this, a user who flips on the lid then enables a blocking
+ * feature (e.g. wall cutouts on all 4 sides) would see the panel toggle
+ * auto-disable but the worker would still emit a malformed lid.
+ */
+export function shouldGenerateLid(params: BinParams): boolean {
+  if (!params.lid.enabled) return false;
+  if (!params.base.stackingLip) return false;
+  return !hasLidBlocker(checkLidCompatibility(params));
+}
+
+/**
  * UI-side groupings: which feature section "owns" each compatibility ID.
  * Used by individual feature sections to ask "am I blocking the lid right
  * now?" so they can render a small conflict badge on their own header.
+ *
+ * Only blocker IDs need entries here — `isLidBlockedBySection` filters
+ * by `severity === 'blocker'`. Warning-only IDs are intentionally absent.
  */
-export type LidConflictSection = 'walls' | 'wallPattern' | 'dividerPieces';
+export type LidConflictSection = 'walls' | 'dividerPieces';
 
 const ID_TO_SECTION: Partial<Record<LidCompatibilityId, LidConflictSection>> = {
-  wallCutouts: 'walls',
   wallCutoutsAllSides: 'walls',
-  wallPattern: 'wallPattern',
   tallDividerPieces: 'dividerPieces',
 };
 

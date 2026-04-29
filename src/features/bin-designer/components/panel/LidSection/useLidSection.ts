@@ -1,11 +1,14 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { useTranslation } from '@/i18n';
 import {
   LID_CLICK_RAIL_COVERAGE_OPTIONS,
+  LID_CORNER_RADIUS,
   LID_FIT_CLEARANCE,
+  LID_MAGNET_CEILING,
+  LID_MIN_RAIL_LENGTH,
+  LID_TOP_THICKNESS_BASE,
   isMagnetStyle,
   type LidClickRails,
   type LidRailSide,
@@ -38,13 +41,6 @@ function buildBlockerReason(
   return t('binDesigner.lid.compat.disabledMany', { count: blockers.length });
 }
 
-/**
- * Minimum rail length (mm) below which the worker skips rendering — must
- * match `MIN_RAIL_LENGTH` in `lidBuilder.ts` so the UI rail readout
- * matches what actually gets generated.
- */
-const MIN_RAIL_LENGTH_MM = 4;
-
 /** Rail summary for display: count of walls per length tier. */
 interface RailSummary {
   /** Total walls that will receive a rail (after coverage + min-length + label-omit filters). */
@@ -70,7 +66,7 @@ function computeRailSummary(
   clickRails: LidClickRails
 ): RailSummary {
   const fitClearance = LID_FIT_CLEARANCE;
-  const lidCornerR = GRIDFINITY.BOX_CORNER_RADIUS - fitClearance;
+  const lidCornerR = LID_CORNER_RADIUS - fitClearance;
   const coverage = coveragePercent / 100;
 
   // Polygon path: per-edge length analysis from the mask outline.
@@ -103,7 +99,7 @@ function computeRailSummary(
       if (!clickRails[side]) continue;
       if (labelEnabled && (side === 'front' || side === 'back')) continue;
       const railLen = (Math.abs(dx) + Math.abs(dy) - 2 * lidCornerR) * coverage;
-      if (railLen >= MIN_RAIL_LENGTH_MM) lengths.push(railLen);
+      if (railLen >= LID_MIN_RAIL_LENGTH) lengths.push(railLen);
     }
     if (lengths.length === 0) return { count: 0, lengths: [] };
     const sorted = [...lengths].sort((a, b) => b - a);
@@ -124,8 +120,8 @@ function computeRailSummary(
   const fbAllowed = !labelEnabled;
   const countX = (clickRails.back && fbAllowed ? 1 : 0) + (clickRails.front && fbAllowed ? 1 : 0);
   const countY = (clickRails.right ? 1 : 0) + (clickRails.left ? 1 : 0);
-  const xValid = railLenX >= MIN_RAIL_LENGTH_MM ? countX : 0;
-  const yValid = railLenY >= MIN_RAIL_LENGTH_MM ? countY : 0;
+  const xValid = railLenX >= LID_MIN_RAIL_LENGTH ? countX : 0;
+  const yValid = railLenY >= LID_MIN_RAIL_LENGTH ? countY : 0;
   const lengths: number[] = [];
   for (let i = 0; i < xValid; i++) lengths.push(railLenX);
   for (let i = 0; i < yValid; i++) lengths.push(railLenY);
@@ -146,13 +142,12 @@ export function useLidSection() {
   // Compatibility issues (computed early so disabledReason and effective
   // enabled gate can both reference them).
   const compatibilityIssues = useMemo(() => checkLidCompatibility(params), [params]);
-  const blockers = useMemo(
-    () => compatibilityIssues.filter((i) => i.severity === 'blocker'),
-    [compatibilityIssues]
-  );
   const blocked = hasLidBlocker(compatibilityIssues);
 
-  const blockerReason = useMemo(() => buildBlockerReason(blockers, t), [blockers, t]);
+  const blockerReason = useMemo(() => {
+    const blockers = compatibilityIssues.filter((i) => i.severity === 'blocker');
+    return buildBlockerReason(blockers, t);
+  }, [compatibilityIssues, t]);
 
   // The toggle is disabled either because the bin has no stacking lip
   // (existing gate) or because a feature blocker prevents the lid from
@@ -253,12 +248,10 @@ export function useLidSection() {
     // Floor plate auto-grows for magnets — keep the readout in sync so
     // users see why the lid is taller when they enable magnets.
     const wallBottomZ = lidWallBottomZ(params.heightUnitMm, fitClearance);
-    const baseTop = 1.2;
-    const magnetCeiling = 0.6;
     const effectiveMagnets = lid.magnetHoles && lid.stackableTop;
     const topThickness = effectiveMagnets
-      ? Math.max(baseTop, base.magnetDepth + magnetCeiling)
-      : baseTop;
+      ? Math.max(LID_TOP_THICKNESS_BASE, base.magnetDepth + LID_MAGNET_CEILING)
+      : LID_TOP_THICKNESS_BASE;
     const lidH = Math.abs(wallBottomZ) + topThickness;
     return { width: lidOuterW, depth: lidOuterD, height: lidH };
   }, [

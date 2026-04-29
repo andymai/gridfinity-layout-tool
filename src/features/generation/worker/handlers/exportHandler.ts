@@ -20,6 +20,7 @@ import { buildLid } from '../generators/lidBuilder';
 import { lidAnchorZ } from '../generators/lidConstants';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { LID_FIT_CLEARANCE } from '@/shared/types/bin';
+import { shouldGenerateLid } from '@/shared/types/bin';
 import { runExport } from './workerContext';
 
 export async function handleExport(message: ExportMessage): Promise<void> {
@@ -101,7 +102,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
       // Lid emits a separate solid alongside the bin; included as its own
       // labeled piece for STL/3MF and folded into the STEP compound below.
-      const hasLid = params.lid.enabled && params.base.stackingLip;
+      const hasLid = shouldGenerateLid(params);
 
       if (!hasDividers && !hasLid) {
         return {
@@ -135,8 +136,8 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         // Lid is built in lid-local Z (Y=0 = lid floor top). Lift it so the
         // mating cavity (Y = anchorZ, negative) sits at world Z = totalHeight
         // (the bin's stacking lip top), matching the preview's lidGroupZ.
-        // Wrap in try/finally so a `compound`/`exportSTEP` failure still
-        // releases the WASM solid — mirrors `exportLid` in lidOrchestrator.
+        // try/finally releases divider + lid solids even if compound or
+        // exportSTEP throws (binSolid is owned by shapeCache; don't free it).
         let lidSolid = hasLid ? buildLid(params) : null;
         try {
           if (lidSolid) {
@@ -155,6 +156,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
             format,
           };
         } finally {
+          for (const d of dividerSolids) d.delete();
           lidSolid?.delete();
         }
       }

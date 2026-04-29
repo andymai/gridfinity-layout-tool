@@ -37,7 +37,7 @@ import {
   withScope,
 } from 'brepjs';
 import type { Shape3D, DisposalScope, Sketch, ValidSolid, Drawing } from 'brepjs';
-import { SIZE, HEIGHT_UNIT, LIP_BIG_TAPER, pocketCornerRadius } from './generatorConstants';
+import { LIP_BIG_TAPER, pocketCornerRadius } from './generatorConstants';
 import { SOCKET_HEIGHT, SOCKET_BIG_TAPER, SOCKET_TAPER_WIDTH, CLEARANCE } from './generatorTypes';
 import {
   LID_CLICK_RAIL_BUMP,
@@ -56,7 +56,6 @@ import {
   lidWallBottomZ,
   LID_FIT_CLEARANCE,
   LID_CORNER_RADIUS,
-  LID_WALL_THICKNESS,
   LID_MAGNET_CEILING,
   lidTopThickness,
 } from './lidConstants';
@@ -72,8 +71,7 @@ import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 import { forEachCell } from './cellDecomposition';
 
-/** Minimum click-rail length — below this we skip rails on that edge. */
-const MIN_RAIL_LENGTH = 4;
+import { LID_MIN_RAIL_LENGTH as MIN_RAIL_LENGTH } from '@/shared/types/bin';
 
 /** Geometric inputs derived from BinParams. */
 interface LidInputs {
@@ -82,14 +80,11 @@ interface LidInputs {
   readonly lidCornerR: number;
   readonly fitClearance: number;
   readonly topThickness: number;
-  readonly wallThickness: number;
   /**
-   * Cavity inner-face inset from the lid's outer perimeter. Equals
-   * `wallThickness + LIP_BIG_TAPER`: the user-chosen wallThickness becomes
-   * the literal wall thickness in the lip-mating zone, where the outer face
-   * is already chamfered inward by LIP_BIG_TAPER. In the floor zone (above
-   * the lip) the wall is `cavityInset` thick — naturally fatter, since the
-   * chamfer hasn't kicked in yet.
+   * Cavity inner-face inset from the lid's outer perimeter. The wall in
+   * the lip-mating zone is `cavityInset - LIP_BIG_TAPER = LID_WALL_THICKNESS`
+   * (= 1.85mm); above the lip the chamfer hasn't kicked in yet so the
+   * wall reads as the full `cavityInset` (= 3.75mm).
    */
   readonly cavityInset: number;
   readonly stackableTop: boolean;
@@ -129,30 +124,26 @@ interface LidInputs {
 }
 
 export function resolveLidInputs(params: BinParams): LidInputs {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for legacy params
-  const gridUnitMm = params.gridUnitMm ?? SIZE;
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for legacy params
-  const heightUnitMm = params.heightUnitMm ?? HEIGHT_UNIT;
+  const { gridUnitMm, heightUnitMm } = params;
   // Single locked-down clearance — see comment on LID_FIT_CLEARANCE.
   const fitClearance = LID_FIT_CLEARANCE;
-  const wallThickness = LID_WALL_THICKNESS;
   // Floor plate grows when magnets are enabled to fit the pocket plus
   // a thin sealed ceiling above it (LID_MAGNET_CEILING).
   const topThickness = lidTopThickness(params.lid.magnetHoles, params.base.magnetDepth);
 
-  // SCAD-faithful lid outer footprint: `bin*42 - 2*Clearance` per side,
-  // with the lid using its OWN corner radius (`LID_CORNER_RADIUS = 4mm`)
-  // — NOT the bin's `BOX_CORNER_RADIUS = 3.75mm`. The bin/lid use
-  // different corner-radius specs in the AnyLid reference; using the
-  // bin's value shifts rails, shrinks walls, and breaks fit.
+  // Lid outer footprint: `bin*42 - 2*Clearance` per side. The lid uses
+  // its OWN corner radius (`LID_CORNER_RADIUS = 4mm`), NOT the bin's
+  // `BOX_CORNER_RADIUS` (3.75mm) — using the bin value shifts rails,
+  // shrinks walls, and breaks lip fit.
   const lidOuterW = params.width * gridUnitMm - 2 * fitClearance;
   const lidOuterD = params.depth * gridUnitMm - 2 * fitClearance;
+  // lidCornerR and cavityInset are the same expression: both are the lid's
+  // effective corner radius after clearance. `cavityInset` names the semantic
+  // role (inner-face distance from outer perimeter); `lidCornerR` is used by
+  // geometry helpers. Cavity wall thickness in the lip-mating zone =
+  // cavityInset - LIP_BIG_TAPER = 1.85mm.
   const lidCornerR = LID_CORNER_RADIUS - fitClearance;
-  // Cavity inner inset matches SCAD's `Corner_Radius - Clearance` (=
-  // 3.75mm) — the cavity inner sits on the lid's corner-radius line.
-  // The wall thickness in the lip-mating zone is implicit: cavityInset −
-  // LIP_BIG_TAPER = LID_WALL_THICKNESS = 1.85mm.
-  const cavityInset = LID_CORNER_RADIUS - fitClearance;
+  const cavityInset = lidCornerR;
 
   // Polygon path activates when the mask is partially filled. A fully-filled
   // mask is treated as rectangular (matches the bin generator's convention).
@@ -164,7 +155,6 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     lidCornerR,
     fitClearance,
     topThickness,
-    wallThickness,
     cavityInset,
     stackableTop: params.lid.stackableTop,
     // Magnets only have a stack-grid neighbour to mate with when
@@ -251,11 +241,10 @@ function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
     sectionAt(inputs, 0, 0),
   ];
 
-  // INNER profile — constant inset at `cavityInset` (= wallThickness +
-  // LIP_BIG_TAPER). The cavity inner face sits at the same inset for every
-  // Z; the user's wallThickness becomes the literal lip-mating wall thickness.
-  // Two sections in ASCENDING Z with COPLANAR margin so the cut bites
-  // cleanly through the outer.
+  // INNER profile — constant inset at `cavityInset` for every Z. The
+  // cavity wall in the lip-mating zone is `cavityInset - LIP_BIG_TAPER =
+  // LID_WALL_THICKNESS`. Two sections in ASCENDING Z with COPLANAR margin
+  // so the cut bites cleanly through the outer.
   const innerSections: readonly Sketch[] = [
     sectionAt(inputs, wallBottomZ - LID_COPLANAR_MARGIN, cavityInset),
     sectionAt(inputs, LID_COPLANAR_MARGIN, cavityInset),
@@ -305,9 +294,8 @@ function buildLidFloor(scope: DisposalScope, inputs: LidInputs): Shape3D {
  * The chamfer slopes 45° from the rail's inner-face top corner up to this
  * apex; we want the apex to land on the cavity wall so the rail attaches
  * flush instead of leaving an unsupported tongue hanging into the cavity.
- * When the cavity wall is at or inboard of the spine (thicker walls,
- * wallThickness ≳ 1.85mm), the apex falls back to the baseline 0.8mm
- * chamfer width — preserving the original geometry for those cases.
+ * When the cavity wall is at or inboard of the spine (LID_WALL_THICKNESS
+ * ≳ 1.85mm), the apex falls back to the baseline 0.8mm chamfer width.
  *
  * Exported for unit testing of the geometric relationship.
  */

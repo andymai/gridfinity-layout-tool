@@ -1,22 +1,21 @@
 /**
  * Click-lock lid generation entry point.
  *
- * Builds the lid solid via `buildLid` and tessellates it into a MeshData
- * suitable for rendering and export. Returns null when the lid is not
- * enabled or the bin has no stacking lip (the lid mates with the lip,
- * so it's pointless without one).
+ * Builds the lid solid via `buildLid` and tessellates it into a LidMeshData
+ * suitable for rendering and export. Returns null when `shouldGenerateLid`
+ * rejects (lid disabled, no stacking lip, or a blocker is active).
  */
 
 import { mesh, meshEdges, rotate, unwrap, exportSTL, exportSTEP } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
-import type { MeshData, ExportFormat } from '../../bridge/types';
+import type { LidMeshData, ExportFormat } from '../../bridge/types';
 import type { ProgressFn } from './generatorTypes';
 import { buildLid } from './lidBuilder';
 import { toIndexedMeshData } from './utils/mesh';
 import { computeTessellationTolerances } from './utils/tolerances';
 import { checkCancelled } from './meshUtils';
-import { SIZE } from './generatorConstants';
+import { shouldGenerateLid } from '@/shared/types/bin';
 
 /**
  * Rotate the lid 180° around the X axis so the floor's outer surface
@@ -29,12 +28,18 @@ import { SIZE } from './generatorConstants';
  * the STEP compound assembly path in `exportHandler` where the lid
  * must remain in mating orientation to nest correctly above the bin.
  *
- * Caller owns the returned solid; this function deletes the input.
+ * Caller owns the returned solid; this function deletes the input even if
+ * the rotation throws (otherwise an OCCT failure would leak the input).
  */
 function orientForPrint(lidSolid: Shape3D): Shape3D {
-  const oriented = rotate(lidSolid, 180, { axis: [1, 0, 0] });
-  lidSolid.delete();
-  return oriented;
+  try {
+    const oriented = rotate(lidSolid, 180, { axis: [1, 0, 0] });
+    lidSolid.delete();
+    return oriented;
+  } catch (err) {
+    lidSolid.delete();
+    throw err;
+  }
 }
 
 export function generateLid(
@@ -42,9 +47,8 @@ export function generateLid(
   onProgress?: ProgressFn,
   forExport = false,
   signal?: AbortSignal
-): MeshData | null {
-  if (!params.lid.enabled) return null;
-  if (!params.base.stackingLip) return null;
+): LidMeshData | null {
+  if (!shouldGenerateLid(params)) return null;
 
   checkCancelled(signal);
   // Build the lid with face-origin → FeatureTag tracking so the rendered
@@ -59,9 +63,7 @@ export function generateLid(
   // try/finally pattern mirrors `baseplateGenerator`'s lifecycle.
   try {
     checkCancelled(signal);
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for legacy params
-    const gridUnit = params.gridUnitMm ?? SIZE;
-    const maxDimension = Math.max(params.width, params.depth) * gridUnit;
+    const maxDimension = Math.max(params.width, params.depth) * params.gridUnitMm;
     // Lid always has lip-mating geometry → use the "has lip" tolerance tier.
     const { tolerance, angularTolerance } = computeTessellationTolerances(
       forExport,
@@ -90,7 +92,7 @@ export interface LidExportResult {
 
 /**
  * Export the lid in the requested format. Builds a fresh export-quality
- * solid each time. Returns null when the lid is not enabled.
+ * solid each time. Returns null when `shouldGenerateLid` rejects.
  *
  * Format convention (matches `exportDividerPiecesSeparately`): only
  * `'step'` returns a STEP buffer with a `.step` filename. Every other
@@ -108,8 +110,7 @@ export async function exportLid(
   tolerance = 0.01,
   angularTolerance = 5
 ): Promise<LidExportResult | null> {
-  if (!params.lid.enabled) return null;
-  if (!params.base.stackingLip) return null;
+  if (!shouldGenerateLid(params)) return null;
 
   const solid = orientForPrint(buildLid(params));
   const name = `gridfinity-${params.width}x${params.depth}-lid`;

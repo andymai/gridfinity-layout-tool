@@ -2,7 +2,12 @@
  * GENERATE + GENERATE_BASEPLATE message handlers.
  */
 
-import type { GenerateMessage, GenerateBaseplateMessage, MeshData } from '../../bridge/types';
+import type {
+  GenerateMessage,
+  GenerateBaseplateMessage,
+  LidMeshData,
+  MeshData,
+} from '../../bridge/types';
 import { generateBin } from '../generators/binGenerator';
 import { generateBaseplate } from '../generators/baseplateGenerator';
 import { generateLid } from '../generators/lidOrchestrator';
@@ -23,7 +28,7 @@ export function handleGenerate(message: GenerateMessage): void {
       // (e.g., on a degenerate polygon footprint) must not poison the
       // already-computed bin mesh. Wrap to fall back to bin-only output;
       // re-throw cancellations so abort still aborts the whole request.
-      let lidMesh: MeshData | null = null;
+      let lidMesh: LidMeshData | null = null;
       try {
         lidMesh = generateLid(params, onProgress, false, signal);
       } catch (e) {

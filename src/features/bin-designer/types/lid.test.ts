@@ -39,7 +39,6 @@ describe('DEFAULT_LID_CONFIG', () => {
 });
 
 describe('LID_FIT_CLEARANCE', () => {
-  // Now a single FDM-printable value (formerly a loose/standard/tight map).
   it('is a positive, sub-mm clearance', () => {
     expect(LID_FIT_CLEARANCE).toBeGreaterThan(0);
     expect(LID_FIT_CLEARANCE).toBeLessThanOrEqual(0.5);
