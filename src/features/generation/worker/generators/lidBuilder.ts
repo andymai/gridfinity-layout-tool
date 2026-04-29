@@ -40,7 +40,6 @@ import type { Shape3D, DisposalScope, Plane, Vec3, Sketch, ValidSolid, Drawing }
 import {
   SIZE,
   HEIGHT_UNIT,
-  BOX_CORNER_RADIUS,
   LIP_SMALL_TAPER,
   LIP_VERTICAL_PART,
   LIP_BIG_TAPER,
@@ -62,6 +61,7 @@ import {
   lidAnchorZ,
   lidWallBottomZ,
   LID_FIT_CLEARANCE,
+  LID_CORNER_RADIUS,
   LID_WALL_THICKNESS,
   LID_MAGNET_CEILING,
   lidTopThickness,
@@ -146,15 +146,19 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // a thin sealed ceiling above it (LID_MAGNET_CEILING).
   const topThickness = lidTopThickness(params.lid.magnetHoles, params.base.magnetDepth);
 
-  // Lid outer footprint matches bin outer footprint (flush exterior on
-  // straight walls; lid corners are slightly inside bin corners by the
-  // fitClearance amount).
+  // SCAD-faithful lid outer footprint: `bin*42 - 2*Clearance` per side,
+  // with the lid using its OWN corner radius (`LID_CORNER_RADIUS = 4mm`)
+  // — NOT the bin's `BOX_CORNER_RADIUS = 3.75mm`. The bin/lid use
+  // different corner-radius specs in the AnyLid reference; using the
+  // bin's value shifts rails, shrinks walls, and breaks fit.
   const lidOuterW = params.width * gridUnitMm - 2 * fitClearance;
   const lidOuterD = params.depth * gridUnitMm - 2 * fitClearance;
-  const lidCornerR = BOX_CORNER_RADIUS - fitClearance;
-  // Cavity inner inset = wallThickness + the lip's chamfer depth. See
-  // comment on LidInputs.cavityInset for details.
-  const cavityInset = wallThickness + LIP_BIG_TAPER;
+  const lidCornerR = LID_CORNER_RADIUS - fitClearance;
+  // Cavity inner inset matches SCAD's `Corner_Radius - Clearance` (=
+  // 3.75mm) — the cavity inner sits on the lid's corner-radius line.
+  // The wall thickness in the lip-mating zone is implicit: cavityInset −
+  // LIP_BIG_TAPER = LID_WALL_THICKNESS = 1.85mm.
+  const cavityInset = LID_CORNER_RADIUS - fitClearance;
 
   // Polygon path activates when the mask is partially filled. A fully-filled
   // mask is treated as rectangular (matches the bin generator's convention).

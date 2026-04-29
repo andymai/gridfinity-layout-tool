@@ -19,7 +19,7 @@
  * loose/standard/tight preset). Mirrors `LID_FIT_CLEARANCE` in the worker
  * `lidConstants.ts`.
  */
-export const LID_FIT_CLEARANCE = 0.2;
+export const LID_FIT_CLEARANCE = 0.25;
 
 /**
  * Available click-rail coverage options as a percentage of edge length.

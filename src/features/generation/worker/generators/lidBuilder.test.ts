@@ -15,36 +15,37 @@ function makeParams(lid: Partial<LidConfig> = {}, extra: Partial<BinParams> = {}
 describe('resolveLidInputs', () => {
   it('derives outer dimensions from bin width/depth and grid unit', () => {
     const inputs = resolveLidInputs(makeParams({}, { width: 3, depth: 2 }));
-    // 3 grid units × 42mm − 2 × fitClearance (0.2)
-    expect(inputs.lidOuterW).toBeCloseTo(125.6, 3);
-    expect(inputs.lidOuterD).toBeCloseTo(83.6, 3);
+    // SCAD: lid outer = bin*42 − 2 × Clearance (= 0.25), so 125.5 / 83.5
+    expect(inputs.lidOuterW).toBeCloseTo(125.5, 3);
+    expect(inputs.lidOuterD).toBeCloseTo(83.5, 3);
     expect(inputs.cellsX).toBe(3);
     expect(inputs.cellsY).toBe(2);
   });
 
-  it('uses the locked-down fit clearance regardless of legacy config', () => {
-    // The loose/standard/tight preset map was retired — there's now one
-    // validated value, baked into `lidConstants.LID_FIT_CLEARANCE`.
+  it('uses the SCAD-faithful clearance constant (0.25mm)', () => {
+    // SCAD: `Clearance_mm = 0.25`. We previously had 0.2 (bin spec); the
+    // mismatch shifted rails and squeezed the wall.
     const inputs = resolveLidInputs(makeParams({}));
-    expect(inputs.fitClearance).toBeCloseTo(0.2, 4);
+    expect(inputs.fitClearance).toBeCloseTo(0.25, 4);
   });
 
-  it('uses the locked-down wall thickness regardless of legacy config', () => {
-    // wallThickness was removed from LidConfig — `resolveLidInputs` now
-    // sources it from `lidConstants.LID_WALL_THICKNESS`.
+  it('uses the SCAD-implicit wall thickness (1.85mm)', () => {
+    // SCAD: wall is implicit `Corner_Radius − Clearance − LIP_BIG_TAPER`
+    // = 4 − 0.25 − 1.9 = 1.85mm. Earlier we used 1.2mm which made the
+    // lid look "wider on top" because the cavity sat too far inboard.
     const inputs = resolveLidInputs(makeParams({}));
-    expect(inputs.wallThickness).toBe(1.2);
+    expect(inputs.wallThickness).toBeCloseTo(1.85, 4);
   });
 
-  it('top thickness defaults to baseline when magnets are off', () => {
+  it('top thickness defaults to SCAD baseline (0.8mm) when magnets are off', () => {
     const inputs = resolveLidInputs(makeParams({ magnetHoles: false }));
-    expect(inputs.topThickness).toBe(1.2);
+    expect(inputs.topThickness).toBe(0.8);
   });
 
   it('top thickness grows to fit a deeper magnet pocket', () => {
     // Magnet pocket needs `magnetDepth` of depth + a sealed ceiling
-    // (LID_MAGNET_CEILING = 0.6mm). For a 2.5mm magnet the floor must be
-    // ≥ 3.1mm, well above the 1.2mm baseline.
+    // (LID_MAGNET_CEILING = 0.6mm). For a 2.5mm magnet the floor must
+    // be ≥ 3.1mm, well above the 0.8mm baseline.
     const inputs = resolveLidInputs(
       makeParams(
         { enabled: true, stackableTop: true, magnetHoles: true },
@@ -111,18 +112,11 @@ describe('chamferApexXForCavityWall', () => {
   // rail attaches flush — otherwise a thin tongue hangs unsupported into
   // the cavity, leaving a printable gap.
 
-  it('extends the chamfer apex to the cavity wall at default wallThickness (1.2mm)', () => {
-    // For default params: lidCornerR = 3.55, cavityInset = 3.1.
-    // cavityWallX = 3.55 - 3.1 = 0.45 → chamfer apex must reach +0.45,
-    // 0.45mm beyond the original spine-aligned default.
-    const cavityWallX = 3.55 - 3.1;
-    expect(chamferApexXForCavityWall(cavityWallX)).toBeCloseTo(0.45, 6);
-  });
-
-  it('falls back to the baseline 0.8mm chamfer at the design-target wallThickness (~1.85mm)', () => {
-    // wallThickness = 1.85 → cavityInset = 1.85 + 1.9 = 3.75 = lidCornerR
-    // → cavityWallX = 0. The baseline chamfer (LID_CLICK_RAIL_INNER + 0.8)
-    // already reaches the cavity wall, so no extra extension is needed.
+  it('uses the baseline 0.8mm chamfer at the SCAD-faithful design point (cavity at spine)', () => {
+    // With LID_CORNER_RADIUS = LID_FIT_CLEARANCE + cavityInset (the SCAD
+    // identity), cavityWallX = lidCornerR − cavityInset = 0. The
+    // baseline chamfer (LID_CLICK_RAIL_INNER + 0.8) already reaches the
+    // cavity wall, so no extra extension is needed.
     expect(chamferApexXForCavityWall(0)).toBeCloseTo(
       LID_CLICK_RAIL_INNER + LID_CLICK_RAIL_TOP_CHAMFER,
       6
@@ -130,9 +124,9 @@ describe('chamferApexXForCavityWall', () => {
   });
 
   it('clamps to baseline when cavity wall is inboard of the rail spine (thick walls)', () => {
-    // wallThickness 2.4mm: cavityInset = 4.3, cavityWallX = -0.75.
-    // The cavity wall is now INSIDE the rail body, so the chamfer just
-    // needs to provide a clean transition — keep the 0.8mm baseline.
+    // For a hypothetical thicker-wall config the cavity wall would sit
+    // INSIDE the rail body. Keep the 0.8mm baseline chamfer rather than
+    // shrinking it negatively.
     expect(chamferApexXForCavityWall(-0.75)).toBeCloseTo(
       LID_CLICK_RAIL_INNER + LID_CLICK_RAIL_TOP_CHAMFER,
       6
