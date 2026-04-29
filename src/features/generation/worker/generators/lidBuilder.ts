@@ -37,7 +37,7 @@ import {
   withScope,
 } from 'brepjs';
 import type { Shape3D, DisposalScope, Sketch, ValidSolid, Drawing } from 'brepjs';
-import { SIZE, HEIGHT_UNIT, LIP_BIG_TAPER } from './generatorConstants';
+import { SIZE, HEIGHT_UNIT, LIP_BIG_TAPER, pocketCornerRadius } from './generatorConstants';
 import { SOCKET_HEIGHT, SOCKET_BIG_TAPER, SOCKET_TAPER_WIDTH, CLEARANCE } from './generatorTypes';
 import {
   LID_CLICK_RAIL_BUMP,
@@ -638,9 +638,12 @@ const STACK_INSET_BOT = SOCKET_TAPER_WIDTH - CLEARANCE / 2; // 2.95mm
  * than the baseplate's Z ∈ [-SOCKET_HEIGHT, 0].
  */
 function buildLidStackPocketCutter(cellW_mm: number, cellD_mm: number): Shape3D {
-  // Pocket corner radius — keep the cell's interior square-ish but
-  // soften the corners so the boolean cut and tessellation stay clean.
-  const cornerR = 1;
+  // Pocket corner radius — same as the baseplate (`SOCKET_CORNER_RADIUS`
+  // = 4mm, clamped to fit small cells). This gives the wall
+  // intersections between adjacent pockets the proper rounded
+  // transition Gridfinity baseplates have. A small cornerR (e.g., 1mm)
+  // makes the wall corners look sharp/blocky.
+  const cornerR = pocketCornerRadius(cellW_mm, cellD_mm);
   const section = (z: number, inset: number): Sketch => {
     const w = Math.max(cellW_mm - 2 * inset, 0.1);
     const d = Math.max(cellD_mm - 2 * inset, 0.1);
