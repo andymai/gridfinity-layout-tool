@@ -1433,6 +1433,12 @@ const en: Record<string, string> = {
   'binDesigner.exportBinAsStl': 'Export bin as STL',
   'binDesigner.exporting': 'Exporting...',
   'binDesigner.exportFailed': 'Export failed — please try again',
+  'binDesigner.export.engine.preparing': 'Preparing engine…',
+  'binDesigner.export.error.body':
+    'The geometry engine had trouble with this bin. Try again, or report an issue if the problem persists.',
+  'binDesigner.export.error.retry': 'Retry',
+  'binDesigner.export.error.report': 'Report issue',
+  'binDesigner.export.error.timeout': 'Export timed out — the engine became unresponsive.',
   'binDesigner.generateAMeshFirstToEnableExport': 'Generate a mesh first to enable export',
   'binDesigner.gridSize': 'Grid size',
   'binDesigner.gridUnit': 'Grid unit',

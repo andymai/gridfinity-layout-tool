@@ -17,6 +17,7 @@ import type {
   MeshData,
   GenerationStage,
   ExportFormat,
+  ExportErrorCode,
   SplitExportPiece,
   SplitPreviewPiece,
   CombinedExportPiece,
@@ -154,11 +155,31 @@ function createDedupCache(): DedupCache {
 /** Keys for the pending export request slots */
 type ExportSlot = 'export' | 'dividers' | 'combined' | 'split' | 'splitPreview';
 
-/** A pending export request: resolve/reject callbacks + request ID */
+/** A pending export request: resolve/reject callbacks + request ID + timeout timer */
 interface PendingExport<T> {
   readonly resolve: (result: T) => void;
   readonly reject: (error: Error) => void;
   readonly requestId: string;
+  /**
+   * Timeout handle that cancels the export and rejects the promise if the
+   * worker becomes unresponsive. Cleared whenever the request resolves,
+   * rejects, or the bridge is torn down.
+   */
+  timer: ReturnType<typeof setTimeout> | null;
+}
+
+/**
+ * Custom error thrown when an export request hits its timeout budget.
+ * The error message also passes the `/timeout/` regex used by the worker
+ * classifier so any downstream wrappers map it to {@link ExportErrorCode}
+ * `TIMEOUT` consistently.
+ */
+export class ExportTimeoutError extends Error {
+  readonly code: ExportErrorCode = 'TIMEOUT';
+  constructor(message = 'Export timed out — the geometry engine became unresponsive.') {
+    super(message);
+    this.name = 'ExportTimeoutError';
+  }
 }
 
 /**
@@ -370,6 +391,7 @@ export class GenerationBridge {
 
     // Reject all pending exports
     for (const pending of this.pendingExports.values()) {
+      this.clearExportTimer(pending);
       pending.reject(new Error('Bridge destroyed'));
     }
     this.pendingExports.clear();
@@ -402,7 +424,8 @@ export class GenerationBridge {
     const requestId = await this.prepareExport('export');
 
     return new Promise<ExportResult>((resolve, reject) => {
-      this.pendingExports.set('export', { resolve, reject, requestId });
+      this.pendingExports.set('export', { resolve, reject, requestId, timer: null });
+      this.startExportTimeout('export', requestId, computeGenerationTimeoutMs(params));
       this.postMessage({
         type: 'EXPORT',
         payload: {
@@ -424,7 +447,8 @@ export class GenerationBridge {
     const requestId = await this.prepareExport('dividers');
 
     return new Promise<DividersExportResult>((resolve, reject) => {
-      this.pendingExports.set('dividers', { resolve, reject, requestId });
+      this.pendingExports.set('dividers', { resolve, reject, requestId, timer: null });
+      this.startExportTimeout('dividers', requestId, computeGenerationTimeoutMs(params));
       this.postMessage({
         type: 'EXPORT_DIVIDERS',
         payload: { params, requestId },
@@ -448,7 +472,8 @@ export class GenerationBridge {
     const requestId = await this.prepareExport('combined');
 
     return new Promise<CombinedExportResult>((resolve, reject) => {
-      this.pendingExports.set('combined', { resolve, reject, requestId });
+      this.pendingExports.set('combined', { resolve, reject, requestId, timer: null });
+      this.startExportTimeout('combined', requestId, computeGenerationTimeoutMs(params));
       this.postMessage({
         type: 'EXPORT_COMBINED',
         payload: {
@@ -479,7 +504,8 @@ export class GenerationBridge {
     const requestId = await this.prepareExport('split');
 
     return new Promise<SplitExportResult>((resolve, reject) => {
-      this.pendingExports.set('split', { resolve, reject, requestId });
+      this.pendingExports.set('split', { resolve, reject, requestId, timer: null });
+      this.startExportTimeout('split', requestId, computeGenerationTimeoutMs(params));
       this.postMessage({
         type: 'EXPORT_SPLIT',
         payload: {
@@ -510,7 +536,8 @@ export class GenerationBridge {
     const requestId = await this.prepareExport('splitPreview');
 
     return new Promise<SplitPreviewResult>((resolve, reject) => {
-      this.pendingExports.set('splitPreview', { resolve, reject, requestId });
+      this.pendingExports.set('splitPreview', { resolve, reject, requestId, timer: null });
+      this.startExportTimeout('splitPreview', requestId, computeGenerationTimeoutMs(params));
       this.postMessage({
         type: 'GENERATE_SPLIT_PREVIEW',
         payload: {
@@ -540,7 +567,8 @@ export class GenerationBridge {
     const requestId = await this.prepareExport('splitPreview');
 
     return new Promise<SplitPreviewResult>((resolve, reject) => {
-      this.pendingExports.set('splitPreview', { resolve, reject, requestId });
+      this.pendingExports.set('splitPreview', { resolve, reject, requestId, timer: null });
+      this.startExportTimeout('splitPreview', requestId, computeGenerationTimeoutMs(params));
       this.postMessage({
         type: 'GENERATE_SPLIT_PREVIEW_RANGE',
         payload: {
@@ -573,7 +601,8 @@ export class GenerationBridge {
     const requestId = await this.prepareExport('split');
 
     return new Promise<SplitExportResult>((resolve, reject) => {
-      this.pendingExports.set('split', { resolve, reject, requestId });
+      this.pendingExports.set('split', { resolve, reject, requestId, timer: null });
+      this.startExportTimeout('split', requestId, computeGenerationTimeoutMs(params));
       this.postMessage({
         type: 'EXPORT_SPLIT_RANGE',
         payload: {
@@ -672,7 +701,8 @@ export class GenerationBridge {
     const requestId = await this.prepareExport('export');
 
     return new Promise<BaseplateExportResult>((resolve, reject) => {
-      this.pendingExports.set('export', { resolve, reject, requestId });
+      this.pendingExports.set('export', { resolve, reject, requestId, timer: null });
+      this.startExportTimeout('export', requestId, computeBaseplateTimeoutMs(params));
       this.postMessage({
         type: 'EXPORT_BASEPLATE',
         payload: {
@@ -712,6 +742,7 @@ export class GenerationBridge {
     // Reject any pending export on this slot (only one at a time)
     const existing = this.pendingExports.get(slot);
     if (existing) {
+      this.clearExportTimer(existing);
       existing.reject(new Error('Export superseded'));
       this.pendingExports.delete(slot);
     }
@@ -727,6 +758,7 @@ export class GenerationBridge {
     const pending = this.pendingExports.get(slot);
     if (pending && pending.requestId === requestId) {
       this.pendingExports.delete(slot);
+      this.clearExportTimer(pending);
       pending.resolve(result);
       return true;
     }
@@ -741,11 +773,41 @@ export class GenerationBridge {
     for (const [slot, pending] of this.pendingExports) {
       if (pending.requestId === requestId) {
         this.pendingExports.delete(slot);
+        this.clearExportTimer(pending);
         pending.reject(error);
         return true;
       }
     }
     return false;
+  }
+
+  /** Clear an export's timeout timer, if any. */
+  private clearExportTimer(pending: PendingExport<unknown>): void {
+    if (pending.timer !== null) {
+      clearTimeout(pending.timer);
+      pending.timer = null;
+    }
+  }
+
+  /**
+   * Start a timeout that cancels an in-flight export if the worker doesn't
+   * respond in time. On fire, sends `CANCEL`, removes the pending entry, and
+   * rejects with an {@link ExportTimeoutError}. The slot identifies which
+   * pending entry to look up — only the originating request can be cancelled
+   * (a later request that took the same slot is left alone).
+   */
+  private startExportTimeout(slot: ExportSlot, requestId: string, timeoutMs: number): void {
+    const pending = this.pendingExports.get(slot);
+    if (!pending) return;
+    pending.timer = setTimeout(() => {
+      const current = this.pendingExports.get(slot);
+      if (!current || current.requestId !== requestId) return;
+      this.pendingExports.delete(slot);
+      current.timer = null;
+      // Best-effort cancel; the worker may already be wedged.
+      this.postMessage({ type: 'CANCEL', requestId });
+      current.reject(new ExportTimeoutError());
+    }, timeoutMs);
   }
 
   private sendGenerateMessage(params: BinParams, fingerprint: string): void {
@@ -816,6 +878,7 @@ export class GenerationBridge {
 
       // Reject all pending exports
       for (const pending of this.pendingExports.values()) {
+        this.clearExportTimer(pending);
         pending.reject(new Error(message));
       }
       this.pendingExports.clear();

@@ -366,10 +366,28 @@ export interface SplitPreviewResultResponse {
   readonly pieces: readonly SplitPreviewPiece[];
 }
 
+/**
+ * Coarse classification of export-side worker failures, used by the resilience
+ * wrapper to decide whether to retry. Classification happens in the worker via
+ * message-pattern matching on the thrown error — see `classifyExportError` in
+ * `exportHandler.ts`. Codes intentionally collapse to a small set so retry
+ * policy stays simple; richer telemetry comes from `error_message`/`error_stack`.
+ */
+export type ExportErrorCode =
+  | 'BREP_BOOLEAN_FAILED'
+  | 'MESH_TESSELLATION_FAILED'
+  | 'INVALID_PARAMS'
+  | 'EMPTY_GEOMETRY'
+  | 'OUT_OF_MEMORY'
+  | 'TIMEOUT'
+  | 'UNKNOWN';
+
 export interface ErrorResponse {
   readonly type: 'ERROR';
   readonly requestId: string;
   readonly error: string;
+  /** Optional taxonomy code attached by export handlers; absent for generic errors. */
+  readonly errorCode?: ExportErrorCode;
 }
 /** Stages of geometry generation for progress reporting */
 export type GenerationStage = 'base' | 'shell' | 'features' | 'merge' | 'splitting';

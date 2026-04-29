@@ -17,7 +17,6 @@ import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/p
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
 import { useToastStore } from '@/core/store/toast';
-import { captureException } from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
 import { ExportDialog as SharedExportDialog } from '@/shared/components/ExportDialog';
 import type { ExportFileFormat } from '@/features/bin-designer/types';
@@ -55,6 +54,7 @@ export function ExportDialog() {
 
   const {
     canExport,
+    engineReady,
     hasDividers,
     estimates,
     isExporting,
@@ -102,62 +102,25 @@ export function ExportDialog() {
   );
 
   const handleDownload = useCallback(async () => {
-    try {
-      if (useSplitExport) {
-        await downloadSplit(activeFormat, exportFileNameConfig, designName);
-        addToast({
-          message: t('binDesigner.splitExport.success', { count: splitPieceCount }),
-          type: 'success',
-          duration: 3000,
-        });
-        closeDialog();
-        return;
-      }
-      await downloadBin(activeFormat, exportFileNameConfig, designName);
-      addToast({
-        message: t('binDesigner.exportSuccess', { format: activeFormat.toUpperCase() }),
-        type: 'success',
-        duration: 3000,
-      });
-      closeDialog();
-    } catch (err) {
-      // Report to PostHog FIRST so the toast path can't mask the capture.
-      // Rich bin-config context makes it possible to reproduce from the
-      // failure report — GH #1339 was only catchable manually because
-      // this catch previously swallowed the error without telemetry.
-      const error = err instanceof Error ? err : new Error(String(err));
-      captureException(error, {
-        source: 'bin_export',
-        export_format: activeFormat,
-        use_split_export: useSplitExport,
-        split_piece_count: useSplitExport ? splitPieceCount : undefined,
-        bin_width: params.width,
-        bin_depth: params.depth,
-        bin_height: params.height,
-        bin_style: params.style,
-        grid_unit_mm: params.gridUnitMm,
-        has_lip: params.base.stackingLip,
-        base_style: params.base.style,
-        magnet_diameter: params.base.magnetDiameter,
-        screw_diameter: params.base.screwDiameter,
-        solid_fill: params.base.solid,
-        half_sockets: params.base.halfSockets,
-        wall_pattern_enabled: params.wallPattern.enabled,
-        wall_pattern: params.wallPattern.pattern,
-        handles_enabled: params.handles.enabled,
-        has_dividers: hasDividers,
-        cutout_count: params.cutouts.length,
-        insert_count: params.inserts.length,
-        // Include original error chain (from binExporter's retry path)
-        // — the cause is set to the first-attempt error when retry fails.
-        first_attempt_message: error.cause instanceof Error ? error.cause.message : undefined,
-      });
-      addToast({
-        message: err instanceof Error ? err.message : t('binDesigner.exportFailed'),
-        type: 'error',
-        duration: 5000,
-      });
-    }
+    // The hook owns error handling end-to-end (telemetry + Retry/Report
+    // toast + captureException with rich bin context). We gate the success
+    // toast and dialog close on the boolean result instead of try/catch —
+    // resolution alone does not imply success since the hook returns false
+    // on caught failures and on engine-warmup queueing.
+    const succeeded = useSplitExport
+      ? await downloadSplit(activeFormat, exportFileNameConfig, designName)
+      : await downloadBin(activeFormat, exportFileNameConfig, designName);
+
+    if (!succeeded) return;
+
+    addToast({
+      message: useSplitExport
+        ? t('binDesigner.splitExport.success', { count: splitPieceCount })
+        : t('binDesigner.exportSuccess', { format: activeFormat.toUpperCase() }),
+      type: 'success',
+      duration: 3000,
+    });
+    closeDialog();
   }, [
     useSplitExport,
     downloadSplit,
@@ -169,13 +132,15 @@ export function ExportDialog() {
     addToast,
     closeDialog,
     t,
-    params,
-    hasDividers,
   ]);
 
   let downloadLabel: string;
   if (isExportingBin) {
     downloadLabel = t('binDesigner.exporting');
+  } else if (!engineReady) {
+    // Surface engine warmup so users don't think the button is broken.
+    // The hook will queue the click and replay it once the engine is ready.
+    downloadLabel = t('binDesigner.export.engine.preparing');
   } else if (useSplitExport) {
     downloadLabel = t('binDesigner.splitExport.downloadSplit', {
       format: activeFormat.toUpperCase(),
@@ -193,7 +158,7 @@ export function ExportDialog() {
       onFileNameConfigChange={setExportFileNameConfig}
       fileName={fileName}
       displayExtension={displayExtension}
-      canExport={canExport}
+      canExport={canExport && engineReady}
       isExporting={isExporting}
       onDownload={() => void handleDownload()}
       downloadLabel={downloadLabel}

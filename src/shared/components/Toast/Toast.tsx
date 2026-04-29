@@ -166,15 +166,28 @@ function ToastItem({ toast, position, onRemove }: ToastItemProps) {
       <div className="flex-1 min-w-0">
         <div className="text-sm leading-relaxed whitespace-pre-wrap pr-1">{toast.message}</div>
         {toast.action && (
-          <button
-            onClick={() => {
-              void toast.action?.onClick();
-              handleDismiss();
-            }}
-            className="mt-2 text-sm font-medium underline underline-offset-2 opacity-90 hover:opacity-100 transition-opacity"
-          >
-            {toast.action.label}
-          </button>
+          <div className="mt-2 flex items-center gap-3">
+            <button
+              onClick={() => {
+                void toast.action?.onClick();
+                handleDismiss();
+              }}
+              className="text-sm font-medium underline underline-offset-2 opacity-90 hover:opacity-100 transition-opacity"
+            >
+              {toast.action.label}
+            </button>
+            {toast.secondaryAction && (
+              <button
+                onClick={() => {
+                  void toast.secondaryAction?.onClick();
+                  handleDismiss();
+                }}
+                className="text-sm font-medium underline underline-offset-2 opacity-75 hover:opacity-100 transition-opacity"
+              >
+                {toast.secondaryAction.label}
+              </button>
+            )}
+          </div>
         )}
       </div>
 

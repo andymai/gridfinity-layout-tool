@@ -588,6 +588,9 @@ export function trackBaseplatePreviewTiming(payload: {
   });
 }
 
+// BIN EXPORT TRACKING — see ./binExportEvents.ts for trackBinExportSucceeded
+// and trackBinExportFailure. Split out to keep this file under the line cap.
+
 // PWA INSTALL TRACKING
 
 /**

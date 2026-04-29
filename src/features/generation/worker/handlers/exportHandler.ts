@@ -21,7 +21,7 @@ import { lidAnchorZ } from '../generators/lidConstants';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { LID_FIT_CLEARANCE } from '@/shared/types/bin';
 import { shouldGenerateLid } from '@/shared/types/bin';
-import { runExport } from './workerContext';
+import { runExport, classifyExportError } from './workerContext';
 
 export async function handleExport(message: ExportMessage): Promise<void> {
   const payload = message.payload;
@@ -43,7 +43,8 @@ export async function handleExport(message: ExportMessage): Promise<void> {
       };
     },
     'Export failed',
-    (p) => [p.data]
+    (p) => [p.data],
+    classifyExportError
   );
 }
 
@@ -62,7 +63,8 @@ export async function handleExportBaseplate(message: ExportBaseplateMessage): Pr
       return { data: result.data, format: payload.format, fileName: result.fileName };
     },
     'Baseplate export failed',
-    (p) => [p.data]
+    (p) => [p.data],
+    classifyExportError
   );
 }
 
@@ -76,7 +78,8 @@ export async function handleExportDividers(message: ExportDividersMessage): Prom
       return { data: result.data, fileName: result.fileName };
     },
     'Divider export failed',
-    (p) => [p.data]
+    (p) => [p.data],
+    classifyExportError
   );
 }
 
@@ -182,6 +185,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
       return { pieces, format, faceGroups: binResult.faceGroups };
     },
     'Combined export failed',
-    (p) => p.pieces.map((piece: CombinedExportPiece) => piece.data)
+    (p) => p.pieces.map((piece: CombinedExportPiece) => piece.data),
+    classifyExportError
   );
 }

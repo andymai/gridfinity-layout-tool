@@ -9,51 +9,49 @@
  * - 3MF: multiple named objects (bin + per-axis dividers) in one file
  * - STEP: compound assembly with bin + divider parts
  * - STL: ZIP archive with separate files per piece
+ *
+ * Resilience layer (added in #harden-bin-export):
+ * - Bridge calls run through `exportWithResilience` so transient WASM/BREP
+ *   wobble retries automatically (and the worker is refreshed once before
+ *   final failure).
+ * - All worker errors funnel through a single catch that fires telemetry
+ *   and surfaces a toast with Retry + Report-issue affordances. The previous
+ *   bare `try { } finally { setIsExportingBin(false) }` swallowed errors as
+ *   unhandled rejections.
+ * - Clicks made before the engine is ready are queued and dispatched once
+ *   `bridgeManager.subscribe` reports readiness, instead of silently no-oping.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
+import { useToastStore } from '@/core/store/toast';
 import { calcMaxGridUnits } from '@/core/constants';
-import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
+import { getActiveBridge, bridgeManager } from '@/shared/generation/bridge';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { estimatePrint } from '@/features/bin-designer/utils/printEstimates';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
-import { export3MF, export3MFMultiObject } from '@/shared/generation/export';
-import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
-import { isErr, getUserMessage } from '@/core/result';
-import type { ThreeMFColorConfig, ThreeMFObject } from '@/shared/generation/export';
-import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
+import { triggerDownload } from '@/shared/generation/exportUtils';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
-import { isFeatureEnabled } from '@/shared/hooks/useFeatureFlag';
-import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
 import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
-
-/** Map piece labels from the worker to descriptive display names for 3MF/STEP. */
-function formatPieceDisplayName(
-  label: string,
-  params: { width: number; depth: number; height: number }
-): string {
-  const dims = `${params.width}x${params.depth}x${params.height}`;
-  switch (label) {
-    case 'bin':
-      return `Bin ${dims}`;
-    case 'lid':
-      return `Lid ${dims}`;
-    case 'divider-horizontal':
-      return 'Divider Horizontal';
-    case 'divider-vertical':
-      return 'Divider Vertical';
-    case 'assembly':
-      return `Bin ${dims} Assembly`;
-    default:
-      return label;
-  }
-}
+import { exportWithResilience } from '@/features/bin-designer/utils/exportWithResilience';
+import {
+  buildBinDownloadPayload,
+  buildReportIssueUrl,
+  buildThreeMFPrintSettings,
+  buildSplit3MFPieces,
+  runSplitBinExport,
+} from '@/features/bin-designer/utils/binDownloadHelpers';
+import {
+  trackBinExportFailure,
+  trackBinExportSucceeded,
+  captureException,
+} from '@/shared/analytics/posthog';
+import { useTranslation } from '@/i18n';
 
 interface UseExportReturn {
   /** Whether a main bin or split export is currently in progress */
@@ -62,14 +60,25 @@ interface UseExportReturn {
   readonly isExporting: boolean;
   /** Whether mesh data is available for export (bridge active + mesh exists) */
   readonly canExport: boolean;
+  /** Whether the geometry engine is ready to handle export requests */
+  readonly engineReady: boolean;
   /** Current print estimates based on params */
   readonly estimates: PrintEstimate;
-  /** Download bin (and dividers if present) in the specified format */
+  /**
+   * Download bin (and dividers if present) in the specified format.
+   *
+   * Resolves to `true` when a file was triggered for download, `false` if the
+   * export was queued for engine warmup or failed (in which case an error toast
+   * has already been shown via the hook's own error path). Callers should gate
+   * any post-success UX (success toast, dialog close) on the boolean result —
+   * **never** assume resolution implies success, since errors are caught
+   * internally to fire telemetry + the Retry/Report-issue toast.
+   */
   readonly downloadBin: (
     format: ExportFileFormat,
     config: ExportFileNameConfig,
     designName?: string
-  ) => Promise<void>;
+  ) => Promise<boolean>;
   /** Whether the bin has exportable dividers (used for display extension) */
   readonly hasDividers: boolean;
   /** Whether the bin exceeds print bed and needs splitting */
@@ -78,15 +87,29 @@ interface UseExportReturn {
   readonly splitPieceCount: number;
   /** Maximum grid units that fit on the print bed */
   readonly maxGridUnits: { width: number; depth: number };
-  /** Trigger split export download as ZIP via worker bridge */
+  /**
+   * Trigger split export download as ZIP via worker bridge.
+   *
+   * Same boolean contract as {@link downloadBin}: `true` on completed download,
+   * `false` on queue-for-warmup, format mismatch, or caught failure.
+   */
   readonly downloadSplit: (
     format: ExportFileFormat,
     config: ExportFileNameConfig,
     designName?: string
-  ) => Promise<void>;
+  ) => Promise<boolean>;
+}
+
+/** Args of the most recent export click — replayed when the engine becomes ready. */
+interface QueuedExport {
+  kind: 'bin' | 'split';
+  format: ExportFileFormat;
+  config: ExportFileNameConfig;
+  designName?: string;
 }
 
 export function useExport(): UseExportReturn {
+  const t = useTranslation();
   const { params, mesh } = useDesignerStore(
     useShallow((state) => ({
       params: state.params,
@@ -102,8 +125,18 @@ export function useExport(): UseExportReturn {
     }))
   );
 
+  const addToast = useToastStore((s) => s.addToast);
+
   const [isExportingBin, setIsExportingBin] = useState(false);
   const isExporting = isExportingBin;
+
+  // Track engine readiness via bridgeManager subscription. `subscribe()` fires
+  // synchronously with the current state, so the initial value is correct.
+  const [engineReady, setEngineReady] = useState(() => bridgeManager.engineReady);
+  useEffect(() => {
+    const unsubscribe = bridgeManager.subscribe(setEngineReady);
+    return unsubscribe;
+  }, []);
 
   // Export requires both a preview mesh (to show UI) and an active bridge (to regenerate)
   const canExport =
@@ -130,6 +163,138 @@ export function useExport(): UseExportReturn {
     [params.width, params.depth, maxGrid.width, maxGrid.depth, needsSplit]
   );
 
+  // Forward declarations so the queued-export effect can call the downloads.
+  const downloadBinRef = useRef<UseExportReturn['downloadBin'] | null>(null);
+  const downloadSplitRef = useRef<UseExportReturn['downloadSplit'] | null>(null);
+
+  // Most recent queued click (made while the engine was still warming up).
+  // Only the latest click is replayed — earlier ones are superseded.
+  const pendingExportRef = useRef<QueuedExport | null>(null);
+
+  // Whenever the engine comes online, replay any queued click.
+  useEffect(() => {
+    if (!engineReady) return;
+    const queued = pendingExportRef.current;
+    if (!queued) return;
+    pendingExportRef.current = null;
+    if (queued.kind === 'bin') {
+      void downloadBinRef.current?.(queued.format, queued.config, queued.designName);
+    } else {
+      void downloadSplitRef.current?.(queued.format, queued.config, queued.designName);
+    }
+  }, [engineReady]);
+
+  /**
+   * Build the property block shared by success and failure telemetry.
+   * Reads at the call site so reactive captures don't go stale.
+   */
+  const buildExportTelemetry = useCallback(
+    (
+      format: ExportFileFormat,
+      durationMs: number,
+      retryCount: number,
+      restartCount: number,
+      isSplit: boolean
+    ) => ({
+      format,
+      duration_ms: durationMs,
+      retry_count: retryCount,
+      restart_count: restartCount,
+      bin_width: params.width,
+      bin_depth: params.depth,
+      bin_height: params.height,
+      bin_style: params.style,
+      has_dividers: hasDividers,
+      has_lid: hasLid,
+      needs_split: isSplit,
+    }),
+    [params, hasDividers, hasLid]
+  );
+
+  /**
+   * Fire the failure toast with Retry + Report issue actions, and capture
+   * telemetry. Centralized here so both download paths share identical UX.
+   */
+  const handleExportError = useCallback(
+    (
+      err: unknown,
+      format: ExportFileFormat,
+      retry: () => void,
+      durationMs: number,
+      retryCount: number,
+      restartCount: number,
+      isSplit: boolean
+    ) => {
+      const error = err instanceof Error ? err : new Error(String(err));
+      const maybeCode = (error as unknown as { code?: unknown }).code;
+      const errorCode = typeof maybeCode === 'string' ? maybeCode : 'UNKNOWN';
+
+      trackBinExportFailure({
+        ...buildExportTelemetry(format, durationMs, retryCount, restartCount, isSplit),
+        error_code: errorCode,
+        error_message: error.message,
+        error_stack: error.stack ?? '',
+      });
+
+      // Mirror to the existing exception channel so PostHog session-replays
+      // still surface the failure with stack context. The rich bin-config
+      // payload here used to live in ExportDialog's catch block — it was
+      // moved into the hook so it still fires now that the hook owns
+      // export-error handling end-to-end (the dialog catch became dead code
+      // for WASM errors once downloadBin/Split started returning a boolean
+      // instead of re-throwing).
+      captureException(error, {
+        source: 'bin_export',
+        export_format: format,
+        is_split_export: isSplit,
+        bin_width: params.width,
+        bin_depth: params.depth,
+        bin_height: params.height,
+        bin_style: params.style,
+        grid_unit_mm: params.gridUnitMm,
+        has_lip: params.base.stackingLip,
+        base_style: params.base.style,
+        magnet_diameter: params.base.magnetDiameter,
+        screw_diameter: params.base.screwDiameter,
+        solid_fill: params.base.solid,
+        half_sockets: params.base.halfSockets,
+        wall_pattern_enabled: params.wallPattern.enabled,
+        wall_pattern: params.wallPattern.pattern,
+        handles_enabled: params.handles.enabled,
+        cutout_count: params.cutouts.length,
+        insert_count: params.inserts.length,
+        // Original error chain — binExporter's retry path attaches `cause`
+        // to the first-attempt error, which is invaluable when the surfaced
+        // error masks a more diagnostic earlier failure.
+        first_attempt_message: error.cause instanceof Error ? error.cause.message : undefined,
+        retry_count: retryCount,
+        restart_count: restartCount,
+      });
+
+      const issueUrl = buildReportIssueUrl(params, error, format);
+      const message =
+        errorCode === 'TIMEOUT'
+          ? t('binDesigner.export.error.timeout')
+          : t('binDesigner.export.error.body');
+      addToast({
+        message,
+        type: 'error',
+        duration: 8000,
+        action: {
+          label: t('binDesigner.export.error.retry'),
+          onClick: retry,
+        },
+        secondaryAction: {
+          label: t('binDesigner.export.error.report'),
+          onClick: () => {
+            window.open(issueUrl, '_blank', 'noopener,noreferrer');
+          },
+        },
+      });
+    },
+    [buildExportTelemetry, params, addToast, t]
+  );
+
   /**
    * Download bin + dividers (if present) in the specified format.
    *
@@ -141,146 +306,89 @@ export function useExport(): UseExportReturn {
    * - STL + dividers: .zip with separate .stl files
    */
   const downloadBin = useCallback(
-    async (format: ExportFileFormat, config: ExportFileNameConfig, designName?: string) => {
-      const bridge = getActiveBridge();
-      if (!bridge) return;
+    async (
+      format: ExportFileFormat,
+      config: ExportFileNameConfig,
+      designName?: string
+    ): Promise<boolean> => {
+      // Engine not ready: queue the click and bail. The readiness effect above
+      // will replay it once `engineReady` flips. Returning `false` lets the
+      // caller (ExportDialog) skip its success path; the queued replay will
+      // surface its own success/failure when it eventually fires.
+      if (!engineReady || !getActiveBridge()) {
+        pendingExportRef.current = { kind: 'bin', format, config, designName };
+        return false;
+      }
 
       setIsExportingBin(true);
+      const startTime = performance.now();
+      let retryCount = 0;
+      let restartCount = 0;
 
       try {
         const fileName = generateFileName(params, format, config, designName);
+        // Worker exports BREP only as 'stl' or 'step'; 3MF is packaged on the
+        // main thread from the STL output.
+        const workerFormat = format === 'step' ? 'step' : 'stl';
+        const exportResult = await exportWithResilience(() => {
+          const bridge = getActiveBridge();
+          if (!bridge) throw new Error('Bridge not available');
+          return bridge.exportCombined(params, workerFormat);
+        });
+        retryCount = exportResult.retryCount;
+        restartCount = exportResult.restartCount;
 
+        let threeMFContext: {
+          modelName: string;
+          threeMFPrintSettings: ReturnType<typeof buildThreeMFPrintSettings>;
+        } | null = null;
         if (format === '3mf') {
-          // Combined export as STL (worker doesn't know 3MF), then package on main thread
-          const result = await bridge.exportCombined(params, 'stl');
-
           // Read print settings at call time to avoid capturing reactive values
           const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
           const currentEstimates = estimatePrint(params, currentPrintSettings);
-
-          const threeMFPrintSettings = {
-            layerHeight: currentPrintSettings.layerHeightMm,
-            infillPercent: currentPrintSettings.infillPercent,
-            material: 'PLA' as const,
-            supportRequired: false,
-            estimatedMinutes: currentEstimates.printTimeMinutes,
-            estimatedGrams: currentEstimates.gramsFilament,
+          threeMFContext = {
+            modelName: designName ?? `gridfinity-${params.width}x${params.depth}x${params.height}`,
+            threeMFPrintSettings: buildThreeMFPrintSettings(currentPrintSettings, currentEstimates),
           };
-
-          const modelName =
-            designName ?? `gridfinity-${params.width}x${params.depth}x${params.height}`;
-
-          if (result.pieces.length === 1) {
-            // Single piece (no dividers) — use existing single-object 3MF
-            const parseResult = parseSTLBinary(result.pieces[0].data);
-            if (isErr(parseResult)) {
-              throw new Error(getUserMessage(parseResult.error));
-            }
-            const { vertices, normals } = parseResult.value;
-
-            // Build multi-color config when Labs flag is enabled
-            let colorConfig: ThreeMFColorConfig | undefined;
-            // result.faceGroups & params.featureColors are typed as non-null
-            // here, but the runtime guard is intentional belt-and-suspenders
-            // against shape drift in the generation pipeline.
-            /* eslint-disable @typescript-eslint/no-unnecessary-condition */
-            if (
-              isFeatureEnabled('multi_color_export') &&
-              result.faceGroups &&
-              params.featureColors
-            ) {
-              /* eslint-enable @typescript-eslint/no-unnecessary-condition */
-              const triangleCount = vertices.length / 9;
-              colorConfig =
-                buildTriangleMaterialIndices(
-                  result.faceGroups,
-                  params.featureColors,
-                  triangleCount
-                ) ?? undefined;
-            }
-
-            const blob = export3MF(vertices, normals, {
-              name: modelName,
-              colorConfig,
-              printSettings: threeMFPrintSettings,
-            });
-            triggerDownload(blob, fileName);
-          } else {
-            // Multiple pieces — multi-object 3MF
-            const objects: ThreeMFObject[] = [];
-
-            for (let i = 0; i < result.pieces.length; i++) {
-              const piece = result.pieces[i];
-              const parseResult = parseSTLBinary(piece.data);
-              if (isErr(parseResult)) {
-                throw new Error(getUserMessage(parseResult.error));
-              }
-
-              // Only apply color config to the bin piece (first piece)
-              let colorConfig: ThreeMFColorConfig | undefined;
-              // result.faceGroups & params.featureColors are typed as non-null
-              // here, but the runtime guard mirrors the single-piece branch
-              // above as belt-and-suspenders against pipeline shape drift.
-              /* eslint-disable @typescript-eslint/no-unnecessary-condition */
-              if (
-                i === 0 &&
-                isFeatureEnabled('multi_color_export') &&
-                result.faceGroups &&
-                params.featureColors
-              ) {
-                /* eslint-enable @typescript-eslint/no-unnecessary-condition */
-                const triangleCount = parseResult.value.vertices.length / 9;
-                colorConfig =
-                  buildTriangleMaterialIndices(
-                    result.faceGroups,
-                    params.featureColors,
-                    triangleCount
-                  ) ?? undefined;
-              }
-
-              objects.push({
-                vertices: parseResult.value.vertices,
-                normals: parseResult.value.normals,
-                name: formatPieceDisplayName(piece.label, params),
-                colorConfig,
-              });
-            }
-
-            const blob = export3MFMultiObject(objects, {
-              name: modelName,
-              printSettings: threeMFPrintSettings,
-            });
-            triggerDownload(blob, fileName);
-          }
-        } else if (format === 'step') {
-          // STEP: worker returns compound assembly as single piece
-          const result = await bridge.exportCombined(params, 'step');
-          const blob = new Blob([result.pieces[0].data], { type: FORMAT_MIME_TYPES.step });
-          triggerDownload(blob, fileName);
-        } else {
-          // STL
-          const result = await bridge.exportCombined(params, 'stl');
-
-          if (result.pieces.length === 1) {
-            // Single-piece (no dividers, no lid) → plain STL
-            const blob = new Blob([result.pieces[0].data], { type: FORMAT_MIME_TYPES.stl });
-            triggerDownload(blob, fileName);
-          } else {
-            // Multi-piece (dividers and/or lid) → ZIP of separate STLs
-            const baseName = fileName.replace(/\.stl$/, '');
-            const zip = await packagePiecesAsZip(
-              result.pieces.map((p) => ({ data: p.data, label: p.label })),
-              baseName,
-              '.stl'
-            );
-            triggerDownload(zip, `${baseName}.zip`);
-          }
         }
+
+        const { blob, downloadName } = await buildBinDownloadPayload(
+          format,
+          exportResult.result,
+          params,
+          fileName,
+          threeMFContext
+        );
+        triggerDownload(blob, downloadName);
+
+        trackBinExportSucceeded(
+          buildExportTelemetry(
+            format,
+            performance.now() - startTime,
+            retryCount,
+            restartCount,
+            false
+          )
+        );
+        return true;
+      } catch (err) {
+        handleExportError(
+          err,
+          format,
+          () => {
+            void downloadBinRef.current?.(format, config, designName);
+          },
+          performance.now() - startTime,
+          retryCount,
+          restartCount,
+          false
+        );
+        return false;
       } finally {
         setIsExportingBin(false);
       }
     },
-    [params]
+    [params, engineReady, buildExportTelemetry, handleExportError]
   );
 
   /**
@@ -294,13 +402,22 @@ export function useExport(): UseExportReturn {
    * exports as single-color. Split + multi-color is a known gap.
    */
   const downloadSplit = useCallback(
-    async (format: ExportFileFormat, config: ExportFileNameConfig, designName?: string) => {
-      if (format === 'step') return; // STEP does not support split export
+    async (
+      format: ExportFileFormat,
+      config: ExportFileNameConfig,
+      designName?: string
+    ): Promise<boolean> => {
+      if (format === 'step') return false; // STEP does not support split export
 
-      const bridge = getActiveBridge();
-      if (!bridge) return;
+      if (!engineReady || !getActiveBridge()) {
+        pendingExportRef.current = { kind: 'split', format, config, designName };
+        return false;
+      }
 
       setIsExportingBin(true);
+      const startTime = performance.now();
+      let retryCount = 0;
+      let restartCount = 0;
 
       try {
         const gridSizeMm = params.gridUnitMm;
@@ -314,36 +431,23 @@ export function useExport(): UseExportReturn {
           maxGrid.depth
         );
 
-        let result;
-        let poolAcquired = false;
-        try {
-          const pool = await workerPoolManager.acquire();
-          poolAcquired = true;
-          if (pool.size > 1) {
-            result = await pool.exportSplitBin(params, cutPlanesX, cutPlanesY, totalPieceCount, {
-              splitConnectorConfig: connectorConfig,
-            });
-          } else {
-            workerPoolManager.release();
-            poolAcquired = false;
-            result = await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
-              splitConnectorConfig: connectorConfig,
-            });
-          }
-        } catch {
-          if (poolAcquired) {
-            workerPoolManager.release();
-            poolAcquired = false;
-          }
-          // Pool unavailable — fall back to single bridge
-          result = await bridge.exportSplitBin(params, cutPlanesX, cutPlanesY, {
-            splitConnectorConfig: connectorConfig,
-          });
-        } finally {
-          if (poolAcquired) workerPoolManager.release();
-        }
+        // Wrap the split-export call in resilience. The pool/bridge fallback
+        // is encapsulated in `runSplitBinExport`; resilience treats the whole
+        // thing as a single retryable operation.
+        const splitExport = await exportWithResilience(() =>
+          runSplitBinExport(
+            params,
+            cutPlanesX,
+            cutPlanesY,
+            totalPieceCount,
+            connectorConfig,
+            format
+          )
+        );
+        retryCount = splitExport.retryCount;
+        restartCount = splitExport.restartCount;
+        const result = splitExport.result;
 
-        // Generate base filename (without extension)
         const baseName = generateFileName(params, format, config, designName).replace(
           /\.[^.]+$/,
           ''
@@ -354,8 +458,15 @@ export function useExport(): UseExportReturn {
         // combined export.
         const companionPieces: { data: ArrayBuffer; label: string }[] = [];
         if (hasDividers || hasLid) {
-          const combinedResult = await bridge.exportCombined(params, 'stl');
-          for (const piece of combinedResult.pieces) {
+          const combined = await exportWithResilience(() => {
+            const bridge = getActiveBridge();
+            if (!bridge) throw new Error('Bridge not available');
+            return bridge.exportCombined(params, 'stl');
+          });
+          // Companion retries roll into the totals.
+          retryCount += combined.retryCount;
+          restartCount += combined.restartCount;
+          for (const piece of combined.result.pieces) {
             if (piece.label !== 'bin') {
               companionPieces.push({ data: piece.data, label: piece.label });
             }
@@ -363,40 +474,22 @@ export function useExport(): UseExportReturn {
         }
 
         if (format === '3mf') {
-          // Convert each STL piece (split bin pieces + companion pieces) to 3MF
           const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
           const currentEstimates = estimatePrint(params, currentPrintSettings);
-          const threeMFPrintSettings = {
-            layerHeight: currentPrintSettings.layerHeightMm,
-            infillPercent: currentPrintSettings.infillPercent,
-            material: 'PLA' as const,
-            supportRequired: false,
-            estimatedMinutes: currentEstimates.printTimeMinutes,
-            estimatedGrams: currentEstimates.gramsFilament,
-          };
+          const threeMFPrintSettings = buildThreeMFPrintSettings(
+            currentPrintSettings,
+            currentEstimates
+          );
 
-          const allInputPieces = [
-            ...result.pieces.map((p) => ({ data: p.data, label: p.label })),
-            ...companionPieces,
-          ];
-          const convertedPieces: { data: ArrayBuffer; label: string }[] = [];
-          for (const piece of allInputPieces) {
-            const parseResult = parseSTLBinary(piece.data);
-            if (isErr(parseResult)) {
-              throw new Error(getUserMessage(parseResult.error));
-            }
-            const { vertices, normals } = parseResult.value;
-            const blob = export3MF(vertices, normals, {
-              name: `${baseName}_${piece.label}`,
-              printSettings: threeMFPrintSettings,
-            });
-            convertedPieces.push({ data: await blob.arrayBuffer(), label: piece.label });
-          }
+          const convertedPieces = await buildSplit3MFPieces(
+            [...result.pieces.map((p) => ({ data: p.data, label: p.label })), ...companionPieces],
+            baseName,
+            threeMFPrintSettings
+          );
 
           const zip = await packagePiecesAsZip(convertedPieces, baseName, '.3mf');
           triggerDownload(zip, `${baseName}_split.zip`);
         } else {
-          // STL: package split pieces + companion pieces (dividers, lid) into ZIP
           const allPieces = [
             ...result.pieces.map((p) => ({ data: p.data, label: p.label })),
             ...companionPieces,
@@ -404,17 +497,51 @@ export function useExport(): UseExportReturn {
           const blob = await packagePiecesAsZip(allPieces, baseName, '.stl');
           triggerDownload(blob, `${baseName}_split.zip`);
         }
+
+        trackBinExportSucceeded(
+          buildExportTelemetry(
+            format,
+            performance.now() - startTime,
+            retryCount,
+            restartCount,
+            true
+          )
+        );
+        return true;
+      } catch (err) {
+        handleExportError(
+          err,
+          format,
+          () => {
+            void downloadSplitRef.current?.(format, config, designName);
+          },
+          performance.now() - startTime,
+          retryCount,
+          restartCount,
+          true
+        );
+        return false;
       } finally {
         setIsExportingBin(false);
       }
     },
-    [params, maxGrid, hasDividers, hasLid]
+    [params, maxGrid, hasDividers, hasLid, engineReady, buildExportTelemetry, handleExportError]
   );
+
+  // Wire refs so the queued-export effect (and Retry callbacks) can find the
+  // latest closures without recreating them on every render. The ref is
+  // touched inside an effect because React's `react-hooks/refs` rule forbids
+  // writes during render — same end result, lint-clean.
+  useEffect(() => {
+    downloadBinRef.current = downloadBin;
+    downloadSplitRef.current = downloadSplit;
+  });
 
   return {
     isExporting,
     isExportingBin,
     canExport,
+    engineReady,
     hasDividers,
     estimates,
     downloadBin,

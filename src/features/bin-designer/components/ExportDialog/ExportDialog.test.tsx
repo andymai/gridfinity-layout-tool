@@ -11,6 +11,7 @@ const mockDownloadBin = vi.fn().mockResolvedValue(undefined);
 vi.mock('@/features/bin-designer/hooks/useExport', () => ({
   useExport: () => ({
     canExport: true,
+    engineReady: true,
     isExporting: false,
     isExportingBin: false,
     estimates: {
