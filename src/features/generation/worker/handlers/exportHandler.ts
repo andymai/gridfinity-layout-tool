@@ -135,21 +135,29 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         // Lid is built in lid-local Z (Y=0 = lid floor top). Lift it so the
         // mating cavity (Y = anchorZ, negative) sits at world Z = totalHeight
         // (the bin's stacking lip top), matching the preview's lidGroupZ.
+        // Wrap in try/finally so a `compound`/`exportSTEP` failure still
+        // releases the WASM solid — mirrors `exportLid` in lidOrchestrator.
         let lidSolid = hasLid ? buildLid(params) : null;
-        if (lidSolid) {
-          const fitClearance = LID_FIT_CLEARANCE[params.lid.fit];
-          const lidZ = totalHeight - lidAnchorZ(params.heightUnitMm, fitClearance);
-          const positioned = translate(lidSolid, [0, 0, lidZ]);
-          lidSolid.delete();
-          lidSolid = positioned;
-        }
-        const assembly = compound([binSolid, ...dividerSolids, ...(lidSolid ? [lidSolid] : [])]);
-        const blob = unwrap(exportSTEP(assembly));
+        try {
+          if (lidSolid) {
+            const fitClearance = LID_FIT_CLEARANCE[params.lid.fit];
+            const lidZ = totalHeight - lidAnchorZ(params.heightUnitMm, fitClearance);
+            const positioned = translate(lidSolid, [0, 0, lidZ]);
+            lidSolid.delete();
+            lidSolid = positioned;
+          }
+          const assembly = compound([binSolid, ...dividerSolids, ...(lidSolid ? [lidSolid] : [])]);
+          const blob = unwrap(exportSTEP(assembly));
 
-        return {
-          pieces: [{ data: await blob.arrayBuffer(), label: 'assembly' }] as CombinedExportPiece[],
-          format,
-        };
+          return {
+            pieces: [
+              { data: await blob.arrayBuffer(), label: 'assembly' },
+            ] as CombinedExportPiece[],
+            format,
+          };
+        } finally {
+          lidSolid?.delete();
+        }
       }
 
       // STL/3MF: export bin + dividers + lid as separate labeled pieces

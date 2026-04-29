@@ -13,6 +13,7 @@ import {
 } from '@/features/bin-designer/types';
 import { isPartialMask, maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
 import type { CellMask } from '@/shared/utils/cellMask';
+import { lidWallBottomZ } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
 import {
   checkLidCompatibility,
   hasLidBlocker,
@@ -259,18 +260,30 @@ export function useLidSection() {
     const fitClearance = LID_FIT_CLEARANCE[lid.fit];
     const lidOuterW = params.width * params.gridUnitMm - 2 * fitClearance;
     const lidOuterD = params.depth * params.gridUnitMm - 2 * fitClearance;
-    // Lid Z extent is roughly one height-unit (mating shell + floor + small extras);
-    // matches the bin's height-unit so users can reason about stack heights.
-    const lidH = params.heightUnitMm;
+    // Lid Z extent = mating-shell depth (|wallBottomZ|) + floor plate
+    // (topThickness). Tracks the user's topThickness slider so the readout
+    // matches the actual generated solid; ignoring it would understate the
+    // lid by up to ~2.4mm and mislead users budgeting drawer height.
+    const wallBottomZ = lidWallBottomZ(params.heightUnitMm, fitClearance);
+    const lidH = Math.abs(wallBottomZ) + lid.topThickness;
     return { width: lidOuterW, depth: lidOuterD, height: lidH };
-  }, [lid.fit, params.width, params.depth, params.gridUnitMm, params.heightUnitMm]);
+  }, [
+    lid.fit,
+    lid.topThickness,
+    params.width,
+    params.depth,
+    params.gridUnitMm,
+    params.heightUnitMm,
+  ]);
 
+  // Lid height varies by sub-mm steps as the user dials topThickness;
+  // 1-decimal precision keeps that feedback visible (matches w/d).
   const dimensionsReadout = useMemo(
     () =>
       t('binDesigner.lid.outerDimensions', {
         width: lidDimensions.width.toFixed(1),
         depth: lidDimensions.depth.toFixed(1),
-        height: lidDimensions.height.toFixed(0),
+        height: lidDimensions.height.toFixed(1),
       }),
     [t, lidDimensions]
   );
