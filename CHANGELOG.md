@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.50.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.49.5...gridfinity-layout-tool-v4.50.0) (2026-04-29)
+
+
+### Features
+
+* **bin-designer:** add click-lock lid as bin companion piece ([#1509](https://github.com/andymai/gridfinity-layout-tool/issues/1509)) ([7410e6e](https://github.com/andymai/gridfinity-layout-tool/commit/7410e6ee2c0f9c3a371e47a94474635f61121b2c))
+
 ## [4.49.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.49.4...gridfinity-layout-tool-v4.49.5) (2026-04-27)
 
 
