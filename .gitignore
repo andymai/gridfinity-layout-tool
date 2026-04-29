@@ -58,3 +58,6 @@ src/i18n/locales/en.json
 
 # Transient benchmark output (baselines are tracked)
 benchmarks/latest.json
+
+# E2E debugging screenshots (manual inspection only, never committed)
+e2e-screenshots/
