@@ -662,16 +662,20 @@ function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs):
     inputs;
   const radius = magnetDiameter / 2;
 
-  // BLIND pocket on the floor's underside — opens at the floor BOTTOM
-  // (lid-local Z = -topThickness, the face that meets the bin's lip top
-  // when closed) and stops short of the floor TOP by LID_MAGNET_CEILING
-  // so the magnet sits in a sealed cup. Capping at `topThickness -
-  // ceiling` is defensive in case `topThickness` was bumped up by
-  // `lidTopThickness` for an oversize magnet — guarantees we never
-  // poke through the cavity face. Floor bottom gets a small coplanar
-  // margin so the cut bites cleanly through the entry face.
+  // BLIND pocket on the floor's UPPER face — opens at the floor TOP
+  // (lid-local Z = 0, the visible top surface that an upper bin sits on
+  // when stacked) and stops short of the floor BOTTOM by
+  // LID_MAGNET_CEILING so the magnet sits in a sealed cup. The upper
+  // bin's base magnets enter from above and mate with these pockets.
+  // Capping at `topThickness - ceiling` is defensive in case
+  // `topThickness` was bumped up by `lidTopThickness` for an oversize
+  // magnet — guarantees we never poke through the cavity face. Floor
+  // top gets a small coplanar margin so the cut bites cleanly through
+  // the entry face.
   const cappedDepth = Math.max(0.4, Math.min(magnetDepth, topThickness - LID_MAGNET_CEILING));
-  const holeZ = -topThickness - LID_COPLANAR_MARGIN;
+  // Sketch sits below the floor top by `cappedDepth` so the extruded
+  // cylinder reaches Z = 0 (top face) plus a coplanar margin above.
+  const holeZ = -cappedDepth;
   const holeHeight = cappedDepth + LID_COPLANAR_MARGIN;
 
   // Build all cylinder cutters first, then apply them in a single cutAll.
