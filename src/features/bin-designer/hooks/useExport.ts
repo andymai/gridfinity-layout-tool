@@ -31,6 +31,7 @@ import { isFeatureEnabled } from '@/shared/hooks/useFeatureFlag';
 import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
 import type { ExportFileNameConfig, ExportFileFormat } from '@/features/bin-designer/types';
 import type { PrintEstimate } from '@/features/bin-designer/utils/printEstimates';
+import { shouldGenerateLid } from '@/features/bin-designer/utils/lidCompatibility';
 
 /** Map piece labels from the worker to descriptive display names for 3MF/STEP. */
 function formatPieceDisplayName(
@@ -41,6 +42,8 @@ function formatPieceDisplayName(
   switch (label) {
     case 'bin':
       return `Bin ${dims}`;
+    case 'lid':
+      return `Lid ${dims}`;
     case 'divider-horizontal':
       return 'Divider Horizontal';
     case 'divider-vertical':
@@ -108,6 +111,7 @@ export function useExport(): UseExportReturn {
 
   const hasDividers =
     params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
+  const hasLid = shouldGenerateLid(params);
 
   const estimates = useMemo(() => estimatePrint(params, printSettings), [params, printSettings]);
 
@@ -258,11 +262,11 @@ export function useExport(): UseExportReturn {
           const result = await bridge.exportCombined(params, 'stl');
 
           if (result.pieces.length === 1) {
-            // No dividers — plain STL
+            // Single-piece (no dividers, no lid) → plain STL
             const blob = new Blob([result.pieces[0].data], { type: FORMAT_MIME_TYPES.stl });
             triggerDownload(blob, fileName);
           } else {
-            // Dividers present — ZIP of separate STLs
+            // Multi-piece (dividers and/or lid) → ZIP of separate STLs
             const baseName = fileName.replace(/\.stl$/, '');
             const zip = await packagePiecesAsZip(
               result.pieces.map((p) => ({ data: p.data, label: p.label })),
@@ -345,25 +349,38 @@ export function useExport(): UseExportReturn {
           ''
         );
 
-        // Collect divider pieces if present
-        const dividerPieces: { data: ArrayBuffer; label: string }[] = [];
-        if (hasDividers) {
-          const dividerResult = await bridge.exportCombined(params, 'stl');
-          // Skip the first piece (bin) — only include divider pieces
-          for (const piece of dividerResult.pieces) {
+        // Collect non-bin companion pieces (dividers, lid) — split export
+        // produces only bin pieces, so any extras come from a parallel
+        // combined export.
+        const companionPieces: { data: ArrayBuffer; label: string }[] = [];
+        if (hasDividers || hasLid) {
+          const combinedResult = await bridge.exportCombined(params, 'stl');
+          for (const piece of combinedResult.pieces) {
             if (piece.label !== 'bin') {
-              dividerPieces.push({ data: piece.data, label: piece.label });
+              companionPieces.push({ data: piece.data, label: piece.label });
             }
           }
         }
 
         if (format === '3mf') {
-          // Convert each STL piece to 3MF before packaging
+          // Convert each STL piece (split bin pieces + companion pieces) to 3MF
           const currentPrintSettings = useSettingsStore.getState().settings.printSettings;
           const currentEstimates = estimatePrint(params, currentPrintSettings);
+          const threeMFPrintSettings = {
+            layerHeight: currentPrintSettings.layerHeightMm,
+            infillPercent: currentPrintSettings.infillPercent,
+            material: 'PLA' as const,
+            supportRequired: false,
+            estimatedMinutes: currentEstimates.printTimeMinutes,
+            estimatedGrams: currentEstimates.gramsFilament,
+          };
 
+          const allInputPieces = [
+            ...result.pieces.map((p) => ({ data: p.data, label: p.label })),
+            ...companionPieces,
+          ];
           const convertedPieces: { data: ArrayBuffer; label: string }[] = [];
-          for (const piece of result.pieces) {
+          for (const piece of allInputPieces) {
             const parseResult = parseSTLBinary(piece.data);
             if (isErr(parseResult)) {
               throw new Error(getUserMessage(parseResult.error));
@@ -371,46 +388,18 @@ export function useExport(): UseExportReturn {
             const { vertices, normals } = parseResult.value;
             const blob = export3MF(vertices, normals, {
               name: `${baseName}_${piece.label}`,
-              printSettings: {
-                layerHeight: currentPrintSettings.layerHeightMm,
-                infillPercent: currentPrintSettings.infillPercent,
-                material: 'PLA',
-                supportRequired: false,
-                estimatedMinutes: currentEstimates.printTimeMinutes,
-                estimatedGrams: currentEstimates.gramsFilament,
-              },
+              printSettings: threeMFPrintSettings,
             });
             convertedPieces.push({ data: await blob.arrayBuffer(), label: piece.label });
-          }
-
-          // Add divider pieces as 3MF
-          for (const divPiece of dividerPieces) {
-            const parseResult = parseSTLBinary(divPiece.data);
-            if (isErr(parseResult)) {
-              throw new Error(getUserMessage(parseResult.error));
-            }
-            const { vertices, normals } = parseResult.value;
-            const blob = export3MF(vertices, normals, {
-              name: `${baseName}_${divPiece.label}`,
-              printSettings: {
-                layerHeight: currentPrintSettings.layerHeightMm,
-                infillPercent: currentPrintSettings.infillPercent,
-                material: 'PLA',
-                supportRequired: false,
-                estimatedMinutes: currentEstimates.printTimeMinutes,
-                estimatedGrams: currentEstimates.gramsFilament,
-              },
-            });
-            convertedPieces.push({ data: await blob.arrayBuffer(), label: divPiece.label });
           }
 
           const zip = await packagePiecesAsZip(convertedPieces, baseName, '.3mf');
           triggerDownload(zip, `${baseName}_split.zip`);
         } else {
-          // STL: package split pieces + divider pieces into ZIP
+          // STL: package split pieces + companion pieces (dividers, lid) into ZIP
           const allPieces = [
             ...result.pieces.map((p) => ({ data: p.data, label: p.label })),
-            ...dividerPieces,
+            ...companionPieces,
           ];
           const blob = await packagePiecesAsZip(allPieces, baseName, '.stl');
           triggerDownload(blob, `${baseName}_split.zip`);
@@ -419,7 +408,7 @@ export function useExport(): UseExportReturn {
         setIsExportingBin(false);
       }
     },
-    [params, maxGrid, hasDividers]
+    [params, maxGrid, hasDividers, hasLid]
   );
 
   return {

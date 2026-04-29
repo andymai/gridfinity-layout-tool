@@ -35,6 +35,11 @@ export const GRIDFINITY_SPEC = {
   LIP_SMALL_TAPER: 0.7, // mm bottom 45° chamfer
   LIP_VERTICAL_PART: 1.8, // mm vertical section
   LIP_BIG_TAPER: 1.9, // mm top 45° chamfer
+  // Z overlap when fusing the lip onto the bin shell. The lip translates
+  // to wallTop − LIP_OVERLAP so its top face lands at wallTop + LIP_HEIGHT
+  // − LIP_OVERLAP. Must remain < LIP_SMALL_TAPER so the interior cavity
+  // still clears the lip base.
+  LIP_OVERLAP: 0.1, // mm
 
   // Magnet holes (spec defaults; configurable via BinParams.base)
   MAGNET_DIAMETER: 6.5, // mm (6mm magnet + tolerance)

@@ -36,9 +36,33 @@ export type {
   HandleCutoutShape,
   HandleSide,
   HandleWallSide,
+  LidConfig,
 } from '@/features/bin-designer/types';
 
-export { MIN_PATH_POINTS } from '@/features/bin-designer/types';
+export {
+  MIN_PATH_POINTS,
+  LID_FIT_CLEARANCE,
+  LID_CORNER_RADIUS,
+  LID_TOP_THICKNESS_BASE,
+  LID_MAGNET_CEILING,
+  LID_MIN_RAIL_LENGTH,
+} from '@/features/bin-designer/types';
+
+/**
+ * Re-export lid policy helpers so worker-side code can ask "should we
+ * generate a lid?" without importing across the feature boundary.
+ */
+export {
+  shouldGenerateLid,
+  checkLidCompatibility,
+  hasLidBlocker,
+} from '@/features/bin-designer/utils/lidCompatibility';
+export type {
+  LidCompatibilityIssue,
+  LidCompatibilityId,
+  LidCompatibilitySeverity,
+  LidCompatibilitySide,
+} from '@/features/bin-designer/utils/lidCompatibility';
 
 /** Whether an edge is exterior (outside baseplate) or a join between split pieces. */
 export type BaseplateEdgeKind = 'join' | 'exterior';

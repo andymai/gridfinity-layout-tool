@@ -1172,6 +1172,57 @@ const en: Record<string, string> = {
   'binDesigner.alignment.left': 'Left',
   'binDesigner.alignment.center': 'Center',
   'binDesigner.alignment.right': 'Right',
+  'binDesigner.lid': 'Lid',
+  'binDesigner.lid.requiresStackingLip': 'Requires stacking lip',
+  'binDesigner.lid.stackableTop': 'Stackable top grid',
+  'binDesigner.lid.magnetHoles': 'Magnet pockets',
+  'binDesigner.lid.magnetsRequireStackable':
+    'Magnet pockets need a stackable top — the upper bin meets them through the floor.',
+  'binDesigner.lid.magnetSpec':
+    'Pocket: ⌀{diameter}mm × {depth}mm deep (matches bin magnet specs).',
+  'binDesigner.lid.clickRailCoverage': 'Rail coverage',
+  'binDesigner.lid.clickRailCoverage.50': 'Compact rails — saves the most filament',
+  'binDesigner.lid.clickRailCoverage.75': 'Three-quarter rails — balanced grip and savings',
+  'binDesigner.lid.clickRailCoverage.100': 'Edge-to-edge rails — maximum grip',
+  'binDesigner.lid.printNote':
+    'Exports in print-ready orientation (rails up). Default config prints supports-free; the stack-grid option is the main thing that may need them.',
+  'binDesigner.lid.clickRails': 'Snap-fit sides',
+  'binDesigner.lid.side.front': 'Front',
+  'binDesigner.lid.side.back': 'Back',
+  'binDesigner.lid.side.left': 'Left',
+  'binDesigner.lid.side.right': 'Right',
+  'binDesigner.lid.summary': '{coverage}% rails',
+  'binDesigner.lid.summaryPartialRails': '{coverage}% rails on {sides}/4',
+  'binDesigner.lid.summaryNoRails': 'Friction-fit (no rails)',
+  'binDesigner.lid.compat.heading': 'Compatibility notes',
+  'binDesigner.lid.compat.wallCutouts':
+    'Wall cutouts ({sides}) remove the lip on those walls — the lid loses grip there.',
+  'binDesigner.lid.compat.wallCutoutsAllSides':
+    'Wall cutouts on all four sides remove the entire lip — the lid has nothing to mate with.',
+  'binDesigner.lid.compat.wallPattern':
+    'Wall pattern can perforate the lip — the lid may sit loosely.',
+  'binDesigner.lid.compat.shortBin':
+    'Bin is 1U tall — the lid still seats but the grip is marginal.',
+  'binDesigner.lid.compat.tallDividerPieces':
+    'Divider pieces are taller than the bin interior — the lid will not seat with them inserted.',
+  'binDesigner.lid.compat.cellMaskHoles':
+    'Custom shape has interior holes — those inner edges have lip but no rails (asymmetric grip).',
+  'binDesigner.lid.compat.compartmentDividers':
+    'Compartment dividers extend up to the lip — they may press against the lid’s mating shell where they meet the bin walls.',
+  'binDesigner.lid.compat.disabledOne': 'Resolve the conflict to enable lid: {detail}',
+  'binDesigner.lid.compat.disabledMany': 'Resolve {count} conflicts to enable lid',
+  'binDesigner.lid.compat.fix.wallCutoutsAllSides': 'disable some wall cutouts',
+  'binDesigner.lid.compat.fix.tallDividerPieces': 'reduce divider piece height',
+  'binDesigner.lid.conflictBadgeLabel': 'Conflicts with the click-lock lid',
+  'binDesigner.lid.outerDimensions': '{width} × {depth} × {height} mm',
+  'binDesigner.lid.railsCount': 'Rails: {length} mm × {count} walls',
+  'binDesigner.lid.railsTwoAxis':
+    'Rails: {longCount} × {longLength} mm + {shortCount} × {shortLength} mm',
+  'binDesigner.lid.railsRange': 'Rails: {count} walls, {min}–{max} mm',
+  'binDesigner.lid.railsNone': 'No rails (walls too short)',
+  'binDesigner.preview.lidClosed': 'Closed',
+  'binDesigner.preview.lidOpen': 'Open',
+  'binDesigner.preview.lidExplodeSlider': 'Lid open/close',
   'binDesigner.fingerScoop': 'Finger scoop',
   'binDesigner.fingerScoopUnavailableSlotted': 'Not available for slotted or solid bins',
   'binDesigner.scoopRadius': 'Radius',

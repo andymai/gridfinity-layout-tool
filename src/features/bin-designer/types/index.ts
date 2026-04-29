@@ -6,14 +6,53 @@
  */
 
 import type { FaceGroupData, CoarseLODData } from '@/shared/types/generation';
+
+/**
+ * Lid mesh data as stored in the designer store. Mirrors the shared
+ * `LidMeshData` shape but with a mutable `faceGroups` array so the
+ * Immer-backed store can ingest it. The bridge converts the worker's
+ * readonly payload into this shape via spread in `useGeneration`.
+ */
+export interface LidMeshDataState {
+  readonly vertices: Float32Array;
+  readonly normals: Float32Array;
+  readonly indices: Uint32Array;
+  readonly edgeVertices: Float32Array;
+  readonly triangleCount: number;
+  readonly faceGroups?: FaceGroupData[];
+}
 import type { DesignId } from '@/core/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { FeatureColorConfig, ColorZone } from './featureColors';
+import type { LidConfig } from './lid';
+
+export type { LidConfig, LidClickRails, LidRailSide } from './lid';
+export {
+  DEFAULT_LID_CONFIG,
+  LID_FIT_CLEARANCE,
+  LID_CORNER_RADIUS,
+  LID_TOP_THICKNESS_BASE,
+  LID_MAGNET_CEILING,
+  LID_MIN_RAIL_LENGTH,
+  LID_CLICK_RAIL_COVERAGE_OPTIONS,
+  LID_RAIL_SIDES,
+} from './lid';
 
 // Bin Configuration Types
 
 /** Base attachment style for bin-to-baseplate connection */
 export type BaseStyle = 'standard' | 'magnet' | 'screw' | 'magnet_and_screw' | 'weighted' | 'flat';
+
+/** True when `style` includes magnet pockets — single source of truth so
+ *  callers don't drift if a new magnet-inclusive style is added. */
+export function isMagnetStyle(style: BaseStyle): boolean {
+  return style === 'magnet' || style === 'magnet_and_screw';
+}
+
+/** True when `style` includes screw mounts — paired with `isMagnetStyle`. */
+export function isScrewStyle(style: BaseStyle): boolean {
+  return style === 'screw' || style === 'magnet_and_screw';
+}
 
 /** Bin wall/style variant */
 export type BinStyle = 'standard' | 'slotted' | 'solid';
@@ -259,6 +298,8 @@ export interface BinParams {
   readonly splitConnectors?: SplitConnectorConfig;
   /** Per-feature filament color assignment for multi-color 3MF export. */
   readonly featureColors: FeatureColorConfig;
+  /** Click-lock lid configuration. Lid is generated as a separate companion solid. */
+  readonly lid: LidConfig;
   /**
    * Optional custom footprint mask (non-rectangular bins).
    *
@@ -391,6 +432,8 @@ export interface GenerationResult {
   readonly faceGroups?: FaceGroupData[];
   /** Coarse LOD mesh for distance-based rendering (preview only) */
   readonly coarseLOD?: CoarseLODData;
+  /** Optional companion lid mesh, present only when the bin has a lid enabled. */
+  readonly lidMesh?: LidMeshDataState;
 }
 
 /** Generation state tracked in the store */
@@ -562,6 +605,7 @@ export interface DesignerState {
   updateHandles: (partial: Partial<HandleConfig>) => void;
   updateHandleSide: (side: HandleWallSide, partial: Partial<HandleSide>) => void;
   updateFeatureColors: (partial: Partial<FeatureColorConfig>) => void;
+  updateLid: (partial: Partial<LidConfig>) => void;
 
   // History actions
   undo: () => void;

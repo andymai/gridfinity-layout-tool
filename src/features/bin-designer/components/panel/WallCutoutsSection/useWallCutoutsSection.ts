@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
+import { isLidBlockedBySection } from '@/features/bin-designer/utils/lidCompatibility';
 import type {
   WallSide,
   WallCutout,
@@ -145,6 +146,12 @@ export function useWallCutoutsSection() {
 
   const disabledReason = featureStatus.reason ? t(featureStatus.reason) : undefined;
 
+  // True when the user's wall-cutout config is blocking the click-lock
+  // lid right now (lid is enabled but all four walls have cutouts → no
+  // lip remaining for the lid to mate with). Drives the small red dot
+  // on the section header so users editing wall cutouts see the conflict.
+  const blocksLid = isLidBlockedBySection(params, 'walls');
+
   const meta: SectionMeta = useMemo(
     () => ({
       summary: isUnavailable ? undefined : summary,
@@ -154,7 +161,7 @@ export function useWallCutoutsSection() {
   );
 
   return {
-    state: { walls, activeSides, linked },
+    state: { walls, activeSides, linked, blocksLid },
     handlers: {
       toggleEnabled,
       toggleSide,

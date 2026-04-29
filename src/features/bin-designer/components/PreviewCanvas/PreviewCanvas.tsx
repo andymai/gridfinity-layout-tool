@@ -17,6 +17,10 @@ import { calcMaxGridUnits } from '@/core/constants';
 import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
 import {
   BinMesh,
+  LidMesh,
+  LidGuideLine,
+  LidExplodeSlider,
+  LID_OFFSET_DEFAULT,
   BinAxisLabels,
   BinDimensions,
   BinNameLabel,
@@ -353,6 +357,9 @@ export function PreviewCanvas() {
   const invalidateRef = useRef<(() => void) | null>(null);
   const [wireframe, setWireframe] = useState(false);
   const [activePreset, setActivePreset] = useState<CameraPreset | null>('isometric');
+  // Lid explode slider (mm above the snapped position). Default = mid-explode
+  // so both the lid and the bin's interior are visible when a lid is enabled.
+  const [lidOffsetMm, setLidOffsetMm] = useState<number>(LID_OFFSET_DEFAULT);
 
   // Preview color persisted in localStorage
   const [previewColor, setPreviewColor] = useState(() => {
@@ -396,6 +403,18 @@ export function PreviewCanvas() {
       splitPieceMeshes: s.ui.splitPieceMeshes,
     }))
   );
+
+  // Reset the explode slider to its default whenever the lid transitions
+  // off → on. Without this, a stale value (e.g. 80mm from a previous session)
+  // persists across the slider's unmount/remount cycle — disabling the lid
+  // hides the slider but doesn't clear the parent-owned `lidOffsetMm`.
+  const wasLidEnabledRef = useRef(params.lid.enabled);
+  useEffect(() => {
+    if (params.lid.enabled && !wasLidEnabledRef.current) {
+      setLidOffsetMm(LID_OFFSET_DEFAULT);
+    }
+    wasLidEnabledRef.current = params.lid.enabled;
+  }, [params.lid.enabled]);
 
   const { defaultPrintBedSize: bedSize, defaultPrintBedDepth: bedDepth } = useSettingsStore(
     useShallow((s) => ({
@@ -569,6 +588,15 @@ export function PreviewCanvas() {
               <BinMesh wireframe={wireframe} color={previewColor} />
             )}
 
+            {/* Click-lock lid (renders only when params.lid.enabled produced
+                a mesh). `lidOffsetMm` controls position + opacity in lockstep. */}
+            <LidMesh color={previewColor} lidOffsetMm={lidOffsetMm} wireframe={wireframe} />
+            {/* Dashed guide line between bin's lip top and lid's mating opening,
+                visible only when the lid is meaningfully exploded. */}
+            {params.lid.enabled && params.base.stackingLip && (
+              <LidGuideLine lidOffsetMm={lidOffsetMm} />
+            )}
+
             {/* Ghost outlines during generation */}
             <GhostWireframe />
             <GhostDividers />
@@ -623,6 +651,12 @@ export function PreviewCanvas() {
 
           {/* Nostalgic loading indicator (bottom center) */}
           {showOverlay && <GeneratingIndicator />}
+
+          {/* Lid explode slider — only when the bin has a lid configured AND
+              its stacking lip is on (lid won't render/export without lip). */}
+          {params.lid.enabled && params.base.stackingLip && (
+            <LidExplodeSlider value={lidOffsetMm} onChange={setLidOffsetMm} />
+          )}
 
           {/* Control buttons */}
           <PreviewControls

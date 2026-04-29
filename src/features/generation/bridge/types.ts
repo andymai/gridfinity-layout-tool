@@ -278,6 +278,13 @@ export interface MeshResultResponse {
   readonly faceGroups?: readonly FaceGroupData[];
   /** Coarse LOD mesh for distance-based rendering (preview only) */
   readonly coarseLOD?: CoarseLODData;
+  /** Click-lock lid mesh — present only when `params.lid.enabled` is true. */
+  readonly lidVertices?: Float32Array;
+  readonly lidNormals?: Float32Array;
+  readonly lidIndices?: Uint32Array;
+  readonly lidEdgeVertices?: Float32Array;
+  readonly lidTriangleCount?: number;
+  readonly lidFaceGroups?: readonly FaceGroupData[];
 }
 
 export interface ExportResultResponse {
@@ -377,4 +384,17 @@ export interface MeshData {
   readonly faceGroups?: readonly FaceGroupData[];
   /** Coarse LOD mesh for distance-based rendering (preview only, omitted for export) */
   readonly coarseLOD?: CoarseLODData;
+  /** Optional click-lock lid mesh — separate solid that pairs with the bin. */
+  readonly lidMesh?: LidMeshData;
+}
+
+/** Mesh data for the click-lock lid (companion piece, separate solid). */
+export interface LidMeshData {
+  readonly vertices: Float32Array;
+  readonly normals: Float32Array;
+  readonly indices: Uint32Array;
+  readonly edgeVertices: Float32Array;
+  readonly triangleCount: number;
+  /** Per-face provenance for rail vs body rendering. */
+  readonly faceGroups?: readonly FaceGroupData[];
 }

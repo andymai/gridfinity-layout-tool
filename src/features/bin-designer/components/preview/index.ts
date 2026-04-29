@@ -1,4 +1,12 @@
 export { BinMesh } from './BinMesh';
+export { LidMesh } from './LidMesh';
+export { LidGuideLine } from './LidGuideLine';
+export {
+  LidExplodeSlider,
+  LID_OFFSET_MIN,
+  LID_OFFSET_MAX,
+  LID_OFFSET_DEFAULT,
+} from './LidExplodeSlider';
 export { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
 export { BinDimensions } from './BinDimensions';
 export { BinNameLabel } from '@/shared/components/preview/BinNameLabel';

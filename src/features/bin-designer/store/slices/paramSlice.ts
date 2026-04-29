@@ -18,6 +18,7 @@ import type {
   HandleConfig,
   HandleSide,
   HandleWallSide,
+  LidConfig,
 } from '../../types';
 import type { FeatureColorConfig } from '../../types/featureColors';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
@@ -181,6 +182,14 @@ export function createParamSlice(set: Set, get: Get) {
       set((state) => {
         pushHistoryEntry(state);
         state.params.featureColors = { ...state.params.featureColors, ...partial };
+      });
+    },
+
+    // Click-lock lid actions
+    updateLid: (partial: Partial<LidConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.lid = { ...state.params.lid, ...partial };
       });
     },
 

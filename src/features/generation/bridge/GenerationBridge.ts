@@ -835,6 +835,23 @@ export class GenerationBridge {
           if (response.requestId === this.currentRequestId && this.pendingResolve) {
             this.adaptiveDebounce.recordTiming(response.timingMs);
             const resolve = this.pendingResolve;
+            // Lid is optional: assemble it only when the worker actually sent
+            // lid arrays. All five lid fields land or are absent together.
+            const lidMesh =
+              response.lidVertices &&
+              response.lidNormals &&
+              response.lidIndices &&
+              response.lidEdgeVertices &&
+              response.lidTriangleCount !== undefined
+                ? {
+                    vertices: response.lidVertices,
+                    normals: response.lidNormals,
+                    indices: response.lidIndices,
+                    edgeVertices: response.lidEdgeVertices,
+                    triangleCount: response.lidTriangleCount,
+                    faceGroups: response.lidFaceGroups,
+                  }
+                : undefined;
             const result: GenerationResult = {
               mesh: {
                 vertices: response.vertices,
@@ -844,6 +861,7 @@ export class GenerationBridge {
                 triangleCount: response.triangleCount,
                 faceGroups: response.faceGroups,
                 coarseLOD: response.coarseLOD,
+                lidMesh,
               },
               timingMs: response.timingMs,
             };

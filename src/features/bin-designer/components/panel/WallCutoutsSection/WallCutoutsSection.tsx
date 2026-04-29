@@ -252,7 +252,7 @@ function PositionDisclosure({
 
 export function WallCutoutsSection() {
   const { state, handlers, meta, t, STEP } = useWallCutoutsSection();
-  const { walls, activeSides, linked } = state;
+  const { walls, activeSides, linked, blocksLid } = state;
 
   const sharedSide = activeSides.length > 0 ? activeSides[0] : undefined;
   const hideDepth = walls.shape === 'scoop';
@@ -263,6 +263,20 @@ export function WallCutoutsSection() {
       checked={walls.enabled}
       onChange={handlers.toggleEnabled}
       disabledReason={meta.disabledReason}
+      badge={
+        // Small red dot when this section is currently blocking the
+        // click-lock lid. Only renders when lid is enabled AND all 4
+        // walls have cutouts (the only wall-cutout config that fully
+        // removes the lip).
+        blocksLid ? (
+          <span
+            role="img"
+            aria-label={t('binDesigner.lid.conflictBadgeLabel')}
+            title={t('binDesigner.lid.conflictBadgeLabel')}
+            className="inline-block h-1.5 w-1.5 rounded-full bg-danger"
+          />
+        ) : undefined
+      }
       primaryControls={
         <div className="space-y-3">
           {/* Shape selector */}

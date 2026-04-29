@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { resolveConstraints, getFeatureStatus } from '@/shared/constraints';
+import { isMagnetStyle, isScrewStyle } from '@/features/bin-designer/types';
 
 export function useBaseSection() {
   const t = useTranslation();
@@ -15,8 +16,8 @@ export function useBaseSection() {
   );
 
   const base = params.base;
-  const hasMagnet = base.style === 'magnet' || base.style === 'magnet_and_screw';
-  const hasScrew = base.style === 'screw' || base.style === 'magnet_and_screw';
+  const hasMagnet = isMagnetStyle(base.style);
+  const hasScrew = isScrewStyle(base.style);
   const isFlat = base.style === 'flat';
   const hasHalfSockets = base.halfSockets;
 

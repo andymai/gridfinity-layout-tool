@@ -3,6 +3,7 @@ import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT, migrateParams } from '../cons
 import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { validateBinParams } from '../utils/validation';
 import { expectOk } from '@/test/testUtils';
+import type { BinParams } from '../types';
 
 describe('DEFAULT_BIN_PARAMS', () => {
   it('should pass validation', () => {
@@ -403,6 +404,140 @@ describe('migrateParams', () => {
     expect(result.featureColors.body).toBe('#3b82f6');
     expect(result.featureColors.lip).toBe('#d4d8dc');
     expect(result.featureColors.labelTab).toBe('#d4d8dc');
+  });
+
+  it('backfills lid with defaults for designs saved before lid feature existed', () => {
+    const result = migrateParams({ width: 2, depth: 2, height: 3 });
+    expect(result.lid).toEqual(DEFAULT_BIN_PARAMS.lid);
+    expect(result.lid.enabled).toBe(false);
+  });
+
+  it('preserves stored lid config and fills missing fields from defaults', () => {
+    const result = migrateParams({
+      lid: { enabled: true, magnetHoles: true } as any,
+    });
+    expect(result.lid.enabled).toBe(true);
+    expect(result.lid.magnetHoles).toBe(true);
+    // Unspecified fields fall back to DEFAULT_LID_CONFIG
+    expect(result.lid.stackableTop).toBe(DEFAULT_BIN_PARAMS.lid.stackableTop);
+  });
+
+  it('strips legacy `fit`, `wallThickness`, `topThickness` from old saved designs', () => {
+    // These three fields were removed from LidConfig — designs saved
+    // before that point still carry them, and re-spreading would put
+    // unknown properties back onto the typed config.
+    const result = migrateParams({
+      lid: {
+        enabled: true,
+        stackableTop: true,
+        fit: 'tight',
+        wallThickness: 1.6,
+        topThickness: 1.6,
+      } as any,
+    });
+    expect(result.lid.enabled).toBe(true);
+    expect(result.lid.stackableTop).toBe(true);
+    expect((result.lid as any).fit).toBeUndefined();
+    expect((result.lid as any).wallThickness).toBeUndefined();
+    expect((result.lid as any).topThickness).toBeUndefined();
+  });
+
+  it('passes through fully-specified lid config', () => {
+    const lid = {
+      enabled: true,
+      stackableTop: true,
+      magnetHoles: true,
+      clickRails: { front: false, back: true, left: true, right: false },
+      clickRailCoverage: 75,
+    };
+    const result = migrateParams({ lid });
+    expect(result.lid).toEqual(lid);
+  });
+
+  it('backfills clickRails (object) for legacy lid configs missing the field', () => {
+    const result = migrateParams({
+      lid: {
+        enabled: true,
+        fit: 'standard',
+        stackableTop: false,
+        magnetHoles: false,
+        wallThickness: 1.2,
+        topThickness: 1.2,
+        clickRailCoverage: 50,
+        // clickRails missing — pre-feature designs were always built
+        // with rails, so the backfill restores all four sides on.
+      } as unknown as BinParams['lid'],
+    });
+    expect(result.lid.clickRails).toEqual({
+      front: true,
+      back: true,
+      left: true,
+      right: true,
+    });
+  });
+
+  it('migrates legacy clickRails: true to all four sides on', () => {
+    const result = migrateParams({
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        clickRails: true as unknown as BinParams['lid']['clickRails'],
+      },
+    });
+    expect(result.lid.clickRails).toEqual({
+      front: true,
+      back: true,
+      left: true,
+      right: true,
+    });
+  });
+
+  it('migrates legacy clickRails: false to all four sides off (friction-fit)', () => {
+    const result = migrateParams({
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        clickRails: false as unknown as BinParams['lid']['clickRails'],
+      },
+    });
+    expect(result.lid.clickRails).toEqual({
+      front: false,
+      back: false,
+      left: false,
+      right: false,
+    });
+  });
+
+  it('backfills missing per-side flags from defaults when clickRails is a partial object', () => {
+    const result = migrateParams({
+      lid: {
+        ...DEFAULT_BIN_PARAMS.lid,
+        // Only `front` set; the other three should fall back to default (true).
+        clickRails: { front: false } as unknown as BinParams['lid']['clickRails'],
+      },
+    });
+    expect(result.lid.clickRails).toEqual({
+      front: false,
+      back: true,
+      left: true,
+      right: true,
+    });
+  });
+
+  it('backfills clickRailCoverage from defaults for legacy lid configs missing the field', () => {
+    const result = migrateParams({
+      lid: {
+        enabled: true,
+        fit: 'standard',
+        stackableTop: true,
+        magnetHoles: false,
+        wallThickness: 1.2,
+        topThickness: 1.2,
+        // clickRailCoverage missing — should fall back to whatever
+        // DEFAULT_LID_CONFIG ships, NOT a hard-coded value, since the
+        // first-enable default has shifted over time (started at 100%
+        // edge-to-edge, then moved to 50% for filament economy).
+      } as unknown as BinParams['lid'],
+    });
+    expect(result.lid.clickRailCoverage).toBe(DEFAULT_BIN_PARAMS.lid.clickRailCoverage);
   });
 });
 

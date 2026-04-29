@@ -75,6 +75,22 @@ export function useGeneration(): void {
           edgeVertices: result.mesh.edgeVertices,
           faceGroups: result.mesh.faceGroups ? [...result.mesh.faceGroups] : undefined,
           coarseLOD: result.mesh.coarseLOD,
+          // Spread lid faceGroups into a mutable array so the Immer store
+          // can ingest it (the worker payload is `readonly`). The
+          // typed-array buffers (vertices/normals/indices/edgeVertices)
+          // are intentionally referenced as-is: `workerContext.maybeCopy`
+          // already cloned them on the worker side before transfer, so
+          // the main-thread arrays are detached from the worker's memory
+          // and safe to keep. (The bin-mesh fields above follow the same
+          // pattern by leaving the worker's typed arrays untouched.)
+          lidMesh: result.mesh.lidMesh
+            ? {
+                ...result.mesh.lidMesh,
+                faceGroups: result.mesh.lidMesh.faceGroups
+                  ? [...result.mesh.lidMesh.faceGroups]
+                  : undefined,
+              }
+            : undefined,
           error: null,
           timingMs: result.timingMs,
         });
