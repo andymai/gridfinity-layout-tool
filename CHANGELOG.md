@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.51.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.50.0...gridfinity-layout-tool-v4.51.0) (2026-04-29)
+
+
+### Features
+
+* **bin-designer:** harden bin export against intermittent worker failures ([#1511](https://github.com/andymai/gridfinity-layout-tool/issues/1511)) ([54443be](https://github.com/andymai/gridfinity-layout-tool/commit/54443bed793db332bbfe16ae018d35f8bbd8d9eb))
+
 ## [4.50.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.49.5...gridfinity-layout-tool-v4.50.0) (2026-04-29)
 
 
