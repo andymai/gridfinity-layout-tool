@@ -61,9 +61,12 @@ import {
   LID_MIN_CORNER_RADIUS,
   lidAnchorZ,
   lidWallBottomZ,
+  LID_FIT_CLEARANCE,
+  LID_WALL_THICKNESS,
+  LID_MAGNET_CEILING,
+  lidTopThickness,
 } from './lidConstants';
 import type { BinParams } from '@/shared/types/bin';
-import { LID_FIT_CLEARANCE } from '@/shared/types/bin';
 import { buildMaskDrawingAtInset } from './maskPolygon';
 import {
   isPartialMask,
@@ -136,7 +139,12 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   const gridUnitMm = params.gridUnitMm ?? SIZE;
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for legacy params
   const heightUnitMm = params.heightUnitMm ?? HEIGHT_UNIT;
-  const fitClearance = LID_FIT_CLEARANCE[params.lid.fit];
+  // Single locked-down clearance — see comment on LID_FIT_CLEARANCE.
+  const fitClearance = LID_FIT_CLEARANCE;
+  const wallThickness = LID_WALL_THICKNESS;
+  // Floor plate grows when magnets are enabled to fit the pocket plus
+  // a thin sealed ceiling above it (LID_MAGNET_CEILING).
+  const topThickness = lidTopThickness(params.lid.magnetHoles, params.base.magnetDepth);
 
   // Lid outer footprint matches bin outer footprint (flush exterior on
   // straight walls; lid corners are slightly inside bin corners by the
@@ -144,9 +152,9 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   const lidOuterW = params.width * gridUnitMm - 2 * fitClearance;
   const lidOuterD = params.depth * gridUnitMm - 2 * fitClearance;
   const lidCornerR = BOX_CORNER_RADIUS - fitClearance;
-  // Cavity inner inset = user-controlled wallThickness + the lip's chamfer
-  // depth. See comment on LidInputs.cavityInset for details.
-  const cavityInset = params.lid.wallThickness + LIP_BIG_TAPER;
+  // Cavity inner inset = wallThickness + the lip's chamfer depth. See
+  // comment on LidInputs.cavityInset for details.
+  const cavityInset = wallThickness + LIP_BIG_TAPER;
 
   // Polygon path activates when the mask is partially filled. A fully-filled
   // mask is treated as rectangular (matches the bin generator's convention).
@@ -157,11 +165,14 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     lidOuterD,
     lidCornerR,
     fitClearance,
-    topThickness: params.lid.topThickness,
-    wallThickness: params.lid.wallThickness,
+    topThickness,
+    wallThickness,
     cavityInset,
     stackableTop: params.lid.stackableTop,
-    magnetHoles: params.lid.magnetHoles,
+    // Magnets only have a stack-grid neighbour to mate with when
+    // `stackableTop` is on. Off ⇒ skip the pockets even if the user
+    // last toggled magnets on.
+    magnetHoles: params.lid.magnetHoles && params.lid.stackableTop,
     magnetDiameter: params.base.magnetDiameter,
     magnetDepth: params.base.magnetDepth,
     cellsX: params.width,
@@ -651,9 +662,17 @@ function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs):
     inputs;
   const radius = magnetDiameter / 2;
 
-  // Hole spans floor + a bit extra so the cut bites cleanly.
+  // BLIND pocket on the floor's underside — opens at the floor BOTTOM
+  // (lid-local Z = -topThickness, the face that meets the bin's lip top
+  // when closed) and stops short of the floor TOP by LID_MAGNET_CEILING
+  // so the magnet sits in a sealed cup. Capping at `topThickness -
+  // ceiling` is defensive in case `topThickness` was bumped up by
+  // `lidTopThickness` for an oversize magnet — guarantees we never
+  // poke through the cavity face. Floor bottom gets a small coplanar
+  // margin so the cut bites cleanly through the entry face.
+  const cappedDepth = Math.max(0.4, Math.min(magnetDepth, topThickness - LID_MAGNET_CEILING));
   const holeZ = -topThickness - LID_COPLANAR_MARGIN;
-  const holeHeight = magnetDepth + 2 * LID_COPLANAR_MARGIN;
+  const holeHeight = cappedDepth + LID_COPLANAR_MARGIN;
 
   // Build all cylinder cutters first, then apply them in a single cutAll.
   // Faster than per-magnet cut() for non-trivial lids — a 10×10 polygon lid

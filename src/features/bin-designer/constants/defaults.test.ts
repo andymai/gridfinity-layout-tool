@@ -414,25 +414,39 @@ describe('migrateParams', () => {
 
   it('preserves stored lid config and fills missing fields from defaults', () => {
     const result = migrateParams({
-      lid: { enabled: true, fit: 'tight' } as any,
+      lid: { enabled: true, magnetHoles: true } as any,
     });
     expect(result.lid.enabled).toBe(true);
-    expect(result.lid.fit).toBe('tight');
+    expect(result.lid.magnetHoles).toBe(true);
     // Unspecified fields fall back to DEFAULT_LID_CONFIG
     expect(result.lid.stackableTop).toBe(DEFAULT_BIN_PARAMS.lid.stackableTop);
-    expect(result.lid.magnetHoles).toBe(DEFAULT_BIN_PARAMS.lid.magnetHoles);
-    expect(result.lid.wallThickness).toBe(DEFAULT_BIN_PARAMS.lid.wallThickness);
-    expect(result.lid.topThickness).toBe(DEFAULT_BIN_PARAMS.lid.topThickness);
+  });
+
+  it('strips legacy `fit`, `wallThickness`, `topThickness` from old saved designs', () => {
+    // These three fields were removed from LidConfig — designs saved
+    // before that point still carry them, and re-spreading would put
+    // unknown properties back onto the typed config.
+    const result = migrateParams({
+      lid: {
+        enabled: true,
+        stackableTop: true,
+        fit: 'tight',
+        wallThickness: 1.6,
+        topThickness: 1.6,
+      } as any,
+    });
+    expect(result.lid.enabled).toBe(true);
+    expect(result.lid.stackableTop).toBe(true);
+    expect((result.lid as any).fit).toBeUndefined();
+    expect((result.lid as any).wallThickness).toBeUndefined();
+    expect((result.lid as any).topThickness).toBeUndefined();
   });
 
   it('passes through fully-specified lid config', () => {
     const lid = {
       enabled: true,
-      fit: 'loose' as const,
-      stackableTop: false,
+      stackableTop: true,
       magnetHoles: true,
-      wallThickness: 1.6,
-      topThickness: 1.6,
       clickRails: { front: false, back: true, left: true, right: false },
       clickRailCoverage: 75,
     };

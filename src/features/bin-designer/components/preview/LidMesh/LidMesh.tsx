@@ -64,7 +64,7 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false }: LidMeshProps)
     useShallow((s) => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for legacy params
       const heightUnit = s.params.heightUnitMm ?? 7;
-      const fitClearance = LID_FIT_CLEARANCE[s.params.lid.fit];
+      const fitClearance = LID_FIT_CLEARANCE;
       const binLipTopWorldZ = s.params.height * heightUnit + PREVIEW_Z_OFFSET;
       const anchorZ = lidAnchorZ(heightUnit, fitClearance);
       return {

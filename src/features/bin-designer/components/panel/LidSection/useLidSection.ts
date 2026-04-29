@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { useTranslation } from '@/i18n';
 import {
@@ -9,7 +8,6 @@ import {
   LID_FIT_CLEARANCE,
   isMagnetStyle,
   type LidClickRails,
-  type LidFit,
   type LidRailSide,
 } from '@/features/bin-designer/types';
 import { isPartialMask, maskToPolygon, MASK_CELL_SIZE } from '@/shared/utils/cellMask';
@@ -21,8 +19,6 @@ import {
 } from '@/features/bin-designer/utils/lidCompatibility';
 import type { LidCompatibilityIssue } from '@/features/bin-designer/utils/lidCompatibility';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
-
-export const FIT_OPTIONS: readonly LidFit[] = ['loose', 'standard', 'tight'] as const;
 
 /**
  * Build the `disabledReason` text shown on the lid toggle when blockers
@@ -68,13 +64,12 @@ function computeRailSummary(
   width: number,
   depth: number,
   gridUnitMm: number,
-  fit: LidFit,
   coveragePercent: number,
   labelEnabled: boolean,
   cellMask: CellMask | undefined,
   clickRails: LidClickRails
 ): RailSummary {
-  const fitClearance = LID_FIT_CLEARANCE[fit];
+  const fitClearance = LID_FIT_CLEARANCE;
   const lidCornerR = GRIDFINITY.BOX_CORNER_RADIUS - fitClearance;
   const coverage = coveragePercent / 100;
 
@@ -173,17 +168,18 @@ export function useLidSection() {
   const effectiveEnabled = lid.enabled && base.stackingLip && !blocked;
 
   // Bin has magnets when its base style includes them. Used as the smart
-  // default for lid magnetHoles each time the lid is enabled.
+  // default for lid magnetHoles each time the lid is enabled (and as a
+  // hint when the user toggles magnets without a stack grid above).
   const binHasMagnets = isMagnetStyle(base.style);
 
-  const thicknessOptions: SnappingSliderOption[] = useMemo(
-    () =>
-      WALL_THICKNESS_OPTIONS.map((value) => ({
-        value,
-        description: t(`binDesigner.wallThickness.${value}`),
-      })),
-    [t]
-  );
+  // Magnet pockets only do something when a bin can stack on the lid above
+  // (the upper bin's base magnets meet the pocketed magnets through the
+  // floor). Without `stackableTop`, the toggle is gated and the worker
+  // skips the cuts even if the persisted flag is `true`.
+  const magnetsRequireStackable = lid.magnetHoles && !lid.stackableTop;
+  const magnetsDisabledReason = !lid.stackableTop
+    ? t('binDesigner.lid.magnetsRequireStackable')
+    : undefined;
 
   const railCoverageOptions: SnappingSliderOption[] = useMemo(
     () =>
@@ -198,40 +194,30 @@ export function useLidSection() {
     if (lid.enabled) {
       updateLid({ enabled: false });
     } else {
-      // First enable (or re-enable) auto-syncs magnetHoles to bin's magnet
-      // state so the lid matches by default. User can override afterwards.
-      updateLid({ enabled: true, magnetHoles: binHasMagnets });
+      // First enable (or re-enable): turn on the stack grid + magnets when
+      // the bin already uses magnets, so the assembly's natural use case
+      // (stackable lid that grips magnets) lights up without extra clicks.
+      const wantMagnets = binHasMagnets;
+      updateLid({
+        enabled: true,
+        stackableTop: wantMagnets || lid.stackableTop,
+        magnetHoles: wantMagnets,
+      });
     }
-  }, [lid.enabled, binHasMagnets, updateLid]);
-
-  const setFit = useCallback(
-    (fit: LidFit) => {
-      updateLid({ fit });
-    },
-    [updateLid]
-  );
+  }, [lid.enabled, lid.stackableTop, binHasMagnets, updateLid]);
 
   const toggleStackableTop = useCallback(() => {
-    updateLid({ stackableTop: !lid.stackableTop });
-  }, [lid.stackableTop, updateLid]);
+    const next = !lid.stackableTop;
+    // Disabling the stack grid also clears magnets — they need the grid
+    // above them to do anything, so leaving them on would silently
+    // produce a lid whose floor pockets meet nothing.
+    updateLid({ stackableTop: next, magnetHoles: next ? lid.magnetHoles : false });
+  }, [lid.stackableTop, lid.magnetHoles, updateLid]);
 
   const toggleMagnetHoles = useCallback(() => {
+    if (!lid.stackableTop) return; // Gated; UI also disables the switch.
     updateLid({ magnetHoles: !lid.magnetHoles });
-  }, [lid.magnetHoles, updateLid]);
-
-  const setWallThickness = useCallback(
-    (wallThickness: number) => {
-      updateLid({ wallThickness });
-    },
-    [updateLid]
-  );
-
-  const setTopThickness = useCallback(
-    (topThickness: number) => {
-      updateLid({ topThickness });
-    },
-    [updateLid]
-  );
+  }, [lid.stackableTop, lid.magnetHoles, updateLid]);
 
   const setClickRailCoverage = useCallback(
     (clickRailCoverage: number) => {
@@ -256,29 +242,37 @@ export function useLidSection() {
     lid.clickRails.front || lid.clickRails.back || lid.clickRails.left || lid.clickRails.right;
 
   // Lid outer footprint mirrors `lidBuilder.resolveLidInputs` so the panel
-  // readout matches the generated geometry.
+  // readout matches the generated geometry. Floor thickness is dynamic
+  // (grows when magnets need a deeper pocket) so we mirror
+  // `lidTopThickness` here without importing the worker-side helper.
   const lidDimensions = useMemo(() => {
-    const fitClearance = LID_FIT_CLEARANCE[lid.fit];
+    const fitClearance = LID_FIT_CLEARANCE;
     const lidOuterW = params.width * params.gridUnitMm - 2 * fitClearance;
     const lidOuterD = params.depth * params.gridUnitMm - 2 * fitClearance;
-    // Lid Z extent = mating-shell depth (|wallBottomZ|) + floor plate
-    // (topThickness). Tracks the user's topThickness slider so the readout
-    // matches the actual generated solid; ignoring it would understate the
-    // lid by up to ~2.4mm and mislead users budgeting drawer height.
+    // Lid Z extent = mating-shell depth (|wallBottomZ|) + floor plate.
+    // Floor plate auto-grows for magnets — keep the readout in sync so
+    // users see why the lid is taller when they enable magnets.
     const wallBottomZ = lidWallBottomZ(params.heightUnitMm, fitClearance);
-    const lidH = Math.abs(wallBottomZ) + lid.topThickness;
+    const baseTop = 1.2;
+    const magnetCeiling = 0.6;
+    const effectiveMagnets = lid.magnetHoles && lid.stackableTop;
+    const topThickness = effectiveMagnets
+      ? Math.max(baseTop, base.magnetDepth + magnetCeiling)
+      : baseTop;
+    const lidH = Math.abs(wallBottomZ) + topThickness;
     return { width: lidOuterW, depth: lidOuterD, height: lidH };
   }, [
-    lid.fit,
-    lid.topThickness,
+    lid.magnetHoles,
+    lid.stackableTop,
+    base.magnetDepth,
     params.width,
     params.depth,
     params.gridUnitMm,
     params.heightUnitMm,
   ]);
 
-  // Lid height varies by sub-mm steps as the user dials topThickness;
-  // 1-decimal precision keeps that feedback visible (matches w/d).
+  // Lid height shifts in sub-mm steps when magnets toggle on; 1-decimal
+  // precision keeps that feedback visible (matches w/d).
   const dimensionsReadout = useMemo(
     () =>
       t('binDesigner.lid.outerDimensions', {
@@ -296,7 +290,6 @@ export function useLidSection() {
             params.width,
             params.depth,
             params.gridUnitMm,
-            lid.fit,
             lid.clickRailCoverage,
             params.label.enabled,
             params.cellMask,
@@ -310,7 +303,6 @@ export function useLidSection() {
       params.gridUnitMm,
       params.cellMask,
       params.label.enabled,
-      lid.fit,
       lid.clickRails,
       lid.clickRailCoverage,
     ]
@@ -360,46 +352,39 @@ export function useLidSection() {
     (lid.clickRails.left ? 1 : 0) +
     (lid.clickRails.right ? 1 : 0);
 
-  // Rich value summary for the collapsed FeatureToggle header — fit +
-  // rail status + wall thickness, separated by middle dots. Three
-  // branches: all sides on (concise "{coverage}% rails"), partial
-  // ("{coverage}% rails on N sides"), none ("no rails").
+  // Rich value summary for the collapsed FeatureToggle header — rail
+  // status + a stack/magnet hint. Three rail branches: all sides on
+  // ("{coverage}% rails"), partial ("{coverage}% rails on N sides"),
+  // none ("no rails"). Wall thickness/fit no longer surface here since
+  // they're locked-down constants.
   const valueSummary = useMemo(() => {
-    const fitLabel = t(`binDesigner.lid.fit.${lid.fit}`);
     if (railSideCount === 0) {
-      return t('binDesigner.lid.summaryNoRails', {
-        fit: fitLabel,
-        wall: lid.wallThickness,
-      });
+      return t('binDesigner.lid.summaryNoRails');
     }
     if (railSideCount < 4) {
       return t('binDesigner.lid.summaryPartialRails', {
-        fit: fitLabel,
         coverage: lid.clickRailCoverage,
         sides: railSideCount,
-        wall: lid.wallThickness,
       });
     }
     return t('binDesigner.lid.summary', {
-      fit: fitLabel,
       coverage: lid.clickRailCoverage,
-      wall: lid.wallThickness,
     });
-  }, [t, lid.fit, railSideCount, lid.clickRailCoverage, lid.wallThickness]);
+  }, [t, railSideCount, lid.clickRailCoverage]);
 
   return {
     state: {
       enabled: effectiveEnabled,
-      fit: lid.fit,
       stackableTop: lid.stackableTop,
       magnetHoles: lid.magnetHoles,
-      wallThickness: lid.wallThickness,
-      topThickness: lid.topThickness,
+      magnetsRequireStackable,
+      magnetsDisabledReason,
+      magnetDiameter: base.magnetDiameter,
+      magnetDepth: base.magnetDepth,
       clickRails: lid.clickRails,
       anyRail,
       clickRailCoverage: lid.clickRailCoverage,
       disabledReason,
-      thicknessOptions,
       railCoverageOptions,
       valueSummary,
       dimensionsReadout,
@@ -408,11 +393,8 @@ export function useLidSection() {
     },
     handlers: {
       toggleEnabled,
-      setFit,
       toggleStackableTop,
       toggleMagnetHoles,
-      setWallThickness,
-      setTopThickness,
       toggleClickRailSide,
       setClickRailCoverage,
     },

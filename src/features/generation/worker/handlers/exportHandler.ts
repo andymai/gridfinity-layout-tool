@@ -140,8 +140,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         let lidSolid = hasLid ? buildLid(params) : null;
         try {
           if (lidSolid) {
-            const fitClearance = LID_FIT_CLEARANCE[params.lid.fit];
-            const lidZ = totalHeight - lidAnchorZ(params.heightUnitMm, fitClearance);
+            const lidZ = totalHeight - lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE);
             const positioned = translate(lidSolid, [0, 0, lidZ]);
             lidSolid.delete();
             lidSolid = positioned;

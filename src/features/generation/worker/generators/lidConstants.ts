@@ -16,6 +16,37 @@
 
 import { LIP_BIG_TAPER, LIP_VERTICAL_PART, LIP_HEIGHT } from './generatorConstants';
 
+/* ──────────────────────────────────────────────────────────────────────
+ * Opinionated lid dimensions (formerly user-configurable; locked down
+ * because the click-lock fit is a single, validated set of numbers).
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/** Side-wall thickness for the mating shell. Two-walls-at-0.4-nozzle. */
+export const LID_WALL_THICKNESS = 1.2;
+
+/** Floor plate thickness when no magnet pockets are needed. */
+export const LID_TOP_THICKNESS_BASE = 1.2;
+
+/** Minimum solid material above a magnet pocket so it can't punch through
+ *  to the cavity face — keeps the lid sealed at typical FDM settings. */
+export const LID_MAGNET_CEILING = 0.6;
+
+/** Per-side clearance between the lid's mating profile and the bin's
+ *  stacking lip. Replaces the old `loose|standard|tight` preset map —
+ *  one validated value, no UI knob. */
+export const LID_FIT_CLEARANCE = 0.2;
+
+/**
+ * Floor plate thickness when magnet pockets are enabled. The pocket
+ * needs at least `magnetDepth` of depth, plus a thin ceiling so the
+ * pocket doesn't break through into the cavity. Falls back to the
+ * baseline when magnets are off.
+ */
+export function lidTopThickness(magnetHoles: boolean, magnetDepth: number): number {
+  if (!magnetHoles) return LID_TOP_THICKNESS_BASE;
+  return Math.max(LID_TOP_THICKNESS_BASE, magnetDepth + LID_MAGNET_CEILING);
+}
+
 /** Extra clearance baked into the anchor calculation to compensate for
  *  first-layer squish (mm). */
 export const LID_EXTRA_HEIGHT = 0.2;

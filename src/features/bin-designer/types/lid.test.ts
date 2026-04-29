@@ -1,14 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_LID_CONFIG, LID_FIT_CLEARANCE, type LidConfig, type LidFit } from './lid';
-import { WALL_THICKNESS_OPTIONS } from '../constants/gridfinity';
+import { DEFAULT_LID_CONFIG, LID_FIT_CLEARANCE, type LidConfig } from './lid';
 
 describe('DEFAULT_LID_CONFIG', () => {
   it('is disabled by default', () => {
     expect(DEFAULT_LID_CONFIG.enabled).toBe(false);
-  });
-
-  it('uses standard fit by default', () => {
-    expect(DEFAULT_LID_CONFIG.fit).toBe('standard');
   });
 
   it('disables stackable top by default (the lid prints rails-up; stack grid would land on the build plate)', () => {
@@ -32,33 +27,21 @@ describe('DEFAULT_LID_CONFIG', () => {
     expect(DEFAULT_LID_CONFIG.magnetHoles).toBe(false);
   });
 
-  it('uses thickness defaults from WALL_THICKNESS_OPTIONS', () => {
-    expect(WALL_THICKNESS_OPTIONS).toContain(DEFAULT_LID_CONFIG.wallThickness);
-    expect(WALL_THICKNESS_OPTIONS).toContain(DEFAULT_LID_CONFIG.topThickness);
+  // wallThickness, topThickness, fit are intentionally NOT on LidConfig —
+  // they're locked-down constants in `lidConstants.ts`. The type-level
+  // test below ensures they aren't reintroduced silently.
+  it('does not expose wall/top/fit knobs (validated values live in lidConstants)', () => {
+    const cfg: LidConfig = DEFAULT_LID_CONFIG;
+    expect('wallThickness' in cfg).toBe(false);
+    expect('topThickness' in cfg).toBe(false);
+    expect('fit' in cfg).toBe(false);
   });
 });
 
 describe('LID_FIT_CLEARANCE', () => {
-  it('orders clearances from loose to tight', () => {
-    expect(LID_FIT_CLEARANCE.loose).toBeGreaterThan(LID_FIT_CLEARANCE.standard);
-    expect(LID_FIT_CLEARANCE.standard).toBeGreaterThan(LID_FIT_CLEARANCE.tight);
-  });
-
-  it('keeps all clearances within FDM-printable range', () => {
-    const fits: readonly LidFit[] = ['loose', 'standard', 'tight'];
-    for (const fit of fits) {
-      expect(LID_FIT_CLEARANCE[fit]).toBeGreaterThan(0);
-      expect(LID_FIT_CLEARANCE[fit]).toBeLessThanOrEqual(0.5);
-    }
-  });
-});
-
-describe('LidConfig type', () => {
-  it('accepts all fit values', () => {
-    const fits: LidFit[] = ['loose', 'standard', 'tight'];
-    for (const fit of fits) {
-      const config: LidConfig = { ...DEFAULT_LID_CONFIG, fit };
-      expect(config.fit).toBe(fit);
-    }
+  // Now a single FDM-printable value (formerly a loose/standard/tight map).
+  it('is a positive, sub-mm clearance', () => {
+    expect(LID_FIT_CLEARANCE).toBeGreaterThan(0);
+    expect(LID_FIT_CLEARANCE).toBeLessThanOrEqual(0.5);
   });
 });

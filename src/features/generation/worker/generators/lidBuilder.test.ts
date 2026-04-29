@@ -22,26 +22,49 @@ describe('resolveLidInputs', () => {
     expect(inputs.cellsY).toBe(2);
   });
 
-  it('maps fit enum to clearance values', () => {
-    const loose = resolveLidInputs(makeParams({ fit: 'loose' }));
-    const standard = resolveLidInputs(makeParams({ fit: 'standard' }));
-    const tight = resolveLidInputs(makeParams({ fit: 'tight' }));
-    expect(loose.fitClearance).toBeGreaterThan(standard.fitClearance);
-    expect(standard.fitClearance).toBeGreaterThan(tight.fitClearance);
-    expect(loose.fitClearance).toBeCloseTo(0.3, 4);
-    expect(standard.fitClearance).toBeCloseTo(0.2, 4);
-    expect(tight.fitClearance).toBeCloseTo(0.1, 4);
+  it('uses the locked-down fit clearance regardless of legacy config', () => {
+    // The loose/standard/tight preset map was retired — there's now one
+    // validated value, baked into `lidConstants.LID_FIT_CLEARANCE`.
+    const inputs = resolveLidInputs(makeParams({}));
+    expect(inputs.fitClearance).toBeCloseTo(0.2, 4);
   });
 
-  it('passes through wall + top thickness from config', () => {
-    const inputs = resolveLidInputs(makeParams({ wallThickness: 1.6, topThickness: 1.2 }));
-    expect(inputs.wallThickness).toBe(1.6);
+  it('uses the locked-down wall thickness regardless of legacy config', () => {
+    // wallThickness was removed from LidConfig — `resolveLidInputs` now
+    // sources it from `lidConstants.LID_WALL_THICKNESS`.
+    const inputs = resolveLidInputs(makeParams({}));
+    expect(inputs.wallThickness).toBe(1.2);
+  });
+
+  it('top thickness defaults to baseline when magnets are off', () => {
+    const inputs = resolveLidInputs(makeParams({ magnetHoles: false }));
     expect(inputs.topThickness).toBe(1.2);
   });
 
-  it('passes through stackable + magnet toggles', () => {
+  it('top thickness grows to fit a deeper magnet pocket', () => {
+    // Magnet pocket needs `magnetDepth` of depth + a sealed ceiling
+    // (LID_MAGNET_CEILING = 0.6mm). For a 2.5mm magnet the floor must be
+    // ≥ 3.1mm, well above the 1.2mm baseline.
+    const inputs = resolveLidInputs(
+      makeParams(
+        { enabled: true, stackableTop: true, magnetHoles: true },
+        { base: { ...DEFAULT_BIN_PARAMS.base, magnetDepth: 2.5 } }
+      )
+    );
+    expect(inputs.topThickness).toBeCloseTo(3.1, 4);
+  });
+
+  it('skips magnet pockets when stackableTop is off, even if persisted flag is true', () => {
+    // Magnets only do something when there's a stack grid above; gate at
+    // resolve time so the worker never cuts useless pockets.
     const inputs = resolveLidInputs(makeParams({ stackableTop: false, magnetHoles: true }));
     expect(inputs.stackableTop).toBe(false);
+    expect(inputs.magnetHoles).toBe(false);
+  });
+
+  it('keeps magnet pockets when both stackableTop and magnetHoles are on', () => {
+    const inputs = resolveLidInputs(makeParams({ stackableTop: true, magnetHoles: true }));
+    expect(inputs.stackableTop).toBe(true);
     expect(inputs.magnetHoles).toBe(true);
   });
 

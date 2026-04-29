@@ -1,10 +1,11 @@
 /**
  * Click-lock lid section.
  *
- * Composed layout (matches HandleSection): the Fit picker lives in
- * `primaryControls` so it's always visible while the lid is on; the
- * customize area carries the secondary controls plus a live mm readout
- * grounding the percentages in real geometry.
+ * Wall thickness, top thickness, and the loose/standard/tight fit picker
+ * have been retired — those numbers are locked down in `lidConstants.ts`
+ * since the click-lock geometry only works with one validated set. The
+ * remaining knobs are real choices: stackable top, magnets (gated on
+ * stackable top), and per-side click rails.
  */
 
 import { FeatureToggle } from '../FeatureToggle';
@@ -14,7 +15,7 @@ import { SnappingSlider } from '../../controls/SnappingSlider';
 import type { LidCompatibilityIssue } from '@/features/bin-designer/utils/lidCompatibility';
 import { LID_RAIL_SIDES } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
-import { useLidSection, FIT_OPTIONS } from './useLidSection';
+import { useLidSection } from './useLidSection';
 
 type Translator = ReturnType<typeof useTranslation>;
 
@@ -51,28 +52,6 @@ export function LidSection() {
           {t('settings.experimental')}
         </span>
       }
-      primaryControls={
-        // Fit is the most consequential lid choice — keep it always visible
-        // when the lid is on, before the "Customize" gate. Mirrors
-        // HandleSection's shape selector + side chips pattern.
-        <div className="flex gap-1">
-          {FIT_OPTIONS.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => handlers.setFit(option)}
-              aria-pressed={state.fit === option}
-              className={`flex-1 rounded px-3 py-2 text-xs font-medium transition-colors min-h-[36px] ${
-                state.fit === option
-                  ? 'bg-accent text-on-accent'
-                  : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-              }`}
-            >
-              {t(`binDesigner.lid.fit.${option}`)}
-            </button>
-          ))}
-        </div>
-      }
     >
       {/* Print-time hint — the mating cavity and click rails are
           downward-facing overhangs that need supports for a clean print. */}
@@ -96,31 +75,18 @@ export function LidSection() {
         </div>
       )}
 
-      {/* Wall + Top thickness paired side-by-side (LabelTabsSection pattern). */}
-      <div className="grid grid-cols-2 gap-3">
-        <SnappingSlider
-          label={t('binDesigner.lid.wallThickness')}
-          value={state.wallThickness}
-          onChange={handlers.setWallThickness}
-          options={state.thicknessOptions}
-        />
-        <SnappingSlider
-          label={t('binDesigner.lid.topThickness')}
-          value={state.topThickness}
-          onChange={handlers.setTopThickness}
-          options={state.thicknessOptions}
-        />
-      </div>
-
       {/* Live physical readout — grounds the params in real-world mm so
-          users can sanity-check before printing. Matches LabelTabsSection
-          and HandleSection conventions. */}
+          users can sanity-check before printing. Wall thickness / top
+          thickness used to live next to this but they're now fixed. */}
       <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
         <RulerIcon size="xs" />
         <span className="tabular-nums">{state.dimensionsReadout}</span>
       </div>
 
-      {/* Switches for the orthogonal toggles. */}
+      {/* Switches for the orthogonal toggles. Magnet pockets only do
+          something when there's a stack grid above them (a bin stacked
+          ON the lid mates with the pockets through the floor) — gate
+          accordingly. */}
       <Switch
         label={t('binDesigner.lid.stackableTop')}
         checked={state.stackableTop}
@@ -130,7 +96,21 @@ export function LidSection() {
         label={t('binDesigner.lid.magnetHoles')}
         checked={state.magnetHoles}
         onChange={handlers.toggleMagnetHoles}
+        disabled={!state.stackableTop}
       />
+      {state.magnetsDisabledReason && (
+        <p className="-mt-2 ml-1 text-[11px] leading-relaxed text-content-tertiary">
+          {state.magnetsDisabledReason}
+        </p>
+      )}
+      {state.magnetHoles && state.stackableTop && (
+        <p className="-mt-2 ml-1 text-[11px] leading-relaxed text-content-tertiary">
+          {t('binDesigner.lid.magnetSpec', {
+            diameter: state.magnetDiameter.toFixed(1),
+            depth: state.magnetDepth.toFixed(1),
+          })}
+        </p>
+      )}
 
       {/* Click rails — per-side. Each chip is an independent toggle: a
           user can ship a hinge-feel lid (one side only), a label-tab-

@@ -138,6 +138,32 @@ describe('generateLid scenarios', () => {
     expect(withBB.maxZ).toBeGreaterThan(withoutBB.maxZ);
   });
 
+  it('stack grid stays inside the lid outer footprint (no protrusion)', async () => {
+    // Regression: the lip profile is swept INWARD from the perimeter
+    // (negative profile X = inward from path), so the stack grid's outer
+    // face must coincide with the lid's outer perimeter — never extend
+    // past it. Compare bounding boxes of stack-on vs stack-off lids:
+    // adding the stack grid must not widen the X/Y footprint.
+    const { generateLid } = await import('./lidOrchestrator');
+    const withGrid = generateLid(
+      makeParams({ stackableTop: true }, { width: 2, depth: 2, height: 3 })
+    );
+    const withoutGrid = generateLid(
+      makeParams({ stackableTop: false }, { width: 2, depth: 2, height: 3 })
+    );
+    expect(withGrid).not.toBeNull();
+    expect(withoutGrid).not.toBeNull();
+    const withBB = boundingBox(withGrid!.vertices);
+    const withoutBB = boundingBox(withoutGrid!.vertices);
+    // Within tessellation tolerance, the stack grid must sit at or inside
+    // the existing footprint — never widen it.
+    const tolerance = 0.01;
+    expect(withBB.maxX).toBeLessThanOrEqual(withoutBB.maxX + tolerance);
+    expect(withBB.minX).toBeGreaterThanOrEqual(withoutBB.minX - tolerance);
+    expect(withBB.maxY).toBeLessThanOrEqual(withoutBB.maxY + tolerance);
+    expect(withBB.minY).toBeGreaterThanOrEqual(withoutBB.minY - tolerance);
+  });
+
   it('magnet holes add cuts (mesh changes meaningfully)', async () => {
     const { generateLid } = await import('./lidOrchestrator');
     const without = generateLid(
@@ -324,7 +350,7 @@ describe('generateLid scenarios', () => {
       expect(binSolid).not.toBeNull();
 
       const totalHeight = params.height * params.heightUnitMm;
-      const fitClearance = LID_FIT_CLEARANCE[params.lid.fit];
+      const fitClearance = LID_FIT_CLEARANCE;
       const lidZ = totalHeight - lidAnchorZ(params.heightUnitMm, fitClearance);
 
       const lidSolid = buildLid(params);

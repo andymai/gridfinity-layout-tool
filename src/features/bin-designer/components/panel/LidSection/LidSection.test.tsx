@@ -28,43 +28,29 @@ describe('LidSection', () => {
     expect(screen.getByRole('switch', { name: 'Lid' })).toBeDisabled();
   });
 
-  it('toggles lid enabled and shows the value summary', () => {
+  it('toggles lid enabled', () => {
     render(<LidSection />);
     const toggle = screen.getByRole('switch', { name: 'Lid' });
     fireEvent.click(toggle);
     expect(useDesignerStore.getState().params.lid.enabled).toBe(true);
   });
 
-  it('auto-syncs magnetHoles to bin magnets on enable', () => {
+  it('auto-syncs magnetHoles + stackableTop on enable when bin has magnets', () => {
+    // Magnets only do anything with a stack grid above — the auto-sync
+    // turns ON both at once so the assembly's natural use case lights up.
     resetStore({ base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' } });
     render(<LidSection />);
     fireEvent.click(screen.getByRole('switch', { name: 'Lid' }));
-    expect(useDesignerStore.getState().params.lid.magnetHoles).toBe(true);
+    const lid = useDesignerStore.getState().params.lid;
+    expect(lid.magnetHoles).toBe(true);
+    expect(lid.stackableTop).toBe(true);
   });
 
-  it('disables magnetHoles on enable when bin has no magnets', () => {
+  it('leaves magnetHoles off on enable when bin has no magnets', () => {
     // Default base.style is 'standard' (no magnets)
     render(<LidSection />);
     fireEvent.click(screen.getByRole('switch', { name: 'Lid' }));
     expect(useDesignerStore.getState().params.lid.magnetHoles).toBe(false);
-  });
-
-  it('renders fit picker buttons when enabled', () => {
-    resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
-    render(<LidSection />);
-    // Switch to expanded (Customize) to see sub-controls
-    fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
-    expect(screen.getByRole('button', { name: 'Loose' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Standard' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Tight' })).toBeInTheDocument();
-  });
-
-  it('switches fit when picker button clicked', () => {
-    resetStore({ lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true } });
-    render(<LidSection />);
-    fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Tight' }));
-    expect(useDesignerStore.getState().params.lid.fit).toBe('tight');
   });
 
   it('toggles stackable top via Switch', () => {
@@ -73,5 +59,27 @@ describe('LidSection', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
     fireEvent.click(screen.getByRole('switch', { name: 'Stackable top grid' }));
     expect(useDesignerStore.getState().params.lid.stackableTop).toBe(false);
+  });
+
+  it('disables the magnet switch when stackable top is off', () => {
+    // Magnet pockets need a stack grid above to mate with — gated.
+    resetStore({
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: false, magnetHoles: false },
+    });
+    render(<LidSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+    expect(screen.getByRole('switch', { name: 'Magnet pockets' })).toBeDisabled();
+  });
+
+  it('clears magnetHoles when stackableTop is turned off', () => {
+    resetStore({
+      lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true, stackableTop: true, magnetHoles: true },
+    });
+    render(<LidSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Stackable top grid' }));
+    const lid = useDesignerStore.getState().params.lid;
+    expect(lid.stackableTop).toBe(false);
+    expect(lid.magnetHoles).toBe(false);
   });
 });

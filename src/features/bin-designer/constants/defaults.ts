@@ -500,14 +500,25 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     wallPattern: wallPatternConfig,
     featureColors: migrateFeatureColors(params.featureColors),
     lid: (() => {
-      const stored = (params.lid as Partial<LidConfig> | undefined) ?? {};
+      // Strip locked-down legacy fields (`fit`, `wallThickness`,
+      // `topThickness`) from persisted designs — they're hardcoded in
+      // `lidConstants.ts` now and re-spreading them would put unknown
+      // properties back onto the typed config.
+      const raw = (params.lid as Record<string, unknown> | undefined) ?? {};
+      const {
+        fit: _legacyFit,
+        wallThickness: _legacyWall,
+        topThickness: _legacyTop,
+        clickRails: rawClickRails,
+        ...stored
+      } = raw;
       return {
         ...DEFAULT_LID_CONFIG,
-        ...stored,
+        ...(stored as Partial<LidConfig>),
         // `clickRails` evolved from boolean → per-side object. Always
         // route through the migrator so the field is the right shape
         // regardless of how it was persisted.
-        clickRails: migrateClickRails(stored.clickRails),
+        clickRails: migrateClickRails(rawClickRails),
       };
     })(),
     ...(params.splitConnectors !== undefined

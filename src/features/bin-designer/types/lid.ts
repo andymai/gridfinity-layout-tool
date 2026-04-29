@@ -6,20 +6,20 @@
  * footprint is auto-derived from the bin's dimensions (or cellMask polygon)
  * and its mating profile uses the bin's existing LIP_* constants so fit
  * tracks the lip spec automatically.
+ *
+ * Wall thickness, top thickness, and fit clearance are intentionally
+ * NOT user-configurable: the click-lock geometry is a single validated
+ * set of numbers, and exposing those knobs invited mis-prints. See
+ * `lidConstants.ts` for the live values.
  */
-
-/** Click-lock fit preset — maps to a clearance offset between lid and lip. */
-export type LidFit = 'loose' | 'standard' | 'tight';
 
 /**
  * Per-side clearance in mm between the lid's mating profile and the bin's
- * stacking lip surface. Applied as inset to the lid's BottomShape polygon.
+ * stacking lip surface. Single validated value — no UI knob (formerly a
+ * loose/standard/tight preset). Mirrors `LID_FIT_CLEARANCE` in the worker
+ * `lidConstants.ts`.
  */
-export const LID_FIT_CLEARANCE: Record<LidFit, number> = {
-  loose: 0.3,
-  standard: 0.2,
-  tight: 0.1,
-} as const;
+export const LID_FIT_CLEARANCE = 0.2;
 
 /**
  * Available click-rail coverage options as a percentage of edge length.
@@ -49,23 +49,19 @@ export interface LidClickRails {
 export interface LidConfig {
   /** Master toggle. When false, no lid is generated regardless of other fields. */
   readonly enabled: boolean;
-  /** Click-lock fit preset (clearance between lid and bin lip). */
-  readonly fit: LidFit;
   /** Include Gridfinity stack-grid pattern on top of lid (other bins stack on it). */
   readonly stackableTop: boolean;
-  /** Include magnet holes in the lid (uses bin's BaseConfig magnetDiameter). */
+  /** Include magnet holes in the lid (uses bin's BaseConfig magnetDiameter).
+   *  Requires `stackableTop`: pockets only do something when a bin can
+   *  stack on the lid above them. */
   readonly magnetHoles: boolean;
-  /** Lid side-wall thickness in mm. Use a value from WALL_THICKNESS_OPTIONS. */
-  readonly wallThickness: number;
-  /** Lid top plate thickness in mm. Use a value from WALL_THICKNESS_OPTIONS. */
-  readonly topThickness: number;
   /**
    * Per-side click-rail engagement. Each wall is independent. When all
    * four are `false`, the lid is friction-fit only (mating cavity wraps
-   * the lip with fitClearance, no positive snap). When some are `false`
-   * the lid clicks asymmetrically — useful for hinged-feel removal or
-   * for designs where one wall has cutouts/labels that conflict with a
-   * rail. `clickRailCoverage` applies to whichever sides are enabled.
+   * the lip, no positive snap). When some are `false` the lid clicks
+   * asymmetrically — useful for hinged-feel removal or for designs
+   * where one wall has cutouts/labels that conflict with a rail.
+   * `clickRailCoverage` applies to whichever sides are enabled.
    *
    * Migration: legacy `boolean` values get expanded by `migrateParams`:
    * `true` → all four sides true, `false` → all four false.
@@ -89,15 +85,11 @@ export interface LidConfig {
  *   (`exportLid` rotates 180° around X so the floor sits on the bed) free
  *   of features that fight that rotation; users opt in if they need
  *   stackability.
- * Other defaults preserve the standard fit, no magnets, and 1.2mm walls/top.
  */
 export const DEFAULT_LID_CONFIG: LidConfig = {
   enabled: false,
-  fit: 'standard',
   stackableTop: false,
   magnetHoles: false,
-  wallThickness: 1.2,
-  topThickness: 1.2,
   clickRails: { front: true, back: true, left: true, right: true },
   clickRailCoverage: 50,
 } as const;

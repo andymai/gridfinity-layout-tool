@@ -70,20 +70,16 @@ describe('lid Z formulas cross-thread agreement', () => {
   // so silent drift fails fast.
   const HEIGHT_UNITS = [4, 7, 10] as const; // common Gridfinity values + edges
   for (const heightUnitMm of HEIGHT_UNITS) {
-    for (const fit of ['loose', 'standard', 'tight'] as const) {
-      it(`lidAnchorZ agrees for heightUnitMm=${heightUnitMm}, fit=${fit}`, () => {
-        const fitClearance = LID_FIT_CLEARANCE[fit];
-        const main = lidAnchorZMain(heightUnitMm, fitClearance);
-        const worker = lidAnchorZWorker(heightUnitMm, fitClearance);
-        // Both formulas use Math.SQRT2 → exact equality is reasonable.
-        expect(main).toBe(worker);
-      });
-      it(`lidWallBottomZ agrees for heightUnitMm=${heightUnitMm}, fit=${fit}`, () => {
-        const fitClearance = LID_FIT_CLEARANCE[fit];
-        const main = lidWallBottomZMain(heightUnitMm, fitClearance);
-        const worker = lidWallBottomZWorker(heightUnitMm, fitClearance);
-        expect(main).toBe(worker);
-      });
-    }
+    it(`lidAnchorZ agrees for heightUnitMm=${heightUnitMm}`, () => {
+      const main = lidAnchorZMain(heightUnitMm, LID_FIT_CLEARANCE);
+      const worker = lidAnchorZWorker(heightUnitMm, LID_FIT_CLEARANCE);
+      // Both formulas use Math.SQRT2 → exact equality is reasonable.
+      expect(main).toBe(worker);
+    });
+    it(`lidWallBottomZ agrees for heightUnitMm=${heightUnitMm}`, () => {
+      const main = lidWallBottomZMain(heightUnitMm, LID_FIT_CLEARANCE);
+      const worker = lidWallBottomZWorker(heightUnitMm, LID_FIT_CLEARANCE);
+      expect(main).toBe(worker);
+    });
   }
 });

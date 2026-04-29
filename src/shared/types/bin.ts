@@ -37,7 +37,6 @@ export type {
   HandleSide,
   HandleWallSide,
   LidConfig,
-  LidFit,
 } from '@/features/bin-designer/types';
 
 export { MIN_PATH_POINTS, LID_FIT_CLEARANCE } from '@/features/bin-designer/types';

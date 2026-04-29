@@ -26,7 +26,7 @@ import type { CellMask } from '@/shared/utils/cellMask';
 import type { FeatureColorConfig, ColorZone } from './featureColors';
 import type { LidConfig } from './lid';
 
-export type { LidConfig, LidFit, LidClickRails, LidRailSide } from './lid';
+export type { LidConfig, LidClickRails, LidRailSide } from './lid';
 export {
   DEFAULT_LID_CONFIG,
   LID_FIT_CLEARANCE,
