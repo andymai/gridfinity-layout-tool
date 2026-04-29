@@ -195,7 +195,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const baseColor = multiColorEnabled && featureColors ? featureColors.body : color;
 
-  // Single-color material props shared between fine mesh and coarse LOD.
+  // Single-color material props shared between fine mesh and coarse LOD
   const singleMatProps = useMemo(
     () => ({
       color: baseColor,
@@ -203,6 +203,8 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       metalness: 0,
       wireframe,
       side: THREE.DoubleSide,
+      emissive: new THREE.Color(baseColor),
+      emissiveIntensity: 0.08,
       flatShading: !hasPrecomputedNormals,
       polygonOffset: true,
       polygonOffsetFactor: 1,
