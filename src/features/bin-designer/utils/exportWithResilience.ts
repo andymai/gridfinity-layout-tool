@@ -103,9 +103,17 @@ export async function exportWithResilience<T>(
     }
   }
 
-  // Phase 2: refresh the worker and try once more with a fresh bridge.
+  // Phase 2: refresh the worker, re-acquire so the new bridge is initialized,
+  // then retry once. Without the acquire(), `operation()` would call
+  // `getActiveBridge()` immediately after refresh — which returns null —
+  // and throw "Bridge not available" before any new worker boots.
   bridgeManager.refresh();
   restartCount++;
-  const result = await operation();
-  return { result, retryCount, restartCount };
+  await bridgeManager.acquire();
+  try {
+    const result = await operation();
+    return { result, retryCount, restartCount };
+  } finally {
+    bridgeManager.release();
+  }
 }

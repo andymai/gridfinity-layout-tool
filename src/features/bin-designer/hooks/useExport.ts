@@ -64,12 +64,21 @@ interface UseExportReturn {
   readonly engineReady: boolean;
   /** Current print estimates based on params */
   readonly estimates: PrintEstimate;
-  /** Download bin (and dividers if present) in the specified format */
+  /**
+   * Download bin (and dividers if present) in the specified format.
+   *
+   * Resolves to `true` when a file was triggered for download, `false` if the
+   * export was queued for engine warmup or failed (in which case an error toast
+   * has already been shown via the hook's own error path). Callers should gate
+   * any post-success UX (success toast, dialog close) on the boolean result —
+   * **never** assume resolution implies success, since errors are caught
+   * internally to fire telemetry + the Retry/Report-issue toast.
+   */
   readonly downloadBin: (
     format: ExportFileFormat,
     config: ExportFileNameConfig,
     designName?: string
-  ) => Promise<void>;
+  ) => Promise<boolean>;
   /** Whether the bin has exportable dividers (used for display extension) */
   readonly hasDividers: boolean;
   /** Whether the bin exceeds print bed and needs splitting */
@@ -78,12 +87,17 @@ interface UseExportReturn {
   readonly splitPieceCount: number;
   /** Maximum grid units that fit on the print bed */
   readonly maxGridUnits: { width: number; depth: number };
-  /** Trigger split export download as ZIP via worker bridge */
+  /**
+   * Trigger split export download as ZIP via worker bridge.
+   *
+   * Same boolean contract as {@link downloadBin}: `true` on completed download,
+   * `false` on queue-for-warmup, format mismatch, or caught failure.
+   */
   readonly downloadSplit: (
     format: ExportFileFormat,
     config: ExportFileNameConfig,
     designName?: string
-  ) => Promise<void>;
+  ) => Promise<boolean>;
 }
 
 /** Args of the most recent export click — replayed when the engine becomes ready. */
@@ -223,11 +237,38 @@ export function useExport(): UseExportReturn {
       });
 
       // Mirror to the existing exception channel so PostHog session-replays
-      // still surface the failure with stack context.
+      // still surface the failure with stack context. The rich bin-config
+      // payload here used to live in ExportDialog's catch block — it was
+      // moved into the hook so it still fires now that the hook owns
+      // export-error handling end-to-end (the dialog catch became dead code
+      // for WASM errors once downloadBin/Split started returning a boolean
+      // instead of re-throwing).
       captureException(error, {
         source: 'bin_export',
         export_format: format,
         is_split_export: isSplit,
+        bin_width: params.width,
+        bin_depth: params.depth,
+        bin_height: params.height,
+        bin_style: params.style,
+        grid_unit_mm: params.gridUnitMm,
+        has_lip: params.base.stackingLip,
+        base_style: params.base.style,
+        magnet_diameter: params.base.magnetDiameter,
+        screw_diameter: params.base.screwDiameter,
+        solid_fill: params.base.solid,
+        half_sockets: params.base.halfSockets,
+        wall_pattern_enabled: params.wallPattern.enabled,
+        wall_pattern: params.wallPattern.pattern,
+        handles_enabled: params.handles.enabled,
+        cutout_count: params.cutouts.length,
+        insert_count: params.inserts.length,
+        // Original error chain — binExporter's retry path attaches `cause`
+        // to the first-attempt error, which is invaluable when the surfaced
+        // error masks a more diagnostic earlier failure.
+        first_attempt_message: error.cause instanceof Error ? error.cause.message : undefined,
+        retry_count: retryCount,
+        restart_count: restartCount,
       });
 
       const issueUrl = buildReportIssueUrl(params, error, format);
@@ -265,12 +306,18 @@ export function useExport(): UseExportReturn {
    * - STL + dividers: .zip with separate .stl files
    */
   const downloadBin = useCallback(
-    async (format: ExportFileFormat, config: ExportFileNameConfig, designName?: string) => {
+    async (
+      format: ExportFileFormat,
+      config: ExportFileNameConfig,
+      designName?: string
+    ): Promise<boolean> => {
       // Engine not ready: queue the click and bail. The readiness effect above
-      // will replay it once `engineReady` flips.
+      // will replay it once `engineReady` flips. Returning `false` lets the
+      // caller (ExportDialog) skip its success path; the queued replay will
+      // surface its own success/failure when it eventually fires.
       if (!engineReady || !getActiveBridge()) {
         pendingExportRef.current = { kind: 'bin', format, config, designName };
-        return;
+        return false;
       }
 
       setIsExportingBin(true);
@@ -323,6 +370,7 @@ export function useExport(): UseExportReturn {
             false
           )
         );
+        return true;
       } catch (err) {
         handleExportError(
           err,
@@ -335,6 +383,7 @@ export function useExport(): UseExportReturn {
           restartCount,
           false
         );
+        return false;
       } finally {
         setIsExportingBin(false);
       }
@@ -353,12 +402,16 @@ export function useExport(): UseExportReturn {
    * exports as single-color. Split + multi-color is a known gap.
    */
   const downloadSplit = useCallback(
-    async (format: ExportFileFormat, config: ExportFileNameConfig, designName?: string) => {
-      if (format === 'step') return; // STEP does not support split export
+    async (
+      format: ExportFileFormat,
+      config: ExportFileNameConfig,
+      designName?: string
+    ): Promise<boolean> => {
+      if (format === 'step') return false; // STEP does not support split export
 
       if (!engineReady || !getActiveBridge()) {
         pendingExportRef.current = { kind: 'split', format, config, designName };
-        return;
+        return false;
       }
 
       setIsExportingBin(true);
@@ -454,6 +507,7 @@ export function useExport(): UseExportReturn {
             true
           )
         );
+        return true;
       } catch (err) {
         handleExportError(
           err,
@@ -466,6 +520,7 @@ export function useExport(): UseExportReturn {
           restartCount,
           true
         );
+        return false;
       } finally {
         setIsExportingBin(false);
       }
