@@ -15,13 +15,9 @@ function makeParams(lid: Partial<LidConfig> = {}, extra: Partial<BinParams> = {}
 describe('resolveLidInputs', () => {
   it('derives outer dimensions from bin width/depth and grid unit', () => {
     const inputs = resolveLidInputs(makeParams({}, { width: 3, depth: 2 }));
-    // bin*42 − 2 × fitClearance (0.2) − 2 × LIP_BIG_TAPER (1.9). The
-    // LIP_BIG_TAPER subtraction sinks the lid INSIDE the bin's lip
-    // vertical part so the lid's exterior matches the lip's inner face;
-    // eliminates the chamfer step that used to flare the upper section
-    // outward above the lip-mating zone.
-    expect(inputs.lidOuterW).toBeCloseTo(3 * 42 - 2 * 0.2 - 2 * 1.9, 3);
-    expect(inputs.lidOuterD).toBeCloseTo(2 * 42 - 2 * 0.2 - 2 * 1.9, 3);
+    // 3 grid units × 42mm − 2 × fitClearance (0.2)
+    expect(inputs.lidOuterW).toBeCloseTo(125.6, 3);
+    expect(inputs.lidOuterD).toBeCloseTo(83.6, 3);
     expect(inputs.cellsX).toBe(3);
     expect(inputs.cellsY).toBe(2);
   });

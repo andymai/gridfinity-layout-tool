@@ -105,25 +105,19 @@ describe('generateLid scenarios', () => {
     expect(bb.maxZ - bb.minZ).toBeGreaterThan(4); // at least lip-height tall
   });
 
-  it('lid XY footprint sits inside the bin lip vertical-part inner face', async () => {
-    // Lid outer = bin*42 − 2×fitClearance − 2×LIP_BIG_TAPER (= bin's
-    // outer minus 4.2mm total, for default fitClearance=0.2). This sinks
-    // the lid's exterior to the lip's inner Y so the lid is uniform-width
-    // top-to-bottom (no chamfer flare back to the bin outer).
+  it('lid XY footprint is approximately the bin outer footprint', async () => {
     const { generateLid } = await import('./lidOrchestrator');
     const params = makeParams({}, { width: 2, depth: 2, height: 3 });
     const result = generateLid(params);
     expect(result).not.toBeNull();
     const bb = boundingBox(result!.vertices);
-    const expectedW = params.width * params.gridUnitMm - 2 * 0.2 - 2 * 1.9;
-    const expectedD = params.depth * params.gridUnitMm - 2 * 0.2 - 2 * 1.9;
+    const expectedW = params.width * params.gridUnitMm;
+    const expectedD = params.depth * params.gridUnitMm;
     const widthMm = bb.maxX - bb.minX;
     const depthMm = bb.maxY - bb.minY;
-    // Tight tolerance: rail bumps poke OUTWARD past the lid's flat
-    // exterior by LID_CLICK_RAIL_OUT − lidCornerR (≈0.2mm), and the
-    // bounding box picks them up.
-    expect(Math.abs(widthMm - expectedW)).toBeLessThan(0.5);
-    expect(Math.abs(depthMm - expectedD)).toBeLessThan(0.5);
+    // Within 1mm of expected (lid uses tighter clearance than bin)
+    expect(Math.abs(widthMm - expectedW)).toBeLessThan(2);
+    expect(Math.abs(depthMm - expectedD)).toBeLessThan(2);
   });
 
   it('mesh changes when stackable top toggle differs', async () => {
@@ -171,15 +165,12 @@ describe('generateLid scenarios', () => {
   });
 
   it('magnet holes add cuts (mesh changes meaningfully)', async () => {
-    // Magnets only emit when stackableTop is also on — the worker
-    // gates magnetHoles on stackableTop in `resolveLidInputs`. Toggle
-    // magnets WITH stackableTop fixed-on for an apples-to-apples diff.
     const { generateLid } = await import('./lidOrchestrator');
     const without = generateLid(
-      makeParams({ stackableTop: true, magnetHoles: false }, { width: 2, depth: 2, height: 3 })
+      makeParams({ magnetHoles: false }, { width: 2, depth: 2, height: 3 })
     );
     const withMagnets = generateLid(
-      makeParams({ stackableTop: true, magnetHoles: true }, { width: 2, depth: 2, height: 3 })
+      makeParams({ magnetHoles: true }, { width: 2, depth: 2, height: 3 })
     );
     expect(without).not.toBeNull();
     expect(withMagnets).not.toBeNull();

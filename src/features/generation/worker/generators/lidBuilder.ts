@@ -146,23 +146,15 @@ export function resolveLidInputs(params: BinParams): LidInputs {
   // a thin sealed ceiling above it (LID_MAGNET_CEILING).
   const topThickness = lidTopThickness(params.lid.magnetHoles, params.base.magnetDepth);
 
-  // Lid outer footprint sits INSIDE the bin's lip vertical part — the
-  // lid's exterior tracks the lip's INNER face (with fitClearance for
-  // slide-on tolerance). Subtracting `LIP_BIG_TAPER` per side puts the
-  // lid outer at the lip's inner Y, eliminating the chamfer step that
-  // used to make the lid look "wider on top than at the bottom" (floor
-  // zone vs lip-mating zone). The wall is now uniform wallThickness
-  // from top to bottom — what you see is what gets printed.
-  const lidOuterW = params.width * gridUnitMm - 2 * fitClearance - 2 * LIP_BIG_TAPER;
-  const lidOuterD = params.depth * gridUnitMm - 2 * fitClearance - 2 * LIP_BIG_TAPER;
-  // Outer corner radius shrinks by LIP_BIG_TAPER too so the rail spine
-  // (anchored at `lidOuterW/2 - lidCornerR`) keeps its absolute world Y
-  // — preserves the click-rail-to-lip engagement we already validated.
-  const lidCornerR = BOX_CORNER_RADIUS - fitClearance - LIP_BIG_TAPER;
-  // Cavity inner inset = wallThickness only (no LIP_BIG_TAPER additive).
-  // The chamfer offset that used to live here now lives in `lidOuterW`,
-  // so the wall has a single uniform thickness all the way through.
-  const cavityInset = wallThickness;
+  // Lid outer footprint matches bin outer footprint (flush exterior on
+  // straight walls; lid corners are slightly inside bin corners by the
+  // fitClearance amount).
+  const lidOuterW = params.width * gridUnitMm - 2 * fitClearance;
+  const lidOuterD = params.depth * gridUnitMm - 2 * fitClearance;
+  const lidCornerR = BOX_CORNER_RADIUS - fitClearance;
+  // Cavity inner inset = wallThickness + the lip's chamfer depth. See
+  // comment on LidInputs.cavityInset for details.
+  const cavityInset = wallThickness + LIP_BIG_TAPER;
 
   // Polygon path activates when the mask is partially filled. A fully-filled
   // mask is treated as rectangular (matches the bin generator's convention).
@@ -248,14 +240,16 @@ function sectionAt(inputs: LidInputs, z: number, outerInset: number): Sketch {
  * ──────────────────────────────────────────────────────────────────────── */
 
 function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape3D {
-  const { cavityInset, wallBottomZ } = inputs;
+  const { cavityInset, anchorZ, wallBottomZ } = inputs;
+  const zVertTop = anchorZ - LIP_BIG_TAPER;
 
-  // OUTER profile — uniform from wall bottom to floor top. Previously
-  // this had a chamfer that flared the upper section back out to the
-  // full lid outer, but `lidOuterW` already accounts for `LIP_BIG_TAPER`
-  // now, so the wall sits at a constant outer all the way up. No flare.
+  // OUTER profile — 4 sections in ASCENDING Z (loftWith expects this):
+  //  Z=wallBottom and Z=zVertTop : chamfered inward by LIP_BIG_TAPER
+  //  Z=anchor and Z=0            : full outer (no chamfer)
   const outerSections: readonly Sketch[] = [
-    sectionAt(inputs, wallBottomZ, 0),
+    sectionAt(inputs, wallBottomZ, LIP_BIG_TAPER),
+    sectionAt(inputs, zVertTop, LIP_BIG_TAPER),
+    sectionAt(inputs, anchorZ, 0),
     sectionAt(inputs, 0, 0),
   ];
 
@@ -668,20 +662,16 @@ function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidInputs):
     inputs;
   const radius = magnetDiameter / 2;
 
-  // BLIND pocket on the floor's UPPER face — opens at the floor TOP
-  // (lid-local Z = 0, the visible top surface that an upper bin sits on
-  // when stacked) and stops short of the floor BOTTOM by
-  // LID_MAGNET_CEILING so the magnet sits in a sealed cup. The upper
-  // bin's base magnets enter from above and mate with these pockets.
-  // Capping at `topThickness - ceiling` is defensive in case
-  // `topThickness` was bumped up by `lidTopThickness` for an oversize
-  // magnet — guarantees we never poke through the cavity face. Floor
-  // top gets a small coplanar margin so the cut bites cleanly through
-  // the entry face.
+  // BLIND pocket on the floor's underside — opens at the floor BOTTOM
+  // (lid-local Z = -topThickness, the face that meets the bin's lip top
+  // when closed) and stops short of the floor TOP by LID_MAGNET_CEILING
+  // so the magnet sits in a sealed cup. Capping at `topThickness -
+  // ceiling` is defensive in case `topThickness` was bumped up by
+  // `lidTopThickness` for an oversize magnet — guarantees we never
+  // poke through the cavity face. Floor bottom gets a small coplanar
+  // margin so the cut bites cleanly through the entry face.
   const cappedDepth = Math.max(0.4, Math.min(magnetDepth, topThickness - LID_MAGNET_CEILING));
-  // Sketch sits below the floor top by `cappedDepth` so the extruded
-  // cylinder reaches Z = 0 (top face) plus a coplanar margin above.
-  const holeZ = -cappedDepth;
+  const holeZ = -topThickness - LID_COPLANAR_MARGIN;
   const holeHeight = cappedDepth + LID_COPLANAR_MARGIN;
 
   // Build all cylinder cutters first, then apply them in a single cutAll.
