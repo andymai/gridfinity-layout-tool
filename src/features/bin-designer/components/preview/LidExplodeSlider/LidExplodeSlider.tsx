@@ -17,19 +17,19 @@ import { cn } from '@/design-system/cn';
 import { interactiveTransition } from '@/design-system/variants';
 
 /**
- * Slider range in mm — small positive floor instead of strict zero. At
- * exactly 0, the click rails physically engage the lip's small taper
- * (0.7mm chamfer), which produces real surface overlap that no depth-
- * bias trick can hide. Lifting 1mm pulls the rails clear of that
- * engagement zone while keeping the lid's exterior walls visually
- * flush with the bin's — the closed look the user expects.
+ * Slider range in mm. Closed position is exactly the lid's mated
+ * position — `lidGroupZ` already aligns lid-local `z=anchorZ` with
+ * the bin's lip top, so at offset=0 the lid's outer wall starts
+ * tapering exactly where the bin's lip begins. That's the visually
+ * "closed" position the user expects.
  *
- * The remaining near-coplanar overlap between the lid's outer wall and
- * the bin's lip outer face (separated by `fitClearance` ≈ 0.2mm in X
- * over the lip Z-range) is handled by `polygonOffset` on the lid's
- * material — see `LidMesh.tsx`.
+ * Z-fighting between the lid's outer wall and the bin's lip outer
+ * face is handled by `polygonOffset` on the lid's material — see
+ * `LidMesh.tsx`. We DO NOT lift the lid off the mated position to
+ * dodge z-fighting; doing that gives the lid a visible "lifted" gap
+ * which the user reads as wrong.
  */
-export const LID_OFFSET_MIN = 1;
+export const LID_OFFSET_MIN = 0;
 export const LID_OFFSET_MAX = 80;
 /** Initial position when the lid is first enabled. */
 export const LID_OFFSET_DEFAULT = 30;
