@@ -39,6 +39,17 @@ export {
 /** Base attachment style for bin-to-baseplate connection */
 export type BaseStyle = 'standard' | 'magnet' | 'screw' | 'magnet_and_screw' | 'weighted' | 'flat';
 
+/** True when `style` includes magnet pockets — single source of truth so
+ *  callers don't drift if a new magnet-inclusive style is added. */
+export function isMagnetStyle(style: BaseStyle): boolean {
+  return style === 'magnet' || style === 'magnet_and_screw';
+}
+
+/** True when `style` includes screw mounts — paired with `isMagnetStyle`. */
+export function isScrewStyle(style: BaseStyle): boolean {
+  return style === 'screw' || style === 'magnet_and_screw';
+}
+
 /** Bin wall/style variant */
 export type BinStyle = 'standard' | 'slotted' | 'solid';
 

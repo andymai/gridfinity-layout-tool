@@ -7,6 +7,7 @@ import { useTranslation } from '@/i18n';
 import {
   LID_CLICK_RAIL_COVERAGE_OPTIONS,
   LID_FIT_CLEARANCE,
+  isMagnetStyle,
   type LidClickRails,
   type LidFit,
   type LidRailSide,
@@ -173,7 +174,7 @@ export function useLidSection() {
 
   // Bin has magnets when its base style includes them. Used as the smart
   // default for lid magnetHoles each time the lid is enabled.
-  const binHasMagnets = base.style === 'magnet' || base.style === 'magnet_and_screw';
+  const binHasMagnets = isMagnetStyle(base.style);
 
   const thicknessOptions: SnappingSliderOption[] = useMemo(
     () =>

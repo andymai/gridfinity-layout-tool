@@ -296,4 +296,53 @@ describe('generateLid scenarios', () => {
       expect(lShape!.triangleCount).not.toBe(rect!.triangleCount);
     });
   });
+
+  describe('STEP combined export (lid-only path)', () => {
+    // Before the lid PR, the STEP combined-export branch was only reached
+    // when dividers existed; a lid-enabled bin with no dividers now also
+    // hits it. This test exercises the buildLid → translate → compound →
+    // exportSTEP sequence end-to-end so the new branch has scenario
+    // coverage and any boolean/compound failure surfaces in CI.
+    it('builds a non-empty STEP buffer for bin + lid (no dividers)', async () => {
+      const { compound, exportSTEP, translate, unwrap } = await import('brepjs');
+      const { buildLid } = await import('./lidBuilder');
+      const { lidAnchorZ } = await import('./lidConstants');
+      const { generateBin } = await import('./binOrchestrator');
+      const { getLastSolid, clearAllCaches } = await import('./shapeCache');
+      const { LID_FIT_CLEARANCE } = await import('@/shared/types/bin');
+
+      clearAllCaches();
+      const params = makeParams(
+        // Standard 2×2 bin, lid enabled, no dividers (default style is
+        // 'standard', not 'slotted'). This is the exact configuration that
+        // didn't have a STEP path before the lid PR.
+        { enabled: true },
+        { width: 2, depth: 2, height: 3 }
+      );
+      generateBin(params, undefined, true);
+      const binSolid = getLastSolid();
+      expect(binSolid).not.toBeNull();
+
+      const totalHeight = params.height * params.heightUnitMm;
+      const fitClearance = LID_FIT_CLEARANCE[params.lid.fit];
+      const lidZ = totalHeight - lidAnchorZ(params.heightUnitMm, fitClearance);
+
+      const lidSolid = buildLid(params);
+      try {
+        const positioned = translate(lidSolid, [0, 0, lidZ]);
+        lidSolid.delete();
+        const assembly = compound([binSolid!, positioned]);
+        const blob = unwrap(exportSTEP(assembly));
+        const buffer = await blob.arrayBuffer();
+        // Sanity: a STEP file with a real assembly is at minimum a few KB.
+        expect(buffer.byteLength).toBeGreaterThan(1024);
+        positioned.delete();
+      } catch (err) {
+        // Defensive cleanup if anything between buildLid and the final
+        // delete throws — mirrors the try/finally in handleExportCombined.
+        lidSolid.delete();
+        throw err;
+      }
+    }, 60_000);
+  });
 });
