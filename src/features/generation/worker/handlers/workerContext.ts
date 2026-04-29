@@ -7,7 +7,7 @@
  */
 
 import { getPerformanceStats, resetPerformanceStats } from 'brepjs';
-import type { WorkerResponse, MeshData, KernelName } from '../../bridge/types';
+import type { WorkerResponse, MeshData, KernelName, ExportErrorCode } from '../../bridge/types';
 import { getAllShapeCacheStats, resetAllShapeCacheStats } from '../generators/shapeCache';
 import { getBaseplateCacheStats, resetBaseplateCacheStats } from '../generators/baseplateGenerator';
 import { isAbortError } from '../generators/utils/abort';
@@ -190,14 +190,53 @@ export function runGeneration(
 }
 
 /**
+ * Classify an export-side error by inspecting its message.
+ *
+ * Codes feed the main-thread resilience wrapper (see `exportWithResilience`):
+ * `INVALID_PARAMS` and `EMPTY_GEOMETRY` are non-retryable (user input is wrong);
+ * everything else is treated as retryable (transient WASM/BREP wobble).
+ *
+ * Pattern matching is intentionally permissive — the worker can't reliably
+ * raise typed errors across the brepjs WASM boundary, and message text drifts
+ * across kernel versions. `UNKNOWN` is the safe default for unmatched errors.
+ */
+export function classifyExportError(e: unknown): ExportErrorCode {
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/boolean.*fail|union.*fail|cut.*fail|fuse.*fail/i.test(msg)) {
+    return 'BREP_BOOLEAN_FAILED';
+  }
+  if (/tessellat|triangulat|mesh.*fail/i.test(msg)) {
+    return 'MESH_TESSELLATION_FAILED';
+  }
+  if (/out of memory|allocation failed|oom/i.test(msg)) {
+    return 'OUT_OF_MEMORY';
+  }
+  if (/invalid (param|argument)|out of range|bad input/i.test(msg)) {
+    return 'INVALID_PARAMS';
+  }
+  if (/empty (geometry|solid|shape)|no geometry|zero[- ]size/i.test(msg)) {
+    return 'EMPTY_GEOMETRY';
+  }
+  if (/timeout|timed out/i.test(msg)) {
+    return 'TIMEOUT';
+  }
+  return 'UNKNOWN';
+}
+
+/**
  * Unified export handler for all export types.
+ *
+ * Optional `classifyError` lets the caller attach an {@link ExportErrorCode}
+ * to the error response so the main thread can decide whether to retry. When
+ * omitted, the error surfaces without a code (treated as retryable upstream).
  */
 export async function runExport<TPayload extends Record<string, unknown>>(
   requestId: string,
   responseType: string,
   exportFn: () => Promise<TPayload>,
   errorPrefix: string,
-  transferFn: (payload: TPayload) => ArrayBuffer[]
+  transferFn: (payload: TPayload) => ArrayBuffer[],
+  classifyError?: (e: unknown) => ExportErrorCode | undefined
 ): Promise<void> {
   if (!requireKernel(requestId)) return;
 
@@ -206,10 +245,12 @@ export async function runExport<TPayload extends Record<string, unknown>>(
     const response = { type: responseType, requestId, ...payload };
     self.postMessage(response, { transfer: transferFn(payload) });
   } catch (e) {
+    const errorCode = classifyError?.(e);
     respond({
       type: 'ERROR',
       requestId,
       error: `${errorPrefix}: ${formatError(e)}`,
+      ...(errorCode ? { errorCode } : {}),
     });
   }
 }

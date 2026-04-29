@@ -292,6 +292,7 @@ export function ExportDialog({
           <button
             onClick={onDownload}
             disabled={!canExport || isExporting}
+            aria-busy={isExporting || undefined}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-info px-4 py-2.5 text-sm font-medium text-white transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
           >
             {isExporting && !exportProgress && <ExportSpinner />}

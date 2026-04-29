@@ -1,4 +1,4 @@
-export { GenerationBridge } from './GenerationBridge';
+export { GenerationBridge, ExportTimeoutError } from './GenerationBridge';
 export type {
   ProgressCallback,
   GenerationResult,
@@ -6,6 +6,8 @@ export type {
   SplitExportResult,
   SplitPreviewResult,
   BaseplateExportResult,
+  CombinedExportResult,
+  DividersExportResult,
 } from './GenerationBridge';
 export { getActiveBridge } from './bridgeRef';
 export { bridgeManager } from './BridgeManager';
@@ -18,6 +20,7 @@ export type {
   ExportPayload,
   ExportSplitPayload,
   ExportFormat,
+  ExportErrorCode,
   MeshData,
   GenerationStage,
   MeshResultResponse,

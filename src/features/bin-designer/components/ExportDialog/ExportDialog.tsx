@@ -55,6 +55,7 @@ export function ExportDialog() {
 
   const {
     canExport,
+    engineReady,
     hasDividers,
     estimates,
     isExporting,
@@ -176,6 +177,10 @@ export function ExportDialog() {
   let downloadLabel: string;
   if (isExportingBin) {
     downloadLabel = t('binDesigner.exporting');
+  } else if (!engineReady) {
+    // Surface engine warmup so users don't think the button is broken.
+    // The hook will queue the click and replay it once the engine is ready.
+    downloadLabel = t('binDesigner.export.engine.preparing');
   } else if (useSplitExport) {
     downloadLabel = t('binDesigner.splitExport.downloadSplit', {
       format: activeFormat.toUpperCase(),
@@ -193,7 +198,7 @@ export function ExportDialog() {
       onFileNameConfigChange={setExportFileNameConfig}
       fileName={fileName}
       displayExtension={displayExtension}
-      canExport={canExport}
+      canExport={canExport && engineReady}
       isExporting={isExporting}
       onDownload={() => void handleDownload()}
       downloadLabel={downloadLabel}

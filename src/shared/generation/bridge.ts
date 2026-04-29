@@ -13,5 +13,7 @@ export type {
   SplitExportResult,
   GenerationResult,
   BaseplateExportResult,
+  CombinedExportResult,
   ExportFormat,
+  ExportErrorCode,
 } from '@/features/generation/bridge';

@@ -18,4 +18,5 @@ export {
 export type {
   ThreeMFColorConfig,
   ThreeMFObject,
+  ThreeMFPrintSettings,
 } from '@/features/generation/export/threemfExporter';

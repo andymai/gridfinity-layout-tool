@@ -30,6 +30,8 @@ export type {
   ActivityContext,
   HeartbeatPayload,
 } from './events';
+export type { BinExportProperties } from './binExportEvents';
+export { trackBinExportSucceeded, trackBinExportFailure } from './binExportEvents';
 export {
   getDeviceType,
   trackLayoutSnapshot,

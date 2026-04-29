@@ -341,6 +341,89 @@ describe('BridgeManager', () => {
   });
 
   // -------------------------------------------------------------------------
+  // refresh()
+  // -------------------------------------------------------------------------
+
+  describe('refresh()', () => {
+    it('destroys the current bridge and clears state', async () => {
+      await manager.acquire();
+      manager.refresh();
+
+      expect(mockInstances[0].destroy).toHaveBeenCalledTimes(1);
+      expect(manager.get()).toBeNull();
+      expect(manager.engineReady).toBe(false);
+    });
+
+    it('lets the next acquire() build a fresh bridge', async () => {
+      await manager.acquire();
+      manager.refresh();
+
+      const fresh = await manager.acquire();
+      expect(mockInstances).toHaveLength(2);
+      expect(fresh).toBe(asBridge(mockInstances[1]));
+    });
+
+    it('is a no-op when called before any acquire', () => {
+      expect(() => manager.refresh()).not.toThrow();
+      expect(manager.engineReady).toBe(false);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // subscribe()
+  // -------------------------------------------------------------------------
+
+  describe('subscribe()', () => {
+    it('fires synchronously with the current state', () => {
+      const listener = vi.fn();
+      manager.subscribe(listener);
+      expect(listener).toHaveBeenCalledTimes(1);
+      expect(listener).toHaveBeenLastCalledWith(false);
+    });
+
+    it('fires on transitions when the bridge becomes ready', async () => {
+      const listener = vi.fn();
+      manager.subscribe(listener);
+      listener.mockClear();
+
+      await manager.acquire();
+      expect(listener).toHaveBeenCalledWith(true);
+    });
+
+    it('fires on transitions when the bridge is refreshed', async () => {
+      await manager.acquire();
+      const listener = vi.fn();
+      manager.subscribe(listener);
+      listener.mockClear();
+
+      manager.refresh();
+      expect(listener).toHaveBeenCalledWith(false);
+    });
+
+    it('does not fire on no-op transitions (already-ready acquire)', async () => {
+      await manager.acquire();
+      const listener = vi.fn();
+      manager.subscribe(listener);
+      // Initial sync call counts as 1
+      expect(listener).toHaveBeenCalledTimes(1);
+      listener.mockClear();
+
+      await manager.acquire(); // refCount++, but no readiness transition
+      expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('returns an unsubscribe function that stops further notifications', async () => {
+      const listener = vi.fn();
+      const unsubscribe = manager.subscribe(listener);
+      listener.mockClear();
+
+      unsubscribe();
+      await manager.acquire();
+      expect(listener).not.toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // Module-level singleton smoke test
   // -------------------------------------------------------------------------
 

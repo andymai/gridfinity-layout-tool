@@ -14,6 +14,12 @@ export interface Toast {
   duration: number; // in ms, 0 = no auto-dismiss
   createdAt: number;
   action?: ToastAction;
+  /**
+   * Optional second action shown next to the primary action. Used by
+   * surfaces that need both a recover (e.g. Retry) and an escalate
+   * (e.g. Report issue) affordance. Renders only when `action` is also set.
+   */
+  secondaryAction?: ToastAction;
 }
 
 interface AddToastOptions {
@@ -21,6 +27,7 @@ interface AddToastOptions {
   type: ToastType;
   duration?: number;
   action?: ToastAction;
+  secondaryAction?: ToastAction;
 }
 
 interface ToastState {
@@ -64,6 +71,7 @@ export const useToastStore = create<ToastState>((set) => ({
       duration: options.duration ?? DEFAULT_DURATION,
       createdAt: Date.now(),
       action: options.action,
+      secondaryAction: options.secondaryAction,
     };
 
     set((state) => {

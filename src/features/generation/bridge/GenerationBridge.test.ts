@@ -423,6 +423,67 @@ describe('GenerationBridge', () => {
     });
   });
 
+  describe('export timeouts', () => {
+    it('rejects exportBin when the worker never responds', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      // Fire the export and let the message reach the worker, but never respond.
+      const exportPromise = bridge.exportBin(DEFAULT_BIN_PARAMS, 'stl');
+      // Attach a no-op catch so the rejection is observed before assertions.
+      const settled = exportPromise.catch((e: unknown) => e);
+      await vi.advanceTimersByTimeAsync(0);
+
+      const exportMsg = getWorker().messages.find(
+        (m) => (m as { type: string }).type === 'EXPORT'
+      ) as { payload: { requestId: string } };
+      expect(exportMsg).toBeDefined();
+
+      // Default bin timeout is at least BASE (30s); advance well past it.
+      await vi.advanceTimersByTimeAsync(120_000);
+
+      const result = await settled;
+      expect(result).toBeInstanceOf(Error);
+      expect((result as Error).message).toMatch(/timed out/i);
+
+      // Bridge should have sent a CANCEL with the original requestId.
+      const cancelMessages = getWorker().messages.filter(
+        (m) => (m as { type: string }).type === 'CANCEL'
+      ) as { type: string; requestId: string }[];
+      expect(cancelMessages.some((m) => m.requestId === exportMsg.payload.requestId)).toBe(true);
+    });
+
+    it('clears the timeout when the export resolves', async () => {
+      const initPromise = bridge.init();
+      await vi.advanceTimersByTimeAsync(10);
+      await initPromise;
+
+      const exportPromise = bridge.exportBin(DEFAULT_BIN_PARAMS, 'stl');
+      await vi.advanceTimersByTimeAsync(0);
+
+      const exportMsg = getWorker().messages.find(
+        (m) => (m as { type: string }).type === 'EXPORT'
+      ) as { payload: { requestId: string } };
+
+      getWorker().simulateResponse({
+        type: 'EXPORT_RESULT',
+        requestId: exportMsg.payload.requestId,
+        data: new ArrayBuffer(8),
+        format: 'stl',
+        fileName: 'bin.stl',
+      });
+
+      const result = await exportPromise;
+      expect(result.format).toBe('stl');
+
+      // Past the timeout — should NOT spuriously reject after the fact.
+      await vi.advanceTimersByTimeAsync(120_000);
+      // No assertion needed — if a stale timer fires, the test would crash on
+      // a now-removed pending entry. The fact that we got here is the proof.
+    });
+  });
+
   describe('deduplication', () => {
     /** Helper: init bridge, generate with DEFAULT_BIN_PARAMS, and complete successfully. */
     async function initAndGenerate(): Promise<void> {

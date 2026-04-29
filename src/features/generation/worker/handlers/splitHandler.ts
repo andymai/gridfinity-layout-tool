@@ -19,6 +19,7 @@ import {
   reportProgress,
   extractMeshTransferBuffers,
   extractExportTransferBuffers,
+  classifyExportError,
 } from './workerContext';
 
 export async function handleSplitPreview(message: GenerateSplitPreviewMessage): Promise<void> {
@@ -38,7 +39,8 @@ export async function handleSplitPreview(message: GenerateSplitPreviewMessage): 
       return Promise.resolve({ pieces: result.pieces });
     },
     'Split preview failed',
-    extractMeshTransferBuffers
+    extractMeshTransferBuffers,
+    classifyExportError
   );
 }
 
@@ -63,7 +65,8 @@ export async function handleSplitPreviewRange(
       return Promise.resolve({ pieces: result.pieces });
     },
     'Split preview range failed',
-    extractMeshTransferBuffers
+    extractMeshTransferBuffers,
+    classifyExportError
   );
 }
 
@@ -86,7 +89,8 @@ export async function handleSplitExport(message: ExportSplitMessage): Promise<vo
       return { pieces: result.pieces };
     },
     'Split export failed',
-    extractExportTransferBuffers
+    extractExportTransferBuffers,
+    classifyExportError
   );
 }
 
@@ -119,6 +123,7 @@ export async function handleSplitExportRange(message: ExportSplitRangeMessage): 
       return { pieces: result.pieces };
     },
     'Split export range failed',
-    extractExportTransferBuffers
+    extractExportTransferBuffers,
+    classifyExportError
   );
 }

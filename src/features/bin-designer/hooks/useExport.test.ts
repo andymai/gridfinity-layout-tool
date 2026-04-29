@@ -16,6 +16,16 @@ vi.mock('@/shared/generation/bridge', () => ({
     exportCombined: mockExportCombined,
     exportSplitBin: mockExportSplitBin,
   }),
+  bridgeManager: {
+    get engineReady() {
+      return true;
+    },
+    subscribe: (listener: (ready: boolean) => void) => {
+      listener(true);
+      return () => {};
+    },
+    refresh: () => {},
+  },
   workerPoolManager: {
     get: () => null,
     acquire: () => Promise.reject(new Error('No pool in test')),

@@ -17,11 +17,24 @@ import { useLabsStore } from '@/core/store/labs';
 /** How long to keep the bridge alive after the last consumer releases (ms) */
 const IDLE_TIMEOUT_MS = 30_000;
 
+/**
+ * Listener invoked whenever the engine readiness state changes. Receives the
+ * current readiness — `true` once init has resolved and the bridge is alive,
+ * `false` when the bridge is destroyed, refreshed, or before first acquire.
+ */
+export type EngineReadyListener = (ready: boolean) => void;
+
 export class BridgeManager {
   private bridge: GenerationBridge | null = null;
   private refCount = 0;
   private initPromise: Promise<void> | null = null;
   private idleTimer: ReturnType<typeof setTimeout> | null = null;
+  /**
+   * Tracks the last ready state we've broadcast so we only fire listeners on
+   * transitions. Avoids the "every acquire re-fires ready=true" noise.
+   */
+  private engineReadyState = false;
+  private readyListeners = new Set<EngineReadyListener>();
 
   /**
    * Acquire a reference to the shared bridge. Increments ref count.
@@ -48,9 +61,11 @@ export class BridgeManager {
       if (this.bridge) this.bridge.destroy();
       this.bridge = null;
       this.initPromise = null;
+      this.setEngineReady(false);
       throw error;
     }
 
+    this.setEngineReady(true);
     return this.bridge;
   }
 
@@ -68,8 +83,53 @@ export class BridgeManager {
         this.bridge?.destroy();
         this.bridge = null;
         this.initPromise = null;
+        this.setEngineReady(false);
       }, IDLE_TIMEOUT_MS);
     }
+  }
+
+  /**
+   * Tear down the current bridge and reset readiness, without disturbing the
+   * ref count. Used by the export resilience wrapper to recover from a wedged
+   * worker — the next `acquire()` builds a fresh `GenerationBridge` and
+   * re-runs `init()`.
+   *
+   * Safe to call even when no bridge is active. Existing consumers retain
+   * their refs but receive a `ready=false` notification so they can disable
+   * UI affordances until the new bridge is ready.
+   */
+  refresh(): void {
+    this.clearIdleTimer();
+    if (this.bridge) {
+      this.bridge.destroy();
+      this.bridge = null;
+    }
+    this.initPromise = null;
+    this.setEngineReady(false);
+  }
+
+  /**
+   * Subscribe to engine readiness transitions. The listener fires on each
+   * transition (not on no-op repeats) and is **also** called synchronously
+   * with the current state, so callers can wire up UI without having to
+   * separately seed initial state.
+   *
+   * Returns an unsubscribe function — typically wired to `useEffect` cleanup.
+   */
+  subscribe(listener: EngineReadyListener): () => void {
+    this.readyListeners.add(listener);
+    listener(this.engineReadyState);
+    return () => {
+      this.readyListeners.delete(listener);
+    };
+  }
+
+  /**
+   * Whether a bridge is currently alive and initialized. Mirrors the most
+   * recent readiness broadcast to subscribers — see {@link subscribe}.
+   */
+  get engineReady(): boolean {
+    return this.engineReadyState;
   }
 
   /**
@@ -80,9 +140,18 @@ export class BridgeManager {
     if (this.bridge?.isDestroyed) {
       this.bridge = null;
       this.initPromise = null;
+      this.setEngineReady(false);
       return null;
     }
     return this.bridge;
+  }
+
+  private setEngineReady(ready: boolean): void {
+    if (this.engineReadyState === ready) return;
+    this.engineReadyState = ready;
+    for (const listener of this.readyListeners) {
+      listener(ready);
+    }
   }
 
   private clearIdleTimer(): void {
