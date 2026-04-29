@@ -611,17 +611,30 @@ function addClickRails(
 }
 
 /* ──────────────────────────────────────────────────────────────────────
- * Stack grid — Gridfinity stacking-lip profile on top of the lid.
+ * Stack grid — Gridfinity baseplate-style lip pattern on top of the lid.
  *
- * Uses the same lip profile as a bin (so other bins can stack on top of
- * the lid identically to bin-on-bin). Built via sweepSketch along the
- * lid's outer perimeter, mirroring the bin's `buildTopShapeSweep`.
+ * Mirrors SCAD's `TopWithClearance`: an outer ring around the lid's
+ * perimeter PLUS inner divider strips at every grid line, so a bin
+ * stacked on top engages the lid like it would a baseplate. Earlier
+ * implementations only built the outer ring, leaving multi-cell lids
+ * looking like a single big stacking lip with no internal structure.
+ *
+ * Shape:
+ *   - Outer ring: sweepSketch of the (asymmetric) Gridfinity lip
+ *     profile around the lid's outer perimeter — rounded corners.
+ *   - Inner dividers: linear-extruded copies of a SYMMETRIC lip profile
+ *     (mirrored across the strip's centerline) at each interior grid
+ *     line. Symmetric so the divider has lip material on BOTH sides,
+ *     matching SCAD's pair of mirrored TopStraights per grid line.
  * ──────────────────────────────────────────────────────────────────────── */
 
 function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
-  // Standard Gridfinity lip profile (no extension — just the stacking ring).
-  // Identical to the bin's TopShape so a stacked bin mates perfectly.
-  const topProfile = (plane: Plane, _origin: Vec3): Sketch => {
+  const { cellsX, cellsY, gridUnitMm, lidOuterW, lidOuterD } = inputs;
+
+  // Asymmetric lip profile (lip material extends INWARD from the
+  // perimeter only). Identical to the bin's TopShape so a stacked bin
+  // mates perfectly along the outer ring.
+  const outerProfile = (plane: Plane, _origin: Vec3): Sketch => {
     return draw([-LIP_TAPER_WIDTH, 0])
       .line(LIP_SMALL_TAPER, LIP_SMALL_TAPER)
       .vLine(LIP_VERTICAL_PART)
@@ -631,10 +644,60 @@ function buildStackGrid(scope: DisposalScope, inputs: LidInputs): Shape3D {
       .sketchOnPlane(plane) as Sketch;
   };
 
-  // Sweep around the lid's outer perimeter — uses the lid's corner radius for
-  // rectangles or the polygon outline for cellMask bins.
+  // SYMMETRIC lip profile for inner dividers: mirror the outer profile
+  // across X=0 so the strip has lip material on both sides. Drawn in
+  // (X, Y) where X is perpendicular to the strip and Y is vertical.
+  const symmetricProfile = (): Drawing =>
+    draw([-LIP_TAPER_WIDTH, 0])
+      .line(LIP_SMALL_TAPER, LIP_SMALL_TAPER)
+      .vLine(LIP_VERTICAL_PART)
+      .line(LIP_BIG_TAPER, LIP_BIG_TAPER)
+      .line(LIP_BIG_TAPER, -LIP_BIG_TAPER)
+      .vLine(-LIP_VERTICAL_PART)
+      .line(LIP_SMALL_TAPER, -LIP_SMALL_TAPER)
+      .close();
+
+  // 1. Outer ring — sweep around the lid perimeter (preserves rounded
+  //    corners). Uses the lid's outer footprint via `buildOutlineDrawing`.
   const lidPerimeter = buildOutlineDrawing(inputs, 0).sketchOnPlane() as Sketch;
-  return scope.register(lidPerimeter.sweepSketch(topProfile, { withContact: true }));
+  let stackGrid: Shape3D = scope.register(
+    lidPerimeter.sweepSketch(outerProfile, { withContact: true })
+  );
+
+  // 2. Inner dividers — one per interior grid line. For W cells in X
+  //    there are W-1 inner X-direction grid lines (vertical strips
+  //    running along Y), and similarly L-1 inner Y-direction strips.
+  //
+  //    Each strip is a linear extrusion of the symmetric profile
+  //    along the strip's axis. The strip's CENTER is at the grid line
+  //    in world coords; `lidOuterW`/`lidOuterD` set the strip length
+  //    so it spans the lid edge to edge, where it fuses into the
+  //    outer ring.
+  for (let i = 1; i < cellsX; i++) {
+    // Vertical strip running along Y at world X = -W/2*GU + i*GU.
+    const xPos = -(cellsX * gridUnitMm) / 2 + i * gridUnitMm;
+    const length = lidOuterD;
+    // Profile sketched on XZ plane (X = perpendicular to strip, Z =
+    // vertical), then extruded along Y by `length`.
+    const sketch = symmetricProfile().sketchOnPlane('XZ', -length / 2) as Sketch;
+    const strip = scope.register(sketch.extrude(length));
+    const positioned = scope.register(translate(strip, [xPos, 0, 0]));
+    scope.register(stackGrid);
+    stackGrid = unwrap(fuse(stackGrid, positioned));
+  }
+  for (let j = 1; j < cellsY; j++) {
+    // Horizontal strip running along X at world Y = -L/2*GU + j*GU.
+    const yPos = -(cellsY * gridUnitMm) / 2 + j * gridUnitMm;
+    const length = lidOuterW;
+    // Profile sketched on YZ plane, extruded along X by `length`.
+    const sketch = symmetricProfile().sketchOnPlane('YZ', -length / 2) as Sketch;
+    const strip = scope.register(sketch.extrude(length));
+    const positioned = scope.register(translate(strip, [0, yPos, 0]));
+    scope.register(stackGrid);
+    stackGrid = unwrap(fuse(stackGrid, positioned));
+  }
+
+  return stackGrid;
 }
 
 /* ──────────────────────────────────────────────────────────────────────
