@@ -290,7 +290,39 @@ function buildLidFloor(scope: DisposalScope, inputs: LidInputs): Shape3D {
  * Rails are inset from corners by `lidCornerR` on both ends.
  * ──────────────────────────────────────────────────────────────────────── */
 
-function clickShape2D(wallBottomZ: number): Drawing {
+/**
+ * Top-chamfer apex X for a rail bar, given the cavity wall's rail-local X.
+ *
+ * The chamfer slopes 45° from the rail's inner-face top corner up to this
+ * apex; we want the apex to land on the cavity wall so the rail attaches
+ * flush instead of leaving an unsupported tongue hanging into the cavity.
+ * When the cavity wall is at or inboard of the spine (thicker walls,
+ * wallThickness ≳ 1.85mm), the apex falls back to the baseline 0.8mm
+ * chamfer width — preserving the original geometry for those cases.
+ *
+ * Exported for unit testing of the geometric relationship.
+ */
+export function chamferApexXForCavityWall(cavityWallX: number): number {
+  return Math.max(LID_CLICK_RAIL_INNER + LID_CLICK_RAIL_TOP_CHAMFER, cavityWallX);
+}
+
+/**
+ * Build the rail's 2D cross-section.
+ *
+ * @param wallBottomZ Z of the rail's top face (= bottom of mating wall).
+ * @param cavityWallX Rail-local X of the lid's cavity inner face. The rail
+ *   spine sits at X=0 and is anchored at the lid's corner-radius line; the
+ *   cavity wall sits at `lidCornerR - cavityInset` away from the spine in
+ *   the outward (+X) direction. The top chamfer's apex extends to meet
+ *   this position so the rail attaches flush to the cavity wall instead
+ *   of leaving an unsupported tongue hanging in midair.
+ *
+ *   At thin walls (default 1.2mm), cavityWallX > 0 (cavity wall is OUTWARD
+ *   of the rail spine) and the chamfer must grow to reach it. At thicker
+ *   walls (~1.85mm) the cavity wall coincides with the spine and the
+ *   chamfer reverts to its baseline 0.8mm height.
+ */
+function clickShape2D(wallBottomZ: number, cavityWallX: number): Drawing {
   // Top of polygon = top of rail = bottom of mating wall.
   const yTop = wallBottomZ;
   // Y heights stepping down from the rail's top.
@@ -300,7 +332,10 @@ function clickShape2D(wallBottomZ: number): Drawing {
   const y4 = y3 - LID_CLICK_RAIL_DROP; // post-bump drop
   const y5 = y4 - LID_CLICK_RAIL_TAIL; // bottom apex
 
-  return draw([0, yTop])
+  const chamferApexX = chamferApexXForCavityWall(cavityWallX);
+  const chamferTopY = yTop + (chamferApexX - LID_CLICK_RAIL_INNER);
+
+  return draw([chamferApexX, yTop])
     .lineTo([LID_CLICK_RAIL_OUT, yTop])
     .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET, y1])
     .lineTo([LID_CLICK_RAIL_OUT - LID_CLICK_RAIL_INSET, y2])
@@ -309,7 +344,7 @@ function clickShape2D(wallBottomZ: number): Drawing {
     .lineTo([0, y5])
     .lineTo([LID_CLICK_RAIL_INNER, y5])
     .lineTo([LID_CLICK_RAIL_INNER, yTop])
-    .lineTo([0, yTop + LID_CLICK_RAIL_TOP_CHAMFER])
+    .lineTo([chamferApexX, chamferTopY])
     .close();
 }
 
@@ -319,10 +354,15 @@ function clickShape2D(wallBottomZ: number): Drawing {
  * outward direction is +Y (so the bump protrudes in +Y), and its top sits
  * at Z=wallBottomZ.
  */
-function buildClickRailBar(scope: DisposalScope, wallBottomZ: number, length: number): Shape3D {
+function buildClickRailBar(
+  scope: DisposalScope,
+  wallBottomZ: number,
+  cavityWallX: number,
+  length: number
+): Shape3D {
   // Build polygon in a 2D plane where local X = outward, local Y = vertical.
   // Sketch on YZ plane (perpendicular to wall direction = X axis).
-  const profile = clickShape2D(wallBottomZ);
+  const profile = clickShape2D(wallBottomZ, cavityWallX);
   const sketch = profile.sketchOnPlane('YZ', -length / 2);
   return scope.register(sketch.extrude(length) as Shape3D);
 }
@@ -527,9 +567,15 @@ function addClickRails(
     ? railPlacementsForPolygon(inputs)
     : railPlacementsForRectangle(inputs);
 
+  // Cavity wall position in rail-local X (where +X is outward from the
+  // spine). The spine sits at `lidCornerR` from the lid outer; the cavity
+  // wall sits at `cavityInset`. Their difference tells the rail's chamfer
+  // how far outward it needs to climb to meet the wall flush.
+  const cavityWallX = inputs.lidCornerR - inputs.cavityInset;
+
   let result = body;
   for (const place of placements) {
-    const rail = buildClickRailBar(scope, inputs.wallBottomZ, place.length);
+    const rail = buildClickRailBar(scope, inputs.wallBottomZ, cavityWallX, place.length);
     const oriented =
       place.rotationDeg === 0
         ? rail

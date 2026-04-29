@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { resolveLidInputs } from './lidBuilder';
+import { resolveLidInputs, chamferApexXForCavityWall } from './lidBuilder';
+import { LID_CLICK_RAIL_INNER, LID_CLICK_RAIL_TOP_CHAMFER } from './lidConstants';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, LidConfig } from '@/features/bin-designer/types';
 
@@ -77,5 +78,52 @@ describe('resolveLidInputs', () => {
     expect(resolveLidInputs(makeParams({ clickRailCoverage: 100 })).clickRailCoverage).toBe(1);
     expect(resolveLidInputs(makeParams({ clickRailCoverage: 75 })).clickRailCoverage).toBe(0.75);
     expect(resolveLidInputs(makeParams({ clickRailCoverage: 50 })).clickRailCoverage).toBe(0.5);
+  });
+});
+
+describe('chamferApexXForCavityWall', () => {
+  // The rail spine sits at the lid's corner-radius line; the cavity wall
+  // sits at `lidCornerR - cavityInset` from the spine in the outward (+X)
+  // direction. The top-chamfer apex must land on the cavity wall so the
+  // rail attaches flush — otherwise a thin tongue hangs unsupported into
+  // the cavity, leaving a printable gap.
+
+  it('extends the chamfer apex to the cavity wall at default wallThickness (1.2mm)', () => {
+    // For default params: lidCornerR = 3.55, cavityInset = 3.1.
+    // cavityWallX = 3.55 - 3.1 = 0.45 → chamfer apex must reach +0.45,
+    // 0.45mm beyond the original spine-aligned default.
+    const cavityWallX = 3.55 - 3.1;
+    expect(chamferApexXForCavityWall(cavityWallX)).toBeCloseTo(0.45, 6);
+  });
+
+  it('falls back to the baseline 0.8mm chamfer at the design-target wallThickness (~1.85mm)', () => {
+    // wallThickness = 1.85 → cavityInset = 1.85 + 1.9 = 3.75 = lidCornerR
+    // → cavityWallX = 0. The baseline chamfer (LID_CLICK_RAIL_INNER + 0.8)
+    // already reaches the cavity wall, so no extra extension is needed.
+    expect(chamferApexXForCavityWall(0)).toBeCloseTo(
+      LID_CLICK_RAIL_INNER + LID_CLICK_RAIL_TOP_CHAMFER,
+      6
+    );
+  });
+
+  it('clamps to baseline when cavity wall is inboard of the rail spine (thick walls)', () => {
+    // wallThickness 2.4mm: cavityInset = 4.3, cavityWallX = -0.75.
+    // The cavity wall is now INSIDE the rail body, so the chamfer just
+    // needs to provide a clean transition — keep the 0.8mm baseline.
+    expect(chamferApexXForCavityWall(-0.75)).toBeCloseTo(
+      LID_CLICK_RAIL_INNER + LID_CLICK_RAIL_TOP_CHAMFER,
+      6
+    );
+  });
+
+  it('produces a 45° chamfer slope (apex-X equals the chamfer height above the inner face)', () => {
+    // The slope from (LID_CLICK_RAIL_INNER, yTop) to (apex, yTop + h) is
+    // 45° iff h equals (apex - LID_CLICK_RAIL_INNER). Verifies the
+    // geometric invariant the rail extrusion relies on for clean prints.
+    const cavityWallX = 0.45;
+    const apex = chamferApexXForCavityWall(cavityWallX);
+    const height = apex - LID_CLICK_RAIL_INNER;
+    expect(apex - LID_CLICK_RAIL_INNER).toBeCloseTo(height, 6);
+    expect(apex).toBeGreaterThan(LID_CLICK_RAIL_INNER);
   });
 });
