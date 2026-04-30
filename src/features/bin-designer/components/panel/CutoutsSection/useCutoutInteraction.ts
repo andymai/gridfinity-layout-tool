@@ -5,248 +5,34 @@
  * Keyboard shortcuts: Delete, Ctrl+A, arrows (nudge), Escape.
  *
  * Pointer-move logic for each interaction mode is delegated to focused
- * handler functions in ./handlers/ — this hook orchestrates transitions
- * and wires shared state.
+ * handler functions in ./handlers/. Concern-specific state and effects
+ * (clipboard, context menu, undo toasts, keyboard shortcuts, recovery,
+ * transform starters, path tool) live in sibling sub-hooks below.
  */
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
-import type { CellMask } from '@/shared/utils/cellMask';
+import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
 import { useCutoutSelection } from '@/features/bin-designer/store';
-import { useToastStore } from '@/core/store/toast';
-import { useTranslation } from '@/i18n';
-import {
-  snapToGrid,
-  MIN_CUTOUT_SIZE,
-  computeBounds,
-  getRotatedBounds,
-  type AlignmentGuide,
-} from './geometry';
-import { cutoutFitsInMask, rectFitsInMask, type MaskCellSize } from './maskFit';
-import {
-  getPathBounds,
-  CLOSE_SNAP_THRESHOLD,
-  clampPathToBounds,
-  isSelfIntersecting,
-} from './pathGeometry';
-import {
-  handlePendingPlaceMove,
-  handleDragMove,
-  handleResizeMove,
-  handleRotateMove,
-  handleGroupRotateMove,
-  handleGroupScaleMove,
-  handleDrawMove,
-  handleCutoutKeyDown,
-  handlePathDrawingPointerDown,
-  handlePathDrawingPointerMove,
-  handlePathDrawingPointerUp,
-  handlePathDrawingVertexDown,
-  handleVertexEditPointerDown,
-  handleVertexEditPointerMove,
-  handleVertexEditPointerUp,
-} from './handlers';
+import { snapToGrid, getRotatedBounds, type AlignmentGuide } from './geometry';
+import { cutoutFitsInMask } from './maskFit';
+import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
+import { collectSnapTargets } from './handlers/rulerHandler';
 import type { RulerMeasurement } from './handlers/rulerHandler';
 import {
-  collectSnapTargets,
-  snapToNearestTarget,
-  computeMeasurement,
-} from './handlers/rulerHandler';
-import type { PathDrawingMode, PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
-import type { VertexEditMode } from './handlers';
-import type { StartRect } from './geometry';
+  type InteractionMode,
+  type PreviewMap,
+  type UseCutoutInteractionOptions,
+} from './cutoutInteractionTypes';
+import { useCutoutClipboard } from './useCutoutClipboard';
+import { useCutoutContextMenu } from './useCutoutContextMenu';
+import { useCutoutUndoToasts } from './useCutoutUndoToasts';
+import { useCutoutKeyboardShortcuts } from './useCutoutKeyboardShortcuts';
+import { useCutoutRecovery } from './useCutoutRecovery';
+import { useCutoutTransformStarters } from './useCutoutTransformStarters';
+import { useCutoutPathTool } from './useCutoutPathTool';
+import { useCutoutPointerHandlers } from './useCutoutPointerHandlers';
 
-/** Direction for resize handles */
-export type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
-
-/** Default sizes for click-to-place (mm) */
-const DEFAULT_RECT_SIZE = 20;
-const DEFAULT_CIRCLE_SIZE = 15;
-
-export type InteractionMode =
-  | { readonly type: 'idle' }
-  | { readonly type: 'placing'; readonly shape: CutoutShape }
-  | {
-      readonly type: 'pending-place';
-      readonly shape: CutoutShape;
-      readonly startMmX: number;
-      readonly startMmY: number;
-    }
-  | {
-      readonly type: 'drawing';
-      readonly shape: CutoutShape;
-      readonly startMmX: number;
-      readonly startMmY: number;
-    }
-  | {
-      readonly type: 'dragging';
-      readonly startX: number;
-      readonly startY: number;
-      readonly offsets: ReadonlyMap<string, { readonly dx: number; readonly dy: number }>;
-    }
-  | {
-      readonly type: 'resizing';
-      readonly cutoutId: string;
-      readonly handle: ResizeHandle;
-      readonly startRect: StartRect;
-    }
-  | {
-      readonly type: 'rotating';
-      readonly cutoutId: string;
-      readonly startAngle: number;
-      readonly initialRotation: number;
-    }
-  | {
-      readonly type: 'group-rotating';
-      readonly startAngle: number;
-      readonly center: { readonly x: number; readonly y: number };
-      readonly initialStates: ReadonlyMap<
-        string,
-        { readonly x: number; readonly y: number; readonly rotation: number }
-      >;
-    }
-  | {
-      readonly type: 'group-scaling';
-      readonly startDist: number;
-      readonly center: { readonly x: number; readonly y: number };
-      readonly initialStates: ReadonlyMap<
-        string,
-        {
-          readonly x: number;
-          readonly y: number;
-          readonly width: number;
-          readonly depth: number;
-        }
-      >;
-    }
-  | { readonly type: 'marquee'; readonly startX: number; readonly startY: number }
-  | PathDrawingMode
-  | VertexEditMode
-  | { readonly type: 'ruler-ready' }
-  | {
-      readonly type: 'measuring';
-      readonly startX: number;
-      readonly startY: number;
-      /** When true, return to ruler-ready on pointer up; otherwise return to idle (Shift+drag) */
-      readonly sticky: boolean;
-    };
-
-/** Preview overrides applied during drag/resize for visual feedback */
-export type PreviewMap = ReadonlyMap<string, Partial<Cutout>>;
-
-interface UseCutoutInteractionOptions {
-  readonly cutouts: readonly Cutout[];
-  readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
-  readonly onRemove: (id: string) => void;
-  readonly onAdd: (cutout: Cutout) => void;
-  readonly onGroup?: (cutoutIds: readonly string[]) => void;
-  readonly onUngroup?: (cutoutIds: readonly string[]) => void;
-  readonly onUpdateBatch?: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
-  readonly onRemoveBatch?: (ids: readonly string[]) => void;
-  readonly onUndo?: () => void;
-  readonly onRedo?: () => void;
-  readonly canUndo?: boolean;
-  readonly canRedo?: boolean;
-  readonly onLock?: (ids: readonly string[]) => void;
-  readonly onUnlock?: (ids: readonly string[]) => void;
-  readonly startTransaction?: () => void;
-  readonly commitTransaction?: () => void;
-  readonly binWidth: number;
-  readonly binDepth: number;
-  readonly gridSize?: number;
-  /** Non-rectangular footprint mask — when present, rejects placements outside the polygon. */
-  readonly cellMask?: CellMask;
-  /** Mm per mask cell. Required alongside cellMask; X/Y differ on non-square bins. */
-  readonly maskCellSize?: MaskCellSize;
-}
-
-/** Paste offset in mm — each successive paste shifts by this amount */
-const PASTE_OFFSET = 2;
-
-interface ClonedCutout extends Cutout {
-  readonly originalId: string;
-}
-
-function cloneCutoutsWithGroups(
-  originals: readonly Cutout[],
-  offsetFn?: (original: Cutout) => { x: number; y: number }
-): readonly ClonedCutout[] {
-  const groupMap = new Map<string, string>();
-  return originals.map((original) => {
-    const newId = crypto.randomUUID();
-    let newGroupId: string | null = null;
-    if (original.groupId) {
-      if (!groupMap.has(original.groupId)) {
-        groupMap.set(original.groupId, crypto.randomUUID());
-      }
-      newGroupId = groupMap.get(original.groupId) ?? null;
-    }
-    const pos = offsetFn ? offsetFn(original) : { x: original.x, y: original.y };
-    return {
-      ...original,
-      id: newId,
-      x: pos.x,
-      y: pos.y,
-      groupId: newGroupId,
-      originalId: original.id,
-    };
-  });
-}
-
-/** Clamp a position so the cutout stays within bin bounds. */
-function clampedOffset(
-  original: Cutout,
-  offset: number,
-  binWidth: number,
-  binDepth: number
-): { x: number; y: number } {
-  return {
-    x: Math.min(original.x + offset, binWidth - original.width),
-    y: Math.min(original.y + offset, binDepth - original.depth),
-  };
-}
-
-/**
- * Clone cutouts, add each to the layout, and select the new set.
- * Returns the cloned cutouts (with originalId) for further use.
- */
-function addClonedCutouts(
-  originals: readonly Cutout[],
-  onAdd: (cutout: Cutout) => void,
-  setSelection: (sel: ReadonlySet<string>) => void,
-  offsetFn?: (original: Cutout) => { x: number; y: number }
-): readonly ClonedCutout[] {
-  const clones = cloneCutoutsWithGroups(originals, offsetFn);
-  for (const { originalId: _, ...cutout } of clones) {
-    onAdd(cutout);
-  }
-  setSelection(new Set(clones.map((c) => c.id)));
-  return clones;
-}
-
-/** Default cutout properties shared by click-to-place and draw-to-place. */
-function createDefaultCutout(
-  id: string,
-  shape: CutoutShape,
-  x: number,
-  y: number,
-  width: number,
-  depth: number
-): Cutout {
-  return {
-    id,
-    shape,
-    x,
-    y,
-    width,
-    depth,
-    cutDepth: 5,
-    rotation: 0,
-    cornerRadius: 0,
-    label: '',
-    groupId: null,
-  };
-}
+export type { ResizeHandle, InteractionMode, PreviewMap } from './cutoutInteractionTypes';
 
 export function useCutoutInteraction({
   cutouts,
@@ -271,9 +57,6 @@ export function useCutoutInteraction({
   cellMask,
   maskCellSize,
 }: UseCutoutInteractionOptions) {
-  const addToast = useToastStore((s) => s.addToast);
-  const t = useTranslation();
-
   const [mode, setMode] = useState<InteractionMode>({ type: 'placing', shape: 'rectangle' });
   const [selection, setSelection] = useState<ReadonlySet<string>>(new Set());
   const [preview, setPreview] = useState<PreviewMap>(new Map());
@@ -283,12 +66,6 @@ export function useCutoutInteraction({
   const containerRef = useRef<HTMLElement | null>(null);
   /** Track whether the dead zone has been exceeded during this drag/resize */
   const pastDeadZoneRef = useRef(false);
-  /** Clipboard for copy/paste operations */
-  const [clipboard, setClipboard] = useState<readonly Cutout[]>([]);
-  /** Track number of pastes since last copy to increment offset */
-  const pasteCountRef = useRef(0);
-  /** Context menu state */
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   /** Drawing preview (corner-to-corner shape being drawn) */
   const [drawingPreview, setDrawingPreview] = useState<{
     x: number;
@@ -321,7 +98,6 @@ export function useCutoutInteraction({
     (id: string, additive: boolean) => {
       const cutout = cutouts.find((c) => c.id === id);
       if (!cutout) return;
-      // Hidden cutouts cannot be selected
       if (cutout.hidden) return;
 
       setSelection((prev) => {
@@ -436,631 +212,102 @@ export function useCutoutInteraction({
     [selection, cutouts, onUpdate, onUpdateBatch, binWidth, binDepth, cellMask, maskCellSize]
   );
 
-  // ── Clipboard ──────────────────────────────────────────────────────
+  // ── Sub-hooks: clipboard, context menu, undo toasts ───────────────
 
-  const copySelected = useCallback(() => {
-    const selected = cutouts.filter((c) => selection.has(c.id));
-    if (selected.length > 0) {
-      setClipboard(selected);
-      pasteCountRef.current = 0;
-      addToast({
-        message: t('toast.cutoutsCopied', { count: selected.length }),
-        type: 'info',
-        duration: 2000,
-      });
-    }
-  }, [cutouts, selection, addToast, t]);
-
-  const pasteFromClipboard = useCallback(() => {
-    if (clipboard.length === 0) return;
-    pasteCountRef.current += 1;
-    const offset = PASTE_OFFSET * pasteCountRef.current;
-
-    // Polygon bins: drop originals whose offset clone would overhang the mask.
-    // User can re-paste at a different location rather than losing the clipboard.
-    const placeable =
-      cellMask && maskCellSize
-        ? clipboard.filter((orig) => {
-            const pos = clampedOffset(orig, offset, binWidth, binDepth);
-            return cutoutFitsInMask({ ...orig, ...pos }, cellMask, maskCellSize);
-          })
-        : clipboard;
-    if (placeable.length === 0) return;
-
-    addClonedCutouts(placeable, onAdd, setSelection, (original) =>
-      clampedOffset(original, offset, binWidth, binDepth)
-    );
-  }, [clipboard, onAdd, binWidth, binDepth, cellMask, maskCellSize]);
-
-  const duplicateSelected = useCallback(() => {
-    const selected = cutouts.filter((c) => selection.has(c.id));
-    if (selected.length === 0) return;
-
-    const placeable =
-      cellMask && maskCellSize
-        ? selected.filter((orig) => {
-            const pos = clampedOffset(orig, PASTE_OFFSET, binWidth, binDepth);
-            return cutoutFitsInMask({ ...orig, ...pos }, cellMask, maskCellSize);
-          })
-        : selected;
-    if (placeable.length === 0) return;
-
-    addClonedCutouts(placeable, onAdd, setSelection, (original) =>
-      clampedOffset(original, PASTE_OFFSET, binWidth, binDepth)
-    );
-  }, [cutouts, selection, onAdd, binWidth, binDepth, cellMask, maskCellSize]);
-
-  // ── Path tool ────────────────────────────────────────────────────
-
-  /** Commit a closed path as a new cutout. */
-  const commitPath = useCallback(
-    (points: readonly PathPoint[]) => {
-      // Clamp to bin bounds so cutout never extends outside the bin surface
-      const clamped = clampPathToBounds(points, binWidth, binDepth);
-
-      // Reject self-intersecting paths that would produce invalid 3D geometry
-      if (isSelfIntersecting(clamped)) {
-        setPathDrawingPreview(null);
-        setMode({ type: 'idle' });
-        return;
-      }
-
-      const { minX, minY, maxX, maxY } = getPathBounds(clamped);
-
-      // Polygon bins: reject paths whose bounds overhang the mask.
-      if (
-        cellMask &&
-        maskCellSize &&
-        !rectFitsInMask(cellMask, minX, minY, maxX - minX, maxY - minY, maskCellSize)
-      ) {
-        setPathDrawingPreview(null);
-        setMode({ type: 'idle' });
-        return;
-      }
-
-      const newId = crypto.randomUUID();
-      onAdd({
-        ...createDefaultCutout(newId, 'path', minX, minY, maxX - minX, maxY - minY),
-        path: clamped,
-      });
-      setSelection(new Set([newId]));
-      setMode({ type: 'idle' });
-      setPathDrawingPreview(null);
-    },
-    [onAdd, binWidth, binDepth, cellMask, maskCellSize]
-  );
-
-  /** Handle path background click (first click or subsequent). */
-  const handlePathBackgroundDown = useCallback(
-    (mmX: number, mmY: number, shiftKey: boolean) => {
-      const bounds = { binWidth, binDepth, cellMask, maskCellSize };
-      const pathMode = mode.type === 'path-drawing' ? mode : null;
-      handlePathDrawingPointerDown(pathMode, mmX, mmY, shiftKey, bounds, snap, {
-        setMode,
-        setPathDrawingPreview,
-        commitPath,
-      });
-    },
-    [mode, binWidth, binDepth, cellMask, maskCellSize, snap, commitPath]
-  );
-
-  /** Handle clicking an existing vertex while drawing (to reposition or close). */
-  const onPathDrawingVertexDown = useCallback(
-    (index: number, _mmX: number, _mmY: number) => {
-      if (mode.type !== 'path-drawing') return;
-      handlePathDrawingVertexDown(mode, index, {
-        setMode,
-        setPathDrawingPreview,
-        commitPath,
-      });
-    },
-    [mode, commitPath]
-  );
-
-  /** Enter vertex editing mode for a path cutout (on double-click). */
-  const enterVertexEditing = useCallback(
-    (cutoutId: string) => {
-      const cutout = cutouts.find((c) => c.id === cutoutId);
-      if (!cutout || cutout.shape !== 'path') return;
-      setSelection(new Set([cutoutId]));
-      setMode({
-        type: 'vertex-editing',
-        cutoutId,
-        selectedPointIndex: null,
-        dragTarget: null,
-      });
-    },
-    [cutouts]
-  );
-
-  /** Handle vertex point down from PathEditOverlay3D. */
-  const handleVertexPointDown = useCallback(
-    (index: number, _mmX: number, _mmY: number) => {
-      if (mode.type !== 'vertex-editing') return;
-      startTransaction?.();
-      setMode({
-        ...mode,
-        selectedPointIndex: index,
-        dragTarget: { type: 'vertex', index },
-      });
-    },
-    [mode, startTransaction]
-  );
-
-  /** Handle vertex handle down from PathEditOverlay3D. */
-  const handleVertexHandleDown = useCallback(
-    (index: number, handleType: 'in' | 'out', _mmX: number, _mmY: number) => {
-      if (mode.type !== 'vertex-editing') return;
-      startTransaction?.();
-      setMode({
-        ...mode,
-        dragTarget: { type: 'handle', index, handleType },
-      });
-    },
-    [mode, startTransaction]
-  );
-
-  /** Handle background click during vertex editing (segment insertion or exit). */
-  const handleVertexBackgroundDown = useCallback(
-    (mmX: number, mmY: number) => {
-      if (mode.type !== 'vertex-editing') return;
-      const cutout = cutouts.find((c) => c.id === mode.cutoutId);
-      if (!cutout) {
-        setMode({ type: 'idle' });
-        return;
-      }
-      // Start a transaction so the split + any subsequent drag = one undo step
-      startTransaction?.();
-      handleVertexEditPointerDown(mode, { mmX, mmY, altKey: false }, cutout, CLOSE_SNAP_THRESHOLD, {
-        setMode,
-        setPreview,
-        onUpdate,
-        setSegmentHover,
-      });
-    },
-    [mode, cutouts, onUpdate, startTransaction]
-  );
-
-  // ── Context menu ───────────────────────────────────────────────────
-
-  const openContextMenu = useCallback((x: number, y: number) => {
-    setContextMenu({ x, y });
-  }, []);
-
-  const closeContextMenu = useCallback(() => {
-    setContextMenu(null);
-  }, []);
-
-  // ── Undo/Redo with toast feedback ─────────────────────────────────
-
-  const undoWithToast = useCallback(() => {
-    if (!canUndo) return;
-    onUndo?.();
-    addToast({ message: t('toast.undone'), type: 'info', duration: 2000 });
-  }, [canUndo, onUndo, addToast, t]);
-
-  const redoWithToast = useCallback(() => {
-    if (!canRedo) return;
-    onRedo?.();
-    addToast({ message: t('toast.redone'), type: 'info', duration: 2000 });
-  }, [canRedo, onRedo, addToast, t]);
-
-  // ── Drag lifecycle ─────────────────────────────────────────────────
-
-  const startDrag = useCallback(
-    (id: string, mmX: number, mmY: number, altKey?: boolean) => {
-      // Locked cutouts cannot be dragged
-      const target = cutouts.find((c) => c.id === id);
-      if (target?.locked) return;
-
-      // Determine effective selection, handling stale closure for grouped cutouts.
-      // When clicking a grouped cutout, selectCutout runs first and sets selection
-      // to the whole group, but React batches updates so `selection` here may still
-      // be the old value. Compute the correct set eagerly.
-      let effectiveSelection: ReadonlySet<string>;
-      if (selection.has(id)) {
-        effectiveSelection = selection;
-      } else {
-        const cutout = cutouts.find((c) => c.id === id);
-        if (cutout?.groupId) {
-          const groupIds = cutouts.filter((c) => c.groupId === cutout.groupId).map((c) => c.id);
-          effectiveSelection = new Set(groupIds);
-        } else {
-          effectiveSelection = new Set([id]);
-        }
-        setSelection(effectiveSelection);
-      }
-
-      // Block drag if any member of the effective selection is locked
-      const anyLocked = cutouts.some((c) => effectiveSelection.has(c.id) && c.locked);
-      if (anyLocked) return;
-
-      // Alt+drag: duplicate selected cutouts in-place, then drag the clones
-      let dragSelection = effectiveSelection;
-      let cloneOriginMap: ReadonlyMap<string, string> | null = null;
-      if (altKey) {
-        const selected = cutouts.filter((c) => effectiveSelection.has(c.id));
-        const clones = addClonedCutouts(selected, onAdd, setSelection);
-        cloneOriginMap = new Map(clones.map((c) => [c.id, c.originalId]));
-        dragSelection = new Set(clones.map((c) => c.id));
-      }
-
-      // Store offset from cursor to each selected cutout's origin
-      const offsets = new Map<string, { dx: number; dy: number }>();
-      for (const selectedId of dragSelection) {
-        const lookupId = cloneOriginMap?.get(selectedId) ?? selectedId;
-        const cutout = cutouts.find((c) => c.id === lookupId);
-        if (cutout) {
-          offsets.set(selectedId, { dx: cutout.x - mmX, dy: cutout.y - mmY });
-        }
-      }
-
-      pastDeadZoneRef.current = false;
-      setMode({ type: 'dragging', startX: mmX, startY: mmY, offsets });
-    },
-    [selection, cutouts, onAdd]
-  );
-
-  // ── Resize lifecycle ───────────────────────────────────────────────
-
-  const startResize = useCallback(
-    (id: string, handle: ResizeHandle, _mmX: number, _mmY: number) => {
-      const cutout = cutouts.find((c) => c.id === id);
-      if (!cutout) return;
-      if (cutout.locked) return;
-
-      pastDeadZoneRef.current = false;
-      setMode({
-        type: 'resizing',
-        cutoutId: id,
-        handle,
-        startRect: { x: cutout.x, y: cutout.y, width: cutout.width, depth: cutout.depth },
-      });
-    },
-    [cutouts]
-  );
-
-  // ── Rotate lifecycle ───────────────────────────────────────────────
-
-  const startRotation = useCallback(
-    (id: string, startAngle: number) => {
-      const cutout = cutouts.find((c) => c.id === id);
-      if (!cutout) return;
-      if (cutout.locked) return;
-
-      pastDeadZoneRef.current = false;
-      setMode({
-        type: 'rotating',
-        cutoutId: id,
-        startAngle,
-        initialRotation: cutout.rotation,
-      });
-    },
-    [cutouts]
-  );
-
-  // ── Group rotate lifecycle ─────────────────────────────────────────
-
-  const startGroupRotation = useCallback(
-    (startAngle: number) => {
-      const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
-      if (selectedCutouts.length < 2) return;
-      const bounds = computeBounds(selectedCutouts);
-      const center = {
-        x: (bounds.minX + bounds.maxX) / 2,
-        y: (bounds.minY + bounds.maxY) / 2,
-      };
-      const initialStates = new Map<string, { x: number; y: number; rotation: number }>();
-      for (const c of selectedCutouts) {
-        initialStates.set(c.id, { x: c.x, y: c.y, rotation: c.rotation });
-      }
-      pastDeadZoneRef.current = false;
-      setMode({ type: 'group-rotating', startAngle, center, initialStates });
-    },
-    [cutouts, selection]
-  );
-
-  // ── Group scale lifecycle ──────────────────────────────────────────
-
-  const startGroupScale = useCallback(
-    (mmX: number, mmY: number) => {
-      const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
-      if (selectedCutouts.length < 2) return;
-      const bounds = computeBounds(selectedCutouts);
-      const center = {
-        x: (bounds.minX + bounds.maxX) / 2,
-        y: (bounds.minY + bounds.maxY) / 2,
-      };
-      const startDist = Math.sqrt((mmX - center.x) ** 2 + (mmY - center.y) ** 2);
-      const initialStates = new Map<
-        string,
-        { x: number; y: number; width: number; depth: number }
-      >();
-      for (const c of selectedCutouts) {
-        initialStates.set(c.id, { x: c.x, y: c.y, width: c.width, depth: c.depth });
-      }
-      pastDeadZoneRef.current = false;
-      setMode({ type: 'group-scaling', startDist, center, initialStates });
-    },
-    [cutouts, selection]
-  );
-
-  // ── Pointer move — delegates to mode-specific handlers ─────────────
-
-  const handlePointerMove = useCallback(
-    (mmX: number, mmY: number, shiftKey?: boolean, altKey?: boolean) => {
-      const event = { mmX, mmY, shiftKey, altKey };
-      const bounds = { binWidth, binDepth, cellMask, maskCellSize };
-
-      switch (mode.type) {
-        case 'pending-place':
-          handlePendingPlaceMove(mode, event, setMode);
-          break;
-
-        case 'dragging':
-          handleDragMove(mode, event, cutouts, bounds, snap, pastDeadZoneRef, {
-            setPreview,
-            setActiveGuides,
-          });
-          break;
-
-        case 'resizing':
-          handleResizeMove(mode, event, cutouts, bounds, snap, pastDeadZoneRef, {
-            setPreview,
-          });
-          break;
-
-        case 'rotating':
-          handleRotateMove(mode, event, cutouts, bounds, pastDeadZoneRef, {
-            setPreview,
-          });
-          break;
-
-        case 'group-rotating':
-          handleGroupRotateMove(mode, event, cutouts, bounds, pastDeadZoneRef, {
-            setPreview,
-          });
-          break;
-
-        case 'group-scaling':
-          handleGroupScaleMove(mode, event, cutouts, bounds, pastDeadZoneRef, {
-            setPreview,
-          });
-          break;
-
-        case 'drawing':
-          handleDrawMove(mode, event, bounds, snap, {
-            setDrawingPreview,
-          });
-          break;
-
-        case 'path-drawing':
-          handlePathDrawingPointerMove(mode, event, bounds, snap, {
-            setMode,
-            setPathDrawingPreview,
-            commitPath,
-          });
-          break;
-
-        case 'vertex-editing': {
-          const editCutout = cutouts.find((c) => c.id === mode.cutoutId);
-          if (editCutout) {
-            handleVertexEditPointerMove(mode, event, editCutout, bounds, snap, {
-              setPreview,
-              setSegmentHover,
-            });
-          }
-          break;
-        }
-
-        case 'measuring': {
-          const snapped = snapToNearestTarget(mmX, mmY, rulerSnapTargets, rulerZoomRef.current);
-          setRulerMeasurement(computeMeasurement(mode.startX, mode.startY, snapped.x, snapped.y));
-          break;
-        }
-      }
-    },
-    [mode, cutouts, binWidth, binDepth, cellMask, maskCellSize, snap, commitPath, rulerSnapTargets]
-  );
-
-  // ── Pointer up (commit) ────────────────────────────────────────────
-
-  /** Click-to-place: create a default-sized shape centered at the click position. */
-  const commitPendingPlace = useCallback(
-    (placeMode: Extract<InteractionMode, { type: 'pending-place' }>) => {
-      const defaultSize = placeMode.shape === 'circle' ? DEFAULT_CIRCLE_SIZE : DEFAULT_RECT_SIZE;
-      const x = Math.max(
-        0,
-        Math.min(snap(placeMode.startMmX - defaultSize / 2), binWidth - defaultSize)
-      );
-      const y = Math.max(
-        0,
-        Math.min(snap(placeMode.startMmY - defaultSize / 2), binDepth - defaultSize)
-      );
-
-      // Polygon mask: reject click-to-place inside an unfilled notch.
-      if (
-        cellMask &&
-        maskCellSize &&
-        !rectFitsInMask(cellMask, x, y, defaultSize, defaultSize, maskCellSize)
-      ) {
-        setMode({ type: 'idle' });
-        return;
-      }
-
-      const newId = crypto.randomUUID();
-      onAdd(createDefaultCutout(newId, placeMode.shape, x, y, defaultSize, defaultSize));
-      setSelection(new Set([newId]));
-      setMode({ type: 'idle' });
-    },
-    [snap, binWidth, binDepth, cellMask, maskCellSize, onAdd]
-  );
-
-  /**
-   * Augment drag preview with translated path coordinates, then commit all
-   * preview updates to the store.
-   */
-  const commitTransformPreview = useCallback(
-    (isDrag: boolean) => {
-      if (!pastDeadZoneRef.current || preview.size === 0) return;
-
-      // For path cutouts during drag, translate absolute path point coordinates
-      // to match the new x/y bounding box position.
-      const augmented = new Map(preview);
-      if (isDrag) {
-        for (const [id, updates] of augmented) {
-          const cutout = cutouts.find((c) => c.id === id);
-          if (
-            cutout?.shape === 'path' &&
-            cutout.path &&
-            updates.x !== undefined &&
-            updates.y !== undefined
-          ) {
-            const dx = updates.x - cutout.x;
-            const dy = updates.y - cutout.y;
-            if (dx !== 0 || dy !== 0) {
-              augmented.set(id, {
-                ...updates,
-                path: cutout.path.map((pt) => ({
-                  ...pt,
-                  x: pt.x + dx,
-                  y: pt.y + dy,
-                })),
-              });
-            }
-          }
-        }
-      }
-      if (onUpdateBatch && augmented.size > 1) {
-        onUpdateBatch(augmented);
-      } else {
-        for (const [id, updates] of augmented) {
-          onUpdate(id, updates);
-        }
-      }
-    },
-    [preview, cutouts, onUpdate, onUpdateBatch]
-  );
-
-  /** Commit the draw-to-place preview as a new cutout. */
-  const commitDrawing = useCallback(() => {
-    if (
-      drawingPreview &&
-      drawingPreview.width >= MIN_CUTOUT_SIZE &&
-      drawingPreview.depth >= MIN_CUTOUT_SIZE
-    ) {
-      const newId = crypto.randomUUID();
-      onAdd(
-        createDefaultCutout(
-          newId,
-          drawingPreview.shape,
-          drawingPreview.x,
-          drawingPreview.y,
-          drawingPreview.width,
-          drawingPreview.depth
-        )
-      );
-      setSelection(new Set([newId]));
-    }
-    setDrawingPreview(null);
-    setMode({ type: 'idle' });
-  }, [drawingPreview, onAdd]);
-
-  const handlePointerUp = useCallback(() => {
-    switch (mode.type) {
-      case 'pending-place':
-        commitPendingPlace(mode);
-        return;
-
-      case 'dragging':
-      case 'resizing':
-      case 'rotating':
-      case 'group-rotating':
-      case 'group-scaling':
-        commitTransformPreview(mode.type === 'dragging');
-        setPreview(new Map());
-        setActiveGuides([]);
-        setMode({ type: 'idle' });
-        return;
-
-      case 'drawing':
-        commitDrawing();
-        return;
-
-      case 'path-drawing':
-        handlePathDrawingPointerUp(mode, { setMode });
-        return;
-
-      case 'vertex-editing': {
-        const editCutout = cutouts.find((c) => c.id === mode.cutoutId);
-        if (editCutout) {
-          handleVertexEditPointerUp(mode, editCutout, preview, {
-            setMode,
-            setPreview,
-            onUpdate,
-            setSegmentHover,
-          });
-        }
-        commitTransaction?.();
-        return;
-      }
-
-      case 'measuring':
-        // Sticky mode (toolbar): stay in ruler-ready for repeated measurements
-        // One-off (Shift+drag): return to idle
-        setMode({ type: mode.sticky ? 'ruler-ready' : 'idle' });
-        return;
-    }
-  }, [
-    mode,
-    preview,
+  const { clipboard, copySelected, pasteFromClipboard, duplicateSelected } = useCutoutClipboard({
     cutouts,
+    selection,
+    setSelection,
+    onAdd,
+    binWidth,
+    binDepth,
+    cellMask,
+    maskCellSize,
+  });
+
+  const { contextMenu, openContextMenu, closeContextMenu } = useCutoutContextMenu();
+
+  const { undoWithToast, redoWithToast } = useCutoutUndoToasts({
+    canUndo,
+    canRedo,
+    onUndo,
+    onRedo,
+  });
+
+  // ── Sub-hooks: path tool, transform lifecycle starters ────────────
+
+  const {
+    commitPath,
+    handlePathBackgroundDown,
+    onPathDrawingVertexDown,
+    enterVertexEditing,
+    handleVertexPointDown,
+    handleVertexHandleDown,
+    handleVertexBackgroundDown,
+  } = useCutoutPathTool({
+    mode,
+    setMode,
+    cutouts,
+    onAdd,
     onUpdate,
-    commitPendingPlace,
-    commitTransformPreview,
-    commitDrawing,
+    setSelection,
+    setPathDrawingPreview,
+    setPreview,
+    setSegmentHover,
+    snap,
+    binWidth,
+    binDepth,
+    cellMask,
+    maskCellSize,
+    startTransaction,
+  });
+
+  const { startDrag, startResize, startRotation, startGroupRotation, startGroupScale } =
+    useCutoutTransformStarters({
+      cutouts,
+      selection,
+      setSelection,
+      onAdd,
+      setMode,
+      pastDeadZoneRef,
+    });
+
+  // ── Sub-hook: pointer move/up dispatcher ──────────────────────────
+
+  const { handlePointerMove, handlePointerUp } = useCutoutPointerHandlers({
+    mode,
+    setMode,
+    cutouts,
+    preview,
+    setPreview,
+    setActiveGuides,
+    drawingPreview,
+    setDrawingPreview,
+    setPathDrawingPreview,
+    setSegmentHover,
+    setSelection,
+    setRulerMeasurement,
+    snap,
+    binWidth,
+    binDepth,
+    cellMask,
+    maskCellSize,
+    rulerSnapTargets,
+    rulerZoomRef,
+    pastDeadZoneRef,
+    commitPath,
+    onAdd,
+    onUpdate,
+    onUpdateBatch,
     commitTransaction,
-  ]);
+  });
 
-  // ── Keyboard shortcuts — delegates to handler ──────────────────────
+  // ── Sub-hooks: keyboard shortcuts, recovery effects ───────────────
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      handleCutoutKeyDown(e, {
-        selection,
-        cutouts,
-        mode,
-        deleteSelected,
-        deselectAll,
-        selectAll,
-        nudgeSelected,
-        copySelected,
-        pasteFromClipboard,
-        duplicateSelected,
-        onUndo: undoWithToast,
-        onRedo: redoWithToast,
-        onGroup,
-        onUngroup,
-        onUpdate,
-        onUpdateBatch,
-        onLock,
-        onUnlock,
-        setPreview,
-        clearActiveGuides: () => setActiveGuides([]),
-        clearDrawingPreview: () => setDrawingPreview(null),
-        clearPathDrawingPreview: () => setPathDrawingPreview(null),
-        setPathDrawingPreview,
-        setMode,
-        setSegmentHover,
-        setSelection,
-      });
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [
+  useCutoutKeyboardShortcuts({
     selection,
     cutouts,
+    mode,
     deleteSelected,
     deselectAll,
     selectAll,
@@ -1076,55 +323,24 @@ export function useCutoutInteraction({
     onUpdateBatch,
     onLock,
     onUnlock,
+    setPreview,
+    setActiveGuides,
+    setDrawingPreview,
+    setPathDrawingPreview,
+    setMode,
+    setSegmentHover,
+    setSelection,
+  });
+
+  useCutoutRecovery({
     mode,
-  ]);
-
-  // ── Recovery: reset on lost pointer / visibility change ────────────
-
-  useEffect(() => {
-    const reset = () => {
-      if (mode.type === 'path-drawing' && mode.activePointDrag) {
-        // Cancel in-progress handle drag but preserve the placed path points
-        setMode({ ...mode, activePointDrag: false, repositionIndex: null });
-        return;
-      }
-      if (
-        mode.type !== 'idle' &&
-        mode.type !== 'placing' &&
-        mode.type !== 'marquee' &&
-        mode.type !== 'vertex-editing' &&
-        mode.type !== 'path-drawing' &&
-        mode.type !== 'ruler-ready'
-      ) {
-        setPreview(new Map());
-        setActiveGuides([]);
-        setDrawingPreview(null);
-        setPathDrawingPreview(null);
-        setRulerMeasurement(null);
-        setMode({ type: 'idle' });
-      }
-    };
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') reset();
-    };
-    window.addEventListener('pointercancel', reset);
-    window.addEventListener('blur', reset);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      window.removeEventListener('pointercancel', reset);
-      window.removeEventListener('blur', reset);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [mode]);
-
-  // Clear ruler measurement when leaving ruler modes (e.g. pressing Escape)
-  /* eslint-disable react-hooks/set-state-in-effect -- clearing transient visual state when mode changes */
-  useEffect(() => {
-    if (mode.type !== 'measuring' && mode.type !== 'ruler-ready') {
-      setRulerMeasurement(null);
-    }
-  }, [mode.type]);
-  /* eslint-enable react-hooks/set-state-in-effect */
+    setMode,
+    setPreview,
+    setActiveGuides,
+    setDrawingPreview,
+    setPathDrawingPreview,
+    setRulerMeasurement,
+  });
 
   // ── Derived state ──────────────────────────────────────────────────
 
