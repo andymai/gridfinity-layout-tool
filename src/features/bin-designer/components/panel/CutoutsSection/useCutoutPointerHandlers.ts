@@ -26,10 +26,8 @@ import {
 } from './handlers';
 import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
 import { snapToNearestTarget, computeMeasurement } from './handlers/rulerHandler';
-import type { RulerMeasurement, collectSnapTargets } from './handlers/rulerHandler';
+import type { RulerMeasurement, SnapTarget } from './handlers/rulerHandler';
 import { MIN_CUTOUT_SIZE, type AlignmentGuide } from './geometry';
-
-type RulerSnapTargets = ReturnType<typeof collectSnapTargets>;
 import { rectFitsInMask, type MaskCellSize } from './maskFit';
 import { createDefaultCutout } from './cutoutHelpers';
 import {
@@ -65,7 +63,7 @@ interface UseCutoutPointerHandlersOptions {
   readonly binDepth: number;
   readonly cellMask?: CellMask;
   readonly maskCellSize?: MaskCellSize;
-  readonly rulerSnapTargets: RulerSnapTargets;
+  readonly rulerSnapTargets: readonly SnapTarget[];
   readonly rulerZoomRef: React.RefObject<number>;
   readonly pastDeadZoneRef: React.RefObject<boolean>;
   readonly commitPath: (points: readonly PathPoint[]) => void;

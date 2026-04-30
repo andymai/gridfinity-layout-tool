@@ -40,7 +40,7 @@ export function cloneCutoutsWithGroups(
   });
 }
 
-/** Clamp a position so the cutout stays within bin bounds. */
+/** Clamp a position so the cutout stays within bin bounds (both lower and upper). */
 export function clampedOffset(
   original: Cutout,
   offset: number,
@@ -48,8 +48,8 @@ export function clampedOffset(
   binDepth: number
 ): { x: number; y: number } {
   return {
-    x: Math.min(original.x + offset, binWidth - original.width),
-    y: Math.min(original.y + offset, binDepth - original.depth),
+    x: Math.max(0, Math.min(original.x + offset, binWidth - original.width)),
+    y: Math.max(0, Math.min(original.y + offset, binDepth - original.depth)),
   };
 }
 
