@@ -80,12 +80,20 @@ export function buildBaseplateSTL(
     view.setFloat32(offset + 8, cz / len, true);
     offset += 12;
 
-    for (const vi of [i0, i1, i2]) {
-      view.setFloat32(offset, verts[vi * 3], true);
-      view.setFloat32(offset + 4, verts[vi * 3 + 1], true);
-      view.setFloat32(offset + 8, verts[vi * 3 + 2], true);
-      offset += 12;
-    }
+    // Unrolled vertex writes — large baseplates emit hundreds of thousands of
+    // triangles, so avoid per-iteration array allocation in this hot loop.
+    view.setFloat32(offset, v0x, true);
+    view.setFloat32(offset + 4, v0y, true);
+    view.setFloat32(offset + 8, v0z, true);
+    offset += 12;
+    view.setFloat32(offset, v1x, true);
+    view.setFloat32(offset + 4, v1y, true);
+    view.setFloat32(offset + 8, v1z, true);
+    offset += 12;
+    view.setFloat32(offset, v2x, true);
+    view.setFloat32(offset + 4, v2y, true);
+    view.setFloat32(offset + 8, v2z, true);
+    offset += 12;
 
     view.setUint16(offset, 0, true);
     offset += 2;

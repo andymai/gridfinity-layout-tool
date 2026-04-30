@@ -4,8 +4,11 @@
  * meshCacheKey covers every param that affects final geometry — used to short-
  * circuit the entire build when params haven't changed.
  *
- * slabPocketsCacheKey covers only slab+pocket-affecting params (NOT magnet
- * holes or connectors), so toggling those reuses the cached intermediate.
+ * slabPocketsCacheKey covers slab+pocket-affecting params. It still includes
+ * `magnetHoles` and `magnetDepth` because they affect slab height and whether
+ * pockets are through-cut or floored. What it omits is the magnet-hole cutter
+ * geometry (diameter/offsets) and all connector params — those are applied
+ * after the cached intermediate, so toggling them reuses this cache.
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
