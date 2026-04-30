@@ -54,7 +54,13 @@ graph TB
 - `worker/generators/slotBuilder.ts` — wall slot cutout geometry
 - `worker/generators/splitConnectorBuilder.ts` — connector nubs for split bin assembly
 - `worker/generators/baseplateGenerator.ts` — baseplate BREP generation
-- `worker/generators/baseplateDirectMesh.ts` — direct mesh generation for baseplate preview
+- `worker/generators/baseplateDirectMesh.ts` — direct mesh generation orchestrator for baseplate preview (procedural, no BREP)
+- `worker/generators/directMeshBuilder.ts` — `MeshBuilder` class + `faceNormal`, `tangentVectors`, segment-count constants
+- `worker/generators/directMeshShapes.ts` — 2D primitives shared across emitters: rounded rectangles, circles, point-in-polygon
+- `worker/generators/directMeshWalls.ts` — pocket walls (with optional floor) and outer perimeter walls
+- `worker/generators/directMeshFaces.ts` — top/bottom slab face = padding ring + per-cell corner gussets; closed bottom for magnet variants
+- `worker/generators/directMeshMagnets.ts` — magnet hole emitter (cancel + cylinder + floor pattern)
+- `worker/generators/directMeshConnectors.ts` — connector nub (male) and connector hole (female) emitters
 - `worker/generators/featureTags.ts` — feature tagging system for BREP objects
 - `worker/generators/generatorConstants.ts` — Gridfinity spec constants
 - `worker/generators/cellDecomposition.ts` — grid cell decomposition utilities
