@@ -330,8 +330,8 @@ function addPocketWalls(
   // Build top + bottom perimeter rings once and share vertex indices across
   // the adjacent wall quads. Normals are intentionally zeroed; they'll be
   // overwritten by `computeVertexNormals` downstream.
-  const topRing: number[] = new Array(n);
-  const botRing: number[] = new Array(n);
+  const topRing = new Array<number>(n);
+  const botRing = new Array<number>(n);
   for (let i = 0; i < n; i++) {
     topRing[i] = mb.pushVertex(topPts[i][0] + cx, topPts[i][1] + cy, zTop, 0, 0, 0);
     botRing[i] = mb.pushVertex(botPts[i][0] + cx, botPts[i][1] + cy, zBot, 0, 0, 0);
@@ -390,8 +390,8 @@ function addOuterWalls(
   // indices so `computeVertexNormals` averages face normals across the rounded
   // slab corners (smooth shading) while the 35° crease threshold keeps the
   // arc→flat-edge tangent points crisp where the dihedral exceeds threshold.
-  const topRing: number[] = new Array(n);
-  const botRing: number[] = new Array(n);
+  const topRing = new Array<number>(n);
+  const botRing = new Array<number>(n);
   for (let i = 0; i < n; i++) {
     const x = outerPts[i][0] + offsetX;
     const y = outerPts[i][1] + offsetY;
@@ -729,8 +729,8 @@ function addMagnetHoles(
     // Cylinder walls — share top/bottom ring vertices across adjacent quads so
     // the magnet hole reads as a smooth cylinder (vs. the prior 16-segment
     // facets the per-quad face normals produced).
-    const wallTop: number[] = new Array(CIRCLE_SEGMENTS);
-    const wallBot: number[] = new Array(CIRCLE_SEGMENTS);
+    const wallTop = new Array<number>(CIRCLE_SEGMENTS);
+    const wallBot = new Array<number>(CIRCLE_SEGMENTS);
     for (let i = 0; i < CIRCLE_SEGMENTS; i++) {
       const px = circlePts[i][0] + mx;
       const py = circlePts[i][1] + my;
@@ -883,8 +883,8 @@ function addConnectorHole(
   // Cylinder walls — share surface/floor ring vertices across adjacent quads
   // so the connector hole appears as a smooth cylinder rather than a faceted
   // prism.
-  const surfRing: number[] = new Array(NUB_CIRCLE_SEGMENTS);
-  const floorRing: number[] = new Array(NUB_CIRCLE_SEGMENTS);
+  const surfRing = new Array<number>(NUB_CIRCLE_SEGMENTS);
+  const floorRing = new Array<number>(NUB_CIRCLE_SEGMENTS);
   for (let i = 0; i < NUB_CIRCLE_SEGMENTS; i++) {
     const [dx, dy, dz] = circlePts[i];
     surfRing[i] = mb.pushVertex(cx + dx, cy + dy, cz + dz, 0, 0, 0);

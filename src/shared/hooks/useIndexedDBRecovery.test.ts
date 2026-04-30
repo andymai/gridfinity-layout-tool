@@ -37,11 +37,11 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports -- dynamic import bound late via vi.resetModules()
 let storage: typeof import('@/core/storage');
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports -- dynamic import bound late via vi.resetModules()
 let layoutStore: typeof import('@/core/store');
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports -- dynamic import bound late via vi.resetModules()
 let toastStore: typeof import('@/core/store/toast');
 
 const ORIGINAL_IDS = ['original-layout-1', 'original-layout-2'];

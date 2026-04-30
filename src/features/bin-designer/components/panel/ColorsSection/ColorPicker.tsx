@@ -84,7 +84,7 @@ export function ColorPicker({ color, onChange }: ColorPickerProps) {
         }}
         error={hexError}
         aria-label={t('binDesigner.colors.hexColor')}
-        placeholder="#000000" // eslint-disable-line i18next/no-literal-string
+        placeholder="#000000" // eslint-disable-line i18next/no-literal-string -- hex format placeholder, not translatable
         leftIcon={
           <span
             className="w-3.5 h-3.5 rounded-sm border border-stroke-subtle/50"

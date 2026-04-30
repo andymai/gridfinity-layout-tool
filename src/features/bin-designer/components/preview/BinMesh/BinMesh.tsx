@@ -103,8 +103,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       edgeVertices: s.generation.mesh?.edgeVertices ?? null,
       faceGroups: s.generation.mesh?.faceGroups ?? null,
       coarseLOD: s.generation.mesh?.coarseLOD ?? null,
-      // featureColors is typed required but legacy persisted configs may omit it
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
       featureColors: s.params.featureColors ?? null,
       hasLip: s.params.base.stackingLip,
       hasLabelTabs: s.params.label.enabled,
@@ -122,8 +121,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
 
   // Build multi-color groups when feature is active
   const multiColorData = useMemo(() => {
-    // featureColors is null-coalesced upstream (legacy persisted configs); guard it.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); guard it
     if (!multiColorEnabled || !faceGroups || !featureColors || !indices) return null;
     return buildMultiColorGroups(faceGroups, featureColors, activeZones, indices.length);
   }, [multiColorEnabled, faceGroups, featureColors, activeZones, indices]);
@@ -144,8 +142,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
 
     // Determine which material index is hovered (if any)
     let hoveredIndex: number | undefined;
-    // featureColors is null-coalesced upstream (legacy persisted configs); guard it.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); guard it
     if (hoveredColorZone && featureColors) {
       const hoveredHex = featureColors[hoveredColorZone];
       hoveredIndex = multiColorData.colorToIndex.get(hoveredHex);
@@ -191,8 +188,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     if (coarseGeometry) invalidate();
   }, [coarseGeometry, invalidate]);
 
-  // featureColors is null-coalesced upstream (legacy persisted configs); guard it.
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); guard it
   const baseColor = multiColorEnabled && featureColors ? featureColors.body : color;
 
   // Single-color material props shared between fine mesh and coarse LOD

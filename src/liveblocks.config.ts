@@ -208,11 +208,8 @@ export const useMyPresence = (context?.useMyPresence ??
   UserPresence,
   (patch: Partial<UserPresence>) => void,
 ];
-// `context?.useUpdateMyPresence` is `any` (context is typed `createRoomContext<any, any>`),
-// so the cast is load-bearing — without it, callers like `CollabProvider` lose the
-// `(patch: Partial<UserPresence>) => void` signature and silently fall back to `any`.
-// The lint rule's "unnecessary" reading is a false positive for `any`-sourced expressions.
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+// context.useUpdateMyPresence is `any` (createRoomContext<any, any>), so the
+// cast pins the public signature for callers like CollabProvider.
 export const useUpdateMyPresence = (context?.useUpdateMyPresence ??
   createUnconfiguredHook('useUpdateMyPresence')) as () => (patch: Partial<UserPresence>) => void;
 // Safe hooks that return defaults when not configured OR when called outside RoomProvider

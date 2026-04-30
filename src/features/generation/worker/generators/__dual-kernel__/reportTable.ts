@@ -42,7 +42,7 @@ export function printTimingTable(timings: TimingEntry[]): void {
   const totalTris = timings.reduce((sum, t) => sum + t.triangleCount, 0);
   const passCount = timings.filter((t) => t.passed).length;
 
-  // eslint-disable-next-line no-console
+  // eslint-disable-next-line no-console -- dual-kernel parity report is intentionally printed to console for scenario diagnostics
   console.log(
     [
       '',
