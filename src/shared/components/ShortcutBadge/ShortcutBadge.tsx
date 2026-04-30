@@ -31,14 +31,14 @@ export function ShortcutBadge({ keys, modifier, shift, className = '' }: Shortcu
       {modifier && (
         <>
           <kbd className={keyClasses}>{modKey}</kbd>
-          {/* eslint-disable-next-line i18next/no-literal-string */}
+          {/* eslint-disable-next-line i18next/no-literal-string -- keyboard shortcut joiner glyph, not translatable */}
           <span className="text-content-tertiary text-[10px]">+</span>
         </>
       )}
       {shift && (
         <>
           <kbd className={keyClasses}>Shift</kbd>
-          {/* eslint-disable-next-line i18next/no-literal-string */}
+          {/* eslint-disable-next-line i18next/no-literal-string -- keyboard shortcut joiner glyph, not translatable */}
           <span className="text-content-tertiary text-[10px]">+</span>
         </>
       )}

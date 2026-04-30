@@ -12,8 +12,7 @@ vi.mock('@/shared/analytics/purposeInference', () => ({
   initLabelSizesCache: vi.fn().mockResolvedValue(undefined),
 }));
 
-// We need to import and re-create the hook each test since it has module-level state
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports -- dynamic import bound late via vi.resetModules() to reset module-level state per test
 let storage: typeof import('@/core/storage');
 
 // Reset module state between tests

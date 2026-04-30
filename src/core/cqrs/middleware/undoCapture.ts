@@ -130,9 +130,7 @@ export function batch<T>(fn: () => T): T {
     // Check if layout actually changed (Immer produces new reference on mutation)
     const currentLayout = useLayoutStore.getState().layout;
     if (currentLayout !== layout) {
-      // batchCommandType is mutated by the inner middleware via fn(); TS's flow
-      // analysis can't see across that boundary so it narrows to `null` here.
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- batchCommandType is mutated by the inner middleware via fn(); TS's flow analysis can't see across that boundary so it narrows to null here
       useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown', selectionSnapshot);
       mlTracking.recordAction();
     }
@@ -142,9 +140,7 @@ export function batch<T>(fn: () => T): T {
     // Push undo snapshot even on error so partial mutations can be reverted
     const currentLayout = useLayoutStore.getState().layout;
     if (currentLayout !== layout) {
-      // batchCommandType is mutated by the inner middleware via fn(); TS's flow
-      // analysis can't see across that boundary so it narrows to `null` here.
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- batchCommandType is mutated by the inner middleware via fn(); TS's flow analysis can't see across that boundary so it narrows to null here
       useHistoryStore.getState().push(snapshot, batchCommandType ?? 'unknown', selectionSnapshot);
       mlTracking.recordAction();
     }

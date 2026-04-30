@@ -39,9 +39,7 @@ export function parseSvgString(svgString: string): Result<ParsedCutoutSpec[], Sv
   // Check for parse errors
   const parseError = doc.querySelector('parsererror');
   if (parseError) {
-    // textContent is `string | null`; the err `detail` field accepts `string | undefined`,
-    // so coalesce null → undefined.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- textContent is `string | null`; err detail accepts `string | undefined`, so coalesce null → undefined
     return err({ code: 'SVG_PARSE_FAILED', detail: parseError.textContent ?? undefined });
   }
 
