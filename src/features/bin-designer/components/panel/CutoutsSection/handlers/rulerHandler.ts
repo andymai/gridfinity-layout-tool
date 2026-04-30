@@ -10,7 +10,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { getRotatedBounds } from '../geometry';
 
 /** A snap target point derived from cutout geometry */
-interface SnapTarget {
+export interface SnapTarget {
   readonly x: number;
   readonly y: number;
 }
