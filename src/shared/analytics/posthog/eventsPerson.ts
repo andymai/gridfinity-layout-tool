@@ -55,6 +55,13 @@ export function updatePersonProperties(): void {
     const data = loadAnalyticsData();
     const flags = data.featureFlags;
 
+    // Coerce flag-derived booleans so the payload is consistently
+    // boolean. `flags[key]` is typed as boolean but can be `undefined`
+    // at runtime for fresh users (no key in the persisted record), so
+    // `metrics.x || flags[k]` would leak `undefined` into PostHog's
+    // schema. The `?? false` collapses the missing-key case.
+    const flag = (key: string): boolean => flags[key] ?? false;
+
     // Properties that can change ($set)
     posthogInstance.setPersonProperties({
       // Usage metrics
@@ -63,14 +70,14 @@ export function updatePersonProperties(): void {
       last_active: new Date().toISOString(),
 
       // Feature adoption (has ever used)
-      uses_multi_layer: metrics.feature_multi_layer || flags['multi_layer'],
-      uses_half_bins: metrics.feature_half_bins || flags['half_bins'],
-      uses_custom_categories: metrics.feature_custom_categories || flags['custom_categories'],
-      uses_labels: metrics.feature_labels || flags['labels'],
-      uses_3d_preview: flags['3d_preview'],
-      uses_cloud_share: flags['cloud_share'],
-      uses_fill_operations: flags['fill'],
-      uses_paint_mode: flags['paint_mode'],
+      uses_multi_layer: metrics.feature_multi_layer || flag('multi_layer'),
+      uses_half_bins: metrics.feature_half_bins || flag('half_bins'),
+      uses_custom_categories: metrics.feature_custom_categories || flag('custom_categories'),
+      uses_labels: metrics.feature_labels || flag('labels'),
+      uses_3d_preview: flag('3d_preview'),
+      uses_cloud_share: flag('cloud_share'),
+      uses_fill_operations: flag('fill'),
+      uses_paint_mode: flag('paint_mode'),
 
       // Engagement tier
       engagement_tier: computeEngagementTier(layoutCount, totalBinsEstimate),
@@ -79,12 +86,20 @@ export function updatePersonProperties(): void {
       primary_device: getDeviceType(),
     });
 
-    // Properties set only once ($set_once) - immutable user traits
-    posthogInstance.setPersonPropertiesForFlags({
-      first_seen: getFirstSeenDate(),
-      initial_referrer: document.referrer || 'direct',
-      initial_device: getDeviceType(),
-    });
+    // Properties set only once ($set_once) — immutable user traits.
+    // Use the two-arg `setPersonProperties({}, onceProps)` form so PostHog
+    // treats them as $set_once. `setPersonPropertiesForFlags` is for flag
+    // evaluation context, not once-only persistence, and would let
+    // `document.referrer` (which can change between navigations) overwrite
+    // the original initial_referrer.
+    posthogInstance.setPersonProperties(
+      {},
+      {
+        first_seen: getFirstSeenDate(),
+        initial_referrer: document.referrer || 'direct',
+        initial_device: getDeviceType(),
+      }
+    );
 
     // Track feature adoption in consolidated storage for persistence
     const adoptionChecks: Array<[boolean, string]> = [

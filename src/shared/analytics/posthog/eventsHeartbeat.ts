@@ -2,8 +2,10 @@
  * Heartbeat telemetry: derive an "activity context" from store state and
  * snapshot enough layout/feature data to power PostHog dashboards.
  *
- * `trackHeartbeat` runs on a periodic interval; `getActivityContext`
- * is also reused as part of error capture so the two co-locate here.
+ * `trackHeartbeat` runs on a periodic interval. `getActivityContext`
+ * lives alongside the heartbeat payload because both are derived from
+ * the same interaction-store inputs and ship together in the heartbeat
+ * event — co-locating them keeps inputs and consumers in one file.
  */
 
 import { useInteractionStore } from '@/core/store/interaction';
