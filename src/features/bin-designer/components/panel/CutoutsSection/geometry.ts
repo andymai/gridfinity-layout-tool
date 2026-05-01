@@ -1,10 +1,54 @@
 /**
  * Geometry utilities for cutout positioning and bounds computation.
+ *
+ * This file holds the rotation + bounds + snap helpers and re-exports
+ * the rest of the geometry surface from focused sibling modules:
+ *   - `geometryResize`     — resize-handle math + cursor lookup
+ *   - `geometryAlignment`  — alignment guides + distribute/center
+ *   - `geometryFlips`      — horizontal/vertical flip helpers
  */
 
-import type { Cutout, CutoutShape, PathPoint } from '@/features/bin-designer/types';
-import { getPathBounds } from './pathGeometry';
-import type { ResizeHandle } from './useCutoutInteraction';
+import type { Cutout } from '@/features/bin-designer/types';
+
+export {
+  MIN_CUTOUT_SIZE,
+  calculateCutoutResize,
+  constrainGroupDrag,
+  clampCornerRadius,
+  getResizeCursor,
+  type StartRect,
+} from './geometryResize';
+export {
+  GUIDE_SNAP_THRESHOLD,
+  findAlignmentGuides,
+  distributeHorizontally,
+  distributeVertically,
+  centerInBin,
+  type AlignmentGuide,
+} from './geometryAlignment';
+export {
+  flipCutoutHorizontal,
+  flipCutoutVertical,
+  flipSelectionHorizontal,
+  flipSelectionVertical,
+} from './geometryFlips';
+
+/** Axis-aligned bounding box */
+export interface Bounds {
+  readonly minX: number;
+  readonly minY: number;
+  readonly maxX: number;
+  readonly maxY: number;
+}
+
+/** Default grid snap size in mm */
+export const SNAP_GRID_SIZE = 1;
+
+/** Snap a value to the nearest grid increment */
+export function snapToGrid(value: number, gridSize: number = SNAP_GRID_SIZE): number {
+  return Math.round(value / gridSize) * gridSize;
+}
+
 /** Rotate a point (px,py) around center (cx,cy) by angleDeg degrees. */
 export function rotatePoint(
   px: number,
@@ -103,25 +147,6 @@ export function clampRotationToBounds(
   return normalize(lo);
 }
 
-/** Minimum cutout dimension in mm */
-export const MIN_CUTOUT_SIZE = 2;
-
-/** Default grid snap size in mm */
-export const SNAP_GRID_SIZE = 1;
-
-/** Snap a value to the nearest grid increment */
-export function snapToGrid(value: number, gridSize: number = SNAP_GRID_SIZE): number {
-  return Math.round(value / gridSize) * gridSize;
-}
-
-/** Axis-aligned bounding box */
-export interface Bounds {
-  readonly minX: number;
-  readonly minY: number;
-  readonly maxX: number;
-  readonly maxY: number;
-}
-
 /**
  * Get the effective bounding box of a cutout (unrotated, local-space).
  * For rotation-aware AABB, use `getRotatedBounds()`.
@@ -186,476 +211,4 @@ export function getEffectiveWidth(cutout: Cutout): number {
  */
 export function getEffectiveDepth(cutout: Cutout): number {
   return cutout.depth;
-}
-
-/** Starting rectangle for resize operations */
-export interface StartRect {
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly depth: number;
-}
-
-/**
- * Calculate new cutout dimensions from a resize handle drag.
- *
- * Resizes along the cutout's local axes (handles rotate with the shape).
- * When `shiftConstrain` is true, the aspect ratio from `start` is preserved.
- */
-export function calculateCutoutResize(
-  start: StartRect,
-  handle: ResizeHandle,
-  cursorMmX: number,
-  cursorMmY: number,
-  binWidth: number,
-  binDepth: number,
-  shape: CutoutShape,
-  rotation: number = 0,
-  shiftConstrain: boolean = false,
-  altConstrain: boolean = false
-): { x: number; y: number; width: number; depth: number } {
-  // Transform cursor into local (unrotated) space
-  const cx = start.x + start.width / 2;
-  const cy = start.y + start.depth / 2;
-  const local = rotatePoint(cursorMmX, cursorMmY, cx, cy, -rotation);
-  const localX = local.x;
-  const localY = local.y;
-
-  let { x, y, width, depth } = start;
-  const right = x + width;
-  const top = y + depth;
-
-  // Resize: adjust edges based on handle direction (in local space)
-  const hasN = handle.includes('n');
-  const hasS = handle.includes('s');
-  const hasE = handle.includes('e');
-  const hasW = handle.includes('w');
-
-  if (altConstrain) {
-    // Alt+resize: mirror around the original center
-    if (hasE || hasW) {
-      const halfW = Math.max(MIN_CUTOUT_SIZE / 2, Math.abs(localX - cx));
-      width = halfW * 2;
-      x = cx - halfW;
-    }
-    if (hasN || hasS) {
-      const halfD = Math.max(MIN_CUTOUT_SIZE / 2, Math.abs(localY - cy));
-      depth = halfD * 2;
-      y = cy - halfD;
-    }
-  } else {
-    if (hasE) {
-      width = Math.max(MIN_CUTOUT_SIZE, localX - x);
-    }
-    if (hasW) {
-      const newX = Math.min(localX, right - MIN_CUTOUT_SIZE);
-      width = right - newX;
-      x = newX;
-    }
-    if (hasN) {
-      depth = Math.max(MIN_CUTOUT_SIZE, localY - y);
-    }
-    if (hasS) {
-      const newY = Math.min(localY, top - MIN_CUTOUT_SIZE);
-      depth = top - newY;
-      y = newY;
-    }
-  }
-
-  // Shift-constrain: preserve aspect ratio
-  if (shiftConstrain && start.width > 0 && start.depth > 0) {
-    const aspect = start.width / start.depth;
-    const isCorner = (hasN || hasS) && (hasE || hasW);
-    const isVertical = hasN || hasS;
-
-    if (isCorner) {
-      // Use the axis with more change
-      const dw = Math.abs(width - start.width);
-      const dd = Math.abs(depth - start.depth);
-      if (dw > dd) {
-        const newDepth = width / aspect;
-        if (hasS) {
-          y = top - newDepth;
-        }
-        depth = newDepth;
-      } else {
-        const newWidth = depth * aspect;
-        if (hasW) {
-          x = right - newWidth;
-        }
-        width = newWidth;
-      }
-    } else if (isVertical) {
-      const newWidth = depth * aspect;
-      x = cx - newWidth / 2;
-      width = newWidth;
-    } else {
-      const newDepth = width / aspect;
-      y = cy - newDepth / 2;
-      depth = newDepth;
-    }
-  }
-
-  // Clamp to bin bounds (conservative: use AABB of rotated shape)
-  width = Math.max(MIN_CUTOUT_SIZE, width);
-  depth = Math.max(MIN_CUTOUT_SIZE, depth);
-
-  // For rotated shapes, ensure the rotated AABB fits in bin
-  if (rotation !== 0) {
-    const testCutout = { x, y, width, depth, rotation, shape } as Cutout;
-    const rBounds = getRotatedBounds(testCutout);
-    // Shift to keep within bounds
-    if (rBounds.minX < 0) x -= rBounds.minX;
-    if (rBounds.minY < 0) y -= rBounds.minY;
-    if (rBounds.maxX > binWidth) x -= rBounds.maxX - binWidth;
-    if (rBounds.maxY > binDepth) y -= rBounds.maxY - binDepth;
-  } else {
-    // Simple axis-aligned clamping
-    if (x < 0) {
-      width += x;
-      x = 0;
-    }
-    if (y < 0) {
-      depth += y;
-      y = 0;
-    }
-    if (x + width > binWidth) width = binWidth - x;
-    if (y + depth > binDepth) depth = binDepth - y;
-  }
-
-  width = Math.max(MIN_CUTOUT_SIZE, width);
-  depth = Math.max(MIN_CUTOUT_SIZE, depth);
-
-  return { x, y, width, depth };
-}
-
-/**
- * Clamp a group drag delta so all cutouts remain within bin bounds.
- */
-export function constrainGroupDrag(
-  cutouts: readonly Cutout[],
-  dx: number,
-  dy: number,
-  binWidth: number,
-  binDepth: number
-): { dx: number; dy: number } {
-  const bounds = computeBounds(cutouts);
-  const clampedDx = Math.max(-bounds.minX, Math.min(dx, binWidth - bounds.maxX));
-  const clampedDy = Math.max(-bounds.minY, Math.min(dy, binDepth - bounds.maxY));
-  return { dx: clampedDx, dy: clampedDy };
-}
-
-/**
- * Clamp corner radius to at most half the smaller dimension.
- */
-export function clampCornerRadius(radius: number, width: number, depth: number): number {
-  return Math.min(radius, Math.min(width, depth) / 2);
-}
-
-/** CSS cursor for each resize handle direction */
-const RESIZE_CURSORS: Record<ResizeHandle, string> = {
-  nw: 'nwse-resize',
-  se: 'nwse-resize',
-  ne: 'nesw-resize',
-  sw: 'nesw-resize',
-  n: 'ns-resize',
-  s: 'ns-resize',
-  e: 'ew-resize',
-  w: 'ew-resize',
-};
-
-/**
- * Get the CSS cursor string for a resize handle direction.
- */
-export function getResizeCursor(handle: ResizeHandle): string {
-  return RESIZE_CURSORS[handle];
-}
-
-/** A guide line indicating alignment between cutouts */
-export interface AlignmentGuide {
-  /** Whether this is a horizontal (Y-axis) or vertical (X-axis) guide */
-  readonly axis: 'x' | 'y';
-  /** Position of the guide line in mm */
-  readonly position: number;
-}
-
-/** Snap threshold in mm — within this range, cutout snaps to guide */
-export const GUIDE_SNAP_THRESHOLD = 1;
-
-/**
- * Find alignment guides between the moving cutouts and stationary cutouts.
- * Checks edges (min/max) and centers of each axis.
- */
-export function findAlignmentGuides(
-  movingBounds: Bounds,
-  stationaryCutouts: readonly Cutout[],
-  threshold: number = GUIDE_SNAP_THRESHOLD
-): AlignmentGuide[] {
-  const guides: AlignmentGuide[] = [];
-
-  // Key positions of the moving cutout(s)
-  const movingCenterX = (movingBounds.minX + movingBounds.maxX) / 2;
-  const movingCenterY = (movingBounds.minY + movingBounds.maxY) / 2;
-  const movingXPositions = [movingBounds.minX, movingCenterX, movingBounds.maxX];
-  const movingYPositions = [movingBounds.minY, movingCenterY, movingBounds.maxY];
-
-  for (const cutout of stationaryCutouts) {
-    const b = getEffectiveBounds(cutout);
-    const cx = (b.minX + b.maxX) / 2;
-    const cy = (b.minY + b.maxY) / 2;
-    const xPositions = [b.minX, cx, b.maxX];
-    const yPositions = [b.minY, cy, b.maxY];
-
-    // Check X alignment (vertical guide lines)
-    for (const mx of movingXPositions) {
-      for (const sx of xPositions) {
-        if (Math.abs(mx - sx) < threshold) {
-          guides.push({ axis: 'x', position: sx });
-        }
-      }
-    }
-
-    // Check Y alignment (horizontal guide lines)
-    for (const my of movingYPositions) {
-      for (const sy of yPositions) {
-        if (Math.abs(my - sy) < threshold) {
-          guides.push({ axis: 'y', position: sy });
-        }
-      }
-    }
-  }
-
-  // Deduplicate guides at same position
-  const seen = new Set<string>();
-  return guides.filter((g) => {
-    const key = `${g.axis}:${g.position.toFixed(2)}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-/**
- * Distribute cutouts evenly along the horizontal axis.
- * Spaces cutouts so there's equal gap between each.
- */
-export function distributeHorizontally(
-  cutouts: readonly Cutout[],
-  _binWidth: number
-): Record<string, { x: number }> {
-  if (cutouts.length < 3) return {};
-
-  // Sort by current X position
-  const sorted = [...cutouts].sort((a, b) => a.x - b.x);
-  const first = sorted[0];
-  const last = sorted[sorted.length - 1];
-
-  // Total space between leftmost left edge and rightmost right edge
-  const totalSpan = last.x + last.width - first.x;
-  const totalWidths = sorted.reduce((sum, c) => sum + c.width, 0);
-  const gap = (totalSpan - totalWidths) / (sorted.length - 1);
-
-  const result: Record<string, { x: number }> = {};
-  let currentX = first.x;
-  for (const cutout of sorted) {
-    result[cutout.id] = { x: currentX };
-    currentX += cutout.width + gap;
-  }
-  return result;
-}
-
-/**
- * Distribute cutouts evenly along the vertical axis.
- */
-export function distributeVertically(
-  cutouts: readonly Cutout[],
-  _binDepth: number
-): Record<string, { y: number }> {
-  if (cutouts.length < 3) return {};
-
-  const sorted = [...cutouts].sort((a, b) => a.y - b.y);
-  const first = sorted[0];
-  const last = sorted[sorted.length - 1];
-
-  const totalSpan = last.y + getEffectiveDepth(last) - first.y;
-  const totalDepths = sorted.reduce((sum, c) => sum + getEffectiveDepth(c), 0);
-  const gap = (totalSpan - totalDepths) / (sorted.length - 1);
-
-  const result: Record<string, { y: number }> = {};
-  let currentY = first.y;
-  for (const cutout of sorted) {
-    result[cutout.id] = { y: currentY };
-    currentY += getEffectiveDepth(cutout) + gap;
-  }
-  return result;
-}
-
-/**
- * Center a group of cutouts within the bin.
- */
-export function centerInBin(
-  cutouts: readonly Cutout[],
-  binWidth: number,
-  binDepth: number
-): Record<string, { x: number; y: number }> {
-  if (cutouts.length === 0) return {};
-
-  const bounds = computeBounds(cutouts);
-  const groupW = bounds.maxX - bounds.minX;
-  const groupH = bounds.maxY - bounds.minY;
-  const dx = (binWidth - groupW) / 2 - bounds.minX;
-  const dy = (binDepth - groupH) / 2 - bounds.minY;
-
-  const result: Record<string, { x: number; y: number }> = {};
-  for (const cutout of cutouts) {
-    result[cutout.id] = { x: cutout.x + dx, y: cutout.y + dy };
-  }
-  return result;
-}
-/**
- * Mirror a path point's X coordinate around a center, negating X handle components.
- * Handles are NOT swapped because the point array order is preserved.
- */
-function mirrorPathPointX(pt: PathPoint, centerX: number): PathPoint {
-  return {
-    x: 2 * centerX - pt.x,
-    y: pt.y,
-    handleIn: pt.handleIn ? { dx: -pt.handleIn.dx, dy: pt.handleIn.dy } : null,
-    handleOut: pt.handleOut ? { dx: -pt.handleOut.dx, dy: pt.handleOut.dy } : null,
-    symmetric: pt.symmetric,
-  };
-}
-
-/**
- * Mirror a path point's Y coordinate around a center, negating Y handle components.
- * Handles are NOT swapped because the point array order is preserved.
- */
-function mirrorPathPointY(pt: PathPoint, centerY: number): PathPoint {
-  return {
-    x: pt.x,
-    y: 2 * centerY - pt.y,
-    handleIn: pt.handleIn ? { dx: pt.handleIn.dx, dy: -pt.handleIn.dy } : null,
-    handleOut: pt.handleOut ? { dx: pt.handleOut.dx, dy: -pt.handleOut.dy } : null,
-    symmetric: pt.symmetric,
-  };
-}
-
-/**
- * Flip a cutout horizontally (mirror left↔right).
- *
- * - Rectangle/Circle: `rotation = (360 - rotation) % 360`
- * - Path: Mirror each point's X around bezier-accurate bounding box center,
- *   then recompute `x, y, width, depth` from the new path bounds.
- */
-export function flipCutoutHorizontal(cutout: Cutout): Partial<Cutout> {
-  if (cutout.shape === 'path' && cutout.path) {
-    const bounds = getPathBounds(cutout.path);
-    const cx = (bounds.minX + bounds.maxX) / 2;
-    const flippedPath = cutout.path.map((pt) => mirrorPathPointX(pt, cx));
-    const newBounds = getPathBounds(flippedPath);
-    return {
-      path: flippedPath,
-      x: newBounds.minX,
-      y: newBounds.minY,
-      width: newBounds.maxX - newBounds.minX,
-      depth: newBounds.maxY - newBounds.minY,
-    };
-  }
-  return { rotation: (360 - cutout.rotation) % 360 };
-}
-
-/**
- * Flip a cutout vertically (mirror top↔bottom).
- *
- * - Rectangle/Circle: `rotation = (180 - rotation + 360) % 360`
- * - Path: Mirror each point's Y around bezier-accurate bounding box center,
- *   then recompute `x, y, width, depth` from the new path bounds.
- */
-export function flipCutoutVertical(cutout: Cutout): Partial<Cutout> {
-  if (cutout.shape === 'path' && cutout.path) {
-    const bounds = getPathBounds(cutout.path);
-    const cy = (bounds.minY + bounds.maxY) / 2;
-    const flippedPath = cutout.path.map((pt) => mirrorPathPointY(pt, cy));
-    const newBounds = getPathBounds(flippedPath);
-    return {
-      path: flippedPath,
-      x: newBounds.minX,
-      y: newBounds.minY,
-      width: newBounds.maxX - newBounds.minX,
-      depth: newBounds.maxY - newBounds.minY,
-    };
-  }
-  return { rotation: (180 - cutout.rotation + 360) % 360 };
-}
-
-/**
- * Compute flip-horizontal updates for a selection of cutouts.
- *
- * For multi-selection, mirrors each cutout's X position around the group center.
- * For single selection, only flips the shape geometry (rotation or path).
- */
-export function flipSelectionHorizontal(
-  cutouts: readonly Cutout[]
-): ReadonlyMap<string, Partial<Cutout>> {
-  const updates = new Map<string, Partial<Cutout>>();
-  if (cutouts.length > 1) {
-    const bounds = computeBounds(cutouts);
-    const cx = (bounds.minX + bounds.maxX) / 2;
-    for (const cutout of cutouts) {
-      const patch = flipCutoutHorizontal(cutout);
-      const mirroredX = 2 * cx - (cutout.x + cutout.width);
-      if (cutout.shape === 'path' && patch.path) {
-        // Path points are absolute — translate them to match the group-mirrored position
-        const dx = mirroredX - (patch.x ?? cutout.x);
-        updates.set(cutout.id, {
-          ...patch,
-          x: mirroredX,
-          path: patch.path.map((pt) => ({ ...pt, x: pt.x + dx })),
-        });
-      } else {
-        updates.set(cutout.id, { ...patch, x: mirroredX });
-      }
-    }
-  } else {
-    for (const cutout of cutouts) {
-      updates.set(cutout.id, flipCutoutHorizontal(cutout));
-    }
-  }
-  return updates;
-}
-
-/**
- * Compute flip-vertical updates for a selection of cutouts.
- *
- * For multi-selection, mirrors each cutout's Y position around the group center.
- * For single selection, only flips the shape geometry (rotation or path).
- */
-export function flipSelectionVertical(
-  cutouts: readonly Cutout[]
-): ReadonlyMap<string, Partial<Cutout>> {
-  const updates = new Map<string, Partial<Cutout>>();
-  if (cutouts.length > 1) {
-    const bounds = computeBounds(cutouts);
-    const cy = (bounds.minY + bounds.maxY) / 2;
-    for (const cutout of cutouts) {
-      const patch = flipCutoutVertical(cutout);
-      const mirroredY = 2 * cy - (cutout.y + cutout.depth);
-      if (cutout.shape === 'path' && patch.path) {
-        // Path points are absolute — translate them to match the group-mirrored position
-        const dy = mirroredY - (patch.y ?? cutout.y);
-        updates.set(cutout.id, {
-          ...patch,
-          y: mirroredY,
-          path: patch.path.map((pt) => ({ ...pt, y: pt.y + dy })),
-        });
-      } else {
-        updates.set(cutout.id, { ...patch, y: mirroredY });
-      }
-    }
-  } else {
-    for (const cutout of cutouts) {
-      updates.set(cutout.id, flipCutoutVertical(cutout));
-    }
-  }
-  return updates;
 }
