@@ -8,7 +8,7 @@
  * The slab extends asymmetrically when padding differs per side.
  */
 
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
@@ -25,6 +25,7 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useSettingsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
 import type { CameraPreset } from './cameraUtils';
+import { calculateIdealDistance, calculateMaxOrbitDistance } from './cameraUtils';
 import { BaseplateMesh } from './BaseplateMesh';
 import { SceneLighting } from './SceneLighting';
 import { CameraController } from './CameraController';
@@ -132,6 +133,24 @@ export function BaseplatePreview({
   );
 
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
+
+  const maxOrbitDistance = useMemo(
+    () =>
+      calculateMaxOrbitDistance(
+        calculateIdealDistance(
+          width,
+          depth,
+          gridUnitMm,
+          paddingLeft,
+          paddingRight,
+          paddingFront,
+          paddingBack,
+          45
+        )
+      ),
+    [width, depth, gridUnitMm, paddingLeft, paddingRight, paddingFront, paddingBack]
+  );
+
   const hasAnyMesh = isSplit ? hasSplitMeshes : hasMesh;
   const hasError = wasmStatus === 'error' || generationStatus === 'error';
   const isWasmLoading = !hasError && wasmStatus !== 'ready';
@@ -202,7 +221,7 @@ export function BaseplatePreview({
             position: new THREE.Vector3(100, -100, 80),
             fov: 45,
             near: 0.1,
-            far: 2000,
+            far: 20000,
           }}
           onCreated={({ camera }) => {
             camera.up.set(0, 0, 1);
@@ -276,7 +295,7 @@ export function BaseplatePreview({
             dampingFactor={0.12}
             rotateSpeed={0.8}
             minDistance={20}
-            maxDistance={800}
+            maxDistance={maxOrbitDistance}
             maxPolarAngle={Math.PI * 0.85}
             minPolarAngle={Math.PI * 0.05}
             enablePan={isDesktop}

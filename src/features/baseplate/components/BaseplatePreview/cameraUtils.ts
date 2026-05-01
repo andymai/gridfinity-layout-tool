@@ -16,6 +16,12 @@ export const TRANSITION_DURATION = 500;
 /** Margin factor: how much of the viewport the baseplate should fill */
 export const FRAME_FILL = 0.65;
 
+/** Headroom multiplier on top of the framing distance when capping zoom-out. */
+export const MAX_DISTANCE_FACTOR = 3;
+
+/** Floor for max orbit distance so small baseplates still feel zoomable. */
+export const MAX_DISTANCE_FLOOR = 800;
+
 /** Cubic ease-out used for all preview animations (crossfade, camera transitions). */
 export function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3);
@@ -45,4 +51,28 @@ export function calculateIdealDistance(
 
   const halfFovRad = (fov / 2) * (Math.PI / 180);
   return (boundingRadius / Math.sin(halfFovRad)) * (1 / FRAME_FILL);
+}
+
+/**
+ * Cap on how far the user can orbit out from the baseplate.
+ *
+ * Why: A static cap (we used to ship 800mm) clamped before the framing
+ * distance for any baseplate larger than ~10×10 grid units, so users
+ * physically could not pull back far enough to see the whole part.
+ */
+export function calculateMaxOrbitDistance(idealDistance: number): number {
+  return Math.max(MAX_DISTANCE_FLOOR, idealDistance * MAX_DISTANCE_FACTOR);
+}
+
+/** Floor for the camera far plane so tiny baseplates still look right. */
+export const FAR_PLANE_FLOOR = 2000;
+
+/**
+ * Camera far-plane distance that comfortably contains the geometry at any
+ * allowed zoom-out level. The 1.5× factor is the buffer for the baseplate's
+ * own bounding radius — when the camera is at `maxOrbitDistance`, the far
+ * corner of the slab still sits ahead of it.
+ */
+export function calculateFarPlane(maxOrbitDistance: number): number {
+  return Math.max(FAR_PLANE_FLOOR, maxOrbitDistance * 1.5);
 }

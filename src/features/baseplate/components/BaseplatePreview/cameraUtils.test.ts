@@ -4,8 +4,17 @@ vi.mock('@/shared/printSettings/gridfinityGeometry', () => ({
   GRIDFINITY_SPEC: { SOCKET_HEIGHT: 5 },
 }));
 
-const { easeOutCubic, calculateIdealDistance, CAMERA_PRESETS, FRAME_FILL } =
-  await import('./cameraUtils');
+const {
+  easeOutCubic,
+  calculateIdealDistance,
+  calculateMaxOrbitDistance,
+  calculateFarPlane,
+  CAMERA_PRESETS,
+  FRAME_FILL,
+  MAX_DISTANCE_FACTOR,
+  MAX_DISTANCE_FLOOR,
+  FAR_PLANE_FLOOR,
+} = await import('./cameraUtils');
 
 describe('cameraUtils', () => {
   describe('easeOutCubic', () => {
@@ -53,6 +62,50 @@ describe('cameraUtils', () => {
     it('is between 0 and 1', () => {
       expect(FRAME_FILL).toBeGreaterThan(0);
       expect(FRAME_FILL).toBeLessThan(1);
+    });
+  });
+
+  describe('calculateMaxOrbitDistance', () => {
+    it('respects the floor for tiny ideal distances', () => {
+      expect(calculateMaxOrbitDistance(10)).toBe(MAX_DISTANCE_FLOOR);
+    });
+
+    it('scales with ideal distance once past the floor', () => {
+      const ideal = MAX_DISTANCE_FLOOR; // exactly at the floor
+      expect(calculateMaxOrbitDistance(ideal)).toBe(ideal * MAX_DISTANCE_FACTOR);
+    });
+
+    it('exceeds framing distance at the supported upper bound (50x50, 100mm padding/side)', () => {
+      // Regression: maxDistance used to be hardcoded to 800, which clamped
+      // before the framing distance for any baseplate above ~10x10 grid units.
+      // GRID_MAX is 50 and PADDING_MAX is 100mm/side, so this is the true
+      // worst case the panel can reach.
+      const ideal = calculateIdealDistance(50, 50, 42, 100, 100, 100, 100, 45);
+      const max = calculateMaxOrbitDistance(ideal);
+      expect(max).toBeGreaterThan(ideal);
+      expect(max).toBeGreaterThan(800);
+    });
+  });
+
+  describe('calculateFarPlane', () => {
+    it('respects the floor for tiny zoom-out caps', () => {
+      expect(calculateFarPlane(10)).toBe(FAR_PLANE_FLOOR);
+    });
+
+    it('keeps geometry inside the frustum at the supported upper bound', () => {
+      // Regression: with the camera at maxOrbitDistance, the far corner of
+      // the slab still has to sit inside the frustum or it clips off-screen.
+      const ideal = calculateIdealDistance(50, 50, 42, 100, 100, 100, 100, 45);
+      const max = calculateMaxOrbitDistance(ideal);
+      const far = calculateFarPlane(max);
+
+      // Bounding sphere of the baseplate (slab + socket height).
+      const halfW = (50 * 42 + 100 + 100) / 2;
+      const boundingRadius = Math.sqrt(2 * halfW * halfW);
+
+      // Camera at maxOrbitDistance from center, so the farthest corner of
+      // the slab is `max + boundingRadius` from the camera.
+      expect(far).toBeGreaterThan(max + boundingRadius);
     });
   });
 });
