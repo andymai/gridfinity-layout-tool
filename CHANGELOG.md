@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.55.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.54.0...gridfinity-layout-tool-v4.55.0) (2026-05-01)
+
+
+### Features
+
+* **cqrs:** migrate fill commands to v2; delete _fillMeta side-channel ([#1548](https://github.com/andymai/gridfinity-layout-tool/issues/1548)) ([e030619](https://github.com/andymai/gridfinity-layout-tool/commit/e03061902d181f616ac7278336240bd2c7d9c124))
+
 ## [4.54.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.53.0...gridfinity-layout-tool-v4.54.0) (2026-05-01)
 
 
