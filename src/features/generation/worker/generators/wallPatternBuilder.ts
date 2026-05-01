@@ -7,28 +7,20 @@
  * clipping logic that don't fit the single cacheKey/build interface.
  *
  * Called as a special case after the generic feature runner in featuresStage.
+ *
+ * Sub-modules:
+ *   - `wallPatternTypes`     — shared interfaces + cache name constants
+ *   - `wallPatternCompound`  — per-wall hex compound construction + caching
+ *   - `wallPatternClips`     — cutout/handle/ramp clipping passes
  */
 
-import {
-  drawPolysides,
-  drawRectangle,
-  unwrap,
-  cut,
-  fuse,
-  clone,
-  compound,
-  composeTransforms,
-  transformCopy,
-  translate,
-  rotate,
-} from 'brepjs';
-import type { Shape3D, TransformOp } from 'brepjs';
+import { drawPolysides, unwrap, clone } from 'brepjs';
+import type { Shape3D } from 'brepjs';
 import type { PipelineContext } from './pipeline/types';
-import type { WallPatternDescriptor } from './wallPatterns';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { sketch } from './meshUtils';
 import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
-import { checkCancelled, isAbortError } from './utils/abort';
+import { checkCancelled } from './utils/abort';
 import {
   getFeatureCache,
   setFeatureCache,
@@ -40,11 +32,7 @@ import {
   CUTOUT_BORDER_WIDTH,
   getExpandedCutoutDimensions,
 } from './wallPatterns';
-import { computeCutoutCenter } from '@/shared/utils/wallCutoutPosition';
 import { computeRampZones, computeDividerJunctionZones } from './dividerBlendBuilder';
-import type { RampZone } from './dividerBlendBuilder';
-import type { WallCutoutShape } from '@/shared/types/bin';
-import { buildSingleCutout } from './featureBuilder';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 import {
@@ -57,62 +45,13 @@ import type { HandleSegment, HandleWallDef } from '@/shared/utils/handleCutoutCl
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { resolvePolygonSideGeometry } from './maskPolygonEdges';
-
-/**
- * Build a compound of positioned hex prisms for a single wall.
- *
- * Creates one transformCopy per hex center, then groups them with compound()
- * (O(n) topology grouping, not O(n²) fuseAll). Returns null if no elements.
- *
- * This is the expensive part of wall pattern construction (up to ~1000 hex
- * prisms on tall, wide bins). The result is cached in
- * `feature-wallPatternBase` keyed on wall geometry only, so cutout/handle/ramp
- * clip-parameter nudges don't force a rebuild — see buildWallPatterns.
- */
-function buildWallPatternCompound(
-  shapeTemplate: Shape3D,
-  wall: WallPatternDescriptor,
-  halfDepth: number
-): Shape3D | null {
-  const elements: Shape3D[] = [];
-  try {
-    for (const center of wall.centers) {
-      const ops: TransformOp[] = [
-        { type: 'translate', v: [center.x, center.y, -halfDepth] },
-        { type: 'rotate', angle: 90, axis: [1, 0, 0] },
-      ];
-      if (wall.zRotation !== undefined) {
-        ops.push({ type: 'rotate', angle: wall.zRotation, axis: [0, 0, 1] });
-      }
-      ops.push({
-        type: 'translate',
-        v: [wall.translateX, wall.translateY, wall.translateZ],
-      });
-      const trsf = composeTransforms(ops);
-      try {
-        elements.push(transformCopy(shapeTemplate, trsf));
-      } finally {
-        trsf.cleanup();
-      }
-    }
-
-    if (elements.length === 0) return null;
-    if (elements.length === 1) return elements[0];
-
-    const grouped = compound(elements);
-    for (const el of elements) el.delete();
-    return grouped;
-  } catch (e: unknown) {
-    for (const el of elements) el.delete();
-    if (isAbortError(e)) throw e;
-    return null;
-  }
-}
-
-/** Cache name for the uncut per-wall hex compound (shared across cutout/handle/ramp nudges). */
-const WALL_PATTERN_BASE_CACHE = 'wallPatternBase';
-/** Cache name for the post-clip per-wall compound (varies with cutout/handle/ramp params). */
-const WALL_PATTERN_CLIPPED_CACHE = 'wallPatternClipped';
+import {
+  WALL_PATTERN_CLIPPED_CACHE,
+  type CutoutClipParams,
+  type HandleClipParams,
+  type RampZoneClipParams,
+} from './wallPatternTypes';
+import { buildClippedWallPattern } from './wallPatternCompound';
 
 /**
  * Build wall pattern shapes for all walls with per-wall caching
@@ -400,302 +339,4 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
   }
 
   return patternCutTargets;
-}
-
-/**
- * Return the base (uncut) hex compound for a wall, cached by wall geometry.
- *
- * The caller receives an owned clone; the cache retains the original. When the
- * compound has no clips to apply, the clipped pipeline will cache this same
- * clone directly — two cache hits for the price of one.
- */
-function getCachedBaseCompound(
-  shapeTemplate: Shape3D,
-  wall: WallPatternDescriptor,
-  halfDepth: number,
-  baseKey: string
-): Shape3D | null {
-  const cached = getFeatureCache(WALL_PATTERN_BASE_CACHE, baseKey);
-  if (cached) return cached;
-
-  const built = buildWallPatternCompound(shapeTemplate, wall, halfDepth);
-  if (!built) return null;
-  setFeatureCache(WALL_PATTERN_BASE_CACHE, baseKey, built);
-  return unwrap(clone(built));
-}
-
-/**
- * Build a fully-clipped wall pattern by cloning the cached base compound and
- * applying cutout, handle, and ramp-zone cuts. Returns null when the base
- * compound can't be built (degenerate wall).
- */
-function buildClippedWallPattern(
-  shapeTemplate: Shape3D,
-  wall: WallPatternDescriptor,
-  halfDepth: number,
-  baseKey: string,
-  clip: CutoutClipParams | null,
-  handleClip: HandleClipParams | null,
-  rampClip: RampZoneClipParams | null
-): Shape3D | null {
-  const base = getCachedBaseCompound(shapeTemplate, wall, halfDepth, baseKey);
-  if (!base) return null;
-  return applyWallPatternClips(base, wall, clip, handleClip, rampClip);
-}
-
-/** Pre-computed cutout clipping parameters passed to buildWallPatternShape. */
-interface CutoutClipParams {
-  readonly cutoutCfg: {
-    enabled: boolean;
-    widthMm: number | null;
-    width: number;
-    depth: number;
-    alignment: 'left' | 'center' | 'right';
-    offset: number;
-  };
-  readonly cutWidth: number;
-  readonly userCutHeight: number;
-  readonly expandedWidth: number;
-  readonly expandedHeight: number;
-  readonly clipOvershoot: number;
-  readonly clipExtrudeDepth: number;
-  readonly wallHeight: number;
-  readonly wallSpan: number;
-  readonly wallShape: WallCutoutShape;
-  readonly wallThickness: number;
-}
-
-/** Pre-computed handle clipping parameters for a single wall. */
-interface HandleClipParams {
-  readonly segments: HandleSegment[];
-  readonly effectiveHeight: number;
-  readonly centerZ: number;
-  readonly clipExtrudeDepth: number;
-  /** Handle wall positioning (uses handleBuilder convention, not pattern descriptor). */
-  readonly handleWall: HandleWallDef;
-}
-
-/** Pre-computed ramp zone clipping parameters for a single wall. */
-interface RampZoneClipParams {
-  readonly zones: readonly RampZone[];
-  readonly clipExtrudeDepth: number;
-  readonly wallHeight: number;
-  /** Border width for clip boxes — max(CUTOUT_BORDER_WIDTH, shapeRadius)
-   *  so hex prisms don't extend into divider walls at junctions. */
-  readonly border: number;
-}
-
-/**
- * Apply optional cutout/handle/ramp clipping to an owned base hex compound.
- *
- * Takes ownership of `base` and returns either `base` itself (no clips) or a
- * new shape with `base` disposed. Callers must not reuse the original handle.
- */
-function applyWallPatternClips(
-  base: Shape3D,
-  wall: WallPatternDescriptor,
-  clip: CutoutClipParams | null,
-  handleClip: HandleClipParams | null,
-  rampClip: RampZoneClipParams | null
-): Shape3D | null {
-  // --- Cutout border clipping ---
-  let result = base;
-  if (clip && clip.cutWidth >= 0.1 && clip.userCutHeight >= 0.1) {
-    const rotateZ = wall.side === 'left' || wall.side === 'right' ? 90 : 0;
-    const centerOffset = computeCutoutCenter(
-      clip.wallSpan,
-      clip.cutWidth,
-      clip.wallThickness,
-      clip.cutoutCfg.alignment,
-      clip.cutoutCfg.offset
-    );
-
-    const clipSolid = buildSingleCutout(
-      clip.wallShape,
-      clip.expandedWidth,
-      clip.expandedHeight,
-      clip.clipOvershoot,
-      clip.clipExtrudeDepth,
-      clip.wallHeight,
-      {
-        x: rotateZ === 0 ? wall.translateX + centerOffset : wall.translateX,
-        y: rotateZ !== 0 ? wall.translateY + centerOffset : wall.translateY,
-        rotateZ,
-      }
-    );
-
-    try {
-      const clipped = unwrap(cut(result, clipSolid));
-      result.delete();
-      result = clipped;
-    } catch (err: unknown) {
-      if (isAbortError(err)) {
-        result.delete();
-        throw err;
-      }
-      // On non-abort failure, keep result as-is
-    } finally {
-      clipSolid.delete();
-    }
-  }
-
-  // --- Handle border clipping ---
-  if (handleClip && handleClip.segments.length > 0) {
-    const border = CUTOUT_BORDER_WIDTH;
-    const clipBoxes: Shape3D[] = [];
-
-    const hw = handleClip.handleWall;
-    try {
-      for (const seg of handleClip.segments) {
-        const boxW = seg.width + 2 * border;
-        const boxH = handleClip.effectiveHeight + 2 * border;
-        const profile = drawRectangle(boxW, boxH);
-        // Each transform allocates a new WASM handle while the previous
-        // becomes garbage. Dispose the intermediates explicitly so only
-        // the final handle survives in clipBoxes.
-        const extruded = sketch(profile, 'XZ').extrude(handleClip.clipExtrudeDepth);
-        const centered = translate(extruded, [
-          seg.offset,
-          handleClip.clipExtrudeDepth / 2,
-          handleClip.centerZ,
-        ]);
-        extruded.delete();
-        let hbox = centered;
-        if (hw.rotateZ !== 0) {
-          const rotated = rotate(hbox, hw.rotateZ, { axis: [0, 0, 1] });
-          hbox.delete();
-          hbox = rotated;
-        }
-        const positioned = translate(hbox, [hw.x, hw.y, 0]);
-        hbox.delete();
-        clipBoxes.push(positioned);
-      }
-
-      let handleClipSolid: Shape3D;
-      if (clipBoxes.length === 1) {
-        handleClipSolid = clipBoxes[0];
-      } else {
-        handleClipSolid = unwrap(fuse(clipBoxes[0], clipBoxes[1]));
-        clipBoxes[0].delete();
-        clipBoxes[1].delete();
-        for (let i = 2; i < clipBoxes.length; i++) {
-          const merged = unwrap(fuse(handleClipSolid, clipBoxes[i]));
-          handleClipSolid.delete();
-          clipBoxes[i].delete();
-          handleClipSolid = merged;
-        }
-      }
-
-      try {
-        const handleClipped = unwrap(cut(result, handleClipSolid));
-        result.delete();
-        result = handleClipped;
-      } catch (err: unknown) {
-        if (isAbortError(err)) {
-          result.delete();
-          throw err;
-        }
-        // On non-abort failure, keep result as-is
-      } finally {
-        handleClipSolid.delete();
-      }
-    } catch (err: unknown) {
-      for (const b of clipBoxes) {
-        try {
-          b.delete();
-        } catch {
-          /* already cleaned */
-        }
-      }
-      if (isAbortError(err)) {
-        result.delete();
-        throw err;
-      }
-    }
-  }
-
-  // --- Ramp zone border clipping ---
-  if (rampClip && rampClip.zones.length > 0) {
-    const { border, clipExtrudeDepth: rampExtrudeDepth, wallHeight, zones } = rampClip;
-    const rampBoxes: Shape3D[] = [];
-
-    try {
-      for (const zone of zones) {
-        const rboxW = zone.width + 2 * border;
-        const rboxH = zone.height + 2 * border;
-        const profile = drawRectangle(rboxW, rboxH);
-        // Dispose intermediates from each transform.
-        const extruded = sketch(profile, 'XZ').extrude(rampExtrudeDepth);
-        const centerZ = wallHeight - zone.height / 2;
-
-        // Build the box at the ORIGIN (not at offsetAlongWall), rotate to
-        // align with the wall, THEN translate to the wall midpoint plus the
-        // axial offset. Applying the rotation to a pre-offset box negates
-        // the offset for back (zRotation=180) and right (zRotation=-90)
-        // walls because rotation around Z negates the axial component —
-        // so a divider at global X=+a produced a clip box at X=-a on the
-        // back wall, leaving the actual junction unclipped and producing
-        // hex-prism bleed near divider-wall junctions on asymmetric bins.
-        // `offsetAlongWall` is a GLOBAL coordinate (posAlongPerp from
-        // dividerBlendBuilder), so it must be added AFTER rotation, along
-        // whichever global axis the wall runs (X for front/back, Y for
-        // left/right).
-        const centered = translate(extruded, [0, rampExtrudeDepth / 2, centerZ]);
-        extruded.delete();
-        let rbox = centered;
-        if (wall.zRotation !== undefined) {
-          const rotated = rotate(rbox, wall.zRotation, { axis: [0, 0, 1] });
-          rbox.delete();
-          rbox = rotated;
-        }
-        const rotZ = wall.zRotation ?? 0;
-        const offsetX = rotZ === 90 || rotZ === -90 ? 0 : zone.offsetAlongWall;
-        const offsetY = rotZ === 90 || rotZ === -90 ? zone.offsetAlongWall : 0;
-        const positioned = translate(rbox, [
-          wall.translateX + offsetX,
-          wall.translateY + offsetY,
-          0,
-        ]);
-        rbox.delete();
-        rampBoxes.push(positioned);
-      }
-
-      if (rampBoxes.length > 0) {
-        let rampClipSolid = rampBoxes[0];
-        for (let i = 1; i < rampBoxes.length; i++) {
-          const merged = unwrap(fuse(rampClipSolid, rampBoxes[i]));
-          rampClipSolid.delete();
-          rampBoxes[i].delete();
-          rampClipSolid = merged;
-        }
-
-        try {
-          const rampClipped = unwrap(cut(result, rampClipSolid));
-          result.delete();
-          result = rampClipped;
-        } catch (err: unknown) {
-          if (isAbortError(err)) {
-            result.delete();
-            throw err;
-          }
-        } finally {
-          rampClipSolid.delete();
-        }
-      }
-    } catch (err: unknown) {
-      for (const b of rampBoxes) {
-        try {
-          b.delete();
-        } catch {
-          /* already cleaned */
-        }
-      }
-      if (isAbortError(err)) {
-        result.delete();
-        throw err;
-      }
-    }
-  }
-
-  return result;
 }
