@@ -33,13 +33,8 @@ export const STYLES = {
     letterSpacing: '0.05em',
   } as CSSProperties,
   textPrimary: { color: 'var(--text-primary)' } as CSSProperties,
-  textSecondary: { color: 'var(--text-secondary)' } as CSSProperties,
   colorPrimary: { color: 'var(--color-primary)' } as CSSProperties,
   // Containers
-  sectionContent: {
-    backgroundColor: 'var(--bg-elevated)',
-    border: '1px solid var(--border-subtle)',
-  } as CSSProperties,
   tipsList: {
     backgroundColor: 'var(--bg-elevated)',
     border: '1px solid var(--border-subtle)',
@@ -54,9 +49,6 @@ export const STYLES = {
   } as CSSProperties,
   // Button
   buttonCompact: { minWidth: 'auto', minHeight: 'auto' } as CSSProperties,
-  // Rows
-  rowDescription: { fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' } as CSSProperties,
-  rowAction: { fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' } as CSSProperties,
 } as const;
 
 // Shortcut categories with their shortcuts
