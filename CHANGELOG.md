@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.60.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.60.0...gridfinity-layout-tool-v4.60.1) (2026-05-01)
+
+
+### Bug Fixes
+
+* **cqrs:** build cqrsMutations lazily to avoid chunk-init undefined bus ([#1563](https://github.com/andymai/gridfinity-layout-tool/issues/1563)) ([cbd8bf7](https://github.com/andymai/gridfinity-layout-tool/commit/cbd8bf7247cd787ce5aba2849cc36366c675bea4)), closes [#1558](https://github.com/andymai/gridfinity-layout-tool/issues/1558)
+
 ## [4.60.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.59.0...gridfinity-layout-tool-v4.60.0) (2026-05-01)
 
 
