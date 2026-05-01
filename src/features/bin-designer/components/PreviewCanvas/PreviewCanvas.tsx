@@ -2,13 +2,18 @@
  * Three.js 3D preview canvas for the bin designer.
  * Renders the generated mesh with enhanced lighting, gradient background,
  * smooth camera transitions, auto-framing, dimension lines, and a footprint grid.
+ *
+ * Camera math, the auto-framing controller, the preset-transition hook, and
+ * the SceneLighting component live in `previewCanvasCamera.tsx`. The
+ * overlay components (TouchHint, GeneratingIndicator) live in
+ * `previewCanvasOverlays.tsx`.
  */
 
 import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { Canvas, useThree, useFrame } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
-import { Vector3, Spherical } from 'three';
+import { Vector3 } from 'three';
 import type { PerspectiveCamera } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -49,283 +54,15 @@ import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../u
 import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
-import { useThreeColors } from '@/shared/hooks/useThemeEffect';
+import { CameraController, usePresetTransition, SceneLighting } from './previewCanvasCamera';
+import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
 
 /** localStorage key for persisting the user's preview color preference */
 const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
 const DEFAULT_COLOR = '#d4d8dc';
-
-/** Camera positions for each preset (eye position looking toward center) */
-const CAMERA_PRESETS: Record<CameraPreset, [number, number, number]> = {
-  front: [0, -1, 0.3], // Normalized direction — scaled by distance
-  side: [1, 0, 0.3],
-  top: [0, -0.01, 1],
-  isometric: [0.6, -0.6, 0.5],
-};
-
-/** Animation duration for camera transitions (ms) */
-const TRANSITION_DURATION = 500;
-/** Animation duration for auto-framing (ms) */
-const AUTO_FRAME_DURATION = 300;
-/** Margin factor: how much of the viewport the bin should fill */
-const FRAME_FILL = 0.65;
-/** Minimum change in distance to trigger auto-frame animation */
-const REFRAME_THRESHOLD = 0.1; // 10% change
-
-/**
- * Calculate ideal camera distance to frame a bin of the given dimensions.
- * Uses perspective camera FOV geometry to ensure the bin fills ~65% of viewport.
- */
-function calculateIdealDistance(
-  width: number,
-  depth: number,
-  height: number,
-  fov: number,
-  gridUnitMm: number,
-  heightUnitMm: number
-): number {
-  const outerW = width * gridUnitMm;
-  const outerD = depth * gridUnitMm;
-  const totalH = height * heightUnitMm;
-
-  // Bounding sphere radius (from center of bin)
-  const halfW = outerW / 2;
-  const halfD = outerD / 2;
-  const halfH = totalH / 2;
-  const boundingRadius = Math.sqrt(halfW * halfW + halfD * halfD + halfH * halfH);
-
-  // Distance = radius / sin(halfFov) * marginFactor
-  const halfFovRad = (fov / 2) * (Math.PI / 180);
-  return (boundingRadius / Math.sin(halfFovRad)) * (1 / FRAME_FILL);
-}
-
-/**
- * Calculate the bin's center point in 3D space (for camera target).
- * Mesh is centered at (0, 0) in XY, base at Z=0 — only height affects the target.
- */
-function calculateBinCenter(
-  _width: number,
-  _depth: number,
-  height: number,
-  heightUnitMm: number
-): Vector3 {
-  const totalH = height * heightUnitMm;
-  return new Vector3(0, 0, totalH / 2);
-}
-
-/**
- * Inner scene component that handles camera animation via useFrame.
- * Must be inside the Canvas to access Three.js context.
- */
-function CameraController({
-  controlsRef,
-  invalidateRef,
-  width,
-  depth,
-  height,
-  gridUnitMm,
-  heightUnitMm,
-}: {
-  controlsRef: React.RefObject<OrbitControlsType | null>;
-  invalidateRef: React.RefObject<(() => void) | null>;
-  width: number;
-  depth: number;
-  height: number;
-  gridUnitMm: number;
-  heightUnitMm: number;
-}) {
-  const { camera, invalidate } = useThree();
-
-  // Expose invalidate to hooks outside Canvas context
-  useEffect(() => {
-    invalidateRef.current = invalidate;
-  }, [invalidate, invalidateRef]);
-  const animRef = useRef<{
-    startPos: Vector3;
-    targetPos: Vector3;
-    startTime: number;
-    duration: number;
-  } | null>(null);
-  const prevDistanceRef = useRef<number | null>(null);
-  const initializedRef = useRef(false);
-
-  const fov = 45;
-  const binCenter = useMemo(
-    () => calculateBinCenter(width, depth, height, heightUnitMm),
-    [width, depth, height, heightUnitMm]
-  );
-  const idealDistance = useMemo(
-    () => calculateIdealDistance(width, depth, height, fov, gridUnitMm, heightUnitMm),
-    [width, depth, height, fov, gridUnitMm, heightUnitMm]
-  );
-
-  // Auto-frame: when bin dimensions change, smoothly adjust camera distance
-  useEffect(() => {
-    if (!initializedRef.current) {
-      // First render: set camera immediately
-      const direction = new Vector3(...CAMERA_PRESETS.isometric).normalize();
-      camera.position.copy(direction.multiplyScalar(idealDistance).add(binCenter));
-      camera.up.set(0, 0, 1);
-      camera.lookAt(binCenter);
-      if (controlsRef.current) {
-        controlsRef.current.target.copy(binCenter);
-        controlsRef.current.update();
-      }
-      prevDistanceRef.current = idealDistance;
-      initializedRef.current = true;
-      return;
-    }
-
-    const prevDistance = prevDistanceRef.current ?? idealDistance;
-    const distanceChange = Math.abs(idealDistance - prevDistance) / prevDistance;
-
-    if (distanceChange > REFRAME_THRESHOLD) {
-      // Significant size change: animate to new framing
-      const currentPos = camera.position.clone();
-      const currentDir = currentPos.clone().sub(binCenter).normalize();
-      const targetPos = currentDir.multiplyScalar(idealDistance).add(binCenter);
-
-      animRef.current = {
-        startPos: currentPos,
-        targetPos,
-        startTime: performance.now(),
-        duration: AUTO_FRAME_DURATION,
-      };
-    }
-
-    prevDistanceRef.current = idealDistance;
-  }, [idealDistance, binCenter, camera, controlsRef]);
-
-  // Update target when bin center changes
-  useEffect(() => {
-    if (controlsRef.current && initializedRef.current) {
-      controlsRef.current.target.copy(binCenter);
-      controlsRef.current.update();
-    }
-  }, [binCenter, controlsRef]);
-
-  // Animate camera position each frame
-  useFrame(() => {
-    const anim = animRef.current;
-    if (!anim) return;
-
-    const elapsed = performance.now() - anim.startTime;
-    const progress = Math.min(elapsed / anim.duration, 1);
-    // Ease-out cubic
-    const eased = 1 - Math.pow(1 - progress, 3);
-
-    camera.position.lerpVectors(anim.startPos, anim.targetPos, eased);
-    camera.lookAt(binCenter);
-    invalidate();
-
-    if (progress >= 1) {
-      animRef.current = null;
-      controlsRef.current?.update();
-    }
-  });
-
-  return null;
-}
-
-/**
- * Manages smooth camera preset transitions using spherical coordinate interpolation.
- */
-function usePresetTransition(
-  controlsRef: React.RefObject<OrbitControlsType | null>,
-  invalidateRef: React.RefObject<(() => void) | null>,
-  width: number,
-  depth: number,
-  height: number,
-  gridUnitMm: number,
-  heightUnitMm: number
-) {
-  const animFrameRef = useRef<number | null>(null);
-
-  const setCameraPreset = useCallback(
-    (preset: CameraPreset) => {
-      const controls = controlsRef.current;
-      if (!controls) return;
-
-      const camera = controls.object;
-      const fov = 45;
-      const binCenter = calculateBinCenter(width, depth, height, heightUnitMm);
-      const idealDistance = calculateIdealDistance(
-        width,
-        depth,
-        height,
-        fov,
-        gridUnitMm,
-        heightUnitMm
-      );
-
-      // Calculate target position from preset direction
-      const direction = new Vector3(...CAMERA_PRESETS[preset]).normalize();
-      const targetPosition = direction.multiplyScalar(idealDistance).add(binCenter);
-
-      // Current camera state
-      const startPosition = camera.position.clone();
-      const target = binCenter.clone();
-
-      // Convert to spherical for smooth arc interpolation
-      const startSpherical = new Spherical().setFromVector3(startPosition.clone().sub(target));
-      const targetSpherical = new Spherical().setFromVector3(targetPosition.clone().sub(target));
-
-      const startTime = performance.now();
-
-      // Cancel existing animation
-      if (animFrameRef.current !== null) {
-        cancelAnimationFrame(animFrameRef.current);
-      }
-
-      const animate = () => {
-        const elapsed = performance.now() - startTime;
-        const progress = Math.min(elapsed / TRANSITION_DURATION, 1);
-        // Ease-out cubic for natural deceleration
-        const eased = 1 - Math.pow(1 - progress, 3);
-
-        // Interpolate in spherical coordinates for smooth arc
-        const currentSpherical = new Spherical(
-          startSpherical.radius + (targetSpherical.radius - startSpherical.radius) * eased,
-          startSpherical.phi + (targetSpherical.phi - startSpherical.phi) * eased,
-          startSpherical.theta + (targetSpherical.theta - startSpherical.theta) * eased
-        );
-
-        const newPosition = new Vector3().setFromSpherical(currentSpherical).add(target);
-        camera.position.copy(newPosition);
-        camera.up.set(0, 0, 1);
-        camera.lookAt(target);
-        // Update controls and explicitly invalidate for demand mode rendering
-        controls.target.copy(target);
-        controls.update();
-        invalidateRef.current?.();
-
-        if (progress < 1) {
-          animFrameRef.current = requestAnimationFrame(animate);
-        } else {
-          animFrameRef.current = null;
-        }
-      };
-
-      animate();
-    },
-    [controlsRef, invalidateRef, width, depth, height, gridUnitMm, heightUnitMm]
-  );
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (animFrameRef.current !== null) {
-        cancelAnimationFrame(animFrameRef.current);
-      }
-    };
-  }, []);
-
-  return setCameraPreset;
-}
 
 /**
  * Render the 3D preview canvas for the bin designer.
@@ -339,18 +76,6 @@ function usePresetTransition(
  * - Dimension lines showing W×D×H + interior height in mm
  * - Footprint grid matching the bin's unit dimensions
  */
-/** Inner component for theme-aware lighting (hooks must be called inside Canvas). */
-function SceneLighting() {
-  const colors = useThreeColors();
-  return (
-    <>
-      <hemisphereLight args={['#ffffff', colors.groundBounce, 0.65]} />
-      <directionalLight position={[-50, 60, 80]} intensity={0.85} color="#fff8f0" />
-      <directionalLight position={[40, -40, 30]} intensity={0.15} color="#e0e8ff" />
-    </>
-  );
-}
-
 export function PreviewCanvas() {
   const t = useTranslation();
   const controlsRef = useRef<OrbitControlsType>(null);
@@ -677,121 +402,6 @@ export function PreviewCanvas() {
           <TouchHint />
         </PanelErrorBoundary>
       )}
-    </div>
-  );
-}
-
-function TouchHint() {
-  const t = useTranslation();
-  const { isTouchDevice, isDesktop } = useResponsive();
-  const [dismissed, setDismissed] = useState(false);
-  const alreadyDismissed = useSettingsStore((s) =>
-    s.settings.dismissedHints.includes('designer-touch')
-  );
-
-  const visible = !dismissed && isTouchDevice && !isDesktop && !alreadyDismissed;
-
-  const dismiss = useCallback(() => {
-    setDismissed(true);
-    const { settings, updateSetting } = useSettingsStore.getState();
-    updateSetting('dismissedHints', [...settings.dismissedHints, 'designer-touch']);
-  }, []);
-
-  if (!visible) return null;
-
-  return (
-    <div
-      className="absolute inset-x-0 bottom-3 flex justify-center"
-      role="status"
-      aria-label={t('binDesigner.touchGestureHints')}
-    >
-      <div className="flex items-center gap-3 rounded-full bg-black/70 px-4 py-2 text-[11px] text-white shadow-lg backdrop-blur-sm">
-        <span>{t('binDesigner.dragToOrbit')}</span>
-        <span className="h-3 w-px bg-white/30" />
-        <span>{t('binDesigner.pinchToZoom')}</span>
-        <span className="h-3 w-px bg-white/30" />
-        <span>{t('binDesigner.doubleTapToReset')}</span>
-        <button
-          onClick={dismiss}
-          className="ml-1 flex items-center justify-center rounded-full p-2 hover:bg-white/20 min-w-[36px] min-h-[36px]"
-          aria-label={t('binDesigner.dismissTouchHints')}
-        >
-          <svg
-            className="h-3.5 w-3.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 12 12"
-            aria-hidden="true"
-          >
-            <path d="M3 3l6 6M9 3l-6 6" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/** Number of nostalgic loading messages (SimCity/Maxis-inspired) available in i18n */
-const LOADING_MESSAGE_COUNT = 12;
-
-/**
- * Nostalgic loading indicator that cycles through SimCity-style messages.
- * Shows at the bottom center of the 3D preview during mesh regeneration.
- */
-function GeneratingIndicator() {
-  const t = useTranslation();
-  const prefersReducedMotion = usePrefersReducedMotion();
-  const reduceMotionSetting = useSettingsStore((s) => s.settings.reduceMotion);
-  const reduceMotion = prefersReducedMotion || reduceMotionSetting;
-
-  const loadingMessages = useMemo(
-    () =>
-      Array.from({ length: LOADING_MESSAGE_COUNT }, (_, i) => t(`binDesigner.loadingMessage.${i}`)),
-    [t]
-  );
-
-  const [messageIndex, setMessageIndex] = useState(() =>
-    Math.floor(Math.random() * LOADING_MESSAGE_COUNT)
-  );
-
-  // Cycle through messages every 1.5 seconds; skip when motion is reduced.
-  useEffect(() => {
-    if (reduceMotion) return;
-    const interval = setInterval(() => {
-      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGE_COUNT);
-    }, 1500);
-    return () => clearInterval(interval);
-  }, [reduceMotion]);
-
-  return (
-    <div
-      className="absolute inset-x-0 bottom-4 flex justify-center"
-      role="status"
-      aria-live="polite"
-    >
-      <div className="flex items-center gap-2.5 rounded-lg border border-stroke-subtle bg-surface-elevated/95 px-4 py-2 font-mono text-xs shadow-lg backdrop-blur-sm">
-        <svg
-          className="h-4 w-4 shrink-0 text-accent animate-spin motion-reduce:animate-none"
-          viewBox="0 0 24 24"
-          fill="none"
-          aria-hidden="true"
-        >
-          <circle
-            className="opacity-20"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="3"
-          />
-          <path
-            className="opacity-80"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-          />
-        </svg>
-        <span className="text-content-secondary">{loadingMessages[messageIndex]}</span>
-      </div>
     </div>
   );
 }
