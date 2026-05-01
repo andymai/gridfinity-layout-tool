@@ -33,6 +33,8 @@ const AUTO_FRAME_DURATION = 300;
 const FRAME_FILL = 0.65;
 /** Minimum change in distance to trigger auto-frame animation */
 const REFRAME_THRESHOLD = 0.1; // 10% change
+/** Perspective FOV (degrees) used for framing math — shared by CameraController and usePresetTransition */
+const CAMERA_FOV = 45;
 
 /**
  * Calculate ideal camera distance to frame a bin of the given dimensions.
@@ -111,7 +113,7 @@ export function CameraController({
   const prevDistanceRef = useRef<number | null>(null);
   const initializedRef = useRef(false);
 
-  const fov = 45;
+  const fov = CAMERA_FOV;
   const binCenter = useMemo(
     () => calculateBinCenter(width, depth, height, heightUnitMm),
     [width, depth, height, heightUnitMm]
@@ -209,7 +211,7 @@ export function usePresetTransition(
       if (!controls) return;
 
       const camera = controls.object;
-      const fov = 45;
+      const fov = CAMERA_FOV;
       const binCenter = calculateBinCenter(width, depth, height, heightUnitMm);
       const idealDistance = calculateIdealDistance(
         width,

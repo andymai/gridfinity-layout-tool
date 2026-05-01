@@ -25,6 +25,9 @@ export function TouchHint() {
   const dismiss = useCallback(() => {
     setDismissed(true);
     const { settings, updateSetting } = useSettingsStore.getState();
+    // Dedupe — multiple tabs / stale local state could otherwise push the
+    // same id repeatedly and bloat the persisted list.
+    if (settings.dismissedHints.includes('designer-touch')) return;
     updateSetting('dismissedHints', [...settings.dismissedHints, 'designer-touch']);
   }, []);
 
