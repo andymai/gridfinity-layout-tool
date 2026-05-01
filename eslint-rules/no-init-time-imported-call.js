@@ -20,9 +20,11 @@ const rule = {
     schema: [],
     messages: {
       capture:
-        "Calling imported `{{callee}}` with imported `{{arg}}` at module-init captures `{{arg}}` into a closure. " +
-        'Under chunk-level static-import cycles (#1466) the captured value may be `undefined` at runtime. ' +
-        'Wrap in a lazy singleton (e.g. `let cached; function getX() { return cached ??= {{callee}}({{arg}}); }`).',
+        'Calling imported `{{callee}}` with imported `{{arg}}` at module-init evaluates with ' +
+        '`{{arg}}` whatever value the import resolves to AT THIS MOMENT — and under ' +
+        'chunk-level static-import cycles (#1466) that may be `undefined`. If `{{callee}}` ' +
+        'retains `{{arg}}` (closure or stored field), that undefined sticks. Defer the call ' +
+        'until first use (e.g. `let cached; function getX() { return cached ??= {{callee}}({{arg}}); }`).',
     },
   },
   create(context) {

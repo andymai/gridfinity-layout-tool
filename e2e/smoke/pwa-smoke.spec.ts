@@ -96,12 +96,16 @@ test('boots ?smoke=1 fixture and exposes a fresh /version.json', async ({ page, 
   // Click on the grid to dispatch bin.add through the live command bus.
   // The smoke layout has 1 layer + 1 category, so this is a happy-path draw.
   // A chunk-init capture bug (commandBus undefined inside cqrsMutations)
-  // surfaces here as a `pageerror` — caught by the `errors` assertion below.
+  // surfaces here as a `pageerror`.
   const grid = page.locator('[role="application"]');
   const gridBox = await grid.boundingBox();
   expect(gridBox, 'grid bounding box not measurable').toBeTruthy();
   if (gridBox) {
     await page.mouse.click(gridBox.x + 50, gridBox.y + gridBox.height - 50);
+    // Assert errors before bin-count so a runtime exception (the very bug
+    // class this assertion guards against) shows up in the failure message
+    // instead of being masked by a "no [data-bin-id] within 5s" timeout.
+    expect(errors, `bin-add dispatch raised: ${errors.join('\n')}`).toHaveLength(0);
     await expect(page.locator('[data-bin-id]')).toHaveCount(1, { timeout: 5_000 });
   }
 
