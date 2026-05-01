@@ -4,8 +4,15 @@ vi.mock('@/shared/printSettings/gridfinityGeometry', () => ({
   GRIDFINITY_SPEC: { SOCKET_HEIGHT: 5 },
 }));
 
-const { easeOutCubic, calculateIdealDistance, CAMERA_PRESETS, FRAME_FILL } =
-  await import('./cameraUtils');
+const {
+  easeOutCubic,
+  calculateIdealDistance,
+  calculateMaxOrbitDistance,
+  CAMERA_PRESETS,
+  FRAME_FILL,
+  MAX_DISTANCE_FACTOR,
+  MAX_DISTANCE_FLOOR,
+} = await import('./cameraUtils');
 
 describe('cameraUtils', () => {
   describe('easeOutCubic', () => {
@@ -53,6 +60,26 @@ describe('cameraUtils', () => {
     it('is between 0 and 1', () => {
       expect(FRAME_FILL).toBeGreaterThan(0);
       expect(FRAME_FILL).toBeLessThan(1);
+    });
+  });
+
+  describe('calculateMaxOrbitDistance', () => {
+    it('respects the floor for tiny ideal distances', () => {
+      expect(calculateMaxOrbitDistance(10)).toBe(MAX_DISTANCE_FLOOR);
+    });
+
+    it('scales with ideal distance once past the floor', () => {
+      const ideal = MAX_DISTANCE_FLOOR; // exactly at the floor
+      expect(calculateMaxOrbitDistance(ideal)).toBe(ideal * MAX_DISTANCE_FACTOR);
+    });
+
+    it('exceeds framing distance for the largest baseplate (16x16, 50mm padding/side)', () => {
+      // Regression: maxDistance used to be hardcoded to 800, which clamped
+      // before the framing distance for any baseplate above ~10x10 grid units.
+      const ideal = calculateIdealDistance(16, 16, 42, 50, 50, 50, 50, 45);
+      const max = calculateMaxOrbitDistance(ideal);
+      expect(max).toBeGreaterThan(ideal);
+      expect(max).toBeGreaterThan(800);
     });
   });
 });
