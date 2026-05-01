@@ -25,9 +25,8 @@ export type AggregateName = 'layout' | 'library' | 'designer';
 /**
  * Read-only snapshot shape per aggregate.
  *
- * Designer is `unknown` until the designer migration lands — the type
- * stays open so `defineCommand({ aggregate: 'designer', ... })` does not
- * lock in a shape we may want to revise during PR 7.
+ * Designer is `unknown` because no command currently targets that
+ * aggregate; revise the shape if/when one does.
  */
 export interface AggregateRoot {
   readonly layout: Layout;

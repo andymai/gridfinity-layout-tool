@@ -1,14 +1,10 @@
 /**
- * Type-inference tests for v2 foundations.
- *
- * Validates that `defineCommand({...})` plus `createRegistry([...])` plus
+ * Type-inference tests for the v2 foundations. Validates that
+ * `defineCommand({...})` plus `createRegistry([...])` plus
  * `Mutations<typeof registry>` thread types end-to-end without collapsing
- * to `unknown`, `never`, or `any`. These tests run at typecheck time —
- * they assert structural type equality, not runtime behavior.
- *
- * Decision gate: if `pnpm typecheck` regresses by >2 seconds when this
- * file is added, the per-command typed-dispatcher fallback (Pass 2 risk
- * mitigation) becomes the path forward instead.
+ * to `unknown`, `never`, or `any`. expectTypeOf assertions run at
+ * typecheck time; the runtime smoke test below ensures vitest discovers
+ * the file.
  */
 
 import { describe, it, expect, expectTypeOf } from 'vitest';

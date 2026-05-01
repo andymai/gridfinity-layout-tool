@@ -1,15 +1,12 @@
 /**
- * bin.fillGaps — v2 (defineCommand) shape.
+ * Fill empty gaps in a layer. Sibling to fillLayer; emits the same
+ * `bin.layerFilled` event but with `fillType: 'gaps'` so the analytics
+ * subscriber can distinguish the two.
  *
- * Sibling to fillLayer. Same shape: planning runs in handle() against the
- * frozen layout snapshot; the resulting bins are encoded in the event
- * payload with `fillType: 'gaps'` so the analytics subscriber can
- * distinguish uniform vs gap-fill operations.
- *
- * Returns `result.addedCount` (matching v1's return). Today this equals
- * `bins.length`, but the underlying helper distinguishes the two for
- * forward compatibility — keep the v1 return shape so callers that
- * already destructure `addedCount` aren't broken if the helper diverges.
+ * Returns `result.addedCount`. Today this equals `bins.length`, but the
+ * underlying helper distinguishes them for forward compatibility — keep
+ * this shape so callers that already destructure `addedCount` aren't
+ * broken if the helper diverges.
  */
 
 import { z } from 'zod';

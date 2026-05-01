@@ -24,8 +24,8 @@ vi.mock('@/core/storage', () => ({
   getCloudShareIdFromURL: vi.fn(() => null),
 }));
 
-// Mock telemetry — ui.* analytics are direct trackEvent() calls now
-// (PR 12 telemetry exit; not routed through the CQRS bus).
+// Mock telemetry — ui.* analytics are direct trackEvent() calls
+// (not routed through the CQRS bus).
 import type * as PosthogModule from '@/shared/analytics/posthog';
 const mockTrackEvent = vi.fn();
 vi.mock('@/shared/analytics/posthog', async () => {

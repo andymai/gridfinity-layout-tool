@@ -1,17 +1,9 @@
 /**
- * category.delete — v2 (defineCommand) shape.
- *
- * Per-command refactor (per Pass 3 plan): this is precondition
- * enforcement, not a cascade. v1 rejects when any bin references the
- * category — v2 keeps that behavior exactly. handle() validates in this
- * order (matches v1's order in createCategoryActions.deleteCategory so
- * the same input produces the same first-failure error):
- *   1. no bins reference it
- *   2. layout still has at least CATEGORIES_MIN categories afterward
- *   3. category exists
- *
- * apply() filters the category out of the draft. No bin reassignment
- * happens because deletion is blocked when any bin uses it.
+ * Delete a category. Precondition enforcement, NOT a cascade — handle()
+ * rejects when any bin references the category. Validation order is
+ * deliberate (in-use → min-count → exists) so the first-failure error
+ * matches what users have been seeing for years; reordering would break
+ * tests that assert specific failure types.
  */
 
 import { z } from 'zod';

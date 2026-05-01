@@ -12,17 +12,14 @@ import { drawerHandlers } from './drawerHandlers';
 import { libraryHandlers } from './libraryHandlers';
 import { designerHandlers } from './designerHandlers';
 import { restoreHandlers } from './restoreHandlers';
-// UI handlers removed in PR 12 (telemetry exit) — ui.* commands are now
-// direct trackEvent() calls instead of bus dispatches.
 import { v2HandlerOverrides } from '../v2/registry';
 
 export { resetVersionCounters } from './shared';
 
 type HandlerFn = (command: never) => CommandResult<unknown, DomainEvent>;
 
-// v2 overrides spread LAST so migrated commands route through defineCommand
-// wrappers instead of the v1 handler. Other commands keep the v1 path until
-// their domain migrates.
+// v2 overrides spread LAST: migrated commands route through their
+// defineCommand wrappers; the rest keep the legacy handler path.
 const handlerRegistry: Record<string, HandlerFn> = {
   ...binHandlers,
   ...layerHandlers,

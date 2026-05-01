@@ -1,13 +1,9 @@
 /**
- * bin.fillLayer — v2 (defineCommand) shape.
- *
- * The planning helper `fillAllWithSize` is called inside handle() against
- * the frozen layout snapshot. The resulting bins are encoded in the event
- * payload (along with `fillType: 'uniform'`, `width`, and `depth`) so
- * apply() is a deterministic push and the fill-analytics subscriber has
- * everything it needs without poking at transient store state.
- *
- * Replaces v1's `useLayoutStore.fillLayer` + `_fillMeta` side-channel.
+ * Fill a layer with uniform-sized bins. `fillAllWithSize` runs against
+ * the frozen layout snapshot; the resulting bins go into the event
+ * payload alongside `fillType: 'uniform'`, `width`, `depth` so apply()
+ * is a deterministic push and the fill-analytics subscriber has
+ * everything it needs without reading transient store state.
  */
 
 import { z } from 'zod';

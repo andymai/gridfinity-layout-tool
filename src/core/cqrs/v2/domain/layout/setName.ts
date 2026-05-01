@@ -1,8 +1,6 @@
 /**
- * layout.setName — v2 (defineCommand) shape.
- *
- * Truncates to NAME_MAX_LENGTH (matches v1 behavior). Captures previousName
- * for undo replay.
+ * Set the layout name. Truncates to NAME_MAX_LENGTH; captures
+ * `previousName` for undo.
  */
 
 import { z } from 'zod';

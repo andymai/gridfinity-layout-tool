@@ -8,12 +8,9 @@
 import type { BaseDomainEvent } from '../types';
 import type { LayoutEntry, LayoutId, CloudShareInfo } from '@/core/types';
 
-/**
- * `entry` was added in the v2 migration so apply() can push the full
- * LayoutEntry deterministically. v1-era persisted events have only
- * {layoutId, name} — replay against those would need to reconstruct the
- * entry from defaults, which is acceptable for the audit trail but lossy.
- */
+// `entry` carries the full LayoutEntry so apply() can push
+// deterministically. Optional only for back-compat with persisted
+// events that carried only {layoutId, name}.
 export type LibraryEntryCreatedEvent = BaseDomainEvent<
   'library.entryCreated',
   { readonly layoutId: LayoutId; readonly name: string; readonly entry?: LayoutEntry }
@@ -24,11 +21,9 @@ export type LibraryEntryDeletedEvent = BaseDomainEvent<
   { readonly layoutId: LayoutId }
 >;
 
-/**
- * `entry` was added in the v2 migration so apply() can push the duplicated
- * entry deterministically. v1-era persisted events have only the ids — the
- * `entry?` shape lets v1 events still satisfy the type.
- */
+// `entry` carries the duplicated LayoutEntry so apply() can push it
+// deterministically. Optional only for back-compat with persisted
+// events that carried only the ids.
 export type LibraryEntryDuplicatedEvent = BaseDomainEvent<
   'library.entryDuplicated',
   {

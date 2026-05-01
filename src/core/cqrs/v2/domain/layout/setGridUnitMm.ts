@@ -1,7 +1,4 @@
-/**
- * layout.setGridUnitMm — v2 (defineCommand) shape.
- * Clamps to [1, 200] mm. Captures previousMm for undo replay.
- */
+/** Set the grid unit in mm. Clamps to [1, 200]; captures `previousMm` for undo. */
 
 import { z } from 'zod';
 import { ok } from '@/core/result';

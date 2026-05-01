@@ -1,13 +1,7 @@
 /**
- * bin.deleteBatch — v2 (defineCommand) shape.
- *
- * Capture the bins being deleted in the event payload (full Bin objects)
- * so undo replay reconstructs them, not just their ids. v1 was lenient
- * about empty-or-missing ids — v2 mirrors that: an empty result is valid,
- * just emits no event.
- *
- * The handler only emits when at least one of the requested ids actually
- * matched an existing bin — keeps the event log free of no-op deletions.
+ * Delete multiple bins. The event payload carries the full Bin objects
+ * so undo can reconstruct them, not just their ids. Lenient on
+ * empty-or-missing ids: empty `bins` is a valid no-op result.
  */
 
 import { z } from 'zod';

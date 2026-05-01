@@ -36,12 +36,9 @@ export type BinMovedToStagingEvent = BaseDomainEvent<
   { readonly id: BinId; readonly previousLayerId: LayerId }
 >;
 
-/**
- * `height` was added in the v2 migration so apply() can reproduce the
- * full mutation without consulting current layout state. v1-era persisted
- * events have no height — the optional shape keeps them readable; the
- * v2 apply() falls back to leaving height untouched when missing.
- */
+// `height` is optional only for back-compat with persisted events that
+// predate the field; new events always include it. apply() leaves
+// `bin.height` untouched when reading an event without it.
 export type BinMovedFromStagingEvent = BaseDomainEvent<
   'bin.movedFromStaging',
   {
@@ -53,13 +50,10 @@ export type BinMovedFromStagingEvent = BaseDomainEvent<
   }
 >;
 
-/**
- * `fillType`, `width`, `depth` were added in the v2 migration so the fill
- * analytics subscriber can derive what the v1 `_fillMeta` field used to
- * carry. v1-era persisted events have no `fillType` — the subscriber
- * silently ignores those (re-emitting them would distort current-period
- * metrics).
- */
+// `fillType`, `width`, `depth` carry the metadata the fill-analytics
+// subscriber needs to distinguish uniform vs gap fills. Optional only
+// for back-compat with persisted events that predate the fields; the
+// subscriber silently ignores events without `fillType`.
 export type LayerFilledEvent = BaseDomainEvent<
   'bin.layerFilled',
   {

@@ -1,9 +1,7 @@
 /**
- * bin.moveToStaging — v2 (defineCommand) shape.
- *
- * Capture the previousLayerId so undo can restore the bin to its prior
- * layer placement. The bin itself stays in the layout — only its layerId
- * changes to STAGING_ID.
+ * Move a bin to staging. The bin stays in the layout; only `layerId`
+ * changes to STAGING_ID. Captures `previousLayerId` so undo restores
+ * the prior placement.
  */
 
 import { z } from 'zod';

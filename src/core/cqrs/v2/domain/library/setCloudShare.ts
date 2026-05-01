@@ -1,12 +1,9 @@
 /**
- * library.setCloudShare — v2 (defineCommand) shape, library aggregate.
- *
- * Sets cloudShare metadata on the matching entry. The libraryPersistence
- * subscriber (`cqrs/subscribers/libraryPersistence.ts`, wired in PR 1)
- * listens for the emitted `library.cloudShareUpdated` event and persists
- * the library snapshot — so the v2 path's behavior matches v1 end-to-end.
- *
- * No-ops silently when the layout id isn't in entries (same as v1).
+ * Set cloudShare metadata on a library entry. The
+ * `cqrs/subscribers/libraryPersistence` subscriber listens for
+ * `library.cloudShareUpdated` and persists the library snapshot
+ * immediately (cloudShare isn't covered by the debounced useAutoSave).
+ * No-ops silently when the layout id isn't in entries.
  */
 
 import { z } from 'zod';

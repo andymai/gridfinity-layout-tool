@@ -1,10 +1,7 @@
 /**
- * library.switchActive — v2 (defineCommand) shape, library aggregate.
- *
- * Captures previousLayoutId so undo replay can restore the prior active
- * selection. v1 didn't validate that the target id exists in entries —
- * v2 keeps that lenient behavior (the layout-activation hook handles
- * the lookup downstream).
+ * Switch the active layout. Captures `previousLayoutId` for undo.
+ * No validation that the target id exists — the layout-activation hook
+ * handles lookup downstream.
  */
 
 import { z } from 'zod';
