@@ -30,8 +30,16 @@ function fallbackActiveLayerId(restoredLayout: Layout): LayerId {
 /**
  * Apply a captured selection snapshot to the restored layout, reconciling
  * any IDs that no longer exist (same fallbacks as the prune path).
+ *
+ * Returns only the fields that differ from the current selection state, so
+ * `restoreSelection` short-circuits when undo lands on a layout whose
+ * selection already matches the snapshot.
  */
-function applySnapshot(layout: Layout, snapshot: SelectionSnapshot): Partial<SelectionState> {
+function applySnapshot(
+  layout: Layout,
+  snapshot: SelectionSnapshot,
+  current: SelectionState
+): Partial<SelectionState> {
   const binIds = new Set(layout.bins.map((b) => b.id));
   const layerIds = new Set(layout.layers.map((l) => l.id));
   const categoryIds = new Set(layout.categories.map((c) => c.id));
@@ -46,17 +54,27 @@ function applySnapshot(layout: Layout, snapshot: SelectionSnapshot): Partial<Sel
       ? snapshot.activeCategoryId
       : layout.categories[0].id;
 
-  return {
-    activeLayerId,
-    activeCategoryId,
-    selectedBinIds: snapshot.selectedBinIds.filter((id) => binIds.has(id)),
-    focusedBinId:
-      snapshot.focusedBinId && binIds.has(snapshot.focusedBinId) ? snapshot.focusedBinId : null,
-    quickLabelBinId:
-      snapshot.quickLabelBinId && binIds.has(snapshot.quickLabelBinId)
-        ? snapshot.quickLabelBinId
-        : null,
-  };
+  const selectedBinIds = snapshot.selectedBinIds.filter((id) => binIds.has(id));
+  const focusedBinId =
+    snapshot.focusedBinId && binIds.has(snapshot.focusedBinId) ? snapshot.focusedBinId : null;
+  const quickLabelBinId =
+    snapshot.quickLabelBinId && binIds.has(snapshot.quickLabelBinId)
+      ? snapshot.quickLabelBinId
+      : null;
+
+  const updates: Partial<SelectionState> = {};
+  if (activeLayerId !== current.activeLayerId) updates.activeLayerId = activeLayerId;
+  if (activeCategoryId !== current.activeCategoryId) updates.activeCategoryId = activeCategoryId;
+  if (!arraysEqual(selectedBinIds, current.selectedBinIds)) updates.selectedBinIds = selectedBinIds;
+  if (focusedBinId !== current.focusedBinId) updates.focusedBinId = focusedBinId;
+  if (quickLabelBinId !== current.quickLabelBinId) updates.quickLabelBinId = quickLabelBinId;
+  return updates;
+}
+
+function arraysEqual<T>(a: ReadonlyArray<T>, b: ReadonlyArray<T>): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
 }
 
 /**
@@ -103,7 +121,9 @@ export function handleRestoreLayout(
   useLayoutStore.getState().restoreLayout(layout);
 
   const selection = useSelectionStore.getState();
-  const updates = snapshot ? applySnapshot(layout, snapshot) : pruneSelection(layout, selection);
+  const updates = snapshot
+    ? applySnapshot(layout, snapshot, selection)
+    : pruneSelection(layout, selection);
 
   if (Object.keys(updates).length > 0) {
     selection.restoreSelection(updates);

@@ -94,10 +94,11 @@ describe('Restore Handlers', () => {
       );
     });
 
-    it('applies the snapshot exactly when present, not the prune fallback', () => {
-      // Snapshot captures a selection state from BEFORE the user did the
-      // undoable action; restoring the layout should also restore that
-      // exact selection, not derive one from the current store state.
+    it('applies only the snapshot fields that differ from current selection', () => {
+      // Mock current selection: selectedBinIds=[bin_1], focusedBinId=null,
+      // quickLabelBinId=null, activeLayerId=layer_1, activeCategoryId=cat_1.
+      // Snapshot wants focusedBinId=bin_1; everything else matches current.
+      // Sparse output: only the focusedBinId field should be restored.
       const cmd = createCommand('layout.restore', {
         layout: testLayout,
         direction: 'undo' as const,
@@ -111,19 +112,15 @@ describe('Restore Handlers', () => {
       });
       handleRestoreLayout(cmd);
 
-      expect(mockRestoreSelection).toHaveBeenCalledWith({
-        activeLayerId: layerId('layer_1'),
-        activeCategoryId: categoryId('cat_1'),
-        selectedBinIds: [binId('bin_1')],
-        focusedBinId: binId('bin_1'),
-        quickLabelBinId: null,
-      });
+      expect(mockRestoreSelection).toHaveBeenCalledTimes(1);
+      expect(mockRestoreSelection).toHaveBeenCalledWith({ focusedBinId: binId('bin_1') });
     });
 
     it('reconciles snapshot ids that no longer exist in the restored layout', () => {
-      // The snapshot references bins/layers/categories that were removed
-      // before the undo target was captured. Reconciliation: drop missing
-      // bins, fall back to the last layer + first category.
+      // Snapshot references missing IDs. Reconciliation drops the missing
+      // bin, falls back to last layer + first category. After reconciliation
+      // the resolved values happen to match current selection — sparse
+      // output produces an empty diff, so restoreSelection is NOT called.
       const cmd = createCommand('layout.restore', {
         layout: { ...testLayout, bins: [] },
         direction: 'undo' as const,
@@ -137,13 +134,31 @@ describe('Restore Handlers', () => {
       });
       handleRestoreLayout(cmd);
 
-      expect(mockRestoreSelection).toHaveBeenCalledWith({
-        activeLayerId: layerId('layer_1'),
-        activeCategoryId: categoryId('cat_1'),
-        selectedBinIds: [],
-        focusedBinId: null,
-        quickLabelBinId: null,
+      // Note: the FALLBACK active-layer (last layer = 'layer_1') matches
+      // current; the FALLBACK active-category ('cat_1') matches current;
+      // selectedBinIds reconciles to [] (current is [bin_1] — that IS a
+      // diff). Only selectedBinIds should be in the call payload.
+      expect(mockRestoreSelection).toHaveBeenCalledTimes(1);
+      expect(mockRestoreSelection).toHaveBeenCalledWith({ selectedBinIds: [] });
+    });
+
+    it('does not call restoreSelection when nothing changes', () => {
+      // Snapshot exactly matches the current selection mock — sparse output
+      // is {} and restoreSelection should be skipped entirely.
+      const cmd = createCommand('layout.restore', {
+        layout: testLayout,
+        direction: 'undo' as const,
+        selection: {
+          activeLayerId: layerId('layer_1'),
+          activeCategoryId: categoryId('cat_1'),
+          selectedBinIds: [binId('bin_1')],
+          focusedBinId: null,
+          quickLabelBinId: null,
+        },
       });
+      handleRestoreLayout(cmd);
+
+      expect(mockRestoreSelection).not.toHaveBeenCalled();
     });
   });
 });
