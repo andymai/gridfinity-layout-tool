@@ -2,10 +2,12 @@
  * Pure resolvers that derive the divider/cutout geometry inputs the
  * blend builder needs from the user's `BinParams`.
  *
- * No brepjs dependency — both functions can be called from
- * `computeRampZones` / `computeDividerJunctionZones` (used by the wall
- * pattern builder) without dragging the WASM solid-modeling kernel
- * along.
+ * Functions here perform pure JS computation — they don't call brepjs
+ * directly. (The transitive import of `findWallSegments` from
+ * `compartmentBuilder` does load the brepjs module at evaluation time;
+ * the data-only property is on the call paths, not the dep graph.)
+ * Reused by the wall-pattern builder via `computeRampZones` and
+ * `computeDividerJunctionZones`.
  */
 
 import type { BinParams } from '@/shared/types/bin';

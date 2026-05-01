@@ -13,7 +13,10 @@ import { box, draw, translate, rotate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { WallCutoutShape } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
-import { buildSingleCutout } from './featureBuilder';
+// Import directly from wallCutoutBuilder rather than the featureBuilder
+// barrel so only the cutout-shape builder is pulled in — the barrel
+// otherwise re-exports every builder, inflating this module's transitive deps.
+import { buildSingleCutout } from './wallCutoutBuilder';
 import { LIP_HEIGHT, COPLANAR_MARGIN } from './generatorConstants';
 import { type DividerInfo, type OuterWallCutoutInfo, MIN_DIM } from './dividerBlendTypes';
 

@@ -62,7 +62,9 @@ export function getWallFaceInfo(
   innerW: number,
   innerD: number
 ): WallFaceInfo {
-  const info: Record<string, WallFaceInfo> = {
+  // Tighter than Record<string, …> so a typo or missing side breaks
+  // compilation rather than returning undefined at runtime.
+  const info: Record<'front' | 'back' | 'left' | 'right', WallFaceInfo> = {
     front: { wallFaceCoord: -innerD / 2, inwardSign: 1, spanAxis: 'x' },
     back: { wallFaceCoord: innerD / 2, inwardSign: -1, spanAxis: 'x' },
     left: { wallFaceCoord: -innerW / 2, inwardSign: 1, spanAxis: 'y' },
