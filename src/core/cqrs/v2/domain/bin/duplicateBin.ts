@@ -80,6 +80,12 @@ export const duplicateBin = defineCommand({
 
     // Resolve placement: staging bins always copy to staging (0, 0); grid
     // bins try the 4 adjacent slots and fall back to staging if none fit.
+    //
+    // Note: the staging slot at (0, 0) is NOT validated against existing
+    // staging bins — duplicates can silently overlap there. This matches
+    // v1's behavior (binActions.duplicateBin via store.addBin, which also
+    // skips placement validation for STAGING_ID). Staging is a free-form
+    // bucket; callers don't rely on collision-free staging coordinates.
     const placement: Placement =
       source.layerId === STAGING_ID
         ? { layerId: STAGING_ID, x: gridUnits(0), y: gridUnits(0) }

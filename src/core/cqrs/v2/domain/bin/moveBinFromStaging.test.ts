@@ -25,6 +25,18 @@ describe('v2 bin.moveFromStaging', () => {
     expect(result.value.event.payload.layerId).toBe(layerId('layer_1'));
   });
 
+  it('errors when the source bin is not in staging (v2 tightening)', () => {
+    const bin = makeBin('bin_1', { layerId: layerId('layer_1') });
+    const layout = makeLayout({ bins: [bin] });
+    const result = moveBinFromStaging.handle(
+      { id: 'bin_1', layerId: 'layer_1', x: 1, y: 1 },
+      { aggregate: layout }
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe('LAYOUT_INVALID_OPERATION');
+  });
+
   it('errors when the bin does not exist', () => {
     const layout = makeLayout();
     const result = moveBinFromStaging.handle(

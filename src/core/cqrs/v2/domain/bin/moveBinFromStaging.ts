@@ -14,6 +14,7 @@
 import { z } from 'zod';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 import { ok, err } from '@/core/result';
+import { STAGING_ID } from '@/core/constants';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { toPlacementError } from '@/core/store/layout/helpers';
 import { layoutInvalidOperation, validationInvalidLayer } from '@/core/result';
@@ -55,6 +56,20 @@ export const moveBinFromStaging = defineCommand({
     const bin = ctx.aggregate.bins.find((b) => b.id === id);
     if (!bin) {
       return err(layoutInvalidOperation('moveBinFromStaging', `Bin ${id} not found`));
+    }
+
+    // Tighten v2 vs v1: the command name implies the source is in staging.
+    // v1 silently re-moved bins regardless of source layer, which would
+    // also re-stamp the bin's height to the target layer's height — a
+    // footgun. Reject explicitly so the caller picks a more appropriate
+    // command (e.g. bin.update for cross-layer moves).
+    if (bin.layerId !== STAGING_ID) {
+      return err(
+        layoutInvalidOperation(
+          'moveBinFromStaging',
+          `Bin ${id} is not in staging (layerId=${bin.layerId})`
+        )
+      );
     }
 
     const layer = ctx.aggregate.layers.find((l) => l.id === layerId);
