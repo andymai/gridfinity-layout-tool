@@ -12,6 +12,17 @@ Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer orga
 
 </div>
 
+<img width="1436" height="847" alt="image" src="https://github.com/user-attachments/assets/17dba424-3a01-4064-b3e9-7742687fc2d5" />
+
+---
+
+<img width="1436" height="844" alt="image" src="https://github.com/user-attachments/assets/30230ac3-bdac-4dcc-83ab-c13b0f40739d" />
+
+---
+
+<img width="1232" height="848" alt="image" src="https://github.com/user-attachments/assets/51db8aaa-8598-4b82-94ce-04f5289a9106" />
+
+
 ## Features
 
 - **Layout Planner** — Drag-and-drop bin placement with stacked layers and color-coded categories
