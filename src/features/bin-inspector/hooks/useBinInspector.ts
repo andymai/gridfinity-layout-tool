@@ -1,3 +1,13 @@
+/**
+ * Shared hook for bin inspector logic.
+ *
+ * Extracts all common state and handlers used by RightPanel and
+ * MobileInspector. Multi-selection callbacks live in
+ * `useBinInspectorMultiActions`; type definitions and the linked-bin
+ * sync helper live in `binInspectorTypes` (no `use` prefix — those
+ * are pure types and a plain helper, not a hook).
+ */
+
 import { useState, useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore, useToastStore } from '@/core/store';
@@ -11,105 +21,26 @@ import { isOk, isErr } from '@/core/result';
 import { clamp, canPlaceBin, validateCustomProperties } from '@/shared/utils/validation';
 import { validateBinRotation } from '@/shared/utils/binLocation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
-import { emitSyncEvent } from '@/shared/events/syncEventBus';
-import type {
-  Bin,
-  Category,
-  Layer,
-  Layout,
-  LayerId,
-  CategoryId,
-  GridUnits,
-  HeightUnits,
-} from '@/core/types';
+import type { GridUnits, HeightUnits, Bin, LayerId } from '@/core/types';
 import { layerId as toLayerId, categoryId as toCategoryId } from '@/core/types';
 import { useTranslation } from '@/i18n';
+import {
+  emitLinkedBinResize,
+  type BinConstraints,
+  type BinField,
+  type ConfirmDeleteState,
+  type UseBinInspectorReturn,
+} from './binInspectorTypes';
+import { useBinInspectorMultiActions } from './useBinInspectorMultiActions';
 
-/** Emit a bin-resized sync event if the bin is linked and dimensions changed. */
-function emitLinkedBinResize(
-  bin: Bin,
-  newDimensions: { width: number; depth: number; height: number }
-): void {
-  if (!bin.linkedDesignId) return;
-  if (
-    newDimensions.width === bin.width &&
-    newDimensions.depth === bin.depth &&
-    newDimensions.height === bin.height
-  ) {
-    return;
-  }
-  emitSyncEvent({
-    type: 'bin-resized',
-    binId: bin.id,
-    linkedDesignId: bin.linkedDesignId,
-    newDimensions,
-  });
-}
-
-export type BinField =
-  | 'width'
-  | 'depth'
-  | 'height'
-  | 'clearanceHeight'
-  | 'category'
-  | 'label'
-  | 'notes';
-
-export type MinHeightReason = 'layer_height' | 'global_minimum';
-export type MaxHeightReason = 'remaining_space' | 'drawer_height';
-
-export interface BinConstraints {
-  minHeight: number;
-  maxHeight: number;
-  maxClearance: number;
-  maxGridUnits: { width: number; depth: number };
-  needsSplit: boolean;
-  heightRange: string;
-  /** Why the minimum height is what it is */
-  minHeightReason: MinHeightReason;
-  /** Why the maximum height is what it is */
-  maxHeightReason: MaxHeightReason;
-}
-
-export interface ConfirmDeleteState {
-  title: string;
-  message: string;
-}
-
-export interface UseBinInspectorReturn {
-  selectedBins: Bin[];
-  isMultiSelect: boolean;
-  bin: Bin | null;
-  category: Category | null;
-  layer: Layer | null;
-
-  // Constraints (derived)
-  constraints: BinConstraints;
-
-  updateField: (field: BinField, value: string | number) => void;
-  updateCustomProperties: (properties: Record<string, string>) => void;
-  updateMultiCustomProperty: (key: string, value: string) => void;
-  updateMultiCategory: (categoryId: string) => void;
-  updateMultiHeight: (delta: number) => void;
-  updateMultiClearance: (delta: number) => void;
-
-  moveToLayer: (targetLayerId: string) => void;
-  updateMultiLayer: (targetLayerId: string) => void;
-
-  requestDelete: () => void;
-  confirmDelete: () => void;
-  cancelDelete: () => void;
-  moveToStaging: () => void;
-  clearSelection: () => void;
-  rotateBin: () => boolean;
-
-  deleteConfirmState: ConfirmDeleteState | null;
-
-  layout: Layout;
-  categories: Category[];
-  /** All unique custom property keys used across all bins in the layout */
-  existingPropertyKeys: string[];
-}
+export type {
+  BinConstraints,
+  BinField,
+  ConfirmDeleteState,
+  MaxHeightReason,
+  MinHeightReason,
+  UseBinInspectorReturn,
+} from './binInspectorTypes';
 
 /**
  * Shared hook for bin inspector logic.
@@ -312,123 +243,13 @@ export function useBinInspector(): UseBinInspectorReturn {
     [bin, updateBin, addToast]
   );
 
-  const updateMultiCategory = useCallback(
-    (rawCategoryId: string) => {
-      if (selectedBins.length === 0) return;
-      const brandedCategoryId: CategoryId = toCategoryId(rawCategoryId);
-
-      const binsToUpdate = selectedBins.filter((b) => b.category !== brandedCategoryId);
-      if (binsToUpdate.length === 0) return;
-
-      const batchSize = binsToUpdate.length;
-      const category = layout.categories.find((c) => c.id === brandedCategoryId);
-
-      batch(() => {
-        for (const b of binsToUpdate) {
-          if (isErr(updateBin(b.id, { category: brandedCategoryId }))) break;
-        }
-      });
-
-      // Track once per batch with category name (not per bin)
-      if (category && binsToUpdate.length > 0) {
-        mlTracking.trackCategory(binsToUpdate[0], category.name, batchSize);
-      }
-    },
-    [selectedBins, layout.categories, updateBin]
-  );
-
-  // Update/add a custom property on multiple bins
-  const updateMultiCustomProperty = useCallback(
-    (key: string, value: string) => {
-      if (selectedBins.length === 0) return;
-      const trimmedKey = key.trim();
-      const trimmedValue = value.trim();
-      if (!trimmedKey) return;
-
-      batch(() => {
-        for (const b of selectedBins) {
-          const existing = b.customProperties || {};
-          updateBin(b.id, {
-            customProperties: { ...existing, [trimmedKey]: trimmedValue },
-          });
-        }
-      });
-
-      addToast(
-        t('toast.customPropertySet', { key: trimmedKey, count: selectedBins.length }),
-        'success'
-      );
-    },
-    [selectedBins, updateBin, addToast, t]
-  );
-
-  const updateMultiHeight = useCallback(
-    (delta: number) => {
-      if (selectedBins.length === 0) return;
-
-      // Pre-compute new heights before execute mutates state (needed for sync events)
-      const updates = selectedBins.map((b) => {
-        const binLayer = layout.layers.find((l) => l.id === b.layerId);
-        const minHeight = Math.max(
-          CONSTRAINTS.MIN_BIN_HEIGHT,
-          binLayer?.height || CONSTRAINTS.MIN_BIN_HEIGHT
-        );
-        let binMaxHeight = layout.drawer.height as number;
-        if (b.layerId !== STAGING_ID && binLayer) {
-          const zR = getLayerZStartResult(b.layerId, layout.layers);
-          binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
-        }
-        const newHeight = clamp(b.height + delta, minHeight, binMaxHeight) as HeightUnits;
-        return { bin: b, newHeight };
-      });
-
-      const succeededBinIds = new Set<string>();
-      batch(() => {
-        for (const { bin: b, newHeight } of updates) {
-          if (isErr(updateBin(b.id, { height: newHeight }))) break;
-          succeededBinIds.add(b.id);
-        }
-      });
-
-      // Emit sync events only for bins that were successfully updated.
-      // Deduplicate by linkedDesignId to avoid concurrent IDB writes.
-      const emittedDesigns = new Set<string>();
-      for (const { bin: b, newHeight } of updates) {
-        if (!succeededBinIds.has(b.id)) continue;
-        if (!b.linkedDesignId || newHeight === b.height) continue;
-        if (emittedDesigns.has(b.linkedDesignId)) continue;
-        emittedDesigns.add(b.linkedDesignId);
-        emitLinkedBinResize(b, { width: b.width, depth: b.depth, height: newHeight });
-      }
-    },
-    [selectedBins, layout.drawer.height, layout.layers, updateBin]
-  );
-
-  const updateMultiClearance = useCallback(
-    (delta: number) => {
-      if (selectedBins.length === 0) return;
-
-      batch(() => {
-        for (const b of selectedBins) {
-          const binLayer = layout.layers.find((l) => l.id === b.layerId);
-          // For staging bins, use full drawer height; for placed bins, account for layer position
-          let binMaxHeight = layout.drawer.height as number;
-          if (b.layerId !== STAGING_ID && binLayer) {
-            const zR = getLayerZStartResult(b.layerId, layout.layers);
-            binMaxHeight = layout.drawer.height - (isOk(zR) ? zR.value : layout.drawer.height);
-          }
-          const maxClearance = binMaxHeight - b.height;
-          const newClearance = clamp(
-            (b.clearanceHeight || 0) + delta,
-            0,
-            maxClearance
-          ) as HeightUnits;
-          updateBin(b.id, { clearanceHeight: newClearance });
-        }
-      });
-    },
-    [selectedBins, layout.drawer.height, layout.layers, updateBin]
-  );
+  const {
+    updateMultiCategory,
+    updateMultiCustomProperty,
+    updateMultiHeight,
+    updateMultiClearance,
+    updateMultiLayer,
+  } = useBinInspectorMultiActions({ selectedBins, layout, updateBin, addToast, t });
 
   const moveToLayer = useCallback(
     (rawTargetLayerId: string) => {
@@ -476,74 +297,6 @@ export function useBinInspector(): UseBinInspectorReturn {
       addToast(t('toast.movedToLayer', { name: targetLayer.name }), 'success');
     },
     [bin, layout, updateBin, addToast, t]
-  );
-
-  const updateMultiLayer = useCallback(
-    (rawTargetLayerId: string) => {
-      if (selectedBins.length === 0) return;
-      const targetLayerId: LayerId = toLayerId(rawTargetLayerId);
-
-      const targetLayer = layout.layers.find((l) => l.id === targetLayerId);
-      if (!targetLayer) return;
-
-      const binsToMove = selectedBins.filter(
-        (b) => b.layerId !== STAGING_ID && b.layerId !== targetLayerId
-      );
-
-      if (binsToMove.length === 0) return;
-
-      // Check which bins can be moved using their actual heights (no auto-adjustment)
-      const movable: Bin[] = [];
-      const blocked: Bin[] = [];
-
-      for (const b of binsToMove) {
-        const result = canPlaceBin(
-          { x: b.x, y: b.y, width: b.width, depth: b.depth, height: b.height },
-          targetLayerId,
-          layout,
-          b.id
-        );
-        if (result.valid) {
-          movable.push(b);
-        } else {
-          blocked.push(b);
-        }
-      }
-
-      if (movable.length === 0) {
-        addToast(t('toast.noMovableCollisions'), 'error');
-        return;
-      }
-
-      // Capture original layer IDs for tracking (use first bin as representative)
-      const firstBin = movable[0];
-      const fromLayerId = firstBin.layerId;
-
-      batch(() => {
-        for (const b of movable) {
-          updateBin(b.id, {
-            layerId: targetLayerId,
-            // Keep bin's original height - don't auto-adjust to layer minimum
-          });
-        }
-      });
-
-      // Track layer movement after execution
-      mlTracking.trackLayerMove(firstBin, fromLayerId, targetLayerId, 'inspector', movable.length);
-
-      if (blocked.length > 0) {
-        addToast(
-          `Moved ${movable.length} of ${binsToMove.length} bins (${blocked.length} blocked)`,
-          'info'
-        );
-      } else {
-        addToast(
-          t('toast.movedMultiToLayer', { count: movable.length, name: targetLayer.name }),
-          'success'
-        );
-      }
-    },
-    [selectedBins, layout, updateBin, addToast, t]
   );
 
   const requestDelete = useCallback(() => {

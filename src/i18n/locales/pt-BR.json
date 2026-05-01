@@ -1531,6 +1531,7 @@
   "toast.moveToLayerComplete": "{count} bin(s) movido(s) para {name}",
   "toast.moveToLayerPartial": "{moved}/{total} movidos para {name} ({skipped} ignorados por colisão)",
   "toast.movedMultiToLayer": "{count} bins movidos para {name}",
+  "toast.movedPartialToLayer": "{moved} de {total} bins movidos ({blocked} bloqueados)",
   "toast.movedToLayer": "Movido para {name}",
   "toast.movedToStash": "{count} bin(s) movido(s) para o armazenamento",
   "toast.noMovableCollisions": "Nenhum bin pode ser movido para este layer (colisões)",

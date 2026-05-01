@@ -1531,6 +1531,7 @@
   "toast.moveToLayerComplete": "{count} beholder(e) flyttet til {name}",
   "toast.moveToLayerPartial": "{moved}/{total} flyttet til {name} ({skipped} hoppet over — kollisjon)",
   "toast.movedMultiToLayer": "Flyttet {count} bins til {name}",
+  "toast.movedPartialToLayer": "Flyttet {moved} av {total} bins ({blocked} blokkert)",
   "toast.movedToLayer": "Flyttet til {name}",
   "toast.movedToStash": "Flyttet {count} bin(s) til stash",
   "toast.noMovableCollisions": "Ingen bins kan flyttes til dette laget (kollisjoner)",
