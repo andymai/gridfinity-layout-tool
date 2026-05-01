@@ -4,19 +4,17 @@
  * Reacts to store state changes and fires analytics events.
  * This keeps analytics concerns out of the store actions themselves,
  * making them pure state mutations that are easier to test.
+ *
+ * Note: fill-operation analytics (uniform/gaps fills) used to live here
+ * via the `_fillMeta` side-channel set by bulkActions. As of the v2
+ * defineCommand migration that path is gone — fill events now flow via
+ * `cqrs/subscribers/fillAnalytics.ts` which subscribes to the
+ * `bin.layerFilled` domain event directly.
  */
 
-import { mlTracking } from '@/shared/analytics/useMLTracking';
-import {
-  markFeatureUsed,
-  trackFillOperation,
-  trackBinCreated,
-  trackPaintMode,
-} from '@/shared/analytics/posthog';
-import { useLayoutStore, type FillMeta } from './layout';
+import { markFeatureUsed, trackPaintMode } from '@/shared/analytics/posthog';
+import { useLayoutStore } from './layout';
 import { useInteractionStore, type PaintSize } from './interaction';
-
-export type { FillMeta };
 
 /**
  * Initialize store analytics subscribers.
@@ -39,31 +37,6 @@ export function initLayoutAnalytics(): () => void {
     // Track custom category usage when a category is added
     if (curr.categories.length > prevCategoryCount) {
       markFeatureUsed('custom_categories');
-    }
-
-    // Track fill operations via _fillMeta
-    const meta = state._fillMeta;
-    if (meta) {
-      const w = meta.width ?? 1;
-      const d = meta.depth ?? 1;
-      mlTracking.trackFill(
-        meta.type,
-        meta.count,
-        meta.layerId,
-        meta.type === 'uniform' ? { width: w, depth: d } : undefined
-      );
-      markFeatureUsed('fill');
-      trackFillOperation(meta.type === 'uniform' ? 'fill_layer' : 'fill_gaps', meta.count);
-      trackBinCreated({
-        method: meta.type === 'uniform' ? 'fill_layer' : 'fill_gaps',
-        count: meta.count,
-        ...(meta.type === 'uniform' ? { width: w, depth: d, height: meta.layerHeight ?? 1 } : {}),
-      });
-
-      // Clear fill meta after consuming.
-      // This setState triggers the subscriber again, but the if(meta) guard
-      // above prevents any repeated work on the second invocation.
-      useLayoutStore.setState({ _fillMeta: null });
     }
 
     prevLayerCount = curr.layers.length;

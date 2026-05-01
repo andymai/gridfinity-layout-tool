@@ -31,7 +31,6 @@ export function resetLayoutStore(): void {
     layout: createDefaultLayout(),
     activeLayoutId: null,
     lastEditSource: null,
-    _fillMeta: null,
   });
 }
 
@@ -73,7 +72,6 @@ export function resetAllStores(): void {
     layout: createDefaultLayout(),
     activeLayoutId: null,
     lastEditSource: null,
-    _fillMeta: null,
   });
 
   useSelectionStore.setState(INITIAL_SELECTION_STATE);

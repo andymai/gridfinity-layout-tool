@@ -12,16 +12,6 @@ import type {
 } from '@/core/types';
 import type { Result, LayoutError, ValidationError } from '@/core/result';
 
-/** Metadata about a fill operation, set by the store and consumed by the analytics subscriber. */
-export interface FillMeta {
-  type: 'uniform' | 'gaps';
-  count: number;
-  layerId: LayerId;
-  width?: number;
-  depth?: number;
-  layerHeight?: number;
-}
-
 /** Source of the last edit to the layout - used to distinguish local edits from remote imports */
 export type EditSource = 'local' | 'remote' | 'init' | null;
 
@@ -29,7 +19,6 @@ export interface LayoutState {
   layout: Layout;
   activeLayoutId: LayoutId | null; // ID of the layout in the library (null for unsaved)
   lastEditSource: EditSource; // Tracks whether last change was local, remote, or initial load
-  _fillMeta: FillMeta | null; // Transient metadata for analytics subscriber (cleared after read)
 
   // Bin operations - all return Result for consistent error handling
   addBin: (bin: Omit<Bin, 'id'>) => Result<BinId, ValidationError>;

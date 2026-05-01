@@ -162,4 +162,8 @@ export { createCqrsMutations } from './integration/mutationsAdapter';
 
 export { applyEvent, replayEvents } from './projection/replay';
 
-export { connectSelectionPruning, connectLibraryPersistence } from './subscribers';
+export {
+  connectSelectionPruning,
+  connectLibraryPersistence,
+  connectFillAnalytics,
+} from './subscribers';

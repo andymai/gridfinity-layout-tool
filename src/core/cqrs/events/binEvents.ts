@@ -53,12 +53,22 @@ export type BinMovedFromStagingEvent = BaseDomainEvent<
   }
 >;
 
+/**
+ * `fillType`, `width`, `depth` were added in the v2 migration so the fill
+ * analytics subscriber can derive what the v1 `_fillMeta` field used to
+ * carry. v1-era persisted events have no `fillType` — the subscriber
+ * silently ignores those (re-emitting them would distort current-period
+ * metrics).
+ */
 export type LayerFilledEvent = BaseDomainEvent<
   'bin.layerFilled',
   {
     readonly layerId: LayerId;
     readonly binsCreated: number;
     readonly bins: ReadonlyArray<Bin>;
+    readonly fillType?: 'uniform' | 'gaps';
+    readonly width?: number;
+    readonly depth?: number;
   }
 >;
 

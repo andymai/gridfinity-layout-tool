@@ -51,31 +51,9 @@ describe('layoutAnalytics', () => {
     expect(markFeatureUsed).toHaveBeenCalledWith('custom_categories');
   });
 
-  it('tracks fill operations when _fillMeta is set', async () => {
-    const { trackFillOperation, trackBinCreated, markFeatureUsed } =
-      await import('@/shared/analytics/posthog');
-    const { mlTracking } = await import('@/shared/analytics/useMLTracking');
-
-    const lid = useLayoutStore.getState().layout.layers[0].id;
-    useLayoutStore.setState({
-      _fillMeta: {
-        type: 'uniform',
-        count: 10,
-        layerId: lid,
-        width: 2,
-        depth: 3,
-        layerHeight: 4,
-      },
-    });
-
-    expect(mlTracking.trackFill).toHaveBeenCalled();
-    expect(markFeatureUsed).toHaveBeenCalledWith('fill');
-    expect(trackFillOperation).toHaveBeenCalledWith('fill_layer', 10);
-    expect(trackBinCreated).toHaveBeenCalled();
-
-    // _fillMeta should be cleared after consuming
-    expect(useLayoutStore.getState()._fillMeta).toBeNull();
-  });
+  // Fill-operation analytics moved to cqrs/subscribers/fillAnalytics.ts as
+  // part of the v2 defineCommand migration; covered by that subscriber's
+  // own tests against the bin.layerFilled event.
 
   it('tracks paint mode entry and exit', async () => {
     const { trackPaintMode } = await import('@/shared/analytics/posthog');
