@@ -21,6 +21,10 @@ import { moveBinFromStaging } from './domain/bin/moveBinFromStaging';
 import { fillLayer } from './domain/bin/fillLayer';
 import { fillGaps } from './domain/bin/fillGaps';
 import { clearLayer } from './domain/bin/clearLayer';
+import { addLayer } from './domain/layer/addLayer';
+import { updateLayer } from './domain/layer/updateLayer';
+import { deleteLayer } from './domain/layer/deleteLayer';
+import { reorderLayers } from './domain/layer/reorderLayers';
 
 type V2HandlerFn = (command: {
   type: string;
@@ -49,6 +53,10 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [fillLayer.type]: wrapV2Handler(fillLayer) as V2HandlerFn,
   [fillGaps.type]: wrapV2Handler(fillGaps) as V2HandlerFn,
   [clearLayer.type]: wrapV2Handler(clearLayer) as V2HandlerFn,
+  [addLayer.type]: wrapV2Handler(addLayer) as V2HandlerFn,
+  [updateLayer.type]: wrapV2Handler(updateLayer) as V2HandlerFn,
+  [deleteLayer.type]: wrapV2Handler(deleteLayer) as V2HandlerFn,
+  [reorderLayers.type]: wrapV2Handler(reorderLayers) as V2HandlerFn,
 };
 
 /** All registered v2 commands, exposed for tests + future tooling. */
@@ -63,4 +71,8 @@ export const v2Commands = [
   fillLayer,
   fillGaps,
   clearLayer,
+  addLayer,
+  updateLayer,
+  deleteLayer,
+  reorderLayers,
 ] as const;

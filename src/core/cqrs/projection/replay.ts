@@ -5,7 +5,7 @@
  * to a base layout state to reconstruct what happened.
  */
 
-import type { Layout } from '@/core/types';
+import type { BinId, Layout } from '@/core/types';
 import { gridUnits, heightUnits, mm } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import type { DomainEvent } from '../events';
@@ -87,12 +87,21 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
     case 'layer.deleted': {
       const deletedLayerId = event.payload.layer.id;
       next.layers = next.layers.filter((l) => l.id !== deletedLayerId);
-      // Match store behavior (layerActions.ts): bins on the deleted layer are
-      // displaced to staging, not removed. Prior versions of this case filtered
-      // the bins out, which silently lost data during replay-based debugging.
-      next.bins = next.bins.map((b) =>
-        b.layerId === deletedLayerId ? { ...b, layerId: STAGING_ID } : b
-      );
+      // v2 events carry the exact displacedBinIds — use them when present
+      // so replay reproduces the cascade even if the layout has diverged.
+      // v1 events fall back to the "all bins on the deleted layer" heuristic
+      // (matches layerActions.ts and the prior replay behavior).
+      // Local annotation: TS doesn't always narrow optional fields cleanly
+      // through the DomainEvent discriminated union, so be explicit here.
+      const ids: ReadonlyArray<BinId> | undefined = event.payload.displacedBinIds;
+      if (ids !== undefined) {
+        const idSet = new Set<BinId>(ids);
+        next.bins = next.bins.map((b) => (idSet.has(b.id) ? { ...b, layerId: STAGING_ID } : b));
+      } else {
+        next.bins = next.bins.map((b) =>
+          b.layerId === deletedLayerId ? { ...b, layerId: STAGING_ID } : b
+        );
+      }
       break;
     }
 
