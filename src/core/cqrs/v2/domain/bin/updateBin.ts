@@ -16,7 +16,14 @@ import { canPlaceBin } from '@/shared/utils/validation';
 import { toPlacementError } from '@/core/store/layout/helpers';
 import { layoutInvalidOperation } from '@/core/result';
 import type { Bin, BinId } from '@/core/types';
-import { binId as toBinId, gridUnits, heightUnits } from '@/core/types';
+import {
+  binId as toBinId,
+  layerId as toLayerId,
+  categoryId as toCategoryId,
+  designId as toDesignId,
+  gridUnits,
+  heightUnits,
+} from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 
 const updatesSchema = z
@@ -48,7 +55,7 @@ const payloadSchema = z.object({
  */
 function brandUpdates(updates: z.infer<typeof updatesSchema>): Partial<Bin> {
   const result: Partial<Bin> = {};
-  if (updates.layerId !== undefined) result.layerId = updates.layerId as Bin['layerId'];
+  if (updates.layerId !== undefined) result.layerId = toLayerId(updates.layerId);
   if (updates.x !== undefined) result.x = gridUnits(updates.x);
   if (updates.y !== undefined) result.y = gridUnits(updates.y);
   if (updates.width !== undefined) result.width = gridUnits(updates.width);
@@ -56,12 +63,12 @@ function brandUpdates(updates: z.infer<typeof updatesSchema>): Partial<Bin> {
   if (updates.height !== undefined) result.height = heightUnits(updates.height);
   if (updates.clearanceHeight !== undefined)
     result.clearanceHeight = heightUnits(updates.clearanceHeight);
-  if (updates.category !== undefined) result.category = updates.category as Bin['category'];
+  if (updates.category !== undefined) result.category = toCategoryId(updates.category);
   if (updates.label !== undefined) result.label = updates.label;
   if (updates.notes !== undefined) result.notes = updates.notes;
   if (updates.customProperties !== undefined) result.customProperties = updates.customProperties;
   if (updates.linkedDesignId !== undefined)
-    result.linkedDesignId = updates.linkedDesignId as Bin['linkedDesignId'];
+    result.linkedDesignId = toDesignId(updates.linkedDesignId);
   return result;
 }
 

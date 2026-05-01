@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
 import { isOk } from '@/core/result';
+import { STAGING_ID } from '@/core/constants';
 import { layerId } from '@/core/types';
 import { moveBinToStaging } from './moveBinToStaging';
 import { makeLayout, makeBin } from './_testHelpers';
@@ -37,6 +38,6 @@ describe('v2 bin.moveToStaging', () => {
     });
 
     expect(applied.bins).toHaveLength(1);
-    expect(applied.bins[0].layerId).toBe('__staging__');
+    expect(applied.bins[0].layerId).toBe(STAGING_ID);
   });
 });

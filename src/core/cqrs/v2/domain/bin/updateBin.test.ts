@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
 import { isOk } from '@/core/result';
-import type { Layout } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 import { binId, gridUnits } from '@/core/types';
 import { updateBin } from './updateBin';
 import { makeLayout, makeBin } from './_testHelpers';
@@ -45,7 +45,7 @@ describe('v2 bin.update', () => {
   });
 
   it('skips placement validation for staging bins', () => {
-    const bin = makeBin('bin_1', { layerId: '__staging__' as Layout['layers'][number]['id'] });
+    const bin = makeBin('bin_1', { layerId: STAGING_ID });
     const layout = makeLayout({ bins: [bin] });
 
     const result = updateBin.handle(
