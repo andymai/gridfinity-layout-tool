@@ -1265,7 +1265,6 @@
   "binDesigner.dragToOrbit": "Drag to orbit",
   "binDesigner.exportBinAsStl": "Export bin as STL",
   "binDesigner.exporting": "Exporting...",
-  "binDesigner.exportFailed": "Export failed — please try again",
   "binDesigner.export.engine.preparing": "Preparing engine…",
   "binDesigner.export.error.body": "The geometry engine had trouble with this bin. Try again, or report an issue if the problem persists.",
   "binDesigner.export.error.retry": "Retry",
