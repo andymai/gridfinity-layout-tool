@@ -1,0 +1,84 @@
+/**
+ * layout.setBaseplateParams — v2 (defineCommand) shape.
+ *
+ * Clamps padding/magnet/baseplate-grid fields to their valid ranges
+ * (matches v1 setBaseplateParams). The full normalized BaseplateParams
+ * object goes into the event payload alongside the previous state.
+ */
+
+import { z } from 'zod';
+import { ok } from '@/core/result';
+import { clamp } from '@/shared/utils/validation';
+import type { BaseplateParams, GridUnits, Mm } from '@/core/types';
+import { defineCommand } from '../../defineCommand';
+
+// BaseplateParams has many fields, most optional; the schema is permissive
+// (passes shape through). Validation focuses on the required boolean +
+// numeric fields v1 always supplies.
+const payloadSchema = z.object({
+  params: z.object({
+    magnetHoles: z.boolean(),
+    magnetDiameter: z.number(),
+    magnetDepth: z.number(),
+    paddingLeft: z.number(),
+    paddingRight: z.number(),
+    paddingFront: z.number(),
+    paddingBack: z.number(),
+    connectorNubs: z.boolean().optional(),
+    lightweight: z.boolean().optional(),
+    syncWithLayout: z.boolean().optional(),
+    baseplateWidth: z.number().optional(),
+    baseplateDepth: z.number().optional(),
+    invertDovetails: z.boolean().optional(),
+    cornerRadius: z.number().optional(),
+    cornerRadii: z
+      .object({
+        tl: z.number(),
+        tr: z.number(),
+        bl: z.number(),
+        br: z.number(),
+      })
+      .optional(),
+  }),
+});
+
+export const setBaseplateParams = defineCommand({
+  type: 'layout.setBaseplateParams',
+  aggregate: 'layout',
+  aggregateId: () => 'layout',
+  payload: payloadSchema,
+  emitted: 'layout.baseplateParamsSet',
+  schemaVersion: 1,
+  descriptionKey: 'undo.action.layoutSetBaseplateParams',
+  middleware: { undoCapture: true, validate: true, analytics: true },
+  handle: (payload, ctx) => {
+    const previousParams = ctx.aggregate.baseplateParams
+      ? { ...ctx.aggregate.baseplateParams }
+      : undefined;
+
+    const p = payload.params;
+    const params: BaseplateParams = {
+      ...p,
+      paddingLeft: Math.max(0, p.paddingLeft) as Mm,
+      paddingRight: Math.max(0, p.paddingRight) as Mm,
+      paddingFront: Math.max(0, p.paddingFront) as Mm,
+      paddingBack: Math.max(0, p.paddingBack) as Mm,
+      magnetDiameter: clamp(p.magnetDiameter, 0.5, 20) as Mm,
+      magnetDepth: clamp(p.magnetDepth, 0.5, 10) as Mm,
+      ...(p.baseplateWidth !== undefined
+        ? { baseplateWidth: clamp(p.baseplateWidth, 0.5, 50) as GridUnits }
+        : {}),
+      ...(p.baseplateDepth !== undefined
+        ? { baseplateDepth: clamp(p.baseplateDepth, 0.5, 50) as GridUnits }
+        : {}),
+    } as BaseplateParams;
+
+    return ok({
+      value: undefined,
+      event: { payload: { params, previousParams } },
+    });
+  },
+  apply: (event, draft) => {
+    draft.baseplateParams = event.payload.params;
+  },
+});
