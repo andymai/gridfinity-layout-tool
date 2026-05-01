@@ -93,5 +93,57 @@ describe('Restore Handlers', () => {
         expect.objectContaining({ selectedBinIds: [] })
       );
     });
+
+    it('applies the snapshot exactly when present, not the prune fallback', () => {
+      // Snapshot captures a selection state from BEFORE the user did the
+      // undoable action; restoring the layout should also restore that
+      // exact selection, not derive one from the current store state.
+      const cmd = createCommand('layout.restore', {
+        layout: testLayout,
+        direction: 'undo' as const,
+        selection: {
+          activeLayerId: layerId('layer_1'),
+          activeCategoryId: categoryId('cat_1'),
+          selectedBinIds: [binId('bin_1')],
+          focusedBinId: binId('bin_1'),
+          quickLabelBinId: null,
+        },
+      });
+      handleRestoreLayout(cmd);
+
+      expect(mockRestoreSelection).toHaveBeenCalledWith({
+        activeLayerId: layerId('layer_1'),
+        activeCategoryId: categoryId('cat_1'),
+        selectedBinIds: [binId('bin_1')],
+        focusedBinId: binId('bin_1'),
+        quickLabelBinId: null,
+      });
+    });
+
+    it('reconciles snapshot ids that no longer exist in the restored layout', () => {
+      // The snapshot references bins/layers/categories that were removed
+      // before the undo target was captured. Reconciliation: drop missing
+      // bins, fall back to the last layer + first category.
+      const cmd = createCommand('layout.restore', {
+        layout: { ...testLayout, bins: [] },
+        direction: 'undo' as const,
+        selection: {
+          activeLayerId: layerId('layer_gone'),
+          activeCategoryId: categoryId('cat_gone'),
+          selectedBinIds: [binId('bin_1'), binId('bin_gone')],
+          focusedBinId: binId('bin_gone'),
+          quickLabelBinId: null,
+        },
+      });
+      handleRestoreLayout(cmd);
+
+      expect(mockRestoreSelection).toHaveBeenCalledWith({
+        activeLayerId: layerId('layer_1'),
+        activeCategoryId: categoryId('cat_1'),
+        selectedBinIds: [],
+        focusedBinId: null,
+        quickLabelBinId: null,
+      });
+    });
   });
 });
