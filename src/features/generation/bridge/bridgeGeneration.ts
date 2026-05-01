@@ -20,8 +20,6 @@ import { computeBaseplateTimeoutMs, computeGenerationTimeoutMs } from './generat
 import { paramsFingerprint } from './bridgeHelpers';
 import type { ProgressCallback, GenerationResult, DedupCache } from './bridgeTypes';
 
-const DEFAULT_GENERATION_TIMEOUT_MS = 30_000;
-
 export interface BridgeGenerationContext {
   readonly isDestroyed: boolean;
   readonly binCache: DedupCache;
@@ -138,7 +136,7 @@ export function generateBaseplate(
 function startGenerationTimeout(
   ctx: BridgeGenerationContext,
   requestId: string,
-  timeoutMs: number = DEFAULT_GENERATION_TIMEOUT_MS
+  timeoutMs: number
 ): void {
   if (ctx.generationTimer !== null) {
     clearTimeout(ctx.generationTimer);
