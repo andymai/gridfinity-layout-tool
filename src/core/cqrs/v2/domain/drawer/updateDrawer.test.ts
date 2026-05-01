@@ -44,7 +44,7 @@ describe('v2 drawer.update', () => {
   });
 
   it('does not displace bins already in staging', () => {
-    const stagingBin = makeBin('bin_s', 99, 99, '__staging__');
+    const stagingBin = makeBin('bin_s', 99, 99, STAGING_ID);
     const layout = makeLayout({ bins: [stagingBin] });
     const result = updateDrawer.handle({ width: 1 }, { aggregate: layout });
 
