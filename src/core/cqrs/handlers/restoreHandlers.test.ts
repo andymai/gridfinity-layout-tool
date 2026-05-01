@@ -93,5 +93,72 @@ describe('Restore Handlers', () => {
         expect.objectContaining({ selectedBinIds: [] })
       );
     });
+
+    it('applies only the snapshot fields that differ from current selection', () => {
+      // Mock current selection: selectedBinIds=[bin_1], focusedBinId=null,
+      // quickLabelBinId=null, activeLayerId=layer_1, activeCategoryId=cat_1.
+      // Snapshot wants focusedBinId=bin_1; everything else matches current.
+      // Sparse output: only the focusedBinId field should be restored.
+      const cmd = createCommand('layout.restore', {
+        layout: testLayout,
+        direction: 'undo' as const,
+        selection: {
+          activeLayerId: layerId('layer_1'),
+          activeCategoryId: categoryId('cat_1'),
+          selectedBinIds: [binId('bin_1')],
+          focusedBinId: binId('bin_1'),
+          quickLabelBinId: null,
+        },
+      });
+      handleRestoreLayout(cmd);
+
+      expect(mockRestoreSelection).toHaveBeenCalledTimes(1);
+      expect(mockRestoreSelection).toHaveBeenCalledWith({ focusedBinId: binId('bin_1') });
+    });
+
+    it('reconciles snapshot ids that no longer exist in the restored layout', () => {
+      // Snapshot references missing IDs. Reconciliation drops the missing
+      // bin, falls back to last layer + first category. After reconciliation
+      // the resolved values happen to match current selection — sparse
+      // output produces an empty diff, so restoreSelection is NOT called.
+      const cmd = createCommand('layout.restore', {
+        layout: { ...testLayout, bins: [] },
+        direction: 'undo' as const,
+        selection: {
+          activeLayerId: layerId('layer_gone'),
+          activeCategoryId: categoryId('cat_gone'),
+          selectedBinIds: [binId('bin_1'), binId('bin_gone')],
+          focusedBinId: binId('bin_gone'),
+          quickLabelBinId: null,
+        },
+      });
+      handleRestoreLayout(cmd);
+
+      // Note: the FALLBACK active-layer (last layer = 'layer_1') matches
+      // current; the FALLBACK active-category ('cat_1') matches current;
+      // selectedBinIds reconciles to [] (current is [bin_1] — that IS a
+      // diff). Only selectedBinIds should be in the call payload.
+      expect(mockRestoreSelection).toHaveBeenCalledTimes(1);
+      expect(mockRestoreSelection).toHaveBeenCalledWith({ selectedBinIds: [] });
+    });
+
+    it('does not call restoreSelection when nothing changes', () => {
+      // Snapshot exactly matches the current selection mock — sparse output
+      // is {} and restoreSelection should be skipped entirely.
+      const cmd = createCommand('layout.restore', {
+        layout: testLayout,
+        direction: 'undo' as const,
+        selection: {
+          activeLayerId: layerId('layer_1'),
+          activeCategoryId: categoryId('cat_1'),
+          selectedBinIds: [binId('bin_1')],
+          focusedBinId: null,
+          quickLabelBinId: null,
+        },
+      });
+      handleRestoreLayout(cmd);
+
+      expect(mockRestoreSelection).not.toHaveBeenCalled();
+    });
   });
 });

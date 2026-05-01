@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { Layout, BinId, LayerId, CategoryId } from '@/core/types';
 import type { CommandType } from '@/core/cqrs/commands';
+import { createCommand } from '@/core/cqrs/commands';
+import { commandBus } from '@/core/cqrs/bus/commandBus';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useToastStore } from '@/core/store/toast';
@@ -33,94 +35,6 @@ export function captureSelectionSnapshot(): SelectionSnapshot {
   };
 }
 
-/**
- * Fallback active-layer id when the snapshotted/current id is no longer in
- * the restored layout. Matches `handleRestoreLayout` in restoreHandlers.ts:
- * use the last layer in data order (= top layer in the UI, since the UI
- * reverses via `getDisplayLayers()`). New bins typically land on the top
- * layer, so this is the least-surprising fallback.
- */
-function fallbackActiveLayerId(restoredLayout: Layout): LayerId {
-  return restoredLayout.layers[restoredLayout.layers.length - 1].id;
-}
-
-/**
- * Restore selection from a snapshot, reconciling against the restored layout.
- * A snapshotted ID that no longer exists in the restored layout falls back to
- * the same pruning logic used before snapshots were captured.
- */
-function restoreSelectionFromSnapshot(restoredLayout: Layout, snapshot: SelectionSnapshot): void {
-  const binIds = new Set(restoredLayout.bins.map((b) => b.id));
-  const layerIds = new Set(restoredLayout.layers.map((l) => l.id));
-  const categoryIds = new Set(restoredLayout.categories.map((c) => c.id));
-
-  const activeLayerId =
-    layerIds.has(snapshot.activeLayerId) || restoredLayout.layers.length === 0
-      ? snapshot.activeLayerId
-      : fallbackActiveLayerId(restoredLayout);
-
-  const activeCategoryId =
-    categoryIds.has(snapshot.activeCategoryId) || restoredLayout.categories.length === 0
-      ? snapshot.activeCategoryId
-      : restoredLayout.categories[0].id;
-
-  useSelectionStore.getState().restoreSelection({
-    activeLayerId,
-    activeCategoryId,
-    selectedBinIds: snapshot.selectedBinIds.filter((id) => binIds.has(id)),
-    focusedBinId:
-      snapshot.focusedBinId && binIds.has(snapshot.focusedBinId) ? snapshot.focusedBinId : null,
-    quickLabelBinId:
-      snapshot.quickLabelBinId && binIds.has(snapshot.quickLabelBinId)
-        ? snapshot.quickLabelBinId
-        : null,
-  });
-}
-
-/**
- * Legacy pruning — used when a history entry has no captured selection
- * (pre-fix entries, or direct push() calls from outside the middleware).
- */
-function pruneStaleSelections(restoredLayout: Layout): void {
-  const binIds = new Set(restoredLayout.bins.map((b) => b.id));
-  const layerIds = new Set(restoredLayout.layers.map((l) => l.id));
-  const categoryIds = new Set(restoredLayout.categories.map((c) => c.id));
-  const selectionState = useSelectionStore.getState();
-
-  const updates: {
-    selectedBinIds?: BinId[];
-    focusedBinId?: BinId | null;
-    quickLabelBinId?: BinId | null;
-    activeLayerId?: LayerId;
-    activeCategoryId?: CategoryId;
-  } = {};
-
-  const prunedIds = selectionState.selectedBinIds.filter((id) => binIds.has(id));
-  if (prunedIds.length !== selectionState.selectedBinIds.length) {
-    updates.selectedBinIds = prunedIds;
-  }
-
-  if (selectionState.focusedBinId && !binIds.has(selectionState.focusedBinId)) {
-    updates.focusedBinId = null;
-  }
-
-  if (selectionState.quickLabelBinId && !binIds.has(selectionState.quickLabelBinId)) {
-    updates.quickLabelBinId = null;
-  }
-
-  if (!layerIds.has(selectionState.activeLayerId) && restoredLayout.layers.length > 0) {
-    updates.activeLayerId = fallbackActiveLayerId(restoredLayout);
-  }
-
-  if (!categoryIds.has(selectionState.activeCategoryId) && restoredLayout.categories.length > 0) {
-    updates.activeCategoryId = restoredLayout.categories[0].id;
-  }
-
-  if (Object.keys(updates).length > 0) {
-    useSelectionStore.getState().restoreSelection(updates);
-  }
-}
-
 export interface HistoryEntry {
   layout: Layout;
   commandType: CommandType | 'unknown';
@@ -145,24 +59,20 @@ interface HistoryState {
   clear: () => void;
 }
 
-function applySelection(restoredLayout: Layout, snapshot: SelectionSnapshot | undefined): void {
-  if (snapshot) {
-    restoreSelectionFromSnapshot(restoredLayout, snapshot);
-  } else {
-    pruneStaleSelections(restoredLayout);
-  }
-}
-
 /**
  * History store — undo/redo stack (max 100 states).
- * Undo snapshots are captured automatically by the CQRS undo middleware.
- * Use `batch()` from `@/core/cqrs` to group multiple mutations into one undo step.
+ *
+ * Snapshots are pushed by `undoCaptureMiddleware`. `undo()` / `redo()`
+ * dispatch a `layout.restore` command via the command bus, which routes
+ * through `handleRestoreLayout` to apply the layout + selection state.
+ * The bus path means the restore is observable by analytics middleware
+ * and replayable through the event store, while undoCapture's
+ * `restore` middleware profile keeps it from being captured itself.
  *
  * Lives under `cqrs/undo/` (not `core/store/`) because undo is a CQRS
- * concern: snapshots are pushed by `undoCaptureMiddleware`, popped by
- * `useHistoryStore.undo/redo`, and apply via `useLayoutStore.restoreLayout`.
- * Keeping the file here also breaks the historical `core/store/history` ↔
- * `cqrs/commandDescriptions` cycle.
+ * concern. The static import cycle (historyStore → commandBus →
+ * middleware → historyStore) is benign — no functions execute at
+ * module-init time, so by first user action all bindings are populated.
  */
 export const useHistoryStore = create<HistoryState>((set, get) => ({
   past: [],
@@ -202,8 +112,13 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       canRedo: true,
     }));
 
-    useLayoutStore.getState().restoreLayout(previous);
-    applySelection(previous, previousSelection);
+    commandBus.dispatch(
+      createCommand('layout.restore', {
+        layout: previous,
+        direction: 'undo',
+        selection: previousSelection,
+      })
+    );
 
     // Show undo toast with action description
     // NOTE: getStaticTranslation uses English only. Full locale support
@@ -237,8 +152,13 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       canRedo: state.future.length > 1,
     }));
 
-    useLayoutStore.getState().restoreLayout(next);
-    applySelection(next, nextSelection);
+    commandBus.dispatch(
+      createCommand('layout.restore', {
+        layout: next,
+        direction: 'redo',
+        selection: nextSelection,
+      })
+    );
 
     // Show redo toast with action description
     const descKey = getCommandDescriptionKey(commandType);
