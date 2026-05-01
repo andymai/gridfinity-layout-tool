@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.54.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.53.0...gridfinity-layout-tool-v4.54.0) (2026-05-01)
+
+
+### Features
+
+* **cqrs:** migrate bin.duplicate + bin.moveFromStaging to v2 ([#1546](https://github.com/andymai/gridfinity-layout-tool/issues/1546)) ([9918455](https://github.com/andymai/gridfinity-layout-tool/commit/99184557eae7f829b15e925760bc83e875da2f20))
+
 ## [4.53.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.52.0...gridfinity-layout-tool-v4.53.0) (2026-05-01)
 
 
