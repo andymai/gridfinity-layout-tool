@@ -15,7 +15,9 @@ import { addBin } from './domain/bin/addBin';
 import { updateBin } from './domain/bin/updateBin';
 import { deleteBin } from './domain/bin/deleteBin';
 import { deleteBins } from './domain/bin/deleteBins';
+import { duplicateBin } from './domain/bin/duplicateBin';
 import { moveBinToStaging } from './domain/bin/moveBinToStaging';
+import { moveBinFromStaging } from './domain/bin/moveBinFromStaging';
 import { clearLayer } from './domain/bin/clearLayer';
 
 type V2HandlerFn = (command: {
@@ -39,7 +41,9 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [updateBin.type]: wrapV2Handler(updateBin) as V2HandlerFn,
   [deleteBin.type]: wrapV2Handler(deleteBin) as V2HandlerFn,
   [deleteBins.type]: wrapV2Handler(deleteBins) as V2HandlerFn,
+  [duplicateBin.type]: wrapV2Handler(duplicateBin) as V2HandlerFn,
   [moveBinToStaging.type]: wrapV2Handler(moveBinToStaging) as V2HandlerFn,
+  [moveBinFromStaging.type]: wrapV2Handler(moveBinFromStaging) as V2HandlerFn,
   [clearLayer.type]: wrapV2Handler(clearLayer) as V2HandlerFn,
 };
 
@@ -49,6 +53,8 @@ export const v2Commands = [
   updateBin,
   deleteBin,
   deleteBins,
+  duplicateBin,
   moveBinToStaging,
+  moveBinFromStaging,
   clearLayer,
 ] as const;
