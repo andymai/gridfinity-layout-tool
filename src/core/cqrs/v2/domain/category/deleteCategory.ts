@@ -3,10 +3,12 @@
  *
  * Per-command refactor (per Pass 3 plan): this is precondition
  * enforcement, not a cascade. v1 rejects when any bin references the
- * category — v2 keeps that behavior exactly. handle() validates:
- *   1. category exists
- *   2. no bins reference it
- *   3. layout still has at least CATEGORIES_MIN categories afterward
+ * category — v2 keeps that behavior exactly. handle() validates in this
+ * order (matches v1's order in createCategoryActions.deleteCategory so
+ * the same input produces the same first-failure error):
+ *   1. no bins reference it
+ *   2. layout still has at least CATEGORIES_MIN categories afterward
+ *   3. category exists
  *
  * apply() filters the category out of the draft. No bin reassignment
  * happens because deletion is blocked when any bin uses it.
