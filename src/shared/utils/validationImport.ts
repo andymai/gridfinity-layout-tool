@@ -55,9 +55,18 @@ export function validateImport(data: unknown): ImportValidationResult {
 
   const layout = data as Record<string, unknown>;
 
-  // Required fields
-  if (!layout.version) errors.push('Missing version');
-  if (!layout.name) errors.push('Missing name');
+  // Required fields — version/name must be non-empty strings, not just truthy,
+  // so downstream display code can safely call string methods.
+  if (layout.version === undefined || layout.version === null) {
+    errors.push('Missing version');
+  } else if (typeof layout.version !== 'string' || layout.version.trim().length === 0) {
+    errors.push('Invalid version: must be a non-empty string');
+  }
+  if (layout.name === undefined || layout.name === null) {
+    errors.push('Missing name');
+  } else if (typeof layout.name !== 'string' || layout.name.trim().length === 0) {
+    errors.push('Invalid name: must be a non-empty string');
+  }
   if (!Array.isArray(layout.layers)) errors.push('Invalid layers');
   if (!Array.isArray(layout.bins)) errors.push('Invalid bins');
   if (!Array.isArray(layout.categories)) errors.push('Invalid categories');

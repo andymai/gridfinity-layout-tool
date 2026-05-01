@@ -45,8 +45,17 @@ export function salvageImport(data: unknown): SalvageResult {
 
   const raw = data as Record<string, unknown>;
 
-  // Structural checks — these are fatal (can't salvage without them)
-  if (!raw.version || !raw.name) return { valid: false };
+  // Structural checks — these are fatal (can't salvage without them).
+  // version/name must be non-empty strings; otherwise display formatting
+  // (.slice, .trim) on the salvaged layout would later crash.
+  if (
+    typeof raw.version !== 'string' ||
+    raw.version.trim().length === 0 ||
+    typeof raw.name !== 'string' ||
+    raw.name.trim().length === 0
+  ) {
+    return { valid: false };
+  }
   if (!isValidDrawer(raw.drawer)) return { valid: false };
   if (!Array.isArray(raw.layers) || !Array.isArray(raw.bins) || !Array.isArray(raw.categories)) {
     return { valid: false };
