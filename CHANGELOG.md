@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.60.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.59.0...gridfinity-layout-tool-v4.60.0) (2026-05-01)
+
+
+### Features
+
+* **cqrs:** migrate remaining 5 library commands to v2 (library complete) ([#1560](https://github.com/andymai/gridfinity-layout-tool/issues/1560)) ([8458ade](https://github.com/andymai/gridfinity-layout-tool/commit/8458ade2154e803eb3e78d921a26984149fea004))
+
 ## [4.59.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.58.0...gridfinity-layout-tool-v4.59.0) (2026-05-01)
 
 
