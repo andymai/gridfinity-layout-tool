@@ -39,6 +39,11 @@ import { deleteEntry as libraryDeleteEntry } from './domain/library/deleteEntry'
 import { switchActive as librarySwitchActive } from './domain/library/switchActive';
 import { updateEntry as libraryUpdateEntry } from './domain/library/updateEntry';
 import { setAuthorName as librarySetAuthorName } from './domain/library/setAuthorName';
+import { duplicateEntry as libraryDuplicateEntry } from './domain/library/duplicateEntry';
+import { setCloudShare as librarySetCloudShare } from './domain/library/setCloudShare';
+import { clearCloudShare as libraryClearCloudShare } from './domain/library/clearCloudShare';
+import { renameEntry as libraryRenameEntry } from './domain/library/renameEntry';
+import { importLayout as libraryImportLayout } from './domain/library/importLayout';
 
 type V2HandlerFn = (command: {
   type: string;
@@ -85,6 +90,11 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [librarySwitchActive.type]: wrapV2Handler(librarySwitchActive) as V2HandlerFn,
   [libraryUpdateEntry.type]: wrapV2Handler(libraryUpdateEntry) as V2HandlerFn,
   [librarySetAuthorName.type]: wrapV2Handler(librarySetAuthorName) as V2HandlerFn,
+  [libraryDuplicateEntry.type]: wrapV2Handler(libraryDuplicateEntry) as V2HandlerFn,
+  [librarySetCloudShare.type]: wrapV2Handler(librarySetCloudShare) as V2HandlerFn,
+  [libraryClearCloudShare.type]: wrapV2Handler(libraryClearCloudShare) as V2HandlerFn,
+  [libraryRenameEntry.type]: wrapV2Handler(libraryRenameEntry) as V2HandlerFn,
+  [libraryImportLayout.type]: wrapV2Handler(libraryImportLayout) as V2HandlerFn,
 };
 
 /** All registered v2 commands, exposed for tests + future tooling. */
@@ -117,4 +127,9 @@ export const v2Commands = [
   librarySwitchActive,
   libraryUpdateEntry,
   librarySetAuthorName,
+  libraryDuplicateEntry,
+  librarySetCloudShare,
+  libraryClearCloudShare,
+  libraryRenameEntry,
+  libraryImportLayout,
 ] as const;
