@@ -16,6 +16,13 @@ import { canPlaceBin } from '@/shared/utils/validation';
 import { toPlacementError } from '@/core/store/layout/helpers';
 import { validationInvalidLayer } from '@/core/result';
 import type { Bin } from '@/core/types';
+import {
+  layerId as toLayerId,
+  categoryId as toCategoryId,
+  designId as toDesignId,
+  gridUnits,
+  heightUnits,
+} from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 
 const payloadSchema = z.object({
@@ -43,25 +50,51 @@ export const addBin = defineCommand({
   descriptionKey: 'undo.action.binAdd',
   middleware: { undoCapture: true, validate: true, analytics: true },
   handle: (payload, ctx) => {
-    const id = generateBinId();
-    const bin: Bin = { ...payload, id } as Bin;
+    // Brand at the CQRS boundary (codebase convention: brand on
+    // deserialization). Payload arrives as plain strings/numbers from Zod;
+    // Bin and downstream APIs require branded LayerId/CategoryId/GridUnits/
+    // HeightUnits. Brand once up front so the rest of the handler is type-
+    // safe end-to-end.
+    const layerId = toLayerId(payload.layerId);
+    const category = toCategoryId(payload.category);
+    const x = gridUnits(payload.x);
+    const y = gridUnits(payload.y);
+    const width = gridUnits(payload.width);
+    const depth = gridUnits(payload.depth);
+    const height = heightUnits(payload.height);
+    const clearanceHeight =
+      payload.clearanceHeight !== undefined ? heightUnits(payload.clearanceHeight) : undefined;
+    const linkedDesignId =
+      payload.linkedDesignId !== undefined ? toDesignId(payload.linkedDesignId) : undefined;
 
-    if (bin.layerId !== STAGING_ID) {
-      const layer = ctx.aggregate.layers.find((l) => l.id === bin.layerId);
+    if (layerId !== STAGING_ID) {
+      const layer = ctx.aggregate.layers.find((l) => l.id === layerId);
       if (!layer) {
-        return err(validationInvalidLayer(bin.layerId));
+        return err(validationInvalidLayer(layerId));
       }
 
-      const rect = { x: bin.x, y: bin.y, width: bin.width, depth: bin.depth };
-      const validationResult = canPlaceBin(
-        { ...rect, height: bin.height },
-        bin.layerId,
-        ctx.aggregate
-      );
+      const rect = { x, y, width, depth };
+      const validationResult = canPlaceBin({ ...rect, height }, layerId, ctx.aggregate);
       if (!validationResult.valid) {
         return err(toPlacementError(validationResult.reason, rect));
       }
     }
+
+    // Generate the BinId only after validation passes so rejected commands
+    // don't burn an id.
+    const bin: Bin = {
+      ...payload,
+      id: generateBinId(),
+      layerId,
+      category,
+      x,
+      y,
+      width,
+      depth,
+      height,
+      clearanceHeight,
+      linkedDesignId,
+    };
 
     return ok({
       value: bin.id,
