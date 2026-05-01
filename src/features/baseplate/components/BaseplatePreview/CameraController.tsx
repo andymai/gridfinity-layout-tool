@@ -1,10 +1,23 @@
 import { useRef, useEffect, useMemo } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { PerspectiveCamera } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import type { RefObject } from 'react';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
-import { CAMERA_PRESETS, easeOutCubic, calculateIdealDistance } from './cameraUtils';
+import {
+  CAMERA_PRESETS,
+  easeOutCubic,
+  calculateIdealDistance,
+  calculateMaxOrbitDistance,
+  calculateFarPlane,
+} from './cameraUtils';
+
+function setCameraFar(camera: THREE.Camera, far: number): void {
+  if (!(camera instanceof PerspectiveCamera)) return;
+  camera.far = far;
+  camera.updateProjectionMatrix();
+}
 
 /**
  * Camera controller that frames the baseplate on mount.
@@ -56,6 +69,15 @@ export function CameraController({
       ),
     [width, depth, gridUnitMm, paddingLeft, paddingRight, paddingFront, paddingBack]
   );
+
+  // Keep the far plane ahead of the user's zoom-out range. Without this,
+  // the geometry's farthest corner clips off-screen at maximum zoom for
+  // large baseplates (50×50 + 100mm padding pushes the corner past 21m).
+  useEffect(() => {
+    const targetFar = calculateFarPlane(calculateMaxOrbitDistance(idealDistance));
+    setCameraFar(camera, targetFar);
+    invalidate();
+  }, [camera, idealDistance, invalidate]);
 
   const animRef = useRef<{
     startPos: THREE.Vector3;

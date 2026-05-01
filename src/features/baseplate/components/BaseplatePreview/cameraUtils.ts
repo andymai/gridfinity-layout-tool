@@ -63,3 +63,16 @@ export function calculateIdealDistance(
 export function calculateMaxOrbitDistance(idealDistance: number): number {
   return Math.max(MAX_DISTANCE_FLOOR, idealDistance * MAX_DISTANCE_FACTOR);
 }
+
+/** Floor for the camera far plane so tiny baseplates still look right. */
+export const FAR_PLANE_FLOOR = 2000;
+
+/**
+ * Camera far-plane distance that comfortably contains the geometry at any
+ * allowed zoom-out level. The 1.5× factor is the buffer for the baseplate's
+ * own bounding radius — when the camera is at `maxOrbitDistance`, the far
+ * corner of the slab still sits ahead of it.
+ */
+export function calculateFarPlane(maxOrbitDistance: number): number {
+  return Math.max(FAR_PLANE_FLOOR, maxOrbitDistance * 1.5);
+}
