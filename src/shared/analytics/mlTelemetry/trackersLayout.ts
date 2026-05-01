@@ -216,6 +216,7 @@ export function trackLayerMove(
   };
 
   markEditActivity();
+  layoutSession.lastEditTime = Date.now();
 
   bufferEvent(event);
 }

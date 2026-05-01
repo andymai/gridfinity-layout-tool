@@ -141,8 +141,11 @@ export function trackUndo(previousLayout: Layout, currentLayout: Layout): void {
     actionUndone = 'deletion';
     binsAffected = addedBins.length;
   } else if (addedBins.length === 0 && removedBins.length === 0) {
+    // O(1) lookup by id avoids the O(n²) cost of .find() inside .filter() —
+    // matters once layouts get into the hundreds of bins.
+    const prevById = new Map(prevBins.map((b) => [b.id, b] as const));
     const changedBins = currBins.filter((currBin) => {
-      const prevBin = prevBins.find((b) => b.id === currBin.id);
+      const prevBin = prevById.get(currBin.id);
       if (!prevBin) return false;
       return (
         prevBin.x !== currBin.x ||
@@ -154,7 +157,7 @@ export function trackUndo(previousLayout: Layout, currentLayout: Layout): void {
     });
 
     if (changedBins.length > 0) {
-      const prevBin = prevBins.find((b) => b.id === changedBins[0].id);
+      const prevBin = prevById.get(changedBins[0].id);
       const currBin = changedBins[0];
       if (prevBin) {
         if (prevBin.width !== currBin.width || prevBin.depth !== currBin.depth) {
@@ -194,6 +197,7 @@ export function trackUndo(previousLayout: Layout, currentLayout: Layout): void {
 
   layoutSession.undoCount++;
   markEditActivity();
+  layoutSession.lastEditTime = Date.now();
 
   bufferEvent(event);
 }
