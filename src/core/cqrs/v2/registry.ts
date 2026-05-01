@@ -25,6 +25,9 @@ import { addLayer } from './domain/layer/addLayer';
 import { updateLayer } from './domain/layer/updateLayer';
 import { deleteLayer } from './domain/layer/deleteLayer';
 import { reorderLayers } from './domain/layer/reorderLayers';
+import { addCategory } from './domain/category/addCategory';
+import { updateCategory } from './domain/category/updateCategory';
+import { deleteCategory } from './domain/category/deleteCategory';
 
 type V2HandlerFn = (command: {
   type: string;
@@ -57,6 +60,9 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [updateLayer.type]: wrapV2Handler(updateLayer) as V2HandlerFn,
   [deleteLayer.type]: wrapV2Handler(deleteLayer) as V2HandlerFn,
   [reorderLayers.type]: wrapV2Handler(reorderLayers) as V2HandlerFn,
+  [addCategory.type]: wrapV2Handler(addCategory) as V2HandlerFn,
+  [updateCategory.type]: wrapV2Handler(updateCategory) as V2HandlerFn,
+  [deleteCategory.type]: wrapV2Handler(deleteCategory) as V2HandlerFn,
 };
 
 /** All registered v2 commands, exposed for tests + future tooling. */
@@ -75,4 +81,7 @@ export const v2Commands = [
   updateLayer,
   deleteLayer,
   reorderLayers,
+  addCategory,
+  updateCategory,
+  deleteCategory,
 ] as const;
