@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.58.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.57.0...gridfinity-layout-tool-v4.58.0) (2026-05-01)
+
+
+### Features
+
+* **cqrs:** migrate drawer + 5 layout-metadata commands to v2 ([#1554](https://github.com/andymai/gridfinity-layout-tool/issues/1554)) ([ad46338](https://github.com/andymai/gridfinity-layout-tool/commit/ad46338ff97ce257cfc7d94a9803b71b1bdab6b7))
+
 ## [4.57.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.56.0...gridfinity-layout-tool-v4.57.0) (2026-05-01)
 
 
