@@ -86,10 +86,6 @@ export type {
   // Restore commands
   RestoreCommand,
   RestoreLayoutCommand,
-  // UI commands
-  UiCommand,
-  UiPageViewCommand,
-  UiFeatureUsedCommand,
 } from './commands';
 
 export type { DomainEvent, DomainEventType } from './events';

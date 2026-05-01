@@ -5,7 +5,8 @@ import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
-import { batch, commandBus, createCommand } from '@/core/cqrs';
+import { batch } from '@/core/cqrs';
+import { trackEvent } from '@/shared/analytics/posthog';
 
 /**
  * Small popover that appears near a bin for quick label editing.
@@ -44,7 +45,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
       mlTracking.trackLabel(bin, oldLabel, newLabel);
       // Mark feature as used for cohort segmentation
       if (newLabel) {
-        commandBus.dispatch(createCommand('ui.featureUsed', { feature: 'labels' }));
+        trackEvent('ui.featureUsed', { feature: 'labels' });
       }
     }
     hideQuickLabel();

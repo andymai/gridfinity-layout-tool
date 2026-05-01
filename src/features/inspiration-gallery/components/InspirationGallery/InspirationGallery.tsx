@@ -6,9 +6,9 @@ import { useMobileStore } from '@/core/store/mobile';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
 import { layoutId } from '@/core/types';
-import { commandBus, createCommand } from '@/core/cqrs';
 import {
   trackBinCreated,
+  trackEvent,
   trackGalleryOpened,
   trackGalleryClosed,
   trackTemplateLoadError,
@@ -148,16 +148,14 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
       const count = themeCounts[theme];
       const label = theme === 'all' ? 'all themes' : THEME_CONFIG[theme].label;
       announceToScreenReader(`Showing ${count} ${label} layouts`);
-      commandBus.dispatch(createCommand('ui.featureUsed', { feature: `gallery_filter_${theme}` }));
+      trackEvent('ui.featureUsed', { feature: `gallery_filter_${theme}` });
     },
     [announceToScreenReader, themeCounts]
   );
 
   const handleSelectLayout = useCallback((layout: InspirationLayout) => {
     setPreviewLayout(layout);
-    commandBus.dispatch(
-      createCommand('ui.featureUsed', { feature: `template_preview_${layout.id}` })
-    );
+    trackEvent('ui.featureUsed', { feature: `template_preview_${layout.id}` });
   }, []);
 
   const handleClosePreview = useCallback(() => {
@@ -181,9 +179,7 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
           setTemplateApplied(true);
           addToast(t('toast.galleryAdded', { name: previewLayout.name }), 'success');
           announceToScreenReader(`${previewLayout.name} added to your library`);
-          commandBus.dispatch(
-            createCommand('ui.templateApplied', { templateId: previewLayout.id })
-          );
+          trackEvent('ui.templateApplied', { templateId: previewLayout.id });
           trackBinCreated({
             method: 'import',
             count: previewLayout.metrics.binCount,

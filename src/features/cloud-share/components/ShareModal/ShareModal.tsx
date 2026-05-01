@@ -7,7 +7,7 @@ import {
   copyToClipboard,
   exportLayoutJSON,
 } from '@/core/storage';
-import { commandBus, createCommand } from '@/core/cqrs';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
@@ -45,7 +45,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
   // Track tab switches for share funnel analysis
   const handleTabChange = (tab: 'cloud' | 'url' | 'file' | 'json') => {
     setActiveTab(tab);
-    commandBus.dispatch(createCommand('ui.featureUsed', { feature: `share_tab_${tab}` }));
+    trackEvent('ui.featureUsed', { feature: `share_tab_${tab}` });
   };
   const [copied, setCopied] = useState(false);
   const urlInputRef = useRef<HTMLInputElement>(null);
@@ -56,7 +56,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
 
   // Track modal open and handle escape key
   useEffect(() => {
-    commandBus.dispatch(createCommand('ui.modalOpen', { modal: 'share' }));
+    trackEvent('ui.modalOpen', { modal: 'share' });
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -73,7 +73,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
     if (success) {
       setCopied(true);
       announceToScreenReader(t('toast.linkCopied'));
-      commandBus.dispatch(createCommand('ui.layoutExported', { format: 'url' }));
+      trackEvent('ui.layoutExported', { format: 'url' });
       setTimeout(() => setCopied(false), 2000);
     }
   };
@@ -84,7 +84,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
     if (success) {
       setCopied(true);
       announceToScreenReader(t('toast.jsonCopied'));
-      commandBus.dispatch(createCommand('ui.layoutExported', { format: 'json' }));
+      trackEvent('ui.layoutExported', { format: 'json' });
       mlTracking.trackSnapshot('export_json');
       mlTracking.trackQuality('exported');
       setTimeout(() => setCopied(false), 2000);
@@ -94,7 +94,7 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
   const handleDownload = async () => {
     await downloadLayoutAsFile(layout);
     announceToScreenReader(t('share.file.downloaded'));
-    commandBus.dispatch(createCommand('ui.layoutExported', { format: 'json' }));
+    trackEvent('ui.layoutExported', { format: 'json' });
     mlTracking.trackSnapshot('export_json');
     mlTracking.trackQuality('exported');
   };

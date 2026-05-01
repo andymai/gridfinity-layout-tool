@@ -11,7 +11,7 @@
 
 import type { CommandType } from '../commands';
 
-export type MiddlewareProfile = 'domain' | 'library' | 'designer' | 'restore' | 'ui';
+export type MiddlewareProfile = 'domain' | 'library' | 'designer' | 'restore';
 
 export interface MiddlewareFlags {
   readonly validation: boolean;
@@ -23,7 +23,6 @@ const PROFILES: Readonly<Record<MiddlewareProfile, MiddlewareFlags>> = {
   library: { validation: true, undo: false },
   designer: { validation: true, undo: false },
   restore: { validation: false, undo: false },
-  ui: { validation: false, undo: false },
 };
 
 const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {
@@ -69,18 +68,6 @@ const COMMAND_PROFILES: Readonly<Record<CommandType, MiddlewareProfile>> = {
 
   // Restore
   'layout.restore': 'restore',
-
-  // UI analytics
-  'ui.pageView': 'ui',
-  'ui.modalOpen': 'ui',
-  'ui.modalClose': 'ui',
-  'ui.featureUsed': 'ui',
-  'ui.shareAttempt': 'ui',
-  'ui.shareComplete': 'ui',
-  'ui.shareFailed': 'ui',
-  'ui.onboardingStep': 'ui',
-  'ui.templateApplied': 'ui',
-  'ui.layoutExported': 'ui',
 };
 
 /** Look up middleware flags for a command type. Defaults to domain profile. */

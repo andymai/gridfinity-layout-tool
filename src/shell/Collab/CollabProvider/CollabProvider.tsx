@@ -27,7 +27,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { generateId } from '@/core/constants';
 import { generateGuestName, generateGuestColor } from '@/shared/utils/guestNames';
-import { commandBus, createCommand } from '@/core/cqrs';
+import { trackEvent } from '@/shared/analytics/posthog';
 import {
   PresenceContext,
   type CollabPresenceActions,
@@ -110,7 +110,7 @@ function LiveblocksCollabProvider({ shareId, children }: CollabProviderProps) {
 
   // Track collab session start
   useEffect(() => {
-    commandBus.dispatch(createCommand('ui.featureUsed', { feature: 'collab_session' }));
+    trackEvent('ui.featureUsed', { feature: 'collab_session' });
   }, []);
 
   // Check if user is owner (layout exists in their library with matching ID)

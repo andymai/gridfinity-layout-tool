@@ -5,7 +5,7 @@ import { useMobileStore } from '@/core/store/mobile';
 import { useInteractionStore } from '@/core/store/interaction';
 import { isOk } from '@/core/result';
 import { layoutId } from '@/core/types';
-import { commandBus, createCommand } from '@/core/cqrs';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 import { INSPIRATION_LAYOUTS } from '@/features/inspiration-gallery/data';
@@ -70,7 +70,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
 
   // Track modal shown
   useEffect(() => {
-    commandBus.dispatch(createCommand('ui.onboardingStep', { step: 'welcome_shown' }));
+    trackEvent('ui.onboardingStep', { step: 'welcome_shown' });
   }, []);
 
   // Focus trap: focus modal on mount
@@ -95,7 +95,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
       if (isImporting) return;
 
       setIsImporting(true);
-      commandBus.dispatch(createCommand('ui.templateApplied', { templateId: layout.id }));
+      trackEvent('ui.templateApplied', { templateId: layout.id });
 
       try {
         const result = await importLayoutFromJSON(
@@ -108,7 +108,7 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
           if (isOk(switchResult)) {
             addToast(t('toast.galleryAdded', { name: layout.name }), 'success');
             announceToScreenReader(t('toast.galleryAdded', { name: layout.name }));
-            commandBus.dispatch(createCommand('ui.onboardingStep', { step: 'template_imported' }));
+            trackEvent('ui.onboardingStep', { step: 'template_imported' });
           }
           closeMobilePanel();
           onClose('template');

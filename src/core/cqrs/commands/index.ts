@@ -66,19 +66,8 @@ export type { DesignerCommand, DesignerSaveCommand } from './designerCommands';
 
 export type { RestoreCommand, RestoreLayoutCommand } from './restoreCommands';
 
-export type {
-  UiCommand,
-  UiPageViewCommand,
-  UiModalOpenCommand,
-  UiModalCloseCommand,
-  UiFeatureUsedCommand,
-  UiShareAttemptCommand,
-  UiShareCompleteCommand,
-  UiShareFailedCommand,
-  UiOnboardingStepCommand,
-  UiTemplateAppliedCommand,
-  UiLayoutExportedCommand,
-} from './uiCommands';
+// UI commands removed in PR 12 (telemetry exit) — they're now direct
+// trackEvent() calls; see src/shared/analytics/posthog/trackEvent.ts.
 
 import type { BinCommand } from './binCommands';
 import type { LayerCommand } from './layerCommands';
@@ -87,7 +76,6 @@ import type { DrawerCommand } from './drawerCommands';
 import type { LibraryCommand } from './libraryCommands';
 import type { DesignerCommand } from './designerCommands';
 import type { RestoreCommand } from './restoreCommands';
-import type { UiCommand } from './uiCommands';
 
 export type Command =
   | BinCommand
@@ -96,8 +84,7 @@ export type Command =
   | DrawerCommand
   | LibraryCommand
   | DesignerCommand
-  | RestoreCommand
-  | UiCommand;
+  | RestoreCommand;
 
 /** All possible command type strings, derived from the Command union */
 export type CommandType = Command['type'];
