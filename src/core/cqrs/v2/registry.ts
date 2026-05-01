@@ -34,6 +34,11 @@ import { setPrintBedSize } from './domain/layout/setPrintBedSize';
 import { setGridUnitMm } from './domain/layout/setGridUnitMm';
 import { setHeightUnitMm } from './domain/layout/setHeightUnitMm';
 import { setBaseplateParams } from './domain/layout/setBaseplateParams';
+import { createEntry as libraryCreateEntry } from './domain/library/createEntry';
+import { deleteEntry as libraryDeleteEntry } from './domain/library/deleteEntry';
+import { switchActive as librarySwitchActive } from './domain/library/switchActive';
+import { updateEntry as libraryUpdateEntry } from './domain/library/updateEntry';
+import { setAuthorName as librarySetAuthorName } from './domain/library/setAuthorName';
 
 type V2HandlerFn = (command: {
   type: string;
@@ -75,6 +80,11 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [setGridUnitMm.type]: wrapV2Handler(setGridUnitMm) as V2HandlerFn,
   [setHeightUnitMm.type]: wrapV2Handler(setHeightUnitMm) as V2HandlerFn,
   [setBaseplateParams.type]: wrapV2Handler(setBaseplateParams) as V2HandlerFn,
+  [libraryCreateEntry.type]: wrapV2Handler(libraryCreateEntry) as V2HandlerFn,
+  [libraryDeleteEntry.type]: wrapV2Handler(libraryDeleteEntry) as V2HandlerFn,
+  [librarySwitchActive.type]: wrapV2Handler(librarySwitchActive) as V2HandlerFn,
+  [libraryUpdateEntry.type]: wrapV2Handler(libraryUpdateEntry) as V2HandlerFn,
+  [librarySetAuthorName.type]: wrapV2Handler(librarySetAuthorName) as V2HandlerFn,
 };
 
 /** All registered v2 commands, exposed for tests + future tooling. */
@@ -102,4 +112,9 @@ export const v2Commands = [
   setGridUnitMm,
   setHeightUnitMm,
   setBaseplateParams,
+  libraryCreateEntry,
+  libraryDeleteEntry,
+  librarySwitchActive,
+  libraryUpdateEntry,
+  librarySetAuthorName,
 ] as const;

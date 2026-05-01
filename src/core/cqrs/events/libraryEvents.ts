@@ -6,11 +6,17 @@
  */
 
 import type { BaseDomainEvent } from '../types';
-import type { LayoutId, CloudShareInfo } from '@/core/types';
+import type { LayoutEntry, LayoutId, CloudShareInfo } from '@/core/types';
 
+/**
+ * `entry` was added in the v2 migration so apply() can push the full
+ * LayoutEntry deterministically. v1-era persisted events have only
+ * {layoutId, name} — replay against those would need to reconstruct the
+ * entry from defaults, which is acceptable for the audit trail but lossy.
+ */
 export type LibraryEntryCreatedEvent = BaseDomainEvent<
   'library.entryCreated',
-  { readonly layoutId: LayoutId; readonly name: string }
+  { readonly layoutId: LayoutId; readonly name: string; readonly entry?: LayoutEntry }
 >;
 
 export type LibraryEntryDeletedEvent = BaseDomainEvent<
