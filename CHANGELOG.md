@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.53.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.52.0...gridfinity-layout-tool-v4.53.0) (2026-05-01)
+
+
+### Features
+
+* **cqrs:** migrate 5 simpler bin commands to v2 defineCommand ([#1544](https://github.com/andymai/gridfinity-layout-tool/issues/1544)) ([1fd34c4](https://github.com/andymai/gridfinity-layout-tool/commit/1fd34c460d72acd430a498a913c1330b8ada60e6))
+
 ## [4.52.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.51.2...gridfinity-layout-tool-v4.52.0) (2026-05-01)
 
 
