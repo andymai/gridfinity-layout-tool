@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useHistoryStore } from '@/core/store/history';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { createDefaultLayout, CONSTRAINTS } from '@/core/constants';

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
-import { useHistoryStore, useMobileStore } from '@/core/store';
+import { useMobileStore } from '@/core/store';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useMutations } from '@/shared/contexts';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';

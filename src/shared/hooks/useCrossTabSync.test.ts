@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useCrossTabSync } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
-import { useHistoryStore } from '@/core/store/history';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSelectionStore } from '@/core/store/selection';
 import { useLabsStore, LABS_STORAGE_KEY } from '@/core/store/labs';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';

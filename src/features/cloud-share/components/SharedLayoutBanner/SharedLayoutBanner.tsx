@@ -5,7 +5,7 @@ import { useLibraryStore } from '@/core/store/library';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
-import { useHistoryStore } from '@/core/store/history';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useToastStore } from '@/core/store/toast';
 import { createLayoutEntry, initializeLayoutLibrary } from '@/core/storage';
 import { isErr } from '@/core/result';

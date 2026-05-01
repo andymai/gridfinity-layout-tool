@@ -10,7 +10,7 @@
  */
 
 import { useLayoutStore } from '@/core/store/layout';
-import { useHistoryStore, captureSelectionSnapshot } from '@/core/store/history';
+import { useHistoryStore, captureSelectionSnapshot } from '@/core/cqrs/undo/historyStore';
 import { isOk } from '@/core/result';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { Command } from '../commands';

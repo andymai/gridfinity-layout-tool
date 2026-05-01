@@ -1,11 +1,6 @@
 import { useEffect } from 'react';
-import {
-  useLayoutStore,
-  useLibraryStore,
-  useHistoryStore,
-  useLabsStore,
-  LABS_STORAGE_KEY,
-} from '@/core/store';
+import { useLayoutStore, useLibraryStore, useLabsStore, LABS_STORAGE_KEY } from '@/core/store';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSelectionStore } from '@/core/store/selection';
 import { loadLayoutAsync, loadLibraryAsync } from '@/core/storage';
 import { listenForLibraryChanges } from '@/core/storage/librarySync';

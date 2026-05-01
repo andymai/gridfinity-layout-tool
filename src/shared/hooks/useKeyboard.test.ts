@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useKeyboard } from '@/shared/hooks';
 import { useLayoutStore } from '@/core/store/layout';
-import { useHistoryStore } from '@/core/store/history';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useViewStore } from '@/core/store/view';

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
-import { useHistoryStore } from '@/core/store/history';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSnapshotStore } from '@/core/store/snapshots';
 import { useToastStore } from '@/core/store/toast';
 import { restoreSnapshot, createLayoutEntry, deleteSnapshotById } from '@/core/storage';

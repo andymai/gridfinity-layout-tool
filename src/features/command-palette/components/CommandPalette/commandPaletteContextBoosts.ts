@@ -9,13 +9,8 @@
 
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import {
-  useLayoutStore,
-  useHistoryStore,
-  useSelectionStore,
-  useViewStore,
-  useInteractionStore,
-} from '@/core/store';
+import { useLayoutStore, useSelectionStore, useViewStore, useInteractionStore } from '@/core/store';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { getStagingBins } from '@/shared/utils';
 
 export function useContextBoosts(): Record<string, number> {
