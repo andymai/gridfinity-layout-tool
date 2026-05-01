@@ -118,11 +118,11 @@ export function MobileCloudSharePanel({
         className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up max-h-[80vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
-          // Escape must close the sheet even when focus is on a child input/button.
-          // Stopping propagation here would otherwise hide the key from the global handler.
+          // Close on Escape locally, then stop propagation so the window-level
+          // keydown listener (registered as a fallback for focus outside the
+          // dialog) doesn't fire onClose() a second time.
           if (e.key === 'Escape') {
             onClose();
-            return;
           }
           e.stopPropagation();
         }}
