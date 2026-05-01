@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.59.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.58.0...gridfinity-layout-tool-v4.59.0) (2026-05-01)
+
+
+### Features
+
+* **cqrs:** migrate 5 simpler library commands to v2 (library aggregate) ([#1557](https://github.com/andymai/gridfinity-layout-tool/issues/1557)) ([581ad16](https://github.com/andymai/gridfinity-layout-tool/commit/581ad164a77684e4e887abcf31495aa44e99a24d))
+
 ## [4.58.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.57.0...gridfinity-layout-tool-v4.58.0) (2026-05-01)
 
 
