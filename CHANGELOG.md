@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.60.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.60.1...gridfinity-layout-tool-v4.60.2) (2026-05-01)
+
+
+### Bug Fixes
+
+* **baseplate:** scale orbit zoom-out cap to baseplate size ([#1568](https://github.com/andymai/gridfinity-layout-tool/issues/1568)) ([05360c3](https://github.com/andymai/gridfinity-layout-tool/commit/05360c35aa5824f6d5e6241e9476bc62651310f9))
+
 ## [4.60.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.60.0...gridfinity-layout-tool-v4.60.1) (2026-05-01)
 
 
