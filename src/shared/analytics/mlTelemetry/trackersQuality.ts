@@ -8,8 +8,7 @@
  * consume it.
  */
 
-import type { Layout } from '@/core/types';
-import type { Bin } from '@/core/types';
+import type { Layout, Bin } from '@/core/types';
 import type {
   LayoutQualityEvent,
   PlacementRejectedEvent,
