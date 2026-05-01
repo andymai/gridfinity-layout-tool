@@ -217,7 +217,11 @@ describe('CQRS Pipeline Integration', () => {
       const mutations = createCqrsMutations(commandBus);
       mutations.setName('Pipeline Test');
 
-      expect(mockStore.setName).toHaveBeenCalledWith('Pipeline Test');
+      // setName is a v2-migrated command — the v2 wrapper applies the
+      // change via useLayoutStore.setState (mocked above to mutate
+      // mockStore.layout in place), not via the legacy mockStore.setName
+      // method. Assert the mutation landed on the layout state.
+      expect(mockStore.layout.name).toBe('Pipeline Test');
       expect(subscribedEvents).toHaveLength(1);
       expect(subscribedEvents[0].type).toBe('layout.nameSet');
     });

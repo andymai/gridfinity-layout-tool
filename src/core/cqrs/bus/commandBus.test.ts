@@ -7,24 +7,32 @@ import type { DomainEvent } from '../events';
 import type { Middleware } from '../types';
 import { ok, isOk, isErr } from '@/core/result';
 
-// Mock the layout and library stores
+// Mock the layout and library stores. The mock state is defined outside
+// the factory so v2 setState producers can mutate it (the v2 wrapper
+// applies events through useLayoutStore.setState — see cqrs/v2/runtime.ts).
+const mockLayoutState = {
+  layout: {
+    name: 'Test Layout',
+    bins: [],
+    layers: [{ id: 'layer_1', name: 'Layer 1', height: 1 }],
+    categories: [{ id: 'cat_1', name: 'Default', color: '#808080' }],
+    drawer: { width: 6, depth: 4, height: 7 },
+    printBedSize: 256,
+    gridUnitMm: 42,
+    heightUnitMm: 7,
+    version: '1.0',
+  },
+  lastEditSource: null as string | null,
+  setName: vi.fn(),
+  deleteBin: () => ({ ok: false, error: { code: 'LAYOUT_INVALID_OPERATION' } }),
+};
+
 vi.mock('@/core/store/layout', () => ({
   useLayoutStore: {
-    getState: () => ({
-      layout: {
-        name: 'Test Layout',
-        bins: [],
-        layers: [{ id: 'layer_1', name: 'Layer 1', height: 1 }],
-        categories: [{ id: 'cat_1', name: 'Default', color: '#808080' }],
-        drawer: { width: 6, depth: 4, height: 7 },
-        printBedSize: 256,
-        gridUnitMm: 42,
-        heightUnitMm: 7,
-        version: '1.0',
-      },
-      setName: vi.fn(),
-      deleteBin: () => ({ ok: false, error: { code: 'LAYOUT_INVALID_OPERATION' } }),
-    }),
+    getState: () => mockLayoutState,
+    setState: (producer: (state: typeof mockLayoutState) => void) => {
+      producer(mockLayoutState);
+    },
   },
 }));
 

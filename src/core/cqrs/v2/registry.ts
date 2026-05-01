@@ -28,6 +28,12 @@ import { reorderLayers } from './domain/layer/reorderLayers';
 import { addCategory } from './domain/category/addCategory';
 import { updateCategory } from './domain/category/updateCategory';
 import { deleteCategory } from './domain/category/deleteCategory';
+import { updateDrawer } from './domain/drawer/updateDrawer';
+import { setName } from './domain/layout/setName';
+import { setPrintBedSize } from './domain/layout/setPrintBedSize';
+import { setGridUnitMm } from './domain/layout/setGridUnitMm';
+import { setHeightUnitMm } from './domain/layout/setHeightUnitMm';
+import { setBaseplateParams } from './domain/layout/setBaseplateParams';
 
 type V2HandlerFn = (command: {
   type: string;
@@ -63,6 +69,12 @@ export const v2HandlerOverrides: Record<string, V2HandlerFn> = {
   [addCategory.type]: wrapV2Handler(addCategory) as V2HandlerFn,
   [updateCategory.type]: wrapV2Handler(updateCategory) as V2HandlerFn,
   [deleteCategory.type]: wrapV2Handler(deleteCategory) as V2HandlerFn,
+  [updateDrawer.type]: wrapV2Handler(updateDrawer) as V2HandlerFn,
+  [setName.type]: wrapV2Handler(setName) as V2HandlerFn,
+  [setPrintBedSize.type]: wrapV2Handler(setPrintBedSize) as V2HandlerFn,
+  [setGridUnitMm.type]: wrapV2Handler(setGridUnitMm) as V2HandlerFn,
+  [setHeightUnitMm.type]: wrapV2Handler(setHeightUnitMm) as V2HandlerFn,
+  [setBaseplateParams.type]: wrapV2Handler(setBaseplateParams) as V2HandlerFn,
 };
 
 /** All registered v2 commands, exposed for tests + future tooling. */
@@ -84,4 +96,10 @@ export const v2Commands = [
   addCategory,
   updateCategory,
   deleteCategory,
+  updateDrawer,
+  setName,
+  setPrintBedSize,
+  setGridUnitMm,
+  setHeightUnitMm,
+  setBaseplateParams,
 ] as const;

@@ -3,14 +3,21 @@
  */
 
 import type { BaseDomainEvent } from '../types';
-import type { Drawer, BaseplateParams } from '@/core/types';
+import type { BinId, Drawer, BaseplateParams } from '@/core/types';
 
+/**
+ * `displacedBinIds` was added in the v2 migration so apply() can target
+ * the exact bins displaced by the drawer-shrink cascade. v1-era persisted
+ * events have only the `binsDisplacedToStaging` count — replay against
+ * those falls back to leaving bins untouched (matches prior behavior).
+ */
 export type DrawerUpdatedEvent = BaseDomainEvent<
   'drawer.updated',
   {
     readonly changes: Partial<Drawer>;
     readonly previous: Partial<Drawer>;
     readonly binsDisplacedToStaging: number;
+    readonly displacedBinIds?: ReadonlyArray<BinId>;
   }
 >;
 
