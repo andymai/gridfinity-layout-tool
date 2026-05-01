@@ -13,7 +13,7 @@
 import type { PathPoint } from '@/features/bin-designer/types';
 import type { ParsedCutoutSpec } from './types';
 import type { Matrix } from './svgTransform';
-import type { ViewBox } from './svgParser';
+import type { ViewBox } from './types';
 import { applyMatrix, isIdentityOrTranslate, transformPoint } from './svgTransform';
 
 export function wrapSingle(spec: ParsedCutoutSpec | null): ParsedCutoutSpec[] | null {
@@ -21,7 +21,10 @@ export function wrapSingle(spec: ParsedCutoutSpec | null): ParsedCutoutSpec[] | 
 }
 
 export function numAttr(el: Element, name: string, fallback = 0): number {
-  return parseFloat(el.getAttribute(name) ?? '') || fallback;
+  // Use isFinite over `|| fallback` so that an explicit `0` attribute
+  // (legal SVG, e.g. <rect x="0">) is preserved instead of falling back.
+  const parsed = parseFloat(el.getAttribute(name) ?? '');
+  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
 /** Flip Y from SVG coordinate space (Y-down) to cutout space (Y-up from viewBox bottom). */

@@ -13,7 +13,7 @@ import type { PathPoint } from '@/features/bin-designer/types';
 import type { ParsedCutoutSpec } from './types';
 import type { Matrix } from './svgTransform';
 import { transformPoint } from './svgTransform';
-import type { ViewBox } from './svgParser';
+import type { ViewBox } from './types';
 import { makeCornerPoint, pathPointsToSpec } from './svgConvertShapes';
 import { arcToCubicBeziers } from './svgArcToBezier';
 

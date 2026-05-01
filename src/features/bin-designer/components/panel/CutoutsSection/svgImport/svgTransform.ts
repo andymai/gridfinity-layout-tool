@@ -10,12 +10,12 @@
  * (m1 ∘ m2 means "first apply m2, then m1").
  */
 
-import type { ViewBox } from './svgParser';
+import type { ViewBox } from './types';
 
 /** 2D affine transform as [a, b, c, d, e, f] matching SVG matrix(a,b,c,d,e,f). */
 export type Matrix = [number, number, number, number, number, number];
 
-export const IDENTITY: Matrix = [1, 0, 0, 1, 0, 0];
+export const IDENTITY: Matrix = Object.freeze([1, 0, 0, 1, 0, 0]) as unknown as Matrix;
 
 export function multiplyMatrices(m1: Matrix, m2: Matrix): Matrix {
   return [

@@ -41,6 +41,14 @@ export interface SvgImportError {
   readonly detail?: string;
 }
 
+/** Resolved viewBox for coordinate mapping (origin + dimensions). */
+export interface ViewBox {
+  readonly minX: number;
+  readonly minY: number;
+  readonly width: number;
+  readonly height: number;
+}
+
 /** Maximum number of SVG shapes to import (guard against huge files). */
 export const MAX_SVG_SHAPES = 500;
 

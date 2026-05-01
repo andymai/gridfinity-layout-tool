@@ -16,7 +16,7 @@
 
 import type { Result } from '@/core/result';
 import { ok, err } from '@/core/result';
-import type { ParsedCutoutSpec, SvgImportError } from './types';
+import type { ParsedCutoutSpec, SvgImportError, ViewBox } from './types';
 import { MAX_SVG_SHAPES } from './types';
 import { resolveTransformChain, type Matrix } from './svgTransform';
 import {
@@ -28,13 +28,7 @@ import {
 } from './svgConvertShapes';
 import { convertPath } from './svgConvertPath';
 
-/** Resolved viewBox for coordinate mapping (origin + dimensions). */
-export interface ViewBox {
-  readonly minX: number;
-  readonly minY: number;
-  readonly width: number;
-  readonly height: number;
-}
+export type { ViewBox } from './types';
 
 /**
  * Geometric SVG elements, excluding those inside non-rendered containers.
