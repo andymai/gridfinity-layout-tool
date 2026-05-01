@@ -196,6 +196,7 @@ export function trackBinRotation(bin: Bin, batchSize: number = 1): void {
   };
 
   markEditActivity();
+  layoutSession.lastEditTime = Date.now();
 
   bufferEvent(event);
 }

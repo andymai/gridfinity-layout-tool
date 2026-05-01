@@ -197,6 +197,7 @@ export function trackUndo(previousLayout: Layout, currentLayout: Layout): void {
 
   layoutSession.undoCount++;
   markEditActivity();
+  layoutSession.lastEditTime = Date.now();
 
   bufferEvent(event);
 }
