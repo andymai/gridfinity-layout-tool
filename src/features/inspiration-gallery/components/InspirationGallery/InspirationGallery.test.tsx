@@ -12,29 +12,20 @@ vi.mock('@/shared/hooks', async (importOriginal) => ({
   useResponsive: () => ({ isMobile: false, viewportWidth: 1280 }),
 }));
 
-// Mock analytics
+// Mock analytics. ui.* events are now direct trackEvent() calls (PR 12
+// telemetry exit) — no longer routed through the CQRS bus.
 const mockTrackBinCreated = vi.fn();
 const mockTrackGalleryOpened = vi.fn();
 const mockTrackGalleryClosed = vi.fn();
 const mockTrackTemplateLoadError = vi.fn();
+const mockTrackEvent = vi.fn();
 vi.mock('@/shared/analytics/posthog', () => ({
-  trackEvent: vi.fn(),
+  trackEvent: (...args: unknown[]) => mockTrackEvent(...args),
   trackBinCreated: (...args: unknown[]) => mockTrackBinCreated(...args),
   trackGalleryOpened: (...args: unknown[]) => mockTrackGalleryOpened(...args),
   trackGalleryClosed: (...args: unknown[]) => mockTrackGalleryClosed(...args),
   trackTemplateLoadError: (...args: unknown[]) => mockTrackTemplateLoadError(...args),
 }));
-
-const mockDispatch = vi.fn();
-vi.mock('@/core/cqrs', async (importOriginal) => {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- dynamic import for mock
-  const actual = await importOriginal<typeof import('@/core/cqrs')>();
-  return {
-    ...actual,
-    commandBus: { ...actual.commandBus, dispatch: (...args: unknown[]) => mockDispatch(...args) },
-    createCommand: (type: string, payload: unknown) => ({ type, payload, meta: {} }),
-  };
-});
 
 const mockImportLayoutFromJSON = vi.fn();
 const mockSwitchLayout = vi.fn();
@@ -616,26 +607,22 @@ describe('InspirationGallery', () => {
 
     it('tracks gallery_filter_changed when theme filter changes', () => {
       render(<InspirationGallery {...defaultProps} />);
-      mockDispatch.mockClear();
+      mockTrackEvent.mockClear();
 
       // Click workshop filter
       fireEvent.click(screen.getByText('Workshop (2)'));
 
-      expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'ui.featureUsed' })
-      );
+      expect(mockTrackEvent).toHaveBeenCalledWith('ui.featureUsed', expect.any(Object));
     });
 
     it('tracks template_preview when layout card is clicked', () => {
       render(<InspirationGallery {...defaultProps} />);
-      mockDispatch.mockClear();
+      mockTrackEvent.mockClear();
 
       // Click a layout card to preview it
       fireEvent.click(screen.getByTestId('layout-card-workshop-1'));
 
-      expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'ui.featureUsed' })
-      );
+      expect(mockTrackEvent).toHaveBeenCalledWith('ui.featureUsed', expect.any(Object));
     });
 
     it('tracks template_applied when layout is used', async () => {
@@ -643,16 +630,14 @@ describe('InspirationGallery', () => {
 
       // Open preview
       fireEvent.click(screen.getByTestId('layout-card-workshop-1'));
-      mockDispatch.mockClear();
+      mockTrackEvent.mockClear();
 
       // Click "Use Layout" button (mocked preview overlay button)
       const useButton = screen.getByTestId('preview-use');
       fireEvent.click(useButton);
 
       await waitFor(() => {
-        expect(mockDispatch).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'ui.templateApplied' })
-        );
+        expect(mockTrackEvent).toHaveBeenCalledWith('ui.templateApplied', expect.any(Object));
       });
     });
   });

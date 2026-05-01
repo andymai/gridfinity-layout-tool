@@ -12,7 +12,8 @@ import { drawerHandlers } from './drawerHandlers';
 import { libraryHandlers } from './libraryHandlers';
 import { designerHandlers } from './designerHandlers';
 import { restoreHandlers } from './restoreHandlers';
-import { uiHandlers } from './uiHandlers';
+// UI handlers removed in PR 12 (telemetry exit) — ui.* commands are now
+// direct trackEvent() calls instead of bus dispatches.
 import { v2HandlerOverrides } from '../v2/registry';
 
 export { resetVersionCounters } from './shared';
@@ -30,7 +31,6 @@ const handlerRegistry: Record<string, HandlerFn> = {
   ...libraryHandlers,
   ...designerHandlers,
   ...restoreHandlers,
-  ...uiHandlers,
   ...(v2HandlerOverrides as Record<string, HandlerFn>),
 };
 

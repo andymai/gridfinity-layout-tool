@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
 import { Checkbox } from '@/shared/components/Checkbox';
-import { commandBus, createCommand } from '@/core/cqrs';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
 import type { Layer } from '@/core/types';
 import type { GridZoomState } from '@/features/grid-editor/hooks/useGridZoom';
@@ -343,7 +343,7 @@ export const GridToolbar = memo(function GridToolbar({
         <button
           onClick={() => {
             if (!showIsometricPreview) {
-              commandBus.dispatch(createCommand('ui.featureUsed', { feature: '3d_preview' }));
+              trackEvent('ui.featureUsed', { feature: '3d_preview' });
             }
             toggleIsometricPreview();
           }}

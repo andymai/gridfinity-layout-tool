@@ -18,7 +18,7 @@ import {
 import { isOk, getUserMessage } from '@/core/result';
 import type { ApiError } from '@/core/result';
 import { copyToClipboard } from '@/core/storage';
-import { commandBus, createCommand } from '@/core/cqrs';
+import { trackEvent } from '@/shared/analytics/posthog';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { slugify } from '@/shared/utils/slug';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -130,9 +130,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
   const handleError = useCallback(
     (err: ApiError) => {
       const message = getUserMessage(err);
-      commandBus.dispatch(
-        createCommand('ui.shareFailed', { layoutId: '', error: `${err.code}: ${message}` })
-      );
+      trackEvent('ui.shareFailed', { layoutId: '', error: `${err.code}: ${message}` });
       setError({
         message,
         code: err.code,
@@ -165,7 +163,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
 
       if (isOk(result)) {
         handleSuccess(result.value);
-        commandBus.dispatch(createCommand('ui.featureUsed', { feature: 'cloud_share' }));
+        trackEvent('ui.featureUsed', { feature: 'cloud_share' });
         return true;
       } else {
         handleError(result.error);
