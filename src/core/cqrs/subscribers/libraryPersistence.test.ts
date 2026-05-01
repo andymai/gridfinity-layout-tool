@@ -8,6 +8,7 @@ import { layoutId } from '@/core/types';
 import type { LayoutLibrary, CloudShareInfo } from '@/core/types';
 import { connectLibraryPersistence } from './libraryPersistence';
 import { ok } from '@/core/result';
+import { resetLibraryStore } from '@/test/testUtils';
 
 import type * as StorageModule from '@/core/storage';
 
@@ -80,6 +81,7 @@ describe('libraryPersistence subscriber', () => {
   let unsubscribe: () => void;
 
   beforeEach(() => {
+    resetLibraryStore();
     bus = createEventBus();
     unsubscribe = connectLibraryPersistence(bus);
     vi.mocked(saveLibrary).mockClear();
@@ -87,6 +89,8 @@ describe('libraryPersistence subscriber', () => {
 
   afterEach(() => {
     unsubscribe();
+    bus.clear();
+    resetLibraryStore();
   });
 
   it('persists library when library.cloudShareUpdated fires', () => {
