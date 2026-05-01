@@ -84,8 +84,10 @@ export function useContextBoosts(): Record<string, number> {
       'clear-staging': hasStagingBins ? 1.8 : 0.3,
       'restore-from-staging': hasStagingBins ? 2.0 : 0.3,
 
-      // Advanced selection - boost when bins selected
+      // Advanced selection
+      // invert-selection is boosted when the layer has any bins to invert against
       'invert-selection': hasLayerBins ? 1.5 : 0.3,
+      // select-by-category needs an existing selection to read the source category from
       'select-by-category': hasBinsSelected ? 1.8 : 0.3,
     };
   }, [

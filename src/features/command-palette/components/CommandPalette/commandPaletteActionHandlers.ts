@@ -132,7 +132,10 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     }
 
     function cycleBinInLayer(direction: 1 | -1): ActionHandler {
-      const sorted = layerBins.sort((a, b) => (a.y === b.y ? a.x - b.x : a.y - b.y));
+      // Copy before sort: Array.prototype.sort is in-place; mutating the
+      // shared `layerBins` reference would persist across the two cycle
+      // calls (-1 and 1) and confuse any other consumer inside this useMemo.
+      const sorted = [...layerBins].sort((a, b) => (a.y === b.y ? a.x - b.x : a.y - b.y));
       if (sorted.length === 0) return null;
       const currentId = selectedBinIds[0];
       const currentIndex = sorted.findIndex((b) => b.id === currentId);
@@ -188,7 +191,13 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'open-help': () => dispatchWindowEvent('open-help-modal'),
       'open-print': () => setPrintModalOpen(true),
       'send-feedback': () =>
-        window.open('https://github.com/andymai/gridfinity-layout-tool/issues', '_blank'),
+        // noopener,noreferrer prevents reverse-tabnabbing — matches the
+        // convention used elsewhere in the codebase for external links.
+        window.open(
+          'https://github.com/andymai/gridfinity-layout-tool/issues',
+          '_blank',
+          'noopener,noreferrer'
+        ),
       'switch-to-designer': () => dispatchWindowEvent('switch-to-designer'),
       'new-layout': () => {
         void createNewLayout();
@@ -301,7 +310,14 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     const currentLayerIndex = layout.layers.findIndex((l) => l.id === activeLayerId);
 
     const layers: Record<string, ActionHandler> = {
-      'add-layer': () => addLayer(),
+      'add-layer': () => {
+        const result = addLayer();
+        if (isOk(result)) {
+          setActiveLayer(result.value);
+        } else {
+          addToast(t('layers.maxLayersReached', { max: 10 }), 'error');
+        }
+      },
       'layer-up':
         currentLayerIndex < layout.layers.length - 1
           ? () => setActiveLayer(layout.layers[currentLayerIndex + 1].id)

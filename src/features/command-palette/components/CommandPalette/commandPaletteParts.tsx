@@ -21,7 +21,11 @@ const CATEGORY_ICON_MAP: Record<string, IconName> = {
 };
 
 export function CategoryIcon({ category }: { category: string }) {
-  const iconName = CATEGORY_ICON_MAP[category];
+  // Unknown categories return undefined at runtime even though the index type
+  // says `IconName`; render nothing rather than throw when `paths.map()` would
+  // otherwise blow up on a missing icon entry.
+  const iconName = CATEGORY_ICON_MAP[category] as IconName | undefined;
+  if (!iconName) return null;
   const paths = ICON_PATHS[iconName];
 
   return (
