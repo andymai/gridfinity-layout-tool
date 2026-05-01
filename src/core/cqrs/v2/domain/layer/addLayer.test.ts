@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
 import { isOk } from '@/core/result';
 import { CONSTRAINTS } from '@/core/constants';
-import { heightUnits } from '@/core/types';
 import { addLayer } from './addLayer';
 import { makeLayout, makeLayer } from './_testHelpers';
 
@@ -48,9 +47,4 @@ describe('v2 layer.add', () => {
     expect(applied.layers).toHaveLength(2);
     expect(applied.layers[1]).toEqual(result.value.event.payload.layer);
   });
-
-  // Avoid unused import flag for heightUnits — the helper makeLayer uses it
-  // internally, but vitest type-imports here also benefit when testing
-  // height-bound logic later.
-  void heightUnits;
 });

@@ -12,7 +12,7 @@
 
 import { z } from 'zod';
 import type { Result, LayoutError } from '@/core/result';
-import { ok, err, OK, layoutInvalidOperation } from '@/core/result';
+import { ok, err, layoutInvalidOperation } from '@/core/result';
 import { checkLayerReorderCollisions } from '@/shared/utils/collision';
 import { defineCommand } from '../../defineCommand';
 
@@ -40,9 +40,11 @@ export const reorderLayers = defineCommand({
     const { fromIndex, toIndex } = payload;
     const layout = ctx.aggregate;
 
+    // Self-move: succeed and emit; apply is a no-op. Matches v1 (the v1
+    // store action returns OK without doing anything; the v1 handler
+    // emits the event regardless). The event in the audit log is benign
+    // signal that the user attempted a reorder.
     if (fromIndex === toIndex) {
-      // No-op: still ok, but no event emitted (apply would no-op too,
-      // but emitting a self-move would pollute the audit log).
       return ok({ value: undefined, event: { payload: { fromIndex, toIndex } } });
     }
     if (fromIndex < 0 || fromIndex >= layout.layers.length) {
@@ -75,7 +77,3 @@ export const reorderLayers = defineCommand({
     draft.layers.splice(toIndex, 0, moved);
   },
 });
-
-// `OK` only used in tests / future reuse. Kept here to avoid an
-// import-only warning if we later reintroduce a no-op success path.
-void OK;

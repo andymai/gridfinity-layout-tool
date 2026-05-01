@@ -60,9 +60,10 @@ export const deleteLayer = defineCommand({
       return err(layoutInvalidOperation('deleteLayer', `Layer ${id} not found`));
     }
 
-    const displacedBinIds = layout.bins
-      .filter((b) => b.layerId === id && b.layerId !== STAGING_ID)
-      .map((b) => b.id);
+    // STAGING_ID is the sentinel layer id never present in layout.layers,
+    // so `b.layerId === id` (where id is a real layer) inherently excludes
+    // staging-bound bins. No explicit STAGING_ID guard needed here.
+    const displacedBinIds = layout.bins.filter((b) => b.layerId === id).map((b) => b.id);
 
     return ok({
       value: undefined,
