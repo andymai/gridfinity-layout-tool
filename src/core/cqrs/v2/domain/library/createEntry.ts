@@ -13,8 +13,8 @@ import type { LayoutEntry, LayoutPreview } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 
 // Mirrors the central library.createEntry schema in
-// validation/librarySchemas.ts — `preview` is structurally re-validated
-// inside handle() since the central schema treats it as opaque.
+// `@/core/cqrs/validation/librarySchemas` — `preview` is structurally
+// re-validated inside handle() since the central schema treats it as opaque.
 const payloadSchema = z.object({
   name: z.string().min(1).max(CONSTRAINTS.NAME_MAX_LENGTH),
   layoutId: z.string().optional(),

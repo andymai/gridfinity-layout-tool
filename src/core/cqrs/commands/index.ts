@@ -66,8 +66,9 @@ export type { DesignerCommand, DesignerSaveCommand } from './designerCommands';
 
 export type { RestoreCommand, RestoreLayoutCommand } from './restoreCommands';
 
-// ui.* events flow through src/shared/analytics/posthog/trackEvent.ts
-// directly — they're not commands (no aggregate, no apply, no undo).
+// ui.* PostHog analytics events flow through trackEvent() in
+// `@/shared/analytics/posthog` directly — they're not CQRS commands
+// (no aggregate, no apply, no undo).
 
 import type { BinCommand } from './binCommands';
 import type { LayerCommand } from './layerCommands';
