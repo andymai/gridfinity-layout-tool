@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.52.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.51.2...gridfinity-layout-tool-v4.52.0) (2026-05-01)
+
+
+### Features
+
+* **cqrs:** v2 defineCommand foundations + type-inference tests ([#1539](https://github.com/andymai/gridfinity-layout-tool/issues/1539)) ([c445587](https://github.com/andymai/gridfinity-layout-tool/commit/c445587354c449f96b3c260986de5d1079b2ef84))
+
 ## [4.51.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.51.1...gridfinity-layout-tool-v4.51.2) (2026-05-01)
 
 
