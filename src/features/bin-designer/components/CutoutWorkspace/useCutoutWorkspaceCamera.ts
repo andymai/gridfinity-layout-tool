@@ -21,10 +21,12 @@ export interface CutoutWorkspaceCamera {
   canvasWidth: number;
   canvasHeight: number;
   zoom: number;
-  setZoom: React.Dispatch<React.SetStateAction<number>>;
   cameraCenter: { x: number; y: number };
+  // Pan handlers in `useCutoutWorkspacePointer` need to nudge the camera
+  // center, so this setter must remain exposed. `setZoom`/`defaultZoom`
+  // stay internal — callers should go through zoomIn/zoomOut/fitToView/
+  // handleWheel so the cursor-centered compensation logic isn't bypassed.
   setCameraCenter: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
-  defaultZoom: number;
   zoomPercent: number;
   zoomIn: () => void;
   zoomOut: () => void;
@@ -130,10 +132,8 @@ export function useCutoutWorkspaceCamera(
     canvasWidth,
     canvasHeight,
     zoom,
-    setZoom,
     cameraCenter,
     setCameraCenter,
-    defaultZoom,
     zoomPercent,
     zoomIn,
     zoomOut,
