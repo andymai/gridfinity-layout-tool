@@ -91,8 +91,14 @@ export interface Mutations {
 
 const MutationsContext = createContext<Mutations | null>(null);
 
-/** CQRS-backed mutations singleton (stable across renders) */
-const cqrsMutations: Mutations = createCqrsMutations(commandBus);
+// Lazy: building at module init would capture `commandBus` before its
+// chunk has evaluated under chunk-level static-import cycles (#1466),
+// so every mutation would close over `undefined` and throw on dispatch.
+let cqrsMutationsSingleton: Mutations | null = null;
+function getCqrsMutations(): Mutations {
+  cqrsMutationsSingleton ??= createCqrsMutations(commandBus);
+  return cqrsMutationsSingleton;
+}
 
 /**
  * Hook to access mutations.
@@ -100,7 +106,7 @@ const cqrsMutations: Mutations = createCqrsMutations(commandBus);
  */
 export function useMutations(): Mutations {
   const context = useContext(MutationsContext);
-  return context ?? cqrsMutations;
+  return context ?? getCqrsMutations();
 }
 
 /**
@@ -108,7 +114,7 @@ export function useMutations(): Mutations {
  * Used to provide mutations through React context for collab mode compatibility.
  */
 export function LocalMutationsProvider({ children }: { children: ReactNode }) {
-  const mutations = useMemo<Mutations>(() => cqrsMutations, []);
+  const mutations = useMemo<Mutations>(() => getCqrsMutations(), []);
 
   return <MutationsContext.Provider value={mutations}>{children}</MutationsContext.Provider>;
 }
