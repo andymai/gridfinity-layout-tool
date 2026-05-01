@@ -36,6 +36,12 @@ export type BinMovedToStagingEvent = BaseDomainEvent<
   { readonly id: BinId; readonly previousLayerId: LayerId }
 >;
 
+/**
+ * `height` was added in the v2 migration so apply() can reproduce the
+ * full mutation without consulting current layout state. v1-era persisted
+ * events have no height — the optional shape keeps them readable; the
+ * v2 apply() falls back to leaving height untouched when missing.
+ */
 export type BinMovedFromStagingEvent = BaseDomainEvent<
   'bin.movedFromStaging',
   {
@@ -43,6 +49,7 @@ export type BinMovedFromStagingEvent = BaseDomainEvent<
     readonly layerId: LayerId;
     readonly x: number;
     readonly y: number;
+    readonly height?: number;
   }
 >;
 

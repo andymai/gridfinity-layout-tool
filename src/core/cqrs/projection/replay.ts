@@ -6,7 +6,7 @@
  */
 
 import type { Layout } from '@/core/types';
-import { gridUnits, mm } from '@/core/types';
+import { gridUnits, heightUnits, mm } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import type { DomainEvent } from '../events';
 
@@ -54,6 +54,12 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
         bin.layerId = event.payload.layerId;
         bin.x = gridUnits(event.payload.x);
         bin.y = gridUnits(event.payload.y);
+        // height was added to the payload in v2 (defineCommand migration).
+        // v1-era persisted events have no height — leave it untouched in
+        // that case (preserves prior replay behavior).
+        if (event.payload.height !== undefined) {
+          bin.height = heightUnits(event.payload.height);
+        }
       }
       break;
     }
