@@ -10,7 +10,7 @@
 
 import type { Cutout, PathPoint } from '@/features/bin-designer/types';
 import { getPathBounds } from './pathGeometry';
-import { computeBounds } from './geometry';
+import { computeBounds } from './geometryCore';
 
 /**
  * Mirror a path point's X coordinate around a center, negating X handle components.

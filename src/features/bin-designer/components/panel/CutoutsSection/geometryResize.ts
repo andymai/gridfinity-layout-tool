@@ -12,7 +12,7 @@
 
 import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
 import type { ResizeHandle } from './useCutoutInteraction';
-import { computeBounds, getRotatedBounds, rotatePoint } from './geometry';
+import { computeBounds, getRotatedBounds, rotatePoint } from './geometryCore';
 
 /** Minimum cutout dimension in mm */
 export const MIN_CUTOUT_SIZE = 2;

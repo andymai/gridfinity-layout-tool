@@ -8,7 +8,7 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import { type Bounds, computeBounds, getEffectiveBounds, getEffectiveDepth } from './geometry';
+import { type Bounds, computeBounds, getEffectiveBounds, getEffectiveDepth } from './geometryCore';
 
 /** A guide line indicating alignment between cutouts */
 export interface AlignmentGuide {
