@@ -15,13 +15,13 @@ import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
 import {
   useLayoutStore,
-  useHistoryStore,
   useSelectionStore,
   useViewStore,
   useHalfBinModeStore,
   useInteractionStore,
   useToastStore,
 } from '@/core/store';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
 import { useLayoutSwitcher } from '@/shared/hooks';

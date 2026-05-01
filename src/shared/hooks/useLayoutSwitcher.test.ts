@@ -4,7 +4,7 @@ import { useLayoutSwitcher } from '@/shared/hooks/useLayoutSwitcher';
 import { useLayoutStore } from '@/core/store/layout';
 import { useLibraryStore } from '@/core/store/library';
 import { useSelectionStore } from '@/core/store/selection';
-import { useHistoryStore } from '@/core/store/history';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useToastStore } from '@/core/store/toast';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { createDefaultLayout, SHARED_PREVIEW_ID } from '@/core/constants';

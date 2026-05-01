@@ -4,7 +4,7 @@ import { useSharedWithMe } from '@/shared/hooks/useSharedWithMe';
 import { useSharedWithMeStore } from '@/core/store/sharedWithMe';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
-import { useHistoryStore } from '@/core/store/history';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useToastStore } from '@/core/store/toast';
 import { createDefaultLayout } from '@/core/constants';
 import type { SharedWithMeEntry, Layout } from '@/core/types';

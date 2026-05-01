@@ -36,7 +36,7 @@ vi.mock('@/core/store/library', () => ({
   },
 }));
 
-vi.mock('@/core/store/history', () => ({
+vi.mock('@/core/cqrs/undo/historyStore', () => ({
   useHistoryStore: {
     getState: () => ({
       push: vi.fn(),

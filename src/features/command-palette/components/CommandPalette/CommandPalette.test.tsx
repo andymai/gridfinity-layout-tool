@@ -3,12 +3,12 @@ import { render } from '@testing-library/react';
 import { CommandPalette } from './CommandPalette';
 import {
   useLayoutStore,
-  useHistoryStore,
   useSelectionStore,
   useViewStore,
   useHalfBinModeStore,
   useInteractionStore,
 } from '@/core/store';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
 
 /**

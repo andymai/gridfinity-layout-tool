@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Header } from '@/shell/Header';
-import { useLayoutStore, useHistoryStore } from '@/core/store';
+import { useLayoutStore } from '@/core/store';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useViewStore } from '@/core/store/view';
 import { resetAllStores } from '@/test/testUtils';
 

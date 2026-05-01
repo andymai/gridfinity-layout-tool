@@ -11,7 +11,7 @@
 import { useCallback } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
-import { useHistoryStore } from '@/core/store/history';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useShallow } from 'zustand/react/shallow';
 import type { Layout, LayoutId } from '@/core/types';

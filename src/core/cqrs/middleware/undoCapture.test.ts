@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ok, err } from '@/core/result';
 import { layoutInvalidOperation } from '@/core/result/constructors';
 import { useLayoutStore } from '@/core/store/layout';
-import { useHistoryStore } from '@/core/store/history';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { resetLayoutStore, resetHistoryStore, createTestLayout } from '@/test/testUtils';
 import { undoCaptureMiddleware, batch, _resetUndoCaptureState } from './undoCapture';
 import type { Command } from '../commands';

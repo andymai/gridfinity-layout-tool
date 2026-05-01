@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore, useHistoryStore, useViewStore } from '@/core/store';
+import { useLayoutStore, useViewStore } from '@/core/store';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useMutations } from '@/shared/contexts';
 import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';

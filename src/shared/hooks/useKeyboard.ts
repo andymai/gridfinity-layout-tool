@@ -38,13 +38,13 @@ import { useShallow } from 'zustand/react/shallow';
 import { batch } from '@/core/cqrs';
 import {
   useLayoutStore,
-  useHistoryStore,
   useToastStore,
   useSelectionStore,
   useInteractionStore,
   useViewStore,
   useHalfBinModeStore,
 } from '@/core/store';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useMutations } from '@/shared/contexts';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useGridNavigation } from '@/features/grid-editor';

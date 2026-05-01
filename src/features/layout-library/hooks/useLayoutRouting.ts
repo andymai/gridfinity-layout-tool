@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore, useLibraryStore, useToastStore, useHistoryStore } from '@/core/store';
+import { useLayoutStore, useLibraryStore, useToastStore } from '@/core/store';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSelectionStore } from '@/core/store/selection';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
 import { loadLayoutAsync } from '@/core/storage';

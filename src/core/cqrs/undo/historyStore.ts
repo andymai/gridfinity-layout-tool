@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import type { Layout, BinId, LayerId, CategoryId } from '@/core/types';
 import type { CommandType } from '@/core/cqrs/commands';
-import { useLayoutStore } from './layout';
-import { useSelectionStore } from './selection';
-import { useToastStore } from './toast';
+import { useLayoutStore } from '@/core/store/layout';
+import { useSelectionStore } from '@/core/store/selection';
+import { useToastStore } from '@/core/store/toast';
 import { CONSTRAINTS } from '@/core/constants';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { getCommandDescriptionKey } from '@/core/cqrs/commandDescriptions';
@@ -34,11 +34,6 @@ export function captureSelectionSnapshot(): SelectionSnapshot {
 }
 
 /**
- * Restore selection from a snapshot, reconciling against the restored layout.
- * A snapshotted ID that no longer exists in the restored layout falls back to
- * the same pruning logic used before snapshots were captured.
- */
-/**
  * Fallback active-layer id when the snapshotted/current id is no longer in
  * the restored layout. Matches `handleRestoreLayout` in restoreHandlers.ts:
  * use the last layer in data order (= top layer in the UI, since the UI
@@ -49,6 +44,11 @@ function fallbackActiveLayerId(restoredLayout: Layout): LayerId {
   return restoredLayout.layers[restoredLayout.layers.length - 1].id;
 }
 
+/**
+ * Restore selection from a snapshot, reconciling against the restored layout.
+ * A snapshotted ID that no longer exists in the restored layout falls back to
+ * the same pruning logic used before snapshots were captured.
+ */
 function restoreSelectionFromSnapshot(restoredLayout: Layout, snapshot: SelectionSnapshot): void {
   const binIds = new Set(restoredLayout.bins.map((b) => b.id));
   const layerIds = new Set(restoredLayout.layers.map((l) => l.id));
@@ -157,6 +157,12 @@ function applySelection(restoredLayout: Layout, snapshot: SelectionSnapshot | un
  * History store — undo/redo stack (max 100 states).
  * Undo snapshots are captured automatically by the CQRS undo middleware.
  * Use `batch()` from `@/core/cqrs` to group multiple mutations into one undo step.
+ *
+ * Lives under `cqrs/undo/` (not `core/store/`) because undo is a CQRS
+ * concern: snapshots are pushed by `undoCaptureMiddleware`, popped by
+ * `useHistoryStore.undo/redo`, and apply via `useLayoutStore.restoreLayout`.
+ * Keeping the file here also breaks the historical `core/store/history` ↔
+ * `cqrs/commandDescriptions` cycle.
  */
 export const useHistoryStore = create<HistoryState>((set, get) => ({
   past: [],

@@ -7,7 +7,7 @@ import type { Result } from '@/core/result/types';
 import { isOk, isErr } from '@/core/result';
 import { createDefaultLayout } from '@/core/constants';
 import { useLayoutStore } from '@/core/store/layout';
-import { useHistoryStore } from '@/core/store/history';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useToastStore, INITIAL_TOAST_STATE } from '@/core/store/toast';
 import { useSettingsStore, DEFAULT_SETTINGS } from '@/core/store/settings';
 import { useLibraryStore } from '@/core/store/library';

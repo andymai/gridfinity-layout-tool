@@ -1,5 +1,4 @@
 export { useLayoutStore } from './layout';
-export { useHistoryStore } from './history';
 export { useToastStore, INITIAL_TOAST_STATE } from './toast';
 export { useLibraryStore, computePreview, createDefaultLibrary } from './library';
 export { useSettingsStore, DEFAULT_SETTINGS } from './settings';
