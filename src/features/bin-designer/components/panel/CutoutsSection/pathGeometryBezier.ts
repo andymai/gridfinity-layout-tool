@@ -11,7 +11,7 @@
 import type { PathPoint } from '@/features/bin-designer/types';
 
 /** Default bezier flattening tolerance in mm */
-export const DEFAULT_FLATTEN_TOLERANCE = 0.1;
+const DEFAULT_FLATTEN_TOLERANCE = 0.1;
 
 export interface Point2D {
   readonly x: number;

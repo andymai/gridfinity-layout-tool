@@ -20,12 +20,9 @@ import type { Bounds } from './geometry';
 import { flattenPath, type Point2D } from './pathGeometryBezier';
 
 export { MIN_PATH_POINTS };
-export {
-  cubicBezier,
-  flattenPath,
-  DEFAULT_FLATTEN_TOLERANCE,
-  type Point2D,
-} from './pathGeometryBezier';
+// DEFAULT_FLATTEN_TOLERANCE stays internal to pathGeometryBezier — it was
+// a private constant in the pre-split file and has no current consumers.
+export { cubicBezier, flattenPath, type Point2D } from './pathGeometryBezier';
 export { triangulatePath } from './pathGeometryTriangulation';
 export {
   findNearestSegment,

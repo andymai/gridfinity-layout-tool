@@ -96,6 +96,12 @@ function earclip(coords: number[]): number[] {
     if (!earFound) break;
   }
 
+  // If we couldn't reduce all the way down to a triangle, the polygon is
+  // self-intersecting or otherwise unsuitable for ear clipping; return
+  // an empty list rather than a partial mesh so callers don't render a
+  // broken fill (matches the doc on `triangulatePath`).
+  if (remaining.length > 2) return [];
+
   return indices;
 }
 
