@@ -52,10 +52,24 @@ export const importLayout = defineCommand({
     });
   },
   apply: (event, draft) => {
-    // Same shape as createEntry's apply — entry is always populated by
-    // the v2 handler but typed optional for v1-replay back-compat.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- entry is optional on the event type
-    if (event.payload.entry === undefined) return;
-    draft.entries.push(event.payload.entry);
+    // Same fallback as createEntry.apply(): v2 handler always populates
+    // `entry`, but v1-era persisted events have only {layoutId, name}.
+    // Reconstruct a best-effort entry from defaults so replay produces
+    // *something* instead of silently dropping the import event.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- entry is optional on the event type for v1 back-compat
+    const entry: LayoutEntry = event.payload.entry ?? {
+      id: event.payload.layoutId,
+      name: event.payload.name,
+      createdAt: 0,
+      modifiedAt: 0,
+      preview: {
+        drawerWidth: 6 as LayoutEntry['preview']['drawerWidth'],
+        drawerDepth: 4 as LayoutEntry['preview']['drawerDepth'],
+        drawerHeight: 7 as LayoutEntry['preview']['drawerHeight'],
+        binCount: 0,
+        layerCount: 1,
+      },
+    };
+    draft.entries.push(entry);
   },
 });

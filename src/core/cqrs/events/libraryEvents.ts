@@ -24,9 +24,18 @@ export type LibraryEntryDeletedEvent = BaseDomainEvent<
   { readonly layoutId: LayoutId }
 >;
 
+/**
+ * `entry` was added in the v2 migration so apply() can push the duplicated
+ * entry deterministically. v1-era persisted events have only the ids — the
+ * `entry?` shape lets v1 events still satisfy the type.
+ */
 export type LibraryEntryDuplicatedEvent = BaseDomainEvent<
   'library.entryDuplicated',
-  { readonly sourceLayoutId: LayoutId; readonly newLayoutId: LayoutId }
+  {
+    readonly sourceLayoutId: LayoutId;
+    readonly newLayoutId: LayoutId;
+    readonly entry?: LayoutEntry;
+  }
 >;
 
 export type LibraryActiveSwitchedEvent = BaseDomainEvent<
