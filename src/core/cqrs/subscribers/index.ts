@@ -6,3 +6,4 @@
  */
 
 export { connectSelectionPruning } from './selectionPruning';
+export { connectLibraryPersistence } from './libraryPersistence';

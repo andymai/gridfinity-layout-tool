@@ -27,6 +27,8 @@ import type {
   BinId,
   LayerId,
   CategoryId,
+  LayoutId,
+  CloudShareInfo,
   BaseplateParams,
 } from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
@@ -81,6 +83,10 @@ export interface Mutations {
   setGridUnitMm: (mm: number) => void;
   setHeightUnitMm: (mm: number) => void;
   setBaseplateParams: (params: BaseplateParams) => void;
+
+  // Library cloud-share operations
+  setCloudShare: (layoutId: LayoutId, share: CloudShareInfo) => void;
+  clearCloudShare: (layoutId: LayoutId) => void;
 }
 
 const MutationsContext = createContext<Mutations | null>(null);

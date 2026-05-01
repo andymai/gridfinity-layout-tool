@@ -15,7 +15,12 @@ import { initializeLayoutLibrary, loadSharedWithMe } from '@/core/storage';
 import { isOk } from '@/core/result';
 import type { Locale } from '@/i18n/types.ts';
 import { recoverFromBadWwwMigration } from '@/core/storage/wwwMigrationRecovery';
-import { connectEventStoreToBus, connectSelectionPruning, eventBus } from '@/core/cqrs';
+import {
+  connectEventStoreToBus,
+  connectLibraryPersistence,
+  connectSelectionPruning,
+  eventBus,
+} from '@/core/cqrs';
 import { connectDesignLinking } from '@/features/design-linking/subscribers';
 import { InitErrorFallback } from '@/shell/InitErrorFallback';
 import { isSmokeMode } from '@/shared/utils/smokeMode';
@@ -112,6 +117,10 @@ if (isSmokeMode()) {
       // Connect selection pruning — automatically cleans stale bin/layer/category
       // references from selection store when entities are deleted or moved
       connectSelectionPruning(eventBus);
+
+      // Persist library to IndexedDB immediately when cloudShare metadata changes
+      // (other library fields are persisted via useAutoSave's debounced flow)
+      connectLibraryPersistence(eventBus);
 
       // Connect design-linking — bridges CQRS events to syncEventBus for
       // design dimension cascade between linked bins and designs

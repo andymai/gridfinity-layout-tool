@@ -15,6 +15,8 @@ import type {
   Category,
   Layer,
   Drawer,
+  LayoutId,
+  CloudShareInfo,
   BaseplateParams,
 } from '@/core/types';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
@@ -167,6 +169,14 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
 
     setBaseplateParams(params: BaseplateParams): void {
       bus.dispatch(createCommand('layout.setBaseplateParams', { params }));
+    },
+
+    setCloudShare(layoutId: LayoutId, share: CloudShareInfo): void {
+      bus.dispatch(createCommand('library.setCloudShare', { layoutId, shareInfo: share }));
+    },
+
+    clearCloudShare(layoutId: LayoutId): void {
+      bus.dispatch(createCommand('library.clearCloudShare', { layoutId }));
     },
   };
 }
