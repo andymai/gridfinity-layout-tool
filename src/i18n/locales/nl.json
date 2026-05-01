@@ -1531,6 +1531,7 @@
   "toast.moveToLayerComplete": "{count} bin(s) verplaatst naar {name}",
   "toast.moveToLayerPartial": "{moved}/{total} verplaatst naar {name} ({skipped} overgeslagen — botsing)",
   "toast.movedMultiToLayer": "{count} bins verplaatst naar {name}",
+  "toast.movedPartialToLayer": "{moved} van {total} bins verplaatst ({blocked} geblokkeerd)",
   "toast.movedToLayer": "Verplaatst naar {name}",
   "toast.movedToStash": "{count} bin(s) naar opslag verplaatst",
   "toast.noMovableCollisions": "Geen bins kunnen naar deze layer worden verplaatst (botsingen)",

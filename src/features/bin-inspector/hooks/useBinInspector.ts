@@ -4,7 +4,8 @@
  * Extracts all common state and handlers used by RightPanel and
  * MobileInspector. Multi-selection callbacks live in
  * `useBinInspectorMultiActions`; type definitions and the linked-bin
- * sync helper live in `useBinInspectorTypes`.
+ * sync helper live in `binInspectorTypes` (no `use` prefix — those
+ * are pure types and a plain helper, not a hook).
  */
 
 import { useState, useCallback, useMemo } from 'react';
@@ -29,7 +30,7 @@ import {
   type BinField,
   type ConfirmDeleteState,
   type UseBinInspectorReturn,
-} from './useBinInspectorTypes';
+} from './binInspectorTypes';
 import { useBinInspectorMultiActions } from './useBinInspectorMultiActions';
 
 export type {
@@ -39,7 +40,7 @@ export type {
   MaxHeightReason,
   MinHeightReason,
   UseBinInspectorReturn,
-} from './useBinInspectorTypes';
+} from './binInspectorTypes';
 
 /**
  * Shared hook for bin inspector logic.

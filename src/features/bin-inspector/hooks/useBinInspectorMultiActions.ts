@@ -22,7 +22,7 @@ import type { LayoutError } from '@/core/result';
 import { clamp, canPlaceBin } from '@/shared/utils/validation';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import type { TFunction } from '@/i18n/context';
-import { emitLinkedBinResize } from './useBinInspectorTypes';
+import { emitLinkedBinResize } from './binInspectorTypes';
 
 export interface MultiActionDeps {
   selectedBins: Bin[];
@@ -113,7 +113,7 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
         return { bin: b, newHeight };
       });
 
-      const succeededBinIds = new Set<string>();
+      const succeededBinIds = new Set<BinId>();
       batch(() => {
         for (const { bin: b, newHeight } of updates) {
           if (isErr(updateBin(b.id, { height: newHeight }))) break;
@@ -123,6 +123,7 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
 
       // Emit sync events only for bins that were successfully updated.
       // Deduplicate by linkedDesignId to avoid concurrent IDB writes.
+      // linkedDesignId isn't branded, so a plain string set is correct here.
       const emittedDesigns = new Set<string>();
       for (const { bin: b, newHeight } of updates) {
         if (!succeededBinIds.has(b.id)) continue;
@@ -216,7 +217,11 @@ export function useBinInspectorMultiActions(deps: MultiActionDeps): MultiActions
 
       if (blocked.length > 0) {
         addToast(
-          `Moved ${movable.length} of ${binsToMove.length} bins (${blocked.length} blocked)`,
+          t('toast.movedPartialToLayer', {
+            moved: movable.length,
+            total: binsToMove.length,
+            blocked: blocked.length,
+          }),
           'info'
         );
       } else {

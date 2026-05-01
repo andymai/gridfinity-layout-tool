@@ -822,6 +822,7 @@
   "toast.binsMovedToLayer": "{count} bin(s) moved to layer",
   "toast.movedToLayer": "Moved to {name}",
   "toast.movedMultiToLayer": "Moved {count} bins to {name}",
+  "toast.movedPartialToLayer": "Moved {moved} of {total} bins ({blocked} blocked)",
   "toast.noMovableCollisions": "No bins can be moved to this layer (collisions)",
   "toast.dragFromStash": "Drag bin from stash to place it on a layer",
   "toast.customPropertySet": "Set \"{key}\" on {count} bins",
