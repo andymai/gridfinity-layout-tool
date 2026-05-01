@@ -15,20 +15,33 @@
  */
 
 import type { Result } from '@/core/result';
-import type { AnyCommandDef, CommandDefShape } from './types';
+import type { AggregateName, AnyCommandDef, CommandDefShape } from './types';
 import type { Registry } from './createRegistry';
 
-/** Extract the value type from a command def. */
+/**
+ * Extract the value type from a command def.
+ *
+ * The seventh slot uses `AggregateName` (the full union) rather than `never`:
+ * `'layout' extends never` is `false`, which would make the conditional
+ * collapse to `never` for any concrete command def. `'layout' extends AggregateName`
+ * is trivially true, so the conditional matches and `infer V` succeeds.
+ */
 export type ValueOf<C> =
-  C extends CommandDefShape<string, unknown, infer V, string, unknown, unknown, never> ? V : never;
+  C extends CommandDefShape<string, unknown, infer V, string, unknown, unknown, AggregateName>
+    ? V
+    : never;
 
 /** Extract the error union from a command def — the union of every `err()` return inside `handle`. */
 export type ErrorOf<C> =
-  C extends CommandDefShape<string, unknown, unknown, string, unknown, infer E, never> ? E : never;
+  C extends CommandDefShape<string, unknown, unknown, string, unknown, infer E, AggregateName>
+    ? E
+    : never;
 
 /** Extract the payload type from a command def. */
 export type PayloadOf<C> =
-  C extends CommandDefShape<string, infer P, unknown, string, unknown, unknown, never> ? P : never;
+  C extends CommandDefShape<string, infer P, unknown, string, unknown, unknown, AggregateName>
+    ? P
+    : never;
 
 /**
  * Mutations surface derived from a registry. One method per command,

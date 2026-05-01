@@ -12,6 +12,7 @@
  */
 
 import type { z } from 'zod';
+import type { Draft } from 'immer';
 import type { Result } from '@/core/result';
 import type { Layout, LayoutLibrary } from '@/core/types';
 
@@ -35,12 +36,18 @@ export interface AggregateRoot {
 }
 
 /**
- * Mutable Immer draft shape per aggregate. `apply()` writes through this.
+ * Mutable Immer draft shape per aggregate. `apply()` receives the draft
+ * for its declared aggregate and writes through it directly. Wrapped in
+ * Immer's `Draft<T>` so the deep-readonly bits of the source types
+ * (Layout's branded `Mm`/`GridUnits`, frozen arrays, etc.) become
+ * writable for the duration of `apply()`.
+ *
+ * Designer is `unknown` until that migration lands.
  */
 export interface AggregateDraft {
-  readonly layout: Layout;
-  readonly library: LayoutLibrary;
-  readonly designer: unknown;
+  layout: Draft<Layout>;
+  library: Draft<LayoutLibrary>;
+  designer: unknown;
 }
 
 /**

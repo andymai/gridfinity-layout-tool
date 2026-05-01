@@ -25,6 +25,15 @@ export interface Registry<T extends readonly AnyCommandDef[]> {
 }
 
 export function createRegistry<const T extends readonly AnyCommandDef[]>(commands: T): Registry<T> {
+  const seen = new Set<string>();
+  for (const command of commands) {
+    if (seen.has(command.type)) {
+      throw new Error(
+        `createRegistry: duplicate command type "${command.type}" — every command must register a unique type`
+      );
+    }
+    seen.add(command.type);
+  }
   const byType = Object.fromEntries(commands.map((c) => [c.type, c])) as RegistryByType<T>;
   return { commands, byType };
 }

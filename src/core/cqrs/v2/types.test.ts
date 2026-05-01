@@ -14,6 +14,7 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
 import type { Result, ValidationError, LayoutError } from '@/core/result';
 import { sampleAddBin, sampleDeleteBin, sampleRegistry } from './sample';
+import { createRegistry } from './createRegistry';
 import type { Mutations, PayloadOf, ValueOf, ErrorOf } from './Mutations';
 
 describe('v2 type inference', () => {
@@ -85,9 +86,16 @@ describe('v2 type inference', () => {
   });
 });
 
-// Runtime no-op so vitest's test runner registers the file.
-describe('v2 runtime smoke', () => {
-  it('registry contains both sample commands', () => {
+describe('v2 registry runtime', () => {
+  it('contains both sample commands', () => {
     expect(sampleRegistry.commands).toHaveLength(2);
+  });
+
+  it('throws when two commands declare the same type', () => {
+    expect(() =>
+      createRegistry([sampleAddBin, sampleAddBin] as const)
+    ).toThrowErrorMatchingInlineSnapshot(
+      `[Error: createRegistry: duplicate command type "sample.bin.add" — every command must register a unique type]`
+    );
   });
 });
