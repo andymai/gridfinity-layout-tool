@@ -97,18 +97,6 @@ describe('bulkActions', () => {
       expect(useLayoutStore.getState().layout.bins).toHaveLength(count);
     });
 
-    it('sets _fillMeta when bins are added', () => {
-      const { fillLayer, layout } = useLayoutStore.getState();
-      const lid = layout.layers[0].id;
-      const cid = layout.categories[0].id;
-
-      fillLayer(lid, 1, 1, cid);
-      const meta = useLayoutStore.getState()._fillMeta;
-      expect(meta).not.toBeNull();
-      expect(meta?.type).toBe('uniform');
-      expect(meta?.layerId).toBe(lid);
-    });
-
     it('returns 0 when layer is already full', () => {
       const { fillLayer, layout } = useLayoutStore.getState();
       const lid = layout.layers[0].id;

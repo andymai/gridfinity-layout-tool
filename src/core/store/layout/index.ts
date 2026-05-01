@@ -9,7 +9,7 @@ import { createBulkActions } from './bulkActions';
 import { createCoreActions } from './coreActions';
 import type { LayoutState } from './types';
 
-export type { FillMeta, EditSource } from './types';
+export type { EditSource } from './types';
 
 /**
  * Empty placeholder layout used as the initial state.
@@ -54,7 +54,6 @@ export const useLayoutStore = create<LayoutState>()(
       layout: PLACEHOLDER_LAYOUT,
       activeLayoutId: null,
       lastEditSource: null,
-      _fillMeta: null,
 
       ...createBinActions(setLocal, get),
       ...createLayerActions(setLocal, get),

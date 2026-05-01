@@ -17,6 +17,7 @@ import type { Locale } from '@/i18n/types.ts';
 import { recoverFromBadWwwMigration } from '@/core/storage/wwwMigrationRecovery';
 import {
   connectEventStoreToBus,
+  connectFillAnalytics,
   connectLibraryPersistence,
   connectSelectionPruning,
   eventBus,
@@ -121,6 +122,10 @@ if (isSmokeMode()) {
       // Persist library to IndexedDB immediately when cloudShare metadata changes
       // (other library fields are persisted via useAutoSave's debounced flow)
       connectLibraryPersistence(eventBus);
+
+      // Forward bin.layerFilled events to PostHog/mlTracking — replaces the
+      // v1 _fillMeta side-channel that the layout store used to set on fills
+      connectFillAnalytics(eventBus);
 
       // Connect design-linking — bridges CQRS events to syncEventBus for
       // design dimension cascade between linked bins and designs

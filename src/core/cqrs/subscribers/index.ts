@@ -7,3 +7,4 @@
 
 export { connectSelectionPruning } from './selectionPruning';
 export { connectLibraryPersistence } from './libraryPersistence';
+export { connectFillAnalytics } from './fillAnalytics';

@@ -16,17 +16,8 @@ export function createBulkActions(setLocal: SetLocal, get: GetState) {
       const result = fillAllWithSize(layout, layerId, width, depth, categoryId, halfBinMode);
 
       if (result.bins.length > 0) {
-        const layer = layout.layers.find((l) => l.id === layerId);
         setLocal((state) => {
           state.layout.bins.push(...result.bins);
-          state._fillMeta = {
-            type: 'uniform',
-            count: result.bins.length,
-            layerId,
-            width,
-            depth,
-            layerHeight: layer?.height ?? 1,
-          };
         });
       }
 
@@ -51,11 +42,6 @@ export function createBulkActions(setLocal: SetLocal, get: GetState) {
       if (result.bins.length > 0) {
         setLocal((state) => {
           state.layout.bins.push(...result.bins);
-          state._fillMeta = {
-            type: 'gaps',
-            count: result.bins.length,
-            layerId,
-          };
         });
       }
 
