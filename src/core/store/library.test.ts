@@ -636,8 +636,8 @@ describe('clearCloudShare', () => {
   });
 });
 
-describe('setCloudShare persist safety', () => {
-  it('should persist library without accessing revoked proxy', () => {
+describe('setCloudShare', () => {
+  it('sets cloudShare on the entry', () => {
     const store = useLibraryStore.getState();
     const preview: LayoutPreview = {
       drawerWidth: 10,
@@ -647,14 +647,16 @@ describe('setCloudShare persist safety', () => {
       layerCount: 1,
     };
     const entry = store.createEntry('Test', 'layout-1' as LayoutId, preview);
-    expect(() => {
-      store.setCloudShare(entry.id, {
-        id: 'share-1',
-        deleteToken: 'token-1',
-        permission: 'view',
-        sharedAt: Date.now(),
-      });
-    }).not.toThrow();
+    const share = {
+      id: 'share-1',
+      deleteToken: 'token-1',
+      permission: 'view' as const,
+      sharedAt: Date.now(),
+    };
+
+    store.setCloudShare(entry.id, share);
+
+    expect(useLibraryStore.getState().getEntry(entry.id)?.cloudShare).toEqual(share);
   });
 });
 

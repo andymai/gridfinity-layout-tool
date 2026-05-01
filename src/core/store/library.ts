@@ -10,21 +10,7 @@ import type {
 import { gridUnits, heightUnits } from '@/core/types';
 import { CONSTRAINTS, getDefaultDrawerSize } from '@/core/constants';
 import type { Result, Unit, LayoutError } from '@/core/result';
-import { err, layoutLastEntity, OK, isErr } from '@/core/result';
-import { saveLibrary } from '@/core/storage';
-
-/**
- * Persist library in the background, logging on failure.
- * Uses structuredClone to detach from Immer proxies before the async save.
- */
-function persistLibrary(): void {
-  const snapshot = structuredClone(useLibraryStore.getState().library);
-  void saveLibrary(snapshot).then((result) => {
-    if (isErr(result)) {
-      console.warn('[library] Background save failed:', result.error.code, result.error.message);
-    }
-  });
-}
+import { err, layoutLastEntity, OK } from '@/core/result';
 
 // Re-export computePreview for backward compatibility with existing imports
 export { computePreview } from '@/core/storage';
@@ -226,8 +212,6 @@ export const useLibraryStore = create<LibraryState>()(
           entry.cloudShare = share;
         }
       });
-      // Persist library immediately so cloudShare survives refresh
-      persistLibrary();
     },
 
     clearCloudShare: (layoutId) => {
@@ -237,8 +221,6 @@ export const useLibraryStore = create<LibraryState>()(
           entry.cloudShare = undefined;
         }
       });
-      // Persist library immediately
-      persistLibrary();
     },
   }))
 );

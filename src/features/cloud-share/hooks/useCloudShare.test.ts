@@ -28,6 +28,16 @@ vi.mock('@/core/storage', async () => {
   };
 });
 
+// Mock useMutations — useCloudShare reads setCloudShare/clearCloudShare from it
+const setCloudShareSpy = vi.fn();
+const clearCloudShareSpy = vi.fn();
+vi.mock('@/shared/contexts/MutationsContext', () => ({
+  useMutations: () => ({
+    setCloudShare: setCloudShareSpy,
+    clearCloudShare: clearCloudShareSpy,
+  }),
+}));
+
 const TEST_LAYOUT_ID = 'test-layout-id';
 
 function createTestLibrary(cloudShare?: CloudShareInfo): LayoutLibrary {
@@ -245,9 +255,6 @@ describe('useCloudShare', () => {
         ok({ success: true as const, message: 'Deleted' })
       );
 
-      const clearCloudShareSpy = vi.fn();
-      useLibraryStore.setState({ clearCloudShare: clearCloudShareSpy });
-
       const { result } = renderHook(() => useCloudShare());
 
       let success: boolean | undefined;
@@ -285,9 +292,6 @@ describe('useCloudShare', () => {
       });
 
       vi.mocked(shareApi.deleteShare).mockResolvedValue(err(apiNotFound('already-deleted')));
-
-      const clearCloudShareSpy = vi.fn();
-      useLibraryStore.setState({ clearCloudShare: clearCloudShareSpy });
 
       const { result } = renderHook(() => useCloudShare());
 

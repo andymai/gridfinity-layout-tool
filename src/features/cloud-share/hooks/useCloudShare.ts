@@ -19,6 +19,7 @@ import { isOk, getUserMessage } from '@/core/result';
 import type { ApiError } from '@/core/result';
 import { copyToClipboard } from '@/core/storage';
 import { commandBus, createCommand } from '@/core/cqrs';
+import { useMutations } from '@/shared/contexts/MutationsContext';
 import { slugify } from '@/shared/utils/slug';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 
@@ -71,15 +72,15 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     };
   }, []);
 
-  const { activeLayoutId, entries, authorName, setCloudShare, clearCloudShare } = useLibraryStore(
+  const { activeLayoutId, entries, authorName } = useLibraryStore(
     useShallow((state) => ({
       activeLayoutId: state.library.activeLayoutId,
       entries: state.library.entries,
       authorName: state.library.settings.authorName,
-      setCloudShare: state.setCloudShare,
-      clearCloudShare: state.clearCloudShare,
     }))
   );
+
+  const { setCloudShare, clearCloudShare } = useMutations();
 
   const layout = useLayoutStore((state) => state.layout);
   const announceToScreenReader = useInteractionStore((state) => state.announceToScreenReader);
