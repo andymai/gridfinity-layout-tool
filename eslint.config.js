@@ -8,6 +8,7 @@ import i18next from 'eslint-plugin-i18next'
 import boundaries from 'eslint-plugin-boundaries'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
+import noInitTimeImportedCall from './eslint-rules/no-init-time-imported-call.js'
 
 export default defineConfig([
   globalIgnores(['dist', 'coverage', 'e2e', 'scripts', 'benchmarks', 'reports', 'playwright.config.ts', 'playwright.smoke.config.ts', 'playwright-ct.config.ts', 'playwright', '**/*.visual.tsx']),
@@ -22,6 +23,7 @@ export default defineConfig([
     ],
     plugins: {
       i18next: fixupPluginRules(i18next),
+      local: { rules: { 'no-init-time-imported-call': noInitTimeImportedCall } },
     },
     languageOptions: {
       ecmaVersion: 2020,
@@ -38,6 +40,8 @@ export default defineConfig([
       },
     },
     rules: {
+      // Catch chunk-init capture hazards (#1466, #1558).
+      'local/no-init-time-imported-call': 'error',
       // TypeScript strict rules
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['error', {
