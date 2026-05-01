@@ -7,6 +7,9 @@ import { test, expect, type ConsoleMessage } from '@playwright/test';
  * - Serves a parseable `/version.json` whose hash matches the one the runtime
  *   reports — catches the wwwMigration-class bug where the SW precache and the
  *   deployed asset graph disagree.
+ * - Drives one bin-creation click through the live command bus — catches
+ *   chunk-init capture bugs (#1466 pattern, #1558) where a singleton like
+ *   `commandBus` is `undefined` when a closure captured it during module-init.
  *
  * Runs under `playwright.smoke.config.ts`, single chromium project, against
  * `PLAYWRIGHT_TEST_BASE_URL`. Used by both PR-preview and post-promote workflows.
@@ -89,6 +92,22 @@ test('boots ?smoke=1 fixture and exposes a fresh /version.json', async ({ page, 
   expect(runtimeVersion, 'smoke harness did not expose __SMOKE_BUILD_INFO__').toBeTruthy();
   expect(runtimeVersion?.version).toBe(versionJson.version);
   expect(runtimeVersion?.gitSha).toBe(versionJson.gitSha);
+
+  // Click on the grid to dispatch bin.add through the live command bus.
+  // The smoke layout has 1 layer + 1 category, so this is a happy-path draw.
+  // A chunk-init capture bug (commandBus undefined inside cqrsMutations)
+  // surfaces here as a `pageerror`.
+  const grid = page.locator('[role="application"]');
+  const gridBox = await grid.boundingBox();
+  expect(gridBox, 'grid bounding box not measurable').toBeTruthy();
+  if (gridBox) {
+    await page.mouse.click(gridBox.x + 50, gridBox.y + gridBox.height - 50);
+    // Assert errors before bin-count so a runtime exception (the very bug
+    // class this assertion guards against) shows up in the failure message
+    // instead of being masked by a "no [data-bin-id] within 5s" timeout.
+    expect(errors, `bin-add dispatch raised: ${errors.join('\n')}`).toHaveLength(0);
+    await expect(page.locator('[data-bin-id]')).toHaveCount(1, { timeout: 5_000 });
+  }
 
   // Console must be clean (excluding ignored patterns).
   expect(errors, `unexpected console errors: ${errors.join('\n')}`).toHaveLength(0);
