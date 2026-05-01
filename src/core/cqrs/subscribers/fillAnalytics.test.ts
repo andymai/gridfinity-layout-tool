@@ -99,6 +99,10 @@ describe('fillAnalytics subscriber', () => {
     bus.publish(makeFillEvent('gaps', [makeBin('b_1')]));
 
     expect(mlTracking.trackFill).toHaveBeenCalledWith('gaps', 1, layerId('layer_1'), undefined);
+    // markFeatureUsed('fill') fires for ALL fill types — assert here too
+    // to catch a silent regression if it gets accidentally moved into a
+    // uniform-only branch.
+    expect(markFeatureUsed).toHaveBeenCalledWith('fill');
     expect(trackFillOperation).toHaveBeenCalledWith('fill_gaps', 1);
     expect(trackBinCreated).toHaveBeenCalledWith({ method: 'fill_gaps', count: 1 });
   });

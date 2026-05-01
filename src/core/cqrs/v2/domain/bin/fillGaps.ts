@@ -6,9 +6,10 @@
  * payload with `fillType: 'gaps'` so the analytics subscriber can
  * distinguish uniform vs gap-fill operations.
  *
- * Returns `result.addedCount` (matching v1's return) — gap fills can
- * place a different count than `bins.length` reports when the underlying
- * helper merges adjacent placements.
+ * Returns `result.addedCount` (matching v1's return). Today this equals
+ * `bins.length`, but the underlying helper distinguishes the two for
+ * forward compatibility — keep the v1 return shape so callers that
+ * already destructure `addedCount` aren't broken if the helper diverges.
  */
 
 import { z } from 'zod';
