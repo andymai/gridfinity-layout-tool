@@ -6,47 +6,33 @@
  *
  * Composes: WorkspaceHeader, CutoutCanvas3D (WebGL renderer), and
  * wires useCutoutInteraction for the interaction state machine.
+ *
+ * Sub-modules in sibling files:
+ *   - `useCutoutWorkspaceCamera`         — zoom/pan state + handleWheel
+ *   - `useCutoutWorkspacePointer`        — background/move/up + marquee + pan
+ *   - `cutoutWorkspaceContextActions`    — right-click menu builder
  */
 
-import { useCallback, useState, useRef, useMemo, useEffect } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
-import {
-  centerInBin,
-  flipSelectionHorizontal,
-  flipSelectionVertical,
-} from '../panel/CutoutsSection/geometry';
 import { useCutoutInteraction } from '../panel/CutoutsSection/useCutoutInteraction';
 import { CutoutCanvas3D } from '../panel/CutoutsSection/renderer';
-import {
-  MIN_ZOOM,
-  MAX_ZOOM,
-  ZOOM_STEP,
-  FIT_PADDING,
-} from '../panel/CutoutsSection/renderer/constants';
 import { WorkspaceHeader } from './WorkspaceHeader';
 import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
 import { useSvgImport } from '../panel/CutoutsSection/svgImport';
 import { FloatingInspector } from './FloatingInspector';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
-import type { ContextMenuAction } from '../panel/CutoutsSection/CutoutContextMenu';
 import { TopRuler, LeftRuler, RulerCorner } from './Rulers';
 import { CutoutQuickstartOverlay } from './CutoutQuickstartOverlay';
 import { CutoutEmptyState } from '../panel/CutoutsSection/CutoutEmptyState';
 import { useCutoutQuickstart } from '../../hooks/useCutoutQuickstart';
 import { useTranslation } from '@/i18n';
+import { useCutoutWorkspaceCamera } from './useCutoutWorkspaceCamera';
+import { useCutoutWorkspacePointer } from './useCutoutWorkspacePointer';
+import { buildCutoutContextActions } from './cutoutWorkspaceContextActions';
 
-/**
- * Placeholder zoom/pan state for the workspace mode.
- *
- * In the WebGL renderer, zoom/pan is managed by the OrthographicCamera
- * inside the R3F Canvas via useViewportCamera. Since the camera lives
- * inside the Canvas tree, we manage a lightweight mirror for the rulers
- * and header. The R3F SceneContent uses useViewportCamera internally.
- *
- * TODO: Connect ruler sync once useViewportCamera exposes state via ref/context.
- */
 export function CutoutWorkspace() {
   const {
     params,
@@ -117,66 +103,21 @@ export function CutoutWorkspace() {
     setOverlayForcedVisible(true);
   }, []);
 
-  // Measure canvas container dynamically
-  const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ width: 600, height: 400 });
-
-  useEffect(() => {
-    const el = canvasContainerRef.current;
-    if (!el) return;
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        if (width > 0 && height > 0) {
-          setContainerSize({ width, height });
-        }
-      }
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const canvasWidth = containerSize.width;
-  const canvasHeight = containerSize.height;
-
-  // Lightweight zoom state for rulers & header (mirrors camera zoom)
-  const defaultZoom = useMemo(() => {
-    const pad = 1 - 2 * FIT_PADDING;
-    return Math.min((canvasWidth * pad) / binWidth, (canvasHeight * pad) / binDepth, MAX_ZOOM);
-  }, [canvasWidth, canvasHeight, binWidth, binDepth]);
-
-  const [zoom, setZoom] = useState(defaultZoom);
-  const [cameraCenter, setCameraCenter] = useState({ x: binWidth / 2, y: binDepth / 2 });
-
-  // Re-fit camera when bin dimensions or container size change
-  /* eslint-disable react-hooks/set-state-in-effect -- syncing camera to external bin dimension changes from designer store */
-  useEffect(() => {
-    setZoom(defaultZoom);
-    setCameraCenter({ x: binWidth / 2, y: binDepth / 2 });
-  }, [defaultZoom, binWidth, binDepth]);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  const fitToView = useCallback(() => {
-    const pad = 1 - 2 * FIT_PADDING;
-    const newZoom = Math.min(
-      (canvasWidth * pad) / binWidth,
-      (canvasHeight * pad) / binDepth,
-      MAX_ZOOM
-    );
-    setZoom(newZoom);
-    setCameraCenter({ x: binWidth / 2, y: binDepth / 2 });
-  }, [canvasWidth, canvasHeight, binWidth, binDepth]);
-
-  const zoomIn = useCallback(() => {
-    setZoom((z) => Math.min(MAX_ZOOM, z * ZOOM_STEP));
-  }, []);
-
-  const zoomOut = useCallback(() => {
-    setZoom((z) => Math.max(MIN_ZOOM, z / ZOOM_STEP));
-  }, []);
-
-  const zoomPercent = Math.round((zoom / defaultZoom) * 100);
+  // Camera + container (zoom/pan/wheel + ResizeObserver)
+  const {
+    canvasContainerRef,
+    containerSize,
+    canvasWidth,
+    canvasHeight,
+    zoom,
+    cameraCenter,
+    setCameraCenter,
+    zoomPercent,
+    zoomIn,
+    zoomOut,
+    fitToView,
+    handleWheel,
+  } = useCutoutWorkspaceCamera(binWidth, binDepth);
 
   // Ruler sync: scale=1 for WebGL (world units = mm), zoom from camera
   const scale = 1;
@@ -247,197 +188,28 @@ export function CutoutWorkspace() {
     maskCellSize,
   });
 
-  // Marquee state — now in mm world coordinates (no SVG pixel conversion needed)
-  const [marquee, setMarquee] = useState<{ x: number; y: number; w: number; h: number } | null>(
-    null
-  );
-  const marqueeStartRef = useRef<{ x: number; y: number } | null>(null);
-
-  // Middle-click pan state
-  const isPanningRef = useRef(false);
-  const panStartRef = useRef({ x: 0, y: 0 });
-
-  // Space-to-pan state
-  const [spaceHeld, setSpaceHeld] = useState(false);
-  const spacePanRef = useRef(false);
-
-  // Cursor world position for coordinate display
-  const [cursorWorldPos, setCursorWorldPos] = useState<{ x: number; y: number } | null>(null);
-
-  // Keyboard shortcuts: Space-to-pan, Ctrl+0 fit-to-view
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !e.repeat && !(e.target instanceof HTMLInputElement)) {
-        e.preventDefault();
-        setSpaceHeld(true);
-      }
-      if (e.key === '0' && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        fitToView();
-      }
-    };
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.code === 'Space') {
-        setSpaceHeld(false);
-        spacePanRef.current = false;
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [fitToView]);
-
-  // Background click handler — receives world-space mm coords from R3F
-  const handleBackgroundPointerDown = useCallback(
-    (worldX: number, worldY: number, nativeEvent: PointerEvent) => {
-      // Middle-click starts pan
-      if (nativeEvent.button === 1) {
-        nativeEvent.preventDefault();
-        isPanningRef.current = true;
-        panStartRef.current = { x: nativeEvent.clientX, y: nativeEvent.clientY };
-        return;
-      }
-
-      // Space+click starts pan
-      if (spaceHeld && nativeEvent.button === 0) {
-        nativeEvent.preventDefault();
-        spacePanRef.current = true;
-        panStartRef.current = { x: nativeEvent.clientX, y: nativeEvent.clientY };
-        return;
-      }
-
-      // Ruler tool: sticky mode (toolbar) or Shift+drag quick measurement
-      if (mode.type === 'ruler-ready' || (nativeEvent.shiftKey && mode.type === 'idle')) {
-        const sticky = mode.type === 'ruler-ready';
-        setMode({ type: 'measuring', startX: worldX, startY: worldY, sticky });
-        return;
-      }
-
-      // Path tool: start or continue path drawing
-      if ((mode.type === 'placing' && mode.shape === 'path') || mode.type === 'path-drawing') {
-        handlePathBackgroundDown(worldX, worldY, nativeEvent.shiftKey);
-        return;
-      }
-
-      // Vertex editing: try segment hit-test for point insertion, deselect on miss
-      if (mode.type === 'vertex-editing') {
-        handleVertexBackgroundDown(worldX, worldY);
-        return;
-      }
-
-      if (mode.type === 'placing') {
-        setMode({ type: 'pending-place', shape: mode.shape, startMmX: worldX, startMmY: worldY });
-        return;
-      }
-
-      deselectAll();
-      // Marquee in mm world coords
-      marqueeStartRef.current = { x: worldX, y: worldY };
-      setMarquee({ x: worldX, y: worldY, w: 0, h: 0 });
-    },
-    [mode, setMode, deselectAll, spaceHeld, handlePathBackgroundDown, handleVertexBackgroundDown]
-  );
-
-  // Pointer move — receives world-space mm coords from R3F
-  const handleCanvasPointerMove = useCallback(
-    (worldX: number, worldY: number, nativeEvent: PointerEvent) => {
-      // Track cursor world position for coordinate display
-      setCursorWorldPos({ x: worldX, y: worldY });
-
-      // Handle middle-click or space pan
-      if (isPanningRef.current || spacePanRef.current) {
-        const dx = nativeEvent.clientX - panStartRef.current.x;
-        const dy = nativeEvent.clientY - panStartRef.current.y;
-        panStartRef.current = { x: nativeEvent.clientX, y: nativeEvent.clientY };
-        // Pan: adjust camera center
-        setCameraCenter((prev) => ({
-          x: prev.x - dx / zoom,
-          y: prev.y + dy / zoom,
-        }));
-        return;
-      }
-
-      if (
-        mode.type === 'pending-place' ||
-        mode.type === 'dragging' ||
-        mode.type === 'resizing' ||
-        mode.type === 'rotating' ||
-        mode.type === 'group-rotating' ||
-        mode.type === 'group-scaling' ||
-        mode.type === 'drawing' ||
-        mode.type === 'path-drawing' ||
-        mode.type === 'vertex-editing' ||
-        mode.type === 'measuring'
-      ) {
-        handlePointerMove(worldX, worldY, nativeEvent.shiftKey, nativeEvent.altKey);
-        return;
-      }
-
-      // Marquee update — in mm world coords
-      if (!marqueeStartRef.current) return;
-      setMarquee({
-        x: marqueeStartRef.current.x,
-        y: marqueeStartRef.current.y,
-        w: worldX - marqueeStartRef.current.x,
-        h: worldY - marqueeStartRef.current.y,
-      });
-    },
-    [mode, handlePointerMove, zoom]
-  );
-
-  const handleCanvasPointerUp = useCallback(() => {
-    if (isPanningRef.current) {
-      isPanningRef.current = false;
-      return;
-    }
-    if (spacePanRef.current) {
-      spacePanRef.current = false;
-      return;
-    }
-
-    if (
-      mode.type === 'pending-place' ||
-      mode.type === 'dragging' ||
-      mode.type === 'resizing' ||
-      mode.type === 'rotating' ||
-      mode.type === 'group-rotating' ||
-      mode.type === 'group-scaling' ||
-      mode.type === 'drawing' ||
-      mode.type === 'path-drawing' ||
-      mode.type === 'vertex-editing' ||
-      mode.type === 'measuring'
-    ) {
-      handlePointerUp();
-      return;
-    }
-
-    // Marquee selection — coordinates are already in mm world space
-    if (marquee && marqueeStartRef.current) {
-      const mmLeft = Math.min(marquee.x, marquee.x + marquee.w);
-      const mmRight = Math.max(marquee.x, marquee.x + marquee.w);
-      const mmBottom = Math.min(marquee.y, marquee.y + marquee.h);
-      const mmTop = Math.max(marquee.y, marquee.y + marquee.h);
-
-      const mw = mmRight - mmLeft;
-      const mh = mmTop - mmBottom;
-
-      if (mw + mh > 2) {
-        for (const cutout of cutouts) {
-          const cRight = cutout.x + cutout.width;
-          const cTop = cutout.y + cutout.depth;
-          if (cutout.x < mmRight && cRight > mmLeft && cutout.y < mmTop && cTop > mmBottom) {
-            selectCutout(cutout.id, true);
-          }
-        }
-      }
-    }
-
-    marqueeStartRef.current = null;
-    setMarquee(null);
-  }, [mode, handlePointerUp, marquee, cutouts, selectCutout]);
+  // Pointer handlers + marquee + pan + Space-to-pan + cursor world pos
+  const {
+    marquee,
+    spaceHeld,
+    cursorWorldPos,
+    handleBackgroundPointerDown,
+    handleCanvasPointerMove,
+    handleCanvasPointerUp,
+  } = useCutoutWorkspacePointer({
+    mode,
+    setMode,
+    cutouts,
+    selectCutout,
+    deselectAll,
+    handlePointerMove,
+    handlePointerUp,
+    handlePathBackgroundDown,
+    handleVertexBackgroundDown,
+    zoom,
+    setCameraCenter,
+    fitToView,
+  });
 
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -454,172 +226,44 @@ export function CutoutWorkspace() {
     mode.type === 'group-rotating' ||
     mode.type === 'group-scaling';
 
-  // Wheel zoom handler on the container div
-  const handleWheel = useCallback(
-    (e: React.WheelEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      const factor = e.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
-      const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * factor));
-      if (newZoom === zoom) return;
-
-      // Cursor position in screen pixels relative to the container
-      const rect = e.currentTarget.getBoundingClientRect();
-      const cx = e.clientX - rect.left;
-      const cy = e.clientY - rect.top;
-
-      // Cursor in world coordinates (before zoom change)
-      const worldX = cameraCenter.x + (cx - canvasWidth / 2) / zoom;
-      const worldY = cameraCenter.y - (cy - canvasHeight / 2) / zoom;
-
-      // After zoom, same screen pixel should map to same world point
-      setCameraCenter({
-        x: worldX - (cx - canvasWidth / 2) / newZoom,
-        y: worldY + (cy - canvasHeight / 2) / newZoom,
-      });
-      setZoom(newZoom);
-    },
-    [zoom, cameraCenter, canvasWidth, canvasHeight]
-  );
-
   // Build context menu actions
-  const contextMenuActions = useMemo((): ContextMenuAction[] => {
-    const hasSelection = selection.size > 0;
-    const hasClipboard = clipboard.length > 0;
-    const actions: ContextMenuAction[] = [];
-
-    if (hasSelection) {
-      actions.push({
-        label: t('common.copy'),
-        onClick: copySelected,
-        shortcut: { keys: 'C', modifier: true },
-      });
-      actions.push({
-        label: t('common.duplicate'),
-        onClick: duplicateSelected,
-        shortcut: { keys: 'D', modifier: true },
-      });
-      actions.push({
-        label: t('common.delete'),
-        onClick: deleteSelected,
-        danger: true,
-        dividerAfter: true,
-        shortcut: { keys: 'Del' },
-      });
-    }
-
-    actions.push({
-      label: t('binDesigner.cutouts.paste'),
-      onClick: pasteFromClipboard,
-      disabled: !hasClipboard,
-      shortcut: { keys: 'V', modifier: true },
-    });
-
-    actions.push({
-      label: t('binDesigner.cutouts.selectAll'),
-      onClick: selectAll,
-      dividerAfter: hasSelection && selection.size < cutouts.length,
-      shortcut: { keys: 'A', modifier: true },
-    });
-
-    if (hasSelection && selection.size === 1) {
-      const cutout = cutouts.find((c) => selection.has(c.id));
-      if (cutout) {
-        actions.push({
-          label: t('binDesigner.cutouts.rotate90'),
-          onClick: () => {
-            const newRotation = (cutout.rotation + 90) % 360;
-            updateCutout(cutout.id, { rotation: newRotation });
-          },
-          shortcut: { keys: 'R' },
-        });
-      }
-    }
-
-    if (hasSelection) {
-      const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
-      const anyLocked = selectedCutouts.some((c) => c.locked);
-
-      actions.push({
-        label: t('binDesigner.cutouts.flipHorizontal'),
-        onClick: () => {
-          const updates = flipSelectionHorizontal(selectedCutouts);
-          if (updates.size > 1) {
-            updateCutoutsBatch(updates);
-          } else {
-            for (const [id, patch] of updates) {
-              updateCutout(id, patch);
-            }
-          }
-        },
-        disabled: anyLocked,
-        shortcut: { keys: 'H', shift: true },
-      });
-
-      actions.push({
-        label: t('binDesigner.cutouts.flipVertical'),
-        onClick: () => {
-          const updates = flipSelectionVertical(selectedCutouts);
-          if (updates.size > 1) {
-            updateCutoutsBatch(updates);
-          } else {
-            for (const [id, patch] of updates) {
-              updateCutout(id, patch);
-            }
-          }
-        },
-        disabled: anyLocked,
-        shortcut: { keys: 'V', shift: true },
-      });
-    }
-
-    if (hasSelection) {
-      actions.push({
-        label: t('binDesigner.cutouts.centerInBin'),
-        onClick: () => {
-          const selected = cutouts.filter((c) => selection.has(c.id));
-          const positions = centerInBin(selected, binWidth, binDepth);
-          for (const [id, pos] of Object.entries(positions)) {
-            updateCutout(id, pos);
-          }
-        },
-        dividerAfter: true,
-      });
-
-      // Lock/hide/layer ordering
-      const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
-      const allLocked = selectedCutouts.every((c) => c.locked);
-
-      actions.push({
-        label: allLocked
-          ? t('binDesigner.cutoutEditor.unlock')
-          : t('binDesigner.cutoutEditor.lock'),
-        onClick: () => {
-          const ids = [...selection];
-          if (allLocked) unlockCutouts(ids);
-          else lockCutouts(ids);
-        },
-        shortcut: { keys: 'L', modifier: true },
-      });
-    }
-
-    return actions;
-  }, [
-    selection,
-    clipboard,
-    cutouts,
-    copySelected,
-    duplicateSelected,
-    deleteSelected,
-    pasteFromClipboard,
-    selectAll,
-    updateCutout,
-    updateCutoutsBatch,
-    binWidth,
-    binDepth,
-    lockCutouts,
-    unlockCutouts,
-    t,
-  ]);
+  const contextMenuActions = useMemo(
+    () =>
+      buildCutoutContextActions({
+        selection,
+        clipboard,
+        cutouts,
+        binWidth,
+        binDepth,
+        copySelected,
+        duplicateSelected,
+        deleteSelected,
+        pasteFromClipboard,
+        selectAll,
+        updateCutout,
+        updateCutoutsBatch,
+        lockCutouts,
+        unlockCutouts,
+        t,
+      }),
+    [
+      selection,
+      clipboard,
+      cutouts,
+      copySelected,
+      duplicateSelected,
+      deleteSelected,
+      pasteFromClipboard,
+      selectAll,
+      updateCutout,
+      updateCutoutsBatch,
+      binWidth,
+      binDepth,
+      lockCutouts,
+      unlockCutouts,
+      t,
+    ]
+  );
 
   return (
     <div className="relative flex h-full flex-col bg-surface-secondary select-none">
