@@ -15,13 +15,16 @@ import { layoutId as toLayoutId } from '@/core/types';
 import type { LayoutId } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 
+// Match the central library.updateEntry schema (validation/librarySchemas.ts):
+// only {name?, preview?, author?} are accepted via the bus. v1's store action
+// supports `modifiedAt` and `forkedFrom` too, but the central validation
+// strips them before they reach the handler — so they're effectively v1
+// store-internal fields, not CQRS-reachable. v2 mirrors that boundary.
 const updatesSchema = z
   .object({
-    name: z.string(),
-    modifiedAt: z.number(),
-    preview: z.record(z.string(), z.unknown()),
+    name: z.string().min(1).max(CONSTRAINTS.NAME_MAX_LENGTH),
+    preview: z.unknown(),
     author: z.string(),
-    forkedFrom: z.unknown(),
   })
   .partial();
 
@@ -59,10 +62,8 @@ export const updateEntry = defineCommand({
     const changes: Record<string, unknown> = {};
     if (updates.name !== undefined)
       changes.name = updates.name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
-    if (updates.modifiedAt !== undefined) changes.modifiedAt = updates.modifiedAt;
     if (updates.preview !== undefined) changes.preview = updates.preview;
     if (updates.author !== undefined) changes.author = updates.author;
-    if (updates.forkedFrom !== undefined) changes.forkedFrom = updates.forkedFrom;
 
     return ok({
       value: undefined,

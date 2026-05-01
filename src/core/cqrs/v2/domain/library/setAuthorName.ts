@@ -10,7 +10,11 @@ import { ok } from '@/core/result';
 import { CONSTRAINTS } from '@/core/constants';
 import { defineCommand } from '../../defineCommand';
 
-const payloadSchema = z.object({ name: z.string() });
+// Match the central library.setAuthorName schema (validation/librarySchemas.ts):
+// name has min(1).max(NAME_MAX_LENGTH).
+const payloadSchema = z.object({
+  name: z.string().min(1).max(CONSTRAINTS.NAME_MAX_LENGTH),
+});
 
 export const setAuthorName = defineCommand({
   type: 'library.setAuthorName',

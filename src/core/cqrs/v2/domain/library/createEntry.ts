@@ -13,28 +13,41 @@
 
 import { z } from 'zod';
 import { ok } from '@/core/result';
+import { CONSTRAINTS } from '@/core/constants';
 import { generateLayoutId } from '@/shared/utils';
 import { gridUnits, heightUnits, layoutId as toLayoutId } from '@/core/types';
 import type { LayoutEntry, LayoutPreview } from '@/core/types';
 import { defineCommand } from '../../defineCommand';
 
-const previewSchema = z
-  .object({
-    drawerWidth: z.number(),
-    drawerDepth: z.number(),
-    drawerHeight: z.number(),
-    binCount: z.number(),
-    layerCount: z.number(),
-    binMap: z.array(z.unknown()).optional(),
-  })
-  .loose();
-
+// Match the central library.createEntry schema (validation/librarySchemas.ts):
+// name has min/max bounds; preview is opaque (validated structurally inside
+// handle below); `author` is NOT a payload field — author always falls back
+// to library.settings.authorName per v1's CQRS handler behavior.
 const payloadSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1).max(CONSTRAINTS.NAME_MAX_LENGTH),
   layoutId: z.string().optional(),
-  preview: previewSchema.optional(),
-  author: z.string().optional(),
+  preview: z.unknown().optional(),
 });
+
+/** Structural shape `handle()` expects when payload.preview is provided. */
+function isStructuredPreview(value: unknown): value is {
+  drawerWidth: number;
+  drawerDepth: number;
+  drawerHeight: number;
+  binCount: number;
+  layerCount: number;
+  [k: string]: unknown;
+} {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.drawerWidth === 'number' &&
+    typeof v.drawerDepth === 'number' &&
+    typeof v.drawerHeight === 'number' &&
+    typeof v.binCount === 'number' &&
+    typeof v.layerCount === 'number'
+  );
+}
 
 const DEFAULT_PREVIEW: LayoutPreview = {
   drawerWidth: gridUnits(6),
@@ -55,28 +68,35 @@ export const createEntry = defineCommand({
   middleware: { undoCapture: false, validate: true, analytics: true },
   handle: (payload, ctx) => {
     const id = payload.layoutId !== undefined ? toLayoutId(payload.layoutId) : generateLayoutId();
-    const author = payload.author ?? ctx.aggregate.settings.authorName;
+    // Match v1's author resolution: always settings.authorName (v1's CQRS
+    // handler doesn't pass an author arg through; the store action's
+    // optional author parameter is unreachable via the bus).
+    const author = ctx.aggregate.settings.authorName;
     const now = Date.now();
 
-    // Brand the preview's numeric fields if a custom one was provided.
-    // Zod infers them as plain numbers; LayoutPreview requires branded.
-    const preview: LayoutPreview = payload.preview
-      ? // Brand the dimension fields and let the rest of the preview shape
-        // (binCount, layerCount, optional binMap) pass through. The Zod
-        // schema uses .loose() so extra/typed fields like binMap survive
-        // payload validation; we cast at the LayoutPreview boundary because
-        // ThumbnailBin's exact shape isn't validated by Zod here.
-        ({
+    // Truncate inside handle even though the central schema enforces a
+    // max — keeps the event payload's value identical to what apply()
+    // installs, even if validation is bypassed in tests/tools.
+    const name = payload.name.slice(0, CONSTRAINTS.NAME_MAX_LENGTH);
+
+    // payload.preview is z.unknown() in both v2 and central schemas;
+    // structurally validate inside handle so a malformed shape falls
+    // back to defaults instead of crashing on undefined .drawerWidth.
+    const preview: LayoutPreview = isStructuredPreview(payload.preview)
+      ? // Brand the dimension fields. Optional shape extras (binMap, etc.)
+        // pass through via the `[k: string]: unknown` index from
+        // isStructuredPreview's predicate.
+        {
           ...payload.preview,
           drawerWidth: gridUnits(payload.preview.drawerWidth),
           drawerDepth: gridUnits(payload.preview.drawerDepth),
           drawerHeight: heightUnits(payload.preview.drawerHeight),
-        } as LayoutPreview)
+        }
       : DEFAULT_PREVIEW;
 
     const entry: LayoutEntry = {
       id,
-      name: payload.name,
+      name,
       createdAt: now,
       modifiedAt: now,
       author,
@@ -89,10 +109,18 @@ export const createEntry = defineCommand({
     });
   },
   apply: (event, draft) => {
-    // Defensive: entry is always populated by the v2 handler but the event
-    // type marks it optional for v1-replay back-compat (see LibraryEntryCreatedEvent).
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- see comment
-    if (event.payload.entry === undefined) return;
-    draft.entries.push(event.payload.entry);
+    // v2 handler always populates `entry`. v1-era persisted events have
+    // only {layoutId, name} — reconstruct a best-effort entry from
+    // defaults so replay produces *something* instead of silently
+    // dropping the event.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- entry is optional on the event type for v1 back-compat
+    const fallback: LayoutEntry = event.payload.entry ?? {
+      id: event.payload.layoutId,
+      name: event.payload.name,
+      createdAt: 0,
+      modifiedAt: 0,
+      preview: DEFAULT_PREVIEW,
+    };
+    draft.entries.push(fallback);
   },
 });
