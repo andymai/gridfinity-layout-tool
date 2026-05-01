@@ -5,10 +5,13 @@
  *                     merge, individual cell outlines for split)
  */
 
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { cellIndex, getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
 import type { CompartmentConfig } from '@/features/bin-designer/types';
-import { getCompartmentFill, getCompartmentBorder } from './compartmentEditorColors';
+import {
+  getCompartmentFill,
+  getPreviewBorderColor,
+} from '@/features/bin-designer/hooks/usePreviewColor';
 
 /** Renders a single cell in the compartment grid with dynamic styling and keyboard support. */
 export function GridCell({
@@ -66,7 +69,7 @@ export function GridCell({
   const bottomLeft = isAtGridBottom && isAtGridLeft ? cornerRadius : 0;
 
   const fillColor = getCompartmentFill(compartmentId, previewColor);
-  const borderColor = getCompartmentBorder(compartmentId, previewColor);
+  const borderColor = getPreviewBorderColor(previewColor);
 
   // Build box-shadow for compartment edges (inset shadows that properly merge)
   // Walls are shared: only draw right/bottom for internal boundaries to avoid doubling
@@ -111,7 +114,7 @@ export function GridCell({
     ? `Compartment ${compartmentId + 1}, ${dimensionLabel}, ${isSplittable ? 'click to split' : ''}`
     : `Cell ${col + 1}, ${row + 1}`;
 
-  // Check if any cell in this compartment is hovered (for showing dimension label)
+  // Reveal the dimension label only when this specific cell is hovered.
   const showDimensionLabel = isHovered && dimensionLabel;
 
   return (
@@ -225,7 +228,7 @@ export function GhostPreview({
   }
 
   // For split: show individual cell outlines
-  const cellPreviews: React.ReactNode[] = [];
+  const cellPreviews: ReactNode[] = [];
   for (const idx of selection) {
     const col = idx % cols;
     const row = Math.floor(idx / cols);

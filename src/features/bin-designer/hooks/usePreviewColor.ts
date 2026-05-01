@@ -75,3 +75,15 @@ export function getPreviewBorderColor(previewColor: string): string {
   const borderL = Math.max(10, l - 25);
   return `hsl(${h}, ${s}%, ${borderL}%)`;
 }
+
+/**
+ * Compartment fill color: preview color with a small per-id lightness
+ * offset (±3%) so adjacent compartments are visually distinguishable
+ * without breaking the unified palette.
+ */
+export function getCompartmentFill(id: number, previewColor: string): string {
+  const { h, s, l } = hexToHsl(previewColor);
+  const offset = ((id % 3) - 1) * 3;
+  const adjustedL = Math.max(10, Math.min(95, l + offset));
+  return `hsl(${h}, ${s}%, ${adjustedL}%)`;
+}

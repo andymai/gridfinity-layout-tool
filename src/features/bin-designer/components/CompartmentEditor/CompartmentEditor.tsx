@@ -11,9 +11,9 @@
  * form one rectangular compartment. Divider walls are automatically derived
  * from boundaries between cells with different IDs.
  *
- * Sub-components live in sibling files:
- *   - `compartmentEditorColors`     — pure color helpers (HSL math, preview color sync)
- *   - `CompartmentEditorParts`      — `GridCell` and `GhostPreview` views
+ * Sub-components live in `CompartmentEditorParts.tsx` (`GridCell` and
+ * `GhostPreview`). Preview color sync is centralized in the shared
+ * `usePreviewColor` hook.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -30,11 +30,7 @@ import {
 } from '@/features/bin-designer/utils/compartments';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
-import {
-  PREVIEW_COLOR_KEY,
-  DEFAULT_PREVIEW_COLOR,
-  getPreviewColor,
-} from './compartmentEditorColors';
+import { usePreviewColor } from '@/features/bin-designer/hooks/usePreviewColor';
 import { GridCell, GhostPreview } from './CompartmentEditorParts';
 
 export function CompartmentEditor() {
@@ -67,26 +63,8 @@ export function CompartmentEditor() {
 
   const { cols, rows, thickness, cells } = compartments;
 
-  // Preview color synced with 3D preview
-  const [previewColor, setPreviewColor] = useState(getPreviewColor);
-
-  // Listen for color changes from 3D preview (same window + cross-tab)
-  useEffect(() => {
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === PREVIEW_COLOR_KEY) {
-        setPreviewColor(e.newValue ?? DEFAULT_PREVIEW_COLOR);
-      }
-    };
-    const handleColorChange = (e: CustomEvent<string>) => {
-      setPreviewColor(e.detail);
-    };
-    window.addEventListener('storage', handleStorage);
-    window.addEventListener('preview-color-change', handleColorChange as EventListener);
-    return () => {
-      window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('preview-color-change', handleColorChange as EventListener);
-    };
-  }, []);
+  // Preview color synced with 3D preview (cross-tab + same-window CustomEvent)
+  const previewColor = usePreviewColor();
 
   // Selection state for drag-to-merge
   const [selection, setSelection] = useState<Set<number>>(new Set());
