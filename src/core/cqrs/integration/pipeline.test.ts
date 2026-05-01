@@ -70,7 +70,17 @@ const mockStore = {
 };
 
 vi.mock('@/core/store/layout', () => ({
-  useLayoutStore: { getState: () => mockStore },
+  useLayoutStore: {
+    getState: () => mockStore,
+    // v2 wrapper (cqrs/v2/runtime.ts) calls setState directly on the layout
+    // store. Mirror the real Zustand+Immer signature: producer receives a
+    // mutable draft of the whole store state, including `layout` and
+    // `lastEditSource`. Apply the producer to mockStore so tests see the
+    // mutation reflected in subsequent getState() calls.
+    setState: (producer: (state: typeof mockStore & { lastEditSource: string | null }) => void) => {
+      producer(mockStore as typeof mockStore & { lastEditSource: string | null });
+    },
+  },
 }));
 
 vi.mock('@/core/store/library', () => ({
