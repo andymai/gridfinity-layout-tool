@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.51.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.51.1...gridfinity-layout-tool-v4.51.2) (2026-05-01)
+
+
+### Bug Fixes
+
+* **analytics:** trackers follow-up review fixes ([#1522](https://github.com/andymai/gridfinity-layout-tool/issues/1522)) ([59f09da](https://github.com/andymai/gridfinity-layout-tool/commit/59f09da0581286ace95e3f1a23fbc5f2d65cd1d9))
+
 ## [4.51.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.51.0...gridfinity-layout-tool-v4.51.1) (2026-05-01)
 
 
