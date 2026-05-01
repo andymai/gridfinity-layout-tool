@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.56.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.55.0...gridfinity-layout-tool-v4.56.0) (2026-05-01)
+
+
+### Features
+
+* **cqrs:** migrate layer commands to v2 defineCommand ([#1550](https://github.com/andymai/gridfinity-layout-tool/issues/1550)) ([fb32fe8](https://github.com/andymai/gridfinity-layout-tool/commit/fb32fe8d2b61d71dd01e5fa9894d7dc8d770fb4d))
+
 ## [4.55.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.54.0...gridfinity-layout-tool-v4.55.0) (2026-05-01)
 
 
