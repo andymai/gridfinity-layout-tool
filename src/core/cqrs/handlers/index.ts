@@ -1,15 +1,17 @@
 /**
  * Command Handler Registry
+ *
+ * After PRs 5–14 (CQRS DX redesign), bin / layer / category / drawer /
+ * library / layout-metadata commands route through v2 `defineCommand`
+ * wrappers (registered in `v2HandlerOverrides`). Designer + restore
+ * stay on v1 by design — designer.save is an event-only no-op handler
+ * (no aggregate to mutate); layout.restore replaces the entire layout
+ * which doesn't fit the apply-on-draft model.
  */
 
 import type { Command, CommandType } from '../commands';
 import type { CommandResult } from '../types';
 import type { DomainEvent } from '../events';
-import { binHandlers } from './binHandlers';
-import { layerHandlers } from './layerHandlers';
-import { categoryHandlers } from './categoryHandlers';
-import { drawerHandlers } from './drawerHandlers';
-import { libraryHandlers } from './libraryHandlers';
 import { designerHandlers } from './designerHandlers';
 import { restoreHandlers } from './restoreHandlers';
 import { v2HandlerOverrides } from '../v2/registry';
@@ -18,14 +20,7 @@ export { resetVersionCounters } from './shared';
 
 type HandlerFn = (command: never) => CommandResult<unknown, DomainEvent>;
 
-// v2 overrides spread LAST: migrated commands route through their
-// defineCommand wrappers; the rest keep the legacy handler path.
 const handlerRegistry: Record<string, HandlerFn> = {
-  ...binHandlers,
-  ...layerHandlers,
-  ...categoryHandlers,
-  ...drawerHandlers,
-  ...libraryHandlers,
   ...designerHandlers,
   ...restoreHandlers,
   ...(v2HandlerOverrides as Record<string, HandlerFn>),
