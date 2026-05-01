@@ -1,18 +1,15 @@
 /**
- * drawer.update — v2 (defineCommand) shape.
+ * Update drawer dims and cascade out-of-bounds bins to staging.
  *
- * Per-command refactor (per Pass 3 plan):
- * 1. Clamping (width/depth in [GRID_MIN, GRID_MAX], height >= sum of layer
- *    heights) moves into handle() so the event payload's `changes` always
- *    reflects the value that will actually be stored.
- * 2. The bin-displacement cascade (out-of-bounds bins moved to STAGING)
- *    is precomputed in handle() and the displaced IDs are encoded in the
- *    event payload as `displacedBinIds`. apply() applies the drawer change
- *    AND the displacement deterministically — no subscriber needed.
+ * Clamping (width/depth in [GRID_MIN, GRID_MAX], height >= sum of layer
+ * heights) happens in handle() so the event's `changes` always reflects
+ * the value that lands. The displaced bin set is also precomputed in
+ * handle() and goes into the event as `displacedBinIds`, so apply()
+ * applies the drawer change AND the displacement deterministically.
  *
- * Event payload widened from v1's `binsDisplacedToStaging: number` to
- * `displacedBinIds: ReadonlyArray<BinId>`. v1-era persisted events without
- * displacedBinIds keep prior replay behavior (heuristic in projection/replay.ts).
+ * `displacedBinIds` is optional on the event type for back-compat with
+ * persisted events that predate the field (those carried only the
+ * count); replay leaves bin state untouched in that case.
  */
 
 import { z } from 'zod';
@@ -71,8 +68,8 @@ export const updateDrawer = defineCommand({
     const layout = ctx.aggregate;
     const drawer = layout.drawer;
 
-    // Resolve clamped/derived values up-front so the event records exactly
-    // what apply() will install. Mirrors the v1 setLocal mutator's logic.
+    // Resolve clamped/derived values up-front so the event records
+    // exactly what apply() will install.
     const changes: Partial<Drawer> = {};
     if (payload.width !== undefined) {
       changes.width = gridUnits(clamp(payload.width, CONSTRAINTS.GRID_MIN, CONSTRAINTS.GRID_MAX));

@@ -3,15 +3,14 @@
  *
  * Maps each command in the registry to a callable keyed by the command's
  * literal `type` string. Payload, return value, and error union are all
- * inferred per command — no `as T` casts, no central interface that
- * must be hand-maintained alongside the registry.
+ * inferred per command — no `as T` casts, no central interface to
+ * hand-maintain alongside the registry.
  *
- * Usage (target shape, no runtime in this PR):
  *   const mutations = createMutations(registry, commandBus);
  *   mutations['bin.add']({ ... });   // Result<BinId, ValidationError>
  *
- * PR 2 ships the type only — runtime `createMutations()` lands when the
- * first domain (bin/) migrates and needs a real dispatcher.
+ * Type only today; runtime `createMutations()` lands when callers move
+ * off the existing `MutationsContext` adapter.
  */
 
 import type { Result } from '@/core/result';

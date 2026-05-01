@@ -1,10 +1,8 @@
 /**
- * layer.add — v2 (defineCommand) shape.
- *
- * Validates layer-count limit and remaining drawer height before
- * generating a Layer. The default-layer-height preference is read from
- * the settings store inside handle (settings are config-not-state, so
- * not part of the layout aggregate snapshot).
+ * Add a layer. Validates layer-count limit and remaining drawer height
+ * before generating one. Reads `defaultLayerHeight` from the settings
+ * store directly — settings are config-not-state, outside the layout
+ * aggregate snapshot.
  */
 
 import { z } from 'zod';

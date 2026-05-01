@@ -1,11 +1,8 @@
 /**
- * layer.update — v2 (defineCommand) shape.
- *
- * Per-command refactor: the v1 store action did the height-clamp inside
- * the setLocal mutator (so clamping was a hidden side effect of the
- * write). v2 inlines the clamp into handle so the event payload's
- * `changes.height` always reflects the value that will actually be
- * stored — no replay drift between native and apply paths.
+ * Update layer fields. height is clamped against the remaining drawer
+ * space (drawer.height minus other layers' heights) inside handle() so
+ * the event payload's `changes.height` always equals the value that
+ * lands.
  */
 
 import { z } from 'zod';
@@ -66,8 +63,6 @@ export const updateLayer = defineCommand({
     const changes: Partial<Layer> = {};
     if (payload.updates.name !== undefined) changes.name = payload.updates.name;
     if (payload.updates.height !== undefined) {
-      // Inline the clamp so the event records the value that will actually
-      // be stored. Other layers' heights cap how much room remains.
       const othersHeight = layout.layers
         .filter((l) => l.id !== id)
         .reduce((sum, l) => sum + (l.height as number), 0);

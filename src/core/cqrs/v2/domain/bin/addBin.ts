@@ -1,12 +1,6 @@
 /**
- * bin.add command — v2 (defineCommand) shape.
- *
- * Mirrors the contract of the v1 `handleAddBin` + `useLayoutStore.addBin`
- * pair, but split along v2's boundary:
- * - `handle()`: validate against frozen layout snapshot, generate the new
- *   BinId, return the full `Bin` object inside the event payload.
- * - `apply()`: push the bin onto the layout draft. No re-read needed —
- *   the event carries everything.
+ * Add a bin: validate against the layout snapshot, generate a BinId, emit
+ * the full Bin in the event so apply() is a deterministic push.
  */
 
 import { z } from 'zod';

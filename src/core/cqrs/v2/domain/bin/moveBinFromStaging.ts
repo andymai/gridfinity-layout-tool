@@ -1,14 +1,9 @@
 /**
- * bin.moveFromStaging — v2 (defineCommand) shape.
- *
- * Migration note: the v1 event payload carried only `{id, layerId, x, y}`
- * which left replay drift — the bin's height needed to be re-derived from
- * the layer at apply time, and projection/replay.ts didn't update height
- * at all. The v2 event payload includes the resolved height so apply() is
- * deterministic without consulting the current layout state.
- *
- * `height` is optional on the type for backward compatibility with v1
- * persisted events; the v2 handler always populates it.
+ * Move a bin out of staging into a layer. handle() resolves the target
+ * layer's height (the bin's new height) and includes it in the event
+ * payload so apply() doesn't need to consult layout state. Tightens
+ * v1 by rejecting non-staging source bins (v1 silently re-stamped
+ * height — a footgun).
  */
 
 import { z } from 'zod';

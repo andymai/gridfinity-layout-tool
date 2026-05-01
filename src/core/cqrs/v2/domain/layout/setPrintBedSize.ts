@@ -1,8 +1,6 @@
 /**
- * layout.setPrintBedSize — v2 (defineCommand) shape.
- *
- * Clamps both `size` and optional `depth` to [42, 500] mm. Captures
- * previousSize + previousDepth for undo replay.
+ * Set print-bed dimensions. Clamps both `size` and optional `depth` to
+ * [42, 500] mm; captures `previousSize` and `previousDepth` for undo.
  */
 
 import { z } from 'zod';

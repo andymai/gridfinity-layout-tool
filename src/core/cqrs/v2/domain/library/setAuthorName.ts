@@ -1,8 +1,6 @@
 /**
- * library.setAuthorName — v2 (defineCommand) shape, library aggregate.
- *
- * Truncates to NAME_MAX_LENGTH (matches v1 behavior) and captures
- * previousName for undo replay.
+ * Set the library's default author name. Truncates to NAME_MAX_LENGTH;
+ * captures `previousName` for undo.
  */
 
 import { z } from 'zod';
@@ -10,8 +8,6 @@ import { ok } from '@/core/result';
 import { CONSTRAINTS } from '@/core/constants';
 import { defineCommand } from '../../defineCommand';
 
-// Match the central library.setAuthorName schema (validation/librarySchemas.ts):
-// name has min(1).max(NAME_MAX_LENGTH).
 const payloadSchema = z.object({
   name: z.string().min(1).max(CONSTRAINTS.NAME_MAX_LENGTH),
 });

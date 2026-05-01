@@ -1,11 +1,8 @@
 /**
- * bin.update — v2 (defineCommand) shape.
- *
- * Validate the bin exists, validate the merged placement when spatial
- * fields change (matching the v1 store action's logic exactly), and emit
- * `bin.updated` with both `changes` (the requested updates) and `previous`
- * (the prior values for those fields) so undo replay can reconstruct
- * either direction.
+ * Update bin fields. Validates merged placement against the layout when
+ * spatial fields change (same gate as the v1 store action); the event
+ * carries both `changes` and `previous` so undo can revert in either
+ * direction.
  */
 
 import { z } from 'zod';
@@ -109,7 +106,6 @@ export const updateBin = defineCommand({
     const merged: Bin = { ...existing, ...changes };
 
     // Validate placement when spatial properties change for on-grid bins.
-    // Mirrors the v1 store-action gate exactly.
     const spatial =
       changes.x !== undefined ||
       changes.y !== undefined ||

@@ -1,8 +1,10 @@
 /**
- * Event Replay — Rebuild state from an event stream.
+ * Event Replay — rebuild state from an event stream.
  *
- * Primarily a debugging/dev tool for v1. Applies domain events
- * to a base layout state to reconstruct what happened.
+ * Debugging/dev tool. Pure-function reducer over DomainEvent — no
+ * dependency on the live store; safe to run against arbitrary baseline
+ * + history. Operates on the legacy event stream, separate from the
+ * v2 apply()/draft path.
  */
 
 import type { BinId, Layout } from '@/core/types';
@@ -54,9 +56,8 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
         bin.layerId = event.payload.layerId;
         bin.x = gridUnits(event.payload.x);
         bin.y = gridUnits(event.payload.y);
-        // height was added to the payload in v2 (defineCommand migration).
-        // v1-era persisted events have no height — leave it untouched in
-        // that case (preserves prior replay behavior).
+        // `height` is optional for back-compat with persisted events
+        // that predate the field; leave it untouched in that case.
         if (event.payload.height !== undefined) {
           bin.height = heightUnits(event.payload.height);
         }
@@ -87,12 +88,11 @@ export function applyEvent(layout: Layout, event: DomainEvent): Layout {
     case 'layer.deleted': {
       const deletedLayerId = event.payload.layer.id;
       next.layers = next.layers.filter((l) => l.id !== deletedLayerId);
-      // v2 events carry the exact displacedBinIds — use them when present
-      // so replay reproduces the cascade even if the layout has diverged.
-      // v1 events fall back to the "all bins on the deleted layer" heuristic
-      // (matches layerActions.ts and the prior replay behavior).
-      // Local annotation: TS doesn't always narrow optional fields cleanly
-      // through the DomainEvent discriminated union, so be explicit here.
+      // Use the explicit `displacedBinIds` set when present so replay
+      // reproduces the cascade even against a divergent layout; fall
+      // back to "all bins on the deleted layer" for events that predate
+      // the field. (Local annotation: TS doesn't narrow optional fields
+      // cleanly through the DomainEvent discriminated union.)
       const ids: ReadonlyArray<BinId> | undefined = event.payload.displacedBinIds;
       if (ids !== undefined) {
         const idSet = new Set<BinId>(ids);

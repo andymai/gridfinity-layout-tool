@@ -1,9 +1,7 @@
 /**
- * library.duplicateEntry — v2 (defineCommand) shape, library aggregate.
- *
- * Validates the source entry exists, generates a new LayoutId, and emits
- * the full new entry in the event payload. apply() pushes — no re-fetch
- * needed.
+ * Duplicate a library entry. Validates the source exists, generates a
+ * new LayoutId, suffixes the name with " (copy)" (truncated to
+ * NAME_MAX_LENGTH). The event carries the full new entry.
  */
 
 import { z } from 'zod';

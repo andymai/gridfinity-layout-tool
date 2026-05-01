@@ -1,10 +1,9 @@
 /**
- * library.updateEntry — v2 (defineCommand) shape, library aggregate.
- *
- * Permits partial updates to entry fields the v1 store action allows
- * (name, modifiedAt, preview, author, forkedFrom). Names are truncated
- * to NAME_MAX_LENGTH inside handle() so the event records the value that
- * actually lands.
+ * Update library entry fields. Accepts only the fields the central
+ * pipeline schema allows (name, preview, author) — the v1 store
+ * action's `modifiedAt` and `forkedFrom` aren't CQRS-reachable (the
+ * validation middleware strips them). Names truncated inside handle()
+ * so the event records the value that lands.
  */
 
 import { z } from 'zod';

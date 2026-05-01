@@ -1,14 +1,9 @@
 /**
- * bin.duplicate — v2 (defineCommand) shape.
- *
- * Migration note: the per-command refactor for bin.duplicate moves the
- * 5-placement search out of the v1 store mutation
- * (binActions.duplicateBin:139-163) into handle(). The event payload
- * carries the resolved {newBin}, so apply() is a dumb push and replay
- * does not re-run the search against potentially-different layout state.
- *
- * Search order (matches v1): right -> below -> left -> above -> staging.
- * Staging-source bins always duplicate to staging at (0, 0).
+ * Duplicate a bin. handle() runs the placement search (right → below →
+ * left → above → staging fallback) and emits the resolved {newBin} so
+ * apply() is a deterministic push — replay won't re-run the search
+ * against possibly-divergent layout state. Staging-source bins always
+ * duplicate to staging at (0, 0).
  */
 
 import { z } from 'zod';

@@ -12,8 +12,8 @@ vi.mock('@/shared/hooks', async (importOriginal) => ({
   useResponsive: () => ({ isMobile: false, viewportWidth: 1280 }),
 }));
 
-// Mock analytics. ui.* events are now direct trackEvent() calls (PR 12
-// telemetry exit) — no longer routed through the CQRS bus.
+// Mock analytics. ui.* events are direct trackEvent() calls — they
+// don't flow through the CQRS bus.
 const mockTrackBinCreated = vi.fn();
 const mockTrackGalleryOpened = vi.fn();
 const mockTrackGalleryClosed = vi.fn();

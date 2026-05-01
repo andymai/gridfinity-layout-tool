@@ -1,13 +1,9 @@
 /**
- * layer.reorder — v2 (defineCommand) shape.
- *
- * Validates indices and runs the reorder collision check against the
- * frozen layout snapshot before emitting. apply() does the actual array
- * splice on the draft.
- *
- * The event payload (`{fromIndex, toIndex}`) is sufficient for replay:
- * given the layout state at replay time, applying the same move
- * deterministically produces the same ordering.
+ * Reorder layers. Validates indices and runs the collision check against
+ * the layout snapshot before emitting; apply() does the splice on the
+ * draft. Self-move (`fromIndex === toIndex`) succeeds and emits but
+ * apply() short-circuits — the event in the audit log records that the
+ * user attempted a reorder.
  */
 
 import { z } from 'zod';
@@ -40,10 +36,6 @@ export const reorderLayers = defineCommand({
     const { fromIndex, toIndex } = payload;
     const layout = ctx.aggregate;
 
-    // Self-move: succeed and emit; apply is a no-op. Matches v1 (the v1
-    // store action returns OK without doing anything; the v1 handler
-    // emits the event regardless). The event in the audit log is benign
-    // signal that the user attempted a reorder.
     if (fromIndex === toIndex) {
       return ok({ value: undefined, event: { payload: { fromIndex, toIndex } } });
     }

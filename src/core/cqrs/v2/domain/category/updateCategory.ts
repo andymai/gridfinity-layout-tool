@@ -1,9 +1,7 @@
 /**
- * category.update — v2 (defineCommand) shape.
- *
- * Validates the category exists, captures previous values for the fields
- * being updated, and emits `category.updated`. apply() does Object.assign
- * over the matching draft entry.
+ * Update category fields. Captures `previous` values for the fields
+ * being changed so undo can revert. apply() Object.assigns onto the
+ * matching draft entry.
  */
 
 import { z } from 'zod';

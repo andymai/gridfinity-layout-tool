@@ -1,12 +1,8 @@
 /**
- * bin.clearLayer — v2 (defineCommand) shape.
- *
- * Capture the full set of bins being removed in the event payload so undo
- * can restore them. v1 reported `binsRemoved` as a count — v2 keeps that
- * for backward compatibility but the source of truth is `bins.length`.
- *
- * No validation: clearing an empty layer is a no-op (emits an event with
- * an empty bins array, which apply() short-circuits on).
+ * Clear all bins on a layer. Captures the full set in the event payload
+ * so undo can restore them; `binsRemoved: number` is preserved for v1
+ * consumer compatibility even though it duplicates `bins.length`.
+ * Empty layer is a valid no-op.
  */
 
 import { z } from 'zod';

@@ -1,9 +1,6 @@
 /**
- * bin.delete — v2 (defineCommand) shape.
- *
- * Capture the bin in the event payload before removing it. Replay-complete:
- * `apply()` filters the bin from the draft, but the full bin lives in the
- * event for undo (and as the audit-log record of what was deleted).
+ * Delete a bin. The event payload carries the full Bin so undo can
+ * reconstruct it (and so the audit log records what was deleted).
  */
 
 import { z } from 'zod';

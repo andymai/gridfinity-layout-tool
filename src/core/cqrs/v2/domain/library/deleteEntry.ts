@@ -1,10 +1,7 @@
 /**
- * library.deleteEntry — v2 (defineCommand) shape, library aggregate.
- *
- * Validates the library still has at least one entry after deletion
- * (rejects deleting the last layout). If the deleted entry is the
- * currently active layout, apply() advances activeLayoutId to the
- * first remaining entry — same fallback as v1.
+ * Delete a library entry. Rejects deleting the last remaining entry.
+ * If the deleted entry was the active layout, apply() advances
+ * `activeLayoutId` to the first remaining entry.
  */
 
 import { z } from 'zod';

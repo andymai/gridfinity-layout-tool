@@ -67,9 +67,6 @@ describe('getMiddlewareFlags', () => {
     }
   });
 
-  // 'ui' profile and ui.* commands removed in PR 12 (telemetry exit) —
-  // ui.* events are now direct trackEvent() calls, not bus dispatches.
-
   it('returns restore profile for layout.restore', () => {
     const flags = getMiddlewareFlags('layout.restore');
     expect(flags).toEqual({ validation: false, undo: false });

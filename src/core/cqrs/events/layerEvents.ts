@@ -16,13 +16,10 @@ export type LayerUpdatedEvent = BaseDomainEvent<
   }
 >;
 
-/**
- * `displacedBinIds` was added in the v2 migration so apply() can target
- * the exact set of bins that moved to staging. v1-era persisted events
- * have no `displacedBinIds` — replay against those falls back to the
- * "all bins on layer" heuristic in projection/replay.ts (lossy if the
- * layout has diverged since the event was emitted, but no worse than v1).
- */
+// `displacedBinIds` records the exact set of bins that cascaded to
+// staging when the layer was deleted. Optional only for back-compat
+// with persisted events that predate the field — projection/replay.ts
+// falls back to the "all bins on layer" heuristic in that case.
 export type LayerDeletedEvent = BaseDomainEvent<
   'layer.deleted',
   {

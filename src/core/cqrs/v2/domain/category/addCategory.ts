@@ -1,8 +1,6 @@
 /**
- * category.add — v2 (defineCommand) shape.
- *
- * Validates the per-layout category count limit, generates the new
- * CategoryId, returns the full Category in the event payload.
+ * Add a category. Validates the per-layout count limit; the event
+ * payload carries the full Category so apply() is a deterministic push.
  */
 
 import { z } from 'zod';

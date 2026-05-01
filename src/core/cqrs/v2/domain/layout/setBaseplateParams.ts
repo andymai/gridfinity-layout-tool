@@ -1,9 +1,8 @@
 /**
- * layout.setBaseplateParams — v2 (defineCommand) shape.
- *
- * Clamps padding/magnet/baseplate-grid fields to their valid ranges
- * (matches v1 setBaseplateParams). The full normalized BaseplateParams
- * object goes into the event payload alongside the previous state.
+ * Set baseplate params. handle() clamps padding (≥ 0), magnet diameter
+ * ([0.5, 20] mm), magnet depth ([0.5, 10] mm), and optional baseplate
+ * grid dims ([0.5, 50]). The normalized object goes into the event
+ * alongside `previousParams` for undo.
  */
 
 import { z } from 'zod';

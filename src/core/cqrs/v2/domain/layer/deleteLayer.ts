@@ -1,16 +1,10 @@
 /**
- * layer.delete — v2 (defineCommand) shape.
- *
- * Per-command refactor: v1's store action cascaded by remapping bins on
- * the deleted layer to STAGING_ID. The v1 event payload only carried
- * `{layer, deletedBinCount}` — the actual displaced bin IDs were lost,
- * so replay against a divergent layout produced the wrong cascade. v2
- * widens the payload with `displacedBinIds` so apply() can target the
- * exact set deterministically.
- *
- * `deletedBinCount` is preserved on the payload for v1 consumer
- * compatibility (analytics / audit log) even though it's now derivable
- * from `displacedBinIds.length`.
+ * Delete a layer. Bins on the layer cascade to STAGING_ID. The event
+ * payload's `displacedBinIds` records the exact set so apply() can
+ * target deterministically (replay would otherwise re-derive the set
+ * against possibly-divergent layout state). `deletedBinCount` is kept
+ * for downstream consumer compatibility even though it duplicates the
+ * array length.
  */
 
 import { z } from 'zod';

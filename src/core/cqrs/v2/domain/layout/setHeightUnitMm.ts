@@ -1,7 +1,4 @@
-/**
- * layout.setHeightUnitMm — v2 (defineCommand) shape.
- * Clamps to [1, 50] mm. Captures previousMm for undo replay.
- */
+/** Set the height unit in mm. Clamps to [1, 50]; captures `previousMm` for undo. */
 
 import { z } from 'zod';
 import { ok } from '@/core/result';

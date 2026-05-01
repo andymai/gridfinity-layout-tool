@@ -66,8 +66,8 @@ export type { DesignerCommand, DesignerSaveCommand } from './designerCommands';
 
 export type { RestoreCommand, RestoreLayoutCommand } from './restoreCommands';
 
-// UI commands removed in PR 12 (telemetry exit) — they're now direct
-// trackEvent() calls; see src/shared/analytics/posthog/trackEvent.ts.
+// ui.* events flow through src/shared/analytics/posthog/trackEvent.ts
+// directly — they're not commands (no aggregate, no apply, no undo).
 
 import type { BinCommand } from './binCommands';
 import type { LayerCommand } from './layerCommands';

@@ -1,9 +1,7 @@
 /**
- * library.clearCloudShare — v2 (defineCommand) shape, library aggregate.
- *
- * Clears cloudShare metadata on the matching entry. The
- * libraryPersistence subscriber listens for the emitted
- * `library.cloudShareCleared` event and persists the library snapshot.
+ * Clear cloudShare metadata from a library entry. The
+ * `cqrs/subscribers/libraryPersistence` subscriber listens for
+ * `library.cloudShareCleared` and persists the library snapshot.
  */
 
 import { z } from 'zod';

@@ -1,12 +1,7 @@
 /**
- * Sample v2 command definitions used to drive type-inference tests.
- *
- * NOT registered with the live commandBus — these exist solely to prove
- * that `defineCommand({...})` captures the right types end-to-end and
- * that `Mutations<typeof registry>` produces a usable surface.
- *
- * Will be deleted in PR 11 (cleanup) once the real domain commands are
- * in place under `cqrs/v2/domain/`.
+ * Sample command defs used by `types.test.ts` to drive end-to-end
+ * type-inference assertions for `defineCommand` + `createRegistry` +
+ * `Mutations<typeof registry>`. Not registered with the live commandBus.
  */
 
 import { z } from 'zod';

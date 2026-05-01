@@ -1,9 +1,6 @@
 /**
- * library.renameEntry — v2 (defineCommand) shape, library aggregate.
- *
- * Captures previousName for undo replay. Truncates inside handle()
- * even though the central schema enforces a max — keeps event payload
- * identical to what apply() installs.
+ * Rename a library entry. Captures `previousName` for undo. Truncates
+ * inside handle() so the event records the value that actually lands.
  */
 
 import { z } from 'zod';
