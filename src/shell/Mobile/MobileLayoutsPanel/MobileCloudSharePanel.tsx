@@ -12,20 +12,24 @@
 
 import { useState, useEffect } from 'react';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
+import type { CloudShareStatus } from '@/features/cloud-share/hooks/useCloudShare';
 import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
 import type { SharePermission } from '@/core/types';
 import { useTranslation } from '@/i18n';
+import type { TFunction } from '@/i18n';
 import { SvgIcon, LoadingSpinner, PermissionSelect, ICON_PATHS } from './MobileLayoutsPanelParts';
 
-function getLoadingLabel(status: string): string {
+function getLoadingLabel(status: CloudShareStatus, t: TFunction): string {
   switch (status) {
     case 'sharing':
-      return 'Uploading layout...';
+      return t('mobile.layouts.shareUploading');
     case 'updating':
-      return 'Updating share...';
+      return t('mobile.layouts.shareUpdating');
     case 'deleting':
-      return 'Deleting share...';
-    default:
+      return t('mobile.layouts.shareDeleting');
+    case 'idle':
+    case 'success':
+    case 'error':
       return '';
   }
 }
@@ -113,7 +117,15 @@ export function MobileCloudSharePanel({
         aria-labelledby="mobile-cloud-share-title"
         className="bg-surface-elevated w-full rounded-t-2xl p-4 pb-8 animate-slide-up max-h-[80vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          // Close on Escape locally, then stop propagation so the window-level
+          // keydown listener (registered as a fallback for focus outside the
+          // dialog) doesn't fire onClose() a second time.
+          if (e.key === 'Escape') {
+            onClose();
+          }
+          e.stopPropagation();
+        }}
       >
         <div className="w-10 h-1 bg-content-disabled rounded-full mx-auto mb-4" />
 
@@ -126,7 +138,7 @@ export function MobileCloudSharePanel({
           </h3>
         </div>
 
-        {isLoading && <LoadingSpinner label={getLoadingLabel(status)} />}
+        {isLoading && <LoadingSpinner label={getLoadingLabel(status, t)} />}
 
         {status === 'error' && error && (
           <div className="space-y-4">
@@ -181,9 +193,7 @@ export function MobileCloudSharePanel({
 
         {status === 'idle' && !hasActiveShare && (
           <div className="space-y-4">
-            <p className="text-sm text-content-secondary">
-              Share your layout to the cloud. Anyone with the link can import it.
-            </p>
+            <p className="text-sm text-content-secondary">{t('mobile.layouts.shareDescription')}</p>
 
             <div className="flex items-center gap-3">
               <label
