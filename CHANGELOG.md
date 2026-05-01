@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.51.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.51.0...gridfinity-layout-tool-v4.51.1) (2026-05-01)
+
+
+### Bug Fixes
+
+* **shell:** address mobile cloud-share follow-up review comments ([#1519](https://github.com/andymai/gridfinity-layout-tool/issues/1519)) ([7e6d093](https://github.com/andymai/gridfinity-layout-tool/commit/7e6d093df7474a660bb416dca6638a089f3d2d41))
+
 ## [4.51.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.50.0...gridfinity-layout-tool-v4.51.0) (2026-04-29)
 
 
