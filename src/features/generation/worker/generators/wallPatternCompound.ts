@@ -32,7 +32,7 @@ import { applyWallPatternClips } from './wallPatternClips';
  * Creates one transformCopy per hex center, then groups them with compound()
  * (O(n) topology grouping, not O(n²) fuseAll). Returns null if no elements.
  */
-export function buildWallPatternCompound(
+function buildWallPatternCompound(
   shapeTemplate: Shape3D,
   wall: WallPatternDescriptor,
   halfDepth: number
@@ -78,8 +78,10 @@ export function buildWallPatternCompound(
  * The caller receives an owned clone; the cache retains the original. When the
  * compound has no clips to apply, the clipped pipeline will cache this same
  * clone directly — two cache hits for the price of one.
+ *
+ * Kept private so the base cache is only reachable via `buildClippedWallPattern`.
  */
-export function getCachedBaseCompound(
+function getCachedBaseCompound(
   shapeTemplate: Shape3D,
   wall: WallPatternDescriptor,
   halfDepth: number,

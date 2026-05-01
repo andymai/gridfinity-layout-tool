@@ -78,6 +78,10 @@ export function applyWallPatternClips(
   if (handleClip && handleClip.segments.length > 0) {
     const border = CUTOUT_BORDER_WIDTH;
     const clipBoxes: Shape3D[] = [];
+    // Tracks the in-flight fuse-merge result so the catch can dispose it
+    // if an intermediate fuse() throws. Set to null once ownership is
+    // handed off to handleClipSolid (or never created on the singleton path).
+    let pendingMerge: Shape3D | null = null;
 
     const hw = handleClip.handleWall;
     try {
@@ -110,15 +114,19 @@ export function applyWallPatternClips(
       if (clipBoxes.length === 1) {
         handleClipSolid = clipBoxes[0];
       } else {
-        handleClipSolid = unwrap(fuse(clipBoxes[0], clipBoxes[1]));
+        let current: Shape3D = unwrap(fuse(clipBoxes[0], clipBoxes[1]));
+        pendingMerge = current;
         clipBoxes[0].delete();
         clipBoxes[1].delete();
         for (let i = 2; i < clipBoxes.length; i++) {
-          const merged = unwrap(fuse(handleClipSolid, clipBoxes[i]));
-          handleClipSolid.delete();
+          const merged: Shape3D = unwrap(fuse(current, clipBoxes[i]));
+          current.delete();
           clipBoxes[i].delete();
-          handleClipSolid = merged;
+          current = merged;
+          pendingMerge = current;
         }
+        handleClipSolid = current;
+        pendingMerge = null; // ownership transferred to handleClipSolid
       }
 
       try {
@@ -142,6 +150,13 @@ export function applyWallPatternClips(
           /* already cleaned */
         }
       }
+      if (pendingMerge) {
+        try {
+          pendingMerge.delete();
+        } catch {
+          /* already cleaned */
+        }
+      }
       if (isAbortError(err)) {
         result.delete();
         throw err;
@@ -153,6 +168,9 @@ export function applyWallPatternClips(
   if (rampClip && rampClip.zones.length > 0) {
     const { border, clipExtrudeDepth: rampExtrudeDepth, wallHeight, zones } = rampClip;
     const rampBoxes: Shape3D[] = [];
+    // See handle-clip block for why pendingMerge is tracked separately
+    // from rampBoxes — the in-flight fuse intermediate isn't in either pool.
+    let pendingMerge: Shape3D | null = null;
 
     try {
       for (const zone of zones) {
@@ -196,13 +214,17 @@ export function applyWallPatternClips(
       }
 
       if (rampBoxes.length > 0) {
-        let rampClipSolid = rampBoxes[0];
+        let current: Shape3D = rampBoxes[0];
+        pendingMerge = current;
         for (let i = 1; i < rampBoxes.length; i++) {
-          const merged = unwrap(fuse(rampClipSolid, rampBoxes[i]));
-          rampClipSolid.delete();
+          const merged: Shape3D = unwrap(fuse(current, rampBoxes[i]));
+          current.delete();
           rampBoxes[i].delete();
-          rampClipSolid = merged;
+          current = merged;
+          pendingMerge = current;
         }
+        const rampClipSolid = current;
+        pendingMerge = null; // ownership transferred to rampClipSolid
 
         try {
           const rampClipped = unwrap(cut(result, rampClipSolid));
@@ -221,6 +243,13 @@ export function applyWallPatternClips(
       for (const b of rampBoxes) {
         try {
           b.delete();
+        } catch {
+          /* already cleaned */
+        }
+      }
+      if (pendingMerge) {
+        try {
+          pendingMerge.delete();
         } catch {
           /* already cleaned */
         }
