@@ -570,6 +570,85 @@ describe('Staging', () => {
     });
   });
 
+  describe('grid positioning regressions', () => {
+    /**
+     * Repro for the "bins spill below the stash grid" bug. When a staged bin has a
+     * fractional depth that pushes `maxY` (= y + depth) to a non-integer, gridHeight
+     * becomes fractional and `gridTemplateRows: repeat(2.5, 38px)` is invalid CSS,
+     * which collapses the explicit grid and causes bins to overflow below the panel.
+     */
+    it('keeps fractional-depth bins inside the explicit grid', () => {
+      addStagedBins([{ width: 2, depth: 2.5 }]);
+
+      render(<Staging />);
+
+      const grid = screen.getByTestId('staging-grid');
+      const match = grid.style.gridTemplateRows.match(/repeat\(([\d.]+),/);
+      expect(match).toBeTruthy();
+      const rowCount = parseFloat(match![1]);
+
+      expect(Number.isInteger(rowCount)).toBe(true);
+      // 2.5 should round up so the 2.5-deep bin fits within the explicit grid
+      expect(rowCount).toBeGreaterThanOrEqual(3);
+    });
+
+    it('aligns fractional-depth bins to the bottom of their grid area', () => {
+      // y=0 means the bin sits at the bottom of the grid. With a fractional depth,
+      // the bin's pixel height is shorter than its (ceiled) row span, so we need
+      // alignSelf:'end' to keep the bottom edge at grid Y=0 instead of floating up.
+      addStagedBins([{ width: 2, depth: 2.5 }]);
+
+      render(<Staging />);
+
+      const bin = document.querySelector<HTMLElement>('[data-staging-bin-id]');
+      expect(bin).toBeTruthy();
+      expect(bin!.style.alignSelf).toBe('end');
+    });
+
+    it('does not force alignment for whole-cell-depth bins', () => {
+      addStagedBins([{ width: 2, depth: 2 }]);
+
+      render(<Staging />);
+
+      const bin = document.querySelector<HTMLElement>('[data-staging-bin-id]');
+      expect(bin).toBeTruthy();
+      expect(bin!.style.alignSelf).toBe('');
+    });
+
+    it('places every bin within the explicit grid rows', () => {
+      addStagedBins([
+        { width: 2, depth: 2.5 },
+        { width: 1, depth: 1 },
+      ]);
+
+      render(<Staging />);
+
+      const grid = screen.getByTestId('staging-grid');
+      const rowsMatch = grid.style.gridTemplateRows.match(/repeat\(([\d.]+),/);
+      expect(rowsMatch).toBeTruthy();
+      const rowCount = parseFloat(rowsMatch![1]);
+
+      const bins = document.querySelectorAll<HTMLElement>('[data-staging-bin-id]');
+      expect(bins.length).toBeGreaterThan(0);
+
+      for (const bin of bins) {
+        const gridRow = bin.style.gridRow; // e.g., "1 / span 3"
+        const startMatch = gridRow.match(/^([\d.]+)/);
+        const spanMatch = gridRow.match(/span\s+([\d.]+)/);
+        expect(startMatch).toBeTruthy();
+        expect(spanMatch).toBeTruthy();
+
+        const start = parseFloat(startMatch![1]);
+        const span = parseFloat(spanMatch![1]);
+
+        expect(Number.isInteger(start)).toBe(true);
+        expect(Number.isInteger(span)).toBe(true);
+        expect(start).toBeGreaterThanOrEqual(1);
+        expect(start + span - 1).toBeLessThanOrEqual(rowCount);
+      }
+    });
+  });
+
   describe('bin title/tooltip', () => {
     it('shows bin info in title attribute', () => {
       addStagedBins([{ label: 'Test Bin', width: 3, depth: 2, height: 4 }]);

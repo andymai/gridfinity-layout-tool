@@ -141,11 +141,13 @@ export function Staging() {
     return packBins(bins, gridCols);
   }, [stagingBins, gridCols]);
 
-  // Calculate required grid height (minimum 2 rows when bins present, 1 when empty)
+  // Calculate required grid height (minimum 2 rows when bins present, 1 when empty).
+  // Ceil because CSS Grid `repeat(N, ...)` requires an integer; a fractional N is
+  // dropped as invalid, collapsing the explicit grid and pushing bins below it.
   const gridHeight = useMemo(() => {
     if (packedBins.length === 0) return 1;
     const maxY = Math.max(...packedBins.map((b) => b.y + b.depth));
-    return Math.max(2, maxY);
+    return Math.max(2, Math.ceil(maxY));
   }, [packedBins]);
 
   const getCategory = (categoryId: string) => layout.categories.find((c) => c.id === categoryId);
@@ -539,6 +541,7 @@ export function Staging() {
           >
             {/* CSS Grid container */}
             <div
+              data-testid="staging-grid"
               className="absolute inset-0"
               style={{
                 display: 'grid',
