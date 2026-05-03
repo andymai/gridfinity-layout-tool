@@ -209,8 +209,10 @@ export const StagingBin = memo(function StagingBin({
       style={{
         gridColumn: `${bin.x + 1} / span ${gridColSpan}`,
         gridRow: `${gridRowStart} / span ${gridRowSpan}`,
-        // Align fractional-depth bins to bottom of their grid cell
-        alignSelf: hasFractionalBin && bin.depth < 1 ? 'end' : undefined,
+        // Pin fractional-depth bins to the bottom of their grid area so they sit at
+        // grid Y = bin.y. Without this, the explicit pixel height + default start
+        // alignment would push the bin upward inside its (ceiled) row span.
+        alignSelf: bin.depth % 1 !== 0 ? 'end' : undefined,
         ...(!isDragging && { backgroundColor: categoryColor }),
         // Override size for fractional bins
         ...(cssWidthOverride !== undefined && { width: cssWidthOverride }),
