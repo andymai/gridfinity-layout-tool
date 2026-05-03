@@ -32,3 +32,4 @@ Bins with `layerId === '__staging__'` are stored here, not on any layer.
 1. **STAGING_ID is magic string** - `'__staging__'`, not a real layer
 2. **Bins don't count in print list** until placed
 3. **Cloud-share excludes staging** - filtered from sync fingerprint
+4. **Fractional-depth bins need ceiled `gridHeight` + `alignSelf: 'end'`** — `repeat(N, ...)` silently drops a non-integer N (collapsing the explicit grid), so `gridHeight` ceils `maxY`. The ceiled row span is taller than the bin's pixel height, so any fractional-depth bin must align to the end (bottom) of its grid area or it drifts above grid Y=0.

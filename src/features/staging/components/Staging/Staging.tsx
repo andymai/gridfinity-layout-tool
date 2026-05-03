@@ -541,6 +541,7 @@ export function Staging() {
           >
             {/* CSS Grid container */}
             <div
+              data-testid="staging-grid"
               className="absolute inset-0"
               style={{
                 display: 'grid',

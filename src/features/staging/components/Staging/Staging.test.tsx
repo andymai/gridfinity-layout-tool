@@ -572,18 +572,6 @@ describe('Staging', () => {
 
   describe('grid positioning regressions', () => {
     /**
-     * Returns the inline `display: grid` container that holds the staging cells/bins.
-     * jsdom preserves inline styles, so we filter <div>s by `style.display`.
-     */
-    function findStagingGridContainer(): HTMLElement {
-      const grids = Array.from(document.querySelectorAll<HTMLElement>('div')).filter(
-        (el) => el.style.display === 'grid'
-      );
-      expect(grids).toHaveLength(1);
-      return grids[0];
-    }
-
-    /**
      * Repro for the "bins spill below the stash grid" bug. When a staged bin has a
      * fractional depth that pushes `maxY` (= y + depth) to a non-integer, gridHeight
      * becomes fractional and `gridTemplateRows: repeat(2.5, 38px)` is invalid CSS,
@@ -594,7 +582,7 @@ describe('Staging', () => {
 
       render(<Staging />);
 
-      const grid = findStagingGridContainer();
+      const grid = screen.getByTestId('staging-grid');
       const match = grid.style.gridTemplateRows.match(/repeat\(([\d.]+),/);
       expect(match).toBeTruthy();
       const rowCount = parseFloat(match![1]);
@@ -635,8 +623,9 @@ describe('Staging', () => {
 
       render(<Staging />);
 
-      const grid = findStagingGridContainer();
+      const grid = screen.getByTestId('staging-grid');
       const rowsMatch = grid.style.gridTemplateRows.match(/repeat\(([\d.]+),/);
+      expect(rowsMatch).toBeTruthy();
       const rowCount = parseFloat(rowsMatch![1]);
 
       const bins = document.querySelectorAll<HTMLElement>('[data-staging-bin-id]');
