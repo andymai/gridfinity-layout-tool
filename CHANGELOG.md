@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.60.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.60.2...gridfinity-layout-tool-v4.60.3) (2026-05-03)
+
+
+### Bug Fixes
+
+* **staging:** keep fractional-depth bins inside the stash grid ([#1570](https://github.com/andymai/gridfinity-layout-tool/issues/1570)) ([5517327](https://github.com/andymai/gridfinity-layout-tool/commit/5517327aee9aead6dfec18f92b39b508c35a6dae))
+
 ## [4.60.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.60.1...gridfinity-layout-tool-v4.60.2) (2026-05-01)
 
 
