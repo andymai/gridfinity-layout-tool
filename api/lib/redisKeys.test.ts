@@ -68,5 +68,22 @@ describe('redisKeys', () => {
         }
       }
     });
+
+    it('rateLimit keys never collide with share or sync keys for matching id segments', () => {
+      const id = 'abc';
+      const rl = rateLimitKey('view', id);
+      expect(rl).not.toBe(shareHashKey(id));
+      expect(rl).not.toBe(shareReportKey(id));
+      expect(rl).not.toBe(sessionKey(id));
+      expect(rl).not.toBe(userIndexKey(id, 'layouts'));
+    });
+  });
+
+  describe('single source of truth', () => {
+    it('shared.ts re-exports the same shareHashKey/shareReportKey impls (no drift)', async () => {
+      const shared = await import('./shared');
+      expect(shared.shareHashKey).toBe(shareHashKey);
+      expect(shared.shareReportKey).toBe(shareReportKey);
+    });
   });
 });

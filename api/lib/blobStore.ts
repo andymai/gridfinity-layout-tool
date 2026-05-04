@@ -1,4 +1,4 @@
-import { put, head, del } from '@vercel/blob';
+import { put, head, del, BlobNotFoundError } from '@vercel/blob';
 import type { PutBlobResult, HeadBlobResult } from '@vercel/blob';
 
 /**
@@ -39,29 +39,42 @@ export async function putJson(
 
 /**
  * Fetch and parse a JSON blob.
- * Returns `null` if the blob does not exist; throws on any other failure
- * (network error, parse error, non-404 HTTP status).
+ * Returns `null` only when the blob is genuinely absent (404). Operational
+ * failures — auth misconfiguration, transient outage, parse errors — propagate
+ * so callers can distinguish "not there" from "couldn't reach storage."
+ *
+ * Path is intentionally omitted from thrown error messages because sync paths
+ * embed user-identifying segments that should not appear in logs / 5xx bodies.
  */
 export async function getJson<T>(path: string): Promise<T | null> {
-  const info = await head(path).catch(() => null);
-  if (!info) return null;
+  let info: HeadBlobResult;
+  try {
+    info = await head(path);
+  } catch (error) {
+    if (error instanceof BlobNotFoundError) return null;
+    throw error;
+  }
 
   const response = await fetch(info.url);
   if (response.status === 404) return null;
   if (!response.ok) {
-    throw new Error(
-      `blobStore.getJson failed for ${path}: ${response.status} ${response.statusText}`
-    );
+    throw new Error(`blobStore.getJson failed: ${response.status} ${response.statusText}`);
   }
   return (await response.json()) as T;
 }
 
 /**
  * Check whether a blob exists at `path` without fetching its body.
- * Returns the head metadata (incl. URL, size, uploadedAt) if found, `null` otherwise.
+ * Returns the head metadata if found, `null` if absent (404). Other errors
+ * propagate — see `getJson` for the rationale.
  */
 export async function headBlob(path: string): Promise<HeadBlobResult | null> {
-  return head(path).catch(() => null);
+  try {
+    return await head(path);
+  } catch (error) {
+    if (error instanceof BlobNotFoundError) return null;
+    throw error;
+  }
 }
 
 /**

@@ -130,15 +130,9 @@ export interface ShareMetadata {
   reportCount?: number;
 }
 
-/** Redis key for a share's delete token hash */
-export function shareHashKey(shareId: string): string {
-  return `share:hash:${shareId}`;
-}
-
-/** Redis key for a share's report count */
-export function shareReportKey(shareId: string): string {
-  return `share:reports:${shareId}`;
-}
+// Redis key builders live in `./redisKeys.ts` (single source of truth).
+// Re-exported here to preserve existing import paths from share endpoints.
+export { shareHashKey, shareReportKey } from './redisKeys.js';
 
 /**
  * Shared data structure for stored shares.
