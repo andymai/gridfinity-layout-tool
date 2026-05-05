@@ -73,29 +73,31 @@ export async function loadBrepkit(): Promise<WasmLoadResult> {
 /**
  * Load and initialize the occt-wasm geometry kernel.
  *
- * Bypasses occt-wasm's public `OcctKernel` wrapper (which hides the raw
- * module behind `#private` fields) and instantiates the Emscripten module
- * directly so we can hand both `module` and the raw `OcctKernel` instance
- * to brepjs's `OcctWasmAdapter`. Registered under kernel id `'occt-wasm'`
- * to coexist with `'occt'` (brepjs-opencascade).
+ * Uses occt-wasm 2.0's public `OcctKernel.init()` and the new
+ * `getRawModule()` / `getRawKernel()` accessors, which return types
+ * structurally compatible with brepjs's `OcctWasmAdapter` constructor.
+ * Registered under kernel id `'occt-wasm'` to coexist with `'occt'`
+ * (brepjs-opencascade).
  */
 export async function loadOcctWasm(): Promise<WasmLoadResult> {
   const hardwareConcurrency = getHardwareConcurrency();
 
   // Dynamic imports keep occt-wasm out of the main worker chunk; Vite emits
   // a separate chunk + WASM asset that only fetches when the labs flag is on.
-  const [{ OcctWasmAdapter }, occtWasmJs, occtWasmUrlMod] = await Promise.all([
+  const [{ OcctWasmAdapter }, { OcctKernel }, occtWasmUrlMod] = await Promise.all([
     import('brepjs'),
-    import('occt-wasm/dist/occt-wasm.js'),
+    import('occt-wasm'),
     import('occt-wasm/dist/occt-wasm.wasm?url'),
   ]);
 
-  const module = await occtWasmJs.default({
-    locateFile: (path: string) => (path.endsWith('.wasm') ? occtWasmUrlMod.default : path),
-  });
-  const rawKernel = new module.OcctKernel();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- brepjs's OcctWasmAdapter ctor takes structurally-typed Embind objects; our minimal vite-env.d.ts declaration exposes only what we use
-  const adapter = new OcctWasmAdapter(module as any, rawKernel as any);
+  const kernel = await OcctKernel.init({ wasm: occtWasmUrlMod.default });
+  // occt-wasm 2.0 widened its raw types but `OcctWasmModule` still omits
+  // `VectorString` / `getExceptionMessage`, and `OcctRawKernel` still omits
+  // IGES + XCAF methods that brepjs's interface declares. Both surfaces exist
+  // at runtime; the structural-type widening is incomplete on the occt-wasm
+  // side. Filed upstream — keep the cast until exports match.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- see comment above
+  const adapter = new OcctWasmAdapter(kernel.getRawModule() as any, kernel.getRawKernel() as any);
   registerKernel('occt-wasm', adapter);
 
   return { isThreaded: false, hardwareConcurrency };

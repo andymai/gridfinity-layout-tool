@@ -45,15 +45,16 @@ export async function initBrepkitKernel(): Promise<void> {
  */
 export async function initOcctWasmKernel(): Promise<void> {
   const { registerKernel, OcctWasmAdapter } = await import('brepjs');
-  const occtWasm = await import('occt-wasm/dist/occt-wasm.js');
+  const { OcctKernel } = await import('occt-wasm');
   const { readFileSync } = await import('fs');
   const { join } = await import('path');
   const wasmPath = join(process.cwd(), 'node_modules/occt-wasm/dist/occt-wasm.wasm');
   const wasmBinary = readFileSync(wasmPath);
-  // The Emscripten module factory accepts wasmBinary to skip its own fetch.
-  const module = await occtWasm.default({ wasmBinary });
-  const rawKernel = new module.OcctKernel();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- OcctWasmAdapter ctor takes structurally-typed Embind objects with HEAP* views and Embind ctors that occt-wasm's public types don't expose
-  const adapter = new OcctWasmAdapter(module, rawKernel);
+  const kernel = await OcctKernel.init({ wasm: wasmBinary });
+  // occt-wasm 2.0's exported types are still narrower than brepjs's expected
+  // shape (missing VectorString/getExceptionMessage on the module, IGES/XCAF
+  // methods on the raw kernel). All present at runtime — filed upstream.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- see comment above
+  const adapter = new OcctWasmAdapter(kernel.getRawModule() as any, kernel.getRawKernel() as any);
   registerKernel('occt-wasm', adapter);
 }
