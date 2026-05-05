@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.62.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.61.0...gridfinity-layout-tool-v4.62.0) (2026-05-05)
+
+
+### Features
+
+* **generation:** add occt-wasm as opt-in third kernel (parity-verified) ([#1578](https://github.com/andymai/gridfinity-layout-tool/issues/1578)) ([6cd9381](https://github.com/andymai/gridfinity-layout-tool/commit/6cd93814f263f8e2764677b98c278efa691ea02d))
+
 ## [4.61.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.60.3...gridfinity-layout-tool-v4.61.0) (2026-05-05)
 
 
