@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.61.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.60.3...gridfinity-layout-tool-v4.61.0) (2026-05-05)
+
+
+### Features
+
+* **api:** add storage primitive layer for upcoming sync feature ([#1572](https://github.com/andymai/gridfinity-layout-tool/issues/1572)) ([d50c82b](https://github.com/andymai/gridfinity-layout-tool/commit/d50c82b2dd510082f956aa456448ba0596d79b3b))
+
 ## [4.60.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.60.2...gridfinity-layout-tool-v4.60.3) (2026-05-03)
 
 
