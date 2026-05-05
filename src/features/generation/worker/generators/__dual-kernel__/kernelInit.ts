@@ -51,7 +51,7 @@ export async function initOcctWasmKernel(): Promise<void> {
   const wasmPath = join(process.cwd(), 'node_modules/occt-wasm/dist/occt-wasm.wasm');
   const wasmBinary = readFileSync(wasmPath);
   const kernel = await OcctKernel.init({ wasm: wasmBinary });
-  // occt-wasm 2.0's exported types are still narrower than brepjs's expected
+  // occt-wasm 3.0's exported types are still narrower than brepjs's expected
   // shape (missing VectorString/getExceptionMessage on the module, IGES/XCAF
   // methods on the raw kernel). All present at runtime — filed upstream.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- see comment above
