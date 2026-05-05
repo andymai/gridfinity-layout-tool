@@ -53,7 +53,7 @@ export async function initOcctWasmKernel(): Promise<void> {
   // The Emscripten module factory accepts wasmBinary to skip its own fetch.
   const module = await occtWasm.default({ wasmBinary });
   const rawKernel = new module.OcctKernel();
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- OcctWasmAdapter ctor takes structurally-typed Embind objects
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- OcctWasmAdapter ctor takes structurally-typed Embind objects with HEAP* views and Embind ctors that occt-wasm's public types don't expose
   const adapter = new OcctWasmAdapter(module, rawKernel);
   registerKernel('occt-wasm', adapter);
 }
