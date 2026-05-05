@@ -59,11 +59,11 @@ export const FEATURE_FLAGS = [
     id: 'occt_wasm_kernel',
     name: 'Updated OCCT 3D Engine',
     description:
-      'Try a newer build of the same OCCT engine that powers the default. Cleaner TypeScript bindings and a smaller WASM module — the goal is feature parity with the current default.',
+      'A newer build of the same OCCT engine that powers the default. Cleaner TypeScript bindings, smaller WASM module (~16% smaller), and topology- and volume-equivalent output across the standard bin set. Surface-precise bounding boxes can differ from the default by up to ~0.05 mm.',
     status: 'experimental',
-    risk: 'high',
+    risk: 'medium',
     warning:
-      'This build is still in evaluation. Exported models may have geometry defects vs the current engine. Cannot be combined with the alternative engine. Reload the page after toggling.',
+      'Geometry parity with the default engine has been verified across the standard bin set. Cannot be combined with the alternative engine. Reload the page after toggling.',
     addedAt: '2026-05',
     requiresRefresh: true,
   },

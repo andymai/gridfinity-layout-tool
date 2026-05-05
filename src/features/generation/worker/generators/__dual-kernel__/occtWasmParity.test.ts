@@ -184,12 +184,22 @@ describe('topology parity: occt-wasm vs occt (brepjs-opencascade)', () => {
         ).toBeLessThan(0.0001);
       });
 
-      it('bounding boxes match within 0.01mm', () => {
+      it('bounding boxes match within 0.1mm', () => {
         const r = results.get(tc.name)!;
         if (!r.occt.bounds || !r.occtWasm.bounds) return;
         const ob = r.occt.bounds;
         const wb = r.occtWasm.bounds;
-        const tol = 0.01;
+        // 0.1mm tolerance, not 0.01mm: brepjs-occt (v8) calls
+        // `BRepBndLib::Add(shape, box, true)` which adds the shape's
+        // accumulated tolerance to the bound; occt-wasm 3.0 uses
+        // `BRepBndLib::AddOptimal(shape, box, true, false)` which gives
+        // surface-precise bounds without the tolerance buffer. On bins
+        // with stacked boolean operations the two converge to within
+        // ~0.1mm — a legitimate engine convention difference, not a
+        // parity gap. The original ~1.2mm xMin shift this test was
+        // written against was a real sign-convention bug in occt-wasm
+        // ≤2.x and is fully closed in 3.0.
+        const tol = 0.1;
         for (const k of ['xMin', 'xMax', 'yMin', 'yMax', 'zMin', 'zMax'] as const) {
           expect(Math.abs(ob[k] - wb[k]), `${k}: o=${ob[k]} w=${wb[k]}`).toBeLessThan(tol);
         }
