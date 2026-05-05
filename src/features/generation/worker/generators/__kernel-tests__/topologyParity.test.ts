@@ -8,7 +8,7 @@
  *
  * Run:
  *   pnpm exec vitest run --config vitest.profile.config.ts \
- *     src/features/generation/worker/generators/__dual-kernel__/topologyParity
+ *     src/features/generation/worker/generators/__kernel-tests__/topologyParity
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';

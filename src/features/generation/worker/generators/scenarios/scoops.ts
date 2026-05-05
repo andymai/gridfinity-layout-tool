@@ -1,6 +1,6 @@
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { defineScenario } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { defineScenario } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 export const scoop: ScenarioCase[] = [
   defineScenario('scoop', '2\u00d72 scoop disabled', {

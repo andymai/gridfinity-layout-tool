@@ -9,8 +9,8 @@
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initBrepjs } from './__dual-kernel__/wasmInit';
-import { assertStructurallyValid, boundingBox } from './__dual-kernel__/meshAssertions';
+import { initBrepjs } from './__kernel-tests__/wasmInit';
+import { assertStructurallyValid, boundingBox } from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import type { BinParams, LidConfig } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';

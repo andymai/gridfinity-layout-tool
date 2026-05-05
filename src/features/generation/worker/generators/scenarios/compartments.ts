@@ -1,5 +1,5 @@
-import { defineScenario } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { defineScenario } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 export const compartments: ScenarioCase[] = [
   defineScenario('compartments', '2\u00d72 bin with 1\u00d71 (none) compartments', {

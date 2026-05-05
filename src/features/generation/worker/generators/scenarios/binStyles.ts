@@ -1,7 +1,7 @@
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams, BinStyle } from '@/shared/types/bin';
-import { defineScenario } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { defineScenario } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 const binStyleList: Array<{ style: BinStyle; base?: Partial<BinParams['base']>; label: string }> = [
   { style: 'standard', label: 'standard' },

@@ -4,7 +4,7 @@
  *
  * Run:
  *   pnpm exec vitest run --config vitest.profile.config.ts \
- *     src/features/generation/worker/generators/__dual-kernel__/diagnoseShell
+ *     src/features/generation/worker/generators/__kernel-tests__/diagnoseShell
  */
 import { test, expect } from 'vitest';
 import { withKernel, measureVolume, getBounds } from 'brepjs';

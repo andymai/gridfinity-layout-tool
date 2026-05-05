@@ -3,10 +3,10 @@
  * by running full generation and timing per config.
  *
  * Run with brepkit:
- *   BREPJS_KERNEL=brepkit pnpm exec vitest run --reporter=verbose src/features/generation/worker/generators/__dual-kernel__/profileBin.test
+ *   BREPJS_KERNEL=brepkit pnpm exec vitest run --reporter=verbose src/features/generation/worker/generators/__kernel-tests__/profileBin.test
  *
  * Run with OCCT (baseline):
- *   pnpm exec vitest run --reporter=verbose src/features/generation/worker/generators/__dual-kernel__/profileBin.test
+ *   pnpm exec vitest run --reporter=verbose src/features/generation/worker/generators/__kernel-tests__/profileBin.test
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';

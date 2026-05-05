@@ -3,7 +3,7 @@
  * Tests for the label tab builder.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initBrepjs } from './__dual-kernel__/wasmInit';
+import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 
 beforeAll(async () => {

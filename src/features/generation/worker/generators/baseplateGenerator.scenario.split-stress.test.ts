@@ -15,7 +15,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import type { BaseplateParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
-import { initBrepjs } from './__dual-kernel__/wasmInit';
+import { initBrepjs } from './__kernel-tests__/wasmInit';
 
 type ExportFn = (
   params: BaseplateParams,

@@ -12,7 +12,7 @@
  *
  * Run:
  *   pnpm exec vitest run --config vitest.profile.config.ts \
- *     src/features/generation/worker/generators/__dual-kernel__/occtWasmBisect
+ *     src/features/generation/worker/generators/__kernel-tests__/occtWasmBisect
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';

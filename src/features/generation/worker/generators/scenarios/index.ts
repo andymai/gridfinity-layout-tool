@@ -5,7 +5,7 @@
  * This index re-exports them as a single ordered array matching the
  * original `binGenerator.scenarios.ts` order exactly.
  */
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 import { dimensions } from './dimensions';
 import { baseStyles } from './baseStyles';
@@ -32,7 +32,7 @@ import { handles } from './handles';
 import { honeycombJunction } from './honeycombJunction';
 import { customShapes } from './customShape';
 
-export type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...dimensions,

@@ -13,7 +13,7 @@
     "src/**/*.bench.ts",
     "src/test/**/*.ts",
     "src/test/**/*.tsx",
-    "src/**/__dual-kernel__/**/*.ts",
+    "src/**/__kernel-tests__/**/*.ts",
     "api/**/*.test.ts",
     "vitest.config.ts"
   ],

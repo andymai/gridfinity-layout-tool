@@ -32,7 +32,7 @@
  * **Status (issue #1494):** as of brepjs 15.6.1 + OCCT kernel, this repair is
  * a no-op for every known piece config — the corner-3/corner-4/edge-x-1
  * scenario tests pass with the repair disabled, and the
- * `__dual-kernel__/diagnoseBaseplateWinding` step-walker shows
+ * `__kernel-tests__/diagnoseBaseplateWinding` step-walker shows
  * `triangles-flipped=0` even on the 13×9 magnet+lightweight reproducer that
  * originally motivated this code. Kept as a defensive net for any future
  * regression in brepjs/OCCT tessellation: if a downstream version reintroduces

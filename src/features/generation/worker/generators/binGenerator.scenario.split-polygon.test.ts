@@ -10,8 +10,8 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { BinParams } from '@/shared/types/bin';
-import { initBrepjs, getGenerateSplitPreview } from './__dual-kernel__/wasmInit';
-import { boundingBox } from './__dual-kernel__/meshAssertions';
+import { initBrepjs, getGenerateSplitPreview } from './__kernel-tests__/wasmInit';
+import { boundingBox } from './__kernel-tests__/meshAssertions';
 import type { CellMask } from '@/shared/utils/cellMask';
 
 beforeAll(async () => {

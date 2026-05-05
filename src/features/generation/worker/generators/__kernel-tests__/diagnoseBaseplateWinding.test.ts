@@ -24,7 +24,7 @@
  *
  * Run:
  *   pnpm exec vitest run --config vitest.profile.config.ts \
- *     src/features/generation/worker/generators/__dual-kernel__/diagnoseBaseplateWinding
+ *     src/features/generation/worker/generators/__kernel-tests__/diagnoseBaseplateWinding
  *
  * The test is **diagnostic** — it always passes. Inspect the printed
  * tables to identify the first construction step at which a failing
