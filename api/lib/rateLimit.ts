@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 import { Redis } from 'ioredis';
 import type { RedisOptions } from 'ioredis';
 import { logger } from './logger.js';
+import { rateLimitKey } from './redisKeys.js';
 
 export type RateLimitAction = 'create' | 'update' | 'view' | 'delete' | 'report' | 'telemetry';
 
@@ -72,7 +73,7 @@ export async function checkRateLimit(
   const config = RATE_LIMITS[action];
   const now = Math.floor(Date.now() / 1000);
   const windowStart = now - config.windowSeconds;
-  const key = `ratelimit:${action}:${hashIP(ip)}`;
+  const key = rateLimitKey(action, hashIP(ip));
 
   const client = getRedis();
 
