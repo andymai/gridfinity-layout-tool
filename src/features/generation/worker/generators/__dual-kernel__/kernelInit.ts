@@ -38,3 +38,23 @@ export async function initBrepkitKernel(): Promise<void> {
   const adapter = new BrepkitAdapter(kernel as any);
   registerKernel('brepkit', adapter);
 }
+
+/** Initialize occt-wasm kernel via brepjs's OcctWasmAdapter. */
+export async function initOcctWasmKernel(): Promise<void> {
+  const { registerKernel, OcctWasmAdapter } = await import('brepjs');
+  const { readFileSync } = await import('fs');
+  const { join } = await import('path');
+
+  const occtWasmDir = join(process.cwd(), 'node_modules/occt-wasm/dist');
+  const loaderPath = join(occtWasmDir, 'occt-wasm.js');
+  const wasmPath = join(occtWasmDir, 'occt-wasm.wasm');
+  const wasmBinary = readFileSync(wasmPath);
+
+  const loader = await import(loaderPath);
+  const createOcctWasm = loader.default ?? loader;
+  const Module = await createOcctWasm({ wasmBinary });
+  const k = new Module.OcctKernel();
+
+  const adapter = new OcctWasmAdapter(Module, k);
+  registerKernel('occt-wasm', adapter);
+}

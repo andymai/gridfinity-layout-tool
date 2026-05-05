@@ -6,6 +6,7 @@
  *
  *   - `'opencascade'` (default) — uses `initFromOC` with brepjs-opencascade
  *   - `'wasm'`                  — uses `initFromWasm` with brepjs-wasm
+ *   - `'occt-wasm'`             — uses brepjs's OcctWasmAdapter on top of occt-wasm
  *
  * Import `initBrepjs` in `beforeAll`, then use `getGenerateBin()`,
  * `getGenerateSplitPreview()`, or `getGenerateBaseplate()` inside tests.
@@ -15,14 +16,15 @@ import type { MeshData } from '@/features/generation/bridge/types';
 
 // ─── Kernel selection ────────────────────────────────────────────────────────
 
-type KernelName = 'opencascade' | 'brepkit';
+type KernelName = 'opencascade' | 'brepkit' | 'occt-wasm';
 
-type EnvKernelName = 'opencascade' | 'wasm' | 'brepkit';
+type EnvKernelName = 'opencascade' | 'wasm' | 'brepkit' | 'occt-wasm';
 
 const ENV_TO_KERNEL: Partial<Record<string, KernelName>> = {
   opencascade: 'opencascade',
   wasm: 'brepkit',
   brepkit: 'brepkit',
+  'occt-wasm': 'occt-wasm',
 };
 
 function resolveKernel(): KernelName {
@@ -30,7 +32,7 @@ function resolveKernel(): KernelName {
   if (!env) return 'opencascade';
   const mapped = ENV_TO_KERNEL[env];
   if (mapped) return mapped;
-  const valid: readonly EnvKernelName[] = ['opencascade', 'wasm', 'brepkit'];
+  const valid: readonly EnvKernelName[] = ['opencascade', 'wasm', 'brepkit', 'occt-wasm'];
   throw new Error(`Invalid BREPJS_KERNEL="${env}". Must be one of: ${valid.join(', ')}`);
 }
 
@@ -113,6 +115,7 @@ let exportSplitBinFn: ExportSplitBinFn | undefined;
 import {
   initOcctKernel as initOpenCascadeKernel,
   initBrepkitKernel as initWasmKernel,
+  initOcctWasmKernel,
 } from './kernelInit';
 
 // ─── Public API ──────────────────────────────────────────────────────────────
@@ -126,6 +129,8 @@ export async function initBrepjs(): Promise<void> {
 
   if (kernelName === 'brepkit') {
     await initWasmKernel();
+  } else if (kernelName === 'occt-wasm') {
+    await initOcctWasmKernel();
   } else {
     await initOpenCascadeKernel();
   }
