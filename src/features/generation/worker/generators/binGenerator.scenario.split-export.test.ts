@@ -13,8 +13,12 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { BinParams } from '@/shared/types/bin';
-import { initBrepjs, getGenerateSplitPreview, getExportSplitBin } from './__dual-kernel__/wasmInit';
-import { boundingBox, hasNoNaNOrInfinity } from './__dual-kernel__/meshAssertions';
+import {
+  initBrepjs,
+  getGenerateSplitPreview,
+  getExportSplitBin,
+} from './__kernel-tests__/wasmInit';
+import { boundingBox, hasNoNaNOrInfinity } from './__kernel-tests__/meshAssertions';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { isOk } from '@/core/result';
 

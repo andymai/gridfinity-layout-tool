@@ -1,8 +1,8 @@
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
-import { boundingBox, countWallVerticesInZone } from '../__dual-kernel__/meshAssertions';
-import { defineScenario } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { boundingBox, countWallVerticesInZone } from '../__kernel-tests__/meshAssertions';
+import { defineScenario } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 const SIZE = GRIDFINITY.GRID_SIZE;
 const HEIGHT_781 = 10;

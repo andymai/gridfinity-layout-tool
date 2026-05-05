@@ -15,7 +15,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
-import { initBrepjs, getGenerateBin } from './__dual-kernel__/wasmInit';
+import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
 import { clearAllCaches, getAllShapeCacheStats, resetAllShapeCacheStats } from './shapeCache';
 
 beforeAll(async () => {

@@ -1,7 +1,7 @@
 import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { defineScenario, makeCutout } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { defineScenario, makeCutout } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 export const solidMode: ScenarioCase[] = [
   defineScenario('solid mode', 'generates a valid mesh when solid=true', {

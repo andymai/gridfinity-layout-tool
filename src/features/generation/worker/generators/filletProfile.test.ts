@@ -3,7 +3,7 @@
  * Tests for the shared concave fillet profile builder.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initBrepjs } from './__dual-kernel__/wasmInit';
+import { initBrepjs } from './__kernel-tests__/wasmInit';
 
 beforeAll(async () => {
   await initBrepjs();

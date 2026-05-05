@@ -1,6 +1,6 @@
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
-import { defineScenario } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { defineScenario } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 export const wallCutouts: ScenarioCase[] = [
   defineScenario('wall cutouts', 'standard bin with global wall cutouts', {

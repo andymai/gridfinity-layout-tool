@@ -1,5 +1,5 @@
-import { defineScenario, makeCutout } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { defineScenario, makeCutout } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 export const cutoutOffset: ScenarioCase[] = [
   defineScenario('cutout offset', 'positions cutout with zero offset flush with rim', {

@@ -17,8 +17,8 @@ import {
   DISABLED_WALL_CUTOUT,
 } from '@/shared/constants/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
-import { defineScenario } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { defineScenario } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 /**
  * Build a cellMask at half-bin resolution from a 2D array where row 0 is

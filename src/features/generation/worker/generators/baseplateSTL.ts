@@ -10,7 +10,7 @@
  *
  * Investigation status (#1494): with brepjs 15.6.1 + OCCT kernel, the repair
  * is currently a no-op for every known piece config — see
- * `__dual-kernel__/diagnoseBaseplateWinding.test.ts`. The pass is kept as a
+ * `__kernel-tests__/diagnoseBaseplateWinding.test.ts`. The pass is kept as a
  * defensive net for any future regression in brepjs/OCCT tessellation.
  *
  * (An even earlier version applied a per-triangle (cross · sum-of-vertex-

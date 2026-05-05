@@ -1,6 +1,6 @@
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { defineScenario, makeCutout } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { defineScenario, makeCutout } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 export const solidCutouts: ScenarioCase[] = [
   defineScenario('solid cutouts', '2\u00d72 solid with rectangle cutout', {

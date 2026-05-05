@@ -17,7 +17,7 @@
  */
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { initBrepjs } from './__dual-kernel__/wasmInit';
+import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { exportBin } from './binExporter';
 import { generateBin } from './binOrchestrator';
 import { clearAllCaches, getLastSolid, isLastSolidExportQuality } from './shapeCache';

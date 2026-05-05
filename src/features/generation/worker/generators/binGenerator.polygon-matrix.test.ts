@@ -13,12 +13,12 @@
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
-import { initBrepjs, getGenerateBin } from './__dual-kernel__/wasmInit';
-import { buildParams } from './__dual-kernel__/scenarioTypes';
+import { initBrepjs, getGenerateBin } from './__kernel-tests__/wasmInit';
+import { buildParams } from './__kernel-tests__/scenarioTypes';
 import {
   assertStructurallyValid,
   assertBoundingBoxMatchesParams,
-} from './__dual-kernel__/meshAssertions';
+} from './__kernel-tests__/meshAssertions';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { MASK_CELLS_PER_UNIT, type CellMask } from '@/shared/utils/cellMask';
 

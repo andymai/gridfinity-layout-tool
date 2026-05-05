@@ -5,10 +5,10 @@
  * in pipeline stages, onEvict in LRU caches) keeps WASM handle counts bounded
  * and prevents shapes from leaking to the FinalizationRegistry (GC safety net).
  *
- * Requires real brepjs WASM — excluded from default CI via __dual-kernel__ path.
+ * Requires real brepjs WASM — excluded from default CI via __kernel-tests__ path.
  *
  * Run:
- *   pnpm exec vitest run --config vitest.profile.config.ts __dual-kernel__/disposalRegression
+ *   pnpm exec vitest run --config vitest.profile.config.ts __kernel-tests__/disposalRegression
  */
 // @vitest-environment node
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';

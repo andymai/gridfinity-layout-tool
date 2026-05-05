@@ -5,7 +5,7 @@
  *
  * Run:
  *   pnpm exec vitest run --config vitest.profile.config.ts \
- *     src/features/generation/worker/generators/__dual-kernel__/diagnoseOps
+ *     src/features/generation/worker/generators/__kernel-tests__/diagnoseOps
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import {

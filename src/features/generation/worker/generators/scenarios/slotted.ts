@@ -1,6 +1,6 @@
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { defineScenario } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { defineScenario } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 export const slottedVariations: ScenarioCase[] = [
   defineScenario('slotted variations', 'slotted with Y-axis slots', {

@@ -3,8 +3,8 @@ import {
   DEFAULT_HANDLE_SIDE,
   DISABLED_WALL_CUTOUT,
 } from '@/shared/constants/bin';
-import { defineScenario } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { defineScenario } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 /** Shorthand for enabled handle side with nullable overrides */
 const ENABLED_SIDE = { ...DEFAULT_HANDLE_SIDE, enabled: true } as const;

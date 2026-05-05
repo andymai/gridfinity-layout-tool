@@ -1,5 +1,5 @@
-import { defineScenario, makeInsert } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { defineScenario, makeInsert } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 export const inserts: ScenarioCase[] = [
   defineScenario('inserts', '2\u00d72 with circle insert', {

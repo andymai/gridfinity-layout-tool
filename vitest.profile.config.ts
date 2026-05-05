@@ -1,14 +1,14 @@
 /**
- * Vitest config for __dual-kernel__ profiling / parity / diagnostic tests.
+ * Vitest config for __kernel-tests__ profiling / parity / diagnostic tests.
  *
- * Standalone config for WASM-heavy dual-kernel tests (node env, longer
+ * Standalone config for WASM-heavy kernel tests (node env, longer
  * timeouts, fork pool, single worker). Mirrors the resolve config from
  * vitest.config.ts to ensure consistent path aliases.
  *
  * Run:
- *   pnpm exec vitest run --config vitest.profile.config.ts __dual-kernel__/topologyParity
- *   pnpm exec vitest run --config vitest.profile.config.ts __dual-kernel__/diagnoseOps
- *   pnpm exec vitest run --config vitest.profile.config.ts __dual-kernel__/brepkitStress
+ *   pnpm exec vitest run --config vitest.profile.config.ts __kernel-tests__/topologyParity
+ *   pnpm exec vitest run --config vitest.profile.config.ts __kernel-tests__/diagnoseOps
+ *   pnpm exec vitest run --config vitest.profile.config.ts __kernel-tests__/brepkitStress
  */
 import { defineConfig } from 'vitest/config';
 import path from 'path';
@@ -20,7 +20,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: [
-      'src/features/generation/worker/generators/__dual-kernel__/**/*.test.ts',
+      'src/features/generation/worker/generators/__kernel-tests__/**/*.test.ts',
       'src/features/generation/worker/generators/tessellation.perf.test.ts',
     ],
     exclude: [],

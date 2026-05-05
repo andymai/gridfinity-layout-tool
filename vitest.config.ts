@@ -12,7 +12,7 @@ const sharedExclude = [
   '**/*.visual.tsx',
   '**/*.bench.ts',
   '.worktrees/**',
-  '**/__dual-kernel__/**',
+  '**/__kernel-tests__/**',
 ];
 
 // DOM project claims these globs — everything else goes to unit.

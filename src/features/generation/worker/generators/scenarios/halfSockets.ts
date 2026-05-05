@@ -1,6 +1,6 @@
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
-import { defineScenario } from '../__dual-kernel__/scenarioTypes';
-import type { ScenarioCase } from '../__dual-kernel__/scenarioTypes';
+import { defineScenario } from '../__kernel-tests__/scenarioTypes';
+import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
 export const halfSockets: ScenarioCase[] = [
   { w: 1, d: 1, label: '1\u00d71' },

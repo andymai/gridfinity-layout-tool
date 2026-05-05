@@ -25,8 +25,8 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT, GRIDFINITY } from '@/shared/constants/bin';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
-import { initBrepjs, getGenerateSplitPreview } from './__dual-kernel__/wasmInit';
-import { boundingBox, assertValidSplit } from './__dual-kernel__/meshAssertions';
+import { initBrepjs, getGenerateSplitPreview } from './__kernel-tests__/wasmInit';
+import { boundingBox, assertValidSplit } from './__kernel-tests__/meshAssertions';
 
 beforeAll(async () => {
   await initBrepjs();
