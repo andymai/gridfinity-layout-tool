@@ -55,6 +55,18 @@ export const FEATURE_FLAGS = [
     addedAt: '2026-03',
     requiresRefresh: true,
   },
+  {
+    id: 'occt_wasm_kernel',
+    name: 'Updated OCCT 3D Engine',
+    description:
+      'Try a newer build of the same OCCT engine that powers the default. Cleaner TypeScript bindings and a smaller WASM module — the goal is feature parity with the current default.',
+    status: 'experimental',
+    risk: 'high',
+    warning:
+      'This build is still in evaluation. Exported models may have geometry defects vs the current engine. Cannot be combined with the alternative engine. Reload the page after toggling.',
+    addedAt: '2026-05',
+    requiresRefresh: true,
+  },
   // cqrs_undo removed — undo capture middleware is now always active
   {
     id: 'handle_holes',

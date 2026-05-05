@@ -33,3 +33,18 @@ interface Navigator {
 declare const __APP_VERSION__: string;
 declare const __GIT_SHA__: string;
 declare const __BUILD_TIME__: string;
+
+// occt-wasm Emscripten entry — the package only ships a typed `OcctKernel`
+// wrapper, but brepjs's `OcctWasmAdapter` needs the raw module. We import
+// the dist JS factory directly; declare a minimal shape so TS stays happy.
+declare module 'occt-wasm/dist/occt-wasm.js' {
+  interface OcctWasmModuleConfig {
+    locateFile?: (path: string) => string;
+    wasmBinary?: ArrayBuffer | Uint8Array;
+  }
+  interface OcctWasmModule {
+    readonly OcctKernel: new () => unknown;
+  }
+  const init: (config?: OcctWasmModuleConfig) => Promise<OcctWasmModule>;
+  export default init;
+}

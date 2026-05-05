@@ -46,10 +46,7 @@ export class BridgeManager {
     this.clearIdleTimer();
 
     if (!this.bridge || this.bridge.isDestroyed) {
-      const kernel: KernelName = useLabsStore.getState().isFeatureEnabled('brepkit_kernel')
-        ? 'brepkit'
-        : 'opencascade';
-      this.bridge = new GenerationBridge(kernel);
+      this.bridge = new GenerationBridge(resolveKernel());
       this.initPromise = this.bridge.init();
     }
 
@@ -163,3 +160,15 @@ export class BridgeManager {
 }
 
 export const bridgeManager = new BridgeManager();
+
+/**
+ * Pick the geometry kernel from labs flags. Both `brepkit_kernel` and
+ * `occt_wasm_kernel` are mutually exclusive experiments; if both are
+ * accidentally toggled on, brepkit wins (older flag takes precedence).
+ */
+function resolveKernel(): KernelName {
+  const labs = useLabsStore.getState();
+  if (labs.isFeatureEnabled('brepkit_kernel')) return 'brepkit';
+  if (labs.isFeatureEnabled('occt_wasm_kernel')) return 'occt-wasm';
+  return 'opencascade';
+}

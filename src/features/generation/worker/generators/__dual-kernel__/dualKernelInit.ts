@@ -53,7 +53,7 @@ export function getSolidId(solid: Shape3D): number {
 // ─── Kernel initialisation ──────────────────────────────────────────────────
 // Re-export from shared kernelInit.ts to keep existing imports working.
 
-export { initOcctKernel, initBrepkitKernel } from './kernelInit';
+export { initOcctKernel, initBrepkitKernel, initOcctWasmKernel } from './kernelInit';
 
 /** Import and return the generateBin function. Call after kernel init. */
 export async function loadGenerateBin(): Promise<GenerateBinFn> {

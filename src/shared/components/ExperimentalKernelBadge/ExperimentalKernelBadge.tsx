@@ -11,9 +11,10 @@ import { useTranslation } from '@/i18n';
 export function ExperimentalKernelBadge() {
   const t = useTranslation();
   const isBrepkitEnabled = useFeatureFlag('brepkit_kernel');
+  const isOcctWasmEnabled = useFeatureFlag('occt_wasm_kernel');
   const openDrawer = useLabsStore((s) => s.openDrawer);
 
-  if (!isBrepkitEnabled) return null;
+  if (!isBrepkitEnabled && !isOcctWasmEnabled) return null;
 
   return (
     <div className="absolute left-3 top-3 z-10 pointer-events-none">

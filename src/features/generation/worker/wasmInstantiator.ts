@@ -69,3 +69,34 @@ export async function loadBrepkit(): Promise<WasmLoadResult> {
 
   return { isThreaded: false, hardwareConcurrency };
 }
+
+/**
+ * Load and initialize the occt-wasm geometry kernel.
+ *
+ * Bypasses occt-wasm's public `OcctKernel` wrapper (which hides the raw
+ * module behind `#private` fields) and instantiates the Emscripten module
+ * directly so we can hand both `module` and the raw `OcctKernel` instance
+ * to brepjs's `OcctWasmAdapter`. Registered under kernel id `'occt-wasm'`
+ * to coexist with `'occt'` (brepjs-opencascade).
+ */
+export async function loadOcctWasm(): Promise<WasmLoadResult> {
+  const hardwareConcurrency = getHardwareConcurrency();
+
+  // Dynamic imports keep occt-wasm out of the main worker chunk; Vite emits
+  // a separate chunk + WASM asset that only fetches when the labs flag is on.
+  const [{ OcctWasmAdapter }, occtWasmJs, occtWasmUrlMod] = await Promise.all([
+    import('brepjs'),
+    import('occt-wasm/dist/occt-wasm.js'),
+    import('occt-wasm/dist/occt-wasm.wasm?url'),
+  ]);
+
+  const module = await occtWasmJs.default({
+    locateFile: (path: string) => (path.endsWith('.wasm') ? occtWasmUrlMod.default : path),
+  });
+  const rawKernel = new module.OcctKernel();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- brepjs's OcctWasmAdapter ctor takes structurally-typed Embind objects; our minimal vite-env.d.ts declaration exposes only what we use
+  const adapter = new OcctWasmAdapter(module as any, rawKernel as any);
+  registerKernel('occt-wasm', adapter);
+
+  return { isThreaded: false, hardwareConcurrency };
+}

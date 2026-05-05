@@ -38,3 +38,22 @@ export async function initBrepkitKernel(): Promise<void> {
   const adapter = new BrepkitAdapter(kernel as any);
   registerKernel('brepkit', adapter);
 }
+
+/**
+ * Initialize occt-wasm kernel and register it with brepjs under id `'occt-wasm'`.
+ * Coexists with `'occt'` (brepjs-opencascade) for parity comparisons.
+ */
+export async function initOcctWasmKernel(): Promise<void> {
+  const { registerKernel, OcctWasmAdapter } = await import('brepjs');
+  const occtWasm = await import('occt-wasm/dist/occt-wasm.js');
+  const { readFileSync } = await import('fs');
+  const { join } = await import('path');
+  const wasmPath = join(process.cwd(), 'node_modules/occt-wasm/dist/occt-wasm.wasm');
+  const wasmBinary = readFileSync(wasmPath);
+  // The Emscripten module factory accepts wasmBinary to skip its own fetch.
+  const module = await occtWasm.default({ wasmBinary });
+  const rawKernel = new module.OcctKernel();
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- OcctWasmAdapter ctor takes structurally-typed Embind objects
+  const adapter = new OcctWasmAdapter(module, rawKernel);
+  registerKernel('occt-wasm', adapter);
+}
