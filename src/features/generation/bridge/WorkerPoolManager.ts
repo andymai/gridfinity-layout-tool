@@ -34,10 +34,7 @@ export class WorkerPoolManager {
     this.clearIdleTimer();
 
     if (!this.pool || this.pool.isDestroyed) {
-      const kernel: KernelName = useLabsStore.getState().isFeatureEnabled('brepkit_kernel')
-        ? 'brepkit'
-        : 'opencascade';
-      this.pool = new WorkerPool(undefined, kernel);
+      this.pool = new WorkerPool(undefined, resolveKernel());
       this.initPromise = this.pool.ensureWorkers();
     }
 
@@ -95,3 +92,14 @@ export class WorkerPoolManager {
 }
 
 export const workerPoolManager = new WorkerPoolManager();
+
+/**
+ * Pick the geometry kernel from labs flags. Mirrors `BridgeManager.resolveKernel`;
+ * brepkit wins if both experiments are toggled on.
+ */
+function resolveKernel(): KernelName {
+  const labs = useLabsStore.getState();
+  if (labs.isFeatureEnabled('brepkit_kernel')) return 'brepkit';
+  if (labs.isFeatureEnabled('occt_wasm_kernel')) return 'occt-wasm';
+  return 'opencascade';
+}

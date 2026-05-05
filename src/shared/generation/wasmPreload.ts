@@ -11,9 +11,11 @@
 
 import singleWasm from 'brepjs-opencascade/src/brepjs_single.wasm?url';
 import brepkitWasm from 'brepkit-wasm/brepkit_wasm_bg.wasm?url';
+import occtWasm from 'occt-wasm/dist/occt-wasm.wasm?url';
 
 let preloaded = false;
 let brepkitPreloaded = false;
+let occtWasmPreloaded = false;
 
 export function preloadWasmBinary(): void {
   if (preloaded) return;
@@ -45,6 +47,24 @@ export function preloadBrepkitWasm(): void {
     });
 
     brepkitPreloaded = true;
+  } catch {
+    // Leave flag false so a later call can retry
+  }
+}
+
+/**
+ * Primes the HTTP cache with the occt-wasm binary during idle time.
+ * Same pattern as `preloadWasmBinary()` but for the alternative OCCT build.
+ */
+export function preloadOcctWasm(): void {
+  if (occtWasmPreloaded) return;
+
+  try {
+    void fetch(occtWasm, { credentials: 'same-origin' }).catch(() => {
+      occtWasmPreloaded = false;
+    });
+
+    occtWasmPreloaded = true;
   } catch {
     // Leave flag false so a later call can retry
   }

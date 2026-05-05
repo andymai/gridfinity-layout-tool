@@ -31,6 +31,7 @@ export type GenerateBinFn = (
 export interface RawBrepkitKernel {
   getEntityCounts(solidId: number): number[];
   validateSolid(solidId: number): number;
+  validateSolidRelaxed(solidId: number): number;
   getSolidFaces(solidId: number): Iterable<number>;
   getSolidEdges(solidId: number): Iterable<number>;
   getSurfaceType(faceId: number): string;
@@ -53,7 +54,7 @@ export function getSolidId(solid: Shape3D): number {
 // ─── Kernel initialisation ──────────────────────────────────────────────────
 // Re-export from shared kernelInit.ts to keep existing imports working.
 
-export { initOcctKernel, initBrepkitKernel } from './kernelInit';
+export { initOcctKernel, initBrepkitKernel, initOcctWasmKernel } from './kernelInit';
 
 /** Import and return the generateBin function. Call after kernel init. */
 export async function loadGenerateBin(): Promise<GenerateBinFn> {
@@ -120,7 +121,7 @@ export function collectTopologyStatsRaw(
   // degenerate faces, matching OCCT's effective validation level.
   // rawKernel is the WASM module export; its return types aren't fully
   // declared in the kernel binding shim.
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
   const validationIssues = rawKernel.validateSolidRelaxed(solidId);
   return {
     isValid: validationIssues === 0,

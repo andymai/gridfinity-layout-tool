@@ -38,3 +38,23 @@ export async function initBrepkitKernel(): Promise<void> {
   const adapter = new BrepkitAdapter(kernel as any);
   registerKernel('brepkit', adapter);
 }
+
+/**
+ * Initialize occt-wasm kernel and register it with brepjs under id `'occt-wasm'`.
+ * Coexists with `'occt'` (brepjs-opencascade) for parity comparisons.
+ */
+export async function initOcctWasmKernel(): Promise<void> {
+  const { registerKernel, OcctWasmAdapter } = await import('brepjs');
+  const { OcctKernel } = await import('occt-wasm');
+  const { readFileSync } = await import('fs');
+  const { join } = await import('path');
+  const wasmPath = join(process.cwd(), 'node_modules/occt-wasm/dist/occt-wasm.wasm');
+  const wasmBinary = readFileSync(wasmPath);
+  const kernel = await OcctKernel.init({ wasm: wasmBinary });
+  // occt-wasm 3.0's exported types are still narrower than brepjs's expected
+  // shape (missing VectorString/getExceptionMessage on the module, IGES/XCAF
+  // methods on the raw kernel). All present at runtime — filed upstream.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- see comment above
+  const adapter = new OcctWasmAdapter(kernel.getRawModule() as any, kernel.getRawKernel() as any);
+  registerKernel('occt-wasm', adapter);
+}

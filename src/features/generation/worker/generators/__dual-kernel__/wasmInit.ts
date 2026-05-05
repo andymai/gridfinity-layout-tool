@@ -15,14 +15,15 @@ import type { MeshData } from '@/features/generation/bridge/types';
 
 // ─── Kernel selection ────────────────────────────────────────────────────────
 
-type KernelName = 'opencascade' | 'brepkit';
+type KernelName = 'opencascade' | 'brepkit' | 'occt-wasm';
 
-type EnvKernelName = 'opencascade' | 'wasm' | 'brepkit';
+type EnvKernelName = 'opencascade' | 'wasm' | 'brepkit' | 'occt-wasm';
 
 const ENV_TO_KERNEL: Partial<Record<string, KernelName>> = {
   opencascade: 'opencascade',
   wasm: 'brepkit',
   brepkit: 'brepkit',
+  'occt-wasm': 'occt-wasm',
 };
 
 function resolveKernel(): KernelName {
@@ -30,7 +31,7 @@ function resolveKernel(): KernelName {
   if (!env) return 'opencascade';
   const mapped = ENV_TO_KERNEL[env];
   if (mapped) return mapped;
-  const valid: readonly EnvKernelName[] = ['opencascade', 'wasm', 'brepkit'];
+  const valid: readonly EnvKernelName[] = ['opencascade', 'wasm', 'brepkit', 'occt-wasm'];
   throw new Error(`Invalid BREPJS_KERNEL="${env}". Must be one of: ${valid.join(', ')}`);
 }
 
@@ -113,7 +114,9 @@ let exportSplitBinFn: ExportSplitBinFn | undefined;
 import {
   initOcctKernel as initOpenCascadeKernel,
   initBrepkitKernel as initWasmKernel,
+  initOcctWasmKernel,
 } from './kernelInit';
+import { withKernel } from 'brepjs';
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
@@ -126,17 +129,36 @@ export async function initBrepjs(): Promise<void> {
 
   if (kernelName === 'brepkit') {
     await initWasmKernel();
+  } else if (kernelName === 'occt-wasm') {
+    await initOcctWasmKernel();
   } else {
     await initOpenCascadeKernel();
   }
 
   const binMod = await import('@/features/generation/worker/generators/binGenerator');
-  generateBin = binMod.generateBin;
-  generateSplitPreview = binMod.generateSplitPreview;
-  exportSplitBinFn = binMod.exportSplitBin;
-
   const baseplateMod = await import('@/features/generation/worker/generators/baseplateGenerator');
-  generateBaseplate = baseplateMod.generateBaseplate;
+
+  // brepjs uses an active-kernel TLS slot; occt-wasm tests need every gen call
+  // wrapped in `withKernel('occt-wasm', ...)` to route to the registered adapter.
+  if (kernelName === 'occt-wasm') {
+    generateBin = (params, onProgress, forExport) =>
+      withKernel('occt-wasm', () => binMod.generateBin(params, onProgress, forExport));
+    generateSplitPreview = (params, cutX, cutY, splitConfig) =>
+      withKernel('occt-wasm', () => binMod.generateSplitPreview(params, cutX, cutY, splitConfig));
+    exportSplitBinFn = (params, cutX, cutY, tol, angTol, splitConfig) =>
+      withKernel('occt-wasm', () =>
+        binMod.exportSplitBin(params, cutX, cutY, tol, angTol, splitConfig)
+      );
+    generateBaseplate = (params, onProgress, forExport, signal) =>
+      withKernel('occt-wasm', () =>
+        baseplateMod.generateBaseplate(params, onProgress, forExport, signal)
+      );
+  } else {
+    generateBin = binMod.generateBin;
+    generateSplitPreview = binMod.generateSplitPreview;
+    exportSplitBinFn = binMod.exportSplitBin;
+    generateBaseplate = baseplateMod.generateBaseplate;
+  }
 }
 
 /** Returns the cached `generateBin` function. Throws if `initBrepjs()` was not called. */

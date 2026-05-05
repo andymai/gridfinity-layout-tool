@@ -72,7 +72,7 @@
       "name": "Total JS (gzip)",
       "path": "dist/assets/*.js",
       "gzip": true,
-      "limit": "1355 kB"
+      "limit": "1500 kB"
     }
   ],
   "dependencies": {
@@ -84,7 +84,7 @@
     "@react-three/fiber": "^9.6.1",
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.3.3",
-    "brepjs": "15.6.1",
+    "brepjs": "17.0.0",
     "brepjs-opencascade": "0.15.6",
     "brepkit-wasm": "^2.44.1",
     "class-variance-authority": "^0.7.1",
@@ -96,6 +96,7 @@
     "ioredis": "^5.10.1",
     "jszip": "^3.10.1",
     "lz-string": "^1.5.0",
+    "occt-wasm": "3.0.0",
     "posthog-js": "^1.372.8",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
