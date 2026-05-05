@@ -81,7 +81,7 @@
     "@liveblocks/node": "^3.18.5",
     "@liveblocks/react": "^3.18.5",
     "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.6.0",
+    "@react-three/fiber": "^9.6.1",
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.3.3",
     "brepjs": "15.6.1",
