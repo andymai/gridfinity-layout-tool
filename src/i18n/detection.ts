@@ -49,6 +49,10 @@ const LANGUAGE_MAP: Partial<Record<string, Locale>> = {
   'nb-NO': 'nb',
   'nn-NO': 'nb',
   'no-NO': 'nb',
+
+  // Ukrainian
+  uk: 'uk',
+  'uk-UA': 'uk',
 };
 
 /**
