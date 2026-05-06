@@ -198,7 +198,7 @@ describe('filterLayoutContent', () => {
     });
 
     it('blocks fullwidth Latin slur', () => {
-      // ｎｉｇｇｅｒ — fullwidth forms (U+FF4E etc.) fold to ASCII via NFKC.
+      // ｎｉｇｇｅｒ — fullwidth forms (U+FF4E etc.) fold to ASCII via NFKD.
       const result = filterLayoutContent({
         name: 'ｎｉｇｇｅｒ',
         bins: [],

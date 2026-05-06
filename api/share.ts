@@ -123,7 +123,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       logger.error('Share creation failed: Redis unavailable, cannot persist delete token hash');
       return res.status(503).json({
         error: 'Service temporarily unavailable. Please try again.',
-        code: ErrorCode.SERVER_ERROR,
+        code: ErrorCode.SERVICE_UNAVAILABLE,
       });
     }
 
@@ -133,28 +133,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const nowIso = new Date().toISOString();
 
     // deleteTokenHash and reportCount are in Redis, not in the public blob,
-    // to prevent exposure via the CDN URL.
+    // to prevent exposure via the CDN URL. lastAccessedAt is also in Redis
+    // (share:lastAccessed:{id}); we omit it from the blob to avoid persisting
+    // a permanently-stale creation-time value that could mislead future
+    // tooling reading directly from the blob.
     const shareData: ShareData = {
       layout: sharePayload,
       metadata: {
         createdAt: nowIso,
         lastUpdatedAt: nowIso,
-        lastAccessedAt: nowIso,
         permission,
         authorName: typeof authorName === 'string' ? authorName.slice(0, 64) : undefined,
       },
     };
 
-    // Acquire the slot atomically: put() with allowOverwrite=false (default)
-    // is the CAS primitive. Two concurrent POSTs racing on the same shareId
-    // produce exactly one winner here; the loser throws and we return 409.
-    // This must happen BEFORE the Redis hash write — otherwise the loser's
-    // hash could clobber the winner's hash in Redis (the original bug).
+    // Acquire the slot atomically: put() with allowOverwrite=false is the CAS
+    // primitive. Two concurrent POSTs racing on the same shareId produce
+    // exactly one winner here; the loser throws and we return 409. This must
+    // happen BEFORE the Redis hash write — otherwise the loser's hash could
+    // clobber the winner's hash in Redis (the original bug).
+    //
+    // SECURITY: allowOverwrite MUST stay false. The MED-1 race fix depends on
+    // it. Don't rely on the library default (which is currently false but
+    // could change in a future major version).
     try {
       await put(blobPath, JSON.stringify(shareData), {
         access: 'public',
         contentType: 'application/json',
         addRandomSuffix: false,
+        allowOverwrite: false,
       });
     } catch (putErr) {
       // The blob already exists (or some other put failure). Probe with head()

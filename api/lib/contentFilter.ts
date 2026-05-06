@@ -100,8 +100,18 @@ export function filterLayoutContent(layout: {
 }
 
 // Confusable Latin-letter mapping for the small alphabet our blocklist needs.
-// Covers Cyrillic homoglyphs and other look-alikes that survive NFKC. Defense-
-// in-depth on top of the report flow — not a complete confusables table.
+// Covers Cyrillic and Greek homoglyphs that NFKD doesn't fold (decomposition
+// only separates marks, it doesn't change script). Defense-in-depth on top
+// of the report flow — not a complete confusables table.
+//
+// Scope is intentionally narrow: we map only characters that are visually
+// indistinguishable from their Latin counterparts in common UI fonts AND
+// have no legitimate ASCII-text use. Digits and punctuation (@, $, !, 5,
+// 7, etc.) are deliberately NOT mapped — they appear in legitimate layout
+// names like "Bin 1/4 inch" or "@home storage" and would rewrite ordinary
+// text into unpredictable strings as the blocklist grows. Only the four
+// classic leetspeak digit substitutions (0/1/3/4) are kept because those
+// appear most often in actual bypass attempts.
 const CONFUSABLE_TO_LATIN: Record<string, string> = {
   // Cyrillic
   а: 'a',
@@ -127,16 +137,11 @@ const CONFUSABLE_TO_LATIN: Record<string, string> = {
   ο: 'o',
   ρ: 'p',
   τ: 't',
-  // Common typographic substitutes
+  // Classic leetspeak digit substitutions (kept narrow — see note above)
   '0': 'o',
   '1': 'i',
   '3': 'e',
   '4': 'a',
-  '5': 's',
-  '7': 't',
-  '@': 'a',
-  $: 's',
-  '!': 'i',
 };
 
 // Strip zero-width (U+200B–U+200D, U+FEFF) and combining marks (U+0300–U+036F).

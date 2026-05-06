@@ -202,12 +202,18 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
 
     const now = new Date().toISOString();
 
+    // Strip the legacy lastAccessedAt field on any rewrite — its source of
+    // truth is now Redis (share:lastAccessed:{id}). Preserving the spread
+    // would carry forward the stale creation-time value indefinitely.
+    const { lastAccessedAt: _drop, ...metadataWithoutAccess } = existingData.metadata;
+    void _drop;
+
     // Permission-only update (no layout provided)
     if (!layout) {
       const updatedData: ShareData = {
         ...existingData,
         metadata: {
-          ...existingData.metadata,
+          ...metadataWithoutAccess,
           permission: newPermission,
           lastUpdatedAt: now,
         },
@@ -249,11 +255,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, id: string, bl
       });
     }
 
-    // Update share data (preserve original deleteTokenHash and createdAt)
+    // Update share data (preserve original deleteTokenHash and createdAt;
+    // drop legacy lastAccessedAt — see note above).
     const updatedData: ShareData = {
       layout: validationResult.layout,
       metadata: {
-        ...existingData.metadata,
+        ...metadataWithoutAccess,
         permission: newPermission,
         lastUpdatedAt: now,
       },

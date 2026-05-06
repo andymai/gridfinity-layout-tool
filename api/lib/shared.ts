@@ -123,7 +123,13 @@ export interface ShareMetadata {
   deleteTokenHash?: string;
   createdAt: string;
   lastUpdatedAt: string;
-  lastAccessedAt: string;
+  /**
+   * Last-access tracking lives in Redis (share:lastAccessed:{id}) — the blob
+   * field is only retained for backwards compatibility with pre-migration
+   * shares. New shares omit it entirely; PUT clears it on legacy shares.
+   * Code reading "when was this last accessed" MUST consult Redis, not this.
+   */
+  lastAccessedAt?: string;
   permission: 'view' | 'edit';
   authorName?: string;
   /** Stored in Redis (share:reports:{id}). May be present in blob for pre-migration shares. */
