@@ -147,19 +147,20 @@ export function SharePopover({ buttonRef, cloudShare }: SharePopoverProps) {
     const isNowEditable = newPermission === 'edit';
     const collabStateChanged = wasEditable !== isNowEditable;
 
-    let message = `Permission updated to "${newPermission === 'edit' ? 'can edit' : 'view only'}"`;
+    let message: string;
     if (collabStateChanged) {
-      message =
-        newPermission === 'edit'
-          ? 'Collaboration enabled. Anyone with the link can now edit.'
-          : 'Collaboration disabled. Link is now view-only.';
+      message = isNowEditable ? t('share.toast.collabEnabled') : t('share.toast.collabDisabled');
+    } else {
+      message = t('share.toast.permissionUpdated', {
+        label: isNowEditable ? t('share.cloud.canEdit') : t('share.cloud.viewOnly'),
+      });
     }
 
     addToast({
       type: 'success',
       message,
       action: {
-        label: 'Undo',
+        label: t('common.undo'),
         onClick: async () => {
           setLocalPermission(oldPermission);
           await updatePermission(oldPermission);
@@ -175,7 +176,9 @@ export function SharePopover({ buttonRef, cloudShare }: SharePopoverProps) {
 
     addToast({
       type: 'success',
-      message: wasCollaborative ? 'Share link deleted. Collaboration ended.' : 'Share link deleted',
+      message: wasCollaborative
+        ? t('share.toast.linkDeletedCollabEnded')
+        : t('share.toast.linkDeleted'),
     });
     onClose();
   };

@@ -33,7 +33,7 @@ export function DeleteShareConfirm({ isDeleting, onConfirm }: DeleteShareConfirm
 
   return (
     <div className="bg-error/10 border border-error/30 rounded-lg p-3 space-y-2">
-      <p className="text-sm text-content">Delete this share? The link will stop working.</p>
+      <p className="text-sm text-content">{t('share.deleteConfirmMessage')}</p>
       <div className="flex gap-2">
         <button
           onClick={(e) => {
@@ -64,7 +64,7 @@ export function DeleteShareConfirm({ isDeleting, onConfirm }: DeleteShareConfirm
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              Deleting...
+              {t('share.deleting')}
             </span>
           ) : (
             t('common.delete')
