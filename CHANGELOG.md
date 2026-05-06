@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.63.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.62.1...gridfinity-layout-tool-v4.63.0) (2026-05-06)
+
+
+### Features
+
+* **i18n:** add Swedish (sv) locale ([#1587](https://github.com/andymai/gridfinity-layout-tool/issues/1587)) ([0c25e6a](https://github.com/andymai/gridfinity-layout-tool/commit/0c25e6a28e930fc382daef2b65c03082bd30b9f4))
+* **i18n:** add Ukrainian (uk) locale ([#1585](https://github.com/andymai/gridfinity-layout-tool/issues/1585)) ([e243778](https://github.com/andymai/gridfinity-layout-tool/commit/e2437783b5918db096540930b6a465976b75618a))
+
 ## [4.62.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.62.0...gridfinity-layout-tool-v4.62.1) (2026-05-06)
 
 
