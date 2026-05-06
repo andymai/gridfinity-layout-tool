@@ -14,13 +14,11 @@
   <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large">
   <link rel="canonical" href="https://gridfinitylayouttool.com/gridfinity-generator">
 
-  <!-- International targeting: hreflang self-references (matches homepage pattern) -->
+  <!-- International targeting: only declare languages we actually serve.
+       Per Google's hreflang spec, every URL in the set must serve content
+       in the declared language. The page is English-only, so we declare
+       only en + x-default. -->
   <link rel="alternate" hreflang="en" href="https://gridfinitylayouttool.com/gridfinity-generator">
-  <link rel="alternate" hreflang="de" href="https://gridfinitylayouttool.com/gridfinity-generator">
-  <link rel="alternate" hreflang="nl" href="https://gridfinitylayouttool.com/gridfinity-generator">
-  <link rel="alternate" hreflang="es" href="https://gridfinitylayouttool.com/gridfinity-generator">
-  <link rel="alternate" hreflang="fr" href="https://gridfinitylayouttool.com/gridfinity-generator">
-  <link rel="alternate" hreflang="pt-BR" href="https://gridfinitylayouttool.com/gridfinity-generator">
   <link rel="alternate" hreflang="x-default" href="https://gridfinitylayouttool.com/gridfinity-generator">
 
   <!-- Open Graph / Facebook -->
@@ -343,7 +341,7 @@
       </svg>
       <span>Gridfinity Layout Tool</span>
     </a>
-    <a href="/designer?utm_source=gridfinity-generator&amp;utm_medium=nav" class="content-nav__cta">
+    <a href="/designer?utm_source=gridfinity-generator&amp;utm_medium=nav&amp;utm_campaign=bin" class="content-nav__cta">
       Open Generator
     </a>
   </nav>
