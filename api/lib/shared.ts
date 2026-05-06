@@ -132,7 +132,10 @@ export interface ShareMetadata {
 
 // Redis key builders live in `./redisKeys.ts` (single source of truth).
 // Re-exported here to preserve existing import paths from share endpoints.
-export { shareHashKey, shareReportKey } from './redisKeys.js';
+export { shareHashKey, shareReportKey, shareLastAccessedKey } from './redisKeys.js';
+
+/** TTL for share:lastAccessed keys (1 year — matches the report-counter TTL). */
+export const SHARE_LAST_ACCESSED_TTL_SECONDS = 365 * 24 * 60 * 60;
 
 /**
  * Shared data structure for stored shares.

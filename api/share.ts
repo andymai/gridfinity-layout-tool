@@ -1,4 +1,4 @@
-import { put, head } from '@vercel/blob';
+import { put, head, del } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { checkRateLimit, getClientIP, getRedis } from './lib/rateLimit.js';
 import { logger } from './lib/logger.js';
@@ -114,29 +114,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Use client-provided layoutId as the share ID
     const shareId = layoutId;
+    const blobPath = `shares/${shareId}.json`;
 
-    // Prevent overwriting an existing share with the same ID
-    const existing = await head(`shares/${shareId}.json`).catch(() => null);
-    if (existing) {
-      return res.status(409).json({
-        error: 'A share with this ID already exists.',
-        code: ErrorCode.VALIDATION_ERROR,
-      });
-    }
-
-    const deleteToken = generateDeleteToken();
-    const deleteTokenHash = await hashToken(deleteToken);
-
-    const now = new Date();
-    const nowIso = now.toISOString();
-
-    // Store deleteTokenHash in Redis (not in the public blob).
-    // Fail-closed in production: if Redis is unavailable the hash can't be persisted,
-    // which would make the share permanently unmodifiable.
+    // Fail-closed in production: if Redis is unavailable, the delete-token hash
+    // can't be persisted (the share would be permanently unmodifiable).
     const redis = getRedis();
-    if (redis) {
-      await redis.set(shareHashKey(shareId), deleteTokenHash);
-    } else if (process.env.VERCEL_ENV === 'production') {
+    if (!redis && process.env.VERCEL_ENV === 'production') {
       logger.error('Share creation failed: Redis unavailable, cannot persist delete token hash');
       return res.status(503).json({
         error: 'Service temporarily unavailable. Please try again.',
@@ -144,8 +127,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Prepare data to store — deleteTokenHash and reportCount are in Redis,
-    // not in the public blob, to prevent exposure via the CDN URL.
+    const deleteToken = generateDeleteToken();
+    const deleteTokenHash = await hashToken(deleteToken);
+
+    const nowIso = new Date().toISOString();
+
+    // deleteTokenHash and reportCount are in Redis, not in the public blob,
+    // to prevent exposure via the CDN URL.
     const shareData: ShareData = {
       layout: sharePayload,
       metadata: {
@@ -157,12 +145,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     };
 
-    // Store in Vercel Blob
-    await put(`shares/${shareId}.json`, JSON.stringify(shareData), {
-      access: 'public',
-      contentType: 'application/json',
-      addRandomSuffix: false,
-    });
+    // Acquire the slot atomically: put() with allowOverwrite=false (default)
+    // is the CAS primitive. Two concurrent POSTs racing on the same shareId
+    // produce exactly one winner here; the loser throws and we return 409.
+    // This must happen BEFORE the Redis hash write — otherwise the loser's
+    // hash could clobber the winner's hash in Redis (the original bug).
+    try {
+      await put(blobPath, JSON.stringify(shareData), {
+        access: 'public',
+        contentType: 'application/json',
+        addRandomSuffix: false,
+      });
+    } catch (putErr) {
+      // The blob already exists (or some other put failure). Probe with head()
+      // to distinguish "lost the race" from genuine errors.
+      const collided = await head(blobPath).catch(() => null);
+      if (collided) {
+        return res.status(409).json({
+          error: 'A share with this ID already exists.',
+          code: ErrorCode.VALIDATION_ERROR,
+        });
+      }
+      throw putErr;
+    }
+
+    // Persist delete-token hash now that we own the slot. If Redis fails here
+    // we must roll back the blob, otherwise we'd leave an orphan share with
+    // no delete token (permanently unmodifiable).
+    if (redis) {
+      try {
+        await redis.set(shareHashKey(shareId), deleteTokenHash);
+      } catch (redisErr) {
+        await del(blobPath).catch((delErr: unknown) => {
+          logger.error('Rollback failed: orphan blob left after Redis write failure', {
+            id: shareId,
+            error: delErr instanceof Error ? delErr.message : String(delErr),
+          });
+        });
+        throw redisErr;
+      }
+    }
 
     // Return success response
     const shareUrl = `${getBaseUrl()}/${type === 'designer' ? 'd' : 'l'}/${shareId}`;

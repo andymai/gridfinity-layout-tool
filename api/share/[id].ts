@@ -13,6 +13,8 @@ import {
   getBaseUrl,
   shareHashKey,
   shareReportKey,
+  shareLastAccessedKey,
+  SHARE_LAST_ACCESSED_TTL_SECONDS,
   type ShareData,
 } from '../lib/shared.js';
 
@@ -79,26 +81,26 @@ async function handleGet(req: VercelRequest, res: VercelResponse, _id: string, b
 
     const shareData = (await response.json()) as ShareData;
 
-    // Update lastAccessedAt timestamp (fire-and-forget, don't block response)
-    const now = new Date().toISOString();
-    const updatedData: ShareData = {
-      ...shareData,
-      metadata: {
-        ...shareData.metadata,
-        lastAccessedAt: now,
-      },
-    };
-    put(blobPath, JSON.stringify(updatedData), {
-      access: 'public',
-      contentType: 'application/json',
-      addRandomSuffix: false,
-    }).catch((err: unknown) => {
-      logger.warn('Failed to update lastAccessedAt for share', {
-        id: _id,
-        error: err instanceof Error ? err.message : String(err),
-        stack: err instanceof Error ? err.stack : undefined,
-      });
-    });
+    // Track lastAccessedAt in Redis instead of rewriting the blob on every GET.
+    // Cheap, atomic, and avoids the per-view Blob-write amplification that
+    // existed when this was a put() with allowOverwrite=false (which silently
+    // errored every time). Fire-and-forget — never block the response.
+    const redisForAccess = getRedis();
+    if (redisForAccess) {
+      redisForAccess
+        .set(
+          shareLastAccessedKey(_id),
+          new Date().toISOString(),
+          'EX',
+          SHARE_LAST_ACCESSED_TTL_SECONDS
+        )
+        .catch((err: unknown) => {
+          logger.warn('Failed to update lastAccessedAt for share', {
+            id: _id,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        });
+    }
 
     // Return layout with public metadata (exclude sensitive fields)
     return res.status(200).json({
@@ -361,7 +363,7 @@ async function handleDelete(
     // Delete the blob and clean up Redis keys
     await del(blobPath);
     if (redis) {
-      await redis.del(shareHashKey(_id), shareReportKey(_id));
+      await redis.del(shareHashKey(_id), shareReportKey(_id), shareLastAccessedKey(_id));
     }
 
     return res.status(200).json({

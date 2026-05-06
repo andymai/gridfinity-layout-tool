@@ -5,6 +5,15 @@ import { REPORT_THRESHOLD } from '../lib/contentFilter.js';
 import { isValidShareId, ErrorCode, methodNotAllowed, shareReportKey } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
 
+/**
+ * SECURITY — report counter inflation:
+ * Counters are protected only by per-IP rate limiting (10/hr). A botnet
+ * with 5+ residential IPs can reach REPORT_THRESHOLD on any share, so
+ * the threshold is currently a manual-review trigger only — there is NO
+ * automated takedown. Before wiring up automated takedown, add a CAPTCHA
+ * (or proof-of-work, or unique-IP requirement) to the report flow so the
+ * threshold can't be hit by IP rotation alone.
+ */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') {

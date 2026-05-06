@@ -14,6 +14,15 @@ import type { ShareData } from './lib/shared.js';
  * - 'edit' permission grants FULL_ACCESS (read + write)
  * - 'view' permission grants READ_ACCESS (read only)
  *
+ * SECURITY — userId trust model:
+ * `userId` is supplied by the client and only checked for non-empty string.
+ * It is signed into the Liveblocks token but is NOT a privilege boundary —
+ * room access is gated by the share's permission level, not by who claims
+ * which userId. Two clients can claim the same userId and become
+ * indistinguishable in presence/cursors. Acceptable for an anonymous-only
+ * product; if identity becomes a privilege concern (private rooms, named
+ * accounts), issue userIds server-side and tie them to a session cookie.
+ *
  * @see https://liveblocks.io/docs/authentication
  */
 

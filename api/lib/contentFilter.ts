@@ -99,20 +99,83 @@ export function filterLayoutContent(layout: {
   return { passed: true };
 }
 
+// Confusable Latin-letter mapping for the small alphabet our blocklist needs.
+// Covers Cyrillic homoglyphs and other look-alikes that survive NFKC. Defense-
+// in-depth on top of the report flow — not a complete confusables table.
+const CONFUSABLE_TO_LATIN: Record<string, string> = {
+  // Cyrillic
+  а: 'a',
+  в: 'b',
+  с: 'c',
+  е: 'e',
+  һ: 'h',
+  і: 'i',
+  ј: 'j',
+  к: 'k',
+  м: 'm',
+  о: 'o',
+  р: 'p',
+  ѕ: 's',
+  т: 't',
+  у: 'y',
+  х: 'x',
+  // Greek
+  α: 'a',
+  β: 'b',
+  ε: 'e',
+  ι: 'i',
+  ο: 'o',
+  ρ: 'p',
+  τ: 't',
+  // Common typographic substitutes
+  '0': 'o',
+  '1': 'i',
+  '3': 'e',
+  '4': 'a',
+  '5': 's',
+  '7': 't',
+  '@': 'a',
+  $: 's',
+  '!': 'i',
+};
+
+// Strip zero-width (U+200B–U+200D, U+FEFF) and combining marks (U+0300–U+036F).
+// Unicode escapes (not literal characters) so the source stays ASCII-only.
+const INVISIBLE_AND_COMBINING = new RegExp('[\u0300-\u036f\u200B-\u200D\uFEFF]', 'g');
+
+/**
+ * Normalize text for blocklist matching. NFKD decomposes precomposed accents
+ * AND folds compatibility forms (fullwidth, ligatures); zero-width and combining
+ * marks are then stripped; confusable Latin look-alikes are mapped back to ASCII.
+ *
+ * NFKD (not NFKC) is required: NFKC would re-compose `n` + COMBINING_ACUTE
+ * back into `ń`, leaving the combining mark unreachable to the strip step.
+ */
+function normalizeForBlocklist(text: string): string {
+  const folded = text.normalize('NFKD').toLowerCase().replace(INVISIBLE_AND_COMBINING, '');
+  let out = '';
+  for (const ch of folded) {
+    out += CONFUSABLE_TO_LATIN[ch] ?? ch;
+  }
+  return out.trim();
+}
+
 /**
  * Check a single text string for offensive content.
  */
 function checkText(text: string): ContentFilterResult {
-  const normalized = text.toLowerCase().trim();
+  const normalized = normalizeForBlocklist(text);
 
-  // Check blocklist
+  // Check blocklist against the normalized form so Unicode tricks
+  // (homoglyphs, zero-width chars, fullwidth, combining marks) can't bypass.
   for (const term of BLOCKLIST) {
     if (normalized.includes(term)) {
       return { passed: false, reason: 'contains prohibited content' };
     }
   }
 
-  // Check harmful patterns
+  // Pattern matching runs against the *raw* text — the zalgo detector
+  // explicitly looks for combining-mark spam, which normalization would erase.
   for (const pattern of HARMFUL_PATTERNS) {
     if (pattern.test(text)) {
       return { passed: false, reason: 'contains prohibited patterns' };

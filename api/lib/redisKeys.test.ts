@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   shareHashKey,
   shareReportKey,
+  shareLastAccessedKey,
   rateLimitKey,
   sessionKey,
   userSessionsKey,
@@ -18,6 +19,10 @@ describe('redisKeys', () => {
 
     it('shareReportKey produces share:reports:{id}', () => {
       expect(shareReportKey('abc123')).toBe('share:reports:abc123');
+    });
+
+    it('shareLastAccessedKey produces share:lastAccessed:{id}', () => {
+      expect(shareLastAccessedKey('abc123')).toBe('share:lastAccessed:abc123');
     });
   });
 
@@ -53,7 +58,7 @@ describe('redisKeys', () => {
 
   describe('namespace separation', () => {
     it('share keys never collide with sync keys', () => {
-      const shareKeys = [shareHashKey('a'), shareReportKey('a')];
+      const shareKeys = [shareHashKey('a'), shareReportKey('a'), shareLastAccessedKey('a')];
       const syncKeys = [
         sessionKey('a'),
         userSessionsKey('a'),
@@ -84,6 +89,7 @@ describe('redisKeys', () => {
       const shared = await import('./shared');
       expect(shared.shareHashKey).toBe(shareHashKey);
       expect(shared.shareReportKey).toBe(shareReportKey);
+      expect(shared.shareLastAccessedKey).toBe(shareLastAccessedKey);
     });
   });
 });
