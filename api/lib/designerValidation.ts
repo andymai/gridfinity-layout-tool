@@ -50,6 +50,65 @@ const CONSTRAINTS = {
   MAX_MASK_DIMENSION: 20,
 } as const;
 
+/**
+ * Top-level keys allowed inside `params` after validation.
+ *
+ * Defense-in-depth: the validator only deep-validates the structurally-
+ * significant fields, but unknown keys (e.g. attacker-controlled junk,
+ * `__proto__`, future fields not yet in the schema) must not be persisted
+ * verbatim into the public blob. Anything outside this set is silently
+ * dropped during sanitization.
+ *
+ * Mirrors the top-level `BinParams` keys in
+ * `src/features/bin-designer/types/index.ts`. Update both together when
+ * adding a new generator-level parameter.
+ */
+const ALLOWED_PARAM_KEYS = new Set<string>([
+  // Dimensions & units
+  'width',
+  'depth',
+  'height',
+  'gridUnitMm',
+  'heightUnitMm',
+  'wallThickness',
+  // Style
+  'style',
+  // Sub-objects (deep-validated below)
+  'base',
+  'compartments',
+  'dividers', // legacy alternative to compartments
+  'label',
+  'walls',
+  'inserts',
+  'cellMask',
+  // Sub-objects not deep-validated (yet) — passed through but key-checked
+  'scoop',
+  'handles',
+  'slotConfig',
+  'dividerPieces',
+  'cutouts',
+  'cutoutConfig',
+  'wallPattern',
+  'splitConnectors',
+  'featureColors',
+  'lid',
+]);
+
+/**
+ * Build a sanitized copy of the params object containing only allowlisted
+ * top-level keys. Drops unknown / future / attacker-controlled keys before
+ * the payload reaches the public blob.
+ */
+function pickAllowedParams(params: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const key of Object.keys(params)) {
+    if (ALLOWED_PARAM_KEYS.has(key)) {
+      out[key] = params[key];
+    }
+  }
+  return out;
+}
+
 export interface DesignerSharePayload {
   type: 'designer';
   version: 1;
@@ -413,7 +472,7 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
     payload: {
       type: 'designer',
       version: 1,
-      params: params,
+      params: pickAllowedParams(params),
     },
   };
 }

@@ -165,6 +165,94 @@ describe('filterLayoutContent', () => {
     });
   });
 
+  describe('Unicode bypass resistance (MED-2 regression)', () => {
+    it('blocks Cyrillic homoglyph "е" inside slur', () => {
+      // Cyrillic 'е' (U+0435) replacing Latin 'e' — would have passed pre-fix.
+      const result = filterLayoutContent({
+        name: 'niggеr drawer',
+        bins: [],
+        categories: [{ name: 'Default' }],
+      });
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('blocks zero-width-space inside slur', () => {
+      const result = filterLayoutContent({
+        name: 'ni​gger',
+        bins: [],
+        categories: [{ name: 'Default' }],
+      });
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('blocks zero-width-joiner inside slur', () => {
+      const result = filterLayoutContent({
+        name: 'ni‍gger',
+        bins: [],
+        categories: [{ name: 'Default' }],
+      });
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('blocks fullwidth Latin slur', () => {
+      // ｎｉｇｇｅｒ — fullwidth forms (U+FF4E etc.) fold to ASCII via NFKD.
+      const result = filterLayoutContent({
+        name: 'ｎｉｇｇｅｒ',
+        bins: [],
+        categories: [{ name: 'Default' }],
+      });
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('blocks slur with single combining accent', () => {
+      // 'ńigger' — single combining acute on n. Single accent should NOT trigger
+      // the zalgo pattern (>=5), so we rely on the strip-combining normalization.
+      const result = filterLayoutContent({
+        name: 'ńigger',
+        bins: [],
+        categories: [{ name: 'Default' }],
+      });
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('blocks BOM inside slur', () => {
+      const result = filterLayoutContent({
+        name: 'ni﻿gger',
+        bins: [],
+        categories: [{ name: 'Default' }],
+      });
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('blocks digit substitution (e.g. n1gger)', () => {
+      const result = filterLayoutContent({
+        name: 'n1gger',
+        bins: [],
+        categories: [{ name: 'Default' }],
+      });
+
+      expect(result.passed).toBe(false);
+    });
+
+    it('still passes legitimate text containing confusable chars', () => {
+      // e.g. a layout name with a Cyrillic name shouldn't be blocked unless
+      // it actually maps to a slur after normalization.
+      const result = filterLayoutContent({
+        name: 'Алексей drawer',
+        bins: [],
+        categories: [{ name: 'Default' }],
+      });
+
+      expect(result.passed).toBe(true);
+    });
+  });
+
   describe('edge cases', () => {
     it('handles undefined label and notes', () => {
       const result = filterLayoutContent({

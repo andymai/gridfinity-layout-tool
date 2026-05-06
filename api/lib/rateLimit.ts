@@ -145,7 +145,14 @@ function hashIP(ip: string): string {
 
 /**
  * Get client IP from request headers.
- * Vercel sets x-forwarded-for header.
+ *
+ * SECURITY: assumes a Vercel deployment. Vercel's edge network always sets
+ * `x-forwarded-for` itself and **overrides** any value the client supplied,
+ * so the leftmost value is the trusted client IP. If this code is ever run
+ * behind a different proxy (or directly), this header is client-controllable
+ * and per-IP rate limits become spoofable. On non-Vercel deployments, take
+ * the rightmost trusted IP from a known-length proxy chain instead.
+ *
  * Supports both Fetch API Request and Node.js IncomingHttpHeaders.
  */
 export function getClientIP(

@@ -123,7 +123,13 @@ export interface ShareMetadata {
   deleteTokenHash?: string;
   createdAt: string;
   lastUpdatedAt: string;
-  lastAccessedAt: string;
+  /**
+   * Last-access tracking lives in Redis (share:lastAccessed:{id}) — the blob
+   * field is only retained for backwards compatibility with pre-migration
+   * shares. New shares omit it entirely; PUT clears it on legacy shares.
+   * Code reading "when was this last accessed" MUST consult Redis, not this.
+   */
+  lastAccessedAt?: string;
   permission: 'view' | 'edit';
   authorName?: string;
   /** Stored in Redis (share:reports:{id}). May be present in blob for pre-migration shares. */
@@ -132,7 +138,10 @@ export interface ShareMetadata {
 
 // Redis key builders live in `./redisKeys.ts` (single source of truth).
 // Re-exported here to preserve existing import paths from share endpoints.
-export { shareHashKey, shareReportKey } from './redisKeys.js';
+export { shareHashKey, shareReportKey, shareLastAccessedKey } from './redisKeys.js';
+
+/** TTL for share:lastAccessed keys (1 year — matches the report-counter TTL). */
+export const SHARE_LAST_ACCESSED_TTL_SECONDS = 365 * 24 * 60 * 60;
 
 /**
  * Shared data structure for stored shares.

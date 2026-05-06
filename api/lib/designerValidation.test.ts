@@ -405,4 +405,60 @@ describe('validateDesignerShare', () => {
       expect(result.valid).toBe(true);
     });
   });
+
+  describe('top-level params allowlist (LOW-3 regression)', () => {
+    it('strips unknown keys from params before storage', () => {
+      const payload = validPayload() as { params: Record<string, unknown> } & Record<
+        string,
+        unknown
+      >;
+      payload.params.attackerControlled = 'evil';
+      payload.params.__proto__ = { polluted: true };
+      payload.params.someInternalFlag = true;
+
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect(Object.hasOwn(result.payload.params, 'attackerControlled')).toBe(false);
+        expect(Object.hasOwn(result.payload.params, 'someInternalFlag')).toBe(false);
+        // __proto__ is dropped both by JSON.parse semantics and our explicit allowlist.
+        expect(Object.hasOwn(result.payload.params, '__proto__')).toBe(false);
+        // Known keys survive.
+        expect(result.payload.params.width).toBe(2);
+        expect(result.payload.params.base).toBeDefined();
+        expect(result.payload.params.compartments).toBeDefined();
+      }
+    });
+
+    it('preserves optional cellMask when present', () => {
+      const payload = validPayload();
+      payload.params = {
+        ...payload.params,
+        cellMask: { cols: 2, rows: 2, cells: [1, 1, 1, 1] },
+      } as typeof payload.params;
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect(result.payload.params.cellMask).toEqual({
+          cols: 2,
+          rows: 2,
+          cells: [1, 1, 1, 1],
+        });
+      }
+    });
+
+    it('preserves legacy dividers field for backwards compatibility', () => {
+      const payload = validPayload() as ReturnType<typeof validPayload> & {
+        params: { compartments?: unknown; dividers?: unknown };
+      };
+      delete payload.params.compartments;
+      payload.params.dividers = { x: 1, y: 1, thickness: 1.2 };
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+      if (result.valid) {
+        expect(result.payload.params.dividers).toEqual({ x: 1, y: 1, thickness: 1.2 });
+      }
+    });
+  });
 });

@@ -50,13 +50,13 @@ graph TB
 
 ## Validation Library (`lib/`)
 
-| File                    | Purpose                                                                    |
-| ----------------------- | -------------------------------------------------------------------------- |
-| `validation.ts`         | Layout schema: 500KB max, 2500 bins, sanitize strings, validate hex colors |
-| `designerValidation.ts` | BinParams schema: 100KB max, enum checking, dimension constraints          |
-| `contentFilter.ts`      | Blocklist (~30 terms), XSS pattern detection, spam filtering               |
-| `rateLimit.ts`          | Sliding window counters via Redis; fail-closed if Redis unavailable        |
-| `shared.ts`             | Share ID validation, `hashToken()` (SHA-256), error codes                  |
+| File                    | Purpose                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| `validation.ts`         | Layout schema: 500KB max, 2500 bins, sanitize strings, validate hex colors      |
+| `designerValidation.ts` | BinParams schema: 100KB max, enum checking, dimension constraints               |
+| `contentFilter.ts`      | Blocklist (~30 terms) with NFKD + confusable normalization, XSS / spam patterns |
+| `rateLimit.ts`          | Sliding window counters via Redis; fail-closed if Redis unavailable             |
+| `shared.ts`             | Share ID validation, `hashToken()` (SHA-256), error codes                       |
 
 ## Share System
 
@@ -70,10 +70,21 @@ graph TB
 ```
 1. Client generates 32-char hex token (128-bit entropy)
 2. Server hashes: SHA-256(TOKEN_SALT + token)
-3. Hash stored in Blob metadata (deleteTokenHash)
+3. Hash stored in Redis (`share:hash:{id}`); legacy shares may have it in blob metadata
 4. Client presents original token for PUT/DELETE
 5. Constant-time comparison prevents timing attacks
 ```
+
+**Redis key namespaces (see `lib/redisKeys.ts`):**
+
+| Key                       | Purpose                                              |
+| ------------------------- | ---------------------------------------------------- |
+| `share:hash:{id}`         | Delete-token hash (acquired AFTER blob put succeeds) |
+| `share:reports:{id}`      | Abuse-report counter (1-year TTL)                    |
+| `share:lastAccessed:{id}` | ISO timestamp of last GET (1-year TTL)               |
+| `ratelimit:{action}:{ip}` | Sliding-window rate-limit counter                    |
+
+Share creation uses `put({ allowOverwrite: false })` as an atomic CAS lock — concurrent POSTs racing on the same shareId produce exactly one winner.
 
 **Share ID formats (backwards compatible):**
 
