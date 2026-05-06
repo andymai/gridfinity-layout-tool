@@ -3,7 +3,8 @@
   "ignoreCommand": "bash scripts/vercel-ignore.sh",
   "trailingSlash": false,
   "redirects": [
-    { "source": "/generator", "destination": "/gridfinity-bin-generator", "permanent": true },
+    { "source": "/generator", "destination": "/gridfinity-generator", "permanent": true },
+    { "source": "/generators", "destination": "/gridfinity-generator", "permanent": true },
     { "source": "/sizes", "destination": "/gridfinity-sizes", "permanent": true }
   ],
   "headers": [

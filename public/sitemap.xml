@@ -3,7 +3,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://gridfinitylayouttool.com/</loc>
-    <lastmod>2026-01-20</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -13,32 +13,43 @@
     </image:image>
   </url>
   <url>
+    <loc>https://gridfinitylayouttool.com/gridfinity-generator</loc>
+    <lastmod>2026-05-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://gridfinitylayouttool.com/og-image.png</image:loc>
+      <image:title>Gridfinity Generator - Free Online Bin and Baseplate Generator</image:title>
+      <image:caption>Free Gridfinity generator for storage bins and baseplates. Configure dimensions and features, preview in 3D, export STL, STEP, or 3MF.</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://gridfinitylayouttool.com/what-is-gridfinity</loc>
-    <lastmod>2026-01-20</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://gridfinitylayouttool.com/guide</loc>
-    <lastmod>2026-01-20</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://gridfinitylayouttool.com/gridfinity-bin-generator</loc>
-    <lastmod>2026-02-12</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://gridfinitylayouttool.com/gridfinity-baseplate-generator</loc>
-    <lastmod>2026-02-28</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://gridfinitylayouttool.com/gridfinity-sizes</loc>
-    <lastmod>2026-02-12</lastmod>
+    <lastmod>2026-05-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
