@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.62.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.62.0...gridfinity-layout-tool-v4.62.1) (2026-05-06)
+
+
+### Bug Fixes
+
+* **api:** security audit fixes (3 MED, 4 LOW) ([#1582](https://github.com/andymai/gridfinity-layout-tool/issues/1582)) ([aecb730](https://github.com/andymai/gridfinity-layout-tool/commit/aecb730720025afd359a69956e442a22fb8e9727))
+
 ## [4.62.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.61.0...gridfinity-layout-tool-v4.62.0) (2026-05-05)
 
 
