@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.64.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.63.0...gridfinity-layout-tool-v4.64.0) (2026-05-06)
+
+
+### Features
+
+* **result:** add ResultAsync wrapper and preserve unwrap cause ([#1589](https://github.com/andymai/gridfinity-layout-tool/issues/1589)) ([5c52679](https://github.com/andymai/gridfinity-layout-tool/commit/5c526799ecb8b3e10356c2f68a3aab30d70c4b0a))
+
 ## [4.63.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.62.1...gridfinity-layout-tool-v4.63.0) (2026-05-06)
 
 
