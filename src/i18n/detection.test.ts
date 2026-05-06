@@ -16,6 +16,7 @@ describe('isLocale', () => {
     expect(isLocale('pt-BR')).toBe(true);
     expect(isLocale('nb')).toBe(true);
     expect(isLocale('uk')).toBe(true);
+    expect(isLocale('sv')).toBe(true);
   });
 
   it('returns false for invalid locale codes', () => {
@@ -29,7 +30,7 @@ describe('isLocale', () => {
 
 describe('SUPPORTED_LOCALES', () => {
   it('contains expected number of locales', () => {
-    expect(SUPPORTED_LOCALES).toHaveLength(8);
+    expect(SUPPORTED_LOCALES).toHaveLength(9);
   });
 
   it('has required properties for each locale', () => {
@@ -100,6 +101,11 @@ describe('detectBrowserLocale', () => {
     it('detects Ukrainian', () => {
       vi.stubGlobal('navigator', { languages: ['uk'], language: 'uk' });
       expect(detectBrowserLocale()).toBe('uk');
+    });
+
+    it('detects Swedish', () => {
+      vi.stubGlobal('navigator', { languages: ['sv'], language: 'sv' });
+      expect(detectBrowserLocale()).toBe('sv');
     });
   });
 
@@ -177,6 +183,16 @@ describe('detectBrowserLocale', () => {
     it('maps uk-UA to uk', () => {
       vi.stubGlobal('navigator', { languages: ['uk-UA'], language: 'uk-UA' });
       expect(detectBrowserLocale()).toBe('uk');
+    });
+
+    it('maps sv-SE to sv', () => {
+      vi.stubGlobal('navigator', { languages: ['sv-SE'], language: 'sv-SE' });
+      expect(detectBrowserLocale()).toBe('sv');
+    });
+
+    it('maps sv-FI (Finland Swedish) to sv', () => {
+      vi.stubGlobal('navigator', { languages: ['sv-FI'], language: 'sv-FI' });
+      expect(detectBrowserLocale()).toBe('sv');
     });
   });
 

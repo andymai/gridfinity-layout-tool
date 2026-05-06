@@ -53,6 +53,11 @@ const LANGUAGE_MAP: Partial<Record<string, Locale>> = {
   // Ukrainian
   uk: 'uk',
   'uk-UA': 'uk',
+
+  // Swedish
+  sv: 'sv',
+  'sv-SE': 'sv',
+  'sv-FI': 'sv', // Finland Swedish
 };
 
 /**
