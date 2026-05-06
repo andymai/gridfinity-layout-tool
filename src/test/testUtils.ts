@@ -19,6 +19,7 @@ import { useInteractionStore, INITIAL_INTERACTION_STATE } from '@/core/store/int
 import { useMobileStore, INITIAL_MOBILE_STATE } from '@/core/store/mobile';
 import { useHalfBinModeStore, INITIAL_HALF_BIN_MODE_STATE } from '@/core/store/halfBinMode';
 import { useSharedPreviewStore, INITIAL_SHARED_PREVIEW_STATE } from '@/core/store/sharedPreview';
+import { useSharePopoverStore, INITIAL_SHARE_POPOVER_STATE } from '@/core/store/sharePopover';
 import { useSharedWithMeStore, INITIAL_SHARED_WITH_ME_STATE } from '@/core/store/sharedWithMe';
 import { useSnapshotStore, INITIAL_SNAPSHOT_STATE } from '@/core/store/snapshots';
 
@@ -86,6 +87,8 @@ export function resetAllStores(): void {
   useHalfBinModeStore.setState(INITIAL_HALF_BIN_MODE_STATE);
 
   useSharedPreviewStore.setState(INITIAL_SHARED_PREVIEW_STATE);
+
+  useSharePopoverStore.setState(INITIAL_SHARE_POPOVER_STATE);
 
   useHistoryStore.setState({
     past: [],
