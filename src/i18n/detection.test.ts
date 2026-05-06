@@ -15,6 +15,7 @@ describe('isLocale', () => {
     expect(isLocale('fr')).toBe(true);
     expect(isLocale('pt-BR')).toBe(true);
     expect(isLocale('nb')).toBe(true);
+    expect(isLocale('uk')).toBe(true);
   });
 
   it('returns false for invalid locale codes', () => {
@@ -28,7 +29,7 @@ describe('isLocale', () => {
 
 describe('SUPPORTED_LOCALES', () => {
   it('contains expected number of locales', () => {
-    expect(SUPPORTED_LOCALES).toHaveLength(7);
+    expect(SUPPORTED_LOCALES).toHaveLength(8);
   });
 
   it('has required properties for each locale', () => {
@@ -94,6 +95,11 @@ describe('detectBrowserLocale', () => {
     it('detects Norwegian Bokmål', () => {
       vi.stubGlobal('navigator', { languages: ['nb'], language: 'nb' });
       expect(detectBrowserLocale()).toBe('nb');
+    });
+
+    it('detects Ukrainian', () => {
+      vi.stubGlobal('navigator', { languages: ['uk'], language: 'uk' });
+      expect(detectBrowserLocale()).toBe('uk');
     });
   });
 
@@ -166,6 +172,11 @@ describe('detectBrowserLocale', () => {
     it('maps no (generic Norwegian) to nb', () => {
       vi.stubGlobal('navigator', { languages: ['no'], language: 'no' });
       expect(detectBrowserLocale()).toBe('nb');
+    });
+
+    it('maps uk-UA to uk', () => {
+      vi.stubGlobal('navigator', { languages: ['uk-UA'], language: 'uk-UA' });
+      expect(detectBrowserLocale()).toBe('uk');
     });
   });
 

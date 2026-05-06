@@ -58,6 +58,7 @@ const OG_LOCALE_MAP: Record<Locale, string> = {
   fr: 'fr_FR',
   'pt-BR': 'pt_BR',
   nb: 'nb_NO',
+  uk: 'uk_UA',
 };
 
 /** Translation function signature */
@@ -142,6 +143,7 @@ const localeLoaders: Record<Locale, () => Promise<{ default: Translations }>> = 
   'pt-BR': () => import('./locales/pt-BR.json'),
   fr: () => import('./locales/fr.json'),
   nb: () => import('./locales/nb.json'),
+  uk: () => import('./locales/uk.json'),
 };
 
 interface LocaleProviderProps {
