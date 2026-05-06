@@ -82,9 +82,9 @@ export const andThen = flatMap;
 /**
  * Format an arbitrary error/value into a human-readable string for unwrap
  * panic messages. Errors use `.message` (their props aren't enumerable, so
- * JSON.stringify yields `{}`); plain objects are JSON-stringified with a
- * String() fallback for circular refs. The original value is preserved via
- * `Error#cause` on the throw site.
+ * JSON.stringify yields `{}`); plain objects are JSON-stringified with an
+ * `[unserializable]` fallback for circular refs / BigInt. The original
+ * value is preserved via `Error#cause` on the throw site.
  */
 function formatErrorDetail(error: unknown): string {
   if (error instanceof Error) return error.message;

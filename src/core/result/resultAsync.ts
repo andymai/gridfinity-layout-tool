@@ -29,10 +29,10 @@ import { ok, err, isOk, isErr } from './types';
 import { match, unwrapOr } from './utils';
 
 export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
-  private readonly _promise: Promise<Result<T, E>>;
+  private readonly promise: Promise<Result<T, E>>;
 
   constructor(promise: Promise<Result<T, E>>) {
-    this._promise = promise;
+    this.promise = promise;
   }
 
   /**
@@ -76,19 +76,33 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
    * Callback must not throw or return a rejecting promise — see throw
    * contract on the class docblock. Use `andThen` with `fromPromise` to
    * convert a fallible async operation into a Result.
+   *
+   * The Err short-circuit is sync (no extra microtask) so chains that
+   * propagate a single Err through many `map` calls don't accumulate
+   * microtask hops.
    */
   map<U>(fn: (value: T) => U | Promise<U>): ResultAsync<U, E> {
-    return new ResultAsync(this._promise.then(async (r) => (isOk(r) ? ok(await fn(r.value)) : r)));
+    return new ResultAsync(
+      this.promise.then((r): Result<U, E> | Promise<Result<U, E>> => {
+        if (isErr(r)) return r;
+        const next = fn(r.value);
+        return next instanceof Promise ? next.then(ok) : ok(next);
+      })
+    );
   }
 
   /**
    * Transform the Err value (sync or async) while preserving Ok.
    * Callback must not throw or return a rejecting promise — see throw
-   * contract on the class docblock.
+   * contract on the class docblock. Ok short-circuits synchronously.
    */
   mapErr<F>(fn: (error: E) => F | Promise<F>): ResultAsync<T, F> {
     return new ResultAsync(
-      this._promise.then(async (r) => (isErr(r) ? err(await fn(r.error)) : r))
+      this.promise.then((r): Result<T, F> | Promise<Result<T, F>> => {
+        if (isOk(r)) return r;
+        const next = fn(r.error);
+        return next instanceof Promise ? next.then(err) : err(next);
+      })
     );
   }
 
@@ -102,10 +116,14 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     fn: (value: T) => Result<U, F> | ResultAsync<U, F> | Promise<Result<U, F>>
   ): ResultAsync<U, E | F> {
     return new ResultAsync(
-      this._promise.then(async (r): Promise<Result<U, E | F>> => {
+      this.promise.then((r): Result<U, E | F> | Promise<Result<U, E | F>> => {
         if (isErr(r)) return r;
         const next = fn(r.value);
-        if (next instanceof ResultAsync) return next._promise;
+        // Fast path: unwrap a known ResultAsync to skip a `.then` hop.
+        // Across split bundles or `vi.isolateModules` boundaries this check
+        // can yield false even for genuine ResultAsync values; the slow path
+        // below still works correctly because Promise.then accepts PromiseLike.
+        if (next instanceof ResultAsync) return next.promise;
         return next;
       })
     );
@@ -113,12 +131,12 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
 
   /** Pattern-match terminal — resolves to the handler's return type. */
   match<U>(handlers: { ok: (value: T) => U; err: (error: E) => U }): Promise<U> {
-    return this._promise.then((r) => match(r, handlers));
+    return this.promise.then((r) => match(r, handlers));
   }
 
   /** Resolve to the Ok value, or to `defaultValue` if Err. */
   unwrapOr(defaultValue: T): Promise<T> {
-    return this._promise.then((r) => unwrapOr(r, defaultValue));
+    return this.promise.then((r) => unwrapOr(r, defaultValue));
   }
 
   /**
@@ -130,6 +148,6 @@ export class ResultAsync<T, E> implements PromiseLike<Result<T, E>> {
     onfulfilled?: ((value: Result<T, E>) => R1 | PromiseLike<R1>) | null,
     onrejected?: ((reason: unknown) => R2 | PromiseLike<R2>) | null
   ): PromiseLike<R1 | R2> {
-    return this._promise.then(onfulfilled, onrejected);
+    return this.promise.then(onfulfilled, onrejected);
   }
 }
