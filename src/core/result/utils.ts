@@ -80,8 +80,28 @@ export const andThen = flatMap;
 // Value Extraction
 
 /**
+ * Format an arbitrary error/value into a human-readable string for unwrap
+ * panic messages. Errors use `.message` (their props aren't enumerable, so
+ * JSON.stringify yields `{}`); plain objects are JSON-stringified with an
+ * `[unserializable]` fallback for circular refs / BigInt. The original
+ * value is preserved via `Error#cause` on the throw site.
+ */
+function formatErrorDetail(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error !== 'object' || error === null) return String(error);
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return '[unserializable]';
+  }
+}
+
+/**
  * Extract the Ok value, throwing if Err.
  * Use sparingly - prefer match() or isOk() checks.
+ *
+ * The thrown Error preserves the original error via `cause`, so structured
+ * errors (e.g. AppError with a non-serializable cause) survive unwrap panics.
  *
  * @throws Error if Result is not Ok
  *
@@ -90,15 +110,21 @@ export const andThen = flatMap;
  * const result = ok(42);
  * const value = unwrap(result); // 42
  *
- * const errorResult = err('failed');
- * unwrap(errorResult); // throws Error
+ * try {
+ *   unwrap(err(storageNotFound('key')));
+ * } catch (e) {
+ *   e.message; // "Called unwrap on an Err: ..."
+ *   e.cause;   // original StorageNotFoundError
+ * }
  * ```
  */
 export function unwrap<T, E>(result: Result<T, E>): T {
   if (isOk(result)) {
     return result.value;
   }
-  throw new Error(`Called unwrap on an Err: ${JSON.stringify(result.error)}`);
+  throw new Error(`Called unwrap on an Err: ${formatErrorDetail(result.error)}`, {
+    cause: result.error,
+  });
 }
 
 /**
@@ -132,13 +158,17 @@ export function unwrapOrElse<T, E>(result: Result<T, E>, fn: (error: E) => T): T
  * Extract the Err value, throwing if Ok.
  * Useful for testing error paths.
  *
+ * The thrown Error preserves the original Ok value via `cause`.
+ *
  * @throws Error if Result is Ok
  */
 export function unwrapErr<T, E>(result: Result<T, E>): E {
   if (isErr(result)) {
     return result.error;
   }
-  throw new Error(`Called unwrapErr on an Ok: ${JSON.stringify(result.value)}`);
+  throw new Error(`Called unwrapErr on an Ok: ${formatErrorDetail(result.value)}`, {
+    cause: result.value,
+  });
 }
 
 // Pattern Matching

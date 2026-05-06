@@ -69,6 +69,7 @@ import type { Result, StorageError, ValidationError, LayoutError, ApiError } fro
 - `constructors.ts` — factory functions per error type
 - `catalog.ts` — error metadata, user messages, recovery hints, severity
 - `utils.ts` — `map`, `flatMap`, `match`, `tryCatch`, `unwrapOr`
+- `resultAsync.ts` — `ResultAsync<T, E>` chainable wrapper for async pipelines (`fromPromise`, `map`, `andThen`, etc.); awaits to a plain `Result<T, E>`
 
 ## Gotchas
 

@@ -242,6 +242,62 @@ describe('unwrap()', () => {
 });
 
 // =============================================================================
+// unwrap — cause preservation
+// =============================================================================
+
+describe('unwrap() — cause preservation', () => {
+  it('attaches the original error reference as Error.cause', () => {
+    const original = { kind: 'storage', code: 'STORAGE_NOT_FOUND', message: 'gone' };
+    try {
+      unwrap(err(original));
+      expect.fail('expected unwrap to throw');
+    } catch (thrown) {
+      expect(thrown).toBeInstanceOf(Error);
+      expect((thrown as Error).cause).toBe(original);
+    }
+  });
+
+  it('uses Error.message in the thrown message when the error is an Error instance', () => {
+    expect(() => unwrap(err(new Error('upstream blew up')))).toThrow('upstream blew up');
+  });
+
+  it('preserves the original Error instance as cause', () => {
+    const original = new Error('upstream blew up');
+    try {
+      unwrap(err(original));
+      expect.fail('expected unwrap to throw');
+    } catch (thrown) {
+      expect((thrown as Error).cause).toBe(original);
+    }
+  });
+
+  it('falls back gracefully when error contains circular references', () => {
+    const circular: Record<string, unknown> = { a: 1 };
+    circular.self = circular;
+    expect(() => unwrap(err(circular))).toThrow('Called unwrap on an Err');
+  });
+
+  it('attaches null cause when error is null', () => {
+    try {
+      unwrap(err(null));
+      expect.fail('expected unwrap to throw');
+    } catch (thrown) {
+      expect((thrown as Error).cause).toBeNull();
+    }
+  });
+
+  it('does not crash when error contains a BigInt (unserializable by JSON)', () => {
+    const original = { amount: 10n };
+    expect(() => unwrap(err(original))).toThrow('Called unwrap on an Err');
+    try {
+      unwrap(err(original));
+    } catch (thrown) {
+      expect((thrown as Error).cause).toBe(original);
+    }
+  });
+});
+
+// =============================================================================
 // unwrapOr
 // =============================================================================
 
@@ -359,6 +415,22 @@ describe('unwrapErr()', () => {
 
   it('throws for Ok with null value', () => {
     expect(() => unwrapErr(ok(null))).toThrow('Called unwrapErr on an Ok');
+  });
+
+  it('attaches the original Ok value as Error.cause', () => {
+    const value = { id: 'abc' };
+    try {
+      unwrapErr(ok(value));
+      expect.fail('expected unwrapErr to throw');
+    } catch (thrown) {
+      expect((thrown as Error).cause).toBe(value);
+    }
+  });
+
+  it('falls back gracefully when value contains circular references', () => {
+    const circular: Record<string, unknown> = { a: 1 };
+    circular.self = circular;
+    expect(() => unwrapErr(ok(circular))).toThrow('Called unwrapErr on an Ok');
   });
 });
 
