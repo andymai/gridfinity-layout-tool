@@ -70,6 +70,8 @@ export { getUserMessage, isRetryable, getErrorInfo, formatErrorMessage } from '.
 
 export { tryCatchAsync, unwrapOr } from './utils';
 
+export { ResultAsync } from './resultAsync';
+
 // Extended API (available, not currently used in production)
 
 export {
