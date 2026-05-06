@@ -1,11 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import { ShareButton } from './ShareButton';
 import { resetAllStores } from '@/test/testUtils';
-import { useLabsStore, useLayoutStore, useSharedPreviewStore } from '@/core/store';
+import {
+  useLabsStore,
+  useLayoutStore,
+  useSharedPreviewStore,
+  useSharePopoverStore,
+} from '@/core/store';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 
-// Mock hooks
 vi.mock('@/features/cloud-share/hooks/useCloudShare', () => ({
   useCloudShare: vi.fn(() => ({
     status: 'idle',
@@ -37,7 +41,6 @@ describe('ShareButton', () => {
     resetAllStores();
     vi.clearAllMocks();
 
-    // Set up default store state
     useLabsStore.getState().enableFeature('collaborative_editing');
     useLayoutStore.setState({
       layout: { name: 'Test Layout', bins: [], layers: [], categories: [] },
@@ -56,16 +59,30 @@ describe('ShareButton', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('opens popover when clicked', () => {
+  it('opens the popover via the store when clicked', () => {
     render(<ShareButton />);
-    const button = screen.getByRole('button', { name: /common.share/i });
-
-    fireEvent.click(button);
-
+    fireEvent.click(screen.getByRole('button', { name: /common.share/i }));
+    expect(useSharePopoverStore.getState().isOpen).toBe(true);
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
-  it('shows loading state', () => {
+  it('toggles the popover closed on a second click', () => {
+    render(<ShareButton />);
+    const button = screen.getByRole('button', { name: /common.share/i });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    expect(useSharePopoverStore.getState().isOpen).toBe(false);
+  });
+
+  it('renders the popover when the store is opened externally (e.g. from command palette)', () => {
+    render(<ShareButton />);
+    act(() => {
+      useSharePopoverStore.getState().open();
+    });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('reflects loading state while sharing', () => {
     vi.mocked(useCloudShare).mockReturnValue({
       status: 'sharing',
       hasActiveShare: false,
@@ -82,7 +99,7 @@ describe('ShareButton', () => {
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
-  it('shows shared indicator when layout has active share', () => {
+  it('shows the shared label when a layout has an active share', () => {
     vi.mocked(useCloudShare).mockReturnValue({
       status: 'idle',
       hasActiveShare: true,
@@ -99,7 +116,7 @@ describe('ShareButton', () => {
     expect(screen.getByText('share.button.shared')).toBeInTheDocument();
   });
 
-  it('shows shared indicator when viewing shared layout', () => {
+  it('shows the shared label when viewing someone else’s shared layout', () => {
     useSharedPreviewStore.setState({
       sharedPreview: {
         layout: { name: 'Shared', bins: [], layers: [], categories: [] },

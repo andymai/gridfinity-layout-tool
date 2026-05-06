@@ -20,6 +20,7 @@ import {
   useHalfBinModeStore,
   useInteractionStore,
   useToastStore,
+  useSharePopoverStore,
 } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { batch } from '@/core/cqrs';
@@ -417,7 +418,9 @@ export function useActionHandlers(): Record<string, ActionHandler> {
 
     const exportActions: Record<string, ActionHandler> = {
       'download-layout': () => dispatchWindowEvent('download-layout'),
-      'copy-share-link': () => dispatchWindowEvent('open-share-modal'),
+      'copy-share-link': () => {
+        useSharePopoverStore.getState().open();
+      },
     };
 
     return {

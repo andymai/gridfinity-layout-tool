@@ -23,6 +23,9 @@ export type { HalfBinModeStore } from './halfBinMode';
 export { useSharedPreviewStore, INITIAL_SHARED_PREVIEW_STATE } from './sharedPreview';
 export type { SharedPreviewStore } from './sharedPreview';
 
+export { useSharePopoverStore, INITIAL_SHARE_POPOVER_STATE } from './sharePopover';
+export type { SharePopoverStore } from './sharePopover';
+
 export { useSharedWithMeStore, INITIAL_SHARED_WITH_ME_STATE } from './sharedWithMe';
 
 export { useSnapshotStore, INITIAL_SNAPSHOT_STATE } from './snapshots';
