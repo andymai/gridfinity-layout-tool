@@ -204,7 +204,9 @@ async function mergeKind(
   }
 
   for (const item of local) {
-    if (item.id in remote) continue;
+    // hasOwn (not `in`) so an id like "constructor" or "toString" can't
+    // be falsely treated as present via Object.prototype.
+    if (Object.hasOwn(remote, item.id)) continue;
     await outboxEnqueue({ kind, id: item.id, modifiedAt: item.modifiedAt, op: 'put' });
     pushed++;
   }

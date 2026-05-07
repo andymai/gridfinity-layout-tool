@@ -32,7 +32,11 @@ export function SyncSessionMount() {
   );
 
   const status = useSessionStore((s) => s.status);
-  const prevStatusRef = useRef(status);
+  // Always seed with 'unknown' so a remount-while-authenticated (StrictMode
+  // double-invoke, conditional unmount, etc.) still hits the transition
+  // branch and starts the engine. Using `useRef(status)` would skip start()
+  // because prev === status on first run.
+  const prevStatusRef = useRef<typeof status>('unknown');
 
   const [mismatchPrompt, setMismatchPrompt] = useState<{
     localCount: number;

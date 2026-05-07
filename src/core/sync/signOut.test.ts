@@ -102,18 +102,58 @@ describe('runSignOut — wipe path', () => {
 });
 
 describe('runSignOut — outbox flush', () => {
-  it('skips flush when outbox is empty', async () => {
+  it('skips flush when outbox is empty (keep path)', async () => {
     getPendingEntriesMock.mockResolvedValueOnce([]);
     await runSignOut({ adapters, promptKeepLocal: promptKeep, onAnonymous });
     expect(flushNowMock).not.toHaveBeenCalled();
   });
 
-  it('attempts a flush when items are pending', async () => {
+  it('attempts a flush when items are pending (keep path)', async () => {
     getPendingEntriesMock.mockResolvedValueOnce([
       { kind: 'layouts', id: 'a', op: 'put', modifiedAt: 1000 },
     ]);
     await runSignOut({ adapters, promptKeepLocal: promptKeep, onAnonymous });
     expect(flushNowMock).toHaveBeenCalled();
+  });
+
+  it('skips flush on wipe path (clearOutbox makes flush wasted work)', async () => {
+    getPendingEntriesMock.mockResolvedValueOnce([
+      { kind: 'layouts', id: 'a', op: 'put', modifiedAt: 1000 },
+    ]);
+    await runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
+    expect(flushNowMock).not.toHaveBeenCalled();
+    expect(clearOutboxMock).toHaveBeenCalled();
+  });
+
+  it('skips flush on cancel (no logout, no flush)', async () => {
+    getPendingEntriesMock.mockResolvedValueOnce([
+      { kind: 'layouts', id: 'a', op: 'put', modifiedAt: 1000 },
+    ]);
+    const promptCancel: KeepLocalPrompt = vi.fn(async () => 'cancel');
+    const result = await runSignOut({ adapters, promptKeepLocal: promptCancel, onAnonymous });
+    expect(result.status).toBe('cancelled');
+    expect(flushNowMock).not.toHaveBeenCalled();
+    expect(apiSignOutMock).not.toHaveBeenCalled();
+    expect(onAnonymous).not.toHaveBeenCalled();
+  });
+
+  it('prompt fires before flushNow so the dialog is never blocked by a 5s flush', async () => {
+    getPendingEntriesMock.mockResolvedValue([
+      { kind: 'layouts', id: 'a', op: 'put', modifiedAt: 1000 },
+    ]);
+    let promptFiredAt = -1;
+    let flushFiredAt = -1;
+    let tick = 0;
+    const promptOrdered: KeepLocalPrompt = vi.fn(async () => {
+      promptFiredAt = tick++;
+      return 'keep';
+    });
+    flushNowMock.mockImplementation(async () => {
+      flushFiredAt = tick++;
+    });
+    await runSignOut({ adapters, promptKeepLocal: promptOrdered, onAnonymous });
+    expect(promptFiredAt).toBeGreaterThanOrEqual(0);
+    expect(flushFiredAt).toBeGreaterThan(promptFiredAt);
   });
 
   it('proceeds with sign-out if getPendingEntries rejects (IndexedDB failure)', async () => {

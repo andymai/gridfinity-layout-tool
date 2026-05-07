@@ -25,13 +25,12 @@ export type SignOutResult = { status: 'kept' } | { status: 'wiped' } | { status:
  * forced-401 path (which is silent and never wipes — see useSession's
  * forced-sign-out handler).
  *
- * Best-effort outbox flush before logout: gives in-flight pushes 5s
- * to land. After that the cookie is gone, so any items still pending
- * just stay queued until the next sign-in.
+ * Order: prompt first (dialog renders immediately so the user gets
+ * feedback within a frame), then flush only on the keep path. The
+ * wipe path is going to clearOutbox() anyway, so flushing before
+ * the prompt would be wasted work and a 5s dead zone for the user.
  */
 export async function runSignOut(ctx: SignOutContext): Promise<SignOutResult> {
-  await flushOutboxBestEffort();
-
   const localCount = await countLocalItems(ctx.adapters);
   const choice = await ctx.promptKeepLocal({ localCount });
   if (!isChoice(choice)) return { status: 'cancelled' };
@@ -40,6 +39,10 @@ export async function runSignOut(ctx: SignOutContext): Promise<SignOutResult> {
     await wipeLocal(ctx.adapters);
     await clearOutbox();
     clearLastSignedInUserId();
+  } else {
+    // Keep path: give in-flight pushes 5s to land before the cookie
+    // disappears. Anything still pending stays queued for next sign-in.
+    await flushOutboxBestEffort();
   }
 
   try {
