@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.66.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.65.0...gridfinity-layout-tool-v4.66.0) (2026-05-07)
+
+
+### Features
+
+* **sync:** add server endpoints for layouts/designs/manifest/export/account ([#1593](https://github.com/andymai/gridfinity-layout-tool/issues/1593)) ([0493b6f](https://github.com/andymai/gridfinity-layout-tool/commit/0493b6f045cdfd746e7822ca4e3f166582bc61e8))
+
 ## [4.65.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.64.0...gridfinity-layout-tool-v4.65.0) (2026-05-07)
 
 
