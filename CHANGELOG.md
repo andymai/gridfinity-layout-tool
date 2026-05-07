@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.67.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.66.0...gridfinity-layout-tool-v4.67.0) (2026-05-07)
+
+
+### Features
+
+* **sync:** client engine foundation — adapters, outbox, status store ([#1595](https://github.com/andymai/gridfinity-layout-tool/issues/1595)) ([ac2fa77](https://github.com/andymai/gridfinity-layout-tool/commit/ac2fa77341c130bef87fa3482a63cdbddae7b6d5))
+
 ## [4.66.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.65.0...gridfinity-layout-tool-v4.66.0) (2026-05-07)
 
 
