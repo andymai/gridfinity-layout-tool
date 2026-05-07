@@ -1,5 +1,5 @@
 import { apiFetch } from './apiFetch';
-import { enqueue as outboxEnqueue } from './outbox';
+import { enqueue as outboxEnqueue, clearAll as outboxClearAll } from './outbox';
 import { useSyncStatusStore } from './status';
 import type { SyncAdapter, SyncAdapters, SyncKind, SyncableItem } from './adapters/types';
 
@@ -44,31 +44,45 @@ interface ItemFetchResponse {
   envelope: { layout?: unknown; design?: unknown; modifiedAt: number };
 }
 
-let inFlight: Promise<ClaimResult> | null = null;
+const inFlightByUser = new Map<string, Promise<ClaimResult>>();
 
 /**
- * Merge local + cloud state once at sign-in. Single-flight: concurrent
- * callers (auth flip + visibility refresh racing) await the same run.
+ * Merge local + cloud state once at sign-in. Single-flight per userId:
+ * concurrent callers for the same user (auth flip + visibility refresh
+ * racing) await the same run, but a different userId starts a fresh run
+ * — preventing a fast sign-out / sign-in-as-other-user from coalescing
+ * under the prior account's context.
  *
  * Idempotent re-run: a second invocation against an already-merged
  * device hits all three diff cases as no-ops and resolves with a
  * `merged` result whose pushed/pulled counts are 0.
  */
 export async function runClaim(ctx: ClaimContext): Promise<ClaimResult> {
-  if (inFlight) return inFlight;
-  inFlight = execute(ctx).finally(() => {
-    inFlight = null;
+  const existing = inFlightByUser.get(ctx.userId);
+  if (existing) return existing;
+  const run = execute(ctx).finally(() => {
+    inFlightByUser.delete(ctx.userId);
   });
-  return inFlight;
+  inFlightByUser.set(ctx.userId, run);
+  return run;
 }
 
 export function __resetForTests(): void {
-  inFlight = null;
+  inFlightByUser.clear();
 }
 
 async function execute(ctx: ClaimContext): Promise<ClaimResult> {
-  useSyncStatusStore.getState().beginSync();
+  const status = useSyncStatusStore.getState();
+  status.beginSync();
+  try {
+    return await executeInner(ctx);
+  } catch (e) {
+    status.reportError(e instanceof Error ? e.message : 'claim failed');
+    return { status: 'error', message: e instanceof Error ? e.message : undefined };
+  }
+}
 
+async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
   const localLayouts = await ctx.adapters.layouts.list();
   const localDesigns = await ctx.adapters.designs.list();
 
@@ -85,6 +99,9 @@ async function execute(ctx: ClaimContext): Promise<ClaimResult> {
     });
     if (choice === 'discard') {
       await wipeLocal(ctx.adapters, localLayouts, localDesigns);
+      // Pending pushes from the prior user must not drain under the
+      // new account.
+      await outboxClearAll();
       persistLastSignedInUserId(ctx.userId);
       useSyncStatusStore.getState().succeed();
       return { status: 'discarded' };
@@ -98,6 +115,10 @@ async function execute(ctx: ClaimContext): Promise<ClaimResult> {
     return { status: 'error', message: 'manifest fetch failed' };
   }
   if (manifest === 'unauthorized') {
+    // Persist on 401 too: a transient cookie-propagation race shouldn't
+    // make the next retry re-prompt the same user as a "different account".
+    persistLastSignedInUserId(ctx.userId);
+    useSyncStatusStore.getState().reportError('unauthorized during claim');
     return { status: 'unauthorized' };
   }
 

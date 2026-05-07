@@ -5,6 +5,7 @@ import type { SyncAdapter, SyncAdapters, SyncableItem } from './adapters/types';
 
 const fetchMock = vi.fn();
 const enqueueMock = vi.fn();
+const clearOutboxMock = vi.fn();
 
 vi.mock('./apiFetch', () => ({
   apiFetch: (url: string, init?: RequestInit) => fetchMock(url, init),
@@ -12,6 +13,7 @@ vi.mock('./apiFetch', () => ({
 
 vi.mock('./outbox', () => ({
   enqueue: (input: unknown) => enqueueMock(input),
+  clearAll: () => clearOutboxMock(),
 }));
 
 interface MockAdapter extends SyncAdapter {
@@ -77,11 +79,21 @@ function ctx(
 }
 
 describe('runClaim — single-flight', () => {
-  it('coalesces concurrent runs into one', async () => {
+  it('coalesces concurrent runs for the same userId into one', async () => {
     fetchMock.mockResolvedValue(manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 0 }));
     const [a, b] = await Promise.all([runClaim(ctx()), runClaim(ctx())]);
     expect(a).toBe(b);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not coalesce concurrent runs for different userIds', async () => {
+    fetchMock.mockResolvedValue(manifestResponse({ layouts: {}, designs: {}, indexUpdatedAt: 0 }));
+    const [a, b] = await Promise.all([
+      runClaim(ctx({ userId: 'user-1' })),
+      runClaim(ctx({ userId: 'user-2' })),
+    ]);
+    expect(a).not.toBe(b);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -269,12 +281,28 @@ describe('runClaim — account-mismatch guard', () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(localStorage.getItem('gflt-last-signed-in-user')).toBe('user-1');
   });
+
+  it('discard also clears the outbox so prior-user pushes do not drain under the new account', async () => {
+    localStorage.setItem('gflt-last-signed-in-user', 'user-other');
+    layouts.items.set('a', { id: 'a', payload: { v: 1 }, modifiedAt: 1000 });
+
+    await runClaim(ctx({ promptAccountMismatch: promptDiscardMock }));
+    expect(clearOutboxMock).toHaveBeenCalled();
+  });
 });
 
 describe('runClaim — failure modes', () => {
   it('returns "unauthorized" when manifest GET 401s', async () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
     expect((await runClaim(ctx())).status).toBe('unauthorized');
+  });
+
+  it('persists lastSignedInUserId on 401 so a transient cookie race does not re-prompt mismatch', async () => {
+    localStorage.setItem('gflt-last-signed-in-user', 'user-other');
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+
+    await runClaim(ctx());
+    expect(localStorage.getItem('gflt-last-signed-in-user')).toBe('user-1');
   });
 
   it('returns "error" on network failure during manifest fetch', async () => {

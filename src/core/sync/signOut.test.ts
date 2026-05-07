@@ -116,6 +116,23 @@ describe('runSignOut — outbox flush', () => {
     expect(flushNowMock).toHaveBeenCalled();
   });
 
+  it('proceeds with sign-out if getPendingEntries rejects (IndexedDB failure)', async () => {
+    getPendingEntriesMock.mockRejectedValueOnce(new Error('idb error'));
+    const result = await runSignOut({ adapters, promptKeepLocal: promptKeep, onAnonymous });
+    expect(result.status).toBe('kept');
+    expect(onAnonymous).toHaveBeenCalled();
+  });
+
+  it('proceeds with sign-out if flushNow rejects (network failure during push)', async () => {
+    getPendingEntriesMock.mockResolvedValueOnce([
+      { kind: 'layouts', id: 'a', op: 'put', modifiedAt: 1000 },
+    ]);
+    flushNowMock.mockRejectedValueOnce(new Error('network'));
+    const result = await runSignOut({ adapters, promptKeepLocal: promptKeep, onAnonymous });
+    expect(result.status).toBe('kept');
+    expect(onAnonymous).toHaveBeenCalled();
+  });
+
   it('proceeds with sign-out even if the flush hangs', async () => {
     getPendingEntriesMock.mockResolvedValueOnce([
       { kind: 'layouts', id: 'a', op: 'put', modifiedAt: 1000 },

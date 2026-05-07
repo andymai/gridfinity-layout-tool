@@ -32,7 +32,6 @@ export function SyncSessionMount() {
   );
 
   const status = useSessionStore((s) => s.status);
-  const user = useSessionStore((s) => s.user);
   const prevStatusRef = useRef(status);
 
   const [mismatchPrompt, setMismatchPrompt] = useState<{
@@ -58,14 +57,27 @@ export function SyncSessionMount() {
     prevStatusRef.current = status;
 
     if (status === 'authenticated' && prev !== 'authenticated') {
-      start(adapters);
-      if (user) {
+      // Read user via getState() so this effect doesn't depend on the
+      // user reference — Zustand may emit a new user object while
+      // status stays 'authenticated', which would otherwise stop()
+      // the engine without a matching start() (the next effect run
+      // sees prev === 'authenticated' and falls through both branches).
+      const currentUser = useSessionStore.getState().user;
+      if (currentUser) {
+        // Run claim before start(): the engine drains outbox and polls
+        // immediately, and we don't want the prior user's pending
+        // pushes to flush under the new account before discard can
+        // wipe them.
         void runClaim({
           adapters,
-          userId: user.userId,
-          newAccountLabel: user.email,
+          userId: currentUser.userId,
+          newAccountLabel: currentUser.email,
           promptAccountMismatch,
+        }).finally(() => {
+          start(adapters);
         });
+      } else {
+        start(adapters);
       }
     } else if (status === 'anonymous' && prev === 'authenticated') {
       stop();
@@ -73,7 +85,7 @@ export function SyncSessionMount() {
     return () => {
       stop();
     };
-  }, [status, user, adapters, promptAccountMismatch]);
+  }, [status, adapters, promptAccountMismatch]);
 
   useDebouncedPush();
   useVisibilityFlush();

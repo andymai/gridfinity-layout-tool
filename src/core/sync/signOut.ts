@@ -53,12 +53,19 @@ export async function runSignOut(ctx: SignOutContext): Promise<SignOutResult> {
 }
 
 async function flushOutboxBestEffort(): Promise<void> {
-  const pending = await getPendingEntries();
-  if (pending.length === 0) return;
-  await Promise.race([
-    flushNow(),
-    new Promise<void>((resolve) => setTimeout(resolve, FLUSH_TIMEOUT_MS)),
-  ]);
+  // Best-effort: an IndexedDB read failure or push rejection here must
+  // never block sign-out. Any unflushed entries stay queued for the
+  // next session.
+  try {
+    const pending = await getPendingEntries();
+    if (pending.length === 0) return;
+    await Promise.race([
+      flushNow().catch(() => {}),
+      new Promise<void>((resolve) => setTimeout(resolve, FLUSH_TIMEOUT_MS)),
+    ]);
+  } catch {
+    /* swallow — see comment above */
+  }
 }
 
 async function countLocalItems(adapters: SyncAdapters): Promise<number> {
