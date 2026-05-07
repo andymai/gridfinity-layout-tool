@@ -98,10 +98,13 @@ async function executeInner(ctx: ClaimContext): Promise<ClaimResult> {
       newAccountLabel: ctx.newAccountLabel,
     });
     if (choice === 'discard') {
-      await wipeLocal(ctx.adapters, localLayouts, localDesigns);
-      // Pending pushes from the prior user must not drain under the
-      // new account.
+      // Clear the outbox FIRST: if wipeLocal succeeds but clearOutbox
+      // throws (IDB failure), the prior user's pending pushes survive
+      // and would drain under the new account once the engine starts.
+      // Reverse order makes the failure safe — clearing the outbox is
+      // the only step that gates cross-account leakage.
       await outboxClearAll();
+      await wipeLocal(ctx.adapters, localLayouts, localDesigns);
       persistLastSignedInUserId(ctx.userId);
       useSyncStatusStore.getState().succeed();
       return { status: 'discarded' };

@@ -289,6 +289,21 @@ describe('runClaim — account-mismatch guard', () => {
     await runClaim(ctx({ promptAccountMismatch: promptDiscardMock }));
     expect(clearOutboxMock).toHaveBeenCalled();
   });
+
+  it('discard clears the outbox before wipeLocal so a wipeLocal failure cannot leak prior-user pushes', async () => {
+    localStorage.setItem('gflt-last-signed-in-user', 'user-other');
+    const order: string[] = [];
+    clearOutboxMock.mockImplementation(async () => {
+      order.push('clearOutbox');
+    });
+    layouts.applyRemoteDelete = vi.fn(async () => {
+      order.push('wipe');
+    });
+    layouts.items.set('a', { id: 'a', payload: { v: 1 }, modifiedAt: 1000 });
+
+    await runClaim(ctx({ promptAccountMismatch: promptDiscardMock }));
+    expect(order.indexOf('clearOutbox')).toBeLessThan(order.indexOf('wipe'));
+  });
 });
 
 describe('runClaim — failure modes', () => {

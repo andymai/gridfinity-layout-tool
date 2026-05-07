@@ -77,8 +77,14 @@ export function SyncSessionMount() {
           userId: currentUser.userId,
           newAccountLabel: currentUser.email,
           promptAccountMismatch,
-        }).finally(() => {
-          start(adapters);
+        }).then((result) => {
+          // Skip engine start on 'unauthorized': the manifest 401 means
+          // session sort-out is in flight (the engine's own forced-401
+          // handler will flip to anonymous), and starting now would
+          // immediately retrigger that path. Other terminal states
+          // ('merged' | 'discarded' | 'error') start the engine —
+          // 'error' relies on the engine's own retry/backoff to recover.
+          if (result.status !== 'unauthorized') start(adapters);
         });
       } else {
         start(adapters);
