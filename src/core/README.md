@@ -17,14 +17,14 @@ graph TB
 
 ## Subdirectories
 
-| Directory  | Purpose                                                                                   |
-| ---------- | ----------------------------------------------------------------------------------------- |
-| `api/`     | Cloud sharing API client (`share.ts`, `suggestName.ts`)                                   |
-| `labs/`    | Feature flag definitions and types (experimental/preview/graduated)                       |
-| `result/`  | `Result<T, E>` type system — constructors, error catalog, combinators                     |
-| `storage/` | Layout persistence — LayoutManager, LayoutService, ShareService, backends                 |
-| `store/`   | Zustand + Immer stores — layout, library, history, selection, interaction, view, settings |
-| `sync/`    | Multi-device sync session: `apiFetch`, `useSession`, `sessionApi` (engine lands later)    |
+| Directory  | Purpose                                                                                                 |
+| ---------- | ------------------------------------------------------------------------------------------------------- |
+| `api/`     | Cloud sharing API client (`share.ts`, `suggestName.ts`)                                                 |
+| `labs/`    | Feature flag definitions and types (experimental/preview/graduated)                                     |
+| `result/`  | `Result<T, E>` type system — constructors, error catalog, combinators                                   |
+| `storage/` | Layout persistence — LayoutManager, LayoutService, ShareService, backends                               |
+| `store/`   | Zustand + Immer stores — layout, library, history, selection, interaction, view, settings               |
+| `sync/`    | Multi-device sync foundation: session, `outbox` (IDB queue), `status` store, `adapters/` (engine in 4b) |
 
 ## Key Files
 
