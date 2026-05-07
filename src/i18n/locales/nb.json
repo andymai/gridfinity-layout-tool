@@ -1639,5 +1639,10 @@
   "auth.userMenuOpen": "Åpne kontomeny",
   "auth.signOut": "Logg ut",
   "auth.providerGoogle": "Google",
-  "auth.providerGithub": "GitHub"
+  "auth.providerGithub": "GitHub",
+  "sync.conflictPulled": "Oppsett oppdatert fra en annen enhet.",
+  "sync.deletedElsewhere": "Dette oppsettet ble slettet på en annen enhet. Lagre igjen for å gjenopprette det.",
+  "sync.quotaExceeded": "Synkronisering pauset — skylagringen din er full.",
+  "sync.pushFailed": "Kunne ikke synkronisere endringene. Prøv igjen senere.",
+  "sync.workingOffline": "Frakoblet — endringene synkroniseres når du er tilkoblet igjen."
 }

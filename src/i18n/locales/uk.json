@@ -1639,5 +1639,10 @@
   "auth.userMenuOpen": "Відкрити меню облікового запису",
   "auth.signOut": "Вийти",
   "auth.providerGoogle": "Google",
-  "auth.providerGithub": "GitHub"
+  "auth.providerGithub": "GitHub",
+  "sync.conflictPulled": "Макет оновлено з іншого пристрою.",
+  "sync.deletedElsewhere": "Цей макет видалили на іншому пристрої. Збережіть знову, щоб відновити.",
+  "sync.quotaExceeded": "Синхронізацію призупинено — у вашому хмарному сховищі немає місця.",
+  "sync.pushFailed": "Не вдалося синхронізувати зміни. Спробуйте пізніше.",
+  "sync.workingOffline": "Працюємо офлайн — зміни синхронізуються після підключення."
 }

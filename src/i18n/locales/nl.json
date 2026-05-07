@@ -1639,5 +1639,10 @@
   "auth.userMenuOpen": "Accountmenu openen",
   "auth.signOut": "Afmelden",
   "auth.providerGoogle": "Google",
-  "auth.providerGithub": "GitHub"
+  "auth.providerGithub": "GitHub",
+  "sync.conflictPulled": "Lay-out bijgewerkt vanaf een ander apparaat.",
+  "sync.deletedElsewhere": "Deze lay-out is op een ander apparaat verwijderd. Sla opnieuw op om te herstellen.",
+  "sync.quotaExceeded": "Synchronisatie gepauzeerd — je cloudopslag is vol.",
+  "sync.pushFailed": "Wijzigingen konden niet worden gesynchroniseerd. Probeer het later opnieuw.",
+  "sync.workingOffline": "Offline — wijzigingen worden gesynchroniseerd zodra je weer online bent."
 }

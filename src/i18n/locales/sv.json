@@ -1639,5 +1639,10 @@
   "auth.userMenuOpen": "Öppna kontomeny",
   "auth.signOut": "Logga ut",
   "auth.providerGoogle": "Google",
-  "auth.providerGithub": "GitHub"
+  "auth.providerGithub": "GitHub",
+  "sync.conflictPulled": "Layout uppdaterad från en annan enhet.",
+  "sync.deletedElsewhere": "Den här layouten togs bort på en annan enhet. Spara igen för att återställa.",
+  "sync.quotaExceeded": "Synkronisering pausad — din molnlagring är full.",
+  "sync.pushFailed": "Det gick inte att synkronisera ändringarna. Försök igen senare.",
+  "sync.workingOffline": "Offline — ändringar synkroniseras när du är ansluten igen."
 }

@@ -1639,5 +1639,10 @@
   "auth.userMenuOpen": "Ouvrir le menu du compte",
   "auth.signOut": "Se déconnecter",
   "auth.providerGoogle": "Google",
-  "auth.providerGithub": "GitHub"
+  "auth.providerGithub": "GitHub",
+  "sync.conflictPulled": "Plan mis à jour depuis un autre appareil.",
+  "sync.deletedElsewhere": "Ce plan a été supprimé sur un autre appareil. Enregistrez-le à nouveau pour le restaurer.",
+  "sync.quotaExceeded": "Synchronisation suspendue — votre espace cloud est plein.",
+  "sync.pushFailed": "Impossible de synchroniser vos modifications. Réessayez plus tard.",
+  "sync.workingOffline": "Hors ligne — les modifications seront synchronisées une fois reconnecté."
 }
