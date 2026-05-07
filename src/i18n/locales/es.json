@@ -1639,5 +1639,10 @@
   "auth.userMenuOpen": "Abrir menú de cuenta",
   "auth.signOut": "Cerrar sesión",
   "auth.providerGoogle": "Google",
-  "auth.providerGithub": "GitHub"
+  "auth.providerGithub": "GitHub",
+  "sync.conflictPulled": "Diseño actualizado desde otro dispositivo.",
+  "sync.deletedElsewhere": "Este diseño se eliminó en otro dispositivo. Guarda de nuevo para restaurarlo.",
+  "sync.quotaExceeded": "Sincronización pausada — tu almacenamiento en la nube está lleno.",
+  "sync.pushFailed": "No se pudieron sincronizar tus cambios. Inténtalo más tarde.",
+  "sync.workingOffline": "Sin conexión — los cambios se sincronizarán cuando vuelvas a estar en línea."
 }

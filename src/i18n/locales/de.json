@@ -1639,5 +1639,10 @@
   "auth.userMenuOpen": "Kontomenü öffnen",
   "auth.signOut": "Abmelden",
   "auth.providerGoogle": "Google",
-  "auth.providerGithub": "GitHub"
+  "auth.providerGithub": "GitHub",
+  "sync.conflictPulled": "Layout von anderem Gerät aktualisiert.",
+  "sync.deletedElsewhere": "Dieses Layout wurde auf einem anderen Gerät gelöscht. Erneut speichern, um es wiederherzustellen.",
+  "sync.quotaExceeded": "Synchronisierung pausiert — dein Cloud-Speicher ist voll.",
+  "sync.pushFailed": "Änderungen konnten nicht synchronisiert werden. Später erneut versuchen.",
+  "sync.workingOffline": "Offline — Änderungen werden synchronisiert, sobald du wieder online bist."
 }

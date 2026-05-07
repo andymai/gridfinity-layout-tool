@@ -113,6 +113,13 @@ const en: Record<string, string> = {
   'auth.providerGoogle': 'Google',
   'auth.providerGithub': 'GitHub',
 
+  // Multi-device sync toasts (engine + poller surface results here)
+  'sync.conflictPulled': 'Layout updated from another device.',
+  'sync.deletedElsewhere': 'This layout was deleted on another device. Save again to restore.',
+  'sync.quotaExceeded': 'Sync paused — your cloud storage is full.',
+  'sync.pushFailed': "Couldn't sync your changes. Try again later.",
+  'sync.workingOffline': 'Working offline — changes will sync when reconnected.',
+
   // Grid Toolbar
   'toolbar.showLayersPanel': 'Show layers panel',
   'toolbar.exitPaintMode': 'Exit paint mode',
