@@ -48,6 +48,7 @@ import { useThemeEffect } from '@/shared/hooks/useThemeEffect';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { usePlaceBinFromURL } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
+import { useSessionLifecycle } from '@/core/sync/session/useSession';
 import { SHORTCUTS } from '@/core/constants';
 
 const CommandPalette = lazyWithRetry(() =>
@@ -122,6 +123,7 @@ export default function App() {
 
   usePlaceBinFromURL();
   useOwnedShareSync();
+  useSessionLifecycle();
 
   useEffect(() => {
     return initLayoutAnalytics();

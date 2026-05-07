@@ -1632,5 +1632,12 @@
   "undo.undid": "↩ Undid: {action}",
   "undo.unknownAction": "Acción",
   "binDesigner.lid.magnetSpec": "Hueco: ⌀{diameter}mm × {depth}mm de profundidad (coincide con los imanes del bin).",
-  "binDesigner.lid.magnetsRequireStackable": "Los huecos para imanes necesitan tapa apilable — el bin superior los encuentra a través del suelo."
+  "binDesigner.lid.magnetsRequireStackable": "Los huecos para imanes necesitan tapa apilable — el bin superior los encuentra a través del suelo.",
+  "auth.signIn": "Iniciar sesión",
+  "auth.signInWithGoogle": "Iniciar sesión con Google",
+  "auth.signInWithGithub": "Iniciar sesión con GitHub",
+  "auth.userMenuOpen": "Abrir menú de cuenta",
+  "auth.signOut": "Cerrar sesión",
+  "auth.providerGoogle": "Google",
+  "auth.providerGithub": "GitHub"
 }

@@ -1632,5 +1632,12 @@
   "undo.undid": "↩ Undid: {action}",
   "undo.unknownAction": "Action effectuée",
   "binDesigner.lid.magnetSpec": "Logement : ⌀{diameter}mm × {depth}mm de profondeur (correspond aux aimants du bac).",
-  "binDesigner.lid.magnetsRequireStackable": "Les logements d'aimants ont besoin d'un dessus empilable — le bac supérieur les rencontre à travers le sol."
+  "binDesigner.lid.magnetsRequireStackable": "Les logements d'aimants ont besoin d'un dessus empilable — le bac supérieur les rencontre à travers le sol.",
+  "auth.signIn": "Se connecter",
+  "auth.signInWithGoogle": "Se connecter avec Google",
+  "auth.signInWithGithub": "Se connecter avec GitHub",
+  "auth.userMenuOpen": "Ouvrir le menu du compte",
+  "auth.signOut": "Se déconnecter",
+  "auth.providerGoogle": "Google",
+  "auth.providerGithub": "GitHub"
 }

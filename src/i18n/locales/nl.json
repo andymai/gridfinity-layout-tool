@@ -1632,5 +1632,12 @@
   "undo.undid": "↩ Undid: {action}",
   "undo.unknownAction": "Actie",
   "binDesigner.lid.magnetSpec": "Holte: ⌀{diameter}mm × {depth}mm diep (komt overeen met bin-magneetspecificaties).",
-  "binDesigner.lid.magnetsRequireStackable": "Magneetholtes hebben een stapelbare bovenkant nodig — de bin erboven ontmoet ze via de vloer."
+  "binDesigner.lid.magnetsRequireStackable": "Magneetholtes hebben een stapelbare bovenkant nodig — de bin erboven ontmoet ze via de vloer.",
+  "auth.signIn": "Aanmelden",
+  "auth.signInWithGoogle": "Aanmelden met Google",
+  "auth.signInWithGithub": "Aanmelden met GitHub",
+  "auth.userMenuOpen": "Accountmenu openen",
+  "auth.signOut": "Afmelden",
+  "auth.providerGoogle": "Google",
+  "auth.providerGithub": "GitHub"
 }

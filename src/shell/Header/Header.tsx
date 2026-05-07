@@ -14,6 +14,7 @@ import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { PresenceAvatars } from '../Collab';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
+import { SignInButton } from './SignInButton';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { SaveStatus } from '@/shared/hooks';
@@ -270,6 +271,7 @@ export function Header({ saveStatus }: HeaderProps) {
         {!isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
 
         <HeaderSupportLinks />
+        <SignInButton />
       </div>
 
       {/* Lazy-loaded modals - only load chunks when modal is opened */}

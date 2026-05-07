@@ -1632,5 +1632,12 @@
   "undo.undid": "↩ Undid: {action}",
   "undo.unknownAction": "Ação",
   "binDesigner.lid.magnetSpec": "Cavidade: ⌀{diameter}mm × {depth}mm de profundidade (coincide com os ímãs do bin).",
-  "binDesigner.lid.magnetsRequireStackable": "As cavidades de ímãs precisam de tampa empilhável — o bin superior as encontra pelo piso."
+  "binDesigner.lid.magnetsRequireStackable": "As cavidades de ímãs precisam de tampa empilhável — o bin superior as encontra pelo piso.",
+  "auth.signIn": "Entrar",
+  "auth.signInWithGoogle": "Entrar com Google",
+  "auth.signInWithGithub": "Entrar com GitHub",
+  "auth.userMenuOpen": "Abrir menu da conta",
+  "auth.signOut": "Sair",
+  "auth.providerGoogle": "Google",
+  "auth.providerGithub": "GitHub"
 }
