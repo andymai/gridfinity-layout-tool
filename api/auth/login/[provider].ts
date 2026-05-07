@@ -1,29 +1,20 @@
-import { generateCodeVerifier, generateState } from 'arctic';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireMethod } from '../../lib/method.js';
 import { ErrorCode } from '../../lib/shared.js';
 import { logger } from '../../lib/logger.js';
 import { checkRateLimit, getClientIP } from '../../lib/rateLimit.js';
 import { setOAuthStateCookie, setOAuthVerifierCookie } from '../../lib/cookies.js';
-import {
-  buildGitHubClient,
-  buildGoogleClient,
-  GITHUB_SCOPES,
-  GOOGLE_SCOPES,
-  isSupportedProvider,
-} from '../providers.js';
+import { createOAuthState, getProvider, isSupportedProvider } from '../providers/index.js';
 
 /**
  * GET /api/auth/login/{google|github}
  *
- * Generates OAuth state (and PKCE verifier for Google), stores them in
- * short-lived HttpOnly cookies, and 302-redirects to the provider's
- * authorization endpoint.
+ * Generates an OAuth state cookie (CSRF token for the round-trip), asks
+ * the provider for an authorization URL (and PKCE verifier if needed),
+ * stashes the verifier in a short-lived cookie, then 302-redirects.
  *
- * The state cookie is the entire CSRF defense for the round-trip: the
- * callback compares the cookie value with the `state` query param Google
- * sends back. An attacker who can't write our HttpOnly cookie can't forge
- * a callback that we'll accept.
+ * The endpoint touches no OAuth library directly — all provider-specific
+ * concerns live behind `getProvider(...)`.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!requireMethod(req, res, ['GET'])) return;
@@ -45,17 +36,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 
   try {
-    const state = generateState();
+    const state = createOAuthState();
     setOAuthStateCookie(res, state);
 
-    let url: URL;
-    if (provider === 'google') {
-      const verifier = generateCodeVerifier();
-      setOAuthVerifierCookie(res, verifier);
-      url = buildGoogleClient().createAuthorizationURL(state, verifier, [...GOOGLE_SCOPES]);
-    } else {
-      url = buildGitHubClient().createAuthorizationURL(state, [...GITHUB_SCOPES]);
-    }
+    const { url, codeVerifier } = getProvider(provider).buildAuthorizationUrl(state);
+    if (codeVerifier) setOAuthVerifierCookie(res, codeVerifier);
 
     res.redirect(302, url.toString());
   } catch (error) {

@@ -1,33 +1,34 @@
 /**
  * Integration-style tests for the four `/api/auth` endpoints.
  *
- * These mock Arctic, Redis, and `fetch` (for GitHub profile lookup) and
- * exercise the request -> response wiring. The underlying session/cookie
- * primitives are unit-tested separately in api/lib.
+ * Mocks happen at the provider abstraction boundary (`getProvider`),
+ * Redis, and `fetch` — not at the OAuth library. Swapping Arctic for
+ * another lib leaves these tests entirely unchanged.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { OAuthProvider, ProviderProfile } from './providers/index';
+import type * as ProvidersModule from './providers/index';
 
-const mockGoogleClient = {
-  createAuthorizationURL: vi.fn(),
-  validateAuthorizationCode: vi.fn(),
-};
-const mockGitHubClient = {
-  createAuthorizationURL: vi.fn(),
-  validateAuthorizationCode: vi.fn(),
-};
+const mockGoogleProvider = {
+  buildAuthorizationUrl: vi.fn(),
+  exchangeCode: vi.fn(),
+} satisfies OAuthProvider;
 
-vi.mock('arctic', () => ({
-  Google: function MockGoogle() {
-    return mockGoogleClient;
-  },
-  GitHub: function MockGitHub() {
-    return mockGitHubClient;
-  },
-  generateState: vi.fn(),
-  generateCodeVerifier: vi.fn(),
-}));
+const mockGitHubProvider = {
+  buildAuthorizationUrl: vi.fn(),
+  exchangeCode: vi.fn(),
+} satisfies OAuthProvider;
+
+vi.mock('./providers/index', async (importOriginal) => {
+  const actual = await importOriginal<typeof ProvidersModule>();
+  return {
+    ...actual,
+    getProvider: (name: string) => (name === 'google' ? mockGoogleProvider : mockGitHubProvider),
+    createOAuthState: () => 'state-fixed',
+  };
+});
 
 let redisStore: Map<string, string>;
 let redisSets: Map<string, Set<string>>;
@@ -167,24 +168,18 @@ function makeReq(opts: {
   } as unknown as VercelRequest;
 }
 
-beforeEach(async () => {
+beforeEach(() => {
   redisStore = new Map();
   redisSets = new Map();
   vi.clearAllMocks();
-  const arctic = await import('arctic');
-  (arctic.generateState as ReturnType<typeof vi.fn>).mockReturnValue('state-fixed');
-  (arctic.generateCodeVerifier as ReturnType<typeof vi.fn>).mockReturnValue('verifier-fixed');
-  mockGoogleClient.createAuthorizationURL.mockReturnValue(
-    new URL('https://accounts.google.com/o/oauth2/v2/auth?state=mock&code_challenge=x')
-  );
-  mockGitHubClient.createAuthorizationURL.mockReturnValue(
-    new URL('https://github.com/login/oauth/authorize?state=mock')
-  );
+  mockGoogleProvider.buildAuthorizationUrl.mockReturnValue({
+    url: new URL('https://accounts.google.com/o/oauth2/v2/auth?state=mock'),
+    codeVerifier: 'verifier-fixed',
+  });
+  mockGitHubProvider.buildAuthorizationUrl.mockReturnValue({
+    url: new URL('https://github.com/login/oauth/authorize?state=mock'),
+  });
   vi.stubEnv('VERCEL_ENV', 'production');
-  vi.stubEnv('GOOGLE_CLIENT_ID', 'g-id');
-  vi.stubEnv('GOOGLE_CLIENT_SECRET', 'g-secret');
-  vi.stubEnv('GITHUB_CLIENT_ID', 'h-id');
-  vi.stubEnv('GITHUB_CLIENT_SECRET', 'h-secret');
 });
 
 afterEach(() => {
@@ -206,6 +201,7 @@ describe('login/[provider]', () => {
     await handler(makeReq({ query: { provider: 'google' } }), res as unknown as VercelResponse);
     expect(res._redirect?.status).toBe(302);
     expect(res._redirect?.url).toContain('accounts.google.com');
+    expect(mockGoogleProvider.buildAuthorizationUrl).toHaveBeenCalledWith('state-fixed');
     const arr = setCookies(res);
     expect(arr.some((c) => c.startsWith('gflt_oauth_state=state-fixed'))).toBe(true);
     expect(arr.some((c) => c.startsWith('gflt_oauth_verifier=verifier-fixed'))).toBe(true);
@@ -221,8 +217,10 @@ describe('login/[provider]', () => {
     expect(arr.some((c) => c.includes('gflt_oauth_verifier='))).toBe(false);
   });
 
-  it('returns 500 with config error when client id is missing', async () => {
-    vi.stubEnv('GOOGLE_CLIENT_ID', '');
+  it('returns 500 with config error when buildAuthorizationUrl throws', async () => {
+    mockGoogleProvider.buildAuthorizationUrl.mockImplementationOnce(() => {
+      throw new Error('GOOGLE_CLIENT_ID not configured');
+    });
     const { default: handler } = await import('./login/[provider]');
     const res = makeRes();
     await handler(makeReq({ query: { provider: 'google' } }), res as unknown as VercelResponse);
@@ -255,10 +253,11 @@ describe('login/[provider]', () => {
 });
 
 describe('callback/[provider]', () => {
-  function googleIdToken(payload: Record<string, unknown>): string {
-    const header = Buffer.from(JSON.stringify({ alg: 'none' })).toString('base64url');
-    const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
-    return `${header}.${body}.sig`;
+  function googleProfile(): ProviderProfile {
+    return { subject: 'google-123', email: 'a@example.com', displayName: 'Alice' };
+  }
+  function githubProfile(): ProviderProfile {
+    return { subject: '42', email: 'al@example.com', displayName: 'Alice' };
   }
 
   it('rejects when state cookie is missing', async () => {
@@ -286,16 +285,8 @@ describe('callback/[provider]', () => {
     expect(res._status).toBe(400);
   });
 
-  it('completes Google sign-in: validates code, derives uid, sets session cookie, redirects to /', async () => {
-    mockGoogleClient.validateAuthorizationCode.mockResolvedValueOnce({
-      idToken: () =>
-        googleIdToken({
-          sub: 'google-123',
-          email: 'a@example.com',
-          email_verified: true,
-          name: 'Alice',
-        }),
-    });
+  it('completes Google sign-in: passes verifier, derives uid, sets session cookie, redirects to /', async () => {
+    mockGoogleProvider.exchangeCode.mockResolvedValueOnce(googleProfile());
     const { default: handler } = await import('./callback/[provider]');
     const res = makeRes();
     await handler(
@@ -306,7 +297,10 @@ describe('callback/[provider]', () => {
       res as unknown as VercelResponse
     );
     expect(res._redirect?.url).toBe('/');
-    expect(mockGoogleClient.validateAuthorizationCode).toHaveBeenCalledWith('authcode', 'V');
+    expect(mockGoogleProvider.exchangeCode).toHaveBeenCalledWith({
+      code: 'authcode',
+      codeVerifier: 'V',
+    });
 
     // Profile + session were written to KV.
     const profileKey = [...redisStore.keys()].find(
@@ -328,28 +322,8 @@ describe('callback/[provider]', () => {
     ).toBe(true);
   });
 
-  it('completes GitHub sign-in via /user + /user/emails fallback', async () => {
-    mockGitHubClient.validateAuthorizationCode.mockResolvedValueOnce({
-      accessToken: () => 'gh-access-token',
-    });
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async (url: string) => {
-        if (url === 'https://api.github.com/user') {
-          return {
-            ok: true,
-            json: async () => ({ id: 42, login: 'al', name: 'Alice', email: null }),
-          } as Response;
-        }
-        if (url === 'https://api.github.com/user/emails') {
-          return {
-            ok: true,
-            json: async () => [{ email: 'al@example.com', primary: true, verified: true }],
-          } as Response;
-        }
-        throw new Error(`Unexpected fetch ${url}`);
-      })
-    );
+  it('completes GitHub sign-in (no PKCE verifier needed)', async () => {
+    mockGitHubProvider.exchangeCode.mockResolvedValueOnce(githubProfile());
     const { default: handler } = await import('./callback/[provider]');
     const res = makeRes();
     await handler(
@@ -360,16 +334,20 @@ describe('callback/[provider]', () => {
       res as unknown as VercelResponse
     );
     expect(res._redirect?.url).toBe('/');
+    expect(mockGitHubProvider.exchangeCode).toHaveBeenCalledWith({
+      code: 'authcode',
+      codeVerifier: undefined,
+    });
     const profileKey = [...redisStore.keys()].find((k) => k.endsWith(':profile'));
     const profile = JSON.parse(redisStore.get(profileKey ?? '') ?? '{}');
     expect(profile.email).toBe('al@example.com');
     expect(profile.provider).toBe('github');
   });
 
-  it('rejects when Google account email is unverified', async () => {
-    mockGoogleClient.validateAuthorizationCode.mockResolvedValueOnce({
-      idToken: () => googleIdToken({ sub: 'x', email: 'x@x', email_verified: false }),
-    });
+  it('rejects with 400 when the provider exchangeCode throws', async () => {
+    mockGoogleProvider.exchangeCode.mockRejectedValueOnce(
+      new Error('Google account has no verified email')
+    );
     const { default: handler } = await import('./callback/[provider]');
     const res = makeRes();
     await handler(

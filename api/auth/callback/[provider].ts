@@ -17,14 +17,7 @@ import {
 } from '../../lib/session.js';
 import { deriveUserId, type AuthProvider } from '../../lib/userId.js';
 import { userProfileKey } from '../../lib/redisKeys.js';
-import {
-  buildGitHubClient,
-  buildGoogleClient,
-  fetchGitHubProfile,
-  googleProfileFromIdToken,
-  isSupportedProvider,
-  type ProviderProfile,
-} from '../providers.js';
+import { getProvider, isSupportedProvider, type ProviderProfile } from '../providers/index.js';
 
 interface UserProfileRecord {
   userId: string;
@@ -41,8 +34,9 @@ const PROFILE_TTL_SECONDS = 365 * 24 * 60 * 60; // 1 year, refreshed on each sig
  * GET /api/auth/callback/{google|github}
  *
  * Receives `?code=...&state=...` from the provider, validates state against
- * the cookie, exchanges the code, derives a stable userId, upserts the user
- * profile, mints a session, and redirects to the SPA root.
+ * the cookie, asks the provider abstraction to exchange the code, derives
+ * a stable userId, upserts the user profile, mints a session, and
+ * redirects to the SPA root.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!requireMethod(req, res, ['GET'])) return;
@@ -74,22 +68,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   let profile: ProviderProfile;
   try {
-    if (provider === 'google') {
-      const verifier = readOAuthVerifierCookie(req);
-      if (!verifier) {
-        clearOAuthCookies(res);
-        res.status(400).json({
-          error: 'Missing PKCE verifier',
-          code: ErrorCode.VALIDATION_ERROR,
-        });
-        return;
-      }
-      const tokens = await buildGoogleClient().validateAuthorizationCode(code, verifier);
-      profile = googleProfileFromIdToken(tokens.idToken());
-    } else {
-      const tokens = await buildGitHubClient().validateAuthorizationCode(code);
-      profile = await fetchGitHubProfile(tokens.accessToken());
-    }
+    profile = await getProvider(provider).exchangeCode({
+      code,
+      codeVerifier: readOAuthVerifierCookie(req) ?? undefined,
+    });
   } catch (error) {
     logger.error('OAuth code exchange failed', {
       provider,
