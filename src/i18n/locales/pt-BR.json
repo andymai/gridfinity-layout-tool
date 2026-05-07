@@ -1644,5 +1644,13 @@
   "sync.deletedElsewhere": "Este layout foi excluído em outro dispositivo. Salve novamente para restaurá-lo.",
   "sync.quotaExceeded": "Sincronização pausada — seu armazenamento na nuvem está cheio.",
   "sync.pushFailed": "Não foi possível sincronizar suas alterações. Tente novamente mais tarde.",
-  "sync.workingOffline": "Sem conexão — as alterações serão sincronizadas quando você estiver online novamente."
+  "sync.workingOffline": "Sem conexão — as alterações serão sincronizadas quando você estiver online novamente.",
+  "syncDialog.signOut.title": "Sair",
+  "syncDialog.signOut.message": "Manter seus {count} layouts e designs locais neste dispositivo? Você também pode apagá-los.",
+  "syncDialog.signOut.keep": "Manter e sair",
+  "syncDialog.signOut.wipe": "Apagar e sair",
+  "syncDialog.accountMismatch.title": "Conta diferente",
+  "syncDialog.accountMismatch.message": "Os {count} layouts e designs neste dispositivo estavam vinculados a outra conta. Adicionar a {account} ou descartar?",
+  "syncDialog.accountMismatch.merge": "Adicionar a {account}",
+  "syncDialog.accountMismatch.discard": "Descartar"
 }

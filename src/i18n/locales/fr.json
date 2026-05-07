@@ -1644,5 +1644,13 @@
   "sync.deletedElsewhere": "Ce plan a été supprimé sur un autre appareil. Enregistrez-le à nouveau pour le restaurer.",
   "sync.quotaExceeded": "Synchronisation suspendue — votre espace cloud est plein.",
   "sync.pushFailed": "Impossible de synchroniser vos modifications. Réessayez plus tard.",
-  "sync.workingOffline": "Hors ligne — les modifications seront synchronisées une fois reconnecté."
+  "sync.workingOffline": "Hors ligne — les modifications seront synchronisées une fois reconnecté.",
+  "syncDialog.signOut.title": "Se déconnecter",
+  "syncDialog.signOut.message": "Conserver vos {count} plans et créations sur cet appareil ? Vous pouvez aussi les effacer.",
+  "syncDialog.signOut.keep": "Conserver et se déconnecter",
+  "syncDialog.signOut.wipe": "Effacer et se déconnecter",
+  "syncDialog.accountMismatch.title": "Compte différent",
+  "syncDialog.accountMismatch.message": "Les {count} plans et créations sur cet appareil étaient liés à un autre compte. Les ajouter à {account} ou les supprimer ?",
+  "syncDialog.accountMismatch.merge": "Ajouter à {account}",
+  "syncDialog.accountMismatch.discard": "Supprimer"
 }

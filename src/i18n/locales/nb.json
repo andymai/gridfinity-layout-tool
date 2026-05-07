@@ -1644,5 +1644,13 @@
   "sync.deletedElsewhere": "Dette oppsettet ble slettet på en annen enhet. Lagre igjen for å gjenopprette det.",
   "sync.quotaExceeded": "Synkronisering pauset — skylagringen din er full.",
   "sync.pushFailed": "Kunne ikke synkronisere endringene. Prøv igjen senere.",
-  "sync.workingOffline": "Frakoblet — endringene synkroniseres når du er tilkoblet igjen."
+  "sync.workingOffline": "Frakoblet — endringene synkroniseres når du er tilkoblet igjen.",
+  "syncDialog.signOut.title": "Logg ut",
+  "syncDialog.signOut.message": "Behold de {count} lokale oppsettene og designene på denne enheten? Du kan også slette dem.",
+  "syncDialog.signOut.keep": "Behold og logg ut",
+  "syncDialog.signOut.wipe": "Slett og logg ut",
+  "syncDialog.accountMismatch.title": "Annen konto",
+  "syncDialog.accountMismatch.message": "De {count} oppsettene og designene på denne enheten var sist tilknyttet en annen konto. Legg til {account}, eller forkast?",
+  "syncDialog.accountMismatch.merge": "Legg til {account}",
+  "syncDialog.accountMismatch.discard": "Forkast"
 }

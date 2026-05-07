@@ -1644,5 +1644,13 @@
   "sync.deletedElsewhere": "Dieses Layout wurde auf einem anderen Gerät gelöscht. Erneut speichern, um es wiederherzustellen.",
   "sync.quotaExceeded": "Synchronisierung pausiert — dein Cloud-Speicher ist voll.",
   "sync.pushFailed": "Änderungen konnten nicht synchronisiert werden. Später erneut versuchen.",
-  "sync.workingOffline": "Offline — Änderungen werden synchronisiert, sobald du wieder online bist."
+  "sync.workingOffline": "Offline — Änderungen werden synchronisiert, sobald du wieder online bist.",
+  "syncDialog.signOut.title": "Abmelden",
+  "syncDialog.signOut.message": "Deine {count} lokalen Layouts und Designs auf diesem Gerät behalten? Du kannst sie auch löschen.",
+  "syncDialog.signOut.keep": "Behalten & Abmelden",
+  "syncDialog.signOut.wipe": "Löschen & Abmelden",
+  "syncDialog.accountMismatch.title": "Anderes Konto",
+  "syncDialog.accountMismatch.message": "Die {count} Layouts und Designs auf diesem Gerät waren zuletzt mit einem anderen Konto verknüpft. Zu {account} hinzufügen oder verwerfen?",
+  "syncDialog.accountMismatch.merge": "Zu {account} hinzufügen",
+  "syncDialog.accountMismatch.discard": "Verwerfen"
 }

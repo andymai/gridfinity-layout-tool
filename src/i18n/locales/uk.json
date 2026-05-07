@@ -1644,5 +1644,13 @@
   "sync.deletedElsewhere": "Цей макет видалили на іншому пристрої. Збережіть знову, щоб відновити.",
   "sync.quotaExceeded": "Синхронізацію призупинено — у вашому хмарному сховищі немає місця.",
   "sync.pushFailed": "Не вдалося синхронізувати зміни. Спробуйте пізніше.",
-  "sync.workingOffline": "Працюємо офлайн — зміни синхронізуються після підключення."
+  "sync.workingOffline": "Працюємо офлайн — зміни синхронізуються після підключення.",
+  "syncDialog.signOut.title": "Вийти",
+  "syncDialog.signOut.message": "Залишити {count} локальних макетів і дизайнів на цьому пристрої? Ви також можете видалити їх.",
+  "syncDialog.signOut.keep": "Залишити та вийти",
+  "syncDialog.signOut.wipe": "Видалити та вийти",
+  "syncDialog.accountMismatch.title": "Інший обліковий запис",
+  "syncDialog.accountMismatch.message": "{count} макетів і дизайнів на цьому пристрої були пов’язані з іншим обліковим записом. Додати до {account} чи відкинути?",
+  "syncDialog.accountMismatch.merge": "Додати до {account}",
+  "syncDialog.accountMismatch.discard": "Відкинути"
 }

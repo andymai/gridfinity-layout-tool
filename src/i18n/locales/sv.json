@@ -1644,5 +1644,13 @@
   "sync.deletedElsewhere": "Den här layouten togs bort på en annan enhet. Spara igen för att återställa.",
   "sync.quotaExceeded": "Synkronisering pausad — din molnlagring är full.",
   "sync.pushFailed": "Det gick inte att synkronisera ändringarna. Försök igen senare.",
-  "sync.workingOffline": "Offline — ändringar synkroniseras när du är ansluten igen."
+  "sync.workingOffline": "Offline — ändringar synkroniseras när du är ansluten igen.",
+  "syncDialog.signOut.title": "Logga ut",
+  "syncDialog.signOut.message": "Behåll dina {count} lokala layouter och designer på den här enheten? Du kan också radera dem.",
+  "syncDialog.signOut.keep": "Behåll & logga ut",
+  "syncDialog.signOut.wipe": "Radera & logga ut",
+  "syncDialog.accountMismatch.title": "Annat konto",
+  "syncDialog.accountMismatch.message": "De {count} layouterna och designerna på den här enheten var senast kopplade till ett annat konto. Lägg till i {account}, eller kasta?",
+  "syncDialog.accountMismatch.merge": "Lägg till i {account}",
+  "syncDialog.accountMismatch.discard": "Kasta"
 }
