@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.70.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.69.0...gridfinity-layout-tool-v4.70.0) (2026-05-07)
+
+
+### Features
+
+* **sync:** boot wiring + offline toast + i18n (PR 4d) ([#1598](https://github.com/andymai/gridfinity-layout-tool/issues/1598)) ([37498d6](https://github.com/andymai/gridfinity-layout-tool/commit/37498d68adcc4539c45be83f4a754207554af521))
+
 ## [4.69.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.68.0...gridfinity-layout-tool-v4.69.0) (2026-05-07)
 
 
