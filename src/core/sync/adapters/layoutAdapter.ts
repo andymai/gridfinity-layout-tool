@@ -1,6 +1,13 @@
+import { isErr } from '@/core/result';
 import { useLayoutStore, useLibraryStore } from '@/core/store';
 import type { Layout, LayoutEntry, LayoutId, LayoutLibrary } from '@/core/types';
-import { loadLayoutAsync, saveLayoutAsync, saveLibrary, loadLayoutSync } from '@/core/storage';
+import {
+  computePreview,
+  loadLayoutAsync,
+  loadLayoutSync,
+  saveLayoutAsync,
+  saveLibrary,
+} from '@/core/storage';
 import type { AdapterChange, AdapterChangeListener, LayoutAdapter, SyncableItem } from './types';
 
 /**
@@ -24,7 +31,12 @@ const suppressed = new Set<string>();
 
 function suppress(id: string): void {
   suppressed.add(id);
-  // Release on the next macrotask — Zustand listeners fire synchronously.
+  // Release at the next microtask checkpoint. Zustand listeners fire
+  // synchronously inside `setLibrary`, so by the time anything `await`s
+  // (the next microtask boundary) the subscriber has already observed
+  // the remote-write and skipped emitting. Releasing here keeps the
+  // suppression window minimal — a real local edit on the same id
+  // arriving on the next tick still pushes normally.
   queueMicrotask(() => suppressed.delete(id));
 }
 
@@ -61,13 +73,22 @@ export const layoutAdapter: LayoutAdapter = {
     }
 
     // Upsert the library entry so the user sees the updated metadata.
+    // For new entries we compute a fresh preview from the remote layout —
+    // `LayoutEntry.preview` is required and the UI dereferences
+    // `entry.preview.binCount` so leaving it undefined would crash.
     const { library, setLibrary } = useLibraryStore.getState();
+    const preview = computePreview(layout);
     const existingIndex = library.entries.findIndex((e) => e.id === item.id);
     const nextEntries: LayoutEntry[] =
       existingIndex >= 0
         ? library.entries.map((e, i) =>
             i === existingIndex
-              ? { ...e, modifiedAt: item.modifiedAt, name: layout.name || e.name }
+              ? {
+                  ...e,
+                  modifiedAt: item.modifiedAt,
+                  name: layout.name || e.name,
+                  preview,
+                }
               : e
           )
         : [
@@ -77,12 +98,15 @@ export const layoutAdapter: LayoutAdapter = {
               name: layout.name || 'Untitled',
               createdAt: item.modifiedAt,
               modifiedAt: item.modifiedAt,
-              preview: undefined as never,
+              preview,
             } satisfies LayoutEntry,
           ];
     const nextLibrary: LayoutLibrary = { ...library, entries: nextEntries };
     setLibrary(nextLibrary);
-    await saveLibrary(nextLibrary);
+    const libraryResult = await saveLibrary(nextLibrary);
+    if (isErr(libraryResult)) {
+      throw new Error(`saveLibrary failed for ${item.id}`);
+    }
 
     // If the user is viewing this layout right now, replace what the
     // store has so the UI re-renders. `source: 'remote'` flags the
@@ -110,7 +134,10 @@ export const layoutAdapter: LayoutAdapter = {
       entries: library.entries.filter((e) => e.id !== id),
     };
     setLibrary(nextLibrary);
-    await saveLibrary(nextLibrary);
+    const libraryResult = await saveLibrary(nextLibrary);
+    if (isErr(libraryResult)) {
+      throw new Error(`saveLibrary failed during remote-delete of ${id}`);
+    }
 
     // If the user was viewing the deleted layout, switch them to
     // whatever's first in the (now-trimmed) library so they aren't

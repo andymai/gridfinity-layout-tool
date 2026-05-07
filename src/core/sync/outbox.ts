@@ -16,12 +16,13 @@
  */
 
 import { openDB, type IDBPDatabase } from 'idb';
+import type { SyncKind } from './adapters/types';
+
+export type { SyncKind };
 
 const DB_NAME = 'gridfinity-sync-outbox-db';
 const DB_VERSION = 1;
 const STORE_NAME = 'outbox';
-
-export type OutboxItemKind = 'layout' | 'design';
 
 /**
  * One pending push. The engine reads this, fetches the actual payload
@@ -31,7 +32,7 @@ export type OutboxItemKind = 'layout' | 'design';
 export interface OutboxEntry {
   /** `${kind}:${id}` — primary key. Re-enqueuing the same item upserts. */
   key: string;
-  kind: OutboxItemKind;
+  kind: SyncKind;
   id: string;
   /**
    * Local mtime at enqueue time. Used as the `modifiedAt` we send to
@@ -76,7 +77,7 @@ async function getDb(): Promise<IDBPDatabase> {
   return dbInstance;
 }
 
-function entryKey(kind: OutboxItemKind, id: string): string {
+function entryKey(kind: SyncKind, id: string): string {
   return `${kind}:${id}`;
 }
 
@@ -103,7 +104,7 @@ export function backoffDelayMs(attempts: number): number {
  * picks it up immediately (next user edit = retry signal too).
  */
 export async function enqueue(input: {
-  kind: OutboxItemKind;
+  kind: SyncKind;
   id: string;
   modifiedAt: number;
   op: 'put' | 'delete';
@@ -151,7 +152,7 @@ export async function getDue(now: number = Date.now()): Promise<OutboxEntry[]> {
  * still matches that mtime. Otherwise the newer enqueue stays.
  */
 export async function markSuccess(
-  kind: OutboxItemKind,
+  kind: SyncKind,
   id: string,
   pushedModifiedAt: number
 ): Promise<void> {
@@ -171,10 +172,7 @@ export async function markSuccess(
  * entry is removed and the function returns `'gave-up'` so the
  * caller can surface a permanent-failure toast.
  */
-export async function markFailure(
-  kind: OutboxItemKind,
-  id: string
-): Promise<'rescheduled' | 'gave-up'> {
+export async function markFailure(kind: SyncKind, id: string): Promise<'rescheduled' | 'gave-up'> {
   const db = await getDb();
   const tx = db.transaction(STORE_NAME, 'readwrite');
   const store = tx.objectStore(STORE_NAME);
@@ -189,10 +187,13 @@ export async function markFailure(
     await tx.done;
     return 'gave-up';
   }
+  // Use the pre-increment value as the backoff index. With attempts=0
+  // (no failures yet) the first failure schedules `backoffDelayMs(0) = 1s`,
+  // matching the documented sequence (1s, 2s, 4s, ...).
   await store.put({
     ...current,
     attempts: nextAttempts,
-    nextAttemptAt: Date.now() + backoffDelayMs(nextAttempts),
+    nextAttemptAt: Date.now() + backoffDelayMs(current.attempts),
   });
   await tx.done;
   return 'rescheduled';
@@ -203,7 +204,7 @@ export async function markFailure(
  * engine determines an entry is no longer applicable (e.g. user
  * signed out before we drained it).
  */
-export async function discard(kind: OutboxItemKind, id: string): Promise<void> {
+export async function discard(kind: SyncKind, id: string): Promise<void> {
   const db = await getDb();
   await db.delete(STORE_NAME, entryKey(kind, id));
 }

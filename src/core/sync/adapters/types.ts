@@ -14,6 +14,8 @@
  * boundary rule (`src/core/` cannot import `src/features/`).
  */
 
+import type { Layout } from '@/core/types';
+
 /**
  * Common shape every synced item presents to the engine, regardless of
  * whether it's a Layout or a BinDesigner design.
@@ -81,13 +83,27 @@ export interface SyncAdapter<T = unknown> {
   subscribe(listener: AdapterChangeListener): () => void;
 }
 
-export type LayoutAdapter = SyncAdapter;
+/**
+ * Layouts have a known core type (`Layout`); design payloads are
+ * intentionally `unknown` here since the actual `BinParams` shape lives
+ * in `src/features/bin-designer/` and `core/` cannot import it. The
+ * concrete `DesignAdapter` impl in `features/` parameterizes its own
+ * adapter type with `BinParams`; the engine only ever sees the boxed
+ * `unknown`, which is fine since it round-trips the payload to the
+ * server without inspection.
+ */
+export type LayoutAdapter = SyncAdapter<Layout>;
 export type DesignAdapter = SyncAdapter;
 
 /**
  * Both adapters bundled together — what the engine takes at start time.
  * The shape lets the engine treat them uniformly while keeping the
  * `kind` distinction visible in logs and the outbox.
+ *
+ * `SyncKind = 'layouts' | 'designs'` — plural to match server endpoints
+ * (`/api/sync/{kind}/[id]`) and Redis index keys (`users:{uid}:index:{kind}`).
+ * The outbox uses the same plural form so there's no kind-translation
+ * shim anywhere in the stack.
  */
 export interface SyncAdapters {
   layouts: LayoutAdapter;

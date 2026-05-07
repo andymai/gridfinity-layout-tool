@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
 
 /**
  * High-level sync state for the UI.
@@ -43,42 +44,42 @@ interface SyncStatusActions {
   reset: () => void;
 }
 
-const INITIAL: SyncStatus = {
-  state: 'idle',
-  pendingCount: 0,
-};
-
-export const useSyncStatusStore = create<SyncStatus & SyncStatusActions>((set) => ({
-  ...INITIAL,
-  beginSync: () => set((s) => (s.state === 'syncing' ? s : { ...s, state: 'syncing' })),
-  succeed: () =>
-    set((s) => ({
-      state: s.pendingCount > 0 ? 'syncing' : 'idle',
-      lastSyncedAt: Date.now(),
-      pendingCount: s.pendingCount,
-      lastError: undefined,
-    })),
-  reportOffline: (message) =>
-    set((s) => ({
-      ...s,
-      state: 'offline',
-      lastError: message,
-    })),
-  reportError: (message) =>
-    set((s) => ({
-      ...s,
-      state: 'error',
-      lastError: message,
-    })),
-  setPendingCount: (count) =>
-    set((s) => ({
-      ...s,
-      pendingCount: Math.max(0, count),
-    })),
-  reset: () =>
-    set({
-      ...INITIAL,
-      lastError: undefined,
-      lastSyncedAt: undefined,
-    }),
-}));
+export const useSyncStatusStore = create<SyncStatus & SyncStatusActions>()(
+  immer((set) => ({
+    state: 'idle',
+    pendingCount: 0,
+    beginSync: () =>
+      set((draft) => {
+        if (draft.state !== 'syncing') draft.state = 'syncing';
+      }),
+    succeed: () =>
+      set((draft) => {
+        // Single coherent transition: stay 'syncing' while the outbox still
+        // has work, otherwise return to 'idle'. Avoids per-item flicker.
+        draft.state = draft.pendingCount > 0 ? 'syncing' : 'idle';
+        draft.lastSyncedAt = Date.now();
+        draft.lastError = undefined;
+      }),
+    reportOffline: (message) =>
+      set((draft) => {
+        draft.state = 'offline';
+        draft.lastError = message;
+      }),
+    reportError: (message) =>
+      set((draft) => {
+        draft.state = 'error';
+        draft.lastError = message;
+      }),
+    setPendingCount: (count) =>
+      set((draft) => {
+        draft.pendingCount = Math.max(0, count);
+      }),
+    reset: () =>
+      set((draft) => {
+        draft.state = 'idle';
+        draft.pendingCount = 0;
+        draft.lastSyncedAt = undefined;
+        draft.lastError = undefined;
+      }),
+  }))
+);
