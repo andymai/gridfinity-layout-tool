@@ -24,6 +24,7 @@ graph TB
 | `result/`  | `Result<T, E>` type system — constructors, error catalog, combinators                     |
 | `storage/` | Layout persistence — LayoutManager, LayoutService, ShareService, backends                 |
 | `store/`   | Zustand + Immer stores — layout, library, history, selection, interaction, view, settings |
+| `sync/`    | Multi-device sync session: `apiFetch`, `useSession`, `sessionApi` (engine lands later)    |
 
 ## Key Files
 

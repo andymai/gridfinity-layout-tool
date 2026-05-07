@@ -84,6 +84,7 @@
     "@react-three/fiber": "^9.6.1",
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.3.3",
+    "arctic": "^3.7.0",
     "brepjs": "17.0.0",
     "brepjs-opencascade": "0.15.6",
     "brepkit-wasm": "^2.44.1",

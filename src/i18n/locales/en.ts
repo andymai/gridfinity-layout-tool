@@ -104,6 +104,15 @@ const en: Record<string, string> = {
   'header.changeLanguage': 'Change language',
   'header.selectLanguage': 'Select language',
 
+  // Sign-in / user menu (multi-device sync)
+  'auth.signIn': 'Sign in',
+  'auth.signInWithGoogle': 'Sign in with Google',
+  'auth.signInWithGithub': 'Sign in with GitHub',
+  'auth.userMenuOpen': 'Open account menu',
+  'auth.signOut': 'Sign out',
+  'auth.providerGoogle': 'Google',
+  'auth.providerGithub': 'GitHub',
+
   // Grid Toolbar
   'toolbar.showLayersPanel': 'Show layers panel',
   'toolbar.exitPaintMode': 'Exit paint mode',

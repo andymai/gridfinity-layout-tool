@@ -1632,5 +1632,12 @@
   "undo.undid": "↩ Undid: {action}",
   "undo.unknownAction": "Aktion",
   "binDesigner.lid.magnetSpec": "Tasche: ⌀{diameter}mm × {depth}mm tief (entspricht Bin-Magnetangaben).",
-  "binDesigner.lid.magnetsRequireStackable": "Magnettaschen brauchen einen stapelbaren Deckel — der obere Bin trifft sie durch den Boden."
+  "binDesigner.lid.magnetsRequireStackable": "Magnettaschen brauchen einen stapelbaren Deckel — der obere Bin trifft sie durch den Boden.",
+  "auth.signIn": "Anmelden",
+  "auth.signInWithGoogle": "Mit Google anmelden",
+  "auth.signInWithGithub": "Mit GitHub anmelden",
+  "auth.userMenuOpen": "Kontomenü öffnen",
+  "auth.signOut": "Abmelden",
+  "auth.providerGoogle": "Google",
+  "auth.providerGithub": "GitHub"
 }

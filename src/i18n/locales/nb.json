@@ -1632,5 +1632,12 @@
   "undo.undid": "↩ Undid: {action}",
   "undo.unknownAction": "Handling",
   "binDesigner.lid.magnetSpec": "Lomme: ⌀{diameter}mm × {depth}mm dyp (matcher bingens magnetspesifikasjoner).",
-  "binDesigner.lid.magnetsRequireStackable": "Magnetlommer trenger stablbar topp — bingen over møter dem gjennom gulvet."
+  "binDesigner.lid.magnetsRequireStackable": "Magnetlommer trenger stablbar topp — bingen over møter dem gjennom gulvet.",
+  "auth.signIn": "Logg inn",
+  "auth.signInWithGoogle": "Logg inn med Google",
+  "auth.signInWithGithub": "Logg inn med GitHub",
+  "auth.userMenuOpen": "Åpne kontomeny",
+  "auth.signOut": "Logg ut",
+  "auth.providerGoogle": "Google",
+  "auth.providerGithub": "GitHub"
 }

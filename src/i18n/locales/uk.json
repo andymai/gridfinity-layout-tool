@@ -1632,5 +1632,12 @@
   "engagement.support": "Підтримати на Ko-fi",
   "engagement.feedbackThankYou": "Дякуємо за ваш відгук! Якщо інструмент вам подобається, розгляньте підтримку на Ko-fi.",
   "engagement.layoutPromotion.message": "Плануєте ще одну шухляду? Збережіть цю розкладку та почніть нову.",
-  "engagement.layoutPromotion.action": "Відкрити бібліотеку розкладок"
+  "engagement.layoutPromotion.action": "Відкрити бібліотеку розкладок",
+  "auth.signIn": "Увійти",
+  "auth.signInWithGoogle": "Увійти через Google",
+  "auth.signInWithGithub": "Увійти через GitHub",
+  "auth.userMenuOpen": "Відкрити меню облікового запису",
+  "auth.signOut": "Вийти",
+  "auth.providerGoogle": "Google",
+  "auth.providerGithub": "GitHub"
 }

@@ -38,15 +38,21 @@ graph TB
 
 ## Endpoints
 
-| Endpoint               | Method | Rate Limit | Purpose                              |
-| ---------------------- | ------ | ---------- | ------------------------------------ |
-| `/api/share`           | POST   | 100/min    | Create layout or designer share      |
-| `/api/share/[id]`      | GET    | 100/min    | Fetch share with metadata            |
-| `/api/share/[id]`      | PUT    | 100/min    | Update share (requires delete token) |
-| `/api/share/[id]`      | DELETE | 100/min    | Delete share (requires delete token) |
-| `/api/report/[id]`     | POST   | 10/hr      | Report inappropriate share           |
-| `/api/liveblocks-auth` | POST   | 100/min    | Collaborative editing session auth   |
-| `/api/ml-telemetry`    | POST   | 100/min    | Aggregated ML training data          |
+| Endpoint                        | Method | Rate Limit | Purpose                              |
+| ------------------------------- | ------ | ---------- | ------------------------------------ |
+| `/api/share`                    | POST   | 100/min    | Create layout or designer share      |
+| `/api/share/[id]`               | GET    | 100/min    | Fetch share with metadata            |
+| `/api/share/[id]`               | PUT    | 100/min    | Update share (requires delete token) |
+| `/api/share/[id]`               | DELETE | 100/min    | Delete share (requires delete token) |
+| `/api/report/[id]`              | POST   | 10/hr      | Report inappropriate share           |
+| `/api/liveblocks-auth`          | POST   | 100/min    | Collaborative editing session auth   |
+| `/api/ml-telemetry`             | POST   | 100/min    | Aggregated ML training data          |
+| `/api/auth/login/[provider]`    | GET    | 30/min     | Begin OAuth flow (Google / GitHub)   |
+| `/api/auth/callback/[provider]` | GET    | 30/min     | OAuth code exchange + session mint   |
+| `/api/auth/logout`              | POST   | 100/min    | Clear session cookie + KV row        |
+| `/api/auth/me`                  | GET    | 100/min    | Return signed-in user profile        |
+
+See [`auth/README.md`](./auth/README.md) for the OAuth setup, cookie shape, and CSRF posture.
 
 ## Validation Library (`lib/`)
 
