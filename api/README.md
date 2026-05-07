@@ -47,10 +47,10 @@ graph TB
 | `/api/report/[id]`              | POST   | 10/hr      | Report inappropriate share           |
 | `/api/liveblocks-auth`          | POST   | 100/min    | Collaborative editing session auth   |
 | `/api/ml-telemetry`             | POST   | 100/min    | Aggregated ML training data          |
-| `/api/auth/login/[provider]`    | GET    | n/a        | Begin OAuth flow (Google / GitHub)   |
-| `/api/auth/callback/[provider]` | GET    | n/a        | OAuth code exchange + session mint   |
-| `/api/auth/logout`              | POST   | n/a        | Clear session cookie + KV row        |
-| `/api/auth/me`                  | GET    | n/a        | Return signed-in user profile        |
+| `/api/auth/login/[provider]`    | GET    | 30/min     | Begin OAuth flow (Google / GitHub)   |
+| `/api/auth/callback/[provider]` | GET    | 30/min     | OAuth code exchange + session mint   |
+| `/api/auth/logout`              | POST   | 100/min    | Clear session cookie + KV row        |
+| `/api/auth/me`                  | GET    | 100/min    | Return signed-in user profile        |
 
 See [`auth/README.md`](./auth/README.md) for the OAuth setup, cookie shape, and CSRF posture.
 

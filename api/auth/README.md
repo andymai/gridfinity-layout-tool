@@ -66,12 +66,33 @@ sign-in:    /login/[p] → state cookie set → 302 to provider
 session:    cookie + KV row, 30-day TTL. Refresh on use is *not* implemented;
             the cookie is replaced on each new sign-in.
 
+profile:    1-year TTL, refreshed on each successful sign-in. Active users
+            keep their profile alive; abandoned accounts age out automatically.
+
+create:     SET session:{token} EX 30d  +  SADD users:{uid}:sessions {token}
+            issued as one pipeline so a transient failure can't leave a
+            session orphaned from the cleanup set.
+
+prune:      Each createSession opportunistically SREMs members of
+            users:{uid}:sessions whose underlying session row has expired.
+            Best-effort; failures don't block sign-in.
+
 revocation: POST /logout → DEL session:{token}, SREM users:{uid}:sessions {token}
             → cookie cleared. Idempotent (works even with a stale cookie).
 
 cascade:    Account deletion (PR 3+) does SMEMBERS users:{uid}:sessions →
             DEL each session:{token}, then drops users:{uid}:* keys.
 ```
+
+## Rate limits
+
+Keyed by client IP (hashed). All four endpoints are rate-limited:
+
+| Action          | Endpoints              | Limit        |
+| --------------- | ---------------------- | ------------ |
+| `auth.start`    | `/login/[provider]`    | 30 / minute  |
+| `auth.callback` | `/callback/[provider]` | 30 / minute  |
+| `auth.read`     | `/logout`, `/me`       | 100 / minute |
 
 ## CSRF defense
 
