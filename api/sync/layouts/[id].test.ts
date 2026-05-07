@@ -306,6 +306,26 @@ describe('DELETE', () => {
     await handler(makeReq({ method: 'DELETE' }), res as unknown as VercelResponse);
     expect(res._status).toBe(204);
   });
+
+  it('is idempotent on repeated DELETE: skips deleteBlob on already-tombstoned entries', async () => {
+    const { default: handler } = await import('./[id]');
+    const blobStoreMod = await import('../../lib/blobStore');
+    const deleteBlobMock = blobStoreMod.deleteBlob as ReturnType<typeof vi.fn>;
+
+    // First delete (live → tombstone) hits deleteBlob once.
+    await handler(
+      makeReq({ method: 'PUT', body: { layout: VALID_LAYOUT, modifiedAt: 1000 } }),
+      makeRes() as unknown as VercelResponse
+    );
+    await handler(makeReq({ method: 'DELETE' }), makeRes() as unknown as VercelResponse);
+    const callsAfterFirst = deleteBlobMock.mock.calls.length;
+
+    // Second delete (already tombstoned) must NOT touch deleteBlob.
+    const secondRes = makeRes();
+    await handler(makeReq({ method: 'DELETE' }), secondRes as unknown as VercelResponse);
+    expect(secondRes._status).toBe(204);
+    expect(deleteBlobMock.mock.calls.length).toBe(callsAfterFirst);
+  });
 });
 
 describe('id validation', () => {

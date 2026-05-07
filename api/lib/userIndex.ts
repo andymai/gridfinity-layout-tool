@@ -107,9 +107,12 @@ function parseEntry(raw: string): IndexEntry | null {
     const value = JSON.parse(raw) as unknown;
     if (typeof value !== 'object' || value === null) return null;
     const record = value as Partial<IndexEntry>;
-    if (typeof record.modifiedAt !== 'number') return null;
-    if (typeof record.sizeBytes !== 'number') return null;
-    if (record.deletedAt !== undefined && typeof record.deletedAt !== 'number') return null;
+    // Reject NaN/Infinity — they would corrupt LWW comparisons (NaN
+    // compares false to everything) and quota math (Infinity makes the
+    // total unboundedly wrong). Same posture as `getIndexUpdatedAt`.
+    if (!Number.isFinite(record.modifiedAt)) return null;
+    if (!Number.isFinite(record.sizeBytes)) return null;
+    if (record.deletedAt !== undefined && !Number.isFinite(record.deletedAt)) return null;
     return record as IndexEntry;
   } catch {
     return null;

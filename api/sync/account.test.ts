@@ -55,7 +55,6 @@ vi.mock('../lib/rateLimit', () => ({
 }));
 
 vi.mock('../lib/session', () => ({
-  checkCsrfDefense: vi.fn(() => true),
   requireSession: vi.fn(async () => ({
     userId: 'user-1',
     provider: 'google',

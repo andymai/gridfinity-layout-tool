@@ -61,7 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   try {
     if (req.method === 'GET') {
-      await handleGet(res, session.userId, id);
+      await handleGet(res, redis, session.userId, id);
     } else if (req.method === 'PUT') {
       await handlePut(req, res, redis, session.userId, id);
     } else {
@@ -77,14 +77,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 }
 
-async function handleGet(res: VercelResponse, userId: string, id: string): Promise<void> {
-  const redis = getRedis();
-  if (!redis) {
-    res
-      .status(503)
-      .json({ error: 'Service temporarily unavailable', code: ErrorCode.SERVICE_UNAVAILABLE });
-    return;
-  }
+async function handleGet(
+  res: VercelResponse,
+  redis: ReturnType<typeof getRedis> & object,
+  userId: string,
+  id: string
+): Promise<void> {
   const entry = await getEntry(redis, userId, 'designs', id);
   if (!entry) {
     res.status(404).json({ error: 'Not found', code: ErrorCode.NOT_FOUND });
@@ -127,23 +125,22 @@ async function handlePut(
     return;
   }
 
-  const serialized = JSON.stringify({ design });
+  // Reuse the share-payload validator by adapting our envelope to its
+  // shape. `sizeBytes` measures the validation payload (not just `{design}`)
+  // so the validator's MAX_PAYLOAD_BYTES check, the quota math, and the
+  // stored envelope are all sized against the same bytes.
+  const validationPayload = { type: 'designer' as const, version: 1 as const, params: design };
+  const serialized = JSON.stringify(validationPayload);
   const sizeBytes = Buffer.byteLength(serialized, 'utf8');
-  // Reuse the share-payload validator by adapting our envelope to its shape.
-  // The validator returns the validated payload, but we keep our cleaner
-  // sync envelope and only use the validator for its side effect (validity
-  // check) here.
-  const validation = validateDesignerShare(
-    { type: 'designer', version: 1, params: design },
-    sizeBytes
-  );
+  const validation = validateDesignerShare(validationPayload, sizeBytes);
   if (!validation.valid) {
     res.status(400).json({ error: validation.error.message, code: ErrorCode.VALIDATION_ERROR });
     return;
   }
 
   const existing = await getEntry(redis, userId, 'designs', id);
-  if (existing && !existing.deletedAt && existing.modifiedAt >= modifiedAt) {
+  // `deletedAt === undefined` is the explicit live-entry check.
+  if (existing && existing.deletedAt === undefined && existing.modifiedAt >= modifiedAt) {
     const stored = await getJson<DesignEnvelope>(blobPath(userId, id));
     res.status(409).json({
       error: 'A newer version already exists.',
@@ -197,6 +194,12 @@ async function handleDelete(
   id: string
 ): Promise<void> {
   const existing = await getEntry(redis, userId, 'designs', id);
+  // Already tombstoned: don't try to delete the blob (it's already gone)
+  // and don't bump the tombstone timestamp.
+  if (existing?.deletedAt !== undefined) {
+    res.status(204).end();
+    return;
+  }
   if (!existing) {
     await tombstone(redis, userId, 'designs', id, Date.now());
     res.status(204).end();

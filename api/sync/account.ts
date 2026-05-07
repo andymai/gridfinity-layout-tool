@@ -3,7 +3,7 @@ import { requireMethod } from '../lib/method.js';
 import { ErrorCode } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
 import { checkRateLimit, getRedis } from '../lib/rateLimit.js';
-import { checkCsrfDefense, requireSession } from '../lib/session.js';
+import { requireSession } from '../lib/session.js';
 import { clearSessionCookie } from '../lib/cookies.js';
 import { deleteBlob } from '../lib/blobStore.js';
 import {
@@ -35,8 +35,8 @@ import {
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!requireMethod(req, res, ['DELETE'])) return;
-  if (!checkCsrfDefense(req, res)) return;
 
+  // CSRF defense is enforced inside `requireSession` (see api/lib/session.ts).
   const session = await requireSession(req, res);
   if (!session) return;
 

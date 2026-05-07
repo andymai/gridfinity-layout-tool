@@ -119,6 +119,20 @@ describe('userIndex', () => {
     expect(Object.keys(index)).toEqual(['valid']);
   });
 
+  it('parseEntry rejects NaN/Infinity values for numeric fields', async () => {
+    const ctx = mockRedis as unknown as { hashes: Map<string, Map<string, string>> };
+    const h = new Map<string, string>();
+    h.set('valid', JSON.stringify({ modifiedAt: 1, sizeBytes: 1 }));
+    // JSON has no NaN/Infinity literals, but a hand-rolled value or a custom
+    // serializer could write 'NaN' / 'Infinity' / 'null' for these fields.
+    h.set('nan-modifiedAt', '{"modifiedAt": null, "sizeBytes": 100}');
+    h.set('inf-deletedAt', JSON.stringify({ modifiedAt: 1, sizeBytes: 0, deletedAt: null }));
+    ctx.hashes.set('users:u1:index:layouts', h);
+
+    const index = await getIndex(mockRedis, 'u1', 'layouts');
+    expect(Object.keys(index)).toEqual(['valid']);
+  });
+
   it('getIndexUpdatedAt returns 0 for a user who has never written', async () => {
     expect(await getIndexUpdatedAt(mockRedis, 'fresh-user')).toBe(0);
   });

@@ -58,7 +58,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   try {
     if (req.method === 'GET') {
-      await handleGet(res, session.userId, id);
+      await handleGet(res, redis, session.userId, id);
     } else if (req.method === 'PUT') {
       await handlePut(req, res, redis, session.userId, id);
     } else {
@@ -74,14 +74,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   }
 }
 
-async function handleGet(res: VercelResponse, userId: string, id: string): Promise<void> {
-  const redis = getRedis();
-  if (!redis) {
-    res
-      .status(503)
-      .json({ error: 'Service temporarily unavailable', code: ErrorCode.SERVICE_UNAVAILABLE });
-    return;
-  }
+async function handleGet(
+  res: VercelResponse,
+  redis: ReturnType<typeof getRedis> & object,
+  userId: string,
+  id: string
+): Promise<void> {
   const entry = await getEntry(redis, userId, 'layouts', id);
   if (!entry) {
     res.status(404).json({ error: 'Not found', code: ErrorCode.NOT_FOUND });
@@ -136,8 +134,10 @@ async function handlePut(
 
   const existing = await getEntry(redis, userId, 'layouts', id);
 
-  // LWW comparison.
-  if (existing && !existing.deletedAt && existing.modifiedAt >= modifiedAt) {
+  // LWW comparison. `deletedAt === undefined` is the explicit live-entry
+  // check — `!existing.deletedAt` would also accept 0/NaN, which would
+  // misclassify any future tombstone written with such a value.
+  if (existing && existing.deletedAt === undefined && existing.modifiedAt >= modifiedAt) {
     const stored = await getJson<LayoutEnvelope>(blobPath(userId, id));
     res.status(409).json({
       error: 'A newer version already exists.',
@@ -194,9 +194,16 @@ async function handleDelete(
   id: string
 ): Promise<void> {
   const existing = await getEntry(redis, userId, 'layouts', id);
+  // Already tombstoned: don't try to delete the blob (it's already gone)
+  // and don't bump the tombstone timestamp — the original deletion is
+  // the source of truth for LWW.
+  if (existing?.deletedAt !== undefined) {
+    res.status(204).end();
+    return;
+  }
   if (!existing) {
-    // Already absent — idempotent: still write a tombstone so other
-    // devices learn about it on next pull.
+    // Never existed — write a tombstone so peer devices learn about
+    // the deletion on next pull. Idempotent.
     await tombstone(redis, userId, 'layouts', id, Date.now());
     res.status(204).end();
     return;
