@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.65.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.64.0...gridfinity-layout-tool-v4.65.0) (2026-05-07)
+
+
+### Features
+
+* **auth:** add OAuth sign-in foundation (Google + GitHub) for sync ([#1591](https://github.com/andymai/gridfinity-layout-tool/issues/1591)) ([226e3f2](https://github.com/andymai/gridfinity-layout-tool/commit/226e3f2a964826a1d487240138bcb5ddd0c76fab))
+
 ## [4.64.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.63.0...gridfinity-layout-tool-v4.64.0) (2026-05-06)
 
 
