@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.69.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.68.0...gridfinity-layout-tool-v4.69.0) (2026-05-07)
+
+
+### Features
+
+* **sync:** poller + periodic-poll trigger (PR 4c) ([#1597](https://github.com/andymai/gridfinity-layout-tool/issues/1597)) ([eb29f3d](https://github.com/andymai/gridfinity-layout-tool/commit/eb29f3dac4c59870d6b4507b2022b1b287fdde8d))
+
 ## [4.68.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.67.0...gridfinity-layout-tool-v4.68.0) (2026-05-07)
 
 
