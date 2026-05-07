@@ -13,7 +13,9 @@ export type RateLimitAction =
   | 'telemetry'
   | 'auth.start'
   | 'auth.callback'
-  | 'auth.read';
+  | 'auth.read'
+  | 'sync.write'
+  | 'sync.read';
 
 /**
  * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
@@ -49,6 +51,11 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   'auth.start': { limit: 30, windowSeconds: 60 }, // 30/minute per IP
   'auth.callback': { limit: 30, windowSeconds: 60 }, // 30/minute per IP
   'auth.read': { limit: 100, windowSeconds: 60 }, // 100/minute per IP
+  // Sync surfaces — keyed by userId (each authenticated user gets their own
+  // budget). Reads accommodate poll bursts across multiple tabs; writes
+  // protect against runaway clients.
+  'sync.write': { limit: 60, windowSeconds: 60 }, // 60/minute per user
+  'sync.read': { limit: 240, windowSeconds: 60 }, // 240/minute per user
 };
 
 interface RateLimitResult {
@@ -78,17 +85,22 @@ export function getRedis(): Redis | null {
 }
 
 /**
- * Check and consume rate limit for an IP address and action type.
- * Uses sliding window counter pattern with Redis.
+ * Check and consume rate limit for a scope (client IP for anonymous
+ * surfaces, userId for authenticated ones) and action type.
+ *
+ * Uses sliding window counter pattern with Redis. The scope value is
+ * hashed before use as a Redis key — for IPs this provides privacy; for
+ * userIds (already pseudonymous SHA-256 hashes) it's redundant but
+ * harmless and keeps the key shape uniform.
  */
 export async function checkRateLimit(
-  ip: string,
+  scope: string,
   action: RateLimitAction
 ): Promise<RateLimitResult> {
   const config = RATE_LIMITS[action];
   const now = Math.floor(Date.now() / 1000);
   const windowStart = now - config.windowSeconds;
-  const key = rateLimitKey(action, hashIP(ip));
+  const key = rateLimitKey(action, hashScope(scope));
 
   const client = getRedis();
 
@@ -151,11 +163,11 @@ export async function checkRateLimit(
 }
 
 /**
- * Hash IP address for privacy (don't store raw IPs).
- * Uses SHA-256 truncated to 16 hex chars for Redis key use.
+ * Hash a scope identifier (IP or userId) for use as a Redis key.
+ * SHA-256 truncated to 16 hex chars; primarily about privacy for IPs.
  */
-function hashIP(ip: string): string {
-  return createHash('sha256').update(ip).digest('hex').slice(0, 16);
+function hashScope(scope: string): string {
+  return createHash('sha256').update(scope).digest('hex').slice(0, 16);
 }
 
 /**

@@ -38,21 +38,26 @@ graph TB
 
 ## Endpoints
 
-| Endpoint                        | Method | Rate Limit | Purpose                              |
-| ------------------------------- | ------ | ---------- | ------------------------------------ |
-| `/api/share`                    | POST   | 100/min    | Create layout or designer share      |
-| `/api/share/[id]`               | GET    | 100/min    | Fetch share with metadata            |
-| `/api/share/[id]`               | PUT    | 100/min    | Update share (requires delete token) |
-| `/api/share/[id]`               | DELETE | 100/min    | Delete share (requires delete token) |
-| `/api/report/[id]`              | POST   | 10/hr      | Report inappropriate share           |
-| `/api/liveblocks-auth`          | POST   | 100/min    | Collaborative editing session auth   |
-| `/api/ml-telemetry`             | POST   | 100/min    | Aggregated ML training data          |
-| `/api/auth/login/[provider]`    | GET    | 30/min     | Begin OAuth flow (Google / GitHub)   |
-| `/api/auth/callback/[provider]` | GET    | 30/min     | OAuth code exchange + session mint   |
-| `/api/auth/logout`              | POST   | 100/min    | Clear session cookie + KV row        |
-| `/api/auth/me`                  | GET    | 100/min    | Return signed-in user profile        |
+| Endpoint                        | Method         | Rate Limit | Purpose                                |
+| ------------------------------- | -------------- | ---------- | -------------------------------------- |
+| `/api/share`                    | POST           | 100/min    | Create layout or designer share        |
+| `/api/share/[id]`               | GET            | 100/min    | Fetch share with metadata              |
+| `/api/share/[id]`               | PUT            | 100/min    | Update share (requires delete token)   |
+| `/api/share/[id]`               | DELETE         | 100/min    | Delete share (requires delete token)   |
+| `/api/report/[id]`              | POST           | 10/hr      | Report inappropriate share             |
+| `/api/liveblocks-auth`          | POST           | 100/min    | Collaborative editing session auth     |
+| `/api/ml-telemetry`             | POST           | 100/min    | Aggregated ML training data            |
+| `/api/auth/login/[provider]`    | GET            | 30/min     | Begin OAuth flow (Google / GitHub)     |
+| `/api/auth/callback/[provider]` | GET            | 30/min     | OAuth code exchange + session mint     |
+| `/api/auth/logout`              | POST           | 100/min    | Clear session cookie + KV row          |
+| `/api/auth/me`                  | GET            | 100/min    | Return signed-in user profile          |
+| `/api/sync/layouts/[id]`        | GET/PUT/DELETE | 60–240/min | Per-user layout sync (LWW + tombstone) |
+| `/api/sync/designs/[id]`        | GET/PUT/DELETE | 60–240/min | Per-user Bin Designer design sync      |
+| `/api/sync/manifest`            | GET            | 240/min    | Per-user index + If-Modified-Since 304 |
+| `/api/sync/export`              | GET            | 240/min    | ZIP of all live items + manifest       |
+| `/api/sync/account`             | DELETE         | 60/min     | Cascade-delete account + KV + blobs    |
 
-See [`auth/README.md`](./auth/README.md) for the OAuth setup, cookie shape, and CSRF posture.
+See [`auth/README.md`](./auth/README.md) for the OAuth setup and [`sync/README.md`](./sync/README.md) for sync semantics, quotas, and the LWW + tombstone state machine.
 
 ## Validation Library (`lib/`)
 
