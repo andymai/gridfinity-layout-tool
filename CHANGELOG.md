@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.68.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.67.0...gridfinity-layout-tool-v4.68.0) (2026-05-07)
+
+
+### Features
+
+* **sync:** engine + DesignAdapter + push triggers (PR 4b) ([#1596](https://github.com/andymai/gridfinity-layout-tool/issues/1596)) ([693dd2a](https://github.com/andymai/gridfinity-layout-tool/commit/693dd2a19c724f0b15414b5ccf58fea5edad86bf))
+
 ## [4.67.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.66.0...gridfinity-layout-tool-v4.67.0) (2026-05-07)
 
 
