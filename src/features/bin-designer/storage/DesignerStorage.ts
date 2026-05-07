@@ -22,6 +22,7 @@ import type { SavedDesign, BinParams, ExportFileNameConfig } from '@/features/bi
 import { THUMBNAIL_VERSION } from '@/features/bin-designer/types';
 import { DEFAULT_BIN_PARAMS, migrateParams } from '@/features/bin-designer/constants/defaults';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
+import { emit as emitDesignerEvent } from '@/features/bin-designer/sync/designerEvents';
 
 const DB_NAME = 'gridfinity-designer-v1';
 const DB_VERSION = 1;
@@ -99,6 +100,7 @@ export async function saveDesign(
     };
 
     await db.put(DESIGNS_STORE, savedDesign);
+    emitDesignerEvent({ type: 'put', id: savedDesign.id, updatedAt: savedDesign.updatedAt });
     return ok(savedDesign);
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
@@ -205,6 +207,7 @@ export async function deleteDesign(id: DesignId): Promise<Result<void, StorageEr
     }
 
     await db.delete(DESIGNS_STORE, id);
+    emitDesignerEvent({ type: 'delete', id, deletedAt: new Date().toISOString() });
     return ok(undefined);
   } catch (e) {
     return err(storageUnavailable('indexedDB', e));
