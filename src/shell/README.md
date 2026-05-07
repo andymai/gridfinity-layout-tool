@@ -31,7 +31,7 @@ graph TB
 | `Mobile/`             | Mobile-specific UI: MobileHeader, BottomNavBar, BottomSheet, MobileInspector, context menus |
 | `Modals/`             | Full-screen overlays: SettingsModal (5 tabs), HelpModal, ImportModal                        |
 | `Tablet/`             | TabletPanelOverlay (slide-in 85vw panels), TabletPanelTriggers (FABs)                       |
-| `Header/`             | App header with layout name, undo/redo, tool buttons, presence                              |
+| `Header/`             | App header with layout name, undo/redo, tool buttons, presence, sign-in / user menu         |
 | `Sidebar/`            | Desktop left panel: layers, categories, drawer settings, inspiration gallery                |
 | `RightPanel/`         | Desktop right panel: bin inspector, print list, split preview                               |
 | `Print/`              | Print preview split view                                                                    |
