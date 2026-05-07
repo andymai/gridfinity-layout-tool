@@ -8,29 +8,25 @@ export type SessionStatus = 'unknown' | 'anonymous' | 'authenticated';
 interface SessionState {
   status: SessionStatus;
   user: SessionUser | null;
+  /** Refresh from /api/auth/me. Broadcasts the resulting state to other tabs. */
   refresh: () => Promise<void>;
+  /** Local sign-in commit (e.g. after OAuth callback). Broadcasts. */
   setAuthenticated: (user: SessionUser) => void;
+  /** Local sign-out commit (explicit sign-out, forced 401). Broadcasts. */
   setAnonymous: () => void;
+  /** Apply an external state change (e.g. another tab's broadcast) without
+   *  re-broadcasting. Use only inside the BroadcastChannel handler. */
+  applyRemoteState: (status: 'authenticated' | 'anonymous') => Promise<void>;
 }
 
-export const useSessionStore = create<SessionState>((set) => ({
+export const useSessionStore = create<SessionState>((set, get) => ({
   status: 'unknown',
   user: null,
   refresh: async () => {
-    try {
-      const user = await getMe();
-      if (user) {
-        set({ status: 'authenticated', user });
-        broadcastSessionChange('authenticated');
-      } else {
-        set({ status: 'anonymous', user: null });
-        broadcastSessionChange('anonymous');
-      }
-    } catch {
-      // Network error during refresh: don't mutate state. Better to stay
-      // 'unknown' and re-try on next visibility flip than to spuriously
-      // sign the user out.
-    }
+    const next = await refreshFromServer();
+    if (!next) return;
+    set(next.state);
+    broadcastSessionChange(next.broadcastType);
   },
   setAuthenticated: (user) => {
     set({ status: 'authenticated', user });
@@ -40,7 +36,34 @@ export const useSessionStore = create<SessionState>((set) => ({
     set({ status: 'anonymous', user: null });
     broadcastSessionChange('anonymous');
   },
+  applyRemoteState: async (status) => {
+    if (status === 'authenticated') {
+      // Another tab signed in. Fetch the user record (we don't trust the
+      // broadcast payload — the cookie is the source of truth).
+      const next = await refreshFromServer();
+      if (next) set(next.state);
+    } else if (get().status !== 'anonymous') {
+      set({ status: 'anonymous', user: null });
+    }
+  },
 }));
+
+/** Hits /api/auth/me and returns the resulting state, or null on transient error. */
+async function refreshFromServer(): Promise<{
+  state: { status: SessionStatus; user: SessionUser | null };
+  broadcastType: 'authenticated' | 'anonymous';
+} | null> {
+  try {
+    const user = await getMe();
+    return user
+      ? { state: { status: 'authenticated', user }, broadcastType: 'authenticated' }
+      : { state: { status: 'anonymous', user: null }, broadcastType: 'anonymous' };
+  } catch {
+    // Network error during refresh: don't mutate state. Better to stay where
+    // we are and re-try on next visibility flip than spuriously sign out.
+    return null;
+  }
+}
 
 const SESSION_CHANNEL = 'gflt-session';
 
@@ -96,8 +119,9 @@ export function useSessionLifecycle(): void {
     const onChannelMessage = (e: MessageEvent<SessionBroadcast | undefined>) => {
       const data = e.data;
       if (!data || data.source === TAB_ID) return;
-      if (data.type === 'authenticated') void refresh();
-      else useSessionStore.getState().setAnonymous();
+      // applyRemoteState mutates without re-broadcasting — prevents cross-tab
+      // ping-pong where every tab keeps echoing the message it just received.
+      void useSessionStore.getState().applyRemoteState(data.type);
     };
 
     document.addEventListener('visibilitychange', onVisibility);

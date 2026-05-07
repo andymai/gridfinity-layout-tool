@@ -4,7 +4,16 @@ import type { RedisOptions } from 'ioredis';
 import { logger } from './logger.js';
 import { rateLimitKey } from './redisKeys.js';
 
-export type RateLimitAction = 'create' | 'update' | 'view' | 'delete' | 'report' | 'telemetry';
+export type RateLimitAction =
+  | 'create'
+  | 'update'
+  | 'view'
+  | 'delete'
+  | 'report'
+  | 'telemetry'
+  | 'auth.start'
+  | 'auth.callback'
+  | 'auth.read';
 
 /**
  * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
@@ -34,6 +43,12 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   delete: { limit: 100, windowSeconds: 60 }, // 100/minute (dev friendly)
   report: { limit: 10, windowSeconds: 3600 }, // 10/hour
   telemetry: { limit: 100, windowSeconds: 60 }, // 100/minute (ML telemetry)
+  // Auth surfaces — keyed by client IP. Login/callback are slower (per-IP
+  // OAuth ceremonies); /api/auth/me is poll-friendly so it gets the same
+  // headroom as 'view'.
+  'auth.start': { limit: 30, windowSeconds: 60 }, // 30/minute per IP
+  'auth.callback': { limit: 30, windowSeconds: 60 }, // 30/minute per IP
+  'auth.read': { limit: 100, windowSeconds: 60 }, // 100/minute per IP
 };
 
 interface RateLimitResult {

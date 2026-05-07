@@ -47,14 +47,53 @@ const mockRedis = {
     redisSets.set(k, s);
     return 1;
   }),
-  srem: vi.fn(async (k: string, m: string) => {
-    redisSets.get(k)?.delete(m);
-    return 1;
+  srem: vi.fn(async (k: string, ...members: string[]) => {
+    const s = redisSets.get(k);
+    if (!s) return 0;
+    let removed = 0;
+    for (const m of members) if (s.delete(m)) removed++;
+    return removed;
   }),
+  smembers: vi.fn(async (k: string) => Array.from(redisSets.get(k) ?? [])),
+  pipeline: vi.fn(() => makeAuthPipelineMock()),
 };
+
+function makeAuthPipelineMock() {
+  const queue: Array<() => [Error | null, unknown]> = [];
+  const pipe = {
+    set: (k: string, v: string, ..._rest: unknown[]) => {
+      queue.push(() => {
+        redisStore.set(k, v);
+        return [null, 'OK'];
+      });
+      return pipe;
+    },
+    sadd: (k: string, m: string) => {
+      queue.push(() => {
+        const s = redisSets.get(k) ?? new Set<string>();
+        s.add(m);
+        redisSets.set(k, s);
+        return [null, 1];
+      });
+      return pipe;
+    },
+    exists: (k: string) => {
+      queue.push(() => [null, redisStore.has(k) ? 1 : 0]);
+      return pipe;
+    },
+    exec: vi.fn(async () => queue.map((fn) => fn())),
+  };
+  return pipe;
+}
 
 vi.mock('../lib/rateLimit', () => ({
   getRedis: () => mockRedis,
+  getClientIP: () => '127.0.0.1',
+  checkRateLimit: vi.fn(async () => ({
+    allowed: true,
+    remaining: 100,
+    resetAt: Date.now() + 60_000,
+  })),
 }));
 
 interface MockRes {
@@ -157,14 +196,14 @@ describe('login/[provider]', () => {
   it('returns 400 for an unsupported provider', async () => {
     const { default: handler } = await import('./login/[provider]');
     const res = makeRes();
-    handler(makeReq({ query: { provider: 'twitter' } }), res as unknown as VercelResponse);
+    await handler(makeReq({ query: { provider: 'twitter' } }), res as unknown as VercelResponse);
     expect(res._status).toBe(400);
   });
 
   it('redirects to Google authorize URL and sets state + verifier cookies', async () => {
     const { default: handler } = await import('./login/[provider]');
     const res = makeRes();
-    handler(makeReq({ query: { provider: 'google' } }), res as unknown as VercelResponse);
+    await handler(makeReq({ query: { provider: 'google' } }), res as unknown as VercelResponse);
     expect(res._redirect?.status).toBe(302);
     expect(res._redirect?.url).toContain('accounts.google.com');
     const arr = setCookies(res);
@@ -175,7 +214,7 @@ describe('login/[provider]', () => {
   it('redirects to GitHub authorize URL with state cookie only (no PKCE)', async () => {
     const { default: handler } = await import('./login/[provider]');
     const res = makeRes();
-    handler(makeReq({ query: { provider: 'github' } }), res as unknown as VercelResponse);
+    await handler(makeReq({ query: { provider: 'github' } }), res as unknown as VercelResponse);
     expect(res._redirect?.url).toContain('github.com');
     const arr = setCookies(res);
     expect(arr.some((c) => c.includes('gflt_oauth_state=state-fixed'))).toBe(true);
@@ -186,18 +225,32 @@ describe('login/[provider]', () => {
     vi.stubEnv('GOOGLE_CLIENT_ID', '');
     const { default: handler } = await import('./login/[provider]');
     const res = makeRes();
-    handler(makeReq({ query: { provider: 'google' } }), res as unknown as VercelResponse);
+    await handler(makeReq({ query: { provider: 'google' } }), res as unknown as VercelResponse);
     expect(res._status).toBe(500);
   });
 
   it('rejects non-GET methods with 405', async () => {
     const { default: handler } = await import('./login/[provider]');
     const res = makeRes();
-    handler(
+    await handler(
       makeReq({ method: 'POST', query: { provider: 'google' } }),
       res as unknown as VercelResponse
     );
     expect(res._status).toBe(405);
+  });
+
+  it('returns 429 when rate limit is exceeded', async () => {
+    const rateLimit = await import('../lib/rateLimit');
+    (rateLimit.checkRateLimit as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      allowed: false,
+      remaining: 0,
+      resetAt: Date.now() + 60_000,
+      retryAfterSeconds: 30,
+    });
+    const { default: handler } = await import('./login/[provider]');
+    const res = makeRes();
+    await handler(makeReq({ query: { provider: 'google' } }), res as unknown as VercelResponse);
+    expect(res._status).toBe(429);
   });
 });
 

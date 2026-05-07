@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireMethod } from '../../lib/method.js';
 import { ErrorCode } from '../../lib/shared.js';
 import { logger } from '../../lib/logger.js';
-import { getRedis } from '../../lib/rateLimit.js';
+import { checkRateLimit, getClientIP, getRedis } from '../../lib/rateLimit.js';
 import {
   clearOAuthCookies,
   readOAuthStateCookie,
@@ -35,6 +35,8 @@ interface UserProfileRecord {
   createdAt: number;
 }
 
+const PROFILE_TTL_SECONDS = 365 * 24 * 60 * 60; // 1 year, refreshed on each sign-in
+
 /**
  * GET /api/auth/callback/{google|github}
  *
@@ -48,6 +50,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const provider = req.query.provider;
   if (typeof provider !== 'string' || !isSupportedProvider(provider)) {
     res.status(400).json({ error: 'Unsupported provider', code: ErrorCode.VALIDATION_ERROR });
+    return;
+  }
+
+  const rate = await checkRateLimit(getClientIP(req), 'auth.callback');
+  if (!rate.allowed) {
+    res.status(429).json({
+      error: 'Too many sign-in attempts. Try again later.',
+      code: ErrorCode.RATE_LIMITED,
+      retryAfter: rate.retryAfterSeconds,
+    });
     return;
   }
 
@@ -119,7 +131,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         displayName: profile.displayName,
         createdAt: now,
       };
-  await redis.set(profileKey, JSON.stringify(profileRecord));
+  // Profile TTL is bumped on every successful sign-in. Active users keep
+  // their profile alive; abandoned accounts age out automatically a year
+  // after their last login (matches the project pattern of TTL'd KV keys).
+  await redis.set(profileKey, JSON.stringify(profileRecord), 'EX', PROFILE_TTL_SECONDS);
 
   const token = generateSessionToken();
   const sessionRecord: SessionRecord = {
@@ -147,6 +162,10 @@ function safeParse(raw: string | null): UserProfileRecord | null {
     if (typeof value !== 'object' || value === null) return null;
     const record = value as Partial<UserProfileRecord>;
     if (typeof record.userId !== 'string') return null;
+    if (typeof record.providerSubject !== 'string') return null;
+    if (typeof record.email !== 'string') return null;
+    if (typeof record.createdAt !== 'number') return null;
+    if (record.provider !== 'google' && record.provider !== 'github') return null;
     return record as UserProfileRecord;
   } catch {
     return null;

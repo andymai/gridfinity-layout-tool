@@ -3,6 +3,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireMethod } from '../../lib/method.js';
 import { ErrorCode } from '../../lib/shared.js';
 import { logger } from '../../lib/logger.js';
+import { checkRateLimit, getClientIP } from '../../lib/rateLimit.js';
 import { setOAuthStateCookie, setOAuthVerifierCookie } from '../../lib/cookies.js';
 import {
   buildGitHubClient,
@@ -24,12 +25,22 @@ import {
  * sends back. An attacker who can't write our HttpOnly cookie can't forge
  * a callback that we'll accept.
  */
-export default function handler(req: VercelRequest, res: VercelResponse): void {
+export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!requireMethod(req, res, ['GET'])) return;
 
   const provider = req.query.provider;
   if (typeof provider !== 'string' || !isSupportedProvider(provider)) {
     res.status(400).json({ error: 'Unsupported provider', code: ErrorCode.VALIDATION_ERROR });
+    return;
+  }
+
+  const rate = await checkRateLimit(getClientIP(req), 'auth.start');
+  if (!rate.allowed) {
+    res.status(429).json({
+      error: 'Too many sign-in attempts. Try again later.',
+      code: ErrorCode.RATE_LIMITED,
+      retryAfter: rate.retryAfterSeconds,
+    });
     return;
   }
 

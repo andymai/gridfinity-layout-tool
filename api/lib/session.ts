@@ -33,16 +33,63 @@ export function generateSessionToken(): string {
 }
 
 /**
- * Persist a session in Redis. Adds the token to the per-user set so account
- * deletion can cascade (DEL every session this user owns).
+ * Persist a session in Redis atomically. The session payload (with TTL) and
+ * its membership in the per-user cleanup set must land together — pipelined
+ * so a transient failure can't leave a valid session orphaned from the
+ * cascade-delete path used at account deletion time.
+ *
+ * Also opportunistically prunes the per-user session set: members whose
+ * underlying `session:{token}` key has expired (Redis TTL fired) are
+ * SREM'd. Without this, the set would grow indefinitely as users sign in
+ * across devices over months. We do this on the write path because the
+ * cost is bounded by the set size — most users have <10 sessions ever.
  */
 export async function createSession(
   redis: Redis,
   token: string,
   record: SessionRecord
 ): Promise<void> {
-  await redis.set(sessionKey(token), JSON.stringify(record), 'EX', SESSION_TTL_SECONDS);
-  await redis.sadd(userSessionsKey(record.userId), token);
+  await pruneExpiredUserSessions(redis, record.userId);
+
+  const pipeline = redis.pipeline();
+  pipeline.set(sessionKey(token), JSON.stringify(record), 'EX', SESSION_TTL_SECONDS);
+  pipeline.sadd(userSessionsKey(record.userId), token);
+  const results = await pipeline.exec();
+  // ioredis returns null on connection-level failure; throw so the caller
+  // (the OAuth callback handler) can surface a 503 instead of returning a
+  // session cookie that points to nothing.
+  if (results === null) {
+    throw new Error('Session pipeline failed: redis connection lost');
+  }
+  for (const [err] of results) {
+    if (err) throw err;
+  }
+}
+
+/**
+ * Remove tokens from the user's session set whose underlying session record
+ * has already expired via TTL. Best-effort: failures here don't block the
+ * sign-in itself, since the worst case is a slightly larger set on next try.
+ */
+async function pruneExpiredUserSessions(redis: Redis, userId: string): Promise<void> {
+  try {
+    const tokens = await redis.smembers(userSessionsKey(userId));
+    if (tokens.length === 0) return;
+    const pipeline = redis.pipeline();
+    for (const t of tokens) pipeline.exists(sessionKey(t));
+    const results = (await pipeline.exec()) ?? [];
+    const stale: string[] = [];
+    for (let i = 0; i < tokens.length && i < results.length; i++) {
+      const [err, exists] = results[i];
+      if (err) continue;
+      if (exists === 0) stale.push(tokens[i]);
+    }
+    if (stale.length > 0) {
+      await redis.srem(userSessionsKey(userId), ...stale);
+    }
+  } catch {
+    // Best-effort; don't fail sign-in if the prune pass errors.
+  }
 }
 
 /**
@@ -75,7 +122,10 @@ function parseSessionRecord(raw: string): SessionRecord | null {
     const value = JSON.parse(raw) as unknown;
     if (typeof value !== 'object' || value === null) return null;
     const record = value as Partial<SessionRecord>;
-    if (typeof record.userId !== 'string' || typeof record.expiresAt !== 'number') return null;
+    if (typeof record.userId !== 'string') return null;
+    if (typeof record.expiresAt !== 'number') return null;
+    if (typeof record.createdAt !== 'number') return null;
+    if (record.provider !== 'google' && record.provider !== 'github') return null;
     return record as SessionRecord;
   } catch {
     return null;

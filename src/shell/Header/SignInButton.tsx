@@ -32,6 +32,8 @@ export function SignInButton() {
           onClick={() => openMenu(triggerRef.current, setMenuPos, setMenuOpen)}
           className="px-3 py-1.5 text-sm rounded-md transition-all text-content-secondary hover:bg-surface-hover hover:text-content"
           aria-label={t('auth.signIn')}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
         >
           {t('auth.signIn')}
         </button>
@@ -55,6 +57,8 @@ export function SignInButton() {
         onClick={() => openMenu(triggerRef.current, setMenuPos, setMenuOpen)}
         className="flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary hover:bg-surface-hover hover:text-content"
         aria-label={t('auth.userMenuOpen')}
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
         title={user?.email}
       >
         <Avatar email={user?.email ?? ''} displayName={user?.displayName} />

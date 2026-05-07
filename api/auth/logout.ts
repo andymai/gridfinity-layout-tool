@@ -1,7 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireMethod } from '../lib/method.js';
+import { ErrorCode } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
-import { getRedis } from '../lib/rateLimit.js';
+import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { clearSessionCookie, readSessionCookie } from '../lib/cookies.js';
 import { checkCsrfDefense, deleteSession } from '../lib/session.js';
 
@@ -17,6 +18,16 @@ import { checkCsrfDefense, deleteSession } from '../lib/session.js';
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!requireMethod(req, res, ['POST'])) return;
   if (!checkCsrfDefense(req, res)) return;
+
+  const rate = await checkRateLimit(getClientIP(req), 'auth.read');
+  if (!rate.allowed) {
+    res.status(429).json({
+      error: 'Too many requests. Try again later.',
+      code: ErrorCode.RATE_LIMITED,
+      retryAfter: rate.retryAfterSeconds,
+    });
+    return;
+  }
 
   const token = readSessionCookie(req);
   if (token) {

@@ -7,7 +7,6 @@ import {
   generateSessionToken,
   readSession,
   requireSession,
-  SESSION_TTL_SECONDS,
   type SessionRecord,
 } from './session';
 
@@ -20,32 +19,64 @@ let mockRedis: Redis;
 function makeRedisMock() {
   const store = new Map<string, string>();
   const sets = new Map<string, Set<string>>();
+  const setKey = (k: string, v: string): 'OK' => {
+    store.set(k, v);
+    return 'OK';
+  };
+  const saddKey = (k: string, m: string): number => {
+    const s = sets.get(k) ?? new Set<string>();
+    s.add(m);
+    sets.set(k, s);
+    return 1;
+  };
+  const sremKeys = (k: string, ...members: string[]): number => {
+    const s = sets.get(k);
+    if (!s) return 0;
+    let removed = 0;
+    for (const m of members) if (s.delete(m)) removed++;
+    return removed;
+  };
   return {
     store,
     sets,
     get: vi.fn(async (k: string) => store.get(k) ?? null),
-    set: vi.fn(async (k: string, v: string) => {
-      store.set(k, v);
-      return 'OK';
-    }),
+    set: vi.fn(async (k: string, v: string) => setKey(k, v)),
     del: vi.fn(async (k: string) => {
       const had = store.delete(k);
       return had ? 1 : 0;
     }),
-    sadd: vi.fn(async (k: string, m: string) => {
-      const s = sets.get(k) ?? new Set<string>();
-      s.add(m);
-      sets.set(k, s);
-      return 1;
-    }),
-    srem: vi.fn(async (k: string, m: string) => {
-      sets.get(k)?.delete(m);
-      return 1;
-    }),
+    sadd: vi.fn(async (k: string, m: string) => saddKey(k, m)),
+    srem: vi.fn(async (k: string, ...members: string[]) => sremKeys(k, ...members)),
+    smembers: vi.fn(async (k: string) => Array.from(sets.get(k) ?? [])),
+    pipeline: vi.fn(() => makePipelineMock(store, setKey, saddKey)),
   } as unknown as Redis & {
     store: Map<string, string>;
     sets: Map<string, Set<string>>;
   };
+}
+
+function makePipelineMock(
+  store: Map<string, string>,
+  setKey: (k: string, v: string) => 'OK',
+  saddKey: (k: string, m: string) => number
+) {
+  const queue: Array<() => [Error | null, unknown]> = [];
+  const pipe = {
+    set: (k: string, v: string, ..._rest: unknown[]) => {
+      queue.push(() => [null, setKey(k, v)]);
+      return pipe;
+    },
+    sadd: (k: string, m: string) => {
+      queue.push(() => [null, saddKey(k, m)]);
+      return pipe;
+    },
+    exists: (k: string) => {
+      queue.push(() => [null, store.has(k) ? 1 : 0]);
+      return pipe;
+    },
+    exec: vi.fn(async () => queue.map((fn) => fn())),
+  };
+  return pipe;
 }
 
 interface MockRes {
@@ -102,7 +133,7 @@ describe('session crud', () => {
     mockRedis = makeRedisMock();
   });
 
-  it('round-trips a session record and indexes by user', async () => {
+  it('round-trips a session record and indexes by user (pipelined)', async () => {
     const record: SessionRecord = {
       userId: 'u1',
       provider: 'google',
@@ -110,16 +141,37 @@ describe('session crud', () => {
       expiresAt: Date.now() + 1000 * 60,
     };
     await createSession(mockRedis, 'tok-1', record);
-    expect(mockRedis.set).toHaveBeenCalledWith(
-      'session:tok-1',
-      expect.any(String),
-      'EX',
-      SESSION_TTL_SECONDS
-    );
-    expect(mockRedis.sadd).toHaveBeenCalledWith('users:u1:sessions', 'tok-1');
+    // The session payload landed in the keyspace; the user is indexed.
+    const ctx = mockRedis as unknown as {
+      store: Map<string, string>;
+      sets: Map<string, Set<string>>;
+    };
+    expect(ctx.store.get('session:tok-1')).toBeTypeOf('string');
+    expect(ctx.sets.get('users:u1:sessions')?.has('tok-1')).toBe(true);
+    // The pipeline path is used (not separate set + sadd).
+    expect(mockRedis.pipeline).toHaveBeenCalled();
 
     const back = await readSession(mockRedis, 'tok-1');
     expect(back).toEqual(record);
+  });
+
+  it('prunes per-user session entries whose underlying key has expired', async () => {
+    const ctx = mockRedis as unknown as {
+      store: Map<string, string>;
+      sets: Map<string, Set<string>>;
+    };
+    // Seed a stale token: it lives in the user's set but has no session: row.
+    ctx.sets.set('users:u1:sessions', new Set(['stale-token']));
+    const record: SessionRecord = {
+      userId: 'u1',
+      provider: 'google',
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 1000 * 60,
+    };
+    await createSession(mockRedis, 'fresh-token', record);
+    const set = ctx.sets.get('users:u1:sessions');
+    expect(set?.has('stale-token')).toBe(false);
+    expect(set?.has('fresh-token')).toBe(true);
   });
 
   it('returns null for a missing token', async () => {

@@ -1632,5 +1632,12 @@
   "engagement.support": "Stöd på Ko-fi",
   "engagement.feedbackThankYou": "Tack för din feedback! Om du gillar verktyget, överväg att stödja på Ko-fi.",
   "engagement.layoutPromotion.message": "Planerar du en annan låda? Spara denna layout och börja en ny.",
-  "engagement.layoutPromotion.action": "Öppna layoutbibliotek"
+  "engagement.layoutPromotion.action": "Öppna layoutbibliotek",
+  "auth.signIn": "Logga in",
+  "auth.signInWithGoogle": "Logga in med Google",
+  "auth.signInWithGithub": "Logga in med GitHub",
+  "auth.userMenuOpen": "Öppna kontomeny",
+  "auth.signOut": "Logga ut",
+  "auth.providerGoogle": "Google",
+  "auth.providerGithub": "GitHub"
 }

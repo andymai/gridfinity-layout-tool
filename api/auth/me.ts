@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { requireMethod } from '../lib/method.js';
 import { logger } from '../lib/logger.js';
 import { ErrorCode } from '../lib/shared.js';
-import { getRedis } from '../lib/rateLimit.js';
+import { checkRateLimit, getClientIP, getRedis } from '../lib/rateLimit.js';
 import { requireSession } from '../lib/session.js';
 import { userProfileKey } from '../lib/redisKeys.js';
 import type { AuthProvider } from '../lib/userId.js';
@@ -23,6 +23,16 @@ interface UserProfileRecord {
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!requireMethod(req, res, ['GET'])) return;
+
+  const rate = await checkRateLimit(getClientIP(req), 'auth.read');
+  if (!rate.allowed) {
+    res.status(429).json({
+      error: 'Too many requests. Try again later.',
+      code: ErrorCode.RATE_LIMITED,
+      retryAfter: rate.retryAfterSeconds,
+    });
+    return;
+  }
 
   const session = await requireSession(req, res);
   if (!session) return;

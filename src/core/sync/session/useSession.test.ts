@@ -95,3 +95,54 @@ describe('useSessionLifecycle', () => {
     expect(useSessionStore.getState().status).toBe('anonymous');
   });
 });
+
+describe('applyRemoteState (broadcast-receiver path)', () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u1', provider: 'google', email: 'a@x' },
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('flips to anonymous without broadcasting (regression: cross-tab ping-pong)', async () => {
+    const channel = new BroadcastChannel('gflt-session');
+    const received: unknown[] = [];
+    channel.addEventListener('message', (e) => received.push(e.data));
+    await act(async () => {
+      await useSessionStore.getState().applyRemoteState('anonymous');
+    });
+    expect(useSessionStore.getState().status).toBe('anonymous');
+    // Wait one tick so any synchronous broadcast would land.
+    await new Promise((r) => setTimeout(r, 0));
+    expect(received).toEqual([]);
+    channel.close();
+  });
+
+  it('refreshes from /api/auth/me on remote authenticated, without broadcasting', async () => {
+    useSessionStore.setState({ status: 'anonymous', user: null });
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ userId: 'u2', provider: 'github', email: 'b@x' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+    const channel = new BroadcastChannel('gflt-session');
+    const received: unknown[] = [];
+    channel.addEventListener('message', (e) => received.push(e.data));
+    await act(async () => {
+      await useSessionStore.getState().applyRemoteState('authenticated');
+    });
+    expect(useSessionStore.getState().user?.userId).toBe('u2');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(received).toEqual([]);
+    channel.close();
+  });
+});
