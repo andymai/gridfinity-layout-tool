@@ -48,8 +48,18 @@ import { useThemeEffect } from '@/shared/hooks/useThemeEffect';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { usePlaceBinFromURL } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
-import { useSessionLifecycle } from '@/core/sync/session/useSession';
+import { SYNC_UI_ENABLED } from '@/core/sync/featureGate';
 import { SHORTCUTS } from '@/core/constants';
+
+// Lazy-loaded behind SYNC_UI_ENABLED. When the gate is statically false at
+// build time (production default), Vite drops the dynamic import and
+// everything it pulls in (useSession, sessionApi, apiFetch) — zero bytes
+// of sync infra ship in the main bundle until PR 6 flips the gate.
+const LazySyncSessionMount = SYNC_UI_ENABLED
+  ? lazyWithRetry(() =>
+      import('@/core/sync/SyncSessionMount').then(namedExport('SyncSessionMount'))
+    )
+  : null;
 
 const CommandPalette = lazyWithRetry(() =>
   import('@/features/command-palette/components/CommandPalette').then(namedExport('CommandPalette'))
@@ -123,7 +133,6 @@ export default function App() {
 
   usePlaceBinFromURL();
   useOwnedShareSync();
-  useSessionLifecycle();
 
   useEffect(() => {
     return initLayoutAnalytics();
@@ -427,6 +436,11 @@ export default function App() {
 
   return (
     <>
+      {LazySyncSessionMount && (
+        <Suspense fallback={null}>
+          <LazySyncSessionMount />
+        </Suspense>
+      )}
       {routeContent}
       <ToastContainer />
       {!isMobile && commandPaletteOpen && (
