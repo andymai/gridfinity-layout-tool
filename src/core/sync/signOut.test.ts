@@ -116,6 +116,19 @@ describe('runSignOut — outbox flush', () => {
     expect(flushNowMock).toHaveBeenCalled();
   });
 
+  it('wipe path clears outbox before wiping local items (leak-safe order)', async () => {
+    const order: string[] = [];
+    clearOutboxMock.mockImplementation(async () => {
+      order.push('clearOutbox');
+    });
+    layouts.applyRemoteDelete = vi.fn(async () => {
+      order.push('wipe');
+    });
+    layouts.items.set('a', { id: 'a', payload: {}, modifiedAt: 1000 });
+    await runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
+    expect(order.indexOf('clearOutbox')).toBeLessThan(order.indexOf('wipe'));
+  });
+
   it('skips flush on wipe path (clearOutbox makes flush wasted work)', async () => {
     getPendingEntriesMock.mockResolvedValueOnce([
       { kind: 'layouts', id: 'a', op: 'put', modifiedAt: 1000 },

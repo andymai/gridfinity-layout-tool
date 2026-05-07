@@ -36,8 +36,11 @@ export async function runSignOut(ctx: SignOutContext): Promise<SignOutResult> {
   if (!isChoice(choice)) return { status: 'cancelled' };
 
   if (choice === 'wipe') {
-    await wipeLocal(ctx.adapters);
+    // Clear outbox before wipeLocal: if clearOutbox throws (IDB failure),
+    // wipeLocal hasn't run yet so the engine has nothing to drain. Same
+    // safety order as claim.ts's discard path.
     await clearOutbox();
+    await wipeLocal(ctx.adapters);
     clearLastSignedInUserId();
   } else {
     // Keep path: give in-flight pushes 5s to land before the cookie
