@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.73.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.73.0...gridfinity-layout-tool-v4.73.1) (2026-05-08)
+
+
+### Bug Fixes
+
+* **analytics:** use posthog.captureException for valid $exception_list schema ([#1616](https://github.com/andymai/gridfinity-layout-tool/issues/1616)) ([7bfae55](https://github.com/andymai/gridfinity-layout-tool/commit/7bfae5547e8dcdc5b96667a509ff1c705be87082))
+
 ## [4.73.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.72.1...gridfinity-layout-tool-v4.73.0) (2026-05-08)
 
 
