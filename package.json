@@ -136,6 +136,7 @@
       "@surma/rollup-plugin-off-main-thread>magic-string": "0.30.21",
       "workbox-build>@rollup/plugin-node-resolve": "^16.0.0",
       "@apideck/better-ajv-errors>ajv": "^8.17.1",
+      "fast-uri": "^3.1.2",
       "serialize-javascript": "^7.0.3",
       "eslint-plugin-react-hooks>eslint": "^10.0.3",
       "eslint-plugin-jsx-a11y>eslint": "^10.0.3",
