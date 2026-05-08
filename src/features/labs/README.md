@@ -29,12 +29,16 @@ graph TB
 
 Internal status enum values → UI badge labels: `experimental` → "Early access", `preview` → "Beta", `graduated` → "Shipped".
 
-| Flag                    | Status (`enum`) | Purpose                        |
-| ----------------------- | --------------- | ------------------------------ |
-| `bin_designer`          | `graduated`     | Custom bin designer            |
-| `baseplate_generator`   | `graduated`     | Custom baseplate generator     |
-| `collaborative_editing` | `experimental`  | Real-time Liveblocks collab    |
-| `brepkit_kernel`        | `experimental`  | Alternative 3D geometry engine |
+| Flag                    | Status (`enum`) | Purpose                                        |
+| ----------------------- | --------------- | ---------------------------------------------- |
+| `bin_designer`          | `graduated`     | Custom bin designer                            |
+| `baseplate_generator`   | `graduated`     | Custom baseplate generator                     |
+| `handle_holes`          | `graduated`     | Finger-grip cutouts on bin walls               |
+| `collaborative_editing` | `experimental`  | Real-time Liveblocks collab                    |
+| `brepkit_kernel`        | `experimental`  | Alternative 3D geometry engine                 |
+| `occt_wasm_kernel`      | `experimental`  | Updated OCCT 3D engine (smaller WASM)          |
+| `multi_color_export`    | `experimental`  | Multi-color 3MF export                         |
+| `cloud_sync`            | `experimental`  | Sign-in sync of layouts/designs across devices |
 
 ## Usage
 

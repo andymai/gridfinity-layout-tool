@@ -97,7 +97,7 @@ export const FEATURE_FLAGS = [
     status: 'experimental',
     risk: 'medium',
     warning:
-      'You can sign out at any time and choose to keep the synced library on this device or wipe it.',
+      'Reload the page after toggling. You can sign out at any time and choose to keep the synced library on this device or wipe it.',
     addedAt: '2026-05',
     requiresRefresh: true,
   },
