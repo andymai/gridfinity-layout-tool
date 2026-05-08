@@ -40,10 +40,23 @@ const BARB_RADIUS = PRONG_RADIUS + BARB_FLARE;
 const BRIDGE_LEN = 2 * (PRONG_INSET + BRIDGE_LENGTH_MARGIN);
 const PRONG_CENTER_OFFSET = PRONG_INSET;
 
-/** Lift in exploded mode (mm) so the user can see prongs separately. */
-const EXPLODE_LIFT_MM = 12;
-
 const CYLINDER_SEGMENTS = 16;
+
+/** Opacity bands mirror the lid's pattern: closer to closed reads more
+ *  translucent (less likely to be read as "the part to print"); fully
+ *  separated reads near-solid for inspection. */
+const OPACITY_CLOSED = 0.55;
+const OPACITY_OPEN = 0.95;
+const OPACITY_INTERP_START_MM = 5;
+const OPACITY_INTERP_END_MM = 25;
+
+function opacityForOffset(offsetMm: number): number {
+  if (offsetMm <= OPACITY_INTERP_START_MM) return OPACITY_CLOSED;
+  if (offsetMm >= OPACITY_INTERP_END_MM) return OPACITY_OPEN;
+  const t =
+    (offsetMm - OPACITY_INTERP_START_MM) / (OPACITY_INTERP_END_MM - OPACITY_INTERP_START_MM);
+  return OPACITY_CLOSED + t * (OPACITY_OPEN - OPACITY_CLOSED);
+}
 
 type MaterialProps = ComponentProps<'meshStandardMaterial'>;
 
@@ -117,8 +130,9 @@ function SnapClipPart({ slabThickness, material }: SnapClipInstanceProps) {
 interface SnapClipPreviewProps {
   /** Color tint for the clip (typically a contrasting accent vs the slab). */
   readonly color?: string;
-  /** When true, lift clips above the slab to expose the prongs. */
-  readonly exploded?: boolean;
+  /** Continuous offset (mm) by which the clip is lifted above its mated
+   *  position. 0 = closed (bridge in recess). */
+  readonly offsetMm?: number;
 }
 
 /** Default clip tint — contrasting blue so clips read distinctly from the
@@ -127,7 +141,7 @@ const DEFAULT_CLIP_COLOR = '#3b82f6';
 
 export function SnapClipPreview({
   color = DEFAULT_CLIP_COLOR,
-  exploded = false,
+  offsetMm = 0,
 }: SnapClipPreviewProps) {
   const { baseplateParams, gridUnitMm } = useLayoutStore(
     useShallow((s) => ({
@@ -161,11 +175,11 @@ export function SnapClipPreview({
     () => ({
       color,
       transparent: true,
-      opacity: 0.7,
+      opacity: opacityForOffset(offsetMm),
       roughness: 0.45,
       metalness: 0,
     }),
-    [color]
+    [color, offsetMm]
   );
 
   if (!enabled || positions.length === 0) return null;
@@ -173,9 +187,9 @@ export function SnapClipPreview({
   // Slab top in scene Z (post-shift): slabThickness; recess floor at top - 1.7.
   // Bridge sits in the recess so its bottom is at top - 1.7. In the clip's
   // local frame the bridge bottom is at z=0, so we translate the group by
-  // (slabThickness - SNAP_BRIDGE_RECESS_DEPTH).
+  // (slabThickness - SNAP_BRIDGE_RECESS_DEPTH) + offsetMm.
   const RECESS_DEPTH = BRIDGE_THICKNESS + 0.2;
-  const groupBaseZ = slabThickness - RECESS_DEPTH + (exploded ? EXPLODE_LIFT_MM : 0);
+  const groupBaseZ = slabThickness - RECESS_DEPTH + offsetMm;
 
   return (
     <group>
