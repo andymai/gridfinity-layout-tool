@@ -120,6 +120,18 @@ const en: Record<string, string> = {
   'sync.pushFailed': "Couldn't sync your changes. Try again later.",
   'sync.workingOffline': 'Working offline — changes will sync when reconnected.',
 
+  // Sign-out + account-mismatch dialogs
+  'syncDialog.signOut.title': 'Sign out',
+  'syncDialog.signOut.message':
+    'Keep your {count} local layouts and designs on this device? You can also wipe them.',
+  'syncDialog.signOut.keep': 'Keep & sign out',
+  'syncDialog.signOut.wipe': 'Wipe & sign out',
+  'syncDialog.accountMismatch.title': 'Different account',
+  'syncDialog.accountMismatch.message':
+    'The {count} layouts and designs on this device were last linked to a different account. Add them to {account}, or discard?',
+  'syncDialog.accountMismatch.merge': 'Add to {account}',
+  'syncDialog.accountMismatch.discard': 'Discard',
+
   // Grid Toolbar
   'toolbar.showLayersPanel': 'Show layers panel',
   'toolbar.exitPaintMode': 'Exit paint mode',

@@ -1,9 +1,13 @@
-import { useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Menu } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { signInUrl, signOut as apiSignOut } from '@/core/sync/session/sessionApi';
+import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
+import { designAdapter } from '@/features/bin-designer/sync/designAdapter';
+import { runSignOut, type KeepLocalPromptResult } from '@/core/sync/signOut';
+import { signInUrl } from '@/core/sync/session/sessionApi';
 import { useSessionStore } from '@/core/sync/session/useSession';
+import { SignOutDialog } from '@/core/sync/dialogs/SignOutDialog';
 
 export function SignInButton() {
   const t = useTranslation();
@@ -18,9 +22,30 @@ export function SignInButton() {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
+  const [signOutPrompt, setSignOutPrompt] = useState<{
+    localCount: number;
+    resolve: (choice: KeepLocalPromptResult) => void;
+  } | null>(null);
 
-  // Render nothing while we don't yet know — avoids a sign-in button flashing
-  // for users who are already signed in.
+  const adapters = useMemo(() => ({ layouts: layoutAdapter, designs: designAdapter }), []);
+
+  const promptKeepLocal = useCallback(
+    (input: { localCount: number }) =>
+      new Promise<KeepLocalPromptResult>((resolve) => {
+        setSignOutPrompt({ localCount: input.localCount, resolve });
+      }),
+    []
+  );
+
+  const handleSignOut = useCallback(async () => {
+    setMenuOpen(false);
+    await runSignOut({
+      adapters,
+      promptKeepLocal,
+      onAnonymous: setAnonymous,
+    });
+  }, [adapters, promptKeepLocal, setAnonymous]);
+
   if (status === 'unknown') return null;
 
   if (status === 'anonymous') {
@@ -67,18 +92,27 @@ export function SignInButton() {
         <UserHeaderItem user={user} t={t} />
         <Menu.Divider />
         <Menu.Item
-          onClick={async () => {
-            try {
-              await apiSignOut();
-            } finally {
-              setAnonymous();
-              setMenuOpen(false);
-            }
+          onClick={() => {
+            void handleSignOut();
           }}
         >
           {t('auth.signOut')}
         </Menu.Item>
       </Menu.Root>
+      {signOutPrompt && (
+        <SignOutDialog
+          isOpen={true}
+          localCount={signOutPrompt.localCount}
+          onChoice={(choice) => {
+            signOutPrompt.resolve(choice);
+            setSignOutPrompt(null);
+          }}
+          onCancel={() => {
+            signOutPrompt.resolve('cancel');
+            setSignOutPrompt(null);
+          }}
+        />
+      )}
     </>
   );
 }
@@ -131,8 +165,6 @@ function openMenu(
 ): void {
   if (!trigger) return;
   const rect = trigger.getBoundingClientRect();
-  // Align the menu's right edge under the trigger's right edge (header
-  // affordance sits in the top-right of the chrome).
   setPos({ x: rect.right - 200, y: rect.bottom + 4 });
   setOpen(true);
 }

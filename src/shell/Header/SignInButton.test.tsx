@@ -58,7 +58,7 @@ describe('SignInButton', () => {
     expect(screen.getByText('auth.signOut')).toBeInTheDocument();
   });
 
-  it('Sign out flips the store to anonymous on click', async () => {
+  it('Sign out opens the SignOutDialog; choosing Keep flips the store to anonymous', async () => {
     useSessionStore.setState({
       status: 'authenticated',
       user: { userId: 'u1', provider: 'google', email: 'a@example.com' },
@@ -67,8 +67,25 @@ describe('SignInButton', () => {
     render(<SignInButton />);
     fireEvent.click(screen.getByRole('button', { name: 'auth.userMenuOpen' }));
     fireEvent.click(screen.getByText('auth.signOut'));
-    // Allow the async signOut handler to settle.
-    await new Promise((r) => setTimeout(r, 0));
+
+    const keepButton = await screen.findByText('syncDialog.signOut.keep');
+    fireEvent.click(keepButton);
+    await new Promise((r) => setTimeout(r, 50));
     expect(useSessionStore.getState().status).toBe('anonymous');
+  });
+
+  it('Sign out → Cancel leaves the user signed in', async () => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u1', provider: 'google', email: 'a@example.com' },
+    });
+    render(<SignInButton />);
+    fireEvent.click(screen.getByRole('button', { name: 'auth.userMenuOpen' }));
+    fireEvent.click(screen.getByText('auth.signOut'));
+
+    const cancelButton = await screen.findByText('common.cancel');
+    fireEvent.click(cancelButton);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(useSessionStore.getState().status).toBe('authenticated');
   });
 });

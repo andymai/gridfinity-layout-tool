@@ -1644,5 +1644,13 @@
   "sync.deletedElsewhere": "Este diseño se eliminó en otro dispositivo. Guarda de nuevo para restaurarlo.",
   "sync.quotaExceeded": "Sincronización pausada — tu almacenamiento en la nube está lleno.",
   "sync.pushFailed": "No se pudieron sincronizar tus cambios. Inténtalo más tarde.",
-  "sync.workingOffline": "Sin conexión — los cambios se sincronizarán cuando vuelvas a estar en línea."
+  "sync.workingOffline": "Sin conexión — los cambios se sincronizarán cuando vuelvas a estar en línea.",
+  "syncDialog.signOut.title": "Cerrar sesión",
+  "syncDialog.signOut.message": "¿Mantener tus {count} diseños y planos locales en este dispositivo? También puedes borrarlos.",
+  "syncDialog.signOut.keep": "Mantener y cerrar sesión",
+  "syncDialog.signOut.wipe": "Borrar y cerrar sesión",
+  "syncDialog.accountMismatch.title": "Cuenta diferente",
+  "syncDialog.accountMismatch.message": "Los {count} diseños y planos en este dispositivo estaban vinculados a una cuenta diferente. ¿Añadirlos a {account} o descartarlos?",
+  "syncDialog.accountMismatch.merge": "Añadir a {account}",
+  "syncDialog.accountMismatch.discard": "Descartar"
 }

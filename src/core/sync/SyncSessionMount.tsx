@@ -1,6 +1,7 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { layoutAdapter } from './adapters/layoutAdapter';
 import { designAdapter } from '@/features/bin-designer/sync/designAdapter';
+import { runClaim, type AccountMismatchChoice } from './claim';
 import { start, stop } from './engine';
 import { useSessionLifecycle, useSessionStore } from './session/useSession';
 import { useDebouncedPush } from './triggers/useDebouncedPush';
@@ -8,6 +9,7 @@ import { useVisibilityFlush } from './triggers/useVisibilityFlush';
 import { useBeaconFlush } from './triggers/useBeaconFlush';
 import { usePeriodicPoll } from './triggers/usePeriodicPoll';
 import { useSyncToasts } from './useSyncToasts';
+import { AccountMismatchDialog } from './dialogs/AccountMismatchDialog';
 import type { SyncAdapters } from './adapters/types';
 
 /**
@@ -16,16 +18,12 @@ import type { SyncAdapters } from './adapters/types';
  *
  *   - session lifecycle (auth bookkeeping)
  *   - engine start/stop tied to authenticated status
- *   - 4 trigger hooks (push debounce, visibility flush, beacon, poll)
+ *   - first-sign-in claim flow (anonymous → authenticated)
+ *   - account-mismatch dialog
+ *   - 4 trigger hooks
  *   - toast subscriber
- *
- * Adapters are constructed once and shared across all hooks; the
- * DesignAdapter import is what brings the bin-designer feature into
- * the sync graph at this level (`shell/` → `core/sync/` → feature
- * import is allowed; `core/sync/` could not import the feature
- * directly).
  */
-export function SyncSessionMount(): null {
+export function SyncSessionMount() {
   useSessionLifecycle();
 
   const adapters = useMemo<SyncAdapters>(
@@ -35,16 +33,65 @@ export function SyncSessionMount(): null {
 
   const status = useSessionStore((s) => s.status);
 
+  const [mismatchPrompt, setMismatchPrompt] = useState<{
+    localCount: number;
+    newAccountLabel: string;
+    resolve: (choice: AccountMismatchChoice) => void;
+  } | null>(null);
+
+  const promptAccountMismatch = useCallback(
+    (input: { localCount: number; newUserId: string; newAccountLabel: string }) =>
+      new Promise<AccountMismatchChoice>((resolve) => {
+        setMismatchPrompt({
+          localCount: input.localCount,
+          newAccountLabel: input.newAccountLabel,
+          resolve,
+        });
+      }),
+    []
+  );
+
   useEffect(() => {
-    if (status === 'authenticated') {
-      start(adapters);
-    } else if (status === 'anonymous') {
-      stop();
-    }
+    if (status !== 'authenticated') return;
+
+    // Read user via getState() so this effect doesn't depend on the
+    // user reference — Zustand may emit a new user object while
+    // status stays 'authenticated', which would otherwise restart
+    // the engine for no reason.
+    const currentUser = useSessionStore.getState().user;
+    // Contract: if status === 'authenticated' the user object is
+    // populated atomically. If we ever observe an intermediate state
+    // where it isn't, do nothing — starting the engine without a
+    // user would immediately 401 and skip the claim flow entirely.
+    // The next session emission will retrigger this effect.
+    if (!currentUser) return;
+
+    let cancelled = false;
+    // Run claim before start(): the engine drains outbox and polls
+    // immediately, and we don't want the prior user's pending
+    // pushes to flush under the new account before discard can
+    // wipe them. runClaim is single-flight per userId so a
+    // StrictMode-style double effect run coalesces.
+    void runClaim({
+      adapters,
+      userId: currentUser.userId,
+      newAccountLabel: currentUser.email,
+      promptAccountMismatch,
+    }).then((result) => {
+      // Skip engine start on 'unauthorized': the manifest 401 means
+      // session sort-out is in flight (the engine's own forced-401
+      // handler will flip to anonymous), and starting now would
+      // immediately retrigger that path. Other terminal states
+      // ('merged' | 'discarded' | 'error') start the engine —
+      // 'error' relies on the engine's own retry/backoff to recover.
+      if (cancelled) return;
+      if (result.status !== 'unauthorized') start(adapters);
+    });
     return () => {
+      cancelled = true;
       stop();
     };
-  }, [status, adapters]);
+  }, [status, adapters, promptAccountMismatch]);
 
   useDebouncedPush();
   useVisibilityFlush();
@@ -52,5 +99,18 @@ export function SyncSessionMount(): null {
   usePeriodicPoll(adapters);
   useSyncToasts();
 
+  if (mismatchPrompt) {
+    return (
+      <AccountMismatchDialog
+        isOpen={true}
+        localCount={mismatchPrompt.localCount}
+        newAccountLabel={mismatchPrompt.newAccountLabel}
+        onChoice={(choice) => {
+          mismatchPrompt.resolve(choice);
+          setMismatchPrompt(null);
+        }}
+      />
+    );
+  }
   return null;
 }
