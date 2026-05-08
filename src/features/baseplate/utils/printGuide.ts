@@ -28,10 +28,21 @@ export interface PrintGuideInput {
   readonly parentParams: BaseplateParams;
   readonly fileExtension: string;
   readonly baseFileName: string;
+  /** Filename of the snap clip part inside the ZIP (e.g. `snap-clip.stl`,
+   *  `snap-clip.step`). Only used when `connectorStyle === 'snap'`. */
+  readonly snapClipFileName?: string;
 }
 
 export function generatePrintGuide(input: PrintGuideInput): string {
-  const { tiling, groups, groupNames, parentParams, fileExtension, baseFileName } = input;
+  const {
+    tiling,
+    groups,
+    groupNames,
+    parentParams,
+    fileExtension,
+    baseFileName,
+    snapClipFileName,
+  } = input;
 
   const sections = [
     generateHeader(tiling, parentParams, groupNames.size),
@@ -47,7 +58,7 @@ export function generatePrintGuide(input: PrintGuideInput): string {
   ];
 
   if (resolveConnectorStyle(parentParams) === 'snap') {
-    sections.push(generateSnapClipSection(tiling));
+    sections.push(generateSnapClipSection(tiling, snapClipFileName ?? 'snap-clip.stl'));
   }
 
   sections.push(generateFooter());
@@ -69,13 +80,13 @@ function countSnapClips(tiling: BaseplateTiling): number {
   return Math.ceil(totalHoles / 2);
 }
 
-function generateSnapClipSection(tiling: BaseplateTiling): string {
+function generateSnapClipSection(tiling: BaseplateTiling, clipFileName: string): string {
   const clipCount = countSnapClips(tiling);
   return [
     '─── Snap Clips ──────────────────────────────────',
     '',
     `  Quantity:    ${clipCount} clip${clipCount === 1 ? '' : 's'} total`,
-    '  File:        snap-clip.stl (one model, print N copies)',
+    `  File:        ${clipFileName} (one model, print N copies)`,
     '  Material:    PETG recommended (slight peg flex helps seating)',
     '  Speed:       ~25mm/s — small features',
     '  Layer:       0.2mm',
