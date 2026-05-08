@@ -102,7 +102,7 @@ export const BASEPLATE_MAX_TIMEOUT_MS = 120_000;
  * Formula:
  *   BASE_TIMEOUT_MS
  * + min(BASEPLATE_MAGNET_BONUS_CAP_MS, ceil(w) * ceil(d) * BASEPLATE_MAGNET_MS_PER_CELL)  [if magnetHoles]
- * + BASEPLATE_CONNECTOR_BONUS_MS  [if connectorNubs]
+ * + BASEPLATE_CONNECTOR_BONUS_MS  [if connectorStyle !== 'none']
  * + BASEPLATE_LIGHTWEIGHT_BONUS_MS  [if lightweight]
  *
  * Clamped to `[BASE_TIMEOUT_MS, BASEPLATE_MAX_TIMEOUT_MS]`.

@@ -1,36 +1,21 @@
 // @vitest-environment node
-/**
- * Geometry tests for the snap-clip part and snap-hole cutter.
- *
- * The clip's mechanical behavior depends on a precise asymmetric barb:
- * - Steep retention shoulder above (~27° from vertical)
- * - Gentle lead-in cone below (~37° from vertical)
- * - Wide point of barb between them, sized to fit the through-hole
- *   under elastic PETG compression
- *
- * Bbox checks confirm every constant is wired correctly: tiny errors in
- * prong/bridge dimensions silently produce unprintable or unsnapping clips.
- */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import {
-  SNAP_PRONG_DIAMETER,
-  SNAP_PRONG_INSET,
-  SNAP_PRONG_OVERSHOOT,
-  SNAP_BRIDGE_THICKNESS,
-  SNAP_BRIDGE_WIDTH,
-  SNAP_BRIDGE_LENGTH_MARGIN,
-  SNAP_BARB_FLARE,
-  SNAP_BARB_RETAIN_HEIGHT,
-  SNAP_BARB_LEAD_HEIGHT,
-  SNAP_TIP_RADIUS,
+  SNAP_PEG_DIAMETER,
+  SNAP_PEG_INSET,
+  SNAP_PEG_LENGTH,
+  SNAP_SADDLE_WIDTH,
+  SNAP_SADDLE_LENGTH_MARGIN,
+  SNAP_SADDLE_BASE_HEIGHT,
+  SNAP_SADDLE_ARCH_RISE,
   SNAP_HOLE_DIAMETER,
   SNAP_HOLE_CLEARANCE,
 } from './generatorConstants';
 
-type ExportClip = (slabThickness: number, format: 'stl') => Promise<{ data: ArrayBuffer }>;
+type ExportClip = (format: 'stl') => Promise<{ data: ArrayBuffer }>;
 
 let exportSnapClip: ExportClip;
 
@@ -71,92 +56,22 @@ function stlBbox(stl: ArrayBuffer): Bbox {
 }
 
 describe('snap clip geometry', () => {
-  describe('asymmetric barb invariants', () => {
-    it('barb max radius exceeds hole radius (interference for snap retention)', () => {
-      const prongR = SNAP_PRONG_DIAMETER / 2;
-      const barbR = prongR + SNAP_BARB_FLARE;
-      const holeR = SNAP_HOLE_DIAMETER / 2;
-      expect(barbR).toBeGreaterThan(holeR);
-      // …but stays within PETG elastic range (interference < 0.15mm radial)
-      expect(barbR - holeR).toBeLessThan(0.15);
-    });
-
-    it('retention shoulder is shorter than lead-in cone (asymmetric snap)', () => {
-      // The asymmetry that makes "easy push, hard pull" lives in the *heights*,
-      // not the cone angles: the retention shoulder concentrates its radial
-      // change (prong → barb-max) over a small height, producing an abrupt
-      // click on pull-out. The lead-in cone spreads its radial change
-      // (barb-max → tip) over a longer height, so insertion feels gradual.
-      expect(SNAP_BARB_RETAIN_HEIGHT).toBeLessThan(SNAP_BARB_LEAD_HEIGHT);
-    });
-
-    it('barb radial flare maps to a non-trivial retention slope', () => {
-      // A degenerate flare (≈0) would make pull-out frictionless. Sanity-check
-      // that the wide-point's radial offset is at least 1× the hole clearance,
-      // i.e. the barb is genuinely wider than what the hole accommodates.
-      expect(SNAP_BARB_FLARE).toBeGreaterThanOrEqual(SNAP_HOLE_CLEARANCE);
-    });
-
-    it('hole clearance leaves room for prong shaft', () => {
-      // Shaft sits in hole with `SNAP_HOLE_CLEARANCE` per side. Prevents jamming.
-      expect(SNAP_HOLE_CLEARANCE).toBeGreaterThan(0);
-      expect(SNAP_HOLE_DIAMETER).toBeCloseTo(SNAP_PRONG_DIAMETER + 2 * SNAP_HOLE_CLEARANCE, 5);
-    });
-
-    it('tip radius is small but printable', () => {
-      // FDM elephant's-foot effect rounds anything below ~0.4mm radius.
-      expect(SNAP_TIP_RADIUS).toBeGreaterThanOrEqual(0.5);
-      expect(SNAP_TIP_RADIUS).toBeLessThan(SNAP_PRONG_DIAMETER / 2);
-    });
+  it('peg fits its blind hole with the configured clearance', () => {
+    expect(SNAP_HOLE_DIAMETER).toBeCloseTo(SNAP_PEG_DIAMETER + 2 * SNAP_HOLE_CLEARANCE, 5);
+    expect(SNAP_HOLE_CLEARANCE).toBeGreaterThan(0);
   });
 
-  describe('exported STL bbox', () => {
-    it('matches expected dimensions for a 5mm slab', async () => {
-      const slabThickness = 5;
-      const result = await exportSnapClip(slabThickness, 'stl');
-      const bbox = stlBbox(result.data);
+  it('exported STL bbox matches saddle dimensions', async () => {
+    const result = await exportSnapClip('stl');
+    const bbox = stlBbox(result.data);
 
-      // X (along seam): bridge length = 2 × (INSET + LENGTH_MARGIN)
-      const expectedLen = 2 * (SNAP_PRONG_INSET + SNAP_BRIDGE_LENGTH_MARGIN);
-      expect(bbox.maxX - bbox.minX).toBeCloseTo(expectedLen, 1);
+    const expectedLen = 2 * (SNAP_PEG_INSET + SNAP_SADDLE_LENGTH_MARGIN);
+    expect(bbox.maxX - bbox.minX).toBeCloseTo(expectedLen, 1);
+    expect(bbox.maxY - bbox.minY).toBeCloseTo(SNAP_SADDLE_WIDTH, 1);
 
-      // Y (perpendicular to seam): bridge width
-      expect(bbox.maxY - bbox.minY).toBeCloseTo(SNAP_BRIDGE_WIDTH, 1);
-
-      // Z (print height): bridge + (shaft = slab + overshoot) + barb total.
-      // The overshoot is what places the barb's wide point below the slab
-      // bottom in use orientation, giving real mechanical engagement.
-      const expectedH =
-        SNAP_BRIDGE_THICKNESS +
-        slabThickness +
-        SNAP_PRONG_OVERSHOOT +
-        SNAP_BARB_RETAIN_HEIGHT +
-        SNAP_BARB_LEAD_HEIGHT;
-      expect(bbox.maxZ - bbox.minZ).toBeCloseTo(expectedH, 1);
-
-      // Bridge sits on Z=0 (print orientation: build plate)
-      expect(bbox.minZ).toBeCloseTo(0, 1);
-    }, 30000);
-
-    it('prong shaft length scales with slab thickness', async () => {
-      const a = await exportSnapClip(5, 'stl');
-      const b = await exportSnapClip(10, 'stl');
-      const heightDiff = stlBbox(b.data).maxZ - stlBbox(a.data).maxZ;
-      expect(heightDiff).toBeCloseTo(5, 1);
-    }, 30000);
-
-    it('shaft applies SNAP_PRONG_OVERSHOOT (barb seats below slab bottom)', async () => {
-      // Regression guard: an earlier draft defined SNAP_PRONG_OVERSHOOT but
-      // forgot to add it to shaftLen, leaving the barb shoulder flush with
-      // the slab bottom instead of below it. Verify the overshoot is in the
-      // total clip height by comparing the actual bbox to the no-overshoot
-      // baseline.
-      const slab = 5;
-      const result = await exportSnapClip(slab, 'stl');
-      const totalH = stlBbox(result.data).maxZ - stlBbox(result.data).minZ;
-      const withoutOvershoot =
-        SNAP_BRIDGE_THICKNESS + slab + SNAP_BARB_RETAIN_HEIGHT + SNAP_BARB_LEAD_HEIGHT;
-      expect(totalH - withoutOvershoot).toBeCloseTo(SNAP_PRONG_OVERSHOOT, 1);
-    }, 30000);
-  });
+    // Z range: from peg tip (-PEG_LENGTH) up to top of arch (BASE_HEIGHT + ARCH_RISE).
+    const expectedH = SNAP_PEG_LENGTH + SNAP_SADDLE_BASE_HEIGHT + SNAP_SADDLE_ARCH_RISE;
+    expect(bbox.maxZ - bbox.minZ).toBeCloseTo(expectedH, 1);
+    expect(bbox.minZ).toBeCloseTo(-SNAP_PEG_LENGTH, 1);
+  }, 30000);
 });

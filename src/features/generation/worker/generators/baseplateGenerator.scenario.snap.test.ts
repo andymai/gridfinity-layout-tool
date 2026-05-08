@@ -17,7 +17,7 @@ import type { BaseplateParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { SNAP_PRONG_INSET, SNAP_BRIDGE_RECESS_DEPTH } from './generatorConstants';
+import { SNAP_PEG_INSET, SNAP_RECESS_DEPTH } from './generatorConstants';
 
 type ExportFn = (
   params: BaseplateParams,
@@ -54,9 +54,9 @@ interface MeshStats {
   nonManifoldEdges: number;
   boundaryEdges: number;
   maxZ: number;
-  /** Highest Z at any vertex within `radius` of (x,y). -Infinity if no
-   *  vertices in range — useful for detecting through-holes. */
-  topAt: (x: number, y: number, radius: number) => number;
+  /** True if any triangle face entirely below `z` lies within `radius` of
+   *  (x, y). Used to detect features cut into the slab top. */
+  hasFaceBelow: (x: number, y: number, radius: number, z: number) => boolean;
 }
 
 function analyze(stl: ArrayBuffer): MeshStats {
@@ -97,19 +97,31 @@ function analyze(stl: ArrayBuffer): MeshStats {
     else if (c > 2) nonManifoldEdges++;
   }
 
-  const topAt = (x: number, y: number, radius: number): number => {
-    let top = -Infinity;
+  const hasFaceBelow = (x: number, y: number, radius: number, z: number): boolean => {
     const r2 = radius * radius;
-    for (let i = 0; i < verts.length; i += 3) {
-      const dx = verts[i] - x;
-      const dy = verts[i + 1] - y;
-      if (dx * dx + dy * dy > r2) continue;
-      if (verts[i + 2] > top) top = verts[i + 2];
+    for (let t = 0; t < triangleCount; t++) {
+      const base = t * 9;
+      let allInside = true;
+      let allBelow = true;
+      for (let v = 0; v < 3; v++) {
+        const vx = verts[base + v * 3];
+        const vy = verts[base + v * 3 + 1];
+        const vz = verts[base + v * 3 + 2];
+        if ((vx - x) * (vx - x) + (vy - y) * (vy - y) > r2) {
+          allInside = false;
+          break;
+        }
+        if (vz >= z) {
+          allBelow = false;
+          break;
+        }
+      }
+      if (allInside && allBelow) return true;
     }
-    return top;
+    return false;
   };
 
-  return { triangleCount, nonManifoldEdges, boundaryEdges, maxZ, topAt };
+  return { triangleCount, nonManifoldEdges, boundaryEdges, maxZ, hasFaceBelow };
 }
 
 describe('baseplateGenerator — snap export', () => {
@@ -130,16 +142,42 @@ describe('baseplateGenerator — snap export', () => {
       expect(stats.boundaryEdges, 'boundary edges').toBe(0);
       expect(stats.nonManifoldEdges, 'non-manifold edges').toBe(0);
 
-      // Recess assertion: the slab top is at Z = maxZ. At a point well inside
-      // the recess footprint near the left join edge, the highest local Z
-      // should sit measurably below the slab top.
-      const halfW = 42; // (2 units × 42mm) / 2
+      // Recess assertion: at the recess footprint near the left join edge,
+      // a triangle face must exist entirely below (slabTop - RECESS_DEPTH/2).
+      // That's the recess floor — it can't exist if the recess wasn't cut.
+      const halfW = 42;
       const slabTop = stats.maxZ;
-      const recessSampleX = -halfW + SNAP_PRONG_INSET; // 5mm in from left edge
-      const localTop = stats.topAt(recessSampleX, 0, 1.5);
-      // Should be below slab top by at least half the recess depth (i.e., the
-      // recess is genuinely cut, not just a coplanar-fuse no-op).
-      expect(slabTop - localTop).toBeGreaterThan(SNAP_BRIDGE_RECESS_DEPTH * 0.5);
+      const recessSampleX = -halfW + SNAP_PEG_INSET;
+      const floorBelow = slabTop - SNAP_RECESS_DEPTH * 0.5;
+      expect(stats.hasFaceBelow(recessSampleX, 0, 2.0, floorBelow)).toBe(true);
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it(
+    'exports a watertight STL with magnets enabled (thicker slab)',
+    async () => {
+      // Magnets thicken the slab by MAGNET_FLOOR + magnetDepth ≈ 2.9mm. The
+      // recess depth is constant, so the floor of the recess sits well above
+      // the magnet floor — verify the export still produces a manifold STL
+      // and the recess is cut into the (now-thicker) slab top.
+      const params = defaults({
+        connectorStyle: 'snap',
+        magnetHoles: true,
+        magnetDepth: 2.4,
+        edges: { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
+      });
+
+      const { data } = await exportBaseplate(params, 'stl');
+      const stats = analyze(data);
+
+      expect(stats.boundaryEdges, 'boundary edges').toBe(0);
+      expect(stats.nonManifoldEdges, 'non-manifold edges').toBe(0);
+
+      expect(stats.maxZ).toBeGreaterThan(5);
+      const halfW = 42;
+      const floorBelow = stats.maxZ - SNAP_RECESS_DEPTH * 0.5;
+      expect(stats.hasFaceBelow(-halfW + SNAP_PEG_INSET, 0, 2.0, floorBelow)).toBe(true);
     },
     TEST_TIMEOUT_MS
   );

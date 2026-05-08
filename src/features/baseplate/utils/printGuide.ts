@@ -47,15 +47,13 @@ export function generatePrintGuide(input: PrintGuideInput): string {
   ];
 
   if (resolveConnectorStyle(parentParams) === 'snap') {
-    sections.push(generateSnapClipSection(tiling, parentParams));
+    sections.push(generateSnapClipSection(tiling));
   }
 
   sections.push(generateFooter());
   return sections.join('\n\n');
 }
 
-/** Count snap clips needed: every join-edge boundary across all pieces gets
- *  one hole; each clip spans two holes. Divide total holes by 2. */
 function countSnapClips(tiling: BaseplateTiling): number {
   let totalHoles = 0;
   for (const piece of tiling.pieces) {
@@ -67,30 +65,30 @@ function countSnapClips(tiling: BaseplateTiling): number {
     if (e.front === 'join') totalHoles += widthBoundaries;
     if (e.back === 'join') totalHoles += widthBoundaries;
   }
+  // Each clip spans two holes (one per piece across the seam).
   return Math.ceil(totalHoles / 2);
 }
 
-function generateSnapClipSection(tiling: BaseplateTiling, _params: BaseplateParams): string {
+function generateSnapClipSection(tiling: BaseplateTiling): string {
   const clipCount = countSnapClips(tiling);
   return [
     '─── Snap Clips ──────────────────────────────────',
     '',
     `  Quantity:    ${clipCount} clip${clipCount === 1 ? '' : 's'} total`,
     '  File:        snap-clip.stl (one model, print N copies)',
-    '  Material:    PETG recommended (prong flex)',
-    '  Speed:       ~20mm/s — small prong features',
+    '  Material:    PETG recommended (slight peg flex helps seating)',
+    '  Speed:       ~25mm/s — small features',
     '  Layer:       0.2mm',
     '  Infill:      20–30%',
-    '  Orientation: bridge flat on the build plate, prongs pointing up.',
-    '               The STL is exported in this orientation already; no',
-    '               rotation is needed in your slicer. The widest barb',
-    '               overhang is ~27° from vertical, well within FDM',
-    '               capability — no supports required.',
+    '  Orientation: saddle base flat on the build plate, arch up. Pegs are',
+    '               on the underside; the slicer will add brief support',
+    '               for them, or you can flip the part for a support-free',
+    '               print and clip the pegs onto the bed.',
     '',
-    '  Insertion:   align clip prongs with the through-holes spanning a',
-    '               baseplate seam, then press the bridge down until it',
-    '               sits flush on the slab top. The barb shoulder snaps',
-    '               under the slab bottom and locks the seam.',
+    '  Installation: align the two pegs with the matching pair of blind',
+    '               holes spanning the seam between two baseplate pieces,',
+    '               then press the saddle straight down. The shoulder seats',
+    '               flush with the slab top, leaving only the arch raised.',
   ].join('\n');
 }
 

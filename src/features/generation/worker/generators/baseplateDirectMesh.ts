@@ -39,7 +39,7 @@ import {
   HOLE_DIAMETER,
   HOLE_DEPTH,
   SNAP_HOLE_DIAMETER,
-  SNAP_PRONG_INSET,
+  SNAP_PEG_INSET,
   computeConnectorPositions,
 } from './generatorTypes';
 import type { ProgressFn, CellInfo, ForEachCellOptions } from './generatorTypes';
@@ -202,6 +202,10 @@ export function generateBaseplateDirect(
     const holeRadius = SNAP_HOLE_DIAMETER / 2;
     const halfW = totalW / 2;
     const halfD = totalD / 2;
+    const widthBoundaries = Math.ceil(width) - 1;
+    const depthBoundaries = Math.ceil(depth) - 1;
+    const xBoundaryPos = (k: number): number => k * gridUnitMm - (depth * gridUnitMm) / 2;
+    const yBoundaryPos = (k: number): number => k * gridUnitMm - (width * gridUnitMm) / 2;
     type Side = 'left' | 'right' | 'front' | 'back';
     const sides: ReadonlyArray<{
       side: Side;
@@ -216,41 +220,42 @@ export function generateBaseplateDirect(
         wallPos: -halfW + slabOffsetX,
         inward: 1,
         protrudeAxis: 'x',
-        numBoundaries: Math.ceil(depth) - 1,
-        boundaryPos: (k) => k * gridUnitMm - (depth * gridUnitMm) / 2,
+        numBoundaries: depthBoundaries,
+        boundaryPos: xBoundaryPos,
       },
       {
         side: 'right',
         wallPos: halfW + slabOffsetX,
         inward: -1,
         protrudeAxis: 'x',
-        numBoundaries: Math.ceil(depth) - 1,
-        boundaryPos: (k) => k * gridUnitMm - (depth * gridUnitMm) / 2,
+        numBoundaries: depthBoundaries,
+        boundaryPos: xBoundaryPos,
       },
       {
         side: 'front',
         wallPos: -halfD + slabOffsetY,
         inward: 1,
         protrudeAxis: 'y',
-        numBoundaries: Math.ceil(width) - 1,
-        boundaryPos: (k) => k * gridUnitMm - (width * gridUnitMm) / 2,
+        numBoundaries: widthBoundaries,
+        boundaryPos: yBoundaryPos,
       },
       {
         side: 'back',
         wallPos: halfD + slabOffsetY,
         inward: -1,
         protrudeAxis: 'y',
-        numBoundaries: Math.ceil(width) - 1,
-        boundaryPos: (k) => k * gridUnitMm - (width * gridUnitMm) / 2,
+        numBoundaries: widthBoundaries,
+        boundaryPos: yBoundaryPos,
       },
     ];
     for (const def of sides) {
       if (edges[def.side] !== 'join' || def.numBoundaries <= 0) continue;
-      const inset = def.wallPos + def.inward * SNAP_PRONG_INSET;
+      const xAxis = def.protrudeAxis === 'x';
+      const inset = def.wallPos + def.inward * SNAP_PEG_INSET;
       for (let k = 1; k <= def.numBoundaries; k++) {
         const bp = def.boundaryPos(k);
-        const cx = def.protrudeAxis === 'x' ? inset : bp;
-        const cy = def.protrudeAxis === 'x' ? bp : inset;
+        const cx = xAxis ? inset : bp;
+        const cy = xAxis ? bp : inset;
         addSnapHoleMarker(mb, cx, cy, holeRadius, totalHeight);
       }
     }

@@ -27,13 +27,6 @@ import { generateBaseplateFileName, toNamingParams } from '../utils/fileNaming';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat } from '@/shared/types/bin';
 import { resolveConnectorStyle } from '@/shared/types/bin';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
-
-/** Retaining floor thickness above magnet holes — mirrors `MAGNET_FLOOR` in
- *  `features/generation/.../generatorConstants.ts` (generation-specific,
- *  not in GRIDFINITY_SPEC). Keeping this in sync matters for snap-clip
- *  shaft length, which depends on the same slab-thickness formula. */
-const MAGNET_FLOOR_MM = 0.5;
 
 interface UseBaseplateExportReturn {
   readonly isExporting: boolean;
@@ -222,11 +215,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           ];
 
           if (resolveConnectorStyle(fullParams) === 'snap') {
-            const slabThickness =
-              GRIDFINITY_SPEC.SOCKET_HEIGHT +
-              (fullParams.magnetHoles ? MAGNET_FLOOR_MM + fullParams.magnetDepth : 0);
             const clipFormat = format === '3mf' ? 'stl' : format;
-            const clipResult = await bridge.exportSnapClip(slabThickness, clipFormat);
+            const clipResult = await bridge.exportSnapClip(clipFormat);
             const clipExt = clipFormat === 'step' ? '.step' : '.stl';
             extraFiles.push({ name: `snap-clip${clipExt}`, content: clipResult.data });
           }

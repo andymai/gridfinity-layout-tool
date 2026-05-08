@@ -72,7 +72,6 @@ export async function handleExportSnapClip(message: ExportSnapClipMessage): Prom
     'SNAP_CLIP_EXPORT_RESULT',
     async () => {
       const result = await exportSnapClip(
-        payload.slabThickness,
         payload.format,
         payload.tolerance,
         payload.angularTolerance

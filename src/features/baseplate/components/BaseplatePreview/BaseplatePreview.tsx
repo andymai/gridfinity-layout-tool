@@ -102,6 +102,10 @@ export function BaseplatePreview({
     return !!params && resolveConnectorStyle(params) === 'snap' && isSplit;
   });
 
+  // While snap clips aren't showing, force the offset to seated so geometry
+  // math elsewhere stays correct. State is preserved across hide/show.
+  const effectiveSnapClipOffsetMm = showSnapClips ? snapClipOffsetMm : SNAP_CLIP_OFFSET_DEFAULT;
+
   const setCameraPreset = useBaseplatePresetTransition(
     controlsRef,
     invalidateRef,
@@ -267,7 +271,7 @@ export function BaseplatePreview({
             <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} />
           )}
 
-          <SnapClipPreview offsetMm={snapClipOffsetMm} />
+          <SnapClipPreview offsetMm={effectiveSnapClipOffsetMm} />
 
           {/* Ghost outline only in assembled mode -- exploded scatters pieces beyond slab bounds */}
           {splitViewMode !== 'exploded' && (

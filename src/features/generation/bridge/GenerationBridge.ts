@@ -327,11 +327,10 @@ export class GenerationBridge {
   }
 
   exportSnapClip(
-    slabThickness: number,
     format: ExportFormat,
     options?: { tolerance?: number; angularTolerance?: number }
   ): Promise<SnapClipExportResult> {
-    return exportSnapClipImpl(this, slabThickness, format, options);
+    return exportSnapClipImpl(this, format, options);
   }
 
   /** Whether the bridge has been destroyed */

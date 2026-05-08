@@ -79,8 +79,6 @@ export interface ExportSnapClipMessage {
 }
 
 export interface ExportSnapClipPayload {
-  /** Slab thickness in mm — sets prong shaft length. */
-  readonly slabThickness: number;
   readonly requestId: string;
   readonly format: ExportFormat;
   readonly tolerance?: number;

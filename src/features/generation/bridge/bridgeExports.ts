@@ -254,14 +254,12 @@ export function exportBaseplate(
  *  and runs after baseplate pieces, never concurrently with them. */
 export function exportSnapClip(
   ctx: BridgeExportContext,
-  slabThickness: number,
   format: ExportFormat,
   options?: { tolerance?: number; angularTolerance?: number }
 ): Promise<SnapClipExportResult> {
   return runExport<SnapClipExportResult>(ctx, 'export', 30_000, (requestId) => ({
     type: 'EXPORT_SNAP_CLIP',
     payload: {
-      slabThickness,
       requestId,
       format,
       tolerance: options?.tolerance,

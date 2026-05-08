@@ -30,11 +30,12 @@ import {
   COPLANAR_MARGIN,
   COPLANAR_OVERLAP,
   SNAP_HOLE_DIAMETER,
-  SNAP_PRONG_INSET,
-  SNAP_BRIDGE_WIDTH,
-  SNAP_BRIDGE_LENGTH_MARGIN,
-  SNAP_BRIDGE_RECESS_CLEARANCE,
-  SNAP_BRIDGE_RECESS_DEPTH,
+  SNAP_PEG_INSET,
+  SNAP_HOLE_DEPTH,
+  SNAP_SADDLE_WIDTH,
+  SNAP_SADDLE_LENGTH_MARGIN,
+  SNAP_RECESS_CLEARANCE,
+  SNAP_RECESS_DEPTH,
   sketch,
 } from './generatorTypes';
 
@@ -66,7 +67,7 @@ export function buildConnectors(
   if (style === 'snap') {
     return {
       nubs: tongues,
-      holes: buildSnapHoles(params, totalHeight, totalW, totalD, slabOffsetX, slabOffsetY),
+      holes: buildSnapCutters(params, totalHeight, totalW, totalD, slabOffsetX, slabOffsetY),
     };
   }
 
@@ -231,26 +232,12 @@ function makeGroove(
   return sketch(profile, 'XY', COPLANAR_MARGIN).extrude(-(totalHeight + 2 * COPLANAR_MARGIN));
 }
 
-/**
- * Cylindrical through-holes for snap-clip connectors.
- *
- *      seam
- *       │
- *  ─────┼─────                ← top view (X-Y) of one boundary
- *   ○   │   ○                 ← prong holes on each piece, inset INSET mm
- *       │
- *
- * One hole per piece, inset SNAP_PRONG_INSET from the wall toward the
- * piece interior. Hole diameter accounts for prong + clearance. Cut extends
- * past the slab top/bottom by COPLANAR_MARGIN to avoid degenerate booleans.
- *
- * Like dovetails, holes are placed at every grid-cell boundary along join
- * edges. Both adjacent pieces receive holes (one each), so the U-clip's two
- * prongs span the seam.
- */
-function buildSnapHoles(
+// Snap cutters are shallow blind holes drilled into the slab top: two per
+// grid boundary along a join edge, straddling the seam at ±SNAP_PEG_INSET.
+// The saddle clip drops onto these from above.
+function buildSnapCutters(
   params: BaseplateParams,
-  totalHeight: number,
+  _totalHeight: number,
   totalW: number,
   totalD: number,
   slabOffsetX: number,
@@ -270,7 +257,6 @@ function buildSnapHoles(
   const edgeDefs: ReadonlyArray<{
     side: Side;
     wallPos: number;
-    /** Inward direction from the wall (sign on the protrude axis). */
     inward: -1 | 1;
     protrudeAxis: 'x' | 'y';
     numBoundaries: number;
@@ -310,47 +296,38 @@ function buildSnapHoles(
     },
   ];
 
-  // Bridge recess: half of the bridge footprint sits in each piece, extending
-  // from the seam edge inward. The recess is along the across-seam direction
-  // (length = bridge half + clearance) and centered on the boundary in the
-  // along-seam direction (width = bridge_width + 2 × clearance). Without this,
-  // the bridge would protrude SNAP_BRIDGE_THICKNESS above the slab top and
-  // lift any bin placed near the seam.
-  const recessAcrossLen =
-    SNAP_PRONG_INSET + SNAP_BRIDGE_LENGTH_MARGIN + SNAP_BRIDGE_RECESS_CLEARANCE;
-  const recessAlongLen = SNAP_BRIDGE_WIDTH + 2 * SNAP_BRIDGE_RECESS_CLEARANCE;
-  // Cut extends slightly above slab top and below the recess depth to avoid
-  // coplanar-face boolean ambiguity (issue #1407 pattern).
-  const recessZTop = ext;
-  const recessZBot = -SNAP_BRIDGE_RECESS_DEPTH;
-  const recessHeight = recessZTop - recessZBot;
+  // Saddle recess: half on each piece, hugging the seam; clip's flat shoulder
+  // sits flush so only the arch projects above the slab top.
+  const recessAcrossLen = SNAP_PEG_INSET + SNAP_SADDLE_LENGTH_MARGIN + SNAP_RECESS_CLEARANCE;
+  const recessAlongLen = SNAP_SADDLE_WIDTH + 2 * SNAP_RECESS_CLEARANCE;
+  const recessHeight = SNAP_RECESS_DEPTH + ext;
+  const recessZCenter = -SNAP_RECESS_DEPTH / 2 + ext / 2;
+
+  // Blind peg holes; ext on top avoids degenerate coplanar booleans.
+  const holeDepth = SNAP_RECESS_DEPTH + SNAP_HOLE_DEPTH + ext;
 
   for (const def of edgeDefs) {
     if (edges[def.side] !== 'join' || def.numBoundaries <= 0) continue;
-    const inset = def.wallPos + def.inward * SNAP_PRONG_INSET;
+    const xAxis = def.protrudeAxis === 'x';
+    const peg = def.wallPos + def.inward * SNAP_PEG_INSET;
+    const recessAcrossCenter = def.wallPos + def.inward * (recessAcrossLen / 2);
+    const recessW = xAxis ? recessAcrossLen : recessAlongLen;
+    const recessD = xAxis ? recessAlongLen : recessAcrossLen;
+
     for (let k = 1; k <= def.numBoundaries; k++) {
       const bp = def.boundaryPos(k);
-      const cx = def.protrudeAxis === 'x' ? inset : bp;
-      const cy = def.protrudeAxis === 'x' ? bp : inset;
-      const cylinder = drawCircle(radius)
-        .sketchOnPlane('XY', ext)
-        .extrude(-(totalHeight + 2 * ext)) as Shape3D;
+      const cx = xAxis ? peg : bp;
+      const cy = xAxis ? bp : peg;
+      const cylinder = drawCircle(radius).sketchOnPlane('XY', ext).extrude(-holeDepth) as Shape3D;
       holes.push(translate(cylinder, [cx, cy, 0]));
 
-      // Bridge recess pocket: extends from the seam edge inward by
-      // recessAcrossLen, centered on the boundary in the along-seam axis.
-      const recessW = def.protrudeAxis === 'x' ? recessAcrossLen : recessAlongLen;
-      const recessD = def.protrudeAxis === 'x' ? recessAlongLen : recessAcrossLen;
-      // Recess center: along the seam, on the boundary; across the seam,
-      // half the recess length inset from the wall (so the recess hugs
-      // the seam edge).
-      const recessCenterAcross = def.wallPos + def.inward * (recessAcrossLen / 2);
-      const recessCx = def.protrudeAxis === 'x' ? recessCenterAcross : bp;
-      const recessCy = def.protrudeAxis === 'x' ? bp : recessCenterAcross;
-      const recessBox = box(recessW, recessD, recessHeight, {
-        at: [recessCx, recessCy, recessZBot + recessHeight / 2],
-      }) as Shape3D;
-      holes.push(recessBox);
+      const recessCx = xAxis ? recessAcrossCenter : bp;
+      const recessCy = xAxis ? bp : recessAcrossCenter;
+      holes.push(
+        box(recessW, recessD, recessHeight, {
+          at: [recessCx, recessCy, recessZCenter],
+        })
+      );
     }
   }
 

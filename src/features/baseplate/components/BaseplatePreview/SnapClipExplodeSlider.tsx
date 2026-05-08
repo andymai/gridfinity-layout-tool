@@ -1,10 +1,3 @@
-/**
- * Vertical slider that lifts snap clips off the slab top, mirroring the
- * bin designer's `LidExplodeSlider` so the same gesture works in both
- * places. Drag up = expose the prongs; drag down = snap closed (bridge
- * sits in its recess).
- */
-
 import { useCallback, useId, useRef, useState } from 'react';
 import { useTranslation } from '@/i18n';
 import { cn } from '@/design-system/cn';
@@ -92,9 +85,8 @@ export function SnapClipExplodeSlider({ value, onChange }: SnapClipExplodeSlider
 
   return (
     <div
-      // Sit a bit higher than the lid slider's vertical center so that, in
-      // any future overlap (designer + baseplate share a layout), the two
-      // controls don't visually collide. Lid slider lives at top-1/2.
+      // top-1/3 (not top-1/2) so this doesn't collide with the lid slider in
+      // shared layouts; lid slider lives at top-1/2.
       className="absolute right-2 top-1/3 z-10 flex -translate-y-1/2 flex-col items-center gap-1.5 rounded-lg bg-surface-elevated/80 px-2 py-2.5 shadow-sm backdrop-blur"
       onPointerEnter={() => setIsHovering(true)}
       onPointerLeave={() => setIsHovering(false)}
