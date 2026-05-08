@@ -35,7 +35,7 @@ vi.mock('@/core/labs', () => ({
   getGraduatedFeatures: () => [],
 }));
 
-vi.mock('@/features/labs/components/FeatureCard', () => ({
+vi.mock('@/features/labs/components', () => ({
   FeatureCard: ({
     feature,
     isEnabled,
@@ -61,20 +61,12 @@ vi.mock('@/features/labs/components/FeatureCard', () => ({
       {feature.titleKey}
     </div>
   ),
-}));
-
-vi.mock('@/features/labs/components/GraduatedSection', () => ({
   GraduatedSection: () => <div data-testid="graduated-section">Graduated</div>,
-}));
-
-vi.mock('@/features/labs/components/icons', () => ({
   SparklesIcon: ({ className }: { className?: string }) => (
     <svg className={className} data-testid="sparkles-icon" />
   ),
-}));
-
-vi.mock('@/features/labs/components/EngineSelector', () => ({
   EngineSelector: () => <div data-testid="engine-selector">Engine Selector</div>,
+  KERNEL_FEATURE_IDS: ['brepkit_kernel', 'occt_wasm_kernel'] as const,
 }));
 
 describe('LabsTab', () => {

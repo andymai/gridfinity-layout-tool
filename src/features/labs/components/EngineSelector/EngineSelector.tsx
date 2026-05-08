@@ -6,11 +6,9 @@ import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import { useTranslation } from '@/i18n';
 import { FeatureStatusBadge } from '../FeatureStatusBadge';
 import { InfoIcon } from '../icons';
+import { BREPKIT_ID, OCCT_WASM_ID } from './kernelIds';
 
 type Engine = 'default' | 'occt-wasm' | 'brepkit';
-
-const BREPKIT_ID = 'brepkit_kernel' as const;
-const OCCT_WASM_ID = 'occt_wasm_kernel' as const;
 
 const ENGINE_FLAGS: Record<Engine, { brepkit: boolean; occt: boolean }> = {
   default: { brepkit: false, occt: false },
