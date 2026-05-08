@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { EngineSelector } from './EngineSelector';
 import { useLabsStore, useToastStore } from '@/core/store';
 import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
+import { resetAllStores } from '@/test/testUtils';
 
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
@@ -19,12 +20,17 @@ vi.mock('../FeatureStatusBadge', () => ({
 }));
 
 function setEnabled(brepkit: boolean, occt: boolean) {
-  useLabsStore.setState({
+  useLabsStore.setState((prev) => ({
     preferences: {
-      enabledFeatures: { brepkit_kernel: brepkit, occt_wasm_kernel: occt },
+      ...prev.preferences,
+      enabledFeatures: {
+        ...prev.preferences.enabledFeatures,
+        brepkit_kernel: brepkit,
+        occt_wasm_kernel: occt,
+      },
       lastModified: new Date().toISOString(),
     },
-  });
+  }));
 }
 
 function getSegment(label: string) {
@@ -35,8 +41,7 @@ function getSegment(label: string) {
 
 describe('EngineSelector', () => {
   beforeEach(() => {
-    setEnabled(false, false);
-    useToastStore.setState({ toasts: [] });
+    resetAllStores();
     vi.mocked(trackEvent).mockClear();
   });
 
