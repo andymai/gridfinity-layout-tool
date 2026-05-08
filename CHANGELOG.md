@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.72.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.72.0...gridfinity-layout-tool-v4.72.1) (2026-05-08)
+
+
+### Bug Fixes
+
+* **labs:** render EngineSelector in Settings → Labs tab ([#1608](https://github.com/andymai/gridfinity-layout-tool/issues/1608)) ([d554daf](https://github.com/andymai/gridfinity-layout-tool/commit/d554dafac584e37fe88db18085771423fdcc7daf))
+
 ## [4.72.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.71.0...gridfinity-layout-tool-v4.72.0) (2026-05-08)
 
 
