@@ -27,6 +27,7 @@ import { useTranslation } from '@/i18n';
 import type { CameraPreset } from './cameraUtils';
 import { calculateIdealDistance, calculateMaxOrbitDistance } from './cameraUtils';
 import { BaseplateMesh } from './BaseplateMesh';
+import { SnapClipPreview } from './SnapClipPreview';
 import { SceneLighting } from './SceneLighting';
 import { CameraController } from './CameraController';
 import { DimensionLabels } from './DimensionLabels';
@@ -255,6 +256,8 @@ export function BaseplatePreview({
           ) : (
             <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} />
           )}
+
+          <SnapClipPreview exploded={splitViewMode === 'exploded'} />
 
           {/* Ghost outline only in assembled mode -- exploded scatters pieces beyond slab bounds */}
           {splitViewMode !== 'exploded' && (
