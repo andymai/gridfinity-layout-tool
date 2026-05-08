@@ -26,6 +26,8 @@ import { generatePrintGuide } from '../utils/printGuide';
 import { generateBaseplateFileName, toNamingParams } from '../utils/fileNaming';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat } from '@/shared/types/bin';
+import { resolveConnectorStyle } from '@/shared/types/bin';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 interface UseBaseplateExportReturn {
   readonly isExporting: boolean;
@@ -209,9 +211,21 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             baseFileName: baseNameNoExt,
           });
 
-          const zip = await packagePiecesAsZip(pieces, baseNameNoExt, extension, [
+          const extraFiles: { name: string; content: string | ArrayBuffer }[] = [
             { name: 'print-guide.txt', content: guideText },
-          ]);
+          ];
+
+          if (resolveConnectorStyle(fullParams) === 'snap') {
+            const slabThickness =
+              GRIDFINITY_SPEC.SOCKET_HEIGHT +
+              (fullParams.magnetHoles ? 0.5 + fullParams.magnetDepth : 0);
+            const clipFormat = format === '3mf' ? 'stl' : format;
+            const clipResult = await bridge.exportSnapClip(slabThickness, clipFormat);
+            const clipExt = clipFormat === 'step' ? '.step' : '.stl';
+            extraFiles.push({ name: `snap-clip${clipExt}`, content: clipResult.data });
+          }
+
+          const zip = await packagePiecesAsZip(pieces, baseNameNoExt, extension, extraFiles);
           triggerDownload(zip, `${baseNameNoExt}.zip`);
 
           if (uniqueCount < totalPieces) {

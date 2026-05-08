@@ -10,10 +10,11 @@ interface ExportPiece {
   readonly label: string;
 }
 
-/** A plain-text file to include alongside binary pieces in the ZIP. */
+/** A file to include alongside binary pieces in the ZIP. Content may be
+ *  text (string) or binary (ArrayBuffer) — JSZip handles both transparently. */
 export interface ZipTextFile {
   readonly name: string;
-  readonly content: string;
+  readonly content: string | ArrayBuffer;
 }
 
 /**

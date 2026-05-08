@@ -8,6 +8,7 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
+import { resolveConnectorStyle } from '@/shared/types/bin';
 import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { PieceGroup } from './pieceFingerprint';
 import { colToLetter } from './splitPlanner';
@@ -43,10 +44,49 @@ export function generatePrintGuide(input: PrintGuideInput): string {
       baseFileName
     ),
     generateGridMap(tiling, groups, groupNames),
-    generateFooter(),
   ];
 
+  if (resolveConnectorStyle(parentParams) === 'snap') {
+    sections.push(generateSnapClipSection(tiling, parentParams));
+  }
+
+  sections.push(generateFooter());
   return sections.join('\n\n');
+}
+
+/** Count snap clips needed: every join-edge boundary across all pieces gets
+ *  one hole; each clip spans two holes. Divide total holes by 2. */
+function countSnapClips(tiling: BaseplateTiling): number {
+  let totalHoles = 0;
+  for (const piece of tiling.pieces) {
+    const e = piece.edges;
+    const widthBoundaries = Math.ceil(piece.widthUnits) - 1;
+    const depthBoundaries = Math.ceil(piece.depthUnits) - 1;
+    if (e.left === 'join') totalHoles += depthBoundaries;
+    if (e.right === 'join') totalHoles += depthBoundaries;
+    if (e.front === 'join') totalHoles += widthBoundaries;
+    if (e.back === 'join') totalHoles += widthBoundaries;
+  }
+  return Math.ceil(totalHoles / 2);
+}
+
+function generateSnapClipSection(tiling: BaseplateTiling, _params: BaseplateParams): string {
+  const clipCount = countSnapClips(tiling);
+  return [
+    '─── Snap Clips ──────────────────────────────────',
+    '',
+    `  Quantity:  ${clipCount} clip${clipCount === 1 ? '' : 's'}`,
+    '  File:      snap-clip.stl (one model, print N copies)',
+    '  Material:  PETG recommended for prong flex',
+    '  Speed:     ~20mm/s for the small prong features',
+    '  Layer:     0.2mm',
+    '  Infill:    20-30%',
+    '',
+    '  Insertion: align clip prongs with the through-holes spanning a',
+    '             baseplate seam, then press the bridge down until it sits',
+    '             flush on the slab top. The barb shoulder snaps under the',
+    '             slab bottom and locks the seam.',
+  ].join('\n');
 }
 
 function generateHeader(
@@ -62,7 +102,9 @@ function generateHeader(
     params.paddingFront > 0 ||
     params.paddingBack > 0;
   if (hasPadding) features.push('padded');
-  if (params.connectorNubs) features.push('connectors');
+  const style = resolveConnectorStyle(params);
+  if (style === 'dovetail') features.push('dovetails');
+  else if (style === 'snap') features.push('snap clips');
 
   const featureStr = features.length > 0 ? features.join(', ') : 'standard';
   const totalPieces = tiling.pieces.length;
@@ -100,8 +142,10 @@ function generatePieceTable(
     // tongue is male — matches the actual STL bbox so users know what fits the
     // bed. Under preferIdenticalPieces (paired mode) every join edge carries a
     // tongue regardless of side, so both sides of each axis claim protrusion.
-    const tongue = parentParams.connectorNubs ? TONGUE_PROTRUSION_MM : 0;
-    const isPaired = !!parentParams.preferIdenticalPieces && !!parentParams.connectorNubs;
+    // Only dovetail style protrudes; snap-clip and 'none' have no tongue.
+    const parentStyle = resolveConnectorStyle(parentParams);
+    const tongue = parentStyle === 'dovetail' ? TONGUE_PROTRUSION_MM : 0;
+    const isPaired = !!parentParams.preferIdenticalPieces && parentStyle === 'dovetail';
     const startMale = !parentParams.invertDovetails;
     const widthMm =
       params.width * params.gridUnitMm +
@@ -130,7 +174,8 @@ function generatePieceTable(
 
     const features: string[] = [];
     if (parentParams.magnetHoles) features.push('magnet holes');
-    if (parentParams.connectorNubs) features.push('connectors');
+    if (parentStyle === 'dovetail') features.push('dovetails');
+    else if (parentStyle === 'snap') features.push('snap clips');
     const hasPadding =
       params.paddingLeft > 0 ||
       params.paddingRight > 0 ||

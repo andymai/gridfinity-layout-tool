@@ -15,6 +15,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
+import { Select } from '@/design-system/Select';
 import { RulerIcon } from '@/design-system/Icon';
 import { Stepper } from '@/design-system/Stepper';
 import { useTranslation } from '@/i18n';
@@ -31,8 +32,9 @@ import { EditableDimensions } from './EditableDimensions';
 import { PaddingSchematic } from './PaddingSchematic';
 import { SplitViewStrip } from './SplitViewStrip';
 import { PADDING_MAX } from '../PaddingStepper';
-import type { BaseplateParams } from '@/core/types';
+import type { BaseplateParams, ConnectorStyle } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
+import { resolveConnectorStyle } from '@/shared/types/bin';
 
 export function BaseplatePanel() {
   const t = useTranslation();
@@ -222,14 +224,35 @@ export function BaseplatePanel() {
           <div className="space-y-3 px-4 py-3">
             {tiling?.isSplit && (
               <>
-                <FeatureToggle
-                  label={t('baseplate.connectorNubs')}
-                  checked={baseplateParams.connectorNubs === true}
-                  onChange={() =>
-                    updateParam('connectorNubs', baseplateParams.connectorNubs !== true)
-                  }
-                />
-                {baseplateParams.connectorNubs === true && (
+                <SettingsRow
+                  label={t('baseplate.connectors.label')}
+                  htmlFor="bp-connectorStyle"
+                  tooltip={t('baseplate.connectors.tooltip')}
+                >
+                  <Select
+                    id="bp-connectorStyle"
+                    size="sm"
+                    value={resolveConnectorStyle(baseplateParams)}
+                    onValueChange={(value) => {
+                      const next = value as ConnectorStyle;
+                      updateParam('connectorStyle', next);
+                      // Non-dovetail styles ignore both flags; clear them so the
+                      // persisted state matches what the user can see in the UI.
+                      if (next !== 'dovetail' && baseplateParams.invertDovetails) {
+                        updateParam('invertDovetails', undefined);
+                      }
+                      if (next !== 'dovetail' && baseplateParams.preferIdenticalPieces) {
+                        updateParam('preferIdenticalPieces', undefined);
+                      }
+                    }}
+                    options={[
+                      { id: 'none', name: t('baseplate.connectors.none') },
+                      { id: 'dovetail', name: t('baseplate.connectors.dovetail') },
+                      { id: 'snap', name: t('baseplate.connectors.snap') },
+                    ]}
+                  />
+                </SettingsRow>
+                {resolveConnectorStyle(baseplateParams) === 'dovetail' && (
                   <>
                     {baseplateParams.preferIdenticalPieces !== true && (
                       <Checkbox

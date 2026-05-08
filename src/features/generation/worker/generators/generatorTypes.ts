@@ -46,6 +46,20 @@ export {
   HOLE_DIAMETER,
   HOLE_DEPTH,
   NUB_CIRCLE_SEGMENTS,
+  SNAP_PRONG_DIAMETER,
+  SNAP_PRONG_INSET,
+  SNAP_PRONG_OVERSHOOT,
+  SNAP_BRIDGE_THICKNESS,
+  SNAP_BRIDGE_WIDTH,
+  SNAP_BRIDGE_LENGTH_MARGIN,
+  SNAP_BARB_FLARE,
+  SNAP_BARB_RETAIN_HEIGHT,
+  SNAP_BARB_LEAD_HEIGHT,
+  SNAP_BARB_HEIGHT,
+  SNAP_TIP_RADIUS,
+  SNAP_HOLE_CLEARANCE,
+  SNAP_HOLE_DIAMETER,
+  SNAP_CIRCLE_SEGMENTS,
 } from './generatorConstants';
 export { decomposeCells, decomposeHalfCells, forEachCell } from './cellDecomposition';
 export type { CellInfo, ForEachCellOptions } from './cellDecomposition';

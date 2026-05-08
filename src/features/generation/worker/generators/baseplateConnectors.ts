@@ -1,33 +1,27 @@
 /**
- * Discrete dovetail connectors at grid cell boundary intersections along
- * join edges.
+ * Inter-piece connectors at grid cell boundary intersections along join edges.
  *
- * Each connector is a small trapezoidal prism — the classic dovetail fan
- * shape visible from the top: narrower at the wall (BASE_HALF), wider at the
- * protruding tip (TIP_HALF).
+ * Two styles are supported, dispatched by `connectorStyle`:
  *
- *   Top view (X-Y) of one connector on a left edge:
+ * - 'dovetail': trapezoidal prism — narrower at the wall (BASE_HALF), wider
+ *   at the tip (TIP_HALF). The taper is in the X-Y plane so pieces drop in
+ *   from above. Once seated, the tip blocks horizontal pull-out.
+ * - 'snap': cylindrical through-holes for a separately printed U-clip. Holes
+ *   are inset `SNAP_PRONG_INSET` from the seam (one per piece). The clip
+ *   bridges the seam from above and locks via tip barbs below the slab.
  *
- *     wall
- *      |  A ──── B         Y = bPos + BASE_HALF (wall) / + TIP_HALF (tip)
- *      |  |  dt  |
- *      |  D ──── C         Y = bPos - BASE_HALF (wall) / - TIP_HALF (tip)
- *      |  ← P →
- *
- * The dovetail taper is in the X-Y plane, so pieces drop in from above (Z)
- * without interference. Once seated, the wider tip prevents horizontal pull-out.
- *
- * Convention: left/front = tongue (male, fused), right/back = groove (female,
- * cut). Inverted by `invertDovetails`.
+ * Convention (dovetail only): left/front = tongue (male, fused), right/back =
+ * groove (female, cut). Inverted by `invertDovetails`.
  *
  * All profiles are drawn on the XY plane (normal=+Z) and extruded downward,
  * matching the pre-Z-shift coordinate system (slab top at Z=0, bottom at
  * Z=-totalHeight).
  */
 
-import { draw } from 'brepjs';
+import { draw, drawCircle, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
+import { resolveConnectorStyle } from '@/shared/types/bin';
 import {
   TONGUE_PROTRUSION,
   TONGUE_BASE_HALF,
@@ -35,6 +29,8 @@ import {
   TONGUE_CLEARANCE,
   COPLANAR_MARGIN,
   COPLANAR_OVERLAP,
+  SNAP_HOLE_DIAMETER,
+  SNAP_PRONG_INSET,
   sketch,
 } from './generatorTypes';
 
@@ -56,11 +52,19 @@ export function buildConnectors(
   slabOffsetX: number,
   slabOffsetY: number
 ): { nubs: Shape3D[]; holes: Shape3D[] } {
-  const { edges, connectorNubs, invertDovetails, preferIdenticalPieces } = params;
+  const { edges, invertDovetails, preferIdenticalPieces } = params;
+  const style = resolveConnectorStyle(params);
   const tongues: Shape3D[] = [];
   const grooves: Shape3D[] = [];
 
-  if (!connectorNubs || !edges) return { nubs: tongues, holes: grooves };
+  if (style === 'none' || !edges) return { nubs: tongues, holes: grooves };
+
+  if (style === 'snap') {
+    return {
+      nubs: tongues,
+      holes: buildSnapHoles(params, totalHeight, totalW, totalD, slabOffsetX, slabOffsetY),
+    };
+  }
 
   const invert = !!invertDovetails;
   // In paired mode invertDovetails is intentionally ignored — the layout is
@@ -221,4 +225,100 @@ function makeGroove(
     .lineTo(pt(w + d * ext, bp - gB))
     .close();
   return sketch(profile, 'XY', COPLANAR_MARGIN).extrude(-(totalHeight + 2 * COPLANAR_MARGIN));
+}
+
+/**
+ * Cylindrical through-holes for snap-clip connectors.
+ *
+ *      seam
+ *       │
+ *  ─────┼─────                ← top view (X-Y) of one boundary
+ *   ○   │   ○                 ← prong holes on each piece, inset INSET mm
+ *       │
+ *
+ * One hole per piece, inset SNAP_PRONG_INSET from the wall toward the
+ * piece interior. Hole diameter accounts for prong + clearance. Cut extends
+ * past the slab top/bottom by COPLANAR_MARGIN to avoid degenerate booleans.
+ *
+ * Like dovetails, holes are placed at every grid-cell boundary along join
+ * edges. Both adjacent pieces receive holes (one each), so the U-clip's two
+ * prongs span the seam.
+ */
+function buildSnapHoles(
+  params: BaseplateParams,
+  totalHeight: number,
+  totalW: number,
+  totalD: number,
+  slabOffsetX: number,
+  slabOffsetY: number
+): Shape3D[] {
+  const { edges } = params;
+  const holes: Shape3D[] = [];
+  if (!edges) return holes;
+
+  const halfW = totalW / 2;
+  const halfD = totalD / 2;
+  const gridUnit = params.gridUnitMm;
+  const radius = SNAP_HOLE_DIAMETER / 2;
+  const ext = COPLANAR_MARGIN;
+
+  type Side = 'left' | 'right' | 'front' | 'back';
+  const edgeDefs: ReadonlyArray<{
+    side: Side;
+    wallPos: number;
+    /** Inward direction from the wall (sign on the protrude axis). */
+    inward: -1 | 1;
+    protrudeAxis: 'x' | 'y';
+    numBoundaries: number;
+    boundaryPos: (k: number) => number;
+  }> = [
+    {
+      side: 'left',
+      wallPos: -halfW + slabOffsetX,
+      inward: 1,
+      protrudeAxis: 'x',
+      numBoundaries: Math.ceil(params.depth) - 1,
+      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
+    },
+    {
+      side: 'right',
+      wallPos: halfW + slabOffsetX,
+      inward: -1,
+      protrudeAxis: 'x',
+      numBoundaries: Math.ceil(params.depth) - 1,
+      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
+    },
+    {
+      side: 'front',
+      wallPos: -halfD + slabOffsetY,
+      inward: 1,
+      protrudeAxis: 'y',
+      numBoundaries: Math.ceil(params.width) - 1,
+      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
+    },
+    {
+      side: 'back',
+      wallPos: halfD + slabOffsetY,
+      inward: -1,
+      protrudeAxis: 'y',
+      numBoundaries: Math.ceil(params.width) - 1,
+      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
+    },
+  ];
+
+  for (const def of edgeDefs) {
+    if (edges[def.side] !== 'join' || def.numBoundaries <= 0) continue;
+    const inset = def.wallPos + def.inward * SNAP_PRONG_INSET;
+    for (let k = 1; k <= def.numBoundaries; k++) {
+      const bp = def.boundaryPos(k);
+      const cx = def.protrudeAxis === 'x' ? inset : bp;
+      const cy = def.protrudeAxis === 'x' ? bp : inset;
+      const cylinder = drawCircle(radius)
+        .sketchOnPlane('XY', ext)
+        .extrude(-(totalHeight + 2 * ext)) as Shape3D;
+      holes.push(translate(cylinder, [cx, cy, 0]));
+    }
+  }
+
+  return holes;
 }

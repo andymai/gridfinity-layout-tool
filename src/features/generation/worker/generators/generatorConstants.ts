@@ -109,3 +109,85 @@ const HOLE_CLEARANCE = 0.1;
 export const HOLE_DIAMETER = NUB_DIAMETER + 2 * HOLE_CLEARANCE;
 export const HOLE_DEPTH = NUB_DEPTH + HOLE_CLEARANCE;
 export const NUB_CIRCLE_SEGMENTS = 12;
+
+// Snap-clip baseplate connectors — separately printed U-clip + cut-through
+// holes in the slab. Modeled after the MakerWorld SnapClip System (model
+// 1034973), which is itself a remix of Printables 430144.
+//
+// Use orientation (clip mounted in baseplate):
+//
+//      ┌──────────────┐  ← bridge sits on top of slab, spans the seam
+//      │  ▓▓▓▓▓▓▓▓▓▓  │
+//      │  │        │  │  ← prongs descend through holes in adjacent pieces
+//   ───┤  │        │  ├───
+//      │  ▽        ▽  │  ← barb tips: lead-in chamfer; widest point sits
+//      └──────────────┘    just below slab bottom, hooks back under
+//
+//          seam (between two baseplate pieces)
+//
+// Print orientation: the clip generator outputs the part flipped — bridge on
+// the build plate (Z=0) with prongs pointing up. This avoids unsupported
+// overhangs and lets the slicer take it as-is.
+//
+// Hole layout: at every grid-cell boundary along a 'join' edge (matching the
+// dovetail density). Each clip spans the seam, with one prong inset
+// SNAP_PRONG_INSET into each adjacent piece. The inset keeps holes well clear
+// of magnet pads at grid-cell corners.
+
+/** Prong shaft diameter (mm). 3mm gives a comfortable PETG flex zone. */
+export const SNAP_PRONG_DIAMETER = 3.0;
+
+/** Distance from the seam to each prong's centerline (mm). 5mm clears
+ *  magnet pads at grid corners by ~16mm. */
+export const SNAP_PRONG_INSET = 5.0;
+
+/** How far the prong overshoots the slab bottom in use, before the barb
+ *  starts (mm). Ensures the barb's wide point seats below the floor. */
+export const SNAP_PRONG_OVERSHOOT = 0.5;
+
+/** Bridge plate thickness above the slab (mm). */
+export const SNAP_BRIDGE_THICKNESS = 1.5;
+
+/** Bridge plate width perpendicular to the seam (mm). */
+export const SNAP_BRIDGE_WIDTH = 6.0;
+
+/** Bridge plate length margin past the prong centers on each side (mm).
+ *  Total bridge length = 2 * (INSET + LENGTH_MARGIN). */
+export const SNAP_BRIDGE_LENGTH_MARGIN = 2.0;
+
+/** Radial flare at the barb's widest point above the prong radius (mm).
+ *  Compression on insertion ≈ flare/clearance ratio — 0.25 keeps PETG
+ *  in its elastic range while still snapping audibly. */
+export const SNAP_BARB_FLARE = 0.25;
+
+/** Barb is a two-frustum profile (use orientation, prong points DOWN):
+ *
+ *      ──┬──  Z = -prongLength                  ┐
+ *        │ │  prong shaft (radius PRONG_R)      │ slab thickness
+ *      ──┼──  Z = -prongLength + RETAIN_H       ┘
+ *       ╱ ╲   retention shoulder (steep ~27°)    upper frustum
+ *      ╱   ╲  PRONG_R → BARB_R (= PRONG_R+FLARE)
+ *     ──┼──   widest point: barb max radius
+ *      ╲   ╱
+ *       ╲ ╱   lead-in cone (gentle ~37°)         lower frustum
+ *        ▽    BARB_R → TIP_R (= PRONG_R-0.5)
+ *      ──┼──  Z = -prongLength - RETAIN_H - LEAD_H
+ *
+ * The asymmetry — steep top, gentle bottom — gives easy push-in and high
+ * pull-out resistance, which is the whole point of a snap clip. */
+export const SNAP_BARB_RETAIN_HEIGHT = 0.5;
+export const SNAP_BARB_LEAD_HEIGHT = 1.0;
+export const SNAP_BARB_HEIGHT = SNAP_BARB_RETAIN_HEIGHT + SNAP_BARB_LEAD_HEIGHT;
+
+/** Tip flat-radius (mm). A pinpoint tip prints poorly on FDM (rounded
+ *  elephant's foot); a 1mm flat tip is the smallest reliable feature. */
+export const SNAP_TIP_RADIUS = 1.0;
+
+/** Per-side clearance between prong and through-hole (mm). */
+export const SNAP_HOLE_CLEARANCE = 0.2;
+
+/** Computed hole diameter through the slab. */
+export const SNAP_HOLE_DIAMETER = SNAP_PRONG_DIAMETER + 2 * SNAP_HOLE_CLEARANCE;
+
+/** Circle segment count for prong/hole tessellation. */
+export const SNAP_CIRCLE_SEGMENTS = 24;

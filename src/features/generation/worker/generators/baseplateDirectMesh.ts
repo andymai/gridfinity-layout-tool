@@ -25,6 +25,7 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
+import { resolveConnectorStyle } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
 import { resolveCornerRadii } from './generatorConstants';
 import type { MeshData } from '../../bridge/types';
@@ -37,6 +38,8 @@ import {
   NUB_DEPTH,
   HOLE_DIAMETER,
   HOLE_DEPTH,
+  SNAP_HOLE_DIAMETER,
+  SNAP_PRONG_INSET,
   computeConnectorPositions,
 } from './generatorTypes';
 import type { ProgressFn, CellInfo, ForEachCellOptions } from './generatorTypes';
@@ -46,6 +49,7 @@ import { addPocketWalls, addOuterWalls } from './directMeshWalls';
 import { addPlateFace, addSolidBottomFace } from './directMeshFaces';
 import { addMagnetHoles } from './directMeshMagnets';
 import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
+import { addSnapHoleMarker } from './directMeshSnapHoles';
 
 /**
  * Generate baseplate mesh data procedurally without BREP boolean operations.
@@ -90,7 +94,6 @@ export function generateBaseplateDirect(
     fractionalEdgeX,
     fractionalEdgeY,
     edges,
-    connectorNubs,
   } = params;
 
   const mb = new MeshBuilder();
@@ -171,7 +174,9 @@ export function generateBaseplateDirect(
     }
   }
 
-  if (connectorNubs && edges) {
+  const connectorStyle = resolveConnectorStyle(params);
+
+  if (connectorStyle === 'dovetail' && edges) {
     const nubRadius = NUB_DIAMETER / 2;
     const holeRadius = HOLE_DIAMETER / 2;
     const connPositions = computeConnectorPositions(
@@ -191,6 +196,62 @@ export function generateBaseplateDirect(
         addConnectorNub(mb, pos.cx, pos.cy, pos.cz, pos.nx, pos.ny, 0, nubRadius, NUB_DEPTH);
       } else {
         addConnectorHole(mb, pos.cx, pos.cy, pos.cz, pos.nx, pos.ny, 0, holeRadius, HOLE_DEPTH);
+      }
+    }
+  } else if (connectorStyle === 'snap' && edges) {
+    const holeRadius = SNAP_HOLE_DIAMETER / 2;
+    const halfW = totalW / 2;
+    const halfD = totalD / 2;
+    type Side = 'left' | 'right' | 'front' | 'back';
+    const sides: ReadonlyArray<{
+      side: Side;
+      wallPos: number;
+      inward: -1 | 1;
+      protrudeAxis: 'x' | 'y';
+      numBoundaries: number;
+      boundaryPos: (k: number) => number;
+    }> = [
+      {
+        side: 'left',
+        wallPos: -halfW + slabOffsetX,
+        inward: 1,
+        protrudeAxis: 'x',
+        numBoundaries: Math.ceil(depth) - 1,
+        boundaryPos: (k) => k * gridUnitMm - (depth * gridUnitMm) / 2,
+      },
+      {
+        side: 'right',
+        wallPos: halfW + slabOffsetX,
+        inward: -1,
+        protrudeAxis: 'x',
+        numBoundaries: Math.ceil(depth) - 1,
+        boundaryPos: (k) => k * gridUnitMm - (depth * gridUnitMm) / 2,
+      },
+      {
+        side: 'front',
+        wallPos: -halfD + slabOffsetY,
+        inward: 1,
+        protrudeAxis: 'y',
+        numBoundaries: Math.ceil(width) - 1,
+        boundaryPos: (k) => k * gridUnitMm - (width * gridUnitMm) / 2,
+      },
+      {
+        side: 'back',
+        wallPos: halfD + slabOffsetY,
+        inward: -1,
+        protrudeAxis: 'y',
+        numBoundaries: Math.ceil(width) - 1,
+        boundaryPos: (k) => k * gridUnitMm - (width * gridUnitMm) / 2,
+      },
+    ];
+    for (const def of sides) {
+      if (edges[def.side] !== 'join' || def.numBoundaries <= 0) continue;
+      const inset = def.wallPos + def.inward * SNAP_PRONG_INSET;
+      for (let k = 1; k <= def.numBoundaries; k++) {
+        const bp = def.boundaryPos(k);
+        const cx = def.protrudeAxis === 'x' ? inset : bp;
+        const cy = def.protrudeAxis === 'x' ? bp : inset;
+        addSnapHoleMarker(mb, cx, cy, holeRadius, totalHeight);
       }
     }
   }

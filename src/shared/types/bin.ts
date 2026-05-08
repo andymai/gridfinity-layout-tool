@@ -69,6 +69,22 @@ export type {
 /** Whether an edge is exterior (outside baseplate) or a join between split pieces. */
 export type BaseplateEdgeKind = 'join' | 'exterior';
 
+/** Connector style on split-piece join edges.
+ *  Mirrors `ConnectorStyle` in `@/core/types` — kept here to avoid an
+ *  upward import from a shared barrel into core. */
+export type ConnectorStyle = 'none' | 'dovetail' | 'snap';
+
+/** Single source of truth for resolving the effective connector style.
+ *  Old layouts persisted only `connectorNubs: true` (== dovetail). */
+export function resolveConnectorStyle(p: {
+  readonly connectorStyle?: ConnectorStyle;
+  readonly connectorNubs?: boolean;
+}): ConnectorStyle {
+  if (p.connectorStyle) return p.connectorStyle;
+  if (p.connectorNubs === true) return 'dovetail';
+  return 'none';
+}
+
 /** Per-side edge classification for split baseplate pieces. */
 export interface BaseplateEdges {
   readonly left: BaseplateEdgeKind;
@@ -100,9 +116,12 @@ export interface BaseplateParams {
   readonly fractionalEdgeY: 'start' | 'end';
   /** Edge classification for split pieces — omit for single (unsplit) baseplates. */
   readonly edges?: BaseplateEdges;
-  /** Enable registration nubs/holes on join edges for split piece alignment. */
+  /** Connector style on join edges. Defaults to 'none' if unset. */
+  readonly connectorStyle?: ConnectorStyle;
+  /** @deprecated Use `connectorStyle`. Kept for backwards compatibility. */
   readonly connectorNubs?: boolean;
-  /** Swap tongue/groove convention on all join edges (default false). */
+  /** Swap tongue/groove convention on all join edges (default false).
+   *  Only applies when `connectorStyle === 'dovetail'`. */
   readonly invertDovetails?: boolean;
   /**
    * When true, dovetails on join edges use a 180°-rotationally symmetric

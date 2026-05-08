@@ -163,6 +163,14 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
         });
         break;
 
+      case 'SNAP_CLIP_EXPORT_RESULT':
+        ctx.resolveExport('export', response.requestId, {
+          data: response.data,
+          fileName: response.fileName,
+          format: response.format,
+        });
+        break;
+
       case 'DIVIDERS_EXPORT_RESULT':
         ctx.resolveExport('dividers', response.requestId, {
           data: response.data,
