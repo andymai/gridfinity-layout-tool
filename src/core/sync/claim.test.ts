@@ -202,7 +202,7 @@ describe('runClaim — diff quadrants', () => {
     expect(layouts.applyRemoteDelete).toHaveBeenCalledWith('a');
   });
 
-  it('remote tombstone older than local: does not delete (push will resurrect)', async () => {
+  it('remote tombstone older than local: pushes the local edit to resurrect it', async () => {
     layouts.items.set('a', { id: 'a', payload: { v: 'fresh' }, modifiedAt: 9000 });
     fetchMock.mockResolvedValueOnce(
       manifestResponse({
@@ -214,10 +214,14 @@ describe('runClaim — diff quadrants', () => {
 
     const result = (await runClaim(ctx())) as ClaimResult & { status: 'merged' };
     expect(layouts.applyRemoteDelete).not.toHaveBeenCalled();
-    // local-newer-than-tombstone falls into "no-op" (deletedAt set, but local newer)
-    // so we don't enqueue a push either; user's next save will re-engage LWW.
-    expect(result.pushed).toBe(0);
+    expect(result.pushed).toBe(1);
     expect(result.pulled).toBe(0);
+    expect(enqueueMock).toHaveBeenCalledWith({
+      kind: 'layouts',
+      id: 'a',
+      modifiedAt: 9000,
+      op: 'put',
+    });
   });
 });
 

@@ -59,31 +59,34 @@ export function SyncSessionMount() {
     // status stays 'authenticated', which would otherwise restart
     // the engine for no reason.
     const currentUser = useSessionStore.getState().user;
+    // Contract: if status === 'authenticated' the user object is
+    // populated atomically. If we ever observe an intermediate state
+    // where it isn't, do nothing — starting the engine without a
+    // user would immediately 401 and skip the claim flow entirely.
+    // The next session emission will retrigger this effect.
+    if (!currentUser) return;
+
     let cancelled = false;
-    if (currentUser) {
-      // Run claim before start(): the engine drains outbox and polls
-      // immediately, and we don't want the prior user's pending
-      // pushes to flush under the new account before discard can
-      // wipe them. runClaim is single-flight per userId so a
-      // StrictMode-style double effect run coalesces.
-      void runClaim({
-        adapters,
-        userId: currentUser.userId,
-        newAccountLabel: currentUser.email,
-        promptAccountMismatch,
-      }).then((result) => {
-        // Skip engine start on 'unauthorized': the manifest 401 means
-        // session sort-out is in flight (the engine's own forced-401
-        // handler will flip to anonymous), and starting now would
-        // immediately retrigger that path. Other terminal states
-        // ('merged' | 'discarded' | 'error') start the engine —
-        // 'error' relies on the engine's own retry/backoff to recover.
-        if (cancelled) return;
-        if (result.status !== 'unauthorized') start(adapters);
-      });
-    } else {
-      start(adapters);
-    }
+    // Run claim before start(): the engine drains outbox and polls
+    // immediately, and we don't want the prior user's pending
+    // pushes to flush under the new account before discard can
+    // wipe them. runClaim is single-flight per userId so a
+    // StrictMode-style double effect run coalesces.
+    void runClaim({
+      adapters,
+      userId: currentUser.userId,
+      newAccountLabel: currentUser.email,
+      promptAccountMismatch,
+    }).then((result) => {
+      // Skip engine start on 'unauthorized': the manifest 401 means
+      // session sort-out is in flight (the engine's own forced-401
+      // handler will flip to anonymous), and starting now would
+      // immediately retrigger that path. Other terminal states
+      // ('merged' | 'discarded' | 'error') start the engine —
+      // 'error' relies on the engine's own retry/backoff to recover.
+      if (cancelled) return;
+      if (result.status !== 'unauthorized') start(adapters);
+    });
     return () => {
       cancelled = true;
       stop();

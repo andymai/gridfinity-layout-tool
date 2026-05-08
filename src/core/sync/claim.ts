@@ -172,6 +172,19 @@ async function mergeKind(
       if (localItem && localItem.modifiedAt < entry.deletedAt) {
         await adapter.applyRemoteDelete(id);
         pulled++;
+      } else if (localItem) {
+        // Local edit is newer than a remote tombstone — the user
+        // deleted on another device and then re-edited here.
+        // Resurrect it by pushing; without this, the only-local loop
+        // below skips the push (because the id is in `remote`) and
+        // the local edit never reaches cloud.
+        await outboxEnqueue({
+          kind,
+          id,
+          modifiedAt: localItem.modifiedAt,
+          op: 'put',
+        });
+        pushed++;
       }
       continue;
     }
