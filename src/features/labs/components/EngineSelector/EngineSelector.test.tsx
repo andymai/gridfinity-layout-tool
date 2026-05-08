@@ -113,6 +113,28 @@ describe('EngineSelector', () => {
     expect(trackEvent).not.toHaveBeenCalled();
   });
 
+  it('reconciles stale state when both flags are on and the displayed-active segment is clicked', () => {
+    setEnabled(true, true);
+    render(<EngineSelector />);
+    fireEvent.click(getSegment('labs.engine.segmentBrepkit'));
+
+    const flags = useLabsStore.getState().preferences.enabledFeatures;
+    expect(flags.brepkit_kernel).toBe(true);
+    expect(flags.occt_wasm_kernel).toBe(false);
+    expect(useToastStore.getState().toasts).toHaveLength(1);
+  });
+
+  it('replaces a prior reload toast instead of stacking on rapid switches', () => {
+    render(<EngineSelector />);
+    fireEvent.click(getSegment('labs.engine.segmentOcctWasm'));
+    fireEvent.click(getSegment('labs.engine.segmentBrepkit'));
+    fireEvent.click(getSegment('labs.engine.segmentDefault'));
+
+    const toasts = useToastStore.getState().toasts;
+    expect(toasts).toHaveLength(1);
+    expect(toasts[0]?.message).toBe('labs.engine.reloadToast');
+  });
+
   it('shows the experimental warning when BrepKit is selected', () => {
     setEnabled(true, false);
     render(<EngineSelector />);

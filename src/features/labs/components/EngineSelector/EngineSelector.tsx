@@ -5,16 +5,34 @@ import { getFeature, type FeatureFlag } from '@/core/labs';
 import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import { useTranslation } from '@/i18n';
 import { FeatureStatusBadge } from '../FeatureStatusBadge';
+import { InfoIcon } from '../icons';
 
 type Engine = 'default' | 'occt-wasm' | 'brepkit';
 
 const BREPKIT_ID = 'brepkit_kernel' as const;
 const OCCT_WASM_ID = 'occt_wasm_kernel' as const;
 
+const ENGINE_FLAGS: Record<Engine, { brepkit: boolean; occt: boolean }> = {
+  default: { brepkit: false, occt: false },
+  'occt-wasm': { brepkit: false, occt: true },
+  brepkit: { brepkit: true, occt: false },
+};
+
 function deriveEngine(brepkit: boolean, occt: boolean): Engine {
   if (brepkit) return 'brepkit';
   if (occt) return 'occt-wasm';
   return 'default';
+}
+
+function selectedFeatureFor(engine: Engine): FeatureFlag | undefined {
+  switch (engine) {
+    case 'brepkit':
+      return getFeature(BREPKIT_ID);
+    case 'occt-wasm':
+      return getFeature(OCCT_WASM_ID);
+    case 'default':
+      return undefined;
+  }
 }
 
 export function EngineSelector() {
@@ -29,24 +47,24 @@ export function EngineSelector() {
   const current = deriveEngine(brepkitEnabled, occtWasmEnabled);
 
   const handleChange = (next: Engine) => {
-    if (next === current) return;
+    const target = ENGINE_FLAGS[next];
+    if (brepkitEnabled === target.brepkit && occtWasmEnabled === target.occt) return;
 
     const labs = useLabsStore.getState();
-    if (next === 'brepkit') {
-      if (occtWasmEnabled) labs.disableFeature(OCCT_WASM_ID);
-      labs.enableFeature(BREPKIT_ID);
-    } else if (next === 'occt-wasm') {
-      if (brepkitEnabled) labs.disableFeature(BREPKIT_ID);
-      labs.enableFeature(OCCT_WASM_ID);
-    } else {
-      if (brepkitEnabled) labs.disableFeature(BREPKIT_ID);
-      if (occtWasmEnabled) labs.disableFeature(OCCT_WASM_ID);
-    }
+    if (target.brepkit) labs.enableFeature(BREPKIT_ID);
+    else labs.disableFeature(BREPKIT_ID);
+    if (target.occt) labs.enableFeature(OCCT_WASM_ID);
+    else labs.disableFeature(OCCT_WASM_ID);
 
     trackEvent('labs_engine_changed', { from: current, to: next });
 
-    useToastStore.getState().addToast({
-      message: t('labs.engine.reloadToast'),
+    const toastApi = useToastStore.getState();
+    const reloadMessage = t('labs.engine.reloadToast');
+    toastApi.toasts
+      .filter((toast) => toast.message === reloadMessage)
+      .forEach((toast) => toastApi.removeToast(toast.id));
+    toastApi.addToast({
+      message: reloadMessage,
       type: 'info',
       duration: 0,
       action: {
@@ -62,10 +80,7 @@ export function EngineSelector() {
     { value: 'brepkit' as const, label: t('labs.engine.segmentBrepkit') },
   ];
 
-  const occtFeature = getFeature(OCCT_WASM_ID);
-  const brepkitFeature = getFeature(BREPKIT_ID);
-  const selectedFeature: FeatureFlag | undefined =
-    current === 'occt-wasm' ? occtFeature : current === 'brepkit' ? brepkitFeature : undefined;
+  const selectedFeature = selectedFeatureFor(current);
 
   return (
     <article className="rounded-lg border border-stroke-subtle bg-surface p-4">
@@ -76,10 +91,7 @@ export function EngineSelector() {
         {selectedFeature ? (
           <FeatureStatusBadge status={selectedFeature.status} />
         ) : (
-          <span
-            className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded bg-success-muted text-success"
-            aria-label={`Status: ${t('labs.engine.statusStable')}`}
-          >
+          <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded bg-success-muted text-success">
             {t('labs.engine.statusStable')}
           </span>
         )}
@@ -110,18 +122,5 @@ export function EngineSelector() {
           </div>
         )}
     </article>
-  );
-}
-
-function InfoIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
   );
 }
