@@ -35,7 +35,7 @@ vi.mock('@/core/labs', () => ({
   getGraduatedFeatures: () => [],
 }));
 
-vi.mock('@/features/labs/components/FeatureCard', () => ({
+vi.mock('@/features/labs/components', () => ({
   FeatureCard: ({
     feature,
     isEnabled,
@@ -61,16 +61,12 @@ vi.mock('@/features/labs/components/FeatureCard', () => ({
       {feature.titleKey}
     </div>
   ),
-}));
-
-vi.mock('@/features/labs/components/GraduatedSection', () => ({
   GraduatedSection: () => <div data-testid="graduated-section">Graduated</div>,
-}));
-
-vi.mock('@/features/labs/components/icons', () => ({
   SparklesIcon: ({ className }: { className?: string }) => (
     <svg className={className} data-testid="sparkles-icon" />
   ),
+  EngineSelector: () => <div data-testid="engine-selector">Engine Selector</div>,
+  KERNEL_FEATURE_IDS: ['brepkit_kernel', 'occt_wasm_kernel'] as const,
 }));
 
 describe('LabsTab', () => {
@@ -108,5 +104,10 @@ describe('LabsTab', () => {
   it('renders GraduatedSection component', () => {
     render(<LabsTab />);
     expect(screen.getByTestId('graduated-section')).toBeInTheDocument();
+  });
+
+  it('renders the EngineSelector', () => {
+    render(<LabsTab />);
+    expect(screen.getByTestId('engine-selector')).toBeInTheDocument();
   });
 });

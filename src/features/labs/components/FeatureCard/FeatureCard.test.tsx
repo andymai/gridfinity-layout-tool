@@ -11,6 +11,7 @@ vi.mock('../icons', () => ({
   SparklesIcon: ({ className }: { className?: string }) => (
     <div className={className}>Sparkles</div>
   ),
+  InfoIcon: ({ className }: { className?: string }) => <div className={className}>Info</div>,
 }));
 
 vi.mock('@/i18n', () => ({
