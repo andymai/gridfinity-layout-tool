@@ -55,6 +55,10 @@ vi.mock('../GraduatedSection', () => ({
   GraduatedSection: () => <div data-testid="graduated-section">Graduated Section</div>,
 }));
 
+vi.mock('../EngineSelector', () => ({
+  EngineSelector: () => <div data-testid="engine-selector">Engine Selector</div>,
+}));
+
 vi.mock('../icons', () => ({
   SparklesIcon: ({ className }: { className?: string }) => (
     <div className={className}>Sparkles</div>
@@ -156,6 +160,21 @@ describe('LabsDrawer', () => {
     expect(screen.getByTestId('feature-card-feature-2')).toBeInTheDocument();
     expect(screen.getByText('Test Feature 1')).toBeInTheDocument();
     expect(screen.getByText('Test Feature 2')).toBeInTheDocument();
+  });
+
+  it('renders the engine selector', () => {
+    vi.mocked(useLabsStore).mockImplementation((selector) => {
+      const state = {
+        isDrawerOpen: true,
+        closeDrawer: vi.fn(),
+        toggleFeature: vi.fn(),
+        isFeatureEnabled: vi.fn(() => false),
+      };
+      return selector ? selector(state) : state;
+    });
+
+    render(<LabsDrawer />);
+    expect(screen.getByTestId('engine-selector')).toBeInTheDocument();
   });
 
   it('renders graduated section', () => {

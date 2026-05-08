@@ -73,6 +73,8 @@
     "inspector.label",
     "inspector.notes",
     "labs.labs",
+    "labs.engine.segmentBrepkit",
+    "labs.engine.statusStable",
     "layers.rectangles",
     "layouts.layoutJson",
     "layouts.layouts",
