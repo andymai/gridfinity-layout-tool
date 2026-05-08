@@ -28,9 +28,9 @@ import {
   validateStepBlob,
 } from './dualKernelInit';
 import type { GenerateBinFn, TopologyStats } from './dualKernelInit';
-import { CORE_PARITY_CASES } from './testCases';
+import { CORE_PARITY_CASES, WALL_FEATURE_PARITY_CASES } from './testCases';
 
-const TEST_CASES = CORE_PARITY_CASES;
+const TEST_CASES = [...CORE_PARITY_CASES, ...WALL_FEATURE_PARITY_CASES];
 
 /**
  * `dualKernelInit.collectTopologyStats` assigns `volume: measureVolume(solid)`
