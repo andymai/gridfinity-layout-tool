@@ -89,6 +89,18 @@ export const FEATURE_FLAGS = [
     addedAt: '2026-03',
     requiresRefresh: false,
   },
+  {
+    id: 'cloud_sync',
+    name: 'Cloud Sync (sign in)',
+    description:
+      'Sign in with Google or GitHub to sync your layouts and bin designs across devices. Your library follows you to any browser you sign in on.',
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'Reload the page after toggling. You can sign out at any time and choose to keep the synced library on this device or wipe it.',
+    addedAt: '2026-05',
+    requiresRefresh: true,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];
