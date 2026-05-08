@@ -38,16 +38,19 @@ function getLayoutContext(): Record<string, unknown> {
 /**
  * Capture an exception with layout context.
  * Use this for caught errors that you want to track.
+ *
+ * Delegates to posthog-js's native `captureException`, which constructs the
+ * required `$exception_list` payload (with parsed stack frames + mechanism)
+ * that PostHog's ingestion pipeline now requires. Manually firing `$exception`
+ * with the legacy flat fields produces serde "missing field $exception_list"
+ * warnings and the events get dropped.
  */
 export function captureException(error: Error, additionalContext?: Record<string, unknown>): void {
   const posthogInstance = getPosthogInstance();
   if (!posthogInstance) return;
 
   try {
-    posthogInstance.capture('$exception', {
-      $exception_message: error.message,
-      $exception_type: error.name,
-      $exception_stack_trace_raw: error.stack,
+    posthogInstance.captureException(error, {
       ...getLayoutContext(),
       ...additionalContext,
     });
