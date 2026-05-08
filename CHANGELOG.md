@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.73.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.72.1...gridfinity-layout-tool-v4.73.0) (2026-05-08)
+
+
+### Features
+
+* **sync:** replace SYNC_UI_ENABLED build gate with cloud_sync Labs flag ([#1605](https://github.com/andymai/gridfinity-layout-tool/issues/1605)) ([f7d5a1d](https://github.com/andymai/gridfinity-layout-tool/commit/f7d5a1d3f4a7a3a1a95be11325900b3c96c32858))
+
 ## [4.72.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.72.0...gridfinity-layout-tool-v4.72.1) (2026-05-08)
 
 ### Bug Fixes
