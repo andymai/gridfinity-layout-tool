@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.72.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.71.0...gridfinity-layout-tool-v4.72.0) (2026-05-08)
+
+
+### Features
+
+* **labs:** segmented control for 3D engine selection ([#1606](https://github.com/andymai/gridfinity-layout-tool/issues/1606)) ([c25eeca](https://github.com/andymai/gridfinity-layout-tool/commit/c25eeca49110580eaa9cddd77bb9b7d38ebee765))
+
 ## [4.71.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.70.0...gridfinity-layout-tool-v4.71.0) (2026-05-08)
 
 
