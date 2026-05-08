@@ -1,7 +1,8 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLabsStore } from '@/core/store';
 import { getToggleableFeatures, getGraduatedFeatures, type FeatureId } from '@/core/labs';
+import { EngineSelector } from '../EngineSelector';
 import { FeatureCard } from '../FeatureCard';
 import { GraduatedSection } from '../GraduatedSection';
 import { SparklesIcon, CloseIcon } from '../icons';
@@ -18,43 +19,36 @@ export function LabsDrawer() {
     }))
   );
 
-  const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        closeDrawer();
-      }
-    },
-    [closeDrawer]
-  );
 
   useEffect(() => {
     if (!isOpen) return;
 
     closeButtonRef.current?.focus();
     document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeDrawer();
+    };
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       document.body.style.overflow = '';
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, handleKeyDown]);
+  }, [isOpen, closeDrawer]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      closeDrawer();
-    }
+    if (e.target === e.currentTarget) closeDrawer();
   };
 
-  const toggleableFeatures = getToggleableFeatures();
+  const toggleableFeatures = getToggleableFeatures().filter(
+    (f) => f.id !== 'brepkit_kernel' && f.id !== 'occt_wasm_kernel'
+  );
   const graduatedFeatures = getGraduatedFeatures();
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className={`fixed inset-0 z-[99] bg-overlay-dark transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -63,9 +57,7 @@ export function LabsDrawer() {
         aria-hidden="true"
       />
 
-      {/* Drawer */}
       <div
-        ref={drawerRef}
         role="dialog"
         aria-modal="true"
         aria-label={t('labs.labsExperimentalFeatures')}
@@ -74,7 +66,6 @@ export function LabsDrawer() {
         }`}
       >
         <div className="flex flex-col h-full">
-          {/* Header */}
           <header className="flex items-center justify-between px-6 py-4 border-b border-stroke-subtle">
             <div className="flex items-center gap-2">
               <SparklesIcon className="w-5 h-5 text-accent" />
@@ -90,14 +81,15 @@ export function LabsDrawer() {
             </button>
           </header>
 
-          {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
-            {/* Description */}
             <p className="text-sm text-content-secondary leading-relaxed mb-6" data-nosnippet>
               {t('labs.description')}
             </p>
 
-            {/* Feature Cards */}
+            <div className="mb-3">
+              <EngineSelector />
+            </div>
+
             {toggleableFeatures.length > 0 ? (
               <div className="space-y-3">
                 {toggleableFeatures.map((feature) => (
@@ -117,7 +109,6 @@ export function LabsDrawer() {
               </div>
             )}
 
-            {/* Graduated Features Section */}
             <GraduatedSection features={graduatedFeatures} />
           </div>
         </div>

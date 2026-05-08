@@ -1685,6 +1685,18 @@ const en: Record<string, string> = {
   'labs.experimentalKernel.warning': 'Exports may have geometry defects.',
   'labs.experimentalKernel.labsSettings': 'Labs settings',
 
+  // Labs — 3D Engine Selector
+  'labs.engine.title': '3D Engine',
+  'labs.engine.ariaLabel': 'Select 3D engine',
+  'labs.engine.segmentDefault': 'Default',
+  'labs.engine.segmentOcctWasm': 'Updated OCCT',
+  'labs.engine.segmentBrepkit': 'BrepKit',
+  'labs.engine.statusStable': 'Stable',
+  'labs.engine.descriptionDefault':
+    'Production engine that powers all bin and baseplate exports today.',
+  'labs.engine.reloadToast': 'Reload to apply 3D engine change.',
+  'labs.engine.reloadAction': 'Reload',
+
   // Layout (Collaboration)
   'layout.collaborativeEditingIsNotActive': 'Collaborative editing is not active',
 

@@ -1,6 +1,6 @@
 import type { FeatureFlag } from '@/core/labs';
 import { FeatureStatusBadge } from '../FeatureStatusBadge';
-import { SparklesIcon } from '../icons';
+import { SparklesIcon, InfoIcon } from '../icons';
 import { Switch } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
@@ -21,7 +21,6 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
     <article
       className={`rounded-lg border border-stroke-subtle bg-surface p-4 ${isComingSoon ? 'opacity-75' : ''}`}
     >
-      {/* Header: Title + Status */}
       <div className="flex items-start justify-between gap-3 mb-2">
         <h3 className="text-[15px] font-semibold text-content leading-tight">{feature.name}</h3>
         {isComingSoon ? (
@@ -33,12 +32,10 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
         )}
       </div>
 
-      {/* Description */}
       <p className="text-[13px] text-content-secondary leading-relaxed mb-3">
         {feature.description}
       </p>
 
-      {/* Info note (for medium/high risk) - hide for coming soon */}
       {!isComingSoon &&
         feature.warning &&
         (feature.risk === 'medium' || feature.risk === 'high') && (
@@ -52,7 +49,6 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
           </div>
         )}
 
-      {/* Footer: Learn more + Toggle */}
       <div className="flex items-center justify-between">
         {feature.learnMoreUrl && !isComingSoon ? (
           <a
@@ -68,7 +64,6 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
           <span />
         )}
 
-        {/* Toggle Switch or Coming Soon indicator */}
         {isComingSoon ? (
           <div className="flex items-center gap-2 text-xs text-purple-400">
             <SparklesIcon className="w-4 h-4" />
@@ -77,7 +72,7 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
         ) : isToggleable ? (
           <Switch
             checked={isEnabled}
-            onChange={() => onToggle()}
+            onChange={onToggle}
             aria-label={t('labs.featureToggle', {
               name: feature.name,
               status: isEnabled ? t('labs.enabled') : t('labs.disabled'),
@@ -91,19 +86,6 @@ export function FeatureCard({ feature, isEnabled, onToggle }: FeatureCardProps) 
         ) : null}
       </div>
     </article>
-  );
-}
-
-function InfoIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
   );
 }
 

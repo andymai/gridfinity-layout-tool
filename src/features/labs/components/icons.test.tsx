@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
-import { SparklesIcon, CloseIcon, ChevronRightIcon } from './icons';
+import { SparklesIcon, CloseIcon, ChevronRightIcon, InfoIcon } from './icons';
 
 describe('icons', () => {
   describe('SparklesIcon', () => {
@@ -61,6 +61,19 @@ describe('icons', () => {
       const svg = container.querySelector('svg');
       expect(svg).toHaveAttribute('fill', 'none');
       expect(svg).toHaveAttribute('viewBox', '0 0 24 24');
+    });
+  });
+
+  describe('InfoIcon', () => {
+    it('renders without crashing', () => {
+      const { container } = render(<InfoIcon />);
+      expect(container.querySelector('svg')).toBeInTheDocument();
+    });
+
+    it('applies custom className', () => {
+      const { container } = render(<InfoIcon className="text-info" />);
+      const svg = container.querySelector('svg');
+      expect(svg).toHaveClass('text-info');
     });
   });
 });

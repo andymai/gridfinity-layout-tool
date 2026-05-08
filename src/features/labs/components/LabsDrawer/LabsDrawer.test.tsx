@@ -6,10 +6,8 @@ import type { FeatureFlag } from '@/core/labs';
 import { useLabsStore } from '@/core/store';
 import { getToggleableFeatures } from '@/core/labs';
 
-// Mock stores
 vi.mock('@/core/store');
 
-// Mock feature retrieval
 const mockToggleableFeatures: FeatureFlag[] = [
   {
     id: 'feature-1',
@@ -55,6 +53,10 @@ vi.mock('../GraduatedSection', () => ({
   GraduatedSection: () => <div data-testid="graduated-section">Graduated Section</div>,
 }));
 
+vi.mock('../EngineSelector', () => ({
+  EngineSelector: () => <div data-testid="engine-selector">Engine Selector</div>,
+}));
+
 vi.mock('../icons', () => ({
   SparklesIcon: ({ className }: { className?: string }) => (
     <div className={className}>Sparkles</div>
@@ -66,22 +68,23 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
+function mockLabsStore(overrides: { isDrawerOpen?: boolean; closeDrawer?: () => void } = {}) {
+  const state = {
+    isDrawerOpen: overrides.isDrawerOpen ?? true,
+    closeDrawer: overrides.closeDrawer ?? vi.fn(),
+    toggleFeature: vi.fn(),
+    isFeatureEnabled: vi.fn(() => false),
+  };
+  vi.mocked(useLabsStore).mockImplementation((selector) => (selector ? selector(state) : state));
+  return state;
+}
+
 describe('LabsDrawer', () => {
   beforeEach(() => {
     resetAllStores();
     vi.clearAllMocks();
     document.body.style.overflow = '';
-
-    // Default mocks - useLabsStore is called with a selector (useShallow)
-    vi.mocked(useLabsStore).mockImplementation((selector) => {
-      const state = {
-        isDrawerOpen: false,
-        closeDrawer: vi.fn(),
-        toggleFeature: vi.fn(),
-        isFeatureEnabled: vi.fn(() => false),
-      };
-      return selector ? selector(state) : state;
-    });
+    mockLabsStore({ isDrawerOpen: false });
   });
 
   it('does not render when closed', () => {
@@ -91,15 +94,7 @@ describe('LabsDrawer', () => {
   });
 
   it('renders when open', () => {
-    vi.mocked(useLabsStore).mockImplementation((selector) => {
-      const state = {
-        isDrawerOpen: true,
-        closeDrawer: vi.fn(),
-        toggleFeature: vi.fn(),
-        isFeatureEnabled: vi.fn(() => false),
-      };
-      return selector ? selector(state) : state;
-    });
+    mockLabsStore();
 
     render(<LabsDrawer />);
     const drawer = screen.getByRole('dialog');
@@ -107,15 +102,7 @@ describe('LabsDrawer', () => {
   });
 
   it('shows labs title in header', () => {
-    vi.mocked(useLabsStore).mockImplementation((selector) => {
-      const state = {
-        isDrawerOpen: true,
-        closeDrawer: vi.fn(),
-        toggleFeature: vi.fn(),
-        isFeatureEnabled: vi.fn(() => false),
-      };
-      return selector ? selector(state) : state;
-    });
+    mockLabsStore();
 
     render(<LabsDrawer />);
     expect(screen.getByText('labs.labs')).toBeInTheDocument();
@@ -123,15 +110,7 @@ describe('LabsDrawer', () => {
 
   it('calls closeDrawer when close button clicked', () => {
     const mockCloseDrawer = vi.fn();
-    vi.mocked(useLabsStore).mockImplementation((selector) => {
-      const state = {
-        isDrawerOpen: true,
-        closeDrawer: mockCloseDrawer,
-        toggleFeature: vi.fn(),
-        isFeatureEnabled: vi.fn(() => false),
-      };
-      return selector ? selector(state) : state;
-    });
+    mockLabsStore({ closeDrawer: mockCloseDrawer });
 
     render(<LabsDrawer />);
     fireEvent.click(screen.getByLabelText('labs.closeLabs'));
@@ -140,15 +119,7 @@ describe('LabsDrawer', () => {
   });
 
   it('renders feature cards', () => {
-    vi.mocked(useLabsStore).mockImplementation((selector) => {
-      const state = {
-        isDrawerOpen: true,
-        closeDrawer: vi.fn(),
-        toggleFeature: vi.fn(),
-        isFeatureEnabled: vi.fn(() => false),
-      };
-      return selector ? selector(state) : state;
-    });
+    mockLabsStore();
 
     render(<LabsDrawer />);
 
@@ -158,16 +129,15 @@ describe('LabsDrawer', () => {
     expect(screen.getByText('Test Feature 2')).toBeInTheDocument();
   });
 
+  it('renders the engine selector', () => {
+    mockLabsStore();
+
+    render(<LabsDrawer />);
+    expect(screen.getByTestId('engine-selector')).toBeInTheDocument();
+  });
+
   it('renders graduated section', () => {
-    vi.mocked(useLabsStore).mockImplementation((selector) => {
-      const state = {
-        isDrawerOpen: true,
-        closeDrawer: vi.fn(),
-        toggleFeature: vi.fn(),
-        isFeatureEnabled: vi.fn(() => false),
-      };
-      return selector ? selector(state) : state;
-    });
+    mockLabsStore();
 
     render(<LabsDrawer />);
     expect(screen.getByTestId('graduated-section')).toBeInTheDocument();
@@ -175,46 +145,21 @@ describe('LabsDrawer', () => {
 
   it('shows empty state when no features available', () => {
     vi.mocked(getToggleableFeatures).mockReturnValue([]);
-
-    vi.mocked(useLabsStore).mockImplementation((selector) => {
-      const state = {
-        isDrawerOpen: true,
-        closeDrawer: vi.fn(),
-        toggleFeature: vi.fn(),
-        isFeatureEnabled: vi.fn(() => false),
-      };
-      return selector ? selector(state) : state;
-    });
+    mockLabsStore();
 
     render(<LabsDrawer />);
     expect(screen.getByText('labs.checkBackLater')).toBeInTheDocument();
   });
 
   it('locks body scroll when drawer is open', () => {
-    vi.mocked(useLabsStore).mockImplementation((selector) => {
-      const state = {
-        isDrawerOpen: true,
-        closeDrawer: vi.fn(),
-        toggleFeature: vi.fn(),
-        isFeatureEnabled: vi.fn(() => false),
-      };
-      return selector ? selector(state) : state;
-    });
+    mockLabsStore();
 
     render(<LabsDrawer />);
     expect(document.body.style.overflow).toBe('hidden');
   });
 
   it('has backdrop with correct opacity when open', () => {
-    vi.mocked(useLabsStore).mockImplementation((selector) => {
-      const state = {
-        isDrawerOpen: true,
-        closeDrawer: vi.fn(),
-        toggleFeature: vi.fn(),
-        isFeatureEnabled: vi.fn(() => false),
-      };
-      return selector ? selector(state) : state;
-    });
+    mockLabsStore();
 
     const { container } = render(<LabsDrawer />);
     const backdrop = container.querySelector('.bg-overlay-dark');
