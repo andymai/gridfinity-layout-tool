@@ -18,6 +18,7 @@ import { initBrepjs } from './__kernel-tests__/wasmInit';
 import {
   SNAP_PRONG_DIAMETER,
   SNAP_PRONG_INSET,
+  SNAP_PRONG_OVERSHOOT,
   SNAP_BRIDGE_THICKNESS,
   SNAP_BRIDGE_WIDTH,
   SNAP_BRIDGE_LENGTH_MARGIN,
@@ -122,9 +123,15 @@ describe('snap clip geometry', () => {
       // Y (perpendicular to seam): bridge width
       expect(bbox.maxY - bbox.minY).toBeCloseTo(SNAP_BRIDGE_WIDTH, 1);
 
-      // Z (print height): bridge + shaft + barb total
+      // Z (print height): bridge + (shaft = slab + overshoot) + barb total.
+      // The overshoot is what places the barb's wide point below the slab
+      // bottom in use orientation, giving real mechanical engagement.
       const expectedH =
-        SNAP_BRIDGE_THICKNESS + slabThickness + SNAP_BARB_RETAIN_HEIGHT + SNAP_BARB_LEAD_HEIGHT;
+        SNAP_BRIDGE_THICKNESS +
+        slabThickness +
+        SNAP_PRONG_OVERSHOOT +
+        SNAP_BARB_RETAIN_HEIGHT +
+        SNAP_BARB_LEAD_HEIGHT;
       expect(bbox.maxZ - bbox.minZ).toBeCloseTo(expectedH, 1);
 
       // Bridge sits on Z=0 (print orientation: build plate)
@@ -136,6 +143,20 @@ describe('snap clip geometry', () => {
       const b = await exportSnapClip(10, 'stl');
       const heightDiff = stlBbox(b.data).maxZ - stlBbox(a.data).maxZ;
       expect(heightDiff).toBeCloseTo(5, 1);
+    }, 30000);
+
+    it('shaft applies SNAP_PRONG_OVERSHOOT (barb seats below slab bottom)', async () => {
+      // Regression guard: an earlier draft defined SNAP_PRONG_OVERSHOOT but
+      // forgot to add it to shaftLen, leaving the barb shoulder flush with
+      // the slab bottom instead of below it. Verify the overshoot is in the
+      // total clip height by comparing the actual bbox to the no-overshoot
+      // baseline.
+      const slab = 5;
+      const result = await exportSnapClip(slab, 'stl');
+      const totalH = stlBbox(result.data).maxZ - stlBbox(result.data).minZ;
+      const withoutOvershoot =
+        SNAP_BRIDGE_THICKNESS + slab + SNAP_BARB_RETAIN_HEIGHT + SNAP_BARB_LEAD_HEIGHT;
+      expect(totalH - withoutOvershoot).toBeCloseTo(SNAP_PRONG_OVERSHOOT, 1);
     }, 30000);
   });
 });

@@ -28,6 +28,7 @@ import type { ExportFormat } from '../../bridge/types';
 import {
   SNAP_PRONG_DIAMETER,
   SNAP_PRONG_INSET,
+  SNAP_PRONG_OVERSHOOT,
   SNAP_BRIDGE_THICKNESS,
   SNAP_BRIDGE_WIDTH,
   SNAP_BRIDGE_LENGTH_MARGIN,
@@ -54,7 +55,10 @@ export function buildSnapClip(slabThickness: number): Shape3D {
   const bridgeThick = SNAP_BRIDGE_THICKNESS;
 
   const prongCenterOffset = SNAP_PRONG_INSET; // half of seam-to-seam spacing
-  const shaftLen = slabThickness;
+  // Shaft is slightly longer than the slab so the barb's wide point seats
+  // below the slab bottom rather than flush with it — gives the snap real
+  // mechanical engagement instead of a marginal hook.
+  const shaftLen = slabThickness + SNAP_PRONG_OVERSHOOT;
 
   const bridge: Shape3D = box(bridgeLen, bridgeWidth, bridgeThick, {
     at: [0, 0, bridgeThick / 2],
