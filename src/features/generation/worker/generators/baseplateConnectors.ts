@@ -18,7 +18,7 @@
  * Z=-totalHeight).
  */
 
-import { draw, drawCircle, translate } from 'brepjs';
+import { box, draw, drawCircle, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
 import { resolveConnectorStyle } from '@/shared/types/bin';
@@ -31,6 +31,10 @@ import {
   COPLANAR_OVERLAP,
   SNAP_HOLE_DIAMETER,
   SNAP_PRONG_INSET,
+  SNAP_BRIDGE_WIDTH,
+  SNAP_BRIDGE_LENGTH_MARGIN,
+  SNAP_BRIDGE_RECESS_CLEARANCE,
+  SNAP_BRIDGE_RECESS_DEPTH,
   sketch,
 } from './generatorTypes';
 
@@ -306,6 +310,21 @@ function buildSnapHoles(
     },
   ];
 
+  // Bridge recess: half of the bridge footprint sits in each piece, extending
+  // from the seam edge inward. The recess is along the across-seam direction
+  // (length = bridge half + clearance) and centered on the boundary in the
+  // along-seam direction (width = bridge_width + 2 × clearance). Without this,
+  // the bridge would protrude SNAP_BRIDGE_THICKNESS above the slab top and
+  // lift any bin placed near the seam.
+  const recessAcrossLen =
+    SNAP_PRONG_INSET + SNAP_BRIDGE_LENGTH_MARGIN + SNAP_BRIDGE_RECESS_CLEARANCE;
+  const recessAlongLen = SNAP_BRIDGE_WIDTH + 2 * SNAP_BRIDGE_RECESS_CLEARANCE;
+  // Cut extends slightly above slab top and below the recess depth to avoid
+  // coplanar-face boolean ambiguity (issue #1407 pattern).
+  const recessZTop = ext;
+  const recessZBot = -SNAP_BRIDGE_RECESS_DEPTH;
+  const recessHeight = recessZTop - recessZBot;
+
   for (const def of edgeDefs) {
     if (edges[def.side] !== 'join' || def.numBoundaries <= 0) continue;
     const inset = def.wallPos + def.inward * SNAP_PRONG_INSET;
@@ -317,6 +336,21 @@ function buildSnapHoles(
         .sketchOnPlane('XY', ext)
         .extrude(-(totalHeight + 2 * ext)) as Shape3D;
       holes.push(translate(cylinder, [cx, cy, 0]));
+
+      // Bridge recess pocket: extends from the seam edge inward by
+      // recessAcrossLen, centered on the boundary in the along-seam axis.
+      const recessW = def.protrudeAxis === 'x' ? recessAcrossLen : recessAlongLen;
+      const recessD = def.protrudeAxis === 'x' ? recessAlongLen : recessAcrossLen;
+      // Recess center: along the seam, on the boundary; across the seam,
+      // half the recess length inset from the wall (so the recess hugs
+      // the seam edge).
+      const recessCenterAcross = def.wallPos + def.inward * (recessAcrossLen / 2);
+      const recessCx = def.protrudeAxis === 'x' ? recessCenterAcross : bp;
+      const recessCy = def.protrudeAxis === 'x' ? bp : recessCenterAcross;
+      const recessBox = box(recessW, recessD, recessHeight, {
+        at: [recessCx, recessCy, recessZBot + recessHeight / 2],
+      }) as Shape3D;
+      holes.push(recessBox);
     }
   }
 

@@ -60,6 +60,8 @@ export {
   SNAP_HOLE_CLEARANCE,
   SNAP_HOLE_DIAMETER,
   SNAP_CIRCLE_SEGMENTS,
+  SNAP_BRIDGE_RECESS_CLEARANCE,
+  SNAP_BRIDGE_RECESS_DEPTH,
 } from './generatorConstants';
 export { decomposeCells, decomposeHalfCells, forEachCell } from './cellDecomposition';
 export type { CellInfo, ForEachCellOptions } from './cellDecomposition';

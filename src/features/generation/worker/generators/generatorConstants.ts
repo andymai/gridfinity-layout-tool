@@ -191,3 +191,27 @@ export const SNAP_HOLE_DIAMETER = SNAP_PRONG_DIAMETER + 2 * SNAP_HOLE_CLEARANCE;
 
 /** Circle segment count for prong/hole tessellation. */
 export const SNAP_CIRCLE_SEGMENTS = 24;
+
+// Bridge recess: a shallow pocket on the slab top that holds the clip's
+// bridge plate flush. Without this, the bridge would protrude SNAP_BRIDGE_
+// THICKNESS above the slab top and lift any bin placed near the seam — the
+// bin's outer rim sits in exactly the area the bridge would occupy.
+//
+//   ▌                          ▐         ← clip bridge sits flush here
+//   ▌  ┌────────┐              ▐
+//   ▌  │ recess │              ▐
+//   ▌  └────────┘              ▐         ← slab top
+//   ▌▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▐
+//             ‖
+//             ‖  through-hole (prong)
+//             ‖
+//
+// Recess footprint = bridge footprint + clearance per side, split between
+// the two adjacent pieces at the seam (each piece carries half).
+
+/** Per-side clearance for the bridge in its recess (mm). */
+export const SNAP_BRIDGE_RECESS_CLEARANCE = 0.25;
+
+/** Recess depth into the slab top (mm) — bridge thickness + a small
+ *  clearance so the bridge drops in and doesn't ride proud. */
+export const SNAP_BRIDGE_RECESS_DEPTH = SNAP_BRIDGE_THICKNESS + 0.2;
