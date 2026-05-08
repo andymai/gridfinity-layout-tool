@@ -7,10 +7,12 @@ const flushNowMock = vi.fn();
 const getPendingEntriesMock = vi.fn();
 const apiSignOutMock = vi.fn();
 const clearOutboxMock = vi.fn();
+const stopEngineMock = vi.fn();
 
 vi.mock('./engine', () => ({
   flushNow: () => flushNowMock(),
   getPendingEntries: () => getPendingEntriesMock(),
+  stop: () => stopEngineMock(),
 }));
 
 vi.mock('./session/sessionApi', () => ({
@@ -127,6 +129,23 @@ describe('runSignOut — outbox flush', () => {
     layouts.items.set('a', { id: 'a', payload: {}, modifiedAt: 1000 });
     await runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
     expect(order.indexOf('clearOutbox')).toBeLessThan(order.indexOf('wipe'));
+  });
+
+  it('wipe path stops the engine before wiping so a poll cannot race new items in', async () => {
+    const order: string[] = [];
+    stopEngineMock.mockImplementation(() => {
+      order.push('stop');
+    });
+    clearOutboxMock.mockImplementation(async () => {
+      order.push('clearOutbox');
+    });
+    layouts.applyRemoteDelete = vi.fn(async () => {
+      order.push('wipe');
+    });
+    layouts.items.set('a', { id: 'a', payload: {}, modifiedAt: 1000 });
+    await runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
+    expect(order[0]).toBe('stop');
+    expect(order.indexOf('stop')).toBeLessThan(order.indexOf('wipe'));
   });
 
   it('skips flush on wipe path (clearOutbox makes flush wasted work)', async () => {

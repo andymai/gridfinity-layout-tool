@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { layoutAdapter } from './adapters/layoutAdapter';
 import { designAdapter } from '@/features/bin-designer/sync/designAdapter';
 import { runClaim, type AccountMismatchChoice } from './claim';
@@ -32,11 +32,6 @@ export function SyncSessionMount() {
   );
 
   const status = useSessionStore((s) => s.status);
-  // Always seed with 'unknown' so a remount-while-authenticated (StrictMode
-  // double-invoke, conditional unmount, etc.) still hits the transition
-  // branch and starts the engine. Using `useRef(status)` would skip start()
-  // because prev === status on first run.
-  const prevStatusRef = useRef<typeof status>('unknown');
 
   const [mismatchPrompt, setMismatchPrompt] = useState<{
     localCount: number;
@@ -57,42 +52,40 @@ export function SyncSessionMount() {
   );
 
   useEffect(() => {
-    const prev = prevStatusRef.current;
-    prevStatusRef.current = status;
+    if (status !== 'authenticated') return;
 
-    if (status === 'authenticated' && prev !== 'authenticated') {
-      // Read user via getState() so this effect doesn't depend on the
-      // user reference — Zustand may emit a new user object while
-      // status stays 'authenticated', which would otherwise stop()
-      // the engine without a matching start() (the next effect run
-      // sees prev === 'authenticated' and falls through both branches).
-      const currentUser = useSessionStore.getState().user;
-      if (currentUser) {
-        // Run claim before start(): the engine drains outbox and polls
-        // immediately, and we don't want the prior user's pending
-        // pushes to flush under the new account before discard can
-        // wipe them.
-        void runClaim({
-          adapters,
-          userId: currentUser.userId,
-          newAccountLabel: currentUser.email,
-          promptAccountMismatch,
-        }).then((result) => {
-          // Skip engine start on 'unauthorized': the manifest 401 means
-          // session sort-out is in flight (the engine's own forced-401
-          // handler will flip to anonymous), and starting now would
-          // immediately retrigger that path. Other terminal states
-          // ('merged' | 'discarded' | 'error') start the engine —
-          // 'error' relies on the engine's own retry/backoff to recover.
-          if (result.status !== 'unauthorized') start(adapters);
-        });
-      } else {
-        start(adapters);
-      }
-    } else if (status === 'anonymous' && prev === 'authenticated') {
-      stop();
+    // Read user via getState() so this effect doesn't depend on the
+    // user reference — Zustand may emit a new user object while
+    // status stays 'authenticated', which would otherwise restart
+    // the engine for no reason.
+    const currentUser = useSessionStore.getState().user;
+    let cancelled = false;
+    if (currentUser) {
+      // Run claim before start(): the engine drains outbox and polls
+      // immediately, and we don't want the prior user's pending
+      // pushes to flush under the new account before discard can
+      // wipe them. runClaim is single-flight per userId so a
+      // StrictMode-style double effect run coalesces.
+      void runClaim({
+        adapters,
+        userId: currentUser.userId,
+        newAccountLabel: currentUser.email,
+        promptAccountMismatch,
+      }).then((result) => {
+        // Skip engine start on 'unauthorized': the manifest 401 means
+        // session sort-out is in flight (the engine's own forced-401
+        // handler will flip to anonymous), and starting now would
+        // immediately retrigger that path. Other terminal states
+        // ('merged' | 'discarded' | 'error') start the engine —
+        // 'error' relies on the engine's own retry/backoff to recover.
+        if (cancelled) return;
+        if (result.status !== 'unauthorized') start(adapters);
+      });
+    } else {
+      start(adapters);
     }
     return () => {
+      cancelled = true;
       stop();
     };
   }, [status, adapters, promptAccountMismatch]);

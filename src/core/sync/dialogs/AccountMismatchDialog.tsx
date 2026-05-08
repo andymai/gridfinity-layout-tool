@@ -9,11 +9,11 @@ export interface AccountMismatchDialogProps {
 }
 
 /**
- * Account-mismatch guard dialog. Default action is Discard — if the
- * device is shared and a different account is signing in, we don't want
- * the previous user's layouts to silently leak into the new account's
- * cloud. The Merge option is opt-in for the rare "I made a second
- * Google account" case.
+ * Account-mismatch guard dialog. Both choices are explicit: Esc and
+ * backdrop click are no-ops because either choice — Merge or Discard —
+ * is consequential, and a reflex Escape press shouldn't wipe local
+ * data nor silently merge it into the wrong account. The user must
+ * pick one of the two buttons.
  */
 export function AccountMismatchDialog({
   isOpen,
@@ -23,7 +23,7 @@ export function AccountMismatchDialog({
 }: AccountMismatchDialogProps) {
   const t = useTranslation();
   return (
-    <Dialog.Root open={isOpen} onClose={() => onChoice('discard')} size="md">
+    <Dialog.Root open={isOpen} onClose={() => {}} size="md">
       <Dialog.Header title={t('syncDialog.accountMismatch.title')} />
       <Dialog.Body>
         <p className="text-sm text-content-secondary">

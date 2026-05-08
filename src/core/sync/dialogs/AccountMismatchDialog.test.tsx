@@ -48,6 +48,20 @@ describe('AccountMismatchDialog', () => {
     expect(onChoice).toHaveBeenCalledWith('merge');
   });
 
+  it('Escape key does not trigger discard or merge (no-op onClose)', () => {
+    const onChoice = vi.fn();
+    render(
+      <AccountMismatchDialog
+        isOpen={true}
+        localCount={3}
+        newAccountLabel="a@example.com"
+        onChoice={onChoice}
+      />
+    );
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onChoice).not.toHaveBeenCalled();
+  });
+
   it('passes count and account to the message body', () => {
     render(
       <AccountMismatchDialog

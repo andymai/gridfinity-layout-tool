@@ -1,5 +1,5 @@
 import { signOut as apiSignOut } from './session/sessionApi';
-import { flushNow, getPendingEntries } from './engine';
+import { flushNow, getPendingEntries, stop as stopEngine } from './engine';
 import { clearAll as clearOutbox } from './outbox';
 import { clearLastSignedInUserId } from './claim';
 import type { SyncAdapters } from './adapters/types';
@@ -36,6 +36,11 @@ export async function runSignOut(ctx: SignOutContext): Promise<SignOutResult> {
   if (!isChoice(choice)) return { status: 'cancelled' };
 
   if (choice === 'wipe') {
+    // Stop the engine FIRST. Otherwise a periodic poll or visibility
+    // flush running in parallel can applyRemote() new items between
+    // wipeLocal's list() snapshot and its delete loop, leaving the
+    // prior user's data behind in storage.
+    stopEngine();
     // Clear outbox before wipeLocal: if clearOutbox throws (IDB failure),
     // wipeLocal hasn't run yet so the engine has nothing to drain. Same
     // safety order as claim.ts's discard path.
