@@ -5,7 +5,7 @@
  * exportParity and topologyParity. Individual test suites can extend
  * with additional cases specific to their domain.
  */
-import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 
 export interface ParityTestCase {
@@ -86,6 +86,31 @@ export const TOPOLOGY_EXTENDED_CASES: readonly ParityTestCase[] = [
       scoop: { enabled: true, radius: 'auto' },
       label: { enabled: true, support: 'bracket', depth: 12, width: 100, alignment: 'left' },
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    },
+  },
+];
+
+// Pins the regression originally surfaced by occtWasmParity: u-shape wall
+// cutouts on non-XY sketch planes. Honeycomb-pattern cases are intentionally
+// omitted until a separate brepkit-side gap is resolved.
+export const WALL_FEATURE_PARITY_CASES: readonly ParityTestCase[] = [
+  {
+    name: '2×2 wall cutouts (u-shape, all sides)',
+    overrides: {
+      width: 2,
+      depth: 2,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+      walls: {
+        enabled: true,
+        shape: 'u-shape',
+        width: 0,
+        depth: 0,
+        front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        back: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        left: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        right: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 70, depth: 50 },
+        interior: DISABLED_WALL_CUTOUT,
+      },
     },
   },
 ];
