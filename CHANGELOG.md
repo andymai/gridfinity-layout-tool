@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.71.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.70.0...gridfinity-layout-tool-v4.71.0) (2026-05-08)
+
+
+### Features
+
+* **sync:** claim flow + explicit sign-out ([#1603](https://github.com/andymai/gridfinity-layout-tool/issues/1603)) ([b748c37](https://github.com/andymai/gridfinity-layout-tool/commit/b748c377162feaee0c8c4611414a36f2841a26f7))
+
 ## [4.70.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.69.0...gridfinity-layout-tool-v4.70.0) (2026-05-07)
 
 
