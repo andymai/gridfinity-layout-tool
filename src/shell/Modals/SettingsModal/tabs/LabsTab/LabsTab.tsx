@@ -2,6 +2,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLabsStore } from '@/core/store';
 import { getToggleableFeatures, getGraduatedFeatures } from '@/core/labs';
 import type { FeatureId } from '@/core/labs';
+import { EngineSelector } from '@/features/labs/components/EngineSelector';
 import { FeatureCard } from '@/features/labs/components/FeatureCard';
 import { GraduatedSection } from '@/features/labs/components/GraduatedSection';
 import { SparklesIcon } from '@/features/labs/components/icons';
@@ -17,7 +18,9 @@ export function LabsTab() {
     }))
   );
 
-  const toggleableFeatures = getToggleableFeatures();
+  const toggleableFeatures = getToggleableFeatures().filter(
+    (f) => f.id !== 'brepkit_kernel' && f.id !== 'occt_wasm_kernel'
+  );
   const graduatedFeatures = getGraduatedFeatures();
 
   return (
@@ -28,6 +31,10 @@ export function LabsTab() {
           <h3 className="text-base font-semibold text-content">{t('settings.labs')}</h3>
         </div>
         <p className="text-sm text-content-tertiary mb-4">{t('settings.labsHint')}</p>
+
+        <div className="mb-3">
+          <EngineSelector />
+        </div>
 
         {toggleableFeatures.length > 0 ? (
           <div className="space-y-3">

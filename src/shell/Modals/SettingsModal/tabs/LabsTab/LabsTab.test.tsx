@@ -73,6 +73,10 @@ vi.mock('@/features/labs/components/icons', () => ({
   ),
 }));
 
+vi.mock('@/features/labs/components/EngineSelector', () => ({
+  EngineSelector: () => <div data-testid="engine-selector">Engine Selector</div>,
+}));
+
 describe('LabsTab', () => {
   it('renders labs heading', () => {
     render(<LabsTab />);
@@ -108,5 +112,10 @@ describe('LabsTab', () => {
   it('renders GraduatedSection component', () => {
     render(<LabsTab />);
     expect(screen.getByTestId('graduated-section')).toBeInTheDocument();
+  });
+
+  it('renders the EngineSelector', () => {
+    render(<LabsTab />);
+    expect(screen.getByTestId('engine-selector')).toBeInTheDocument();
   });
 });
