@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLabsStore } from '@/core/store';
 import { getToggleableFeatures, getGraduatedFeatures, type FeatureId } from '@/core/labs';
-import { EngineSelector } from '../EngineSelector';
+import { EngineSelector, KERNEL_FEATURE_IDS } from '../EngineSelector';
 import { FeatureCard } from '../FeatureCard';
 import { GraduatedSection } from '../GraduatedSection';
 import { SparklesIcon, CloseIcon } from '../icons';
@@ -43,7 +43,7 @@ export function LabsDrawer() {
   };
 
   const toggleableFeatures = getToggleableFeatures().filter(
-    (f) => f.id !== 'brepkit_kernel' && f.id !== 'occt_wasm_kernel'
+    (f) => !KERNEL_FEATURE_IDS.some((id) => id === f.id)
   );
   const graduatedFeatures = getGraduatedFeatures();
 

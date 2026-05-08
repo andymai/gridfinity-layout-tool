@@ -4,4 +4,5 @@ export { LabsDrawer } from './LabsDrawer';
 export { FeatureCard } from './FeatureCard';
 export { FeatureStatusBadge } from './FeatureStatusBadge';
 export { GraduatedSection } from './GraduatedSection';
-export { SparklesIcon, CloseIcon, ChevronRightIcon } from './icons';
+export { EngineSelector, KERNEL_FEATURE_IDS } from './EngineSelector';
+export { SparklesIcon, CloseIcon, ChevronRightIcon, InfoIcon } from './icons';

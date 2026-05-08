@@ -55,6 +55,7 @@ vi.mock('../GraduatedSection', () => ({
 
 vi.mock('../EngineSelector', () => ({
   EngineSelector: () => <div data-testid="engine-selector">Engine Selector</div>,
+  KERNEL_FEATURE_IDS: ['brepkit_kernel', 'occt_wasm_kernel'] as const,
 }));
 
 vi.mock('../icons', () => ({
