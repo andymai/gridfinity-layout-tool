@@ -48,18 +48,15 @@ import { useThemeEffect } from '@/shared/hooks/useThemeEffect';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { usePlaceBinFromURL } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
-import { SYNC_UI_ENABLED } from '@/core/sync/featureGate';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { SHORTCUTS } from '@/core/constants';
 
-// Lazy-loaded behind SYNC_UI_ENABLED. When the gate is statically false at
-// build time (production default), Vite drops the dynamic import and
-// everything it pulls in (useSession, sessionApi, apiFetch) — zero bytes
-// of sync infra ship in the main bundle until PR 6 flips the gate.
-const LazySyncSessionMount = SYNC_UI_ENABLED
-  ? lazyWithRetry(() =>
-      import('@/core/sync/SyncSessionMount').then(namedExport('SyncSessionMount'))
-    )
-  : null;
+// Lazy-loaded so the sync chunk only fetches when the user opts into the
+// `cloud_sync` Labs flag. The dynamic import means the code is in the
+// build output but the chunk request is gated.
+const LazySyncSessionMount = lazyWithRetry(() =>
+  import('@/core/sync/SyncSessionMount').then(namedExport('SyncSessionMount'))
+);
 
 const CommandPalette = lazyWithRetry(() =>
   import('@/features/command-palette/components/CommandPalette').then(namedExport('CommandPalette'))
@@ -123,6 +120,7 @@ export default function App() {
 
   const { isCollaborative, shareId } = useCollabMode();
   const isLabsDrawerOpen = useLabsStore((state) => state.isDrawerOpen);
+  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const hasSharedLayoutPreview = useSharedPreviewStore((state) => state.sharedPreview !== null);
 
   const [hasShareUrl] = useState(() => {
@@ -436,7 +434,7 @@ export default function App() {
 
   return (
     <>
-      {LazySyncSessionMount && (
+      {cloudSyncEnabled && (
         <Suspense fallback={null}>
           <LazySyncSessionMount />
         </Suspense>

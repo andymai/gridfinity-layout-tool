@@ -14,14 +14,11 @@ import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { PresenceAvatars } from '../Collab';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
-import { SYNC_UI_ENABLED } from '@/core/sync/featureGate';
-
-// Lazy-loaded behind SYNC_UI_ENABLED — see App.tsx for the rationale.
-// In production (gate off), the SignInButton chunk and its session
-// dependencies (useSession, sessionApi, apiFetch) ship as zero bytes.
-const LazySignInButton = SYNC_UI_ENABLED
-  ? lazyWithRetry(() => import('./SignInButton').then(namedExport('SignInButton')))
-  : null;
+// Lazy-loaded so the SignInButton chunk only fetches when the user
+// opts into the `cloud_sync` Labs flag.
+const LazySignInButton = lazyWithRetry(() =>
+  import('./SignInButton').then(namedExport('SignInButton'))
+);
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { SaveStatus } from '@/shared/hooks';
@@ -46,6 +43,7 @@ export function Header({ saveStatus }: HeaderProps) {
   const t = useTranslation();
   const { isTablet } = useResponsive();
   const isCollabEnabled = useFeatureFlag('collaborative_editing');
+  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const { isCollaborative } = useCollabMode();
 
   const layout = useLayoutStore((state) => state.layout);
@@ -278,7 +276,7 @@ export function Header({ saveStatus }: HeaderProps) {
         {!isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
 
         <HeaderSupportLinks />
-        {LazySignInButton && (
+        {cloudSyncEnabled && (
           <Suspense fallback={null}>
             <LazySignInButton />
           </Suspense>
