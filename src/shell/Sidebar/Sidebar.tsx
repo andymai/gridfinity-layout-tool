@@ -497,11 +497,21 @@ export function Sidebar() {
                 {t('sidebar.github')}
               </a>{' '}
               ·{' '}
-              <a href="/privacy" className="text-content-tertiary hover:underline">
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-content-tertiary hover:underline"
+              >
                 {t('sidebar.privacy')}
               </a>{' '}
               ·{' '}
-              <a href="/terms" className="text-content-tertiary hover:underline">
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-content-tertiary hover:underline"
+              >
                 {t('sidebar.terms')}
               </a>
             </div>
