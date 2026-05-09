@@ -6,7 +6,7 @@
   <title>Privacy Policy | Gridfinity Layout Tool</title>
 
   <!-- SEO Meta Tags -->
-  <meta name="description" content="Privacy Policy for Gridfinity Layout Tool. Learn how we collect, use, and protect your data.">
+  <meta name="description" content="Privacy Policy for Gridfinity Layout Tool. Layouts stay in your browser by default; sign-in is optional. Learn what we collect and how it&#039;s used.">
   <meta name="keywords" content="privacy policy, data collection, analytics, gridfinity layout tool">
   <meta name="author" content="Andy Aragon">
   <meta name="robots" content="index, follow">
@@ -16,7 +16,7 @@
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://gridfinitylayouttool.com/privacy">
   <meta property="og:title" content="Privacy Policy | Gridfinity Layout Tool">
-  <meta property="og:description" content="Privacy Policy for Gridfinity Layout Tool. Learn how we collect, use, and protect your data.">
+  <meta property="og:description" content="Privacy Policy for Gridfinity Layout Tool. Layouts stay in your browser by default; sign-in is optional. Learn what we collect and how it&#039;s used.">
   <meta property="og:image" content="https://gridfinitylayouttool.com/og-image.png">
   <meta property="og:site_name" content="Gridfinity Layout Tool">
 
@@ -24,7 +24,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://gridfinitylayouttool.com/privacy">
   <meta name="twitter:title" content="Privacy Policy | Gridfinity Layout Tool">
-  <meta name="twitter:description" content="Privacy Policy for Gridfinity Layout Tool. Learn how we collect, use, and protect your data.">
+  <meta name="twitter:description" content="Privacy Policy for Gridfinity Layout Tool. Layouts stay in your browser by default; sign-in is optional. Learn what we collect and how it&#039;s used.">
   <meta name="twitter:image" content="https://gridfinitylayouttool.com/og-image.png">
 
   <!-- Structured Data -->
@@ -33,7 +33,7 @@
   "@context": "https://schema.org",
   "@type": "Article",
   "headline": "Privacy Policy",
-  "description": "Privacy Policy for Gridfinity Layout Tool. Learn how we collect, use, and protect your data.",
+  "description": "Privacy Policy for Gridfinity Layout Tool. Layouts stay in your browser by default; sign-in is optional. Learn what we collect and how it's used.",
   "image": "https://gridfinitylayouttool.com/og-image.png",
   "url": "https://gridfinitylayouttool.com/privacy",
   "author": {
@@ -86,12 +86,13 @@
   <!-- Main Content -->
   <main id="main-content" class="content-page content-body">
 <h1 class="content-h1">Privacy Policy</h1>
-<p><strong>Last updated:</strong> March 2026</p>
+<p><strong>Last updated:</strong> May 2026</p>
 <p>Gridfinity Layout Tool is a free, open-source web application maintained by Andy Aragon. This policy explains what data we collect and how we use it.</p>
 <h2 class="content-h2">Summary</h2>
 <ul class="content-list"><li>We collect <strong>anonymous analytics</strong> to improve the app (you can opt out)</li>
-<li>Layouts you create are stored <strong>locally in your browser</strong> unless you choose to share them</li>
+<li>Layouts you create are stored <strong>locally in your browser</strong> unless you choose to share them or sign in</li>
 <li>When you share a layout, it&#39;s stored on our servers with a shareable link</li>
+<li><strong>Sign-in is optional.</strong> If you sign in to sync across devices, we collect your name and email from Google or GitHub</li>
 <li>We don&#39;t sell your data or use it for advertising</li>
 </ul>
 <h2 class="content-h2">Data We Collect</h2>
@@ -106,7 +107,7 @@
 <p>When analytics is disabled, no data is sent to PostHog.</p>
 <p>We also respect your browser&#39;s privacy settings. If your browser sends a <a href="https://globalprivacycontrol.org/" target="_blank" rel="noopener">Global Privacy Control</a> (GPC) or Do Not Track signal, analytics is disabled by default. You can still enable it manually in Settings if you choose.</p>
 <h3 class="content-h3">Layout Data</h3>
-<p><strong>Local storage:</strong> Your layouts are stored in your browser&#39;s localStorage. This data never leaves your device unless you explicitly share a layout.</p>
+<p><strong>Local storage:</strong> Your layouts are stored locally in your browser. This data never leaves your device unless you explicitly share a layout or sign in for sync.</p>
 <p><strong>Shared layouts:</strong> When you create a shareable link, your layout data is uploaded to <a href="https://vercel.com/docs/storage/vercel-blob" target="_blank" rel="noopener">Vercel Blob Storage</a>. Shared layouts include:</p>
 <ul class="content-list"><li>Your drawer configuration (dimensions, grid settings)</li>
 <li>Bin positions, sizes, labels, and notes</li>
@@ -114,12 +115,58 @@
 </ul>
 <p>Shared layouts are accessible to anyone with the link. You can delete a shared layout at any time.</p>
 <h3 class="content-h3">Real-time Collaboration</h3>
-<p>When you use the collaboration feature, your presence data (cursor position, anonymous display name) is shared with other participants via <a href="https://liveblocks.io" target="_blank" rel="noopener">Liveblocks</a>. This data is only transmitted while you&#39;re actively collaborating and is not stored permanently.</p>
+<p>When you use the collaboration feature, your presence data (cursor position and display name) is shared with other participants via <a href="https://liveblocks.io" target="_blank" rel="noopener">Liveblocks</a>. The display name is the author name you set in library settings, or an auto-generated guest name if you haven&#39;t set one. This data is only transmitted while you&#39;re actively collaborating and is not stored permanently.</p>
+<h3 class="content-h3">Sign-in and Multi-Device Sync (Optional)</h3>
+<p>The app is fully usable without an account. If you choose to sign in — currently behind the <strong>Cloud Sync</strong> opt-in in Labs settings — we use Google or GitHub as the identity provider and collect:</p>
+<ul class="content-list"><li>A <strong>stable account identifier</strong> issued by the provider (so we can recognize you on return visits without storing a password)</li>
+<li>Your <strong>email address</strong> (must be verified by the provider)</li>
+<li>Your <strong>display name</strong> (shown as your account label in-app)</li>
+</ul>
+<p>We do <strong>not</strong> receive or store your password, contacts, calendar, files, or any other data from your Google or GitHub account. The only OAuth scopes requested are:</p>
+<ul class="content-list"><li><strong>Google:</strong> <code>openid</code>, <code>profile</code>, <code>email</code></li>
+<li><strong>GitHub:</strong> <code>read:user</code>, <code>user:email</code></li>
+</ul>
+<p>We use this information solely to:</p>
+<ul class="content-list"><li>Identify your account so we can return your synced layouts and bin designs to you on any device</li>
+<li>Display your name in the in-app account UI</li>
+</ul>
+<p>We do not use your email for marketing and do not share your account information with third parties.</p>
+<h4 class="content-h4">Synced layouts and designs</h4>
+<p>When you&#39;re signed in, layouts and bin designs you create are uploaded to our <a href="https://vercel.com/docs/storage/vercel-blob" target="_blank" rel="noopener">Vercel Blob</a> storage under per-account paths that aren&#39;t listed publicly. Reads and writes go through our authenticated server endpoints, which check your session cookie before returning data — clients don&#39;t access blob URLs directly. Per-account limits currently apply: up to 100 layouts and 100 bin designs, with each layout up to 500 KB, each design up to 100 KB, and 10 MB total per kind.</p>
+<h4 class="content-h4">Authentication cookies</h4>
+<table>
+<thead>
+<tr>
+<th>Cookie</th>
+<th>Purpose</th>
+<th>Lifetime</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>__Host-gflt_session</code> (<code>gflt_session</code> in dev)</td>
+<td>Opaque session token</td>
+<td>30 days</td>
+</tr>
+<tr>
+<td><code>gflt_oauth_state</code>, <code>gflt_oauth_verifier</code></td>
+<td>CSRF / PKCE during sign-in</td>
+<td>10 minutes</td>
+</tr>
+</tbody></table>
+<p>All of these cookies are <code>HttpOnly</code> and <code>SameSite=Lax</code>, and <code>Secure</code> over HTTPS. We do not set advertising or cross-site tracking cookies.</p>
+<h4 class="content-h4">Deleting your account</h4>
+<p>You can delete your account at any time from <strong>Settings &gt; Account &gt; Delete account</strong>. This irreversibly:</p>
+<ol class="content-list"><li>Signs you out on every device</li>
+<li>Deletes every synced layout and bin design from our servers</li>
+<li>Deletes your account profile from our servers</li>
+</ol>
+<p>Local data in your browser is unaffected — your locally-stored layouts remain on your device.</p>
 <h2 class="content-h2">Data We Don&#39;t Collect</h2>
-<ul class="content-list"><li>Personal information (name, email, address)</li>
-<li>Payment information</li>
+<ul class="content-list"><li>Payment information</li>
 <li>Precise location</li>
+<li>Contacts, calendar, files, or anything outside the OAuth scopes listed above</li>
 <li>Cookies for advertising or tracking across sites</li>
+<li>Personal information (name, email) <strong>unless you sign in for cloud sync</strong></li>
 </ul>
 <h2 class="content-h2">Third-Party Services</h2>
 <table>
@@ -145,18 +192,33 @@
 <td>Real-time collaboration</td>
 <td><a href="https://liveblocks.io/privacy" target="_blank" rel="noopener">liveblocks.io/privacy</a></td>
 </tr>
+<tr>
+<td>Google</td>
+<td>Sign-in for sync (only if you sign in)</td>
+<td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a></td>
+</tr>
+<tr>
+<td>GitHub</td>
+<td>Sign-in for sync (only if you sign in)</td>
+<td><a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">docs.github.com/site-policy/privacy-policies/github-general-privacy-statement</a></td>
+</tr>
 </tbody></table>
 <h2 class="content-h2">Your Rights</h2>
 <p>You can:</p>
 <ul class="content-list"><li><strong>Opt out of analytics</strong> in Settings &gt; Privacy</li>
 <li><strong>Use your browser&#39;s privacy setting</strong> (Global Privacy Control or Do Not Track) to disable analytics automatically</li>
 <li><strong>Delete your shared layouts</strong> using the share modal</li>
+<li><strong>Sign out</strong> from Settings &gt; Account at any time</li>
+<li><strong>Delete your account</strong> (and all synced data) from Settings &gt; Account &gt; Delete account</li>
 <li><strong>Clear all local data</strong> by clearing your browser&#39;s site data for this domain</li>
 </ul>
 <h2 class="content-h2">Data Retention</h2>
 <ul class="content-list"><li><strong>Local data:</strong> Stored indefinitely until you clear it</li>
 <li><strong>Shared layouts:</strong> Stored until you delete them (or we may remove inactive shares after 12 months)</li>
 <li><strong>Analytics:</strong> Retained by PostHog per their data retention policy</li>
+<li><strong>Account session cookies:</strong> 30 days from sign-in</li>
+<li><strong>Account profile (name, email, provider account ID):</strong> 1 year, refreshed on every sign-in. Profiles for accounts that don&#39;t sign in for a year are automatically deleted</li>
+<li><strong>Synced layouts and designs:</strong> Retained until you delete them, or until you delete your account</li>
 </ul>
 <h2 class="content-h2">Children&#39;s Privacy</h2>
 <p>This app is not directed at children under 13. We don&#39;t knowingly collect data from children.</p>

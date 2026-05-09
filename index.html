@@ -3,9 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Gridfinity Generator & Layout Planner — Free Online Bin & Baseplate Tool</title>
+    <title>Gridfinity Layout Tool — Free Online Gridfinity Generator & Layout Planner</title>
 
     <!-- SEO Meta Tags -->
+    <meta name="application-name" content="Gridfinity Layout Tool">
     <meta name="description" content="Free Gridfinity generator and layout planner. Make custom bins and baseplates, configure dimensions and features, preview in 3D, and export STL/STEP/3MF. Runs in your browser, no account, works offline.">
     <meta name="keywords" content="gridfinity generator, gridfinity, gridfinity bin generator, gridfinity baseplate generator, gridfinity layout, drawer organizer, 3D printing, gridfinity planner, gridfinity STL, gridfinity bins, gridfinity 3MF">
     <meta name="author" content="Andy Aragon">
@@ -31,7 +32,7 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://gridfinitylayouttool.com/">
-    <meta property="og:title" content="Gridfinity Generator & Layout Planner — Free Online Bin & Baseplate Tool">
+    <meta property="og:title" content="Gridfinity Layout Tool — Free Online Gridfinity Generator & Layout Planner">
     <meta property="og:description" content="Free Gridfinity generator and layout planner. Make custom bins and baseplates, configure dimensions, preview in 3D, and export STL/STEP/3MF. Runs in your browser.">
     <meta property="og:image" content="https://gridfinitylayouttool.com/og-image.png">
     <meta property="og:image:width" content="1200">
@@ -43,7 +44,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://gridfinitylayouttool.com/">
-    <meta name="twitter:title" content="Gridfinity Generator & Layout Planner — Free Online Bin & Baseplate Tool">
+    <meta name="twitter:title" content="Gridfinity Layout Tool — Free Online Gridfinity Generator & Layout Planner">
     <meta name="twitter:description" content="Free Gridfinity generator and layout planner. Make custom bins and baseplates, configure dimensions, preview in 3D, and export STL/STEP/3MF. Runs in your browser.">
     <meta name="twitter:image" content="https://gridfinitylayouttool.com/og-image.png">
     <meta name="twitter:image:alt" content="Gridfinity Layout Tool interface showing a grid-based drawer layout editor with colorful storage bins">
@@ -475,5 +476,16 @@
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Static brand + legal footer. Lives OUTSIDE #root so it survives React mount,
+         giving non-JS crawlers (and Google's OAuth brand-verification bot) a stable,
+         visible link to the Privacy Policy and Terms on the canonical home page. -->
+    <footer
+      aria-label="Site information"
+      style="position:fixed;bottom:6px;left:50%;transform:translateX(-50%);z-index:50;display:flex;gap:10px;align-items:center;padding:2px 8px;font-family:'IBM Plex Sans',system-ui,-apple-system,sans-serif;font-size:10px;line-height:1.2;color:rgba(161,161,170,0.55);pointer-events:auto;background:transparent;white-space:nowrap"
+    >
+      <span>Gridfinity Layout Tool</span>
+      <a href="/privacy" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Privacy</a>
+      <a href="/terms" style="color:inherit;text-decoration:underline;text-underline-offset:2px">Terms</a>
+    </footer>
   </body>
 </html>

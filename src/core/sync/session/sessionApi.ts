@@ -25,6 +25,20 @@ export async function signOut(): Promise<void> {
   }
 }
 
+/**
+ * DELETE /api/sync/account. Server-side cascade clears every session,
+ * blob, and KV key for the signed-in account, then clears the cookie
+ * on the responding device. 401 is treated as success: the session
+ * was already invalid, so the account is — from this client's view —
+ * gone.
+ */
+export async function deleteAccount(): Promise<void> {
+  const res = await apiFetch('/api/sync/account', { method: 'DELETE' });
+  if (!res.ok && res.status !== 401) {
+    throw new Error(`/api/sync/account DELETE failed (${res.status})`);
+  }
+}
+
 export function signInUrl(provider: AuthProvider): string {
   return `/api/auth/login/${provider}`;
 }

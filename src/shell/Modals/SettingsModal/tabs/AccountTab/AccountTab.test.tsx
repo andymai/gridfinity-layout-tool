@@ -10,10 +10,14 @@ import { resetAllStores } from '@/test/testUtils';
 vi.mock('@/core/sync/signOut', () => ({
   runSignOut: vi.fn().mockResolvedValue(undefined),
 }));
+vi.mock('@/core/sync/deleteAccount', () => ({
+  runDeleteAccount: vi.fn().mockResolvedValue({ status: 'deleted' }),
+}));
 vi.mock('@/core/sync/adapters/layoutAdapter', () => ({ layoutAdapter: {} }));
 vi.mock('@/features/bin-designer/sync/designAdapter', () => ({ designAdapter: {} }));
 
 import { runSignOut } from '@/core/sync/signOut';
+import { runDeleteAccount } from '@/core/sync/deleteAccount';
 
 const enableCloudSync = (enabled: boolean) => {
   useLabsStore.setState((state) => ({
@@ -31,6 +35,7 @@ describe('AccountTab', () => {
     useSessionStore.setState({ status: 'unknown', user: null });
     useSyncStatusStore.setState({ state: 'idle', pendingCount: 0 });
     vi.mocked(runSignOut).mockClear();
+    vi.mocked(runDeleteAccount).mockClear();
   });
   afterEach(() => cleanup());
 
@@ -84,6 +89,33 @@ describe('AccountTab', () => {
     render(<AccountTab />);
     fireEvent.click(screen.getByRole('button', { name: /sign out/i }));
     expect(runSignOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the Danger Zone with a Delete account button when authenticated', () => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u1', provider: 'google', email: 'a@x', displayName: 'A' },
+    });
+    render(<AccountTab />);
+    expect(screen.getByText(/danger zone/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /delete account/i })).toBeTruthy();
+  });
+
+  it('does NOT render the Delete account button when anonymous', () => {
+    useSessionStore.setState({ status: 'anonymous', user: null });
+    render(<AccountTab />);
+    expect(screen.queryByRole('button', { name: /delete account/i })).toBeNull();
+    expect(screen.queryByText(/danger zone/i)).toBeNull();
+  });
+
+  it('triggers runDeleteAccount from the Delete account button', () => {
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u1', provider: 'google', email: 'a@x', displayName: 'A' },
+    });
+    render(<AccountTab />);
+    fireEvent.click(screen.getByRole('button', { name: /delete account/i }));
+    expect(runDeleteAccount).toHaveBeenCalledTimes(1);
   });
 
   it('surfaces pending count and last error when sync is degraded', () => {

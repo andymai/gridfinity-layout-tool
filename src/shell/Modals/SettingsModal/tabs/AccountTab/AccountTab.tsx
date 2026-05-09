@@ -6,6 +6,8 @@ import { useSessionStore } from '@/core/sync/session/useSession';
 import { signInUrl } from '@/core/sync/session/sessionApi';
 import { useSyncStatusStore } from '@/core/sync/status';
 import { useSignOutFlow } from '@/core/sync/useSignOutFlow';
+import { useDeleteAccountFlow } from '@/core/sync/useDeleteAccountFlow';
+import { useToastStore } from '@/core/store';
 import { useLibraryStore } from '@/core/store/library';
 
 const PROVIDER_LABEL_KEY = {
@@ -29,6 +31,18 @@ export function AccountTab() {
   const layoutCount = useLibraryStore((s) => s.library.entries.length);
 
   const { signOut, dialog: signOutDialog } = useSignOutFlow();
+  const { deleteAccount, dialog: deleteAccountDialog } = useDeleteAccountFlow();
+  const addToast = useToastStore((s) => s.addToast);
+
+  const handleDeleteAccount = async () => {
+    const result = await deleteAccount();
+    if (result.status === 'error') {
+      addToast({
+        message: t('account.deleteAccount.errorToast', { message: result.message }),
+        type: 'error',
+      });
+    }
+  };
 
   if (!cloudSyncEnabled) {
     return (
@@ -129,7 +143,20 @@ export function AccountTab() {
         </section>
       )}
 
+      {status === 'authenticated' && (
+        <section className="space-y-3 pt-4 border-t border-stroke-subtle">
+          <h3 className="text-base font-semibold text-content">
+            {t('account.dangerZone.heading')}
+          </h3>
+          <p className="text-xs text-content-tertiary">{t('account.deleteAccount.description')}</p>
+          <Button variant="danger" onClick={() => void handleDeleteAccount()}>
+            {t('account.deleteAccount.button')}
+          </Button>
+        </section>
+      )}
+
       {signOutDialog}
+      {deleteAccountDialog}
     </div>
   );
 }
