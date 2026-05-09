@@ -4,6 +4,7 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { UserDock } from './UserDock';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useSyncStatusStore } from '@/core/sync/status';
+import { useLibraryStore } from '@/core/store/library';
 import { resetAllStores } from '@/test/testUtils';
 
 vi.mock('@/core/sync/signOut', () => ({
@@ -26,10 +27,32 @@ const setSession = (
   useSessionStore.setState({ status, user });
 };
 
+const setLayoutCount = (count: number) => {
+  useLibraryStore.setState((s) => ({
+    library: {
+      ...s.library,
+      entries: Array.from({ length: count }, (_, i) => ({
+        id: `entry-${i}` as never,
+        name: `Layout ${i}`,
+        createdAt: 0,
+        modifiedAt: 0,
+        preview: {
+          drawerWidth: 5 as never,
+          drawerDepth: 5 as never,
+          drawerHeight: 1 as never,
+          binCount: 0,
+          layerCount: 1,
+        },
+      })),
+    },
+  }));
+};
+
 describe('UserDock', () => {
   beforeEach(() => {
     resetAllStores();
     setSession('unknown');
+    setLayoutCount(0);
     useSyncStatusStore.setState({ state: 'idle', pendingCount: 0 });
     vi.mocked(runSignOut).mockClear();
   });
@@ -40,18 +63,41 @@ describe('UserDock', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders the sign-in trigger when anonymous', () => {
+  it('shows the "Working locally" trigger label when anonymous', () => {
     setSession('anonymous');
     render(<UserDock />);
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeTruthy();
+    expect(screen.getByText(/working locally/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /open account menu/i })).toBeTruthy();
   });
 
-  it('reveals provider links when the anonymous trigger is clicked', () => {
+  it('reveals provider links when the anonymous trigger is opened', () => {
     setSession('anonymous');
     render(<UserDock />);
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    fireEvent.click(screen.getByRole('button', { name: /open account menu/i }));
     expect(screen.getByRole('link', { name: /google/i })).toBeTruthy();
     expect(screen.getByRole('link', { name: /github/i })).toBeTruthy();
+  });
+
+  it('shows "Ready when you are" when the library is empty', () => {
+    setSession('anonymous');
+    setLayoutCount(0);
+    render(<UserDock />);
+    fireEvent.click(screen.getByRole('button', { name: /open account menu/i }));
+    expect(screen.getByText(/ready when you are/i)).toBeTruthy();
+  });
+
+  it('shows the layout count when the library has entries', () => {
+    setSession('anonymous');
+    setLayoutCount(7);
+    render(<UserDock />);
+    fireEvent.click(screen.getByRole('button', { name: /open account menu/i }));
+    expect(screen.getByText(/saved on this device · 7 layout/i)).toBeTruthy();
+  });
+
+  it('uses the same "Account menu" aria-label for anonymous and authed', () => {
+    setSession('anonymous');
+    const { container } = render(<UserDock />);
+    expect(container.querySelector('[aria-label="Account menu"]')).toBeTruthy();
   });
 
   it('renders the display name when authenticated', () => {
@@ -84,7 +130,6 @@ describe('UserDock', () => {
     });
     const { container } = render(<UserDock />);
     const hairline = container.querySelector('[aria-hidden="true"]') as HTMLElement;
-    // jsdom normalizes #6E5494 to rgb form
     expect(hairline.style.background).toContain('rgb(110, 84, 148)');
   });
 
@@ -97,8 +142,18 @@ describe('UserDock', () => {
     });
     const { container } = render(<UserDock />);
     const hairline = container.querySelector('[aria-hidden="true"]') as HTMLElement;
-    // jsdom normalizes #4285F4 to rgb form
     expect(hairline.style.background).toContain('rgb(66, 133, 244)');
+  });
+
+  it('omits the provider hairline when anonymous', () => {
+    setSession('anonymous');
+    const { container } = render(<UserDock />);
+    const hairlines = container.querySelectorAll('div[style*="background"]');
+    hairlines.forEach((el) => {
+      const bg = (el as HTMLElement).style.background;
+      expect(bg).not.toContain('rgb(110, 84, 148)');
+      expect(bg).not.toContain('rgb(66, 133, 244)');
+    });
   });
 
   it('expands to reveal sync status and sign-out when authenticated', () => {
@@ -133,6 +188,15 @@ describe('UserDock', () => {
       email: 'a@x',
       displayName: 'A',
     });
+    const onOpenSettings = vi.fn();
+    render(<UserDock onOpenSettings={onOpenSettings} />);
+    fireEvent.click(screen.getByRole('button', { name: /open account menu/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^settings$/i }));
+    expect(onOpenSettings).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders Settings in the anonymous menu when onOpenSettings is provided', () => {
+    setSession('anonymous');
     const onOpenSettings = vi.fn();
     render(<UserDock onOpenSettings={onOpenSettings} />);
     fireEvent.click(screen.getByRole('button', { name: /open account menu/i }));
@@ -177,5 +241,12 @@ describe('UserDock', () => {
     render(<UserDock variant="compact" />);
     expect(screen.queryByText('Andy')).toBeNull();
     expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('compact variant exposes the local-mode tooltip when anonymous', () => {
+    setSession('anonymous');
+    const { container } = render(<UserDock variant="compact" />);
+    const labelled = container.querySelector('[aria-label="Working locally · Sign in to sync"]');
+    expect(labelled).toBeTruthy();
   });
 });

@@ -112,20 +112,30 @@ const en: Record<string, string> = {
   'auth.providerGoogle': 'Google',
   'auth.providerGithub': 'GitHub',
 
-  // UserDock — bottom-of-sidebar account panel (cloud_sync gated)
+  // UserDock — bottom-of-sidebar account panel
   'dock.openMenu': 'Open account menu',
   'dock.menuLabel': 'Account menu',
-  'dock.signInOptions': 'Sign in options',
   'dock.settings': 'Settings',
   'dock.syncStatusIdle': 'All changes synced',
   'dock.syncStatusSyncing': 'Syncing…',
   'dock.syncStatusOffline': 'Offline',
   'dock.syncStatusError': 'Sync error',
+  'dock.workingLocally': 'Working locally',
+  'dock.savedOnDeviceCount': 'Saved on this device · {count} layout(s)',
+  'dock.readyWhenYouAre': 'Ready when you are',
+  'dock.signInTooltip': 'Working locally · Sign in to sync',
 
   // Settings → Account tab
   'settings.tabs.account': 'Account',
-  'account.identity.heading': 'Signed in',
+  'account.identity.heading': 'Account',
   'account.identity.signedInVia': 'Signed in with {provider}',
+  'account.localMode.heading': 'Working locally',
+  'account.localMode.description': 'Your layouts are saved on this device.',
+  'account.localMode.savedOnDeviceCount': 'Saved on this device · {count} layout(s)',
+  'account.localMode.readyWhenYouAre': 'Ready when you are',
+  'account.localMode.benefitsIntro': 'With sync, you can:',
+  'account.localMode.benefitDevices': 'Sync across all your devices',
+  'account.localMode.benefitNoLoss': 'Never lose a layout',
   'account.sync.heading': 'Cloud sync',
   'account.sync.lastSyncedNever': 'Not synced yet',
   'account.sync.lastSyncedAt': 'Last synced {time}',

@@ -6,6 +6,7 @@ import { useSessionStore } from '@/core/sync/session/useSession';
 import { signInUrl } from '@/core/sync/session/sessionApi';
 import { useSyncStatusStore } from '@/core/sync/status';
 import { useSignOutFlow } from '@/core/sync/useSignOutFlow';
+import { useLibraryStore } from '@/core/store/library';
 
 const PROVIDER_LABEL_KEY = {
   google: 'auth.providerGoogle',
@@ -25,6 +26,7 @@ export function AccountTab() {
       lastError: s.lastError,
     }))
   );
+  const layoutCount = useLibraryStore((s) => s.library.entries.length);
 
   const { signOut, dialog: signOutDialog } = useSignOutFlow();
 
@@ -54,13 +56,39 @@ export function AccountTab() {
             </div>
           </div>
         ) : status === 'anonymous' ? (
-          <div className="rounded-md border border-stroke-subtle p-4 flex items-center gap-3">
-            <Button variant="primary" onClick={() => goTo(signInUrl('google'))}>
-              {t('auth.signInWithGoogle')}
-            </Button>
-            <Button variant="ghost" onClick={() => goTo(signInUrl('github'))}>
-              {t('auth.signInWithGithub')}
-            </Button>
+          <div className="rounded-md border border-stroke-subtle p-4 space-y-4">
+            <div className="space-y-1">
+              <div className="text-sm text-content font-medium">
+                {t('account.localMode.heading')}
+              </div>
+              <div className="text-xs text-content-tertiary">
+                {t('account.localMode.description')}
+              </div>
+              <div className="text-xs text-content-tertiary">
+                {layoutCount > 0
+                  ? t('account.localMode.savedOnDeviceCount', { count: layoutCount })
+                  : t('account.localMode.readyWhenYouAre')}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-xs text-content-secondary">
+                {t('account.localMode.benefitsIntro')}
+              </div>
+              <ul className="text-xs text-content-secondary list-disc pl-5 space-y-1">
+                <li>{t('account.localMode.benefitDevices')}</li>
+                <li>{t('account.localMode.benefitNoLoss')}</li>
+              </ul>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button variant="primary" onClick={() => goTo(signInUrl('google'))}>
+                {t('auth.signInWithGoogle')}
+              </Button>
+              <Button variant="ghost" onClick={() => goTo(signInUrl('github'))}>
+                {t('auth.signInWithGithub')}
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="rounded-md border border-stroke-subtle p-4 h-[3.5rem]" aria-busy="true" />

@@ -34,11 +34,28 @@ describe('AccountTab', () => {
   });
   afterEach(() => cleanup());
 
-  it('shows provider sign-in buttons when anonymous', () => {
+  it('shows the local-mode framing and provider buttons when anonymous', () => {
     useSessionStore.setState({ status: 'anonymous', user: null });
     render(<AccountTab />);
+    expect(screen.getByText(/working locally/i)).toBeTruthy();
+    expect(screen.getByText(/your layouts are saved on this device\./i)).toBeTruthy();
+    expect(screen.getByText(/with sync, you can:/i)).toBeTruthy();
+    expect(screen.getByText(/sync across all your devices/i)).toBeTruthy();
+    expect(screen.getByText(/never lose a layout/i)).toBeTruthy();
     expect(screen.getByRole('button', { name: /sign in with google/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /sign in with github/i })).toBeTruthy();
+  });
+
+  it('uses the universal "Account" heading regardless of auth state', () => {
+    useSessionStore.setState({ status: 'anonymous', user: null });
+    const { rerender } = render(<AccountTab />);
+    expect(screen.getAllByText(/^account$/i).length).toBeGreaterThan(0);
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u1', provider: 'google', email: 'a@x', displayName: 'A' },
+    });
+    rerender(<AccountTab />);
+    expect(screen.getAllByText(/^account$/i).length).toBeGreaterThan(0);
   });
 
   it('renders identity and sync status when authenticated', () => {
