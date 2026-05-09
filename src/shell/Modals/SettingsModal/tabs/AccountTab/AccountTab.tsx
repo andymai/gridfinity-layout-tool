@@ -58,14 +58,16 @@ export function AccountTab() {
         ) : status === 'anonymous' ? (
           <div className="rounded-md border border-stroke-subtle p-4 space-y-4">
             <div className="space-y-1">
-              <div className="text-sm text-content font-medium">{t('dock.workingLocally')}</div>
+              <div className="text-sm text-content font-medium">
+                {t('account.localMode.heading')}
+              </div>
               <div className="text-xs text-content-tertiary">
                 {t('account.localMode.description')}
               </div>
               <div className="text-xs text-content-tertiary">
                 {layoutCount > 0
-                  ? t('dock.savedOnDeviceCount', { count: layoutCount })
-                  : t('dock.readyWhenYouAre')}
+                  ? t('account.localMode.savedOnDeviceCount', { count: layoutCount })
+                  : t('account.localMode.readyWhenYouAre')}
               </div>
             </div>
 
