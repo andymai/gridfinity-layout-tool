@@ -967,6 +967,35 @@ input[type='range']:hover::-moz-range-thumb {
   animation: draw-hint-rect 4s ease-in-out infinite;
 }
 
+/* UserDock: sync ring states.
+   The ring is a layer behind the avatar. Idle/error use a solid background;
+   syncing rotates a conic-gradient via the layer's transform; offline uses a
+   dashed border. The blanket prefers-reduced-motion rule above neutralizes
+   the spin and pulse without per-rule overrides. */
+@keyframes sync-ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sync-ring-breath {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.animate-sync-ring-spin {
+  animation: sync-ring-spin 1.2s linear infinite;
+}
+
+.animate-sync-ring-breath {
+  animation: sync-ring-breath 2s ease-in-out infinite;
+}
+
 /* Onboarding: sidebar gallery pulse glow */
 @keyframes gallery-pulse {
   0%,

@@ -51,6 +51,12 @@ vi.mock('@/core/store', () => ({
     }),
 }));
 
+// Mock cloud_sync feature flag — these tests don't exercise the UserDock,
+// so keep it disabled to avoid pulling in session/sync store dependencies.
+vi.mock('@/shared/hooks/useFeatureFlag', () => ({
+  useFeatureFlag: () => false,
+}));
+
 // Mock half-bin mode store
 let mockHalfBinMode = false;
 vi.mock('@/core/store/halfBinMode', () => ({

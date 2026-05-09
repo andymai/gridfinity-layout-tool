@@ -3,6 +3,8 @@
   "keys": [
     "auth.providerGithub",
     "auth.providerGoogle",
+    "dock.syncStatusOffline",
+    "settings.tabs.account",
     "binDesigner.cart.cost",
     "binDesigner.shape.preset.rectangle",
     "binDesigner.shape.preset.l",

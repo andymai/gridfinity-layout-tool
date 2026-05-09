@@ -10,6 +10,7 @@ import { TabNavigation } from './TabNavigation/TabNavigation';
 import { useSettingsTab } from './hooks/useSettingsTab';
 import { GeneralTab } from './tabs/GeneralTab/GeneralTab';
 import { AppearanceTab } from './tabs/AppearanceTab/AppearanceTab';
+import { AccountTab } from './tabs/AccountTab/AccountTab';
 import { DefaultsTab } from './tabs/DefaultsTab/DefaultsTab';
 import { IntegrationsTab } from './tabs/IntegrationsTab/IntegrationsTab';
 import { PrivacyTab } from './tabs/PrivacyTab/PrivacyTab';
@@ -33,6 +34,8 @@ function renderTab(tabId: SettingsTabId) {
       return <GeneralTab />;
     case 'appearance':
       return <AppearanceTab />;
+    case 'account':
+      return <AccountTab />;
     case 'defaults':
       return <DefaultsTab />;
     case 'integrations':

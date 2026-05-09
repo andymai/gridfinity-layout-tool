@@ -108,10 +108,30 @@ const en: Record<string, string> = {
   'auth.signIn': 'Sign in',
   'auth.signInWithGoogle': 'Sign in with Google',
   'auth.signInWithGithub': 'Sign in with GitHub',
-  'auth.userMenuOpen': 'Open account menu',
   'auth.signOut': 'Sign out',
   'auth.providerGoogle': 'Google',
   'auth.providerGithub': 'GitHub',
+
+  // UserDock — bottom-of-sidebar account panel (cloud_sync gated)
+  'dock.openMenu': 'Open account menu',
+  'dock.menuLabel': 'Account menu',
+  'dock.signInOptions': 'Sign in options',
+  'dock.settings': 'Settings',
+  'dock.syncStatusIdle': 'All changes synced',
+  'dock.syncStatusSyncing': 'Syncing…',
+  'dock.syncStatusOffline': 'Offline',
+  'dock.syncStatusError': 'Sync error',
+
+  // Settings → Account tab
+  'settings.tabs.account': 'Account',
+  'account.identity.heading': 'Signed in',
+  'account.identity.signedInVia': 'Signed in with {provider}',
+  'account.sync.heading': 'Cloud sync',
+  'account.sync.lastSyncedNever': 'Not synced yet',
+  'account.sync.lastSyncedAt': 'Last synced {time}',
+  'account.sync.pendingChanges': '{count} pending change(s)',
+  'account.sync.errorPrefix': 'Last error: {message}',
+  'account.signOut.button': 'Sign out',
 
   // Multi-device sync toasts (engine + poller surface results here)
   'sync.conflictPulled': 'Layout updated from another device.',

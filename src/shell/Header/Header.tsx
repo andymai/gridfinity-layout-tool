@@ -14,11 +14,6 @@ import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { PresenceAvatars } from '../Collab';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
-// Lazy-loaded so the SignInButton chunk only fetches when the user
-// opts into the `cloud_sync` Labs flag.
-const LazySignInButton = lazyWithRetry(() =>
-  import('./SignInButton').then(namedExport('SignInButton'))
-);
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { SaveStatus } from '@/shared/hooks';
@@ -43,7 +38,6 @@ export function Header({ saveStatus }: HeaderProps) {
   const t = useTranslation();
   const { isTablet } = useResponsive();
   const isCollabEnabled = useFeatureFlag('collaborative_editing');
-  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const { isCollaborative } = useCollabMode();
 
   const layout = useLayoutStore((state) => state.layout);
@@ -276,11 +270,6 @@ export function Header({ saveStatus }: HeaderProps) {
         {!isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
 
         <HeaderSupportLinks />
-        {cloudSyncEnabled && (
-          <Suspense fallback={null}>
-            <LazySignInButton />
-          </Suspense>
-        )}
       </div>
 
       {/* Lazy-loaded modals - only load chunks when modal is opened */}

@@ -25,12 +25,12 @@ describe('TabNavigation', () => {
       mockUseResponsive.mockReturnValue({ isMobile: false });
     });
 
-    it('renders all 7 tabs with vertical orientation', () => {
+    it('renders all 8 tabs with vertical orientation', () => {
       render(<TabNavigation activeTab="general" onTabChange={onTabChange} />);
       const tablist = screen.getByRole('tablist');
       expect(tablist).toHaveAttribute('aria-orientation', 'vertical');
       const tabs = screen.getAllByRole('tab');
-      expect(tabs).toHaveLength(7);
+      expect(tabs).toHaveLength(8);
     });
 
     it('marks the active tab with aria-selected', () => {
@@ -43,7 +43,7 @@ describe('TabNavigation', () => {
     it('calls onTabChange when a tab is clicked', () => {
       render(<TabNavigation activeTab="general" onTabChange={onTabChange} />);
       const tabs = screen.getAllByRole('tab');
-      fireEvent.click(tabs[3]); // integrations tab
+      fireEvent.click(tabs[4]); // integrations tab (after account was inserted at index 2)
       expect(onTabChange).toHaveBeenCalledWith('integrations');
     });
 
@@ -65,7 +65,7 @@ describe('TabNavigation', () => {
       const tablist = screen.getByRole('tablist');
       expect(tablist).not.toHaveAttribute('aria-orientation');
       const tabs = screen.getAllByRole('tab');
-      expect(tabs).toHaveLength(7);
+      expect(tabs).toHaveLength(8);
     });
 
     it('supports arrow key navigation (left/right)', () => {
