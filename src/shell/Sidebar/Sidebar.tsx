@@ -447,6 +447,9 @@ export function Sidebar() {
 
             {/* Attribution */}
             <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">
+              <div className="text-content-secondary text-[11px] font-semibold mb-1">
+                {t('sidebar.appName')}
+              </div>
               {t('sidebar.gridfinityBy')}{' '}
               <a
                 href="https://www.youtube.com/c/ZackFreedman"
@@ -492,6 +495,14 @@ export function Sidebar() {
                 className="text-content-tertiary hover:underline"
               >
                 {t('sidebar.github')}
+              </a>{' '}
+              ·{' '}
+              <a href="/privacy" className="text-content-tertiary hover:underline">
+                {t('sidebar.privacy')}
+              </a>{' '}
+              ·{' '}
+              <a href="/terms" className="text-content-tertiary hover:underline">
+                {t('sidebar.terms')}
               </a>
             </div>
           </div>
