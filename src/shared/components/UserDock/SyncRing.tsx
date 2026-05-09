@@ -1,25 +1,12 @@
 import type { SyncState } from '@/core/sync/status';
 
 interface SyncRingProps {
-  /** What the ring should communicate. 'none' renders a neutral border (used
-   *  for the anonymous sign-in state, where there's no sync to report). */
   state: SyncState | 'none';
-  /** Single grapheme rendered inside the ring. */
   initial: string;
-  /** Outer diameter in px. Default matches the dock row height. */
   size?: number;
 }
 
-/**
- * Avatar with a status ring whose color and motion encode sync state:
- *   idle    — solid green ring, static
- *   syncing — conic-gradient ring, rotating (1.2s linear)
- *   offline — dashed amber ring, static
- *   error   — solid red ring, slow opacity breath (2s)
- *   none    — neutral border (used for anonymous state)
- */
 export function SyncRing({ state, initial, size = 28 }: SyncRingProps) {
-  const innerInset = 2;
   const ring = ringLayer(state);
 
   return (
@@ -39,7 +26,7 @@ export function SyncRing({ state, initial, size = 28 }: SyncRingProps) {
       />
       <span
         className="absolute inline-flex items-center justify-center rounded-full bg-primary-muted text-content text-[11px] font-medium"
-        style={{ inset: innerInset }}
+        style={{ inset: 2 }}
       >
         {initial}
       </span>

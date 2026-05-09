@@ -12,10 +12,6 @@ interface DockMenuApi {
   };
 }
 
-/**
- * Manages the dock's open/close state, outside-click dismissal, and Esc-to-close.
- * Returns a ref to attach to the dock root and prop spreads for the trigger.
- */
 export function useDockMenu(): DockMenuApi {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);

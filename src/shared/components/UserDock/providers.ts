@@ -1,10 +1,7 @@
 import type { AuthProvider } from '@/core/sync/session/sessionApi';
 
 interface ProviderInfo {
-  /** Localized display label key fragment ('Google' / 'GitHub'). */
   labelKey: 'auth.providerGoogle' | 'auth.providerGithub';
-  /** 1px hairline accent at the top of the dock. Single tasteful tone per
-   *  provider — chosen for theme-friendly contrast against surface-secondary. */
   hairlineColor: string;
 }
 

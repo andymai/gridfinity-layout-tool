@@ -1,14 +1,11 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { cn } from '@/design-system/cn';
 import { useTranslation } from '@/i18n';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { signInUrl } from '@/core/sync/session/sessionApi';
-import { runSignOut, type KeepLocalPromptResult } from '@/core/sync/signOut';
-import { SignOutDialog } from '@/core/sync/dialogs/SignOutDialog';
 import { useSyncStatusStore, type SyncState } from '@/core/sync/status';
-import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
-import { designAdapter } from '@/features/bin-designer/sync/designAdapter';
+import { useSignOutFlow } from '@/core/sync/useSignOutFlow';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { SyncRing } from './SyncRing';
 import { useDockMenu } from './useDockMenu';
@@ -19,40 +16,22 @@ const LOGOUT_ICON: readonly string[] = [
 ];
 
 interface UserDockProps {
-  /** 'compact' renders just the avatar (used in 40px collapsed sidebars). */
   variant?: 'default' | 'compact';
-  /** Optional handler for the menu's Settings shortcut. When omitted the
-   *  shortcut isn't rendered — sidebars that don't host SettingsModal can
-   *  hide it entirely. */
   onOpenSettings?: () => void;
 }
 
 export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps) {
   const t = useTranslation();
-  const { status, user, setAnonymous } = useSessionStore(
-    useShallow((s) => ({ status: s.status, user: s.user, setAnonymous: s.setAnonymous }))
-  );
+  const { status, user } = useSessionStore(useShallow((s) => ({ status: s.status, user: s.user })));
   const syncState = useSyncStatusStore((s) => s.state);
 
   const { open, toggle, close, rootRef, triggerProps } = useDockMenu();
-  const [signOutPrompt, setSignOutPrompt] = useState<{
-    localCount: number;
-    resolve: (choice: KeepLocalPromptResult) => void;
-  } | null>(null);
+  const { signOut, dialog: signOutDialog } = useSignOutFlow();
 
-  const adapters = useMemo(() => ({ layouts: layoutAdapter, designs: designAdapter }), []);
-  const promptKeepLocal = useCallback(
-    (input: { localCount: number }) =>
-      new Promise<KeepLocalPromptResult>((resolve) => {
-        setSignOutPrompt({ localCount: input.localCount, resolve });
-      }),
-    []
-  );
-
-  const handleSignOut = useCallback(async () => {
+  const handleSignOut = useCallback(() => {
     close();
-    await runSignOut({ adapters, promptKeepLocal, onAnonymous: setAnonymous });
-  }, [adapters, promptKeepLocal, setAnonymous, close]);
+    void signOut();
+  }, [close, signOut]);
 
   if (status === 'unknown') return null;
 
@@ -63,6 +42,13 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
     ? (user.displayName ?? user.email).trim().charAt(0).toUpperCase() || '?'
     : '+';
   const hairline = isAuthed ? PROVIDER_INFO[user.provider].hairlineColor : null;
+
+  const handleOpenSettings = onOpenSettings
+    ? () => {
+        close();
+        onOpenSettings();
+      }
+    : undefined;
 
   return (
     <>
@@ -87,15 +73,8 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
                   <AuthedMenuContent
                     user={user}
                     syncState={syncState}
-                    onSignOut={() => void handleSignOut()}
-                    onOpenSettings={
-                      onOpenSettings
-                        ? () => {
-                            close();
-                            onOpenSettings();
-                          }
-                        : undefined
-                    }
+                    onSignOut={handleSignOut}
+                    onOpenSettings={handleOpenSettings}
                     t={t}
                   />
                 ) : (
@@ -106,49 +85,45 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={toggle}
-          {...triggerProps}
-          aria-label={t(isAuthed ? 'dock.openMenu' : 'auth.signIn')}
-          title={isAuthed ? user.email : t('auth.signIn')}
-          className={cn(
-            'w-full flex items-center text-sm transition-colors',
-            'text-content-secondary hover:bg-surface-hover hover:text-content',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset',
-            isCompact ? 'justify-center py-2' : 'gap-2 px-3 py-2'
-          )}
-        >
-          {isAuthed ? (
-            <SyncRing state={ringState} initial={initial} size={isCompact ? 24 : 28} />
-          ) : (
-            <SignInIcon size={isCompact ? 24 : 28} />
-          )}
-          {!isCompact && (
-            <>
-              <span className="flex-1 truncate text-left">
-                {isAuthed ? (user.displayName ?? user.email) : t('auth.signIn')}
-              </span>
-              <Caret up={open} />
-            </>
-          )}
-        </button>
+        {isCompact ? (
+          <div
+            className="w-full flex justify-center py-2 text-content-secondary"
+            title={isAuthed ? user.email : t('auth.signIn')}
+            aria-label={isAuthed ? user.email : t('auth.signIn')}
+          >
+            {isAuthed ? (
+              <SyncRing state={ringState} initial={initial} size={24} />
+            ) : (
+              <SignInIcon size={24} />
+            )}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={toggle}
+            {...triggerProps}
+            aria-label={t(isAuthed ? 'dock.openMenu' : 'auth.signIn')}
+            title={isAuthed ? user.email : t('auth.signIn')}
+            className={cn(
+              'w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors',
+              'text-content-secondary hover:bg-surface-hover hover:text-content',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset'
+            )}
+          >
+            {isAuthed ? (
+              <SyncRing state={ringState} initial={initial} size={28} />
+            ) : (
+              <SignInIcon size={28} />
+            )}
+            <span className="flex-1 truncate text-left">
+              {isAuthed ? (user.displayName ?? user.email) : t('auth.signIn')}
+            </span>
+            <Caret up={open} />
+          </button>
+        )}
       </div>
 
-      {signOutPrompt && (
-        <SignOutDialog
-          isOpen={true}
-          localCount={signOutPrompt.localCount}
-          onChoice={(choice) => {
-            signOutPrompt.resolve(choice);
-            setSignOutPrompt(null);
-          }}
-          onCancel={() => {
-            signOutPrompt.resolve('cancel');
-            setSignOutPrompt(null);
-          }}
-        />
-      )}
+      {signOutDialog}
     </>
   );
 }
@@ -218,17 +193,6 @@ function AnonymousMenuContent({ t }: { t: ReturnType<typeof useTranslation> }) {
   );
 }
 
-function SyncStatusRow({ state, t }: { state: SyncState; t: ReturnType<typeof useTranslation> }) {
-  const text = t(SYNC_STATUS_KEYS[state]);
-  const dotClass = SYNC_DOT_CLASS[state];
-  return (
-    <div className="flex items-center gap-2 px-3 py-2 text-xs text-content-secondary" role="status">
-      <span className={cn('inline-block w-1.5 h-1.5 rounded-full', dotClass)} aria-hidden="true" />
-      <span>{text}</span>
-    </div>
-  );
-}
-
 const SYNC_STATUS_KEYS: Record<SyncState, string> = {
   idle: 'dock.syncStatusIdle',
   syncing: 'dock.syncStatusSyncing',
@@ -238,10 +202,22 @@ const SYNC_STATUS_KEYS: Record<SyncState, string> = {
 
 const SYNC_DOT_CLASS: Record<SyncState, string> = {
   idle: 'bg-success',
-  syncing: 'bg-info animate-pulse motion-reduce:animate-none',
+  syncing: 'bg-info animate-pulse',
   offline: 'bg-warning',
   error: 'bg-error',
 };
+
+function SyncStatusRow({ state, t }: { state: SyncState; t: ReturnType<typeof useTranslation> }) {
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 text-xs text-content-secondary" role="status">
+      <span
+        className={cn('inline-block w-1.5 h-1.5 rounded-full', SYNC_DOT_CLASS[state])}
+        aria-hidden="true"
+      />
+      <span>{t(SYNC_STATUS_KEYS[state])}</span>
+    </div>
+  );
+}
 
 interface MenuButtonProps {
   onClick: () => void;

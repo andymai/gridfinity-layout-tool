@@ -1,4 +1,3 @@
-import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
@@ -6,10 +5,7 @@ import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { signInUrl } from '@/core/sync/session/sessionApi';
 import { useSyncStatusStore } from '@/core/sync/status';
-import { runSignOut, type KeepLocalPromptResult } from '@/core/sync/signOut';
-import { SignOutDialog } from '@/core/sync/dialogs/SignOutDialog';
-import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
-import { designAdapter } from '@/features/bin-designer/sync/designAdapter';
+import { useSignOutFlow } from '@/core/sync/useSignOutFlow';
 
 const PROVIDER_LABEL_KEY = {
   google: 'auth.providerGoogle',
@@ -20,9 +16,7 @@ export function AccountTab() {
   const t = useTranslation();
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
 
-  const { status, user, setAnonymous } = useSessionStore(
-    useShallow((s) => ({ status: s.status, user: s.user, setAnonymous: s.setAnonymous }))
-  );
+  const { status, user } = useSessionStore(useShallow((s) => ({ status: s.status, user: s.user })));
   const sync = useSyncStatusStore(
     useShallow((s) => ({
       state: s.state,
@@ -32,23 +26,7 @@ export function AccountTab() {
     }))
   );
 
-  const adapters = useMemo(() => ({ layouts: layoutAdapter, designs: designAdapter }), []);
-  const [signOutPrompt, setSignOutPrompt] = useState<{
-    localCount: number;
-    resolve: (choice: KeepLocalPromptResult) => void;
-  } | null>(null);
-
-  const promptKeepLocal = useCallback(
-    (input: { localCount: number }) =>
-      new Promise<KeepLocalPromptResult>((resolve) => {
-        setSignOutPrompt({ localCount: input.localCount, resolve });
-      }),
-    []
-  );
-
-  const handleSignOut = useCallback(async () => {
-    await runSignOut({ adapters, promptKeepLocal, onAnonymous: setAnonymous });
-  }, [adapters, promptKeepLocal, setAnonymous]);
+  const { signOut, dialog: signOutDialog } = useSignOutFlow();
 
   if (!cloudSyncEnabled) {
     return (
@@ -115,26 +93,13 @@ export function AccountTab() {
 
       {status === 'authenticated' && (
         <section>
-          <Button variant="ghost" onClick={() => void handleSignOut()}>
+          <Button variant="ghost" onClick={() => void signOut()}>
             {t('account.signOut.button')}
           </Button>
         </section>
       )}
 
-      {signOutPrompt && (
-        <SignOutDialog
-          isOpen={true}
-          localCount={signOutPrompt.localCount}
-          onChoice={(choice) => {
-            signOutPrompt.resolve(choice);
-            setSignOutPrompt(null);
-          }}
-          onCancel={() => {
-            signOutPrompt.resolve('cancel');
-            setSignOutPrompt(null);
-          }}
-        />
-      )}
+      {signOutDialog}
     </div>
   );
 }

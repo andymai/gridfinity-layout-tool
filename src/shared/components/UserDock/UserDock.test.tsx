@@ -4,6 +4,7 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { UserDock } from './UserDock';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useSyncStatusStore } from '@/core/sync/status';
+import { resetAllStores } from '@/test/testUtils';
 
 vi.mock('@/core/sync/signOut', () => ({
   runSignOut: vi.fn().mockResolvedValue(undefined),
@@ -27,6 +28,7 @@ const setSession = (
 
 describe('UserDock', () => {
   beforeEach(() => {
+    resetAllStores();
     setSession('unknown');
     useSyncStatusStore.setState({ state: 'idle', pendingCount: 0 });
     vi.mocked(runSignOut).mockClear();
@@ -151,7 +153,7 @@ describe('UserDock', () => {
     expect(runSignOut).toHaveBeenCalledTimes(1);
   });
 
-  it('hides the name and caret in compact variant', () => {
+  it('renders compact variant as a non-interactive avatar (no button, no name)', () => {
     setSession('authenticated', {
       userId: 'u1',
       provider: 'google',
@@ -160,5 +162,6 @@ describe('UserDock', () => {
     });
     render(<UserDock variant="compact" />);
     expect(screen.queryByText('Andy')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
   });
 });

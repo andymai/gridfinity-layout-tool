@@ -5,6 +5,7 @@ import { AccountTab } from './AccountTab';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { useSyncStatusStore } from '@/core/sync/status';
 import { useLabsStore } from '@/core/store';
+import { resetAllStores } from '@/test/testUtils';
 
 vi.mock('@/core/sync/signOut', () => ({
   runSignOut: vi.fn().mockResolvedValue(undefined),
@@ -25,6 +26,7 @@ const enableCloudSync = (enabled: boolean) => {
 
 describe('AccountTab', () => {
   beforeEach(() => {
+    resetAllStores();
     enableCloudSync(true);
     useSessionStore.setState({ status: 'unknown', user: null });
     useSyncStatusStore.setState({ state: 'idle', pendingCount: 0 });
