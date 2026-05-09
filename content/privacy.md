@@ -74,7 +74,7 @@ We do not use your email for marketing and do not share your account information
 
 #### Synced layouts and designs
 
-When you're signed in, layouts and bin designs you create are uploaded to our [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) storage under a per-user namespace. Only you can access them through your account. Per-account limits currently apply: up to 100 layouts and 100 bin designs, with each layout up to 500 KB, each design up to 100 KB, and 10 MB total per kind.
+When you're signed in, layouts and bin designs you create are uploaded to our [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) storage under per-account paths that aren't listed publicly. Reads and writes go through our authenticated server endpoints, which check your session cookie before returning data — clients don't access blob URLs directly. Per-account limits currently apply: up to 100 layouts and 100 bin designs, with each layout up to 500 KB, each design up to 100 KB, and 10 MB total per kind.
 
 #### Authentication cookies
 
@@ -87,11 +87,11 @@ All of these cookies are `HttpOnly` and `SameSite=Lax`, and `Secure` over HTTPS.
 
 #### Deleting your account
 
-You can delete your account at any time from **Settings > Account > Delete account**. This irreversibly:
+To delete your account and all synced data, open an account-deletion request on our [GitHub repository](https://github.com/andymai/gridfinity-layout-tool/issues) (please include the email address linked to your account). Deletion is irreversible and will:
 
-1. Signs you out on every device
-2. Deletes every synced layout and bin design from our servers
-3. Deletes your account profile from our servers
+1. Sign you out on every device
+2. Delete every synced layout and bin design from our servers
+3. Delete your account profile from our servers
 
 Local data in your browser is unaffected — your locally-stored layouts remain on your device.
 
@@ -121,7 +121,7 @@ You can:
 - **Use your browser's privacy setting** (Global Privacy Control or Do Not Track) to disable analytics automatically
 - **Delete your shared layouts** using the share modal
 - **Sign out** from Settings > Account at any time
-- **Delete your account** (and all synced data) from Settings > Account > Delete account
+- **Delete your account** (and all synced data) by opening a deletion request on our [GitHub repository](https://github.com/andymai/gridfinity-layout-tool/issues)
 - **Clear all local data** by clearing your browser's site data for this domain
 
 ## Data Retention

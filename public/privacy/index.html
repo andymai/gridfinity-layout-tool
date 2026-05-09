@@ -132,7 +132,7 @@
 </ul>
 <p>We do not use your email for marketing and do not share your account information with third parties.</p>
 <h4 class="content-h4">Synced layouts and designs</h4>
-<p>When you&#39;re signed in, layouts and bin designs you create are uploaded to our <a href="https://vercel.com/docs/storage/vercel-blob" target="_blank" rel="noopener">Vercel Blob</a> storage under a per-user namespace. Only you can access them through your account. Per-account limits currently apply: up to 100 layouts and 100 bin designs, with each layout up to 500 KB, each design up to 100 KB, and 10 MB total per kind.</p>
+<p>When you&#39;re signed in, layouts and bin designs you create are uploaded to our <a href="https://vercel.com/docs/storage/vercel-blob" target="_blank" rel="noopener">Vercel Blob</a> storage under per-account paths that aren&#39;t listed publicly. Reads and writes go through our authenticated server endpoints, which check your session cookie before returning data — clients don&#39;t access blob URLs directly. Per-account limits currently apply: up to 100 layouts and 100 bin designs, with each layout up to 500 KB, each design up to 100 KB, and 10 MB total per kind.</p>
 <h4 class="content-h4">Authentication cookies</h4>
 <table>
 <thead>
@@ -155,10 +155,10 @@
 </tbody></table>
 <p>All of these cookies are <code>HttpOnly</code> and <code>SameSite=Lax</code>, and <code>Secure</code> over HTTPS. We do not set advertising or cross-site tracking cookies.</p>
 <h4 class="content-h4">Deleting your account</h4>
-<p>You can delete your account at any time from <strong>Settings &gt; Account &gt; Delete account</strong>. This irreversibly:</p>
-<ol class="content-list"><li>Signs you out on every device</li>
-<li>Deletes every synced layout and bin design from our servers</li>
-<li>Deletes your account profile from our servers</li>
+<p>To delete your account and all synced data, open an account-deletion request on our <a href="https://github.com/andymai/gridfinity-layout-tool/issues" target="_blank" rel="noopener">GitHub repository</a> (please include the email address linked to your account). Deletion is irreversible and will:</p>
+<ol class="content-list"><li>Sign you out on every device</li>
+<li>Delete every synced layout and bin design from our servers</li>
+<li>Delete your account profile from our servers</li>
 </ol>
 <p>Local data in your browser is unaffected — your locally-stored layouts remain on your device.</p>
 <h2 class="content-h2">Data We Don&#39;t Collect</h2>
@@ -209,7 +209,7 @@
 <li><strong>Use your browser&#39;s privacy setting</strong> (Global Privacy Control or Do Not Track) to disable analytics automatically</li>
 <li><strong>Delete your shared layouts</strong> using the share modal</li>
 <li><strong>Sign out</strong> from Settings &gt; Account at any time</li>
-<li><strong>Delete your account</strong> (and all synced data) from Settings &gt; Account &gt; Delete account</li>
+<li><strong>Delete your account</strong> (and all synced data) by opening a deletion request on our <a href="https://github.com/andymai/gridfinity-layout-tool/issues" target="_blank" rel="noopener">GitHub repository</a></li>
 <li><strong>Clear all local data</strong> by clearing your browser&#39;s site data for this domain</li>
 </ul>
 <h2 class="content-h2">Data Retention</h2>
