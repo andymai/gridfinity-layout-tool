@@ -61,14 +61,15 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
               'grid transition-[grid-template-rows] duration-300 ease-out',
               open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
             )}
-            role="region"
+            // `inert` removes the collapsed region from focus and pointer
+            // events while the grid-rows transition still drives the smooth
+            // expand. Without this, every menu item stays keyboard-reachable
+            // when visually hidden.
+            inert={!open}
+            aria-label={t(isAuthed ? 'dock.menuLabel' : 'dock.signInOptions')}
           >
             <div className="overflow-hidden">
-              <div
-                role="menu"
-                aria-label={t(isAuthed ? 'dock.menuLabel' : 'dock.signInOptions')}
-                className="flex flex-col px-2 py-2 gap-0.5 border-b border-stroke-subtle"
-              >
+              <div className="flex flex-col px-2 py-2 gap-0.5 border-b border-stroke-subtle">
                 {isAuthed ? (
                   <AuthedMenuContent
                     user={user}
@@ -175,7 +176,6 @@ function AnonymousMenuContent({ t }: { t: ReturnType<typeof useTranslation> }) {
     <>
       <a
         href={signInUrl('google')}
-        role="menuitem"
         className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-content hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none"
       >
         <ProviderMark provider="google" />
@@ -183,7 +183,6 @@ function AnonymousMenuContent({ t }: { t: ReturnType<typeof useTranslation> }) {
       </a>
       <a
         href={signInUrl('github')}
-        role="menuitem"
         className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-content hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none"
       >
         <ProviderMark provider="github" />
@@ -229,7 +228,6 @@ function MenuButton({ onClick, icon, children }: MenuButtonProps) {
   return (
     <button
       type="button"
-      role="menuitem"
       onClick={onClick}
       className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-content hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none text-left"
     >

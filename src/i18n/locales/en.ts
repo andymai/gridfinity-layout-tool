@@ -131,6 +131,11 @@ const en: Record<string, string> = {
   'account.sync.lastSyncedAt': 'Last synced {time}',
   'account.sync.pendingChanges': '{count} pending change(s)',
   'account.sync.errorPrefix': 'Last error: {message}',
+  'account.sync.relativeJustNow': 'just now',
+  'account.sync.relativeSeconds': '{count}s ago',
+  'account.sync.relativeMinutes': '{count}m ago',
+  'account.sync.relativeHours': '{count}h ago',
+  'account.sync.relativeDays': '{count}d ago',
   'account.signOut.button': 'Sign out',
 
   // Multi-device sync toasts (engine + poller surface results here)

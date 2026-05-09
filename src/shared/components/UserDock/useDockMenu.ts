@@ -7,8 +7,6 @@ interface DockMenuApi {
   rootRef: React.RefObject<HTMLDivElement | null>;
   triggerProps: {
     'aria-expanded': boolean;
-    'aria-haspopup': 'menu';
-    onKeyDown: (event: React.KeyboardEvent) => void;
   };
 }
 
@@ -36,16 +34,6 @@ export function useDockMenu(): DockMenuApi {
     };
   }, [open, close]);
 
-  const onKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        toggle();
-      }
-    },
-    [toggle]
-  );
-
   return {
     open,
     toggle,
@@ -53,8 +41,6 @@ export function useDockMenu(): DockMenuApi {
     rootRef,
     triggerProps: {
       'aria-expanded': open,
-      'aria-haspopup': 'menu',
-      onKeyDown,
     },
   };
 }

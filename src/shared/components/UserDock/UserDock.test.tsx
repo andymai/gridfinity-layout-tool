@@ -50,8 +50,8 @@ describe('UserDock', () => {
     setSession('anonymous');
     render(<UserDock />);
     fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
-    expect(screen.getByRole('menuitem', { name: /google/i })).toBeTruthy();
-    expect(screen.getByRole('menuitem', { name: /github/i })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /google/i })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /github/i })).toBeTruthy();
   });
 
   it('renders the display name when authenticated', () => {
@@ -111,7 +111,7 @@ describe('UserDock', () => {
     render(<UserDock />);
     fireEvent.click(screen.getByRole('button', { name: /open account menu/i }));
     expect(screen.getByText(/all changes synced/i)).toBeTruthy();
-    expect(screen.getByRole('menuitem', { name: /sign out/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /sign out/i })).toBeTruthy();
   });
 
   it('omits the Settings menu item when no onOpenSettings handler is provided', () => {
@@ -123,7 +123,7 @@ describe('UserDock', () => {
     });
     render(<UserDock />);
     fireEvent.click(screen.getByRole('button', { name: /open account menu/i }));
-    expect(screen.queryByRole('menuitem', { name: /^settings$/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^settings$/i })).toBeNull();
   });
 
   it('renders the Settings menu item and calls the handler when provided', () => {
@@ -136,7 +136,7 @@ describe('UserDock', () => {
     const onOpenSettings = vi.fn();
     render(<UserDock onOpenSettings={onOpenSettings} />);
     fireEvent.click(screen.getByRole('button', { name: /open account menu/i }));
-    fireEvent.click(screen.getByRole('menuitem', { name: /^settings$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^settings$/i }));
     expect(onOpenSettings).toHaveBeenCalledTimes(1);
   });
 
@@ -149,8 +149,22 @@ describe('UserDock', () => {
     });
     render(<UserDock />);
     fireEvent.click(screen.getByRole('button', { name: /open account menu/i }));
-    fireEvent.click(screen.getByRole('menuitem', { name: /sign out/i }));
+    fireEvent.click(screen.getByRole('button', { name: /sign out/i }));
     expect(runSignOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('marks the collapsed menu region as inert so items are not tab-reachable', () => {
+    setSession('authenticated', {
+      userId: 'u1',
+      provider: 'google',
+      email: 'a@x',
+      displayName: 'Andy',
+    });
+    const { container } = render(<UserDock />);
+    const region = container.querySelector('[aria-label]');
+    expect(region?.hasAttribute('inert')).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: /open account menu/i }));
+    expect(region?.hasAttribute('inert')).toBe(false);
   });
 
   it('renders compact variant as a non-interactive avatar (no button, no name)', () => {

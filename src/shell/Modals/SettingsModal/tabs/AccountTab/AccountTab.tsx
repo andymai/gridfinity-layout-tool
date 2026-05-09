@@ -53,7 +53,7 @@ export function AccountTab() {
               })}
             </div>
           </div>
-        ) : (
+        ) : status === 'anonymous' ? (
           <div className="rounded-md border border-stroke-subtle p-4 flex items-center gap-3">
             <Button variant="primary" onClick={() => goTo(signInUrl('google'))}>
               {t('auth.signInWithGoogle')}
@@ -62,6 +62,8 @@ export function AccountTab() {
               {t('auth.signInWithGithub')}
             </Button>
           </div>
+        ) : (
+          <div className="rounded-md border border-stroke-subtle p-4 h-[3.5rem]" aria-busy="true" />
         )}
       </section>
 
@@ -73,7 +75,7 @@ export function AccountTab() {
             <span className="text-xs text-content-tertiary">
               {sync.lastSyncedAt
                 ? t('account.sync.lastSyncedAt', {
-                    time: formatRelative(sync.lastSyncedAt),
+                    time: formatRelative(sync.lastSyncedAt, t),
                   })
                 : t('account.sync.lastSyncedNever')}
             </span>
@@ -114,14 +116,14 @@ function capitalize<T extends string>(s: T): Capitalize<T> {
   return (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<T>;
 }
 
-function formatRelative(timestamp: number): string {
+function formatRelative(timestamp: number, t: ReturnType<typeof useTranslation>): string {
   const seconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
-  if (seconds < 5) return 'just now';
-  if (seconds < 60) return `${seconds}s ago`;
+  if (seconds < 5) return t('account.sync.relativeJustNow');
+  if (seconds < 60) return t('account.sync.relativeSeconds', { count: seconds });
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return t('account.sync.relativeMinutes', { count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t('account.sync.relativeHours', { count: hours });
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return t('account.sync.relativeDays', { count: days });
 }
