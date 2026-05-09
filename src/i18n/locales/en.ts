@@ -147,6 +147,11 @@ const en: Record<string, string> = {
   'account.sync.relativeHours': '{count}h ago',
   'account.sync.relativeDays': '{count}d ago',
   'account.signOut.button': 'Sign out',
+  'account.dangerZone.heading': 'Danger zone',
+  'account.deleteAccount.button': 'Delete account',
+  'account.deleteAccount.description':
+    'Permanently delete your account, every synced layout, and every synced bin design. Local copies on this device are kept.',
+  'account.deleteAccount.errorToast': "Couldn't delete your account: {message}",
 
   // Multi-device sync toasts (engine + poller surface results here)
   'sync.conflictPulled': 'Layout updated from another device.',
@@ -161,6 +166,12 @@ const en: Record<string, string> = {
     'Keep your {count} local layouts and designs on this device? You can also wipe them.',
   'syncDialog.signOut.keep': 'Keep & sign out',
   'syncDialog.signOut.wipe': 'Wipe & sign out',
+  'syncDialog.deleteAccount.title': 'Delete your account?',
+  'syncDialog.deleteAccount.message':
+    'This permanently deletes your account, every synced layout, and every synced bin design from our servers. This cannot be undone.',
+  'syncDialog.deleteAccount.localNote':
+    'Your {count} local layouts and designs on this device will be kept. Clear your browser data if you want to remove them too.',
+  'syncDialog.deleteAccount.confirm': 'Delete account',
   'syncDialog.accountMismatch.title': 'Different account',
   'syncDialog.accountMismatch.message':
     'The {count} layouts and designs on this device were last linked to a different account. Add them to {account}, or discard?',

@@ -40,7 +40,7 @@ Sign-in is optional. If you choose to sign in via Google or GitHub:
 - You're responsible for keeping your linked Google or GitHub account secure. We rely on the upstream provider for authentication.
 - One person, one account. Don't create accounts under another person's identity.
 - You can sign out from any device at **Settings > Account**.
-- You can permanently delete your account and all synced data by opening a deletion request on our [GitHub repository](https://github.com/andymai/gridfinity-layout-tool/issues). Deletion signs you out on every device, removes your account profile, and deletes every synced layout and bin design.
+- You can permanently delete your account and all synced data at **Settings > Account > Delete account**. This signs you out on every device, removes your account profile, and deletes every synced layout and bin design.
 - We may suspend or terminate accounts that violate these terms or are used to abuse the service.
 
 We may impose per-account limits. Currently: up to 100 layouts and 100 bin designs, with each layout up to 500 KB, each design up to 100 KB, and 10 MB total per kind. Limits exist to keep the service free and may change.
