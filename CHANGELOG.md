@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.76.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.75.0...gridfinity-layout-tool-v4.76.0) (2026-05-09)
+
+
+### Features
+
+* **sync:** wire Delete account UI; meet Google OAuth brand verification ([#1622](https://github.com/andymai/gridfinity-layout-tool/issues/1622)) ([b7c2890](https://github.com/andymai/gridfinity-layout-tool/commit/b7c28906a3097e14d958db288f7471a0352f7919))
+
 ## [4.75.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.74.0...gridfinity-layout-tool-v4.75.0) (2026-05-09)
 
 
