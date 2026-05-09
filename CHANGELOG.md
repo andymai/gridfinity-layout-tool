@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.75.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.74.0...gridfinity-layout-tool-v4.75.0) (2026-05-09)
+
+
+### Features
+
+* **auth:** teach the dock that anonymous is a real mode ([#1620](https://github.com/andymai/gridfinity-layout-tool/issues/1620)) ([6647284](https://github.com/andymai/gridfinity-layout-tool/commit/6647284209ad8b7771122eb4e42f8c9cdce8c246))
+
 ## [4.74.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.73.1...gridfinity-layout-tool-v4.74.0) (2026-05-09)
 
 
