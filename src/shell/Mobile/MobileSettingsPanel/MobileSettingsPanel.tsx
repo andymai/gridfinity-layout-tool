@@ -14,6 +14,8 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
+import { UserDock } from '@/shared/components/UserDock';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 
 // Lazy load SettingsModal — only loaded when user taps the button
@@ -27,6 +29,7 @@ const SettingsModal = lazyWithRetry(() =>
  */
 export function MobileSettingsPanel() {
   const t = useTranslation();
+  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<SettingsTabId | undefined>(
     undefined
@@ -292,6 +295,15 @@ export function MobileSettingsPanel() {
           </a>
         </div>
       </section>
+
+      {cloudSyncEnabled && (
+        <UserDock
+          onOpenSettings={() => {
+            setSettingsInitialTab('account');
+            setShowSettingsModal(true);
+          }}
+        />
+      )}
 
       {/* Settings Modal — rendered locally so it works on mobile (Sidebar not mounted) */}
       {showSettingsModal && (

@@ -15,8 +15,10 @@ import { HalfBinModeBlockedModal } from '@/shell/Modals';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useResponsive } from '@/shared/hooks';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
+import { UserDock } from '@/shared/components/UserDock';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 import { useOnboarding } from '@/features/onboarding';
@@ -47,6 +49,7 @@ export function Sidebar() {
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const { isDesktop } = useResponsive();
+  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
 
   const handleScroll = useCallback(() => {
     if (scrollRef.current) {
@@ -113,8 +116,8 @@ export function Sidebar() {
       style={{ width: collapsed ? '40px' : '288px' }}
     >
       {collapsed ? (
-        // Collapsed state - just show expand button
-        <div className="flex flex-col items-center py-2">
+        // Collapsed state - expand button at top, UserDock pinned at bottom
+        <div className="flex flex-col items-center h-full py-2">
           <button
             onClick={toggle}
             className="btn btn-ghost btn-icon"
@@ -127,6 +130,11 @@ export function Sidebar() {
               ))}
             </svg>
           </button>
+          {cloudSyncEnabled && (
+            <div className="mt-auto w-full">
+              <UserDock variant="compact" />
+            </div>
+          )}
         </div>
       ) : (
         // Expanded state
@@ -487,6 +495,14 @@ export function Sidebar() {
               </a>
             </div>
           </div>
+          {cloudSyncEnabled && (
+            <UserDock
+              onOpenSettings={() => {
+                setSettingsInitialTab('account');
+                setShowSettingsModal(true);
+              }}
+            />
+          )}
         </div>
       )}
 

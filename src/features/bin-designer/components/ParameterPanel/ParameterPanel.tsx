@@ -32,6 +32,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOptionsSection';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { isPartialMask } from '@/shared/utils/cellMask';
+import { UserDock } from '@/shared/components/UserDock';
 
 export function ParameterPanel() {
   const t = useTranslation();
@@ -46,6 +47,7 @@ export function ParameterPanel() {
   );
   const { needsSplit } = useSplitOptionsSection();
   const showColors = useFeatureFlag('multi_color_export');
+  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const customShapeReason = t('binDesigner.shape.custom.hint');
   return (
     <div className="flex h-full flex-col">
@@ -170,6 +172,7 @@ export function ParameterPanel() {
           </a>
         </div>
       </div>
+      {cloudSyncEnabled && <UserDock />}
     </div>
   );
 }

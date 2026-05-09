@@ -24,6 +24,8 @@ import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { SliderInput } from '@/shared/components/SliderInput';
+import { UserDock } from '@/shared/components/UserDock';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { EditableDimensions } from './EditableDimensions';
 import { PaddingSchematic } from './PaddingSchematic';
@@ -34,6 +36,7 @@ import { gridUnits, mm } from '@/core/types';
 
 export function BaseplatePanel() {
   const t = useTranslation();
+  const cloudSyncEnabled = useFeatureFlag('cloud_sync');
 
   const { drawerWidth, drawerDepth, gridUnitMm, printBedSize, printBedDepth, baseplateParams } =
     useLayoutStore(
@@ -344,6 +347,7 @@ export function BaseplatePanel() {
           />
         )}
       </div>
+      {cloudSyncEnabled && <UserDock />}
     </div>
   );
 }
