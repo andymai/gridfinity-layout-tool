@@ -145,11 +145,13 @@ describe('baseplateGenerator — snap export', () => {
       // Recess assertion: at the recess footprint near the left join edge,
       // a triangle face must exist entirely below (slabTop - RECESS_DEPTH/2).
       // That's the recess floor — it can't exist if the recess wasn't cut.
+      // Recesses sit at cell centers along the seam: for depth=2, that's
+      // y = ±gridUnit/2 = ±21mm.
       const halfW = 42;
       const slabTop = stats.maxZ;
       const recessSampleX = -halfW + SNAP_PEG_INSET;
       const floorBelow = slabTop - SNAP_RECESS_DEPTH * 0.5;
-      expect(stats.hasFaceBelow(recessSampleX, 0, 2.0, floorBelow)).toBe(true);
+      expect(stats.hasFaceBelow(recessSampleX, 21, 2.0, floorBelow)).toBe(true);
     },
     TEST_TIMEOUT_MS
   );
@@ -177,7 +179,8 @@ describe('baseplateGenerator — snap export', () => {
       expect(stats.maxZ).toBeGreaterThan(5);
       const halfW = 42;
       const floorBelow = stats.maxZ - SNAP_RECESS_DEPTH * 0.5;
-      expect(stats.hasFaceBelow(-halfW + SNAP_PEG_INSET, 0, 2.0, floorBelow)).toBe(true);
+      // Cell centers on a depth=2 left edge are at y = ±21.
+      expect(stats.hasFaceBelow(-halfW + SNAP_PEG_INSET, 21, 2.0, floorBelow)).toBe(true);
     },
     TEST_TIMEOUT_MS
   );

@@ -32,6 +32,7 @@ import type { MeshData } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
   forEachCell,
+  cellCentersAlong,
   checkCancelled,
   MAGNET_FLOOR,
   NUB_DIAMETER,
@@ -189,7 +190,9 @@ export function generateBaseplateDirect(
       slabOffsetX,
       slabOffsetY,
       edges,
-      params.invertDovetails
+      params.invertDovetails,
+      fractionalEdgeX,
+      fractionalEdgeY
     );
     for (const pos of connPositions) {
       if (pos.isMale) {
@@ -202,58 +205,50 @@ export function generateBaseplateDirect(
     const holeRadius = SNAP_HOLE_DIAMETER / 2;
     const halfW = totalW / 2;
     const halfD = totalD / 2;
-    const widthBoundaries = Math.ceil(width) - 1;
-    const depthBoundaries = Math.ceil(depth) - 1;
-    const xBoundaryPos = (k: number): number => k * gridUnitMm - (depth * gridUnitMm) / 2;
-    const yBoundaryPos = (k: number): number => k * gridUnitMm - (width * gridUnitMm) / 2;
+    const yCenters = cellCentersAlong(depth, gridUnitMm, fractionalEdgeY);
+    const xCenters = cellCentersAlong(width, gridUnitMm, fractionalEdgeX);
     type Side = 'left' | 'right' | 'front' | 'back';
     const sides: ReadonlyArray<{
       side: Side;
       wallPos: number;
       inward: -1 | 1;
       protrudeAxis: 'x' | 'y';
-      numBoundaries: number;
-      boundaryPos: (k: number) => number;
+      centers: readonly number[];
     }> = [
       {
         side: 'left',
         wallPos: -halfW + slabOffsetX,
         inward: 1,
         protrudeAxis: 'x',
-        numBoundaries: depthBoundaries,
-        boundaryPos: xBoundaryPos,
+        centers: yCenters,
       },
       {
         side: 'right',
         wallPos: halfW + slabOffsetX,
         inward: -1,
         protrudeAxis: 'x',
-        numBoundaries: depthBoundaries,
-        boundaryPos: xBoundaryPos,
+        centers: yCenters,
       },
       {
         side: 'front',
         wallPos: -halfD + slabOffsetY,
         inward: 1,
         protrudeAxis: 'y',
-        numBoundaries: widthBoundaries,
-        boundaryPos: yBoundaryPos,
+        centers: xCenters,
       },
       {
         side: 'back',
         wallPos: halfD + slabOffsetY,
         inward: -1,
         protrudeAxis: 'y',
-        numBoundaries: widthBoundaries,
-        boundaryPos: yBoundaryPos,
+        centers: xCenters,
       },
     ];
     for (const def of sides) {
-      if (edges[def.side] !== 'join' || def.numBoundaries <= 0) continue;
+      if (edges[def.side] !== 'join') continue;
       const xAxis = def.protrudeAxis === 'x';
       const inset = def.wallPos + def.inward * SNAP_PEG_INSET;
-      for (let k = 1; k <= def.numBoundaries; k++) {
-        const bp = def.boundaryPos(k);
+      for (const bp of def.centers) {
         const cx = xAxis ? inset : bp;
         const cy = xAxis ? bp : inset;
         addSnapHoleMarker(mb, cx, cy, holeRadius, totalHeight);

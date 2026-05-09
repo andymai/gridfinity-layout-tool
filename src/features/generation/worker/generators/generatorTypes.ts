@@ -60,7 +60,12 @@ export {
   SNAP_RECESS_CLEARANCE,
   SNAP_RECESS_DEPTH,
 } from './generatorConstants';
-export { decomposeCells, decomposeHalfCells, forEachCell } from './cellDecomposition';
+export {
+  decomposeCells,
+  decomposeHalfCells,
+  forEachCell,
+  cellCentersAlong,
+} from './cellDecomposition';
 export type { CellInfo, ForEachCellOptions } from './cellDecomposition';
 export { sketch, checkCancelled, toIndexedMeshData } from './meshUtils';
 export type { ProgressFn, BooleanOpts } from './meshUtils';

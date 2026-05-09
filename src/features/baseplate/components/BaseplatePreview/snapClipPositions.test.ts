@@ -43,9 +43,9 @@ describe('computeSnapClipPositions', () => {
     expect(computeSnapClipPositions(t, GRID)).toEqual([]);
   });
 
-  it('emits one clip per grid boundary on a 2×1 split (single vertical seam)', () => {
+  it('emits one clip per cell on a 2×1 split (single vertical seam)', () => {
     // Two pieces side-by-side along X. Left piece's right edge is the seam.
-    // depthUnits=2 → 1 boundary on the seam → 1 clip.
+    // depthUnits=2 → 2 cells along the seam → 2 clips (one per cell center).
     const left = piece({
       col: 0,
       row: 0,
@@ -69,16 +69,53 @@ describe('computeSnapClipPositions', () => {
 
     // Walking by 'right' join only avoids double-counting (left piece emits;
     // right piece's 'left' join is skipped).
-    expect(positions).toHaveLength(1);
-    expect(positions[0].orientation).toBe('verticalSeam');
+    expect(positions).toHaveLength(2);
+    expect(positions.every((p) => p.orientation === 'verticalSeam')).toBe(true);
     // Seam x = (left piece center) + halfWidth = (-2*GRID + GRID) + GRID = 0.
     expect(positions[0].x).toBeCloseTo(0, 5);
-    // Boundary y at depth=2 → middle of slab = 0.
+    expect(positions[1].x).toBeCloseTo(0, 5);
+    // Cell centers at depth=2 → y = ±GRID/2 = ±21.
+    const ys = positions.map((p) => p.y).sort((a, b) => a - b);
+    expect(ys[0]).toBeCloseTo(-GRID / 2, 5);
+    expect(ys[1]).toBeCloseTo(GRID / 2, 5);
+  });
+
+  it('emits a single clip on a 1×1 split (one cell along the seam)', () => {
+    // Cell-center indexing means even a 1×1 piece pair gets a connector;
+    // the previous boundary indexing left these unconnected.
+    const left = piece({
+      col: 0,
+      row: 0,
+      widthUnits: 1,
+      depthUnits: 1,
+      edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'exterior' },
+    });
+    const right = piece({
+      col: 1,
+      row: 0,
+      gridOffsetX: 1,
+      widthUnits: 1,
+      depthUnits: 1,
+      edges: { left: 'join', right: 'exterior', front: 'exterior', back: 'exterior' },
+    });
+    const t = tiling({
+      pieces: [left, right],
+      cols: 2,
+      rows: 1,
+      totalWidthUnits: 2,
+      totalDepthUnits: 1,
+    });
+
+    const positions = computeSnapClipPositions(t, GRID);
+    expect(positions).toHaveLength(1);
+    expect(positions[0].orientation).toBe('verticalSeam');
+    expect(positions[0].x).toBeCloseTo(0, 5);
     expect(positions[0].y).toBeCloseTo(0, 5);
   });
 
   it('emits clips for a 1×2 split with horizontal seam', () => {
     // Two pieces stacked along Y. Front piece's back edge is the seam.
+    // widthUnits=2 → 2 cells along the seam → 2 clips.
     const front = piece({
       col: 0,
       row: 0,
@@ -99,14 +136,16 @@ describe('computeSnapClipPositions', () => {
     });
 
     const positions = computeSnapClipPositions(t, GRID);
-    expect(positions).toHaveLength(1);
-    expect(positions[0].orientation).toBe('horizontalSeam');
+    expect(positions).toHaveLength(2);
+    expect(positions.every((p) => p.orientation === 'horizontalSeam')).toBe(true);
   });
 
   it('does not double-count seams (each clip emitted once)', () => {
-    // 2×2 grid: 4 pieces, 1 vertical seam × depth-1 boundaries + 1 horizontal
-    // seam × width-1 boundaries. Without the right/back-only convention,
-    // we'd emit twice as many.
+    // 2×2 grid of 2×2 pieces: 1 vertical seam × 2 cells = 2 clips per piece
+    // along Y; 1 horizontal seam × 2 cells = 2 clips per piece along X.
+    // Walking only +X / +Y joins selects 2 emitting pieces per axis, so:
+    //   2 (right-join pieces) × 2 cells = 4 verticals
+    //   2 (back-join pieces) × 2 cells = 4 horizontals
     const pieces: BaseplatePiece[] = [];
     for (let c = 0; c < 2; c++) {
       for (let r = 0; r < 2; r++) {
@@ -134,14 +173,10 @@ describe('computeSnapClipPositions', () => {
       totalDepthUnits: 4,
     });
     const positions = computeSnapClipPositions(t, GRID);
-    // 2 vertical-seam clips (1 vertical seam × depth-1=1 boundary per piece × 2 pieces along Y) +
-    // 2 horizontal-seam clips. Wait — 'right' join only on c=0 pieces, of which there are 2.
-    // Each emits 1 boundary (depth 2 → boundary count = 1). 2 vertical clips.
-    // Same for 'back' join on r=0 pieces. 2 horizontal clips. Total = 4.
-    expect(positions.length).toBe(4);
+    expect(positions.length).toBe(8);
     const verticals = positions.filter((p) => p.orientation === 'verticalSeam');
     const horizontals = positions.filter((p) => p.orientation === 'horizontalSeam');
-    expect(verticals.length).toBe(2);
-    expect(horizontals.length).toBe(2);
+    expect(verticals.length).toBe(4);
+    expect(horizontals.length).toBe(4);
   });
 });

@@ -37,6 +37,7 @@ import {
   SNAP_RECESS_CLEARANCE,
   SNAP_RECESS_DEPTH,
   sketch,
+  cellCentersAlong,
 } from './generatorTypes';
 
 /**
@@ -86,6 +87,9 @@ export function buildConnectors(
   const cl = TONGUE_CLEARANCE;
   const ext = COPLANAR_MARGIN;
 
+  const yCenters = cellCentersAlong(params.depth, gridUnit, params.fractionalEdgeY);
+  const xCenters = cellCentersAlong(params.width, gridUnit, params.fractionalEdgeX);
+
   type Side = 'left' | 'right' | 'front' | 'back';
 
   /**
@@ -107,8 +111,7 @@ export function buildConnectors(
     isMale: boolean;
     maleOffsetSign: -1 | 1;
     wallPos: number;
-    numBoundaries: number;
-    boundaryPos: (k: number) => number;
+    centers: readonly number[];
     protrudeAxis: 'x' | 'y';
     protrudeDir: -1 | 1;
   }> = [
@@ -117,8 +120,7 @@ export function buildConnectors(
       isMale: !invert,
       maleOffsetSign: 1,
       wallPos: -halfW + slabOffsetX,
-      numBoundaries: Math.ceil(params.depth) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
+      centers: yCenters,
       protrudeAxis: 'x',
       protrudeDir: -1,
     },
@@ -127,8 +129,7 @@ export function buildConnectors(
       isMale: invert,
       maleOffsetSign: -1,
       wallPos: halfW + slabOffsetX,
-      numBoundaries: Math.ceil(params.depth) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
+      centers: yCenters,
       protrudeAxis: 'x',
       protrudeDir: 1,
     },
@@ -137,8 +138,7 @@ export function buildConnectors(
       isMale: !invert,
       maleOffsetSign: -1,
       wallPos: -halfD + slabOffsetY,
-      numBoundaries: Math.ceil(params.width) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
+      centers: xCenters,
       protrudeAxis: 'y',
       protrudeDir: -1,
     },
@@ -147,25 +147,24 @@ export function buildConnectors(
       isMale: invert,
       maleOffsetSign: 1,
       wallPos: halfD + slabOffsetY,
-      numBoundaries: Math.ceil(params.width) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
+      centers: xCenters,
       protrudeAxis: 'y',
       protrudeDir: 1,
     },
   ];
 
   for (const def of edgeDefs) {
-    if (edges[def.side] !== 'join' || def.numBoundaries <= 0) continue;
+    if (edges[def.side] !== 'join') continue;
 
-    // Build an XY point with wall/boundary coords assigned to the correct axis.
-    // When protruding along X, wall is on X and boundary is on Y; vice versa for Y.
+    // Build an XY point with wall/cell-center coords assigned to the correct
+    // axis. When protruding along X, wall is on X and cell-center is on Y;
+    // vice versa for Y.
     const pt =
       def.protrudeAxis === 'x'
         ? (wallCoord: number, bpCoord: number): [number, number] => [wallCoord, bpCoord]
         : (wallCoord: number, bpCoord: number): [number, number] => [bpCoord, wallCoord];
 
-    for (let k = 1; k <= def.numBoundaries; k++) {
-      const bp = def.boundaryPos(k);
+    for (const bp of def.centers) {
       const w = def.wallPos;
       const d = def.protrudeDir;
 
@@ -232,8 +231,8 @@ function makeGroove(
   return sketch(profile, 'XY', COPLANAR_MARGIN).extrude(-(totalHeight + 2 * COPLANAR_MARGIN));
 }
 
-// Snap cutters are shallow blind holes drilled into the slab top: two per
-// grid boundary along a join edge, straddling the seam at ±SNAP_PEG_INSET.
+// Snap cutters are shallow blind holes drilled into the slab top: one pair
+// per cell along a join edge, straddling the seam at ±SNAP_PEG_INSET.
 // The saddle clip drops onto these from above.
 function buildSnapCutters(
   params: BaseplateParams,
@@ -253,46 +252,44 @@ function buildSnapCutters(
   const radius = SNAP_HOLE_DIAMETER / 2;
   const ext = COPLANAR_MARGIN;
 
+  const yCenters = cellCentersAlong(params.depth, gridUnit, params.fractionalEdgeY);
+  const xCenters = cellCentersAlong(params.width, gridUnit, params.fractionalEdgeX);
+
   type Side = 'left' | 'right' | 'front' | 'back';
   const edgeDefs: ReadonlyArray<{
     side: Side;
     wallPos: number;
     inward: -1 | 1;
     protrudeAxis: 'x' | 'y';
-    numBoundaries: number;
-    boundaryPos: (k: number) => number;
+    centers: readonly number[];
   }> = [
     {
       side: 'left',
       wallPos: -halfW + slabOffsetX,
       inward: 1,
       protrudeAxis: 'x',
-      numBoundaries: Math.ceil(params.depth) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
+      centers: yCenters,
     },
     {
       side: 'right',
       wallPos: halfW + slabOffsetX,
       inward: -1,
       protrudeAxis: 'x',
-      numBoundaries: Math.ceil(params.depth) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
+      centers: yCenters,
     },
     {
       side: 'front',
       wallPos: -halfD + slabOffsetY,
       inward: 1,
       protrudeAxis: 'y',
-      numBoundaries: Math.ceil(params.width) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
+      centers: xCenters,
     },
     {
       side: 'back',
       wallPos: halfD + slabOffsetY,
       inward: -1,
       protrudeAxis: 'y',
-      numBoundaries: Math.ceil(params.width) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
+      centers: xCenters,
     },
   ];
 
@@ -307,15 +304,14 @@ function buildSnapCutters(
   const holeDepth = SNAP_RECESS_DEPTH + SNAP_HOLE_DEPTH + ext;
 
   for (const def of edgeDefs) {
-    if (edges[def.side] !== 'join' || def.numBoundaries <= 0) continue;
+    if (edges[def.side] !== 'join') continue;
     const xAxis = def.protrudeAxis === 'x';
     const peg = def.wallPos + def.inward * SNAP_PEG_INSET;
     const recessAcrossCenter = def.wallPos + def.inward * (recessAcrossLen / 2);
     const recessW = xAxis ? recessAcrossLen : recessAlongLen;
     const recessD = xAxis ? recessAlongLen : recessAcrossLen;
 
-    for (let k = 1; k <= def.numBoundaries; k++) {
-      const bp = def.boundaryPos(k);
+    for (const bp of def.centers) {
       const cx = xAxis ? peg : bp;
       const cy = xAxis ? bp : peg;
       const cylinder = drawCircle(radius).sketchOnPlane('XY', ext).extrude(-holeDepth) as Shape3D;
