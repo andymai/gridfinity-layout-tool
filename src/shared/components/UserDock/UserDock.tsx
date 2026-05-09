@@ -6,6 +6,7 @@ import { useSessionStore } from '@/core/sync/session/useSession';
 import { signInUrl } from '@/core/sync/session/sessionApi';
 import { useSyncStatusStore, type SyncState } from '@/core/sync/status';
 import { useSignOutFlow } from '@/core/sync/useSignOutFlow';
+import { useLibraryStore } from '@/core/store/library';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { SyncRing } from './SyncRing';
 import { useDockMenu } from './useDockMenu';
@@ -24,6 +25,7 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
   const t = useTranslation();
   const { status, user } = useSessionStore(useShallow((s) => ({ status: s.status, user: s.user })));
   const syncState = useSyncStatusStore((s) => s.state);
+  const layoutCount = useLibraryStore((s) => s.library.entries.length);
 
   const { open, toggle, close, rootRef, triggerProps } = useDockMenu();
   const { signOut, dialog: signOutDialog } = useSignOutFlow();
@@ -40,7 +42,7 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
   const ringState: SyncState | 'none' = isAuthed ? syncState : 'none';
   const initial = isAuthed
     ? (user.displayName ?? user.email).trim().charAt(0).toUpperCase() || '?'
-    : '+';
+    : '';
   const hairline = isAuthed ? PROVIDER_INFO[user.provider].hairlineColor : null;
 
   const handleOpenSettings = onOpenSettings
@@ -61,12 +63,8 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
               'grid transition-[grid-template-rows] duration-300 ease-out',
               open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
             )}
-            // `inert` removes the collapsed region from focus and pointer
-            // events while the grid-rows transition still drives the smooth
-            // expand. Without this, every menu item stays keyboard-reachable
-            // when visually hidden.
             inert={!open}
-            aria-label={t(isAuthed ? 'dock.menuLabel' : 'dock.signInOptions')}
+            aria-label={t('dock.menuLabel')}
           >
             <div className="overflow-hidden">
               <div className="flex flex-col px-2 py-2 gap-0.5 border-b border-stroke-subtle">
@@ -79,7 +77,11 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
                     t={t}
                   />
                 ) : (
-                  <AnonymousMenuContent t={t} />
+                  <AnonymousMenuContent
+                    layoutCount={layoutCount}
+                    onOpenSettings={handleOpenSettings}
+                    t={t}
+                  />
                 )}
               </div>
             </div>
@@ -89,13 +91,13 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
         {isCompact ? (
           <div
             className="w-full flex justify-center py-2 text-content-secondary"
-            title={isAuthed ? user.email : t('auth.signIn')}
-            aria-label={isAuthed ? user.email : t('auth.signIn')}
+            title={isAuthed ? user.email : t('dock.signInTooltip')}
+            aria-label={isAuthed ? user.email : t('dock.signInTooltip')}
           >
             {isAuthed ? (
               <SyncRing state={ringState} initial={initial} size={24} />
             ) : (
-              <SignInIcon size={24} />
+              <LocalAvatar size={24} />
             )}
           </div>
         ) : (
@@ -103,8 +105,8 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
             type="button"
             onClick={toggle}
             {...triggerProps}
-            aria-label={t(isAuthed ? 'dock.openMenu' : 'auth.signIn')}
-            title={isAuthed ? user.email : t('auth.signIn')}
+            aria-label={t('dock.openMenu')}
+            title={isAuthed ? user.email : t('dock.signInTooltip')}
             className={cn(
               'w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors',
               'text-content-secondary hover:bg-surface-hover hover:text-content',
@@ -114,11 +116,12 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
             {isAuthed ? (
               <SyncRing state={ringState} initial={initial} size={28} />
             ) : (
-              <SignInIcon size={28} />
+              <LocalAvatar size={28} />
             )}
             <span className="flex-1 truncate text-left">
-              {isAuthed ? (user.displayName ?? user.email) : t('auth.signIn')}
+              {isAuthed ? (user.displayName ?? user.email) : t('dock.workingLocally')}
             </span>
+            {!isAuthed && <span className="text-xs text-content-tertiary">{t('auth.signIn')}</span>}
             <Caret up={open} />
           </button>
         )}
@@ -171,9 +174,17 @@ function AuthedMenuContent({
   );
 }
 
-function AnonymousMenuContent({ t }: { t: ReturnType<typeof useTranslation> }) {
+interface AnonymousMenuContentProps {
+  layoutCount: number;
+  onOpenSettings?: () => void;
+  t: ReturnType<typeof useTranslation>;
+}
+
+function AnonymousMenuContent({ layoutCount, onOpenSettings, t }: AnonymousMenuContentProps) {
   return (
     <>
+      <LocalStatusRow layoutCount={layoutCount} t={t} />
+      <div className="h-px bg-stroke-subtle mx-1 my-1" />
       <a
         href={signInUrl('google')}
         className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-content hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none"
@@ -188,6 +199,14 @@ function AnonymousMenuContent({ t }: { t: ReturnType<typeof useTranslation> }) {
         <ProviderMark provider="github" />
         <span>{t('auth.signInWithGithub')}</span>
       </a>
+      {onOpenSettings && (
+        <>
+          <div className="h-px bg-stroke-subtle mx-1 my-1" />
+          <MenuButton onClick={onOpenSettings} icon={ICON_PATHS.settings}>
+            {t('dock.settings')}
+          </MenuButton>
+        </>
+      )}
     </>
   );
 }
@@ -214,6 +233,25 @@ function SyncStatusRow({ state, t }: { state: SyncState; t: ReturnType<typeof us
         aria-hidden="true"
       />
       <span>{t(SYNC_STATUS_KEYS[state])}</span>
+    </div>
+  );
+}
+
+function LocalStatusRow({
+  layoutCount,
+  t,
+}: {
+  layoutCount: number;
+  t: ReturnType<typeof useTranslation>;
+}) {
+  const label =
+    layoutCount > 0
+      ? t('dock.savedOnDeviceCount', { count: layoutCount })
+      : t('dock.readyWhenYouAre');
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 text-xs text-content-secondary" role="status">
+      <span className="inline-block w-1.5 h-1.5 rounded-full bg-stroke-subtle" aria-hidden="true" />
+      <span>{label}</span>
     </div>
   );
 }
@@ -264,11 +302,11 @@ function Caret({ up }: { up: boolean }) {
   );
 }
 
-function SignInIcon({ size }: { size: number }) {
+function LocalAvatar({ size }: { size: number }) {
   return (
     <span
       aria-hidden="true"
-      className="inline-flex items-center justify-center rounded-full border border-stroke-subtle text-content-tertiary"
+      className="inline-flex items-center justify-center rounded-full bg-primary-muted text-content-secondary flex-none"
       style={{ width: size, height: size }}
     >
       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -276,7 +314,7 @@ function SignInIcon({ size }: { size: number }) {
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+          d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-9 0h12m-12 0a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2"
         />
       </svg>
     </span>
