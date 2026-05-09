@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.74.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.73.1...gridfinity-layout-tool-v4.74.0) (2026-05-09)
+
+
+### Features
+
+* **auth:** modern UserDock in every sidebar; new Account tab ([#1618](https://github.com/andymai/gridfinity-layout-tool/issues/1618)) ([9a93bc3](https://github.com/andymai/gridfinity-layout-tool/commit/9a93bc349fb69587acede3afcda65ccf2fa8f167))
+
 ## [4.73.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.73.0...gridfinity-layout-tool-v4.73.1) (2026-05-08)
 
 
