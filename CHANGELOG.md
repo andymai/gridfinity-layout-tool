@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.78.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.78.0...gridfinity-layout-tool-v4.78.1) (2026-05-11)
+
+
+### Bug Fixes
+
+* **bin-recommender:** apply Copilot review feedback from PR [#1627](https://github.com/andymai/gridfinity-layout-tool/issues/1627) ([#1629](https://github.com/andymai/gridfinity-layout-tool/issues/1629)) ([86a2d57](https://github.com/andymai/gridfinity-layout-tool/commit/86a2d57e3c05866b1350471774a684cf8e36b918))
+
 ## [4.78.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.77.0...gridfinity-layout-tool-v4.78.0) (2026-05-11)
 
 
