@@ -41,7 +41,9 @@ export function CutoutQuickstartOverlay({ onDismiss }: CutoutQuickstartOverlayPr
           {t('binDesigner.cutoutEditor.quickstart.title')}
         </h3>
 
-        <ul className="space-y-2 list-none">
+        {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
+        {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
+        <ul className="space-y-2 list-none" role="list">
           <FeatureRow
             index={0}
             icon={<ShapesIcon />}
