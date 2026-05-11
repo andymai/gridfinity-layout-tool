@@ -203,6 +203,17 @@ export function aggregateLayoutSnapshot(event: LayoutSnapshotEvent, inc: Increme
     }
   }
 
+  // 9b. High-quality per-label size pairs. Feeds the bin-size recommender —
+  // this is the only namespace that combines (label_hash → size) with a
+  // quality filter, because quality_tier lives on the snapshot, not on
+  // BinPlacementEvent. label_size_pairs is optional so older clients still
+  // validate; they just don't contribute training data.
+  if (quality_tier === 'high' && event.label_size_pairs) {
+    for (const { hash, size } of event.label_size_pairs) {
+      incr(inc, `ml:label_hash_high:${hash}`, size);
+    }
+  }
+
   // 10. Track layout archetype distribution
   const { archetype, spatial_patterns, uniformity_score, edge_usage } = event;
   incr(inc, 'ml:archetype', archetype);

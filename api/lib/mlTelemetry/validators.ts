@@ -128,6 +128,22 @@ function validateLabelHashArray(value: unknown): value is string[] {
 }
 
 /**
+ * Validate per-bin (label_hash, bin_size) pairs from layout snapshots.
+ * Bounded at 500 pairs to match the bin-count cap on shared layouts.
+ */
+function validateLabelSizePairs(value: unknown): value is Array<{ hash: string; size: string }> {
+  if (!Array.isArray(value)) return false;
+  if (value.length > 500) return false;
+  for (const pair of value) {
+    if (!pair || typeof pair !== 'object') return false;
+    const p = pair as { hash?: unknown; size?: unknown };
+    if (typeof p.hash !== 'string' || !VALID_LABEL_HASH_REGEX.test(p.hash)) return false;
+    if (typeof p.size !== 'string' || !VALID_BIN_SIZE_REGEX.test(p.size)) return false;
+  }
+  return true;
+}
+
+/**
  * Validate size sequence array (all are valid bin sizes).
  */
 function validateSizeSequenceArray(value: unknown): value is string[] {
@@ -237,6 +253,7 @@ export function validateEvent(event: unknown): event is MLTelemetryEvent {
       validateDistribution(e.category_distribution, VALID_CATEGORY_ID_REGEX) &&
       validateDistribution(e.domain_distribution, /^[a-z_]+$/) &&
       validateLabelHashArray(e.top_label_hashes) &&
+      (e.label_size_pairs === undefined || validateLabelSizePairs(e.label_size_pairs)) &&
       isFillPct(e.fill_percentage) &&
       isFillPct(e.labeled_percentage) &&
       typeof e.session_duration_ms === 'number' &&
