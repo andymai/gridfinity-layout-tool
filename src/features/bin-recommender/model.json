@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "vocabVersion": "v1",
+  "source": "label_hash_high",
+  "trainedAt": "1970-01-01T00:00:00+00:00",
+  "sampleCount": 0,
+  "byLabelHash": {},
+  "byEmbedBucket": {},
+  "byDrawer": {}
+}
