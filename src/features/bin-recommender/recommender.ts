@@ -8,7 +8,7 @@ const MIN_SAMPLES_FOR_DRAWER = 50;
 const SUPPORTED_SCHEMA_VERSION = 1;
 const SIZE_PATTERN = /^(\d+)x(\d+)x(\d+)$/;
 
-let warnedAboutVersionMismatch = false;
+const warnedVersionPairs = new Set<string>();
 
 export interface DrawerDims {
   width: number;
@@ -36,11 +36,12 @@ export function recommendBinSize(args: {
 
   if (model.schemaVersion !== SUPPORTED_SCHEMA_VERSION) return null;
   if (model.vocabVersion !== VOCAB_VERSION) {
-    if (!warnedAboutVersionMismatch) {
+    const pairKey = `${model.vocabVersion}->${VOCAB_VERSION}`;
+    if (!warnedVersionPairs.has(pairKey)) {
+      warnedVersionPairs.add(pairKey);
       console.warn(
         `[bin-recommender] vocab mismatch: model=${model.vocabVersion} runtime=${VOCAB_VERSION}; suppressing predictions until retrain`
       );
-      warnedAboutVersionMismatch = true;
     }
     return null;
   }
@@ -85,9 +86,4 @@ function parseSize(raw: string): BinSize | null {
   const h = Number(match[3]);
   if (!w || !d || !h) return null;
   return { width: gridUnits(w), depth: gridUnits(d), height: heightUnits(h) };
-}
-
-/** Test-only — reset the version-mismatch warn-once flag. */
-export function __resetWarnedForTests(): void {
-  warnedAboutVersionMismatch = false;
 }

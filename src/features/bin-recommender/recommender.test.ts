@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { processLabel } from '@/shared/analytics/labelVocabulary';
-import { recommendBinSize, __resetWarnedForTests } from './recommender';
+import { recommendBinSize } from './recommender';
 import type { BinRecommenderModel } from './types';
 
 const DRAWER = { width: 8, depth: 12, height: 4 };
@@ -18,10 +18,6 @@ function emptyModel(overrides: Partial<BinRecommenderModel> = {}): BinRecommende
     ...overrides,
   };
 }
-
-beforeEach(() => {
-  __resetWarnedForTests();
-});
 
 describe('recommendBinSize', () => {
   it('returns null when the label has no support and there is no drawer prior', () => {
@@ -100,16 +96,26 @@ describe('recommendBinSize', () => {
     expect(recommendBinSize({ label: 'screws', drawer: DRAWER, model })).toBeNull();
   });
 
-  it('returns null on vocabVersion mismatch and warns once', () => {
+  it('returns null on vocabVersion mismatch and warns once per unique mismatch pair', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { hash } = processLabel('screws');
+    // Use a version unique to this test so warn-set state from earlier tests
+    // can't interfere; this also exercises the per-pair de-duping.
     const model = emptyModel({
-      vocabVersion: 'v0',
+      vocabVersion: 'v_test_mismatch_a',
       byLabelHash: { [hash]: [{ size: '2x3x6', p: 0.6, n: 40 }] },
     });
     expect(recommendBinSize({ label: 'screws', drawer: DRAWER, model })).toBeNull();
     expect(recommendBinSize({ label: 'screws', drawer: DRAWER, model })).toBeNull();
     expect(warn).toHaveBeenCalledTimes(1);
+
+    // A different stale version still warns (distinct pair).
+    const otherModel = emptyModel({
+      vocabVersion: 'v_test_mismatch_b',
+      byLabelHash: { [hash]: [{ size: '2x3x6', p: 0.6, n: 40 }] },
+    });
+    expect(recommendBinSize({ label: 'screws', drawer: DRAWER, model: otherModel })).toBeNull();
+    expect(warn).toHaveBeenCalledTimes(2);
     warn.mockRestore();
   });
 

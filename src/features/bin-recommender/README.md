@@ -5,7 +5,7 @@ Static lookup table that predicts a bin's `WxDxH` size from its user-entered lab
 ## Contract
 
 ```ts
-import { recommendBinSize } from '@/features/bin-recommender/recommender';
+import { recommendBinSize } from '@/features/bin-recommender';
 import model from '@/features/bin-recommender/model.json';
 
 const prediction = recommendBinSize({
