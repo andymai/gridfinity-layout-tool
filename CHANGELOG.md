@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.77.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.76.0...gridfinity-layout-tool-v4.77.0) (2026-05-11)
+
+
+### Features
+
+* **ml-telemetry:** emit per-label sizes on high-quality snapshots ([#1625](https://github.com/andymai/gridfinity-layout-tool/issues/1625)) ([1c0dd85](https://github.com/andymai/gridfinity-layout-tool/commit/1c0dd85edbf02995a0473a7083984dad0ea30dd1))
+
 ## [4.76.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.75.0...gridfinity-layout-tool-v4.76.0) (2026-05-09)
 
 
