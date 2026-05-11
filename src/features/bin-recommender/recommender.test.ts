@@ -1,9 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { processLabel } from '@/shared/analytics/labelVocabulary';
+import { gridUnits, heightUnits } from '@/core/types';
 import { recommendBinSize } from './recommender';
 import type { BinRecommenderModel } from './types';
 
-const DRAWER = { width: 8, depth: 12, height: 4 };
+const DRAWER = { width: gridUnits(8), depth: gridUnits(12), height: heightUnits(4) };
 
 function emptyModel(overrides: Partial<BinRecommenderModel> = {}): BinRecommenderModel {
   return {
@@ -96,27 +97,13 @@ describe('recommendBinSize', () => {
     expect(recommendBinSize({ label: 'screws', drawer: DRAWER, model })).toBeNull();
   });
 
-  it('returns null on vocabVersion mismatch and warns once per unique mismatch pair', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  it('returns null on vocabVersion mismatch (silent — diagnostic is the caller’s job)', () => {
     const { hash } = processLabel('screws');
-    // Use a version unique to this test so warn-set state from earlier tests
-    // can't interfere; this also exercises the per-pair de-duping.
     const model = emptyModel({
-      vocabVersion: 'v_test_mismatch_a',
+      vocabVersion: 'v_stale',
       byLabelHash: { [hash]: [{ size: '2x3x6', p: 0.6, n: 40 }] },
     });
     expect(recommendBinSize({ label: 'screws', drawer: DRAWER, model })).toBeNull();
-    expect(recommendBinSize({ label: 'screws', drawer: DRAWER, model })).toBeNull();
-    expect(warn).toHaveBeenCalledTimes(1);
-
-    // A different stale version still warns (distinct pair).
-    const otherModel = emptyModel({
-      vocabVersion: 'v_test_mismatch_b',
-      byLabelHash: { [hash]: [{ size: '2x3x6', p: 0.6, n: 40 }] },
-    });
-    expect(recommendBinSize({ label: 'screws', drawer: DRAWER, model: otherModel })).toBeNull();
-    expect(warn).toHaveBeenCalledTimes(2);
-    warn.mockRestore();
   });
 
   it('prefers PRIMARY over ENRICHMENT when both have support', () => {
@@ -135,6 +122,34 @@ describe('recommendBinSize', () => {
       byLabelHash: { [hash]: [{ size: '0x0x0', p: 1.0, n: 100 }] },
     });
     expect(recommendBinSize({ label: 'broken', drawer: DRAWER, model })).toBeNull();
+  });
+
+  it('scans past a malformed top entry to the next valid one', () => {
+    const { hash } = processLabel('mixed');
+    const model = emptyModel({
+      byLabelHash: {
+        [hash]: [
+          { size: 'not-a-size', p: 0.7, n: 50 },
+          { size: '2x2x4', p: 0.2, n: 30 },
+        ],
+      },
+    });
+    const result = recommendBinSize({ label: 'mixed', drawer: DRAWER, model });
+    expect(result?.size).toEqual({ width: 2, depth: 2, height: 4 });
+    expect(result?.n).toBe(30);
+  });
+
+  it('stops scanning once samples drop below the threshold', () => {
+    const { hash } = processLabel('borderline');
+    const model = emptyModel({
+      byLabelHash: {
+        [hash]: [
+          { size: 'bad', p: 0.7, n: 50 },
+          { size: '1x1x3', p: 0.2, n: 5 }, // below MIN_SAMPLES_FOR_LABEL (10)
+        ],
+      },
+    });
+    expect(recommendBinSize({ label: 'borderline', drawer: DRAWER, model })).toBeNull();
   });
 
   it('skips PRIMARY for whitespace-only labels and tries the drawer prior', () => {

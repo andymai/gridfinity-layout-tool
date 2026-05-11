@@ -1,5 +1,5 @@
 import { processLabel, VOCAB_VERSION } from '@/shared/analytics/labelVocabulary';
-import { gridUnits, heightUnits } from '@/core/types';
+import { gridUnits, heightUnits, type GridUnits, type HeightUnits } from '@/core/types';
 import type { BinRecommenderModel, BinSize, BinSizePrediction } from './types';
 
 const MIN_SAMPLES_FOR_LABEL = 10;
@@ -8,12 +8,10 @@ const MIN_SAMPLES_FOR_DRAWER = 50;
 const SUPPORTED_SCHEMA_VERSION = 1;
 const SIZE_PATTERN = /^(\d+)x(\d+)x(\d+)$/;
 
-const warnedVersionPairs = new Set<string>();
-
 export interface DrawerDims {
-  width: number;
-  depth: number;
-  height: number;
+  width: GridUnits;
+  depth: GridUnits;
+  height: HeightUnits;
 }
 
 /**
@@ -26,6 +24,10 @@ export interface DrawerDims {
  *   1. byLabelHash[hash]      — exact label match (handles any language)
  *   2. byEmbedBucket[bucket]  — semantic-bucket fallback for OOV labels
  *   3. byDrawer["WxDxH"]      — drawer-size prior when nothing else hits
+ *
+ * Pure: schema/vocab-version mismatches silently return `null` rather than
+ * logging. The Labs hook that loads the model is responsible for surfacing a
+ * "model is stale" diagnostic at load time, where the context is available.
  */
 export function recommendBinSize(args: {
   label: string;
@@ -35,16 +37,7 @@ export function recommendBinSize(args: {
   const { label, drawer, model } = args;
 
   if (model.schemaVersion !== SUPPORTED_SCHEMA_VERSION) return null;
-  if (model.vocabVersion !== VOCAB_VERSION) {
-    const pairKey = `${model.vocabVersion}->${VOCAB_VERSION}`;
-    if (!warnedVersionPairs.has(pairKey)) {
-      warnedVersionPairs.add(pairKey);
-      console.warn(
-        `[bin-recommender] vocab mismatch: model=${model.vocabVersion} runtime=${VOCAB_VERSION}; suppressing predictions until retrain`
-      );
-    }
-    return null;
-  }
+  if (model.vocabVersion !== VOCAB_VERSION) return null;
 
   const trimmed = label.trim();
   if (trimmed) {
@@ -66,16 +59,23 @@ export function recommendBinSize(args: {
   return null;
 }
 
+/**
+ * Pick the highest-ranked entry whose `n` meets the threshold AND whose size
+ * parses cleanly. Scanning past the top entry guards against a malformed top
+ * row in model.json — if the training script ever emits a bad top entry, we
+ * fall back to the next valid one rather than dropping the whole label.
+ */
 function pickTop(
   entries: Array<{ size: string; p: number; n: number }> | undefined,
   minSamples: number
 ): { size: BinSize; p: number; n: number } | null {
-  if (!entries || entries.length === 0) return null;
-  const top = entries[0];
-  if (top.n < minSamples) return null;
-  const size = parseSize(top.size);
-  if (!size) return null;
-  return { size, p: top.p, n: top.n };
+  if (!entries) return null;
+  for (const entry of entries) {
+    if (entry.n < minSamples) break;
+    const size = parseSize(entry.size);
+    if (size) return { size, p: entry.p, n: entry.n };
+  }
+  return null;
 }
 
 function parseSize(raw: string): BinSize | null {
