@@ -16,6 +16,7 @@ import {
 } from './computations';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
 import { binId, layerId, categoryId, gridUnits, heightUnits } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 
 // ============================================
 // HELPERS
@@ -698,10 +699,27 @@ describe('computeLabelSizePairs', () => {
   it('excludes staging bins', () => {
     const bins = [
       createTestBin({ id: binId('b1'), label: 'a', layerId: layerId('layer1') }),
-      createTestBin({ id: binId('s1'), label: 'b', layerId: layerId('__staging__') }),
+      createTestBin({ id: binId('s1'), label: 'b', layerId: layerId(STAGING_ID) }),
     ];
     const result = computeLabelSizePairs(bins, processLabel);
     expect(result).toEqual([{ hash: 'hash-a', size: '1x1x3' }]);
+  });
+
+  it('caps the result at 500 pairs even when more labeled bins exist', () => {
+    const bins = [
+      ...Array.from({ length: 600 }, (_, i) =>
+        createTestBin({
+          id: binId(`b${i}`),
+          label: 'item',
+          layerId: layerId('layer1'),
+        })
+      ),
+      createTestBin({ id: binId('staged'), label: 'ignored', layerId: layerId(STAGING_ID) }),
+      createTestBin({ id: binId('blank'), label: '   ', layerId: layerId('layer1') }),
+    ];
+    const result = computeLabelSizePairs(bins, processLabel);
+    expect(result).toHaveLength(500);
+    expect(result.every((p) => p.hash === 'hash-item')).toBe(true);
   });
 });
 

@@ -129,7 +129,9 @@ function validateLabelHashArray(value: unknown): value is string[] {
 
 /**
  * Validate per-bin (label_hash, bin_size) pairs from layout snapshots.
- * Bounded at 500 pairs to match the bin-count cap on shared layouts.
+ * Bounded at 500 pairs as a defensive cap on telemetry payload size — well
+ * above any realistic labeled-bin count per drawer, well below the 2500-bin
+ * cap used for share validation.
  */
 function validateLabelSizePairs(value: unknown): value is Array<{ hash: string; size: string }> {
   if (!Array.isArray(value)) return false;
