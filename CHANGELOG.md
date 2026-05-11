@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.78.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.77.0...gridfinity-layout-tool-v4.78.0) (2026-05-11)
+
+
+### Features
+
+* **bin-recommender:** pure-function library + Python training pipeline ([#1627](https://github.com/andymai/gridfinity-layout-tool/issues/1627)) ([7b3d440](https://github.com/andymai/gridfinity-layout-tool/commit/7b3d440b922b9ab695ee73d8986090ab49dd5659))
+
 ## [4.77.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.76.0...gridfinity-layout-tool-v4.77.0) (2026-05-11)
 
 
