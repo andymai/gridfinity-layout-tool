@@ -17,7 +17,6 @@ export function CutoutQuickstartOverlay({ onDismiss }: CutoutQuickstartOverlayPr
   const t = useTranslation();
   const dismissRef = useRef<HTMLButtonElement>(null);
 
-  // Dismiss on Escape and auto-focus the dismiss button
   useEffect(() => {
     dismissRef.current?.focus();
 
@@ -33,7 +32,7 @@ export function CutoutQuickstartOverlay({ onDismiss }: CutoutQuickstartOverlayPr
 
   return (
     <div
-      className="absolute top-12 right-3 z-40 w-72 rounded-xl border border-stroke-subtle bg-surface-elevated shadow-lg animate-in fade-in slide-in-from-top-2 duration-200"
+      className="absolute top-12 right-3 z-40 w-80 rounded-xl border border-stroke-subtle bg-surface-elevated shadow-lg animate-in fade-in slide-in-from-top-2 duration-200"
       role="dialog"
       aria-labelledby="cutout-quickstart-title"
     >
@@ -42,24 +41,35 @@ export function CutoutQuickstartOverlay({ onDismiss }: CutoutQuickstartOverlayPr
           {t('binDesigner.cutoutEditor.quickstart.title')}
         </h3>
 
-        <div className="space-y-2.5">
+        {/* role="list" restores list semantics that Safari/iOS VoiceOver strips when list-style:none is applied. */}
+        {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
+        <ul className="space-y-2 list-none" role="list">
           <FeatureRow
+            index={0}
             icon={<ShapesIcon />}
             text={t('binDesigner.cutoutEditor.quickstart.shapes')}
           />
           <FeatureRow
-            icon={<KeyboardIcon />}
-            text={t('binDesigner.cutoutEditor.quickstart.shortcuts')}
+            index={1}
+            icon={<SelectIcon />}
+            text={t('binDesigner.cutoutEditor.quickstart.select')}
           />
           <FeatureRow
+            index={2}
+            icon={<VertexIcon />}
+            text={t('binDesigner.cutoutEditor.quickstart.vertex')}
+          />
+          <FeatureRow
+            index={3}
             icon={<MenuIcon />}
             text={t('binDesigner.cutoutEditor.quickstart.rightClick')}
           />
           <FeatureRow
+            index={4}
             icon={<GridIcon />}
             text={t('binDesigner.cutoutEditor.quickstart.precision')}
           />
-        </div>
+        </ul>
 
         <button
           ref={dismissRef}
@@ -74,14 +84,26 @@ export function CutoutQuickstartOverlay({ onDismiss }: CutoutQuickstartOverlayPr
   );
 }
 
-function FeatureRow({ icon, text }: { readonly icon: ReactNode; readonly text: string }) {
+function FeatureRow({
+  index,
+  icon,
+  text,
+}: {
+  readonly index: number;
+  readonly icon: ReactNode;
+  readonly text: string;
+}) {
   return (
-    <div className="flex items-start gap-2.5">
-      <div className="flex-shrink-0 w-5 h-5 mt-0.5 text-accent/70" aria-hidden="true">
+    <li className="group/row flex items-start gap-2.5 rounded-md -mx-1 px-1 py-1 transition-colors hover:bg-surface/60">
+      <div
+        className="flex-shrink-0 w-5 h-5 mt-0.5 text-accent/70 group-hover/row:text-accent transition-all duration-200 ease-out group-hover/row:scale-110 animate-quickstart-icon-intro"
+        style={{ animationDelay: `${index * 60}ms` }}
+        aria-hidden="true"
+      >
         {icon}
       </div>
       <span className="text-xs text-content-secondary leading-relaxed">{text}</span>
-    </div>
+    </li>
   );
 }
 
@@ -90,17 +112,34 @@ function FeatureRow({ icon, text }: { readonly icon: ReactNode; readonly text: s
 function ShapesIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2" y="2" width="8" height="8" rx="1" />
-      <circle cx="14" cy="14" r="4" />
+      <rect x="2" y="2.5" width="7" height="7" rx="1" />
+      <circle cx="14" cy="14" r="3.5" />
+      <path d="M3 16 L8 11 L9 13 L12 10" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
-function KeyboardIcon() {
+function SelectIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="1" y="4" width="18" height="12" rx="2" />
-      <path d="M5 8h2M9 8h2M13 8h2M6 12h8" strokeLinecap="round" />
+      <rect x="2" y="2" width="11" height="11" rx="0.5" strokeDasharray="2 1.5" />
+      <path
+        d="M11 9 L11 18 L13.5 15.5 L15.5 19 L17 18.2 L15 15 L18 14.5 Z"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function VertexIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M3 14 C 6 4, 14 4, 17 14" strokeLinecap="round" />
+      <circle cx="3" cy="14" r="1.5" fill="currentColor" />
+      <circle cx="10" cy="6.5" r="1.5" fill="currentColor" />
+      <circle cx="17" cy="14" r="1.5" fill="currentColor" />
     </svg>
   );
 }

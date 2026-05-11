@@ -967,6 +967,23 @@ input[type='range']:hover::-moz-range-thumb {
   animation: draw-hint-rect 4s ease-in-out infinite;
 }
 
+/* Cutout quickstart overlay: per-row icon intro pop.
+   Staggered via inline animationDelay on each FeatureRow. */
+@keyframes quickstart-icon-intro {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-quickstart-icon-intro {
+  animation: quickstart-icon-intro 320ms ease-out backwards;
+}
+
 /* UserDock: sync ring states.
    The ring is a layer behind the avatar. Idle/error use a solid background;
    syncing rotates a conic-gradient via the layer's transform; offline uses a
@@ -1047,6 +1064,10 @@ input[type='range']:hover::-moz-range-thumb {
 
   .animate-cutout-draw-hint-rect {
     animation: draw-hint-rect 4s ease-in-out 1 !important;
+  }
+
+  .animate-quickstart-icon-intro {
+    animation: none !important;
   }
 }
 
