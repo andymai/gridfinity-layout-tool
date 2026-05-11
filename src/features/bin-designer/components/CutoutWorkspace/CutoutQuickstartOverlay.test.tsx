@@ -3,12 +3,14 @@ import { describe, it, expect, vi } from 'vitest';
 import { CutoutQuickstartOverlay } from './CutoutQuickstartOverlay';
 
 describe('CutoutQuickstartOverlay', () => {
-  it('renders all 4 feature rows', () => {
+  it('renders all 5 feature rows', () => {
     render(<CutoutQuickstartOverlay onDismiss={vi.fn()} />);
-    expect(screen.getByText(/draw shapes/i)).toBeInTheDocument();
-    expect(screen.getByText(/switch tools/i)).toBeInTheDocument();
+    expect(screen.getByText(/shapes/i)).toBeInTheDocument();
+    expect(screen.getByText(/select/i)).toBeInTheDocument();
+    expect(screen.getByText(/vertex/i)).toBeInTheDocument();
     expect(screen.getByText(/right-click/i)).toBeInTheDocument();
-    expect(screen.getByText(/snap to grid/i)).toBeInTheDocument();
+    expect(screen.getByText(/smart guides/i)).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(5);
   });
 
   it('calls onDismiss when Got it button is clicked', () => {
