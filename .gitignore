@@ -48,6 +48,12 @@ docs/plans/
 .env*.local
 .playwright-mcp/
 
+# Defensive — training script pulls prod credentials into its own dir
+scripts/train-bin-recommender/.env*
+# Python bytecode from training script execution
+scripts/train-bin-recommender/__pycache__/
+scripts/train-bin-recommender/.venv/
+
 # Generated content pages (built from content/*.md)
 public/what-is-gridfinity/
 public/guide/

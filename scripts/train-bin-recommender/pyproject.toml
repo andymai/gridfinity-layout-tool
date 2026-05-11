@@ -1,0 +1,12 @@
+[project]
+name = "train-bin-recommender"
+version = "0.1.0"
+description = "Build the bin-size recommender's static lookup table from Redis telemetry."
+requires-python = ">=3.11"
+dependencies = [
+  "redis>=5.0.0",
+  "click>=8.1.0",
+]
+
+[tool.uv]
+package = false
