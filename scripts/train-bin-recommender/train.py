@@ -23,10 +23,11 @@ from typing import Iterable
 import click
 import redis
 
-INT_SIZE_RE = re.compile(r"^\d+x\d+x\d+$")
+INT_SIZE_RE = re.compile(r"^[1-9]\d*x[1-9]\d*x[1-9]\d*$")
 LAPLACE_ALPHA = 1.0
 TOP_N_SIZES = 3
 SCHEMA_VERSION = 1
+SCAN_PAGE_SIZE = 500
 
 
 @dataclass(slots=True)
@@ -37,29 +38,61 @@ class SizeEntry:
 
 
 def fetch_hash_map(client: redis.Redis, prefix: str) -> dict[str, dict[str, int]]:
-    """Read every `{prefix}{key}` hash into `{key -> {field -> count}}`."""
+    """Read every `{prefix}{key}` hash into `{key -> {field -> count}}`.
+
+    Uses a pipeline batched by SCAN page to avoid an N+1 round-trip pattern
+    against production Redis. A page of keys is gathered from SCAN, then a
+    single pipeline issues `HGETALL` for each and reads them back together.
+    """
     out: dict[str, dict[str, int]] = {}
-    for raw_key in client.scan_iter(match=f"{prefix}*", count=500):
-        key = raw_key.decode() if isinstance(raw_key, bytes) else raw_key
-        suffix = key[len(prefix) :]
-        fields = client.hgetall(raw_key)
+    page: list[bytes | str] = []
+    for raw_key in client.scan_iter(match=f"{prefix}*", count=SCAN_PAGE_SIZE):
+        page.append(raw_key)
+        if len(page) >= SCAN_PAGE_SIZE:
+            _drain_page(client, prefix, page, out)
+    _drain_page(client, prefix, page, out)
+    return out
+
+
+def _drain_page(
+    client: redis.Redis,
+    prefix: str,
+    page: list[bytes | str],
+    out: dict[str, dict[str, int]],
+) -> None:
+    if not page:
+        return
+    pipe = client.pipeline(transaction=False)
+    for key in page:
+        pipe.hgetall(key)
+    results = pipe.execute()
+    for key, fields in zip(page, results):
+        decoded_key = key.decode() if isinstance(key, bytes) else key
+        suffix = decoded_key[len(prefix) :]
         out[suffix] = {
             (f.decode() if isinstance(f, bytes) else f): int(v)
             for f, v in fields.items()
         }
-    return out
+    page.clear()
 
 
 def top_sizes(counts: dict[str, int]) -> list[SizeEntry]:
-    """Filter to integer sizes, top-N by count, Laplace-smoothed probabilities."""
+    """Filter to integer sizes, top-N by count, Laplace-smoothed probabilities.
+
+    The smoothing denominator is computed over the **full** filtered
+    distribution (`N + α·V`, where V is the number of distinct sizes seen),
+    not just over the top-N. Using only the top-N rows would inflate `p` and
+    misrepresent the source distribution.
+    """
     filtered = {size: n for size, n in counts.items() if INT_SIZE_RE.match(size)}
     if not filtered:
         return []
+    total_n = sum(filtered.values())
+    vocab_size = len(filtered)
+    denom = total_n + LAPLACE_ALPHA * vocab_size
     ranked = sorted(filtered.items(), key=lambda kv: kv[1], reverse=True)[:TOP_N_SIZES]
-    smoothed_total = sum(n + LAPLACE_ALPHA for _, n in ranked)
     return [
-        SizeEntry(size=size, p=(n + LAPLACE_ALPHA) / smoothed_total, n=n)
-        for size, n in ranked
+        SizeEntry(size=size, p=(n + LAPLACE_ALPHA) / denom, n=n) for size, n in ranked
     ]
 
 
@@ -70,18 +103,20 @@ def serialize(entries: list[SizeEntry]) -> list[dict[str, float | int | str]]:
 def build_table(
     raw: dict[str, dict[str, int]], min_samples: int
 ) -> tuple[dict[str, list[dict]], int]:
-    """Apply the min_samples floor and serialize. Returns (table, total_samples)."""
+    """Apply the min_samples floor and serialize. Returns (table, total_samples).
+
+    The floor is applied to the **top entry's own `n`**, matching the runtime's
+    threshold check. Filtering by `sum(counts)` instead would emit rows whose
+    top size has fewer than `min_samples` and is always rejected at runtime.
+    """
     table: dict[str, list[dict]] = {}
     total = 0
     for key, counts in raw.items():
-        sample_n = sum(counts.values())
-        if sample_n < min_samples:
-            continue
         entries = top_sizes(counts)
-        if not entries:
+        if not entries or entries[0].n < min_samples:
             continue
         table[key] = serialize(entries)
-        total += sample_n
+        total += sum(counts.values())
     return table, total
 
 
