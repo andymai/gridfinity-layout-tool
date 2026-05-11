@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.79.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.78.1...gridfinity-layout-tool-v4.79.0) (2026-05-11)
+
+
+### Features
+
+* **cutout-editor:** rewrite quickstart overlay with action-driving copy ([#1631](https://github.com/andymai/gridfinity-layout-tool/issues/1631)) ([3229a53](https://github.com/andymai/gridfinity-layout-tool/commit/3229a5347a58cf672a1bb44660d745d0da3913ca))
+
 ## [4.78.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.78.0...gridfinity-layout-tool-v4.78.1) (2026-05-11)
 
 
