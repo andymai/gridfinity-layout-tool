@@ -80,6 +80,7 @@ export interface LayoutSnapshotEvent {
   category_distribution: Record<string, number>;
   domain_distribution: Record<string, number>;
   top_label_hashes: string[];
+  label_size_pairs?: Array<{ hash: string; size: string }>;
   fill_percentage: number;
   labeled_percentage: number;
   session_duration_ms: number;

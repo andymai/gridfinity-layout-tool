@@ -116,6 +116,13 @@ export interface LayoutSnapshotEvent {
   /** Top 10 most common label hashes in layout */
   top_label_hashes: string[];
 
+  /**
+   * Per-labeled-bin (hash, size) pairs. Optional so older deployed clients
+   * still validate; the aggregator only consumes it when the snapshot is
+   * high-quality tier.
+   */
+  label_size_pairs?: Array<{ hash: string; size: string }>;
+
   /** Percentage of drawer filled (0-100) */
   fill_percentage: number;
   /** Percentage of bins with labels (0-100) */

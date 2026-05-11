@@ -155,6 +155,29 @@ export function computeTopLabelHashes(
 }
 
 /**
+ * Per-bin (label_hash, size) pairs for every labeled bin on the grid. The
+ * aggregator only consumes these when the snapshot's quality_tier is `high`,
+ * so this is the path that feeds the bin-size recommender's training set.
+ * Capped at 500 to match the validator limit.
+ */
+export function computeLabelSizePairs(
+  bins: Bin[],
+  processLabel: (label: string) => { hash: string }
+): Array<{ hash: string; size: string }> {
+  const pairs: Array<{ hash: string; size: string }> = [];
+  for (const bin of getGridBins(bins)) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- label can be undefined at runtime despite types
+    if (!bin.label?.trim()) continue;
+    if (pairs.length >= 500) break;
+    pairs.push({
+      hash: processLabel(bin.label).hash,
+      size: `${bin.width}x${bin.depth}x${bin.height}`,
+    });
+  }
+  return pairs;
+}
+
+/**
  * Compute fill percentage of layout.
  */
 export function computeFillPercentage(layout: Layout): number {

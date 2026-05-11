@@ -7,6 +7,7 @@ import {
   computeCategoryDistribution,
   computeDomainDistribution,
   computeTopLabelHashes,
+  computeLabelSizePairs,
   computeFillPercentage,
   computeLabeledPercentage,
   computeSessionConfidence,
@@ -14,7 +15,8 @@ import {
   hashCategoryName,
 } from './computations';
 import { createTestLayout, createTestBin } from '@/test/testUtils';
-import { binId, layerId, categoryId } from '@/core/types';
+import { binId, layerId, categoryId, gridUnits, heightUnits } from '@/core/types';
+import { STAGING_ID } from '@/core/constants';
 
 // ============================================
 // HELPERS
@@ -648,6 +650,76 @@ describe('computeTopLabelHashes', () => {
     ];
     const result = computeTopLabelHashes(bins, 5, sameHashProcessor);
     expect(result).toEqual(['same-hash']);
+  });
+});
+
+describe('computeLabelSizePairs', () => {
+  const processLabel = (label: string) => ({ hash: `hash-${label}` });
+
+  it('returns empty array when no bins are labeled', () => {
+    const bins = [createTestBin({ id: binId('b1'), label: '', layerId: layerId('layer1') })];
+    expect(computeLabelSizePairs(bins, processLabel)).toEqual([]);
+  });
+
+  it('emits one pair per labeled bin with its hash and size', () => {
+    const bins = [
+      createTestBin({
+        id: binId('b1'),
+        label: 'screws',
+        layerId: layerId('layer1'),
+        width: gridUnits(2),
+        depth: gridUnits(3),
+        height: heightUnits(6),
+      }),
+      createTestBin({
+        id: binId('b2'),
+        label: 'screws',
+        layerId: layerId('layer1'),
+        width: gridUnits(1),
+        depth: gridUnits(1),
+        height: heightUnits(3),
+      }),
+    ];
+    expect(computeLabelSizePairs(bins, processLabel)).toEqual([
+      { hash: 'hash-screws', size: '2x3x6' },
+      { hash: 'hash-screws', size: '1x1x3' },
+    ]);
+  });
+
+  it('skips bins with empty or whitespace-only labels', () => {
+    const bins = [
+      createTestBin({ id: binId('b1'), label: '', layerId: layerId('layer1') }),
+      createTestBin({ id: binId('b2'), label: '   ', layerId: layerId('layer1') }),
+      createTestBin({ id: binId('b3'), label: 'real', layerId: layerId('layer1') }),
+    ];
+    const result = computeLabelSizePairs(bins, processLabel);
+    expect(result).toEqual([{ hash: 'hash-real', size: '1x1x3' }]);
+  });
+
+  it('excludes staging bins', () => {
+    const bins = [
+      createTestBin({ id: binId('b1'), label: 'a', layerId: layerId('layer1') }),
+      createTestBin({ id: binId('s1'), label: 'b', layerId: layerId(STAGING_ID) }),
+    ];
+    const result = computeLabelSizePairs(bins, processLabel);
+    expect(result).toEqual([{ hash: 'hash-a', size: '1x1x3' }]);
+  });
+
+  it('caps the result at 500 pairs even when more labeled bins exist', () => {
+    const bins = [
+      ...Array.from({ length: 600 }, (_, i) =>
+        createTestBin({
+          id: binId(`b${i}`),
+          label: 'item',
+          layerId: layerId('layer1'),
+        })
+      ),
+      createTestBin({ id: binId('staged'), label: 'ignored', layerId: layerId(STAGING_ID) }),
+      createTestBin({ id: binId('blank'), label: '   ', layerId: layerId('layer1') }),
+    ];
+    const result = computeLabelSizePairs(bins, processLabel);
+    expect(result).toHaveLength(500);
+    expect(result.every((p) => p.hash === 'hash-item')).toBe(true);
   });
 });
 

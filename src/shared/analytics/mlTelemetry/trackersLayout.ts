@@ -29,6 +29,7 @@ import {
   computeCategoryDistribution,
   computeDomainDistribution,
   computeTopLabelHashes,
+  computeLabelSizePairs,
   computeFillPercentage,
   computeLabeledPercentage,
   assessLayoutQuality,
@@ -71,6 +72,7 @@ export function trackLayoutSnapshot(layout: Layout, trigger: LayoutSnapshotTrigg
 
   const bins = getGridBins(layout.bins);
   const temporal = computeTemporalFields();
+  const qualityTier = assessLayoutQuality(layout);
 
   const event: LayoutSnapshotEvent = {
     type: 'layout_snapshot',
@@ -85,11 +87,16 @@ export function trackLayoutSnapshot(layout: Layout, trigger: LayoutSnapshotTrigg
     category_distribution: computeCategoryDistribution(layout.bins),
     domain_distribution: computeDomainDistribution(layout.bins, processLabel),
     top_label_hashes: computeTopLabelHashes(layout.bins, 10, processLabel),
+    // Only populated for high-tier snapshots — the server discards pairs from
+    // other tiers, so paying the per-bin walk + payload on every idle /
+    // layout_switch is pure waste.
+    label_size_pairs:
+      qualityTier === 'high' ? computeLabelSizePairs(layout.bins, processLabel) : undefined,
     fill_percentage: computeFillPercentage(layout),
     labeled_percentage: computeLabeledPercentage(layout.bins),
     session_duration_ms: layoutSession.editCount > 0 ? Date.now() - layoutSession.startTime : 0,
     edit_count: layoutSession.editCount,
-    quality_tier: assessLayoutQuality(layout),
+    quality_tier: qualityTier,
     archetype: detectArchetype(layout),
     spatial_patterns: detectSpatialPatterns(layout),
     uniformity_score: computeUniformityScore(bins),

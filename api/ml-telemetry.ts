@@ -10,7 +10,9 @@
  * - ml:sizes                  -> Global bin size frequency
  * - ml:trans:{prev}           -> Transition matrix (prev_size -> next_size)
  * - ml:drawer:{size}          -> Bin sizes per drawer size
- * - ml:label_hash:{hash}      -> Bin sizes per label hash (PRIMARY - any language)
+ * - ml:label_hash:{hash}      -> Bin sizes per label hash (PRIMARY - any language, all events)
+ * - ml:label_hash_high:{hash} -> Bin sizes per label hash, restricted to high-quality snapshots
+ *                                (training source for the bin-size recommender; 90d TTL)
  * - ml:label:{normalized}     -> Bin sizes per normalized label (ENRICHMENT)
  * - ml:label_domain:{domain}  -> Bin sizes per domain category (FALLBACK)
  * - ml:cat:{category}         -> Bin sizes per category
@@ -386,7 +388,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       if (
         hash === 'ml:unknown_hashes' ||
         hash.startsWith('ml:size_seq:') ||
-        hash.startsWith('ml:cooccur:')
+        hash.startsWith('ml:cooccur:') ||
+        hash.startsWith('ml:label_hash_high:')
       ) {
         pipe.expire(hash, 90 * 24 * 60 * 60, 'NX'); // 90 days, only if no TTL exists
       }
