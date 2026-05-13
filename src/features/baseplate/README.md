@@ -25,7 +25,7 @@ graph TB
 - `components/BaseplatePanel.tsx` — parameter controls: grid size, padding, magnets, split mini-map
 - `components/BaseplatePreview.tsx` — Three.js 3D preview with assembled/exploded split views
 - `hooks/useBaseplateGeneration.ts` — two-phase lifecycle: synchronous direct-mesh preview (sub-100ms) + async BREP swap once WASM bridge ready, epoch-based stale detection
-- `hooks/useBaseplateExport.ts` — export pipeline: single-piece or parallel split with ZIP packaging
+- `hooks/useBaseplateExport.ts` — export pipeline: single-piece or parallel split with ZIP packaging; 3MF format optionally stacks N copies of each part via 3MF instancing
 - `store/baseplatePageStore.ts` — ephemeral UI state (generation status, tiling, piece selection)
 - `utils/splitPlanner.ts` — 2D optimal tiling: partitions grid into print-bed-sized pieces
 - `utils/buildFullParams.ts` — resolves sync mode: drawer dims vs custom width/depth

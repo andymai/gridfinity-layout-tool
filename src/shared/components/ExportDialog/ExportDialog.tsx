@@ -58,6 +58,16 @@ export interface ExportDialogProps {
     onCheckedChange: (v: boolean) => void;
   } | null;
 
+  /** Optional vertical-stack control (3MF only — STL/STEP have no instancing). */
+  stackOptions?: {
+    label: string;
+    description?: string;
+    value: number;
+    onChange: (v: number) => void;
+    min: number;
+    max: number;
+  } | null;
+
   /** Optional print estimates */
   estimates?: readonly { label: string; value: string }[] | null;
   estimatesTitle?: string;
@@ -94,6 +104,7 @@ export function ExportDialog({
   downloadLabel,
   exportProgress,
   splitBanner,
+  stackOptions,
   estimates,
   estimatesTitle,
   estimatesDisclaimer,
@@ -246,6 +257,38 @@ export function ExportDialog({
                   {splitBanner.checkboxLabel}
                 </span>
               </label>
+            </div>
+          )}
+
+          {/* Vertical Stacking */}
+          {stackOptions && (
+            <div className="mb-4">
+              <label
+                htmlFor="export-stack-copies"
+                className="mb-2 block text-sm font-medium text-content-secondary"
+              >
+                {stackOptions.label}
+              </label>
+              <input
+                id="export-stack-copies"
+                type="number"
+                min={stackOptions.min}
+                max={stackOptions.max}
+                step={1}
+                value={stackOptions.value}
+                onChange={(e) => {
+                  const next = Number.parseInt(e.target.value, 10);
+                  if (Number.isFinite(next)) {
+                    stackOptions.onChange(
+                      Math.max(stackOptions.min, Math.min(stackOptions.max, next))
+                    );
+                  }
+                }}
+                className="w-24 rounded-md border border-stroke-subtle bg-surface px-3 py-2 text-sm text-content outline-none focus:border-stroke"
+              />
+              {stackOptions.description && (
+                <p className="mt-1 text-xs text-content-secondary">{stackOptions.description}</p>
+              )}
             </div>
           )}
 

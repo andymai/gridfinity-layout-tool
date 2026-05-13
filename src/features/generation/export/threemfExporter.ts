@@ -42,6 +42,22 @@ export interface ThreeMFOptions {
   readonly printSettings?: ThreeMFPrintSettings;
   /** Optional multi-material color configuration */
   readonly colorConfig?: ThreeMFColorConfig;
+  /**
+   * Optional vertical stacking. The mesh is emitted once and referenced by
+   * `count` build items, each translated by `i * (zHeight + spacingMm)` along Z.
+   * `zHeight` should be the source mesh's Z extent (max - min Z over its
+   * vertices). Slicers see each instance as a separate placement and slice them
+   * together, which is the auto-stack workflow requested by issue #1642.
+   *
+   * Honored by `export3MF` / `build3MFBuffer` (single-object export) only;
+   * `export3MFMultiObject` ignores this field — stacking a heterogeneous bin +
+   * lid pair has no slicer-friendly interpretation.
+   */
+  readonly stack?: {
+    readonly count: number;
+    readonly zHeightMm: number;
+    readonly spacingMm: number;
+  };
 }
 
 /** Suggested print settings embedded as metadata */
@@ -307,14 +323,38 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   xml += '    </object>\n';
   xml += '  </resources>\n';
 
-  // Build instructions
+  // Build instructions — one or many instances of the single object.
   xml += '  <build>\n';
-  xml += `    <item objectid="${colorConfig ? OBJECT_ID : 1}" />\n`;
+  xml += renderBuildItems(colorConfig ? OBJECT_ID : 1, options.stack);
   xml += '  </build>\n';
 
   xml += '</model>';
   return xml;
 }
+
+/**
+ * Emit one or N `<item>` build entries for an object.
+ *
+ * 3MF transforms are row-major 3×4 (`m11..m13 m21..m23 m31..m33 m41..m43`);
+ * the trailing m41/m42/m43 row carries the translation. Since stacking is a
+ * pure Z translation, the rotation/scale block is the identity matrix and
+ * only m43 changes per copy.
+ */
+function renderBuildItems(objectId: number, stack: ThreeMFOptions['stack']): string {
+  const count = stack && stack.count > 1 ? Math.floor(stack.count) : 1;
+  if (count === 1) {
+    return `    <item objectid="${objectId}" />\n`;
+  }
+
+  const stride = (stack?.zHeightMm ?? 0) + (stack?.spacingMm ?? 0);
+  let out = '';
+  for (let i = 0; i < count; i++) {
+    const dz = formatFloat(i * stride);
+    out += `    <item objectid="${objectId}" transform="1 0 0 0 1 0 0 0 1 0 0 ${dz}" />\n`;
+  }
+  return out;
+}
+
 function buildMultiObjectModelXML(
   objects: readonly {
     mesh: IndexedMesh;

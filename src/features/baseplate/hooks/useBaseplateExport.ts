@@ -40,13 +40,26 @@ const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
   '3mf': '.3mf',
 };
 
-function convertStlTo3mf(stlData: ArrayBuffer, name: string): Blob {
+function convertStlTo3mf(stlData: ArrayBuffer, name: string, stackCopies: number): Blob {
   const parseResult = parseSTLBinary(stlData);
   if (isErr(parseResult)) {
     throw new Error(getUserMessage(parseResult.error));
   }
   const { vertices, normals } = parseResult.value;
   const printSettings = useSettingsStore.getState().settings.printSettings;
+
+  // Stacked instances reference the same mesh translated along Z; compute the
+  // per-instance Z stride from the source mesh's bbox so each copy sits flush
+  // on top of the one below it. A degenerate mesh (zero Z extent) would
+  // produce a stride of 0 and silently overlap every copy at Z=0, so the
+  // option is suppressed in that case and the export degrades to a single
+  // instance instead.
+  const zHeight = meshZExtent(vertices);
+  const stack =
+    stackCopies > 1 && zHeight > 0
+      ? { count: stackCopies, zHeightMm: zHeight, spacingMm: 0 }
+      : undefined;
+
   return export3MF(vertices, normals, {
     name,
     printSettings: {
@@ -57,7 +70,21 @@ function convertStlTo3mf(stlData: ArrayBuffer, name: string): Blob {
       estimatedMinutes: 0,
       estimatedGrams: 0,
     },
+    stack,
   });
+}
+
+function meshZExtent(vertices: Float32Array): number {
+  if (vertices.length < 3) return 0;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  for (let i = 2; i < vertices.length; i += 3) {
+    const z = vertices[i];
+    if (z < minZ) minZ = z;
+    if (z > maxZ) maxZ = z;
+  }
+  const extent = maxZ - minZ;
+  return Number.isFinite(extent) && extent > 0 ? extent : 0;
 }
 
 export function useBaseplateExport(): UseBaseplateExportReturn {
@@ -87,6 +114,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
   const exportFileNameConfig = useBaseplatePageStore((s) => s.exportFileNameConfig);
   const exportProgress = useBaseplatePageStore((s) => s.exportProgress);
   const setExportProgress = useBaseplatePageStore((s) => s.setExportProgress);
+  const stackCopies = useBaseplatePageStore((s) => s.stackCopies);
   const [isExporting, setIsExporting] = useState(false);
 
   const hasSingleMesh = mesh !== null && mesh.vertices !== null && mesh.error === null;
@@ -164,7 +192,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             let data = uniqueExports[i];
 
             if (format === '3mf') {
-              const blob = convertStlTo3mf(data, `${baseNameNoExt}_${name}`);
+              const blob = convertStlTo3mf(data, `${baseNameNoExt}_${name}`, stackCopies);
               data = await blob.arrayBuffer();
             }
 
@@ -202,7 +230,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           // Single piece export
           if (format === '3mf') {
             const stlResult = await bridge.exportBaseplate(fullParams, 'stl');
-            const blob = convertStlTo3mf(stlResult.data, baseNameNoExt);
+            const blob = convertStlTo3mf(stlResult.data, baseNameNoExt, stackCopies);
             triggerDownload(blob, baseName);
           } else {
             const result = await bridge.exportBaseplate(fullParams, format);
@@ -236,6 +264,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       tiling,
       exportFileNameConfig,
       setExportProgress,
+      stackCopies,
     ]
   );
 

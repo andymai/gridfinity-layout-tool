@@ -20,6 +20,8 @@
   "baseplate.export.enableSplit": "Del opp i biter",
   "baseplate.export.splitBanner": "Bunnplaten overskrider {size}mm printflate — eksporteres som {count} deler i en ZIP med utskriftsguide",
   "baseplate.export.splitSuccess": "Bunnplate eksportert ({count} deler)",
+  "baseplate.export.stackCopies": "Kopier per del",
+  "baseplate.export.stackCopiesDescription": "Stable vertikale kopier av hver bunnplatedel i 3MF-en for slicer-batching.",
   "baseplate.export.success": "{format}-bunnplate eksportert",
   "baseplate.export.threeDModel": "3D-modell",
   "baseplate.export.threeDModelDescription": "Eksporter en printbar bunnplatemodell",

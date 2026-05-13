@@ -708,4 +708,88 @@ describe('threemfExporter', () => {
       expect(contentTypes).toContain('Extension="rels"');
     });
   });
+
+  // Issue #1642 — auto-stack copies in 3MF. The exporter uses 3MF instancing
+  // (single object, multiple <item> entries with Z translation) so file size
+  // stays constant regardless of copy count.
+  describe('stack option (issue #1642)', () => {
+    it('emits a single <item> when stack is omitted', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const xml = extractModelXML(build3MFBuffer(vertices, normals, { name: 'test' }));
+      const items = xml.match(/<item /g) ?? [];
+      expect(items).toHaveLength(1);
+      expect(xml).not.toContain('transform=');
+    });
+
+    it('emits a single <item> when stack.count is 1', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const xml = extractModelXML(
+        build3MFBuffer(vertices, normals, {
+          name: 'test',
+          stack: { count: 1, zHeightMm: 7, spacingMm: 0 },
+        })
+      );
+      expect((xml.match(/<item /g) ?? []).length).toBe(1);
+    });
+
+    it('emits N <item> entries with Z translation when stack.count > 1', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const xml = extractModelXML(
+        build3MFBuffer(vertices, normals, {
+          name: 'test',
+          stack: { count: 3, zHeightMm: 7, spacingMm: 0 },
+        })
+      );
+      const items = xml.match(/<item [^/]*\/>/g) ?? [];
+      expect(items).toHaveLength(3);
+      expect(items[0]).toContain('transform="1 0 0 0 1 0 0 0 1 0 0 0"');
+      expect(items[1]).toContain('transform="1 0 0 0 1 0 0 0 1 0 0 7"');
+      expect(items[2]).toContain('transform="1 0 0 0 1 0 0 0 1 0 0 14"');
+    });
+
+    it('adds spacingMm to each successive Z stride', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const xml = extractModelXML(
+        build3MFBuffer(vertices, normals, {
+          name: 'test',
+          stack: { count: 2, zHeightMm: 5, spacingMm: 0.5 },
+        })
+      );
+      const items = xml.match(/transform="[^"]+"/g) ?? [];
+      expect(items[0]).toBe('transform="1 0 0 0 1 0 0 0 1 0 0 0"');
+      expect(items[1]).toBe('transform="1 0 0 0 1 0 0 0 1 0 0 5.5"');
+    });
+
+    it('still references a single object even when stacking many copies', () => {
+      const { vertices, normals } = createTwoTriangles();
+      const xml = extractModelXML(
+        build3MFBuffer(vertices, normals, {
+          name: 'test',
+          stack: { count: 10, zHeightMm: 7, spacingMm: 0 },
+        })
+      );
+      // The mesh is emitted once even though there are 10 placements.
+      expect((xml.match(/<object /g) ?? []).length).toBe(1);
+      expect((xml.match(/<item /g) ?? []).length).toBe(10);
+    });
+
+    it('honors all build items when reading back as a slicer would', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const xml = extractModelXML(
+        build3MFBuffer(vertices, normals, {
+          name: 'test',
+          stack: { count: 4, zHeightMm: 7, spacingMm: 0 },
+        })
+      );
+      const objectIdMatch = xml.match(/<object id="(\d+)"/);
+      expect(objectIdMatch).not.toBeNull();
+      const objectId = objectIdMatch?.[1] ?? '';
+      const items = xml.match(/<item objectid="(\d+)"/g) ?? [];
+      expect(items.length).toBe(4);
+      // Every item references the single emitted object.
+      for (const item of items) {
+        expect(item).toContain(`objectid="${objectId}"`);
+      }
+    });
+  });
 });

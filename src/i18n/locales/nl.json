@@ -20,6 +20,8 @@
   "baseplate.export.enableSplit": "Opsplitsen in onderdelen",
   "baseplate.export.splitBanner": "Basisplaat overschrijdt {size}mm printbed — wordt geëxporteerd als {count} onderdelen in een ZIP met printgids",
   "baseplate.export.splitSuccess": "Basisplaat geëxporteerd ({count} onderdelen)",
+  "baseplate.export.stackCopies": "Kopieën per onderdeel",
+  "baseplate.export.stackCopiesDescription": "Stapelt verticale kopieën van elk basisplaat-onderdeel in het 3MF voor batchverwerking in de slicer.",
   "baseplate.export.success": "{format}-basisplaat succesvol geëxporteerd",
   "baseplate.export.threeDModel": "3D-model",
   "baseplate.export.threeDModelDescription": "Exporteer een printbaar basisplaatmodel",

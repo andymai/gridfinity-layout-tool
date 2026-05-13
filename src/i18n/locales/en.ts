@@ -1151,6 +1151,9 @@ const en: Record<string, string> = {
   'baseplate.export.threeDModel': '3D Model',
   'baseplate.export.threeDModelDescription': 'Export a printable baseplate model',
   'baseplate.export.dedupSuccess': 'Baseplate exported ({unique} unique pieces, {total} total)',
+  'baseplate.export.stackCopies': 'Copies per part',
+  'baseplate.export.stackCopiesDescription':
+    'Stack vertical copies of each baseplate piece in the 3MF for slicer batching.',
   'baseplate.generation.dedupProgress':
     'Refining {unique} unique pieces ({skipped} duplicates skipped)',
 

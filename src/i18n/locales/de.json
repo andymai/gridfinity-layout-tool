@@ -20,6 +20,8 @@
   "baseplate.export.enableSplit": "In Teile aufteilen",
   "baseplate.export.splitBanner": "Grundplatte überschreitet {size}mm Druckbett — wird als {count} Teile in einer ZIP mit Druckanleitung exportiert",
   "baseplate.export.splitSuccess": "Grundplatte exportiert ({count} Teile)",
+  "baseplate.export.stackCopies": "Kopien pro Teil",
+  "baseplate.export.stackCopiesDescription": "Stapelt vertikale Kopien jedes Grundplatten-Teils im 3MF zur Stapelverarbeitung im Slicer.",
   "baseplate.export.success": "{format}-Grundplatte erfolgreich exportiert",
   "baseplate.export.threeDModel": "3D-Modell",
   "baseplate.export.threeDModelDescription": "Ein druckbares Grundplatten-Modell exportieren",

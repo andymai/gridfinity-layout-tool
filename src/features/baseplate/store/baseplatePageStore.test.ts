@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useBaseplatePageStore } from './baseplatePageStore';
+import { useBaseplatePageStore, MAX_STACK_COPIES } from './baseplatePageStore';
 import type { PieceMeshEntry } from './baseplatePageStore';
 import type { BaseplateTiling } from '../types/tiling';
 
@@ -360,6 +360,36 @@ describe('baseplatePageStore', () => {
 
       expect(useBaseplatePageStore.getState().hoveredPieceLabel).toBeNull();
       expect(useBaseplatePageStore.getState().selectedPieceLabel).toBeNull();
+    });
+  });
+
+  describe('setStackCopies', () => {
+    it('defaults to 1', () => {
+      expect(useBaseplatePageStore.getState().stackCopies).toBe(1);
+    });
+
+    it('clamps below 1 to 1', () => {
+      useBaseplatePageStore.getState().setStackCopies(0);
+      expect(useBaseplatePageStore.getState().stackCopies).toBe(1);
+      useBaseplatePageStore.getState().setStackCopies(-5);
+      expect(useBaseplatePageStore.getState().stackCopies).toBe(1);
+    });
+
+    it('clamps above MAX_STACK_COPIES', () => {
+      useBaseplatePageStore.getState().setStackCopies(200);
+      expect(useBaseplatePageStore.getState().stackCopies).toBe(MAX_STACK_COPIES);
+    });
+
+    it('floors fractional values', () => {
+      useBaseplatePageStore.getState().setStackCopies(3.7);
+      expect(useBaseplatePageStore.getState().stackCopies).toBe(3);
+    });
+
+    it('falls back to 1 for non-finite input', () => {
+      useBaseplatePageStore.getState().setStackCopies(Number.NaN);
+      expect(useBaseplatePageStore.getState().stackCopies).toBe(1);
+      useBaseplatePageStore.getState().setStackCopies(Number.POSITIVE_INFINITY);
+      expect(useBaseplatePageStore.getState().stackCopies).toBe(1);
     });
   });
 });

@@ -20,6 +20,8 @@
   "baseplate.export.enableSplit": "Dividir en piezas",
   "baseplate.export.splitBanner": "La placa base excede la cama de impresión de {size}mm — se exportará como {count} piezas en un ZIP con guía de impresión",
   "baseplate.export.splitSuccess": "Placa base exportada ({count} piezas)",
+  "baseplate.export.stackCopies": "Copias por pieza",
+  "baseplate.export.stackCopiesDescription": "Apila copias verticales de cada pieza de placa base en el 3MF para procesar por lotes en el slicer.",
   "baseplate.export.success": "Placa base {format} exportada correctamente",
   "baseplate.export.threeDModel": "Modelo 3D",
   "baseplate.export.threeDModelDescription": "Exportar un modelo de placa base imprimible",

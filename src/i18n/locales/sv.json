@@ -948,6 +948,8 @@
   "baseplate.export.threeDModel": "3D-modell",
   "baseplate.export.threeDModelDescription": "Exportera en utskriftsbar bottenplattmodell",
   "baseplate.export.dedupSuccess": "Bottenplatta exporterad ({unique} unika delar, {total} totalt)",
+  "baseplate.export.stackCopies": "Kopior per del",
+  "baseplate.export.stackCopiesDescription": "Staplar vertikala kopior av varje bottenplattedel i 3MF-filen för batchhantering i slicern.",
   "baseplate.generation.dedupProgress": "Förfinar {unique} unika delar ({skipped} dubbletter hoppade över)",
   "halfBinBlocked.title": "Kan inte inaktivera halvfack-läge",
   "halfBinBlocked.message": "Vissa fack använder bråkmått. Ändra storlek eller radera dessa fack innan du inaktiverar halvfack-läget.",

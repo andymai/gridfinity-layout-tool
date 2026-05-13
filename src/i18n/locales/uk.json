@@ -948,6 +948,8 @@
   "baseplate.export.threeDModel": "3D-модель",
   "baseplate.export.threeDModelDescription": "Експортувати придатну для друку модель базової плити",
   "baseplate.export.dedupSuccess": "Базову плиту експортовано (унікальних частин: {unique}, усього: {total})",
+  "baseplate.export.stackCopies": "Копій на деталь",
+  "baseplate.export.stackCopiesDescription": "Накладає вертикальні копії кожної частини базової плити у 3MF для пакетної обробки в слайсері.",
   "baseplate.generation.dedupProgress": "Уточнення {unique} унікальних частин (пропущено дублікатів: {skipped})",
   "halfBinBlocked.title": "Не можна вимкнути режим напівбіна",
   "halfBinBlocked.message": "Деякі біни мають дробові розміри. Змініть їх розмір або видаліть, перш ніж вимикати режим напівбіна.",
