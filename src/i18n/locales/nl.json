@@ -11,6 +11,7 @@
   "baseplate.cornerRadiusTR": "Rechtsboven",
   "baseplate.cornerRadiusUnlink": "Per hoek",
   "baseplate.dovetails.invert": "Zwaluwstaarten omkeren",
+  "baseplate.preferIdenticalPieces": "Minder unieke onderdelen (draai om te passen)",
   "baseplate.editDimensions": "Basisplaatafmetingen bewerken",
   "baseplate.editDimensionsDepth": "Basisplaatdiepte in mm",
   "baseplate.editDimensionsWidth": "Basisplaatbreedte in mm",

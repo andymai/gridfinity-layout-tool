@@ -36,6 +36,13 @@ export interface BaseplatePiece {
   readonly fractionalEdgeX: 'start' | 'end' | 'none';
   readonly fractionalEdgeY: 'start' | 'end' | 'none';
   readonly edges: PieceEdges;
+  /**
+   * Rotation in degrees (0 or 180) to apply to the generated mesh when placing
+   * this piece. Non-zero only under `preferIdenticalPieces`: opposite-corner
+   * pieces share a canonical mesh and one of them is rendered 180°-rotated so
+   * its dovetails end up on the correct world-space sides.
+   */
+  readonly placementRotationDeg: 0 | 180;
 }
 
 /** Hint suggesting a padding reduction that would eliminate a split. */

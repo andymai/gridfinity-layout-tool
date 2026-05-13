@@ -52,6 +52,16 @@ export interface BaseplateParams {
   readonly baseplateDepth?: GridUnits;
   /** Swap tongue/groove convention on all join edges (default false). */
   readonly invertDovetails?: boolean;
+  /**
+   * When true, optimize for fewer unique part designs at the cost of more total
+   * parts: split sizes are chosen to maximize same-size groups, dovetail
+   * connectors become 180°-rotationally symmetric (M+F pair per cell boundary),
+   * and pieces that are 180° rotations of each other share a fingerprint.
+   *
+   * Trade-off: produces 2× connector features per join boundary (denser BREP),
+   * and may add 1–2 pieces compared to the piece-minimizing default.
+   */
+  readonly preferIdenticalPieces?: boolean;
   /** Uniform outer corner radius in mm (default: Gridfinity spec 2.5mm). */
   readonly cornerRadius?: Mm;
   /** Per-corner radius overrides. When set, takes precedence over cornerRadius. */

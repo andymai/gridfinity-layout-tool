@@ -102,6 +102,13 @@ export interface BaseplateParams {
   readonly connectorNubs?: boolean;
   /** Swap tongue/groove convention on all join edges (default false). */
   readonly invertDovetails?: boolean;
+  /**
+   * When true, dovetails on join edges use a 180°-rotationally symmetric
+   * pattern (M+F pair per cell boundary) so pieces of equivalent size that
+   * are 180° rotations of each other share an identical canonical mesh. The
+   * split planner also prefers max-uniform tilings when this is set.
+   */
+  readonly preferIdenticalPieces?: boolean;
   /** Remove center floor material, keeping only magnet pads. */
   readonly lightweight?: boolean;
   /** Uniform outer corner radius in mm. */

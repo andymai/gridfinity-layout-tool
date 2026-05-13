@@ -261,6 +261,9 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     paddingBack: mm(clampNumber(obj.paddingBack, 0, 100, 0)),
     ...(typeof obj.connectorNubs === 'boolean' ? { connectorNubs: obj.connectorNubs } : {}),
     ...(typeof obj.invertDovetails === 'boolean' ? { invertDovetails: obj.invertDovetails } : {}),
+    ...(typeof obj.preferIdenticalPieces === 'boolean'
+      ? { preferIdenticalPieces: obj.preferIdenticalPieces }
+      : {}),
     ...(typeof obj.lightweight === 'boolean' ? { lightweight: obj.lightweight } : {}),
     ...(typeof obj.syncWithLayout === 'boolean' ? { syncWithLayout: obj.syncWithLayout } : {}),
     ...(typeof obj.baseplateWidth === 'number'

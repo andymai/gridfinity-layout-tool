@@ -17,6 +17,12 @@ import { pieceToBaseplateParams } from './splitPlanner';
  * Uses `|` as field delimiter and `:` as key-value separator.
  * Field values must not contain these characters (safe for current
  * numeric, boolean, and short enum values in BaseplateParams).
+ *
+ * Under `preferIdenticalPieces`, the edge classification is canonicalized so
+ * pieces whose join/exterior layout is a 180° rotation of each other share a
+ * fingerprint. Combined with the doubled-dovetail connector pattern (which is
+ * itself 180° rotation invariant), this means A1 and C2 — and more generally
+ * any opposite-corner pair in the tiling — produce the same canonical mesh.
  */
 export function computePieceFingerprint(params: BaseplateParams): string {
   const parts = [
@@ -33,18 +39,18 @@ export function computePieceFingerprint(params: BaseplateParams): string {
     `fx:${params.fractionalEdgeX}`,
     `fy:${params.fractionalEdgeY}`,
     `cn:${params.connectorNubs ? 1 : 0}`,
-    `id:${params.invertDovetails ? 1 : 0}`,
+    // invertDovetails is ignored by buildConnectors in paired mode, so
+    // normalize it to 0 there to avoid false cache misses between sessions
+    // that differ only in the persisted invertDovetails value.
+    `id:${params.preferIdenticalPieces ? 0 : params.invertDovetails ? 1 : 0}`,
+    `ip:${params.preferIdenticalPieces ? 1 : 0}`,
     `lw:${params.lightweight ? 1 : 0}`,
     params.cornerRadius === undefined ? 'cr:default' : `cr:${params.cornerRadius}`,
   ];
 
   if (params.edges) {
-    parts.push(
-      `el:${params.edges.left}`,
-      `er:${params.edges.right}`,
-      `ef:${params.edges.front}`,
-      `eb:${params.edges.back}`
-    );
+    const e = params.preferIdenticalPieces ? canonicalizeEdges(params.edges) : params.edges;
+    parts.push(`el:${e.left}`, `er:${e.right}`, `ef:${e.front}`, `eb:${e.back}`);
   }
 
   if (params.cornerRadii) {
@@ -53,6 +59,27 @@ export function computePieceFingerprint(params: BaseplateParams): string {
   }
 
   return parts.join('|');
+}
+
+/**
+ * Canonicalize an edge layout under 180° rotation.
+ *
+ * A 180° rotation swaps left↔right and front↔back. Returns the
+ * lexicographically smaller of the two possible representations so both forms
+ * map to the same canonical string.
+ */
+function canonicalizeEdges(
+  edges: NonNullable<BaseplateParams['edges']>
+): NonNullable<BaseplateParams['edges']> {
+  const rotated = {
+    left: edges.right,
+    right: edges.left,
+    front: edges.back,
+    back: edges.front,
+  };
+  const a = `${edges.left}|${edges.right}|${edges.front}|${edges.back}`;
+  const b = `${rotated.left}|${rotated.right}|${rotated.front}|${rotated.back}`;
+  return a <= b ? edges : rotated;
 }
 
 /** A group of pieces sharing the same geometry fingerprint. */

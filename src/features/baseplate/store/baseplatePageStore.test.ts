@@ -205,6 +205,7 @@ describe('baseplatePageStore', () => {
       offsetY: 0,
       widthUnits: 5,
       depthUnits: 4,
+      placementRotationDeg: 0,
       mesh: {
         vertices: null,
         normals: null,
@@ -322,6 +323,7 @@ describe('baseplatePageStore', () => {
       offsetY: 0,
       widthUnits: 5,
       depthUnits: 4,
+      placementRotationDeg: 0,
       mesh: {
         vertices: null,
         normals: null,

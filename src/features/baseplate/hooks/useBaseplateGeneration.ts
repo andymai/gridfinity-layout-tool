@@ -58,6 +58,7 @@ function buildPieceMeshEntry(
     gridOffsetY: number;
     widthUnits: number;
     depthUnits: number;
+    placementRotationDeg: 0 | 180;
   },
   source: 'direct' | 'brep'
 ): PieceMeshEntry {
@@ -78,6 +79,7 @@ function buildPieceMeshEntry(
     offsetY: piece.gridOffsetY,
     widthUnits: piece.widthUnits,
     depthUnits: piece.depthUnits,
+    placementRotationDeg: piece.placementRotationDeg,
   };
 }
 
@@ -174,6 +176,7 @@ export function useBaseplateGeneration(): void {
     cornerRadius,
     cornerRadii,
     invertDovetails,
+    preferIdenticalPieces,
   } = useLayoutStore(
     useShallow((state) => {
       const bp = state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
@@ -199,6 +202,7 @@ export function useBaseplateGeneration(): void {
         cornerRadius: bp.cornerRadius,
         cornerRadii: bp.cornerRadii,
         invertDovetails: bp.invertDovetails,
+        preferIdenticalPieces: bp.preferIdenticalPieces,
       };
     })
   );
@@ -573,6 +577,7 @@ export function useBaseplateGeneration(): void {
     cornerRadius,
     cornerRadii,
     invertDovetails,
+    preferIdenticalPieces,
     runGeneration,
   ]);
 }

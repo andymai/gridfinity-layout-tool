@@ -11,6 +11,7 @@
   "baseplate.cornerRadiusTR": "Oben-rechts",
   "baseplate.cornerRadiusUnlink": "Pro Ecke",
   "baseplate.dovetails.invert": "Dovetails umkehren",
+  "baseplate.preferIdenticalPieces": "Weniger eindeutige Teile (zum Anpassen drehen)",
   "baseplate.editDimensions": "Grundplattenmaße bearbeiten",
   "baseplate.editDimensionsDepth": "Grundplattentiefe in mm",
   "baseplate.editDimensionsWidth": "Grundplattenbreite in mm",

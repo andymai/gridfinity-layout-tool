@@ -172,4 +172,117 @@ describe('groupPiecesByFingerprint', () => {
       expect(normalFps.has(fp)).toBe(false);
     }
   });
+
+  // ─── preferIdenticalPieces canonicalization (#1640) ──────────────────────
+
+  it('collapses opposite-corner pieces into a single group under the flag', () => {
+    // 10×8 → 2×2 grid. Without canonicalization there are 4 distinct edge
+    // layouts (one per corner). With the flag, A1≡C2 and A2≡C1 → 2 groups.
+    const params = makeParams({
+      width: 10,
+      depth: 8,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.pieces).toHaveLength(4);
+
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    expect(groups.size).toBe(2);
+
+    // Each group covers a diagonal pair.
+    for (const group of groups.values()) {
+      expect(group.indices).toHaveLength(2);
+    }
+  });
+
+  it('keeps the 4-corner pieces distinct when the flag is off (baseline)', () => {
+    const params = makeParams({ width: 10, depth: 8, preferIdenticalPieces: false });
+    const tiling = computeBaseplateTiling(params, 256);
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    expect(groups.size).toBe(4);
+  });
+
+  it('preferIdenticalPieces=false and =true produce different fingerprint sets', () => {
+    const off = makeParams({ width: 10, depth: 8 });
+    const on = makeParams({
+      width: 10,
+      depth: 8,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+    });
+    const groupsOff = groupPiecesByFingerprint(computeBaseplateTiling(off, 256).pieces, off);
+    const groupsOn = groupPiecesByFingerprint(computeBaseplateTiling(on, 256).pieces, on);
+
+    // Flag is part of the fingerprint, so the keysets must be disjoint even
+    // for pieces that happen to share an edge layout.
+    const offKeys = new Set([...groupsOff.keys()]);
+    for (const fp of groupsOn.keys()) {
+      expect(offKeys.has(fp)).toBe(false);
+    }
+  });
+
+  it('keeps opposite-corner pieces distinct under non-180°-symmetric cornerRadii', () => {
+    // buildSlabProfile only applies radii at EXTERIOR corners (interior
+    // corners are always squared). In a 2×2 split each corner piece has
+    // exactly one exterior corner, and canonical pairs sit at different
+    // exterior positions: A1↔B2 are (bl, tr) and A2↔B1 are (tl, br). When
+    // parent.bl ≠ parent.tr (or parent.tl ≠ parent.br), the two pieces
+    // need physically different radii at their single exterior corner, so
+    // they cannot share a generated mesh — fingerprints must diverge.
+    // (Greptile review #5 suggested canonicalizing cornerRadii in the
+    // fingerprint; that would force a shared mesh and put the wrong radius
+    // at one of the world corners.)
+    const params = makeParams({
+      width: 10,
+      depth: 8,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+      cornerRadii: { tl: 1, tr: 2, bl: 3, br: 4 },
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    expect(groups.size).toBe(4);
+  });
+
+  it('still collapses opposite-corner pieces when cornerRadii are 180°-symmetric', () => {
+    // 180°-symmetric: tl == br and tr == bl. Opposite corners get matching
+    // radii at their respective exterior positions, so the generated
+    // meshes are genuine rotations of each other and dedup correctly.
+    const params = makeParams({
+      width: 10,
+      depth: 8,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+      cornerRadii: { tl: 1, tr: 2, bl: 2, br: 1 },
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    expect(groups.size).toBe(2);
+  });
+
+  it('fingerprint ignores invertDovetails under preferIdenticalPieces', () => {
+    // buildConnectors discards invertDovetails in paired mode (the layout is
+    // symmetric by construction). Persisted differences in that flag must
+    // not split the BREP cache for otherwise-identical geometry.
+    const base = {
+      width: 3,
+      depth: 3,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+    } as const;
+    const fpInvertOff = computePieceFingerprint(makeParams({ ...base, invertDovetails: false }));
+    const fpInvertOn = computePieceFingerprint(makeParams({ ...base, invertDovetails: true }));
+    expect(fpInvertOff).toBe(fpInvertOn);
+  });
+
+  it('fingerprint still distinguishes invertDovetails when paired mode is off', () => {
+    const fpOff = computePieceFingerprint(
+      makeParams({ width: 3, depth: 3, connectorNubs: true, invertDovetails: false })
+    );
+    const fpOn = computePieceFingerprint(
+      makeParams({ width: 3, depth: 3, connectorNubs: true, invertDovetails: true })
+    );
+    expect(fpOff).not.toBe(fpOn);
+  });
 });

@@ -11,6 +11,7 @@
   "baseplate.cornerRadiusTR": "Haut-droit",
   "baseplate.cornerRadiusUnlink": "Par coin",
   "baseplate.dovetails.invert": "Inverser les queues d'aronde",
+  "baseplate.preferIdenticalPieces": "Moins de pièces uniques (pivoter pour ajuster)",
   "baseplate.editDimensions": "Modifier les dimensions de la plaque",
   "baseplate.editDimensionsDepth": "Profondeur de la plaque en mm",
   "baseplate.editDimensionsWidth": "Largeur de la plaque en mm",
