@@ -147,6 +147,7 @@
       "glob>minimatch": "^10.2.3",
       "flatted": "^3.4.2",
       "posthog-js>dompurify": "^3.4.0",
+      "protobufjs": "^7.5.8",
       "eslint-plugin-i18next>lodash": "^4.18.1",
       "vitest-axe>lodash-es": "^4.18.1",
       "picomatch@>=4.0.0 <4.0.4": "^4.0.4",
