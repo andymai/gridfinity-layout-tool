@@ -90,6 +90,8 @@ export function BaseplatePage() {
   const exportFileNameConfig = useBaseplatePageStore((s) => s.exportFileNameConfig);
   const setExportFileNameConfig = useBaseplatePageStore((s) => s.setExportFileNameConfig);
   const tiling = useBaseplatePageStore((s) => s.tiling);
+  const stackCopies = useBaseplatePageStore((s) => s.stackCopies);
+  const setStackCopies = useBaseplatePageStore((s) => s.setStackCopies);
 
   const [splitEnabled, setSplitEnabled] = useState(true);
 
@@ -258,6 +260,18 @@ export function BaseplatePage() {
                 checkboxLabel: t('baseplate.export.enableSplit'),
                 checked: splitEnabled,
                 onCheckedChange: setSplitEnabled,
+              }
+            : null
+        }
+        stackOptions={
+          activeFormat === '3mf'
+            ? {
+                label: t('baseplate.export.stackCopies'),
+                description: t('baseplate.export.stackCopiesDescription'),
+                value: stackCopies,
+                onChange: setStackCopies,
+                min: 1,
+                max: 20,
               }
             : null
         }
