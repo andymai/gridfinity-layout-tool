@@ -74,8 +74,8 @@ export function parseSvgString(svgString: string): Result<ParsedCutoutSpec[], Sv
     });
   }
 
-  const viewBox = parseViewBox(svgRoot);
-  const userUnitToMm = resolveUserUnitToMm(svgRoot, viewBox);
+  const { viewBox, hasExplicitViewBox } = parseViewBox(svgRoot);
+  const userUnitToMm = hasExplicitViewBox ? resolveUserUnitToMm(svgRoot, viewBox) : 1;
 
   const specs: ParsedCutoutSpec[] = [];
 
@@ -137,7 +137,7 @@ function resolveUserUnitToMm(svg: SVGSVGElement, viewBox: ViewBox): number {
   return (sx + sy) / 2;
 }
 
-function parseViewBox(svg: SVGSVGElement): ViewBox {
+function parseViewBox(svg: SVGSVGElement): { viewBox: ViewBox; hasExplicitViewBox: boolean } {
   const vb = svg.getAttribute('viewBox');
   if (vb) {
     const parts = vb
@@ -150,14 +150,22 @@ function parseViewBox(svg: SVGSVGElement): ViewBox {
       parts[2] > 0 &&
       parts[3] > 0
     ) {
-      return { minX: parts[0], minY: parts[1], width: parts[2], height: parts[3] };
+      return {
+        viewBox: { minX: parts[0], minY: parts[1], width: parts[2], height: parts[3] },
+        hasExplicitViewBox: true,
+      };
     }
   }
 
-  // Fallback to width/height attributes
+  // The fallback drops unit suffixes (parseFloat("1in") → 1), so it is not a
+  // valid basis for physical-unit scaling — callers must guard with
+  // hasExplicitViewBox before computing user-unit-to-mm scale.
   const w = parseFloat(svg.getAttribute('width') ?? '0');
   const h = parseFloat(svg.getAttribute('height') ?? '0');
-  return { minX: 0, minY: 0, width: w || 100, height: h || 100 };
+  return {
+    viewBox: { minX: 0, minY: 0, width: w || 100, height: h || 100 },
+    hasExplicitViewBox: false,
+  };
 }
 
 function convertElement(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCutoutSpec[] | null {

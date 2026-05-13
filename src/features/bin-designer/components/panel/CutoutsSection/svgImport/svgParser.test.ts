@@ -441,6 +441,21 @@ describe('parseSvgString', () => {
       expect(result.value[0].width).toBeCloseTo(99.975, 2);
     });
 
+    it('does not apply physical scaling when no explicit viewBox is present', () => {
+      // The fallback viewBox is parseFloat'd from width/height and silently
+      // drops unit suffixes — `width="1in"` would yield viewBox.width=1 and
+      // a wildly wrong 25.4 mm/unit scale. Skip scaling when there's no real
+      // viewBox to anchor it against.
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1in" height="1in">
+        <rect x="0" y="0" width="50" height="50"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      // Identity scale → cutout matches the source attribute (50 user units)
+      expect(result.value[0].width).toBe(50);
+    });
+
     it('falls back to identity when only one of width/height has units', () => {
       // Mixed/incomplete physical sizing → don't attempt to scale
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100" viewBox="0 0 200 200">
@@ -516,22 +531,22 @@ describe('parseSvgString', () => {
     });
   });
 
-  // Issue #1643 — "imports as a square" / "displays at wrong scale" caused
-  // partly by anchor-only bounds clipping curves that bow outward.
+  // Issue #1643 — anchor-only bounds clipped curves whose handles extend
+  // beyond the anchor extents. `pathPointsToSpec` now uses flattened bezier
+  // bounds so the spec bbox tracks the visible curve.
   describe('bezier bounds (issue #1643)', () => {
-    it('reflects outward-bowing curves in the bbox', () => {
-      // Path bows outward: anchors are at x=0 and x=10 but the curve apex
-      // reaches x≈12.5 via handles. Anchor-only bounds would say width=10.
+    it('reflects curve extent (not just anchors) in the bbox', () => {
+      // Two anchors at the same SVG y=50 with control handles pulled to
+      // y=30 and y=70. Anchor-only bounds → depth=0 → spec rejected as
+      // degenerate. Flattened bounds capture the curve dipping ~5 units
+      // off the anchor line in cutout space.
       const svg = svgWrap('<path d="M 0 50 C 25 30 25 70 50 50 Z"/>');
       const result = parseSvgString(svg);
       expect(isOk(result)).toBe(true);
       if (!isOk(result)) return;
       const spec = result.value[0];
       expect(spec.shape).toBe('path');
-      // Bbox y must extend below 30 (curve dips toward y=30 in SVG → top in cutout)
-      // Verify width matches anchor span (x ∈ [0,50])
       expect(spec.width).toBeCloseTo(50, 0);
-      // Depth grows past anchor span (anchor y=50 only) due to curve reach
       expect(spec.depth).toBeGreaterThan(0);
     });
   });

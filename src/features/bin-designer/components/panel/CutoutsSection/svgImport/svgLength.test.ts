@@ -66,4 +66,9 @@ describe('parseSvgLengthMm', () => {
   it('handles scientific notation', () => {
     expect(parseSvgLengthMm('1e2mm')).toBe(100);
   });
+
+  it('accepts an explicit + sign (SVG/CSS number grammar)', () => {
+    expect(parseSvgLengthMm('+100mm')).toBe(100);
+    expect(parseSvgLengthMm('+2in')).toBeCloseTo(50.8, 5);
+  });
 });

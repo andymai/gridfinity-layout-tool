@@ -20,7 +20,7 @@ const PHYSICAL_UNIT_TO_MM: Record<PhysicalUnit, number> = {
   q: 0.25,
 };
 
-const LENGTH_RE = /^(-?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*([a-zA-Z%]*)$/;
+const LENGTH_RE = /^([-+]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s*([a-zA-Z%]*)$/;
 
 function isPhysicalUnit(unit: string): unit is PhysicalUnit {
   return unit in PHYSICAL_UNIT_TO_MM;
