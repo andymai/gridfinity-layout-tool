@@ -116,18 +116,25 @@ export function parseSvgString(svgString: string): Result<ParsedCutoutSpec[], Sv
  * Returns 1 (identity) unless the SVG declares physical dimensions in real
  * units (mm, cm, in, pt, pc, Q). Without explicit units, user-units are
  * treated as 1mm — preserving the import behavior callers historically relied on.
+ *
+ * Genuinely non-square SVGs (e.g. width="200mm" height="100mm" viewBox 200×200)
+ * also fall back to identity: a single uniform scalar can't honor non-uniform
+ * stretching without distorting circles and rotated shapes, so importing at
+ * 1:1 user units is the predictable choice.
  */
+const NON_SQUARE_TOLERANCE = 0.005;
+
 function resolveUserUnitToMm(svg: SVGSVGElement, viewBox: ViewBox): number {
   const physicalWidth = parseSvgLengthMm(svg.getAttribute('width'));
   const physicalHeight = parseSvgLengthMm(svg.getAttribute('height'));
   if (physicalWidth === null || physicalHeight === null) return 1;
 
-  // Average sx and sy so minor non-uniform aspect ratios resolve to a single
-  // scalar. Real-world SVGs from drawing tools occasionally drift by < 0.1%.
   const sx = physicalWidth / viewBox.width;
   const sy = physicalHeight / viewBox.height;
-  const scale = (sx + sy) / 2;
-  return Number.isFinite(scale) && scale > 0 ? scale : 1;
+  if (!Number.isFinite(sx) || !Number.isFinite(sy) || sx <= 0 || sy <= 0) return 1;
+
+  if (Math.abs(sx - sy) / Math.max(sx, sy) > NON_SQUARE_TOLERANCE) return 1;
+  return (sx + sy) / 2;
 }
 
 function parseViewBox(svg: SVGSVGElement): ViewBox {

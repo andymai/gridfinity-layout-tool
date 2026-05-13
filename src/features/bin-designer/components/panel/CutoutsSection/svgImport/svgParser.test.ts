@@ -414,6 +414,33 @@ describe('parseSvgString', () => {
       expect(spec.depth).toBeCloseTo(50, 1);
     });
 
+    it('falls back to identity for genuinely non-square SVGs (avoids silent distortion)', () => {
+      // 200mm × 100mm with viewBox 200x200 → sx=1, sy=0.5 — uniform scaling
+      // would silently shrink the canvas, so we keep user units instead.
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200mm" height="100mm" viewBox="0 0 200 200">
+        <rect x="0" y="0" width="100" height="100"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      // Identity scale → cutout matches the source attribute (100 user units)
+      expect(result.value[0].width).toBe(100);
+      expect(result.value[0].depth).toBe(100);
+    });
+
+    it('absorbs sub-percent sx/sy drift from real-world exports as a single scalar', () => {
+      // Tools occasionally export 100mm × 99.95mm with viewBox 100x100 due to
+      // float rounding — that's still effectively uniform, so apply the average.
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="99.95mm" viewBox="0 0 100 100">
+        <rect x="0" y="0" width="100" height="100"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      // (1 + 0.9995) / 2 = 0.99975 ≈ 1
+      expect(result.value[0].width).toBeCloseTo(99.975, 2);
+    });
+
     it('falls back to identity when only one of width/height has units', () => {
       // Mixed/incomplete physical sizing → don't attempt to scale
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100" viewBox="0 0 200 200">
