@@ -15,6 +15,7 @@ import type { ParsedCutoutSpec } from './types';
 import type { Matrix } from './svgTransform';
 import type { ViewBox } from './types';
 import { applyMatrix, isIdentityOrTranslate, transformPoint } from './svgTransform';
+import { getPathBounds } from '../pathGeometry';
 
 export function wrapSingle(spec: ParsedCutoutSpec | null): ParsedCutoutSpec[] | null {
   return spec ? [spec] : null;
@@ -69,22 +70,18 @@ export function pointsToPathSpec(
   return pathPointsToSpec(pathPoints);
 }
 
-/** Compute bounds from anchor points (does not account for bezier handle extents). */
+/**
+ * Build a path spec with bounds from the flattened bezier curve.
+ *
+ * Anchor-only bounds clip cutouts whose curves bow outward beyond their
+ * anchors (logos, organic shapes), producing a too-small bbox that breaks
+ * selection handles and downstream geometry placement. `getPathBounds`
+ * flattens the curve, matching what the renderer / vertex editor compute.
+ */
 export function pathPointsToSpec(pathPoints: PathPoint[]): ParsedCutoutSpec | null {
   if (pathPoints.length < 2) return null;
 
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-
-  for (const pt of pathPoints) {
-    if (pt.x < minX) minX = pt.x;
-    if (pt.y < minY) minY = pt.y;
-    if (pt.x > maxX) maxX = pt.x;
-    if (pt.y > maxY) maxY = pt.y;
-  }
-
+  const { minX, minY, maxX, maxY } = getPathBounds(pathPoints);
   const width = maxX - minX;
   const depth = maxY - minY;
 

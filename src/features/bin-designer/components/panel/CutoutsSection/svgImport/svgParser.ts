@@ -27,6 +27,8 @@ import {
   wrapSingle,
 } from './svgConvertShapes';
 import { convertPath } from './svgConvertPath';
+import { parseSvgLengthMm } from './svgLength';
+import { scaleParsedSpec } from './svgScaleSpec';
 
 export type { ViewBox } from './types';
 
@@ -73,6 +75,7 @@ export function parseSvgString(svgString: string): Result<ParsedCutoutSpec[], Sv
   }
 
   const viewBox = parseViewBox(svgRoot);
+  const userUnitToMm = resolveUserUnitToMm(svgRoot, viewBox);
 
   const specs: ParsedCutoutSpec[] = [];
 
@@ -100,7 +103,31 @@ export function parseSvgString(svgString: string): Result<ParsedCutoutSpec[], Sv
     });
   }
 
+  if (userUnitToMm !== 1) {
+    return ok(specs.map((s) => scaleParsedSpec(s, userUnitToMm)));
+  }
+
   return ok(specs);
+}
+
+/**
+ * Compute the user-unit → mm scale factor.
+ *
+ * Returns 1 (identity) unless the SVG declares physical dimensions in real
+ * units (mm, cm, in, pt, pc, Q). Without explicit units, user-units are
+ * treated as 1mm — preserving the import behavior callers historically relied on.
+ */
+function resolveUserUnitToMm(svg: SVGSVGElement, viewBox: ViewBox): number {
+  const physicalWidth = parseSvgLengthMm(svg.getAttribute('width'));
+  const physicalHeight = parseSvgLengthMm(svg.getAttribute('height'));
+  if (physicalWidth === null || physicalHeight === null) return 1;
+
+  // Average sx and sy so minor non-uniform aspect ratios resolve to a single
+  // scalar. Real-world SVGs from drawing tools occasionally drift by < 0.1%.
+  const sx = physicalWidth / viewBox.width;
+  const sy = physicalHeight / viewBox.height;
+  const scale = (sx + sy) / 2;
+  return Number.isFinite(scale) && scale > 0 ? scale : 1;
 }
 
 function parseViewBox(svg: SVGSVGElement): ViewBox {
