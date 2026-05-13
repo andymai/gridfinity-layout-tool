@@ -617,42 +617,36 @@ function palindromizeWithEdges(
   if (sizes.length <= 1) return [...sizes];
 
   const n = sizes.length;
-  const sorted = [...sizes].sort((a, b) => b - a);
-  const used = new Array<boolean>(n).fill(false);
-  const result = new Array<number>(n);
-  const firstUnused = (from = 0, skip = -1): number => {
-    for (let k = from; k < n; k++) if (!used[k] && k !== skip) return k;
-    return -1;
-  };
-  const lastUnused = (skip: number): number => {
-    for (let k = n - 1; k >= 0; k--) if (!used[k] && k !== skip) return k;
-    return -1;
-  };
-  const take = (a: number, b: number, l: number, r: number): void => {
-    used[a] = used[b] = true;
-    result[l] = sorted[a];
-    result[r] = sorted[b];
-  };
 
+  // Collect every value that can participate in a true palindromic pair (it
+  // appears 2+ times in the multiset). What's left over after pairing — the
+  // odd-count remainders — must occupy middle slots since no slot at the
+  // outer edges can be the half of a matching pair. This finds palindromes
+  // even when the unique value is the largest: [5, 4, 4] → pairs [(4,4)],
+  // leftovers [5] → result [4, 5, 4].
+  const freq = new Map<number, number>();
+  for (const s of sizes) freq.set(s, (freq.get(s) ?? 0) + 1);
+  const pairs: number[] = [];
+  const leftovers: number[] = [];
+  for (const [value, count] of freq) {
+    for (let i = 0; i < Math.floor(count / 2); i++) pairs.push(value);
+    if (count % 2 === 1) leftovers.push(value);
+  }
+  pairs.sort((a, b) => b - a); // largest pairs at outermost slots
+  leftovers.sort((a, b) => b - a);
+
+  const result = new Array<number>(n);
   let left = 0;
   let right = n - 1;
-  while (left < right) {
-    const i1 = firstUnused();
-    if (i1 < 0) break;
-    // Prefer a true palindromic pair (equal values); otherwise pair largest
-    // unused with smallest unused so asymmetry concentrates in one slot.
-    let i2 = -1;
-    for (let k = i1 + 1; k < n; k++) {
-      if (!used[k] && sorted[k] === sorted[i1]) {
-        i2 = k;
-        break;
-      }
-    }
-    const partner = i2 >= 0 ? i2 : lastUnused(i1);
-    if (partner < 0) break;
-    take(i1, partner, left++, right--);
+  for (const value of pairs) {
+    if (left >= right) break;
+    result[left++] = value;
+    result[right--] = value;
   }
-  if (left === right) result[left] = sorted[firstUnused()];
+  for (const value of leftovers) {
+    if (left > right) break;
+    result[left++] = value;
+  }
 
   // Fall back to the baseline sort if the palindromic layout would overrun a
   // first/last edge cap OR a middle cap (middle slots can have stricter caps

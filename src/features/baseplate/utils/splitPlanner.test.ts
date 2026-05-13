@@ -868,6 +868,27 @@ describe('preferIdenticalPieces', () => {
     expect(widths[0]).toBe(widths[widths.length - 1]);
   });
 
+  it('palindromizes when the unique value is the largest ([5, 4, 4] → [4, 5, 4])', () => {
+    // 13u wide → 3 pieces, distribution [5, 4, 4]. A greedy "pair largest
+    // first" misses [4, 5, 4] because 5 has no equal partner. The frequency-
+    // count algorithm picks the available pair (4, 4) for outer slots and
+    // puts the unique 5 in the middle.
+    const params = makeParams({
+      width: 13,
+      depth: 4,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    const widths = tiling.pieces
+      .filter((p) => p.row === 0)
+      .sort((a, b) => a.col - b.col)
+      .map((p) => p.widthUnits);
+
+    expect(widths).toEqual([4, 5, 4]);
+  });
+
   it('marks opposite-corner pieces with placementRotationDeg=180', () => {
     // 10×8 → 2×2 grid. Under the flag, A1≡C2 share canonical edges and one is
     // rendered rotated 180°.
