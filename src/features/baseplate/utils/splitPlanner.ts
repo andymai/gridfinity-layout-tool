@@ -362,7 +362,10 @@ export function computeBaseplateTiling(
     invertDovetails,
     preferIdenticalPieces,
   } = params;
-  const palindromic = !!preferIdenticalPieces;
+  // preferIdenticalPieces only takes effect when connectors are enabled — the
+  // UI checkbox is hidden under that gate, but the stored flag persists, so
+  // gate here too to keep behavior aligned with the visible control.
+  const palindromic = !!preferIdenticalPieces && !!connectorNubs;
 
   // Pieces with dovetail connectors include male tongue protrusions in their bbox
   // (#1498). The planner reserves bed budget for those tongues so the resulting
@@ -488,31 +491,24 @@ export function pieceToBaseplateParams(
   piece: BaseplatePiece,
   parentParams: BaseplateParams
 ): BaseplateParams {
-  // Determine fractional edge — if this piece has no fraction, default to 'end'
-  const fractionalEdgeX = piece.fractionalEdgeX === 'none' ? 'end' : piece.fractionalEdgeX;
-  const fractionalEdgeY = piece.fractionalEdgeY === 'none' ? 'end' : piece.fractionalEdgeY;
+  // Default fractionalEdge to 'end' when this piece has no fraction.
+  const fracX: 'start' | 'end' = piece.fractionalEdgeX === 'none' ? 'end' : piece.fractionalEdgeX;
+  const fracY: 'start' | 'end' = piece.fractionalEdgeY === 'none' ? 'end' : piece.fractionalEdgeY;
 
   // Under preferIdenticalPieces, generate from the canonical (180°-equivalent)
-  // edge layout and rotate at placement so pieces that are rotations of each
-  // other reuse a single mesh. Padding is rotated alongside so the same
-  // canonical mesh carries padding on the correct sides post-rotation.
-  const canonical =
-    parentParams.preferIdenticalPieces && piece.placementRotationDeg === 180
-      ? {
-          edges: rotateEdges180(piece.edges),
-          paddingLeft: piece.paddingRight,
-          paddingRight: piece.paddingLeft,
-          paddingFront: piece.paddingBack,
-          paddingBack: piece.paddingFront,
-        }
-      : {
-          edges: piece.edges,
-          paddingLeft: piece.paddingLeft,
-          paddingRight: piece.paddingRight,
-          paddingFront: piece.paddingFront,
-          paddingBack: piece.paddingBack,
-        };
-
+  // form and apply the rotation at placement so opposite-corner pieces share
+  // one mesh. EVERY positionally-indexed field must rotate alongside edges:
+  // padding (L↔R, F↔B), fractionalEdge (start↔end), per-corner radii (tl↔br,
+  // tr↔bl — buildSlabProfile maps tl to left+back exterior and br to
+  // right+front exterior, which the 180° rotation swaps).
+  const rot = parentParams.preferIdenticalPieces && piece.placementRotationDeg === 180;
+  // Only flip fractionalEdge when this piece actually has a fractional sliver
+  // on that axis. Non-fractional pieces default to 'end' regardless of
+  // orientation — flipping them would diverge from their canonical-pair
+  // partner's fingerprint without changing any geometry.
+  const flipX = rot && piece.fractionalEdgeX !== 'none';
+  const flipY = rot && piece.fractionalEdgeY !== 'none';
+  const pr = parentParams.cornerRadii;
   return {
     width: piece.widthUnits,
     depth: piece.depthUnits,
@@ -520,20 +516,24 @@ export function pieceToBaseplateParams(
     magnetHoles: parentParams.magnetHoles,
     magnetDiameter: parentParams.magnetDiameter,
     magnetDepth: parentParams.magnetDepth,
-    paddingLeft: canonical.paddingLeft,
-    paddingRight: canonical.paddingRight,
-    paddingFront: canonical.paddingFront,
-    paddingBack: canonical.paddingBack,
-    fractionalEdgeX,
-    fractionalEdgeY,
-    edges: canonical.edges,
+    paddingLeft: rot ? piece.paddingRight : piece.paddingLeft,
+    paddingRight: rot ? piece.paddingLeft : piece.paddingRight,
+    paddingFront: rot ? piece.paddingBack : piece.paddingFront,
+    paddingBack: rot ? piece.paddingFront : piece.paddingBack,
+    fractionalEdgeX: flipX ? flip(fracX) : fracX,
+    fractionalEdgeY: flipY ? flip(fracY) : fracY,
+    edges: rot ? rotateEdges180(piece.edges) : piece.edges,
     connectorNubs: parentParams.connectorNubs,
     invertDovetails: parentParams.invertDovetails,
     preferIdenticalPieces: parentParams.preferIdenticalPieces,
     lightweight: parentParams.lightweight,
     cornerRadius: parentParams.cornerRadius,
-    cornerRadii: parentParams.cornerRadii,
+    cornerRadii: rot && pr ? { tl: pr.br, tr: pr.bl, bl: pr.tr, br: pr.tl } : pr,
   };
+}
+
+function flip(side: 'start' | 'end'): 'start' | 'end' {
+  return side === 'start' ? 'end' : 'start';
 }
 
 /** Swap left↔right and front↔back, the edge layout under a 180° rotation. */

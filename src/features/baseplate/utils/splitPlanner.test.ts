@@ -851,7 +851,12 @@ describe('preferIdenticalPieces', () => {
     // asymmetric distribution like [5, 5, 4]; preferIdenticalPieces should
     // rearrange to a palindrome [4, 5, 5] is also asymmetric — but [5, 4, 5]
     // or [4, 6, 4] makes the two corner pieces match.
-    const params = makeParams({ width: 14, depth: 4, preferIdenticalPieces: true });
+    const params = makeParams({
+      width: 14,
+      depth: 4,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+    });
     const tiling = computeBaseplateTiling(params, 256);
 
     const widths = tiling.pieces
@@ -866,7 +871,12 @@ describe('preferIdenticalPieces', () => {
   it('marks opposite-corner pieces with placementRotationDeg=180', () => {
     // 10×8 → 2×2 grid. Under the flag, A1≡C2 share canonical edges and one is
     // rendered rotated 180°.
-    const params = makeParams({ width: 10, depth: 8, preferIdenticalPieces: true });
+    const params = makeParams({
+      width: 10,
+      depth: 8,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+    });
     const tiling = computeBaseplateTiling(params, 256);
 
     expect(tiling.pieces).toHaveLength(4);
@@ -898,6 +908,21 @@ describe('preferIdenticalPieces', () => {
     }
   });
 
+  it('leaves placementRotationDeg=0 when the flag is on but connectorNubs is off', () => {
+    // The UI checkbox is hidden under connectorNubs, but the persisted flag
+    // would otherwise apply rotation invisibly. Gate must short-circuit.
+    const params = makeParams({
+      width: 10,
+      depth: 8,
+      connectorNubs: false,
+      preferIdenticalPieces: true,
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    for (const piece of tiling.pieces) {
+      expect(piece.placementRotationDeg).toBe(0);
+    }
+  });
+
   it('pieceToBaseplateParams swaps padding on 180° pieces so the canonical mesh receives padding on the correct sides', () => {
     const parent = makeParams({
       width: 10,
@@ -906,6 +931,7 @@ describe('preferIdenticalPieces', () => {
       paddingRight: 7,
       paddingFront: 4,
       paddingBack: 9,
+      connectorNubs: true,
       preferIdenticalPieces: true,
     });
     const tiling = computeBaseplateTiling(parent, 256);
@@ -922,4 +948,69 @@ describe('preferIdenticalPieces', () => {
     expect(params.paddingFront).toBe(rotated.paddingBack);
     expect(params.paddingBack).toBe(rotated.paddingFront);
   });
+
+  it('pieceToBaseplateParams swaps cornerRadii (tl↔br, tr↔bl) on 180° pieces', () => {
+    // buildSlabProfile maps tl→(left+back exterior) and br→(right+front
+    // exterior); a 180° rotation swaps both pairs, so cornerRadii must rotate
+    // with edges or asymmetric radii land at the wrong corners.
+    const parent = makeParams({
+      width: 10,
+      depth: 8,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+      cornerRadii: { tl: 1, tr: 2, bl: 3, br: 4 },
+    });
+    const tiling = computeBaseplateTiling(parent, 256);
+
+    const rotated = tiling.pieces.find((p) => p.placementRotationDeg === 180);
+    const straight = tiling.pieces.find((p) => p.placementRotationDeg === 0);
+    if (!rotated || !straight) throw new Error('expected both rotated and unrotated pieces');
+
+    const rotatedParams = pieceToBaseplateParams(rotated, parent);
+    const straightParams = pieceToBaseplateParams(straight, parent);
+
+    expect(straightParams.cornerRadii).toEqual({ tl: 1, tr: 2, bl: 3, br: 4 });
+    expect(rotatedParams.cornerRadii).toEqual({ tl: 4, tr: 3, bl: 2, br: 1 });
+  });
+
+  it('pieceToBaseplateParams flips fractionalEdgeX on 180° fractional pieces', () => {
+    // 'start' ↔ 'end' under 180° rotation — otherwise the canonical mesh's
+    // half-unit sliver ends up on the wrong world side after placement.
+    // Non-fractional pieces keep the canonical 'end' default regardless of
+    // rotation (so their fingerprint matches their canonical-pair partner).
+    const parent = makeParams({
+      width: 10.5,
+      depth: 4,
+      fractionalEdgeX: 'end',
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+    });
+    const tiling = computeBaseplateTiling(parent, 256);
+
+    const fractional = tiling.pieces.find((p) => p.fractionalEdgeX !== 'none');
+    const integer = tiling.pieces.find((p) => p.fractionalEdgeX === 'none');
+    if (!fractional || !integer) {
+      throw new Error('expected both fractional and integer pieces in tiling');
+    }
+
+    const fractionalParams = pieceToBaseplateParams(fractional, parent);
+    const integerParams = pieceToBaseplateParams(integer, parent);
+
+    // Non-fractional pieces always carry the 'end' default — irrelevant for
+    // geometry, but kept consistent for canonical fingerprinting.
+    expect(integerParams.fractionalEdgeX).toBe('end');
+
+    // Fractional piece flips iff it ended up rotated.
+    if (fractional.placementRotationDeg === 180) {
+      expect(fractionalParams.fractionalEdgeX).toBe(flip(fractional.fractionalEdgeX));
+    } else {
+      expect(fractionalParams.fractionalEdgeX).toBe(fractional.fractionalEdgeX);
+    }
+  });
 });
+
+function flip(side: 'start' | 'end' | 'none'): 'start' | 'end' | 'none' {
+  if (side === 'start') return 'end';
+  if (side === 'end') return 'start';
+  return 'none';
+}
