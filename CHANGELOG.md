@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.80.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.79.1...gridfinity-layout-tool-v4.80.0) (2026-05-13)
+
+
+### Features
+
+* **baseplate:** auto-stack copies of each part in 3MF export ([#1646](https://github.com/andymai/gridfinity-layout-tool/issues/1646)) ([26e9c9b](https://github.com/andymai/gridfinity-layout-tool/commit/26e9c9b154e91360d10d1ad43975afa85e4f7750))
+
 ## [4.79.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.79.0...gridfinity-layout-tool-v4.79.1) (2026-05-13)
 
 
