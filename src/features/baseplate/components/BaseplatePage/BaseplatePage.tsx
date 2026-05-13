@@ -23,7 +23,7 @@ import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
-import { useBaseplatePageStore } from '../../store/baseplatePageStore';
+import { useBaseplatePageStore, MAX_STACK_COPIES } from '../../store/baseplatePageStore';
 import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNaming';
 import { buildFullParams } from '../../utils/buildFullParams';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
@@ -271,7 +271,7 @@ export function BaseplatePage() {
                 value: stackCopies,
                 onChange: setStackCopies,
                 min: 1,
-                max: 20,
+                max: MAX_STACK_COPIES,
               }
             : null
         }
