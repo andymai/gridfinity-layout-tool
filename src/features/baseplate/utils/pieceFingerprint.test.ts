@@ -260,4 +260,29 @@ describe('groupPiecesByFingerprint', () => {
     const groups = groupPiecesByFingerprint(tiling.pieces, params);
     expect(groups.size).toBe(2);
   });
+
+  it('fingerprint ignores invertDovetails under preferIdenticalPieces', () => {
+    // buildConnectors discards invertDovetails in paired mode (the layout is
+    // symmetric by construction). Persisted differences in that flag must
+    // not split the BREP cache for otherwise-identical geometry.
+    const base = {
+      width: 3,
+      depth: 3,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+    } as const;
+    const fpInvertOff = computePieceFingerprint(makeParams({ ...base, invertDovetails: false }));
+    const fpInvertOn = computePieceFingerprint(makeParams({ ...base, invertDovetails: true }));
+    expect(fpInvertOff).toBe(fpInvertOn);
+  });
+
+  it('fingerprint still distinguishes invertDovetails when paired mode is off', () => {
+    const fpOff = computePieceFingerprint(
+      makeParams({ width: 3, depth: 3, connectorNubs: true, invertDovetails: false })
+    );
+    const fpOn = computePieceFingerprint(
+      makeParams({ width: 3, depth: 3, connectorNubs: true, invertDovetails: true })
+    );
+    expect(fpOff).not.toBe(fpOn);
+  });
 });
