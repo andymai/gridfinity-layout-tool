@@ -579,7 +579,7 @@ function reorderForDisplay(
   if (fractionAtStart && fracIdx >= 0 && sizes[fracIdx] <= maxFirst) {
     const rest = sizes.filter((_, i) => i !== fracIdx);
     const inner = preferIdenticalPieces
-      ? palindromizeWithEdges(rest, maxMiddle, maxLast)
+      ? palindromizeWithEdges(rest, maxMiddle, maxLast, maxMiddle)
       : sortDescWithEdges(rest, maxMiddle, maxLast);
     return [sizes[fracIdx], ...inner];
   }
@@ -588,13 +588,13 @@ function reorderForDisplay(
   if (!fractionAtStart && fracIdx >= 0 && sizes[fracIdx] <= maxLast) {
     const rest = sizes.filter((_, i) => i !== fracIdx);
     const inner = preferIdenticalPieces
-      ? palindromizeWithEdges(rest, maxFirst, maxMiddle)
+      ? palindromizeWithEdges(rest, maxFirst, maxMiddle, maxMiddle)
       : sortDescWithEdges(rest, maxFirst, maxMiddle);
     return [...inner, sizes[fracIdx]];
   }
 
   if (preferIdenticalPieces) {
-    return palindromizeWithEdges(sizes, maxFirst, maxLast);
+    return palindromizeWithEdges(sizes, maxFirst, maxLast, maxMiddle);
   }
 
   return sortDescWithEdges(sizes, maxFirst, maxLast);
@@ -611,7 +611,8 @@ function reorderForDisplay(
 function palindromizeWithEdges(
   sizes: readonly number[],
   maxFirst: number,
-  maxLast: number
+  maxLast: number,
+  maxMiddle: number
 ): number[] {
   if (sizes.length <= 1) return [...sizes];
 
@@ -654,8 +655,14 @@ function palindromizeWithEdges(
   if (left === right) result[left] = sorted[firstUnused()];
 
   // Fall back to the baseline sort if the palindromic layout would overrun a
-  // first/last edge cap — the fitting checker would otherwise reject the tile.
-  if (result[0] > maxFirst || result[n - 1] > maxLast) {
+  // first/last edge cap OR a middle cap (middle slots can have stricter caps
+  // than edges when both join sides claim tongue protrusion — only matters
+  // for non-standard small gridUnitMm where floor(bed/gu) > floor((bed-P)/gu)).
+  const middleOverflow = (): boolean => {
+    for (let i = 1; i < n - 1; i++) if (result[i] > maxMiddle) return true;
+    return false;
+  };
+  if (result[0] > maxFirst || result[n - 1] > maxLast || middleOverflow()) {
     return sortDescWithEdges([...sizes], maxFirst, maxLast);
   }
   return result;
