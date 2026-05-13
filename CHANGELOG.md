@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.81.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.80.0...gridfinity-layout-tool-v4.81.0) (2026-05-13)
+
+
+### Features
+
+* **baseplate:** rotational-symmetric split pieces ([#1648](https://github.com/andymai/gridfinity-layout-tool/issues/1648)) ([bdd00c0](https://github.com/andymai/gridfinity-layout-tool/commit/bdd00c0677527d0c4263b5a8112a322a85720aab))
+
 ## [4.80.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.79.1...gridfinity-layout-tool-v4.80.0) (2026-05-13)
 
 
