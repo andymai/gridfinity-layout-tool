@@ -356,4 +356,198 @@ describe('parseSvgString', () => {
       expect(centerY).toBeCloseTo(50, 0);
     });
   });
+
+  // Issue #1643 — "wrong scale" failure mode.
+  // SVGs from drawing tools (Inkscape, Illustrator) commonly carry physical
+  // dimensions (mm/in) with a much larger viewBox; importing them at 1:1
+  // produced cutouts orders of magnitude too large.
+  describe('physical units (issue #1643)', () => {
+    it('scales user units → mm when SVG declares physical width/height in mm', () => {
+      // Inkscape-style: 100mm canvas with 800-unit viewBox (10x oversampling)
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100mm" viewBox="0 0 800 800">
+        <rect x="0" y="0" width="80" height="80"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      // 80 user units * (100mm / 800) = 10mm
+      expect(result.value[0].width).toBeCloseTo(10, 5);
+      expect(result.value[0].depth).toBeCloseTo(10, 5);
+    });
+
+    it('scales when SVG declares dimensions in inches', () => {
+      // 1in = 25.4mm; viewBox 100x100 → user-unit = 0.254mm
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1in" height="1in" viewBox="0 0 100 100">
+        <rect x="0" y="0" width="50" height="50"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      expect(result.value[0].width).toBeCloseTo(12.7, 3);
+    });
+
+    it('keeps unitless width/height at 1:1 (preserves historical behavior)', () => {
+      // Without physical units we can't know the intended physical scale —
+      // current contract is 1 user unit = 1 mm, leave as-is.
+      const result = parseSvgString(svgWrap('<rect x="0" y="0" width="42" height="42"/>'));
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value[0].width).toBe(42);
+    });
+
+    it('scales path point coordinates and handles', () => {
+      // Real curves must scale uniformly so the visual shape is preserved
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="50mm" height="50mm" viewBox="0 0 100 100">
+        <path d="M 0 0 C 50 0 50 100 100 100"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      const spec = result.value[0];
+      expect(spec.shape).toBe('path');
+      // Path is open (no Z) — pathPointsToSpec needs ≥2 anchors and produces a spec
+      expect(spec.path).toBeDefined();
+      // Bbox spans the full curve, scaled 50/100 = 0.5
+      expect(spec.width).toBeCloseTo(50, 1);
+      expect(spec.depth).toBeCloseTo(50, 1);
+    });
+
+    it('falls back to identity for genuinely non-square SVGs (avoids silent distortion)', () => {
+      // 200mm × 100mm with viewBox 200x200 → sx=1, sy=0.5 — uniform scaling
+      // would silently shrink the canvas, so we keep user units instead.
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200mm" height="100mm" viewBox="0 0 200 200">
+        <rect x="0" y="0" width="100" height="100"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      // Identity scale → cutout matches the source attribute (100 user units)
+      expect(result.value[0].width).toBe(100);
+      expect(result.value[0].depth).toBe(100);
+    });
+
+    it('absorbs sub-percent sx/sy drift from real-world exports as a single scalar', () => {
+      // Tools occasionally export 100mm × 99.95mm with viewBox 100x100 due to
+      // float rounding — that's still effectively uniform, so apply the average.
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="99.95mm" viewBox="0 0 100 100">
+        <rect x="0" y="0" width="100" height="100"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      // (1 + 0.9995) / 2 = 0.99975 ≈ 1
+      expect(result.value[0].width).toBeCloseTo(99.975, 2);
+    });
+
+    it('does not apply physical scaling when no explicit viewBox is present', () => {
+      // The fallback viewBox is parseFloat'd from width/height and silently
+      // drops unit suffixes — `width="1in"` would yield viewBox.width=1 and
+      // a wildly wrong 25.4 mm/unit scale. Skip scaling when there's no real
+      // viewBox to anchor it against.
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1in" height="1in">
+        <rect x="0" y="0" width="50" height="50"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      // Identity scale → cutout matches the source attribute (50 user units)
+      expect(result.value[0].width).toBe(50);
+    });
+
+    it('falls back to identity when only one of width/height has units', () => {
+      // Mixed/incomplete physical sizing → don't attempt to scale
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100" viewBox="0 0 200 200">
+        <rect x="0" y="0" width="50" height="50"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      expect(result.value[0].width).toBe(50);
+    });
+  });
+
+  // Issue #1643 — fixtures resembling real-world editor output.
+  describe('real-world fixtures (issue #1643)', () => {
+    it('parses an Inkscape-style heart icon at the declared physical size', () => {
+      // Heart silhouette in a 25mm × 25mm icon authored in Inkscape
+      // (viewBox 100 × 100 → user-unit scale = 0.25)
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="25mm" height="25mm" viewBox="0 0 100 100">
+        <path d="M 50 30 C 50 10 80 10 80 35 C 80 60 50 80 50 90 C 50 80 20 60 20 35 C 20 10 50 10 50 30 Z"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      const spec = result.value[0];
+      expect(spec.shape).toBe('path');
+      // 25mm canvas → bbox should fit comfortably under 25mm in both axes
+      expect(spec.width).toBeLessThanOrEqual(25);
+      expect(spec.depth).toBeLessThanOrEqual(25);
+      // Heart has real area in both axes (>10mm at 25mm canvas)
+      expect(spec.width).toBeGreaterThan(10);
+      expect(spec.depth).toBeGreaterThan(10);
+    });
+
+    it('parses a multi-contour SVG (icon set) into multiple specs', () => {
+      // Three icon glyphs side-by-side, e.g. a custom set
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60mm" height="20mm" viewBox="0 0 60 20">
+        <circle cx="10" cy="10" r="8"/>
+        <rect x="22" y="2" width="16" height="16" rx="2"/>
+        <polygon points="50,2 58,18 42,18"/>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      expect(result.value).toHaveLength(3);
+      // 1mm-per-user-unit physical scale, so dimensions equal the source attrs
+      expect(result.value[0].width).toBe(16); // circle dia
+      expect(result.value[1].width).toBe(16); // rect width
+    });
+
+    it('handles nested group transforms with physical scaling combined', () => {
+      // A logo with a rotated group inside a translated group, in a physically
+      // sized SVG — the most common "wrong scale + wrong shape" combo
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="40mm" height="40mm" viewBox="0 0 80 80">
+        <g transform="translate(40 40)">
+          <g transform="rotate(45)">
+            <rect x="-10" y="-10" width="20" height="20"/>
+          </g>
+        </g>
+      </svg>`;
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+
+      const spec = result.value[0];
+      // Rotation forces the rect through the rasterize path, producing a path
+      expect(spec.shape).toBe('path');
+      // Diamond inscribed in a 20-unit square has bbox ≈ 28.28 user units;
+      // physically scaled by 40/80 = 0.5 → bbox ≈ 14.14mm.
+      expect(spec.width).toBeCloseTo(14.142, 1);
+      expect(spec.depth).toBeCloseTo(14.142, 1);
+    });
+  });
+
+  // Issue #1643 — anchor-only bounds clipped curves whose handles extend
+  // beyond the anchor extents. `pathPointsToSpec` now uses flattened bezier
+  // bounds so the spec bbox tracks the visible curve.
+  describe('bezier bounds (issue #1643)', () => {
+    it('reflects curve extent (not just anchors) in the bbox', () => {
+      // Two anchors at the same SVG y=50 with control handles pulled to
+      // y=30 and y=70. Anchor-only bounds → depth=0 → spec rejected as
+      // degenerate. Flattened bounds capture the curve dipping ~5 units
+      // off the anchor line in cutout space.
+      const svg = svgWrap('<path d="M 0 50 C 25 30 25 70 50 50 Z"/>');
+      const result = parseSvgString(svg);
+      expect(isOk(result)).toBe(true);
+      if (!isOk(result)) return;
+      const spec = result.value[0];
+      expect(spec.shape).toBe('path');
+      expect(spec.width).toBeCloseTo(50, 0);
+      expect(spec.depth).toBeGreaterThan(0);
+    });
+  });
 });

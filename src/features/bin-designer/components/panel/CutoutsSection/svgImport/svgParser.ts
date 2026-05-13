@@ -27,6 +27,8 @@ import {
   wrapSingle,
 } from './svgConvertShapes';
 import { convertPath } from './svgConvertPath';
+import { parseSvgLengthMm } from './svgLength';
+import { scaleParsedSpec } from './svgScaleSpec';
 
 export type { ViewBox } from './types';
 
@@ -72,7 +74,8 @@ export function parseSvgString(svgString: string): Result<ParsedCutoutSpec[], Sv
     });
   }
 
-  const viewBox = parseViewBox(svgRoot);
+  const { viewBox, hasExplicitViewBox } = parseViewBox(svgRoot);
+  const userUnitToMm = hasExplicitViewBox ? resolveUserUnitToMm(svgRoot, viewBox) : 1;
 
   const specs: ParsedCutoutSpec[] = [];
 
@@ -100,10 +103,41 @@ export function parseSvgString(svgString: string): Result<ParsedCutoutSpec[], Sv
     });
   }
 
+  if (userUnitToMm !== 1) {
+    return ok(specs.map((s) => scaleParsedSpec(s, userUnitToMm)));
+  }
+
   return ok(specs);
 }
 
-function parseViewBox(svg: SVGSVGElement): ViewBox {
+/**
+ * Compute the user-unit → mm scale factor.
+ *
+ * Returns 1 (identity) unless the SVG declares physical dimensions in real
+ * units (mm, cm, in, pt, pc, Q). Without explicit units, user-units are
+ * treated as 1mm — preserving the import behavior callers historically relied on.
+ *
+ * Genuinely non-square SVGs (e.g. width="200mm" height="100mm" viewBox 200×200)
+ * also fall back to identity: a single uniform scalar can't honor non-uniform
+ * stretching without distorting circles and rotated shapes, so importing at
+ * 1:1 user units is the predictable choice.
+ */
+const NON_SQUARE_TOLERANCE = 0.005;
+
+function resolveUserUnitToMm(svg: SVGSVGElement, viewBox: ViewBox): number {
+  const physicalWidth = parseSvgLengthMm(svg.getAttribute('width'));
+  const physicalHeight = parseSvgLengthMm(svg.getAttribute('height'));
+  if (physicalWidth === null || physicalHeight === null) return 1;
+
+  const sx = physicalWidth / viewBox.width;
+  const sy = physicalHeight / viewBox.height;
+  if (!Number.isFinite(sx) || !Number.isFinite(sy) || sx <= 0 || sy <= 0) return 1;
+
+  if (Math.abs(sx - sy) / Math.max(sx, sy) > NON_SQUARE_TOLERANCE) return 1;
+  return (sx + sy) / 2;
+}
+
+function parseViewBox(svg: SVGSVGElement): { viewBox: ViewBox; hasExplicitViewBox: boolean } {
   const vb = svg.getAttribute('viewBox');
   if (vb) {
     const parts = vb
@@ -116,14 +150,22 @@ function parseViewBox(svg: SVGSVGElement): ViewBox {
       parts[2] > 0 &&
       parts[3] > 0
     ) {
-      return { minX: parts[0], minY: parts[1], width: parts[2], height: parts[3] };
+      return {
+        viewBox: { minX: parts[0], minY: parts[1], width: parts[2], height: parts[3] },
+        hasExplicitViewBox: true,
+      };
     }
   }
 
-  // Fallback to width/height attributes
+  // The fallback drops unit suffixes (parseFloat("1in") → 1), so it is not a
+  // valid basis for physical-unit scaling — callers must guard with
+  // hasExplicitViewBox before computing user-unit-to-mm scale.
   const w = parseFloat(svg.getAttribute('width') ?? '0');
   const h = parseFloat(svg.getAttribute('height') ?? '0');
-  return { minX: 0, minY: 0, width: w || 100, height: h || 100 };
+  return {
+    viewBox: { minX: 0, minY: 0, width: w || 100, height: h || 100 },
+    hasExplicitViewBox: false,
+  };
 }
 
 function convertElement(el: Element, matrix: Matrix, viewBox: ViewBox): ParsedCutoutSpec[] | null {
