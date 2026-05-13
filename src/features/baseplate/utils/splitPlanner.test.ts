@@ -868,6 +868,39 @@ describe('preferIdenticalPieces', () => {
     expect(widths[0]).toBe(widths[widths.length - 1]);
   });
 
+  it('reserves bed budget for tongues on BOTH join sides in paired mode', () => {
+    // Paired mode (preferIdenticalPieces) places a tongue + groove pair on
+    // every join edge, so every join side claims a tongue protrusion — not
+    // just the conventionally-male side. Without the bed-budget fix, a
+    // first-column piece sized at the cap could end up 1.5mm over the bed:
+    //   maxFirst = floor((256-3)/42) = 6
+    //   piece STL = 6×42 + 3 + 1.5 (right-side tongue) = 256.5 > 256.
+    // The fix is to treat both join sides as male when paired.
+    const params = makeParams({
+      width: 12,
+      depth: 4,
+      paddingLeft: 3,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    // Every piece must physically fit the bed including the paired tongue on
+    // every join edge (1.5mm each side).
+    for (const piece of tiling.pieces) {
+      const leftTongue = piece.edges.left === 'join' ? 1.5 : 0;
+      const rightTongue = piece.edges.right === 'join' ? 1.5 : 0;
+      const frontTongue = piece.edges.front === 'join' ? 1.5 : 0;
+      const backTongue = piece.edges.back === 'join' ? 1.5 : 0;
+      const widthMm =
+        piece.widthUnits * 42 + piece.paddingLeft + piece.paddingRight + leftTongue + rightTongue;
+      const depthMm =
+        piece.depthUnits * 42 + piece.paddingFront + piece.paddingBack + frontTongue + backTongue;
+      expect(widthMm).toBeLessThanOrEqual(256 + 0.001);
+      expect(depthMm).toBeLessThanOrEqual(256 + 0.001);
+    }
+  });
+
   it('palindromizes when the unique value is the largest ([5, 4, 4] → [4, 5, 4])', () => {
     // 13u wide → 3 pieces, distribution [5, 4, 4]. A greedy "pair largest
     // first" misses [4, 5, 4] because 5 has no equal partner. The frequency-

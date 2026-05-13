@@ -54,10 +54,18 @@ function makeAxisConfig(
   paddingStart: number,
   paddingEnd: number,
   connectorNubs: boolean | undefined,
-  invertDovetails: boolean | undefined
+  invertDovetails: boolean | undefined,
+  preferIdenticalPieces: boolean | undefined
 ): AxisConfig {
   // Both axes follow the same rule: the start side (left / front) is male iff !invertDovetails.
+  // Under preferIdenticalPieces, every join edge places a tongue+groove pair —
+  // so both sides claim a tongue and the bed budget must reserve for both,
+  // not just the conventionally-male side.
   const tongue = connectorNubs ? TONGUE_PROTRUSION_MM : 0;
+  const paired = !!preferIdenticalPieces && !!connectorNubs;
+  if (paired) {
+    return { bedMm, paddingStart, paddingEnd, startMaleMm: tongue, endMaleMm: tongue };
+  }
   const startMale = !invertDovetails;
   return {
     bedMm,
@@ -375,14 +383,16 @@ export function computeBaseplateTiling(
     paddingLeft,
     paddingRight,
     connectorNubs,
-    invertDovetails
+    invertDovetails,
+    palindromic
   );
   const yAxis = makeAxisConfig(
     printBedDepthMm,
     paddingFront,
     paddingBack,
     connectorNubs,
-    invertDovetails
+    invertDovetails,
+    palindromic
   );
 
   const { colSizes: rawColSizes, rowSizes: rawRowSizes } = findOptimalTiling(
