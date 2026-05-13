@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.79.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.79.0...gridfinity-layout-tool-v4.79.1) (2026-05-13)
+
+
+### Bug Fixes
+
+* **bin-designer:** scale SVG imports to physical units and curve-aware bounds ([#1644](https://github.com/andymai/gridfinity-layout-tool/issues/1644)) ([34a0c7b](https://github.com/andymai/gridfinity-layout-tool/commit/34a0c7bac707795491d17ea6d0af79a601a508b1))
+
 ## [4.79.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.78.1...gridfinity-layout-tool-v4.79.0) (2026-05-11)
 
 
