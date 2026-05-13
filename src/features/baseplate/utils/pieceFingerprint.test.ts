@@ -221,4 +221,43 @@ describe('groupPiecesByFingerprint', () => {
       expect(offKeys.has(fp)).toBe(false);
     }
   });
+
+  it('keeps opposite-corner pieces distinct under non-180°-symmetric cornerRadii', () => {
+    // buildSlabProfile only applies radii at EXTERIOR corners (interior
+    // corners are always squared). In a 2×2 split each corner piece has
+    // exactly one exterior corner, and canonical pairs sit at different
+    // exterior positions: A1↔B2 are (bl, tr) and A2↔B1 are (tl, br). When
+    // parent.bl ≠ parent.tr (or parent.tl ≠ parent.br), the two pieces
+    // need physically different radii at their single exterior corner, so
+    // they cannot share a generated mesh — fingerprints must diverge.
+    // (Greptile review #5 suggested canonicalizing cornerRadii in the
+    // fingerprint; that would force a shared mesh and put the wrong radius
+    // at one of the world corners.)
+    const params = makeParams({
+      width: 10,
+      depth: 8,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+      cornerRadii: { tl: 1, tr: 2, bl: 3, br: 4 },
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    expect(groups.size).toBe(4);
+  });
+
+  it('still collapses opposite-corner pieces when cornerRadii are 180°-symmetric', () => {
+    // 180°-symmetric: tl == br and tr == bl. Opposite corners get matching
+    // radii at their respective exterior positions, so the generated
+    // meshes are genuine rotations of each other and dedup correctly.
+    const params = makeParams({
+      width: 10,
+      depth: 8,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+      cornerRadii: { tl: 1, tr: 2, bl: 2, br: 1 },
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    expect(groups.size).toBe(2);
+  });
 });
