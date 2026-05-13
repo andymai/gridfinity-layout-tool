@@ -176,6 +176,7 @@ export function useBaseplateGeneration(): void {
     cornerRadius,
     cornerRadii,
     invertDovetails,
+    preferIdenticalPieces,
   } = useLayoutStore(
     useShallow((state) => {
       const bp = state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
@@ -201,6 +202,7 @@ export function useBaseplateGeneration(): void {
         cornerRadius: bp.cornerRadius,
         cornerRadii: bp.cornerRadii,
         invertDovetails: bp.invertDovetails,
+        preferIdenticalPieces: bp.preferIdenticalPieces,
       };
     })
   );
@@ -575,6 +577,7 @@ export function useBaseplateGeneration(): void {
     cornerRadius,
     cornerRadii,
     invertDovetails,
+    preferIdenticalPieces,
     runGeneration,
   ]);
 }

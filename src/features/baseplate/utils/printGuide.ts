@@ -97,21 +97,24 @@ function generatePieceTable(
     const count = group.indices.length;
 
     // Slab dimensions plus dovetail tongue protrusion on join edges where the
-    // tongue is male — matches the actual STL bbox so users know what fits the bed.
+    // tongue is male — matches the actual STL bbox so users know what fits the
+    // bed. Under preferIdenticalPieces (paired mode) every join edge carries a
+    // tongue regardless of side, so both sides of each axis claim protrusion.
     const tongue = parentParams.connectorNubs ? TONGUE_PROTRUSION_MM : 0;
+    const isPaired = !!parentParams.preferIdenticalPieces && !!parentParams.connectorNubs;
     const startMale = !parentParams.invertDovetails;
     const widthMm =
       params.width * params.gridUnitMm +
       params.paddingLeft +
       params.paddingRight +
-      (params.edges?.left === 'join' && startMale ? tongue : 0) +
-      (params.edges?.right === 'join' && !startMale ? tongue : 0);
+      (params.edges?.left === 'join' && (isPaired || startMale) ? tongue : 0) +
+      (params.edges?.right === 'join' && (isPaired || !startMale) ? tongue : 0);
     const depthMm =
       params.depth * params.gridUnitMm +
       params.paddingFront +
       params.paddingBack +
-      (params.edges?.front === 'join' && startMale ? tongue : 0) +
-      (params.edges?.back === 'join' && !startMale ? tongue : 0);
+      (params.edges?.front === 'join' && (isPaired || startMale) ? tongue : 0) +
+      (params.edges?.back === 'join' && (isPaired || !startMale) ? tongue : 0);
     const heightMm =
       SOCKET_HEIGHT + (parentParams.magnetHoles ? MAGNET_FLOOR + parentParams.magnetDepth : 0);
 

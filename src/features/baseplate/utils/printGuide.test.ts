@@ -137,4 +137,22 @@ describe('generatePrintGuide', () => {
     expect(guide).toContain('168.0 × 168.0');
     expect(guide).toContain('169.5 × 168.0');
   });
+
+  it('Size line counts BOTH-side tongues under preferIdenticalPieces (#1640)', () => {
+    // Paired mode places a tongue on every join edge regardless of which side
+    // is conventionally male. A 4-wide piece with one join edge previously
+    // reported 168.0 or 169.5 depending on side; now both sides → 169.5.
+    const params = makeParams({
+      width: 8,
+      depth: 4,
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+    });
+    const guide = buildGuide(params);
+
+    // Both pieces have exactly one join edge (8 = 4+4 split, no padding):
+    // under paired mode that join carries a tongue → bbox = 168 + 1.5 = 169.5.
+    expect(guide).toContain('169.5 × 168.0');
+    expect(guide).not.toContain('168.0 × 168.0');
+  });
 });
