@@ -50,10 +50,14 @@ function convertStlTo3mf(stlData: ArrayBuffer, name: string, stackCopies: number
 
   // Stacked instances reference the same mesh translated along Z; compute the
   // per-instance Z stride from the source mesh's bbox so each copy sits flush
-  // on top of the one below it.
+  // on top of the one below it. A degenerate mesh (zero Z extent) would
+  // produce a stride of 0 and silently overlap every copy at Z=0, so the
+  // option is suppressed in that case and the export degrades to a single
+  // instance instead.
+  const zHeight = meshZExtent(vertices);
   const stack =
-    stackCopies > 1
-      ? { count: stackCopies, zHeightMm: meshZExtent(vertices), spacingMm: 0 }
+    stackCopies > 1 && zHeight > 0
+      ? { count: stackCopies, zHeightMm: zHeight, spacingMm: 0 }
       : undefined;
 
   return export3MF(vertices, normals, {

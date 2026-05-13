@@ -48,6 +48,10 @@ export interface ThreeMFOptions {
    * `zHeight` should be the source mesh's Z extent (max - min Z over its
    * vertices). Slicers see each instance as a separate placement and slice them
    * together, which is the auto-stack workflow requested by issue #1642.
+   *
+   * Honored by `export3MF` / `build3MFBuffer` (single-object export) only;
+   * `export3MFMultiObject` ignores this field — stacking a heterogeneous bin +
+   * lid pair has no slicer-friendly interpretation.
    */
   readonly stack?: {
     readonly count: number;

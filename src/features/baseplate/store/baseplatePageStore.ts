@@ -211,7 +211,9 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
 
     setStackCopies: (copies) => {
       set((state) => {
-        state.stackCopies = Math.max(1, Math.floor(copies));
+        // Math.floor(NaN) / Math.max(1, NaN) both return NaN, which would
+        // poison every downstream comparison. Default unsafe input to 1.
+        state.stackCopies = Number.isFinite(copies) ? Math.max(1, Math.floor(copies)) : 1;
       });
     },
   }))
