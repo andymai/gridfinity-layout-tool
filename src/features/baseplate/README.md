@@ -40,6 +40,7 @@ graph TB
 - **Graceful BREP failure**: if BREP errors after a direct-mesh preview is on screen, the preview stays visible and a non-blocking toast surfaces the failure — avoids the red error overlay swallowing a still-usable canvas
 - **Epoch detection**: rapid param changes bump an epoch counter; stale in-flight results (direct or BREP) are discarded
 - **Ephemeral store**: `baseplatePageStore` resets on unmount; persistent params live in layout store
+- **`preferIdenticalPieces` (opt-in, gated behind `connectorNubs`)**: palindromic chunk sizes + doubled (M+F) dovetail connectors + canonical-edge fingerprinting let opposite-corner pieces share one generated mesh. Each placement gets a `placementRotationDeg` (0 or 180); the 3D preview rotates the canonical mesh around the piece center and the print guide annotates rotated positions with "(rotate 180°)"
 
 ## Gotchas
 
@@ -48,3 +49,4 @@ graph TB
 3. **Worker pool is optional** — parallel generation falls back to sequential if pool unavailable
 4. **Grid units vs mm** — stored params use grid units; multiply by `gridUnitMm` (42mm) for generation
 5. **Default camera is top-down** — `BaseplatePreview` opens in top view (`CAMERA_PRESETS.top`); the reset button also returns to top view (not isometric)
+6. **`preferIdenticalPieces` degrades silently with asymmetric padding/radii** — opposite-corner pieces only share a fingerprint when `paddingLeft == paddingRight`, `paddingFront == paddingBack`, and `cornerRadii` are 180°-symmetric. Otherwise the canonical mesh diverges and each piece gets its own file (still correct, just not deduplicated)

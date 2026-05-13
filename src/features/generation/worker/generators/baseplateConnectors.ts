@@ -63,6 +63,9 @@ export function buildConnectors(
   if (!connectorNubs || !edges) return { nubs: tongues, holes: grooves };
 
   const invert = !!invertDovetails;
+  // In paired mode invertDovetails is intentionally ignored — the layout is
+  // 180°-rotationally symmetric by construction, so an "invert" toggle would
+  // produce the same physical connector orientation on both sides.
   const paired = !!preferIdenticalPieces;
 
   const halfW = totalW / 2;
