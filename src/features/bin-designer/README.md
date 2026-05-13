@@ -110,6 +110,15 @@ graph TB
     main-thread copy in `LidMesh.tsx` mirrors it because the worker module
     isn't importable here. **Update both in lockstep** — silent drift causes
     the preview to misalign vs. the exported geometry.
+12. **SVG import unit contract** — `svgImport/svgParser.ts` treats user units
+    as mm 1:1 unless the SVG declares a physical `width`/`height`
+    (mm/cm/in/pt/pc/Q) **and** carries an explicit `viewBox`. Without a real
+    viewBox the fallback parses width/height with `parseFloat` (drops unit
+    suffixes), so scaling is skipped to avoid producing wildly wrong sizes.
+    Genuinely non-square aspect ratios (sx/sy diverge > 0.5%) also fall back
+    to identity — a single uniform scalar would distort circles and rotated
+    shapes. Path bounds use `getPathBounds` (flattened bezier) so curves that
+    bow outward beyond their anchors aren't clipped.
 
 ## Integration
 
