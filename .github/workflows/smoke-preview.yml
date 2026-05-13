@@ -55,6 +55,7 @@ jobs:
         if: github.actor != 'dependabot[bot]'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           # Poll GitHub deployments API for up to 5 min looking for a successful
           # Vercel preview matching this PR's head SHA. We can't use the third-party
@@ -78,9 +79,18 @@ jobs:
               fi
             fi
 
-            # Detect the Vercel "ignored build" case via PR-bot comment so we can
-            # exit cleanly instead of timing out.
-            if gh api "repos/$GITHUB_REPOSITORY/issues/${{ github.event.pull_request.number }}/comments" \
+            # Detect the Vercel "ignored build" case. When Vercel skips a deploy
+            # it does not create a GitHub deployment at all; it posts the signal
+            # as a commit status (context=Vercel, description="Canceled by
+            # Ignored Build Step"). Older Vercel versions also posted a PR
+            # comment, so we keep that as a fallback.
+            if gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/statuses?per_page=20" \
+                --jq '.[] | select(.context == "Vercel") | .description' \
+                | grep -qE 'Ignored Build Step|Skipped Deployment'; then
+              ignored=1
+              break
+            fi
+            if gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
                 --jq '.[].body' \
                 | grep -qE 'Skipped Deployment|Ignored Build Step'; then
               ignored=1
