@@ -39,8 +39,9 @@ import {
   NUB_DEPTH,
   HOLE_DIAMETER,
   HOLE_DEPTH,
-  SNAP_HOLE_DIAMETER,
-  SNAP_PEG_INSET,
+  SNAP_CLIP_LENGTH,
+  SNAP_CLIP_WIDTH,
+  SNAP_CLIP_CLEARANCE,
   computeConnectorPositions,
 } from './generatorTypes';
 import type { ProgressFn, CellInfo, ForEachCellOptions } from './generatorTypes';
@@ -50,7 +51,7 @@ import { addPocketWalls, addOuterWalls } from './directMeshWalls';
 import { addPlateFace, addSolidBottomFace } from './directMeshFaces';
 import { addMagnetHoles } from './directMeshMagnets';
 import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
-import { addSnapHoleMarker } from './directMeshSnapHoles';
+import { addSnapSocketMarker } from './directMeshSnapHoles';
 
 /**
  * Generate baseplate mesh data procedurally without BREP boolean operations.
@@ -202,56 +203,65 @@ export function generateBaseplateDirect(
       }
     }
   } else if (connectorStyle === 'snap' && edges) {
-    const holeRadius = SNAP_HOLE_DIAMETER / 2;
     const halfW = totalW / 2;
     const halfD = totalD / 2;
     const yCenters = cellCentersAlong(depth, gridUnitMm, fractionalEdgeY);
     const xCenters = cellCentersAlong(width, gridUnitMm, fractionalEdgeX);
+    // Outline footprint of one pin half + clearance — matches the BREP cutter.
+    const socketLength = SNAP_CLIP_LENGTH + 2 * SNAP_CLIP_CLEARANCE;
+    const socketWidth = SNAP_CLIP_WIDTH + 2 * SNAP_CLIP_CLEARANCE;
     type Side = 'left' | 'right' | 'front' | 'back';
+    // rotZ rotates the canonical cutter (pin extending +Y) so it extends
+    // inward from the seam edge. Half-length offset shifts the pocket centre
+    // to the middle of the pin since the canonical pin's base is at Y=0.
     const sides: ReadonlyArray<{
       side: Side;
       wallPos: number;
+      bpAxis: 'x' | 'y';
+      rotZ: number;
       inward: -1 | 1;
-      protrudeAxis: 'x' | 'y';
       centers: readonly number[];
     }> = [
       {
         side: 'left',
         wallPos: -halfW + slabOffsetX,
+        bpAxis: 'y',
+        rotZ: -90,
         inward: 1,
-        protrudeAxis: 'x',
         centers: yCenters,
       },
       {
         side: 'right',
         wallPos: halfW + slabOffsetX,
+        bpAxis: 'y',
+        rotZ: 90,
         inward: -1,
-        protrudeAxis: 'x',
         centers: yCenters,
       },
       {
         side: 'front',
         wallPos: -halfD + slabOffsetY,
+        bpAxis: 'x',
+        rotZ: 0,
         inward: 1,
-        protrudeAxis: 'y',
         centers: xCenters,
       },
       {
         side: 'back',
         wallPos: halfD + slabOffsetY,
+        bpAxis: 'x',
+        rotZ: 180,
         inward: -1,
-        protrudeAxis: 'y',
         centers: xCenters,
       },
     ];
     for (const def of sides) {
       if (edges[def.side] !== 'join') continue;
-      const xAxis = def.protrudeAxis === 'x';
-      const inset = def.wallPos + def.inward * SNAP_PEG_INSET;
+      const centerOffset = def.inward * (socketLength / 2);
       for (const bp of def.centers) {
-        const cx = xAxis ? inset : bp;
-        const cy = xAxis ? bp : inset;
-        addSnapHoleMarker(mb, cx, cy, holeRadius, totalHeight);
+        const cx = def.bpAxis === 'y' ? def.wallPos + centerOffset : bp;
+        const cy = def.bpAxis === 'y' ? bp : def.wallPos + centerOffset;
+        addSnapSocketMarker(mb, cx, cy, socketLength, socketWidth, def.rotZ, totalHeight);
       }
     }
   }

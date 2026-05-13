@@ -31,7 +31,7 @@ export interface Layout {
 /** Connector style on split-piece join edges.
  *  - 'none': no inter-piece connector
  *  - 'dovetail': integral trapezoidal tongue/groove
- *  - 'snap': through-holes for a separately printed U-clip */
+ *  - 'snap': lateral pocket for a separately printed rabbit-clip */
 export type ConnectorStyle = 'none' | 'dovetail' | 'snap';
 
 /** Baseplate generation parameters stored per-layout.

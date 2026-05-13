@@ -7,21 +7,15 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { resolveConnectorStyle } from '@/shared/types/bin';
 import {
   MAGNET_FLOOR_MM,
-  SNAP_PEG_DIAMETER,
-  SNAP_PEG_INSET,
-  SNAP_PEG_LENGTH,
-  SNAP_SADDLE_WIDTH,
-  SNAP_SADDLE_LENGTH_MARGIN,
-  SNAP_SADDLE_BASE_HEIGHT,
-  SNAP_SADDLE_ARCH_RISE,
-  SNAP_RECESS_DEPTH,
+  SNAP_CLIP_LENGTH,
+  SNAP_CLIP_WIDTH,
+  SNAP_CLIP_DEPTH,
+  SNAP_CLIP_SNAP,
+  SNAP_CLIP_THICKNESS,
+  SNAP_CLIP_COMPRESSION,
 } from '@/shared/printSettings/snapClipGeometry';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { computeSnapClipPositions } from './snapClipPositions';
-
-const PEG_RADIUS = SNAP_PEG_DIAMETER / 2;
-const SADDLE_LEN = 2 * (SNAP_PEG_INSET + SNAP_SADDLE_LENGTH_MARGIN);
-const CYLINDER_SEGMENTS = 16;
 
 const OPACITY_CLOSED = 0.7;
 const OPACITY_OPEN = 0.95;
@@ -36,55 +30,82 @@ function opacityForOffset(offsetMm: number): number {
   return OPACITY_CLOSED + t * (OPACITY_OPEN - OPACITY_CLOSED);
 }
 
+// Match snapClipBuilder.ts.rabbitPinOutline so the preview tracks the worker.
+function rabbitHalfPath(): Array<[number, number]> {
+  const t = SNAP_CLIP_THICKNESS;
+  const snap = SNAP_CLIP_SNAP;
+  const length = SNAP_CLIP_LENGTH;
+  const width = SNAP_CLIP_WIDTH;
+  const compression = SNAP_CLIP_COMPRESSION;
+
+  const earwidth = 2 * t + snap;
+  const pointLength = earwidth / 2.15;
+  const scaledLen =
+    length -
+    (0.5 * (earwidth * snap + pointLength * length)) / Math.sqrt(snap * snap + (length / 2) ** 2);
+  const bottomPtY = Math.max(scaledLen * 0.15 + t, 2 * t);
+
+  const halfW = width / 2;
+  const earX = halfW + compression;
+  const waistX = halfW - snap;
+  const tipOutX = halfW * 0.4;
+  const tipOutY = scaledLen + t * 0.5;
+  const tipInX = t;
+  const tipInY = scaledLen - t * 0.5;
+
+  return [
+    [halfW, 0],
+    [waistX, scaledLen / 2],
+    [earX, scaledLen],
+    [tipOutX, tipOutY],
+    [tipInX, tipInY],
+    [0, bottomPtY],
+    [-tipInX, tipInY],
+    [-tipOutX, tipOutY],
+    [-earX, scaledLen],
+    [-waistX, scaledLen / 2],
+    [-halfW, 0],
+  ];
+}
+
+function buildDoubleClipShape(): THREE.Shape {
+  const half = rabbitHalfPath();
+  // Mirror across Y=0 (negate y) and reverse so the combined ring is closed CCW.
+  const mirror: Array<[number, number]> = [...half]
+    .reverse()
+    .map(([x, y]) => [x, -y] as [number, number]);
+  // Full closed outline: upper half (y >= 0) then lower half (y <= 0).
+  // Y=0 endpoints overlap, which THREE accepts as a closed contour.
+  const full = [...half, ...mirror];
+  const shape = new THREE.Shape();
+  shape.moveTo(full[0][0], full[0][1]);
+  for (let i = 1; i < full.length; i++) shape.lineTo(full[i][0], full[i][1]);
+  shape.closePath();
+  return shape;
+}
+
 type MaterialProps = ComponentProps<'meshStandardMaterial'>;
 
 function SnapClipPart({ material }: { material: MaterialProps }) {
-  const geoms = useMemo(
-    () => ({
-      base: new THREE.BoxGeometry(SADDLE_LEN, SNAP_SADDLE_WIDTH, SNAP_SADDLE_BASE_HEIGHT),
-      arch: new THREE.CylinderGeometry(
-        SNAP_SADDLE_ARCH_RISE,
-        SNAP_SADDLE_ARCH_RISE,
-        SADDLE_LEN,
-        CYLINDER_SEGMENTS
-      ),
-      peg: new THREE.CylinderGeometry(PEG_RADIUS, PEG_RADIUS, SNAP_PEG_LENGTH, CYLINDER_SEGMENTS),
-    }),
-    []
-  );
+  const geometry = useMemo(() => {
+    const shape = buildDoubleClipShape();
+    return new THREE.ExtrudeGeometry(shape, {
+      depth: SNAP_CLIP_DEPTH,
+      bevelEnabled: false,
+      curveSegments: 8,
+    });
+  }, []);
 
-  // Three.js doesn't dispose buffer geometries on React unmount.
   useEffect(() => {
     return () => {
-      geoms.base.dispose();
-      geoms.arch.dispose();
-      geoms.peg.dispose();
+      geometry.dispose();
     };
-  }, [geoms]);
-
-  // Cylinders default to Y-axis. Arch lays along X (rotate 90° about Z); pegs
-  // hang along -Z (rotate -90° about X).
-  const archRot: [number, number, number] = [0, 0, Math.PI / 2];
-  const pegRot: [number, number, number] = [-Math.PI / 2, 0, 0];
-
-  const archZ = SNAP_SADDLE_BASE_HEIGHT;
-  const pegZ = -SNAP_PEG_LENGTH / 2;
+  }, [geometry]);
 
   return (
-    <group>
-      <mesh geometry={geoms.base} position={[0, 0, SNAP_SADDLE_BASE_HEIGHT / 2]}>
-        <meshStandardMaterial {...material} />
-      </mesh>
-      <mesh geometry={geoms.arch} position={[0, 0, archZ]} rotation={archRot}>
-        <meshStandardMaterial {...material} />
-      </mesh>
-      <mesh geometry={geoms.peg} position={[-SNAP_PEG_INSET, 0, pegZ]} rotation={pegRot}>
-        <meshStandardMaterial {...material} />
-      </mesh>
-      <mesh geometry={geoms.peg} position={[SNAP_PEG_INSET, 0, pegZ]} rotation={pegRot}>
-        <meshStandardMaterial {...material} />
-      </mesh>
-    </group>
+    <mesh geometry={geometry}>
+      <meshStandardMaterial {...material} />
+    </mesh>
   );
 }
 
@@ -141,15 +162,16 @@ export function SnapClipPreview({ offsetMm = 0 }: SnapClipPreviewProps) {
 
   if (!enabled || positions.length === 0) return null;
 
-  // Saddle base sits inside the recess so its shoulder is flush with the slab
-  // top. The local frame's z=0 is the saddle's underside; place the group so
-  // z=0 lands at (slabTop - RECESS_DEPTH).
-  const groupBaseZ = slabThickness - SNAP_RECESS_DEPTH + offsetMm;
+  // Clip sits centred in the slab vertically — pocket is at slab mid. Lift by
+  // offsetMm to slide it out for inspection.
+  const groupBaseZ = slabThickness / 2 - SNAP_CLIP_DEPTH / 2 + offsetMm;
 
   return (
     <group>
       {positions.map((pos, i) => {
-        const rotZ = pos.orientation === 'horizontalSeam' ? Math.PI / 2 : 0;
+        // Canonical clip has length along Y. Vertical seams need length along
+        // X (perpendicular to seam direction), so rotate 90°.
+        const rotZ = pos.orientation === 'verticalSeam' ? Math.PI / 2 : 0;
         return (
           <group key={i} position={[pos.x, pos.y, groupBaseZ]} rotation={[0, 0, rotZ]}>
             <SnapClipPart material={material} />

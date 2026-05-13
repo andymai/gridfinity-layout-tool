@@ -4,15 +4,13 @@ import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import {
-  SNAP_PEG_DIAMETER,
-  SNAP_PEG_INSET,
-  SNAP_PEG_LENGTH,
-  SNAP_SADDLE_WIDTH,
-  SNAP_SADDLE_LENGTH_MARGIN,
-  SNAP_SADDLE_BASE_HEIGHT,
-  SNAP_SADDLE_ARCH_RISE,
-  SNAP_HOLE_DIAMETER,
-  SNAP_HOLE_CLEARANCE,
+  SNAP_CLIP_LENGTH,
+  SNAP_CLIP_WIDTH,
+  SNAP_CLIP_DEPTH,
+  SNAP_CLIP_SNAP,
+  SNAP_CLIP_THICKNESS,
+  SNAP_CLIP_COMPRESSION,
+  SNAP_CLIP_CLEARANCE,
 } from './generatorConstants';
 
 type ExportClip = (format: 'stl') => Promise<{ data: ArrayBuffer }>;
@@ -55,23 +53,37 @@ function stlBbox(stl: ArrayBuffer): Bbox {
   return { minX, maxX, minY, maxY, minZ, maxZ };
 }
 
-describe('snap clip geometry', () => {
-  it('peg fits its blind hole with the configured clearance', () => {
-    expect(SNAP_HOLE_DIAMETER).toBeCloseTo(SNAP_PEG_DIAMETER + 2 * SNAP_HOLE_CLEARANCE, 5);
-    expect(SNAP_HOLE_CLEARANCE).toBeGreaterThan(0);
+describe('rabbit snap clip geometry', () => {
+  it('clearance is positive and smaller than snap (so the clip can squeeze in)', () => {
+    expect(SNAP_CLIP_CLEARANCE).toBeGreaterThan(0);
+    expect(SNAP_CLIP_CLEARANCE).toBeLessThan(SNAP_CLIP_SNAP);
   });
 
-  it('exported STL bbox matches saddle dimensions', async () => {
+  it('ear width exceeds nominal — the over-width is what makes the snap engage', () => {
+    // After compression, the ear protrudes past the socket's nominal width.
+    // This interference is what produces the audible click on insertion.
+    expect(SNAP_CLIP_COMPRESSION).toBeGreaterThan(0);
+  });
+
+  it('exported STL bbox matches the double clip dimensions', async () => {
     const result = await exportSnapClip('stl');
     const bbox = stlBbox(result.data);
 
-    const expectedLen = 2 * (SNAP_PEG_INSET + SNAP_SADDLE_LENGTH_MARGIN);
-    expect(bbox.maxX - bbox.minX).toBeCloseTo(expectedLen, 1);
-    expect(bbox.maxY - bbox.minY).toBeCloseTo(SNAP_SADDLE_WIDTH, 1);
+    // X axis (width): nominal width + 2*compression at the ears.
+    const expectedX = SNAP_CLIP_WIDTH + 2 * SNAP_CLIP_COMPRESSION;
+    expect(bbox.maxX - bbox.minX).toBeCloseTo(expectedX, 0);
 
-    // Z range: from peg tip (-PEG_LENGTH) up to top of arch (BASE_HEIGHT + ARCH_RISE).
-    const expectedH = SNAP_PEG_LENGTH + SNAP_SADDLE_BASE_HEIGHT + SNAP_SADDLE_ARCH_RISE;
-    expect(bbox.maxZ - bbox.minZ).toBeCloseTo(expectedH, 1);
-    expect(bbox.minZ).toBeCloseTo(-SNAP_PEG_LENGTH, 1);
+    // Y axis (length): both pin halves extend on either side of Y=0. Each half
+    // is foreshortened by BOSL2's scaledLen formula, so we accept anything
+    // within ~80–100% of (2 * length).
+    const yExtent = bbox.maxY - bbox.minY;
+    expect(yExtent).toBeGreaterThan(SNAP_CLIP_LENGTH * 1.6);
+    expect(yExtent).toBeLessThanOrEqual(SNAP_CLIP_LENGTH * 2.05);
+
+    // Z axis: lay-flat extrusion at the configured depth.
+    expect(bbox.maxZ - bbox.minZ).toBeCloseTo(SNAP_CLIP_DEPTH, 1);
+
+    // Sanity: clip wall is thinner than the clip is deep.
+    expect(SNAP_CLIP_THICKNESS).toBeLessThan(SNAP_CLIP_DEPTH);
   }, 30000);
 });

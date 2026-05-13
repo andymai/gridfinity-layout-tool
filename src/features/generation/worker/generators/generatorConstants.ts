@@ -113,19 +113,12 @@ export const NUB_CIRCLE_SEGMENTS = 12;
 // Snap-clip constants live in src/shared/printSettings/snapClipGeometry.ts so
 // the BREP generator and the R3F preview share one source of truth.
 export {
-  SNAP_PEG_DIAMETER,
-  SNAP_PEG_INSET,
-  SNAP_PEG_LENGTH,
-  SNAP_SADDLE_LENGTH_MARGIN,
-  SNAP_SADDLE_WIDTH,
-  SNAP_SADDLE_BASE_HEIGHT,
-  SNAP_SADDLE_ARCH_RISE,
-  SNAP_HOLE_CLEARANCE,
-  SNAP_HOLE_DIAMETER,
-  SNAP_HOLE_DEPTH,
-  SNAP_RECESS_CLEARANCE,
-  SNAP_RECESS_DEPTH,
+  SNAP_CLIP_LENGTH,
+  SNAP_CLIP_WIDTH,
+  SNAP_CLIP_DEPTH,
+  SNAP_CLIP_SNAP,
+  SNAP_CLIP_THICKNESS,
+  SNAP_CLIP_COMPRESSION,
+  SNAP_CLIP_CLEARANCE,
+  SNAP_CLIP_DEPTH_CLEARANCE,
 } from '@/shared/printSettings/snapClipGeometry';
-
-/** Circle segment count for peg/hole tessellation (worker-only). */
-export const SNAP_CIRCLE_SEGMENTS = 24;

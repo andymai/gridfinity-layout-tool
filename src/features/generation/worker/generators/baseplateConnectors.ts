@@ -6,9 +6,10 @@
  * - 'dovetail': trapezoidal prism — narrower at the wall (BASE_HALF), wider
  *   at the tip (TIP_HALF). The taper is in the X-Y plane so pieces drop in
  *   from above. Once seated, the tip blocks horizontal pull-out.
- * - 'snap': cylindrical through-holes for a separately printed U-clip. Holes
- *   are inset `SNAP_PRONG_INSET` from the seam (one per piece). The clip
- *   bridges the seam from above and locks via tip barbs below the slab.
+ * - 'snap': rabbit-clip socket pockets cut into each piece's seam edge. A
+ *   separately-printed flat clip slides in laterally — its flexing ears
+ *   snap past the socket waist and lock into the wider mid-section, joining
+ *   the two pieces. See snapClipBuilder.ts.
  *
  * Convention (dovetail only): left/front = tongue (male, fused), right/back =
  * groove (female, cut). Inverted by `invertDovetails`.
@@ -18,7 +19,7 @@
  * Z=-totalHeight).
  */
 
-import { box, draw, drawCircle, translate } from 'brepjs';
+import { draw, rotate, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
 import { resolveConnectorStyle } from '@/shared/types/bin';
@@ -29,16 +30,12 @@ import {
   TONGUE_CLEARANCE,
   COPLANAR_MARGIN,
   COPLANAR_OVERLAP,
-  SNAP_HOLE_DIAMETER,
-  SNAP_PEG_INSET,
-  SNAP_HOLE_DEPTH,
-  SNAP_SADDLE_WIDTH,
-  SNAP_SADDLE_LENGTH_MARGIN,
-  SNAP_RECESS_CLEARANCE,
-  SNAP_RECESS_DEPTH,
+  SNAP_CLIP_DEPTH,
+  SNAP_CLIP_DEPTH_CLEARANCE,
   sketch,
   cellCentersAlong,
 } from './generatorTypes';
+import { buildSnapSocketCutter } from './snapClipBuilder';
 
 /**
  * Half the separation between the tongue and groove of a paired connector,
@@ -231,12 +228,14 @@ function makeGroove(
   return sketch(profile, 'XY', COPLANAR_MARGIN).extrude(-(totalHeight + 2 * COPLANAR_MARGIN));
 }
 
-// Snap cutters are shallow blind holes drilled into the slab top: one pair
-// per cell along a join edge, straddling the seam at ±SNAP_PEG_INSET.
-// The saddle clip drops onto these from above.
+// Rabbit-clip sockets: one pocket per cell-boundary along each join edge.
+// The pocket's outline matches the clip pin's silhouette (+ clearance) so the
+// clip's ears compress on insertion and snap into the wider mid-section.
+// The pocket is carved into the slab top and opens laterally at the seam
+// edge — the clip slides in from the seam direction, not from above.
 function buildSnapCutters(
   params: BaseplateParams,
-  _totalHeight: number,
+  totalHeight: number,
   totalW: number,
   totalD: number,
   slabOffsetX: number,
@@ -249,81 +248,40 @@ function buildSnapCutters(
   const halfW = totalW / 2;
   const halfD = totalD / 2;
   const gridUnit = params.gridUnitMm;
-  const radius = SNAP_HOLE_DIAMETER / 2;
-  const ext = COPLANAR_MARGIN;
 
   const yCenters = cellCentersAlong(params.depth, gridUnit, params.fractionalEdgeY);
   const xCenters = cellCentersAlong(params.width, gridUnit, params.fractionalEdgeX);
 
+  // Pocket is centered vertically in the slab so the clip is hidden in both
+  // top and bottom views, with at least 1 mm of slab material above and below.
+  const cutterDepth = SNAP_CLIP_DEPTH + SNAP_CLIP_DEPTH_CLEARANCE;
+  const zCenter = -totalHeight / 2;
+  const zBottom = zCenter - cutterDepth / 2;
+
   type Side = 'left' | 'right' | 'front' | 'back';
+  // Canonical socket cutter has its pin base at local Y=0 extending toward
+  // +Y. `rotZ` rotates it so the pin extends *inward* from the seam edge.
   const edgeDefs: ReadonlyArray<{
     side: Side;
     wallPos: number;
-    inward: -1 | 1;
-    protrudeAxis: 'x' | 'y';
+    bpAxis: 'x' | 'y';
+    rotZ: number;
     centers: readonly number[];
   }> = [
-    {
-      side: 'left',
-      wallPos: -halfW + slabOffsetX,
-      inward: 1,
-      protrudeAxis: 'x',
-      centers: yCenters,
-    },
-    {
-      side: 'right',
-      wallPos: halfW + slabOffsetX,
-      inward: -1,
-      protrudeAxis: 'x',
-      centers: yCenters,
-    },
-    {
-      side: 'front',
-      wallPos: -halfD + slabOffsetY,
-      inward: 1,
-      protrudeAxis: 'y',
-      centers: xCenters,
-    },
-    {
-      side: 'back',
-      wallPos: halfD + slabOffsetY,
-      inward: -1,
-      protrudeAxis: 'y',
-      centers: xCenters,
-    },
+    { side: 'left', wallPos: -halfW + slabOffsetX, bpAxis: 'y', rotZ: -90, centers: yCenters },
+    { side: 'right', wallPos: halfW + slabOffsetX, bpAxis: 'y', rotZ: 90, centers: yCenters },
+    { side: 'front', wallPos: -halfD + slabOffsetY, bpAxis: 'x', rotZ: 0, centers: xCenters },
+    { side: 'back', wallPos: halfD + slabOffsetY, bpAxis: 'x', rotZ: 180, centers: xCenters },
   ];
-
-  // Saddle recess: half on each piece, hugging the seam; clip's flat shoulder
-  // sits flush so only the arch projects above the slab top.
-  const recessAcrossLen = SNAP_PEG_INSET + SNAP_SADDLE_LENGTH_MARGIN + SNAP_RECESS_CLEARANCE;
-  const recessAlongLen = SNAP_SADDLE_WIDTH + 2 * SNAP_RECESS_CLEARANCE;
-  const recessHeight = SNAP_RECESS_DEPTH + ext;
-  const recessZCenter = -SNAP_RECESS_DEPTH / 2 + ext / 2;
-
-  // Blind peg holes; ext on top avoids degenerate coplanar booleans.
-  const holeDepth = SNAP_RECESS_DEPTH + SNAP_HOLE_DEPTH + ext;
 
   for (const def of edgeDefs) {
     if (edges[def.side] !== 'join') continue;
-    const xAxis = def.protrudeAxis === 'x';
-    const peg = def.wallPos + def.inward * SNAP_PEG_INSET;
-    const recessAcrossCenter = def.wallPos + def.inward * (recessAcrossLen / 2);
-    const recessW = xAxis ? recessAcrossLen : recessAlongLen;
-    const recessD = xAxis ? recessAlongLen : recessAcrossLen;
-
     for (const bp of def.centers) {
-      const cx = xAxis ? peg : bp;
-      const cy = xAxis ? bp : peg;
-      const cylinder = drawCircle(radius).sketchOnPlane('XY', ext).extrude(-holeDepth) as Shape3D;
-      holes.push(translate(cylinder, [cx, cy, 0]));
-
-      const recessCx = xAxis ? recessAcrossCenter : bp;
-      const recessCy = xAxis ? bp : recessAcrossCenter;
-      holes.push(
-        box(recessW, recessD, recessHeight, {
-          at: [recessCx, recessCy, recessZCenter],
-        })
-      );
+      const cutter = buildSnapSocketCutter();
+      const rotated = def.rotZ === 0 ? cutter : rotate(cutter, def.rotZ, { axis: [0, 0, 1] });
+      const wx = def.bpAxis === 'y' ? def.wallPos : bp;
+      const wy = def.bpAxis === 'y' ? bp : def.wallPos;
+      holes.push(translate(rotated, [wx, wy, zBottom]));
     }
   }
 

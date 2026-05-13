@@ -1,23 +1,18 @@
 // @vitest-environment node
 /**
- * Scenario tests for snap-clip baseplate connectors.
+ * Scenario tests for rabbit-clip baseplate connectors.
  *
- * Two features per join boundary:
- * - A vertical through-hole sized for the prong shaft.
- * - A shallow rectangular recess on the slab top so the clip's bridge
- *   sits flush — without it, the bridge rides 1.5mm proud and lifts any
- *   bin placed in the seam-adjacent column.
- *
- * Tests verify the export is watertight (Greptile #1407 pattern), the
- * slab top is locally lowered at the recess, and the through-hole is
- * actually cut.
+ * Each join edge gets one socket pocket per cell-boundary — pocketed into
+ * the slab, opening laterally at the seam edge. Tests verify the export is
+ * watertight (Greptile #1407 pattern) and a pocket is actually cut at each
+ * cell centre.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { BaseplateParams } from '@/shared/types/bin';
 import { isOk } from '@/core/result';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { SNAP_PEG_INSET, SNAP_RECESS_DEPTH } from './generatorConstants';
+import { SNAP_CLIP_DEPTH, SNAP_CLIP_LENGTH } from './generatorConstants';
 
 type ExportFn = (
   params: BaseplateParams,
@@ -54,9 +49,9 @@ interface MeshStats {
   nonManifoldEdges: number;
   boundaryEdges: number;
   maxZ: number;
-  /** True if any triangle face entirely below `z` lies within `radius` of
-   *  (x, y). Used to detect features cut into the slab top. */
-  hasFaceBelow: (x: number, y: number, radius: number, z: number) => boolean;
+  minZ: number;
+  /** True if any triangle vertex lies within `radius` of (x, y) AND below z<zMax. */
+  hasVertexNear: (x: number, y: number, radius: number, zMin: number, zMax: number) => boolean;
 }
 
 function analyze(stl: ArrayBuffer): MeshStats {
@@ -72,6 +67,7 @@ function analyze(stl: ArrayBuffer): MeshStats {
 
   const edgeCount = new Map<string, number>();
   let maxZ = -Infinity;
+  let minZ = Infinity;
 
   for (let t = 0; t < triangleCount; t++) {
     const base = t * 9;
@@ -82,6 +78,7 @@ function analyze(stl: ArrayBuffer): MeshStats {
     ];
     for (const [, , z] of tri) {
       if (z > maxZ) maxZ = z;
+      if (z < minZ) minZ = z;
     }
     const keys = tri.map(([x, y, z]) => vKey(x, y, z));
     for (let i = 0; i < 3; i++) {
@@ -97,38 +94,32 @@ function analyze(stl: ArrayBuffer): MeshStats {
     else if (c > 2) nonManifoldEdges++;
   }
 
-  const hasFaceBelow = (x: number, y: number, radius: number, z: number): boolean => {
+  const hasVertexNear = (
+    x: number,
+    y: number,
+    radius: number,
+    zMin: number,
+    zMax: number
+  ): boolean => {
     const r2 = radius * radius;
-    for (let t = 0; t < triangleCount; t++) {
-      const base = t * 9;
-      let allInside = true;
-      let allBelow = true;
-      for (let v = 0; v < 3; v++) {
-        const vx = verts[base + v * 3];
-        const vy = verts[base + v * 3 + 1];
-        const vz = verts[base + v * 3 + 2];
-        if ((vx - x) * (vx - x) + (vy - y) * (vy - y) > r2) {
-          allInside = false;
-          break;
-        }
-        if (vz >= z) {
-          allBelow = false;
-          break;
-        }
-      }
-      if (allInside && allBelow) return true;
+    for (let i = 0; i < verts.length; i += 3) {
+      const vx = verts[i];
+      const vy = verts[i + 1];
+      const vz = verts[i + 2];
+      if (vz < zMin || vz > zMax) continue;
+      if ((vx - x) * (vx - x) + (vy - y) * (vy - y) <= r2) return true;
     }
     return false;
   };
 
-  return { triangleCount, nonManifoldEdges, boundaryEdges, maxZ, hasFaceBelow };
+  return { triangleCount, nonManifoldEdges, boundaryEdges, maxZ, minZ, hasVertexNear };
 }
 
-describe('baseplateGenerator — snap export', () => {
+describe('baseplateGenerator — rabbit-clip snap export', () => {
   const TEST_TIMEOUT_MS = 60_000;
 
   it(
-    'exports a watertight STL with through-hole and bridge recess',
+    'exports a watertight STL with sockets on every join edge',
     async () => {
       const params = defaults({
         connectorStyle: 'snap',
@@ -138,20 +129,29 @@ describe('baseplateGenerator — snap export', () => {
       const { data } = await exportBaseplate(params, 'stl');
       const stats = analyze(data);
 
-      // Manifold sanity (slicer-safe).
       expect(stats.boundaryEdges, 'boundary edges').toBe(0);
       expect(stats.nonManifoldEdges, 'non-manifold edges').toBe(0);
 
-      // Recess assertion: at the recess footprint near the left join edge,
-      // a triangle face must exist entirely below (slabTop - RECESS_DEPTH/2).
-      // That's the recess floor — it can't exist if the recess wasn't cut.
-      // Recesses sit at cell centers along the seam: for depth=2, that's
-      // y = ±gridUnit/2 = ±21mm.
+      // The pocket adds vertices on its floor/ceiling at the pocket OUTLINE
+      // (not its interior). The cutter is rotated for the left edge so the
+      // pin extends +X from the seam; the pocket-floor ring contains
+      // vertices around the rabbit outline near the cell centre at y=21.
       const halfW = 42;
-      const slabTop = stats.maxZ;
-      const recessSampleX = -halfW + SNAP_PEG_INSET;
-      const floorBelow = slabTop - SNAP_RECESS_DEPTH * 0.5;
-      expect(stats.hasFaceBelow(recessSampleX, 21, 2.0, floorBelow)).toBe(true);
+      const slabHeight = stats.maxZ - stats.minZ;
+      const pocketCeilingZ = stats.minZ + slabHeight / 2 + SNAP_CLIP_DEPTH / 2;
+      // Wide radius to catch any vertex on the pocket-ceiling ring at the
+      // cell centre — sample is near the seam, looking for vertices on the
+      // pocket boundary at the matching Z slice.
+      expect(
+        stats.hasVertexNear(
+          -halfW + SNAP_CLIP_LENGTH * 0.3,
+          21,
+          SNAP_CLIP_LENGTH,
+          pocketCeilingZ - 0.5,
+          pocketCeilingZ + 0.5
+        ),
+        'pocket boundary at left-edge cell centre'
+      ).toBe(true);
     },
     TEST_TIMEOUT_MS
   );
@@ -160,9 +160,8 @@ describe('baseplateGenerator — snap export', () => {
     'exports a watertight STL with magnets enabled (thicker slab)',
     async () => {
       // Magnets thicken the slab by MAGNET_FLOOR + magnetDepth ≈ 2.9mm. The
-      // recess depth is constant, so the floor of the recess sits well above
-      // the magnet floor — verify the export still produces a manifold STL
-      // and the recess is cut into the (now-thicker) slab top.
+      // rabbit-clip pocket is centred vertically regardless, so the export
+      // must remain manifold and the pocket must still cut into the slab.
       const params = defaults({
         connectorStyle: 'snap',
         magnetHoles: true,
@@ -175,12 +174,21 @@ describe('baseplateGenerator — snap export', () => {
 
       expect(stats.boundaryEdges, 'boundary edges').toBe(0);
       expect(stats.nonManifoldEdges, 'non-manifold edges').toBe(0);
-
       expect(stats.maxZ).toBeGreaterThan(5);
+
       const halfW = 42;
-      const floorBelow = stats.maxZ - SNAP_RECESS_DEPTH * 0.5;
-      // Cell centers on a depth=2 left edge are at y = ±21.
-      expect(stats.hasFaceBelow(-halfW + SNAP_PEG_INSET, 21, 2.0, floorBelow)).toBe(true);
+      const slabHeight = stats.maxZ - stats.minZ;
+      const pocketCeilingZ = stats.minZ + slabHeight / 2 + SNAP_CLIP_DEPTH / 2;
+      expect(
+        stats.hasVertexNear(
+          -halfW + SNAP_CLIP_LENGTH * 0.3,
+          21,
+          SNAP_CLIP_LENGTH,
+          pocketCeilingZ - 0.5,
+          pocketCeilingZ + 0.5
+        ),
+        'pocket boundary cut into thickened slab at left-edge cell centre'
+      ).toBe(true);
     },
     TEST_TIMEOUT_MS
   );

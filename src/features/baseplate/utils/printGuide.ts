@@ -66,18 +66,16 @@ export function generatePrintGuide(input: PrintGuideInput): string {
 }
 
 function countSnapClips(tiling: BaseplateTiling): number {
-  let totalHoles = 0;
+  // One clip per cell along each +X/+Y seam — walking only right/back edges
+  // matches snapClipPositions.ts and avoids double-counting shared seams.
+  let count = 0;
   for (const piece of tiling.pieces) {
-    const e = piece.edges;
-    const widthBoundaries = Math.ceil(piece.widthUnits) - 1;
-    const depthBoundaries = Math.ceil(piece.depthUnits) - 1;
-    if (e.left === 'join') totalHoles += depthBoundaries;
-    if (e.right === 'join') totalHoles += depthBoundaries;
-    if (e.front === 'join') totalHoles += widthBoundaries;
-    if (e.back === 'join') totalHoles += widthBoundaries;
+    const widthCells = Math.ceil(piece.widthUnits);
+    const depthCells = Math.ceil(piece.depthUnits);
+    if (piece.edges.right === 'join') count += depthCells;
+    if (piece.edges.back === 'join') count += widthCells;
   }
-  // Each clip spans two holes (one per piece across the seam).
-  return Math.ceil(totalHoles / 2);
+  return count;
 }
 
 function generateSnapClipSection(tiling: BaseplateTiling, clipFileName: string): string {
@@ -87,19 +85,18 @@ function generateSnapClipSection(tiling: BaseplateTiling, clipFileName: string):
     '',
     `  Quantity:    ${clipCount} clip${clipCount === 1 ? '' : 's'} total`,
     `  File:        ${clipFileName} (one model, print N copies)`,
-    '  Material:    PETG recommended (slight peg flex helps seating)',
-    '  Speed:       ~25mm/s — small features',
+    '  Material:    PETG recommended (ears must flex elastically)',
+    '  Speed:       ~25mm/s — thin walls need slower print',
     '  Layer:       0.2mm',
-    '  Infill:      20–30%',
-    '  Orientation: saddle base flat on the build plate, arch up. Pegs are',
-    '               on the underside; the slicer will add brief support',
-    '               for them, or you can flip the part for a support-free',
-    '               print and clip the pegs onto the bed.',
+    '  Infill:      0% with 2 wall loops, 0 top/bottom layers — the clip is',
+    '               a thin-walled spring; solid infill defeats the snap action',
+    '  Orientation: flat on the build plate, no supports needed',
     '',
-    '  Installation: align the two pegs with the matching pair of blind',
-    '               holes spanning the seam between two baseplate pieces,',
-    '               then press the saddle straight down. The shoulder seats',
-    '               flush with the slab top, leaving only the arch raised.',
+    '  Installation: slide the clip into one piece’s seam-edge pocket so',
+    '               half its length sits inside; align the second piece’s',
+    '               pocket with the protruding half and press the pieces',
+    '               together. The clip’s ears compress past the pocket waist',
+    '               and snap into the wider mid-section, locking the seam.',
   ].join('\n');
 }
 
