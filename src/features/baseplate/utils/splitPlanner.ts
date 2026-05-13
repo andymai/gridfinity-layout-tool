@@ -12,7 +12,12 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
-import type { BaseplatePiece, BaseplateTiling, PaddingReductionHint } from '../types/tiling';
+import type {
+  BaseplatePiece,
+  BaseplateTiling,
+  PaddingReductionHint,
+  PieceEdges,
+} from '../types/tiling';
 
 /** Threshold for detecting a fractional half-unit (avoids floating-point noise). */
 const FRACTIONAL_THRESHOLD = 0.49;
@@ -355,7 +360,9 @@ export function computeBaseplateTiling(
     fractionalEdgeY,
     connectorNubs,
     invertDovetails,
+    preferIdenticalPieces,
   } = params;
+  const palindromic = !!preferIdenticalPieces;
 
   // Pieces with dovetail connectors include male tongue protrusions in their bbox
   // (#1498). The planner reserves bed budget for those tongues so the resulting
@@ -383,9 +390,22 @@ export function computeBaseplateTiling(
     yAxis
   );
 
-  // Reorder for display: largest pieces at front/left, fractional edges pinned
-  const colSizes = reorderForDisplay(rawColSizes, gridUnitMm, xAxis, fractionalEdgeX === 'start');
-  const rowSizes = reorderForDisplay(rawRowSizes, gridUnitMm, yAxis, fractionalEdgeY === 'start');
+  // Reorder for display: largest pieces at front/left, fractional edges pinned.
+  // Under preferIdenticalPieces, arrange palindromically so outer positions match.
+  const colSizes = reorderForDisplay(
+    rawColSizes,
+    gridUnitMm,
+    xAxis,
+    fractionalEdgeX === 'start',
+    palindromic
+  );
+  const rowSizes = reorderForDisplay(
+    rawRowSizes,
+    gridUnitMm,
+    yAxis,
+    fractionalEdgeY === 'start',
+    palindromic
+  );
 
   const isSplit = colSizes.length > 1 || rowSizes.length > 1;
   const colOffsets = cumulativeOffsets(colSizes);
@@ -403,6 +423,18 @@ export function computeBaseplateTiling(
       const isFrontEdge = r === 0;
       const isBackEdge = r === lastRow;
 
+      const actualEdges: PieceEdges = {
+        left: isLeftEdge ? 'exterior' : 'join',
+        right: isRightEdge ? 'exterior' : 'join',
+        front: isFrontEdge ? 'exterior' : 'join',
+        back: isBackEdge ? 'exterior' : 'join',
+      };
+      // Under preferIdenticalPieces, the piece's mesh is generated from a
+      // canonical edge layout (lex-smaller of {edges, 180°-rotated edges}).
+      // If the actual edges differ, the placement applies a 180° rotation so
+      // the dovetails end up on the correct world-space sides.
+      const needs180 = palindromic && edgeKey(actualEdges) > edgeKey(rotateEdges180(actualEdges));
+
       pieces.push({
         label: `${colToLetter(c)}${r + 1}`,
         col: c,
@@ -417,12 +449,8 @@ export function computeBaseplateTiling(
         paddingBack: isBackEdge ? paddingBack : 0,
         fractionalEdgeX: isFractional(colSizes[c]) ? fractionalEdgeX : 'none',
         fractionalEdgeY: isFractional(rowSizes[r]) ? fractionalEdgeY : 'none',
-        edges: {
-          left: isLeftEdge ? 'exterior' : 'join',
-          right: isRightEdge ? 'exterior' : 'join',
-          front: isFrontEdge ? 'exterior' : 'join',
-          back: isBackEdge ? 'exterior' : 'join',
-        },
+        edges: actualEdges,
+        placementRotationDeg: needs180 ? 180 : 0,
       });
     }
   }
@@ -464,6 +492,27 @@ export function pieceToBaseplateParams(
   const fractionalEdgeX = piece.fractionalEdgeX === 'none' ? 'end' : piece.fractionalEdgeX;
   const fractionalEdgeY = piece.fractionalEdgeY === 'none' ? 'end' : piece.fractionalEdgeY;
 
+  // Under preferIdenticalPieces, generate from the canonical (180°-equivalent)
+  // edge layout and rotate at placement so pieces that are rotations of each
+  // other reuse a single mesh. Padding is rotated alongside so the same
+  // canonical mesh carries padding on the correct sides post-rotation.
+  const canonical =
+    parentParams.preferIdenticalPieces && piece.placementRotationDeg === 180
+      ? {
+          edges: rotateEdges180(piece.edges),
+          paddingLeft: piece.paddingRight,
+          paddingRight: piece.paddingLeft,
+          paddingFront: piece.paddingBack,
+          paddingBack: piece.paddingFront,
+        }
+      : {
+          edges: piece.edges,
+          paddingLeft: piece.paddingLeft,
+          paddingRight: piece.paddingRight,
+          paddingFront: piece.paddingFront,
+          paddingBack: piece.paddingBack,
+        };
+
   return {
     width: piece.widthUnits,
     depth: piece.depthUnits,
@@ -471,19 +520,34 @@ export function pieceToBaseplateParams(
     magnetHoles: parentParams.magnetHoles,
     magnetDiameter: parentParams.magnetDiameter,
     magnetDepth: parentParams.magnetDepth,
-    paddingLeft: piece.paddingLeft,
-    paddingRight: piece.paddingRight,
-    paddingFront: piece.paddingFront,
-    paddingBack: piece.paddingBack,
+    paddingLeft: canonical.paddingLeft,
+    paddingRight: canonical.paddingRight,
+    paddingFront: canonical.paddingFront,
+    paddingBack: canonical.paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
-    edges: piece.edges,
+    edges: canonical.edges,
     connectorNubs: parentParams.connectorNubs,
     invertDovetails: parentParams.invertDovetails,
+    preferIdenticalPieces: parentParams.preferIdenticalPieces,
     lightweight: parentParams.lightweight,
     cornerRadius: parentParams.cornerRadius,
     cornerRadii: parentParams.cornerRadii,
   };
+}
+
+/** Swap left↔right and front↔back, the edge layout under a 180° rotation. */
+function rotateEdges180(edges: BaseplatePiece['edges']): BaseplatePiece['edges'] {
+  return {
+    left: edges.right,
+    right: edges.left,
+    front: edges.back,
+    back: edges.front,
+  };
+}
+
+function edgeKey(edges: BaseplatePiece['edges']): string {
+  return `${edges.left}|${edges.right}|${edges.front}|${edges.back}`;
 }
 
 /**
@@ -492,12 +556,17 @@ export function pieceToBaseplateParams(
  *
  * When `fractionAtStart` is true and a fractional piece exists, it is pinned to
  * position 0 with the remaining pieces sorted descending.
+ *
+ * When `preferIdenticalPieces` is true, the integer-sized pieces are arranged
+ * palindromically so opposite outer positions have identical sizes — this lets
+ * A1 ≡ C2 and A2 ≡ C1 share a canonical fingerprint under 180° rotation.
  */
 function reorderForDisplay(
   sizes: number[],
   gridUnitMm: number,
   axis: AxisConfig,
-  fractionAtStart: boolean
+  fractionAtStart: boolean,
+  preferIdenticalPieces: boolean
 ): number[] {
   if (sizes.length <= 1) return sizes;
 
@@ -509,16 +578,87 @@ function reorderForDisplay(
   // Pin fractional piece to position 0 (only if it fits there).
   if (fractionAtStart && fracIdx >= 0 && sizes[fracIdx] <= maxFirst) {
     const rest = sizes.filter((_, i) => i !== fracIdx);
-    return [sizes[fracIdx], ...sortDescWithEdges(rest, maxMiddle, maxLast)];
+    const inner = preferIdenticalPieces
+      ? palindromizeWithEdges(rest, maxMiddle, maxLast)
+      : sortDescWithEdges(rest, maxMiddle, maxLast);
+    return [sizes[fracIdx], ...inner];
   }
 
   // Pin fractional piece to last position (prevents middle placement).
   if (!fractionAtStart && fracIdx >= 0 && sizes[fracIdx] <= maxLast) {
     const rest = sizes.filter((_, i) => i !== fracIdx);
-    return [...sortDescWithEdges(rest, maxFirst, maxMiddle), sizes[fracIdx]];
+    const inner = preferIdenticalPieces
+      ? palindromizeWithEdges(rest, maxFirst, maxMiddle)
+      : sortDescWithEdges(rest, maxFirst, maxMiddle);
+    return [...inner, sizes[fracIdx]];
+  }
+
+  if (preferIdenticalPieces) {
+    return palindromizeWithEdges(sizes, maxFirst, maxLast);
   }
 
   return sortDescWithEdges(sizes, maxFirst, maxLast);
+}
+
+/**
+ * Arrange sizes palindromically (sizes[i] = sizes[n-1-i] where possible) while
+ * respecting edge constraints. Pairs equal values at outermost positions first,
+ * then works inward.
+ *
+ * Returns sortDescWithEdges' result if no palindromic arrangement satisfies the
+ * edge caps — the fitting checker would otherwise reject the tiling.
+ */
+function palindromizeWithEdges(
+  sizes: readonly number[],
+  maxFirst: number,
+  maxLast: number
+): number[] {
+  if (sizes.length <= 1) return [...sizes];
+
+  const n = sizes.length;
+  const sorted = [...sizes].sort((a, b) => b - a);
+  const used = new Array<boolean>(n).fill(false);
+  const result = new Array<number>(n);
+  const firstUnused = (from = 0, skip = -1): number => {
+    for (let k = from; k < n; k++) if (!used[k] && k !== skip) return k;
+    return -1;
+  };
+  const lastUnused = (skip: number): number => {
+    for (let k = n - 1; k >= 0; k--) if (!used[k] && k !== skip) return k;
+    return -1;
+  };
+  const take = (a: number, b: number, l: number, r: number): void => {
+    used[a] = used[b] = true;
+    result[l] = sorted[a];
+    result[r] = sorted[b];
+  };
+
+  let left = 0;
+  let right = n - 1;
+  while (left < right) {
+    const i1 = firstUnused();
+    if (i1 < 0) break;
+    // Prefer a true palindromic pair (equal values); otherwise pair largest
+    // unused with smallest unused so asymmetry concentrates in one slot.
+    let i2 = -1;
+    for (let k = i1 + 1; k < n; k++) {
+      if (!used[k] && sorted[k] === sorted[i1]) {
+        i2 = k;
+        break;
+      }
+    }
+    const partner = i2 >= 0 ? i2 : lastUnused(i1);
+    if (partner < 0) break;
+    take(i1, partner, left++, right--);
+  }
+  if (left === right) result[left] = sorted[firstUnused()];
+
+  // Fall back to the baseline sort if the palindromic layout would overrun a
+  // first/last edge cap — the fitting checker would otherwise reject the tile.
+  if (result[0] > maxFirst || result[n - 1] > maxLast) {
+    return sortDescWithEdges([...sizes], maxFirst, maxLast);
+  }
+  return result;
 }
 
 /**

@@ -50,6 +50,12 @@ export interface PieceMeshEntry {
   readonly widthUnits: number;
   /** Piece depth in grid units */
   readonly depthUnits: number;
+  /**
+   * Rotation (0 or 180 degrees) applied around the piece center when placing
+   * the mesh. Always 0 unless `preferIdenticalPieces` is on and this piece
+   * shares its canonical mesh with another (180°-rotated) piece in the tiling.
+   */
+  readonly placementRotationDeg: 0 | 180;
 }
 
 interface BaseplatePageState {

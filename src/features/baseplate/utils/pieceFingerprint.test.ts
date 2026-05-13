@@ -172,4 +172,43 @@ describe('groupPiecesByFingerprint', () => {
       expect(normalFps.has(fp)).toBe(false);
     }
   });
+
+  // ─── preferIdenticalPieces canonicalization (#1640) ──────────────────────
+
+  it('collapses opposite-corner pieces into a single group under the flag', () => {
+    // 10×8 → 2×2 grid. Without canonicalization there are 4 distinct edge
+    // layouts (one per corner). With the flag, A1≡C2 and A2≡C1 → 2 groups.
+    const params = makeParams({ width: 10, depth: 8, preferIdenticalPieces: true });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(tiling.pieces).toHaveLength(4);
+
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    expect(groups.size).toBe(2);
+
+    // Each group covers a diagonal pair.
+    for (const group of groups.values()) {
+      expect(group.indices).toHaveLength(2);
+    }
+  });
+
+  it('keeps the 4-corner pieces distinct when the flag is off (baseline)', () => {
+    const params = makeParams({ width: 10, depth: 8, preferIdenticalPieces: false });
+    const tiling = computeBaseplateTiling(params, 256);
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    expect(groups.size).toBe(4);
+  });
+
+  it('preferIdenticalPieces=false and =true produce different fingerprint sets', () => {
+    const off = makeParams({ width: 10, depth: 8 });
+    const on = makeParams({ width: 10, depth: 8, preferIdenticalPieces: true });
+    const groupsOff = groupPiecesByFingerprint(computeBaseplateTiling(off, 256).pieces, off);
+    const groupsOn = groupPiecesByFingerprint(computeBaseplateTiling(on, 256).pieces, on);
+
+    // Flag is part of the fingerprint, so the keysets must be disjoint even
+    // for pieces that happen to share an edge layout.
+    const offKeys = new Set([...groupsOff.keys()]);
+    for (const fp of groupsOn.keys()) {
+      expect(offKeys.has(fp)).toBe(false);
+    }
+  });
 });

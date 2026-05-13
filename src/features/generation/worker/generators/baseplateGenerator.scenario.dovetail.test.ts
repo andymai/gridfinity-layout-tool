@@ -296,4 +296,61 @@ describe('baseplateGenerator — fractional + dovetail export (issue #1472)', ()
     },
     TEST_TIMEOUT_MS
   );
+
+  // ─── preferIdenticalPieces — doubled dovetails (#1640) ────────────────────
+
+  it(
+    'preferIdenticalPieces produces a watertight STL and adds connector triangles',
+    async () => {
+      // 4×4 interior tile (4 join edges). Without the flag each cell boundary
+      // gets a single male tongue or female groove. With the flag, every cell
+      // boundary on a join edge gets BOTH a tongue and a groove (so the
+      // connector layout is 180°-rotationally invariant). The doubled
+      // features must produce a manifold mesh AND add triangles relative to
+      // the single-feature baseline.
+      const baseParams = defaults({
+        width: 4,
+        depth: 4,
+        connectorNubs: true,
+        edges: { left: 'join', right: 'join', front: 'join', back: 'join' },
+      });
+
+      const single = await exportBaseplate(baseParams, 'stl');
+      const doubled = await exportBaseplate({ ...baseParams, preferIdenticalPieces: true }, 'stl');
+
+      const singleStats = analyzeManifold(single.data);
+      const doubledStats = analyzeManifold(doubled.data);
+
+      expectWatertight(singleStats, '4×4 interior single-dovetail');
+      expectWatertight(doubledStats, '4×4 interior doubled-dovetail');
+
+      // 4 join edges × 3 boundaries per edge = 12 connectors single,
+      // 24 connectors doubled. Each connector adds non-trivial triangle count,
+      // so the doubled mesh must have meaningfully more triangles. Use a loose
+      // lower bound to stay robust against tessellation tuning.
+      expect(doubledStats.triangleCount).toBeGreaterThan(singleStats.triangleCount);
+      expect(doubledStats.triangleCount - singleStats.triangleCount).toBeGreaterThanOrEqual(12 * 6);
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it(
+    'preferIdenticalPieces stays watertight on a corner tile with 2 join edges',
+    async () => {
+      // Canonical A1-style corner: join on right + back. Even a single doubled
+      // feature on a 2u edge must remain manifold (only 1 boundary → 2
+      // connectors per edge under the flag).
+      const params = defaults({
+        width: 2,
+        depth: 2,
+        connectorNubs: true,
+        preferIdenticalPieces: true,
+        edges: { left: 'exterior', right: 'join', front: 'exterior', back: 'join' },
+      });
+
+      const { data } = await exportBaseplate(params, 'stl');
+      expectWatertight(analyzeManifold(data), '2×2 A1-canonical doubled-dovetail');
+    },
+    TEST_TIMEOUT_MS
+  );
 });

@@ -11,6 +11,7 @@
   "baseplate.cornerRadiusTR": "Superior derecha",
   "baseplate.cornerRadiusUnlink": "Por esquina",
   "baseplate.dovetails.invert": "Invertir colas de milano",
+  "baseplate.preferIdenticalPieces": "Menos piezas únicas (girar para encajar)",
   "baseplate.editDimensions": "Editar dimensiones de la base",
   "baseplate.editDimensionsDepth": "Profundidad de la base en mm",
   "baseplate.editDimensionsWidth": "Ancho de la base en mm",

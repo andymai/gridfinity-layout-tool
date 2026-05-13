@@ -842,3 +842,84 @@ describe('pieceToBaseplateParams', () => {
     expect(result.invertDovetails).toBeUndefined();
   });
 });
+
+// ─── preferIdenticalPieces (#1640) ───────────────────────────────────────────
+
+describe('preferIdenticalPieces', () => {
+  it('palindromizes a 3-piece column split so outer pieces match', () => {
+    // 14u wide, 256mm bed (max 6u/piece) → 3 pieces. Default produces an
+    // asymmetric distribution like [5, 5, 4]; preferIdenticalPieces should
+    // rearrange to a palindrome [4, 5, 5] is also asymmetric — but [5, 4, 5]
+    // or [4, 6, 4] makes the two corner pieces match.
+    const params = makeParams({ width: 14, depth: 4, preferIdenticalPieces: true });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    const widths = tiling.pieces
+      .filter((p) => p.row === 0)
+      .sort((a, b) => a.col - b.col)
+      .map((p) => p.widthUnits);
+
+    expect(widths.length).toBeGreaterThanOrEqual(2);
+    expect(widths[0]).toBe(widths[widths.length - 1]);
+  });
+
+  it('marks opposite-corner pieces with placementRotationDeg=180', () => {
+    // 10×8 → 2×2 grid. Under the flag, A1≡C2 share canonical edges and one is
+    // rendered rotated 180°.
+    const params = makeParams({ width: 10, depth: 8, preferIdenticalPieces: true });
+    const tiling = computeBaseplateTiling(params, 256);
+
+    expect(tiling.pieces).toHaveLength(4);
+    const byLabel = new Map(tiling.pieces.map((p) => [p.label, p] as const));
+
+    // Exactly two pieces should be rotated; the other two unrotated. By the
+    // canonical-edge tiebreak (lex-smaller of {edges, swapped}), it's the
+    // anti-diagonal that flips.
+    const rotated = tiling.pieces.filter((p) => p.placementRotationDeg === 180);
+    expect(rotated).toHaveLength(2);
+
+    // A1 and B2 are opposite corners — a canonical pair. Exactly one of them
+    // gets the 180° rotation so a single canonical mesh covers both positions.
+    const a1Rotated = byLabel.get('A1')?.placementRotationDeg === 180;
+    const b2Rotated = byLabel.get('B2')?.placementRotationDeg === 180;
+    expect(a1Rotated).not.toBe(b2Rotated);
+
+    // Same invariant for the other diagonal.
+    const a2Rotated = byLabel.get('A2')?.placementRotationDeg === 180;
+    const b1Rotated = byLabel.get('B1')?.placementRotationDeg === 180;
+    expect(a2Rotated).not.toBe(b1Rotated);
+  });
+
+  it('leaves placementRotationDeg=0 on every piece when flag is off', () => {
+    const params = makeParams({ width: 10, depth: 8, preferIdenticalPieces: false });
+    const tiling = computeBaseplateTiling(params, 256);
+    for (const piece of tiling.pieces) {
+      expect(piece.placementRotationDeg).toBe(0);
+    }
+  });
+
+  it('pieceToBaseplateParams swaps padding on 180° pieces so the canonical mesh receives padding on the correct sides', () => {
+    const parent = makeParams({
+      width: 10,
+      depth: 8,
+      paddingLeft: 3,
+      paddingRight: 7,
+      paddingFront: 4,
+      paddingBack: 9,
+      preferIdenticalPieces: true,
+    });
+    const tiling = computeBaseplateTiling(parent, 256);
+
+    const rotated = tiling.pieces.find((p) => p.placementRotationDeg === 180);
+    if (!rotated) throw new Error('expected a rotated piece in the 2×2 tiling');
+
+    const params = pieceToBaseplateParams(rotated, parent);
+
+    // Rotated piece's padding gets swapped (L↔R, F↔B) so that after the 180°
+    // placement rotation the padding ends up on the correct world-space sides.
+    expect(params.paddingLeft).toBe(rotated.paddingRight);
+    expect(params.paddingRight).toBe(rotated.paddingLeft);
+    expect(params.paddingFront).toBe(rotated.paddingBack);
+    expect(params.paddingBack).toBe(rotated.paddingFront);
+  });
+});

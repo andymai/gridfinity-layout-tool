@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BaseplatePanel } from './BaseplatePanel';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
+import type { BaseplateTiling } from '../../types/tiling';
 
 // Mock i18n
 vi.mock('@/i18n', () => ({
@@ -89,13 +90,31 @@ vi.mock('../../store/baseplatePageStore', () => ({
   },
 }));
 
-const splitTiling = {
+const splitTiling: BaseplateTiling = {
   isSplit: true,
   cols: 2,
   rows: 1,
   pieces: [
-    { label: 'A1', col: 0, row: 0, widthUnits: 5, depthUnits: 4, gridOffsetX: 0, gridOffsetY: 0 },
-    { label: 'B1', col: 1, row: 0, widthUnits: 4, depthUnits: 4, gridOffsetX: 5, gridOffsetY: 0 },
+    {
+      label: 'A1',
+      col: 0,
+      row: 0,
+      widthUnits: 5,
+      depthUnits: 4,
+      gridOffsetX: 0,
+      gridOffsetY: 0,
+      placementRotationDeg: 0,
+    },
+    {
+      label: 'B1',
+      col: 1,
+      row: 0,
+      widthUnits: 4,
+      depthUnits: 4,
+      gridOffsetX: 5,
+      gridOffsetY: 0,
+      placementRotationDeg: 0,
+    },
   ],
   totalWidthUnits: 9,
   totalDepthUnits: 6,

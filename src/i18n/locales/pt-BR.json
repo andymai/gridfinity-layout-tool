@@ -11,6 +11,7 @@
   "baseplate.cornerRadiusTR": "Superior direito",
   "baseplate.cornerRadiusUnlink": "Por canto",
   "baseplate.dovetails.invert": "Inverter encaixes",
+  "baseplate.preferIdenticalPieces": "Menos peças únicas (girar para encaixar)",
   "baseplate.editDimensions": "Editar dimensões da base",
   "baseplate.editDimensionsDepth": "Profundidade da base em mm",
   "baseplate.editDimensionsWidth": "Largura da base em mm",

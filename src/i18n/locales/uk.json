@@ -1408,6 +1408,7 @@
   "baseplate.isoView": "Iso",
   "baseplate.connectorNubs": "Хвостові з’єднувачі",
   "baseplate.dovetails.invert": "Інвертувати з’єднувачі",
+  "baseplate.preferIdenticalPieces": "Менше унікальних деталей (повертайте для з’єднання)",
   "baseplate.cornerRadius": "Радіус кута",
   "baseplate.cornerRadiusInfo": "Радіус зовнішнього кута для розміщення в заокруглених корпусах",
   "baseplate.cornerRadiusTL": "Верхній лівий",

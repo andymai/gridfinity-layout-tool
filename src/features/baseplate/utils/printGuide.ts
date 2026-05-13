@@ -115,7 +115,15 @@ function generatePieceTable(
     const heightMm =
       SOCKET_HEIGHT + (parentParams.magnetHoles ? MAGNET_FLOOR + parentParams.magnetDepth : 0);
 
-    const positions = group.indices.map((i) => pieces[i].label).join(', ');
+    // Under preferIdenticalPieces opposite-corner pieces share a mesh, so one
+    // of each pair is assembled rotated 180° around its center. Annotate the
+    // label so the print guide explains why two slots ship from the same file.
+    const positions = group.indices
+      .map((i) => {
+        const p = pieces[i];
+        return p.placementRotationDeg === 180 ? `${p.label} (rotate 180°)` : p.label;
+      })
+      .join(', ');
 
     const features: string[] = [];
     if (parentParams.magnetHoles) features.push('magnet holes');

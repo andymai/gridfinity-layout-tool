@@ -143,6 +143,12 @@ function PieceMesh({
   const x = pieceCenterX + explodeX;
   const y = pieceCenterY + explodeY;
 
+  // 180°-rotated placement keeps a single canonical mesh shared between
+  // opposite-corner pieces (preferIdenticalPieces). Rotation is around the
+  // piece center, applied via the inner group so the outer group still owns
+  // the world translation and the hit plane stays axis-aligned for the picker.
+  const rotZ = entry.placementRotationDeg === 180 ? Math.PI : 0;
+
   return (
     <group position={[x, y, 0.1]}>
       {/* Invisible hit plane for continuous hover over socket holes */}
@@ -154,22 +160,24 @@ function PieceMesh({
       >
         <meshBasicMaterial visible={false} />
       </mesh>
-      <mesh geometry={geometry}>
-        <meshStandardMaterial
-          {...MESH_MATERIAL_PROPS}
-          color={displayColor}
-          emissive={displayColor}
-          emissiveIntensity={emissiveIntensity}
-          flatShading={!hasPrecomputedNormals}
-          transparent={isDimmed}
-          opacity={isDimmed ? 0.55 : 1}
-        />
-      </mesh>
-      {edgesGeometry && (
-        <lineSegments geometry={edgesGeometry} renderOrder={1}>
-          <lineBasicMaterial {...EDGE_MATERIAL_PROPS} />
-        </lineSegments>
-      )}
+      <group rotation={[0, 0, rotZ]}>
+        <mesh geometry={geometry}>
+          <meshStandardMaterial
+            {...MESH_MATERIAL_PROPS}
+            color={displayColor}
+            emissive={displayColor}
+            emissiveIntensity={emissiveIntensity}
+            flatShading={!hasPrecomputedNormals}
+            transparent={isDimmed}
+            opacity={isDimmed ? 0.55 : 1}
+          />
+        </mesh>
+        {edgesGeometry && (
+          <lineSegments geometry={edgesGeometry} renderOrder={1}>
+            <lineBasicMaterial {...EDGE_MATERIAL_PROPS} />
+          </lineSegments>
+        )}
+      </group>
       {splitViewMode === 'exploded' && (
         <Text
           position={[0, 0, GRIDFINITY_SPEC.SOCKET_HEIGHT + 3]}

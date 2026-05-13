@@ -230,11 +230,20 @@ export function BaseplatePanel() {
                   }
                 />
                 {baseplateParams.connectorNubs === true && (
-                  <Checkbox
-                    checked={baseplateParams.invertDovetails === true}
-                    onChange={(checked) => updateParam('invertDovetails', checked || undefined)}
-                    label={t('baseplate.dovetails.invert')}
-                  />
+                  <>
+                    <Checkbox
+                      checked={baseplateParams.invertDovetails === true}
+                      onChange={(checked) => updateParam('invertDovetails', checked || undefined)}
+                      label={t('baseplate.dovetails.invert')}
+                    />
+                    <Checkbox
+                      checked={baseplateParams.preferIdenticalPieces === true}
+                      onChange={(checked) =>
+                        updateParam('preferIdenticalPieces', checked || undefined)
+                      }
+                      label={t('baseplate.preferIdenticalPieces')}
+                    />
+                  </>
                 )}
               </>
             )}

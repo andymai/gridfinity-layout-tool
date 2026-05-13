@@ -11,6 +11,7 @@
   "baseplate.cornerRadiusTR": "Øverst høyre",
   "baseplate.cornerRadiusUnlink": "Per hjørne",
   "baseplate.dovetails.invert": "Inverter svalehaler",
+  "baseplate.preferIdenticalPieces": "Færre unike deler (roter for tilpasning)",
   "baseplate.editDimensions": "Rediger grunnplatemål",
   "baseplate.editDimensionsDepth": "Grunnplatedybde i mm",
   "baseplate.editDimensionsWidth": "Grunnplatebredde i mm",

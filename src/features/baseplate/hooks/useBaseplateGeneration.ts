@@ -58,6 +58,7 @@ function buildPieceMeshEntry(
     gridOffsetY: number;
     widthUnits: number;
     depthUnits: number;
+    placementRotationDeg: 0 | 180;
   },
   source: 'direct' | 'brep'
 ): PieceMeshEntry {
@@ -78,6 +79,7 @@ function buildPieceMeshEntry(
     offsetY: piece.gridOffsetY,
     widthUnits: piece.widthUnits,
     depthUnits: piece.depthUnits,
+    placementRotationDeg: piece.placementRotationDeg,
   };
 }
 
