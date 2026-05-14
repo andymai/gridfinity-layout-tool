@@ -43,7 +43,7 @@ The app will be available at `http://localhost:5173`.
 
 ### Prerequisites
 
-- **Node.js 20+** (see `.nvmrc` — use `nvm use` to switch)
+- **Node.js 24+** (see `.nvmrc` — use `nvm use` to switch)
 - **pnpm 10+** (`corepack enable` to install)
 
 ## License

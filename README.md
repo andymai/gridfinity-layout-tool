@@ -4,6 +4,8 @@
 
 [![CI](https://github.com/andymai/gridfinity-layout-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/andymai/gridfinity-layout-tool/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/andymai/gridfinity-layout-tool)](https://github.com/andymai/gridfinity-layout-tool/releases)
+[![Last release](https://img.shields.io/github/release-date/andymai/gridfinity-layout-tool?label=last%20release)](https://github.com/andymai/gridfinity-layout-tool/releases)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/andymai/gridfinity-layout-tool?label=commits%2Fmonth)](https://github.com/andymai/gridfinity-layout-tool/commits/main)
 [![License: AGPL-3.0](https://img.shields.io/github/license/andymai/gridfinity-layout-tool)](./LICENSE)
 
 Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer organizer layouts for 3D printing — right in your browser.
@@ -22,7 +24,6 @@ Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer orga
 
 <img width="1232" height="848" alt="image" src="https://github.com/user-attachments/assets/51db8aaa-8598-4b82-94ce-04f5289a9106" />
 
-
 ## Features
 
 - **Layout Planner** — Drag-and-drop bin placement with stacked layers and color-coded categories
@@ -33,6 +34,15 @@ Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer orga
 - **Inspiration Gallery** — Browse curated example layouts across workshop, kitchen, office, hobby, and personal themes
 - **Cloud Sharing** — Share layouts via link with optional real-time collaboration
 - **PWA** — Installable, works offline
+
+## Scope
+
+To set expectations, this tool deliberately does not:
+
+- **Slice models for printing** — export STL / STEP / 3MF and slice in Bambu Studio, PrusaSlicer, OrcaSlicer, etc.
+- **Replace general-purpose CAD** — the Bin Designer is parametric but stays within the Gridfinity spec; for arbitrary shapes use Fusion, OpenSCAD, etc.
+- **Require accounts** — layouts live in your browser; cloud sharing is opt-in and link-based
+- **Support legacy browsers** — needs a modern browser with WebGL support
 
 ## Built With
 
