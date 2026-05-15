@@ -1,10 +1,3 @@
-/**
- * Pure helpers for split-axis cutout scoop fillets.
- *
- * Kept separate from cutoutBuilder so the file stays under the 500-line lint
- * cap and the axis-classification math can be tested in isolation.
- */
-
 import type { Cutout, CutoutScoopEdges } from '@/shared/types/bin';
 import { DEFAULT_SCOOP_EDGES } from '@/shared/types/bin';
 
@@ -37,13 +30,11 @@ export function resolveScoop(cutout: Cutout, effectiveDepth: number): ResolvedSc
   };
 }
 
-/** Max axis radius across owner members; falls back to targetRadius when scoops aren't provided. */
+/** Max axis radius across the given owner indices. */
 export function maxOwnerAxisRadius(
   owners: readonly number[],
-  memberScoops: readonly ResolvedScoop[] | undefined,
-  targetRadius: number
+  memberScoops: readonly ResolvedScoop[]
 ): number {
-  if (!memberScoops) return targetRadius;
   let max = 0;
   for (const i of owners) {
     const s = memberScoops[i];
@@ -54,27 +45,62 @@ export function maxOwnerAxisRadius(
 }
 
 /**
- * Pick the axis-specific radius for an edge owned by a single member.
- * Rotates the edge direction by -member.rotation to canonical frame and compares.
+ * Pick the axis-specific radius for an edge owned by a single grouped member.
+ *
+ * Classifies by the edge midpoint's position in the member's local frame
+ * (not by bounding-box extents, which lose sign for non-orthogonal rotations
+ * and incorrectly collapse W- and D-axis edges to the same axis).
+ *
+ * In the member's local frame, an edge on a W-wall (left/right) has its
+ * midpoint near x = ±halfW with |localX| > |localY|; an edge on a D-wall
+ * (front/back) has its midpoint near y = ±halfD with |localY| > |localX|;
+ * corner-arc midpoints sit near (±halfW, ±halfD) and fall back to max(W, D).
+ *
+ * Edge gates (`scoop.edges.{left,right,front,back}`) are also honored:
+ * returns 0 for edges whose corresponding gate is off.
  */
 export function classifyAxisRadius(
   edgeBounds: { xMin: number; xMax: number; yMin: number; yMax: number },
   member: Cutout,
-  scoop: ResolvedScoop
+  scoop: ResolvedScoop,
+  memberCenter: { readonly x: number; readonly y: number }
 ): number {
-  const dx = edgeBounds.xMax - edgeBounds.xMin;
-  const dy = edgeBounds.yMax - edgeBounds.yMin;
-  if (member.rotation === 0) {
-    if (dy > dx) return scoop.w;
-    if (dx > dy) return scoop.d;
-    return Math.max(scoop.w, scoop.d);
-  }
-  const angle = (-member.rotation * Math.PI) / 180;
+  const worldMidX = (edgeBounds.xMin + edgeBounds.xMax) / 2;
+  const worldMidY = (edgeBounds.yMin + edgeBounds.yMax) / 2;
+  const dx = worldMidX - memberCenter.x;
+  const dy = worldMidY - memberCenter.y;
+
+  // Shapes are rotated by -member.rotation in buildCutoutShape, so inverting
+  // (world → local) means rotating by +member.rotation.
+  const angle = (member.rotation * Math.PI) / 180;
   const cosA = Math.cos(angle);
   const sinA = Math.sin(angle);
-  const localDX = Math.abs(dx * cosA - dy * sinA);
-  const localDY = Math.abs(dx * sinA + dy * cosA);
-  if (localDY > localDX) return scoop.w;
-  if (localDX > localDY) return scoop.d;
+  const localX = dx * cosA - dy * sinA;
+  const localY = dx * sinA + dy * cosA;
+
+  const halfW = member.width / 2;
+  const halfD = member.depth / 2;
+  // 0.5mm tolerance — picks up rounded-rect arcs whose midpoint sits slightly
+  // inside the wall extents (their midpoint is at the corner).
+  const tol = 0.5;
+  const onWWall = Math.abs(Math.abs(localX) - halfW) < tol;
+  const onDWall = Math.abs(Math.abs(localY) - halfD) < tol;
+
+  if (onWWall && !onDWall) {
+    // Wall gate: left wall has localX < 0, right wall has localX > 0
+    if (localX < 0 ? !scoop.edges.left : !scoop.edges.right) return 0;
+    return scoop.w;
+  }
+  if (onDWall && !onWWall) {
+    if (localY < 0 ? !scoop.edges.front : !scoop.edges.back) return 0;
+    return scoop.d;
+  }
+  // Corner arc (both walls) or unclassifiable — use larger axis, gated by
+  // both adjacent edges (both must be enabled to round the corner).
+  if (onWWall && onDWall) {
+    const wAllowed = localX < 0 ? scoop.edges.left : scoop.edges.right;
+    const dAllowed = localY < 0 ? scoop.edges.front : scoop.edges.back;
+    if (!wAllowed || !dAllowed) return 0;
+  }
   return Math.max(scoop.w, scoop.d);
 }

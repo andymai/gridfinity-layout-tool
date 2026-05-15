@@ -1,13 +1,14 @@
 /**
  * Split-axis scoop controls for a single cutout.
  *
- * Renders as either a single uniform Scoop slider (default, or when shape is
- * circle/path, or when cutout is grouped) or — for ungrouped rectangles —
- * expands into Scoop W, Scoop D, and four edge toggles (L/R/F/B in local frame).
+ * For rectangles, the panel can expand into per-axis Scoop W / Scoop D
+ * sliders. Ungrouped rectangles additionally expose four edge toggles
+ * (L/R/F/B in cutout-local frame); grouped rectangles hide them because
+ * edges shared between members have ambiguous wall identity. Circles and
+ * paths show only a single uniform slider — they have no W/D distinction.
  *
- * The "Split" toggle is purely UI state; the data model always stores
- * scoopRadiusW and scoopRadiusD. Collapsing back to uniform writes
- * max(W, D) into both axes.
+ * The "Split" toggle is UI state; the data model always stores both
+ * scoopRadiusW and scoopRadiusD. Collapsing writes max(W, D) into both.
  */
 
 import { useState } from 'react';
@@ -48,6 +49,9 @@ export function CutoutScoopControls({
 
   // Auto-open the split panel when W and D diverge or any edge is off,
   // so a loaded design with asymmetric scoop reveals its full state.
+  // Callers MUST pass `key={cutout.id}` so this initial value is re-evaluated
+  // when the active cutout changes; otherwise the panel inherits the
+  // previous cutout's open/closed state.
   const hasNonUniformState =
     radiusW !== radiusD || !(edges.left && edges.right && edges.front && edges.back);
   const [expanded, setExpanded] = useState(hasNonUniformState);
@@ -142,24 +146,28 @@ export function CutoutScoopControls({
           </span>
           <EdgeChip
             label={t('binDesigner.cutouts.scoopEdgeLeft')}
+            ariaLabel={t('binDesigner.cutouts.scoopEdgeLeftAria')}
             on={edges.left}
             disabled={disabled}
             onToggle={() => toggleEdge('left')}
           />
           <EdgeChip
             label={t('binDesigner.cutouts.scoopEdgeRight')}
+            ariaLabel={t('binDesigner.cutouts.scoopEdgeRightAria')}
             on={edges.right}
             disabled={disabled}
             onToggle={() => toggleEdge('right')}
           />
           <EdgeChip
             label={t('binDesigner.cutouts.scoopEdgeFront')}
+            ariaLabel={t('binDesigner.cutouts.scoopEdgeFrontAria')}
             on={edges.front}
             disabled={disabled}
             onToggle={() => toggleEdge('front')}
           />
           <EdgeChip
             label={t('binDesigner.cutouts.scoopEdgeBack')}
+            ariaLabel={t('binDesigner.cutouts.scoopEdgeBackAria')}
             on={edges.back}
             disabled={disabled}
             onToggle={() => toggleEdge('back')}
@@ -172,17 +180,19 @@ export function CutoutScoopControls({
 
 interface EdgeChipProps {
   readonly label: string;
+  readonly ariaLabel: string;
   readonly on: boolean;
   readonly disabled?: boolean;
   readonly onToggle: () => void;
 }
 
-function EdgeChip({ label, on, disabled, onToggle }: EdgeChipProps) {
+function EdgeChip({ label, ariaLabel, on, disabled, onToggle }: EdgeChipProps) {
   return (
     <button
       type="button"
       onClick={onToggle}
       disabled={disabled}
+      aria-label={ariaLabel}
       aria-pressed={on}
       className={`h-5 min-w-[20px] rounded text-[10px] font-medium transition-colors px-1 ${
         on

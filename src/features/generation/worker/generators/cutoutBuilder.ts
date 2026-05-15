@@ -312,28 +312,23 @@ export function applyFilletWithFallback(
  *
  * Per-edge toggles (`scoopEdges`) are not honored for grouped cutouts — edges
  * may be shared between members, making per-edge semantics ambiguous.
- *
- * On failure, falls back to progressively reduced uniform radii at the group max.
  */
 function applyAdaptiveScoop(
   shape: Shape3D,
   edges: readonly Edge[],
   targetRadius: number,
   memberBounds: readonly AABB[],
-  members?: readonly Cutout[],
-  memberScoops?: readonly ResolvedScoop[]
+  members: readonly Cutout[],
+  memberScoops: readonly ResolvedScoop[]
 ): Shape3D {
-  const axisAware = members !== undefined && memberScoops !== undefined;
-
-  const radiusCallback = (edge: Edge<Dimension>): number | null => {
-    const len = curveLength(edge);
-    if (len < MIN_EDGE_LENGTH) return null;
-
+  // Pick the desired radius for one edge. Returns 0 when the edge should
+  // stay sharp (disabled gate, zero axis); `applyCallbackFilletWithFallback`
+  // honors that across every fallback step.
+  const pickRadius = (edge: Edge<Dimension>): number => {
     const b = getBounds(edge);
     const midX = (b.xMin + b.xMax) / 2;
     const midY = (b.yMin + b.yMax) / 2;
 
-    // Find owning member(s): AABBs that contain the edge midpoint
     const owners: number[] = [];
     for (let i = 0; i < memberBounds.length; i++) {
       const mb = memberBounds[i];
@@ -342,42 +337,21 @@ function applyAdaptiveScoop(
       }
     }
 
-    // Junction edge: 2+ owners — use max axis radius across all involved members
     if (owners.length >= 2) {
-      const ownerMaxR = maxOwnerAxisRadius(owners, memberScoops, targetRadius);
-      const r = ownerMaxR * JUNCTION_RADIUS_FACTOR;
-      if (r < MIN_FILLET_RADIUS) return null;
-      if (len < 2 * r) {
-        const short = (len / 2) * SHORT_EDGE_MARGIN;
-        return short < MIN_FILLET_RADIUS ? null : short;
-      }
-      return r;
+      return maxOwnerAxisRadius(owners, memberScoops) * JUNCTION_RADIUS_FACTOR;
     }
-
-    // Single-owner perimeter edge: classify by member's local axis
-    let radius = targetRadius;
-    if (axisAware && owners.length === 1) {
-      const m = members[owners[0]];
-      const s = memberScoops[owners[0]];
-      radius = classifyAxisRadius(b, m, s);
+    if (owners.length === 1) {
+      const idx = owners[0];
+      const aabb = memberBounds[idx];
+      return classifyAxisRadius(b, members[idx], memberScoops[idx], {
+        x: (aabb.minX + aabb.maxX) / 2,
+        y: (aabb.minY + aabb.maxY) / 2,
+      });
     }
-    if (radius < MIN_FILLET_RADIUS) return null;
-
-    if (len < 2 * radius) {
-      const short = (len / 2) * SHORT_EDGE_MARGIN;
-      return short < MIN_FILLET_RADIUS ? null : short;
-    }
-    return radius;
+    return targetRadius;
   };
 
-  try {
-    const result = fillet(shape as ValidSolid, edges as Edge[], radiusCallback);
-    if (isOk(result)) return unwrap(result);
-  } catch {
-    // Fall through to uniform fallback
-  }
-
-  return applyFilletWithFallback(shape, edges, targetRadius);
+  return applyCallbackFilletWithFallback(shape, edges, pickRadius);
 }
 
 /**
@@ -430,14 +404,15 @@ function buildUngroupedCutout(
 /**
  * Apply an axis-aware fillet to a cutout's bottom edges in its local frame.
  *
- * Classification rules:
- *   - Edge with |dy| > |dx|  →  Y-aligned (left/right wall)   →  radiusW, gated by edges.left/right
- *   - Edge with |dx| > |dy|  →  X-aligned (front/back wall)   →  radiusD, gated by edges.front/back
- *   - Corner arc edges (cornerRadius > 0): receive max(radiusW, radiusD); they vanish naturally
- *     when both adjacent edge groups have zero radius.
+ * Classification rules (edges are in canonical local frame since rotation hasn't run yet):
+ *   - |dy| > |dx|  →  Y-aligned (left/right wall)   →  radiusW, gated by edges.left/right
+ *   - |dx| > |dy|  →  X-aligned (front/back wall)   →  radiusD, gated by edges.front/back
+ *   - dx ≈ dy      →  corner arc (rounded rect)     →  max(W, D), gated by BOTH adjacent edges
  *
- * Disabled edges return null, which OCCT skips via the per-edge callback API.
- * On total fillet failure, returns the input shape unchanged.
+ * Disabled edges and zero-radius axes return null, which OCCT skips via the
+ * per-edge callback API. Progressive fallback preserves the callback's per-edge
+ * decisions by scaling the returned radii, never falling back to a uniform
+ * radius that would re-enable disabled edges.
  */
 function applyAxisAwareScoop(shape: Shape3D, cutout: Cutout, scoop: ResolvedScoop): Shape3D {
   const halfW = cutout.width / 2;
@@ -450,57 +425,74 @@ function applyAxisAwareScoop(shape: Shape3D, cutout: Cutout, scoop: ResolvedScoo
   });
   if (edges.length === 0) return shape;
 
-  // Uniform path: both axes equal → fall back to simple progressive fallback
-  // (mirrors prior behavior; reduces risk of regressing existing geometry).
-  const uniformR = scoop.w === scoop.d ? scoop.w : null;
+  // Uniform path: both axes equal AND all edges on → preserve historical
+  // progressive-uniform fallback so existing geometry is unchanged.
   const allEdgesOn = scoop.edges.left && scoop.edges.right && scoop.edges.front && scoop.edges.back;
-  if (uniformR !== null && allEdgesOn) {
-    return applyFilletWithFallback(shape, edges, uniformR);
+  if (scoop.w === scoop.d && allEdgesOn) {
+    return applyFilletWithFallback(shape, edges, scoop.w);
   }
 
-  const radiusCallback = (edge: Edge<Dimension>): number | null => {
-    const len = curveLength(edge);
-    if (len < MIN_EDGE_LENGTH) return null;
-
+  // Pick the radius for one edge in local frame. Edge gates apply per-wall;
+  // corner arcs require BOTH adjacent walls enabled to round.
+  const pickRadius = (edge: Edge<Dimension>): number => {
     const b = getBounds(edge);
     const dx = b.xMax - b.xMin;
     const dy = b.yMax - b.yMin;
     const midX = (b.xMin + b.xMax) / 2;
     const midY = (b.yMin + b.yMax) / 2;
-
-    let radius: number;
-    if (dy > dx) {
-      // Y-aligned: left/right wall in local frame
-      if (midX < 0 ? !scoop.edges.left : !scoop.edges.right) return null;
-      radius = scoop.w;
-    } else if (dx > dy) {
-      // X-aligned: front/back wall in local frame (front = -Y in local frame)
-      if (midY < 0 ? !scoop.edges.front : !scoop.edges.back) return null;
-      radius = scoop.d;
-    } else {
-      // Corner arc (dx ≈ dy): blend the two axes
-      radius = Math.max(scoop.w, scoop.d);
+    // Tolerance: a sharp 90° corner vertex has dx ≈ dy ≈ 0; an arc has dx ≈ dy ≈ cornerRadius.
+    // Distinguish from a long axis-aligned edge by requiring one dim to clearly dominate.
+    const isYAligned = dy > dx + 0.01;
+    const isXAligned = dx > dy + 0.01;
+    if (isYAligned) {
+      return (midX < 0 ? scoop.edges.left : scoop.edges.right) ? scoop.w : 0;
     }
-
-    if (radius < MIN_FILLET_RADIUS) return null;
-    if (len < 2 * radius) {
-      const r = (len / 2) * SHORT_EDGE_MARGIN;
-      return r < MIN_FILLET_RADIUS ? null : r;
+    if (isXAligned) {
+      return (midY < 0 ? scoop.edges.front : scoop.edges.back) ? scoop.d : 0;
     }
-    return radius;
+    // Corner arc: needs both adjacent walls enabled.
+    const wAllowed = midX < 0 ? scoop.edges.left : scoop.edges.right;
+    const dAllowed = midY < 0 ? scoop.edges.front : scoop.edges.back;
+    return wAllowed && dAllowed ? Math.max(scoop.w, scoop.d) : 0;
   };
 
-  try {
-    const result = fillet(shape as ValidSolid, edges as Edge[], radiusCallback);
-    if (isOk(result)) return unwrap(result);
-  } catch {
-    // Fall through to uniform fallback
-  }
+  return applyCallbackFilletWithFallback(shape, edges, pickRadius);
+}
 
-  // Fallback: progressive uniform fillet at max(W, D) — preserves visible scoop
-  // even if the per-edge callback fails on a particular geometry.
-  const fallbackR = Math.max(scoop.w, scoop.d);
-  return applyFilletWithFallback(shape, edges, fallbackR);
+/**
+ * Run a per-edge fillet callback, progressively scaling all radii on failure.
+ *
+ * Unlike `applyFilletWithFallback`, this preserves the caller's per-edge intent
+ * — null/zero returns stay null/zero through every fallback attempt, so edges
+ * the caller wanted left sharp (disabled walls, zero-axis radii) never gain a
+ * scoop just because the full-radius attempt failed.
+ */
+function applyCallbackFilletWithFallback(
+  shape: Shape3D,
+  edges: readonly Edge[],
+  pickRadius: (edge: Edge<Dimension>) => number
+): Shape3D {
+  for (const factor of FALLBACK_FACTORS) {
+    if (factor < MIN_FILLET_RADIUS) break;
+    const callback = (edge: Edge<Dimension>): number | null => {
+      const len = curveLength(edge);
+      if (len < MIN_EDGE_LENGTH) return null;
+      const r = pickRadius(edge) * factor;
+      if (r < MIN_FILLET_RADIUS) return null;
+      if (len < 2 * r) {
+        const short = (len / 2) * SHORT_EDGE_MARGIN;
+        return short < MIN_FILLET_RADIUS ? null : short;
+      }
+      return r;
+    };
+    try {
+      const result = fillet(shape as ValidSolid, edges as Edge[], callback);
+      if (isOk(result)) return unwrap(result);
+    } catch {
+      // Try next reduction
+    }
+  }
+  return shape;
 }
 
 /** Build and fuse grouped cutouts with a shared adaptive scoop fillet. */

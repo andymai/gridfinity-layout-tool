@@ -104,6 +104,7 @@ export function CutoutPropertyPanel({
           />
         )}
         <CutoutScoopControls
+          key={cutout.id}
           cutout={cutout}
           disabled={disabled}
           onUpdate={(patch) => onUpdate(cutout.id, patch)}

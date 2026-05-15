@@ -230,6 +230,24 @@ export function FloatingInspector({
     }
   };
 
+  // Multi-select scoop axis update. Non-rectangle cutouts have no W/D
+  // distinction — the generator collapses W and D to a single value via
+  // max() — so writing only one axis would silently no-op if the other axis
+  // is larger. Write both axes for circles/paths to keep the slider
+  // semantically meaningful for those shapes.
+  const handleScoopAxisBatch = (axis: 'scoopRadiusW' | 'scoopRadiusD', value: number) => {
+    if (onUpdateBatch && selectedCutouts.length > 1) {
+      const updates = new Map<string, Partial<Cutout>>();
+      for (const c of selectedCutouts) {
+        updates.set(
+          c.id,
+          c.shape === 'rectangle' ? { [axis]: value } : { scoopRadiusW: value, scoopRadiusD: value }
+        );
+      }
+      onUpdateBatch(updates);
+    }
+  };
+
   return (
     <div
       ref={panelRef}
@@ -338,6 +356,7 @@ export function FloatingInspector({
             disabled={disabled}
           />
           <CutoutScoopControls
+            key={singleCutout.id}
             cutout={singleCutout}
             preview={preview.get(singleCutout.id)}
             disabled={disabled}
@@ -376,7 +395,7 @@ export function FloatingInspector({
             <SliderInput
               label={t('binDesigner.cutouts.scoopW')}
               value={sharedScoopRadiusW ?? 0}
-              onChange={(scoopRadiusW) => handleBatchUpdate('scoopRadiusW', scoopRadiusW)}
+              onChange={(scoopRadiusW) => handleScoopAxisBatch('scoopRadiusW', scoopRadiusW)}
               min={0}
               max={sharedCutDepth ?? maxCutDepth}
               step={0.5}
@@ -386,7 +405,7 @@ export function FloatingInspector({
             <SliderInput
               label={t('binDesigner.cutouts.scoopD')}
               value={sharedScoopRadiusD ?? 0}
-              onChange={(scoopRadiusD) => handleBatchUpdate('scoopRadiusD', scoopRadiusD)}
+              onChange={(scoopRadiusD) => handleScoopAxisBatch('scoopRadiusD', scoopRadiusD)}
               min={0}
               max={sharedCutDepth ?? maxCutDepth}
               step={0.5}
