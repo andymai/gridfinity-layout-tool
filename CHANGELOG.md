@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.81.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.81.1...gridfinity-layout-tool-v4.81.2) (2026-05-15)
+
+
+### Bug Fixes
+
+* **generation:** cut lid magnet holes before fusing stack grid ([#1657](https://github.com/andymai/gridfinity-layout-tool/issues/1657)) ([68f3a1a](https://github.com/andymai/gridfinity-layout-tool/commit/68f3a1a4fca9d934ebd6c24a1290c45b585f57c8))
+
 ## [4.81.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.81.0...gridfinity-layout-tool-v4.81.1) (2026-05-15)
 
 
