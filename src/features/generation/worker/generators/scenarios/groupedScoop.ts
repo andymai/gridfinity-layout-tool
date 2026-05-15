@@ -149,4 +149,37 @@ export const groupedScoop: ScenarioCase[] = [
     },
     forExport: true,
   }),
+  defineScenario(
+    'grouped scoop',
+    'group with asymmetric W/D scoop on each member generates valid mesh',
+    {
+      assert: 'structural',
+      params: {
+        ...solidBase,
+        cutouts: [
+          makeCutout({
+            id: 'rect-split-a',
+            x: 10,
+            y: 15,
+            width: 25,
+            depth: 10,
+            groupId: 'g6',
+            scoopRadiusW: 3,
+            scoopRadiusD: 0,
+          }),
+          makeCutout({
+            id: 'rect-split-b',
+            x: 20,
+            y: 30,
+            width: 10,
+            depth: 25,
+            groupId: 'g6',
+            scoopRadiusW: 0,
+            scoopRadiusD: 3,
+          }),
+        ],
+      },
+      forExport: true,
+    }
+  ),
 ];

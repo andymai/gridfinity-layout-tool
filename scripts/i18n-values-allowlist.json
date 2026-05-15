@@ -27,6 +27,7 @@
     "binDesigner.cutouts.addRectangle",
     "binDesigner.cutouts.label",
     "binDesigner.cutouts.rotation",
+    "binDesigner.cutouts.scoopUniform",
     "binDesigner.cutouts.shortcutCircle",
     "binDesigner.cutouts.shortcutPen",
     "binDesigner.cutouts.shortcutRect",

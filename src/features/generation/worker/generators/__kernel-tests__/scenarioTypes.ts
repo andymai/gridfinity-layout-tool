@@ -94,9 +94,15 @@ export function makeInsert(overrides: Partial<Insert>): Insert {
   };
 }
 
-/** Factory for test Cutout objects with sensible defaults. */
-export function makeCutout(overrides: Partial<Cutout>): Cutout {
-  return {
+/**
+ * Factory for test Cutout objects with sensible defaults.
+ *
+ * Accepts the legacy `scoopRadius` field as an alias for setting both axes
+ * to the same value; lets existing fixtures keep working unchanged.
+ */
+export function makeCutout(overrides: Partial<Cutout> & { scoopRadius?: number }): Cutout {
+  const { scoopRadius, ...rest } = overrides;
+  const merged: Cutout = {
     id: 'test-cutout',
     shape: 'rectangle',
     x: 0,
@@ -108,7 +114,16 @@ export function makeCutout(overrides: Partial<Cutout>): Cutout {
     cornerRadius: 0,
     label: '',
     groupId: null,
-    scoopRadius: 0,
-    ...overrides,
+    scoopRadiusW: 0,
+    scoopRadiusD: 0,
+    ...rest,
   };
+  if (
+    scoopRadius !== undefined &&
+    rest.scoopRadiusW === undefined &&
+    rest.scoopRadiusD === undefined
+  ) {
+    return { ...merged, scoopRadiusW: scoopRadius, scoopRadiusD: scoopRadius };
+  }
+  return merged;
 }

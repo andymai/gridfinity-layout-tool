@@ -24,8 +24,14 @@ import {
   curveLength,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension } from 'brepjs';
-import type { BinParams, PathPoint } from '@/shared/types/bin';
+import type { BinParams, Cutout, PathPoint } from '@/shared/types/bin';
 import { MIN_PATH_POINTS } from '@/shared/types/bin';
+import {
+  resolveScoop,
+  maxOwnerAxisRadius,
+  classifyAxisRadius,
+  type ResolvedScoop,
+} from './cutoutScoopHelpers';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
 /** Axis-aligned bounding box in XY. */
@@ -43,6 +49,57 @@ function computeRotationSafeAABB(cx: number, cy: number, width: number, depth: n
   const diag = Math.sqrt(width ** 2 + depth ** 2) / 2;
   return { minX: cx - diag, minY: cy - diag, maxX: cx + diag, maxY: cy + diag };
 }
+/** Create an extruded cutout shape centered at origin, **without rotation**.
+ *  Splitting out rotation lets callers apply axis-aware fillets in the
+ *  cutout's canonical local frame (W along X, D along Y) before rotating.
+ *  Returns null if dimensions are degenerate (would crash WASM).
+ */
+function buildUnrotatedCutoutShape(cutout: {
+  readonly shape: string;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly depth: number;
+  readonly cutDepth: number;
+  readonly cornerRadius: number;
+  readonly path?: readonly PathPoint[];
+}): Shape3D | null {
+  if (cutout.cutDepth <= 0 || cutout.width <= 0 || cutout.depth <= 0) return null;
+
+  switch (cutout.shape) {
+    case 'circle': {
+      const rx = cutout.width / 2;
+      const ry = cutout.depth / 2;
+      return Math.abs(rx - ry) < 0.01
+        ? cylinder(rx, cutout.cutDepth)
+        : sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
+    }
+    case 'path': {
+      try {
+        return buildPathCutoutShape(cutout);
+      } catch {
+        // Self-intersecting or degenerate path — fall back to bounding box rectangle
+        return box(cutout.width, cutout.depth, cutout.cutDepth, {
+          at: [0, 0, cutout.cutDepth / 2],
+        });
+      }
+    }
+    case 'rectangle':
+    default: {
+      if (cutout.cornerRadius > 0) {
+        const maxCR = Math.min(cutout.width, cutout.depth) / 2 - 0.01;
+        return sketch(
+          drawRoundedRectangle(cutout.width, cutout.depth, Math.min(cutout.cornerRadius, maxCR)),
+          'XY'
+        ).extrude(cutout.cutDepth);
+      }
+      return box(cutout.width, cutout.depth, cutout.cutDepth, {
+        at: [0, 0, cutout.cutDepth / 2],
+      });
+    }
+  }
+}
+
 /** Create an extruded + rotated cutout shape centered at origin (no translation).
  *  Returns null if dimensions are degenerate (would crash WASM).
  */
@@ -57,51 +114,9 @@ function buildCutoutShape(cutout: {
   readonly cornerRadius: number;
   readonly path?: readonly PathPoint[];
 }): Shape3D | null {
-  // Guard: skip cutouts with degenerate dimensions that would crash WASM
-  if (cutout.cutDepth <= 0 || cutout.width <= 0 || cutout.depth <= 0) return null;
+  let shape = buildUnrotatedCutoutShape(cutout);
+  if (!shape) return null;
 
-  let shape: Shape3D;
-
-  switch (cutout.shape) {
-    case 'circle': {
-      const rx = cutout.width / 2;
-      const ry = cutout.depth / 2;
-      if (Math.abs(rx - ry) < 0.01) {
-        shape = cylinder(rx, cutout.cutDepth);
-      } else {
-        shape = sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
-      }
-      break;
-    }
-    case 'path': {
-      try {
-        shape = buildPathCutoutShape(cutout);
-      } catch {
-        // Self-intersecting or degenerate path — fall back to bounding box rectangle
-        shape = box(cutout.width, cutout.depth, cutout.cutDepth, {
-          at: [0, 0, cutout.cutDepth / 2],
-        });
-      }
-      break;
-    }
-    case 'rectangle':
-    default: {
-      if (cutout.cornerRadius > 0) {
-        const maxCR = Math.min(cutout.width, cutout.depth) / 2 - 0.01;
-        shape = sketch(
-          drawRoundedRectangle(cutout.width, cutout.depth, Math.min(cutout.cornerRadius, maxCR)),
-          'XY'
-        ).extrude(cutout.cutDepth);
-      } else {
-        shape = box(cutout.width, cutout.depth, cutout.cutDepth, {
-          at: [0, 0, cutout.cutDepth / 2],
-        });
-      }
-      break;
-    }
-  }
-
-  // Apply rotation around Z axis (at origin, before translation)
   if (cutout.rotation !== 0) {
     const rotated = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });
     shape.delete();
@@ -291,49 +306,70 @@ export function applyFilletWithFallback(
  * Uses brepjs's per-edge radius callback to classify each bottom edge:
  * - Short edges (length < 2× radius) get proportionally reduced radius
  * - Junction edges (center falls inside 2+ member AABBs) get reduced radius
- * - Normal perimeter edges get the full requested radius
+ *   computed from the max axis radius across owning members
+ * - Perimeter edges owned by exactly one member get that member's axis-specific
+ *   radius, classified by rotating the edge direction back to the member's local frame
  *
- * On failure, falls back to progressively reduced uniform radii.
+ * Per-edge toggles (`scoopEdges`) are not honored for grouped cutouts — edges
+ * may be shared between members, making per-edge semantics ambiguous.
+ *
+ * On failure, falls back to progressively reduced uniform radii at the group max.
  */
 function applyAdaptiveScoop(
   shape: Shape3D,
   edges: readonly Edge[],
   targetRadius: number,
-  memberBounds: readonly AABB[]
+  memberBounds: readonly AABB[],
+  members?: readonly Cutout[],
+  memberScoops?: readonly ResolvedScoop[]
 ): Shape3D {
-  // Per-edge radius callback
+  const axisAware = members !== undefined && memberScoops !== undefined;
+
   const radiusCallback = (edge: Edge<Dimension>): number | null => {
     const len = curveLength(edge);
-
     if (len < MIN_EDGE_LENGTH) return null;
 
-    // Short edges get proportionally reduced radius
-    if (len < 2 * targetRadius) {
-      const r = (len / 2) * SHORT_EDGE_MARGIN;
-      return r < MIN_FILLET_RADIUS ? null : r;
-    }
-
-    // Classify as junction edge: edge center falls inside 2+ member AABBs
     const b = getBounds(edge);
     const midX = (b.xMin + b.xMax) / 2;
     const midY = (b.yMin + b.yMax) / 2;
-    let containCount = 0;
-    for (const mb of memberBounds) {
+
+    // Find owning member(s): AABBs that contain the edge midpoint
+    const owners: number[] = [];
+    for (let i = 0; i < memberBounds.length; i++) {
+      const mb = memberBounds[i];
       if (midX >= mb.minX && midX <= mb.maxX && midY >= mb.minY && midY <= mb.maxY) {
-        containCount++;
-        if (containCount >= 2) break;
+        owners.push(i);
       }
     }
 
-    if (containCount >= 2) {
-      const r = targetRadius * JUNCTION_RADIUS_FACTOR;
-      return r < MIN_FILLET_RADIUS ? null : r;
+    // Junction edge: 2+ owners — use max axis radius across all involved members
+    if (owners.length >= 2) {
+      const ownerMaxR = maxOwnerAxisRadius(owners, memberScoops, targetRadius);
+      const r = ownerMaxR * JUNCTION_RADIUS_FACTOR;
+      if (r < MIN_FILLET_RADIUS) return null;
+      if (len < 2 * r) {
+        const short = (len / 2) * SHORT_EDGE_MARGIN;
+        return short < MIN_FILLET_RADIUS ? null : short;
+      }
+      return r;
     }
 
-    return targetRadius;
+    // Single-owner perimeter edge: classify by member's local axis
+    let radius = targetRadius;
+    if (axisAware && owners.length === 1) {
+      const m = members[owners[0]];
+      const s = memberScoops[owners[0]];
+      radius = classifyAxisRadius(b, m, s);
+    }
+    if (radius < MIN_FILLET_RADIUS) return null;
+
+    if (len < 2 * radius) {
+      const short = (len / 2) * SHORT_EDGE_MARGIN;
+      return short < MIN_FILLET_RADIUS ? null : short;
+    }
+    return radius;
   };
 
-  // Try adaptive per-edge fillet first
   try {
     const result = fillet(shape as ValidSolid, edges as Edge[], radiusCallback);
     if (isOk(result)) return unwrap(result);
@@ -341,10 +377,20 @@ function applyAdaptiveScoop(
     // Fall through to uniform fallback
   }
 
-  // Progressive uniform fallback
   return applyFilletWithFallback(shape, edges, targetRadius);
 }
-/** Build and position an ungrouped cutout with individual scoop fillet. */
+
+/**
+ * Build and position an ungrouped cutout with axis-aware scoop fillet.
+ *
+ * The fillet is applied in the cutout's local (unrotated) frame so edges
+ * can be classified by canonical orientation: Y-aligned bottom edges (left/right
+ * walls) get `scoopRadiusW`; X-aligned bottom edges (front/back walls) get
+ * `scoopRadiusD`. Rotation is applied **after** the fillet so the curve
+ * follows the cutout's local axes. Per-edge toggles (`scoopEdges`) gate
+ * individual walls — disabled edges return a null radius from the callback,
+ * which OCCT treats as "skip this edge."
+ */
 function buildUngroupedCutout(
   cutout: BinParams['cutouts'][number],
   solidSurfaceZ: number,
@@ -354,30 +400,22 @@ function buildUngroupedCutout(
   const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
   if (effectiveDepth <= 0) return null;
 
-  let shape = buildCutoutShape({ ...cutout, cutDepth: effectiveDepth });
+  let shape = buildUnrotatedCutoutShape({ ...cutout, cutDepth: effectiveDepth });
   if (!shape) return null;
 
-  // Apply scoop radius fillet to bottom edges (before translation, at Z ~ 0)
-  const maxScoop = Math.min(effectiveDepth, Math.min(cutout.width, cutout.depth) / 2) - 0.01;
-  const scoopR = Math.min(cutout.scoopRadius ?? 0, Math.max(0, maxScoop));
-  if (scoopR > 0) {
-    const halfW = cutout.width / 2;
-    const halfD = cutout.depth / 2;
-    const scoopEdges = findBottomEdges(shape, 0, {
-      minX: -halfW,
-      minY: -halfD,
-      maxX: halfW,
-      maxY: halfD,
-    });
-    if (scoopEdges.length > 0) {
-      const filleted = applyFilletWithFallback(shape, scoopEdges, scoopR);
-      // applyFilletWithFallback returns the same shape on total failure;
-      // only dispose when it actually allocated a new handle.
-      if (filleted !== shape) {
-        shape.delete();
-        shape = filleted;
-      }
+  const scoop = resolveScoop(cutout, effectiveDepth);
+  if (scoop.w > 0 || scoop.d > 0) {
+    const filleted = applyAxisAwareScoop(shape, cutout, scoop);
+    if (filleted !== shape) {
+      shape.delete();
+      shape = filleted;
     }
+  }
+
+  if (cutout.rotation !== 0) {
+    const rotated = rotate(shape, -cutout.rotation, { axis: [0, 0, 1] });
+    shape.delete();
+    shape = rotated;
   }
 
   const positioned = translate(shape, [
@@ -387,6 +425,82 @@ function buildUngroupedCutout(
   ]);
   shape.delete();
   return positioned;
+}
+
+/**
+ * Apply an axis-aware fillet to a cutout's bottom edges in its local frame.
+ *
+ * Classification rules:
+ *   - Edge with |dy| > |dx|  →  Y-aligned (left/right wall)   →  radiusW, gated by edges.left/right
+ *   - Edge with |dx| > |dy|  →  X-aligned (front/back wall)   →  radiusD, gated by edges.front/back
+ *   - Corner arc edges (cornerRadius > 0): receive max(radiusW, radiusD); they vanish naturally
+ *     when both adjacent edge groups have zero radius.
+ *
+ * Disabled edges return null, which OCCT skips via the per-edge callback API.
+ * On total fillet failure, returns the input shape unchanged.
+ */
+function applyAxisAwareScoop(shape: Shape3D, cutout: Cutout, scoop: ResolvedScoop): Shape3D {
+  const halfW = cutout.width / 2;
+  const halfD = cutout.depth / 2;
+  const edges = findBottomEdges(shape, 0, {
+    minX: -halfW,
+    minY: -halfD,
+    maxX: halfW,
+    maxY: halfD,
+  });
+  if (edges.length === 0) return shape;
+
+  // Uniform path: both axes equal → fall back to simple progressive fallback
+  // (mirrors prior behavior; reduces risk of regressing existing geometry).
+  const uniformR = scoop.w === scoop.d ? scoop.w : null;
+  const allEdgesOn = scoop.edges.left && scoop.edges.right && scoop.edges.front && scoop.edges.back;
+  if (uniformR !== null && allEdgesOn) {
+    return applyFilletWithFallback(shape, edges, uniformR);
+  }
+
+  const radiusCallback = (edge: Edge<Dimension>): number | null => {
+    const len = curveLength(edge);
+    if (len < MIN_EDGE_LENGTH) return null;
+
+    const b = getBounds(edge);
+    const dx = b.xMax - b.xMin;
+    const dy = b.yMax - b.yMin;
+    const midX = (b.xMin + b.xMax) / 2;
+    const midY = (b.yMin + b.yMax) / 2;
+
+    let radius: number;
+    if (dy > dx) {
+      // Y-aligned: left/right wall in local frame
+      if (midX < 0 ? !scoop.edges.left : !scoop.edges.right) return null;
+      radius = scoop.w;
+    } else if (dx > dy) {
+      // X-aligned: front/back wall in local frame (front = -Y in local frame)
+      if (midY < 0 ? !scoop.edges.front : !scoop.edges.back) return null;
+      radius = scoop.d;
+    } else {
+      // Corner arc (dx ≈ dy): blend the two axes
+      radius = Math.max(scoop.w, scoop.d);
+    }
+
+    if (radius < MIN_FILLET_RADIUS) return null;
+    if (len < 2 * radius) {
+      const r = (len / 2) * SHORT_EDGE_MARGIN;
+      return r < MIN_FILLET_RADIUS ? null : r;
+    }
+    return radius;
+  };
+
+  try {
+    const result = fillet(shape as ValidSolid, edges as Edge[], radiusCallback);
+    if (isOk(result)) return unwrap(result);
+  } catch {
+    // Fall through to uniform fallback
+  }
+
+  // Fallback: progressive uniform fillet at max(W, D) — preserves visible scoop
+  // even if the per-edge callback fails on a particular geometry.
+  const fallbackR = Math.max(scoop.w, scoop.d);
+  return applyFilletWithFallback(shape, edges, fallbackR);
 }
 
 /** Build and fuse grouped cutouts with a shared adaptive scoop fillet. */
@@ -430,14 +544,13 @@ function buildGroupedCutouts(
     for (const s of memberShapes) s.delete();
   }
 
-  // Determine group scoop radius and cut depth from built members only
-  const groupScoopRadius = Math.max(...builtMembers.map((c) => c.scoopRadius ?? 0));
+  // Per-member axis radii, clamped to each member's geometric limits.
+  // Group-level max is used only as an envelope (skip fillet entirely if all are zero).
   const groupCutDepth = Math.min(...builtDepths);
-  const minDim = Math.min(...builtMembers.map((c) => Math.min(c.width, c.depth)));
-  const maxScoop = Math.min(groupCutDepth, minDim / 2) - 0.01;
-  const scoopR = Math.min(groupScoopRadius, Math.max(0, maxScoop));
+  const memberScoops: ResolvedScoop[] = builtMembers.map((m, i) => resolveScoop(m, builtDepths[i]));
+  const groupMaxR = Math.max(0, ...memberScoops.flatMap((s) => [s.w, s.d]));
 
-  if (scoopR > 0) {
+  if (groupMaxR > 0) {
     // Build rotation-safe AABBs for each member (used for edge selection + junction detection)
     const memberAABBs = builtMembers.map((cutout) =>
       computeRotationSafeAABB(
@@ -459,7 +572,14 @@ function buildGroupedCutouts(
     const zBottom = solidSurfaceZ - groupCutDepth;
     const groupScoopEdges = findBottomEdges(fused, zBottom, groupBounds);
     if (groupScoopEdges.length > 0) {
-      const filleted = applyAdaptiveScoop(fused, groupScoopEdges, scoopR, memberAABBs);
+      const filleted = applyAdaptiveScoop(
+        fused,
+        groupScoopEdges,
+        groupMaxR,
+        memberAABBs,
+        builtMembers,
+        memberScoops
+      );
       if (filleted !== fused) {
         fused.delete();
         fused = filleted;

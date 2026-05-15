@@ -28,6 +28,7 @@ export type {
   InsertShape,
   Cutout,
   CutoutShape,
+  CutoutScoopEdges,
   PathPoint,
   WallPatternConfig,
   WallPatternType,
@@ -46,6 +47,7 @@ export {
   LID_TOP_THICKNESS_BASE,
   LID_MAGNET_CEILING,
   LID_MIN_RAIL_LENGTH,
+  DEFAULT_SCOOP_EDGES,
 } from '@/features/bin-designer/types';
 
 /**

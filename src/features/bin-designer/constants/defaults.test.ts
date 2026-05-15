@@ -539,6 +539,68 @@ describe('migrateParams', () => {
     });
     expect(result.lid.clickRailCoverage).toBe(DEFAULT_BIN_PARAMS.lid.clickRailCoverage);
   });
+
+  describe('cutout scoop migration', () => {
+    const makeCutout = (overrides: Record<string, unknown> = {}): unknown => ({
+      id: 'c1',
+      shape: 'rectangle',
+      x: 0,
+      y: 0,
+      width: 20,
+      depth: 20,
+      cutDepth: 5,
+      rotation: 0,
+      cornerRadius: 0,
+      label: '',
+      groupId: null,
+      ...overrides,
+    });
+
+    it('copies legacy scoopRadius into both axis fields', () => {
+      const result = migrateParams({
+        cutouts: [makeCutout({ scoopRadius: 4 })] as BinParams['cutouts'],
+      });
+      const c = result.cutouts[0];
+      expect(c.scoopRadiusW).toBe(4);
+      expect(c.scoopRadiusD).toBe(4);
+      // Legacy field should be stripped after migration
+      expect('scoopRadius' in c).toBe(false);
+    });
+
+    it('preserves split fields when both are already set', () => {
+      const result = migrateParams({
+        cutouts: [makeCutout({ scoopRadiusW: 6, scoopRadiusD: 2 })] as BinParams['cutouts'],
+      });
+      expect(result.cutouts[0].scoopRadiusW).toBe(6);
+      expect(result.cutouts[0].scoopRadiusD).toBe(2);
+    });
+
+    it('ignores legacy scoopRadius when split fields are already set', () => {
+      const result = migrateParams({
+        cutouts: [
+          makeCutout({ scoopRadius: 10, scoopRadiusW: 3, scoopRadiusD: 5 }),
+        ] as BinParams['cutouts'],
+      });
+      expect(result.cutouts[0].scoopRadiusW).toBe(3);
+      expect(result.cutouts[0].scoopRadiusD).toBe(5);
+    });
+
+    it('is idempotent — re-migrating a migrated cutout is a no-op', () => {
+      const once = migrateParams({
+        cutouts: [makeCutout({ scoopRadius: 4 })] as BinParams['cutouts'],
+      });
+      const twice = migrateParams({ cutouts: once.cutouts });
+      expect(twice.cutouts[0]).toEqual(once.cutouts[0]);
+    });
+
+    it('leaves cutouts without scoop fields untouched', () => {
+      const result = migrateParams({
+        cutouts: [makeCutout()] as BinParams['cutouts'],
+      });
+      expect(result.cutouts[0].scoopRadiusW).toBeUndefined();
+      expect(result.cutouts[0].scoopRadiusD).toBeUndefined();
+    });
+  });
 });
 
 describe('GRIDFINITY constants', () => {

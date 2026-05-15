@@ -108,7 +108,7 @@ describe('FloatingInspector', () => {
     // Sliders for rotation, depth, and scoop
     expect(screen.getByTestId('slider-input-Rotation')).toBeInTheDocument();
     expect(screen.getByTestId('slider-input-Depth')).toBeInTheDocument();
-    expect(screen.getByTestId('slider-input-Scoop')).toBeInTheDocument();
+    expect(screen.getByTestId('slider-input-binDesigner.cutouts.scoopRadius')).toBeInTheDocument();
   });
 
   it('shows corner radius slider only for rectangles', () => {
@@ -149,10 +149,11 @@ describe('FloatingInspector', () => {
     // Should show multi-select info
     expect(screen.getByText(/2\s+bindesigner\.cutouteditor\.actions/i)).toBeInTheDocument();
 
-    // Should only show rotation, depth, and scoop sliders for multi-select
+    // Should only show rotation, depth, and split-axis scoop sliders for multi-select
     expect(screen.getByTestId('slider-input-Rotation')).toBeInTheDocument();
     expect(screen.getByTestId('slider-input-Depth')).toBeInTheDocument();
-    expect(screen.getByTestId('slider-input-Scoop')).toBeInTheDocument();
+    expect(screen.getByTestId('slider-input-binDesigner.cutouts.scoopW')).toBeInTheDocument();
+    expect(screen.getByTestId('slider-input-binDesigner.cutouts.scoopD')).toBeInTheDocument();
 
     // Should NOT show compact inputs
     expect(screen.queryByTestId('compact-input-X')).not.toBeInTheDocument();

@@ -4,6 +4,7 @@
 
 import type {
   BinParams,
+  Cutout,
   DesignerUIState,
   GenerationState,
   DesignerHistory,
@@ -282,8 +283,32 @@ interface LegacyFields {
   walls?: WallConfig | LegacyWallConfig;
 }
 
+/** Legacy cutout fields from older versions, accepted by migrateCutout. */
+interface LegacyCutoutFields {
+  /** Pre-split scoop radius (mm). Migrated to scoopRadiusW + scoopRadiusD. */
+  scoopRadius?: number;
+}
+
 /** Input type for migrateParams — current params plus known legacy fields. */
 type MigrateParamsInput = Partial<BinParams> & LegacyFields;
+
+/**
+ * Migrate a single cutout's legacy fields to current shape.
+ *
+ * Idempotent: re-running on an already-migrated cutout leaves W/D untouched.
+ * Only copies legacy scoopRadius into both axes when neither axis is set.
+ */
+function migrateCutout(cutout: Cutout & LegacyCutoutFields): Cutout {
+  const { scoopRadius, ...rest } = cutout;
+  if (
+    scoopRadius !== undefined &&
+    rest.scoopRadiusW === undefined &&
+    rest.scoopRadiusD === undefined
+  ) {
+    return { ...rest, scoopRadiusW: scoopRadius, scoopRadiusD: scoopRadius };
+  }
+  return rest;
+}
 
 /**
  * Populate missing bin parameters with default values.
@@ -513,7 +538,9 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     slotConfig,
     dividerPieces,
     inserts: params.inserts ?? DEFAULT_BIN_PARAMS.inserts,
-    cutouts: params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts,
+    cutouts: (params.cutouts ?? DEFAULT_BIN_PARAMS.cutouts).map((c) =>
+      migrateCutout(c as Cutout & LegacyCutoutFields)
+    ),
     cutoutConfig,
     wallPattern: wallPatternConfig,
     featureColors: migrateFeatureColors(params.featureColors),
