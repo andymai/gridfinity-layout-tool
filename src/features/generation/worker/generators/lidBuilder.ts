@@ -5,12 +5,12 @@
  * stacking lip. The lid is built in lid-local coordinates so it can be
  * positioned and exported independently of the bin.
  *
- * Geometry breakdown:
+ * Geometry breakdown (in build order):
  *   - `buildLidFloor`     — flat plate at the top              (lidProfile)
  *   - `buildMatingShell`  — inverted-lip wall                  (lidProfile)
  *   - `addClickRails`     — tapered snap rails on each wall    (lidClickRail)
- *   - `buildStackGrid`    — Gridfinity lip profile on top      (lidStackGrid)
  *   - `cutMagnetHoles`    — standard magnet pattern through floor (lidMagnets)
+ *   - `buildStackGrid`    — Gridfinity lip profile on top      (lidStackGrid)
  *
  * Coordinate convention:
  *   Z = 0          : top of lid floor
@@ -76,7 +76,20 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
       body = addClickRails(scope, body, inputs, originToTag);
     }
 
-    // 3. Optional Gridfinity stack grid on top
+    // 3. Optional magnet holes through the floor.
+    //    Cut BEFORE the stack grid fuses on top: the cylinder's 0.1mm
+    //    coplanar overshoot above Z=0 would otherwise hang inside the
+    //    pocket cavity (a void INSIDE the body), and some OCCT/WASM
+    //    builds produce malformed output when trimming a cutter whose
+    //    top sits in an internal void (issue #1655). Cut-first makes
+    //    the overshoot land in empty space ABOVE the body — a clean
+    //    through-cut. Order swap is safe because magnet positions sit
+    //    inside the pocket footprint, so cylinders never touch the slab.
+    if (inputs.magnetHoles) {
+      body = cutMagnetHoles(scope, body, inputs);
+    }
+
+    // 4. Optional Gridfinity stack grid on top
     if (inputs.stackableTop) {
       const stackGrid = scope.register(buildStackGrid(scope, inputs));
       if (originToTag) {
@@ -84,11 +97,6 @@ export function buildLid(params: BinParams, originToTag?: Map<number, number>): 
       }
       scope.register(body);
       body = unwrap(fuse(body, stackGrid));
-    }
-
-    // 4. Optional magnet holes through the floor
-    if (inputs.magnetHoles) {
-      body = cutMagnetHoles(scope, body, inputs);
     }
 
     return body as ValidSolid;

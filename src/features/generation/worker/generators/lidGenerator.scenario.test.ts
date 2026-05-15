@@ -54,7 +54,7 @@ function makeParams(lid: Partial<LidConfig>, extra: Partial<BinParams> = {}): Bi
   };
 }
 
-describe('generateLid scenarios', () => {
+describe('lid generation and export scenarios', () => {
   it('returns null when lid is disabled', async () => {
     const { generateLid } = await import('./lidOrchestrator');
     expect(generateLid(DEFAULT_BIN_PARAMS)).toBeNull();
@@ -177,6 +177,32 @@ describe('generateLid scenarios', () => {
     // Mesh should be different (magnets add face groups)
     expect(withMagnets!.triangleCount).not.toBe(without!.triangleCount);
   });
+
+  it('exports STL for stackable lid with magnet holes (regression #1655)', async () => {
+    // Stackable top + magnet holes used to fuse the slab BEFORE cutting
+    // magnet pockets, leaving each cylinder's coplanar-margin overshoot
+    // hanging inside the pocket cavity (a void inside the body's bounding
+    // volume). OCCT/WASM builds varied on whether they could trim that
+    // configuration cleanly — Firefox succeeded, some Chrome builds failed
+    // with STL_EXPORT_FAILED. Now the magnet cut runs against the
+    // floor-only body so the overshoot lands in empty space above the
+    // body, which is a topologically simpler through-cut.
+    const { exportLid } = await import('./lidOrchestrator');
+    const result = await exportLid(
+      makeParams(
+        { stackableTop: true, magnetHoles: true },
+        {
+          width: 2,
+          depth: 1,
+          height: 4,
+          base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
+        }
+      ),
+      'stl'
+    );
+    expect(result).not.toBeNull();
+    expect(result!.data.byteLength).toBeGreaterThan(0);
+  }, 60_000);
 
   it('builds a valid mesh for half-bin width (2.5×2) with magnets', async () => {
     // Regression: prior to the forEachCell-based magnet iteration, the
