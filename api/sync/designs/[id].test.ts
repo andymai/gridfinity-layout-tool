@@ -234,4 +234,17 @@ describe('id validation', () => {
     );
     expect(res._status).toBe(400);
   });
+
+  // Must accept the exact shape `generateDesignId()` in DesignerStorage.ts
+  // produces: `design_<ms-epoch>_<6-char-base36>`. The earlier validator
+  // was copy-pasted from layouts and silently 400'd every real design id.
+  it('accepts the generateDesignId shape (design_<ts>_<6 base36>)', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({ method: 'GET', id: 'design_1771464121030_9ltk1f' }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(404);
+  });
 });
