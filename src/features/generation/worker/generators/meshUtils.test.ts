@@ -82,26 +82,25 @@ describe('toIndexedMeshData', () => {
 });
 
 describe('toIndexedMeshData faceGroups', () => {
-  it('passes through faceGroups mapped via originToTag', () => {
+  it('uses brepjs-propagated origin as the FeatureTag', () => {
     const meshResult = {
       vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
       normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
       triangles: new Uint32Array([0, 1, 2]),
-      faceGroups: [{ start: 0, count: 3, faceId: 1, origin: 42 }],
+      faceGroups: [{ start: 0, count: 3, faceId: 1, origin: 1 /* FeatureTag.SCOOP */ }],
     };
-    const originToTag = new Map([[42, 2]]); // origin 42 -> SCOOP (2)
-    const result = toIndexedMeshData(meshResult, undefined, originToTag);
-    expect(result.faceGroups).toEqual([{ start: 0, count: 3, tag: 2 }]);
+    const result = toIndexedMeshData(meshResult);
+    expect(result.faceGroups).toEqual([{ start: 0, count: 3, tag: 1 }]);
   });
 
-  it('uses UNKNOWN tag when originToTag is undefined', () => {
+  it('treats origin=0 as UNKNOWN (brepjs default when no setShapeOrigin was called)', () => {
     const meshResult = {
       vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
       normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
       triangles: new Uint32Array([0, 1, 2]),
-      faceGroups: [{ start: 0, count: 3, faceId: 1, origin: 99 }],
+      faceGroups: [{ start: 0, count: 3, faceId: 1, origin: 0 }],
     };
-    const result = toIndexedMeshData(meshResult, undefined, undefined);
+    const result = toIndexedMeshData(meshResult);
     expect(result.faceGroups).toEqual([{ start: 0, count: 3, tag: 255 }]);
   });
 

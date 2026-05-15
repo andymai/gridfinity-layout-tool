@@ -8,7 +8,7 @@
  * context holds a mutable copy.
  */
 
-import { unwrap, fuse, clone, translate, withScope } from 'brepjs';
+import { unwrap, fuse, translate, withScope } from 'brepjs';
 import type { DisposalScope } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
@@ -30,7 +30,8 @@ export const shellStage: PipelineStage = {
   execute(ctx: PipelineContext): PipelineContext {
     const { params, dimensions: dim, signal, onProgress, originToTag } = ctx;
 
-    // Check cache first
+    // `getShellCache` returns a metadata-preserving clone so face-origin
+    // tags survive the cache hit (see `getShellCache` for the mechanism).
     const cachedShell = getShellCache(dim.shellKey);
     if (cachedShell) {
       return { ...ctx, solid: cachedShell };
@@ -134,6 +135,9 @@ export const shellStage: PipelineStage = {
 
     setShellCache(dim.shellKey, bin);
 
-    return { ...ctx, solid: unwrap(clone(bin)) };
+    // Mirror the cache-hit path: a zero-vector translate is the cheapest
+    // brepjs op that preserves face-origin metadata through a copy. Plain
+    // `clone()` would drop the WeakMap and break multi-color on first render.
+    return { ...ctx, solid: translate(bin, [0, 0, 0]) };
   },
 };

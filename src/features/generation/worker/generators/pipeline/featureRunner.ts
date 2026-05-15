@@ -70,6 +70,11 @@ export function runFeatureBuilders(
     }
 
     if (shape) {
+      // `clone()` drops the face-origin WeakMap (shellCache uses
+      // `translate([0,0,0])` for that reason), but here it's safe because
+      // `collectOrigins` re-tags the freshly cloned shape on every
+      // iteration — including cache hits. Don't move this call out of
+      // the loop or feature colors will silently collapse.
       collectOrigins(shape, builder.tag, ctx.originToTag);
       bucketMap[builder.target].push(shape);
     }

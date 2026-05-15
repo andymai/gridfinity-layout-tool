@@ -2,12 +2,14 @@
  * Bin export — converts the last generated solid to STL or STEP format.
  */
 
-import { unwrap, exportSTL, exportSTEP } from 'brepjs';
+import { unwrap, exportSTL, exportSTEP, mesh } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 
 import { generateBin } from './binOrchestrator';
+import { FeatureTag } from './featureTags';
 import { getLastSolid, isLastSolidExportQuality, setLastSolid } from './shapeCache';
+import { EXPORT_ANGULAR_TOLERANCE, EXPORT_TOLERANCE } from './utils/tolerances';
 
 /** Export result with binary data and suggested file name. */
 export interface ExportResult {
@@ -17,18 +19,25 @@ export interface ExportResult {
 }
 
 /**
- * Run a single export attempt against the current cached solid.
- * Regenerates first if the cache is missing or preview-quality.
+ * Run a single export attempt against the current cached solid, regenerating
+ * first if the cache is missing or preview-quality.
+ *
+ * `faceGroups` is captured so 3MF callers can map each STL triangle to a
+ * feature tag. The match relies on brepjs's shape+tolerance mesh cache: the
+ * regen path runs `mesh()` at `EXPORT_TOLERANCE`/`EXPORT_ANGULAR_TOLERANCE`
+ * (the export branch of `computeTessellationTolerances`), and we re-mesh /
+ * `exportSTL` with the same constants here so all three calls hit the same
+ * cached tessellation.
  */
 async function runExportAttempt(
   params: BinParams,
   format: ExportFormat,
-  tolerance: number,
-  angularTolerance: number,
   name: string
 ): Promise<ExportResult> {
+  let faceGroups: readonly FaceGroupData[] | undefined;
   if (!isLastSolidExportQuality()) {
-    generateBin(params, undefined, true);
+    const meshData = generateBin(params, undefined, true);
+    faceGroups = meshData.faceGroups;
   }
 
   const solid = getLastSolid();
@@ -37,24 +46,44 @@ async function runExportAttempt(
   }
 
   if (format === 'step') {
+    // STEP carries exact BREP geometry; faceGroups don't ride along, so
+    // skip the re-mesh that the STL/3MF path needs.
     const blob = unwrap(exportSTEP(solid));
     const data = await blob.arrayBuffer();
     return { data, fileName: `${name}.step` };
   }
 
+  // Cached export-quality solid — re-derive faceGroups from the brepjs mesh
+  // cache so STL→3MF gets per-triangle material indices.
+  if (!faceGroups) {
+    const m = mesh(solid, {
+      tolerance: EXPORT_TOLERANCE,
+      angularTolerance: EXPORT_ANGULAR_TOLERANCE,
+    });
+    faceGroups = m.faceGroups.map((g) => ({
+      start: g.start,
+      count: g.count,
+      tag: g.origin !== 0 ? g.origin : FeatureTag.UNKNOWN,
+    }));
+  }
+
   const blob = unwrap(
     exportSTL(solid, {
-      tolerance,
-      angularTolerance,
+      tolerance: EXPORT_TOLERANCE,
+      angularTolerance: EXPORT_ANGULAR_TOLERANCE,
       binary: true,
     })
   );
   const data = await blob.arrayBuffer();
-  return { data, fileName: `${name}.stl` };
+  return { data, fileName: `${name}.stl`, faceGroups };
 }
 
 /**
- * Export the last generated solid in the requested format.
+ * Export the last generated solid in the requested format. Tessellation is
+ * fixed at `EXPORT_TOLERANCE` / `EXPORT_ANGULAR_TOLERANCE` so the faceGroups
+ * captured at generation time line up with the triangles `exportSTL` emits
+ * (brepjs caches `mesh()` by shape+tolerance — diverging here would silently
+ * misalign per-triangle material indices in the 3MF).
  *
  * Strategy for robustness against intermittent kernel failures (GH #1339):
  *
@@ -70,19 +99,14 @@ async function runExportAttempt(
  *    preview-quality case, which my root-cause analysis for #1339 may
  *    not fully cover.
  *
- * STL: binary mesh with configurable tessellation quality
- * STEP: exact BREP geometry (lossless, CAD-interoperable)
+ * STL: binary mesh at the fixed export tolerance.
+ * STEP: exact BREP geometry (lossless, CAD-interoperable).
  */
-export async function exportBin(
-  params: BinParams,
-  format: ExportFormat,
-  tolerance = 0.01,
-  angularTolerance = 5
-): Promise<ExportResult> {
+export async function exportBin(params: BinParams, format: ExportFormat): Promise<ExportResult> {
   const name = `gridfinity-${params.width}x${params.depth}x${params.height}`;
 
   try {
-    return await runExportAttempt(params, format, tolerance, angularTolerance, name);
+    return await runExportAttempt(params, format, name);
   } catch (firstError) {
     // Discard any cached state and try once more with a completely fresh
     // solid. If this second attempt also fails, rethrow the second error
@@ -90,7 +114,7 @@ export async function exportBin(
     // fresh-solid path gives us the cleanest diagnostic stack.
     setLastSolid(null);
     try {
-      return await runExportAttempt(params, format, tolerance, angularTolerance, name);
+      return await runExportAttempt(params, format, name);
     } catch (retryError) {
       // Attach context about the first failure so telemetry can see both.
       if (retryError instanceof Error && firstError instanceof Error) {

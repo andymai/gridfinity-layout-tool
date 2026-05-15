@@ -1,43 +1,19 @@
 /**
- * Face provenance collector.
+ * Tags every face of `shape` with `tag` via brepjs `setShapeOrigin`. The tag
+ * lives in a WeakMap keyed by the shape's wrapped WASM handle and propagates
+ * through booleans (fuse/cut) and transforms, so faces in the final solid
+ * still report the tag of the input shape that contributed them. Without
+ * this call `getFaceOrigins` returns 0 for every face and all colors collapse
+ * to one. Read-back happens in `toIndexedMeshData`.
  *
- * Uses a fast low-fidelity mesh to discover which BREP face origins
- * belong to a given feature, recording them in the originToTag map.
- *
- * Uses "last writer wins" — features that run later (lip, label tab)
- * override the base body tag on shared/fused faces. This ensures
- * feature-specific colors take priority over the generic body color.
+ * `map` is vestigial — kept on the signature so every pipeline call site
+ * doesn't have to change. Removing it from `PipelineContext` is a follow-up.
  */
 
-import { mesh } from 'brepjs';
+import { setShapeOrigin } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { FeatureTag } from '../featureTags';
 
-/** Whether we've already logged the missing-origin warning this session. */
-let originWarningLogged = false;
-
-/**
- * Collect face origin IDs from a shape using a fast low-fidelity mesh.
- * Maps each unique origin to the given FeatureTag (overwrites existing tags).
- */
-export function collectOrigins(shape: Shape3D, tag: FeatureTag, map: Map<number, number>): void {
-  const m = mesh(shape, { tolerance: 5, angularTolerance: 45 });
-
-  for (const fg of m.faceGroups) {
-    const origin = (fg as { origin?: number }).origin;
-
-    if (origin === undefined) {
-      // Runtime guard: brepjs API may change and stop exposing origin field
-      if (!originWarningLogged) {
-        console.warn(
-          '[collectOrigins] face group missing origin field — color tagging may be incorrect'
-        );
-        originWarningLogged = true;
-      }
-      continue;
-    }
-
-    // Last writer wins: feature tags override base/shell tags
-    map.set(origin, tag);
-  }
+export function collectOrigins(shape: Shape3D, tag: FeatureTag, _map: Map<number, number>): void {
+  setShapeOrigin(shape, tag);
 }

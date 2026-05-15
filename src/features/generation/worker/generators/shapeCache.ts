@@ -16,7 +16,7 @@
  * - patternTemplateCache: pattern shape template (single-entry, cheap to rebuild)
  */
 
-import { clone, unwrap } from 'brepjs';
+import { clone, translate, unwrap } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { CacheStats } from './lruCache';
 import { LRUCache } from './lruCache';
@@ -132,7 +132,14 @@ export const getLipCache = lip.get;
 export const setLipCache = lip.set;
 
 export function getShellCache(key: string): Shape3D | null {
-  return cloneFromCache(shellCache, key);
+  const cached = shellCache.get(key);
+  if (cached === undefined) return null;
+  // `clone()` rewraps the topology in a new JS Shape, but the face-origin
+  // WeakMap is keyed by `.wrapped` and does not follow. A zero-vector
+  // `translate` goes through `translateWithHistory` and calls
+  // `propagateAllMetadata`, giving us a metadata-preserving clone — without
+  // this the multi-color preview collapses to a single material.
+  return translate(cached, [0, 0, 0]);
 }
 
 export function setShellCache(key: string, shape: Shape3D): void {

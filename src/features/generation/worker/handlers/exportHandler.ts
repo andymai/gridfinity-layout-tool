@@ -29,12 +29,7 @@ export async function handleExport(message: ExportMessage): Promise<void> {
     payload.requestId,
     'EXPORT_RESULT',
     async () => {
-      const result = await exportBin(
-        payload.params,
-        payload.format,
-        payload.tolerance,
-        payload.angularTolerance
-      );
+      const result = await exportBin(payload.params, payload.format);
       return {
         data: result.data,
         format: payload.format,
@@ -98,8 +93,11 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
     requestId,
     'COMBINED_EXPORT_RESULT',
     async () => {
-      // Export the bin first (regenerates solid if needed)
-      const binResult = await exportBin(params, format, tolerance, angularTolerance);
+      // Export the bin first (regenerates solid if needed). exportBin runs
+      // at the fixed export tolerance; the explicit `tolerance` /
+      // `angularTolerance` from the payload still flow into divider and lid
+      // exports below which carry their own tessellation knobs.
+      const binResult = await exportBin(params, format);
 
       const hasDividers =
         params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
