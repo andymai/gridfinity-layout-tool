@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.82.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.82.0...gridfinity-layout-tool-v4.82.1) (2026-05-15)
+
+
+### Bug Fixes
+
+* **generation:** propagate face tags via setShapeOrigin so multi-color export works ([#1662](https://github.com/andymai/gridfinity-layout-tool/issues/1662)) ([476b1e2](https://github.com/andymai/gridfinity-layout-tool/commit/476b1e29db1250a4a60cee4c67fcdfa36d419af8))
+
 ## [4.82.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.81.2...gridfinity-layout-tool-v4.82.0) (2026-05-15)
 
 
