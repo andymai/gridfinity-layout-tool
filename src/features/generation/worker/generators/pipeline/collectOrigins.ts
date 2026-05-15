@@ -1,22 +1,13 @@
 /**
- * Face provenance collector.
+ * Tags every face of `shape` with `tag` via brepjs `setShapeOrigin`. The tag
+ * lives in a WeakMap keyed by the shape's wrapped WASM handle and propagates
+ * through booleans (fuse/cut) and transforms, so faces in the final solid
+ * still report the tag of the input shape that contributed them. Without
+ * this call `getFaceOrigins` returns 0 for every face and all colors collapse
+ * to one. Read-back happens in `toIndexedMeshData`.
  *
- * Tags every face of `shape` with `tag` using brepjs's `setShapeOrigin`, which
- * stores the tag in a WeakMap keyed by the shape's wrapped WASM handle. The
- * kernel propagates these origins through boolean ops (fuse / cut) and
- * transforms (translate / rotate) automatically, so faces in the final fused
- * solid still report the tag of whichever input shape contributed them.
- *
- * Why: a face group's `origin` field comes from `getFaceOrigins(shape)`, which
- * is empty unless `setShapeOrigin` was called on the shape (or an ancestor).
- * Without this call the origin defaults to 0 for every face, and downstream
- * tag lookup collapses to whichever feature ran last — every face gets the
- * same color. The legacy implementation walked face groups and stored their
- * origins in a map, but since every origin was 0 the map only ever held one
- * entry. See `toIndexedMeshData` for how the propagated origin is read back.
- *
- * The `map` parameter is kept for call-site compatibility with the pipeline
- * context (and used as a session-scoped sanity-check that the tag was set).
+ * `map` is vestigial — kept on the signature so every pipeline call site
+ * doesn't have to change. Removing it from `PipelineContext` is a follow-up.
  */
 
 import { setShapeOrigin } from 'brepjs';

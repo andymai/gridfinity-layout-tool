@@ -1,19 +1,8 @@
 /**
- * Verifies the `multi_color_export` Labs flow end-to-end. Pins the fix for
- * the bug where every face downstream of `collectOrigins` got the same tag
- * because brepjs's `mesh().faceGroups[].origin` is `0` by default — the
- * previous implementation tried to use that field as a face-id and ended up
- * with a one-entry map. The repaired path calls `setShapeOrigin(shape, tag)`
- * so origins propagate through fuses and reach the final mesh.
- *
- * Step list:
- *   1. Enable the Labs flag, change body + lip to distinct hex colors
- *   2. Download the 3MF, unzip it, parse the embedded XML
- *   3. Assert `<basematerials>` carries the chosen hex colors AND the
- *      per-triangle `pid`/`p1` attributes span ≥2 distinct material indices
- *
- * If `<basematerials>` is missing or every `<triangle>` carries the same
- * `p1`, the regression is back.
+ * Pins the fix for the multi-color export regression: faces tagged via
+ * `collectOrigins` must reach the final 3MF as distinct material indices.
+ * Failure mode if this regresses: `<basematerials>` is missing, or every
+ * `<triangle>` carries the same `p1` — i.e. one color for the whole bin.
  */
 
 import { test, expect } from '../fixtures';
@@ -37,9 +26,8 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
         try {
           localStorage.setItem(key, JSON.stringify(prefs));
         } catch {
-          // Storage may be unavailable in private/incognito contexts; the
-          // test will fail at the next visibility assertion if the flag
-          // doesn't apply, which is a clearer signal than a bare throw.
+          // If storage is unavailable, the visibility assertion below fails
+          // with a clearer signal than rethrowing here would give.
         }
       },
       { key: LABS_KEY, flag: LAB_FLAG }
@@ -93,14 +81,11 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     expect(entries['3D/3dmodel.model']).toBeDefined();
     const xml = strFromU8(entries['3D/3dmodel.model']);
 
-    // basematerials should declare both hex colors. Compare lower-case so
-    // the test isn't sensitive to the exporter's case choice.
+    // Lower-cased: exporter's hex case is not part of the contract.
     expect(xml.toLowerCase()).toContain(BODY_HEX);
     expect(xml.toLowerCase()).toContain(LIP_HEX);
     expect(xml).toMatch(/<basematerials\b/);
 
-    // Triangles carry pid/p1 multi-material attributes and span at least
-    // two distinct p1 indices (body + lip).
     const triangleMatches = xml.match(/<triangle\b[^/]*p1="(\d+)"/g) ?? [];
     expect(triangleMatches.length).toBeGreaterThan(0);
     const distinctP1 = new Set(triangleMatches.map((m) => /p1="(\d+)"/.exec(m)?.[1]));

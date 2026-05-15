@@ -134,13 +134,11 @@ export const setLipCache = lip.set;
 export function getShellCache(key: string): Shape3D | null {
   const cached = shellCache.get(key);
   if (cached === undefined) return null;
-  // `clone()` is a kernel downcast that rewraps the same topology with a
-  // new JS Shape — the face-origin WeakMap (keyed by `.wrapped`) does not
-  // follow. A zero-vector `translate` is the cheapest brepjs op that
-  // _does_ propagate metadata (it goes through `translateWithHistory` and
-  // calls `propagateAllMetadata` on the result), so we use it as a
-  // metadata-preserving clone. Without this every face downstream reads
-  // `origin = 0` and the multi-color preview collapses to one material.
+  // `clone()` rewraps the topology in a new JS Shape, but the face-origin
+  // WeakMap is keyed by `.wrapped` and does not follow. A zero-vector
+  // `translate` goes through `translateWithHistory` and calls
+  // `propagateAllMetadata`, giving us a metadata-preserving clone — without
+  // this the multi-color preview collapses to a single material.
   return translate(cached, [0, 0, 0]);
 }
 

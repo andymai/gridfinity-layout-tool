@@ -1,24 +1,13 @@
-/**
- * Mesh conversion utilities for the generation pipeline.
- *
- * Converts brepjs mesh data to the indexed MeshData format
- * used by the Three.js renderer.
- */
-
 import type { MeshData } from '../../../bridge/types';
 
 /**
- * Convert brepjs indexed mesh to our MeshData format, keeping indexed representation.
+ * Convert brepjs indexed mesh to our MeshData format. Each face group's
+ * `origin` is the FeatureTag stamped by `collectOrigins`/`setShapeOrigin` and
+ * propagated through booleans. Origin `0` is brepjs's default for untagged
+ * faces and must map to UNKNOWN — FeatureTag.BASE also equals 0, so we lose
+ * the distinction between "tagged BASE" and "untagged" by design.
  *
- * The `origin` field on each face group is the FeatureTag set via
- * `setShapeOrigin` on the source shape (see `collectOrigins`). Origins
- * propagate through fuses/cuts/transforms, so faces in the final solid still
- * report the tag of whichever feature shape contributed them. A `0` origin
- * means brepjs returned the default — treat it as UNKNOWN to avoid silently
- * coloring untagged faces with FeatureTag.BASE (which also happens to be 0).
- *
- * @param meshResult brepjs mesh with indexed vertices/normals/triangles
- * @param originToTag unused; retained for call-site compatibility
+ * `_originToTag` is unused; kept positionally so callers don't churn.
  */
 export function toIndexedMeshData(
   meshResult: {

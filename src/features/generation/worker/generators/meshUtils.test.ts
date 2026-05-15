@@ -87,9 +87,7 @@ describe('toIndexedMeshData faceGroups', () => {
       vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
       normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
       triangles: new Uint32Array([0, 1, 2]),
-      // `setShapeOrigin(shape, FeatureTag.SCOOP=1)` propagates origin=1 onto
-      // every face of the resulting solid.
-      faceGroups: [{ start: 0, count: 3, faceId: 1, origin: 1 }],
+      faceGroups: [{ start: 0, count: 3, faceId: 1, origin: 1 /* FeatureTag.SCOOP */ }],
     };
     const result = toIndexedMeshData(meshResult);
     expect(result.faceGroups).toEqual([{ start: 0, count: 3, tag: 1 }]);

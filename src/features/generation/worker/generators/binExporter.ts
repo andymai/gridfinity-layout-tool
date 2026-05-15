@@ -17,13 +17,13 @@ export interface ExportResult {
 }
 
 /**
- * Run a single export attempt against the current cached solid.
- * Regenerates first if the cache is missing or preview-quality.
+ * Run a single export attempt against the current cached solid, regenerating
+ * first if the cache is missing or preview-quality.
  *
- * `faceGroups` is captured from the export-quality regen so 3MF callers can
- * map each STL triangle to a feature tag. brepjs caches mesh() output by
- * shape+tolerance, and `exportSTL` walks the same tessellation, so the
- * per-triangle ordering matches the face-group ranges produced here.
+ * `faceGroups` is captured so 3MF callers can map each STL triangle to a
+ * feature tag. brepjs caches `mesh()` output by shape+tolerance and
+ * `exportSTL` walks the same tessellation, so the per-triangle ordering here
+ * matches what ends up in the STL.
  */
 async function runExportAttempt(
   params: BinParams,
@@ -43,19 +43,14 @@ async function runExportAttempt(
     throw new Error('Failed to generate solid for export');
   }
 
-  // If we skipped regen above, the cached solid was already export-quality
-  // but we don't have its meshData. Re-mesh it at export tolerances — brepjs
-  // caches mesh results by shape+tolerance, so this hits the cache and
-  // gives us the same face-group ordering exportSTL will walk.
+  // Cached export-quality solid — re-derive faceGroups from the brepjs mesh
+  // cache so we can return them alongside the STL/STEP payload.
   if (!faceGroups) {
     const m = mesh(solid, { tolerance, angularTolerance });
     faceGroups = m.faceGroups.map((g) => ({
       start: g.start,
       count: g.count,
-      // Brepjs returns origin=0 when no setShapeOrigin tag is in the lookup
-      // map — that's "untagged" from our pipeline's POV, so treat it as
-      // UNKNOWN (matches `toIndexedMeshData`).
-      tag: g.origin !== 0 ? g.origin : 255,
+      tag: g.origin !== 0 ? g.origin : 255, // FeatureTag.UNKNOWN — matches `toIndexedMeshData`
     }));
   }
 

@@ -30,9 +30,8 @@ export const shellStage: PipelineStage = {
   execute(ctx: PipelineContext): PipelineContext {
     const { params, dimensions: dim, signal, onProgress, originToTag } = ctx;
 
-    // Check cache first. `getShellCache` returns a metadata-preserving
-    // clone (via a zero-vector translate) so face origins survive the
-    // cache hit and multi-color tags reach the final mesh.
+    // `getShellCache` returns a metadata-preserving clone so face-origin
+    // tags survive the cache hit (see `getShellCache` for the mechanism).
     const cachedShell = getShellCache(dim.shellKey);
     if (cachedShell) {
       return { ...ctx, solid: cachedShell };
