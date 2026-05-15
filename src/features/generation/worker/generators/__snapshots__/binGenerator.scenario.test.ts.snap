@@ -180,6 +180,10 @@ exports[`solid cutouts > 2×2 solid with rectangle cutout 1`] = `2568`;
 
 exports[`solid cutouts > 2×2 solid with rectangle with scoop cutout 1`] = `3244`;
 
+exports[`solid cutouts > 2×2 solid with rectangle, edge gate disables a single wall 1`] = `2862`;
+
+exports[`solid cutouts > 2×2 solid with rectangle, split scoop (W only) cuts only left/right walls 1`] = `2712`;
+
 exports[`solid cutouts > 2×2 solid with rotated 45° cutout 1`] = `2580`;
 
 exports[`solid cutouts > 2×2 solid with rounded-rectangle cutout 1`] = `2696`;

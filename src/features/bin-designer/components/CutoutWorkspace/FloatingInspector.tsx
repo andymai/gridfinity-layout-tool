@@ -13,6 +13,7 @@ import { useTranslation } from '@/i18n';
 import { SliderInput } from '@/features/bin-designer/components/controls/SliderInput';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { clampRotationToBounds, getRotatedBounds } from '../panel/CutoutsSection/geometry';
+import { CutoutScoopControls } from './CutoutScoopControls';
 
 interface FloatingInspectorProps {
   readonly cutouts: readonly Cutout[];
@@ -216,13 +217,32 @@ export function FloatingInspector({
   // For multi-select, compute shared values
   const sharedCutDepth = getSharedValue(selectedCutouts, preview, 'cutDepth');
   const sharedRotation = getSharedValue(selectedCutouts, preview, 'rotation');
-  const sharedScoopRadius = getSharedValue(selectedCutouts, preview, 'scoopRadius');
+  const sharedScoopRadiusW = getSharedValue(selectedCutouts, preview, 'scoopRadiusW');
+  const sharedScoopRadiusD = getSharedValue(selectedCutouts, preview, 'scoopRadiusD');
 
   const handleBatchUpdate = (key: keyof Cutout, value: number) => {
     if (onUpdateBatch && selectedCutouts.length > 1) {
       const updates = new Map<string, Partial<Cutout>>();
       for (const c of selectedCutouts) {
         updates.set(c.id, { [key]: value });
+      }
+      onUpdateBatch(updates);
+    }
+  };
+
+  // Multi-select scoop axis update. Non-rectangle cutouts have no W/D
+  // distinction — the generator collapses W and D to a single value via
+  // max() — so writing only one axis would silently no-op if the other axis
+  // is larger. Write both axes for circles/paths to keep the slider
+  // semantically meaningful for those shapes.
+  const handleScoopAxisBatch = (axis: 'scoopRadiusW' | 'scoopRadiusD', value: number) => {
+    if (onUpdateBatch && selectedCutouts.length > 1) {
+      const updates = new Map<string, Partial<Cutout>>();
+      for (const c of selectedCutouts) {
+        updates.set(
+          c.id,
+          c.shape === 'rectangle' ? { [axis]: value } : { scoopRadiusW: value, scoopRadiusD: value }
+        );
       }
       onUpdateBatch(updates);
     }
@@ -335,18 +355,12 @@ export function FloatingInspector({
             unit="mm"
             disabled={disabled}
           />
-          <SliderInput
-            label="Scoop"
-            value={singleCutout.scoopRadius ?? 0}
-            onChange={(scoopRadius) => onUpdate(singleCutout.id, { scoopRadius })}
-            min={0}
-            max={Math.min(
-              singleCutout.cutDepth,
-              Math.min(singleCutout.width, singleCutout.depth) / 2
-            )}
-            step={0.5}
-            unit="mm"
+          <CutoutScoopControls
+            key={singleCutout.id}
+            cutout={singleCutout}
+            preview={preview.get(singleCutout.id)}
             disabled={disabled}
+            onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
           />
         </div>
       )}
@@ -379,9 +393,19 @@ export function FloatingInspector({
               disabled={disabled}
             />
             <SliderInput
-              label="Scoop"
-              value={sharedScoopRadius ?? 0}
-              onChange={(scoopRadius) => handleBatchUpdate('scoopRadius', scoopRadius)}
+              label={t('binDesigner.cutouts.scoopW')}
+              value={sharedScoopRadiusW ?? 0}
+              onChange={(scoopRadiusW) => handleScoopAxisBatch('scoopRadiusW', scoopRadiusW)}
+              min={0}
+              max={sharedCutDepth ?? maxCutDepth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
+            <SliderInput
+              label={t('binDesigner.cutouts.scoopD')}
+              value={sharedScoopRadiusD ?? 0}
+              onChange={(scoopRadiusD) => handleScoopAxisBatch('scoopRadiusD', scoopRadiusD)}
               min={0}
               max={sharedCutDepth ?? maxCutDepth}
               step={0.5}

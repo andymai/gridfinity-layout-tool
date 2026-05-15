@@ -24,6 +24,43 @@ export const solidCutouts: ScenarioCase[] = [
       cutouts: [makeCutout({ shape: 'rectangle', scoopRadius: 3 })],
     },
   }),
+  defineScenario(
+    'solid cutouts',
+    '2\u00d72 solid with rectangle, split scoop (W only) cuts only left/right walls',
+    {
+      params: {
+        style: 'solid',
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [
+          makeCutout({
+            shape: 'rectangle',
+            width: 25,
+            depth: 10,
+            scoopRadiusW: 3,
+            scoopRadiusD: 0,
+          }),
+        ],
+      },
+    }
+  ),
+  defineScenario(
+    'solid cutouts',
+    '2\u00d72 solid with rectangle, edge gate disables a single wall',
+    {
+      params: {
+        style: 'solid',
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        cutouts: [
+          makeCutout({
+            shape: 'rectangle',
+            scoopRadiusW: 2,
+            scoopRadiusD: 2,
+            scoopEdges: { left: false, right: true, front: true, back: true },
+          }),
+        ],
+      },
+    }
+  ),
   defineScenario('solid cutouts', '2\u00d72 solid with rounded-rectangle cutout', {
     params: {
       style: 'solid',

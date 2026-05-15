@@ -349,6 +349,22 @@ export interface Insert {
 /** Shape of a top-down cutout into solid bin body */
 export type CutoutShape = 'rectangle' | 'circle' | 'path';
 
+/** Per-edge enable flags for split-axis cutout scoops, in the cutout's local frame. */
+export interface CutoutScoopEdges {
+  readonly left: boolean;
+  readonly right: boolean;
+  readonly front: boolean;
+  readonly back: boolean;
+}
+
+/** Default scoop edge flags: all enabled. Use when scoopEdges is undefined. */
+export const DEFAULT_SCOOP_EDGES: CutoutScoopEdges = {
+  left: true,
+  right: true,
+  front: true,
+  back: true,
+};
+
 /** Minimum number of anchor points required to form a closed path shape */
 export const MIN_PATH_POINTS = 2;
 
@@ -400,8 +416,23 @@ export interface Cutout {
   readonly label: string;
   /** Group ID for boolean union (null = ungrouped) */
   readonly groupId: string | null;
-  /** Scoop radius in mm — fillets the bottom edges of the cutout for easy access */
-  readonly scoopRadius?: number;
+  /**
+   * Scoop radius along the cutout's local width axis (mm).
+   * Fillets the Y-aligned bottom edges (left/right walls in local frame).
+   * Default 0 (no fillet). Rectangle shape only — circle/path collapse W and D to one value.
+   */
+  readonly scoopRadiusW?: number;
+  /**
+   * Scoop radius along the cutout's local depth axis (mm).
+   * Fillets the X-aligned bottom edges (front/back walls in local frame).
+   * Default 0 (no fillet).
+   */
+  readonly scoopRadiusD?: number;
+  /**
+   * Per-edge enable flags in the cutout's local frame. Default all true.
+   * Applies only to ungrouped rectangle cutouts; ignored for circles/paths and grouped cutouts.
+   */
+  readonly scoopEdges?: CutoutScoopEdges;
   /** When true, the cutout cannot be moved, resized, or rotated */
   readonly locked?: boolean;
   /** When true, the cutout is not rendered or selectable (faint ghost only) */

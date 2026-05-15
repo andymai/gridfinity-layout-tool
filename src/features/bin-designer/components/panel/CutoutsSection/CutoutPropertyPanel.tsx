@@ -9,6 +9,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { SliderInput } from '../../controls/SliderInput';
 import { clampRotationToBounds, flipCutoutHorizontal, flipCutoutVertical } from './geometry';
+import { CutoutScoopControls } from '../../CutoutWorkspace/CutoutScoopControls';
 
 interface CutoutPropertyPanelProps {
   readonly cutout: Cutout;
@@ -102,15 +103,11 @@ export function CutoutPropertyPanel({
             disabled={disabled}
           />
         )}
-        <SliderInput
-          label={t('binDesigner.cutouts.scoopRadius')}
-          value={cutout.scoopRadius ?? 0}
-          onChange={(scoopRadius) => onUpdate(cutout.id, { scoopRadius })}
-          min={0}
-          max={Math.min(cutout.cutDepth, Math.min(cutout.width, cutout.depth) / 2)}
-          step={0.5}
-          unit="mm"
+        <CutoutScoopControls
+          key={cutout.id}
+          cutout={cutout}
           disabled={disabled}
+          onUpdate={(patch) => onUpdate(cutout.id, patch)}
         />
         <SliderInput
           label={t('binDesigner.cutouts.rotation')}
