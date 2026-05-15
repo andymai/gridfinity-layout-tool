@@ -11,6 +11,16 @@ export interface TessellationTolerances {
 }
 
 /**
+ * Single source of truth for the tessellation quality used by every export
+ * pass. `generateBin(_, _, forExport=true)` and `exportSTL` must walk the
+ * same `mesh()` (brepjs caches by shape+tolerance), otherwise the
+ * per-triangle faceGroups captured at generation time misalign with the
+ * triangles `exportSTL` writes.
+ */
+export const EXPORT_TOLERANCE = 0.01;
+export const EXPORT_ANGULAR_TOLERANCE = 5;
+
+/**
  * Select tessellation tolerances based on export mode and bin dimensions.
  *
  * Quality tiers:
@@ -25,7 +35,7 @@ export function computeTessellationTolerances(
   maxDimension: number
 ): TessellationTolerances {
   if (forExport) {
-    return { tolerance: 0.01, angularTolerance: 5 };
+    return { tolerance: EXPORT_TOLERANCE, angularTolerance: EXPORT_ANGULAR_TOLERANCE };
   }
   if (hasLip) {
     return {
