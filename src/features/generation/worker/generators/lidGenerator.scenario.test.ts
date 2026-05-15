@@ -54,7 +54,7 @@ function makeParams(lid: Partial<LidConfig>, extra: Partial<BinParams> = {}): Bi
   };
 }
 
-describe('generateLid scenarios', () => {
+describe('lid generation and export scenarios', () => {
   it('returns null when lid is disabled', async () => {
     const { generateLid } = await import('./lidOrchestrator');
     expect(generateLid(DEFAULT_BIN_PARAMS)).toBeNull();
