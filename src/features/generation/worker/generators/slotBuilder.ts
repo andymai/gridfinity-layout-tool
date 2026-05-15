@@ -186,17 +186,17 @@ export function buildSlotCuts(
  * pipeline, but the separately-built lip needs its own cutouts so the
  * dividers can slide in from above.
  *
- * The body's wall slot positions are computed with `edgeInset=0` because
- * bodyParams strips `stackingLip` before going through the pipeline. To
- * keep lip cuts aligned with those wall slots, callers should pass
- * `slotPositionsEdgeInset=0` here as well.
- *
  * @param params Bin parameters (with the user's style/slotConfig intact)
  * @param innerW Interior width in mm
  * @param innerD Interior depth in mm
  * @param lipInfo Lip geometry — physical dimensions of the cutters
- * @param slotPositionsEdgeInset Edge inset used when computing slot positions
- *   along each axis. Pass 0 to match split bin body positions.
+ * @param slotPositionsEdgeInset Edge inset (mm) used when computing slot
+ *   positions along each axis. MUST match the value the caller's body used
+ *   when generating its wall slots — otherwise lip cuts will misalign and
+ *   dividers won't slide through. Split bin callers should pass 0 because
+ *   bodyParams strips `stackingLip`, forcing the pipeline to compute body
+ *   slot positions with edgeInset=0. Non-split callers wanting to use this
+ *   helper would pass `lipOverhang` instead to match the normal pipeline.
  * @returns Fused compound of lip cutters, or null if not slotted / no cuts needed
  */
 export function buildLipSlotCuts(
@@ -204,7 +204,7 @@ export function buildLipSlotCuts(
   innerW: number,
   innerD: number,
   lipInfo: LipCutInfo,
-  slotPositionsEdgeInset = 0
+  slotPositionsEdgeInset: number
 ): Shape3D | null {
   if (params.style !== 'slotted') return null;
   if (params.wallThickness < MIN_WALL_FOR_SLOTS) return null;
