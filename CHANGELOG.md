@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.82.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.81.2...gridfinity-layout-tool-v4.82.0) (2026-05-15)
+
+
+### Features
+
+* **cutouts:** split scoop into per-axis radii with per-edge toggles ([#1660](https://github.com/andymai/gridfinity-layout-tool/issues/1660)) ([1a00899](https://github.com/andymai/gridfinity-layout-tool/commit/1a00899427ac7d4a9bc8aad667b4b81e3db2b57b))
+
 ## [4.81.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.81.1...gridfinity-layout-tool-v4.81.2) (2026-05-15)
 
 
