@@ -177,6 +177,82 @@ export function buildSlotCuts(
   });
 }
 
+/**
+ * Build only the lip-zone slot cutters for a slotted bin.
+ *
+ * Used by splitBinBuilder where the stacking lip is built and split
+ * separately from the body (to work around an OCCT crash at the lip-wall
+ * junction). The body already has wall slot cuts applied via the normal
+ * pipeline, but the separately-built lip needs its own cutouts so the
+ * dividers can slide in from above.
+ *
+ * The body's wall slot positions are computed with `edgeInset=0` because
+ * bodyParams strips `stackingLip` before going through the pipeline. To
+ * keep lip cuts aligned with those wall slots, callers should pass
+ * `slotPositionsEdgeInset=0` here as well.
+ *
+ * @param params Bin parameters (with the user's style/slotConfig intact)
+ * @param innerW Interior width in mm
+ * @param innerD Interior depth in mm
+ * @param lipInfo Lip geometry — physical dimensions of the cutters
+ * @param slotPositionsEdgeInset Edge inset used when computing slot positions
+ *   along each axis. Pass 0 to match split bin body positions.
+ * @returns Fused compound of lip cutters, or null if not slotted / no cuts needed
+ */
+export function buildLipSlotCuts(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  lipInfo: LipCutInfo,
+  slotPositionsEdgeInset = 0
+): Shape3D | null {
+  if (params.style !== 'slotted') return null;
+  if (params.wallThickness < MIN_WALL_FOR_SLOTS) return null;
+
+  const lipOverhang = Math.max(0, lipInfo.lipTaperWidth - params.wallThickness);
+  if (lipOverhang <= 0) return null;
+
+  return withScope((scope: DisposalScope): Shape3D | null => {
+    const { slotConfig } = params;
+    const { slotWidth } = getEffectiveSlotDimensions(params);
+    const lipCutStartZ = lipInfo.wallHeight - lipInfo.lipTaperWidth;
+    const lipCutHeight = lipInfo.lipTaperWidth + lipInfo.lipHeight + 1;
+
+    const cutters: Shape3D[] = [];
+
+    const addAxisLipCuts = (axis: 'x' | 'y', innerCross: number, positions: number[]): void => {
+      const halfSpan = innerCross / 2;
+      for (const crossPos of positions) {
+        const lipCutters = createMirroredLipCutters(
+          lipOverhang,
+          slotWidth,
+          lipCutHeight,
+          halfSpan,
+          crossPos,
+          lipCutStartZ,
+          axis
+        );
+        for (const c of lipCutters) cutters.push(scope.register(c));
+      }
+    };
+
+    if (slotConfig.x.enabled) {
+      const positions = calculateSlotPositions(innerD, slotConfig.x.pitch, slotPositionsEdgeInset);
+      addAxisLipCuts('x', innerW, positions);
+    }
+
+    if (slotConfig.y.enabled) {
+      const positions = calculateSlotPositions(innerW, slotConfig.y.pitch, slotPositionsEdgeInset);
+      addAxisLipCuts('y', innerD, positions);
+    }
+
+    if (cutters.length === 0) return null;
+    const fused =
+      cutters.length === 1 ? cutters[0] : scope.register(unwrap(fuseAll(cutters as ValidSolid[])));
+    return unwrap(clone(fused));
+  });
+}
+
 function buildSlotCutsInScope(
   scope: DisposalScope,
   params: BinParams,
