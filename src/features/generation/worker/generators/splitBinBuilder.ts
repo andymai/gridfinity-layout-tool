@@ -9,6 +9,7 @@ import {
   box,
   unwrap,
   fuse,
+  cut,
   clone,
   translate,
   intersect,
@@ -17,16 +18,18 @@ import {
   meshEdges,
   exportSTL,
 } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 
 import { SIZE, CLEARANCE, SOCKET_HEIGHT } from './generatorTypes';
+import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { toIndexedMeshData } from './utils/mesh';
 import { buildTopShape } from './boxBuilder';
 import { generateBin } from './binOrchestrator';
 import { getLastSolid, setLastSolid } from './shapeCache';
 import { applySplitConnectors, computeCutFaces } from './splitConnectorBuilder';
 import type { BinGeometryContext } from './splitConnectorBuilder';
+import { buildLipSlotCuts } from './slotBuilder';
 import { isAbortError } from './utils/abort';
 
 /** Result of a split export: array of piece buffers with grid labels */
@@ -143,6 +146,34 @@ function splitSolidIntoPieces(
     const lipBase = buildTopShape(params.width, params.depth, true, params.gridUnitMm);
     lipSolid = translate(lipBase, [0, 0, wallTopZ - LIP_FUSE_OVERLAP]);
     lipBase.delete();
+
+    // For slotted bins, cut divider notches through the lip so removable
+    // dividers can slide in from the top. The wall slot cuts already live in
+    // the body solid (applied via the normal pipeline on bodyParams), but the
+    // lip is built fresh here and would otherwise block the dividers.
+    //
+    // Body wall slots were positioned with edgeInset=0 (bodyParams strips
+    // stackingLip, so dim.hasLip=false in the pipeline). Pass the same inset
+    // here to keep the lip cuts aligned with the body's wall slots.
+    if (params.style === 'slotted') {
+      const innerW = outerW - 2 * params.wallThickness;
+      const innerD = outerD - 2 * params.wallThickness;
+      const lipInfo = {
+        wallHeight: wallTopZ,
+        lipHeight: LIP_HEIGHT,
+        lipTaperWidth: LIP_TAPER_WIDTH,
+      };
+      const lipCuts = buildLipSlotCuts(params, innerW, innerD, lipInfo, 0);
+      if (lipCuts) {
+        try {
+          const newLip = unwrap(cut(lipSolid as ValidSolid, lipCuts as ValidSolid));
+          lipSolid.delete();
+          lipSolid = newLip;
+        } finally {
+          lipCuts.delete();
+        }
+      }
+    }
   }
 
   // Boundary arrays: [left edge, ...cut planes, right edge]
