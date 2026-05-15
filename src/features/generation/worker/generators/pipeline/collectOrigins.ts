@@ -1,43 +1,29 @@
 /**
  * Face provenance collector.
  *
- * Uses a fast low-fidelity mesh to discover which BREP face origins
- * belong to a given feature, recording them in the originToTag map.
+ * Tags every face of `shape` with `tag` using brepjs's `setShapeOrigin`, which
+ * stores the tag in a WeakMap keyed by the shape's wrapped WASM handle. The
+ * kernel propagates these origins through boolean ops (fuse / cut) and
+ * transforms (translate / rotate) automatically, so faces in the final fused
+ * solid still report the tag of whichever input shape contributed them.
  *
- * Uses "last writer wins" — features that run later (lip, label tab)
- * override the base body tag on shared/fused faces. This ensures
- * feature-specific colors take priority over the generic body color.
+ * Why: a face group's `origin` field comes from `getFaceOrigins(shape)`, which
+ * is empty unless `setShapeOrigin` was called on the shape (or an ancestor).
+ * Without this call the origin defaults to 0 for every face, and downstream
+ * tag lookup collapses to whichever feature ran last — every face gets the
+ * same color. The legacy implementation walked face groups and stored their
+ * origins in a map, but since every origin was 0 the map only ever held one
+ * entry. See `toIndexedMeshData` for how the propagated origin is read back.
+ *
+ * The `map` parameter is kept for call-site compatibility with the pipeline
+ * context (and used as a session-scoped sanity-check that the tag was set).
  */
 
-import { mesh } from 'brepjs';
+import { setShapeOrigin } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { FeatureTag } from '../featureTags';
 
-/** Whether we've already logged the missing-origin warning this session. */
-let originWarningLogged = false;
-
-/**
- * Collect face origin IDs from a shape using a fast low-fidelity mesh.
- * Maps each unique origin to the given FeatureTag (overwrites existing tags).
- */
 export function collectOrigins(shape: Shape3D, tag: FeatureTag, map: Map<number, number>): void {
-  const m = mesh(shape, { tolerance: 5, angularTolerance: 45 });
-
-  for (const fg of m.faceGroups) {
-    const origin = (fg as { origin?: number }).origin;
-
-    if (origin === undefined) {
-      // Runtime guard: brepjs API may change and stop exposing origin field
-      if (!originWarningLogged) {
-        console.warn(
-          '[collectOrigins] face group missing origin field — color tagging may be incorrect'
-        );
-        originWarningLogged = true;
-      }
-      continue;
-    }
-
-    // Last writer wins: feature tags override base/shell tags
-    map.set(origin, tag);
-  }
+  setShapeOrigin(shape, tag);
+  map.set(tag, tag);
 }

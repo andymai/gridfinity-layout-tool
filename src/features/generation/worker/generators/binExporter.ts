@@ -2,7 +2,7 @@
  * Bin export — converts the last generated solid to STL or STEP format.
  */
 
-import { unwrap, exportSTL, exportSTEP } from 'brepjs';
+import { unwrap, exportSTL, exportSTEP, mesh } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 
@@ -19,6 +19,11 @@ export interface ExportResult {
 /**
  * Run a single export attempt against the current cached solid.
  * Regenerates first if the cache is missing or preview-quality.
+ *
+ * `faceGroups` is captured from the export-quality regen so 3MF callers can
+ * map each STL triangle to a feature tag. brepjs caches mesh() output by
+ * shape+tolerance, and `exportSTL` walks the same tessellation, so the
+ * per-triangle ordering matches the face-group ranges produced here.
  */
 async function runExportAttempt(
   params: BinParams,
@@ -27,8 +32,10 @@ async function runExportAttempt(
   angularTolerance: number,
   name: string
 ): Promise<ExportResult> {
+  let faceGroups: readonly FaceGroupData[] | undefined;
   if (!isLastSolidExportQuality()) {
-    generateBin(params, undefined, true);
+    const meshData = generateBin(params, undefined, true);
+    faceGroups = meshData.faceGroups;
   }
 
   const solid = getLastSolid();
@@ -36,10 +43,26 @@ async function runExportAttempt(
     throw new Error('Failed to generate solid for export');
   }
 
+  // If we skipped regen above, the cached solid was already export-quality
+  // but we don't have its meshData. Re-mesh it at export tolerances — brepjs
+  // caches mesh results by shape+tolerance, so this hits the cache and
+  // gives us the same face-group ordering exportSTL will walk.
+  if (!faceGroups) {
+    const m = mesh(solid, { tolerance, angularTolerance });
+    faceGroups = m.faceGroups.map((g) => ({
+      start: g.start,
+      count: g.count,
+      // Brepjs returns origin=0 when no setShapeOrigin tag is in the lookup
+      // map — that's "untagged" from our pipeline's POV, so treat it as
+      // UNKNOWN (matches `toIndexedMeshData`).
+      tag: g.origin !== 0 ? g.origin : 255,
+    }));
+  }
+
   if (format === 'step') {
     const blob = unwrap(exportSTEP(solid));
     const data = await blob.arrayBuffer();
-    return { data, fileName: `${name}.step` };
+    return { data, fileName: `${name}.step`, faceGroups };
   }
 
   const blob = unwrap(
@@ -50,7 +73,7 @@ async function runExportAttempt(
     })
   );
   const data = await blob.arrayBuffer();
-  return { data, fileName: `${name}.stl` };
+  return { data, fileName: `${name}.stl`, faceGroups };
 }
 
 /**
