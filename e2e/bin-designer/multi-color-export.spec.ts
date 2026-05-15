@@ -38,7 +38,6 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     await page.goto('/designer');
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible({ timeout: 30000 });
-    await page.waitForTimeout(3000);
 
     for (const [label, hex] of [
       [/^Body: /i, BODY_HEX],
@@ -51,8 +50,13 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
       await popover.getByRole('textbox').first().fill(hex);
       await page.keyboard.press('Enter');
       await page.keyboard.press('Escape');
+      // The picker button's aria-label is `${label}: ${hex}` — waiting for it
+      // to update is a deterministic signal that the color change landed in
+      // the store, no wall-clock guess needed.
+      await expect(page.getByRole('button', { name: new RegExp(`${hex}$`, 'i') })).toBeVisible({
+        timeout: 5000,
+      });
     }
-    await page.waitForTimeout(2000);
 
     await page
       .getByRole('button', { name: /^export/i })

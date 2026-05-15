@@ -14,7 +14,6 @@ import { setShapeOrigin } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { FeatureTag } from '../featureTags';
 
-export function collectOrigins(shape: Shape3D, tag: FeatureTag, map: Map<number, number>): void {
+export function collectOrigins(shape: Shape3D, tag: FeatureTag, _map: Map<number, number>): void {
   setShapeOrigin(shape, tag);
-  map.set(tag, tag);
 }
