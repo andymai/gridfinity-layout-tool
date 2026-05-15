@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.81.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.81.0...gridfinity-layout-tool-v4.81.1) (2026-05-15)
+
+
+### Bug Fixes
+
+* **generation:** cut divider notches through lip in split slotted bins ([#1653](https://github.com/andymai/gridfinity-layout-tool/issues/1653)) ([6051fc0](https://github.com/andymai/gridfinity-layout-tool/commit/6051fc04aa20757e83e283e3cdcc3e83fed5fe8e))
+
 ## [4.81.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.80.0...gridfinity-layout-tool-v4.81.0) (2026-05-13)
 
 
