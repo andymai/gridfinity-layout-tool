@@ -43,8 +43,16 @@ async function runExportAttempt(
     throw new Error('Failed to generate solid for export');
   }
 
+  if (format === 'step') {
+    // STEP carries exact BREP geometry; faceGroups don't ride along, so
+    // skip the re-mesh that the STL/3MF path needs.
+    const blob = unwrap(exportSTEP(solid));
+    const data = await blob.arrayBuffer();
+    return { data, fileName: `${name}.step` };
+  }
+
   // Cached export-quality solid — re-derive faceGroups from the brepjs mesh
-  // cache so we can return them alongside the STL/STEP payload.
+  // cache so STL→3MF gets per-triangle material indices.
   if (!faceGroups) {
     const m = mesh(solid, { tolerance, angularTolerance });
     faceGroups = m.faceGroups.map((g) => ({
@@ -52,12 +60,6 @@ async function runExportAttempt(
       count: g.count,
       tag: g.origin !== 0 ? g.origin : 255, // FeatureTag.UNKNOWN — matches `toIndexedMeshData`
     }));
-  }
-
-  if (format === 'step') {
-    const blob = unwrap(exportSTEP(solid));
-    const data = await blob.arrayBuffer();
-    return { data, fileName: `${name}.step`, faceGroups };
   }
 
   const blob = unwrap(
