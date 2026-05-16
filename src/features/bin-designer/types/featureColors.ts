@@ -110,10 +110,6 @@ export function lipCornerZone(corner: LipCorner): ColorZone {
   return `lip:${corner}` as const;
 }
 
-export function lipCornerZones(): ReadonlySet<ColorZone> {
-  return new Set<ColorZone>(LIP_CORNERS.map(lipCornerZone));
-}
-
 /**
  * Maps a non-LIP FeatureTag to its ColorZone. LIP returns null because
  * lip faces need centroid-based classification into one of four corners.

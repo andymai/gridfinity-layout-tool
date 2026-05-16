@@ -1,5 +1,7 @@
 /**
- * Hides itself when `visible` is false — empty groups don't earn space.
+ * Renders nothing when `visible` is false. The caller computes `visible`
+ * from whether any zones are active, so an "empty" group (i.e. the
+ * caller would only render zero children) never reaches the DOM.
  */
 
 import { useId, useState, type ReactNode } from 'react';
