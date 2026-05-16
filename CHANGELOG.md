@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.86.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.85.0...gridfinity-layout-tool-v4.86.0) (2026-05-16)
+
+
+### Features
+
+* **bin-designer:** graduate multi-color export with per-design toggle ([#1674](https://github.com/andymai/gridfinity-layout-tool/issues/1674)) ([0fa4408](https://github.com/andymai/gridfinity-layout-tool/commit/0fa440891ad6c2ae27ae543e5ab13ebbc325a3d8))
+
 ## [4.85.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.84.0...gridfinity-layout-tool-v4.85.0) (2026-05-16)
 
 
