@@ -4,10 +4,18 @@
  * apply saved, delete saved).
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Popover } from '@/design-system/Popover/Popover';
-import { MoreHorizontalIcon, RotateCcwIcon, PlusIcon, TrashIcon } from '@/design-system/Icon';
+import {
+  CheckIcon,
+  MoreHorizontalIcon,
+  PlusIcon,
+  RotateCcwIcon,
+  TrashIcon,
+  XIcon,
+} from '@/design-system/Icon';
+import { Input } from '@/design-system/Input/Input';
 import { useSettingsStore, useToastStore } from '@/core/store';
 import { COLOR_PALETTE_CONSTRAINTS } from '@/core/store/settings.types';
 import type { SavedColorPalette } from '@/core/store/settings.types';
@@ -31,7 +39,10 @@ export function ColorsActionsMenu({
 }: ColorsActionsMenuProps) {
   const t = useTranslation();
   const [open, setOpen] = useState(false);
+  const [saveMode, setSaveMode] = useState(false);
+  const [draftName, setDraftName] = useState('');
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { palettes, updateSettings } = useSettingsStore(
     useShallow((s) => ({
@@ -41,10 +52,21 @@ export function ColorsActionsMenu({
   );
   const addToast = useToastStore((s) => s.addToast);
 
-  const handleSavePalette = useCallback(() => {
-    const raw = window.prompt(t('binDesigner.colors.savePalette.prompt'));
-    if (!raw) return;
-    const name = raw.trim().slice(0, COLOR_PALETTE_CONSTRAINTS.NAME_MAX_LENGTH);
+  useEffect(() => {
+    if (saveMode) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [saveMode]);
+
+  const closeMenu = useCallback(() => {
+    setOpen(false);
+    setSaveMode(false);
+    setDraftName('');
+  }, []);
+
+  const commitSave = useCallback(() => {
+    const name = draftName.trim().slice(0, COLOR_PALETTE_CONSTRAINTS.NAME_MAX_LENGTH);
     if (!name) return;
 
     const palette: SavedColorPalette = {
@@ -73,8 +95,8 @@ export function ColorsActionsMenu({
       type: 'success',
       duration: 2500,
     });
-    setOpen(false);
-  }, [featureColors, palettes, updateSettings, addToast, t]);
+    closeMenu();
+  }, [draftName, featureColors, palettes, updateSettings, addToast, t, closeMenu]);
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -99,18 +121,13 @@ export function ColorsActionsMenu({
       </button>
 
       {open && (
-        <Popover
-          anchorRef={triggerRef}
-          isOpen
-          onClose={() => setOpen(false)}
-          placement="bottom-end"
-        >
+        <Popover anchorRef={triggerRef} isOpen onClose={closeMenu} placement="bottom-end">
           <div role="menu" className="w-56 p-1 text-xs">
             <MenuButton
               icon={<RotateCcwIcon size="sm" />}
               onClick={() => {
                 onMatchAllToBody();
-                setOpen(false);
+                closeMenu();
               }}
             >
               {t('binDesigner.colors.matchAllToBody')}
@@ -118,13 +135,49 @@ export function ColorsActionsMenu({
 
             <div className="my-1 h-px bg-stroke-subtle/60" role="separator" />
 
-            <MenuButton
-              icon={<PlusIcon size="sm" />}
-              onClick={handleSavePalette}
-              disabled={palettes.length >= COLOR_PALETTE_CONSTRAINTS.MAX_PALETTES}
-            >
-              {t('binDesigner.colors.savePalette')}
-            </MenuButton>
+            {saveMode ? (
+              <div className="flex items-center gap-1 px-1">
+                <Input
+                  ref={inputRef}
+                  size="sm"
+                  value={draftName}
+                  onChange={(e) => setDraftName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') commitSave();
+                    else if (e.key === 'Escape') setSaveMode(false);
+                  }}
+                  placeholder={t('binDesigner.colors.savePalette.prompt')}
+                  aria-label={t('binDesigner.colors.savePalette.prompt')}
+                  maxLength={COLOR_PALETTE_CONSTRAINTS.NAME_MAX_LENGTH}
+                />
+                <button
+                  type="button"
+                  onClick={commitSave}
+                  disabled={draftName.trim() === ''}
+                  className="flex h-7 w-7 items-center justify-center rounded text-accent hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                  aria-label={t('binDesigner.colors.savePalette')}
+                  title={t('binDesigner.colors.savePalette')}
+                >
+                  <CheckIcon size="sm" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSaveMode(false)}
+                  className="flex h-7 w-7 items-center justify-center rounded text-content-tertiary hover:bg-surface-hover hover:text-content-secondary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                  aria-label={t('binDesigner.colors.firstTimeHint.dismiss')}
+                >
+                  <XIcon size="sm" />
+                </button>
+              </div>
+            ) : (
+              <MenuButton
+                icon={<PlusIcon size="sm" />}
+                onClick={() => setSaveMode(true)}
+                disabled={palettes.length >= COLOR_PALETTE_CONSTRAINTS.MAX_PALETTES}
+              >
+                {t('binDesigner.colors.savePalette')}
+              </MenuButton>
+            )}
 
             <div className="my-1 h-px bg-stroke-subtle/60" role="separator" />
 
@@ -143,7 +196,7 @@ export function ColorsActionsMenu({
                       type="button"
                       onClick={() => {
                         onApplyPalette(palette);
-                        setOpen(false);
+                        closeMenu();
                       }}
                       className="group flex flex-1 items-center gap-2 rounded px-2 py-1 text-left hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none"
                       role="menuitem"

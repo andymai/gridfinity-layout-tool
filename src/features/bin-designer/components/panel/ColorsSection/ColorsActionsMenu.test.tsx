@@ -57,6 +57,39 @@ describe('ColorsActionsMenu', () => {
     expect(screen.getByText('binDesigner.colors.noPalettes')).toBeInTheDocument();
   });
 
+  it('saves a palette through the inline-input row (no window.prompt)', () => {
+    render(
+      <ColorsActionsMenu featureColors={fc} onMatchAllToBody={vi.fn()} onApplyPalette={vi.fn()} />
+    );
+    fireEvent.click(screen.getByLabelText('binDesigner.colors.actions'));
+    fireEvent.click(screen.getByText('binDesigner.colors.savePalette'));
+
+    const input = screen.getByLabelText('binDesigner.colors.savePalette.prompt');
+    fireEvent.change(input, { target: { value: 'My Palette' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    const palettes = useSettingsStore.getState().settings.savedColorPalettes;
+    expect(palettes).toHaveLength(1);
+    expect(palettes[0].name).toBe('My Palette');
+  });
+
+  it('cancels the inline save row when Escape is pressed', () => {
+    render(
+      <ColorsActionsMenu featureColors={fc} onMatchAllToBody={vi.fn()} onApplyPalette={vi.fn()} />
+    );
+    fireEvent.click(screen.getByLabelText('binDesigner.colors.actions'));
+    fireEvent.click(screen.getByText('binDesigner.colors.savePalette'));
+
+    const input = screen.getByLabelText('binDesigner.colors.savePalette.prompt');
+    fireEvent.change(input, { target: { value: 'discard me' } });
+    fireEvent.keyDown(input, { key: 'Escape' });
+
+    expect(
+      screen.queryByLabelText('binDesigner.colors.savePalette.prompt')
+    ).not.toBeInTheDocument();
+    expect(useSettingsStore.getState().settings.savedColorPalettes).toHaveLength(0);
+  });
+
   it('lists saved palettes and applies one on click', () => {
     useSettingsStore.setState({
       settings: {
