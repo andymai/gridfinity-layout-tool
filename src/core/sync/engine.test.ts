@@ -284,6 +284,37 @@ describe('push: 429 rate-limited', () => {
     expect(entries[0].nextAttemptAt).toBeLessThan(Date.now() + 2_000);
   });
 
+  it('bumps the per-(kind,id) rate-limit counter so backoff actually escalates', async () => {
+    // Regression: previous impl passed `entry.attempts` to
+    // `rateLimitedBackoffMs`, but `rescheduleWithoutAttempt` keeps attempts
+    // at 0 — so every 429 retried at ~1s forever. Engine now tracks a
+    // separate counter that drives the exponent.
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 429 }));
+
+    engine.start(adapters);
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await flush();
+
+    const counter = engine.__getEngineStateForTests()?.rateLimitedRetries.get('layouts:lay-1');
+    expect(counter).toBe(1);
+  });
+
+  it('resets the rate-limit counter when a push succeeds', async () => {
+    // Seed a counter as if we'd hit several 429s already, then have the
+    // next push return 200 and assert the counter is cleared. Easier
+    // than chaining 429-then-200 through the real backoff timer.
+    fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
+    engine.start(adapters);
+    engine.__getEngineStateForTests()?.rateLimitedRetries.set('layouts:lay-1', 3);
+
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await flush();
+
+    expect(
+      engine.__getEngineStateForTests()?.rateLimitedRetries.get('layouts:lay-1')
+    ).toBeUndefined();
+  });
+
   it('falls back to backoff when Retry-After is 0 (no immediate-retry loop)', async () => {
     fetchMock.mockResolvedValueOnce(
       new Response(null, { status: 429, headers: { 'Retry-After': '0' } })

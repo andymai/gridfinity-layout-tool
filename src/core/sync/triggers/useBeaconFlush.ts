@@ -16,9 +16,15 @@ interface PreparedBeacon {
 export function useBeaconFlush(adapters: SyncAdapters): void {
   useEffect(() => {
     let prepared: PreparedBeacon[] = [];
+    // Monotonic token so a slow earlier refresh can't overwrite a newer
+    // one. Without this, two visibility-hidden events in flight would race
+    // and the later (fresher) result could be clobbered by the earlier.
+    let refreshSeq = 0;
 
     const refreshPrepared = async (): Promise<void> => {
-      prepared = await collectBeacons(adapters);
+      const mySeq = ++refreshSeq;
+      const next = await collectBeacons(adapters);
+      if (mySeq === refreshSeq) prepared = next;
     };
 
     const onVisibility = (): void => {

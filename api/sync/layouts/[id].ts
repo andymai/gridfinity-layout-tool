@@ -152,15 +152,21 @@ async function handlePut(
     if (existing.modifiedAt === modifiedAt) {
       // Equal-ms tie: deterministic tiebreaker so concurrent devices converge.
       const stored = await getJson<LayoutEnvelope>(blobPath(userId, id));
-      const order = compareForTiebreaker(validation.layout, stored?.layout);
-      if (order <= 0) {
-        res.status(409).json({
-          error: 'A newer version already exists.',
-          code: ErrorCode.VALIDATION_ERROR,
-          stored,
-          indexEntry: existing,
-        });
-        return;
+      // Blob missing while index entry exists = divergence (deleted blob,
+      // failed prior write, etc.). Let the candidate repair it instead of
+      // running a tiebreaker against `undefined`, which would arbitrarily
+      // 409 a write that could have fixed the gap.
+      if (stored !== null) {
+        const order = compareForTiebreaker(validation.layout, stored.layout);
+        if (order <= 0) {
+          res.status(409).json({
+            error: 'A newer version already exists.',
+            code: ErrorCode.VALIDATION_ERROR,
+            stored,
+            indexEntry: existing,
+          });
+          return;
+        }
       }
     }
   }

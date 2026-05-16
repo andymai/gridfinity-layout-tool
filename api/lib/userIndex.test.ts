@@ -150,6 +150,13 @@ describe('userIndex', () => {
   });
 
   describe('tombstone sweep on upsertEntry', () => {
+    // Force the sweep gate to fire on every upsert in this block by pretending
+    // the last sweep was long ago. Production gates sweeps to once per hour.
+    function forceSweepEligible(): void {
+      const ctx = mockRedis as unknown as { store: Map<string, string> };
+      ctx.store.set('users:u1:tombstoneSweptAt', String(Date.now() - 2 * 60 * 60 * 1_000));
+    }
+
     it('removes tombstones older than the retention window when a new entry is upserted', async () => {
       const now = Date.now();
       const stale = now - TOMBSTONE_RETENTION_MS - 1_000;
@@ -161,6 +168,7 @@ describe('userIndex', () => {
         modifiedAt: fresh,
         sizeBytes: 100,
       });
+      forceSweepEligible();
 
       await upsertEntry(mockRedis, 'u1', 'layouts', 'new-entry', {
         modifiedAt: now,
@@ -178,6 +186,7 @@ describe('userIndex', () => {
         modifiedAt: ancient,
         sizeBytes: 100,
       });
+      forceSweepEligible();
       await upsertEntry(mockRedis, 'u1', 'layouts', 'trigger', {
         modifiedAt: Date.now(),
         sizeBytes: 200,
@@ -190,12 +199,27 @@ describe('userIndex', () => {
     it('skips the id being written even when it is itself a stale tombstone (no self-conflict)', async () => {
       const stale = Date.now() - TOMBSTONE_RETENTION_MS - 1_000;
       await tombstone(mockRedis, 'u1', 'layouts', 'self', stale);
+      forceSweepEligible();
 
       await tombstone(mockRedis, 'u1', 'layouts', 'self', Date.now());
 
       const entry = await getEntry(mockRedis, 'u1', 'layouts', 'self');
       expect(entry).not.toBeNull();
       expect(entry?.deletedAt).toBeGreaterThan(stale);
+    });
+
+    it('skips the HGETALL scan when the last sweep was recent', async () => {
+      // Seed a recent sweep timestamp; the next upsert must not call hgetall.
+      const ctx = mockRedis as unknown as { store: Map<string, string> };
+      ctx.store.set('users:u1:tombstoneSweptAt', String(Date.now() - 60_000));
+      const hgetallSpy = vi.spyOn(mockRedis, 'hgetall');
+
+      await upsertEntry(mockRedis, 'u1', 'layouts', 'a', {
+        modifiedAt: Date.now(),
+        sizeBytes: 100,
+      });
+
+      expect(hgetallSpy).not.toHaveBeenCalled();
     });
   });
 });

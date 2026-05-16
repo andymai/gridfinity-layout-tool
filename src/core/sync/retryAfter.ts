@@ -1,5 +1,6 @@
 // Parse RFC 9110 §10.2.3 `Retry-After`: either `delta-seconds` or `HTTP-date`.
-// Returns null when absent/malformed; result is capped at 1h.
+// Returns null when absent/malformed; 0 for past HTTP-dates (engine callers
+// treat 0 as "no usable hint" and fall back to their own backoff). Capped at 1h.
 const MAX_RETRY_AFTER_MS = 60 * 60 * 1_000;
 
 export function parseRetryAfter(value: string | null, now: number = Date.now()): number | null {

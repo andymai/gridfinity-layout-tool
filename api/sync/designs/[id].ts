@@ -190,16 +190,19 @@ async function handlePut(
     if (existing.modifiedAt === modifiedAt) {
       // Equal-ms tie: hash over `{ name, params }` so renames also participate.
       const stored = await getJson<DesignEnvelope>(blobPath(userId, id));
-      const candidate = { name, params: validation.payload.params };
-      const order = compareForTiebreaker(candidate, stored?.design);
-      if (order <= 0) {
-        res.status(409).json({
-          error: 'A newer version already exists.',
-          code: ErrorCode.VALIDATION_ERROR,
-          stored,
-          indexEntry: existing,
-        });
-        return;
+      // See layouts/[id].ts for the missing-blob rationale.
+      if (stored !== null) {
+        const candidate = { name, params: validation.payload.params };
+        const order = compareForTiebreaker(candidate, stored.design);
+        if (order <= 0) {
+          res.status(409).json({
+            error: 'A newer version already exists.',
+            code: ErrorCode.VALIDATION_ERROR,
+            stored,
+            indexEntry: existing,
+          });
+          return;
+        }
       }
     }
   }
