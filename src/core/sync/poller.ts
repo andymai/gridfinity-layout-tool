@@ -1,4 +1,5 @@
 import { apiFetch } from './apiFetch';
+import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
 import type { SyncAdapter, SyncAdapters, SyncKind } from './adapters/types';
 
@@ -61,6 +62,10 @@ export function __resetForTests(): void {
 }
 
 async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<PullResult> {
+  if (useSessionStore.getState().status !== 'authenticated') {
+    return { status: 'unauthorized' };
+  }
+
   useSyncStatusStore.getState().beginSync();
 
   let manifestRes: Response;

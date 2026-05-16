@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { __resetForTests, pullNow } from './poller';
+import { useSessionStore } from './session/useSession';
 import { useSyncStatusStore } from './status';
 import type { SyncAdapter, SyncAdapters, SyncableItem } from './adapters/types';
 
@@ -39,6 +40,10 @@ beforeEach(() => {
   __resetForTests();
   vi.clearAllMocks();
   useSyncStatusStore.getState().reset();
+  useSessionStore.setState({
+    status: 'authenticated',
+    user: { userId: 'test-user', email: 'test@example.com', provider: 'google' },
+  });
   layouts = makeMockAdapter();
   designs = makeMockAdapter();
   adapters = { layouts, designs };
@@ -57,6 +62,22 @@ function envelopeResponse(envelope: unknown, indexEntry: unknown): Response {
     headers: { 'Content-Type': 'application/json' },
   });
 }
+
+describe('pullNow — session gate', () => {
+  it('returns "unauthorized" without fetching when session is anonymous', async () => {
+    useSessionStore.setState({ status: 'anonymous', user: null });
+    const result = await pullNow(adapters);
+    expect(result.status).toBe('unauthorized');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('returns "unauthorized" without fetching when session is unknown', async () => {
+    useSessionStore.setState({ status: 'unknown', user: null });
+    const result = await pullNow(adapters);
+    expect(result.status).toBe('unauthorized');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
 
 describe('pullNow — single-flight + 304 path', () => {
   it('coalesces concurrent calls into one in-flight pull', async () => {
