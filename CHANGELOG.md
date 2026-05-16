@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.84.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.83.0...gridfinity-layout-tool-v4.84.0) (2026-05-16)
+
+
+### Features
+
+* **bin-designer:** per-corner lip + base/scoop/dividers color zones ([#1671](https://github.com/andymai/gridfinity-layout-tool/issues/1671)) ([f2ff675](https://github.com/andymai/gridfinity-layout-tool/commit/f2ff675852f18f022c9a28c76d11ed00d741f252))
+* **bin-designer:** redesign multi-color panel + fix popover anchor ([#1669](https://github.com/andymai/gridfinity-layout-tool/issues/1669)) ([8de3bab](https://github.com/andymai/gridfinity-layout-tool/commit/8de3bab857bc116d620d809447600eef7ccd0372))
+
 ## [4.83.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.82.2...gridfinity-layout-tool-v4.83.0) (2026-05-16)
 
 
