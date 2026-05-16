@@ -9,37 +9,75 @@ function sha256Base64(input: string): string {
   return createHash('sha256').update(input, 'utf8').digest('base64');
 }
 
+interface VercelHeader {
+  key: string;
+  value: string;
+}
+interface VercelHeadersEntry {
+  source: string;
+  headers: VercelHeader[];
+}
+interface VercelConfig {
+  headers?: VercelHeadersEntry[];
+}
+
 /**
- * Hash every executable inline `<script>` in `index.html` and assert the
- * `script-src` directive in `vercel.json` contains that hash.
- *
- * CSP inline-script hashes drift on the slightest byte change (a single
- * whitespace edit breaks them). Without this check, edits to the theme-
- * detection or www-migration scripts in index.html would silently start
- * producing CSP violations in production — the policy is report-only
- * today but is intended to be enforced later.
- *
- * `<script type="application/ld+json">` and `<script src="…">` blocks are
- * intentionally skipped: only the body of an executable inline script is
- * subject to `script-src`.
+ * Find executable inline scripts: any <script>…</script> that isn't
+ * `type="…"` (JSON-LD, module, etc.) and isn't `src="…"` (external).
+ * Case-insensitive so `<SCRIPT>` or `<script defer>` aren't silently
+ * skipped — the test exists precisely to catch what `index.html` ships.
  */
+function findInlineScripts(html: string): string[] {
+  const scripts: string[] = [];
+  for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
+    const attrs = m[1];
+    if (/\bsrc\s*=/i.test(attrs)) continue;
+    if (/\btype\s*=/i.test(attrs)) continue;
+    scripts.push(m[2]);
+  }
+  return scripts;
+}
+
+/**
+ * Extract `script-src` source list from every CSP header (enforced and
+ * report-only) declared in vercel.json. A hash that lands in `style-src`
+ * by mistake must not satisfy the test.
+ */
+function scriptSrcDirectives(config: VercelConfig): string[] {
+  const directives: string[] = [];
+  for (const entry of config.headers ?? []) {
+    for (const header of entry.headers) {
+      if (!/^content-security-policy(-report-only)?$/i.test(header.key)) continue;
+      for (const part of header.value.split(';')) {
+        const trimmed = part.trim();
+        if (/^script-src\b/i.test(trimmed)) directives.push(trimmed);
+      }
+    }
+  }
+  return directives;
+}
+
+// CSP inline-script hashes drift on the slightest byte change. Without this
+// check, edits to the theme or www-migration scripts in index.html silently
+// produce CSP violations in production (report-only today, enforced later).
 describe('CSP inline-script hashes are in sync with vercel.json', () => {
   const html = readFileSync(join(ROOT, 'index.html'), 'utf8');
-  const vercelConfig = readFileSync(join(ROOT, 'vercel.json'), 'utf8');
-
-  // Match <script> with no attributes (executable inline). We deliberately
-  // skip <script type="…"> (JSON-LD) and <script src="…"> (external).
-  const inlineScripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+  const config = JSON.parse(readFileSync(join(ROOT, 'vercel.json'), 'utf8')) as VercelConfig;
+  const inlineScripts = findInlineScripts(html);
+  const scriptSrcs = scriptSrcDirectives(config);
 
   it('finds at least one inline script to verify', () => {
     expect(inlineScripts.length).toBeGreaterThan(0);
   });
 
+  it('finds at least one script-src directive in vercel.json', () => {
+    expect(scriptSrcs.length).toBeGreaterThan(0);
+  });
+
   for (const [i, body] of inlineScripts.entries()) {
-    const hash = sha256Base64(body);
-    const directive = `'sha256-${hash}'`;
-    it(`inline script #${i + 1} has matching CSP hash ${directive}`, () => {
-      expect(vercelConfig).toContain(directive);
+    const directive = `'sha256-${sha256Base64(body)}'`;
+    it(`inline script #${i + 1} has matching script-src hash ${directive}`, () => {
+      expect(scriptSrcs.some((src) => src.includes(directive))).toBe(true);
     });
   }
 });

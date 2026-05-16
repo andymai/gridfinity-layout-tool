@@ -183,6 +183,20 @@ describe('validateShareLayout', () => {
 
       expect(result.valid).toBe(true);
     });
+
+    // Without these guards, a malicious payload like `{ label: 42 }` would
+    // reach `sanitizeString` (which calls `.replace`) and crash the route
+    // with a 500 instead of a clean 400.
+    it.each([
+      ['label', 42],
+      ['notes', { evil: true }],
+      ['category', ['nope']],
+    ])('rejects bins where %s is not a string', (field, badValue) => {
+      const layout = createValidLayout();
+      (layout.bins[0] as unknown as Record<string, unknown>)[field] = badValue;
+      const result = validateShareLayout(layout, 1000);
+      expect(result.valid).toBe(false);
+    });
   });
 
   describe('drawer dimensions', () => {
@@ -319,7 +333,7 @@ describe('validateShareLayout', () => {
 
       expect(result.valid).toBe(true);
       if (result.valid) {
-        expect(result.layout.bins[0].label!.length).toBe(24);
+        expect(result.layout.bins[0].label.length).toBe(24);
       }
     });
 
@@ -330,7 +344,7 @@ describe('validateShareLayout', () => {
 
       expect(result.valid).toBe(true);
       if (result.valid) {
-        expect(result.layout.bins[0].notes!.length).toBe(256);
+        expect(result.layout.bins[0].notes.length).toBe(256);
       }
     });
 

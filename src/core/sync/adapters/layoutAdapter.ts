@@ -10,38 +10,31 @@ import {
 } from '@/core/storage';
 import type { AdapterChange, AdapterChangeListener, LayoutAdapter, SyncableItem } from './types';
 
-// `Bin.notes`/`Bin.label` are declared as `string`, but cloud blobs written
-// before the validator started emitting them as required strings literally
-// omit the keys. Modeling that as `unknown` here is the honest input type —
-// otherwise the runtime guard below reads as unreachable to TypeScript.
+// Wider than `Bin` because legacy cloud blobs (pre-validator-fix) literally
+// omit `notes`/`label`. Without this the runtime guard below reads as
+// unreachable to TypeScript.
 type IncomingBin = Omit<Bin, 'notes' | 'label'> & { notes?: unknown; label?: unknown };
 type IncomingLayout = Omit<Layout, 'bins'> & { bins: IncomingBin[] };
 
 /**
- * Heal legacy cloud blobs whose bins predate the validator fix that always
- * emits `notes`/`label` as strings. Without this, `bin.notes.trim()` in the
- * 3D view (`Bin.tsx`) throws on any layout last written before that fix.
- * New writes are already clean — this only kicks in for stored blobs that
- * haven't been re-saved since the contract change in `api/lib/validation.ts`.
- *
- * Exported for unit testing only; runtime callers should not normalize
- * twice — `applyRemote` is the single entry point for remote-sourced data.
+ * Default missing `notes`/`label` to '' so the 3D view's `bin.notes.trim()`
+ * doesn't crash on legacy cloud blobs written before `api/lib/validation.ts`
+ * began emitting both as required strings.
  */
 export function normalizeIncomingLayout(layout: Layout): Layout {
-  const incoming = layout as IncomingLayout;
-  const needsHealing = incoming.bins.some(
-    (b) => typeof b.notes !== 'string' || typeof b.label !== 'string'
-  );
+  const bins = (layout as IncomingLayout).bins;
+  const needsHealing = bins.some((b) => typeof b.notes !== 'string' || typeof b.label !== 'string');
   if (!needsHealing) return layout;
-
-  const bins = incoming.bins.map(
-    (bin): Bin => ({
-      ...bin,
-      notes: typeof bin.notes === 'string' ? bin.notes : '',
-      label: typeof bin.label === 'string' ? bin.label : '',
-    })
-  );
-  return { ...layout, bins };
+  return {
+    ...layout,
+    bins: bins.map(
+      (b): Bin => ({
+        ...b,
+        notes: typeof b.notes === 'string' ? b.notes : '',
+        label: typeof b.label === 'string' ? b.label : '',
+      })
+    ),
+  };
 }
 
 /**
