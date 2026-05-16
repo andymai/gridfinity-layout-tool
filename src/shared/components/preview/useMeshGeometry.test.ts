@@ -13,10 +13,14 @@ describe('useMeshGeometry', () => {
   // geometry to non-indexed; if the start/count offsets don't survive the
   // conversion, every face renders with material index 0 (body).
   describe('face group offsets', () => {
-    // Two triangles: indices 0..5 = first triangle "body" (materialIndex 0),
-    // indices 6..11 = second triangle "lip" (materialIndex 1). When the user
-    // sees an all-body bin, this end-to-end shape is what the geometry should
-    // expose so Three.js can route each triangle to the right material.
+    // Two triangles sharing an edge between v1 and v2 (a quad split on a
+    // diagonal): triangle 0 = v0,v1,v2 (body, materialIndex 0); triangle 1 =
+    // v1,v3,v2 (lip, materialIndex 1). Indices [0,1,2, 1,3,2] reference only
+    // 4 unique positions, so `toCreasedNormals` actually expands the position
+    // buffer from 4 vertices to 6 — exercising the real index→position offset
+    // remap. With 6 distinct vertices the expansion is a no-op and the test
+    // can't distinguish "groups survived in index space" from "groups
+    // survived in vertex space."
     function makeIndexed(): {
       vertices: Float32Array;
       normals: Float32Array;
@@ -24,28 +28,21 @@ describe('useMeshGeometry', () => {
       edgeVertices: Float32Array;
       faceGroups: readonly { start: number; count: number; materialIndex: number }[];
     } {
+      // prettier-ignore
       const vertices = new Float32Array([
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0, // body triangle
-        2,
-        2,
-        0,
-        3,
-        2,
-        0,
-        2,
-        3,
-        0, // lip triangle
+        0, 0, 0, // v0
+        1, 0, 0, // v1
+        0, 1, 0, // v2
+        1, 1, 0, // v3
       ]);
-      const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
-      const indices = new Uint32Array([0, 1, 2, 3, 4, 5]);
+      // prettier-ignore
+      const normals = new Float32Array([
+        0, 0, 1,
+        0, 0, 1,
+        0, 0, 1,
+        0, 0, 1,
+      ]);
+      const indices = new Uint32Array([0, 1, 2, 1, 3, 2]);
       return {
         vertices,
         normals,
