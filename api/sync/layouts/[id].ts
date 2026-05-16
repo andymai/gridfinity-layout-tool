@@ -8,6 +8,7 @@ import { isValidationError, validateShareLayout } from '../../lib/validation.js'
 import { deleteBlob, getJson, putJson } from '../../lib/blobStore.js';
 import { getEntry, tombstone, upsertEntry, type IndexEntry } from '../../lib/userIndex.js';
 import { checkQuota } from '../../lib/quota.js';
+import { compareForTiebreaker } from '../../lib/lwwTiebreaker.js';
 
 export const SCHEMA_VERSION = 1 as const;
 
@@ -137,15 +138,37 @@ async function handlePut(
   // LWW comparison. `deletedAt === undefined` is the explicit live-entry
   // check — `!existing.deletedAt` would also accept 0/NaN, which would
   // misclassify any future tombstone written with such a value.
-  if (existing && existing.deletedAt === undefined && existing.modifiedAt >= modifiedAt) {
-    const stored = await getJson<LayoutEnvelope>(blobPath(userId, id));
-    res.status(409).json({
-      error: 'A newer version already exists.',
-      code: ErrorCode.VALIDATION_ERROR,
-      stored,
-      indexEntry: existing,
-    });
-    return;
+  if (existing && existing.deletedAt === undefined) {
+    if (existing.modifiedAt > modifiedAt) {
+      const stored = await getJson<LayoutEnvelope>(blobPath(userId, id));
+      res.status(409).json({
+        error: 'A newer version already exists.',
+        code: ErrorCode.VALIDATION_ERROR,
+        stored,
+        indexEntry: existing,
+      });
+      return;
+    }
+    if (existing.modifiedAt === modifiedAt) {
+      // Equal-ms tie: deterministic tiebreaker so concurrent devices converge.
+      const stored = await getJson<LayoutEnvelope>(blobPath(userId, id));
+      // Blob missing while index entry exists = divergence (deleted blob,
+      // failed prior write, etc.). Let the candidate repair it instead of
+      // running a tiebreaker against `undefined`, which would arbitrarily
+      // 409 a write that could have fixed the gap.
+      if (stored !== null) {
+        const order = compareForTiebreaker(validation.layout, stored.layout);
+        if (order <= 0) {
+          res.status(409).json({
+            error: 'A newer version already exists.',
+            code: ErrorCode.VALIDATION_ERROR,
+            stored,
+            indexEntry: existing,
+          });
+          return;
+        }
+      }
+    }
   }
 
   // Tombstone protection: a stale edit can't resurrect a deletion that

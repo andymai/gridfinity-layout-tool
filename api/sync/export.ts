@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { zipSync, strToU8 } from 'fflate';
+import { Zip, ZipDeflate, strToU8 } from 'fflate';
 import { requireMethod } from '../lib/method.js';
 import { ErrorCode } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
@@ -24,10 +24,6 @@ import {
  *
  * Tombstones are excluded — the user asked to export their data, not
  * the audit trail of deletions.
- *
- * The ZIP is built in-memory. With the 10MB-per-kind quota, the worst
- * case is ~20MB pre-compression which is still well within Vercel
- * function memory limits and HTTP response timeouts.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!requireMethod(req, res, ['GET'])) return;
@@ -63,41 +59,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const liveLayouts = filterLive(layoutsIndex);
     const liveDesigns = filterLive(designsIndex);
 
-    const files: Record<string, Uint8Array> = {
-      'manifest.json': strToU8(
-        JSON.stringify(
-          {
-            layouts: liveLayouts,
-            designs: liveDesigns,
-            indexUpdatedAt,
-            exportedAt: Date.now(),
-            schemaVersion: 1,
-          },
-          null,
-          2
-        )
-      ),
-    };
-
-    await Promise.all([
-      addEnvelopes(files, session.userId, 'layouts', Object.keys(liveLayouts)),
-      addEnvelopes(files, session.userId, 'designs', Object.keys(liveDesigns)),
-    ]);
-
-    // `level: 6` matches the prior JSZip default; keeps archive sizes stable
-    // across the migration so existing client roundtrips behave identically.
-    const buffer = Buffer.from(zipSync(files, { level: 6 }));
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader(
       'Content-Disposition',
       `attachment; filename="gridfinity-export-${session.userId.slice(0, 8)}.zip"`
     );
-    res.status(200).send(buffer);
+    res.status(200);
+
+    await streamZipToResponse(res, async (addFile) => {
+      addFile(
+        'manifest.json',
+        strToU8(
+          JSON.stringify(
+            {
+              layouts: liveLayouts,
+              designs: liveDesigns,
+              indexUpdatedAt,
+              exportedAt: Date.now(),
+              schemaVersion: 1,
+            },
+            null,
+            2
+          )
+        )
+      );
+      await Promise.all([
+        streamEnvelopes(addFile, session.userId, 'layouts', Object.keys(liveLayouts)),
+        streamEnvelopes(addFile, session.userId, 'designs', Object.keys(liveDesigns)),
+      ]);
+    });
   } catch (error) {
     logger.error('sync/export failed', {
       userId: session.userId,
       error: error instanceof Error ? error.message : String(error),
     });
+    // Headers + 200 already flushed: can't switch to a JSON error.
+    if (res.headersSent) {
+      try {
+        res.end();
+      } catch {
+        /* nothing to do */
+      }
+      return;
+    }
     res.status(500).json({ error: 'Server error', code: ErrorCode.SERVER_ERROR });
   }
 }
@@ -110,22 +114,60 @@ function filterLive(index: Record<string, IndexEntry>): Record<string, IndexEntr
   return out;
 }
 
-async function addEnvelopes(
-  files: Record<string, Uint8Array>,
+type AddFile = (filename: string, contents: Uint8Array) => void;
+
+// `level: 6` matches the prior JSZip default; keeps archive sizes stable
+// across the migration so existing client roundtrips behave identically.
+function streamZipToResponse(
+  res: VercelResponse,
+  build: (addFile: AddFile) => Promise<void>
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const settle = (fn: () => void): void => {
+      if (settled) return;
+      settled = true;
+      fn();
+    };
+
+    const zip = new Zip((err, chunk, final) => {
+      if (err) {
+        settle(() => reject(err instanceof Error ? err : new Error(String(err))));
+        return;
+      }
+      if (chunk.length > 0) res.write(chunk);
+      if (final) {
+        res.end();
+        settle(resolve);
+      }
+    });
+
+    build((filename, contents) => {
+      const entry = new ZipDeflate(filename, { level: 6 });
+      zip.add(entry);
+      entry.push(contents, true);
+    })
+      .then(() => zip.end())
+      .catch((error: unknown) =>
+        settle(() => reject(error instanceof Error ? error : new Error(String(error))))
+      );
+  });
+}
+
+async function streamEnvelopes(
+  addFile: AddFile,
   userId: string,
   kind: SyncItemKind,
   ids: string[]
 ): Promise<void> {
-  // Fetch envelopes in parallel; missing blobs are skipped (they shouldn't
-  // happen, but if a blob delete races with the index read we don't want
-  // the export to fail).
+  // Missing blobs (index/blob race) are skipped rather than failing the export.
   const envelopes = await Promise.all(
     ids.map((id) => getJson<unknown>(`users/${userId}/${kind}/${id}.json`))
   );
   for (let i = 0; i < ids.length; i++) {
     const envelope = envelopes[i];
     if (envelope) {
-      files[`${kind}/${ids[i]}.json`] = strToU8(JSON.stringify(envelope, null, 2));
+      addFile(`${kind}/${ids[i]}.json`, strToU8(JSON.stringify(envelope, null, 2)));
     }
   }
 }

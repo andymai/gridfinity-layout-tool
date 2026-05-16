@@ -232,6 +232,50 @@ describe('designAdapter.subscribe', () => {
     off();
   });
 
+  it('suppresses the emit triggered by saveDesign during applyRemote', async () => {
+    const events: AdapterChange[] = [];
+    const off = designAdapter.subscribe((c) => events.push(c));
+
+    loadDesignMock.mockResolvedValueOnce(err(storageNotFound('echo-id')));
+    saveDesignMock.mockImplementationOnce(async (input: SavedDesign) => {
+      // Reproduce real `saveDesign` timing: emit past an internal await.
+      emit({
+        type: 'put',
+        id: designId('echo-id'),
+        updatedAt: '2026-05-04T00:00:00.000Z',
+      });
+      return ok({ ...input, createdAt: input.updatedAt });
+    });
+
+    await designAdapter.applyRemote({
+      id: 'echo-id',
+      payload: samplePayload(),
+      modifiedAt: Date.parse('2026-05-04T00:00:00.000Z'),
+    });
+
+    expect(events.filter((e) => e.id === 'echo-id')).toEqual([]);
+    off();
+  });
+
+  it('suppresses the emit triggered by deleteDesign during applyRemoteDelete', async () => {
+    const events: AdapterChange[] = [];
+    const off = designAdapter.subscribe((c) => events.push(c));
+
+    deleteDesignMock.mockImplementationOnce(async () => {
+      emit({
+        type: 'delete',
+        id: designId('echo-del'),
+        deletedAt: '2026-05-04T00:00:00.000Z',
+      });
+      return ok(undefined);
+    });
+
+    await designAdapter.applyRemoteDelete('echo-del');
+
+    expect(events.filter((e) => e.id === 'echo-del')).toEqual([]);
+    off();
+  });
+
   it('passes unsuppressed events through to listeners', async () => {
     const events: AdapterChange[] = [];
     const off = designAdapter.subscribe((c) => events.push(c));

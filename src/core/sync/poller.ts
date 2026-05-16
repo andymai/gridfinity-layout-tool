@@ -28,6 +28,11 @@ export interface PullResult {
 
 let lastIndexUpdatedAt = 0;
 let inFlight: Promise<PullResult> | null = null;
+// Bumped by `resetPullState`. `run()` captures the value at call time;
+// if it changes before the run finishes, the run abandons its writes.
+// Prevents a pre-reset pull from re-installing the prior user's
+// `lastIndexUpdatedAt` after sign-out.
+let generation = 0;
 
 /**
  * Single-flight pull. Concurrent callers (timer + on-focus) await the
@@ -35,19 +40,27 @@ let inFlight: Promise<PullResult> | null = null;
  */
 export async function pullNow(adapters: SyncAdapters): Promise<PullResult> {
   if (inFlight) return inFlight;
-  inFlight = run(adapters).finally(() => {
+  inFlight = run(adapters, generation).finally(() => {
     inFlight = null;
   });
   return inFlight;
 }
 
-/** Test-only: forget the cached `indexUpdatedAt`. */
-export function __resetForTests(): void {
+// Reset on sign-out: without this the next user's first poll would send
+// the prior user's `lastIndexUpdatedAt` as `If-Modified-Since`. Bumping
+// `generation` also poisons any in-flight `run()` so its late completion
+// can't re-install stale state.
+export function resetPullState(): void {
   lastIndexUpdatedAt = 0;
   inFlight = null;
+  generation++;
 }
 
-async function run(adapters: SyncAdapters): Promise<PullResult> {
+export function __resetForTests(): void {
+  resetPullState();
+}
+
+async function run(adapters: SyncAdapters, capturedGeneration: number): Promise<PullResult> {
   useSyncStatusStore.getState().beginSync();
 
   let manifestRes: Response;
@@ -56,9 +69,13 @@ async function run(adapters: SyncAdapters): Promise<PullResult> {
       headers: lastIndexUpdatedAt > 0 ? { 'If-Modified-Since': String(lastIndexUpdatedAt) } : {},
     });
   } catch {
-    useSyncStatusStore.getState().reportOffline('manifest fetch failed');
+    if (capturedGeneration === generation) {
+      useSyncStatusStore.getState().reportOffline('manifest fetch failed');
+    }
     return { status: 'offline' };
   }
+
+  if (capturedGeneration !== generation) return { status: 'offline' };
 
   if (manifestRes.status === 304) {
     useSyncStatusStore.getState().succeed();
@@ -66,6 +83,13 @@ async function run(adapters: SyncAdapters): Promise<PullResult> {
   }
   if (manifestRes.status === 401) {
     return { status: 'unauthorized' };
+  }
+  if (manifestRes.status === 429) {
+    // Server throttling, not a real error. Treat as transient offline so
+    // the periodic poll caller backs off — mirrors the push-side 429
+    // handling in `engine.ts`.
+    useSyncStatusStore.getState().reportOffline('Rate limited');
+    return { status: 'offline' };
   }
   if (!manifestRes.ok) {
     useSyncStatusStore.getState().reportError(`manifest ${manifestRes.status}`);
@@ -77,6 +101,11 @@ async function run(adapters: SyncAdapters): Promise<PullResult> {
   const layoutChanges = await diffKind(adapters.layouts, 'layouts', manifest.layouts);
   const designChanges = await diffKind(adapters.designs, 'designs', manifest.designs);
   const applied = layoutChanges + designChanges;
+
+  // Reset happened mid-flight — drop our results to avoid re-installing the
+  // prior user's high-water mark or applying writes that belong to a session
+  // that's been torn down.
+  if (capturedGeneration !== generation) return { status: 'offline' };
 
   lastIndexUpdatedAt = manifest.indexUpdatedAt;
   useSyncStatusStore.getState().succeed();

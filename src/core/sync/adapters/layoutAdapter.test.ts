@@ -13,12 +13,14 @@ const loadLayoutAsyncMock = vi.fn();
 const saveLayoutAsyncMock = vi.fn();
 const saveLibraryMock = vi.fn();
 const loadLayoutSyncMock = vi.fn();
+const computePreviewMock = vi.fn();
 
 vi.mock('@/core/storage', () => ({
   loadLayoutAsync: (id: string) => loadLayoutAsyncMock(id),
   saveLayoutAsync: (id: string, layout: unknown) => saveLayoutAsyncMock(id, layout),
   saveLibrary: (lib: unknown) => saveLibraryMock(lib),
   loadLayoutSync: (id: string) => loadLayoutSyncMock(id),
+  computePreview: (layout: unknown) => computePreviewMock(layout),
 }));
 
 import { layoutAdapter, normalizeIncomingLayout } from './layoutAdapter';
@@ -140,6 +142,41 @@ describe('layoutAdapter.subscribe', () => {
 
     setLibrary([entry('lay-1', 9999)]);
     expect(events).toEqual([]);
+  });
+});
+
+describe('layoutAdapter.applyRemote — echo suppression', () => {
+  it('does not emit a listener event for the id being remote-applied', async () => {
+    setLibrary([entry('echo-1', 1000)]);
+    saveLayoutAsyncMock.mockResolvedValue({ ok: true, value: undefined });
+    saveLibraryMock.mockResolvedValue({ ok: true, value: undefined });
+    computePreviewMock.mockReturnValue({ binCount: 0 });
+
+    const events: AdapterChange[] = [];
+    const unsubscribe = layoutAdapter.subscribe((c) => events.push(c));
+
+    await layoutAdapter.applyRemote({
+      id: 'echo-1',
+      payload: { name: 'Remote', bins: [] } as unknown as Layout,
+      modifiedAt: 5000,
+    });
+
+    expect(events.filter((e) => e.id === 'echo-1')).toEqual([]);
+    unsubscribe();
+  });
+
+  it('does not emit a listener event for applyRemoteDelete', async () => {
+    setLibrary([entry('echo-2', 1000)]);
+    saveLibraryMock.mockResolvedValue({ ok: true, value: undefined });
+    loadLayoutSyncMock.mockReturnValue(null);
+
+    const events: AdapterChange[] = [];
+    const unsubscribe = layoutAdapter.subscribe((c) => events.push(c));
+
+    await layoutAdapter.applyRemoteDelete('echo-2');
+
+    expect(events.filter((e) => e.id === 'echo-2')).toEqual([]);
+    unsubscribe();
   });
 });
 

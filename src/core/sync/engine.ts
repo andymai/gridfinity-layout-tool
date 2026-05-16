@@ -5,8 +5,10 @@ import {
   getAll as outboxGetAll,
   markFailure as outboxMarkFailure,
   markSuccess as outboxMarkSuccess,
+  rescheduleWithoutAttempt as outboxRescheduleWithoutAttempt,
   type OutboxEntry,
 } from './outbox';
+import { parseRetryAfter, rateLimitedBackoffMs } from './retryAfter';
 import { useSyncStatusStore } from './status';
 import type { AdapterChange, SyncAdapter, SyncAdapters, SyncKind } from './adapters/types';
 
@@ -28,6 +30,14 @@ interface EngineState {
   drainTimer: ReturnType<typeof setTimeout> | null;
   /** Set to true while `stop()` is tearing down — drainer skips its tail. */
   stopping: boolean;
+  /**
+   * Per-(kind, id) count of consecutive 429s without a server-provided
+   * Retry-After. Drives `rateLimitedBackoffMs`'s exponent. Distinct from
+   * `OutboxEntry.attempts` — that field is intentionally not bumped for
+   * rate-limit responses so they don't burn the gave-up budget. Cleared
+   * on any non-429 outcome for the same item.
+   */
+  rateLimitedRetries: Map<string, number>;
 }
 
 let state: EngineState | null = null;
@@ -42,6 +52,7 @@ export function start(adapters: SyncAdapters): void {
     listeners: new Set(),
     drainTimer: null,
     stopping: false,
+    rateLimitedRetries: new Map(),
   };
   state = s;
 
@@ -49,12 +60,14 @@ export function start(adapters: SyncAdapters): void {
     const adapter = adapters[kind];
     s.unsubscribers.push(
       adapter.subscribe((change) => {
-        void onLocalChange(s, kind, change);
+        onLocalChange(s, kind, change).catch((error: unknown) =>
+          reportUncaught('onLocalChange', error)
+        );
       })
     );
   }
 
-  void rehydrate(s);
+  rehydrate(s).catch((error: unknown) => reportUncaught('rehydrate', error));
 }
 
 export function stop(): void {
@@ -100,7 +113,7 @@ function scheduleDrain(s: EngineState, delayMs: number): void {
   s.drainTimer = setTimeout(
     () => {
       s.drainTimer = null;
-      void drain(s);
+      drain(s).catch((error: unknown) => reportUncaught('drain', error));
     },
     Math.max(0, delayMs)
   );
@@ -152,6 +165,7 @@ async function sendOne(
   if (entry.op === 'delete') {
     const res = await apiFetch(url, { method: 'DELETE' });
     if (res.ok || res.status === 404 || res.status === 410) {
+      s.rateLimitedRetries.delete(`${entry.kind}:${entry.id}`);
       await markPushSucceeded(entry.kind, entry.id, entry.modifiedAt);
       return;
     }
@@ -179,6 +193,7 @@ async function sendOne(
   });
 
   if (res.ok) {
+    s.rateLimitedRetries.delete(`${entry.kind}:${entry.id}`);
     await markPushSucceeded(entry.kind, entry.id, latest.modifiedAt);
     return;
   }
@@ -250,7 +265,32 @@ async function handleFailure(
   entry: OutboxEntry,
   s: EngineState
 ): Promise<void> {
-  // 401 is handled by apiFetch (forced sign-out). 4xx (other) gives up.
+  // 429: don't burn the attempts budget on server throttling. `attempts`
+  // stays at 0 so MAX_ATTEMPTS doesn't trip — but we still need an
+  // escalating delay across consecutive 429s, so track that in a separate
+  // per-(kind, id) counter on the engine state. `Retry-After` overrides
+  // the counter entirely (server knows best).
+  if (res.status === 429) {
+    const key = `${entry.kind}:${entry.id}`;
+    const retryAfter = parseRetryAfter(res.headers.get('Retry-After'));
+    // `Retry-After: 0` would otherwise pass through `??` and re-fire immediately.
+    let delayMs: number;
+    if (retryAfter !== null && retryAfter > 0) {
+      delayMs = retryAfter;
+    } else {
+      const prior = s.rateLimitedRetries.get(key) ?? 0;
+      delayMs = rateLimitedBackoffMs(prior);
+      s.rateLimitedRetries.set(key, prior + 1);
+    }
+    await outboxRescheduleWithoutAttempt(entry.kind, entry.id, delayMs);
+    useSyncStatusStore.getState().reportOffline('Rate limited');
+    scheduleDrain(s, delayMs);
+    return;
+  }
+  // Any non-429 outcome for this item resets the rate-limit counter so
+  // an unrelated transient failure doesn't carry yesterday's exponent.
+  s.rateLimitedRetries.delete(`${entry.kind}:${entry.id}`);
+  // 401 is handled by apiFetch (forced sign-out). Other 4xx gives up.
   // 5xx / network retries with backoff.
   const isClientError = res.status >= 400 && res.status < 500 && res.status !== 401;
   if (isClientError) {
@@ -298,6 +338,13 @@ async function safeReadError(res: Response): Promise<string | undefined> {
   } catch {
     return undefined;
   }
+}
+
+// Route fire-and-forget rejections into the status store so the UI
+// surfaces them instead of letting them escape as window.unhandledrejection.
+function reportUncaught(label: string, error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error);
+  useSyncStatusStore.getState().reportError(`${label}: ${message}`);
 }
 
 function emitEngineEvent(s: EngineState, event: EngineEvent): void {

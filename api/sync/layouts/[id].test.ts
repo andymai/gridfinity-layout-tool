@@ -139,7 +139,7 @@ const VALID_LAYOUT = {
   name: 'Test Layout',
   drawer: { width: 5, depth: 5, height: 3 },
   bins: [],
-  layers: [{ id: 'layer-1', name: 'Layer 1', height: 1 }],
+  layers: [{ id: 'layer-1', name: 'Layer 1', height: 2 }],
   categories: [{ id: 'cat-1', name: 'Default', color: '#ff0000' }],
   printBedSize: 256,
   gridUnitMm: 42,
@@ -270,6 +270,53 @@ describe('PUT — LWW + tombstone', () => {
       res as unknown as VercelResponse
     );
     expect(res._status).toBe(200);
+  });
+
+  it('equal-ms LWW: tiebreaker is deterministic and complementary across orderings', async () => {
+    const { default: handler } = await import('./[id]');
+    const A = { ...VALID_LAYOUT, name: 'Aardvark' };
+    const B = { ...VALID_LAYOUT, name: 'Zebra' };
+
+    await handler(
+      makeReq({ method: 'PUT', body: { layout: A, modifiedAt: 1000 } }),
+      makeRes() as unknown as VercelResponse
+    );
+    const res1 = makeRes();
+    await handler(
+      makeReq({ method: 'PUT', body: { layout: B, modifiedAt: 1000 } }),
+      res1 as unknown as VercelResponse
+    );
+
+    redisStore = new Map();
+    redisHashes = new Map();
+    blobStore.clear();
+    await handler(
+      makeReq({ method: 'PUT', body: { layout: B, modifiedAt: 1000 } }),
+      makeRes() as unknown as VercelResponse
+    );
+    const res2 = makeRes();
+    await handler(
+      makeReq({ method: 'PUT', body: { layout: A, modifiedAt: 1000 } }),
+      res2 as unknown as VercelResponse
+    );
+
+    // Asymmetry across orderings proves determinism: auto-409 yields [409,409], unconditional [200,200].
+    const statuses = [res1._status, res2._status].sort();
+    expect(statuses).toEqual([200, 409]);
+  });
+
+  it('equal-ms LWW: identical payloads return 409 (no unnecessary write)', async () => {
+    const { default: handler } = await import('./[id]');
+    await handler(
+      makeReq({ method: 'PUT', body: { layout: VALID_LAYOUT, modifiedAt: 1000 } }),
+      makeRes() as unknown as VercelResponse
+    );
+    const res = makeRes();
+    await handler(
+      makeReq({ method: 'PUT', body: { layout: VALID_LAYOUT, modifiedAt: 1000 } }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(409);
   });
 
   it('rejects 400 when modifiedAt is missing or non-numeric', async () => {

@@ -9,6 +9,7 @@ import { sanitizeString } from '../../lib/validation.js';
 import { deleteBlob, getJson, putJson } from '../../lib/blobStore.js';
 import { getEntry, tombstone, upsertEntry, type IndexEntry } from '../../lib/userIndex.js';
 import { checkQuota } from '../../lib/quota.js';
+import { compareForTiebreaker } from '../../lib/lwwTiebreaker.js';
 
 export const SCHEMA_VERSION = 1 as const;
 
@@ -175,15 +176,35 @@ async function handlePut(
 
   const existing = await getEntry(redis, userId, 'designs', id);
   // `deletedAt === undefined` is the explicit live-entry check.
-  if (existing && existing.deletedAt === undefined && existing.modifiedAt >= modifiedAt) {
-    const stored = await getJson<DesignEnvelope>(blobPath(userId, id));
-    res.status(409).json({
-      error: 'A newer version already exists.',
-      code: ErrorCode.VALIDATION_ERROR,
-      stored,
-      indexEntry: existing,
-    });
-    return;
+  if (existing && existing.deletedAt === undefined) {
+    if (existing.modifiedAt > modifiedAt) {
+      const stored = await getJson<DesignEnvelope>(blobPath(userId, id));
+      res.status(409).json({
+        error: 'A newer version already exists.',
+        code: ErrorCode.VALIDATION_ERROR,
+        stored,
+        indexEntry: existing,
+      });
+      return;
+    }
+    if (existing.modifiedAt === modifiedAt) {
+      // Equal-ms tie: hash over `{ name, params }` so renames also participate.
+      const stored = await getJson<DesignEnvelope>(blobPath(userId, id));
+      // See layouts/[id].ts for the missing-blob rationale.
+      if (stored !== null) {
+        const candidate = { name, params: validation.payload.params };
+        const order = compareForTiebreaker(candidate, stored.design);
+        if (order <= 0) {
+          res.status(409).json({
+            error: 'A newer version already exists.',
+            code: ErrorCode.VALIDATION_ERROR,
+            stored,
+            indexEntry: existing,
+          });
+          return;
+        }
+      }
+    }
   }
 
   if (existing?.deletedAt !== undefined && existing.deletedAt >= modifiedAt) {

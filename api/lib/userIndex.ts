@@ -1,5 +1,10 @@
 import type { Redis } from 'ioredis';
-import { userIndexKey, userIndexUpdatedAtKey, type SyncItemKind } from './redisKeys.js';
+import {
+  userIndexKey,
+  userIndexUpdatedAtKey,
+  userTombstoneSweptAtKey,
+  type SyncItemKind,
+} from './redisKeys.js';
 
 export type { SyncItemKind } from './redisKeys.js';
 
@@ -50,7 +55,9 @@ export async function getEntry(
 /**
  * Insert or replace an entry, atomically bumping `indexUpdatedAt` so
  * `/api/sync/manifest` can serve `If-Modified-Since` 304s without reading
- * the hash.
+ * the hash. Opportunistically sweeps tombstones past `TOMBSTONE_RETENTION_MS`,
+ * but only every `SWEEP_INTERVAL_MS` — otherwise every write would HGETALL
+ * the whole index just to discover there's nothing to clean up.
  */
 export async function upsertEntry(
   redis: Redis,
@@ -59,15 +66,60 @@ export async function upsertEntry(
   id: string,
   entry: IndexEntry
 ): Promise<void> {
+  const now = Date.now();
+  const dueForSweep = await shouldSweep(redis, userId, now);
+  const staleTombstoneIds = dueForSweep ? await findStaleTombstones(redis, userId, kind, now) : [];
   const pipeline = redis.pipeline();
   pipeline.hset(userIndexKey(userId, kind), id, JSON.stringify(entry));
-  pipeline.set(userIndexUpdatedAtKey(userId), String(Date.now()));
+  for (const staleId of staleTombstoneIds) {
+    if (staleId === id) continue;
+    pipeline.hdel(userIndexKey(userId, kind), staleId);
+  }
+  pipeline.set(userIndexUpdatedAtKey(userId), String(now));
+  if (dueForSweep) {
+    pipeline.set(userTombstoneSweptAtKey(userId), String(now));
+  }
   const run = pipeline.exec.bind(pipeline);
   const results = await run();
   if (results === null) throw new Error('userIndex pipeline failed: redis connection lost');
   for (const [err] of results) {
     if (err) throw err;
   }
+}
+
+// 90 days covers the longest legitimate offline propagation window for a
+// dormant device to still pick up deletes; beyond that the tombstone just
+// bloats every manifest poll.
+export const TOMBSTONE_RETENTION_MS = 90 * 24 * 60 * 60 * 1_000;
+
+// Sweep at most once per hour per user. Bounded growth between sweeps is
+// tiny (one tombstone per delete) and amortizes the HGETALL cost.
+const SWEEP_INTERVAL_MS = 60 * 60 * 1_000;
+
+async function shouldSweep(redis: Redis, userId: string, now: number): Promise<boolean> {
+  const raw = await redis.get(userTombstoneSweptAtKey(userId));
+  if (raw === null) return true;
+  const lastSweep = Number(raw);
+  if (!Number.isFinite(lastSweep)) return true;
+  return now - lastSweep >= SWEEP_INTERVAL_MS;
+}
+
+async function findStaleTombstones(
+  redis: Redis,
+  userId: string,
+  kind: SyncItemKind,
+  now: number
+): Promise<string[]> {
+  const raw = await redis.hgetall(userIndexKey(userId, kind));
+  const stale: string[] = [];
+  for (const [id, encoded] of Object.entries(raw)) {
+    // Substring check avoids JSON.parse on every live entry.
+    if (!encoded.includes('"deletedAt"')) continue;
+    const parsed = parseEntry(encoded);
+    if (!parsed?.deletedAt) continue;
+    if (now - parsed.deletedAt > TOMBSTONE_RETENTION_MS) stale.push(id);
+  }
+  return stale;
 }
 
 /**

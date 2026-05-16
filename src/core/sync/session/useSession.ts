@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { useEffect } from 'react';
 import { FORCED_SIGN_OUT_EVENT } from '../apiFetch';
+import { clearAll as clearOutbox } from '../outbox';
+import { resetPullState } from '../poller';
 import { getMe, type SessionUser } from './sessionApi';
 
 export type SessionStatus = 'unknown' | 'anonymous' | 'authenticated';
@@ -114,6 +116,16 @@ export function useSessionLifecycle(): void {
       }
     };
     const onForcedSignOut = () => {
+      // Cookie is already invalid — any pending push will 401 too. Wipe
+      // the outbox and reset the manifest high-water mark so a later
+      // sign-in (especially as a different user via the mismatch flow's
+      // 'merge' path) can't drain the prior user's queued PUTs under
+      // the new account. Pending edits since the last successful push
+      // are sacrificed; cross-account leakage would be worse.
+      void clearOutbox().catch(() => {
+        /* IDB failure is non-blocking; setAnonymous below still flips UI */
+      });
+      resetPullState();
       useSessionStore.getState().setAnonymous();
     };
     const onChannelMessage = (e: MessageEvent<SessionBroadcast | undefined>) => {

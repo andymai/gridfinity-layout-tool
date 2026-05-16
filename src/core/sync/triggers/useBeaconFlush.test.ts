@@ -43,24 +43,47 @@ function makeAdapters(layoutPayload: Record<string, unknown> | null = { v: 1 }):
   };
 }
 
-async function firePageHide(): Promise<void> {
+function fireVisibilityHidden(): void {
+  Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+  document.dispatchEvent(new Event('visibilitychange'));
+}
+
+function firePageHide(): void {
   window.dispatchEvent(new Event('pagehide'));
-  // The handler is async; let microtasks settle.
+}
+
+// Let visibility-hidden's IDB read + adapter.get settle before pagehide.
+async function settlePrep(): Promise<void> {
   await new Promise((r) => setTimeout(r, 10));
 }
 
 describe('useBeaconFlush', () => {
-  it('sends a beacon for each pending PUT', async () => {
+  it('sends a beacon for each pending PUT after the visibility-hidden prep completes', async () => {
     getPendingEntriesMock.mockResolvedValueOnce([
       { kind: 'layouts', id: 'lay-1', op: 'put', modifiedAt: 1000 },
       { kind: 'designs', id: 'des-1', op: 'put', modifiedAt: 2000 },
     ]);
     renderHook(() => useBeaconFlush(makeAdapters()));
-    await firePageHide();
+    fireVisibilityHidden();
+    await settlePrep();
+    firePageHide();
 
     expect(sendBeaconMock).toHaveBeenCalledTimes(2);
     expect(sendBeaconMock).toHaveBeenCalledWith('/api/sync/layouts/lay-1', expect.any(Blob));
     expect(sendBeaconMock).toHaveBeenCalledWith('/api/sync/designs/des-1', expect.any(Blob));
+  });
+
+  it('fires sendBeacon synchronously on pagehide — no awaits between the event and the call', async () => {
+    getPendingEntriesMock.mockResolvedValueOnce([
+      { kind: 'layouts', id: 'lay-1', op: 'put', modifiedAt: 1000 },
+    ]);
+    renderHook(() => useBeaconFlush(makeAdapters()));
+    fireVisibilityHidden();
+    await settlePrep();
+
+    firePageHide();
+    // No await between firePageHide and this assertion — sendBeacon must have already fired.
+    expect(sendBeaconMock).toHaveBeenCalledTimes(1);
   });
 
   it('skips DELETE entries (sendBeacon is POST-shaped)', async () => {
@@ -68,7 +91,9 @@ describe('useBeaconFlush', () => {
       { kind: 'layouts', id: 'lay-1', op: 'delete', modifiedAt: 1000 },
     ]);
     renderHook(() => useBeaconFlush(makeAdapters()));
-    await firePageHide();
+    fireVisibilityHidden();
+    await settlePrep();
+    firePageHide();
     expect(sendBeaconMock).not.toHaveBeenCalled();
   });
 
@@ -78,7 +103,9 @@ describe('useBeaconFlush', () => {
       { kind: 'layouts', id: 'too-big', op: 'put', modifiedAt: 1000 },
     ]);
     renderHook(() => useBeaconFlush(makeAdapters(huge)));
-    await firePageHide();
+    fireVisibilityHidden();
+    await settlePrep();
+    firePageHide();
     expect(sendBeaconMock).not.toHaveBeenCalled();
   });
 
@@ -87,7 +114,9 @@ describe('useBeaconFlush', () => {
       { kind: 'layouts', id: 'gone', op: 'put', modifiedAt: 1000 },
     ]);
     renderHook(() => useBeaconFlush(makeAdapters(null)));
-    await firePageHide();
+    fireVisibilityHidden();
+    await settlePrep();
+    firePageHide();
     expect(sendBeaconMock).not.toHaveBeenCalled();
   });
 
@@ -96,8 +125,10 @@ describe('useBeaconFlush', () => {
       { kind: 'layouts', id: 'lay-1', op: 'put', modifiedAt: 1000 },
     ]);
     const { unmount } = renderHook(() => useBeaconFlush(makeAdapters()));
+    fireVisibilityHidden();
+    await settlePrep();
     unmount();
-    await firePageHide();
+    firePageHide();
     expect(sendBeaconMock).not.toHaveBeenCalled();
   });
 });

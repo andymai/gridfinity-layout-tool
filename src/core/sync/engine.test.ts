@@ -233,6 +233,103 @@ describe('push: 413 quota exceeded', () => {
   });
 });
 
+describe('push: uncaught rejections in fire-and-forget paths', () => {
+  it('reports a network rejection from the scheduled drain via reportError instead of bubbling unhandled', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    engine.start(adapters);
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await new Promise((r) => setTimeout(r, 50));
+
+    expect(useSyncStatusStore.getState().state).toBe('error');
+    expect(useSyncStatusStore.getState().lastError).toContain('Failed to fetch');
+  });
+});
+
+describe('push: 429 rate-limited', () => {
+  it('reschedules without bumping attempts, reports offline, and does not give up', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: 'Too many requests' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': '5' },
+      })
+    );
+
+    engine.start(adapters);
+    const events: engine.EngineEvent[] = [];
+    engine.onEngineEvent((e) => events.push(e));
+
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await flush();
+
+    const entries = await outboxGetAll();
+    expect(entries).toHaveLength(1);
+    expect(entries[0].attempts).toBe(0);
+    expect(entries[0].nextAttemptAt).toBeGreaterThan(Date.now() + 3_000);
+    expect(useSyncStatusStore.getState().state).toBe('offline');
+    expect(events.filter((e) => e.type === 'sync-error' && e.reason === 'gave-up')).toEqual([]);
+  });
+
+  it('falls back to exponential backoff when Retry-After is absent', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 429 }));
+
+    engine.start(adapters);
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await flush();
+
+    const entries = await outboxGetAll();
+    expect(entries).toHaveLength(1);
+    expect(entries[0].attempts).toBe(0);
+    expect(entries[0].nextAttemptAt).toBeGreaterThanOrEqual(Date.now() + 900);
+    expect(entries[0].nextAttemptAt).toBeLessThan(Date.now() + 2_000);
+  });
+
+  it('bumps the per-(kind,id) rate-limit counter so backoff actually escalates', async () => {
+    // Regression: previous impl passed `entry.attempts` to
+    // `rateLimitedBackoffMs`, but `rescheduleWithoutAttempt` keeps attempts
+    // at 0 — so every 429 retried at ~1s forever. Engine now tracks a
+    // separate counter that drives the exponent.
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 429 }));
+
+    engine.start(adapters);
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await flush();
+
+    const counter = engine.__getEngineStateForTests()?.rateLimitedRetries.get('layouts:lay-1');
+    expect(counter).toBe(1);
+  });
+
+  it('resets the rate-limit counter when a push succeeds', async () => {
+    // Seed a counter as if we'd hit several 429s already, then have the
+    // next push return 200 and assert the counter is cleared. Easier
+    // than chaining 429-then-200 through the real backoff timer.
+    fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
+    engine.start(adapters);
+    engine.__getEngineStateForTests()?.rateLimitedRetries.set('layouts:lay-1', 3);
+
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await flush();
+
+    expect(
+      engine.__getEngineStateForTests()?.rateLimitedRetries.get('layouts:lay-1')
+    ).toBeUndefined();
+  });
+
+  it('falls back to backoff when Retry-After is 0 (no immediate-retry loop)', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(null, { status: 429, headers: { 'Retry-After': '0' } })
+    );
+
+    engine.start(adapters);
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await flush();
+
+    const entries = await outboxGetAll();
+    expect(entries).toHaveLength(1);
+    expect(entries[0].nextAttemptAt).toBeGreaterThanOrEqual(Date.now() + 900);
+  });
+});
+
 describe('push: 5xx / network failure', () => {
   it('reschedules with backoff and reports offline', async () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 503 }));

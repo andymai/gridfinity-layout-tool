@@ -8,6 +8,7 @@ const getPendingEntriesMock = vi.fn();
 const apiSignOutMock = vi.fn();
 const clearOutboxMock = vi.fn();
 const stopEngineMock = vi.fn();
+const resetPullStateMock = vi.fn();
 
 vi.mock('./engine', () => ({
   flushNow: () => flushNowMock(),
@@ -21,6 +22,10 @@ vi.mock('./session/sessionApi', () => ({
 
 vi.mock('./outbox', () => ({
   clearAll: () => clearOutboxMock(),
+}));
+
+vi.mock('./poller', () => ({
+  resetPullState: () => resetPullStateMock(),
 }));
 
 interface MockAdapter extends SyncAdapter {
@@ -218,6 +223,24 @@ describe('runSignOut — outbox flush', () => {
     const result = await promise;
     expect(result.status).toBe('kept');
     expect(apiSignOutMock).toHaveBeenCalled();
+  });
+});
+
+describe('runSignOut — poller high-water reset', () => {
+  it('resets the poller high-water mark on the keep path', async () => {
+    await runSignOut({ adapters, promptKeepLocal: promptKeep, onAnonymous });
+    expect(resetPullStateMock).toHaveBeenCalled();
+  });
+
+  it('resets the poller high-water mark on the wipe path', async () => {
+    await runSignOut({ adapters, promptKeepLocal: promptWipe, onAnonymous });
+    expect(resetPullStateMock).toHaveBeenCalled();
+  });
+
+  it('does not reset the poller on cancel (user is still signed in)', async () => {
+    const promptCancel: KeepLocalPrompt = vi.fn(async () => 'cancel');
+    await runSignOut({ adapters, promptKeepLocal: promptCancel, onAnonymous });
+    expect(resetPullStateMock).not.toHaveBeenCalled();
   });
 });
 

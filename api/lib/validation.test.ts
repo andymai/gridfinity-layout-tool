@@ -243,6 +243,33 @@ describe('validateShareLayout', () => {
         expect(result.error.code).toBe('VALIDATION_ERROR');
       }
     });
+
+    it('rejects unbounded drawer height (1e9)', () => {
+      const layout = createValidLayout();
+      layout.drawer.height = 1_000_000_000;
+      const result = validateShareLayout(layout, 1000);
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.code).toBe('VALIDATION_ERROR');
+      }
+    });
+
+    it('rejects drawer height below HEIGHT_MIN (mirrors client MIN_LAYER_HEIGHT=2)', () => {
+      const layout = createValidLayout();
+      layout.drawer.height = 1;
+      const result = validateShareLayout(layout, 1000);
+
+      expect(result.valid).toBe(false);
+    });
+
+    it('accepts drawer height at the GRID_MAX cap (50)', () => {
+      const layout = createValidLayout();
+      layout.drawer.height = 50;
+      const result = validateShareLayout(layout, 1000);
+
+      expect(result.valid).toBe(true);
+    });
   });
 
   describe('layer limits', () => {
@@ -262,7 +289,7 @@ describe('validateShareLayout', () => {
       layout.layers = Array.from({ length: 11 }, (_, i) => ({
         id: `layer${i}`,
         name: `Layer ${i}`,
-        height: 1,
+        height: 2,
       }));
       const result = validateShareLayout(layout, 1000);
 
@@ -277,7 +304,7 @@ describe('validateShareLayout', () => {
       layout.layers = Array.from({ length: 10 }, (_, i) => ({
         id: `layer${i}`,
         name: `Layer ${i}`,
-        height: 1,
+        height: 2,
       }));
       const result = validateShareLayout(layout, 1000);
 

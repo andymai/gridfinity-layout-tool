@@ -62,6 +62,22 @@ describe('AccountMismatchDialog', () => {
     expect(onChoice).not.toHaveBeenCalled();
   });
 
+  it('makes the non-destructive Merge button the primary action', () => {
+    // A reflex Enter on dialog open must not fire the destructive discard.
+    render(
+      <AccountMismatchDialog
+        isOpen={true}
+        localCount={3}
+        newAccountLabel="a@example.com"
+        onChoice={vi.fn()}
+      />
+    );
+    const merge = screen.getByText(/syncDialog\.accountMismatch\.merge/).closest('button');
+    const discard = screen.getByText('syncDialog.accountMismatch.discard').closest('button');
+    expect(merge?.className).toMatch(/from-accent/);
+    expect(discard?.className).toMatch(/to-danger/);
+  });
+
   it('passes count and account to the message body', () => {
     render(
       <AccountMismatchDialog

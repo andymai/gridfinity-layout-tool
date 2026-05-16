@@ -34,11 +34,11 @@ export function AccountMismatchDialog({
         </p>
       </Dialog.Body>
       <Dialog.Footer>
-        <Button variant="ghost" onClick={() => onChoice('merge')}>
-          {t('syncDialog.accountMismatch.merge', { account: newAccountLabel })}
-        </Button>
-        <Button variant="primary" onClick={() => onChoice('discard')}>
+        <Button variant="danger" onClick={() => onChoice('discard')}>
           {t('syncDialog.accountMismatch.discard')}
+        </Button>
+        <Button variant="primary" onClick={() => onChoice('merge')}>
+          {t('syncDialog.accountMismatch.merge', { account: newAccountLabel })}
         </Button>
       </Dialog.Footer>
     </Dialog.Root>

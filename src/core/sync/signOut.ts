@@ -1,6 +1,7 @@
 import { signOut as apiSignOut } from './session/sessionApi';
 import { flushNow, getPendingEntries, stop as stopEngine } from './engine';
 import { clearAll as clearOutbox } from './outbox';
+import { resetPullState } from './poller';
 import { clearLastSignedInUserId } from './claim';
 import type { SyncAdapters } from './adapters/types';
 
@@ -58,6 +59,8 @@ export async function runSignOut(ctx: SignOutContext): Promise<SignOutResult> {
   } catch {
     /* server-side logout best-effort; client state still flips below */
   }
+
+  resetPullState();
 
   ctx.onAnonymous();
   return { status: choice === 'wipe' ? 'wiped' : 'kept' };

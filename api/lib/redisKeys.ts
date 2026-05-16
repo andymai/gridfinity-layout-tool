@@ -63,3 +63,8 @@ export function userIndexKey(userId: string, kind: SyncItemKind): string {
 export function userIndexUpdatedAtKey(userId: string): string {
   return `users:${userId}:indexUpdatedAt`;
 }
+
+/** Ms timestamp of the last tombstone sweep — gates how often `upsertEntry` HGETALLs. */
+export function userTombstoneSweptAtKey(userId: string): string {
+  return `users:${userId}:tombstoneSweptAt`;
+}
