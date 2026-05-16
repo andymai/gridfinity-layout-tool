@@ -136,8 +136,8 @@ export function buildSinglePiece3MF(
   const { vertices, normals } = parseResult.value;
 
   let colorConfig: ThreeMFColorConfig | undefined;
-  /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups and featureColors are typed non-null, but runtime guard is intentional belt-and-suspenders against shape drift in the generation pipeline */
-  if (applyMultiColor && params.featureColors?.enabled && faceGroups && params.featureColors) {
+  /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups is typed non-null, but runtime guard is intentional belt-and-suspenders against shape drift in the generation pipeline */
+  if (applyMultiColor && params.featureColors?.enabled && faceGroups) {
     /* eslint-enable @typescript-eslint/no-unnecessary-condition */
     const triangleCount = vertices.length / 9;
     colorConfig =
@@ -179,8 +179,8 @@ export function buildMultiObject3MF(
     }
 
     let colorConfig: ThreeMFColorConfig | undefined;
-    /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups and featureColors are typed non-null, but runtime guard mirrors the single-piece branch as belt-and-suspenders against pipeline shape drift */
-    if (i === 0 && params.featureColors?.enabled && faceGroups && params.featureColors) {
+    /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups is typed non-null, but runtime guard mirrors the single-piece branch as belt-and-suspenders against pipeline shape drift */
+    if (i === 0 && params.featureColors?.enabled && faceGroups) {
       /* eslint-enable @typescript-eslint/no-unnecessary-condition */
       const triangleCount = parseResult.value.vertices.length / 9;
       colorConfig =

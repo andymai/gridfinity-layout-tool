@@ -224,7 +224,8 @@ export function PreviewCanvas() {
     }
   }, [wasmStatus]);
 
-  const showColors = params.featureColors.enabled;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve runtime fallback
+  const showColors = params.featureColors?.enabled ?? false;
 
   // Responsive state for touch optimizations
   const { isDesktop, isTouchDevice } = useResponsive();

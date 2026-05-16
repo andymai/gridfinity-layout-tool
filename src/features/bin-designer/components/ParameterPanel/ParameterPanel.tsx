@@ -48,11 +48,6 @@ export function ParameterPanel() {
   const { needsSplit } = useSplitOptionsSection();
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const customShapeReason = t('binDesigner.shape.custom.hint');
-  const multiColorBadge = (
-    <span className="inline-flex items-center rounded bg-info-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-info">
-      {t('binDesigner.multiColor.experimental')}
-    </span>
-  );
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-scroll scrollbar-thin">
@@ -93,7 +88,7 @@ export function ParameterPanel() {
         <StickyGroupHeader
           title={t('binDesigner.group.colors')}
           defaultExpanded
-          badge={multiColorBadge}
+          badge={t('binDesigner.multiColor.experimental')}
         >
           <div className="px-4 py-4">
             <ColorsSection />

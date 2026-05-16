@@ -186,15 +186,11 @@ function resolveColor(raw: string | undefined, fallback: string): string {
 /**
  * Migrate featureColors. Handles three eras of saved designs:
  * - Pre-v4.30: slot IDs like 'slot1' → mapped to hex via LEGACY_SLOT_COLORS.
- * - v4.30..present (pre-corner-lip): `lip` is a single hex string. All
- *   four corners inherit that value so existing designs look identical.
- * - New zones (base / scoop / dividers) missing → inherit the body color
- *   so the visual rendering is unchanged after migration.
+ * - v4.30..pre-corner-lip: `lip` is a single hex string; all four corners inherit it.
+ * - New zones (base / scoop / dividers) missing → inherit body so render is unchanged.
  *
- * The `enabled` field is back-filled from the colors themselves on the first
- * load after this field was introduced: any pre-existing design that already
- * customized at least one zone away from body is treated as having multi-color
- * turned on, so the user's existing colored designs keep their look.
+ * `enabled` is back-filled on first load — any pre-existing design with any color
+ * customization is treated as opted-in so the user's colored designs keep their look.
  */
 function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): FeatureColorConfig {
   if (!raw) return DEFAULT_FEATURE_COLOR_CONFIG;
@@ -221,17 +217,15 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
   const scoop = resolveColor(raw.scoop, body);
   const dividers = resolveColor(raw.dividers, body);
 
+  // Pre-`enabled` design counts as multi-color if body or any zone diverges
+  // from the default — zone editors only existed behind the old Labs flag, so
+  // any customized color implies multi-color intent.
   const bodyLower = body.toLowerCase();
-  const hasCustomColor = [
-    labelTab,
-    base,
-    scoop,
-    dividers,
-    lip.frontLeft,
-    lip.frontRight,
-    lip.backRight,
-    lip.backLeft,
-  ].some((c) => c.toLowerCase() !== bodyLower);
+  const isCustom = (c: string): boolean => c.toLowerCase() !== bodyLower;
+  const hasCustomColor =
+    bodyLower !== DEFAULT_FEATURE_COLOR_CONFIG.body.toLowerCase() ||
+    [labelTab, base, scoop, dividers].some(isCustom) ||
+    [lip.frontLeft, lip.frontRight, lip.backRight, lip.backLeft].some(isCustom);
 
   return { enabled: raw.enabled ?? hasCustomColor, body, lip, labelTab, base, scoop, dividers };
 }

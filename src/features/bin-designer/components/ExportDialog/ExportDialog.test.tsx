@@ -302,10 +302,13 @@ describe('ExportDialog', () => {
       open,
       multiColor,
       format,
+      enabled = multiColor,
     }: {
       open: boolean;
       multiColor: boolean;
       format: 'stl' | 'step' | '3mf';
+      /** Override the toggle independently of whether zone colors diverge. */
+      enabled?: boolean;
     }) {
       const single = '#3b82f6';
       const lipSingle = {
@@ -316,7 +319,7 @@ describe('ExportDialog', () => {
       };
       const featureColors = multiColor
         ? {
-            enabled: true,
+            enabled,
             body: single,
             lip: {
               frontLeft: '#ef4444',
@@ -330,7 +333,7 @@ describe('ExportDialog', () => {
             dividers: single,
           }
         : {
-            enabled: false,
+            enabled,
             body: single,
             lip: lipSingle,
             labelTab: single,
@@ -389,13 +392,14 @@ describe('ExportDialog', () => {
       expect(screen.getByRole('radio', { name: '3MF' })).not.toHaveAttribute('aria-disabled');
     });
 
-    it('does not auto-switch when multi-color is disabled on the design', () => {
-      // Design has per-zone colors customized but featureColors.enabled is false,
-      // so the multi-color export path should not engage and STL stays selectable.
-      setupMultiColorOpen({ open: false, multiColor: false, format: 'stl' });
+    it('does not auto-switch when multi-color is disabled on the design with diverged colors', () => {
+      // Critical case: zone colors are diverged (red lip, green labelTab) but
+      // featureColors.enabled is false. The toggle alone must suppress the
+      // multi-color export path; underlying color data is preserved on disable.
+      setupMultiColorOpen({ open: false, multiColor: true, format: 'stl', enabled: false });
       const { rerender } = render(<ExportDialog />);
       act(() => {
-        setupMultiColorOpen({ open: true, multiColor: false, format: 'stl' });
+        setupMultiColorOpen({ open: true, multiColor: true, format: 'stl', enabled: false });
       });
       rerender(<ExportDialog />);
       expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('stl');

@@ -15,8 +15,10 @@ interface StickyGroupHeaderProps {
   title: string;
   defaultExpanded?: boolean;
   summary?: string;
-  /** Optional inline badge rendered next to the title (e.g. "Experimental"). */
-  badge?: ReactNode;
+  /** Optional short label rendered as a pill next to the title (e.g. "Experimental").
+   *  Typed as `string` so the badge can't accidentally hold an interactive element
+   *  inside the collapse `<button>`. */
+  badge?: string;
   children: ReactNode;
 }
 
@@ -50,7 +52,14 @@ export function StickyGroupHeader({
         <span className="text-[11px] font-bold text-content-tertiary uppercase tracking-widest">
           {title}
         </span>
-        {badge}
+        {badge && (
+          <span
+            aria-hidden="true"
+            className="inline-flex items-center rounded bg-info-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-info"
+          >
+            {badge}
+          </span>
+        )}
         {summary && (
           <span
             className={`ml-auto min-w-0 truncate text-xs tabular-nums transition-colors ${
