@@ -1352,6 +1352,10 @@ const en: Record<string, string> = {
   'binDesigner.colors.presets': 'Presets',
   'binDesigner.colors.hexColor': 'Hex color',
   'binDesigner.colors.hexInvalid': 'Invalid hex color',
+  'binDesigner.colors.usedInDesign': 'Used in this design',
+  'binDesigner.colors.matchColor': 'Match color {color}',
+  'binDesigner.colors.pickCustom': 'Pick a custom color',
+  'binDesigner.colors.resetToDefault': 'Reset to default',
 
   'binDesigner.shape.customShape': 'Custom shape',
   'binDesigner.shape.gridHelp': 'Click to toggle grid cells',
