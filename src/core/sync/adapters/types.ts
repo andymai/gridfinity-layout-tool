@@ -84,16 +84,19 @@ export interface SyncAdapter<T = unknown> {
 }
 
 /**
- * Layouts have a known core type (`Layout`); design payloads are
- * intentionally `unknown` here since the actual `BinParams` shape lives
- * in `src/features/bin-designer/` and `core/` cannot import it. The
- * concrete `DesignAdapter` impl in `features/` parameterizes its own
- * adapter type with `BinParams`; the engine only ever sees the boxed
- * `unknown`, which is fine since it round-trips the payload to the
- * server without inspection.
+ * Designs sync as `{ name, params }` so the user-visible name survives
+ * the cloud round-trip — mirroring how `Layout` already carries its
+ * name as a top-level payload field. `params` is `unknown` here because
+ * `BinParams` lives in `features/bin-designer/` and `core/` cannot
+ * import it; the concrete `DesignAdapter` impl re-narrows it.
  */
+export interface DesignSyncPayload {
+  name: string;
+  params: unknown;
+}
+
 export type LayoutAdapter = SyncAdapter<Layout>;
-export type DesignAdapter = SyncAdapter;
+export type DesignAdapter = SyncAdapter<DesignSyncPayload>;
 
 /**
  * Both adapters bundled together — what the engine takes at start time.

@@ -11,7 +11,11 @@ import { checkQuota } from '../../lib/quota.js';
 
 export const SCHEMA_VERSION = 1 as const;
 
+/** Max length for a user-visible design name (mirrors `inserts[].label`). */
+const MAX_NAME_LENGTH = 100;
+
 interface DesignEnvelope {
+  /** `{ name, params }` wrapper; readers parse with `unwrapDesignPayload`. */
   design: unknown;
   modifiedAt: number;
   schemaVersion: typeof SCHEMA_VERSION;
@@ -19,11 +23,9 @@ interface DesignEnvelope {
 
 /**
  * GET    /api/sync/designs/{id}
- * PUT    /api/sync/designs/{id}   — body { design, modifiedAt } where
- *                                    `design` is the raw BinParams shape.
- *                                    Validated via the existing designer
- *                                    validator (wrapped in the share
- *                                    payload contract internally).
+ * PUT    /api/sync/designs/{id}   — body { design, modifiedAt }. `design`
+ *                                    is `{ name, params }` (new shape) or
+ *                                    bare BinParams (legacy, still accepted).
  * DELETE /api/sync/designs/{id}
  *
  * Mirrors the layouts endpoint's LWW + tombstone semantics.
@@ -105,6 +107,20 @@ interface PutBody {
   modifiedAt: unknown;
 }
 
+/**
+ * Split `design` into `{ name, params }`. New shape carries a `params`
+ * field; legacy shape is bare `BinParams` (no nested `params`), so the
+ * two are unambiguous. Returns `null` for non-objects so the caller can 400.
+ */
+function unwrapDesignPayload(design: unknown): { name: string | null; params: unknown } | null {
+  if (design === null || typeof design !== 'object') return null;
+  const { name, params } = design as { name?: unknown; params?: unknown };
+  if (typeof params === 'object' && params !== null) {
+    return { name: typeof name === 'string' ? name : null, params };
+  }
+  return { name: null, params: design };
+}
+
 async function handlePut(
   req: VercelRequest,
   res: VercelResponse,
@@ -125,13 +141,31 @@ async function handlePut(
     return;
   }
 
-  // Reuse the share-payload validator by adapting our envelope to its
-  // shape. `sizeBytes` measures the validation payload (not just `{design}`)
-  // so the validator's MAX_PAYLOAD_BYTES check, the quota math, and the
-  // stored envelope are all sized against the same bytes.
-  const validationPayload = { type: 'designer' as const, version: 1 as const, params: design };
-  const serialized = JSON.stringify(validationPayload);
-  const sizeBytes = Buffer.byteLength(serialized, 'utf8');
+  const unwrapped = unwrapDesignPayload(design);
+  if (!unwrapped) {
+    res.status(400).json({ error: 'design must be an object', code: ErrorCode.VALIDATION_ERROR });
+    return;
+  }
+  // Bound the name so a hostile client can't blow the per-entry size cap
+  // via the user-visible field. Legacy payloads persist as empty string;
+  // the client adapter falls back from there.
+  if (unwrapped.name !== null && unwrapped.name.length > MAX_NAME_LENGTH) {
+    res.status(400).json({
+      error: `name must be ≤ ${MAX_NAME_LENGTH} characters`,
+      code: ErrorCode.VALIDATION_ERROR,
+    });
+    return;
+  }
+  const name = unwrapped.name ?? '';
+
+  // Reuse the share-payload validator. `sizeBytes` measures name + params
+  // together so the size cap, quota math, and stored envelope all agree.
+  const validationPayload = {
+    type: 'designer' as const,
+    version: 1 as const,
+    params: unwrapped.params,
+  };
+  const sizeBytes = Buffer.byteLength(JSON.stringify({ name, ...validationPayload }), 'utf8');
   const validation = validateDesignerShare(validationPayload, sizeBytes);
   if (!validation.valid) {
     res.status(400).json({ error: validation.error.message, code: ErrorCode.VALIDATION_ERROR });
@@ -174,8 +208,10 @@ async function handlePut(
     return;
   }
 
+  // Always emit the new wrapper shape. Legacy posts become `name = ''`;
+  // readers fall back from there.
   const envelope: DesignEnvelope = {
-    design: validation.payload.params,
+    design: { name, params: validation.payload.params },
     modifiedAt,
     schemaVersion: SCHEMA_VERSION,
   };
