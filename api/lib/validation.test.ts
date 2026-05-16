@@ -243,6 +243,35 @@ describe('validateShareLayout', () => {
         expect(result.error.code).toBe('VALIDATION_ERROR');
       }
     });
+
+    it('rejects unbounded drawer height (1e9)', () => {
+      // Regression: drawer.height was only `> 0`. A corrupted device
+      // can persist absurd values that round-trip to other devices.
+      const layout = createValidLayout();
+      layout.drawer.height = 1_000_000_000;
+      const result = validateShareLayout(layout, 1000);
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.code).toBe('VALIDATION_ERROR');
+      }
+    });
+
+    it('rejects drawer height below 1', () => {
+      const layout = createValidLayout();
+      layout.drawer.height = 0;
+      const result = validateShareLayout(layout, 1000);
+
+      expect(result.valid).toBe(false);
+    });
+
+    it('accepts drawer height at the GRID_MAX cap (50)', () => {
+      const layout = createValidLayout();
+      layout.drawer.height = 50;
+      const result = validateShareLayout(layout, 1000);
+
+      expect(result.valid).toBe(true);
+    });
   });
 
   describe('layer limits', () => {

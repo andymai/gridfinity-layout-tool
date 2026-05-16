@@ -341,7 +341,11 @@ function isValidDrawer(value: unknown): value is DrawerShape {
     isNumber(value.height) &&
     value.width > 0 &&
     value.depth > 0 &&
-    value.height > 0
+    // `drawer.height` is HeightUnits in the domain model (7mm each); the
+    // client UI caps it at GRID_MAX (50). Without this server-side bound
+    // a corrupted device can persist absurd values (e.g. 1e9) that then
+    // round-trip via sync to other devices.
+    inRange(value.height, 1, SHARE_CONSTRAINTS.GRID_MAX)
   );
 }
 
@@ -351,7 +355,7 @@ function isValidLayer(value: unknown): value is LayerShape {
     typeof value.id === 'string' &&
     typeof value.name === 'string' &&
     isNumber(value.height) &&
-    value.height > 0
+    inRange(value.height, 1, SHARE_CONSTRAINTS.GRID_MAX)
   );
 }
 
@@ -370,7 +374,7 @@ function isValidBin(value: unknown): value is BinShape {
     isNumber(value.height) &&
     value.width > 0 &&
     value.depth > 0 &&
-    value.height > 0 &&
+    inRange(value.height, 1, SHARE_CONSTRAINTS.GRID_MAX) &&
     optString(value.category) &&
     optString(value.label) &&
     optString(value.notes)
