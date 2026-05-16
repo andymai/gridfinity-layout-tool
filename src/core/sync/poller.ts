@@ -41,10 +41,20 @@ export async function pullNow(adapters: SyncAdapters): Promise<PullResult> {
   return inFlight;
 }
 
-/** Test-only: forget the cached `indexUpdatedAt`. */
-export function __resetForTests(): void {
+/**
+ * Reset the poller's per-user high-water mark. Call on sign-out so the
+ * next sign-in's first poll doesn't use the prior user's
+ * `lastIndexUpdatedAt` as its `If-Modified-Since` — that mismatch would
+ * silently skip a fresh manifest scan for the new account.
+ */
+export function resetPullState(): void {
   lastIndexUpdatedAt = 0;
   inFlight = null;
+}
+
+/** Test-only alias retained for legacy callers in test files. */
+export function __resetForTests(): void {
+  resetPullState();
 }
 
 async function run(adapters: SyncAdapters): Promise<PullResult> {
