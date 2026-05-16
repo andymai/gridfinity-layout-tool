@@ -5,8 +5,10 @@ import {
   getAll as outboxGetAll,
   markFailure as outboxMarkFailure,
   markSuccess as outboxMarkSuccess,
+  rescheduleWithoutAttempt as outboxRescheduleWithoutAttempt,
   type OutboxEntry,
 } from './outbox';
+import { parseRetryAfter, rateLimitedBackoffMs } from './retryAfter';
 import { useSyncStatusStore } from './status';
 import type { AdapterChange, SyncAdapter, SyncAdapters, SyncKind } from './adapters/types';
 
@@ -250,7 +252,18 @@ async function handleFailure(
   entry: OutboxEntry,
   s: EngineState
 ): Promise<void> {
-  // 401 is handled by apiFetch (forced sign-out). 4xx (other) gives up.
+  // 429 is server throttling, not a payload problem — retry indefinitely
+  // and don't burn the `attempts` budget. Honor `Retry-After` if the
+  // server sends it; otherwise back off exponentially with jitter.
+  if (res.status === 429) {
+    const delayMs =
+      parseRetryAfter(res.headers.get('Retry-After')) ?? rateLimitedBackoffMs(entry.attempts);
+    await outboxRescheduleWithoutAttempt(entry.kind, entry.id, delayMs);
+    useSyncStatusStore.getState().reportOffline('Rate limited');
+    scheduleDrain(s, delayMs);
+    return;
+  }
+  // 401 is handled by apiFetch (forced sign-out). Other 4xx gives up.
   // 5xx / network retries with backoff.
   const isClientError = res.status >= 400 && res.status < 500 && res.status !== 401;
   if (isClientError) {

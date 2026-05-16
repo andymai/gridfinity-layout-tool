@@ -233,6 +233,49 @@ describe('push: 413 quota exceeded', () => {
   });
 });
 
+describe('push: 429 rate-limited', () => {
+  it('reschedules without bumping attempts, reports offline, and does not give up', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: 'Too many requests' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json', 'Retry-After': '5' },
+      })
+    );
+
+    engine.start(adapters);
+    const events: engine.EngineEvent[] = [];
+    engine.onEngineEvent((e) => events.push(e));
+
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await flush();
+
+    const entries = await outboxGetAll();
+    expect(entries).toHaveLength(1);
+    // attempts MUST NOT be incremented — 429 is server throttling, not a
+    // push-payload failure. Burning the attempts budget on rate limits
+    // would let a busy minute drop legitimate writes.
+    expect(entries[0].attempts).toBe(0);
+    expect(entries[0].nextAttemptAt).toBeGreaterThan(Date.now() + 3_000);
+    expect(useSyncStatusStore.getState().state).toBe('offline');
+    expect(events.filter((e) => e.type === 'sync-error' && e.reason === 'gave-up')).toEqual([]);
+  });
+
+  it('falls back to exponential backoff when Retry-After is absent', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 429 }));
+
+    engine.start(adapters);
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await flush();
+
+    const entries = await outboxGetAll();
+    expect(entries).toHaveLength(1);
+    expect(entries[0].attempts).toBe(0);
+    // First retry at ~1s after now (jitter adds 0-200ms).
+    expect(entries[0].nextAttemptAt).toBeGreaterThanOrEqual(Date.now() + 900);
+    expect(entries[0].nextAttemptAt).toBeLessThan(Date.now() + 2_000);
+  });
+});
+
 describe('push: 5xx / network failure', () => {
   it('reschedules with backoff and reports offline', async () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 503 }));

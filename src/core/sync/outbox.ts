@@ -200,6 +200,32 @@ export async function markFailure(kind: SyncKind, id: string): Promise<'reschedu
 }
 
 /**
+ * Reschedule an entry without bumping `attempts`. Used for 429 responses
+ * where the failure is server-side throttling, not a problem with the
+ * payload — counting it against the attempt budget would let a busy
+ * minute exhaust `MAX_ATTEMPTS` and drop legitimate writes.
+ */
+export async function rescheduleWithoutAttempt(
+  kind: SyncKind,
+  id: string,
+  delayMs: number
+): Promise<void> {
+  const db = await getDb();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  const current = (await store.get(entryKey(kind, id))) as OutboxEntry | undefined;
+  if (!current) {
+    await tx.done;
+    return;
+  }
+  await store.put({
+    ...current,
+    nextAttemptAt: Date.now() + Math.max(0, delayMs),
+  });
+  await tx.done;
+}
+
+/**
  * Remove an entry without success/failure semantics. Used when the
  * engine determines an entry is no longer applicable (e.g. user
  * signed out before we drained it).
