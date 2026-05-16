@@ -97,12 +97,14 @@ export function createUISlice(set: Set) {
         if (tool !== 'swap-pick-second') {
           state.ui.swapFirstZone = null;
         }
-        // Leaving a tool: drop hover focus and any open eyedropper picker so
-        // toolbar toggles + multi-color disable all exit cleanly through one
-        // path (avoids the orphaned-picker case where a local-state overlay
-        // outlived the tool that opened it).
-        if (tool === null) {
-          state.ui.hoveredColorZone = null;
+        // Drop hover focus on every tool transition so the glow doesn't
+        // leak from one mode into the next.
+        state.ui.hoveredColorZone = null;
+        // Picker only makes sense in eyedropper mode — clear it whenever
+        // we transition to anything else (null, swap-pick-first, etc.),
+        // otherwise a picker opened during eyedropper would float over the
+        // swap banner ("mutually exclusive tool overlay" promise).
+        if (tool !== 'eyedropper') {
           state.ui.pickerOverlay = null;
         }
       });

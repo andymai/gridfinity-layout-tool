@@ -26,9 +26,10 @@ export interface ZoneResolver {
 
 /**
  * Build a resolver for the given mesh. The lip bbox is computed up front,
- * so subsequent `resolve()` calls are O(faceGroups) on the binary-searchable
- * group list plus O(1) for the corner classification — cheap enough for
- * per-pointer-move use even on dense meshes.
+ * so subsequent `resolve()` calls just do a linear scan over face groups
+ * (group count is small — typically under a dozen) plus O(1) for the
+ * corner classification — cheap enough for per-pointer-move use even on
+ * dense meshes.
  */
 export function buildZoneResolver(
   faceGroups: readonly FaceGroupData[],

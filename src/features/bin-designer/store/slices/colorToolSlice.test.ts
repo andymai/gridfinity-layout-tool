@@ -85,6 +85,21 @@ describe('color-tool slice', () => {
       useDesignerStore.getState().setColorTool(null);
       expect(useDesignerStore.getState().ui.hoveredColorZone).toBeNull();
     });
+
+    it('clears pickerOverlay when switching to a non-eyedropper tool', () => {
+      // Eyedropper → swap transition: the floating picker from eyedropper
+      // would otherwise sit over the swap banner. Picker only makes sense
+      // in eyedropper mode.
+      useDesignerStore.setState({
+        ui: {
+          ...useDesignerStore.getState().ui,
+          colorTool: 'eyedropper',
+          pickerOverlay: { zone: 'body', x: 100, y: 100 },
+        },
+      });
+      useDesignerStore.getState().setColorTool('swap-pick-first');
+      expect(useDesignerStore.getState().ui.pickerOverlay).toBeNull();
+    });
   });
 
   describe('pickSwapZone', () => {
