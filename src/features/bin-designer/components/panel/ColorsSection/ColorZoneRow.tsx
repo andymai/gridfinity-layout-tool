@@ -1,12 +1,14 @@
 /**
- * A single color zone row: colored dot + zone label, click to edit.
+ * A single color zone row: swatch tile + zone label + hex value + chevron.
  *
- * Opens a popover with preset filament colors + hex input.
- * Fires hover events for 3D preview glow feedback.
+ * Clicking the row opens a popover with the full picker. The 3D preview
+ * receives hover focus on row hover AND while the popover is open so the
+ * user always sees which zone they're editing.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Popover } from '@/design-system/Popover/Popover';
+import { ChevronDownIcon } from '@/design-system/Icon';
 import { ColorPicker } from './ColorPicker';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 
@@ -14,54 +16,87 @@ interface ColorZoneRowProps {
   zone: ColorZone;
   label: string;
   color: string;
+  defaultColor: string;
+  otherColors: readonly string[];
   onChange: (hex: string) => void;
   onHover: (zone: ColorZone | null) => void;
+  /** Native-picker gesture hooks, forwarded to ColorPicker for undo coalescing. */
+  onGestureStart?: () => void;
+  onGestureEnd?: () => void;
 }
 
-export function ColorZoneRow({ zone, label, color, onChange, onHover }: ColorZoneRowProps) {
+export function ColorZoneRow({
+  zone,
+  label,
+  color,
+  defaultColor,
+  otherColors,
+  onChange,
+  onHover,
+  onGestureStart,
+  onGestureEnd,
+}: ColorZoneRowProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const anchorRef = useRef<HTMLButtonElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleClose = useCallback(() => setIsOpen(false), []);
 
-  // Re-anchor on open (effect to comply with React 19 ref rules)
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  // While the popover is open, keep this zone pinned as the focused one
+  // so the 3D preview glow doesn't drop off when the user moves their
+  // pointer into the popover content. The cleanup runs on close (or
+  // unmount) and releases the pin — without it, closing via Escape /
+  // click-outside while the pointer is already off the row would leave
+  // the glow stuck because pointerLeave short-circuits when `isOpen`.
   useEffect(() => {
-    anchorRef.current = isOpen ? buttonRef.current : null;
-  }, [isOpen]);
+    if (!isOpen) return;
+    onHover(zone);
+    return () => onHover(null);
+  }, [isOpen, zone, onHover]);
 
   return (
-    <div
-      className="flex items-center gap-2.5"
-      onPointerEnter={() => onHover(zone)}
-      onPointerLeave={() => onHover(null)}
-    >
+    <>
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="group flex items-center gap-2 rounded-md px-1.5 py-1 -mx-1.5 transition-colors hover:bg-surface-hover"
+        onClick={() => setIsOpen((v) => !v)}
+        onPointerEnter={() => onHover(zone)}
+        onPointerLeave={() => {
+          if (!isOpen) onHover(null);
+        }}
+        className="group flex w-full items-center gap-3 rounded-lg px-2 py-1.5 -mx-2 transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent/40 data-[open=true]:bg-surface-hover"
         aria-expanded={isOpen}
+        aria-haspopup="dialog"
         aria-label={`${label}: ${color}`}
+        data-open={isOpen}
       >
         <span
-          className="w-4 h-4 rounded-full border border-stroke-subtle/50 shrink-0 transition-transform group-hover:scale-110"
+          className="w-6 h-6 rounded-md border border-stroke-subtle/60 shrink-0 shadow-inner transition-transform group-hover:scale-105"
           style={{ backgroundColor: color }}
         />
-        <span className="text-xs text-content-secondary">{label}</span>
+        <span className="flex-1 text-left text-xs text-content-secondary">{label}</span>
+        <span className="font-mono text-[10px] uppercase text-content-tertiary tabular-nums">
+          {color}
+        </span>
+        <ChevronDownIcon
+          size="sm"
+          className="-rotate-90 text-content-tertiary transition-transform group-hover:translate-x-0.5"
+        />
       </button>
 
       {isOpen && (
-        <Popover
-          key={color}
-          anchorRef={anchorRef}
-          isOpen
-          onClose={handleClose}
-          placement="bottom-start"
-        >
-          <ColorPicker color={color} onChange={onChange} />
+        <Popover anchorRef={buttonRef} isOpen onClose={handleClose} placement="bottom-start">
+          <ColorPicker
+            zone={zone}
+            zoneLabel={label}
+            color={color}
+            defaultColor={defaultColor}
+            otherColors={otherColors}
+            onChange={onChange}
+            onGestureStart={onGestureStart}
+            onGestureEnd={onGestureEnd}
+          />
         </Popover>
       )}
-    </div>
+    </>
   );
 }

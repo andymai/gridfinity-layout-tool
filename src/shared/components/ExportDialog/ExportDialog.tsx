@@ -68,6 +68,14 @@ export interface ExportDialogProps {
     max: number;
   } | null;
 
+  /**
+   * Per-format availability. Disabled formats render greyed-out with the
+   * supplied reason as a tooltip and are skipped during arrow-key navigation.
+   * Callers gate via this when a format would silently drop data they care
+   * about (e.g. STL for a multi-color bin).
+   */
+  formatStates?: Partial<Record<ExportFileFormat, { disabled?: boolean; reason?: string }>>;
+
   /** Optional print estimates */
   estimates?: readonly { label: string; value: string }[] | null;
   estimatesTitle?: string;
@@ -105,6 +113,7 @@ export function ExportDialog({
   exportProgress,
   splitBanner,
   stackOptions,
+  formatStates,
   estimates,
   estimatesTitle,
   estimatesDisclaimer,
@@ -186,6 +195,7 @@ export function ExportDialog({
             activeFormat={activeFormat}
             onChange={handleFormatChange}
             formatLabel={t('export.format')}
+            formatStates={formatStates}
           />
 
           {/* File Name */}
@@ -367,12 +377,32 @@ function FormatSelector({
   activeFormat,
   onChange,
   formatLabel,
+  formatStates,
 }: {
   activeFormat: ExportFileFormat;
   onChange: (format: ExportFileFormat) => void;
   formatLabel: string;
+  formatStates?: Partial<Record<ExportFileFormat, { disabled?: boolean; reason?: string }>>;
 }) {
   const groupRef = useRef<HTMLDivElement>(null);
+
+  const isDisabled = useCallback(
+    (fmt: ExportFileFormat) => formatStates?.[fmt]?.disabled === true,
+    [formatStates]
+  );
+
+  // Pick the next enabled index when arrow-stepping. Returns currentIndex if
+  // no other format is enabled (no-op rather than focus-trap escape).
+  const findNextEnabled = useCallback(
+    (from: number, dir: 1 | -1): number => {
+      for (let i = 1; i <= FORMAT_OPTIONS.length; i++) {
+        const idx = (from + dir * i + FORMAT_OPTIONS.length) % FORMAT_OPTIONS.length;
+        if (!isDisabled(FORMAT_OPTIONS[idx])) return idx;
+      }
+      return from;
+    },
+    [isDisabled]
+  );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -381,25 +411,26 @@ function FormatSelector({
 
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();
-        nextIndex = (currentIndex + 1) % FORMAT_OPTIONS.length;
+        nextIndex = findNextEnabled(currentIndex, 1);
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
-        nextIndex = (currentIndex - 1 + FORMAT_OPTIONS.length) % FORMAT_OPTIONS.length;
+        nextIndex = findNextEnabled(currentIndex, -1);
       } else if (e.key === 'Home') {
         e.preventDefault();
-        nextIndex = 0;
+        nextIndex = findNextEnabled(-1, 1);
       } else if (e.key === 'End') {
         e.preventDefault();
-        nextIndex = FORMAT_OPTIONS.length - 1;
+        nextIndex = findNextEnabled(FORMAT_OPTIONS.length, -1);
       } else {
         return;
       }
 
+      if (nextIndex === currentIndex) return;
       onChange(FORMAT_OPTIONS[nextIndex]);
       const buttons = groupRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
       buttons?.[nextIndex]?.focus();
     },
-    [activeFormat, onChange]
+    [activeFormat, onChange, findNextEnabled]
   );
 
   return (
@@ -415,6 +446,8 @@ function FormatSelector({
       >
         {FORMAT_OPTIONS.map((fmt) => {
           const isActive = fmt === activeFormat;
+          const disabled = isDisabled(fmt);
+          const reason = formatStates?.[fmt]?.reason;
           return (
             <button
               key={fmt}
@@ -422,11 +455,17 @@ function FormatSelector({
               role="radio"
               tabIndex={isActive ? 0 : -1}
               aria-checked={isActive}
-              onClick={() => onChange(fmt)}
+              aria-disabled={disabled || undefined}
+              onClick={() => {
+                if (!disabled) onChange(fmt);
+              }}
+              title={disabled ? reason : undefined}
               className={`rounded-md px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
-                isActive
-                  ? 'bg-accent-muted text-accent'
-                  : 'bg-surface text-content-secondary hover:bg-surface-hover'
+                disabled
+                  ? 'cursor-not-allowed bg-surface text-content-disabled opacity-50'
+                  : isActive
+                    ? 'bg-accent-muted text-accent'
+                    : 'bg-surface text-content-secondary hover:bg-surface-hover'
               }`}
             >
               {FORMAT_LABELS[fmt]}
