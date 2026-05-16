@@ -93,6 +93,59 @@ interface SplitPieceInfo {
 }
 
 /**
+ * Tolerance for "cut plane is on a cell boundary" detection (mm). The bin's
+ * socket cells share walls at every gridUnit step, so a cut plane within
+ * this distance of one is treated as coincident.
+ */
+const CELL_BOUNDARY_TOLERANCE = 0.001;
+
+/**
+ * Amount to nudge a cut plane off a coincident cell boundary (mm).
+ * 0.1mm is below the visible-seam threshold for FDM prints and is well
+ * above OCCT's coplanar-face tolerance, so the boolean cut sees two
+ * cleanly distinct faces rather than a near-coincident pair that
+ * triggers wall-dropping (issue #1676).
+ */
+const CELL_BOUNDARY_NUDGE = 0.1;
+
+/**
+ * Shift any cut plane that lands on a socket-cell boundary by a tiny
+ * amount so it no longer coincides with the bin's internal wall plane.
+ *
+ * Cell boundaries (in bin-centered coords) sit at `(i - cells/2) * gridUnit`
+ * for `i` in `0..cells`. For an even-numbered cell count (e.g. depth=10),
+ * the natural even-split cut plane lands at exactly y=0, which is one of
+ * those boundaries.
+ *
+ * Pieces still meet flush — they both use the shifted plane — so the
+ * nudge just translates the seam, it doesn't create overlap.
+ */
+export function shiftCutPlanesOffCellBoundaries(
+  cutPlanes: readonly number[],
+  cells: number,
+  gridUnitMm: number
+): number[] {
+  if (!Number.isFinite(gridUnitMm) || gridUnitMm <= 0 || cells <= 0) {
+    return [...cutPlanes];
+  }
+
+  const halfCells = cells / 2;
+  return cutPlanes.map((plane) => {
+    // Convert plane y to a fractional cell index. Integer values are on a
+    // boundary; the i=0 and i=cells boundaries lie on the bin's outer wall
+    // (covered by EDGE_MARGIN), so only INTERIOR integers matter.
+    const cellIndex = plane / gridUnitMm + halfCells;
+    const nearest = Math.round(cellIndex);
+    if (nearest <= 0 || nearest >= cells) return plane;
+    const distanceMm = Math.abs(cellIndex - nearest) * gridUnitMm;
+    if (distanceMm < CELL_BOUNDARY_TOLERANCE) {
+      return plane + CELL_BOUNDARY_NUDGE;
+    }
+    return plane;
+  });
+}
+
+/**
  * Split the bin solid into pieces via boolean intersection.
  *
  * Shared by exportSplitBin (STL output) and generateSplitPreview (mesh output).
@@ -176,19 +229,30 @@ function splitSolidIntoPieces(
     }
   }
 
+  // When a cut plane lands exactly on a socket-cell boundary (e.g. depth=10
+  // split into 5+5 puts the cut at y=0, which is the shared wall between
+  // adjacent socket cells), the per-piece 0.01mm cutting-box overlap isn't
+  // enough — OCCT still treats some interior faces as coplanar and drops
+  // walls (issue #1676 reported A2 lost ~22mm of body Z). Shifting the cut
+  // plane itself by 0.1mm fully resolves the coplanarity at both faces and
+  // keeps the pieces flush (no overlap region, just a 0.1mm offset that's
+  // invisible to FDM print and barely felt at the join).
+  const adjustedCutPlanesX = shiftCutPlanesOffCellBoundaries(cutPlanesX, params.width, gridUnitMm);
+  const adjustedCutPlanesY = shiftCutPlanesOffCellBoundaries(cutPlanesY, params.depth, gridUnitMm);
+
   // Boundary arrays: [left edge, ...cut planes, right edge]
-  const xBounds = [-outerW / 2, ...cutPlanesX, outerW / 2];
-  const yBounds = [-outerD / 2, ...cutPlanesY, outerD / 2];
+  const xBounds = [-outerW / 2, ...adjustedCutPlanesX, outerW / 2];
+  const yBounds = [-outerD / 2, ...adjustedCutPlanesY, outerD / 2];
 
   // Outer edges of the cutting box are expanded by this margin to avoid
   // coplanar faces with bin geometry, which cause OCCT booleans to
   // silently drop outer walls.
   const EDGE_MARGIN = 1;
 
-  // Interior cut faces also need a small offset to avoid coplanarity with
-  // socket cell boundaries (e.g. a 10-wide bin split at cell 5 puts the
-  // cut plane exactly on the cell wall at x=0). 10um is invisible in FDM
-  // print but breaks the coplanarity that causes OCCT to drop geometry.
+  // Interior cut faces still get a small overlap to defeat coplanarity
+  // tolerance at the cut. With shiftCutPlanesOffCellBoundaries() above,
+  // the cut plane itself is already off any cell wall — this offset is the
+  // belt to the suspenders of the cell-boundary shift.
   const INTERIOR_MARGIN = 0.01;
 
   const pieces: SplitPieceInfo[] = [];
@@ -266,8 +330,8 @@ function splitSolidIntoPieces(
           const cutFaces = computeCutFaces(
             col,
             row,
-            cutPlanesX,
-            cutPlanesY,
+            adjustedCutPlanesX,
+            adjustedCutPlanesY,
             outerW,
             outerD,
             pieceW,

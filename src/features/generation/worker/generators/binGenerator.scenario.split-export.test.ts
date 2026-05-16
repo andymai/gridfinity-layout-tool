@@ -133,6 +133,64 @@ describe('split export: geometry completeness', () => {
     }
   }, 90000);
 
+  it('exports a 5x4x3 bin (split at cell boundary) without losing geometry', async () => {
+    // Width 5 → cut at x=0 (the cell-4/cell-5 boundary). Confirms the
+    // cell-boundary nudge fires on x-axis cuts too and doesn't regress
+    // pieces with stacking lip.
+    const exportSplitBin = getExportSplitBin();
+
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 5,
+      depth: 2,
+      height: 3,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    };
+
+    // Pick a printBed size that forces a cut: max=2 for width=5 → 3 pieces;
+    // we want exactly 2, so pre-compute one cut at x=0 (cell-2/cell-3 wall).
+    const cutPlanesX: number[] = [-21]; // halfway between cells 2 and 3
+    const connectors = { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: false };
+    const exported = await exportSplitBin(params, cutPlanesX, [], 0.01, 5, connectors);
+    expect(exported.pieces).toHaveLength(2);
+  }, 90000);
+
+  it('exports a 3x10x7 standard-base no-lip bin without losing body Z (issue #1676)', async () => {
+    // Reported failure: depth 10 forces a single y-cut at exactly y=0, which
+    // lands on the shared wall between adjacent socket cells. Even with the
+    // 0.01mm INTERIOR_MARGIN, OCCT was dropping ~22mm of wall geometry
+    // (final piece Z=26.7mm vs expected 49mm), tripping the body-loss guard.
+    const exportSplitBin = getExportSplitBin();
+
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 3,
+      depth: 10,
+      height: 7,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+    };
+
+    // depth=10 with max=6 → one cut plane at center (y=0). That puts the
+    // cut exactly on the shared socket-cell wall between cells 4 and 5.
+    const cutPlanesY = [0];
+    // Connectors enabled — matches the production default the bug reporter
+    // would have hit; with connectors off the failure mode doesn't appear.
+    const connectors = { ...DEFAULT_SPLIT_CONNECTOR_CONFIG };
+
+    const exported = await exportSplitBin(params, [], cutPlanesY, 0.01, 5, connectors);
+    const totalHeight = params.height * GRIDFINITY.HEIGHT_UNIT;
+
+    expect(exported.pieces).toHaveLength(2);
+    for (const piece of exported.pieces) {
+      const { bb: exportBB } = exportPieceBounds(piece.data);
+      const exportZ = exportBB.maxZ - exportBB.minZ;
+      expect(
+        exportZ,
+        `piece ${piece.label}: Z=${exportZ.toFixed(1)}mm should reach full height ${totalHeight.toFixed(1)}mm`
+      ).toBeGreaterThan(totalHeight * 0.9);
+    }
+  }, 90000);
+
   it('exported STL pieces with magnet+screw base have full geometry', async () => {
     const exportSplitBin = getExportSplitBin();
 
