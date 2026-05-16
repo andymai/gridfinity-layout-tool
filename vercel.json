@@ -25,7 +25,7 @@
         },
         {
           "key": "Content-Security-Policy-Report-Only",
-          "value": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; child-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.posthog.com https://*.liveblocks.io wss://*.liveblocks.io; base-uri 'self'; form-action 'self'; object-src 'none'"
+          "value": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' 'sha256-Mw22/ZAJRshXEvS8/Ol3lQ4fuh9u0CpfYpgBaSMgOsE=' 'sha256-ZFh/jA8g0pm0KqxQsSQwlMZCLY+5rjgk3lzDL9ly2KU='; worker-src 'self' blob:; child-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.posthog.com https://*.liveblocks.io wss://*.liveblocks.io https://fonts.googleapis.com https://fonts.gstatic.com; base-uri 'self'; form-action 'self'; object-src 'none'"
         }
       ]
     },

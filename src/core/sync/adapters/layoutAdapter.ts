@@ -1,6 +1,6 @@
 import { isErr } from '@/core/result';
 import { useLayoutStore, useLibraryStore } from '@/core/store';
-import type { Layout, LayoutEntry, LayoutId, LayoutLibrary } from '@/core/types';
+import type { Bin, Layout, LayoutEntry, LayoutId, LayoutLibrary } from '@/core/types';
 import {
   computePreview,
   loadLayoutAsync,
@@ -9,6 +9,40 @@ import {
   saveLibrary,
 } from '@/core/storage';
 import type { AdapterChange, AdapterChangeListener, LayoutAdapter, SyncableItem } from './types';
+
+// `Bin.notes`/`Bin.label` are declared as `string`, but cloud blobs written
+// before the validator started emitting them as required strings literally
+// omit the keys. Modeling that as `unknown` here is the honest input type —
+// otherwise the runtime guard below reads as unreachable to TypeScript.
+type IncomingBin = Omit<Bin, 'notes' | 'label'> & { notes?: unknown; label?: unknown };
+type IncomingLayout = Omit<Layout, 'bins'> & { bins: IncomingBin[] };
+
+/**
+ * Heal legacy cloud blobs whose bins predate the validator fix that always
+ * emits `notes`/`label` as strings. Without this, `bin.notes.trim()` in the
+ * 3D view (`Bin.tsx`) throws on any layout last written before that fix.
+ * New writes are already clean — this only kicks in for stored blobs that
+ * haven't been re-saved since the contract change in `api/lib/validation.ts`.
+ *
+ * Exported for unit testing only; runtime callers should not normalize
+ * twice — `applyRemote` is the single entry point for remote-sourced data.
+ */
+export function normalizeIncomingLayout(layout: Layout): Layout {
+  const incoming = layout as IncomingLayout;
+  const needsHealing = incoming.bins.some(
+    (b) => typeof b.notes !== 'string' || typeof b.label !== 'string'
+  );
+  if (!needsHealing) return layout;
+
+  const bins = incoming.bins.map(
+    (bin): Bin => ({
+      ...bin,
+      notes: typeof bin.notes === 'string' ? bin.notes : '',
+      label: typeof bin.label === 'string' ? bin.label : '',
+    })
+  );
+  return { ...layout, bins };
+}
 
 /**
  * `LayoutAdapter` implementation backed by `useLibraryStore` (entry
@@ -63,7 +97,7 @@ export const layoutAdapter: LayoutAdapter = {
   async applyRemote(item: SyncableItem<Layout>): Promise<void> {
     suppress(item.id);
 
-    const layout = item.payload;
+    const layout = normalizeIncomingLayout(item.payload);
     const saveResult = await saveLayoutAsync(item.id, layout);
     if (!saveResult.ok) {
       // Storage failure — the engine catches and surfaces a toast. We

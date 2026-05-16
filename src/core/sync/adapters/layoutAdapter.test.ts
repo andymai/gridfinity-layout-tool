@@ -21,7 +21,8 @@ vi.mock('@/core/storage', () => ({
   loadLayoutSync: (id: string) => loadLayoutSyncMock(id),
 }));
 
-import { layoutAdapter } from './layoutAdapter';
+import { layoutAdapter, normalizeIncomingLayout } from './layoutAdapter';
+import type { Bin, Layout } from '@/core/types';
 import type { AdapterChange } from './types';
 
 const minimalLayout = (name: string): { name: string } => ({ name });
@@ -139,5 +140,66 @@ describe('layoutAdapter.subscribe', () => {
 
     setLibrary([entry('lay-1', 9999)]);
     expect(events).toEqual([]);
+  });
+});
+
+/**
+ * `normalizeIncomingLayout` heals legacy cloud blobs whose bins were
+ * written before `api/lib/validation.ts` started emitting `notes`/`label`
+ * as required strings. Without this, the 3D view crashes on `bin.notes.trim()`
+ * when the user switches to a synced layout from before the contract fix.
+ */
+describe('normalizeIncomingLayout', () => {
+  function binFixture(overrides: Partial<Bin> = {}): Bin {
+    return {
+      id: 'b1' as Bin['id'],
+      layerId: 'lay-1' as Bin['layerId'],
+      x: 0 as Bin['x'],
+      y: 0 as Bin['y'],
+      width: 1 as Bin['width'],
+      depth: 1 as Bin['depth'],
+      height: 1 as Bin['height'],
+      category: 'cat-1' as Bin['category'],
+      label: '',
+      notes: '',
+      ...overrides,
+    };
+  }
+  function layoutWith(bins: Bin[]): Layout {
+    return { bins } as unknown as Layout;
+  }
+
+  it('defaults missing notes and label to empty string', () => {
+    // Cast through unknown to simulate the cloud blob shape that predates
+    // the validator contract — `notes`/`label` literally absent from JSON.
+    const legacyBin = binFixture();
+    delete (legacyBin as unknown as { notes?: string }).notes;
+    delete (legacyBin as unknown as { label?: string }).label;
+
+    const out = normalizeIncomingLayout(layoutWith([legacyBin]));
+    expect(out.bins[0].notes).toBe('');
+    expect(out.bins[0].label).toBe('');
+  });
+
+  it('preserves existing notes and label without copying', () => {
+    const layout = layoutWith([binFixture({ notes: 'hi', label: 'screws' })]);
+    const out = normalizeIncomingLayout(layout);
+    // Reference equality: no allocation when every bin is already valid.
+    // Without this, every poll cycle would rewrite the bin array and
+    // churn downstream selectors using shallow equality.
+    expect(out).toBe(layout);
+  });
+
+  it('preserves other bin fields', () => {
+    const bin = binFixture({
+      x: 5 as Bin['x'],
+      y: 7 as Bin['y'],
+      category: 'tools' as Bin['category'],
+    });
+    delete (bin as unknown as { notes?: string }).notes;
+    const out = normalizeIncomingLayout(layoutWith([bin]));
+    expect(out.bins[0].x).toBe(5);
+    expect(out.bins[0].y).toBe(7);
+    expect(out.bins[0].category).toBe('tools');
   });
 });

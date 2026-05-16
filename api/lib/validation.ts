@@ -68,8 +68,12 @@ interface BinShape {
   depth: number;
   height: number;
   category?: string;
-  label?: string;
-  notes?: string;
+  // `label` and `notes` are always strings (empty when absent) so the cloud
+  // contract matches the local `Bin` invariant. Without this the 3D view
+  // would crash on `bin.notes.trim()` for any synced layout, since the
+  // consumer trusts the static type.
+  label: string;
+  notes: string;
   customProperties?: Record<string, string>;
 }
 
@@ -283,8 +287,8 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       depth: bin.depth,
       height: bin.height,
       category: bin.category ? sanitizeString(bin.category, 64) : undefined,
-      label: bin.label ? sanitizeString(bin.label, SHARE_CONSTRAINTS.LABEL_MAX_LENGTH) : undefined,
-      notes: bin.notes ? sanitizeString(bin.notes, SHARE_CONSTRAINTS.NOTES_MAX_LENGTH) : undefined,
+      label: bin.label ? sanitizeString(bin.label, SHARE_CONSTRAINTS.LABEL_MAX_LENGTH) : '',
+      notes: bin.notes ? sanitizeString(bin.notes, SHARE_CONSTRAINTS.NOTES_MAX_LENGTH) : '',
       customProperties: validatedCustomProperties,
     });
   }

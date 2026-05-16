@@ -338,6 +338,7 @@ function isValidColor(v: unknown): boolean {
 
 const LIP_CORNERS = ['frontLeft', 'frontRight', 'backRight', 'backLeft'] as const;
 const ALLOWED_FEATURE_COLOR_KEYS = new Set([
+  'enabled',
   'body',
   'lip',
   'labelTab',
@@ -360,6 +361,10 @@ function validateFeatureColors(value: unknown): string | null {
     if (!ALLOWED_FEATURE_COLOR_KEYS.has(key)) {
       return `featureColors has unknown key: ${key}`;
     }
+  }
+
+  if (value.enabled !== undefined && !isBoolean(value.enabled)) {
+    return 'featureColors.enabled must be boolean';
   }
 
   for (const key of ['body', 'labelTab', 'base', 'scoop', 'dividers'] as const) {
