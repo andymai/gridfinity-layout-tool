@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.83.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.82.2...gridfinity-layout-tool-v4.83.0) (2026-05-16)
+
+
+### Features
+
+* **baseplate:** snap-clip connector style alongside dovetails ([#1611](https://github.com/andymai/gridfinity-layout-tool/issues/1611)) ([9e2127f](https://github.com/andymai/gridfinity-layout-tool/commit/9e2127f40198199531e91608bb5b1333e954ae8b))
+
 ## [4.82.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.82.1...gridfinity-layout-tool-v4.82.2) (2026-05-16)
 
 
