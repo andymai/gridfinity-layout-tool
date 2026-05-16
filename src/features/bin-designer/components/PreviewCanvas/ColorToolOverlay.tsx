@@ -50,24 +50,18 @@ function defaultForZone(zone: ColorZone): string {
   }
 }
 
-export interface PickerOverlayState {
-  readonly zone: ColorZone;
-  readonly x: number;
-  readonly y: number;
-}
-
 interface ColorToolOverlayProps {
-  readonly pickerOverlay: PickerOverlayState | null;
   readonly onClosePicker: () => void;
 }
 
-export function ColorToolOverlay({ pickerOverlay, onClosePicker }: ColorToolOverlayProps) {
+export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
   const t = useTranslation();
   const addToast = useToastStore((s) => s.addToast);
 
   const {
     colorTool,
     swapFirstZone,
+    pickerOverlay,
     featureColors,
     baseStyle,
     stackingLip,
@@ -82,6 +76,7 @@ export function ColorToolOverlay({ pickerOverlay, onClosePicker }: ColorToolOver
     useShallow((s) => ({
       colorTool: s.ui.colorTool,
       swapFirstZone: s.ui.swapFirstZone,
+      pickerOverlay: s.ui.pickerOverlay,
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- legacy persisted configs may omit featureColors; preserve runtime fallback
       featureColors: s.params.featureColors ?? DEFAULT_FEATURE_COLOR_CONFIG,
       baseStyle: s.params.base.style,

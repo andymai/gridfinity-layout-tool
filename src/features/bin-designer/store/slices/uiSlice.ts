@@ -8,6 +8,7 @@ import type {
   BinParams,
   ColorTool,
   DesignerTab,
+  PickerOverlayState,
   SplitViewMode,
   SplitPieceMeshEntry,
 } from '../../types';
@@ -96,10 +97,20 @@ export function createUISlice(set: Set) {
         if (tool !== 'swap-pick-second') {
           state.ui.swapFirstZone = null;
         }
-        // Drop the hover focus when leaving a tool so the glow doesn't linger.
+        // Leaving a tool: drop hover focus and any open eyedropper picker so
+        // toolbar toggles + multi-color disable all exit cleanly through one
+        // path (avoids the orphaned-picker case where a local-state overlay
+        // outlived the tool that opened it).
         if (tool === null) {
           state.ui.hoveredColorZone = null;
+          state.ui.pickerOverlay = null;
         }
+      });
+    },
+
+    setPickerOverlay: (overlay: PickerOverlayState | null) => {
+      set((state) => {
+        state.ui.pickerOverlay = overlay;
       });
     },
 

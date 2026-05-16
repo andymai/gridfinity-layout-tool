@@ -206,6 +206,7 @@ export function createParamSlice(set: Set, get: Get) {
           state.ui.colorTool = null;
           state.ui.swapFirstZone = null;
           state.ui.hoveredColorZone = null;
+          state.ui.pickerOverlay = null;
         }
       });
     },

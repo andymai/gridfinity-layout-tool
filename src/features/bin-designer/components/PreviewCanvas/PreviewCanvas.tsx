@@ -58,7 +58,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { CameraController, usePresetTransition, SceneLighting } from './previewCanvasCamera';
 import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
-import { ColorToolOverlay, type PickerOverlayState } from './ColorToolOverlay';
+import { ColorToolOverlay } from './ColorToolOverlay';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { PipetteIcon } from '@/design-system/Icon';
 import { useSwapZoneWithToast } from '../../hooks/useSwapZoneWithToast';
@@ -119,6 +119,7 @@ export function PreviewCanvas() {
     splitPieceMeshes,
     colorTool,
     setColorTool,
+    setPickerOverlay,
   } = useDesignerStore(
     useShallow((s) => ({
       wasmStatus: s.wasmStatus,
@@ -133,16 +134,18 @@ export function PreviewCanvas() {
       splitPieceMeshes: s.ui.splitPieceMeshes,
       colorTool: s.ui.colorTool,
       setColorTool: s.setColorTool,
+      setPickerOverlay: s.setPickerOverlay,
     }))
   );
 
   const swapZoneWithToast = useSwapZoneWithToast();
 
-  const [pickerOverlay, setPickerOverlay] = useState<PickerOverlayState | null>(null);
-
   // Clicking a zone with eyedropper opens the picker at the click point.
   // Clicking during the swap flow advances the swap state machine (the
   // store also accepts panel-row picks, so this is one of two entry paths).
+  // pickerOverlay lives in the store, so any path that clears `colorTool`
+  // (toolbar buttons, multi-color toggle, ESC, banner X) clears the
+  // picker atomically — no orphaned floating picker after the tool exits.
   const handleZoneClick = useCallback(
     (zone: ColorZone, screen: { x: number; y: number }) => {
       if (colorTool === 'eyedropper') {
@@ -153,13 +156,12 @@ export function PreviewCanvas() {
         swapZoneWithToast(zone);
       }
     },
-    [colorTool, swapZoneWithToast]
+    [colorTool, swapZoneWithToast, setPickerOverlay]
   );
 
   // Picker closes on user dismissal; eyedropper mode persists so the user
-  // can recolor multiple zones in one session. The picker is independent
-  // of the tool's lifecycle once opened — anchored to its click point.
-  const handleClosePicker = useCallback(() => setPickerOverlay(null), []);
+  // can recolor multiple zones in one session.
+  const handleClosePicker = useCallback(() => setPickerOverlay(null), [setPickerOverlay]);
 
   // Reset the explode slider to its default whenever the lid transitions
   // off → on. Without this, a stale value (e.g. 80mm from a previous session)
@@ -456,10 +458,10 @@ export function PreviewCanvas() {
             </button>
           )}
 
-          {/* Banner + click-anchored picker — rendered above canvas */}
-          {showColors && (
-            <ColorToolOverlay pickerOverlay={pickerOverlay} onClosePicker={handleClosePicker} />
-          )}
+          {/* Banner + click-anchored picker — rendered above canvas. The
+              overlay reads `pickerOverlay` from the store, so any tool exit
+              clears it without prop drilling. */}
+          {showColors && <ColorToolOverlay onClosePicker={handleClosePicker} />}
 
           {/* Touch gesture hint (mobile/tablet first visit) */}
           <TouchHint />

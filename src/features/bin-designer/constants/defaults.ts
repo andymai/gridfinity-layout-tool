@@ -310,6 +310,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   hoveredColorZone: null,
   colorTool: null,
   swapFirstZone: null,
+  pickerOverlay: null,
   shapeEditorOpen: false,
 };
 

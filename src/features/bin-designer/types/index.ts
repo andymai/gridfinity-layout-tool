@@ -26,6 +26,19 @@ import type { CellMask } from '@/shared/utils/cellMask';
 import type { ColorZone, FeatureColorConfig, HoverableZone, LipColorConfig } from './featureColors';
 
 /**
+ * Eyedropper click anchor: which zone was hit and the viewport coords
+ * where the picker should open. Kept in the store so every exit path
+ * for `colorTool` (toolbar button, banner X, ESC, multi-color disable)
+ * can clear it atomically — otherwise the picker risks floating after
+ * the tool exits.
+ */
+export interface PickerOverlayState {
+  readonly zone: ColorZone;
+  readonly x: number;
+  readonly y: number;
+}
+
+/**
  * Optional zone-editing mode overlaid on the 3D preview.
  *  - `'eyedropper'`: click any zone in the mesh to open its picker
  *  - `'swap-pick-first'` / `'swap-pick-second'`: two-step swap-zones flow
@@ -571,6 +584,12 @@ export interface DesignerUIState {
    */
   readonly swapFirstZone: ColorZone | null;
   /**
+   * Anchor + zone for the eyedropper's click-anchored picker. Lives in
+   * the store so any path that clears `colorTool` also clears it (no
+   * orphaned picker after a toolbar toggle or multi-color disable).
+   */
+  readonly pickerOverlay: PickerOverlayState | null;
+  /**
    * Whether the Custom-shape editor section is expanded. Tracks the toggle
    * independently of the mask because the store auto-clears fully-filled
    * masks to undefined (fast path) — we can't infer "editor should be open"
@@ -752,6 +771,12 @@ export interface DesignerState {
   setHoveredColorZone: (zone: HoverableZone | null) => void;
   /** Enter a color tool overlay, or pass null to exit any active tool. */
   setColorTool: (tool: ColorTool) => void;
+  /**
+   * Anchor + zone for the eyedropper picker. Pass null to dismiss; the
+   * picker is also auto-cleared when `setColorTool(null)` runs or when
+   * multi-color gets disabled.
+   */
+  setPickerOverlay: (overlay: PickerOverlayState | null) => void;
   /**
    * Pick a zone in the active flow. Behavior depends on `ui.colorTool`:
    *  - `'swap-pick-first'`: store the zone and advance to `'swap-pick-second'`
