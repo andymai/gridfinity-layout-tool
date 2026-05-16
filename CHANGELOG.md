@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.86.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.86.2...gridfinity-layout-tool-v4.86.3) (2026-05-16)
+
+
+### Bug Fixes
+
+* **api,security:** accept solid/flat/fillet enums and drop browsing-topics from Permissions-Policy ([2ccc270](https://github.com/andymai/gridfinity-layout-tool/commit/2ccc270c3ae41e507003bde344f0c5ddc39ae4c9))
+* **api,security:** close validator enum gap, tighten CodeQL regex, relax browsing-topics ([#1684](https://github.com/andymai/gridfinity-layout-tool/issues/1684)) ([c52d397](https://github.com/andymai/gridfinity-layout-tool/commit/c52d3971865c28cb5662549b207e2f5b40c73013))
+* **scripts:** broaden inline-script closing-tag regex for CodeQL js/bad-tag-filter ([481d7f7](https://github.com/andymai/gridfinity-layout-tool/commit/481d7f76845d8bb63829fcd05bc8d52c3b606fca))
+
 ## [4.86.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.86.1...gridfinity-layout-tool-v4.86.2) (2026-05-16)
 
 
