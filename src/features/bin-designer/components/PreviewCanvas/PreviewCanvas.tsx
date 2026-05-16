@@ -58,6 +58,10 @@ import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { CameraController, usePresetTransition, SceneLighting } from './previewCanvasCamera';
 import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
+import { ColorToolOverlay } from './ColorToolOverlay';
+import type { ColorZone } from '@/features/bin-designer/types/featureColors';
+import { PipetteIcon } from '@/design-system/Icon';
+import { useSwapZoneWithToast } from '../../hooks/useSwapZoneWithToast';
 
 /** localStorage key for persisting the user's preview color preference */
 const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
@@ -113,6 +117,9 @@ export function PreviewCanvas() {
     splitViewMode,
     setSplitViewMode,
     splitPieceMeshes,
+    colorTool,
+    setColorTool,
+    setPickerOverlay,
   } = useDesignerStore(
     useShallow((s) => ({
       wasmStatus: s.wasmStatus,
@@ -125,8 +132,36 @@ export function PreviewCanvas() {
       splitViewMode: s.ui.splitViewMode,
       setSplitViewMode: s.setSplitViewMode,
       splitPieceMeshes: s.ui.splitPieceMeshes,
+      colorTool: s.ui.colorTool,
+      setColorTool: s.setColorTool,
+      setPickerOverlay: s.setPickerOverlay,
     }))
   );
+
+  const swapZoneWithToast = useSwapZoneWithToast();
+
+  // Clicking a zone with eyedropper opens the picker at the click point.
+  // Clicking during the swap flow advances the swap state machine (the
+  // store also accepts panel-row picks, so this is one of two entry paths).
+  // pickerOverlay lives in the store, so any path that clears `colorTool`
+  // (toolbar buttons, multi-color toggle, ESC, banner X) clears the
+  // picker atomically — no orphaned floating picker after the tool exits.
+  const handleZoneClick = useCallback(
+    (zone: ColorZone, screen: { x: number; y: number }) => {
+      if (colorTool === 'eyedropper') {
+        setPickerOverlay({ zone, x: screen.x, y: screen.y });
+        return;
+      }
+      if (colorTool === 'swap-pick-first' || colorTool === 'swap-pick-second') {
+        swapZoneWithToast(zone);
+      }
+    },
+    [colorTool, swapZoneWithToast, setPickerOverlay]
+  );
+
+  // Picker closes on user dismissal; eyedropper mode persists so the user
+  // can recolor multiple zones in one session.
+  const handleClosePicker = useCallback(() => setPickerOverlay(null), [setPickerOverlay]);
 
   // Reset the explode slider to its default whenever the lid transitions
   // off → on. Without this, a stale value (e.g. 80mm from a previous session)
@@ -247,9 +282,15 @@ export function PreviewCanvas() {
   const showSkeleton = !hasMesh || wasmStatus !== 'ready';
   const showOverlay = generationStatus === 'generating' && hasMesh;
 
+  // Cursor swap only applies when multi-color is on too — `colorTool` is
+  // cleared on disable, but guard defensively in case state ever drifts.
+  const toolActive = colorTool !== null && showColors;
+
   return (
     <div
-      className="relative h-full w-full touch-manipulation"
+      className={`relative h-full w-full touch-manipulation ${
+        toolActive ? '[&_canvas]:cursor-crosshair' : ''
+      }`}
       role="img"
       aria-label={binDescription}
       onPointerDown={onDoubleTapPointerDown}
@@ -309,7 +350,7 @@ export function PreviewCanvas() {
             {showSplitPieces ? (
               <SplitBinMeshes color={previewColor} wireframe={wireframe} />
             ) : (
-              <BinMesh wireframe={wireframe} color={previewColor} />
+              <BinMesh wireframe={wireframe} color={previewColor} onZoneClick={handleZoneClick} />
             )}
 
             {/* Click-lock lid (renders only when params.lid.enabled produced
@@ -396,6 +437,31 @@ export function PreviewCanvas() {
             onSplitViewModeChange={setSplitViewMode}
             hideColorPicker={showColors}
           />
+
+          {/* Eyedropper toolbar button — only when multi-color is on. The
+              button is paired with one in the Colors panel header; both
+              enter eyedropper mode. */}
+          {showColors && (
+            <button
+              type="button"
+              onClick={() => setColorTool(colorTool === 'eyedropper' ? null : 'eyedropper')}
+              className={`absolute bottom-3 left-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border shadow-md backdrop-blur transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                colorTool === 'eyedropper'
+                  ? 'border-accent bg-accent text-on-accent'
+                  : 'border-stroke-subtle/60 bg-surface-elevated/90 text-content-secondary hover:text-content'
+              }`}
+              aria-label={t('binDesigner.colors.eyedropper.enter')}
+              aria-pressed={colorTool === 'eyedropper'}
+              title={t('binDesigner.colors.eyedropper.enter')}
+            >
+              <PipetteIcon size="sm" />
+            </button>
+          )}
+
+          {/* Banner + click-anchored picker — rendered above canvas. The
+              overlay reads `pickerOverlay` from the store, so any tool exit
+              clears it without prop drilling. */}
+          {showColors && <ColorToolOverlay onClosePicker={handleClosePicker} />}
 
           {/* Touch gesture hint (mobile/tablet first visit) */}
           <TouchHint />

@@ -23,6 +23,8 @@ import {
 import type { ColorZone, FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 import type { SavedColorPalette } from '@/core/store/settings.types';
 import { useTranslation } from '@/i18n';
+import { PipetteIcon } from '@/design-system/Icon';
+import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
 import { ColorZoneRow } from './ColorZoneRow';
 import { ColorGroup } from './ColorGroup';
 import { ColorsHintBanner } from './ColorsHintBanner';
@@ -56,6 +58,7 @@ export function ColorsSection() {
     labelEnabled,
     scoopEnabled,
     cells,
+    colorTool,
   } = useDesignerStore(
     useShallow((s) => ({
       featureColors: s.params.featureColors,
@@ -64,8 +67,11 @@ export function ColorsSection() {
       labelEnabled: s.params.label.enabled,
       scoopEnabled: s.params.scoop.enabled,
       cells: s.params.compartments.cells,
+      colorTool: s.ui.colorTool,
     }))
   );
+  const setColorTool = useDesignerStore((s) => s.setColorTool);
+  const swapZoneWithToast = useSwapZoneWithToast();
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; preserve runtime fallback
   const multiColorEnabled = rawColors?.enabled ?? false;
 
@@ -147,6 +153,11 @@ export function ColorsSection() {
     prevAddonsCountRef.current = addonsCount;
   }, [addonsCount]);
 
+  // When the swap flow is active, intercept the row click so it acts as a
+  // pick instead of opening the picker (clean path: the store advances the
+  // swap state machine and the picker stays closed).
+  const swapActive = colorTool === 'swap-pick-first' || colorTool === 'swap-pick-second';
+
   const renderZone = (
     zone: ColorZone,
     label: string,
@@ -169,6 +180,7 @@ export function ColorsSection() {
       onHover={setHoveredColorZone}
       onGestureStart={startTransaction}
       onGestureEnd={commitTransaction}
+      onClickOverride={swapActive ? () => swapZoneWithToast(zone) : undefined}
     />
   );
 
@@ -222,6 +234,22 @@ export function ColorsSection() {
       <div className="flex items-center justify-between py-1.5">
         <span className="text-xs text-content-secondary">{enableLabel}</span>
         <div className="flex items-center gap-2">
+          {multiColorEnabled && (
+            <button
+              type="button"
+              onClick={() => setColorTool(colorTool === 'eyedropper' ? null : 'eyedropper')}
+              aria-pressed={colorTool === 'eyedropper'}
+              aria-label={t('binDesigner.colors.eyedropper.enter')}
+              title={t('binDesigner.colors.eyedropper.enter')}
+              className={`flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent ${
+                colorTool === 'eyedropper'
+                  ? 'bg-accent text-on-accent'
+                  : 'text-content-tertiary hover:bg-surface-hover hover:text-content-secondary'
+              }`}
+            >
+              <PipetteIcon size="sm" />
+            </button>
+          )}
           {multiColorEnabled && (
             <ColorsActionsMenu
               featureColors={featureColors}
@@ -293,6 +321,12 @@ export function ColorsSection() {
                 onHover={setHoveredColorZone}
                 onGestureStart={startTransaction}
                 onGestureEnd={commitTransaction}
+                // During swap mode, route the lip click into the state machine
+                // through `lip:frontLeft` — the canonical representative for
+                // the now-single-color lip (mirror-on-write means picking any
+                // corner spreads to all four). Without this override the row
+                // would open the picker mid-swap.
+                onClickOverride={swapActive ? () => swapZoneWithToast('lip:frontLeft') : undefined}
               />
             )}
             {hasBase &&

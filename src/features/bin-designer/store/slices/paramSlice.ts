@@ -197,6 +197,17 @@ export function createParamSlice(set: Set, get: Get) {
           ...rest,
           lip: nextLip,
         };
+        // Multi-color toggle drives the color-tool overlay's visibility; if the
+        // user disables multi-color while a tool is active, the overlay unmounts
+        // but `ui.colorTool` would otherwise stay set, leaving the canvas in
+        // crosshair mode and the eyedropper banner ready to flash back on next
+        // enable. Clear all tool state in lockstep.
+        if (patch.enabled === false) {
+          state.ui.colorTool = null;
+          state.ui.swapFirstZone = null;
+          state.ui.hoveredColorZone = null;
+          state.ui.pickerOverlay = null;
+        }
       });
     },
 

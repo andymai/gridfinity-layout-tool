@@ -84,6 +84,14 @@ describe('ColorZoneRow', () => {
     expect(onHover).not.toHaveBeenCalledWith(null);
   });
 
+  it('calls onClickOverride instead of opening the picker when provided', () => {
+    const onClickOverride = vi.fn();
+    render(<ColorZoneRow {...baseProps} onClickOverride={onClickOverride} />);
+    fireEvent.click(screen.getByRole('button'));
+    expect(onClickOverride).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('color-picker')).not.toBeInTheDocument();
+  });
+
   it('clears the hover pin when the popover closes (even if pointer already left)', () => {
     const onHover = vi.fn();
     render(<ColorZoneRow {...baseProps} onHover={onHover} />);

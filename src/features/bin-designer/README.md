@@ -32,6 +32,11 @@ graph TB
 - `components/panel/ShapeSection/` — "Custom shape" toggle + paint-style half-bin grid editor
   (L/T/U presets, reset-to-rectangle link, O-shape-capable cellMask painting)
 - `components/panel/LidSection/` — click-lock lid toggle, fit pills, magnet/grid toggles, thickness sliders
+- `components/panel/ColorsSection/` — multi-color zone editor: per-zone rows, picker, palette CRUD, eyedropper + swap entry points
+- `components/PreviewCanvas/ColorToolOverlay.tsx` — banner + click-anchored ColorPicker for the eyedropper tool, ESC-to-exit
+- `utils/zoneResolver.ts` — pure raycast triangle → ColorZone mapping (reused across hit-test, preview, and 3MF export gating)
+- `utils/zoneLabels.ts` — ColorZone → i18n key + flat `updateFeatureColors` patch helpers
+- `hooks/useSwapZoneWithToast.ts` — wraps `pickSwapZone` with a localized success toast
 - `components/preview/LidMesh/` — renders the lid mesh in the preview, with explode-aware
   positioning, opacity interpolation, and mutual hover highlight pairing with `BinMesh`
 - `components/preview/LidGuideLine/` — visual cue connecting bin and lid in exploded views

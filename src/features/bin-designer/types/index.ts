@@ -23,8 +23,31 @@ export interface LidMeshDataState {
 }
 import type { DesignId } from '@/core/types';
 import type { CellMask } from '@/shared/utils/cellMask';
-import type { FeatureColorConfig, HoverableZone, LipColorConfig } from './featureColors';
+import type { ColorZone, FeatureColorConfig, HoverableZone, LipColorConfig } from './featureColors';
 import type { LidConfig } from './lid';
+
+/**
+ * Eyedropper click anchor: which zone was hit and the viewport coords
+ * where the picker should open. Kept in the store so every exit path
+ * for `colorTool` (toolbar button, banner X, ESC, multi-color disable)
+ * can clear it atomically — otherwise the picker risks floating after
+ * the tool exits.
+ */
+export interface PickerOverlayState {
+  readonly zone: ColorZone;
+  readonly x: number;
+  readonly y: number;
+}
+
+/**
+ * Optional zone-editing mode overlaid on the 3D preview.
+ *  - `'eyedropper'`: click any zone in the mesh to open its picker
+ *  - `'swap-pick-first'` / `'swap-pick-second'`: two-step swap-zones flow
+ *
+ * Mutually exclusive — entering one tool clears any in-progress state from
+ * another (so a half-done swap pick doesn't leak into eyedropper mode).
+ */
+export type ColorTool = 'eyedropper' | 'swap-pick-first' | 'swap-pick-second' | null;
 
 export type { LidConfig, LidClickRails, LidRailSide } from './lid';
 export {
@@ -549,6 +572,24 @@ export interface DesignerUIState {
   /** Currently hovered color zone in the panel (for 3D preview glow feedback) */
   readonly hoveredColorZone: HoverableZone | null;
   /**
+   * Active color tool overlay. `'eyedropper'` lets the user click a zone in
+   * the 3D preview to recolor it; `'swap-pick-first'` and `'swap-pick-second'`
+   * drive the two-step swap-zones flow. `null` = no tool active.
+   * Each tool gates pointer behavior in PreviewCanvas and shows a banner.
+   */
+  readonly colorTool: ColorTool;
+  /**
+   * First zone picked in the swap flow (set during `'swap-pick-second'`).
+   * Captured at pick time; the second pick triggers the swap transaction.
+   */
+  readonly swapFirstZone: ColorZone | null;
+  /**
+   * Anchor + zone for the eyedropper's click-anchored picker. Lives in
+   * the store so any path that clears `colorTool` also clears it (no
+   * orphaned picker after a toolbar toggle or multi-color disable).
+   */
+  readonly pickerOverlay: PickerOverlayState | null;
+  /**
    * Whether the Custom-shape editor section is expanded. Tracks the toggle
    * independently of the mask because the store auto-clears fully-filled
    * masks to undefined (fast path) — we can't infer "editor should be open"
@@ -728,6 +769,23 @@ export interface DesignerState {
   setSplitViewMode: (mode: SplitViewMode) => void;
   setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => void;
   setHoveredColorZone: (zone: HoverableZone | null) => void;
+  /** Enter a color tool overlay, or pass null to exit any active tool. */
+  setColorTool: (tool: ColorTool) => void;
+  /**
+   * Anchor + zone for the eyedropper picker. Pass null to dismiss; the
+   * picker is also auto-cleared when `setColorTool(null)` runs or when
+   * multi-color gets disabled.
+   */
+  setPickerOverlay: (overlay: PickerOverlayState | null) => void;
+  /**
+   * Pick a zone in the active flow. Behavior depends on `ui.colorTool`:
+   *  - `'swap-pick-first'`: store the zone and advance to `'swap-pick-second'`
+   *  - `'swap-pick-second'`: swap colors between stored zone and this one,
+   *    in a single undo entry, then exit the tool — returns the pair that
+   *    was swapped so the caller can show a localized toast.
+   *  - any other state: no-op (eyedropper opens the picker via UI, not state)
+   */
+  pickSwapZone: (zone: ColorZone) => { first: ColorZone; second: ColorZone } | null;
   setPreviewCompartments: (preview: CompartmentConfig | null) => void;
   setPreviewSelection: (
     selection: {

@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Popover } from '@/design-system/Popover/Popover';
 import {
+  ArrowLeftRightIcon,
   CheckIcon,
   MoreHorizontalIcon,
   PlusIcon,
@@ -16,6 +17,7 @@ import {
   XIcon,
 } from '@/design-system/Icon';
 import { Input } from '@/design-system/Input/Input';
+import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore, useToastStore } from '@/core/store';
 import { COLOR_PALETTE_CONSTRAINTS } from '@/core/store/settings.types';
 import type { SavedColorPalette } from '@/core/store/settings.types';
@@ -50,6 +52,7 @@ export function ColorsActionsMenu({
       updateSettings: s.updateSettings,
     }))
   );
+  const setColorTool = useDesignerStore((s) => s.setColorTool);
   const addToast = useToastStore((s) => s.addToast);
 
   useEffect(() => {
@@ -131,6 +134,16 @@ export function ColorsActionsMenu({
               }}
             >
               {t('binDesigner.colors.matchAllToBody')}
+            </MenuButton>
+
+            <MenuButton
+              icon={<ArrowLeftRightIcon size="sm" />}
+              onClick={() => {
+                setColorTool('swap-pick-first');
+                closeMenu();
+              }}
+            >
+              {t('binDesigner.colors.swap.enter')}
             </MenuButton>
 
             <div className="my-1 h-px bg-stroke-subtle/60" role="separator" />

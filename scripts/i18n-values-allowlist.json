@@ -22,6 +22,7 @@
     "binDesigner.dividerAutoHeight",
     "binDesigner.experimental",
     "binDesigner.multiColor.experimental",
+    "binDesigner.colors.zone.base",
     "binDesigner.format",
     "binDesigner.format3MF",
     "binDesigner.formatSTL",

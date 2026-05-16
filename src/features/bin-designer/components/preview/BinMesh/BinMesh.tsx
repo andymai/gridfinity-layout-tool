@@ -11,18 +11,21 @@
  *   centroid quadrant relative to the lip's outer bbox center.
  */
 
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
+import type { ThreeEvent } from '@react-three/fiber';
 import { Detailed } from '@react-three/drei';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry, useCoarseGeometry } from '@/shared/components/preview/useMeshGeometry';
 import { computeActiveZones } from '@/features/bin-designer/types/featureColors';
+import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import {
   buildMultiColorGroups,
   hoveredMaterialIndices,
 } from '@/features/bin-designer/utils/multiColorGroups';
+import { buildZoneResolver } from '@/features/bin-designer/utils/zoneResolver';
 
 const EDGE_COLOR = '#000000';
 
@@ -30,9 +33,15 @@ interface BinMeshProps {
   wireframe: boolean;
   /** Base color for the bin (user-selectable) */
   color: string;
+  /**
+   * Click handler invoked when a color tool is active. `screen` is in
+   * viewport coordinates (clientX/clientY) so the parent can anchor a
+   * popover at the click point. Only fired when `ui.colorTool` is set.
+   */
+  onZoneClick?: (zone: ColorZone, screen: { x: number; y: number }) => void;
 }
 
-export function BinMesh({ wireframe, color }: BinMeshProps) {
+export function BinMesh({ wireframe, color, onZoneClick }: BinMeshProps) {
   const { invalidate } = useThree();
 
   const {
@@ -49,6 +58,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     scoopEnabled,
     cells,
     hoveredColorZone,
+    colorTool,
   } = useDesignerStore(
     useShallow((s) => ({
       vertices: s.generation.mesh?.vertices ?? null,
@@ -65,8 +75,10 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       scoopEnabled: s.params.scoop.enabled,
       cells: s.params.compartments.cells,
       hoveredColorZone: s.ui.hoveredColorZone,
+      colorTool: s.ui.colorTool,
     }))
   );
+  const setHoveredColorZone = useDesignerStore((s) => s.setHoveredColorZone);
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve runtime fallback
   const multiColorEnabled = featureColors?.enabled ?? false;
 
@@ -172,12 +184,64 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     [baseColor, wireframe, hasPrecomputedNormals]
   );
 
+  // Pointer handlers active only when a color tool is engaged AND multi-color
+  // is on. Without the multi-color guard, disabling the toggle while a tool
+  // is active would leave the mesh swallowing pointer events (the overlay UI
+  // would be hidden but the canvas would still intercept clicks). Hover reuses
+  // the same `hoveredColorZone` glow path the panel uses.
+  const toolActive = colorTool !== null && multiColorEnabled;
+
+  // Pre-compute the lip bbox once per mesh — `resolve()` runs on every
+  // pointer-move when the tool is active, and re-scanning every LIP triangle
+  // each frame is expensive on high-poly meshes.
+  const zoneResolver = useMemo(() => {
+    if (!toolActive || !faceGroups || !vertices || !indices) return null;
+    return buildZoneResolver(faceGroups, vertices, indices);
+  }, [toolActive, faceGroups, vertices, indices]);
+
+  const handlePointerMove = useCallback(
+    (e: ThreeEvent<PointerEvent>) => {
+      if (!zoneResolver) return;
+      const triIndex = e.faceIndex;
+      if (triIndex === undefined || triIndex === null) return;
+      e.stopPropagation();
+      const zone = zoneResolver.resolve(triIndex);
+      if (zone !== hoveredColorZone) setHoveredColorZone(zone);
+    },
+    [zoneResolver, hoveredColorZone, setHoveredColorZone]
+  );
+
+  const handlePointerOut = useCallback(() => {
+    if (!toolActive) return;
+    setHoveredColorZone(null);
+  }, [toolActive, setHoveredColorZone]);
+
+  const handleClick = useCallback(
+    (e: ThreeEvent<MouseEvent>) => {
+      if (!zoneResolver || !onZoneClick) return;
+      const triIndex = e.faceIndex;
+      if (triIndex === undefined || triIndex === null) return;
+      e.stopPropagation();
+      const zone = zoneResolver.resolve(triIndex);
+      onZoneClick(zone, { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY });
+    },
+    [zoneResolver, onZoneClick]
+  );
+
   if (!geometry) return null;
 
+  const meshProps = toolActive
+    ? {
+        onPointerMove: handlePointerMove,
+        onPointerOut: handlePointerOut,
+        onClick: handleClick,
+      }
+    : {};
+
   const fineMesh = materials ? (
-    <mesh geometry={geometry} material={materials} />
+    <mesh geometry={geometry} material={materials} {...meshProps} />
   ) : (
-    <mesh geometry={geometry}>
+    <mesh geometry={geometry} {...meshProps}>
       <meshStandardMaterial {...singleMatProps} />
     </mesh>
   );

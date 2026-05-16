@@ -33,6 +33,11 @@ interface ColorZoneRowProps {
   /** Native-picker gesture hooks, forwarded to ColorPicker for undo coalescing. */
   onGestureStart?: () => void;
   onGestureEnd?: () => void;
+  /**
+   * When provided, clicking the row calls this instead of opening the
+   * picker. Used by the swap-zones flow so a row click acts as a pick.
+   */
+  onClickOverride?: () => void;
 }
 
 export function ColorZoneRow({
@@ -47,11 +52,19 @@ export function ColorZoneRow({
   onHover,
   onGestureStart,
   onGestureEnd,
+  onClickOverride,
 }: ColorZoneRowProps) {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleClose = useCallback(() => setIsOpen(false), []);
+  const handleClick = useCallback(() => {
+    if (onClickOverride) {
+      onClickOverride();
+      return;
+    }
+    setIsOpen((v) => !v);
+  }, [onClickOverride]);
 
   // While the popover is open, keep this zone pinned as the focused one
   // so the 3D preview glow doesn't drop off when the user moves their
@@ -70,7 +83,7 @@ export function ColorZoneRow({
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setIsOpen((v) => !v)}
+        onClick={handleClick}
         onPointerEnter={() => onHover(zone)}
         onPointerLeave={() => {
           if (!isOpen) onHover(null);
