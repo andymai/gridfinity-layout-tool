@@ -9,12 +9,17 @@ export interface SessionUser {
   displayName?: string;
 }
 
-/** Returns the user if authenticated, null on 401, throws on transport/server errors. */
+interface MeResponse {
+  authenticated: boolean;
+  user: SessionUser | null;
+}
+
+/** Returns the user if authenticated, null when anonymous, throws on transport/server errors. */
 export async function getMe(): Promise<SessionUser | null> {
   const res = await apiFetch('/api/auth/me');
-  if (res.status === 401) return null;
   if (!res.ok) throw new Error(`/api/auth/me failed (${res.status})`);
-  return (await res.json()) as SessionUser;
+  const body = (await res.json()) as MeResponse;
+  return body.authenticated ? body.user : null;
 }
 
 /** POST /api/auth/logout. Idempotent: succeeds for 204 or 401. */
