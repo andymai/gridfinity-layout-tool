@@ -7,6 +7,7 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
+import { resolveConnectorStyle } from '@/shared/types/bin';
 import type { BaseplatePiece } from '../types/tiling';
 import { pieceToBaseplateParams } from './splitPlanner';
 
@@ -38,7 +39,9 @@ export function computePieceFingerprint(params: BaseplateParams): string {
     `pb:${params.paddingBack}`,
     `fx:${params.fractionalEdgeX}`,
     `fy:${params.fractionalEdgeY}`,
-    `cn:${params.connectorNubs ? 1 : 0}`,
+    // cs subsumes the legacy cn (connectorNubs) signal: resolveConnectorStyle
+    // returns 'dovetail' iff connectorNubs was true and connectorStyle is unset.
+    `cs:${resolveConnectorStyle(params)}`,
     // invertDovetails is ignored by buildConnectors in paired mode, so
     // normalize it to 0 there to avoid false cache misses between sessions
     // that differ only in the persisted invertDovetails value.

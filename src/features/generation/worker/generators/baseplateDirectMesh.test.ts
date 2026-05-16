@@ -336,7 +336,7 @@ describe('baseplateDirectMesh', () => {
     expect(meshWith.triangleCount).toBe(meshWithout.triangleCount);
   });
 
-  it('no connectors on 1-unit dimension (zero interior boundaries)', () => {
+  it('1-unit dimension still gets one connector per join edge (cell-center indexing)', () => {
     const base = defaults({
       width: 1,
       depth: 1,
@@ -348,8 +348,10 @@ describe('baseplateDirectMesh', () => {
     const meshWith = generateDirect(base, noop);
     const meshWithout = generateDirect(noNubs, noop);
 
-    // 1×1 piece has 0 interior cell boundaries on every edge → 0 connectors
-    expect(meshWith.triangleCount).toBe(meshWithout.triangleCount);
+    // 1×1 piece × 4 join edges × 1 cell-center per edge = 4 connectors.
+    // Male edges (left, front) = 36 tris each; female (right, back) = 48 each.
+    // Diff = 2 × 36 + 2 × 48 = 168.
+    expect(meshWith.triangleCount - meshWithout.triangleCount).toBe(168);
   });
 
   it('connectors work alongside magnet holes', () => {
@@ -366,8 +368,8 @@ describe('baseplateDirectMesh', () => {
     expect(mesh.triangleCount).toBeGreaterThan(0);
   });
 
-  it('2.5-unit dimension gets 2 connectors (full + fractional boundary)', () => {
-    // 2.5 units → ceil(2.5)-1 = 2 interior boundaries per join edge
+  it('2.5-unit dimension gets 3 connectors per edge (one per cell, including fractional)', () => {
+    // 2.5 units → 3 cells along the edge: [1, 1, 0.5] → 3 connectors per join edge.
     const withNubs = defaults({
       width: 2.5,
       depth: 1,
@@ -380,12 +382,11 @@ describe('baseplateDirectMesh', () => {
     const countWithout = generateDirect(noNubs, noop).triangleCount;
     const diff = countWith - countWithout;
 
-    // 2 edges (front+back) × 2 boundaries each = 4 connectors total
-    // Each connector adds a fixed number of triangles (cylinder + caps)
+    // 2 edges (front+back) × 3 cell-centers each = 6 connectors total.
     // Nub: NUB_CIRCLE_SEGMENTS * 2 (wall) + NUB_CIRCLE_SEGMENTS (tip cap) = 36
     // Hole: NUB_CIRCLE_SEGMENTS (cancel) + NUB_CIRCLE_SEGMENTS * 2 (wall) + NUB_CIRCLE_SEGMENTS (floor) = 48
-    // Front = male (36 each × 2 = 72), Back = female (48 each × 2 = 96) → total 168
-    expect(diff).toBe(168);
+    // Front = male (36 × 3 = 108), Back = female (48 × 3 = 144) → total 252
+    expect(diff).toBe(252);
   });
 
   it('nubs expand bounding box on front join edge (-Y)', () => {

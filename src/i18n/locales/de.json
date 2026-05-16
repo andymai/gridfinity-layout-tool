@@ -2,7 +2,6 @@
   "app.skipToGridEditor": "Zum Grid-Planner springen",
   "baseplate.brepFinalizeFailed": "Hochauflösende Vorschau konnte nicht abgeschlossen werden — die exportierte Datei kann leicht abweichen.",
   "baseplate.computingGeometry": "Verfeinere...",
-  "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.cornerRadius": "Eckenradius",
   "baseplate.cornerRadiusBL": "Unten-links",
   "baseplate.cornerRadiusBR": "Unten-rechts",
@@ -1720,5 +1719,13 @@
   "syncDialog.accountMismatch.title": "Anderes Konto",
   "syncDialog.accountMismatch.message": "Die {count} Layouts und Designs auf diesem Gerät waren zuletzt mit einem anderen Konto verknüpft. Zu {account} hinzufügen oder verwerfen?",
   "syncDialog.accountMismatch.merge": "Zu {account} hinzufügen",
-  "syncDialog.accountMismatch.discard": "Verwerfen"
+  "syncDialog.accountMismatch.discard": "Verwerfen",
+  "baseplate.connectors.dovetail": "Schwalbenschwanz",
+  "baseplate.connectors.label": "Verbinder",
+  "baseplate.connectors.none": "Keine",
+  "baseplate.connectors.snap": "Snap-Clip",
+  "baseplate.snapClipLifted": "Angehoben",
+  "baseplate.snapClipSeated": "Eingerastet",
+  "baseplate.snapClipExplodeSlider": "Snap-Clips zur Inspektion anheben",
+  "baseplate.connectors.tooltip": "Wie benachbarte Grundplatten verbunden bleiben. Schwalbenschwänze sind integriert; Snap-Clips werden separat gedruckt."
 }

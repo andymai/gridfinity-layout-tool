@@ -32,6 +32,7 @@ import { handleGenerate, handleGenerateBaseplate } from './handlers/generateHand
 import {
   handleExport,
   handleExportBaseplate,
+  handleExportSnapClip,
   handleExportDividers,
   handleExportCombined,
 } from './handlers/exportHandler';
@@ -105,6 +106,10 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'EXPORT_BASEPLATE':
         await handleExportBaseplate(message);
+        break;
+
+      case 'EXPORT_SNAP_CLIP':
+        await handleExportSnapClip(message);
         break;
 
       case 'EXPORT_DIVIDERS':

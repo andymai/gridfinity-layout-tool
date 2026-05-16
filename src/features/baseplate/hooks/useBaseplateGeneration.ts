@@ -195,6 +195,8 @@ export function useBaseplateGeneration(): void {
         paddingRight: bp.paddingRight,
         paddingFront: bp.paddingFront,
         paddingBack: bp.paddingBack,
+        connectorStyle: bp.connectorStyle,
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- forward legacy field for backwards-compat reads downstream
         connectorNubs: bp.connectorNubs,
         syncWithLayout: bp.syncWithLayout,
         baseplateWidth: bp.baseplateWidth,

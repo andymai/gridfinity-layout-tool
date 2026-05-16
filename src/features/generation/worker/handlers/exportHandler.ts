@@ -6,6 +6,7 @@ import { unwrap, compound, exportSTEP, translate } from 'brepjs';
 import type {
   ExportMessage,
   ExportBaseplateMessage,
+  ExportSnapClipMessage,
   ExportDividersMessage,
   ExportCombinedMessage,
   CombinedExportPiece,
@@ -13,6 +14,7 @@ import type {
 import { exportBin } from '../generators/binGenerator';
 import { getLastSolid } from '../generators/shapeCache';
 import { exportBaseplate } from '../generators/baseplateGenerator';
+import { exportSnapClip } from '../generators/snapClipBuilder';
 import { exportDividers, exportDividerPiecesSeparately } from '../generators/dividerExport';
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
 import { exportLid } from '../generators/lidOrchestrator';
@@ -58,6 +60,25 @@ export async function handleExportBaseplate(message: ExportBaseplateMessage): Pr
       return { data: result.data, format: payload.format, fileName: result.fileName };
     },
     'Baseplate export failed',
+    (p) => [p.data],
+    classifyExportError
+  );
+}
+
+export async function handleExportSnapClip(message: ExportSnapClipMessage): Promise<void> {
+  const payload = message.payload;
+  await runExport(
+    payload.requestId,
+    'SNAP_CLIP_EXPORT_RESULT',
+    async () => {
+      const result = await exportSnapClip(
+        payload.format,
+        payload.tolerance,
+        payload.angularTolerance
+      );
+      return { data: result.data, format: payload.format, fileName: result.fileName };
+    },
+    'Snap clip export failed',
     (p) => [p.data],
     classifyExportError
   );

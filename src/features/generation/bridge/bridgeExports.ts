@@ -18,6 +18,7 @@ import type {
   SplitExportResult,
   SplitPreviewResult,
   BaseplateExportResult,
+  SnapClipExportResult,
   ExportSlot,
   PendingExport,
 } from './bridgeTypes';
@@ -247,4 +248,22 @@ export function exportBaseplate(
       },
     })
   );
+}
+
+/** Snap-clip export reuses the same 'export' slot — a clip is a tiny solid
+ *  and runs after baseplate pieces, never concurrently with them. */
+export function exportSnapClip(
+  ctx: BridgeExportContext,
+  format: ExportFormat,
+  options?: { tolerance?: number; angularTolerance?: number }
+): Promise<SnapClipExportResult> {
+  return runExport<SnapClipExportResult>(ctx, 'export', 30_000, (requestId) => ({
+    type: 'EXPORT_SNAP_CLIP',
+    payload: {
+      requestId,
+      format,
+      tolerance: options?.tolerance,
+      angularTolerance: options?.angularTolerance,
+    },
+  }));
 }

@@ -2,7 +2,6 @@
   "app.skipToGridEditor": "Gå til rutenettplanlegger",
   "baseplate.brepFinalizeFailed": "Kunne ikke fullføre høyoppløst forhåndsvisning — den eksporterte filen kan avvike litt.",
   "baseplate.computingGeometry": "Forfiner...",
-  "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.cornerRadius": "Hjørneradius",
   "baseplate.cornerRadiusBL": "Nederst venstre",
   "baseplate.cornerRadiusBR": "Nederst høyre",
@@ -1720,5 +1719,13 @@
   "syncDialog.accountMismatch.title": "Annen konto",
   "syncDialog.accountMismatch.message": "De {count} oppsettene og designene på denne enheten var sist tilknyttet en annen konto. Legg til {account}, eller forkast?",
   "syncDialog.accountMismatch.merge": "Legg til {account}",
-  "syncDialog.accountMismatch.discard": "Forkast"
+  "syncDialog.accountMismatch.discard": "Forkast",
+  "baseplate.connectors.dovetail": "Svalehale",
+  "baseplate.connectors.label": "Koblinger",
+  "baseplate.connectors.none": "Ingen",
+  "baseplate.connectors.snap": "Snappklips",
+  "baseplate.snapClipLifted": "Hevet",
+  "baseplate.snapClipSeated": "På plass",
+  "baseplate.snapClipExplodeSlider": "Hev snappklips for inspeksjon",
+  "baseplate.connectors.tooltip": "Hvordan tilstøtende grunnplater holdes på linje. Svalehaler er integrert; snappklips skrives ut separat."
 }

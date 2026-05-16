@@ -2,7 +2,6 @@
   "app.skipToGridEditor": "Ga naar grid planner",
   "baseplate.brepFinalizeFailed": "Kon hoogwaardige voorbeeldweergave niet voltooien — het geëxporteerde bestand kan licht afwijken.",
   "baseplate.computingGeometry": "Verfijnen...",
-  "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.cornerRadius": "Hoekradius",
   "baseplate.cornerRadiusBL": "Linksonder",
   "baseplate.cornerRadiusBR": "Rechtsonder",
@@ -1720,5 +1719,13 @@
   "syncDialog.accountMismatch.title": "Ander account",
   "syncDialog.accountMismatch.message": "De {count} lay-outs en ontwerpen op dit apparaat waren laatst gekoppeld aan een ander account. Toevoegen aan {account} of weggooien?",
   "syncDialog.accountMismatch.merge": "Toevoegen aan {account}",
-  "syncDialog.accountMismatch.discard": "Weggooien"
+  "syncDialog.accountMismatch.discard": "Weggooien",
+  "baseplate.connectors.dovetail": "Zwaluwstaart",
+  "baseplate.connectors.label": "Verbindingen",
+  "baseplate.connectors.none": "Geen",
+  "baseplate.connectors.snap": "Klikclip",
+  "baseplate.snapClipLifted": "Opgelicht",
+  "baseplate.snapClipSeated": "Op zijn plaats",
+  "baseplate.snapClipExplodeSlider": "Klikclips optillen voor inspectie",
+  "baseplate.connectors.tooltip": "Hoe aangrenzende grondplaten uitgelijnd blijven. Zwaluwstaarten zijn integraal; klikclips worden apart geprint."
 }

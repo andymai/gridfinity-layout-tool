@@ -1,10 +1,13 @@
 /**
- * Legacy connector position computation for the direct mesh baseplate generator.
+ * Connector position computation for the direct mesh baseplate generator.
  *
- * Computes nub/hole positions along join edges of split baseplate pieces.
- * Only used by baseplateDirectMesh.ts — the BREP generator uses dovetail
- * connectors from splitConnectorBuilder.ts instead.
+ * One connector per cell along each join edge — matching upstream
+ * `cutter_screw_together`'s "fastener per cell" pattern. The previous
+ * boundary-indexed math placed connectors at internal cell boundaries,
+ * leaving 1×1 splits with zero connectors and corner cells unsupported.
  */
+import { cellCentersAlong } from './cellDecomposition';
+
 export interface ConnectorPos {
   cx: number;
   cy: number;
@@ -24,7 +27,9 @@ export function computeConnectorPositions(
   slabOffsetX: number,
   slabOffsetY: number,
   edges: { left: string; right: string; front: string; back: string },
-  invertDovetails?: boolean
+  invertDovetails?: boolean,
+  fractionalEdgeX: 'start' | 'end' = 'end',
+  fractionalEdgeY: 'start' | 'end' = 'end'
 ): ConnectorPos[] {
   const positions: ConnectorPos[] = [];
   const zCenter = totalHeight / 2;
@@ -32,64 +37,55 @@ export function computeConnectorPositions(
   const halfD = totalD / 2;
   const invert = !!invertDovetails;
 
+  const yCenters = cellCentersAlong(depth, gridUnitMm, fractionalEdgeY);
+  const xCenters = cellCentersAlong(width, gridUnitMm, fractionalEdgeX);
+
   const edgeDefs: ReadonlyArray<{
     side: keyof typeof edges;
-    numBoundaries: number;
-    position: (k: number) => { cx: number; cy: number };
+    centers: readonly number[];
+    position: (c: number) => { cx: number; cy: number };
     nx: number;
     ny: number;
     isMale: boolean;
   }> = [
     {
       side: 'left',
-      numBoundaries: Math.ceil(depth) - 1,
-      position: (k) => ({
-        cx: -halfW + slabOffsetX,
-        cy: k * gridUnitMm - (depth * gridUnitMm) / 2,
-      }),
+      centers: yCenters,
+      position: (cy) => ({ cx: -halfW + slabOffsetX, cy }),
       nx: -1,
       ny: 0,
       isMale: !invert,
     },
     {
       side: 'right',
-      numBoundaries: Math.ceil(depth) - 1,
-      position: (k) => ({
-        cx: halfW + slabOffsetX,
-        cy: k * gridUnitMm - (depth * gridUnitMm) / 2,
-      }),
+      centers: yCenters,
+      position: (cy) => ({ cx: halfW + slabOffsetX, cy }),
       nx: 1,
       ny: 0,
       isMale: invert,
     },
     {
       side: 'front',
-      numBoundaries: Math.ceil(width) - 1,
-      position: (k) => ({
-        cx: k * gridUnitMm - (width * gridUnitMm) / 2,
-        cy: -halfD + slabOffsetY,
-      }),
+      centers: xCenters,
+      position: (cx) => ({ cx, cy: -halfD + slabOffsetY }),
       nx: 0,
       ny: -1,
       isMale: !invert,
     },
     {
       side: 'back',
-      numBoundaries: Math.ceil(width) - 1,
-      position: (k) => ({
-        cx: k * gridUnitMm - (width * gridUnitMm) / 2,
-        cy: halfD + slabOffsetY,
-      }),
+      centers: xCenters,
+      position: (cx) => ({ cx, cy: halfD + slabOffsetY }),
       nx: 0,
       ny: 1,
       isMale: invert,
     },
   ];
 
-  for (const { side, numBoundaries, position, nx, ny, isMale } of edgeDefs) {
-    if (edges[side] !== 'join' || numBoundaries <= 0) continue;
-    for (let k = 1; k <= numBoundaries; k++) {
-      const { cx, cy } = position(k);
+  for (const { side, centers, position, nx, ny, isMale } of edgeDefs) {
+    if (edges[side] !== 'join') continue;
+    for (const c of centers) {
+      const { cx, cy } = position(c);
       positions.push({ cx, cy, cz: zCenter, nx, ny, isMale });
     }
   }

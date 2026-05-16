@@ -109,3 +109,16 @@ const HOLE_CLEARANCE = 0.1;
 export const HOLE_DIAMETER = NUB_DIAMETER + 2 * HOLE_CLEARANCE;
 export const HOLE_DEPTH = NUB_DEPTH + HOLE_CLEARANCE;
 export const NUB_CIRCLE_SEGMENTS = 12;
+
+// Snap-clip constants live in src/shared/printSettings/snapClipGeometry.ts so
+// the BREP generator and the R3F preview share one source of truth.
+export {
+  SNAP_CLIP_LENGTH,
+  SNAP_CLIP_WIDTH,
+  SNAP_CLIP_DEPTH,
+  SNAP_CLIP_SNAP,
+  SNAP_CLIP_THICKNESS,
+  SNAP_CLIP_COMPRESSION,
+  SNAP_CLIP_CLEARANCE,
+  SNAP_CLIP_DEPTH_CLEARANCE,
+} from '@/shared/printSettings/snapClipGeometry';

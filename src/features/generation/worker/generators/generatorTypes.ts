@@ -46,8 +46,21 @@ export {
   HOLE_DIAMETER,
   HOLE_DEPTH,
   NUB_CIRCLE_SEGMENTS,
+  SNAP_CLIP_LENGTH,
+  SNAP_CLIP_WIDTH,
+  SNAP_CLIP_DEPTH,
+  SNAP_CLIP_SNAP,
+  SNAP_CLIP_THICKNESS,
+  SNAP_CLIP_COMPRESSION,
+  SNAP_CLIP_CLEARANCE,
+  SNAP_CLIP_DEPTH_CLEARANCE,
 } from './generatorConstants';
-export { decomposeCells, decomposeHalfCells, forEachCell } from './cellDecomposition';
+export {
+  decomposeCells,
+  decomposeHalfCells,
+  forEachCell,
+  cellCentersAlong,
+} from './cellDecomposition';
 export type { CellInfo, ForEachCellOptions } from './cellDecomposition';
 export { sketch, checkCancelled, toIndexedMeshData } from './meshUtils';
 export type { ProgressFn, BooleanOpts } from './meshUtils';

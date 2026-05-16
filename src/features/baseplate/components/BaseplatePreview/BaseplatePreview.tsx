@@ -27,6 +27,10 @@ import { useTranslation } from '@/i18n';
 import type { CameraPreset } from './cameraUtils';
 import { calculateIdealDistance, calculateMaxOrbitDistance } from './cameraUtils';
 import { BaseplateMesh } from './BaseplateMesh';
+import { SnapClipPreview } from './SnapClipPreview';
+import { SnapClipExplodeSlider, SNAP_CLIP_OFFSET_DEFAULT } from './SnapClipExplodeSlider';
+import { resolveConnectorStyle } from '@/shared/types/bin';
+import { useLayoutStore } from '@/core/store/layout';
 import { SceneLighting } from './SceneLighting';
 import { CameraController } from './CameraController';
 import { DimensionLabels } from './DimensionLabels';
@@ -90,6 +94,17 @@ export function BaseplatePreview({
 
   // Camera preset state
   const [activePreset, setActivePreset] = useState<CameraPreset | null>(null);
+
+  const [snapClipOffsetMm, setSnapClipOffsetMm] = useState<number>(SNAP_CLIP_OFFSET_DEFAULT);
+
+  const showSnapClips = useLayoutStore((s) => {
+    const params = s.layout.baseplateParams;
+    return !!params && resolveConnectorStyle(params) === 'snap' && isSplit;
+  });
+
+  // While snap clips aren't showing, force the offset to seated so geometry
+  // math elsewhere stays correct. State is preserved across hide/show.
+  const effectiveSnapClipOffsetMm = showSnapClips ? snapClipOffsetMm : SNAP_CLIP_OFFSET_DEFAULT;
 
   const setCameraPreset = useBaseplatePresetTransition(
     controlsRef,
@@ -256,6 +271,8 @@ export function BaseplatePreview({
             <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} />
           )}
 
+          <SnapClipPreview offsetMm={effectiveSnapClipOffsetMm} />
+
           {/* Ghost outline only in assembled mode -- exploded scatters pieces beyond slab bounds */}
           {splitViewMode !== 'exploded' && (
             <GhostPaddingOutline
@@ -316,6 +333,10 @@ export function BaseplatePreview({
         onViewModeChange={setSplitViewMode}
         onColorChange={handleColorChange}
       />
+
+      {showSnapClips && (
+        <SnapClipExplodeSlider value={snapClipOffsetMm} onChange={setSnapClipOffsetMm} />
+      )}
 
       {hasError && (
         <div className="absolute inset-0 flex items-center justify-center" role="alert">
