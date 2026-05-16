@@ -133,10 +133,11 @@ describe('split export: geometry completeness', () => {
     }
   }, 90000);
 
-  it('exports a 5x4x3 bin (split at cell boundary) without losing geometry', async () => {
-    // Width 5 → cut at x=0 (the cell-4/cell-5 boundary). Confirms the
-    // cell-boundary nudge fires on x-axis cuts too and doesn't regress
-    // pieces with stacking lip.
+  it('exports a 5x2x3 bin with lip + x-axis cell-boundary cut without losing geometry', async () => {
+    // Width 5 cells, cut at x=-21 — that's the cell-1/cell-2 boundary (cell
+    // centers at -84, -42, 0, 42, 84; the boundary between cells 1 and 2
+    // sits at -42 + gridUnit/2 = -21). Confirms the cell-boundary nudge
+    // also fires on the x axis and doesn't regress lipped pieces.
     const exportSplitBin = getExportSplitBin();
 
     const params: BinParams = {
@@ -147,9 +148,7 @@ describe('split export: geometry completeness', () => {
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
     };
 
-    // Pick a printBed size that forces a cut: max=2 for width=5 → 3 pieces;
-    // we want exactly 2, so pre-compute one cut at x=0 (cell-2/cell-3 wall).
-    const cutPlanesX: number[] = [-21]; // halfway between cells 2 and 3
+    const cutPlanesX: number[] = [-21];
     const connectors = { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: false };
     const exported = await exportSplitBin(params, cutPlanesX, [], 0.01, 5, connectors);
     expect(exported.pieces).toHaveLength(2);
