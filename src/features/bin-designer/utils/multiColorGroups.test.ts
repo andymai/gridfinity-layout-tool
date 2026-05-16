@@ -45,7 +45,7 @@ describe('buildMultiColorGroups', () => {
   it('returns null when all active zones share the body color', () => {
     const { vertices, indices } = meshFromCentroids([{ x: 0, y: 0 }]);
     const faceGroups: FaceGroupData[] = [{ start: 0, count: 3, tag: FeatureTag.BASE }];
-    expect(buildMultiColorGroups(faceGroups, vertices, indices, colors(), allZones, 3)).toBeNull();
+    expect(buildMultiColorGroups(faceGroups, vertices, indices, colors(), allZones)).toBeNull();
   });
 
   it('places body at material index 0 and one slot per ColorZone (no hex dedup)', () => {
@@ -61,7 +61,7 @@ describe('buildMultiColorGroups', () => {
       { start: 0, count: 3, tag: FeatureTag.BASE },
       { start: 3, count: 3, tag: FeatureTag.LABEL_TAB },
     ];
-    const result = buildMultiColorGroups(faceGroups, vertices, indices, c, allZones, 6);
+    const result = buildMultiColorGroups(faceGroups, vertices, indices, c, allZones);
     expect(result).not.toBeNull();
     expect(result?.zoneColors).toHaveLength(ZONE_ORDER.length);
     expect(result?.zoneColors[zoneIndex('labelTab')]).toBe('#aabbcc');
@@ -84,7 +84,7 @@ describe('buildMultiColorGroups', () => {
       },
     });
     const faceGroups: FaceGroupData[] = [{ start: 0, count: 12, tag: FeatureTag.LIP }];
-    const result = buildMultiColorGroups(faceGroups, vertices, indices, c, allZones, 12);
+    const result = buildMultiColorGroups(faceGroups, vertices, indices, c, allZones);
     expect(result).not.toBeNull();
 
     // Four 1-triangle (3-index) groups in centroid order.
@@ -114,7 +114,7 @@ describe('buildMultiColorGroups', () => {
       lip: { frontLeft: '#ff0000', frontRight: SINGLE, backRight: '#0000ff', backLeft: SINGLE },
     });
     const faceGroups: FaceGroupData[] = [{ start: 0, count: 15, tag: FeatureTag.LIP }];
-    const result = buildMultiColorGroups(faceGroups, vertices, indices, c, allZones, 15);
+    const result = buildMultiColorGroups(faceGroups, vertices, indices, c, allZones);
     expect(result).not.toBeNull();
     expect(result?.groups).toHaveLength(2);
     expect(result?.groups[0]).toMatchObject({
@@ -141,9 +141,7 @@ describe('buildMultiColorGroups', () => {
     const c = colors({
       lip: { frontLeft: '#ff0000', frontRight: SINGLE, backRight: SINGLE, backLeft: SINGLE },
     });
-    expect(() =>
-      buildMultiColorGroups(faceGroups, vertices, indices, c, allZones, 3)
-    ).not.toThrow();
+    expect(() => buildMultiColorGroups(faceGroups, vertices, indices, c, allZones)).not.toThrow();
   });
 
   it('fills the gap before a face group with body material', () => {
@@ -159,7 +157,7 @@ describe('buildMultiColorGroups', () => {
     ]);
     const c = colors({ labelTab: '#aabbcc' });
     const faceGroups: FaceGroupData[] = [{ start: 9, count: 9, tag: FeatureTag.LABEL_TAB }];
-    const result = buildMultiColorGroups(faceGroups, vertices, indices, c, allZones, 18);
+    const result = buildMultiColorGroups(faceGroups, vertices, indices, c, allZones);
     expect(result?.groups[0]).toMatchObject({
       start: 0,
       count: 9,

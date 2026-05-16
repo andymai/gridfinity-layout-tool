@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { FeatureTag } from '@/shared/types/generation';
 import {
+  ZONE_ORDER,
   featureTagToColorZone,
   getZoneColor,
   isSingleColor,
@@ -89,14 +90,14 @@ describe('lipCornerZone', () => {
 
 describe('isSingleColor', () => {
   it('returns true when all zones equal body', () => {
-    expect(isSingleColor(colors())).toBe(true);
+    expect(isSingleColor(colors(), ZONE_ORDER)).toBe(true);
   });
 
   it('returns false when any lip corner differs', () => {
     const c = colors({
       lip: { frontLeft: '#ff0000', frontRight: SINGLE, backRight: SINGLE, backLeft: SINGLE },
     });
-    expect(isSingleColor(c)).toBe(false);
+    expect(isSingleColor(c, ZONE_ORDER)).toBe(false);
   });
 
   it("respects activeZones — disabled lip corners with different colors don't count", () => {

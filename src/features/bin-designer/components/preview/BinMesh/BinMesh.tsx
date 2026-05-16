@@ -87,14 +87,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     if (!multiColorEnabled || !faceGroups || !featureColors || !vertices || !indices) {
       return null;
     }
-    return buildMultiColorGroups(
-      faceGroups,
-      vertices,
-      indices,
-      featureColors,
-      activeZones,
-      indices.length
-    );
+    return buildMultiColorGroups(faceGroups, vertices, indices, featureColors, activeZones);
   }, [multiColorEnabled, faceGroups, featureColors, vertices, indices, activeZones]);
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({

@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { FeatureTag } from '@/shared/types/generation';
 import { buildTriangleMaterialIndices } from './materialMapping';
-import type { FeatureColorConfig } from '../types/featureColors';
+import { ZONE_ORDER } from '../types/featureColors';
+import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
 import type { FaceGroupData } from '@/shared/types/generation';
 
 const SINGLE = '#d4d8dc';
+const allZones: ReadonlySet<ColorZone> = new Set(ZONE_ORDER);
 
 /** Build a featureColors config that's single-color by default; pass overrides to differentiate zones. */
 function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig {
@@ -28,7 +30,7 @@ describe('buildTriangleMaterialIndices', () => {
   it('returns null when all zones use the same color', () => {
     const faceGroups: FaceGroupData[] = [{ start: 0, count: 9, tag: FeatureTag.BASE }];
     const vertices = new Float32Array([...tri(0, 0), ...tri(1, 0), ...tri(0, 1)]);
-    expect(buildTriangleMaterialIndices(faceGroups, colors(), 3, vertices)).toBeNull();
+    expect(buildTriangleMaterialIndices(faceGroups, colors(), 3, vertices, allZones)).toBeNull();
   });
 
   it('maps non-lip face groups to their zone color', () => {
@@ -47,7 +49,7 @@ describe('buildTriangleMaterialIndices', () => {
       ...tri(4, 4),
     ]);
 
-    const result = buildTriangleMaterialIndices(faceGroups, featureColors, 6, vertices);
+    const result = buildTriangleMaterialIndices(faceGroups, featureColors, 6, vertices, allZones);
 
     expect(result).not.toBeNull();
     expect(result?.materials.map((m) => m.color)).toEqual([SINGLE, '#00ff00']);
@@ -73,7 +75,7 @@ describe('buildTriangleMaterialIndices', () => {
     ]);
     const faceGroups: FaceGroupData[] = [{ start: 0, count: 12, tag: FeatureTag.LIP }];
 
-    const result = buildTriangleMaterialIndices(faceGroups, featureColors, 4, vertices);
+    const result = buildTriangleMaterialIndices(faceGroups, featureColors, 4, vertices, allZones);
 
     expect(result).not.toBeNull();
     // Materials: body, then 4 distinct corner colors. resolveColorMapping
@@ -101,7 +103,7 @@ describe('buildTriangleMaterialIndices', () => {
     ];
     const vertices = new Float32Array([...tri(0, 0), ...tri(1, 1), ...tri(2, 2)]);
 
-    const result = buildTriangleMaterialIndices(faceGroups, featureColors, 3, vertices);
+    const result = buildTriangleMaterialIndices(faceGroups, featureColors, 3, vertices, allZones);
 
     expect(result).not.toBeNull();
     const idxFor = (hex: string) => result!.materials.findIndex((m) => m.color === hex);

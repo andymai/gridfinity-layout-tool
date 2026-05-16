@@ -8,6 +8,7 @@
  */
 
 import { FeatureTag } from '@/shared/types/generation';
+import type { BaseStyle } from './index';
 
 /** Lip corner identifier — quadrant of the outer XY bbox. */
 export type LipCorner = 'frontLeft' | 'frontRight' | 'backRight' | 'backLeft';
@@ -135,18 +136,18 @@ export function featureTagToColorZone(tag: number): ColorZone | null {
 }
 
 /**
- * True when every zone in `activeZones` matches body. Pass only the
- * currently-relevant zones so a hidden feature's lingering color (e.g.
- * a recolored lip on a stacking-lip-off bin) doesn't flag the design
- * as multi-color.
+ * True when every zone in `activeZones` matches body. Required because
+ * forgetting to filter out hidden-feature zones would flag a single-color
+ * design as multi-color from a stale recolor on a disabled feature (the
+ * exact bug we hit when the preview and exporter gated differently).
+ * Pass `ZONE_ORDER` (or `new Set(ZONE_ORDER)`) for an unconditional check.
  */
 export function isSingleColor(
   c: FeatureColorConfig,
-  activeZones?: ReadonlySet<ColorZone>
+  activeZones: ReadonlySet<ColorZone> | readonly ColorZone[]
 ): boolean {
-  const zones = activeZones ? [...activeZones] : ZONE_ORDER;
   const ref = c.body;
-  for (const z of zones) {
+  for (const z of activeZones) {
     if (getZoneColor(c, z) !== ref) return false;
   }
   return true;
@@ -162,7 +163,7 @@ export function isSingleColor(
  * the full `BinParams` type.
  */
 export interface ActiveZonesParams {
-  readonly base: { readonly style: string; readonly stackingLip: boolean };
+  readonly base: { readonly style: BaseStyle; readonly stackingLip: boolean };
   readonly label: { readonly enabled: boolean };
   readonly scoop: { readonly enabled: boolean };
   readonly compartments: { readonly cells: readonly number[] };

@@ -44,8 +44,7 @@ export function buildMultiColorGroups(
   vertices: Float32Array,
   indices: Uint32Array,
   featureColors: FeatureColorConfig,
-  activeZones: ReadonlySet<ColorZone>,
-  totalIndexCount: number
+  activeZones: ReadonlySet<ColorZone>
 ): MultiColorGroupsResult | null {
   if (isSingleColor(featureColors, activeZones)) return null;
 
@@ -105,8 +104,8 @@ export function buildMultiColorGroups(
     cursor = fg.start + fg.count;
   }
 
-  if (cursor < totalIndexCount) {
-    groups.push({ start: cursor, count: totalIndexCount - cursor, materialIndex: BODY_INDEX });
+  if (cursor < indices.length) {
+    groups.push({ start: cursor, count: indices.length - cursor, materialIndex: BODY_INDEX });
   }
 
   const zoneColors = ZONE_ORDER.map((z) => getZoneColor(featureColors, z));

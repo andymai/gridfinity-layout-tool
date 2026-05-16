@@ -29,7 +29,7 @@ export function buildTriangleMaterialIndices(
   featureColors: FeatureColorConfig,
   triangleCount: number,
   vertices: Float32Array,
-  activeZones?: ReadonlySet<ColorZone>
+  activeZones: ReadonlySet<ColorZone>
 ): ThreeMFColorConfig | null {
   if (isSingleColor(featureColors, activeZones)) return null;
 
