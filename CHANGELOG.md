@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.86.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.86.1...gridfinity-layout-tool-v4.86.2) (2026-05-16)
+
+
+### Bug Fixes
+
+* **generation:** nudge split cut planes off socket-cell boundaries ([#1681](https://github.com/andymai/gridfinity-layout-tool/issues/1681)) ([bc2a9c1](https://github.com/andymai/gridfinity-layout-tool/commit/bc2a9c1e59b63c2a0d87d399daff88384724fce1))
+
 ## [4.86.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.86.0...gridfinity-layout-tool-v4.86.1) (2026-05-16)
 
 
