@@ -82,11 +82,28 @@ export function ExportDialog() {
   const multiColorEnabled = useFeatureFlag('multi_color_export');
   const isMultiColor = useMemo(() => {
     if (!multiColorEnabled) return false;
-    const activeZones = new Set<ColorZone>(['body']);
-    if (params.base.stackingLip) activeZones.add('lip');
+    const cells = params.compartments.cells;
+    const firstCell = cells[0] ?? 0;
+    const hasDividers = cells.length > 1 && cells.some((c) => c !== firstCell);
+    const activeZones = new Set<ColorZone>(['body', 'base']);
+    if (params.base.stackingLip) {
+      activeZones.add('lip:frontLeft');
+      activeZones.add('lip:frontRight');
+      activeZones.add('lip:backRight');
+      activeZones.add('lip:backLeft');
+    }
     if (params.label.enabled) activeZones.add('labelTab');
+    if (params.scoop.enabled) activeZones.add('scoop');
+    if (hasDividers) activeZones.add('dividers');
     return !isSingleColor(params.featureColors, activeZones);
-  }, [multiColorEnabled, params.featureColors, params.base.stackingLip, params.label.enabled]);
+  }, [
+    multiColorEnabled,
+    params.featureColors,
+    params.base.stackingLip,
+    params.label.enabled,
+    params.scoop.enabled,
+    params.compartments.cells,
+  ]);
 
   // Auto-switch to 3MF the first time the dialog opens on a multi-color
   // design with a colorless format selected. Tracked by a ref so we only

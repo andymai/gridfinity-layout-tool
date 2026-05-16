@@ -1,64 +1,163 @@
 /**
  * Feature color types for multi-color bin design.
  *
- * Each color zone stores a hex color string directly.
- * No palette indirection — users pick colors per zone.
+ * Each non-lip zone stores a hex color directly. The lip splits into
+ * four corner zones (front-left, front-right, back-right, back-left)
+ * snapped to the outer bbox of the bin's footprint — even on multi-cell
+ * and custom-shape bins, there are always exactly 4 lip-corner zones.
  */
 
 import { FeatureTag } from '@/shared/types/generation';
 
-/** High-level color zone grouping multiple FeatureTags */
-export type ColorZone = 'body' | 'lip' | 'labelTab';
+/** Lip corner identifier — quadrant of the outer XY bbox. */
+export type LipCorner = 'frontLeft' | 'frontRight' | 'backRight' | 'backLeft';
 
-/** Per-zone hex color assignment */
+export const LIP_CORNERS: readonly LipCorner[] = [
+  'frontLeft',
+  'frontRight',
+  'backRight',
+  'backLeft',
+] as const;
+
+/** Per-corner lip color assignment. */
+export interface LipColorConfig {
+  readonly frontLeft: string;
+  readonly frontRight: string;
+  readonly backRight: string;
+  readonly backLeft: string;
+}
+
+/** Per-zone hex color assignment. */
 export interface FeatureColorConfig {
-  /** Body shell color (hex, e.g. '#3b82f6') */
+  /** Body shell — bin walls and floor (FeatureTag.BASE + unclassified). */
   readonly body: string;
-  /** Stacking lip color */
-  readonly lip: string;
-  /** Label tab color */
+  /** Stacking lip, split into 4 corner quadrants. */
+  readonly lip: LipColorConfig;
+  /** Label tab. */
   readonly labelTab: string;
+  /** Gridfinity foot (FeatureTag.SOCKET — magnets, screws, baseplate fit). */
+  readonly base: string;
+  /** Scoop / front internal ramp (FeatureTag.SCOOP). */
+  readonly scoop: string;
+  /** Interior compartment dividers (FeatureTag.DIVIDER). */
+  readonly dividers: string;
 }
 
 /**
- * Maps a FeatureTag to its high-level ColorZone.
+ * All editable color zones — each backed by exactly one hex color.
  *
- * LIP → 'lip', LABEL_TAB → 'labelTab', everything else → 'body'.
+ * Lip is split into four `lip:*` zones; the bare 'lip' identifier is
+ * reserved for hover (highlighting the whole lip on group-header hover)
+ * and is not a settable color slot.
  */
-export function featureTagToColorZone(tag: number): ColorZone {
+export type ColorZone =
+  | 'body'
+  | 'lip:frontLeft'
+  | 'lip:frontRight'
+  | 'lip:backRight'
+  | 'lip:backLeft'
+  | 'labelTab'
+  | 'base'
+  | 'scoop'
+  | 'dividers';
+
+/** Hover target — accepts every ColorZone plus the lip group header. */
+export type HoverableZone = ColorZone | 'lip';
+
+const ALL_ZONES: readonly ColorZone[] = [
+  'body',
+  'lip:frontLeft',
+  'lip:frontRight',
+  'lip:backRight',
+  'lip:backLeft',
+  'labelTab',
+  'base',
+  'scoop',
+  'dividers',
+] as const;
+
+/** Look up the hex value of a specific zone in a FeatureColorConfig. */
+export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
+  switch (z) {
+    case 'body':
+      return c.body;
+    case 'labelTab':
+      return c.labelTab;
+    case 'base':
+      return c.base;
+    case 'scoop':
+      return c.scoop;
+    case 'dividers':
+      return c.dividers;
+    case 'lip:frontLeft':
+      return c.lip.frontLeft;
+    case 'lip:frontRight':
+      return c.lip.frontRight;
+    case 'lip:backRight':
+      return c.lip.backRight;
+    case 'lip:backLeft':
+      return c.lip.backLeft;
+  }
+}
+
+/** Compose a lip-corner zone from a LipCorner. */
+export function lipCornerZone(corner: LipCorner): ColorZone {
+  return `lip:${corner}` as const;
+}
+
+/** Build the set of lip-corner ColorZones. */
+export function lipCornerZones(): ReadonlySet<ColorZone> {
+  return new Set<ColorZone>(LIP_CORNERS.map(lipCornerZone));
+}
+
+/**
+ * Maps a non-LIP FeatureTag to its ColorZone. LIP returns null because
+ * lip faces need centroid-based classification into one of four corners.
+ */
+export function featureTagToColorZone(tag: number): ColorZone | null {
   switch (tag) {
-    case FeatureTag.LIP:
-      return 'lip';
     case FeatureTag.LABEL_TAB:
       return 'labelTab';
+    case FeatureTag.SOCKET:
+      return 'base';
+    case FeatureTag.SCOOP:
+      return 'scoop';
+    case FeatureTag.DIVIDER:
+      return 'dividers';
+    case FeatureTag.LIP:
+      return null;
     default:
       return 'body';
   }
 }
 
 /**
- * Returns true when all *active* color zones use the same color
- * (single-color — no multi-material needed).
+ * True when all *active* zones use the same color (no multi-material
+ * payload needed in the 3MF export and no multi-material setup in the
+ * preview).
  *
- * @param activeZones - Set of zone keys that are currently enabled.
- *   Omit to check all zones. Pass only enabled zones to ignore disabled
- *   features (e.g., lip color differs but stacking lip is off).
+ * `activeZones` lets callers pass only the currently-relevant zones
+ * (e.g., skip lip corners when the bin has no stacking lip) so a single
+ * pattern-color bin doesn't get flagged as multi-color just because the
+ * disabled lip's corner colors differ.
  */
 export function isSingleColor(
-  featureColors: FeatureColorConfig,
+  c: FeatureColorConfig,
   activeZones?: ReadonlySet<ColorZone>
 ): boolean {
-  const zones: ColorZone[] = activeZones ? [...activeZones] : ['body', 'lip', 'labelTab'];
-  return zones.every((z) => featureColors[z] === featureColors.body);
+  const zones = activeZones ? [...activeZones] : ALL_ZONES;
+  const ref = c.body;
+  for (const z of zones) {
+    if (getZoneColor(c, z) !== ref) return false;
+  }
+  return true;
 }
 
 /**
- * Deduplicates zone colors and builds a color-to-index mapping.
- *
- * Shared by both the 3D preview (BinMesh) and 3MF exporter.
- * Returns the unique color list and a lookup from hex color to material index.
+ * Dedupe zone colors into a flat list + lookup map. Body always lands
+ * at index 0 so it's the default fallback in 3MF / preview groupings.
  */
-export function resolveColorMapping(featureColors: FeatureColorConfig): {
+export function resolveColorMapping(c: FeatureColorConfig): {
   colors: readonly string[];
   colorToIndex: ReadonlyMap<string, number>;
   defaultIndex: number;
@@ -66,12 +165,12 @@ export function resolveColorMapping(featureColors: FeatureColorConfig): {
   const colorToIndex = new Map<string, number>();
   const colors: string[] = [];
 
-  // Body first (index 0 = default fallback)
-  colorToIndex.set(featureColors.body, 0);
-  colors.push(featureColors.body);
+  colorToIndex.set(c.body, 0);
+  colors.push(c.body);
 
-  // Add remaining unique colors
-  for (const hex of [featureColors.lip, featureColors.labelTab]) {
+  for (const z of ALL_ZONES) {
+    if (z === 'body') continue;
+    const hex = getZoneColor(c, z);
     if (colorToIndex.has(hex)) continue;
     colorToIndex.set(hex, colors.length);
     colors.push(hex);

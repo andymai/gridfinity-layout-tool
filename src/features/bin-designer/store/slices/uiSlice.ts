@@ -10,7 +10,7 @@ import type {
   SplitViewMode,
   SplitPieceMeshEntry,
 } from '../../types';
-import type { ColorZone } from '../../types/featureColors';
+import type { HoverableZone } from '../../types/featureColors';
 import { isFractional } from '@/core/constants';
 import { pushHistoryEntry } from '../helpers';
 
@@ -80,7 +80,7 @@ export function createUISlice(set: Set) {
       });
     },
 
-    setHoveredColorZone: (zone: ColorZone | null) => {
+    setHoveredColorZone: (zone: HoverableZone | null) => {
       set((state) => {
         state.ui.hoveredColorZone = zone;
       });

@@ -146,7 +146,8 @@ export function buildSinglePiece3MF(
     /* eslint-enable @typescript-eslint/no-unnecessary-condition */
     const triangleCount = vertices.length / 9;
     colorConfig =
-      buildTriangleMaterialIndices(faceGroups, params.featureColors, triangleCount) ?? undefined;
+      buildTriangleMaterialIndices(faceGroups, params.featureColors, triangleCount, vertices) ??
+      undefined;
   }
 
   return export3MF(vertices, normals, {
@@ -183,7 +184,12 @@ export function buildMultiObject3MF(
       /* eslint-enable @typescript-eslint/no-unnecessary-condition */
       const triangleCount = parseResult.value.vertices.length / 9;
       colorConfig =
-        buildTriangleMaterialIndices(faceGroups, params.featureColors, triangleCount) ?? undefined;
+        buildTriangleMaterialIndices(
+          faceGroups,
+          params.featureColors,
+          triangleCount,
+          parseResult.value.vertices
+        ) ?? undefined;
     }
 
     objects.push({

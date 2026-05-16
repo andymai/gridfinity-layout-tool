@@ -7,6 +7,8 @@
  * - Dynamic flat shading for large bins (GPU-computed normals)
  * - Pre-computed BREP edge lines from worker (avoids main-thread EdgesGeometry)
  * - polygonOffset to prevent z-fighting with edge lines
+ * - Per-corner lip coloring: lip face groups are sub-grouped by triangle
+ *   centroid quadrant relative to the lip's outer bbox center.
  */
 
 import { useEffect, useMemo } from 'react';
@@ -18,14 +20,21 @@ import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry, useCoarseGeometry } from '@/shared/components/preview/useMeshGeometry';
 import type { MeshFaceGroup } from '@/shared/components/preview/useMeshGeometry';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { FeatureTag } from '@/shared/types/generation';
 import {
   featureTagToColorZone,
+  getZoneColor,
   isSingleColor,
+  lipCornerZone,
   resolveColorMapping,
 } from '@/features/bin-designer/types/featureColors';
-import type { ColorZone } from '@/features/bin-designer/types/featureColors';
+import type { ColorZone, HoverableZone } from '@/features/bin-designer/types/featureColors';
 import type { FaceGroupData } from '@/shared/types/generation';
 import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
+import {
+  classifyLipCorner,
+  computeLipBBoxCenter,
+} from '@/features/bin-designer/utils/lipCornerClassifier';
 
 /** Edge line color (black for sketch look) */
 const EDGE_COLOR = '#000000';
@@ -37,11 +46,18 @@ interface BinMeshProps {
 }
 
 /**
- * Builds MeshFaceGroup[] and a material color array from FaceGroupData + color config.
- * Returns null when multi-color is not active (all zones same slot or missing data).
+ * Builds MeshFaceGroup[] and the unique color list from FaceGroupData +
+ * color config. Returns null when single-color.
+ *
+ * Lip face groups are walked triangle-by-triangle to assign each one to
+ * its corner zone, and runs of same-corner triangles are coalesced into
+ * a single MeshFaceGroup so Three.js doesn't see thousands of 1-triangle
+ * draw calls for a typical lip.
  */
 function buildMultiColorGroups(
   faceGroups: readonly FaceGroupData[],
+  vertices: Float32Array,
+  indices: Uint32Array,
   featureColors: FeatureColorConfig,
   activeZones: ReadonlySet<ColorZone>,
   totalIndexCount: number
@@ -54,7 +70,24 @@ function buildMultiColorGroups(
 
   const { colors, colorToIndex, defaultIndex } = resolveColorMapping(featureColors);
 
-  // Sort by start position, then fill leading/interior/trailing gaps with body default
+  const materialIndexForZone = (zone: ColorZone): number => {
+    const hex = getZoneColor(featureColors, zone);
+    return colorToIndex.get(hex) ?? defaultIndex;
+  };
+
+  const triangleXY = (triIdx: number) => {
+    const i = triIdx * 3;
+    const a = indices[i] * 3;
+    const b = indices[i + 1] * 3;
+    const c = indices[i + 2] * 3;
+    return {
+      x: (vertices[a] + vertices[b] + vertices[c]) / 3,
+      y: (vertices[a + 1] + vertices[b + 1] + vertices[c + 1]) / 3,
+    };
+  };
+
+  const lipCenter = computeLipBBoxCenter(faceGroups, triangleXY);
+
   const sorted = [...faceGroups].sort((a, b) => a.start - b.start);
   const groups: MeshFaceGroup[] = [];
   let cursor = 0;
@@ -63,13 +96,37 @@ function buildMultiColorGroups(
     if (fg.start > cursor) {
       groups.push({ start: cursor, count: fg.start - cursor, materialIndex: defaultIndex });
     }
-    const zone = featureTagToColorZone(fg.tag);
-    const hex = featureColors[zone];
-    groups.push({
-      start: fg.start,
-      count: fg.count,
-      materialIndex: colorToIndex.get(hex) ?? defaultIndex,
-    });
+
+    if (fg.tag === FeatureTag.LIP && lipCenter) {
+      const { cx, cy } = lipCenter;
+      const triStart = fg.start / 3;
+      const triEnd = triStart + fg.count / 3;
+      let runStart = fg.start;
+      let runIndex = materialIndexForZone(
+        lipCornerZone(classifyLipCorner(triangleXY(triStart).x, triangleXY(triStart).y, cx, cy))
+      );
+
+      for (let i = triStart + 1; i < triEnd; i++) {
+        const { x, y } = triangleXY(i);
+        const corner = classifyLipCorner(x, y, cx, cy);
+        const matIdx = materialIndexForZone(lipCornerZone(corner));
+        if (matIdx !== runIndex) {
+          groups.push({ start: runStart, count: i * 3 - runStart, materialIndex: runIndex });
+          runStart = i * 3;
+          runIndex = matIdx;
+        }
+      }
+      groups.push({
+        start: runStart,
+        count: fg.start + fg.count - runStart,
+        materialIndex: runIndex,
+      });
+    } else {
+      const zone = featureTagToColorZone(fg.tag);
+      const matIdx = zone === null ? defaultIndex : materialIndexForZone(zone);
+      groups.push({ start: fg.start, count: fg.count, materialIndex: matIdx });
+    }
+
     cursor = fg.start + fg.count;
   }
 
@@ -78,6 +135,30 @@ function buildMultiColorGroups(
   }
 
   return { groups, colors, colorToIndex };
+}
+
+/**
+ * Resolve the set of color indices that should glow for a given hover
+ * target. Returns the empty set when nothing is hovered. The 'lip'
+ * group-header lights every lip-corner color simultaneously, even when
+ * the four corners use different hexes.
+ */
+function hoveredMaterialIndices(
+  hover: HoverableZone | null,
+  featureColors: FeatureColorConfig | null,
+  colorToIndex: ReadonlyMap<string, number>
+): ReadonlySet<number> {
+  if (!hover || !featureColors) return new Set();
+  if (hover === 'lip') {
+    const out = new Set<number>();
+    for (const corner of ['frontLeft', 'frontRight', 'backRight', 'backLeft'] as const) {
+      const idx = colorToIndex.get(featureColors.lip[corner]);
+      if (idx !== undefined) out.add(idx);
+    }
+    return out;
+  }
+  const idx = colorToIndex.get(getZoneColor(featureColors, hover));
+  return idx === undefined ? new Set() : new Set([idx]);
 }
 
 export function BinMesh({ wireframe, color }: BinMeshProps) {
@@ -94,37 +175,63 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     featureColors,
     hasLip,
     hasLabelTabs,
+    hasScoop,
+    hasDividers,
     hoveredColorZone,
   } = useDesignerStore(
-    useShallow((s) => ({
-      vertices: s.generation.mesh?.vertices ?? null,
-      normals: s.generation.mesh?.normals ?? null,
-      indices: s.generation.mesh?.indices ?? null,
-      edgeVertices: s.generation.mesh?.edgeVertices ?? null,
-      faceGroups: s.generation.mesh?.faceGroups ?? null,
-      coarseLOD: s.generation.mesh?.coarseLOD ?? null,
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
-      featureColors: s.params.featureColors ?? null,
-      hasLip: s.params.base.stackingLip,
-      hasLabelTabs: s.params.label.enabled,
-      hoveredColorZone: s.ui.hoveredColorZone,
-    }))
+    useShallow((s) => {
+      const cells = s.params.compartments.cells;
+      const firstCell = cells[0] ?? 0;
+      return {
+        vertices: s.generation.mesh?.vertices ?? null,
+        normals: s.generation.mesh?.normals ?? null,
+        indices: s.generation.mesh?.indices ?? null,
+        edgeVertices: s.generation.mesh?.edgeVertices ?? null,
+        faceGroups: s.generation.mesh?.faceGroups ?? null,
+        coarseLOD: s.generation.mesh?.coarseLOD ?? null,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
+        featureColors: s.params.featureColors ?? null,
+        hasLip: s.params.base.stackingLip,
+        hasLabelTabs: s.params.label.enabled,
+        hasScoop: s.params.scoop.enabled,
+        hasDividers: cells.length > 1 && cells.some((c) => c !== firstCell),
+        hoveredColorZone: s.ui.hoveredColorZone,
+      };
+    })
   );
 
-  // Build active zone set — scales as more zones are added
+  // Active zones — drives single-color detection and hidden-zone filtering.
+  // Base is always present since every bin has a body; the user-facing
+  // "Base" zone (Gridfinity foot / SOCKET) similarly always exists.
   const activeZones = useMemo(() => {
-    const zones = new Set<ColorZone>(['body']);
-    if (hasLip) zones.add('lip');
+    const zones = new Set<ColorZone>(['body', 'base']);
+    if (hasLip) {
+      zones.add('lip:frontLeft');
+      zones.add('lip:frontRight');
+      zones.add('lip:backRight');
+      zones.add('lip:backLeft');
+    }
     if (hasLabelTabs) zones.add('labelTab');
+    if (hasScoop) zones.add('scoop');
+    if (hasDividers) zones.add('dividers');
     return zones;
-  }, [hasLip, hasLabelTabs]);
+  }, [hasLip, hasLabelTabs, hasScoop, hasDividers]);
 
   // Build multi-color groups when feature is active
   const multiColorData = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); guard it
-    if (!multiColorEnabled || !faceGroups || !featureColors || !indices) return null;
-    return buildMultiColorGroups(faceGroups, featureColors, activeZones, indices.length);
-  }, [multiColorEnabled, faceGroups, featureColors, activeZones, indices]);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); runtime guard kept as belt-and-suspenders.
+    if (!multiColorEnabled || !faceGroups || !featureColors || !vertices || !indices) {
+      return null;
+    }
+    return buildMultiColorGroups(
+      faceGroups,
+      vertices,
+      indices,
+      featureColors,
+      activeZones,
+      indices.length
+    );
+  }, [multiColorEnabled, faceGroups, featureColors, vertices, indices, activeZones]);
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
     vertices,
@@ -140,13 +247,11 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
   const materials = useMemo(() => {
     if (!multiColorData) return null;
 
-    // Determine which material index is hovered (if any)
-    let hoveredIndex: number | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); guard it
-    if (hoveredColorZone && featureColors) {
-      const hoveredHex = featureColors[hoveredColorZone];
-      hoveredIndex = multiColorData.colorToIndex.get(hoveredHex);
-    }
+    const hoveredIndices = hoveredMaterialIndices(
+      hoveredColorZone,
+      featureColors,
+      multiColorData.colorToIndex
+    );
 
     return multiColorData.colors.map(
       (c, i) =>
@@ -157,7 +262,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
           wireframe,
           side: THREE.DoubleSide,
           emissive: new THREE.Color(c),
-          emissiveIntensity: i === hoveredIndex ? 0.35 : 0.08,
+          emissiveIntensity: hoveredIndices.has(i) ? 0.35 : 0.08,
           flatShading: !hasPrecomputedNormals,
           polygonOffset: true,
           polygonOffsetFactor: 1,
@@ -222,7 +327,6 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
   return (
     <group position={[0, 0, 0.1]}>
       {coarseGeometry ? (
-        // LOD: fine mesh at distance 0, coarse at 300mm (zoomed out)
         <Detailed distances={[0, 300]}>
           {fineMesh}
           <mesh geometry={coarseGeometry}>
@@ -232,7 +336,6 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       ) : (
         fineMesh
       )}
-      {/* Edge lines from BREP topology (pre-computed in worker, fine LOD only) */}
       {!wireframe && edgesGeometry && (
         <lineSegments geometry={edgesGeometry} renderOrder={1}>
           <lineBasicMaterial color={EDGE_COLOR} depthTest={true} />

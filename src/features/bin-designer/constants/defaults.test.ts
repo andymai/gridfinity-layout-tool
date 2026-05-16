@@ -374,8 +374,16 @@ describe('migrateParams', () => {
     const result = migrateParams({});
     expect(result.featureColors).toEqual({
       body: '#d4d8dc',
-      lip: '#d4d8dc',
+      lip: {
+        frontLeft: '#d4d8dc',
+        frontRight: '#d4d8dc',
+        backRight: '#d4d8dc',
+        backLeft: '#d4d8dc',
+      },
       labelTab: '#d4d8dc',
+      base: '#d4d8dc',
+      scoop: '#d4d8dc',
+      dividers: '#d4d8dc',
     });
   });
 
@@ -384,26 +392,60 @@ describe('migrateParams', () => {
     const result = migrateParams({
       featureColors: legacy,
     });
-    expect(result.featureColors).toEqual({
-      body: '#3b82f6',
-      lip: '#22c55e',
-      labelTab: '#d4d8dc',
+    expect(result.featureColors.body).toBe('#3b82f6');
+    expect(result.featureColors.lip).toEqual({
+      frontLeft: '#22c55e',
+      frontRight: '#22c55e',
+      backRight: '#22c55e',
+      backLeft: '#22c55e',
+    });
+    expect(result.featureColors.labelTab).toBe('#d4d8dc');
+  });
+
+  it('expands the legacy single-color lip into four matching corners', () => {
+    // Pre-corner-lip designs stored `lip` as a single hex string. All four
+    // corners must inherit that value so existing designs render unchanged.
+    const legacy = { body: '#222', lip: '#ff0000', labelTab: '#0f0' };
+    const result = migrateParams({ featureColors: legacy });
+    expect(result.featureColors.lip).toEqual({
+      frontLeft: '#ff0000',
+      frontRight: '#ff0000',
+      backRight: '#ff0000',
+      backLeft: '#ff0000',
     });
   });
 
   it('should preserve hex featureColors through double migration', () => {
-    const hex = { body: '#ef4444', lip: '#3b82f6', labelTab: '#22c55e' };
+    const hex = {
+      body: '#ef4444',
+      lip: {
+        frontLeft: '#3b82f6',
+        frontRight: '#3b82f6',
+        backRight: '#3b82f6',
+        backLeft: '#3b82f6',
+      },
+      labelTab: '#22c55e',
+      base: '#ef4444',
+      scoop: '#ef4444',
+      dividers: '#ef4444',
+    };
     const firstPass = migrateParams({ featureColors: hex });
     const secondPass = migrateParams(firstPass);
     expect(secondPass.featureColors).toEqual(hex);
   });
 
-  it('should backfill missing featureColors fields from defaults', () => {
+  it('inherits body for missing zones so legacy designs render unchanged', () => {
     const partial = { body: '#3b82f6' } as unknown as typeof DEFAULT_BIN_PARAMS.featureColors;
     const result = migrateParams({ featureColors: partial });
     expect(result.featureColors.body).toBe('#3b82f6');
-    expect(result.featureColors.lip).toBe('#d4d8dc');
-    expect(result.featureColors.labelTab).toBe('#d4d8dc');
+    // Lip corners with no input → inherit body color (no surprise visual change).
+    expect(result.featureColors.lip.frontLeft).toBe('#3b82f6');
+    expect(result.featureColors.lip.frontRight).toBe('#3b82f6');
+    // New zones similarly inherit body so older designs match what they showed before.
+    expect(result.featureColors.base).toBe('#3b82f6');
+    expect(result.featureColors.scoop).toBe('#3b82f6');
+    expect(result.featureColors.dividers).toBe('#3b82f6');
+    expect(result.featureColors.labelTab).toBe('#3b82f6');
   });
 
   it('backfills lid with defaults for designs saved before lid feature existed', () => {

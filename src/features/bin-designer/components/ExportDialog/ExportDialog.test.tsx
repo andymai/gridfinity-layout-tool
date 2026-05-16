@@ -318,9 +318,35 @@ describe('ExportDialog', () => {
       multiColor: boolean;
       format: 'stl' | 'step' | '3mf';
     }) {
+      const single = '#3b82f6';
+      const lipSingle = {
+        frontLeft: single,
+        frontRight: single,
+        backRight: single,
+        backLeft: single,
+      };
       const featureColors = multiColor
-        ? { body: '#3b82f6', lip: '#ef4444', labelTab: '#22c55e' }
-        : { body: '#3b82f6', lip: '#3b82f6', labelTab: '#3b82f6' };
+        ? {
+            body: single,
+            lip: {
+              frontLeft: '#ef4444',
+              frontRight: '#ef4444',
+              backRight: '#ef4444',
+              backLeft: '#ef4444',
+            },
+            labelTab: '#22c55e',
+            base: single,
+            scoop: single,
+            dividers: single,
+          }
+        : {
+            body: single,
+            lip: lipSingle,
+            labelTab: single,
+            base: single,
+            scoop: single,
+            dividers: single,
+          };
 
       setupStore({
         params: {
