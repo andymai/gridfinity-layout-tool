@@ -214,6 +214,7 @@
   "binDesigner.export.error.report": "Probleem melden",
   "binDesigner.export.error.retry": "Opnieuw proberen",
   "binDesigner.export.error.timeout": "Export verlopen — de engine reageert niet meer.",
+  "binDesigner.export.multiColor.formatDisabled": "{format} behoudt geen kleurgegevens. Gebruik 3MF om uw multi-kleurzones te behouden.",
   "binDesigner.exportBinAsStl": "Bin als STL exporteren",
   "binDesigner.exportSTL": "Bin als STL exporteren",
   "binDesigner.exportSuccess": "{format} succesvol geëxporteerd",

@@ -1305,6 +1305,7 @@
   "binDesigner.export.error.retry": "Повторити",
   "binDesigner.export.error.report": "Повідомити про проблему",
   "binDesigner.export.error.timeout": "Час експорту вичерпано — рушій перестав відповідати.",
+  "binDesigner.export.multiColor.formatDisabled": "{format} не зберігає дані кольору. Використовуйте 3MF для збереження багатоколірних зон.",
   "binDesigner.generateAMeshFirstToEnableExport": "Спершу згенеруйте мешу, щоб увімкнути експорт",
   "binDesigner.gridSize": "Розмір сітки",
   "binDesigner.gridUnit": "Одиниця сітки",

@@ -8,11 +8,14 @@
  * there is no separate divider download button.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
+import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { isSingleColor } from '@/features/bin-designer/types/featureColors';
+import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
@@ -72,6 +75,45 @@ export function ExportDialog() {
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
   const showSplitBanner = needsSplit && activeFormat !== 'step';
   const useSplitExport = showSplitBanner && splitEnabled;
+
+  // A design is multi-color when the multi_color_export Labs flag is on AND
+  // its currently-active zones do not all share the body color. STL and STEP
+  // silently drop this color data, so we steer the user toward 3MF.
+  const multiColorEnabled = useFeatureFlag('multi_color_export');
+  const isMultiColor = useMemo(() => {
+    if (!multiColorEnabled) return false;
+    const activeZones = new Set<ColorZone>(['body']);
+    if (params.base.stackingLip) activeZones.add('lip');
+    if (params.label.enabled) activeZones.add('labelTab');
+    return !isSingleColor(params.featureColors, activeZones);
+  }, [multiColorEnabled, params.featureColors, params.base.stackingLip, params.label.enabled]);
+
+  // Auto-switch to 3MF the first time the dialog opens on a multi-color
+  // design with a colorless format selected. Tracked by a ref so we only
+  // do it on the open transition, not while the user is inside the dialog
+  // (they may deliberately pick STL/STEP after seeing the disabled state).
+  const prevOpenRef = useRef(exportDialogOpen);
+  useEffect(() => {
+    const justOpened = exportDialogOpen && !prevOpenRef.current;
+    prevOpenRef.current = exportDialogOpen;
+    if (
+      justOpened &&
+      isMultiColor &&
+      (exportFileNameConfig.format === 'stl' || exportFileNameConfig.format === 'step')
+    ) {
+      setExportFileNameConfig({ ...exportFileNameConfig, format: '3mf' });
+    }
+  }, [exportDialogOpen, isMultiColor, exportFileNameConfig, setExportFileNameConfig]);
+
+  const formatStates = useMemo(() => {
+    if (!isMultiColor) return undefined;
+    const stlReason = t('binDesigner.export.multiColor.formatDisabled', { format: 'STL' });
+    const stepReason = t('binDesigner.export.multiColor.formatDisabled', { format: 'STEP' });
+    return {
+      stl: { disabled: true, reason: stlReason },
+      step: { disabled: true, reason: stepReason },
+    } as const;
+  }, [isMultiColor, t]);
 
   const fileName = useMemo(
     () => generateFileName(params, activeFormat, exportFileNameConfig, designName),
@@ -175,6 +217,7 @@ export function ExportDialog() {
             }
           : null
       }
+      formatStates={formatStates}
       estimates={estimateRows}
       estimatesTitle={t('binDesigner.printEstimatesPla')}
       estimatesDisclaimer={t('binDesigner.printEstimatesDisclaimer', {

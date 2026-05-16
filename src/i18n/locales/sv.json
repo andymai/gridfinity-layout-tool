@@ -1305,6 +1305,7 @@
   "binDesigner.export.error.retry": "Försök igen",
   "binDesigner.export.error.report": "Rapportera problem",
   "binDesigner.export.error.timeout": "Export avbröts — motorn slutade svara.",
+  "binDesigner.export.multiColor.formatDisabled": "{format} bevarar inte färgdata. Använd 3MF för att behålla dina flerfärgade zoner.",
   "binDesigner.generateAMeshFirstToEnableExport": "Generera ett mesh först för att aktivera export",
   "binDesigner.gridSize": "Rutnätsstorlek",
   "binDesigner.gridUnit": "Rutnätsenhet",

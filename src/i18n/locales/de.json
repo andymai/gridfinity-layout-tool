@@ -214,6 +214,7 @@
   "binDesigner.export.error.report": "Problem melden",
   "binDesigner.export.error.retry": "Erneut versuchen",
   "binDesigner.export.error.timeout": "Export-Zeitüberschreitung — die Engine reagiert nicht mehr.",
+  "binDesigner.export.multiColor.formatDisabled": "{format} bewahrt keine Farbdaten. Verwende 3MF, um deine mehrfarbigen Bereiche zu behalten.",
   "binDesigner.exportBinAsStl": "Bin als STL exportieren",
   "binDesigner.exportSTL": "Bin als STL exportieren",
   "binDesigner.exportSuccess": "{format} erfolgreich exportiert",

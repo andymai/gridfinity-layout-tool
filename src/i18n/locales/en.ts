@@ -1356,6 +1356,8 @@ const en: Record<string, string> = {
   'binDesigner.colors.matchColor': 'Match color {color}',
   'binDesigner.colors.pickCustom': 'Pick a custom color',
   'binDesigner.colors.resetToDefault': 'Reset to default',
+  'binDesigner.export.multiColor.formatDisabled':
+    "{format} doesn't preserve color data. Use 3MF to keep your multi-color zones.",
 
   'binDesigner.shape.customShape': 'Custom shape',
   'binDesigner.shape.gridHelp': 'Click to toggle grid cells',

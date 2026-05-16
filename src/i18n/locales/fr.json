@@ -214,6 +214,7 @@
   "binDesigner.export.error.report": "Signaler un problème",
   "binDesigner.export.error.retry": "Réessayer",
   "binDesigner.export.error.timeout": "Délai d'exportation dépassé — le moteur ne répond plus.",
+  "binDesigner.export.multiColor.formatDisabled": "{format} ne conserve pas les données de couleur. Utilisez 3MF pour préserver vos zones multicolores.",
   "binDesigner.exportBinAsStl": "Exporter le bin en STL",
   "binDesigner.exportSTL": "Exporter le bin en STL",
   "binDesigner.exportSuccess": "{format} exporté avec succès",

@@ -190,4 +190,58 @@ describe('ExportDialog', () => {
       expect(screen.getByText('Stack vertically for slicer batching')).toBeInTheDocument();
     });
   });
+
+  describe('formatStates', () => {
+    it('marks disabled formats with aria-disabled and exposes the reason as a tooltip', () => {
+      render(
+        <ExportDialog
+          {...defaultProps}
+          activeFormat="3mf"
+          fileNameConfig={{ ...defaultProps.fileNameConfig, format: '3mf' }}
+          formatStates={{
+            stl: { disabled: true, reason: 'STL loses color data' },
+            step: { disabled: true, reason: 'STEP loses color data' },
+          }}
+        />
+      );
+      const stl = screen.getByRole('radio', { name: 'STL' });
+      expect(stl).toHaveAttribute('aria-disabled', 'true');
+      expect(stl).toHaveAttribute('title', 'STL loses color data');
+    });
+
+    it('does not call onChange when a disabled format is clicked', () => {
+      const onFileNameConfigChange = vi.fn();
+      render(
+        <ExportDialog
+          {...defaultProps}
+          activeFormat="3mf"
+          fileNameConfig={{ ...defaultProps.fileNameConfig, format: '3mf' }}
+          onFileNameConfigChange={onFileNameConfigChange}
+          formatStates={{ stl: { disabled: true, reason: 'no colors' } }}
+        />
+      );
+      fireEvent.click(screen.getByRole('radio', { name: 'STL' }));
+      expect(onFileNameConfigChange).not.toHaveBeenCalled();
+    });
+
+    it('skips disabled formats during arrow-key navigation', () => {
+      const onFileNameConfigChange = vi.fn();
+      render(
+        <ExportDialog
+          {...defaultProps}
+          activeFormat="3mf"
+          fileNameConfig={{ ...defaultProps.fileNameConfig, format: '3mf' }}
+          onFileNameConfigChange={onFileNameConfigChange}
+          formatStates={{
+            stl: { disabled: true, reason: 'no colors' },
+            step: { disabled: true, reason: 'no colors' },
+          }}
+        />
+      );
+      // ArrowRight from 3MF would normally hit STL, then STEP. Both disabled,
+      // so the only enabled option is 3MF — no change should fire.
+      fireEvent.keyDown(screen.getByRole('radio', { name: '3MF' }), { key: 'ArrowRight' });
+      expect(onFileNameConfigChange).not.toHaveBeenCalled();
+    });
+  });
 });

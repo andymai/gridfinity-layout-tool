@@ -214,6 +214,7 @@
   "binDesigner.export.error.report": "Meld inn problem",
   "binDesigner.export.error.retry": "Prøv igjen",
   "binDesigner.export.error.timeout": "Eksport tidsavbrudd — motoren reagerer ikke.",
+  "binDesigner.export.multiColor.formatDisabled": "{format} bevarer ikke fargedata. Bruk 3MF for å beholde de flerfargede sonene.",
   "binDesigner.exportBinAsStl": "Eksporter bin som STL",
   "binDesigner.exportSTL": "Eksporter bin som STL",
   "binDesigner.exportSuccess": "{format} eksportert",
