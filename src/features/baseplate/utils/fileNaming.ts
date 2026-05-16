@@ -6,7 +6,6 @@
  */
 
 import type { BaseplateParams, ExportFileNameConfig, ExportFileFormat } from '@/shared/types/bin';
-import { resolveConnectorStyle } from '@/shared/types/bin';
 
 /** Characters not allowed in filenames (replaced with underscore) */
 // eslint-disable-next-line no-control-regex -- Intentionally matching control chars for filename sanitization
@@ -24,7 +23,7 @@ interface BaseplateNamingParams {
   readonly paddingRight: number;
   readonly paddingFront: number;
   readonly paddingBack: number;
-  readonly connectorStyle?: 'none' | 'dovetail' | 'snap';
+  readonly connectorNubs?: boolean;
 }
 
 /**
@@ -80,8 +79,9 @@ function collectFeatures(params: BaseplateNamingParams): string[] {
     features.push('padded');
   }
 
-  if (params.connectorStyle === 'dovetail') features.push('dovetails');
-  else if (params.connectorStyle === 'snap') features.push('snap');
+  if (params.connectorNubs) {
+    features.push('connectors');
+  }
 
   return features;
 }
@@ -99,6 +99,6 @@ export function toNamingParams(params: BaseplateParams): BaseplateNamingParams {
     paddingRight: params.paddingRight,
     paddingFront: params.paddingFront,
     paddingBack: params.paddingBack,
-    connectorStyle: resolveConnectorStyle(params),
+    connectorNubs: params.connectorNubs,
   };
 }

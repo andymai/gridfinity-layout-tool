@@ -34,7 +34,6 @@ import {
   type SplitExportResult,
   type SplitPreviewResult,
   type BaseplateExportResult,
-  type SnapClipExportResult,
   type CacheStatsCallback,
   type KernelPerfStatsCallback,
   type ThreadingInfo,
@@ -53,7 +52,6 @@ import {
   generateSplitPreviewRange as generateSplitPreviewRangeImpl,
   exportSplitBinRange as exportSplitBinRangeImpl,
   exportBaseplate as exportBaseplateImpl,
-  exportSnapClip as exportSnapClipImpl,
 } from './bridgeExports';
 import type { KernelName } from './types';
 
@@ -66,7 +64,6 @@ export type {
   SplitExportResult,
   SplitPreviewResult,
   BaseplateExportResult,
-  SnapClipExportResult,
   CacheStatsPayload,
   CacheStatsCallback,
   KernelPerfStatsPayload,
@@ -324,13 +321,6 @@ export class GenerationBridge {
     options?: { tolerance?: number; angularTolerance?: number }
   ): Promise<BaseplateExportResult> {
     return exportBaseplateImpl(this, params, format, options);
-  }
-
-  exportSnapClip(
-    format: ExportFormat,
-    options?: { tolerance?: number; angularTolerance?: number }
-  ): Promise<SnapClipExportResult> {
-    return exportSnapClipImpl(this, format, options);
   }
 
   /** Whether the bridge has been destroyed */

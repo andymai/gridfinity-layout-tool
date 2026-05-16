@@ -11,7 +11,6 @@
  */
 
 import type { BaseplateParams, BinParams } from '@/shared/types/bin';
-import { resolveConnectorStyle } from '@/shared/types/bin';
 
 /** Minimum timeout for trivial bins (no heavy features). */
 export const BASE_TIMEOUT_MS = 30_000;
@@ -102,7 +101,7 @@ export const BASEPLATE_MAX_TIMEOUT_MS = 120_000;
  * Formula:
  *   BASE_TIMEOUT_MS
  * + min(BASEPLATE_MAGNET_BONUS_CAP_MS, ceil(w) * ceil(d) * BASEPLATE_MAGNET_MS_PER_CELL)  [if magnetHoles]
- * + BASEPLATE_CONNECTOR_BONUS_MS  [if connectorStyle !== 'none']
+ * + BASEPLATE_CONNECTOR_BONUS_MS  [if connectorNubs]
  * + BASEPLATE_LIGHTWEIGHT_BONUS_MS  [if lightweight]
  *
  * Clamped to `[BASE_TIMEOUT_MS, BASEPLATE_MAX_TIMEOUT_MS]`.
@@ -122,7 +121,7 @@ export function computeBaseplateTimeoutMs(params: BaseplateParams): number {
     const cells = Math.ceil(safeWidth) * Math.ceil(safeDepth);
     timeout += Math.min(BASEPLATE_MAGNET_BONUS_CAP_MS, cells * BASEPLATE_MAGNET_MS_PER_CELL);
   }
-  if (resolveConnectorStyle(params) !== 'none') {
+  if (params.connectorNubs) {
     timeout += BASEPLATE_CONNECTOR_BONUS_MS;
   }
   // Match the generator's own convention — `baseplateGenerator.ts` runs the

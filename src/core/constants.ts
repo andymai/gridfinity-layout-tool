@@ -259,14 +259,6 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     paddingRight: mm(clampNumber(obj.paddingRight, 0, 100, 0)),
     paddingFront: mm(clampNumber(obj.paddingFront, 0, 100, 0)),
     paddingBack: mm(clampNumber(obj.paddingBack, 0, 100, 0)),
-    ...(typeof obj.connectorStyle === 'string' &&
-    (obj.connectorStyle === 'none' ||
-      obj.connectorStyle === 'dovetail' ||
-      obj.connectorStyle === 'snap')
-      ? { connectorStyle: obj.connectorStyle }
-      : typeof obj.connectorNubs === 'boolean' && obj.connectorNubs
-        ? { connectorStyle: 'dovetail' as const }
-        : {}),
     ...(typeof obj.connectorNubs === 'boolean' ? { connectorNubs: obj.connectorNubs } : {}),
     ...(typeof obj.invertDovetails === 'boolean' ? { invertDovetails: obj.invertDovetails } : {}),
     ...(typeof obj.preferIdenticalPieces === 'boolean'

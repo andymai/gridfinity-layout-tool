@@ -2,6 +2,7 @@
   "app.skipToGridEditor": "Ir al planificador de cuadrícula",
   "baseplate.brepFinalizeFailed": "No se pudo finalizar la vista previa de alta fidelidad — el archivo exportado puede diferir ligeramente.",
   "baseplate.computingGeometry": "Refinando...",
+  "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.cornerRadius": "Radio de esquina",
   "baseplate.cornerRadiusBL": "Inferior izquierda",
   "baseplate.cornerRadiusBR": "Inferior derecha",
@@ -1719,13 +1720,5 @@
   "syncDialog.accountMismatch.title": "Cuenta diferente",
   "syncDialog.accountMismatch.message": "Los {count} diseños y planos en este dispositivo estaban vinculados a una cuenta diferente. ¿Añadirlos a {account} o descartarlos?",
   "syncDialog.accountMismatch.merge": "Añadir a {account}",
-  "syncDialog.accountMismatch.discard": "Descartar",
-  "baseplate.connectors.dovetail": "Cola de milano",
-  "baseplate.connectors.label": "Conectores",
-  "baseplate.connectors.none": "Ninguno",
-  "baseplate.connectors.snap": "Clip de presión",
-  "baseplate.snapClipLifted": "Levantado",
-  "baseplate.snapClipSeated": "Asentado",
-  "baseplate.snapClipExplodeSlider": "Levantar clips para inspección",
-  "baseplate.connectors.tooltip": "Cómo se mantienen alineadas las placas adyacentes. Las colas de milano son integrales; los clips de presión se imprimen aparte."
+  "syncDialog.accountMismatch.discard": "Descartar"
 }

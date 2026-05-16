@@ -36,17 +36,11 @@ describe('generateBaseplateFileName', () => {
     it('includes multiple features', () => {
       expect(
         generateBaseplateFileName(
-          { ...baseParams, magnetHoles: true, paddingLeft: 1, connectorStyle: 'dovetail' },
+          { ...baseParams, magnetHoles: true, paddingLeft: 1, connectorNubs: true },
           'step',
           config
         )
-      ).toBe('gridfinity-baseplate-8x6-magnets-padded-dovetails.step');
-    });
-
-    it('snap connector style produces snap suffix', () => {
-      expect(
-        generateBaseplateFileName({ ...baseParams, connectorStyle: 'snap' }, 'stl', config)
-      ).toBe('gridfinity-baseplate-8x6-snap.stl');
+      ).toBe('gridfinity-baseplate-8x6-magnets-padded-connectors.step');
     });
 
     it('handles fractional dimensions', () => {

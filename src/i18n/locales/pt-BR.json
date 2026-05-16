@@ -2,6 +2,7 @@
   "app.skipToGridEditor": "Pular para o planejador de grade",
   "baseplate.brepFinalizeFailed": "Não foi possível finalizar a pré-visualização de alta fidelidade — o arquivo exportado pode diferir ligeiramente.",
   "baseplate.computingGeometry": "Refinando...",
+  "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.cornerRadius": "Raio de canto",
   "baseplate.cornerRadiusBL": "Inferior esquerdo",
   "baseplate.cornerRadiusBR": "Inferior direito",
@@ -1719,13 +1720,5 @@
   "syncDialog.accountMismatch.title": "Conta diferente",
   "syncDialog.accountMismatch.message": "Os {count} layouts e designs neste dispositivo estavam vinculados a outra conta. Adicionar a {account} ou descartar?",
   "syncDialog.accountMismatch.merge": "Adicionar a {account}",
-  "syncDialog.accountMismatch.discard": "Descartar",
-  "baseplate.connectors.dovetail": "Encaixe",
-  "baseplate.connectors.label": "Conectores",
-  "baseplate.connectors.none": "Nenhum",
-  "baseplate.connectors.snap": "Clipe de pressão",
-  "baseplate.snapClipLifted": "Levantado",
-  "baseplate.snapClipSeated": "Encaixado",
-  "baseplate.snapClipExplodeSlider": "Levantar clipes para inspeção",
-  "baseplate.connectors.tooltip": "Como as placas adjacentes permanecem alinhadas. Encaixes são integrais; clipes de pressão são impressos separadamente."
+  "syncDialog.accountMismatch.discard": "Descartar"
 }

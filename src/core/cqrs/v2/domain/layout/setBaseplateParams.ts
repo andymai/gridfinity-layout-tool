@@ -23,7 +23,6 @@ const payloadSchema = z.object({
     paddingRight: z.number(),
     paddingFront: z.number(),
     paddingBack: z.number(),
-    connectorStyle: z.enum(['none', 'dovetail', 'snap']).optional(),
     connectorNubs: z.boolean().optional(),
     lightweight: z.boolean().optional(),
     syncWithLayout: z.boolean().optional(),
