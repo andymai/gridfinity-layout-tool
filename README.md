@@ -33,6 +33,7 @@ Plan and design [Gridfinity](https://www.youtube.com/c/ZackFreedman) drawer orga
 - **Print List** — Optimized print list with filament, time, and cost estimates
 - **Inspiration Gallery** — Browse curated example layouts across workshop, kitchen, office, hobby, and personal themes
 - **Cloud Sharing** — Share layouts via link with optional real-time collaboration
+- **Cloud Sync** — Sign in with Google or GitHub to sync your layouts and bin designs across devices
 - **PWA** — Installable, works offline
 
 ## Scope
@@ -41,7 +42,7 @@ To set expectations, this tool deliberately does not:
 
 - **Slice models for printing** — export STL / STEP / 3MF and slice in Bambu Studio, PrusaSlicer, OrcaSlicer, etc.
 - **Replace general-purpose CAD** — the Bin Designer is parametric but stays within the Gridfinity spec; for arbitrary shapes use Fusion, OpenSCAD, etc.
-- **Require accounts** — layouts live in your browser; cloud sharing is opt-in and link-based
+- **Require accounts** — layouts live in your browser by default; signing in for Cloud Sync and link-based sharing are both opt-in
 - **Support legacy browsers** — needs a modern browser with WebGL support
 
 ## Built With
