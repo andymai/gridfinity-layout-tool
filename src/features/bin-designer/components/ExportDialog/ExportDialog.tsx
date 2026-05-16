@@ -14,12 +14,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import {
-  LIP_CORNERS,
-  isSingleColor,
-  lipCornerZone,
-} from '@/features/bin-designer/types/featureColors';
-import type { ColorZone } from '@/features/bin-designer/types/featureColors';
+import { computeActiveZones, isSingleColor } from '@/features/bin-designer/types/featureColors';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
@@ -86,27 +81,8 @@ export function ExportDialog() {
   const multiColorEnabled = useFeatureFlag('multi_color_export');
   const isMultiColor = useMemo(() => {
     if (!multiColorEnabled) return false;
-    const cells = params.compartments.cells;
-    const firstCell = cells[0] ?? 0;
-    const hasDividers = cells.length > 1 && cells.some((c) => c !== firstCell);
-    const activeZones = new Set<ColorZone>(['body']);
-    if (params.base.style !== 'flat') activeZones.add('base');
-    if (params.base.stackingLip) {
-      for (const corner of LIP_CORNERS) activeZones.add(lipCornerZone(corner));
-    }
-    if (params.label.enabled) activeZones.add('labelTab');
-    if (params.scoop.enabled) activeZones.add('scoop');
-    if (hasDividers) activeZones.add('dividers');
-    return !isSingleColor(params.featureColors, activeZones);
-  }, [
-    multiColorEnabled,
-    params.featureColors,
-    params.base.style,
-    params.base.stackingLip,
-    params.label.enabled,
-    params.scoop.enabled,
-    params.compartments.cells,
-  ]);
+    return !isSingleColor(params.featureColors, computeActiveZones(params));
+  }, [multiColorEnabled, params]);
 
   // Auto-switch to 3MF the first time the dialog opens on a multi-color
   // design with a colorless format selected. Tracked by a ref so we only

@@ -19,8 +19,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry, useCoarseGeometry } from '@/shared/components/preview/useMeshGeometry';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { LIP_CORNERS, lipCornerZone } from '@/features/bin-designer/types/featureColors';
-import type { ColorZone } from '@/features/bin-designer/types/featureColors';
+import { computeActiveZones } from '@/features/bin-designer/types/featureColors';
 import {
   buildMultiColorGroups,
   hoveredMaterialIndices,
@@ -46,48 +45,41 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     faceGroups,
     coarseLOD,
     featureColors,
-    hasLip,
-    hasLabelTabs,
-    hasBase,
-    hasScoop,
-    hasDividers,
+    baseStyle,
+    stackingLip,
+    labelEnabled,
+    scoopEnabled,
+    cells,
     hoveredColorZone,
   } = useDesignerStore(
-    useShallow((s) => {
-      const cells = s.params.compartments.cells;
-      const firstCell = cells[0] ?? 0;
-      return {
-        vertices: s.generation.mesh?.vertices ?? null,
-        normals: s.generation.mesh?.normals ?? null,
-        indices: s.generation.mesh?.indices ?? null,
-        edgeVertices: s.generation.mesh?.edgeVertices ?? null,
-        faceGroups: s.generation.mesh?.faceGroups ?? null,
-        coarseLOD: s.generation.mesh?.coarseLOD ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
-        featureColors: s.params.featureColors ?? null,
-        hasLip: s.params.base.stackingLip,
-        hasLabelTabs: s.params.label.enabled,
-        // Flat-style bins skip the buildBaseSocket pass in shellStage, so
-        // there are no FeatureTag.SOCKET faces for the Base zone to color.
-        hasBase: s.params.base.style !== 'flat',
-        hasScoop: s.params.scoop.enabled,
-        hasDividers: cells.length > 1 && cells.some((c) => c !== firstCell),
-        hoveredColorZone: s.ui.hoveredColorZone,
-      };
-    })
+    useShallow((s) => ({
+      vertices: s.generation.mesh?.vertices ?? null,
+      normals: s.generation.mesh?.normals ?? null,
+      indices: s.generation.mesh?.indices ?? null,
+      edgeVertices: s.generation.mesh?.edgeVertices ?? null,
+      faceGroups: s.generation.mesh?.faceGroups ?? null,
+      coarseLOD: s.generation.mesh?.coarseLOD ?? null,
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
+      featureColors: s.params.featureColors ?? null,
+      baseStyle: s.params.base.style,
+      stackingLip: s.params.base.stackingLip,
+      labelEnabled: s.params.label.enabled,
+      scoopEnabled: s.params.scoop.enabled,
+      cells: s.params.compartments.cells,
+      hoveredColorZone: s.ui.hoveredColorZone,
+    }))
   );
 
-  const activeZones = useMemo(() => {
-    const zones = new Set<ColorZone>(['body']);
-    if (hasBase) zones.add('base');
-    if (hasLip) {
-      for (const corner of LIP_CORNERS) zones.add(lipCornerZone(corner));
-    }
-    if (hasLabelTabs) zones.add('labelTab');
-    if (hasScoop) zones.add('scoop');
-    if (hasDividers) zones.add('dividers');
-    return zones;
-  }, [hasBase, hasLip, hasLabelTabs, hasScoop, hasDividers]);
+  const activeZones = useMemo(
+    () =>
+      computeActiveZones({
+        base: { style: baseStyle, stackingLip },
+        label: { enabled: labelEnabled },
+        scoop: { enabled: scoopEnabled },
+        compartments: { cells },
+      }),
+    [baseStyle, stackingLip, labelEnabled, scoopEnabled, cells]
+  );
 
   // Build multi-color groups when feature is active
   const multiColorData = useMemo(() => {
@@ -115,14 +107,13 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
 
   const coarseGeometry = useCoarseGeometry(coarseLOD);
 
-  // Build material array for multi-color, with hover glow applied
+  // Allocate one material per zone. Hover state is applied separately via
+  // emissiveIntensity mutation, so a pointer move doesn't rebuild + dispose
+  // every material on the GPU.
   const materials = useMemo(() => {
     if (!multiColorData) return null;
-
-    const hoveredIndices = hoveredMaterialIndices(hoveredColorZone);
-
     return multiColorData.zoneColors.map(
-      (c, i) =>
+      (c) =>
         new THREE.MeshStandardMaterial({
           color: c,
           roughness: 0.45,
@@ -130,28 +121,34 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
           wireframe,
           side: THREE.DoubleSide,
           emissive: new THREE.Color(c),
-          emissiveIntensity: hoveredIndices.has(i) ? 0.35 : 0.08,
+          emissiveIntensity: 0.08,
           flatShading: !hasPrecomputedNormals,
           polygonOffset: true,
           polygonOffsetFactor: 1,
           polygonOffsetUnits: 1,
         })
     );
-  }, [multiColorData, wireframe, hasPrecomputedNormals, hoveredColorZone]);
+  }, [multiColorData, wireframe, hasPrecomputedNormals]);
 
-  // Dispose materials on change
+  useEffect(() => {
+    if (!materials) return;
+    const hoveredIndices = hoveredMaterialIndices(hoveredColorZone);
+    materials.forEach((mat, i) => {
+      mat.emissiveIntensity = hoveredIndices.has(i) ? 0.35 : 0.08;
+    });
+    invalidate();
+  }, [materials, hoveredColorZone, invalidate]);
+
   useEffect(() => {
     return () => {
       materials?.forEach((m) => m.dispose());
     };
   }, [materials]);
 
-  // Invalidate frame when mesh data changes
   useEffect(() => {
     if (geometry) invalidate();
   }, [geometry, invalidate]);
 
-  // Invalidate frame when visual props change
   useEffect(() => {
     invalidate();
   }, [wireframe, color, materials, invalidate]);

@@ -11,6 +11,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import {
   LIP_CORNERS,
+  computeActiveZones,
   getZoneColor,
   lipCornerZone,
 } from '@/features/bin-designer/types/featureColors';
@@ -42,27 +43,37 @@ export function ColorsSection() {
 
   const {
     featureColors: rawColors,
-    hasLip,
-    hasLabelTabs,
-    hasBase,
-    hasScoop,
-    hasDividers,
+    baseStyle,
+    stackingLip,
+    labelEnabled,
+    scoopEnabled,
+    cells,
   } = useDesignerStore(
-    useShallow((s) => {
-      const cells = s.params.compartments.cells;
-      const firstCell = cells[0] ?? 0;
-      return {
-        featureColors: s.params.featureColors,
-        hasLip: s.params.base.stackingLip,
-        hasLabelTabs: s.params.label.enabled,
-        // Flat-style bins emit no FeatureTag.SOCKET geometry; hiding the
-        // Base row prevents a picker that has zero visual effect.
-        hasBase: s.params.base.style !== 'flat',
-        hasScoop: s.params.scoop.enabled,
-        hasDividers: cells.length > 1 && cells.some((c) => c !== firstCell),
-      };
-    })
+    useShallow((s) => ({
+      featureColors: s.params.featureColors,
+      baseStyle: s.params.base.style,
+      stackingLip: s.params.base.stackingLip,
+      labelEnabled: s.params.label.enabled,
+      scoopEnabled: s.params.scoop.enabled,
+      cells: s.params.compartments.cells,
+    }))
   );
+
+  const activeZones = useMemo(
+    () =>
+      computeActiveZones({
+        base: { style: baseStyle, stackingLip },
+        label: { enabled: labelEnabled },
+        scoop: { enabled: scoopEnabled },
+        compartments: { cells },
+      }),
+    [baseStyle, stackingLip, labelEnabled, scoopEnabled, cells]
+  );
+  const hasLip = activeZones.has('lip:frontLeft');
+  const hasLabelTabs = activeZones.has('labelTab');
+  const hasBase = activeZones.has('base');
+  const hasScoop = activeZones.has('scoop');
+  const hasDividers = activeZones.has('dividers');
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve the runtime fallback
   const featureColors = rawColors ?? DEFAULT_FEATURE_COLOR_CONFIG;

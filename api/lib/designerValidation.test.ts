@@ -525,5 +525,34 @@ describe('validateDesignerShare', () => {
       const result = withColors('not an object');
       expect(result.valid).toBe(false);
     });
+
+    it('accepts 3-digit shorthand hex (#abc)', () => {
+      const result = withColors({ body: '#abc', lip: '#0f0' });
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects unknown top-level keys', () => {
+      const result = withColors({ body: '#fff', evilKey: 'garbage' });
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toMatch(/unknown key/);
+      }
+    });
+
+    it('rejects unknown corner names inside the lip object', () => {
+      const result = withColors({
+        lip: {
+          frontLeft: '#fff',
+          frontRight: '#fff',
+          backRight: '#fff',
+          backLeft: '#fff',
+          rogueCorner: '#000',
+        },
+      });
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toMatch(/unknown corner/);
+      }
+    });
   });
 });

@@ -156,6 +156,41 @@ export function isSingleColor(
  * Dedupe zone colors into a flat list + lookup map. Body always lands
  * at index 0 so it's the default fallback in 3MF / preview groupings.
  */
+/**
+ * Subset of `BinParams` that determines which zones are visually
+ * meaningful. Declared structurally to avoid a circular import on
+ * the full `BinParams` type.
+ */
+export interface ActiveZonesParams {
+  readonly base: { readonly style: string; readonly stackingLip: boolean };
+  readonly label: { readonly enabled: boolean };
+  readonly scoop: { readonly enabled: boolean };
+  readonly compartments: { readonly cells: readonly number[] };
+}
+
+/**
+ * The set of zones whose color a user can actually see in the current
+ * configuration. Used uniformly by the panel (row visibility), the 3D
+ * preview (multi-color gating), and the 3MF exporter — keeping them
+ * aligned prevents drift like "preview reports single-color while the
+ * exporter writes a multi-material 3MF because of a stale lip corner".
+ */
+export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone> {
+  const cells = p.compartments.cells;
+  const firstCell = cells[0] ?? 0;
+  const hasDividers = cells.length > 1 && cells.some((c) => c !== firstCell);
+
+  const zones = new Set<ColorZone>(['body']);
+  if (p.base.style !== 'flat') zones.add('base');
+  if (p.base.stackingLip) {
+    for (const corner of LIP_CORNERS) zones.add(lipCornerZone(corner));
+  }
+  if (p.label.enabled) zones.add('labelTab');
+  if (p.scoop.enabled) zones.add('scoop');
+  if (hasDividers) zones.add('dividers');
+  return zones;
+}
+
 export function resolveColorMapping(c: FeatureColorConfig): {
   colors: readonly string[];
   colorToIndex: ReadonlyMap<string, number>;

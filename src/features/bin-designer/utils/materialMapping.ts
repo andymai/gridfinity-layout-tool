@@ -18,16 +18,20 @@ import { classifyLipCorner, computeLipBBoxCenter } from './lipCornerClassifier';
 
 /**
  * `vertices` is the flat STL-style array (9 floats per triangle) — read
- * only to compute centroids for LIP triangles. Returns null when the
- * design is single-color (no basematerials section needed in the 3MF).
+ * only to compute centroids for LIP triangles. `activeZones` filters out
+ * zones whose feature isn't enabled, so a stale color on a hidden zone
+ * (e.g. a lip corner recolor on a stacking-lip-off bin) doesn't trip
+ * multi-color export. Matches the preview's gating. Returns null when
+ * the design is single-color (no basematerials section needed).
  */
 export function buildTriangleMaterialIndices(
   faceGroups: readonly FaceGroupData[],
   featureColors: FeatureColorConfig,
   triangleCount: number,
-  vertices: Float32Array
+  vertices: Float32Array,
+  activeZones?: ReadonlySet<ColorZone>
 ): ThreeMFColorConfig | null {
-  if (isSingleColor(featureColors)) return null;
+  if (isSingleColor(featureColors, activeZones)) return null;
 
   const { colors, colorToIndex, defaultIndex } = resolveColorMapping(featureColors);
 
