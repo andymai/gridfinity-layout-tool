@@ -280,7 +280,9 @@ export function PreviewCanvas() {
   const showSkeleton = !hasMesh || wasmStatus !== 'ready';
   const showOverlay = generationStatus === 'generating' && hasMesh;
 
-  const toolActive = colorTool !== null;
+  // Cursor swap only applies when multi-color is on too — `colorTool` is
+  // cleared on disable, but guard defensively in case state ever drifts.
+  const toolActive = colorTool !== null && showColors;
 
   return (
     <div

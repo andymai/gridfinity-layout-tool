@@ -179,9 +179,19 @@ export function ColorToolOverlay({ pickerOverlay, onClosePicker }: ColorToolOver
             </span>
             <button
               type="button"
-              onClick={() => setColorTool(null)}
+              onClick={() => {
+                // Close any open picker atomically with the tool exit, otherwise
+                // the picker keeps floating (and mutating colors) after the
+                // banner disappears.
+                onClosePicker();
+                setColorTool(null);
+              }}
               className="-mr-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-content-tertiary hover:bg-surface-hover hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              aria-label={t('binDesigner.colors.eyedropper.exit')}
+              aria-label={
+                colorTool === 'eyedropper'
+                  ? t('binDesigner.colors.eyedropper.exit')
+                  : t('binDesigner.colors.swap.cancel')
+              }
             >
               <XIcon size="sm" />
             </button>

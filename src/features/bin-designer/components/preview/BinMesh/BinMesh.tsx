@@ -25,7 +25,7 @@ import {
   buildMultiColorGroups,
   hoveredMaterialIndices,
 } from '@/features/bin-designer/utils/multiColorGroups';
-import { resolveTriangleZone } from '@/features/bin-designer/utils/zoneResolver';
+import { buildZoneResolver } from '@/features/bin-designer/utils/zoneResolver';
 
 const EDGE_COLOR = '#000000';
 
@@ -184,21 +184,31 @@ export function BinMesh({ wireframe, color, onZoneClick }: BinMeshProps) {
     [baseColor, wireframe, hasPrecomputedNormals]
   );
 
-  // Pointer handlers active only when a color tool is engaged. Hover sets
-  // the same `hoveredColorZone` the panel uses, reusing the emissive glow
-  // path so we don't add a second highlight system.
-  const toolActive = colorTool !== null;
+  // Pointer handlers active only when a color tool is engaged AND multi-color
+  // is on. Without the multi-color guard, disabling the toggle while a tool
+  // is active would leave the mesh swallowing pointer events (the overlay UI
+  // would be hidden but the canvas would still intercept clicks). Hover reuses
+  // the same `hoveredColorZone` glow path the panel uses.
+  const toolActive = colorTool !== null && multiColorEnabled;
+
+  // Pre-compute the lip bbox once per mesh — `resolve()` runs on every
+  // pointer-move when the tool is active, and re-scanning every LIP triangle
+  // each frame is expensive on high-poly meshes.
+  const zoneResolver = useMemo(() => {
+    if (!toolActive || !faceGroups || !vertices || !indices) return null;
+    return buildZoneResolver(faceGroups, vertices, indices);
+  }, [toolActive, faceGroups, vertices, indices]);
 
   const handlePointerMove = useCallback(
     (e: ThreeEvent<PointerEvent>) => {
-      if (!toolActive || !faceGroups || !vertices || !indices) return;
+      if (!zoneResolver) return;
       const triIndex = e.faceIndex;
       if (triIndex === undefined || triIndex === null) return;
       e.stopPropagation();
-      const zone = resolveTriangleZone(triIndex, faceGroups, vertices, indices);
+      const zone = zoneResolver.resolve(triIndex);
       if (zone !== hoveredColorZone) setHoveredColorZone(zone);
     },
-    [toolActive, faceGroups, vertices, indices, hoveredColorZone, setHoveredColorZone]
+    [zoneResolver, hoveredColorZone, setHoveredColorZone]
   );
 
   const handlePointerOut = useCallback(() => {
@@ -208,14 +218,14 @@ export function BinMesh({ wireframe, color, onZoneClick }: BinMeshProps) {
 
   const handleClick = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
-      if (!toolActive || !onZoneClick || !faceGroups || !vertices || !indices) return;
+      if (!zoneResolver || !onZoneClick) return;
       const triIndex = e.faceIndex;
       if (triIndex === undefined || triIndex === null) return;
       e.stopPropagation();
-      const zone = resolveTriangleZone(triIndex, faceGroups, vertices, indices);
+      const zone = zoneResolver.resolve(triIndex);
       onZoneClick(zone, { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY });
     },
-    [toolActive, onZoneClick, faceGroups, vertices, indices]
+    [zoneResolver, onZoneClick]
   );
 
   if (!geometry) return null;

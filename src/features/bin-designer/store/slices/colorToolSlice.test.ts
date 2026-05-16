@@ -38,6 +38,28 @@ describe('color-tool slice', () => {
     });
   });
 
+  describe('updateFeatureColors.enabled', () => {
+    it('clears an active color tool when multi-color is disabled', () => {
+      useDesignerStore.getState().setColorTool('eyedropper');
+      useDesignerStore.setState({
+        ui: { ...useDesignerStore.getState().ui, hoveredColorZone: 'body' },
+      });
+
+      useDesignerStore.getState().updateFeatureColors({ enabled: false });
+
+      const { ui } = useDesignerStore.getState();
+      expect(ui.colorTool).toBeNull();
+      expect(ui.swapFirstZone).toBeNull();
+      expect(ui.hoveredColorZone).toBeNull();
+    });
+
+    it('leaves color-tool state untouched when enabling multi-color', () => {
+      useDesignerStore.getState().setColorTool('eyedropper');
+      useDesignerStore.getState().updateFeatureColors({ enabled: true });
+      expect(useDesignerStore.getState().ui.colorTool).toBe('eyedropper');
+    });
+  });
+
   describe('setColorTool', () => {
     it('enters a tool', () => {
       useDesignerStore.getState().setColorTool('eyedropper');
