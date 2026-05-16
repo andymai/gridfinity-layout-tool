@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { act, render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { ColorsSection } from './ColorsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
@@ -137,25 +137,22 @@ describe('ColorsSection', () => {
         },
       });
       render(<ColorsSection />);
-      // Drive a color commit directly through the store action — the
-      // ColorZoneRow → ColorPicker → hex-input plumbing is covered by
-      // its own tests; here we only care that the section's onChange
-      // wiring writes a 4-corner patch.
-      act(() => {
-        useDesignerStore.getState().updateFeatureColors({
-          lip: {
-            frontLeft: '#112233',
-            frontRight: '#112233',
-            backRight: '#112233',
-            backLeft: '#112233',
-          },
-        });
-      });
+
+      // Drive a real color commit through the rendered ColorZoneRow →
+      // ColorPicker pipeline so the section's inline onChange handler is
+      // actually exercised. A direct store call would still pass even if
+      // the handler regressed to writing a single corner — the whole
+      // point of the mirror is the section, not the store action.
+      fireEvent.click(screen.getByRole('button', { name: /Stacking Lip/ }));
+      // The picker renders 'Red' (#ef4444) as a preset filament swatch;
+      // clicking it routes through ColorsSection's onChange.
+      fireEvent.click(screen.getByTitle('Red'));
+
       const after = useDesignerStore.getState().params.featureColors;
-      expect(after.lip.frontLeft).toBe('#112233');
-      expect(after.lip.frontRight).toBe('#112233');
-      expect(after.lip.backRight).toBe('#112233');
-      expect(after.lip.backLeft).toBe('#112233');
+      expect(after.lip.frontLeft).toBe('#ef4444');
+      expect(after.lip.frontRight).toBe('#ef4444');
+      expect(after.lip.backRight).toBe('#ef4444');
+      expect(after.lip.backLeft).toBe('#ef4444');
     });
   });
 
