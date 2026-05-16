@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.87.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.87.2...gridfinity-layout-tool-v4.87.3) (2026-05-16)
+
+
+### Bug Fixes
+
+* **sync:** graduation prep — 10 verified defects ([#1691](https://github.com/andymai/gridfinity-layout-tool/issues/1691)) ([80356ac](https://github.com/andymai/gridfinity-layout-tool/commit/80356ac0e218076b32c6569635583738d7c8bbc8))
+
 ## [4.87.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.87.1...gridfinity-layout-tool-v4.87.2) (2026-05-16)
 
 
