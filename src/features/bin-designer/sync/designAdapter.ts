@@ -44,8 +44,13 @@ function unwrap(payload: unknown): { name?: string; params: BinParams } {
   if (payload !== null && typeof payload === 'object' && 'params' in payload) {
     const { name, params } = payload as { name?: unknown; params: unknown };
     if (typeof params === 'object' && params !== null) {
+      // Empty/whitespace-only remote names become `undefined` so the
+      // fallback chain kicks in. The server stores `name = ''` when an
+      // older client pushes the legacy bare-params shape; we must not
+      // overwrite a real local name with that empty.
+      const trimmed = typeof name === 'string' ? name.trim() : '';
       return {
-        name: typeof name === 'string' ? name : undefined,
+        name: trimmed === '' ? undefined : trimmed,
         params: params as BinParams,
       };
     }

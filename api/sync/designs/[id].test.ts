@@ -207,14 +207,34 @@ describe('PUT', () => {
     expect(res._status).toBe(400);
   });
 
-  it('rejects a name longer than 100 chars with 400', async () => {
+  it('sanitizes the name: strips control chars, trims, and truncates to 100', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    const dirty = '  hello\x00world\x1F  ' + 'x'.repeat(200);
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: { design: { name: dirty, params: VALID_DESIGN }, modifiedAt: 1000 },
+      }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(200);
+    const body = res._body as { envelope: { design: { name: string } } };
+    // Control chars stripped, trimmed, truncated to MAX_NAME_LENGTH (100).
+    expect(body.envelope.design.name.length).toBe(100);
+    expect(body.envelope.design.name.startsWith('helloworld')).toBe(true);
+    // eslint-disable-next-line no-control-regex
+    expect(body.envelope.design.name).not.toMatch(/[\x00-\x1F\x7F]/);
+  });
+
+  it('rejects a wrapper with a non-string name (e.g. attacker dropping the field)', async () => {
     const { default: handler } = await import('./[id]');
     const res = makeRes();
     await handler(
       makeReq({
         method: 'PUT',
         body: {
-          design: { name: 'x'.repeat(101), params: VALID_DESIGN },
+          design: { name: 42 as unknown as string, params: VALID_DESIGN },
           modifiedAt: 1000,
         },
       }),

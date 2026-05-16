@@ -119,6 +119,23 @@ describe('designAdapter.applyRemote', () => {
     expect(saveDesignMock.mock.calls[0][0].name).toBe('Remote Name');
   });
 
+  it('falls back to the local name when the remote wrapper has an empty name (legacy bare PUT on server)', async () => {
+    loadDesignMock.mockResolvedValueOnce(
+      ok(savedDesign('d1', '2026-01-01T00:00:00.000Z', 'Local Name'))
+    );
+    saveDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-04-01T00:00:00.000Z')));
+
+    await designAdapter.applyRemote({
+      id: 'd1',
+      // Server stores `{ name: '', params }` whenever a legacy bare-params
+      // PUT lands. A fresh client pulling that must not wipe the local name.
+      payload: { name: '', params: sampleParams() },
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(saveDesignMock.mock.calls[0][0].name).toBe('Local Name');
+  });
+
   it('falls back to the local name when the remote payload is the legacy bare-BinParams shape', async () => {
     loadDesignMock.mockResolvedValueOnce(
       ok(savedDesign('d1', '2026-01-01T00:00:00.000Z', 'Local Name'))

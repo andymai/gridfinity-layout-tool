@@ -5,6 +5,7 @@ import { logger } from '../../lib/logger.js';
 import { checkRateLimit, getRedis } from '../../lib/rateLimit.js';
 import { requireSession } from '../../lib/session.js';
 import { validateDesignerShare } from '../../lib/designerValidation.js';
+import { sanitizeString } from '../../lib/validation.js';
 import { deleteBlob, getJson, putJson } from '../../lib/blobStore.js';
 import { getEntry, tombstone, upsertEntry, type IndexEntry } from '../../lib/userIndex.js';
 import { checkQuota } from '../../lib/quota.js';
@@ -110,13 +111,17 @@ interface PutBody {
 /**
  * Split `design` into `{ name, params }`. New shape carries a `params`
  * field; legacy shape is bare `BinParams` (no nested `params`), so the
- * two are unambiguous. Returns `null` for non-objects so the caller can 400.
+ * two are unambiguous. Returns `null` if the wrapper is malformed (e.g.
+ * `name` is present but isn't a string) so the caller can 400.
  */
 function unwrapDesignPayload(design: unknown): { name: string | null; params: unknown } | null {
   if (design === null || typeof design !== 'object') return null;
   const { name, params } = design as { name?: unknown; params?: unknown };
   if (typeof params === 'object' && params !== null) {
-    return { name: typeof name === 'string' ? name : null, params };
+    // Wrapper shape: name must be a string or absent. Reject other types
+    // so malformed clients can't silently drop the user-visible field.
+    if (name !== undefined && typeof name !== 'string') return null;
+    return { name: name ?? null, params };
   }
   return { name: null, params: design };
 }
@@ -143,20 +148,16 @@ async function handlePut(
 
   const unwrapped = unwrapDesignPayload(design);
   if (!unwrapped) {
-    res.status(400).json({ error: 'design must be an object', code: ErrorCode.VALIDATION_ERROR });
-    return;
-  }
-  // Bound the name so a hostile client can't blow the per-entry size cap
-  // via the user-visible field. Legacy payloads persist as empty string;
-  // the client adapter falls back from there.
-  if (unwrapped.name !== null && unwrapped.name.length > MAX_NAME_LENGTH) {
     res.status(400).json({
-      error: `name must be ≤ ${MAX_NAME_LENGTH} characters`,
+      error: 'design must be an object with a string `name`',
       code: ErrorCode.VALIDATION_ERROR,
     });
     return;
   }
-  const name = unwrapped.name ?? '';
+  // Mirror the share validator's handling of user-visible strings: strip
+  // null bytes and control chars, trim, and truncate. Legacy bare-params
+  // posts have no name; they persist as '' and the adapter falls back.
+  const name = sanitizeString(unwrapped.name ?? '', MAX_NAME_LENGTH);
 
   // Reuse the share-payload validator. `sizeBytes` measures name + params
   // together so the size cap, quota math, and stored envelope all agree.
