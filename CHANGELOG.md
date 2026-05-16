@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.87.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.87.1...gridfinity-layout-tool-v4.87.2) (2026-05-16)
+
+
+### Bug Fixes
+
+* **sync:** carry design name in cloud payload ([#1689](https://github.com/andymai/gridfinity-layout-tool/issues/1689)) ([638afea](https://github.com/andymai/gridfinity-layout-tool/commit/638afea764969e9ab867a1b7d8b7beaabb7f232f))
+
 ## [4.87.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.87.0...gridfinity-layout-tool-v4.87.1) (2026-05-16)
 
 
