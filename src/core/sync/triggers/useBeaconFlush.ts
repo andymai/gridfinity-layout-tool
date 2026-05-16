@@ -46,9 +46,9 @@ async function beaconFlushAll(adapters: SyncAdapters): Promise<void> {
 
     const body = bodyForKind(entry.kind, payload.payload, payload.modifiedAt);
     const json = JSON.stringify(body);
-    if (Buffer.byteLength(json, 'utf8') > BEACON_MAX_BYTES) continue;
+    const blob = new Blob([json], { type: 'application/json' });
+    if (blob.size > BEACON_MAX_BYTES) continue;
     try {
-      const blob = new Blob([json], { type: 'application/json' });
       navigator.sendBeacon(`/api/sync/${entry.kind}/${entry.id}`, blob);
     } catch {
       /* next session retries from the persisted outbox */

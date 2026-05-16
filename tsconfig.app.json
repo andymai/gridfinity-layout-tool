@@ -32,8 +32,8 @@
   "include": ["src"],
   "exclude": [
     "src/test",
-    "**/__tests__",
-    "**/__kernel-tests__",
+    "**/__tests__/**",
+    "**/__kernel-tests__/**",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.testUtils.ts",

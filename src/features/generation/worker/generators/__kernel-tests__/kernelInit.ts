@@ -1,8 +1,13 @@
+/// <reference types="node" />
 /**
  * Shared kernel initialization routines for test infrastructure.
  *
  * Both `wasmInit.ts` (single-kernel mode) and `dualKernelInit.ts` (dual-kernel
  * mode) delegate to these helpers to avoid duplicating WASM loading logic.
+ *
+ * The triple-slash node reference is intentional: this file uses `fs`/`path`/
+ * `process` (Node-only globals) and gets pulled into the app build via the
+ * scenario-file import chain.
  */
 
 /** Initialize OCCT via brepjs-opencascade WASM binary. */
