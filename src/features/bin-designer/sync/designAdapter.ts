@@ -22,14 +22,14 @@ import { subscribe as subscribeDesignerEvents } from './designerEvents';
 // SavedDesign stores `updatedAt` as ISO; the cloud envelope is ms. We
 // normalize at this boundary so the engine never sees ISO strings.
 
+// Echo suppression. Unlike `layoutAdapter`, the trigger is `emit()`
+// fired *inside* `saveDesign`/`deleteDesign` — past one or more internal
+// `await` boundaries that drain microtasks. A microtask-scheduled cleanup
+// would release the suppression before the emit, so we hold it for the
+// full duration of the async work via `try`/`finally`. The engine
+// serializes `applyRemote*` per-(kind, id), so a concurrent local edit
+// on the same id is not possible during this window.
 const suppressed = new Set<string>();
-
-function suppress(id: string): void {
-  suppressed.add(id);
-  queueMicrotask(() => {
-    suppressed.delete(id);
-  });
-}
 
 function toMs(iso: string): number {
   const ms = Date.parse(iso);
@@ -81,33 +81,41 @@ export const designAdapter: DesignAdapter = {
   },
 
   async applyRemote(item: SyncableItem<DesignSyncPayload>): Promise<void> {
-    suppress(item.id);
-    // Read existing first to preserve local-only fields (thumbnail,
-    // exportFileNameConfig) on update.
-    const existing = await loadDesign(designId(item.id));
-    const base = isOk(existing) ? existing.value : null;
-    const { name: remoteName, params } = unwrap(item.payload);
-    // LWW: engine only calls applyRemote when remote is newer, so a
-    // remote rename must win. Local name is only a fallback for legacy
-    // payloads with no name; the literal covers a legacy fresh-device pull.
-    const name = remoteName ?? base?.name ?? 'Synced design';
-    const result = await saveDesign({
-      id: designId(item.id),
-      name,
-      params,
-      thumbnail: base?.thumbnail ?? null,
-      exportFileNameConfig: base?.exportFileNameConfig ?? null,
-    });
-    if (!isOk(result)) {
-      throw new Error(`saveDesign failed for ${item.id}`);
+    suppressed.add(item.id);
+    try {
+      // Read existing first to preserve local-only fields (thumbnail,
+      // exportFileNameConfig) on update.
+      const existing = await loadDesign(designId(item.id));
+      const base = isOk(existing) ? existing.value : null;
+      const { name: remoteName, params } = unwrap(item.payload);
+      // LWW: engine only calls applyRemote when remote is newer, so a
+      // remote rename must win. Local name is only a fallback for legacy
+      // payloads with no name; the literal covers a legacy fresh-device pull.
+      const name = remoteName ?? base?.name ?? 'Synced design';
+      const result = await saveDesign({
+        id: designId(item.id),
+        name,
+        params,
+        thumbnail: base?.thumbnail ?? null,
+        exportFileNameConfig: base?.exportFileNameConfig ?? null,
+      });
+      if (!isOk(result)) {
+        throw new Error(`saveDesign failed for ${item.id}`);
+      }
+    } finally {
+      suppressed.delete(item.id);
     }
   },
 
   async applyRemoteDelete(id: string): Promise<void> {
-    suppress(id);
-    const result = await deleteDesign(designId(id));
-    if (!isOk(result) && result.error.code !== 'STORAGE_NOT_FOUND') {
-      throw new Error(`deleteDesign failed for ${id}`);
+    suppressed.add(id);
+    try {
+      const result = await deleteDesign(designId(id));
+      if (!isOk(result) && result.error.code !== 'STORAGE_NOT_FOUND') {
+        throw new Error(`deleteDesign failed for ${id}`);
+      }
+    } finally {
+      suppressed.delete(id);
     }
   },
 

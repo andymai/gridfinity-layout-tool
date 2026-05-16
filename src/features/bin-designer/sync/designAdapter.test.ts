@@ -232,6 +232,58 @@ describe('designAdapter.subscribe', () => {
     off();
   });
 
+  it('suppresses the emit triggered by saveDesign during applyRemote', async () => {
+    // Regression: the previous implementation released suppression on a
+    // `queueMicrotask` cleanup that fired at the first `await` boundary,
+    // BEFORE `saveDesign`'s internal `emit` ran. The engine would then
+    // observe the remote-applied change as a fresh local edit and push
+    // it back. Fix wraps the work in try/finally so suppression spans
+    // every microtask up to and including the emit.
+    const events: AdapterChange[] = [];
+    const off = designAdapter.subscribe((c) => events.push(c));
+
+    loadDesignMock.mockResolvedValueOnce(err(storageNotFound('echo-id')));
+    saveDesignMock.mockImplementationOnce(async (input: SavedDesign) => {
+      // Real `saveDesign` emits a 'put' event synchronously after the
+      // IndexedDB write completes — i.e. past at least one internal
+      // `await` boundary. Reproduce that timing here.
+      emit({
+        type: 'put',
+        id: designId('echo-id'),
+        updatedAt: '2026-05-04T00:00:00.000Z',
+      });
+      return ok({ ...input, createdAt: input.updatedAt });
+    });
+
+    await designAdapter.applyRemote({
+      id: 'echo-id',
+      payload: samplePayload(),
+      modifiedAt: Date.parse('2026-05-04T00:00:00.000Z'),
+    });
+
+    expect(events.filter((e) => e.id === 'echo-id')).toEqual([]);
+    off();
+  });
+
+  it('suppresses the emit triggered by deleteDesign during applyRemoteDelete', async () => {
+    const events: AdapterChange[] = [];
+    const off = designAdapter.subscribe((c) => events.push(c));
+
+    deleteDesignMock.mockImplementationOnce(async () => {
+      emit({
+        type: 'delete',
+        id: designId('echo-del'),
+        deletedAt: '2026-05-04T00:00:00.000Z',
+      });
+      return ok(undefined);
+    });
+
+    await designAdapter.applyRemoteDelete('echo-del');
+
+    expect(events.filter((e) => e.id === 'echo-del')).toEqual([]);
+    off();
+  });
+
   it('passes unsuppressed events through to listeners', async () => {
     const events: AdapterChange[] = [];
     const off = designAdapter.subscribe((c) => events.push(c));

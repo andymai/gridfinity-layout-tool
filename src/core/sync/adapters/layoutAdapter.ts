@@ -48,22 +48,19 @@ export function normalizeIncomingLayout(layout: Layout): Layout {
  * registered with the engine at app-shell boot.
  *
  * Echo suppression: when the engine calls `applyRemote*` to write a
- * cloud-sourced change locally, we add the id to `suppressed` for one
- * tick. The `subscribe` listener checks the set and skips emitting,
- * so the engine doesn't observe its own remote-write as a fresh local
- * change and re-push it. Single-tick is enough because the library-
- * store change fires synchronously after `saveLibrary`.
+ * cloud-sourced change locally, we add the id to `suppressed` immediately
+ * before the synchronous `setLibrary` call that triggers subscribers.
+ * The listener checks the set and skips emitting, so the engine doesn't
+ * observe its own remote-write as a fresh local change and re-push it.
+ * Cleanup is scheduled via `queueMicrotask`: zustand fires subscribers
+ * synchronously inside `setLibrary`, so the cleanup runs at the next
+ * await boundary — after the subscriber has already observed the
+ * remote-write and skipped.
  */
 const suppressed = new Set<string>();
 
 function suppress(id: string): void {
   suppressed.add(id);
-  // Release at the next microtask checkpoint. Zustand listeners fire
-  // synchronously inside `setLibrary`, so by the time anything `await`s
-  // (the next microtask boundary) the subscriber has already observed
-  // the remote-write and skipped emitting. Releasing here keeps the
-  // suppression window minimal — a real local edit on the same id
-  // arriving on the next tick still pushes normally.
   queueMicrotask(() => suppressed.delete(id));
 }
 
@@ -88,14 +85,9 @@ export const layoutAdapter: LayoutAdapter = {
   },
 
   async applyRemote(item: SyncableItem<Layout>): Promise<void> {
-    suppress(item.id);
-
     const layout = normalizeIncomingLayout(item.payload);
     const saveResult = await saveLayoutAsync(item.id, layout);
     if (!saveResult.ok) {
-      // Storage failure — the engine catches and surfaces a toast. We
-      // still leave the suppression in place; releasing it on the next
-      // tick is harmless.
       throw new Error(`saveLayoutAsync failed for ${item.id}`);
     }
 
@@ -129,6 +121,7 @@ export const layoutAdapter: LayoutAdapter = {
             } satisfies LayoutEntry,
           ];
     const nextLibrary: LayoutLibrary = { ...library, entries: nextEntries };
+    suppress(item.id);
     setLibrary(nextLibrary);
     const libraryResult = await saveLibrary(nextLibrary);
     if (isErr(libraryResult)) {
@@ -146,8 +139,6 @@ export const layoutAdapter: LayoutAdapter = {
   },
 
   async applyRemoteDelete(id: string): Promise<void> {
-    suppress(id);
-
     // Drop from library entries and persist. We don't proactively
     // remove the layout blob from IndexedDB here — that happens via
     // the existing delete flow when the user navigates away. The
@@ -160,6 +151,7 @@ export const layoutAdapter: LayoutAdapter = {
       ...library,
       entries: library.entries.filter((e) => e.id !== id),
     };
+    suppress(id);
     setLibrary(nextLibrary);
     const libraryResult = await saveLibrary(nextLibrary);
     if (isErr(libraryResult)) {
