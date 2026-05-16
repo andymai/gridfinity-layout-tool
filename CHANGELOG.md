@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.85.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.84.0...gridfinity-layout-tool-v4.85.0) (2026-05-16)
+
+
+### Features
+
+* **bin-designer:** comprehensive color-panel UX/UI polish ([#1672](https://github.com/andymai/gridfinity-layout-tool/issues/1672)) ([fd991a5](https://github.com/andymai/gridfinity-layout-tool/commit/fd991a58dec48b8b74695426adaefe29a1f0450a))
+
 ## [4.84.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.83.0...gridfinity-layout-tool-v4.84.0) (2026-05-16)
 
 
