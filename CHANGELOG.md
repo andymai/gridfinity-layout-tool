@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.86.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.86.0...gridfinity-layout-tool-v4.86.1) (2026-05-16)
+
+
+### Bug Fixes
+
+* **bin-designer:** roll back per-corner lip UI to a single lip color ([c45f8a8](https://github.com/andymai/gridfinity-layout-tool/commit/c45f8a8f90988f96036b40929932002efdc3d17b))
+* **bin-designer:** roll back per-corner lip UI to a single lip color ([#1679](https://github.com/andymai/gridfinity-layout-tool/issues/1679)) ([7254c19](https://github.com/andymai/gridfinity-layout-tool/commit/7254c19e770e4e757f3e7da9447d6c760bc68220))
+* **sync,csp:** unblock design sync + tighten CSP for fonts and inline scripts ([#1677](https://github.com/andymai/gridfinity-layout-tool/issues/1677)) ([c35764b](https://github.com/andymai/gridfinity-layout-tool/commit/c35764bec1e17a742816213ec4a1eeee2218a388))
+
 ## [4.86.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.85.0...gridfinity-layout-tool-v4.86.0) (2026-05-16)
 
 
