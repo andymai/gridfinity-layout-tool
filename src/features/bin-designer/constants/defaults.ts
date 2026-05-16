@@ -164,10 +164,9 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
   dividers: '#d4d8dc',
 } as const;
 
-/** Legacy raw color input from persisted designs (pre-corner-lip / pre-expanded-zones). */
 interface LegacyFeatureColorInput {
   body?: string;
-  /** Either the legacy single-color string or the new 4-corner object. */
+  /** Legacy single-color string or the new 4-corner object. */
   lip?: string | Partial<FeatureColorConfig['lip']>;
   labelTab?: string;
   base?: string;
@@ -175,12 +174,9 @@ interface LegacyFeatureColorInput {
   dividers?: string;
 }
 
-/** Resolve a legacy or current hex value, falling back to `fallback`. */
 function resolveColor(raw: string | undefined, fallback: string): string {
   if (raw === undefined) return fallback;
-
-  const mapped = LEGACY_SLOT_COLORS[raw];
-  return mapped ?? raw;
+  return LEGACY_SLOT_COLORS[raw] ?? raw;
 }
 
 /**

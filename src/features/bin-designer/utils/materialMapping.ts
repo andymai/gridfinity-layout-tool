@@ -1,9 +1,6 @@
 /**
- * Material mapping for multi-color 3MF export.
- *
- * Walks the face groups, maps each tagged region to a ColorZone, and
- * resolves the per-zone hex into a material index. LIP triangles are
- * subdivided by corner via centroid quadrant — see lipCornerClassifier.
+ * 3MF export material mapping. LIP triangles are subdivided per corner
+ * via centroid quadrant — see `lipCornerClassifier`.
  */
 
 import { FeatureTag } from '@/shared/types/generation';
@@ -20,15 +17,9 @@ import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
 import { classifyLipCorner, computeLipBBoxCenter } from './lipCornerClassifier';
 
 /**
- * Builds a per-triangle material index array from face groups and color
- * assignments.
- *
- * `vertices` is the flat STL-style vertex array (9 floats per triangle).
- * It's only used to compute centroids for LIP triangles when the four
- * corners have different colors; non-lip pipelines never read it.
- *
- * Returns null when the design is single-color (no basematerials section
- * needed in the 3MF).
+ * `vertices` is the flat STL-style array (9 floats per triangle) — read
+ * only to compute centroids for LIP triangles. Returns null when the
+ * design is single-color (no basematerials section needed in the 3MF).
  */
 export function buildTriangleMaterialIndices(
   faceGroups: readonly FaceGroupData[],

@@ -1,15 +1,11 @@
 /**
- * Colors section: per-zone color assignment, grouped into collapsible
- * sub-sections (Exterior / Interior / Add-ons).
- *
- * Lip is rendered as a single expandable row that fans out into four
- * per-corner sub-rows. Hidden-feature zones (no scoop, no dividers,
- * etc.) don't render at all — no greyed-out rows.
- *
- * Only mounted when the multi_color_export Labs flag is on.
+ * Lip renders as a single expandable row that fans out into four
+ * per-corner sub-rows. Hidden-feature zones don't render at all — no
+ * greyed-out rows. Mounted only when the multi_color_export Labs flag
+ * is on.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/defaults';
@@ -24,7 +20,6 @@ import { ColorZoneRow } from './ColorZoneRow';
 import { LipZoneRow } from './LipZoneRow';
 import { ColorGroup } from './ColorGroup';
 
-/** Build the deduped list of OTHER active zone colors (excludes the current one). */
 function buildOtherColors(zone: ColorZone, colorsByZone: ReadonlyMap<ColorZone, string>): string[] {
   const current = colorsByZone.get(zone);
   const seen = new Set<string>();
@@ -43,11 +38,13 @@ function buildOtherColors(zone: ColorZone, colorsByZone: ReadonlyMap<ColorZone, 
 export function ColorsSection() {
   const t = useTranslation();
   const [lipExpanded, setLipExpanded] = useState(false);
+  const lipCornersId = useId();
 
   const {
     featureColors: rawColors,
     hasLip,
     hasLabelTabs,
+    hasBase,
     hasScoop,
     hasDividers,
   } = useDesignerStore(
@@ -58,6 +55,9 @@ export function ColorsSection() {
         featureColors: s.params.featureColors,
         hasLip: s.params.base.stackingLip,
         hasLabelTabs: s.params.label.enabled,
+        // Flat-style bins emit no FeatureTag.SOCKET geometry; hiding the
+        // Base row prevents a picker that has zero visual effect.
+        hasBase: s.params.base.style !== 'flat',
         hasScoop: s.params.scoop.enabled,
         hasDividers: cells.length > 1 && cells.some((c) => c !== firstCell),
       };
@@ -82,7 +82,7 @@ export function ColorsSection() {
   const colorsByZone = useMemo(() => {
     const map = new Map<ColorZone, string>();
     map.set('body', featureColors.body);
-    map.set('base', featureColors.base);
+    if (hasBase) map.set('base', featureColors.base);
     if (hasLip) {
       for (const corner of LIP_CORNERS) {
         map.set(lipCornerZone(corner), featureColors.lip[corner]);
@@ -92,9 +92,8 @@ export function ColorsSection() {
     if (hasScoop) map.set('scoop', featureColors.scoop);
     if (hasDividers) map.set('dividers', featureColors.dividers);
     return map;
-  }, [featureColors, hasLip, hasLabelTabs, hasScoop, hasDividers]);
+  }, [featureColors, hasBase, hasLip, hasLabelTabs, hasScoop, hasDividers]);
 
-  /** Render a leaf ColorZoneRow for a non-lip zone. */
   const renderZone = (
     zone: ColorZone,
     label: string,
@@ -140,9 +139,10 @@ export function ColorsSection() {
               isExpanded={lipExpanded}
               onToggleExpand={() => setLipExpanded((v) => !v)}
               onHover={setHoveredColorZone}
+              cornersId={lipCornersId}
             />
             {lipExpanded && (
-              <div className="pl-7 space-y-0.5">
+              <div id={lipCornersId} className="pl-7 space-y-0.5">
                 {LIP_CORNERS.map((corner) => {
                   const zone = lipCornerZone(corner);
                   return (
@@ -164,13 +164,14 @@ export function ColorsSection() {
             )}
           </>
         )}
-        {renderZone(
-          'base',
-          t('binDesigner.colors.base'),
-          featureColors.base,
-          DEFAULT_FEATURE_COLOR_CONFIG.base,
-          (hex) => updateFeatureColors({ base: hex })
-        )}
+        {hasBase &&
+          renderZone(
+            'base',
+            t('binDesigner.colors.base'),
+            featureColors.base,
+            DEFAULT_FEATURE_COLOR_CONFIG.base,
+            (hex) => updateFeatureColors({ base: hex })
+          )}
       </ColorGroup>
 
       <ColorGroup title={t('binDesigner.colors.group.interior')} visible={hasScoop || hasDividers}>

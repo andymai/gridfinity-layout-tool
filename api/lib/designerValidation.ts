@@ -326,6 +326,51 @@ function validateLabel(label: unknown): string | null {
  * @param index - The index of the insert in the inserts array (used to build precise error messages)
  * @returns A validation error message describing the first detected problem, or `null` if the insert is valid
  */
+// 6-digit hex, optionally including the legacy slot IDs we migrate
+// client-side. Anything else is rejected before it lands in the blob.
+const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
+const LEGACY_SLOT_IDS = new Set(['slot1', 'slot2', 'slot3', 'slot4']);
+
+function isValidColor(v: unknown): boolean {
+  if (!isString(v)) return false;
+  return HEX_COLOR_REGEX.test(v) || LEGACY_SLOT_IDS.has(v);
+}
+
+const LIP_CORNERS = ['frontLeft', 'frontRight', 'backRight', 'backLeft'] as const;
+
+/**
+ * Accepts either the legacy `lip: string` shape (migrated client-side
+ * into four matching corners) or the new 4-corner object. Anything else
+ * — wrong types, extra keys with garbage, deeply-nested junk — is
+ * rejected so the blob never persists invalid color state.
+ */
+function validateFeatureColors(value: unknown): string | null {
+  if (!isObject(value)) return 'featureColors must be an object';
+
+  for (const key of ['body', 'labelTab', 'base', 'scoop', 'dividers'] as const) {
+    if (value[key] !== undefined && !isValidColor(value[key])) {
+      return `featureColors.${key} must be a hex color`;
+    }
+  }
+
+  const lip = value.lip;
+  if (lip !== undefined) {
+    if (isString(lip)) {
+      if (!isValidColor(lip)) return 'featureColors.lip must be a hex color';
+    } else if (isObject(lip)) {
+      for (const corner of LIP_CORNERS) {
+        if (lip[corner] !== undefined && !isValidColor(lip[corner])) {
+          return `featureColors.lip.${corner} must be a hex color`;
+        }
+      }
+    } else {
+      return 'featureColors.lip must be a hex color or 4-corner object';
+    }
+  }
+
+  return null;
+}
+
 function validateInsert(insert: unknown, index: number): string | null {
   if (!isObject(insert)) return `inserts[${index}] must be an object`;
   if (!isString(insert.id)) return `inserts[${index}].id must be a string`;
@@ -453,6 +498,11 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   if (params.cellMask !== undefined) {
     const maskErr = validateCellMask(params.cellMask);
     if (maskErr) return validationError('INVALID_PARAMS', maskErr);
+  }
+
+  if (params.featureColors !== undefined) {
+    const fcErr = validateFeatureColors(params.featureColors);
+    if (fcErr) return validationError('INVALID_PARAMS', fcErr);
   }
 
   // Inserts

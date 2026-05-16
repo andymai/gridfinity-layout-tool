@@ -409,6 +409,7 @@
   "binDesigner.splitExport.downloadSplit": "Descargar {format} dividido (ZIP)",
   "binDesigner.splitExport.enableSplit": "Dividir en piezas",
   "binDesigner.splitExport.exceedsPrintBed": "Este bin excede el tamaño de tu cama de impresión ({size}mm). Se dividirá en {count} piezas.",
+  "binDesigner.splitExport.colorLossWarning": "La exportación dividida descarta los datos de color — cada pieza se imprimirá en un solo color. Desactiva la división para conservar tus zonas de color.",
   "binDesigner.splitExport.success": "Exportación dividida completada ({count} piezas)",
   "binDesigner.startANewDesign": "Comenzar un nuevo diseño",
   "binDesigner.stylesMutuallyExclusive": "Solo un estilo de contenedor puede estar activo",

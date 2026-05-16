@@ -1,10 +1,7 @@
 /**
- * Classify LIP-tagged triangles into four corner zones based on each
- * triangle centroid's quadrant relative to the lip's outer XY bbox.
- *
- * Shared by the 3MF exporter (flat-vertex STL data) and the 3D preview
- * (indexed BufferGeometry) — both supply a `triangleXY` callback so this
- * module stays geometry-format-agnostic.
+ * Both the 3MF exporter (flat-vertex STL) and the 3D preview (indexed
+ * BufferGeometry) supply a `triangleXY` callback so this module stays
+ * geometry-format-agnostic.
  */
 
 import { FeatureTag } from '@/shared/types/generation';
@@ -12,12 +9,11 @@ import type { FaceGroupData } from '@/shared/types/generation';
 import type { LipCorner } from '../types/featureColors';
 
 /**
- * Compute the centerline of the lip footprint by taking the outer XY
- * bbox of every LIP triangle's centroid. Returns null when no lip exists.
- *
- * Bbox over centroids rather than vertices is deliberate: a single
- * triangle that straddles the bin's center wouldn't shift the split,
- * which keeps the four quadrants symmetric for typical rectangular bins.
+ * Compute the lip footprint's centerline by taking the outer XY bbox
+ * of LIP triangle *centroids* (not vertices). A single triangle that
+ * straddles the bin's center doesn't shift the split, which keeps the
+ * four quadrants symmetric for rectangular bins. Returns null when no
+ * lip exists.
  */
 export function computeLipBBoxCenter(
   faceGroups: readonly FaceGroupData[],
@@ -48,13 +44,9 @@ export function computeLipBBoxCenter(
 }
 
 /**
- * Assign a centroid to one of the four lip corners. Centroids on the
- * exact centerline tie to the right/back side — deterministic regardless
- * of float drift, and good enough since the lip never has triangles
- * whose centroid is exactly at the bin center.
- *
- * Front = lower Y (the bin face oriented toward the camera in the
- * preview), Right = higher X.
+ * Front = lower Y (camera-facing face in the preview); Right = higher X.
+ * Centroids on the exact centerline tie to back/right — deterministic
+ * regardless of float drift.
  */
 export function classifyLipCorner(
   centroidX: number,

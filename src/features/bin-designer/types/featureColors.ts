@@ -19,7 +19,6 @@ export const LIP_CORNERS: readonly LipCorner[] = [
   'backLeft',
 ] as const;
 
-/** Per-corner lip color assignment. */
 export interface LipColorConfig {
   readonly frontLeft: string;
   readonly frontRight: string;
@@ -27,13 +26,10 @@ export interface LipColorConfig {
   readonly backLeft: string;
 }
 
-/** Per-zone hex color assignment. */
 export interface FeatureColorConfig {
   /** Body shell — bin walls and floor (FeatureTag.BASE + unclassified). */
   readonly body: string;
-  /** Stacking lip, split into 4 corner quadrants. */
   readonly lip: LipColorConfig;
-  /** Label tab. */
   readonly labelTab: string;
   /** Gridfinity foot (FeatureTag.SOCKET — magnets, screws, baseplate fit). */
   readonly base: string;
@@ -64,7 +60,12 @@ export type ColorZone =
 /** Hover target — accepts every ColorZone plus the lip group header. */
 export type HoverableZone = ColorZone | 'lip';
 
-const ALL_ZONES: readonly ColorZone[] = [
+/**
+ * Canonical zone ordering. Used as both the iteration order for full-zone
+ * walks and the index for the 3D preview's per-zone material array — body
+ * at 0 makes it the natural fallback for triangles outside any face group.
+ */
+export const ZONE_ORDER: readonly ColorZone[] = [
   'body',
   'lip:frontLeft',
   'lip:frontRight',
@@ -76,7 +77,11 @@ const ALL_ZONES: readonly ColorZone[] = [
   'dividers',
 ] as const;
 
-/** Look up the hex value of a specific zone in a FeatureColorConfig. */
+/** Position of a zone in ZONE_ORDER. */
+export function zoneIndex(zone: ColorZone): number {
+  return ZONE_ORDER.indexOf(zone);
+}
+
 export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
   switch (z) {
     case 'body':
@@ -100,12 +105,10 @@ export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
   }
 }
 
-/** Compose a lip-corner zone from a LipCorner. */
 export function lipCornerZone(corner: LipCorner): ColorZone {
   return `lip:${corner}` as const;
 }
 
-/** Build the set of lip-corner ColorZones. */
 export function lipCornerZones(): ReadonlySet<ColorZone> {
   return new Set<ColorZone>(LIP_CORNERS.map(lipCornerZone));
 }
@@ -132,20 +135,16 @@ export function featureTagToColorZone(tag: number): ColorZone | null {
 }
 
 /**
- * True when all *active* zones use the same color (no multi-material
- * payload needed in the 3MF export and no multi-material setup in the
- * preview).
- *
- * `activeZones` lets callers pass only the currently-relevant zones
- * (e.g., skip lip corners when the bin has no stacking lip) so a single
- * pattern-color bin doesn't get flagged as multi-color just because the
- * disabled lip's corner colors differ.
+ * True when every zone in `activeZones` matches body. Pass only the
+ * currently-relevant zones so a hidden feature's lingering color (e.g.
+ * a recolored lip on a stacking-lip-off bin) doesn't flag the design
+ * as multi-color.
  */
 export function isSingleColor(
   c: FeatureColorConfig,
   activeZones?: ReadonlySet<ColorZone>
 ): boolean {
-  const zones = activeZones ? [...activeZones] : ALL_ZONES;
+  const zones = activeZones ? [...activeZones] : ZONE_ORDER;
   const ref = c.body;
   for (const z of zones) {
     if (getZoneColor(c, z) !== ref) return false;
@@ -168,7 +167,7 @@ export function resolveColorMapping(c: FeatureColorConfig): {
   colorToIndex.set(c.body, 0);
   colors.push(c.body);
 
-  for (const z of ALL_ZONES) {
+  for (const z of ZONE_ORDER) {
     if (z === 'body') continue;
     const hex = getZoneColor(c, z);
     if (colorToIndex.has(hex)) continue;

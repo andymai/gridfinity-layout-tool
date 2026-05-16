@@ -1368,6 +1368,7 @@
   "binDesigner.splitExport.exceedsPrintBed": "Цей бін перевищує ваш друкарський стіл ({size}мм). Його буде розділено на {count} частин.",
   "binDesigner.splitExport.enableSplit": "Розділити на частини",
   "binDesigner.splitExport.downloadSplit": "Завантажити розділений {format} (ZIP)",
+  "binDesigner.splitExport.colorLossWarning": "Розділений експорт відкидає дані кольору — кожна частина друкується одним кольором. Вимкніть розділення, щоб зберегти зони кольорів.",
   "binDesigner.splitExport.success": "Розділений експорт завершено ({count} частин)",
   "binDesigner.toggleWireframeModeKeyboardShortcut": "Перемкнути режим каркаса, скорочення W",
   "binDesigner.touchGestureHints": "Підказки сенсорних жестів",

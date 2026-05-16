@@ -14,7 +14,11 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { isSingleColor } from '@/features/bin-designer/types/featureColors';
+import {
+  LIP_CORNERS,
+  isSingleColor,
+  lipCornerZone,
+} from '@/features/bin-designer/types/featureColors';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
@@ -85,12 +89,10 @@ export function ExportDialog() {
     const cells = params.compartments.cells;
     const firstCell = cells[0] ?? 0;
     const hasDividers = cells.length > 1 && cells.some((c) => c !== firstCell);
-    const activeZones = new Set<ColorZone>(['body', 'base']);
+    const activeZones = new Set<ColorZone>(['body']);
+    if (params.base.style !== 'flat') activeZones.add('base');
     if (params.base.stackingLip) {
-      activeZones.add('lip:frontLeft');
-      activeZones.add('lip:frontRight');
-      activeZones.add('lip:backRight');
-      activeZones.add('lip:backLeft');
+      for (const corner of LIP_CORNERS) activeZones.add(lipCornerZone(corner));
     }
     if (params.label.enabled) activeZones.add('labelTab');
     if (params.scoop.enabled) activeZones.add('scoop');
@@ -99,6 +101,7 @@ export function ExportDialog() {
   }, [
     multiColorEnabled,
     params.featureColors,
+    params.base.style,
     params.base.stackingLip,
     params.label.enabled,
     params.scoop.enabled,
@@ -235,6 +238,11 @@ export function ExportDialog() {
           : null
       }
       formatStates={formatStates}
+      warningBanner={
+        useSplitExport && isMultiColor
+          ? { message: t('binDesigner.splitExport.colorLossWarning') }
+          : null
+      }
       estimates={estimateRows}
       estimatesTitle={t('binDesigner.printEstimatesPla')}
       estimatesDisclaimer={t('binDesigner.printEstimatesDisclaimer', {

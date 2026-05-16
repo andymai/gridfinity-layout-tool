@@ -409,6 +409,7 @@
   "binDesigner.splitExport.downloadSplit": "Last ned delt {format} (ZIP)",
   "binDesigner.splitExport.enableSplit": "Del opp i deler",
   "binDesigner.splitExport.exceedsPrintBed": "Denne binnen overskrider printplaten din ({size}mm). Den vil bli delt i {count} deler.",
+  "binDesigner.splitExport.colorLossWarning": "Delt eksport mister fargedata — hver del skrives ut i én farge. Slå av deling for å beholde fargesonene.",
   "binDesigner.splitExport.success": "Delt eksport fullført ({count} deler)",
   "binDesigner.startANewDesign": "Start et nytt design",
   "binDesigner.stylesMutuallyExclusive": "Bare én beholdersstil kan være aktiv",

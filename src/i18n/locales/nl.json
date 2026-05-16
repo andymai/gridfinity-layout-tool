@@ -409,6 +409,7 @@
   "binDesigner.splitExport.downloadSplit": "Gesplitste {format} downloaden (ZIP)",
   "binDesigner.splitExport.enableSplit": "Opsplitsen in stukken",
   "binDesigner.splitExport.exceedsPrintBed": "Deze bin is groter dan je printbed ({size}mm). Hij wordt opgesplitst in {count} stukken.",
+  "binDesigner.splitExport.colorLossWarning": "Gesplitste export verliest kleurgegevens — elk stuk wordt in één kleur geprint. Schakel splitsen uit om uw kleurzones te behouden.",
   "binDesigner.splitExport.success": "Gesplitste export voltooid ({count} stukken)",
   "binDesigner.startANewDesign": "Begin een nieuw ontwerp",
   "binDesigner.stylesMutuallyExclusive": "Slechts één bakstijl kan actief zijn",

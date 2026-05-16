@@ -1623,6 +1623,8 @@ const en: Record<string, string> = {
   'binDesigner.splitExport.enableSplit': 'Split into pieces',
   'binDesigner.splitExport.downloadSplit': 'Download Split {format} (ZIP)',
   'binDesigner.splitExport.success': 'Split export completed ({count} pieces)',
+  'binDesigner.splitExport.colorLossWarning':
+    'Split export currently drops color data — each piece will print as single-color. Disable split to keep your color zones.',
   'binDesigner.toggleWireframeModeKeyboardShortcut': 'Toggle wireframe mode, keyboard shortcut W',
   'binDesigner.touchGestureHints': 'Touch gesture hints',
   'binDesigner.wire': 'Wire',

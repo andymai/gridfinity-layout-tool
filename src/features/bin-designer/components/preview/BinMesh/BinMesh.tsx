@@ -18,147 +18,20 @@ import { Detailed } from '@react-three/drei';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry, useCoarseGeometry } from '@/shared/components/preview/useMeshGeometry';
-import type { MeshFaceGroup } from '@/shared/components/preview/useMeshGeometry';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { FeatureTag } from '@/shared/types/generation';
+import { LIP_CORNERS, lipCornerZone } from '@/features/bin-designer/types/featureColors';
+import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import {
-  featureTagToColorZone,
-  getZoneColor,
-  isSingleColor,
-  lipCornerZone,
-  resolveColorMapping,
-} from '@/features/bin-designer/types/featureColors';
-import type { ColorZone, HoverableZone } from '@/features/bin-designer/types/featureColors';
-import type { FaceGroupData } from '@/shared/types/generation';
-import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
-import {
-  classifyLipCorner,
-  computeLipBBoxCenter,
-} from '@/features/bin-designer/utils/lipCornerClassifier';
+  buildMultiColorGroups,
+  hoveredMaterialIndices,
+} from '@/features/bin-designer/utils/multiColorGroups';
 
-/** Edge line color (black for sketch look) */
 const EDGE_COLOR = '#000000';
 
 interface BinMeshProps {
   wireframe: boolean;
   /** Base color for the bin (user-selectable) */
   color: string;
-}
-
-/**
- * Builds MeshFaceGroup[] and the unique color list from FaceGroupData +
- * color config. Returns null when single-color.
- *
- * Lip face groups are walked triangle-by-triangle to assign each one to
- * its corner zone, and runs of same-corner triangles are coalesced into
- * a single MeshFaceGroup so Three.js doesn't see thousands of 1-triangle
- * draw calls for a typical lip.
- */
-function buildMultiColorGroups(
-  faceGroups: readonly FaceGroupData[],
-  vertices: Float32Array,
-  indices: Uint32Array,
-  featureColors: FeatureColorConfig,
-  activeZones: ReadonlySet<ColorZone>,
-  totalIndexCount: number
-): {
-  groups: MeshFaceGroup[];
-  colors: readonly string[];
-  colorToIndex: ReadonlyMap<string, number>;
-} | null {
-  if (isSingleColor(featureColors, activeZones)) return null;
-
-  const { colors, colorToIndex, defaultIndex } = resolveColorMapping(featureColors);
-
-  const materialIndexForZone = (zone: ColorZone): number => {
-    const hex = getZoneColor(featureColors, zone);
-    return colorToIndex.get(hex) ?? defaultIndex;
-  };
-
-  const triangleXY = (triIdx: number) => {
-    const i = triIdx * 3;
-    const a = indices[i] * 3;
-    const b = indices[i + 1] * 3;
-    const c = indices[i + 2] * 3;
-    return {
-      x: (vertices[a] + vertices[b] + vertices[c]) / 3,
-      y: (vertices[a + 1] + vertices[b + 1] + vertices[c + 1]) / 3,
-    };
-  };
-
-  const lipCenter = computeLipBBoxCenter(faceGroups, triangleXY);
-
-  const sorted = [...faceGroups].sort((a, b) => a.start - b.start);
-  const groups: MeshFaceGroup[] = [];
-  let cursor = 0;
-
-  for (const fg of sorted) {
-    if (fg.start > cursor) {
-      groups.push({ start: cursor, count: fg.start - cursor, materialIndex: defaultIndex });
-    }
-
-    if (fg.tag === FeatureTag.LIP && lipCenter) {
-      const { cx, cy } = lipCenter;
-      const triStart = fg.start / 3;
-      const triEnd = triStart + fg.count / 3;
-      let runStart = fg.start;
-      let runIndex = materialIndexForZone(
-        lipCornerZone(classifyLipCorner(triangleXY(triStart).x, triangleXY(triStart).y, cx, cy))
-      );
-
-      for (let i = triStart + 1; i < triEnd; i++) {
-        const { x, y } = triangleXY(i);
-        const corner = classifyLipCorner(x, y, cx, cy);
-        const matIdx = materialIndexForZone(lipCornerZone(corner));
-        if (matIdx !== runIndex) {
-          groups.push({ start: runStart, count: i * 3 - runStart, materialIndex: runIndex });
-          runStart = i * 3;
-          runIndex = matIdx;
-        }
-      }
-      groups.push({
-        start: runStart,
-        count: fg.start + fg.count - runStart,
-        materialIndex: runIndex,
-      });
-    } else {
-      const zone = featureTagToColorZone(fg.tag);
-      const matIdx = zone === null ? defaultIndex : materialIndexForZone(zone);
-      groups.push({ start: fg.start, count: fg.count, materialIndex: matIdx });
-    }
-
-    cursor = fg.start + fg.count;
-  }
-
-  if (cursor < totalIndexCount) {
-    groups.push({ start: cursor, count: totalIndexCount - cursor, materialIndex: defaultIndex });
-  }
-
-  return { groups, colors, colorToIndex };
-}
-
-/**
- * Resolve the set of color indices that should glow for a given hover
- * target. Returns the empty set when nothing is hovered. The 'lip'
- * group-header lights every lip-corner color simultaneously, even when
- * the four corners use different hexes.
- */
-function hoveredMaterialIndices(
-  hover: HoverableZone | null,
-  featureColors: FeatureColorConfig | null,
-  colorToIndex: ReadonlyMap<string, number>
-): ReadonlySet<number> {
-  if (!hover || !featureColors) return new Set();
-  if (hover === 'lip') {
-    const out = new Set<number>();
-    for (const corner of ['frontLeft', 'frontRight', 'backRight', 'backLeft'] as const) {
-      const idx = colorToIndex.get(featureColors.lip[corner]);
-      if (idx !== undefined) out.add(idx);
-    }
-    return out;
-  }
-  const idx = colorToIndex.get(getZoneColor(featureColors, hover));
-  return idx === undefined ? new Set() : new Set([idx]);
 }
 
 export function BinMesh({ wireframe, color }: BinMeshProps) {
@@ -175,6 +48,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     featureColors,
     hasLip,
     hasLabelTabs,
+    hasBase,
     hasScoop,
     hasDividers,
     hoveredColorZone,
@@ -193,6 +67,9 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
         featureColors: s.params.featureColors ?? null,
         hasLip: s.params.base.stackingLip,
         hasLabelTabs: s.params.label.enabled,
+        // Flat-style bins skip the buildBaseSocket pass in shellStage, so
+        // there are no FeatureTag.SOCKET faces for the Base zone to color.
+        hasBase: s.params.base.style !== 'flat',
         hasScoop: s.params.scoop.enabled,
         hasDividers: cells.length > 1 && cells.some((c) => c !== firstCell),
         hoveredColorZone: s.ui.hoveredColorZone,
@@ -200,22 +77,17 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     })
   );
 
-  // Active zones — drives single-color detection and hidden-zone filtering.
-  // Base is always present since every bin has a body; the user-facing
-  // "Base" zone (Gridfinity foot / SOCKET) similarly always exists.
   const activeZones = useMemo(() => {
-    const zones = new Set<ColorZone>(['body', 'base']);
+    const zones = new Set<ColorZone>(['body']);
+    if (hasBase) zones.add('base');
     if (hasLip) {
-      zones.add('lip:frontLeft');
-      zones.add('lip:frontRight');
-      zones.add('lip:backRight');
-      zones.add('lip:backLeft');
+      for (const corner of LIP_CORNERS) zones.add(lipCornerZone(corner));
     }
     if (hasLabelTabs) zones.add('labelTab');
     if (hasScoop) zones.add('scoop');
     if (hasDividers) zones.add('dividers');
     return zones;
-  }, [hasLip, hasLabelTabs, hasScoop, hasDividers]);
+  }, [hasBase, hasLip, hasLabelTabs, hasScoop, hasDividers]);
 
   // Build multi-color groups when feature is active
   const multiColorData = useMemo(() => {
@@ -247,13 +119,9 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
   const materials = useMemo(() => {
     if (!multiColorData) return null;
 
-    const hoveredIndices = hoveredMaterialIndices(
-      hoveredColorZone,
-      featureColors,
-      multiColorData.colorToIndex
-    );
+    const hoveredIndices = hoveredMaterialIndices(hoveredColorZone);
 
-    return multiColorData.colors.map(
+    return multiColorData.zoneColors.map(
       (c, i) =>
         new THREE.MeshStandardMaterial({
           color: c,
@@ -269,7 +137,7 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
           polygonOffsetUnits: 1,
         })
     );
-  }, [multiColorData, wireframe, hasPrecomputedNormals, hoveredColorZone, featureColors]);
+  }, [multiColorData, wireframe, hasPrecomputedNormals, hoveredColorZone]);
 
   // Dispose materials on change
   useEffect(() => {

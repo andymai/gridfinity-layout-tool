@@ -409,6 +409,7 @@
   "binDesigner.splitExport.downloadSplit": "Télécharger le {format} découpé (ZIP)",
   "binDesigner.splitExport.enableSplit": "Diviser en pièces",
   "binDesigner.splitExport.exceedsPrintBed": "Ce bac dépasse la taille de votre plateau d'impression ({size}mm). Il sera divisé en {count} pièces.",
+  "binDesigner.splitExport.colorLossWarning": "L'export découpé supprime les données de couleur — chaque pièce sera imprimée d'une seule couleur. Désactivez la découpe pour conserver vos zones de couleur.",
   "binDesigner.splitExport.success": "Export découpé terminé ({count} pièces)",
   "binDesigner.startANewDesign": "Démarrer un nouveau design",
   "binDesigner.stylesMutuallyExclusive": "Un seul style de bac peut être actif",
