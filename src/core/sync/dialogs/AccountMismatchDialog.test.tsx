@@ -62,6 +62,28 @@ describe('AccountMismatchDialog', () => {
     expect(onChoice).not.toHaveBeenCalled();
   });
 
+  it('makes the non-destructive Merge button the primary action', () => {
+    // Regression: Discard was `variant="primary"` so a reflex Enter press
+    // on dialog open would wipe local data. The dialog's own docstring
+    // says Escape and reflex inputs must not cause either outcome —
+    // primary must be the safe (merge) path, danger emphasizes the
+    // destructive (discard) path.
+    render(
+      <AccountMismatchDialog
+        isOpen={true}
+        localCount={3}
+        newAccountLabel="a@example.com"
+        onChoice={vi.fn()}
+      />
+    );
+    const merge = screen.getByText(/syncDialog\.accountMismatch\.merge/).closest('button');
+    const discard = screen.getByText('syncDialog.accountMismatch.discard').closest('button');
+    // Primary variant uses `from-accent`; danger uses `from-error`/`to-danger`.
+    // See `src/design-system/variants.ts:145`.
+    expect(merge?.className).toMatch(/from-accent/);
+    expect(discard?.className).toMatch(/to-danger/);
+  });
+
   it('passes count and account to the message body', () => {
     render(
       <AccountMismatchDialog
