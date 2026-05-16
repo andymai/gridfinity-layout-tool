@@ -233,6 +233,30 @@ describe('push: 413 quota exceeded', () => {
   });
 });
 
+describe('push: uncaught rejections in fire-and-forget paths', () => {
+  it('reports a network rejection from the scheduled drain via reportError instead of bubbling unhandled', async () => {
+    // fetch rejects (network error / abort). Without the catch wrapper,
+    // this surfaces as `window.unhandledrejection` — invisible to the
+    // user and useless for diagnosis.
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    engine.start(adapters);
+    // triggerChange goes through onLocalChange → scheduleDrain → setTimeout
+    // → drain. The drain rejection must be caught at the setTimeout
+    // boundary, not allowed to bubble as unhandled. We avoid `flushNow`
+    // here because the test wants to exercise the fire-and-forget path,
+    // not the direct-await path.
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    // Wait long enough for the setTimeout-scheduled drain to fire and
+    // the rejection to flow through the catch wrapper into the status
+    // store. 50ms is generous; the actual scheduled delay is 0ms.
+    await new Promise((r) => setTimeout(r, 50));
+
+    expect(useSyncStatusStore.getState().state).toBe('error');
+    expect(useSyncStatusStore.getState().lastError).toContain('Failed to fetch');
+  });
+});
+
 describe('push: 429 rate-limited', () => {
   it('reschedules without bumping attempts, reports offline, and does not give up', async () => {
     fetchMock.mockResolvedValueOnce(

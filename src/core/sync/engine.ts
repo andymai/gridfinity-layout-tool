@@ -51,12 +51,14 @@ export function start(adapters: SyncAdapters): void {
     const adapter = adapters[kind];
     s.unsubscribers.push(
       adapter.subscribe((change) => {
-        void onLocalChange(s, kind, change);
+        onLocalChange(s, kind, change).catch((error: unknown) =>
+          reportUncaught('onLocalChange', error)
+        );
       })
     );
   }
 
-  void rehydrate(s);
+  rehydrate(s).catch((error: unknown) => reportUncaught('rehydrate', error));
 }
 
 export function stop(): void {
@@ -102,7 +104,7 @@ function scheduleDrain(s: EngineState, delayMs: number): void {
   s.drainTimer = setTimeout(
     () => {
       s.drainTimer = null;
-      void drain(s);
+      drain(s).catch((error: unknown) => reportUncaught('drain', error));
     },
     Math.max(0, delayMs)
   );
@@ -311,6 +313,20 @@ async function safeReadError(res: Response): Promise<string | undefined> {
   } catch {
     return undefined;
   }
+}
+
+/**
+ * Surface an uncaught error from a fire-and-forget path. Without this,
+ * a fetch rejection (network error, abort) or IDB failure inside
+ * `drain`, `rehydrate`, or `onLocalChange` would bubble up as a
+ * `window.unhandledrejection` — visible in DevTools, invisible to
+ * the user, and useless for diagnosis. Route it through the status
+ * store so the UI reflects "something is broken" and the message
+ * lands in the toast / Account tab error surface.
+ */
+function reportUncaught(label: string, error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error);
+  useSyncStatusStore.getState().reportError(`${label}: ${message}`);
 }
 
 function emitEngineEvent(s: EngineState, event: EngineEvent): void {
