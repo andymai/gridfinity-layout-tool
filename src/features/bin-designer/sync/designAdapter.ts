@@ -3,6 +3,7 @@ import type {
   AdapterChange,
   AdapterChangeListener,
   DesignAdapter,
+  DesignSyncPayload,
   SyncableItem,
 } from '@/core/sync/adapters/types';
 import { designId } from '@/core/types';
@@ -35,34 +36,65 @@ function toMs(iso: string): number {
   return Number.isFinite(ms) ? ms : 0;
 }
 
+/**
+ * Accept either the new `{ name, params }` wrapper or the legacy bare
+ * `BinParams` shape so pre-name cloud blobs still apply cleanly.
+ */
+function unwrap(payload: unknown): { name?: string; params: BinParams } {
+  if (payload !== null && typeof payload === 'object' && 'params' in payload) {
+    const { name, params } = payload as { name?: unknown; params: unknown };
+    if (typeof params === 'object' && params !== null) {
+      // Empty/whitespace-only remote names become `undefined` so the
+      // fallback chain kicks in. The server stores `name = ''` when an
+      // older client pushes the legacy bare-params shape; we must not
+      // overwrite a real local name with that empty.
+      const trimmed = typeof name === 'string' ? name.trim() : '';
+      return {
+        name: trimmed === '' ? undefined : trimmed,
+        params: params as BinParams,
+      };
+    }
+  }
+  return { params: payload as BinParams };
+}
+
 export const designAdapter: DesignAdapter = {
-  async list(): Promise<SyncableItem<BinParams>[]> {
+  async list(): Promise<SyncableItem<DesignSyncPayload>[]> {
     const result = await listDesigns();
     if (!isOk(result)) return [];
     return result.value.map((d) => ({
       id: d.id,
-      payload: d.params,
+      payload: { name: d.name, params: d.params },
       modifiedAt: toMs(d.updatedAt),
     }));
   },
 
-  async get(id: string): Promise<SyncableItem<BinParams> | null> {
+  async get(id: string): Promise<SyncableItem<DesignSyncPayload> | null> {
     const result = await loadDesign(designId(id));
     if (!isOk(result)) return null;
     const d = result.value;
-    return { id: d.id, payload: d.params, modifiedAt: toMs(d.updatedAt) };
+    return {
+      id: d.id,
+      payload: { name: d.name, params: d.params },
+      modifiedAt: toMs(d.updatedAt),
+    };
   },
 
-  async applyRemote(item: SyncableItem<BinParams>): Promise<void> {
+  async applyRemote(item: SyncableItem<DesignSyncPayload>): Promise<void> {
     suppress(item.id);
-    // Read the existing design first to preserve local-only fields
-    // (thumbnail, exportFileNameConfig) on update.
+    // Read existing first to preserve local-only fields (thumbnail,
+    // exportFileNameConfig) on update.
     const existing = await loadDesign(designId(item.id));
     const base = isOk(existing) ? existing.value : null;
+    const { name: remoteName, params } = unwrap(item.payload);
+    // LWW: engine only calls applyRemote when remote is newer, so a
+    // remote rename must win. Local name is only a fallback for legacy
+    // payloads with no name; the literal covers a legacy fresh-device pull.
+    const name = remoteName ?? base?.name ?? 'Synced design';
     const result = await saveDesign({
       id: designId(item.id),
-      name: base?.name ?? 'Synced design',
-      params: item.payload,
+      name,
+      params,
       thumbnail: base?.thumbnail ?? null,
       exportFileNameConfig: base?.exportFileNameConfig ?? null,
     });

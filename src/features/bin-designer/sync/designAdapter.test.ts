@@ -19,13 +19,17 @@ vi.mock('@/features/bin-designer/storage/DesignerStorage', () => ({
 import { designAdapter } from './designAdapter';
 import { __resetForTests, emit } from './designerEvents';
 
-const samplePayload = (): BinParams => ({}) as BinParams;
+const sampleParams = (): BinParams => ({}) as BinParams;
+const samplePayload = (name = 'D'): { name: string; params: BinParams } => ({
+  name,
+  params: sampleParams(),
+});
 
 function savedDesign(id: string, updatedAt: string, name = 'D'): SavedDesign {
   return {
     id: designId(id),
     name,
-    params: samplePayload(),
+    params: sampleParams(),
     thumbnail: null,
     createdAt: updatedAt,
     updatedAt,
@@ -39,17 +43,19 @@ beforeEach(() => {
 });
 
 describe('designAdapter.list', () => {
-  it('returns SyncableItems with ms-normalized timestamps', async () => {
+  it('returns SyncableItems with ms-normalized timestamps and the design name', async () => {
     listDesignsMock.mockResolvedValueOnce(
       ok([
-        savedDesign('a', '2026-01-01T00:00:00.000Z'),
-        savedDesign('b', '2026-01-02T00:00:00.000Z'),
+        savedDesign('a', '2026-01-01T00:00:00.000Z', 'Alpha'),
+        savedDesign('b', '2026-01-02T00:00:00.000Z', 'Beta'),
       ])
     );
     const items = await designAdapter.list();
     expect(items.map((i) => i.id)).toEqual(['a', 'b']);
     expect(items[0].modifiedAt).toBe(Date.parse('2026-01-01T00:00:00.000Z'));
     expect(items[1].modifiedAt).toBe(Date.parse('2026-01-02T00:00:00.000Z'));
+    expect(items[0].payload).toEqual({ name: 'Alpha', params: {} });
+    expect(items[1].payload).toEqual({ name: 'Beta', params: {} });
   });
 
   it('returns [] when listDesigns errors', async () => {
@@ -64,11 +70,14 @@ describe('designAdapter.get', () => {
     expect(await designAdapter.get('d-missing')).toBe(null);
   });
 
-  it('returns id + payload + ms-normalized modifiedAt on success', async () => {
-    loadDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-03-01T00:00:00.000Z')));
+  it('returns id + payload (incl. name) + ms-normalized modifiedAt on success', async () => {
+    loadDesignMock.mockResolvedValueOnce(
+      ok(savedDesign('d1', '2026-03-01T00:00:00.000Z', 'My Bin'))
+    );
     const item = await designAdapter.get('d1');
     expect(item?.id).toBe('d1');
     expect(item?.modifiedAt).toBe(Date.parse('2026-03-01T00:00:00.000Z'));
+    expect(item?.payload).toEqual({ name: 'My Bin', params: {} });
   });
 });
 
@@ -95,19 +104,80 @@ describe('designAdapter.applyRemote', () => {
     expect(args.exportFileNameConfig).toEqual({ template: '{name}-v{version}' });
   });
 
-  it('creates a fresh entry with default name when no local entry exists', async () => {
+  it('uses the remote name when present (LWW means the engine already determined remote wins)', async () => {
+    loadDesignMock.mockResolvedValueOnce(
+      ok(savedDesign('d1', '2026-01-01T00:00:00.000Z', 'Local Name'))
+    );
+    saveDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-04-01T00:00:00.000Z')));
+
+    await designAdapter.applyRemote({
+      id: 'd1',
+      payload: samplePayload('Remote Name'),
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(saveDesignMock.mock.calls[0][0].name).toBe('Remote Name');
+  });
+
+  it('falls back to the local name when the remote wrapper has an empty name (legacy bare PUT on server)', async () => {
+    loadDesignMock.mockResolvedValueOnce(
+      ok(savedDesign('d1', '2026-01-01T00:00:00.000Z', 'Local Name'))
+    );
+    saveDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-04-01T00:00:00.000Z')));
+
+    await designAdapter.applyRemote({
+      id: 'd1',
+      // Server stores `{ name: '', params }` whenever a legacy bare-params
+      // PUT lands. A fresh client pulling that must not wipe the local name.
+      payload: { name: '', params: sampleParams() },
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(saveDesignMock.mock.calls[0][0].name).toBe('Local Name');
+  });
+
+  it('falls back to the local name when the remote payload is the legacy bare-BinParams shape', async () => {
+    loadDesignMock.mockResolvedValueOnce(
+      ok(savedDesign('d1', '2026-01-01T00:00:00.000Z', 'Local Name'))
+    );
+    saveDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-04-01T00:00:00.000Z')));
+
+    await designAdapter.applyRemote({
+      id: 'd1',
+      // Legacy bare-BinParams shape — no `{ name, params }` wrapper.
+      payload: sampleParams() as never,
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(saveDesignMock.mock.calls[0][0].name).toBe('Local Name');
+  });
+
+  it('falls back to "Synced design" when both remote payload (legacy) and local entry are missing', async () => {
     loadDesignMock.mockResolvedValueOnce(err(storageNotFound('new')));
     saveDesignMock.mockResolvedValueOnce(ok(savedDesign('new', '2026-04-01T00:00:00.000Z')));
 
     await designAdapter.applyRemote({
       id: 'new',
-      payload: samplePayload(),
+      payload: sampleParams() as never, // legacy bare shape
       modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
     });
 
     const args = saveDesignMock.mock.calls[0][0];
     expect(args.name).toBe('Synced design');
     expect(args.thumbnail).toBe(null);
+  });
+
+  it('uses the remote name on a fresh-device pull when the payload carries it', async () => {
+    loadDesignMock.mockResolvedValueOnce(err(storageNotFound('new')));
+    saveDesignMock.mockResolvedValueOnce(ok(savedDesign('new', '2026-04-01T00:00:00.000Z')));
+
+    await designAdapter.applyRemote({
+      id: 'new',
+      payload: samplePayload('My Bin'),
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(saveDesignMock.mock.calls[0][0].name).toBe('My Bin');
   });
 
   it('throws when saveDesign fails', async () => {
@@ -162,7 +232,7 @@ describe('designAdapter.subscribe', () => {
     off();
   });
 
-  it('suppresses the echo from applyRemote (no infinite ping-pong)', async () => {
+  it('passes unsuppressed events through to listeners', async () => {
     const events: AdapterChange[] = [];
     const off = designAdapter.subscribe((c) => events.push(c));
 
@@ -170,16 +240,9 @@ describe('designAdapter.subscribe', () => {
     saveDesignMock.mockResolvedValueOnce(ok(savedDesign('x', '2026-05-03T00:00:00.000Z')));
     await designAdapter.applyRemote({ id: 'x', payload: samplePayload(), modifiedAt: 1 });
 
-    // The mocked saveDesign doesn't trigger designerEvents — but if a
-    // real save fired one for `x`, our suppression Set would filter it.
-    // Simulate that here:
-    emit({ type: 'put', id: designId('x'), updatedAt: '2026-05-03T00:00:00.000Z' });
-    // The suppress() window has expired (queueMicrotask resolved before
-    // the synchronous emit reaches us in-test); release it manually for
-    // determinism by adding a fresh entry the engine WOULD see:
+    // Unrelated id is never in the suppression set, so it reaches the listener.
     emit({ type: 'put', id: designId('y'), updatedAt: '2026-05-03T00:00:00.000Z' });
 
-    // Either way: at least the unrelated 'y' event made it through.
     expect(events.some((e) => e.id === 'y')).toBe(true);
     off();
   });

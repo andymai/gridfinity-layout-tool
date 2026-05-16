@@ -155,7 +155,29 @@ beforeEach(() => {
 });
 
 describe('PUT', () => {
-  it('creates a new design entry on first write', async () => {
+  it('creates a new design entry with the wrapper { name, params } payload', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: { name: 'My Bin', params: VALID_DESIGN },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(200);
+    const body = res._body as {
+      envelope: { schemaVersion: number; design: { name: string; params: unknown } };
+    };
+    expect(body.envelope.schemaVersion).toBe(1);
+    expect(body.envelope.design.name).toBe('My Bin');
+    expect((body.envelope.design.params as { width: number }).width).toBe(2);
+  });
+
+  it('accepts the legacy bare-BinParams shape and stores it with an empty name', async () => {
     const { default: handler } = await import('./[id]');
     const res = makeRes();
     await handler(
@@ -163,8 +185,10 @@ describe('PUT', () => {
       res as unknown as VercelResponse
     );
     expect(res._status).toBe(200);
-    const body = res._body as { envelope: { schemaVersion: number; design: unknown } };
-    expect(body.envelope.schemaVersion).toBe(1);
+    const body = res._body as {
+      envelope: { design: { name: string; params: unknown } };
+    };
+    expect(body.envelope.design.name).toBe('');
   });
 
   it('rejects an invalid BinParams payload with 400', async () => {
@@ -173,7 +197,46 @@ describe('PUT', () => {
     await handler(
       makeReq({
         method: 'PUT',
-        body: { design: { ...VALID_DESIGN, width: 999 }, modifiedAt: 1000 },
+        body: {
+          design: { name: 'x', params: { ...VALID_DESIGN, width: 999 } },
+          modifiedAt: 1000,
+        },
+      }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(400);
+  });
+
+  it('sanitizes the name: strips control chars, trims, and truncates to 100', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    const dirty = '  hello\x00world\x1F  ' + 'x'.repeat(200);
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: { design: { name: dirty, params: VALID_DESIGN }, modifiedAt: 1000 },
+      }),
+      res as unknown as VercelResponse
+    );
+    expect(res._status).toBe(200);
+    const body = res._body as { envelope: { design: { name: string } } };
+    // Control chars stripped, trimmed, truncated to MAX_NAME_LENGTH (100).
+    expect(body.envelope.design.name.length).toBe(100);
+    expect(body.envelope.design.name.startsWith('helloworld')).toBe(true);
+    // eslint-disable-next-line no-control-regex
+    expect(body.envelope.design.name).not.toMatch(/[\x00-\x1F\x7F]/);
+  });
+
+  it('rejects a wrapper with a non-string name (e.g. attacker dropping the field)', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: { name: 42 as unknown as string, params: VALID_DESIGN },
+          modifiedAt: 1000,
+        },
       }),
       res as unknown as VercelResponse
     );
@@ -184,7 +247,10 @@ describe('PUT', () => {
     const { default: handler } = await import('./[id]');
     const res = makeRes();
     await handler(
-      makeReq({ method: 'PUT', body: { design: VALID_DESIGN, modifiedAt: 'now' } }),
+      makeReq({
+        method: 'PUT',
+        body: { design: { name: 'x', params: VALID_DESIGN }, modifiedAt: 'now' },
+      }),
       res as unknown as VercelResponse
     );
     expect(res._status).toBe(400);
@@ -193,12 +259,18 @@ describe('PUT', () => {
   it('rejects 409 when remote is newer', async () => {
     const { default: handler } = await import('./[id]');
     await handler(
-      makeReq({ method: 'PUT', body: { design: VALID_DESIGN, modifiedAt: 5000 } }),
+      makeReq({
+        method: 'PUT',
+        body: { design: { name: 'x', params: VALID_DESIGN }, modifiedAt: 5000 },
+      }),
       makeRes() as unknown as VercelResponse
     );
     const res = makeRes();
     await handler(
-      makeReq({ method: 'PUT', body: { design: VALID_DESIGN, modifiedAt: 1000 } }),
+      makeReq({
+        method: 'PUT',
+        body: { design: { name: 'x', params: VALID_DESIGN }, modifiedAt: 1000 },
+      }),
       res as unknown as VercelResponse
     );
     expect(res._status).toBe(409);
@@ -206,15 +278,25 @@ describe('PUT', () => {
 });
 
 describe('GET / DELETE roundtrip', () => {
-  it('round-trips PUT → GET → DELETE → GET=410', async () => {
+  it('round-trips PUT → GET (with name) → DELETE → GET=410', async () => {
     const { default: handler } = await import('./[id]');
     await handler(
-      makeReq({ method: 'PUT', body: { design: VALID_DESIGN, modifiedAt: 1000 } }),
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: { name: 'Round Trip', params: VALID_DESIGN },
+          modifiedAt: 1000,
+        },
+      }),
       makeRes() as unknown as VercelResponse
     );
     const getRes = makeRes();
     await handler(makeReq({ method: 'GET' }), getRes as unknown as VercelResponse);
     expect(getRes._status).toBe(200);
+    const getBody = getRes._body as {
+      envelope: { design: { name: string; params: unknown } };
+    };
+    expect(getBody.envelope.design.name).toBe('Round Trip');
     const delRes = makeRes();
     await handler(makeReq({ method: 'DELETE' }), delRes as unknown as VercelResponse);
     expect(delRes._status).toBe(204);
