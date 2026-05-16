@@ -214,13 +214,13 @@ export function buildMultiObject3MF(
  *
  * Pulled out of `useExport.ts` to keep that file under the 500-line cap.
  */
-export async function buildBinDownloadPayload(
+export function buildBinDownloadPayload(
   format: ExportFileFormat,
   result: CombinedExportResult,
   params: BinParams,
   fileName: string,
   threeMFContext: { modelName: string; threeMFPrintSettings: ThreeMFPrintSettings } | null
-): Promise<{ blob: Blob; downloadName: string }> {
+): { blob: Blob; downloadName: string } {
   if (format === '3mf') {
     if (!threeMFContext) throw new Error('3MF context required for 3MF export');
     if (result.pieces.length === 1) {
@@ -255,7 +255,7 @@ export async function buildBinDownloadPayload(
     return { blob, downloadName: fileName };
   }
   const baseName = fileName.replace(/\.stl$/, '');
-  const zip = await packagePiecesAsZip(
+  const zip = packagePiecesAsZip(
     result.pieces.map((p: { data: ArrayBuffer; label: string }) => ({
       data: p.data,
       label: p.label,

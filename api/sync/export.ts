@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { zipSync, strToU8 } from 'fflate';
 import { requireMethod } from '../lib/method.js';
 import { ErrorCode } from '../lib/shared.js';
 import { logger } from '../lib/logger.js';
@@ -62,30 +63,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const liveLayouts = filterLive(layoutsIndex);
     const liveDesigns = filterLive(designsIndex);
 
-    const { default: JSZip } = await import('jszip');
-    const zip = new JSZip();
-
-    zip.file(
-      'manifest.json',
-      JSON.stringify(
-        {
-          layouts: liveLayouts,
-          designs: liveDesigns,
-          indexUpdatedAt,
-          exportedAt: Date.now(),
-          schemaVersion: 1,
-        },
-        null,
-        2
-      )
-    );
+    const files: Record<string, Uint8Array> = {
+      'manifest.json': strToU8(
+        JSON.stringify(
+          {
+            layouts: liveLayouts,
+            designs: liveDesigns,
+            indexUpdatedAt,
+            exportedAt: Date.now(),
+            schemaVersion: 1,
+          },
+          null,
+          2
+        )
+      ),
+    };
 
     await Promise.all([
-      addEnvelopes(zip, session.userId, 'layouts', Object.keys(liveLayouts)),
-      addEnvelopes(zip, session.userId, 'designs', Object.keys(liveDesigns)),
+      addEnvelopes(files, session.userId, 'layouts', Object.keys(liveLayouts)),
+      addEnvelopes(files, session.userId, 'designs', Object.keys(liveDesigns)),
     ]);
 
-    const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+    // `level: 6` matches the prior JSZip default; keeps archive sizes stable
+    // across the migration so existing client roundtrips behave identically.
+    const buffer = Buffer.from(zipSync(files, { level: 6 }));
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader(
       'Content-Disposition',
@@ -109,12 +110,8 @@ function filterLive(index: Record<string, IndexEntry>): Record<string, IndexEntr
   return out;
 }
 
-interface JSZipLike {
-  file(name: string, content: string): void;
-}
-
 async function addEnvelopes(
-  zip: JSZipLike,
+  files: Record<string, Uint8Array>,
   userId: string,
   kind: SyncItemKind,
   ids: string[]
@@ -128,7 +125,7 @@ async function addEnvelopes(
   for (let i = 0; i < ids.length; i++) {
     const envelope = envelopes[i];
     if (envelope) {
-      zip.file(`${kind}/${ids[i]}.json`, JSON.stringify(envelope, null, 2));
+      files[`${kind}/${ids[i]}.json`] = strToU8(JSON.stringify(envelope, null, 2));
     }
   }
 }

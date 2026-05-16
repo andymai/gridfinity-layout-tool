@@ -352,7 +352,7 @@ export function useExport(): UseExportReturn {
           };
         }
 
-        const { blob, downloadName } = await buildBinDownloadPayload(
+        const { blob, downloadName } = buildBinDownloadPayload(
           format,
           exportResult.result,
           params,
@@ -487,14 +487,14 @@ export function useExport(): UseExportReturn {
             threeMFPrintSettings
           );
 
-          const zip = await packagePiecesAsZip(convertedPieces, baseName, '.3mf');
+          const zip = packagePiecesAsZip(convertedPieces, baseName, '.3mf');
           triggerDownload(zip, `${baseName}_split.zip`);
         } else {
           const allPieces = [
             ...result.pieces.map((p) => ({ data: p.data, label: p.label })),
             ...companionPieces,
           ];
-          const blob = await packagePiecesAsZip(allPieces, baseName, '.stl');
+          const blob = packagePiecesAsZip(allPieces, baseName, '.stl');
           triggerDownload(blob, `${baseName}_split.zip`);
         }
 

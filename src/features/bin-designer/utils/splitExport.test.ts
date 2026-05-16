@@ -1,47 +1,28 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import { unzipSync } from 'fflate';
 import { packageSplitPiecesAsZip } from './splitExport';
 
-// Mock JSZip
-const mockFile = vi.fn();
-const mockGenerateAsync = vi.fn().mockResolvedValue(new Blob(['zip-content']));
-
-vi.mock('jszip', () => ({
-  default: class MockJSZip {
-    file = mockFile;
-    generateAsync = mockGenerateAsync;
-  },
-}));
+async function unzip(blob: Blob): Promise<Record<string, Uint8Array>> {
+  return unzipSync(new Uint8Array(await blob.arrayBuffer()));
+}
 
 describe('packageSplitPiecesAsZip', () => {
-  beforeEach(() => {
-    mockFile.mockClear();
-    mockGenerateAsync.mockClear();
-  });
-
   it('creates a ZIP with one file per piece', async () => {
     const pieces = [
       { data: new ArrayBuffer(100), label: 'piece-1x1' },
       { data: new ArrayBuffer(200), label: 'piece-2x1' },
     ];
 
-    const blob = await packageSplitPiecesAsZip(pieces, 'my-bin');
-
-    expect(blob).toBeInstanceOf(Blob);
-    expect(mockFile).toHaveBeenCalledTimes(2);
-    expect(mockFile).toHaveBeenCalledWith('my-bin_piece-1x1.stl', pieces[0].data);
-    expect(mockFile).toHaveBeenCalledWith('my-bin_piece-2x1.stl', pieces[1].data);
-    expect(mockGenerateAsync).toHaveBeenCalledWith({
-      type: 'blob',
-      compression: 'DEFLATE',
-    });
+    const entries = await unzip(packageSplitPiecesAsZip(pieces, 'my-bin'));
+    expect(Object.keys(entries).sort()).toEqual(['my-bin_piece-1x1.stl', 'my-bin_piece-2x1.stl']);
+    expect(entries['my-bin_piece-1x1.stl'].length).toBe(100);
+    expect(entries['my-bin_piece-2x1.stl'].length).toBe(200);
   });
 
   it('handles single piece', async () => {
-    const pieces = [{ data: new ArrayBuffer(50), label: 'piece-1x1' }];
-
-    await packageSplitPiecesAsZip(pieces, 'test');
-
-    expect(mockFile).toHaveBeenCalledTimes(1);
-    expect(mockFile).toHaveBeenCalledWith('test_piece-1x1.stl', pieces[0].data);
+    const entries = await unzip(
+      packageSplitPiecesAsZip([{ data: new ArrayBuffer(50), label: 'piece-1x1' }], 'test')
+    );
+    expect(Object.keys(entries)).toEqual(['test_piece-1x1.stl']);
   });
 });

@@ -1,118 +1,80 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import { unzipSync, strFromU8 } from 'fflate';
 import { packagePiecesAsZip } from './zipExport';
 
-// Mock JSZip
-const mockFile = vi.fn();
-const mockGenerateAsync = vi.fn().mockResolvedValue(new Blob(['zip-content']));
+/**
+ * Roundtrip through real fflate — the previous JSZip-mock-based suite proved
+ * the wrapper called `.file()` with the right args but never exercised the
+ * actual ZIP encoding, so a bad piece-buffer shape (e.g. an ArrayBuffer left
+ * un-wrapped) would slip through.
+ */
+async function unzip(blob: Blob): Promise<Record<string, Uint8Array>> {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  return unzipSync(bytes);
+}
 
-vi.mock('jszip', () => ({
-  default: class MockJSZip {
-    file = mockFile;
-    generateAsync = mockGenerateAsync;
-  },
-}));
+function bufferOf(byte: number, length: number): ArrayBuffer {
+  const buf = new ArrayBuffer(length);
+  new Uint8Array(buf).fill(byte);
+  return buf;
+}
 
 describe('packagePiecesAsZip', () => {
-  beforeEach(() => {
-    mockFile.mockClear();
-    mockGenerateAsync.mockClear();
-    mockGenerateAsync.mockResolvedValue(new Blob(['zip-content']));
-  });
-
   it('creates a ZIP with one file per piece using the given extension', async () => {
     const pieces = [
-      { data: new ArrayBuffer(100), label: 'piece-A1' },
-      { data: new ArrayBuffer(200), label: 'piece-B2' },
+      { data: bufferOf(0xa1, 16), label: 'piece-A1' },
+      { data: bufferOf(0xb2, 32), label: 'piece-B2' },
     ];
 
-    const blob = await packagePiecesAsZip(pieces, 'my-baseplate', '.stl');
-
-    expect(blob).toBeInstanceOf(Blob);
-    expect(mockFile).toHaveBeenCalledTimes(2);
-    expect(mockFile).toHaveBeenCalledWith('my-baseplate_piece-A1.stl', pieces[0].data);
-    expect(mockFile).toHaveBeenCalledWith('my-baseplate_piece-B2.stl', pieces[1].data);
+    const entries = await unzip(packagePiecesAsZip(pieces, 'my-baseplate', '.stl'));
+    expect(Object.keys(entries).sort()).toEqual([
+      'my-baseplate_piece-A1.stl',
+      'my-baseplate_piece-B2.stl',
+    ]);
+    expect(entries['my-baseplate_piece-A1.stl'].length).toBe(16);
+    expect(entries['my-baseplate_piece-A1.stl'][0]).toBe(0xa1);
+    expect(entries['my-baseplate_piece-B2.stl'].length).toBe(32);
+    expect(entries['my-baseplate_piece-B2.stl'][0]).toBe(0xb2);
   });
 
-  it('uses DEFLATE compression', async () => {
-    const pieces = [{ data: new ArrayBuffer(50), label: 'part-1' }];
-
-    await packagePiecesAsZip(pieces, 'test', '.stl');
-
-    expect(mockGenerateAsync).toHaveBeenCalledWith({
-      type: 'blob',
-      compression: 'DEFLATE',
-    });
-  });
-
-  it('handles single piece', async () => {
-    const pieces = [{ data: new ArrayBuffer(50), label: 'only-piece' }];
-
-    await packagePiecesAsZip(pieces, 'solo', '.stl');
-
-    expect(mockFile).toHaveBeenCalledTimes(1);
-    expect(mockFile).toHaveBeenCalledWith('solo_only-piece.stl', pieces[0].data);
+  it('preserves piece bytes exactly through the encode → decode roundtrip', async () => {
+    const original = new Uint8Array([0xde, 0xad, 0xbe, 0xef, 0x00, 0x01, 0x02, 0xff]);
+    const entries = await unzip(
+      packagePiecesAsZip([{ data: original.buffer, label: 'p' }], 'test', '.bin')
+    );
+    expect(Array.from(entries['test_p.bin'])).toEqual(Array.from(original));
   });
 
   it('uses the provided extension parameter', async () => {
-    const pieces = [{ data: new ArrayBuffer(100), label: 'part' }];
-
-    await packagePiecesAsZip(pieces, 'base', '.step');
-
-    expect(mockFile).toHaveBeenCalledWith('base_part.step', pieces[0].data);
-  });
-
-  it('handles multiple pieces with correct filenames', async () => {
-    const pieces = [
-      { data: new ArrayBuffer(10), label: 'A1' },
-      { data: new ArrayBuffer(20), label: 'A2' },
-      { data: new ArrayBuffer(30), label: 'B1' },
-      { data: new ArrayBuffer(40), label: 'B2' },
-    ];
-
-    await packagePiecesAsZip(pieces, 'grid', '.stl');
-
-    expect(mockFile).toHaveBeenCalledTimes(4);
-    expect(mockFile).toHaveBeenCalledWith('grid_A1.stl', pieces[0].data);
-    expect(mockFile).toHaveBeenCalledWith('grid_A2.stl', pieces[1].data);
-    expect(mockFile).toHaveBeenCalledWith('grid_B1.stl', pieces[2].data);
-    expect(mockFile).toHaveBeenCalledWith('grid_B2.stl', pieces[3].data);
+    const entries = await unzip(
+      packagePiecesAsZip([{ data: new ArrayBuffer(8), label: 'part' }], 'base', '.step')
+    );
+    expect(Object.keys(entries)).toEqual(['base_part.step']);
   });
 
   it('includes extra text files in the ZIP when provided', async () => {
-    const pieces = [{ data: new ArrayBuffer(10), label: 'corner' }];
-
-    await packagePiecesAsZip(pieces, 'test', '.stl', [
-      { name: 'print-guide.txt', content: 'Hello world' },
-    ]);
-
-    expect(mockFile).toHaveBeenCalledTimes(2);
-    expect(mockFile).toHaveBeenCalledWith('test_corner.stl', pieces[0].data);
-    expect(mockFile).toHaveBeenCalledWith('print-guide.txt', 'Hello world');
+    const entries = await unzip(
+      packagePiecesAsZip([{ data: new ArrayBuffer(8), label: 'corner' }], 'test', '.stl', [
+        { name: 'print-guide.txt', content: 'Hello world' },
+      ])
+    );
+    expect(Object.keys(entries).sort()).toEqual(['print-guide.txt', 'test_corner.stl']);
+    expect(strFromU8(entries['print-guide.txt'])).toBe('Hello world');
   });
 
-  it('skips extra files when not provided', async () => {
-    const pieces = [{ data: new ArrayBuffer(10), label: 'piece' }];
-
-    await packagePiecesAsZip(pieces, 'test', '.stl');
-
-    expect(mockFile).toHaveBeenCalledTimes(1);
+  it.each([
+    ['undefined', undefined],
+    ['empty array', []],
+  ])('skips extra files when %s', async (_, extra) => {
+    const entries = await unzip(
+      packagePiecesAsZip([{ data: new ArrayBuffer(8), label: 'piece' }], 'test', '.stl', extra)
+    );
+    expect(Object.keys(entries)).toEqual(['test_piece.stl']);
   });
 
-  it('skips extra files when empty array provided', async () => {
-    const pieces = [{ data: new ArrayBuffer(10), label: 'piece' }];
-
-    await packagePiecesAsZip(pieces, 'test', '.stl', []);
-
-    expect(mockFile).toHaveBeenCalledTimes(1);
-  });
-
-  it('returns the blob from generateAsync', async () => {
-    const expectedBlob = new Blob(['custom-content']);
-    mockGenerateAsync.mockResolvedValue(expectedBlob);
-
-    const pieces = [{ data: new ArrayBuffer(10), label: 'piece' }];
-    const result = await packagePiecesAsZip(pieces, 'name', '.stl');
-
-    expect(result).toBe(expectedBlob);
+  it('returns an application/zip blob', async () => {
+    const blob = packagePiecesAsZip([{ data: new ArrayBuffer(8), label: 'x' }], 'name', '.stl');
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.type).toBe('application/zip');
   });
 });

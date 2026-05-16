@@ -33,14 +33,6 @@ vi.mock('@/shared/generation/bridge', () => ({
   },
 }));
 
-// Mock JSZip used by splitExport
-vi.mock('jszip', () => ({
-  default: class MockJSZip {
-    file = vi.fn();
-    generateAsync = vi.fn().mockResolvedValue(new Blob(['zip']));
-  },
-}));
-
 // Mock URL.createObjectURL and URL.revokeObjectURL
 const originalURL = globalThis.URL;
 const mockCreateObjectURL = vi.fn().mockReturnValue('blob:mock-url');
