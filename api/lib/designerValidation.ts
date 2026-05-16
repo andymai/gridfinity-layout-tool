@@ -14,10 +14,20 @@ import {
   validationError,
 } from './validationUtils.js';
 
-// Type-safe enum validation
-const VALID_BIN_STYLES = ['standard', 'slotted'] as const;
-const VALID_BASE_STYLES = ['standard', 'magnet', 'screw', 'magnet_and_screw', 'weighted'] as const;
-const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid'] as const;
+// Type-safe enum validation. Mirror the client unions in
+// `src/features/bin-designer/types/index.ts` — when a value is added there
+// it must be added here too, otherwise cloud sync PUTs from up-to-date
+// clients will be rejected with a 400.
+const VALID_BIN_STYLES = ['standard', 'slotted', 'solid'] as const;
+const VALID_BASE_STYLES = [
+  'standard',
+  'magnet',
+  'screw',
+  'magnet_and_screw',
+  'weighted',
+  'flat',
+] as const;
+const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid', 'fillet'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;
 const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;

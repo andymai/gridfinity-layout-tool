@@ -133,7 +133,7 @@ describe('validateDesignerShare', () => {
     });
 
     it('accepts all valid bin styles', () => {
-      for (const style of ['standard', 'slotted']) {
+      for (const style of ['standard', 'slotted', 'solid']) {
         const payload = validPayload();
         (payload.params as Record<string, unknown>).style = style;
         const result = validateDesignerShare(payload, JSON.stringify(payload).length);
@@ -148,6 +148,15 @@ describe('validateDesignerShare', () => {
       (payload.params.base as Record<string, unknown>).style = 'floating';
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
+    });
+
+    it('accepts all valid base styles', () => {
+      for (const style of ['standard', 'magnet', 'screw', 'magnet_and_screw', 'weighted', 'flat']) {
+        const payload = validPayload();
+        (payload.params.base as Record<string, unknown>).style = style;
+        const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+        expect(result.valid).toBe(true);
+      }
     });
 
     it('rejects non-boolean stackingLip', () => {
@@ -236,6 +245,14 @@ describe('validateDesignerShare', () => {
       const payload = validPayload();
       (payload.params.label as Record<string, unknown>).enabled = true;
       (payload.params.label as Record<string, unknown>).support = 'solid';
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+    });
+
+    it('accepts fillet label tab support', () => {
+      const payload = validPayload();
+      (payload.params.label as Record<string, unknown>).enabled = true;
+      (payload.params.label as Record<string, unknown>).support = 'fillet';
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(true);
     });
