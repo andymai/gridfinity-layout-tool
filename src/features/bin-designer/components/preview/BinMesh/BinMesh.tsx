@@ -238,10 +238,14 @@ export function BinMesh({ wireframe, color, onZoneClick }: BinMeshProps) {
       }
     : {};
 
+  // Distinct keys force unmount/remount across the multi↔single switch. If we
+  // reuse the same <mesh>, R3F's prop-diff resets the removed `material` prop
+  // to a memoized MeshBasicMaterial after the child-material attach has run,
+  // clobbering the new material — no emissive glow, color picker stuck.
   const fineMesh = materials ? (
-    <mesh geometry={geometry} material={materials} {...meshProps} />
+    <mesh key="multi-color" geometry={geometry} material={materials} {...meshProps} />
   ) : (
-    <mesh geometry={geometry} {...meshProps}>
+    <mesh key="single-color" geometry={geometry} {...meshProps}>
       <meshStandardMaterial {...singleMatProps} />
     </mesh>
   );
