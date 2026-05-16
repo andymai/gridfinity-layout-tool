@@ -24,6 +24,7 @@ export interface LidMeshDataState {
 import type { DesignId } from '@/core/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { ColorZone, FeatureColorConfig, HoverableZone, LipColorConfig } from './featureColors';
+import type { LidConfig } from './lid';
 
 /**
  * Eyedropper click anchor: which zone was hit and the viewport coords
@@ -47,7 +48,6 @@ export interface PickerOverlayState {
  * another (so a half-done swap pick doesn't leak into eyedropper mode).
  */
 export type ColorTool = 'eyedropper' | 'swap-pick-first' | 'swap-pick-second' | null;
-import type { LidConfig } from './lid';
 
 export type { LidConfig, LidClickRails, LidRailSide } from './lid';
 export {
