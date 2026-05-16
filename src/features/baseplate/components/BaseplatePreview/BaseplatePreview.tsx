@@ -34,6 +34,8 @@ import { useBaseplatePresetTransition } from './useBaseplatePresetTransition';
 import { BaseplatePreviewControls } from './BaseplatePreviewControls';
 import { overlayStatusText } from './overlayStatusText';
 import { useGenerationElapsed } from './useGenerationElapsed';
+import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
+import { detectWebGL, WebGLFallback } from '@/shared/webgl';
 
 interface BaseplatePreviewProps {
   width: number;
@@ -59,6 +61,7 @@ export function BaseplatePreview({
   const invalidateRef = useRef<(() => void) | null>(null);
   const { isDesktop } = useResponsive();
   const filamentColor = useSettingsStore((s) => s.settings.baseplateFilamentColor);
+  const webgl = detectWebGL();
 
   const {
     wasmStatus,
@@ -212,70 +215,34 @@ export function BaseplatePreview({
         </div>
       )}
 
-      <div
-        className={`h-full w-full transition-opacity duration-500 ${hasAnyMesh ? 'opacity-100' : 'opacity-0'}`}
-      >
-        <Canvas
-          frameloop="demand"
-          camera={{
-            position: new THREE.Vector3(100, -100, 80),
-            fov: 45,
-            near: 0.1,
-            far: 20000,
-          }}
-          onCreated={({ camera }) => {
-            camera.up.set(0, 0, 1);
-            camera.lookAt(0, 0, totalH / 2);
-          }}
-          gl={{ antialias: true }}
-          onPointerMissed={handlePointerMissed}
+      {!webgl.available && webgl.reason ? (
+        <WebGLFallback reason={webgl.reason} component="baseplate" />
+      ) : (
+        <div
+          className={`h-full w-full transition-opacity duration-500 ${hasAnyMesh ? 'opacity-100' : 'opacity-0'}`}
         >
-          <GradientBackground />
-          <SceneLighting />
+          <PanelErrorBoundary panelName="3D Preview">
+            <Canvas
+              frameloop="demand"
+              camera={{
+                position: new THREE.Vector3(100, -100, 80),
+                fov: 45,
+                near: 0.1,
+                far: 20000,
+              }}
+              onCreated={({ camera }) => {
+                camera.up.set(0, 0, 1);
+                camera.lookAt(0, 0, totalH / 2);
+              }}
+              gl={{ antialias: true }}
+              onPointerMissed={handlePointerMissed}
+            >
+              <GradientBackground />
+              <SceneLighting />
 
-          <CameraController
-            controlsRef={controlsRef}
-            invalidateRef={invalidateRef}
-            width={width}
-            depth={depth}
-            gridUnitMm={gridUnitMm}
-            paddingLeft={paddingLeft}
-            paddingRight={paddingRight}
-            paddingFront={paddingFront}
-            paddingBack={paddingBack}
-          />
-
-          {isSplit ? (
-            <SplitBaseplateMeshes
-              totalWidthUnits={width}
-              totalDepthUnits={depth}
-              gridUnitMm={gridUnitMm}
-              isPreview={hasDirectPreview}
-            />
-          ) : (
-            <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} />
-          )}
-
-          {/* Ghost outline only in assembled mode -- exploded scatters pieces beyond slab bounds */}
-          {splitViewMode !== 'exploded' && (
-            <GhostPaddingOutline
-              width={width}
-              depth={depth}
-              gridUnitMm={gridUnitMm}
-              paddingLeft={paddingLeft}
-              paddingRight={paddingRight}
-              paddingFront={paddingFront}
-              paddingBack={paddingBack}
-              isGenerating={generationStatus === 'generating'}
-            />
-          )}
-
-          <FootprintGrid width={width} depth={depth} gridUnitMm={gridUnitMm} />
-          {/* Hide measurement labels in exploded mode -- pieces scatter beyond these positions */}
-          {splitViewMode !== 'exploded' && (
-            <>
-              <BinAxisLabels width={width} depth={depth} gridUnitMm={gridUnitMm} />
-              <DimensionLabels
+              <CameraController
+                controlsRef={controlsRef}
+                invalidateRef={invalidateRef}
                 width={width}
                 depth={depth}
                 gridUnitMm={gridUnitMm}
@@ -284,26 +251,68 @@ export function BaseplatePreview({
                 paddingFront={paddingFront}
                 paddingBack={paddingBack}
               />
-            </>
-          )}
 
-          <OrbitControls
-            ref={controlsRef}
-            makeDefault
-            target={[0, 0, totalH / 2]}
-            enableDamping
-            dampingFactor={0.12}
-            rotateSpeed={0.8}
-            minDistance={20}
-            maxDistance={maxOrbitDistance}
-            maxPolarAngle={Math.PI * 0.85}
-            minPolarAngle={Math.PI * 0.05}
-            enablePan={isDesktop}
-            onStart={handleOrbitStart}
-            onEnd={handleOrbitEnd}
-          />
-        </Canvas>
-      </div>
+              {isSplit ? (
+                <SplitBaseplateMeshes
+                  totalWidthUnits={width}
+                  totalDepthUnits={depth}
+                  gridUnitMm={gridUnitMm}
+                  isPreview={hasDirectPreview}
+                />
+              ) : (
+                <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} />
+              )}
+
+              {/* Ghost outline only in assembled mode -- exploded scatters pieces beyond slab bounds */}
+              {splitViewMode !== 'exploded' && (
+                <GhostPaddingOutline
+                  width={width}
+                  depth={depth}
+                  gridUnitMm={gridUnitMm}
+                  paddingLeft={paddingLeft}
+                  paddingRight={paddingRight}
+                  paddingFront={paddingFront}
+                  paddingBack={paddingBack}
+                  isGenerating={generationStatus === 'generating'}
+                />
+              )}
+
+              <FootprintGrid width={width} depth={depth} gridUnitMm={gridUnitMm} />
+              {/* Hide measurement labels in exploded mode -- pieces scatter beyond these positions */}
+              {splitViewMode !== 'exploded' && (
+                <>
+                  <BinAxisLabels width={width} depth={depth} gridUnitMm={gridUnitMm} />
+                  <DimensionLabels
+                    width={width}
+                    depth={depth}
+                    gridUnitMm={gridUnitMm}
+                    paddingLeft={paddingLeft}
+                    paddingRight={paddingRight}
+                    paddingFront={paddingFront}
+                    paddingBack={paddingBack}
+                  />
+                </>
+              )}
+
+              <OrbitControls
+                ref={controlsRef}
+                makeDefault
+                target={[0, 0, totalH / 2]}
+                enableDamping
+                dampingFactor={0.12}
+                rotateSpeed={0.8}
+                minDistance={20}
+                maxDistance={maxOrbitDistance}
+                maxPolarAngle={Math.PI * 0.85}
+                minPolarAngle={Math.PI * 0.05}
+                enablePan={isDesktop}
+                onStart={handleOrbitStart}
+                onEnd={handleOrbitEnd}
+              />
+            </Canvas>
+          </PanelErrorBoundary>
+        </div>
+      )}
 
       {/* Camera controls + view toggle overlay */}
       <BaseplatePreviewControls

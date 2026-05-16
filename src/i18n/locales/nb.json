@@ -1779,5 +1779,8 @@
   "binDesigner.colors.zone.labelTab": "Merkelapp",
   "binDesigner.colors.zone.base": "Sokkel",
   "binDesigner.colors.zone.scoop": "Skje",
-  "binDesigner.colors.zone.dividers": "Skillevegger"
+  "binDesigner.colors.zone.dividers": "Skillevegger",
+  "webgl.fallback.title": "Nettleseren din kunne ikke laste 3D-gjengivelse",
+  "webgl.fallback.body": "WebGL er deaktivert eller støttes ikke. Prøv å aktivere maskinvareakselerasjon i nettleserinnstillingene, oppdatere grafikkdriverne eller bytte nettleser.",
+  "webgl.fallback.helpLink": "Sjekk WebGL-støtte"
 }

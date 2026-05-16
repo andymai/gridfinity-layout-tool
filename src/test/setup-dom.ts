@@ -5,6 +5,7 @@
 import '@testing-library/jest-dom';
 import { afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
+import { resetWebGLDetectionCacheForTests } from '@/shared/webgl/detectWebGL';
 
 // Suppress jsdom-environment noise from Three.js / React Three Fiber.
 if (typeof window !== 'undefined') {
@@ -33,6 +34,25 @@ if (typeof Element !== 'undefined') {
   Element.prototype.setPointerCapture = () => {};
   Element.prototype.releasePointerCapture = () => {};
   Element.prototype.hasPointerCapture = () => false;
+}
+
+// jsdom returns null for any WebGL context; teach getContext to return a
+// non-lost context object instead so detectWebGL() resolves "available" by
+// default. Tests covering the WebGL-unavailable path override this locally
+// with vi.spyOn.
+if (typeof HTMLCanvasElement !== 'undefined') {
+  const minimalWebGl = { isContextLost: () => false } as unknown as WebGLRenderingContext;
+  const originalGetContext = HTMLCanvasElement.prototype.getContext;
+  HTMLCanvasElement.prototype.getContext = function (
+    this: HTMLCanvasElement,
+    contextId: string,
+    options?: unknown
+  ): RenderingContext | null {
+    if (contextId === 'webgl' || contextId === 'webgl2' || contextId === 'experimental-webgl') {
+      return minimalWebGl;
+    }
+    return originalGetContext.call(this, contextId as '2d', options);
+  } as typeof HTMLCanvasElement.prototype.getContext;
 }
 
 if (typeof window !== 'undefined') {
@@ -82,4 +102,5 @@ afterEach(() => {
   if (typeof document !== 'undefined') {
     cleanup();
   }
+  resetWebGLDetectionCacheForTests();
 });
