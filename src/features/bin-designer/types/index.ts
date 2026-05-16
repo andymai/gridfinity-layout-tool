@@ -636,6 +636,7 @@ export interface DesignerState {
   updateHandles: (partial: Partial<HandleConfig>) => void;
   updateHandleSide: (side: HandleWallSide, partial: Partial<HandleSide>) => void;
   updateFeatureColors: (patch: {
+    enabled?: boolean;
     body?: string;
     lip?: Partial<LipColorConfig>;
     labelTab?: string;

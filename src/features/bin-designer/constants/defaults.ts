@@ -149,8 +149,11 @@ const LEGACY_SLOT_COLORS: Record<string, string> = {
   slot4: '#ef4444',
 };
 
-/** Default feature color config: all zones use the default bin color (light grey) */
+/** Default feature color config: all zones use the default bin color (light grey).
+ *  Multi-color is opt-in per design — `enabled: false` keeps fresh designs at the
+ *  single-body-color baseline until the user flips the toggle. */
 export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
+  enabled: false,
   body: '#d4d8dc',
   lip: {
     frontLeft: '#d4d8dc',
@@ -165,6 +168,7 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
 } as const;
 
 interface LegacyFeatureColorInput {
+  enabled?: boolean;
   body?: string;
   /** Legacy single-color string or the new 4-corner object. */
   lip?: string | Partial<FeatureColorConfig['lip']>;
@@ -186,6 +190,11 @@ function resolveColor(raw: string | undefined, fallback: string): string {
  *   four corners inherit that value so existing designs look identical.
  * - New zones (base / scoop / dividers) missing → inherit the body color
  *   so the visual rendering is unchanged after migration.
+ *
+ * The `enabled` field is back-filled from the colors themselves on the first
+ * load after this field was introduced: any pre-existing design that already
+ * customized at least one zone away from body is treated as having multi-color
+ * turned on, so the user's existing colored designs keep their look.
  */
 function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): FeatureColorConfig {
   if (!raw) return DEFAULT_FEATURE_COLOR_CONFIG;
@@ -208,14 +217,23 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
     lip = { frontLeft: body, frontRight: body, backRight: body, backLeft: body };
   }
 
-  return {
-    body,
-    lip,
+  const base = resolveColor(raw.base, body);
+  const scoop = resolveColor(raw.scoop, body);
+  const dividers = resolveColor(raw.dividers, body);
+
+  const bodyLower = body.toLowerCase();
+  const hasCustomColor = [
     labelTab,
-    base: resolveColor(raw.base, body),
-    scoop: resolveColor(raw.scoop, body),
-    dividers: resolveColor(raw.dividers, body),
-  };
+    base,
+    scoop,
+    dividers,
+    lip.frontLeft,
+    lip.frontRight,
+    lip.backRight,
+    lip.backLeft,
+  ].some((c) => c.toLowerCase() !== bodyLower);
+
+  return { enabled: raw.enabled ?? hasCustomColor, body, lip, labelTab, base, scoop, dividers };
 }
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */

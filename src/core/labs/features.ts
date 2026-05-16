@@ -84,9 +84,10 @@ export const FEATURE_FLAGS = [
     name: 'Multi-Color 3MF Export',
     description:
       'Assign different filament colors to body, lip, and label tabs. Exports multi-color 3MF files for multi-material printers.',
-    status: 'experimental',
+    status: 'graduated',
     risk: 'low',
     addedAt: '2026-03',
+    graduatedAt: '2026-05',
     requiresRefresh: false,
   },
   {

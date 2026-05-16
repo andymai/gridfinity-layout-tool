@@ -15,6 +15,8 @@ interface StickyGroupHeaderProps {
   title: string;
   defaultExpanded?: boolean;
   summary?: string;
+  /** Optional inline badge rendered next to the title (e.g. "Experimental"). */
+  badge?: ReactNode;
   children: ReactNode;
 }
 
@@ -22,6 +24,7 @@ export function StickyGroupHeader({
   title,
   defaultExpanded = true,
   summary,
+  badge,
   children,
 }: StickyGroupHeaderProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -47,6 +50,7 @@ export function StickyGroupHeader({
         <span className="text-[11px] font-bold text-content-tertiary uppercase tracking-widest">
           {title}
         </span>
+        {badge}
         {summary && (
           <span
             className={`ml-auto min-w-0 truncate text-xs tabular-nums transition-colors ${

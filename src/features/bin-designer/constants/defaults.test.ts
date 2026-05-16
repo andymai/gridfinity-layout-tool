@@ -373,6 +373,7 @@ describe('migrateParams', () => {
   it('should provide default featureColors when absent', () => {
     const result = migrateParams({});
     expect(result.featureColors).toEqual({
+      enabled: false,
       body: '#d4d8dc',
       lip: {
         frontLeft: '#d4d8dc',
@@ -417,6 +418,7 @@ describe('migrateParams', () => {
 
   it('should preserve hex featureColors through double migration', () => {
     const hex = {
+      enabled: true,
       body: '#ef4444',
       lip: {
         frontLeft: '#3b82f6',

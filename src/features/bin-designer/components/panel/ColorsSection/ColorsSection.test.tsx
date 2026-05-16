@@ -9,6 +9,7 @@ const SINGLE = '#d4d8dc';
 
 function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig {
   return {
+    enabled: true,
     body: SINGLE,
     lip: { frontLeft: SINGLE, frontRight: SINGLE, backRight: SINGLE, backLeft: SINGLE },
     labelTab: SINGLE,

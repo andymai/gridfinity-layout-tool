@@ -18,7 +18,6 @@ import { Detailed } from '@react-three/drei';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry, useCoarseGeometry } from '@/shared/components/preview/useMeshGeometry';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { computeActiveZones } from '@/features/bin-designer/types/featureColors';
 import {
   buildMultiColorGroups,
@@ -35,7 +34,6 @@ interface BinMeshProps {
 
 export function BinMesh({ wireframe, color }: BinMeshProps) {
   const { invalidate } = useThree();
-  const multiColorEnabled = useFeatureFlag('multi_color_export');
 
   const {
     vertices,
@@ -69,6 +67,8 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       hoveredColorZone: s.ui.hoveredColorZone,
     }))
   );
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve runtime fallback
+  const multiColorEnabled = featureColors?.enabled ?? false;
 
   const activeZones = useMemo(
     () =>

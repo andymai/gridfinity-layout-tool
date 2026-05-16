@@ -21,7 +21,6 @@ import type {
   ThreeMFPrintSettings,
 } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
-import { isFeatureEnabled } from '@/shared/hooks/useFeatureFlag';
 import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
 import { computeActiveZones } from '@/features/bin-designer/types/featureColors';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
@@ -138,12 +137,7 @@ export function buildSinglePiece3MF(
 
   let colorConfig: ThreeMFColorConfig | undefined;
   /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups and featureColors are typed non-null, but runtime guard is intentional belt-and-suspenders against shape drift in the generation pipeline */
-  if (
-    applyMultiColor &&
-    isFeatureEnabled('multi_color_export') &&
-    faceGroups &&
-    params.featureColors
-  ) {
+  if (applyMultiColor && params.featureColors?.enabled && faceGroups && params.featureColors) {
     /* eslint-enable @typescript-eslint/no-unnecessary-condition */
     const triangleCount = vertices.length / 9;
     colorConfig =
@@ -186,7 +180,7 @@ export function buildMultiObject3MF(
 
     let colorConfig: ThreeMFColorConfig | undefined;
     /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups and featureColors are typed non-null, but runtime guard mirrors the single-piece branch as belt-and-suspenders against pipeline shape drift */
-    if (i === 0 && isFeatureEnabled('multi_color_export') && faceGroups && params.featureColors) {
+    if (i === 0 && params.featureColors?.enabled && faceGroups && params.featureColors) {
       /* eslint-enable @typescript-eslint/no-unnecessary-condition */
       const triangleCount = parseResult.value.vertices.length / 9;
       colorConfig =
