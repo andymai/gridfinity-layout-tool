@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.87.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.86.3...gridfinity-layout-tool-v4.87.0) (2026-05-16)
+
+
+### Features
+
+* **bin-designer:** eyedropper + swap tools for multi-color zones ([#1678](https://github.com/andymai/gridfinity-layout-tool/issues/1678)) ([9d22832](https://github.com/andymai/gridfinity-layout-tool/commit/9d22832d0b1cd757244bc034c7d5e2f76f83b2e9))
+
 ## [4.86.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.86.2...gridfinity-layout-tool-v4.86.3) (2026-05-16)
 
 
