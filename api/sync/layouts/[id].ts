@@ -8,6 +8,7 @@ import { isValidationError, validateShareLayout } from '../../lib/validation.js'
 import { deleteBlob, getJson, putJson } from '../../lib/blobStore.js';
 import { getEntry, tombstone, upsertEntry, type IndexEntry } from '../../lib/userIndex.js';
 import { checkQuota } from '../../lib/quota.js';
+import { compareForTiebreaker } from '../../lib/lwwTiebreaker.js';
 
 export const SCHEMA_VERSION = 1 as const;
 
@@ -137,15 +138,36 @@ async function handlePut(
   // LWW comparison. `deletedAt === undefined` is the explicit live-entry
   // check — `!existing.deletedAt` would also accept 0/NaN, which would
   // misclassify any future tombstone written with such a value.
-  if (existing && existing.deletedAt === undefined && existing.modifiedAt >= modifiedAt) {
-    const stored = await getJson<LayoutEnvelope>(blobPath(userId, id));
-    res.status(409).json({
-      error: 'A newer version already exists.',
-      code: ErrorCode.VALIDATION_ERROR,
-      stored,
-      indexEntry: existing,
-    });
-    return;
+  if (existing && existing.deletedAt === undefined) {
+    if (existing.modifiedAt > modifiedAt) {
+      const stored = await getJson<LayoutEnvelope>(blobPath(userId, id));
+      res.status(409).json({
+        error: 'A newer version already exists.',
+        code: ErrorCode.VALIDATION_ERROR,
+        stored,
+        indexEntry: existing,
+      });
+      return;
+    }
+    if (existing.modifiedAt === modifiedAt) {
+      // Equal-ms tie: deterministic tiebreaker on canonical payload hash
+      // so two devices that produce the same modifiedAt for distinct
+      // payloads converge on the same winner — instead of the opaque
+      // "whoever raced to the index first" behavior.
+      const stored = await getJson<LayoutEnvelope>(blobPath(userId, id));
+      const order = compareForTiebreaker(validation.layout, stored?.layout);
+      if (order <= 0) {
+        res.status(409).json({
+          error: 'A newer version already exists.',
+          code: ErrorCode.VALIDATION_ERROR,
+          stored,
+          indexEntry: existing,
+        });
+        return;
+      }
+      // order === 1: candidate hash sorts lexicographically larger, so it
+      // wins the tie and falls through to the normal write path below.
+    }
   }
 
   // Tombstone protection: a stale edit can't resurrect a deletion that
