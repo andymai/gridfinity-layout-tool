@@ -4,6 +4,7 @@ import {
   getEntry,
   getIndex,
   getIndexUpdatedAt,
+  TOMBSTONE_RETENTION_MS,
   tombstone,
   upsertEntry,
   type IndexEntry,
@@ -21,6 +22,11 @@ function makeRedisMock() {
     hashes.set(k, h);
     return isNew ? 1 : 0;
   };
+  const hdelKey = (k: string, field: string): number => {
+    const h = hashes.get(k);
+    if (!h) return 0;
+    return h.delete(field) ? 1 : 0;
+  };
   const setKey = (k: string, v: string): 'OK' => {
     store.set(k, v);
     return 'OK';
@@ -32,12 +38,13 @@ function makeRedisMock() {
     set: vi.fn(async (k: string, v: string) => setKey(k, v)),
     hset: vi.fn(async (k: string, field: string, val: string) => hsetKey(k, field, val)),
     hget: vi.fn(async (k: string, field: string) => hashes.get(k)?.get(field) ?? null),
+    hdel: vi.fn(async (k: string, field: string) => hdelKey(k, field)),
     hgetall: vi.fn(async (k: string) => {
       const h = hashes.get(k);
       if (!h) return {};
       return Object.fromEntries(h);
     }),
-    pipeline: vi.fn(() => makePipelineMock(setKey, hsetKey)),
+    pipeline: vi.fn(() => makePipelineMock(setKey, hsetKey, hdelKey)),
   } as unknown as Redis & {
     store: Map<string, string>;
     hashes: Map<string, Map<string, string>>;
@@ -46,7 +53,8 @@ function makeRedisMock() {
 
 function makePipelineMock(
   setKey: (k: string, v: string) => 'OK',
-  hsetKey: (k: string, field: string, val: string) => number
+  hsetKey: (k: string, field: string, val: string) => number,
+  hdelKey: (k: string, field: string) => number
 ) {
   const queue: Array<() => [Error | null, unknown]> = [];
   const pipe = {
@@ -56,6 +64,10 @@ function makePipelineMock(
     },
     hset: (k: string, field: string, val: string) => {
       queue.push(() => [null, hsetKey(k, field, val)]);
+      return pipe;
+    },
+    hdel: (k: string, field: string) => {
+      queue.push(() => [null, hdelKey(k, field)]);
       return pipe;
     },
     exec: vi.fn(async () => queue.map((fn) => fn())),
@@ -135,5 +147,64 @@ describe('userIndex', () => {
 
   it('getIndexUpdatedAt returns 0 for a user who has never written', async () => {
     expect(await getIndexUpdatedAt(mockRedis, 'fresh-user')).toBe(0);
+  });
+
+  describe('tombstone sweep on upsertEntry', () => {
+    // Tombstones used to live forever in the user-index hash. Every
+    // manifest poll HGETALLs that hash, so a power user who churned a
+    // lot of items would inflate every poll response forever. The fix
+    // is an opportunistic sweep: on each write, delete tombstones older
+    // than TOMBSTONE_RETENTION_MS.
+    it('removes tombstones older than the retention window when a new entry is upserted', async () => {
+      const now = Date.now();
+      const stale = now - TOMBSTONE_RETENTION_MS - 1_000;
+      const fresh = now - 1_000;
+
+      // Seed: one stale tombstone, one fresh tombstone, one live entry.
+      await tombstone(mockRedis, 'u1', 'layouts', 'old-deleted', stale);
+      await tombstone(mockRedis, 'u1', 'layouts', 'recent-deleted', fresh);
+      await upsertEntry(mockRedis, 'u1', 'layouts', 'alive', {
+        modifiedAt: fresh,
+        sizeBytes: 100,
+      });
+
+      // Another write triggers the sweep.
+      await upsertEntry(mockRedis, 'u1', 'layouts', 'new-entry', {
+        modifiedAt: now,
+        sizeBytes: 200,
+      });
+
+      const index = await getIndex(mockRedis, 'u1', 'layouts');
+      expect(Object.keys(index).sort()).toEqual(['alive', 'new-entry', 'recent-deleted']);
+      expect(index['old-deleted']).toBeUndefined();
+    });
+
+    it('does not remove non-tombstone (live) entries even if they are very old', async () => {
+      const ancient = Date.now() - TOMBSTONE_RETENTION_MS * 10;
+      await upsertEntry(mockRedis, 'u1', 'layouts', 'ancient-live', {
+        modifiedAt: ancient,
+        sizeBytes: 100,
+      });
+      await upsertEntry(mockRedis, 'u1', 'layouts', 'trigger', {
+        modifiedAt: Date.now(),
+        sizeBytes: 200,
+      });
+
+      const index = await getIndex(mockRedis, 'u1', 'layouts');
+      expect(index['ancient-live']).toBeDefined();
+    });
+
+    it('skips the id being written even when it is itself a stale tombstone (no self-conflict)', async () => {
+      const stale = Date.now() - TOMBSTONE_RETENTION_MS - 1_000;
+      await tombstone(mockRedis, 'u1', 'layouts', 'self', stale);
+
+      // Re-tombstone with a fresh deletedAt: the entry must end up
+      // present with the new value, not deleted by the sweep step.
+      await tombstone(mockRedis, 'u1', 'layouts', 'self', Date.now());
+
+      const entry = await getEntry(mockRedis, 'u1', 'layouts', 'self');
+      expect(entry).not.toBeNull();
+      expect(entry?.deletedAt).toBeGreaterThan(stale);
+    });
   });
 });
