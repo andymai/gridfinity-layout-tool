@@ -5,6 +5,7 @@
 import '@testing-library/jest-dom';
 import { afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
+import { resetWebGLDetectionCacheForTests } from '@/shared/webgl/detectWebGL';
 
 // Suppress jsdom-environment noise from Three.js / React Three Fiber.
 if (typeof window !== 'undefined') {
@@ -101,4 +102,5 @@ afterEach(() => {
   if (typeof document !== 'undefined') {
     cleanup();
   }
+  resetWebGLDetectionCacheForTests();
 });

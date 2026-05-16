@@ -21,7 +21,6 @@ export function WebGLFallback({ reason, component }: WebGLFallbackProps) {
     <div
       className="flex h-full min-h-[200px] w-full flex-col items-center justify-center p-6 text-center"
       role="alert"
-      aria-live="polite"
     >
       <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-error/20">
         <svg
