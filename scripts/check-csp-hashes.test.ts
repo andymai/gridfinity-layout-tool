@@ -28,10 +28,16 @@ interface VercelConfig {
  * `type="…"` (JSON-LD, module, etc.) and isn't `src="…"` (external).
  * Case-insensitive so `<SCRIPT>` or `<script defer>` aren't silently
  * skipped — the test exists precisely to catch what `index.html` ships.
+ *
+ * Closing tag matches anything between `</script` and `>` (not just
+ * pure whitespace) so browser-permissive forms like `</script foo=bar>`
+ * or `</script\n\tjunk>` still terminate the body — otherwise CodeQL
+ * `js/bad-tag-filter` (and a real `index.html` typo) could slip a
+ * script past hash verification.
  */
 function findInlineScripts(html: string): string[] {
   const scripts: string[] = [];
-  for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
+  for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\b[^>]*>/gi)) {
     const attrs = m[1];
     if (/\bsrc\s*=/i.test(attrs)) continue;
     if (/\btype\s*=/i.test(attrs)) continue;
