@@ -488,6 +488,27 @@ describe('validateDesignerShare', () => {
       expect(result.valid).toBe(true);
     });
 
+    // The client `migrateParams` backfills `featureColors.enabled` on every
+    // load (see `defaults.ts:230`), so every synced design carries this key.
+    // The validator must accept it or every design sync fails with 400.
+    it('accepts the multi-color enabled toggle', () => {
+      const result = withColors({ enabled: true, body: '#3b82f6' });
+      expect(result.valid).toBe(true);
+    });
+
+    it('accepts enabled: false', () => {
+      const result = withColors({ enabled: false, body: '#3b82f6' });
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects non-boolean enabled', () => {
+      const result = withColors({ enabled: 'yes', body: '#3b82f6' });
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toMatch(/enabled/);
+      }
+    });
+
     it('accepts the legacy lip:string shape', () => {
       const result = withColors({ body: '#3b82f6', lip: '#ff0000' });
       expect(result.valid).toBe(true);

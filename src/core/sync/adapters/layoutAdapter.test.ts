@@ -21,7 +21,8 @@ vi.mock('@/core/storage', () => ({
   loadLayoutSync: (id: string) => loadLayoutSyncMock(id),
 }));
 
-import { layoutAdapter } from './layoutAdapter';
+import { layoutAdapter, normalizeIncomingLayout } from './layoutAdapter';
+import type { Bin, Layout } from '@/core/types';
 import type { AdapterChange } from './types';
 
 const minimalLayout = (name: string): { name: string } => ({ name });
@@ -139,5 +140,44 @@ describe('layoutAdapter.subscribe', () => {
 
     setLibrary([entry('lay-1', 9999)]);
     expect(events).toEqual([]);
+  });
+});
+
+describe('normalizeIncomingLayout', () => {
+  function bin(overrides: Partial<Bin> & { notes?: unknown; label?: unknown } = {}): Bin {
+    return {
+      id: 'b1',
+      layerId: 'lay-1',
+      x: 0,
+      y: 0,
+      width: 1,
+      depth: 1,
+      height: 1,
+      category: 'cat-1',
+      label: '',
+      notes: '',
+      ...overrides,
+    } as Bin;
+  }
+  const layoutWith = (bins: Bin[]): Layout => ({ bins }) as unknown as Layout;
+
+  it('defaults missing notes and label to empty string', () => {
+    const out = normalizeIncomingLayout(layoutWith([bin({ notes: undefined, label: undefined })]));
+    expect(out.bins[0].notes).toBe('');
+    expect(out.bins[0].label).toBe('');
+  });
+
+  it('returns the same reference when every bin is already valid', () => {
+    // Reference equality matters: without it every poll cycle reallocates
+    // the bin array and churns downstream shallow-equality selectors.
+    const layout = layoutWith([bin({ notes: 'hi', label: 'screws' })]);
+    expect(normalizeIncomingLayout(layout)).toBe(layout);
+  });
+
+  it('preserves other bin fields when healing', () => {
+    const out = normalizeIncomingLayout(
+      layoutWith([bin({ x: 5, y: 7, category: 'tools', notes: undefined })])
+    );
+    expect(out.bins[0]).toMatchObject({ x: 5, y: 7, category: 'tools', notes: '' });
   });
 });

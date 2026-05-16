@@ -1,6 +1,6 @@
 import { isErr } from '@/core/result';
 import { useLayoutStore, useLibraryStore } from '@/core/store';
-import type { Layout, LayoutEntry, LayoutId, LayoutLibrary } from '@/core/types';
+import type { Bin, Layout, LayoutEntry, LayoutId, LayoutLibrary } from '@/core/types';
 import {
   computePreview,
   loadLayoutAsync,
@@ -9,6 +9,33 @@ import {
   saveLibrary,
 } from '@/core/storage';
 import type { AdapterChange, AdapterChangeListener, LayoutAdapter, SyncableItem } from './types';
+
+// Wider than `Bin` because legacy cloud blobs (pre-validator-fix) literally
+// omit `notes`/`label`. Without this the runtime guard below reads as
+// unreachable to TypeScript.
+type IncomingBin = Omit<Bin, 'notes' | 'label'> & { notes?: unknown; label?: unknown };
+type IncomingLayout = Omit<Layout, 'bins'> & { bins: IncomingBin[] };
+
+/**
+ * Default missing `notes`/`label` to '' so the 3D view's `bin.notes.trim()`
+ * doesn't crash on legacy cloud blobs written before `api/lib/validation.ts`
+ * began emitting both as required strings.
+ */
+export function normalizeIncomingLayout(layout: Layout): Layout {
+  const bins = (layout as IncomingLayout).bins;
+  const needsHealing = bins.some((b) => typeof b.notes !== 'string' || typeof b.label !== 'string');
+  if (!needsHealing) return layout;
+  return {
+    ...layout,
+    bins: bins.map(
+      (b): Bin => ({
+        ...b,
+        notes: typeof b.notes === 'string' ? b.notes : '',
+        label: typeof b.label === 'string' ? b.label : '',
+      })
+    ),
+  };
+}
 
 /**
  * `LayoutAdapter` implementation backed by `useLibraryStore` (entry
@@ -63,7 +90,7 @@ export const layoutAdapter: LayoutAdapter = {
   async applyRemote(item: SyncableItem<Layout>): Promise<void> {
     suppress(item.id);
 
-    const layout = item.payload;
+    const layout = normalizeIncomingLayout(item.payload);
     const saveResult = await saveLayoutAsync(item.id, layout);
     if (!saveResult.ok) {
       // Storage failure — the engine catches and surfaces a toast. We

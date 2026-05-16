@@ -68,8 +68,10 @@ interface BinShape {
   depth: number;
   height: number;
   category?: string;
-  label?: string;
-  notes?: string;
+  // Required (empty when absent) to match the local `Bin` invariant; the 3D
+  // view crashes on `bin.notes.trim()` if these arrive as undefined.
+  label: string;
+  notes: string;
   customProperties?: Record<string, string>;
 }
 
@@ -283,8 +285,8 @@ export function validateShareLayout(data: unknown, jsonSize: number): Validation
       depth: bin.depth,
       height: bin.height,
       category: bin.category ? sanitizeString(bin.category, 64) : undefined,
-      label: bin.label ? sanitizeString(bin.label, SHARE_CONSTRAINTS.LABEL_MAX_LENGTH) : undefined,
-      notes: bin.notes ? sanitizeString(bin.notes, SHARE_CONSTRAINTS.NOTES_MAX_LENGTH) : undefined,
+      label: bin.label ? sanitizeString(bin.label, SHARE_CONSTRAINTS.LABEL_MAX_LENGTH) : '',
+      notes: bin.notes ? sanitizeString(bin.notes, SHARE_CONSTRAINTS.NOTES_MAX_LENGTH) : '',
       customProperties: validatedCustomProperties,
     });
   }
@@ -355,6 +357,9 @@ function isValidLayer(value: unknown): value is LayerShape {
 
 function isValidBin(value: unknown): value is BinShape {
   if (!isObject(value)) return false;
+  // `category`/`label`/`notes` must be string-or-absent before they reach
+  // `sanitizeString`, which calls `.replace` and throws on non-strings.
+  const optString = (v: unknown): boolean => v === undefined || typeof v === 'string';
   return (
     typeof value.id === 'string' &&
     typeof value.layerId === 'string' &&
@@ -365,7 +370,10 @@ function isValidBin(value: unknown): value is BinShape {
     isNumber(value.height) &&
     value.width > 0 &&
     value.depth > 0 &&
-    value.height > 0
+    value.height > 0 &&
+    optString(value.category) &&
+    optString(value.label) &&
+    optString(value.notes)
   );
 }
 
