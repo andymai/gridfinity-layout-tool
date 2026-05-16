@@ -219,7 +219,6 @@ const baseplateParamsSchema = z.object({
   paddingRight: z.number().min(0).max(100),
   paddingFront: z.number().min(0).max(100),
   paddingBack: z.number().min(0).max(100),
-  connectorStyle: z.enum(['none', 'dovetail', 'snap']).optional(),
   connectorNubs: z.boolean().optional(),
   invertDovetails: z.boolean().optional(),
   lightweight: z.boolean().optional(),

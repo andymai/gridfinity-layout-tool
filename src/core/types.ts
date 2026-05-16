@@ -28,12 +28,6 @@ export interface Layout {
   baseplateParams?: BaseplateParams; // Per-layout baseplate configuration
 }
 
-/** Connector style on split-piece join edges.
- *  - 'none': no inter-piece connector
- *  - 'dovetail': integral trapezoidal tongue/groove
- *  - 'snap': lateral pocket for a separately printed rabbit-clip */
-export type ConnectorStyle = 'none' | 'dovetail' | 'snap';
-
 /** Baseplate generation parameters stored per-layout.
  * Width/depth/gridUnitMm are derived from the layout's drawer at generation time unless
  * syncWithLayout is false, in which case baseplateWidth/baseplateDepth override drawer dims.
@@ -46,11 +40,7 @@ export interface BaseplateParams {
   readonly paddingRight: Mm;
   readonly paddingFront: Mm;
   readonly paddingBack: Mm;
-  /** Connector style on split piece join edges. Defaults to 'none' when unset.
-   *  When unset but `connectorNubs === true`, treated as 'dovetail' for
-   *  backwards compatibility with layouts saved before snap connectors. */
-  readonly connectorStyle?: ConnectorStyle;
-  /** @deprecated Use `connectorStyle` instead. Read for backwards compatibility. */
+  /** Enable registration nubs/holes on split piece join edges (default false). */
   readonly connectorNubs?: boolean;
   /** Remove center floor material, keeping only magnet pads (default true). */
   readonly lightweight?: boolean;
@@ -60,8 +50,7 @@ export interface BaseplateParams {
   readonly baseplateWidth?: GridUnits;
   /** Custom grid depth in units, only used when syncWithLayout is false. */
   readonly baseplateDepth?: GridUnits;
-  /** Swap tongue/groove convention on all join edges (default false).
-   *  Only meaningful when `connectorStyle === 'dovetail'`. */
+  /** Swap tongue/groove convention on all join edges (default false). */
   readonly invertDovetails?: boolean;
   /**
    * When true, optimize for fewer unique part designs at the cost of more total

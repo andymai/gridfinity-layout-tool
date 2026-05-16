@@ -35,8 +35,6 @@ export function buildFullParams(
     paddingBack: stored.paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
-    connectorStyle: stored.connectorStyle,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- forward legacy field for backwards-compat reads downstream
     connectorNubs: stored.connectorNubs,
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,

@@ -12,7 +12,6 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
-import { resolveConnectorStyle } from '@/shared/types/bin';
 import type {
   BaseplatePiece,
   BaseplateTiling,
@@ -54,17 +53,16 @@ function makeAxisConfig(
   bedMm: number,
   paddingStart: number,
   paddingEnd: number,
-  hasDovetailTongues: boolean,
+  connectorNubs: boolean | undefined,
   invertDovetails: boolean | undefined,
   preferIdenticalPieces: boolean | undefined
 ): AxisConfig {
   // Both axes follow the same rule: the start side (left / front) is male iff !invertDovetails.
-  // Only dovetails extend the slab bbox; snap-clip through-holes don't change footprint.
   // Under preferIdenticalPieces, every join edge places a tongue+groove pair —
   // so both sides claim a tongue and the bed budget must reserve for both,
   // not just the conventionally-male side.
-  const tongue = hasDovetailTongues ? TONGUE_PROTRUSION_MM : 0;
-  const paired = !!preferIdenticalPieces && hasDovetailTongues;
+  const tongue = connectorNubs ? TONGUE_PROTRUSION_MM : 0;
+  const paired = !!preferIdenticalPieces && !!connectorNubs;
   if (paired) {
     return { bedMm, paddingStart, paddingEnd, startMaleMm: tongue, endMaleMm: tongue };
   }
@@ -368,23 +366,23 @@ export function computeBaseplateTiling(
     paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
+    connectorNubs,
     invertDovetails,
     preferIdenticalPieces,
   } = params;
+  // preferIdenticalPieces only takes effect when connectors are enabled — the
+  // UI checkbox is hidden under that gate, but the stored flag persists, so
+  // gate here too to keep behavior aligned with the visible control.
+  const palindromic = !!preferIdenticalPieces && !!connectorNubs;
+
   // Pieces with dovetail connectors include male tongue protrusions in their bbox
   // (#1498). The planner reserves bed budget for those tongues so the resulting
-  // STLs actually fit the bed. Snap-clip holes don't extend the bbox.
-  const hasDovetailTongues = resolveConnectorStyle(params) === 'dovetail';
-  // preferIdenticalPieces only takes effect when dovetail connectors are
-  // enabled — the UI checkbox is hidden under that gate, but the stored flag
-  // persists, so gate here too to keep behavior aligned with the visible control.
-  const palindromic = !!preferIdenticalPieces && hasDovetailTongues;
-
+  // STLs actually fit the bed.
   const xAxis = makeAxisConfig(
     printBedWidthMm,
     paddingLeft,
     paddingRight,
-    hasDovetailTongues,
+    connectorNubs,
     invertDovetails,
     palindromic
   );
@@ -392,7 +390,7 @@ export function computeBaseplateTiling(
     printBedDepthMm,
     paddingFront,
     paddingBack,
-    hasDovetailTongues,
+    connectorNubs,
     invertDovetails,
     palindromic
   );
@@ -535,8 +533,6 @@ export function pieceToBaseplateParams(
     fractionalEdgeX: flipX ? flip(fracX) : fracX,
     fractionalEdgeY: flipY ? flip(fracY) : fracY,
     edges: rot ? rotateEdges180(piece.edges) : piece.edges,
-    connectorStyle: parentParams.connectorStyle,
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- forward legacy field for backwards-compat reads downstream
     connectorNubs: parentParams.connectorNubs,
     invertDovetails: parentParams.invertDovetails,
     preferIdenticalPieces: parentParams.preferIdenticalPieces,

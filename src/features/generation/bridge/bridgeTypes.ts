@@ -64,13 +64,6 @@ export interface BaseplateExportResult {
   readonly format: ExportFormat;
 }
 
-/** Result from a successful snap-clip export (single STL/STEP). */
-export interface SnapClipExportResult {
-  readonly data: ArrayBuffer;
-  readonly fileName: string;
-  readonly format: ExportFormat;
-}
-
 /** Aggregated cache performance stats for analytics. */
 export interface CacheStatsPayload {
   readonly total_hits: number;

@@ -26,7 +26,6 @@ import { generatePrintGuide } from '../utils/printGuide';
 import { generateBaseplateFileName, toNamingParams } from '../utils/fileNaming';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat } from '@/shared/types/bin';
-import { resolveConnectorStyle } from '@/shared/types/bin';
 
 interface UseBaseplateExportReturn {
   readonly isExporting: boolean;
@@ -200,14 +199,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             pieces.push({ data, label: name });
           }
 
-          let snapClipFile: { name: string; data: ArrayBuffer } | null = null;
-          if (resolveConnectorStyle(fullParams) === 'snap') {
-            const clipFormat = format === '3mf' ? 'stl' : format;
-            const clipResult = await bridge.exportSnapClip(clipFormat);
-            const clipExt = clipFormat === 'step' ? '.step' : '.stl';
-            snapClipFile = { name: `snap-clip${clipExt}`, data: clipResult.data };
-          }
-
+          // Generate print guide
           const guideText = generatePrintGuide({
             tiling,
             groups,
@@ -215,17 +207,11 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             parentParams: fullParams,
             fileExtension: extension,
             baseFileName: baseNameNoExt,
-            snapClipFileName: snapClipFile?.name,
           });
 
-          const extraFiles: { name: string; content: string | ArrayBuffer }[] = [
+          const zip = await packagePiecesAsZip(pieces, baseNameNoExt, extension, [
             { name: 'print-guide.txt', content: guideText },
-          ];
-          if (snapClipFile) {
-            extraFiles.push({ name: snapClipFile.name, content: snapClipFile.data });
-          }
-
-          const zip = await packagePiecesAsZip(pieces, baseNameNoExt, extension, extraFiles);
+          ]);
           triggerDownload(zip, `${baseNameNoExt}.zip`);
 
           if (uniqueCount < totalPieces) {

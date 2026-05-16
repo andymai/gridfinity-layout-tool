@@ -2,6 +2,7 @@
   "app.skipToGridEditor": "Passer au planificateur de grille",
   "baseplate.brepFinalizeFailed": "Impossible de finaliser l'aperçu haute fidélité — le fichier exporté peut légèrement différer.",
   "baseplate.computingGeometry": "Affinage...",
+  "baseplate.connectorNubs": "Dovetail connectors",
   "baseplate.cornerRadius": "Rayon de coin",
   "baseplate.cornerRadiusBL": "Bas-gauche",
   "baseplate.cornerRadiusBR": "Bas-droit",
@@ -1719,13 +1720,5 @@
   "syncDialog.accountMismatch.title": "Compte différent",
   "syncDialog.accountMismatch.message": "Les {count} plans et créations sur cet appareil étaient liés à un autre compte. Les ajouter à {account} ou les supprimer ?",
   "syncDialog.accountMismatch.merge": "Ajouter à {account}",
-  "syncDialog.accountMismatch.discard": "Supprimer",
-  "baseplate.connectors.dovetail": "Queue d'aronde",
-  "baseplate.connectors.label": "Connecteurs",
-  "baseplate.connectors.none": "Aucun",
-  "baseplate.connectors.snap": "Clip à pression",
-  "baseplate.snapClipLifted": "Soulevé",
-  "baseplate.snapClipSeated": "En place",
-  "baseplate.snapClipExplodeSlider": "Soulever les clips pour inspection",
-  "baseplate.connectors.tooltip": "Comment les plaques adjacentes restent alignées. Les queues d'aronde sont intégrées ; les clips à pression s'impriment séparément."
+  "syncDialog.accountMismatch.discard": "Supprimer"
 }

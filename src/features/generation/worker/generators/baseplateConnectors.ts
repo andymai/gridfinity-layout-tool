@@ -1,28 +1,33 @@
 /**
- * Inter-piece connectors at grid cell boundary intersections along join edges.
+ * Discrete dovetail connectors at grid cell boundary intersections along
+ * join edges.
  *
- * Two styles are supported, dispatched by `connectorStyle`:
+ * Each connector is a small trapezoidal prism — the classic dovetail fan
+ * shape visible from the top: narrower at the wall (BASE_HALF), wider at the
+ * protruding tip (TIP_HALF).
  *
- * - 'dovetail': trapezoidal prism — narrower at the wall (BASE_HALF), wider
- *   at the tip (TIP_HALF). The taper is in the X-Y plane so pieces drop in
- *   from above. Once seated, the tip blocks horizontal pull-out.
- * - 'snap': rabbit-clip socket pockets cut into each piece's seam edge. A
- *   separately-printed flat clip slides in laterally — its flexing ears
- *   snap past the socket waist and lock into the wider mid-section, joining
- *   the two pieces. See snapClipBuilder.ts.
+ *   Top view (X-Y) of one connector on a left edge:
  *
- * Convention (dovetail only): left/front = tongue (male, fused), right/back =
- * groove (female, cut). Inverted by `invertDovetails`.
+ *     wall
+ *      |  A ──── B         Y = bPos + BASE_HALF (wall) / + TIP_HALF (tip)
+ *      |  |  dt  |
+ *      |  D ──── C         Y = bPos - BASE_HALF (wall) / - TIP_HALF (tip)
+ *      |  ← P →
+ *
+ * The dovetail taper is in the X-Y plane, so pieces drop in from above (Z)
+ * without interference. Once seated, the wider tip prevents horizontal pull-out.
+ *
+ * Convention: left/front = tongue (male, fused), right/back = groove (female,
+ * cut). Inverted by `invertDovetails`.
  *
  * All profiles are drawn on the XY plane (normal=+Z) and extruded downward,
  * matching the pre-Z-shift coordinate system (slab top at Z=0, bottom at
  * Z=-totalHeight).
  */
 
-import { draw, rotate, translate } from 'brepjs';
+import { draw } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
-import { resolveConnectorStyle } from '@/shared/types/bin';
 import {
   TONGUE_PROTRUSION,
   TONGUE_BASE_HALF,
@@ -30,12 +35,8 @@ import {
   TONGUE_CLEARANCE,
   COPLANAR_MARGIN,
   COPLANAR_OVERLAP,
-  SNAP_CLIP_DEPTH,
-  SNAP_CLIP_DEPTH_CLEARANCE,
   sketch,
-  cellCentersAlong,
 } from './generatorTypes';
-import { buildSnapSocketCutter } from './snapClipBuilder';
 
 /**
  * Half the separation between the tongue and groove of a paired connector,
@@ -55,19 +56,11 @@ export function buildConnectors(
   slabOffsetX: number,
   slabOffsetY: number
 ): { nubs: Shape3D[]; holes: Shape3D[] } {
-  const { edges, invertDovetails, preferIdenticalPieces } = params;
-  const style = resolveConnectorStyle(params);
+  const { edges, connectorNubs, invertDovetails, preferIdenticalPieces } = params;
   const tongues: Shape3D[] = [];
   const grooves: Shape3D[] = [];
 
-  if (style === 'none' || !edges) return { nubs: tongues, holes: grooves };
-
-  if (style === 'snap') {
-    return {
-      nubs: tongues,
-      holes: buildSnapCutters(params, totalHeight, totalW, totalD, slabOffsetX, slabOffsetY),
-    };
-  }
+  if (!connectorNubs || !edges) return { nubs: tongues, holes: grooves };
 
   const invert = !!invertDovetails;
   // In paired mode invertDovetails is intentionally ignored — the layout is
@@ -83,9 +76,6 @@ export function buildConnectors(
   const tW = TONGUE_TIP_HALF; // half-width at tip (wide)
   const cl = TONGUE_CLEARANCE;
   const ext = COPLANAR_MARGIN;
-
-  const yCenters = cellCentersAlong(params.depth, gridUnit, params.fractionalEdgeY);
-  const xCenters = cellCentersAlong(params.width, gridUnit, params.fractionalEdgeX);
 
   type Side = 'left' | 'right' | 'front' | 'back';
 
@@ -108,7 +98,8 @@ export function buildConnectors(
     isMale: boolean;
     maleOffsetSign: -1 | 1;
     wallPos: number;
-    centers: readonly number[];
+    numBoundaries: number;
+    boundaryPos: (k: number) => number;
     protrudeAxis: 'x' | 'y';
     protrudeDir: -1 | 1;
   }> = [
@@ -117,7 +108,8 @@ export function buildConnectors(
       isMale: !invert,
       maleOffsetSign: 1,
       wallPos: -halfW + slabOffsetX,
-      centers: yCenters,
+      numBoundaries: Math.ceil(params.depth) - 1,
+      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
       protrudeAxis: 'x',
       protrudeDir: -1,
     },
@@ -126,7 +118,8 @@ export function buildConnectors(
       isMale: invert,
       maleOffsetSign: -1,
       wallPos: halfW + slabOffsetX,
-      centers: yCenters,
+      numBoundaries: Math.ceil(params.depth) - 1,
+      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
       protrudeAxis: 'x',
       protrudeDir: 1,
     },
@@ -135,7 +128,8 @@ export function buildConnectors(
       isMale: !invert,
       maleOffsetSign: -1,
       wallPos: -halfD + slabOffsetY,
-      centers: xCenters,
+      numBoundaries: Math.ceil(params.width) - 1,
+      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
       protrudeAxis: 'y',
       protrudeDir: -1,
     },
@@ -144,24 +138,25 @@ export function buildConnectors(
       isMale: invert,
       maleOffsetSign: 1,
       wallPos: halfD + slabOffsetY,
-      centers: xCenters,
+      numBoundaries: Math.ceil(params.width) - 1,
+      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
       protrudeAxis: 'y',
       protrudeDir: 1,
     },
   ];
 
   for (const def of edgeDefs) {
-    if (edges[def.side] !== 'join') continue;
+    if (edges[def.side] !== 'join' || def.numBoundaries <= 0) continue;
 
-    // Build an XY point with wall/cell-center coords assigned to the correct
-    // axis. When protruding along X, wall is on X and cell-center is on Y;
-    // vice versa for Y.
+    // Build an XY point with wall/boundary coords assigned to the correct axis.
+    // When protruding along X, wall is on X and boundary is on Y; vice versa for Y.
     const pt =
       def.protrudeAxis === 'x'
         ? (wallCoord: number, bpCoord: number): [number, number] => [wallCoord, bpCoord]
         : (wallCoord: number, bpCoord: number): [number, number] => [bpCoord, wallCoord];
 
-    for (const bp of def.centers) {
+    for (let k = 1; k <= def.numBoundaries; k++) {
+      const bp = def.boundaryPos(k);
       const w = def.wallPos;
       const d = def.protrudeDir;
 
@@ -226,64 +221,4 @@ function makeGroove(
     .lineTo(pt(w + d * ext, bp - gB))
     .close();
   return sketch(profile, 'XY', COPLANAR_MARGIN).extrude(-(totalHeight + 2 * COPLANAR_MARGIN));
-}
-
-// Rabbit-clip sockets: one pocket per cell-boundary along each join edge.
-// The pocket's outline matches the clip pin's silhouette (+ clearance) so the
-// clip's ears compress on insertion and snap into the wider mid-section.
-// The pocket is carved into the slab top and opens laterally at the seam
-// edge — the clip slides in from the seam direction, not from above.
-function buildSnapCutters(
-  params: BaseplateParams,
-  totalHeight: number,
-  totalW: number,
-  totalD: number,
-  slabOffsetX: number,
-  slabOffsetY: number
-): Shape3D[] {
-  const { edges } = params;
-  const holes: Shape3D[] = [];
-  if (!edges) return holes;
-
-  const halfW = totalW / 2;
-  const halfD = totalD / 2;
-  const gridUnit = params.gridUnitMm;
-
-  const yCenters = cellCentersAlong(params.depth, gridUnit, params.fractionalEdgeY);
-  const xCenters = cellCentersAlong(params.width, gridUnit, params.fractionalEdgeX);
-
-  // Pocket is centered vertically in the slab so the clip is hidden in both
-  // top and bottom views, with at least 1 mm of slab material above and below.
-  const cutterDepth = SNAP_CLIP_DEPTH + SNAP_CLIP_DEPTH_CLEARANCE;
-  const zCenter = -totalHeight / 2;
-  const zBottom = zCenter - cutterDepth / 2;
-
-  type Side = 'left' | 'right' | 'front' | 'back';
-  // Canonical socket cutter has its pin base at local Y=0 extending toward
-  // +Y. `rotZ` rotates it so the pin extends *inward* from the seam edge.
-  const edgeDefs: ReadonlyArray<{
-    side: Side;
-    wallPos: number;
-    bpAxis: 'x' | 'y';
-    rotZ: number;
-    centers: readonly number[];
-  }> = [
-    { side: 'left', wallPos: -halfW + slabOffsetX, bpAxis: 'y', rotZ: -90, centers: yCenters },
-    { side: 'right', wallPos: halfW + slabOffsetX, bpAxis: 'y', rotZ: 90, centers: yCenters },
-    { side: 'front', wallPos: -halfD + slabOffsetY, bpAxis: 'x', rotZ: 0, centers: xCenters },
-    { side: 'back', wallPos: halfD + slabOffsetY, bpAxis: 'x', rotZ: 180, centers: xCenters },
-  ];
-
-  for (const def of edgeDefs) {
-    if (edges[def.side] !== 'join') continue;
-    for (const bp of def.centers) {
-      const cutter = buildSnapSocketCutter();
-      const rotated = def.rotZ === 0 ? cutter : rotate(cutter, def.rotZ, { axis: [0, 0, 1] });
-      const wx = def.bpAxis === 'y' ? def.wallPos : bp;
-      const wy = def.bpAxis === 'y' ? bp : def.wallPos;
-      holes.push(translate(rotated, [wx, wy, zBottom]));
-    }
-  }
-
-  return holes;
 }

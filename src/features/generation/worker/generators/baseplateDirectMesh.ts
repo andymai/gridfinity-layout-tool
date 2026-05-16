@@ -25,23 +25,18 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
-import { resolveConnectorStyle } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
 import { resolveCornerRadii } from './generatorConstants';
 import type { MeshData } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
   forEachCell,
-  cellCentersAlong,
   checkCancelled,
   MAGNET_FLOOR,
   NUB_DIAMETER,
   NUB_DEPTH,
   HOLE_DIAMETER,
   HOLE_DEPTH,
-  SNAP_CLIP_LENGTH,
-  SNAP_CLIP_WIDTH,
-  SNAP_CLIP_CLEARANCE,
   computeConnectorPositions,
 } from './generatorTypes';
 import type { ProgressFn, CellInfo, ForEachCellOptions } from './generatorTypes';
@@ -51,7 +46,6 @@ import { addPocketWalls, addOuterWalls } from './directMeshWalls';
 import { addPlateFace, addSolidBottomFace } from './directMeshFaces';
 import { addMagnetHoles } from './directMeshMagnets';
 import { addConnectorNub, addConnectorHole } from './directMeshConnectors';
-import { addSnapSocketMarker } from './directMeshSnapHoles';
 
 /**
  * Generate baseplate mesh data procedurally without BREP boolean operations.
@@ -96,6 +90,7 @@ export function generateBaseplateDirect(
     fractionalEdgeX,
     fractionalEdgeY,
     edges,
+    connectorNubs,
   } = params;
 
   const mb = new MeshBuilder();
@@ -176,9 +171,7 @@ export function generateBaseplateDirect(
     }
   }
 
-  const connectorStyle = resolveConnectorStyle(params);
-
-  if (connectorStyle === 'dovetail' && edges) {
+  if (connectorNubs && edges) {
     const nubRadius = NUB_DIAMETER / 2;
     const holeRadius = HOLE_DIAMETER / 2;
     const connPositions = computeConnectorPositions(
@@ -191,77 +184,13 @@ export function generateBaseplateDirect(
       slabOffsetX,
       slabOffsetY,
       edges,
-      params.invertDovetails,
-      fractionalEdgeX,
-      fractionalEdgeY
+      params.invertDovetails
     );
     for (const pos of connPositions) {
       if (pos.isMale) {
         addConnectorNub(mb, pos.cx, pos.cy, pos.cz, pos.nx, pos.ny, 0, nubRadius, NUB_DEPTH);
       } else {
         addConnectorHole(mb, pos.cx, pos.cy, pos.cz, pos.nx, pos.ny, 0, holeRadius, HOLE_DEPTH);
-      }
-    }
-  } else if (connectorStyle === 'snap' && edges) {
-    const halfW = totalW / 2;
-    const halfD = totalD / 2;
-    const yCenters = cellCentersAlong(depth, gridUnitMm, fractionalEdgeY);
-    const xCenters = cellCentersAlong(width, gridUnitMm, fractionalEdgeX);
-    // Outline footprint of one pin half + clearance — matches the BREP cutter.
-    const socketLength = SNAP_CLIP_LENGTH + 2 * SNAP_CLIP_CLEARANCE;
-    const socketWidth = SNAP_CLIP_WIDTH + 2 * SNAP_CLIP_CLEARANCE;
-    type Side = 'left' | 'right' | 'front' | 'back';
-    // rotZ rotates the canonical cutter (pin extending +Y) so it extends
-    // inward from the seam edge. Half-length offset shifts the pocket centre
-    // to the middle of the pin since the canonical pin's base is at Y=0.
-    const sides: ReadonlyArray<{
-      side: Side;
-      wallPos: number;
-      bpAxis: 'x' | 'y';
-      rotZ: number;
-      inward: -1 | 1;
-      centers: readonly number[];
-    }> = [
-      {
-        side: 'left',
-        wallPos: -halfW + slabOffsetX,
-        bpAxis: 'y',
-        rotZ: -90,
-        inward: 1,
-        centers: yCenters,
-      },
-      {
-        side: 'right',
-        wallPos: halfW + slabOffsetX,
-        bpAxis: 'y',
-        rotZ: 90,
-        inward: -1,
-        centers: yCenters,
-      },
-      {
-        side: 'front',
-        wallPos: -halfD + slabOffsetY,
-        bpAxis: 'x',
-        rotZ: 0,
-        inward: 1,
-        centers: xCenters,
-      },
-      {
-        side: 'back',
-        wallPos: halfD + slabOffsetY,
-        bpAxis: 'x',
-        rotZ: 180,
-        inward: -1,
-        centers: xCenters,
-      },
-    ];
-    for (const def of sides) {
-      if (edges[def.side] !== 'join') continue;
-      const centerOffset = def.inward * (socketLength / 2);
-      for (const bp of def.centers) {
-        const cx = def.bpAxis === 'y' ? def.wallPos + centerOffset : bp;
-        const cy = def.bpAxis === 'y' ? bp : def.wallPos + centerOffset;
-        addSnapSocketMarker(mb, cx, cy, socketLength, socketWidth, def.rotZ, totalHeight);
       }
     }
   }

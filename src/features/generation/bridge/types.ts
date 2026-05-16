@@ -19,7 +19,6 @@ export type WorkerMessage =
   | CleanupMessage
   | ExportMessage
   | ExportBaseplateMessage
-  | ExportSnapClipMessage
   | ExportDividersMessage
   | ExportCombinedMessage
   | ExportSplitMessage
@@ -67,18 +66,6 @@ export interface ExportBaseplateMessage {
 
 export interface ExportBaseplatePayload {
   readonly params: BaseplateParams;
-  readonly requestId: string;
-  readonly format: ExportFormat;
-  readonly tolerance?: number;
-  readonly angularTolerance?: number;
-}
-
-export interface ExportSnapClipMessage {
-  readonly type: 'EXPORT_SNAP_CLIP';
-  readonly payload: ExportSnapClipPayload;
-}
-
-export interface ExportSnapClipPayload {
   readonly requestId: string;
   readonly format: ExportFormat;
   readonly tolerance?: number;
@@ -218,7 +205,6 @@ export type WorkerResponse =
   | MeshResultResponse
   | SplitPreviewResultResponse
   | BaseplateExportResultResponse
-  | SnapClipExportResultResponse
   | ExportResultResponse
   | DividersExportResultResponse
   | CombinedExportResultResponse
@@ -313,14 +299,6 @@ export interface ExportResultResponse {
 
 export interface BaseplateExportResultResponse {
   readonly type: 'BASEPLATE_EXPORT_RESULT';
-  readonly requestId: string;
-  readonly data: ArrayBuffer;
-  readonly format: ExportFormat;
-  readonly fileName: string;
-}
-
-export interface SnapClipExportResultResponse {
-  readonly type: 'SNAP_CLIP_EXPORT_RESULT';
   readonly requestId: string;
   readonly data: ArrayBuffer;
   readonly format: ExportFormat;

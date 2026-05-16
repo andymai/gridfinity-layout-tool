@@ -124,27 +124,3 @@ export function forEachCell(
     xOffset += cellW_units * unit;
   }
 }
-
-/**
- * Cell-center positions along an axis, in mm relative to the piece center.
- *
- * One position per cell — including a trailing half-cell — matching upstream
- * `cutter_screw_together`'s "one fastener per cell along the seam" pattern.
- * `fractionalEdge` controls which side a half-cell appears on.
- */
-export function cellCentersAlong(
-  units: number,
-  gridUnitMm: number,
-  fractionalEdge: 'start' | 'end' = 'end'
-): number[] {
-  const cells = decomposeCells(units);
-  if (fractionalEdge === 'start') cells.reverse();
-  const total = units * gridUnitMm;
-  const centers: number[] = [];
-  let offset = 0;
-  for (const cellUnits of cells) {
-    centers.push(offset + (cellUnits * gridUnitMm) / 2 - total / 2);
-    offset += cellUnits * gridUnitMm;
-  }
-  return centers;
-}

@@ -12,7 +12,6 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
-import { resolveConnectorStyle } from '@/shared/types/bin';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 
 export function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
@@ -34,7 +33,7 @@ export function meshCacheKey(params: BaseplateParams, forExport: boolean): strin
     params.edges?.right ?? '',
     params.edges?.front ?? '',
     params.edges?.back ?? '',
-    resolveConnectorStyle(params),
+    params.connectorNubs ?? false,
     params.invertDovetails ?? false,
     params.lightweight ?? true,
     quantize(params.cornerRadius ?? -1),

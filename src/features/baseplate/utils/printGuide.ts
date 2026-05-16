@@ -8,7 +8,6 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
-import { resolveConnectorStyle } from '@/shared/types/bin';
 import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { PieceGroup } from './pieceFingerprint';
 import { colToLetter } from './splitPlanner';
@@ -28,21 +27,10 @@ export interface PrintGuideInput {
   readonly parentParams: BaseplateParams;
   readonly fileExtension: string;
   readonly baseFileName: string;
-  /** Filename of the snap clip part inside the ZIP (e.g. `snap-clip.stl`,
-   *  `snap-clip.step`). Only used when `connectorStyle === 'snap'`. */
-  readonly snapClipFileName?: string;
 }
 
 export function generatePrintGuide(input: PrintGuideInput): string {
-  const {
-    tiling,
-    groups,
-    groupNames,
-    parentParams,
-    fileExtension,
-    baseFileName,
-    snapClipFileName,
-  } = input;
+  const { tiling, groups, groupNames, parentParams, fileExtension, baseFileName } = input;
 
   const sections = [
     generateHeader(tiling, parentParams, groupNames.size),
@@ -55,49 +43,10 @@ export function generatePrintGuide(input: PrintGuideInput): string {
       baseFileName
     ),
     generateGridMap(tiling, groups, groupNames),
+    generateFooter(),
   ];
 
-  if (resolveConnectorStyle(parentParams) === 'snap') {
-    sections.push(generateSnapClipSection(tiling, snapClipFileName ?? 'snap-clip.stl'));
-  }
-
-  sections.push(generateFooter());
   return sections.join('\n\n');
-}
-
-function countSnapClips(tiling: BaseplateTiling): number {
-  // One clip per cell along each +X/+Y seam — walking only right/back edges
-  // matches snapClipPositions.ts and avoids double-counting shared seams.
-  let count = 0;
-  for (const piece of tiling.pieces) {
-    const widthCells = Math.ceil(piece.widthUnits);
-    const depthCells = Math.ceil(piece.depthUnits);
-    if (piece.edges.right === 'join') count += depthCells;
-    if (piece.edges.back === 'join') count += widthCells;
-  }
-  return count;
-}
-
-function generateSnapClipSection(tiling: BaseplateTiling, clipFileName: string): string {
-  const clipCount = countSnapClips(tiling);
-  return [
-    '─── Snap Clips ──────────────────────────────────',
-    '',
-    `  Quantity:    ${clipCount} clip${clipCount === 1 ? '' : 's'} total`,
-    `  File:        ${clipFileName} (one model, print N copies)`,
-    '  Material:    PETG recommended (ears must flex elastically)',
-    '  Speed:       ~25mm/s — thin walls need slower print',
-    '  Layer:       0.2mm',
-    '  Infill:      0% with 2 wall loops, 0 top/bottom layers — the clip is',
-    '               a thin-walled spring; solid infill defeats the snap action',
-    '  Orientation: flat on the build plate, no supports needed',
-    '',
-    '  Installation: slide the clip into one piece’s seam-edge pocket so',
-    '               half its length sits inside; align the second piece’s',
-    '               pocket with the protruding half and press the pieces',
-    '               together. The clip’s ears compress past the pocket waist',
-    '               and snap into the wider mid-section, locking the seam.',
-  ].join('\n');
 }
 
 function generateHeader(
@@ -113,9 +62,7 @@ function generateHeader(
     params.paddingFront > 0 ||
     params.paddingBack > 0;
   if (hasPadding) features.push('padded');
-  const style = resolveConnectorStyle(params);
-  if (style === 'dovetail') features.push('dovetails');
-  else if (style === 'snap') features.push('snap clips');
+  if (params.connectorNubs) features.push('connectors');
 
   const featureStr = features.length > 0 ? features.join(', ') : 'standard';
   const totalPieces = tiling.pieces.length;
@@ -153,10 +100,8 @@ function generatePieceTable(
     // tongue is male — matches the actual STL bbox so users know what fits the
     // bed. Under preferIdenticalPieces (paired mode) every join edge carries a
     // tongue regardless of side, so both sides of each axis claim protrusion.
-    // Only dovetail style protrudes; snap-clip and 'none' have no tongue.
-    const parentStyle = resolveConnectorStyle(parentParams);
-    const tongue = parentStyle === 'dovetail' ? TONGUE_PROTRUSION_MM : 0;
-    const isPaired = !!parentParams.preferIdenticalPieces && parentStyle === 'dovetail';
+    const tongue = parentParams.connectorNubs ? TONGUE_PROTRUSION_MM : 0;
+    const isPaired = !!parentParams.preferIdenticalPieces && !!parentParams.connectorNubs;
     const startMale = !parentParams.invertDovetails;
     const widthMm =
       params.width * params.gridUnitMm +
@@ -185,8 +130,7 @@ function generatePieceTable(
 
     const features: string[] = [];
     if (parentParams.magnetHoles) features.push('magnet holes');
-    if (parentStyle === 'dovetail') features.push('dovetails');
-    else if (parentStyle === 'snap') features.push('snap clips');
+    if (parentParams.connectorNubs) features.push('connectors');
     const hasPadding =
       params.paddingLeft > 0 ||
       params.paddingRight > 0 ||

@@ -10,15 +10,11 @@ interface ExportPiece {
   readonly label: string;
 }
 
-/** A file to include alongside binary pieces in the ZIP. Content may be
- *  text (string) or binary (ArrayBuffer) — JSZip handles both transparently. */
-export interface ZipExtraFile {
+/** A plain-text file to include alongside binary pieces in the ZIP. */
+export interface ZipTextFile {
   readonly name: string;
-  readonly content: string | ArrayBuffer;
+  readonly content: string;
 }
-
-/** @deprecated Use `ZipExtraFile` — content can be binary, not just text. */
-export type ZipTextFile = ZipExtraFile;
 
 /**
  * Package pieces into a ZIP archive with per-piece files.
@@ -33,7 +29,7 @@ export async function packagePiecesAsZip(
   pieces: readonly ExportPiece[],
   baseName: string,
   extension: string,
-  extraFiles?: readonly ZipExtraFile[]
+  extraFiles?: readonly ZipTextFile[]
 ): Promise<Blob> {
   const { default: JSZip } = await import('jszip');
   const zip = new JSZip();
