@@ -6,6 +6,9 @@ export type { IconProps } from './Icon';
 export { ArrowLeftIcon } from './icons/ArrowLeft';
 export type { ArrowLeftIconProps } from './icons/ArrowLeft';
 
+export { ArrowLeftRightIcon } from './icons/ArrowLeftRight';
+export type { ArrowLeftRightIconProps } from './icons/ArrowLeftRight';
+
 export { ChevronDownIcon } from './icons/ChevronDown';
 export type { ChevronDownIconProps } from './icons/ChevronDown';
 

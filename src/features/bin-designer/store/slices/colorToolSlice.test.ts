@@ -1,0 +1,133 @@
+/**
+ * Tests for the color-tool state machine on the designer store: tool
+ * entry/exit, the two-step swap-zones flow, and history coalescing.
+ */
+
+import { beforeEach, describe, expect, it } from 'vitest';
+import { useDesignerStore, _resetPendingMeshCache } from '../designer';
+import { DEFAULT_FEATURE_COLOR_CONFIG } from '../../constants/defaults';
+
+describe('color-tool slice', () => {
+  beforeEach(() => {
+    _resetPendingMeshCache();
+    useDesignerStore.setState({
+      ui: {
+        ...useDesignerStore.getState().ui,
+        colorTool: null,
+        swapFirstZone: null,
+        hoveredColorZone: null,
+      },
+      history: { past: [], future: [] },
+      params: {
+        ...useDesignerStore.getState().params,
+        featureColors: {
+          ...DEFAULT_FEATURE_COLOR_CONFIG,
+          body: '#aaaaaa',
+          base: '#bbbbbb',
+          scoop: '#cccccc',
+          dividers: '#dddddd',
+          labelTab: '#eeeeee',
+          lip: {
+            frontLeft: '#111111',
+            frontRight: '#222222',
+            backRight: '#333333',
+            backLeft: '#444444',
+          },
+        },
+      },
+    });
+  });
+
+  describe('setColorTool', () => {
+    it('enters a tool', () => {
+      useDesignerStore.getState().setColorTool('eyedropper');
+      expect(useDesignerStore.getState().ui.colorTool).toBe('eyedropper');
+    });
+
+    it('clears swapFirstZone when entering a non-swap-pick-second tool', () => {
+      useDesignerStore.setState({
+        ui: { ...useDesignerStore.getState().ui, swapFirstZone: 'body' },
+      });
+      useDesignerStore.getState().setColorTool('eyedropper');
+      expect(useDesignerStore.getState().ui.swapFirstZone).toBeNull();
+    });
+
+    it('clears hovered zone when exiting any tool', () => {
+      useDesignerStore.setState({
+        ui: {
+          ...useDesignerStore.getState().ui,
+          colorTool: 'eyedropper',
+          hoveredColorZone: 'base',
+        },
+      });
+      useDesignerStore.getState().setColorTool(null);
+      expect(useDesignerStore.getState().ui.hoveredColorZone).toBeNull();
+    });
+  });
+
+  describe('pickSwapZone', () => {
+    it('first pick advances to swap-pick-second with the zone stored', () => {
+      useDesignerStore.getState().setColorTool('swap-pick-first');
+      const result = useDesignerStore.getState().pickSwapZone('body');
+
+      expect(result).toBeNull();
+      expect(useDesignerStore.getState().ui.colorTool).toBe('swap-pick-second');
+      expect(useDesignerStore.getState().ui.swapFirstZone).toBe('body');
+    });
+
+    it('second pick swaps colors, exits tool, and returns the pair', () => {
+      useDesignerStore.getState().setColorTool('swap-pick-first');
+      useDesignerStore.getState().pickSwapZone('body');
+      const result = useDesignerStore.getState().pickSwapZone('base');
+
+      expect(result).toEqual({ first: 'body', second: 'base' });
+      const { params, ui } = useDesignerStore.getState();
+      expect(ui.colorTool).toBeNull();
+      expect(ui.swapFirstZone).toBeNull();
+      expect(params.featureColors.body).toBe('#bbbbbb');
+      expect(params.featureColors.base).toBe('#aaaaaa');
+    });
+
+    it('swaps lip-corner zones via nested write', () => {
+      useDesignerStore.getState().setColorTool('swap-pick-first');
+      useDesignerStore.getState().pickSwapZone('lip:frontLeft');
+      useDesignerStore.getState().pickSwapZone('lip:backRight');
+
+      const { params } = useDesignerStore.getState();
+      expect(params.featureColors.lip.frontLeft).toBe('#333333');
+      expect(params.featureColors.lip.backRight).toBe('#111111');
+      expect(params.featureColors.lip.frontRight).toBe('#222222');
+    });
+
+    it('records one history entry per swap (single undo restores both zones)', () => {
+      useDesignerStore.getState().setColorTool('swap-pick-first');
+      useDesignerStore.getState().pickSwapZone('body');
+      useDesignerStore.getState().pickSwapZone('scoop');
+
+      expect(useDesignerStore.getState().history.past).toHaveLength(1);
+      useDesignerStore.getState().undo();
+      const { featureColors } = useDesignerStore.getState().params;
+      expect(featureColors.body).toBe('#aaaaaa');
+      expect(featureColors.scoop).toBe('#cccccc');
+    });
+
+    it('picking the same zone twice cancels without writing history', () => {
+      useDesignerStore.getState().setColorTool('swap-pick-first');
+      useDesignerStore.getState().pickSwapZone('body');
+      const result = useDesignerStore.getState().pickSwapZone('body');
+
+      expect(result).toBeNull();
+      const state = useDesignerStore.getState();
+      expect(state.ui.colorTool).toBeNull();
+      expect(state.ui.swapFirstZone).toBeNull();
+      expect(state.history.past).toHaveLength(0);
+      expect(state.params.featureColors.body).toBe('#aaaaaa');
+    });
+
+    it('no-ops when no tool is active', () => {
+      const result = useDesignerStore.getState().pickSwapZone('body');
+      expect(result).toBeNull();
+      expect(useDesignerStore.getState().ui.colorTool).toBeNull();
+    });
+  });
+});

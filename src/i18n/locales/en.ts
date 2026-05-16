@@ -1394,6 +1394,26 @@ const en: Record<string, string> = {
     'When you open the 3MF in your slicer, the materials below appear as separate filaments. Assign each to an AMS/MMU slot.',
   'binDesigner.colors.slicerHandoff.show': 'Show filament mapping',
   'binDesigner.colors.slicerHandoff.filament': 'Filament {n}',
+  'binDesigner.colors.eyedropper.enter': 'Pick a color zone from the preview',
+  'binDesigner.colors.eyedropper.exit': 'Exit eyedropper',
+  'binDesigner.colors.eyedropper.banner': 'Click any zone in the preview to change its color',
+  'binDesigner.colors.eyedropper.hint': 'Press Esc to exit',
+  'binDesigner.colors.swap.enter': 'Swap colors between two zones',
+  'binDesigner.colors.swap.banner.first':
+    'Pick the first zone to swap — click a row or the 3D preview',
+  'binDesigner.colors.swap.banner.second':
+    'Pick the second zone — its color will swap with {first}',
+  'binDesigner.colors.swap.toast': 'Swapped {first} and {second}',
+  'binDesigner.colors.swap.cancel': 'Cancel swap',
+  'binDesigner.colors.zone.body': 'Body',
+  'binDesigner.colors.zone.lip.frontLeft': 'Front-left lip',
+  'binDesigner.colors.zone.lip.frontRight': 'Front-right lip',
+  'binDesigner.colors.zone.lip.backRight': 'Back-right lip',
+  'binDesigner.colors.zone.lip.backLeft': 'Back-left lip',
+  'binDesigner.colors.zone.labelTab': 'Label tab',
+  'binDesigner.colors.zone.base': 'Base',
+  'binDesigner.colors.zone.scoop': 'Scoop',
+  'binDesigner.colors.zone.dividers': 'Dividers',
   'binDesigner.export.multiColor.formatDisabled':
     "{format} doesn't preserve color data. Use 3MF to keep your multi-color zones.",
 

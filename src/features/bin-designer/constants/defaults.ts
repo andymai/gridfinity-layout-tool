@@ -308,6 +308,8 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   splitViewMode: 'exploded',
   splitPieceMeshes: [],
   hoveredColorZone: null,
+  colorTool: null,
+  swapFirstZone: null,
   shapeEditorOpen: false,
 };
 
