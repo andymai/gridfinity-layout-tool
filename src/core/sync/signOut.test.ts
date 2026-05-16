@@ -227,11 +227,6 @@ describe('runSignOut — outbox flush', () => {
 });
 
 describe('runSignOut — poller high-water reset', () => {
-  // Regression: poller.ts holds `lastIndexUpdatedAt` at module scope as
-  // a per-user high-water mark. Without resetting it on sign-out the
-  // next sign-in's first poll sends the prior user's timestamp as
-  // `If-Modified-Since`, and silently skips a fresh manifest scan for
-  // the new account.
   it('resets the poller high-water mark on the keep path', async () => {
     await runSignOut({ adapters, promptKeepLocal: promptKeep, onAnonymous });
     expect(resetPullStateMock).toHaveBeenCalled();

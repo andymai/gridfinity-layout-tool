@@ -9,23 +9,10 @@ interface PreparedBeacon {
   blob: Blob;
 }
 
-/**
- * On `pagehide`, send a beacon for every pending outbox PUT so the
- * server learns about the latest state even if the tab is closing.
- * `fetch` would be cancelled at unload; `sendBeacon` survives. DELETE
- * entries are skipped — beacon can't express the verb; the next session
- * picks them up from the persisted outbox.
- *
- * Two-phase flow: `visibilitychange → hidden` does the async prep (IDB
- * reads, adapter snapshots), and `pagehide` fires every prepared beacon
- * synchronously with zero awaits. The earlier `visibilitychange` signal
- * usually arrives well before `pagehide`, so by the time the browser is
- * tearing the page down, the data is already a `Blob` ready to ship.
- *
- * Cache is refreshed on every visibility-hidden transition — a user who
- * tabs away and comes back to edit more sees a fresh prep on the next
- * transition.
- */
+// Async prep on `visibilitychange → hidden`, synchronous send on `pagehide`.
+// `fetch` is cancelled at unload but `sendBeacon` survives, so beacons must
+// be pre-built before the browser tears the page down. DELETE entries are
+// skipped (beacon has no verb); the next session replays them from the outbox.
 export function useBeaconFlush(adapters: SyncAdapters): void {
   useEffect(() => {
     let prepared: PreparedBeacon[] = [];
@@ -37,18 +24,14 @@ export function useBeaconFlush(adapters: SyncAdapters): void {
     const onVisibility = (): void => {
       if (typeof document === 'undefined') return;
       if (document.visibilityState === 'hidden') {
-        // Best-effort; if it doesn't finish before pagehide the next
-        // session's outbox replay still catches the changes.
         refreshPrepared().catch(() => {
-          /* swallow — beacon is best-effort */
+          /* best-effort */
         });
       }
     };
 
+    // No awaits — must stay synchronous inside the unload window.
     const onPageHide = (): void => {
-      // SYNCHRONOUS path: no awaits. By this point `prepared` was filled
-      // by the prior visibility-hidden tick, so every beacon fires right
-      // here in the unload window where the browser actually waits.
       if (typeof navigator === 'undefined' || typeof navigator.sendBeacon !== 'function') return;
       for (const { url, blob } of prepared) {
         try {

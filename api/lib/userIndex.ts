@@ -50,8 +50,7 @@ export async function getEntry(
 /**
  * Insert or replace an entry, atomically bumping `indexUpdatedAt` so
  * `/api/sync/manifest` can serve `If-Modified-Since` 304s without reading
- * the hash. Also sweeps tombstones older than `TOMBSTONE_RETENTION_MS`
- * so the user-index hash doesn't grow unboundedly over a user's lifetime.
+ * the hash. Opportunistically sweeps tombstones past `TOMBSTONE_RETENTION_MS`.
  */
 export async function upsertEntry(
   redis: Redis,
@@ -77,14 +76,9 @@ export async function upsertEntry(
   }
 }
 
-/**
- * How long tombstones live in the index hash. Tombstones serve to inform
- * cross-device sync that an item was deleted; 90 days covers the longest
- * legitimate offline propagation window (a user signs in on a long-dormant
- * device and still gets the deletes that happened on their primary device).
- * Beyond that, a tombstone is no longer useful — keeping it forever just
- * inflates every manifest poll response.
- */
+// 90 days covers the longest legitimate offline propagation window for a
+// dormant device to still pick up deletes; beyond that the tombstone just
+// bloats every manifest poll.
 export const TOMBSTONE_RETENTION_MS = 90 * 24 * 60 * 60 * 1_000;
 
 async function findStaleTombstones(
@@ -96,6 +90,8 @@ async function findStaleTombstones(
   const raw = await redis.hgetall(userIndexKey(userId, kind));
   const stale: string[] = [];
   for (const [id, encoded] of Object.entries(raw)) {
+    // Substring check avoids JSON.parse on every live entry.
+    if (!encoded.includes('"deletedAt"')) continue;
     const parsed = parseEntry(encoded);
     if (!parsed?.deletedAt) continue;
     if (now - parsed.deletedAt > TOMBSTONE_RETENTION_MS) stale.push(id);

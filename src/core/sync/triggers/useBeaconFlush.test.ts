@@ -52,9 +52,7 @@ function firePageHide(): void {
   window.dispatchEvent(new Event('pagehide'));
 }
 
-// Visibility-hidden does async prep; let the IDB read and adapter.get
-// promises resolve before pagehide. In real life the gap between the
-// two events is typically tens to hundreds of ms.
+// Let visibility-hidden's IDB read + adapter.get settle before pagehide.
 async function settlePrep(): Promise<void> {
   await new Promise((r) => setTimeout(r, 10));
 }
@@ -76,11 +74,6 @@ describe('useBeaconFlush', () => {
   });
 
   it('fires sendBeacon synchronously on pagehide — no awaits between the event and the call', async () => {
-    // Regression: previous implementation `await`ed `getPendingEntries`
-    // and each `adapter.get` after pagehide fired, defeating the whole
-    // point of using sendBeacon as an unload-survival mechanism. Now
-    // the prep happens on the earlier visibility-hidden event; pagehide
-    // is purely synchronous transmission.
     getPendingEntriesMock.mockResolvedValueOnce([
       { kind: 'layouts', id: 'lay-1', op: 'put', modifiedAt: 1000 },
     ]);
@@ -88,9 +81,8 @@ describe('useBeaconFlush', () => {
     fireVisibilityHidden();
     await settlePrep();
 
-    // No `await` after firing pagehide — sendBeacon must have been
-    // invoked before this assertion line even runs.
     firePageHide();
+    // No await between firePageHide and this assertion — sendBeacon must have already fired.
     expect(sendBeaconMock).toHaveBeenCalledTimes(1);
   });
 

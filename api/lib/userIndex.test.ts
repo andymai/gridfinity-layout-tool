@@ -150,17 +150,11 @@ describe('userIndex', () => {
   });
 
   describe('tombstone sweep on upsertEntry', () => {
-    // Tombstones used to live forever in the user-index hash. Every
-    // manifest poll HGETALLs that hash, so a power user who churned a
-    // lot of items would inflate every poll response forever. The fix
-    // is an opportunistic sweep: on each write, delete tombstones older
-    // than TOMBSTONE_RETENTION_MS.
     it('removes tombstones older than the retention window when a new entry is upserted', async () => {
       const now = Date.now();
       const stale = now - TOMBSTONE_RETENTION_MS - 1_000;
       const fresh = now - 1_000;
 
-      // Seed: one stale tombstone, one fresh tombstone, one live entry.
       await tombstone(mockRedis, 'u1', 'layouts', 'old-deleted', stale);
       await tombstone(mockRedis, 'u1', 'layouts', 'recent-deleted', fresh);
       await upsertEntry(mockRedis, 'u1', 'layouts', 'alive', {
@@ -168,7 +162,6 @@ describe('userIndex', () => {
         sizeBytes: 100,
       });
 
-      // Another write triggers the sweep.
       await upsertEntry(mockRedis, 'u1', 'layouts', 'new-entry', {
         modifiedAt: now,
         sizeBytes: 200,
@@ -198,8 +191,6 @@ describe('userIndex', () => {
       const stale = Date.now() - TOMBSTONE_RETENTION_MS - 1_000;
       await tombstone(mockRedis, 'u1', 'layouts', 'self', stale);
 
-      // Re-tombstone with a fresh deletedAt: the entry must end up
-      // present with the new value, not deleted by the sweep step.
       await tombstone(mockRedis, 'u1', 'layouts', 'self', Date.now());
 
       const entry = await getEntry(mockRedis, 'u1', 'layouts', 'self');

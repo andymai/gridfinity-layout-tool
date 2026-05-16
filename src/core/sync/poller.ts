@@ -41,18 +41,13 @@ export async function pullNow(adapters: SyncAdapters): Promise<PullResult> {
   return inFlight;
 }
 
-/**
- * Reset the poller's per-user high-water mark. Call on sign-out so the
- * next sign-in's first poll doesn't use the prior user's
- * `lastIndexUpdatedAt` as its `If-Modified-Since` — that mismatch would
- * silently skip a fresh manifest scan for the new account.
- */
+// Reset on sign-out: without this the next user's first poll would send
+// the prior user's `lastIndexUpdatedAt` as `If-Modified-Since`.
 export function resetPullState(): void {
   lastIndexUpdatedAt = 0;
   inFlight = null;
 }
 
-/** Test-only alias retained for legacy callers in test files. */
 export function __resetForTests(): void {
   resetPullState();
 }
@@ -76,6 +71,13 @@ async function run(adapters: SyncAdapters): Promise<PullResult> {
   }
   if (manifestRes.status === 401) {
     return { status: 'unauthorized' };
+  }
+  if (manifestRes.status === 429) {
+    // Server throttling, not a real error. Treat as transient offline so
+    // the periodic poll caller backs off — mirrors the push-side 429
+    // handling in `engine.ts`.
+    useSyncStatusStore.getState().reportOffline('Rate limited');
+    return { status: 'offline' };
   }
   if (!manifestRes.ok) {
     useSyncStatusStore.getState().reportError(`manifest ${manifestRes.status}`);

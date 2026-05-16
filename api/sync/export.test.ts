@@ -114,8 +114,7 @@ function makeRes(): MockRes {
     },
     end() {
       this._ended = true;
-      // Streaming consumers (export ZIP) flush via write() + end(); the
-      // tests reach for `_body` so consolidate the chunks here.
+      // Consolidate streamed chunks into `_body` so existing assertions still work.
       if (this._chunks.length > 0) {
         this._body = Buffer.concat(this._chunks);
       }
@@ -233,11 +232,6 @@ describe('GET /api/sync/export', () => {
   });
 
   it('streams chunks via res.write/res.end rather than buffering with res.send', async () => {
-    // Regression: previous implementation called `zipSync` and `res.send(buffer)`
-    // — the full archive lived in memory before any byte hit the wire. The
-    // streaming rewrite must surface chunks through `write()` and finalize
-    // with `end()`. Verify the consumed transport, not the payload bytes
-    // (a separate test already round-trips the archive contents).
     await seedItem('layouts', 'lay-1', 1000, {
       layout: { name: 'L1' },
       modifiedAt: 1000,
@@ -250,8 +244,6 @@ describe('GET /api/sync/export', () => {
 
     expect(res._chunks.length).toBeGreaterThan(0);
     expect(res._ended).toBe(true);
-    // No single buffered `send` call — the response body was assembled
-    // chunk-by-chunk by the streaming Zip writer.
     expect(res.headersSent).toBe(true);
   });
 

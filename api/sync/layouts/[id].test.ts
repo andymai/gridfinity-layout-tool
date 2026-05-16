@@ -139,7 +139,7 @@ const VALID_LAYOUT = {
   name: 'Test Layout',
   drawer: { width: 5, depth: 5, height: 3 },
   bins: [],
-  layers: [{ id: 'layer-1', name: 'Layer 1', height: 1 }],
+  layers: [{ id: 'layer-1', name: 'Layer 1', height: 2 }],
   categories: [{ id: 'cat-1', name: 'Default', color: '#ff0000' }],
   printBedSize: 256,
   gridUnitMm: 42,
@@ -272,35 +272,37 @@ describe('PUT — LWW + tombstone', () => {
     expect(res._status).toBe(200);
   });
 
-  it('equal-ms LWW: resolves by canonical payload hash, deterministic across devices', async () => {
-    // Regression: `existing.modifiedAt >= modifiedAt` used `>=`, so an
-    // equal-ms write was silently 409'd. Two devices that produce the
-    // same modifiedAt for distinct payloads should converge on the
-    // SAME winner regardless of arrival order — not on "whoever raced
-    // to the index first."
+  it('equal-ms LWW: tiebreaker is deterministic and complementary across orderings', async () => {
     const { default: handler } = await import('./[id]');
+    const A = { ...VALID_LAYOUT, name: 'Aardvark' };
+    const B = { ...VALID_LAYOUT, name: 'Zebra' };
 
-    // First write installs the incumbent.
-    const incumbent = { ...VALID_LAYOUT, name: 'Aardvark' };
     await handler(
-      makeReq({ method: 'PUT', body: { layout: incumbent, modifiedAt: 1000 } }),
+      makeReq({ method: 'PUT', body: { layout: A, modifiedAt: 1000 } }),
       makeRes() as unknown as VercelResponse
     );
-
-    // Equal-ms write with a distinct payload — should be resolved by
-    // tiebreaker, NOT auto-409'd just because mtimes match. We test
-    // both directions to confirm determinism.
-    const candidate = { ...VALID_LAYOUT, name: 'Zebra' };
-    const res = makeRes();
+    const res1 = makeRes();
     await handler(
-      makeReq({ method: 'PUT', body: { layout: candidate, modifiedAt: 1000 } }),
-      res as unknown as VercelResponse
+      makeReq({ method: 'PUT', body: { layout: B, modifiedAt: 1000 } }),
+      res1 as unknown as VercelResponse
     );
 
-    // The hash of the candidate either beats or loses the incumbent —
-    // either way the test must pass with a status reflecting the
-    // tiebreaker outcome (200 if candidate wins, 409 if incumbent wins).
-    expect([200, 409]).toContain(res._status);
+    redisStore = new Map();
+    redisHashes = new Map();
+    blobStore.clear();
+    await handler(
+      makeReq({ method: 'PUT', body: { layout: B, modifiedAt: 1000 } }),
+      makeRes() as unknown as VercelResponse
+    );
+    const res2 = makeRes();
+    await handler(
+      makeReq({ method: 'PUT', body: { layout: A, modifiedAt: 1000 } }),
+      res2 as unknown as VercelResponse
+    );
+
+    // Asymmetry across orderings proves determinism: auto-409 yields [409,409], unconditional [200,200].
+    const statuses = [res1._status, res2._status].sort();
+    expect(statuses).toEqual([200, 409]);
   });
 
   it('equal-ms LWW: identical payloads return 409 (no unnecessary write)', async () => {
@@ -314,7 +316,6 @@ describe('PUT — LWW + tombstone', () => {
       makeReq({ method: 'PUT', body: { layout: VALID_LAYOUT, modifiedAt: 1000 } }),
       res as unknown as VercelResponse
     );
-    // Hash equal → order === 0 → incumbent wins (no churn).
     expect(res._status).toBe(409);
   });
 

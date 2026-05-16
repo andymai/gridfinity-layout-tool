@@ -17,6 +17,10 @@ const SHARE_CONSTRAINTS = {
   NAME_MAX_LENGTH: 64,
   LABEL_MAX_LENGTH: 24,
   NOTES_MAX_LENGTH: 256,
+  // Mirrors client `CONSTRAINTS.MIN_BIN_HEIGHT` / `MIN_LAYER_HEIGHT` (2).
+  // Server <-> client divergence would let a peer persist height=1 that the
+  // recipient's CQRS schema rejects on the next mutation.
+  HEIGHT_MIN: 2,
   VALID_EXPIRATIONS: [30, 60, 90, 365] as const,
   // Custom properties constraints
   CUSTOM_PROPERTY_MAX_COUNT: 50,
@@ -341,11 +345,9 @@ function isValidDrawer(value: unknown): value is DrawerShape {
     isNumber(value.height) &&
     value.width > 0 &&
     value.depth > 0 &&
-    // `drawer.height` is HeightUnits in the domain model (7mm each); the
-    // client UI caps it at GRID_MAX (50). Without this server-side bound
-    // a corrupted device can persist absurd values (e.g. 1e9) that then
-    // round-trip via sync to other devices.
-    inRange(value.height, 1, SHARE_CONSTRAINTS.GRID_MAX)
+    // HeightUnits (7mm each), capped at GRID_MAX so a corrupted client
+    // can't sync absurd values to other devices.
+    inRange(value.height, SHARE_CONSTRAINTS.HEIGHT_MIN, SHARE_CONSTRAINTS.GRID_MAX)
   );
 }
 
@@ -355,7 +357,7 @@ function isValidLayer(value: unknown): value is LayerShape {
     typeof value.id === 'string' &&
     typeof value.name === 'string' &&
     isNumber(value.height) &&
-    inRange(value.height, 1, SHARE_CONSTRAINTS.GRID_MAX)
+    inRange(value.height, SHARE_CONSTRAINTS.HEIGHT_MIN, SHARE_CONSTRAINTS.GRID_MAX)
   );
 }
 
@@ -374,7 +376,7 @@ function isValidBin(value: unknown): value is BinShape {
     isNumber(value.height) &&
     value.width > 0 &&
     value.depth > 0 &&
-    inRange(value.height, 1, SHARE_CONSTRAINTS.GRID_MAX) &&
+    inRange(value.height, SHARE_CONSTRAINTS.HEIGHT_MIN, SHARE_CONSTRAINTS.GRID_MAX) &&
     optString(value.category) &&
     optString(value.label) &&
     optString(value.notes)

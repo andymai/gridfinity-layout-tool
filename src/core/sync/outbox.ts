@@ -199,12 +199,7 @@ export async function markFailure(kind: SyncKind, id: string): Promise<'reschedu
   return 'rescheduled';
 }
 
-/**
- * Reschedule an entry without bumping `attempts`. Used for 429 responses
- * where the failure is server-side throttling, not a problem with the
- * payload — counting it against the attempt budget would let a busy
- * minute exhaust `MAX_ATTEMPTS` and drop legitimate writes.
- */
+// Reschedule for 429 throttling without consuming the MAX_ATTEMPTS budget.
 export async function rescheduleWithoutAttempt(
   kind: SyncKind,
   id: string,

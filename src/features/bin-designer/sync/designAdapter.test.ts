@@ -233,20 +233,12 @@ describe('designAdapter.subscribe', () => {
   });
 
   it('suppresses the emit triggered by saveDesign during applyRemote', async () => {
-    // Regression: the previous implementation released suppression on a
-    // `queueMicrotask` cleanup that fired at the first `await` boundary,
-    // BEFORE `saveDesign`'s internal `emit` ran. The engine would then
-    // observe the remote-applied change as a fresh local edit and push
-    // it back. Fix wraps the work in try/finally so suppression spans
-    // every microtask up to and including the emit.
     const events: AdapterChange[] = [];
     const off = designAdapter.subscribe((c) => events.push(c));
 
     loadDesignMock.mockResolvedValueOnce(err(storageNotFound('echo-id')));
     saveDesignMock.mockImplementationOnce(async (input: SavedDesign) => {
-      // Real `saveDesign` emits a 'put' event synchronously after the
-      // IndexedDB write completes — i.e. past at least one internal
-      // `await` boundary. Reproduce that timing here.
+      // Reproduce real `saveDesign` timing: emit past an internal await.
       emit({
         type: 'put',
         id: designId('echo-id'),

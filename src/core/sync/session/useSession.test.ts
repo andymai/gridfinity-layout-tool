@@ -94,6 +94,36 @@ describe('useSessionLifecycle', () => {
     });
     expect(useSessionStore.getState().status).toBe('anonymous');
   });
+
+  it('forced-sign-out clears outbox + resets poller (cross-account leak guard)', async () => {
+    // Without these cleanups, user A's queued PUTs survive into a user B
+    // sign-in that picks 'merge' in the mismatch dialog, leaking A's
+    // edits into B's account.
+    const outboxModule = await import('../outbox');
+    const pollerModule = await import('../poller');
+    const clearAllSpy = vi.spyOn(outboxModule, 'clearAll').mockResolvedValueOnce();
+    const resetPullStateSpy = vi.spyOn(pollerModule, 'resetPullState').mockImplementation(() => {});
+
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ userId: 'u1', provider: 'google', email: 'a@x' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+    renderHook(() => useSessionLifecycle());
+    await waitFor(() => {
+      expect(useSessionStore.getState().status).toBe('authenticated');
+    });
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent('gflt:forced-sign-out'));
+    });
+
+    expect(clearAllSpy).toHaveBeenCalled();
+    expect(resetPullStateSpy).toHaveBeenCalled();
+    clearAllSpy.mockRestore();
+    resetPullStateSpy.mockRestore();
+  });
 });
 
 describe('applyRemoteState (broadcast-receiver path)', () => {

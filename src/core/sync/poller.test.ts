@@ -80,6 +80,17 @@ describe('pullNow — single-flight + 304 path', () => {
     fetchMock.mockRejectedValueOnce(new Error('network'));
     expect((await pullNow(adapters)).status).toBe('offline');
   });
+
+  it('returns "offline" on 429 (rate-limit) instead of error', async () => {
+    // Regression: pull side was reporting error on 429, diverging from
+    // the push side which honors Retry-After and treats 429 as throttling.
+    fetchMock.mockResolvedValueOnce(
+      new Response(null, { status: 429, headers: { 'Retry-After': '5' } })
+    );
+    const result = await pullNow(adapters);
+    expect(result.status).toBe('offline');
+    expect(useSyncStatusStore.getState().state).toBe('offline');
+  });
 });
 
 describe('diff: only-remote (live)', () => {

@@ -254,12 +254,12 @@ async function handleFailure(
   entry: OutboxEntry,
   s: EngineState
 ): Promise<void> {
-  // 429 is server throttling, not a payload problem — retry indefinitely
-  // and don't burn the `attempts` budget. Honor `Retry-After` if the
-  // server sends it; otherwise back off exponentially with jitter.
+  // 429: don't burn the attempts budget on server throttling.
   if (res.status === 429) {
+    const retryAfter = parseRetryAfter(res.headers.get('Retry-After'));
+    // `Retry-After: 0` would otherwise pass through `??` and re-fire immediately.
     const delayMs =
-      parseRetryAfter(res.headers.get('Retry-After')) ?? rateLimitedBackoffMs(entry.attempts);
+      retryAfter !== null && retryAfter > 0 ? retryAfter : rateLimitedBackoffMs(entry.attempts);
     await outboxRescheduleWithoutAttempt(entry.kind, entry.id, delayMs);
     useSyncStatusStore.getState().reportOffline('Rate limited');
     scheduleDrain(s, delayMs);
@@ -315,15 +315,8 @@ async function safeReadError(res: Response): Promise<string | undefined> {
   }
 }
 
-/**
- * Surface an uncaught error from a fire-and-forget path. Without this,
- * a fetch rejection (network error, abort) or IDB failure inside
- * `drain`, `rehydrate`, or `onLocalChange` would bubble up as a
- * `window.unhandledrejection` — visible in DevTools, invisible to
- * the user, and useless for diagnosis. Route it through the status
- * store so the UI reflects "something is broken" and the message
- * lands in the toast / Account tab error surface.
- */
+// Route fire-and-forget rejections into the status store so the UI
+// surfaces them instead of letting them escape as window.unhandledrejection.
 function reportUncaught(label: string, error: unknown): void {
   const message = error instanceof Error ? error.message : String(error);
   useSyncStatusStore.getState().reportError(`${label}: ${message}`);

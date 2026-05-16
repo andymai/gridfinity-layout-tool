@@ -235,21 +235,10 @@ describe('push: 413 quota exceeded', () => {
 
 describe('push: uncaught rejections in fire-and-forget paths', () => {
   it('reports a network rejection from the scheduled drain via reportError instead of bubbling unhandled', async () => {
-    // fetch rejects (network error / abort). Without the catch wrapper,
-    // this surfaces as `window.unhandledrejection` — invisible to the
-    // user and useless for diagnosis.
     fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
 
     engine.start(adapters);
-    // triggerChange goes through onLocalChange → scheduleDrain → setTimeout
-    // → drain. The drain rejection must be caught at the setTimeout
-    // boundary, not allowed to bubble as unhandled. We avoid `flushNow`
-    // here because the test wants to exercise the fire-and-forget path,
-    // not the direct-await path.
     layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
-    // Wait long enough for the setTimeout-scheduled drain to fire and
-    // the rejection to flow through the catch wrapper into the status
-    // store. 50ms is generous; the actual scheduled delay is 0ms.
     await new Promise((r) => setTimeout(r, 50));
 
     expect(useSyncStatusStore.getState().state).toBe('error');
@@ -275,9 +264,6 @@ describe('push: 429 rate-limited', () => {
 
     const entries = await outboxGetAll();
     expect(entries).toHaveLength(1);
-    // attempts MUST NOT be incremented — 429 is server throttling, not a
-    // push-payload failure. Burning the attempts budget on rate limits
-    // would let a busy minute drop legitimate writes.
     expect(entries[0].attempts).toBe(0);
     expect(entries[0].nextAttemptAt).toBeGreaterThan(Date.now() + 3_000);
     expect(useSyncStatusStore.getState().state).toBe('offline');
@@ -294,9 +280,22 @@ describe('push: 429 rate-limited', () => {
     const entries = await outboxGetAll();
     expect(entries).toHaveLength(1);
     expect(entries[0].attempts).toBe(0);
-    // First retry at ~1s after now (jitter adds 0-200ms).
     expect(entries[0].nextAttemptAt).toBeGreaterThanOrEqual(Date.now() + 900);
     expect(entries[0].nextAttemptAt).toBeLessThan(Date.now() + 2_000);
+  });
+
+  it('falls back to backoff when Retry-After is 0 (no immediate-retry loop)', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(null, { status: 429, headers: { 'Retry-After': '0' } })
+    );
+
+    engine.start(adapters);
+    layoutsAdapter.triggerChange({ kind: 'put', id: 'lay-1', modifiedAt: 1000 });
+    await flush();
+
+    const entries = await outboxGetAll();
+    expect(entries).toHaveLength(1);
+    expect(entries[0].nextAttemptAt).toBeGreaterThanOrEqual(Date.now() + 900);
   });
 });
 

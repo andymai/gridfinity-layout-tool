@@ -150,10 +150,7 @@ async function handlePut(
       return;
     }
     if (existing.modifiedAt === modifiedAt) {
-      // Equal-ms tie: deterministic tiebreaker on canonical payload hash
-      // so two devices that produce the same modifiedAt for distinct
-      // payloads converge on the same winner — instead of the opaque
-      // "whoever raced to the index first" behavior.
+      // Equal-ms tie: deterministic tiebreaker so concurrent devices converge.
       const stored = await getJson<LayoutEnvelope>(blobPath(userId, id));
       const order = compareForTiebreaker(validation.layout, stored?.layout);
       if (order <= 0) {
@@ -165,8 +162,6 @@ async function handlePut(
         });
         return;
       }
-      // order === 1: candidate hash sorts lexicographically larger, so it
-      // wins the tie and falls through to the normal write path below.
     }
   }
 

@@ -188,9 +188,7 @@ async function handlePut(
       return;
     }
     if (existing.modifiedAt === modifiedAt) {
-      // Equal-ms tie: deterministic tiebreaker on canonical payload hash.
-      // Compare the wrapped `{ name, params }` shape so name changes also
-      // participate in the tiebreak (not just params).
+      // Equal-ms tie: hash over `{ name, params }` so renames also participate.
       const stored = await getJson<DesignEnvelope>(blobPath(userId, id));
       const candidate = { name, params: validation.payload.params };
       const order = compareForTiebreaker(candidate, stored?.design);

@@ -146,12 +146,6 @@ describe('layoutAdapter.subscribe', () => {
 });
 
 describe('layoutAdapter.applyRemote — echo suppression', () => {
-  // Regression: `suppress(id)` used to run BEFORE the first `await`, and the
-  // `queueMicrotask` cleanup fired on that await boundary — clearing the
-  // suppression before `setLibrary` fired its synchronous subscribers. The
-  // engine then observed the remote-applied change as a fresh local edit
-  // and pushed it back to the server. Fix moves `suppress` to immediately
-  // before `setLibrary` so the synchronous listener firing sees the flag.
   it('does not emit a listener event for the id being remote-applied', async () => {
     setLibrary([entry('echo-1', 1000)]);
     saveLayoutAsyncMock.mockResolvedValue({ ok: true, value: undefined });

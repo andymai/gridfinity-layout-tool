@@ -24,10 +24,6 @@ import {
  *
  * Tombstones are excluded — the user asked to export their data, not
  * the audit trail of deletions.
- *
- * The ZIP streams chunks directly to the response — heap stays bounded
- * regardless of library size, so the 10MB-per-kind quota doesn't have
- * to translate into a ~20MB resident buffer per concurrent request.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (!requireMethod(req, res, ['GET'])) return;
@@ -87,17 +83,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
           )
         )
       );
-      await streamEnvelopes(addFile, session.userId, 'layouts', Object.keys(liveLayouts));
-      await streamEnvelopes(addFile, session.userId, 'designs', Object.keys(liveDesigns));
+      await Promise.all([
+        streamEnvelopes(addFile, session.userId, 'layouts', Object.keys(liveLayouts)),
+        streamEnvelopes(addFile, session.userId, 'designs', Object.keys(liveDesigns)),
+      ]);
     });
   } catch (error) {
     logger.error('sync/export failed', {
       userId: session.userId,
       error: error instanceof Error ? error.message : String(error),
     });
-    // If we've already started streaming, the headers + 200 are committed
-    // and we can't send a JSON error; just terminate so the client sees
-    // a truncated ZIP and the next call surfaces the real error.
+    // Headers + 200 already flushed: can't switch to a JSON error.
     if (res.headersSent) {
       try {
         res.end();
@@ -120,18 +116,8 @@ function filterLive(index: Record<string, IndexEntry>): Record<string, IndexEntr
 
 type AddFile = (filename: string, contents: Uint8Array) => void;
 
-/**
- * Wrap fflate's callback-based streaming Zip writer in a Promise that
- * resolves once the trailing chunk has been written. The `build`
- * callback receives an `addFile` helper that pushes one whole-file
- * entry at a time; we do not need per-file streaming (entries are
- * sized in tens of KB), only archive-level streaming so peak heap
- * stays bounded.
- *
- * `level: 6` matches the prior JSZip default; keeps archive sizes
- * stable across the migration so existing client roundtrips behave
- * identically.
- */
+// `level: 6` matches the prior JSZip default; keeps archive sizes stable
+// across the migration so existing client roundtrips behave identically.
 function streamZipToResponse(
   res: VercelResponse,
   build: (addFile: AddFile) => Promise<void>
@@ -174,9 +160,7 @@ async function streamEnvelopes(
   kind: SyncItemKind,
   ids: string[]
 ): Promise<void> {
-  // Fetch envelopes in parallel; missing blobs are skipped (they shouldn't
-  // happen, but if a blob delete races with the index read we don't want
-  // the export to fail).
+  // Missing blobs (index/blob race) are skipped rather than failing the export.
   const envelopes = await Promise.all(
     ids.map((id) => getJson<unknown>(`users/${userId}/${kind}/${id}.json`))
   );

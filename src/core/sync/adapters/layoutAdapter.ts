@@ -47,15 +47,10 @@ export function normalizeIncomingLayout(layout: Layout): Layout {
  * `DesignAdapter` lives in `src/features/bin-designer/sync/` and is
  * registered with the engine at app-shell boot.
  *
- * Echo suppression: when the engine calls `applyRemote*` to write a
- * cloud-sourced change locally, we add the id to `suppressed` immediately
- * before the synchronous `setLibrary` call that triggers subscribers.
- * The listener checks the set and skips emitting, so the engine doesn't
- * observe its own remote-write as a fresh local change and re-push it.
- * Cleanup is scheduled via `queueMicrotask`: zustand fires subscribers
- * synchronously inside `setLibrary`, so the cleanup runs at the next
- * await boundary — after the subscriber has already observed the
- * remote-write and skipped.
+ * Echo suppression: `suppress(id)` must run immediately before the
+ * synchronous `setLibrary` call that fires subscribers — zustand
+ * notifies listeners synchronously, so the microtask-scheduled cleanup
+ * runs after the listener has already observed and skipped.
  */
 const suppressed = new Set<string>();
 

@@ -60,10 +60,6 @@ export async function runSignOut(ctx: SignOutContext): Promise<SignOutResult> {
     /* server-side logout best-effort; client state still flips below */
   }
 
-  // Clear the poller's per-user high-water mark before flipping anonymous.
-  // Without this, a subsequent sign-in on the same device would send the
-  // prior user's `lastIndexUpdatedAt` as `If-Modified-Since` and silently
-  // skip the fresh manifest scan for the new account.
   resetPullState();
 
   ctx.onAnonymous();

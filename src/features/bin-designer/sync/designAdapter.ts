@@ -22,13 +22,9 @@ import { subscribe as subscribeDesignerEvents } from './designerEvents';
 // SavedDesign stores `updatedAt` as ISO; the cloud envelope is ms. We
 // normalize at this boundary so the engine never sees ISO strings.
 
-// Echo suppression. Unlike `layoutAdapter`, the trigger is `emit()`
-// fired *inside* `saveDesign`/`deleteDesign` — past one or more internal
-// `await` boundaries that drain microtasks. A microtask-scheduled cleanup
-// would release the suppression before the emit, so we hold it for the
-// full duration of the async work via `try`/`finally`. The engine
-// serializes `applyRemote*` per-(kind, id), so a concurrent local edit
-// on the same id is not possible during this window.
+// Held across the full `saveDesign`/`deleteDesign` await chain because
+// the `emit()` that needs suppression fires past internal await boundaries;
+// a microtask cleanup would release too early.
 const suppressed = new Set<string>();
 
 function toMs(iso: string): number {

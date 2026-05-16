@@ -245,8 +245,6 @@ describe('validateShareLayout', () => {
     });
 
     it('rejects unbounded drawer height (1e9)', () => {
-      // Regression: drawer.height was only `> 0`. A corrupted device
-      // can persist absurd values that round-trip to other devices.
       const layout = createValidLayout();
       layout.drawer.height = 1_000_000_000;
       const result = validateShareLayout(layout, 1000);
@@ -257,9 +255,9 @@ describe('validateShareLayout', () => {
       }
     });
 
-    it('rejects drawer height below 1', () => {
+    it('rejects drawer height below HEIGHT_MIN (mirrors client MIN_LAYER_HEIGHT=2)', () => {
       const layout = createValidLayout();
-      layout.drawer.height = 0;
+      layout.drawer.height = 1;
       const result = validateShareLayout(layout, 1000);
 
       expect(result.valid).toBe(false);
@@ -291,7 +289,7 @@ describe('validateShareLayout', () => {
       layout.layers = Array.from({ length: 11 }, (_, i) => ({
         id: `layer${i}`,
         name: `Layer ${i}`,
-        height: 1,
+        height: 2,
       }));
       const result = validateShareLayout(layout, 1000);
 
@@ -306,7 +304,7 @@ describe('validateShareLayout', () => {
       layout.layers = Array.from({ length: 10 }, (_, i) => ({
         id: `layer${i}`,
         name: `Layer ${i}`,
-        height: 1,
+        height: 2,
       }));
       const result = validateShareLayout(layout, 1000);
 
