@@ -321,6 +321,12 @@ export function ColorsSection() {
                 onHover={setHoveredColorZone}
                 onGestureStart={startTransaction}
                 onGestureEnd={commitTransaction}
+                // During swap mode, route the lip click into the state machine
+                // through `lip:frontLeft` — the canonical representative for
+                // the now-single-color lip (mirror-on-write means picking any
+                // corner spreads to all four). Without this override the row
+                // would open the picker mid-swap.
+                onClickOverride={swapActive ? () => swapZoneWithToast('lip:frontLeft') : undefined}
               />
             )}
             {hasBase &&
