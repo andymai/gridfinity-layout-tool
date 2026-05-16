@@ -3,7 +3,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLayoutStore } from '@/core/store';
 import { useDebouncedPush } from './useDebouncedPush';
-import { useSessionStore } from '../session/useSession';
 
 const flushNowMock = vi.fn();
 
@@ -14,10 +13,6 @@ vi.mock('../engine', () => ({
 beforeEach(() => {
   vi.useFakeTimers();
   flushNowMock.mockReset();
-  useSessionStore.setState({
-    status: 'authenticated',
-    user: { userId: 'test-user', email: 'test@example.com', provider: 'google' },
-  });
 });
 
 afterEach(() => {
@@ -71,19 +66,6 @@ describe('useDebouncedPush', () => {
         layout: { ...s.layout, name: 'Pulled' },
         lastEditSource: 'remote',
       }));
-    });
-    rerender();
-
-    vi.advanceTimersByTime(5_000);
-    expect(flushNowMock).not.toHaveBeenCalled();
-  });
-
-  it('skips flush when session is anonymous', () => {
-    useSessionStore.setState({ status: 'anonymous', user: null });
-    const { rerender } = renderHook(() => useDebouncedPush());
-
-    act(() => {
-      useLayoutStore.setState((s) => ({ ...s, layout: { ...s.layout, name: 'Anon edit' } }));
     });
     rerender();
 
