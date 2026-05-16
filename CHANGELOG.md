@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.88.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.87.3...gridfinity-layout-tool-v4.88.0) (2026-05-16)
+
+
+### Features
+
+* **labs:** graduate cloud_sync — sign in to sync across devices ([#1693](https://github.com/andymai/gridfinity-layout-tool/issues/1693)) ([f2b48aa](https://github.com/andymai/gridfinity-layout-tool/commit/f2b48aa984477eb5b2978ba9d478dc1586f5c703))
+
 ## [4.87.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.87.2...gridfinity-layout-tool-v4.87.3) (2026-05-16)
 
 
