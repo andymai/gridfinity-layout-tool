@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.87.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.87.0...gridfinity-layout-tool-v4.87.1) (2026-05-16)
+
+
+### Bug Fixes
+
+* **bin-designer:** keep material attach intact across multi-color toggle ([#1687](https://github.com/andymai/gridfinity-layout-tool/issues/1687)) ([6c0ecc4](https://github.com/andymai/gridfinity-layout-tool/commit/6c0ecc4c569ae70359f0da9ef1d523895b503e4c))
+
 ## [4.87.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.86.3...gridfinity-layout-tool-v4.87.0) (2026-05-16)
 
 
