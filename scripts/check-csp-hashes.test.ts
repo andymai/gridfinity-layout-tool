@@ -13,10 +13,12 @@ interface VercelHeader {
   key: string;
   value: string;
 }
+
 interface VercelHeadersEntry {
   source: string;
   headers: VercelHeader[];
 }
+
 interface VercelConfig {
   headers?: VercelHeadersEntry[];
 }
