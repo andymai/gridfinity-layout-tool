@@ -9,6 +9,7 @@ const SINGLE = '#d4d8dc';
 
 function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig {
   return {
+    enabled: true,
     body: SINGLE,
     lip: { frontLeft: SINGLE, frontRight: SINGLE, backRight: SINGLE, backLeft: SINGLE },
     labelTab: SINGLE,
@@ -121,6 +122,56 @@ describe('ColorsSection', () => {
       expect(screen.getByText('Front-right')).toBeDefined();
       expect(screen.getByText('Back-right')).toBeDefined();
       expect(screen.getByText('Back-left')).toBeDefined();
+    });
+  });
+
+  describe('enable toggle', () => {
+    it('hides zone editors and shows the hint when featureColors.enabled is false', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+          label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+          featureColors: colors({ enabled: false }),
+        },
+      });
+      render(<ColorsSection />);
+      // Toggle is off → zone rows and the actions menu must not appear.
+      expect(screen.queryByText('Body')).toBeNull();
+      expect(screen.queryByText('Stacking Lip')).toBeNull();
+      expect(screen.queryByText('Label Tab')).toBeNull();
+      // The hint copy should be visible to explain the off state.
+      expect(screen.getByText(/multi-color 3MF/)).toBeDefined();
+    });
+
+    it('exposes the toggle with aria-checked reflecting enabled state', () => {
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, featureColors: colors({ enabled: false }) },
+      });
+      render(<ColorsSection />);
+      const sw = screen.getByRole('switch');
+      expect(sw.getAttribute('aria-checked')).toBe('false');
+    });
+
+    it('flips featureColors.enabled and preserves zone colors when toggled', () => {
+      // Seed with diverged colors + enabled:true so we can verify that toggling
+      // off doesn't reset them — the toggle is a gate, not a reset button.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          featureColors: colors({
+            body: '#3b82f6',
+            labelTab: '#22c55e',
+            enabled: true,
+          }),
+        },
+      });
+      render(<ColorsSection />);
+      fireEvent.click(screen.getByRole('switch'));
+      const after = useDesignerStore.getState().params.featureColors;
+      expect(after.enabled).toBe(false);
+      expect(after.body).toBe('#3b82f6');
+      expect(after.labelTab).toBe('#22c55e');
     });
   });
 });

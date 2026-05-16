@@ -1345,7 +1345,11 @@ const en: Record<string, string> = {
   'binDesigner.group.shape': 'Shape',
   'binDesigner.group.interior': 'Interior',
   'binDesigner.group.base': 'Base',
-  'binDesigner.group.colors': 'Colors',
+  'binDesigner.group.colors': 'Multi-Color',
+  'binDesigner.multiColor.experimental': 'Experimental',
+  'binDesigner.multiColor.enableLabel': 'Enable multi-color',
+  'binDesigner.multiColor.enableHint':
+    'Assign different filaments to bin parts and export a multi-color 3MF.',
   'binDesigner.colors.body': 'Body',
   'binDesigner.colors.lip': 'Stacking Lip',
   'binDesigner.colors.lip.frontLeft': 'Front-left',

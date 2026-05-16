@@ -1,8 +1,8 @@
 /**
  * Lip renders as a single expandable row that fans out into four
  * per-corner sub-rows. Hidden-feature zones don't render at all — no
- * greyed-out rows. Mounted only when the multi_color_export Labs flag
- * is on.
+ * greyed-out rows. The zone editors are gated on the per-design
+ * featureColors.enabled toggle exposed at the section header.
  */
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -72,6 +72,8 @@ export function ColorsSection() {
       hoveredColorZone: s.ui.hoveredColorZone,
     }))
   );
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; preserve runtime fallback
+  const multiColorEnabled = rawColors?.enabled ?? false;
 
   const activeZones = useMemo(
     () =>
@@ -216,114 +218,151 @@ export function ColorsSection() {
     [startTransaction, commitTransaction, updateFeatureColors]
   );
 
+  const enableLabel = t('binDesigner.multiColor.enableLabel');
+  const handleToggleMultiColor = useCallback(() => {
+    updateFeatureColors({ enabled: !multiColorEnabled });
+  }, [multiColorEnabled, updateFeatureColors]);
+
   return (
     <div className="space-y-2">
-      <div className="flex justify-end -mb-1">
-        <ColorsActionsMenu
-          featureColors={featureColors}
-          onMatchAllToBody={handleMatchAllToBody}
-          onApplyPalette={handleApplyPalette}
-        />
+      {/* Top toggle row — gates the zone editor below */}
+      <div className="flex items-center justify-between py-1.5">
+        <span className="text-xs text-content-secondary">{enableLabel}</span>
+        <div className="flex items-center gap-2">
+          {multiColorEnabled && (
+            <ColorsActionsMenu
+              featureColors={featureColors}
+              onMatchAllToBody={handleMatchAllToBody}
+              onApplyPalette={handleApplyPalette}
+            />
+          )}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={multiColorEnabled}
+            aria-label={enableLabel}
+            onClick={handleToggleMultiColor}
+            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
+              multiColorEnabled ? 'bg-accent' : 'bg-stroke-subtle'
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
+                multiColorEnabled ? 'translate-x-6' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
-      <ColorsHintBanner />
+      {!multiColorEnabled && (
+        <p className="text-[11px] text-content-tertiary leading-snug">
+          {t('binDesigner.multiColor.enableHint')}
+        </p>
+      )}
 
-      <ColorGroup title={t('binDesigner.colors.group.exterior')}>
-        {renderZone(
-          'body',
-          t('binDesigner.colors.body'),
-          featureColors.body,
-          DEFAULT_FEATURE_COLOR_CONFIG.body,
-          (hex) => updateFeatureColors({ body: hex })
-        )}
-        {hasLip && (
-          <>
-            <LipZoneRow
-              label={t('binDesigner.colors.lip')}
-              corners={featureColors.lip}
-              isExpanded={lipExpanded}
-              onToggleExpand={() => setLipExpanded((v) => !v)}
-              onHover={setHoveredColorZone}
-              cornersId={lipCornersId}
-            />
-            {lipExpanded && (
-              <div id={lipCornersId} className="flex gap-3 pl-2 pr-1">
-                <div className="flex-1 space-y-0.5">
-                  {LIP_CORNERS.map((corner) => {
-                    const zone = lipCornerZone(corner);
-                    return (
-                      <ColorZoneRow
-                        key={corner}
-                        zone={zone}
-                        label={lipCornerLabel[corner]}
-                        color={getZoneColor(featureColors, zone)}
-                        defaultColor={DEFAULT_FEATURE_COLOR_CONFIG.lip[corner]}
-                        otherColors={buildOtherColors(zone, colorsByZone)}
-                        bodyColor={featureColors.body}
-                        recentColors={recentColors}
-                        onChange={(hex) => {
-                          remember(hex);
-                          updateFeatureColors({ lip: { [corner]: hex } });
-                        }}
-                        onHover={setHoveredColorZone}
-                        onGestureStart={startTransaction}
-                        onGestureEnd={commitTransaction}
-                      />
-                    );
-                  })}
-                </div>
-                <LipCornerDiagram corners={featureColors.lip} hovered={hoveredColorZone} />
-              </div>
+      {multiColorEnabled && (
+        <>
+          <ColorsHintBanner />
+
+          <ColorGroup title={t('binDesigner.colors.group.exterior')}>
+            {renderZone(
+              'body',
+              t('binDesigner.colors.body'),
+              featureColors.body,
+              DEFAULT_FEATURE_COLOR_CONFIG.body,
+              (hex) => updateFeatureColors({ body: hex })
             )}
-          </>
-        )}
-        {hasBase &&
-          renderZone(
-            'base',
-            t('binDesigner.colors.base'),
-            featureColors.base,
-            DEFAULT_FEATURE_COLOR_CONFIG.base,
-            (hex) => updateFeatureColors({ base: hex })
-          )}
-      </ColorGroup>
+            {hasLip && (
+              <>
+                <LipZoneRow
+                  label={t('binDesigner.colors.lip')}
+                  corners={featureColors.lip}
+                  isExpanded={lipExpanded}
+                  onToggleExpand={() => setLipExpanded((v) => !v)}
+                  onHover={setHoveredColorZone}
+                  cornersId={lipCornersId}
+                />
+                {lipExpanded && (
+                  <div id={lipCornersId} className="flex gap-3 pl-2 pr-1">
+                    <div className="flex-1 space-y-0.5">
+                      {LIP_CORNERS.map((corner) => {
+                        const zone = lipCornerZone(corner);
+                        return (
+                          <ColorZoneRow
+                            key={corner}
+                            zone={zone}
+                            label={lipCornerLabel[corner]}
+                            color={getZoneColor(featureColors, zone)}
+                            defaultColor={DEFAULT_FEATURE_COLOR_CONFIG.lip[corner]}
+                            otherColors={buildOtherColors(zone, colorsByZone)}
+                            bodyColor={featureColors.body}
+                            recentColors={recentColors}
+                            onChange={(hex) => {
+                              remember(hex);
+                              updateFeatureColors({ lip: { [corner]: hex } });
+                            }}
+                            onHover={setHoveredColorZone}
+                            onGestureStart={startTransaction}
+                            onGestureEnd={commitTransaction}
+                          />
+                        );
+                      })}
+                    </div>
+                    <LipCornerDiagram corners={featureColors.lip} hovered={hoveredColorZone} />
+                  </div>
+                )}
+              </>
+            )}
+            {hasBase &&
+              renderZone(
+                'base',
+                t('binDesigner.colors.base'),
+                featureColors.base,
+                DEFAULT_FEATURE_COLOR_CONFIG.base,
+                (hex) => updateFeatureColors({ base: hex })
+              )}
+          </ColorGroup>
 
-      <ColorGroup
-        title={t('binDesigner.colors.group.interior')}
-        visible={hasScoop || hasDividers}
-        growthTick={interiorGrowthTick}
-      >
-        {hasScoop &&
-          renderZone(
-            'scoop',
-            t('binDesigner.colors.scoop'),
-            featureColors.scoop,
-            DEFAULT_FEATURE_COLOR_CONFIG.scoop,
-            (hex) => updateFeatureColors({ scoop: hex })
-          )}
-        {hasDividers &&
-          renderZone(
-            'dividers',
-            t('binDesigner.colors.dividers'),
-            featureColors.dividers,
-            DEFAULT_FEATURE_COLOR_CONFIG.dividers,
-            (hex) => updateFeatureColors({ dividers: hex })
-          )}
-      </ColorGroup>
+          <ColorGroup
+            title={t('binDesigner.colors.group.interior')}
+            visible={hasScoop || hasDividers}
+            growthTick={interiorGrowthTick}
+          >
+            {hasScoop &&
+              renderZone(
+                'scoop',
+                t('binDesigner.colors.scoop'),
+                featureColors.scoop,
+                DEFAULT_FEATURE_COLOR_CONFIG.scoop,
+                (hex) => updateFeatureColors({ scoop: hex })
+              )}
+            {hasDividers &&
+              renderZone(
+                'dividers',
+                t('binDesigner.colors.dividers'),
+                featureColors.dividers,
+                DEFAULT_FEATURE_COLOR_CONFIG.dividers,
+                (hex) => updateFeatureColors({ dividers: hex })
+              )}
+          </ColorGroup>
 
-      <ColorGroup
-        title={t('binDesigner.colors.group.addons')}
-        visible={hasLabelTabs}
-        growthTick={addonsGrowthTick}
-      >
-        {hasLabelTabs &&
-          renderZone(
-            'labelTab',
-            t('binDesigner.colors.labelTab'),
-            featureColors.labelTab,
-            DEFAULT_FEATURE_COLOR_CONFIG.labelTab,
-            (hex) => updateFeatureColors({ labelTab: hex })
-          )}
-      </ColorGroup>
+          <ColorGroup
+            title={t('binDesigner.colors.group.addons')}
+            visible={hasLabelTabs}
+            growthTick={addonsGrowthTick}
+          >
+            {hasLabelTabs &&
+              renderZone(
+                'labelTab',
+                t('binDesigner.colors.labelTab'),
+                featureColors.labelTab,
+                DEFAULT_FEATURE_COLOR_CONFIG.labelTab,
+                (hex) => updateFeatureColors({ labelTab: hex })
+              )}
+          </ColorGroup>
+        </>
+      )}
     </div>
   );
 }

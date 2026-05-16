@@ -46,7 +46,6 @@ export function ParameterPanel() {
     }))
   );
   const { needsSplit } = useSplitOptionsSection();
-  const showColors = useFeatureFlag('multi_color_export');
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const customShapeReason = t('binDesigner.shape.custom.hint');
   return (
@@ -85,14 +84,16 @@ export function ParameterPanel() {
           </div>
         </StickyGroupHeader>
 
-        {/* Colors group (Labs: multi_color_export) — between Shape and Interior */}
-        {showColors && (
-          <StickyGroupHeader title={t('binDesigner.group.colors')} defaultExpanded>
-            <div className="px-4 py-4">
-              <ColorsSection />
-            </div>
-          </StickyGroupHeader>
-        )}
+        {/* Multi-Color group — between Shape and Interior */}
+        <StickyGroupHeader
+          title={t('binDesigner.group.colors')}
+          defaultExpanded
+          badge={t('binDesigner.multiColor.experimental')}
+        >
+          <div className="px-4 py-4">
+            <ColorsSection />
+          </div>
+        </StickyGroupHeader>
 
         {/* Interior group */}
         <StickyGroupHeader

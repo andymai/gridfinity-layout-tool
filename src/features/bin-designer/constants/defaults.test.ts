@@ -373,6 +373,7 @@ describe('migrateParams', () => {
   it('should provide default featureColors when absent', () => {
     const result = migrateParams({});
     expect(result.featureColors).toEqual({
+      enabled: false,
       body: '#d4d8dc',
       lip: {
         frontLeft: '#d4d8dc',
@@ -400,6 +401,9 @@ describe('migrateParams', () => {
       backLeft: '#22c55e',
     });
     expect(result.featureColors.labelTab).toBe('#d4d8dc');
+    // Legacy design had diverged colors but no `enabled` field — back-fill to true
+    // so its multi-color look is preserved post-migration.
+    expect(result.featureColors.enabled).toBe(true);
   });
 
   it('expands the legacy single-color lip into four matching corners', () => {
@@ -413,10 +417,29 @@ describe('migrateParams', () => {
       backRight: '#ff0000',
       backLeft: '#ff0000',
     });
+    expect(result.featureColors.enabled).toBe(true);
+  });
+
+  it('preserves explicit enabled:false even when colors are diverged', () => {
+    // raw.enabled ?? hasCustomColor — when the user explicitly chose false,
+    // that wins over the auto-derive, so toggling off doesn't bounce back to
+    // true just because their saved colors still diverge.
+    const explicitOff = {
+      enabled: false,
+      body: '#222',
+      lip: { frontLeft: '#f00', frontRight: '#f00', backRight: '#f00', backLeft: '#f00' },
+      labelTab: '#0f0',
+      base: '#222',
+      scoop: '#222',
+      dividers: '#222',
+    };
+    const result = migrateParams({ featureColors: explicitOff });
+    expect(result.featureColors.enabled).toBe(false);
   });
 
   it('should preserve hex featureColors through double migration', () => {
     const hex = {
+      enabled: true,
       body: '#ef4444',
       lip: {
         frontLeft: '#3b82f6',
@@ -434,7 +457,10 @@ describe('migrateParams', () => {
     expect(secondPass.featureColors).toEqual(hex);
   });
 
-  it('inherits body for missing zones so legacy designs render unchanged', () => {
+  it('inherits body for missing zones and auto-enables when body was customized', () => {
+    // Pre-`enabled` design: only `body` is explicitly set, but it's a non-default
+    // color — the user could only have set this via the old Labs multi-color
+    // section, so honor their intent and auto-enable.
     const partial = { body: '#3b82f6' } as unknown as typeof DEFAULT_BIN_PARAMS.featureColors;
     const result = migrateParams({ featureColors: partial });
     expect(result.featureColors.body).toBe('#3b82f6');
@@ -446,6 +472,28 @@ describe('migrateParams', () => {
     expect(result.featureColors.scoop).toBe('#3b82f6');
     expect(result.featureColors.dividers).toBe('#3b82f6');
     expect(result.featureColors.labelTab).toBe('#3b82f6');
+    // Body diverges from the default → auto-enable so their body color renders.
+    expect(result.featureColors.enabled).toBe(true);
+  });
+
+  it('does not auto-enable when every zone matches the historical default color', () => {
+    // Legacy design that was never customized — pre-`enabled` semantics treated
+    // this as single-color, and the new opt-in toggle should reflect that.
+    const allDefault = {
+      body: '#d4d8dc',
+      lip: {
+        frontLeft: '#d4d8dc',
+        frontRight: '#d4d8dc',
+        backRight: '#d4d8dc',
+        backLeft: '#d4d8dc',
+      },
+      labelTab: '#d4d8dc',
+      base: '#d4d8dc',
+      scoop: '#d4d8dc',
+      dividers: '#d4d8dc',
+    } as unknown as typeof DEFAULT_BIN_PARAMS.featureColors;
+    const result = migrateParams({ featureColors: allDefault });
+    expect(result.featureColors.enabled).toBe(false);
   });
 
   it('backfills lid with defaults for designs saved before lid feature existed', () => {

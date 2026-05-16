@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
-import { useLabsStore } from '@/core/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 
@@ -299,24 +298,17 @@ describe('ExportDialog', () => {
   });
 
   describe('multi-color defaults', () => {
-    function enableMultiColorFlag(enabled: boolean) {
-      const prefs = useLabsStore.getState().preferences;
-      useLabsStore.setState({
-        preferences: {
-          ...prefs,
-          enabledFeatures: { ...prefs.enabledFeatures, multi_color_export: enabled },
-        },
-      });
-    }
-
     function setupMultiColorOpen({
       open,
       multiColor,
       format,
+      enabled = multiColor,
     }: {
       open: boolean;
       multiColor: boolean;
       format: 'stl' | 'step' | '3mf';
+      /** Override the toggle independently of whether zone colors diverge. */
+      enabled?: boolean;
     }) {
       const single = '#3b82f6';
       const lipSingle = {
@@ -327,6 +319,7 @@ describe('ExportDialog', () => {
       };
       const featureColors = multiColor
         ? {
+            enabled,
             body: single,
             lip: {
               frontLeft: '#ef4444',
@@ -340,6 +333,7 @@ describe('ExportDialog', () => {
             dividers: single,
           }
         : {
+            enabled,
             body: single,
             lip: lipSingle,
             labelTab: single,
@@ -365,10 +359,6 @@ describe('ExportDialog', () => {
         },
       });
     }
-
-    beforeEach(() => {
-      enableMultiColorFlag(true);
-    });
 
     it('switches the format to 3MF when opening on a multi-color design saved as STL', () => {
       // Pre-open state: closed dialog, STL format.
@@ -402,12 +392,14 @@ describe('ExportDialog', () => {
       expect(screen.getByRole('radio', { name: '3MF' })).not.toHaveAttribute('aria-disabled');
     });
 
-    it('does not auto-switch when the multi_color_export Labs flag is off', () => {
-      enableMultiColorFlag(false);
-      setupMultiColorOpen({ open: false, multiColor: true, format: 'stl' });
+    it('does not auto-switch when multi-color is disabled on the design with diverged colors', () => {
+      // Critical case: zone colors are diverged (red lip, green labelTab) but
+      // featureColors.enabled is false. The toggle alone must suppress the
+      // multi-color export path; underlying color data is preserved on disable.
+      setupMultiColorOpen({ open: false, multiColor: true, format: 'stl', enabled: false });
       const { rerender } = render(<ExportDialog />);
       act(() => {
-        setupMultiColorOpen({ open: true, multiColor: true, format: 'stl' });
+        setupMultiColorOpen({ open: true, multiColor: true, format: 'stl', enabled: false });
       });
       rerender(<ExportDialog />);
       expect(useDesignerStore.getState().exportFileNameConfig.format).toBe('stl');

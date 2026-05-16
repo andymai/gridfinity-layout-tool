@@ -13,7 +13,6 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { computeActiveZones, isSingleColor } from '@/features/bin-designer/types/featureColors';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { SlicerHandoffPreview } from './SlicerHandoffPreview';
@@ -77,14 +76,13 @@ export function ExportDialog() {
   const showSplitBanner = needsSplit && activeFormat !== 'step';
   const useSplitExport = showSplitBanner && splitEnabled;
 
-  // A design is multi-color when the multi_color_export Labs flag is on AND
-  // its currently-active zones do not all share the body color. STL and STEP
-  // silently drop this color data, so we steer the user toward 3MF.
-  const multiColorEnabled = useFeatureFlag('multi_color_export');
+  // A design is multi-color when the per-design toggle is on AND its currently
+  // active zones do not all share the body color. STL and STEP silently drop
+  // this color data, so we steer the user toward 3MF.
   const isMultiColor = useMemo(() => {
-    if (!multiColorEnabled) return false;
+    if (!params.featureColors.enabled) return false;
     return !isSingleColor(params.featureColors, computeActiveZones(params));
-  }, [multiColorEnabled, params]);
+  }, [params]);
 
   // Auto-switch to 3MF the first time the dialog opens on a multi-color
   // design with a colorless format selected. Tracked by a ref so we only

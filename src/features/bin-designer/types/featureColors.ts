@@ -28,6 +28,10 @@ export interface LipColorConfig {
 }
 
 export interface FeatureColorConfig {
+  /** Whether multi-color zone editing is active for this design. When false,
+   *  zone editors are hidden, the preview renders as a single body color, and
+   *  3MF exports omit material indices. */
+  readonly enabled: boolean;
   /** Body shell — bin walls and floor (FeatureTag.BASE + unclassified). */
   readonly body: string;
   readonly lip: LipColorConfig;

@@ -179,6 +179,7 @@ export function createParamSlice(set: Set, get: Get) {
 
     // Feature color actions
     updateFeatureColors: (patch: {
+      enabled?: boolean;
       body?: string;
       lip?: Partial<LipColorConfig>;
       labelTab?: string;

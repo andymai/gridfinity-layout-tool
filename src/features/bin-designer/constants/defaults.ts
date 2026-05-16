@@ -149,8 +149,11 @@ const LEGACY_SLOT_COLORS: Record<string, string> = {
   slot4: '#ef4444',
 };
 
-/** Default feature color config: all zones use the default bin color (light grey) */
+/** Default feature color config: all zones use the default bin color (light grey).
+ *  Multi-color is opt-in per design — `enabled: false` keeps fresh designs at the
+ *  single-body-color baseline until the user flips the toggle. */
 export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
+  enabled: false,
   body: '#d4d8dc',
   lip: {
     frontLeft: '#d4d8dc',
@@ -165,6 +168,7 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
 } as const;
 
 interface LegacyFeatureColorInput {
+  enabled?: boolean;
   body?: string;
   /** Legacy single-color string or the new 4-corner object. */
   lip?: string | Partial<FeatureColorConfig['lip']>;
@@ -182,10 +186,11 @@ function resolveColor(raw: string | undefined, fallback: string): string {
 /**
  * Migrate featureColors. Handles three eras of saved designs:
  * - Pre-v4.30: slot IDs like 'slot1' → mapped to hex via LEGACY_SLOT_COLORS.
- * - v4.30..present (pre-corner-lip): `lip` is a single hex string. All
- *   four corners inherit that value so existing designs look identical.
- * - New zones (base / scoop / dividers) missing → inherit the body color
- *   so the visual rendering is unchanged after migration.
+ * - v4.30..pre-corner-lip: `lip` is a single hex string; all four corners inherit it.
+ * - New zones (base / scoop / dividers) missing → inherit body so render is unchanged.
+ *
+ * `enabled` is back-filled on first load — any pre-existing design with any color
+ * customization is treated as opted-in so the user's colored designs keep their look.
  */
 function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): FeatureColorConfig {
   if (!raw) return DEFAULT_FEATURE_COLOR_CONFIG;
@@ -208,14 +213,21 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
     lip = { frontLeft: body, frontRight: body, backRight: body, backLeft: body };
   }
 
-  return {
-    body,
-    lip,
-    labelTab,
-    base: resolveColor(raw.base, body),
-    scoop: resolveColor(raw.scoop, body),
-    dividers: resolveColor(raw.dividers, body),
-  };
+  const base = resolveColor(raw.base, body);
+  const scoop = resolveColor(raw.scoop, body);
+  const dividers = resolveColor(raw.dividers, body);
+
+  // Pre-`enabled` design counts as multi-color if body or any zone diverges
+  // from the default — zone editors only existed behind the old Labs flag, so
+  // any customized color implies multi-color intent.
+  const bodyLower = body.toLowerCase();
+  const isCustom = (c: string): boolean => c.toLowerCase() !== bodyLower;
+  const hasCustomColor =
+    bodyLower !== DEFAULT_FEATURE_COLOR_CONFIG.body.toLowerCase() ||
+    [labelTab, base, scoop, dividers].some(isCustom) ||
+    [lip.frontLeft, lip.frontRight, lip.backRight, lip.backLeft].some(isCustom);
+
+  return { enabled: raw.enabled ?? hasCustomColor, body, lip, labelTab, base, scoop, dividers };
 }
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */

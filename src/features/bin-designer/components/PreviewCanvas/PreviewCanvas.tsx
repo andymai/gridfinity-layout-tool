@@ -53,7 +53,6 @@ import { useSplitPreview } from '../../hooks/useSplitPreview';
 import { setPreviewCanvas, setPreviewContext, clearPreviewCanvas } from '../../utils/thumbnail';
 import { describeBin, getStatusAnnouncement } from '../../utils/a11y';
 import { useResponsive } from '@/shared/hooks/useResponsive';
-import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
@@ -225,8 +224,8 @@ export function PreviewCanvas() {
     }
   }, [wasmStatus]);
 
-  // Hide single-color picker when multi-color palette is active
-  const showColors = useFeatureFlag('multi_color_export');
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve runtime fallback
+  const showColors = params.featureColors?.enabled ?? false;
 
   // Responsive state for touch optimizations
   const { isDesktop, isTouchDevice } = useResponsive();

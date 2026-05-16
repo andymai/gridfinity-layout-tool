@@ -21,6 +21,7 @@
     "binDesigner.dimensions",
     "binDesigner.dividerAutoHeight",
     "binDesigner.experimental",
+    "binDesigner.multiColor.experimental",
     "binDesigner.format",
     "binDesigner.format3MF",
     "binDesigner.formatSTL",
