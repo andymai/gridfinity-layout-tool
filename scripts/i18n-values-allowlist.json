@@ -39,6 +39,7 @@
     "binDesigner.colors.base",
     "binDesigner.colors.group.exterior",
     "binDesigner.colors.group.interior",
+    "binDesigner.colors.slicerHandoff.filament",
     "binDesigner.layout",
     "binDesigner.radius",
     "binDesigner.scoopRadius",

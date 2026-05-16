@@ -5,9 +5,10 @@
  * is on.
  */
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useToastStore } from '@/core/store';
 import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import {
   LIP_CORNERS,
@@ -15,11 +16,21 @@ import {
   getZoneColor,
   lipCornerZone,
 } from '@/features/bin-designer/types/featureColors';
-import type { ColorZone, LipCorner } from '@/features/bin-designer/types/featureColors';
+import type {
+  ColorZone,
+  FeatureColorConfig,
+  LipCorner,
+} from '@/features/bin-designer/types/featureColors';
+import type { SavedColorPalette } from '@/core/store/settings.types';
 import { useTranslation } from '@/i18n';
 import { ColorZoneRow } from './ColorZoneRow';
 import { LipZoneRow } from './LipZoneRow';
+import { LipCornerDiagram } from './LipCornerDiagram';
 import { ColorGroup } from './ColorGroup';
+import { ColorsHintBanner } from './ColorsHintBanner';
+import { ColorsActionsMenu } from './ColorsActionsMenu';
+
+const RECENT_COLORS_LIMIT = 8;
 
 function buildOtherColors(zone: ColorZone, colorsByZone: ReadonlyMap<ColorZone, string>): string[] {
   const current = colorsByZone.get(zone);
@@ -39,6 +50,7 @@ function buildOtherColors(zone: ColorZone, colorsByZone: ReadonlyMap<ColorZone, 
 export function ColorsSection() {
   const t = useTranslation();
   const [lipExpanded, setLipExpanded] = useState(false);
+  const [recentColors, setRecentColors] = useState<readonly string[]>([]);
   const lipCornersId = useId();
 
   const {
@@ -48,6 +60,7 @@ export function ColorsSection() {
     labelEnabled,
     scoopEnabled,
     cells,
+    hoveredColorZone,
   } = useDesignerStore(
     useShallow((s) => ({
       featureColors: s.params.featureColors,
@@ -56,6 +69,7 @@ export function ColorsSection() {
       labelEnabled: s.params.label.enabled,
       scoopEnabled: s.params.scoop.enabled,
       cells: s.params.compartments.cells,
+      hoveredColorZone: s.ui.hoveredColorZone,
     }))
   );
 
@@ -76,20 +90,24 @@ export function ColorsSection() {
   const hasDividers = activeZones.has('dividers');
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve the runtime fallback
-  const featureColors = rawColors ?? DEFAULT_FEATURE_COLOR_CONFIG;
+  const featureColors: FeatureColorConfig = rawColors ?? DEFAULT_FEATURE_COLOR_CONFIG;
   const updateFeatureColors = useDesignerStore((s) => s.updateFeatureColors);
   const setHoveredColorZone = useDesignerStore((s) => s.setHoveredColorZone);
-  // Native-picker drags can fire dozens of change events per gesture
-  // (worst case: Firefox during pointer drag). Wrap them in a transaction
-  // so all the intermediate colors collapse into a single undo entry.
   const startTransaction = useDesignerStore((s) => s.startTransaction);
   const commitTransaction = useDesignerStore((s) => s.commitTransaction);
 
-  // Clear hovered zone on unmount to prevent stale preview glow
   useEffect(() => () => setHoveredColorZone(null), [setHoveredColorZone]);
 
-  // Map of *active* zone → color. Drives the "Used in this design"
-  // suggestion list per row and stays in sync with hidden-zone filtering.
+  // Local LRU of recently-committed colors so the picker can offer them
+  // as quick-pick swatches even on a fresh, all-body design.
+  const remember = useCallback((hex: string) => {
+    const lower = hex.toLowerCase();
+    setRecentColors((prev) => {
+      const next = [lower, ...prev.filter((c) => c !== lower)];
+      return next.slice(0, RECENT_COLORS_LIMIT);
+    });
+  }, []);
+
   const colorsByZone = useMemo(() => {
     const map = new Map<ColorZone, string>();
     map.set('body', featureColors.body);
@@ -105,6 +123,28 @@ export function ColorsSection() {
     return map;
   }, [featureColors, hasBase, hasLip, hasLabelTabs, hasScoop, hasDividers]);
 
+  // Bump a tick whenever a group's visible-zone count grows. ColorGroup
+  // auto-opens on each tick change so a newly-enabled feature is never
+  // trapped behind a stale collapsed header.
+  const interiorCount = (hasScoop ? 1 : 0) + (hasDividers ? 1 : 0);
+  const addonsCount = hasLabelTabs ? 1 : 0;
+  const [interiorGrowthTick, setInteriorGrowthTick] = useState(0);
+  const [addonsGrowthTick, setAddonsGrowthTick] = useState(0);
+  const prevInteriorCountRef = useRef(interiorCount);
+  const prevAddonsCountRef = useRef(addonsCount);
+  useEffect(() => {
+    if (interiorCount > prevInteriorCountRef.current) {
+      setInteriorGrowthTick((t) => t + 1);
+    }
+    prevInteriorCountRef.current = interiorCount;
+  }, [interiorCount]);
+  useEffect(() => {
+    if (addonsCount > prevAddonsCountRef.current) {
+      setAddonsGrowthTick((t) => t + 1);
+    }
+    prevAddonsCountRef.current = addonsCount;
+  }, [addonsCount]);
+
   const renderZone = (
     zone: ColorZone,
     label: string,
@@ -118,7 +158,12 @@ export function ColorsSection() {
       color={color}
       defaultColor={defaultColor}
       otherColors={buildOtherColors(zone, colorsByZone)}
-      onChange={onChange}
+      bodyColor={featureColors.body}
+      recentColors={recentColors}
+      onChange={(hex) => {
+        remember(hex);
+        onChange(hex);
+      }}
       onHover={setHoveredColorZone}
       onGestureStart={startTransaction}
       onGestureEnd={commitTransaction}
@@ -132,8 +177,57 @@ export function ColorsSection() {
     backLeft: t('binDesigner.colors.lip.backLeft'),
   };
 
+  const addToast = useToastStore((s) => s.addToast);
+  const handleMatchAllToBody = useCallback(() => {
+    startTransaction();
+    updateFeatureColors({
+      lip: {
+        frontLeft: featureColors.body,
+        frontRight: featureColors.body,
+        backRight: featureColors.body,
+        backLeft: featureColors.body,
+      },
+      labelTab: featureColors.body,
+      base: featureColors.body,
+      scoop: featureColors.body,
+      dividers: featureColors.body,
+    });
+    commitTransaction();
+    addToast({
+      message: t('binDesigner.colors.matchAllToBody.toast'),
+      type: 'success',
+      duration: 2500,
+    });
+  }, [startTransaction, commitTransaction, updateFeatureColors, featureColors.body, addToast, t]);
+
+  const handleApplyPalette = useCallback(
+    (palette: SavedColorPalette) => {
+      startTransaction();
+      updateFeatureColors({
+        body: palette.colors.body,
+        lip: palette.colors.lip,
+        labelTab: palette.colors.labelTab,
+        base: palette.colors.base,
+        scoop: palette.colors.scoop,
+        dividers: palette.colors.dividers,
+      });
+      commitTransaction();
+    },
+    [startTransaction, commitTransaction, updateFeatureColors]
+  );
+
   return (
     <div className="space-y-2">
+      <div className="flex justify-end -mb-1">
+        <ColorsActionsMenu
+          featureColors={featureColors}
+          onMatchAllToBody={handleMatchAllToBody}
+          onApplyPalette={handleApplyPalette}
+        />
+      </div>
+
+      <ColorsHintBanner />
+
       <ColorGroup title={t('binDesigner.colors.group.exterior')}>
         {renderZone(
           'body',
@@ -153,24 +247,32 @@ export function ColorsSection() {
               cornersId={lipCornersId}
             />
             {lipExpanded && (
-              <div id={lipCornersId} className="pl-7 space-y-0.5">
-                {LIP_CORNERS.map((corner) => {
-                  const zone = lipCornerZone(corner);
-                  return (
-                    <ColorZoneRow
-                      key={corner}
-                      zone={zone}
-                      label={lipCornerLabel[corner]}
-                      color={getZoneColor(featureColors, zone)}
-                      defaultColor={DEFAULT_FEATURE_COLOR_CONFIG.lip[corner]}
-                      otherColors={buildOtherColors(zone, colorsByZone)}
-                      onChange={(hex) => updateFeatureColors({ lip: { [corner]: hex } })}
-                      onHover={setHoveredColorZone}
-                      onGestureStart={startTransaction}
-                      onGestureEnd={commitTransaction}
-                    />
-                  );
-                })}
+              <div id={lipCornersId} className="flex gap-3 pl-2 pr-1">
+                <div className="flex-1 space-y-0.5">
+                  {LIP_CORNERS.map((corner) => {
+                    const zone = lipCornerZone(corner);
+                    return (
+                      <ColorZoneRow
+                        key={corner}
+                        zone={zone}
+                        label={lipCornerLabel[corner]}
+                        color={getZoneColor(featureColors, zone)}
+                        defaultColor={DEFAULT_FEATURE_COLOR_CONFIG.lip[corner]}
+                        otherColors={buildOtherColors(zone, colorsByZone)}
+                        bodyColor={featureColors.body}
+                        recentColors={recentColors}
+                        onChange={(hex) => {
+                          remember(hex);
+                          updateFeatureColors({ lip: { [corner]: hex } });
+                        }}
+                        onHover={setHoveredColorZone}
+                        onGestureStart={startTransaction}
+                        onGestureEnd={commitTransaction}
+                      />
+                    );
+                  })}
+                </div>
+                <LipCornerDiagram corners={featureColors.lip} hovered={hoveredColorZone} />
               </div>
             )}
           </>
@@ -185,7 +287,11 @@ export function ColorsSection() {
           )}
       </ColorGroup>
 
-      <ColorGroup title={t('binDesigner.colors.group.interior')} visible={hasScoop || hasDividers}>
+      <ColorGroup
+        title={t('binDesigner.colors.group.interior')}
+        visible={hasScoop || hasDividers}
+        growthTick={interiorGrowthTick}
+      >
         {hasScoop &&
           renderZone(
             'scoop',
@@ -204,7 +310,11 @@ export function ColorsSection() {
           )}
       </ColorGroup>
 
-      <ColorGroup title={t('binDesigner.colors.group.addons')} visible={hasLabelTabs}>
+      <ColorGroup
+        title={t('binDesigner.colors.group.addons')}
+        visible={hasLabelTabs}
+        growthTick={addonsGrowthTick}
+      >
         {hasLabelTabs &&
           renderZone(
             'labelTab',

@@ -15,6 +15,8 @@ import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { computeActiveZones, isSingleColor } from '@/features/bin-designer/types/featureColors';
+import type { ColorZone } from '@/features/bin-designer/types/featureColors';
+import { SlicerHandoffPreview } from './SlicerHandoffPreview';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
@@ -218,6 +220,27 @@ export function ExportDialog() {
         useSplitExport && isMultiColor
           ? { message: t('binDesigner.splitExport.colorLossWarning') }
           : null
+      }
+      extras={
+        isMultiColor && activeFormat === '3mf' && !useSplitExport ? (
+          <SlicerHandoffPreview
+            featureColors={params.featureColors}
+            activeZones={computeActiveZones(params)}
+            zoneLabels={
+              {
+                body: t('binDesigner.colors.body'),
+                'lip:frontLeft': `${t('binDesigner.colors.lip')} · ${t('binDesigner.colors.lip.frontLeft')}`,
+                'lip:frontRight': `${t('binDesigner.colors.lip')} · ${t('binDesigner.colors.lip.frontRight')}`,
+                'lip:backRight': `${t('binDesigner.colors.lip')} · ${t('binDesigner.colors.lip.backRight')}`,
+                'lip:backLeft': `${t('binDesigner.colors.lip')} · ${t('binDesigner.colors.lip.backLeft')}`,
+                labelTab: t('binDesigner.colors.labelTab'),
+                base: t('binDesigner.colors.base'),
+                scoop: t('binDesigner.colors.scoop'),
+                dividers: t('binDesigner.colors.dividers'),
+              } satisfies Record<ColorZone, string>
+            }
+          />
+        ) : null
       }
       estimates={estimateRows}
       estimatesTitle={t('binDesigner.printEstimatesPla')}

@@ -4,6 +4,7 @@
  */
 
 import { ChevronDownIcon } from '@/design-system/Icon';
+import { useTranslation } from '@/i18n';
 import type { HoverableZone, LipColorConfig } from '@/features/bin-designer/types/featureColors';
 
 interface LipZoneRowProps {
@@ -24,23 +25,32 @@ export function LipZoneRow({
   onHover,
   cornersId,
 }: LipZoneRowProps) {
+  const t = useTranslation();
   return (
     <button
       type="button"
       onClick={onToggleExpand}
       onPointerEnter={() => onHover('lip')}
       onPointerLeave={() => onHover(null)}
-      className="group flex w-full items-center gap-3 rounded-lg px-2 py-1.5 -mx-2 transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent/40"
+      className="group flex w-full items-center gap-3 rounded-lg px-2 py-2 -mx-2 transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent/40 md:py-1.5"
       aria-expanded={isExpanded}
       aria-controls={cornersId}
     >
-      <span className="grid w-6 h-6 grid-cols-2 grid-rows-2 overflow-hidden rounded-md border border-stroke-subtle/60 shrink-0 shadow-inner">
+      <span
+        className="grid w-7 h-7 grid-cols-2 grid-rows-2 gap-px overflow-hidden rounded-md border border-stroke-subtle/60 bg-stroke-subtle/60 shrink-0 shadow-inner md:w-6 md:h-6"
+        aria-hidden="true"
+      >
         <span style={{ backgroundColor: corners.backLeft }} />
         <span style={{ backgroundColor: corners.backRight }} />
         <span style={{ backgroundColor: corners.frontLeft }} />
         <span style={{ backgroundColor: corners.frontRight }} />
       </span>
-      <span className="flex-1 text-left text-xs text-content-secondary">{label}</span>
+      <span className="flex flex-1 flex-col text-left leading-tight">
+        <span className="text-xs text-content-secondary">{label}</span>
+        <span className="text-[10px] text-content-tertiary">
+          {t('binDesigner.colors.lip.fourCorners')}
+        </span>
+      </span>
       <ChevronDownIcon
         size="sm"
         className={`text-content-tertiary transition-transform ${isExpanded ? '' : '-rotate-90'}`}

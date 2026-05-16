@@ -11,16 +11,23 @@ describe('ColorGroup', () => {
     );
     expect(screen.getByText('Exterior')).toBeInTheDocument();
     expect(screen.getByText('child')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Exterior' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
   });
 
-  it('hides children when collapsed via header click', () => {
+  it('reports collapsed via aria-expanded after header click', () => {
     render(
       <ColorGroup title="Exterior">
         <div>child</div>
       </ColorGroup>
     );
     fireEvent.click(screen.getByRole('button', { name: 'Exterior' }));
-    expect(screen.queryByText('child')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Exterior' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
   });
 
   it('renders nothing when not visible', () => {
@@ -32,12 +39,36 @@ describe('ColorGroup', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('respects defaultOpen=false (children hidden on mount)', () => {
+  it('respects defaultOpen=false (button reports collapsed on mount)', () => {
     render(
       <ColorGroup title="Exterior" defaultOpen={false}>
         <div>child</div>
       </ColorGroup>
     );
-    expect(screen.queryByText('child')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Exterior' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+  });
+
+  it('auto-opens when growthTick increments (zone added to an empty group)', () => {
+    const { rerender } = render(
+      <ColorGroup title="Interior" defaultOpen={false} growthTick={0}>
+        <div>child</div>
+      </ColorGroup>
+    );
+    expect(screen.getByRole('button', { name: 'Interior' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+    rerender(
+      <ColorGroup title="Interior" defaultOpen={false} growthTick={1}>
+        <div>child</div>
+      </ColorGroup>
+    );
+    expect(screen.getByRole('button', { name: 'Interior' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
   });
 });

@@ -114,7 +114,9 @@ describe('ColorsSection', () => {
 
     it('reveals four corner sub-rows after the lip row is clicked', () => {
       render(<ColorsSection />);
-      fireEvent.click(screen.getByRole('button', { name: 'Stacking Lip' }));
+      // The lip header button contains "Stacking Lip" + "4 corners" sub-label,
+      // so query by the regex matching the visible name.
+      fireEvent.click(screen.getByRole('button', { name: /Stacking Lip/ }));
       expect(screen.getByText('Front-left')).toBeDefined();
       expect(screen.getByText('Front-right')).toBeDefined();
       expect(screen.getByText('Back-right')).toBeDefined();
