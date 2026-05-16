@@ -69,11 +69,14 @@ vi.mock('../lib/blobStore', () => ({
 interface MockRes {
   _status: number;
   _body: unknown;
+  _chunks: Buffer[];
   _headers: Record<string, string>;
   _ended: boolean;
+  headersSent: boolean;
   status(code: number): MockRes;
   json(body: unknown): MockRes;
   send(body: unknown): MockRes;
+  write(chunk: Uint8Array | Buffer | string): boolean;
   end(): MockRes;
   setHeader(k: string, v: string): MockRes;
 }
@@ -82,8 +85,10 @@ function makeRes(): MockRes {
   return {
     _status: 0,
     _body: null,
+    _chunks: [],
     _headers: {},
     _ended: false,
+    headersSent: false,
     status(code) {
       this._status = code;
       return this;
@@ -96,8 +101,24 @@ function makeRes(): MockRes {
       this._body = body;
       return this;
     },
+    write(chunk) {
+      this.headersSent = true;
+      const buf =
+        typeof chunk === 'string'
+          ? Buffer.from(chunk)
+          : Buffer.isBuffer(chunk)
+            ? chunk
+            : Buffer.from(chunk);
+      this._chunks.push(buf);
+      return true;
+    },
     end() {
       this._ended = true;
+      // Streaming consumers (export ZIP) flush via write() + end(); the
+      // tests reach for `_body` so consolidate the chunks here.
+      if (this._chunks.length > 0) {
+        this._body = Buffer.concat(this._chunks);
+      }
       return this;
     },
     setHeader(k, v) {
@@ -209,6 +230,29 @@ describe('GET /api/sync/export', () => {
     const manifest = JSON.parse(strFromU8(zip['manifest.json']));
     expect(manifest.layouts).toHaveProperty('lay-live');
     expect(manifest.layouts).not.toHaveProperty('lay-dead');
+  });
+
+  it('streams chunks via res.write/res.end rather than buffering with res.send', async () => {
+    // Regression: previous implementation called `zipSync` and `res.send(buffer)`
+    // — the full archive lived in memory before any byte hit the wire. The
+    // streaming rewrite must surface chunks through `write()` and finalize
+    // with `end()`. Verify the consumed transport, not the payload bytes
+    // (a separate test already round-trips the archive contents).
+    await seedItem('layouts', 'lay-1', 1000, {
+      layout: { name: 'L1' },
+      modifiedAt: 1000,
+      schemaVersion: 1,
+    });
+
+    const { default: handler } = await import('./export');
+    const res = makeRes();
+    await handler(makeReq(), res as unknown as VercelResponse);
+
+    expect(res._chunks.length).toBeGreaterThan(0);
+    expect(res._ended).toBe(true);
+    // No single buffered `send` call — the response body was assembled
+    // chunk-by-chunk by the streaming Zip writer.
+    expect(res.headersSent).toBe(true);
   });
 
   it('returns 429 when rate-limited', async () => {
