@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.82.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.82.1...gridfinity-layout-tool-v4.82.2) (2026-05-16)
+
+
+### Bug Fixes
+
+* **sync:** accept the generateDesignId shape on the designer sync route ([#1664](https://github.com/andymai/gridfinity-layout-tool/issues/1664)) ([6c8d5bf](https://github.com/andymai/gridfinity-layout-tool/commit/6c8d5bf0e29f2e607c0f942624239504d2addbb7))
+
 ## [4.82.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.82.0...gridfinity-layout-tool-v4.82.1) (2026-05-15)
 
 
