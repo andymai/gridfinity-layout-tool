@@ -19,9 +19,6 @@ interface SplitPiece {
  * @param baseName - Base filename for the ZIP and individual STLs
  * @returns ZIP blob ready for download
  */
-export async function packageSplitPiecesAsZip(
-  pieces: readonly SplitPiece[],
-  baseName: string
-): Promise<Blob> {
+export function packageSplitPiecesAsZip(pieces: readonly SplitPiece[], baseName: string): Blob {
   return packagePiecesAsZip(pieces, baseName, '.stl');
 }

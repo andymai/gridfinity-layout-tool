@@ -209,7 +209,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             baseFileName: baseNameNoExt,
           });
 
-          const zip = await packagePiecesAsZip(pieces, baseNameNoExt, extension, [
+          const zip = packagePiecesAsZip(pieces, baseNameNoExt, extension, [
             { name: 'print-guide.txt', content: guideText },
           ]);
           triggerDownload(zip, `${baseNameNoExt}.zip`);

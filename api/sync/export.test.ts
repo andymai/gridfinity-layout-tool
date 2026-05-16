@@ -151,9 +151,9 @@ describe('GET /api/sync/export', () => {
     expect(res._headers['Content-Disposition']).toMatch(/^attachment; filename=/);
     expect(Buffer.isBuffer(res._body)).toBe(true);
 
-    const JSZip = (await import('jszip')).default;
-    const zip = await JSZip.loadAsync(res._body as Buffer);
-    const names = Object.keys(zip.files);
+    const { unzipSync } = await import('fflate');
+    const zip = unzipSync(new Uint8Array(res._body as Buffer));
+    const names = Object.keys(zip);
     expect(names).toContain('manifest.json');
     expect(names.filter((n) => n.startsWith('layouts/'))).toEqual([]);
   });
@@ -175,15 +175,15 @@ describe('GET /api/sync/export', () => {
     await handler(makeReq(), res as unknown as VercelResponse);
     expect(res._status).toBe(200);
 
-    const JSZip = (await import('jszip')).default;
-    const zip = await JSZip.loadAsync(res._body as Buffer);
-    const fileEntries = Object.entries(zip.files)
-      .filter(([, entry]) => !entry.dir)
-      .map(([name]) => name)
-      .sort();
-    expect(fileEntries).toEqual(['designs/des-1.json', 'layouts/lay-1.json', 'manifest.json']);
+    const { unzipSync, strFromU8 } = await import('fflate');
+    const zip = unzipSync(new Uint8Array(res._body as Buffer));
+    expect(Object.keys(zip).sort()).toEqual([
+      'designs/des-1.json',
+      'layouts/lay-1.json',
+      'manifest.json',
+    ]);
 
-    const manifest = JSON.parse(await zip.file('manifest.json')!.async('string'));
+    const manifest = JSON.parse(strFromU8(zip['manifest.json']));
     expect(manifest.layouts['lay-1'].modifiedAt).toBe(1000);
     expect(manifest.designs['des-1'].modifiedAt).toBe(2000);
     expect(manifest.exportedAt).toBeGreaterThan(0);
@@ -201,12 +201,12 @@ describe('GET /api/sync/export', () => {
     const res = makeRes();
     await handler(makeReq(), res as unknown as VercelResponse);
 
-    const JSZip = (await import('jszip')).default;
-    const zip = await JSZip.loadAsync(res._body as Buffer);
-    expect(zip.file('layouts/lay-live.json')).toBeTruthy();
-    expect(zip.file('layouts/lay-dead.json')).toBe(null);
+    const { unzipSync, strFromU8 } = await import('fflate');
+    const zip = unzipSync(new Uint8Array(res._body as Buffer));
+    expect(zip).toHaveProperty('layouts/lay-live.json');
+    expect(zip).not.toHaveProperty('layouts/lay-dead.json');
 
-    const manifest = JSON.parse(await zip.file('manifest.json')!.async('string'));
+    const manifest = JSON.parse(strFromU8(zip['manifest.json']));
     expect(manifest.layouts).toHaveProperty('lay-live');
     expect(manifest.layouts).not.toHaveProperty('lay-dead');
   });

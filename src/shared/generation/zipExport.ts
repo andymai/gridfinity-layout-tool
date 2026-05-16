@@ -1,9 +1,12 @@
 /**
  * Shared ZIP packaging for multi-piece exports (baseplates, split bins, etc.).
  *
- * Dynamically imports JSZip to keep it out of the initial bundle,
- * then packages individual piece buffers into a single ZIP archive.
+ * Uses `fflate` because JSZip ships a template-compiler path that requires
+ * `'unsafe-eval'` in the document CSP. fflate is pure-JS with no runtime
+ * code evaluation, and is already loaded by the 3MF exporter.
  */
+
+import { zipSync, strToU8 } from 'fflate';
 
 interface ExportPiece {
   readonly data: ArrayBuffer;
@@ -25,25 +28,27 @@ export interface ZipTextFile {
  * @param extraFiles - Optional text files to include (e.g. print guide)
  * @returns ZIP blob ready for download
  */
-export async function packagePiecesAsZip(
+export function packagePiecesAsZip(
   pieces: readonly ExportPiece[],
   baseName: string,
   extension: string,
   extraFiles?: readonly ZipTextFile[]
-): Promise<Blob> {
-  const { default: JSZip } = await import('jszip');
-  const zip = new JSZip();
+): Blob {
+  const files: Record<string, Uint8Array> = {};
 
   for (const piece of pieces) {
     const fileName = `${baseName}_${piece.label}${extension}`;
-    zip.file(fileName, piece.data);
+    files[fileName] = new Uint8Array(piece.data);
   }
 
   if (extraFiles) {
     for (const file of extraFiles) {
-      zip.file(file.name, file.content);
+      files[file.name] = strToU8(file.content);
     }
   }
 
-  return zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+  // `level: 6` matches JSZip's default DEFLATE level, keeping archive sizes
+  // and compatibility identical across the migration.
+  const compressed = zipSync(files, { level: 6 });
+  return new Blob([new Uint8Array(compressed)], { type: 'application/zip' });
 }
