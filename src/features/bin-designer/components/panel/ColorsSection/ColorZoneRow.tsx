@@ -18,6 +18,10 @@ interface ColorZoneRowProps {
   color: string;
   defaultColor: string;
   otherColors: readonly string[];
+  /** Body hex used to seed AI suggestions in the picker. */
+  bodyColor: string;
+  /** Session-scoped recent colors the user has committed elsewhere. */
+  recentColors: readonly string[];
   onChange: (hex: string) => void;
   onHover: (zone: ColorZone | null) => void;
   /** Native-picker gesture hooks, forwarded to ColorPicker for undo coalescing. */
@@ -31,6 +35,8 @@ export function ColorZoneRow({
   color,
   defaultColor,
   otherColors,
+  bodyColor,
+  recentColors,
   onChange,
   onHover,
   onGestureStart,
@@ -63,7 +69,7 @@ export function ColorZoneRow({
         onPointerLeave={() => {
           if (!isOpen) onHover(null);
         }}
-        className="group flex w-full items-center gap-3 rounded-lg px-2 py-1.5 -mx-2 transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent/40 data-[open=true]:bg-surface-hover"
+        className="group flex w-full items-center gap-3 rounded-lg px-2 py-2 -mx-2 transition-colors hover:bg-surface-hover focus-visible:bg-surface-hover focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent/40 data-[open=true]:bg-surface-hover md:py-1.5"
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-label={`${label}: ${color}`}
@@ -74,9 +80,7 @@ export function ColorZoneRow({
           style={{ backgroundColor: color }}
         />
         <span className="flex-1 text-left text-xs text-content-secondary">{label}</span>
-        <span className="font-mono text-[10px] uppercase text-content-tertiary tabular-nums">
-          {color}
-        </span>
+        <span className="font-mono text-[11px] text-content-secondary tabular-nums">{color}</span>
         <ChevronDownIcon
           size="sm"
           className="-rotate-90 text-content-tertiary transition-transform group-hover:translate-x-0.5"
@@ -91,6 +95,8 @@ export function ColorZoneRow({
             color={color}
             defaultColor={defaultColor}
             otherColors={otherColors}
+            bodyColor={bodyColor}
+            recentColors={recentColors}
             onChange={onChange}
             onGestureStart={onGestureStart}
             onGestureEnd={onGestureEnd}

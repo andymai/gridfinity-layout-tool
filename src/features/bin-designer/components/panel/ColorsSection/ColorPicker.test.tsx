@@ -20,6 +20,8 @@ const baseProps = {
   color: '#3b82f6',
   defaultColor: '#d4d8dc',
   otherColors: [] as readonly string[],
+  bodyColor: '#3b82f6',
+  recentColors: [] as readonly string[],
   onChange: () => undefined,
 };
 
@@ -78,9 +80,19 @@ describe('ColorPicker', () => {
     expect(onChange).toHaveBeenCalledWith('#22c55e');
   });
 
-  it('hides the used-in-design section when no other colors exist', () => {
-    render(<ColorPicker {...baseProps} otherColors={[]} />);
-    expect(screen.queryByText('binDesigner.colors.usedInDesign')).not.toBeInTheDocument();
+  it('shows the used-in-design header with an empty-state when no shared colors exist', () => {
+    render(<ColorPicker {...baseProps} otherColors={[]} recentColors={[]} />);
+    expect(screen.getByText('binDesigner.colors.usedInDesign')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.colors.usedInDesign.empty')).toBeInTheDocument();
+  });
+
+  it('offers AI-suggested colors after clicking the suggest action', () => {
+    const onChange = vi.fn();
+    render(<ColorPicker {...baseProps} bodyColor="#3b82f6" onChange={onChange} />);
+    fireEvent.click(screen.getByLabelText('binDesigner.colors.suggest'));
+    // suggest seeds 5 hex swatches in the used-in-design row
+    const swatches = screen.getAllByTitle(/^#[0-9a-f]{6}$/i);
+    expect(swatches.length).toBeGreaterThanOrEqual(5);
   });
 
   it('resets to defaultColor and disables reset when already at default', () => {

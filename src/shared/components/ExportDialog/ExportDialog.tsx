@@ -7,7 +7,7 @@
  * button(s).
  */
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { Dialog } from '@/design-system/Dialog';
 import { ProgressBar } from '@/design-system/ProgressBar';
 import { useTranslation } from '@/i18n';
@@ -65,6 +65,12 @@ export interface ExportDialogProps {
    */
   warningBanner?: { message: string } | null;
 
+  /**
+   * Optional extra content rendered above the estimates block. Used by
+   * the bin designer to show the slicer-filament hand-off preview.
+   */
+  extras?: ReactNode;
+
   /** Optional vertical-stack control (3MF only — STL/STEP have no instancing). */
   stackOptions?: {
     label: string;
@@ -120,6 +126,7 @@ export function ExportDialog({
   exportProgress,
   splitBanner,
   warningBanner,
+  extras,
   stackOptions,
   formatStates,
   estimates,
@@ -283,6 +290,8 @@ export function ExportDialog({
               <p className="text-xs text-warning">{warningBanner.message}</p>
             </div>
           )}
+
+          {extras}
 
           {/* Vertical Stacking */}
           {stackOptions && (

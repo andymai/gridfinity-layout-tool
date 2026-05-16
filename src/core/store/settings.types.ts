@@ -243,10 +243,44 @@ export interface UserSettings {
   /**
    * One-time UI hints that have been dismissed.
    * Replaces individual localStorage keys for hint tracking.
-   * IDs: 'grid-resize', 'paint-mode', 'bin-resize', 'designer-touch'
+   * IDs: 'grid-resize', 'paint-mode', 'bin-resize', 'designer-touch',
+   *      'multi-color-export'
    */
   dismissedHints: string[];
+
+  /** Named multi-color palettes saved by the user. */
+  savedColorPalettes: SavedColorPalette[];
 }
+
+/**
+ * Per-zone color set saved by the user as a reusable palette. Structurally
+ * matches the bin-designer's `FeatureColorConfig` so the value is directly
+ * assignable, but declared here to avoid a core → feature import cycle.
+ */
+export interface SavedColorPalette {
+  readonly id: string;
+  readonly name: string;
+  /** ISO timestamp of creation. */
+  readonly createdAt: string;
+  readonly colors: {
+    readonly body: string;
+    readonly lip: {
+      readonly frontLeft: string;
+      readonly frontRight: string;
+      readonly backRight: string;
+      readonly backLeft: string;
+    };
+    readonly labelTab: string;
+    readonly base: string;
+    readonly scoop: string;
+    readonly dividers: string;
+  };
+}
+
+export const COLOR_PALETTE_CONSTRAINTS = {
+  MAX_PALETTES: 20,
+  NAME_MAX_LENGTH: 40,
+} as const;
 
 /**
  * Default settings values.
@@ -303,4 +337,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // Dismissed hints
   dismissedHints: [],
+
+  // Saved color palettes
+  savedColorPalettes: [],
 };

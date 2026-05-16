@@ -50,3 +50,12 @@ export type { PencilIconProps } from './icons/Pencil';
 
 export { RulerIcon } from './icons/Ruler';
 export type { RulerIconProps } from './icons/Ruler';
+
+export { PipetteIcon } from './icons/Pipette';
+export type { PipetteIconProps } from './icons/Pipette';
+
+export { SparklesIcon } from './icons/Sparkles';
+export type { SparklesIconProps } from './icons/Sparkles';
+
+export { MoreHorizontalIcon } from './icons/MoreHorizontal';
+export type { MoreHorizontalIconProps } from './icons/MoreHorizontal';
