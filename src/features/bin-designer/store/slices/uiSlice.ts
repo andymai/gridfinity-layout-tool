@@ -114,8 +114,10 @@ export function createUISlice(set: Set) {
         if (state.ui.colorTool !== 'swap-pick-second') return;
 
         const first = state.ui.swapFirstZone;
-        if (!first || first === zone) {
-          // Picking the same zone twice is a no-op cancel: exit the flow.
+        const bothLip = first !== null && lipCornerOf(first) && lipCornerOf(zone);
+        if (!first || first === zone || bothLip) {
+          // Picking the same zone twice OR two lip corners (visually one
+          // zone after the per-corner rollback) is a no-op cancel.
           state.ui.colorTool = null;
           state.ui.swapFirstZone = null;
           state.ui.hoveredColorZone = null;
@@ -198,9 +200,13 @@ function writeZone(
   zone: ColorZone,
   hex: string
 ): void {
-  const corner = lipCornerOf(zone);
-  if (corner) {
-    colors.lip[corner] = hex;
+  if (lipCornerOf(zone)) {
+    // The per-corner lip UI is rolled back to a single visual zone; mirror
+    // any corner-targeted write across all four slots so the lip stays
+    // visually uniform regardless of which corner the raycast hit.
+    for (const corner of LIP_CORNERS) {
+      colors.lip[corner] = hex;
+    }
     return;
   }
   colors[zone as 'body' | 'labelTab' | 'base' | 'scoop' | 'dividers'] = hex;

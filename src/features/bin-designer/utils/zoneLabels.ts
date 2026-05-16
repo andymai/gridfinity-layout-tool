@@ -40,7 +40,15 @@ export type ZoneColorPatch =
   | { dividers: string }
   | { lip: Partial<FeatureColorConfig['lip']> };
 
-/** Build the partial patch that sets the given zone to `hex`. */
+/**
+ * Build the partial patch that sets the given zone to `hex`.
+ *
+ * Any lip-corner zone mirrors `hex` into all four corner slots: the
+ * per-corner UI is currently rolled back to a single lip color, but the
+ * 4-corner schema is preserved on the model side. Mirroring keeps the
+ * panel, 3D preview, and 3MF exporter in agreement no matter which
+ * specific corner the eyedropper hit-tested to.
+ */
 export function zoneColorPatch(zone: ColorZone, hex: string): ZoneColorPatch {
   switch (zone) {
     case 'body':
@@ -54,12 +62,9 @@ export function zoneColorPatch(zone: ColorZone, hex: string): ZoneColorPatch {
     case 'dividers':
       return { dividers: hex };
     case 'lip:frontLeft':
-      return { lip: { frontLeft: hex } };
     case 'lip:frontRight':
-      return { lip: { frontRight: hex } };
     case 'lip:backRight':
-      return { lip: { backRight: hex } };
     case 'lip:backLeft':
-      return { lip: { backLeft: hex } };
+      return { lip: { frontLeft: hex, frontRight: hex, backRight: hex, backLeft: hex } };
   }
 }

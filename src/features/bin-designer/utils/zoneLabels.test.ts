@@ -16,12 +16,24 @@ describe('zoneLabels', () => {
     expect(zoneColorPatch('labelTab', '#abcdef')).toEqual({ labelTab: '#abcdef' });
   });
 
-  it('zoneColorPatch nests lip-corner zones under `lip`', () => {
+  it('zoneColorPatch mirrors any lip-corner zone into all four corner slots', () => {
+    // Post per-corner-rollback: the lip is visually a single zone, so the
+    // eyedropper patch for any specific corner mirrors across all four.
     expect(zoneColorPatch('lip:frontLeft', '#aa0000')).toEqual({
-      lip: { frontLeft: '#aa0000' },
+      lip: {
+        frontLeft: '#aa0000',
+        frontRight: '#aa0000',
+        backRight: '#aa0000',
+        backLeft: '#aa0000',
+      },
     });
     expect(zoneColorPatch('lip:backRight', '#bb0000')).toEqual({
-      lip: { backRight: '#bb0000' },
+      lip: {
+        frontLeft: '#bb0000',
+        frontRight: '#bb0000',
+        backRight: '#bb0000',
+        backLeft: '#bb0000',
+      },
     });
   });
 });
