@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.88.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.88.1...gridfinity-layout-tool-v4.88.2) (2026-05-16)
+
+
+### Bug Fixes
+
+* **sync:** gate manifest pull + outbox flush on authenticated session ([#1701](https://github.com/andymai/gridfinity-layout-tool/issues/1701)) ([9dabcfc](https://github.com/andymai/gridfinity-layout-tool/commit/9dabcfc0b052303e1faa9b5b52028d53b626c91e))
+
 ## [4.88.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.88.0...gridfinity-layout-tool-v4.88.1) (2026-05-16)
 
 
