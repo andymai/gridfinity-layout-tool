@@ -107,21 +107,52 @@ describe('ColorsSection', () => {
     expect(screen.getByText('Dividers')).toBeDefined();
   });
 
-  describe('Lip per-corner expansion', () => {
-    it('does not show corner sub-rows by default', () => {
+  describe('single lip color', () => {
+    it('does not expose per-corner sub-rows (per-corner UI is rolled back)', () => {
       render(<ColorsSection />);
+      // Whichever way the user interacts with the lip row, none of the
+      // four corner labels should ever appear in the panel.
+      fireEvent.click(screen.getByRole('button', { name: /Stacking Lip/ }));
       expect(screen.queryByText('Front-left')).toBeNull();
+      expect(screen.queryByText('Front-right')).toBeNull();
+      expect(screen.queryByText('Back-right')).toBeNull();
+      expect(screen.queryByText('Back-left')).toBeNull();
     });
 
-    it('reveals four corner sub-rows after the lip row is clicked', () => {
+    it("mirrors the picker's hex into all four lip corners on change", () => {
+      // Seed with mismatched corners so we can prove the writer overwrites
+      // every corner — not just the canonical one the picker reads from.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+          featureColors: colors({
+            lip: {
+              frontLeft: '#aaaaaa',
+              frontRight: '#bbbbbb',
+              backRight: '#cccccc',
+              backLeft: '#dddddd',
+            },
+          }),
+        },
+      });
       render(<ColorsSection />);
-      // The lip header button contains "Stacking Lip" + "4 corners" sub-label,
-      // so query by the regex matching the visible name.
+
+      // Drive a real color commit through the rendered ColorZoneRow →
+      // ColorPicker pipeline so the section's inline onChange handler is
+      // actually exercised. A direct store call would still pass even if
+      // the handler regressed to writing a single corner — the whole
+      // point of the mirror is the section, not the store action.
       fireEvent.click(screen.getByRole('button', { name: /Stacking Lip/ }));
-      expect(screen.getByText('Front-left')).toBeDefined();
-      expect(screen.getByText('Front-right')).toBeDefined();
-      expect(screen.getByText('Back-right')).toBeDefined();
-      expect(screen.getByText('Back-left')).toBeDefined();
+      // The picker renders 'Red' (#ef4444) as a preset filament swatch;
+      // clicking it routes through ColorsSection's onChange.
+      fireEvent.click(screen.getByTitle('Red'));
+
+      const after = useDesignerStore.getState().params.featureColors;
+      expect(after.lip.frontLeft).toBe('#ef4444');
+      expect(after.lip.frontRight).toBe('#ef4444');
+      expect(after.lip.backRight).toBe('#ef4444');
+      expect(after.lip.backLeft).toBe('#ef4444');
     });
   });
 

@@ -10,10 +10,16 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { Popover } from '@/design-system/Popover/Popover';
 import { ChevronDownIcon } from '@/design-system/Icon';
 import { ColorPicker } from './ColorPicker';
-import type { ColorZone } from '@/features/bin-designer/types/featureColors';
+import type { HoverableZone } from '@/features/bin-designer/types/featureColors';
 
 interface ColorZoneRowProps {
-  zone: ColorZone;
+  /**
+   * Hover/identifier target. Widened to HoverableZone so the lip row can
+   * fire the whole-lip glow ('lip') even though 'lip' is not a settable
+   * ColorZone — onChange is still wired by the parent to the correct
+   * underlying slot(s).
+   */
+  zone: HoverableZone;
   label: string;
   color: string;
   defaultColor: string;
@@ -23,7 +29,7 @@ interface ColorZoneRowProps {
   /** Session-scoped recent colors the user has committed elsewhere. */
   recentColors: readonly string[];
   onChange: (hex: string) => void;
-  onHover: (zone: ColorZone | null) => void;
+  onHover: (zone: HoverableZone | null) => void;
   /** Native-picker gesture hooks, forwarded to ColorPicker for undo coalescing. */
   onGestureStart?: () => void;
   onGestureEnd?: () => void;

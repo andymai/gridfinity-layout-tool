@@ -10,13 +10,15 @@ import { FILAMENT_PRESET_COLORS } from '@/core/constants';
 import { Input } from '@/design-system/Input/Input';
 import { CheckIcon, PipetteIcon, RotateCcwIcon, SparklesIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
-import type { ColorZone } from '@/features/bin-designer/types/featureColors';
+import type { HoverableZone } from '@/features/bin-designer/types/featureColors';
 import { suggestMatchingColors } from '@/features/bin-designer/utils/colorSuggestions';
 
 const HEX_REGEX = /^#[0-9a-f]{6}$/i;
 
 interface ColorPickerProps {
-  zone: ColorZone;
+  /** Zone identifier — used only for `data-zone` and React keys. Widened
+   *  to HoverableZone so the lip row can pass 'lip' alongside settable zones. */
+  zone: HoverableZone;
   zoneLabel: string;
   color: string;
   /** Color this zone falls back to when the user clicks Reset. */
