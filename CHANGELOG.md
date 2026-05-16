@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.88.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.88.0...gridfinity-layout-tool-v4.88.1) (2026-05-16)
+
+
+### Bug Fixes
+
+* **baseplate:** show proactive fallback when WebGL is unavailable ([#1697](https://github.com/andymai/gridfinity-layout-tool/issues/1697)) ([b9ead4e](https://github.com/andymai/gridfinity-layout-tool/commit/b9ead4e638e09674fe00c3856ebcd3286340f3ee))
+
 ## [4.88.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.87.3...gridfinity-layout-tool-v4.88.0) (2026-05-16)
 
 
