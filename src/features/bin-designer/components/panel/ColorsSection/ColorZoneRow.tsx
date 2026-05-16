@@ -20,6 +20,9 @@ interface ColorZoneRowProps {
   otherColors: readonly string[];
   onChange: (hex: string) => void;
   onHover: (zone: ColorZone | null) => void;
+  /** Native-picker gesture hooks, forwarded to ColorPicker for undo coalescing. */
+  onGestureStart?: () => void;
+  onGestureEnd?: () => void;
 }
 
 export function ColorZoneRow({
@@ -30,6 +33,8 @@ export function ColorZoneRow({
   otherColors,
   onChange,
   onHover,
+  onGestureStart,
+  onGestureEnd,
 }: ColorZoneRowProps) {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -38,9 +43,14 @@ export function ColorZoneRow({
 
   // While the popover is open, keep this zone pinned as the focused one
   // so the 3D preview glow doesn't drop off when the user moves their
-  // pointer into the popover content.
+  // pointer into the popover content. The cleanup runs on close (or
+  // unmount) and releases the pin — without it, closing via Escape /
+  // click-outside while the pointer is already off the row would leave
+  // the glow stuck because pointerLeave short-circuits when `isOpen`.
   useEffect(() => {
-    if (isOpen) onHover(zone);
+    if (!isOpen) return;
+    onHover(zone);
+    return () => onHover(null);
   }, [isOpen, zone, onHover]);
 
   return (
@@ -82,6 +92,8 @@ export function ColorZoneRow({
             defaultColor={defaultColor}
             otherColors={otherColors}
             onChange={onChange}
+            onGestureStart={onGestureStart}
+            onGestureEnd={onGestureEnd}
           />
         </Popover>
       )}

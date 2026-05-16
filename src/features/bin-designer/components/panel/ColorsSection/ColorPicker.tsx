@@ -25,6 +25,14 @@ interface ColorPickerProps {
   /** Colors used by the other active zones (deduped, excludes the current color). */
   otherColors: readonly string[];
   onChange: (hex: string) => void;
+  /**
+   * Optional gesture hooks. ColorsSection wires these to the designer
+   * store's transaction API so a continuous native-picker drag — which
+   * may fire dozens of change events per second on Firefox — coalesces
+   * into a single undo entry.
+   */
+  onGestureStart?: () => void;
+  onGestureEnd?: () => void;
 }
 
 export function ColorPicker({
@@ -34,6 +42,8 @@ export function ColorPicker({
   defaultColor,
   otherColors,
   onChange,
+  onGestureStart,
+  onGestureEnd,
 }: ColorPickerProps) {
   const t = useTranslation();
   const [hexInput, setHexInput] = useState(color);
@@ -49,31 +59,49 @@ export function ColorPicker({
     }
   }, [color]);
 
-  const applyHex = useCallback(
-    (value: string) => {
-      const trimmed = value.trim();
-      const normalized = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
-      if (HEX_REGEX.test(normalized)) {
-        const lower = normalized.toLowerCase();
-        setHexError(false);
-        setHexInput(lower);
-        onChange(lower);
-      } else {
-        setHexError(true);
-      }
-    },
-    [onChange]
-  );
-
   const commitColor = useCallback(
     (next: string) => {
       const lower = next.toLowerCase();
       setHexInput(lower);
       setHexError(false);
+      // Idempotent commit. Without this guard the Enter-key path fires
+      // applyHex → commitColor → blur → applyHex again, producing two
+      // identical updateFeatureColors calls and a wasted undo entry.
+      if (lower === color.toLowerCase()) return;
       onChange(lower);
     },
-    [onChange]
+    [color, onChange]
   );
+
+  const applyHex = useCallback(
+    (value: string) => {
+      const trimmed = value.trim();
+      const normalized = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+      if (HEX_REGEX.test(normalized)) {
+        commitColor(normalized);
+      } else {
+        setHexError(true);
+      }
+    },
+    [commitColor]
+  );
+
+  // Track whether the native picker has an open gesture so we can collapse
+  // a stream of change events into a single undo entry — and recover the
+  // transaction on unmount if the popover closes while the picker is still
+  // focused (rare, but cheap insurance against a leaked transaction).
+  const gestureOpenRef = useRef(false);
+  const beginGesture = useCallback(() => {
+    if (gestureOpenRef.current) return;
+    gestureOpenRef.current = true;
+    onGestureStart?.();
+  }, [onGestureStart]);
+  const endGesture = useCallback(() => {
+    if (!gestureOpenRef.current) return;
+    gestureOpenRef.current = false;
+    onGestureEnd?.();
+  }, [onGestureEnd]);
+  useEffect(() => endGesture, [endGesture]);
 
   const isAtDefault = color.toLowerCase() === defaultColor.toLowerCase();
 
@@ -155,10 +183,7 @@ export function ColorPicker({
             }}
             onBlur={() => applyHex(hexInput)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                applyHex(hexInput);
-                e.currentTarget.blur();
-              }
+              if (e.key === 'Enter') applyHex(hexInput);
             }}
             error={hexError}
             aria-label={t('binDesigner.colors.hexColor')}
@@ -178,6 +203,8 @@ export function ColorPicker({
             ref={nativeInputRef}
             type="color"
             value={color}
+            onFocus={beginGesture}
+            onBlur={endGesture}
             onChange={(e) => commitColor(e.target.value)}
             className="sr-only"
           />

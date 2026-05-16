@@ -83,4 +83,20 @@ describe('ColorZoneRow', () => {
     // pointerLeave must NOT clear the hover while popover is open
     expect(onHover).not.toHaveBeenCalledWith(null);
   });
+
+  it('clears the hover pin when the popover closes (even if pointer already left)', () => {
+    const onHover = vi.fn();
+    render(<ColorZoneRow {...baseProps} onHover={onHover} />);
+    const button = screen.getByRole('button');
+
+    // Open and walk pointer off the row before closing — pointerLeave
+    // is suppressed because isOpen is true, so the only path to clear
+    // the glow is the effect's cleanup running on close.
+    fireEvent.click(button);
+    fireEvent.pointerLeave(button);
+    onHover.mockClear();
+
+    fireEvent.click(button);
+    expect(onHover).toHaveBeenCalledWith(null);
+  });
 });

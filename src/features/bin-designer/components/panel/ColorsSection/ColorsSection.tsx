@@ -49,6 +49,11 @@ export function ColorsSection() {
   const featureColors = rawColors ?? DEFAULT_FEATURE_COLOR_CONFIG;
   const updateFeatureColors = useDesignerStore((s) => s.updateFeatureColors);
   const setHoveredColorZone = useDesignerStore((s) => s.setHoveredColorZone);
+  // Native-picker drags can fire dozens of change events per gesture
+  // (worst case: Firefox during pointer drag). Wrap them in a transaction
+  // so all the intermediate colors collapse into a single undo entry.
+  const startTransaction = useDesignerStore((s) => s.startTransaction);
+  const commitTransaction = useDesignerStore((s) => s.commitTransaction);
 
   // Clear hovered zone on unmount to prevent stale preview glow
   useEffect(() => () => setHoveredColorZone(null), [setHoveredColorZone]);
@@ -73,6 +78,8 @@ export function ColorsSection() {
         otherColors={buildOtherColors('body', colorsByZone)}
         onChange={(hex) => updateFeatureColors({ body: hex })}
         onHover={setHoveredColorZone}
+        onGestureStart={startTransaction}
+        onGestureEnd={commitTransaction}
       />
       {hasLip && (
         <ColorZoneRow
@@ -83,6 +90,8 @@ export function ColorsSection() {
           otherColors={buildOtherColors('lip', colorsByZone)}
           onChange={(hex) => updateFeatureColors({ lip: hex })}
           onHover={setHoveredColorZone}
+          onGestureStart={startTransaction}
+          onGestureEnd={commitTransaction}
         />
       )}
       {hasLabelTabs && (
@@ -94,6 +103,8 @@ export function ColorsSection() {
           otherColors={buildOtherColors('labelTab', colorsByZone)}
           onChange={(hex) => updateFeatureColors({ labelTab: hex })}
           onHover={setHoveredColorZone}
+          onGestureStart={startTransaction}
+          onGestureEnd={commitTransaction}
         />
       )}
     </div>
