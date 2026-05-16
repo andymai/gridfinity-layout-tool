@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { usePeriodicPoll } from './usePeriodicPoll';
+import { useSessionStore } from '../session/useSession';
 import type { SyncAdapters } from '../adapters/types';
 
 const pullNowMock = vi.fn();
@@ -33,6 +34,10 @@ beforeEach(() => {
   pullNowMock.mockReset();
   pullNowMock.mockResolvedValue({ status: 'not-modified' });
   setVisibility('visible');
+  useSessionStore.setState({
+    status: 'authenticated',
+    user: { userId: 'test-user', email: 'test@example.com', provider: 'google' },
+  });
 });
 
 afterEach(() => {
@@ -89,5 +94,33 @@ describe('usePeriodicPoll', () => {
     setVisibility('visible');
     vi.advanceTimersByTime(60_000);
     expect(pullNowMock).not.toHaveBeenCalled();
+  });
+
+  it('does not pull when session is anonymous', () => {
+    useSessionStore.setState({ status: 'anonymous', user: null });
+    renderHook(() => usePeriodicPoll(adapters));
+    expect(pullNowMock).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(120_000);
+    expect(pullNowMock).not.toHaveBeenCalled();
+  });
+
+  it('does not pull when session is unknown (initial boot)', () => {
+    useSessionStore.setState({ status: 'unknown', user: null });
+    renderHook(() => usePeriodicPoll(adapters));
+    expect(pullNowMock).not.toHaveBeenCalled();
+  });
+
+  it('starts polling once session flips from anonymous → authenticated', () => {
+    useSessionStore.setState({ status: 'anonymous', user: null });
+    const { rerender } = renderHook(() => usePeriodicPoll(adapters));
+    expect(pullNowMock).not.toHaveBeenCalled();
+
+    useSessionStore.setState({
+      status: 'authenticated',
+      user: { userId: 'u', email: 'u@x', provider: 'google' },
+    });
+    rerender();
+    expect(pullNowMock).toHaveBeenCalledTimes(1);
   });
 });

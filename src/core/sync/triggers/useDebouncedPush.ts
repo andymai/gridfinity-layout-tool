@@ -7,6 +7,8 @@ const DEBOUNCE_MS = 3_000;
 /**
  * Flush the outbox 3s after the last local save settles. The outbox
  * upserts re-enqueues, so a burst of edits collapses to one push.
+ * No session gate here: `flushNow` is a no-op when the engine hasn't
+ * been started (anonymous sessions never call `start`).
  */
 export function useDebouncedPush(): void {
   const layout = useLayoutStore((s) => s.layout);

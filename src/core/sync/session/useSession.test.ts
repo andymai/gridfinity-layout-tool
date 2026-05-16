@@ -22,10 +22,13 @@ describe('useSessionStore', () => {
 
   it('transitions to "authenticated" on a successful refresh', async () => {
     fetchMock.mockResolvedValueOnce(
-      new Response(JSON.stringify({ userId: 'u1', provider: 'google', email: 'a@x' }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
+      new Response(
+        JSON.stringify({
+          authenticated: true,
+          user: { userId: 'u1', provider: 'google', email: 'a@x' },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
     );
     await act(async () => {
       await useSessionStore.getState().refresh();
@@ -34,8 +37,13 @@ describe('useSessionStore', () => {
     expect(useSessionStore.getState().user?.userId).toBe('u1');
   });
 
-  it('transitions to "anonymous" on 401', async () => {
-    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+  it('transitions to "anonymous" on an anonymous response', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ authenticated: false, user: null }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
     await act(async () => {
       await useSessionStore.getState().refresh();
     });
@@ -71,7 +79,12 @@ describe('useSessionLifecycle', () => {
   });
 
   it('refreshes on mount', async () => {
-    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ authenticated: false, user: null }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
     renderHook(() => useSessionLifecycle());
     await waitFor(() => {
       expect(useSessionStore.getState().status).toBe('anonymous');
@@ -80,10 +93,13 @@ describe('useSessionLifecycle', () => {
 
   it('flips to anonymous when the forced-sign-out event fires', async () => {
     fetchMock.mockResolvedValueOnce(
-      new Response(JSON.stringify({ userId: 'u1', provider: 'google', email: 'a@x' }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
+      new Response(
+        JSON.stringify({
+          authenticated: true,
+          user: { userId: 'u1', provider: 'google', email: 'a@x' },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
     );
     renderHook(() => useSessionLifecycle());
     await waitFor(() => {
@@ -105,10 +121,13 @@ describe('useSessionLifecycle', () => {
     const resetPullStateSpy = vi.spyOn(pollerModule, 'resetPullState').mockImplementation(() => {});
 
     fetchMock.mockResolvedValueOnce(
-      new Response(JSON.stringify({ userId: 'u1', provider: 'google', email: 'a@x' }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
+      new Response(
+        JSON.stringify({
+          authenticated: true,
+          user: { userId: 'u1', provider: 'google', email: 'a@x' },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
     );
     renderHook(() => useSessionLifecycle());
     await waitFor(() => {
@@ -159,10 +178,13 @@ describe('applyRemoteState (broadcast-receiver path)', () => {
   it('refreshes from /api/auth/me on remote authenticated, without broadcasting', async () => {
     useSessionStore.setState({ status: 'anonymous', user: null });
     fetchMock.mockResolvedValueOnce(
-      new Response(JSON.stringify({ userId: 'u2', provider: 'github', email: 'b@x' }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      })
+      new Response(
+        JSON.stringify({
+          authenticated: true,
+          user: { userId: 'u2', provider: 'github', email: 'b@x' },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
     );
     const channel = new BroadcastChannel('gflt-session');
     const received: unknown[] = [];

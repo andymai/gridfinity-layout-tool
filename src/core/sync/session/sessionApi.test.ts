@@ -14,14 +14,17 @@ describe('sessionApi', () => {
   });
 
   describe('getMe', () => {
-    it('returns the session user on 200', async () => {
+    it('returns the session user when authenticated', async () => {
       fetchMock.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            userId: 'u1',
-            provider: 'google',
-            email: 'a@example.com',
-            displayName: 'Alice',
+            authenticated: true,
+            user: {
+              userId: 'u1',
+              provider: 'google',
+              email: 'a@example.com',
+              displayName: 'Alice',
+            },
           }),
           { status: 200, headers: { 'Content-Type': 'application/json' } }
         )
@@ -30,8 +33,13 @@ describe('sessionApi', () => {
       expect(user?.userId).toBe('u1');
     });
 
-    it('returns null on 401', async () => {
-      fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    it('returns null on anonymous 200 response', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify({ authenticated: false, user: null }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      );
       expect(await getMe()).toBe(null);
     });
 

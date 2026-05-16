@@ -443,14 +443,15 @@ describe('me', () => {
     );
   }
 
-  it('returns 401 without a session', async () => {
+  it('returns 200 + anonymous body without a session', async () => {
     const { default: handler } = await import('./me');
     const res = makeRes();
     await handler(
       makeReq({ method: 'GET', fetchSite: 'same-origin' }),
       res as unknown as VercelResponse
     );
-    expect(res._status).toBe(401);
+    expect(res._status).toBe(200);
+    expect(res._body).toEqual({ authenticated: false, user: null });
   });
 
   it('returns the profile for a valid session', async () => {
@@ -468,14 +469,17 @@ describe('me', () => {
     );
     expect(res._status).toBe(200);
     expect(res._body).toMatchObject({
-      userId: 'u1',
-      provider: 'google',
-      email: 'a@example.com',
-      displayName: 'A',
+      authenticated: true,
+      user: {
+        userId: 'u1',
+        provider: 'google',
+        email: 'a@example.com',
+        displayName: 'A',
+      },
     });
   });
 
-  it('returns 401 when the profile has been deleted but session lingers', async () => {
+  it('returns 200 + anonymous body when the profile has been deleted but session lingers', async () => {
     seedSession('tok', 'u1');
     const { default: handler } = await import('./me');
     const res = makeRes();
@@ -487,6 +491,7 @@ describe('me', () => {
       }),
       res as unknown as VercelResponse
     );
-    expect(res._status).toBe(401);
+    expect(res._status).toBe(200);
+    expect(res._body).toEqual({ authenticated: false, user: null });
   });
 });
