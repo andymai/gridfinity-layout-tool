@@ -6,7 +6,12 @@
     ".": {
       "entry": ["api/**/*.ts", "scripts/**/*.ts"],
       "project": ["src/**/*.{ts,tsx}", "api/**/*.ts", "scripts/**/*.ts"],
-      "ignore": ["src/test/**", "**/*.test.{ts,tsx}", "**/index.ts"],
+      "ignore": [
+        "src/test/**",
+        "**/*.test.{ts,tsx}",
+        "**/index.ts",
+        "src/features/bin-designer/components/panel/ColorsSection/LipZoneRow.tsx"
+      ],
       "vite": {
         "config": ["vite.config.ts"]
       },

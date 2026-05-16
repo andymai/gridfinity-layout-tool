@@ -1,11 +1,16 @@
 /**
- * Lip renders as a single expandable row that fans out into four
- * per-corner sub-rows. Hidden-feature zones don't render at all — no
- * greyed-out rows. The zone editors are gated on the per-design
- * featureColors.enabled toggle exposed at the section header.
+ * Lip renders as a single color row — the per-corner UI is rolled back
+ * pending a fix. The underlying 4-corner schema is preserved: the single
+ * picker mirrors the chosen hex to every corner so geometry, preview,
+ * and 3MF export keep working unchanged. When per-corner editing is
+ * restored, LipZoneRow / LipCornerDiagram are still available.
+ *
+ * Hidden-feature zones don't render at all — no greyed-out rows. The
+ * zone editors are gated on the per-design featureColors.enabled toggle
+ * exposed at the section header.
  */
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useToastStore } from '@/core/store';
@@ -13,19 +18,12 @@ import { DEFAULT_FEATURE_COLOR_CONFIG } from '@/features/bin-designer/constants/
 import {
   LIP_CORNERS,
   computeActiveZones,
-  getZoneColor,
   lipCornerZone,
 } from '@/features/bin-designer/types/featureColors';
-import type {
-  ColorZone,
-  FeatureColorConfig,
-  LipCorner,
-} from '@/features/bin-designer/types/featureColors';
+import type { ColorZone, FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 import type { SavedColorPalette } from '@/core/store/settings.types';
 import { useTranslation } from '@/i18n';
 import { ColorZoneRow } from './ColorZoneRow';
-import { LipZoneRow } from './LipZoneRow';
-import { LipCornerDiagram } from './LipCornerDiagram';
 import { ColorGroup } from './ColorGroup';
 import { ColorsHintBanner } from './ColorsHintBanner';
 import { ColorsActionsMenu } from './ColorsActionsMenu';
@@ -49,9 +47,7 @@ function buildOtherColors(zone: ColorZone, colorsByZone: ReadonlyMap<ColorZone, 
 
 export function ColorsSection() {
   const t = useTranslation();
-  const [lipExpanded, setLipExpanded] = useState(false);
   const [recentColors, setRecentColors] = useState<readonly string[]>([]);
-  const lipCornersId = useId();
 
   const {
     featureColors: rawColors,
@@ -60,7 +56,6 @@ export function ColorsSection() {
     labelEnabled,
     scoopEnabled,
     cells,
-    hoveredColorZone,
   } = useDesignerStore(
     useShallow((s) => ({
       featureColors: s.params.featureColors,
@@ -69,7 +64,6 @@ export function ColorsSection() {
       labelEnabled: s.params.label.enabled,
       scoopEnabled: s.params.scoop.enabled,
       cells: s.params.compartments.cells,
-      hoveredColorZone: s.ui.hoveredColorZone,
     }))
   );
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; preserve runtime fallback
@@ -109,6 +103,12 @@ export function ColorsSection() {
       return next.slice(0, RECENT_COLORS_LIMIT);
     });
   }, []);
+
+  // Canonical lip color shown in the single-color picker. Reading from
+  // frontLeft means a saved design with mismatched corners snaps to a
+  // single hex on the next user edit (mirrored across all four corners)
+  // without us mutating the store on mount.
+  const lipColor = featureColors.lip.frontLeft;
 
   const colorsByZone = useMemo(() => {
     const map = new Map<ColorZone, string>();
@@ -171,13 +171,6 @@ export function ColorsSection() {
       onGestureEnd={commitTransaction}
     />
   );
-
-  const lipCornerLabel: Record<LipCorner, string> = {
-    frontLeft: t('binDesigner.colors.lip.frontLeft'),
-    frontRight: t('binDesigner.colors.lip.frontRight'),
-    backRight: t('binDesigner.colors.lip.backRight'),
-    backLeft: t('binDesigner.colors.lip.backLeft'),
-  };
 
   const addToast = useToastStore((s) => s.addToast);
   const handleMatchAllToBody = useCallback(() => {
@@ -274,45 +267,33 @@ export function ColorsSection() {
               (hex) => updateFeatureColors({ body: hex })
             )}
             {hasLip && (
-              <>
-                <LipZoneRow
-                  label={t('binDesigner.colors.lip')}
-                  corners={featureColors.lip}
-                  isExpanded={lipExpanded}
-                  onToggleExpand={() => setLipExpanded((v) => !v)}
-                  onHover={setHoveredColorZone}
-                  cornersId={lipCornersId}
-                />
-                {lipExpanded && (
-                  <div id={lipCornersId} className="flex gap-3 pl-2 pr-1">
-                    <div className="flex-1 space-y-0.5">
-                      {LIP_CORNERS.map((corner) => {
-                        const zone = lipCornerZone(corner);
-                        return (
-                          <ColorZoneRow
-                            key={corner}
-                            zone={zone}
-                            label={lipCornerLabel[corner]}
-                            color={getZoneColor(featureColors, zone)}
-                            defaultColor={DEFAULT_FEATURE_COLOR_CONFIG.lip[corner]}
-                            otherColors={buildOtherColors(zone, colorsByZone)}
-                            bodyColor={featureColors.body}
-                            recentColors={recentColors}
-                            onChange={(hex) => {
-                              remember(hex);
-                              updateFeatureColors({ lip: { [corner]: hex } });
-                            }}
-                            onHover={setHoveredColorZone}
-                            onGestureStart={startTransaction}
-                            onGestureEnd={commitTransaction}
-                          />
-                        );
-                      })}
-                    </div>
-                    <LipCornerDiagram corners={featureColors.lip} hovered={hoveredColorZone} />
-                  </div>
-                )}
-              </>
+              // Lip uses the umbrella 'lip' hover target so the whole lip
+              // glows on row hover. The picker writes the chosen hex into
+              // all four corner slots — the per-corner schema stays valid
+              // and the per-corner UI can be restored without a migration.
+              <ColorZoneRow
+                zone="lip"
+                label={t('binDesigner.colors.lip')}
+                color={lipColor}
+                defaultColor={DEFAULT_FEATURE_COLOR_CONFIG.lip.frontLeft}
+                otherColors={buildOtherColors('lip:frontLeft', colorsByZone)}
+                bodyColor={featureColors.body}
+                recentColors={recentColors}
+                onChange={(hex) => {
+                  remember(hex);
+                  updateFeatureColors({
+                    lip: {
+                      frontLeft: hex,
+                      frontRight: hex,
+                      backRight: hex,
+                      backLeft: hex,
+                    },
+                  });
+                }}
+                onHover={setHoveredColorZone}
+                onGestureStart={startTransaction}
+                onGestureEnd={commitTransaction}
+              />
             )}
             {hasBase &&
               renderZone(
