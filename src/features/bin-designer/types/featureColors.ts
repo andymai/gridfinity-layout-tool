@@ -1,64 +1,194 @@
 /**
  * Feature color types for multi-color bin design.
  *
- * Each color zone stores a hex color string directly.
- * No palette indirection — users pick colors per zone.
+ * Each non-lip zone stores a hex color directly. The lip splits into
+ * four corner zones (front-left, front-right, back-right, back-left)
+ * snapped to the outer bbox of the bin's footprint — even on multi-cell
+ * and custom-shape bins, there are always exactly 4 lip-corner zones.
  */
 
 import { FeatureTag } from '@/shared/types/generation';
+import type { BaseStyle } from './index';
 
-/** High-level color zone grouping multiple FeatureTags */
-export type ColorZone = 'body' | 'lip' | 'labelTab';
+/** Lip corner identifier — quadrant of the outer XY bbox. */
+export type LipCorner = 'frontLeft' | 'frontRight' | 'backRight' | 'backLeft';
 
-/** Per-zone hex color assignment */
+export const LIP_CORNERS: readonly LipCorner[] = [
+  'frontLeft',
+  'frontRight',
+  'backRight',
+  'backLeft',
+] as const;
+
+export interface LipColorConfig {
+  readonly frontLeft: string;
+  readonly frontRight: string;
+  readonly backRight: string;
+  readonly backLeft: string;
+}
+
 export interface FeatureColorConfig {
-  /** Body shell color (hex, e.g. '#3b82f6') */
+  /** Body shell — bin walls and floor (FeatureTag.BASE + unclassified). */
   readonly body: string;
-  /** Stacking lip color */
-  readonly lip: string;
-  /** Label tab color */
+  readonly lip: LipColorConfig;
   readonly labelTab: string;
+  /** Gridfinity foot (FeatureTag.SOCKET — magnets, screws, baseplate fit). */
+  readonly base: string;
+  /** Scoop / front internal ramp (FeatureTag.SCOOP). */
+  readonly scoop: string;
+  /** Interior compartment dividers (FeatureTag.DIVIDER). */
+  readonly dividers: string;
 }
 
 /**
- * Maps a FeatureTag to its high-level ColorZone.
+ * All editable color zones — each backed by exactly one hex color.
  *
- * LIP → 'lip', LABEL_TAB → 'labelTab', everything else → 'body'.
+ * Lip is split into four `lip:*` zones; the bare 'lip' identifier is
+ * reserved for hover (highlighting the whole lip on group-header hover)
+ * and is not a settable color slot.
  */
-export function featureTagToColorZone(tag: number): ColorZone {
+export type ColorZone =
+  | 'body'
+  | 'lip:frontLeft'
+  | 'lip:frontRight'
+  | 'lip:backRight'
+  | 'lip:backLeft'
+  | 'labelTab'
+  | 'base'
+  | 'scoop'
+  | 'dividers';
+
+/** Hover target — accepts every ColorZone plus the lip group header. */
+export type HoverableZone = ColorZone | 'lip';
+
+/**
+ * Canonical zone ordering. Used as both the iteration order for full-zone
+ * walks and the index for the 3D preview's per-zone material array — body
+ * at 0 makes it the natural fallback for triangles outside any face group.
+ */
+export const ZONE_ORDER: readonly ColorZone[] = [
+  'body',
+  'lip:frontLeft',
+  'lip:frontRight',
+  'lip:backRight',
+  'lip:backLeft',
+  'labelTab',
+  'base',
+  'scoop',
+  'dividers',
+] as const;
+
+/** Position of a zone in ZONE_ORDER. */
+export function zoneIndex(zone: ColorZone): number {
+  return ZONE_ORDER.indexOf(zone);
+}
+
+export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
+  switch (z) {
+    case 'body':
+      return c.body;
+    case 'labelTab':
+      return c.labelTab;
+    case 'base':
+      return c.base;
+    case 'scoop':
+      return c.scoop;
+    case 'dividers':
+      return c.dividers;
+    case 'lip:frontLeft':
+      return c.lip.frontLeft;
+    case 'lip:frontRight':
+      return c.lip.frontRight;
+    case 'lip:backRight':
+      return c.lip.backRight;
+    case 'lip:backLeft':
+      return c.lip.backLeft;
+  }
+}
+
+export function lipCornerZone(corner: LipCorner): ColorZone {
+  return `lip:${corner}` as const;
+}
+
+/**
+ * Maps a non-LIP FeatureTag to its ColorZone. LIP returns null because
+ * lip faces need centroid-based classification into one of four corners.
+ */
+export function featureTagToColorZone(tag: number): ColorZone | null {
   switch (tag) {
-    case FeatureTag.LIP:
-      return 'lip';
     case FeatureTag.LABEL_TAB:
       return 'labelTab';
+    case FeatureTag.SOCKET:
+      return 'base';
+    case FeatureTag.SCOOP:
+      return 'scoop';
+    case FeatureTag.DIVIDER:
+      return 'dividers';
+    case FeatureTag.LIP:
+      return null;
     default:
       return 'body';
   }
 }
 
 /**
- * Returns true when all *active* color zones use the same color
- * (single-color — no multi-material needed).
- *
- * @param activeZones - Set of zone keys that are currently enabled.
- *   Omit to check all zones. Pass only enabled zones to ignore disabled
- *   features (e.g., lip color differs but stacking lip is off).
+ * True when every zone in `activeZones` matches body. Required because
+ * forgetting to filter out hidden-feature zones would flag a single-color
+ * design as multi-color from a stale recolor on a disabled feature (the
+ * exact bug we hit when the preview and exporter gated differently).
+ * Pass `ZONE_ORDER` (or `new Set(ZONE_ORDER)`) for an unconditional check.
  */
 export function isSingleColor(
-  featureColors: FeatureColorConfig,
-  activeZones?: ReadonlySet<ColorZone>
+  c: FeatureColorConfig,
+  activeZones: ReadonlySet<ColorZone> | readonly ColorZone[]
 ): boolean {
-  const zones: ColorZone[] = activeZones ? [...activeZones] : ['body', 'lip', 'labelTab'];
-  return zones.every((z) => featureColors[z] === featureColors.body);
+  const ref = c.body;
+  for (const z of activeZones) {
+    if (getZoneColor(c, z) !== ref) return false;
+  }
+  return true;
 }
 
 /**
- * Deduplicates zone colors and builds a color-to-index mapping.
- *
- * Shared by both the 3D preview (BinMesh) and 3MF exporter.
- * Returns the unique color list and a lookup from hex color to material index.
+ * Dedupe zone colors into a flat list + lookup map. Body always lands
+ * at index 0 so it's the default fallback in 3MF / preview groupings.
  */
-export function resolveColorMapping(featureColors: FeatureColorConfig): {
+/**
+ * Subset of `BinParams` that determines which zones are visually
+ * meaningful. Declared structurally to avoid a circular import on
+ * the full `BinParams` type.
+ */
+export interface ActiveZonesParams {
+  readonly base: { readonly style: BaseStyle; readonly stackingLip: boolean };
+  readonly label: { readonly enabled: boolean };
+  readonly scoop: { readonly enabled: boolean };
+  readonly compartments: { readonly cells: readonly number[] };
+}
+
+/**
+ * The set of zones whose color a user can actually see in the current
+ * configuration. Used uniformly by the panel (row visibility), the 3D
+ * preview (multi-color gating), and the 3MF exporter — keeping them
+ * aligned prevents drift like "preview reports single-color while the
+ * exporter writes a multi-material 3MF because of a stale lip corner".
+ */
+export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone> {
+  const cells = p.compartments.cells;
+  const firstCell = cells[0] ?? 0;
+  const hasDividers = cells.length > 1 && cells.some((c) => c !== firstCell);
+
+  const zones = new Set<ColorZone>(['body']);
+  if (p.base.style !== 'flat') zones.add('base');
+  if (p.base.stackingLip) {
+    for (const corner of LIP_CORNERS) zones.add(lipCornerZone(corner));
+  }
+  if (p.label.enabled) zones.add('labelTab');
+  if (p.scoop.enabled) zones.add('scoop');
+  if (hasDividers) zones.add('dividers');
+  return zones;
+}
+
+export function resolveColorMapping(c: FeatureColorConfig): {
   colors: readonly string[];
   colorToIndex: ReadonlyMap<string, number>;
   defaultIndex: number;
@@ -66,12 +196,12 @@ export function resolveColorMapping(featureColors: FeatureColorConfig): {
   const colorToIndex = new Map<string, number>();
   const colors: string[] = [];
 
-  // Body first (index 0 = default fallback)
-  colorToIndex.set(featureColors.body, 0);
-  colors.push(featureColors.body);
+  colorToIndex.set(c.body, 0);
+  colors.push(c.body);
 
-  // Add remaining unique colors
-  for (const hex of [featureColors.lip, featureColors.labelTab]) {
+  for (const z of ZONE_ORDER) {
+    if (z === 'body') continue;
+    const hex = getZoneColor(c, z);
     if (colorToIndex.has(hex)) continue;
     colorToIndex.set(hex, colors.length);
     colors.push(hex);

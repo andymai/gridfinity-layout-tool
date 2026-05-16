@@ -23,6 +23,7 @@ import type {
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { isFeatureEnabled } from '@/shared/hooks/useFeatureFlag';
 import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
+import { computeActiveZones } from '@/features/bin-designer/types/featureColors';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { FORMAT_MIME_TYPES } from '@/shared/generation/exportUtils';
 import type { BinParams, ExportFileFormat } from '@/features/bin-designer/types';
@@ -146,7 +147,13 @@ export function buildSinglePiece3MF(
     /* eslint-enable @typescript-eslint/no-unnecessary-condition */
     const triangleCount = vertices.length / 9;
     colorConfig =
-      buildTriangleMaterialIndices(faceGroups, params.featureColors, triangleCount) ?? undefined;
+      buildTriangleMaterialIndices(
+        faceGroups,
+        params.featureColors,
+        triangleCount,
+        vertices,
+        computeActiveZones(params)
+      ) ?? undefined;
   }
 
   return export3MF(vertices, normals, {
@@ -183,7 +190,13 @@ export function buildMultiObject3MF(
       /* eslint-enable @typescript-eslint/no-unnecessary-condition */
       const triangleCount = parseResult.value.vertices.length / 9;
       colorConfig =
-        buildTriangleMaterialIndices(faceGroups, params.featureColors, triangleCount) ?? undefined;
+        buildTriangleMaterialIndices(
+          faceGroups,
+          params.featureColors,
+          triangleCount,
+          parseResult.value.vertices,
+          computeActiveZones(params)
+        ) ?? undefined;
     }
 
     objects.push({

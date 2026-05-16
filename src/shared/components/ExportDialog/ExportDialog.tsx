@@ -58,6 +58,13 @@ export interface ExportDialogProps {
     onCheckedChange: (v: boolean) => void;
   } | null;
 
+  /**
+   * Optional inline warning shown below the split banner. Use for
+   * non-interactive heads-ups about how the current configuration will
+   * be exported (e.g. "split + multi-color will drop color data").
+   */
+  warningBanner?: { message: string } | null;
+
   /** Optional vertical-stack control (3MF only — STL/STEP have no instancing). */
   stackOptions?: {
     label: string;
@@ -112,6 +119,7 @@ export function ExportDialog({
   downloadLabel,
   exportProgress,
   splitBanner,
+  warningBanner,
   stackOptions,
   formatStates,
   estimates,
@@ -267,6 +275,12 @@ export function ExportDialog({
                   {splitBanner.checkboxLabel}
                 </span>
               </label>
+            </div>
+          )}
+
+          {warningBanner && (
+            <div className="mb-4 rounded-lg border border-warning bg-warning-muted p-3">
+              <p className="text-xs text-warning">{warningBanner.message}</p>
             </div>
           )}
 

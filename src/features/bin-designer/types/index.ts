@@ -23,7 +23,7 @@ export interface LidMeshDataState {
 }
 import type { DesignId } from '@/core/types';
 import type { CellMask } from '@/shared/utils/cellMask';
-import type { FeatureColorConfig, ColorZone } from './featureColors';
+import type { FeatureColorConfig, HoverableZone, LipColorConfig } from './featureColors';
 import type { LidConfig } from './lid';
 
 export type { LidConfig, LidClickRails, LidRailSide } from './lid';
@@ -547,7 +547,7 @@ export interface DesignerUIState {
   /** Per-piece mesh data for split bin preview (populated when exploded mode is active) */
   readonly splitPieceMeshes: readonly SplitPieceMeshEntry[];
   /** Currently hovered color zone in the panel (for 3D preview glow feedback) */
-  readonly hoveredColorZone: ColorZone | null;
+  readonly hoveredColorZone: HoverableZone | null;
   /**
    * Whether the Custom-shape editor section is expanded. Tracks the toggle
    * independently of the mask because the store auto-clears fully-filled
@@ -635,7 +635,14 @@ export interface DesignerState {
   updateWallSide: (side: WallSide, partial: Partial<WallCutout>) => void;
   updateHandles: (partial: Partial<HandleConfig>) => void;
   updateHandleSide: (side: HandleWallSide, partial: Partial<HandleSide>) => void;
-  updateFeatureColors: (partial: Partial<FeatureColorConfig>) => void;
+  updateFeatureColors: (patch: {
+    body?: string;
+    lip?: Partial<LipColorConfig>;
+    labelTab?: string;
+    base?: string;
+    scoop?: string;
+    dividers?: string;
+  }) => void;
   updateLid: (partial: Partial<LidConfig>) => void;
 
   // History actions
@@ -719,7 +726,7 @@ export interface DesignerState {
   setShapeEditorOpen: (open: boolean) => void;
   setSplitViewMode: (mode: SplitViewMode) => void;
   setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => void;
-  setHoveredColorZone: (zone: ColorZone | null) => void;
+  setHoveredColorZone: (zone: HoverableZone | null) => void;
   setPreviewCompartments: (preview: CompartmentConfig | null) => void;
   setPreviewSelection: (
     selection: {

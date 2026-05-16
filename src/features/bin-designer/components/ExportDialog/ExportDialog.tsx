@@ -14,8 +14,7 @@ import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useSettingsStore } from '@/core/store';
 import { useExport } from '@/features/bin-designer/hooks/useExport';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { isSingleColor } from '@/features/bin-designer/types/featureColors';
-import type { ColorZone } from '@/features/bin-designer/types/featureColors';
+import { computeActiveZones, isSingleColor } from '@/features/bin-designer/types/featureColors';
 import { formatPrintTime, formatFilament } from '@/features/bin-designer/utils/printEstimates';
 import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
@@ -82,11 +81,8 @@ export function ExportDialog() {
   const multiColorEnabled = useFeatureFlag('multi_color_export');
   const isMultiColor = useMemo(() => {
     if (!multiColorEnabled) return false;
-    const activeZones = new Set<ColorZone>(['body']);
-    if (params.base.stackingLip) activeZones.add('lip');
-    if (params.label.enabled) activeZones.add('labelTab');
-    return !isSingleColor(params.featureColors, activeZones);
-  }, [multiColorEnabled, params.featureColors, params.base.stackingLip, params.label.enabled]);
+    return !isSingleColor(params.featureColors, computeActiveZones(params));
+  }, [multiColorEnabled, params]);
 
   // Auto-switch to 3MF the first time the dialog opens on a multi-color
   // design with a colorless format selected. Tracked by a ref so we only
@@ -218,6 +214,11 @@ export function ExportDialog() {
           : null
       }
       formatStates={formatStates}
+      warningBanner={
+        useSplitExport && isMultiColor
+          ? { message: t('binDesigner.splitExport.colorLossWarning') }
+          : null
+      }
       estimates={estimateRows}
       estimatesTitle={t('binDesigner.printEstimatesPla')}
       estimatesDisclaimer={t('binDesigner.printEstimatesDisclaimer', {

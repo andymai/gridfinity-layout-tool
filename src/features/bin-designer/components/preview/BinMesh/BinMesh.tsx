@@ -7,6 +7,8 @@
  * - Dynamic flat shading for large bins (GPU-computed normals)
  * - Pre-computed BREP edge lines from worker (avoids main-thread EdgesGeometry)
  * - polygonOffset to prevent z-fighting with edge lines
+ * - Per-corner lip coloring: lip face groups are sub-grouped by triangle
+ *   centroid quadrant relative to the lip's outer bbox center.
  */
 
 import { useEffect, useMemo } from 'react';
@@ -16,68 +18,19 @@ import { Detailed } from '@react-three/drei';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useShallow } from 'zustand/react/shallow';
 import { useMeshGeometry, useCoarseGeometry } from '@/shared/components/preview/useMeshGeometry';
-import type { MeshFaceGroup } from '@/shared/components/preview/useMeshGeometry';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { computeActiveZones } from '@/features/bin-designer/types/featureColors';
 import {
-  featureTagToColorZone,
-  isSingleColor,
-  resolveColorMapping,
-} from '@/features/bin-designer/types/featureColors';
-import type { ColorZone } from '@/features/bin-designer/types/featureColors';
-import type { FaceGroupData } from '@/shared/types/generation';
-import type { FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
+  buildMultiColorGroups,
+  hoveredMaterialIndices,
+} from '@/features/bin-designer/utils/multiColorGroups';
 
-/** Edge line color (black for sketch look) */
 const EDGE_COLOR = '#000000';
 
 interface BinMeshProps {
   wireframe: boolean;
   /** Base color for the bin (user-selectable) */
   color: string;
-}
-
-/**
- * Builds MeshFaceGroup[] and a material color array from FaceGroupData + color config.
- * Returns null when multi-color is not active (all zones same slot or missing data).
- */
-function buildMultiColorGroups(
-  faceGroups: readonly FaceGroupData[],
-  featureColors: FeatureColorConfig,
-  activeZones: ReadonlySet<ColorZone>,
-  totalIndexCount: number
-): {
-  groups: MeshFaceGroup[];
-  colors: readonly string[];
-  colorToIndex: ReadonlyMap<string, number>;
-} | null {
-  if (isSingleColor(featureColors, activeZones)) return null;
-
-  const { colors, colorToIndex, defaultIndex } = resolveColorMapping(featureColors);
-
-  // Sort by start position, then fill leading/interior/trailing gaps with body default
-  const sorted = [...faceGroups].sort((a, b) => a.start - b.start);
-  const groups: MeshFaceGroup[] = [];
-  let cursor = 0;
-
-  for (const fg of sorted) {
-    if (fg.start > cursor) {
-      groups.push({ start: cursor, count: fg.start - cursor, materialIndex: defaultIndex });
-    }
-    const zone = featureTagToColorZone(fg.tag);
-    const hex = featureColors[zone];
-    groups.push({
-      start: fg.start,
-      count: fg.count,
-      materialIndex: colorToIndex.get(hex) ?? defaultIndex,
-    });
-    cursor = fg.start + fg.count;
-  }
-
-  if (cursor < totalIndexCount) {
-    groups.push({ start: cursor, count: totalIndexCount - cursor, materialIndex: defaultIndex });
-  }
-
-  return { groups, colors, colorToIndex };
 }
 
 export function BinMesh({ wireframe, color }: BinMeshProps) {
@@ -92,8 +45,11 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
     faceGroups,
     coarseLOD,
     featureColors,
-    hasLip,
-    hasLabelTabs,
+    baseStyle,
+    stackingLip,
+    labelEnabled,
+    scoopEnabled,
+    cells,
     hoveredColorZone,
   } = useDesignerStore(
     useShallow((s) => ({
@@ -105,26 +61,34 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       coarseLOD: s.generation.mesh?.coarseLOD ?? null,
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
       featureColors: s.params.featureColors ?? null,
-      hasLip: s.params.base.stackingLip,
-      hasLabelTabs: s.params.label.enabled,
+      baseStyle: s.params.base.style,
+      stackingLip: s.params.base.stackingLip,
+      labelEnabled: s.params.label.enabled,
+      scoopEnabled: s.params.scoop.enabled,
+      cells: s.params.compartments.cells,
       hoveredColorZone: s.ui.hoveredColorZone,
     }))
   );
 
-  // Build active zone set — scales as more zones are added
-  const activeZones = useMemo(() => {
-    const zones = new Set<ColorZone>(['body']);
-    if (hasLip) zones.add('lip');
-    if (hasLabelTabs) zones.add('labelTab');
-    return zones;
-  }, [hasLip, hasLabelTabs]);
+  const activeZones = useMemo(
+    () =>
+      computeActiveZones({
+        base: { style: baseStyle, stackingLip },
+        label: { enabled: labelEnabled },
+        scoop: { enabled: scoopEnabled },
+        compartments: { cells },
+      }),
+    [baseStyle, stackingLip, labelEnabled, scoopEnabled, cells]
+  );
 
   // Build multi-color groups when feature is active
   const multiColorData = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); guard it
-    if (!multiColorEnabled || !faceGroups || !featureColors || !indices) return null;
-    return buildMultiColorGroups(faceGroups, featureColors, activeZones, indices.length);
-  }, [multiColorEnabled, faceGroups, featureColors, activeZones, indices]);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); runtime guard kept as belt-and-suspenders.
+    if (!multiColorEnabled || !faceGroups || !featureColors || !vertices || !indices) {
+      return null;
+    }
+    return buildMultiColorGroups(faceGroups, vertices, indices, featureColors, activeZones);
+  }, [multiColorEnabled, faceGroups, featureColors, vertices, indices, activeZones]);
 
   const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry({
     vertices,
@@ -136,20 +100,13 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
 
   const coarseGeometry = useCoarseGeometry(coarseLOD);
 
-  // Build material array for multi-color, with hover glow applied
+  // Allocate one material per zone. Hover state is applied separately via
+  // emissiveIntensity mutation, so a pointer move doesn't rebuild + dispose
+  // every material on the GPU.
   const materials = useMemo(() => {
     if (!multiColorData) return null;
-
-    // Determine which material index is hovered (if any)
-    let hoveredIndex: number | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is null-coalesced upstream (legacy persisted configs); guard it
-    if (hoveredColorZone && featureColors) {
-      const hoveredHex = featureColors[hoveredColorZone];
-      hoveredIndex = multiColorData.colorToIndex.get(hoveredHex);
-    }
-
-    return multiColorData.colors.map(
-      (c, i) =>
+    return multiColorData.zoneColors.map(
+      (c) =>
         new THREE.MeshStandardMaterial({
           color: c,
           roughness: 0.45,
@@ -157,28 +114,34 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
           wireframe,
           side: THREE.DoubleSide,
           emissive: new THREE.Color(c),
-          emissiveIntensity: i === hoveredIndex ? 0.35 : 0.08,
+          emissiveIntensity: 0.08,
           flatShading: !hasPrecomputedNormals,
           polygonOffset: true,
           polygonOffsetFactor: 1,
           polygonOffsetUnits: 1,
         })
     );
-  }, [multiColorData, wireframe, hasPrecomputedNormals, hoveredColorZone, featureColors]);
+  }, [multiColorData, wireframe, hasPrecomputedNormals]);
 
-  // Dispose materials on change
+  useEffect(() => {
+    if (!materials) return;
+    const hoveredIndices = hoveredMaterialIndices(hoveredColorZone);
+    materials.forEach((mat, i) => {
+      mat.emissiveIntensity = hoveredIndices.has(i) ? 0.35 : 0.08;
+    });
+    invalidate();
+  }, [materials, hoveredColorZone, invalidate]);
+
   useEffect(() => {
     return () => {
       materials?.forEach((m) => m.dispose());
     };
   }, [materials]);
 
-  // Invalidate frame when mesh data changes
   useEffect(() => {
     if (geometry) invalidate();
   }, [geometry, invalidate]);
 
-  // Invalidate frame when visual props change
   useEffect(() => {
     invalidate();
   }, [wireframe, color, materials, invalidate]);
@@ -222,7 +185,6 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
   return (
     <group position={[0, 0, 0.1]}>
       {coarseGeometry ? (
-        // LOD: fine mesh at distance 0, coarse at 300mm (zoomed out)
         <Detailed distances={[0, 300]}>
           {fineMesh}
           <mesh geometry={coarseGeometry}>
@@ -232,7 +194,6 @@ export function BinMesh({ wireframe, color }: BinMeshProps) {
       ) : (
         fineMesh
       )}
-      {/* Edge lines from BREP topology (pre-computed in worker, fine LOD only) */}
       {!wireframe && edgesGeometry && (
         <lineSegments geometry={edgesGeometry} renderOrder={1}>
           <lineBasicMaterial color={EDGE_COLOR} depthTest={true} />

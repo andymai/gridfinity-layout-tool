@@ -461,4 +461,98 @@ describe('validateDesignerShare', () => {
       }
     });
   });
+
+  describe('featureColors validation', () => {
+    function withColors(featureColors: unknown) {
+      const payload = validPayload() as ReturnType<typeof validPayload> & {
+        params: { featureColors?: unknown };
+      };
+      payload.params.featureColors = featureColors;
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    }
+
+    it('accepts the current shape (4-corner lip)', () => {
+      const result = withColors({
+        body: '#3b82f6',
+        lip: {
+          frontLeft: '#ef4444',
+          frontRight: '#22c55e',
+          backRight: '#0000ff',
+          backLeft: '#ffffff',
+        },
+        labelTab: '#3b82f6',
+        base: '#3b82f6',
+        scoop: '#3b82f6',
+        dividers: '#3b82f6',
+      });
+      expect(result.valid).toBe(true);
+    });
+
+    it('accepts the legacy lip:string shape', () => {
+      const result = withColors({ body: '#3b82f6', lip: '#ff0000' });
+      expect(result.valid).toBe(true);
+    });
+
+    it('accepts legacy slot IDs (pre-v4.30)', () => {
+      const result = withColors({ body: 'slot2', lip: 'slot3', labelTab: 'slot1' });
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects a non-hex body color', () => {
+      const result = withColors({ body: 'red' });
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toMatch(/body/);
+      }
+    });
+
+    it('rejects a non-hex lip corner', () => {
+      const result = withColors({
+        lip: { frontLeft: 'orange', frontRight: '#22c55e', backRight: '#0000ff', backLeft: '#fff' },
+      });
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toMatch(/frontLeft/);
+      }
+    });
+
+    it('rejects lip with a non-string, non-object value', () => {
+      const result = withColors({ lip: 123 });
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects featureColors that is not an object', () => {
+      const result = withColors('not an object');
+      expect(result.valid).toBe(false);
+    });
+
+    it('accepts 3-digit shorthand hex (#abc)', () => {
+      const result = withColors({ body: '#abc', lip: '#0f0' });
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects unknown top-level keys', () => {
+      const result = withColors({ body: '#fff', evilKey: 'garbage' });
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toMatch(/unknown key/);
+      }
+    });
+
+    it('rejects unknown corner names inside the lip object', () => {
+      const result = withColors({
+        lip: {
+          frontLeft: '#fff',
+          frontRight: '#fff',
+          backRight: '#fff',
+          backLeft: '#fff',
+          rogueCorner: '#000',
+        },
+      });
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toMatch(/unknown corner/);
+      }
+    });
+  });
 });

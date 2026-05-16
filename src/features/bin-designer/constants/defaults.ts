@@ -149,27 +149,74 @@ const LEGACY_SLOT_COLORS: Record<string, string> = {
   slot4: '#ef4444',
 };
 
-/** Migrate featureColors from old slot-based format to direct hex colors */
-function migrateFeatureColors(raw: Partial<FeatureColorConfig> | undefined): FeatureColorConfig {
-  if (!raw) return DEFAULT_FEATURE_COLOR_CONFIG;
-  /* eslint-disable @typescript-eslint/no-unnecessary-condition -- LEGACY_SLOT_COLORS is Record<string, string> so TS treats every lookup as defined; at runtime an unmapped legacy slot returns undefined and we fall through to the direct color or default. The ?? chain encodes that fallback ladder. */
-  return {
-    body: LEGACY_SLOT_COLORS[raw.body as string] ?? raw.body ?? DEFAULT_FEATURE_COLOR_CONFIG.body,
-    lip: LEGACY_SLOT_COLORS[raw.lip as string] ?? raw.lip ?? DEFAULT_FEATURE_COLOR_CONFIG.lip,
-    labelTab:
-      LEGACY_SLOT_COLORS[raw.labelTab as string] ??
-      raw.labelTab ??
-      DEFAULT_FEATURE_COLOR_CONFIG.labelTab,
-  };
-  /* eslint-enable @typescript-eslint/no-unnecessary-condition */
-}
-
 /** Default feature color config: all zones use the default bin color (light grey) */
 export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
   body: '#d4d8dc',
-  lip: '#d4d8dc',
+  lip: {
+    frontLeft: '#d4d8dc',
+    frontRight: '#d4d8dc',
+    backRight: '#d4d8dc',
+    backLeft: '#d4d8dc',
+  },
   labelTab: '#d4d8dc',
+  base: '#d4d8dc',
+  scoop: '#d4d8dc',
+  dividers: '#d4d8dc',
 } as const;
+
+interface LegacyFeatureColorInput {
+  body?: string;
+  /** Legacy single-color string or the new 4-corner object. */
+  lip?: string | Partial<FeatureColorConfig['lip']>;
+  labelTab?: string;
+  base?: string;
+  scoop?: string;
+  dividers?: string;
+}
+
+function resolveColor(raw: string | undefined, fallback: string): string {
+  if (raw === undefined) return fallback;
+  return LEGACY_SLOT_COLORS[raw] ?? raw;
+}
+
+/**
+ * Migrate featureColors. Handles three eras of saved designs:
+ * - Pre-v4.30: slot IDs like 'slot1' → mapped to hex via LEGACY_SLOT_COLORS.
+ * - v4.30..present (pre-corner-lip): `lip` is a single hex string. All
+ *   four corners inherit that value so existing designs look identical.
+ * - New zones (base / scoop / dividers) missing → inherit the body color
+ *   so the visual rendering is unchanged after migration.
+ */
+function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): FeatureColorConfig {
+  if (!raw) return DEFAULT_FEATURE_COLOR_CONFIG;
+
+  const body = resolveColor(raw.body, DEFAULT_FEATURE_COLOR_CONFIG.body);
+  const labelTab = resolveColor(raw.labelTab, body);
+
+  let lip: FeatureColorConfig['lip'];
+  if (typeof raw.lip === 'string') {
+    const single = resolveColor(raw.lip, body);
+    lip = { frontLeft: single, frontRight: single, backRight: single, backLeft: single };
+  } else if (raw.lip && typeof raw.lip === 'object') {
+    lip = {
+      frontLeft: raw.lip.frontLeft ?? body,
+      frontRight: raw.lip.frontRight ?? body,
+      backRight: raw.lip.backRight ?? body,
+      backLeft: raw.lip.backLeft ?? body,
+    };
+  } else {
+    lip = { frontLeft: body, frontRight: body, backRight: body, backLeft: body };
+  }
+
+  return {
+    body,
+    lip,
+    labelTab,
+    base: resolveColor(raw.base, body),
+    scoop: resolveColor(raw.scoop, body),
+    dividers: resolveColor(raw.dividers, body),
+  };
+}
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */
 export const DEFAULT_BIN_PARAMS: BinParams = {

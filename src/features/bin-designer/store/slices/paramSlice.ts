@@ -20,7 +20,7 @@ import type {
   HandleWallSide,
   LidConfig,
 } from '../../types';
-import type { FeatureColorConfig } from '../../types/featureColors';
+import type { LipColorConfig } from '../../types/featureColors';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
 import { isErr } from '@/core/result';
 import { isRectangularSelection, normalizeIds } from '../../utils/compartments';
@@ -178,10 +178,24 @@ export function createParamSlice(set: Set, get: Get) {
     },
 
     // Feature color actions
-    updateFeatureColors: (partial: Partial<FeatureColorConfig>) => {
+    updateFeatureColors: (patch: {
+      body?: string;
+      lip?: Partial<LipColorConfig>;
+      labelTab?: string;
+      base?: string;
+      scoop?: string;
+      dividers?: string;
+    }) => {
       set((state) => {
         pushHistoryEntry(state);
-        state.params.featureColors = { ...state.params.featureColors, ...partial };
+        const current = state.params.featureColors;
+        const { lip: lipPatch, ...rest } = patch;
+        const nextLip: LipColorConfig = lipPatch ? { ...current.lip, ...lipPatch } : current.lip;
+        state.params.featureColors = {
+          ...current,
+          ...rest,
+          lip: nextLip,
+        };
       });
     },
 
