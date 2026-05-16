@@ -1779,5 +1779,8 @@
   "binDesigner.colors.zone.labelTab": "Pestaña de etiqueta",
   "binDesigner.colors.zone.base": "Base",
   "binDesigner.colors.zone.scoop": "Rampa",
-  "binDesigner.colors.zone.dividers": "Divisores"
+  "binDesigner.colors.zone.dividers": "Divisores",
+  "webgl.fallback.title": "Tu navegador no pudo cargar el renderizado 3D",
+  "webgl.fallback.body": "WebGL está desactivado o no es compatible. Intenta activar la aceleración por hardware en la configuración del navegador, actualizar los controladores gráficos o cambiar de navegador.",
+  "webgl.fallback.helpLink": "Comprobar compatibilidad con WebGL"
 }

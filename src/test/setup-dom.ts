@@ -35,6 +35,25 @@ if (typeof Element !== 'undefined') {
   Element.prototype.hasPointerCapture = () => false;
 }
 
+// jsdom returns null for any WebGL context; teach getContext to return a
+// non-lost context object instead so detectWebGL() resolves "available" by
+// default. Tests covering the WebGL-unavailable path override this locally
+// with vi.spyOn.
+if (typeof HTMLCanvasElement !== 'undefined') {
+  const minimalWebGl = { isContextLost: () => false } as unknown as WebGLRenderingContext;
+  const originalGetContext = HTMLCanvasElement.prototype.getContext;
+  HTMLCanvasElement.prototype.getContext = function (
+    this: HTMLCanvasElement,
+    contextId: string,
+    options?: unknown
+  ): RenderingContext | null {
+    if (contextId === 'webgl' || contextId === 'webgl2' || contextId === 'experimental-webgl') {
+      return minimalWebGl;
+    }
+    return originalGetContext.call(this, contextId as '2d', options);
+  } as typeof HTMLCanvasElement.prototype.getContext;
+}
+
 if (typeof window !== 'undefined') {
   // Mock matchMedia for responsive hook tests
   Object.defineProperty(window, 'matchMedia', {

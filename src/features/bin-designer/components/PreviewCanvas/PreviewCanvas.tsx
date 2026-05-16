@@ -58,6 +58,7 @@ import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
 import { CameraController, usePresetTransition, SceneLighting } from './previewCanvasCamera';
 import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
+import { detectWebGL, WebGLFallback } from '@/shared/webgl';
 import { ColorToolOverlay } from './ColorToolOverlay';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { PipetteIcon } from '@/design-system/Icon';
@@ -83,6 +84,7 @@ export function PreviewCanvas() {
   const t = useTranslation();
   const controlsRef = useRef<OrbitControlsType>(null);
   const invalidateRef = useRef<(() => void) | null>(null);
+  const webgl = detectWebGL();
   const [wireframe, setWireframe] = useState(false);
   const [activePreset, setActivePreset] = useState<CameraPreset | null>('isometric');
   // Lid explode slider (mm above the snapped position). Default = mid-explode
@@ -302,7 +304,9 @@ export function PreviewCanvas() {
         {statusAnnouncement}
       </div>
 
-      {showSkeleton ? (
+      {!webgl.available && webgl.reason ? (
+        <WebGLFallback reason={webgl.reason} component="designer" />
+      ) : showSkeleton ? (
         <PreviewSkeleton
           wasmStatus={wasmStatus}
           generationStatus={generationStatus}

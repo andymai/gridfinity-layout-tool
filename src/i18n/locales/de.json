@@ -1779,5 +1779,8 @@
   "binDesigner.colors.zone.labelTab": "Beschriftungslasche",
   "binDesigner.colors.zone.base": "Basis",
   "binDesigner.colors.zone.scoop": "Mulde",
-  "binDesigner.colors.zone.dividers": "Trennwände"
+  "binDesigner.colors.zone.dividers": "Trennwände",
+  "webgl.fallback.title": "Ihr Browser konnte 3D-Rendering nicht laden",
+  "webgl.fallback.body": "WebGL ist deaktiviert oder wird nicht unterstützt. Aktivieren Sie die Hardwarebeschleunigung in den Browsereinstellungen, aktualisieren Sie die Grafiktreiber oder wechseln Sie den Browser.",
+  "webgl.fallback.helpLink": "WebGL-Unterstützung prüfen"
 }

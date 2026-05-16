@@ -2082,6 +2082,12 @@ const en: Record<string, string> = {
   'engagement.layoutPromotion.message':
     'Planning another drawer? Save this layout and start a new one.',
   'engagement.layoutPromotion.action': 'Open Layout Library',
+
+  // WebGL unavailable fallback
+  'webgl.fallback.title': "Your browser couldn't load 3D rendering",
+  'webgl.fallback.body':
+    'WebGL is disabled or unsupported. Try enabling hardware acceleration in your browser settings, updating your graphics drivers, or switching browsers.',
+  'webgl.fallback.helpLink': 'Check WebGL support',
 };
 
 export default en;

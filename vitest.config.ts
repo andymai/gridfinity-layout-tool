@@ -22,6 +22,7 @@ const domIncludes = [
   'src/**/*.test.tsx',
   'src/shared/components/**/*.test.{ts,tsx}',
   'src/shared/hooks/**/*.test.{ts,tsx}',
+  'src/shared/webgl/**/*.test.{ts,tsx}',
   'src/features/**/components/**/*.test.{ts,tsx}',
   'src/features/**/hooks/**/*.test.{ts,tsx}',
   'src/design-system/**/*.test.{ts,tsx}',
