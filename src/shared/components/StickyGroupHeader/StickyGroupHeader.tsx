@@ -53,10 +53,7 @@ export function StickyGroupHeader({
           {title}
         </span>
         {badge && (
-          <span
-            aria-hidden="true"
-            className="inline-flex items-center rounded bg-info-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-info"
-          >
+          <span className="inline-flex items-center rounded bg-info-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-info">
             {badge}
           </span>
         )}
