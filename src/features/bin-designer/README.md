@@ -124,6 +124,18 @@ graph TB
     to identity — a single uniform scalar would distort circles and rotated
     shapes. Path bounds use `getPathBounds` (flattened bezier) so curves that
     bow outward beyond their anchors aren't clipped.
+13. **`BinMesh` multi↔single material switch needs distinct keys** — the
+    multi-color branch passes `material` as a `<mesh>` **prop** (array of
+    `MeshStandardMaterial`), the single-color branch declares the material as
+    a `<meshStandardMaterial>` **child**. Without keys, R3F (9.x) reuses the
+    same `THREE.Mesh` across the toggle and the post-order commit clobbers
+    the freshly attached child material: child-attach runs first, then the
+    parent's prop-diff resets the removed `material` prop to a memoized
+    `new Mesh()` default (`MeshBasicMaterial`) via `diffProps`. The
+    user-visible symptom is a mesh with no emissive glow whose color picker
+    no longer takes. Don't remove the `key="multi-color"` /
+    `key="single-color"` props — and if you add a third branch (e.g. a new
+    material strategy) give it its own key too.
 
 ## Integration
 
