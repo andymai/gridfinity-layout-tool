@@ -35,9 +35,3 @@ export function formatTable(
   for (const r of rows) lines.push(fmtRow(r));
   return lines.join('\n');
 }
-
-export function emit(payload: unknown, asJson: boolean): void {
-  if (asJson) {
-    process.stdout.write(JSON.stringify(payload, null, 2) + '\n');
-  }
-}

@@ -109,6 +109,7 @@ bash drift-fixes.sh
 | `envelope_invalid`      | error    | Envelope shape wrong: bad `schemaVersion` / `modifiedAt`     |
 | `payload_invalid`       | error    | `validateShareLayout` / `validateDesignerShare` rejected     |
 | `sanitization_drift`    | warn     | Index `sizeBytes` over-counts (quota leak in system's favor) |
+| `listing_size_mismatch` | warn     | Vercel Blob listing's `size` differs from fetched byte count |
 | `stale_tombstone`       | info     | Tombstone older than retention; safe to sweep                |
 
 ## CI usage

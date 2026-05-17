@@ -37,6 +37,7 @@ export type FindingKind =
   | 'envelope_invalid'
   | 'payload_invalid'
   | 'sanitization_drift'
+  | 'listing_size_mismatch'
   | 'stale_tombstone';
 
 export interface Finding {

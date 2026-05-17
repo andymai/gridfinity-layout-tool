@@ -94,12 +94,12 @@ describe('analyze', () => {
     expect(findings.find((f) => f.kind === 'missing_blob')).toBeDefined();
   });
 
-  it('flags tombstone with surviving blob', async () => {
+  it('flags tombstone with surviving blob exactly once (no duplicate orphan_blob)', async () => {
     const blob = layoutBlob('u1', 'zombie');
     const entry = tombstoneEntry('u1', 'zombie', T);
-    mockPayload({ layout: layoutPayload, modifiedAt: T, schemaVersion: 1 });
-    const findings = await analyze(makeInventory([blob], [entry]));
-    expect(findings.find((f) => f.kind === 'tombstone_with_blob')).toBeDefined();
+    const findings = await analyze(makeInventory([blob], [entry]), { fetchPayloads: false });
+    expect(findings.filter((f) => f.kind === 'tombstone_with_blob')).toHaveLength(1);
+    expect(findings.filter((f) => f.kind === 'orphan_blob')).toHaveLength(0);
   });
 
   it('flags sanitization drift when index sizeBytes is higher than blob - envelope overhead', async () => {
@@ -157,6 +157,18 @@ describe('analyze', () => {
     mockPayload({ layout: layoutPayload, modifiedAt: T, schemaVersion: 2 });
     const findings = await analyze(makeInventory([blob], [entry]));
     expect(findings.find((f) => f.kind === 'envelope_invalid')).toBeDefined();
+  });
+
+  it('flags listing_size_mismatch when fetched bytes diverge from listing.size', async () => {
+    const blob = layoutBlob('u1', 'a');
+    const entry = layoutEntry('u1', 'a');
+    const body = JSON.stringify({ layout: layoutPayload, modifiedAt: T, schemaVersion: 1 });
+    const oversized = { ...blob, size: Buffer.byteLength(body) + 50 };
+    mockPayload({ layout: layoutPayload, modifiedAt: T, schemaVersion: 1 });
+    const findings = await analyze(makeInventory([oversized], [entry]));
+    const m = findings.find((f) => f.kind === 'listing_size_mismatch');
+    expect(m).toBeDefined();
+    expect((m?.data as { listingSize: number }).listingSize).toBe(Buffer.byteLength(body) + 50);
   });
 
   it('skips payload fetching when fetchPayloads=false', async () => {

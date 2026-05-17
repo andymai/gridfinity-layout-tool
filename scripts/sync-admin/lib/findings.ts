@@ -95,14 +95,14 @@ export async function analyze(
 
   for (const blob of inv.blobs) {
     const row = inv.indexMap.get(itemKey(blob.uid, blob.kind, blob.id));
-    if (!row || row.tombstone) {
+    if (!row) {
       findings.push({
         kind: 'orphan_blob',
         uid: blob.uid,
         itemKind: blob.kind,
         id: blob.id,
         severity: 'error',
-        detail: row ? 'blob survives a tombstone' : 'blob has no index entry',
+        detail: 'blob has no index entry',
         data: { blobSize: blob.size },
       });
     }
@@ -123,12 +123,12 @@ export async function analyze(
 }
 
 async function validateBlob(
-  blob: { uid: string; kind: 'layouts' | 'designs'; id: string; url: string },
+  blob: { uid: string; kind: 'layouts' | 'designs'; id: string; url: string; size: number },
   inv: Inventory
 ): Promise<Finding[]> {
   const out: Finding[] = [];
   let body: unknown;
-  let bytes = 0;
+  let fetchedBytes = 0;
   try {
     const r = await fetch(blob.url);
     if (!r.ok) {
@@ -144,7 +144,7 @@ async function validateBlob(
       ];
     }
     const text = await r.text();
-    bytes = Buffer.byteLength(text, 'utf8');
+    fetchedBytes = Buffer.byteLength(text, 'utf8');
     body = JSON.parse(text);
   } catch (err) {
     return [
@@ -246,7 +246,18 @@ async function validateBlob(
     }
   }
 
-  void bytes;
+  if (fetchedBytes !== blob.size) {
+    out.push({
+      kind: 'listing_size_mismatch',
+      uid: blob.uid,
+      itemKind: blob.kind,
+      id: blob.id,
+      severity: 'warn',
+      detail: `listing reports ${blob.size}B, fetched ${fetchedBytes}B`,
+      data: { listingSize: blob.size, fetchedBytes },
+    });
+  }
+
   return out;
 }
 

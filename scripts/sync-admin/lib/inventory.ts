@@ -79,11 +79,11 @@ async function readIndexes(redis: Redis, opts: BuildOpts): Promise<IndexRow[]> {
   return out;
 }
 
-function parseRow(uid: string, kind: Kind, id: string, encoded: string): IndexRow {
+export function parseRow(uid: string, kind: Kind, id: string, encoded: string): IndexRow {
   try {
     const entry = JSON.parse(encoded) as IndexEntry;
     if (typeof entry.modifiedAt !== 'number' || typeof entry.sizeBytes !== 'number') {
-      return { uid, kind, id, entry, tombstone: entry.deletedAt !== undefined };
+      return { uid, kind, id, entry: { modifiedAt: NaN, sizeBytes: NaN }, tombstone: false };
     }
     return { uid, kind, id, entry, tombstone: entry.deletedAt !== undefined };
   } catch {
