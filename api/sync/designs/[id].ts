@@ -160,19 +160,25 @@ async function handlePut(
   // posts have no name; they persist as '' and the adapter falls back.
   const name = sanitizeString(unwrapped.name ?? '', MAX_NAME_LENGTH);
 
-  // Reuse the share-payload validator. `sizeBytes` measures name + params
-  // together so the size cap, quota math, and stored envelope all agree.
+  // The size cap guards against work on huge inputs, so check it against
+  // the raw request. Quota math and the index entry below use the
+  // post-sanitization size — otherwise the user is charged for bytes the
+  // validator stripped, and the index drifts from what the blob stores.
   const validationPayload = {
     type: 'designer' as const,
     version: 1 as const,
     params: unwrapped.params,
   };
-  const sizeBytes = Buffer.byteLength(JSON.stringify({ name, ...validationPayload }), 'utf8');
-  const validation = validateDesignerShare(validationPayload, sizeBytes);
+  const requestBytes = Buffer.byteLength(JSON.stringify({ name, ...validationPayload }), 'utf8');
+  const validation = validateDesignerShare(validationPayload, requestBytes);
   if (!validation.valid) {
     res.status(400).json({ error: validation.error.message, code: ErrorCode.VALIDATION_ERROR });
     return;
   }
+  const sizeBytes = Buffer.byteLength(
+    JSON.stringify({ name, type: 'designer', version: 1, params: validation.payload.params }),
+    'utf8'
+  );
 
   const existing = await getEntry(redis, userId, 'designs', id);
   // `deletedAt === undefined` is the explicit live-entry check.

@@ -125,13 +125,17 @@ async function handlePut(
     return;
   }
 
-  const serialized = JSON.stringify({ layout });
-  const sizeBytes = Buffer.byteLength(serialized, 'utf8');
-  const validation = validateShareLayout(layout, sizeBytes);
+  // The size cap guards against work on huge inputs, so check it against
+  // the raw request. Quota math and the index entry below use the
+  // post-sanitization size — otherwise the user is charged for bytes the
+  // validator stripped, and the index drifts from what the blob stores.
+  const requestBytes = Buffer.byteLength(JSON.stringify({ layout }), 'utf8');
+  const validation = validateShareLayout(layout, requestBytes);
   if (isValidationError(validation)) {
     res.status(400).json({ error: validation.error.message, code: validation.error.code });
     return;
   }
+  const sizeBytes = Buffer.byteLength(JSON.stringify({ layout: validation.layout }), 'utf8');
 
   const existing = await getEntry(redis, userId, 'layouts', id);
 

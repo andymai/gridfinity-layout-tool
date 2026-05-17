@@ -54,6 +54,11 @@ type IndexEntry = {
 //           bumps the cache key for /api/sync/manifest's 304 path.
 ```
 
+`sizeBytes` is measured against the **sanitized** payload — the same bytes the
+blob stores — so quota accounting matches reality. The 500 KB size cap on PUT
+is checked separately against the raw request bytes so the handler doesn't
+waste cycles validating huge inputs.
+
 ## LWW + tombstone semantics (PUT)
 
 Every write supplies a `modifiedAt` (ms epoch) representing the client's view of when the change happened. The server compares against the existing entry:
