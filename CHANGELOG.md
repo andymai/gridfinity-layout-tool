@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.89.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.88.4...gridfinity-layout-tool-v4.89.0) (2026-05-17)
+
+
+### Features
+
+* sync-admin CLI for blob/index integrity audits ([#1708](https://github.com/andymai/gridfinity-layout-tool/issues/1708)) ([c9d39ed](https://github.com/andymai/gridfinity-layout-tool/commit/c9d39eddb41aaea7a4c35e74de758d9a9d28f190))
+
 ## [4.88.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.88.3...gridfinity-layout-tool-v4.88.4) (2026-05-17)
 
 
