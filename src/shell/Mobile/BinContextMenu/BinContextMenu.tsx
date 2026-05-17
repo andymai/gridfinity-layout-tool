@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { batch } from '@/core/cqrs';
 import {
   useLayoutStore,
@@ -22,13 +22,11 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinById } from '@/shared/utils/entity';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
+import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import type { Bin, GridUnits, LayerId } from '@/core/types';
 
-// Lazy load design-linking section
-const BinContextMenuDesignSection = lazy(() =>
-  import('../BinContextMenuDesignSection').then((m) => ({
-    default: m.BinContextMenuDesignSection,
-  }))
+const BinContextMenuDesignSection = lazyWithRetry(() =>
+  import('../BinContextMenuDesignSection').then(namedExport('BinContextMenuDesignSection'))
 );
 
 interface BinContextMenuProps {

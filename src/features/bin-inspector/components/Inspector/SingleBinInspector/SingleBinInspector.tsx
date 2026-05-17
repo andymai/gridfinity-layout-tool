@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
 import { RulerIcon } from '@/design-system/Icon';
 import { useHalfBinModeStore } from '@/core/store/halfBinMode';
@@ -10,12 +10,12 @@ import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
 import { useTranslation } from '@/i18n';
+import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 
-// Lazy load LinkedDesignSection
-const LinkedDesignSection = lazy(() =>
-  import('@/features/design-linking/components/LinkedDesignSection').then((m) => ({
-    default: m.LinkedDesignSection,
-  }))
+const LinkedDesignSection = lazyWithRetry(() =>
+  import('@/features/design-linking/components/LinkedDesignSection').then(
+    namedExport('LinkedDesignSection')
+  )
 );
 
 interface SingleBinInspectorProps {
