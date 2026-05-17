@@ -98,6 +98,24 @@ export default defineConfig([
       'eqeqeq': ['error', 'always'],
       'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
 
+      // Force every lazy() through lazyWithRetry so chunk-load failures on
+      // stale clients retry + reload instead of leaking to PostHog as
+      // unhandled rejections. See PR #1703. Two rules cover the two shapes:
+      //   - `import { lazy } from 'react'` → no-restricted-imports (resolves
+      //     through module graph, won't false-flag a locally-named `lazy`).
+      //   - `React.lazy(...)` member call → no-restricted-syntax.
+      'no-restricted-imports': ['error', {
+        paths: [{
+          name: 'react',
+          importNames: ['lazy'],
+          message: 'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy() — raw lazy() leaks chunk-load failures to PostHog as unhandled rejections.',
+        }],
+      }],
+      'no-restricted-syntax': ['error', {
+        selector: 'CallExpression[callee.type="MemberExpression"][callee.property.name="lazy"][callee.object.name="React"]',
+        message: 'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy() — raw lazy() leaks chunk-load failures to PostHog as unhandled rejections.',
+      }],
+
       // i18n: Enforce localization of user-facing strings
       'i18next/no-literal-string': ['error', {
         mode: 'jsx-only',
@@ -190,12 +208,19 @@ export default defineConfig([
       }],
     },
   },
-  // Barrel-only restriction: design-linking may only import bin-designer barrel
+  // Barrel-only restriction: design-linking may only import bin-designer barrel.
+  // Note: `paths` is duplicated from the global rule because flat-config overrides
+  // replace (not merge) the rule value.
   {
     files: ['src/features/design-linking/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}'],
     rules: {
       'no-restricted-imports': ['error', {
+        paths: [{
+          name: 'react',
+          importNames: ['lazy'],
+          message: 'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy().',
+        }],
         patterns: [{
           group: ['@/features/bin-designer/*', '@/features/bin-designer/**'],
           message: 'Import from @/features/bin-designer barrel only',
@@ -203,12 +228,17 @@ export default defineConfig([
       }],
     },
   },
-  // Barrel-only restriction: bin-inspector may only import design-linking barrel
+  // Barrel-only restriction: bin-inspector may only import design-linking barrel.
   {
     files: ['src/features/bin-inspector/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}'],
     rules: {
       'no-restricted-imports': ['error', {
+        paths: [{
+          name: 'react',
+          importNames: ['lazy'],
+          message: 'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy().',
+        }],
         patterns: [{
           group: ['@/features/design-linking/*', '@/features/design-linking/**'],
           message: 'Import from @/features/design-linking barrel only',
