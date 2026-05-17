@@ -102,7 +102,7 @@ describe('analyze', () => {
     expect(findings.filter((f) => f.kind === 'orphan_blob')).toHaveLength(0);
   });
 
-  it('flags sanitization drift when index sizeBytes is higher than blob - envelope overhead', async () => {
+  it('flags sanitization drift when index over-counts (delta < expected)', async () => {
     const blob = layoutBlob('u1', 'x');
     const inflated = layoutEntry(
       'u1',
@@ -110,11 +110,60 @@ describe('analyze', () => {
       T,
       blob.size - expectedEnvelopeDelta('layouts', T) + 100
     );
-    mockPayload({ layout: layoutPayload, modifiedAt: T, schemaVersion: 1 });
-    const findings = await analyze(makeInventory([blob], [inflated]));
+    const findings = await analyze(makeInventory([blob], [inflated]), { fetchPayloads: false });
     const drift = findings.find((f) => f.kind === 'sanitization_drift');
     expect(drift).toBeDefined();
     expect((drift?.data as { drift: number }).drift).toBe(-100);
+    expect(findings.some((f) => f.kind === 'index_size_undercount')).toBe(false);
+  });
+
+  it('flags index_size_undercount when index under-counts (delta > expected)', async () => {
+    const blob = layoutBlob('u1', 'x');
+    const undercount = layoutEntry(
+      'u1',
+      'x',
+      T,
+      blob.size - expectedEnvelopeDelta('layouts', T) - 50
+    );
+    const findings = await analyze(makeInventory([blob], [undercount]), { fetchPayloads: false });
+    const f = findings.find((finding) => finding.kind === 'index_size_undercount');
+    expect(f).toBeDefined();
+    expect(f?.severity).toBe('error');
+    expect((f?.data as { drift: number }).drift).toBe(50);
+    expect(findings.some((finding) => finding.kind === 'sanitization_drift')).toBe(false);
+  });
+
+  it('skips payload validation for malformed index rows', async () => {
+    const blob = layoutBlob('u1', 'mal');
+    const malformed: IndexRow = {
+      uid: 'u1',
+      kind: 'layouts',
+      id: 'mal',
+      entry: { modifiedAt: NaN, sizeBytes: NaN },
+      tombstone: false,
+    };
+    const findings = await analyze(makeInventory([blob], [malformed]));
+    expect(findings.some((f) => f.kind === 'malformed_index_entry')).toBe(true);
+    expect(findings.some((f) => f.kind === 'modifiedAt_mismatch')).toBe(false);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('flags fetch_timeout when fetch exceeds the deadline', async () => {
+    const blob = layoutBlob('u1', 'slow');
+    const entry = layoutEntry('u1', 'slow');
+    fetchMock.mockImplementationOnce(async (_url: string, opts?: { signal?: AbortSignal }) => {
+      return new Promise((_, reject) => {
+        opts?.signal?.addEventListener('abort', () => {
+          const err = new DOMException('timed out', 'TimeoutError');
+          reject(err);
+        });
+      });
+    });
+    const findings = await analyze(makeInventory([blob], [entry]), {
+      fetchPayloads: true,
+      fetchTimeoutMs: 5,
+    });
+    expect(findings.find((f) => f.kind === 'fetch_timeout')).toBeDefined();
   });
 
   it('flags stale tombstone older than retention', async () => {

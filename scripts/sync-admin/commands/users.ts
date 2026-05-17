@@ -66,6 +66,12 @@ function computeStats(inv: Inventory): UserStats[] {
     return s;
   };
 
+  // Seed from index rows so users whose blobs are all missing (or who only
+  // have tombstones) are still represented in the table.
+  for (const r of inv.indexRows) {
+    const s = get(r.uid);
+    if (r.tombstone) s.tombstones++;
+  }
   for (const b of inv.blobs) {
     const s = get(b.uid);
     if (b.kind === 'layouts') {
@@ -78,9 +84,6 @@ function computeStats(inv: Inventory): UserStats[] {
     s.totalBytes += b.size;
     const ms = b.uploadedAt.getTime();
     if (s.oldestItem === 0 || ms < s.oldestItem) s.oldestItem = ms;
-  }
-  for (const r of inv.indexRows) {
-    if (r.tombstone) get(r.uid).tombstones++;
   }
 
   return [...map.values()].sort((a, b) => b.totalBytes - a.totalBytes);

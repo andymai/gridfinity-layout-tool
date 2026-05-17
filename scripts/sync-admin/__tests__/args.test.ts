@@ -34,4 +34,8 @@ describe('parseArgs', () => {
   it('parses --user', () => {
     expect(parseArgs(['audit', '--user=abc']).user).toBe('abc');
   });
+
+  it('rejects empty --user= to prevent accidental full-production scans', () => {
+    expect(() => parseArgs(['audit', '--user='])).toThrow(/cannot be empty/);
+  });
 });

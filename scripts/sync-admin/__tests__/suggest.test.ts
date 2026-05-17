@@ -4,7 +4,7 @@ import { expectedEnvelopeDelta } from '../lib/delta';
 import type { Finding } from '../lib/types';
 
 describe('suggestFor', () => {
-  it('drift suggestion encodes the recomputed sizeBytes', () => {
+  it('drift suggestion encodes the recomputed sizeBytes and guards on modifiedAt', () => {
     const modifiedAt = 1_780_000_000_000;
     const blobSize = 1000;
     const finding: Finding = {
@@ -16,13 +16,43 @@ describe('suggestFor', () => {
       detail: '',
       data: { indexSize: 1500, blobSize, modifiedAt },
     };
-    const lines = suggestFor(finding);
+    const out = suggestFor(finding).join('\n');
     const expected = blobSize - expectedEnvelopeDelta('layouts', modifiedAt);
-    expect(lines.join('\n')).toContain(`${expected}`);
-    expect(lines.join('\n')).toContain(`'users:u1:index:layouts'`);
+    expect(out).toContain(`${expected}`);
+    expect(out).toContain(`'users:u1:index:layouts'`);
+    // Stale-modifiedAt guard and indexUpdatedAt bump are both wired.
+    expect(out).toContain('stale-modifiedAt');
+    expect(out).toContain(`'users:u1:indexUpdatedAt'`);
   });
 
-  it('orphan blob suggestion emits `vercel blob rm`', () => {
+  it('drift suggestion is empty when blobSize would yield a negative recomputed size', () => {
+    const finding: Finding = {
+      kind: 'sanitization_drift',
+      uid: 'u1',
+      itemKind: 'layouts',
+      id: 'l1',
+      severity: 'warn',
+      detail: '',
+      data: { blobSize: 10, modifiedAt: 1_780_000_000_000 },
+    };
+    expect(suggestFor(finding)).toEqual([]);
+  });
+
+  it('drift suggestion handles modifiedAt === 0', () => {
+    const finding: Finding = {
+      kind: 'sanitization_drift',
+      uid: 'u1',
+      itemKind: 'layouts',
+      id: 'l1',
+      severity: 'warn',
+      detail: '',
+      data: { blobSize: 1000, modifiedAt: 0 },
+    };
+    // Should not silently treat 0 as missing — should compute against expected envelope.
+    expect(suggestFor(finding)).not.toEqual([]);
+  });
+
+  it('orphan blob suggestion preflight-checks the index before deleting the blob', () => {
     const finding: Finding = {
       kind: 'orphan_blob',
       uid: 'u1',
@@ -31,12 +61,15 @@ describe('suggestFor', () => {
       severity: 'error',
       detail: '',
     };
-    const lines = suggestFor(finding);
-    expect(lines.some((l) => l.startsWith('vercel blob rm'))).toBe(true);
-    expect(lines.join('\n')).toContain('users/u1/designs/d1.json');
+    const out = suggestFor(finding).join('\n');
+    expect(out).toContain('vercel blob rm');
+    expect(out).toContain('users/u1/designs/d1.json');
+    // Preflight guard against an item that got re-uploaded between audit and remediation.
+    expect(out).toContain('redis-cli');
+    expect(out).toContain('HGET');
   });
 
-  it('missing blob suggestion emits HDEL', () => {
+  it('missing blob suggestion emits HDEL guarded on audited modifiedAt', () => {
     const finding: Finding = {
       kind: 'missing_blob',
       uid: 'u1',
@@ -44,8 +77,11 @@ describe('suggestFor', () => {
       id: 'l1',
       severity: 'error',
       detail: '',
+      data: { modifiedAt: 1_780_000_000_000, sizeBytes: 100 },
     };
-    expect(suggestFor(finding).join('\n')).toContain('HDEL');
+    const out = suggestFor(finding).join('\n');
+    expect(out).toContain('HDEL');
+    expect(out).toContain('stale-modifiedAt');
   });
 
   it("escapes single quotes via the '\\'' bash idiom", () => {
@@ -67,6 +103,7 @@ describe('suggestFor', () => {
 describe('categoryOf', () => {
   it.each([
     ['sanitization_drift', 'drift'],
+    ['index_size_undercount', 'drift'],
     ['orphan_blob', 'orphans'],
     ['tombstone_with_blob', 'orphans'],
     ['missing_blob', 'orphans'],

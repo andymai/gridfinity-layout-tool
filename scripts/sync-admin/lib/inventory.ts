@@ -8,10 +8,12 @@ import type { BlobRow, Inventory, IndexRow, Kind } from './types.js';
 interface BuildOpts {
   user?: string;
   kind?: Kind;
+  /** Skip the Vercel Blob listing — only Redis index data is needed. */
+  skipBlobs?: boolean;
 }
 
 export async function buildInventory(redis: Redis, opts: BuildOpts = {}): Promise<Inventory> {
-  const blobs = await listBlobs(opts);
+  const blobs = opts.skipBlobs ? [] : await listBlobs(opts);
   const blobMap = new Map<string, BlobRow>();
   const blobUsers = new Set<string>();
   for (const b of blobs) {
@@ -80,20 +82,21 @@ async function readIndexes(redis: Redis, opts: BuildOpts): Promise<IndexRow[]> {
 }
 
 export function parseRow(uid: string, kind: Kind, id: string, encoded: string): IndexRow {
+  const malformed: IndexRow = {
+    uid,
+    kind,
+    id,
+    entry: { modifiedAt: NaN, sizeBytes: NaN },
+    tombstone: false,
+  };
   try {
     const entry = JSON.parse(encoded) as IndexEntry;
-    if (typeof entry.modifiedAt !== 'number' || typeof entry.sizeBytes !== 'number') {
-      return { uid, kind, id, entry: { modifiedAt: NaN, sizeBytes: NaN }, tombstone: false };
-    }
+    if (!Number.isFinite(entry.modifiedAt) || !Number.isFinite(entry.sizeBytes)) return malformed;
+    // Match userIndex.parseEntry: deletedAt is either absent or a finite number.
+    if (entry.deletedAt !== undefined && !Number.isFinite(entry.deletedAt)) return malformed;
     return { uid, kind, id, entry, tombstone: entry.deletedAt !== undefined };
   } catch {
-    return {
-      uid,
-      kind,
-      id,
-      entry: { modifiedAt: NaN, sizeBytes: NaN },
-      tombstone: false,
-    };
+    return malformed;
   }
 }
 

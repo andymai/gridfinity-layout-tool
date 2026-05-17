@@ -29,6 +29,16 @@ describe('parseRow', () => {
     expect(isMalformedRow(r)).toBe(true);
   });
 
+  it('flags non-finite modifiedAt as malformed', () => {
+    const r = parseRow('u', 'layouts', 'id', '{"modifiedAt":1e9999,"sizeBytes":10}');
+    expect(isMalformedRow(r)).toBe(true);
+  });
+
+  it('flags non-finite deletedAt as malformed', () => {
+    const r = parseRow('u', 'layouts', 'id', '{"modifiedAt":1,"sizeBytes":0,"deletedAt":1e9999}');
+    expect(isMalformedRow(r)).toBe(true);
+  });
+
   it('flags unparseable JSON as malformed', () => {
     const r = parseRow('u', 'layouts', 'id', 'not-json');
     expect(isMalformedRow(r)).toBe(true);

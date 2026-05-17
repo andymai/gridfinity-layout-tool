@@ -4,11 +4,20 @@ import { colors } from '../lib/output.js';
 import { connect } from '../lib/redis.js';
 import {
   categoryOf,
+  SCRIPT_PREAMBLE,
   SUGGEST_CATEGORIES,
   suggestFor,
   type SuggestCategory,
 } from '../lib/suggest.js';
 import type { Args } from '../lib/args.js';
+
+// stale-tombstones + malformed live entirely in Redis, no Blob calls needed.
+const NEEDS_BLOBS: Record<SuggestCategory, boolean> = {
+  drift: true,
+  orphans: true,
+  'stale-tombstones': false,
+  malformed: false,
+};
 
 export async function suggest(args: Args): Promise<number> {
   const cat = args.positional[0] as SuggestCategory | undefined;
@@ -19,9 +28,15 @@ export async function suggest(args: Args): Promise<number> {
 
   const redis = connect();
   try {
-    const inv = await buildInventory(redis, { user: args.user, kind: args.kind });
+    const inv = await buildInventory(redis, {
+      user: args.user,
+      kind: args.kind,
+      skipBlobs: !NEEDS_BLOBS[cat],
+    });
     const findings = await analyze(inv, {
-      fetchPayloads: !args.noPayloadFetch,
+      // Payload fetching only contributes envelope/payload findings, none of
+      // which feed into `suggest`'s categories. Skip the fetch pass entirely.
+      fetchPayloads: false,
       staleTombstoneMs: args.olderThanMs,
     });
     const matched = findings.filter((f) => categoryOf(f) === cat);
@@ -41,6 +56,7 @@ export async function suggest(args: Args): Promise<number> {
       console.log(colors.cyan(`✓ no findings in category "${cat}"`));
       return 0;
     }
+    for (const line of SCRIPT_PREAMBLE) console.log(line);
     console.log(`# sync-admin suggest ${cat} — ${matched.length} finding(s)`);
     console.log(`# Review each command before running.`);
     console.log('');

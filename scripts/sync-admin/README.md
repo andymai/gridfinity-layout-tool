@@ -1,9 +1,8 @@
 # sync-admin
 
 Operator toolkit for the cloud-sync subsystem. Reads from production Vercel Blob
-
-- Redis (via `.env.production.local`) and reports on integrity. **Read-only**:
-  mutations are emitted as shell commands the operator pastes after review.
+and Redis (via `.env.production.local`) and reports on integrity. **Read-only**:
+mutations are emitted as shell commands the operator pastes after review.
 
 ## Setup
 
@@ -87,15 +86,15 @@ bash drift-fixes.sh
 
 ## Shared flags
 
-| Flag                      | Applies to                 | Effect                                             |
-| ------------------------- | -------------------------- | -------------------------------------------------- |
-| `--json`                  | all                        | Machine-readable output (use with `pnpm --silent`) |
-| `--strict`                | audit, user, tombstones    | Exit 1 if any error/warning finding present        |
-| `--kind=layouts\|designs` | most                       | Restrict to one item kind                          |
-| `--user=<uid>`            | audit, suggest, tombstones | Restrict to one user                               |
-| `--no-payload-fetch`      | audit, user, suggest       | Skip per-blob HTTP fetch (skips envelope checks)   |
-| `--suggest`               | audit                      | Inline fix commands beneath each finding           |
-| `--older-than=Nd`         | tombstones, suggest        | Stale-tombstone age threshold (default 90d)        |
+| Flag                      | Applies to                 | Effect                                                                               |
+| ------------------------- | -------------------------- | ------------------------------------------------------------------------------------ |
+| `--json`                  | all                        | Machine-readable output (use with `pnpm --silent`)                                   |
+| `--strict`                | audit, user, tombstones    | Exit 1 if any finding present (errors, warnings, _and_ info — e.g. stale tombstones) |
+| `--kind=layouts\|designs` | most                       | Restrict to one item kind                                                            |
+| `--user=<uid>`            | audit, suggest, tombstones | Restrict to one user                                                                 |
+| `--no-payload-fetch`      | audit, user, suggest       | Skip per-blob HTTP fetch (skips envelope checks)                                     |
+| `--suggest`               | audit                      | Inline fix commands beneath each finding                                             |
+| `--older-than=Nd`         | tombstones, suggest        | Stale-tombstone age threshold (default 90d)                                          |
 
 ## Finding kinds
 

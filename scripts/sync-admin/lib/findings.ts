@@ -9,7 +9,11 @@ import type { Finding, Inventory } from './types.js';
 interface AnalyzeOpts {
   fetchPayloads: boolean;
   staleTombstoneMs?: number;
+  /** Per-fetch deadline in ms. Default 15s. */
+  fetchTimeoutMs?: number;
 }
+
+const DEFAULT_FETCH_TIMEOUT_MS = 15_000;
 
 export async function analyze(
   inv: Inventory,
@@ -75,7 +79,8 @@ export async function analyze(
 
     const expected = expectedEnvelopeDelta(row.kind, row.entry.modifiedAt);
     const delta = blob.size - row.entry.sizeBytes;
-    if (delta !== expected) {
+    if (delta < expected) {
+      // index > what's stored: user is over-charged. Fix is safe (lowers sizeBytes).
       findings.push({
         kind: 'sanitization_drift',
         uid: row.uid,
@@ -83,6 +88,24 @@ export async function analyze(
         id: row.id,
         severity: 'warn',
         detail: `index sizeBytes over-counts by ${expected - delta}B (quota leak)`,
+        data: {
+          indexSize: row.entry.sizeBytes,
+          blobSize: blob.size,
+          drift: delta - expected,
+          modifiedAt: row.entry.modifiedAt,
+        },
+      });
+    } else if (delta > expected) {
+      // index < what's stored: index under-counts the blob. Suggests the blob
+      // was rewritten without a matching index update, or some other atomicity
+      // gap. Severity bumped to error since it can hide quota usage.
+      findings.push({
+        kind: 'index_size_undercount',
+        uid: row.uid,
+        itemKind: row.kind,
+        id: row.id,
+        severity: 'error',
+        detail: `index sizeBytes under-counts by ${delta - expected}B`,
         data: {
           indexSize: row.entry.sizeBytes,
           blobSize: blob.size,
@@ -109,12 +132,15 @@ export async function analyze(
   }
 
   if (opts.fetchPayloads) {
+    const timeoutMs = opts.fetchTimeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS;
     const liveBlobs = inv.blobs.filter((b) => {
       const r = inv.indexMap.get(itemKey(b.uid, b.kind, b.id));
-      return r && !r.tombstone;
+      // Skip rows that are tombstoned or malformed — payload-validation
+      // findings would be misleading or use NaN values in the detail line.
+      return r && !r.tombstone && !isMalformedRow(r);
     });
     const payloadFindings = await pMap(liveBlobs, async (blob) => {
-      return validateBlob(blob, inv);
+      return validateBlob(blob, inv, timeoutMs);
     });
     for (const list of payloadFindings) findings.push(...list);
   }
@@ -124,13 +150,14 @@ export async function analyze(
 
 async function validateBlob(
   blob: { uid: string; kind: 'layouts' | 'designs'; id: string; url: string; size: number },
-  inv: Inventory
+  inv: Inventory,
+  timeoutMs: number
 ): Promise<Finding[]> {
   const out: Finding[] = [];
   let body: unknown;
   let fetchedBytes = 0;
   try {
-    const r = await fetch(blob.url);
+    const r = await fetch(blob.url, { signal: AbortSignal.timeout(timeoutMs) });
     if (!r.ok) {
       return [
         {
@@ -147,14 +174,19 @@ async function validateBlob(
     fetchedBytes = Buffer.byteLength(text, 'utf8');
     body = JSON.parse(text);
   } catch (err) {
+    const isTimeout = err instanceof DOMException && err.name === 'TimeoutError';
     return [
       {
-        kind: 'envelope_invalid',
+        kind: isTimeout ? 'fetch_timeout' : 'envelope_invalid',
         uid: blob.uid,
         itemKind: blob.kind,
         id: blob.id,
         severity: 'error',
-        detail: err instanceof Error ? err.message : String(err),
+        detail: isTimeout
+          ? `blob fetch exceeded ${timeoutMs}ms`
+          : err instanceof Error
+            ? err.message
+            : String(err),
       },
     ];
   }

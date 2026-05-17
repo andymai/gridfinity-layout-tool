@@ -37,7 +37,9 @@ export type FindingKind =
   | 'envelope_invalid'
   | 'payload_invalid'
   | 'sanitization_drift'
+  | 'index_size_undercount'
   | 'listing_size_mismatch'
+  | 'fetch_timeout'
   | 'stale_tombstone';
 
 export interface Finding {
@@ -49,5 +51,3 @@ export interface Finding {
   detail: string;
   data?: Record<string, unknown>;
 }
-
-export const PER_USER_QUOTA = { count: 100, bytes: 10 * 1024 * 1024 };

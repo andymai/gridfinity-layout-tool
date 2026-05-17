@@ -42,8 +42,11 @@ export function parseArgs(argv: readonly string[]): Args {
       const v = arg.slice('--kind='.length);
       if (!KINDS.includes(v as Kind)) throw new Error(`--kind must be one of ${KINDS.join('|')}`);
       a.kind = v as Kind;
-    } else if (arg.startsWith('--user=')) a.user = arg.slice('--user='.length);
-    else if (arg.startsWith('--older-than='))
+    } else if (arg.startsWith('--user=')) {
+      const v = arg.slice('--user='.length);
+      if (!v) throw new Error('--user= cannot be empty — omit the flag to scan all users');
+      a.user = v;
+    } else if (arg.startsWith('--older-than='))
       a.olderThanMs = parseOlderThan(arg.slice('--older-than='.length));
     else if (arg.startsWith('--')) throw new Error(`Unknown flag: ${arg}`);
     else if (!a.command) a.command = arg;

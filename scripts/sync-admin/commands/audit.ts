@@ -26,8 +26,7 @@ export async function audit(args: Args): Promise<number> {
       printHuman(inv, findings, args.suggest);
     }
 
-    const hasErrors = findings.some((f) => f.severity === 'error' || f.severity === 'warn');
-    return args.strict && hasErrors ? 1 : 0;
+    return args.strict && findings.length > 0 ? 1 : 0;
   } finally {
     await redis.quit();
   }

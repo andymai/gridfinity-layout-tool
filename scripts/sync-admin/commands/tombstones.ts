@@ -16,7 +16,12 @@ interface TombRow {
 export async function tombstones(args: Args): Promise<number> {
   const redis = connect();
   try {
-    const inv = await buildInventory(redis, { user: args.user, kind: args.kind });
+    // Tombstones live entirely in Redis; skip the Blob listing.
+    const inv = await buildInventory(redis, {
+      user: args.user,
+      kind: args.kind,
+      skipBlobs: true,
+    });
     const staleAge = args.olderThanMs ?? TOMBSTONE_RETENTION_MS;
     const now = Date.now();
     const rows: TombRow[] = inv.indexRows
