@@ -98,6 +98,20 @@ export default defineConfig([
       'eqeqeq': ['error', 'always'],
       'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
 
+      // Force every lazy() through lazyWithRetry so chunk-load failures on
+      // stale clients retry + reload instead of leaking to PostHog as
+      // unhandled rejections. See PR #1703.
+      'no-restricted-syntax': ['error',
+        {
+          selector: 'CallExpression[callee.type="Identifier"][callee.name="lazy"]',
+          message: 'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy() — raw lazy() leaks chunk-load failures to PostHog as unhandled rejections.',
+        },
+        {
+          selector: 'CallExpression[callee.type="MemberExpression"][callee.property.name="lazy"][callee.object.name="React"]',
+          message: 'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy() — raw lazy() leaks chunk-load failures to PostHog as unhandled rejections.',
+        },
+      ],
+
       // i18n: Enforce localization of user-facing strings
       'i18next/no-literal-string': ['error', {
         mode: 'jsx-only',
@@ -254,6 +268,13 @@ export default defineConfig([
     rules: {
       'i18next/no-literal-string': 'off',
       'max-lines': 'off',
+    },
+  },
+  // lazyWithRetry wraps React.lazy() — the one legitimate caller.
+  {
+    files: ['src/shared/utils/lazyWithRetry.ts'],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
   },
   // Justified large files: cohesive modules where splitting would hurt readability.
