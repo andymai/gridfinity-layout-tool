@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.scripts.tsbuildinfo",
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "module": "ESNext",
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["scripts/sync-admin/**/*.ts"]
+}
