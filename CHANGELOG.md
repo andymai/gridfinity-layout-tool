@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.88.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.88.2...gridfinity-layout-tool-v4.88.3) (2026-05-17)
+
+
+### Bug Fixes
+
+* **lazy:** wrap design-linking dynamic imports with lazyWithRetry ([#1703](https://github.com/andymai/gridfinity-layout-tool/issues/1703)) ([6a46ffb](https://github.com/andymai/gridfinity-layout-tool/commit/6a46ffba8f0bdfb0bce5430f41e0dfd310e21d0a))
+
 ## [4.88.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.88.1...gridfinity-layout-tool-v4.88.2) (2026-05-16)
 
 
