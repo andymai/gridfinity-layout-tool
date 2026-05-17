@@ -54,6 +54,15 @@ type IndexEntry = {
 //           bumps the cache key for /api/sync/manifest's 304 path.
 ```
 
+`sizeBytes` is measured against the **sanitized** payload — the same bytes the
+blob stores — so quota accounting matches reality. Each kind also has a
+**pre-validation cap** that bounds CPU on huge inputs: layouts use
+`SHARE_CONSTRAINTS.MAX_SIZE_BYTES` (500 KB, measured on `{ layout }`); designs
+use `CONSTRAINTS.MAX_PAYLOAD_BYTES` (100 KB, measured on
+`{ name, type, version, params }`). The pre-validation count is intentionally a
+subset of the request body, not the full HTTP payload — its only job is to gate
+the validator's workload.
+
 ## LWW + tombstone semantics (PUT)
 
 Every write supplies a `modifiedAt` (ms epoch) representing the client's view of when the change happened. The server compares against the existing entry:

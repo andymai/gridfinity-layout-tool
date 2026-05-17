@@ -177,6 +177,44 @@ describe('PUT', () => {
     expect((body.envelope.design.params as { width: number }).width).toBe(2);
   });
 
+  it('records sizeBytes for the post-sanitization payload, not the raw request', async () => {
+    const { default: handler } = await import('./[id]');
+    // Extra params field the share validator strips. Without the
+    // post-validation size fix, the index would record the request-size
+    // while the blob holds the smaller sanitized params, drifting apart.
+    const dirty = { ...VALID_DESIGN, garbage: 'x'.repeat(200) };
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: { design: { name: 'Test', params: dirty }, modifiedAt: 1000 },
+      }),
+      makeRes() as unknown as VercelResponse
+    );
+
+    const storedEnvelope = [...blobStore.values()][0] as {
+      design: { name: string; params: unknown };
+    };
+    const indexHash = [...redisHashes.values()].find((h) => h.size > 0);
+    const encoded = [...(indexHash?.values() ?? [])][0];
+    const entry = JSON.parse(encoded ?? '{}') as { sizeBytes: number };
+
+    const expected = Buffer.byteLength(
+      JSON.stringify({
+        name: storedEnvelope.design.name,
+        type: 'designer',
+        version: 1,
+        params: storedEnvelope.design.params,
+      }),
+      'utf8'
+    );
+    expect(entry.sizeBytes).toBe(expected);
+    const requestBytes = Buffer.byteLength(
+      JSON.stringify({ name: 'Test', type: 'designer', version: 1, params: dirty }),
+      'utf8'
+    );
+    expect(entry.sizeBytes).toBeLessThan(requestBytes);
+  });
+
   it('accepts the legacy bare-BinParams shape and stores it with an empty name', async () => {
     const { default: handler } = await import('./[id]');
     const res = makeRes();

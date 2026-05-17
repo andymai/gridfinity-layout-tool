@@ -125,13 +125,19 @@ async function handlePut(
     return;
   }
 
-  const serialized = JSON.stringify({ layout });
-  const sizeBytes = Buffer.byteLength(serialized, 'utf8');
-  const validation = validateShareLayout(layout, sizeBytes);
+  // Two byte counts intentionally: `preValidationBytes` is what the
+  // validator's 500 KB size cap sees — purely a CPU guard against huge
+  // inputs. `sizeBytes` is what we actually store after sanitization, and
+  // it's what the quota check and index entry track. Without the split,
+  // users get charged for bytes the validator stripped and the index
+  // drifts from what the blob holds.
+  const preValidationBytes = Buffer.byteLength(JSON.stringify({ layout }), 'utf8');
+  const validation = validateShareLayout(layout, preValidationBytes);
   if (isValidationError(validation)) {
     res.status(400).json({ error: validation.error.message, code: validation.error.code });
     return;
   }
+  const sizeBytes = Buffer.byteLength(JSON.stringify({ layout: validation.layout }), 'utf8');
 
   const existing = await getEntry(redis, userId, 'layouts', id);
 

@@ -208,6 +208,30 @@ describe('PUT — LWW + tombstone', () => {
     expect(res._status).toBe(200);
   });
 
+  it('records sizeBytes for the post-sanitization payload, not the raw request', async () => {
+    const { default: handler } = await import('./[id]');
+    // Extra top-level fields the share validator drops. Without the
+    // post-validation size fix, the index would record the request-size
+    // (including these bytes) while the blob would store the smaller
+    // sanitized layout — drifting the two apart.
+    const dirty = { ...VALID_LAYOUT, garbage: 'x'.repeat(200), alsoGarbage: true };
+    await handler(
+      makeReq({ method: 'PUT', body: { layout: dirty, modifiedAt: 1000 } }),
+      makeRes() as unknown as VercelResponse
+    );
+
+    const storedEnvelope = [...blobStore.values()][0] as { layout: unknown };
+    const indexHash = [...redisHashes.values()].find((h) => h.size > 0);
+    const encoded = [...(indexHash?.values() ?? [])][0];
+    const entry = JSON.parse(encoded ?? '{}') as { sizeBytes: number };
+
+    const expected = Buffer.byteLength(JSON.stringify({ layout: storedEnvelope.layout }), 'utf8');
+    expect(entry.sizeBytes).toBe(expected);
+    // Sanity: the dirty payload was strictly larger than what we stored.
+    const requestBytes = Buffer.byteLength(JSON.stringify({ layout: dirty }), 'utf8');
+    expect(entry.sizeBytes).toBeLessThan(requestBytes);
+  });
+
   it('rejects with 409 when the existing entry is newer (stale write)', async () => {
     const { default: handler } = await import('./[id]');
     await handler(
