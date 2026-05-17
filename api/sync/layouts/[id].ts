@@ -125,12 +125,14 @@ async function handlePut(
     return;
   }
 
-  // The size cap guards against work on huge inputs, so check it against
-  // the raw request. Quota math and the index entry below use the
-  // post-sanitization size — otherwise the user is charged for bytes the
-  // validator stripped, and the index drifts from what the blob stores.
-  const requestBytes = Buffer.byteLength(JSON.stringify({ layout }), 'utf8');
-  const validation = validateShareLayout(layout, requestBytes);
+  // Two byte counts intentionally: `preValidationBytes` is what the
+  // validator's 500 KB size cap sees — purely a CPU guard against huge
+  // inputs. `sizeBytes` is what we actually store after sanitization, and
+  // it's what the quota check and index entry track. Without the split,
+  // users get charged for bytes the validator stripped and the index
+  // drifts from what the blob holds.
+  const preValidationBytes = Buffer.byteLength(JSON.stringify({ layout }), 'utf8');
+  const validation = validateShareLayout(layout, preValidationBytes);
   if (isValidationError(validation)) {
     res.status(400).json({ error: validation.error.message, code: validation.error.code });
     return;

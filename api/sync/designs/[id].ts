@@ -160,17 +160,22 @@ async function handlePut(
   // posts have no name; they persist as '' and the adapter falls back.
   const name = sanitizeString(unwrapped.name ?? '', MAX_NAME_LENGTH);
 
-  // The size cap guards against work on huge inputs, so check it against
-  // the raw request. Quota math and the index entry below use the
-  // post-sanitization size — otherwise the user is charged for bytes the
-  // validator stripped, and the index drifts from what the blob stores.
+  // Two byte counts intentionally: `preValidationBytes` is what the
+  // validator's 100 KB size cap sees — purely a CPU guard against huge
+  // params. `sizeBytes` is what we actually store after sanitization, and
+  // it's what the quota check and index entry track. Without the split,
+  // users get charged for bytes the validator stripped and the index
+  // drifts from what the blob holds.
   const validationPayload = {
     type: 'designer' as const,
     version: 1 as const,
     params: unwrapped.params,
   };
-  const requestBytes = Buffer.byteLength(JSON.stringify({ name, ...validationPayload }), 'utf8');
-  const validation = validateDesignerShare(validationPayload, requestBytes);
+  const preValidationBytes = Buffer.byteLength(
+    JSON.stringify({ name, ...validationPayload }),
+    'utf8'
+  );
+  const validation = validateDesignerShare(validationPayload, preValidationBytes);
   if (!validation.valid) {
     res.status(400).json({ error: validation.error.message, code: ErrorCode.VALIDATION_ERROR });
     return;
