@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports -- this util is the one legitimate caller of React.lazy.
 import { lazy, type ComponentType } from 'react';
 
 /**
