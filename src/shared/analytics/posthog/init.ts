@@ -6,6 +6,7 @@
 import type { PostHog } from 'posthog-js';
 import { useSettingsStore } from '@/core/store/settings';
 import { getStableUserId } from './identity';
+import { filterExceptionForPosthog, shouldIgnoreError } from './errorFilters';
 
 // INITIALIZATION (LAZY LOADED)
 
@@ -55,6 +56,12 @@ export function initAnalytics(): void {
 
         // Performance monitoring - web vitals
         capture_performance: true,
+
+        // Drop extension/platform noise before it ships. Native capture_exceptions
+        // fires independently of our window.onerror handler, so this is the only
+        // place we can filter that path. CaptureResult is a structural superset
+        // of the shape filterExceptionForPosthog reads.
+        before_send: (event) => filterExceptionForPosthog(event) as typeof event,
       });
       posthogInstance = posthog;
 
@@ -92,6 +99,7 @@ export function initAnalytics(): void {
       // A re-entrancy guard prevents infinite loops if captureException itself throws.
       window.addEventListener('error', (event: ErrorEvent) => {
         if (isCapturingGlobalError) return;
+        if (shouldIgnoreError(event.message, event.filename)) return;
         isCapturingGlobalError = true;
         try {
           if (event.error instanceof Error) {
@@ -109,6 +117,9 @@ export function initAnalytics(): void {
 
       window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
         if (isCapturingGlobalError) return;
+        const reasonMsg =
+          event.reason instanceof Error ? event.reason.message : String(event.reason);
+        if (shouldIgnoreError(reasonMsg)) return;
         isCapturingGlobalError = true;
         try {
           const error =
