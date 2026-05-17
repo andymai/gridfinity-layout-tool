@@ -82,4 +82,19 @@ describe('filterExceptionForPosthog', () => {
     };
     expect(filterExceptionForPosthog(e)).toBe(e);
   });
+
+  it('keeps $exception when only a non-primary cause matches a filter', () => {
+    // Real app error wraps an extension error as Error.cause — keep the event,
+    // since the user-visible failure is the primary (app) error.
+    const e = {
+      event: '$exception',
+      properties: {
+        $exception_list: [
+          { value: 'TypeError: appCode is undefined' },
+          { value: 'No Listener: tabs:outgoing.message.ready' },
+        ],
+      },
+    };
+    expect(filterExceptionForPosthog(e)).toBe(e);
+  });
 });

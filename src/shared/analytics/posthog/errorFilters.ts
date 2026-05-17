@@ -50,8 +50,13 @@ interface ExceptionEventLike {
 }
 
 /**
- * PostHog `before_send` hook. Drops `$exception` events that match the
- * extension/noise filters; passes everything else through unchanged.
+ * PostHog `before_send` hook. Drops `$exception` events whose **primary**
+ * exception matches the extension/noise filters; passes everything else
+ * through unchanged.
+ *
+ * Only the first entry in `$exception_list` / `$exception_values` is
+ * checked. Subsequent entries are `Error.cause` chains — if a real app
+ * error wrapped extension noise as a cause, we want to keep the event.
  *
  * Typed loosely (input ExceptionEventLike | null, returning same shape) so
  * posthog-js's BeforeSendFn signature accepts it — it passes CaptureResult,
@@ -62,11 +67,8 @@ export function filterExceptionForPosthog(
 ): ExceptionEventLike | null {
   if (!event) return event;
   if (event.event !== '$exception') return event;
-  const list = event.properties?.$exception_list ?? [];
-  const values = event.properties?.$exception_values ?? [];
-  const messages = [...list.map((e) => e.value), ...values];
-  for (const msg of messages) {
-    if (shouldIgnoreError(msg)) return null;
-  }
+  const primary =
+    event.properties?.$exception_list?.[0]?.value ?? event.properties?.$exception_values?.[0];
+  if (shouldIgnoreError(primary)) return null;
   return event;
 }
