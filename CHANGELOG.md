@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.88.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.88.3...gridfinity-layout-tool-v4.88.4) (2026-05-17)
+
+
+### Bug Fixes
+
+* **analytics:** filter browser-extension noise from PostHog capture ([#1706](https://github.com/andymai/gridfinity-layout-tool/issues/1706)) ([692eff6](https://github.com/andymai/gridfinity-layout-tool/commit/692eff6a53e2ba81fe267b5129fa502f927cfe66))
+
 ## [4.88.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.88.2...gridfinity-layout-tool-v4.88.3) (2026-05-17)
 
 
