@@ -855,6 +855,7 @@
   "help.mouse.shiftClick": "Shift + Klik",
   "help.searchPlaceholder": "Sneltoetsen en functies zoeken...",
   "help.goTo": "Ga naar",
+  "help.openCommandPaletteWithQuery": "In plaats daarvan alle commando's zoeken",
   "help.kind.shortcut": "Sneltoets",
   "help.kind.feature": "Functie",
   "help.kind.tip": "Tip",

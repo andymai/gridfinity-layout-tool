@@ -625,6 +625,7 @@
   "help.title": "Kortkommandon",
   "help.searchPlaceholder": "Sök kortkommandon och funktioner...",
   "help.goTo": "Gå till",
+  "help.openCommandPaletteWithQuery": "Sök bland alla kommandon istället",
   "help.kind.shortcut": "Kortkommando",
   "help.kind.feature": "Funktion",
   "help.kind.tip": "Tips",

@@ -21,10 +21,19 @@ import { CategoryIcon, CommandItem } from './commandPaletteParts';
 interface CommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /**
+   * Optional initial query to seed the search input when the palette opens.
+   * Used by the Help modal's empty-state fall-through so users land here with
+   * their query already typed.
+   */
+  initialQuery?: string;
 }
 
-export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
+export function CommandPalette({ open, onOpenChange, initialQuery = '' }: CommandPaletteProps) {
   const t = useTranslation();
+  // App.tsx unmounts this component when closed (`{commandPaletteOpen && <CommandPalette/>}`),
+  // so the initial state runs fresh on every open — no need to re-seed via effect.
+  const [searchValue, setSearchValue] = useState(initialQuery);
 
   // Frecency tracking
   const recordUsage = useRecentCommandsStore((s) => s.recordUsage);
@@ -148,6 +157,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               ))}
             </svg>
             <Command.Input
+              value={searchValue}
+              onValueChange={setSearchValue}
               placeholder={t('commandPalette.placeholder')}
               className="flex-1 py-3.5 text-[15px] bg-transparent text-content placeholder:text-content-tertiary outline-none"
               // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX

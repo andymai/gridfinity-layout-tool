@@ -685,6 +685,7 @@
   "help.searchPlaceholder": "Search shortcuts and features...",
   "help.commandPaletteTip": "Quick tip: Use the command palette for fast access to all actions",
   "help.goTo": "Go to",
+  "help.openCommandPaletteWithQuery": "Search all commands instead",
   "help.kind.shortcut": "Shortcut",
   "help.kind.feature": "Feature",
   "help.kind.tip": "Tip",

@@ -23,6 +23,11 @@ import {
 import { getAllHelpEntries } from './helpEntryAggregator';
 import { searchHelpEntries } from './helpSearch';
 import { HelpSearchResultRow } from './HelpSearchResultRow';
+import {
+  trackHelpSearchEmpty,
+  trackHelpSearchJump,
+  trackHelpCommandPaletteFallthrough,
+} from '@/shared/analytics/posthog/events';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -63,6 +68,16 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
     if (!isSearching) return [];
     return searchHelpEntries(allEntries, trimmedQuery, t);
   }, [allEntries, trimmedQuery, isSearching, t]);
+
+  // Telemetry: fire once per zero-result query so we can see which terms users
+  // type that the catalog doesn't cover. Debounced via the trimmedQuery key —
+  // each new query that hits zero results is captured exactly once.
+  useEffect(() => {
+    if (!isOpen) return;
+    if (isSearching && rankedResults.length === 0) {
+      trackHelpSearchEmpty(trimmedQuery);
+    }
+  }, [isOpen, isSearching, rankedResults.length, trimmedQuery]);
 
   if (!isOpen) return null;
 
@@ -264,18 +279,34 @@ interface SearchResultsListProps {
 
 function SearchResultsList({ results, modifierKey, query, onJump }: SearchResultsListProps) {
   const t = useTranslation();
+  const openCommandPalette = () => {
+    trackHelpCommandPaletteFallthrough(query);
+    window.dispatchEvent(new CustomEvent('open-command-palette', { detail: { query } }));
+    onJump();
+  };
+
   if (results.length === 0) {
     return (
-      <div className="text-center py-8 text-content-tertiary text-sm">
-        {t('help.noResultsFor', { query })}
+      <div className="text-center py-10 px-4 space-y-4">
+        <p className="text-content-tertiary text-sm">{t('help.noResultsFor', { query })}</p>
+        <button type="button" onClick={openCommandPalette} className="btn btn-secondary btn-sm">
+          {t('help.openCommandPaletteWithQuery')}
+        </button>
       </div>
     );
   }
   return (
     <ul aria-label={t('help.searchResultsAriaLabel')} className="space-y-1">
-      {results.map(({ entry }) => (
+      {results.map(({ entry }, index) => (
         <li key={entry.id}>
-          <HelpSearchResultRow entry={entry} modifierKey={modifierKey} onJump={onJump} />
+          <HelpSearchResultRow
+            entry={entry}
+            modifierKey={modifierKey}
+            onJump={() => {
+              trackHelpSearchJump(entry.id, query, index);
+              onJump();
+            }}
+          />
         </li>
       ))}
     </ul>
