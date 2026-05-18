@@ -26,7 +26,7 @@ import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { SliderInput } from '@/shared/components/SliderInput';
 import { UserDock } from '@/shared/components/UserDock';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { HelpTargetMarker } from '@/shell/Modals/HelpModal/HelpTargetMarker';
+import { HelpTargetMarker } from '@/shared/help/HelpTargetMarker';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { EditableDimensions } from './EditableDimensions';

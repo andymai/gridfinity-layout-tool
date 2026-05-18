@@ -100,6 +100,7 @@ export function CollapsibleSection({
         role="region"
         aria-label={title}
         aria-hidden={!expanded}
+        inert={!expanded ? true : undefined}
         className={`overflow-hidden ${hasToggled ? 'transition-all duration-200' : ''} ${
           expanded ? 'opacity-100 max-h-[2000px] mt-3' : 'opacity-0 max-h-0'
         }`}
