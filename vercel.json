@@ -264,110 +264,14 @@
       "source": "/ph/:path(.*)",
       "destination": "https://us.i.posthog.com/:path"
     },
-    { "source": "/what-is-gridfinity", "destination": "/what-is-gridfinity/index.html" },
-    { "source": "/guide", "destination": "/guide/index.html" },
-    { "source": "/privacy", "destination": "/privacy/index.html" },
-    { "source": "/terms", "destination": "/terms/index.html" },
     {
-      "source": "/gridfinity-bin-generator",
-      "destination": "/gridfinity-bin-generator/index.html"
+      "source": "/:slug(what-is-gridfinity|guide|privacy|terms|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-sizes)",
+      "destination": "/:slug/index.html"
     },
     {
-      "source": "/gridfinity-baseplate-generator",
-      "destination": "/gridfinity-baseplate-generator/index.html"
+      "source": "/:locale(de|fr|es|pt-BR|nl|sv|nb|uk)/:slug(what-is-gridfinity|guide|gridfinity-bin-generator|gridfinity-baseplate-generator|gridfinity-sizes)",
+      "destination": "/:locale/:slug/index.html"
     },
-    { "source": "/gridfinity-sizes", "destination": "/gridfinity-sizes/index.html" },
-    { "source": "/de/what-is-gridfinity", "destination": "/de/what-is-gridfinity/index.html" },
-    { "source": "/de/guide", "destination": "/de/guide/index.html" },
-    { "source": "/fr/what-is-gridfinity", "destination": "/fr/what-is-gridfinity/index.html" },
-    { "source": "/fr/guide", "destination": "/fr/guide/index.html" },
-    { "source": "/es/what-is-gridfinity", "destination": "/es/what-is-gridfinity/index.html" },
-    { "source": "/es/guide", "destination": "/es/guide/index.html" },
-    {
-      "source": "/pt-BR/what-is-gridfinity",
-      "destination": "/pt-BR/what-is-gridfinity/index.html"
-    },
-    { "source": "/pt-BR/guide", "destination": "/pt-BR/guide/index.html" },
-    {
-      "source": "/de/gridfinity-bin-generator",
-      "destination": "/de/gridfinity-bin-generator/index.html"
-    },
-    {
-      "source": "/de/gridfinity-baseplate-generator",
-      "destination": "/de/gridfinity-baseplate-generator/index.html"
-    },
-    { "source": "/de/gridfinity-sizes", "destination": "/de/gridfinity-sizes/index.html" },
-    {
-      "source": "/fr/gridfinity-bin-generator",
-      "destination": "/fr/gridfinity-bin-generator/index.html"
-    },
-    {
-      "source": "/fr/gridfinity-baseplate-generator",
-      "destination": "/fr/gridfinity-baseplate-generator/index.html"
-    },
-    { "source": "/fr/gridfinity-sizes", "destination": "/fr/gridfinity-sizes/index.html" },
-    {
-      "source": "/es/gridfinity-bin-generator",
-      "destination": "/es/gridfinity-bin-generator/index.html"
-    },
-    {
-      "source": "/es/gridfinity-baseplate-generator",
-      "destination": "/es/gridfinity-baseplate-generator/index.html"
-    },
-    { "source": "/es/gridfinity-sizes", "destination": "/es/gridfinity-sizes/index.html" },
-    {
-      "source": "/pt-BR/gridfinity-bin-generator",
-      "destination": "/pt-BR/gridfinity-bin-generator/index.html"
-    },
-    {
-      "source": "/pt-BR/gridfinity-baseplate-generator",
-      "destination": "/pt-BR/gridfinity-baseplate-generator/index.html"
-    },
-    { "source": "/pt-BR/gridfinity-sizes", "destination": "/pt-BR/gridfinity-sizes/index.html" },
-    { "source": "/nl/what-is-gridfinity", "destination": "/nl/what-is-gridfinity/index.html" },
-    { "source": "/nl/guide", "destination": "/nl/guide/index.html" },
-    {
-      "source": "/nl/gridfinity-bin-generator",
-      "destination": "/nl/gridfinity-bin-generator/index.html"
-    },
-    {
-      "source": "/nl/gridfinity-baseplate-generator",
-      "destination": "/nl/gridfinity-baseplate-generator/index.html"
-    },
-    { "source": "/nl/gridfinity-sizes", "destination": "/nl/gridfinity-sizes/index.html" },
-    { "source": "/sv/what-is-gridfinity", "destination": "/sv/what-is-gridfinity/index.html" },
-    { "source": "/sv/guide", "destination": "/sv/guide/index.html" },
-    {
-      "source": "/sv/gridfinity-bin-generator",
-      "destination": "/sv/gridfinity-bin-generator/index.html"
-    },
-    {
-      "source": "/sv/gridfinity-baseplate-generator",
-      "destination": "/sv/gridfinity-baseplate-generator/index.html"
-    },
-    { "source": "/sv/gridfinity-sizes", "destination": "/sv/gridfinity-sizes/index.html" },
-    { "source": "/nb/what-is-gridfinity", "destination": "/nb/what-is-gridfinity/index.html" },
-    { "source": "/nb/guide", "destination": "/nb/guide/index.html" },
-    {
-      "source": "/nb/gridfinity-bin-generator",
-      "destination": "/nb/gridfinity-bin-generator/index.html"
-    },
-    {
-      "source": "/nb/gridfinity-baseplate-generator",
-      "destination": "/nb/gridfinity-baseplate-generator/index.html"
-    },
-    { "source": "/nb/gridfinity-sizes", "destination": "/nb/gridfinity-sizes/index.html" },
-    { "source": "/uk/what-is-gridfinity", "destination": "/uk/what-is-gridfinity/index.html" },
-    { "source": "/uk/guide", "destination": "/uk/guide/index.html" },
-    {
-      "source": "/uk/gridfinity-bin-generator",
-      "destination": "/uk/gridfinity-bin-generator/index.html"
-    },
-    {
-      "source": "/uk/gridfinity-baseplate-generator",
-      "destination": "/uk/gridfinity-baseplate-generator/index.html"
-    },
-    { "source": "/uk/gridfinity-sizes", "destination": "/uk/gridfinity-sizes/index.html" },
     { "source": "/designer", "destination": "/" },
     { "source": "/baseplate", "destination": "/" },
     { "source": "/s/:id([a-zA-Z0-9]{12})", "destination": "/" },
