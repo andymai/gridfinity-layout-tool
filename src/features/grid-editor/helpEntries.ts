@@ -18,4 +18,40 @@ export const helpEntries: FeatureHelpEntry[] = [
       controlId: 'print-bed-size',
     },
   },
+  {
+    id: 'feature/grid-editor/drawer-size',
+    kind: 'feature',
+    titleKey: 'help.target.drawerSize.title',
+    descriptionKey: 'help.target.drawerSize.description',
+    keywordsKey: 'help.target.drawerSize.keywords',
+    category: 'settings',
+    target: {
+      surface: 'sidebar:grid-size',
+      controlId: 'drawer-size',
+    },
+  },
+  {
+    id: 'feature/grid-editor/grid-unit',
+    kind: 'feature',
+    titleKey: 'help.target.gridUnit.title',
+    descriptionKey: 'help.target.gridUnit.description',
+    keywordsKey: 'help.target.gridUnit.keywords',
+    category: 'settings',
+    target: {
+      surface: 'sidebar:physical-units',
+      controlId: 'grid-unit',
+    },
+  },
+  {
+    id: 'feature/grid-editor/height-unit',
+    kind: 'feature',
+    titleKey: 'help.target.heightUnit.title',
+    descriptionKey: 'help.target.heightUnit.description',
+    keywordsKey: 'help.target.heightUnit.keywords',
+    category: 'settings',
+    target: {
+      surface: 'sidebar:physical-units',
+      controlId: 'height-unit',
+    },
+  },
 ];

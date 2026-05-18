@@ -17,6 +17,15 @@ describe('getAllHelpEntries', () => {
     expect(ids).toContain('feature/shell/half-bin-mode');
   });
 
+  it('includes the expanded sidebar catalog (drawer, grid unit, height unit, layers, categories)', () => {
+    const ids = getAllHelpEntries().map((e) => e.id);
+    expect(ids).toContain('feature/grid-editor/drawer-size');
+    expect(ids).toContain('feature/grid-editor/grid-unit');
+    expect(ids).toContain('feature/grid-editor/height-unit');
+    expect(ids).toContain('feature/layers/panel');
+    expect(ids).toContain('feature/categories/panel');
+  });
+
   it('produces unique ids across all entries', () => {
     const ids = getAllHelpEntries().map((e) => e.id);
     expect(new Set(ids).size).toBe(ids.length);

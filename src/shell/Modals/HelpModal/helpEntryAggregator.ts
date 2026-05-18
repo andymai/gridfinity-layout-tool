@@ -10,10 +10,18 @@
  */
 
 import { helpEntries as gridEditorHelpEntries } from '@/features/grid-editor';
+import { helpEntries as layersHelpEntries } from '@/features/layers';
+import { helpEntries as categoriesHelpEntries } from '@/features/categories';
 import { helpEntries as shellHelpEntries } from './shellHelpEntries';
 import { shortcutCatalogToHelpEntries } from './shellShortcuts';
 import type { HelpEntry } from './helpEntry';
 
 export function getAllHelpEntries(): HelpEntry[] {
-  return [...shortcutCatalogToHelpEntries(), ...shellHelpEntries, ...gridEditorHelpEntries];
+  return [
+    ...shortcutCatalogToHelpEntries(),
+    ...shellHelpEntries,
+    ...gridEditorHelpEntries,
+    ...layersHelpEntries,
+    ...categoriesHelpEntries,
+  ];
 }
