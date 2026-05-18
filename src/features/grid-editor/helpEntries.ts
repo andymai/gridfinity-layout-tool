@@ -1,9 +1,12 @@
 /**
  * Help entries owned by the grid-editor feature. Surfaced in the global
  * Help modal search via `helpEntryAggregator`.
+ *
+ * All entries here target Sidebar surfaces that only exist on the layout-
+ * planner route, so they're scoped to `routes: ['layout']`.
  */
 
-import type { FeatureHelpEntry } from '@/shell/Modals/HelpModal/helpEntry';
+import type { FeatureHelpEntry } from '@/shared/help/helpEntry';
 
 export const helpEntries: FeatureHelpEntry[] = [
   {
@@ -13,6 +16,7 @@ export const helpEntries: FeatureHelpEntry[] = [
     descriptionKey: 'help.target.printBedSize.description',
     keywordsKey: 'help.target.printBedSize.keywords',
     category: 'settings',
+    routes: ['layout'],
     target: {
       surface: 'sidebar:physical-units',
       controlId: 'print-bed-size',
@@ -25,6 +29,7 @@ export const helpEntries: FeatureHelpEntry[] = [
     descriptionKey: 'help.target.drawerSize.description',
     keywordsKey: 'help.target.drawerSize.keywords',
     category: 'settings',
+    routes: ['layout'],
     target: {
       surface: 'sidebar:grid-size',
       controlId: 'drawer-size',
@@ -37,6 +42,7 @@ export const helpEntries: FeatureHelpEntry[] = [
     descriptionKey: 'help.target.gridUnit.description',
     keywordsKey: 'help.target.gridUnit.keywords',
     category: 'settings',
+    routes: ['layout'],
     target: {
       surface: 'sidebar:physical-units',
       controlId: 'grid-unit',
@@ -49,6 +55,7 @@ export const helpEntries: FeatureHelpEntry[] = [
     descriptionKey: 'help.target.heightUnit.description',
     keywordsKey: 'help.target.heightUnit.keywords',
     category: 'settings',
+    routes: ['layout'],
     target: {
       surface: 'sidebar:physical-units',
       controlId: 'height-unit',

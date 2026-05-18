@@ -3,7 +3,7 @@
  * modal search via `helpEntryAggregator`.
  */
 
-import type { FeatureHelpEntry } from '@/shell/Modals/HelpModal/helpEntry';
+import type { FeatureHelpEntry } from '@/shared/help/helpEntry';
 
 export const helpEntries: FeatureHelpEntry[] = [
   {
@@ -13,6 +13,7 @@ export const helpEntries: FeatureHelpEntry[] = [
     descriptionKey: 'help.target.layers.description',
     keywordsKey: 'help.target.layers.keywords',
     category: 'layout',
+    routes: ['layout'],
     target: {
       surface: 'sidebar:layers',
       controlId: 'layers-panel',

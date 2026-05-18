@@ -23,6 +23,7 @@ import {
 import { getAllHelpEntries } from './helpEntryAggregator';
 import { searchHelpEntries } from './helpSearch';
 import { HelpSearchResultRow } from './HelpSearchResultRow';
+import { useHelpRoute } from './useHelpRoute';
 import {
   trackHelpSearchEmpty,
   trackHelpSearchJump,
@@ -60,10 +61,12 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
 
   const trimmedQuery = searchQuery.trim();
   const isSearching = trimmedQuery.length > 0;
+  const currentRoute = useHelpRoute();
 
-  // Unified ranked search across shortcuts + features + tips. Recomputed only
-  // when the query (or locale via `t`) changes — entry catalog is static.
-  const allEntries = useMemo(() => getAllHelpEntries(), []);
+  // Unified ranked search filtered to entries valid in the current mode.
+  // A bin-designer user never sees layout-planner entries, etc — the
+  // destination surfaces aren't mounted on the other route anyway.
+  const allEntries = useMemo(() => getAllHelpEntries(currentRoute), [currentRoute]);
   const rankedResults = useMemo(() => {
     if (!isSearching) return [];
     return searchHelpEntries(allEntries, trimmedQuery, t);
@@ -77,10 +80,10 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
     if (!isOpen) return;
     if (!isSearching || rankedResults.length > 0) return;
     const timer = window.setTimeout(() => {
-      trackHelpSearchEmpty(trimmedQuery);
+      trackHelpSearchEmpty(trimmedQuery, currentRoute);
     }, 600);
     return () => window.clearTimeout(timer);
-  }, [isOpen, isSearching, rankedResults.length, trimmedQuery]);
+  }, [isOpen, isSearching, rankedResults.length, trimmedQuery, currentRoute]);
 
   if (!isOpen) return null;
 
@@ -208,6 +211,7 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                 results={rankedResults}
                 modifierKey={modifierKey}
                 query={trimmedQuery}
+                currentRoute={currentRoute}
                 onJump={onClose}
               />
             ) : activeTab === 'shortcuts' ? (
@@ -277,13 +281,20 @@ interface SearchResultsListProps {
   results: ReturnType<typeof searchHelpEntries>;
   modifierKey: string;
   query: string;
+  currentRoute: string;
   onJump: () => void;
 }
 
-function SearchResultsList({ results, modifierKey, query, onJump }: SearchResultsListProps) {
+function SearchResultsList({
+  results,
+  modifierKey,
+  query,
+  currentRoute,
+  onJump,
+}: SearchResultsListProps) {
   const t = useTranslation();
   const openCommandPalette = () => {
-    trackHelpCommandPaletteFallthrough(query);
+    trackHelpCommandPaletteFallthrough(query, currentRoute);
     window.dispatchEvent(new CustomEvent('open-command-palette', { detail: { query } }));
     onJump();
   };

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import { HelpTargetMarker } from './HelpTargetMarker';
-import { HELP_TARGET_ATTR } from './helpJumpDispatcher';
+import { HELP_TARGET_ATTR } from '@/shared/help/helpJumpDispatcher';
 
 describe('HelpTargetMarker', () => {
   it('renders children inside a div carrying the data-help-target attribute', () => {

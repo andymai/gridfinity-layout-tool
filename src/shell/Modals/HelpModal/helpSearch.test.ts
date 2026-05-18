@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { searchHelpEntries } from './helpSearch';
-import type { HelpEntry } from './helpEntry';
+import type { HelpEntry } from '@/shared/help/helpEntry';
 
 const entries: HelpEntry[] = [
   {

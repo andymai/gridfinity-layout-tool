@@ -9,7 +9,7 @@
  */
 
 import type { ReactNode } from 'react';
-import { HELP_TARGET_ATTR } from './helpJumpDispatcher';
+import { HELP_TARGET_ATTR } from '@/shared/help/helpJumpDispatcher';
 
 interface HelpTargetMarkerProps {
   id: string;

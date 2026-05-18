@@ -5,6 +5,7 @@ import { getAllHelpEntries } from '@/shell/Modals/HelpModal/helpEntryAggregator'
 import { searchHelpEntries } from '@/shell/Modals/HelpModal/helpSearch';
 import { HelpSearchResultRow } from '@/shell/Modals/HelpModal/HelpSearchResultRow';
 import { getModifierKey } from '@/shell/Modals/HelpModal/helpModalStyles';
+import { useHelpRoute } from '@/shell/Modals/HelpModal/useHelpRoute';
 
 // Style constants to avoid recreating objects on each render
 const STYLES = {
@@ -68,7 +69,8 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
     onClose();
   }, [onClose]);
 
-  const allEntries = useMemo(() => getAllHelpEntries(), []);
+  const currentRoute = useHelpRoute();
+  const allEntries = useMemo(() => getAllHelpEntries(currentRoute), [currentRoute]);
   const rankedResults = useMemo(
     () => (isSearching ? searchHelpEntries(allEntries, trimmedQuery, t) : []),
     [allEntries, trimmedQuery, isSearching, t]

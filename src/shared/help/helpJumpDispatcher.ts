@@ -44,23 +44,39 @@ function findFocusTarget(el: HTMLElement): HTMLElement {
   return el;
 }
 
+/**
+ * A target is "ready to highlight" only when it's both in the DOM AND not
+ * inside an `inert` ancestor. StickyGroupHeader (and other collapsibles)
+ * marks collapsed regions with `inert` while keeping their children in the
+ * DOM — scrolling/focusing/pulsing while inert leaves the user staring at
+ * an off-screen highlight. We wait until expansion finishes.
+ */
+function isTargetReady(el: HTMLElement): boolean {
+  return !el.closest('[inert]');
+}
+
 function waitForElement(
   selector: string,
   { timeoutMs = DEFAULT_TIMEOUT_MS }: { timeoutMs?: number } = {}
 ): Promise<HTMLElement | null> {
   const existing = document.querySelector<HTMLElement>(selector);
-  if (existing) return Promise.resolve(existing);
+  if (existing && isTargetReady(existing)) return Promise.resolve(existing);
 
   return new Promise((resolve) => {
     const observer = new MutationObserver(() => {
       const found = document.querySelector<HTMLElement>(selector);
-      if (found) {
+      if (found && isTargetReady(found)) {
         observer.disconnect();
         clearTimeout(timer);
         resolve(found);
       }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['inert'],
+    });
 
     const timer = window.setTimeout(() => {
       observer.disconnect();

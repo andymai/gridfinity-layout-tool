@@ -11,7 +11,7 @@
 import { useState, useId, type ReactNode } from 'react';
 import { ChevronDownIcon } from '@/design-system/Icon';
 
-interface StickyGroupHeaderProps {
+interface StickyGroupHeaderBaseProps {
   title: string;
   defaultExpanded?: boolean;
   summary?: string;
@@ -22,14 +22,30 @@ interface StickyGroupHeaderProps {
   children: ReactNode;
 }
 
+// Discriminated union: providing `expanded` requires `onExpandedChange` so the
+// header can't silently freeze. Either go fully controlled or fully uncontrolled.
+type StickyGroupHeaderProps = StickyGroupHeaderBaseProps &
+  (
+    | { expanded?: undefined; onExpandedChange?: undefined }
+    | { expanded: boolean; onExpandedChange: (next: boolean) => void }
+  );
+
 export function StickyGroupHeader({
   title,
   defaultExpanded = true,
+  expanded: controlledExpanded,
+  onExpandedChange,
   summary,
   badge,
   children,
 }: StickyGroupHeaderProps) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
+  const isControlled = controlledExpanded !== undefined;
+  const expanded = isControlled ? controlledExpanded : internalExpanded;
+  const setExpanded = (next: boolean) => {
+    if (!isControlled) setInternalExpanded(next);
+    onExpandedChange?.(next);
+  };
   const [hasToggled, setHasToggled] = useState(false);
   const contentId = useId();
 

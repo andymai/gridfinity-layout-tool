@@ -38,4 +38,33 @@ describe('getAllHelpEntries', () => {
       expect(feature.target.controlId).toBeTruthy();
     }
   });
+
+  it('filters layout-route entries out when called with currentRoute=designer', () => {
+    const ids = getAllHelpEntries('designer').map((e) => e.id);
+    // Layout-only entries must NOT appear in designer mode.
+    expect(ids).not.toContain('feature/grid-editor/print-bed-size');
+    expect(ids).not.toContain('feature/grid-editor/drawer-size');
+    expect(ids).not.toContain('feature/layers/panel');
+    expect(ids).not.toContain('feature/categories/panel');
+    expect(ids).not.toContain('feature/shell/half-bin-mode');
+    // Bin-designer entries must appear.
+    expect(ids).toContain('feature/bin-designer/dimensions');
+    expect(ids).toContain('feature/bin-designer/walls');
+    expect(ids).toContain('feature/bin-designer/lid');
+  });
+
+  it('filters designer-route entries out when called with currentRoute=layout', () => {
+    const ids = getAllHelpEntries('layout').map((e) => e.id);
+    expect(ids).toContain('feature/grid-editor/print-bed-size');
+    expect(ids).toContain('feature/layers/panel');
+    expect(ids).not.toContain('feature/bin-designer/dimensions');
+    expect(ids).not.toContain('feature/bin-designer/walls');
+  });
+
+  it('includes mode-agnostic entries (shortcuts) on every route', () => {
+    const layoutShortcuts = getAllHelpEntries('layout').filter((e) => e.kind === 'shortcut');
+    const designerShortcuts = getAllHelpEntries('designer').filter((e) => e.kind === 'shortcut');
+    expect(layoutShortcuts.length).toBeGreaterThan(0);
+    expect(designerShortcuts.length).toBe(layoutShortcuts.length);
+  });
 });

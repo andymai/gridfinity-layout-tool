@@ -3,7 +3,7 @@
  * to any single feature (e.g., global toggles in the sidebar header).
  */
 
-import type { FeatureHelpEntry } from './helpEntry';
+import type { FeatureHelpEntry } from '@/shared/help/helpEntry';
 
 export const helpEntries: FeatureHelpEntry[] = [
   {
@@ -13,6 +13,7 @@ export const helpEntries: FeatureHelpEntry[] = [
     descriptionKey: 'help.target.halfBinMode.description',
     keywordsKey: 'help.target.halfBinMode.keywords',
     category: 'settings',
+    routes: ['layout'],
     target: {
       surface: 'sidebar:grid-size',
       controlId: 'half-bin-mode',

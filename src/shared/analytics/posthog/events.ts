@@ -167,10 +167,16 @@ export function trackHelpSearchJump(entryId: string, query: string, position: nu
   });
 }
 
-export function trackHelpSearchEmpty(query: string): void {
-  trackEvent('help_search_empty', { query: sanitizeQuery(query) });
+export function trackHelpSearchEmpty(query: string, mode?: string): void {
+  trackEvent('help_search_empty', {
+    query: sanitizeQuery(query),
+    ...(mode ? { mode } : {}),
+  });
 }
 
-export function trackHelpCommandPaletteFallthrough(query: string): void {
-  trackEvent('help_command_palette_fallthrough', { query: sanitizeQuery(query) });
+export function trackHelpCommandPaletteFallthrough(query: string, mode?: string): void {
+  trackEvent('help_command_palette_fallthrough', {
+    query: sanitizeQuery(query),
+    ...(mode ? { mode } : {}),
+  });
 }

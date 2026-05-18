@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { HelpSearchResultRow } from './HelpSearchResultRow';
-import type { HelpEntry } from './helpEntry';
-import type * as HelpJumpDispatcherModule from './helpJumpDispatcher';
+import type { HelpEntry } from '@/shared/help/helpEntry';
+import type * as HelpJumpDispatcherModule from '@/shared/help/helpJumpDispatcher';
 
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string, vars?: Record<string, string>) => {
@@ -11,8 +11,10 @@ vi.mock('@/i18n', () => ({
   },
 }));
 
-vi.mock('./helpJumpDispatcher', async () => {
-  const actual = await vi.importActual<typeof HelpJumpDispatcherModule>('./helpJumpDispatcher');
+vi.mock('@/shared/help/helpJumpDispatcher', async () => {
+  const actual = await vi.importActual<typeof HelpJumpDispatcherModule>(
+    '@/shared/help/helpJumpDispatcher'
+  );
   return {
     ...actual,
     jumpToHelpTarget: vi.fn(() => Promise.resolve(true)),
@@ -34,7 +36,7 @@ describe('HelpSearchResultRow', () => {
     const button = screen.getByRole('button', { name: 'help.goTo' });
     fireEvent.click(button);
 
-    const { jumpToHelpTarget } = await import('./helpJumpDispatcher');
+    const { jumpToHelpTarget } = await import('@/shared/help/helpJumpDispatcher');
     expect(onJump).toHaveBeenCalledTimes(1);
     expect(jumpToHelpTarget).toHaveBeenCalledWith(feature.target);
   });

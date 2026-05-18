@@ -10,7 +10,7 @@
  */
 
 import type { TFunction } from '@/i18n/context';
-import { KEYWORDS_DELIMITER, type HelpEntry } from './helpEntry';
+import { KEYWORDS_DELIMITER, type HelpEntry } from '@/shared/help/helpEntry';
 
 const SCORE = {
   TITLE_FULL: 100,
