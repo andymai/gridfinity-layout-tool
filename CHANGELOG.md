@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.98.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.97.0...gridfinity-layout-tool-v4.98.0) (2026-05-18)
+
+
+### Features
+
+* **help:** natural-language search across shortcuts + features + settings ([#1737](https://github.com/andymai/gridfinity-layout-tool/issues/1737)) ([d88b7eb](https://github.com/andymai/gridfinity-layout-tool/commit/d88b7eb87bf9c227683f2e484b1e9fb29fafc65b))
+
 ## [4.97.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.96.0...gridfinity-layout-tool-v4.97.0) (2026-05-18)
 
 
