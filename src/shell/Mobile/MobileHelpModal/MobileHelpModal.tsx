@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { getAllHelpEntries } from '@/shell/Modals/HelpModal/helpEntryAggregator';
@@ -61,6 +61,13 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
   const trimmedQuery = searchQuery.trim();
   const isSearching = trimmedQuery.length > 0;
 
+  // Reset search on every close path so re-opening starts at the gesture
+  // sections, not a stale filtered view.
+  const handleClose = useCallback(() => {
+    setSearchQuery('');
+    onClose();
+  }, [onClose]);
+
   const allEntries = useMemo(() => getAllHelpEntries(), []);
   const rankedResults = useMemo(
     () => (isSearching ? searchHelpEntries(allEntries, trimmedQuery, t) : []),
@@ -72,7 +79,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
 
@@ -83,7 +90,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
       document.body.style.overflow = '';
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   if (!isOpen) return null;
 
@@ -93,7 +100,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
     <div
       className="fixed inset-0 flex items-end sm:items-center justify-center z-50 animate-fade-in"
       style={STYLES.overlay}
-      onClick={onClose}
+      onClick={handleClose}
       role="presentation"
     >
       <div role="presentation" onClick={(e) => e.stopPropagation()}>
@@ -114,7 +121,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
               {t('mobile.help')}
             </h2>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="btn btn-ghost w-10 h-10 p-0"
               aria-label={t('common.close')}
             >
@@ -132,6 +139,8 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
           {/* Search */}
           <div className="relative mb-4">
             <svg
+              aria-hidden="true"
+              focusable="false"
               className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary"
               fill="none"
               viewBox="0 0 24 24"
@@ -146,6 +155,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('help.searchPlaceholder')}
+              aria-label={t('help.searchPlaceholder')}
               className="w-full pl-9 pr-9 py-2 text-sm rounded-md bg-surface border border-stroke-subtle text-content placeholder:text-content-tertiary"
             />
             {searchQuery && (
@@ -154,7 +164,14 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-content-tertiary hover:text-content"
                 aria-label={t('layouts.clearSearch')}
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   {ICON_PATHS.close.map((d) => (
                     <path
                       key={d}
@@ -174,7 +191,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
               results={rankedResults}
               modifierKey={modifierKey}
               query={trimmedQuery}
-              onJump={onClose}
+              onJump={handleClose}
             />
           ) : (
             <div className="space-y-5">

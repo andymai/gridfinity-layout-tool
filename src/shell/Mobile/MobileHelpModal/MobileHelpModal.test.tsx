@@ -9,6 +9,7 @@ vi.mock('@/i18n', () => ({
     if (key === 'common.close') return 'Close';
     if (key === 'help.searchPlaceholder') return 'Search shortcuts and features...';
     if (key === 'help.noResultsFor' && vars) return `No matches for "${vars.query}"`;
+    if (key === 'help.searchResultsAriaLabel') return 'Search results';
     return key;
   },
 }));
@@ -51,6 +52,8 @@ describe('MobileHelpModal', () => {
 
     // The "Drawing & Selection" section is hidden when searching.
     expect(screen.queryByText('mobile.help.drawingSelection')).toBeNull();
+    // ...and the results list is rendered (matched by its aria-label).
+    expect(screen.getByLabelText('Search results')).toBeInTheDocument();
   });
 
   it('shows the no-results message when no matches', () => {
@@ -61,5 +64,22 @@ describe('MobileHelpModal', () => {
     fireEvent.change(input, { target: { value: 'xyznonexistent' } });
 
     expect(screen.getByText('No matches for "xyznonexistent"')).toBeInTheDocument();
+  });
+
+  it('clears the search query when the modal is closed (no stale filter on reopen)', () => {
+    const onClose = vi.fn();
+    const { rerender } = render(<MobileHelpModal isOpen={true} onClose={onClose} />);
+
+    const input = screen.getByPlaceholderText('Search shortcuts and features...');
+    fireEvent.change(input, { target: { value: 'bed size' } });
+    expect(input.value).toBe('bed size');
+
+    // Trigger the X close button — the handler should clear search first.
+    fireEvent.click(screen.getByLabelText('Close'));
+    expect(onClose).toHaveBeenCalled();
+
+    rerender(<MobileHelpModal isOpen={true} onClose={onClose} />);
+    const reopenedInput = screen.getByPlaceholderText('Search shortcuts and features...');
+    expect(reopenedInput.value).toBe('');
   });
 });
