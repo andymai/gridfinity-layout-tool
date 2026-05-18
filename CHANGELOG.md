@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.101.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.101.2...gridfinity-layout-tool-v4.101.3) (2026-05-18)
+
+
+### Bug Fixes
+
+* **help:** surface print-bed help in designer and baseplate modes ([#1750](https://github.com/andymai/gridfinity-layout-tool/issues/1750)) ([1feb2ad](https://github.com/andymai/gridfinity-layout-tool/commit/1feb2ad72fb80a587ef0931714e3478c9e78001c))
+
 ## [4.101.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.101.1...gridfinity-layout-tool-v4.101.2) (2026-05-18)
 
 
