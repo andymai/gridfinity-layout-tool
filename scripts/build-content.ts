@@ -135,6 +135,35 @@ interface BreadcrumbEntry {
   url: string;
 }
 
+interface HowToStep {
+  name: string;
+  text: string;
+}
+
+interface HowToFrontmatter {
+  name?: string;
+  description?: string;
+  totalTime?: string;
+  tools?: string[];
+  steps: HowToStep[];
+}
+
+interface SoftwareApplicationFrontmatter {
+  name: string;
+  description?: string;
+  applicationCategory: string;
+  applicationSubCategory?: string;
+  operatingSystem?: string;
+  browserRequirements?: string;
+  offers?: { price: string; priceCurrency: string };
+  featureList?: string[];
+}
+
+interface NavCta {
+  label: string;
+  href: string;
+}
+
 interface Frontmatter {
   title: string;
   description: string;
@@ -143,6 +172,9 @@ interface Frontmatter {
   schema?: 'Article' | 'HowTo';
   faqs?: FaqEntry[];
   breadcrumbs?: BreadcrumbEntry[];
+  howTo?: HowToFrontmatter;
+  softwareApplication?: SoftwareApplicationFrontmatter;
+  navCta?: NavCta;
 }
 
 /**
@@ -155,7 +187,18 @@ function generateHtml(
   locale: Locale,
   availableLocales: ReadonlySet<Locale>
 ): string {
-  const { title, description, keywords, ogImage, schema, faqs, breadcrumbs } = frontmatter;
+  const {
+    title,
+    description,
+    keywords,
+    ogImage,
+    schema,
+    faqs,
+    breadcrumbs,
+    howTo,
+    softwareApplication,
+    navCta,
+  } = frontmatter;
   const canonicalUrl = getUrl(slug, locale);
   const image = ogImage || `${SITE_URL}/og-image.png`;
   const labels = LOCALE_LABELS[locale];
@@ -179,10 +222,24 @@ function generateHtml(
       ? {
           '@context': 'https://schema.org',
           '@type': 'HowTo',
-          name: title,
-          description,
+          name: howTo?.name ?? title,
+          description: howTo?.description ?? description,
           image,
           url: canonicalUrl,
+          ...(howTo?.totalTime ? { totalTime: howTo.totalTime } : {}),
+          ...(howTo?.tools && howTo.tools.length > 0
+            ? { tool: howTo.tools.map((name) => ({ '@type': 'HowToTool', name })) }
+            : {}),
+          ...(howTo?.steps && howTo.steps.length > 0
+            ? {
+                step: howTo.steps.map((s, i) => ({
+                  '@type': 'HowToStep',
+                  name: s.name,
+                  text: s.text,
+                  position: i + 1,
+                })),
+              }
+            : {}),
           author: {
             '@type': 'Person',
             name: 'Andy Aragon',
@@ -212,6 +269,42 @@ function generateHtml(
         };
 
   const structuredDataBlocks: object[] = [primarySchema];
+
+  if (softwareApplication) {
+    structuredDataBlocks.push({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: softwareApplication.name,
+      url: canonicalUrl,
+      description: softwareApplication.description ?? description,
+      applicationCategory: softwareApplication.applicationCategory,
+      ...(softwareApplication.applicationSubCategory
+        ? { applicationSubCategory: softwareApplication.applicationSubCategory }
+        : {}),
+      ...(softwareApplication.operatingSystem
+        ? { operatingSystem: softwareApplication.operatingSystem }
+        : {}),
+      ...(softwareApplication.browserRequirements
+        ? { browserRequirements: softwareApplication.browserRequirements }
+        : {}),
+      ...(softwareApplication.offers
+        ? {
+            offers: {
+              '@type': 'Offer',
+              price: softwareApplication.offers.price,
+              priceCurrency: softwareApplication.offers.priceCurrency,
+            },
+          }
+        : {}),
+      author: {
+        '@type': 'Person',
+        name: 'Andy Aragon',
+      },
+      ...(softwareApplication.featureList && softwareApplication.featureList.length > 0
+        ? { featureList: softwareApplication.featureList }
+        : {}),
+    });
+  }
 
   if (breadcrumbs && breadcrumbs.length > 0) {
     structuredDataBlocks.push({
@@ -322,8 +415,8 @@ ${structuredDataScripts}
       </svg>
       <span>${labels.siteName}</span>
     </a>
-    <a href="${homeUrl}" class="content-nav__cta">
-      ${escapeHtml(labels.openTool)}
+    <a href="${navCta?.href ?? homeUrl}" class="content-nav__cta">
+      ${escapeHtml(navCta?.label ?? labels.openTool)}
     </a>
   </nav>
 
@@ -584,24 +677,6 @@ function build(): void {
   for (const entry of entries) {
     const locales = localesBySlug.get(entry.slug) ?? new Set<Locale>();
     processFile(entry.filePath, entry.slug, entry.locale, locales);
-  }
-
-  // Update CSS filename in hand-crafted content pages
-  const handCraftedPages = [
-    'gridfinity-bin-generator/index.html',
-    'gridfinity-baseplate-generator/index.html',
-    'gridfinity-sizes/index.html',
-  ];
-  for (const pagePath of handCraftedPages) {
-    const fullPath = path.join(OUTPUT_DIR, pagePath);
-    if (fs.existsSync(fullPath)) {
-      const html = fs.readFileSync(fullPath, 'utf-8');
-      const updated = html.replace(/\/content\.[a-f0-9]+\.css/, `/${cssFilename}`);
-      if (updated !== html) {
-        fs.writeFileSync(fullPath, updated);
-        console.log(`✓ Updated CSS reference in ${pagePath}`);
-      }
-    }
   }
 
   console.log(`\n✓ Built ${entries.length} content page(s) across ${localesBySlug.size} slug(s)`);

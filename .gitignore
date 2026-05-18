@@ -57,6 +57,9 @@ scripts/train-bin-recommender/.venv/
 # Generated content pages (built from content/*.md and content/{locale}/*.md)
 public/what-is-gridfinity/
 public/guide/
+public/gridfinity-bin-generator/
+public/gridfinity-baseplate-generator/
+public/gridfinity-sizes/
 public/de/
 public/fr/
 public/es/
