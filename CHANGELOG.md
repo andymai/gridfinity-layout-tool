@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.92.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.91.0...gridfinity-layout-tool-v4.92.0) (2026-05-18)
+
+
+### Features
+
+* **seo:** migrate hand-crafted pages to markdown-driven pipeline ([#1717](https://github.com/andymai/gridfinity-layout-tool/issues/1717)) ([8ce9fdf](https://github.com/andymai/gridfinity-layout-tool/commit/8ce9fdffa23c7b1aeb948416044413dc3aacb21c))
+
 ## [4.91.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.90.0...gridfinity-layout-tool-v4.91.0) (2026-05-18)
 
 
