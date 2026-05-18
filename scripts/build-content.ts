@@ -19,24 +19,35 @@ const SITE_URL = 'https://gridfinitylayouttool.com';
 // Will be set during build after hashing the CSS
 let cssFilename = 'content.css';
 
+interface FaqEntry {
+  q: string;
+  a: string;
+}
+
+interface BreadcrumbEntry {
+  name: string;
+  url: string;
+}
+
 interface Frontmatter {
   title: string;
   description: string;
   keywords?: string;
   ogImage?: string;
   schema?: 'Article' | 'HowTo';
+  faqs?: FaqEntry[];
+  breadcrumbs?: BreadcrumbEntry[];
 }
 
 /**
  * Generate the HTML template for a content page
  */
 function generateHtml(content: string, frontmatter: Frontmatter, slug: string): string {
-  const { title, description, keywords, ogImage, schema } = frontmatter;
+  const { title, description, keywords, ogImage, schema, faqs, breadcrumbs } = frontmatter;
   const canonicalUrl = `${SITE_URL}/${slug}`;
   const image = ogImage || `${SITE_URL}/og-image.png`;
 
-  // Generate structured data based on schema type
-  const structuredData =
+  const primarySchema =
     schema === 'HowTo'
       ? {
           '@context': 'https://schema.org',
@@ -73,6 +84,52 @@ function generateHtml(content: string, frontmatter: Frontmatter, slug: string): 
           },
         };
 
+  const structuredDataBlocks: object[] = [primarySchema];
+
+  if (breadcrumbs && breadcrumbs.length > 0) {
+    structuredDataBlocks.push({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: breadcrumbs.map((crumb, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: crumb.name,
+        item: crumb.url,
+      })),
+    });
+  }
+
+  const renderedFaqs = faqs?.map((faq) => ({
+    q: faq.q,
+    answerHtml: marked.parseInline(escapeHtml(faq.a)) as string,
+  }));
+
+  if (renderedFaqs && renderedFaqs.length > 0) {
+    structuredDataBlocks.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: renderedFaqs.map((faq) => ({
+        '@type': 'Question',
+        name: faq.q,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answerHtml,
+        },
+      })),
+    });
+  }
+
+  const structuredDataScripts = structuredDataBlocks
+    .map(
+      (block) => `  <script type="application/ld+json">
+${safeJsonLd(block)}
+  </script>`
+    )
+    .join('\n');
+
+  const breadcrumbsHtml = renderBreadcrumbs(breadcrumbs);
+  const faqsHtml = renderFaqs(renderedFaqs);
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,9 +160,7 @@ function generateHtml(content: string, frontmatter: Frontmatter, slug: string): 
   <meta name="twitter:image" content="${image}">
 
   <!-- Structured Data -->
-  <script type="application/ld+json">
-${safeJsonLd(structuredData)}
-  </script>
+${structuredDataScripts}
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -144,7 +199,7 @@ ${safeJsonLd(structuredData)}
 
   <!-- Main Content -->
   <main id="main-content" class="content-page content-body">
-${content}
+${breadcrumbsHtml}${content}${faqsHtml}
   </main>
 
   <!-- Footer -->
@@ -187,6 +242,49 @@ function escapeHtml(str: string): string {
  */
 function safeJsonLd(data: object): string {
   return JSON.stringify(data, null, 2).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+}
+
+function renderBreadcrumbs(breadcrumbs: BreadcrumbEntry[] | undefined): string {
+  if (!breadcrumbs || breadcrumbs.length === 0) return '';
+  const items = breadcrumbs
+    .map((crumb, index) => {
+      const isLast = index === breadcrumbs.length - 1;
+      const name = escapeHtml(crumb.name);
+      if (isLast) {
+        return `      <li class="content-breadcrumbs__item" aria-current="page">${name}</li>`;
+      }
+      return `      <li class="content-breadcrumbs__item"><a href="${escapeHtml(crumb.url)}">${name}</a></li>`;
+    })
+    .join('\n');
+  return `<nav class="content-breadcrumbs" aria-label="Breadcrumb">
+    <ol class="content-breadcrumbs__list">
+${items}
+    </ol>
+  </nav>
+`;
+}
+
+interface RenderedFaq {
+  q: string;
+  answerHtml: string;
+}
+
+function renderFaqs(faqs: RenderedFaq[] | undefined): string {
+  if (!faqs || faqs.length === 0) return '';
+  const items = faqs
+    .map(
+      (faq) => `    <details class="content-faq">
+      <summary class="content-faq__question">${escapeHtml(faq.q)}</summary>
+      <div class="content-faq__answer">${faq.answerHtml}</div>
+    </details>`
+    )
+    .join('\n');
+  return `
+  <section class="content-faqs" aria-labelledby="faq-heading">
+    <h2 id="faq-heading" class="content-h2">Frequently Asked Questions</h2>
+${items}
+  </section>
+`;
 }
 
 /**
