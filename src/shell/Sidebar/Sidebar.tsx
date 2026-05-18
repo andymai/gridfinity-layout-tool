@@ -23,6 +23,7 @@ import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 import { useOnboarding } from '@/features/onboarding';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { helpJumpEventName } from '@/shell/Modals/HelpModal/helpJumpDispatcher';
 
 // Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
 const InspirationGallery = lazyWithRetry(() =>
@@ -49,6 +50,8 @@ export function Sidebar() {
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const { isDesktop } = useResponsive();
+  const [gridSizeExpanded, setGridSizeExpanded] = useState(true);
+  const [physicalUnitsExpanded, setPhysicalUnitsExpanded] = useState(isDesktop);
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
 
   const handleScroll = useCallback(() => {
@@ -107,6 +110,23 @@ export function Sidebar() {
     window.addEventListener('open-settings-modal', handleOpenSettings as EventListener);
     return () =>
       window.removeEventListener('open-settings-modal', handleOpenSettings as EventListener);
+  }, []);
+
+  // Help modal deep-links: expand the destination section so the highlighted
+  // control is visible when the dispatcher applies its pulse.
+  useEffect(() => {
+    const gridSizeEvent = helpJumpEventName('sidebar:grid-size');
+    const physicalUnitsEvent = helpJumpEventName('sidebar:physical-units');
+
+    const expandGridSize = () => setGridSizeExpanded(true);
+    const expandPhysicalUnits = () => setPhysicalUnitsExpanded(true);
+
+    window.addEventListener(gridSizeEvent, expandGridSize);
+    window.addEventListener(physicalUnitsEvent, expandPhysicalUnits);
+    return () => {
+      window.removeEventListener(gridSizeEvent, expandGridSize);
+      window.removeEventListener(physicalUnitsEvent, expandPhysicalUnits);
+    };
   }, []);
 
   return (
@@ -255,7 +275,12 @@ export function Sidebar() {
 
             {/* Grid Size */}
             <div data-grid-size-panel className="mt-auto">
-              <CollapsibleSection title={t('sidebar.gridSize')} variant="default">
+              <CollapsibleSection
+                title={t('sidebar.gridSize')}
+                variant="default"
+                expanded={gridSizeExpanded}
+                onExpandedChange={setGridSizeExpanded}
+              >
                 <div className="text-xs text-content-secondary space-y-2">
                   {/* Width / Depth / Height in compact grid */}
                   <div className="grid grid-cols-3 gap-1.5">
@@ -326,6 +351,7 @@ export function Sidebar() {
 
                   {/* Half-bin mode toggle */}
                   <div
+                    data-help-target="half-bin-mode"
                     className="flex items-center justify-between pt-2 cursor-pointer"
                     onClick={handleHalfBinToggle}
                     role="checkbox"
@@ -394,7 +420,8 @@ export function Sidebar() {
               <CollapsibleSection
                 title={t('sidebar.physicalUnits')}
                 variant="default"
-                defaultExpanded={isDesktop}
+                expanded={physicalUnitsExpanded}
+                onExpandedChange={setPhysicalUnitsExpanded}
               >
                 <div className="text-xs text-content-secondary space-y-2">
                   <SettingsRow
@@ -427,20 +454,22 @@ export function Sidebar() {
                       className="input w-14 py-0.5 px-1 text-xs text-right"
                     />
                   </SettingsRow>
-                  <SettingsRow
-                    label="Print bed"
-                    htmlFor="printBedSize"
-                    tooltip={`Bins wider than ${maxGridUnits.width} or deeper than ${maxGridUnits.depth} will be split for printing`}
-                    unit="mm"
-                  >
-                    <PrintBedInput
-                      id="printBedSize"
-                      width={printBedSize}
-                      depth={printBedDepth}
-                      onChange={setPrintBedSize}
-                      variant="compact"
-                    />
-                  </SettingsRow>
+                  <div data-help-target="print-bed-size">
+                    <SettingsRow
+                      label="Print bed"
+                      htmlFor="printBedSize"
+                      tooltip={`Bins wider than ${maxGridUnits.width} or deeper than ${maxGridUnits.depth} will be split for printing`}
+                      unit="mm"
+                    >
+                      <PrintBedInput
+                        id="printBedSize"
+                        width={printBedSize}
+                        depth={printBedDepth}
+                        onChange={setPrintBedSize}
+                        variant="compact"
+                      />
+                    </SettingsRow>
+                  </div>
                 </div>
               </CollapsibleSection>
             </div>

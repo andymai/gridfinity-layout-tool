@@ -27,3 +27,5 @@ export type { GridTemplateState, UseGridTemplateOptions } from './hooks';
 // Types used externally (3D preview integration)
 export type { SceneHandle } from './components/Grid/IsometricPreview/Scene';
 export type { CameraPreset } from './components/Grid/IsometricPreview/Scene';
+
+export { helpEntries } from './helpEntries';

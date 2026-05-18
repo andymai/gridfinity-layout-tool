@@ -20,6 +20,9 @@ import {
   BlockedZonesSection,
   BinClearanceSection,
 } from './HelpModalSections';
+import { getAllHelpEntries } from './helpEntryAggregator';
+import { searchHelpEntries } from './helpSearch';
+import { HelpSearchResultRow } from './HelpSearchResultRow';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -50,22 +53,16 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
     };
   }, [isOpen, onClose]);
 
-  // Filter shortcuts based on search query (searches translated strings)
-  const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) return SHORTCUT_CATEGORIES;
+  const trimmedQuery = searchQuery.trim();
+  const isSearching = trimmedQuery.length > 0;
 
-    const query = searchQuery.toLowerCase();
-    return SHORTCUT_CATEGORIES.map((category) => ({
-      ...category,
-      shortcuts: category.shortcuts.filter(
-        (shortcut) =>
-          t(shortcut.descriptionKey).toLowerCase().includes(query) ||
-          (typeof shortcut.keys === 'string' && shortcut.keys.toLowerCase().includes(query)) ||
-          (Array.isArray(shortcut.keys) &&
-            (shortcut.keys as readonly string[]).some((k) => k.toLowerCase().includes(query)))
-      ),
-    })).filter((category) => category.shortcuts.length > 0);
-  }, [searchQuery, t]);
+  // Unified ranked search across shortcuts + features + tips. Recomputed only
+  // when the query (or locale via `t`) changes — entry catalog is static.
+  const allEntries = useMemo(() => getAllHelpEntries(), []);
+  const rankedResults = useMemo(() => {
+    if (!isSearching) return [];
+    return searchHelpEntries(allEntries, trimmedQuery, t);
+  }, [allEntries, trimmedQuery, isSearching, t]);
 
   if (!isOpen) return null;
 
@@ -113,146 +110,136 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
 
           {/* Tab bar and search */}
           <div className="px-6 py-3 border-b border-stroke-subtle flex items-center gap-4">
-            <div className="flex gap-1">
-              <button
-                onClick={() => setActiveTab('shortcuts')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
-                  activeTab === 'shortcuts'
-                    ? 'bg-accent/20 text-accent'
-                    : 'text-content-secondary hover:text-content hover:bg-surface-hover'
-                }`}
-              >
-                {t('help.shortcuts')}
-              </button>
-              <button
-                onClick={() => setActiveTab('tips')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
-                  activeTab === 'tips'
-                    ? 'bg-accent/20 text-accent'
-                    : 'text-content-secondary hover:text-content hover:bg-surface-hover'
-                }`}
-              >
-                {t('help.tipsInfo')}
-              </button>
-            </div>
-
-            {activeTab === 'shortcuts' && (
-              <div className="flex-1 max-w-xs">
-                <div className="relative">
-                  <svg
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    {ICON_PATHS.search.map((d) => (
-                      <path
-                        key={d}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d={d}
-                      />
-                    ))}
-                  </svg>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={t('help.searchPlaceholder')}
-                    className="w-full pl-9 pr-3 py-1.5 text-sm rounded-md bg-surface border border-stroke-subtle text-content placeholder:text-content-tertiary"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-content-tertiary hover:text-content focus-visible:ring-2 focus-visible:ring-accent"
-                      aria-label={t('layouts.clearSearch')}
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        {ICON_PATHS.close.map((d) => (
-                          <path
-                            key={d}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d={d}
-                          />
-                        ))}
-                      </svg>
-                    </button>
-                  )}
-                </div>
+            {!isSearching && (
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setActiveTab('shortcuts')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
+                    activeTab === 'shortcuts'
+                      ? 'bg-accent/20 text-accent'
+                      : 'text-content-secondary hover:text-content hover:bg-surface-hover'
+                  }`}
+                >
+                  {t('help.shortcuts')}
+                </button>
+                <button
+                  onClick={() => setActiveTab('tips')}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
+                    activeTab === 'tips'
+                      ? 'bg-accent/20 text-accent'
+                      : 'text-content-secondary hover:text-content hover:bg-surface-hover'
+                  }`}
+                >
+                  {t('help.tipsInfo')}
+                </button>
               </div>
             )}
+
+            <div className="flex-1 max-w-xs">
+              <div className="relative">
+                <svg
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  {ICON_PATHS.search.map((d) => (
+                    <path
+                      key={d}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d={d}
+                    />
+                  ))}
+                </svg>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t('help.searchPlaceholder')}
+                  className="w-full pl-9 pr-3 py-1.5 text-sm rounded-md bg-surface border border-stroke-subtle text-content placeholder:text-content-tertiary"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-content-tertiary hover:text-content focus-visible:ring-2 focus-visible:ring-accent"
+                    aria-label={t('layouts.clearSearch')}
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      {ICON_PATHS.close.map((d) => (
+                        <path
+                          key={d}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={d}
+                        />
+                      ))}
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto scrollbar-thin p-6">
-            {activeTab === 'shortcuts' ? (
+            {isSearching ? (
+              <SearchResultsList
+                results={rankedResults}
+                modifierKey={modifierKey}
+                query={trimmedQuery}
+                onJump={onClose}
+              />
+            ) : activeTab === 'shortcuts' ? (
               <div className="space-y-6">
                 {/* Command palette tip */}
-                {!searchQuery && (
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/10 border border-accent/20">
-                    <div className="shrink-0 w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
-                      <svg
-                        className="w-4 h-4 text-accent"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        {ICON_PATHS.bolt.map((d) => (
-                          <path
-                            key={d}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d={d}
-                          />
-                        ))}
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-content">{t('help.commandPaletteTip')}</p>
-                    </div>
-                    <div className="shrink-0 flex items-center gap-1">
-                      <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content shadow-[0_1px_0_1px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]">
-                        {modifierKey}
-                      </kbd>
-                      {/* eslint-disable-next-line i18next/no-literal-string -- universal symbol */}
-                      <span className="text-content-tertiary text-xs">+</span>
-                      <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content shadow-[0_1px_0_1px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]">
-                        K
-                      </kbd>
-                    </div>
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/10 border border-accent/20">
+                  <div className="shrink-0 w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                    <svg
+                      className="w-4 h-4 text-accent"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      {ICON_PATHS.bolt.map((d) => (
+                        <path
+                          key={d}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={d}
+                        />
+                      ))}
+                    </svg>
                   </div>
-                )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-content">{t('help.commandPaletteTip')}</p>
+                  </div>
+                  <div className="shrink-0 flex items-center gap-1">
+                    <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content shadow-[0_1px_0_1px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]">
+                      {modifierKey}
+                    </kbd>
+                    {/* eslint-disable-next-line i18next/no-literal-string -- universal symbol */}
+                    <span className="text-content-tertiary text-xs">+</span>
+                    <kbd className="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 text-xs font-mono font-medium rounded border border-stroke bg-gradient-to-b from-surface-elevated to-surface text-content shadow-[0_1px_0_1px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)]">
+                      K
+                    </kbd>
+                  </div>
+                </div>
 
-                {filteredCategories.length === 0 ? (
-                  <div className="text-center py-8 text-content-tertiary">
-                    {t('help.noShortcutsFoundFor', { query: searchQuery })}
-                  </div>
-                ) : (
-                  filteredCategories.map((category) => (
-                    <ShortcutCategorySection
-                      key={category.id}
-                      category={category}
-                      modifierKey={modifierKey}
-                    />
-                  ))
-                )}
+                {SHORTCUT_CATEGORIES.map((category) => (
+                  <ShortcutCategorySection
+                    key={category.id}
+                    category={category}
+                    modifierKey={modifierKey}
+                  />
+                ))}
 
                 {/* Mouse/Touch section */}
-                {!searchQuery && (
-                  <>
-                    <MouseInteractionsSection />
-                    {isTablet && <TouchGesturesSection />}
-                  </>
-                )}
+                <MouseInteractionsSection />
+                {isTablet && <TouchGesturesSection />}
               </div>
             ) : (
               <div className="space-y-6">
@@ -265,5 +252,32 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
         </div>
       </div>
     </div>
+  );
+}
+
+interface SearchResultsListProps {
+  results: ReturnType<typeof searchHelpEntries>;
+  modifierKey: string;
+  query: string;
+  onJump: () => void;
+}
+
+function SearchResultsList({ results, modifierKey, query, onJump }: SearchResultsListProps) {
+  const t = useTranslation();
+  if (results.length === 0) {
+    return (
+      <div className="text-center py-8 text-content-tertiary text-sm">
+        {t('help.noResultsFor', { query })}
+      </div>
+    );
+  }
+  return (
+    <ul aria-label={t('help.searchResultsAriaLabel')} className="space-y-1">
+      {results.map(({ entry }) => (
+        <li key={entry.id}>
+          <HelpSearchResultRow entry={entry} modifierKey={modifierKey} onJump={onJump} />
+        </li>
+      ))}
+    </ul>
   );
 }

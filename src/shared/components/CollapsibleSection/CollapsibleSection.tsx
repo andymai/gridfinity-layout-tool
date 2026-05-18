@@ -3,8 +3,16 @@ import { useState, useId, type ReactNode } from 'react';
 interface CollapsibleSectionProps {
   /** Section title */
   title: string;
-  /** Whether section starts expanded (default: true) */
+  /** Whether section starts expanded (default: true). Ignored when `expanded` is provided. */
   defaultExpanded?: boolean;
+  /**
+   * Controlled expanded state. When provided, the component becomes controlled
+   * and `onExpandedChange` should be wired to a parent setter — enables external
+   * triggers like help-modal deep-links to force a section open.
+   */
+  expanded?: boolean;
+  /** Called when user toggles. Required for controlled mode to behave correctly. */
+  onExpandedChange?: (next: boolean) => void;
   /** Content to render inside the section */
   children: ReactNode;
   /** Optional badge to show next to title */
@@ -26,6 +34,8 @@ interface CollapsibleSectionProps {
 export function CollapsibleSection({
   title,
   defaultExpanded = true,
+  expanded: controlledExpanded,
+  onExpandedChange,
   children,
   badge,
   actions,
@@ -33,7 +43,13 @@ export function CollapsibleSection({
   icon,
   summary,
 }: CollapsibleSectionProps) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
+  const isControlled = controlledExpanded !== undefined;
+  const expanded = isControlled ? controlledExpanded : internalExpanded;
+  const setExpanded = (next: boolean) => {
+    if (!isControlled) setInternalExpanded(next);
+    onExpandedChange?.(next);
+  };
   // Track if user has toggled - only animate after first interaction to prevent CLS
   const [hasToggled, setHasToggled] = useState(false);
   const contentId = useId();

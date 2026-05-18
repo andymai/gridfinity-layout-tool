@@ -1028,6 +1028,32 @@ input[type='range']:hover::-moz-range-thumb {
   animation: gallery-pulse 2s ease-in-out 3;
 }
 
+/* Help modal: deep-link target pulse — single 1.5s instructional flash so users
+   see *where* the help entry points to in the UI. Class is added imperatively
+   by `helpJumpDispatcher.ts` and removed when the animation completes. */
+@keyframes help-target-pulse {
+  0% {
+    box-shadow:
+      0 0 0 0 var(--color-accent),
+      0 0 0 0 var(--color-accent-muted);
+  }
+  60% {
+    box-shadow:
+      0 0 0 4px transparent,
+      0 0 0 10px transparent;
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 transparent,
+      0 0 0 0 transparent;
+  }
+}
+
+.help-target-pulse {
+  animation: help-target-pulse 1.5s ease-out;
+  border-radius: var(--radius-md);
+}
+
 /* ===========================================
    REDUCED MOTION
    =========================================== */
@@ -1067,6 +1093,10 @@ input[type='range']:hover::-moz-range-thumb {
   }
 
   .animate-quickstart-icon-intro {
+    animation: none !important;
+  }
+
+  .help-target-pulse {
     animation: none !important;
   }
 }
