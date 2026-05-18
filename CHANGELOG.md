@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.96.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.95.1...gridfinity-layout-tool-v4.96.0) (2026-05-18)
+
+
+### Features
+
+* **seo:** add language switcher to nav on every content page ([#1733](https://github.com/andymai/gridfinity-layout-tool/issues/1733)) ([a150395](https://github.com/andymai/gridfinity-layout-tool/commit/a150395e5ca52017370e70d56fab52ddc47bdfd1))
+
 ## [4.95.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.95.0...gridfinity-layout-tool-v4.95.1) (2026-05-18)
 
 
