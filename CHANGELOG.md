@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.97.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.96.0...gridfinity-layout-tool-v4.97.0) (2026-05-18)
+
+
+### Features
+
+* **seo:** migrate /gridfinity-generator to markdown + localize for 8 locales ([#1735](https://github.com/andymai/gridfinity-layout-tool/issues/1735)) ([a596043](https://github.com/andymai/gridfinity-layout-tool/commit/a596043387ee7f310c90261ed07950ab048257d4))
+
 ## [4.96.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.95.1...gridfinity-layout-tool-v4.96.0) (2026-05-18)
 
 
