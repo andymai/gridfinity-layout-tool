@@ -23,7 +23,7 @@ import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 import { useOnboarding } from '@/features/onboarding';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
-import { helpJumpEventName } from '@/shell/Modals/HelpModal/helpJumpDispatcher';
+import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 
 // Lazy load modals/galleries - only loaded when opened (using lazyWithRetry for PWA resilience)
 const InspirationGallery = lazyWithRetry(() =>

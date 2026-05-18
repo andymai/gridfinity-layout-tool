@@ -3,7 +3,7 @@
  * to any single feature (e.g., global toggles in the sidebar header).
  */
 
-import type { FeatureHelpEntry } from './helpEntry';
+import type { FeatureHelpEntry } from '@/shared/help/helpEntry';
 
 export const helpEntries: FeatureHelpEntry[] = [
   {

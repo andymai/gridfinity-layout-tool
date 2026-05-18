@@ -5,10 +5,10 @@
  */
 
 import { useTranslation } from '@/i18n';
-import type { HelpEntry } from './helpEntry';
+import type { HelpEntry } from '@/shared/help/helpEntry';
 import { KeyboardKey } from './HelpModalSections';
 import { KEY_SEPARATOR } from './helpModalStyles';
-import { jumpToHelpTarget } from './helpJumpDispatcher';
+import { jumpToHelpTarget } from '@/shared/help/helpJumpDispatcher';
 
 interface HelpSearchResultRowProps {
   entry: HelpEntry;

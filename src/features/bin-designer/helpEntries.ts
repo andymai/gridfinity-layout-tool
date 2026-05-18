@@ -14,7 +14,7 @@
  * scrolls + pulses the target control.
  */
 
-import type { FeatureHelpEntry } from '@/shell/Modals/HelpModal/helpEntry';
+import type { FeatureHelpEntry } from '@/shared/help/helpEntry';
 
 export const helpEntries: FeatureHelpEntry[] = [
   {

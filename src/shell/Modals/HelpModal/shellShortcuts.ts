@@ -8,7 +8,7 @@
  */
 
 import { SHORTCUT_CATEGORIES } from './helpModalShortcutData';
-import type { ShortcutHelpEntry } from './helpEntry';
+import type { ShortcutHelpEntry } from '@/shared/help/helpEntry';
 
 export function shortcutCatalogToHelpEntries(): ShortcutHelpEntry[] {
   return SHORTCUT_CATEGORIES.flatMap((category) =>

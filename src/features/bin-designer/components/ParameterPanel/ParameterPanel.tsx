@@ -34,7 +34,7 @@ import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOpt
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { UserDock } from '@/shared/components/UserDock';
-import { helpJumpEventName } from '@/shell/Modals/HelpModal/helpJumpDispatcher';
+import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 
 export function ParameterPanel() {
   const t = useTranslation();

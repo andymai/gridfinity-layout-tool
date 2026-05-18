@@ -6,7 +6,7 @@
 
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
-import type { HelpRoute } from './helpEntry';
+import type { HelpRoute } from '@/shared/help/helpEntry';
 
 export function useHelpRoute(): HelpRoute {
   const { isDesignerRoute } = useDesignerRouting();

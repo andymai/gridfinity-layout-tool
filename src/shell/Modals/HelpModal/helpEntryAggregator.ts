@@ -19,7 +19,7 @@ import { helpEntries as categoriesHelpEntries } from '@/features/categories';
 import { helpEntries as binDesignerHelpEntries } from '@/features/bin-designer';
 import { helpEntries as shellHelpEntries } from './shellHelpEntries';
 import { shortcutCatalogToHelpEntries } from './shellShortcuts';
-import type { HelpEntry, HelpRoute } from './helpEntry';
+import type { HelpEntry, HelpRoute } from '@/shared/help/helpEntry';
 
 export function getAllHelpEntries(currentRoute?: HelpRoute): HelpEntry[] {
   const all: HelpEntry[] = [

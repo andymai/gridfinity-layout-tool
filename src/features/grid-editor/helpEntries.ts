@@ -6,7 +6,7 @@
  * planner route, so they're scoped to `routes: ['layout']`.
  */
 
-import type { FeatureHelpEntry } from '@/shell/Modals/HelpModal/helpEntry';
+import type { FeatureHelpEntry } from '@/shared/help/helpEntry';
 
 export const helpEntries: FeatureHelpEntry[] = [
   {
