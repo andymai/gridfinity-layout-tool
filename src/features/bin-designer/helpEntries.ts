@@ -77,16 +77,10 @@ export const helpEntries: FeatureHelpEntry[] = [
     routes: ['designer'],
     target: { surface: 'binDesigner:interior', controlId: 'bd-interior' },
   },
-  {
-    id: 'feature/bin-designer/label-tabs',
-    kind: 'feature',
-    titleKey: 'help.target.binDesigner.labelTabs.title',
-    descriptionKey: 'help.target.binDesigner.labelTabs.description',
-    keywordsKey: 'help.target.binDesigner.labelTabs.keywords',
-    category: 'interior',
-    routes: ['designer'],
-    target: { surface: 'binDesigner:interior', controlId: 'bd-label-tabs' },
-  },
+  // NOTE: Label tab entry deferred — the bd-label-tabs marker only mounts
+  // when `params.style === 'standard'`. With static `routes` filtering we'd
+  // either need conditional entries (runtime predicate) or to always mount
+  // the marker. Re-add when we ship runtime-conditional entry support.
   {
     id: 'feature/bin-designer/scoop',
     kind: 'feature',

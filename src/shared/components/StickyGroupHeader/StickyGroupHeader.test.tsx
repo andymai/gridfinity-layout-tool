@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { StickyGroupHeader } from './StickyGroupHeader';
 
@@ -49,5 +49,50 @@ describe('StickyGroupHeader', () => {
     );
 
     expect(screen.getByText('2x2x3u')).toBeInTheDocument();
+  });
+
+  describe('controlled mode', () => {
+    it('reflects the controlled `expanded` prop on aria-expanded', () => {
+      const { rerender } = render(
+        <StickyGroupHeader title="Shape" expanded={false} onExpandedChange={() => {}}>
+          <div>content</div>
+        </StickyGroupHeader>
+      );
+
+      const button = screen.getByText('Shape').closest('button')!;
+      expect(button).toHaveAttribute('aria-expanded', 'false');
+
+      rerender(
+        <StickyGroupHeader title="Shape" expanded={true} onExpandedChange={() => {}}>
+          <div>content</div>
+        </StickyGroupHeader>
+      );
+      expect(button).toHaveAttribute('aria-expanded', 'true');
+    });
+
+    it('invokes onExpandedChange when the header is clicked', () => {
+      const onExpandedChange = vi.fn();
+      render(
+        <StickyGroupHeader title="Shape" expanded={false} onExpandedChange={onExpandedChange}>
+          <div>content</div>
+        </StickyGroupHeader>
+      );
+
+      fireEvent.click(screen.getByText('Shape').closest('button')!);
+      expect(onExpandedChange).toHaveBeenCalledWith(true);
+    });
+
+    it('does not update its own state when controlled (parent must drive)', () => {
+      render(
+        <StickyGroupHeader title="Shape" expanded={false} onExpandedChange={() => {}}>
+          <div>content</div>
+        </StickyGroupHeader>
+      );
+
+      const button = screen.getByText('Shape').closest('button')!;
+      fireEvent.click(button);
+      // Parent never updated `expanded` — header must stay closed.
+      expect(button).toHaveAttribute('aria-expanded', 'false');
+    });
   });
 });

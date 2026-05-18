@@ -11,17 +11,9 @@
 import { useState, useId, type ReactNode } from 'react';
 import { ChevronDownIcon } from '@/design-system/Icon';
 
-interface StickyGroupHeaderProps {
+interface StickyGroupHeaderBaseProps {
   title: string;
   defaultExpanded?: boolean;
-  /**
-   * Controlled expanded state. When provided, the component becomes controlled
-   * and `onExpandedChange` should be wired to a parent setter — enables
-   * external triggers (help-modal deep-links) to force a section open.
-   */
-  expanded?: boolean;
-  /** Required for controlled mode to behave correctly. */
-  onExpandedChange?: (next: boolean) => void;
   summary?: string;
   /** Optional short label rendered as a pill next to the title (e.g. "Experimental").
    *  Typed as `string` so the badge can't accidentally hold an interactive element
@@ -29,6 +21,14 @@ interface StickyGroupHeaderProps {
   badge?: string;
   children: ReactNode;
 }
+
+// Discriminated union: providing `expanded` requires `onExpandedChange` so the
+// header can't silently freeze. Either go fully controlled or fully uncontrolled.
+type StickyGroupHeaderProps = StickyGroupHeaderBaseProps &
+  (
+    | { expanded?: undefined; onExpandedChange?: undefined }
+    | { expanded: boolean; onExpandedChange: (next: boolean) => void }
+  );
 
 export function StickyGroupHeader({
   title,
