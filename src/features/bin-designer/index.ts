@@ -32,3 +32,6 @@ export { generateFileName } from './utils';
 
 // --- Components ---
 export { DesignerPage } from './components';
+
+// --- Help modal integration ---
+export { helpEntries } from './helpEntries';

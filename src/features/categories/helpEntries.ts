@@ -13,6 +13,7 @@ export const helpEntries: FeatureHelpEntry[] = [
     descriptionKey: 'help.target.categories.description',
     keywordsKey: 'help.target.categories.keywords',
     category: 'layout',
+    routes: ['layout'],
     target: {
       surface: 'sidebar:categories',
       controlId: 'categories-panel',

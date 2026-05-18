@@ -815,6 +815,53 @@ const en: Record<string, string> = {
   'help.target.categories.description':
     'Color-coded groups for organizing bins by contents. Useful for highlighting what each bin holds at a glance.',
   'help.target.categories.keywords': 'category|categories|color|group|tag|label|organize',
+  'help.target.binDesigner.dimensions.title': 'Bin dimensions',
+  'help.target.binDesigner.dimensions.description':
+    'Set the width, depth, and height of the custom bin in grid units. Drives every other measurement in the designer.',
+  'help.target.binDesigner.dimensions.keywords':
+    'dimensions|size|width|depth|height|grid units|footprint',
+  'help.target.binDesigner.shape.title': 'Bin shape',
+  'help.target.binDesigner.shape.description':
+    'Choose between rectangle, L, T, U, or a fully custom footprint by toggling individual grid cells.',
+  'help.target.binDesigner.shape.keywords':
+    'shape|footprint|rectangle|L shape|T shape|U shape|custom|polygon|cell mask',
+  'help.target.binDesigner.walls.title': 'Walls and patterns',
+  'help.target.binDesigner.walls.description':
+    'Adjust wall thickness, pick a decorative pattern (hex, ribbed, etc.), and configure wall cutouts or handles.',
+  'help.target.binDesigner.walls.keywords':
+    'walls|wall thickness|pattern|hex|ribbed|cutouts|handles|grip',
+  'help.target.binDesigner.lid.title': 'Lid',
+  'help.target.binDesigner.lid.description':
+    'Generate a companion lid that mates with the stacking lip on top of the bin. Requires stacking lip enabled.',
+  'help.target.binDesigner.lid.keywords': 'lid|cap|cover|top|click-lock|stacking lip',
+  'help.target.binDesigner.colors.title': 'Multi-color zones',
+  'help.target.binDesigner.colors.description':
+    'Assign different filament colors to different regions of the bin. Experimental — supports multi-material printing.',
+  'help.target.binDesigner.colors.keywords':
+    'color|colors|multi-color|multi-material|filament|MMU|zones',
+  'help.target.binDesigner.interior.title': 'Interior dividers',
+  'help.target.binDesigner.interior.description':
+    'Configure the interior as standard, slotted, or solid (cutouts). Controls how the bin is partitioned inside.',
+  'help.target.binDesigner.interior.keywords':
+    'interior|dividers|compartments|slotted|standard|solid|cutouts|partitions',
+  'help.target.binDesigner.labelTabs.title': 'Label tab',
+  'help.target.binDesigner.labelTabs.description':
+    'Add an angled label area on the front edge of the bin for writing or applying a label.',
+  'help.target.binDesigner.labelTabs.keywords': 'label|labels|tab|tabs|tag|name|sticker|caption',
+  'help.target.binDesigner.scoop.title': 'Finger scoop',
+  'help.target.binDesigner.scoop.description':
+    'Add a curved scoop cutout at the front of the bin so contents can be easily scooped or grabbed.',
+  'help.target.binDesigner.scoop.keywords': 'scoop|finger scoop|fillet|grab|grip|access',
+  'help.target.binDesigner.base.title': 'Base attachments',
+  'help.target.binDesigner.base.description':
+    'Configure the base of the bin: stacking lip, magnet holes, screw holes, and weight savings.',
+  'help.target.binDesigner.base.keywords':
+    'base|bottom|magnets|magnet holes|screw holes|stacking lip|weight savings',
+  'help.target.binDesigner.physicalUnits.title': 'Physical units (designer)',
+  'help.target.binDesigner.physicalUnits.description':
+    'Override the grid unit (mm) and height unit (mm) for this custom bin. Defaults to Gridfinity standards (42mm / 7mm).',
+  'help.target.binDesigner.physicalUnits.keywords':
+    'unit|grid unit|height unit|42mm|7mm|mm|millimeters',
   'help.target.halfBinMode.title': 'Half-bin mode',
   'help.target.halfBinMode.description':
     'Enable 0.5-unit grid increments so you can place half-sized bins and fractional drawer edges.',

@@ -11,6 +11,16 @@ import type { ReactNode } from 'react';
 
 export type HelpEntryKind = 'shortcut' | 'feature' | 'tip';
 
+/**
+ * App mode a help entry applies to. The Help modal is mounted globally but the
+ * surfaces an entry can jump to are mode-specific (the Sidebar isn't mounted
+ * on the bin-designer route, etc), so the catalog is filtered by current mode.
+ *
+ * Omitting `routes` from an entry treats it as mode-agnostic — useful for
+ * keyboard shortcuts and tips that apply regardless of route.
+ */
+export type HelpRoute = 'layout' | 'designer' | 'baseplate';
+
 export interface HelpTarget {
   /** Surface identifier the dispatcher knows how to open (e.g. 'sidebar:physical-units'). */
   surface: string;
@@ -35,6 +45,11 @@ interface BaseHelpEntry {
   category?: string;
   /** Optional decorative icon for result-list rendering. */
   icon?: ReactNode;
+  /**
+   * Modes this entry is valid in. Omit for mode-agnostic entries (shortcuts,
+   * tips). When listed, the entry is hidden on every other mode.
+   */
+  routes?: readonly HelpRoute[];
 }
 
 export interface ShortcutHelpEntry extends BaseHelpEntry {

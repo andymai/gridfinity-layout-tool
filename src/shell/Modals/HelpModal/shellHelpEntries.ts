@@ -13,6 +13,7 @@ export const helpEntries: FeatureHelpEntry[] = [
     descriptionKey: 'help.target.halfBinMode.description',
     keywordsKey: 'help.target.halfBinMode.keywords',
     category: 'settings',
+    routes: ['layout'],
     target: {
       surface: 'sidebar:grid-size',
       controlId: 'half-bin-mode',

@@ -14,6 +14,14 @@ import { ChevronDownIcon } from '@/design-system/Icon';
 interface StickyGroupHeaderProps {
   title: string;
   defaultExpanded?: boolean;
+  /**
+   * Controlled expanded state. When provided, the component becomes controlled
+   * and `onExpandedChange` should be wired to a parent setter — enables
+   * external triggers (help-modal deep-links) to force a section open.
+   */
+  expanded?: boolean;
+  /** Required for controlled mode to behave correctly. */
+  onExpandedChange?: (next: boolean) => void;
   summary?: string;
   /** Optional short label rendered as a pill next to the title (e.g. "Experimental").
    *  Typed as `string` so the badge can't accidentally hold an interactive element
@@ -25,11 +33,19 @@ interface StickyGroupHeaderProps {
 export function StickyGroupHeader({
   title,
   defaultExpanded = true,
+  expanded: controlledExpanded,
+  onExpandedChange,
   summary,
   badge,
   children,
 }: StickyGroupHeaderProps) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
+  const isControlled = controlledExpanded !== undefined;
+  const expanded = isControlled ? controlledExpanded : internalExpanded;
+  const setExpanded = (next: boolean) => {
+    if (!isControlled) setInternalExpanded(next);
+    onExpandedChange?.(next);
+  };
   const [hasToggled, setHasToggled] = useState(false);
   const contentId = useId();
 
