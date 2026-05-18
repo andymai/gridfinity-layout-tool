@@ -54,9 +54,11 @@ test('boots ?smoke=1 fixture and exposes a fresh /version.json', async ({ page, 
   if (bypass) apiHeaders['x-vercel-protection-bypass'] = bypass;
 
   // /version.json must be reachable and parseable. Bypass any service worker by
-  // requesting from the API context.
+  // requesting from the API context. 30s tolerates Vercel cold-start after a
+  // promote-to-prod, which can take 12-15s before /version.json responds.
   const versionRes = await page.request.get(`${baseURL ?? ''}/version.json`, {
     headers: apiHeaders,
+    timeout: 30_000,
   });
   expect(versionRes.status()).toBe(200);
   const versionJson = (await versionRes.json()) as VersionJson;
