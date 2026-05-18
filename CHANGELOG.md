@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.101.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.100.0...gridfinity-layout-tool-v4.101.0) (2026-05-18)
+
+
+### Features
+
+* **help:** mode-aware search + bin-designer catalog ([#1744](https://github.com/andymai/gridfinity-layout-tool/issues/1744)) ([62f3ad2](https://github.com/andymai/gridfinity-layout-tool/commit/62f3ad2afb805c1efc65af70aafab75ce4d50db9))
+
 ## [4.100.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.99.0...gridfinity-layout-tool-v4.100.0) (2026-05-18)
 
 
