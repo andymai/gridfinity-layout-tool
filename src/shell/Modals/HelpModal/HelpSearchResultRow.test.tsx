@@ -67,4 +67,25 @@ describe('HelpSearchResultRow', () => {
     expect(screen.queryByRole('button', { name: 'help.goTo' })).toBeNull();
     expect(screen.getByText('help.tip.halfBin')).toBeTruthy();
   });
+
+  it('suppresses the Go-to button on feature entries when showJumpButton=false', () => {
+    const feature: HelpEntry = {
+      id: 'feature/grid-editor/print-bed-size',
+      kind: 'feature',
+      titleKey: 'help.target.printBedSize.title',
+      descriptionKey: 'help.target.printBedSize.description',
+      target: { surface: 'sidebar:physical-units', controlId: 'print-bed-size' },
+    };
+    render(
+      <HelpSearchResultRow
+        entry={feature}
+        modifierKey="⌘"
+        onJump={vi.fn()}
+        showJumpButton={false}
+      />
+    );
+
+    expect(screen.queryByRole('button', { name: 'help.goTo' })).toBeNull();
+    expect(screen.getByText('help.target.printBedSize.title')).toBeTruthy();
+  });
 });

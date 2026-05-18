@@ -1,5 +1,10 @@
-import { useEffect, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useTranslation } from '@/i18n';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { getAllHelpEntries } from '@/shell/Modals/HelpModal/helpEntryAggregator';
+import { searchHelpEntries } from '@/shell/Modals/HelpModal/helpSearch';
+import { HelpSearchResultRow } from '@/shell/Modals/HelpModal/HelpSearchResultRow';
+import { getModifierKey } from '@/shell/Modals/HelpModal/helpModalStyles';
 
 // Style constants to avoid recreating objects on each render
 const STYLES = {
@@ -52,13 +57,29 @@ interface MobileHelpModalProps {
  */
 export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
   const t = useTranslation();
+  const [searchQuery, setSearchQuery] = useState('');
+  const trimmedQuery = searchQuery.trim();
+  const isSearching = trimmedQuery.length > 0;
+
+  // Reset search on every close path so re-opening starts at the gesture
+  // sections, not a stale filtered view.
+  const handleClose = useCallback(() => {
+    setSearchQuery('');
+    onClose();
+  }, [onClose]);
+
+  const allEntries = useMemo(() => getAllHelpEntries(), []);
+  const rankedResults = useMemo(
+    () => (isSearching ? searchHelpEntries(allEntries, trimmedQuery, t) : []),
+    [allEntries, trimmedQuery, isSearching, t]
+  );
 
   useEffect(() => {
     if (!isOpen) return;
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
 
@@ -69,15 +90,17 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
       document.body.style.overflow = '';
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   if (!isOpen) return null;
+
+  const modifierKey = getModifierKey();
 
   return (
     <div
       className="fixed inset-0 flex items-end sm:items-center justify-center z-50 animate-fade-in"
       style={STYLES.overlay}
-      onClick={onClose}
+      onClick={handleClose}
       role="presentation"
     >
       <div role="presentation" onClick={(e) => e.stopPropagation()}>
@@ -98,7 +121,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
               {t('mobile.help')}
             </h2>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="btn btn-ghost w-10 h-10 p-0"
               aria-label={t('common.close')}
             >
@@ -113,140 +136,236 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
             </button>
           </div>
 
-          <div className="space-y-5">
-            {/* Drawing & Selection */}
-            <section>
-              <h3 className="mb-3" style={STYLES.sectionHeader}>
-                {t('mobile.help.drawingSelection')}
-              </h3>
-              <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
-                <GestureRow
-                  icon={<TapIcon />}
-                  gesture={t('help.gesture.tapBin')}
-                  description={t('help.gesture.selectBin')}
-                />
-                <GestureRow
-                  icon={<DragIcon />}
-                  gesture={t('help.gesture.dragEmpty')}
-                  description={t('help.gesture.drawNewBin')}
-                />
-                <GestureRow
-                  icon={<DragIcon />}
-                  gesture={t('help.gesture.dragSelected')}
-                  description={t('help.gesture.moveBin')}
-                />
-                <GestureRow
-                  icon={<LongPressIcon />}
-                  gesture={t('help.gesture.longPress')}
-                  description={t('help.gesture.openContextMenu')}
-                />
-              </div>
-            </section>
-
-            {/* Editing */}
-            <section>
-              <h3 className="mb-3" style={STYLES.sectionHeader}>
-                {t('mobile.help.editing')}
-              </h3>
-              <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
-                <GestureRow
-                  icon={<DragEdgeIcon />}
-                  gesture={t('help.gesture.dragEdge')}
-                  description={t('help.gesture.resizeBin')}
-                />
-                <GestureRow
-                  icon={<DragCornerIcon />}
-                  gesture={t('help.gesture.dragCorner')}
-                  description={t('help.gesture.resizeWidthDepth')}
-                />
-                <GestureRow
-                  icon={<DragIcon />}
-                  gesture={t('help.gesture.dragToStash')}
-                  description={t('help.gesture.moveToStaging')}
-                />
-              </div>
-            </section>
-
-            {/* Paint Mode */}
-            <section>
-              <h3 className="mb-3" style={STYLES.sectionHeader}>
-                {t('mobile.help.paintMode')}
-              </h3>
-              <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
-                <GestureRow
-                  icon={<TapIcon />}
-                  gesture={t('help.gesture.tapPalette')}
-                  description={t('help.gesture.enterPaintMode')}
-                />
-                <GestureRow
-                  icon={<DragIcon />}
-                  gesture={t('help.gesture.dragGrid')}
-                  description={t('help.gesture.fillArea')}
-                />
-                <GestureRow
-                  icon={<TapIcon />}
-                  gesture={t('help.gesture.tapClose', { button: t('common.close') })}
-                  description={t('help.gesture.exitPaintMode')}
-                />
-              </div>
-            </section>
-
-            {/* Navigation */}
-            <section>
-              <h3 className="mb-3" style={STYLES.sectionHeader}>
-                {t('mobile.help.navigation')}
-              </h3>
-              <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
-                <GestureRow
-                  icon={<SwipeDownIcon />}
-                  gesture={t('help.gesture.swipeDown')}
-                  description={t('help.gesture.closeBottomSheet')}
-                />
-                <GestureRow
-                  icon={<TapIcon />}
-                  gesture={t('help.gesture.tapLayer')}
-                  description={t('help.gesture.switchLayers')}
-                />
-                <GestureRow
-                  icon={<TapIcon />}
-                  gesture={t('help.gesture.tapStriped')}
-                  description={t('help.gesture.jumpToBlocking')}
-                />
-              </div>
-            </section>
-
-            {/* Tips */}
-            <section>
-              <h3 className="mb-3" style={STYLES.sectionHeader}>
-                {t('mobile.help.tips')}
-              </h3>
-              <ul className="space-y-2 p-3 rounded-lg" style={STYLES.tipsList}>
-                <li className="flex items-start gap-2">
-                  <span style={STYLES.colorPrimary}>•</span>
-                  <span>{t('mobile.help.longPressABinToDuplicateDeleteOrMov')}</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span style={STYLES.colorPrimary}>•</span>
-                  <span>{t('mobile.help.tapThe3dCubeIconToSeeYourLayoutInIs')}</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span style={STYLES.colorPrimary}>•</span>
-                  <span>{t('mobile.help.withKeyboardMToMoveBinsRToResizeVFo')}</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span style={STYLES.colorPrimary}>•</span>
-                  <span>{t('mobile.help.oversizedBinsAreAutomaticallySplitF')}</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span style={STYLES.colorPrimary}>•</span>
-                  <span>{t('mobile.help.yourLayoutAutoSavesToYourBrowser')}</span>
-                </li>
-              </ul>
-            </section>
+          {/* Search */}
+          <div className="relative mb-4">
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              {ICON_PATHS.search.map((d) => (
+                <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+              ))}
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('help.searchPlaceholder')}
+              aria-label={t('help.searchPlaceholder')}
+              className="w-full pl-9 pr-9 py-2 text-sm rounded-md bg-surface border border-stroke-subtle text-content placeholder:text-content-tertiary"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-content-tertiary hover:text-content"
+                aria-label={t('layouts.clearSearch')}
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  {ICON_PATHS.close.map((d) => (
+                    <path
+                      key={d}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d={d}
+                    />
+                  ))}
+                </svg>
+              </button>
+            )}
           </div>
+
+          {isSearching ? (
+            <MobileSearchResultsList
+              results={rankedResults}
+              modifierKey={modifierKey}
+              query={trimmedQuery}
+              onJump={handleClose}
+            />
+          ) : (
+            <div className="space-y-5">
+              {/* Drawing & Selection */}
+              <section>
+                <h3 className="mb-3" style={STYLES.sectionHeader}>
+                  {t('mobile.help.drawingSelection')}
+                </h3>
+                <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
+                  <GestureRow
+                    icon={<TapIcon />}
+                    gesture={t('help.gesture.tapBin')}
+                    description={t('help.gesture.selectBin')}
+                  />
+                  <GestureRow
+                    icon={<DragIcon />}
+                    gesture={t('help.gesture.dragEmpty')}
+                    description={t('help.gesture.drawNewBin')}
+                  />
+                  <GestureRow
+                    icon={<DragIcon />}
+                    gesture={t('help.gesture.dragSelected')}
+                    description={t('help.gesture.moveBin')}
+                  />
+                  <GestureRow
+                    icon={<LongPressIcon />}
+                    gesture={t('help.gesture.longPress')}
+                    description={t('help.gesture.openContextMenu')}
+                  />
+                </div>
+              </section>
+
+              {/* Editing */}
+              <section>
+                <h3 className="mb-3" style={STYLES.sectionHeader}>
+                  {t('mobile.help.editing')}
+                </h3>
+                <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
+                  <GestureRow
+                    icon={<DragEdgeIcon />}
+                    gesture={t('help.gesture.dragEdge')}
+                    description={t('help.gesture.resizeBin')}
+                  />
+                  <GestureRow
+                    icon={<DragCornerIcon />}
+                    gesture={t('help.gesture.dragCorner')}
+                    description={t('help.gesture.resizeWidthDepth')}
+                  />
+                  <GestureRow
+                    icon={<DragIcon />}
+                    gesture={t('help.gesture.dragToStash')}
+                    description={t('help.gesture.moveToStaging')}
+                  />
+                </div>
+              </section>
+
+              {/* Paint Mode */}
+              <section>
+                <h3 className="mb-3" style={STYLES.sectionHeader}>
+                  {t('mobile.help.paintMode')}
+                </h3>
+                <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
+                  <GestureRow
+                    icon={<TapIcon />}
+                    gesture={t('help.gesture.tapPalette')}
+                    description={t('help.gesture.enterPaintMode')}
+                  />
+                  <GestureRow
+                    icon={<DragIcon />}
+                    gesture={t('help.gesture.dragGrid')}
+                    description={t('help.gesture.fillArea')}
+                  />
+                  <GestureRow
+                    icon={<TapIcon />}
+                    gesture={t('help.gesture.tapClose', { button: t('common.close') })}
+                    description={t('help.gesture.exitPaintMode')}
+                  />
+                </div>
+              </section>
+
+              {/* Navigation */}
+              <section>
+                <h3 className="mb-3" style={STYLES.sectionHeader}>
+                  {t('mobile.help.navigation')}
+                </h3>
+                <div className="space-y-3 p-3 rounded-lg" style={STYLES.sectionContent}>
+                  <GestureRow
+                    icon={<SwipeDownIcon />}
+                    gesture={t('help.gesture.swipeDown')}
+                    description={t('help.gesture.closeBottomSheet')}
+                  />
+                  <GestureRow
+                    icon={<TapIcon />}
+                    gesture={t('help.gesture.tapLayer')}
+                    description={t('help.gesture.switchLayers')}
+                  />
+                  <GestureRow
+                    icon={<TapIcon />}
+                    gesture={t('help.gesture.tapStriped')}
+                    description={t('help.gesture.jumpToBlocking')}
+                  />
+                </div>
+              </section>
+
+              {/* Tips */}
+              <section>
+                <h3 className="mb-3" style={STYLES.sectionHeader}>
+                  {t('mobile.help.tips')}
+                </h3>
+                <ul className="space-y-2 p-3 rounded-lg" style={STYLES.tipsList}>
+                  <li className="flex items-start gap-2">
+                    <span style={STYLES.colorPrimary}>•</span>
+                    <span>{t('mobile.help.longPressABinToDuplicateDeleteOrMov')}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span style={STYLES.colorPrimary}>•</span>
+                    <span>{t('mobile.help.tapThe3dCubeIconToSeeYourLayoutInIs')}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span style={STYLES.colorPrimary}>•</span>
+                    <span>{t('mobile.help.withKeyboardMToMoveBinsRToResizeVFo')}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span style={STYLES.colorPrimary}>•</span>
+                    <span>{t('mobile.help.oversizedBinsAreAutomaticallySplitF')}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span style={STYLES.colorPrimary}>•</span>
+                    <span>{t('mobile.help.yourLayoutAutoSavesToYourBrowser')}</span>
+                  </li>
+                </ul>
+              </section>
+            </div>
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+interface MobileSearchResultsListProps {
+  results: ReturnType<typeof searchHelpEntries>;
+  modifierKey: string;
+  query: string;
+  onJump: () => void;
+}
+
+function MobileSearchResultsList({
+  results,
+  modifierKey,
+  query,
+  onJump,
+}: MobileSearchResultsListProps) {
+  const t = useTranslation();
+  if (results.length === 0) {
+    return (
+      <div className="text-center py-6 text-content-tertiary text-sm">
+        {t('help.noResultsFor', { query })}
+      </div>
+    );
+  }
+  return (
+    <ul aria-label={t('help.searchResultsAriaLabel')} className="space-y-1">
+      {results.map(({ entry }) => (
+        <li key={entry.id}>
+          <HelpSearchResultRow
+            entry={entry}
+            modifierKey={modifierKey}
+            onJump={onJump}
+            showJumpButton={false}
+          />
+        </li>
+      ))}
+    </ul>
   );
 }
 

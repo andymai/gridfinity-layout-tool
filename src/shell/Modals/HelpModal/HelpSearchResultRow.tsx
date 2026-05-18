@@ -14,9 +14,20 @@ interface HelpSearchResultRowProps {
   entry: HelpEntry;
   modifierKey: string;
   onJump: () => void;
+  /**
+   * Whether to render the Go-to deep-link button on feature entries.
+   * Defaults to true; mobile suppresses it until mobile surfaces expose
+   * data-help-target attributes (planned follow-up).
+   */
+  showJumpButton?: boolean;
 }
 
-export function HelpSearchResultRow({ entry, modifierKey, onJump }: HelpSearchResultRowProps) {
+export function HelpSearchResultRow({
+  entry,
+  modifierKey,
+  onJump,
+  showJumpButton = true,
+}: HelpSearchResultRowProps) {
   const t = useTranslation();
   const title = t(entry.titleKey);
   const description = entry.titleKey === entry.descriptionKey ? null : t(entry.descriptionKey);
@@ -34,7 +45,7 @@ export function HelpSearchResultRow({ entry, modifierKey, onJump }: HelpSearchRe
       </div>
       {entry.kind === 'shortcut' ? (
         <ShortcutKeyCaps entry={entry} modifierKey={modifierKey} />
-      ) : entry.kind === 'feature' ? (
+      ) : entry.kind === 'feature' && showJumpButton ? (
         <button
           type="button"
           className="btn btn-secondary btn-sm shrink-0"
