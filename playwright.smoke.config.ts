@@ -14,15 +14,19 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 1,
   workers: 1,
-  timeout: 30_000, // total per-test budget
+  // Per-test budget. 60s accommodates Vercel cold-start (12-15s for first
+  // /version.json) plus the rest of the boot flow (navigation + selector
+  // waits) without trip-failing while leaving genuine regressions on a tight
+  // leash.
+  timeout: 60_000,
   expect: { timeout: 10_000 },
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL ?? 'http://localhost:4173',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    actionTimeout: 10_000,
-    navigationTimeout: 10_000,
+    actionTimeout: 20_000,
+    navigationTimeout: 20_000,
     // NOTE: don't set extraHTTPHeaders for the Vercel bypass token here.
     // Playwright sends `extraHTTPHeaders` on EVERY outgoing request including
     // third-party (fonts.gstatic.com etc.), and those origins reject unknown
