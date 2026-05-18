@@ -64,6 +64,10 @@ public/de/
 public/fr/
 public/es/
 public/pt-BR/
+public/nl/
+public/sv/
+public/nb/
+public/uk/
 public/content.*.css
 
 # Generated English locale JSON (source of truth is en.ts)

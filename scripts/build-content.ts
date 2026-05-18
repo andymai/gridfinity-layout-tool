@@ -16,7 +16,7 @@ const CONTENT_DIR = path.join(process.cwd(), 'content');
 const OUTPUT_DIR = path.join(process.cwd(), 'public');
 const SITE_URL = 'https://gridfinitylayouttool.com';
 
-const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'es', 'pt-BR'] as const;
+const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'es', 'pt-BR', 'nl', 'sv', 'nb', 'uk'] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = 'en';
 
@@ -26,6 +26,10 @@ const LOCALE_LABELS: Record<Locale, { lang: string; openTool: string; siteName: 
   fr: { lang: 'fr', openTool: 'Ouvrir l’outil', siteName: 'Gridfinity Layout Tool' },
   es: { lang: 'es', openTool: 'Abrir herramienta', siteName: 'Gridfinity Layout Tool' },
   'pt-BR': { lang: 'pt-BR', openTool: 'Abrir ferramenta', siteName: 'Gridfinity Layout Tool' },
+  nl: { lang: 'nl', openTool: 'Tool openen', siteName: 'Gridfinity Layout Tool' },
+  sv: { lang: 'sv', openTool: 'Öppna verktyget', siteName: 'Gridfinity Layout Tool' },
+  nb: { lang: 'nb', openTool: 'Åpne verktøy', siteName: 'Gridfinity Layout Tool' },
+  uk: { lang: 'uk', openTool: 'Відкрити інструмент', siteName: 'Gridfinity Layout Tool' },
 };
 
 const FAQ_HEADING: Record<Locale, string> = {
@@ -34,6 +38,10 @@ const FAQ_HEADING: Record<Locale, string> = {
   fr: 'Questions fréquentes',
   es: 'Preguntas frecuentes',
   'pt-BR': 'Perguntas frequentes',
+  nl: 'Veelgestelde vragen',
+  sv: 'Vanliga frågor',
+  nb: 'Ofte stilte spørsmål',
+  uk: 'Часті запитання',
 };
 
 const FOOTER_COPY: Record<Locale, string> = {
@@ -42,6 +50,10 @@ const FOOTER_COPY: Record<Locale, string> = {
   fr: 'Gratuit.',
   es: 'Uso gratuito.',
   'pt-BR': 'Uso gratuito.',
+  nl: 'Gratis te gebruiken.',
+  sv: 'Gratis att använda.',
+  nb: 'Gratis å bruke.',
+  uk: 'Безкоштовно у використанні.',
 };
 
 const FOOTER_LINKS: Record<
@@ -106,6 +118,46 @@ const FOOTER_LINKS: Record<
     guide: 'Guia de planejamento',
     privacy: 'Privacidade',
     terms: 'Termos',
+  },
+  nl: {
+    generator: 'Generator',
+    whatIs: 'Wat is Gridfinity?',
+    bin: 'Bin-generator',
+    baseplate: 'Bodemplaat-generator',
+    sizes: 'Maatreferentie',
+    guide: 'Planningsgids',
+    privacy: 'Privacy',
+    terms: 'Voorwaarden',
+  },
+  sv: {
+    generator: 'Generator',
+    whatIs: 'Vad är Gridfinity?',
+    bin: 'Bin-generator',
+    baseplate: 'Bottenplatta-generator',
+    sizes: 'Storleksreferens',
+    guide: 'Planeringsguide',
+    privacy: 'Integritet',
+    terms: 'Villkor',
+  },
+  nb: {
+    generator: 'Generator',
+    whatIs: 'Hva er Gridfinity?',
+    bin: 'Bin-generator',
+    baseplate: 'Grunnplate-generator',
+    sizes: 'Størrelsesreferanse',
+    guide: 'Planleggingsveiledning',
+    privacy: 'Personvern',
+    terms: 'Vilkår',
+  },
+  uk: {
+    generator: 'Генератор',
+    whatIs: 'Що таке Gridfinity?',
+    bin: 'Генератор bin',
+    baseplate: 'Генератор основи',
+    sizes: 'Довідник розмірів',
+    guide: 'Посібник з планування',
+    privacy: 'Конфіденційність',
+    terms: 'Умови',
   },
 };
 
@@ -209,6 +261,10 @@ function generateHtml(
     fr: 'fr_FR',
     es: 'es_ES',
     'pt-BR': 'pt_BR',
+    nl: 'nl_NL',
+    sv: 'sv_SE',
+    nb: 'nb_NO',
+    uk: 'uk_UA',
   };
   const hreflangLinks = SUPPORTED_LOCALES.filter((l) => availableLocales.has(l))
     .map((l) => `  <link rel="alternate" hreflang="${l}" href="${getUrl(slug, l)}">`)
