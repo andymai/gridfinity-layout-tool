@@ -54,9 +54,13 @@ scripts/train-bin-recommender/.env*
 scripts/train-bin-recommender/__pycache__/
 scripts/train-bin-recommender/.venv/
 
-# Generated content pages (built from content/*.md)
+# Generated content pages (built from content/*.md and content/{locale}/*.md)
 public/what-is-gridfinity/
 public/guide/
+public/de/
+public/fr/
+public/es/
+public/pt-BR/
 public/content.*.css
 
 # Generated English locale JSON (source of truth is en.ts)

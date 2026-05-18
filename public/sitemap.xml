@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://gridfinitylayouttool.com/</loc>
-    <lastmod>2026-05-05</lastmod>
+    <lastmod>2026-05-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -14,7 +15,7 @@
   </url>
   <url>
     <loc>https://gridfinitylayouttool.com/gridfinity-generator</loc>
-    <lastmod>2026-05-05</lastmod>
+    <lastmod>2026-05-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
     <image:image>
@@ -25,31 +26,139 @@
   </url>
   <url>
     <loc>https://gridfinitylayouttool.com/what-is-gridfinity</loc>
-    <lastmod>2026-05-05</lastmod>
+    <lastmod>2026-05-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://gridfinitylayouttool.com/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://gridfinitylayouttool.com/de/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://gridfinitylayouttool.com/fr/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://gridfinitylayouttool.com/es/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://gridfinitylayouttool.com/pt-BR/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gridfinitylayouttool.com/what-is-gridfinity"/>
+  </url>
+  <url>
+    <loc>https://gridfinitylayouttool.com/de/what-is-gridfinity</loc>
+    <lastmod>2026-05-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://gridfinitylayouttool.com/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://gridfinitylayouttool.com/de/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://gridfinitylayouttool.com/fr/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://gridfinitylayouttool.com/es/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://gridfinitylayouttool.com/pt-BR/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gridfinitylayouttool.com/what-is-gridfinity"/>
+  </url>
+  <url>
+    <loc>https://gridfinitylayouttool.com/fr/what-is-gridfinity</loc>
+    <lastmod>2026-05-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://gridfinitylayouttool.com/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://gridfinitylayouttool.com/de/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://gridfinitylayouttool.com/fr/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://gridfinitylayouttool.com/es/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://gridfinitylayouttool.com/pt-BR/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gridfinitylayouttool.com/what-is-gridfinity"/>
+  </url>
+  <url>
+    <loc>https://gridfinitylayouttool.com/es/what-is-gridfinity</loc>
+    <lastmod>2026-05-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://gridfinitylayouttool.com/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://gridfinitylayouttool.com/de/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://gridfinitylayouttool.com/fr/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://gridfinitylayouttool.com/es/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://gridfinitylayouttool.com/pt-BR/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gridfinitylayouttool.com/what-is-gridfinity"/>
+  </url>
+  <url>
+    <loc>https://gridfinitylayouttool.com/pt-BR/what-is-gridfinity</loc>
+    <lastmod>2026-05-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://gridfinitylayouttool.com/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://gridfinitylayouttool.com/de/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://gridfinitylayouttool.com/fr/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://gridfinitylayouttool.com/es/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://gridfinitylayouttool.com/pt-BR/what-is-gridfinity"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gridfinitylayouttool.com/what-is-gridfinity"/>
   </url>
   <url>
     <loc>https://gridfinitylayouttool.com/guide</loc>
-    <lastmod>2026-05-05</lastmod>
+    <lastmod>2026-05-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://gridfinitylayouttool.com/guide"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://gridfinitylayouttool.com/de/guide"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://gridfinitylayouttool.com/fr/guide"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://gridfinitylayouttool.com/es/guide"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://gridfinitylayouttool.com/pt-BR/guide"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gridfinitylayouttool.com/guide"/>
+  </url>
+  <url>
+    <loc>https://gridfinitylayouttool.com/de/guide</loc>
+    <lastmod>2026-05-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://gridfinitylayouttool.com/guide"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://gridfinitylayouttool.com/de/guide"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://gridfinitylayouttool.com/fr/guide"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://gridfinitylayouttool.com/es/guide"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://gridfinitylayouttool.com/pt-BR/guide"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gridfinitylayouttool.com/guide"/>
+  </url>
+  <url>
+    <loc>https://gridfinitylayouttool.com/fr/guide</loc>
+    <lastmod>2026-05-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://gridfinitylayouttool.com/guide"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://gridfinitylayouttool.com/de/guide"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://gridfinitylayouttool.com/fr/guide"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://gridfinitylayouttool.com/es/guide"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://gridfinitylayouttool.com/pt-BR/guide"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gridfinitylayouttool.com/guide"/>
+  </url>
+  <url>
+    <loc>https://gridfinitylayouttool.com/es/guide</loc>
+    <lastmod>2026-05-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://gridfinitylayouttool.com/guide"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://gridfinitylayouttool.com/de/guide"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://gridfinitylayouttool.com/fr/guide"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://gridfinitylayouttool.com/es/guide"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://gridfinitylayouttool.com/pt-BR/guide"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gridfinitylayouttool.com/guide"/>
+  </url>
+  <url>
+    <loc>https://gridfinitylayouttool.com/pt-BR/guide</loc>
+    <lastmod>2026-05-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://gridfinitylayouttool.com/guide"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://gridfinitylayouttool.com/de/guide"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://gridfinitylayouttool.com/fr/guide"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://gridfinitylayouttool.com/es/guide"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://gridfinitylayouttool.com/pt-BR/guide"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://gridfinitylayouttool.com/guide"/>
   </url>
   <url>
     <loc>https://gridfinitylayouttool.com/gridfinity-bin-generator</loc>
-    <lastmod>2026-05-05</lastmod>
+    <lastmod>2026-05-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://gridfinitylayouttool.com/gridfinity-baseplate-generator</loc>
-    <lastmod>2026-05-05</lastmod>
+    <lastmod>2026-05-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://gridfinitylayouttool.com/gridfinity-sizes</loc>
-    <lastmod>2026-05-05</lastmod>
+    <lastmod>2026-05-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
