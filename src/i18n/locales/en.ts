@@ -844,10 +844,6 @@ const en: Record<string, string> = {
     'Configure the interior as standard, slotted, or solid (cutouts). Controls how the bin is partitioned inside.',
   'help.target.binDesigner.interior.keywords':
     'interior|dividers|compartments|slotted|standard|solid|cutouts|partitions',
-  'help.target.binDesigner.labelTabs.title': 'Label tab',
-  'help.target.binDesigner.labelTabs.description':
-    'Add an angled label area on the front edge of the bin for writing or applying a label.',
-  'help.target.binDesigner.labelTabs.keywords': 'label|labels|tab|tabs|tag|name|sticker|caption',
   'help.target.binDesigner.scoop.title': 'Finger scoop',
   'help.target.binDesigner.scoop.description':
     'Add a curved scoop cutout at the front of the bin so contents can be easily scooped or grabbed.',
@@ -862,6 +858,16 @@ const en: Record<string, string> = {
     'Override the grid unit (mm) and height unit (mm) for this custom bin. Defaults to Gridfinity standards (42mm / 7mm).',
   'help.target.binDesigner.physicalUnits.keywords':
     'unit|grid unit|height unit|42mm|7mm|mm|millimeters',
+  'help.target.binDesigner.printBedSize.title': 'Print bed size (designer)',
+  'help.target.binDesigner.printBedSize.description':
+    'Width and depth of your printer bed in millimeters. Bins larger than the bed are split for printing.',
+  'help.target.binDesigner.printBedSize.keywords':
+    'bed|bed size|print bed|printer size|printer bed|build plate|build volume',
+  'help.target.baseplate.printBedSize.title': 'Print bed size (baseplate)',
+  'help.target.baseplate.printBedSize.description':
+    'Width and depth of your printer bed. Baseplates larger than the bed are split into tileable pieces.',
+  'help.target.baseplate.printBedSize.keywords':
+    'bed|bed size|print bed|printer size|printer bed|build plate|build volume|split|tile',
   'help.target.halfBinMode.title': 'Half-bin mode',
   'help.target.halfBinMode.description':
     'Enable 0.5-unit grid increments so you can place half-sized bins and fractional drawer edges.',

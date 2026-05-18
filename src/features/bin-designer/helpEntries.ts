@@ -111,4 +111,14 @@ export const helpEntries: FeatureHelpEntry[] = [
     routes: ['designer'],
     target: { surface: 'binDesigner:base', controlId: 'bd-physical-units' },
   },
+  {
+    id: 'feature/bin-designer/print-bed-size',
+    kind: 'feature',
+    titleKey: 'help.target.binDesigner.printBedSize.title',
+    descriptionKey: 'help.target.binDesigner.printBedSize.description',
+    keywordsKey: 'help.target.binDesigner.printBedSize.keywords',
+    category: 'base',
+    routes: ['designer'],
+    target: { surface: 'binDesigner:base', controlId: 'bd-physical-units' },
+  },
 ];
