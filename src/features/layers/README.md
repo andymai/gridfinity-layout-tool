@@ -37,3 +37,7 @@ Z-axis calculations (getLayerZStart, getLayerZEnd) are in `@/shared/utils/collis
 3. **Reorder validation** - checks for vertical collisions before allowing
 4. **Can't delete last layer** - minimum 1 required
 5. **Layer deletion** - bins move to staging
+
+## Help Modal Integration
+
+`helpEntries` is exported from the barrel and aggregated by the global Help modal. Add new entries to `helpEntries.ts` when authoring user-facing affordances that should be discoverable via natural-language search. Each entry's `target` references a `data-help-target` marker in the rendered DOM.

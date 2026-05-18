@@ -32,3 +32,7 @@ graph TB
 1. **Deletion blocked if category in use** - bins must be reassigned first (prevented at store level)
 2. **Category ID used in bin.category** - not name
 3. **Print list groups by category** - affects export organization
+
+## Help Modal Integration
+
+`helpEntries` is exported from the barrel and aggregated by the global Help modal. Add new entries to `helpEntries.ts` when authoring user-facing affordances that should be discoverable via natural-language search. Each entry's `target` references a `data-help-target` marker in the rendered DOM.
