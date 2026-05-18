@@ -113,19 +113,35 @@ export function Sidebar() {
   }, []);
 
   // Help modal deep-links: expand the destination section so the highlighted
-  // control is visible when the dispatcher applies its pulse.
+  // control is visible when the dispatcher applies its pulse. Also ensure the
+  // sidebar itself is uncollapsed — a jump while the left panel is closed
+  // would target an offscreen control.
   useEffect(() => {
-    const gridSizeEvent = helpJumpEventName('sidebar:grid-size');
-    const physicalUnitsEvent = helpJumpEventName('sidebar:physical-units');
+    const ensureSidebarOpen = () => {
+      const state = useViewStore.getState();
+      if (state.leftPanelCollapsed) state.toggleLeftPanel();
+    };
 
-    const expandGridSize = () => setGridSizeExpanded(true);
-    const expandPhysicalUnits = () => setPhysicalUnitsExpanded(true);
+    const handlers: Record<string, () => void> = {
+      [helpJumpEventName('sidebar:grid-size')]: () => {
+        ensureSidebarOpen();
+        setGridSizeExpanded(true);
+      },
+      [helpJumpEventName('sidebar:physical-units')]: () => {
+        ensureSidebarOpen();
+        setPhysicalUnitsExpanded(true);
+      },
+      [helpJumpEventName('sidebar:layers')]: ensureSidebarOpen,
+      [helpJumpEventName('sidebar:categories')]: ensureSidebarOpen,
+    };
 
-    window.addEventListener(gridSizeEvent, expandGridSize);
-    window.addEventListener(physicalUnitsEvent, expandPhysicalUnits);
+    for (const [name, fn] of Object.entries(handlers)) {
+      window.addEventListener(name, fn);
+    }
     return () => {
-      window.removeEventListener(gridSizeEvent, expandGridSize);
-      window.removeEventListener(physicalUnitsEvent, expandPhysicalUnits);
+      for (const [name, fn] of Object.entries(handlers)) {
+        window.removeEventListener(name, fn);
+      }
     };
   }, []);
 
@@ -212,10 +228,18 @@ export function Sidebar() {
             <div data-active-layer-panel className="border-b border-stroke-subtle">
               <ActiveLayerPanel />
             </div>
-            <div data-layers-panel className="border-b border-stroke-subtle">
+            <div
+              data-layers-panel
+              data-help-target="layers-panel"
+              className="border-b border-stroke-subtle"
+            >
               <LayerPanel />
             </div>
-            <div data-categories-panel className="border-b border-stroke-subtle">
+            <div
+              data-categories-panel
+              data-help-target="categories-panel"
+              className="border-b border-stroke-subtle"
+            >
               <CategoriesPanel />
             </div>
 
@@ -283,7 +307,7 @@ export function Sidebar() {
               >
                 <div className="text-xs text-content-secondary space-y-2">
                   {/* Width / Depth / Height in compact grid */}
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div data-help-target="drawer-size" className="grid grid-cols-3 gap-1.5">
                     <div>
                       <label
                         className="block text-content-tertiary mb-1"
@@ -424,36 +448,40 @@ export function Sidebar() {
                 onExpandedChange={setPhysicalUnitsExpanded}
               >
                 <div className="text-xs text-content-secondary space-y-2">
-                  <SettingsRow
-                    label="Grid unit"
-                    htmlFor="gridUnit"
-                    tooltip="Size of one grid unit in mm (standard Gridfinity = 42mm)"
-                    unit="mm"
-                  >
-                    <DeferredNumberInput
-                      id="gridUnit"
-                      value={gridUnitMm}
-                      onChange={setGridUnitMm}
-                      min={1}
-                      max={200}
-                      className="input w-14 py-0.5 px-1 text-xs text-right"
-                    />
-                  </SettingsRow>
-                  <SettingsRow
-                    label="Height unit"
-                    htmlFor="heightUnit"
-                    tooltip="Height of one vertical unit in mm (standard = 7mm)"
-                    unit="mm"
-                  >
-                    <DeferredNumberInput
-                      id="heightUnit"
-                      value={heightUnitMm}
-                      onChange={setHeightUnitMm}
-                      min={1}
-                      max={50}
-                      className="input w-14 py-0.5 px-1 text-xs text-right"
-                    />
-                  </SettingsRow>
+                  <div data-help-target="grid-unit">
+                    <SettingsRow
+                      label="Grid unit"
+                      htmlFor="gridUnit"
+                      tooltip="Size of one grid unit in mm (standard Gridfinity = 42mm)"
+                      unit="mm"
+                    >
+                      <DeferredNumberInput
+                        id="gridUnit"
+                        value={gridUnitMm}
+                        onChange={setGridUnitMm}
+                        min={1}
+                        max={200}
+                        className="input w-14 py-0.5 px-1 text-xs text-right"
+                      />
+                    </SettingsRow>
+                  </div>
+                  <div data-help-target="height-unit">
+                    <SettingsRow
+                      label="Height unit"
+                      htmlFor="heightUnit"
+                      tooltip="Height of one vertical unit in mm (standard = 7mm)"
+                      unit="mm"
+                    >
+                      <DeferredNumberInput
+                        id="heightUnit"
+                        value={heightUnitMm}
+                        onChange={setHeightUnitMm}
+                        min={1}
+                        max={50}
+                        className="input w-14 py-0.5 px-1 text-xs text-right"
+                      />
+                    </SettingsRow>
+                  </div>
                   <div data-help-target="print-bed-size">
                     <SettingsRow
                       label="Print bed"

@@ -794,6 +794,26 @@ const en: Record<string, string> = {
     'Set the width and depth of your printer bed in millimeters. Bins larger than the bed are split for printing.',
   'help.target.printBedSize.keywords':
     'bed|bed size|print bed|printer size|printer bed|build plate|build volume',
+  'help.target.drawerSize.title': 'Drawer size',
+  'help.target.drawerSize.description':
+    'Set the width, depth, and height of the drawer in grid units. Controls the canvas you place bins in.',
+  'help.target.drawerSize.keywords': 'drawer|size|width|depth|height|dimensions|canvas|grid size',
+  'help.target.gridUnit.title': 'Grid unit (mm)',
+  'help.target.gridUnit.description':
+    'Size of one grid unit in millimeters. The standard Gridfinity unit is 42mm; change only if your prints use a non-standard size.',
+  'help.target.gridUnit.keywords': 'unit|grid unit|42mm|millimeters|mm|cell size',
+  'help.target.heightUnit.title': 'Height unit (mm)',
+  'help.target.heightUnit.description':
+    'Height of one vertical unit in millimeters. The standard is 7mm; bin heights are multiples of this.',
+  'help.target.heightUnit.keywords': 'height|height unit|7mm|vertical|tall|millimeters|mm',
+  'help.target.layers.title': 'Layers',
+  'help.target.layers.description':
+    'Stack multiple grids vertically. Each layer is its own bin layout; bins on higher layers sit physically on top of lower ones.',
+  'help.target.layers.keywords': 'layer|layers|stack|tier|level|multi-layer',
+  'help.target.categories.title': 'Categories',
+  'help.target.categories.description':
+    'Color-coded groups for organizing bins by contents. Useful for highlighting what each bin holds at a glance.',
+  'help.target.categories.keywords': 'category|categories|color|group|tag|label|organize',
   'help.target.halfBinMode.title': 'Half-bin mode',
   'help.target.halfBinMode.description':
     'Enable 0.5-unit grid increments so you can place half-sized bins and fractional drawer edges.',
