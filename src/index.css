@@ -1097,7 +1097,7 @@ input[type='range']:hover::-moz-range-thumb {
   }
 
   .help-target-pulse {
-    animation: help-target-pulse 1.5s ease-out !important;
+    animation: none !important;
   }
 }
 

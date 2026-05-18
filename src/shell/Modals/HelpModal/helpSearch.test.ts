@@ -114,4 +114,9 @@ describe('searchHelpEntries', () => {
     const results = searchHelpEntries(entries, 'half bin', localT);
     expect(results[0].entry.id).toBe('feature/shell/half-bin-mode');
   });
+
+  it('matches shortcut entries by their key sequence (e.g. typing "z" finds Undo)', () => {
+    const results = searchHelpEntries(entries, 'z', t);
+    expect(results.some((r) => r.entry.id === 'shortcut/general/0')).toBe(true);
+  });
 });

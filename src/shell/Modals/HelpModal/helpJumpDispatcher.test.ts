@@ -40,6 +40,23 @@ describe('helpJumpDispatcher', () => {
     expect(ok).toBe(true);
   });
 
+  it('focuses a focusable descendant when the marker wraps the control', async () => {
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute(HELP_TARGET_ATTR, 'print-bed-size');
+    const input = document.createElement('input');
+    input.type = 'number';
+    wrapper.appendChild(input);
+    document.body.appendChild(wrapper);
+
+    await jumpToHelpTarget({
+      surface: 'sidebar:physical-units',
+      controlId: 'print-bed-size',
+    });
+
+    expect(document.activeElement).toBe(input);
+    expect(wrapper.classList.contains('help-target-pulse')).toBe(true);
+  });
+
   it('focuses the target control and applies the pulse class', async () => {
     const button = document.createElement('button');
     button.setAttribute(HELP_TARGET_ATTR, 'print-bed-size');

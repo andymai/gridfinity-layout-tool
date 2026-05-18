@@ -272,9 +272,9 @@ function SearchResultsList({ results, modifierKey, query, onJump }: SearchResult
     );
   }
   return (
-    <ul role="listbox" aria-label={t('help.searchResultsAriaLabel')} className="space-y-1">
+    <ul aria-label={t('help.searchResultsAriaLabel')} className="space-y-1">
       {results.map(({ entry }) => (
-        <li key={entry.id} role="option" aria-selected={false}>
+        <li key={entry.id}>
           <HelpSearchResultRow entry={entry} modifierKey={modifierKey} onJump={onJump} />
         </li>
       ))}

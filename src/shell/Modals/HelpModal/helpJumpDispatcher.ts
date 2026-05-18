@@ -25,15 +25,20 @@ function helpJumpEvent(surface: string, detail: HelpJumpEventDetail): CustomEven
   return new CustomEvent(`${HELP_JUMP_EVENT_PREFIX}${surface}`, { detail });
 }
 
-function findFocusableAncestor(el: HTMLElement): HTMLElement {
+const FOCUSABLE_SELECTOR =
+  'button, input, select, textarea, a[href], [role="button"], [tabindex]:not([tabindex="-1"])';
+
+function findFocusTarget(el: HTMLElement): HTMLElement {
+  // The marker often wraps the control (e.g., a div around <PrintBedInput>),
+  // so look inside before walking outward.
+  const descendant = el.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+  if (descendant) return descendant;
+
+  // Fall back to el itself when the marker IS the control (e.g., a tabIndex=0
+  // div with role=checkbox), then walk up if neither matches.
   let cursor: HTMLElement | null = el;
   while (cursor) {
-    if (
-      cursor.tabIndex >= 0 ||
-      cursor.matches('button, input, select, textarea, a[href], [role="button"]')
-    ) {
-      return cursor;
-    }
+    if (cursor.matches(FOCUSABLE_SELECTOR)) return cursor;
     cursor = cursor.parentElement;
   }
   return el;
@@ -80,7 +85,7 @@ export async function jumpToHelpTarget(target: HelpTarget): Promise<boolean> {
 
   element.scrollIntoView({ block: 'center', behavior: 'smooth' });
 
-  const focusTarget = findFocusableAncestor(element);
+  const focusTarget = findFocusTarget(element);
   focusTarget.focus({ preventScroll: true });
 
   element.classList.remove(PULSE_CLASS);

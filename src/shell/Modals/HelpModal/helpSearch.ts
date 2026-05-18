@@ -61,6 +61,14 @@ function resolveEntryFields(entry: HelpEntry, t: TFunction): ResolvedEntryFields
   const keywords = entry.keywordsKey
     ? tokenize(t(entry.keywordsKey).split(KEYWORDS_DELIMITER).join(' '))
     : [];
+
+  // Shortcut entries also match on their key sequences ("Z" finds Undo) — the
+  // old substring-based search supported this; the new tokenized search must
+  // preserve it. Treated as keyword-strength signals.
+  if (entry.kind === 'shortcut') {
+    const keyTokens = (Array.isArray(entry.keys) ? entry.keys : [entry.keys]).flatMap(tokenize);
+    keywords.push(...keyTokens);
+  }
   return { title, keywords, description, idPath };
 }
 
