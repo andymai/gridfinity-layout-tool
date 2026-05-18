@@ -21,6 +21,11 @@ const domIncludes = [
   // All .test.tsx files are React component tests and need jsdom.
   'src/**/*.test.tsx',
   'src/shared/components/**/*.test.{ts,tsx}',
+  // `src/shared/help/` tests live directly under the prefix with no
+  // sub-directory, which not every glob implementation matches via `**/`.
+  // Both patterns guarantee the dispatcher test lands in jsdom env.
+  'src/shared/help/*.test.{ts,tsx}',
+  'src/shared/help/**/*.test.{ts,tsx}',
   'src/shared/hooks/**/*.test.{ts,tsx}',
   'src/shared/webgl/**/*.test.{ts,tsx}',
   'src/features/**/components/**/*.test.{ts,tsx}',
