@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.99.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.98.0...gridfinity-layout-tool-v4.99.0) (2026-05-18)
+
+
+### Features
+
+* **help:** add unified search to MobileHelpModal ([#1740](https://github.com/andymai/gridfinity-layout-tool/issues/1740)) ([f3abb16](https://github.com/andymai/gridfinity-layout-tool/commit/f3abb1611047b57d5a1b7a6e3f10a5a0b232d363))
+* **help:** expand catalog with 5 sidebar entries ([#1739](https://github.com/andymai/gridfinity-layout-tool/issues/1739)) ([225bf02](https://github.com/andymai/gridfinity-layout-tool/commit/225bf02ae3c57218df7de3460e26c99a579ad7fb))
+
 ## [4.98.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.97.0...gridfinity-layout-tool-v4.98.0) (2026-05-18)
 
 
