@@ -5,18 +5,29 @@
  * so this section is collapsed by default, placed near the bottom of the panel.
  */
 
+import { useEffect, useState } from 'react';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import { usePhysicalUnitsSection } from './usePhysicalUnitsSection';
 
 export function PhysicalUnitsSection() {
   const { state, handlers, meta, t } = usePhysicalUnitsSection();
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setExpanded(true);
+    const eventName = helpJumpEventName('binDesigner:base');
+    window.addEventListener(eventName, handler);
+    return () => window.removeEventListener(eventName, handler);
+  }, []);
 
   return (
     <CollapsibleSection
       title={t('binDesigner.physicalUnits')}
-      defaultExpanded={false}
+      expanded={expanded}
+      onExpandedChange={setExpanded}
       summary={meta.summary}
     >
       <div className="space-y-2">

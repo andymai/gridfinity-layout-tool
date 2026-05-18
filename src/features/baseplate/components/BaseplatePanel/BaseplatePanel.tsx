@@ -9,7 +9,7 @@
  * 4. Split pieces mini-map (only when baseplate is split across print beds)
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
@@ -26,6 +26,8 @@ import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { SliderInput } from '@/shared/components/SliderInput';
 import { UserDock } from '@/shared/components/UserDock';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { HelpTargetMarker } from '@/shared/help/HelpTargetMarker';
+import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { EditableDimensions } from './EditableDimensions';
 import { PaddingSchematic } from './PaddingSchematic';
@@ -69,6 +71,15 @@ export function BaseplatePanel() {
   );
 
   const halfBinMode = useHalfBinModeStore((s) => s.halfBinMode);
+  const [printSettingsExpanded, setPrintSettingsExpanded] = useState(true);
+
+  useEffect(() => {
+    const handler = () => setPrintSettingsExpanded(true);
+    const eventName = helpJumpEventName('baseplate:print-settings');
+    window.addEventListener(eventName, handler);
+    return () => window.removeEventListener(eventName, handler);
+  }, []);
+
   const synced = baseplateParams.syncWithLayout !== false;
   const effectiveWidth = synced ? drawerWidth : (baseplateParams.baseplateWidth ?? drawerWidth);
   const effectiveDepth = synced ? drawerDepth : (baseplateParams.baseplateDepth ?? drawerDepth);
@@ -310,6 +321,8 @@ export function BaseplatePanel() {
             printBedSize,
             printBedDepth ?? printBedSize
           )}
+          expanded={printSettingsExpanded}
+          onExpandedChange={setPrintSettingsExpanded}
         >
           <div className="space-y-3 px-4 py-3">
             <div className="text-xs text-content-secondary space-y-2">
@@ -328,20 +341,22 @@ export function BaseplatePanel() {
                   className="input w-14 py-0.5 px-1 text-xs text-right"
                 />
               </SettingsRow>
-              <SettingsRow
-                label={t('baseplate.printBedSize')}
-                htmlFor="bp-printBedSize"
-                unit="mm"
-                tooltip={t('baseplate.printBedTooltip')}
-              >
-                <PrintBedInput
-                  id="bp-printBedSize"
-                  width={printBedSize}
-                  depth={printBedDepth ?? printBedSize}
-                  onChange={(w, d) => useLayoutStore.getState().setPrintBedSize(w, d)}
-                  variant="compact"
-                />
-              </SettingsRow>
+              <HelpTargetMarker id="bp-print-bed-size">
+                <SettingsRow
+                  label={t('baseplate.printBedSize')}
+                  htmlFor="bp-printBedSize"
+                  unit="mm"
+                  tooltip={t('baseplate.printBedTooltip')}
+                >
+                  <PrintBedInput
+                    id="bp-printBedSize"
+                    width={printBedSize}
+                    depth={printBedDepth ?? printBedSize}
+                    onChange={(w, d) => useLayoutStore.getState().setPrintBedSize(w, d)}
+                    variant="compact"
+                  />
+                </SettingsRow>
+              </HelpTargetMarker>
             </div>
           </div>
         </StickyGroupHeader>

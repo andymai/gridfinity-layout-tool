@@ -61,6 +61,20 @@ describe('getAllHelpEntries', () => {
     expect(ids).not.toContain('feature/bin-designer/walls');
   });
 
+  it('surfaces the baseplate print-bed entry only on the baseplate route', () => {
+    const baseplateIds = getAllHelpEntries('baseplate').map((e) => e.id);
+    expect(baseplateIds).toContain('feature/baseplate/print-bed-size');
+    expect(baseplateIds).not.toContain('feature/grid-editor/print-bed-size');
+    expect(baseplateIds).not.toContain('feature/bin-designer/print-bed-size');
+
+    const layoutIds = getAllHelpEntries('layout').map((e) => e.id);
+    expect(layoutIds).not.toContain('feature/baseplate/print-bed-size');
+
+    const designerIds = getAllHelpEntries('designer').map((e) => e.id);
+    expect(designerIds).not.toContain('feature/baseplate/print-bed-size');
+    expect(designerIds).toContain('feature/bin-designer/print-bed-size');
+  });
+
   it('includes mode-agnostic entries (shortcuts) on every route', () => {
     const layoutShortcuts = getAllHelpEntries('layout').filter((e) => e.kind === 'shortcut');
     const designerShortcuts = getAllHelpEntries('designer').filter((e) => e.kind === 'shortcut');
