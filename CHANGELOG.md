@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.101.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.101.1...gridfinity-layout-tool-v4.101.2) (2026-05-18)
+
+
+### Bug Fixes
+
+* **smoke:** raise /version.json timeout to 30s ([#1748](https://github.com/andymai/gridfinity-layout-tool/issues/1748)) ([45efda8](https://github.com/andymai/gridfinity-layout-tool/commit/45efda8f62b075ef0f5c4d1975d63d52e9e5d957))
+
 ## [4.101.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.101.0...gridfinity-layout-tool-v4.101.1) (2026-05-18)
 
 
