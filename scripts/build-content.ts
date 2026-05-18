@@ -362,6 +362,8 @@ ${safeJsonLd(block)}
   ${keywords ? `<meta name="keywords" content="${escapeHtml(keywords)}">` : ''}
   <meta name="author" content="Andy Aragon">
   <meta name="robots" content="index, follow">
+  <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large">
   <link rel="canonical" href="${canonicalUrl}">
 ${hreflangLinks}
 ${xDefaultLink}
