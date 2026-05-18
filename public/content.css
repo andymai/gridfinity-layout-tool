@@ -424,6 +424,10 @@ body {
   display: none;
 }
 
+.content-faq__question::marker {
+  content: '';
+}
+
 .content-faq__question::after {
   content: '+';
   font-size: 1.25rem;

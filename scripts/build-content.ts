@@ -226,16 +226,21 @@ function generateHtml(
     });
   }
 
-  if (faqs && faqs.length > 0) {
+  const renderedFaqs = faqs?.map((faq) => ({
+    q: faq.q,
+    answerHtml: marked.parseInline(escapeHtml(faq.a)) as string,
+  }));
+
+  if (renderedFaqs && renderedFaqs.length > 0) {
     structuredDataBlocks.push({
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: faqs.map((faq) => ({
+      mainEntity: renderedFaqs.map((faq) => ({
         '@type': 'Question',
         name: faq.q,
         acceptedAnswer: {
           '@type': 'Answer',
-          text: faq.a,
+          text: faq.answerHtml,
         },
       })),
     });
@@ -250,7 +255,7 @@ ${safeJsonLd(block)}
     .join('\n');
 
   const breadcrumbsHtml = renderBreadcrumbs(breadcrumbs);
-  const faqsHtml = renderFaqs(faqs, locale);
+  const faqsHtml = renderFaqs(renderedFaqs, locale);
 
   return `<!DOCTYPE html>
 <html lang="${labels.lang}">
@@ -389,13 +394,18 @@ ${items}
 `;
 }
 
-function renderFaqs(faqs: FaqEntry[] | undefined, locale: Locale): string {
+interface RenderedFaq {
+  q: string;
+  answerHtml: string;
+}
+
+function renderFaqs(faqs: RenderedFaq[] | undefined, locale: Locale): string {
   if (!faqs || faqs.length === 0) return '';
   const items = faqs
     .map(
       (faq) => `    <details class="content-faq">
       <summary class="content-faq__question">${escapeHtml(faq.q)}</summary>
-      <div class="content-faq__answer">${marked.parseInline(faq.a) as string}</div>
+      <div class="content-faq__answer">${faq.answerHtml}</div>
     </details>`
     )
     .join('\n');
@@ -563,12 +573,17 @@ function build(): void {
 
   const localesBySlug = new Map<string, Set<Locale>>();
   for (const entry of entries) {
-    if (!localesBySlug.has(entry.slug)) localesBySlug.set(entry.slug, new Set());
-    localesBySlug.get(entry.slug)!.add(entry.locale);
+    let locales = localesBySlug.get(entry.slug);
+    if (!locales) {
+      locales = new Set<Locale>();
+      localesBySlug.set(entry.slug, locales);
+    }
+    locales.add(entry.locale);
   }
 
   for (const entry of entries) {
-    processFile(entry.filePath, entry.slug, entry.locale, localesBySlug.get(entry.slug)!);
+    const locales = localesBySlug.get(entry.slug) ?? new Set<Locale>();
+    processFile(entry.filePath, entry.slug, entry.locale, locales);
   }
 
   // Update CSS filename in hand-crafted content pages
