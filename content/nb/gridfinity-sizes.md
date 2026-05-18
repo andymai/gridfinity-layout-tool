@@ -5,7 +5,7 @@ keywords: gridfinity størrelser, gridfinity mål, gridfinity bin-størrelser, g
 schema: Article
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/nb/
+    url: https://gridfinitylayouttool.com/
   - name: Størrelsesreferanse
     url: https://gridfinitylayouttool.com/nb/gridfinity-sizes
 faqs:
@@ -109,7 +109,7 @@ De fleste FDM-skrivere har 220-256 mm bord, som håndterer bins opp til cirka 5�
 
 ## Neste trinn
 
-Nå som du kan størrelsene, kan du [generere en egen bin](/nb/gridfinity-bin-generator) eller åpne [layout-planleggeren](/nb/) for å se hvordan bins passer i skuffen.
+Nå som du kan størrelsene, kan du [generere en egen bin](/nb/gridfinity-bin-generator) eller åpne [layout-planleggeren](/) for å se hvordan bins passer i skuffen.
 
 Ny på Gridfinity? [Her er en kort oversikt](/nb/what-is-gridfinity) over systemet.
 

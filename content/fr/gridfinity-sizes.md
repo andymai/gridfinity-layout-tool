@@ -5,7 +5,7 @@ keywords: tailles gridfinity, dimensions gridfinity, gridfinity bin tailles, uni
 schema: Article
 breadcrumbs:
   - name: Accueil
-    url: https://gridfinitylayouttool.com/fr/
+    url: https://gridfinitylayouttool.com/
   - name: Référence des tailles
     url: https://gridfinitylayouttool.com/fr/gridfinity-sizes
 faqs:
@@ -109,7 +109,7 @@ La plupart des imprimantes FDM ont un plateau de 220–256 mm, qui gère les bin
 
 ## Étapes suivantes
 
-Maintenant que vous connaissez les tailles, [générez un bin personnalisé](/fr/gridfinity-bin-generator) ou ouvrez le [planificateur de layout](/fr/) pour voir comment les bins s’organisent dans votre tiroir.
+Maintenant que vous connaissez les tailles, [générez un bin personnalisé](/fr/gridfinity-bin-generator) ou ouvrez le [planificateur de layout](/) pour voir comment les bins s’organisent dans votre tiroir.
 
 Nouveau à Gridfinity ? [Voici une présentation rapide](/fr/what-is-gridfinity) du système.
 

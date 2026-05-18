@@ -5,7 +5,7 @@ keywords: gridfinity größen, gridfinity maße, gridfinity bin größen, gridfi
 schema: Article
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/de/
+    url: https://gridfinitylayouttool.com/
   - name: Größenübersicht
     url: https://gridfinitylayouttool.com/de/gridfinity-sizes
 faqs:
@@ -109,7 +109,7 @@ Die meisten FDM-Drucker haben ein 220–256 mm Bett, das Bins bis ca. 5×5 oder 
 
 ## Nächste Schritte
 
-Jetzt, wo du die Größen kennst, kannst du einen [individuellen Bin generieren](/de/gridfinity-bin-generator) oder den [Layout-Planer](/de/) öffnen, um zu sehen, wie Bins in deine Schublade passen.
+Jetzt, wo du die Größen kennst, kannst du einen [individuellen Bin generieren](/de/gridfinity-bin-generator) oder den [Layout-Planer](/) öffnen, um zu sehen, wie Bins in deine Schublade passen.
 
 Neu bei Gridfinity? [Hier ist die Kurzfassung](/de/what-is-gridfinity) zum System.
 

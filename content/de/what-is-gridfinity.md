@@ -5,7 +5,7 @@ keywords: gridfinity, was ist gridfinity, schubladeneinsatz, 3D-Druck, modulares
 schema: Article
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/de/
+    url: https://gridfinitylayouttool.com/
   - name: Was ist Gridfinity?
     url: https://gridfinitylayouttool.com/de/what-is-gridfinity
 faqs:

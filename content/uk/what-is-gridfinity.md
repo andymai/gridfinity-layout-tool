@@ -5,7 +5,7 @@ keywords: gridfinity, що таке gridfinity, органайзер для шу
 schema: Article
 breadcrumbs:
   - name: Головна
-    url: https://gridfinitylayouttool.com/uk/
+    url: https://gridfinitylayouttool.com/
   - name: Що таке Gridfinity?
     url: https://gridfinitylayouttool.com/uk/what-is-gridfinity
 faqs:

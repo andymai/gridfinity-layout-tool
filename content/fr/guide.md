@@ -5,7 +5,7 @@ keywords: gridfinity planificateur, gridfinity layout, comment planifier gridfin
 schema: HowTo
 breadcrumbs:
   - name: Accueil
-    url: https://gridfinitylayouttool.com/fr/
+    url: https://gridfinitylayouttool.com/
   - name: Guide de planification
     url: https://gridfinitylayouttool.com/fr/guide
 faqs:
@@ -141,4 +141,4 @@ Votre bin le plus haut plus la plaque (environ 5 mm) doit rentrer tiroir fermé.
 
 **Ignorer ce que vous utilisez vraiment.** N’organisez pas autour de ce que vous croyez devoir posséder. Organisez autour de ce que vous attrapez réellement.
 
-[CTA: Ouvrir l’outil de layout](/fr/)
+[CTA: Ouvrir l’outil de layout](/)

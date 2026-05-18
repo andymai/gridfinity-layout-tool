@@ -5,7 +5,7 @@ keywords: planejador gridfinity, layout gridfinity, como planejar gridfinity, or
 schema: HowTo
 breadcrumbs:
   - name: Início
-    url: https://gridfinitylayouttool.com/pt-BR/
+    url: https://gridfinitylayouttool.com/
   - name: Guia de planejamento
     url: https://gridfinitylayouttool.com/pt-BR/guide
 faqs:
@@ -141,4 +141,4 @@ Seu bin mais alto, somado à placa-base (cerca de 5 mm), precisa caber com a gav
 
 **Ignorar o que você realmente usa.** Não organize com base no que você acha que deveria ter. Organize com base no que realmente pega.
 
-[CTA: Abrir a ferramenta de layout](/pt-BR/)
+[CTA: Abrir a ferramenta de layout](/)

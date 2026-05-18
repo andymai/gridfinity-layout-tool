@@ -5,7 +5,7 @@ keywords: gridfinity, wat is gridfinity, lade-organizer, 3D-print, modulaire ops
 schema: Article
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/nl/
+    url: https://gridfinitylayouttool.com/
   - name: Wat is Gridfinity?
     url: https://gridfinitylayouttool.com/nl/what-is-gridfinity
 faqs:

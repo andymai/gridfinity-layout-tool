@@ -5,7 +5,7 @@ keywords: generador placa gridfinity, gridfinity baseplate, placa gridfinity per
 schema: HowTo
 breadcrumbs:
   - name: Inicio
-    url: https://gridfinitylayouttool.com/es/
+    url: https://gridfinitylayouttool.com/
   - name: Generador de placas
     url: https://gridfinitylayouttool.com/es/gridfinity-baseplate-generator
 howTo:
@@ -98,6 +98,6 @@ Un generador paramétrico de placas que funciona en tu navegador. Define el tama
 
 ## Siguientes pasos
 
-¿Necesitas bins a medida para tu placa? Usa el [generador de bins](/es/gridfinity-bin-generator) para crear bins con compartimentos, recortes y etiquetas. Planifica el cajón entero con el [planificador de layout](/es/), o consulta la [referencia de tamaños](/es/gridfinity-sizes) para calcular tus medidas.
+¿Necesitas bins a medida para tu placa? Usa el [generador de bins](/es/gridfinity-bin-generator) para crear bins con compartimentos, recortes y etiquetas. Planifica el cajón entero con el [planificador de layout](/), o consulta la [referencia de tamaños](/es/gridfinity-sizes) para calcular tus medidas.
 
 [CTA: Generar placa](/baseplate?standalone=1)

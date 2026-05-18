@@ -5,7 +5,7 @@ keywords: planificador gridfinity, layout gridfinity, cómo planificar gridfinit
 schema: HowTo
 breadcrumbs:
   - name: Inicio
-    url: https://gridfinitylayouttool.com/es/
+    url: https://gridfinitylayouttool.com/
   - name: Guía de planificación
     url: https://gridfinitylayouttool.com/es/guide
 faqs:
@@ -141,4 +141,4 @@ El bin más alto más la placa base (unos 5 mm) tiene que entrar con el cajón c
 
 **Ignorar lo que usas de verdad.** No organices alrededor de lo que crees que «deberías» tener. Organiza alrededor de lo que realmente coges.
 
-[CTA: Abrir la herramienta de layout](/es/)
+[CTA: Abrir la herramienta de layout](/)

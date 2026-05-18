@@ -263,7 +263,10 @@ function generateHtml(
   const canonicalUrl = getUrl(slug, locale);
   const image = ogImage || `${SITE_URL}/og-image.png`;
   const labels = LOCALE_LABELS[locale];
-  const homeUrl = locale === DEFAULT_LOCALE ? '/' : `/${locale}/`;
+  // No localized SPA root (e.g. /de/) exists — the in-app i18n auto-detects
+  // browser language from the canonical English SPA at /. Linking logo/CTA
+  // to /{locale}/ would 404. Same pattern as the localized privacy/terms links.
+  const homeUrl = '/';
   const hreflangLinks = SUPPORTED_LOCALES.filter((l) => availableLocales.has(l))
     .map((l) => `  <link rel="alternate" hreflang="${l}" href="${getUrl(slug, l)}">`)
     .join('\n');

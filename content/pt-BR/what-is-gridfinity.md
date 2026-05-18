@@ -5,7 +5,7 @@ keywords: gridfinity, o que é gridfinity, organizador de gaveta, impressão 3D,
 schema: Article
 breadcrumbs:
   - name: Início
-    url: https://gridfinitylayouttool.com/pt-BR/
+    url: https://gridfinitylayouttool.com/
   - name: O que é Gridfinity?
     url: https://gridfinitylayouttool.com/pt-BR/what-is-gridfinity
 faqs:

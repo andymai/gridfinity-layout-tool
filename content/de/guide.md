@@ -5,7 +5,7 @@ keywords: gridfinity planer, gridfinity layout, gridfinity planen, schubladenein
 schema: HowTo
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/de/
+    url: https://gridfinitylayouttool.com/
   - name: Planungsleitfaden
     url: https://gridfinitylayouttool.com/de/guide
 faqs:
@@ -141,4 +141,4 @@ Dein höchster Bin plus Grundplatte (etwa 5 mm) muss in die geschlossene Schubla
 
 **Ignorieren, was du tatsächlich nutzt.** Organisiere nicht nach Wunschvorstellung, sondern nach dem, was du wirklich greifst.
 
-[CTA: Layout-Tool öffnen](/de/)
+[CTA: Layout-Tool öffnen](/)

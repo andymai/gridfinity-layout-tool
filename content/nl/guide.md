@@ -5,7 +5,7 @@ keywords: gridfinity planner, gridfinity layout, gridfinity plannen, lade-organi
 schema: HowTo
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/nl/
+    url: https://gridfinitylayouttool.com/
   - name: Planningsgids
     url: https://gridfinitylayouttool.com/nl/guide
 faqs:
@@ -141,4 +141,4 @@ Je hoogste bin plus bodemplaat (~5 mm) moet passen bij gesloten lade. Meet dit v
 
 **Negeren wat je echt gebruikt.** Organiseer niet rond wat je dénkt te bezitten. Organiseer rond wat je echt pakt.
 
-[CTA: Layout-tool openen](/nl/)
+[CTA: Layout-tool openen](/)

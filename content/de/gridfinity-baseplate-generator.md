@@ -5,7 +5,7 @@ keywords: gridfinity grundplatte generator, gridfinity baseplate, individuelle g
 schema: HowTo
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/de/
+    url: https://gridfinitylayouttool.com/
   - name: Grundplatten-Generator
     url: https://gridfinitylayouttool.com/de/gridfinity-baseplate-generator
 howTo:
@@ -98,6 +98,6 @@ Ein parametrischer Grundplatten-Generator, der in deinem Browser läuft. Rasterg
 
 ## Nächste Schritte
 
-Brauchst du individuelle Bins zur Grundplatte? Nutze den [Bin-Generator](/de/gridfinity-bin-generator), um Bins mit Kompartimenten, Aussparungen und Beschriftungslaschen zu erstellen. Plane deine gesamte Schublade mit dem [Layout-Planer](/de/) oder schau in die [Größenübersicht](/de/gridfinity-sizes), um deine Maße zu finden.
+Brauchst du individuelle Bins zur Grundplatte? Nutze den [Bin-Generator](/de/gridfinity-bin-generator), um Bins mit Kompartimenten, Aussparungen und Beschriftungslaschen zu erstellen. Plane deine gesamte Schublade mit dem [Layout-Planer](/) oder schau in die [Größenübersicht](/de/gridfinity-sizes), um deine Maße zu finden.
 
 [CTA: Grundplatte generieren](/baseplate?standalone=1)
