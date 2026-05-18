@@ -56,6 +56,18 @@ const FOOTER_COPY: Record<Locale, string> = {
   uk: 'Безкоштовно у використанні.',
 };
 
+const OG_LOCALE: Record<Locale, string> = {
+  en: 'en_US',
+  de: 'de_DE',
+  fr: 'fr_FR',
+  es: 'es_ES',
+  'pt-BR': 'pt_BR',
+  nl: 'nl_NL',
+  sv: 'sv_SE',
+  nb: 'nb_NO',
+  uk: 'uk_UA',
+};
+
 const FOOTER_LINKS: Record<
   Locale,
   {
@@ -229,9 +241,6 @@ interface Frontmatter {
   navCta?: NavCta;
 }
 
-/**
- * Generate the HTML template for a content page
- */
 function generateHtml(
   content: string,
   frontmatter: Frontmatter,
@@ -255,17 +264,6 @@ function generateHtml(
   const image = ogImage || `${SITE_URL}/og-image.png`;
   const labels = LOCALE_LABELS[locale];
   const homeUrl = locale === DEFAULT_LOCALE ? '/' : `/${locale}/`;
-  const ogLocaleMap: Record<Locale, string> = {
-    en: 'en_US',
-    de: 'de_DE',
-    fr: 'fr_FR',
-    es: 'es_ES',
-    'pt-BR': 'pt_BR',
-    nl: 'nl_NL',
-    sv: 'sv_SE',
-    nb: 'nb_NO',
-    uk: 'uk_UA',
-  };
   const hreflangLinks = SUPPORTED_LOCALES.filter((l) => availableLocales.has(l))
     .map((l) => `  <link rel="alternate" hreflang="${l}" href="${getUrl(slug, l)}">`)
     .join('\n');
@@ -431,7 +429,7 @@ ${xDefaultLink}
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:image" content="${image}">
   <meta property="og:site_name" content="${labels.siteName}">
-  <meta property="og:locale" content="${ogLocaleMap[locale]}">
+  <meta property="og:locale" content="${OG_LOCALE[locale]}">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -493,8 +491,8 @@ ${breadcrumbsHtml}${content}${faqsHtml}
         <a href="/gridfinity-baseplate-generator">${escapeHtml(FOOTER_LINKS[locale].baseplate)}</a>
         <a href="/gridfinity-sizes">${escapeHtml(FOOTER_LINKS[locale].sizes)}</a>
         <a href="${localizedPath('guide', locale)}">${escapeHtml(FOOTER_LINKS[locale].guide)}</a>
-        <a href="${localizedPath('privacy', locale)}">${escapeHtml(FOOTER_LINKS[locale].privacy)}</a>
-        <a href="${localizedPath('terms', locale)}">${escapeHtml(FOOTER_LINKS[locale].terms)}</a>
+        <a href="/privacy">${escapeHtml(FOOTER_LINKS[locale].privacy)}</a>
+        <a href="/terms">${escapeHtml(FOOTER_LINKS[locale].terms)}</a>
       </div>
       <p class="content-footer__copyright">
         © ${new Date().getFullYear()} ${labels.siteName}. ${escapeHtml(FOOTER_COPY[locale])}
@@ -568,25 +566,20 @@ ${items}
 `;
 }
 
-/**
- * Configure marked for our needs
- */
 function configureMarked(): void {
   marked.use({
     renderer: {
-      // Add classes to headings
       heading({ tokens, depth }) {
         const text = this.parser.parseInline(tokens);
-        const className = `content-h${depth}`;
-        return `<h${depth} class="${className}">${text}</h${depth}>\n`;
+        return `<h${depth} class="content-h${depth}">${text}</h${depth}>\n`;
       },
-      // Add classes to lists
       list(token) {
         const type = token.ordered ? 'ol' : 'ul';
         const body = token.items.map((item) => this.listitem(item)).join('');
         return `<${type} class="content-list">${body}</${type}>\n`;
       },
-      // Handle special CTA syntax: [CTA: text](url)
+      // `[CTA: text](url)` is our convention for the orange call-to-action button;
+      // external links get target="_blank" rel="noopener" to prevent reverse tabnabbing.
       link({ href, text }) {
         const safeHref = escapeHtml(href);
         const safeText = escapeHtml(text);
@@ -594,14 +587,12 @@ function configureMarked(): void {
           const ctaText = text.replace('CTA:', '').trim();
           return `<a href="${safeHref}" class="content-cta">${escapeHtml(ctaText)} &rarr;</a>`;
         }
-        // External links get target="_blank" and rel="noopener"
         const isExternal = href.startsWith('http://') || href.startsWith('https://');
         if (isExternal) {
           return `<a href="${safeHref}" target="_blank" rel="noopener">${safeText}</a>`;
         }
         return `<a href="${safeHref}">${safeText}</a>`;
       },
-      // Convert blockquotes to styled callout boxes
       blockquote({ tokens }) {
         const content = this.parser.parse(tokens);
         return `<div class="content-callout">${content}</div>\n`;
@@ -695,35 +686,106 @@ function processCss(): void {
 
   const cssDestPath = path.join(OUTPUT_DIR, cssFilename);
 
-  // Remove old hashed CSS files
-  const existingFiles = fs.readdirSync(OUTPUT_DIR);
-  for (const file of existingFiles) {
+  for (const file of fs.readdirSync(OUTPUT_DIR)) {
     if (file.startsWith('content.') && file.endsWith('.css') && file !== 'content.css') {
       fs.unlinkSync(path.join(OUTPUT_DIR, file));
     }
   }
 
-  // Copy CSS with hashed filename
   fs.copyFileSync(cssSourcePath, cssDestPath);
   console.log(`✓ Generated ${cssFilename}`);
 }
 
-/**
- * Main build function
- */
+interface SitemapPage {
+  basePriority: number;
+  changefreq: string;
+}
+
+// Bump CONTENT_LASTMOD when shipping a substantive content change so search
+// engines re-crawl the affected URLs. Hardcoded (not `new Date()`) to avoid
+// every build advertising the entire sitemap as updated.
+const CONTENT_LASTMOD = '2026-05-18';
+
+const SITEMAP_PAGES: Record<string, SitemapPage> = {
+  'what-is-gridfinity': { basePriority: 0.8, changefreq: 'monthly' },
+  guide: { basePriority: 0.8, changefreq: 'monthly' },
+  'gridfinity-bin-generator': { basePriority: 0.9, changefreq: 'monthly' },
+  'gridfinity-baseplate-generator': { basePriority: 0.9, changefreq: 'monthly' },
+  'gridfinity-sizes': { basePriority: 0.8, changefreq: 'monthly' },
+};
+
+function writeSitemap(localesBySlug: Map<string, Set<Locale>>): void {
+  const out: string[] = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
+    '        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"',
+    '        xmlns:xhtml="http://www.w3.org/1999/xhtml">',
+    `  <url>
+    <loc>${SITE_URL}/</loc>
+    <lastmod>${CONTENT_LASTMOD}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>${SITE_URL}/og-image.png</image:loc>
+      <image:title>Gridfinity Layout Tool - Design Drawer Layouts for 3D Printing</image:title>
+      <image:caption>Free online tool to design Gridfinity drawer organizer layouts with drag-and-drop bin placement, multi-layer support, and 3D preview</image:caption>
+    </image:image>
+  </url>`,
+    `  <url>
+    <loc>${SITE_URL}/gridfinity-generator</loc>
+    <lastmod>${CONTENT_LASTMOD}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>${SITE_URL}/og-image.png</image:loc>
+      <image:title>Gridfinity Generator - Free Online Bin and Baseplate Generator</image:title>
+      <image:caption>Free Gridfinity generator for storage bins and baseplates. Configure dimensions and features, preview in 3D, export STL, STEP, or 3MF.</image:caption>
+    </image:image>
+  </url>`,
+  ];
+
+  for (const [slug, config] of Object.entries(SITEMAP_PAGES)) {
+    const locales = localesBySlug.get(slug);
+    if (!locales) continue;
+    const sortedLocales = SUPPORTED_LOCALES.filter((l) => locales.has(l));
+    const hreflang = [
+      ...sortedLocales.map(
+        (l) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${getUrl(slug, l)}"/>`
+      ),
+      `    <xhtml:link rel="alternate" hreflang="x-default" href="${getUrl(slug, DEFAULT_LOCALE)}"/>`,
+    ].join('\n');
+
+    for (const locale of sortedLocales) {
+      const priority =
+        locale === DEFAULT_LOCALE
+          ? config.basePriority.toFixed(1)
+          : (config.basePriority - 0.1).toFixed(1);
+      out.push(`  <url>
+    <loc>${getUrl(slug, locale)}</loc>
+    <lastmod>${CONTENT_LASTMOD}</lastmod>
+    <changefreq>${config.changefreq}</changefreq>
+    <priority>${priority}</priority>
+${hreflang}
+  </url>`);
+    }
+  }
+
+  out.push('</urlset>');
+  fs.writeFileSync(path.join(OUTPUT_DIR, 'sitemap.xml'), out.join('\n') + '\n');
+  console.log(`✓ Generated sitemap.xml`);
+}
+
 function build(): void {
   console.log('Building content pages...\n');
 
-  // Configure marked
   configureMarked();
 
-  // Check if content directory exists
   if (!fs.existsSync(CONTENT_DIR)) {
     console.log('No content directory found. Skipping content build.');
     return;
   }
 
-  // Hash and copy CSS file first (sets cssFilename for HTML generation)
+  // processCss mutates module-level cssFilename — call before HTML generation.
   processCss();
 
   const entries = discoverContent();
@@ -747,8 +809,9 @@ function build(): void {
     processFile(entry.filePath, entry.slug, entry.locale, locales);
   }
 
+  writeSitemap(localesBySlug);
+
   console.log(`\n✓ Built ${entries.length} content page(s) across ${localesBySlug.size} slug(s)`);
 }
 
-// Run build
 build();

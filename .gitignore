@@ -69,6 +69,7 @@ public/sv/
 public/nb/
 public/uk/
 public/content.*.css
+public/sitemap.xml
 
 # Generated English locale JSON (source of truth is en.ts)
 src/i18n/locales/en.json
