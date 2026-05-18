@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.94.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.93.0...gridfinity-layout-tool-v4.94.0) (2026-05-18)
+
+
+### Features
+
+* **seo:** localize generator pages for de/fr/es/pt-BR ([#1725](https://github.com/andymai/gridfinity-layout-tool/issues/1725)) ([43684bb](https://github.com/andymai/gridfinity-layout-tool/commit/43684bb3b61ecf23c910b9273aaa0c53a5b2c8f4))
+
 ## [4.93.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.92.0...gridfinity-layout-tool-v4.93.0) (2026-05-18)
 
 
