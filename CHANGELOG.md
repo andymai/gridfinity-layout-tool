@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.101.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.101.0...gridfinity-layout-tool-v4.101.1) (2026-05-18)
+
+
+### Bug Fixes
+
+* **test:** route dispatcher test to jsdom env ([#1746](https://github.com/andymai/gridfinity-layout-tool/issues/1746)) ([6184bf0](https://github.com/andymai/gridfinity-layout-tool/commit/6184bf084b7620519f25a037fd9caa8bcd4138b2))
+
 ## [4.101.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.100.0...gridfinity-layout-tool-v4.101.0) (2026-05-18)
 
 
