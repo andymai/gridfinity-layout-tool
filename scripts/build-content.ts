@@ -233,17 +233,25 @@ interface HowToFrontmatter {
   description?: string;
   totalTime?: string;
   tools?: string[];
+  supplies?: string[];
   steps?: HowToStep[];
 }
 
 interface SoftwareApplicationFrontmatter {
   name: string;
+  alternateName?: string[];
   description?: string;
   applicationCategory: string;
   applicationSubCategory?: string;
   operatingSystem?: string;
   browserRequirements?: string;
-  offers?: { price: string; priceCurrency: string };
+  permissions?: string;
+  isAccessibleForFree?: boolean;
+  offers?: {
+    price: string;
+    priceCurrency: string;
+    availability?: string;
+  };
   featureList?: string[];
 }
 
@@ -311,6 +319,11 @@ function generateHtml(
           ...(howTo?.tools && howTo.tools.length > 0
             ? { tool: howTo.tools.map((name) => ({ '@type': 'HowToTool', name })) }
             : {}),
+          ...(howTo?.supplies && howTo.supplies.length > 0
+            ? {
+                supply: howTo.supplies.map((name) => ({ '@type': 'HowToSupply', name })),
+              }
+            : {}),
           ...(howTo?.steps && howTo.steps.length > 0
             ? {
                 step: howTo.steps.map((s, i) => ({
@@ -352,28 +365,31 @@ function generateHtml(
   const structuredDataBlocks: object[] = [primarySchema];
 
   if (softwareApplication) {
+    const sa = softwareApplication;
     structuredDataBlocks.push({
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
-      name: softwareApplication.name,
+      name: sa.name,
+      ...(sa.alternateName && sa.alternateName.length > 0
+        ? { alternateName: sa.alternateName }
+        : {}),
       url: canonicalUrl,
-      description: softwareApplication.description ?? description,
-      applicationCategory: softwareApplication.applicationCategory,
-      ...(softwareApplication.applicationSubCategory
-        ? { applicationSubCategory: softwareApplication.applicationSubCategory }
+      description: sa.description ?? description,
+      applicationCategory: sa.applicationCategory,
+      ...(sa.applicationSubCategory ? { applicationSubCategory: sa.applicationSubCategory } : {}),
+      ...(sa.operatingSystem ? { operatingSystem: sa.operatingSystem } : {}),
+      ...(sa.browserRequirements ? { browserRequirements: sa.browserRequirements } : {}),
+      ...(sa.permissions ? { permissions: sa.permissions } : {}),
+      ...(sa.isAccessibleForFree !== undefined
+        ? { isAccessibleForFree: sa.isAccessibleForFree }
         : {}),
-      ...(softwareApplication.operatingSystem
-        ? { operatingSystem: softwareApplication.operatingSystem }
-        : {}),
-      ...(softwareApplication.browserRequirements
-        ? { browserRequirements: softwareApplication.browserRequirements }
-        : {}),
-      ...(softwareApplication.offers
+      ...(sa.offers
         ? {
             offers: {
               '@type': 'Offer',
-              price: softwareApplication.offers.price,
-              priceCurrency: softwareApplication.offers.priceCurrency,
+              price: sa.offers.price,
+              priceCurrency: sa.offers.priceCurrency,
+              ...(sa.offers.availability ? { availability: sa.offers.availability } : {}),
             },
           }
         : {}),
@@ -381,9 +397,7 @@ function generateHtml(
         '@type': 'Person',
         name: 'Andy Aragon',
       },
-      ...(softwareApplication.featureList && softwareApplication.featureList.length > 0
-        ? { featureList: softwareApplication.featureList }
-        : {}),
+      ...(sa.featureList && sa.featureList.length > 0 ? { featureList: sa.featureList } : {}),
     });
   }
 
@@ -759,6 +773,7 @@ interface SitemapPage {
 const CONTENT_LASTMOD = '2026-05-18';
 
 const SITEMAP_PAGES: Record<string, SitemapPage> = {
+  'gridfinity-generator': { basePriority: 0.95, changefreq: 'weekly' },
   'what-is-gridfinity': { basePriority: 0.8, changefreq: 'monthly' },
   guide: { basePriority: 0.8, changefreq: 'monthly' },
   'gridfinity-bin-generator': { basePriority: 0.9, changefreq: 'monthly' },
@@ -781,17 +796,6 @@ function writeSitemap(localesBySlug: Map<string, Set<Locale>>): void {
       <image:loc>${SITE_URL}/og-image.png</image:loc>
       <image:title>Gridfinity Layout Tool - Design Drawer Layouts for 3D Printing</image:title>
       <image:caption>Free online tool to design Gridfinity drawer organizer layouts with drag-and-drop bin placement, multi-layer support, and 3D preview</image:caption>
-    </image:image>
-  </url>`,
-    `  <url>
-    <loc>${SITE_URL}/gridfinity-generator</loc>
-    <lastmod>${CONTENT_LASTMOD}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.95</priority>
-    <image:image>
-      <image:loc>${SITE_URL}/og-image.png</image:loc>
-      <image:title>Gridfinity Generator - Free Online Bin and Baseplate Generator</image:title>
-      <image:caption>Free Gridfinity generator for storage bins and baseplates. Configure dimensions and features, preview in 3D, export STL, STEP, or 3MF.</image:caption>
     </image:image>
   </url>`,
   ];
