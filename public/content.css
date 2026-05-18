@@ -146,6 +146,95 @@ body {
 }
 
 /* ===========================================
+   LANGUAGE SWITCHER
+   =========================================== */
+.content-nav {
+  gap: var(--space-md);
+}
+
+.content-nav__lang {
+  position: relative;
+  margin-left: auto;
+}
+
+.content-nav__lang > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-content-secondary);
+  border: 1px solid var(--color-stroke-subtle);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.content-nav__lang > summary::-webkit-details-marker {
+  display: none;
+}
+
+.content-nav__lang > summary::marker {
+  content: '';
+}
+
+.content-nav__lang > summary::after {
+  content: '▾';
+  font-size: 0.75em;
+  color: var(--color-content-tertiary);
+}
+
+.content-nav__lang > summary:hover {
+  color: var(--color-content);
+  border-color: var(--color-content-tertiary);
+}
+
+.content-nav__lang > summary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.content-nav__lang-list {
+  position: absolute;
+  top: calc(100% + var(--space-xs));
+  right: 0;
+  min-width: 180px;
+  margin: 0;
+  padding: var(--space-xs);
+  list-style: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-stroke-subtle);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 110;
+}
+
+.content-nav__lang-list a {
+  display: block;
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.875rem;
+  color: var(--color-content-secondary);
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.content-nav__lang-list a:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-content);
+}
+
+.content-nav__lang-list a[aria-current='true'] {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.content-nav__lang-list a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+/* ===========================================
    PAGE LAYOUT
    =========================================== */
 .content-page {

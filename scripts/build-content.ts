@@ -68,6 +68,30 @@ const OG_LOCALE: Record<Locale, string> = {
   uk: 'uk_UA',
 };
 
+const NATIVE_LANGUAGE: Record<Locale, string> = {
+  en: 'English',
+  de: 'Deutsch',
+  fr: 'Français',
+  es: 'Español',
+  'pt-BR': 'Português (BR)',
+  nl: 'Nederlands',
+  sv: 'Svenska',
+  nb: 'Norsk',
+  uk: 'Українська',
+};
+
+const LANGUAGE_LABEL: Record<Locale, string> = {
+  en: 'Language',
+  de: 'Sprache',
+  fr: 'Langue',
+  es: 'Idioma',
+  'pt-BR': 'Idioma',
+  nl: 'Taal',
+  sv: 'Språk',
+  nb: 'Språk',
+  uk: 'Мова',
+};
+
 const FOOTER_LINKS: Record<
   Locale,
   {
@@ -406,6 +430,7 @@ ${safeJsonLd(block)}
 
   const breadcrumbsHtml = renderBreadcrumbs(breadcrumbs);
   const faqsHtml = renderFaqs(renderedFaqs, locale);
+  const languageSwitcherHtml = renderLanguageSwitcher(slug, locale, availableLocales);
 
   return `<!DOCTYPE html>
 <html lang="${labels.lang}">
@@ -474,7 +499,7 @@ ${structuredDataScripts}
       </svg>
       <span>${labels.siteName}</span>
     </a>
-    <a href="${escapeHtml(navCta?.href ?? homeUrl)}" class="content-nav__cta">
+${languageSwitcherHtml}    <a href="${escapeHtml(navCta?.href ?? homeUrl)}" class="content-nav__cta">
       ${escapeHtml(navCta?.label ?? labels.openTool)}
     </a>
   </nav>
@@ -524,6 +549,30 @@ function escapeHtml(str: string): string {
  */
 function safeJsonLd(data: object): string {
   return JSON.stringify(data, null, 2).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+}
+
+function renderLanguageSwitcher(
+  slug: string,
+  currentLocale: Locale,
+  availableLocales: ReadonlySet<Locale>
+): string {
+  const targets = SUPPORTED_LOCALES.filter((l) => availableLocales.has(l));
+  if (targets.length <= 1) return '';
+  const items = targets
+    .map((l) => {
+      const name = escapeHtml(NATIVE_LANGUAGE[l]);
+      const isCurrent = l === currentLocale;
+      const attrs = isCurrent ? ' aria-current="true"' : '';
+      return `        <li><a href="${getUrl(slug, l)}" hreflang="${l}" lang="${LOCALE_LABELS[l].lang}"${attrs}>${name}</a></li>`;
+    })
+    .join('\n');
+  return `    <details class="content-nav__lang">
+      <summary aria-label="${escapeHtml(LANGUAGE_LABEL[currentLocale])}">${escapeHtml(NATIVE_LANGUAGE[currentLocale])}</summary>
+      <ul class="content-nav__lang-list">
+${items}
+      </ul>
+    </details>
+`;
 }
 
 function renderBreadcrumbs(breadcrumbs: BreadcrumbEntry[] | undefined): string {
