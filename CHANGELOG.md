@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.90.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.89.0...gridfinity-layout-tool-v4.90.0) (2026-05-18)
+
+
+### Features
+
+* **seo:** add FAQPage and BreadcrumbList schema to /guide and /what-is-gridfinity ([#1711](https://github.com/andymai/gridfinity-layout-tool/issues/1711)) ([d846fe1](https://github.com/andymai/gridfinity-layout-tool/commit/d846fe13dba2eaecb1c023ee5e4d23b81ee38bf3))
+
 ## [4.89.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.88.4...gridfinity-layout-tool-v4.89.0) (2026-05-17)
 
 
