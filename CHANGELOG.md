@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.93.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.92.0...gridfinity-layout-tool-v4.93.0) (2026-05-18)
+
+
+### Features
+
+* **seo:** emit googlebot/bingbot meta on all generated content pages ([#1723](https://github.com/andymai/gridfinity-layout-tool/issues/1723)) ([f9ec62e](https://github.com/andymai/gridfinity-layout-tool/commit/f9ec62ecd05ae991c4b70fce44b5b69ad4dc8a22))
+
+
+### Bug Fixes
+
+* **seo:** address Copilot review on build-content.ts ([#1720](https://github.com/andymai/gridfinity-layout-tool/issues/1720)) ([aa41316](https://github.com/andymai/gridfinity-layout-tool/commit/aa41316e41066abeb130bbdde74e1ca19ca1248a))
+
 ## [4.92.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.91.0...gridfinity-layout-tool-v4.92.0) (2026-05-18)
 
 
