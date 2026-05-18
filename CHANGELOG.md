@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.100.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.99.0...gridfinity-layout-tool-v4.100.0) (2026-05-18)
+
+
+### Features
+
+* **help:** ⌘K initialQuery + empty-state CTA + telemetry ([#1742](https://github.com/andymai/gridfinity-layout-tool/issues/1742)) ([2fff8f1](https://github.com/andymai/gridfinity-layout-tool/commit/2fff8f1108ef9f7ba50559dc643479342e470367))
+
 ## [4.99.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.98.0...gridfinity-layout-tool-v4.99.0) (2026-05-18)
 
 
