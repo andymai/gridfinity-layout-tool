@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.95.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.94.0...gridfinity-layout-tool-v4.95.0) (2026-05-18)
+
+
+### Features
+
+* **seo:** add phase-2 locales (nl, sv, nb, uk) for all content pages ([#1728](https://github.com/andymai/gridfinity-layout-tool/issues/1728)) ([c07887d](https://github.com/andymai/gridfinity-layout-tool/commit/c07887def376eceb0abed7f2ad4b95dcc57c9189))
+
 ## [4.94.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.93.0...gridfinity-layout-tool-v4.94.0) (2026-05-18)
 
 
