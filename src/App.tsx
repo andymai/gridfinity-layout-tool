@@ -111,6 +111,19 @@ export default function App() {
   const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette({
     disabled: isDesignerRoute || isBaseplateRoute,
   });
+  const [commandPaletteInitialQuery, setCommandPaletteInitialQuery] = useState('');
+
+  // Allow external surfaces (e.g. HelpModal's empty-state fall-through) to open
+  // the command palette pre-filled with a query via a window event — matches
+  // the existing `open-settings-modal` / `switch-to-designer` dispatch pattern.
+  useEffect(() => {
+    const handler = (e: CustomEvent<{ query?: string }>) => {
+      setCommandPaletteInitialQuery(e.detail.query ?? '');
+      setCommandPaletteOpen(true);
+    };
+    window.addEventListener('open-command-palette', handler as EventListener);
+    return () => window.removeEventListener('open-command-palette', handler as EventListener);
+  }, [setCommandPaletteOpen]);
   const { isMobile, isTablet } = useResponsive();
 
   const { shouldShowWelcome, shouldShowDrawTutorial, markWelcomeComplete } = useOnboarding();
@@ -443,7 +456,16 @@ export default function App() {
       <ToastContainer />
       {!isMobile && commandPaletteOpen && (
         <Suspense fallback={null}>
-          <CommandPalette open={commandPaletteOpen} onOpenChange={setCommandPaletteOpen} />
+          <CommandPalette
+            open={commandPaletteOpen}
+            onOpenChange={(open: boolean) => {
+              setCommandPaletteOpen(open);
+              // Clear the initial query on close so the next ⌘K open
+              // (which bypasses the event listener) doesn't see a stale value.
+              if (!open) setCommandPaletteInitialQuery('');
+            }}
+            initialQuery={commandPaletteInitialQuery}
+          />
         </Suspense>
       )}
       {isLabsDrawerOpen && (

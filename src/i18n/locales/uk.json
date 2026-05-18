@@ -625,6 +625,7 @@
   "help.title": "Клавіатурні скорочення",
   "help.searchPlaceholder": "Пошук скорочень і функцій...",
   "help.goTo": "Перейти",
+  "help.openCommandPaletteWithQuery": "Натомість шукати серед усіх команд",
   "help.kind.shortcut": "Скорочення",
   "help.kind.feature": "Функція",
   "help.kind.tip": "Порада",

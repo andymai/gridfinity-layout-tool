@@ -147,3 +147,30 @@ export function trackGalleryOpened(layoutCount: number): void {
 export function trackGalleryClosed(reason: 'applied_template' | 'dismissed'): void {
   trackEvent('gallery_closed', { reason });
 }
+
+// HELP MODAL TRACKING
+
+/**
+ * Sanitize a help search query before sending to telemetry: lowercase + truncated
+ * to 80 chars so PII-shaped strings (an email, a long phrase, etc.) can't slip
+ * through verbatim. Not a privacy guarantee, but a sensible limit.
+ */
+function sanitizeQuery(query: string): string {
+  return query.trim().toLowerCase().slice(0, 80);
+}
+
+export function trackHelpSearchJump(entryId: string, query: string, position: number): void {
+  trackEvent('help_search_jump', {
+    entry_id: entryId,
+    query: sanitizeQuery(query),
+    position,
+  });
+}
+
+export function trackHelpSearchEmpty(query: string): void {
+  trackEvent('help_search_empty', { query: sanitizeQuery(query) });
+}
+
+export function trackHelpCommandPaletteFallthrough(query: string): void {
+  trackEvent('help_command_palette_fallthrough', { query: sanitizeQuery(query) });
+}

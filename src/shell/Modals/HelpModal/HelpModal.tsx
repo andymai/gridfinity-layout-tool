@@ -23,6 +23,11 @@ import {
 import { getAllHelpEntries } from './helpEntryAggregator';
 import { searchHelpEntries } from './helpSearch';
 import { HelpSearchResultRow } from './HelpSearchResultRow';
+import {
+  trackHelpSearchEmpty,
+  trackHelpSearchJump,
+  trackHelpCommandPaletteFallthrough,
+} from '@/shared/analytics/posthog/events';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -63,6 +68,19 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
     if (!isSearching) return [];
     return searchHelpEntries(allEntries, trimmedQuery, t);
   }, [allEntries, trimmedQuery, isSearching, t]);
+
+  // Telemetry: fire on settled zero-result queries so we don't capture every
+  // intermediate substring while the user is still typing (e.g. "x", "xy",
+  // "xyz" → just "xyz"). 600ms after the last keystroke is enough to skip
+  // mid-typing snapshots without feeling laggy.
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!isSearching || rankedResults.length > 0) return;
+    const timer = window.setTimeout(() => {
+      trackHelpSearchEmpty(trimmedQuery);
+    }, 600);
+    return () => window.clearTimeout(timer);
+  }, [isOpen, isSearching, rankedResults.length, trimmedQuery]);
 
   if (!isOpen) return null;
 
@@ -264,18 +282,34 @@ interface SearchResultsListProps {
 
 function SearchResultsList({ results, modifierKey, query, onJump }: SearchResultsListProps) {
   const t = useTranslation();
+  const openCommandPalette = () => {
+    trackHelpCommandPaletteFallthrough(query);
+    window.dispatchEvent(new CustomEvent('open-command-palette', { detail: { query } }));
+    onJump();
+  };
+
   if (results.length === 0) {
     return (
-      <div className="text-center py-8 text-content-tertiary text-sm">
-        {t('help.noResultsFor', { query })}
+      <div className="text-center py-10 px-4 space-y-4">
+        <p className="text-content-tertiary text-sm">{t('help.noResultsFor', { query })}</p>
+        <button type="button" onClick={openCommandPalette} className="btn btn-secondary btn-sm">
+          {t('help.openCommandPaletteWithQuery')}
+        </button>
       </div>
     );
   }
   return (
     <ul aria-label={t('help.searchResultsAriaLabel')} className="space-y-1">
-      {results.map(({ entry }) => (
+      {results.map(({ entry }, index) => (
         <li key={entry.id}>
-          <HelpSearchResultRow entry={entry} modifierKey={modifierKey} onJump={onJump} />
+          <HelpSearchResultRow
+            entry={entry}
+            modifierKey={modifierKey}
+            onJump={() => {
+              trackHelpSearchJump(entry.id, query, index);
+              onJump();
+            }}
+          />
         </li>
       ))}
     </ul>

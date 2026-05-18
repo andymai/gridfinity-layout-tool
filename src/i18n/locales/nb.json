@@ -855,6 +855,7 @@
   "help.mouse.shiftClick": "Shift + klikk",
   "help.searchPlaceholder": "Søk i snarveier og funksjoner...",
   "help.goTo": "Gå til",
+  "help.openCommandPaletteWithQuery": "Søk i alle kommandoer i stedet",
   "help.kind.shortcut": "Snarvei",
   "help.kind.feature": "Funksjon",
   "help.kind.tip": "Tips",

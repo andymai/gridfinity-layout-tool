@@ -855,6 +855,7 @@
   "help.mouse.shiftClick": "Shift + Clic",
   "help.searchPlaceholder": "Pesquisar atalhos e recursos...",
   "help.goTo": "Ir para",
+  "help.openCommandPaletteWithQuery": "Pesquisar todos os comandos",
   "help.kind.shortcut": "Atalho",
   "help.kind.feature": "Recurso",
   "help.kind.tip": "Dica",
