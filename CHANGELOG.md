@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.91.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.90.0...gridfinity-layout-tool-v4.91.0) (2026-05-18)
+
+
+### Features
+
+* **seo:** add de/fr/es/pt-BR locales for /what-is-gridfinity and /guide ([#1714](https://github.com/andymai/gridfinity-layout-tool/issues/1714)) ([b2e2c66](https://github.com/andymai/gridfinity-layout-tool/commit/b2e2c66c6769ec574c30d7a1a70787367597eef2))
+
 ## [4.90.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.89.0...gridfinity-layout-tool-v4.90.0) (2026-05-18)
 
 
