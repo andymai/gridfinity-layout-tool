@@ -458,7 +458,12 @@ export default function App() {
         <Suspense fallback={null}>
           <CommandPalette
             open={commandPaletteOpen}
-            onOpenChange={setCommandPaletteOpen}
+            onOpenChange={(open: boolean) => {
+              setCommandPaletteOpen(open);
+              // Clear the initial query on close so the next ⌘K open
+              // (which bypasses the event listener) doesn't see a stale value.
+              if (!open) setCommandPaletteInitialQuery('');
+            }}
             initialQuery={commandPaletteInitialQuery}
           />
         </Suspense>

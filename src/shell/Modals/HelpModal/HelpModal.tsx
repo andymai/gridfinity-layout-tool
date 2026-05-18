@@ -69,14 +69,17 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
     return searchHelpEntries(allEntries, trimmedQuery, t);
   }, [allEntries, trimmedQuery, isSearching, t]);
 
-  // Telemetry: fire once per zero-result query so we can see which terms users
-  // type that the catalog doesn't cover. Debounced via the trimmedQuery key —
-  // each new query that hits zero results is captured exactly once.
+  // Telemetry: fire on settled zero-result queries so we don't capture every
+  // intermediate substring while the user is still typing (e.g. "x", "xy",
+  // "xyz" → just "xyz"). 600ms after the last keystroke is enough to skip
+  // mid-typing snapshots without feeling laggy.
   useEffect(() => {
     if (!isOpen) return;
-    if (isSearching && rankedResults.length === 0) {
+    if (!isSearching || rankedResults.length > 0) return;
+    const timer = window.setTimeout(() => {
       trackHelpSearchEmpty(trimmedQuery);
-    }
+    }, 600);
+    return () => window.clearTimeout(timer);
   }, [isOpen, isSearching, rankedResults.length, trimmedQuery]);
 
   if (!isOpen) return null;

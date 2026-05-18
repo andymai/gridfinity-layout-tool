@@ -159,9 +159,9 @@ function sanitizeQuery(query: string): string {
   return query.trim().toLowerCase().slice(0, 80);
 }
 
-export function trackHelpSearchJump(entry_id: string, query: string, position: number): void {
+export function trackHelpSearchJump(entryId: string, query: string, position: number): void {
   trackEvent('help_search_jump', {
-    entry_id,
+    entry_id: entryId,
     query: sanitizeQuery(query),
     position,
   });
