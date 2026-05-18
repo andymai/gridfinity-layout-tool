@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.95.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.95.0...gridfinity-layout-tool-v4.95.1) (2026-05-18)
+
+
+### Bug Fixes
+
+* **seo:** broken locale-root links (logo, CTA, breadcrumb home, body CTAs) ([#1731](https://github.com/andymai/gridfinity-layout-tool/issues/1731)) ([7981a77](https://github.com/andymai/gridfinity-layout-tool/commit/7981a77819e47e680fc2c2b0106615e3b1549a7f))
+
 ## [4.95.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.94.0...gridfinity-layout-tool-v4.95.0) (2026-05-18)
 
 
