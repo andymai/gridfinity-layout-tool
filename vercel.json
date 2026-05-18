@@ -112,6 +112,46 @@
       ]
     },
     {
+      "source": "/de/:path((?!api/).*)",
+      "headers": [
+        { "key": "Content-Language", "value": "de" },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/fr/:path((?!api/).*)",
+      "headers": [
+        { "key": "Content-Language", "value": "fr" },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/es/:path((?!api/).*)",
+      "headers": [
+        { "key": "Content-Language", "value": "es" },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/pt-BR/:path((?!api/).*)",
+      "headers": [
+        { "key": "Content-Language", "value": "pt-BR" },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
       "source": "/content.:hash.css",
       "headers": [
         {
@@ -197,6 +237,17 @@
       "destination": "/gridfinity-baseplate-generator/index.html"
     },
     { "source": "/gridfinity-sizes", "destination": "/gridfinity-sizes/index.html" },
+    { "source": "/de/what-is-gridfinity", "destination": "/de/what-is-gridfinity/index.html" },
+    { "source": "/de/guide", "destination": "/de/guide/index.html" },
+    { "source": "/fr/what-is-gridfinity", "destination": "/fr/what-is-gridfinity/index.html" },
+    { "source": "/fr/guide", "destination": "/fr/guide/index.html" },
+    { "source": "/es/what-is-gridfinity", "destination": "/es/what-is-gridfinity/index.html" },
+    { "source": "/es/guide", "destination": "/es/guide/index.html" },
+    {
+      "source": "/pt-BR/what-is-gridfinity",
+      "destination": "/pt-BR/what-is-gridfinity/index.html"
+    },
+    { "source": "/pt-BR/guide", "destination": "/pt-BR/guide/index.html" },
     { "source": "/designer", "destination": "/" },
     { "source": "/baseplate", "destination": "/" },
     { "source": "/s/:id([a-zA-Z0-9]{12})", "destination": "/" },
