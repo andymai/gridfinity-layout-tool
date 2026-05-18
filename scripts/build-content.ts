@@ -145,7 +145,7 @@ interface HowToFrontmatter {
   description?: string;
   totalTime?: string;
   tools?: string[];
-  steps: HowToStep[];
+  steps?: HowToStep[];
 }
 
 interface SoftwareApplicationFrontmatter {
@@ -415,7 +415,7 @@ ${structuredDataScripts}
       </svg>
       <span>${labels.siteName}</span>
     </a>
-    <a href="${navCta?.href ?? homeUrl}" class="content-nav__cta">
+    <a href="${escapeHtml(navCta?.href ?? homeUrl)}" class="content-nav__cta">
       ${escapeHtml(navCta?.label ?? labels.openTool)}
     </a>
   </nav>
@@ -565,6 +565,16 @@ function processFile(
   if (!frontmatter.title || !frontmatter.description) {
     console.error(`Missing required frontmatter in ${filePath}`);
     process.exit(1);
+  }
+
+  if (frontmatter.softwareApplication) {
+    const sa = frontmatter.softwareApplication;
+    if (!sa.name || !sa.applicationCategory) {
+      console.error(
+        `softwareApplication in ${filePath} is missing required fields (need 'name' and 'applicationCategory')`
+      );
+      process.exit(1);
+    }
   }
 
   const htmlContent = marked(content);
