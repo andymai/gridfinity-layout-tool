@@ -5,7 +5,7 @@ keywords: tamaños gridfinity, dimensiones gridfinity, tamaños bin gridfinity, 
 schema: Article
 breadcrumbs:
   - name: Inicio
-    url: https://gridfinitylayouttool.com/es/
+    url: https://gridfinitylayouttool.com/
   - name: Referencia de tamaños
     url: https://gridfinitylayouttool.com/es/gridfinity-sizes
 faqs:
@@ -109,7 +109,7 @@ La mayoría de las impresoras FDM tienen una cama de 220–256 mm, que admite bi
 
 ## Siguientes pasos
 
-Ahora que conoces los tamaños, [genera un bin personalizado](/es/gridfinity-bin-generator) o abre el [planificador de layout](/es/) para ver cómo encajan los bins en tu cajón.
+Ahora que conoces los tamaños, [genera un bin personalizado](/es/gridfinity-bin-generator) o abre el [planificador de layout](/) para ver cómo encajan los bins en tu cajón.
 
 ¿Nuevo en Gridfinity? [Aquí tienes una visión general](/es/what-is-gridfinity) del sistema.
 

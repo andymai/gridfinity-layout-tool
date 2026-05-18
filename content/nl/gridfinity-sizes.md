@@ -5,7 +5,7 @@ keywords: gridfinity maten, gridfinity afmetingen, gridfinity bin maten, gridfin
 schema: Article
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/nl/
+    url: https://gridfinitylayouttool.com/
   - name: Maatreferentie
     url: https://gridfinitylayouttool.com/nl/gridfinity-sizes
 faqs:
@@ -109,7 +109,7 @@ De meeste FDM-printers hebben een bed van 220-256 mm, geschikt voor bins tot ong
 
 ## Volgende stappen
 
-Nu je de maten kent, kun je een [eigen bin genereren](/nl/gridfinity-bin-generator) of de [layout-planner](/nl/) openen om te zien hoe bins in je lade passen.
+Nu je de maten kent, kun je een [eigen bin genereren](/nl/gridfinity-bin-generator) of de [layout-planner](/) openen om te zien hoe bins in je lade passen.
 
 Nieuw bij Gridfinity? [Hier is een kort overzicht](/nl/what-is-gridfinity) van het systeem.
 

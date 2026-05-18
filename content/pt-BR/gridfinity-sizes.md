@@ -5,7 +5,7 @@ keywords: tamanhos gridfinity, dimensões gridfinity, tamanhos bin gridfinity, u
 schema: Article
 breadcrumbs:
   - name: Início
-    url: https://gridfinitylayouttool.com/pt-BR/
+    url: https://gridfinitylayouttool.com/
   - name: Referência de tamanhos
     url: https://gridfinitylayouttool.com/pt-BR/gridfinity-sizes
 faqs:
@@ -109,7 +109,7 @@ A maioria das impressoras FDM tem mesa de 220–256 mm, que comporta bins até c
 
 ## Próximos passos
 
-Agora que você conhece os tamanhos, [gere um bin personalizado](/pt-BR/gridfinity-bin-generator) ou abra o [planejador de layout](/pt-BR/) para ver como os bins cabem na sua gaveta.
+Agora que você conhece os tamanhos, [gere um bin personalizado](/pt-BR/gridfinity-bin-generator) ou abra o [planejador de layout](/) para ver como os bins cabem na sua gaveta.
 
 Novo no Gridfinity? [Aqui está uma visão geral](/pt-BR/what-is-gridfinity) de como o sistema funciona.
 

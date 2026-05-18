@@ -5,7 +5,7 @@ keywords: генератор основ gridfinity, gridfinity baseplate, вла
 schema: HowTo
 breadcrumbs:
   - name: Головна
-    url: https://gridfinitylayouttool.com/uk/
+    url: https://gridfinitylayouttool.com/
   - name: Генератор основ
     url: https://gridfinitylayouttool.com/uk/gridfinity-baseplate-generator
 howTo:
@@ -98,6 +98,6 @@ navCta:
 
 ## Наступні кроки
 
-Потрібні власні bins до основи? Використовуйте [генератор bin](/uk/gridfinity-bin-generator) для bins з відсіками, вирізами і етикетками. Сплануйте всю шухляду у [планувальнику лейауту](/uk/) або дивіться [довідник розмірів](/uk/gridfinity-sizes) для ваших розмірів.
+Потрібні власні bins до основи? Використовуйте [генератор bin](/uk/gridfinity-bin-generator) для bins з відсіками, вирізами і етикетками. Сплануйте всю шухляду у [планувальнику лейауту](/) або дивіться [довідник розмірів](/uk/gridfinity-sizes) для ваших розмірів.
 
 [CTA: Згенерувати основу](/baseplate?standalone=1)

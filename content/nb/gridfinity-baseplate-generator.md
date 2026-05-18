@@ -5,7 +5,7 @@ keywords: gridfinity grunnplate-generator, gridfinity baseplate, egen gridfinity
 schema: HowTo
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/nb/
+    url: https://gridfinitylayouttool.com/
   - name: Grunnplate-generator
     url: https://gridfinitylayouttool.com/nb/gridfinity-baseplate-generator
 howTo:
@@ -98,6 +98,6 @@ En parametrisk grunnplate-generator som kjører i nettleseren din. Sett rutenett
 
 ## Neste trinn
 
-Trenger du egne bins til grunnplaten? Bruk [bin-generatoren](/nb/gridfinity-bin-generator) til å lage bins med rom, utsparinger og etiketter. Planlegg hele skuffen med [layout-planleggeren](/nb/), eller sjekk [størrelsesreferansen](/nb/gridfinity-sizes) for dine mål.
+Trenger du egne bins til grunnplaten? Bruk [bin-generatoren](/nb/gridfinity-bin-generator) til å lage bins med rom, utsparinger og etiketter. Planlegg hele skuffen med [layout-planleggeren](/), eller sjekk [størrelsesreferansen](/nb/gridfinity-sizes) for dine mål.
 
 [CTA: Generer grunnplate](/baseplate?standalone=1)

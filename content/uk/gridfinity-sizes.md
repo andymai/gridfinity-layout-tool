@@ -5,7 +5,7 @@ keywords: розміри gridfinity, габарити gridfinity, розміри
 schema: Article
 breadcrumbs:
   - name: Головна
-    url: https://gridfinitylayouttool.com/uk/
+    url: https://gridfinitylayouttool.com/
   - name: Довідник розмірів
     url: https://gridfinitylayouttool.com/uk/gridfinity-sizes
 faqs:
@@ -109,7 +109,7 @@ Gridfinity використовує два числа: **одиниці сітк
 
 ## Наступні кроки
 
-Тепер, коли ви знаєте розміри, [згенеруйте власний bin](/uk/gridfinity-bin-generator) або відкрийте [планувальник лейауту](/uk/), щоб подивитися, як bins вписуються у шухляду.
+Тепер, коли ви знаєте розміри, [згенеруйте власний bin](/uk/gridfinity-bin-generator) або відкрийте [планувальник лейауту](/), щоб подивитися, як bins вписуються у шухляду.
 
 Новачок у Gridfinity? [Ось коротко](/uk/what-is-gridfinity) про систему.
 

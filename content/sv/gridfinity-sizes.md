@@ -5,7 +5,7 @@ keywords: gridfinity storlekar, gridfinity mått, gridfinity bin-storlekar, grid
 schema: Article
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/sv/
+    url: https://gridfinitylayouttool.com/
   - name: Storleksreferens
     url: https://gridfinitylayouttool.com/sv/gridfinity-sizes
 faqs:
@@ -109,7 +109,7 @@ De flesta FDM-skrivare har en 220–256 mm bädd, vilket hanterar bins upp till 
 
 ## Nästa steg
 
-Nu när du kan storlekarna kan du [generera en egen bin](/sv/gridfinity-bin-generator) eller öppna [layout-planeraren](/sv/) för att se hur bins passar i din låda.
+Nu när du kan storlekarna kan du [generera en egen bin](/sv/gridfinity-bin-generator) eller öppna [layout-planeraren](/) för att se hur bins passar i din låda.
 
 Ny på Gridfinity? [Här är en snabbintroduktion](/sv/what-is-gridfinity) till systemet.
 

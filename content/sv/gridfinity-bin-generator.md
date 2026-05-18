@@ -5,7 +5,7 @@ keywords: gridfinity generator, gridfinity bin-generator, gridfinity STL, egna g
 schema: HowTo
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/sv/
+    url: https://gridfinitylayouttool.com/
   - name: Bin-generator
     url: https://gridfinitylayouttool.com/sv/gridfinity-bin-generator
 howTo:

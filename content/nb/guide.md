@@ -5,7 +5,7 @@ keywords: gridfinity planlegger, gridfinity layout, gridfinity planlegge, skuffe
 schema: HowTo
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/nb/
+    url: https://gridfinitylayouttool.com/
   - name: Planleggingsveiledning
     url: https://gridfinitylayouttool.com/nb/guide
 faqs:
@@ -141,4 +141,4 @@ Din høyeste bin pluss grunnplaten (~5 mm) må få plass med skuffen lukket. Må
 
 **Ignorer hva du faktisk bruker.** Ikke organiser etter hva du tror du burde ha. Organiser etter hva du faktisk griper etter.
 
-[CTA: Åpne layout-verktøyet](/nb/)
+[CTA: Åpne layout-verktøyet](/)

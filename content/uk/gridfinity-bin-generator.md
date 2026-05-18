@@ -5,7 +5,7 @@ keywords: gridfinity генератор, генератор bin gridfinity, grid
 schema: HowTo
 breadcrumbs:
   - name: Головна
-    url: https://gridfinitylayouttool.com/uk/
+    url: https://gridfinitylayouttool.com/
   - name: Генератор bin
     url: https://gridfinitylayouttool.com/uk/gridfinity-bin-generator
 howTo:

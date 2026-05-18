@@ -5,7 +5,7 @@ keywords: gridfinity, qu’est-ce que gridfinity, organisateur tiroir, impressio
 schema: Article
 breadcrumbs:
   - name: Accueil
-    url: https://gridfinitylayouttool.com/fr/
+    url: https://gridfinitylayouttool.com/
   - name: Qu’est-ce que Gridfinity ?
     url: https://gridfinitylayouttool.com/fr/what-is-gridfinity
 faqs:

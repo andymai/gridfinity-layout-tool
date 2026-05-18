@@ -5,7 +5,7 @@ keywords: gridfinity bottenplatta-generator, gridfinity baseplate, egen gridfini
 schema: HowTo
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/sv/
+    url: https://gridfinitylayouttool.com/
   - name: Bottenplatta-generator
     url: https://gridfinitylayouttool.com/sv/gridfinity-baseplate-generator
 howTo:
@@ -98,6 +98,6 @@ En parametrisk bottenplatta-generator som körs i din webbläsare. Ställ in rut
 
 ## Nästa steg
 
-Behöver du egna bins till bottenplattan? Använd [bin-generatorn](/sv/gridfinity-bin-generator) för att skapa bins med fack, urtag och etiketter. Planera hela lådan med [layout-planeraren](/sv/), eller kolla [storleksreferensen](/sv/gridfinity-sizes) för dina mått.
+Behöver du egna bins till bottenplattan? Använd [bin-generatorn](/sv/gridfinity-bin-generator) för att skapa bins med fack, urtag och etiketter. Planera hela lådan med [layout-planeraren](/), eller kolla [storleksreferensen](/sv/gridfinity-sizes) för dina mått.
 
 [CTA: Generera bottenplatta](/baseplate?standalone=1)

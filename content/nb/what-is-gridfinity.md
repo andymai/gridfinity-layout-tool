@@ -5,7 +5,7 @@ keywords: gridfinity, hva er gridfinity, skuffeorganisator, 3D-utskrift, modulæ
 schema: Article
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/nb/
+    url: https://gridfinitylayouttool.com/
   - name: Hva er Gridfinity?
     url: https://gridfinitylayouttool.com/nb/what-is-gridfinity
 faqs:

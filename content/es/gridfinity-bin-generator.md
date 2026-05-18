@@ -5,7 +5,7 @@ keywords: generador gridfinity, gridfinity bin generator, generador STL gridfini
 schema: HowTo
 breadcrumbs:
   - name: Inicio
-    url: https://gridfinitylayouttool.com/es/
+    url: https://gridfinitylayouttool.com/
   - name: Generador de bins
     url: https://gridfinitylayouttool.com/es/gridfinity-bin-generator
 howTo:

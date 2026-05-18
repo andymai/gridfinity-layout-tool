@@ -5,7 +5,7 @@ keywords: gridfinity générateur plaque, gridfinity baseplate, plaque gridfinit
 schema: HowTo
 breadcrumbs:
   - name: Accueil
-    url: https://gridfinitylayouttool.com/fr/
+    url: https://gridfinitylayouttool.com/
   - name: Générateur de plaques
     url: https://gridfinitylayouttool.com/fr/gridfinity-baseplate-generator
 howTo:
@@ -98,6 +98,6 @@ Un générateur paramétrique de plaques qui tourne dans votre navigateur. Régl
 
 ## Étapes suivantes
 
-Besoin de bins sur mesure pour votre plaque ? Utilisez le [générateur de bins](/fr/gridfinity-bin-generator) pour créer des bins avec compartiments, découpes et étiquettes. Planifiez tout votre tiroir avec le [planificateur de layout](/fr/), ou consultez la [référence des tailles](/fr/gridfinity-sizes) pour trouver vos dimensions.
+Besoin de bins sur mesure pour votre plaque ? Utilisez le [générateur de bins](/fr/gridfinity-bin-generator) pour créer des bins avec compartiments, découpes et étiquettes. Planifiez tout votre tiroir avec le [planificateur de layout](/), ou consultez la [référence des tailles](/fr/gridfinity-sizes) pour trouver vos dimensions.
 
 [CTA: Générer une plaque](/baseplate?standalone=1)

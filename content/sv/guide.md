@@ -5,7 +5,7 @@ keywords: gridfinity planerare, gridfinity layout, gridfinity planera, lådorgan
 schema: HowTo
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/sv/
+    url: https://gridfinitylayouttool.com/
   - name: Planeringsguide
     url: https://gridfinitylayouttool.com/sv/guide
 faqs:
@@ -141,4 +141,4 @@ Din högsta bin plus bottenplatta (cirka 5 mm) måste få plats med lådan stän
 
 **Strunta i vad du faktiskt använder.** Organisera inte efter vad du tror att du borde ha. Organisera efter vad du faktiskt griper efter.
 
-[CTA: Öppna layout-verktyget](/sv/)
+[CTA: Öppna layout-verktyget](/)

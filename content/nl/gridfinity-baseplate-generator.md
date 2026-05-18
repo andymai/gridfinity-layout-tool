@@ -5,7 +5,7 @@ keywords: gridfinity bodemplaat generator, gridfinity baseplate, eigen gridfinit
 schema: HowTo
 breadcrumbs:
   - name: Start
-    url: https://gridfinitylayouttool.com/nl/
+    url: https://gridfinitylayouttool.com/
   - name: Bodemplaat-generator
     url: https://gridfinitylayouttool.com/nl/gridfinity-baseplate-generator
 howTo:
@@ -98,6 +98,6 @@ Een parametrische bodemplaat-generator die in je browser draait. Stel de rasterg
 
 ## Volgende stappen
 
-Eigen bins nodig bij je bodemplaat? Gebruik de [bin-generator](/nl/gridfinity-bin-generator) voor bins met vakken, uitsparingen en etiketten. Plan je hele lade met de [layout-planner](/nl/), of bekijk de [maatreferentie](/nl/gridfinity-sizes) voor je afmetingen.
+Eigen bins nodig bij je bodemplaat? Gebruik de [bin-generator](/nl/gridfinity-bin-generator) voor bins met vakken, uitsparingen en etiketten. Plan je hele lade met de [layout-planner](/), of bekijk de [maatreferentie](/nl/gridfinity-sizes) voor je afmetingen.
 
 [CTA: Bodemplaat genereren](/baseplate?standalone=1)
