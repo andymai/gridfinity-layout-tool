@@ -12,14 +12,26 @@
 import * as THREE from 'three';
 import { bridgeManager } from '@/shared/generation/bridge';
 import type { BinParams } from '@/features/bin-designer/types';
+import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
 import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
 import { THREE_COLORS } from '@/shared/hooks/useThemeEffect';
+import {
+  binLipTopWorldZ,
+  lidAnchorZ,
+} from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
 
 /** Thumbnail size matching the main capture utility */
 const THUMBNAIL_SIZE = 384;
 
 /** Default preview color matching PreviewCanvas default */
 const DEFAULT_COLOR = '#d4d8dc';
+
+interface RegenerateOptions {
+  /** AbortSignal to cancel the operation. */
+  readonly signal?: AbortSignal;
+  /** Preview color override. Defaults to `DEFAULT_COLOR`. */
+  readonly color?: string;
+}
 
 /**
  * Generate a thumbnail for a bin design using an offscreen Three.js renderer.
@@ -28,24 +40,32 @@ const DEFAULT_COLOR = '#d4d8dc';
  * and returns a WebP data URL. All resources are cleaned up after capture.
  *
  * @param params - Bin parameters to generate and render
- * @param signal - Optional AbortSignal to cancel the operation
+ * @param options - Optional abort signal and preview color override
  * @returns WebP data URL string, or null on failure
  */
 export async function regenerateThumbnail(
   params: BinParams,
-  signal?: AbortSignal
+  options: RegenerateOptions = {}
 ): Promise<string | null> {
+  const { signal, color = DEFAULT_COLOR } = options;
   let renderer: THREE.WebGLRenderer | null = null;
+  // Track whether `acquire()` actually returned before incrementing the
+  // bridge's ref-count obligation on our side. BridgeManager.acquire()
+  // decrements its own refCount on init failure, so a blanket `release()`
+  // in `finally` would double-decrement and drop any outer caller's hold
+  // — notably `runBatch`, which pre-acquires the bridge for a whole batch.
+  let bridgeAcquired = false;
 
   try {
     const bridge = await bridgeManager.acquire();
+    bridgeAcquired = true;
 
     if (signal?.aborted) return null;
 
     const result = await bridge.generateImmediate(params);
     if (signal?.aborted) return null;
 
-    const { vertices, normals, indices, edgeVertices } = result.mesh;
+    const { vertices, normals, indices, edgeVertices, lidMesh } = result.mesh;
     if (vertices.length === 0) return null;
 
     // Build geometry. The worker emits an indexed mesh (deduplicated vertices
@@ -69,10 +89,41 @@ export async function regenerateThumbnail(
       edgesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
     }
 
+    // Lid mesh + edges (rendered at closed position when params.lid.enabled
+    // and the worker produced a lid). Matches LidMesh.tsx's mated formula.
+    let lidGeometry: THREE.BufferGeometry | null = null;
+    let lidEdgesGeometry: THREE.BufferGeometry | null = null;
+    const lidGroupZ =
+      lidMesh && params.lid.enabled && params.base.stackingLip
+        ? binLipTopWorldZ(params.height, params.heightUnitMm, params.base.stackingLip) -
+          lidAnchorZ(params.heightUnitMm, LID_FIT_CLEARANCE)
+        : null;
+    if (lidMesh && lidGroupZ !== null && lidMesh.vertices.length > 0) {
+      lidGeometry = new THREE.BufferGeometry();
+      lidGeometry.setAttribute('position', new THREE.Float32BufferAttribute(lidMesh.vertices, 3));
+      if (lidMesh.indices.length > 0) {
+        lidGeometry.setIndex(new THREE.BufferAttribute(lidMesh.indices, 1));
+      }
+      if (lidMesh.normals.length > 0) {
+        lidGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(lidMesh.normals, 3));
+      } else {
+        lidGeometry.computeVertexNormals();
+      }
+      if (lidMesh.edgeVertices.length > 0) {
+        lidEdgesGeometry = new THREE.BufferGeometry();
+        lidEdgesGeometry.setAttribute(
+          'position',
+          new THREE.Float32BufferAttribute(lidMesh.edgeVertices, 3)
+        );
+      }
+    }
+
     // Check abort before expensive scene setup and rendering
     if (signal?.aborted) {
       geometry.dispose();
       edgesGeometry?.dispose();
+      lidGeometry?.dispose();
+      lidEdgesGeometry?.dispose();
       return null;
     }
 
@@ -97,11 +148,11 @@ export async function regenerateThumbnail(
 
     // Bin mesh with PBR material matching BinMesh component
     const material = new THREE.MeshStandardMaterial({
-      color: DEFAULT_COLOR,
+      color,
       roughness: 0.45,
       metalness: 0,
       side: THREE.DoubleSide,
-      emissive: new THREE.Color(DEFAULT_COLOR),
+      emissive: new THREE.Color(color),
       emissiveIntensity: 0.08,
       flatShading: false,
       polygonOffset: true,
@@ -120,6 +171,34 @@ export async function regenerateThumbnail(
       edges.position.set(0, 0, 0.1);
       edges.renderOrder = 1;
       scene.add(edges);
+    }
+
+    // Lid mesh rendered at its closed/mated position (lidOffsetMm = 0). Opaque
+    // here — there's no exploded-view affordance in a thumbnail, so the lid
+    // simply hides the cavity it sits over.
+    let lidMaterial: THREE.MeshStandardMaterial | null = null;
+    if (lidGeometry && lidGroupZ !== null) {
+      lidMaterial = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.45,
+        metalness: 0,
+        side: THREE.DoubleSide,
+        emissive: new THREE.Color(color),
+        emissiveIntensity: 0.08,
+        flatShading: false,
+        polygonOffset: true,
+        polygonOffsetFactor: 4,
+        polygonOffsetUnits: 4,
+      });
+      const lid = new THREE.Mesh(lidGeometry, lidMaterial);
+      lid.position.set(0, 0, lidGroupZ);
+      scene.add(lid);
+      if (lidEdgesGeometry) {
+        const lidEdges = new THREE.LineSegments(lidEdgesGeometry, edgeMaterial);
+        lidEdges.position.set(0, 0, lidGroupZ);
+        lidEdges.renderOrder = 1;
+        scene.add(lidEdges);
+      }
     }
 
     // Camera setup
@@ -166,7 +245,10 @@ export async function regenerateThumbnail(
     // Clean up Three.js objects
     geometry.dispose();
     edgesGeometry?.dispose();
+    lidGeometry?.dispose();
+    lidEdgesGeometry?.dispose();
     material.dispose();
+    lidMaterial?.dispose();
     edgeMaterial.dispose();
     scene.clear();
 
@@ -174,7 +256,9 @@ export async function regenerateThumbnail(
   } catch {
     return null;
   } finally {
-    bridgeManager.release();
+    if (bridgeAcquired) {
+      bridgeManager.release();
+    }
     if (renderer) {
       renderer.dispose();
       renderer.forceContextLoss();

@@ -21,6 +21,7 @@ export { loadDesign, deleteDesign, listDesigns, updateDesignParams } from './sto
 
 // --- Hooks ---
 export {
+  useBackgroundThumbnailRegen,
   useCustomBins,
   useDesignThumbnail,
   clearThumbnailCache,

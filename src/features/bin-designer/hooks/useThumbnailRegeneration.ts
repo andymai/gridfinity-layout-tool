@@ -54,7 +54,9 @@ export function useThumbnailRegeneration(
       for (const design of needsRegen) {
         if (controller.signal.aborted) break;
 
-        const thumbnail = await regenerateThumbnail(design.params, controller.signal);
+        const thumbnail = await regenerateThumbnail(design.params, {
+          signal: controller.signal,
+        });
 
         if (!thumbnail) {
           // Generation failed — skip but don't mark as processed so it can retry

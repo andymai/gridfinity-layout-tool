@@ -48,6 +48,7 @@ import { useThemeEffect } from '@/shared/hooks/useThemeEffect';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { usePlaceBinFromURL } from '@/features/bin-designer/hooks/usePlaceBinInLayout';
+import { useBackgroundThumbnailRegen } from '@/features/bin-designer';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { SHORTCUTS } from '@/core/constants';
 
@@ -171,6 +172,7 @@ export default function App() {
 
   usePlaceBinFromURL();
   useOwnedShareSync();
+  useBackgroundThumbnailRegen();
 
   useEffect(() => {
     return initLayoutAnalytics();
