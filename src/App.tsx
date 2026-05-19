@@ -476,8 +476,17 @@ export default function App() {
     <>
       {/* Visually hidden H1 so JS-rendered DOM has a top-level heading for
           crawlers and screen readers. The visible app shell doesn't carry an H1;
-          the noscript fallback's H1 only renders when JS is disabled. */}
-      <h1 className="sr-only">{t('seo.h1')}</h1>
+          the noscript fallback's H1 only renders when JS is disabled. The
+          heading must mirror the route-aware title set above so Googlebot
+          sees consistent <title> + <h1> signals and screen readers announce
+          the correct page on /designer and /baseplate. */}
+      <h1 className="sr-only">
+        {isDesignerRoute
+          ? t('seo.designer.title')
+          : isBaseplateRoute
+            ? t('seo.baseplate.title')
+            : t('seo.h1')}
+      </h1>
       {cloudSyncEnabled && (
         <Suspense fallback={null}>
           <LazySyncSessionMount />

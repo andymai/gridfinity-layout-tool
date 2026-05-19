@@ -44,6 +44,13 @@ const fallback: Translations = {
   'seo.title': 'Gridfinity Planner & Layout Tool — Free Bin Generator',
   'seo.description':
     'Plan Gridfinity drawer layouts in your browser. Drag-and-drop bins, custom bin generator, 3D preview, STL/STEP/3MF export. Free, no account.',
+  'seo.h1': 'Gridfinity Planner & Layout Tool',
+  'seo.designer.title': 'Gridfinity Bin Generator — Free Online STL Creator',
+  'seo.designer.description':
+    'Gridfinity bin generator with visual editor and real-time 3D preview. Set dimensions, add compartments and cutouts, export STL, STEP, or 3MF. Free browser tool.',
+  'seo.baseplate.title': 'Gridfinity Baseplate Generator — Free Online STL Creator',
+  'seo.baseplate.description':
+    'Gridfinity baseplate generator with real-time 3D preview. Configure grid size, magnet holes, connector nubs, and edge padding. Export STL, STEP, or 3MF. Free browser tool.',
 };
 
 /**
