@@ -1,5 +1,5 @@
 /**
- * Unwrap helpers for brepjs export Results (STL/STEP/IGES).
+ * Unwrap helpers for brepjs export Results (STL and STEP).
  *
  * brepjs returns `Result<Blob, BrepError>` from its export functions. Using
  * brepjs's `unwrap()` rethrows with `"Called unwrap on an Err: [IO] STL_EXPORT_FAILED: ..."`,
@@ -36,9 +36,10 @@ export function unwrapExportBlob(result: Result<Blob>, format: ExportFormat): Bl
   const error = result.error as BrepLikeError;
   const code = error.code ?? 'UNKNOWN';
   const detail = error.message ?? `${format} export failed`;
-  const suggestion = error.suggestion ?? DEFAULT_SUGGESTION[format];
-  const tail = suggestion ? ` — ${suggestion}` : '';
-  throw Object.assign(new Error(`${detail} (${code})${tail}`, { cause: error }), {
+  // `||` (not `??`): brepjs may serialize a missing suggestion as `""`, and
+  // an empty string here would silently drop the default actionable hint.
+  const suggestion = error.suggestion || DEFAULT_SUGGESTION[format];
+  throw Object.assign(new Error(`${detail} (${code}) — ${suggestion}`, { cause: error }), {
     name: 'ExportFailed',
   });
 }

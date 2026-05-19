@@ -104,7 +104,10 @@ export function buildReportIssueUrl(
         compartments: {
           cols: params.compartments.cols,
           rows: params.compartments.rows,
-          merged: params.compartments.cells.some((id, i) => id !== i),
+          // Duplicate IDs = at least two cells share a compartment. Robust
+          // against renumbered-but-unmerged designs (where a positional
+          // `id !== i` check would false-positive).
+          merged: new Set(params.compartments.cells).size !== params.compartments.cells.length,
         },
         scoop: params.scoop.enabled ? { enabled: true, radius: params.scoop.radius } : false,
         label: params.label.enabled

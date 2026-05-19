@@ -41,6 +41,21 @@ describe('unwrapExportBlob', () => {
     }
   });
 
+  it('falls back to the default suggestion when BrepError suggestion is an empty string', () => {
+    // brepjs may serialize a missing suggestion as `""`; `??` would let it
+    // through and the user would see no hint. Guard against that.
+    const result = err(
+      ioError('STL_EXPORT_FAILED', 'Failed to write STL file', undefined, undefined, '')
+    );
+    try {
+      unwrapExportBlob(result, 'STL');
+      expect.fail('should have thrown');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      expect(msg).toMatch(/disabling features one at a time/i);
+    }
+  });
+
   it('preserves the structured BrepError via `cause`', () => {
     const brepErr = ioError('STL_EXPORT_FAILED', 'Failed to write STL file');
     const result = err(brepErr);

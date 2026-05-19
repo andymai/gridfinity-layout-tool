@@ -190,4 +190,17 @@ describe('buildReportIssueUrl', () => {
     expect(json).toHaveProperty('featureColors');
     expect(json).toHaveProperty('wallThickness', params.wallThickness);
   });
+
+  it('does not flag renumbered-but-unmerged compartments as merged', () => {
+    // Each cell has a unique ID — these are 4 distinct compartments, not
+    // merged, even though the IDs aren't in `0..N-1` order. A positional
+    // `id !== i` check would false-positive here.
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [3, 2, 1, 0] },
+    };
+    const url = buildReportIssueUrl(params, new Error('test'), 'stl');
+    const json = extractParams(url);
+    expect((json.compartments as { merged: boolean }).merged).toBe(false);
+  });
 });
