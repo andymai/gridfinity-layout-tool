@@ -8,15 +8,18 @@ import { err, getUserMessage, isOk, layoutInvalidOperation, OK } from '@/core/re
 import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backends/localStorage';
 
 /**
- * Half-Bin Mode Store
+ * Half-Grid Mode Store
  *
- * Manages the half-bin mode setting, which allows 0.5 unit increments
- * for finer positioning of bins. This is a power user feature.
+ * Manages the half-grid mode setting: allows 0.5-unit grid increments for
+ * fractional bin sizing AND seeds `base.halfSockets = true` on new bin
+ * designs (see `defaultsForNewDesign` in `bin-designer/store/helpers.ts`).
  *
  * Extracted from ui.ts as part of the god object decomposition.
  *
- * Persistence: Stored in localStorage under 'gridfinity-half-bin-mode'.
- * The store handles persistence internally to keep components simple.
+ * Persistence: stored in localStorage under `gridfinity-half-bin-mode`.
+ * The key name predates the rename and is kept to preserve existing
+ * users' preference across the upgrade — don't change it without a
+ * migration.
  */
 
 const STORAGE_KEY = 'gridfinity-half-bin-mode';

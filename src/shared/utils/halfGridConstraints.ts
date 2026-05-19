@@ -89,12 +89,14 @@ export function validateHalfGridModeToggle(
   layout: Layout,
   targetState: boolean
 ): HalfGridConstraintResult {
-  // Enabling half-bin mode is always allowed
+  // Enabling half-grid mode is always allowed. `canDisable: true` here
+  // reads oddly but means "no constraint blocks this transition" — kept
+  // for backward compatibility with the existing call sites.
   if (targetState) {
     return { canDisable: true };
   }
 
-  // Disabling half-bin mode: check for fractional bins
+  // Disabling half-grid mode: check for fractional bins
   const fractionalBinIds = getFractionalBinIds(layout.bins);
 
   if (fractionalBinIds.length === 0) {

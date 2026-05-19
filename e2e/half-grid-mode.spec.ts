@@ -12,7 +12,7 @@ import {
   getActiveDialog,
 } from './fixtures';
 
-test.describe('Half-Bin Mode', () => {
+test.describe('Half-Grid Mode', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
@@ -30,7 +30,7 @@ test.describe('Half-Bin Mode', () => {
     }
   });
 
-  test.describe('Enabling Half-Bin Mode', () => {
+  test.describe('Enabling Half-Grid Mode', () => {
     test('can enable half-grid mode via checkbox', async ({ page }) => {
       const sidebar = getSidebar(page);
 
@@ -142,7 +142,7 @@ test.describe('Half-Bin Mode', () => {
     });
   });
 
-  test.describe('Disabling Half-Bin Mode', () => {
+  test.describe('Disabling Half-Grid Mode', () => {
     test('cannot disable half-grid mode with fractional bins present', async ({ page }) => {
       const sidebar = getSidebar(page);
       const inspector = getInspector(page);
