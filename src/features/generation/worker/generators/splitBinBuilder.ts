@@ -16,13 +16,12 @@ import {
   getBounds,
   mesh,
   meshEdges,
-  exportSTL,
 } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 
 import { SIZE, CLEARANCE, SOCKET_HEIGHT } from './generatorTypes';
-import { unwrapExportBlob } from './utils/exportUnwrap';
+import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { toIndexedMeshData } from './utils/mesh';
 import { buildTopShape } from './boxBuilder';
@@ -377,6 +376,39 @@ function splitSolidIntoPieces(
   return pieces;
 }
 
+/**
+ * Tessellate a split piece and serialize it to a binary STL ArrayBuffer.
+ *
+ * Path: `brepjs.mesh()` → `buildSTLBufferFromIndexed()`.
+ *
+ * We deliberately bypass brepjs's `exportSTL()` (which calls OCCT's
+ * `StlAPI.Write`). For bins with a scoop ramp and walls tall enough that
+ * the scoop radius is sizeable (e.g. height=9 → radius=29mm), the boolean
+ * cut leaves a BREP topology that triangulates correctly via `mesh()` but
+ * trips a silent failure in `StlAPI.Write` — exportSTL returns
+ * `STL_EXPORT_FAILED` regardless of tolerance (issue #1760).
+ *
+ * Writing STL from the meshed triangle buffer ourselves removes the
+ * dependency on OCCT's STL writer; `buildSTLBufferFromIndexed` runs on
+ * the exact same triangles the preview path already renders cleanly.
+ */
+function tessellateAndExportPiece(
+  piece: SplitPieceInfo,
+  tolerance: number,
+  angularTolerance: number
+): ArrayBuffer {
+  const { solid: pieceSolid } = piece;
+  try {
+    const m = mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
+    const vertices = m.vertices instanceof Float32Array ? m.vertices : new Float32Array(m.vertices);
+    const normals = m.normals instanceof Float32Array ? m.normals : new Float32Array(m.normals);
+    const indices = m.triangles instanceof Uint32Array ? m.triangles : new Uint32Array(m.triangles);
+    return buildSTLBufferFromIndexed(vertices, normals, indices, `gridfinity-piece-${piece.label}`);
+  } finally {
+    pieceSolid.delete();
+  }
+}
+
 /** Tessellate a split piece into preview mesh data */
 function tessellatePiece(
   piece: SplitPieceInfo,
@@ -430,7 +462,7 @@ function tessellatePiece(
  *
  * Each piece is independently tessellated to STL.
  */
-export async function exportSplitBin(
+export function exportSplitBin(
   params: BinParams,
   cutPlanesX: readonly number[],
   cutPlanesY: readonly number[],
@@ -442,24 +474,12 @@ export async function exportSplitBin(
 
   const pieces: SplitExportResult['pieces'] = [];
 
-  for (const { solid: pieceSolid, label, col, row } of splitPieces) {
-    // Force complete tessellation before export. Boolean intersection reuses
-    // some original faces (with existing triangulation) but creates new faces
-    // at cut planes (without triangulation). brepjs exportSTL skips meshing
-    // when hasTriangulation() finds ANY tessellated face, leaving new faces
-    // un-tessellated. Calling mesh() first runs BRepMesh_IncrementalMesh which
-    // fills in the missing triangulation on cut-plane faces.
-    mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
-    const blob = unwrapExportBlob(
-      exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }),
-      'STL'
-    );
-    const data = await blob.arrayBuffer();
-    pieceSolid.delete();
-    pieces.push({ data, label, col, row });
+  for (const piece of splitPieces) {
+    const data = tessellateAndExportPiece(piece, tolerance, angularTolerance);
+    pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
   }
 
-  return { pieces };
+  return Promise.resolve({ pieces });
 }
 
 /**
@@ -521,7 +541,7 @@ export function generateSplitPreviewRange(
  * Same as exportSplitBin but only processes the assigned pieces,
  * allowing parallel export across multiple workers.
  */
-export async function exportSplitBinRange(
+export function exportSplitBinRange(
   params: BinParams,
   cutPlanesX: readonly number[],
   cutPlanesY: readonly number[],
@@ -539,16 +559,9 @@ export async function exportSplitBinRange(
       throw new Error(`Piece index ${idx} out of range [0, ${splitPieces.length})`);
     }
 
-    const { solid: pieceSolid, label, col, row } = splitPieces[idx];
-    // Force complete tessellation (see exportSplitBin comment for rationale)
-    mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
-    const blob = unwrapExportBlob(
-      exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }),
-      'STL'
-    );
-    const data = await blob.arrayBuffer();
-    pieceSolid.delete();
-    pieces.push({ data, label, col, row });
+    const piece = splitPieces[idx];
+    const data = tessellateAndExportPiece(piece, tolerance, angularTolerance);
+    pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
   }
 
   // Dispose unused split pieces (not in pieceIndices)
@@ -558,5 +571,5 @@ export async function exportSplitBinRange(
     }
   }
 
-  return { pieces };
+  return Promise.resolve({ pieces });
 }
