@@ -51,14 +51,15 @@ describe('createInitialContext', () => {
     expect(ctx.dimensions.wallHeight).toBe(21); // No socket deduction for flat
   });
 
-  it('produces versioned shellKey with v5 prefix including gridUnitMm', () => {
+  it('produces versioned shellKey with v6 prefix including gridUnitMm and compartments segment', () => {
     const ctx = createInitialContext(createTestParams());
 
-    // shellKey uses buildCacheKey with v5 prefix, gridUnitMm, and quantized floats
-    // forExport is no longer in the key since shell geometry is identical for preview/export.
-    // Final segment is 'rect' when no cellMask is in use; mask hash otherwise.
+    // shellKey uses buildCacheKey with v6 prefix, gridUnitMm, quantized floats,
+    // a 'rect' mask segment (no cellMask), and a 'none' compartments segment
+    // (single-compartment default — no multi-cavity cut path). v6 bumped from
+    // v5 when the compartments segment was added (#1753).
     const expected = [
-      'v5',
+      'v6',
       2,
       2,
       42, // gridUnitMm
@@ -74,6 +75,7 @@ describe('createInitialContext', () => {
       false,
       false,
       'rect',
+      'none',
     ].join('|');
 
     expect(ctx.dimensions.shellKey).toBe(expected);
