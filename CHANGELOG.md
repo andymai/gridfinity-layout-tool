@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.101.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.101.3...gridfinity-layout-tool-v4.101.4) (2026-05-19)
+
+
+### Bug Fixes
+
+* **generation:** build compartmented bins as multi-cavity cut ([#1753](https://github.com/andymai/gridfinity-layout-tool/issues/1753)) ([#1756](https://github.com/andymai/gridfinity-layout-tool/issues/1756)) ([19497f8](https://github.com/andymai/gridfinity-layout-tool/commit/19497f8545da5b8b3691742cefeb1bec1c37e115))
+
 ## [4.101.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.101.2...gridfinity-layout-tool-v4.101.3) (2026-05-18)
 
 
