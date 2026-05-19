@@ -15,9 +15,20 @@
 
 const en: Record<string, string> = {
   // SEO Meta Tags (dynamically injected into document head)
-  'seo.title': 'Gridfinity Layout Tool | Plan Your 3D Printed Drawer Organizers',
+  'seo.h1': 'Gridfinity Planner & Layout Tool',
+  'seo.title': 'Gridfinity Planner & Layout Tool — Free Bin Generator',
   'seo.description':
-    'Plan and visualize Gridfinity drawer layouts for 3D printing. Custom bins, multi-layer support, and 3D preview.',
+    'Plan Gridfinity drawer layouts in your browser. Drag-and-drop bins, custom bin generator, 3D preview, STL/STEP/3MF export. Free, no account.',
+  // Per-route title overrides — mirror the content-page titles so direct
+  // landings on /designer and /baseplate get the same SEO signal as the
+  // content-page equivalents at /gridfinity-bin-generator and
+  // /gridfinity-baseplate-generator.
+  'seo.designer.title': 'Gridfinity Bin Generator — Free Online STL Creator',
+  'seo.designer.description':
+    'Gridfinity bin generator with visual editor and real-time 3D preview. Set dimensions, add compartments and cutouts, export STL, STEP, or 3MF. Free browser tool.',
+  'seo.baseplate.title': 'Gridfinity Baseplate Generator — Free Online STL Creator',
+  'seo.baseplate.description':
+    'Gridfinity baseplate generator with real-time 3D preview. Configure grid size, magnet holes, connector nubs, and edge padding. Export STL, STEP, or 3MF. Free browser tool.',
 
   // Common / Shared
   'common.save': 'Save',
@@ -238,6 +249,14 @@ const en: Record<string, string> = {
   'sidebar.toggleHalfBinMode': 'Toggle half-grid mode',
   'sidebar.toolBy': 'Tool by',
   'sidebar.top': 'Top',
+
+  // Sidebar Learn section — internal links to content pages (SEO / discoverability)
+  'sidebar.learn': 'Learn',
+  'sidebar.learn.whatIs': 'What is Gridfinity?',
+  'sidebar.learn.guide': 'Planning Guide',
+  'sidebar.learn.binGenerator': 'Bin Generator',
+  'sidebar.learn.baseplateGenerator': 'Baseplate Generator',
+  'sidebar.learn.sizes': 'Sizes Reference',
 
   // Right Panel (Bin List)
   'rightPanel.expandPanel': 'Expand panel',

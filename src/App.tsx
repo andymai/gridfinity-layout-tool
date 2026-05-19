@@ -124,6 +124,33 @@ export default function App() {
     window.addEventListener('open-command-palette', handler as EventListener);
     return () => window.removeEventListener('open-command-palette', handler as EventListener);
   }, [setCommandPaletteOpen]);
+
+  // Route-aware SEO meta. Owns title/description across SPA navigation: the
+  // i18n context only re-fires on locale change, so without this an in-app
+  // jump from /designer back to / would leave the generator title up. We
+  // always resolve to *some* route-appropriate value (homepage, designer, or
+  // baseplate) — no early return — so back-navigation restores the homepage
+  // meta. Depends on `t` so it re-applies when locale flips mid-session.
+  useEffect(() => {
+    const titleKey = isDesignerRoute
+      ? 'seo.designer.title'
+      : isBaseplateRoute
+        ? 'seo.baseplate.title'
+        : 'seo.title';
+    const descKey = isDesignerRoute
+      ? 'seo.designer.description'
+      : isBaseplateRoute
+        ? 'seo.baseplate.description'
+        : 'seo.description';
+    const title = t(titleKey);
+    const desc = t(descKey);
+    document.title = title;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
+    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
+    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', desc);
+  }, [isDesignerRoute, isBaseplateRoute, t]);
   const { isMobile, isTablet } = useResponsive();
 
   const { shouldShowWelcome, shouldShowDrawTutorial, markWelcomeComplete } = useOnboarding();
@@ -447,6 +474,19 @@ export default function App() {
 
   return (
     <>
+      {/* Visually hidden H1 so JS-rendered DOM has a top-level heading for
+          crawlers and screen readers. The visible app shell doesn't carry an H1;
+          the noscript fallback's H1 only renders when JS is disabled. The
+          heading must mirror the route-aware title set above so Googlebot
+          sees consistent <title> + <h1> signals and screen readers announce
+          the correct page on /designer and /baseplate. */}
+      <h1 className="sr-only">
+        {isDesignerRoute
+          ? t('seo.designer.title')
+          : isBaseplateRoute
+            ? t('seo.baseplate.title')
+            : t('seo.h1')}
+      </h1>
       {cloudSyncEnabled && (
         <Suspense fallback={null}>
           <LazySyncSessionMount />

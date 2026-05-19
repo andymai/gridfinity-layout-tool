@@ -41,9 +41,16 @@ const fallback: Translations = {
   'errorBoundary.tryAgain': 'Try Again',
   'errorBoundary.resetAppData': 'Reset App Data',
   'common.loading': 'Loading...',
-  'seo.title': 'Gridfinity Layout Tool | Plan Your 3D Printed Drawer Organizers',
+  'seo.title': 'Gridfinity Planner & Layout Tool — Free Bin Generator',
   'seo.description':
-    'Plan and visualize Gridfinity drawer layouts for 3D printing. Custom bins, multi-layer support, and 3D preview.',
+    'Plan Gridfinity drawer layouts in your browser. Drag-and-drop bins, custom bin generator, 3D preview, STL/STEP/3MF export. Free, no account.',
+  'seo.h1': 'Gridfinity Planner & Layout Tool',
+  'seo.designer.title': 'Gridfinity Bin Generator — Free Online STL Creator',
+  'seo.designer.description':
+    'Gridfinity bin generator with visual editor and real-time 3D preview. Set dimensions, add compartments and cutouts, export STL, STEP, or 3MF. Free browser tool.',
+  'seo.baseplate.title': 'Gridfinity Baseplate Generator — Free Online STL Creator',
+  'seo.baseplate.description':
+    'Gridfinity baseplate generator with real-time 3D preview. Configure grid size, magnet holes, connector nubs, and edge padding. Export STL, STEP, or 3MF. Free browser tool.',
 };
 
 /**
@@ -218,35 +225,20 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
     [loadLocale, onLocaleChange]
   );
 
-  // Sync SEO meta tags when locale/translations change
+  // Sync locale-specific document attributes when locale changes.
+  // Title / description / og:title / og:description / twitter:title /
+  // twitter:description are owned by App's route-aware effect — they vary by
+  // route too, so a single owner avoids the parent/child useEffect ordering
+  // race (children fire first, parent overwrites) that would otherwise leave
+  // /designer and /baseplate stuck on the homepage title after a locale flip.
   useEffect(() => {
     if (isLoading || typeof document === 'undefined') return;
 
-    // HTML lang attribute (screen readers, SEO)
     document.documentElement.lang = locale;
-
-    // Page title and meta description
-    const seoTitle =
-      lookupKey(translations, 'seo.title') ?? _loadedEn?.['seo.title'] ?? fallback['seo.title'];
-    const seoDesc =
-      lookupKey(translations, 'seo.description') ??
-      _loadedEn?.['seo.description'] ??
-      fallback['seo.description'];
-
-    document.title = seoTitle;
-    document.querySelector('meta[name="description"]')?.setAttribute('content', seoDesc);
-
-    // Open Graph tags
     document
       .querySelector('meta[property="og:locale"]')
       ?.setAttribute('content', OG_LOCALE_MAP[locale]);
-    document.querySelector('meta[property="og:title"]')?.setAttribute('content', seoTitle);
-    document.querySelector('meta[property="og:description"]')?.setAttribute('content', seoDesc);
-
-    // Twitter Card tags
-    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', seoTitle);
-    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', seoDesc);
-  }, [locale, translations, isLoading]);
+  }, [locale, isLoading]);
 
   const t: TFunction = useCallback(
     (key: string, vars?: TranslationVars): string => {
