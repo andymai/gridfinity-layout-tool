@@ -460,9 +460,16 @@ function tessellatePiece(
 /**
  * Export the cached (or regenerated) bin solid, split into pieces via boolean cuts.
  *
- * Each piece is independently tessellated to STL.
+ * Each piece is independently tessellated to STL. If tessellation throws
+ * partway through, the remaining piece solids are still disposed so we don't
+ * leak WASM memory.
+ *
+ * `async` is intentional even though the body has no `await` — it keeps the
+ * error-delivery contract (throws arrive as rejected promises) consistent
+ * with the declared return type, matching what every caller expects.
  */
-export function exportSplitBin(
+// eslint-disable-next-line @typescript-eslint/require-await -- see fn doc
+export async function exportSplitBin(
   params: BinParams,
   cutPlanesX: readonly number[],
   cutPlanesY: readonly number[],
@@ -473,13 +480,23 @@ export function exportSplitBin(
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
 
   const pieces: SplitExportResult['pieces'] = [];
-
-  for (const piece of splitPieces) {
-    const data = tessellateAndExportPiece(piece, tolerance, angularTolerance);
-    pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
+  let nextIdx = 0;
+  try {
+    for (; nextIdx < splitPieces.length; nextIdx++) {
+      const piece = splitPieces[nextIdx];
+      const data = tessellateAndExportPiece(piece, tolerance, angularTolerance);
+      pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
+    }
+  } finally {
+    // tessellateAndExportPiece disposes the solid it processed (including on
+    // throw, via its own try/finally). Clean up any pieces past that point
+    // that were never handed off.
+    for (let i = nextIdx + 1; i < splitPieces.length; i++) {
+      splitPieces[i].solid.delete();
+    }
   }
 
-  return Promise.resolve({ pieces });
+  return { pieces };
 }
 
 /**
@@ -538,10 +555,15 @@ export function generateSplitPreviewRange(
 /**
  * Export split bin pieces for a subset of piece indices.
  *
- * Same as exportSplitBin but only processes the assigned pieces,
- * allowing parallel export across multiple workers.
+ * Same as exportSplitBin but only processes the assigned pieces, allowing
+ * parallel export across multiple workers. Pieces outside `pieceIndices` are
+ * always disposed (even if export throws midway through) to keep WASM
+ * memory bounded.
+ *
+ * `async` is intentional — same rationale as exportSplitBin's doc.
  */
-export function exportSplitBinRange(
+// eslint-disable-next-line @typescript-eslint/require-await -- see fn doc
+export async function exportSplitBinRange(
   params: BinParams,
   cutPlanesX: readonly number[],
   cutPlanesY: readonly number[],
@@ -553,23 +575,25 @@ export function exportSplitBinRange(
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
 
   const pieces: SplitExportResult['pieces'] = [];
+  const processed = new Set<number>();
+  try {
+    for (const idx of pieceIndices) {
+      if (idx < 0 || idx >= splitPieces.length) {
+        throw new Error(`Piece index ${idx} out of range [0, ${splitPieces.length})`);
+      }
 
-  for (const idx of pieceIndices) {
-    if (idx < 0 || idx >= splitPieces.length) {
-      throw new Error(`Piece index ${idx} out of range [0, ${splitPieces.length})`);
+      processed.add(idx);
+      const piece = splitPieces[idx];
+      const data = tessellateAndExportPiece(piece, tolerance, angularTolerance);
+      pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
     }
-
-    const piece = splitPieces[idx];
-    const data = tessellateAndExportPiece(piece, tolerance, angularTolerance);
-    pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
+  } finally {
+    // tessellateAndExportPiece disposes the solids it processed (including
+    // the one that threw, via its own try/finally). Dispose everything else.
+    for (let i = 0; i < splitPieces.length; i++) {
+      if (!processed.has(i)) splitPieces[i].solid.delete();
+    }
   }
 
-  // Dispose unused split pieces (not in pieceIndices)
-  for (let i = 0; i < splitPieces.length; i++) {
-    if (!pieceIndices.includes(i)) {
-      splitPieces[i].solid.delete();
-    }
-  }
-
-  return Promise.resolve({ pieces });
+  return { pieces };
 }
