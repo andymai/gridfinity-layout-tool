@@ -181,9 +181,14 @@ export function useLidSection() {
   const compatibilityIssues = useMemo(() => checkLidCompatibility(params), [params]);
   const blocked = hasLidBlocker(compatibilityIssues);
   // Per-side rail conflicts (label tabs, wall cutouts, intruding handles).
-  // Shared with the worker via `resolveLidInputs` so the UI and the
-  // generator never disagree about which sides actually get a rail.
-  const disabledRails = useMemo(() => computeDisabledRails(params), [params]);
+  // Derived from the already-memoized issue list — avoids running the
+  // compatibility scan a second time per params change. The worker side
+  // (`resolveLidInputs`) calls `computeDisabledRails(checkLidCompatibility(p))`
+  // for the same source-of-truth contract.
+  const disabledRails = useMemo(
+    () => computeDisabledRails(compatibilityIssues),
+    [compatibilityIssues]
+  );
 
   const blockerReason = useMemo(() => {
     const blockers = compatibilityIssues.filter((i) => i.severity === 'blocker');

@@ -164,11 +164,10 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    that slide into floor slots. When the user sets a manual mm height
   //    larger than the bin's interior, the divider protrudes above the
   //    lip and physically blocks the lid from seating. 'auto' fits.
-  const interiorHeight = params.height * params.heightUnitMm - GRIDFINITY.SOCKET_HEIGHT;
   if (
     params.style === 'slotted' &&
     typeof params.dividerPieces.height === 'number' &&
-    params.dividerPieces.height > interiorHeight
+    params.dividerPieces.height > computeInteriorHeight(params)
   ) {
     issues.push({ id: 'tallDividerPieces', severity: 'blocker' });
   }
@@ -313,19 +312,18 @@ export function isLidBlockedBySection(params: BinParams, section: LidConflictSec
  * Per-side rail engagement: which sides should NOT receive a click rail
  * due to a conflicting feature on that wall.
  *
- * Aggregates the side-bearing warning issues into a single Set so the
- * lid builder (`resolveLidInputs`) and the lid panel (`useLidSection`)
- * share one source of truth for "which rails are auto-skipped". Without
- * this, the panel's rail summary and the worker's actual placements
- * could drift apart whenever a new side-bearing check is introduced.
- *
- * Returns an empty set when the lid isn't applicable (no params shaped
- * for lid use); callers should still gate on `shouldGenerateLid` for
- * the overall enable decision.
+ * Takes the already-computed compatibility issue list so callers that
+ * have memoized it (the `useLidSection` panel) don't trigger a second
+ * `checkLidCompatibility` scan. Aggregating from issues — rather than
+ * re-deriving conflicts from `params` — guarantees the panel's
+ * warning rows and the worker's actual rail placements draw from one
+ * source of truth.
  */
-export function computeDisabledRails(params: BinParams): ReadonlySet<LidCompatibilitySide> {
+export function computeDisabledRails(
+  issues: readonly LidCompatibilityIssue[]
+): ReadonlySet<LidCompatibilitySide> {
   const disabled = new Set<LidCompatibilitySide>();
-  for (const issue of checkLidCompatibility(params)) {
+  for (const issue of issues) {
     if (!issue.sides) continue;
     // Only side-bearing issues affect per-side rail placement.
     // wallCutoutsAllSides/handlesAllSides are blockers — they short-circuit

@@ -7,7 +7,7 @@
  */
 
 import type { BinParams, LidCompatibilitySide } from '@/shared/types/bin';
-import { computeDisabledRails } from '@/shared/types/bin';
+import { checkLidCompatibility, computeDisabledRails } from '@/shared/types/bin';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import {
   LID_FIT_CLEARANCE,
@@ -54,8 +54,10 @@ export interface LidInputs {
   readonly disabledRails: ReadonlySet<LidCompatibilitySide>;
   /**
    * Per-side click-rail engagement. When all four are `false` the lid
-   * is friction-fit (no positive snap). Combined with `omitFrontBackRails`
-   * to produce the effective per-side rail set during placement.
+   * is friction-fit (no positive snap). Combined with `disabledRails`
+   * to produce the effective per-side rail set during placement — a
+   * side gets a rail only when its `clickRails[side]` flag is true AND
+   * it's not in `disabledRails`.
    */
   readonly clickRails: {
     readonly front: boolean;
@@ -126,7 +128,7 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     // wall cutouts on specific sides, handles intruding into the lip
     // Z range). Centralised in `lidCompatibility.computeDisabledRails`
     // so the UI rail-summary and the worker placement code stay in sync.
-    disabledRails: computeDisabledRails(params),
+    disabledRails: computeDisabledRails(checkLidCompatibility(params)),
     clickRails: params.lid.clickRails,
     // Coverage stored as 0–100 percentage on LidConfig; converted to
     // a 0–1 fraction here for direct multiplication against rail lengths.

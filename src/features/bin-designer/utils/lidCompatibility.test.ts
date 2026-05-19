@@ -516,14 +516,14 @@ describe('checkLidCompatibility', () => {
 
   describe('computeDisabledRails', () => {
     it('is empty for a vanilla bin', () => {
-      expect(computeDisabledRails(DEFAULT_BIN_PARAMS).size).toBe(0);
+      expect(computeDisabledRails(checkLidCompatibility(DEFAULT_BIN_PARAMS)).size).toBe(0);
     });
 
     it('disables only the BACK rail when label tabs are enabled', () => {
       const params = withOverrides({
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
       });
-      const set = computeDisabledRails(params);
+      const set = computeDisabledRails(checkLidCompatibility(params));
       expect(set.has('back')).toBe(true);
       expect(set.has('front')).toBe(false);
       expect(set.has('left')).toBe(false);
@@ -542,11 +542,19 @@ describe('checkLidCompatibility', () => {
           right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false },
         },
       });
-      const set = computeDisabledRails(params);
+      const set = computeDisabledRails(checkLidCompatibility(params));
       expect(set.has('back')).toBe(true);
       expect(set.has('left')).toBe(true);
       expect(set.has('front')).toBe(false);
       expect(set.has('right')).toBe(false);
+    });
+
+    it('ignores issues without a sides array', () => {
+      // wallPattern is side-less and shouldn't contribute to disabledRails.
+      const params = withOverrides({
+        wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true },
+      });
+      expect(computeDisabledRails(checkLidCompatibility(params)).size).toBe(0);
     });
   });
 
