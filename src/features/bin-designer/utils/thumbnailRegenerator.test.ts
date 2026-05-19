@@ -152,7 +152,7 @@ describe('regenerateThumbnail', () => {
     const controller = new AbortController();
     controller.abort();
 
-    const result = await regenerateThumbnail(makeParams(), controller.signal);
+    const result = await regenerateThumbnail(makeParams(), { signal: controller.signal });
 
     expect(result).toBeNull();
     expect(generateImmediate).not.toHaveBeenCalled();
@@ -178,5 +178,19 @@ describe('regenerateThumbnail', () => {
     expect(rendererInstances[0]?.dispose).toHaveBeenCalled();
     expect(rendererInstances[0]?.forceContextLoss).toHaveBeenCalled();
     expect(bridgeManager.release).toHaveBeenCalled();
+  });
+
+  it('does NOT call release() when acquire() itself rejects', async () => {
+    // BridgeManager.acquire() decrements its own refCount on init failure.
+    // If the regenerator's finally also called release(), the count would
+    // double-decrement — dropping any outer hold (e.g., the batch-wide
+    // acquire in useBackgroundThumbnailRegen's runBatch).
+    vi.mocked(bridgeManager.acquire).mockRejectedValueOnce(new Error('init failed'));
+
+    const result = await regenerateThumbnail(makeParams());
+
+    expect(result).toBeNull();
+    expect(bridgeManager.acquire).toHaveBeenCalled();
+    expect(bridgeManager.release).not.toHaveBeenCalled();
   });
 });
