@@ -31,6 +31,11 @@ export {
 // --- Utils ---
 export { generateFileName } from './utils';
 
+// --- Sync ---
+// Exposed for `shared/sync/` to wire into the sync engine without reaching
+// into the feature's internal path.
+export { designAdapter } from './sync/designAdapter';
+
 // --- Components ---
 export { DesignerPage } from './components';
 

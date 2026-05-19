@@ -56,7 +56,7 @@ import { SHORTCUTS } from '@/core/constants';
 // `cloud_sync` Labs flag. The dynamic import means the code is in the
 // build output but the chunk request is gated.
 const LazySyncSessionMount = lazyWithRetry(() =>
-  import('@/core/sync/SyncSessionMount').then(namedExport('SyncSessionMount'))
+  import('@/shared/sync/SyncSessionMount').then(namedExport('SyncSessionMount'))
 );
 
 const CommandPalette = lazyWithRetry(() =>

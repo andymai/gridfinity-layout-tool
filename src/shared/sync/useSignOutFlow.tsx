@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react';
-import { layoutAdapter } from './adapters/layoutAdapter';
-import { designAdapter } from '@/features/bin-designer/sync/designAdapter';
-import { useSessionStore } from './session/useSession';
-import { runSignOut, type KeepLocalPromptResult } from './signOut';
-import { SignOutDialog } from './dialogs/SignOutDialog';
+import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
+import { designAdapter } from '@/features/bin-designer';
+import { useSessionStore } from '@/core/sync/session/useSession';
+import { runSignOut, type KeepLocalPromptResult } from '@/core/sync/signOut';
+import { SignOutDialog } from '@/core/sync/dialogs/SignOutDialog';
 
 const ADAPTERS = { layouts: layoutAdapter, designs: designAdapter };
 

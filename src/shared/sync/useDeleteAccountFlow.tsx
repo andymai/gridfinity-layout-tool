@@ -1,13 +1,13 @@
 import { useCallback, useState } from 'react';
-import { layoutAdapter } from './adapters/layoutAdapter';
-import { designAdapter } from '@/features/bin-designer/sync/designAdapter';
-import { useSessionStore } from './session/useSession';
+import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
+import { designAdapter } from '@/features/bin-designer';
+import { useSessionStore } from '@/core/sync/session/useSession';
 import {
   runDeleteAccount,
   type DeleteAccountConfirmResult,
   type DeleteAccountResult,
-} from './deleteAccount';
-import { DeleteAccountDialog } from './dialogs/DeleteAccountDialog';
+} from '@/core/sync/deleteAccount';
+import { DeleteAccountDialog } from '@/core/sync/dialogs/DeleteAccountDialog';
 
 const ADAPTERS = { layouts: layoutAdapter, designs: designAdapter };
 

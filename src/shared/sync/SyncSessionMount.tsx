@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { layoutAdapter } from './adapters/layoutAdapter';
-import { designAdapter } from '@/features/bin-designer/sync/designAdapter';
-import { runClaim, type AccountMismatchChoice } from './claim';
-import { start, stop } from './engine';
-import { useSessionLifecycle, useSessionStore } from './session/useSession';
-import { useDebouncedPush } from './triggers/useDebouncedPush';
-import { useVisibilityFlush } from './triggers/useVisibilityFlush';
-import { useBeaconFlush } from './triggers/useBeaconFlush';
-import { usePeriodicPoll } from './triggers/usePeriodicPoll';
-import { useSyncToasts } from './useSyncToasts';
-import { AccountMismatchDialog } from './dialogs/AccountMismatchDialog';
-import type { SyncAdapters } from './adapters/types';
+import { layoutAdapter } from '@/core/sync/adapters/layoutAdapter';
+import { designAdapter } from '@/features/bin-designer';
+import { runClaim, type AccountMismatchChoice } from '@/core/sync/claim';
+import { start, stop } from '@/core/sync/engine';
+import { useSessionLifecycle, useSessionStore } from '@/core/sync/session/useSession';
+import { useDebouncedPush } from '@/core/sync/triggers/useDebouncedPush';
+import { useVisibilityFlush } from '@/core/sync/triggers/useVisibilityFlush';
+import { useBeaconFlush } from '@/core/sync/triggers/useBeaconFlush';
+import { usePeriodicPoll } from '@/core/sync/triggers/usePeriodicPoll';
+import { useSyncToasts } from '@/core/sync/useSyncToasts';
+import { AccountMismatchDialog } from '@/core/sync/dialogs/AccountMismatchDialog';
+import type { SyncAdapters } from '@/core/sync/adapters/types';
 
 /**
  * Boot point for the sync feature. Mounted only when the user has
