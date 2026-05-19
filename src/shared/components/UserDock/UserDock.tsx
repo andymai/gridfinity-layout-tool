@@ -5,7 +5,7 @@ import { useTranslation } from '@/i18n';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { signInUrl } from '@/core/sync/session/sessionApi';
 import { useSyncStatusStore, type SyncState } from '@/core/sync/status';
-import { useSignOutFlow } from '@/core/sync/useSignOutFlow';
+import { useSignOutFlow } from '@/shared/sync/useSignOutFlow';
 import { useLibraryStore } from '@/core/store/library';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { SyncRing } from './SyncRing';

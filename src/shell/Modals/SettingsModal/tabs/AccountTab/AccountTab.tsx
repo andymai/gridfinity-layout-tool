@@ -5,8 +5,8 @@ import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useSessionStore } from '@/core/sync/session/useSession';
 import { signInUrl } from '@/core/sync/session/sessionApi';
 import { useSyncStatusStore } from '@/core/sync/status';
-import { useSignOutFlow } from '@/core/sync/useSignOutFlow';
-import { useDeleteAccountFlow } from '@/core/sync/useDeleteAccountFlow';
+import { useSignOutFlow } from '@/shared/sync/useSignOutFlow';
+import { useDeleteAccountFlow } from '@/shared/sync/useDeleteAccountFlow';
 import { useToastStore } from '@/core/store';
 import { useLibraryStore } from '@/core/store/library';
 
