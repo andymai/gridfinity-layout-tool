@@ -22,6 +22,7 @@ import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 
 import { SIZE, CLEARANCE, SOCKET_HEIGHT } from './generatorTypes';
+import { unwrapExportBlob } from './utils/exportUnwrap';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { toIndexedMeshData } from './utils/mesh';
 import { buildTopShape } from './boxBuilder';
@@ -449,7 +450,10 @@ export async function exportSplitBin(
     // un-tessellated. Calling mesh() first runs BRepMesh_IncrementalMesh which
     // fills in the missing triangulation on cut-plane faces.
     mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
-    const blob = unwrap(exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }));
+    const blob = unwrapExportBlob(
+      exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }),
+      'STL'
+    );
     const data = await blob.arrayBuffer();
     pieceSolid.delete();
     pieces.push({ data, label, col, row });
@@ -538,7 +542,10 @@ export async function exportSplitBinRange(
     const { solid: pieceSolid, label, col, row } = splitPieces[idx];
     // Force complete tessellation (see exportSplitBin comment for rationale)
     mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
-    const blob = unwrap(exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }));
+    const blob = unwrapExportBlob(
+      exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }),
+      'STL'
+    );
     const data = await blob.arrayBuffer();
     pieceSolid.delete();
     pieces.push({ data, label, col, row });
