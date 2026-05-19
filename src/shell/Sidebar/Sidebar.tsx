@@ -502,6 +502,57 @@ export function Sidebar() {
               </CollapsibleSection>
             </div>
 
+            {/* Learn — internal links to content pages. Real <a href> so Google passes
+                link equity from the SPA to /what-is-gridfinity et al. (which had zero
+                inbound links from the SPA before this section existed). */}
+            <div className="px-4 py-4 border-t border-stroke-subtle">
+              <h2 className="text-xs leading-none font-semibold text-content-tertiary uppercase tracking-wider mb-2">
+                {t('sidebar.learn')}
+              </h2>
+              <ul className="text-[11px] leading-relaxed space-y-1">
+                <li>
+                  <a
+                    href="/what-is-gridfinity"
+                    className="text-content-tertiary hover:text-content hover:underline"
+                  >
+                    {t('sidebar.learn.whatIs')}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/guide"
+                    className="text-content-tertiary hover:text-content hover:underline"
+                  >
+                    {t('sidebar.learn.guide')}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/gridfinity-bin-generator"
+                    className="text-content-tertiary hover:text-content hover:underline"
+                  >
+                    {t('sidebar.learn.binGenerator')}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/gridfinity-baseplate-generator"
+                    className="text-content-tertiary hover:text-content hover:underline"
+                  >
+                    {t('sidebar.learn.baseplateGenerator')}
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/gridfinity-sizes"
+                    className="text-content-tertiary hover:text-content hover:underline"
+                  >
+                    {t('sidebar.learn.sizes')}
+                  </a>
+                </li>
+              </ul>
+            </div>
+
             {/* Attribution */}
             <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">
               <div className="text-content-secondary text-[11px] font-semibold mb-1">

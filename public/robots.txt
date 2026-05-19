@@ -10,5 +10,9 @@ Disallow: /api/
 # Disallow shared layout URLs (user-generated content, dynamic)
 Disallow: /s/
 
+# Disallow library/shared-layout deep links — same SPA, same meta as homepage,
+# so indexing them creates duplicate-title results.
+Disallow: /l/
+
 # Sitemap location
 Sitemap: https://gridfinitylayouttool.com/sitemap.xml

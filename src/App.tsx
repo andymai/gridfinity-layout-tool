@@ -124,6 +124,25 @@ export default function App() {
     window.addEventListener('open-command-palette', handler as EventListener);
     return () => window.removeEventListener('open-command-palette', handler as EventListener);
   }, [setCommandPaletteOpen]);
+
+  // Route-aware SEO meta override. The i18n context sets the homepage title on
+  // locale change; this runs after to override it for /designer and /baseplate
+  // so direct landings get a route-appropriate title and meta description.
+  // Depends on `t` (which changes on locale change) so we re-apply when locale
+  // flips while on a generator route.
+  useEffect(() => {
+    if (!isDesignerRoute && !isBaseplateRoute) return;
+    const titleKey = isDesignerRoute ? 'seo.designer.title' : 'seo.baseplate.title';
+    const descKey = isDesignerRoute ? 'seo.designer.description' : 'seo.baseplate.description';
+    const title = t(titleKey);
+    const desc = t(descKey);
+    document.title = title;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', desc);
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
+    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
+    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', desc);
+  }, [isDesignerRoute, isBaseplateRoute, t]);
   const { isMobile, isTablet } = useResponsive();
 
   const { shouldShowWelcome, shouldShowDrawTutorial, markWelcomeComplete } = useOnboarding();
@@ -447,6 +466,10 @@ export default function App() {
 
   return (
     <>
+      {/* Visually hidden H1 so JS-rendered DOM has a top-level heading for
+          crawlers and screen readers. The visible app shell doesn't carry an H1;
+          the noscript fallback's H1 only renders when JS is disabled. */}
+      <h1 className="sr-only">{t('seo.h1')}</h1>
       {cloudSyncEnabled && (
         <Suspense fallback={null}>
           <LazySyncSessionMount />

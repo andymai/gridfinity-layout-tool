@@ -398,6 +398,14 @@ function generateHtml(
         name: 'Andy Aragon',
       },
       ...(sa.featureList && sa.featureList.length > 0 ? { featureList: sa.featureList } : {}),
+      // Link this SoftwareApplication back to the parent Gridfinity Layout Tool app
+      // so Google can model the generator suite (bin + baseplate + planner) as
+      // sub-components of one product.
+      isPartOf: {
+        '@type': 'SoftwareApplication',
+        name: 'Gridfinity Layout Tool',
+        url: SITE_URL,
+      },
     });
   }
 
