@@ -32,6 +32,15 @@ export interface BinDimensions {
   readonly shellKey: string;
   readonly withMagnet: boolean;
   readonly withScrew: boolean;
+  /**
+   * True when the shell is built with compartment cavities subtracted
+   * directly (per-compartment cavity cut). In that path the divider
+   * walls are residue from the cut, not separately-fused solids, so
+   * `compartmentWallsFeature` is skipped to avoid double-walling.
+   * See `compartmentBuilder.buildCompartmentCavityDrawings` and
+   * `boxBuilder.buildBinBox` for the cut path.
+   */
+  readonly compartmentsBakedIntoShell: boolean;
 }
 
 /** Immutable context threaded through pipeline stages. */

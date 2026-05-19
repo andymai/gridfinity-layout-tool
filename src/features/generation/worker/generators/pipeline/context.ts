@@ -14,6 +14,11 @@ import {
   SOCKET_HEIGHT,
   LIP_SMALL_TAPER,
 } from '../generatorConstants';
+import {
+  compartmentCavitiesAreViable,
+  compartmentsAreRectangular,
+  hasMultipleCompartments,
+} from '../compartmentBuilder';
 // SIZE and HEIGHT_UNIT are kept as fallback defaults for backwards compatibility
 // with callers (or serialized designs) that predate gridUnitMm/heightUnitMm.
 import type { ProgressFn } from '../meshUtils';
@@ -55,14 +60,44 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // already clears the actual lip base at wallHeight - LIP_OVERLAP.
   const interiorHeight = hasLip ? wallHeight - LIP_SMALL_TAPER : wallHeight;
 
+  // Bake compartment walls into the shell as a single multi-cavity cut when
+  // the shape is amenable to that path: rectangular footprint (no polygon
+  // mask), not solid mode, not slotted, the compartments are rectangles
+  // (their cells fill their bounding box), and every per-compartment cavity
+  // has viable post-inset dimensions. This avoids the fuse T-junction at
+  // the cavity floor that BambuStudio flagged as non-manifold (#1753).
+  //
+  // TODO #1753: polygon-mask bins (L/T/U footprints) with compartments
+  // still use the additive-fuse path and remain susceptible to the
+  // T-junction non-manifold bug. See the skipped scenario in
+  // `compartmentBuilder.scenario.manifold.test.ts` ("polygon-mask gap").
+  const compartmentsBakedIntoShell =
+    !isSlotted &&
+    !solid &&
+    !isPartialMask(params.cellMask) &&
+    hasMultipleCompartments(params) &&
+    compartmentsAreRectangular(params) &&
+    compartmentCavitiesAreViable(params, innerW, innerD);
+
   // Shell cache key — versioned + quantized for deterministic matching.
   // Mask hash is included only when the mask triggers the polygon path so
-  // rectangular bins continue to share the existing cache bucket.
+  // rectangular bins continue to share the existing cache bucket. The
+  // compartments segment is "none" unless the bin uses the multi-cavity
+  // cut path, so single-compartment bins keep their existing cache bucket.
   const { cellMask } = params;
   const maskKeySegment = isPartialMask(cellMask) ? hashMask(cellMask) : 'rect';
+  const compartmentsKey = compartmentsBakedIntoShell
+    ? buildCacheKey(
+        'comp',
+        params.compartments.cols,
+        params.compartments.rows,
+        quantize(params.compartments.thickness),
+        params.compartments.cells.join(',')
+      )
+    : 'none';
   const shellKey = compactKey(
     buildCacheKey(
-      'v5',
+      'v6',
       quantize(params.width),
       quantize(params.depth),
       quantize(gridUnit),
@@ -77,7 +112,8 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
       quantize(params.wallThickness),
       params.base.stackingLip,
       solid,
-      maskKeySegment
+      maskKeySegment,
+      compartmentsKey
     )
   );
 
@@ -98,6 +134,7 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
     shellKey,
     withMagnet,
     withScrew,
+    compartmentsBakedIntoShell,
   };
 }
 
