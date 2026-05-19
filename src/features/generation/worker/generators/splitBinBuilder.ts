@@ -16,13 +16,12 @@ import {
   getBounds,
   mesh,
   meshEdges,
-  exportSTL,
 } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 
 import { SIZE, CLEARANCE, SOCKET_HEIGHT } from './generatorTypes';
-import { unwrapExportBlob } from './utils/exportUnwrap';
+import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { toIndexedMeshData } from './utils/mesh';
 import { buildTopShape } from './boxBuilder';
@@ -377,6 +376,39 @@ function splitSolidIntoPieces(
   return pieces;
 }
 
+/**
+ * Tessellate a split piece and serialize it to a binary STL ArrayBuffer.
+ *
+ * Path: `brepjs.mesh()` → `buildSTLBufferFromIndexed()`.
+ *
+ * We deliberately bypass brepjs's `exportSTL()` (which calls OCCT's
+ * `StlAPI.Write`). For bins with a scoop ramp and walls tall enough that
+ * the scoop radius is sizeable (e.g. height=9 → radius=29mm), the boolean
+ * cut leaves a BREP topology that triangulates correctly via `mesh()` but
+ * trips a silent failure in `StlAPI.Write` — exportSTL returns
+ * `STL_EXPORT_FAILED` regardless of tolerance (issue #1760).
+ *
+ * Writing STL from the meshed triangle buffer ourselves removes the
+ * dependency on OCCT's STL writer; `buildSTLBufferFromIndexed` runs on
+ * the exact same triangles the preview path already renders cleanly.
+ */
+function tessellateAndExportPiece(
+  piece: SplitPieceInfo,
+  tolerance: number,
+  angularTolerance: number
+): ArrayBuffer {
+  const { solid: pieceSolid } = piece;
+  try {
+    const m = mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
+    const vertices = m.vertices instanceof Float32Array ? m.vertices : new Float32Array(m.vertices);
+    const normals = m.normals instanceof Float32Array ? m.normals : new Float32Array(m.normals);
+    const indices = m.triangles instanceof Uint32Array ? m.triangles : new Uint32Array(m.triangles);
+    return buildSTLBufferFromIndexed(vertices, normals, indices, `gridfinity-piece-${piece.label}`);
+  } finally {
+    pieceSolid.delete();
+  }
+}
+
 /** Tessellate a split piece into preview mesh data */
 function tessellatePiece(
   piece: SplitPieceInfo,
@@ -428,8 +460,15 @@ function tessellatePiece(
 /**
  * Export the cached (or regenerated) bin solid, split into pieces via boolean cuts.
  *
- * Each piece is independently tessellated to STL.
+ * Each piece is independently tessellated to STL. If tessellation throws
+ * partway through, the remaining piece solids are still disposed so we don't
+ * leak WASM memory.
+ *
+ * `async` is intentional even though the body has no `await` — it keeps the
+ * error-delivery contract (throws arrive as rejected promises) consistent
+ * with the declared return type, matching what every caller expects.
  */
+// eslint-disable-next-line @typescript-eslint/require-await -- see fn doc
 export async function exportSplitBin(
   params: BinParams,
   cutPlanesX: readonly number[],
@@ -441,22 +480,20 @@ export async function exportSplitBin(
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
 
   const pieces: SplitExportResult['pieces'] = [];
-
-  for (const { solid: pieceSolid, label, col, row } of splitPieces) {
-    // Force complete tessellation before export. Boolean intersection reuses
-    // some original faces (with existing triangulation) but creates new faces
-    // at cut planes (without triangulation). brepjs exportSTL skips meshing
-    // when hasTriangulation() finds ANY tessellated face, leaving new faces
-    // un-tessellated. Calling mesh() first runs BRepMesh_IncrementalMesh which
-    // fills in the missing triangulation on cut-plane faces.
-    mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
-    const blob = unwrapExportBlob(
-      exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }),
-      'STL'
-    );
-    const data = await blob.arrayBuffer();
-    pieceSolid.delete();
-    pieces.push({ data, label, col, row });
+  let nextIdx = 0;
+  try {
+    for (; nextIdx < splitPieces.length; nextIdx++) {
+      const piece = splitPieces[nextIdx];
+      const data = tessellateAndExportPiece(piece, tolerance, angularTolerance);
+      pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
+    }
+  } finally {
+    // tessellateAndExportPiece disposes the solid it processed (including on
+    // throw, via its own try/finally). Clean up any pieces past that point
+    // that were never handed off.
+    for (let i = nextIdx + 1; i < splitPieces.length; i++) {
+      splitPieces[i].solid.delete();
+    }
   }
 
   return { pieces };
@@ -518,9 +555,14 @@ export function generateSplitPreviewRange(
 /**
  * Export split bin pieces for a subset of piece indices.
  *
- * Same as exportSplitBin but only processes the assigned pieces,
- * allowing parallel export across multiple workers.
+ * Same as exportSplitBin but only processes the assigned pieces, allowing
+ * parallel export across multiple workers. Pieces outside `pieceIndices` are
+ * always disposed (even if export throws midway through) to keep WASM
+ * memory bounded.
+ *
+ * `async` is intentional — same rationale as exportSplitBin's doc.
  */
+// eslint-disable-next-line @typescript-eslint/require-await -- see fn doc
 export async function exportSplitBinRange(
   params: BinParams,
   cutPlanesX: readonly number[],
@@ -533,28 +575,23 @@ export async function exportSplitBinRange(
   const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
 
   const pieces: SplitExportResult['pieces'] = [];
+  const processed = new Set<number>();
+  try {
+    for (const idx of pieceIndices) {
+      if (idx < 0 || idx >= splitPieces.length) {
+        throw new Error(`Piece index ${idx} out of range [0, ${splitPieces.length})`);
+      }
 
-  for (const idx of pieceIndices) {
-    if (idx < 0 || idx >= splitPieces.length) {
-      throw new Error(`Piece index ${idx} out of range [0, ${splitPieces.length})`);
+      processed.add(idx);
+      const piece = splitPieces[idx];
+      const data = tessellateAndExportPiece(piece, tolerance, angularTolerance);
+      pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
     }
-
-    const { solid: pieceSolid, label, col, row } = splitPieces[idx];
-    // Force complete tessellation (see exportSplitBin comment for rationale)
-    mesh(pieceSolid, { tolerance, angularTolerance, cache: false });
-    const blob = unwrapExportBlob(
-      exportSTL(pieceSolid, { tolerance, angularTolerance, binary: true }),
-      'STL'
-    );
-    const data = await blob.arrayBuffer();
-    pieceSolid.delete();
-    pieces.push({ data, label, col, row });
-  }
-
-  // Dispose unused split pieces (not in pieceIndices)
-  for (let i = 0; i < splitPieces.length; i++) {
-    if (!pieceIndices.includes(i)) {
-      splitPieces[i].solid.delete();
+  } finally {
+    // tessellateAndExportPiece disposes the solids it processed (including
+    // the one that threw, via its own try/finally). Dispose everything else.
+    for (let i = 0; i < splitPieces.length; i++) {
+      if (!processed.has(i)) splitPieces[i].solid.delete();
     }
   }
 
