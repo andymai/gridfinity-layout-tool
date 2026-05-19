@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.105.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.104.0...gridfinity-layout-tool-v4.105.0) (2026-05-19)
+
+
+### Features
+
+* **bin-designer:** background thumbnail regeneration on app boot ([#1770](https://github.com/andymai/gridfinity-layout-tool/issues/1770)) ([c097bb7](https://github.com/andymai/gridfinity-layout-tool/commit/c097bb7f2fd7d09560407b6a0d6c92a11b5e6cab))
+
+
+### Bug Fixes
+
+* **bin-designer:** set index buffer on offscreen thumbnail geometry ([#1769](https://github.com/andymai/gridfinity-layout-tool/issues/1769)) ([6ef0348](https://github.com/andymai/gridfinity-layout-tool/commit/6ef0348a5ba7b0ef11a6ccb9d8bdc4ad029100a9))
+
 ## [4.104.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.103.0...gridfinity-layout-tool-v4.104.0) (2026-05-19)
 
 
