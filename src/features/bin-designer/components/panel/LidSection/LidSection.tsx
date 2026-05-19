@@ -36,7 +36,12 @@ function CompatibilityIssue({
   onFix: (id: LidCompatibilityId) => void;
   t: Translator;
 }) {
-  const sides = issue.sides ? issue.sides.join(', ') : '';
+  // Side IDs ('front'/'back'/'left'/'right') are internal — translate
+  // each through `binDesigner.lid.side.*` before joining so non-English
+  // locales don't render raw English tokens in the warning text.
+  const sides = issue.sides
+    ? issue.sides.map((s) => t(`binDesigner.lid.side.${s}`)).join(', ')
+    : '';
   const message = t(`binDesigner.lid.compat.${issue.id}`, { sides });
   // Blockers are rendered with the danger token (red); warnings are
   // amber. Both use a small filled dot so the row reads as a list

@@ -81,10 +81,16 @@ function lipBottomZ(interiorHeight: number): number {
 /**
  * Does the per-side handle hole extend up into the lip Z range?
  *
- * For 'u-shape' handles (auto-anchored to the floor) the hole top sits
- * at `effectiveHeight`. For centered shapes (rectangle/oval/scoop) the
- * top is `centerZ + effectiveHeight/2`. Both forms are compared against
- * the lip's bottom Z.
+ * Mirrors the shape branching in `handleBuilder.ts` so the lip check
+ * agrees with the geometry that actually gets cut:
+ *   - 'u-shape': anchored to the floor, top sits at
+ *     `min(requestedHeight, interiorHeight)` (verticalPosition is
+ *     ignored — matches the `clampedHeight` derivation in
+ *     handleBuilder's u-shape branch).
+ *   - other shapes: centered at `centerZ`, top is
+ *     `centerZ + effectiveHeight/2`.
+ *
+ * Each form is compared against the lip's bottom Z.
  */
 function handleSideIntrudesLip(
   handles: HandleConfig,
@@ -96,12 +102,17 @@ function handleSideIntrudesLip(
   if (!sideCfg.enabled) return false;
 
   const requestedHeight = sideCfg.height ?? handles.height;
-  const { centerZ, effectiveHeight } = computeHandleHoleGeometry(
-    interiorHeight,
-    requestedHeight,
-    handles.verticalPosition
-  );
-  const topZ = handles.shape === 'u-shape' ? effectiveHeight : centerZ + effectiveHeight / 2;
+  const topZ =
+    handles.shape === 'u-shape'
+      ? Math.min(requestedHeight, interiorHeight)
+      : (() => {
+          const { centerZ, effectiveHeight } = computeHandleHoleGeometry(
+            interiorHeight,
+            requestedHeight,
+            handles.verticalPosition
+          );
+          return centerZ + effectiveHeight / 2;
+        })();
   return topZ > lipBottomZ(interiorHeight);
 }
 
