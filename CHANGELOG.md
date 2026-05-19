@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.102.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.101.5...gridfinity-layout-tool-v4.102.0) (2026-05-19)
+
+
+### Features
+
+* **half-grid:** rename half-bin → half-grid, couple to halfSockets ([#1752](https://github.com/andymai/gridfinity-layout-tool/issues/1752)) ([#1762](https://github.com/andymai/gridfinity-layout-tool/issues/1762)) ([1cf920f](https://github.com/andymai/gridfinity-layout-tool/commit/1cf920fd7d0531064c186940d010b09f62167490))
+
 ## [4.101.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.101.4...gridfinity-layout-tool-v4.101.5) (2026-05-19)
 
 
