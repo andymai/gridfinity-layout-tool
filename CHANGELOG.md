@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.101.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.101.4...gridfinity-layout-tool-v4.101.5) (2026-05-19)
+
+
+### Bug Fixes
+
+* **export:** translate brepjs export Err to a user-readable message ([#1757](https://github.com/andymai/gridfinity-layout-tool/issues/1757)) ([#1759](https://github.com/andymai/gridfinity-layout-tool/issues/1759)) ([a179a14](https://github.com/andymai/gridfinity-layout-tool/commit/a179a14349604ce61399cc10df75423f315d90bf))
+
 ## [4.101.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.101.3...gridfinity-layout-tool-v4.101.4) (2026-05-19)
 
 
