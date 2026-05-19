@@ -40,7 +40,10 @@ import {
 import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
+import { createLogger } from '@/core/logger';
 import { buildMaskDrawing, buildMaskDrawingInset, buildMaskHoleDrawings } from './maskPolygon';
+
+const logger = createLogger('boxBuilder');
 
 /**
  * Build a hollow-walls + closed-floor shell without relying on brepjs
@@ -310,11 +313,22 @@ export function buildBinBox(
         }
         scope.register(box);
         return setBoxCache(boxKey, result);
-      } catch {
+      } catch (e: unknown) {
         // Defensive only — context.ts is supposed to gate this path with
         // `compartmentCavitiesAreViable` so cuts can't fail in practice.
         // If a cut does throw, fall through to the regular hollow-shell
-        // path below so the bin is at least usable (sans dividers).
+        // path below so the bin is at least usable. The bin will be
+        // divider-less (compartmentWallsFeature is also gated off when
+        // `compartmentsBakedIntoShell` is true) — surface that via a
+        // console warning so the silent degradation is observable in
+        // dev/logs rather than only at the next user complaint.
+        const msg = e instanceof Error ? e.message : String(e);
+        logger.warn('[buildBinBox] multi-cavity cut failed; bin will be built without dividers', {
+          err: msg,
+          width: gridW,
+          depth: gridD,
+          cavities: compartmentCavityDrawings.length,
+        });
       }
     }
 

@@ -3,17 +3,21 @@
  * Regression test for issue #1753 — partitioned bins exported with
  * non-manifold geometry per BambuStudio.
  *
- * Compartment divider walls are fused into the bin shell as positive solids
- * via the boolean stage's batch `fuseAll`. Where a wall meets the cavity
- * floor (T-junction at Z = wallThickness), OCCT's General Fuse Algorithm
- * leaves coincident edges and same-domain face fragments along the seam.
- * STL slicers (BambuStudio) flag those duplicated edges as non-manifold and
- * "repair" the result as solid infill.
+ * Old shell construction: hollow rectangular shell + each compartment wall
+ * fused on top as a separate positive solid (`compartmentWallsFeature`,
+ * `target: 'fuse'`). Where a wall met the cavity floor at Z=wallThickness,
+ * OCCT's General Fuse Algorithm left a T-junction with coincident edges
+ * between the wall's vertical face and the floor's horizontal face — STL
+ * slicers (BambuStudio) flagged those duplicate edges as non-manifold and
+ * "repaired" them as solid infill.
  *
- * Fix: pass `{ simplify: forExport }` to the fuse pass (booleanStage), which
- * runs OCCT's `ShapeUpgrade_UnifySameDomain` to merge the coincident edges
- * and same-domain faces. The cut pass already used this flag; the fuse pass
- * had been called with no options.
+ * Fix in this PR: when compartments are amenable (rectangular footprint,
+ * non-solid, non-slotted, rectangular comps with viable post-inset dims),
+ * rebuild the bin as `outer_extrusion − each_compartment_cavity` directly
+ * in `buildBinBox`. Walls are cut residue between cavities, so every face
+ * shares edges on a single solid — no fuse seam, no T-junction. See
+ * `compartmentBuilder.buildCompartmentCavityDrawings` and
+ * `pipeline/context.compartmentsBakedIntoShell`.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { BinParams } from '@/shared/types/bin';
@@ -124,12 +128,14 @@ describe('compartmentBuilder — partition export manifold-ness (issue #1753)', 
   );
 
   it(
-    '2×2 bin with merged top-half (L-shape) compartments exports watertight STL',
+    '2×2 bin with top row merged into one compartment exports watertight STL',
     async () => {
       clearAllCaches();
-      // Two cells merged into one big compartment + two separate ones.
+      // [0,0,1,2] = top row merged into compartment 0 + two single-cell
+      // compartments in the bottom row. Stresses the "merged-bounding-box"
+      // cavity drawing path (a single rectangle spanning both columns).
       const params = withCompartments(2, 2, [0, 0, 1, 2], { width: 2, depth: 2 });
-      expectWatertight(analyzeManifold((await exportBin(params, 'stl')).data), 'L-shape merged');
+      expectWatertight(analyzeManifold((await exportBin(params, 'stl')).data), 'top-row merged');
     },
     TEST_TIMEOUT_MS
   );

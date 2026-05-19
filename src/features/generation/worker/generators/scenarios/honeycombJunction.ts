@@ -166,9 +166,14 @@ export const honeycombJunction: ScenarioCase[] = [
         // triangle delta a few percent up at thick wallThickness. A real
         // junction-clip failure adds hundreds of hex prism triangles (>>10%)
         // so the loosened bound still catches the regression this test
-        // exists for.
+        // exists for. The lower bound (>= 1) catches a divider-regression
+        // where compartments collapse to a no-op (delta would be 0).
         const delta = Math.abs(withDivider.triangleCount - noDivider.triangleCount);
         const maxDelta = noDivider.triangleCount * 0.1;
+        expect(
+          delta,
+          'divider produced identical geometry — divider path may have regressed'
+        ).toBeGreaterThan(0);
         expect(
           delta,
           `divider changed triangle count by ${delta} (max ${Math.round(maxDelta)}); junction clip depth may be too shallow`
@@ -208,9 +213,14 @@ export const honeycombJunction: ScenarioCase[] = [
         // triangle delta a few percent up at thick wallThickness. A real
         // junction-clip failure adds hundreds of hex prism triangles (>>10%)
         // so the loosened bound still catches the regression this test
-        // exists for.
+        // exists for. The lower bound (>= 1) catches a divider-regression
+        // where compartments collapse to a no-op (delta would be 0).
         const delta = Math.abs(withDivider.triangleCount - noDivider.triangleCount);
         const maxDelta = noDivider.triangleCount * 0.1;
+        expect(
+          delta,
+          'divider produced identical geometry — divider path may have regressed'
+        ).toBeGreaterThan(0);
         expect(
           delta,
           `divider changed triangle count by ${delta} (max ${Math.round(maxDelta)}); junction clip depth may be too shallow`
@@ -251,9 +261,14 @@ export const honeycombJunction: ScenarioCase[] = [
           // cuts through the junction would add hundreds of extra triangles;
           // with the multi-cavity cut shell path the divider is cut residue
           // and can slightly *reduce* total triangles. Either way, the delta
-          // should stay within 5%.
+          // should stay within 5%. The lower bound (>= 1) catches a
+          // divider-regression where compartments collapse to a no-op.
           const delta = Math.abs(withDivider.triangleCount - noDivider.triangleCount);
           const maxDelta = noDivider.triangleCount * 0.05;
+          expect(
+            delta,
+            'divider produced identical geometry — divider path may have regressed'
+          ).toBeGreaterThan(0);
           expect(
             delta,
             `divider changed triangle count by ${delta} (max ${Math.round(maxDelta)}); junction blocking may be broken`
