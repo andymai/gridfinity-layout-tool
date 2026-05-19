@@ -53,7 +53,7 @@ export async function regenerateThumbnail(
     // as a non-indexed triangle list and renders garbage triangles.
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    if (indices && indices.length > 0) {
+    if (indices.length > 0) {
       geometry.setIndex(new THREE.BufferAttribute(indices, 1));
     }
     if (normals.length > 0) {
