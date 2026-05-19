@@ -40,7 +40,10 @@ import {
 import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
+import { createLogger } from '@/core/logger';
 import { buildMaskDrawing, buildMaskDrawingInset, buildMaskHoleDrawings } from './maskPolygon';
+
+const logger = createLogger('boxBuilder');
 
 /**
  * Build a hollow-walls + closed-floor shell without relying on brepjs
@@ -135,11 +138,26 @@ export function buildBinBox(
   solid: boolean,
   cutoutTopOffset: number = 0,
   gridUnitMm: number = SIZE,
-  cellMask?: CellMask
+  cellMask?: CellMask,
+  /**
+   * Per-compartment cavity drawings used by the multi-cavity cut path.
+   * When provided with length > 1 (and `solid` is false, mask is rectangular),
+   * the box is built as `outer − each cavity` instead of `outer ⊖ inner` +
+   * fused dividers, so the divider walls are residue from the cut and meet
+   * the cavity floor cleanly (no fuse T-junction). See `compartmentBuilder`
+   * `buildCompartmentCavityDrawings` and issue #1753.
+   */
+  compartmentCavityDrawings?: readonly Drawing[],
+  compartmentCavityKey?: string
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
+  const useMultiCavity =
+    !solid &&
+    !polygon &&
+    compartmentCavityDrawings !== undefined &&
+    compartmentCavityDrawings.length > 1;
   const boxKey = buildCacheKey(
-    'v2',
+    'v3',
     quantize(gridW),
     quantize(gridD),
     quantize(gridUnitMm),
@@ -147,7 +165,8 @@ export function buildBinBox(
     quantize(wallThickness),
     solid,
     quantize(cutoutTopOffset),
-    polygon ? hashMask(cellMask) : 'rect'
+    polygon ? hashMask(cellMask) : 'rect',
+    useMultiCavity ? (compartmentCavityKey ?? 'comp') : 'none'
   );
   const cached = getBoxCache(boxKey);
   if (cached) {
@@ -272,6 +291,44 @@ export function buildBinBox(
       const innerD = outerD - 2 * wallThickness;
       if (innerW <= 0 || innerD <= 0) {
         return setBoxCache(boxKey, box);
+      }
+    }
+
+    if (useMultiCavity) {
+      // Multi-cavity cut path: walls are the natural residue between cuts.
+      // Each compartment cavity is extruded from Z=wallThickness up past the
+      // top (COPLANAR_MARGIN clears the rim) and cut from the outer
+      // extrusion. The resulting wall faces meet the cavity floor as part
+      // of a single solid — no fuse seam, no non-manifold T-junction (#1753).
+      try {
+        let result: Shape3D = box;
+        const cavityHeight = wallHeight - wallThickness + COPLANAR_MARGIN;
+        for (const cavityDrawing of compartmentCavityDrawings) {
+          const cavity = scope.register(
+            sketch(cavityDrawing, 'XY', wallThickness).extrude(cavityHeight)
+          );
+          const prev = result;
+          result = unwrap(cut(prev as ValidSolid, cavity as ValidSolid));
+          if (prev !== box) scope.register(prev);
+        }
+        scope.register(box);
+        return setBoxCache(boxKey, result);
+      } catch (e: unknown) {
+        // Defensive only — context.ts is supposed to gate this path with
+        // `compartmentCavitiesAreViable` so cuts can't fail in practice.
+        // If a cut does throw, fall through to the regular hollow-shell
+        // path below so the bin is at least usable. The bin will be
+        // divider-less (compartmentWallsFeature is also gated off when
+        // `compartmentsBakedIntoShell` is true) — surface that via a
+        // console warning so the silent degradation is observable in
+        // dev/logs rather than only at the next user complaint.
+        const msg = e instanceof Error ? e.message : String(e);
+        logger.warn('[buildBinBox] multi-cavity cut failed; bin will be built without dividers', {
+          err: msg,
+          width: gridW,
+          depth: gridD,
+          cavities: compartmentCavityDrawings.length,
+        });
       }
     }
 

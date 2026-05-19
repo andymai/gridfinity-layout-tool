@@ -14,6 +14,8 @@ import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket } from '../../socketBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
+import { buildCompartmentCavityDrawings } from '../../compartmentBuilder';
+import { buildCacheKey, compactKey, quantize } from '../../cacheKeyUtils';
 import { getShellCache, setShellCache } from '../../shapeCache';
 import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
@@ -42,6 +44,27 @@ export const shellStage: PipelineStage = {
 
     const cutoutTopOffset = dim.solid ? params.cutoutConfig.topOffset : 0;
 
+    // Compute per-compartment cavity drawings only when the multi-cavity cut
+    // path will be taken (rectangular bin + non-solid + rectangular comps).
+    // The cache key in `dim.shellKey` already discriminates on the comp grid
+    // so we can safely pass `undefined` for the default path.
+    const compartmentCavityDrawings = dim.compartmentsBakedIntoShell
+      ? buildCompartmentCavityDrawings(params, dim.innerW, dim.innerD)
+      : undefined;
+    // Built via the standard cacheKey helpers so `thickness` is quantized
+    // the same way as in `dim.shellKey` (avoids float-drift cache misses).
+    const compartmentCavityKey = dim.compartmentsBakedIntoShell
+      ? compactKey(
+          buildCacheKey(
+            'comp',
+            params.compartments.cols,
+            params.compartments.rows,
+            quantize(params.compartments.thickness),
+            params.compartments.cells.join(',')
+          )
+        )
+      : undefined;
+
     const bin = withScope((scope: DisposalScope) => {
       const binBody = buildBinBox(
         params.width,
@@ -51,7 +74,9 @@ export const shellStage: PipelineStage = {
         dim.solid,
         cutoutTopOffset,
         params.gridUnitMm,
-        params.cellMask
+        params.cellMask,
+        compartmentCavityDrawings,
+        compartmentCavityKey
       );
       collectOrigins(binBody, FeatureTag.BASE, originToTag);
 

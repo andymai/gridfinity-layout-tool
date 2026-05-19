@@ -5,12 +5,127 @@
  * Walls appear at boundaries between cells with different compartment IDs.
  */
 
-import { box, withScope, clone, unwrap, fuseAll } from 'brepjs';
-import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
+import { box, withScope, clone, unwrap, fuseAll, draw } from 'brepjs';
+import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 
 // Re-export for backwards compatibility with existing imports
 export { fuseAllOrNull } from './utils/shapeOps';
+
+/**
+ * Whether the bin's compartments produce internal divider walls (>1 distinct
+ * compartment ID). Single-compartment bins (`cells: [0]` or all identical)
+ * don't need walls — the inner cavity is a single region.
+ */
+export function hasMultipleCompartments(params: BinParams): boolean {
+  const { cells } = params.compartments;
+  if (cells.length === 0) return false;
+  return new Set(cells).size > 1;
+}
+
+/**
+ * Build per-compartment cavity drawings (rectangular footprints in the XY
+ * plane) used to subtract cavities from the bin's outer extrusion, producing
+ * the divider walls as natural cut residue between compartments.
+ *
+ * Each cavity rectangle spans the compartment's cell bounding box, inset by
+ * `thickness/2` on every shared internal boundary (so adjacent compartments
+ * leave `thickness` of wall between them) and aligned flush with the bin's
+ * inner wall surface on each exterior boundary.
+ *
+ * Non-rectangular compartments (cells with the same ID forming an L-shape,
+ * etc.) are approximated by their bounding box; multi-cavity cut is therefore
+ * only safe for compartments that fill their bounding box. Callers should
+ * verify via `compartmentsAreRectangular` before using this path.
+ */
+export function buildCompartmentCavityDrawings(
+  params: BinParams,
+  innerW: number,
+  innerD: number
+): readonly Drawing[] {
+  const { cols, rows, thickness, cells } = params.compartments;
+  const cellW = innerW / cols;
+  const cellD = innerD / rows;
+  const half = thickness / 2;
+
+  const compIds = Array.from(new Set(cells));
+  const drawings: Drawing[] = [];
+
+  for (const id of compIds) {
+    const bounds = findCompartmentBounds(id, cols, rows, cells);
+    if (!bounds) continue;
+    const { minCol, maxCol, minRow, maxRow } = bounds;
+
+    // Cavity rectangle in the bin's inner frame (origin at center of inner cavity)
+    const xMin = -innerW / 2 + minCol * cellW + (minCol > 0 ? half : 0);
+    const xMax = -innerW / 2 + (maxCol + 1) * cellW - (maxCol < cols - 1 ? half : 0);
+    const yMin = -innerD / 2 + minRow * cellD + (minRow > 0 ? half : 0);
+    const yMax = -innerD / 2 + (maxRow + 1) * cellD - (maxRow < rows - 1 ? half : 0);
+
+    drawings.push(
+      draw([xMin, yMin]).lineTo([xMax, yMin]).lineTo([xMax, yMax]).lineTo([xMin, yMax]).close()
+    );
+  }
+
+  return drawings;
+}
+
+/**
+ * Whether every compartment is a rectangle (its cells fully fill its
+ * bounding box). Required precondition for the multi-cavity-cut shell
+ * path; non-rectangular compartments fall back to the additive-fuse path.
+ */
+export function compartmentsAreRectangular(params: BinParams): boolean {
+  const { cols, rows, cells } = params.compartments;
+  const compIds = new Set(cells);
+  for (const id of compIds) {
+    const bounds = findCompartmentBounds(id, cols, rows, cells);
+    if (!bounds) continue;
+    const { minCol, maxCol, minRow, maxRow } = bounds;
+    for (let r = minRow; r <= maxRow; r++) {
+      for (let c = minCol; c <= maxCol; c++) {
+        if (cells[r * cols + c] !== id) return false;
+      }
+    }
+  }
+  return true;
+}
+
+/**
+ * Tight precondition check for the multi-cavity-cut shell path. Verifies
+ * that every per-compartment cavity rectangle would have positive width and
+ * depth after inset by `thickness/2` on shared boundaries. If any cavity
+ * would collapse, the upstream cut would fail in OCCT — better to fall
+ * through to the additive-fuse path now than crash buildBinBox later.
+ */
+export function compartmentCavitiesAreViable(
+  params: BinParams,
+  innerW: number,
+  innerD: number
+): boolean {
+  if (innerW <= 0 || innerD <= 0) return false;
+  const { cols, rows, thickness, cells } = params.compartments;
+  if (cols < 1 || rows < 1 || cells.length !== cols * rows) return false;
+  const cellW = innerW / cols;
+  const cellD = innerD / rows;
+  const half = thickness / 2;
+  // Minimum viable cavity dimension: 2× wall thickness so each compartment
+  // still has usable interior after the inset (same heuristic the additive
+  // path uses in `buildCompartmentWallsInScope`).
+  const minDim = thickness * 2;
+  const compIds = new Set(cells);
+  for (const id of compIds) {
+    const bounds = findCompartmentBounds(id, cols, rows, cells);
+    if (!bounds) return false;
+    const { minCol, maxCol, minRow, maxRow } = bounds;
+    const compW =
+      (maxCol - minCol + 1) * cellW - (minCol > 0 ? half : 0) - (maxCol < cols - 1 ? half : 0);
+    const compD =
+      (maxRow - minRow + 1) * cellD - (minRow > 0 ? half : 0) - (maxRow < rows - 1 ? half : 0);
+    if (compW < minDim || compD < minDim) return false;
+  }
+  return true;
+}
 
 /** Build a positioned wall segment solid. */
 function buildWallSegment(w: number, d: number, height: number, x: number, y: number): Shape3D {
@@ -168,7 +283,8 @@ export const compartmentWallsFeature: FeatureBuilder = {
   name: 'compartmentWalls',
   tag: FeatureTag.DIVIDER,
   target: 'fuse',
-  shouldBuild: (ctx) => !ctx.dimensions.isSlotted,
+  // Skip when walls are already in the shell (multi-cavity cut path, #1753).
+  shouldBuild: (ctx) => !ctx.dimensions.isSlotted && !ctx.dimensions.compartmentsBakedIntoShell,
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
     return compactKey(
