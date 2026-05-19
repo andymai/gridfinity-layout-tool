@@ -6,7 +6,8 @@
  * and the conversions (clearance, corner radius, anchor Z) happen once.
  */
 
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, LidCompatibilitySide } from '@/shared/types/bin';
+import { checkLidCompatibility, computeDisabledRails } from '@/shared/types/bin';
 import { isPartialMask, type CellMask } from '@/shared/utils/cellMask';
 import {
   LID_FIT_CLEARANCE,
@@ -38,12 +39,25 @@ export interface LidInputs {
   readonly cellsY: number;
   readonly gridUnitMm: number;
   readonly heightUnitMm: number;
-  /** Bin has a label on its back wall — disable click rails on the front/back walls. */
-  readonly omitFrontBackRails: boolean;
+  /**
+   * Per-side rail engagement overrides driven by feature conflicts.
+   * Aggregated from `computeDisabledRails(params)` so the lid builder
+   * shares one source of truth with the LidSection panel. Any side in
+   * this set is skipped during click-rail placement regardless of the
+   * user's persisted `clickRails[side]` flag.
+   *
+   * Replaces the older `omitFrontBackRails` boolean — the granular
+   * `Set<side>` lets label tabs disable only the BACK rail (instead of
+   * symmetrically skipping front+back), and lets wall cutouts/handles
+   * skip only the affected sides.
+   */
+  readonly disabledRails: ReadonlySet<LidCompatibilitySide>;
   /**
    * Per-side click-rail engagement. When all four are `false` the lid
-   * is friction-fit (no positive snap). Combined with `omitFrontBackRails`
-   * to produce the effective per-side rail set during placement.
+   * is friction-fit (no positive snap). Combined with `disabledRails`
+   * to produce the effective per-side rail set during placement — a
+   * side gets a rail only when its `clickRails[side]` flag is true AND
+   * it's not in `disabledRails`.
    */
   readonly clickRails: {
     readonly front: boolean;
@@ -110,10 +124,11 @@ export function resolveLidInputs(params: BinParams): LidInputs {
     cellsY: params.depth,
     gridUnitMm,
     heightUnitMm,
-    // Label tabs always sit on the back wall (per labelTabBuilder convention).
-    // Disable click rails along the bin's depth axis (front/back) so they
-    // don't collide with the printed label tab.
-    omitFrontBackRails: params.label.enabled,
+    // Per-side rail skips derived from feature conflicts (label tabs,
+    // wall cutouts on specific sides, handles intruding into the lip
+    // Z range). Centralised in `lidCompatibility.computeDisabledRails`
+    // so the UI rail-summary and the worker placement code stay in sync.
+    disabledRails: computeDisabledRails(checkLidCompatibility(params)),
     clickRails: params.lid.clickRails,
     // Coverage stored as 0–100 percentage on LidConfig; converted to
     // a 0–1 fraction here for direct multiplication against rail lengths.

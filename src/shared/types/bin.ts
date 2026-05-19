@@ -58,6 +58,7 @@ export {
   shouldGenerateLid,
   checkLidCompatibility,
   hasLidBlocker,
+  computeDisabledRails,
 } from '@/features/bin-designer/utils/lidCompatibility';
 export type {
   LidCompatibilityIssue,

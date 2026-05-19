@@ -78,16 +78,39 @@ describe('resolveLidInputs', () => {
     expect(inputs.magnetDepth).toBe(2.5);
   });
 
-  it('omits front/back rails when bin has label tabs (label sits on back wall)', () => {
+  it('disables only the BACK rail when bin has label tabs (label sits on back wall)', () => {
     const withLabel = resolveLidInputs(
       makeParams({}, { label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } })
     );
-    expect(withLabel.omitFrontBackRails).toBe(true);
+    expect(withLabel.disabledRails.has('back')).toBe(true);
+    expect(withLabel.disabledRails.has('front')).toBe(false);
+    expect(withLabel.disabledRails.has('left')).toBe(false);
+    expect(withLabel.disabledRails.has('right')).toBe(false);
   });
 
   it('keeps all four rails when bin has no label tabs', () => {
     const noLabel = resolveLidInputs(makeParams({}));
-    expect(noLabel.omitFrontBackRails).toBe(false);
+    expect(noLabel.disabledRails.size).toBe(0);
+  });
+
+  it('disables rails on sides that have a wall cutout', () => {
+    const withCutouts = resolveLidInputs(
+      makeParams(
+        {},
+        {
+          walls: {
+            ...DEFAULT_BIN_PARAMS.walls,
+            enabled: true,
+            left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
+            right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: true },
+          },
+        }
+      )
+    );
+    expect(withCutouts.disabledRails.has('left')).toBe(true);
+    expect(withCutouts.disabledRails.has('right')).toBe(true);
+    expect(withCutouts.disabledRails.has('front')).toBe(false);
+    expect(withCutouts.disabledRails.has('back')).toBe(false);
   });
 
   it('anchorZ sits within the lid (above wall bottom, below floor top)', () => {

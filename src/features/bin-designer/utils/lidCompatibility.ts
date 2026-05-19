@@ -22,7 +22,8 @@
 
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 import { isPartialMask, maskToPolygon } from '@/shared/utils/cellMask';
-import type { BinParams } from '../types';
+import { computeHandleHoleGeometry } from '@/shared/utils/handleCutoutClip';
+import type { BinParams, HandleConfig, HandleSide } from '../types';
 
 /** Wall side affected by a per-side issue (e.g. wall cutouts). */
 export type LidCompatibilitySide = 'front' | 'back' | 'left' | 'right';
@@ -41,7 +42,11 @@ export type LidCompatibilityId =
   | 'shortBin'
   | 'tallDividerPieces'
   | 'cellMaskHoles'
-  | 'compartmentDividers';
+  | 'compartmentDividers'
+  | 'labelTabs'
+  | 'handles'
+  | 'handlesAllSides'
+  | 'topDownCutoutsAtLip';
 
 export interface LidCompatibilityIssue {
   readonly id: LidCompatibilityId;
@@ -51,6 +56,65 @@ export interface LidCompatibilityIssue {
 }
 
 const WALL_SIDES = ['front', 'back', 'left', 'right'] as const;
+
+/**
+ * Interior wall height available for handle holes (mm). Mirrors the
+ * `interiorHeight` derivation used by `handleBuilder` and the existing
+ * `tallDividerPieces` check — handle hole geometry positions itself
+ * relative to this height, not the total bin height.
+ */
+function computeInteriorHeight(params: BinParams): number {
+  return params.height * params.heightUnitMm - GRIDFINITY.SOCKET_HEIGHT;
+}
+
+/**
+ * Z extent of the lip's bottom face within the interior coordinate frame
+ * (Z = 0 at floor, Z = interiorHeight at wall top). The click rail
+ * grips lip material between this Z and `interiorHeight`. Anything cut
+ * through the lip Z range (e.g. a tall handle hole) removes the
+ * material the rail needs to engage with.
+ */
+function lipBottomZ(interiorHeight: number): number {
+  return interiorHeight - GRIDFINITY.LIP_HEIGHT;
+}
+
+/**
+ * Does the per-side handle hole extend up into the lip Z range?
+ *
+ * Mirrors the shape branching in `handleBuilder.ts` so the lip check
+ * agrees with the geometry that actually gets cut:
+ *   - 'u-shape': anchored to the floor, top sits at
+ *     `min(requestedHeight, interiorHeight)` (verticalPosition is
+ *     ignored — matches the `clampedHeight` derivation in
+ *     handleBuilder's u-shape branch).
+ *   - other shapes: centered at `centerZ`, top is
+ *     `centerZ + effectiveHeight/2`.
+ *
+ * Each form is compared against the lip's bottom Z.
+ */
+function handleSideIntrudesLip(
+  handles: HandleConfig,
+  side: LidCompatibilitySide,
+  interiorHeight: number
+): boolean {
+  if (!handles.enabled) return false;
+  const sideCfg: HandleSide = handles[side];
+  if (!sideCfg.enabled) return false;
+
+  const requestedHeight = sideCfg.height ?? handles.height;
+  const topZ =
+    handles.shape === 'u-shape'
+      ? Math.min(requestedHeight, interiorHeight)
+      : (() => {
+          const { centerZ, effectiveHeight } = computeHandleHoleGeometry(
+            interiorHeight,
+            requestedHeight,
+            handles.verticalPosition
+          );
+          return centerZ + effectiveHeight / 2;
+        })();
+  return topZ > lipBottomZ(interiorHeight);
+}
 
 /**
  * Inspect a `BinParams` and return all click-lock-lid compatibility issues
@@ -111,11 +175,10 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
   //    that slide into floor slots. When the user sets a manual mm height
   //    larger than the bin's interior, the divider protrudes above the
   //    lip and physically blocks the lid from seating. 'auto' fits.
-  const interiorHeight = params.height * params.heightUnitMm - GRIDFINITY.SOCKET_HEIGHT;
   if (
     params.style === 'slotted' &&
     typeof params.dividerPieces.height === 'number' &&
-    params.dividerPieces.height > interiorHeight
+    params.dividerPieces.height > computeInteriorHeight(params)
   ) {
     issues.push({ id: 'tallDividerPieces', severity: 'blocker' });
   }
@@ -129,7 +192,56 @@ export function checkLidCompatibility(params: BinParams): readonly LidCompatibil
     issues.push({ id: 'cellMaskHoles', severity: 'warning' });
   }
 
-  // 6. Compartment dividers. `compartmentBuilder` builds divider walls
+  // 6. Label tabs. Tabs always sit on the BACK wall — the lid's click
+  //    rail on that wall can't run under the tab without colliding with
+  //    it, so the back rail is auto-skipped during placement. The front
+  //    rail is fine. Warn so the user understands why the back rail
+  //    summary changes when label tabs are on.
+  if (params.label.enabled && !isPolygon) {
+    issues.push({ id: 'labelTabs', severity: 'warning', sides: ['back'] });
+  }
+
+  // 7. Handles. Handles cut through the wall body; when the hole's top
+  //    Z exceeds the lip's bottom Z, the cutout removes lip material on
+  //    that wall — same impact as a wall cutout. Sides where the handle
+  //    sits clear of the lip don't conflict and don't warn. All four
+  //    sides intruding → blocker (lid has no wall to grip). Interior
+  //    handles (compartment dividers) don't touch the outer lip, so
+  //    they're excluded.
+  if (params.handles.enabled && !isPolygon) {
+    const interiorHeight = computeInteriorHeight(params);
+    const intrudingSides: LidCompatibilitySide[] = [];
+    for (const side of WALL_SIDES) {
+      if (handleSideIntrudesLip(params.handles, side, interiorHeight)) {
+        intrudingSides.push(side);
+      }
+    }
+    if (intrudingSides.length === WALL_SIDES.length) {
+      issues.push({ id: 'handlesAllSides', severity: 'blocker', sides: intrudingSides });
+    } else if (intrudingSides.length > 0) {
+      issues.push({ id: 'handles', severity: 'warning', sides: intrudingSides });
+    }
+  }
+
+  // 8. Top-down cutouts on solid bins. When a cutout's `cutDepth`
+  //    reaches into the lip Z range (cutout top sits at `wallTop -
+  //    cutoutConfig.topOffset`, descending by `cutDepth`), it locally
+  //    removes lip material at the cutout footprint. Only solid bins
+  //    apply top-down cutouts; normal-style bins use floor inserts and
+  //    don't carve into the rim.
+  if (params.style === 'solid' && !isPolygon && params.cutouts.length > 0) {
+    const interiorHeight = computeInteriorHeight(params);
+    const lipBottom = lipBottomZ(interiorHeight);
+    const topZ = interiorHeight - params.cutoutConfig.topOffset;
+    const anyReachesLip = params.cutouts.some(
+      (c) => !c.hidden && topZ - c.cutDepth < interiorHeight && topZ > lipBottom
+    );
+    if (anyReachesLip) {
+      issues.push({ id: 'topDownCutoutsAtLip', severity: 'warning' });
+    }
+  }
+
+  // 9. Compartment dividers. `compartmentBuilder` builds divider walls
   //    from `Z=0` (floor) up to `Z=wallHeight` — the full wall height,
   //    INCLUDING the lip Z range. Where the divider meets the bin's
   //    inner wall, the divider material at lip-area Z occupies the
@@ -186,11 +298,12 @@ export function shouldGenerateLid(params: BinParams): boolean {
  * Only blocker IDs need entries here — `isLidBlockedBySection` filters
  * by `severity === 'blocker'`. Warning-only IDs are intentionally absent.
  */
-export type LidConflictSection = 'walls' | 'dividerPieces';
+export type LidConflictSection = 'walls' | 'dividerPieces' | 'handles';
 
 const ID_TO_SECTION: Partial<Record<LidCompatibilityId, LidConflictSection>> = {
   wallCutoutsAllSides: 'walls',
   tallDividerPieces: 'dividerPieces',
+  handlesAllSides: 'handles',
 };
 
 /**
@@ -204,4 +317,31 @@ export function isLidBlockedBySection(params: BinParams, section: LidConflictSec
   return checkLidCompatibility(params).some(
     (i) => i.severity === 'blocker' && ID_TO_SECTION[i.id] === section
   );
+}
+
+/**
+ * Per-side rail engagement: which sides should NOT receive a click rail
+ * due to a conflicting feature on that wall.
+ *
+ * Takes the already-computed compatibility issue list so callers that
+ * have memoized it (the `useLidSection` panel) don't trigger a second
+ * `checkLidCompatibility` scan. Aggregating from issues — rather than
+ * re-deriving conflicts from `params` — guarantees the panel's
+ * warning rows and the worker's actual rail placements draw from one
+ * source of truth.
+ */
+export function computeDisabledRails(
+  issues: readonly LidCompatibilityIssue[]
+): ReadonlySet<LidCompatibilitySide> {
+  const disabled = new Set<LidCompatibilitySide>();
+  for (const issue of issues) {
+    if (!issue.sides) continue;
+    // Only side-bearing issues affect per-side rail placement.
+    // wallCutoutsAllSides/handlesAllSides are blockers — they short-circuit
+    // generation entirely via `shouldGenerateLid`, so we don't need to
+    // populate `disabled` in that case. But callers that inspect the set
+    // independently still benefit from a complete picture, so include them.
+    for (const side of issue.sides) disabled.add(side);
+  }
+  return disabled;
 }

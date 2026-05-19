@@ -2,7 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '../constants';
 import type { BinParams } from '../types';
 import type { CellMask } from '@/shared/utils/cellMask';
-import { checkLidCompatibility, hasLidBlocker, isLidBlockedBySection } from './lidCompatibility';
+import {
+  checkLidCompatibility,
+  computeDisabledRails,
+  hasLidBlocker,
+  isLidBlockedBySection,
+} from './lidCompatibility';
 
 function withOverrides(overrides: Partial<BinParams>): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
@@ -336,6 +341,257 @@ describe('checkLidCompatibility', () => {
         wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true },
       });
       expect(isLidBlockedBySection(params, 'walls')).toBe(false);
+    });
+  });
+
+  describe('label tabs', () => {
+    it('warns and lists back as the affected side', () => {
+      const params = withOverrides({
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+      });
+      const issue = checkLidCompatibility(params).find((i) => i.id === 'labelTabs');
+      expect(issue?.severity).toBe('warning');
+      expect(issue?.sides).toEqual(['back']);
+    });
+
+    it('skips on polygon (cellMask) bins', () => {
+      const cells = Array<number>(64).fill(1);
+      cells[0] = 0;
+      const params = withOverrides({
+        width: 4,
+        depth: 4,
+        cellMask: { cols: 8, rows: 8, cells },
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'labelTabs')).toBeUndefined();
+    });
+  });
+
+  describe('handles', () => {
+    // Defaults: 2x2x3 bin → interiorHeight 14mm, lipBottom 9.6mm. With
+    // verticalPosition 0.7 and height 15mm clamped by margins, the hole
+    // top lands at 12.6mm > 9.6mm → intrudes.
+    it('warns when an enabled handle side intrudes into the lip Z range', () => {
+      const params = withOverrides({
+        handles: {
+          ...DEFAULT_BIN_PARAMS.handles,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
+          back: { ...DEFAULT_BIN_PARAMS.handles.back, enabled: false },
+          left: { ...DEFAULT_BIN_PARAMS.handles.left, enabled: false },
+          right: { ...DEFAULT_BIN_PARAMS.handles.right, enabled: false },
+        },
+      });
+      const issue = checkLidCompatibility(params).find((i) => i.id === 'handles');
+      expect(issue?.severity).toBe('warning');
+      expect(issue?.sides).toEqual(['front']);
+    });
+
+    it('u-shape handles use floor-anchored geometry (ignore verticalPosition)', () => {
+      // U-shape extends from the floor up to `min(requestedHeight, interiorHeight)`,
+      // matching `handleBuilder.ts:clampedHeight`. verticalPosition is ignored.
+      // Interior height = 14mm, lipBottom = 9.6mm. A u-shape handle 12mm tall
+      // tops out at Z=12mm → above the lip → should warn even with
+      // verticalPosition=0 (which would clamp non-u-shape handles to 0).
+      const params = withOverrides({
+        handles: {
+          ...DEFAULT_BIN_PARAMS.handles,
+          enabled: true,
+          shape: 'u-shape',
+          height: 12,
+          verticalPosition: 0,
+          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
+          back: { ...DEFAULT_BIN_PARAMS.handles.back, enabled: false },
+          left: { ...DEFAULT_BIN_PARAMS.handles.left, enabled: false },
+          right: { ...DEFAULT_BIN_PARAMS.handles.right, enabled: false },
+        },
+      });
+      const issue = checkLidCompatibility(params).find((i) => i.id === 'handles');
+      expect(issue?.sides).toEqual(['front']);
+    });
+
+    it('short u-shape handles do NOT warn (top below lip)', () => {
+      // A 5mm u-shape handle tops out at Z=5mm, well below lipBottom=9.6mm.
+      const params = withOverrides({
+        handles: {
+          ...DEFAULT_BIN_PARAMS.handles,
+          enabled: true,
+          shape: 'u-shape',
+          height: 5,
+          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
+        },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'handles')).toBeUndefined();
+    });
+
+    it('does NOT warn when the handle sits clear of the lip (low verticalPosition)', () => {
+      const params = withOverrides({
+        handles: {
+          ...DEFAULT_BIN_PARAMS.handles,
+          enabled: true,
+          verticalPosition: 0.2,
+          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
+        },
+      });
+      expect(checkLidCompatibility(params).find((i) => i.id === 'handles')).toBeUndefined();
+    });
+
+    it('upgrades to blocker (handlesAllSides) when all four sides intrude', () => {
+      const params = withOverrides({
+        handles: {
+          ...DEFAULT_BIN_PARAMS.handles,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
+          back: { ...DEFAULT_BIN_PARAMS.handles.back, enabled: true },
+          left: { ...DEFAULT_BIN_PARAMS.handles.left, enabled: true },
+          right: { ...DEFAULT_BIN_PARAMS.handles.right, enabled: true },
+        },
+      });
+      const issues = checkLidCompatibility(params);
+      const blocker = issues.find((i) => i.id === 'handlesAllSides');
+      expect(blocker?.severity).toBe('blocker');
+      expect(blocker?.sides).toEqual(['front', 'back', 'left', 'right']);
+      expect(issues.find((i) => i.id === 'handles')).toBeUndefined();
+    });
+
+    it('isLidBlockedBySection returns true for the handles section on the all-sides blocker', () => {
+      const params = withOverrides({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        handles: {
+          ...DEFAULT_BIN_PARAMS.handles,
+          enabled: true,
+          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
+          back: { ...DEFAULT_BIN_PARAMS.handles.back, enabled: true },
+          left: { ...DEFAULT_BIN_PARAMS.handles.left, enabled: true },
+          right: { ...DEFAULT_BIN_PARAMS.handles.right, enabled: true },
+        },
+      });
+      expect(isLidBlockedBySection(params, 'handles')).toBe(true);
+    });
+  });
+
+  describe('top-down cutouts at lip', () => {
+    it('warns when a solid-bin cutout reaches the lip Z range', () => {
+      // Bin interior = height (3) * heightUnitMm (7) − SOCKET_HEIGHT (7) = 14mm.
+      // Lip bottom = 14 − LIP_HEIGHT (4.4) = 9.6mm. A cutout with
+      // topOffset=0 and cutDepth=6mm reaches from 14 down to 8 → crosses
+      // the lip boundary.
+      const params = withOverrides({
+        style: 'solid',
+        cutoutConfig: { ...DEFAULT_BIN_PARAMS.cutoutConfig, topOffset: 0 },
+        cutouts: [
+          {
+            id: 'c1',
+            shape: 'rectangle',
+            x: 10,
+            y: 10,
+            width: 20,
+            depth: 20,
+            cutDepth: 6,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+            groupId: null,
+          },
+        ],
+      });
+      const issue = checkLidCompatibility(params).find((i) => i.id === 'topDownCutoutsAtLip');
+      expect(issue?.severity).toBe('warning');
+    });
+
+    it('skips when the cutout stays below the lip', () => {
+      // cutDepth=2 from topOffset=10 reaches Z=4 → never touches the lip
+      // (which starts at 9.6mm). Cutout `topZ = 14-10 = 4mm` is also below
+      // the lipBottom, so the condition `topZ > lipBottom` already fails.
+      const params = withOverrides({
+        style: 'solid',
+        cutoutConfig: { ...DEFAULT_BIN_PARAMS.cutoutConfig, topOffset: 10 },
+        cutouts: [
+          {
+            id: 'c1',
+            shape: 'rectangle',
+            x: 10,
+            y: 10,
+            width: 20,
+            depth: 20,
+            cutDepth: 2,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+            groupId: null,
+          },
+        ],
+      });
+      expect(
+        checkLidCompatibility(params).find((i) => i.id === 'topDownCutoutsAtLip')
+      ).toBeUndefined();
+    });
+
+    it('skips on non-solid bins (top-down cutouts only apply to solid)', () => {
+      const params = withOverrides({
+        cutouts: [
+          {
+            id: 'c1',
+            shape: 'rectangle',
+            x: 10,
+            y: 10,
+            width: 20,
+            depth: 20,
+            cutDepth: 6,
+            rotation: 0,
+            cornerRadius: 0,
+            label: '',
+            groupId: null,
+          },
+        ],
+      });
+      expect(
+        checkLidCompatibility(params).find((i) => i.id === 'topDownCutoutsAtLip')
+      ).toBeUndefined();
+    });
+  });
+
+  describe('computeDisabledRails', () => {
+    it('is empty for a vanilla bin', () => {
+      expect(computeDisabledRails(checkLidCompatibility(DEFAULT_BIN_PARAMS)).size).toBe(0);
+    });
+
+    it('disables only the BACK rail when label tabs are enabled', () => {
+      const params = withOverrides({
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+      });
+      const set = computeDisabledRails(checkLidCompatibility(params));
+      expect(set.has('back')).toBe(true);
+      expect(set.has('front')).toBe(false);
+      expect(set.has('left')).toBe(false);
+      expect(set.has('right')).toBe(false);
+    });
+
+    it('aggregates wall cutouts + label tabs across multiple sides', () => {
+      // Explicitly disable right (default is enabled) so we only assert
+      // the left-only wall cutout case.
+      const params = withOverrides({
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+        walls: {
+          ...DEFAULT_BIN_PARAMS.walls,
+          enabled: true,
+          left: { ...DEFAULT_BIN_PARAMS.walls.left, enabled: true },
+          right: { ...DEFAULT_BIN_PARAMS.walls.right, enabled: false },
+        },
+      });
+      const set = computeDisabledRails(checkLidCompatibility(params));
+      expect(set.has('back')).toBe(true);
+      expect(set.has('left')).toBe(true);
+      expect(set.has('front')).toBe(false);
+      expect(set.has('right')).toBe(false);
+    });
+
+    it('ignores issues without a sides array', () => {
+      // wallPattern is side-less and shouldn't contribute to disabledRails.
+      const params = withOverrides({
+        wallPattern: { ...DEFAULT_BIN_PARAMS.wallPattern, enabled: true },
+      });
+      expect(computeDisabledRails(checkLidCompatibility(params)).size).toBe(0);
     });
   });
 

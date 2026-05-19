@@ -266,6 +266,50 @@ describe('lid generation and export scenarios', () => {
     expect(oneOn!.triangleCount).toBeGreaterThan(noneOn!.triangleCount);
   });
 
+  it('label tabs auto-skip only the BACK rail (front + sides keep theirs)', async () => {
+    // Regression for the omitFrontBackRails → disabledRails refactor:
+    // the previous logic disabled BOTH front and back rails whenever
+    // label tabs were enabled. The new behavior only disables back,
+    // since label tabs sit on the back wall only.
+    const { generateLid } = await import('./lidOrchestrator');
+    const noLabel = generateLid(
+      makeParams(
+        { clickRails: { front: true, back: true, left: true, right: true } },
+        { width: 3, depth: 2, height: 3 }
+      )
+    );
+    const withLabel = generateLid(
+      makeParams(
+        { clickRails: { front: true, back: true, left: true, right: true } },
+        {
+          width: 3,
+          depth: 2,
+          height: 3,
+          label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+        }
+      )
+    );
+    expect(noLabel).not.toBeNull();
+    expect(withLabel).not.toBeNull();
+    assertStructurallyValid(noLabel!, 'no label, all rails');
+    assertStructurallyValid(withLabel!, 'with label, back rail skipped');
+    // Skipping one rail (back) must reduce triangle count vs all-4.
+    expect(withLabel!.triangleCount).toBeLessThan(noLabel!.triangleCount);
+    // And the rail-skip should be EXACTLY one wall, not two — compare
+    // against the previously-tested 3-on configuration which also has
+    // three rails. Counts should be in the same ballpark (within 10%).
+    const threeOn = generateLid(
+      makeParams(
+        { clickRails: { front: true, back: true, left: true, right: false } },
+        { width: 3, depth: 2, height: 3 }
+      )
+    );
+    expect(threeOn).not.toBeNull();
+    const ratio = withLabel!.triangleCount / threeOn!.triangleCount;
+    expect(ratio).toBeGreaterThan(0.9);
+    expect(ratio).toBeLessThan(1.1);
+  });
+
   describe('polygon (cellMask) lids', () => {
     it('produces a valid mesh for a 3×3 L-shape lid', async () => {
       const { generateLid } = await import('./lidOrchestrator');

@@ -1410,10 +1410,23 @@ const en: Record<string, string> = {
     'Custom shape has interior holes — those inner edges have lip but no rails (asymmetric grip).',
   'binDesigner.lid.compat.compartmentDividers':
     'Compartment dividers extend up to the lip — they may press against the lid’s mating shell where they meet the bin walls.',
+  'binDesigner.lid.compat.labelTabs':
+    'Label tabs sit on the back wall — the click rail on that wall is auto-skipped to clear the tab.',
+  'binDesigner.lid.compat.handles':
+    'Handles on {sides} reach into the lip — the click rail on those walls is auto-skipped.',
+  'binDesigner.lid.compat.handlesAllSides':
+    'Handles on all four sides reach into the lip — no wall is left for the lid to grip.',
+  'binDesigner.lid.compat.topDownCutoutsAtLip':
+    'A solid-bin cutout reaches up into the lip — the lid may sit loosely above it.',
   'binDesigner.lid.compat.disabledOne': 'Resolve the conflict to enable lid: {detail}',
   'binDesigner.lid.compat.disabledMany': 'Resolve {count} conflicts to enable lid',
   'binDesigner.lid.compat.fix.wallCutoutsAllSides': 'disable some wall cutouts',
   'binDesigner.lid.compat.fix.tallDividerPieces': 'reduce divider piece height',
+  'binDesigner.lid.compat.fix.handlesAllSides': 'disable some handles',
+  'binDesigner.lid.compat.fixButton': 'Fix',
+  'binDesigner.lid.compat.fixAriaLabel': 'Fix: {detail}',
+  'binDesigner.lid.clickRailDisabledBySide':
+    '{side} rail auto-disabled by a feature conflict — see compatibility notes',
   'binDesigner.lid.conflictBadgeLabel': 'Conflicts with the click-lock lid',
   'binDesigner.lid.outerDimensions': '{width} × {depth} × {height} mm',
   'binDesigner.lid.railsCount': 'Rails: {length} mm × {count} walls',

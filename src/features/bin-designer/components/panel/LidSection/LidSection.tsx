@@ -11,16 +11,37 @@ import { FeatureToggle } from '../FeatureToggle';
 import { Switch } from '@/design-system/Switch';
 import { RulerIcon } from '@/design-system/Icon';
 import { SnappingSlider } from '../../controls/SnappingSlider';
-import type { LidCompatibilityIssue } from '@/features/bin-designer/utils/lidCompatibility';
+import type {
+  LidCompatibilityId,
+  LidCompatibilityIssue,
+} from '@/features/bin-designer/utils/lidCompatibility';
 import { LID_RAIL_SIDES } from '@/features/bin-designer/types';
 import type { useTranslation } from '@/i18n';
 import { useLidSection } from './useLidSection';
 
 type Translator = ReturnType<typeof useTranslation>;
 
-/** Render a single compatibility issue as a colored bullet line. */
-function CompatibilityIssue({ issue, t }: { issue: LidCompatibilityIssue; t: Translator }) {
-  const sides = issue.sides ? issue.sides.join(', ') : '';
+/** Render a single compatibility issue as a colored bullet line with an
+ *  optional one-click Fix button. The button is only shown for issues
+ *  whose ID appears in `fixableIds` — issues like `shortBin` or
+ *  `cellMaskHoles` need user judgment and don't get an automatic fix. */
+function CompatibilityIssue({
+  issue,
+  fixable,
+  onFix,
+  t,
+}: {
+  issue: LidCompatibilityIssue;
+  fixable: boolean;
+  onFix: (id: LidCompatibilityId) => void;
+  t: Translator;
+}) {
+  // Side IDs ('front'/'back'/'left'/'right') are internal — translate
+  // each through `binDesigner.lid.side.*` before joining so non-English
+  // locales don't render raw English tokens in the warning text.
+  const sides = issue.sides
+    ? issue.sides.map((s) => t(`binDesigner.lid.side.${s}`)).join(', ')
+    : '';
   const message = t(`binDesigner.lid.compat.${issue.id}`, { sides });
   // Blockers are rendered with the danger token (red); warnings are
   // amber. Both use a small filled dot so the row reads as a list
@@ -29,9 +50,19 @@ function CompatibilityIssue({ issue, t }: { issue: LidCompatibilityIssue; t: Tra
   const dotColor = isBlocker ? 'bg-danger' : 'bg-warning';
   const textColor = isBlocker ? 'text-danger' : 'text-warning';
   return (
-    <li className={`flex gap-1.5 text-[11px] leading-relaxed ${textColor}`}>
+    <li className={`flex items-start gap-1.5 text-[11px] leading-relaxed ${textColor}`}>
       <span className={`mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full ${dotColor}`} />
-      <span>{message}</span>
+      <span className="flex-1">{message}</span>
+      {fixable && (
+        <button
+          type="button"
+          onClick={() => onFix(issue.id)}
+          aria-label={t('binDesigner.lid.compat.fixAriaLabel', { detail: message })}
+          className="shrink-0 rounded border border-stroke-subtle bg-surface-elevated px-1.5 py-0.5 text-[10px] font-medium text-content-secondary hover:bg-surface-hover"
+        >
+          {t('binDesigner.lid.compat.fixButton')}
+        </button>
+      )}
     </li>
   );
 }
@@ -68,7 +99,13 @@ export function LidSection() {
           </p>
           <ul className="space-y-1">
             {state.compatibilityIssues.map((issue) => (
-              <CompatibilityIssue key={issue.id} issue={issue} t={t} />
+              <CompatibilityIssue
+                key={issue.id}
+                issue={issue}
+                fixable={state.fixableIds.has(issue.id)}
+                onFix={handlers.fixIssue}
+                t={t}
+              />
             ))}
           </ul>
         </div>
@@ -115,7 +152,10 @@ export function LidSection() {
           user can ship a hinge-feel lid (one side only), a label-tab-
           friendly L+R pair, or all four for symmetric snap. All four off
           ⇒ friction-fit lid (mating cavity still wraps the lip; no
-          positive snap). Mirrors HandleSection's side-chip pattern. */}
+          positive snap). When a feature conflict disables a side (label
+          tab on back, wall cutout/handle on a given side) the chip is
+          greyed out with a tooltip — the user's persisted intent is
+          kept so the rail returns when the conflict is resolved. */}
       <div>
         <span className="mb-1 block text-xs font-medium text-content-secondary">
           {t('binDesigner.lid.clickRails')}
@@ -123,17 +163,29 @@ export function LidSection() {
         <div className="flex gap-1">
           {LID_RAIL_SIDES.map((side) => {
             const isActive = state.clickRails[side];
+            const isAutoDisabled = state.disabledRails.has(side);
+            const effectiveActive = isActive && !isAutoDisabled;
+            const tooltip = isAutoDisabled
+              ? t('binDesigner.lid.clickRailDisabledBySide', {
+                  side: t(`binDesigner.lid.side.${side}`),
+                })
+              : undefined;
             return (
               <button
                 key={side}
                 type="button"
                 role="switch"
-                aria-checked={isActive}
+                aria-checked={effectiveActive}
+                aria-disabled={isAutoDisabled}
+                disabled={isAutoDisabled}
+                title={tooltip}
                 onClick={() => handlers.toggleClickRailSide(side)}
                 className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                  isActive
-                    ? 'bg-accent text-on-accent'
-                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+                  isAutoDisabled
+                    ? 'cursor-not-allowed border border-stroke-subtle bg-surface-secondary text-content-tertiary line-through opacity-60'
+                    : effectiveActive
+                      ? 'bg-accent text-on-accent'
+                      : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
                 }`}
               >
                 {t(`binDesigner.lid.side.${side}`)}

@@ -18,9 +18,14 @@ import type { CellMask } from '@/shared/utils/cellMask';
 import { lidWallBottomZ } from '@/features/bin-designer/components/preview/LidMesh/lidAnchorZ';
 import {
   checkLidCompatibility,
+  computeDisabledRails,
   hasLidBlocker,
 } from '@/features/bin-designer/utils/lidCompatibility';
-import type { LidCompatibilityIssue } from '@/features/bin-designer/utils/lidCompatibility';
+import type {
+  LidCompatibilityId,
+  LidCompatibilityIssue,
+  LidCompatibilitySide,
+} from '@/features/bin-designer/utils/lidCompatibility';
 import type { SnappingSliderOption } from '../../controls/SnappingSlider';
 
 /**
@@ -61,7 +66,7 @@ function computeRailSummary(
   depth: number,
   gridUnitMm: number,
   coveragePercent: number,
-  labelEnabled: boolean,
+  disabledRails: ReadonlySet<LidCompatibilitySide>,
   cellMask: CellMask | undefined,
   clickRails: LidClickRails
 ): RailSummary {
@@ -85,7 +90,7 @@ function computeRailSummary(
       const dx = bx - ax;
       const dy = by - ay;
       // Classify by outward direction to apply the per-side toggle and
-      // the label-tab skip — mirrors the worker's railPlacementsForPolygon.
+      // the feature-conflict skip — mirrors the worker's railPlacementsForPolygon.
       const edgeDirX = Math.sign(dx);
       const edgeDirY = Math.sign(dy);
       const outX = edgeDirY;
@@ -97,7 +102,7 @@ function computeRailSummary(
       else if (outX === -1 && outY === 0) side = 'left';
       else continue;
       if (!clickRails[side]) continue;
-      if (labelEnabled && (side === 'front' || side === 'back')) continue;
+      if (disabledRails.has(side)) continue;
       const railLen = (Math.abs(dx) + Math.abs(dy) - 2 * lidCornerR) * coverage;
       if (railLen >= LID_MIN_RAIL_LENGTH) lengths.push(railLen);
     }
@@ -115,11 +120,11 @@ function computeRailSummary(
   const lidOuterD = depth * gridUnitMm - 2 * fitClearance;
   const railLenX = (lidOuterW - 2 * lidCornerR) * coverage;
   const railLenY = (lidOuterD - 2 * lidCornerR) * coverage;
-  // Per-side count: 1 if that wall has a rail enabled (and isn't omitted
-  // by the label-tab gate); 0 otherwise. Front+back run along X axis.
-  const fbAllowed = !labelEnabled;
-  const countX = (clickRails.back && fbAllowed ? 1 : 0) + (clickRails.front && fbAllowed ? 1 : 0);
-  const countY = (clickRails.right ? 1 : 0) + (clickRails.left ? 1 : 0);
+  // Per-side count: 1 if that wall has a rail enabled AND its side isn't
+  // disabled by a feature conflict. Front+back run along X axis.
+  const railOn = (side: LidRailSide) => clickRails[side] && !disabledRails.has(side);
+  const countX = (railOn('back') ? 1 : 0) + (railOn('front') ? 1 : 0);
+  const countY = (railOn('right') ? 1 : 0) + (railOn('left') ? 1 : 0);
   const xValid = railLenX >= LID_MIN_RAIL_LENGTH ? countX : 0;
   const yValid = railLenY >= LID_MIN_RAIL_LENGTH ? countY : 0;
   const lengths: number[] = [];
@@ -128,14 +133,46 @@ function computeRailSummary(
   return { count: lengths.length, lengths: lengths.sort((a, b) => b - a) };
 }
 
+/**
+ * Compat IDs that have a clean, single-action fix. Issues NOT in this
+ * set (`shortBin`, `cellMaskHoles`, `compartmentDividers`,
+ * `topDownCutoutsAtLip`) require user judgment to resolve — bumping bin
+ * height, redrawing a shape, removing compartments, or editing a
+ * specific cutout — so we don't surface a "Fix" button for them.
+ */
+const FIXABLE_IDS: ReadonlySet<LidCompatibilityId> = new Set<LidCompatibilityId>([
+  'wallCutouts',
+  'wallCutoutsAllSides',
+  'wallPattern',
+  'labelTabs',
+  'handles',
+  'handlesAllSides',
+  'tallDividerPieces',
+]);
+
 export function useLidSection() {
   const t = useTranslation();
-  const { lid, base, params, updateLid } = useDesignerStore(
+  const {
+    lid,
+    base,
+    params,
+    updateLid,
+    updateWalls,
+    updateLabel,
+    updateHandles,
+    updateWallPattern,
+    setParam,
+  } = useDesignerStore(
     useShallow((s) => ({
       lid: s.params.lid,
       base: s.params.base,
       params: s.params,
       updateLid: s.updateLid,
+      updateWalls: s.updateWalls,
+      updateLabel: s.updateLabel,
+      updateHandles: s.updateHandles,
+      updateWallPattern: s.updateWallPattern,
+      setParam: s.setParam,
     }))
   );
 
@@ -143,6 +180,15 @@ export function useLidSection() {
   // enabled gate can both reference them).
   const compatibilityIssues = useMemo(() => checkLidCompatibility(params), [params]);
   const blocked = hasLidBlocker(compatibilityIssues);
+  // Per-side rail conflicts (label tabs, wall cutouts, intruding handles).
+  // Derived from the already-memoized issue list — avoids running the
+  // compatibility scan a second time per params change. The worker side
+  // (`resolveLidInputs`) calls `computeDisabledRails(checkLidCompatibility(p))`
+  // for the same source-of-truth contract.
+  const disabledRails = useMemo(
+    () => computeDisabledRails(compatibilityIssues),
+    [compatibilityIssues]
+  );
 
   const blockerReason = useMemo(() => {
     const blockers = compatibilityIssues.filter((i) => i.severity === 'blocker');
@@ -284,7 +330,7 @@ export function useLidSection() {
             params.depth,
             params.gridUnitMm,
             lid.clickRailCoverage,
-            params.label.enabled,
+            disabledRails,
             params.cellMask,
             lid.clickRails
           )
@@ -295,7 +341,7 @@ export function useLidSection() {
       params.depth,
       params.gridUnitMm,
       params.cellMask,
-      params.label.enabled,
+      disabledRails,
       lid.clickRails,
       lid.clickRailCoverage,
     ]
@@ -365,6 +411,43 @@ export function useLidSection() {
     });
   }, [t, railSideCount, lid.clickRailCoverage]);
 
+  // One-click resolution for issues that have a clean automatic fix.
+  // Disables the conflicting feature at the section level (e.g. walls,
+  // handles, label tabs) rather than per-side, matching how each feature
+  // is toggled in its own panel. Issues without a clean fix (shortBin,
+  // cellMaskHoles, compartmentDividers, topDownCutoutsAtLip) don't get
+  // a button surfaced in the UI — see `FIXABLE_IDS`.
+  const fixIssue = useCallback(
+    (id: LidCompatibilityId) => {
+      switch (id) {
+        case 'wallCutouts':
+        case 'wallCutoutsAllSides':
+          updateWalls({ enabled: false });
+          return;
+        case 'wallPattern':
+          updateWallPattern({ enabled: false });
+          return;
+        case 'labelTabs':
+          updateLabel({ enabled: false });
+          return;
+        case 'handles':
+        case 'handlesAllSides':
+          updateHandles({ enabled: false });
+          return;
+        case 'tallDividerPieces':
+          setParam('dividerPieces', { ...params.dividerPieces, height: 'auto' });
+          return;
+        // Non-fixable issues fall through; LidSection hides the button.
+        case 'shortBin':
+        case 'cellMaskHoles':
+        case 'compartmentDividers':
+        case 'topDownCutoutsAtLip':
+          return;
+      }
+    },
+    [params.dividerPieces, setParam, updateHandles, updateLabel, updateWalls, updateWallPattern]
+  );
+
   return {
     state: {
       enabled: effectiveEnabled,
@@ -378,11 +461,13 @@ export function useLidSection() {
       anyRail,
       clickRailCoverage: lid.clickRailCoverage,
       disabledReason,
+      disabledRails,
       railCoverageOptions,
       valueSummary,
       dimensionsReadout,
       railsReadout,
       compatibilityIssues,
+      fixableIds: FIXABLE_IDS,
     },
     handlers: {
       toggleEnabled,
@@ -390,6 +475,7 @@ export function useLidSection() {
       toggleMagnetHoles,
       toggleClickRailSide,
       setClickRailCoverage,
+      fixIssue,
     },
     t,
   };
