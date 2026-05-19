@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   hasFractionalBins,
   getFractionalBinIds,
-  validateHalfBinModeToggle,
-} from '@/shared/utils/halfBinConstraints';
+  validateHalfGridModeToggle,
+} from '@/shared/utils/halfGridConstraints';
 import type { Bin } from '@/core/types';
 import { STAGING_ID } from '@/core/constants';
 import { createTestBin, createTestLayout } from '@/test/testUtils';
@@ -102,11 +102,11 @@ describe('getFractionalBinIds', () => {
   });
 });
 
-describe('validateHalfBinModeToggle', () => {
+describe('validateHalfGridModeToggle', () => {
   describe('enabling half-bin mode (targetState: true)', () => {
     it('always allows enabling half-bin mode', () => {
       const layout = createTestLayout({ bins: [] });
-      const result = validateHalfBinModeToggle(layout, true);
+      const result = validateHalfGridModeToggle(layout, true);
       expect(result).toEqual({ canDisable: true });
     });
 
@@ -114,7 +114,7 @@ describe('validateHalfBinModeToggle', () => {
       const layout = createTestLayout({
         bins: [createTestBin({ id: 'bin1', layerId: 'layer1', x: 0.5, y: 0.5 })],
       });
-      const result = validateHalfBinModeToggle(layout, true);
+      const result = validateHalfGridModeToggle(layout, true);
       expect(result).toEqual({ canDisable: true });
     });
   });
@@ -122,7 +122,7 @@ describe('validateHalfBinModeToggle', () => {
   describe('disabling half-bin mode (targetState: false)', () => {
     it('allows disabling when no bins exist', () => {
       const layout = createTestLayout({ bins: [] });
-      const result = validateHalfBinModeToggle(layout, false);
+      const result = validateHalfGridModeToggle(layout, false);
       expect(result).toEqual({ canDisable: true });
     });
 
@@ -133,7 +133,7 @@ describe('validateHalfBinModeToggle', () => {
           createTestBin({ id: 'bin2', layerId: 'layer1', x: 2, y: 0, width: 3, depth: 3 }),
         ],
       });
-      const result = validateHalfBinModeToggle(layout, false);
+      const result = validateHalfGridModeToggle(layout, false);
       expect(result).toEqual({ canDisable: true });
     });
 
@@ -144,7 +144,7 @@ describe('validateHalfBinModeToggle', () => {
           createTestBin({ id: 'bin2', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2 }),
         ],
       });
-      const result = validateHalfBinModeToggle(layout, false);
+      const result = validateHalfGridModeToggle(layout, false);
 
       expect(result.canDisable).toBe(false);
       expect(result.violation).toBeDefined();
@@ -161,7 +161,7 @@ describe('validateHalfBinModeToggle', () => {
           createTestBin({ id: 'bin3', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2 }),
         ],
       });
-      const result = validateHalfBinModeToggle(layout, false);
+      const result = validateHalfGridModeToggle(layout, false);
 
       expect(result.canDisable).toBe(false);
       expect(result.violation?.binIds).toContain('bin1');
@@ -183,7 +183,7 @@ describe('validateHalfBinModeToggle', () => {
           createTestBin({ id: 'grid-bin', layerId: 'layer1', x: 0, y: 0, width: 2, depth: 2 }),
         ],
       });
-      const result = validateHalfBinModeToggle(layout, false);
+      const result = validateHalfGridModeToggle(layout, false);
 
       expect(result).toEqual({ canDisable: true });
     });

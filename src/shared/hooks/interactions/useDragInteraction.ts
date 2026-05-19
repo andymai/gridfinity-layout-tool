@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useInteractionStore, useViewStore, useLayoutStore, useToastStore } from '@/core/store';
-import { useHalfBinModeStore } from '@/core/store';
+import { useHalfGridModeStore } from '@/core/store';
 import { canPlaceBin, getPlacementErrorMessage } from '@/shared/utils/validation';
 import { canSwapBins, findBinAtPosition } from '@/shared/utils/position';
 import { snapGroupDelta } from '@/shared/utils/snap';
@@ -252,8 +252,8 @@ export function useDragInteraction(context: InteractionContext): ModeHandlers<Dr
             !ctrlKeyRef.current &&
             (invalidReason === 'collision' || invalidReason === 'blocked_zone')
           ) {
-            const halfBinMode = useHalfBinModeStore.getState().halfBinMode;
-            const step = halfBinMode ? 0.5 : 1;
+            const halfGridMode = useHalfGridModeStore.getState().halfGridMode;
+            const step = halfGridMode ? 0.5 : 1;
             const moveDirX = Math.sign(rawDeltaX);
             const moveDirY = Math.sign(rawDeltaY);
 

@@ -83,7 +83,7 @@ function markOccupied(
  * Fill empty cells with bins of specified size.
  * Skips occupied cells and blocked zones.
  * Optimized: Pre-computes blocked zones and uses Set for O(1) cell lookup.
- * @param halfBinMode - When true, uses 0.5 step for iteration and collision detection
+ * @param halfGridMode - When true, uses 0.5 step for iteration and collision detection
  */
 export function fillAllWithSize(
   layout: Layout,
@@ -91,7 +91,7 @@ export function fillAllWithSize(
   binWidth: number,
   binDepth: number,
   categoryId: CategoryId,
-  halfBinMode: boolean = false
+  halfGridMode: boolean = false
 ): { bins: Bin[]; skippedCells: number } {
   const layer = layout.layers.find((l) => l.id === layerId);
   if (!layer || binWidth <= 0 || binDepth <= 0) {
@@ -99,7 +99,7 @@ export function fillAllWithSize(
   }
 
   // Step size for collision detection (0.5 in half-bin mode, 1 in normal)
-  const step = halfBinMode ? 0.5 : 1;
+  const step = halfGridMode ? 0.5 : 1;
 
   // Pre-compute occupied cells (existing bins + blocked zones)
   const occupied = createOccupiedCellSet(layout.bins, layerId, layout, step);
@@ -149,14 +149,14 @@ export function fillAllWithSize(
  * Fill gaps with optimally-sized bins.
  * Tries to use bins that don't require splitting.
  * Optimized: Pre-computes blocked zones and uses Set for O(1) cell lookup.
- * @param halfBinMode - When true, uses 0.5 step for iteration and collision detection
+ * @param halfGridMode - When true, uses 0.5 step for iteration and collision detection
  */
 export function fillGaps(
   layout: Layout,
   layerId: LayerId,
   categoryId: CategoryId,
   maxPrintSize: number,
-  halfBinMode: boolean = false
+  halfGridMode: boolean = false
 ): { bins: Bin[]; addedCount: number } {
   const layer = layout.layers.find((l) => l.id === layerId);
   if (!layer) {
@@ -164,8 +164,8 @@ export function fillGaps(
   }
 
   // Step size for iteration and collision detection (0.5 in half-bin mode, 1 in normal)
-  const step = halfBinMode ? 0.5 : 1;
-  const minSize = halfBinMode ? 0.5 : 1;
+  const step = halfGridMode ? 0.5 : 1;
+  const minSize = halfGridMode ? 0.5 : 1;
 
   // Pre-compute occupied cells (existing bins + blocked zones)
   const occupied = createOccupiedCellSet(layout.bins, layerId, layout, step);

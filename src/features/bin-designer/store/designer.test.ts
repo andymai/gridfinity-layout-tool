@@ -15,7 +15,7 @@ describe('useDesignerStore', () => {
         exportDialogOpen: false,
         designListOpen: false,
         wireframeMode: false,
-        halfBinMode: false,
+        halfGridMode: false,
       },
     });
   });

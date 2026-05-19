@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '@/core/store';
+import { useLayoutStore, useInteractionStore, useHalfGridModeStore } from '@/core/store';
 import {
   calcFractionalPixelSize,
   toPixels,
@@ -64,7 +64,7 @@ function PlacementIndicator({
 export function Overlay({ cellSize, gap }: OverlayProps) {
   // Performance: Use focused stores directly instead of facade
   const interaction = useInteractionStore((state) => state.interaction);
-  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
+  const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
   const { drawer, bins } = useLayoutStore(
     useShallow((state) => ({
       drawer: state.layout.drawer,
@@ -184,7 +184,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     const x2 = Math.max(start.x, current.x);
     const y2 = Math.max(start.y, current.y);
     // In half-bin mode, minimum unit is 0.5; in normal mode it's 1
-    const minUnit = halfBinMode ? 0.5 : 1;
+    const minUnit = halfGridMode ? 0.5 : 1;
     const width = x2 - x1 + minUnit;
     const depth = y2 - y1 + minUnit;
 
@@ -510,7 +510,7 @@ export function Overlay({ cellSize, gap }: OverlayProps) {
     const x2 = Math.max(start.x, current.x);
     const y2 = Math.max(start.y, current.y);
     // In half-bin mode, minimum unit is 0.5; in normal mode it's 1
-    const minUnit = halfBinMode ? 0.5 : 1;
+    const minUnit = halfGridMode ? 0.5 : 1;
     const areaWidth = x2 - x1 + minUnit;
     const areaDepth = y2 - y1 + minUnit;
 

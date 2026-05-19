@@ -11,7 +11,7 @@ import { CategoriesPanel } from '@/features/categories/components/CategoriesPane
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { StepperControl } from '@/shared/components/StepperControl';
-import { HalfBinModeBlockedModal } from '@/shell/Modals';
+import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useResponsive } from '@/shared/hooks';
@@ -81,7 +81,7 @@ export function Sidebar() {
     printBedSize,
     printBedDepth,
     maxGridUnits,
-    halfBinMode,
+    halfGridMode,
     handleDrawerWidthChange,
     handleDrawerDepthChange,
     handleDrawerHeightChange,
@@ -379,7 +379,7 @@ export function Sidebar() {
                     className="flex items-center justify-between pt-2 cursor-pointer"
                     onClick={handleHalfBinToggle}
                     role="checkbox"
-                    aria-checked={halfBinMode}
+                    aria-checked={halfGridMode}
                     aria-label={t('sidebar.toggleHalfBinMode')}
                     tabIndex={0}
                     onKeyDown={(e) => {
@@ -391,7 +391,7 @@ export function Sidebar() {
                   >
                     <div className="flex items-center gap-1.5">
                       <span
-                        className={`leading-none ${halfBinMode ? 'text-content' : 'text-content-tertiary'}`}
+                        className={`leading-none ${halfGridMode ? 'text-content' : 'text-content-tertiary'}`}
                         title={t('sidebar.halfBinTooltip')}
                       >
                         {t('sidebar.halfBinMode')}
@@ -400,7 +400,7 @@ export function Sidebar() {
                         H
                       </kbd>
                     </div>
-                    <Checkbox checked={halfBinMode} variant="desktop" />
+                    <Checkbox checked={halfGridMode} variant="desktop" />
                   </div>
 
                   {/* Fractional edge position toggles - only shown when dimensions are fractional */}
@@ -585,7 +585,7 @@ export function Sidebar() {
       )}
 
       {halfBinViolation && (
-        <HalfBinModeBlockedModal
+        <HalfGridModeBlockedModal
           isOpen={showHalfBinBlockedModal}
           violation={halfBinViolation}
           onClose={() => setShowHalfBinBlockedModal(false)}

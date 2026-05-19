@@ -12,15 +12,15 @@ describe('useShapeSection', () => {
     });
   });
 
-  it('exposes cols/rows at 1u resolution when halfBinMode is off', () => {
+  it('exposes cols/rows at 1u resolution when halfGridMode is off', () => {
     const { result } = renderHook(() => useShapeSection());
     expect(result.current.state.cols).toBe(3);
     expect(result.current.state.rows).toBe(3);
   });
 
-  it('exposes cols/rows at 0.5u resolution when halfBinMode is on', () => {
+  it('exposes cols/rows at 0.5u resolution when halfGridMode is on', () => {
     useDesignerStore.setState({
-      ui: { ...useDesignerStore.getState().ui, halfBinMode: true },
+      ui: { ...useDesignerStore.getState().ui, halfGridMode: true },
     });
     const { result } = renderHook(() => useShapeSection());
     expect(result.current.state.cols).toBe(6);
@@ -83,9 +83,9 @@ describe('useShapeSection', () => {
     expect(stored!.cells[1 * 6 + 5]).toBe(0);
   });
 
-  it('0.5u toggleCell (halfBinMode on) flips a single sub-cell', () => {
+  it('0.5u toggleCell (halfGridMode on) flips a single sub-cell', () => {
     useDesignerStore.setState({
-      ui: { ...useDesignerStore.getState().ui, halfBinMode: true },
+      ui: { ...useDesignerStore.getState().ui, halfGridMode: true },
     });
     const { result } = renderHook(() => useShapeSection());
     act(() => result.current.handlers.toggleCell(5, 0));
@@ -116,11 +116,11 @@ describe('useShapeSection', () => {
 
   it('falls back to half-bin display when bin dims are odd (fractional-size bins)', () => {
     // A 1.5×1.5 bin has a 3×3 mask — can't be cleanly grouped into 1u
-    // squares. With halfBinMode off, the UI should still render at 0.5u
+    // squares. With halfGridMode off, the UI should still render at 0.5u
     // granularity instead of throwing a RangeError inside coarsenToGridUnits.
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 1.5, depth: 1.5 },
-      ui: { ...useDesignerStore.getState().ui, halfBinMode: false },
+      ui: { ...useDesignerStore.getState().ui, halfGridMode: false },
     });
     const { result } = renderHook(() => useShapeSection());
     expect(result.current.state.cols).toBe(3);
@@ -132,18 +132,18 @@ describe('useShapeSection', () => {
   });
 
   it('coarse display hides half-bin detail while preserving stored data', () => {
-    // Paint a single 0.5u cell clear with halfBinMode on.
+    // Paint a single 0.5u cell clear with halfGridMode on.
     useDesignerStore.setState({
-      ui: { ...useDesignerStore.getState().ui, halfBinMode: true },
+      ui: { ...useDesignerStore.getState().ui, halfGridMode: true },
     });
     const onHook = renderHook(() => useShapeSection());
     act(() => onHook.result.current.handlers.toggleCell(5, 0));
     const storedAfterFineEdit = useDesignerStore.getState().params.cellMask;
     expect(storedAfterFineEdit).toBeDefined();
 
-    // Switch halfBinMode off. The stored mask keeps its 0.5u detail.
+    // Switch halfGridMode off. The stored mask keeps its 0.5u detail.
     useDesignerStore.setState({
-      ui: { ...useDesignerStore.getState().ui, halfBinMode: false },
+      ui: { ...useDesignerStore.getState().ui, halfGridMode: false },
     });
     const offHook = renderHook(() => useShapeSection());
     const stored = useDesignerStore.getState().params.cellMask;

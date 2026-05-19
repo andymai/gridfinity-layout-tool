@@ -51,7 +51,7 @@ src/
 | `view.ts`            | 3D preview camera, isometric snap                                                |
 | `toast.ts`           | Toast notification queue                                                         |
 | `labs.ts`            | Experimental feature flags                                                       |
-| `halfBinMode.ts`     | Half-bin toggle state                                                            |
+| `halfGridMode.ts`    | Half-grid toggle (0.5 grid steps + couples new designs to half-pitch sockets)    |
 | `mobile.ts`          | Mobile-specific UI state                                                         |
 | `layoutAnalytics.ts` | Layout statistics tracking                                                       |
 | `sharedPreview.ts`   | Shared preview/embed state                                                       |

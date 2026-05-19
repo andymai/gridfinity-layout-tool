@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useLayoutStore } from '@/core/store/layout';
 import {
   resetAllStores,
@@ -15,7 +15,7 @@ vi.mock('@/shared/analytics/posthog', () => ({
   markFeatureUsed: vi.fn(),
 }));
 
-describe('halfBinMode store', () => {
+describe('halfGridMode store', () => {
   let localStorageMock: ReturnType<typeof createIsolatedLocalStorageMock>;
 
   beforeEach(() => {
@@ -37,9 +37,9 @@ describe('halfBinMode store', () => {
   });
 
   describe('initial state', () => {
-    it('starts with halfBinMode false when no localStorage value', () => {
-      const { halfBinMode } = useHalfBinModeStore.getState();
-      expect(halfBinMode).toBe(false);
+    it('starts with halfGridMode false when no localStorage value', () => {
+      const { halfGridMode } = useHalfGridModeStore.getState();
+      expect(halfGridMode).toBe(false);
     });
 
     it('reads initial state from localStorage if set to true', () => {
@@ -53,30 +53,30 @@ describe('halfBinMode store', () => {
     });
   });
 
-  describe('setHalfBinMode', () => {
+  describe('setHalfGridMode', () => {
     it('enables half-bin mode', () => {
-      const { setHalfBinMode } = useHalfBinModeStore.getState();
+      const { setHalfGridMode } = useHalfGridModeStore.getState();
 
-      setHalfBinMode(true);
+      setHalfGridMode(true);
 
-      const { halfBinMode } = useHalfBinModeStore.getState();
-      expect(halfBinMode).toBe(true);
+      const { halfGridMode } = useHalfGridModeStore.getState();
+      expect(halfGridMode).toBe(true);
     });
 
     it('disables half-bin mode', () => {
-      const { setHalfBinMode } = useHalfBinModeStore.getState();
+      const { setHalfGridMode } = useHalfGridModeStore.getState();
 
-      setHalfBinMode(true);
-      setHalfBinMode(false);
+      setHalfGridMode(true);
+      setHalfGridMode(false);
 
-      const { halfBinMode } = useHalfBinModeStore.getState();
-      expect(halfBinMode).toBe(false);
+      const { halfGridMode } = useHalfGridModeStore.getState();
+      expect(halfGridMode).toBe(false);
     });
 
     it('persists state to localStorage when enabled', () => {
-      const { setHalfBinMode } = useHalfBinModeStore.getState();
+      const { setHalfGridMode } = useHalfGridModeStore.getState();
 
-      setHalfBinMode(true);
+      setHalfGridMode(true);
 
       expect(localStorageMock.mock.setItem).toHaveBeenCalledWith(
         'gridfinity-half-bin-mode',
@@ -85,10 +85,10 @@ describe('halfBinMode store', () => {
     });
 
     it('persists state to localStorage when disabled', () => {
-      const { setHalfBinMode } = useHalfBinModeStore.getState();
+      const { setHalfGridMode } = useHalfGridModeStore.getState();
 
-      setHalfBinMode(true);
-      setHalfBinMode(false);
+      setHalfGridMode(true);
+      setHalfGridMode(false);
 
       expect(localStorageMock.mock.setItem).toHaveBeenLastCalledWith(
         'gridfinity-half-bin-mode',
@@ -111,45 +111,45 @@ describe('halfBinMode store', () => {
         notes: '',
       });
 
-      // setHalfBinMode bypasses validation (caller is responsible)
-      const { setHalfBinMode } = useHalfBinModeStore.getState();
-      setHalfBinMode(false);
+      // setHalfGridMode bypasses validation (caller is responsible)
+      const { setHalfGridMode } = useHalfGridModeStore.getState();
+      setHalfGridMode(false);
 
-      const { halfBinMode } = useHalfBinModeStore.getState();
-      expect(halfBinMode).toBe(false);
+      const { halfGridMode } = useHalfGridModeStore.getState();
+      expect(halfGridMode).toBe(false);
     });
   });
 
-  describe('toggleHalfBinMode', () => {
+  describe('toggleHalfGridMode', () => {
     it('enables half-bin mode when currently disabled', () => {
-      const { toggleHalfBinMode } = useHalfBinModeStore.getState();
+      const { toggleHalfGridMode } = useHalfGridModeStore.getState();
 
-      const result = toggleHalfBinMode();
+      const result = toggleHalfGridMode();
 
       expectOk(result);
-      const { halfBinMode } = useHalfBinModeStore.getState();
-      expect(halfBinMode).toBe(true);
+      const { halfGridMode } = useHalfGridModeStore.getState();
+      expect(halfGridMode).toBe(true);
     });
 
     it('disables half-bin mode when no fractional bins exist', () => {
-      const { toggleHalfBinMode, setHalfBinMode } = useHalfBinModeStore.getState();
+      const { toggleHalfGridMode, setHalfGridMode } = useHalfGridModeStore.getState();
 
       // Enable first
-      setHalfBinMode(true);
+      setHalfGridMode(true);
 
       // Toggle off (no fractional bins = should succeed)
-      const result = toggleHalfBinMode();
+      const result = toggleHalfGridMode();
 
       expectOk(result);
-      const { halfBinMode } = useHalfBinModeStore.getState();
-      expect(halfBinMode).toBe(false);
+      const { halfGridMode } = useHalfGridModeStore.getState();
+      expect(halfGridMode).toBe(false);
     });
 
     it('returns error when trying to disable with fractional bins on grid', () => {
-      const { setHalfBinMode, toggleHalfBinMode } = useHalfBinModeStore.getState();
+      const { setHalfGridMode, toggleHalfGridMode } = useHalfGridModeStore.getState();
 
       // Enable half-bin mode first
-      setHalfBinMode(true);
+      setHalfGridMode(true);
 
       // Add a bin with fractional position
       const { layout, addBin } = useLayoutStore.getState();
@@ -166,7 +166,7 @@ describe('halfBinMode store', () => {
       });
 
       // Try to toggle off - should fail
-      const result = toggleHalfBinMode();
+      const result = toggleHalfGridMode();
 
       const error = expectErr(result);
       expect(error.code).toBe('LAYOUT_INVALID_OPERATION');
@@ -174,13 +174,13 @@ describe('halfBinMode store', () => {
       expect(error.reason).toContain('fractional dimensions');
 
       // State should remain enabled
-      const { halfBinMode } = useHalfBinModeStore.getState();
-      expect(halfBinMode).toBe(true);
+      const { halfGridMode } = useHalfGridModeStore.getState();
+      expect(halfGridMode).toBe(true);
     });
 
     it('returns error when bins have fractional width', () => {
-      const { setHalfBinMode, toggleHalfBinMode } = useHalfBinModeStore.getState();
-      setHalfBinMode(true);
+      const { setHalfGridMode, toggleHalfGridMode } = useHalfGridModeStore.getState();
+      setHalfGridMode(true);
 
       const { layout, addBin } = useLayoutStore.getState();
       addBin({
@@ -195,15 +195,15 @@ describe('halfBinMode store', () => {
         notes: '',
       });
 
-      const result = toggleHalfBinMode();
+      const result = toggleHalfGridMode();
 
       expectErr(result);
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(true);
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
     });
 
     it('returns error when bins have fractional depth', () => {
-      const { setHalfBinMode, toggleHalfBinMode } = useHalfBinModeStore.getState();
-      setHalfBinMode(true);
+      const { setHalfGridMode, toggleHalfGridMode } = useHalfGridModeStore.getState();
+      setHalfGridMode(true);
 
       const { layout, addBin } = useLayoutStore.getState();
       addBin({
@@ -218,15 +218,15 @@ describe('halfBinMode store', () => {
         notes: '',
       });
 
-      const result = toggleHalfBinMode();
+      const result = toggleHalfGridMode();
 
       expectErr(result);
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(true);
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
     });
 
     it('allows disabling when only staging bins have fractional dimensions', () => {
-      const { setHalfBinMode, toggleHalfBinMode } = useHalfBinModeStore.getState();
-      setHalfBinMode(true);
+      const { setHalfGridMode, toggleHalfGridMode } = useHalfGridModeStore.getState();
+      setHalfGridMode(true);
 
       // Add a fractional bin to staging (should be ignored)
       const { layout, addBin } = useLayoutStore.getState();
@@ -243,16 +243,16 @@ describe('halfBinMode store', () => {
       });
 
       // Should succeed because staging bins are ignored
-      const result = toggleHalfBinMode();
+      const result = toggleHalfGridMode();
 
       expectOk(result);
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(false);
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
     });
 
     it('persists to localStorage when enabling', () => {
-      const { toggleHalfBinMode } = useHalfBinModeStore.getState();
+      const { toggleHalfGridMode } = useHalfGridModeStore.getState();
 
-      toggleHalfBinMode();
+      toggleHalfGridMode();
 
       expect(localStorageMock.mock.setItem).toHaveBeenCalledWith(
         'gridfinity-half-bin-mode',
@@ -261,12 +261,12 @@ describe('halfBinMode store', () => {
     });
 
     it('persists to localStorage when disabling successfully', () => {
-      const { setHalfBinMode, toggleHalfBinMode } = useHalfBinModeStore.getState();
+      const { setHalfGridMode, toggleHalfGridMode } = useHalfGridModeStore.getState();
 
-      setHalfBinMode(true);
+      setHalfGridMode(true);
       localStorageMock.mock.setItem.mockClear();
 
-      toggleHalfBinMode();
+      toggleHalfGridMode();
 
       expect(localStorageMock.mock.setItem).toHaveBeenCalledWith(
         'gridfinity-half-bin-mode',
@@ -275,8 +275,8 @@ describe('halfBinMode store', () => {
     });
 
     it('does not persist when toggle fails validation', () => {
-      const { setHalfBinMode, toggleHalfBinMode } = useHalfBinModeStore.getState();
-      setHalfBinMode(true);
+      const { setHalfGridMode, toggleHalfGridMode } = useHalfGridModeStore.getState();
+      setHalfGridMode(true);
 
       // Add fractional bin
       const { layout, addBin } = useLayoutStore.getState();
@@ -294,7 +294,7 @@ describe('halfBinMode store', () => {
 
       localStorageMock.mock.setItem.mockClear();
 
-      toggleHalfBinMode();
+      toggleHalfGridMode();
 
       // setItem should not be called when validation fails
       expect(localStorageMock.mock.setItem).not.toHaveBeenCalled();
@@ -307,21 +307,21 @@ describe('halfBinMode store', () => {
         throw new Error('QuotaExceededError');
       });
 
-      const { setHalfBinMode } = useHalfBinModeStore.getState();
+      const { setHalfGridMode } = useHalfGridModeStore.getState();
 
       // Should not throw
-      expect(() => setHalfBinMode(true)).not.toThrow();
+      expect(() => setHalfGridMode(true)).not.toThrow();
 
       // State should still update
-      const { halfBinMode } = useHalfBinModeStore.getState();
-      expect(halfBinMode).toBe(true);
+      const { halfGridMode } = useHalfGridModeStore.getState();
+      expect(halfGridMode).toBe(true);
     });
   });
 
   describe('multiple fractional bins', () => {
     it('reports count in error message', () => {
-      const { setHalfBinMode, toggleHalfBinMode } = useHalfBinModeStore.getState();
-      setHalfBinMode(true);
+      const { setHalfGridMode, toggleHalfGridMode } = useHalfGridModeStore.getState();
+      setHalfGridMode(true);
 
       const { layout, addBin } = useLayoutStore.getState();
 
@@ -350,7 +350,7 @@ describe('halfBinMode store', () => {
         notes: '',
       });
 
-      const result = toggleHalfBinMode();
+      const result = toggleHalfGridMode();
 
       const error = expectErr(result);
       expect(error.reason).toContain('2 bins');

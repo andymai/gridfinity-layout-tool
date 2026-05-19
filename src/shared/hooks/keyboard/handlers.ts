@@ -13,7 +13,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { SHORTCUTS, STAGING_ID, hasFractionalDimensions } from '@/core/constants';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { validateBinRotation } from '@/shared/utils/binLocation';
-import { validateHalfBinModeToggle } from '@/shared/utils/halfBinConstraints';
+import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import { getLayerBins } from '@/shared/utils/bins';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinById, findBinsByIds } from '@/shared/utils/entity';
@@ -356,9 +356,9 @@ export function handleHalfBinToggle(e: KeyboardEvent, ctx: KeyboardContext): boo
   if (e.key.toLowerCase() !== SHORTCUTS.HALF_BIN_TOGGLE || ctrlOrMeta) return false;
   e.preventDefault();
 
-  const result = ctx.toggleHalfBinMode();
+  const result = ctx.toggleHalfGridMode();
   if (isErr(result)) {
-    const validationResult = validateHalfBinModeToggle(ctx.layout, false);
+    const validationResult = validateHalfGridModeToggle(ctx.layout, false);
     if (validationResult.violation) {
       ctx.addToast(
         `Cannot disable half-bin mode: ${validationResult.violation.count} bin${validationResult.violation.count !== 1 ? 's have' : ' has'} fractional dimensions. Move them to staging first.`,

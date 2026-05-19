@@ -4,7 +4,7 @@ import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel'
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { resetAllStores } from '@/test/testUtils';
 
 // Mock ConfirmDialog
@@ -64,8 +64,8 @@ describe('ActiveLayerPanel', () => {
     useInteractionStore.setState({
       paintSize: null,
     });
-    useHalfBinModeStore.setState({
-      halfBinMode: false,
+    useHalfGridModeStore.setState({
+      halfGridMode: false,
     });
   });
 

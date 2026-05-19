@@ -4,7 +4,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import {
   useSelectionStore,
   useInteractionStore,
-  useHalfBinModeStore,
+  useHalfGridModeStore,
   useMobileStore,
 } from '@/core/store';
 import { batch } from '@/core/cqrs';
@@ -62,7 +62,7 @@ export function ToolsTab() {
       setPaintSize: state.setPaintSize,
     }))
   );
-  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
+  const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
   const closeMobilePanel = useMobileStore((state) => state.closeMobilePanel);
 
   const addToast = useToastStore((state) => state.addToast);
@@ -81,7 +81,7 @@ export function ToolsTab() {
     if (!activeLayerId) return;
     const beforeCount = layerBins.length;
     batch(() => {
-      fillLayerGaps(activeLayerId, activeCategoryId, halfBinMode);
+      fillLayerGaps(activeLayerId, activeCategoryId, halfGridMode);
     });
     closeMobilePanel();
     setTimeout(() => {
@@ -109,7 +109,7 @@ export function ToolsTab() {
     if (!activeLayerId) return;
     const beforeCount = layerBins.length;
     batch(() => {
-      fillLayer(activeLayerId, width, depth, activeCategoryId, halfBinMode);
+      fillLayer(activeLayerId, width, depth, activeCategoryId, halfGridMode);
     });
     // Exit paint mode after filling
     setPaintSize(null);

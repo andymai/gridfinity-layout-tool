@@ -12,7 +12,7 @@ import { useInteractionStore } from '@/core/store/interaction';
 import type { LayerViewMode } from '@/core/store/view';
 import { useLayoutStore } from '@/core/store/layout';
 import { useViewStore } from '@/core/store/view';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { splitBinsByLocation } from '@/shared/utils';
 import { capture } from './init';
 import { getDeviceType } from './trackEvent';
@@ -76,7 +76,7 @@ export function buildHeartbeatPayload(sessionMinutes: number): HeartbeatPayload 
   const { bins, layers, categories, drawer } = useLayoutStore.getState().layout;
   const interaction = useInteractionStore.getState();
   const view = useViewStore.getState();
-  const { halfBinMode } = useHalfBinModeStore.getState();
+  const { halfGridMode } = useHalfGridModeStore.getState();
 
   const { gridBins, stagingBins } = splitBinsByLocation(bins);
 
@@ -95,7 +95,7 @@ export function buildHeartbeatPayload(sessionMinutes: number): HeartbeatPayload 
     grid_utilization: gridUtilization,
     drawer_width: drawer.width,
     drawer_depth: drawer.depth,
-    half_bin_mode: halfBinMode,
+    half_bin_mode: halfGridMode,
     layer_view_mode: view.layerViewMode,
     is_3d_preview_open: view.showIsometricPreview,
     is_preview_expanded: view.isPreviewExpanded,

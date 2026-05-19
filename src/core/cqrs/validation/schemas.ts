@@ -124,14 +124,14 @@ const binFillLayerSchema = z.object({
   width: gridDim,
   depth: gridDim,
   categoryId: categoryIdSchema,
-  halfBinMode: z.boolean().optional(),
+  halfGridMode: z.boolean().optional(),
 });
 
 /** bin.fillGaps */
 const binFillGapsSchema = z.object({
   layerId: layerIdSchema,
   categoryId: categoryIdSchema,
-  halfBinMode: z.boolean().optional(),
+  halfGridMode: z.boolean().optional(),
 });
 
 /** bin.clearLayer */

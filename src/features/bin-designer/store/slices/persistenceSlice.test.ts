@@ -29,23 +29,23 @@ describe('persistenceSlice.loadDesign — UI derivation from params', () => {
     useDesignerStore.setState(useDesignerStore.getInitialState());
   });
 
-  it('enables halfBinMode when loading a design with fractional dimensions', () => {
+  it('enables halfGridMode when loading a design with fractional dimensions', () => {
     const { loadDesign } = useDesignerStore.getState();
     loadDesign(makeSaved({ width: 1.5, depth: 1.5 }));
-    expect(useDesignerStore.getState().ui.halfBinMode).toBe(true);
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(true);
   });
 
-  it('enables halfBinMode when the cellMask has mixed half-bin detail', () => {
+  it('enables halfGridMode when the cellMask has mixed half-bin detail', () => {
     // 2×2 bin (4×4 mask) with one half-cell cleared — mixed 1u block.
     const cells = new Array<0 | 1>(16).fill(1);
     cells[3] = 0;
     const cellMask = { cols: 4, rows: 4, cells };
     const { loadDesign } = useDesignerStore.getState();
     loadDesign(makeSaved({ width: 2, depth: 2, cellMask }));
-    expect(useDesignerStore.getState().ui.halfBinMode).toBe(true);
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(true);
   });
 
-  it('leaves halfBinMode off for a 1u-aligned preset mask', () => {
+  it('leaves halfGridMode off for a 1u-aligned preset mask', () => {
     // 3×3 L preset: cleared corner aligns to 1u, no half-bin detail.
     const cellMask = buildMask([
       [1, 1, 1, 1, 1, 1],
@@ -57,7 +57,7 @@ describe('persistenceSlice.loadDesign — UI derivation from params', () => {
     ]);
     const { loadDesign } = useDesignerStore.getState();
     loadDesign(makeSaved({ width: 3, depth: 3, cellMask }));
-    expect(useDesignerStore.getState().ui.halfBinMode).toBe(false);
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(false);
   });
 
   it('opens the shape editor when loading a custom-masked design', () => {
@@ -80,20 +80,20 @@ describe('persistenceSlice.loadDesign — UI derivation from params', () => {
 
   it('normalises toggles off when switching from a half-bin design to a rectangular one', () => {
     useDesignerStore.setState((s) => ({
-      ui: { ...s.ui, halfBinMode: true, shapeEditorOpen: true },
+      ui: { ...s.ui, halfGridMode: true, shapeEditorOpen: true },
     }));
     const { loadDesign } = useDesignerStore.getState();
     loadDesign(makeSaved({ width: 2, depth: 2 }));
-    expect(useDesignerStore.getState().ui.halfBinMode).toBe(false);
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(false);
     expect(useDesignerStore.getState().ui.shapeEditorOpen).toBe(false);
   });
 
-  it('newDesign resets halfBinMode and shapeEditorOpen', () => {
+  it('newDesign resets halfGridMode and shapeEditorOpen', () => {
     useDesignerStore.setState((s) => ({
-      ui: { ...s.ui, halfBinMode: true, shapeEditorOpen: true },
+      ui: { ...s.ui, halfGridMode: true, shapeEditorOpen: true },
     }));
     useDesignerStore.getState().newDesign();
-    expect(useDesignerStore.getState().ui.halfBinMode).toBe(false);
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(false);
     expect(useDesignerStore.getState().ui.shapeEditorOpen).toBe(false);
   });
 
@@ -141,16 +141,57 @@ describe('history restore normalises UI toggles', () => {
     expect(useDesignerStore.getState().ui.shapeEditorOpen).toBe(false);
   });
 
-  it('undoing across a fractional dimension change turns halfBinMode off', () => {
+  it('undoing across a fractional dimension change turns halfGridMode off', () => {
     const { setParam, undo } = useDesignerStore.getState();
     // Go from 2×2 (integer) to 1.5×2 (fractional).
-    useDesignerStore.setState((s) => ({ ui: { ...s.ui, halfBinMode: true } }));
+    useDesignerStore.setState((s) => ({ ui: { ...s.ui, halfGridMode: true } }));
     setParam('width', 1.5);
     expect(useDesignerStore.getState().params.width).toBe(1.5);
-    expect(useDesignerStore.getState().ui.halfBinMode).toBe(true);
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(true);
     undo();
     expect(useDesignerStore.getState().params.width).toBe(2);
-    // Restored params are integer → halfBinMode should be off.
-    expect(useDesignerStore.getState().ui.halfBinMode).toBe(false);
+    // Restored params are integer → halfGridMode should be off.
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(false);
+  });
+});
+
+describe('persistenceSlice.newDesign — coupling with layout-level half-grid mode (#1752)', () => {
+  beforeEach(() => {
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  it('defaults base.halfSockets to true when half-grid mode is on', async () => {
+    const { useHalfGridModeStore } = await import('@/core/store/halfGridMode');
+    useHalfGridModeStore.setState({ halfGridMode: true });
+    try {
+      useDesignerStore.getState().newDesign();
+      expect(useDesignerStore.getState().params.base.halfSockets).toBe(true);
+    } finally {
+      useHalfGridModeStore.setState({ halfGridMode: false });
+    }
+  });
+
+  it('keeps base.halfSockets at the default false when half-grid mode is off', () => {
+    useDesignerStore.getState().newDesign();
+    expect(useDesignerStore.getState().params.base.halfSockets).toBe(
+      DEFAULT_BIN_PARAMS.base.halfSockets
+    );
+  });
+
+  it('resetToDefaults also picks up the half-grid coupling', async () => {
+    const { useHalfGridModeStore } = await import('@/core/store/halfGridMode');
+    useHalfGridModeStore.setState({ halfGridMode: true });
+    try {
+      // Start from a design with halfSockets explicitly off
+      useDesignerStore.getState().newDesign();
+      useDesignerStore.setState((s) => ({
+        params: { ...s.params, base: { ...s.params.base, halfSockets: false } },
+      }));
+      // Reset should re-apply the coupling
+      useDesignerStore.getState().resetToDefaults();
+      expect(useDesignerStore.getState().params.base.halfSockets).toBe(true);
+    } finally {
+      useHalfGridModeStore.setState({ halfGridMode: false });
+    }
   });
 });

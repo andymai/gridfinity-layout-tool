@@ -78,7 +78,7 @@ describe('Bin', () => {
     drawer: defaultDrawer,
     cellSize: 32,
     gap: 2,
-    halfBinMode: false,
+    halfGridMode: false,
     isGhost: false,
     isSelected: false,
     onStartDrag: mockOnStartDrag,

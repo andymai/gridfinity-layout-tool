@@ -269,24 +269,24 @@ describe('bin.fillLayer schema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('accepts optional halfBinMode', () => {
+  it('accepts optional halfGridMode', () => {
     const result = z.safeParse(schema, {
       layerId: 'layer-1',
       width: 2,
       depth: 2,
       categoryId: 'cat-1',
-      halfBinMode: true,
+      halfGridMode: true,
     });
     expect(result.success).toBe(true);
   });
 
-  it('rejects halfBinMode as string', () => {
+  it('rejects halfGridMode as string', () => {
     const result = z.safeParse(schema, {
       layerId: 'layer-1',
       width: 2,
       depth: 2,
       categoryId: 'cat-1',
-      halfBinMode: 'yes',
+      halfGridMode: 'yes',
     });
     expect(result.success).toBe(false);
   });

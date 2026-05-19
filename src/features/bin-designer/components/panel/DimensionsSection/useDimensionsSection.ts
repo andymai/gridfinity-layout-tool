@@ -13,10 +13,10 @@ export function useDimensionsSection() {
     height,
     gridUnitMm,
     heightUnitMm,
-    halfBinMode,
+    halfGridMode,
     setParam,
     setParams,
-    toggleHalfBinMode,
+    toggleHalfGridMode,
   } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
@@ -24,18 +24,18 @@ export function useDimensionsSection() {
       height: s.params.height,
       gridUnitMm: s.params.gridUnitMm,
       heightUnitMm: s.params.heightUnitMm,
-      halfBinMode: s.ui.halfBinMode,
+      halfGridMode: s.ui.halfGridMode,
       setParam: s.setParam,
       setParams: s.setParams,
-      toggleHalfBinMode: s.toggleHalfBinMode,
+      toggleHalfGridMode: s.toggleHalfGridMode,
     }))
   );
   const t = useTranslation();
 
-  const dimensionStep = halfBinMode ? 0.5 : 1;
+  const dimensionStep = halfGridMode ? 0.5 : 1;
   // At least one dimension must be ≥ 1 — if the other is 0.5, this one can't go below 1
-  const minWidth = halfBinMode && depth >= 1 ? 0.5 : 1;
-  const minDepth = halfBinMode && width >= 1 ? 0.5 : 1;
+  const minWidth = halfGridMode && depth >= 1 ? 0.5 : 1;
+  const minDepth = halfGridMode && width >= 1 ? 0.5 : 1;
 
   const widthMm = width * gridUnitMm;
   const depthMm = depth * gridUnitMm;
@@ -77,12 +77,12 @@ export function useDimensionsSection() {
 
   const handleSetParam = useCallback(
     <K extends keyof BinParams>(key: K, value: BinParams[K]) => {
-      if ((key === 'width' || key === 'depth') && isFractional(value as number) && !halfBinMode) {
-        toggleHalfBinMode();
+      if ((key === 'width' || key === 'depth') && isFractional(value as number) && !halfGridMode) {
+        toggleHalfGridMode();
       }
       setParam(key, value);
     },
-    [halfBinMode, toggleHalfBinMode, setParam]
+    [halfGridMode, toggleHalfGridMode, setParam]
   );
 
   return {
@@ -93,7 +93,7 @@ export function useDimensionsSection() {
       widthMm,
       depthMm,
       heightMm,
-      halfBinMode,
+      halfGridMode,
       dimensionStep,
       minWidth,
       minDepth,
@@ -104,7 +104,7 @@ export function useDimensionsSection() {
       handleDepthStep,
       handleHeightStep,
       handleSwapDimensions,
-      toggleHalfBinMode,
+      toggleHalfGridMode,
     },
     t,
   };

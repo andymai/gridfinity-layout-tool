@@ -6,7 +6,7 @@ import {
   useViewStore,
   useInteractionStore,
   useSelectionStore,
-  useHalfBinModeStore,
+  useHalfGridModeStore,
 } from '@/core/store';
 import { resetAllStores, createTestLayout } from '@/test/testUtils';
 
@@ -220,8 +220,8 @@ describe('Grid', () => {
       paintSize: null,
       setPaintSize: vi.fn(),
     });
-    useHalfBinModeStore.setState({
-      halfBinMode: false,
+    useHalfGridModeStore.setState({
+      halfGridMode: false,
     });
   });
 
@@ -370,7 +370,7 @@ describe('Grid', () => {
     });
 
     it('applies scaled cell sizing when half-bin mode is on', () => {
-      useHalfBinModeStore.setState({ halfBinMode: true });
+      useHalfGridModeStore.setState({ halfGridMode: true });
 
       const { container } = render(<Grid />);
 

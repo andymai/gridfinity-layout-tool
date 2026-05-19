@@ -19,7 +19,7 @@ import { defineCommand } from '../../defineCommand';
 const payloadSchema = z.object({
   layerId: z.string().min(1),
   categoryId: z.string().min(1),
-  halfBinMode: z.boolean().optional(),
+  halfGridMode: z.boolean().optional(),
 });
 
 export const fillGaps = defineCommand({
@@ -45,7 +45,7 @@ export const fillGaps = defineCommand({
       layerId,
       categoryId,
       Math.min(maxGrid.width, maxGrid.depth),
-      payload.halfBinMode ?? false
+      payload.halfGridMode ?? false
     );
 
     return ok({

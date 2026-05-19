@@ -53,13 +53,13 @@ function coarsenToGridUnits(hb: CellMask): CellMask {
 }
 
 export function useShapeSection() {
-  const { width, depth, cellMask, halfBinMode, shapeEditorOpen, setCellMask, setShapeEditorOpen } =
+  const { width, depth, cellMask, halfGridMode, shapeEditorOpen, setCellMask, setShapeEditorOpen } =
     useDesignerStore(
       useShallow((s) => ({
         width: s.params.width,
         depth: s.params.depth,
         cellMask: s.params.cellMask,
-        halfBinMode: s.ui.halfBinMode,
+        halfGridMode: s.ui.halfGridMode,
         shapeEditorOpen: s.ui.shapeEditorOpen,
         setCellMask: s.setCellMask,
         setShapeEditorOpen: s.setShapeEditorOpen,
@@ -68,7 +68,7 @@ export function useShapeSection() {
   const t = useTranslation();
 
   // Stored masks are always at half-bin resolution. UI resolution depends on
-  // halfBinMode: 0.5u when on, 1u when off. Stored data is never coarsened.
+  // halfGridMode: 0.5u when on, 1u when off. Stored data is never coarsened.
   const hbCols = Math.round(width * MASK_CELLS_PER_UNIT);
   const hbRows = Math.round(depth * MASK_CELLS_PER_UNIT);
 
@@ -80,12 +80,12 @@ export function useShapeSection() {
     // Coarsening requires even mask dimensions (half-bin cells group into
     // 1u squares). Fractional-width bins like 1.5×1.5 have odd dims; fall
     // through to the raw half-bin source — the editor will still render,
-    // just at 0.5u granularity regardless of halfBinMode.
-    if (!halfBinMode && source.cols % 2 === 0 && source.rows % 2 === 0) {
+    // just at 0.5u granularity regardless of halfGridMode.
+    if (!halfGridMode && source.cols % 2 === 0 && source.rows % 2 === 0) {
       return coarsenToGridUnits(source);
     }
     return source;
-  }, [storedMask, halfBinMode, width, depth]);
+  }, [storedMask, halfGridMode, width, depth]);
 
   // "Editing" (toggle on) = editor is open. A painted mask implies editing,
   // but the editor can also be open with no mask yet (user just toggled on).
@@ -132,7 +132,7 @@ export function useShapeSection() {
   }, [setCellMask, setShapeEditorOpen]);
 
   /**
-   * Toggle a cell at the current UI resolution. In 0.5u (halfBinMode on) a
+   * Toggle a cell at the current UI resolution. In 0.5u (halfGridMode on) a
    * toggle flips one sub-cell. In 1u a toggle flips all four sub-cells of
    * the grid square together, so the coarse display always stays in sync
    * with the underlying half-bin store. Store rejects masks that would
@@ -143,7 +143,7 @@ export function useShapeSection() {
       const store = useDesignerStore.getState();
       const w = store.params.width;
       const d = store.params.depth;
-      const hbm = store.ui.halfBinMode;
+      const hbm = store.ui.halfGridMode;
       const currentHbCols = Math.round(w * MASK_CELLS_PER_UNIT);
       const currentHbRows = Math.round(d * MASK_CELLS_PER_UNIT);
       const currentStored = store.params.cellMask;
@@ -157,7 +157,7 @@ export function useShapeSection() {
       const next = base.cells.slice();
 
       // Coarse 1u toggle needs even mask dims to group 2×2 sub-cells cleanly.
-      // If halfBinMode is off but the bin has fractional sides (odd dims),
+      // If halfGridMode is off but the bin has fractional sides (odd dims),
       // the UI renders at 0.5u anyway — fall through to the half-bin branch.
       const isCoarseMode = !hbm && currentHbCols % 2 === 0 && currentHbRows % 2 === 0;
       if (isCoarseMode) {

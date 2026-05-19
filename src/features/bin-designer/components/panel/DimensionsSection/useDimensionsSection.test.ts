@@ -56,7 +56,7 @@ describe('useDimensionsSection', () => {
 
   it('uses 0.5 step in half-bin mode', () => {
     useDesignerStore.setState({
-      ui: { ...DEFAULT_UI_STATE, halfBinMode: true },
+      ui: { ...DEFAULT_UI_STATE, halfGridMode: true },
     });
 
     const { result } = renderHook(() => useDimensionsSection());
@@ -70,7 +70,7 @@ describe('useDimensionsSection', () => {
   it('prevents 0.5×0.5 footprint in half-bin mode', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 0.5, depth: 2 },
-      ui: { ...DEFAULT_UI_STATE, halfBinMode: true },
+      ui: { ...DEFAULT_UI_STATE, halfGridMode: true },
     });
 
     const { result } = renderHook(() => useDimensionsSection());
@@ -102,7 +102,7 @@ describe('useDimensionsSection', () => {
       result.current.handlers.setParam('width', 1.5);
     });
 
-    expect(useDesignerStore.getState().ui.halfBinMode).toBe(true);
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(true);
     expect(useDesignerStore.getState().params.width).toBe(1.5);
   });
 
@@ -113,7 +113,7 @@ describe('useDimensionsSection', () => {
       result.current.handlers.setParam('depth', 2.5);
     });
 
-    expect(useDesignerStore.getState().ui.halfBinMode).toBe(true);
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(true);
     expect(useDesignerStore.getState().params.depth).toBe(2.5);
   });
 
@@ -124,13 +124,13 @@ describe('useDimensionsSection', () => {
       result.current.handlers.setParam('width', 3);
     });
 
-    expect(useDesignerStore.getState().ui.halfBinMode).toBe(false);
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(false);
     expect(useDesignerStore.getState().params.width).toBe(3);
   });
 
   it('does not double-toggle half-bin mode when already enabled', () => {
     useDesignerStore.setState({
-      ui: { ...DEFAULT_UI_STATE, halfBinMode: true },
+      ui: { ...DEFAULT_UI_STATE, halfGridMode: true },
     });
     const { result } = renderHook(() => useDimensionsSection());
 
@@ -139,7 +139,7 @@ describe('useDimensionsSection', () => {
     });
 
     // Should still be enabled (not toggled off)
-    expect(useDesignerStore.getState().ui.halfBinMode).toBe(true);
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(true);
     expect(useDesignerStore.getState().params.width).toBe(1.5);
   });
 });

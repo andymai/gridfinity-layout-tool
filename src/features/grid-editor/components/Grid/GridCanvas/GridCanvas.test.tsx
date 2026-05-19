@@ -29,7 +29,7 @@ const mockGetGridCoords = vi.fn().mockReturnValue({ x: 0, y: 0 });
 vi.mock('@/features/grid-editor/hooks/useGridCoords', () => ({
   useGridCoords: () => ({
     getGridCoords: mockGetGridCoords,
-    halfBinMode: false,
+    halfGridMode: false,
   }),
 }));
 

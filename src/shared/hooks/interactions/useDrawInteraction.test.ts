@@ -4,7 +4,7 @@ import { useDrawInteraction } from '@/shared/hooks/interactions/useDrawInteracti
 import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
-import { useHalfBinModeStore } from '@/core/store';
+import { useHalfGridModeStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 import { ok } from '@/core/result';
 import type { InteractionContext } from '@/shared/hooks/interactions/types';
@@ -204,7 +204,7 @@ describe('useDrawInteraction', () => {
     });
 
     it('supports half-bin mode with snapping', () => {
-      useHalfBinModeStore.setState({ halfBinMode: true });
+      useHalfGridModeStore.setState({ halfGridMode: true });
       const paintSize = { width: 1.5, depth: 1 };
       mockAddBin.mockReturnValue(ok('new-bin-id'));
 

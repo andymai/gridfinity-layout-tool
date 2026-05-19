@@ -105,24 +105,24 @@ export function DimensionsSection() {
       {/* Half-bin mode toggle */}
       <div
         className="group flex items-center justify-between pt-2 cursor-pointer rounded-md px-1 -mx-1 py-1 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-        onClick={handlers.toggleHalfBinMode}
+        onClick={handlers.toggleHalfGridMode}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            handlers.toggleHalfBinMode();
+            handlers.toggleHalfGridMode();
           }
         }}
         role="checkbox"
-        aria-checked={state.halfBinMode}
+        aria-checked={state.halfGridMode}
         aria-label={t('binDesigner.halfBinModeEnable05Grid')}
         tabIndex={0}
       >
         <span
-          className={`text-xs leading-none transition-colors ${state.halfBinMode ? 'text-content' : 'text-content-tertiary group-hover:text-content-secondary'}`}
+          className={`text-xs leading-none transition-colors ${state.halfGridMode ? 'text-content' : 'text-content-tertiary group-hover:text-content-secondary'}`}
         >
           {t('binDesigner.halfBinMode')}
         </span>
-        <Checkbox checked={state.halfBinMode} variant={stepperVariant} />
+        <Checkbox checked={state.halfGridMode} variant={stepperVariant} />
       </div>
     </div>
   );

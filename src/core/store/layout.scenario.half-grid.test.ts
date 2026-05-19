@@ -6,7 +6,7 @@ import {
   hasFractionalDimensions,
   HALF_BIN_SCALE,
 } from '@/core/constants';
-import { useHalfBinModeStore } from '@/core/store';
+import { useHalfGridModeStore } from '@/core/store';
 
 /**
  * Helper to calculate pixel dimensions for grid elements.
@@ -72,13 +72,13 @@ describe('Half-bin mode', () => {
   });
 
   describe('snapToGrid', () => {
-    it('snaps to 0.5 increments when halfBinMode is true', () => {
+    it('snaps to 0.5 increments when halfGridMode is true', () => {
       expect(snapToGrid(0.3, true)).toBe(0.5);
       expect(snapToGrid(1.7, true)).toBe(1.5);
       expect(snapToGrid(2.8, true)).toBe(3);
     });
 
-    it('snaps to whole numbers when halfBinMode is false', () => {
+    it('snaps to whole numbers when halfGridMode is false', () => {
       expect(snapToGrid(0.3, false)).toBe(0);
       expect(snapToGrid(1.7, false)).toBe(1);
       expect(snapToGrid(2.8, false)).toBe(2);
@@ -128,34 +128,34 @@ describe('Half-bin mode', () => {
     });
   });
 
-  describe('halfBinMode store', () => {
+  describe('halfGridMode store', () => {
     beforeEach(() => {
       // Reset store state
-      useHalfBinModeStore.setState({ halfBinMode: false });
+      useHalfGridModeStore.setState({ halfGridMode: false });
     });
 
     it('defaults to false', () => {
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(false);
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
     });
 
-    it('toggleHalfBinMode toggles the value', () => {
-      const { toggleHalfBinMode } = useHalfBinModeStore.getState();
+    it('toggleHalfGridMode toggles the value', () => {
+      const { toggleHalfGridMode } = useHalfGridModeStore.getState();
 
-      toggleHalfBinMode();
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(true);
+      toggleHalfGridMode();
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
 
-      toggleHalfBinMode();
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(false);
+      toggleHalfGridMode();
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
     });
 
-    it('setHalfBinMode sets specific value', () => {
-      const { setHalfBinMode } = useHalfBinModeStore.getState();
+    it('setHalfGridMode sets specific value', () => {
+      const { setHalfGridMode } = useHalfGridModeStore.getState();
 
-      setHalfBinMode(true);
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(true);
+      setHalfGridMode(true);
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
 
-      setHalfBinMode(false);
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(false);
+      setHalfGridMode(false);
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
     });
   });
 
@@ -197,12 +197,12 @@ describe('Half-bin mode', () => {
     });
   });
 
-  describe('fractional bin rendering when halfBinMode is off', () => {
+  describe('fractional bin rendering when halfGridMode is off', () => {
     const cellSize = 32;
     const gap = 1;
 
     it('should use true pixel size for 0.5x0.5 bin', () => {
-      // When halfBinMode is OFF with a 0.5x0.5 bin:
+      // When halfGridMode is OFF with a 0.5x0.5 bin:
       // Without the fix: gridColSpan = Math.round(0.5) = 0 or 1, causing wrong size
       // With the fix: explicit width = toPixels(0.5) = 16px
       const binWidth = 0.5;
@@ -449,8 +449,8 @@ describe('Half-bin mode', () => {
       // Drawing from (0,0) to (1,1) in standard mode
       const start = { x: 0, y: 0 };
       const current = { x: 1, y: 1 };
-      const halfBinMode = false;
-      const minUnit = halfBinMode ? 0.5 : 1;
+      const halfGridMode = false;
+      const minUnit = halfGridMode ? 0.5 : 1;
 
       const x1 = Math.min(start.x, current.x);
       const y1 = Math.min(start.y, current.y);
@@ -467,8 +467,8 @@ describe('Half-bin mode', () => {
       // Drawing from (0.5,0.5) to (1,1) in half-bin mode
       const start = { x: 0.5, y: 0.5 };
       const current = { x: 1, y: 1 };
-      const halfBinMode = true;
-      const minUnit = halfBinMode ? 0.5 : 1;
+      const halfGridMode = true;
+      const minUnit = halfGridMode ? 0.5 : 1;
 
       const x1 = Math.min(start.x, current.x);
       const y1 = Math.min(start.y, current.y);
@@ -485,8 +485,8 @@ describe('Half-bin mode', () => {
       // Single click (same start and current) in half-bin mode
       const start = { x: 1.5, y: 2 };
       const current = { x: 1.5, y: 2 };
-      const halfBinMode = true;
-      const minUnit = halfBinMode ? 0.5 : 1;
+      const halfGridMode = true;
+      const minUnit = halfGridMode ? 0.5 : 1;
 
       const width = Math.max(start.x, current.x) - Math.min(start.x, current.x) + minUnit;
       const depth = Math.max(start.y, current.y) - Math.min(start.y, current.y) + minUnit;
@@ -499,8 +499,8 @@ describe('Half-bin mode', () => {
       // Single click (same start and current) in standard mode
       const start = { x: 3, y: 4 };
       const current = { x: 3, y: 4 };
-      const halfBinMode = false;
-      const minUnit = halfBinMode ? 0.5 : 1;
+      const halfGridMode = false;
+      const minUnit = halfGridMode ? 0.5 : 1;
 
       const width = Math.max(start.x, current.x) - Math.min(start.x, current.x) + minUnit;
       const depth = Math.max(start.y, current.y) - Math.min(start.y, current.y) + minUnit;
@@ -563,20 +563,20 @@ describe('Half-bin mode', () => {
 
   describe('keyboard interaction increments', () => {
     it('uses 0.5 increment in half-bin mode', () => {
-      const halfBinMode = true;
-      const increment = halfBinMode ? 0.5 : 1;
+      const halfGridMode = true;
+      const increment = halfGridMode ? 0.5 : 1;
       expect(increment).toBe(0.5);
     });
 
     it('uses 1.0 increment in normal mode', () => {
-      const halfBinMode = false;
-      const increment = halfBinMode ? 0.5 : 1;
+      const halfGridMode = false;
+      const increment = halfGridMode ? 0.5 : 1;
       expect(increment).toBe(1);
     });
 
     it('calculates correct drag delta in half-bin mode', () => {
-      const halfBinMode = true;
-      const increment = halfBinMode ? 0.5 : 1;
+      const halfGridMode = true;
+      const increment = halfGridMode ? 0.5 : 1;
 
       // Simulating 2 arrow key presses
       let dx = 0;
@@ -587,19 +587,19 @@ describe('Half-bin mode', () => {
     });
 
     it('calculates correct resize delta in half-bin mode', () => {
-      const halfBinMode = true;
-      const minSize = halfBinMode ? 0.5 : 1;
+      const halfGridMode = true;
+      const minSize = halfGridMode ? 0.5 : 1;
 
       const originalWidth = 1;
       // Shrink by one increment
-      const newWidth = Math.max(minSize, originalWidth - (halfBinMode ? 0.5 : 1));
+      const newWidth = Math.max(minSize, originalWidth - (halfGridMode ? 0.5 : 1));
 
       expect(newWidth).toBe(0.5); // 1 - 0.5 = 0.5 (above minSize)
     });
 
     it('enforces 0.5 minimum size in half-bin mode', () => {
-      const halfBinMode = true;
-      const minSize = halfBinMode ? 0.5 : 1;
+      const halfGridMode = true;
+      const minSize = halfGridMode ? 0.5 : 1;
 
       const originalWidth = 0.5;
       // Try to shrink below minimum
@@ -609,8 +609,8 @@ describe('Half-bin mode', () => {
     });
 
     it('enforces 1.0 minimum size in normal mode', () => {
-      const halfBinMode = false;
-      const minSize = halfBinMode ? 0.5 : 1;
+      const halfGridMode = false;
+      const minSize = halfGridMode ? 0.5 : 1;
 
       const originalWidth = 1;
       // Try to shrink below minimum
@@ -622,8 +622,8 @@ describe('Half-bin mode', () => {
 
   describe('fill operations step size', () => {
     it('uses 0.5 step for cell iteration in half-bin mode', () => {
-      const halfBinMode = true;
-      const step = halfBinMode ? 0.5 : 1;
+      const halfGridMode = true;
+      const step = halfGridMode ? 0.5 : 1;
 
       // Simulate iterating over a 2x2 area
       const cells: string[] = [];
@@ -641,8 +641,8 @@ describe('Half-bin mode', () => {
     });
 
     it('uses 1.0 step for cell iteration in normal mode', () => {
-      const halfBinMode = false;
-      const step = halfBinMode ? 0.5 : 1;
+      const halfGridMode = false;
+      const step = halfGridMode ? 0.5 : 1;
 
       // Simulate iterating over a 2x2 area
       const cells: string[] = [];
@@ -659,9 +659,9 @@ describe('Half-bin mode', () => {
     });
 
     it('generates 0.5-increment sizes for gap fill in half-bin mode', () => {
-      const halfBinMode = true;
-      const step = halfBinMode ? 0.5 : 1;
-      const minSize = halfBinMode ? 0.5 : 1;
+      const halfGridMode = true;
+      const step = halfGridMode ? 0.5 : 1;
+      const minSize = halfGridMode ? 0.5 : 1;
       const maxSize = 2;
 
       const sizes: Array<{ w: number; d: number }> = [];
@@ -679,9 +679,9 @@ describe('Half-bin mode', () => {
     });
 
     it('generates whole-unit sizes for gap fill in normal mode', () => {
-      const halfBinMode = false;
-      const step = halfBinMode ? 0.5 : 1;
-      const minSize = halfBinMode ? 0.5 : 1;
+      const halfGridMode = false;
+      const step = halfGridMode ? 0.5 : 1;
+      const minSize = halfGridMode ? 0.5 : 1;
       const maxSize = 2;
 
       const sizes: Array<{ w: number; d: number }> = [];

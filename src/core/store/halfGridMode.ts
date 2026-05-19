@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { validateHalfBinModeToggle } from '@/shared/utils/halfBinConstraints';
+import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
 import { markFeatureUsed } from '@/shared/analytics/posthog';
 import { useLayoutStore } from './layout';
 import { useToastStore } from './toast';
@@ -8,15 +8,18 @@ import { err, getUserMessage, isOk, layoutInvalidOperation, OK } from '@/core/re
 import { saveToLocalStorage, loadFromLocalStorage } from '@/core/storage/backends/localStorage';
 
 /**
- * Half-Bin Mode Store
+ * Half-Grid Mode Store
  *
- * Manages the half-bin mode setting, which allows 0.5 unit increments
- * for finer positioning of bins. This is a power user feature.
+ * Manages the half-grid mode setting: allows 0.5-unit grid increments for
+ * fractional bin sizing AND seeds `base.halfSockets = true` on new bin
+ * designs (see `defaultsForNewDesign` in `bin-designer/store/helpers.ts`).
  *
  * Extracted from ui.ts as part of the god object decomposition.
  *
- * Persistence: Stored in localStorage under 'gridfinity-half-bin-mode'.
- * The store handles persistence internally to keep components simple.
+ * Persistence: stored in localStorage under `gridfinity-half-bin-mode`.
+ * The key name predates the rename and is kept to preserve existing
+ * users' preference across the upgrade — don't change it without a
+ * migration.
  */
 
 const STORAGE_KEY = 'gridfinity-half-bin-mode';
@@ -41,11 +44,11 @@ function saveToStorage(enabled: boolean): Result<void, StorageError> {
   return saveToLocalStorage(STORAGE_KEY, enabled);
 }
 
-interface HalfBinModeState {
-  halfBinMode: boolean;
+interface HalfGridModeState {
+  halfGridMode: boolean;
 }
 
-interface HalfBinModeActions {
+interface HalfGridModeActions {
   /**
    * Toggle half-bin mode with validation.
    *
@@ -58,20 +61,20 @@ interface HalfBinModeActions {
    * storage errors from validation errors when deciding whether to show the
    * "fractional bins" blocking UI.
    */
-  toggleHalfBinMode: () => Result<Unit, LayoutError>;
+  toggleHalfGridMode: () => Result<Unit, LayoutError>;
 
   /**
    * Set half-bin mode directly without validation.
    * Use with caution - caller is responsible for ensuring valid state.
    * Returns Result indicating if persistence succeeded.
    */
-  setHalfBinMode: (enabled: boolean) => Result<void, StorageError>;
+  setHalfGridMode: (enabled: boolean) => Result<void, StorageError>;
 }
 
-export type HalfBinModeStore = HalfBinModeState & HalfBinModeActions;
+export type HalfGridModeStore = HalfGridModeState & HalfGridModeActions;
 
-export const INITIAL_HALF_BIN_MODE_STATE = {
-  halfBinMode: false,
+export const INITIAL_HALF_GRID_MODE_STATE = {
+  halfGridMode: false,
 } as const;
 
 /**
@@ -86,17 +89,17 @@ function toastStorageFailure(error: StorageError): void {
   });
 }
 
-export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
-  halfBinMode: loadFromStorage(),
+export const useHalfGridModeStore = create<HalfGridModeStore>((set) => ({
+  halfGridMode: loadFromStorage(),
 
-  toggleHalfBinMode: () => {
-    const state = useHalfBinModeStore.getState();
-    const targetState = !state.halfBinMode;
+  toggleHalfGridMode: () => {
+    const state = useHalfGridModeStore.getState();
+    const targetState = !state.halfGridMode;
 
     // Turning ON: no validation needed
     if (targetState) {
       const saveResult = saveToStorage(true);
-      set({ halfBinMode: true });
+      set({ halfGridMode: true });
       markFeatureUsed('half_bins');
       if (!isOk(saveResult)) toastStorageFailure(saveResult.error);
       return OK;
@@ -104,26 +107,26 @@ export const useHalfBinModeStore = create<HalfBinModeStore>((set) => ({
 
     // Turning OFF: validate layout for fractional bins
     const layout = useLayoutStore.getState().layout;
-    const result = validateHalfBinModeToggle(layout, false);
+    const result = validateHalfGridModeToggle(layout, false);
 
     if (!result.canDisable) {
       return err(
         layoutInvalidOperation(
-          'toggleHalfBinMode',
+          'toggleHalfGridMode',
           `Cannot disable: ${result.violation?.count ?? 0} bins have fractional dimensions`
         )
       );
     }
 
     const saveResult = saveToStorage(false);
-    set({ halfBinMode: false });
+    set({ halfGridMode: false });
     if (!isOk(saveResult)) toastStorageFailure(saveResult.error);
     return OK;
   },
 
-  setHalfBinMode: (enabled) => {
+  setHalfGridMode: (enabled) => {
     const result = saveToStorage(enabled);
-    set({ halfBinMode: enabled });
+    set({ halfGridMode: enabled });
     return result;
   },
 }));

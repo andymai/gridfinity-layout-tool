@@ -120,11 +120,11 @@ export function snapToHalf(value: number): number {
 /**
  * Snap a coordinate to grid based on half-bin mode.
  * @param value - The raw coordinate value
- * @param halfBinMode - Whether half-bin mode is active
- * @returns Value snapped to appropriate grid (0.5 increments if halfBinMode, whole numbers otherwise)
+ * @param halfGridMode - Whether half-bin mode is active
+ * @returns Value snapped to appropriate grid (0.5 increments if halfGridMode, whole numbers otherwise)
  */
-export function snapToGrid(value: number, halfBinMode: boolean): number {
-  return halfBinMode ? snapToHalf(value) : Math.floor(value);
+export function snapToGrid(value: number, halfGridMode: boolean): number {
+  return halfGridMode ? snapToHalf(value) : Math.floor(value);
 }
 
 /**

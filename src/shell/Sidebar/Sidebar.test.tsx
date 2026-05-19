@@ -4,7 +4,7 @@ import { Sidebar } from '@/shell/Sidebar';
 import { useLayoutStore } from '@/core/store';
 import { useSelectionStore } from '@/core/store/selection';
 import { useViewStore } from '@/core/store/view';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { resetAllStores } from '@/test/testUtils';
 
 // Mock child components to isolate Sidebar tests
@@ -57,8 +57,8 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
     ) : null,
 }));
 
-vi.mock('@/shell/Modals/HalfBinModeBlockedModal', () => ({
-  HalfBinModeBlockedModal: ({
+vi.mock('@/shell/Modals/HalfGridModeBlockedModal', () => ({
+  HalfGridModeBlockedModal: ({
     isOpen,
     onClose,
     onRemediate,
@@ -280,31 +280,31 @@ describe('Sidebar', () => {
     });
   });
 
-  describe('half-bin mode', () => {
-    it('renders half-bin mode toggle', () => {
+  describe('half-grid mode', () => {
+    it('renders half-grid mode toggle', () => {
       render(<Sidebar />);
 
-      expect(screen.getByText('Half-bin mode')).toBeInTheDocument();
-      expect(screen.getByLabelText('Toggle half-bin mode')).toBeInTheDocument();
+      expect(screen.getByText('Half-grid mode')).toBeInTheDocument();
+      expect(screen.getByLabelText('Toggle half-grid mode')).toBeInTheDocument();
     });
 
     it('half-bin checkbox reflects store state', () => {
       render(<Sidebar />);
 
-      const checkbox = screen.getByLabelText('Toggle half-bin mode');
+      const checkbox = screen.getByLabelText('Toggle half-grid mode');
       expect(checkbox).toHaveAttribute('aria-checked', 'false');
     });
 
-    it('toggles half-bin mode when clicked', () => {
+    it('toggles half-grid mode when clicked', () => {
       render(<Sidebar />);
 
-      fireEvent.click(screen.getByLabelText('Toggle half-bin mode'));
+      fireEvent.click(screen.getByLabelText('Toggle half-grid mode'));
 
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(true);
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
     });
 
-    it('uses 0.5 step for width in half-bin mode', () => {
-      useHalfBinModeStore.setState({ halfBinMode: true });
+    it('uses 0.5 step for width in half-grid mode', () => {
+      useHalfGridModeStore.setState({ halfGridMode: true });
 
       render(<Sidebar />);
 
@@ -314,8 +314,8 @@ describe('Sidebar', () => {
       expect(useLayoutStore.getState().layout.drawer.width).toBe(initialWidth + 0.5);
     });
 
-    it('uses 0.5 step for depth in half-bin mode', () => {
-      useHalfBinModeStore.setState({ halfBinMode: true });
+    it('uses 0.5 step for depth in half-grid mode', () => {
+      useHalfGridModeStore.setState({ halfGridMode: true });
 
       render(<Sidebar />);
 

@@ -4,7 +4,7 @@ import { useLayoutStore } from '@/core/store';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useSelectionStore } from '@/core/store/selection';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import {
   useInteraction,
   useGridResize,
@@ -91,7 +91,7 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
     useSelectionActions();
 
   // Half-bin mode - single value, no useShallow needed
-  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
+  const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
 
   const { drawer, layers, bins, categories } = useLayoutStore(
     useShallow((state) => ({
@@ -202,9 +202,9 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
 
   // In half-bin mode, visual cells are smaller to fit 2x cells in the same space
   // Formula accounts for extra gaps: (cellSize - gap) / 2 keeps total grid size constant
-  const visualCellSize = halfBinMode ? (cellSize - gap) / HALF_BIN_SCALE : cellSize;
+  const visualCellSize = halfGridMode ? (cellSize - gap) / HALF_BIN_SCALE : cellSize;
   // Scale factor for grid dimensions
-  const scale = halfBinMode ? HALF_BIN_SCALE : 1;
+  const scale = halfGridMode ? HALF_BIN_SCALE : 1;
 
   // Grid axis labels hook - computes label arrays and sizing
   const labelsState = useGridAxisLabels({

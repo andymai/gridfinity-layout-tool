@@ -4,7 +4,7 @@ import { useLayoutStore } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useToastStore } from '@/core/store/toast';
 import { STAGING_ID } from '@/core/constants';
 import { gridUnits } from '@/core/types';
@@ -39,7 +39,7 @@ export function ActiveLayerPanel() {
     }))
   );
 
-  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
+  const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
 
   const addToast = useToastStore((state) => state.addToast);
 
@@ -55,7 +55,7 @@ export function ActiveLayerPanel() {
     if (!activeLayerId) return;
     const beforeCount = layerBins.length;
     batch(() => {
-      fillLayerGaps(activeLayerId, activeCategoryId, halfBinMode);
+      fillLayerGaps(activeLayerId, activeCategoryId, halfGridMode);
     });
     setTimeout(() => {
       const afterCount = getLayerBins(useLayoutStore.getState().layout.bins, activeLayerId).length;
@@ -82,7 +82,7 @@ export function ActiveLayerPanel() {
     const { width, depth } = paintSize;
     const beforeCount = layerBins.length;
     batch(() => {
-      fillLayer(activeLayerId, width, depth, activeCategoryId, halfBinMode);
+      fillLayer(activeLayerId, width, depth, activeCategoryId, halfGridMode);
     });
     // Exit paint mode after filling
     setPaintSize(null);

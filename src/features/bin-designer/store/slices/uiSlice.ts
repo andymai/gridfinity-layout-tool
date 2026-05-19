@@ -153,9 +153,9 @@ export function createUISlice(set: Set) {
       });
     },
 
-    toggleHalfBinMode: () => {
+    toggleHalfGridMode: () => {
       set((state) => {
-        const enabling = !state.ui.halfBinMode;
+        const enabling = !state.ui.halfGridMode;
         if (!enabling) {
           if (isFractional(state.params.width) || isFractional(state.params.depth)) {
             pushHistoryEntry(state);
@@ -167,7 +167,7 @@ export function createUISlice(set: Set) {
             state.params.depth = Math.round(state.params.depth);
           }
         }
-        state.ui.halfBinMode = enabling;
+        state.ui.halfGridMode = enabling;
       });
     },
   };

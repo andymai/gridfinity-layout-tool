@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import { resetAllStores } from '@/test/testUtils';
 import { Overlay } from './Overlay';
-import { useInteractionStore, useLayoutStore, useHalfBinModeStore } from '@/core/store';
+import { useInteractionStore, useLayoutStore, useHalfGridModeStore } from '@/core/store';
 import { createDefaultLayout } from '@/core/constants';
 
 // Mock i18n
@@ -158,7 +158,7 @@ describe('Overlay', () => {
   });
 
   it('handles half-bin mode in draw interaction', () => {
-    useHalfBinModeStore.setState({ halfBinMode: true });
+    useHalfGridModeStore.setState({ halfGridMode: true });
     useInteractionStore.setState({
       interaction: {
         type: 'draw',

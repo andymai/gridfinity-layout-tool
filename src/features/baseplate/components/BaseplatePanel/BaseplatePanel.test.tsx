@@ -59,11 +59,11 @@ vi.mock('@/shared/hooks/useFeatureFlag', () => ({
 }));
 
 // Mock half-bin mode store
-let mockHalfBinMode = false;
-vi.mock('@/core/store/halfBinMode', () => ({
-  useHalfBinModeStore: (selector: (state: { halfBinMode: boolean }) => unknown) =>
-    selector({ halfBinMode: mockHalfBinMode }),
-  INITIAL_HALF_BIN_MODE_STATE: {},
+let mockHalfGridMode = false;
+vi.mock('@/core/store/halfGridMode', () => ({
+  useHalfGridModeStore: (selector: (state: { halfGridMode: boolean }) => unknown) =>
+    selector({ halfGridMode: mockHalfGridMode }),
+  INITIAL_HALF_GRID_MODE_STATE: {},
 }));
 
 // Mock page store
@@ -135,7 +135,7 @@ describe('BaseplatePanel', () => {
       setBaseplateParams: mockSetBaseplateParams,
       setPrintBedSize: mockSetPrintBedSize,
     };
-    mockHalfBinMode = false;
+    mockHalfGridMode = false;
     mockTiling = null;
     mockSplitViewMode = 'assembled';
     mockHoveredPieceLabel = null;
@@ -366,7 +366,7 @@ describe('BaseplatePanel', () => {
       const widthInput = screen.getByLabelText('baseplate.editDimensionsWidth');
       const depthInput = screen.getByLabelText('baseplate.editDimensionsDepth');
 
-      // Enter 500mm wide × 300mm deep (halfBinMode=false, step=1)
+      // Enter 500mm wide × 300mm deep (halfGridMode=false, step=1)
       // 500 / 42 = 11.90 → floor to 11 units = 462mm, remainder = 38mm → 19 each
       // 300 / 42 = 7.14 → floor to 7 = 294mm, remainder = 6mm → 3 each
       fireEvent.change(widthInput, { target: { value: '500' } });
@@ -421,7 +421,7 @@ describe('BaseplatePanel', () => {
     });
 
     it('half-bin mode snaps to 0.5 increments', () => {
-      mockHalfBinMode = true;
+      mockHalfGridMode = true;
       // 450 / 42 = 10.71 → floor to 10.5 (step=0.5) = 441mm, remainder = 9mm → 4.5 each
       render(<BaseplatePanel />);
       fireEvent.click(screen.getByRole('button', { name: 'baseplate.editDimensions' }));

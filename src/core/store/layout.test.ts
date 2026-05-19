@@ -1179,7 +1179,7 @@ describe('layout store', () => {
       const layerId = layout.layers[0].id;
       const categoryId = layout.categories[0].id;
 
-      // Should not throw with halfBinMode enabled
+      // Should not throw with halfGridMode enabled
       expect(() => fillLayerGaps(layerId, categoryId, true)).not.toThrow();
     });
   });
