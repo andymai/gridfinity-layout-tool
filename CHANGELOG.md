@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.104.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.103.0...gridfinity-layout-tool-v4.104.0) (2026-05-19)
+
+
+### Features
+
+* **lid:** granular per-side rail conflicts + Fix UX ([#1767](https://github.com/andymai/gridfinity-layout-tool/issues/1767)) ([c84a269](https://github.com/andymai/gridfinity-layout-tool/commit/c84a2698c4ea9c5566f607f537f6dde6e3fae4c5))
+
 ## [4.103.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.102.0...gridfinity-layout-tool-v4.103.0) (2026-05-19)
 
 
