@@ -52,6 +52,12 @@ export async function exportLayoutJSONWithDesigns(layout: Layout): Promise<strin
   // Look up each design from IndexedDB
   const linkedDesigns: LinkedDesignExport[] = [];
   if (designIds.size > 0) {
+    // Dynamic import keeps the bin-designer chunk out of the core/storage
+    // entry; the layer rule's `disallow` covers static imports but flags
+    // dynamic ones too. Until the call site is inverted to pass the
+    // loader in (or this service moves to shared/), the exception is
+    // documented here.
+    // eslint-disable-next-line boundaries/dependencies
     const { loadDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
     for (const id of designIds) {
       const result = await loadDesign(id);
@@ -177,6 +183,9 @@ export async function restoreEmbeddedDesigns(
     return { layout, importedDesignCount: 0 };
   }
 
+  // Dynamic import — same code-splitting rationale as the loadDesign call
+  // above; see comment there for the cleanup follow-up.
+  // eslint-disable-next-line boundaries/dependencies
   const { saveDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
   const designIdMap = new Map<string, DesignId>();
   let importedDesignCount = 0;

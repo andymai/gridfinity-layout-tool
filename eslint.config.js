@@ -178,12 +178,21 @@ export default defineConfig([
       'boundaries/dependency-nodes': ['import', 'dynamic-import'],
     },
     rules: {
-      // Primary rule: features cannot import from OTHER features (same feature is OK).
-      // This is a STRICTER superset of the bash mirror in scripts/check-module-boundaries.sh:
-      // (1) it inspects dynamic imports too (not just static — see boundaries/dependency-nodes
-      // above), and (2) it has explicit exceptions for design-linking -> bin-designer and
-      // bin-inspector -> design-linking. All other module relationships (core↔shared,
-      // shared→features, etc.) are unrestricted.
+      // Layer rules. Three kinds of constraint coexist:
+      //   1. Cross-feature: features cannot import from OTHER features (with
+      //      named exceptions for design-linking -> bin-designer and
+      //      bin-inspector -> design-linking integration layers).
+      //   2. `core/` is infrastructure: disallowed from `feature` and `shell`.
+      //      (`core/` -> `shared/` stays allowed; several `core/storage/*`
+      //      modules consume shared utilities/analytics by design.)
+      //   3. `design-system/` is UI primitives: disallowed from every
+      //      application-level layer (`feature`, `shell`, `shared`, `core`).
+      //
+      // This is a STRICTER superset of the bash mirror in
+      // scripts/check-module-boundaries.sh — it also inspects dynamic
+      // imports (see `boundaries/dependency-nodes` above).
+      // Remaining edges (shared→feature, feature→shell) are intentionally
+      // unrestricted today; tightening them needs a per-violator cleanup pass.
       'boundaries/dependencies': ['error', {
         default: 'allow',
         rules: [
@@ -203,6 +212,24 @@ export default defineConfig([
           {
             from: [{ type: 'feature', captured: { featureName: 'bin-inspector' } }],
             allow: [{ to: { type: 'feature', captured: { featureName: 'design-linking' } } }],
+          },
+          // `core/` is infrastructure — it must not depend on features or the
+          // app shell. (`core/` -> `shared/` is intentionally allowed; many
+          // `core/storage/*` modules use shared utilities/analytics.)
+          { from: [{ type: 'core' }], disallow: [{ to: { type: 'feature' } }, { to: { type: 'shell' } }] },
+          // `design-system/` is UI primitives — it must not depend on any
+          // application-level layer. UI primitives take strings via props;
+          // they never read translations themselves, so `i18n` is in the
+          // disallow list alongside the app layers.
+          {
+            from: [{ type: 'design-system' }],
+            disallow: [
+              { to: { type: 'feature' } },
+              { to: { type: 'shell' } },
+              { to: { type: 'i18n' } },
+              { to: { type: 'shared' } },
+              { to: { type: 'core' } },
+            ],
           },
         ],
       }],

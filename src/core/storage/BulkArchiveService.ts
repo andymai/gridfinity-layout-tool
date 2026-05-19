@@ -107,6 +107,10 @@ export async function exportAllLayouts(
       if (designIds.size > 0) {
         linkedDesigns = [];
         try {
+          // Dynamic import — same rationale as ShareService.ts: keeps the
+          // bin-designer chunk out of core/storage's entry. Future cleanup
+          // could move this service to shared/ or invert the loader.
+          // eslint-disable-next-line boundaries/dependencies
           const { loadDesign } = await import('@/features/bin-designer/storage/DesignerStorage');
           for (const id of designIds) {
             const result = await loadDesign(id);
