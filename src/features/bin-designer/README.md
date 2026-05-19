@@ -67,9 +67,9 @@ graph TB
   `validateMask` accepts enclosed empty cells (O-shape / ring topology); the
   generator builds those via `buildMaskHoleDrawings` and a 3D boolean cut,
   and the stacking-lip loft wraps each hole as well.
-- **Shape editor state** (`ui.shapeEditorOpen` + `ui.halfBinMode`): normalised
+- **Shape editor state** (`ui.shapeEditorOpen` + `ui.halfGridMode`): normalised
   from the loaded params by `loadDesign` and `restoreHistoryEntry` via
-  `paramsNeedHalfBinMode` (fractional dimensions OR `hasHalfBinDetail(mask)`),
+  `paramsNeedHalfGridMode` (fractional dimensions OR `hasHalfBinDetail(mask)`),
   so reopening a design or undoing past a dimension change never leaves the
   UI toggles out of sync with the underlying shape.
 - **Click-lock lid**: optional companion piece generated alongside the bin

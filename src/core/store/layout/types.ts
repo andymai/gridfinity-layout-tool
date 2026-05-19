@@ -54,9 +54,9 @@ export interface LayoutState {
     width: number,
     depth: number,
     categoryId: CategoryId,
-    halfBinMode?: boolean
+    halfGridMode?: boolean
   ) => number;
-  fillLayerGaps: (layerId: LayerId, categoryId: CategoryId, halfBinMode?: boolean) => number;
+  fillLayerGaps: (layerId: LayerId, categoryId: CategoryId, halfGridMode?: boolean) => number;
   clearLayer: (layerId: LayerId) => number;
 
   // I/O

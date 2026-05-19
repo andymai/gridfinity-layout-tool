@@ -25,7 +25,7 @@ import { DEFAULT_BIN_PARAMS } from '../../constants';
 import { isErr } from '@/core/result';
 import { isRectangularSelection, normalizeIds } from '../../utils/compartments';
 import { validateCompartmentSizes } from '../../utils/validation';
-import { pushHistoryEntry } from '../helpers';
+import { defaultsForNewDesign, pushHistoryEntry } from '../helpers';
 import {
   MASK_CELLS_PER_UNIT,
   type CellMask,
@@ -109,7 +109,7 @@ export function createParamSlice(set: Set, get: Get) {
     resetToDefaults: () => {
       set((state) => {
         pushHistoryEntry(state);
-        state.params = { ...DEFAULT_BIN_PARAMS };
+        state.params = { ...defaultsForNewDesign() };
       });
     },
 

@@ -122,8 +122,8 @@ export function useCreateFromBin(): void {
     // Enable half-bin mode if dimensions have fractional values
     const needsHalfBin = isFractional(urlParams.width) || isFractional(urlParams.depth);
     const ui = useDesignerStore.getState().ui;
-    if (needsHalfBin && !ui.halfBinMode) {
-      useDesignerStore.getState().toggleHalfBinMode();
+    if (needsHalfBin && !ui.halfGridMode) {
+      useDesignerStore.getState().toggleHalfGridMode();
     }
 
     // Build the bin params for saving — inherit physical units from layout store

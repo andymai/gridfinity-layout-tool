@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useInteractionStore, useHalfBinModeStore, useToastStore } from '@/core/store';
+import { useInteractionStore, useHalfGridModeStore, useToastStore } from '@/core/store';
 import { canPlaceBin, getPlacementErrorMessage } from '@/shared/utils/validation';
 import { snapResizeRect } from '@/shared/utils/snap';
 import { calculateResizeRect, capturePointer } from './interaction';
@@ -110,8 +110,8 @@ export function useResizeInteraction(context: InteractionContext): ModeHandlers<
       let blockingInfo: BlockingInfo | undefined;
       const otherBinIds = new Set(interaction.binIds);
 
-      const halfBinModeNow = useHalfBinModeStore.getState().halfBinMode;
-      const minSizeNow = halfBinModeNow ? 0.5 : 1;
+      const halfGridModeNow = useHalfGridModeStore.getState().halfGridMode;
+      const minSizeNow = halfGridModeNow ? 0.5 : 1;
 
       for (const binId of interaction.binIds) {
         const bin = findBinById(layout, binId);

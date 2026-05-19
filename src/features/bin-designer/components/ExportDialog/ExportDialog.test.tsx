@@ -53,7 +53,7 @@ function setupStore(overrides: Record<string, unknown> = {}) {
       exportDialogOpen: true,
       wireframeMode: false,
       designListOpen: false,
-      halfBinMode: false,
+      halfGridMode: false,
     },
     ...overrides,
   });
@@ -72,7 +72,7 @@ describe('ExportDialog', () => {
         exportDialogOpen: false,
         wireframeMode: false,
         designListOpen: false,
-        halfBinMode: false,
+        halfGridMode: false,
       },
     });
     const { container } = render(<ExportDialog />);
@@ -355,7 +355,7 @@ describe('ExportDialog', () => {
           exportDialogOpen: open,
           wireframeMode: false,
           designListOpen: false,
-          halfBinMode: false,
+          halfGridMode: false,
         },
       });
     }

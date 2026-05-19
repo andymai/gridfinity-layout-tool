@@ -13,7 +13,7 @@ describe('ParameterPanel', () => {
         exportDialogOpen: false,
         designListOpen: false,
         wireframeMode: false,
-        halfBinMode: false,
+        halfGridMode: false,
         previewCompartments: null,
         previewSelection: null,
       },
@@ -175,7 +175,7 @@ describe('ParameterPanel', () => {
 
   it('dimension steppers use 0.5 step when half-bin mode is enabled', () => {
     useDesignerStore.setState({
-      ui: { ...useDesignerStore.getState().ui, halfBinMode: true },
+      ui: { ...useDesignerStore.getState().ui, halfGridMode: true },
     });
     render(<ParameterPanel />);
 

@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { HalfBinConstraintViolation } from '@/shared/utils/halfBinConstraints';
+import type { HalfGridConstraintViolation } from '@/shared/utils/halfGridConstraints';
 import { useTranslation } from '@/i18n';
 
-interface HalfBinModeBlockedModalProps {
+interface HalfGridModeBlockedModalProps {
   isOpen: boolean;
-  violation: HalfBinConstraintViolation;
+  violation: HalfGridConstraintViolation;
   onClose: () => void;
   onRemediate: () => void | Promise<void>;
 }
@@ -26,17 +26,17 @@ interface HalfBinModeBlockedModalProps {
  * @example
  * ```tsx
  * const [showModal, setShowModal] = useState(false);
- * const [violation, setViolation] = useState<HalfBinConstraintViolation | null>(null);
+ * const [violation, setViolation] = useState<HalfGridConstraintViolation | null>(null);
  *
  * const handleRemediate = async () => {
  *   // Move bins to staging
  *   await execute(() => {
  *     violation.binIds.forEach(id => moveBinToStaging(id));
  *   });
- *   toggleHalfBinMode();
+ *   toggleHalfGridMode();
  * };
  *
- * <HalfBinModeBlockedModal
+ * <HalfGridModeBlockedModal
  *   isOpen={showModal}
  *   violation={violation}
  *   onClose={() => setShowModal(false)}
@@ -44,12 +44,12 @@ interface HalfBinModeBlockedModalProps {
  * />
  * ```
  */
-export function HalfBinModeBlockedModal({
+export function HalfGridModeBlockedModal({
   isOpen,
   violation,
   onClose,
   onRemediate,
-}: HalfBinModeBlockedModalProps) {
+}: HalfGridModeBlockedModalProps) {
   const t = useTranslation();
   const [isRemediating, setIsRemediating] = useState(false);
   const [error, setError] = useState<string | null>(null);

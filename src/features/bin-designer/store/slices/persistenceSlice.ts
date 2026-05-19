@@ -5,9 +5,9 @@
 import type { Draft } from 'immer';
 import type { DesignerState, SaveStatus, ExportFileNameConfig, SavedDesign } from '../../types';
 import { THUMBNAIL_VERSION } from '../../types';
-import { DEFAULT_BIN_PARAMS, migrateParams } from '../../constants';
+import { migrateParams } from '../../constants';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '../../utils/fileNaming';
-import { paramsNeedHalfBinMode, setPendingMeshCache } from '../helpers';
+import { defaultsForNewDesign, paramsNeedHalfGridMode, setPendingMeshCache } from '../helpers';
 import { isPartialMask, validateMask } from '@/shared/utils/cellMask';
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
@@ -60,7 +60,7 @@ export function createPersistenceSlice(set: Set) {
       set((state) => {
         state.history.past = [];
         state.history.future = [];
-        state.params = { ...DEFAULT_BIN_PARAMS };
+        state.params = { ...defaultsForNewDesign() };
         state.currentDesignId = null;
         state.designName = 'Untitled Bin';
         state.saveStatus = 'idle';
@@ -70,7 +70,7 @@ export function createPersistenceSlice(set: Set) {
         state.generation.epoch += 1;
         // Reset UI toggles that are derived from params so the new design
         // starts clean instead of inheriting the previous session's state.
-        state.ui.halfBinMode = false;
+        state.ui.halfGridMode = false;
         state.ui.shapeEditorOpen = false;
         setPendingMeshCache(null);
       });
@@ -103,13 +103,13 @@ export function createPersistenceSlice(set: Set) {
         state.pendingBinLink = null;
         state.needsThumbnailUpdate = needsNewThumbnail;
         state.generation.epoch += 1;
-        // halfBinMode and shapeEditorOpen live in UI state (not in
+        // halfGridMode and shapeEditorOpen live in UI state (not in
         // SavedDesign), so derive them from the loaded params. Without
         // this, a half-bin design opens in a 1u UI that can't represent
         // its own state, and a custom-masked design opens with its shape
         // editor collapsed. Normalize both ways so switching between
         // saved designs doesn't leak the previous session's toggles.
-        state.ui.halfBinMode = paramsNeedHalfBinMode(migrated);
+        state.ui.halfGridMode = paramsNeedHalfGridMode(migrated);
         state.ui.shapeEditorOpen = isPartialMask(migrated.cellMask);
         setPendingMeshCache(null);
       });

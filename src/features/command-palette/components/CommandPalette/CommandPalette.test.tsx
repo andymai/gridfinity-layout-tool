@@ -5,7 +5,7 @@ import {
   useLayoutStore,
   useSelectionStore,
   useViewStore,
-  useHalfBinModeStore,
+  useHalfGridModeStore,
   useInteractionStore,
 } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
@@ -60,9 +60,9 @@ describe('CommandPalette', () => {
       toggleShowOtherLayers: vi.fn(),
       setPrintModalOpen: vi.fn(),
     });
-    useHalfBinModeStore.setState({
-      halfBinMode: false,
-      toggleHalfBinMode: vi.fn(() => ({ success: true })),
+    useHalfGridModeStore.setState({
+      halfGridMode: false,
+      toggleHalfGridMode: vi.fn(() => ({ success: true })),
     });
     useViewStore.setState({
       setShowLayoutManager: vi.fn(),

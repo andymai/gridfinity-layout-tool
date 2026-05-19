@@ -3,7 +3,7 @@ import type { RefObject } from 'react';
 import type { Coord, GridUnits } from '@/core/types';
 import { useLayoutStore } from '@/core/store';
 import { useViewStore } from '@/core/store/view';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { getBaseCellSize, snapToHalf } from '@/core/constants';
 import { clamp } from '@/shared/utils/validation';
 import { useResponsive } from '@/shared/hooks';
@@ -45,7 +45,7 @@ import { useResponsive } from '@/shared/hooks';
  *   - `clampCoords(coord)` - Clamp coordinates to valid grid bounds
  *   - `isInBounds(coord)` - Check if coordinates are within grid bounds
  *   - `cellSize` - Current cell size in pixels (accounts for zoom)
- *   - `halfBinMode` - Whether half-bin mode is active
+ *   - `halfGridMode` - Whether half-bin mode is active
  *
  * @example
  * ```tsx
@@ -66,7 +66,7 @@ import { useResponsive } from '@/shared/hooks';
  */
 export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
   const zoom = useViewStore((state) => state.zoom);
-  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
+  const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
   const drawer = useLayoutStore((state) => state.layout.drawer);
   const { viewportWidth } = useResponsive();
 
@@ -138,7 +138,7 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
       // Convert to grid coordinates
       const integerDepth = Math.floor(drawer.depth);
 
-      if (halfBinMode) {
+      if (halfGridMode) {
         // In half-bin mode, detect which half of the cell for 0.5 snapping
         const isLeftHalf = inCellX < (cellX === -1 ? fractionalCellWidth / 2 : cellSize / 2);
         const isTopHalf = inCellY < (cellY === -1 ? fractionalCellHeight / 2 : cellSize / 2);
@@ -203,13 +203,13 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
       drawer.depth,
       drawer.fractionalEdgeX,
       drawer.fractionalEdgeY,
-      halfBinMode,
+      halfGridMode,
     ]
   );
 
   const clampCoords = useCallback(
     (coord: Coord): Coord => {
-      if (halfBinMode) {
+      if (halfGridMode) {
         // In half-bin mode, clamp to 0.5 increments within bounds
         // Max coordinate is drawer dimension - 0.5 (to allow 0.5-width bins at edge)
         return {
@@ -223,7 +223,7 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
         };
       }
     },
-    [drawer.width, drawer.depth, halfBinMode]
+    [drawer.width, drawer.depth, halfGridMode]
   );
 
   const isInBounds = useCallback(
@@ -267,6 +267,6 @@ export function useGridCoords(gridRef: RefObject<HTMLDivElement | null>) {
     clampCoords,
     isInBounds,
     cellSize,
-    halfBinMode,
+    halfGridMode,
   };
 }

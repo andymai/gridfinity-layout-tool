@@ -78,7 +78,7 @@ export function BaseSection() {
       />
 
       <FeatureToggle
-        label="Half sockets"
+        label={t('binDesigner.halfSockets')}
         checked={state.hasHalfSockets}
         onChange={handlers.toggleHalfSockets}
         disabledReason={handlers.halfSocketsDisabledReason}

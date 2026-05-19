@@ -42,7 +42,7 @@ import {
   useSelectionStore,
   useInteractionStore,
   useViewStore,
-  useHalfBinModeStore,
+  useHalfGridModeStore,
 } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useMutations } from '@/shared/contexts';
@@ -131,7 +131,7 @@ export function useKeyboard() {
     }))
   );
 
-  const toggleHalfBinMode = useHalfBinModeStore((state) => state.toggleHalfBinMode);
+  const toggleHalfGridMode = useHalfGridModeStore((state) => state.toggleHalfGridMode);
   const addToast = useToastStore((state) => state.addToast);
   const { navigateToDesigner } = useDesignerRouting();
   const { handleNavigationKey } = useGridNavigation();
@@ -182,7 +182,7 @@ export function useKeyboard() {
         deleteBin,
         duplicateBin,
         updateBin,
-        toggleHalfBinMode,
+        toggleHalfGridMode,
         handleNavigationKey,
         navigateToDesigner,
         addToast,
@@ -215,7 +215,7 @@ export function useKeyboard() {
       showQuickLabel,
       activeCategoryId,
       setActiveCategory,
-      toggleHalfBinMode,
+      toggleHalfGridMode,
       setShowLayoutManager,
       addToast,
       navigateToDesigner,

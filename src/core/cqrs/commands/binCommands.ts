@@ -42,7 +42,7 @@ export type FillLayerCommand = BaseCommand<
     readonly width: number;
     readonly depth: number;
     readonly categoryId: CategoryId;
-    readonly halfBinMode?: boolean;
+    readonly halfGridMode?: boolean;
   }
 >;
 
@@ -51,7 +51,7 @@ export type FillLayerGapsCommand = BaseCommand<
   {
     readonly layerId: LayerId;
     readonly categoryId: CategoryId;
-    readonly halfBinMode?: boolean;
+    readonly halfGridMode?: boolean;
   }
 >;
 

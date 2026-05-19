@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useLayoutStore, useInteractionStore, useHalfBinModeStore } from '@/core/store';
+import { useLayoutStore, useInteractionStore, useHalfGridModeStore } from '@/core/store';
 import { canPlaceBin } from '@/shared/utils/validation';
 import { snapToGrid } from '@/core/constants';
 import { snapDrawRect } from '@/shared/utils/snap';
@@ -116,8 +116,8 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
       const y2 = Math.max(start.y, current.y);
 
       // In half-bin mode, minimum size is 0.5; otherwise it's 1
-      const halfBinModeNow = useHalfBinModeStore.getState().halfBinMode;
-      const minSizeNow = halfBinModeNow ? 0.5 : 1;
+      const halfGridModeNow = useHalfGridModeStore.getState().halfGridMode;
+      const minSizeNow = halfGridModeNow ? 0.5 : 1;
       let width = x2 - x1 + minSizeNow;
       let depth = y2 - y1 + minSizeNow;
 
@@ -165,8 +165,8 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
       // Paint mode - fill the selected area with bins of paintSize
       const { start, current, paintSize: ps } = interaction;
 
-      const halfBinModeNow = useHalfBinModeStore.getState().halfBinMode;
-      const minSizeNow = halfBinModeNow ? 0.5 : 1;
+      const halfGridModeNow = useHalfGridModeStore.getState().halfGridMode;
+      const minSizeNow = halfGridModeNow ? 0.5 : 1;
       const layer = layout.layers.find((l) => l.id === activeLayerId);
 
       // Single-click placement: when user clicks without dragging, place one bin
@@ -175,8 +175,8 @@ export function useDrawInteraction(context: InteractionContext): ModeHandlers<Dr
       if (isSingleClick && layer) {
         const { drawer } = layout;
         // Center the bin on the clicked cell, then snap to grid
-        const centeredX = snapToGrid(start.x - (ps.width - minSizeNow) / 2, halfBinModeNow);
-        const centeredY = snapToGrid(start.y - (ps.depth - minSizeNow) / 2, halfBinModeNow);
+        const centeredX = snapToGrid(start.x - (ps.width - minSizeNow) / 2, halfGridModeNow);
+        const centeredY = snapToGrid(start.y - (ps.depth - minSizeNow) / 2, halfGridModeNow);
         // Clamp to drawer bounds so the bin always fits
         const clampedX = Math.max(0, Math.min(centeredX, drawer.width - ps.width));
         const clampedY = Math.max(0, Math.min(centeredY, drawer.depth - ps.depth));

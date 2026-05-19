@@ -552,7 +552,7 @@ export interface DesignerUIState {
   readonly designListOpen: boolean;
   readonly wireframeMode: boolean;
   /** Whether half-bin mode is enabled (0.5 grid unit increments for width/depth) */
-  readonly halfBinMode: boolean;
+  readonly halfGridMode: boolean;
   /** Whether the full-workspace cutout editor is open (desktop only) */
   readonly cutoutEditorOpen: boolean;
   /** Preview compartments during drag-to-merge/split (shown as ghost in 3D view) */
@@ -796,5 +796,5 @@ export interface DesignerState {
       maxRow: number;
     } | null
   ) => void;
-  toggleHalfBinMode: () => void;
+  toggleHalfGridMode: () => void;
 }

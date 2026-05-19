@@ -18,7 +18,7 @@ const payloadSchema = z.object({
   width: z.number().gt(0).max(CONSTRAINTS.GRID_MAX),
   depth: z.number().gt(0).max(CONSTRAINTS.GRID_MAX),
   categoryId: z.string().min(1),
-  halfBinMode: z.boolean().optional(),
+  halfGridMode: z.boolean().optional(),
 });
 
 export const fillLayer = defineCommand({
@@ -40,7 +40,7 @@ export const fillLayer = defineCommand({
       payload.width,
       payload.depth,
       categoryId,
-      payload.halfBinMode ?? false
+      payload.halfGridMode ?? false
     );
 
     return ok({

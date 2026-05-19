@@ -39,7 +39,7 @@ describe('useCreateFromBin', () => {
         wireframeMode: false,
         previewCompartments: null,
         previewSelection: null,
-        halfBinMode: false,
+        halfGridMode: false,
       },
     });
 
@@ -152,7 +152,7 @@ describe('useCreateFromBin', () => {
     await waitFor(() => {
       const state = useDesignerStore.getState();
       expect(state.params.width).toBe(1.5);
-      expect(state.ui.halfBinMode).toBe(true);
+      expect(state.ui.halfGridMode).toBe(true);
     });
   });
 
@@ -171,7 +171,7 @@ describe('useCreateFromBin', () => {
     await waitFor(() => {
       const state = useDesignerStore.getState();
       expect(state.params.width).toBe(2);
-      expect(state.ui.halfBinMode).toBe(false);
+      expect(state.ui.halfGridMode).toBe(false);
     });
   });
 

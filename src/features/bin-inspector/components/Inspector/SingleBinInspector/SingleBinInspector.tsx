@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
 import { RulerIcon } from '@/design-system/Icon';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { getBinLocationContext } from '@/shared/utils/binLocation';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
@@ -47,7 +47,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
     existingPropertyKeys,
   } = inspector;
 
-  const halfBinMode = useHalfBinModeStore((state) => state.halfBinMode);
+  const halfGridMode = useHalfGridModeStore((state) => state.halfGridMode);
   const t = useTranslation();
 
   if (!bin) return null;
@@ -58,8 +58,8 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
   // Format dimensions - show decimal if fractional (half-bin mode)
   const formatDim = (val: number) => (val % 1 === 0 ? val.toString() : val.toFixed(1));
-  const minSize = halfBinMode ? 0.5 : 1;
-  const stepSize = halfBinMode ? 0.5 : 1;
+  const minSize = halfGridMode ? 0.5 : 1;
+  const stepSize = halfGridMode ? 0.5 : 1;
 
   // Sizing for mobile vs desktop
   const inputHeight = isMobile ? 'h-12' : '';

@@ -49,7 +49,7 @@ vi.mock('@/shared/hooks/useDrawerSettings', () => ({
     heightUnitMm: 7,
     printBedSize: 256,
     printBedDepth: 256,
-    halfBinMode: false,
+    halfGridMode: false,
     settings: {
       stlSearchSites: [],
       defaultDrawerWidth: 6,

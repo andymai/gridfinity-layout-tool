@@ -10,10 +10,10 @@ export function createBulkActions(setLocal: SetLocal, get: GetState) {
       width: number,
       depth: number,
       categoryId: CategoryId,
-      halfBinMode = false
+      halfGridMode = false
     ): number => {
       const { layout } = get();
-      const result = fillAllWithSize(layout, layerId, width, depth, categoryId, halfBinMode);
+      const result = fillAllWithSize(layout, layerId, width, depth, categoryId, halfGridMode);
 
       if (result.bins.length > 0) {
         setLocal((state) => {
@@ -24,7 +24,7 @@ export function createBulkActions(setLocal: SetLocal, get: GetState) {
       return result.bins.length;
     },
 
-    fillLayerGaps: (layerId: LayerId, categoryId: CategoryId, halfBinMode = false): number => {
+    fillLayerGaps: (layerId: LayerId, categoryId: CategoryId, halfGridMode = false): number => {
       const { layout } = get();
       const maxGrid = calcMaxGridUnits(
         layout.printBedSize,
@@ -36,7 +36,7 @@ export function createBulkActions(setLocal: SetLocal, get: GetState) {
         layerId,
         categoryId,
         Math.min(maxGrid.width, maxGrid.depth),
-        halfBinMode
+        halfGridMode
       );
 
       if (result.bins.length > 0) {

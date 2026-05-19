@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { RulerIcon } from '@/design-system/Icon';
 import { Stepper } from '@/design-system/Stepper';
@@ -70,7 +70,7 @@ export function BaseplatePanel() {
     []
   );
 
-  const halfBinMode = useHalfBinModeStore((s) => s.halfBinMode);
+  const halfGridMode = useHalfGridModeStore((s) => s.halfGridMode);
   const [printSettingsExpanded, setPrintSettingsExpanded] = useState(true);
 
   useEffect(() => {
@@ -123,7 +123,7 @@ export function BaseplatePanel() {
    */
   const handleDimensionCommit = useCallback(
     (targetWidthMm: number, targetDepthMm: number) => {
-      const step = halfBinMode ? 0.5 : 1;
+      const step = halfGridMode ? 0.5 : 1;
 
       const rawWidthUnits = targetWidthMm / gridUnitMm;
       const rawDepthUnits = targetDepthMm / gridUnitMm;
@@ -156,7 +156,7 @@ export function BaseplatePanel() {
         paddingBack: mm(halfPadDepth),
       });
     },
-    [gridUnitMm, halfBinMode]
+    [gridUnitMm, halfGridMode]
   );
 
   return (
@@ -175,14 +175,14 @@ export function BaseplatePanel() {
                 label={t('baseplate.gridWidth')}
                 value={effectiveWidth}
                 onChange={(v) => updateParam('baseplateWidth', gridUnits(v))}
-                halfBinMode={halfBinMode}
+                halfGridMode={halfGridMode}
                 disabled={synced}
               />
               <GridDimensionStepper
                 label={t('baseplate.gridDepth')}
                 value={effectiveDepth}
                 onChange={(v) => updateParam('baseplateDepth', gridUnits(v))}
-                halfBinMode={halfBinMode}
+                halfGridMode={halfGridMode}
                 disabled={synced}
               />
             </div>
@@ -475,7 +475,7 @@ interface GridDimensionStepperProps {
   readonly label: string;
   readonly value: number;
   readonly onChange: (value: number) => void;
-  readonly halfBinMode: boolean;
+  readonly halfGridMode: boolean;
   readonly disabled: boolean;
 }
 
@@ -484,10 +484,10 @@ function GridDimensionStepper({
   label,
   value,
   onChange,
-  halfBinMode,
+  halfGridMode,
   disabled,
 }: GridDimensionStepperProps) {
-  const step = halfBinMode ? 0.5 : 1;
+  const step = halfGridMode ? 0.5 : 1;
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-content-tertiary">{label}</span>

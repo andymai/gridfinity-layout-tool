@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useGridCoords } from '@/features/grid-editor/hooks/useGridCoords';
 import { useViewStore } from '@/core/store/view';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { useLayoutStore } from '@/core/store/layout';
 import { resetAllStores } from '@/test/testUtils';
 import type { RefObject } from 'react';
@@ -52,7 +52,7 @@ describe('useGridCoords', () => {
 
     // Default UI state
     useViewStore.setState({ zoom: 1 });
-    useHalfBinModeStore.setState({ halfBinMode: false });
+    useHalfGridModeStore.setState({ halfGridMode: false });
   });
 
   afterEach(() => {
@@ -114,7 +114,7 @@ describe('useGridCoords', () => {
   describe('half-bin mode', () => {
     it('snaps to half-unit increments when enabled', () => {
       const gridRef = createMockGridRef(0, 0);
-      useHalfBinModeStore.setState({ halfBinMode: true });
+      useHalfGridModeStore.setState({ halfGridMode: true });
 
       const { result } = renderHook(() => useGridCoords(gridRef));
 
@@ -125,16 +125,16 @@ describe('useGridCoords', () => {
       expect(coord?.x).toBe(0.5);
     });
 
-    it('returns halfBinMode status', () => {
+    it('returns halfGridMode status', () => {
       const gridRef = createMockGridRef(0, 0);
 
-      useHalfBinModeStore.setState({ halfBinMode: false });
+      useHalfGridModeStore.setState({ halfGridMode: false });
       const { result: result1 } = renderHook(() => useGridCoords(gridRef));
-      expect(result1.current.halfBinMode).toBe(false);
+      expect(result1.current.halfGridMode).toBe(false);
 
-      useHalfBinModeStore.setState({ halfBinMode: true });
+      useHalfGridModeStore.setState({ halfGridMode: true });
       const { result: result2 } = renderHook(() => useGridCoords(gridRef));
-      expect(result2.current.halfBinMode).toBe(true);
+      expect(result2.current.halfGridMode).toBe(true);
     });
   });
 
@@ -157,9 +157,9 @@ describe('useGridCoords', () => {
       expect(result.current.clampCoords({ x: 5, y: 3 })).toEqual({ x: 5, y: 3 });
     });
 
-    it('clamps to half-unit bounds when halfBinMode is enabled', () => {
+    it('clamps to half-unit bounds when halfGridMode is enabled', () => {
       const gridRef = createMockGridRef(0, 0);
-      useHalfBinModeStore.setState({ halfBinMode: true });
+      useHalfGridModeStore.setState({ halfGridMode: true });
 
       const { result } = renderHook(() => useGridCoords(gridRef));
 
@@ -169,9 +169,9 @@ describe('useGridCoords', () => {
       expect(clamped.y).toBe(7.5);
     });
 
-    it('snaps to half-unit increments in halfBinMode', () => {
+    it('snaps to half-unit increments in halfGridMode', () => {
       const gridRef = createMockGridRef(0, 0);
-      useHalfBinModeStore.setState({ halfBinMode: true });
+      useHalfGridModeStore.setState({ halfGridMode: true });
 
       const { result } = renderHook(() => useGridCoords(gridRef));
 
@@ -269,7 +269,7 @@ describe('useGridCoords', () => {
       layout.drawer = { width: 10.5, depth: 8, height: 12, fractionalEdgeX: 'start' };
       useLayoutStore.setState({ layout });
 
-      useHalfBinModeStore.setState({ halfBinMode: false });
+      useHalfGridModeStore.setState({ halfGridMode: false });
 
       const { result } = renderHook(() => useGridCoords(gridRef));
 
@@ -289,7 +289,7 @@ describe('useGridCoords', () => {
       layout.drawer = { width: 10, depth: 8.5, height: 12, fractionalEdgeY: 'end' };
       useLayoutStore.setState({ layout });
 
-      useHalfBinModeStore.setState({ halfBinMode: false });
+      useHalfGridModeStore.setState({ halfGridMode: false });
 
       const { result } = renderHook(() => useGridCoords(gridRef));
 
@@ -310,7 +310,7 @@ describe('useGridCoords', () => {
       layout.drawer = { width: 10, depth: 8.5, height: 12, fractionalEdgeY: 'end' };
       useLayoutStore.setState({ layout });
 
-      useHalfBinModeStore.setState({ halfBinMode: true });
+      useHalfGridModeStore.setState({ halfGridMode: true });
 
       const { result } = renderHook(() => useGridCoords(gridRef));
 

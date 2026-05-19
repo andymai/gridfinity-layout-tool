@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { useInteractionStore, useToastStore } from '@/core/store';
-import { useHalfBinModeStore } from '@/core/store';
+import { useHalfGridModeStore } from '@/core/store';
 import { canPlaceBin, clamp, getPlacementErrorMessage } from '@/shared/utils/validation';
 import { snapPosition } from '@/shared/utils/snap';
 import { capturePointer } from './interaction';
@@ -123,8 +123,8 @@ export function useStagingDragInteraction(
       if (!result.valid) {
         if (!ctrlKeyRef.current) {
           // Smart snap: search nearby for a valid position
-          const halfBinMode = useHalfBinModeStore.getState().halfBinMode;
-          const step = halfBinMode ? 0.5 : 1;
+          const halfGridMode = useHalfGridModeStore.getState().halfGridMode;
+          const step = halfGridMode ? 0.5 : 1;
           const prevCoord = prevCoordRef.current;
           const moveDirX = prevCoord ? Math.sign(targetX - prevCoord.x) : 0;
           const moveDirY = prevCoord ? Math.sign(targetY - prevCoord.y) : 0;

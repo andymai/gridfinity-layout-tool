@@ -6,7 +6,7 @@ import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { useViewStore } from '@/core/store/view';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { createDefaultLayout, STAGING_ID } from '@/core/constants';
 import { resetAllStores, getBinId } from '@/test/testUtils';
 
@@ -1196,7 +1196,7 @@ describe('useKeyboard', () => {
 
   describe('half-bin mode toggle', () => {
     it('toggles half-bin mode on H key', () => {
-      const initialMode = useHalfBinModeStore.getState().halfBinMode;
+      const initialMode = useHalfGridModeStore.getState().halfGridMode;
 
       renderHook(() => useKeyboard());
 
@@ -1204,7 +1204,7 @@ describe('useKeyboard', () => {
         pressKey('h');
       });
 
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(!initialMode);
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(!initialMode);
     });
   });
 
@@ -1267,7 +1267,7 @@ describe('useKeyboard', () => {
 
   describe('half-bin mode toggle', () => {
     it('toggles half-bin mode on H key', () => {
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(false);
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(false);
 
       renderHook(() => useKeyboard());
 
@@ -1275,12 +1275,12 @@ describe('useKeyboard', () => {
         pressKey('h');
       });
 
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(true);
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
     });
 
     it('shows error toast when toggle fails due to fractional bins', () => {
       // First enable half-bin mode
-      useHalfBinModeStore.setState({ halfBinMode: true });
+      useHalfGridModeStore.setState({ halfGridMode: true });
 
       // Add a bin with fractional dimensions
       const { addBin, layout } = useLayoutStore.getState();
@@ -1307,7 +1307,7 @@ describe('useKeyboard', () => {
       });
 
       // Half-bin mode should still be enabled
-      expect(useHalfBinModeStore.getState().halfBinMode).toBe(true);
+      expect(useHalfGridModeStore.getState().halfGridMode).toBe(true);
     });
   });
 

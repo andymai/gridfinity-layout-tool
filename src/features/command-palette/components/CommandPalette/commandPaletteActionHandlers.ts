@@ -17,7 +17,7 @@ import {
   useLayoutStore,
   useSelectionStore,
   useViewStore,
-  useHalfBinModeStore,
+  useHalfGridModeStore,
   useInteractionStore,
   useToastStore,
   useSharePopoverStore,
@@ -98,10 +98,10 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       togglePreviewExpanded: s.togglePreviewExpanded,
     }))
   );
-  const { toggleHalfBinMode, halfBinMode } = useHalfBinModeStore(
+  const { toggleHalfGridMode, halfGridMode } = useHalfGridModeStore(
     useShallow((s) => ({
-      toggleHalfBinMode: s.toggleHalfBinMode,
-      halfBinMode: s.halfBinMode,
+      toggleHalfGridMode: s.toggleHalfGridMode,
+      halfGridMode: s.halfGridMode,
     }))
   );
   const setInteraction = useInteractionStore((s) => s.setInteraction);
@@ -394,12 +394,12 @@ export function useActionHandlers(): Record<string, ActionHandler> {
 
     const tools: Record<string, ActionHandler> = {
       'toggle-half-bin': () => {
-        const result = toggleHalfBinMode();
+        const result = toggleHalfGridMode();
         if (!isOk(result)) {
           addToast(t('halfBinBlocked.title'), 'error');
         }
       },
-      'fill-gaps': () => fillLayerGaps(activeLayerId, activeCategoryId, halfBinMode),
+      'fill-gaps': () => fillLayerGaps(activeLayerId, activeCategoryId, halfGridMode),
       'toggle-paint-mode': () => {
         if (paintSize) {
           setPaintSize(null);
@@ -409,7 +409,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
         }
       },
       'fill-layer': () => {
-        const count = fillLayer(activeLayerId, 1, 1, activeCategoryId, halfBinMode);
+        const count = fillLayer(activeLayerId, 1, 1, activeCategoryId, halfGridMode);
         if (count > 0) {
           addToast(t('toast.layerFilled'), 'success');
         }
@@ -445,7 +445,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     activeCategoryId,
     activeLayoutId,
     showIsometricPreview,
-    halfBinMode,
+    halfGridMode,
     paintSize,
     deleteBin,
     duplicateBin,
@@ -467,7 +467,7 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     togglePreviewExpanded,
     toggleShowOtherLayers,
     showQuickLabel,
-    toggleHalfBinMode,
+    toggleHalfGridMode,
     zoomIn,
     zoomOut,
     alignBins,

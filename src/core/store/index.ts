@@ -17,8 +17,8 @@ export type { InteractionStore, DropTarget, PaintSize } from './interaction';
 export { useMobileStore, INITIAL_MOBILE_STATE } from './mobile';
 export type { MobileStore, MobilePanel, MobileLayersTab } from './mobile';
 
-export { useHalfBinModeStore, INITIAL_HALF_BIN_MODE_STATE } from './halfBinMode';
-export type { HalfBinModeStore } from './halfBinMode';
+export { useHalfGridModeStore, INITIAL_HALF_GRID_MODE_STATE } from './halfGridMode';
+export type { HalfGridModeStore } from './halfGridMode';
 
 export { useSharedPreviewStore, INITIAL_SHARED_PREVIEW_STATE } from './sharedPreview';
 export type { SharedPreviewStore } from './sharedPreview';

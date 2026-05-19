@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { HalfBinModeBlockedModal } from '@/shell/Modals/HalfBinModeBlockedModal';
-import type { HalfBinConstraintViolation } from '@/shared/utils/halfBinConstraints';
+import { HalfGridModeBlockedModal } from '@/shell/Modals/HalfGridModeBlockedModal';
+import type { HalfGridConstraintViolation } from '@/shared/utils/halfGridConstraints';
 
 function createViolation(
   count: number = 3,
   binIds: string[] = ['bin-1', 'bin-2', 'bin-3']
-): HalfBinConstraintViolation {
+): HalfGridConstraintViolation {
   return {
     type: 'fractional_bins',
     count,
@@ -15,7 +15,7 @@ function createViolation(
   };
 }
 
-describe('HalfBinModeBlockedModal', () => {
+describe('HalfGridModeBlockedModal', () => {
   const mockOnClose = vi.fn();
   const mockOnRemediate = vi.fn();
 
@@ -37,7 +37,7 @@ describe('HalfBinModeBlockedModal', () => {
 
   describe('rendering when closed', () => {
     it('returns null when not open', () => {
-      const { container } = render(<HalfBinModeBlockedModal {...defaultProps} isOpen={false} />);
+      const { container } = render(<HalfGridModeBlockedModal {...defaultProps} isOpen={false} />);
 
       expect(container.firstChild).toBeNull();
     });
@@ -45,25 +45,25 @@ describe('HalfBinModeBlockedModal', () => {
 
   describe('rendering when open', () => {
     it('renders dialog with correct role', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
 
     it('has aria-modal attribute', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       expect(screen.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');
     });
 
     it('renders title', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      expect(screen.getByText('Cannot Disable Half-Bin Mode')).toBeInTheDocument();
+      expect(screen.getByText('Cannot Disable Half-Grid Mode')).toBeInTheDocument();
     });
 
     it('shows bin count (plural)', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       // The message is now in i18n: "Some bins use fractional dimensions..."
       expect(screen.getByText(/Some bins use fractional dimensions/)).toBeInTheDocument();
@@ -71,7 +71,7 @@ describe('HalfBinModeBlockedModal', () => {
 
     it('shows bin count (singular)', () => {
       render(
-        <HalfBinModeBlockedModal {...defaultProps} violation={createViolation(1, ['bin-1'])} />
+        <HalfGridModeBlockedModal {...defaultProps} violation={createViolation(1, ['bin-1'])} />
       );
 
       // The message is now in i18n
@@ -79,20 +79,20 @@ describe('HalfBinModeBlockedModal', () => {
     });
 
     it('renders explanatory message', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       // The full message from i18n
       expect(screen.getByText(/Some bins use fractional dimensions/)).toBeInTheDocument();
     });
 
     it('renders Cancel button', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       expect(screen.getByText('Cancel')).toBeInTheDocument();
     });
 
     it('renders Move to Staging button', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       expect(screen.getByText('Got it')).toBeInTheDocument();
     });
@@ -100,17 +100,17 @@ describe('HalfBinModeBlockedModal', () => {
 
   describe('accessibility', () => {
     it('has aria-labelledby pointing to title', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       const dialog = screen.getByRole('dialog');
       expect(dialog).toHaveAttribute('aria-labelledby', 'half-bin-blocked-title');
 
-      const title = screen.getByText('Cannot Disable Half-Bin Mode');
+      const title = screen.getByText('Cannot Disable Half-Grid Mode');
       expect(title).toHaveAttribute('id', 'half-bin-blocked-title');
     });
 
     it('has aria-describedby pointing to message', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       const dialog = screen.getByRole('dialog');
       expect(dialog).toHaveAttribute('aria-describedby', 'half-bin-blocked-message');
@@ -120,33 +120,33 @@ describe('HalfBinModeBlockedModal', () => {
     });
 
     it('cancel button has accessible label', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
-      expect(screen.getByLabelText('Cancel and keep half-bin mode enabled')).toBeInTheDocument();
+      expect(screen.getByLabelText('Cancel and keep half-grid mode enabled')).toBeInTheDocument();
     });
 
     it('remediate button has accessible label with bin count', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       expect(
-        screen.getByLabelText('Move 3 fractional bins to stash and disable half-bin mode')
+        screen.getByLabelText('Move 3 fractional bins to stash and disable half-grid mode')
       ).toBeInTheDocument();
     });
 
     it('remediate button label uses singular when 1 bin', () => {
       render(
-        <HalfBinModeBlockedModal {...defaultProps} violation={createViolation(1, ['bin-1'])} />
+        <HalfGridModeBlockedModal {...defaultProps} violation={createViolation(1, ['bin-1'])} />
       );
 
       expect(
-        screen.getByLabelText('Move 1 fractional bins to stash and disable half-bin mode')
+        screen.getByLabelText('Move 1 fractional bins to stash and disable half-grid mode')
       ).toBeInTheDocument();
     });
   });
 
   describe('cancel action', () => {
     it('calls onClose when Cancel clicked', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       fireEvent.click(screen.getByText('Cancel'));
 
@@ -154,7 +154,7 @@ describe('HalfBinModeBlockedModal', () => {
     });
 
     it('calls onClose when backdrop clicked', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       // Click on backdrop (outermost role="presentation")
       const backdrop = screen.getAllByRole('presentation')[0];
@@ -164,7 +164,7 @@ describe('HalfBinModeBlockedModal', () => {
     });
 
     it('does not close when clicking inside dialog', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       fireEvent.click(screen.getByRole('dialog'));
 
@@ -174,7 +174,7 @@ describe('HalfBinModeBlockedModal', () => {
 
   describe('remediate action', () => {
     it('calls onRemediate when Move to Staging clicked', async () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       fireEvent.click(screen.getByText('Got it'));
 
@@ -187,7 +187,7 @@ describe('HalfBinModeBlockedModal', () => {
       // Make remediation hang
       mockOnRemediate.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 1000)));
 
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       fireEvent.click(screen.getByText('Got it'));
 
@@ -199,7 +199,7 @@ describe('HalfBinModeBlockedModal', () => {
     it('disables buttons while remediating', async () => {
       mockOnRemediate.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 1000)));
 
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       fireEvent.click(screen.getByText('Got it'));
 
@@ -212,7 +212,7 @@ describe('HalfBinModeBlockedModal', () => {
     it('does not call onClose when clicking backdrop while remediating', async () => {
       mockOnRemediate.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 1000)));
 
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       fireEvent.click(screen.getByText('Got it'));
 
@@ -230,7 +230,7 @@ describe('HalfBinModeBlockedModal', () => {
     it('shows error message when remediation fails', async () => {
       mockOnRemediate.mockRejectedValue(new Error('Failed to move bins'));
 
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       fireEvent.click(screen.getByText('Got it'));
 
@@ -243,7 +243,7 @@ describe('HalfBinModeBlockedModal', () => {
     it('shows generic error for non-Error objects', async () => {
       mockOnRemediate.mockRejectedValue('Something went wrong');
 
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       fireEvent.click(screen.getByText('Got it'));
 
@@ -255,7 +255,7 @@ describe('HalfBinModeBlockedModal', () => {
     it('re-enables buttons after error', async () => {
       mockOnRemediate.mockRejectedValue(new Error('Failed'));
 
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       fireEvent.click(screen.getByText('Got it'));
 
@@ -270,7 +270,7 @@ describe('HalfBinModeBlockedModal', () => {
 
   describe('keyboard handling', () => {
     it('closes on Escape key', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       fireEvent.keyDown(document, { key: 'Escape' });
 
@@ -280,7 +280,7 @@ describe('HalfBinModeBlockedModal', () => {
     it('does not close on Escape while remediating', async () => {
       mockOnRemediate.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 1000)));
 
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       fireEvent.click(screen.getByText('Got it'));
 
@@ -296,13 +296,13 @@ describe('HalfBinModeBlockedModal', () => {
 
   describe('focus management', () => {
     it('prevents body scroll when open', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       expect(document.body.style.overflow).toBe('hidden');
     });
 
     it('restores body scroll when closed', () => {
-      const { unmount } = render(<HalfBinModeBlockedModal {...defaultProps} />);
+      const { unmount } = render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       unmount();
 
@@ -312,7 +312,7 @@ describe('HalfBinModeBlockedModal', () => {
 
   describe('focus trapping', () => {
     it('traps Tab at last element', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       const dialog = screen.getByRole('dialog');
       const buttons = dialog.querySelectorAll('button');
@@ -328,7 +328,7 @@ describe('HalfBinModeBlockedModal', () => {
     });
 
     it('traps Shift+Tab at first element', () => {
-      render(<HalfBinModeBlockedModal {...defaultProps} />);
+      render(<HalfGridModeBlockedModal {...defaultProps} />);
 
       const dialog = screen.getByRole('dialog');
       const buttons = dialog.querySelectorAll('button');

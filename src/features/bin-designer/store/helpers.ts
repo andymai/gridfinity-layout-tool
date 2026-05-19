@@ -9,10 +9,32 @@
 
 import { current, type Draft } from 'immer';
 import type { BinParams, DesignerState, HistoryEntry, CachedMesh, Cutout } from '../types';
-import { DESIGNER_CONSTRAINTS } from '../constants';
+import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '../constants';
 import { evictIfNeeded } from './meshCacheManager';
 import { isFractional } from '@/core/constants';
 import { hasHalfBinDetail, isPartialMask } from '@/shared/utils/cellMask';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
+
+/**
+ * Seed `DEFAULT_BIN_PARAMS` with `base.halfSockets = true` when the
+ * layout-level half-grid mode is active. Skip for flat-floor bins — the
+ * `halfSockets ⇔ flat-floor` mutual-exclusion constraint takes precedence,
+ * and a user who switches to flat floor made an explicit choice that
+ * shouldn't be overridden by a mode toggle elsewhere (issue #1752).
+ *
+ * Called from `newDesign` and `resetToDefaults` so both fresh-start paths
+ * pick up the coupling without re-implementing it.
+ */
+export function defaultsForNewDesign(): typeof DEFAULT_BIN_PARAMS {
+  const halfGridOn = useHalfGridModeStore.getState().halfGridMode;
+  if (!halfGridOn || DEFAULT_BIN_PARAMS.base.style === 'flat') {
+    return DEFAULT_BIN_PARAMS;
+  }
+  return {
+    ...DEFAULT_BIN_PARAMS,
+    base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
+  };
+}
 
 /**
  * Module-level pending mesh cache: stores the mesh generated for the current
@@ -21,12 +43,12 @@ import { hasHalfBinDetail, isPartialMask } from '@/shared/utils/cellMask';
 let pendingMeshCache: CachedMesh | null = null;
 
 /**
- * Shared with `persistenceSlice.loadDesign`: `halfBinMode` must be on
+ * Shared with `persistenceSlice.loadDesign`: `halfGridMode` must be on
  * whenever the params require 0.5u granularity (fractional dimensions or
  * a cellMask with mixed-detail 1u blocks). Kept here so both load paths
  * and history restore pick up the same rule.
  */
-export function paramsNeedHalfBinMode(params: BinParams): boolean {
+export function paramsNeedHalfGridMode(params: BinParams): boolean {
   if (isFractional(params.width) || isFractional(params.depth)) return true;
   if (isPartialMask(params.cellMask) && hasHalfBinDetail(params.cellMask)) return true;
   return false;
@@ -106,9 +128,9 @@ export function restoreHistoryEntry(state: Draft<DesignerState>, entry: HistoryE
   // Keep UI toggles consistent with the restored params. Without this,
   // undoing across a custom-shape paint leaves `shapeEditorOpen` stuck on
   // after the mask is gone, and undoing across a dimension change can
-  // leave `halfBinMode` out of sync with the new dimensions. Mirrors the
+  // leave `halfGridMode` out of sync with the new dimensions. Mirrors the
   // normalisation in `loadDesign`.
-  state.ui.halfBinMode = paramsNeedHalfBinMode(entry.params);
+  state.ui.halfGridMode = paramsNeedHalfGridMode(entry.params);
   state.ui.shapeEditorOpen = isPartialMask(entry.params.cellMask);
 
   if (entry.mesh) {

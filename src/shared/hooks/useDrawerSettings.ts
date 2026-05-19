@@ -6,7 +6,7 @@ import {
   useSettingsStore,
   useToastStore,
   useSelectionStore,
-  useHalfBinModeStore,
+  useHalfGridModeStore,
 } from '@/core/store';
 import { useMutations } from '@/shared/contexts';
 import {
@@ -16,8 +16,8 @@ import {
   snapToHalf,
   isFractional,
 } from '@/core/constants';
-import { validateHalfBinModeToggle } from '@/shared/utils/halfBinConstraints';
-import type { HalfBinConstraintViolation } from '@/shared/utils/halfBinConstraints';
+import { validateHalfGridModeToggle } from '@/shared/utils/halfGridConstraints';
+import type { HalfGridConstraintViolation } from '@/shared/utils/halfGridConstraints';
 import type { STLSearchSite, UserSettings } from '@/core/store/settings';
 import type { Category, GridUnits, HeightUnits } from '@/core/types';
 import { binId as toBinId, gridUnits } from '@/core/types';
@@ -59,7 +59,7 @@ export interface UseDrawerSettingsReturn {
   printBedDepth: number;
 
   // Half-bin mode
-  halfBinMode: boolean;
+  halfGridMode: boolean;
 
   // Settings (for display)
   settings: UserSettings;
@@ -96,7 +96,7 @@ export interface UseDrawerSettingsReturn {
   setShowSaveDefaultsConfirm: (show: boolean) => void;
   showHalfBinBlockedModal: boolean;
   setShowHalfBinBlockedModal: (show: boolean) => void;
-  halfBinViolation: HalfBinConstraintViolation | null;
+  halfBinViolation: HalfGridConstraintViolation | null;
 
   // Category defaults
   currentCategories: Category[];
@@ -123,7 +123,7 @@ export interface UseDrawerSettingsReturn {
  *   const {
  *     drawer,
  *     handleDrawerWidthChange,
- *     halfBinMode,
+ *     halfGridMode,
  *     handleHalfBinToggle,
  *     ...
  *   } = useDrawerSettings();
@@ -143,7 +143,9 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
   const [showSaveDefaultsConfirm, setShowSaveDefaultsConfirm] = useState(false);
   const [showHalfBinBlockedModal, setShowHalfBinBlockedModal] = useState(false);
-  const [halfBinViolation, setHalfBinViolation] = useState<HalfBinConstraintViolation | null>(null);
+  const [halfBinViolation, setHalfBinViolation] = useState<HalfGridConstraintViolation | null>(
+    null
+  );
   const [showSaveCategoriesConfirm, setShowSaveCategoriesConfirm] = useState(false);
 
   // Layout store selectors
@@ -174,11 +176,11 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   );
 
   // Half-bin mode store selectors
-  const { halfBinMode, toggleHalfBinMode, setHalfBinMode } = useHalfBinModeStore(
+  const { halfGridMode, toggleHalfGridMode, setHalfGridMode } = useHalfGridModeStore(
     useShallow((state) => ({
-      halfBinMode: state.halfBinMode,
-      toggleHalfBinMode: state.toggleHalfBinMode,
-      setHalfBinMode: state.setHalfBinMode,
+      halfGridMode: state.halfGridMode,
+      toggleHalfGridMode: state.toggleHalfGridMode,
+      setHalfGridMode: state.setHalfGridMode,
     }))
   );
 
@@ -222,8 +224,8 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
   // Computed values
   const hasFractionalWidth = drawerWidth % 1 !== 0;
   const hasFractionalDepth = drawerDepth % 1 !== 0;
-  const widthStep = halfBinMode || hasFractionalWidth ? 0.5 : 1;
-  const depthStep = halfBinMode || hasFractionalDepth ? 0.5 : 1;
+  const widthStep = halfGridMode || hasFractionalWidth ? 0.5 : 1;
+  const depthStep = halfGridMode || hasFractionalDepth ? 0.5 : 1;
   const maxGridUnits = calcMaxGridUnits(printBedSize, gridUnitMm, printBedDepth);
 
   const realWorldDimensions = useMemo(
@@ -270,24 +272,24 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     (width: number) => {
       const snapped = gridUnits(snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, width))));
       batch(() => updateDrawer({ width: snapped }));
-      if (isFractional(snapped) && !halfBinMode) {
-        setHalfBinMode(true);
+      if (isFractional(snapped) && !halfGridMode) {
+        setHalfGridMode(true);
         addToast(t('toast.halfBinModeAutoEnabled'), 'info');
       }
     },
-    [updateDrawer, halfBinMode, setHalfBinMode, addToast, t]
+    [updateDrawer, halfGridMode, setHalfGridMode, addToast, t]
   );
 
   const handleDrawerDepthInput = useCallback(
     (depth: number) => {
       const snapped = gridUnits(snapToHalf(Math.max(0.5, Math.min(CONSTRAINTS.GRID_MAX, depth))));
       batch(() => updateDrawer({ depth: snapped }));
-      if (isFractional(snapped) && !halfBinMode) {
-        setHalfBinMode(true);
+      if (isFractional(snapped) && !halfGridMode) {
+        setHalfGridMode(true);
         addToast(t('toast.halfBinModeAutoEnabled'), 'info');
       }
     },
-    [updateDrawer, halfBinMode, setHalfBinMode, addToast, t]
+    [updateDrawer, halfGridMode, setHalfGridMode, addToast, t]
   );
 
   // Fractional edge position handler
@@ -304,17 +306,17 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
   // Half-bin mode toggle with validation
   const handleHalfBinToggle = useCallback(() => {
-    const result = toggleHalfBinMode();
+    const result = toggleHalfGridMode();
 
     if (!isOk(result)) {
       // Validation failed - show blocking modal
-      const validationResult = validateHalfBinModeToggle(layout, false);
+      const validationResult = validateHalfGridModeToggle(layout, false);
       if (validationResult.violation) {
         setHalfBinViolation(validationResult.violation);
         setShowHalfBinBlockedModal(true);
       }
     }
-  }, [toggleHalfBinMode, layout]);
+  }, [toggleHalfGridMode, layout]);
 
   // Remediate fractional bins by moving them to staging
   const handleRemediate = useCallback(() => {
@@ -331,12 +333,12 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     });
 
     // Now disable half-bin mode (forced, bypassing validation)
-    setHalfBinMode(false);
+    setHalfGridMode(false);
 
     // Close modal and show success message
     setShowHalfBinBlockedModal(false);
     addToast(`Moved ${movedCount} bin${movedCount !== 1 ? 's' : ''} to staging`, 'success');
-  }, [halfBinViolation, updateBin, setHalfBinMode, addToast]);
+  }, [halfBinViolation, updateBin, setHalfGridMode, addToast]);
 
   // Save current settings as defaults
   const handleSaveDefaults = useCallback(() => {
@@ -406,7 +408,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     printBedDepth,
 
     // Half-bin mode
-    halfBinMode,
+    halfGridMode,
 
     settings,
     activeLayerHeight,

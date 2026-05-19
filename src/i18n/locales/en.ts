@@ -211,7 +211,7 @@ const en: Record<string, string> = {
   'sidebar.collapsePanel': 'Collapse panel',
   'sidebar.settings': 'Settings',
   'sidebar.maxHeight': 'Maximum height in units',
-  'sidebar.halfBinTooltip': 'Enable 0.5 grid unit precision for half-size bins (H)',
+  'sidebar.halfBinTooltip': 'Enable 0.5 grid steps and half-pitch sockets on new bins (H)',
   'sidebar.halfBinLeft': 'Place half-unit column on the left',
   'sidebar.halfBinRight': 'Place half-unit column on the right',
   'sidebar.halfBinBottom': 'Place half-unit row at the bottom',
@@ -220,7 +220,7 @@ const en: Record<string, string> = {
   'sidebar.inspirationGallery': 'Inspiration Gallery',
   'sidebar.inspirationHint': 'Get ideas for your drawer',
   'sidebar.gridSize': 'Grid Size',
-  'sidebar.halfBinMode': 'Half-bin mode',
+  'sidebar.halfBinMode': 'Half-grid mode',
   'sidebar.physicalUnits': 'Physical Units',
   'sidebar.bottom': 'Bottom',
   'sidebar.collapseLeftPanel': 'Collapse left panel',
@@ -235,7 +235,7 @@ const en: Record<string, string> = {
   'sidebar.appName': 'Gridfinity Layout Tool',
   'sidebar.privacy': 'Privacy',
   'sidebar.terms': 'Terms',
-  'sidebar.toggleHalfBinMode': 'Toggle half-bin mode',
+  'sidebar.toggleHalfBinMode': 'Toggle half-grid mode',
   'sidebar.toolBy': 'Tool by',
   'sidebar.top': 'Top',
 
@@ -868,10 +868,11 @@ const en: Record<string, string> = {
     'Width and depth of your printer bed. Baseplates larger than the bed are split into tileable pieces.',
   'help.target.baseplate.printBedSize.keywords':
     'bed|bed size|print bed|printer size|printer bed|build plate|build volume|split|tile',
-  'help.target.halfBinMode.title': 'Half-bin mode',
+  'help.target.halfBinMode.title': 'Half-grid mode',
   'help.target.halfBinMode.description':
-    'Enable 0.5-unit grid increments so you can place half-sized bins and fractional drawer edges.',
-  'help.target.halfBinMode.keywords': 'half|half-bin|half bin|0.5|fractional|small bins',
+    'Enable 0.5-unit grid increments and half-pitch sockets on new bins. Existing bins keep their current settings.',
+  'help.target.halfBinMode.keywords':
+    'half|half-bin|half bin|half-grid|half grid|0.5|fractional|small bins|sockets',
   'help.binClearance': 'Bin clearance',
   'help.blockedZones': 'Blocked zones',
   'help.example': 'Example',
@@ -968,7 +969,7 @@ const en: Record<string, string> = {
   'help.tip.renameLayers': 'Double-click layer names to rename them',
   'help.tip.autoSave': 'Your layout is automatically saved to your browser',
   'help.tip.quickOpen': 'Use Ctrl/{cmd}+O to quickly open the layout manager',
-  'help.tip.halfBin': 'Press H to toggle half-bin mode for 0.5 unit precision',
+  'help.tip.halfBin': 'Press H to toggle half-grid mode for 0.5 unit precision',
 
   // Blocked zones explanation
   'help.blockedZonesDescription':
@@ -1066,7 +1067,7 @@ const en: Record<string, string> = {
   'mobile.renameLayer': 'Rename layer',
   'mobile.settings.allow05UnitPrecision': 'Allow 0.5 unit precision',
   'mobile.settings.byZackFreedman': 'by Zack Freedman',
-  'mobile.settings.halfBinMode': 'Half-bin mode',
+  'mobile.settings.halfBinMode': 'Half-grid mode',
   'mobile.settings.maxBinSize': 'Max bin size: ',
   'mobile.settings.toolBy': 'Tool by',
   'mobile.settings.openAppSettings': 'Language, defaults, privacy & more',
@@ -1130,7 +1131,7 @@ const en: Record<string, string> = {
   'toast.notifications': 'Notifications',
   'toast.selectedAll': 'Selected {count} bin(s)',
   'toast.paintModeEnabled': 'Paint mode enabled. Click to place bins.',
-  'toast.halfBinModeAutoEnabled': 'Half-bin mode enabled',
+  'toast.halfBinModeAutoEnabled': 'Half-grid mode enabled',
   'toast.layerFilled': 'Layer filled with bins',
   'toast.movedToStash': 'Moved {count} bin(s) to stash',
   'toast.stagingCleared': 'Cleared {count} bin(s) from stash',
@@ -1248,14 +1249,14 @@ const en: Record<string, string> = {
   // Drawer Settings
 
   // Half-Bin Mode Blocked
-  'halfBinBlocked.title': 'Cannot Disable Half-Bin Mode',
+  'halfBinBlocked.title': 'Cannot Disable Half-Grid Mode',
   'halfBinBlocked.message':
-    'Some bins use fractional dimensions. Resize or delete these bins before disabling half-bin mode.',
-  'halfBinBlocked.cancelAriaLabel': 'Cancel and keep half-bin mode enabled',
+    'Some bins use fractional dimensions. Resize or delete these bins before disabling half-grid mode.',
+  'halfBinBlocked.cancelAriaLabel': 'Cancel and keep half-grid mode enabled',
   'halfBinBlocked.close': 'Got it',
   'halfBinBlocked.errorFallback': 'An error occurred while moving bins',
   'halfBinMode.remediate.ariaLabel':
-    'Move {count} fractional bins to stash and disable half-bin mode',
+    'Move {count} fractional bins to stash and disable half-grid mode',
 
   // Inspiration Gallery
   'gallery.title': 'Inspiration Gallery',
@@ -1705,8 +1706,9 @@ const en: Record<string, string> = {
   'binDesigner.generateAMeshFirstToEnableExport': 'Generate a mesh first to enable export',
   'binDesigner.gridSize': 'Grid size',
   'binDesigner.gridUnit': 'Grid unit',
-  'binDesigner.halfBinMode': 'Half-bin mode',
-  'binDesigner.halfBinModeEnable05Grid': 'Half-bin mode: enable 0.5 grid unit precision',
+  'binDesigner.halfBinMode': 'Half-grid mode',
+  'binDesigner.halfBinModeEnable05Grid': 'Half-grid mode: enable 0.5 grid unit precision',
+  'binDesigner.halfSockets': 'Half sockets',
   'binDesigner.heightUnit': 'Height unit',
   'binDesigner.load': 'Load',
   'binDesigner.loading': 'Loading',

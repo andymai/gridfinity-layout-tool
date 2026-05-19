@@ -18,7 +18,12 @@ import {
   listenForPwaInstall,
   captureUtmParameters,
 } from '@/shared/analytics/posthog';
-import { useInteractionStore, useLabsStore, useViewStore, useHalfBinModeStore } from '@/core/store';
+import {
+  useInteractionStore,
+  useLabsStore,
+  useViewStore,
+  useHalfGridModeStore,
+} from '@/core/store';
 import { useLayoutStore } from '@/core/store/layout';
 import { STAGING_ID } from '@/core/constants';
 
@@ -1032,7 +1037,7 @@ describe('buildHeartbeatPayload', () => {
       isPreviewExpanded: false,
       layerViewMode: 'stack',
     });
-    useHalfBinModeStore.setState({ halfBinMode: false });
+    useHalfGridModeStore.setState({ halfGridMode: false });
   });
 
   it('returns correct engagement fields', () => {
@@ -1154,7 +1159,7 @@ describe('buildHeartbeatPayload', () => {
       leftPanelCollapsed: true,
       rightPanelCollapsed: false,
     });
-    useHalfBinModeStore.setState({ halfBinMode: true });
+    useHalfGridModeStore.setState({ halfGridMode: true });
 
     const payload = buildHeartbeatPayload(0);
 

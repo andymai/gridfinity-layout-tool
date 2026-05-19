@@ -24,7 +24,7 @@ This is a React + TypeScript web app for designing 3D-printed Gridfinity drawer 
 ### Half-Bin Mode
 
 - Enables 0.5-unit grid increments for finer layouts
-- Use `snapToHalf()`, `snapToGrid(halfBinMode)`, `isFractional()` from `@/core/constants`
+- Use `snapToHalf()`, `snapToGrid(halfGridMode)`, `isFractional()` from `@/core/constants`
 - `HALF_BIN_SCALE = 2` — internal coordinates multiply by 2 for integer math
 - Never round grid coordinates manually; always go through snap helpers
 

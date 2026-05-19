@@ -5,7 +5,7 @@ import { getGridBins } from '@/shared/utils/bins';
 /**
  * Describes a constraint violation when attempting to disable half-bin mode.
  */
-export interface HalfBinConstraintViolation {
+export interface HalfGridConstraintViolation {
   type: 'fractional_bins_exist';
   binIds: string[];
   count: number;
@@ -14,9 +14,9 @@ export interface HalfBinConstraintViolation {
 /**
  * Result of validating whether half-bin mode can be toggled.
  */
-export interface HalfBinConstraintResult {
+export interface HalfGridConstraintResult {
   canDisable: boolean;
-  violation?: HalfBinConstraintViolation;
+  violation?: HalfGridConstraintViolation;
 }
 
 /**
@@ -78,17 +78,17 @@ export function getFractionalBinIds(bins: Bin[]): string[] {
  *
  * @example
  * ```ts
- * const result = validateHalfBinModeToggle(layout, false);
+ * const result = validateHalfGridModeToggle(layout, false);
  * if (!result.canDisable) {
  *   console.log(`Cannot disable: ${result.violation?.count} bins have fractional dimensions`);
  *   // Show dialog with result.violation.binIds
  * }
  * ```
  */
-export function validateHalfBinModeToggle(
+export function validateHalfGridModeToggle(
   layout: Layout,
   targetState: boolean
-): HalfBinConstraintResult {
+): HalfGridConstraintResult {
   // Enabling half-bin mode is always allowed
   if (targetState) {
     return { canDisable: true };

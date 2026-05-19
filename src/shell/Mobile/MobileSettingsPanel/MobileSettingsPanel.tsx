@@ -4,7 +4,7 @@ import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';
 import { RulerIcon } from '@/design-system/Icon';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { HalfBinModeBlockedModal } from '@/shell/Modals';
+import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { StepperControl } from '@/shared/components/StepperControl';
@@ -44,7 +44,7 @@ export function MobileSettingsPanel() {
     heightUnitMm,
     printBedSize,
     printBedDepth,
-    halfBinMode,
+    halfGridMode,
     activeLayerHeight,
     handleDrawerWidthChange,
     handleDrawerDepthChange,
@@ -137,7 +137,7 @@ export function MobileSettingsPanel() {
           className="flex items-center justify-between cursor-pointer"
           onClick={handleHalfBinToggle}
           role="checkbox"
-          aria-checked={halfBinMode}
+          aria-checked={halfGridMode}
           aria-label={t('sidebar.toggleHalfBinMode')}
           tabIndex={0}
           onKeyDown={(e) => {
@@ -148,14 +148,14 @@ export function MobileSettingsPanel() {
           }}
         >
           <div>
-            <span className={`text-sm ${halfBinMode ? 'text-content' : 'text-content-secondary'}`}>
+            <span className={`text-sm ${halfGridMode ? 'text-content' : 'text-content-secondary'}`}>
               {t('mobile.settings.halfBinMode')}
             </span>
             <p className="text-xs text-content-tertiary">
               {t('mobile.settings.allow05UnitPrecision')}
             </p>
           </div>
-          <Checkbox checked={halfBinMode} variant="mobile" />
+          <Checkbox checked={halfGridMode} variant="mobile" />
         </div>
       </section>
 
@@ -336,7 +336,7 @@ export function MobileSettingsPanel() {
       />
 
       {halfBinViolation && (
-        <HalfBinModeBlockedModal
+        <HalfGridModeBlockedModal
           isOpen={showHalfBinBlockedModal}
           violation={halfBinViolation}
           onClose={() => setShowHalfBinBlockedModal(false)}

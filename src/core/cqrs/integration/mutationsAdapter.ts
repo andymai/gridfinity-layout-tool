@@ -128,18 +128,18 @@ export function createCqrsMutations(bus: CommandBus): Mutations {
       width: number,
       depth: number,
       categoryId: CategoryId,
-      halfBinMode?: boolean
+      halfGridMode?: boolean
     ): number {
       const result = bus.dispatch(
-        createCommand('bin.fillLayer', { layerId, width, depth, categoryId, halfBinMode })
+        createCommand('bin.fillLayer', { layerId, width, depth, categoryId, halfGridMode })
       );
       if (isOk(result)) return result.value.value as number;
       return 0;
     },
 
-    fillLayerGaps(layerId: LayerId, categoryId: CategoryId, halfBinMode?: boolean): number {
+    fillLayerGaps(layerId: LayerId, categoryId: CategoryId, halfGridMode?: boolean): number {
       const result = bus.dispatch(
-        createCommand('bin.fillGaps', { layerId, categoryId, halfBinMode })
+        createCommand('bin.fillGaps', { layerId, categoryId, halfGridMode })
       );
       if (isOk(result)) return result.value.value as number;
       return 0;

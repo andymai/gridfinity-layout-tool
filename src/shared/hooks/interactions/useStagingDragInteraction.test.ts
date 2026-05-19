@@ -5,7 +5,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSelectionStore } from '@/core/store/selection';
 import { useInteractionStore } from '@/core/store/interaction';
 import { STAGING_ID } from '@/core/constants';
-import { useHalfBinModeStore } from '@/core/store/halfBinMode';
+import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { resetAllStores, getBinId } from '@/test/testUtils';
 import type { InteractionContext } from '@/shared/hooks/interactions/types';
 
@@ -335,7 +335,7 @@ describe('useStagingDragInteraction', () => {
       addGridBin(4, 2); // grid bin at (4,2)
 
       // Enable half-bin mode
-      useHalfBinModeStore.setState({ halfBinMode: true });
+      useHalfGridModeStore.setState({ halfGridMode: true });
 
       useInteractionStore.setState({
         ...useInteractionStore.getState(),
@@ -361,7 +361,7 @@ describe('useStagingDragInteraction', () => {
       expect(call.currentCoord).toEqual({ x: 2, y: 2 });
 
       // Clean up
-      useHalfBinModeStore.setState({ halfBinMode: false });
+      useHalfGridModeStore.setState({ halfGridMode: false });
     });
 
     it('snaps when blocked_zone detected', () => {
