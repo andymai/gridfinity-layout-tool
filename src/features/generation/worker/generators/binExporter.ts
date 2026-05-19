@@ -2,7 +2,7 @@
  * Bin export — converts the last generated solid to STL or STEP format.
  */
 
-import { unwrap, exportSTL, exportSTEP, mesh } from 'brepjs';
+import { exportSTL, exportSTEP, mesh } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 
@@ -10,6 +10,7 @@ import { generateBin } from './binOrchestrator';
 import { FeatureTag } from './featureTags';
 import { getLastSolid, isLastSolidExportQuality, setLastSolid } from './shapeCache';
 import { EXPORT_ANGULAR_TOLERANCE, EXPORT_TOLERANCE } from './utils/tolerances';
+import { unwrapExportBlob } from './utils/exportUnwrap';
 
 /** Export result with binary data and suggested file name. */
 export interface ExportResult {
@@ -48,7 +49,7 @@ async function runExportAttempt(
   if (format === 'step') {
     // STEP carries exact BREP geometry; faceGroups don't ride along, so
     // skip the re-mesh that the STL/3MF path needs.
-    const blob = unwrap(exportSTEP(solid));
+    const blob = unwrapExportBlob(exportSTEP(solid), 'STEP');
     const data = await blob.arrayBuffer();
     return { data, fileName: `${name}.step` };
   }
@@ -67,12 +68,13 @@ async function runExportAttempt(
     }));
   }
 
-  const blob = unwrap(
+  const blob = unwrapExportBlob(
     exportSTL(solid, {
       tolerance: EXPORT_TOLERANCE,
       angularTolerance: EXPORT_ANGULAR_TOLERANCE,
       binary: true,
-    })
+    }),
+    'STL'
   );
   const data = await blob.arrayBuffer();
   return { data, fileName: `${name}.stl`, faceGroups };

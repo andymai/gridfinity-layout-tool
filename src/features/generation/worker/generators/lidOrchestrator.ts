@@ -6,7 +6,7 @@
  * rejects (lid disabled, no stacking lip, or a blocker is active).
  */
 
-import { mesh, meshEdges, rotate, unwrap, exportSTL, exportSTEP } from 'brepjs';
+import { mesh, meshEdges, rotate, exportSTL, exportSTEP } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { LidMeshData, ExportFormat } from '../../bridge/types';
@@ -16,6 +16,7 @@ import { toIndexedMeshData } from './utils/mesh';
 import { computeTessellationTolerances } from './utils/tolerances';
 import { checkCancelled } from './meshUtils';
 import { shouldGenerateLid } from '@/shared/types/bin';
+import { unwrapExportBlob } from './utils/exportUnwrap';
 
 /**
  * Rotate the lid 180° around the X axis so the floor's outer surface
@@ -119,17 +120,18 @@ export async function exportLid(
   // caller-owned and must be released once the export buffer is built.
   try {
     if (format === 'step') {
-      const blob = unwrap(exportSTEP(solid));
+      const blob = unwrapExportBlob(exportSTEP(solid), 'STEP');
       const data = await blob.arrayBuffer();
       return { data, fileName: `${name}.step` };
     }
 
-    const blob = unwrap(
+    const blob = unwrapExportBlob(
       exportSTL(solid, {
         tolerance,
         angularTolerance,
         binary: true,
-      })
+      }),
+      'STL'
     );
     const data = await blob.arrayBuffer();
     return { data, fileName: `${name}.stl` };

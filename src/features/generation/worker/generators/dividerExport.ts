@@ -11,6 +11,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { ExportFormat, CombinedExportPiece } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildUniqueDividerPieces } from './dividerBuilder';
+import { unwrapExportBlob } from './utils/exportUnwrap';
 
 const CLEARANCE = GRIDFINITY.TOLERANCE;
 const SOCKET_HEIGHT = GRIDFINITY.SOCKET_HEIGHT;
@@ -61,12 +62,13 @@ export async function exportDividers(
       nextPieceToFree = i + 1;
     }
 
-    const blob = unwrap(
+    const blob = unwrapExportBlob(
       exportSTL(combined, {
         tolerance: 0.01,
         angularTolerance: 5,
         binary: true,
-      })
+      }),
+      'STL'
     );
     const data = await blob.arrayBuffer();
 
@@ -117,10 +119,13 @@ export async function exportDividerPiecesSeparately(
   try {
     for (let i = 0; i < pieces.length; i++) {
       if (format === 'step') {
-        const blob = unwrap(exportSTEP(pieces[i]));
+        const blob = unwrapExportBlob(exportSTEP(pieces[i]), 'STEP');
         results.push({ data: await blob.arrayBuffer(), label: labels[i] });
       } else {
-        const blob = unwrap(exportSTL(pieces[i], { tolerance, angularTolerance, binary: true }));
+        const blob = unwrapExportBlob(
+          exportSTL(pieces[i], { tolerance, angularTolerance, binary: true }),
+          'STL'
+        );
         results.push({ data: await blob.arrayBuffer(), label: labels[i] });
       }
     }

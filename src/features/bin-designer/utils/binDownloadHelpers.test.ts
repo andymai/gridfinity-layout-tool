@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { buildSinglePiece3MF, buildMultiObject3MF } from './binDownloadHelpers';
+import {
+  buildSinglePiece3MF,
+  buildMultiObject3MF,
+  buildReportIssueUrl,
+} from './binDownloadHelpers';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import type { BinParams } from '@/features/bin-designer/types';
 import type { CombinedExportResult } from '@/shared/generation/bridge';
@@ -138,5 +142,65 @@ describe('binDownloadHelpers — multi-color export gate', () => {
       // Ancillary pieces (dividers, lid) always ship solid-color.
       expect(objects[1].colorConfig).toBeUndefined();
     });
+  });
+});
+
+describe('buildReportIssueUrl', () => {
+  function extractBody(url: string): string {
+    return new URL(url).searchParams.get('body') ?? '';
+  }
+
+  function extractParams(url: string): Record<string, unknown> {
+    const body = extractBody(url);
+    const match = body.match(/```json\n([\s\S]*?)\n```/);
+    if (!match) throw new Error('no JSON block in body');
+    return JSON.parse(match[1]) as Record<string, unknown>;
+  }
+
+  it('includes scoop config when scoop is enabled (issue #1757 — scoop was previously omitted)', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 3.5,
+      depth: 11,
+      height: 9,
+      scoop: { enabled: true, radius: 'auto' },
+    };
+    const url = buildReportIssueUrl(params, new Error('test'), 'stl');
+    const json = extractParams(url);
+    expect(json.scoop).toEqual({ enabled: true, radius: 'auto' });
+  });
+
+  it('marks scoop as `false` when disabled (so its state is unambiguous)', () => {
+    const url = buildReportIssueUrl(DEFAULT_BIN_PARAMS, new Error('test'), 'stl');
+    const json = extractParams(url);
+    expect(json.scoop).toBe(false);
+  });
+
+  it('captures compartments + walls + label + lid + featureColors flags', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 0, 1, 1] }, // merged cells
+      label: { enabled: true, support: 'bracket', depth: 12, width: 100, alignment: 'left' },
+    };
+    const url = buildReportIssueUrl(params, new Error('test'), 'stl');
+    const json = extractParams(url);
+    expect(json.compartments).toEqual({ cols: 2, rows: 2, merged: true });
+    expect(json.label).toMatchObject({ enabled: true, support: 'bracket', depth: 12 });
+    expect(json).toHaveProperty('lid');
+    expect(json).toHaveProperty('featureColors');
+    expect(json).toHaveProperty('wallThickness', params.wallThickness);
+  });
+
+  it('does not flag renumbered-but-unmerged compartments as merged', () => {
+    // Each cell has a unique ID — these are 4 distinct compartments, not
+    // merged, even though the IDs aren't in `0..N-1` order. A positional
+    // `id !== i` check would false-positive here.
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [3, 2, 1, 0] },
+    };
+    const url = buildReportIssueUrl(params, new Error('test'), 'stl');
+    const json = extractParams(url);
+    expect((json.compartments as { merged: boolean }).merged).toBe(false);
   });
 });
