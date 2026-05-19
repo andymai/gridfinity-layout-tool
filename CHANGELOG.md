@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.103.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.102.0...gridfinity-layout-tool-v4.103.0) (2026-05-19)
+
+
+### Features
+
+* **seo:** planner-led title + internal linking + structured-data polish ([#1764](https://github.com/andymai/gridfinity-layout-tool/issues/1764)) ([a24ab78](https://github.com/andymai/gridfinity-layout-tool/commit/a24ab78df2a148270f4a45ba3450a5fefb813d5c))
+
+
+### Bug Fixes
+
+* **generation:** bypass OCCT STL writer for split-bin pieces ([#1760](https://github.com/andymai/gridfinity-layout-tool/issues/1760)) ([#1765](https://github.com/andymai/gridfinity-layout-tool/issues/1765)) ([411ba58](https://github.com/andymai/gridfinity-layout-tool/commit/411ba587db8f684db807ec94ac4701ef18bf5aba))
+
 ## [4.102.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.101.5...gridfinity-layout-tool-v4.102.0) (2026-05-19)
 
 
