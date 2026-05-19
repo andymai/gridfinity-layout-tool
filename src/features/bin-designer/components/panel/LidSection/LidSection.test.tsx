@@ -82,4 +82,37 @@ describe('LidSection', () => {
     expect(lid.stackableTop).toBe(false);
     expect(lid.magnetHoles).toBe(false);
   });
+
+  describe('compatibility issues', () => {
+    it('shows a Fix button on the label-tabs warning that disables the feature', () => {
+      // Enable lid + label tabs → the `labelTabs` warning surfaces with
+      // a Fix button. Clicking it should call `updateLabel({ enabled: false })`.
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+      const fixButtons = screen.getAllByRole('button', { name: /^Fix:/ });
+      // Should find a Fix button labelled with the label-tabs message.
+      const labelFix = fixButtons.find((b) => b.getAttribute('aria-label')?.includes('Label tabs'));
+      expect(labelFix).toBeDefined();
+      fireEvent.click(labelFix!);
+      expect(useDesignerStore.getState().params.label.enabled).toBe(false);
+    });
+
+    it('disables the per-side rail toggle button when a feature conflict skips that side', () => {
+      // Label tabs → back rail is auto-skipped. The Back chip should be
+      // rendered disabled with a tooltip.
+      resetStore({
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+      });
+      render(<LidSection />);
+      fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+      const backChip = screen.getByRole('switch', { name: 'Back' });
+      expect(backChip).toBeDisabled();
+      expect(backChip.getAttribute('title')).toMatch(/auto-disabled/i);
+    });
+  });
 });

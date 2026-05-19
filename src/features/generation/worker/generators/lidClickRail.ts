@@ -126,7 +126,8 @@ interface RailPlacement {
  *  - Insets the edge by `lidCornerR` from each end so the rail stays clear
  *    of corners (which are filled mating-shell pillars)
  *  - Skips edges shorter than MIN_RAIL_LENGTH after inset
- *  - Honors `omitFrontBackRails` for edges whose outward normal is along Y
+ *  - Honors `disabledRails` (per-side conflict overrides driven by
+ *    labels, wall cutouts, and intruding handles)
  */
 function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
   const {
@@ -134,7 +135,7 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
     gridUnitMm,
     lidCornerR,
     fitClearance,
-    omitFrontBackRails,
+    disabledRails,
     clickRails,
     clickRailCoverage,
   } = inputs;
@@ -197,7 +198,7 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
     }
 
     if (!clickRails[side]) continue;
-    if (omitFrontBackRails && (side === 'front' || side === 'back')) continue;
+    if (disabledRails.has(side)) continue;
 
     const midX = (a.x + b.x) / 2 + inX * railInset;
     const midY = (a.y + b.y) / 2 + inY * railInset;
@@ -215,8 +216,7 @@ function railPlacementsForPolygon(inputs: LidInputs): RailPlacement[] {
 
 /** Compute rail placements for a rectangular bin (4 walls). */
 function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
-  const { lidOuterW, lidOuterD, lidCornerR, omitFrontBackRails, clickRails, clickRailCoverage } =
-    inputs;
+  const { lidOuterW, lidOuterD, lidCornerR, disabledRails, clickRails, clickRailCoverage } = inputs;
   // Rail spans wall length minus corner radii on both ends, then shrunk
   // to `clickRailCoverage` (centered on the wall) to save filament.
   const railLengthX = (lidOuterW - 2 * lidCornerR) * clickRailCoverage;
@@ -226,10 +226,12 @@ function railPlacementsForRectangle(inputs: LidInputs): RailPlacement[] {
 
   const placements: RailPlacement[] = [];
 
-  const wantBack = clickRails.back && !omitFrontBackRails && railLengthX >= MIN_RAIL_LENGTH;
-  const wantFront = clickRails.front && !omitFrontBackRails && railLengthX >= MIN_RAIL_LENGTH;
-  const wantRight = clickRails.right && railLengthY >= MIN_RAIL_LENGTH;
-  const wantLeft = clickRails.left && railLengthY >= MIN_RAIL_LENGTH;
+  const wantBack = clickRails.back && !disabledRails.has('back') && railLengthX >= MIN_RAIL_LENGTH;
+  const wantFront =
+    clickRails.front && !disabledRails.has('front') && railLengthX >= MIN_RAIL_LENGTH;
+  const wantRight =
+    clickRails.right && !disabledRails.has('right') && railLengthY >= MIN_RAIL_LENGTH;
+  const wantLeft = clickRails.left && !disabledRails.has('left') && railLengthY >= MIN_RAIL_LENGTH;
 
   if (wantBack) {
     placements.push({ centerX: 0, centerY: corneredOuterY, length: railLengthX, rotationDeg: 0 });
