@@ -125,15 +125,23 @@ export default function App() {
     return () => window.removeEventListener('open-command-palette', handler as EventListener);
   }, [setCommandPaletteOpen]);
 
-  // Route-aware SEO meta override. The i18n context sets the homepage title on
-  // locale change; this runs after to override it for /designer and /baseplate
-  // so direct landings get a route-appropriate title and meta description.
-  // Depends on `t` (which changes on locale change) so we re-apply when locale
-  // flips while on a generator route.
+  // Route-aware SEO meta. Owns title/description across SPA navigation: the
+  // i18n context only re-fires on locale change, so without this an in-app
+  // jump from /designer back to / would leave the generator title up. We
+  // always resolve to *some* route-appropriate value (homepage, designer, or
+  // baseplate) — no early return — so back-navigation restores the homepage
+  // meta. Depends on `t` so it re-applies when locale flips mid-session.
   useEffect(() => {
-    if (!isDesignerRoute && !isBaseplateRoute) return;
-    const titleKey = isDesignerRoute ? 'seo.designer.title' : 'seo.baseplate.title';
-    const descKey = isDesignerRoute ? 'seo.designer.description' : 'seo.baseplate.description';
+    const titleKey = isDesignerRoute
+      ? 'seo.designer.title'
+      : isBaseplateRoute
+        ? 'seo.baseplate.title'
+        : 'seo.title';
+    const descKey = isDesignerRoute
+      ? 'seo.designer.description'
+      : isBaseplateRoute
+        ? 'seo.baseplate.description'
+        : 'seo.description';
     const title = t(titleKey);
     const desc = t(descKey);
     document.title = title;

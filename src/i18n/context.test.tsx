@@ -557,31 +557,6 @@ describe('LocaleProvider document updates', () => {
     });
   });
 
-  it('updates document title with SEO title', async () => {
-    render(
-      <LocaleProvider initialLocale="en">
-        <div>Content</div>
-      </LocaleProvider>
-    );
-
-    await waitFor(() => {
-      expect(document.title).toBe(en['seo.title']);
-    });
-  });
-
-  it('updates meta description', async () => {
-    render(
-      <LocaleProvider initialLocale="en">
-        <div>Content</div>
-      </LocaleProvider>
-    );
-
-    await waitFor(() => {
-      const meta = document.querySelector('meta[name="description"]');
-      expect(meta?.getAttribute('content')).toBe(en['seo.description']);
-    });
-  });
-
   it('updates OG locale meta tag', async () => {
     render(
       <LocaleProvider initialLocale="en">
@@ -595,55 +570,10 @@ describe('LocaleProvider document updates', () => {
     });
   });
 
-  it('updates OG title meta tag', async () => {
-    render(
-      <LocaleProvider initialLocale="en">
-        <div>Content</div>
-      </LocaleProvider>
-    );
-
-    await waitFor(() => {
-      const meta = document.querySelector('meta[property="og:title"]');
-      expect(meta?.getAttribute('content')).toBe(en['seo.title']);
-    });
-  });
-
-  it('updates OG description meta tag', async () => {
-    render(
-      <LocaleProvider initialLocale="en">
-        <div>Content</div>
-      </LocaleProvider>
-    );
-
-    await waitFor(() => {
-      const meta = document.querySelector('meta[property="og:description"]');
-      expect(meta?.getAttribute('content')).toBe(en['seo.description']);
-    });
-  });
-
-  it('updates Twitter title meta tag', async () => {
-    render(
-      <LocaleProvider initialLocale="en">
-        <div>Content</div>
-      </LocaleProvider>
-    );
-
-    await waitFor(() => {
-      const meta = document.querySelector('meta[name="twitter:title"]');
-      expect(meta?.getAttribute('content')).toBe(en['seo.title']);
-    });
-  });
-
-  it('updates Twitter description meta tag', async () => {
-    render(
-      <LocaleProvider initialLocale="en">
-        <div>Content</div>
-      </LocaleProvider>
-    );
-
-    await waitFor(() => {
-      const meta = document.querySelector('meta[name="twitter:description"]');
-      expect(meta?.getAttribute('content')).toBe(en['seo.description']);
-    });
-  });
+  // Title / description / og:title / og:description / twitter:title /
+  // twitter:description are owned by App's route-aware effect, not the
+  // LocaleProvider. See src/App.tsx — moved there to avoid the
+  // child-fires-before-parent useEffect ordering race that would let
+  // LocaleProvider clobber the /designer and /baseplate route titles
+  // on locale change.
 });
