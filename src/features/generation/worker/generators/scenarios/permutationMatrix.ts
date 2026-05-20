@@ -1,4 +1,3 @@
-import { expect } from 'vitest';
 import {
   DEFAULT_BIN_PARAMS,
   DEFAULT_HANDLE_SIDE,
@@ -7,7 +6,6 @@ import {
 import {
   assertBoundingBoxMatchesParams,
   assertNoDegenerateTriangles,
-  boundingBox,
 } from '../__kernel-tests__/meshAssertions';
 import { defineScenario, makeInsert, makeCutout } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
@@ -18,6 +16,10 @@ const CAT = 'permutation matrix';
 
 export const permutationMatrix: ScenarioCase[] = [
   // ─── Lip junction × interior features ─────────────────────────────────────
+  // NOTE: params here intentionally mirror the snapshot-mode scenario in
+  // combinedFeatures.ts. The matrix variant adds a bounding-box customAssert
+  // so this configuration is locked against silent dimension drift even when
+  // the snapshot would be updated for an unrelated triangle-count change.
   defineScenario(CAT, '2×2 lip + 2×2 compartments + scoop', {
     assert: 'structural',
     params: {
@@ -70,9 +72,8 @@ export const permutationMatrix: ScenarioCase[] = [
       },
     },
     timeout: 60_000,
-    customAssert: (result) => {
-      const bb = boundingBox(result.vertices);
-      expect(bb.maxZ - bb.minZ).toBeGreaterThan(20);
+    customAssert: (result, params) => {
+      assertBoundingBoxMatchesParams(result, params, 'slotted+lip+handles');
     },
   }),
 
