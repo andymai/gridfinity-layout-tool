@@ -76,13 +76,11 @@ export function handleDragMove(
     const rb = getRotatedBounds(cutout);
     const overhangX = (rb.maxX - rb.minX - cutout.width) / 2;
     const overhangY = (rb.maxY - rb.minY - cutout.depth) / 2;
-    const minX = overhangX;
-    const minY = overhangY;
     const maxX = bounds.binWidth - cutout.width - overhangX;
     const maxY = bounds.binDepth - cutout.depth - overhangY;
     nextPreview.set(id, {
-      x: Math.max(minX, Math.min(snap(mode.startX + dx + offset.dx), maxX)),
-      y: Math.max(minY, Math.min(snap(mode.startY + dy + offset.dy), maxY)),
+      x: Math.max(overhangX, Math.min(snap(mode.startX + dx + offset.dx), maxX)),
+      y: Math.max(overhangY, Math.min(snap(mode.startY + dy + offset.dy), maxY)),
     });
   }
 

@@ -42,15 +42,12 @@ function makeSetters(): {
   const setPreview = vi.fn((map: Map<string, Partial<Cutout>>) => {
     preview = map;
   });
-  return Object.assign(
-    {
-      setPreview,
-      get preview() {
-        return preview;
-      },
+  return {
+    setPreview,
+    get preview() {
+      return preview;
     },
-    {}
-  );
+  };
 }
 
 const NO_DEAD_ZONE: DeadZoneRef = { current: true };
