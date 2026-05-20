@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.108.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.108.4...gridfinity-layout-tool-v4.108.5) (2026-05-20)
+
+
+### Bug Fixes
+
+* **bin-designer:** rotation-aware drag clamp + resize joint constraint ([#1805](https://github.com/andymai/gridfinity-layout-tool/issues/1805)) ([c86a06e](https://github.com/andymai/gridfinity-layout-tool/commit/c86a06e91314849d1de6372d46a587bfe3ae6c2c))
+
 ## [4.108.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.108.3...gridfinity-layout-tool-v4.108.4) (2026-05-20)
 
 
