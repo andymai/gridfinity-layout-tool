@@ -45,7 +45,7 @@ export function resetBooleanFallbackStats(): void {
   fallbackRecords = [];
 }
 
-function recordIfRecovered(
+export function recordIfRecovered(
   category: BooleanFallbackCategory,
   telemetry: BatchBisectTelemetry
 ): void {

@@ -81,7 +81,7 @@ Composable stages in `pipeline/stages/`, orchestrated by `pipeline/runner.ts`:
 
 1. **Shell** (`shellStage`) — socket + box body + lip assembly, cached by shellKey
 2. **Features** (`featuresStage`) — compartments, inserts, slots, labels, scoops, wall cutouts, patterns
-3. **Boolean** (`booleanStage`) — batch fuse additive + cut subtractive with sequential fallback
+3. **Boolean** (`booleanStage`) — batch fuse additive + cut subtractive via `fuseAllBisect` / `cutAllBisect` (n-way batch first, recursive bisect on failure)
 4. **Translate** (`translateStage`) — Z-offset for socket-based bins
 5. **Tessellate** (`tessellateStage`) — dynamic quality mesh + edge extraction
 
