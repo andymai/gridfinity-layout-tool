@@ -1,33 +1,38 @@
 /**
  * Boolean stage — applies additive fuses and subtractive cuts.
  *
- * Uses batch fuseAll/cutAll passes with sequential pairwise fallback.
- * cutAll() compounds tools into a single boolean, which preserves better
- * face topology for complex bins than booleanPipeline()'s sequential approach.
+ * Uses brepjs's `fuseAllBisect` / `cutAllBisect` primitives, which try a
+ * single n-way batch op first, then recursively bisect on failure down to
+ * pairwise ops — strictly better than the prior `batchWithFallback`
+ * sequential fallback (2.4× faster at N=16 per the upstream bench), and
+ * the recovery surfaces structured telemetry instead of opaque exceptions.
  *
- * booleanPipeline() is used by socketBuilder and baseplateGenerator for
- * simpler fuse→cut chains where topology differences are negligible.
+ * booleanPipeline() is still used by socketBuilder and baseplateGenerator
+ * for simpler fuse→cut chains where bisect's recovery would be wasted.
  */
 
-import { unwrap, fuse, fuseAll, cut, cutAll } from 'brepjs';
-import type { Shape3D, ValidSolid } from 'brepjs';
+import { unwrap, fuseAllBisect, cutAllBisect } from 'brepjs';
+import type { Shape3D, ValidSolid, BatchBisectTelemetry } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import type { BooleanOpts } from '../../meshUtils';
-import { checkCancelled, isAbortError } from '../../utils/abort';
+import { checkCancelled } from '../../utils/abort';
 
 export type BooleanFallbackCategory = 'fuse' | 'cut' | 'pattern_cut';
 
 /**
- * Records one batch→sequential fallback event. The histogram of `targetCount`
- * vs `successfulCount` is what tells us whether failures are concentrated
- * (1 bad tool → `successfulCount = targetCount - 1`) or structural
- * (`successfulCount = 0` → every sequential op also failed).
+ * One record per boolean op that needed bisect recovery. `batchAttempts > 1`
+ * or `singletonFallbacks > 0` means the first n-way attempt failed and
+ * recovery kicked in; the histogram of `failedInputCount` vs `totalInputs`
+ * separates concentrated failures (1-2 bad tools → bisect wins big) from
+ * structural failures (all tools fail → bisect bottoms out at pairwise).
  */
 export interface BooleanFallbackRecord {
   readonly category: BooleanFallbackCategory;
-  readonly targetCount: number;
-  readonly successfulCount: number;
-  readonly errorCategory: string;
+  readonly totalInputs: number;
+  readonly batchAttempts: number;
+  readonly batchSucceeded: number;
+  readonly singletonFallbacks: number;
+  readonly failedInputCount: number;
 }
 
 let fallbackRecords: BooleanFallbackRecord[] = [];
@@ -40,52 +45,19 @@ export function resetBooleanFallbackStats(): void {
   fallbackRecords = [];
 }
 
-/**
- * Strip identifier-like digits and trim so OCCT-style messages
- * ("BRepAlgoAPI: face 42 incompatible with face 17") collapse to a
- * stable categorical key in PostHog without exploding cardinality.
- */
-export function categorizeError(e: unknown): string {
-  const msg = e instanceof Error ? e.message : String(e);
-  return msg.replace(/\d+/g, '#').replace(/\s+/g, ' ').trim().slice(0, 120);
-}
-
-/**
- * Try a batch boolean, falling back to sequential pairwise operations.
- * AbortErrors always propagate; other errors are swallowed per-pair.
- * Records the fallback (if any) for diagnostics — see #1792.
- */
-function batchWithFallback(
-  bin: Shape3D,
-  targets: readonly Shape3D[],
+export function recordIfRecovered(
   category: BooleanFallbackCategory,
-  batch: (bin: Shape3D, targets: readonly Shape3D[]) => Shape3D,
-  pairwise: (bin: Shape3D, target: Shape3D) => Shape3D
-): Shape3D {
-  try {
-    return batch(bin, targets);
-  } catch (e: unknown) {
-    if (isAbortError(e)) throw e;
-    const errorCategory = categorizeError(e);
-    let result = bin;
-    let successfulCount = 0;
-    for (const target of targets) {
-      try {
-        const prev = result;
-        result = pairwise(result, target);
-        if (prev !== bin) prev.delete();
-        successfulCount++;
-      } catch (inner: unknown) {
-        if (isAbortError(inner)) throw inner;
-      }
-    }
+  telemetry: BatchBisectTelemetry
+): void {
+  if (telemetry.batchAttempts > 1 || telemetry.singletonFallbacks > 0) {
     fallbackRecords.push({
       category,
-      targetCount: targets.length,
-      successfulCount,
-      errorCategory,
+      totalInputs: telemetry.totalInputs,
+      batchAttempts: telemetry.batchAttempts,
+      batchSucceeded: telemetry.batchSucceeded,
+      singletonFallbacks: telemetry.singletonFallbacks,
+      failedInputCount: telemetry.failedInputs.length,
     });
-    return result;
   }
 }
 
@@ -97,15 +69,12 @@ function applyCutPass(
   opts: BooleanOpts
 ): Shape3D {
   const prev = bin;
-  const result = batchWithFallback(
-    bin,
-    targets,
-    category,
-    (b, ts) => unwrap(cutAll(b as ValidSolid, [...ts] as ValidSolid[], opts)),
-    (b, t) => unwrap(cut(b as ValidSolid, t as ValidSolid))
+  const { shape, telemetry } = unwrap(
+    cutAllBisect(bin as ValidSolid, [...targets] as ValidSolid[], opts)
   );
-  if (prev !== originalSolid && prev !== result) prev.delete();
-  return result;
+  recordIfRecovered(category, telemetry);
+  if (prev !== originalSolid && prev !== shape) prev.delete();
+  return shape;
 }
 
 export const booleanStage: PipelineStage = {
@@ -130,13 +99,9 @@ export const booleanStage: PipelineStage = {
 
     if (ctx.fuseTargets.length > 0) {
       checkCancelled(signal);
-      bin = batchWithFallback(
-        bin,
-        ctx.fuseTargets,
-        'fuse',
-        (b, targets) => unwrap(fuseAll([b, ...targets] as ValidSolid[])),
-        (b, t) => unwrap(fuse(b as ValidSolid, t as ValidSolid))
-      );
+      const { shape, telemetry } = unwrap(fuseAllBisect([bin, ...ctx.fuseTargets] as ValidSolid[]));
+      recordIfRecovered('fuse', telemetry);
+      bin = shape;
     }
 
     if (ctx.cutTargets.length > 0) {

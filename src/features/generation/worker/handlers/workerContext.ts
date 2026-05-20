@@ -184,9 +184,11 @@ export function runGeneration(
         requestId,
         records: fallbackRecords.map((r) => ({
           category: r.category,
-          targetCount: r.targetCount,
-          successfulCount: r.successfulCount,
-          errorCategory: r.errorCategory,
+          totalInputs: r.totalInputs,
+          batchAttempts: r.batchAttempts,
+          batchSucceeded: r.batchSucceeded,
+          singletonFallbacks: r.singletonFallbacks,
+          failedInputCount: r.failedInputCount,
         })),
       });
       resetBooleanFallbackStats();

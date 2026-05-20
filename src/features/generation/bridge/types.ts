@@ -250,23 +250,25 @@ export interface KernelPerfStatsResponse {
 }
 
 /**
- * Boolean fallback occurrence — one record per batch→sequential fallback.
- * `category` is the boolean op type, `successfulCount` is how many targets
- * the sequential pass actually applied (so `targetCount - successfulCount`
- * is the count that failed both batch and pairwise — usually 1 for
- * concentrated failures, `targetCount` for structural failures).
+ * Boolean fallback occurrence — one record per boolean op where bisect
+ * recovery kicked in (`batchAttempts > 1` or `singletonFallbacks > 0`).
+ * `failedInputCount` over `totalInputs` separates concentrated failures
+ * (1-2 bad tools — bisect wins) from structural failures (all tools fail —
+ * bisect bottoms out at pairwise).
  */
 export interface BooleanFallbackEntry {
   readonly category: 'fuse' | 'cut' | 'pattern_cut';
-  readonly targetCount: number;
-  readonly successfulCount: number;
-  readonly errorCategory: string;
+  readonly totalInputs: number;
+  readonly batchAttempts: number;
+  readonly batchSucceeded: number;
+  readonly singletonFallbacks: number;
+  readonly failedInputCount: number;
 }
 
 /**
  * Boolean fallback stats posted after a generation if (and only if) at least
- * one batch→sequential fallback fired. The worker omits this response on the
- * common no-fallback path to keep main-thread/worker chatter minimal.
+ * one bisect-recovery event fired in the boolean stage. The worker omits this
+ * response on the common no-recovery path to keep worker/main chatter minimal.
  */
 export interface BooleanFallbackStatsResponse {
   readonly type: 'BOOLEAN_FALLBACK_STATS';

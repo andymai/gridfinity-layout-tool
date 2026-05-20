@@ -124,20 +124,24 @@ describe('trackBooleanFallbacks', () => {
     expect(trackEventMock).not.toHaveBeenCalled();
   });
 
-  it('emits one event per fallback record with the diagnostic counts', () => {
+  it('emits one event per fallback record with the upstream bisect telemetry', () => {
     trackBooleanFallbacks({
       records: [
         {
           category: 'cut',
-          targetCount: 8,
-          successfulCount: 7,
-          errorCategory: 'Standard_ConstructionError: face # incompatible',
+          totalInputs: 8,
+          batchAttempts: 3,
+          batchSucceeded: 2,
+          singletonFallbacks: 1,
+          failedInputCount: 1,
         },
         {
           category: 'fuse',
-          targetCount: 3,
-          successfulCount: 0,
-          errorCategory: 'BRepAlgoAPI failed',
+          totalInputs: 3,
+          batchAttempts: 5,
+          batchSucceeded: 0,
+          singletonFallbacks: 3,
+          failedInputCount: 3,
         },
       ],
     });
@@ -145,17 +149,19 @@ describe('trackBooleanFallbacks', () => {
     expect(trackEventMock).toHaveBeenCalledTimes(2);
     expect(trackEventMock).toHaveBeenNthCalledWith(1, 'generation_boolean_fallback', {
       op_category: 'cut',
-      target_count: 8,
-      successful_count: 7,
-      failed_count: 1,
-      error_category: 'Standard_ConstructionError: face # incompatible',
+      total_inputs: 8,
+      batch_attempts: 3,
+      batch_succeeded: 2,
+      singleton_fallbacks: 1,
+      failed_input_count: 1,
     });
     expect(trackEventMock).toHaveBeenNthCalledWith(2, 'generation_boolean_fallback', {
       op_category: 'fuse',
-      target_count: 3,
-      successful_count: 0,
-      failed_count: 3,
-      error_category: 'BRepAlgoAPI failed',
+      total_inputs: 3,
+      batch_attempts: 5,
+      batch_succeeded: 0,
+      singleton_fallbacks: 3,
+      failed_input_count: 3,
     });
   });
 });
