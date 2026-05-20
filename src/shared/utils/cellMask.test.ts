@@ -482,6 +482,65 @@ describe('maskToPolygon', () => {
     expect(Math.min(...holeYs)).toBeCloseTo(0.5);
     expect(Math.max(...holeYs)).toBeCloseTo(1.0);
   });
+
+  // Two empty cells sharing only a corner used to merge into one self-touching
+  // figure-8 loop, breaking downstream BREP cuts. They must come back as two
+  // distinct simple hole loops.
+  it('returns two separate hole loops when two empty cells touch only diagonally (/-saddle)', () => {
+    const m = mask([
+      [1, 1, 1, 1],
+      [1, 0, 1, 1],
+      [1, 1, 0, 1],
+      [1, 1, 1, 1],
+    ]);
+    const loops = maskToPolygon(m);
+    expect(loops).toHaveLength(3);
+    expect(loops[0]).toHaveLength(4);
+
+    const holes = loops.slice(1);
+    for (const hole of holes) {
+      expect(hole).toHaveLength(4);
+      expect(new Set(hole.map((p) => `${p.x},${p.y}`)).size).toBe(4);
+    }
+
+    const bounds = holes
+      .map((h) => ({
+        minX: Math.min(...h.map((p) => p.x)),
+        maxX: Math.max(...h.map((p) => p.x)),
+        minY: Math.min(...h.map((p) => p.y)),
+        maxY: Math.max(...h.map((p) => p.y)),
+      }))
+      .sort((a, b) => a.minX - b.minX || a.minY - b.minY);
+
+    expect(bounds[0]).toEqual({
+      minX: expect.closeTo(0.5),
+      maxX: expect.closeTo(1.0),
+      minY: expect.closeTo(1.0),
+      maxY: expect.closeTo(1.5),
+    });
+    expect(bounds[1]).toEqual({
+      minX: expect.closeTo(1.0),
+      maxX: expect.closeTo(1.5),
+      minY: expect.closeTo(0.5),
+      maxY: expect.closeTo(1.0),
+    });
+  });
+
+  it('returns two separate hole loops for the mirror \\-saddle configuration', () => {
+    const m = mask([
+      [1, 1, 1, 1],
+      [1, 1, 0, 1],
+      [1, 0, 1, 1],
+      [1, 1, 1, 1],
+    ]);
+    const loops = maskToPolygon(m);
+    expect(loops).toHaveLength(3);
+
+    for (const hole of loops.slice(1)) {
+      expect(hole).toHaveLength(4);
+      expect(new Set(hole.map((p) => `${p.x},${p.y}`)).size).toBe(4);
+    }
+  });
 });
 
 describe('classifyShape', () => {

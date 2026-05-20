@@ -327,8 +327,29 @@ export function maskToPolygon(mask: CellMask): readonly MaskLoop[] {
   }
 
   const key = (x: number, y: number): string => `${x},${y}`;
-  const byStart = new Map<string, Edge>();
-  for (const e of edges) byStart.set(key(e.fx, e.fy), e);
+  // Saddle handling: at the corner shared by two diagonally-adjacent empty
+  // cells, two outgoing edges start from the same vertex. Group by start so
+  // both candidates survive (a plain Map would overwrite one).
+  const byStart = new Map<string, Edge[]>();
+  for (const e of edges) {
+    const k = key(e.fx, e.fy);
+    const list = byStart.get(k);
+    if (list) list.push(e);
+    else byStart.set(k, [e]);
+  }
+
+  // Index of the empty cell on the RIGHT of `e` (edges have filled-on-left by
+  // construction). Two edges that bound the same empty cell belong to the same
+  // hole loop — used at a saddle to chain edges from one hole together rather
+  // than crossing the diagonal into the other hole.
+  const rightCellKey = (e: Edge): number => {
+    const dx = Math.sign(e.tx - e.fx);
+    const dy = Math.sign(e.ty - e.fy);
+    // Right-perpendicular of (dx, dy) is (dy, -dx); step half a half-cell.
+    const cx = (e.fx + e.tx) / 2 + (dy * s) / 2;
+    const cy = (e.fy + e.ty) / 2 - (dx * s) / 2;
+    return Math.floor(cy / s) * cols + Math.floor(cx / s);
+  };
 
   /** Collapse collinear runs → keep only vertices where direction changes. */
   const collapse = (walk: Edge[]): Point2[] => {
@@ -360,21 +381,29 @@ export function maskToPolygon(mask: CellMask): readonly MaskLoop[] {
     return a / 2;
   };
 
-  // Chain edges into every closed loop — each connected boundary (outer or
-  // hole) consumes its edges exactly once.
+  // Chain edges into every closed loop. Consumption is tracked per edge (not
+  // per start vertex) so both outgoing edges at a saddle can be walked.
   const loops: Point2[][] = [];
-  const consumed = new Set<string>();
+  const consumed = new Set<Edge>();
   for (const startEdge of edges) {
-    const k = key(startEdge.fx, startEdge.fy);
-    if (consumed.has(k)) continue;
+    if (consumed.has(startEdge)) continue;
     const walk: Edge[] = [];
     let cur: Edge | undefined = startEdge;
-    while (cur) {
-      const ck = key(cur.fx, cur.fy);
-      if (consumed.has(ck)) break;
-      consumed.add(ck);
+    while (cur && !consumed.has(cur)) {
+      consumed.add(cur);
       walk.push(cur);
-      cur = byStart.get(key(cur.tx, cur.ty));
+      const candidates = byStart.get(key(cur.tx, cur.ty));
+      if (!candidates) break;
+      const isSaddle = candidates.length > 1;
+      const curRight: number = isSaddle ? rightCellKey(cur) : 0;
+      let next: Edge | undefined;
+      for (const c of candidates) {
+        if (consumed.has(c)) continue;
+        if (isSaddle && rightCellKey(c) !== curRight) continue;
+        next = c;
+        break;
+      }
+      cur = next;
     }
     if (walk.length > 0) loops.push(collapse(walk));
   }
