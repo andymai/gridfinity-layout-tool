@@ -102,7 +102,7 @@ describe('DesignerStore - custom shape (cellMask) actions', () => {
       expect(useDesignerStore.getState().params.cellMask).toBeUndefined();
     });
 
-    it('rejects an empty mask (validateMask flag)', () => {
+    it('rejects an empty mask (no filled cells)', () => {
       const { setCellMask } = useDesignerStore.getState();
       const empty: CellMask = {
         cols: 4,
