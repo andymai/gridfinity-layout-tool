@@ -367,4 +367,71 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(afterHistoryLength).toBe(beforeHistoryLength);
     });
   });
+
+  // The cutoutBuilder worker reads neither `locked`, `hidden`, nor `zIndex`
+  // (verified by inspection: none appear in `src/features/generation/worker/`),
+  // so flipping those fields must not bump the generation epoch. Otherwise
+  // every lock/hide/reorder click kicks off a brepjs run that produces the
+  // identical mesh.
+  describe('cosmetic mutations do not bump generation.epoch', () => {
+    it('setCutoutProperty (lock) leaves epoch unchanged', () => {
+      const { addCutout, setCutoutProperty } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'c-1' }));
+      const epochBefore = useDesignerStore.getState().generation.epoch;
+
+      setCutoutProperty(['c-1'], { locked: true });
+
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
+    });
+
+    it('setCutoutProperty (hide) leaves epoch unchanged', () => {
+      const { addCutout, setCutoutProperty } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'c-1' }));
+      const epochBefore = useDesignerStore.getState().generation.epoch;
+
+      setCutoutProperty(['c-1'], { hidden: true });
+
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
+    });
+
+    it('reorderCutouts leaves epoch unchanged', () => {
+      const { addCutout, reorderCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'c-1' }));
+      addCutout(createTestCutout({ id: 'c-2' }));
+      const epochBefore = useDesignerStore.getState().generation.epoch;
+
+      reorderCutouts(['c-1'], 'forward');
+
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
+    });
+
+    it('showAllCutouts leaves epoch unchanged', () => {
+      const { addCutout, showAllCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'c-1', hidden: true }));
+      const epochBefore = useDesignerStore.getState().generation.epoch;
+
+      showAllCutouts();
+
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore);
+    });
+
+    it('addCutout still bumps epoch (geometric)', () => {
+      const { addCutout } = useDesignerStore.getState();
+      const epochBefore = useDesignerStore.getState().generation.epoch;
+
+      addCutout(createTestCutout({ id: 'c-1' }));
+
+      expect(useDesignerStore.getState().generation.epoch).toBe(epochBefore + 1);
+    });
+
+    it('history entry is still captured so undo restores prior state', () => {
+      const { addCutout, setCutoutProperty, undo } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'c-1', locked: false }));
+      setCutoutProperty(['c-1'], { locked: true });
+
+      expect(useDesignerStore.getState().params.cutouts[0].locked).toBe(true);
+      undo();
+      expect(useDesignerStore.getState().params.cutouts[0].locked).toBe(false);
+    });
+  });
 });
