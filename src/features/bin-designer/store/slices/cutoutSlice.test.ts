@@ -397,6 +397,34 @@ describe('cutoutSlice - consolidated actions', () => {
       ]);
     });
 
+    it('path resize works in batch', () => {
+      const { addCutout, updateCutoutsBatch } = useDesignerStore.getState();
+      addCutout(
+        createTestCutout({
+          id: 'p-1',
+          shape: 'path',
+          x: 0,
+          y: 0,
+          width: 10,
+          depth: 10,
+          path: [
+            { x: 0, y: 0, handleIn: null, handleOut: null, symmetric: false },
+            { x: 10, y: 0, handleIn: null, handleOut: null, symmetric: false },
+            { x: 5, y: 10, handleIn: { dx: 1, dy: -1 }, handleOut: null, symmetric: false },
+          ],
+        })
+      );
+
+      updateCutoutsBatch(new Map([['p-1', { x: 100, y: 50, width: 30, depth: 20 }]]));
+
+      const c = useDesignerStore.getState().params.cutouts[0];
+      expect(c.path).toEqual([
+        { x: 100, y: 50, handleIn: null, handleOut: null, symmetric: false },
+        { x: 130, y: 50, handleIn: null, handleOut: null, symmetric: false },
+        { x: 115, y: 70, handleIn: { dx: 3, dy: -2 }, handleOut: null, symmetric: false },
+      ]);
+    });
+
     it('no-op on empty map', () => {
       const { addCutout, updateCutoutsBatch } = useDesignerStore.getState();
       addCutout(createTestCutout());

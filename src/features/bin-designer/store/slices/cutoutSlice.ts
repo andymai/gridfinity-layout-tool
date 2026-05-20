@@ -16,9 +16,10 @@ import type {
 } from '../../types';
 import { pushHistoryEntry, dissolveSingletonGroups } from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
+import { scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
 
 // Points are absolute, handles are relative — scale around the old origin
-// so resize + move composes correctly in one pass.
+// first so the bounds end up flush with the new x/y, then translate.
 function applyPathTransform(c: Cutout, updates: Partial<Cutout>): PathPoint[] | undefined {
   if (!c.path || c.path.length === 0 || updates.path) return undefined;
   const newX = updates.x ?? c.x;
@@ -28,17 +29,12 @@ function applyPathTransform(c: Cutout, updates: Partial<Cutout>): PathPoint[] | 
   const scaleX = c.width !== 0 ? newW / c.width : 1;
   const scaleY = c.depth !== 0 ? newD / c.depth : 1;
   const scaled = scaleX !== 1 || scaleY !== 1;
-  const translated = newX !== c.x || newY !== c.y;
+  const dx = newX - c.x;
+  const dy = newY - c.y;
+  const translated = dx !== 0 || dy !== 0;
   if (!scaled && !translated) return undefined;
-  const scaleHandle = (h: PathPoint['handleIn']): PathPoint['handleIn'] =>
-    h && scaled ? { dx: h.dx * scaleX, dy: h.dy * scaleY } : h;
-  return c.path.map((pt) => ({
-    ...pt,
-    x: (pt.x - c.x) * scaleX + newX,
-    y: (pt.y - c.y) * scaleY + newY,
-    handleIn: scaleHandle(pt.handleIn),
-    handleOut: scaleHandle(pt.handleOut),
-  }));
+  const scaledPoints = scaled ? scalePathPoints(c.path, scaleX, scaleY, c.x, c.y) : c.path;
+  return translated ? translatePathPoints(scaledPoints, dx, dy) : [...scaledPoints];
 }
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
@@ -177,12 +173,16 @@ export function createCutoutSlice(set: Set) {
             }
             newGroupId = groupMap.get(c.groupId) ?? null;
           }
+          // Path points are absolute, so shifting x/y must shift them too —
+          // otherwise duplicates render with the original path geometry.
+          const translatedPath = c.path ? translatePathPoints(c.path, 5, 5) : c.path;
           return {
             ...c,
             id: generateLayoutId(),
             x: c.x + 5,
             y: c.y + 5,
             groupId: newGroupId,
+            ...(translatedPath ? { path: translatedPath } : {}),
           };
         });
         state.params.cutouts = [...state.params.cutouts, ...duplicated];

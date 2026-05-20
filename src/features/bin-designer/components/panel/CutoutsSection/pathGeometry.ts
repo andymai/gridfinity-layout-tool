@@ -61,35 +61,9 @@ export function getPathBounds(points: readonly PathPoint[]): Bounds {
   return { minX, minY, maxX, maxY };
 }
 
-/** Scale all path points proportionally around an origin. */
-export function scalePathPoints(
-  points: readonly PathPoint[],
-  scaleX: number,
-  scaleY: number,
-  originX: number,
-  originY: number
-): PathPoint[] {
-  return points.map((pt) => ({
-    ...pt,
-    x: originX + (pt.x - originX) * scaleX,
-    y: originY + (pt.y - originY) * scaleY,
-    handleIn: pt.handleIn ? { dx: pt.handleIn.dx * scaleX, dy: pt.handleIn.dy * scaleY } : null,
-    handleOut: pt.handleOut ? { dx: pt.handleOut.dx * scaleX, dy: pt.handleOut.dy * scaleY } : null,
-  }));
-}
-
-/** Translate all path points by a delta. */
-export function translatePathPoints(
-  points: readonly PathPoint[],
-  dx: number,
-  dy: number
-): PathPoint[] {
-  return points.map((pt) => ({
-    ...pt,
-    x: pt.x + dx,
-    y: pt.y + dy,
-  }));
-}
+// Re-exported from utils/ so the cutout store can share the same transforms
+// without crossing the `components → store` boundary.
+export { scalePathPoints, translatePathPoints } from '@/features/bin-designer/utils/pathTransforms';
 
 /** Insert a new point into a path at the given index. */
 export function insertPoint(
