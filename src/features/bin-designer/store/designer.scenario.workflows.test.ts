@@ -177,7 +177,7 @@ describe('DesignerStore - multi-action workflows', () => {
       expect(params.style).toBe('standard');
     });
 
-    it('switching to solid keeps inserts but ignores compartments in geometry', () => {
+    it('enabling base.solid keeps inserts but ignores compartments in geometry', () => {
       const { addInsert, setCompartmentGrid, updateBase } = useDesignerStore.getState();
 
       setCompartmentGrid(2, 2);
