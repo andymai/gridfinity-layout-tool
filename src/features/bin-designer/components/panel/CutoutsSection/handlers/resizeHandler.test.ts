@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { Cutout } from '@/features/bin-designer/types';
-import type { StartRect } from '../geometry';
+import { MIN_CUTOUT_SIZE, type StartRect } from '../geometry';
 import { handleResizeMove } from './resizeHandler';
 import type { InteractionMode, ResizeHandle } from '../useCutoutInteraction';
 import type { BinBounds, PointerMoveEvent, PreviewSetters, DeadZoneRef } from './types';
@@ -116,9 +116,8 @@ describe('handleResizeMove joint-constraint clamping', () => {
 
     const patch = setters.preview?.get('c-1');
     if (patch) {
-      // MIN_CUTOUT_SIZE is 1mm; clamping must not violate it.
-      expect((patch.width as number) ?? 1).toBeGreaterThanOrEqual(1);
-      expect((patch.depth as number) ?? 1).toBeGreaterThanOrEqual(1);
+      expect(patch.width as number).toBeGreaterThanOrEqual(MIN_CUTOUT_SIZE);
+      expect(patch.depth as number).toBeGreaterThanOrEqual(MIN_CUTOUT_SIZE);
     }
   });
 });
