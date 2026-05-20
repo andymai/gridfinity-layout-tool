@@ -395,8 +395,15 @@ export function maskToPolygon(mask: CellMask): readonly MaskLoop[] {
       const candidates = byStart.get(key(cur.tx, cur.ty));
       if (!candidates) break;
       const isSaddle = candidates.length > 1;
-      const curRight = isSaddle ? rightCellKey(cur) : 0;
-      cur = candidates.find((c) => !consumed.has(c) && (!isSaddle || rightCellKey(c) === curRight));
+      const curRight: number = isSaddle ? rightCellKey(cur) : 0;
+      let next: Edge | undefined;
+      for (const c of candidates) {
+        if (consumed.has(c)) continue;
+        if (isSaddle && rightCellKey(c) !== curRight) continue;
+        next = c;
+        break;
+      }
+      cur = next;
     }
     if (walk.length > 0) loops.push(collapse(walk));
   }

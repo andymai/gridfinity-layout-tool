@@ -32,11 +32,20 @@ const DIAGONAL_HOLES_SLASH: CellMask = {
   ] as (0 | 1)[],
 };
 
-// Same configuration mirrored — empty cells on the \ diagonal.
+// Mirror of the / saddle — empties run along the \ diagonal instead.
 const DIAGONAL_HOLES_BACKSLASH: CellMask = {
   cols: 4,
   rows: 4,
-  cells: [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1] as (0 | 1)[],
+  cells: [
+    // row 0 (bottom)
+    1, 1, 1, 1,
+    // row 1
+    1, 0, 1, 1,
+    // row 2
+    1, 1, 0, 1,
+    // row 3 (top)
+    1, 1, 1, 1,
+  ] as (0 | 1)[],
 };
 
 describe('bin generation with diagonally-adjacent mask holes', () => {
