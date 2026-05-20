@@ -31,6 +31,7 @@ import { lipWall } from './lipWall';
 import { handles } from './handles';
 import { honeycombJunction } from './honeycombJunction';
 import { customShapes } from './customShape';
+import { permutationMatrix } from './permutationMatrix';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -63,4 +64,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...handles,
   ...honeycombJunction,
   ...customShapes,
+  ...permutationMatrix,
 ];
