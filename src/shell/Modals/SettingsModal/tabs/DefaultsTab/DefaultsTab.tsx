@@ -188,15 +188,7 @@ export function DefaultsTab() {
               <DeferredNumberInput
                 id="defaultGridUnit"
                 value={settings.defaultGridUnitMm}
-                onChange={(value) =>
-                  updateSetting(
-                    'defaultGridUnitMm',
-                    Math.max(
-                      CONSTRAINTS.GRID_UNIT_MM_MIN,
-                      Math.min(CONSTRAINTS.GRID_UNIT_MM_MAX, value)
-                    )
-                  )
-                }
+                onChange={(value) => updateSetting('defaultGridUnitMm', value)}
                 min={CONSTRAINTS.GRID_UNIT_MM_MIN}
                 max={CONSTRAINTS.GRID_UNIT_MM_MAX}
                 className="input w-14 py-0.5 px-1 text-xs text-right"
