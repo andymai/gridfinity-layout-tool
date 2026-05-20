@@ -299,4 +299,114 @@ export const customShapes: ScenarioCase[] = [
       wallPattern: { enabled: true, pattern: 'honeycomb' as const },
     },
   }),
+
+  defineScenario('custom-shape', '3×3 L with scoop (polygon scoop placement)', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: L_SHAPE_MASK,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+      scoop: { enabled: true, radius: 'auto' },
+    },
+    timeout: 60_000,
+  }),
+
+  defineScenario('custom-shape', '3×3 T with lip + scoop (concave perimeter + scoop)', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: T_SHAPE_MASK,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+      scoop: { enabled: true, radius: 'auto' },
+    },
+    timeout: 60_000,
+  }),
+
+  defineScenario('custom-shape', '3×3 U with handles + label (multi-feature polygon)', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 3,
+      height: 5,
+      cellMask: U_SHAPE_MASK,
+      handles: {
+        ...DEFAULT_BIN_PARAMS.handles,
+        enabled: true,
+        front: { ...DEFAULT_HANDLE_SIDE, enabled: true },
+      },
+      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+    },
+    timeout: 60_000,
+  }),
+
+  defineScenario('custom-shape', '3×3 O-shape + magnet base + lip', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: O_SHAPE_MASK,
+      base: {
+        ...DEFAULT_BIN_PARAMS.base,
+        style: 'magnet',
+        stackingLip: true,
+      },
+    },
+    timeout: 60_000,
+  }),
+
+  defineScenario('custom-shape', '3×3 O-shape + half sockets', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: O_SHAPE_MASK,
+      base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
+    },
+    timeout: 60_000,
+  }),
+
+  defineScenario('custom-shape', '3×3 L tall (10u) + lip (z-extrusion stability)', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 3,
+      height: 10,
+      cellMask: L_SHAPE_MASK,
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    },
+    timeout: 60_000,
+  }),
+
+  defineScenario('custom-shape', '4×3 asymmetric L (non-square bounding box)', {
+    // Wider than tall; tests that polygon path handles non-square masks.
+    assert: 'structural',
+    params: {
+      width: 4,
+      depth: 3,
+      cellMask: buildMask([
+        [1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0, 0, 0, 0],
+      ]),
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    },
+    timeout: 60_000,
+  }),
+
+  defineScenario('custom-shape', '3×3 L + slotted bin (polygon + slots)', {
+    assert: 'structural',
+    params: {
+      width: 3,
+      depth: 3,
+      cellMask: L_SHAPE_MASK,
+      style: 'slotted',
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    },
+    timeout: 60_000,
+  }),
 ];

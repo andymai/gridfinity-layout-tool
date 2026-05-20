@@ -432,4 +432,91 @@ describe('lid generation and export scenarios', () => {
       }
     }, 60_000);
   });
+
+  describe('extended lid coverage', () => {
+    it('builds a valid lid for a 1.5×1.5 half-bin', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(makeParams({}, { width: 1.5, depth: 1.5, height: 3 }));
+      expect(result).not.toBeNull();
+      assertStructurallyValid(result!, '1.5x1.5 lid');
+    });
+
+    it('builds a valid lid for a tall (height 10) bin', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(makeParams({}, { width: 2, depth: 2, height: 10 }));
+      expect(result).not.toBeNull();
+      assertStructurallyValid(result!, 'tall lid');
+      // Lid Z thickness is bin-height-independent — the lid mesh is the
+      // same vertical extent whether the bin is 3U or 10U.
+      const bb = boundingBox(result!.vertices);
+      expect(bb.maxZ - bb.minZ).toBeGreaterThan(4);
+      expect(bb.maxZ - bb.minZ).toBeLessThan(DEFAULT_BIN_PARAMS.heightUnitMm * 2);
+    });
+
+    it('builds a valid lid for a custom heightUnitMm (10mm)', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(
+        makeParams({}, { width: 2, depth: 2, height: 3, heightUnitMm: 10 })
+      );
+      expect(result).not.toBeNull();
+      assertStructurallyValid(result!, 'custom heightUnitMm lid');
+    });
+
+    it('builds a valid lid for an L-shape polygon + magnet holes', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(
+        makeParams({ magnetHoles: true }, { width: 3, depth: 3, height: 3, cellMask: L_SHAPE_MASK })
+      );
+      expect(result).not.toBeNull();
+      assertStructurallyValid(result!, 'L+magnet lid');
+    });
+
+    it('builds a valid lid for a U-shape polygon', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(
+        makeParams({}, { width: 3, depth: 3, height: 3, cellMask: U_SHAPE_MASK })
+      );
+      expect(result).not.toBeNull();
+      assertStructurallyValid(result!, 'U-shape lid');
+    });
+
+    it('builds a valid lid for a slotted bin (lid is independent of bin style)', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(
+        makeParams({}, { width: 2, depth: 2, height: 4, style: 'slotted' })
+      );
+      expect(result).not.toBeNull();
+      assertStructurallyValid(result!, 'slotted-bin lid');
+    });
+
+    it('builds a valid lid with thick walls (2.4mm) — lip clearance check', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(
+        makeParams({}, { width: 2, depth: 2, height: 3, wallThickness: 2.4 })
+      );
+      expect(result).not.toBeNull();
+      assertStructurallyValid(result!, 'thick-wall lid');
+    });
+
+    it('builds a valid lid with only-front click rail enabled', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const result = generateLid(
+        makeParams(
+          { clickRails: { front: true, back: false, left: false, right: false } },
+          { width: 2, depth: 2, height: 3 }
+        )
+      );
+      expect(result).not.toBeNull();
+      assertStructurallyValid(result!, 'front-only-rail lid');
+    });
+
+    it('lid mesh is deterministic: identical inputs produce the same triangle count', async () => {
+      const { generateLid } = await import('./lidOrchestrator');
+      const a = generateLid(makeParams({}, { width: 2, depth: 2, height: 3 }));
+      const b = generateLid(makeParams({}, { width: 2, depth: 2, height: 3 }));
+      expect(a).not.toBeNull();
+      expect(b).not.toBeNull();
+      expect(a!.triangleCount).toBe(b!.triangleCount);
+    });
+  });
 });
