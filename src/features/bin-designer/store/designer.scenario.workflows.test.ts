@@ -20,8 +20,6 @@ const cutout = (overrides: Partial<Cutout> = {}): Cutout => ({
   cornerRadius: 0,
   label: '',
   groupId: null,
-  scoopRadiusW: 0,
-  scoopRadiusD: 0,
   ...overrides,
 });
 
