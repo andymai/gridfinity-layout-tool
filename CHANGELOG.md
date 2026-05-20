@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.108.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.108.2...gridfinity-layout-tool-v4.108.3) (2026-05-20)
+
+
+### Bug Fixes
+
+* **bin-designer:** skip generation epoch on cosmetic cutout mutations ([#1801](https://github.com/andymai/gridfinity-layout-tool/issues/1801)) ([8416577](https://github.com/andymai/gridfinity-layout-tool/commit/84165774baef56bdc25f30fe1dfe6b46ecbedffe))
+
 ## [4.108.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.108.1...gridfinity-layout-tool-v4.108.2) (2026-05-20)
 
 
