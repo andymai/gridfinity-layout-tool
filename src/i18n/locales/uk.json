@@ -611,6 +611,8 @@
   "settings.defaultLayerHeight": "Стандартна висота шару",
   "settings.defaultPrintBedSize": "Друкарський стіл",
   "settings.defaultGridUnit": "Одиниця сітки",
+  "settings.gridfinityStandardMm": "Стандарт Gridfinity: {value}мм",
+  "settings.resetGridfinityStandard": "Скинути до стандарту Gridfinity",
   "settings.copiedFromLayout": "Стандартні налаштування скопійовано з поточної розкладки",
   "settings.confirmResetAll": "Скинути всі налаштування до стандартних? Цю дію неможливо скасувати.",
   "settings.resetAllConfirmed": "Усі налаштування скинуто",

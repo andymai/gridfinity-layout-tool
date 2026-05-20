@@ -1,6 +1,7 @@
 {
   "maxShortValueLength": 3,
   "keys": [
+    "settings.gridfinityStandardMm",
     "auth.providerGithub",
     "auth.providerGoogle",
     "dock.syncStatusOffline",

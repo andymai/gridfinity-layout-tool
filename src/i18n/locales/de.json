@@ -1407,6 +1407,8 @@
   "settings.defaultCategories": "Standard-Kategorien",
   "settings.defaultCategoriesHint": "Kategorien für neue Layouts:",
   "settings.defaultGridUnit": "Rastereinheit",
+  "settings.gridfinityStandardMm": "Standard-Gridfinity: {value}mm",
+  "settings.resetGridfinityStandard": "Auf Standard-Gridfinity zurücksetzen",
   "settings.defaultLayerHeight": "Standard-Lagenhöhe",
   "settings.defaultPreferences": "Standardeinstellungen",
   "settings.defaultPreferencesHint": "Neue Layouts verwenden diese Einstellungen:",

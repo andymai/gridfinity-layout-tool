@@ -611,6 +611,8 @@
   "settings.defaultLayerHeight": "Standardlagerhöjd",
   "settings.defaultPrintBedSize": "Utskriftsbädd",
   "settings.defaultGridUnit": "Rutnätsenhet",
+  "settings.gridfinityStandardMm": "Standard Gridfinity: {value}mm",
+  "settings.resetGridfinityStandard": "Återställ till standard Gridfinity",
   "settings.copiedFromLayout": "Standardvärden kopierade från nuvarande layout",
   "settings.confirmResetAll": "Återställ alla inställningar till standard? Detta kan inte ångras.",
   "settings.resetAllConfirmed": "Alla inställningar återställda",

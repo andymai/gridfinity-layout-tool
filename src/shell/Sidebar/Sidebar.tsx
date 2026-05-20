@@ -93,6 +93,7 @@ export function Sidebar() {
     setGridUnitMm,
     setHeightUnitMm,
     setPrintBedSize,
+    resetGridfinityStandard,
     showHalfBinBlockedModal,
     setShowHalfBinBlockedModal,
     halfBinViolation,
@@ -459,11 +460,16 @@ export function Sidebar() {
                         id="gridUnit"
                         value={gridUnitMm}
                         onChange={setGridUnitMm}
-                        min={1}
-                        max={200}
+                        min={CONSTRAINTS.GRID_UNIT_MM_MIN}
+                        max={CONSTRAINTS.GRID_UNIT_MM_MAX}
                         className="input w-14 py-0.5 px-1 text-xs text-right"
                       />
                     </SettingsRow>
+                    <p className="text-[10px] text-content-tertiary mt-0.5">
+                      {t('settings.gridfinityStandardMm', {
+                        value: CONSTRAINTS.GRID_UNIT_MM_DEFAULT,
+                      })}
+                    </p>
                   </div>
                   <div data-help-target="height-unit">
                     <SettingsRow
@@ -476,11 +482,16 @@ export function Sidebar() {
                         id="heightUnit"
                         value={heightUnitMm}
                         onChange={setHeightUnitMm}
-                        min={1}
-                        max={50}
+                        min={CONSTRAINTS.HEIGHT_UNIT_MM_MIN}
+                        max={CONSTRAINTS.HEIGHT_UNIT_MM_MAX}
                         className="input w-14 py-0.5 px-1 text-xs text-right"
                       />
                     </SettingsRow>
+                    <p className="text-[10px] text-content-tertiary mt-0.5">
+                      {t('settings.gridfinityStandardMm', {
+                        value: CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT,
+                      })}
+                    </p>
                   </div>
                   <div data-help-target="print-bed-size">
                     <SettingsRow
@@ -498,6 +509,17 @@ export function Sidebar() {
                       />
                     </SettingsRow>
                   </div>
+                  <button
+                    type="button"
+                    onClick={resetGridfinityStandard}
+                    disabled={
+                      gridUnitMm === CONSTRAINTS.GRID_UNIT_MM_DEFAULT &&
+                      heightUnitMm === CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT
+                    }
+                    className="w-full text-[11px] py-1.5 px-2 mt-1 rounded text-content-tertiary hover:text-content hover:bg-surface-hover border border-stroke-subtle transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-content-tertiary disabled:hover:bg-transparent"
+                  >
+                    {t('settings.resetGridfinityStandard')}
+                  </button>
                 </div>
               </CollapsibleSection>
             </div>

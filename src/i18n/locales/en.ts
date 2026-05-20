@@ -765,6 +765,8 @@ const en: Record<string, string> = {
   'settings.defaultLayerHeight': 'Default Layer Height',
   'settings.defaultPrintBedSize': 'Print Bed',
   'settings.defaultGridUnit': 'Grid Unit',
+  'settings.gridfinityStandardMm': 'Standard Gridfinity: {value}mm',
+  'settings.resetGridfinityStandard': 'Reset to Gridfinity Standard',
   'settings.copiedFromLayout': 'Defaults copied from current layout',
   'settings.confirmResetAll': 'Reset all settings to their defaults? This cannot be undone.',
   'settings.resetAllConfirmed': 'All settings reset',

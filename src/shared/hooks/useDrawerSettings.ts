@@ -88,6 +88,7 @@ export interface UseDrawerSettingsReturn {
   setGridUnitMm: (value: number) => void;
   setHeightUnitMm: (value: number) => void;
   setPrintBedSize: (value: number, depth?: number) => void;
+  resetGridfinityStandard: () => void;
 
   // STL site toggle
   toggleSTLSite: (siteId: string) => void;
@@ -363,6 +364,13 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     activeLayerHeight,
   ]);
 
+  const resetGridfinityStandard = useCallback(() => {
+    batch(() => {
+      setGridUnitMm(CONSTRAINTS.GRID_UNIT_MM_DEFAULT);
+      setHeightUnitMm(CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT);
+    });
+  }, [setGridUnitMm, setHeightUnitMm]);
+
   // Save current categories as defaults
   const handleSaveCategoriesAsDefaults = useCallback(() => {
     saveCategoriesAsDefaults(currentCategories);
@@ -426,6 +434,7 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
     setGridUnitMm,
     setHeightUnitMm,
     setPrintBedSize,
+    resetGridfinityStandard,
     toggleSTLSite,
 
     showSaveDefaultsConfirm,
