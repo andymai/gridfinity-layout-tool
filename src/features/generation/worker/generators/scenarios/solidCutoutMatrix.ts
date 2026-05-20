@@ -21,8 +21,12 @@ const SOLID_BASE = { ...DEFAULT_BIN_PARAMS.base, solid: true, stackingLip: false
 const CAT = 'solid+cutout matrix';
 
 export const solidCutoutMatrix: ScenarioCase[] = [
-  // ─── Solid mode × label tabs (missing today) ────────────────────────────
-  defineScenario(CAT, 'solid + label tab bracket (top of solid)', {
+  // ─── Solid mode silently ignores label tabs and handles ─────────────────
+  // featuresStage short-circuits in solid mode and applies only cutout cuts
+  // (see pipeline/stages/featuresStage.ts: `if (dim.solid) ... return ctx`).
+  // These scenarios lock in that contract: setting `label.enabled` or
+  // enabling handle sides on a solid bin must NOT alter the mesh.
+  defineScenario(CAT, 'solid + label tab bracket params ignored (no geometry change)', {
     assert: 'structural',
     params: {
       height: 4,
@@ -33,9 +37,18 @@ export const solidCutoutMatrix: ScenarioCase[] = [
     customAssert: (result) => {
       assertNoDegenerateTriangles(result, 'solid+label-bracket');
     },
+    compareWith: {
+      params: { height: 4, base: SOLID_BASE },
+      assert: (withLabel, withoutLabel) => {
+        expect(
+          withLabel.triangleCount,
+          'solid+label should match plain solid — features stage short-circuits'
+        ).toBe(withoutLabel.triangleCount);
+      },
+    },
   }),
 
-  defineScenario(CAT, 'solid + label tab solid (gusset on solid)', {
+  defineScenario(CAT, 'solid + label tab solid params ignored', {
     assert: 'structural',
     params: {
       height: 4,
@@ -45,7 +58,7 @@ export const solidCutoutMatrix: ScenarioCase[] = [
     timeout: 60_000,
   }),
 
-  defineScenario(CAT, 'solid + label tab + thick walls (gusset edge case)', {
+  defineScenario(CAT, 'solid + label tab + thick walls — label still ignored', {
     assert: 'structural',
     params: {
       height: 4,
@@ -55,7 +68,7 @@ export const solidCutoutMatrix: ScenarioCase[] = [
     },
   }),
 
-  defineScenario(CAT, 'solid + label + cutout (3-feature)', {
+  defineScenario(CAT, 'solid + label (ignored) + cutout (applied)', {
     assert: 'structural',
     params: {
       height: 5,
@@ -66,8 +79,9 @@ export const solidCutoutMatrix: ScenarioCase[] = [
     timeout: 60_000,
   }),
 
-  // ─── Solid + handles + cutouts ────────────────────────────────────────────
-  defineScenario(CAT, 'solid + handle holes + cutout (cuts above + into solid)', {
+  // ─── Solid + handle params (also ignored) + cutouts ──────────────────────
+  // Same short-circuit applies to handles — only the cutout takes effect.
+  defineScenario(CAT, 'solid + handle params ignored + cutout (only cutout cuts)', {
     assert: 'structural',
     params: {
       height: 5,
@@ -84,13 +98,15 @@ export const solidCutoutMatrix: ScenarioCase[] = [
   }),
 
   // ─── topOffset × cutDepth matrix ─────────────────────────────────────────
+  // At height=5 and heightUnitMm=7, solidSurfaceZ ≈ wallHeight - topOffset
+  // ≈ 30 - topOffset. A cut reaches the floor when cutDepth >= solidSurfaceZ.
   ...[
     { offset: 0, depth: 3, label: 'flush + shallow' },
-    { offset: 0, depth: 10, label: 'flush + deep' },
+    { offset: 0, depth: 10, label: 'flush + medium' },
     { offset: 5, depth: 3, label: 'mid-offset + shallow' },
-    { offset: 5, depth: 15, label: 'mid-offset + deep (past floor)' },
+    { offset: 5, depth: 15, label: 'mid-offset + deep' },
     { offset: 20, depth: 2, label: 'high-offset + shallow' },
-    { offset: 20, depth: 30, label: 'high-offset + deep (likely past floor)' },
+    { offset: 20, depth: 30, label: 'high-offset + deep (past floor)' },
   ].map(({ offset, depth, label }) =>
     defineScenario(CAT, `solid topOffset=${offset} cutDepth=${depth} (${label})`, {
       assert: 'structural',
