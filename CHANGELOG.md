@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.108.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.108.0...gridfinity-layout-tool-v4.108.1) (2026-05-20)
+
+
+### Bug Fixes
+
+* **bin-designer:** handle diagonally-adjacent holes in custom shapes ([#1797](https://github.com/andymai/gridfinity-layout-tool/issues/1797)) ([8a220dc](https://github.com/andymai/gridfinity-layout-tool/commit/8a220dc3a14f44a76facf7dcda1e815b4d73fc83))
+
 ## [4.108.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.107.0...gridfinity-layout-tool-v4.108.0) (2026-05-20)
 
 
