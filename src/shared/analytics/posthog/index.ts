@@ -53,6 +53,7 @@ export {
   trackWasmThreadingStatus,
   trackCachePerformance,
   trackKernelPerformance,
+  trackBooleanFallbacks,
   trackBaseplatePreviewTiming,
   trackGalleryOpened,
   trackGalleryClosed,

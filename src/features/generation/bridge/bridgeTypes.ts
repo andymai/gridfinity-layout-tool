@@ -15,6 +15,7 @@ import type {
   FaceGroupData,
   KernelName,
   KernelPerfCategory,
+  BooleanFallbackEntry,
 } from './types';
 
 /** Callback for progress updates during generation */
@@ -84,6 +85,14 @@ export interface KernelPerfStatsPayload {
 
 /** Callback for kernel perf stats reporting */
 export type KernelPerfStatsCallback = (payload: KernelPerfStatsPayload) => void;
+
+/** Payload for boolean fallback stats callback */
+export interface BooleanFallbackStatsPayload {
+  readonly records: readonly BooleanFallbackEntry[];
+}
+
+/** Callback for boolean fallback stats reporting */
+export type BooleanFallbackStatsCallback = (payload: BooleanFallbackStatsPayload) => void;
 
 /** Information about the WASM threading capabilities */
 export interface ThreadingInfo {

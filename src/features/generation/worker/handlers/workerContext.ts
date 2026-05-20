@@ -10,6 +10,10 @@ import { getPerformanceStats, resetPerformanceStats } from 'brepjs';
 import type { WorkerResponse, MeshData, KernelName, ExportErrorCode } from '../../bridge/types';
 import { getAllShapeCacheStats, resetAllShapeCacheStats } from '../generators/shapeCache';
 import { getBaseplateCacheStats, resetBaseplateCacheStats } from '../generators/baseplateGenerator';
+import {
+  getBooleanFallbackStats,
+  resetBooleanFallbackStats,
+} from '../generators/pipeline/stages/booleanStage';
 import { isAbortError } from '../generators/utils/abort';
 
 /** Mutable worker state */
@@ -89,6 +93,7 @@ export function runGeneration(
   try {
     // brepjs perf stats are only meaningful for the opencascade kernel
     if (activeKernel === 'opencascade') resetPerformanceStats();
+    resetBooleanFallbackStats();
     const meshData = generator(signal);
 
     if (activeRequestId !== requestId) return;
@@ -170,6 +175,21 @@ export function runGeneration(
 
     if (activeKernel === 'opencascade') {
       respond({ type: 'KERNEL_PERF_STATS', requestId, stats: kernelPerfStats });
+    }
+
+    const fallbackRecords = getBooleanFallbackStats();
+    if (fallbackRecords.length > 0) {
+      respond({
+        type: 'BOOLEAN_FALLBACK_STATS',
+        requestId,
+        records: fallbackRecords.map((r) => ({
+          category: r.category,
+          targetCount: r.targetCount,
+          successfulCount: r.successfulCount,
+          errorCategory: r.errorCategory,
+        })),
+      });
+      resetBooleanFallbackStats();
     }
   } catch (e) {
     if (isAbortError(e)) return;

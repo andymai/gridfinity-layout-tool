@@ -10,7 +10,7 @@ vi.mock('./trackEvent', () => ({
   getDeviceType: () => 'desktop',
 }));
 
-import { trackCachePerformance } from './eventsPerformance';
+import { trackBooleanFallbacks, trackCachePerformance } from './eventsPerformance';
 
 beforeEach(() => {
   trackEventMock.mockReset();
@@ -115,5 +115,47 @@ describe('trackCachePerformance', () => {
     const props = trackEventMock.mock.calls[0]?.[1] as Record<string, number>;
     expect(props).toHaveProperty('cache_used_hit_rate', 1);
     expect(props).not.toHaveProperty('cache_idle_hit_rate');
+  });
+});
+
+describe('trackBooleanFallbacks', () => {
+  it('emits no events when no fallbacks fired', () => {
+    trackBooleanFallbacks({ records: [] });
+    expect(trackEventMock).not.toHaveBeenCalled();
+  });
+
+  it('emits one event per fallback record with the diagnostic counts', () => {
+    trackBooleanFallbacks({
+      records: [
+        {
+          category: 'cut',
+          targetCount: 8,
+          successfulCount: 7,
+          errorCategory: 'Standard_ConstructionError: face # incompatible',
+        },
+        {
+          category: 'fuse',
+          targetCount: 3,
+          successfulCount: 0,
+          errorCategory: 'BRepAlgoAPI failed',
+        },
+      ],
+    });
+
+    expect(trackEventMock).toHaveBeenCalledTimes(2);
+    expect(trackEventMock).toHaveBeenNthCalledWith(1, 'generation_boolean_fallback', {
+      op_category: 'cut',
+      target_count: 8,
+      successful_count: 7,
+      failed_count: 1,
+      error_category: 'Standard_ConstructionError: face # incompatible',
+    });
+    expect(trackEventMock).toHaveBeenNthCalledWith(2, 'generation_boolean_fallback', {
+      op_category: 'fuse',
+      target_count: 3,
+      successful_count: 0,
+      failed_count: 3,
+      error_category: 'BRepAlgoAPI failed',
+    });
   });
 });

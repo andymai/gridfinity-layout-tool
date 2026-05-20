@@ -52,6 +52,7 @@ export {
   trackWasmThreadingStatus,
   trackCachePerformance,
   trackKernelPerformance,
+  trackBooleanFallbacks,
   trackBaseplatePreviewTiming,
 } from './eventsPerformance';
 

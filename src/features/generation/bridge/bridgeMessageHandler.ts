@@ -17,6 +17,7 @@ import type {
   GenerationResult,
   CacheStatsCallback,
   KernelPerfStatsCallback,
+  BooleanFallbackStatsCallback,
   DedupCache,
   ExportSlot,
   PendingExport,
@@ -33,6 +34,7 @@ export interface MessageHandlerContext {
   onProgress: ProgressCallback | null;
   onCacheStats: CacheStatsCallback | null;
   onKernelPerfStats: KernelPerfStatsCallback | null;
+  onBooleanFallbackStats: BooleanFallbackStatsCallback | null;
   readonly adaptiveDebounce: AdaptiveDebounce;
   readonly binCache: DedupCache;
   readonly baseplateCache: DedupCache;
@@ -196,6 +198,10 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
 
       case 'KERNEL_PERF_STATS':
         ctx.onKernelPerfStats?.({ stats: response.stats });
+        break;
+
+      case 'BOOLEAN_FALLBACK_STATS':
+        ctx.onBooleanFallbackStats?.({ records: response.records });
         break;
 
       case 'INIT_READY':
