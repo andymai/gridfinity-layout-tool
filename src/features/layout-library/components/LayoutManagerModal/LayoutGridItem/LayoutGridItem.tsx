@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import type { LayoutEntry } from '@/core/types';
 import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import { LayoutActions } from '../LayoutActions';
@@ -54,17 +53,13 @@ export function LayoutGridItem({
     onSave: onRename,
   });
 
-  const handleItemKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (isEditing) return;
-
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        onSelect();
-      }
-    },
-    [isEditing, onSelect]
-  );
+  const handleItemKeyDown = (e: React.KeyboardEvent) => {
+    if (isEditing) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect();
+    }
+  };
 
   return (
     <div
@@ -75,7 +70,7 @@ export function LayoutGridItem({
       tabIndex={isFocused ? 0 : -1}
       data-layout-card
       className={`
-        group w-full text-left rounded-lg overflow-hidden
+        w-full text-left rounded-lg overflow-hidden
         border-2 transition-colors cursor-pointer
         focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-secondary
         ${isActive ? 'border-accent' : 'border-transparent hover:border-accent/50'}
@@ -84,7 +79,6 @@ export function LayoutGridItem({
       onKeyDown={handleItemKeyDown}
       onFocus={onFocus}
     >
-      {/* Thumbnail - landscape aspect keeps cards short and uniform */}
       <div className="aspect-[4/3] relative flex items-center justify-center bg-surface-secondary">
         <LayoutThumbnail
           preview={entry.preview}
@@ -92,7 +86,6 @@ export function LayoutGridItem({
           showLabels
           className="max-w-full max-h-full"
         />
-        {/* Active badge */}
         {isActive && (
           <span
             className="absolute top-1.5 right-1.5 rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-on-dark"
@@ -103,63 +96,50 @@ export function LayoutGridItem({
         )}
       </div>
 
-      {/* Content */}
       <div className="px-2 py-1.5 bg-surface-secondary">
-        {/* Title */}
-        <div className="min-w-0">
-          {isEditing ? (
-            <input
-              ref={inputRef}
-              type="text"
-              value={editingValue}
-              onChange={(e) => handleChange(e.target.value)}
-              onBlur={handleFinish}
-              onKeyDown={handleKeyDown}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full bg-surface px-1.5 py-0.5 rounded border border-stroke focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-content text-sm"
-              maxLength={64}
-              aria-label={t('layouts.layoutName')}
-            />
-          ) : (
-            <h3
-              className="font-medium text-content text-sm leading-tight line-clamp-1"
-              title={entry.name}
-            >
-              {entry.name}
-            </h3>
-          )}
-        </div>
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={editingValue}
+            onChange={(e) => handleChange(e.target.value)}
+            onBlur={handleFinish}
+            onKeyDown={handleKeyDown}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full bg-surface px-1.5 py-0.5 rounded border border-stroke focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none text-content text-sm"
+            maxLength={64}
+            aria-label={t('layouts.layoutName')}
+          />
+        ) : (
+          <h3
+            className="font-medium text-content text-sm leading-tight line-clamp-1"
+            title={entry.name}
+          >
+            {entry.name}
+          </h3>
+        )}
 
-        {/* Metadata */}
         <p className="text-xs text-content-secondary mt-0.5">
           {entry.preview.binCount} {t('layouts.bins')} · {entry.preview.drawerWidth}×
           {entry.preview.drawerDepth}
         </p>
 
-        {/* Date and actions row */}
         <div className="flex items-center justify-between mt-1">
           <span className="text-[10px] text-content-tertiary">
             {formatRelativeDate(entry.modifiedAt, false)}
           </span>
 
-          <div
-            className="transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
-            role="presentation"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <LayoutActions
-              entry={entry}
-              isOnlyLayout={isOnlyLayout}
-              onCopyLink={onCopyLink}
-              onDownload={onDownload}
-              onRename={startEditing}
-              onDuplicate={onDuplicate}
-              onDelete={onDelete}
-            />
-          </div>
+          <LayoutActions
+            entry={entry}
+            isOnlyLayout={isOnlyLayout}
+            onCopyLink={onCopyLink}
+            onDownload={onDownload}
+            onRename={startEditing}
+            onDuplicate={onDuplicate}
+            onDelete={onDelete}
+          />
         </div>
 
-        {/* Forked From */}
         {entry.forkedFrom && (
           <div className="text-[10px] text-content-tertiary truncate mt-0.5">
             {t('layouts.forkedFromName', { name: entry.forkedFrom.name })}
