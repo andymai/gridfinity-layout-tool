@@ -96,8 +96,12 @@ export const regressions: ScenarioCase[] = [
   }),
 
   // #1653 — divider notches needed to cut through the lip in split slotted
-  // bins; otherwise the lip blocked the divider slot. Invariant: slotted +
-  // lip + stacking lip on visible at lip Z-band.
+  // bins; otherwise the lip blocked the divider slot. Invariant: enabling
+  // the stacking lip must NOT erase the slot notches — so the lip-on
+  // mesh should have MORE triangles than the lip-off baseline (lip adds
+  // geometry) AND the lip should peak above wallHeight. If the lip-on
+  // mesh is suspiciously close to or smaller than lip-off, the notch cut
+  // through the lip probably failed silently.
   defineScenario(CAT, '#1653 slotted + lip + slot notches', {
     assert: 'structural',
     params: {
@@ -111,8 +115,24 @@ export const regressions: ScenarioCase[] = [
     customAssert: (result) => {
       const wallHeight = 6 * GRIDFINITY.HEIGHT_UNIT;
       const bb = boundingBox(result.vertices);
-      // Lip exists (peaks above wallHeight)
-      expect(bb.maxZ).toBeGreaterThan(wallHeight);
+      expect(bb.maxZ, '#1653: lip peaks above wallHeight').toBeGreaterThan(wallHeight);
+    },
+    compareWith: {
+      params: {
+        width: 4,
+        depth: 2,
+        height: 6,
+        style: 'slotted',
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
+      },
+      assert: (lipOn, lipOff) => {
+        // Lip adds geometry; if notches don't cut through it the savings
+        // would be much larger, so lipOn ≥ lipOff is the floor.
+        expect(
+          lipOn.triangleCount,
+          '#1653: slotted+lip should not regress below slotted+nolip triangle count'
+        ).toBeGreaterThanOrEqual(lipOff.triangleCount);
+      },
     },
   }),
 
