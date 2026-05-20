@@ -69,7 +69,12 @@ export function LayoutGridItem({
       aria-current={isActive ? 'true' : undefined}
       tabIndex={isFocused ? 0 : -1}
       data-layout-card
-      className={`w-full text-left rounded-lg overflow-hidden border-2 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-secondary ${isActive ? 'border-accent' : 'border-transparent hover:border-accent/50'}`}
+      className={`
+        w-full text-left rounded-lg overflow-hidden
+        border-2 transition-colors cursor-pointer
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-secondary
+        ${isActive ? 'border-accent' : 'border-transparent hover:border-accent/50'}
+      `}
       onClick={() => !isEditing && onSelect()}
       onKeyDown={handleItemKeyDown}
       onFocus={onFocus}
