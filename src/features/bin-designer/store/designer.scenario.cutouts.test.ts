@@ -192,6 +192,32 @@ describe('DesignerStore - cutout actions', () => {
       const { history } = useDesignerStore.getState();
       expect(history.past).toHaveLength(0);
     });
+
+    it('translates absolute path points alongside the 5mm offset', () => {
+      const { addCutout, duplicateCutouts } = useDesignerStore.getState();
+      addCutout(
+        createTestCutout({
+          id: 'p-1',
+          shape: 'path',
+          x: 10,
+          y: 10,
+          path: [
+            { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+            { x: 20, y: 10, handleIn: null, handleOut: null, symmetric: false },
+          ],
+        })
+      );
+
+      duplicateCutouts(['p-1']);
+
+      const dup = useDesignerStore.getState().params.cutouts[1];
+      expect(dup.x).toBe(15);
+      expect(dup.y).toBe(15);
+      expect(dup.path).toEqual([
+        { x: 15, y: 15, handleIn: null, handleOut: null, symmetric: false },
+        { x: 25, y: 15, handleIn: null, handleOut: null, symmetric: false },
+      ]);
+    });
   });
 
   describe('groupCutouts', () => {

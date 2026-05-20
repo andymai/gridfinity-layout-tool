@@ -259,6 +259,93 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(params.cutouts[0].y).toBe(40);
       expect(params.cutouts[0].path).toBeUndefined();
     });
+
+    it('resizing a path cutout scales its path points proportionally', () => {
+      const { addCutout, updateCutout } = useDesignerStore.getState();
+      addCutout(
+        createTestCutout({
+          id: 'p-1',
+          shape: 'path',
+          x: 10,
+          y: 10,
+          width: 20,
+          depth: 20,
+          path: [
+            { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+            { x: 30, y: 10, handleIn: null, handleOut: null, symmetric: false },
+            { x: 20, y: 30, handleIn: null, handleOut: null, symmetric: false },
+          ],
+        })
+      );
+
+      updateCutout('p-1', { width: 40, depth: 40 });
+
+      const c = useDesignerStore.getState().params.cutouts[0];
+      expect(c.width).toBe(40);
+      expect(c.depth).toBe(40);
+      expect(c.path).toEqual([
+        { x: 10, y: 10, handleIn: null, handleOut: null, symmetric: false },
+        { x: 50, y: 10, handleIn: null, handleOut: null, symmetric: false },
+        { x: 30, y: 50, handleIn: null, handleOut: null, symmetric: false },
+      ]);
+    });
+
+    it('resize + move composes scale-around-old-origin then translate', () => {
+      const { addCutout, updateCutout } = useDesignerStore.getState();
+      addCutout(
+        createTestCutout({
+          id: 'p-1',
+          shape: 'path',
+          x: 0,
+          y: 0,
+          width: 10,
+          depth: 10,
+          path: [
+            { x: 0, y: 0, handleIn: null, handleOut: null, symmetric: false },
+            { x: 10, y: 0, handleIn: null, handleOut: null, symmetric: false },
+            { x: 5, y: 10, handleIn: null, handleOut: null, symmetric: false },
+          ],
+        })
+      );
+
+      updateCutout('p-1', { x: 100, y: 50, width: 20, depth: 30 });
+
+      const c = useDesignerStore.getState().params.cutouts[0];
+      expect(c.path).toEqual([
+        { x: 100, y: 50, handleIn: null, handleOut: null, symmetric: false },
+        { x: 120, y: 50, handleIn: null, handleOut: null, symmetric: false },
+        { x: 110, y: 80, handleIn: null, handleOut: null, symmetric: false },
+      ]);
+    });
+
+    it('scales handles by the same factors as the points', () => {
+      const { addCutout, updateCutout } = useDesignerStore.getState();
+      addCutout(
+        createTestCutout({
+          id: 'p-1',
+          shape: 'path',
+          x: 0,
+          y: 0,
+          width: 10,
+          depth: 10,
+          path: [
+            {
+              x: 5,
+              y: 5,
+              handleIn: { dx: -2, dy: 1 },
+              handleOut: { dx: 2, dy: -1 },
+              symmetric: true,
+            },
+          ],
+        })
+      );
+
+      updateCutout('p-1', { width: 30, depth: 20 });
+
+      const pt = useDesignerStore.getState().params.cutouts[0].path?.[0];
+      expect(pt?.handleIn).toEqual({ dx: -6, dy: 2 });
+      expect(pt?.handleOut).toEqual({ dx: 6, dy: -2 });
+    });
   });
 
   describe('updateCutoutsBatch', () => {
@@ -307,6 +394,34 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(params.cutouts[0].path).toEqual([
         { x: 25, y: 30, handleIn: null, handleOut: null, symmetric: false },
         { x: 35, y: 30, handleIn: null, handleOut: null, symmetric: false },
+      ]);
+    });
+
+    it('path resize works in batch', () => {
+      const { addCutout, updateCutoutsBatch } = useDesignerStore.getState();
+      addCutout(
+        createTestCutout({
+          id: 'p-1',
+          shape: 'path',
+          x: 0,
+          y: 0,
+          width: 10,
+          depth: 10,
+          path: [
+            { x: 0, y: 0, handleIn: null, handleOut: null, symmetric: false },
+            { x: 10, y: 0, handleIn: null, handleOut: null, symmetric: false },
+            { x: 5, y: 10, handleIn: { dx: 1, dy: -1 }, handleOut: null, symmetric: false },
+          ],
+        })
+      );
+
+      updateCutoutsBatch(new Map([['p-1', { x: 100, y: 50, width: 30, depth: 20 }]]));
+
+      const c = useDesignerStore.getState().params.cutouts[0];
+      expect(c.path).toEqual([
+        { x: 100, y: 50, handleIn: null, handleOut: null, symmetric: false },
+        { x: 130, y: 50, handleIn: null, handleOut: null, symmetric: false },
+        { x: 115, y: 70, handleIn: { dx: 3, dy: -2 }, handleOut: null, symmetric: false },
       ]);
     });
 
