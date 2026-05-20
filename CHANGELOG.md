@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.108.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.108.1...gridfinity-layout-tool-v4.108.2) (2026-05-20)
+
+
+### Bug Fixes
+
+* **bin-designer:** tearing-safe useCustomBins + idle-aware autosave wait ([#1799](https://github.com/andymai/gridfinity-layout-tool/issues/1799)) ([409d255](https://github.com/andymai/gridfinity-layout-tool/commit/409d255d9c8bfce1d0e6025b4c539da82b3f5e9d))
+
 ## [4.108.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.108.0...gridfinity-layout-tool-v4.108.1) (2026-05-20)
 
 
