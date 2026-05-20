@@ -1407,6 +1407,8 @@
   "settings.defaultCategories": "Standaard Categorieën",
   "settings.defaultCategoriesHint": "Categorieën gebruikt bij het maken van nieuwe layouts:",
   "settings.defaultGridUnit": "Rastereenheid",
+  "settings.gridfinityStandardMm": "Standaard Gridfinity: {value}mm",
+  "settings.resetGridfinityStandard": "Terugzetten naar standaard Gridfinity",
   "settings.defaultLayerHeight": "Standaard laaghoogte",
   "settings.defaultPreferences": "Standaard voorkeuren",
   "settings.defaultPreferencesHint": "Nieuwe layouts gebruiken deze instellingen:",

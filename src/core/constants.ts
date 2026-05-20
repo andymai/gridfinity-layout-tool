@@ -28,6 +28,15 @@ export const CONSTRAINTS = {
   MIN_BIN_HEIGHT: 2, // Minimum bin height in units (1U = base only, no usable cavity)
   MIN_LAYER_HEIGHT: 2, // Minimum layer height in units (1U = socket base only)
   PRINT_GAP_MM: 10, // Gap between bins on print bed
+  // Physical unit bounds. Standard Gridfinity is 42mm grid / 7mm height; the
+  // range here covers half-pitch (21mm) and mini-Gridfinity (25mm) variants
+  // with a small buffer, while rejecting obviously-wrong values like "300".
+  GRID_UNIT_MM_MIN: 20,
+  GRID_UNIT_MM_MAX: 60,
+  GRID_UNIT_MM_DEFAULT: 42,
+  HEIGHT_UNIT_MM_MIN: 3,
+  HEIGHT_UNIT_MM_MAX: 20,
+  HEIGHT_UNIT_MM_DEFAULT: 7,
   // Layout library constraints
   LAYOUTS_MAX: 500, // Max layouts in library (IndexedDB storage)
   LAYOUTS_WARNING_THRESHOLD: 450, // Show warning at this count

@@ -155,6 +155,19 @@ describe('DeferredNumberInput', () => {
       expect(mockOnChange).not.toHaveBeenCalled();
       expect(input).toHaveDisplayValue('5');
     });
+
+    it('does not clamp on focus+blur of an out-of-range value when the user did not edit', () => {
+      // Legacy persisted value (300) sits outside the new bounds. Focusing and
+      // blurring without typing must NOT silently rewrite the stored value.
+      render(<DeferredNumberInput {...defaultProps} value={300} max={60} />);
+
+      const input = screen.getByRole('spinbutton');
+      fireEvent.focus(input);
+      fireEvent.blur(input);
+
+      expect(mockOnChange).not.toHaveBeenCalled();
+      expect(input).toHaveDisplayValue('300');
+    });
   });
 
   describe('committing on Enter', () => {

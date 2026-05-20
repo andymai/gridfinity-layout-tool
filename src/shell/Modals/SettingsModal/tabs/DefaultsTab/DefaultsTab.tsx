@@ -183,18 +183,23 @@ export function DefaultsTab() {
               variant="compact"
             />
           </SettingsRow>
-          <SettingsRow label={t('settings.defaultGridUnit')} htmlFor="defaultGridUnit" unit="mm">
-            <DeferredNumberInput
-              id="defaultGridUnit"
-              value={settings.defaultGridUnitMm}
-              onChange={(value) =>
-                updateSetting('defaultGridUnitMm', Math.max(1, Math.min(200, value)))
-              }
-              min={1}
-              max={200}
-              className="input w-14 py-0.5 px-1 text-xs text-right"
-            />
-          </SettingsRow>
+          <div>
+            <SettingsRow label={t('settings.defaultGridUnit')} htmlFor="defaultGridUnit" unit="mm">
+              <DeferredNumberInput
+                id="defaultGridUnit"
+                value={settings.defaultGridUnitMm}
+                onChange={(value) => updateSetting('defaultGridUnitMm', value)}
+                min={CONSTRAINTS.GRID_UNIT_MM_MIN}
+                max={CONSTRAINTS.GRID_UNIT_MM_MAX}
+                className="input w-14 py-0.5 px-1 text-xs text-right"
+              />
+            </SettingsRow>
+            <p className="text-[10px] text-content-tertiary mt-0.5">
+              {t('settings.gridfinityStandardMm', {
+                value: CONSTRAINTS.GRID_UNIT_MM_DEFAULT,
+              })}
+            </p>
+          </div>
         </div>
 
         {/* Copy from current layout */}

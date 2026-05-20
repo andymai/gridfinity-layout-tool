@@ -411,6 +411,24 @@ describe('useDrawerSettings', () => {
 
       expect(result.current.printBedSize).toBe(300);
     });
+
+    it('resetGridfinityStandard restores 42mm/7mm from non-standard values', () => {
+      const { result } = renderHook(() => useDrawerSettings());
+
+      act(() => {
+        result.current.setGridUnitMm(50);
+        result.current.setHeightUnitMm(10);
+      });
+      expect(result.current.gridUnitMm).toBe(50);
+      expect(result.current.heightUnitMm).toBe(10);
+
+      act(() => {
+        result.current.resetGridfinityStandard();
+      });
+
+      expect(result.current.gridUnitMm).toBe(CONSTRAINTS.GRID_UNIT_MM_DEFAULT);
+      expect(result.current.heightUnitMm).toBe(CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT);
+    });
   });
 
   describe('computed values', () => {

@@ -1407,6 +1407,8 @@
   "settings.defaultCategories": "Standardkategorier",
   "settings.defaultCategoriesHint": "Kategorier brukt ved opprettelse av nye layouts:",
   "settings.defaultGridUnit": "Rutenettenhet",
+  "settings.gridfinityStandardMm": "Standard Gridfinity: {value}mm",
+  "settings.resetGridfinityStandard": "Tilbakestill til standard Gridfinity",
   "settings.defaultLayerHeight": "Standard laghøyde",
   "settings.defaultPreferences": "Standardinnstillinger",
   "settings.defaultPreferencesHint": "Nye layouts vil bruke disse innstillingene:",

@@ -46,6 +46,11 @@ export function DeferredNumberInput({
   }
 
   const commit = useCallback(() => {
+    // Skip when text is unchanged so focus+blur on a value that's now out of
+    // the min/max range doesn't silently clamp it and emit an undo entry —
+    // persisted data stays put until the user actually edits.
+    if (localValue === formatValue(value)) return;
+
     const parsed = parseFloat(localValue);
     if (!isNaN(parsed)) {
       const clamped = Math.max(min, Math.min(max, parsed));

@@ -1407,6 +1407,8 @@
   "settings.defaultCategories": "Catégories par défaut",
   "settings.defaultCategoriesHint": "Catégories utilisées lors de la création de nouveaux layouts :",
   "settings.defaultGridUnit": "Unité de grille",
+  "settings.gridfinityStandardMm": "Gridfinity standard : {value}mm",
+  "settings.resetGridfinityStandard": "Réinitialiser à Gridfinity standard",
   "settings.defaultLayerHeight": "Hauteur de couche par défaut",
   "settings.defaultPreferences": "Préférences par défaut",
   "settings.defaultPreferencesHint": "Les nouveaux layouts utiliseront ces paramètres :",

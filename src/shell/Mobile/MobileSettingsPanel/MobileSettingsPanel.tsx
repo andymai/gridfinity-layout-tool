@@ -57,6 +57,7 @@ export function MobileSettingsPanel() {
     setGridUnitMm,
     setHeightUnitMm,
     setPrintBedSize,
+    resetGridfinityStandard,
     showSaveDefaultsConfirm,
     setShowSaveDefaultsConfirm,
     showHalfBinBlockedModal,
@@ -164,25 +165,39 @@ export function MobileSettingsPanel() {
         <SectionHeader title={t('settings.gridSettings')} />
 
         <div className="space-y-3">
-          <SettingsRow label="1 grid unit" unit="mm" variant="mobile">
-            <DeferredNumberInput
-              value={gridUnitMm}
-              onChange={setGridUnitMm}
-              className="input w-20 h-10 text-center"
-              min={1}
-              max={200}
-            />
-          </SettingsRow>
+          <div>
+            <SettingsRow label="1 grid unit" unit="mm" variant="mobile">
+              <DeferredNumberInput
+                value={gridUnitMm}
+                onChange={setGridUnitMm}
+                className="input w-20 h-10 text-center"
+                min={CONSTRAINTS.GRID_UNIT_MM_MIN}
+                max={CONSTRAINTS.GRID_UNIT_MM_MAX}
+              />
+            </SettingsRow>
+            <p className="text-xs text-content-tertiary mt-1">
+              {t('settings.gridfinityStandardMm', {
+                value: CONSTRAINTS.GRID_UNIT_MM_DEFAULT,
+              })}
+            </p>
+          </div>
 
-          <SettingsRow label="1u height" unit="mm" variant="mobile">
-            <DeferredNumberInput
-              value={heightUnitMm}
-              onChange={setHeightUnitMm}
-              className="input w-20 h-10 text-center"
-              min={1}
-              max={50}
-            />
-          </SettingsRow>
+          <div>
+            <SettingsRow label="1u height" unit="mm" variant="mobile">
+              <DeferredNumberInput
+                value={heightUnitMm}
+                onChange={setHeightUnitMm}
+                className="input w-20 h-10 text-center"
+                min={CONSTRAINTS.HEIGHT_UNIT_MM_MIN}
+                max={CONSTRAINTS.HEIGHT_UNIT_MM_MAX}
+              />
+            </SettingsRow>
+            <p className="text-xs text-content-tertiary mt-1">
+              {t('settings.gridfinityStandardMm', {
+                value: CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT,
+              })}
+            </p>
+          </div>
 
           <SettingsRow label="Print bed size" unit="mm" variant="mobile">
             <PrintBedInput
@@ -192,6 +207,18 @@ export function MobileSettingsPanel() {
               variant="mobile"
             />
           </SettingsRow>
+
+          <button
+            type="button"
+            onClick={resetGridfinityStandard}
+            disabled={
+              gridUnitMm === CONSTRAINTS.GRID_UNIT_MM_DEFAULT &&
+              heightUnitMm === CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT
+            }
+            className="w-full text-sm py-2 px-3 rounded-lg text-content-secondary hover:text-content hover:bg-surface-hover border border-stroke-subtle transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-content-secondary disabled:hover:bg-transparent"
+          >
+            {t('settings.resetGridfinityStandard')}
+          </button>
 
           <div className="text-sm text-right text-content-disabled">
             {t('mobile.settings.maxBinSize')}

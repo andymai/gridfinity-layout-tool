@@ -1407,6 +1407,8 @@
   "settings.defaultCategories": "Categorías Predeterminadas",
   "settings.defaultCategoriesHint": "Categorías usadas al crear nuevos diseños:",
   "settings.defaultGridUnit": "Unidad de rejilla",
+  "settings.gridfinityStandardMm": "Gridfinity estándar: {value}mm",
+  "settings.resetGridfinityStandard": "Restablecer a Gridfinity estándar",
   "settings.defaultLayerHeight": "Altura de capa predeterminada",
   "settings.defaultPreferences": "Preferencias Predeterminadas",
   "settings.defaultPreferencesHint": "Los nuevos diseños usarán esta configuración:",
