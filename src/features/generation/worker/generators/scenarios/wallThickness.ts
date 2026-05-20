@@ -16,7 +16,7 @@ export const wallThickness: ScenarioCase[] = [
       assert: 'structural',
       params: { wallThickness: wt },
       customAssert: (result, params) => {
-        assertBoundingBoxMatchesParams(result, params, `wall-${wt}mm`);
+        assertBoundingBoxMatchesParams(result, params, `wall-${wt.toFixed(1)}mm`);
       },
     })
   ),

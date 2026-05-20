@@ -1,6 +1,9 @@
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BaseStyle } from '@/shared/types/bin';
-import { assertBoundingBoxMatchesParams } from '../__kernel-tests__/meshAssertions';
+import {
+  assertBoundingBoxMatchesParams,
+  assertNoDegenerateTriangles,
+} from '../__kernel-tests__/meshAssertions';
 import { defineScenario } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -80,6 +83,9 @@ export const baseStyles: ScenarioCase[] = [
         style: 'flat',
         stackingLip: false,
       },
+    },
+    customAssert: (result) => {
+      assertNoDegenerateTriangles(result, '0.5x0.5-flat-nolip');
     },
   }),
 
