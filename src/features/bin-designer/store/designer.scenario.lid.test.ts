@@ -35,8 +35,15 @@ describe('DesignerStore - lid actions', () => {
       expect(params.lid.stackableTop).toBe(true);
     });
 
-    it('updates clickRails as a whole object', () => {
+    it('clickRails is replaced wholesale, not deep-merged', () => {
+      // Set a distinctive initial state, then replace with a different
+      // object. If updateLid deep-merged, sides from the first update
+      // would survive into the second. They must not — replacement
+      // semantics matter so the user-visible toggles match the state.
       const { updateLid } = useDesignerStore.getState();
+      updateLid({
+        clickRails: { front: true, back: true, left: true, right: false },
+      });
       updateLid({
         clickRails: { front: false, back: true, left: false, right: true },
       });
