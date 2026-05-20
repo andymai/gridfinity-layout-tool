@@ -9,46 +9,40 @@
 import { useSyncExternalStore } from 'react';
 import { loadRegistry, subscribeToRegistry, type CustomBinRef } from '../store/customBinRegistry';
 
-// Cache the registry result to prevent useSyncExternalStore infinite loops
+// useSyncExternalStore requires referentially stable snapshots between notifications.
+// `cachedRegistry` is only reassigned inside `notifyAll` (or on the 0→1 subscriber
+// transition, when no consumer can observe the change yet).
 let cachedRegistry: CustomBinRef[] = loadRegistry();
+const subscribers = new Set<() => void>();
 
-// Track subscribers for storage event notifications
-const storageSubscribers = new Set<() => void>();
+function notifyAll(): void {
+  cachedRegistry = loadRegistry();
+  subscribers.forEach((cb) => cb());
+}
+
+subscribeToRegistry(notifyAll);
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'gridfinity-custom-bins-v1' || e.key === null) {
+      notifyAll();
+    }
+  });
+}
 
 function subscribe(callback: () => void): () => void {
-  // Refresh cache on subscribe to catch any updates that happened
-  // before this hook instance mounted (e.g., upsertRegistryEntry called
-  // while no hooks were active)
-  cachedRegistry = loadRegistry();
-
-  // Subscribe to registry changes (same-tab updates)
-  const unsubscribeRegistry = subscribeToRegistry(() => {
+  // Catches registry writes that landed while nothing was subscribed.
+  if (subscribers.size === 0) {
     cachedRegistry = loadRegistry();
-    callback();
-  });
-
-  // Also track for storage events (cross-tab updates)
-  storageSubscribers.add(callback);
-
+  }
+  subscribers.add(callback);
   return () => {
-    unsubscribeRegistry();
-    storageSubscribers.delete(callback);
+    subscribers.delete(callback);
   };
 }
 
 function getSnapshot(): CustomBinRef[] {
-  // Return cached value - useSyncExternalStore expects referential stability
   return cachedRegistry;
-}
-
-// Listen for storage events from other tabs
-if (typeof window !== 'undefined') {
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'gridfinity-custom-bins-v1' || e.key === null) {
-      cachedRegistry = loadRegistry();
-      storageSubscribers.forEach((cb) => cb());
-    }
-  });
 }
 
 /**

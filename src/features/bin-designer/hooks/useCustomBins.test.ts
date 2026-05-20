@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useCustomBins, resetCustomBinsCache } from './useCustomBins';
 import { upsertRegistryEntry, type CustomBinRef } from '../store/customBinRegistry';
 
@@ -62,5 +62,35 @@ describe('useCustomBins', () => {
 
     const { result } = renderHook(() => useCustomBins());
     expect(result.current[0]).toEqual(ref);
+  });
+
+  // Two consumers must observe the same snapshot reference until a registry
+  // event fires. Previously, mounting a second consumer reloaded the cache
+  // inside `subscribe()`, swapping the first consumer's snapshot reference
+  // without notifying it — a useSyncExternalStore tearing-contract violation.
+  it('keeps already-mounted consumers in sync when another consumer mounts', () => {
+    upsertRegistryEntry(makeRef('bin-1'));
+
+    const { result: a } = renderHook(() => useCustomBins());
+    const snapshotBefore = a.current;
+    expect(snapshotBefore).toHaveLength(1);
+
+    // Second consumer mounts; first consumer's snapshot must not silently change.
+    renderHook(() => useCustomBins());
+    expect(a.current).toBe(snapshotBefore);
+  });
+
+  it('notifies both consumers when the registry updates', () => {
+    const { result: a } = renderHook(() => useCustomBins());
+    const { result: b } = renderHook(() => useCustomBins());
+    expect(a.current).toHaveLength(0);
+    expect(b.current).toHaveLength(0);
+
+    act(() => {
+      upsertRegistryEntry(makeRef('bin-1'));
+    });
+    expect(a.current).toHaveLength(1);
+    expect(b.current).toHaveLength(1);
+    expect(a.current).toBe(b.current);
   });
 });
