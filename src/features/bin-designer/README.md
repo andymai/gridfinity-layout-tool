@@ -52,7 +52,7 @@ graph TB
 
 ## Critical Concepts
 
-- **Epoch pattern**: `store.setParam()` increments epoch → triggers regeneration
+- **Epoch pattern**: `store.setParam()` increments epoch → triggers regeneration. Cosmetic cutout mutations (lock/hide/z-reorder/showAllCutouts) call `pushHistoryEntry(state, { affectsGeometry: false })` so undo still works but the worker doesn't re-run — only properties the worker reads (everything except `locked`/`hidden`/`zIndex`) bump the epoch
 - **Mesh cache**: 100MB budget, attached to history for instant undo
 - **Custom bin registry**: Syncs to localStorage for Layout Planner palette
 - **Ghost overlays**: Lightweight Three.js primitives render during `generationStatus === 'generating'` for instant visual feedback before BREP mesh completes. Components: `GhostDividers`, `GhostWireframe`, `GhostCompartmentPreview`, `GhostLabelTabs`, `GhostScoops`, `GhostCutouts`, `GhostWallCutouts`, `GhostSlotLines`, `GhostDividerPieces`
