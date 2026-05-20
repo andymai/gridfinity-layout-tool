@@ -1,9 +1,9 @@
 /**
  * Aggregated scenario definitions for bin generation tests.
  *
- * Each category file exports an array of ScenarioCase objects.
- * This index re-exports them as a single ordered array matching the
- * original `binGenerator.scenarios.ts` order exactly.
+ * Each category file exports an array of ScenarioCase objects. The
+ * historical categories below preserve their original definition order;
+ * new categories are appended to the end of `ALL_SCENARIOS`.
  */
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -31,6 +31,7 @@ import { lipWall } from './lipWall';
 import { handles } from './handles';
 import { honeycombJunction } from './honeycombJunction';
 import { customShapes } from './customShape';
+import { permutationMatrix } from './permutationMatrix';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -63,4 +64,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...handles,
   ...honeycombJunction,
   ...customShapes,
+  ...permutationMatrix,
 ];
