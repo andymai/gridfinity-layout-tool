@@ -31,8 +31,12 @@ function isAborted(token: { current: boolean }): boolean {
 }
 
 /**
- * Wait for generation to reach 'complete' or 'error' status.
- * Polls the store at 200ms intervals up to a maximum wait time.
+ * Wait for generation to reach a terminal status (`'complete'` or `'error'`).
+ *
+ * `'idle'` is excluded — it's the pre-generation state, and treating it as
+ * terminal would let autosave capture an empty-canvas thumbnail before the
+ * worker has started. The timeout still applies if the worker is stuck.
+ *
  * Returns the final status, or null if cancelled via AbortSignal.
  */
 function waitForGenerationComplete(
@@ -47,7 +51,7 @@ function waitForGenerationComplete(
         return;
       }
       const status = useDesignerStore.getState().generation.status;
-      if (status === 'complete' || status === 'error' || status === 'idle') {
+      if (status === 'complete' || status === 'error') {
         resolve(status);
         return;
       }

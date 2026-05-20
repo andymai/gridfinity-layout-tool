@@ -230,4 +230,39 @@ describe('useAutoSave', () => {
       expect.objectContaining({ style: 'descriptive', customName: '' })
     );
   });
+
+  // `idle` is the pre-generation state — saving immediately on idle captured a
+  // thumbnail of an empty canvas when an effect fired before the param change
+  // had kicked off generation.
+  it('waits for generation to complete before saving when status starts at idle', async () => {
+    mockUpdateDesignParams();
+    useDesignerStore.setState({
+      currentDesignId: 'existing-id',
+      generation: { status: 'idle', mesh: null, progress: 0, epoch: 0 },
+    });
+
+    renderHook(() => useAutoSave());
+
+    act(() => {
+      useDesignerStore.getState().setParam('width', 4);
+    });
+
+    // Debounce elapses; waitForGenerationComplete starts polling.
+    await act(async () => {
+      vi.advanceTimersByTime(1100);
+    });
+
+    // Worker hasn't reported back yet — save must not have fired.
+    expect(DesignerStorage.updateDesignParams).not.toHaveBeenCalled();
+
+    // Now generation finishes; save should proceed within the next poll + render delay.
+    act(() => {
+      useDesignerStore.setState({
+        generation: { status: 'complete', mesh: null, progress: 1, epoch: 1 },
+      });
+    });
+    await advanceThroughSave();
+
+    expect(DesignerStorage.updateDesignParams).toHaveBeenCalledOnce();
+  });
 });
