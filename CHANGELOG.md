@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.108.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.107.0...gridfinity-layout-tool-v4.108.0) (2026-05-20)
+
+
+### Features
+
+* **generation:** adopt brepjs cutAllBisect/fuseAllBisect (step 3 of [#1792](https://github.com/andymai/gridfinity-layout-tool/issues/1792)) ([#1795](https://github.com/andymai/gridfinity-layout-tool/issues/1795)) ([3685d02](https://github.com/andymai/gridfinity-layout-tool/commit/3685d027094f8b338dce6bf96f56d43d7e2f18c5))
+
 ## [4.107.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.106.0...gridfinity-layout-tool-v4.107.0) (2026-05-20)
 
 
