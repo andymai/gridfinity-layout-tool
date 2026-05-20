@@ -16,10 +16,13 @@ type Set = (fn: (state: Draft<DesignerState>) => void) => void;
 export function createCutoutSlice(set: Set) {
   // Core actions
 
+  // locked/hidden/zIndex are editor-only state — the worker reads neither
+  // (see cutoutBuilder.ts), so these mutations get history but skip the
+  // generation epoch.
   const setCutoutProperty = (ids: readonly string[], partial: CutoutToggleProperties): void => {
     if (ids.length === 0) return;
     set((state) => {
-      pushHistoryEntry(state);
+      pushHistoryEntry(state, { affectsGeometry: false });
       const idSet = new Set(ids);
       state.params.cutouts = state.params.cutouts.map((c) =>
         idSet.has(c.id) ? { ...c, ...partial } : c
@@ -30,7 +33,7 @@ export function createCutoutSlice(set: Set) {
   const reorderCutouts = (ids: readonly string[], direction: ReorderDirection): void => {
     if (ids.length === 0) return;
     set((state) => {
-      pushHistoryEntry(state);
+      pushHistoryEntry(state, { affectsGeometry: false });
       const idSet = new Set(ids);
 
       switch (direction) {
@@ -68,7 +71,7 @@ export function createCutoutSlice(set: Set) {
     set((state) => {
       const hasHidden = state.params.cutouts.some((c) => c.hidden);
       if (!hasHidden) return;
-      pushHistoryEntry(state);
+      pushHistoryEntry(state, { affectsGeometry: false });
       state.params.cutouts = state.params.cutouts.map((c) =>
         c.hidden ? { ...c, hidden: false } : c
       );

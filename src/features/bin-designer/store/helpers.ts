@@ -68,8 +68,16 @@ export function setPendingMeshCache(mesh: CachedMesh | null): void {
  * Push current params (with pending mesh) to history past array.
  * Skips if inside a transaction (already pushed on transaction start).
  * Evicts old caches if memory budget exceeded.
+ *
+ * Pass `{ affectsGeometry: false }` for cosmetic mutations (lock, hide,
+ * z-reorder, etc.) — the entry is still captured for undo, but the
+ * generation epoch isn't bumped, so the worker doesn't re-run on every
+ * lock/hide click.
  */
-export function pushHistoryEntry(state: Draft<DesignerState>): void {
+export function pushHistoryEntry(
+  state: Draft<DesignerState>,
+  options: { affectsGeometry?: boolean } = {}
+): void {
   // Inside a transaction, the entry was already pushed at startTransaction
   if (state.transactionDepth > 0) return;
 
@@ -92,10 +100,11 @@ export function pushHistoryEntry(state: Draft<DesignerState>): void {
   const evicted = evictIfNeeded(newPast, []);
   state.history.past = evicted.past as HistoryEntry[];
   state.history.future = evicted.future as HistoryEntry[];
-  state.generation.epoch += 1;
-
-  // Clear cached mesh for the previous params; new params need a fresh result
-  pendingMeshCache = null;
+  if (options.affectsGeometry ?? true) {
+    state.generation.epoch += 1;
+    // Clear cached mesh for the previous params; new params need a fresh result
+    pendingMeshCache = null;
+  }
 }
 
 /**
