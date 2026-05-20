@@ -32,6 +32,7 @@ import { handles } from './handles';
 import { honeycombJunction } from './honeycombJunction';
 import { customShapes } from './customShape';
 import { permutationMatrix } from './permutationMatrix';
+import { regressions } from './regressions';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -65,4 +66,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...honeycombJunction,
   ...customShapes,
   ...permutationMatrix,
+  ...regressions,
 ];
