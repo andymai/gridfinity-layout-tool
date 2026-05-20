@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { Cutout } from '@/features/bin-designer/types';
-import type { ResizeHandle, StartRect } from '../geometry';
+import type { StartRect } from '../geometry';
 import { handleResizeMove } from './resizeHandler';
-import type { InteractionMode } from '../useCutoutInteraction';
+import type { InteractionMode, ResizeHandle } from '../useCutoutInteraction';
 import type { BinBounds, PointerMoveEvent, PreviewSetters, DeadZoneRef } from './types';
 
 type ResizingMode = Extract<InteractionMode, { type: 'resizing' }>;
@@ -54,18 +54,21 @@ const NO_DEAD_ZONE: DeadZoneRef = { current: true };
 
 describe('handleResizeMove joint-constraint clamping', () => {
   it('keeps x + width within binWidth when snap rounds width past the bin edge', () => {
-    // Drag the SE handle far past the bin's right edge. With independent
-    // snap-then-clamp, snappedW could exceed binWidth and bypass the x
-    // clamp; the joint constraint must cap width to (binWidth - x).
-    const cutout = makeCutout({ x: 30, y: 30, width: 20, depth: 20 });
+    // 30mm snap step in a 20mm bin: any non-zero `snap(width)` rounds up to 30
+    // — exceeding binWidth. With the old independent snap-then-clamp, x landed
+    // at 0 with width=30 (overflow); the joint constraint must cap width to
+    // (binWidth - x). noopSnap doesn't reproduce this because the failure
+    // mode is specifically about snap rounding past the bin edge.
+    const snapTo30 = (n: number): number => Math.ceil(n / 30) * 30;
+    const cutout = makeCutout({ x: 5, y: 5, width: 5, depth: 5 });
     const bounds: BinBounds = {
-      binWidth: 50,
-      binDepth: 50,
+      binWidth: 20,
+      binDepth: 20,
       cellMask: undefined,
       maskCellSize: undefined,
     };
-    const mode = makeMode({ x: 30, y: 30, width: 20, depth: 20 }, 'se');
-    const event: PointerMoveEvent = { mmX: 200, mmY: 200, shiftKey: false, altKey: false };
+    const mode = makeMode({ x: 5, y: 5, width: 5, depth: 5 }, 'se');
+    const event: PointerMoveEvent = { mmX: 15, mmY: 15, shiftKey: false, altKey: false };
     const setters = makeSetters();
 
     handleResizeMove(
@@ -73,7 +76,7 @@ describe('handleResizeMove joint-constraint clamping', () => {
       event,
       [cutout],
       bounds,
-      noopSnap,
+      snapTo30,
       NO_DEAD_ZONE,
       setters as unknown as PreviewSetters
     );
