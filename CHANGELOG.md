@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.107.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.106.0...gridfinity-layout-tool-v4.107.0) (2026-05-20)
+
+
+### Features
+
+* **analytics:** instrument boolean batch fallbacks (step 1 of [#1792](https://github.com/andymai/gridfinity-layout-tool/issues/1792)) ([#1793](https://github.com/andymai/gridfinity-layout-tool/issues/1793)) ([e56ebe7](https://github.com/andymai/gridfinity-layout-tool/commit/e56ebe76d70d384cf39c660a6db2dfd22c58a64b))
+
 ## [4.106.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.105.2...gridfinity-layout-tool-v4.106.0) (2026-05-20)
 
 
