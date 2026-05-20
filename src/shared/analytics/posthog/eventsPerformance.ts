@@ -6,7 +6,14 @@
  * preview's two-stage timing (direct mesh vs. final BREP).
  */
 
+import type { WorkerCacheStats } from '@/shared/types/generation';
 import { trackEvent } from './trackEvent';
+
+const toCacheKey = (name: string): string =>
+  name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
 
 /**
  * Track WASM threading status when generation bridge initializes.
@@ -22,6 +29,10 @@ export function trackWasmThreadingStatus(isThreaded: boolean, hardwareConcurrenc
 /**
  * Track generation cache performance for capacity planning.
  * Called after each geometry generation with per-generation hit/miss/eviction deltas.
+ *
+ * Per-cache hit_rate and evictions are flattened into top-level properties
+ * (`cache_<name>_hit_rate`, `cache_<name>_evictions`) so PostHog filters/aggregates
+ * can identify which cache is dragging the aggregate hit rate down.
  */
 export function trackCachePerformance(stats: {
   total_hits: number;
@@ -29,14 +40,33 @@ export function trackCachePerformance(stats: {
   total_evictions: number;
   hit_rate: number;
   cache_count: number;
+  per_cache?: readonly WorkerCacheStats[];
 }): void {
-  trackEvent('generation_cache_stats', {
+  const properties: Record<string, number> = {
     total_hits: stats.total_hits,
     total_misses: stats.total_misses,
     total_evictions: stats.total_evictions,
     hit_rate: stats.hit_rate,
     cache_count: stats.cache_count,
-  });
+  };
+
+  const seenKeys = new Set<string>();
+  let collisions = 0;
+  for (const c of stats.per_cache ?? []) {
+    const total = c.hits + c.misses;
+    if (total === 0) continue;
+    const key = toCacheKey(c.name);
+    if (seenKeys.has(key)) {
+      collisions++;
+      continue;
+    }
+    seenKeys.add(key);
+    properties[`cache_${key}_hit_rate`] = Math.round((c.hits / total) * 1000) / 1000;
+    properties[`cache_${key}_evictions`] = c.evictions;
+  }
+  if (collisions > 0) properties.cache_key_collisions = collisions;
+
+  trackEvent('generation_cache_stats', properties);
 }
 
 const toSnakeCase = (s: string): string => s.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
