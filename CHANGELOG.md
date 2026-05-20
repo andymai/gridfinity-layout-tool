@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.105.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.105.0...gridfinity-layout-tool-v4.105.1) (2026-05-20)
+
+
+### Bug Fixes
+
+* **layout-library:** always show card actions in grid view ([#1784](https://github.com/andymai/gridfinity-layout-tool/issues/1784)) ([5e88e2c](https://github.com/andymai/gridfinity-layout-tool/commit/5e88e2c122a9b9b50ad851ef7ade4c9b6d31fde3))
+
 ## [4.105.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.104.0...gridfinity-layout-tool-v4.105.0) (2026-05-19)
 
 
