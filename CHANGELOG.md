@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.105.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.105.1...gridfinity-layout-tool-v4.105.2) (2026-05-20)
+
+
+### Bug Fixes
+
+* **settings:** tighten physical unit bounds and add reset ([#1787](https://github.com/andymai/gridfinity-layout-tool/issues/1787)) ([0c2631f](https://github.com/andymai/gridfinity-layout-tool/commit/0c2631f5ae4180fb1cf1869f760b36bd3cce368b))
+
 ## [4.105.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.105.0...gridfinity-layout-tool-v4.105.1) (2026-05-20)
 
 
