@@ -6,7 +6,12 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import { constrainGroupDrag, computeBounds, findAlignmentGuides } from '../geometry';
+import {
+  constrainGroupDrag,
+  computeBounds,
+  findAlignmentGuides,
+  getRotatedBounds,
+} from '../geometry';
 import { cutoutFitsInMask } from '../maskFit';
 import type { InteractionMode } from '../useCutoutInteraction';
 import type { PointerMoveEvent, BinBounds, SnapFn, PreviewSetters, DeadZoneRef } from './types';
@@ -65,10 +70,17 @@ export function handleDragMove(
   for (const [id, offset] of mode.offsets) {
     const cutout = cutouts.find((c) => c.id === id);
     if (!cutout) continue;
-    // Snap, then clamp to bin bounds (snap can round past non-integer edges)
+    // Rotation-aware clamp — a rotated AABB extends past the unrotated
+    // (width × depth) box, so plain `binWidth - cutout.width` lets the corner
+    // drag past the bin edge. Mirrors `nudgeSelected` in useCutoutInteraction.
+    const rb = getRotatedBounds(cutout);
+    const overhangX = (rb.maxX - rb.minX - cutout.width) / 2;
+    const overhangY = (rb.maxY - rb.minY - cutout.depth) / 2;
+    const maxX = bounds.binWidth - cutout.width - overhangX;
+    const maxY = bounds.binDepth - cutout.depth - overhangY;
     nextPreview.set(id, {
-      x: Math.max(0, Math.min(snap(mode.startX + dx + offset.dx), bounds.binWidth - cutout.width)),
-      y: Math.max(0, Math.min(snap(mode.startY + dy + offset.dy), bounds.binDepth - cutout.depth)),
+      x: Math.max(overhangX, Math.min(snap(mode.startX + dx + offset.dx), maxX)),
+      y: Math.max(overhangY, Math.min(snap(mode.startY + dy + offset.dy), maxY)),
     });
   }
 
