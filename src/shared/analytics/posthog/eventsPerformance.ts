@@ -93,29 +93,33 @@ export function trackKernelPerformance(payload: {
 }
 
 /**
- * Track each batch→sequential fallback that fires inside `batchWithFallback`.
+ * Track each boolean op where brepjs's bisect recovery was invoked
+ * (`batchAttempts > 1` or `singletonFallbacks > 0`).
  *
- * One event per fallback record (zero events on the common path). The
- * `successful_count` / `target_count` ratio is the diagnostic for #1792:
- *   `successful = target - 1`  → concentrated failure (bisect wins)
- *   `successful = 0`           → structural failure (bisect doesn't help)
- *   anything in between        → mixed; investigate `error_category`.
+ * One event per recovery (zero events when first-try n-way succeeded).
+ * The HogQL diagnostic for #1792:
+ *   `failed_input_count = 0`            → bisect recovered everything
+ *   `failed_input_count = 1`            → concentrated single-tool failure
+ *   `failed_input_count = total_inputs` → structural failure (bisect couldn't help)
  */
 export function trackBooleanFallbacks(payload: {
   records: ReadonlyArray<{
     category: 'fuse' | 'cut' | 'pattern_cut';
-    targetCount: number;
-    successfulCount: number;
-    errorCategory: string;
+    totalInputs: number;
+    batchAttempts: number;
+    batchSucceeded: number;
+    singletonFallbacks: number;
+    failedInputCount: number;
   }>;
 }): void {
   for (const r of payload.records) {
     trackEvent('generation_boolean_fallback', {
       op_category: r.category,
-      target_count: r.targetCount,
-      successful_count: r.successfulCount,
-      failed_count: r.targetCount - r.successfulCount,
-      error_category: r.errorCategory,
+      total_inputs: r.totalInputs,
+      batch_attempts: r.batchAttempts,
+      batch_succeeded: r.batchSucceeded,
+      singleton_fallbacks: r.singletonFallbacks,
+      failed_input_count: r.failedInputCount,
     });
   }
 }
