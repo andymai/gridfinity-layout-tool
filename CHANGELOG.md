@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.108.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.108.3...gridfinity-layout-tool-v4.108.4) (2026-05-20)
+
+
+### Bug Fixes
+
+* **bin-designer:** scale path cutouts on width/depth update ([#1803](https://github.com/andymai/gridfinity-layout-tool/issues/1803)) ([e1a6fe2](https://github.com/andymai/gridfinity-layout-tool/commit/e1a6fe2f612ab371be192ac46b8284cb2298988b))
+
 ## [4.108.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.108.2...gridfinity-layout-tool-v4.108.3) (2026-05-20)
 
 
