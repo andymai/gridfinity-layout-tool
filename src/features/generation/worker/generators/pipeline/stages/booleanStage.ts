@@ -33,7 +33,7 @@ export interface BooleanFallbackRecord {
 let fallbackRecords: BooleanFallbackRecord[] = [];
 
 export function getBooleanFallbackStats(): readonly BooleanFallbackRecord[] {
-  return fallbackRecords;
+  return fallbackRecords.slice();
 }
 
 export function resetBooleanFallbackStats(): void {

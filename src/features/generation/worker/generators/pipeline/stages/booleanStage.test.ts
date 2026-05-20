@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from 'vitest';
 import {
+  type BooleanFallbackRecord,
   categorizeError,
   getBooleanFallbackStats,
   resetBooleanFallbackStats,
@@ -32,10 +33,24 @@ describe('categorizeError', () => {
 });
 
 describe('boolean fallback stats', () => {
-  it('starts empty and resets to empty', () => {
+  beforeEach(() => {
     resetBooleanFallbackStats();
+  });
+
+  it('starts empty and resets to empty', () => {
     expect(getBooleanFallbackStats()).toEqual([]);
     resetBooleanFallbackStats();
+    expect(getBooleanFallbackStats()).toEqual([]);
+  });
+
+  it('returns a defensive copy so callers cannot mutate the internal accumulator', () => {
+    const snapshot = getBooleanFallbackStats() as BooleanFallbackRecord[];
+    snapshot.push({
+      category: 'cut',
+      targetCount: 1,
+      successfulCount: 0,
+      errorCategory: 'mutation attempt',
+    });
     expect(getBooleanFallbackStats()).toEqual([]);
   });
 });

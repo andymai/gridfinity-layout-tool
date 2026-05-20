@@ -189,6 +189,7 @@ export function runGeneration(
           errorCategory: r.errorCategory,
         })),
       });
+      resetBooleanFallbackStats();
     }
   } catch (e) {
     if (isAbortError(e)) return;

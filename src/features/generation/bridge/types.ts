@@ -263,7 +263,11 @@ export interface BooleanFallbackEntry {
   readonly errorCategory: string;
 }
 
-/** Boolean fallback stats posted after each generation. Empty when no fallback fired. */
+/**
+ * Boolean fallback stats posted after a generation if (and only if) at least
+ * one batch→sequential fallback fired. The worker omits this response on the
+ * common no-fallback path to keep main-thread/worker chatter minimal.
+ */
 export interface BooleanFallbackStatsResponse {
   readonly type: 'BOOLEAN_FALLBACK_STATS';
   readonly requestId: string;
