@@ -446,8 +446,8 @@ describe('lid generation and export scenarios', () => {
       const result = generateLid(makeParams({}, { width: 2, depth: 2, height: 10 }));
       expect(result).not.toBeNull();
       assertStructurallyValid(result!, 'tall lid');
-      // Lid Z height is bin-height-independent — top of lid should still
-      // fall within ~1U of its anchor.
+      // Lid Z thickness is bin-height-independent — the lid mesh is the
+      // same vertical extent whether the bin is 3U or 10U.
       const bb = boundingBox(result!.vertices);
       expect(bb.maxZ - bb.minZ).toBeGreaterThan(4);
       expect(bb.maxZ - bb.minZ).toBeLessThan(DEFAULT_BIN_PARAMS.heightUnitMm * 2);
@@ -510,9 +510,7 @@ describe('lid generation and export scenarios', () => {
       assertStructurallyValid(result!, 'front-only-rail lid');
     });
 
-    it('lid mesh is approximately translation-invariant in X for square bins', async () => {
-      // Sanity invariant: 2×2 lid mesh from a fresh build should match its
-      // own triangle count across two independent builds (deterministic).
+    it('lid mesh is deterministic: identical inputs produce the same triangle count', async () => {
       const { generateLid } = await import('./lidOrchestrator');
       const a = generateLid(makeParams({}, { width: 2, depth: 2, height: 3 }));
       const b = generateLid(makeParams({}, { width: 2, depth: 2, height: 3 }));
