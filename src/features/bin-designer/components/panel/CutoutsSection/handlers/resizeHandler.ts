@@ -61,14 +61,16 @@ export function handleResizeMove(
     event.altKey
   );
 
-  // Snap, then clamp to bin bounds (snap can round past non-integer edges)
-  const snappedW = Math.max(MIN_CUTOUT_SIZE, snap(resized.width));
-  const snappedD = Math.max(MIN_CUTOUT_SIZE, snap(resized.depth));
+  // Snap x/y first, then constrain w/d to fit — otherwise snappedW > binWidth
+  // (small bins, big snap step) leaves x clamped at 0 with the original
+  // snappedW, producing a cutout whose AABB exits the bin.
+  const snappedX = Math.max(0, Math.min(snap(resized.x), bounds.binWidth - MIN_CUTOUT_SIZE));
+  const snappedY = Math.max(0, Math.min(snap(resized.y), bounds.binDepth - MIN_CUTOUT_SIZE));
   const nextPatch = {
-    x: Math.max(0, Math.min(snap(resized.x), bounds.binWidth - snappedW)),
-    y: Math.max(0, Math.min(snap(resized.y), bounds.binDepth - snappedD)),
-    width: snappedW,
-    depth: snappedD,
+    x: snappedX,
+    y: snappedY,
+    width: Math.max(MIN_CUTOUT_SIZE, Math.min(snap(resized.width), bounds.binWidth - snappedX)),
+    depth: Math.max(MIN_CUTOUT_SIZE, Math.min(snap(resized.depth), bounds.binDepth - snappedY)),
   };
 
   // Polygon mask: hard-reject resizes that would overhang the polygon.
