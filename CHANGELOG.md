@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.106.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.105.2...gridfinity-layout-tool-v4.106.0) (2026-05-20)
+
+
+### Features
+
+* **analytics:** emit per-cache hit rates in generation_cache_stats ([#1790](https://github.com/andymai/gridfinity-layout-tool/issues/1790)) ([2e40752](https://github.com/andymai/gridfinity-layout-tool/commit/2e40752d2018b76c4bf0fb07887bef3f6ba53156))
+
 ## [4.105.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.105.1...gridfinity-layout-tool-v4.105.2) (2026-05-20)
 
 
