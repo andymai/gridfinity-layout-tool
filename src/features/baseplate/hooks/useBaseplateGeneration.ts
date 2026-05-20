@@ -33,6 +33,7 @@ import {
   trackWasmThreadingStatus,
   trackCachePerformance,
   trackKernelPerformance,
+  trackBooleanFallbacks,
   trackBaseplatePreviewTiming,
 } from '@/shared/analytics/posthog';
 import { useToastStore } from '@/core/store/toast';
@@ -489,6 +490,7 @@ export function useBaseplateGeneration(): void {
         // Wire up cache stats and kernel perf reporting to PostHog
         bridge.onCacheStats = trackCachePerformance;
         bridge.onKernelPerfStats = trackKernelPerformance;
+        bridge.onBooleanFallbackStats = trackBooleanFallbacks;
 
         // Acquire shared worker pool in the background (don't block initial generation)
         void workerPoolManager

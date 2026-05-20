@@ -93,6 +93,34 @@ export function trackKernelPerformance(payload: {
 }
 
 /**
+ * Track each batch→sequential fallback that fires inside `batchWithFallback`.
+ *
+ * One event per fallback record (zero events on the common path). The
+ * `successful_count` / `target_count` ratio is the diagnostic for #1792:
+ *   `successful = target - 1`  → concentrated failure (bisect wins)
+ *   `successful = 0`           → structural failure (bisect doesn't help)
+ *   anything in between        → mixed; investigate `error_category`.
+ */
+export function trackBooleanFallbacks(payload: {
+  records: ReadonlyArray<{
+    category: 'fuse' | 'cut' | 'pattern_cut';
+    targetCount: number;
+    successfulCount: number;
+    errorCategory: string;
+  }>;
+}): void {
+  for (const r of payload.records) {
+    trackEvent('generation_boolean_fallback', {
+      op_category: r.category,
+      target_count: r.targetCount,
+      successful_count: r.successfulCount,
+      failed_count: r.targetCount - r.successfulCount,
+      error_category: r.errorCategory,
+    });
+  }
+}
+
+/**
  * Track time-to-first-mesh (direct-mesh placeholder) and time-to-final-mesh
  * (BREP) for the baseplate page. Lets us validate the perceived-perf win
  * post-launch and catch regressions if the direct-mesh path stalls.

@@ -9,6 +9,7 @@ import {
   trackWasmThreadingStatus,
   trackCachePerformance,
   trackKernelPerformance,
+  trackBooleanFallbacks,
 } from '@/shared/analytics/posthog';
 import type { BinParams } from '../types';
 
@@ -140,6 +141,7 @@ export function useGeneration(): void {
         // Wire up cache stats and kernel perf reporting to PostHog
         bridge.onCacheStats = trackCachePerformance;
         bridge.onKernelPerfStats = trackKernelPerformance;
+        bridge.onBooleanFallbackStats = trackBooleanFallbacks;
 
         // Trigger initial generation
         const currentState = useDesignerStore.getState();

@@ -36,6 +36,7 @@ import {
   type BaseplateExportResult,
   type CacheStatsCallback,
   type KernelPerfStatsCallback,
+  type BooleanFallbackStatsCallback,
   type ThreadingInfo,
   type DedupCache,
   type ExportSlot,
@@ -68,6 +69,8 @@ export type {
   CacheStatsCallback,
   KernelPerfStatsPayload,
   KernelPerfStatsCallback,
+  BooleanFallbackStatsPayload,
+  BooleanFallbackStatsCallback,
   ThreadingInfo,
 } from './bridgeTypes';
 export { ExportTimeoutError } from './bridgeTypes';
@@ -96,6 +99,9 @@ export class GenerationBridge {
 
   /** Optional callback for kernel performance stats (called after each generation). */
   onKernelPerfStats: KernelPerfStatsCallback | null = null;
+
+  /** Optional callback for boolean fallback stats (called after each generation that had ≥1 fallback). */
+  onBooleanFallbackStats: BooleanFallbackStatsCallback | null = null;
 
   /** Pending export requests keyed by slot. Only one per slot at a time. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Values are PendingExport<T> with different T per slot; type safety is enforced at each call site

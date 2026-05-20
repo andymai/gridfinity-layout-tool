@@ -211,6 +211,7 @@ export type WorkerResponse =
   | SplitExportResultResponse
   | CacheStatsResponse
   | KernelPerfStatsResponse
+  | BooleanFallbackStatsResponse
   | CleanupDoneResponse
   | ErrorResponse;
 
@@ -246,6 +247,27 @@ export interface KernelPerfStatsResponse {
   readonly type: 'KERNEL_PERF_STATS';
   readonly requestId: string;
   readonly stats: Readonly<Record<string, KernelPerfCategory>>;
+}
+
+/**
+ * Boolean fallback occurrence — one record per batch→sequential fallback.
+ * `category` is the boolean op type, `successfulCount` is how many targets
+ * the sequential pass actually applied (so `targetCount - successfulCount`
+ * is the count that failed both batch and pairwise — usually 1 for
+ * concentrated failures, `targetCount` for structural failures).
+ */
+export interface BooleanFallbackEntry {
+  readonly category: 'fuse' | 'cut' | 'pattern_cut';
+  readonly targetCount: number;
+  readonly successfulCount: number;
+  readonly errorCategory: string;
+}
+
+/** Boolean fallback stats posted after each generation. Empty when no fallback fired. */
+export interface BooleanFallbackStatsResponse {
+  readonly type: 'BOOLEAN_FALLBACK_STATS';
+  readonly requestId: string;
+  readonly records: readonly BooleanFallbackEntry[];
 }
 
 export interface InitReadyResponse {
