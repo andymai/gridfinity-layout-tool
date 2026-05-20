@@ -7,9 +7,39 @@
  */
 
 import type { Draft } from 'immer';
-import type { DesignerState, Cutout, CutoutToggleProperties, ReorderDirection } from '../../types';
+import type {
+  DesignerState,
+  Cutout,
+  CutoutToggleProperties,
+  ReorderDirection,
+  PathPoint,
+} from '../../types';
 import { pushHistoryEntry, dissolveSingletonGroups } from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
+
+// Points are absolute, handles are relative — scale around the old origin
+// so resize + move composes correctly in one pass.
+function applyPathTransform(c: Cutout, updates: Partial<Cutout>): PathPoint[] | undefined {
+  if (!c.path || c.path.length === 0 || updates.path) return undefined;
+  const newX = updates.x ?? c.x;
+  const newY = updates.y ?? c.y;
+  const newW = updates.width ?? c.width;
+  const newD = updates.depth ?? c.depth;
+  const scaleX = c.width !== 0 ? newW / c.width : 1;
+  const scaleY = c.depth !== 0 ? newD / c.depth : 1;
+  const scaled = scaleX !== 1 || scaleY !== 1;
+  const translated = newX !== c.x || newY !== c.y;
+  if (!scaled && !translated) return undefined;
+  const scaleHandle = (h: PathPoint['handleIn']): PathPoint['handleIn'] =>
+    h && scaled ? { dx: h.dx * scaleX, dy: h.dy * scaleY } : h;
+  return c.path.map((pt) => ({
+    ...pt,
+    x: (pt.x - c.x) * scaleX + newX,
+    y: (pt.y - c.y) * scaleY + newY,
+    handleIn: scaleHandle(pt.handleIn),
+    handleOut: scaleHandle(pt.handleOut),
+  }));
+}
 
 type Set = (fn: (state: Draft<DesignerState>) => void) => void;
 
@@ -117,24 +147,10 @@ export function createCutoutSlice(set: Set) {
         pushHistoryEntry(state);
         state.params.cutouts = state.params.cutouts.map((c) => {
           if (c.id !== id) return c;
-          // When x/y changes on a path shape and path isn't explicitly provided,
-          // translate path points by the position delta so they stay in sync
-          let merged = { ...c, ...updates };
-          if (c.path && c.path.length > 0 && !updates.path) {
-            const dx = (updates.x !== undefined ? updates.x : c.x) - c.x;
-            const dy = (updates.y !== undefined ? updates.y : c.y) - c.y;
-            if (dx !== 0 || dy !== 0) {
-              merged = {
-                ...merged,
-                path: c.path.map((pt) => ({
-                  ...pt,
-                  x: pt.x + dx,
-                  y: pt.y + dy,
-                })),
-              };
-            }
-          }
-          return merged;
+          const transformedPath = applyPathTransform(c, updates);
+          return transformedPath
+            ? { ...c, ...updates, path: transformedPath }
+            : { ...c, ...updates };
         });
       });
     },
@@ -212,22 +228,8 @@ export function createCutoutSlice(set: Set) {
         state.params.cutouts = state.params.cutouts.map((c) => {
           const u = updates.get(c.id);
           if (!u) return c;
-          let merged = { ...c, ...u };
-          if (c.path && c.path.length > 0 && !u.path) {
-            const dx = (u.x !== undefined ? u.x : c.x) - c.x;
-            const dy = (u.y !== undefined ? u.y : c.y) - c.y;
-            if (dx !== 0 || dy !== 0) {
-              merged = {
-                ...merged,
-                path: c.path.map((pt) => ({
-                  ...pt,
-                  x: pt.x + dx,
-                  y: pt.y + dy,
-                })),
-              };
-            }
-          }
-          return merged;
+          const transformedPath = applyPathTransform(c, u);
+          return transformedPath ? { ...c, ...u, path: transformedPath } : { ...c, ...u };
         });
       });
     },
