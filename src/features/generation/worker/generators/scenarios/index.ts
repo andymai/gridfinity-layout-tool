@@ -33,6 +33,7 @@ import { honeycombJunction } from './honeycombJunction';
 import { customShapes } from './customShape';
 import { permutationMatrix } from './permutationMatrix';
 import { regressions } from './regressions';
+import { solidCutoutMatrix } from './solidCutoutMatrix';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -67,4 +68,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...customShapes,
   ...permutationMatrix,
   ...regressions,
+  ...solidCutoutMatrix,
 ];
