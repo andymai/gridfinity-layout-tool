@@ -14,11 +14,18 @@ describe('DesignerStore - handle cutout actions', () => {
     });
 
     it('preserves per-side state on master toggle', () => {
+      // Flip 'back' (default false) to true and 'front' (default true) to
+      // false so we have a non-default per-side state. If the master
+      // toggle accidentally reset sides to defaults, both assertions
+      // below would flip the wrong way.
       const { updateHandles, updateHandleSide } = useDesignerStore.getState();
-      updateHandleSide('front', { enabled: true });
+      updateHandleSide('back', { enabled: true });
+      updateHandleSide('front', { enabled: false });
       updateHandles({ enabled: true });
 
-      expect(useDesignerStore.getState().params.handles.front.enabled).toBe(true);
+      const { handles } = useDesignerStore.getState().params;
+      expect(handles.back.enabled).toBe(true);
+      expect(handles.front.enabled).toBe(false);
     });
 
     it('pushes history on update', () => {
