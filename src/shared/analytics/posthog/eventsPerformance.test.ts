@@ -61,7 +61,7 @@ describe('trackCachePerformance', () => {
     });
   });
 
-  it('replaces hyphens in cache names with underscores so PostHog keys stay ergonomic', () => {
+  it('normalises any non-alphanumeric character so PostHog keys stay ergonomic', () => {
     trackCachePerformance({
       total_hits: 4,
       total_misses: 0,
@@ -70,12 +70,33 @@ describe('trackCachePerformance', () => {
       cache_count: 1,
       per_cache: [
         { name: 'baseplate-mesh-result', hits: 4, misses: 0, evictions: 0, size: 1, maxSize: 32 },
+        { name: 'Feature.Builder (v2)', hits: 2, misses: 0, evictions: 0, size: 1, maxSize: 10 },
       ],
     });
 
     const props = trackEventMock.mock.calls[0]?.[1] as Record<string, number>;
     expect(props).toHaveProperty('cache_baseplate_mesh_result_hit_rate', 1);
+    expect(props).toHaveProperty('cache_feature_builder_v2_hit_rate', 1);
     expect(props).not.toHaveProperty('cache_baseplate-mesh-result_hit_rate');
+  });
+
+  it('drops colliding entries and records the collision count for HogQL visibility', () => {
+    trackCachePerformance({
+      total_hits: 6,
+      total_misses: 4,
+      total_evictions: 0,
+      hit_rate: 0.6,
+      cache_count: 2,
+      per_cache: [
+        { name: 'feature-socket', hits: 4, misses: 0, evictions: 0, size: 1, maxSize: 10 },
+        { name: 'feature_socket', hits: 2, misses: 4, evictions: 5, size: 1, maxSize: 10 },
+      ],
+    });
+
+    const props = trackEventMock.mock.calls[0]?.[1] as Record<string, number>;
+    expect(props).toHaveProperty('cache_feature_socket_hit_rate', 1);
+    expect(props).toHaveProperty('cache_feature_socket_evictions', 0);
+    expect(props).toHaveProperty('cache_key_collisions', 1);
   });
 
   it('skips caches with zero activity to avoid NaN', () => {

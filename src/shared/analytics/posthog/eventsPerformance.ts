@@ -9,7 +9,11 @@
 import type { WorkerCacheStats } from '@/shared/types/generation';
 import { trackEvent } from './trackEvent';
 
-const toCacheKey = (name: string): string => name.replace(/-/g, '_');
+const toCacheKey = (name: string): string =>
+  name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '');
 
 /**
  * Track WASM threading status when generation bridge initializes.
@@ -46,13 +50,21 @@ export function trackCachePerformance(stats: {
     cache_count: stats.cache_count,
   };
 
+  const seenKeys = new Set<string>();
+  let collisions = 0;
   for (const c of stats.per_cache ?? []) {
     const total = c.hits + c.misses;
     if (total === 0) continue;
     const key = toCacheKey(c.name);
+    if (seenKeys.has(key)) {
+      collisions++;
+      continue;
+    }
+    seenKeys.add(key);
     properties[`cache_${key}_hit_rate`] = Math.round((c.hits / total) * 1000) / 1000;
     properties[`cache_${key}_evictions`] = c.evictions;
   }
+  if (collisions > 0) properties.cache_key_collisions = collisions;
 
   trackEvent('generation_cache_stats', properties);
 }
