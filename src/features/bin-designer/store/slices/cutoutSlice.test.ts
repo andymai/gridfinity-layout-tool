@@ -260,9 +260,6 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(params.cutouts[0].path).toBeUndefined();
     });
 
-    // Resizing a path cutout used to leave the path unchanged, so the stored
-    // AABB drifted from the rendered shape and exports printed the original
-    // (un-scaled) path. The path now scales around the cutout's old origin.
     it('resizing a path cutout scales its path points proportionally', () => {
       const { addCutout, updateCutout } = useDesignerStore.getState();
       addCutout(
