@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.113.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.112.1...gridfinity-layout-tool-v4.113.0) (2026-05-21)
+
+
+### Features
+
+* **bin-designer:** angled-dividers panel UI (PR 2 of 3) ([#1832](https://github.com/andymai/gridfinity-layout-tool/issues/1832)) ([040cde5](https://github.com/andymai/gridfinity-layout-tool/commit/040cde5650b9f6c3a6aa267150aa454676acff86))
+
+
+### Bug Fixes
+
+* **bin-designer:** [#1832](https://github.com/andymai/gridfinity-layout-tool/issues/1832) review carryover (critical first-time UX + 2 smaller) ([#1834](https://github.com/andymai/gridfinity-layout-tool/issues/1834)) ([7adee20](https://github.com/andymai/gridfinity-layout-tool/commit/7adee20bcb6d430e5f87dc85b8a2712c5a029742))
+
 ## [4.112.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.112.0...gridfinity-layout-tool-v4.112.1) (2026-05-21)
 
 
