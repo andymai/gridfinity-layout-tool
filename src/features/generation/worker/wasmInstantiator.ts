@@ -7,10 +7,12 @@
  * Vite's ?url imports to ensure the correct path in all environments.
  */
 
-import { initFromOC, registerKernel, BrepkitAdapter } from 'brepjs';
+import { initFromOC, registerKernel, BrepkitAdapter, loadFont } from 'brepjs';
 
 import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
 import singleWasmUrl from 'brepjs-opencascade/src/brepjs_single.wasm?url';
+import atkinsonFontUrl from './assets/fonts/AtkinsonHyperlegible-Regular.ttf?url';
+import { isErr } from '@/core/result';
 
 export interface WasmLoadResult {
   /** Whether multi-threaded WASM is being used */
@@ -44,8 +46,32 @@ export async function loadOpenCascade(): Promise<WasmLoadResult> {
   );
 
   initFromOC(OC);
+  await loadEmbeddedFonts();
 
   return { isThreaded: false, hardwareConcurrency };
+}
+
+/**
+ * Loads the bundled engraved-text fonts into the brepjs font registry.
+ * Failures are swallowed: the worker keeps running and text generation
+ * downgrades to a no-op (label tabs without engraving), so a network
+ * blip on the font asset never bricks the whole generation pipeline.
+ *
+ * Only called for OCCT-based kernels; brepkit-wasm doesn't currently
+ * implement the topology operations textBlueprints needs.
+ */
+async function loadEmbeddedFonts(): Promise<void> {
+  try {
+    const response = await fetch(atkinsonFontUrl);
+    if (!response.ok) return;
+    const buffer = await response.arrayBuffer();
+    const result = await loadFont(buffer, 'atkinson');
+    if (isErr(result)) {
+      console.warn('Failed to register Atkinson font:', result.error.message);
+    }
+  } catch (err) {
+    console.warn('Failed to load embedded font asset:', err);
+  }
 }
 
 /**
