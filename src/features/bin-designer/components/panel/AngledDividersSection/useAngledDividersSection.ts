@@ -19,10 +19,11 @@ export interface AngledDividerRow extends EligibleDivider {
 }
 
 export function useAngledDividersSection() {
-  const { compartments, setDividerOverride, removeDividerOverride, clearDividerOverrides } =
+  const { compartments, style, setDividerOverride, removeDividerOverride, clearDividerOverrides } =
     useDesignerStore(
       useShallow((s) => ({
         compartments: s.params.compartments,
+        style: s.params.style,
         setDividerOverride: s.setDividerOverride,
         removeDividerOverride: s.removeDividerOverride,
         clearDividerOverrides: s.clearDividerOverrides,
@@ -105,9 +106,19 @@ export function useAngledDividersSection() {
     }
   }, [isOpen, hasAnyOverride, clearDividerOverrides]);
 
-  const isUnavailable = !hasEligibleDividers;
+  // `standard` is the only interior style that uses the compartment-grid
+  // path. Slotted (divider slots) and solid (cutouts) bypass it entirely
+  // and dividerOverrides would have no effect — hide the section so
+  // users in those modes don't see a knob that does nothing. Closes the
+  // one-directional gap Greptile flagged on #1840 (the reverse direction
+  // — slotted-mode-already-set then add an override — was previously
+  // unguarded).
+  const styleSupportsOverrides = style === 'standard';
+  const isUnavailable = !styleSupportsOverrides || !hasEligibleDividers;
   const disabledReason = isUnavailable
-    ? t('binDesigner.angledDividers.unavailableNoBoundary')
+    ? styleSupportsOverrides
+      ? t('binDesigner.angledDividers.unavailableNoBoundary')
+      : t('binDesigner.angledDividers.unavailableNonStandardMode')
     : undefined;
 
   const summary = useMemo(() => {

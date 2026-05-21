@@ -90,6 +90,7 @@
   "binDesigner.angledDividers.handleAriaLabel.start": "Startpunkt der Trennwand zwischen Fach {a} und Fach {b} ziehen",
   "binDesigner.angledDividers.handleAriaLabel.end": "Endpunkt der Trennwand zwischen Fach {a} und Fach {b} ziehen",
   "binDesigner.angledDividers.slotIncompatible": "Slots werden auf schrägen Trennwänden noch nicht unterstützt — kommt in v2.",
+  "binDesigner.angledDividers.unavailableNonStandardMode": "Schräge Trennwände gelten nur für das Standard-Fachraster.",
   "binDesigner.compartmentNumberLabel": "Fach {n}",
   "binDesigner.textMode": "Stil",
   "binDesigner.textMode.engrave": "Gravieren",

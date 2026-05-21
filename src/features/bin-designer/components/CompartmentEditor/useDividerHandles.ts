@@ -201,10 +201,14 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
           // handler fires at every pointer event, so emitting per-event
           // would saturate analytics. The first rejection within a drag
           // is the signal we care about (and includes the reason code).
-          if (!isValid && !blockedEventEmittedRef.current) {
+          if (!isValid && validationError !== null && !blockedEventEmittedRef.current) {
+            // `validationError` is non-null whenever `isValid` is false
+            // (the two are derived from the same `validateDividerOverride`
+            // call). Belt-and-suspenders null check makes the invariant
+            // explicit so future refactors can't silently emit `'unknown'`.
             blockedEventEmittedRef.current = true;
             trackEvent('divider_tilt_blocked', {
-              reason: validationError ?? 'unknown',
+              reason: validationError,
               axis: handle.divider.axis,
             });
           }

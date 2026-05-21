@@ -1131,6 +1131,7 @@
   "binDesigner.angledDividers.handleAriaLabel.start": "Перетягніть початкову точку перегородки між Відсік {a} та Відсік {b}",
   "binDesigner.angledDividers.handleAriaLabel.end": "Перетягніть кінцеву точку перегородки між Відсік {a} та Відсік {b}",
   "binDesigner.angledDividers.slotIncompatible": "Пази поки не підтримуються для нахилених перегородок — у версії 2.",
+  "binDesigner.angledDividers.unavailableNonStandardMode": "Нахилені перегородки застосовуються лише до стандартної сітки відсіків.",
   "binDesigner.compartmentNumberLabel": "Відсік {n}",
   "binDesigner.textMode": "Стиль",
   "binDesigner.textMode.engrave": "Гравірувати",

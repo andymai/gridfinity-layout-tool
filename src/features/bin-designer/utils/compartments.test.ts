@@ -1263,6 +1263,36 @@ describe('compartments', () => {
       expect(rectStraddlesTiltedDivider(config, 80, 80, rect)).toBe(false);
     });
 
+    it('rectStraddlesTiltedDivider uses partial-span endpoints for non-linear grids', () => {
+      // Regression test for the bug Copilot caught on PR #1840:
+      // `tiltedDividerEndpoints` was using full-bin endpoints (y: ±innerD/2)
+      // for ALL dividers, including partial-span ones. For a 2×2 grid
+      // with cells [0,1,2,3], the override on (0,1) applies ONLY to row
+      // 0's segment of the col-1 boundary — y range [-innerD/2,0], not
+      // the full bin depth.
+      //
+      // An insert at the BOTTOM of the bin (in row 1's range, where the
+      // (0,1) divider doesn't exist) shouldn't be flagged as straddling
+      // the (0,1) tilt. With the bug, the line was extrapolated to the
+      // full bin and the bottom insert was incorrectly flagged.
+      const config: CompartmentConfig = {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1, 2, 3],
+        dividerOverrides: [
+          // Tilt only the top-row half of the vertical boundary.
+          { compartmentA: 0, compartmentB: 1, offsetStart: 15, offsetEnd: -15 },
+        ],
+      };
+      // Insert in row-1's range (y > 0), well away from the row-0 segment.
+      const bottomInsert = { x: -5, y: 25, width: 10, depth: 10 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, bottomInsert)).toBe(false);
+      // Insert in row-0's range (y < 0), straddling the tilt — should flag.
+      const topInsert = { x: -10, y: -30, width: 20, depth: 20 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, topInsert)).toBe(true);
+    });
+
     it('rectStraddlesTiltedDivider skips zero-offset overrides', () => {
       const config: CompartmentConfig = {
         cols: 1,
