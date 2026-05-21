@@ -47,6 +47,26 @@ describe('CutoutEditor', () => {
     expect(screen.getByTitle('binDesigner.cutouts.addCircle')).toBeInTheDocument();
   });
 
+  it('canvas binWidth/binDepth tracks params.gridUnitMm (regression: editor frame must match mesh frame)', () => {
+    // wallThickness = 1.2 (default). At gridUnitMm = 30:
+    //   outerW = 2 × 30 − 0.5     = 59.5
+    //   binWidth = 59.5 − 2 × 1.2 = 57.1
+    // (Would be 81.1 with the previous hardcoded 42 — placing cutouts in
+    // a 24mm-too-wide phantom frame that didn't match the generated mesh.)
+    useDesignerStore.setState({
+      ...useDesignerStore.getInitialState(),
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+        gridUnitMm: 30,
+      },
+    });
+    render(<CutoutEditor />);
+    const canvas = screen.getByTestId('cutout-canvas-3d');
+    expect(Number(canvas.getAttribute('data-bin-width'))).toBeCloseTo(57.1, 5);
+    expect(Number(canvas.getAttribute('data-bin-depth'))).toBeCloseTo(57.1, 5);
+  });
+
   it('renders without errors with cutouts present', () => {
     useDesignerStore.setState({
       params: {

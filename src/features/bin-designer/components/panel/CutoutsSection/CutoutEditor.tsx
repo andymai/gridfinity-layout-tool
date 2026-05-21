@@ -8,7 +8,7 @@
 import { useCallback, useState, useRef, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { centerInBin, flipSelectionHorizontal, flipSelectionVertical } from './geometry';
 import { useCutoutInteraction } from './useCutoutInteraction';
 import { useTranslation } from '@/i18n';
@@ -69,10 +69,7 @@ export function CutoutEditor() {
   );
 
   const { cutouts } = params;
-  const outerW = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const outerD = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const binWidth = outerW - 2 * params.wallThickness;
-  const binDepth = outerD - 2 * params.wallThickness;
+  const { innerW: binWidth, innerD: binDepth, wallHeight } = binDimensions(params);
   // Mm-per-mask-cell in the editor's interior coordinate system. X and Y differ
   // on non-square bins because the interior is shrunk by wall + tolerance (an
   // absolute mm amount) independently on each axis. Keeping validator and
@@ -81,9 +78,6 @@ export function CutoutEditor() {
   const maskCellSize = params.cellMask
     ? { cellMmX: binWidth / params.cellMask.cols, cellMmY: binDepth / params.cellMask.rows }
     : undefined;
-  const totalHeight = params.height * params.heightUnitMm;
-  const isFlat = params.base.style === 'flat';
-  const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.BASE_HEIGHT;
 
   const canvasHeight = (CANVAS_WIDTH * binDepth) / binWidth;
 
