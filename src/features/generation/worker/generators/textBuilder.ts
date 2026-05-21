@@ -30,7 +30,7 @@ import { isOk } from '@/core/result';
 import type { TextFontFamily, TextMode } from '@/shared/types/bin';
 
 export interface FitResult {
-  /** Rendered font size in mm; `min` if even the smallest size overflows. */
+  /** Rendered font size in mm; `0` if `fits` is false. */
   readonly fontSize: number;
   /** Whether the chosen size honors both width and depth constraints. */
   readonly fits: boolean;
@@ -168,11 +168,18 @@ export function buildTextSolid(
 
   // Sketch origin: engrave/through-cut start just above the top face and
   // extrude DOWN; emboss starts at the top face and extrudes UP.
+  // All three modes need the EPSILON lift to avoid coplanar boolean fragility:
+  //  - engrave / through-cut: sketch sits ABOVE topZ, extrudes DOWN through it
+  //  - emboss: sketch sits BELOW topZ, extrudes UP through it
+  // Either way the solid penetrates the host's top face by EPSILON so the
+  // fuse/cut surfaces overlap instead of being coincident.
   const sketchOriginZ =
-    options.mode === 'emboss' ? options.topZ : options.topZ + TEXT_BOOLEAN_EPSILON;
+    options.mode === 'emboss'
+      ? options.topZ - TEXT_BOOLEAN_EPSILON
+      : options.topZ + TEXT_BOOLEAN_EPSILON;
   const extrusion =
     options.mode === 'emboss'
-      ? options.depth
+      ? options.depth + TEXT_BOOLEAN_EPSILON
       : options.mode === 'through-cut'
         ? -(options.hostThickness + 2 * TEXT_BOOLEAN_EPSILON)
         : -(options.depth + TEXT_BOOLEAN_EPSILON);

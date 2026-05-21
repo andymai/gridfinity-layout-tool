@@ -23,8 +23,9 @@ import {
   isOk,
   curveLength,
   clone,
+  withScope,
 } from 'brepjs';
-import type { Shape3D, ValidSolid, Edge, Dimension } from 'brepjs';
+import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope } from 'brepjs';
 import type { BinParams, Cutout, PathPoint } from '@/shared/types/bin';
 import { MIN_PATH_POINTS } from '@/shared/types/bin';
 import {
@@ -35,7 +36,6 @@ import {
 } from './cutoutScoopHelpers';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
-import { withScope, type DisposalScope } from 'brepjs';
 import { buildTextSolid } from './textBuilder';
 /** Axis-aligned bounding box in XY. */
 export interface AABB {
@@ -51,6 +51,53 @@ export interface AABB {
 function computeRotationSafeAABB(cx: number, cy: number, width: number, depth: number): AABB {
   const diag = Math.sqrt(width ** 2 + depth ** 2) / 2;
   return { minX: cx - diag, minY: cy - diag, maxX: cx + diag, maxY: cy + diag };
+}
+
+/**
+ * Tight world-coord AABB for a cutout, accounting for `cutout.rotation`.
+ *
+ * Projects the four corners through the rotation matrix (around the cutout's
+ * own center) and takes their min/max. Unrotated cutouts return their plain
+ * extent; rotated ones get a true axis-aligned envelope (smaller than
+ * `computeRotationSafeAABB`'s diagonal-based safe box, which would push
+ * adjacent text farther out than necessary).
+ *
+ * `originX/Y` is the bin-interior origin in world coords (= -innerW/2,
+ * -innerD/2), so the returned AABB sits in the interior frame.
+ */
+function cutoutWorldAabb(
+  cutout: Pick<Cutout, 'x' | 'y' | 'width' | 'depth' | 'rotation'>,
+  originX: number,
+  originY: number
+): AABB {
+  const cx = originX + cutout.x + cutout.width / 2;
+  const cy = originY + cutout.y + cutout.depth / 2;
+  const hw = cutout.width / 2;
+  const hd = cutout.depth / 2;
+  if (cutout.rotation === 0) {
+    return { minX: cx - hw, maxX: cx + hw, minY: cy - hd, maxY: cy + hd };
+  }
+  const θ = (cutout.rotation * Math.PI) / 180;
+  const c = Math.cos(θ);
+  const s = Math.sin(θ);
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const [lx, ly] of [
+    [-hw, -hd],
+    [hw, -hd],
+    [hw, hd],
+    [-hw, hd],
+  ] as const) {
+    const wx = cx + lx * c - ly * s;
+    const wy = cy + lx * s + ly * c;
+    if (wx < minX) minX = wx;
+    if (wx > maxX) maxX = wx;
+    if (wy < minY) minY = wy;
+    if (wy > maxY) maxY = wy;
+  }
+  return { minX, maxX, minY, maxY };
 }
 /** Create an extruded cutout shape centered at origin, **without rotation**.
  *  Splitting out rotation lets callers apply axis-aware fillets in the
@@ -682,16 +729,16 @@ export function buildCutoutCuts(
 /**
  * Engraved text adjacent to a cutout, on the bin top surface.
  *
- * Placement: the side picker is interpreted in WORLD coordinates relative to
- * the cutout's AABB — the rotation-aware projection is a follow-up. This
- * keeps the most common case (unrotated cutouts) intuitive and avoids the
- * trig that the design called for but isn't yet load-bearing. Text reads
- * left-to-right in world XY regardless.
+ * The side picker is interpreted in WORLD coordinates (top = +Y, etc.); text
+ * reads left-to-right in world XY regardless of cutout rotation. The cutout
+ * AABB used for placement IS rotation-aware so labels never overlap a rotated
+ * cutout's footprint — `cutoutWorldAabb()` projects the four rotated corners
+ * and takes their min/max.
  *
- * Available space = the gap between the cutout's AABB edge and the bin
- * interior boundary in the chosen direction, minus 2·margin. Returns `null`
- * when even the minimum font size won't fit — better silent skip than a
- * visually broken engraving.
+ * Available space = the gap between the cutout's rotated AABB edge and the
+ * bin interior boundary in the chosen direction, minus 2·margin. Returns
+ * `null` when even the minimum font size won't fit — better silent skip than
+ * a visually broken engraving.
  */
 function buildCutoutLabelEngrave(
   cutout: Cutout,
@@ -704,11 +751,14 @@ function buildCutoutLabelEngrave(
   innerD: number
 ): Shape3D | null {
   const side = cutout.textSide ?? 'top';
-  // World-coord AABB of the cutout (in interior frame: origin at bin center).
-  const aabbMinX = originX + cutout.x;
-  const aabbMaxX = aabbMinX + cutout.width;
-  const aabbMinY = originY + cutout.y;
-  const aabbMaxY = aabbMinY + cutout.depth;
+  // World-coord AABB of the cutout (in interior frame: origin at bin center),
+  // rotation-aware so labels don't overlap a rotated cutout.
+  const {
+    minX: aabbMinX,
+    maxX: aabbMaxX,
+    minY: aabbMinY,
+    maxY: aabbMaxY,
+  } = cutoutWorldAabb(cutout, originX, originY);
 
   // Interior bounds in the same frame.
   const interiorMinX = -innerW / 2;
