@@ -199,27 +199,28 @@ function findPairAwareRuns(
   key: (i: number) => string | null
 ): Array<{ start: number; end: number; pairKey: string }> {
   const runs: Array<{ start: number; end: number; pairKey: string }> = [];
-  let segStart: number | null = null;
-  let segKey: string | null = null;
+  // Carry start + key as a single nullable tuple so segStart and segKey can
+  // never disagree (one set, the other still null). Prior shape stored them
+  // separately and TypeScript couldn't prove the invariant; reviewers
+  // flagged the `segKey ?? ''` fallback as either dead code or a silent
+  // misroute waiting to happen.
+  let open: { start: number; key: string } | null = null;
   for (let i = 0; i < count; i++) {
     const k = key(i);
     if (k === null) {
-      if (segStart !== null && segKey !== null) {
-        runs.push({ start: segStart, end: i, pairKey: segKey });
-        segStart = null;
-        segKey = null;
+      if (open !== null) {
+        runs.push({ start: open.start, end: i, pairKey: open.key });
+        open = null;
       }
-    } else if (segStart === null) {
-      segStart = i;
-      segKey = k;
-    } else if (k !== segKey) {
-      runs.push({ start: segStart, end: i, pairKey: segKey ?? '' });
-      segStart = i;
-      segKey = k;
+    } else if (open === null) {
+      open = { start: i, key: k };
+    } else if (k !== open.key) {
+      runs.push({ start: open.start, end: i, pairKey: open.key });
+      open = { start: i, key: k };
     }
   }
-  if (segStart !== null && segKey !== null) {
-    runs.push({ start: segStart, end: count, pairKey: segKey });
+  if (open !== null) {
+    runs.push({ start: open.start, end: count, pairKey: open.key });
   }
   return runs;
 }
