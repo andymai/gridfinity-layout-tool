@@ -122,10 +122,9 @@ export const FEATURE_FLAGS = [
     status: 'experimental',
     risk: 'medium',
     warning:
-      'Coming soon. The geometry pipeline already understands tilted dividers; the editor UI for setting offsets ships in the next update.',
+      'Panel UI ships now (numeric mm offsets per divider). Canvas drag handles arrive in the next update. Scoops and label tabs auto-skip compartments touching a tilted divider.',
     addedAt: '2026-05',
     requiresRefresh: false,
-    comingSoon: true,
   },
 ] as const satisfies readonly FeatureFlag[];
 

@@ -199,7 +199,7 @@ function findPairAwareRuns(
   key: (i: number) => string | null
 ): Array<{ start: number; end: number; pairKey: string }> {
   const runs: Array<{ start: number; end: number; pairKey: string }> = [];
-  // Carry start + key as a single nullable tuple so segStart and segKey can
+  // Carry start + key as a single nullable object so segStart and segKey can
   // never disagree (one set, the other still null). Prior shape stored them
   // separately and TypeScript couldn't prove the invariant; reviewers
   // flagged the `segKey ?? ''` fallback as either dead code or a silent

@@ -389,6 +389,68 @@ export function createParamSlice(set: Set, get: Get) {
       });
     },
 
+    setDividerOverride: (
+      compartmentA: number,
+      compartmentB: number,
+      offsetStart: number,
+      offsetEnd: number
+    ) => {
+      // Enforce canonical pair ordering: the validator + worker lookup all
+      // assume compartmentA < compartmentB, and silently allowing unordered
+      // pairs at the store would let two storage representations of the
+      // same divider exist as separate entries.
+      const [a, b] =
+        compartmentA < compartmentB ? [compartmentA, compartmentB] : [compartmentB, compartmentA];
+      const { params } = get();
+      const prev = params.compartments.dividerOverrides ?? [];
+      const existing = prev.find((o) => o.compartmentA === a && o.compartmentB === b);
+      // No-op guard: dragging an endpoint to its current position fires this
+      // action; an unchanged value would otherwise push a history entry per
+      // pointer move and bloat the undo stack.
+      if (existing && existing.offsetStart === offsetStart && existing.offsetEnd === offsetEnd) {
+        return;
+      }
+      set((state) => {
+        pushHistoryEntry(state);
+        const next = prev.filter((o) => !(o.compartmentA === a && o.compartmentB === b));
+        // Treat zero offsets as "remove" so the storage stays tidy and the
+        // empty array can be omitted from persisted JSON.
+        if (offsetStart !== 0 || offsetEnd !== 0) {
+          next.push({ compartmentA: a, compartmentB: b, offsetStart, offsetEnd });
+        }
+        state.params.compartments = {
+          ...state.params.compartments,
+          ...(next.length > 0 ? { dividerOverrides: next } : { dividerOverrides: undefined }),
+        };
+      });
+    },
+
+    removeDividerOverride: (compartmentA: number, compartmentB: number) => {
+      const [a, b] =
+        compartmentA < compartmentB ? [compartmentA, compartmentB] : [compartmentB, compartmentA];
+      const { params } = get();
+      const prev = params.compartments.dividerOverrides ?? [];
+      const next = prev.filter((o) => !(o.compartmentA === a && o.compartmentB === b));
+      if (next.length === prev.length) return; // nothing changed
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.compartments = {
+          ...state.params.compartments,
+          ...(next.length > 0 ? { dividerOverrides: next } : { dividerOverrides: undefined }),
+        };
+      });
+    },
+
+    clearDividerOverrides: () => {
+      const { params } = get();
+      if (!params.compartments.dividerOverrides?.length) return;
+      set((state) => {
+        pushHistoryEntry(state);
+        const { dividerOverrides: _drop, ...rest } = state.params.compartments;
+        state.params.compartments = rest;
+      });
+    },
+
     // Insert actions
     addInsert: (insert: Insert) => {
       set((state) => {
