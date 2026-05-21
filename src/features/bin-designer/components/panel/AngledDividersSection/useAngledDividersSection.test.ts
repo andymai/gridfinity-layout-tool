@@ -167,4 +167,36 @@ describe('useAngledDividersSection', () => {
     expect(result.current.state.isUnavailable).toBe(true);
     expect(result.current.state.isOpen).toBe(false);
   });
+
+  it('reports isUnavailable with the non-standard-mode reason for slotted bins', () => {
+    // Greptile flagged on #1840 that the slotted-mode blind spot let
+    // users tilt knobs that did nothing once already in slotted mode.
+    // The fix gates `useAngledDividersSection` on style==='standard';
+    // this test prevents regression.
+    setCompartments(1, 2, [0, 1]);
+    useDesignerStore.setState((s) => ({ params: { ...s.params, style: 'slotted' } }));
+    const { result } = renderHook(() => useAngledDividersSection());
+    expect(result.current.state.isUnavailable).toBe(true);
+    // Translation renders to English here; assert against the actual
+    // string so we're testing the right branch fired (the
+    // `unavailableNoBoundary` branch would say "interior dividers"
+    // instead).
+    expect(result.current.meta.disabledReason).toContain('standard compartment grid');
+  });
+
+  it('reports isUnavailable for solid (cutout) bins too', () => {
+    setCompartments(1, 2, [0, 1]);
+    useDesignerStore.setState((s) => ({ params: { ...s.params, style: 'solid' } }));
+    const { result } = renderHook(() => useAngledDividersSection());
+    expect(result.current.state.isUnavailable).toBe(true);
+  });
+
+  it('reports isAvailable for standard-mode bins with eligible dividers', () => {
+    // Sanity check that the new style gate doesn't accidentally
+    // suppress the standard-mode path.
+    setCompartments(1, 2, [0, 1]);
+    const { result } = renderHook(() => useAngledDividersSection());
+    expect(result.current.state.isUnavailable).toBe(false);
+    expect(result.current.meta.disabledReason).toBeUndefined();
+  });
 });

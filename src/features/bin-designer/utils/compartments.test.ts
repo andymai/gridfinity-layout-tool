@@ -1264,17 +1264,24 @@ describe('compartments', () => {
     });
 
     it('rectStraddlesTiltedDivider uses partial-span endpoints for non-linear grids', () => {
-      // Regression test for the bug Copilot caught on PR #1840:
+      // Regression for the bug Copilot caught on PR #1840:
       // `tiltedDividerEndpoints` was using full-bin endpoints (y: ±innerD/2)
       // for ALL dividers, including partial-span ones. For a 2×2 grid
       // with cells [0,1,2,3], the override on (0,1) applies ONLY to row
-      // 0's segment of the col-1 boundary — y range [-innerD/2,0], not
-      // the full bin depth.
+      // 0's segment — y range [-innerD/2, 0], not the full bin.
       //
-      // An insert at the BOTTOM of the bin (in row 1's range, where the
-      // (0,1) divider doesn't exist) shouldn't be flagged as straddling
-      // the (0,1) tilt. With the bug, the line was extrapolated to the
-      // full bin and the bottom insert was incorrectly flagged.
+      // CRITICAL: this test must FAIL with the pre-fix code AND PASS
+      // with the post-fix code. The first version of this test (PR
+      // #1842) chose insert positions that produced the same outcome
+      // under both code paths — passing trivially. The positions below
+      // were derived from the actual line geometry:
+      //   - Old full-span line: from (15, -40) to (-15, 40), slope
+      //     -3/8 in y/x. At y=20, line x = -7.5.
+      //   - New partial-span line: from (15, -40) to (-15, 0). At y=20
+      //     (extrapolated), line x = -30.
+      // An insert at x = [-10, 0], y = [20, 25] crosses the old line
+      // (corners on both sides of x=-7.5..-9.375) but sits entirely to
+      // the right of the new line (corners all at x > -30).
       const config: CompartmentConfig = {
         cols: 2,
         rows: 2,
@@ -1285,12 +1292,15 @@ describe('compartments', () => {
           { compartmentA: 0, compartmentB: 1, offsetStart: 15, offsetEnd: -15 },
         ],
       };
-      // Insert in row-1's range (y > 0), well away from the row-0 segment.
-      const bottomInsert = { x: -5, y: 25, width: 10, depth: 10 };
-      expect(rectStraddlesTiltedDivider(config, 80, 80, bottomInsert)).toBe(false);
-      // Insert in row-0's range (y < 0), straddling the tilt — should flag.
-      const topInsert = { x: -10, y: -30, width: 20, depth: 20 };
-      expect(rectStraddlesTiltedDivider(config, 80, 80, topInsert)).toBe(true);
+      // Insert at (x=-10..0, y=20..25): straddles the old extrapolated
+      // line, sits cleanly on one side of the post-fix partial-span line.
+      const partialSpanInsert = { x: -10, y: 20, width: 10, depth: 5 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, partialSpanInsert)).toBe(false);
+      // Insert in row-0's range that genuinely crosses the partial-span
+      // line — must straddle in both old and new code. Sanity check
+      // that the helper still catches real intersections.
+      const inRangeInsert = { x: -10, y: -35, width: 20, depth: 10 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, inRangeInsert)).toBe(true);
     });
 
     it('rectStraddlesTiltedDivider skips zero-offset overrides', () => {
