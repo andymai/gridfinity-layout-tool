@@ -53,11 +53,16 @@ export function useAngledDividersSection() {
   // toggle was off → FeatureToggle hid the controls → user couldn't
   // create the first override.
   // `isOpen` derives from EITHER a manual open OR the data already having
-  // overrides — no useEffect needed. When a future canvas-drag path
-  // creates the first override, `hasAnyOverride` flips true and `isOpen`
-  // becomes true on the next render, no state-sync logic required.
+  // overrides — no useEffect needed. When a canvas drag creates the first
+  // override, `hasAnyOverride` flips true and `isOpen` becomes true on
+  // the next render, no state-sync logic required.
+  //
+  // Gated on `rows.length > 0` (computed below) so changing the grid mid-
+  // session to a layout with no interior dividers visually closes the
+  // section instead of showing a checked-but-disabled toggle.
   const [isOpenLocal, setIsOpenLocal] = useState(false);
-  const isOpen = isOpenLocal || hasAnyOverride;
+  const hasEligibleDividers = rows.length > 0;
+  const isOpen = hasEligibleDividers && (isOpenLocal || hasAnyOverride);
 
   const setOffset = useCallback(
     (row: AngledDividerRow, which: 'start' | 'end', value: number) => {
@@ -90,7 +95,7 @@ export function useAngledDividersSection() {
     }
   }, [isOpen, hasAnyOverride, clearDividerOverrides]);
 
-  const isUnavailable = rows.length === 0;
+  const isUnavailable = !hasEligibleDividers;
   const disabledReason = isUnavailable
     ? t('binDesigner.angledDividers.unavailableNoBoundary')
     : undefined;

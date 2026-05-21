@@ -126,4 +126,47 @@ describe('useAngledDividersSection', () => {
     expect(result.current.state.isOpen).toBe(false);
     expect(result.current.state.hasAnyOverride).toBe(false);
   });
+
+  it('auto-opens on initial render when overrides already exist (reload UX)', () => {
+    // #1834 follow-up: Greptile flagged that the reload-with-existing-
+    // overrides path wasn't covered. The hook derives `isOpen` from
+    // `isOpenLocal || hasAnyOverride` so a fresh mount with overrides in
+    // storage must immediately report isOpen=true (so the section's
+    // toggle reads as on AND its children render — without this, a user
+    // who reloads with existing overrides sees the section collapsed
+    // even though their data is intact).
+    useDesignerStore.setState((s) => ({
+      params: {
+        ...s.params,
+        compartments: {
+          ...s.params.compartments,
+          cols: 1,
+          rows: 2,
+          cells: [0, 1],
+          dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 12, offsetEnd: -8 }],
+        },
+      },
+    }));
+    const { result } = renderHook(() => useAngledDividersSection());
+    expect(result.current.state.isOpen).toBe(true);
+    expect(result.current.state.hasAnyOverride).toBe(true);
+  });
+
+  it('forces isOpen=false when the grid becomes ineligible mid-session', () => {
+    // #1834 follow-up: Greptile flagged an edge case where `isOpenLocal`
+    // persists across grid mutations. If the user opens the section on a
+    // 1×2 layout then shrinks to 1×1, the toggle shouldn't read as
+    // "on" while being disabled — `isOpen` must derive from BOTH the
+    // open state AND eligibility.
+    setCompartments(1, 2, [0, 1]);
+    const { result, rerender } = renderHook(() => useAngledDividersSection());
+    act(() => result.current.handlers.toggleEnabled());
+    rerender();
+    expect(result.current.state.isOpen).toBe(true);
+    // Shrink to 1×1 — no interior dividers.
+    setCompartments(1, 1, [0]);
+    rerender();
+    expect(result.current.state.isUnavailable).toBe(true);
+    expect(result.current.state.isOpen).toBe(false);
+  });
 });

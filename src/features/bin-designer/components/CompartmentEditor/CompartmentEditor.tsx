@@ -32,6 +32,9 @@ import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { usePreviewColor } from '@/features/bin-designer/hooks/usePreviewColor';
 import { GridCell, GhostPreview } from './CompartmentEditorParts';
+import { DividerHandlesOverlay } from './DividerHandlesOverlay';
+import { useDividerHandles } from './useDividerHandles';
+import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 
 export function CompartmentEditor() {
   const t = useTranslation();
@@ -41,6 +44,7 @@ export function CompartmentEditor() {
     compartments,
     width,
     depth,
+    wallThickness,
     setParam,
     setCompartmentGrid,
     mergeCells,
@@ -52,6 +56,7 @@ export function CompartmentEditor() {
       compartments: s.params.compartments,
       width: s.params.width,
       depth: s.params.depth,
+      wallThickness: s.params.wallThickness,
       setParam: s.setParam,
       setCompartmentGrid: s.setCompartmentGrid,
       mergeCells: s.mergeCells,
@@ -72,6 +77,19 @@ export function CompartmentEditor() {
   const [isDragging, setIsDragging] = useState(false);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+
+  // Bin interior dimensions in mm — used by the divider-drag overlay to
+  // convert canvas-pixel deltas to mm offsets. Mirrors the worker-side
+  // derivation in `buildCompartmentWalls`.
+  const innerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+  const innerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+
+  const dividerHandles = useDividerHandles({
+    compartments,
+    innerW,
+    innerD,
+    canvasRef: gridRef,
+  });
 
   // Pre-compute cell counts per compartment to avoid repeated O(n) scans
   const compartmentCellCounts = useMemo(() => {
@@ -446,7 +464,7 @@ export function CompartmentEditor() {
                 );
               })}
             </div>
-            {/* Ghost preview overlay during drag */}
+            {/* Ghost preview overlay during cell-select drag */}
             {isDragging && selection.size >= 2 && (
               <GhostPreview
                 selection={selection}
@@ -455,6 +473,15 @@ export function CompartmentEditor() {
                 rows={rows}
               />
             )}
+            {/* Angled-divider drag handles. Self-gated on labs flag and
+                grid linearity; renders nothing for unsupported layouts. */}
+            <DividerHandlesOverlay
+              handles={dividerHandles.handles}
+              drag={dividerHandles.drag}
+              innerW={innerW}
+              innerD={innerD}
+              onHandlePointerDown={dividerHandles.onHandlePointerDown}
+            />
           </div>
         </section>
       )}
