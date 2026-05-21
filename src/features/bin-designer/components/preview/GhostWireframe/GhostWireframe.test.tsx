@@ -5,6 +5,10 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { GhostWireframe } from './GhostWireframe';
 
+const { capturedPositions } = vi.hoisted(() => ({
+  capturedPositions: [] as number[][],
+}));
+
 vi.mock('@react-three/fiber', () => ({
   Canvas: ({ children }: { children: ReactNode }) => <div data-testid="r3f-canvas">{children}</div>,
   useThree: () => ({
@@ -69,7 +73,9 @@ vi.mock('three/examples/jsm/lines/LineMaterial.js', () => ({
 
 vi.mock('three/examples/jsm/lines/LineSegmentsGeometry.js', () => ({
   LineSegmentsGeometry: class MockLineSegmentsGeometry {
-    setPositions = vi.fn();
+    setPositions(positions: number[]) {
+      capturedPositions.push([...positions]);
+    }
     dispose = vi.fn();
   },
 }));
@@ -77,6 +83,7 @@ vi.mock('three/examples/jsm/lines/LineSegmentsGeometry.js', () => ({
 describe('GhostWireframe', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    capturedPositions.length = 0;
     useDesignerStore.setState({
       params: DEFAULT_BIN_PARAMS,
       generation: {
@@ -105,6 +112,31 @@ describe('GhostWireframe', () => {
     });
     const { container } = render(<GhostWireframe />);
     expect(container.firstChild).not.toBeNull();
+  });
+
+  it('outer dimensions track params.gridUnitMm (regression for #1807-follow-up)', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, gridUnitMm: 30 },
+      generation: {
+        status: 'generating',
+        mesh: null,
+        progress: 0,
+        epoch: 0,
+      },
+    });
+    render(<GhostWireframe />);
+
+    expect(capturedPositions.length).toBeGreaterThan(0);
+    const positions = capturedPositions[0];
+    let maxAbsX = 0;
+    let maxAbsY = 0;
+    for (let i = 0; i < positions.length; i += 3) {
+      maxAbsX = Math.max(maxAbsX, Math.abs(positions[i]));
+      maxAbsY = Math.max(maxAbsY, Math.abs(positions[i + 1]));
+    }
+    // outerW = 2 × 30 − 0.5 = 59.5 → halfW = 29.75 (would be 41.75 with hardcoded 42)
+    expect(maxAbsX).toBeCloseTo(29.75, 5);
+    expect(maxAbsY).toBeCloseTo(29.75, 5);
   });
 
   it('renders nothing when generation is complete', () => {

@@ -25,6 +25,7 @@ export function GhostLabelTabs() {
     width,
     depth,
     height,
+    gridUnitMm,
     heightUnitMm,
     wallThickness,
     style,
@@ -36,6 +37,7 @@ export function GhostLabelTabs() {
       width: s.params.width,
       depth: s.params.depth,
       height: s.params.height,
+      gridUnitMm: s.params.gridUnitMm,
       heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       style: s.params.style,
@@ -46,8 +48,8 @@ export function GhostLabelTabs() {
   );
   const { cols, rows, thickness, cells } = compartments;
 
-  const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
+  const outerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const totalH = height * heightUnitMm;

@@ -14,6 +14,8 @@ interface BinNameLabelProps {
   width: number;
   /** Bin depth in grid units (for vertical positioning relative to bin edge) */
   depth: number;
+  /** Grid unit size in mm (defaults to standard 42mm) */
+  gridUnitMm?: number;
   /** Design name to display */
   name: string;
 }
@@ -28,12 +30,13 @@ const FRONT_OFFSET = 32;
  * Bin name label displayed on the floor in front of the bin.
  * Uppercase text centered on the bin's width.
  */
-export function BinNameLabel({ width, depth, name }: BinNameLabelProps) {
+export function BinNameLabel({ width, depth, gridUnitMm, name }: BinNameLabelProps) {
   const colors = useThreeColors();
   if (!name.trim()) return null;
 
-  const outerW = width * GRIDFINITY.GRID_SIZE;
-  const halfD = (depth * GRIDFINITY.GRID_SIZE) / 2;
+  const GS = gridUnitMm ?? GRIDFINITY.GRID_SIZE;
+  const outerW = width * GS;
+  const halfD = (depth * GS) / 2;
 
   const textY = -halfD - FRONT_OFFSET;
 
