@@ -802,6 +802,16 @@ export interface DesignerState {
   resetCompartments: () => void;
   setCompartmentText: (compartmentId: number, text: string) => void;
 
+  // Angled-divider override actions
+  setDividerOverride: (
+    compartmentA: number,
+    compartmentB: number,
+    offsetStart: number,
+    offsetEnd: number
+  ) => void;
+  removeDividerOverride: (compartmentA: number, compartmentB: number) => void;
+  clearDividerOverrides: () => void;
+
   // Text style actions (engraved text on label tabs and cutouts)
   setTextDefaults: (partial: Partial<TextStyleDefaults>) => void;
   setLabelTabTextStyle: (overrides: TextStyleOverride | null) => void;

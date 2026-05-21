@@ -229,6 +229,62 @@ export function validateDividerOverrides(
 }
 
 /**
+ * One row in the panel's "Diagonal dividers" section: a pair of adjacent
+ * compartments whose shared divider segment can be tilted, plus the current
+ * override values (zero if no override exists yet) and the axis the segment
+ * runs along (so the UI can label endpoints consistently).
+ */
+export interface EligibleDivider {
+  readonly compartmentA: number;
+  readonly compartmentB: number;
+  /** 'vertical' = compartments stacked horizontally (boundary runs along Y). */
+  readonly axis: 'vertical' | 'horizontal';
+  readonly offsetStart: number;
+  readonly offsetEnd: number;
+}
+
+/**
+ * Enumerate every interior divider segment that could carry a tilt override.
+ * Mirrors the worker-side wall-segment derivation but at the compartment-pair
+ * granularity the panel UI needs — one row per (compartmentA, compartmentB).
+ *
+ * Order is stable (by axis then by canonical pair) so panel row positions
+ * don't shuffle as the user mutates the grid.
+ */
+export function getEligibleDividers(config: CompartmentConfig): EligibleDivider[] {
+  const { cols, rows, cells } = config;
+  const seen = new Set<string>();
+  const out: EligibleDivider[] = [];
+  const overrideByPair = new Map<string, DividerOverride>();
+  for (const o of config.dividerOverrides ?? []) {
+    overrideByPair.set(`${o.compartmentA}|${o.compartmentB}`, o);
+  }
+  const consider = (a: number, b: number, axis: 'vertical' | 'horizontal'): void => {
+    if (a === b) return;
+    const [ca, cb] = a < b ? [a, b] : [b, a];
+    const key = `${axis}|${ca}|${cb}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    const existing = overrideByPair.get(`${ca}|${cb}`);
+    out.push({
+      compartmentA: ca,
+      compartmentB: cb,
+      axis,
+      offsetStart: existing?.offsetStart ?? 0,
+      offsetEnd: existing?.offsetEnd ?? 0,
+    });
+  };
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const id = cells[row * cols + col];
+      if (col + 1 < cols) consider(id, cells[row * cols + (col + 1)], 'vertical');
+      if (row + 1 < rows) consider(id, cells[(row + 1) * cols + col], 'horizontal');
+    }
+  }
+  return out;
+}
+
+/**
  * True when the compartment has at least one tilted boundary (i.e. is one
  * end of a `DividerOverride`). Used by features that can't render against
  * non-axis-aligned edges (scoops, label tabs on the tilted side).

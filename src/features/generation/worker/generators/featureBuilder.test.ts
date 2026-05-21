@@ -225,18 +225,19 @@ describe('buildCompartmentWalls', () => {
     );
     expect(topOnly).not.toBeNull();
     expect(bothPairs).not.toBeNull();
-    // Use centroid (sum of vertex positions) as the discriminator rather
-    // than vertex count: OCCT's fuse may normalize coincident vertices,
-    // and two parallelograms with the same vertex count can land at
-    // different positions. The centroid catches positional differences
-    // even when the count happens to match.
-    const sumXYZ = (mesh: { vertices: ArrayLike<number> }): number => {
+    // Use raw vertex-position sum as the discriminator rather than vertex
+    // count: OCCT's fuse may normalize coincident vertices, and two
+    // parallelograms with the same vertex count can land at different
+    // positions. The position sum catches positional differences even
+    // when the count happens to match. (Not a true centroid — no
+    // division by count — but the differential check works the same.)
+    const sumPositions = (mesh: { vertices: ArrayLike<number> }): number => {
       let s = 0;
       for (let i = 0; i < mesh.vertices.length; i++) s += mesh.vertices[i];
       return s;
     };
-    const topOnlySum = sumXYZ(meshShape(topOnly));
-    const bothSum = sumXYZ(meshShape(bothPairs));
+    const topOnlySum = sumPositions(meshShape(topOnly));
+    const bothSum = sumPositions(meshShape(bothPairs));
     // Pre-fix: these would be identical because the (0,1) override would
     // silently tilt both halves of the boundary and the (2,3) override
     // would be a no-op. Post-fix: they differ because only the (2,3)
