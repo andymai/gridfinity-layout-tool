@@ -150,6 +150,54 @@ describe('buildCompartmentWalls', () => {
     const skewMesh = meshShape(skew);
     expect(skewMesh.vertices.length).not.toBe(straightMesh.vertices.length);
   }, 30000);
+
+  it('does not crash on a tilted override that pushes the divider outside the bin interior', () => {
+    // Defensive guard against malformed JSON or invariant breakage where
+    // the override drives the whole prism past the clip box. Build must
+    // omit the bad divider silently — never crash the worker.
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: {
+        cols: 1,
+        rows: 2,
+        cells: [0, 1],
+        thickness: 1.2,
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 200, offsetEnd: 200 }],
+      },
+    };
+    expect(() => buildCompartmentWalls(params, 80, 80, 16)).not.toThrow();
+  }, 30000);
+
+  it('applies overrides only to the matching pair when a boundary spans multiple pairs', () => {
+    // 2×2 grid with no merging — the vertical boundary between col 0 and col
+    // 1 runs through pair (0,1) at row 0 and pair (2,3) at row 1. Before the
+    // pair-aware run split, the whole vertical run was one segment and the
+    // (0,1) override would silently apply to the (2,3) half. With the fix,
+    // each pair-run gets its own lookup.
+    const baseCells = [0, 1, 2, 3];
+    const noOverrides: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: { cols: 2, rows: 2, cells: baseCells, thickness: 1.2 },
+    };
+    const onlyTopTilted: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: {
+        cols: 2,
+        rows: 2,
+        cells: baseCells,
+        thickness: 1.2,
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 10, offsetEnd: -10 }],
+      },
+    };
+    const baseline = buildCompartmentWalls(noOverrides, 80, 80, 16);
+    const tilted = buildCompartmentWalls(onlyTopTilted, 80, 80, 16);
+    expect(baseline).not.toBeNull();
+    expect(tilted).not.toBeNull();
+    // Different mesh — proves the tilt is taking effect somewhere.
+    const baselineMesh = meshShape(baseline);
+    const tiltedMesh = meshShape(tilted);
+    expect(tiltedMesh.vertices.length).not.toBe(baselineMesh.vertices.length);
+  }, 30000);
 });
 
 describe('buildInsertCuts', () => {

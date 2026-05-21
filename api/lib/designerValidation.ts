@@ -286,14 +286,19 @@ function validateCompartments(compartments: unknown): string | null {
   // Optional per-divider tilt overrides. Mirrors the client-side
   // `DIVIDER_OFFSET_MAX_MM = 200` cap and the canonical pair ordering rule
   // (compartmentA < compartmentB) so a direct HTTP POST can't smuggle in
-  // unordered or absurd overrides that bypass the store action.
+  // unordered or absurd overrides that bypass the store action. Also
+  // verifies (1) both compartment IDs actually exist in cells and (2) the
+  // pair is adjacent — same checks the client validator does.
   if (compartments.dividerOverrides !== undefined) {
     if (!Array.isArray(compartments.dividerOverrides)) {
       return 'compartments.dividerOverrides must be an array';
     }
     if (compartments.dividerOverrides.length > expectedLength * 2) {
-      // Generous upper bound: at most ~2× cell count of unique pairs.
       return `compartments.dividerOverrides length is unreasonably large`;
+    }
+    const knownIds = new Set<number>();
+    for (const cell of compartments.cells as unknown[]) {
+      if (typeof cell === 'number' && Number.isInteger(cell)) knownIds.add(cell);
     }
     const seenPairs = new Set<string>();
     for (let i = 0; i < compartments.dividerOverrides.length; i++) {
@@ -310,6 +315,12 @@ function validateCompartments(compartments: unknown): string | null {
       if (o.compartmentA >= o.compartmentB) {
         return `compartments.dividerOverrides[${i}] must have compartmentA < compartmentB`;
       }
+      if (!knownIds.has(o.compartmentA) || !knownIds.has(o.compartmentB)) {
+        return `compartments.dividerOverrides[${i}] references unknown compartment ID`;
+      }
+      if (!compartmentsAreAdjacent(compartments, o.compartmentA, o.compartmentB)) {
+        return `compartments.dividerOverrides[${i}] compartments are not adjacent`;
+      }
       if (!isNumber(o.offsetStart) || !inRange(o.offsetStart, -200, 200)) {
         return `compartments.dividerOverrides[${i}].offsetStart must be -200..200`;
       }
@@ -324,6 +335,35 @@ function validateCompartments(compartments: unknown): string | null {
     }
   }
   return null;
+}
+
+/**
+ * Server-side adjacency check mirroring the client helper. Two compartments
+ * are adjacent if any pair of orthogonally-neighboring cells holds them.
+ */
+function compartmentsAreAdjacent(
+  compartments: Record<string, unknown>,
+  a: number,
+  b: number
+): boolean {
+  const cols = compartments.cols as number;
+  const rows = compartments.rows as number;
+  const cells = compartments.cells as readonly number[];
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const id = cells[row * cols + col];
+      if (id !== a && id !== b) continue;
+      if (col + 1 < cols) {
+        const r = cells[row * cols + (col + 1)];
+        if ((id === a && r === b) || (id === b && r === a)) return true;
+      }
+      if (row + 1 < rows) {
+        const d = cells[(row + 1) * cols + col];
+        if ((id === a && d === b) || (id === b && d === a)) return true;
+      }
+    }
+  }
+  return false;
 }
 
 /**

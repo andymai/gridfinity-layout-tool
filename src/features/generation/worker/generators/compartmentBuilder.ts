@@ -153,10 +153,14 @@ function buildTiltedWallSegment(
   height: number,
   binInnerW: number,
   binInnerD: number
-): Shape3D {
+): Shape3D | null {
   const dx = endX - startX;
   const dy = endY - startY;
   const len = Math.hypot(dx, dy);
+  // Degenerate-segment guard: a zero-length divider (both endpoints
+  // collapsed to the same point — possible if a malformed override drives
+  // a span to nothing) would divide by zero and produce NaN geometry.
+  if (len < 1e-6) return null;
   // Perpendicular unit vector (rotated 90° CCW from the divider direction).
   const px = -dy / len;
   const py = dx / len;
@@ -171,8 +175,53 @@ function buildTiltedWallSegment(
   // Clip the parallelogram corners that overshoot the bin's perpendicular
   // wall. For zero-tilt segments the clip is a no-op; for tilted segments
   // it shears off the "ears" that would otherwise poke through the wall.
+  // If the prism is entirely outside the clip box (override pushes the
+  // divider beyond the bin interior), the intersect returns nothing — bail
+  // gracefully rather than crashing the whole bin build.
   const clipBox = scope.register(box(binInnerW, binInnerD, height, { at: [0, 0, height / 2] }));
-  return scope.register(unwrap(intersect(prism as ValidSolid, clipBox)));
+  try {
+    return scope.register(unwrap(intersect(prism as ValidSolid, clipBox)));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Walk a boundary line in single-cell steps and group contiguous cells where
+ * `key(i)` returns the SAME non-null string into runs. Each emitted run has
+ * a uniform `pairKey`. Used so the override lookup applies to runs that
+ * actually correspond to one (compartmentA, compartmentB) pair — a longer
+ * fused run that crosses pair changes would silently apply the first pair's
+ * override to the entire wall.
+ */
+function findPairAwareRuns(
+  count: number,
+  key: (i: number) => string | null
+): Array<{ start: number; end: number; pairKey: string }> {
+  const runs: Array<{ start: number; end: number; pairKey: string }> = [];
+  let segStart: number | null = null;
+  let segKey: string | null = null;
+  for (let i = 0; i < count; i++) {
+    const k = key(i);
+    if (k === null) {
+      if (segStart !== null && segKey !== null) {
+        runs.push({ start: segStart, end: i, pairKey: segKey });
+        segStart = null;
+        segKey = null;
+      }
+    } else if (segStart === null) {
+      segStart = i;
+      segKey = k;
+    } else if (k !== segKey) {
+      runs.push({ start: segStart, end: i, pairKey: segKey ?? '' });
+      segStart = i;
+      segKey = k;
+    }
+  }
+  if (segStart !== null && segKey !== null) {
+    runs.push({ start: segStart, end: count, pairKey: segKey });
+  }
+  return runs;
 }
 
 /** Canonical-pair key for an override lookup map. */
@@ -292,37 +341,40 @@ function buildCompartmentWallsInScope(
   const wallSegments: Shape3D[] = [];
   const overrideLookup = buildOverrideLookup(params.compartments.dividerOverrides);
 
-  // Vertical walls: between column boundaries
+  // Vertical walls: between column boundaries. We split runs not just by
+  // "needs wall" but also by the (leftId, rightId) pair — otherwise a single
+  // segment that spans multiple compartment pairs (e.g. col-boundary in a
+  // 2×2 grid runs through pair 0|1 then 2|3) would only check the first
+  // pair's override and apply it to the whole run, producing wrong geometry.
+  // Touching axis-aligned boxes fuse cleanly in OCCT so the split is
+  // visually transparent for non-tilted segments.
   for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
     const xPos = -innerW / 2 + colBoundary * cellW;
-    const segments = findWallSegments(rows, (row) => {
+    const runs = findPairAwareRuns(rows, (row) => {
       const leftId = cells[row * cols + (colBoundary - 1)];
       const rightId = cells[row * cols + colBoundary];
-      return leftId !== rightId;
+      return leftId !== rightId ? overrideKey(leftId, rightId) : null;
     });
 
-    for (const [start, end] of segments) {
-      const leftId = cells[start * cols + (colBoundary - 1)];
-      const rightId = cells[start * cols + colBoundary];
-      const override = overrideLookup.get(overrideKey(leftId, rightId));
+    for (const { start, end, pairKey } of runs) {
+      const override = overrideLookup.get(pairKey);
       if (override) {
         // Tilted: endpoints shifted in ±X. start = front edge (y = startY),
         // end = back edge (y = endY).
         const startY = -innerD / 2 + start * cellD;
         const endY = -innerD / 2 + end * cellD;
-        wallSegments.push(
-          buildTiltedWallSegment(
-            scope,
-            xPos + override.offsetStart,
-            startY,
-            xPos + override.offsetEnd,
-            endY,
-            thickness,
-            wallHeight,
-            innerW,
-            innerD
-          )
+        const tilted = buildTiltedWallSegment(
+          scope,
+          xPos + override.offsetStart,
+          startY,
+          xPos + override.offsetEnd,
+          endY,
+          thickness,
+          wallHeight,
+          innerW,
+          innerD
         );
+        if (tilted) wallSegments.push(tilted);
       } else {
         const segLength = (end - start) * cellD;
         const yCenter = -innerD / 2 + (start + (end - start) / 2) * cellD;
@@ -333,37 +385,34 @@ function buildCompartmentWallsInScope(
     }
   }
 
-  // Horizontal walls: between row boundaries
+  // Horizontal walls: between row boundaries (same pair-aware split as above).
   for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
     const yPos = -innerD / 2 + rowBoundary * cellD;
-    const segments = findWallSegments(cols, (col) => {
+    const runs = findPairAwareRuns(cols, (col) => {
       const topId = cells[(rowBoundary - 1) * cols + col];
       const bottomId = cells[rowBoundary * cols + col];
-      return topId !== bottomId;
+      return topId !== bottomId ? overrideKey(topId, bottomId) : null;
     });
 
-    for (const [start, end] of segments) {
-      const topId = cells[(rowBoundary - 1) * cols + start];
-      const bottomId = cells[rowBoundary * cols + start];
-      const override = overrideLookup.get(overrideKey(topId, bottomId));
+    for (const { start, end, pairKey } of runs) {
+      const override = overrideLookup.get(pairKey);
       if (override) {
         // Tilted: endpoints shifted in ±Y. start = left edge (x = startX),
         // end = right edge (x = endX).
         const startX = -innerW / 2 + start * cellW;
         const endX = -innerW / 2 + end * cellW;
-        wallSegments.push(
-          buildTiltedWallSegment(
-            scope,
-            startX,
-            yPos + override.offsetStart,
-            endX,
-            yPos + override.offsetEnd,
-            thickness,
-            wallHeight,
-            innerW,
-            innerD
-          )
+        const tilted = buildTiltedWallSegment(
+          scope,
+          startX,
+          yPos + override.offsetStart,
+          endX,
+          yPos + override.offsetEnd,
+          thickness,
+          wallHeight,
+          innerW,
+          innerD
         );
+        if (tilted) wallSegments.push(tilted);
       } else {
         const segLength = (end - start) * cellW;
         const xCenter = -innerW / 2 + (start + (end - start) / 2) * cellW;

@@ -264,16 +264,21 @@ export function compartmentHasTiltedBackWall(
   if (!bounds) return false;
   if (bounds.maxRow === config.rows - 1) return false;
   const backRow = bounds.maxRow + 1;
-  const neighborId = config.cells[backRow * config.cols + bounds.minCol];
-  if (neighborId === compartmentId) return false;
-  const [a, b] =
-    compartmentId < neighborId ? [compartmentId, neighborId] : [neighborId, compartmentId];
+  // Scan the entire back edge from minCol..maxCol. A wide compartment can
+  // border multiple different back-neighbors; any of them being tilted-pair
+  // with this compartment counts as a tilted back wall.
+  const overrideKeys = new Set<string>();
   for (const o of overrides) {
-    const [oa, ob] =
-      o.compartmentA < o.compartmentB
-        ? [o.compartmentA, o.compartmentB]
-        : [o.compartmentB, o.compartmentA];
-    if (oa === a && ob === b) return true;
+    const a = Math.min(o.compartmentA, o.compartmentB);
+    const b = Math.max(o.compartmentA, o.compartmentB);
+    overrideKeys.add(`${a}|${b}`);
+  }
+  for (let col = bounds.minCol; col <= bounds.maxCol; col++) {
+    const neighborId = config.cells[backRow * config.cols + col];
+    if (neighborId === compartmentId) continue;
+    const a = Math.min(compartmentId, neighborId);
+    const b = Math.max(compartmentId, neighborId);
+    if (overrideKeys.has(`${a}|${b}`)) return true;
   }
   return false;
 }
@@ -448,12 +453,21 @@ export function remapDividerOverrides(
 ): DividerOverride[] {
   if (!oldOverrides || oldOverrides.length === 0) return [];
   const out: DividerOverride[] = [];
+  // Deduplicate by canonical pair: a merge can collapse two old overrides
+  // onto the same new (compartmentA, compartmentB) pair. Keep the first
+  // occurrence — without this, the worker's lookup map silently last-write-
+  // wins, the validator rejects the design on next save, and the schema's
+  // "no duplicate pairs" invariant breaks.
+  const seenPairs = new Set<string>();
   for (const o of oldOverrides) {
     const newA = remap.get(o.compartmentA);
     const newB = remap.get(o.compartmentB);
     if (newA === undefined || newB === undefined) continue;
     if (newA === newB) continue;
     const [a, b] = newA < newB ? [newA, newB] : [newB, newA];
+    const key = `${a}|${b}`;
+    if (seenPairs.has(key)) continue;
+    seenPairs.add(key);
     out.push({
       compartmentA: a,
       compartmentB: b,

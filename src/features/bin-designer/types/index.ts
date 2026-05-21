@@ -194,13 +194,15 @@ export interface CompartmentConfig {
  * because two adjacent compartments share a boundary; the override shifts
  * the divider's endpoints away from that boundary line.
  *
- * Coordinate system:
- * - For a **vertical** divider (compartments stacked horizontally), positive
- *   `offsetStart` shifts the FRONT endpoint (y = 0 edge) in +X; positive
- *   `offsetEnd` shifts the BACK endpoint (y = innerD edge) in +X.
- * - For a **horizontal** divider (compartments stacked vertically), positive
- *   `offsetStart` shifts the LEFT endpoint (x = 0 edge) in +Y; positive
- *   `offsetEnd` shifts the RIGHT endpoint (x = innerW edge) in +Y.
+ * Coordinate system (relative to the SEGMENT's own endpoints, not the bin
+ * walls — an interior divider in a 3+row grid doesn't span the full bin):
+ * - For a **vertical** divider segment (compartments stacked horizontally),
+ *   `offsetStart` shifts the lower-Y endpoint of the segment in ±X;
+ *   `offsetEnd` shifts the higher-Y endpoint in ±X. Positive offsets push
+ *   the endpoints in the +X direction.
+ * - For a **horizontal** divider segment (compartments stacked vertically),
+ *   `offsetStart` shifts the lower-X endpoint in ±Y; `offsetEnd` shifts the
+ *   higher-X endpoint in ±Y. Positive offsets push endpoints in +Y.
  *
  * Setting both offsets equal translates the divider without tilting it.
  * Setting `offsetEnd = -offsetStart` produces a symmetric tilt around the
