@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.109.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.108.5...gridfinity-layout-tool-v4.109.0) (2026-05-21)
+
+
+### Features
+
+* **bin-designer:** foundation for engraved text on label tabs and cutouts ([#1807](https://github.com/andymai/gridfinity-layout-tool/issues/1807)) ([b55581e](https://github.com/andymai/gridfinity-layout-tool/commit/b55581e2ff9b3f751ea0731d1044f52a09797e76))
+
 ## [4.108.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.108.4...gridfinity-layout-tool-v4.108.5) (2026-05-20)
 
 
