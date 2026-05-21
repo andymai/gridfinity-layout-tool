@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.110.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.109.0...gridfinity-layout-tool-v4.110.0) (2026-05-21)
+
+
+### Features
+
+* **bin-designer:** engraved text on label tabs (end-to-end) ([#1809](https://github.com/andymai/gridfinity-layout-tool/issues/1809)) ([8ddb9d5](https://github.com/andymai/gridfinity-layout-tool/commit/8ddb9d514671db0b6303035bbca785c241a77265))
+
 ## [4.109.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.108.5...gridfinity-layout-tool-v4.109.0) (2026-05-21)
 
 
