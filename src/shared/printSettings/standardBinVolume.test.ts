@@ -42,6 +42,15 @@ describe('standardBinVolume', () => {
       const volume = estimateStandardBinVolume(0.5, 0.5, 2, 1.0);
       expect(volume).toBeGreaterThanOrEqual(0);
     });
+
+    it('socket volume scales with gridUnitMm (regression: hardcoded 42mm cellSize)', () => {
+      // Same bin spec at half-pitch (30mm) vs standard (42mm). Sockets are
+      // per-cell shell structures whose footprint follows gridUnitMm — a
+      // 30mm cell socket holds materially less material than a 42mm one.
+      const standard = estimateStandardBinVolume(2, 2, 3, 0.4, 42);
+      const halfPitch = estimateStandardBinVolume(2, 2, 3, 0.4, 30);
+      expect(halfPitch).toBeLessThan(standard);
+    });
   });
 
   describe('estimateStandardBinFilament', () => {

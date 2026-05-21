@@ -49,7 +49,8 @@ export function useGeneration(): void {
         currentParams.wallThickness,
         currentParams.compartments.cols,
         currentParams.compartments.rows,
-        currentParams.compartments.thickness
+        currentParams.compartments.thickness,
+        currentParams.gridUnitMm
       );
       if (isErr(compartmentCheck)) {
         setGenerationResult({
