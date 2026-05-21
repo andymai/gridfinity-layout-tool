@@ -289,6 +289,23 @@ describe('validateDesignerShare', () => {
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
     });
+
+    it('rejects non-integer cells (float, string, or negative)', () => {
+      // Cells must be non-negative integers so dividerOverrides' knownIds
+      // set is well-formed. A crafted payload could otherwise smuggle in
+      // floats and silently break the adjacency check.
+      const floats = validPayload();
+      (floats.params.compartments as Record<string, unknown>).cells = [0.5];
+      expect(validateDesignerShare(floats, JSON.stringify(floats).length).valid).toBe(false);
+
+      const strings = validPayload();
+      (strings.params.compartments as Record<string, unknown>).cells = ['0'];
+      expect(validateDesignerShare(strings, JSON.stringify(strings).length).valid).toBe(false);
+
+      const negatives = validPayload();
+      (negatives.params.compartments as Record<string, unknown>).cells = [-1];
+      expect(validateDesignerShare(negatives, JSON.stringify(negatives).length).valid).toBe(false);
+    });
   });
 
   describe('label tab validation', () => {

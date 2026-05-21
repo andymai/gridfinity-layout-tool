@@ -170,33 +170,78 @@ describe('buildCompartmentWalls', () => {
 
   it('applies overrides only to the matching pair when a boundary spans multiple pairs', () => {
     // 2×2 grid with no merging — the vertical boundary between col 0 and col
-    // 1 runs through pair (0,1) at row 0 and pair (2,3) at row 1. Before the
-    // pair-aware run split, the whole vertical run was one segment and the
-    // (0,1) override would silently apply to the (2,3) half. With the fix,
-    // each pair-run gets its own lookup.
+    // 1 runs through pair (0,1) at row 0 and pair (2,3) at row 1. Before
+    // the pair-aware run split, the whole vertical run was one segment and
+    // the (0,1) override would silently apply to the (2,3) half — meaning
+    // an override on ONLY (0,1) would produce identical geometry to
+    // overriding BOTH pairs (because the bottom half secretly got the
+    // same tilt). With the fix, top-only-override and both-override
+    // produce DIFFERENT meshes.
+    //
+    // This is the load-bearing assertion. The previous version of this
+    // test only compared against baseline, which would still pass if the
+    // bug persisted (the buggy code does change the mesh — it just
+    // changes the wrong part).
     const baseCells = [0, 1, 2, 3];
-    const noOverrides: BinParams = {
-      ...DEFAULT_BIN_PARAMS,
-      compartments: { cols: 2, rows: 2, cells: baseCells, thickness: 1.2 },
-    };
-    const onlyTopTilted: BinParams = {
+    const make = (
+      overrides: {
+        compartmentA: number;
+        compartmentB: number;
+        offsetStart: number;
+        offsetEnd: number;
+      }[]
+    ): BinParams => ({
       ...DEFAULT_BIN_PARAMS,
       compartments: {
         cols: 2,
         rows: 2,
         cells: baseCells,
         thickness: 1.2,
-        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 10, offsetEnd: -10 }],
+        dividerOverrides: overrides,
       },
+    });
+
+    const topOnly = buildCompartmentWalls(
+      make([{ compartmentA: 0, compartmentB: 1, offsetStart: 10, offsetEnd: -10 }]),
+      80,
+      80,
+      16
+    );
+    // Use a DIFFERENT tilt for (2,3) than for (0,1) so the two halves
+    // can't fuse into one indistinguishable parallelogram. With matched
+    // offsets, two adjacent identical parallelograms fuse into a single
+    // larger parallelogram with the same vertex count as the buggy
+    // single-run output — the test would pass trivially and not catch
+    // the bug. With mismatched offsets, the bottom half has a distinct
+    // angle and can't fuse cleanly.
+    const bothPairs = buildCompartmentWalls(
+      make([
+        { compartmentA: 0, compartmentB: 1, offsetStart: 10, offsetEnd: -10 },
+        { compartmentA: 2, compartmentB: 3, offsetStart: -8, offsetEnd: 8 },
+      ]),
+      80,
+      80,
+      16
+    );
+    expect(topOnly).not.toBeNull();
+    expect(bothPairs).not.toBeNull();
+    // Use centroid (sum of vertex positions) as the discriminator rather
+    // than vertex count: OCCT's fuse may normalize coincident vertices,
+    // and two parallelograms with the same vertex count can land at
+    // different positions. The centroid catches positional differences
+    // even when the count happens to match.
+    const sumXYZ = (mesh: { vertices: ArrayLike<number> }): number => {
+      let s = 0;
+      for (let i = 0; i < mesh.vertices.length; i++) s += mesh.vertices[i];
+      return s;
     };
-    const baseline = buildCompartmentWalls(noOverrides, 80, 80, 16);
-    const tilted = buildCompartmentWalls(onlyTopTilted, 80, 80, 16);
-    expect(baseline).not.toBeNull();
-    expect(tilted).not.toBeNull();
-    // Different mesh — proves the tilt is taking effect somewhere.
-    const baselineMesh = meshShape(baseline);
-    const tiltedMesh = meshShape(tilted);
-    expect(tiltedMesh.vertices.length).not.toBe(baselineMesh.vertices.length);
+    const topOnlySum = sumXYZ(meshShape(topOnly));
+    const bothSum = sumXYZ(meshShape(bothPairs));
+    // Pre-fix: these would be identical because the (0,1) override would
+    // silently tilt both halves of the boundary and the (2,3) override
+    // would be a no-op. Post-fix: they differ because only the (2,3)
+    // half changes — proving the override is now scoped to its pair.
+    expect(Math.abs(topOnlySum - bothSum)).toBeGreaterThan(0.01);
   }, 30000);
 });
 

@@ -262,6 +262,17 @@ function validateCompartments(compartments: unknown): string | null {
   if (compartments.cells.length !== expectedLength) {
     return `compartments.cells length must be cols × rows (${expectedLength})`;
   }
+  // Each cell must be a non-negative integer compartment ID. The
+  // dividerOverrides validator below derives its knownIds set from cells
+  // and runs an adjacency check that assumes integer IDs — a crafted
+  // payload could otherwise smuggle in floats/strings and break both
+  // checks silently.
+  for (let i = 0; i < compartments.cells.length; i++) {
+    const c = compartments.cells[i] as unknown;
+    if (typeof c !== 'number' || !Number.isInteger(c) || c < 0) {
+      return `compartments.cells[${i}] must be a non-negative integer`;
+    }
+  }
   // Optional per-compartment engraved text. Mirrors the client-side
   // `TEXT_MAX_LENGTH = 50` cap so a direct HTTP POST can't smuggle in
   // unbounded strings that bypass `setCompartmentText`. Array length
