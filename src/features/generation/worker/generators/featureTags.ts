@@ -19,6 +19,7 @@ export const FeatureTag = {
   HANDLE: 11,
   LID_BODY: 12,
   LID_RAIL: 13,
+  TEXT: 14,
   UNKNOWN: 255,
 } as const;
 

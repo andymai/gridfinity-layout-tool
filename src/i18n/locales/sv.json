@@ -1207,6 +1207,7 @@
   "binDesigner.colors.base": "Sockel",
   "binDesigner.colors.scoop": "Sluttning",
   "binDesigner.colors.dividers": "Skiljeväggar",
+  "binDesigner.colors.text": "Graverad text",
   "binDesigner.colors.group.exterior": "Utsida",
   "binDesigner.colors.group.interior": "Insida",
   "binDesigner.colors.group.addons": "Tillbehör",
@@ -1862,6 +1863,7 @@
   "binDesigner.colors.zone.base": "Bas",
   "binDesigner.colors.zone.scoop": "Skopa",
   "binDesigner.colors.zone.dividers": "Avdelare",
+  "binDesigner.colors.zone.text": "Graverad text",
   "webgl.fallback.title": "Din webbläsare kunde inte ladda 3D-rendering",
   "webgl.fallback.body": "WebGL är inaktiverat eller stöds inte. Försök aktivera hårdvaruacceleration i webbläsarinställningarna, uppdatera grafikdrivrutinerna eller byt webbläsare.",
   "webgl.fallback.helpLink": "Kontrollera WebGL-stöd"

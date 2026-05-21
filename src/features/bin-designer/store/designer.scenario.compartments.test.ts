@@ -713,4 +713,71 @@ describe('DesignerStore - compartment actions', () => {
       expect(history.past.length).toBeLessThanOrEqual(DESIGNER_CONSTRAINTS.MAX_HISTORY);
     });
   });
+
+  describe('setCompartmentText', () => {
+    it('stores text on the specified compartment', () => {
+      const { setCompartmentGrid, setCompartmentText } = useDesignerStore.getState();
+      setCompartmentGrid(2, 1);
+      setCompartmentText(0, 'SCREWS');
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.compartmentTexts).toEqual(['SCREWS']);
+    });
+
+    it('clamps text to TEXT_MAX_LENGTH (50 chars)', () => {
+      const { setCompartmentGrid, setCompartmentText } = useDesignerStore.getState();
+      setCompartmentGrid(1, 1);
+      setCompartmentText(0, 'x'.repeat(100));
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.compartmentTexts?.[0]).toHaveLength(50);
+    });
+
+    it('does not push history for a no-op write', () => {
+      const { setCompartmentGrid, setCompartmentText } = useDesignerStore.getState();
+      setCompartmentGrid(1, 1);
+      setCompartmentText(0, 'A');
+      const beforeHistoryLength = useDesignerStore.getState().history.past.length;
+
+      // Same value again — must not push a history entry. This matters
+      // because the UI calls setCompartmentText on every keystroke; without
+      // this guard, pasting the same value would spawn one undo step per
+      // character.
+      setCompartmentText(0, 'A');
+      expect(useDesignerStore.getState().history.past.length).toBe(beforeHistoryLength);
+    });
+
+    it('does not push history when re-clearing an already-empty slot', () => {
+      const { setCompartmentGrid, setCompartmentText } = useDesignerStore.getState();
+      setCompartmentGrid(1, 1);
+      const beforeHistoryLength = useDesignerStore.getState().history.past.length;
+
+      setCompartmentText(0, '');
+      expect(useDesignerStore.getState().history.past.length).toBe(beforeHistoryLength);
+    });
+
+    it('is cleared when the grid is resized (avoids ghost text on regenerated IDs)', () => {
+      const { setCompartmentGrid, setCompartmentText } = useDesignerStore.getState();
+      setCompartmentGrid(2, 2);
+      setCompartmentText(0, 'SCREWS');
+      setCompartmentText(3, 'WASHERS');
+
+      setCompartmentGrid(3, 3);
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.compartmentTexts).toBeUndefined();
+    });
+
+    it('drops trailing empty slots from the stored array', () => {
+      const { setCompartmentGrid, setCompartmentText } = useDesignerStore.getState();
+      setCompartmentGrid(3, 1);
+      setCompartmentText(0, 'A');
+      setCompartmentText(2, 'C');
+      // Clear the last entry → trailing-empty trim should shrink the array.
+      setCompartmentText(2, '');
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.compartmentTexts).toEqual(['A']);
+    });
+  });
 });

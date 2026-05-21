@@ -19,11 +19,18 @@ import type {
   HandleSide,
   HandleWallSide,
   LidConfig,
+  TextStyleDefaults,
+  TextStyleOverride,
 } from '../../types';
+import { TEXT_MAX_LENGTH } from '../../types/text';
 import type { LipColorConfig } from '../../types/featureColors';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
 import { isErr } from '@/core/result';
-import { isRectangularSelection, normalizeIds } from '../../utils/compartments';
+import {
+  isRectangularSelection,
+  normalizeIdsWithRemap,
+  remapCompartmentTexts,
+} from '../../utils/compartments';
 import { validateCompartmentSizes } from '../../utils/validation';
 import { defaultsForNewDesign, pushHistoryEntry } from '../helpers';
 import {
@@ -186,6 +193,7 @@ export function createParamSlice(set: Set, get: Get) {
       base?: string;
       scoop?: string;
       dividers?: string;
+      text?: string;
     }) => {
       set((state) => {
         pushHistoryEntry(state);
@@ -246,8 +254,11 @@ export function createParamSlice(set: Set, get: Get) {
         for (let i = 0; i < rows * cols; i++) {
           cells.push(i);
         }
+        // Old per-compartment text would attach to unrelated cells once
+        // IDs regenerate — drop it.
+        const { compartmentTexts: _drop, ...keepCompartments } = state.params.compartments;
         state.params.compartments = {
-          ...state.params.compartments,
+          ...keepCompartments,
           cols,
           rows,
           cells,
@@ -271,9 +282,12 @@ export function createParamSlice(set: Set, get: Get) {
         for (const idx of cellIndices) {
           newCells[idx] = targetId;
         }
+        const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
+        const prevTexts = state.params.compartments.compartmentTexts;
         state.params.compartments = {
           ...state.params.compartments,
-          cells: normalizeIds(newCells),
+          cells: normalized,
+          ...(prevTexts ? { compartmentTexts: remapCompartmentTexts(prevTexts, remap) } : {}),
         };
       });
     },
@@ -305,9 +319,12 @@ export function createParamSlice(set: Set, get: Get) {
             }
           }
         }
+        const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
+        const prevTexts = state.params.compartments.compartmentTexts;
         state.params.compartments = {
           ...state.params.compartments,
-          cells: normalizeIds(newCells),
+          cells: normalized,
+          ...(prevTexts ? { compartmentTexts: remapCompartmentTexts(prevTexts, remap) } : {}),
         };
       });
     },
@@ -316,6 +333,46 @@ export function createParamSlice(set: Set, get: Get) {
       set((state) => {
         pushHistoryEntry(state);
         state.params.compartments = { ...DEFAULT_BIN_PARAMS.compartments };
+      });
+    },
+
+    setCompartmentText: (compartmentId: number, text: string) => {
+      const { params } = get();
+      const clamped = text.slice(0, TEXT_MAX_LENGTH);
+      const prev = params.compartments.compartmentTexts ?? [];
+      // No-op guard: the UI calls this on every keystroke, so an unchanged
+      // value must not push a history entry (would be one undo step per char).
+      if ((prev[compartmentId] ?? '') === clamped) return;
+
+      set((state) => {
+        pushHistoryEntry(state);
+        const next = prev.slice();
+        while (next.length <= compartmentId) next.push('');
+        next[compartmentId] = clamped;
+        while (next.length > 0 && next[next.length - 1] === '') next.pop();
+        state.params.compartments = {
+          ...state.params.compartments,
+          ...(next.length > 0 ? { compartmentTexts: next } : { compartmentTexts: undefined }),
+        };
+      });
+    },
+
+    setTextDefaults: (partial: Partial<TextStyleDefaults>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.textDefaults = { ...state.params.textDefaults, ...partial };
+      });
+    },
+
+    setLabelTabTextStyle: (overrides: TextStyleOverride | null) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        if (overrides === null) {
+          const { textStyle: _omit, ...rest } = state.params.label;
+          state.params.label = rest;
+        } else {
+          state.params.label = { ...state.params.label, textStyle: overrides };
+        }
       });
     },
 

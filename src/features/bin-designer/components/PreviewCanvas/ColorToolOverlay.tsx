@@ -39,6 +39,8 @@ function defaultForZone(zone: ColorZone): string {
       return DEFAULT_FEATURE_COLOR_CONFIG.scoop;
     case 'dividers':
       return DEFAULT_FEATURE_COLOR_CONFIG.dividers;
+    case 'text':
+      return DEFAULT_FEATURE_COLOR_CONFIG.text;
     case 'lip:frontLeft':
       return DEFAULT_FEATURE_COLOR_CONFIG.lip.frontLeft;
     case 'lip:frontRight':

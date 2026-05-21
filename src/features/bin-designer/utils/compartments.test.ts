@@ -13,6 +13,8 @@ import {
   mergeCells,
   splitCompartment,
   normalizeIds,
+  normalizeIdsWithRemap,
+  remapCompartmentTexts,
   deriveWallSegments,
   fromDividerConfig,
 } from '@/features/bin-designer/utils/compartments';
@@ -584,6 +586,111 @@ describe('compartments', () => {
       const result = normalizeIds(cells);
       // First occurrence: 10 -> 0, 5 -> 1, 8 -> 2
       expect(result).toEqual([0, 0, 1, 2]);
+    });
+  });
+
+  describe('normalizeIdsWithRemap', () => {
+    it('exposes the oldId -> newId remap alongside normalized cells', () => {
+      const { cells, remap } = normalizeIdsWithRemap([10, 10, 5, 8]);
+      expect(cells).toEqual([0, 0, 1, 2]);
+      expect(remap.get(10)).toBe(0);
+      expect(remap.get(5)).toBe(1);
+      expect(remap.get(8)).toBe(2);
+    });
+
+    it('returns empty cells + empty remap for an empty input', () => {
+      const { cells, remap } = normalizeIdsWithRemap([]);
+      expect(cells).toEqual([]);
+      expect(remap.size).toBe(0);
+    });
+  });
+
+  describe('remapCompartmentTexts', () => {
+    it('returns empty array for undefined or empty input', () => {
+      expect(remapCompartmentTexts(undefined, new Map())).toEqual([]);
+      expect(remapCompartmentTexts([], new Map([[0, 0]]))).toEqual([]);
+    });
+
+    it('migrates per-compartment text into the new ID slots', () => {
+      // Original IDs 0,1,2 → remapped to 0,1,2 (no change)
+      const remap = new Map([
+        [0, 0],
+        [1, 1],
+        [2, 2],
+      ]);
+      const out = remapCompartmentTexts(['A', 'B', 'C'], remap);
+      expect(out).toEqual(['A', 'B', 'C']);
+    });
+
+    it('handles renumbering across split (new IDs get empty strings)', () => {
+      // Split: a compartment is split, so a new ID appears in cells. The
+      // remap from normalizeIdsWithRemap is always 1:1 — the new ID is
+      // present with its own slot. Original IDs that survived keep their text.
+      // Setup: original ids 0,1,2,3 with texts ['A','B','C','D']. Split id 1
+      // into two — the parent keeps id 1, the new cell gets id 4. After
+      // normalize: cells use 0,1,2,3,4 → renumbered to 0,1,2,3,4 (same).
+      const remap = new Map([
+        [0, 0],
+        [1, 1],
+        [4, 2], // new compartment from split — no source text → ''
+        [2, 3],
+        [3, 4],
+      ]);
+      const out = remapCompartmentTexts(['A', 'B', 'C', 'D'], remap);
+      expect(out).toEqual(['A', 'B', '', 'C', 'D']);
+    });
+
+    it('drops text for compartments that disappeared from the remap', () => {
+      // Merge: ids 1,2 were stomped to 0 before normalize ran, so the post-
+      // normalize remap only contains the surviving IDs (0 and 3). The
+      // disappearing IDs (1, 2) are not in the remap — their texts drop.
+      // Original cells [0,1,2,3] with texts ['A','B','C','D']. After merge
+      // and normalize: cells [0,0,0,1], remap {0→0, 3→1}.
+      const remap = new Map([
+        [0, 0],
+        [3, 1],
+      ]);
+      const out = remapCompartmentTexts(['A', 'B', 'C', 'D'], remap);
+      expect(out).toEqual(['A', 'D']);
+    });
+  });
+
+  describe('mergeCells with compartmentTexts', () => {
+    it('keeps the target compartment text after a merge', () => {
+      // 2×2 with cells [0,1,2,3] and texts ['A','B','C','D']. Merge indices
+      // [0,1] (top row). targetId = min(0,1) = 0, so the merged compartment
+      // keeps text 'A'. The remaining compartments (old 2,3 → new 1,2) keep
+      // 'C' and 'D'.
+      const config: CompartmentConfig = {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1, 2, 3],
+        compartmentTexts: ['A', 'B', 'C', 'D'],
+      };
+      const merged = mergeCells(config, [0, 1]);
+      expect(merged?.cells).toEqual([0, 0, 1, 2]);
+      expect(merged?.compartmentTexts).toEqual(['A', 'C', 'D']);
+    });
+  });
+
+  describe('splitCompartment with compartmentTexts', () => {
+    it('keeps the parent text on the first cell of the split', () => {
+      // 2×2 with [0,0,1,2] (top row merged) and texts ['MERGED','SOLO','OTHER'].
+      // Split compartment 0 → top-left keeps 0 with 'MERGED'; top-right gets
+      // new ID; everything renumbers.
+      const config: CompartmentConfig = {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 0, 1, 2],
+        compartmentTexts: ['MERGED', 'SOLO', 'OTHER'],
+      };
+      const split = splitCompartment(config, 0);
+      // After split + normalize: [0, 1, 2, 3]. Top-left keeps 'MERGED',
+      // new compartment 1 gets ''.
+      expect(split.cells).toEqual([0, 1, 2, 3]);
+      expect(split.compartmentTexts).toEqual(['MERGED', '', 'SOLO', 'OTHER']);
     });
   });
 

@@ -101,6 +101,19 @@ export const FEATURE_FLAGS = [
     graduatedAt: '2026-05',
     requiresRefresh: false,
   },
+  {
+    id: 'embedded_text',
+    name: 'Engraved Text',
+    description:
+      'Engrave, emboss, or cut text directly into label tabs and beside cutouts. Type a label per compartment or per cutout and it prints into the model.',
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'Coming soon. The editor UI and 3D engraving pipeline ship in follow-up updates; flipping this flag today has no visible effect.',
+    addedAt: '2026-05',
+    requiresRefresh: false,
+    comingSoon: true,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

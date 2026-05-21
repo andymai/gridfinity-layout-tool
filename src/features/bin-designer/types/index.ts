@@ -25,6 +25,16 @@ import type { DesignId } from '@/core/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { ColorZone, FeatureColorConfig, HoverableZone, LipColorConfig } from './featureColors';
 import type { LidConfig } from './lid';
+import type { TextStyleDefaults, TextStyleOverride, CutoutTextSide } from './text';
+
+export type {
+  TextMode,
+  TextFontFamily,
+  CutoutTextSide,
+  TextStyleDefaults,
+  TextStyleOverride,
+} from './text';
+export { TEXT_MAX_LENGTH } from './text';
 
 /**
  * Eyedropper click anchor: which zone was hit and the viewport coords
@@ -154,6 +164,17 @@ export interface CompartmentConfig {
    * Cells with the same ID must form a rectangle.
    */
   readonly cells: number[];
+  /**
+   * Optional per-compartment engraved label text, indexed by compartment ID
+   * after `normalizeIds`. Empty / missing entries render no text on the tab.
+   * Length need not equal compartment count; trailing slots are treated as
+   * empty. Kept in lockstep with `cells` via `normalizeIdsWithRemap`.
+   *
+   * Element type intentionally `string[]` (not `readonly string[]`) to mirror
+   * sibling `cells: number[]`. The whole `params` tree passes through Immer
+   * `Draft`s, which require mutable element types.
+   */
+  readonly compartmentTexts?: string[];
 }
 
 /** Scoop ramp configuration for compartment accessibility */
@@ -180,6 +201,11 @@ export interface LabelTabConfig {
   readonly width: number;
   /** Horizontal alignment within each compartment column */
   readonly alignment: LabelTabAlignment;
+  /**
+   * Optional per-design style override for engraved compartment text on
+   * label tabs. When omitted, `BinParams.textDefaults` apply unchanged.
+   */
+  readonly textStyle?: TextStyleOverride;
 }
 
 /** Handle-eligible wall sides (outer walls only, no interior dividers) */
@@ -321,6 +347,12 @@ export interface BinParams {
   readonly splitConnectors?: SplitConnectorConfig;
   /** Per-feature filament color assignment for multi-color 3MF export. */
   readonly featureColors: FeatureColorConfig;
+  /**
+   * Design-level defaults for engraved text geometry on label tabs and
+   * adjacent to cutouts. Individual instances may attach a
+   * `TextStyleOverride` that selectively overrides these fields.
+   */
+  readonly textDefaults: TextStyleDefaults;
   /** Click-lock lid configuration. Lid is generated as a separate companion solid. */
   readonly lid: LidConfig;
   /**
@@ -464,6 +496,23 @@ export interface Cutout {
   readonly zIndex?: number;
   /** Path vertices for pen tool shapes (required when shape === 'path') */
   readonly path?: PathPoint[];
+  /**
+   * When true, `label` is also engraved on the bin top adjacent to this
+   * cutout. Default false so existing designs render unchanged after
+   * adding this field.
+   */
+  readonly engraveLabel?: boolean;
+  /**
+   * Which side of the cutout (in its local rotated frame) the engraved
+   * label sits on. Defaults to 'top' (back-of-cutout in local frame).
+   * Ignored when `engraveLabel` is false.
+   */
+  readonly textSide?: CutoutTextSide;
+  /**
+   * Optional per-cutout style override. When omitted, the design-level
+   * `BinParams.textDefaults` apply. Ignored when `engraveLabel` is false.
+   */
+  readonly textStyle?: TextStyleOverride;
 }
 
 // Generation Types
@@ -684,6 +733,7 @@ export interface DesignerState {
     base?: string;
     scoop?: string;
     dividers?: string;
+    text?: string;
   }) => void;
   updateLid: (partial: Partial<LidConfig>) => void;
 
@@ -708,6 +758,11 @@ export interface DesignerState {
   mergeCells: (cellIndices: readonly number[]) => void;
   splitCompartment: (compartmentId: number) => void;
   resetCompartments: () => void;
+  setCompartmentText: (compartmentId: number, text: string) => void;
+
+  // Text style actions (engraved text on label tabs and cutouts)
+  setTextDefaults: (partial: Partial<TextStyleDefaults>) => void;
+  setLabelTabTextStyle: (overrides: TextStyleOverride | null) => void;
 
   // Wall pattern actions
   updateWallPattern: (partial: Partial<WallPatternConfig>) => void;

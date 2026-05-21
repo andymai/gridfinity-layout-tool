@@ -9,12 +9,14 @@ const SINGLE = '#d4d8dc';
 
 function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig {
   return {
+    enabled: false,
     body: SINGLE,
     lip: { frontLeft: SINGLE, frontRight: SINGLE, backRight: SINGLE, backLeft: SINGLE },
     labelTab: SINGLE,
     base: SINGLE,
     scoop: SINGLE,
     dividers: SINGLE,
+    text: SINGLE,
     ...overrides,
   };
 }

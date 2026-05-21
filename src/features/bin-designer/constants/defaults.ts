@@ -23,6 +23,8 @@ import type { FeatureColorConfig } from '../types/featureColors';
 import type { LidConfig } from '../types/lid';
 import { DEFAULT_LID_CONFIG, LID_CLICK_RAIL_COVERAGE_OPTIONS } from '../types/lid';
 import type { LidClickRails } from '../types/lid';
+import type { TextStyleDefaults } from '../types/text';
+import { DEFAULT_TEXT_STYLE_DEFAULTS } from '../types/text';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
 const DEFAULT_SLOT_CONFIG: SlotConfig = {
@@ -165,6 +167,7 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
   base: '#d4d8dc',
   scoop: '#d4d8dc',
   dividers: '#d4d8dc',
+  text: '#d4d8dc',
 } as const;
 
 interface LegacyFeatureColorInput {
@@ -176,6 +179,7 @@ interface LegacyFeatureColorInput {
   base?: string;
   scoop?: string;
   dividers?: string;
+  text?: string;
 }
 
 function resolveColor(raw: string | undefined, fallback: string): string {
@@ -216,6 +220,9 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
   const base = resolveColor(raw.base, body);
   const scoop = resolveColor(raw.scoop, body);
   const dividers = resolveColor(raw.dividers, body);
+  // Text defaults to the label-tab color so single-color designs see no shift
+  // when this field is added by migration.
+  const text = resolveColor(raw.text, labelTab);
 
   // Pre-`enabled` design counts as multi-color if body or any zone diverges
   // from the default — zone editors only existed behind the old Labs flag, so
@@ -224,10 +231,19 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
   const isCustom = (c: string): boolean => c.toLowerCase() !== bodyLower;
   const hasCustomColor =
     bodyLower !== DEFAULT_FEATURE_COLOR_CONFIG.body.toLowerCase() ||
-    [labelTab, base, scoop, dividers].some(isCustom) ||
+    [labelTab, base, scoop, dividers, text].some(isCustom) ||
     [lip.frontLeft, lip.frontRight, lip.backRight, lip.backLeft].some(isCustom);
 
-  return { enabled: raw.enabled ?? hasCustomColor, body, lip, labelTab, base, scoop, dividers };
+  return {
+    enabled: raw.enabled ?? hasCustomColor,
+    body,
+    lip,
+    labelTab,
+    base,
+    scoop,
+    dividers,
+    text,
+  };
 }
 
 /** Default bin parameters: 2x2x3 standard bin with no compartments */
@@ -285,6 +301,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   wallPattern: DEFAULT_WALL_PATTERN_CONFIG,
   featureColors: DEFAULT_FEATURE_COLOR_CONFIG,
   lid: DEFAULT_LID_CONFIG,
+  textDefaults: DEFAULT_TEXT_STYLE_DEFAULTS,
 } as const;
 
 /** Default generation state */
@@ -633,5 +650,9 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     ...(params.splitConnectors !== undefined
       ? { splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, ...params.splitConnectors } }
       : {}),
+    textDefaults: {
+      ...DEFAULT_TEXT_STYLE_DEFAULTS,
+      ...((params as { textDefaults?: Partial<TextStyleDefaults> }).textDefaults ?? {}),
+    },
   };
 }

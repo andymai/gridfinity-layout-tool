@@ -11,12 +11,14 @@ const allZones: ReadonlySet<ColorZone> = new Set(ZONE_ORDER);
 /** Build a featureColors config that's single-color by default; pass overrides to differentiate zones. */
 function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig {
   return {
+    enabled: false,
     body: SINGLE,
     lip: { frontLeft: SINGLE, frontRight: SINGLE, backRight: SINGLE, backLeft: SINGLE },
     labelTab: SINGLE,
     base: SINGLE,
     scoop: SINGLE,
     dividers: SINGLE,
+    text: SINGLE,
     ...overrides,
   };
 }
