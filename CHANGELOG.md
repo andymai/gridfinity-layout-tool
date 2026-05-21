@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.111.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.111.1...gridfinity-layout-tool-v4.111.2) (2026-05-21)
+
+
+### Bug Fixes
+
+* **bin-designer:** address [#1815](https://github.com/andymai/gridfinity-layout-tool/issues/1815) review (emboss coplanar fix + rotation-aware AABB) ([#1819](https://github.com/andymai/gridfinity-layout-tool/issues/1819)) ([d2a8312](https://github.com/andymai/gridfinity-layout-tool/commit/d2a83120f938989f1df2430fe90ecb561fe0bbef))
+
 ## [4.111.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.111.0...gridfinity-layout-tool-v4.111.1) (2026-05-21)
 
 
