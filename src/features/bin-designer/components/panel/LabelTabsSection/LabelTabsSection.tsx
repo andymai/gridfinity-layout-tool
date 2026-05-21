@@ -7,8 +7,10 @@
 
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperControl } from '@/shared/components/StepperControl';
+import { Input } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
+import { TEXT_MAX_LENGTH } from '../../../types';
 import type { LabelTabAlignment, LabelTabSupport } from '../../../types';
 import { useLabelTabsSection } from './useLabelTabsSection';
 
@@ -132,6 +134,31 @@ export function LabelTabsSection() {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Engraved compartment text (one input per compartment) */}
+      <div>
+        <label className="text-xs font-medium text-content-secondary mb-1 block">
+          {t('binDesigner.tabEngravedText')}
+        </label>
+        <ul className="flex flex-col gap-1.5">
+          {state.compartmentTextRows.map((row) => (
+            <li key={row.id} className="flex items-center gap-2">
+              <span className="w-20 shrink-0 text-xs text-content-tertiary tabular-nums">
+                {row.label}
+              </span>
+              <Input
+                type="text"
+                size="sm"
+                value={row.value}
+                maxLength={TEXT_MAX_LENGTH}
+                onChange={(e) => handlers.setCompartmentText(row.id, e.target.value)}
+                placeholder={t('binDesigner.tabEngravedTextPlaceholder')}
+                aria-label={t('binDesigner.tabEngravedTextAriaLabel', { n: row.id + 1 })}
+              />
+            </li>
+          ))}
+        </ul>
       </div>
     </FeatureToggle>
   );

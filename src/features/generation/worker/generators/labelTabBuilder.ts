@@ -5,11 +5,12 @@
  * at the back edge of each compartment.
  */
 
-import { draw, unwrap, fuseAll, fuse, translate, withScope, clone } from 'brepjs';
+import { draw, unwrap, fuseAll, fuse, cut, translate, withScope, clone } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
+import { buildEngraveCutSolid } from './textBuilder';
 /**
  * Build a right-triangle profile for label tab gusset supports.
  * The triangle has its right angle at (0, height), with the depth leg
@@ -233,6 +234,17 @@ function buildLabelTabsInScope(
         }
       }
 
+      // Engraved per-compartment text on the shelf top, in local frame so it
+      // travels with the tab through the world translation below.
+      tabSolid = applyTabEngraveText(scope, tabSolid, {
+        text: params.compartments.compartmentTexts?.[cellId] ?? '',
+        textDefaults: params.textDefaults,
+        labelTextStyle: params.label.textStyle,
+        tabWidth,
+        tabDepth,
+        tabHeight,
+      });
+
       // Position: X at alignment offset, Y at compartment back edge, Z at tab base
       tabSolid = scope.register(
         translate(tabSolid, [tabXStart, backEdgeY, wallHeight - tabHeight])
@@ -247,6 +259,54 @@ function buildLabelTabsInScope(
   if (allTabs.length === 0) return null;
   if (allTabs.length === 1) return allTabs[0]; // already scope-registered
   return scope.register(unwrap(fuseAll(allTabs as ValidSolid[])));
+}
+
+/**
+ * Cut engraved text from the shelf top in the tab's local frame, where
+ * the shelf occupies X:[0,tabWidth], Y:[-tabDepth,0], top face at Z=tabHeight.
+ *
+ * Returns the original tab unchanged when text is empty or the chosen mode
+ * is not 'engrave' (other modes ship in later PRs); falls back to unchanged
+ * geometry if the boolean fails so a font/auto-fit edge case can't tank the
+ * whole label-tab build.
+ */
+function applyTabEngraveText(
+  scope: DisposalScope,
+  tabSolid: Shape3D,
+  ctx: {
+    text: string;
+    textDefaults: BinParams['textDefaults'];
+    labelTextStyle: BinParams['label']['textStyle'];
+    tabWidth: number;
+    tabDepth: number;
+    tabHeight: number;
+  }
+): Shape3D {
+  const style = { ...ctx.textDefaults, ...ctx.labelTextStyle };
+  if (style.mode !== 'engrave') return tabSolid;
+
+  const textSolid = buildEngraveCutSolid(scope, {
+    text: ctx.text,
+    fontFamily: style.font,
+    availW: ctx.tabWidth,
+    availD: ctx.tabDepth,
+    centerX: ctx.tabWidth / 2,
+    centerY: -ctx.tabDepth / 2,
+    topZ: ctx.tabHeight,
+    depth: style.depth,
+    margin: style.margin,
+    minFontSize: style.minFontSize,
+    maxFontSize: style.maxFontSize,
+  });
+  if (!textSolid) return tabSolid;
+
+  try {
+    return scope.register(unwrap(cut(tabSolid as ValidSolid, textSolid as ValidSolid)));
+  } catch {
+    // Defensive: a degenerate text glyph can occasionally trip OCCT's boolean
+    // engine. Better to ship an un-engraved tab than to fail the whole build.
+    return tabSolid;
+  }
 }
 
 // --- FeatureBuilder protocol ---
@@ -264,7 +324,7 @@ export const labelTabsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v1',
+        'v2',
         dim.shellKey,
         stableSerialize(params.label),
         quantize(dim.innerW),
@@ -273,7 +333,11 @@ export const labelTabsFeature: FeatureBuilder = {
         quantize(params.wallThickness),
         params.compartments.cols,
         params.compartments.rows,
-        params.compartments.cells.join(',')
+        params.compartments.cells.join(','),
+        // Engraved-text inputs participate in cache key so text edits
+        // invalidate the prior mesh. `v1` → `v2` bumps the key namespace.
+        (params.compartments.compartmentTexts ?? []).join(''),
+        stableSerialize(params.textDefaults)
       )
     );
   },

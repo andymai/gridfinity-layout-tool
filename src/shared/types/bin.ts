@@ -38,6 +38,11 @@ export type {
   HandleSide,
   HandleWallSide,
   LidConfig,
+  TextMode,
+  TextFontFamily,
+  CutoutTextSide,
+  TextStyleDefaults,
+  TextStyleOverride,
 } from '@/features/bin-designer/types';
 
 export {
@@ -48,6 +53,7 @@ export {
   LID_MAGNET_CEILING,
   LID_MIN_RAIL_LENGTH,
   DEFAULT_SCOOP_EDGES,
+  TEXT_MAX_LENGTH,
 } from '@/features/bin-designer/types';
 
 /**

@@ -4,21 +4,31 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '../../../constants';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
+import { getCompartmentIds } from '../../../utils/compartments';
 import type { LabelTabAlignment, LabelTabSupport } from '../../../types';
 
 export function useLabelTabsSection() {
-  const { compartments, label, width, height, wallThickness, updateLabel, params } =
-    useDesignerStore(
-      useShallow((s) => ({
-        compartments: s.params.compartments,
-        label: s.params.label,
-        width: s.params.width,
-        height: s.params.height,
-        wallThickness: s.params.wallThickness,
-        updateLabel: s.updateLabel,
-        params: s.params,
-      }))
-    );
+  const {
+    compartments,
+    label,
+    width,
+    height,
+    wallThickness,
+    updateLabel,
+    setCompartmentText,
+    params,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      compartments: s.params.compartments,
+      label: s.params.label,
+      width: s.params.width,
+      height: s.params.height,
+      wallThickness: s.params.wallThickness,
+      updateLabel: s.updateLabel,
+      setCompartmentText: s.setCompartmentText,
+      params: s.params,
+    }))
+  );
   const t = useTranslation();
 
   const labelStatus = getFeatureStatus(params, 'label');
@@ -97,9 +107,26 @@ export function useLabelTabsSection() {
     [isUnavailable, sectionSummary, disabledReason]
   );
 
+  const compartmentTextRows = useMemo(() => {
+    const ids = getCompartmentIds(compartments);
+    const texts = compartments.compartmentTexts ?? [];
+    return ids.map((id, idx) => ({
+      id,
+      label: t('binDesigner.compartmentNumberLabel', { n: idx + 1 }),
+      value: texts[id] ?? '',
+    }));
+  }, [compartments, t]);
+
   return {
-    state: { label, isUnavailable, tabWidthMm },
-    handlers: { toggleLabelTabs, setTabSupport, setTabDepth, setTabWidth, setTabAlignment },
+    state: { label, isUnavailable, tabWidthMm, compartmentTextRows },
+    handlers: {
+      toggleLabelTabs,
+      setTabSupport,
+      setTabDepth,
+      setTabWidth,
+      setTabAlignment,
+      setCompartmentText,
+    },
     meta,
     t,
   };
