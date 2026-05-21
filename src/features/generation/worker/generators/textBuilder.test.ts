@@ -74,6 +74,7 @@ describe('resolveEffectiveFont', () => {
   it('returns the requested font for engrave and emboss', () => {
     expect(resolveEffectiveFont('atkinson', 'engrave')).toBe('atkinson');
     expect(resolveEffectiveFont('jetbrains-mono', 'engrave')).toBe('jetbrains-mono');
+    expect(resolveEffectiveFont('allerta-stencil', 'engrave')).toBe('allerta-stencil');
     expect(resolveEffectiveFont('atkinson', 'emboss')).toBe('atkinson');
     expect(resolveEffectiveFont('jetbrains-mono', 'emboss')).toBe('jetbrains-mono');
     expect(resolveEffectiveFont('allerta-stencil', 'emboss')).toBe('allerta-stencil');
