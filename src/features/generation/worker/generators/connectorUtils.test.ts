@@ -111,10 +111,6 @@ describe('computeConnectorPositions — fractional-cell placement (#1847)', () =
    * [0.5, 1, 1, 1, 1] in grid units; boundaries at grid positions 0.5, 1.5,
    * 2.5, 3.5. In piece-local coords (totalD = 189mm) they shift left by half
    * a grid unit: -73.5, -31.5, 10.5, 52.5.
-   *
-   * Before the fix this test failed because the formula assumed the half-cell
-   * was always at the end, producing -52.5, -10.5, 31.5, 73.5 — dovetails 21mm
-   * off from the actual cell boundaries.
    */
   it('frac=start: shifts left-edge dovetails by half a grid unit for depth=4.5', () => {
     const result = computeConnectorPositions(

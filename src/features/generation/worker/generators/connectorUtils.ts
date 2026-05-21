@@ -36,8 +36,8 @@ export function computeConnectorPositions(
   const halfD = totalD / 2;
   const invert = !!invertDovetails;
 
-  // Boundary positions derived from the cell layout so dovetails stay on cell
-  // edges regardless of which side the fractional half-cell sits on (#1847).
+  // Honors fractionalEdgeX/Y so dovetails land on cell boundaries even when
+  // the half-cell is at the start (rotated piece under preferIdenticalPieces).
   const yBoundaries = computeCellBoundariesMm(depth, gridUnitMm, fractionalEdgeY);
   const xBoundaries = computeCellBoundariesMm(width, gridUnitMm, fractionalEdgeX);
 

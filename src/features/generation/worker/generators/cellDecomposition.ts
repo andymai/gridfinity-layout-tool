@@ -39,11 +39,8 @@ export function decomposeCells(gridUnits: number): number[] {
  * Compute the mm-positions of inter-cell boundaries along an axis, relative to
  * the piece center (axis spans `[-axisUnits*gridUnitMm/2, +axisUnits*gridUnitMm/2]`).
  *
- * Mirrors `forEachCell`'s cell layout exactly: when the fractional half-cell
- * sits at the start, every full-cell boundary shifts by half a grid unit in
- * the negative direction. Used by the dovetail connector builders so that
- * tongues/grooves always land on cell boundaries regardless of where the half
- * cell ends up (#1847).
+ * When the fractional half-cell sits at the start, every full-cell boundary
+ * shifts by half a grid unit in the negative direction.
  *
  * Returns an empty array when the axis has only one cell (no interior boundaries).
  */

@@ -78,11 +78,8 @@ export function buildConnectors(
   const cl = TONGUE_CLEARANCE;
   const ext = COPLANAR_MARGIN;
 
-  // Boundary positions derived from the cell layout so dovetails stay on cell
-  // edges regardless of which side the fractional half-cell sits on (#1847).
-  // Under preferIdenticalPieces, rotated pieces are generated with the
-  // fractional edge flipped — without honoring that here the dovetails would
-  // land half a grid unit off and the printed pieces wouldn't seat together.
+  // Honors fractionalEdgeX/Y so dovetails land on cell boundaries even when
+  // the half-cell is at the start (rotated piece under preferIdenticalPieces).
   const yBoundaries = computeCellBoundariesMm(params.depth, gridUnit, params.fractionalEdgeY);
   const xBoundaries = computeCellBoundariesMm(params.width, gridUnit, params.fractionalEdgeX);
 
