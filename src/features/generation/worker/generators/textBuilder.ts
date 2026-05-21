@@ -47,7 +47,6 @@ export function fitFontSize(
   if (!text || availW <= 0 || availD <= 0 || min <= 0 || max < min) {
     return { fontSize: 0, fits: false };
   }
-  // Reject up front if even the minimum doesn't fit.
   const minMetrics = textMetrics(text, { fontSize: min, fontFamily });
   if (!isOk(minMetrics) || minMetrics.value.width > availW || minMetrics.value.height > availD) {
     return { fontSize: 0, fits: false };
