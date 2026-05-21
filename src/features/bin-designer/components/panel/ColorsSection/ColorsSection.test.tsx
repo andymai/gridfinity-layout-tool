@@ -16,6 +16,7 @@ function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig
     base: SINGLE,
     scoop: SINGLE,
     dividers: SINGLE,
+    text: SINGLE,
     ...overrides,
   };
 }

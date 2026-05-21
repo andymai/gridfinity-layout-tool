@@ -42,6 +42,12 @@ export interface FeatureColorConfig {
   readonly scoop: string;
   /** Interior compartment dividers (FeatureTag.DIVIDER). */
   readonly dividers: string;
+  /**
+   * Engraved text on label tabs and adjacent to cutouts (FeatureTag.TEXT).
+   * Defaults to the label-tab color so single-color users see no change;
+   * multi-material printers can paint a contrasting filament here.
+   */
+  readonly text: string;
 }
 
 /**
@@ -60,7 +66,8 @@ export type ColorZone =
   | 'labelTab'
   | 'base'
   | 'scoop'
-  | 'dividers';
+  | 'dividers'
+  | 'text';
 
 /** Hover target — accepts every ColorZone plus the lip group header. */
 export type HoverableZone = ColorZone | 'lip';
@@ -80,6 +87,7 @@ export const ZONE_ORDER: readonly ColorZone[] = [
   'base',
   'scoop',
   'dividers',
+  'text',
 ] as const;
 
 /** Position of a zone in ZONE_ORDER. */
@@ -99,6 +107,8 @@ export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
       return c.scoop;
     case 'dividers':
       return c.dividers;
+    case 'text':
+      return c.text;
     case 'lip:frontLeft':
       return c.lip.frontLeft;
     case 'lip:frontRight':
@@ -128,6 +138,8 @@ export function featureTagToColorZone(tag: number): ColorZone | null {
       return 'scoop';
     case FeatureTag.DIVIDER:
       return 'dividers';
+    case FeatureTag.TEXT:
+      return 'text';
     case FeatureTag.LIP:
       return null;
     default:
@@ -166,7 +178,11 @@ export interface ActiveZonesParams {
   readonly base: { readonly style: BaseStyle; readonly stackingLip: boolean };
   readonly label: { readonly enabled: boolean };
   readonly scoop: { readonly enabled: boolean };
-  readonly compartments: { readonly cells: readonly number[] };
+  readonly compartments: {
+    readonly cells: readonly number[];
+    readonly compartmentTexts?: readonly string[];
+  };
+  readonly cutouts?: readonly { readonly engraveLabel?: boolean; readonly label: string }[];
 }
 
 /**
@@ -180,6 +196,11 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   const cells = p.compartments.cells;
   const firstCell = cells[0] ?? 0;
   const hasDividers = cells.length > 1 && cells.some((c) => c !== firstCell);
+  const hasTabText =
+    p.label.enabled && (p.compartments.compartmentTexts ?? []).some((t) => t.trim().length > 0);
+  const hasCutoutText = (p.cutouts ?? []).some(
+    (c) => c.engraveLabel === true && c.label.trim().length > 0
+  );
 
   const zones = new Set<ColorZone>(['body']);
   if (p.base.style !== 'flat') zones.add('base');
@@ -189,6 +210,7 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   if (p.label.enabled) zones.add('labelTab');
   if (p.scoop.enabled) zones.add('scoop');
   if (hasDividers) zones.add('dividers');
+  if (hasTabText || hasCutoutText) zones.add('text');
   return zones;
 }
 

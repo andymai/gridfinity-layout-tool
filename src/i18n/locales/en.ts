@@ -1483,6 +1483,7 @@ const en: Record<string, string> = {
   'binDesigner.colors.base': 'Base',
   'binDesigner.colors.scoop': 'Scoop',
   'binDesigner.colors.dividers': 'Dividers',
+  'binDesigner.colors.text': 'Engraved Text',
   'binDesigner.colors.group.exterior': 'Exterior',
   'binDesigner.colors.group.interior': 'Interior',
   'binDesigner.colors.group.addons': 'Add-ons',
@@ -1537,6 +1538,7 @@ const en: Record<string, string> = {
   'binDesigner.colors.zone.base': 'Base',
   'binDesigner.colors.zone.scoop': 'Scoop',
   'binDesigner.colors.zone.dividers': 'Dividers',
+  'binDesigner.colors.zone.text': 'Engraved text',
   'binDesigner.export.multiColor.formatDisabled':
     "{format} doesn't preserve color data. Use 3MF to keep your multi-color zones.",
 

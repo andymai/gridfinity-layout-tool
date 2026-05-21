@@ -84,6 +84,7 @@
   "binDesigner.colors.base": "Base",
   "binDesigner.colors.body": "Cuerpo",
   "binDesigner.colors.dividers": "Divisores",
+  "binDesigner.colors.text": "Texto grabado",
   "binDesigner.colors.group.addons": "Complementos",
   "binDesigner.colors.group.exterior": "Exterior",
   "binDesigner.colors.group.interior": "Interior",
@@ -1862,6 +1863,7 @@
   "binDesigner.colors.zone.base": "Base",
   "binDesigner.colors.zone.scoop": "Rampa",
   "binDesigner.colors.zone.dividers": "Divisores",
+  "binDesigner.colors.zone.text": "Texto grabado",
   "webgl.fallback.title": "Tu navegador no pudo cargar el renderizado 3D",
   "webgl.fallback.body": "WebGL está desactivado o no es compatible. Intenta activar la aceleración por hardware en la configuración del navegador, actualizar los controladores gráficos o cambiar de navegador.",
   "webgl.fallback.helpLink": "Comprobar compatibilidad con WebGL"

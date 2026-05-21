@@ -102,6 +102,7 @@ const ALLOWED_PARAM_KEYS = new Set<string>([
   'splitConnectors',
   'featureColors',
   'lid',
+  'textDefaults',
 ]);
 
 /**

@@ -235,6 +235,7 @@ export function ExportDialog() {
                 base: t('binDesigner.colors.base'),
                 scoop: t('binDesigner.colors.scoop'),
                 dividers: t('binDesigner.colors.dividers'),
+                text: t('binDesigner.colors.text'),
               } satisfies Record<ColorZone, string>
             }
           />

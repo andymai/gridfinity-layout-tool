@@ -84,6 +84,7 @@
   "binDesigner.colors.base": "Base",
   "binDesigner.colors.body": "Corps",
   "binDesigner.colors.dividers": "Cloisons",
+  "binDesigner.colors.text": "Texte gravé",
   "binDesigner.colors.group.addons": "Compléments",
   "binDesigner.colors.group.exterior": "Extérieur",
   "binDesigner.colors.group.interior": "Intérieur",
@@ -1862,6 +1863,7 @@
   "binDesigner.colors.zone.base": "Base",
   "binDesigner.colors.zone.scoop": "Cuiller",
   "binDesigner.colors.zone.dividers": "Séparateurs",
+  "binDesigner.colors.zone.text": "Texte gravé",
   "webgl.fallback.title": "Votre navigateur n'a pas pu charger le rendu 3D",
   "webgl.fallback.body": "WebGL est désactivé ou non pris en charge. Activez l'accélération matérielle dans les paramètres du navigateur, mettez à jour les pilotes graphiques ou changez de navigateur.",
   "webgl.fallback.helpLink": "Vérifier la prise en charge de WebGL"

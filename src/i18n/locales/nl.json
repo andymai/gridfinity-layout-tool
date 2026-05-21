@@ -84,6 +84,7 @@
   "binDesigner.colors.base": "Basis",
   "binDesigner.colors.body": "Behuizing",
   "binDesigner.colors.dividers": "Tussenschotten",
+  "binDesigner.colors.text": "Gegraveerde tekst",
   "binDesigner.colors.group.addons": "Toebehoren",
   "binDesigner.colors.group.exterior": "Buitenkant",
   "binDesigner.colors.group.interior": "Binnenkant",
@@ -1862,6 +1863,7 @@
   "binDesigner.colors.zone.base": "Voet",
   "binDesigner.colors.zone.scoop": "Schepje",
   "binDesigner.colors.zone.dividers": "Tussenschotten",
+  "binDesigner.colors.zone.text": "Gegraveerde tekst",
   "webgl.fallback.title": "Je browser kon 3D-weergave niet laden",
   "webgl.fallback.body": "WebGL is uitgeschakeld of wordt niet ondersteund. Schakel hardwareversnelling in de browserinstellingen in, werk je grafische stuurprogramma's bij of probeer een andere browser.",
   "webgl.fallback.helpLink": "WebGL-ondersteuning controleren"

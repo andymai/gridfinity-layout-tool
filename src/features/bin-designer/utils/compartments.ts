@@ -183,7 +183,11 @@ export function mergeCells(
     newCells[idx] = targetId;
   }
 
-  return { ...config, cells: normalizeIds(newCells) };
+  const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
+  const compartmentTexts = config.compartmentTexts
+    ? remapCompartmentTexts(config.compartmentTexts, remap)
+    : config.compartmentTexts;
+  return { ...config, cells: normalized, ...(compartmentTexts ? { compartmentTexts } : {}) };
 }
 
 /**
@@ -209,7 +213,11 @@ export function splitCompartment(
     }
   }
 
-  return { ...config, cells: normalizeIds(newCells) };
+  const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
+  const compartmentTexts = config.compartmentTexts
+    ? remapCompartmentTexts(config.compartmentTexts, remap)
+    : config.compartmentTexts;
+  return { ...config, cells: normalized, ...(compartmentTexts ? { compartmentTexts } : {}) };
 }
 
 /**
@@ -217,19 +225,57 @@ export function splitCompartment(
  * Preserves spatial ordering (top-left to bottom-right first occurrence).
  */
 export function normalizeIds(cells: number[]): number[] {
-  const idMap = new Map<number, number>();
+  return normalizeIdsWithRemap(cells).cells;
+}
+
+/**
+ * Variant of `normalizeIds` that also returns the `oldId → newId` remap so
+ * callers can keep parallel per-compartment arrays (e.g. `compartmentTexts`)
+ * in lockstep with `cells`. Use this for any mutation that may renumber IDs.
+ */
+export function normalizeIdsWithRemap(cells: number[]): {
+  cells: number[];
+  remap: Map<number, number>;
+} {
+  const remap = new Map<number, number>();
   let nextId = 0;
 
   const normalized = cells.map((id) => {
-    let normalizedId = idMap.get(id);
+    let normalizedId = remap.get(id);
     if (normalizedId === undefined) {
       normalizedId = nextId++;
-      idMap.set(id, normalizedId);
+      remap.set(id, normalizedId);
     }
     return normalizedId;
   });
 
-  return normalized;
+  return { cells: normalized, remap };
+}
+
+/**
+ * Apply an `oldId → newId` remap (from `normalizeIdsWithRemap`) to a parallel
+ * per-compartment texts array. Old IDs not present in the remap (compartments
+ * that disappeared) drop out; new IDs not present in the source (newly created
+ * compartments, e.g. from a split) get an empty string.
+ *
+ * Trailing empty strings are preserved in the output array — callers may
+ * choose to truncate for serialization compactness.
+ */
+export function remapCompartmentTexts(
+  oldTexts: readonly string[] | undefined,
+  remap: ReadonlyMap<number, number>
+): string[] {
+  if (!oldTexts || oldTexts.length === 0) return [];
+  let maxNewId = -1;
+  for (const newId of remap.values()) {
+    if (newId > maxNewId) maxNewId = newId;
+  }
+  const out: string[] = new Array<string>(maxNewId + 1).fill('');
+  for (const [oldId, newId] of remap) {
+    const t = oldTexts[oldId];
+    if (typeof t === 'string') out[newId] = t;
+  }
+  return out;
 }
 
 // Wall Segment Derivation

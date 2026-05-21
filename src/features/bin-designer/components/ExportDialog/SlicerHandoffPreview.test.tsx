@@ -28,12 +28,14 @@ const zoneLabels: Record<ColorZone, string> = {
 
 function buildColors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig {
   return {
+    enabled: true,
     body: '#ffffff',
     lip: { frontLeft: '#ffffff', frontRight: '#ffffff', backRight: '#ffffff', backLeft: '#ffffff' },
     labelTab: '#ffffff',
     base: '#ffffff',
     scoop: '#ffffff',
     dividers: '#ffffff',
+    text: '#ffffff',
     ...overrides,
   };
 }

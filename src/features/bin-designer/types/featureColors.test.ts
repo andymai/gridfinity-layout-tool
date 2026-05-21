@@ -14,12 +14,14 @@ const SINGLE = '#d4d8dc';
 
 function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig {
   return {
+    enabled: false,
     body: SINGLE,
     lip: { frontLeft: SINGLE, frontRight: SINGLE, backRight: SINGLE, backLeft: SINGLE },
     labelTab: SINGLE,
     base: SINGLE,
     scoop: SINGLE,
     dividers: SINGLE,
+    text: SINGLE,
     ...overrides,
   };
 }
@@ -114,12 +116,14 @@ describe('isSingleColor', () => {
 describe('resolveColorMapping', () => {
   it('puts body at index 0 and dedupes equal colors', () => {
     const c: FeatureColorConfig = {
+      enabled: false,
       body: '#aaa',
       lip: { frontLeft: '#aaa', frontRight: '#aaa', backRight: '#aaa', backLeft: '#aaa' },
       labelTab: '#aaa',
       base: '#bbb',
       scoop: '#aaa',
       dividers: '#aaa',
+      text: '#aaa',
     };
     const { colors: palette, colorToIndex, defaultIndex } = resolveColorMapping(c);
     expect(defaultIndex).toBe(0);

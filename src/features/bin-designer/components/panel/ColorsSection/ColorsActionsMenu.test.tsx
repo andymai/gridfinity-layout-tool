@@ -14,12 +14,14 @@ vi.mock('@/design-system/Popover/Popover', () => ({
 }));
 
 const fc: FeatureColorConfig = {
+  enabled: false,
   body: '#aaaaaa',
   lip: { frontLeft: '#aaaaaa', frontRight: '#aaaaaa', backRight: '#aaaaaa', backLeft: '#aaaaaa' },
   labelTab: '#aaaaaa',
   base: '#aaaaaa',
   scoop: '#aaaaaa',
   dividers: '#aaaaaa',
+  text: '#aaaaaa',
 };
 
 describe('ColorsActionsMenu', () => {

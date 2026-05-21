@@ -23,7 +23,11 @@ import type {
 import type { LipColorConfig } from '../../types/featureColors';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
 import { isErr } from '@/core/result';
-import { isRectangularSelection, normalizeIds } from '../../utils/compartments';
+import {
+  isRectangularSelection,
+  normalizeIdsWithRemap,
+  remapCompartmentTexts,
+} from '../../utils/compartments';
 import { validateCompartmentSizes } from '../../utils/validation';
 import { defaultsForNewDesign, pushHistoryEntry } from '../helpers';
 import {
@@ -186,6 +190,7 @@ export function createParamSlice(set: Set, get: Get) {
       base?: string;
       scoop?: string;
       dividers?: string;
+      text?: string;
     }) => {
       set((state) => {
         pushHistoryEntry(state);
@@ -271,9 +276,12 @@ export function createParamSlice(set: Set, get: Get) {
         for (const idx of cellIndices) {
           newCells[idx] = targetId;
         }
+        const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
+        const prevTexts = state.params.compartments.compartmentTexts;
         state.params.compartments = {
           ...state.params.compartments,
-          cells: normalizeIds(newCells),
+          cells: normalized,
+          ...(prevTexts ? { compartmentTexts: remapCompartmentTexts(prevTexts, remap) } : {}),
         };
       });
     },
@@ -305,9 +313,12 @@ export function createParamSlice(set: Set, get: Get) {
             }
           }
         }
+        const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
+        const prevTexts = state.params.compartments.compartmentTexts;
         state.params.compartments = {
           ...state.params.compartments,
-          cells: normalizeIds(newCells),
+          cells: normalized,
+          ...(prevTexts ? { compartmentTexts: remapCompartmentTexts(prevTexts, remap) } : {}),
         };
       });
     },
@@ -316,6 +327,43 @@ export function createParamSlice(set: Set, get: Get) {
       set((state) => {
         pushHistoryEntry(state);
         state.params.compartments = { ...DEFAULT_BIN_PARAMS.compartments };
+      });
+    },
+
+    setCompartmentText: (compartmentId: number, text: string) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        const trimmed = text.slice(0, 50);
+        const prev = state.params.compartments.compartmentTexts ?? [];
+        const next = prev.slice();
+        // Grow with empty slots so the array length covers compartmentId.
+        while (next.length <= compartmentId) next.push('');
+        next[compartmentId] = trimmed;
+        // Drop trailing empty slots so identical no-op writes don't bloat the JSON.
+        while (next.length > 0 && next[next.length - 1] === '') next.pop();
+        state.params.compartments = {
+          ...state.params.compartments,
+          ...(next.length > 0 ? { compartmentTexts: next } : { compartmentTexts: undefined }),
+        };
+      });
+    },
+
+    setTextDefaults: (partial: Partial<BinParams['textDefaults']>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.textDefaults = { ...state.params.textDefaults, ...partial };
+      });
+    },
+
+    setLabelTabTextStyle: (overrides: BinParams['label']['textStyle'] | null) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        if (overrides === null) {
+          const { textStyle: _omit, ...rest } = state.params.label;
+          state.params.label = rest;
+        } else {
+          state.params.label = { ...state.params.label, textStyle: overrides };
+        }
       });
     },
 

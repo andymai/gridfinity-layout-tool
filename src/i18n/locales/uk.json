@@ -1207,6 +1207,7 @@
   "binDesigner.colors.base": "Основа",
   "binDesigner.colors.scoop": "Скіс",
   "binDesigner.colors.dividers": "Перегородки",
+  "binDesigner.colors.text": "Гравірований текст",
   "binDesigner.colors.group.exterior": "Зовнішнє",
   "binDesigner.colors.group.interior": "Внутрішнє",
   "binDesigner.colors.group.addons": "Додатки",
@@ -1862,6 +1863,7 @@
   "binDesigner.colors.zone.base": "Основа",
   "binDesigner.colors.zone.scoop": "Жолоб",
   "binDesigner.colors.zone.dividers": "Перегородки",
+  "binDesigner.colors.zone.text": "Гравірований текст",
   "webgl.fallback.title": "Ваш браузер не зміг завантажити 3D-рендеринг",
   "webgl.fallback.body": "WebGL вимкнено або не підтримується. Увімкніть апаратне прискорення в налаштуваннях браузера, оновіть графічні драйвери або спробуйте інший браузер.",
   "webgl.fallback.helpLink": "Перевірити підтримку WebGL"
