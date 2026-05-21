@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { computeBaseplateTiling, pieceToBaseplateParams, colToLetter } from './splitPlanner';
 import { TONGUE_PROTRUSION } from '@/features/generation/worker/generators/generatorConstants';
+import { computeConnectorPositions } from '@/features/generation/worker/generators/connectorUtils';
 import type { BaseplateParams } from '@/shared/types/bin';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -1060,6 +1061,106 @@ describe('preferIdenticalPieces', () => {
     } else {
       expect(fractionalParams.fractionalEdgeX).toBe(fractional.fractionalEdgeX);
     }
+  });
+});
+
+describe('preferIdenticalPieces × fractional dimensions — dovetail alignment (#1847)', () => {
+  /**
+   * 9.5 × 9.5 plate with `preferIdenticalPieces` tiles into 2×2 = {A1, B1, A2, B2}.
+   * B2 (4.5 × 4.5) is the only piece that's fractional on both axes AND gets the
+   * 180° canonicalization rotation, so its `fractionalEdgeX/Y` are flipped to
+   * `'start'`. Before the connector-builder fix, B2's dovetail positions still
+   * used the end-side formula and landed 21mm off the cell boundaries — A2's
+   * right-edge dovetails (correctly at `frac='end'`) couldn't seat with B2's
+   * left-edge dovetails (off by half a grid unit).
+   *
+   * This test runs the full pipeline (tiling → per-piece params → connector
+   * positions → placement rotation → world coords) and asserts every shared
+   * join edge has matching world-space dovetail positions.
+   */
+  it('aligns connectors across every shared join edge for 9.5×9.5', () => {
+    const G = 42;
+    const parent: BaseplateParams = {
+      width: 9.5,
+      depth: 9.5,
+      gridUnitMm: G,
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+      fractionalEdgeX: 'end',
+      fractionalEdgeY: 'end',
+      connectorNubs: true,
+      preferIdenticalPieces: true,
+      lightweight: true,
+    };
+    const tiling = computeBaseplateTiling(parent, 256, 256);
+    const totalW = parent.width * G;
+    const totalD = parent.depth * G;
+
+    const placedConnectors = tiling.pieces.map((p) => {
+      const pp = pieceToBaseplateParams(p, parent);
+      const halfW = (pp.width * G) / 2;
+      const halfD = (pp.depth * G) / 2;
+      const cxWorld = p.gridOffsetX * G + halfW - totalW / 2;
+      const cyWorld = p.gridOffsetY * G + halfD - totalD / 2;
+      const local = computeConnectorPositions(
+        pp.width,
+        pp.depth,
+        G,
+        10,
+        pp.width * G,
+        pp.depth * G,
+        0,
+        0,
+        pp.edges as { left: string; right: string; front: string; back: string },
+        pp.invertDovetails ?? false,
+        pp.fractionalEdgeX,
+        pp.fractionalEdgeY
+      );
+      const rotated = p.placementRotationDeg === 180;
+      return {
+        label: p.label,
+        col: p.col,
+        row: p.row,
+        connectors: local.map((c) => ({
+          x: cxWorld + (rotated ? -c.cx : c.cx),
+          y: cyWorld + (rotated ? -c.cy : c.cy),
+        })),
+      };
+    });
+
+    // For every adjacent pair, the connectors on their shared edge must be a
+    // strict permutation in world space. A position on one piece must have a
+    // partner on the other; an orphan means a print-time mismatch.
+    function assertAdjacentMatch(aLabel: string, bLabel: string, axis: 'x' | 'y'): void {
+      const a = placedConnectors.find((p) => p.label === aLabel);
+      const b = placedConnectors.find((p) => p.label === bLabel);
+      expect(a, `piece ${aLabel} missing`).toBeDefined();
+      expect(b, `piece ${bLabel} missing`).toBeDefined();
+      // Join-edge connectors: between A and B, the shared edge sits at some
+      // constant axis coordinate. The "matching" connectors are those whose
+      // shared-axis coordinate is identical between the two pieces.
+      const aPositions = a!.connectors.map((c) => `${c.x.toFixed(3)},${c.y.toFixed(3)}`);
+      const bPositions = b!.connectors.map((c) => `${c.x.toFixed(3)},${c.y.toFixed(3)}`);
+      const shared = aPositions.filter((p) => bPositions.includes(p));
+      // 2×2 tiling: every adjacent pair shares exactly one join edge with
+      // ⌈dim⌉-1 connectors. For 9.5 split into [5, 4.5], each shared edge
+      // has 4 connectors (matching cell boundaries within the smaller of the
+      // two adjacent pieces' depths/widths).
+      expect(
+        shared.length,
+        `${aLabel} ↔ ${bLabel} (${axis}-axis join) should share 4 connectors, got ${shared.length}`
+      ).toBe(4);
+    }
+
+    assertAdjacentMatch('A1', 'B1', 'x');
+    assertAdjacentMatch('A2', 'B2', 'x');
+    assertAdjacentMatch('A1', 'A2', 'y');
+    assertAdjacentMatch('B1', 'B2', 'y');
   });
 });
 
