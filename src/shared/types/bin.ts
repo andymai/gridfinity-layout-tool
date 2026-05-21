@@ -43,6 +43,7 @@ export type {
   CutoutTextSide,
   TextStyleDefaults,
   TextStyleOverride,
+  DividerOverride,
 } from '@/features/bin-designer/types';
 
 export {
@@ -66,6 +67,16 @@ export {
   hasLidBlocker,
   computeDisabledRails,
 } from '@/features/bin-designer/utils/lidCompatibility';
+
+/**
+ * Re-export compartment-edge predicates so worker-side feature builders
+ * (scoop ramps, label tabs) can ask "does this compartment have a tilted
+ * boundary?" without crossing the feature boundary.
+ */
+export {
+  compartmentHasTiltedEdge,
+  compartmentHasTiltedBackWall,
+} from '@/features/bin-designer/utils/compartments';
 export type {
   LidCompatibilityIssue,
   LidCompatibilityId,

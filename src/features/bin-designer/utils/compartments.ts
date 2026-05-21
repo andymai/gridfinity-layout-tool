@@ -8,7 +8,7 @@
  * - Deriving divider wall segments from the cell map
  */
 
-import type { CompartmentConfig } from '../types';
+import type { CompartmentConfig, DividerOverride } from '../types';
 
 // Grid Creation
 
@@ -160,6 +160,150 @@ export function validateCompartmentGrid(config: CompartmentConfig): number[] {
   return invalid;
 }
 
+// Divider Override Validation
+
+/** Maximum absolute offset in mm for a single divider endpoint. Generous —
+ *  the worker will additionally clip the divider to the bin interior at
+ *  generation time, but this stops absurd inputs before they hit storage. */
+export const DIVIDER_OFFSET_MAX_MM = 200;
+
+export type DividerOverrideValidationError =
+  | 'unordered-pair'
+  | 'self-pair'
+  | 'unknown-compartment'
+  | 'non-adjacent-compartments'
+  | 'offset-not-finite'
+  | 'offset-out-of-bounds'
+  | 'duplicate-pair';
+
+/**
+ * Structural validation for a single `DividerOverride` against a compartment
+ * config. Returns `null` if valid, or an error code suitable for displaying
+ * a tooltip / rejecting a store mutation.
+ *
+ * Geometric viability (min compartment area, clearance to other dividers,
+ * convexity of resulting wedges) is validated separately at drag-commit
+ * time and at generation time — the helpers here are structural only so
+ * the validator stays cheap to call from anywhere.
+ */
+export function validateDividerOverride(
+  config: CompartmentConfig,
+  override: DividerOverride
+): DividerOverrideValidationError | null {
+  const { compartmentA, compartmentB, offsetStart, offsetEnd } = override;
+  if (compartmentA === compartmentB) return 'self-pair';
+  if (compartmentA >= compartmentB) return 'unordered-pair';
+  const ids = new Set(config.cells);
+  if (!ids.has(compartmentA) || !ids.has(compartmentB)) return 'unknown-compartment';
+  if (!Number.isFinite(offsetStart) || !Number.isFinite(offsetEnd)) return 'offset-not-finite';
+  if (
+    Math.abs(offsetStart) > DIVIDER_OFFSET_MAX_MM ||
+    Math.abs(offsetEnd) > DIVIDER_OFFSET_MAX_MM
+  ) {
+    return 'offset-out-of-bounds';
+  }
+  if (!compartmentsAreAdjacent(config, compartmentA, compartmentB)) {
+    return 'non-adjacent-compartments';
+  }
+  return null;
+}
+
+/**
+ * Validate a full list of overrides. Catches duplicates (same pair appearing
+ * twice) in addition to per-entry structural checks.
+ */
+export function validateDividerOverrides(
+  config: CompartmentConfig,
+  overrides: readonly DividerOverride[]
+): { ok: true } | { ok: false; index: number; error: DividerOverrideValidationError } {
+  const seen = new Set<string>();
+  for (let i = 0; i < overrides.length; i++) {
+    const o = overrides[i];
+    const err = validateDividerOverride(config, o);
+    if (err) return { ok: false, index: i, error: err };
+    const key = `${o.compartmentA}|${o.compartmentB}`;
+    if (seen.has(key)) return { ok: false, index: i, error: 'duplicate-pair' };
+    seen.add(key);
+  }
+  return { ok: true };
+}
+
+/**
+ * True when the compartment has at least one tilted boundary (i.e. is one
+ * end of a `DividerOverride`). Used by features that can't render against
+ * non-axis-aligned edges (scoops, label tabs on the tilted side).
+ */
+export function compartmentHasTiltedEdge(
+  config: CompartmentConfig,
+  compartmentId: number
+): boolean {
+  const overrides = config.dividerOverrides;
+  if (!overrides || overrides.length === 0) return false;
+  for (const o of overrides) {
+    if (o.compartmentA === compartmentId || o.compartmentB === compartmentId) return true;
+  }
+  return false;
+}
+
+/**
+ * True when the compartment's BACK wall is a tilted divider. Used by label
+ * tabs which attach to the back wall and can't currently render on a tilt.
+ *
+ * "Back" = the +Y direction in interior coords (the higher-row neighbor in
+ * the cell grid). A back wall is tilted when the compartment has a back
+ * neighbor (not touching the bin's actual back wall) AND a divider override
+ * pairs the two compartments.
+ */
+export function compartmentHasTiltedBackWall(
+  config: CompartmentConfig,
+  compartmentId: number
+): boolean {
+  const overrides = config.dividerOverrides;
+  if (!overrides || overrides.length === 0) return false;
+  const bounds = getCompartmentBounds(config, compartmentId);
+  if (!bounds) return false;
+  if (bounds.maxRow === config.rows - 1) return false;
+  const backRow = bounds.maxRow + 1;
+  const neighborId = config.cells[backRow * config.cols + bounds.minCol];
+  if (neighborId === compartmentId) return false;
+  const [a, b] =
+    compartmentId < neighborId ? [compartmentId, neighborId] : [neighborId, compartmentId];
+  for (const o of overrides) {
+    const [oa, ob] =
+      o.compartmentA < o.compartmentB
+        ? [o.compartmentA, o.compartmentB]
+        : [o.compartmentB, o.compartmentA];
+    if (oa === a && ob === b) return true;
+  }
+  return false;
+}
+
+/**
+ * True when two compartments share at least one cell-boundary edge. With the
+ * existing rectangle constraint, that boundary is automatically contiguous;
+ * no further "single segment" check is needed in practice.
+ */
+function compartmentsAreAdjacent(config: CompartmentConfig, a: number, b: number): boolean {
+  const { cols, rows, cells } = config;
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const id = cells[row * cols + col];
+      if (id !== a && id !== b) continue;
+      // Check right neighbor
+      if (col + 1 < cols) {
+        const r = cells[row * cols + (col + 1)];
+        if ((id === a && r === b) || (id === b && r === a)) return true;
+      }
+      // Check bottom neighbor
+      if (row + 1 < rows) {
+        const d = cells[(row + 1) * cols + col];
+        if ((id === a && d === b) || (id === b && d === a)) return true;
+      }
+    }
+  }
+  return false;
+}
+
 // Merge / Split Operations
 
 /**
@@ -189,6 +333,9 @@ export function mergeCells(
     cells: normalized,
     ...(config.compartmentTexts && {
       compartmentTexts: remapCompartmentTexts(config.compartmentTexts, remap),
+    }),
+    ...(config.dividerOverrides && {
+      dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
     }),
   };
 }
@@ -222,6 +369,9 @@ export function splitCompartment(
     cells: normalized,
     ...(config.compartmentTexts && {
       compartmentTexts: remapCompartmentTexts(config.compartmentTexts, remap),
+    }),
+    ...(config.dividerOverrides && {
+      dividerOverrides: remapDividerOverrides(config.dividerOverrides, remap),
     }),
   };
 }
@@ -280,6 +430,36 @@ export function remapCompartmentTexts(
   for (const [oldId, newId] of remap) {
     const t = oldTexts[oldId];
     if (typeof t === 'string') out[newId] = t;
+  }
+  return out;
+}
+
+/**
+ * Reindex divider overrides through an `oldId → newId` remap.
+ *
+ * Drops any override whose endpoint compartment disappeared (cells stomped
+ * before normalize ran) OR whose two endpoints collapsed to the same ID
+ * (their boundary no longer exists). Surviving overrides keep canonical
+ * `compartmentA < compartmentB` ordering.
+ */
+export function remapDividerOverrides(
+  oldOverrides: readonly DividerOverride[] | undefined,
+  remap: ReadonlyMap<number, number>
+): DividerOverride[] {
+  if (!oldOverrides || oldOverrides.length === 0) return [];
+  const out: DividerOverride[] = [];
+  for (const o of oldOverrides) {
+    const newA = remap.get(o.compartmentA);
+    const newB = remap.get(o.compartmentB);
+    if (newA === undefined || newB === undefined) continue;
+    if (newA === newB) continue;
+    const [a, b] = newA < newB ? [newA, newB] : [newB, newA];
+    out.push({
+      compartmentA: a,
+      compartmentB: b,
+      offsetStart: o.offsetStart,
+      offsetEnd: o.offsetEnd,
+    });
   }
   return out;
 }

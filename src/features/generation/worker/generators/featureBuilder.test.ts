@@ -110,6 +110,46 @@ describe('buildCompartmentWalls', () => {
     const meshed = meshShape(result);
     expect(meshed.vertices.length).toBeGreaterThan(0);
   }, 30000);
+
+  it('builds walls when a divider has a tilt override (1×2)', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: {
+        cols: 1,
+        rows: 2,
+        cells: [0, 1],
+        thickness: 1.2,
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 10, offsetEnd: -10 }],
+      },
+    };
+    const result = buildCompartmentWalls(params, 80, 80, 16);
+    expect(result).not.toBeNull();
+    const meshed = meshShape(result);
+    expect(meshed.vertices.length).toBeGreaterThan(0);
+  }, 30000);
+
+  it('tilted divider produces a different mesh than the equivalent straight one', () => {
+    const base: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      compartments: { cols: 1, rows: 2, cells: [0, 1], thickness: 1.2 },
+    };
+    const tilted: BinParams = {
+      ...base,
+      compartments: {
+        ...base.compartments,
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 12, offsetEnd: -12 }],
+      },
+    };
+    const straight = buildCompartmentWalls(base, 80, 80, 16);
+    const skew = buildCompartmentWalls(tilted, 80, 80, 16);
+    expect(straight).not.toBeNull();
+    expect(skew).not.toBeNull();
+    // Tilted divider has different vertex topology than the axis-aligned
+    // box — at minimum, vertex counts differ.
+    const straightMesh = meshShape(straight);
+    const skewMesh = meshShape(skew);
+    expect(skewMesh.vertices.length).not.toBe(straightMesh.vertices.length);
+  }, 30000);
 });
 
 describe('buildInsertCuts', () => {

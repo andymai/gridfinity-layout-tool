@@ -114,6 +114,19 @@ export const FEATURE_FLAGS = [
     requiresRefresh: false,
     comingSoon: true,
   },
+  {
+    id: 'angled_dividers',
+    name: 'Angled Dividers',
+    description:
+      'Tilt the dividers between compartments to make wedge-shaped slots — handy for silverware drawers where utensils pack better head-to-toe.',
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'Coming soon. The geometry pipeline already understands tilted dividers; the editor UI for setting offsets ships in the next update.',
+    addedAt: '2026-05',
+    requiresRefresh: false,
+    comingSoon: true,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

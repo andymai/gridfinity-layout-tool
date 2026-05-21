@@ -17,6 +17,7 @@ import {
 import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
 import { findCompartmentBounds } from './compartmentBuilder';
 import { applyFilletWithFallback } from './cutoutBuilder';
+import { compartmentHasTiltedEdge } from '@/shared/types/bin';
 /**
  * Build finger scoop ramps that curve from the bin floor up to the front wall.
  *
@@ -81,6 +82,12 @@ function buildScoopRampsInScope(
       const compId = cells[row * cols + col];
       if (processedCompartments.has(compId)) continue;
       processedCompartments.add(compId);
+
+      // Scoop ramps assume axis-aligned compartment floors. When a divider
+      // override tilts one of this compartment's walls, the floor becomes a
+      // wedge/trapezoid and the ramp math no longer applies. Silently skip;
+      // the UI surfaces a tooltip explaining why.
+      if (compartmentHasTiltedEdge(params.compartments, compId)) continue;
 
       const bounds = findCompartmentBounds(compId, cols, rows, cells);
       if (!bounds) continue;
@@ -221,7 +228,9 @@ export const scoopRampsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v1',
+        // `v2`: scoop now skips compartments with any tilted edge, so the
+        // dividerOverrides shape affects output. Cache namespace bumped.
+        'v2',
         dim.shellKey,
         stableSerialize(params.scoop),
         params.style,
@@ -232,7 +241,8 @@ export const scoopRampsFeature: FeatureBuilder = {
         dim.hasLip,
         params.compartments.cols,
         params.compartments.rows,
-        params.compartments.cells.join(',')
+        params.compartments.cells.join(','),
+        stableSerialize(params.compartments.dividerOverrides ?? [])
       )
     );
   },

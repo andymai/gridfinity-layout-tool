@@ -175,6 +175,46 @@ export interface CompartmentConfig {
    * `Draft`s, which require mutable element types.
    */
   readonly compartmentTexts?: string[];
+  /**
+   * Optional per-divider tilt overrides. Each entry shifts the endpoints of
+   * one interior divider away from its axis-aligned grid position, producing
+   * an angled (tapered) divider — useful for wedge-shaped compartments
+   * (e.g. silverware drawer dividers that follow utensil taper).
+   *
+   * The override applies to the unique segment between two adjacent
+   * compartments identified by `compartmentA < compartmentB` (canonical
+   * ordering enforced by the validator). Dropped via
+   * `remapDividerOverrides` on any cell mutation that renumbers IDs.
+   */
+  readonly dividerOverrides?: DividerOverride[];
+}
+
+/**
+ * One tilted-divider override. The underlying axis-aligned divider exists
+ * because two adjacent compartments share a boundary; the override shifts
+ * the divider's endpoints away from that boundary line.
+ *
+ * Coordinate system:
+ * - For a **vertical** divider (compartments stacked horizontally), positive
+ *   `offsetStart` shifts the FRONT endpoint (y = 0 edge) in +X; positive
+ *   `offsetEnd` shifts the BACK endpoint (y = innerD edge) in +X.
+ * - For a **horizontal** divider (compartments stacked vertically), positive
+ *   `offsetStart` shifts the LEFT endpoint (x = 0 edge) in +Y; positive
+ *   `offsetEnd` shifts the RIGHT endpoint (x = innerW edge) in +Y.
+ *
+ * Setting both offsets equal translates the divider without tilting it.
+ * Setting `offsetEnd = -offsetStart` produces a symmetric tilt around the
+ * divider midpoint.
+ */
+export interface DividerOverride {
+  /** Lower of the two compartment IDs (canonical pair ordering). */
+  readonly compartmentA: number;
+  /** Higher of the two compartment IDs. Must be > compartmentA. */
+  readonly compartmentB: number;
+  /** Signed mm shift of the start endpoint perpendicular to the divider axis. */
+  readonly offsetStart: number;
+  /** Signed mm shift of the end endpoint perpendicular to the divider axis. */
+  readonly offsetEnd: number;
 }
 
 /** Scoop ramp configuration for compartment accessibility */

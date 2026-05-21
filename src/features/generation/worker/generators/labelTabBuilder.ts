@@ -8,6 +8,7 @@
 import { draw, unwrap, fuseAll, fuse, cut, translate, withScope, clone } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import type { BinParams, TextStyleDefaults, TextStyleOverride } from '@/shared/types/bin';
+import { compartmentHasTiltedBackWall } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
 import { buildTextSolid } from './textBuilder';
@@ -101,6 +102,14 @@ function buildLabelTabsInScope(
       // Check if this cell has a back edge (last row, or different compId behind)
       const hasBackEdge = isLastRow || cellId !== nextRowCellId;
       if (!hasBackEdge) {
+        col++;
+        continue;
+      }
+
+      // Skip tabs whose back wall is a tilted divider — the shelf and gusset
+      // geometry assumes an axis-aligned back wall. The compartment text
+      // input still persists in storage; only the rendering is suppressed.
+      if (compartmentHasTiltedBackWall(params.compartments, cellId)) {
         col++;
         continue;
       }
@@ -327,7 +336,9 @@ export const labelTabsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v2',
+        // `v3`: tab generation now skips compartments whose back wall is a
+        // tilted divider, so dividerOverrides affects output.
+        'v3',
         dim.shellKey,
         stableSerialize(params.label),
         quantize(dim.innerW),
@@ -340,6 +351,7 @@ export const labelTabsFeature: FeatureBuilder = {
         // `stableSerialize` (not `.join(sep)`) avoids the collision where
         // e.g. `['ab','c']` and `['a','bc']` produce the same key.
         stableSerialize(params.compartments.compartmentTexts ?? []),
+        stableSerialize(params.compartments.dividerOverrides ?? []),
         stableSerialize(params.textDefaults)
       )
     );
