@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.114.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.114.0...gridfinity-layout-tool-v4.114.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* **bin-designer:** [#1835](https://github.com/andymai/gridfinity-layout-tool/issues/1835) canvas-drag review — 8 items, 2 critical ([#1837](https://github.com/andymai/gridfinity-layout-tool/issues/1837)) ([39b083d](https://github.com/andymai/gridfinity-layout-tool/commit/39b083d1c297528cbcc50f73ee368a498224308b))
+* **bin-designer:** [#1837](https://github.com/andymai/gridfinity-layout-tool/issues/1837) review — critical commit regression + doc/sync nits ([#1839](https://github.com/andymai/gridfinity-layout-tool/issues/1839)) ([3378c2a](https://github.com/andymai/gridfinity-layout-tool/commit/3378c2a856c2a471f492fb6ed40e964a5ee52150))
+
 ## [4.114.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.113.0...gridfinity-layout-tool-v4.114.0) (2026-05-21)
 
 
