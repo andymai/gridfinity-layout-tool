@@ -122,12 +122,20 @@ describe('buildTextSolid (emboss)', () => {
 
 describe('buildTextSolid (through-cut)', () => {
   it('reports op:cut and extends through the full hostThickness (stencil auto-swapped)', () => {
-    // Pass `fontFamily: 'atkinson'` to also assert the stencil auto-swap
-    // path — `resolveEffectiveFont` forces Allerta Stencil for through-cut
-    // regardless of the requested family.
+    // Request `jetbrains-mono` — deliberately NOT loaded by `beforeAll`.
+    // If the auto-swap is intact, `resolveEffectiveFont('jetbrains-mono',
+    // 'through-cut')` returns `'allerta-stencil'`, which IS loaded, and the
+    // build succeeds. If the swap is ever broken, `getFont('jetbrains-mono')`
+    // returns undefined and `buildTextSolid` returns null — making this test
+    // a load-bearing check of the swap behavior, not just an unloaded-font
+    // assertion.
     let opCaptured: 'cut' | 'fuse' | null = null;
     const solid = withScope((scope): Shape3D | null => {
-      const r = buildTextSolid(scope, { ...BASE, mode: 'through-cut', fontFamily: 'atkinson' });
+      const r = buildTextSolid(scope, {
+        ...BASE,
+        mode: 'through-cut',
+        fontFamily: 'jetbrains-mono',
+      });
       expect(r).not.toBeNull();
       opCaptured = r!.op;
       return unwrap(clone(r!.solid));

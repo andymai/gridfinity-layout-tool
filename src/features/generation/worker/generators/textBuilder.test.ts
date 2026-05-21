@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { fitFontSize } from './textBuilder';
+import { fitFontSize, resolveEffectiveFont } from './textBuilder';
 import { loadFont } from 'brepjs';
 import { isErr } from '@/core/result';
 import { readFileSync } from 'node:fs';
@@ -62,5 +62,26 @@ describe('fitFontSize', () => {
     // @ts-expect-error — testing runtime guard with an unsupported family
     const fit = fitFontSize('A', 'comic-sans', 100, 100, 3, 20);
     expect(fit.fits).toBe(false);
+  });
+});
+
+describe('resolveEffectiveFont', () => {
+  // The swap is the printability guarantee for through-cut: glyphs with
+  // closed counters (O, A, D…) lose their inner islands when cut all the
+  // way through, so the renderer forces a stencil font regardless of the
+  // user's pick. Lock the behavior in directly here so a regression can
+  // never silently slip past the scenario tests.
+  it('returns the requested font for engrave and emboss', () => {
+    expect(resolveEffectiveFont('atkinson', 'engrave')).toBe('atkinson');
+    expect(resolveEffectiveFont('jetbrains-mono', 'engrave')).toBe('jetbrains-mono');
+    expect(resolveEffectiveFont('atkinson', 'emboss')).toBe('atkinson');
+    expect(resolveEffectiveFont('jetbrains-mono', 'emboss')).toBe('jetbrains-mono');
+    expect(resolveEffectiveFont('allerta-stencil', 'emboss')).toBe('allerta-stencil');
+  });
+
+  it('forces allerta-stencil for through-cut regardless of the requested font', () => {
+    expect(resolveEffectiveFont('atkinson', 'through-cut')).toBe('allerta-stencil');
+    expect(resolveEffectiveFont('jetbrains-mono', 'through-cut')).toBe('allerta-stencil');
+    expect(resolveEffectiveFont('allerta-stencil', 'through-cut')).toBe('allerta-stencil');
   });
 });
