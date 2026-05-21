@@ -182,7 +182,11 @@
     "export.nameStyle.compact",
     "binDesigner.lid.outerDimensions",
     "binDesigner.lid.summary",
-    "binDesigner.lid.railsTwoAxis"
+    "binDesigner.lid.railsTwoAxis",
+    "binDesigner.textFont.atkinson",
+    "binDesigner.textFont.jetbrains-mono",
+    "binDesigner.textFont.allerta-stencil",
+    "binDesigner.cutoutEngraveLabelPlaceholder"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

@@ -22,6 +22,7 @@ import {
   getBounds,
   isOk,
   curveLength,
+  clone,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension } from 'brepjs';
 import type { BinParams, Cutout, PathPoint } from '@/shared/types/bin';
@@ -34,6 +35,8 @@ import {
 } from './cutoutScoopHelpers';
 import { sketch } from './meshUtils';
 import { fuseAllOrNull } from './compartmentBuilder';
+import { withScope, type DisposalScope } from 'brepjs';
+import { buildTextSolid } from './textBuilder';
 /** Axis-aligned bounding box in XY. */
 export interface AABB {
   readonly minX: number;
@@ -635,6 +638,28 @@ export function buildCutoutCuts(
     if (shape) cutoutShapes.push(shape);
   }
 
+  // Per-cutout engraved label text on the bin top, adjacent to each cutout in
+  // the user-picked side direction. Engrave-only (emboss requires a fuse-
+  // target pass which lives in a follow-up; through-cut is meaningless on
+  // bin-top text since it would punch through the bin floor).
+  for (const cutout of params.cutouts) {
+    if (cutout.hidden === true) continue;
+    if (cutout.engraveLabel !== true) continue;
+    const label = cutout.label.trim();
+    if (label === '') continue;
+    const textShape = buildCutoutLabelEngrave(
+      cutout,
+      label,
+      params.textDefaults,
+      solidSurfaceZ,
+      originX,
+      originY,
+      innerW,
+      innerD
+    );
+    if (textShape) cutoutShapes.push(textShape);
+  }
+
   if (cutoutShapes.length === 0) return null;
 
   const fusedResult = fuseAllOrNull(cutoutShapes);
@@ -652,4 +677,96 @@ export function buildCutoutCuts(
   fusedResult.delete();
   clipBoundary.delete();
   return clipped;
+}
+
+/**
+ * Engraved text adjacent to a cutout, on the bin top surface.
+ *
+ * Placement: the side picker is interpreted in WORLD coordinates relative to
+ * the cutout's AABB — the rotation-aware projection is a follow-up. This
+ * keeps the most common case (unrotated cutouts) intuitive and avoids the
+ * trig that the design called for but isn't yet load-bearing. Text reads
+ * left-to-right in world XY regardless.
+ *
+ * Available space = the gap between the cutout's AABB edge and the bin
+ * interior boundary in the chosen direction, minus 2·margin. Returns `null`
+ * when even the minimum font size won't fit — better silent skip than a
+ * visually broken engraving.
+ */
+function buildCutoutLabelEngrave(
+  cutout: Cutout,
+  label: string,
+  textDefaults: BinParams['textDefaults'],
+  solidSurfaceZ: number,
+  originX: number,
+  originY: number,
+  innerW: number,
+  innerD: number
+): Shape3D | null {
+  const side = cutout.textSide ?? 'top';
+  // World-coord AABB of the cutout (in interior frame: origin at bin center).
+  const aabbMinX = originX + cutout.x;
+  const aabbMaxX = aabbMinX + cutout.width;
+  const aabbMinY = originY + cutout.y;
+  const aabbMaxY = aabbMinY + cutout.depth;
+
+  // Interior bounds in the same frame.
+  const interiorMinX = -innerW / 2;
+  const interiorMaxX = innerW / 2;
+  const interiorMinY = -innerD / 2;
+  const interiorMaxY = innerD / 2;
+
+  let availW: number;
+  let availD: number;
+  let centerX: number;
+  let centerY: number;
+  switch (side) {
+    case 'top':
+      availW = aabbMaxX - aabbMinX;
+      availD = interiorMaxY - aabbMaxY;
+      centerX = (aabbMinX + aabbMaxX) / 2;
+      centerY = (aabbMaxY + interiorMaxY) / 2;
+      break;
+    case 'bottom':
+      availW = aabbMaxX - aabbMinX;
+      availD = aabbMinY - interiorMinY;
+      centerX = (aabbMinX + aabbMaxX) / 2;
+      centerY = (interiorMinY + aabbMinY) / 2;
+      break;
+    case 'left':
+      availW = aabbMinX - interiorMinX;
+      availD = aabbMaxY - aabbMinY;
+      centerX = (interiorMinX + aabbMinX) / 2;
+      centerY = (aabbMinY + aabbMaxY) / 2;
+      break;
+    case 'right':
+      availW = interiorMaxX - aabbMaxX;
+      availD = aabbMaxY - aabbMinY;
+      centerX = (aabbMaxX + interiorMaxX) / 2;
+      centerY = (aabbMinY + aabbMaxY) / 2;
+      break;
+  }
+  if (availW <= 0 || availD <= 0) return null;
+
+  return withScope((scope: DisposalScope): Shape3D | null => {
+    // Cutout text is engrave-only this PR. The design-level mode is
+    // intentionally ignored for cutouts (emboss-on-cutouts is a follow-up
+    // that needs a fuse-target builder; through-cut would punch the floor).
+    const result = buildTextSolid(scope, {
+      text: label,
+      fontFamily: textDefaults.font,
+      mode: 'engrave',
+      availW,
+      availD,
+      centerX,
+      centerY,
+      topZ: solidSurfaceZ,
+      depth: textDefaults.depth,
+      hostThickness: solidSurfaceZ,
+      margin: textDefaults.margin,
+      minFontSize: textDefaults.minFontSize,
+      maxFontSize: textDefaults.maxFontSize,
+    });
+    return result ? unwrap(clone(result.solid)) : null;
+  });
 }

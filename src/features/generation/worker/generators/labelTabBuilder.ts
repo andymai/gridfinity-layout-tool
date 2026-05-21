@@ -10,7 +10,7 @@ import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import type { BinParams, TextStyleDefaults, TextStyleOverride } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
-import { buildEngraveCutSolid } from './textBuilder';
+import { buildTextSolid } from './textBuilder';
 /**
  * Build a right-triangle profile for label tab gusset supports.
  * The triangle has its right angle at (0, height), with the depth leg
@@ -236,13 +236,14 @@ function buildLabelTabsInScope(
 
       // Engraved per-compartment text on the shelf top, in local frame so it
       // travels with the tab through the world translation below.
-      tabSolid = applyTabEngraveText(scope, tabSolid, {
+      tabSolid = applyTabText(scope, tabSolid, {
         text: params.compartments.compartmentTexts?.[cellId] ?? '',
         textDefaults: params.textDefaults,
         labelTextStyle: params.label.textStyle,
         tabWidth,
         tabDepth,
         tabHeight,
+        shelfThickness: wt,
       });
 
       // Position: X at alignment offset, Y at compartment back edge, Z at tab base
@@ -262,14 +263,17 @@ function buildLabelTabsInScope(
 }
 
 /**
- * Cut engraved text from the shelf top in the tab's local frame, where
- * the shelf occupies X:[0,tabWidth], Y:[-tabDepth,0], top face at Z=tabHeight.
+ * Apply per-compartment engraved/embossed/through-cut text on the shelf top
+ * in the tab's local frame (shelf occupies X:[0,tabWidth], Y:[-tabDepth,0],
+ * top face at Z=tabHeight). Through-cut uses the shelf thickness `wt` as
+ * the host depth; `allerta-stencil` is auto-substituted (handled inside
+ * `buildTextSolid`).
  *
- * Returns the original tab unchanged when text is empty or mode is not
- * 'engrave'; falls back to unchanged geometry if the boolean fails so a
- * font/auto-fit edge case can't tank the whole label-tab build.
+ * Falls back to unchanged geometry when text is empty, the font isn't
+ * loaded, the auto-fit can't satisfy `minFontSize`, OR the boolean throws —
+ * a single glyph edge case must not tank the whole label-tab build.
  */
-function applyTabEngraveText(
+function applyTabText(
   scope: DisposalScope,
   tabSolid: Shape3D,
   ctx: {
@@ -279,31 +283,31 @@ function applyTabEngraveText(
     tabWidth: number;
     tabDepth: number;
     tabHeight: number;
+    shelfThickness: number;
   }
 ): Shape3D {
   const style = { ...ctx.textDefaults, ...ctx.labelTextStyle };
-  if (style.mode !== 'engrave') return tabSolid;
-
-  const textSolid = buildEngraveCutSolid(scope, {
+  const result = buildTextSolid(scope, {
     text: ctx.text,
     fontFamily: style.font,
+    mode: style.mode,
     availW: ctx.tabWidth,
     availD: ctx.tabDepth,
     centerX: ctx.tabWidth / 2,
     centerY: -ctx.tabDepth / 2,
     topZ: ctx.tabHeight,
     depth: style.depth,
+    hostThickness: ctx.shelfThickness,
     margin: style.margin,
     minFontSize: style.minFontSize,
     maxFontSize: style.maxFontSize,
   });
-  if (!textSolid) return tabSolid;
+  if (!result) return tabSolid;
 
   try {
-    return scope.register(unwrap(cut(tabSolid as ValidSolid, textSolid as ValidSolid)));
+    const op = result.op === 'cut' ? cut : fuse;
+    return scope.register(unwrap(op(tabSolid as ValidSolid, result.solid as ValidSolid)));
   } catch {
-    // Defensive: a degenerate text glyph can occasionally trip OCCT's boolean
-    // engine. Better to ship an un-engraved tab than to fail the whole build.
     return tabSolid;
   }
 }
