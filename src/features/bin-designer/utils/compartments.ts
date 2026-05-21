@@ -363,34 +363,60 @@ function tiltedDividerEndpoints(
   innerW: number,
   innerD: number
 ): { p1: { x: number; y: number }; p2: { x: number; y: number } } | null {
-  // Vertical divider? Look for the pair sharing a col boundary.
+  // Vertical divider: find the contiguous run of rows where the pair
+  // (left=a, right=b) or (left=b, right=a) holds at the same col
+  // boundary. The worker's `findPairAwareRuns` derives segment endpoints
+  // from that run, NOT from the bin walls — so partial-span dividers
+  // (e.g. a 2×2 where override applies to only the top half of a column
+  // boundary) need the segment's true row-range, not the full bin depth.
+  // Greptile flagged the bug on PR #1840: full-span endpoints can make
+  // `rectStraddlesTiltedDivider` miss inserts that actually cross a
+  // partial-span tilted segment.
   for (let col = 0; col < cols - 1; col++) {
+    let runStart: number | null = null;
+    let runEnd: number | null = null;
     for (let row = 0; row < rows; row++) {
       const left = cells[row * cols + col];
       const right = cells[row * cols + (col + 1)];
       const [a, b] = left < right ? [left, right] : [right, left];
-      if (a === override.compartmentA && b === override.compartmentB) {
-        const xMm = -innerW / 2 + ((col + 1) / cols) * innerW;
-        return {
-          p1: { x: xMm + override.offsetStart, y: -innerD / 2 },
-          p2: { x: xMm + override.offsetEnd, y: innerD / 2 },
-        };
-      }
+      const matches = a === override.compartmentA && b === override.compartmentB;
+      if (matches && runStart === null) runStart = row;
+      if (matches) runEnd = row + 1;
+      else if (runStart !== null) break; // run ended; non-contiguous would be invalid
+    }
+    if (runStart !== null && runEnd !== null) {
+      const xMm = -innerW / 2 + ((col + 1) / cols) * innerW;
+      const cellD = innerD / rows;
+      const yStart = -innerD / 2 + runStart * cellD;
+      const yEnd = -innerD / 2 + runEnd * cellD;
+      return {
+        p1: { x: xMm + override.offsetStart, y: yStart },
+        p2: { x: xMm + override.offsetEnd, y: yEnd },
+      };
     }
   }
-  // Horizontal divider.
+  // Horizontal divider: symmetric — partial-span across a column range.
   for (let row = 0; row < rows - 1; row++) {
+    let runStart: number | null = null;
+    let runEnd: number | null = null;
     for (let col = 0; col < cols; col++) {
       const top = cells[row * cols + col];
       const bottom = cells[(row + 1) * cols + col];
       const [a, b] = top < bottom ? [top, bottom] : [bottom, top];
-      if (a === override.compartmentA && b === override.compartmentB) {
-        const yMm = -innerD / 2 + ((row + 1) / rows) * innerD;
-        return {
-          p1: { x: -innerW / 2, y: yMm + override.offsetStart },
-          p2: { x: innerW / 2, y: yMm + override.offsetEnd },
-        };
-      }
+      const matches = a === override.compartmentA && b === override.compartmentB;
+      if (matches && runStart === null) runStart = col;
+      if (matches) runEnd = col + 1;
+      else if (runStart !== null) break;
+    }
+    if (runStart !== null && runEnd !== null) {
+      const yMm = -innerD / 2 + ((row + 1) / rows) * innerD;
+      const cellW = innerW / cols;
+      const xStart = -innerW / 2 + runStart * cellW;
+      const xEnd = -innerW / 2 + runEnd * cellW;
+      return {
+        p1: { x: xStart, y: yMm + override.offsetStart },
+        p2: { x: xEnd, y: yMm + override.offsetEnd },
+      };
     }
   }
   return null;

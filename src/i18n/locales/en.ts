@@ -1392,6 +1392,8 @@ const en: Record<string, string> = {
     'Drag end endpoint of divider between Comp {a} and Comp {b}',
   'binDesigner.angledDividers.slotIncompatible':
     "Slots aren't supported on angled dividers — coming in v2.",
+  'binDesigner.angledDividers.unavailableNonStandardMode':
+    'Angled dividers only apply to the standard compartment grid.',
   'binDesigner.compartmentNumberLabel': 'Comp. {n}',
   'binDesigner.textMode': 'Style',
   'binDesigner.textMode.engrave': 'Engrave',
