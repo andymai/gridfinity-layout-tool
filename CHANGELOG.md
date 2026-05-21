@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.111.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.110.1...gridfinity-layout-tool-v4.111.0) (2026-05-21)
+
+
+### Features
+
+* **bin-designer:** complete engraved-text feature (cutouts + emboss/through-cut + font picker) ([#1815](https://github.com/andymai/gridfinity-layout-tool/issues/1815)) ([bb4dc57](https://github.com/andymai/gridfinity-layout-tool/commit/bb4dc57e6b694bbbfa282c249c57e0aa3bfe38b5))
+
 ## [4.110.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.110.0...gridfinity-layout-tool-v4.110.1) (2026-05-21)
 
 
