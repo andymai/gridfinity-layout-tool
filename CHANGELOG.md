@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.110.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.110.0...gridfinity-layout-tool-v4.110.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* **bin-designer:** address [#1809](https://github.com/andymai/gridfinity-layout-tool/issues/1809) review (a11y + occt-wasm fonts + tests) ([#1812](https://github.com/andymai/gridfinity-layout-tool/issues/1812)) ([000ae64](https://github.com/andymai/gridfinity-layout-tool/commit/000ae648db1bcb02245c68f54049d0847a88678e))
+* **bin-designer:** ghost previews track params.gridUnitMm ([#1814](https://github.com/andymai/gridfinity-layout-tool/issues/1814)) ([e00e7cd](https://github.com/andymai/gridfinity-layout-tool/commit/e00e7cdc6eefd6149599f19b64e086f39629ec41))
+
 ## [4.110.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.109.0...gridfinity-layout-tool-v4.110.0) (2026-05-21)
 
 
