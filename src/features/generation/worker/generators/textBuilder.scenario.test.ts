@@ -7,7 +7,7 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
-import { buildEngraveCutSolid } from './textBuilder';
+import { buildEngraveCutSolid, TEXT_BOOLEAN_EPSILON } from './textBuilder';
 import { loadFont, withScope, mesh, clone, unwrap, type Shape3D } from 'brepjs';
 import { isErr } from '@/core/result';
 import { readFileSync } from 'node:fs';
@@ -68,7 +68,7 @@ describe('buildEngraveCutSolid', () => {
     expect(solid).toBeNull();
   });
 
-  it('places the solid below the topZ plane (extruded downward into the host)', () => {
+  it('starts just above topZ (EPSILON lift) and extrudes downward by depth + EPSILON', () => {
     // `clone(...)` lifts the shape out of the disposal scope so we can call
     // `mesh()` on it after the scope's scratch handles are freed.
     const solid = withScope((scope): Shape3D | null => {
@@ -84,10 +84,13 @@ describe('buildEngraveCutSolid', () => {
       if (z > maxZ) maxZ = z;
       if (z < minZ) minZ = z;
     }
-    // Top of the solid sits just above topZ (the EPSILON lift); bottom sits
-    // at most `depth + EPSILON` below it.
+    // Top of the solid sits exactly EPSILON above topZ; bottom is depth +
+    // EPSILON below it. Tessellation slack is bounded by the mesh
+    // `tolerance` arg above (0.5mm), so use that — `TEXT_BOOLEAN_EPSILON`
+    // is the analytical bound; tessellation can never undercut it.
+    const MESH_SLACK = 0.5;
     expect(maxZ).toBeGreaterThan(BASE.topZ);
     expect(minZ).toBeLessThan(BASE.topZ);
-    expect(BASE.topZ - minZ).toBeLessThan(BASE.depth + 0.1);
+    expect(BASE.topZ - minZ).toBeLessThan(BASE.depth + TEXT_BOOLEAN_EPSILON + MESH_SLACK);
   });
 });
