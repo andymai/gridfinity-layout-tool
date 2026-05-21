@@ -169,6 +169,10 @@ export interface CompartmentConfig {
    * after `normalizeIds`. Empty / missing entries render no text on the tab.
    * Length need not equal compartment count; trailing slots are treated as
    * empty. Kept in lockstep with `cells` via `normalizeIdsWithRemap`.
+   *
+   * Element type intentionally `string[]` (not `readonly string[]`) to mirror
+   * sibling `cells: number[]`. The whole `params` tree passes through Immer
+   * `Draft`s, which require mutable element types.
    */
   readonly compartmentTexts?: string[];
 }

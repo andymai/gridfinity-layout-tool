@@ -645,4 +645,58 @@ describe('validateDesignerShare', () => {
       }
     });
   });
+
+  describe('textDefaults validation', () => {
+    function withTextDefaults(td: unknown) {
+      const payload = validPayload() as ReturnType<typeof validPayload> & {
+        params: { textDefaults?: unknown };
+      };
+      payload.params.textDefaults = td;
+      return validateDesignerShare(payload, JSON.stringify(payload).length);
+    }
+
+    it('accepts the canonical defaults', () => {
+      const result = withTextDefaults({
+        font: 'atkinson',
+        mode: 'engrave',
+        depth: 0.4,
+        margin: 1.5,
+        minFontSize: 3,
+        maxFontSize: 20,
+      });
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects non-object', () => {
+      expect(withTextDefaults('oops').valid).toBe(false);
+    });
+
+    it('rejects unknown keys', () => {
+      const result = withTextDefaults({ font: 'atkinson', evil: 1 });
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.error.message).toMatch(/unknown key/);
+    });
+
+    it('rejects unsupported fonts', () => {
+      const result = withTextDefaults({ font: 'comic-sans' });
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.error.message).toMatch(/font/);
+    });
+
+    it('rejects unsupported modes', () => {
+      const result = withTextDefaults({ mode: 'blast' });
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.error.message).toMatch(/mode/);
+    });
+
+    it('rejects negative depth (crafted-share guard)', () => {
+      const result = withTextDefaults({ depth: -1 });
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects out-of-range maxFontSize (crafted-share guard)', () => {
+      const result = withTextDefaults({ maxFontSize: 1e9 });
+      expect(result.valid).toBe(false);
+    });
+  });
 });

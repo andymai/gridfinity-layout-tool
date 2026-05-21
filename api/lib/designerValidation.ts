@@ -31,6 +31,8 @@ const VALID_LABEL_TAB_SUPPORTS = ['bracket', 'solid', 'fillet'] as const;
 const VALID_INSERT_SHAPES = ['rectangle', 'circle', 'hexagon', 'rounded-rect', 'slot'] as const;
 const VALID_WALL_CUTOUT_SHAPES = ['u-shape', 'scoop', 'funnel'] as const;
 const VALID_ROTATIONS = [0, 90, 180, 270] as const;
+const VALID_TEXT_FONTS = ['atkinson', 'jetbrains-mono', 'allerta-stencil'] as const;
+const VALID_TEXT_MODES = ['engrave', 'emboss', 'through-cut'] as const;
 
 // Constraints (server-side copies of client DESIGNER_CONSTRAINTS)
 const CONSTRAINTS = {
@@ -317,6 +319,62 @@ function validateWalls(walls: unknown): string | null {
   return null;
 }
 
+const ALLOWED_TEXT_DEFAULTS_KEYS = new Set([
+  'font',
+  'mode',
+  'depth',
+  'margin',
+  'minFontSize',
+  'maxFontSize',
+]);
+
+/**
+ * Caps mirror the geometry-pipeline safe ranges that ship in the next PR;
+ * keeping them server-side now means a crafted share can't smuggle in a
+ * `depth: -1` or `maxFontSize: 1e9` that crashes the BREP worker.
+ */
+function validateTextDefaults(value: unknown): string | null {
+  if (!isObject(value)) return 'textDefaults must be an object';
+
+  for (const key of Object.keys(value)) {
+    if (!ALLOWED_TEXT_DEFAULTS_KEYS.has(key)) {
+      return `textDefaults has unknown key: ${key}`;
+    }
+  }
+
+  if (
+    value.font !== undefined &&
+    !VALID_TEXT_FONTS.includes(value.font as (typeof VALID_TEXT_FONTS)[number])
+  ) {
+    return `textDefaults.font must be one of: ${VALID_TEXT_FONTS.join(', ')}`;
+  }
+  if (
+    value.mode !== undefined &&
+    !VALID_TEXT_MODES.includes(value.mode as (typeof VALID_TEXT_MODES)[number])
+  ) {
+    return `textDefaults.mode must be one of: ${VALID_TEXT_MODES.join(', ')}`;
+  }
+  if (value.depth !== undefined && (!isNumber(value.depth) || !inRange(value.depth, 0, 10))) {
+    return 'textDefaults.depth must be 0-10';
+  }
+  if (value.margin !== undefined && (!isNumber(value.margin) || !inRange(value.margin, 0, 50))) {
+    return 'textDefaults.margin must be 0-50';
+  }
+  if (
+    value.minFontSize !== undefined &&
+    (!isNumber(value.minFontSize) || !inRange(value.minFontSize, 0.5, 100))
+  ) {
+    return 'textDefaults.minFontSize must be 0.5-100';
+  }
+  if (
+    value.maxFontSize !== undefined &&
+    (!isNumber(value.maxFontSize) || !inRange(value.maxFontSize, 0.5, 200))
+  ) {
+    return 'textDefaults.maxFontSize must be 0.5-200';
+  }
+  return null;
+}
+
 function validateLabel(label: unknown): string | null {
   if (!isObject(label)) return 'label must be an object';
   if (!isBoolean(label.enabled)) return 'label.enabled must be boolean';
@@ -561,6 +619,11 @@ export function validateDesignerShare(body: unknown, sizeBytes: number): Designe
   if (params.featureColors !== undefined) {
     const fcErr = validateFeatureColors(params.featureColors);
     if (fcErr) return validationError('INVALID_PARAMS', fcErr);
+  }
+
+  if (params.textDefaults !== undefined) {
+    const tdErr = validateTextDefaults(params.textDefaults);
+    if (tdErr) return validationError('INVALID_PARAMS', tdErr);
   }
 
   // Inserts
