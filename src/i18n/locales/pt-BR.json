@@ -87,6 +87,8 @@
   "binDesigner.angledDividers.offsetStart": "Início (mm)",
   "binDesigner.angledDividers.offsetEnd": "Fim (mm)",
   "binDesigner.angledDividers.resetRow": "Redefinir divisória",
+  "binDesigner.angledDividers.handleAriaLabel.start": "Arrastar ponto inicial da divisória entre Compart. {a} e Compart. {b}",
+  "binDesigner.angledDividers.handleAriaLabel.end": "Arrastar ponto final da divisória entre Compart. {a} e Compart. {b}",
   "binDesigner.compartmentNumberLabel": "Compart. {n}",
   "binDesigner.textMode": "Estilo",
   "binDesigner.textMode.engrave": "Gravar",

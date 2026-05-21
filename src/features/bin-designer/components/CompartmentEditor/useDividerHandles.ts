@@ -17,7 +17,7 @@
  *    per drag, not one per pointer move.
  */
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useLabsStore } from '@/core/store/labs';
@@ -29,7 +29,10 @@ import {
 import type { CompartmentConfig } from '@/features/bin-designer/types';
 
 export const DRAG_SNAP_DEFAULT_MM = 5;
-export const DRAG_SNAP_FREE_MM = 1;
+// Matches the panel's `ANGLED_DIVIDER_UI_STEP` so canvas free-snap and
+// panel stepper produce values from the same granularity grid (Greptile
+// flagged the 1 mm-vs-0.5 mm mismatch on PR #1835).
+export const DRAG_SNAP_FREE_MM = 0.5;
 
 /** One draggable endpoint on the canvas. */
 export interface DividerHandle {
@@ -92,6 +95,12 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
     startClientY: number;
     originalOffsetMm: number;
   } | null>(null);
+  // Cleanup hook for the active drag's window listeners. Set when a drag
+  // starts, called on natural pointerup/cancel AND on unmount. Prevents
+  // listener leaks if the component unmounts mid-drag (route change,
+  // labs flag toggle, etc.) — Greptile flagged the leak on PR #1835.
+  const dragCleanupRef = useRef<(() => void) | null>(null);
+  useEffect(() => () => dragCleanupRef.current?.(), []);
 
   // v1 restriction: only render handles when the bin is a 1×N or N×1 grid,
   // so every interior divider spans wall-to-wall. Multi-divider grids
@@ -107,7 +116,12 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
   const onHandlePointerDown = useCallback(
     (handle: DividerHandle) =>
       (e: React.PointerEvent): void => {
-        // Don't let the underlying GridCell selection capture the same press.
+        // Prevent default + stop propagation: blocks text selection, page
+        // scrolling, and the underlying GridCell selection from competing
+        // with the drag. The `touch-action: none` style on the button
+        // handles the touch equivalent (we can't `preventDefault` a
+        // passive touch event reliably).
+        e.preventDefault();
         e.stopPropagation();
         e.currentTarget.setPointerCapture?.(e.pointerId);
         dragOriginRef.current = {
@@ -125,74 +139,65 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
           cursorY: e.clientY,
         });
 
-        const handleMove = (move: PointerEvent): void => {
+        const computeOffsetMm = (clientX: number, clientY: number, altOrShift: boolean) => {
           const origin = dragOriginRef.current;
           const canvas = canvasRef.current;
-          if (!origin || !canvas) return;
+          if (!origin || !canvas) return null;
           const rect = canvas.getBoundingClientRect();
-          // Drag axis: vertical dividers offset along ±X; horizontal along ±Y.
-          // The visual Y axis is flipped by flex-col-reverse — a *visual*
-          // upward drag (negative client delta) corresponds to a +Y data
-          // shift. We undo the flip here so positive offsets mean +data-Y.
-          const deltaPxX = move.clientX - origin.startClientX;
-          const deltaPxY = -(move.clientY - origin.startClientY);
+          const deltaPxX = clientX - origin.startClientX;
+          const deltaPxY = -(clientY - origin.startClientY);
           const deltaMm =
             handle.divider.axis === 'vertical'
               ? (deltaPxX / Math.max(1, rect.width)) * innerW
               : (deltaPxY / Math.max(1, rect.height)) * innerD;
-          const snapMm = move.altKey || move.shiftKey ? DRAG_SNAP_FREE_MM : DRAG_SNAP_DEFAULT_MM;
+          const snapMm = altOrShift ? DRAG_SNAP_FREE_MM : DRAG_SNAP_DEFAULT_MM;
           const rawMm = origin.originalOffsetMm + deltaMm;
-          const previewOffsetMm = Math.round(rawMm / snapMm) * snapMm;
-          const candidate = buildCandidateOverride(handle, previewOffsetMm);
+          return {
+            offsetMm: Math.round(rawMm / snapMm) * snapMm,
+            snapMm,
+          };
+        };
+
+        const handleMove = (move: PointerEvent): void => {
+          const result = computeOffsetMm(move.clientX, move.clientY, move.altKey || move.shiftKey);
+          if (!result) return;
+          const candidate = buildCandidateOverride(handle, result.offsetMm);
           const isValid = candidate
             ? validateDividerOverride(compartments, candidate) === null
             : false;
           setDrag({
             divider: handle.divider,
             which: handle.which,
-            previewOffsetMm,
-            snapMm,
+            previewOffsetMm: result.offsetMm,
+            snapMm: result.snapMm,
             isValid,
             cursorX: move.clientX,
             cursorY: move.clientY,
           });
         };
 
-        const handleUp = (up: PointerEvent): void => {
-          window.removeEventListener('pointermove', handleMove);
-          window.removeEventListener('pointerup', handleUp);
-          window.removeEventListener('pointercancel', handleUp);
+        const finishDrag = (commit: boolean, up?: PointerEvent): void => {
+          dragCleanupRef.current?.();
+          dragCleanupRef.current = null;
           const origin = dragOriginRef.current;
           dragOriginRef.current = null;
-          if (!origin) {
+          if (!commit || !origin || !up) {
             setDrag(null);
             return;
           }
           // Re-derive the final offset from the up-event so a pointer
           // released between move ticks still commits the right value.
-          const canvas = canvasRef.current;
-          if (!canvas) {
-            setDrag(null);
-            return;
-          }
-          const rect = canvas.getBoundingClientRect();
-          const deltaPxX = up.clientX - origin.startClientX;
-          const deltaPxY = -(up.clientY - origin.startClientY);
-          const deltaMm =
-            handle.divider.axis === 'vertical'
-              ? (deltaPxX / Math.max(1, rect.width)) * innerW
-              : (deltaPxY / Math.max(1, rect.height)) * innerD;
-          const snapMm = up.altKey || up.shiftKey ? DRAG_SNAP_FREE_MM : DRAG_SNAP_DEFAULT_MM;
-          const rawMm = origin.originalOffsetMm + deltaMm;
-          const finalOffsetMm = Math.round(rawMm / snapMm) * snapMm;
-          const candidate = buildCandidateOverride(handle, finalOffsetMm);
-          if (candidate && validateDividerOverride(compartments, candidate) === null) {
-            setDividerOverride(
-              candidate.compartmentA,
-              candidate.compartmentB,
-              candidate.offsetStart,
-              candidate.offsetEnd
-            );
+          const result = computeOffsetMm(up.clientX, up.clientY, up.altKey || up.shiftKey);
+          if (result) {
+            const candidate = buildCandidateOverride(handle, result.offsetMm);
+            if (candidate && validateDividerOverride(compartments, candidate) === null) {
+              setDividerOverride(
+                candidate.compartmentA,
+                candidate.compartmentB,
+                candidate.offsetStart,
+                candidate.offsetEnd
+              );
+            }
           }
           // Either way the drag is over; the snap-back to the previous
           // valid state is implicit because we never committed an invalid
@@ -200,9 +205,21 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
           setDrag(null);
         };
 
+        const handleUp = (up: PointerEvent): void => finishDrag(true, up);
+        // pointercancel = the OS or browser took over (gesture, context
+        // menu, alert). The cancel event carries `clientX: 0, clientY: 0`
+        // on some platforms — committing using that delta could silently
+        // write an unintended override. Abort cleanly instead.
+        const handleCancel = (): void => finishDrag(false);
+
         window.addEventListener('pointermove', handleMove);
         window.addEventListener('pointerup', handleUp);
-        window.addEventListener('pointercancel', handleUp);
+        window.addEventListener('pointercancel', handleCancel);
+        dragCleanupRef.current = (): void => {
+          window.removeEventListener('pointermove', handleMove);
+          window.removeEventListener('pointerup', handleUp);
+          window.removeEventListener('pointercancel', handleCancel);
+        };
       },
     [canvasRef, compartments, innerW, innerD, setDividerOverride]
   );

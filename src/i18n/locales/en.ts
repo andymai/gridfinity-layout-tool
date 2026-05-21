@@ -1386,6 +1386,10 @@ const en: Record<string, string> = {
   'binDesigner.angledDividers.offsetStart': 'Start (mm)',
   'binDesigner.angledDividers.offsetEnd': 'End (mm)',
   'binDesigner.angledDividers.resetRow': 'Reset divider to straight',
+  'binDesigner.angledDividers.handleAriaLabel.start':
+    'Drag start endpoint of divider between Comp {a} and Comp {b}',
+  'binDesigner.angledDividers.handleAriaLabel.end':
+    'Drag end endpoint of divider between Comp {a} and Comp {b}',
   'binDesigner.compartmentNumberLabel': 'Comp. {n}',
   'binDesigner.textMode': 'Style',
   'binDesigner.textMode.engrave': 'Engrave',

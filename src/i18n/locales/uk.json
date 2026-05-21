@@ -1128,6 +1128,8 @@
   "binDesigner.angledDividers.offsetStart": "Початок (мм)",
   "binDesigner.angledDividers.offsetEnd": "Кінець (мм)",
   "binDesigner.angledDividers.resetRow": "Скинути перегородку",
+  "binDesigner.angledDividers.handleAriaLabel.start": "Перетягніть початкову точку перегородки між Відсік {a} та Відсік {b}",
+  "binDesigner.angledDividers.handleAriaLabel.end": "Перетягніть кінцеву точку перегородки між Відсік {a} та Відсік {b}",
   "binDesigner.compartmentNumberLabel": "Відсік {n}",
   "binDesigner.textMode": "Стиль",
   "binDesigner.textMode.engrave": "Гравірувати",
