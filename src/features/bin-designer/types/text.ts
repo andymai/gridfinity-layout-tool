@@ -1,16 +1,11 @@
 /**
- * Embedded text type definitions.
+ * Style for text engraved/embossed/cut into label tabs and adjacent to cutouts.
  *
- * Text engraved/embossed/cut into label tabs and adjacent to cutouts.
- * Geometry is produced by `textBuilder` at generation time using
- * brepjs `sketchText` + `extrude`. Fonts are loaded once at worker init.
- *
- * Style is scoped: `TextStyleDefaults` lives on `BinParams.textDefaults`
- * (design-wide defaults) and individual instances may attach a
- * `TextStyleOverride` to selectively override fields.
+ * Scoping: `TextStyleDefaults` lives on `BinParams.textDefaults` (design-wide);
+ * individual instances may attach a `TextStyleOverride` to selectively override
+ * any subset of those fields.
  */
 
-/** Geometry interaction mode of an engraved text instance. */
 export type TextMode = 'engrave' | 'emboss' | 'through-cut';
 
 /**
@@ -27,7 +22,6 @@ export type TextFontFamily = 'atkinson' | 'jetbrains-mono' | 'allerta-stencil';
  */
 export type CutoutTextSide = 'top' | 'bottom' | 'left' | 'right';
 
-/** Design-level defaults inherited by every text instance unless overridden. */
 export interface TextStyleDefaults {
   readonly font: TextFontFamily;
   readonly mode: TextMode;
@@ -41,22 +35,14 @@ export interface TextStyleDefaults {
   readonly maxFontSize: number;
 }
 
-/**
- * Per-instance override. Any subset of `TextStyleDefaults`, plus an
- * optional `fontSizeOverride` that bypasses auto-fit and locks the
- * rendered size to an explicit mm value.
- */
+/** `fontSizeOverride` bypasses auto-fit and locks the size to a mm value. */
 export type TextStyleOverride = Partial<TextStyleDefaults> & {
   readonly fontSizeOverride?: number;
 };
 
-/** Hard upper bound on a single text string. Beyond this, input is rejected. */
+/** Hard cap on a single text string — input above this is rejected. */
 export const TEXT_MAX_LENGTH = 50;
 
-/** Soft warning threshold for input length. */
-export const TEXT_WARN_LENGTH = 20;
-
-/** Default engraved-text style applied to every text instance unless overridden. */
 export const DEFAULT_TEXT_STYLE_DEFAULTS: TextStyleDefaults = {
   font: 'atkinson',
   mode: 'engrave',

@@ -26,8 +26,6 @@ import type { LidClickRails } from '../types/lid';
 import type { TextStyleDefaults } from '../types/text';
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '../types/text';
 
-export { DEFAULT_TEXT_STYLE_DEFAULTS };
-
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
 const DEFAULT_SLOT_CONFIG: SlotConfig = {
   x: { enabled: true, pitch: 20 },

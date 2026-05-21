@@ -34,7 +34,7 @@ export type {
   TextStyleDefaults,
   TextStyleOverride,
 } from './text';
-export { TEXT_MAX_LENGTH, TEXT_WARN_LENGTH } from './text';
+export { TEXT_MAX_LENGTH } from './text';
 
 /**
  * Eyedropper click anchor: which zone was hit and the viewport coords

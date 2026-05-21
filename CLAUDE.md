@@ -70,6 +70,7 @@ Bin → position (x,y), size (w,d,h), layerId, category, label, notes, customPro
 3. **Half-Bin Mode**: 0.5 increments. Helpers: `snapToHalf()`, `snapToGrid()`, `isFractional()`. `HALF_BIN_SCALE = 2`.
 4. **Multi-Layout**: Each layout stored by UUID (`gridfinity-layout-{uuid}`). Library index tracks metadata only.
 5. **Wall Pattern Border Rule**: Any feature that cuts through a wall (cutouts, handles, etc.) MUST have corresponding border clipping in `wallPatternBuilder.ts`. Cutout/handle clips use `CUTOUT_BORDER_WIDTH` (1.5mm); divider junction clips use `max(CUTOUT_BORDER_WIDTH, shapeRadius)` so larger hex prisms (4u+ bins) can't bleed into divider walls. Without border clipping, hex prisms overlap the cut region producing jagged edges.
+6. **Compartment IDs are not stable**: `normalizeIds()` renumbers `compartments.cells` on every merge/split, so any parallel per-compartment array (e.g. `compartmentTexts`) must be reindexed in lockstep via `normalizeIdsWithRemap()` + `remapCompartmentTexts()`. Resetting the grid (`setCompartmentGrid`) regenerates IDs from scratch — drop parallel arrays rather than carry ghost values onto unrelated cells.
 
 ### Result Type (`src/core/result/`)
 

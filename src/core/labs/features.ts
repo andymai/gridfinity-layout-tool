@@ -109,9 +109,10 @@ export const FEATURE_FLAGS = [
     status: 'experimental',
     risk: 'medium',
     warning:
-      'Geometry pipeline and editor UI ship in follow-up updates. Currently only stores the text data and migrates existing designs.',
+      'Coming soon. The editor UI and 3D engraving pipeline ship in follow-up updates; flipping this flag today has no visible effect.',
     addedAt: '2026-05',
     requiresRefresh: false,
+    comingSoon: true,
   },
 ] as const satisfies readonly FeatureFlag[];
 

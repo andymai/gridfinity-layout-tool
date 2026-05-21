@@ -254,8 +254,11 @@ export function createParamSlice(set: Set, get: Get) {
         for (let i = 0; i < rows * cols; i++) {
           cells.push(i);
         }
+        // Old per-compartment text would attach to unrelated cells once
+        // IDs regenerate — drop it.
+        const { compartmentTexts: _drop, ...keepCompartments } = state.params.compartments;
         state.params.compartments = {
-          ...state.params.compartments,
+          ...keepCompartments,
           cols,
           rows,
           cells,
@@ -337,21 +340,15 @@ export function createParamSlice(set: Set, get: Get) {
       const { params } = get();
       const clamped = text.slice(0, TEXT_MAX_LENGTH);
       const prev = params.compartments.compartmentTexts ?? [];
-      // No-op short-circuit: writing the same text to the same slot must
-      // not push a history entry. The UI calls this on every keystroke, so
-      // a no-op would create one undoable step per character of e.g.
-      // pasting the same value back in — and would defeat the trailing-
-      // empty trim by spawning empty mutations on already-clear slots.
-      const current = prev[compartmentId] ?? '';
-      if (current === clamped) return;
+      // No-op guard: the UI calls this on every keystroke, so an unchanged
+      // value must not push a history entry (would be one undo step per char).
+      if ((prev[compartmentId] ?? '') === clamped) return;
 
       set((state) => {
         pushHistoryEntry(state);
         const next = prev.slice();
-        // Grow with empty slots so the array length covers compartmentId.
         while (next.length <= compartmentId) next.push('');
         next[compartmentId] = clamped;
-        // Drop trailing empty slots so identical no-op writes don't bloat the JSON.
         while (next.length > 0 && next[next.length - 1] === '') next.pop();
         state.params.compartments = {
           ...state.params.compartments,

@@ -756,6 +756,18 @@ describe('DesignerStore - compartment actions', () => {
       expect(useDesignerStore.getState().history.past.length).toBe(beforeHistoryLength);
     });
 
+    it('is cleared when the grid is resized (avoids ghost text on regenerated IDs)', () => {
+      const { setCompartmentGrid, setCompartmentText } = useDesignerStore.getState();
+      setCompartmentGrid(2, 2);
+      setCompartmentText(0, 'SCREWS');
+      setCompartmentText(3, 'WASHERS');
+
+      setCompartmentGrid(3, 3);
+
+      const { params } = useDesignerStore.getState();
+      expect(params.compartments.compartmentTexts).toBeUndefined();
+    });
+
     it('drops trailing empty slots from the stored array', () => {
       const { setCompartmentGrid, setCompartmentText } = useDesignerStore.getState();
       setCompartmentGrid(3, 1);
