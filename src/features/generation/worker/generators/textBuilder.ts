@@ -166,8 +166,6 @@ export function buildTextSolid(
   const metrics = textMetrics(trimmed, { fontSize: fit.fontSize, fontFamily });
   if (!isOk(metrics)) return null;
 
-  // Sketch origin: engrave/through-cut start just above the top face and
-  // extrude DOWN; emboss starts at the top face and extrudes UP.
   // All three modes need the EPSILON lift to avoid coplanar boolean fragility:
   //  - engrave / through-cut: sketch sits ABOVE topZ, extrudes DOWN through it
   //  - emboss: sketch sits BELOW topZ, extrudes UP through it
@@ -200,17 +198,4 @@ export function buildTextSolid(
   );
 
   return { solid, op: options.mode === 'emboss' ? 'fuse' : 'cut' };
-}
-
-/**
- * @deprecated Prefer `buildTextSolid` which supports all 3 modes. Kept as a
- * thin wrapper so existing callers (and tests) that only need engrave keep
- * working without churn.
- */
-export function buildEngraveCutSolid(
-  scope: DisposalScope,
-  options: Omit<BuildTextSolidOptions, 'mode' | 'hostThickness'>
-): Shape3D | null {
-  const result = buildTextSolid(scope, { ...options, mode: 'engrave', hostThickness: 0 });
-  return result ? result.solid : null;
 }

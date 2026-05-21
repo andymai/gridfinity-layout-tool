@@ -200,7 +200,16 @@ export function LabelTabsSection() {
               <Select
                 size="sm"
                 fullWidth
-                value={state.textDefaults.font}
+                // In through-cut mode the renderer forces Allerta Stencil
+                // regardless of preference — show that as the displayed value
+                // so the disabled state isn't misleading. The user's font
+                // preference is preserved in `textDefaults.font` and restored
+                // when they switch back to engrave or emboss.
+                value={
+                  state.textDefaults.mode === 'through-cut'
+                    ? 'allerta-stencil'
+                    : state.textDefaults.font
+                }
                 onChange={(e) => handlers.setTextFont(e.target.value as TextFontFamily)}
                 disabled={state.textDefaults.mode === 'through-cut'}
                 aria-label={t('binDesigner.textFont')}
