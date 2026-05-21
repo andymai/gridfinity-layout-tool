@@ -16,13 +16,15 @@ import {
 } from '../generatorConstants';
 import {
   compartmentCavitiesAreViable,
+  compartmentEdgesAreSinglePair,
   compartmentsAreRectangular,
+  hasDividerOverrides,
   hasMultipleCompartments,
 } from '../compartmentBuilder';
 // SIZE and HEIGHT_UNIT are kept as fallback defaults for backwards compatibility
 // with callers (or serialized designs) that predate gridUnitMm/heightUnitMm.
 import type { ProgressFn } from '../meshUtils';
-import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
+import { buildCacheKey, quantize, compactKey, stableSerialize } from '../cacheKeyUtils';
 import type { BinDimensions, PipelineContext } from './types';
 
 /** Derive all dimensions from bin parameters. */
@@ -71,13 +73,22 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // still use the additive-fuse path and remain susceptible to the
   // T-junction non-manifold bug. See the skipped scenario in
   // `compartmentBuilder.scenario.manifold.test.ts` ("polygon-mask gap").
+  // Tilted-divider override support (#1822): the cut path's cavity drawer
+  // emits parallelogram cavities for shared edges that are single-pair (a
+  // compartment edge touches at most one neighbor compartment along its
+  // length). When an override exists but a comp edge spans multiple pairs
+  // (e.g. a wide comp 0 with 3 distinct comps below), the cavity would
+  // need a polyline — fall back to the additive-fuse path for that case.
+  const overridesAllowCutPath =
+    !hasDividerOverrides(params) || compartmentEdgesAreSinglePair(params);
   const compartmentsBakedIntoShell =
     !isSlotted &&
     !solid &&
     !isPartialMask(params.cellMask) &&
     hasMultipleCompartments(params) &&
     compartmentsAreRectangular(params) &&
-    compartmentCavitiesAreViable(params, innerW, innerD);
+    compartmentCavitiesAreViable(params, innerW, innerD) &&
+    overridesAllowCutPath;
 
   // Shell cache key — versioned + quantized for deterministic matching.
   // Mask hash is included only when the mask triggers the polygon path so
@@ -92,7 +103,11 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
         params.compartments.cols,
         params.compartments.rows,
         quantize(params.compartments.thickness),
-        params.compartments.cells.join(',')
+        params.compartments.cells.join(','),
+        // Tilted-divider overrides change the cavity polygon (#1822).
+        // Without this segment, two designs that differ only in tilt
+        // would share a stale shell cache entry.
+        stableSerialize(params.compartments.dividerOverrides ?? [])
       )
     : 'none';
   const shellKey = compactKey(

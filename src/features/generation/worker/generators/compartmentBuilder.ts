@@ -48,6 +48,7 @@ export function buildCompartmentCavityDrawings(
   const cellW = innerW / cols;
   const cellD = innerD / rows;
   const half = thickness / 2;
+  const overrideLookup = buildOverrideLookup(params.compartments.dividerOverrides);
 
   const compIds = Array.from(new Set(cells));
   const drawings: Drawing[] = [];
@@ -57,18 +58,117 @@ export function buildCompartmentCavityDrawings(
     if (!bounds) continue;
     const { minCol, maxCol, minRow, maxRow } = bounds;
 
-    // Cavity rectangle in the bin's inner frame (origin at center of inner cavity)
+    // Axis-aligned corner positions. Shared edges are inset by `half` so
+    // adjacent cavities leave a `thickness`-wide wall between them. Tilt
+    // overrides displace the corners on shared edges further (below).
     const xMin = -innerW / 2 + minCol * cellW + (minCol > 0 ? half : 0);
     const xMax = -innerW / 2 + (maxCol + 1) * cellW - (maxCol < cols - 1 ? half : 0);
     const yMin = -innerD / 2 + minRow * cellD + (minRow > 0 ? half : 0);
     const yMax = -innerD / 2 + (maxRow + 1) * cellD - (maxRow < rows - 1 ? half : 0);
 
-    drawings.push(
-      draw([xMin, yMin]).lineTo([xMax, yMin]).lineTo([xMax, yMax]).lineTo([xMin, yMax]).close()
-    );
+    // Start the cavity polygon as a rectangle. Each shared edge with an
+    // override displaces its two corners along the divider's axis.
+    // Sign convention mirrors `buildTiltedWallSegment`: for vertical
+    // dividers, `offsetStart` shifts X at the lower-Y endpoint; for
+    // horizontal dividers, `offsetStart` shifts Y at the lower-X endpoint.
+    // Both compartments touching the shared edge apply the same offsets
+    // (consistently displacing the centerline), so the inset on each side
+    // remains `half` along the axis.
+    const bl: [number, number] = [xMin, yMin];
+    const br: [number, number] = [xMax, yMin];
+    const tr: [number, number] = [xMax, yMax];
+    const tl: [number, number] = [xMin, yMax];
+
+    if (maxCol < cols - 1) {
+      // Right edge — shared with compartment in col (maxCol + 1).
+      // Single-pair precondition guarantees the neighbor is the same
+      // across the whole edge, so cells[minRow * cols + (maxCol + 1)] is
+      // representative.
+      const ov = overrideLookup.get(overrideKey(id, cells[minRow * cols + (maxCol + 1)]));
+      if (ov) {
+        br[0] += ov.offsetStart;
+        tr[0] += ov.offsetEnd;
+      }
+    }
+    if (minCol > 0) {
+      const ov = overrideLookup.get(overrideKey(id, cells[minRow * cols + (minCol - 1)]));
+      if (ov) {
+        bl[0] += ov.offsetStart;
+        tl[0] += ov.offsetEnd;
+      }
+    }
+    if (maxRow < rows - 1) {
+      const ov = overrideLookup.get(overrideKey(id, cells[(maxRow + 1) * cols + minCol]));
+      if (ov) {
+        tl[1] += ov.offsetStart;
+        tr[1] += ov.offsetEnd;
+      }
+    }
+    if (minRow > 0) {
+      const ov = overrideLookup.get(overrideKey(id, cells[(minRow - 1) * cols + minCol]));
+      if (ov) {
+        bl[1] += ov.offsetStart;
+        br[1] += ov.offsetEnd;
+      }
+    }
+
+    drawings.push(draw(bl).lineTo(br).lineTo(tr).lineTo(tl).close());
   }
 
   return drawings;
+}
+
+/** Whether any divider override is present in the compartment grid. */
+export function hasDividerOverrides(params: BinParams): boolean {
+  return (params.compartments.dividerOverrides?.length ?? 0) > 0;
+}
+
+/**
+ * True iff every compartment's edges touch at most one distinct neighbor
+ * compartment per edge. When this holds, each cavity can be a quadrilateral
+ * with at most one tilt per edge — which is what the cut-path cavity drawer
+ * supports. A compartment spanning multiple cells where the shared boundary
+ * crosses pair changes (e.g. a 1×3 comp 0 with 3 distinct comps below)
+ * would need a polyline cavity edge; those configurations fall back to the
+ * additive-fuse path via the `compartmentsBakedIntoShell` predicate.
+ */
+export function compartmentEdgesAreSinglePair(params: BinParams): boolean {
+  const { cols, rows, cells } = params.compartments;
+  const compIds = new Set(cells);
+  for (const id of compIds) {
+    const bounds = findCompartmentBounds(id, cols, rows, cells);
+    if (!bounds) continue;
+    const { minCol, maxCol, minRow, maxRow } = bounds;
+    if (maxRow < rows - 1) {
+      const neighbors = new Set<number>();
+      for (let c = minCol; c <= maxCol; c++) {
+        neighbors.add(cells[(maxRow + 1) * cols + c]);
+      }
+      if (neighbors.size > 1) return false;
+    }
+    if (minRow > 0) {
+      const neighbors = new Set<number>();
+      for (let c = minCol; c <= maxCol; c++) {
+        neighbors.add(cells[(minRow - 1) * cols + c]);
+      }
+      if (neighbors.size > 1) return false;
+    }
+    if (maxCol < cols - 1) {
+      const neighbors = new Set<number>();
+      for (let r = minRow; r <= maxRow; r++) {
+        neighbors.add(cells[r * cols + (maxCol + 1)]);
+      }
+      if (neighbors.size > 1) return false;
+    }
+    if (minCol > 0) {
+      const neighbors = new Set<number>();
+      for (let r = minRow; r <= maxRow; r++) {
+        neighbors.add(cells[r * cols + (minCol - 1)]);
+      }
+      if (neighbors.size > 1) return false;
+    }
+  }
+  return true;
 }
 
 /**

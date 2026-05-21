@@ -15,7 +15,7 @@ import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket } from '../../socketBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
 import { buildCompartmentCavityDrawings } from '../../compartmentBuilder';
-import { buildCacheKey, compactKey, quantize } from '../../cacheKeyUtils';
+import { buildCacheKey, compactKey, quantize, stableSerialize } from '../../cacheKeyUtils';
 import { getShellCache, setShellCache } from '../../shapeCache';
 import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
@@ -60,7 +60,11 @@ export const shellStage: PipelineStage = {
             params.compartments.cols,
             params.compartments.rows,
             quantize(params.compartments.thickness),
-            params.compartments.cells.join(',')
+            params.compartments.cells.join(','),
+            // Tilt overrides reshape the cavity polygon (#1822); without
+            // this segment two designs that differ only in tilt would
+            // share a stale cavity-cache entry.
+            stableSerialize(params.compartments.dividerOverrides ?? [])
           )
         )
       : undefined;
