@@ -32,9 +32,7 @@ import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { usePreviewColor } from '@/features/bin-designer/hooks/usePreviewColor';
 import { GridCell, GhostPreview } from './CompartmentEditorParts';
-import { DividerHandlesOverlay } from './DividerHandlesOverlay';
-import { useDividerHandles } from './useDividerHandles';
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { DividerTiltSubsection } from './DividerTiltSubsection';
 
 export function CompartmentEditor() {
   const t = useTranslation();
@@ -44,8 +42,6 @@ export function CompartmentEditor() {
     compartments,
     width,
     depth,
-    wallThickness,
-    gridUnitMm,
     setParam,
     setCompartmentGrid,
     mergeCells,
@@ -57,8 +53,6 @@ export function CompartmentEditor() {
       compartments: s.params.compartments,
       width: s.params.width,
       depth: s.params.depth,
-      wallThickness: s.params.wallThickness,
-      gridUnitMm: s.params.gridUnitMm,
       setParam: s.setParam,
       setCompartmentGrid: s.setCompartmentGrid,
       mergeCells: s.mergeCells,
@@ -79,24 +73,6 @@ export function CompartmentEditor() {
   const [isDragging, setIsDragging] = useState(false);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  // Ref to the *inner* flex container that holds GridCells. Used by the
-  // divider-drag math so mm-per-pixel matches the GridCell coordinate
-  // space (the outer `gridRef` includes the container's padding + border,
-  // which would skew the conversion).
-  const gridCellsRef = useRef<HTMLDivElement>(null);
-
-  // Bin interior dimensions in mm — used by the divider-drag overlay to
-  // convert canvas-pixel deltas to mm offsets. Mirrors the worker-side
-  // derivation in `buildCompartmentWalls`.
-  const innerW = width * gridUnitMm - GRIDFINITY.TOLERANCE - 2 * wallThickness;
-  const innerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE - 2 * wallThickness;
-
-  const dividerHandles = useDividerHandles({
-    compartments,
-    innerW,
-    innerD,
-    canvasRef: gridCellsRef,
-  });
 
   // Pre-compute cell counts per compartment to avoid repeated O(n) scans
   const compartmentCellCounts = useMemo(() => {
@@ -434,7 +410,7 @@ export function CompartmentEditor() {
             )}
             {/* Use flex-col-reverse to match 3D orientation: row 0 = front = bottom of UI */}
             {/* No gap - merged cells should visually connect; borders handle separation */}
-            <div ref={gridCellsRef} className="relative flex h-full w-full flex-col-reverse">
+            <div className="relative flex h-full w-full flex-col-reverse">
               {Array.from({ length: rows }, (_, visualRow) => {
                 const dataRow = visualRow; // flex-col-reverse handles the flip
                 return (
@@ -470,19 +446,6 @@ export function CompartmentEditor() {
                   </div>
                 );
               })}
-              {/* Angled-divider drag handles. Lives INSIDE the flex
-                  container so its `inset-0` matches the GridCell
-                  coordinate space (the outer `gridRef` includes padding
-                  and border, which would skew positioning). Self-gated
-                  on labs flag + grid linearity; renders nothing
-                  otherwise. */}
-              <DividerHandlesOverlay
-                handles={dividerHandles.handles}
-                drag={dividerHandles.drag}
-                innerW={innerW}
-                innerD={innerD}
-                onHandlePointerDown={dividerHandles.onHandlePointerDown}
-              />
             </div>
             {/* Ghost preview overlay during cell-select drag */}
             {isDragging && selection.size >= 2 && (
@@ -509,6 +472,8 @@ export function CompartmentEditor() {
           />
         </section>
       )}
+
+      <DividerTiltSubsection />
     </div>
   );
 }
