@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.112.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.111.2...gridfinity-layout-tool-v4.112.0) (2026-05-21)
+
+
+### Features
+
+* **bin-designer:** foundation for angled dividers (issue [#1822](https://github.com/andymai/gridfinity-layout-tool/issues/1822)) ([#1827](https://github.com/andymai/gridfinity-layout-tool/issues/1827)) ([2fcc48c](https://github.com/andymai/gridfinity-layout-tool/commit/2fcc48cde232403bb2c455a4c85b4e6f1df3ccf2))
+
 ## [4.111.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.111.1...gridfinity-layout-tool-v4.111.2) (2026-05-21)
 
 
