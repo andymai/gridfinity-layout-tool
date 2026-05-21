@@ -15,8 +15,12 @@ import {
   LIP_SMALL_TAPER,
 } from '../generatorConstants';
 import {
+  buildCompartmentsCacheKey,
   compartmentCavitiesAreViable,
+  compartmentCavitiesAreViableWithOverrides,
+  compartmentEdgesAreSinglePair,
   compartmentsAreRectangular,
+  hasDividerOverrides,
   hasMultipleCompartments,
 } from '../compartmentBuilder';
 // SIZE and HEIGHT_UNIT are kept as fallback defaults for backwards compatibility
@@ -71,13 +75,18 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // still use the additive-fuse path and remain susceptible to the
   // T-junction non-manifold bug. See the skipped scenario in
   // `compartmentBuilder.scenario.manifold.test.ts` ("polygon-mask gap").
+  const overridesAllowCutPath =
+    !hasDividerOverrides(params) ||
+    (compartmentEdgesAreSinglePair(params) &&
+      compartmentCavitiesAreViableWithOverrides(params, innerW, innerD));
   const compartmentsBakedIntoShell =
     !isSlotted &&
     !solid &&
     !isPartialMask(params.cellMask) &&
     hasMultipleCompartments(params) &&
     compartmentsAreRectangular(params) &&
-    compartmentCavitiesAreViable(params, innerW, innerD);
+    compartmentCavitiesAreViable(params, innerW, innerD) &&
+    overridesAllowCutPath;
 
   // Shell cache key — versioned + quantized for deterministic matching.
   // Mask hash is included only when the mask triggers the polygon path so
@@ -86,15 +95,7 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // cut path, so single-compartment bins keep their existing cache bucket.
   const { cellMask } = params;
   const maskKeySegment = isPartialMask(cellMask) ? hashMask(cellMask) : 'rect';
-  const compartmentsKey = compartmentsBakedIntoShell
-    ? buildCacheKey(
-        'comp',
-        params.compartments.cols,
-        params.compartments.rows,
-        quantize(params.compartments.thickness),
-        params.compartments.cells.join(',')
-      )
-    : 'none';
+  const compartmentsKey = compartmentsBakedIntoShell ? buildCompartmentsCacheKey(params) : 'none';
   const shellKey = compactKey(
     buildCacheKey(
       'v6',

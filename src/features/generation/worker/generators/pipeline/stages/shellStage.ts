@@ -14,8 +14,10 @@ import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket } from '../../socketBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
-import { buildCompartmentCavityDrawings } from '../../compartmentBuilder';
-import { buildCacheKey, compactKey, quantize } from '../../cacheKeyUtils';
+import {
+  buildCompartmentCavityDrawings,
+  buildCompartmentsCacheKey,
+} from '../../compartmentBuilder';
 import { getShellCache, setShellCache } from '../../shapeCache';
 import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
@@ -51,18 +53,8 @@ export const shellStage: PipelineStage = {
     const compartmentCavityDrawings = dim.compartmentsBakedIntoShell
       ? buildCompartmentCavityDrawings(params, dim.innerW, dim.innerD)
       : undefined;
-    // Built via the standard cacheKey helpers so `thickness` is quantized
-    // the same way as in `dim.shellKey` (avoids float-drift cache misses).
     const compartmentCavityKey = dim.compartmentsBakedIntoShell
-      ? compactKey(
-          buildCacheKey(
-            'comp',
-            params.compartments.cols,
-            params.compartments.rows,
-            quantize(params.compartments.thickness),
-            params.compartments.cells.join(',')
-          )
-        )
+      ? buildCompartmentsCacheKey(params)
       : undefined;
 
     const bin = withScope((scope: DisposalScope) => {
