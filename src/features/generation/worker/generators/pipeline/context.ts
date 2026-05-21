@@ -15,6 +15,7 @@ import {
   LIP_SMALL_TAPER,
 } from '../generatorConstants';
 import {
+  buildCompartmentsCacheKey,
   compartmentCavitiesAreViable,
   compartmentCavitiesAreViableWithOverrides,
   compartmentEdgesAreSinglePair,
@@ -25,7 +26,7 @@ import {
 // SIZE and HEIGHT_UNIT are kept as fallback defaults for backwards compatibility
 // with callers (or serialized designs) that predate gridUnitMm/heightUnitMm.
 import type { ProgressFn } from '../meshUtils';
-import { buildCacheKey, quantize, compactKey, stableSerialize } from '../cacheKeyUtils';
+import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
 import type { BinDimensions, PipelineContext } from './types';
 
 /** Derive all dimensions from bin parameters. */
@@ -74,14 +75,6 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // still use the additive-fuse path and remain susceptible to the
   // T-junction non-manifold bug. See the skipped scenario in
   // `compartmentBuilder.scenario.manifold.test.ts` ("polygon-mask gap").
-  // Tilted-divider override support (#1822): the cut path's cavity drawer
-  // emits parallelogram cavities for shared edges that are single-pair (a
-  // compartment edge touches at most one neighbor compartment along its
-  // length) AND whose displaced corners keep the cavity polygon non-
-  // degenerate (no self-intersection / collapsed area from extreme tilts).
-  // Either condition failing falls back to the additive-fuse path, which
-  // clips overshoots gracefully so even pathological overrides still
-  // produce *some* mesh rather than silently dropping a cavity.
   const overridesAllowCutPath =
     !hasDividerOverrides(params) ||
     (compartmentEdgesAreSinglePair(params) &&
@@ -102,21 +95,7 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // cut path, so single-compartment bins keep their existing cache bucket.
   const { cellMask } = params;
   const maskKeySegment = isPartialMask(cellMask) ? hashMask(cellMask) : 'rect';
-  const compartmentsKey = compartmentsBakedIntoShell
-    ? compactKey(
-        buildCacheKey(
-          'comp',
-          params.compartments.cols,
-          params.compartments.rows,
-          quantize(params.compartments.thickness),
-          params.compartments.cells.join(','),
-          // Tilted-divider overrides change the cavity polygon (#1822).
-          // Without this segment, two designs that differ only in tilt
-          // would share a stale shell cache entry.
-          stableSerialize(params.compartments.dividerOverrides ?? [])
-        )
-      )
-    : 'none';
+  const compartmentsKey = compartmentsBakedIntoShell ? buildCompartmentsCacheKey(params) : 'none';
   const shellKey = compactKey(
     buildCacheKey(
       'v6',

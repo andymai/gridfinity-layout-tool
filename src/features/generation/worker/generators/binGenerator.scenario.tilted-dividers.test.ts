@@ -49,16 +49,9 @@ describe('tilted dividers through full pipeline', () => {
     });
     expect(straight.vertices).not.toBeNull();
     expect(tilted.vertices).not.toBeNull();
-    // `expect(...).not.toBeNull()` records the failure but doesn't stop
-    // execution — narrow the types so the next reads compile without `!`
-    // and the friendly assertion message surfaces instead of a TypeError.
     if (!straight.vertices || !tilted.vertices) return;
-    // A tilted parallelogram and an axis-aligned rectangle both tessellate
-    // to the same vertex count (4 corners each), so a count-diff is too
-    // weak. Compare positions instead: sum |y| across all vertices —
-    // the tilt displaces interior cavity vertices by ±~10mm, while the
-    // straight version has them at y ≈ ±half. Difference should be
-    // dozens of mm if the override is honored.
+    // Vertex *count* is too weak — both quads tessellate to the same count.
+    // Sum |y| picks up the off-axis displacement from the tilt.
     const sumAbsY = (verts: Float32Array): number => {
       let s = 0;
       for (let i = 1; i < verts.length; i += 3) s += Math.abs(verts[i]);
@@ -77,23 +70,14 @@ describe('tilted dividers through full pipeline', () => {
       },
     });
     expect(tilted.vertices).not.toBeNull();
-    if (!tilted.vertices) return; // narrow type — see sister test above
-    // With the divider tilted, the bin's interior has vertices whose Y
-    // landing is not at the symmetric cavity midpoint. Sample for any
-    // vertex with Y in the tilt range (~ ±10 mm from midpoint, away from
-    // the bin walls) — a straight cavity wouldn't produce one.
-    //
-    // 1×2 default gridUnitMm=42, depth=2 → outerD = 84-tolerance.
-    // Midpoint is at Y=0 (bin coordinates centered). Walls are at
-    // Y≈±41.75. A tilted-divider vertex should appear within Y ∈ (-25, 25)
-    // but offset from Y=0 by close to the override magnitude.
+    if (!tilted.vertices) return;
+    // 1×2 default gridUnitMm=42 → bin walls at Y≈±41.75, divider midpoint
+    // at Y=0. A 10mm tilt should put cavity vertices at |y| ≈ 10 (well
+    // away from the walls); a straight cavity has no vertices in this band.
     const verts = tilted.vertices;
     let foundTiltVertex = false;
     for (let i = 0; i < verts.length; i += 3) {
-      const y = verts[i + 1];
-      // Match the tilt magnitude (10mm) with generous tolerance for mesh
-      // tessellation. Avoid the bin walls (>30mm from center).
-      const absY = Math.abs(y);
+      const absY = Math.abs(verts[i + 1]);
       if (absY > 5 && absY < 25) {
         foundTiltVertex = true;
         break;

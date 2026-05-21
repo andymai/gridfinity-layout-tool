@@ -8,6 +8,7 @@
 import { box, withScope, clone, unwrap, fuseAll, draw, intersect } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
 import type { BinParams, DividerOverride } from '@/shared/types/bin';
+import { buildCacheKey, compactKey, quantize, stableSerialize } from './cacheKeyUtils';
 import { sketch } from './meshUtils';
 
 // Re-export for backwards compatibility with existing imports
@@ -44,78 +45,80 @@ export function buildCompartmentCavityDrawings(
   innerW: number,
   innerD: number
 ): readonly Drawing[] {
+  const lookup = buildOverrideLookup(params.compartments.dividerOverrides);
+  const drawings: Drawing[] = [];
+  for (const id of new Set(params.compartments.cells)) {
+    const corners = cavityCorners(params, innerW, innerD, id, lookup);
+    if (!corners) continue;
+    const { bl, br, tr, tl } = corners;
+    drawings.push(draw(bl).lineTo(br).lineTo(tr).lineTo(tl).close());
+  }
+  return drawings;
+}
+
+/**
+ * Cavity corners with shared-edge overrides applied. Sign convention
+ * mirrors `buildTiltedWallSegment`: `offsetStart` shifts the lower-
+ * coordinate endpoint, `offsetEnd` the higher-coordinate one. Both
+ * compartments either side of a divider apply the same offsets so the
+ * centerline displaces consistently and each side keeps its `half` inset.
+ */
+function cavityCorners(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  id: number,
+  lookup: Map<string, DividerOverride>
+): {
+  bl: [number, number];
+  br: [number, number];
+  tr: [number, number];
+  tl: [number, number];
+} | null {
   const { cols, rows, thickness, cells } = params.compartments;
+  const bounds = findCompartmentBounds(id, cols, rows, cells);
+  if (!bounds) return null;
+  const { minCol, maxCol, minRow, maxRow } = bounds;
   const cellW = innerW / cols;
   const cellD = innerD / rows;
   const half = thickness / 2;
-  const overrideLookup = buildOverrideLookup(params.compartments.dividerOverrides);
-
-  const compIds = Array.from(new Set(cells));
-  const drawings: Drawing[] = [];
-
-  for (const id of compIds) {
-    const bounds = findCompartmentBounds(id, cols, rows, cells);
-    if (!bounds) continue;
-    const { minCol, maxCol, minRow, maxRow } = bounds;
-
-    // Axis-aligned corner positions. Shared edges are inset by `half` so
-    // adjacent cavities leave a `thickness`-wide wall between them. Tilt
-    // overrides displace the corners on shared edges further (below).
-    const xMin = -innerW / 2 + minCol * cellW + (minCol > 0 ? half : 0);
-    const xMax = -innerW / 2 + (maxCol + 1) * cellW - (maxCol < cols - 1 ? half : 0);
-    const yMin = -innerD / 2 + minRow * cellD + (minRow > 0 ? half : 0);
-    const yMax = -innerD / 2 + (maxRow + 1) * cellD - (maxRow < rows - 1 ? half : 0);
-
-    // Start the cavity polygon as a rectangle. Each shared edge with an
-    // override displaces its two corners along the divider's axis.
-    // Sign convention mirrors `buildTiltedWallSegment`: for vertical
-    // dividers, `offsetStart` shifts X at the lower-Y endpoint; for
-    // horizontal dividers, `offsetStart` shifts Y at the lower-X endpoint.
-    // Both compartments touching the shared edge apply the same offsets
-    // (consistently displacing the centerline), so the inset on each side
-    // remains `half` along the axis.
-    const bl: [number, number] = [xMin, yMin];
-    const br: [number, number] = [xMax, yMin];
-    const tr: [number, number] = [xMax, yMax];
-    const tl: [number, number] = [xMin, yMax];
-
-    if (maxCol < cols - 1) {
-      // Right edge — shared with compartment in col (maxCol + 1).
-      // Single-pair precondition guarantees the neighbor is the same
-      // across the whole edge, so cells[minRow * cols + (maxCol + 1)] is
-      // representative.
-      const ov = overrideLookup.get(overrideKey(id, cells[minRow * cols + (maxCol + 1)]));
-      if (ov) {
-        br[0] += ov.offsetStart;
-        tr[0] += ov.offsetEnd;
-      }
+  const xMin = -innerW / 2 + minCol * cellW + (minCol > 0 ? half : 0);
+  const xMax = -innerW / 2 + (maxCol + 1) * cellW - (maxCol < cols - 1 ? half : 0);
+  const yMin = -innerD / 2 + minRow * cellD + (minRow > 0 ? half : 0);
+  const yMax = -innerD / 2 + (maxRow + 1) * cellD - (maxRow < rows - 1 ? half : 0);
+  const bl: [number, number] = [xMin, yMin];
+  const br: [number, number] = [xMax, yMin];
+  const tr: [number, number] = [xMax, yMax];
+  const tl: [number, number] = [xMin, yMax];
+  if (maxCol < cols - 1) {
+    const ov = lookup.get(overrideKey(id, cells[minRow * cols + (maxCol + 1)]));
+    if (ov) {
+      br[0] += ov.offsetStart;
+      tr[0] += ov.offsetEnd;
     }
-    if (minCol > 0) {
-      const ov = overrideLookup.get(overrideKey(id, cells[minRow * cols + (minCol - 1)]));
-      if (ov) {
-        bl[0] += ov.offsetStart;
-        tl[0] += ov.offsetEnd;
-      }
-    }
-    if (maxRow < rows - 1) {
-      const ov = overrideLookup.get(overrideKey(id, cells[(maxRow + 1) * cols + minCol]));
-      if (ov) {
-        tl[1] += ov.offsetStart;
-        tr[1] += ov.offsetEnd;
-      }
-    }
-    if (minRow > 0) {
-      const ov = overrideLookup.get(overrideKey(id, cells[(minRow - 1) * cols + minCol]));
-      if (ov) {
-        bl[1] += ov.offsetStart;
-        br[1] += ov.offsetEnd;
-      }
-    }
-
-    drawings.push(draw(bl).lineTo(br).lineTo(tr).lineTo(tl).close());
   }
-
-  return drawings;
+  if (minCol > 0) {
+    const ov = lookup.get(overrideKey(id, cells[minRow * cols + (minCol - 1)]));
+    if (ov) {
+      bl[0] += ov.offsetStart;
+      tl[0] += ov.offsetEnd;
+    }
+  }
+  if (maxRow < rows - 1) {
+    const ov = lookup.get(overrideKey(id, cells[(maxRow + 1) * cols + minCol]));
+    if (ov) {
+      tl[1] += ov.offsetStart;
+      tr[1] += ov.offsetEnd;
+    }
+  }
+  if (minRow > 0) {
+    const ov = lookup.get(overrideKey(id, cells[(minRow - 1) * cols + minCol]));
+    if (ov) {
+      bl[1] += ov.offsetStart;
+      br[1] += ov.offsetEnd;
+    }
+  }
+  return { bl, br, tr, tl };
 }
 
 /** Whether any divider override is present in the compartment grid. */
@@ -124,65 +127,64 @@ export function hasDividerOverrides(params: BinParams): boolean {
 }
 
 /**
+ * Cache-key segment for the per-compartment cavity layout. Shared by the
+ * shell-cache (in context) and the per-box cavity cache (in shellStage) so
+ * both invalidate together when overrides change.
+ */
+export function buildCompartmentsCacheKey(params: BinParams): string {
+  return compactKey(
+    buildCacheKey(
+      'comp',
+      params.compartments.cols,
+      params.compartments.rows,
+      quantize(params.compartments.thickness),
+      params.compartments.cells.join(','),
+      stableSerialize(params.compartments.dividerOverrides ?? [])
+    )
+  );
+}
+
+/**
  * True iff every compartment's edges touch at most one distinct neighbor
- * compartment per edge. When this holds, each cavity can be a quadrilateral
- * with at most one tilt per edge — which is what the cut-path cavity drawer
- * supports. A compartment spanning multiple cells where the shared boundary
- * crosses pair changes (e.g. a 1×3 comp 0 with 3 distinct comps below)
- * would need a polyline cavity edge; those configurations fall back to the
- * additive-fuse path via the `compartmentsBakedIntoShell` predicate.
+ * compartment per edge. Required for the cut-path cavity drawer, which
+ * emits quadrilaterals; multi-pair edges (a wide compartment with
+ * different neighbors below each cell) would need a polyline edge and
+ * fall back to the additive-fuse path.
  */
 export function compartmentEdgesAreSinglePair(params: BinParams): boolean {
   const { cols, rows, cells } = params.compartments;
-  const compIds = new Set(cells);
-  for (const id of compIds) {
+  const edgeIsSinglePair = (from: number, to: number, indexFn: (i: number) => number): boolean => {
+    let first: number | null = null;
+    for (let i = from; i <= to; i++) {
+      const n = cells[indexFn(i)];
+      if (first === null) first = n;
+      else if (n !== first) return false;
+    }
+    return true;
+  };
+  for (const id of new Set(cells)) {
     const bounds = findCompartmentBounds(id, cols, rows, cells);
     if (!bounds) continue;
     const { minCol, maxCol, minRow, maxRow } = bounds;
-    if (maxRow < rows - 1) {
-      const neighbors = new Set<number>();
-      for (let c = minCol; c <= maxCol; c++) {
-        neighbors.add(cells[(maxRow + 1) * cols + c]);
-      }
-      if (neighbors.size > 1) return false;
-    }
-    if (minRow > 0) {
-      const neighbors = new Set<number>();
-      for (let c = minCol; c <= maxCol; c++) {
-        neighbors.add(cells[(minRow - 1) * cols + c]);
-      }
-      if (neighbors.size > 1) return false;
-    }
-    if (maxCol < cols - 1) {
-      const neighbors = new Set<number>();
-      for (let r = minRow; r <= maxRow; r++) {
-        neighbors.add(cells[r * cols + (maxCol + 1)]);
-      }
-      if (neighbors.size > 1) return false;
-    }
-    if (minCol > 0) {
-      const neighbors = new Set<number>();
-      for (let r = minRow; r <= maxRow; r++) {
-        neighbors.add(cells[r * cols + (minCol - 1)]);
-      }
-      if (neighbors.size > 1) return false;
-    }
+    if (maxRow < rows - 1 && !edgeIsSinglePair(minCol, maxCol, (c) => (maxRow + 1) * cols + c))
+      return false;
+    if (minRow > 0 && !edgeIsSinglePair(minCol, maxCol, (c) => (minRow - 1) * cols + c))
+      return false;
+    if (maxCol < cols - 1 && !edgeIsSinglePair(minRow, maxRow, (r) => r * cols + (maxCol + 1)))
+      return false;
+    if (minCol > 0 && !edgeIsSinglePair(minRow, maxRow, (r) => r * cols + (minCol - 1)))
+      return false;
   }
   return true;
 }
 
 /**
- * Check that applying the divider overrides keeps every cavity polygon
- * non-degenerate — i.e. left strictly left of right and bottom strictly
- * below top at the most-encroached corners, with at least `thickness * 2`
- * of clearance. Extreme offsets can otherwise shift a corner past its
- * opposite, producing a self-intersecting bowtie quad that BREP would
- * silently drop (cavity vanishes from the mesh).
- *
- * Mirrors the corner-computation logic in `buildCompartmentCavityDrawings`
- * — both must stay in sync. The predicate falls back to the additive-fuse
- * path when this returns false; the additive path clips overshoots
- * gracefully so even pathological overrides still produce *some* mesh.
+ * Verify every override-displaced cavity remains a non-degenerate quad
+ * (left strictly left of right, bottom strictly below top, with at least
+ * `thickness * 2` clearance). Extreme offsets can otherwise produce a
+ * self-intersecting bowtie that BREP silently drops; falling back to the
+ * additive-fuse path lets that path's clip-to-interior salvage *some*
+ * mesh for pathological inputs.
  */
 export function compartmentCavitiesAreViableWithOverrides(
   params: BinParams,
@@ -191,62 +193,14 @@ export function compartmentCavitiesAreViableWithOverrides(
 ): boolean {
   const overrides = params.compartments.dividerOverrides;
   if (!overrides || overrides.length === 0) return true;
-  const { cols, rows, thickness, cells } = params.compartments;
-  const cellW = innerW / cols;
-  const cellD = innerD / rows;
-  const half = thickness / 2;
-  const minDim = thickness * 2;
   const lookup = buildOverrideLookup(overrides);
-  const compIds = new Set(cells);
-  for (const id of compIds) {
-    const bounds = findCompartmentBounds(id, cols, rows, cells);
-    if (!bounds) continue;
-    const { minCol, maxCol, minRow, maxRow } = bounds;
-    const xMin = -innerW / 2 + minCol * cellW + (minCol > 0 ? half : 0);
-    const xMax = -innerW / 2 + (maxCol + 1) * cellW - (maxCol < cols - 1 ? half : 0);
-    const yMin = -innerD / 2 + minRow * cellD + (minRow > 0 ? half : 0);
-    const yMax = -innerD / 2 + (maxRow + 1) * cellD - (maxRow < rows - 1 ? half : 0);
-    const bl: [number, number] = [xMin, yMin];
-    const br: [number, number] = [xMax, yMin];
-    const tr: [number, number] = [xMax, yMax];
-    const tl: [number, number] = [xMin, yMax];
-    if (maxCol < cols - 1) {
-      const ov = lookup.get(overrideKey(id, cells[minRow * cols + (maxCol + 1)]));
-      if (ov) {
-        br[0] += ov.offsetStart;
-        tr[0] += ov.offsetEnd;
-      }
-    }
-    if (minCol > 0) {
-      const ov = lookup.get(overrideKey(id, cells[minRow * cols + (minCol - 1)]));
-      if (ov) {
-        bl[0] += ov.offsetStart;
-        tl[0] += ov.offsetEnd;
-      }
-    }
-    if (maxRow < rows - 1) {
-      const ov = lookup.get(overrideKey(id, cells[(maxRow + 1) * cols + minCol]));
-      if (ov) {
-        tl[1] += ov.offsetStart;
-        tr[1] += ov.offsetEnd;
-      }
-    }
-    if (minRow > 0) {
-      const ov = lookup.get(overrideKey(id, cells[(minRow - 1) * cols + minCol]));
-      if (ov) {
-        bl[1] += ov.offsetStart;
-        br[1] += ov.offsetEnd;
-      }
-    }
-    // Non-degenerate quad: at the worst-case corners, left side stays
-    // strictly left of right side and bottom stays strictly below top,
-    // each with at least minDim clearance.
-    const xLeftMax = Math.max(bl[0], tl[0]);
-    const xRightMin = Math.min(br[0], tr[0]);
-    if (xRightMin - xLeftMax < minDim) return false;
-    const yBottomMax = Math.max(bl[1], br[1]);
-    const yTopMin = Math.min(tl[1], tr[1]);
-    if (yTopMin - yBottomMax < minDim) return false;
+  const minDim = params.compartments.thickness * 2;
+  for (const id of new Set(params.compartments.cells)) {
+    const corners = cavityCorners(params, innerW, innerD, id, lookup);
+    if (!corners) continue;
+    const { bl, br, tr, tl } = corners;
+    if (Math.min(br[0], tr[0]) - Math.max(bl[0], tl[0]) < minDim) return false;
+    if (Math.min(tl[1], tr[1]) - Math.max(bl[1], br[1]) < minDim) return false;
   }
   return true;
 }
@@ -613,7 +567,6 @@ function buildCompartmentWallsInScope(
 
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import { FeatureTag } from './featureTags';
-import { buildCacheKey, quantize, compactKey, stableSerialize } from './cacheKeyUtils';
 
 export const compartmentWallsFeature: FeatureBuilder = {
   name: 'compartmentWalls',
@@ -634,8 +587,6 @@ export const compartmentWallsFeature: FeatureBuilder = {
         params.compartments.rows,
         quantize(params.compartments.thickness),
         params.compartments.cells.join(','),
-        // Tilted-divider overrides change the wall geometry. `v1` → `v2`
-        // bumps the namespace so any cached pre-feature mesh is rebuilt.
         stableSerialize(params.compartments.dividerOverrides ?? [])
       )
     );
