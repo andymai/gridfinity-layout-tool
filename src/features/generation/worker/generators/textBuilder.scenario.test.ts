@@ -13,16 +13,21 @@ import { isErr } from '@/core/result';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-beforeAll(async () => {
-  await initBrepjs();
-  const buffer = readFileSync(
-    resolve(__dirname, '../assets/fonts/AtkinsonHyperlegible-Regular.ttf')
-  );
+async function loadTtf(filename: string, family: string): Promise<void> {
+  const buffer = readFileSync(resolve(__dirname, `../assets/fonts/${filename}`));
   const result = await loadFont(
     buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
-    'atkinson'
+    family
   );
-  if (isErr(result)) throw new Error(`Font load failed: ${result.error.message}`);
+  if (isErr(result)) throw new Error(`Font load failed for ${family}: ${result.error.message}`);
+}
+
+beforeAll(async () => {
+  await initBrepjs();
+  // Atkinson covers engrave/emboss; Allerta Stencil is required for the
+  // through-cut path because `resolveEffectiveFont` auto-swaps to it.
+  await loadTtf('AtkinsonHyperlegible-Regular.ttf', 'atkinson');
+  await loadTtf('AllertaStencil-Regular.ttf', 'allerta-stencil');
 }, 30_000);
 
 const BASE = {
@@ -54,8 +59,8 @@ describe('buildTextSolid (engrave)', () => {
   });
 
   it('returns null when the font family is not loaded', () => {
-    // `jetbrains-mono` isn't loaded in this test file (only Atkinson) — so
-    // the runtime guard should return null.
+    // `jetbrains-mono` isn't loaded in this test file (only Atkinson +
+    // Allerta Stencil) — the runtime guard should return null.
     const r = withScope((scope) =>
       buildTextSolid(scope, { ...BASE, fontFamily: 'jetbrains-mono' })
     );
@@ -116,20 +121,31 @@ describe('buildTextSolid (emboss)', () => {
 });
 
 describe('buildTextSolid (through-cut)', () => {
-  it('reports op:cut and extends through the full hostThickness', () => {
+  it('reports op:cut and extends through the full hostThickness (stencil auto-swapped)', () => {
+    // Pass `fontFamily: 'atkinson'` to also assert the stencil auto-swap
+    // path — `resolveEffectiveFont` forces Allerta Stencil for through-cut
+    // regardless of the requested family.
+    let opCaptured: 'cut' | 'fuse' | null = null;
     const solid = withScope((scope): Shape3D | null => {
-      const r = buildTextSolid(scope, { ...BASE, mode: 'through-cut' });
-      return r ? unwrap(clone(r.solid)) : null;
+      const r = buildTextSolid(scope, { ...BASE, mode: 'through-cut', fontFamily: 'atkinson' });
+      expect(r).not.toBeNull();
+      opCaptured = r!.op;
+      return unwrap(clone(r!.solid));
     });
-    // Without Allerta Stencil loaded, the swap returns null — that's the
-    // documented behavior. Skip the depth assertion if so.
-    if (solid === null) return;
-    const tessellated = mesh(solid, { tolerance: 0.5, angularTolerance: 15 });
+    expect(opCaptured).toBe('cut');
+    const tessellated = mesh(solid!, { tolerance: 0.5, angularTolerance: 15 });
     let minZ = Infinity;
+    let maxZ = -Infinity;
     for (let i = 2; i < tessellated.vertices.length; i += 3) {
-      if (tessellated.vertices[i] < minZ) minZ = tessellated.vertices[i];
+      const z = tessellated.vertices[i];
+      if (z < minZ) minZ = z;
+      if (z > maxZ) maxZ = z;
     }
-    // Should extend at least hostThickness below topZ (plus a 2·EPSILON slack)
-    expect(BASE.topZ - minZ).toBeGreaterThan(BASE.hostThickness - TEXT_BOOLEAN_EPSILON);
+    // Span: topZ + EPSILON down to topZ - hostThickness - EPSILON. The
+    // total Z extent must reach hostThickness so the cut produces a clean
+    // exit on both faces of the host.
+    expect(maxZ - minZ).toBeGreaterThanOrEqual(BASE.hostThickness);
+    expect(maxZ).toBeGreaterThan(BASE.topZ);
+    expect(BASE.topZ - minZ).toBeGreaterThanOrEqual(BASE.hostThickness - TEXT_BOOLEAN_EPSILON);
   });
 });
