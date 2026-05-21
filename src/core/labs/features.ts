@@ -114,6 +114,19 @@ export const FEATURE_FLAGS = [
     requiresRefresh: false,
     comingSoon: true,
   },
+  {
+    id: 'angled_dividers',
+    name: 'Angled Dividers',
+    description:
+      'Tilt the dividers between compartments to make wedge-shaped slots — handy for silverware drawers where utensils pack better head-to-toe.',
+    status: 'graduated',
+    risk: 'medium',
+    warning:
+      'Scoops, label tabs, slot mode, and floor inserts auto-skip compartments touching a tilted divider.',
+    addedAt: '2026-05',
+    graduatedAt: '2026-05',
+    requiresRefresh: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

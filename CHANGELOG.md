@@ -1,5 +1,59 @@
 # Changelog
 
+## [4.115.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.114.1...gridfinity-layout-tool-v4.115.0) (2026-05-21)
+
+
+### Features
+
+* **bin-designer:** angled-dividers polish + flag graduation (PR 4 of 4) ([#1840](https://github.com/andymai/gridfinity-layout-tool/issues/1840)) ([2fed8d2](https://github.com/andymai/gridfinity-layout-tool/commit/2fed8d2217d854d0055db28a42b79b09bb990b53))
+
+
+### Bug Fixes
+
+* **bin-designer:** [#1840](https://github.com/andymai/gridfinity-layout-tool/issues/1840) review — partial-span tilt coverage + 3 smaller ([#1842](https://github.com/andymai/gridfinity-layout-tool/issues/1842)) ([efd89ea](https://github.com/andymai/gridfinity-layout-tool/commit/efd89ea525477febc51187d27d3329c7b9c38984))
+
+## [4.114.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.114.0...gridfinity-layout-tool-v4.114.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* **bin-designer:** [#1835](https://github.com/andymai/gridfinity-layout-tool/issues/1835) canvas-drag review — 8 items, 2 critical ([#1837](https://github.com/andymai/gridfinity-layout-tool/issues/1837)) ([39b083d](https://github.com/andymai/gridfinity-layout-tool/commit/39b083d1c297528cbcc50f73ee368a498224308b))
+* **bin-designer:** [#1837](https://github.com/andymai/gridfinity-layout-tool/issues/1837) review — critical commit regression + doc/sync nits ([#1839](https://github.com/andymai/gridfinity-layout-tool/issues/1839)) ([3378c2a](https://github.com/andymai/gridfinity-layout-tool/commit/3378c2a856c2a471f492fb6ed40e964a5ee52150))
+
+## [4.114.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.113.0...gridfinity-layout-tool-v4.114.0) (2026-05-21)
+
+
+### Features
+
+* **bin-designer:** canvas drag handles for angled dividers (PR 3 of 3-ish) ([#1835](https://github.com/andymai/gridfinity-layout-tool/issues/1835)) ([1085a58](https://github.com/andymai/gridfinity-layout-tool/commit/1085a588cfb9c2b72f0c9f5e9f9193110aeeb9d5))
+
+## [4.113.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.112.1...gridfinity-layout-tool-v4.113.0) (2026-05-21)
+
+
+### Features
+
+* **bin-designer:** angled-dividers panel UI (PR 2 of 3) ([#1832](https://github.com/andymai/gridfinity-layout-tool/issues/1832)) ([040cde5](https://github.com/andymai/gridfinity-layout-tool/commit/040cde5650b9f6c3a6aa267150aa454676acff86))
+
+
+### Bug Fixes
+
+* **bin-designer:** [#1832](https://github.com/andymai/gridfinity-layout-tool/issues/1832) review carryover (critical first-time UX + 2 smaller) ([#1834](https://github.com/andymai/gridfinity-layout-tool/issues/1834)) ([7adee20](https://github.com/andymai/gridfinity-layout-tool/commit/7adee20bcb6d430e5f87dc85b8a2712c5a029742))
+
+## [4.112.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.112.0...gridfinity-layout-tool-v4.112.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* **bin-designer:** address [#1829](https://github.com/andymai/gridfinity-layout-tool/issues/1829) follow-up review (3 items) ([#1831](https://github.com/andymai/gridfinity-layout-tool/issues/1831)) ([450bd0c](https://github.com/andymai/gridfinity-layout-tool/commit/450bd0c92c96dabb302fc418227f807ed3a2c9a6))
+* **bin-designer:** address Greptile + Copilot review on [#1827](https://github.com/andymai/gridfinity-layout-tool/issues/1827) ([#1829](https://github.com/andymai/gridfinity-layout-tool/issues/1829)) ([d307d3c](https://github.com/andymai/gridfinity-layout-tool/commit/d307d3cac21920053a6e2b98cb78a9621cd74075))
+
+## [4.112.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.111.2...gridfinity-layout-tool-v4.112.0) (2026-05-21)
+
+
+### Features
+
+* **bin-designer:** foundation for angled dividers (issue [#1822](https://github.com/andymai/gridfinity-layout-tool/issues/1822)) ([#1827](https://github.com/andymai/gridfinity-layout-tool/issues/1827)) ([2fcc48c](https://github.com/andymai/gridfinity-layout-tool/commit/2fcc48cde232403bb2c455a4c85b4e6f1df3ccf2))
+
 ## [4.111.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.111.1...gridfinity-layout-tool-v4.111.2) (2026-05-21)
 
 

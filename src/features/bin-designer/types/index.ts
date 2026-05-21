@@ -175,6 +175,48 @@ export interface CompartmentConfig {
    * `Draft`s, which require mutable element types.
    */
   readonly compartmentTexts?: string[];
+  /**
+   * Optional per-divider tilt overrides. Each entry shifts the endpoints of
+   * one interior divider away from its axis-aligned grid position, producing
+   * an angled (tapered) divider — useful for wedge-shaped compartments
+   * (e.g. silverware drawer dividers that follow utensil taper).
+   *
+   * The override applies to the unique segment between two adjacent
+   * compartments identified by `compartmentA < compartmentB` (canonical
+   * ordering enforced by the validator). Dropped via
+   * `remapDividerOverrides` on any cell mutation that renumbers IDs.
+   */
+  readonly dividerOverrides?: DividerOverride[];
+}
+
+/**
+ * One tilted-divider override. The underlying axis-aligned divider exists
+ * because two adjacent compartments share a boundary; the override shifts
+ * the divider's endpoints away from that boundary line.
+ *
+ * Coordinate system (relative to the SEGMENT's own endpoints, not the bin
+ * walls — an interior divider in a 3+row grid doesn't span the full bin):
+ * - For a **vertical** divider segment (compartments stacked horizontally),
+ *   `offsetStart` shifts the lower-Y endpoint of the segment in ±X;
+ *   `offsetEnd` shifts the higher-Y endpoint in ±X. Positive offsets push
+ *   the endpoints in the +X direction.
+ * - For a **horizontal** divider segment (compartments stacked vertically),
+ *   `offsetStart` shifts the lower-X endpoint in ±Y; `offsetEnd` shifts the
+ *   higher-X endpoint in ±Y. Positive offsets push endpoints in +Y.
+ *
+ * Setting both offsets equal translates the divider without tilting it.
+ * Setting `offsetEnd = -offsetStart` produces a symmetric tilt around the
+ * divider midpoint.
+ */
+export interface DividerOverride {
+  /** Lower of the two compartment IDs (canonical pair ordering). */
+  readonly compartmentA: number;
+  /** Higher of the two compartment IDs. Must be > compartmentA. */
+  readonly compartmentB: number;
+  /** Signed mm shift of the start endpoint perpendicular to the divider axis. */
+  readonly offsetStart: number;
+  /** Signed mm shift of the end endpoint perpendicular to the divider axis. */
+  readonly offsetEnd: number;
 }
 
 /** Scoop ramp configuration for compartment accessibility */
@@ -759,6 +801,16 @@ export interface DesignerState {
   splitCompartment: (compartmentId: number) => void;
   resetCompartments: () => void;
   setCompartmentText: (compartmentId: number, text: string) => void;
+
+  // Angled-divider override actions
+  setDividerOverride: (
+    compartmentA: number,
+    compartmentB: number,
+    offsetStart: number,
+    offsetEnd: number
+  ) => void;
+  removeDividerOverride: (compartmentA: number, compartmentB: number) => void;
+  clearDividerOverrides: () => void;
 
   // Text style actions (engraved text on label tabs and cutouts)
   setTextDefaults: (partial: Partial<TextStyleDefaults>) => void;

@@ -233,6 +233,79 @@ describe('validateDesignerShare', () => {
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
     });
+
+    it('accepts a well-formed dividerOverrides array', () => {
+      const payload = validPayload();
+      (payload.params.compartments as Record<string, unknown>).cols = 1;
+      (payload.params.compartments as Record<string, unknown>).rows = 2;
+      (payload.params.compartments as Record<string, unknown>).cells = [0, 1];
+      (payload.params.compartments as Record<string, unknown>).dividerOverrides = [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 10, offsetEnd: -8 },
+      ];
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects unordered dividerOverrides pair', () => {
+      const payload = validPayload();
+      (payload.params.compartments as Record<string, unknown>).cols = 1;
+      (payload.params.compartments as Record<string, unknown>).rows = 2;
+      (payload.params.compartments as Record<string, unknown>).cells = [0, 1];
+      (payload.params.compartments as Record<string, unknown>).dividerOverrides = [
+        { compartmentA: 1, compartmentB: 0, offsetStart: 0, offsetEnd: 0 },
+      ];
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects dividerOverrides with offsets out of range', () => {
+      const payload = validPayload();
+      (payload.params.compartments as Record<string, unknown>).cols = 1;
+      (payload.params.compartments as Record<string, unknown>).rows = 2;
+      (payload.params.compartments as Record<string, unknown>).cells = [0, 1];
+      (payload.params.compartments as Record<string, unknown>).dividerOverrides = [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 9999, offsetEnd: 0 },
+      ];
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects duplicate dividerOverrides pairs', () => {
+      const payload = validPayload();
+      (payload.params.compartments as Record<string, unknown>).cols = 1;
+      (payload.params.compartments as Record<string, unknown>).rows = 2;
+      (payload.params.compartments as Record<string, unknown>).cells = [0, 1];
+      (payload.params.compartments as Record<string, unknown>).dividerOverrides = [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 },
+        { compartmentA: 0, compartmentB: 1, offsetStart: 10, offsetEnd: 0 },
+      ];
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects dividerOverrides that is not an array', () => {
+      const payload = validPayload();
+      (payload.params.compartments as Record<string, unknown>).dividerOverrides = 'oops';
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects non-integer cells (float, string, or negative)', () => {
+      // Cells must be non-negative integers so dividerOverrides' knownIds
+      // set is well-formed. A crafted payload could otherwise smuggle in
+      // floats and silently break the adjacency check.
+      const floats = validPayload();
+      (floats.params.compartments as Record<string, unknown>).cells = [0.5];
+      expect(validateDesignerShare(floats, JSON.stringify(floats).length).valid).toBe(false);
+
+      const strings = validPayload();
+      (strings.params.compartments as Record<string, unknown>).cells = ['0'];
+      expect(validateDesignerShare(strings, JSON.stringify(strings).length).valid).toBe(false);
+
+      const negatives = validPayload();
+      (negatives.params.compartments as Record<string, unknown>).cells = [-1];
+      expect(validateDesignerShare(negatives, JSON.stringify(negatives).length).valid).toBe(false);
+    });
   });
 
   describe('label tab validation', () => {

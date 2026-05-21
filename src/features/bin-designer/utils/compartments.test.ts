@@ -15,10 +15,16 @@ import {
   normalizeIds,
   normalizeIdsWithRemap,
   remapCompartmentTexts,
+  remapDividerOverrides,
+  rectStraddlesTiltedDivider,
+  validateDividerOverride,
+  validateDividerOverrides,
+  compartmentHasTiltedEdge,
+  compartmentHasTiltedBackWall,
   deriveWallSegments,
   fromDividerConfig,
 } from '@/features/bin-designer/utils/compartments';
-import type { CompartmentConfig } from '@/features/bin-designer/types';
+import type { CompartmentConfig, DividerOverride } from '@/features/bin-designer/types';
 
 describe('compartments', () => {
   // =============================================================================
@@ -948,6 +954,381 @@ describe('compartments', () => {
       const ids = getCompartmentIds(result);
       expect(ids.length).toBe(9); // 3×3 = 9 cells
       expect(getCompartmentCount(result)).toBe(9);
+    });
+  });
+
+  // =============================================================================
+  // Divider Override
+  // =============================================================================
+
+  describe('validateDividerOverride', () => {
+    const config: CompartmentConfig = {
+      cols: 1,
+      rows: 2,
+      thickness: 1.2,
+      cells: [0, 1],
+    };
+
+    it('accepts a canonical, in-bounds override between adjacent compartments', () => {
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 0,
+          compartmentB: 1,
+          offsetStart: 10,
+          offsetEnd: -8,
+        })
+      ).toBeNull();
+    });
+
+    it('rejects unordered pair', () => {
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 1,
+          compartmentB: 0,
+          offsetStart: 0,
+          offsetEnd: 0,
+        })
+      ).toBe('unordered-pair');
+    });
+
+    it('rejects self-pair', () => {
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 0,
+          compartmentB: 0,
+          offsetStart: 0,
+          offsetEnd: 0,
+        })
+      ).toBe('self-pair');
+    });
+
+    it('rejects unknown compartment IDs', () => {
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 0,
+          compartmentB: 9,
+          offsetStart: 0,
+          offsetEnd: 0,
+        })
+      ).toBe('unknown-compartment');
+    });
+
+    it('rejects non-adjacent compartments', () => {
+      // 1×3 grid: compartments 0 and 2 are not adjacent (compartment 1
+      // sits between them).
+      const nonAdj: CompartmentConfig = {
+        cols: 1,
+        rows: 3,
+        thickness: 1.2,
+        cells: [0, 1, 2],
+      };
+      expect(
+        validateDividerOverride(nonAdj, {
+          compartmentA: 0,
+          compartmentB: 2,
+          offsetStart: 0,
+          offsetEnd: 0,
+        })
+      ).toBe('non-adjacent-compartments');
+    });
+
+    it('rejects out-of-bounds offsets', () => {
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 0,
+          compartmentB: 1,
+          offsetStart: 999,
+          offsetEnd: 0,
+        })
+      ).toBe('offset-out-of-bounds');
+    });
+
+    it('rejects non-finite offsets', () => {
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 0,
+          compartmentB: 1,
+          offsetStart: Number.POSITIVE_INFINITY,
+          offsetEnd: 0,
+        })
+      ).toBe('offset-not-finite');
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 0,
+          compartmentB: 1,
+          offsetStart: 0,
+          offsetEnd: Number.NaN,
+        })
+      ).toBe('offset-not-finite');
+    });
+  });
+
+  describe('validateDividerOverrides', () => {
+    const config: CompartmentConfig = {
+      cols: 2,
+      rows: 2,
+      thickness: 1.2,
+      cells: [0, 1, 2, 3],
+    };
+
+    it('rejects duplicate canonical pairs', () => {
+      const result = validateDividerOverrides(config, [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 },
+        { compartmentA: 0, compartmentB: 1, offsetStart: 10, offsetEnd: 0 },
+      ]);
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error).toBe('duplicate-pair');
+        expect(result.index).toBe(1);
+      }
+    });
+
+    it('passes on a clean list', () => {
+      const result = validateDividerOverrides(config, [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 },
+        { compartmentA: 2, compartmentB: 3, offsetStart: -3, offsetEnd: 0 },
+      ]);
+      expect(result.ok).toBe(true);
+    });
+  });
+
+  describe('remapDividerOverrides', () => {
+    it('returns empty for undefined / empty input', () => {
+      expect(remapDividerOverrides(undefined, new Map())).toEqual([]);
+      expect(remapDividerOverrides([], new Map([[0, 0]]))).toEqual([]);
+    });
+
+    it('renumbers surviving overrides and preserves canonical ordering', () => {
+      const overrides: DividerOverride[] = [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: -2 },
+        { compartmentA: 1, compartmentB: 2, offsetStart: 0, offsetEnd: 3 },
+      ];
+      // Remap that swaps 0↔1.
+      const remap = new Map([
+        [0, 1],
+        [1, 0],
+        [2, 2],
+      ]);
+      const out = remapDividerOverrides(overrides, remap);
+      expect(out).toEqual([
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: -2 },
+        { compartmentA: 0, compartmentB: 2, offsetStart: 0, offsetEnd: 3 },
+      ]);
+    });
+
+    it('drops overrides whose compartment disappeared from the remap', () => {
+      const overrides: DividerOverride[] = [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 },
+        { compartmentA: 1, compartmentB: 2, offsetStart: 3, offsetEnd: 0 },
+      ];
+      // Compartment 2 disappeared (merged into 1).
+      const remap = new Map([
+        [0, 0],
+        [1, 1],
+      ]);
+      const out = remapDividerOverrides(overrides, remap);
+      expect(out).toEqual([{ compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 }]);
+    });
+
+    it('drops overrides whose two compartments collapsed to the same ID', () => {
+      const overrides: DividerOverride[] = [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 },
+      ];
+      // Compartments 0 and 1 merged to 0.
+      const remap = new Map([
+        [0, 0],
+        [1, 0],
+      ]);
+      expect(remapDividerOverrides(overrides, remap)).toEqual([]);
+    });
+
+    it('deduplicates pairs that collapse onto each other after a merge', () => {
+      // Imagine a 1×3 with compartments 0,1,2. Two overrides:
+      //   - between 0 and 2 (impossible in real grid, but illustrative)
+      //   - between 1 and 2
+      // After merging 0 and 1 into 0, both overrides target the same new
+      // pair (0,2). Without dedup we'd emit two entries with the same key
+      // — the worker's lookup map would last-write-wins and the validator
+      // would reject the design on next save.
+      const overrides: DividerOverride[] = [
+        { compartmentA: 0, compartmentB: 2, offsetStart: 5, offsetEnd: 0 },
+        { compartmentA: 1, compartmentB: 2, offsetStart: 10, offsetEnd: 0 },
+      ];
+      const remap = new Map([
+        [0, 0],
+        [1, 0],
+        [2, 1],
+      ]);
+      const out = remapDividerOverrides(overrides, remap);
+      expect(out).toHaveLength(1);
+      // First-wins policy: the offsets from the earlier entry survive.
+      expect(out[0].offsetStart).toBe(5);
+    });
+  });
+
+  describe('mergeCells with dividerOverrides', () => {
+    it('remaps surviving overrides after a merge', () => {
+      const config: CompartmentConfig = {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1, 2, 3],
+        dividerOverrides: [
+          { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: -3 },
+          { compartmentA: 2, compartmentB: 3, offsetStart: 0, offsetEnd: 8 },
+        ],
+      };
+      // Merge compartments 0 and 1 (top row).
+      const merged = mergeCells(config, [0, 1]);
+      // Top-row override drops; bottom-row override survives with renumbered IDs.
+      expect(merged?.dividerOverrides).toEqual([
+        { compartmentA: 1, compartmentB: 2, offsetStart: 0, offsetEnd: 8 },
+      ]);
+    });
+  });
+
+  describe('compartmentHasTiltedEdge / compartmentHasTiltedBackWall', () => {
+    it('returns false when no overrides exist', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+      };
+      expect(compartmentHasTiltedEdge(config, 0)).toBe(false);
+      expect(compartmentHasTiltedBackWall(config, 0)).toBe(false);
+    });
+
+    it('detects a tilted edge on either compartment of an override pair', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 }],
+      };
+      expect(compartmentHasTiltedEdge(config, 0)).toBe(true);
+      expect(compartmentHasTiltedEdge(config, 1)).toBe(true);
+    });
+
+    it('flags the back-wall tilt only for the front compartment in a 1×2', () => {
+      // 1×2 stacked vertically: row 0 is "front" (closer to y=0), row 1 is
+      // "back". The horizontal divider between them is the BACK wall of
+      // compartment 0 and the FRONT wall of compartment 1. Only compartment
+      // 0's back wall is tilted.
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: -5 }],
+      };
+      expect(compartmentHasTiltedBackWall(config, 0)).toBe(true);
+      expect(compartmentHasTiltedBackWall(config, 1)).toBe(false);
+    });
+
+    it('rectStraddlesTiltedDivider returns false when no overrides exist', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+      };
+      const rect = { x: -10, y: -10, width: 20, depth: 20 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, rect)).toBe(false);
+    });
+
+    it('rectStraddlesTiltedDivider flags an insert that crosses a tilted line', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 20, offsetEnd: -20 }],
+      };
+      const rect = { x: -15, y: -15, width: 30, depth: 30 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, rect)).toBe(true);
+    });
+
+    it('rectStraddlesTiltedDivider returns false for inserts safely inside one wedge', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 20, offsetEnd: -20 }],
+      };
+      // Tiny insert in the front-right corner, well inside one wedge.
+      const rect = { x: 30, y: -30, width: 5, depth: 5 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, rect)).toBe(false);
+    });
+
+    it('rectStraddlesTiltedDivider uses partial-span endpoints for non-linear grids', () => {
+      // Regression for the bug Copilot caught on PR #1840:
+      // `tiltedDividerEndpoints` was using full-bin endpoints (y: ±innerD/2)
+      // for ALL dividers, including partial-span ones. For a 2×2 grid
+      // with cells [0,1,2,3], the override on (0,1) applies ONLY to row
+      // 0's segment — y range [-innerD/2, 0], not the full bin.
+      //
+      // CRITICAL: this test must FAIL with the pre-fix code AND PASS
+      // with the post-fix code. The first version of this test (PR
+      // #1842) chose insert positions that produced the same outcome
+      // under both code paths — passing trivially. The positions below
+      // were derived from the actual line geometry:
+      //   - Old full-span line: from (15, -40) to (-15, 40), slope
+      //     -3/8 in y/x. At y=20, line x = -7.5.
+      //   - New partial-span line: from (15, -40) to (-15, 0). At y=20
+      //     (extrapolated), line x = -30.
+      // An insert at x = [-10, 0], y = [20, 25] crosses the old line
+      // (corners on both sides of x=-7.5..-9.375) but sits entirely to
+      // the right of the new line (corners all at x > -30).
+      const config: CompartmentConfig = {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1, 2, 3],
+        dividerOverrides: [
+          // Tilt only the top-row half of the vertical boundary.
+          { compartmentA: 0, compartmentB: 1, offsetStart: 15, offsetEnd: -15 },
+        ],
+      };
+      // Insert at (x=-10..0, y=20..25): straddles the old extrapolated
+      // line, sits cleanly on one side of the post-fix partial-span line.
+      const partialSpanInsert = { x: -10, y: 20, width: 10, depth: 5 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, partialSpanInsert)).toBe(false);
+      // Insert in row-0's range that genuinely crosses the partial-span
+      // line — must straddle in both old and new code. Sanity check
+      // that the helper still catches real intersections.
+      const inRangeInsert = { x: -10, y: -35, width: 20, depth: 10 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, inRangeInsert)).toBe(true);
+    });
+
+    it('rectStraddlesTiltedDivider skips zero-offset overrides', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 0 }],
+      };
+      const rect = { x: -15, y: -15, width: 30, depth: 30 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, rect)).toBe(false);
+    });
+
+    it('detects a tilted back wall when the tilt is on a non-minCol neighbor', () => {
+      // 2×2 with the top row merged into compartment 0 (spanning both cols)
+      // and bottom row split into 1 (left) and 2 (right). The override is
+      // between 0 and 2 — i.e. the right half of compartment 0's back wall.
+      // Sampling only `bounds.minCol` would miss this because the back
+      // neighbor at column 0 is compartment 1, not compartment 2.
+      const config: CompartmentConfig = {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 0, 1, 2],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 2, offsetStart: 5, offsetEnd: -5 }],
+      };
+      expect(compartmentHasTiltedBackWall(config, 0)).toBe(true);
     });
   });
 });

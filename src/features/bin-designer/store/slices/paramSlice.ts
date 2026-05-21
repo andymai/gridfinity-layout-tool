@@ -30,6 +30,7 @@ import {
   isRectangularSelection,
   normalizeIdsWithRemap,
   remapCompartmentTexts,
+  remapDividerOverrides,
 } from '../../utils/compartments';
 import { validateCompartmentSizes } from '../../utils/validation';
 import { defaultsForNewDesign, pushHistoryEntry } from '../helpers';
@@ -258,9 +259,13 @@ export function createParamSlice(set: Set, get: Get) {
         for (let i = 0; i < rows * cols; i++) {
           cells.push(i);
         }
-        // Old per-compartment text would attach to unrelated cells once
-        // IDs regenerate — drop it.
-        const { compartmentTexts: _drop, ...keepCompartments } = state.params.compartments;
+        // Old per-compartment text and divider overrides would attach to
+        // unrelated cells once IDs regenerate — drop them.
+        const {
+          compartmentTexts: _dropTexts,
+          dividerOverrides: _dropOverrides,
+          ...keepCompartments
+        } = state.params.compartments;
         state.params.compartments = {
           ...keepCompartments,
           cols,
@@ -288,10 +293,14 @@ export function createParamSlice(set: Set, get: Get) {
         }
         const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
         const prevTexts = state.params.compartments.compartmentTexts;
+        const prevOverrides = state.params.compartments.dividerOverrides;
         state.params.compartments = {
           ...state.params.compartments,
           cells: normalized,
           ...(prevTexts ? { compartmentTexts: remapCompartmentTexts(prevTexts, remap) } : {}),
+          ...(prevOverrides
+            ? { dividerOverrides: remapDividerOverrides(prevOverrides, remap) }
+            : {}),
         };
       });
     },
@@ -326,10 +335,14 @@ export function createParamSlice(set: Set, get: Get) {
         }
         const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
         const prevTexts = state.params.compartments.compartmentTexts;
+        const prevOverrides = state.params.compartments.dividerOverrides;
         state.params.compartments = {
           ...state.params.compartments,
           cells: normalized,
           ...(prevTexts ? { compartmentTexts: remapCompartmentTexts(prevTexts, remap) } : {}),
+          ...(prevOverrides
+            ? { dividerOverrides: remapDividerOverrides(prevOverrides, remap) }
+            : {}),
         };
       });
     },
@@ -378,6 +391,68 @@ export function createParamSlice(set: Set, get: Get) {
         } else {
           state.params.label = { ...state.params.label, textStyle: overrides };
         }
+      });
+    },
+
+    setDividerOverride: (
+      compartmentA: number,
+      compartmentB: number,
+      offsetStart: number,
+      offsetEnd: number
+    ) => {
+      // Enforce canonical pair ordering: the validator + worker lookup all
+      // assume compartmentA < compartmentB, and silently allowing unordered
+      // pairs at the store would let two storage representations of the
+      // same divider exist as separate entries.
+      const [a, b] =
+        compartmentA < compartmentB ? [compartmentA, compartmentB] : [compartmentB, compartmentA];
+      const { params } = get();
+      const prev = params.compartments.dividerOverrides ?? [];
+      const existing = prev.find((o) => o.compartmentA === a && o.compartmentB === b);
+      // No-op guard: dragging an endpoint to its current position fires this
+      // action; an unchanged value would otherwise push a history entry per
+      // pointer move and bloat the undo stack.
+      if (existing && existing.offsetStart === offsetStart && existing.offsetEnd === offsetEnd) {
+        return;
+      }
+      set((state) => {
+        pushHistoryEntry(state);
+        const next = prev.filter((o) => !(o.compartmentA === a && o.compartmentB === b));
+        // Treat zero offsets as "remove" so the storage stays tidy and the
+        // empty array can be omitted from persisted JSON.
+        if (offsetStart !== 0 || offsetEnd !== 0) {
+          next.push({ compartmentA: a, compartmentB: b, offsetStart, offsetEnd });
+        }
+        state.params.compartments = {
+          ...state.params.compartments,
+          ...(next.length > 0 ? { dividerOverrides: next } : { dividerOverrides: undefined }),
+        };
+      });
+    },
+
+    removeDividerOverride: (compartmentA: number, compartmentB: number) => {
+      const [a, b] =
+        compartmentA < compartmentB ? [compartmentA, compartmentB] : [compartmentB, compartmentA];
+      const { params } = get();
+      const prev = params.compartments.dividerOverrides ?? [];
+      const next = prev.filter((o) => !(o.compartmentA === a && o.compartmentB === b));
+      if (next.length === prev.length) return; // nothing changed
+      set((state) => {
+        pushHistoryEntry(state);
+        state.params.compartments = {
+          ...state.params.compartments,
+          ...(next.length > 0 ? { dividerOverrides: next } : { dividerOverrides: undefined }),
+        };
+      });
+    },
+
+    clearDividerOverrides: () => {
+      const { params } = get();
+      if (!params.compartments.dividerOverrides?.length) return;
+      set((state) => {
+        pushHistoryEntry(state);
+        const { dividerOverrides: _drop, ...rest } = state.params.compartments;
+        state.params.compartments = rest;
       });
     },
 

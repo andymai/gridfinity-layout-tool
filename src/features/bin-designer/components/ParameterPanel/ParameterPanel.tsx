@@ -15,6 +15,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { DimensionsSection } from '../panel/DimensionsSection';
 import { ShapeSection } from '../panel/ShapeSection';
 import { InteriorSection } from '../panel/InteriorSection';
+import { AngledDividersSection } from '../panel/AngledDividersSection';
 import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { ScoopSection } from '../panel/ScoopSection';
@@ -138,6 +139,14 @@ export function ParameterPanel() {
             {/* Per-mode gating lives inside InteriorSection: Solid (cutouts) stays
                 interactive on custom shapes; Standard/Slotted remain gated. */}
             <InteriorSection />
+          </div>
+          <div
+            data-help-target="bd-angled-dividers"
+            className="px-4 py-4 border-t border-stroke-subtle/50"
+          >
+            <FeatureGate disabled={isCustomShape} reason={customShapeReason}>
+              <AngledDividersSection />
+            </FeatureGate>
           </div>
           {showLabelTabs && (
             <div

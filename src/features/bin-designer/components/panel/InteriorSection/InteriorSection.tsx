@@ -26,7 +26,15 @@ export function InteriorSection() {
   const { state, handlers } = useInteriorSection();
   const t = useTranslation();
   const isCustomShape = useDesignerStore((s) => isPartialMask(s.params.cellMask));
+  const hasAngledDividers = useDesignerStore(
+    (s) => (s.params.compartments.dividerOverrides?.length ?? 0) > 0
+  );
   const customShapeReason = t('binDesigner.shape.custom.hint');
+  // Slot mode uses divider slots, not the compartment grid — angled
+  // dividers don't translate to slot-mode geometry yet. Gate the slotted
+  // card while any override exists so the user gets an explanation
+  // instead of silently losing their tilts.
+  const slottedAngledReason = t('binDesigner.angledDividers.slotIncompatible');
 
   return (
     <div className="space-y-2">
@@ -42,6 +50,13 @@ export function InteriorSection() {
         if (isCustomShape && MODES_REQUIRING_RECTANGULAR_SHAPE.has(mode)) {
           return (
             <FeatureGate key={mode} disabled reason={customShapeReason}>
+              {card}
+            </FeatureGate>
+          );
+        }
+        if (mode === 'slotted' && hasAngledDividers) {
+          return (
+            <FeatureGate key={mode} disabled reason={slottedAngledReason}>
               {card}
             </FeatureGate>
           );

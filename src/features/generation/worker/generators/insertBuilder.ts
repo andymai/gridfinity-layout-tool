@@ -17,6 +17,7 @@ import {
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
+import { rectStraddlesTiltedDivider } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 /**
  * Build the 2D insert profile (Drawing) for a given insert shape.
@@ -46,9 +47,19 @@ function makeInsertProfile(
 }
 /**
  * Build insert cavity cuts.
+ *
+ * `innerW`/`innerD` are needed only when the bin has tilted dividers — the
+ * worker checks if each insert straddles a tilted divider line and skips
+ * any that would otherwise punch through a wedge into the neighboring
+ * compartment. Default `undefined` keeps the legacy callers working.
  */
-export function buildInsertCuts(params: BinParams): Shape3D | null {
+export function buildInsertCuts(
+  params: BinParams,
+  innerW?: number,
+  innerD?: number
+): Shape3D | null {
   if (params.inserts.length === 0) return null;
+  const hasTiltedDividers = (params.compartments.dividerOverrides?.length ?? 0) > 0;
 
   return withScope((scope: DisposalScope): Shape3D | null => {
     const insertShapes: Shape3D[] = [];
@@ -56,6 +67,23 @@ export function buildInsertCuts(params: BinParams): Shape3D | null {
     for (const insert of params.inserts) {
       // Guard: skip inserts with degenerate dimensions that would crash WASM
       if (insert.cutDepth <= 0 || insert.width <= 0 || insert.depth <= 0) continue;
+
+      // Tilted-divider compat: skip inserts whose footprint crosses a
+      // tilted divider line. The check is conservative — a false positive
+      // only suppresses an insert (visible to the user as "missing");
+      // a false negative would punch through the wedge and produce
+      // visually broken geometry.
+      if (hasTiltedDividers && innerW !== undefined && innerD !== undefined) {
+        const rect = {
+          x: insert.x - insert.width / 2,
+          y: insert.y - insert.depth / 2,
+          width: insert.width,
+          depth: insert.depth,
+        };
+        if (rectStraddlesTiltedDivider(params.compartments, innerW, innerD, rect)) {
+          continue;
+        }
+      }
 
       const profile = makeInsertProfile(
         insert.shape,
@@ -88,9 +116,18 @@ export const insertCutsFeature: FeatureBuilder = {
   target: 'cut',
   shouldBuild: (ctx) => ctx.params.inserts.length > 0,
   cacheKey: (ctx) =>
-    compactKey(buildCacheKey('v1', ctx.dimensions.shellKey, stableSerialize(ctx.params.inserts))),
+    compactKey(
+      buildCacheKey(
+        // `v2`: insert-vs-tilted-divider skip means dividerOverrides
+        // affects which inserts render. Cache namespace bumped.
+        'v2',
+        ctx.dimensions.shellKey,
+        stableSerialize(ctx.params.inserts),
+        stableSerialize(ctx.params.compartments.dividerOverrides ?? [])
+      )
+    ),
   build: (ctx) => {
-    const result = buildInsertCuts(ctx.params);
+    const result = buildInsertCuts(ctx.params, ctx.dimensions.innerW, ctx.dimensions.innerD);
     return result ? [result] : null;
   },
 };

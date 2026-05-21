@@ -5,9 +5,10 @@
  * Walls appear at boundaries between cells with different compartment IDs.
  */
 
-import { box, withScope, clone, unwrap, fuseAll, draw } from 'brepjs';
+import { box, withScope, clone, unwrap, fuseAll, draw, intersect } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, DividerOverride } from '@/shared/types/bin';
+import { sketch } from './meshUtils';
 
 // Re-export for backwards compatibility with existing imports
 export { fuseAllOrNull } from './utils/shapeOps';
@@ -133,6 +134,114 @@ function buildWallSegment(w: number, d: number, height: number, x: number, y: nu
 }
 
 /**
+ * Build a tilted divider wall as a parallelogram prism whose long axis runs
+ * from `(startX, startY)` to `(endX, endY)`. Thickness is applied
+ * perpendicular to that axis (not world-aligned) so the divider looks like
+ * a tilted ribbon, not a squished box.
+ *
+ * Clipped to the bin interior so any parallelogram corners that overshoot
+ * the bin wall (which happens whenever the tilt is non-zero) are sliced
+ * cleanly at the wall plane.
+ */
+function buildTiltedWallSegment(
+  scope: DisposalScope,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  thickness: number,
+  height: number,
+  binInnerW: number,
+  binInnerD: number
+): Shape3D | null {
+  const dx = endX - startX;
+  const dy = endY - startY;
+  const len = Math.hypot(dx, dy);
+  // Degenerate-segment guard: a zero-length divider (both endpoints
+  // collapsed to the same point — possible if a malformed override drives
+  // a span to nothing) would divide by zero and produce NaN geometry.
+  if (len < 1e-6) return null;
+  // Perpendicular unit vector (rotated 90° CCW from the divider direction).
+  const px = -dy / len;
+  const py = dx / len;
+  const half = thickness / 2;
+
+  const pen = draw([startX + px * half, startY + py * half])
+    .lineTo([endX + px * half, endY + py * half])
+    .lineTo([endX - px * half, endY - py * half])
+    .lineTo([startX - px * half, startY - py * half])
+    .close();
+  const prism = scope.register(sketch(pen, 'XY', 0).extrude(height));
+  // Clip the parallelogram corners that overshoot the bin's perpendicular
+  // wall. For zero-tilt segments the clip is a no-op; for tilted segments
+  // it shears off the "ears" that would otherwise poke through the wall.
+  // If the prism is entirely outside the clip box (override pushes the
+  // divider beyond the bin interior), the intersect returns nothing — bail
+  // gracefully rather than crashing the whole bin build.
+  const clipBox = scope.register(box(binInnerW, binInnerD, height, { at: [0, 0, height / 2] }));
+  try {
+    return scope.register(unwrap(intersect(prism as ValidSolid, clipBox)));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Walk a boundary line in single-cell steps and group contiguous cells where
+ * `key(i)` returns the SAME non-null string into runs. Each emitted run has
+ * a uniform `pairKey`. Used so the override lookup applies to runs that
+ * actually correspond to one (compartmentA, compartmentB) pair — a longer
+ * fused run that crosses pair changes would silently apply the first pair's
+ * override to the entire wall.
+ */
+function findPairAwareRuns(
+  count: number,
+  key: (i: number) => string | null
+): Array<{ start: number; end: number; pairKey: string }> {
+  const runs: Array<{ start: number; end: number; pairKey: string }> = [];
+  // Carry start + key as a single nullable object so segStart and segKey can
+  // never disagree (one set, the other still null). Prior shape stored them
+  // separately and TypeScript couldn't prove the invariant; reviewers
+  // flagged the `segKey ?? ''` fallback as either dead code or a silent
+  // misroute waiting to happen.
+  let open: { start: number; key: string } | null = null;
+  for (let i = 0; i < count; i++) {
+    const k = key(i);
+    if (k === null) {
+      if (open !== null) {
+        runs.push({ start: open.start, end: i, pairKey: open.key });
+        open = null;
+      }
+    } else if (open === null) {
+      open = { start: i, key: k };
+    } else if (k !== open.key) {
+      runs.push({ start: open.start, end: i, pairKey: open.key });
+      open = { start: i, key: k };
+    }
+  }
+  if (open !== null) {
+    runs.push({ start: open.start, end: count, pairKey: open.key });
+  }
+  return runs;
+}
+
+/** Canonical-pair key for an override lookup map. */
+function overrideKey(a: number, b: number): string {
+  return a < b ? `${a}|${b}` : `${b}|${a}`;
+}
+
+function buildOverrideLookup(
+  overrides: readonly DividerOverride[] | undefined
+): Map<string, DividerOverride> {
+  const lookup = new Map<string, DividerOverride>();
+  if (!overrides) return lookup;
+  for (const o of overrides) {
+    lookup.set(overrideKey(o.compartmentA, o.compartmentB), o);
+  }
+  return lookup;
+}
+
+/**
  * Find consecutive wall segments along a boundary line.
  * Returns array of [start, end) index pairs where walls are needed.
  */
@@ -231,40 +340,87 @@ function buildCompartmentWallsInScope(
   if (effectiveCellW < thickness * 2 || effectiveCellD < thickness * 2) return null;
 
   const wallSegments: Shape3D[] = [];
+  const overrideLookup = buildOverrideLookup(params.compartments.dividerOverrides);
 
-  // Vertical walls: between column boundaries
+  // Vertical walls: between column boundaries. We split runs not just by
+  // "needs wall" but also by the (leftId, rightId) pair — otherwise a single
+  // segment that spans multiple compartment pairs (e.g. col-boundary in a
+  // 2×2 grid runs through pair 0|1 then 2|3) would only check the first
+  // pair's override and apply it to the whole run, producing wrong geometry.
+  // Touching axis-aligned boxes fuse cleanly in OCCT so the split is
+  // visually transparent for non-tilted segments.
   for (let colBoundary = 1; colBoundary < cols; colBoundary++) {
     const xPos = -innerW / 2 + colBoundary * cellW;
-    const segments = findWallSegments(rows, (row) => {
+    const runs = findPairAwareRuns(rows, (row) => {
       const leftId = cells[row * cols + (colBoundary - 1)];
       const rightId = cells[row * cols + colBoundary];
-      return leftId !== rightId;
+      return leftId !== rightId ? overrideKey(leftId, rightId) : null;
     });
 
-    for (const [start, end] of segments) {
-      const segLength = (end - start) * cellD;
-      const yCenter = -innerD / 2 + (start + (end - start) / 2) * cellD;
-      wallSegments.push(
-        scope.register(buildWallSegment(thickness, segLength, wallHeight, xPos, yCenter))
-      );
+    for (const { start, end, pairKey } of runs) {
+      const override = overrideLookup.get(pairKey);
+      if (override) {
+        // Tilted: endpoints shifted in ±X. start = front edge (y = startY),
+        // end = back edge (y = endY).
+        const startY = -innerD / 2 + start * cellD;
+        const endY = -innerD / 2 + end * cellD;
+        const tilted = buildTiltedWallSegment(
+          scope,
+          xPos + override.offsetStart,
+          startY,
+          xPos + override.offsetEnd,
+          endY,
+          thickness,
+          wallHeight,
+          innerW,
+          innerD
+        );
+        if (tilted) wallSegments.push(tilted);
+      } else {
+        const segLength = (end - start) * cellD;
+        const yCenter = -innerD / 2 + (start + (end - start) / 2) * cellD;
+        wallSegments.push(
+          scope.register(buildWallSegment(thickness, segLength, wallHeight, xPos, yCenter))
+        );
+      }
     }
   }
 
-  // Horizontal walls: between row boundaries
+  // Horizontal walls: between row boundaries (same pair-aware split as above).
   for (let rowBoundary = 1; rowBoundary < rows; rowBoundary++) {
     const yPos = -innerD / 2 + rowBoundary * cellD;
-    const segments = findWallSegments(cols, (col) => {
+    const runs = findPairAwareRuns(cols, (col) => {
       const topId = cells[(rowBoundary - 1) * cols + col];
       const bottomId = cells[rowBoundary * cols + col];
-      return topId !== bottomId;
+      return topId !== bottomId ? overrideKey(topId, bottomId) : null;
     });
 
-    for (const [start, end] of segments) {
-      const segLength = (end - start) * cellW;
-      const xCenter = -innerW / 2 + (start + (end - start) / 2) * cellW;
-      wallSegments.push(
-        scope.register(buildWallSegment(segLength, thickness, wallHeight, xCenter, yPos))
-      );
+    for (const { start, end, pairKey } of runs) {
+      const override = overrideLookup.get(pairKey);
+      if (override) {
+        // Tilted: endpoints shifted in ±Y. start = left edge (x = startX),
+        // end = right edge (x = endX).
+        const startX = -innerW / 2 + start * cellW;
+        const endX = -innerW / 2 + end * cellW;
+        const tilted = buildTiltedWallSegment(
+          scope,
+          startX,
+          yPos + override.offsetStart,
+          endX,
+          yPos + override.offsetEnd,
+          thickness,
+          wallHeight,
+          innerW,
+          innerD
+        );
+        if (tilted) wallSegments.push(tilted);
+      } else {
+        const segLength = (end - start) * cellW;
+        const xCenter = -innerW / 2 + (start + (end - start) / 2) * cellW;
+        wallSegments.push(
+          scope.register(buildWallSegment(segLength, thickness, wallHeight, xCenter, yPos))
+        );
+      }
     }
   }
 
@@ -277,7 +433,7 @@ function buildCompartmentWallsInScope(
 
 import type { FeatureBuilder } from './pipeline/featureBuilder';
 import { FeatureTag } from './featureTags';
-import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
+import { buildCacheKey, quantize, compactKey, stableSerialize } from './cacheKeyUtils';
 
 export const compartmentWallsFeature: FeatureBuilder = {
   name: 'compartmentWalls',
@@ -289,7 +445,7 @@ export const compartmentWallsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        'v1',
+        'v2',
         dim.shellKey,
         quantize(dim.innerW),
         quantize(dim.innerD),
@@ -297,7 +453,10 @@ export const compartmentWallsFeature: FeatureBuilder = {
         params.compartments.cols,
         params.compartments.rows,
         quantize(params.compartments.thickness),
-        params.compartments.cells.join(',')
+        params.compartments.cells.join(','),
+        // Tilted-divider overrides change the wall geometry. `v1` → `v2`
+        // bumps the namespace so any cached pre-feature mesh is rebuilt.
+        stableSerialize(params.compartments.dividerOverrides ?? [])
       )
     );
   },
