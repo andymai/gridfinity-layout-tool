@@ -116,7 +116,7 @@ function computeBinVolume(params: BinParams): number {
   volume += computeHollowBoxVolume(outerW, outerD, totalH, wallThickness, bottomH);
 
   // Base socket (per grid cell, tapered profile that slides onto baseplate)
-  volume += computeBaseSocketVolume(params.width, params.depth);
+  volume += computeBaseSocketVolume(params.width, params.depth, params.gridUnitMm);
 
   // Stacking lip (sits on top of bin body)
   if (params.base.stackingLip) {
@@ -176,12 +176,17 @@ function computeHollowBoxVolume(
  * thin-walled shell approximately 3.5mm thick around the cell perimeter.
  * Half-cells share proportional socket volume.
  */
-function computeBaseSocketVolume(widthUnits: number, depthUnits: number): number {
-  // Each 1×1 cell: ~42×42mm footprint, socket shell ~3.5mm thick, 5mm deep
-  const cellSize = GRIDFINITY.GRID_SIZE;
-  const shellThickness = 3.5; // approximate average socket shell thickness
-  const outerArea = cellSize * cellSize;
-  const innerSide = cellSize - 2 * shellThickness;
+function computeBaseSocketVolume(
+  widthUnits: number,
+  depthUnits: number,
+  gridUnitMm: number
+): number {
+  // Each 1×1 cell: gridUnitMm×gridUnitMm footprint, socket shell ~3.5mm thick, 5mm deep.
+  // Clamp innerSide to 0 so a tiny gridUnitMm (< 2·shellThickness = 7mm) doesn't
+  // produce a negative socket volume that masks undercounts elsewhere.
+  const shellThickness = 3.5;
+  const outerArea = gridUnitMm * gridUnitMm;
+  const innerSide = Math.max(0, gridUnitMm - 2 * shellThickness);
   const innerArea = innerSide * innerSide;
   const shellArea = outerArea - innerArea;
   const volumePerFullCell = shellArea * GRIDFINITY.SOCKET_HEIGHT;

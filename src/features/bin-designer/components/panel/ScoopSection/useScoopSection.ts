@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
 import {
   resolveScoopRadius,
@@ -21,7 +22,6 @@ export function useScoopSection() {
   );
   const t = useTranslation();
 
-  const { width, depth, height, heightUnitMm, wallThickness, base, compartments } = params;
   const scoopStatus = getFeatureStatus(params, 'scoop');
   const isUnavailable = !scoopStatus.available;
   const isAutoRadius = scoop.radius === 'auto';
@@ -30,16 +30,11 @@ export function useScoopSection() {
   const autoDisplayText = useMemo(() => {
     if (!isAutoRadius) return '';
 
-    const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-    const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-    const innerW = outerW - 2 * wallThickness;
-    const innerD = outerD - 2 * wallThickness;
+    const { base, compartments } = params;
+    const { innerW, innerD, wallHeight } = binDimensions(params);
     const cellW = innerW / compartments.cols;
     const cellD = innerD / compartments.rows;
 
-    const isFlat = base.style === 'flat';
-    const totalH = height * heightUnitMm;
-    const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
     const hasLip = base.stackingLip;
     const interiorHeight = computeInteriorHeight(wallHeight, hasLip, GRIDFINITY.LIP_SMALL_TAPER);
     const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
@@ -60,7 +55,7 @@ export function useScoopSection() {
         const compW = (maxCol - minCol + 1) * cellW;
         const compD = (maxRow - minRow + 1) * cellD;
         const isMinRow = minRow === 0;
-        const lipOffset = computeLipOffset(hasLip, isMinRow, lipTaperWidth, wallThickness);
+        const lipOffset = computeLipOffset(hasLip, isMinRow, lipTaperWidth, params.wallThickness);
 
         const radius = resolveScoopRadius(
           'auto',
@@ -86,7 +81,7 @@ export function useScoopSection() {
       return t('binDesigner.scoopRadiusAutoValue', { value: String(min) });
     }
     return t('binDesigner.scoopRadiusAutoRange', { min: String(min), max: String(max) });
-  }, [isAutoRadius, width, depth, height, heightUnitMm, wallThickness, base, compartments, t]);
+  }, [isAutoRadius, params, t]);
 
   const toggleScoop = useCallback(() => {
     updateScoop({ enabled: !scoop.enabled });

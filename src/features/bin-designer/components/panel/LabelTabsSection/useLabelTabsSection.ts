@@ -1,7 +1,8 @@
 import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '../../../constants';
+import { DESIGNER_CONSTRAINTS } from '../../../constants';
+import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
 import { getCompartmentIds } from '../../../utils/compartments';
@@ -12,9 +13,7 @@ export function useLabelTabsSection() {
     compartments,
     label,
     textDefaults,
-    width,
     height,
-    wallThickness,
     updateLabel,
     setCompartmentText,
     setTextDefaults,
@@ -24,9 +23,7 @@ export function useLabelTabsSection() {
       compartments: s.params.compartments,
       label: s.params.label,
       textDefaults: s.params.textDefaults,
-      width: s.params.width,
       height: s.params.height,
-      wallThickness: s.params.wallThickness,
       updateLabel: s.updateLabel,
       setCompartmentText: s.setCompartmentText,
       setTextDefaults: s.setTextDefaults,
@@ -96,8 +93,7 @@ export function useLabelTabsSection() {
   );
 
   const tabWidthMm = useMemo(() => {
-    const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-    const innerW = outerW - 2 * wallThickness;
+    const { innerW } = binDimensions(params);
     const cellW = innerW / compartments.cols;
     let availableWidth = cellW;
     if (compartments.cols === 2) {
@@ -106,7 +102,7 @@ export function useLabelTabsSection() {
       availableWidth -= compartments.thickness;
     }
     return Math.round(((availableWidth * label.width) / 100) * 10) / 10;
-  }, [width, wallThickness, compartments.cols, compartments.thickness, label.width]);
+  }, [params, compartments.cols, compartments.thickness, label.width]);
 
   const sectionSummary = useMemo(() => {
     if (!label.enabled) return undefined;

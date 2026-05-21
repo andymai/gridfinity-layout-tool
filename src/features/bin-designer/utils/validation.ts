@@ -8,6 +8,7 @@ import type { Result } from '@/core/result';
 import { ok, err } from '@/core/result';
 import type { BinParams } from '../types';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY, WALL_THICKNESS_OPTIONS } from '../constants';
+import { binDimensions } from './binDimensions';
 
 /** Tolerance for floating-point step comparisons */
 const EPSILON = 1e-10;
@@ -228,10 +229,7 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
 
   // Compartment size validation (ensures grid cells aren't impossibly thin)
   if (params.compartments.cols > 1 || params.compartments.rows > 1) {
-    const innerWidth =
-      params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
-    const innerDepth =
-      params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * params.wallThickness;
+    const { innerW: innerWidth, innerD: innerDepth } = binDimensions(params);
 
     if (params.compartments.cols > 1) {
       const maxDividers = params.compartments.cols - 1;
@@ -280,10 +278,11 @@ export function computeMinCellSize(
   wallThickness: number,
   cols: number,
   rows: number,
-  dividerThickness: number
+  dividerThickness: number,
+  gridUnitMm: number = GRIDFINITY.GRID_SIZE
 ): MinCellSize {
-  const innerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
-  const innerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+  const innerW = width * gridUnitMm - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+  const innerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE - 2 * wallThickness;
 
   const dividersW = cols > 1 ? (cols - 1) * dividerThickness : 0;
   const dividersD = rows > 1 ? (rows - 1) * dividerThickness : 0;
@@ -306,7 +305,8 @@ export function validateCompartmentSizes(
   wallThickness: number,
   cols: number,
   rows: number,
-  dividerThickness: number
+  dividerThickness: number,
+  gridUnitMm: number = GRIDFINITY.GRID_SIZE
 ): Result<undefined, DesignerValidationError> {
   if (cols < 1 || rows < 1) {
     return err({
@@ -323,7 +323,8 @@ export function validateCompartmentSizes(
     wallThickness,
     cols,
     rows,
-    dividerThickness
+    dividerThickness,
+    gridUnitMm
   );
 
   if (cols > 1 && minCellW < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {

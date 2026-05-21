@@ -572,6 +572,23 @@ describe('computeMinCellSize', () => {
     expect(result.minCellW).toBeGreaterThan(100);
     expect(result.minCellD).toBeGreaterThan(100);
   });
+
+  it('honors a custom gridUnitMm (regression: validator must match mesh frame)', () => {
+    // 2-unit bin, half-pitch 30mm grid, 1x1 grid → innerW = 2 × 30 − 0.5 − 2 × 1.2 = 57.1
+    const result = computeMinCellSize(2, 2, 1.2, 1, 1, 1.2, 30);
+    expect(result.minCellW).toBeCloseTo(57.1, 5);
+    // Same bin with default 42mm would produce 81.1 — confirm we're not falling back
+    expect(result.minCellW).not.toBeCloseTo(81.1, 1);
+  });
+
+  it('rejects a config that fits at 42mm but not at 30mm gridUnitMm', () => {
+    // 1-unit bin × 6 cols × 1.2mm dividers (min compartment size = 5mm)
+    //   42mm: innerW = 42 − 0.5 − 2.4 = 39.1 → minCellW = (39.1 − 5 × 1.2) / 6 ≈ 5.52 (valid)
+    //   30mm: innerW = 30 − 0.5 − 2.4 = 27.1 → minCellW = (27.1 − 5 × 1.2) / 6 ≈ 3.52 (too small)
+    expectOk(validateCompartmentSizes(1, 1, 1.2, 6, 1, 1.2));
+    const halfPitchErr = expectErr(validateCompartmentSizes(1, 1, 1.2, 6, 1, 1.2, 30));
+    expect(halfPitchErr.code).toBe('COMPARTMENT_TOO_SMALL');
+  });
 });
 
 describe('validateCompartmentSizes', () => {

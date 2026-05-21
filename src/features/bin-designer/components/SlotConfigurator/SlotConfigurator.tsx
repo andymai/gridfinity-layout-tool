@@ -10,6 +10,7 @@ import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '@/features/bin-designer/constants';
+import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { RulerIcon } from '@/design-system/Icon';
 import {
@@ -25,44 +26,21 @@ import type { DividerPieceConfig } from '../../types';
 type SlotDirection = 'vertical' | 'horizontal';
 
 export function SlotConfigurator() {
-  const {
-    slotConfig,
-    dividerPieces,
-    width,
-    depth,
-    height,
-    heightUnitMm,
-    wallThickness,
-    stackingLip,
-    baseStyle,
-    setParam,
-  } = useDesignerStore(
+  const { params, setParam } = useDesignerStore(
     useShallow((s) => ({
-      slotConfig: s.params.slotConfig,
-      dividerPieces: s.params.dividerPieces,
-      width: s.params.width,
-      depth: s.params.depth,
-      height: s.params.height,
-      heightUnitMm: s.params.heightUnitMm,
-      wallThickness: s.params.wallThickness,
-      stackingLip: s.params.base.stackingLip,
-      baseStyle: s.params.base.style,
+      params: s.params,
       setParam: s.setParam,
     }))
   );
+  const { slotConfig, dividerPieces } = params;
+  const stackingLip = params.base.stackingLip;
   const t = useTranslation();
 
   // ── Dimension calculations ──────────────────────────────────────────
-  const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const innerW = outerW - 2 * wallThickness;
-  const innerD = outerD - 2 * wallThickness;
-  const totalH = height * heightUnitMm;
-  const isFlat = baseStyle === 'flat';
-  const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const { innerW, innerD, wallHeight } = binDimensions(params);
 
   const lipTaperWidth = GRIDFINITY.LIP_SMALL_TAPER + GRIDFINITY.LIP_BIG_TAPER;
-  const lipOverhang = stackingLip ? Math.max(0, lipTaperWidth - wallThickness) : 0;
+  const lipOverhang = stackingLip ? Math.max(0, lipTaperWidth - params.wallThickness) : 0;
 
   // ── Slot direction / count ──────────────────────────────────────────
   const activeDirection: SlotDirection = slotConfig.y.enabled ? 'vertical' : 'horizontal';
@@ -132,7 +110,7 @@ export function SlotConfigurator() {
   const maxHeightRounded = Math.round(maxDividerHeight * 10) / 10;
 
   const effectiveSlotDepth = getEffectiveSlotDimensions(
-    wallThickness,
+    params.wallThickness,
     dividerPieces.thickness,
     dividerPieces.clearance
   ).slotDepth;
@@ -151,7 +129,7 @@ export function SlotConfigurator() {
   ]);
 
   const directions: SlotDirection[] = ['vertical', 'horizontal'];
-  const wallTooThin = wallThickness < MIN_WALL_FOR_SLOTS;
+  const wallTooThin = params.wallThickness < MIN_WALL_FOR_SLOTS;
 
   return (
     <div className="space-y-3">

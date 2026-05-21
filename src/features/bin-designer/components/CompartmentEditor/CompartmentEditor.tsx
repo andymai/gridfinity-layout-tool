@@ -45,6 +45,7 @@ export function CompartmentEditor() {
     width,
     depth,
     wallThickness,
+    gridUnitMm,
     setParam,
     setCompartmentGrid,
     mergeCells,
@@ -57,6 +58,7 @@ export function CompartmentEditor() {
       width: s.params.width,
       depth: s.params.depth,
       wallThickness: s.params.wallThickness,
+      gridUnitMm: s.params.gridUnitMm,
       setParam: s.setParam,
       setCompartmentGrid: s.setCompartmentGrid,
       mergeCells: s.mergeCells,
@@ -86,8 +88,8 @@ export function CompartmentEditor() {
   // Bin interior dimensions in mm — used by the divider-drag overlay to
   // convert canvas-pixel deltas to mm offsets. Mirrors the worker-side
   // derivation in `buildCompartmentWalls`.
-  const innerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
-  const innerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+  const innerW = width * gridUnitMm - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+  const innerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE - 2 * wallThickness;
 
   const dividerHandles = useDividerHandles({
     compartments,

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { GRIDFINITY } from '../../../constants';
+import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -13,18 +13,14 @@ import type { SectionMeta } from '../types';
 export const HANDLE_SIDES: readonly HandleWallSide[] = ['left', 'right', 'front', 'back'];
 
 export function useHandleSection() {
-  const { handles, updateHandles, updateHandleSide, params, width, depth, wallThickness } =
-    useDesignerStore(
-      useShallow((s) => ({
-        handles: s.params.handles,
-        updateHandles: s.updateHandles,
-        updateHandleSide: s.updateHandleSide,
-        params: s.params,
-        width: s.params.width,
-        depth: s.params.depth,
-        wallThickness: s.params.wallThickness,
-      }))
-    );
+  const { handles, updateHandles, updateHandleSide, params } = useDesignerStore(
+    useShallow((s) => ({
+      handles: s.params.handles,
+      updateHandles: s.updateHandles,
+      updateHandleSide: s.updateHandleSide,
+      params: s.params,
+    }))
+  );
   const t = useTranslation();
   const [linked, setLinked] = useState(true);
 
@@ -118,10 +114,7 @@ export function useHandleSection() {
   // Returning null here lets the UI suppress the mm readout for custom shapes.
   const handleWidthMm = useMemo(() => {
     if (isCustomShape) return null;
-    const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-    const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-    const innerW = outerW - 2 * wallThickness;
-    const innerD = outerD - 2 * wallThickness;
+    const { innerW, innerD } = binDimensions(params);
     const fbEnabled = handles.front.enabled || (handles.back.enabled && !isBackDisabled);
     const lrEnabled = handles.left.enabled || handles.right.enabled;
     let span = innerW;
@@ -131,7 +124,7 @@ export function useHandleSection() {
       span = innerD;
     }
     return Math.round(span * (handles.width / 100) * 10) / 10;
-  }, [width, depth, wallThickness, handles, isBackDisabled, isCustomShape]);
+  }, [params, handles, isBackDisabled, isCustomShape]);
 
   const summary = useMemo(() => {
     if (!handles.enabled || activeSides.length === 0) return undefined;

@@ -16,7 +16,7 @@
 import { useCallback, useState, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
+import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useCutoutInteraction } from '../panel/CutoutsSection/useCutoutInteraction';
 import { CutoutCanvas3D } from '../panel/CutoutsSection/renderer';
 import { WorkspaceHeader } from './WorkspaceHeader';
@@ -73,18 +73,12 @@ export function CutoutWorkspace() {
   );
 
   const { cutouts } = params;
-  const outerW = params.width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const outerD = params.depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const binWidth = outerW - 2 * params.wallThickness;
-  const binDepth = outerD - 2 * params.wallThickness;
+  const { innerW: binWidth, innerD: binDepth, wallHeight } = binDimensions(params);
   // See CutoutEditor for rationale — separate X/Y cell sizes keep validator and
   // polygon rendering aligned for non-square bins.
   const maskCellSize = params.cellMask
     ? { cellMmX: binWidth / params.cellMask.cols, cellMmY: binDepth / params.cellMask.rows }
     : undefined;
-  const totalHeight = params.height * params.heightUnitMm;
-  const isFlat = params.base.style === 'flat';
-  const wallHeight = isFlat ? totalHeight : totalHeight - GRIDFINITY.BASE_HEIGHT;
 
   const t = useTranslation();
   const { triggerImport: triggerSvgImport } = useSvgImport();

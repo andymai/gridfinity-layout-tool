@@ -235,6 +235,46 @@ export default defineConfig([
       }],
     },
   },
+  // Bin-dimension discipline: every UI / validator / estimator that needs
+  // outer/inner/total bin dimensions must derive them via binDimensions(params),
+  // which reads `params.gridUnitMm` and `params.heightUnitMm`. Arithmetic
+  // against the spec constants directly silently locks the math to 42mm/7mm
+  // even when the user has configured a custom physical unit — the bug
+  // shape behind #1809 and the broader audit follow-up.
+  //
+  // Allowlisted files: the helper, the constant definitions, scenario
+  // fixtures (intentionally on the spec), and test code.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: [
+      '**/*.test.{ts,tsx}',
+      '**/test/**/*.{ts,tsx}',
+      '**/scenarios/**/*.{ts,tsx}',
+      '**/__kernel-tests__/**/*.{ts,tsx}',
+      'src/features/bin-designer/utils/binDimensions.ts',
+      'src/shared/printSettings/gridfinityGeometry.ts',
+    ],
+    rules: {
+      // Flat-config replaces (does not merge) per-rule values, so the
+      // React.lazy guard from the global block is duplicated here.
+      'no-restricted-syntax': ['error', {
+        selector: 'CallExpression[callee.type="MemberExpression"][callee.property.name="lazy"][callee.object.name="React"]',
+        message: 'Use lazyWithRetry() from @/shared/utils/lazyWithRetry instead of React.lazy() — raw lazy() leaks chunk-load failures to PostHog as unhandled rejections.',
+      }, {
+        selector: "BinaryExpression > MemberExpression[object.name='GRIDFINITY'][property.name='GRID_SIZE']",
+        message: 'Do not multiply/divide GRIDFINITY.GRID_SIZE directly — use binDimensions(params) (or thread params.gridUnitMm through) so the math tracks the user-configured grid unit. See src/features/bin-designer/utils/binDimensions.ts.',
+      }, {
+        selector: "BinaryExpression > MemberExpression[object.name='GRIDFINITY'][property.name='HEIGHT_UNIT']",
+        message: 'Do not multiply/divide GRIDFINITY.HEIGHT_UNIT directly — use binDimensions(params) (or thread params.heightUnitMm through) so the math tracks the user-configured height unit. See src/features/bin-designer/utils/binDimensions.ts.',
+      }, {
+        selector: "BinaryExpression > MemberExpression[object.name='GRIDFINITY_SPEC'][property.name='GRID_SIZE']",
+        message: 'Do not multiply/divide GRIDFINITY_SPEC.GRID_SIZE directly — thread the per-layout gridUnitMm through instead. See src/features/bin-designer/utils/binDimensions.ts.',
+      }, {
+        selector: "BinaryExpression > MemberExpression[object.name='GRIDFINITY_SPEC'][property.name='HEIGHT_UNIT']",
+        message: 'Do not multiply/divide GRIDFINITY_SPEC.HEIGHT_UNIT directly — thread the per-layout heightUnitMm through instead. See src/features/bin-designer/utils/binDimensions.ts.',
+      }],
+    },
+  },
   // Barrel-only restriction: design-linking may only import bin-designer barrel.
   // Note: `paths` is duplicated from the global rule because flat-config overrides
   // replace (not merge) the rule value.

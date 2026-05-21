@@ -14,6 +14,8 @@ interface BinNameLabelProps {
   width: number;
   /** Bin depth in grid units (for vertical positioning relative to bin edge) */
   depth: number;
+  /** Grid unit size in mm (defaults to standard 42mm) */
+  gridUnitMm?: number;
   /** Design name to display */
   name: string;
 }
@@ -46,13 +48,14 @@ function estimateTextWidth(charCount: number, fontSize: number): number {
  * Long names shrink-to-fit on a single line down to MIN_FONT_SIZE; below that
  * threshold, font size resets to default and the text wraps to 2 lines.
  */
-export function BinNameLabel({ width, depth, name }: BinNameLabelProps) {
+export function BinNameLabel({ width, depth, gridUnitMm, name }: BinNameLabelProps) {
   const colors = useThreeColors();
   if (!name.trim()) return null;
 
   const upperName = name.toUpperCase();
-  const outerW = width * GRIDFINITY.GRID_SIZE;
-  const halfD = (depth * GRIDFINITY.GRID_SIZE) / 2;
+  const GS = gridUnitMm ?? GRIDFINITY.GRID_SIZE;
+  const outerW = width * GS;
+  const halfD = (depth * GS) / 2;
   const textY = -halfD - FRONT_OFFSET;
 
   const availableWidth = Math.max(outerW * 1.5, MIN_AVAILABLE_WIDTH);

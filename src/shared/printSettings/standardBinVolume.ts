@@ -89,7 +89,7 @@ export function estimateStandardBinVolume(
 
   volume += computeFloorVolume(outerW, outerD, wall);
 
-  volume += computeBaseSocketVolume(widthUnits, depthUnits);
+  volume += computeBaseSocketVolume(widthUnits, depthUnits, gridUnitMm);
 
   volume += computeStackingLipVolume(outerW, outerD);
 
@@ -181,10 +181,13 @@ function computeFloorVolume(outerW: number, outerD: number, wall: number): numbe
  * (calibrated to actual tapered profile average) rather than the
  * bin-designer's more generous 3.5mm approximation.
  */
-function computeBaseSocketVolume(widthUnits: number, depthUnits: number): number {
-  const cellSize = GRIDFINITY_SPEC.GRID_SIZE;
-  const outerArea = cellSize * cellSize;
-  const innerSide = cellSize - 2 * SOCKET_SHELL_THICKNESS;
+function computeBaseSocketVolume(
+  widthUnits: number,
+  depthUnits: number,
+  gridUnitMm: number
+): number {
+  const outerArea = gridUnitMm * gridUnitMm;
+  const innerSide = Math.max(0, gridUnitMm - 2 * SOCKET_SHELL_THICKNESS);
   const innerArea = innerSide * innerSide;
   const shellArea = outerArea - innerArea;
   const volumePerFullCell = shellArea * GRIDFINITY_SPEC.SOCKET_HEIGHT;

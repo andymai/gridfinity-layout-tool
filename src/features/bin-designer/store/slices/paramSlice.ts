@@ -59,7 +59,8 @@ export function createParamSlice(set: Set, get: Get) {
           params.wallThickness,
           newCompartments.cols,
           newCompartments.rows,
-          newCompartments.thickness
+          newCompartments.thickness,
+          params.gridUnitMm
         );
         if (isErr(result)) return;
       }
@@ -87,13 +88,15 @@ export function createParamSlice(set: Set, get: Get) {
         const width = partial.width ?? params.width;
         const depth = partial.depth ?? params.depth;
         const wallThickness = partial.wallThickness ?? params.wallThickness;
+        const gridUnitMm = partial.gridUnitMm ?? params.gridUnitMm;
         const result = validateCompartmentSizes(
           width,
           depth,
           wallThickness,
           partial.compartments.cols,
           partial.compartments.rows,
-          partial.compartments.thickness
+          partial.compartments.thickness,
+          gridUnitMm
         );
         if (isErr(result)) return;
       }
@@ -245,7 +248,8 @@ export function createParamSlice(set: Set, get: Get) {
         params.wallThickness,
         cols,
         rows,
-        params.compartments.thickness
+        params.compartments.thickness,
+        params.gridUnitMm
       );
       if (isErr(result)) return;
 
@@ -310,7 +314,8 @@ export function createParamSlice(set: Set, get: Get) {
         params.wallThickness,
         params.compartments.cols,
         params.compartments.rows,
-        params.compartments.thickness
+        params.compartments.thickness,
+        params.gridUnitMm
       );
       if (isErr(result)) return;
 
