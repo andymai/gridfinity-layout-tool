@@ -7,7 +7,7 @@
 
 import { draw, unwrap, fuseAll, fuse, cut, translate, withScope, clone } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
-import type { BinParams } from '@/shared/types/bin';
+import type { BinParams, TextStyleDefaults, TextStyleOverride } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
 import { buildEngraveCutSolid } from './textBuilder';
@@ -265,18 +265,17 @@ function buildLabelTabsInScope(
  * Cut engraved text from the shelf top in the tab's local frame, where
  * the shelf occupies X:[0,tabWidth], Y:[-tabDepth,0], top face at Z=tabHeight.
  *
- * Returns the original tab unchanged when text is empty or the chosen mode
- * is not 'engrave' (other modes ship in later PRs); falls back to unchanged
- * geometry if the boolean fails so a font/auto-fit edge case can't tank the
- * whole label-tab build.
+ * Returns the original tab unchanged when text is empty or mode is not
+ * 'engrave'; falls back to unchanged geometry if the boolean fails so a
+ * font/auto-fit edge case can't tank the whole label-tab build.
  */
 function applyTabEngraveText(
   scope: DisposalScope,
   tabSolid: Shape3D,
   ctx: {
     text: string;
-    textDefaults: BinParams['textDefaults'];
-    labelTextStyle: BinParams['label']['textStyle'];
+    textDefaults: TextStyleDefaults;
+    labelTextStyle: TextStyleOverride | undefined;
     tabWidth: number;
     tabDepth: number;
     tabHeight: number;
@@ -334,9 +333,9 @@ export const labelTabsFeature: FeatureBuilder = {
         params.compartments.cols,
         params.compartments.rows,
         params.compartments.cells.join(','),
-        // Engraved-text inputs participate in cache key so text edits
-        // invalidate the prior mesh. `v1` → `v2` bumps the key namespace.
-        (params.compartments.compartmentTexts ?? []).join(''),
+        // `stableSerialize` (not `.join(sep)`) avoids the collision where
+        // e.g. `['ab','c']` and `['a','bc']` produce the same key.
+        stableSerialize(params.compartments.compartmentTexts ?? []),
         stableSerialize(params.textDefaults)
       )
     );

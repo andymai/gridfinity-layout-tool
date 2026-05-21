@@ -136,7 +136,6 @@ export function LabelTabsSection() {
         </div>
       </div>
 
-      {/* Engraved compartment text (one input per compartment) */}
       <div>
         <label className="text-xs font-medium text-content-secondary mb-1 block">
           {t('binDesigner.tabEngravedText')}

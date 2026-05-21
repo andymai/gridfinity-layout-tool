@@ -5,9 +5,23 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
+import { loadFont } from 'brepjs';
+import { isErr } from '@/core/result';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 beforeAll(async () => {
   await initBrepjs();
+  // Engraved-text tests need the bundled Atkinson font; load from disk since
+  // the test env has no `fetch` for `?url` assets.
+  const buffer = readFileSync(
+    resolve(__dirname, '../assets/fonts/AtkinsonHyperlegible-Regular.ttf')
+  );
+  const result = await loadFont(
+    buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
+    'atkinson'
+  );
+  if (isErr(result)) throw new Error(`Font load failed: ${result.error.message}`);
 }, 30_000);
 
 describe('buildLabelTabs', () => {
@@ -75,6 +89,66 @@ describe('buildLabelTabs', () => {
     // The tab's lowest point should be above half the wall height
     // (it sits near the top, not at the floor)
     expect(minZ).toBeGreaterThan(wallHeight / 2);
+  });
+
+  describe('engraved compartment text', () => {
+    it('builds tabs without crashing when compartmentTexts is present', async () => {
+      const { buildLabelTabs } = await import('./labelTabBuilder');
+      const params = {
+        ...DEFAULT_BIN_PARAMS,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+        compartments: {
+          ...DEFAULT_BIN_PARAMS.compartments,
+          compartmentTexts: ['SCREWS'],
+        },
+      };
+      const result = buildLabelTabs(params, 80, 80, 35, 1.2);
+      expect(result).not.toBeNull();
+    });
+
+    it('cuts material from the shelf when text is present (more faces than without)', async () => {
+      const { buildLabelTabs } = await import('./labelTabBuilder');
+      const { mesh } = await import('brepjs');
+
+      const base = { ...DEFAULT_BIN_PARAMS, label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } };
+      const withText = {
+        ...base,
+        compartments: { ...base.compartments, compartmentTexts: ['ABC'] },
+      };
+
+      const without = buildLabelTabs(base, 80, 80, 35, 1.2);
+      const withEngraved = buildLabelTabs(withText, 80, 80, 35, 1.2);
+      expect(without).not.toBeNull();
+      expect(withEngraved).not.toBeNull();
+
+      const opts = { tolerance: 0.5, angularTolerance: 15 };
+      const meshA = mesh(without!, opts);
+      const meshB = mesh(withEngraved!, opts);
+      // Engraving adds glyph faces — vertex count strictly increases.
+      expect(meshB.vertices.length).toBeGreaterThan(meshA.vertices.length);
+    });
+
+    it('skips engraving when the slot text is empty or whitespace', async () => {
+      const { buildLabelTabs } = await import('./labelTabBuilder');
+      const { mesh } = await import('brepjs');
+
+      const base = { ...DEFAULT_BIN_PARAMS, label: { ...DEFAULT_BIN_PARAMS.label, enabled: true } };
+      const blank = {
+        ...base,
+        compartments: { ...base.compartments, compartmentTexts: ['   '] },
+      };
+
+      const withoutTexts = buildLabelTabs(base, 80, 80, 35, 1.2);
+      const blankText = buildLabelTabs(blank, 80, 80, 35, 1.2);
+      expect(withoutTexts).not.toBeNull();
+      expect(blankText).not.toBeNull();
+
+      const opts = { tolerance: 0.5, angularTolerance: 15 };
+      // Whitespace-only text must be treated as "no text" — identical vertex count.
+      expect(mesh(blankText!, opts).vertices.length).toBe(
+        mesh(withoutTexts!, opts).vertices.length
+      );
+    });
   });
 
   it.each(['solid', 'bracket', 'fillet'] as const)(

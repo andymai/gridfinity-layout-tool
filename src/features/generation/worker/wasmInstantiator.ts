@@ -58,7 +58,7 @@ export async function loadOpenCascade(): Promise<WasmLoadResult> {
  * blip on the font asset never bricks the whole generation pipeline.
  *
  * Only called for OCCT-based kernels; brepkit-wasm doesn't currently
- * implement the topology operations textBlueprints needs.
+ * implement the topology operations textBuilder needs.
  */
 async function loadEmbeddedFonts(): Promise<void> {
   try {
