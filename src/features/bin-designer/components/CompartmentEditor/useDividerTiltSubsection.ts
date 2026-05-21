@@ -11,14 +11,8 @@ export const TILT_UI_MAX = 50;
 export const TILT_UI_STEP = 0.5;
 
 export interface TiltRow extends EligibleDivider {
-  /** Stable key for accordion expansion + React lists. */
   readonly key: string;
-  /**
-   * True when the asymmetric view is active — either the data is
-   * non-mirrored (`offsetStart !== -offsetEnd`) or the user pressed the
-   * "Asymmetric" toggle explicitly. Lets users edit independent
-   * start/end values even when current data happens to be symmetric.
-   */
+  /** True when data is non-mirrored OR the user forced the asymmetric view. */
   readonly showAsymmetric: boolean;
   /** Symmetric magnitude (= offsetStart when mirrored); 0 for asymmetric data. */
   readonly symmetricTilt: number;
@@ -39,12 +33,9 @@ export function useDividerTiltSubsection() {
     );
   const t = useTranslation();
 
-  // Accordion: at most one row expanded at a time. Local UI state; not
-  // persisted. Auto-collapses when the row key no longer exists (grid
-  // changed under the user).
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
-  // Per-row "force asymmetric view" — decoupled from data so the user can
-  // toggle into asymmetric mode even when offsetStart === -offsetEnd.
+  // Decoupled from data so users can edit independent start/end values
+  // even when current data happens to be mirrored.
   const [forcedAsymmetricKeys, setForcedAsymmetricKeys] = useState<ReadonlySet<string>>(new Set());
 
   const rows: readonly TiltRow[] = useMemo(() => {
@@ -86,8 +77,6 @@ export function useDividerTiltSubsection() {
   const setSymmetricTilt = useCallback(
     (row: TiltRow, tilt: number) => {
       const clamped = clamp(tilt);
-      // Exit asymmetric view when committing a symmetric value, so the
-      // UI matches the data shape.
       setAsymmetricMode(row.key, false);
       if (clamped === row.offsetStart && -clamped === row.offsetEnd) return;
       setDividerOverride(row.compartmentA, row.compartmentB, clamped, -clamped);

@@ -1,9 +1,3 @@
-/**
- * Inline tilt controls below the 2D compartment grid. One source of truth
- * for divider tilts (#1822): drag handles and the separate panel card were
- * three overlapping affordances; this is the only one.
- */
-
 import { ChevronDownIcon, RotateCcwIcon } from '@/design-system/Icon';
 import { Checkbox } from '@/design-system/Checkbox';
 import { StepperControl } from '@/shared/components/StepperControl';
@@ -101,15 +95,11 @@ function DividerRow({ row, compartments, isExpanded, handlers, t }: DividerRowPr
           <div className="flex items-center justify-between">
             <Checkbox
               checked={row.showAsymmetric}
-              onChange={(checked) => {
-                if (checked) {
-                  handlers.setAsymmetricMode(row.key, true);
-                } else {
-                  // Snap data back to mirrored using the mean magnitude;
-                  // setSymmetricTilt also clears the forced-asymmetric flag.
-                  handlers.setSymmetricTilt(row, (row.offsetStart - row.offsetEnd) / 2);
-                }
-              }}
+              onChange={(checked) =>
+                checked
+                  ? handlers.setAsymmetricMode(row.key, true)
+                  : handlers.setSymmetricTilt(row, (row.offsetStart - row.offsetEnd) / 2)
+              }
               label={t('binDesigner.angledDividers.asymmetric')}
             />
             {hasTilt && (
@@ -135,15 +125,20 @@ interface ControlProps {
   readonly t: ReturnType<typeof useDividerTiltSubsection>['t'];
 }
 
-function SymmetricControl({ row, handlers, t }: ControlProps) {
-  const label = t('binDesigner.angledDividers.tilt');
+interface TiltStepperProps {
+  readonly label: string;
+  readonly value: number;
+  readonly onSet: (next: number) => void;
+}
+
+function TiltStepper({ label, value, onSet }: TiltStepperProps) {
   return (
-    <div>
+    <div className="min-w-0 flex-1">
       <span className="mb-1 block text-[11px] text-content-tertiary">{label}</span>
       <StepperControl
-        value={row.symmetricTilt}
-        onChange={(v) => handlers.setSymmetricTilt(row, v)}
-        onStep={(delta) => handlers.setSymmetricTilt(row, row.symmetricTilt + delta * TILT_UI_STEP)}
+        value={value}
+        onChange={onSet}
+        onStep={(delta) => onSet(value + delta * TILT_UI_STEP)}
         min={-TILT_UI_MAX}
         max={TILT_UI_MAX}
         step={TILT_UI_STEP}
@@ -154,41 +149,29 @@ function SymmetricControl({ row, handlers, t }: ControlProps) {
   );
 }
 
+function SymmetricControl({ row, handlers, t }: ControlProps) {
+  return (
+    <TiltStepper
+      label={t('binDesigner.angledDividers.tilt')}
+      value={row.symmetricTilt}
+      onSet={(v) => handlers.setSymmetricTilt(row, v)}
+    />
+  );
+}
+
 function AsymmetricControls({ row, handlers, t }: ControlProps) {
-  const startLabel = t('binDesigner.angledDividers.offsetStart');
-  const endLabel = t('binDesigner.angledDividers.offsetEnd');
   return (
     <div className="flex items-end gap-2">
-      <div className="min-w-0 flex-1">
-        <span className="mb-1 block text-[11px] text-content-tertiary">{startLabel}</span>
-        <StepperControl
-          value={row.offsetStart}
-          onChange={(v) => handlers.setAsymmetricOffset(row, 'start', v)}
-          onStep={(delta) =>
-            handlers.setAsymmetricOffset(row, 'start', row.offsetStart + delta * TILT_UI_STEP)
-          }
-          min={-TILT_UI_MAX}
-          max={TILT_UI_MAX}
-          step={TILT_UI_STEP}
-          variant="desktop"
-          ariaLabel={startLabel}
-        />
-      </div>
-      <div className="min-w-0 flex-1">
-        <span className="mb-1 block text-[11px] text-content-tertiary">{endLabel}</span>
-        <StepperControl
-          value={row.offsetEnd}
-          onChange={(v) => handlers.setAsymmetricOffset(row, 'end', v)}
-          onStep={(delta) =>
-            handlers.setAsymmetricOffset(row, 'end', row.offsetEnd + delta * TILT_UI_STEP)
-          }
-          min={-TILT_UI_MAX}
-          max={TILT_UI_MAX}
-          step={TILT_UI_STEP}
-          variant="desktop"
-          ariaLabel={endLabel}
-        />
-      </div>
+      <TiltStepper
+        label={t('binDesigner.angledDividers.offsetStart')}
+        value={row.offsetStart}
+        onSet={(v) => handlers.setAsymmetricOffset(row, 'start', v)}
+      />
+      <TiltStepper
+        label={t('binDesigner.angledDividers.offsetEnd')}
+        value={row.offsetEnd}
+        onSet={(v) => handlers.setAsymmetricOffset(row, 'end', v)}
+      />
     </div>
   );
 }
@@ -198,53 +181,47 @@ interface MiniDiagramProps {
   readonly row: TiltRow;
 }
 
-/**
- * 16×12 SVG showing the bin outline with this row's divider highlighted —
- * restores the spatial "which divider is this?" cue that the deleted
- * canvas drag handles previously provided.
- */
+const DIAGRAM_W = 16;
+const DIAGRAM_H = 12;
+
 function DividerMiniDiagram({ compartments, row }: MiniDiagramProps) {
   const { cols, rows: gridRows } = compartments;
-  const W = 16;
-  const H = 12;
   const aBounds = getCompartmentBounds(compartments, row.compartmentA);
   const bBounds = getCompartmentBounds(compartments, row.compartmentB);
-  if (!aBounds || !bBounds) return <svg width={W} height={H} aria-hidden="true" />;
-  // The shared boundary sits at the further edge of whichever compartment
-  // is "below" the divider on its perpendicular axis. For a vertical
-  // divider (axis runs in Y) that's the right edge of the left-side comp;
-  // for horizontal, the top edge of the bottom-side comp.
+  if (!aBounds || !bBounds) {
+    return <svg width={DIAGRAM_W} height={DIAGRAM_H} aria-hidden="true" />;
+  }
+
   const isVertical = row.axis === 'vertical';
+  // Shared boundary = far edge of the lower-indexed compartment on the
+  // perpendicular axis. SVG y is top-down so horizontal lines flip via H - y.
+  const boundary = isVertical
+    ? (Math.min(aBounds.maxCol, bBounds.maxCol) + 1) * (DIAGRAM_W / cols)
+    : DIAGRAM_H - (Math.min(aBounds.maxRow, bBounds.maxRow) + 1) * (DIAGRAM_H / gridRows);
+
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+    <svg
+      width={DIAGRAM_W}
+      height={DIAGRAM_H}
+      viewBox={`0 0 ${DIAGRAM_W} ${DIAGRAM_H}`}
+      aria-hidden="true"
+    >
       <rect
         x={0.5}
         y={0.5}
-        width={W - 1}
-        height={H - 1}
+        width={DIAGRAM_W - 1}
+        height={DIAGRAM_H - 1}
         fill="none"
         className="stroke-stroke-subtle"
       />
-      {isVertical ? (
-        <line
-          x1={(Math.min(aBounds.maxCol, bBounds.maxCol) + 1) * (W / cols)}
-          y1={0}
-          x2={(Math.min(aBounds.maxCol, bBounds.maxCol) + 1) * (W / cols)}
-          y2={H}
-          strokeWidth={1.5}
-          className="stroke-accent"
-        />
-      ) : (
-        // SVG y-axis is top-down; grid origin is bottom-left, so flip.
-        <line
-          x1={0}
-          y1={H - (Math.min(aBounds.maxRow, bBounds.maxRow) + 1) * (H / gridRows)}
-          x2={W}
-          y2={H - (Math.min(aBounds.maxRow, bBounds.maxRow) + 1) * (H / gridRows)}
-          strokeWidth={1.5}
-          className="stroke-accent"
-        />
-      )}
+      <line
+        x1={isVertical ? boundary : 0}
+        y1={isVertical ? 0 : boundary}
+        x2={isVertical ? boundary : DIAGRAM_W}
+        y2={isVertical ? DIAGRAM_H : boundary}
+        strokeWidth={1.5}
+        className="stroke-accent"
+      />
     </svg>
   );
 }
