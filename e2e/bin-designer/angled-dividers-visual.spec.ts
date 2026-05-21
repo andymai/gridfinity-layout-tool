@@ -11,6 +11,7 @@
  * Run with: `pnpm test:e2e e2e/bin-designer/angled-dividers-visual.spec.ts`
  */
 
+import type { Page } from '@playwright/test';
 import { test, expect } from '../fixtures';
 
 // Force WebGL via swiftshader so the 3D preview canvas mounts under headless
@@ -22,6 +23,18 @@ test.use({
   },
 });
 
+/**
+ * Wait for the worker round-trip to finish. PreviewSkeleton renders
+ * `role="status"` with the "Generating mesh…" label while generationStatus
+ * is 'generating'; when complete the skeleton is unmounted. Polling for
+ * its absence is a deterministic alternative to wall-clock sleeps.
+ */
+async function waitForGenerationComplete(page: Page): Promise<void> {
+  await expect(page.getByRole('status', { name: /generating mesh/i })).toHaveCount(0, {
+    timeout: 30_000,
+  });
+}
+
 test.describe('Angled dividers — visual', () => {
   test('tilt offsets visibly change the 3D preview', async ({ page }) => {
     test.setTimeout(180_000);
@@ -29,6 +42,7 @@ test.describe('Angled dividers — visual', () => {
 
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible({ timeout: 120_000 });
+    await waitForGenerationComplete(page);
 
     // Default is 1×1 (no divider) — bump rows to make the panel eligible.
     await page.getByRole('button', { name: /increase rows/i }).click();
@@ -41,15 +55,14 @@ test.describe('Angled dividers — visual', () => {
     await expect(angledSwitch).toBeVisible({ timeout: 15_000 });
     await angledSwitch.scrollIntoViewIfNeeded();
 
-    await page.waitForTimeout(2500); // worker round-trip for the rows change
+    await waitForGenerationComplete(page);
     const beforeBuf = await canvas.screenshot();
 
     await angledSwitch.click();
     // FeatureToggle has a separate "Customize" button that expands the body.
     const customizeBtn = page.getByRole('button', { name: /^customize$/i }).first();
-    if (await customizeBtn.count()) {
-      await customizeBtn.click();
-    }
+    await expect(customizeBtn).toBeVisible({ timeout: 5000 });
+    await customizeBtn.click();
 
     await page
       .getByRole('spinbutton', { name: /start \(mm\)/i })
@@ -62,7 +75,7 @@ test.describe('Angled dividers — visual', () => {
       .fill('-15');
     await page.keyboard.press('Tab');
 
-    await page.waitForTimeout(3000); // worker round-trip for the tilt
+    await waitForGenerationComplete(page);
     const afterBuf = await canvas.screenshot();
 
     // Load-bearing: if generation silently ignores the override (the
