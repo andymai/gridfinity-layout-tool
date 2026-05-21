@@ -65,8 +65,9 @@ const gridFragmentShader = /* glsl */ `
 
 /**
  * Renders a Gridfinity-sized infinite grid using a custom shader.
- * Grid lines at 42mm intervals are aligned with the bin's cell boundaries,
- * so the bin appears correctly placed on the grid cells it occupies.
+ * Grid lines at `gridUnitMm` intervals (Gridfinity standard = 42mm) are
+ * aligned with the bin's cell boundaries, so the bin appears correctly
+ * placed on the grid cells it occupies.
  */
 export function FootprintGrid({ width, depth, gridUnitMm }: FootprintGridProps) {
   const colors = useThreeColors();
