@@ -1,14 +1,20 @@
 /**
- * Engraved text geometry builder.
+ * Engraved-text geometry builder.
  *
- * Renders user-supplied strings as 3D solids that can be booleaned into a
- * host (label tab, cutout, etc.). Auto-fits the font size to a constrained
- * area using `textMetrics` — much cheaper than the "build, measure, scale"
- * pattern because metrics never materialize geometry.
+ * Materializes user text as a 3D solid that the host (label tab, cutout
+ * surround) booleans against. Three modes:
+ *  - `engrave` — extrude downward into the host (caller cuts)
+ *  - `emboss`  — extrude upward above the host (caller fuses)
+ *  - `through-cut` — extrude downward through the full host depth (caller cuts)
  *
- * Fonts are loaded once at worker init by `wasmInstantiator.loadEmbeddedFonts`;
- * if loading failed (network failure, non-OCCT kernel), this module returns
- * `null` rather than throwing so the host generation still completes.
+ * Auto-fits font size via `textMetrics` so we never materialize geometry just
+ * to measure. Fonts are loaded once at worker init; if the requested family
+ * isn't in the registry, the builder returns `null` so the host generation
+ * still completes.
+ *
+ * Through-cut auto-swaps to `allerta-stencil` regardless of the user's font
+ * pick: non-stencil glyphs have free-floating counter islands (O, A, D…)
+ * that fall out of a printed cutout.
  */
 
 import {
@@ -21,20 +27,19 @@ import {
   type PlaneName,
 } from 'brepjs';
 import { isOk } from '@/core/result';
-import type { TextFontFamily } from '@/shared/types/bin';
+import type { TextFontFamily, TextMode } from '@/shared/types/bin';
 
-/** Result of binary-search auto-fit. */
 export interface FitResult {
-  /** Rendered font size in mm; 0 if even `min` doesn't fit. */
+  /** Rendered font size in mm; `min` if even the smallest size overflows. */
   readonly fontSize: number;
   /** Whether the chosen size honors both width and depth constraints. */
   readonly fits: boolean;
 }
 
 /**
- * Pick the largest font size whose rendered bounding box fits the given
- * width/depth budget, clamped to [min, max]. Returns `{ fits: false }`
- * if even the minimum size overflows.
+ * Pick the largest font size whose rendered bbox fits the given width/depth
+ * budget, clamped to [min, max]. Returns `{ fits: false }` if even `min`
+ * overflows.
  */
 export function fitFontSize(
   text: string,
@@ -52,9 +57,9 @@ export function fitFontSize(
     return { fontSize: 0, fits: false };
   }
   // Binary search to ~0.05mm precision. textMetrics scales linearly with
-  // fontSize, so we could short-circuit with a ratio — but the binary loop
-  // is bounded at 14 iterations and stays correct if metrics ever become
-  // non-linear (e.g. hinting changes between sizes).
+  // fontSize so a ratio-based shortcut is possible, but the bounded loop
+  // (14 iterations) stays correct if metrics ever become non-linear
+  // (e.g. hinting changes between sizes).
   let lo = min;
   let hi = max;
   let best = min;
@@ -74,39 +79,81 @@ export function fitFontSize(
 }
 
 /**
- * Build an engrave-cut text solid sized for the host area and translated so
- * its visual bbox is centered on `(centerX, centerY)`. The solid extends
- * downward from `topZ` by `depth + EPSILON` and is intended to be boolean-cut
- * from the host.
- *
- * Returns `null` if the font isn't loaded, the text is empty, or the auto-fit
- * floor would be below `minFontSize`.
+ * Whether the host should `cut` or `fuse` the returned solid. Engrave and
+ * through-cut both cut; emboss fuses.
  */
-export function buildEngraveCutSolid(
+export type TextOp = 'cut' | 'fuse';
+
+export interface TextSolidResult {
+  readonly solid: Shape3D;
+  readonly op: TextOp;
+}
+
+export interface BuildTextSolidOptions {
+  readonly text: string;
+  readonly fontFamily: TextFontFamily;
+  readonly mode: TextMode;
+  /** Total available width for auto-fit, in mm (margin not yet subtracted). */
+  readonly availW: number;
+  /** Total available depth for auto-fit, in mm (margin not yet subtracted). */
+  readonly availD: number;
+  /** Visual centroid X for the text bbox in the host's local frame. */
+  readonly centerX: number;
+  /** Visual centroid Y for the text bbox in the host's local frame. */
+  readonly centerY: number;
+  /** Z of the host's top face in the local frame; sketch origin sits here. */
+  readonly topZ: number;
+  /** Engrave/emboss depth in mm. */
+  readonly depth: number;
+  /**
+   * Total host thickness in mm. Through-cut extrudes through `hostThickness +
+   * 2·EPSILON` to guarantee clean both-face exits; engrave/emboss ignore it.
+   */
+  readonly hostThickness: number;
+  /** Padding to host edge for auto-fit, in mm. */
+  readonly margin: number;
+  /** Auto-fit floor in mm. */
+  readonly minFontSize: number;
+  /** Auto-fit ceiling in mm. */
+  readonly maxFontSize: number;
+}
+
+/** Lift sketches above the host top face so booleans don't touch coincident
+ *  surfaces (an OCCT fragility point that occasionally produces nullspace
+ *  results). 0.01mm is below any printable feature. */
+const EPSILON = 0.01;
+
+/**
+ * Apply the stencil-font auto-swap for through-cut mode. The user's font
+ * pick is honored for engrave/emboss; through-cut always uses
+ * `allerta-stencil` so glyph counters survive as connected islands.
+ */
+export function resolveEffectiveFont(font: TextFontFamily, mode: TextMode): TextFontFamily {
+  return mode === 'through-cut' ? 'allerta-stencil' : font;
+}
+
+/**
+ * Build a text solid placed in the host's local frame and ready for the
+ * caller to apply via the returned `op` (`cut` or `fuse`).
+ *
+ * Returns `null` when text is empty/whitespace, the resolved font isn't
+ * loaded, or the auto-fit floor would exceed `minFontSize`.
+ */
+export function buildTextSolid(
   scope: DisposalScope,
-  options: {
-    text: string;
-    fontFamily: TextFontFamily;
-    availW: number;
-    availD: number;
-    centerX: number;
-    centerY: number;
-    topZ: number;
-    depth: number;
-    margin: number;
-    minFontSize: number;
-    maxFontSize: number;
-  }
-): Shape3D | null {
+  options: BuildTextSolidOptions
+): TextSolidResult | null {
   const trimmed = options.text.trim();
   if (!trimmed) return null;
-  if (!getFont(options.fontFamily)) return null;
+
+  const fontFamily = resolveEffectiveFont(options.fontFamily, options.mode);
+  if (!getFont(fontFamily)) return null;
 
   const availW = options.availW - 2 * options.margin;
   const availD = options.availD - 2 * options.margin;
   const fit = fitFontSize(
     trimmed,
-    options.fontFamily,
+    fontFamily,
     availW,
     availD,
     options.minFontSize,
@@ -114,24 +161,46 @@ export function buildEngraveCutSolid(
   );
   if (!fit.fits) return null;
 
-  const metrics = textMetrics(trimmed, { fontSize: fit.fontSize, fontFamily: options.fontFamily });
+  const metrics = textMetrics(trimmed, { fontSize: fit.fontSize, fontFamily });
   if (!isOk(metrics)) return null;
 
-  // Lift the sketch slightly above the host top face so the cut starts cleanly
-  // (avoids coincident-face fragility in the OCCT boolean).
-  const EPSILON = 0.01;
+  // Sketch origin: engrave/through-cut start just above the top face and
+  // extrude DOWN; emboss starts at the top face and extrudes UP.
+  const sketchOriginZ = options.mode === 'emboss' ? options.topZ : options.topZ + EPSILON;
+  const extrusion =
+    options.mode === 'emboss'
+      ? options.depth
+      : options.mode === 'through-cut'
+        ? -(options.hostThickness + 2 * EPSILON)
+        : -(options.depth + EPSILON);
+
   const sketches = sketchText(
     trimmed,
-    { fontSize: fit.fontSize, fontFamily: options.fontFamily },
-    { plane: 'XY' as PlaneName, origin: [0, 0, options.topZ + EPSILON] }
+    { fontSize: fit.fontSize, fontFamily },
+    { plane: 'XY' as PlaneName, origin: [0, 0, sketchOriginZ] }
   );
-  const solid = scope.register(sketches.extrude(-(options.depth + EPSILON)));
+  const extruded = scope.register(sketches.extrude(extrusion));
 
-  // textMetrics: width is total advance, vertical bbox spans descender..ascender.
+  // textMetrics: width is total advance; vertical bbox spans descender..ascender.
   // Visual centroid in the sketch frame = (width/2, (ascender + descender)/2).
   const visualCenterX = metrics.value.width / 2;
   const visualCenterY = (metrics.value.ascender + metrics.value.descender) / 2;
-  return scope.register(
-    translate(solid, [options.centerX - visualCenterX, options.centerY - visualCenterY, 0])
+  const solid = scope.register(
+    translate(extruded, [options.centerX - visualCenterX, options.centerY - visualCenterY, 0])
   );
+
+  return { solid, op: options.mode === 'emboss' ? 'fuse' : 'cut' };
+}
+
+/**
+ * @deprecated Prefer `buildTextSolid` which supports all 3 modes. Kept as a
+ * thin wrapper so existing callers (and tests) that only need engrave keep
+ * working without churn.
+ */
+export function buildEngraveCutSolid(
+  scope: DisposalScope,
+  options: Omit<BuildTextSolidOptions, 'mode' | 'hostThickness'>
+): Shape3D | null {
+  const result = buildTextSolid(scope, { ...options, mode: 'engrave', hostThickness: 0 });
+  return result ? result.solid : null;
 }

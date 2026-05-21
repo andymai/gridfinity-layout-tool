@@ -12,6 +12,8 @@ import { initFromOC, registerKernel, BrepkitAdapter, loadFont } from 'brepjs';
 import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
 import singleWasmUrl from 'brepjs-opencascade/src/brepjs_single.wasm?url';
 import atkinsonFontUrl from './assets/fonts/AtkinsonHyperlegible-Regular.ttf?url';
+import jetbrainsMonoFontUrl from './assets/fonts/JetBrainsMono-Regular.ttf?url';
+import allertaStencilFontUrl from './assets/fonts/AllertaStencil-Regular.ttf?url';
 import { isErr } from '@/core/result';
 
 export interface WasmLoadResult {
@@ -61,18 +63,28 @@ export async function loadOpenCascade(): Promise<WasmLoadResult> {
  * brepkit-wasm skips font loading because it doesn't implement the
  * topology operations `textBuilder` needs.
  */
+const EMBEDDED_FONTS: readonly { readonly family: string; readonly url: string }[] = [
+  { family: 'atkinson', url: atkinsonFontUrl },
+  { family: 'jetbrains-mono', url: jetbrainsMonoFontUrl },
+  { family: 'allerta-stencil', url: allertaStencilFontUrl },
+];
+
 async function loadEmbeddedFonts(): Promise<void> {
-  try {
-    const response = await fetch(atkinsonFontUrl);
-    if (!response.ok) return;
-    const buffer = await response.arrayBuffer();
-    const result = await loadFont(buffer, 'atkinson');
-    if (isErr(result)) {
-      console.warn('Failed to register Atkinson font:', result.error.message);
-    }
-  } catch (err) {
-    console.warn('Failed to load embedded font asset:', err);
-  }
+  await Promise.all(
+    EMBEDDED_FONTS.map(async ({ family, url }) => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) return;
+        const buffer = await response.arrayBuffer();
+        const result = await loadFont(buffer, family);
+        if (isErr(result)) {
+          console.warn(`Failed to register ${family} font:`, result.error.message);
+        }
+      } catch (err) {
+        console.warn(`Failed to load ${family} font asset:`, err);
+      }
+    })
+  );
 }
 
 /**

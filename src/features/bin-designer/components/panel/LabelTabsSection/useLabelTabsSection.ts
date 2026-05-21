@@ -5,27 +5,31 @@ import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '../../../constants';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
 import { getCompartmentIds } from '../../../utils/compartments';
-import type { LabelTabAlignment, LabelTabSupport } from '../../../types';
+import type { LabelTabAlignment, LabelTabSupport, TextFontFamily, TextMode } from '../../../types';
 
 export function useLabelTabsSection() {
   const {
     compartments,
     label,
+    textDefaults,
     width,
     height,
     wallThickness,
     updateLabel,
     setCompartmentText,
+    setTextDefaults,
     params,
   } = useDesignerStore(
     useShallow((s) => ({
       compartments: s.params.compartments,
       label: s.params.label,
+      textDefaults: s.params.textDefaults,
       width: s.params.width,
       height: s.params.height,
       wallThickness: s.params.wallThickness,
       updateLabel: s.updateLabel,
       setCompartmentText: s.setCompartmentText,
+      setTextDefaults: s.setTextDefaults,
       params: s.params,
     }))
   );
@@ -68,6 +72,27 @@ export function useLabelTabsSection() {
       updateLabel({ alignment });
     },
     [updateLabel]
+  );
+
+  const setTextFont = useCallback(
+    (font: TextFontFamily) => {
+      setTextDefaults({ font });
+    },
+    [setTextDefaults]
+  );
+
+  const setTextMode = useCallback(
+    (mode: TextMode) => {
+      setTextDefaults({ mode });
+    },
+    [setTextDefaults]
+  );
+
+  const setTextDepth = useCallback(
+    (depth: number) => {
+      setTextDefaults({ depth });
+    },
+    [setTextDefaults]
   );
 
   const tabWidthMm = useMemo(() => {
@@ -125,7 +150,7 @@ export function useLabelTabsSection() {
   }, [compartments, t]);
 
   return {
-    state: { label, isUnavailable, tabWidthMm, compartmentTextRows },
+    state: { label, textDefaults, isUnavailable, tabWidthMm, compartmentTextRows },
     handlers: {
       toggleLabelTabs,
       setTabSupport,
@@ -133,6 +158,9 @@ export function useLabelTabsSection() {
       setTabWidth,
       setTabAlignment,
       setCompartmentText,
+      setTextFont,
+      setTextMode,
+      setTextDepth,
     },
     meta,
     t,

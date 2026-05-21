@@ -8,12 +8,21 @@
  */
 
 import { useMemo, useRef, useState, useCallback, useEffect } from 'react';
-import type { Cutout } from '@/features/bin-designer/types';
+import type { Cutout, CutoutTextSide } from '@/features/bin-designer/types';
+import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { SliderInput } from '@/features/bin-designer/components/controls/SliderInput';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { clampRotationToBounds, getRotatedBounds } from '../panel/CutoutsSection/geometry';
 import { CutoutScoopControls } from './CutoutScoopControls';
+import { Checkbox, Input } from '@/design-system';
+
+const SIDE_OPTIONS: readonly { readonly side: CutoutTextSide; readonly glyph: string }[] = [
+  { side: 'top', glyph: '↑' },
+  { side: 'bottom', glyph: '↓' },
+  { side: 'left', glyph: '←' },
+  { side: 'right', glyph: '→' },
+] as const;
 
 interface FloatingInspectorProps {
   readonly cutouts: readonly Cutout[];
@@ -362,6 +371,12 @@ export function FloatingInspector({
             disabled={disabled}
             onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
           />
+          <CutoutEngraveLabelControls
+            key={`${singleCutout.id}-text`}
+            cutout={singleCutout}
+            disabled={disabled ?? false}
+            onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
+          />
         </div>
       )}
 
@@ -423,6 +438,87 @@ export function FloatingInspector({
             {t('binDesigner.cutoutEditor.locked')}
           </span>
         </div>
+      )}
+    </div>
+  );
+}
+
+interface CutoutEngraveLabelControlsProps {
+  readonly cutout: Cutout;
+  readonly disabled: boolean;
+  readonly onUpdate: (patch: Partial<Cutout>) => void;
+}
+
+/**
+ * Compact engraved-label controls for a single selected cutout — toggle,
+ * text input, and side picker. Mode + font + depth use the design-level
+ * `textDefaults`; per-instance overrides are deferred to a follow-up.
+ *
+ * Layout mirrors the rest of the inspector (compact rows, small icon-only
+ * segmented control for the side direction) so it slots into the existing
+ * visual rhythm without a heavyweight new section.
+ */
+function CutoutEngraveLabelControls({
+  cutout,
+  disabled,
+  onUpdate,
+}: CutoutEngraveLabelControlsProps) {
+  const t = useTranslation();
+  const enabled = cutout.engraveLabel ?? false;
+  const side: CutoutTextSide = cutout.textSide ?? 'top';
+
+  return (
+    <div className="flex flex-col gap-1.5 border-t border-stroke-subtle pt-2">
+      <label className="flex items-center gap-2 text-xs text-content-secondary cursor-pointer">
+        <Checkbox
+          checked={enabled}
+          onChange={(checked) => onUpdate({ engraveLabel: checked })}
+          disabled={disabled}
+          aria-label={t('binDesigner.cutoutEngraveLabel')}
+        />
+        <span>{t('binDesigner.cutoutEngraveLabel')}</span>
+      </label>
+      {enabled && (
+        <>
+          <Input
+            type="text"
+            size="sm"
+            value={cutout.label}
+            maxLength={TEXT_MAX_LENGTH}
+            onChange={(e) => onUpdate({ label: e.target.value })}
+            disabled={disabled}
+            placeholder={t('binDesigner.cutoutEngraveLabelPlaceholder')}
+            aria-label={t('binDesigner.cutoutEngraveLabel')}
+          />
+          <div>
+            <span className="mb-1 block text-[10px] uppercase tracking-wide text-content-tertiary">
+              {t('binDesigner.cutoutTextSide')}
+            </span>
+            <div role="group" aria-label={t('binDesigner.cutoutTextSide')} className="flex gap-1">
+              {SIDE_OPTIONS.map(({ side: opt, glyph }) => (
+                <button
+                  key={opt}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => onUpdate({ textSide: opt })}
+                  aria-pressed={side === opt}
+                  aria-label={t(`binDesigner.cutoutTextSide.${opt}`)}
+                  title={t(`binDesigner.cutoutTextSide.${opt}`)}
+                  className={`flex-1 rounded px-2 py-1 text-xs font-medium leading-none transition-colors ${
+                    side === opt
+                      ? 'bg-accent text-on-accent'
+                      : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+                  }`}
+                >
+                  {glyph}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="text-[10px] text-content-tertiary">
+            {t('binDesigner.cutoutEngraveLabelEngraveOnly')}
+          </p>
+        </>
       )}
     </div>
   );

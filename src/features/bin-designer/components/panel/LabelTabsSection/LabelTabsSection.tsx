@@ -7,15 +7,30 @@
 
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperControl } from '@/shared/components/StepperControl';
-import { Input } from '@/design-system';
+import { Input, Select, InfoIcon } from '@/design-system';
+import type { SelectOption } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { TEXT_MAX_LENGTH } from '../../../types';
-import type { LabelTabAlignment, LabelTabSupport } from '../../../types';
+import type { LabelTabAlignment, LabelTabSupport, TextFontFamily, TextMode } from '../../../types';
 import { useLabelTabsSection } from './useLabelTabsSection';
 
 const ALIGNMENT_OPTIONS: LabelTabAlignment[] = ['left', 'center', 'right'];
 const SUPPORT_OPTIONS: LabelTabSupport[] = ['bracket', 'solid', 'fillet'];
+const MODE_OPTIONS: TextMode[] = ['engrave', 'emboss', 'through-cut'];
+
+const FONT_OPTIONS: readonly TextFontFamily[] = [
+  'atkinson',
+  'jetbrains-mono',
+  'allerta-stencil',
+] as const;
+
+/** Per-mode bounds for the engrave/emboss depth stepper. Through-cut ignores
+ *  `depth` (cuts through the full shelf), so the picker is hidden in that
+ *  mode rather than disabled. */
+const TEXT_DEPTH_MIN = 0.2;
+const TEXT_DEPTH_MAX = 5;
+const TEXT_DEPTH_STEP = 0.1;
 
 export function LabelTabsSection() {
   const { state, handlers, meta, t } = useLabelTabsSection();
@@ -136,12 +151,95 @@ export function LabelTabsSection() {
         </div>
       </div>
 
-      <div>
-        {/* Heading for the group of compartment inputs — `<span>`, not `<label>`,
-            because there is no single input to associate via htmlFor. */}
-        <span className="text-xs font-medium text-content-secondary mb-1 block">
+      {/* Engraved-text group — settings on top, per-compartment inputs below.
+          The `<span>` heading isn't a `<label>` because there's no single
+          input to associate via htmlFor. */}
+      <div className="flex flex-col gap-2 border-t border-stroke-subtle pt-3">
+        <span className="text-xs font-medium text-content-secondary block">
           {t('binDesigner.tabEngravedText')}
         </span>
+
+        {/* Design-level text style: mode, font, depth */}
+        <div className="flex flex-col gap-2 rounded-md border border-stroke-subtle bg-surface-elevated p-2">
+          {/* Mode picker — segmented control, mirroring the alignment/support pattern */}
+          <div>
+            <span className="mb-1 block text-xs text-content-tertiary">
+              {t('binDesigner.textMode')}
+            </span>
+            <div role="group" aria-label={t('binDesigner.textMode')} className="flex gap-1">
+              {MODE_OPTIONS.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => handlers.setTextMode(option)}
+                  aria-pressed={state.textDefaults.mode === option}
+                  className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                    state.textDefaults.mode === option
+                      ? 'bg-accent text-on-accent'
+                      : 'border border-stroke-subtle bg-surface text-content-secondary hover:bg-surface-hover'
+                  }`}
+                >
+                  {t(`binDesigner.textMode.${option}`)}
+                </button>
+              ))}
+            </div>
+            {state.textDefaults.mode === 'through-cut' && (
+              <p className="mt-1 flex items-start gap-1 text-xs text-content-tertiary">
+                <InfoIcon size="xs" className="mt-0.5 shrink-0" />
+                <span>{t('binDesigner.textMode.throughCutStencilNote')}</span>
+              </p>
+            )}
+          </div>
+
+          {/* Font + (conditional) depth, side by side when both visible */}
+          <div className="flex items-end gap-2">
+            <div className="flex-1 min-w-0">
+              <span className="mb-1 block text-xs text-content-tertiary">
+                {t('binDesigner.textFont')}
+              </span>
+              <Select
+                size="sm"
+                fullWidth
+                value={state.textDefaults.font}
+                onChange={(e) => handlers.setTextFont(e.target.value as TextFontFamily)}
+                disabled={state.textDefaults.mode === 'through-cut'}
+                aria-label={t('binDesigner.textFont')}
+                options={FONT_OPTIONS.map(
+                  (f): SelectOption => ({
+                    id: f,
+                    name: t(`binDesigner.textFont.${f}`),
+                  })
+                )}
+              />
+            </div>
+            {state.textDefaults.mode !== 'through-cut' && (
+              <div className="flex-1 min-w-0">
+                <span className="mb-1 block text-xs text-content-tertiary">
+                  {t('binDesigner.textDepth')}
+                </span>
+                <StepperControl
+                  value={state.textDefaults.depth}
+                  onChange={handlers.setTextDepth}
+                  onStep={(delta) =>
+                    handlers.setTextDepth(
+                      Math.min(
+                        TEXT_DEPTH_MAX,
+                        Math.max(TEXT_DEPTH_MIN, state.textDefaults.depth + delta * TEXT_DEPTH_STEP)
+                      )
+                    )
+                  }
+                  min={TEXT_DEPTH_MIN}
+                  max={TEXT_DEPTH_MAX}
+                  step={TEXT_DEPTH_STEP}
+                  variant="desktop"
+                  ariaLabel={t('binDesigner.textDepth')}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Per-compartment text inputs */}
         <ul className="flex flex-col gap-1.5">
           {state.compartmentTextRows.map((row) => (
             <li key={row.id} className="flex items-center gap-2">
