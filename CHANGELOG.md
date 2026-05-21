@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.115.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.115.0...gridfinity-layout-tool-v4.115.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* **generation:** [#1822](https://github.com/andymai/gridfinity-layout-tool/issues/1822) — wire dividerOverrides through the cut path ([#1844](https://github.com/andymai/gridfinity-layout-tool/issues/1844)) ([7d2d2f2](https://github.com/andymai/gridfinity-layout-tool/commit/7d2d2f21fdec5f3aa792a48b82923001e5172671))
+
 ## [4.115.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.114.1...gridfinity-layout-tool-v4.115.0) (2026-05-21)
 
 
