@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
@@ -41,6 +41,24 @@ export function useAngledDividersSection() {
     [rows]
   );
 
+  // Section open/closed state. Local — the toggle is UI affordance, not
+  // schema. Default: open whenever the user already has at least one
+  // override (so reload preserves intent via the data). When the user
+  // toggles open with no overrides, the section stays open until they
+  // explicitly toggle off (which also clears any overrides they added in
+  // the meantime).
+  //
+  // The previous version of this hook tied `checked` directly to
+  // `hasAnyOverride`, which created a catch-22: with no overrides the
+  // toggle was off → FeatureToggle hid the controls → user couldn't
+  // create the first override.
+  // `isOpen` derives from EITHER a manual open OR the data already having
+  // overrides — no useEffect needed. When a future canvas-drag path
+  // creates the first override, `hasAnyOverride` flips true and `isOpen`
+  // becomes true on the next render, no state-sync logic required.
+  const [isOpenLocal, setIsOpenLocal] = useState(false);
+  const isOpen = isOpenLocal || hasAnyOverride;
+
   const setOffset = useCallback(
     (row: AngledDividerRow, which: 'start' | 'end', value: number) => {
       const clamped = Math.max(-ANGLED_DIVIDER_UI_MAX, Math.min(ANGLED_DIVIDER_UI_MAX, value));
@@ -59,11 +77,18 @@ export function useAngledDividersSection() {
   );
 
   const toggleEnabled = useCallback(() => {
-    // Toggle semantics: "off" = clear all overrides; "on" = keep storage as-is
-    // (with eligible rows visible at 0/0 for the user to populate). This
-    // matches the FeatureToggle pattern used by sibling sections.
-    if (hasAnyOverride) clearDividerOverrides();
-  }, [hasAnyOverride, clearDividerOverrides]);
+    // Toggle semantics:
+    //   - currently open → close the section AND clear any overrides
+    //     (matches user expectation of "feature off")
+    //   - currently closed → open the section so eligible rows surface at
+    //     0/0 for the user to populate (no data change)
+    if (isOpen) {
+      setIsOpenLocal(false);
+      if (hasAnyOverride) clearDividerOverrides();
+    } else {
+      setIsOpenLocal(true);
+    }
+  }, [isOpen, hasAnyOverride, clearDividerOverrides]);
 
   const isUnavailable = rows.length === 0;
   const disabledReason = isUnavailable
@@ -86,6 +111,7 @@ export function useAngledDividersSection() {
       isUnavailable,
       rows,
       hasAnyOverride,
+      isOpen,
     },
     handlers: { setOffset, resetRow, toggleEnabled },
     meta: { summary, disabledReason },

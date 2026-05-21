@@ -4,9 +4,13 @@ import { useAngledDividersSection } from './useAngledDividersSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useLabsStore } from '@/core/store/labs';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { resetAllStores } from '@/test/testUtils';
 
 describe('useAngledDividersSection', () => {
   beforeEach(() => {
+    // Project convention: full inter-test isolation across history,
+    // selection, ui stores etc. — not just designer params.
+    resetAllStores();
     useDesignerStore.setState({ params: DEFAULT_BIN_PARAMS });
     useLabsStore.getState().enableFeature('angled_dividers');
   });
@@ -92,5 +96,34 @@ describe('useAngledDividersSection', () => {
     setCompartments(1, 2, [0, 1]);
     const { result } = renderHook(() => useAngledDividersSection());
     expect(result.current.state.flagEnabled).toBe(false);
+  });
+
+  it('opens on toggleEnabled even when no overrides exist (first-time UX)', () => {
+    // Regression test for the catch-22 in PR #1832: FeatureToggle only
+    // renders children when `checked` is true. If `checked` is tied to
+    // `hasAnyOverride`, users with no overrides can't open the section
+    // to create the first one. Toggle-on should open the section
+    // regardless of override state.
+    setCompartments(1, 2, [0, 1]);
+    const { result, rerender } = renderHook(() => useAngledDividersSection());
+    expect(result.current.state.isOpen).toBe(false);
+    expect(result.current.state.hasAnyOverride).toBe(false);
+    act(() => result.current.handlers.toggleEnabled());
+    rerender();
+    expect(result.current.state.isOpen).toBe(true);
+    expect(result.current.state.hasAnyOverride).toBe(false);
+  });
+
+  it('toggleEnabled closes AND clears overrides when currently open', () => {
+    setCompartments(1, 2, [0, 1]);
+    const { result, rerender } = renderHook(() => useAngledDividersSection());
+    act(() => result.current.handlers.setOffset(result.current.state.rows[0], 'start', 10));
+    rerender();
+    expect(result.current.state.isOpen).toBe(true);
+    expect(result.current.state.hasAnyOverride).toBe(true);
+    act(() => result.current.handlers.toggleEnabled());
+    rerender();
+    expect(result.current.state.isOpen).toBe(false);
+    expect(result.current.state.hasAnyOverride).toBe(false);
   });
 });

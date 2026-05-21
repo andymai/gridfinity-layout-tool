@@ -26,7 +26,11 @@ export function AngledDividersSection() {
   return (
     <FeatureToggle
       label={t('binDesigner.angledDividers.title')}
-      checked={state.hasAnyOverride}
+      // `checked` reflects whether the section is OPEN (a UI state derived
+      // from local toggle state OR the data-presence of any override),
+      // not whether any override exists. This lets users open the section
+      // before they have any overrides — the catch-22 #1832 review caught.
+      checked={state.isOpen}
       onChange={handlers.toggleEnabled}
       disabledReason={meta.disabledReason}
       valueSummary={meta.summary}

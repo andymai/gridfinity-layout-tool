@@ -4,9 +4,13 @@ import { AngledDividersSection } from './AngledDividersSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useLabsStore } from '@/core/store/labs';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { resetAllStores } from '@/test/testUtils';
 
 describe('AngledDividersSection', () => {
   beforeEach(() => {
+    // Project convention: full inter-test isolation across history,
+    // selection, ui stores etc. — not just designer params.
+    resetAllStores();
     useDesignerStore.setState({ params: DEFAULT_BIN_PARAMS });
     useLabsStore.getState().enableFeature('angled_dividers');
   });

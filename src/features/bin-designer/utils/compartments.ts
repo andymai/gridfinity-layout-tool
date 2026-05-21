@@ -253,6 +253,11 @@ export interface EligibleDivider {
  */
 export function getEligibleDividers(config: CompartmentConfig): EligibleDivider[] {
   const { cols, rows, cells } = config;
+  // Dedup key is canonical-pair-only (no axis) to match the storage model
+  // — overrides key on `(compartmentA, compartmentB)` alone. Including
+  // axis here would surface duplicate rows for any layout where the same
+  // pair appears on both axes (defense-in-depth against future validator
+  // gaps that let through non-rectangular configurations).
   const seen = new Set<string>();
   const out: EligibleDivider[] = [];
   const overrideByPair = new Map<string, DividerOverride>();
@@ -262,10 +267,10 @@ export function getEligibleDividers(config: CompartmentConfig): EligibleDivider[
   const consider = (a: number, b: number, axis: 'vertical' | 'horizontal'): void => {
     if (a === b) return;
     const [ca, cb] = a < b ? [a, b] : [b, a];
-    const key = `${axis}|${ca}|${cb}`;
+    const key = `${ca}|${cb}`;
     if (seen.has(key)) return;
     seen.add(key);
-    const existing = overrideByPair.get(`${ca}|${cb}`);
+    const existing = overrideByPair.get(key);
     out.push({
       compartmentA: ca,
       compartmentB: cb,
@@ -281,6 +286,14 @@ export function getEligibleDividers(config: CompartmentConfig): EligibleDivider[
       if (row + 1 < rows) consider(id, cells[(row + 1) * cols + col], 'horizontal');
     }
   }
+  // Stable sort to match the JSDoc contract: vertical dividers first, then
+  // horizontal, with canonical-pair ordering inside each group. Grid-scan
+  // order is mostly equivalent but not guaranteed (interleaves axes).
+  out.sort((p, q) => {
+    if (p.axis !== q.axis) return p.axis === 'vertical' ? -1 : 1;
+    if (p.compartmentA !== q.compartmentA) return p.compartmentA - q.compartmentA;
+    return p.compartmentB - q.compartmentB;
+  });
   return out;
 }
 
