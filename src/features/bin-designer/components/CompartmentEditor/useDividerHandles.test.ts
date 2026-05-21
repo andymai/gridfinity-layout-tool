@@ -169,6 +169,7 @@ describe('useDividerHandles', () => {
     const handle = result.current.handles[0];
     act(() => {
       result.current.onHandlePointerDown(handle)({
+        preventDefault: () => {},
         stopPropagation: () => {},
         currentTarget: { setPointerCapture: () => {} },
         pointerId: 1,
@@ -182,5 +183,33 @@ describe('useDividerHandles', () => {
     expect(result.current.drag?.which).toBe('start');
     expect(result.current.drag?.previewOffsetMm).toBe(0);
     expect(result.current.drag?.snapMm).toBe(5);
+  });
+
+  it('enters free-snap (0.5 mm) when Alt is held on pointer-down', () => {
+    setCompartments({ cols: 1, rows: 2, cells: [0, 1] });
+    const { result } = renderHook(() =>
+      useDividerHandles({
+        compartments: useDesignerStore.getState().params.compartments,
+        innerW: 80,
+        innerD: 80,
+        canvasRef: fakeCanvas(),
+      })
+    );
+    const handle = result.current.handles[0];
+    act(() => {
+      result.current.onHandlePointerDown(handle)({
+        preventDefault: () => {},
+        stopPropagation: () => {},
+        currentTarget: { setPointerCapture: () => {} },
+        pointerId: 1,
+        clientX: 100,
+        clientY: 100,
+        altKey: true,
+        shiftKey: false,
+      } as unknown as React.PointerEvent);
+    });
+    // Free-snap matches the panel's ANGLED_DIVIDER_UI_STEP so both paths
+    // produce values from the same granularity grid.
+    expect(result.current.drag?.snapMm).toBe(0.5);
   });
 });

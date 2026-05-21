@@ -1128,6 +1128,8 @@
   "binDesigner.angledDividers.offsetStart": "Början (mm)",
   "binDesigner.angledDividers.offsetEnd": "Slut (mm)",
   "binDesigner.angledDividers.resetRow": "Återställ avdelare",
+  "binDesigner.angledDividers.handleAriaLabel.start": "Dra startpunkten för avdelaren mellan Fack {a} och Fack {b}",
+  "binDesigner.angledDividers.handleAriaLabel.end": "Dra slutpunkten för avdelaren mellan Fack {a} och Fack {b}",
   "binDesigner.compartmentNumberLabel": "Fack {n}",
   "binDesigner.textMode": "Stil",
   "binDesigner.textMode.engrave": "Gravera",

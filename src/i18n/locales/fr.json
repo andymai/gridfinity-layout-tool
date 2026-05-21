@@ -87,6 +87,8 @@
   "binDesigner.angledDividers.offsetStart": "Début (mm)",
   "binDesigner.angledDividers.offsetEnd": "Fin (mm)",
   "binDesigner.angledDividers.resetRow": "Réinitialiser le séparateur",
+  "binDesigner.angledDividers.handleAriaLabel.start": "Faire glisser le point de départ du séparateur entre Comp. {a} et Comp. {b}",
+  "binDesigner.angledDividers.handleAriaLabel.end": "Faire glisser le point final du séparateur entre Comp. {a} et Comp. {b}",
   "binDesigner.compartmentNumberLabel": "Compart. {n}",
   "binDesigner.textMode": "Type",
   "binDesigner.textMode.engrave": "Gravure",

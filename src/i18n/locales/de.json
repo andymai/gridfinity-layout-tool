@@ -87,6 +87,8 @@
   "binDesigner.angledDividers.offsetStart": "Anfang (mm)",
   "binDesigner.angledDividers.offsetEnd": "Ende (mm)",
   "binDesigner.angledDividers.resetRow": "Trennwand zurücksetzen",
+  "binDesigner.angledDividers.handleAriaLabel.start": "Startpunkt der Trennwand zwischen Fach {a} und Fach {b} ziehen",
+  "binDesigner.angledDividers.handleAriaLabel.end": "Endpunkt der Trennwand zwischen Fach {a} und Fach {b} ziehen",
   "binDesigner.compartmentNumberLabel": "Fach {n}",
   "binDesigner.textMode": "Stil",
   "binDesigner.textMode.engrave": "Gravieren",

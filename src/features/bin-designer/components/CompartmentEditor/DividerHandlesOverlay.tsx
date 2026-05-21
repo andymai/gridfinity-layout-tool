@@ -1,6 +1,13 @@
 /**
- * Visual layer for the divider drag handles. Sits on top of GridCell but
- * below GhostPreview, absolutely positioned inside the canvas container.
+ * Visual layer for the divider drag handles. Renders on top of the cell
+ * grid AND on top of `GhostPreview` (CompartmentEditor renders this
+ * sibling last) so the handles + ghost line + mm chip are never occluded
+ * by the cell-selection overlay.
+ *
+ * Positioned with `inset-0` (not `inset-2`) so the handle coordinate
+ * space matches the GridCell flex container's coordinate space — Greptile
+ * flagged the prior `inset-2` mismatch on #1835. Pair with `canvasRef`
+ * pointing at that same flex container in `useDividerHandles`.
  *
  * Renders:
  *  - One subtle dot per handle position (4 px resting, 8 px on hover).
@@ -12,6 +19,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from '@/i18n';
 import type { DividerHandle, DividerDragState } from './useDividerHandles';
 
 // Tailwind class fragments referenced from JSX. Hoisting them out of the
@@ -39,10 +47,11 @@ export function DividerHandlesOverlay({
   onHandlePointerDown,
 }: Props) {
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+  const t = useTranslation();
   if (handles.length === 0) return null;
   return (
     <>
-      <div className="pointer-events-none absolute inset-2">
+      <div className="pointer-events-none absolute inset-0">
         {/* Ghost line for active drag — drawn before handles so the dots
             sit on top of the line. */}
         {drag && <DragGhostLine handles={handles} drag={drag} innerW={innerW} innerD={innerD} />}
@@ -61,7 +70,10 @@ export function DividerHandlesOverlay({
               onPointerDown={onHandlePointerDown(h)}
               onPointerEnter={() => setHoveredKey(key)}
               onPointerLeave={() => setHoveredKey((k) => (k === key ? null : k))}
-              aria-label={`Divider ${h.divider.compartmentA + 1}–${h.divider.compartmentB + 1} ${h.which}`}
+              aria-label={t(`binDesigner.angledDividers.handleAriaLabel.${h.which}`, {
+                a: String(h.divider.compartmentA + 1),
+                b: String(h.divider.compartmentB + 1),
+              })}
               className={`pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-surface transition-all ${tone}`}
               style={{
                 left: `${clamp01(visualX) * 100}%`,
@@ -69,9 +81,14 @@ export function DividerHandlesOverlay({
                 width: `${size}px`,
                 height: `${size}px`,
                 // Tap target is always 16 px on touch; visual dot stays small.
+                // `touch-action: none` blocks the OS from interpreting drag
+                // gestures as page scroll/zoom — required since the React
+                // pointer-down handler can't reliably preventDefault on
+                // passive touch events.
                 boxSizing: 'content-box',
                 padding: '4px',
                 margin: '-4px',
+                touchAction: 'none',
               }}
             />
           );
