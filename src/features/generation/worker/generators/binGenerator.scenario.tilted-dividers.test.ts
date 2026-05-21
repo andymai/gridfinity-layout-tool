@@ -49,6 +49,10 @@ describe('tilted dividers through full pipeline', () => {
     });
     expect(straight.vertices).not.toBeNull();
     expect(tilted.vertices).not.toBeNull();
+    // `expect(...).not.toBeNull()` records the failure but doesn't stop
+    // execution — narrow the types so the next reads compile without `!`
+    // and the friendly assertion message surfaces instead of a TypeError.
+    if (!straight.vertices || !tilted.vertices) return;
     // A tilted parallelogram and an axis-aligned rectangle both tessellate
     // to the same vertex count (4 corners each), so a count-diff is too
     // weak. Compare positions instead: sum |y| across all vertices —
@@ -73,6 +77,7 @@ describe('tilted dividers through full pipeline', () => {
       },
     });
     expect(tilted.vertices).not.toBeNull();
+    if (!tilted.vertices) return; // narrow type — see sister test above
     // With the divider tilted, the bin's interior has vertices whose Y
     // landing is not at the symmetric cavity midpoint. Sample for any
     // vertex with Y in the tilt range (~ ±10 mm from midpoint, away from

@@ -172,6 +172,86 @@ export function compartmentEdgesAreSinglePair(params: BinParams): boolean {
 }
 
 /**
+ * Check that applying the divider overrides keeps every cavity polygon
+ * non-degenerate — i.e. left strictly left of right and bottom strictly
+ * below top at the most-encroached corners, with at least `thickness * 2`
+ * of clearance. Extreme offsets can otherwise shift a corner past its
+ * opposite, producing a self-intersecting bowtie quad that BREP would
+ * silently drop (cavity vanishes from the mesh).
+ *
+ * Mirrors the corner-computation logic in `buildCompartmentCavityDrawings`
+ * — both must stay in sync. The predicate falls back to the additive-fuse
+ * path when this returns false; the additive path clips overshoots
+ * gracefully so even pathological overrides still produce *some* mesh.
+ */
+export function compartmentCavitiesAreViableWithOverrides(
+  params: BinParams,
+  innerW: number,
+  innerD: number
+): boolean {
+  const overrides = params.compartments.dividerOverrides;
+  if (!overrides || overrides.length === 0) return true;
+  const { cols, rows, thickness, cells } = params.compartments;
+  const cellW = innerW / cols;
+  const cellD = innerD / rows;
+  const half = thickness / 2;
+  const minDim = thickness * 2;
+  const lookup = buildOverrideLookup(overrides);
+  const compIds = new Set(cells);
+  for (const id of compIds) {
+    const bounds = findCompartmentBounds(id, cols, rows, cells);
+    if (!bounds) continue;
+    const { minCol, maxCol, minRow, maxRow } = bounds;
+    const xMin = -innerW / 2 + minCol * cellW + (minCol > 0 ? half : 0);
+    const xMax = -innerW / 2 + (maxCol + 1) * cellW - (maxCol < cols - 1 ? half : 0);
+    const yMin = -innerD / 2 + minRow * cellD + (minRow > 0 ? half : 0);
+    const yMax = -innerD / 2 + (maxRow + 1) * cellD - (maxRow < rows - 1 ? half : 0);
+    const bl: [number, number] = [xMin, yMin];
+    const br: [number, number] = [xMax, yMin];
+    const tr: [number, number] = [xMax, yMax];
+    const tl: [number, number] = [xMin, yMax];
+    if (maxCol < cols - 1) {
+      const ov = lookup.get(overrideKey(id, cells[minRow * cols + (maxCol + 1)]));
+      if (ov) {
+        br[0] += ov.offsetStart;
+        tr[0] += ov.offsetEnd;
+      }
+    }
+    if (minCol > 0) {
+      const ov = lookup.get(overrideKey(id, cells[minRow * cols + (minCol - 1)]));
+      if (ov) {
+        bl[0] += ov.offsetStart;
+        tl[0] += ov.offsetEnd;
+      }
+    }
+    if (maxRow < rows - 1) {
+      const ov = lookup.get(overrideKey(id, cells[(maxRow + 1) * cols + minCol]));
+      if (ov) {
+        tl[1] += ov.offsetStart;
+        tr[1] += ov.offsetEnd;
+      }
+    }
+    if (minRow > 0) {
+      const ov = lookup.get(overrideKey(id, cells[(minRow - 1) * cols + minCol]));
+      if (ov) {
+        bl[1] += ov.offsetStart;
+        br[1] += ov.offsetEnd;
+      }
+    }
+    // Non-degenerate quad: at the worst-case corners, left side stays
+    // strictly left of right side and bottom stays strictly below top,
+    // each with at least minDim clearance.
+    const xLeftMax = Math.max(bl[0], tl[0]);
+    const xRightMin = Math.min(br[0], tr[0]);
+    if (xRightMin - xLeftMax < minDim) return false;
+    const yBottomMax = Math.max(bl[1], br[1]);
+    const yTopMin = Math.min(tl[1], tr[1]);
+    if (yTopMin - yBottomMax < minDim) return false;
+  }
+  return true;
+}
+
+/**
  * Whether every compartment is a rectangle (its cells fully fill its
  * bounding box). Required precondition for the multi-cavity-cut shell
  * path; non-rectangular compartments fall back to the additive-fuse path.
