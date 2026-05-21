@@ -142,7 +142,7 @@ export async function loadOcctWasm(): Promise<WasmLoadResult> {
   // Engraved-text APIs are kernel-agnostic at brepjs's surface but use
   // OCCT primitives under the hood; occt-wasm satisfies them, so font
   // loading mirrors the default-kernel path. brepkit-wasm intentionally
-  // skipped — it doesn't implement the topology ops textBlueprints needs.
+  // skipped — it doesn't implement the topology ops textBuilder needs.
   await loadEmbeddedFonts();
 
   return { isThreaded: false, hardwareConcurrency };

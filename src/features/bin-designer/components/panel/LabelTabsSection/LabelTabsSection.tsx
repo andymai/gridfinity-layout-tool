@@ -105,12 +105,12 @@ export function LabelTabsSection() {
         </span>
       </div>
 
-      {/* Alignment */}
+      {/* Alignment — `<span>` heading because no single input owns the group label */}
       <div>
-        <label className="text-xs font-medium text-content-secondary mb-1 block">
+        <span className="text-xs font-medium text-content-secondary mb-1 block">
           {t('binDesigner.tabAlignment')}
-        </label>
-        <div className="flex gap-1">
+        </span>
+        <div role="group" aria-label={t('binDesigner.tabAlignment')} className="flex gap-1">
           {ALIGNMENT_OPTIONS.map((option) => (
             <button
               key={option}
@@ -128,12 +128,12 @@ export function LabelTabsSection() {
         </div>
       </div>
 
-      {/* Support picker */}
+      {/* Support picker — `<span>` heading; segmented control gets the group label */}
       <div>
-        <label className="text-xs font-medium text-content-secondary mb-1 block">
+        <span className="text-xs font-medium text-content-secondary mb-1 block">
           {t('binDesigner.tabSupport')}
-        </label>
-        <div className="flex gap-1">
+        </span>
+        <div role="group" aria-label={t('binDesigner.tabSupport')} className="flex gap-1">
           {SUPPORT_OPTIONS.map((option) => (
             <button
               key={option}

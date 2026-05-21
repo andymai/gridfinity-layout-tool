@@ -120,8 +120,10 @@ export interface BuildTextSolidOptions {
 
 /** Lift sketches above the host top face so booleans don't touch coincident
  *  surfaces (an OCCT fragility point that occasionally produces nullspace
- *  results). 0.01mm is below any printable feature. */
-const EPSILON = 0.01;
+ *  results). 0.01mm is below any printable feature. Exported so tests can
+ *  assert against the same tolerance the runtime uses instead of duplicating
+ *  the magic number. */
+export const TEXT_BOOLEAN_EPSILON = 0.01;
 
 /**
  * Apply the stencil-font auto-swap for through-cut mode. The user's font
@@ -166,13 +168,14 @@ export function buildTextSolid(
 
   // Sketch origin: engrave/through-cut start just above the top face and
   // extrude DOWN; emboss starts at the top face and extrudes UP.
-  const sketchOriginZ = options.mode === 'emboss' ? options.topZ : options.topZ + EPSILON;
+  const sketchOriginZ =
+    options.mode === 'emboss' ? options.topZ : options.topZ + TEXT_BOOLEAN_EPSILON;
   const extrusion =
     options.mode === 'emboss'
       ? options.depth
       : options.mode === 'through-cut'
-        ? -(options.hostThickness + 2 * EPSILON)
-        : -(options.depth + EPSILON);
+        ? -(options.hostThickness + 2 * TEXT_BOOLEAN_EPSILON)
+        : -(options.depth + TEXT_BOOLEAN_EPSILON);
 
   const sketches = sketchText(
     trimmed,
