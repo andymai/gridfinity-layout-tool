@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.115.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.115.1...gridfinity-layout-tool-v4.115.2) (2026-05-21)
+
+
+### Bug Fixes
+
+* **baseplate:** [#1847](https://github.com/andymai/gridfinity-layout-tool/issues/1847) — dovetail positions honor fractionalEdge under rotation ([#1848](https://github.com/andymai/gridfinity-layout-tool/issues/1848)) ([c0f91d3](https://github.com/andymai/gridfinity-layout-tool/commit/c0f91d369d70c0d10fdc329e1075786cb141f4e1))
+
 ## [4.115.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.115.0...gridfinity-layout-tool-v4.115.1) (2026-05-21)
 
 
