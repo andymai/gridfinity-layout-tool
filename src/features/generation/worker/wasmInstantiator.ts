@@ -57,8 +57,9 @@ export async function loadOpenCascade(): Promise<WasmLoadResult> {
  * downgrades to a no-op (label tabs without engraving), so a network
  * blip on the font asset never bricks the whole generation pipeline.
  *
- * Only called for OCCT-based kernels; brepkit-wasm doesn't currently
- * implement the topology operations textBuilder needs.
+ * Called from both OCCT loaders (`loadOpenCascade` and `loadOcctWasm`);
+ * brepkit-wasm skips font loading because it doesn't implement the
+ * topology operations `textBuilder` needs.
  */
 async function loadEmbeddedFonts(): Promise<void> {
   try {
@@ -125,6 +126,12 @@ export async function loadOcctWasm(): Promise<WasmLoadResult> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- see comment above
   const adapter = new OcctWasmAdapter(kernel.getRawModule() as any, kernel.getRawKernel() as any);
   registerKernel('occt-wasm', adapter);
+
+  // Engraved-text APIs are kernel-agnostic at brepjs's surface but use
+  // OCCT primitives under the hood; occt-wasm satisfies them, so font
+  // loading mirrors the default-kernel path. brepkit-wasm intentionally
+  // skipped — it doesn't implement the topology ops textBlueprints needs.
+  await loadEmbeddedFonts();
 
   return { isThreaded: false, hardwareConcurrency };
 }

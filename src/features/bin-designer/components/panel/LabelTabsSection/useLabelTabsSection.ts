@@ -110,11 +110,18 @@ export function useLabelTabsSection() {
   const compartmentTextRows = useMemo(() => {
     const ids = getCompartmentIds(compartments);
     const texts = compartments.compartmentTexts ?? [];
-    return ids.map((id, idx) => ({
-      id,
-      label: t('binDesigner.compartmentNumberLabel', { n: idx + 1 }),
-      value: texts[id] ?? '',
-    }));
+    // `displayNumber` is the source of truth for what the user sees AND what
+    // the aria-label announces — keep them in lockstep so a future change
+    // to ID ordering can't silently desync the two.
+    return ids.map((id, idx) => {
+      const displayNumber = idx + 1;
+      return {
+        id,
+        displayNumber,
+        label: t('binDesigner.compartmentNumberLabel', { n: displayNumber }),
+        value: texts[id] ?? '',
+      };
+    });
   }, [compartments, t]);
 
   return {
