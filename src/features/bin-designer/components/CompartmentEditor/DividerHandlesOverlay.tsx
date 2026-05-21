@@ -1,13 +1,14 @@
 /**
- * Visual layer for the divider drag handles. Renders on top of the cell
- * grid AND on top of `GhostPreview` (CompartmentEditor renders this
- * sibling last) so the handles + ghost line + mm chip are never occluded
- * by the cell-selection overlay.
+ * Visual layer for the divider drag handles. Lives INSIDE the GridCell
+ * flex container; `inset-0` matches the GridCell coordinate space exactly
+ * (Greptile flagged the prior `inset-2` mismatch on #1835). Pair with
+ * `canvasRef` pointing at that same flex container in `useDividerHandles`
+ * so mm-per-pixel conversion uses the same rect.
  *
- * Positioned with `inset-0` (not `inset-2`) so the handle coordinate
- * space matches the GridCell flex container's coordinate space — Greptile
- * flagged the prior `inset-2` mismatch on #1835. Pair with `canvasRef`
- * pointing at that same flex container in `useDividerHandles`.
+ * Z-order: `GhostPreview` paints ABOVE this overlay (CompartmentEditor
+ * renders it as a later sibling of the flex container). This is fine
+ * because the two are mutually exclusive interactions — `GhostPreview`
+ * only fires during cell-select drag, never during divider drag.
  *
  * Renders:
  *  - One subtle dot per handle position (4 px resting, 8 px on hover).
