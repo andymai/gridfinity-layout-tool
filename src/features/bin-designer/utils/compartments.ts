@@ -254,9 +254,21 @@ export function normalizeIdsWithRemap(cells: number[]): {
 
 /**
  * Apply an `oldId → newId` remap (from `normalizeIdsWithRemap`) to a parallel
- * per-compartment texts array. Old IDs not present in the remap (compartments
- * that disappeared) drop out; new IDs not present in the source (newly created
- * compartments, e.g. from a split) get an empty string.
+ * per-compartment texts array.
+ *
+ * Contract: the remap is the one produced by `normalizeIdsWithRemap`, which
+ * is **one-to-one** — every distinct old ID in `cells` maps to exactly one
+ * distinct new ID. Old IDs that are not in the remap (compartments that
+ * disappeared because their cells were rewritten — e.g. a merge that
+ * stomped IDs `1,2` to `0` before normalize was called) drop out: their
+ * text is not carried into the output. New IDs that have no corresponding
+ * entry in the source (newly created compartments, e.g. from a split) get
+ * an empty string.
+ *
+ * If two old IDs ever did map to the same new ID, the later iteration would
+ * win in Map insertion order. The caller's normalize step rules this out
+ * in practice, so the order-dependent behavior is documented but never
+ * exercised.
  *
  * Trailing empty strings are preserved in the output array — callers may
  * choose to truncate for serialization compactness.

@@ -19,7 +19,10 @@ import type {
   HandleSide,
   HandleWallSide,
   LidConfig,
+  TextStyleDefaults,
+  TextStyleOverride,
 } from '../../types';
+import { TEXT_MAX_LENGTH } from '../../types/text';
 import type { LipColorConfig } from '../../types/featureColors';
 import { DEFAULT_BIN_PARAMS } from '../../constants';
 import { isErr } from '@/core/result';
@@ -333,12 +336,12 @@ export function createParamSlice(set: Set, get: Get) {
     setCompartmentText: (compartmentId: number, text: string) => {
       set((state) => {
         pushHistoryEntry(state);
-        const trimmed = text.slice(0, 50);
+        const clamped = text.slice(0, TEXT_MAX_LENGTH);
         const prev = state.params.compartments.compartmentTexts ?? [];
         const next = prev.slice();
         // Grow with empty slots so the array length covers compartmentId.
         while (next.length <= compartmentId) next.push('');
-        next[compartmentId] = trimmed;
+        next[compartmentId] = clamped;
         // Drop trailing empty slots so identical no-op writes don't bloat the JSON.
         while (next.length > 0 && next[next.length - 1] === '') next.pop();
         state.params.compartments = {
@@ -348,14 +351,14 @@ export function createParamSlice(set: Set, get: Get) {
       });
     },
 
-    setTextDefaults: (partial: Partial<BinParams['textDefaults']>) => {
+    setTextDefaults: (partial: Partial<TextStyleDefaults>) => {
       set((state) => {
         pushHistoryEntry(state);
         state.params.textDefaults = { ...state.params.textDefaults, ...partial };
       });
     },
 
-    setLabelTabTextStyle: (overrides: BinParams['label']['textStyle'] | null) => {
+    setLabelTabTextStyle: (overrides: TextStyleOverride | null) => {
       set((state) => {
         pushHistoryEntry(state);
         if (overrides === null) {

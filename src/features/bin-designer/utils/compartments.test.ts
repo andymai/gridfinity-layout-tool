@@ -623,32 +623,35 @@ describe('compartments', () => {
     });
 
     it('handles renumbering across split (new IDs get empty strings)', () => {
-      // Split compartment 1 into two: 1 stays, new 2 appears, old 2 → 3
+      // Split: a compartment is split, so a new ID appears in cells. The
+      // remap from normalizeIdsWithRemap is always 1:1 — the new ID is
+      // present with its own slot. Original IDs that survived keep their text.
+      // Setup: original ids 0,1,2,3 with texts ['A','B','C','D']. Split id 1
+      // into two — the parent keeps id 1, the new cell gets id 4. After
+      // normalize: cells use 0,1,2,3,4 → renumbered to 0,1,2,3,4 (same).
       const remap = new Map([
         [0, 0],
         [1, 1],
-        [3, 2],
+        [4, 2], // new compartment from split — no source text → ''
         [2, 3],
+        [3, 4],
       ]);
-      const out = remapCompartmentTexts(['A', 'B', 'C'], remap);
-      // 'A' stays at new 0, 'B' stays at new 1, original 3 had no text → '',
-      // and 'C' (old 2) moves to new 3.
-      expect(out).toEqual(['A', 'B', '', 'C']);
+      const out = remapCompartmentTexts(['A', 'B', 'C', 'D'], remap);
+      expect(out).toEqual(['A', 'B', '', 'C', 'D']);
     });
 
-    it('handles renumbering across merge (collapsed IDs drop out)', () => {
-      // Merge: ids 0,1 both map to new 0; old 2 → new 1
+    it('drops text for compartments that disappeared from the remap', () => {
+      // Merge: ids 1,2 were stomped to 0 before normalize ran, so the post-
+      // normalize remap only contains the surviving IDs (0 and 3). The
+      // disappearing IDs (1, 2) are not in the remap — their texts drop.
+      // Original cells [0,1,2,3] with texts ['A','B','C','D']. After merge
+      // and normalize: cells [0,0,0,1], remap {0→0, 3→1}.
       const remap = new Map([
         [0, 0],
-        [1, 0],
-        [2, 1],
+        [3, 1],
       ]);
-      const out = remapCompartmentTexts(['A', 'B', 'C'], remap);
-      // 'A' wins index 0 (insertion order — but Map iterates in insertion order,
-      // so the contract is "later writers stomp earlier", giving us 'B' at slot 0
-      // when 1 is processed second). To pin the behavior down:
-      // For [0,0] → out[0]='A'; for [1,0] → out[0]='B'; for [2,1] → out[1]='C'.
-      expect(out).toEqual(['B', 'C']);
+      const out = remapCompartmentTexts(['A', 'B', 'C', 'D'], remap);
+      expect(out).toEqual(['A', 'D']);
     });
   });
 
