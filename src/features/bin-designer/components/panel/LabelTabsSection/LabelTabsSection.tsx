@@ -137,9 +137,11 @@ export function LabelTabsSection() {
       </div>
 
       <div>
-        <label className="text-xs font-medium text-content-secondary mb-1 block">
+        {/* Heading for the group of compartment inputs — `<span>`, not `<label>`,
+            because there is no single input to associate via htmlFor. */}
+        <span className="text-xs font-medium text-content-secondary mb-1 block">
           {t('binDesigner.tabEngravedText')}
-        </label>
+        </span>
         <ul className="flex flex-col gap-1.5">
           {state.compartmentTextRows.map((row) => (
             <li key={row.id} className="flex items-center gap-2">
@@ -153,7 +155,7 @@ export function LabelTabsSection() {
                 maxLength={TEXT_MAX_LENGTH}
                 onChange={(e) => handlers.setCompartmentText(row.id, e.target.value)}
                 placeholder={t('binDesigner.tabEngravedTextPlaceholder')}
-                aria-label={t('binDesigner.tabEngravedTextAriaLabel', { n: row.id + 1 })}
+                aria-label={t('binDesigner.tabEngravedTextAriaLabel', { n: row.displayNumber })}
               />
             </li>
           ))}
