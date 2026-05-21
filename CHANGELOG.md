@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.111.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.111.0...gridfinity-layout-tool-v4.111.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* **bin-designer:** address [#1812](https://github.com/andymai/gridfinity-layout-tool/issues/1812) review carryover (a11y + typo + test polish) ([#1817](https://github.com/andymai/gridfinity-layout-tool/issues/1817)) ([a083ccc](https://github.com/andymai/gridfinity-layout-tool/commit/a083ccc491d137380752174dcb3cf979b3df996c))
+
 ## [4.111.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.110.1...gridfinity-layout-tool-v4.111.0) (2026-05-21)
 
 
