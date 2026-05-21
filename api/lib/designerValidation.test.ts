@@ -197,6 +197,42 @@ describe('validateDesignerShare', () => {
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(true);
     });
+
+    it('accepts compartmentTexts with valid strings', () => {
+      const payload = validPayload();
+      (payload.params.compartments as Record<string, unknown>).compartmentTexts = ['SCREWS'];
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects compartmentTexts that is not an array', () => {
+      const payload = validPayload();
+      (payload.params.compartments as Record<string, unknown>).compartmentTexts = 'oops';
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects compartmentTexts entries that are not strings', () => {
+      const payload = validPayload();
+      (payload.params.compartments as Record<string, unknown>).compartmentTexts = [123];
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects compartmentTexts entries over 50 characters', () => {
+      const payload = validPayload();
+      (payload.params.compartments as Record<string, unknown>).compartmentTexts = ['x'.repeat(51)];
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects compartmentTexts longer than cols × rows', () => {
+      // valid payload has cols=1 rows=1 → max 1 entry
+      const payload = validPayload();
+      (payload.params.compartments as Record<string, unknown>).compartmentTexts = ['A', 'B'];
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
   });
 
   describe('label tab validation', () => {
@@ -590,6 +626,22 @@ describe('validateDesignerShare', () => {
       expect(result.valid).toBe(false);
       if (!result.valid) {
         expect(result.error.message).toMatch(/unknown corner/);
+      }
+    });
+
+    // `migrateFeatureColors` (defaults.ts) unconditionally writes a `text`
+    // field. The validator must accept it or every cloud share fails 400
+    // for users on the post-migration build.
+    it('accepts the text zone hex (engraved-text color slot)', () => {
+      const result = withColors({ body: '#3b82f6', text: '#22c55e' });
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects a non-hex text zone color', () => {
+      const result = withColors({ body: '#3b82f6', text: 'not-a-hex' });
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error.message).toMatch(/text/);
       }
     });
   });

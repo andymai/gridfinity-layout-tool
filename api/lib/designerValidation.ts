@@ -260,6 +260,27 @@ function validateCompartments(compartments: unknown): string | null {
   if (compartments.cells.length !== expectedLength) {
     return `compartments.cells length must be cols × rows (${expectedLength})`;
   }
+  // Optional per-compartment engraved text. Mirrors the client-side
+  // `TEXT_MAX_LENGTH = 50` cap so a direct HTTP POST can't smuggle in
+  // unbounded strings that bypass `setCompartmentText`. Array length
+  // can't exceed the total cell count (one slot per possible compartment ID).
+  if (compartments.compartmentTexts !== undefined) {
+    if (!Array.isArray(compartments.compartmentTexts)) {
+      return 'compartments.compartmentTexts must be an array';
+    }
+    if (compartments.compartmentTexts.length > expectedLength) {
+      return `compartments.compartmentTexts length must not exceed cols × rows (${expectedLength})`;
+    }
+    for (let i = 0; i < compartments.compartmentTexts.length; i++) {
+      const t = compartments.compartmentTexts[i];
+      if (typeof t !== 'string') {
+        return `compartments.compartmentTexts[${i}] must be a string`;
+      }
+      if (t.length > 50) {
+        return `compartments.compartmentTexts[${i}] must not exceed 50 characters`;
+      }
+    }
+  }
   return null;
 }
 
@@ -356,6 +377,7 @@ const ALLOWED_FEATURE_COLOR_KEYS = new Set([
   'base',
   'scoop',
   'dividers',
+  'text',
 ]);
 const ALLOWED_LIP_CORNER_KEYS = new Set<string>(LIP_CORNERS);
 
@@ -378,7 +400,7 @@ function validateFeatureColors(value: unknown): string | null {
     return 'featureColors.enabled must be boolean';
   }
 
-  for (const key of ['body', 'labelTab', 'base', 'scoop', 'dividers'] as const) {
+  for (const key of ['body', 'labelTab', 'base', 'scoop', 'dividers', 'text'] as const) {
     if (value[key] !== undefined && !isValidColor(value[key])) {
       return `featureColors.${key} must be a hex color`;
     }
