@@ -155,19 +155,29 @@ export function GhostCutouts() {
   const { invalidate } = useThree();
   const lineRef = useRef<LineSegments2 | null>(null);
 
-  const { width, depth, height, heightUnitMm, wallThickness, cutouts, base, generationStatus } =
-    useDesignerStore(
-      useShallow((s) => ({
-        width: s.params.width,
-        depth: s.params.depth,
-        height: s.params.height,
-        heightUnitMm: s.params.heightUnitMm,
-        wallThickness: s.params.wallThickness,
-        cutouts: s.params.cutouts,
-        base: s.params.base,
-        generationStatus: s.generation.status,
-      }))
-    );
+  const {
+    width,
+    depth,
+    height,
+    gridUnitMm,
+    heightUnitMm,
+    wallThickness,
+    cutouts,
+    base,
+    generationStatus,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      width: s.params.width,
+      depth: s.params.depth,
+      height: s.params.height,
+      gridUnitMm: s.params.gridUnitMm,
+      heightUnitMm: s.params.heightUnitMm,
+      wallThickness: s.params.wallThickness,
+      cutouts: s.params.cutouts,
+      base: s.params.base,
+      generationStatus: s.generation.status,
+    }))
+  );
 
   const selectedIds = useCutoutSelection((s) => s.selectedIds);
   const previewOverrides = useCutoutSelection((s) => s.previewOverrides);
@@ -178,8 +188,8 @@ export function GhostCutouts() {
   const wallHeight = isFlat ? totalH : totalH - GRIDFINITY.BASE_HEIGHT;
   const floorZ = isFlat ? 0 : GRIDFINITY.BASE_HEIGHT;
 
-  const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
+  const outerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const originX = -innerW / 2;

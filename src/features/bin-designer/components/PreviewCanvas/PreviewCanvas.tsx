@@ -382,12 +382,12 @@ export function PreviewCanvas() {
             {!showSplitPieces && <BinSplitLines />}
 
             {/* Footprint grid */}
-            <FootprintGrid width={width} depth={depth} />
+            <FootprintGrid width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
 
             {/* Dimension markers and labels — hidden for split pieces */}
             {!showSplitPieces && (
               <>
-                <BinAxisLabels width={width} depth={depth} />
+                <BinAxisLabels width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
                 <BinDimensions
                   width={width}
                   depth={depth}
@@ -396,7 +396,12 @@ export function PreviewCanvas() {
                   heightUnitMm={params.heightUnitMm}
                   stackingLip={params.base.stackingLip}
                 />
-                <BinNameLabel width={width} depth={depth} name={designName} />
+                <BinNameLabel
+                  width={width}
+                  depth={depth}
+                  gridUnitMm={params.gridUnitMm}
+                  name={designName}
+                />
               </>
             )}
 

@@ -29,19 +29,20 @@ export function GhostWireframe() {
   const { invalidate } = useThree();
   const lineRef = useRef<LineSegments2 | null>(null);
 
-  const { width, depth, height, heightUnitMm, generationStatus } = useDesignerStore(
+  const { width, depth, height, gridUnitMm, heightUnitMm, generationStatus } = useDesignerStore(
     useShallow((s) => ({
       width: s.params.width,
       depth: s.params.depth,
       height: s.params.height,
+      gridUnitMm: s.params.gridUnitMm,
       heightUnitMm: s.params.heightUnitMm,
       generationStatus: s.generation.status,
     }))
   );
 
   // Calculate bin dimensions
-  const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
+  const outerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE;
   const totalH = height * heightUnitMm;
 
   // Only show during generation

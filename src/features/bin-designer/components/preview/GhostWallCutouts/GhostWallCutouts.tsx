@@ -27,22 +27,32 @@ export function GhostWallCutouts() {
   const { invalidate } = useThree();
   const lineRef = useRef<LineSegments2 | null>(null);
 
-  const { width, depth, height, heightUnitMm, wallThickness, walls, baseStyle, generationStatus } =
-    useDesignerStore(
-      useShallow((s) => ({
-        width: s.params.width,
-        depth: s.params.depth,
-        height: s.params.height,
-        heightUnitMm: s.params.heightUnitMm,
-        wallThickness: s.params.wallThickness,
-        walls: s.params.walls,
-        baseStyle: s.params.base.style,
-        generationStatus: s.generation.status,
-      }))
-    );
+  const {
+    width,
+    depth,
+    height,
+    gridUnitMm,
+    heightUnitMm,
+    wallThickness,
+    walls,
+    baseStyle,
+    generationStatus,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      width: s.params.width,
+      depth: s.params.depth,
+      height: s.params.height,
+      gridUnitMm: s.params.gridUnitMm,
+      heightUnitMm: s.params.heightUnitMm,
+      wallThickness: s.params.wallThickness,
+      walls: s.params.walls,
+      baseStyle: s.params.base.style,
+      generationStatus: s.generation.status,
+    }))
+  );
 
-  const outerW = width * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
-  const outerD = depth * GRIDFINITY.GRID_SIZE - GRIDFINITY.TOLERANCE;
+  const outerW = width * gridUnitMm - GRIDFINITY.TOLERANCE;
+  const outerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE;
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const totalH = height * heightUnitMm;

@@ -1,8 +1,8 @@
 /**
  * Infinite-fade Gridfinity grid for the bin designer 3D preview.
- * Uses a custom fragment shader to render a grid at 42mm intervals
- * aligned with the bin's grid cell boundaries, fading out radially.
- * The bin sits correctly on top of the grid cells it occupies.
+ * Uses a custom fragment shader to render a grid at gridUnitMm intervals
+ * (default 42mm) aligned with the bin's grid cell boundaries, fading out
+ * radially. The bin sits correctly on top of the grid cells it occupies.
  */
 
 import { useMemo, useEffect } from 'react';
@@ -15,12 +15,14 @@ interface FootprintGridProps {
   width: number;
   /** Bin depth in grid units */
   depth: number;
+  /** Per-layout grid unit in mm (defaults to standard 42mm) */
+  gridUnitMm?: number;
 }
 
 /** How many grid units the floor extends beyond the bin footprint */
 const GRID_EXTENT = 14;
-/** Minimum floor size to avoid clipping on small bins */
-const MIN_FLOOR_SIZE = GRIDFINITY.GRID_SIZE * 16;
+/** Minimum floor size as a multiple of one grid unit */
+const MIN_FLOOR_GRID_UNITS = 16;
 
 const gridVertexShader = /* glsl */ `
   varying vec2 vWorldPos;
@@ -63,30 +65,32 @@ const gridFragmentShader = /* glsl */ `
 
 /**
  * Renders a Gridfinity-sized infinite grid using a custom shader.
- * Grid lines at 42mm intervals are aligned with the bin's cell boundaries,
- * so the bin appears correctly placed on the grid cells it occupies.
+ * Grid lines at `gridUnitMm` intervals (Gridfinity standard = 42mm) are
+ * aligned with the bin's cell boundaries, so the bin appears correctly
+ * placed on the grid cells it occupies.
  */
-export function FootprintGrid({ width, depth }: FootprintGridProps) {
+export function FootprintGrid({ width, depth, gridUnitMm }: FootprintGridProps) {
   const colors = useThreeColors();
+  const GS = gridUnitMm ?? GRIDFINITY.GRID_SIZE;
   // Floor size: extends well beyond the bin for the "infinite" illusion
   const maxDim = Math.max(width, depth);
-  const floorSize = Math.max((maxDim + GRID_EXTENT * 2) * GRIDFINITY.GRID_SIZE, MIN_FLOOR_SIZE);
+  const floorSize = Math.max((maxDim + GRID_EXTENT * 2) * GS, GS * MIN_FLOOR_GRID_UNITS);
 
   // Grid offset: shift the grid pattern so lines align with the bin's cell boundaries
   // The bin is centered at origin, so offset by half the nominal width/depth
-  const offsetX = (width * GRIDFINITY.GRID_SIZE) / 2;
-  const offsetY = (depth * GRIDFINITY.GRID_SIZE) / 2;
+  const offsetX = (width * GS) / 2;
+  const offsetY = (depth * GS) / 2;
 
   // Fade distances: grid stays crisp near the bin, fades out toward edges
-  const fadeStart = (maxDim / 2 + 4) * GRIDFINITY.GRID_SIZE;
-  const fadeEnd = (maxDim / 2 + GRID_EXTENT) * GRIDFINITY.GRID_SIZE;
+  const fadeStart = (maxDim / 2 + 4) * GS;
+  const fadeEnd = (maxDim / 2 + GRID_EXTENT) * GS;
 
   const material = useMemo(() => {
     return new THREE.ShaderMaterial({
       vertexShader: gridVertexShader,
       fragmentShader: gridFragmentShader,
       uniforms: {
-        gridSize: { value: GRIDFINITY.GRID_SIZE },
+        gridSize: { value: GS },
         gridOffset: { value: new THREE.Vector2(offsetX, offsetY) },
         fadeStart: { value: fadeStart },
         fadeEnd: { value: fadeEnd },
@@ -97,7 +101,7 @@ export function FootprintGrid({ width, depth }: FootprintGridProps) {
       transparent: true,
       depthWrite: false,
     });
-  }, [offsetX, offsetY, fadeStart, fadeEnd, colors.footprintLine]);
+  }, [GS, offsetX, offsetY, fadeStart, fadeEnd, colors.footprintLine]);
 
   // Dispose shader material on unmount/change
   useEffect(() => {
