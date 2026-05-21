@@ -186,7 +186,8 @@
     "binDesigner.textFont.atkinson",
     "binDesigner.textFont.jetbrains-mono",
     "binDesigner.textFont.allerta-stencil",
-    "binDesigner.cutoutEngraveLabelPlaceholder"
+    "binDesigner.cutoutEngraveLabelPlaceholder",
+    "binDesigner.angledDividers.stateTilted"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

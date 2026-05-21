@@ -1379,21 +1379,15 @@ const en: Record<string, string> = {
   'binDesigner.tabEngravedTextPlaceholder': 'e.g. SCREWS',
   'binDesigner.tabEngravedTextAriaLabel': 'Engraved text for compartment {n}',
   'binDesigner.angledDividers.title': 'Diagonal dividers',
-  'binDesigner.angledDividers.unavailableNoBoundary': 'No interior dividers in this layout.',
-  'binDesigner.angledDividers.summaryAllStraight': 'All straight',
-  'binDesigner.angledDividers.summaryTilted': '{tilted} of {total} tilted',
   'binDesigner.angledDividers.rowLabel': 'Comp {a} ↔ Comp {b}',
+  'binDesigner.angledDividers.tilt': 'Tilt (mm)',
   'binDesigner.angledDividers.offsetStart': 'Start (mm)',
   'binDesigner.angledDividers.offsetEnd': 'End (mm)',
+  'binDesigner.angledDividers.asymmetric': 'Asymmetric',
   'binDesigner.angledDividers.resetRow': 'Reset divider to straight',
-  'binDesigner.angledDividers.handleAriaLabel.start':
-    'Drag start endpoint of divider between Comp {a} and Comp {b}',
-  'binDesigner.angledDividers.handleAriaLabel.end':
-    'Drag end endpoint of divider between Comp {a} and Comp {b}',
-  'binDesigner.angledDividers.slotIncompatible':
-    "Slots aren't supported on angled dividers — coming in v2.",
-  'binDesigner.angledDividers.unavailableNonStandardMode':
-    'Angled dividers only apply to the standard compartment grid.',
+  'binDesigner.angledDividers.resetAll': 'Reset all',
+  'binDesigner.angledDividers.stateStraight': 'Straight',
+  'binDesigner.angledDividers.stateTilted': '{start}/{end} mm',
   'binDesigner.compartmentNumberLabel': 'Comp. {n}',
   'binDesigner.textMode': 'Style',
   'binDesigner.textMode.engrave': 'Engrave',
