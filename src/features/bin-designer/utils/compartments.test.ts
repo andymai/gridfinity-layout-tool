@@ -1140,6 +1140,29 @@ describe('compartments', () => {
       ]);
       expect(remapDividerOverrides(overrides, remap)).toEqual([]);
     });
+
+    it('deduplicates pairs that collapse onto each other after a merge', () => {
+      // Imagine a 1×3 with compartments 0,1,2. Two overrides:
+      //   - between 0 and 2 (impossible in real grid, but illustrative)
+      //   - between 1 and 2
+      // After merging 0 and 1 into 0, both overrides target the same new
+      // pair (0,2). Without dedup we'd emit two entries with the same key
+      // — the worker's lookup map would last-write-wins and the validator
+      // would reject the design on next save.
+      const overrides: DividerOverride[] = [
+        { compartmentA: 0, compartmentB: 2, offsetStart: 5, offsetEnd: 0 },
+        { compartmentA: 1, compartmentB: 2, offsetStart: 10, offsetEnd: 0 },
+      ];
+      const remap = new Map([
+        [0, 0],
+        [1, 0],
+        [2, 1],
+      ]);
+      const out = remapDividerOverrides(overrides, remap);
+      expect(out).toHaveLength(1);
+      // First-wins policy: the offsets from the earlier entry survive.
+      expect(out[0].offsetStart).toBe(5);
+    });
   });
 
   describe('mergeCells with dividerOverrides', () => {
@@ -1201,6 +1224,22 @@ describe('compartments', () => {
       };
       expect(compartmentHasTiltedBackWall(config, 0)).toBe(true);
       expect(compartmentHasTiltedBackWall(config, 1)).toBe(false);
+    });
+
+    it('detects a tilted back wall when the tilt is on a non-minCol neighbor', () => {
+      // 2×2 with the top row merged into compartment 0 (spanning both cols)
+      // and bottom row split into 1 (left) and 2 (right). The override is
+      // between 0 and 2 — i.e. the right half of compartment 0's back wall.
+      // Sampling only `bounds.minCol` would miss this because the back
+      // neighbor at column 0 is compartment 1, not compartment 2.
+      const config: CompartmentConfig = {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 0, 1, 2],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 2, offsetStart: 5, offsetEnd: -5 }],
+      };
+      expect(compartmentHasTiltedBackWall(config, 0)).toBe(true);
     });
   });
 });
