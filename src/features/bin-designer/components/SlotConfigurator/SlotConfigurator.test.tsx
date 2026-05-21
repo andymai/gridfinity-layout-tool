@@ -80,6 +80,46 @@ describe('SlotConfigurator', () => {
     expect(texts.length).toBeGreaterThan(0);
   });
 
+  it('divider length tracks params.gridUnitMm (regression: panel must match mesh)', () => {
+    // Identical configs at 42mm vs 30mm gridUnitMm produce different
+    // divider lengths because innerD scales with the user-set grid unit.
+    // Pre-fix, both render the 42mm-based length regardless.
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        slotConfig: {
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: false, pitch: 20 },
+        },
+      },
+    });
+    const standard = render(<SlotConfigurator />);
+    const standardText = standard.container.textContent ?? '';
+    standard.unmount();
+
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 2,
+        depth: 2,
+        gridUnitMm: 30,
+        slotConfig: {
+          x: { enabled: true, pitch: 20 },
+          y: { enabled: false, pitch: 20 },
+        },
+      },
+    });
+    const halfPitch = render(<SlotConfigurator />);
+    const halfPitchText = halfPitch.container.textContent ?? '';
+
+    // 42mm bin has innerD ≈ 81.1, 30mm bin ≈ 57.1 → different length renders
+    expect(standardText).not.toBe(halfPitchText);
+    // Sanity: half-pitch bin shouldn't contain the 42mm-length number
+    expect(halfPitchText).toMatch(/5[0-9]\.\d/);
+  });
+
   it('shows auto height when divider height is auto', () => {
     useDesignerStore.setState({
       params: {
