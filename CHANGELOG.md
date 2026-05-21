@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.114.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.113.0...gridfinity-layout-tool-v4.114.0) (2026-05-21)
+
+
+### Features
+
+* **bin-designer:** canvas drag handles for angled dividers (PR 3 of 3-ish) ([#1835](https://github.com/andymai/gridfinity-layout-tool/issues/1835)) ([1085a58](https://github.com/andymai/gridfinity-layout-tool/commit/1085a588cfb9c2b72f0c9f5e9f9193110aeeb9d5))
+
 ## [4.113.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.112.1...gridfinity-layout-tool-v4.113.0) (2026-05-21)
 
 
