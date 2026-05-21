@@ -30,6 +30,7 @@ import {
   isRectangularSelection,
   normalizeIdsWithRemap,
   remapCompartmentTexts,
+  remapDividerOverrides,
 } from '../../utils/compartments';
 import { validateCompartmentSizes } from '../../utils/validation';
 import { defaultsForNewDesign, pushHistoryEntry } from '../helpers';
@@ -254,9 +255,13 @@ export function createParamSlice(set: Set, get: Get) {
         for (let i = 0; i < rows * cols; i++) {
           cells.push(i);
         }
-        // Old per-compartment text would attach to unrelated cells once
-        // IDs regenerate — drop it.
-        const { compartmentTexts: _drop, ...keepCompartments } = state.params.compartments;
+        // Old per-compartment text and divider overrides would attach to
+        // unrelated cells once IDs regenerate — drop them.
+        const {
+          compartmentTexts: _dropTexts,
+          dividerOverrides: _dropOverrides,
+          ...keepCompartments
+        } = state.params.compartments;
         state.params.compartments = {
           ...keepCompartments,
           cols,
@@ -284,10 +289,14 @@ export function createParamSlice(set: Set, get: Get) {
         }
         const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
         const prevTexts = state.params.compartments.compartmentTexts;
+        const prevOverrides = state.params.compartments.dividerOverrides;
         state.params.compartments = {
           ...state.params.compartments,
           cells: normalized,
           ...(prevTexts ? { compartmentTexts: remapCompartmentTexts(prevTexts, remap) } : {}),
+          ...(prevOverrides
+            ? { dividerOverrides: remapDividerOverrides(prevOverrides, remap) }
+            : {}),
         };
       });
     },
@@ -321,10 +330,14 @@ export function createParamSlice(set: Set, get: Get) {
         }
         const { cells: normalized, remap } = normalizeIdsWithRemap(newCells);
         const prevTexts = state.params.compartments.compartmentTexts;
+        const prevOverrides = state.params.compartments.dividerOverrides;
         state.params.compartments = {
           ...state.params.compartments,
           cells: normalized,
           ...(prevTexts ? { compartmentTexts: remapCompartmentTexts(prevTexts, remap) } : {}),
+          ...(prevOverrides
+            ? { dividerOverrides: remapDividerOverrides(prevOverrides, remap) }
+            : {}),
         };
       });
     },

@@ -15,10 +15,15 @@ import {
   normalizeIds,
   normalizeIdsWithRemap,
   remapCompartmentTexts,
+  remapDividerOverrides,
+  validateDividerOverride,
+  validateDividerOverrides,
+  compartmentHasTiltedEdge,
+  compartmentHasTiltedBackWall,
   deriveWallSegments,
   fromDividerConfig,
 } from '@/features/bin-designer/utils/compartments';
-import type { CompartmentConfig } from '@/features/bin-designer/types';
+import type { CompartmentConfig, DividerOverride } from '@/features/bin-designer/types';
 
 describe('compartments', () => {
   // =============================================================================
@@ -948,6 +953,254 @@ describe('compartments', () => {
       const ids = getCompartmentIds(result);
       expect(ids.length).toBe(9); // 3×3 = 9 cells
       expect(getCompartmentCount(result)).toBe(9);
+    });
+  });
+
+  // =============================================================================
+  // Divider Override
+  // =============================================================================
+
+  describe('validateDividerOverride', () => {
+    const config: CompartmentConfig = {
+      cols: 1,
+      rows: 2,
+      thickness: 1.2,
+      cells: [0, 1],
+    };
+
+    it('accepts a canonical, in-bounds override between adjacent compartments', () => {
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 0,
+          compartmentB: 1,
+          offsetStart: 10,
+          offsetEnd: -8,
+        })
+      ).toBeNull();
+    });
+
+    it('rejects unordered pair', () => {
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 1,
+          compartmentB: 0,
+          offsetStart: 0,
+          offsetEnd: 0,
+        })
+      ).toBe('unordered-pair');
+    });
+
+    it('rejects self-pair', () => {
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 0,
+          compartmentB: 0,
+          offsetStart: 0,
+          offsetEnd: 0,
+        })
+      ).toBe('self-pair');
+    });
+
+    it('rejects unknown compartment IDs', () => {
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 0,
+          compartmentB: 9,
+          offsetStart: 0,
+          offsetEnd: 0,
+        })
+      ).toBe('unknown-compartment');
+    });
+
+    it('rejects non-adjacent compartments', () => {
+      // 1×3 grid: compartments 0 and 2 are not adjacent (compartment 1
+      // sits between them).
+      const nonAdj: CompartmentConfig = {
+        cols: 1,
+        rows: 3,
+        thickness: 1.2,
+        cells: [0, 1, 2],
+      };
+      expect(
+        validateDividerOverride(nonAdj, {
+          compartmentA: 0,
+          compartmentB: 2,
+          offsetStart: 0,
+          offsetEnd: 0,
+        })
+      ).toBe('non-adjacent-compartments');
+    });
+
+    it('rejects out-of-bounds offsets', () => {
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 0,
+          compartmentB: 1,
+          offsetStart: 999,
+          offsetEnd: 0,
+        })
+      ).toBe('offset-out-of-bounds');
+    });
+
+    it('rejects non-finite offsets', () => {
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 0,
+          compartmentB: 1,
+          offsetStart: Number.POSITIVE_INFINITY,
+          offsetEnd: 0,
+        })
+      ).toBe('offset-not-finite');
+      expect(
+        validateDividerOverride(config, {
+          compartmentA: 0,
+          compartmentB: 1,
+          offsetStart: 0,
+          offsetEnd: Number.NaN,
+        })
+      ).toBe('offset-not-finite');
+    });
+  });
+
+  describe('validateDividerOverrides', () => {
+    const config: CompartmentConfig = {
+      cols: 2,
+      rows: 2,
+      thickness: 1.2,
+      cells: [0, 1, 2, 3],
+    };
+
+    it('rejects duplicate canonical pairs', () => {
+      const result = validateDividerOverrides(config, [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 },
+        { compartmentA: 0, compartmentB: 1, offsetStart: 10, offsetEnd: 0 },
+      ]);
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error).toBe('duplicate-pair');
+        expect(result.index).toBe(1);
+      }
+    });
+
+    it('passes on a clean list', () => {
+      const result = validateDividerOverrides(config, [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 },
+        { compartmentA: 2, compartmentB: 3, offsetStart: -3, offsetEnd: 0 },
+      ]);
+      expect(result.ok).toBe(true);
+    });
+  });
+
+  describe('remapDividerOverrides', () => {
+    it('returns empty for undefined / empty input', () => {
+      expect(remapDividerOverrides(undefined, new Map())).toEqual([]);
+      expect(remapDividerOverrides([], new Map([[0, 0]]))).toEqual([]);
+    });
+
+    it('renumbers surviving overrides and preserves canonical ordering', () => {
+      const overrides: DividerOverride[] = [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: -2 },
+        { compartmentA: 1, compartmentB: 2, offsetStart: 0, offsetEnd: 3 },
+      ];
+      // Remap that swaps 0↔1.
+      const remap = new Map([
+        [0, 1],
+        [1, 0],
+        [2, 2],
+      ]);
+      const out = remapDividerOverrides(overrides, remap);
+      expect(out).toEqual([
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: -2 },
+        { compartmentA: 0, compartmentB: 2, offsetStart: 0, offsetEnd: 3 },
+      ]);
+    });
+
+    it('drops overrides whose compartment disappeared from the remap', () => {
+      const overrides: DividerOverride[] = [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 },
+        { compartmentA: 1, compartmentB: 2, offsetStart: 3, offsetEnd: 0 },
+      ];
+      // Compartment 2 disappeared (merged into 1).
+      const remap = new Map([
+        [0, 0],
+        [1, 1],
+      ]);
+      const out = remapDividerOverrides(overrides, remap);
+      expect(out).toEqual([{ compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 }]);
+    });
+
+    it('drops overrides whose two compartments collapsed to the same ID', () => {
+      const overrides: DividerOverride[] = [
+        { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 },
+      ];
+      // Compartments 0 and 1 merged to 0.
+      const remap = new Map([
+        [0, 0],
+        [1, 0],
+      ]);
+      expect(remapDividerOverrides(overrides, remap)).toEqual([]);
+    });
+  });
+
+  describe('mergeCells with dividerOverrides', () => {
+    it('remaps surviving overrides after a merge', () => {
+      const config: CompartmentConfig = {
+        cols: 2,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1, 2, 3],
+        dividerOverrides: [
+          { compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: -3 },
+          { compartmentA: 2, compartmentB: 3, offsetStart: 0, offsetEnd: 8 },
+        ],
+      };
+      // Merge compartments 0 and 1 (top row).
+      const merged = mergeCells(config, [0, 1]);
+      // Top-row override drops; bottom-row override survives with renumbered IDs.
+      expect(merged?.dividerOverrides).toEqual([
+        { compartmentA: 1, compartmentB: 2, offsetStart: 0, offsetEnd: 8 },
+      ]);
+    });
+  });
+
+  describe('compartmentHasTiltedEdge / compartmentHasTiltedBackWall', () => {
+    it('returns false when no overrides exist', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+      };
+      expect(compartmentHasTiltedEdge(config, 0)).toBe(false);
+      expect(compartmentHasTiltedBackWall(config, 0)).toBe(false);
+    });
+
+    it('detects a tilted edge on either compartment of an override pair', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: 0 }],
+      };
+      expect(compartmentHasTiltedEdge(config, 0)).toBe(true);
+      expect(compartmentHasTiltedEdge(config, 1)).toBe(true);
+    });
+
+    it('flags the back-wall tilt only for the front compartment in a 1×2', () => {
+      // 1×2 stacked vertically: row 0 is "front" (closer to y=0), row 1 is
+      // "back". The horizontal divider between them is the BACK wall of
+      // compartment 0 and the FRONT wall of compartment 1. Only compartment
+      // 0's back wall is tilted.
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: -5 }],
+      };
+      expect(compartmentHasTiltedBackWall(config, 0)).toBe(true);
+      expect(compartmentHasTiltedBackWall(config, 1)).toBe(false);
     });
   });
 });

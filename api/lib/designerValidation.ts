@@ -283,6 +283,46 @@ function validateCompartments(compartments: unknown): string | null {
       }
     }
   }
+  // Optional per-divider tilt overrides. Mirrors the client-side
+  // `DIVIDER_OFFSET_MAX_MM = 200` cap and the canonical pair ordering rule
+  // (compartmentA < compartmentB) so a direct HTTP POST can't smuggle in
+  // unordered or absurd overrides that bypass the store action.
+  if (compartments.dividerOverrides !== undefined) {
+    if (!Array.isArray(compartments.dividerOverrides)) {
+      return 'compartments.dividerOverrides must be an array';
+    }
+    if (compartments.dividerOverrides.length > expectedLength * 2) {
+      // Generous upper bound: at most ~2× cell count of unique pairs.
+      return `compartments.dividerOverrides length is unreasonably large`;
+    }
+    const seenPairs = new Set<string>();
+    for (let i = 0; i < compartments.dividerOverrides.length; i++) {
+      const o = compartments.dividerOverrides[i] as Record<string, unknown>;
+      if (!isObject(o)) {
+        return `compartments.dividerOverrides[${i}] must be an object`;
+      }
+      if (!isNumber(o.compartmentA) || !Number.isInteger(o.compartmentA) || o.compartmentA < 0) {
+        return `compartments.dividerOverrides[${i}].compartmentA must be a non-negative integer`;
+      }
+      if (!isNumber(o.compartmentB) || !Number.isInteger(o.compartmentB) || o.compartmentB < 0) {
+        return `compartments.dividerOverrides[${i}].compartmentB must be a non-negative integer`;
+      }
+      if (o.compartmentA >= o.compartmentB) {
+        return `compartments.dividerOverrides[${i}] must have compartmentA < compartmentB`;
+      }
+      if (!isNumber(o.offsetStart) || !inRange(o.offsetStart, -200, 200)) {
+        return `compartments.dividerOverrides[${i}].offsetStart must be -200..200`;
+      }
+      if (!isNumber(o.offsetEnd) || !inRange(o.offsetEnd, -200, 200)) {
+        return `compartments.dividerOverrides[${i}].offsetEnd must be -200..200`;
+      }
+      const key = `${o.compartmentA}|${o.compartmentB}`;
+      if (seenPairs.has(key)) {
+        return `compartments.dividerOverrides has duplicate pair ${key}`;
+      }
+      seenPairs.add(key);
+    }
+  }
   return null;
 }
 
