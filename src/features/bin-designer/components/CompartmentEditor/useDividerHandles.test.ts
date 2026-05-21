@@ -48,19 +48,10 @@ describe('useDividerHandles', () => {
     useLabsStore.getState().enableFeature('angled_dividers');
   });
 
-  it('returns no handles when the labs flag is off', () => {
-    useLabsStore.getState().disableFeature('angled_dividers');
-    setCompartments({ cols: 1, rows: 2, cells: [0, 1] });
-    const { result } = renderHook(() =>
-      useDividerHandles({
-        compartments: useDesignerStore.getState().params.compartments,
-        innerW: 80,
-        innerD: 80,
-        canvasRef: fakeCanvas(),
-      })
-    );
-    expect(result.current.handles).toEqual([]);
-  });
+  // Note: prior to graduation the feature was experimental and could be
+  // disabled; that test was removed when `angled_dividers` graduated. The
+  // hook now always honors eligibility (linear grid + interior dividers)
+  // since graduated flags are always enabled.
 
   it('returns no handles for non-linear grids (panel-only in v1)', () => {
     setCompartments({ cols: 2, rows: 2, cells: [0, 1, 2, 3] });
@@ -295,28 +286,57 @@ describe('useDividerHandles', () => {
   });
 
   it('removes window listeners on unmount mid-drag (no leak)', () => {
-    // Regression for the listener-leak fix on #1837: if the component
-    // unmounted mid-drag, window pointer listeners would persist and
-    // later try to setDrag on an unmounted component.
+    // Regression for the listener-leak fix on #1837 — strengthened in
+    // PR 4 by spying on add/removeEventListener so a reintroduced leak
+    // fails the test directly, not via the indirect "no store
+    // mutation" signal alone (React 18 silently suppresses setState
+    // on unmounted components, so that proxy can miss real leaks).
     setCompartments({ cols: 1, rows: 2, cells: [0, 1] });
-    const { result, unmount } = renderHook(() =>
-      useDividerHandles({
-        compartments: useDesignerStore.getState().params.compartments,
-        innerW: 80,
-        innerD: 80,
-        canvasRef: fakeCanvas(),
-      })
-    );
-    pointerDown(result);
-    expect(result.current.drag).not.toBeNull();
-    unmount();
-    // Post-unmount: a window pointer-move/up event must NOT throw or
-    // attempt to update state. We can't directly observe listener
-    // count, so the cleanest check is that the act doesn't surface
-    // errors and the store stays unchanged.
-    expect(() => {
-      window.dispatchEvent(new PointerEvent('pointerup', { clientX: 100, clientY: 150 }));
-    }).not.toThrow();
-    expect(useDesignerStore.getState().params.compartments.dividerOverrides).toBeUndefined();
+    const adds: string[] = [];
+    const removes: string[] = [];
+    const origAdd = window.addEventListener.bind(window);
+    const origRemove = window.removeEventListener.bind(window);
+    window.addEventListener = ((type: string, ...args: unknown[]) => {
+      if (type === 'pointermove' || type === 'pointerup' || type === 'pointercancel') {
+        adds.push(type);
+      }
+
+      return origAdd(type as never, ...(args as any));
+    }) as typeof window.addEventListener;
+    window.removeEventListener = ((type: string, ...args: unknown[]) => {
+      if (type === 'pointermove' || type === 'pointerup' || type === 'pointercancel') {
+        removes.push(type);
+      }
+
+      return origRemove(type as never, ...(args as any));
+    }) as typeof window.removeEventListener;
+    try {
+      const { result, unmount } = renderHook(() =>
+        useDividerHandles({
+          compartments: useDesignerStore.getState().params.compartments,
+          innerW: 80,
+          innerD: 80,
+          canvasRef: fakeCanvas(),
+        })
+      );
+      pointerDown(result);
+      expect(result.current.drag).not.toBeNull();
+      // 3 listeners registered on pointer-down (move, up, cancel).
+      const addsBeforeUnmount = adds.length;
+      expect(addsBeforeUnmount).toBeGreaterThanOrEqual(3);
+      unmount();
+      // The useEffect cleanup must invoke `dragCleanupRef`, which
+      // removes the same 3 listeners. Removes count >= adds count
+      // proves no leak.
+      expect(removes.length).toBeGreaterThanOrEqual(addsBeforeUnmount);
+      // Defense-in-depth: post-unmount events still must not commit.
+      expect(() => {
+        window.dispatchEvent(new PointerEvent('pointerup', { clientX: 100, clientY: 150 }));
+      }).not.toThrow();
+      expect(useDesignerStore.getState().params.compartments.dividerOverrides).toBeUndefined();
+    } finally {
+      window.addEventListener = origAdd;
+      window.removeEventListener = origRemove;
+    }
   });
 });

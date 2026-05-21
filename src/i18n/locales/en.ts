@@ -1390,6 +1390,8 @@ const en: Record<string, string> = {
     'Drag start endpoint of divider between Comp {a} and Comp {b}',
   'binDesigner.angledDividers.handleAriaLabel.end':
     'Drag end endpoint of divider between Comp {a} and Comp {b}',
+  'binDesigner.angledDividers.slotIncompatible':
+    "Slots aren't supported on angled dividers — coming in v2.",
   'binDesigner.compartmentNumberLabel': 'Comp. {n}',
   'binDesigner.textMode': 'Style',
   'binDesigner.textMode.engrave': 'Engrave',

@@ -119,11 +119,12 @@ export const FEATURE_FLAGS = [
     name: 'Angled Dividers',
     description:
       'Tilt the dividers between compartments to make wedge-shaped slots — handy for silverware drawers where utensils pack better head-to-toe.',
-    status: 'experimental',
+    status: 'graduated',
     risk: 'medium',
     warning:
-      'Panel UI ships now (numeric mm offsets per divider). Canvas drag handles arrive in the next update. Scoops and label tabs auto-skip compartments touching a tilted divider.',
+      'Scoops, label tabs, slot mode, and floor inserts auto-skip compartments touching a tilted divider.',
     addedAt: '2026-05',
+    graduatedAt: '2026-05',
     requiresRefresh: false,
   },
 ] as const satisfies readonly FeatureFlag[];

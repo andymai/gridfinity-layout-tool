@@ -89,6 +89,7 @@
   "binDesigner.angledDividers.resetRow": "Nullstill skillevegg",
   "binDesigner.angledDividers.handleAriaLabel.start": "Dra startpunktet til skilleveggen mellom Rom {a} og Rom {b}",
   "binDesigner.angledDividers.handleAriaLabel.end": "Dra sluttpunktet til skilleveggen mellom Rom {a} og Rom {b}",
+  "binDesigner.angledDividers.slotIncompatible": "Spor støttes ikke for skrå skillevegger ennå — kommer i v2.",
   "binDesigner.compartmentNumberLabel": "Rom {n}",
   "binDesigner.textMode": "Stil",
   "binDesigner.textMode.engrave": "Graver",

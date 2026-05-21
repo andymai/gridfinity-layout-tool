@@ -89,6 +89,7 @@
   "binDesigner.angledDividers.resetRow": "Réinitialiser le séparateur",
   "binDesigner.angledDividers.handleAriaLabel.start": "Faire glisser le point de départ du séparateur entre Comp. {a} et Comp. {b}",
   "binDesigner.angledDividers.handleAriaLabel.end": "Faire glisser le point final du séparateur entre Comp. {a} et Comp. {b}",
+  "binDesigner.angledDividers.slotIncompatible": "Les fentes ne sont pas compatibles avec les séparateurs inclinés — disponible en v2.",
   "binDesigner.compartmentNumberLabel": "Compart. {n}",
   "binDesigner.textMode": "Type",
   "binDesigner.textMode.engrave": "Gravure",

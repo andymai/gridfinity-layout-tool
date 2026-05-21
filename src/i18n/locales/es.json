@@ -89,6 +89,7 @@
   "binDesigner.angledDividers.resetRow": "Restablecer divisor",
   "binDesigner.angledDividers.handleAriaLabel.start": "Arrastrar punto inicial del divisor entre Compart. {a} y Compart. {b}",
   "binDesigner.angledDividers.handleAriaLabel.end": "Arrastrar punto final del divisor entre Compart. {a} y Compart. {b}",
+  "binDesigner.angledDividers.slotIncompatible": "Las ranuras no son compatibles con divisores inclinados — próximamente en v2.",
   "binDesigner.compartmentNumberLabel": "Compart. {n}",
   "binDesigner.textMode": "Estilo",
   "binDesigner.textMode.engrave": "Grabado",

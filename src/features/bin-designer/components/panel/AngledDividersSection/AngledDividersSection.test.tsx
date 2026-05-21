@@ -15,11 +15,9 @@ describe('AngledDividersSection', () => {
     useLabsStore.getState().enableFeature('angled_dividers');
   });
 
-  it('renders nothing when the labs flag is off', () => {
-    useLabsStore.getState().disableFeature('angled_dividers');
-    const { container } = render(<AngledDividersSection />);
-    expect(container.firstChild).toBeNull();
-  });
+  // The "labs flag off" path was removed when `angled_dividers`
+  // graduated to a stable feature (PR 4). Graduated flags are always
+  // enabled, so the section can't be hidden via the Labs drawer.
 
   it('renders the section title when at least one interior divider exists', () => {
     useDesignerStore.setState((s) => ({

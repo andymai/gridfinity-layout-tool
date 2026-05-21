@@ -89,6 +89,7 @@
   "binDesigner.angledDividers.resetRow": "Redefinir divisória",
   "binDesigner.angledDividers.handleAriaLabel.start": "Arrastar ponto inicial da divisória entre Compart. {a} e Compart. {b}",
   "binDesigner.angledDividers.handleAriaLabel.end": "Arrastar ponto final da divisória entre Compart. {a} e Compart. {b}",
+  "binDesigner.angledDividers.slotIncompatible": "Encaixes ainda não são compatíveis com divisórias inclinadas — em breve na v2.",
   "binDesigner.compartmentNumberLabel": "Compart. {n}",
   "binDesigner.textMode": "Estilo",
   "binDesigner.textMode.engrave": "Gravar",

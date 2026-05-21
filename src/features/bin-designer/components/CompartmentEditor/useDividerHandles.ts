@@ -23,6 +23,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useLabsStore } from '@/core/store/labs';
+import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import {
   getEligibleDividers,
   validateDividerOverride,
@@ -35,6 +36,16 @@ export const DRAG_SNAP_DEFAULT_MM = 5;
 // panel stepper produce values from the same granularity grid (Greptile
 // flagged the 1 mm-vs-0.5 mm mismatch on PR #1835).
 export const DRAG_SNAP_FREE_MM = 0.5;
+
+/** Captured at pointer-down; the commit path needs these values even after
+ *  the ref gets cleared in cleanup, so we pass it explicitly to
+ *  `computeOffsetMm`. Extracted from the inline `dragOriginRef` shape so
+ *  the ref + function signature can't drift (Copilot flagged on #1839). */
+interface DragOrigin {
+  readonly startClientX: number;
+  readonly startClientY: number;
+  readonly originalOffsetMm: number;
+}
 
 /** One draggable endpoint on the canvas. */
 export interface DividerHandle {
@@ -92,11 +103,12 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
   // Pointer-down captured the initial offset and pointer position so move
   // events can compute a delta without re-reading the (possibly mutated)
   // override value.
-  const dragOriginRef = useRef<{
-    startClientX: number;
-    startClientY: number;
-    originalOffsetMm: number;
-  } | null>(null);
+  const dragOriginRef = useRef<DragOrigin | null>(null);
+  // Whether we've already emitted a `divider_tilt_blocked` event during
+  // the current drag — keeps the analytics signal to "at least one
+  // rejection happened during this drag" rather than one event per
+  // pointer move tick (which would saturate the dashboard).
+  const blockedEventEmittedRef = useRef(false);
   // Cleanup hook for the active drag's window listeners. Set when a drag
   // starts, called on natural pointerup/cancel AND on unmount. Prevents
   // listener leaks if the component unmounts mid-drag (route change,
@@ -131,6 +143,7 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
           startClientY: e.clientY,
           originalOffsetMm: handle.currentOffsetMm,
         };
+        blockedEventEmittedRef.current = false;
         setDrag({
           divider: handle.divider,
           which: handle.which,
@@ -147,7 +160,7 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
         // null after `finishDrag` zeroed it — Copilot caught the
         // regression on PR #1837 (silent broken commits).
         const computeOffsetMm = (
-          origin: { startClientX: number; startClientY: number; originalOffsetMm: number },
+          origin: DragOrigin,
           clientX: number,
           clientY: number,
           altOrShift: boolean
@@ -180,9 +193,21 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
           );
           if (!result) return;
           const candidate = buildCandidateOverride(handle, result.offsetMm);
-          const isValid = candidate
-            ? validateDividerOverride(compartments, candidate) === null
-            : false;
+          const validationError = candidate
+            ? validateDividerOverride(compartments, candidate)
+            : 'unknown-compartment';
+          const isValid = validationError === null;
+          // Emit `divider_tilt_blocked` at most ONCE per drag — the move
+          // handler fires at every pointer event, so emitting per-event
+          // would saturate analytics. The first rejection within a drag
+          // is the signal we care about (and includes the reason code).
+          if (!isValid && !blockedEventEmittedRef.current) {
+            blockedEventEmittedRef.current = true;
+            trackEvent('divider_tilt_blocked', {
+              reason: validationError ?? 'unknown',
+              axis: handle.divider.axis,
+            });
+          }
           setDrag({
             divider: handle.divider,
             which: handle.which,
@@ -215,6 +240,12 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
                 candidate.offsetStart,
                 candidate.offsetEnd
               );
+              trackEvent('divider_offset_changed', {
+                axis: handle.divider.axis,
+                offset_start_mm: candidate.offsetStart,
+                offset_end_mm: candidate.offsetEnd,
+                source: 'canvas_drag',
+              });
             }
           }
           // Either way the drag is over; the snap-back to the previous

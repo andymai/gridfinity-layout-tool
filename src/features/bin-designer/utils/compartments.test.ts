@@ -16,6 +16,7 @@ import {
   normalizeIdsWithRemap,
   remapCompartmentTexts,
   remapDividerOverrides,
+  rectStraddlesTiltedDivider,
   validateDividerOverride,
   validateDividerOverrides,
   compartmentHasTiltedEdge,
@@ -1224,6 +1225,54 @@ describe('compartments', () => {
       };
       expect(compartmentHasTiltedBackWall(config, 0)).toBe(true);
       expect(compartmentHasTiltedBackWall(config, 1)).toBe(false);
+    });
+
+    it('rectStraddlesTiltedDivider returns false when no overrides exist', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+      };
+      const rect = { x: -10, y: -10, width: 20, depth: 20 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, rect)).toBe(false);
+    });
+
+    it('rectStraddlesTiltedDivider flags an insert that crosses a tilted line', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 20, offsetEnd: -20 }],
+      };
+      const rect = { x: -15, y: -15, width: 30, depth: 30 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, rect)).toBe(true);
+    });
+
+    it('rectStraddlesTiltedDivider returns false for inserts safely inside one wedge', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 20, offsetEnd: -20 }],
+      };
+      // Tiny insert in the front-right corner, well inside one wedge.
+      const rect = { x: 30, y: -30, width: 5, depth: 5 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, rect)).toBe(false);
+    });
+
+    it('rectStraddlesTiltedDivider skips zero-offset overrides', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 0, offsetEnd: 0 }],
+      };
+      const rect = { x: -15, y: -15, width: 30, depth: 30 };
+      expect(rectStraddlesTiltedDivider(config, 80, 80, rect)).toBe(false);
     });
 
     it('detects a tilted back wall when the tilt is on a non-minCol neighbor', () => {
