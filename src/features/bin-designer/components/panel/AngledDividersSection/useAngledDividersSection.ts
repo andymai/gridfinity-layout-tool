@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { useLabsStore } from '@/core/store/labs';
+import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import { getEligibleDividers } from '@/features/bin-designer/utils/compartments';
 import type { EligibleDivider } from '@/features/bin-designer/utils/compartments';
 
@@ -69,7 +70,16 @@ export function useAngledDividersSection() {
       const clamped = Math.max(-ANGLED_DIVIDER_UI_MAX, Math.min(ANGLED_DIVIDER_UI_MAX, value));
       const nextStart = which === 'start' ? clamped : row.offsetStart;
       const nextEnd = which === 'end' ? clamped : row.offsetEnd;
+      // No-op guard before the analytics emit so a noisy keystroke loop
+      // (StepperControl can fire on hold-arrow) doesn't saturate PostHog.
+      if (nextStart === row.offsetStart && nextEnd === row.offsetEnd) return;
       setDividerOverride(row.compartmentA, row.compartmentB, nextStart, nextEnd);
+      trackEvent('divider_offset_changed', {
+        axis: row.axis,
+        offset_start_mm: nextStart,
+        offset_end_mm: nextEnd,
+        source: 'panel_input',
+      });
     },
     [setDividerOverride]
   );

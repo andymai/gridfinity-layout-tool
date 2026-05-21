@@ -76,6 +76,7 @@ export {
 export {
   compartmentHasTiltedEdge,
   compartmentHasTiltedBackWall,
+  rectStraddlesTiltedDivider,
 } from '@/features/bin-designer/utils/compartments';
 export type {
   LidCompatibilityIssue,

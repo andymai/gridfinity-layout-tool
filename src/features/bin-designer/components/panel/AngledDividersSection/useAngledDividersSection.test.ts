@@ -91,12 +91,10 @@ describe('useAngledDividersSection', () => {
     expect(useDesignerStore.getState().params.compartments.dividerOverrides).toBeUndefined();
   });
 
-  it('hides itself when the labs flag is off', () => {
-    useLabsStore.getState().disableFeature('angled_dividers');
-    setCompartments(1, 2, [0, 1]);
-    const { result } = renderHook(() => useAngledDividersSection());
-    expect(result.current.state.flagEnabled).toBe(false);
-  });
+  // The "labs flag off" test was removed when `angled_dividers`
+  // graduated to a stable feature. `flagEnabled` is always true for
+  // graduated flags, so the section's visibility is now driven purely
+  // by eligibility (rows.length > 0).
 
   it('opens on toggleEnabled even when no overrides exist (first-time UX)', () => {
     // Regression test for the catch-22 in PR #1832: FeatureToggle only

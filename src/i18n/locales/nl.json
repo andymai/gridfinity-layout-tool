@@ -89,6 +89,7 @@
   "binDesigner.angledDividers.resetRow": "Scheiding herstellen",
   "binDesigner.angledDividers.handleAriaLabel.start": "Sleep het beginpunt van de scheiding tussen Vak {a} en Vak {b}",
   "binDesigner.angledDividers.handleAriaLabel.end": "Sleep het eindpunt van de scheiding tussen Vak {a} en Vak {b}",
+  "binDesigner.angledDividers.slotIncompatible": "Sleuven worden nog niet ondersteund bij schuine scheidingen — beschikbaar in v2.",
   "binDesigner.compartmentNumberLabel": "Vak {n}",
   "binDesigner.textMode": "Stijl",
   "binDesigner.textMode.engrave": "Graveren",

@@ -298,6 +298,105 @@ export function getEligibleDividers(config: CompartmentConfig): EligibleDivider[
 }
 
 /**
+ * True when an axis-aligned rectangle (e.g. a floor insert's footprint)
+ * straddles ANY tilted divider segment. Used by `buildInsertCuts` to skip
+ * inserts that would otherwise cross from one wedge compartment into
+ * another — the resulting cavity would punch through a tilted wall and
+ * produce visually broken geometry.
+ *
+ * The check is conservative: it considers each tilted divider's segment
+ * as an infinite line for the cross test (rather than just the segment),
+ * which over-rejects for inserts placed near the end of a segment but
+ * far past its endpoints. That's the right safety vs. flexibility
+ * trade-off for v1 — false positives only suppress, never produce broken
+ * geometry.
+ *
+ * Rectangle coords are interior-frame mm (origin at bin center).
+ */
+export function rectStraddlesTiltedDivider(
+  config: CompartmentConfig,
+  innerW: number,
+  innerD: number,
+  rect: { x: number; y: number; width: number; depth: number }
+): boolean {
+  const overrides = config.dividerOverrides;
+  if (!overrides || overrides.length === 0) return false;
+  const corners: ReadonlyArray<readonly [number, number]> = [
+    [rect.x, rect.y],
+    [rect.x + rect.width, rect.y],
+    [rect.x + rect.width, rect.y + rect.depth],
+    [rect.x, rect.y + rect.depth],
+  ];
+  const { cols, rows, cells } = config;
+  for (const o of overrides) {
+    // Skip overrides where the offset is zero on both ends (no tilt).
+    if (o.offsetStart === 0 && o.offsetEnd === 0) continue;
+    const endpoints = tiltedDividerEndpoints(o, cols, rows, cells, innerW, innerD);
+    if (!endpoints) continue;
+    const { p1, p2 } = endpoints;
+    // Implicit form of the line through p1 → p2: (x - p1.x) * (p2.y -
+    // p1.y) - (y - p1.y) * (p2.x - p1.x). Positive on one side, negative
+    // on the other. If any two corners produce opposite signs the
+    // rectangle straddles the line.
+    let sawPositive = false;
+    let sawNegative = false;
+    for (const [cx, cy] of corners) {
+      const s = (cx - p1.x) * (p2.y - p1.y) - (cy - p1.y) * (p2.x - p1.x);
+      if (s > 0) sawPositive = true;
+      else if (s < 0) sawNegative = true;
+      if (sawPositive && sawNegative) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * World-frame endpoints (mm, origin at bin center) of a tilted divider.
+ * Returns null when the override doesn't correspond to an interior cell
+ * boundary (e.g. after a non-adjacent remap — defense-in-depth).
+ */
+function tiltedDividerEndpoints(
+  override: DividerOverride,
+  cols: number,
+  rows: number,
+  cells: number[],
+  innerW: number,
+  innerD: number
+): { p1: { x: number; y: number }; p2: { x: number; y: number } } | null {
+  // Vertical divider? Look for the pair sharing a col boundary.
+  for (let col = 0; col < cols - 1; col++) {
+    for (let row = 0; row < rows; row++) {
+      const left = cells[row * cols + col];
+      const right = cells[row * cols + (col + 1)];
+      const [a, b] = left < right ? [left, right] : [right, left];
+      if (a === override.compartmentA && b === override.compartmentB) {
+        const xMm = -innerW / 2 + ((col + 1) / cols) * innerW;
+        return {
+          p1: { x: xMm + override.offsetStart, y: -innerD / 2 },
+          p2: { x: xMm + override.offsetEnd, y: innerD / 2 },
+        };
+      }
+    }
+  }
+  // Horizontal divider.
+  for (let row = 0; row < rows - 1; row++) {
+    for (let col = 0; col < cols; col++) {
+      const top = cells[row * cols + col];
+      const bottom = cells[(row + 1) * cols + col];
+      const [a, b] = top < bottom ? [top, bottom] : [bottom, top];
+      if (a === override.compartmentA && b === override.compartmentB) {
+        const yMm = -innerD / 2 + ((row + 1) / rows) * innerD;
+        return {
+          p1: { x: -innerW / 2, y: yMm + override.offsetStart },
+          p2: { x: innerW / 2, y: yMm + override.offsetEnd },
+        };
+      }
+    }
+  }
+  return null;
+}
+
+/**
  * True when the compartment has at least one tilted boundary (i.e. is one
  * end of a `DividerOverride`). Used by features that can't render against
  * non-axis-aligned edges (scoops, label tabs on the tilted side).
