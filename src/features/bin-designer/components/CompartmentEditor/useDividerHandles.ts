@@ -10,7 +10,9 @@
  *
  * Drag UX:
  *  - Default snap: 5 mm increments (intuitive for users thinking in mm).
- *  - Alt or Shift held: free 1 mm increments.
+ *  - Alt or Shift held: 0.5 mm free-snap (matches the panel stepper's
+ *    `ANGLED_DIVIDER_UI_STEP` so both paths produce values from the same
+ *    granularity grid).
  *  - Live validation: handle/line render red when the would-be commit is
  *    invalid; pointer-up on an invalid position snaps back (no commit).
  *  - Pointer-up commits once via `setDividerOverride` — one undo step
@@ -139,10 +141,19 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
           cursorY: e.clientY,
         });
 
-        const computeOffsetMm = (clientX: number, clientY: number, altOrShift: boolean) => {
-          const origin = dragOriginRef.current;
+        // Pass `origin` explicitly so the commit path can compute the
+        // final offset AFTER `dragOriginRef.current` is cleared during
+        // cleanup. The earlier version read from the ref and produced
+        // null after `finishDrag` zeroed it — Copilot caught the
+        // regression on PR #1837 (silent broken commits).
+        const computeOffsetMm = (
+          origin: { startClientX: number; startClientY: number; originalOffsetMm: number },
+          clientX: number,
+          clientY: number,
+          altOrShift: boolean
+        ) => {
           const canvas = canvasRef.current;
-          if (!origin || !canvas) return null;
+          if (!canvas) return null;
           const rect = canvas.getBoundingClientRect();
           const deltaPxX = clientX - origin.startClientX;
           const deltaPxY = -(clientY - origin.startClientY);
@@ -159,7 +170,14 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
         };
 
         const handleMove = (move: PointerEvent): void => {
-          const result = computeOffsetMm(move.clientX, move.clientY, move.altKey || move.shiftKey);
+          const origin = dragOriginRef.current;
+          if (!origin) return;
+          const result = computeOffsetMm(
+            origin,
+            move.clientX,
+            move.clientY,
+            move.altKey || move.shiftKey
+          );
           if (!result) return;
           const candidate = buildCandidateOverride(handle, result.offsetMm);
           const isValid = candidate
@@ -187,7 +205,7 @@ export function useDividerHandles(opts: UseDividerHandlesOptions): UseDividerHan
           }
           // Re-derive the final offset from the up-event so a pointer
           // released between move ticks still commits the right value.
-          const result = computeOffsetMm(up.clientX, up.clientY, up.altKey || up.shiftKey);
+          const result = computeOffsetMm(origin, up.clientX, up.clientY, up.altKey || up.shiftKey);
           if (result) {
             const candidate = buildCandidateOverride(handle, result.offsetMm);
             if (candidate && validateDividerOverride(compartments, candidate) === null) {

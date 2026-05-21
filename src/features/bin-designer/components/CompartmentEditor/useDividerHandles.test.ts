@@ -212,4 +212,111 @@ describe('useDividerHandles', () => {
     // produce values from the same granularity grid.
     expect(result.current.drag?.snapMm).toBe(0.5);
   });
+
+  // === Regression tests for #1837 critical fixes ===
+  // These cover the end-of-drag behavior (commit on pointerup, abort on
+  // pointercancel, cleanup on unmount). The fixes themselves shipped in
+  // #1837 but were never exercised by tests — Greptile flagged the gap
+  // on PR #1837. Including here so a future refactor can't silently
+  // reintroduce the bugs.
+
+  function pointerDown(
+    result: { current: ReturnType<typeof useDividerHandles> },
+    opts: {
+      clientX: number;
+      clientY: number;
+      altKey?: boolean;
+      shiftKey?: boolean;
+    } = { clientX: 100, clientY: 100 }
+  ) {
+    const handle = result.current.handles[0];
+    act(() => {
+      result.current.onHandlePointerDown(handle)({
+        preventDefault: () => {},
+        stopPropagation: () => {},
+        currentTarget: { setPointerCapture: () => {} },
+        pointerId: 1,
+        clientX: opts.clientX,
+        clientY: opts.clientY,
+        altKey: opts.altKey ?? false,
+        shiftKey: opts.shiftKey ?? false,
+      } as unknown as React.PointerEvent);
+    });
+  }
+
+  it('commits the override on pointerup', () => {
+    // Regression for the finishDrag bug Copilot caught on #1837:
+    // `dragOriginRef.current` was being cleared BEFORE the final offset
+    // was computed, so `setDividerOverride` was never called.
+    setCompartments({ cols: 1, rows: 2, cells: [0, 1] });
+    const { result } = renderHook(() =>
+      useDividerHandles({
+        compartments: useDesignerStore.getState().params.compartments,
+        innerW: 80,
+        innerD: 80,
+        canvasRef: fakeCanvas(),
+      })
+    );
+    pointerDown(result, { clientX: 100, clientY: 100 });
+    // Release 50 px below the start — for the horizontal divider,
+    // that's a 20 mm shift (50 px / 200 px-rect-height * 80 mm-innerD,
+    // negated because flex-col-reverse flips Y → -20 mm). Snaps to
+    // -20 (already a 5 mm multiple).
+    act(() => {
+      window.dispatchEvent(new PointerEvent('pointerup', { clientX: 100, clientY: 150 }));
+    });
+    const overrides = useDesignerStore.getState().params.compartments.dividerOverrides;
+    expect(overrides).toHaveLength(1);
+    expect(overrides?.[0].offsetStart).toBe(-20);
+    expect(result.current.drag).toBeNull();
+  });
+
+  it('aborts WITHOUT committing on pointercancel', () => {
+    // Regression for the #1835 → #1837 critical fix: pointercancel
+    // shared handleUp and could write a wrong override using
+    // clientX:0,clientY:0 from cancel events.
+    setCompartments({ cols: 1, rows: 2, cells: [0, 1] });
+    const { result } = renderHook(() =>
+      useDividerHandles({
+        compartments: useDesignerStore.getState().params.compartments,
+        innerW: 80,
+        innerD: 80,
+        canvasRef: fakeCanvas(),
+      })
+    );
+    pointerDown(result);
+    act(() => {
+      // Cancel events on some platforms carry clientX:0,clientY:0 —
+      // committing using THAT delta would write a wrong override.
+      window.dispatchEvent(new PointerEvent('pointercancel', { clientX: 0, clientY: 0 }));
+    });
+    expect(useDesignerStore.getState().params.compartments.dividerOverrides).toBeUndefined();
+    expect(result.current.drag).toBeNull();
+  });
+
+  it('removes window listeners on unmount mid-drag (no leak)', () => {
+    // Regression for the listener-leak fix on #1837: if the component
+    // unmounted mid-drag, window pointer listeners would persist and
+    // later try to setDrag on an unmounted component.
+    setCompartments({ cols: 1, rows: 2, cells: [0, 1] });
+    const { result, unmount } = renderHook(() =>
+      useDividerHandles({
+        compartments: useDesignerStore.getState().params.compartments,
+        innerW: 80,
+        innerD: 80,
+        canvasRef: fakeCanvas(),
+      })
+    );
+    pointerDown(result);
+    expect(result.current.drag).not.toBeNull();
+    unmount();
+    // Post-unmount: a window pointer-move/up event must NOT throw or
+    // attempt to update state. We can't directly observe listener
+    // count, so the cleanest check is that the act doesn't surface
+    // errors and the store stays unchanged.
+    expect(() => {
+      window.dispatchEvent(new PointerEvent('pointerup', { clientX: 100, clientY: 150 }));
+    }).not.toThrow();
+    expect(useDesignerStore.getState().params.compartments.dividerOverrides).toBeUndefined();
+  });
 });
