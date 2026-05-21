@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.115.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.114.1...gridfinity-layout-tool-v4.115.0) (2026-05-21)
+
+
+### Features
+
+* **bin-designer:** angled-dividers polish + flag graduation (PR 4 of 4) ([#1840](https://github.com/andymai/gridfinity-layout-tool/issues/1840)) ([2fed8d2](https://github.com/andymai/gridfinity-layout-tool/commit/2fed8d2217d854d0055db28a42b79b09bb990b53))
+
+
+### Bug Fixes
+
+* **bin-designer:** [#1840](https://github.com/andymai/gridfinity-layout-tool/issues/1840) review — partial-span tilt coverage + 3 smaller ([#1842](https://github.com/andymai/gridfinity-layout-tool/issues/1842)) ([efd89ea](https://github.com/andymai/gridfinity-layout-tool/commit/efd89ea525477febc51187d27d3329c7b9c38984))
+
 ## [4.114.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.114.0...gridfinity-layout-tool-v4.114.1) (2026-05-21)
 
 
