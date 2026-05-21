@@ -79,3 +79,109 @@ describe('computeConnectorPositions', () => {
     expect(result).toEqual([]);
   });
 });
+
+describe('computeConnectorPositions — fractional-cell placement (#1847)', () => {
+  /**
+   * For a 4.5-unit depth with the half-cell at the END (default), the four
+   * inter-cell boundaries are at grid positions 1, 2, 3, 4. In piece-local
+   * coordinates (centered on the piece, totalD = 189mm), that's
+   * (k * 42) - 94.5 for k = 1..4 → -52.5, -10.5, 31.5, 73.5.
+   */
+  it('frac=end: places left-edge dovetails at expected positions for depth=4.5', () => {
+    const result = computeConnectorPositions(
+      4.5,
+      4.5,
+      42,
+      10,
+      4.5 * 42,
+      4.5 * 42,
+      0,
+      0,
+      { left: 'join', right: 'open', front: 'open', back: 'open' },
+      false,
+      'end',
+      'end'
+    );
+    const ys = result.map((p) => p.cy).sort((a, b) => a - b);
+    expect(ys).toEqual([-52.5, -10.5, 31.5, 73.5]);
+  });
+
+  /**
+   * For a 4.5-unit depth with the half-cell at the START, the cell layout is
+   * [0.5, 1, 1, 1, 1] in grid units; boundaries at grid positions 0.5, 1.5,
+   * 2.5, 3.5. In piece-local coords (totalD = 189mm) they shift left by half
+   * a grid unit: -73.5, -31.5, 10.5, 52.5.
+   */
+  it('frac=start: shifts left-edge dovetails by half a grid unit for depth=4.5', () => {
+    const result = computeConnectorPositions(
+      4.5,
+      4.5,
+      42,
+      10,
+      4.5 * 42,
+      4.5 * 42,
+      0,
+      0,
+      { left: 'join', right: 'open', front: 'open', back: 'open' },
+      false,
+      'end',
+      'start'
+    );
+    const ys = result.map((p) => p.cy).sort((a, b) => a - b);
+    expect(ys).toEqual([-73.5, -31.5, 10.5, 52.5]);
+  });
+
+  it('frac=start on width axis: shifts front-edge dovetails for width=4.5', () => {
+    const result = computeConnectorPositions(
+      4.5,
+      4.5,
+      42,
+      10,
+      4.5 * 42,
+      4.5 * 42,
+      0,
+      0,
+      { left: 'open', right: 'open', front: 'join', back: 'open' },
+      false,
+      'start',
+      'end'
+    );
+    const xs = result.map((p) => p.cx).sort((a, b) => a - b);
+    expect(xs).toEqual([-73.5, -31.5, 10.5, 52.5]);
+  });
+
+  it('integer depth: fractionalEdgeY is irrelevant', () => {
+    const end = computeConnectorPositions(
+      5,
+      5,
+      42,
+      10,
+      5 * 42,
+      5 * 42,
+      0,
+      0,
+      { left: 'join', right: 'open', front: 'open', back: 'open' },
+      false,
+      'end',
+      'end'
+    );
+    const start = computeConnectorPositions(
+      5,
+      5,
+      42,
+      10,
+      5 * 42,
+      5 * 42,
+      0,
+      0,
+      { left: 'join', right: 'open', front: 'open', back: 'open' },
+      false,
+      'end',
+      'start'
+    );
+    const endYs = end.map((p) => p.cy).sort((a, b) => a - b);
+    const startYs = start.map((p) => p.cy).sort((a, b) => a - b);
+    expect(endYs).toEqual(startYs);
+    expect(endYs).toEqual([-63, -21, 21, 63]);
+  });
+});

@@ -184,7 +184,9 @@ export function generateBaseplateDirect(
       slabOffsetX,
       slabOffsetY,
       edges,
-      params.invertDovetails
+      params.invertDovetails,
+      fractionalEdgeX,
+      fractionalEdgeY
     );
     for (const pos of connPositions) {
       if (pos.isMale) {

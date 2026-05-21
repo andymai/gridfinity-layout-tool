@@ -37,6 +37,7 @@ import {
   COPLANAR_OVERLAP,
   sketch,
 } from './generatorTypes';
+import { computeCellBoundariesMm } from './cellDecomposition';
 
 /**
  * Half the separation between the tongue and groove of a paired connector,
@@ -77,6 +78,11 @@ export function buildConnectors(
   const cl = TONGUE_CLEARANCE;
   const ext = COPLANAR_MARGIN;
 
+  // Honors fractionalEdgeX/Y so dovetails land on cell boundaries even when
+  // the half-cell is at the start (rotated piece under preferIdenticalPieces).
+  const yBoundaries = computeCellBoundariesMm(params.depth, gridUnit, params.fractionalEdgeY);
+  const xBoundaries = computeCellBoundariesMm(params.width, gridUnit, params.fractionalEdgeX);
+
   type Side = 'left' | 'right' | 'front' | 'back';
 
   /**
@@ -98,8 +104,7 @@ export function buildConnectors(
     isMale: boolean;
     maleOffsetSign: -1 | 1;
     wallPos: number;
-    numBoundaries: number;
-    boundaryPos: (k: number) => number;
+    boundaries: readonly number[];
     protrudeAxis: 'x' | 'y';
     protrudeDir: -1 | 1;
   }> = [
@@ -108,8 +113,7 @@ export function buildConnectors(
       isMale: !invert,
       maleOffsetSign: 1,
       wallPos: -halfW + slabOffsetX,
-      numBoundaries: Math.ceil(params.depth) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
+      boundaries: yBoundaries,
       protrudeAxis: 'x',
       protrudeDir: -1,
     },
@@ -118,8 +122,7 @@ export function buildConnectors(
       isMale: invert,
       maleOffsetSign: -1,
       wallPos: halfW + slabOffsetX,
-      numBoundaries: Math.ceil(params.depth) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.depth * gridUnit) / 2,
+      boundaries: yBoundaries,
       protrudeAxis: 'x',
       protrudeDir: 1,
     },
@@ -128,8 +131,7 @@ export function buildConnectors(
       isMale: !invert,
       maleOffsetSign: -1,
       wallPos: -halfD + slabOffsetY,
-      numBoundaries: Math.ceil(params.width) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
+      boundaries: xBoundaries,
       protrudeAxis: 'y',
       protrudeDir: -1,
     },
@@ -138,15 +140,14 @@ export function buildConnectors(
       isMale: invert,
       maleOffsetSign: 1,
       wallPos: halfD + slabOffsetY,
-      numBoundaries: Math.ceil(params.width) - 1,
-      boundaryPos: (k) => k * gridUnit - (params.width * gridUnit) / 2,
+      boundaries: xBoundaries,
       protrudeAxis: 'y',
       protrudeDir: 1,
     },
   ];
 
   for (const def of edgeDefs) {
-    if (edges[def.side] !== 'join' || def.numBoundaries <= 0) continue;
+    if (edges[def.side] !== 'join' || def.boundaries.length === 0) continue;
 
     // Build an XY point with wall/boundary coords assigned to the correct axis.
     // When protruding along X, wall is on X and boundary is on Y; vice versa for Y.
@@ -155,8 +156,7 @@ export function buildConnectors(
         ? (wallCoord: number, bpCoord: number): [number, number] => [wallCoord, bpCoord]
         : (wallCoord: number, bpCoord: number): [number, number] => [bpCoord, wallCoord];
 
-    for (let k = 1; k <= def.numBoundaries; k++) {
-      const bp = def.boundaryPos(k);
+    for (const bp of def.boundaries) {
       const w = def.wallPos;
       const d = def.protrudeDir;
 

@@ -36,6 +36,32 @@ export function decomposeCells(gridUnits: number): number[] {
 }
 
 /**
+ * Compute the mm-positions of inter-cell boundaries along an axis, relative to
+ * the piece center (axis spans `[-axisUnits*gridUnitMm/2, +axisUnits*gridUnitMm/2]`).
+ *
+ * When the fractional half-cell sits at the start, every full-cell boundary
+ * shifts by half a grid unit in the negative direction.
+ *
+ * Returns an empty array when the axis has only one cell (no interior boundaries).
+ */
+export function computeCellBoundariesMm(
+  axisUnits: number,
+  gridUnitMm: number,
+  fractionalEdge: 'start' | 'end' = 'end'
+): number[] {
+  const cells = decomposeCells(axisUnits);
+  if (fractionalEdge === 'start') cells.reverse();
+  const totalMm = axisUnits * gridUnitMm;
+  const offsets: number[] = [];
+  let pos = 0;
+  for (let i = 0; i < cells.length - 1; i++) {
+    pos += cells[i] * gridUnitMm;
+    offsets.push(pos - totalMm / 2);
+  }
+  return offsets;
+}
+
+/**
  * Decompose a grid dimension into all 0.5-unit cells (half sockets mode).
  * Each 1-unit cell becomes two 0.5-unit cells; trailing half-cells stay 0.5.
  *

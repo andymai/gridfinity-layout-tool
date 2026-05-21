@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { decomposeCells, decomposeHalfCells, forEachCell } from './cellDecomposition';
+import {
+  decomposeCells,
+  decomposeHalfCells,
+  forEachCell,
+  computeCellBoundariesMm,
+} from './cellDecomposition';
 import type { CellInfo } from './cellDecomposition';
 import { SIZE } from './generatorConstants';
 
@@ -108,5 +113,37 @@ describe('forEachCell', () => {
     expect(cells[0].centerX).toBe(-25);
     expect(cells[1].centerX).toBe(25);
     expect(cells[0].centerY).toBe(0);
+  });
+});
+
+describe('computeCellBoundariesMm', () => {
+  it('returns empty array for a single-cell axis', () => {
+    expect(computeCellBoundariesMm(1, 42)).toEqual([]);
+    expect(computeCellBoundariesMm(0.5, 42)).toEqual([]);
+  });
+
+  it('integer axis: boundaries are evenly spaced regardless of fractional edge', () => {
+    // depth=5 → cells [1,1,1,1,1]. Boundaries at 42, 84, 126, 168 (mm from start).
+    // Centered at totalMm/2 = 105 → -63, -21, 21, 63.
+    expect(computeCellBoundariesMm(5, 42, 'end')).toEqual([-63, -21, 21, 63]);
+    expect(computeCellBoundariesMm(5, 42, 'start')).toEqual([-63, -21, 21, 63]);
+  });
+
+  it('fractional axis, end-side: full cells precede half cell', () => {
+    // depth=4.5 → cells [1,1,1,1,0.5]. Boundaries at 42, 84, 126, 168 (mm from start).
+    // Centered at totalMm/2 = 94.5 → -52.5, -10.5, 31.5, 73.5.
+    expect(computeCellBoundariesMm(4.5, 42, 'end')).toEqual([-52.5, -10.5, 31.5, 73.5]);
+  });
+
+  it('fractional axis, start-side: half cell precedes full cells, shifts boundaries by -gridUnit/2', () => {
+    // depth=4.5 → cells reversed to [0.5,1,1,1,1]. Boundaries at 21, 63, 105, 147.
+    // Centered at 94.5 → -73.5, -31.5, 10.5, 52.5.
+    expect(computeCellBoundariesMm(4.5, 42, 'start')).toEqual([-73.5, -31.5, 10.5, 52.5]);
+  });
+
+  it('honors custom gridUnitMm', () => {
+    // depth=2.5, grid=50 → cells [1,1,0.5] frac=end. Boundaries at 50, 100.
+    // Centered at 62.5 → -12.5, 37.5.
+    expect(computeCellBoundariesMm(2.5, 50, 'end')).toEqual([-12.5, 37.5]);
   });
 });
