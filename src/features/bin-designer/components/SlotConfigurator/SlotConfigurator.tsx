@@ -26,15 +26,14 @@ import type { DividerPieceConfig } from '../../types';
 type SlotDirection = 'vertical' | 'horizontal';
 
 export function SlotConfigurator() {
-  const { slotConfig, dividerPieces, params, stackingLip, setParam } = useDesignerStore(
+  const { params, setParam } = useDesignerStore(
     useShallow((s) => ({
-      slotConfig: s.params.slotConfig,
-      dividerPieces: s.params.dividerPieces,
       params: s.params,
-      stackingLip: s.params.base.stackingLip,
       setParam: s.setParam,
     }))
   );
+  const { slotConfig, dividerPieces } = params;
+  const stackingLip = params.base.stackingLip;
   const t = useTranslation();
 
   // ── Dimension calculations ──────────────────────────────────────────

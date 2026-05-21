@@ -181,10 +181,12 @@ function computeBaseSocketVolume(
   depthUnits: number,
   gridUnitMm: number
 ): number {
-  // Each 1×1 cell: gridUnitMm×gridUnitMm footprint, socket shell ~3.5mm thick, 5mm deep
-  const shellThickness = 3.5; // approximate average socket shell thickness
+  // Each 1×1 cell: gridUnitMm×gridUnitMm footprint, socket shell ~3.5mm thick, 5mm deep.
+  // Clamp innerSide to 0 so a tiny gridUnitMm (< 2·shellThickness = 7mm) doesn't
+  // produce a negative socket volume that masks undercounts elsewhere.
+  const shellThickness = 3.5;
   const outerArea = gridUnitMm * gridUnitMm;
-  const innerSide = gridUnitMm - 2 * shellThickness;
+  const innerSide = Math.max(0, gridUnitMm - 2 * shellThickness);
   const innerArea = innerSide * innerSide;
   const shellArea = outerArea - innerArea;
   const volumePerFullCell = shellArea * GRIDFINITY.SOCKET_HEIGHT;

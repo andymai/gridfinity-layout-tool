@@ -187,7 +187,7 @@ function computeBaseSocketVolume(
   gridUnitMm: number
 ): number {
   const outerArea = gridUnitMm * gridUnitMm;
-  const innerSide = gridUnitMm - 2 * SOCKET_SHELL_THICKNESS;
+  const innerSide = Math.max(0, gridUnitMm - 2 * SOCKET_SHELL_THICKNESS);
   const innerArea = innerSide * innerSide;
   const shellArea = outerArea - innerArea;
   const volumePerFullCell = shellArea * GRIDFINITY_SPEC.SOCKET_HEIGHT;

@@ -22,7 +22,6 @@ export function useScoopSection() {
   );
   const t = useTranslation();
 
-  const { base, compartments } = params;
   const scoopStatus = getFeatureStatus(params, 'scoop');
   const isUnavailable = !scoopStatus.available;
   const isAutoRadius = scoop.radius === 'auto';
@@ -31,6 +30,7 @@ export function useScoopSection() {
   const autoDisplayText = useMemo(() => {
     if (!isAutoRadius) return '';
 
+    const { base, compartments } = params;
     const { innerW, innerD, wallHeight } = binDimensions(params);
     const cellW = innerW / compartments.cols;
     const cellD = innerD / compartments.rows;
@@ -81,7 +81,7 @@ export function useScoopSection() {
       return t('binDesigner.scoopRadiusAutoValue', { value: String(min) });
     }
     return t('binDesigner.scoopRadiusAutoRange', { min: String(min), max: String(max) });
-  }, [isAutoRadius, params, base, compartments, t]);
+  }, [isAutoRadius, params, t]);
 
   const toggleScoop = useCallback(() => {
     updateScoop({ enabled: !scoop.enabled });
