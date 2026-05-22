@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.116.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.115.4...gridfinity-layout-tool-v4.116.0) (2026-05-22)
+
+
+### Features
+
+* **bin-designer:** redesign diagonal-divider UI ([#1855](https://github.com/andymai/gridfinity-layout-tool/issues/1855)) ([e6cbed4](https://github.com/andymai/gridfinity-layout-tool/commit/e6cbed4ee70780e99292ab27c1e7deaba9f4c18c))
+
 ## [4.115.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.115.3...gridfinity-layout-tool-v4.115.4) (2026-05-22)
 
 
