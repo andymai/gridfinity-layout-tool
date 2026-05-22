@@ -184,7 +184,7 @@ function DividerHitLine({
       onBlur={onHoverLeave}
       onClick={onClick}
       aria-label={label}
-      className="pointer-events-auto absolute cursor-pointer outline-none transition-opacity"
+      className="pointer-events-auto absolute cursor-pointer transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
       style={containerStyle}
     >
       <span className={`${stripeClass} ${stripeThickness} ${stripeColor} transition-colors`} />

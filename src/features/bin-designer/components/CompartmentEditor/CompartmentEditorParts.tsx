@@ -21,7 +21,7 @@ export function GridCell({
   isHovered,
   isSplittable,
   isDragging,
-  isDividerHoverHighlighted,
+  isDividerHoverHighlighted = false,
   config,
   previewColor,
   onPointerDown,
@@ -34,8 +34,10 @@ export function GridCell({
   isHovered: boolean;
   isSplittable: boolean;
   isDragging: boolean;
-  /** True when this compartment is one of the two adjacent to the hovered divider. */
-  isDividerHoverHighlighted: boolean;
+  /** True when this compartment is one of the two adjacent to the hovered divider.
+   *  Optional + defaults to false so unit tests and any future call site that
+   *  doesn't care about divider hover don't have to thread the prop. */
+  isDividerHoverHighlighted?: boolean;
   config: CompartmentConfig;
   previewColor: string;
   onPointerDown: (idx: number) => void;

@@ -200,6 +200,17 @@ function ModifiedDividerRow({
     <div
       onPointerEnter={() => handlers.hoverDivider(row.key)}
       onPointerLeave={() => handlers.hoverDivider(null)}
+      // Focus-capture mirrors pointerEnter so keyboard users get the same
+      // canvas + compartment highlight as mouse users when they tab onto the
+      // row. Capture phase + check that focus is leaving the wrapper entirely
+      // (relatedTarget outside) so tabbing between the edit and ✕ buttons
+      // inside the row doesn't flicker the highlight off.
+      onFocusCapture={() => handlers.hoverDivider(row.key)}
+      onBlurCapture={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+          handlers.hoverDivider(null);
+        }
+      }}
       className={`flex items-center rounded-md border bg-surface-elevated transition-colors ${
         isHovered
           ? 'border-accent/60 bg-accent/5'
@@ -213,7 +224,7 @@ function ModifiedDividerRow({
           a: String(row.compartmentA + 1),
           b: String(row.compartmentB + 1),
         })}
-        className="flex flex-1 items-center gap-2 px-2 py-1.5 text-left"
+        className="flex flex-1 items-center gap-2 px-2 py-1.5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[-2px]"
       >
         <DividerMiniDiagram compartments={compartments} row={row} />
         <span className="text-xs font-medium text-content-secondary tabular-nums">{rowLabel}</span>

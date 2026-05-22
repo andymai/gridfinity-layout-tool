@@ -16,7 +16,10 @@ export interface TiltRow extends EligibleDivider {
   readonly hasTilt: boolean;
 }
 
-export const rowKeyOf = (a: number, b: number): string => `${a}-${b}`;
+/** Canonical key for a divider between two compartments. Sorts inputs so
+ *  callers can't desync the key by passing the pair in either order
+ *  (`selectedDividerKey` / `hoveredDividerKey` lookups depend on this). */
+export const rowKeyOf = (a: number, b: number): string => (a < b ? `${a}-${b}` : `${b}-${a}`);
 const clamp = (n: number): number => Math.max(-TILT_UI_MAX, Math.min(TILT_UI_MAX, n));
 
 export type DividerAxis = 'vertical' | 'horizontal';
@@ -121,14 +124,22 @@ export function useDividerTiltSubsection() {
   const resetRow = useCallback(
     (row: TiltRow) => {
       removeDividerOverride(row.compartmentA, row.compartmentB);
+      // Clear hover if it pointed at the row we just removed from the modified
+      // list — pointerLeave can't fire on an unmounted wrapper, so without
+      // this the canvas + compartment highlight stays stuck on.
+      // selection is intentionally preserved: when reset is triggered from
+      // the inspector, the user stays in that inspector for the now-straight
+      // divider so they can immediately re-tilt or back out.
+      if (hoveredDividerKey === row.key) setHoveredDividerKey(null);
     },
-    [removeDividerOverride]
+    [removeDividerOverride, hoveredDividerKey, setHoveredDividerKey]
   );
 
   const resetAll = useCallback(() => {
     clearDividerOverrides();
     setSelectedDividerKey(null);
-  }, [clearDividerOverrides, setSelectedDividerKey]);
+    setHoveredDividerKey(null);
+  }, [clearDividerOverrides, setSelectedDividerKey, setHoveredDividerKey]);
 
   return {
     compartments,

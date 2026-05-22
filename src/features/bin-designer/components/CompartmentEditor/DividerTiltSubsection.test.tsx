@@ -112,11 +112,16 @@ describe('DividerTiltSubsection', () => {
     expect(remaining?.[0]).toMatchObject({ compartmentA: 2, compartmentB: 3 });
   });
 
-  it('Reset all clears every override and only renders when any exist', () => {
+  it('Reset all clears every override and only renders when any exist', async () => {
     setGrid(1, 2);
     render(<DividerTiltSubsection />);
     expect(screen.queryByRole('button', { name: /^reset all$/i })).not.toBeInTheDocument();
     useDesignerStore.getState().setDividerOverride(0, 1, 8, -8);
+    // Zustand subscription rerenders are async under the testing-library
+    // batched scheduler — `findByRole` waits past the next render frame.
+    const resetBtn = await screen.findByRole('button', { name: /^reset all$/i });
+    fireEvent.click(resetBtn);
+    expect(useDesignerStore.getState().params.compartments.dividerOverrides).toBeUndefined();
   });
 
   it('the empty-state diagram renders without compartment text fragments', () => {
@@ -137,6 +142,28 @@ describe('DividerTiltSubsection', () => {
     expect(screen.getAllByRole('spinbutton')).toHaveLength(2);
     // No "Asymmetric" toggle anywhere.
     expect(screen.queryByLabelText(/asymmetric/i)).not.toBeInTheDocument();
+  });
+
+  it('removing the hovered row clears hoveredDividerKey so the highlight does not stick', () => {
+    setGrid(1, 2);
+    useDesignerStore.getState().setDividerOverride(0, 1, 4, -4);
+    render(<DividerTiltSubsection />);
+    const row = screen.getByRole('button', { name: /Edit divider between Comp/i });
+    fireEvent.pointerEnter(row.parentElement!);
+    expect(useDesignerStore.getState().ui.hoveredDividerKey).toBe('0-1');
+    fireEvent.click(screen.getByRole('button', { name: /Reset divider to straight/i }));
+    expect(useDesignerStore.getState().ui.hoveredDividerKey).toBeNull();
+  });
+
+  it('Reset all also clears hoveredDividerKey', async () => {
+    setGrid(1, 2);
+    useDesignerStore.getState().setDividerOverride(0, 1, 4, -4);
+    useDesignerStore.setState((s) => ({ ui: { ...s.ui, hoveredDividerKey: '0-1' } }));
+    render(<DividerTiltSubsection />);
+    const resetBtn = await screen.findByRole('button', { name: /^reset all$/i });
+    fireEvent.click(resetBtn);
+    expect(useDesignerStore.getState().ui.hoveredDividerKey).toBeNull();
+    expect(useDesignerStore.getState().ui.selectedDividerKey).toBeNull();
   });
 
   it('mini-diagram renders inside each modified row', () => {
