@@ -1,17 +1,9 @@
 // @vitest-environment node
 /**
- * Regression for issue #1850: STL export failed (STL_EXPORT_FAILED) for the
- * user's 6×6×6 bin with a 4×4 merged compartment + auto-radius scoop, plus
- * a small matrix of single-compartment shapes that hit the same failure.
- *
- * Root cause: the scoop's 2D profile traversed wall→arc→floor where the arc
- * is tangent to the wall at one end and the floor at the other. Tangent
- * meetings appear as 180° turns in the polygon, so the corresponding
- * longitudinal edges of the extruded scoop sat at cusps. brepjs's `fillet()`
- * on these cusp edges returned `Ok` with degenerate topology that downstream
- * `StlAPI.Write` rejected. The fillet was a purely cosmetic 2mm rim — sharp
- * edges print and function identically — so `scoopRampBuilder` no longer
- * applies it. See scoopRampBuilder.ts for the long comment.
+ * STL export must succeed for auto-radius scoops across single-compartment
+ * and merged-compartment bins. These configs previously hit STL_EXPORT_FAILED
+ * because the scoop's cusp rim edges produced degenerate topology after
+ * filleting (issue #1850).
  */
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';

@@ -152,17 +152,11 @@ function buildScoopRampsInScope(
       }
       const profile = pen.close();
 
-      // Sketch on YZ plane and extrude along X for the compartment width.
-      //
-      // We previously filleted the longitudinal top-of-ramp (Y=lipOffset,
-      // Z=radius) and floor-of-ramp (Y=lipOffset+radius, Z=0) edges by 2mm.
-      // Both edges sit at the polygon's tangent reversals (the wall is tangent
-      // to the arc at the top, the floor is tangent to the arc at the floor)
-      // — the brepjs `fillet()` call returns `Ok` for these cusp edges but the
-      // resulting solid carries degenerate topology that `StlAPI.Write` later
-      // rejects with STL_EXPORT_FAILED (#1850). The fillet was purely
-      // cosmetic — sharp rim edges print and function identically — so we
-      // skip it to keep export robust across all bin sizes.
+      // Do not fillet the longitudinal rim edges (top-of-ramp at Y=lipOffset,
+      // Z=radius; floor-of-ramp at Y=lipOffset+radius, Z=0). The arc is tangent
+      // to the wall and floor at those points, so the edges sit at polygon
+      // cusps — brepjs `fillet()` returns Ok but produces degenerate topology
+      // that fails STL export.
       const scoopSolid = scope.register(sketch(profile, 'YZ', -compW / 2).extrude(compW));
 
       // Position: center X at compartment center, Y at front edge of compartment
@@ -194,10 +188,6 @@ export const scoopRampsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        // `v3`: scoop no longer fillets its top/floor rim edges (#1850 — the
-        // fillet sat at a cusp in the 2D profile, producing degenerate
-        // topology that broke STL export at wider bin sizes). Bumping the
-        // namespace invalidates any v2 entries cached with the old rim.
         'v3',
         dim.shellKey,
         stableSerialize(params.scoop),
