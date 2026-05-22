@@ -21,6 +21,7 @@ export function GridCell({
   isHovered,
   isSplittable,
   isDragging,
+  isDividerHoverHighlighted,
   config,
   previewColor,
   onPointerDown,
@@ -33,6 +34,8 @@ export function GridCell({
   isHovered: boolean;
   isSplittable: boolean;
   isDragging: boolean;
+  /** True when this compartment is one of the two adjacent to the hovered divider. */
+  isDividerHoverHighlighted: boolean;
   config: CompartmentConfig;
   previewColor: string;
   onPointerDown: (idx: number) => void;
@@ -134,6 +137,11 @@ export function GridCell({
         boxShadow: isSelected ? `inset 0 0 0 2px var(--color-accent)` : boxShadow,
         opacity: isSelected ? 0.8 : 1,
         cursor: isDragging ? 'crosshair' : isSplittable ? 'pointer' : 'crosshair',
+        // Brighten the adjacent compartments when their divider is hovered/selected.
+        // Filter is composable with the existing background and avoids fighting the
+        // inset-shadow border system; pulse-free since the divider hover is the
+        // primary signal — this is a quiet companion highlight.
+        filter: isDividerHoverHighlighted ? 'brightness(1.18)' : 'none',
         transition: 'all 150ms ease-out',
         transform: isSelected ? 'scale(0.97)' : 'scale(1)',
       }}
