@@ -139,4 +139,24 @@ describe('resolveColorMapping', () => {
     const { colors: palette } = resolveColorMapping(c);
     expect(palette).toEqual(expect.arrayContaining(['#1', '#2', '#3', '#4']));
   });
+
+  it('normalizes hex to lowercase so mixed-case zones dedupe', () => {
+    // Without normalization the exporter would emit two materials for what
+    // is the same color, breaking lockstep with the slicer-handoff preview
+    // (which already lowercased before deduping). Mirrors the `displaycolor`
+    // convention slicers expect.
+    const c: FeatureColorConfig = {
+      enabled: false,
+      body: '#FFF',
+      lip: { frontLeft: '#fff', frontRight: '#fff', backRight: '#fff', backLeft: '#fff' },
+      labelTab: '#FFF',
+      base: '#fff',
+      scoop: '#FFF',
+      dividers: '#fff',
+      text: '#FFF',
+    };
+    const { colors: palette, colorToIndex } = resolveColorMapping(c);
+    expect(palette).toEqual(['#fff']);
+    expect(colorToIndex.get('#fff')).toBe(0);
+  });
 });
