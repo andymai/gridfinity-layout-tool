@@ -24,6 +24,7 @@ const zoneLabels: Record<ColorZone, string> = {
   base: 'Base',
   scoop: 'Scoop',
   dividers: 'Dividers',
+  text: 'Text',
 };
 
 function buildColors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig {
@@ -66,5 +67,24 @@ describe('SlicerHandoffPreview', () => {
     expect(screen.getByText(/filament:n=2/)).toBeInTheDocument();
     // First filament's zone list should mention both Body and Label.
     expect(screen.getByText(/Body, Label/)).toBeInTheDocument();
+  });
+
+  it('includes the text zone when it diverges from body', () => {
+    // Regression guard: the manually-curated `ordered` list previously
+    // omitted 'text', so a body+text design rendered as single-filament
+    // and the preview was hidden — even though the 3MF export shipped
+    // two materials. Walking ZONE_ORDER keeps the preview in lockstep
+    // with the exporter's `resolveColorMapping`.
+    render(
+      <SlicerHandoffPreview
+        featureColors={buildColors({ text: '#ff0000' })}
+        activeZones={new Set<ColorZone>(['body', 'text'])}
+        zoneLabels={zoneLabels}
+      />
+    );
+    fireEvent.click(screen.getByRole('button'));
+    expect(screen.getByText(/filament:n=1/)).toBeInTheDocument();
+    expect(screen.getByText(/filament:n=2/)).toBeInTheDocument();
+    expect(screen.getByText(/^Text$/)).toBeInTheDocument();
   });
 });

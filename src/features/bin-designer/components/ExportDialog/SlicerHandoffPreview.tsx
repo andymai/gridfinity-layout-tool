@@ -7,11 +7,7 @@
 
 import { useId, useState } from 'react';
 import { ChevronDownIcon } from '@/design-system/Icon';
-import {
-  LIP_CORNERS,
-  getZoneColor,
-  lipCornerZone,
-} from '@/features/bin-designer/types/featureColors';
+import { ZONE_ORDER, getZoneColor } from '@/features/bin-designer/types/featureColors';
 import type { ColorZone, FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 import { useTranslation } from '@/i18n';
 
@@ -31,19 +27,12 @@ function buildFilaments(
   activeZones: ReadonlySet<ColorZone>,
   labels: Record<ColorZone, string>
 ): Filament[] {
-  // Body always lands first so its filament index is 0 — mirrors the
-  // 3MF exporter's `resolveColorMapping` ordering.
-  const ordered: ColorZone[] = [
-    'body',
-    ...LIP_CORNERS.map(lipCornerZone),
-    'labelTab',
-    'base',
-    'scoop',
-    'dividers',
-  ];
-
+  // Walk ZONE_ORDER so this stays in lockstep with the 3MF exporter's
+  // `resolveColorMapping` — both must enumerate the same zones in the same
+  // order or the preview understates the filament count (the `text` zone
+  // was silently dropped here while the exporter shipped it).
   const byHex = new Map<string, Filament>();
-  for (const z of ordered) {
+  for (const z of ZONE_ORDER) {
     if (!activeZones.has(z)) continue;
     const hex = getZoneColor(featureColors, z).toLowerCase();
     const existing = byHex.get(hex);
