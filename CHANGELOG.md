@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.115.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.115.2...gridfinity-layout-tool-v4.115.3) (2026-05-22)
+
+
+### Bug Fixes
+
+* **generation:** [#1850](https://github.com/andymai/gridfinity-layout-tool/issues/1850) — drop scoop rim fillet that broke STL export ([#1851](https://github.com/andymai/gridfinity-layout-tool/issues/1851)) ([cd607b1](https://github.com/andymai/gridfinity-layout-tool/commit/cd607b1261d7e28562cda72c82ee70c90478d5c8))
+
 ## [4.115.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.115.1...gridfinity-layout-tool-v4.115.2) (2026-05-21)
 
 
