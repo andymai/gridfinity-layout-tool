@@ -5,7 +5,7 @@
  * to help slide items out of the bin.
  */
 
-import { draw, edgeFinder, getBounds, translate, withScope, clone, unwrap, fuseAll } from 'brepjs';
+import { draw, translate, withScope, clone, unwrap, fuseAll } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
@@ -16,7 +16,6 @@ import {
 } from '@/shared/utils/scoopCalculations';
 import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
 import { findCompartmentBounds } from './compartmentBuilder';
-import { applyFilletWithFallback } from './cutoutBuilder';
 import { compartmentHasTiltedEdge } from '@/shared/types/bin';
 /**
  * Build finger scoop ramps that curve from the bin floor up to the front wall.
@@ -153,51 +152,12 @@ function buildScoopRampsInScope(
       }
       const profile = pen.close();
 
-      // Sketch on YZ plane and extrude along X for the compartment width
-      let scoopSolid = scope.register(sketch(profile, 'YZ', -compW / 2).extrude(compW));
-
-      // Fillet the two longitudinal edges where the ramp meets the wall and floor.
-      // Before translation, the scoop solid spans X=[-compW/2, +compW/2] with
-      // Y=[lipOffset, lipOffset+radius], Z=[0, radius]. The sharp edges are:
-      //   - Top-of-ramp: (Y~lipOffset, Z~radius) -- ramp meets wall/lip
-      //   - Floor-of-ramp: (Y~lipOffset+radius, Z~0) -- ramp meets bin floor
-      const filletR = Math.min(2, radius / 4);
-      if (filletR >= 0.5) {
-        const smoothEdges = edgeFinder()
-          .when((e) => {
-            const b = getBounds(e);
-            // Edge must run along X (span most of the compartment width)
-            if (b.xMax - b.xMin < compW * 0.5) return false;
-            // Top-of-ramp edge: Y~lipOffset, Z~radius
-            const isTop =
-              Math.abs(b.yMin - lipOffset) < 0.5 &&
-              Math.abs(b.yMax - lipOffset) < 0.5 &&
-              Math.abs(b.zMin - radius) < 0.5 &&
-              Math.abs(b.zMax - radius) < 0.5;
-            // Floor-of-ramp edge: Y~lipOffset+radius, Z~0
-            const floorY = lipOffset + radius;
-            const isFloor =
-              Math.abs(b.yMin - floorY) < 0.5 &&
-              Math.abs(b.yMax - floorY) < 0.5 &&
-              Math.abs(b.zMin) < 0.5 &&
-              Math.abs(b.zMax) < 0.5;
-            return isTop || isFloor;
-          })
-          .findAll(scoopSolid);
-        // Note: edges returned by findAll come from brepjs's per-shape
-        // topology cache — they're NOT owned by the caller. Disposing them
-        // here would double-free. They're released when the parent shape
-        // (registered below) is disposed by the scope.
-        if (smoothEdges.length > 0) {
-          const filleted = applyFilletWithFallback(scoopSolid, smoothEdges, filletR);
-          // applyFilletWithFallback returns either a new shape (success) or
-          // the same shape (all fallbacks failed). Only register when it's
-          // a new allocation; otherwise we'd double-register.
-          if (filleted !== scoopSolid) {
-            scoopSolid = scope.register(filleted);
-          }
-        }
-      }
+      // Do not fillet the longitudinal rim edges (top-of-ramp at Y=lipOffset,
+      // Z=radius; floor-of-ramp at Y=lipOffset+radius, Z=0). The arc is tangent
+      // to the wall and floor at those points, so the edges sit at polygon
+      // cusps — brepjs `fillet()` returns Ok but produces degenerate topology
+      // that fails STL export.
+      const scoopSolid = scope.register(sketch(profile, 'YZ', -compW / 2).extrude(compW));
 
       // Position: center X at compartment center, Y at front edge of compartment
       const compCenterX = -innerW / 2 + (minCol + compCols / 2) * cellW;
@@ -228,9 +188,7 @@ export const scoopRampsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        // `v2`: scoop now skips compartments with any tilted edge, so the
-        // dividerOverrides shape affects output. Cache namespace bumped.
-        'v2',
+        'v3',
         dim.shellKey,
         stableSerialize(params.scoop),
         params.style,
