@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.115.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.115.3...gridfinity-layout-tool-v4.115.4) (2026-05-22)
+
+
+### Bug Fixes
+
+* **generation:** [#1822](https://github.com/andymai/gridfinity-layout-tool/issues/1822) — manifold coverage + booleanStage simplify ([#1853](https://github.com/andymai/gridfinity-layout-tool/issues/1853)) ([004b65f](https://github.com/andymai/gridfinity-layout-tool/commit/004b65f5d2f116ffc7a45ae34e1ef3423f06d6bb))
+
 ## [4.115.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.115.2...gridfinity-layout-tool-v4.115.3) (2026-05-22)
 
 
