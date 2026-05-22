@@ -5,7 +5,7 @@
  * to help slide items out of the bin.
  */
 
-import { draw, edgeFinder, getBounds, translate, withScope, clone, unwrap, fuseAll } from 'brepjs';
+import { draw, translate, withScope, clone, unwrap, fuseAll } from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
@@ -16,7 +16,6 @@ import {
 } from '@/shared/utils/scoopCalculations';
 import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
 import { findCompartmentBounds } from './compartmentBuilder';
-import { applyFilletWithFallback } from './cutoutBuilder';
 import { compartmentHasTiltedEdge } from '@/shared/types/bin';
 /**
  * Build finger scoop ramps that curve from the bin floor up to the front wall.
@@ -153,51 +152,18 @@ function buildScoopRampsInScope(
       }
       const profile = pen.close();
 
-      // Sketch on YZ plane and extrude along X for the compartment width
-      let scoopSolid = scope.register(sketch(profile, 'YZ', -compW / 2).extrude(compW));
-
-      // Fillet the two longitudinal edges where the ramp meets the wall and floor.
-      // Before translation, the scoop solid spans X=[-compW/2, +compW/2] with
-      // Y=[lipOffset, lipOffset+radius], Z=[0, radius]. The sharp edges are:
-      //   - Top-of-ramp: (Y~lipOffset, Z~radius) -- ramp meets wall/lip
-      //   - Floor-of-ramp: (Y~lipOffset+radius, Z~0) -- ramp meets bin floor
-      const filletR = Math.min(2, radius / 4);
-      if (filletR >= 0.5) {
-        const smoothEdges = edgeFinder()
-          .when((e) => {
-            const b = getBounds(e);
-            // Edge must run along X (span most of the compartment width)
-            if (b.xMax - b.xMin < compW * 0.5) return false;
-            // Top-of-ramp edge: Y~lipOffset, Z~radius
-            const isTop =
-              Math.abs(b.yMin - lipOffset) < 0.5 &&
-              Math.abs(b.yMax - lipOffset) < 0.5 &&
-              Math.abs(b.zMin - radius) < 0.5 &&
-              Math.abs(b.zMax - radius) < 0.5;
-            // Floor-of-ramp edge: Y~lipOffset+radius, Z~0
-            const floorY = lipOffset + radius;
-            const isFloor =
-              Math.abs(b.yMin - floorY) < 0.5 &&
-              Math.abs(b.yMax - floorY) < 0.5 &&
-              Math.abs(b.zMin) < 0.5 &&
-              Math.abs(b.zMax) < 0.5;
-            return isTop || isFloor;
-          })
-          .findAll(scoopSolid);
-        // Note: edges returned by findAll come from brepjs's per-shape
-        // topology cache — they're NOT owned by the caller. Disposing them
-        // here would double-free. They're released when the parent shape
-        // (registered below) is disposed by the scope.
-        if (smoothEdges.length > 0) {
-          const filleted = applyFilletWithFallback(scoopSolid, smoothEdges, filletR);
-          // applyFilletWithFallback returns either a new shape (success) or
-          // the same shape (all fallbacks failed). Only register when it's
-          // a new allocation; otherwise we'd double-register.
-          if (filleted !== scoopSolid) {
-            scoopSolid = scope.register(filleted);
-          }
-        }
-      }
+      // Sketch on YZ plane and extrude along X for the compartment width.
+      //
+      // We previously filleted the longitudinal top-of-ramp (Y=lipOffset,
+      // Z=radius) and floor-of-ramp (Y=lipOffset+radius, Z=0) edges by 2mm.
+      // Both edges sit at the polygon's tangent reversals (the wall is tangent
+      // to the arc at the top, the floor is tangent to the arc at the floor)
+      // — the brepjs `fillet()` call returns `Ok` for these cusp edges but the
+      // resulting solid carries degenerate topology that `StlAPI.Write` later
+      // rejects with STL_EXPORT_FAILED (#1850). The fillet was purely
+      // cosmetic — sharp rim edges print and function identically — so we
+      // skip it to keep export robust across all bin sizes.
+      const scoopSolid = scope.register(sketch(profile, 'YZ', -compW / 2).extrude(compW));
 
       // Position: center X at compartment center, Y at front edge of compartment
       const compCenterX = -innerW / 2 + (minCol + compCols / 2) * cellW;
@@ -228,9 +194,11 @@ export const scoopRampsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        // `v2`: scoop now skips compartments with any tilted edge, so the
-        // dividerOverrides shape affects output. Cache namespace bumped.
-        'v2',
+        // `v3`: scoop no longer fillets its top/floor rim edges (#1850 — the
+        // fillet sat at a cusp in the 2D profile, producing degenerate
+        // topology that broke STL export at wider bin sizes). Bumping the
+        // namespace invalidates any v2 entries cached with the old rim.
+        'v3',
         dim.shellKey,
         stableSerialize(params.scoop),
         params.style,
