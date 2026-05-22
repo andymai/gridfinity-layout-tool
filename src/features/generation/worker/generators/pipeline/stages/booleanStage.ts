@@ -99,7 +99,19 @@ export const booleanStage: PipelineStage = {
 
     if (ctx.fuseTargets.length > 0) {
       checkCancelled(signal);
-      const { shape, telemetry } = unwrap(fuseAllBisect([bin, ...ctx.fuseTargets] as ValidSolid[]));
+      // `simplify: forExport` merges same-domain faces left behind by
+      // the n-way fuse — mirrors what the cut path already passes. Fuse
+      // was previously the outlier, accumulating duplicate / coincident
+      // faces from additive features (label tabs, scoop ramps) that
+      // share a face with the shell. Slicers (BambuStudio) flag the
+      // resulting duplicate triangles as non-manifold (#1822 — partial
+      // fix; see labelTab gusset-back-face follow-up).
+      const { shape, telemetry } = unwrap(
+        fuseAllBisect([bin, ...ctx.fuseTargets] as ValidSolid[], {
+          simplify: forExport,
+          signal,
+        })
+      );
       recordIfRecovered('fuse', telemetry);
       bin = shape;
     }
