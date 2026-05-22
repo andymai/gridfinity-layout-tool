@@ -95,23 +95,32 @@ export const booleanStage: PipelineStage = {
 
     checkCancelled(signal);
 
-    const cutOpts = { simplify: forExport, signal } as BooleanOpts;
+    // Shared by fuse and cut passes — `simplify: forExport` merges
+    // same-domain faces left behind by the n-way boolean, and `signal`
+    // threads cancellation through. Fuse used to drop both, accumulating
+    // duplicate / coincident faces from additive features (label tabs,
+    // scoop ramps) that share a face with the shell; slicers (BambuStudio)
+    // flag the resulting duplicate triangles as non-manifold (#1822 —
+    // partial fix; see labelTab gusset-back-face follow-up).
+    const boolOpts = { simplify: forExport, signal } as BooleanOpts;
 
     if (ctx.fuseTargets.length > 0) {
       checkCancelled(signal);
-      const { shape, telemetry } = unwrap(fuseAllBisect([bin, ...ctx.fuseTargets] as ValidSolid[]));
+      const { shape, telemetry } = unwrap(
+        fuseAllBisect([bin, ...ctx.fuseTargets] as ValidSolid[], boolOpts)
+      );
       recordIfRecovered('fuse', telemetry);
       bin = shape;
     }
 
     if (ctx.cutTargets.length > 0) {
       checkCancelled(signal);
-      bin = applyCutPass(bin, originalSolid, ctx.cutTargets, 'cut', cutOpts);
+      bin = applyCutPass(bin, originalSolid, ctx.cutTargets, 'cut', boolOpts);
     }
 
     if (ctx.patternCutTargets.length > 0) {
       checkCancelled(signal);
-      bin = applyCutPass(bin, originalSolid, ctx.patternCutTargets, 'pattern_cut', cutOpts);
+      bin = applyCutPass(bin, originalSolid, ctx.patternCutTargets, 'pattern_cut', boolOpts);
     }
 
     if (bin !== originalSolid) originalSolid.delete();
