@@ -158,9 +158,13 @@ export function isSingleColor(
   c: FeatureColorConfig,
   activeZones: ReadonlySet<ColorZone> | readonly ColorZone[]
 ): boolean {
-  const ref = c.body;
+  // Compare in lowercase to stay in lockstep with `resolveColorMapping` —
+  // otherwise a mixed-case design (body `#FFF` + text `#fff`) would
+  // skip the early-exit and emit a `<basematerials>` section with a
+  // single material instead of returning null (no basematerials).
+  const ref = c.body.toLowerCase();
   for (const z of activeZones) {
-    if (getZoneColor(c, z) !== ref) return false;
+    if (getZoneColor(c, z).toLowerCase() !== ref) return false;
   }
   return true;
 }

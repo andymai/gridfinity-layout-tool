@@ -102,6 +102,13 @@ describe('isSingleColor', () => {
     expect(isSingleColor(c, ZONE_ORDER)).toBe(false);
   });
 
+  it('treats mixed-case hex as the same color', () => {
+    // Locks in case-insensitive equality so this gate stays consistent
+    // with `resolveColorMapping`'s lowercase deduplication.
+    const c = colors({ body: '#FFF', labelTab: '#fff', text: '#FFF' });
+    expect(isSingleColor(c, ['body', 'labelTab', 'text'])).toBe(true);
+  });
+
   it("respects activeZones — disabled lip corners with different colors don't count", () => {
     // The user changed the lip color, then turned off the stacking lip.
     // Lip corners aren't active any more, so the bin is single-color from
