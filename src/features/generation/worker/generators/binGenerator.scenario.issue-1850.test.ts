@@ -64,4 +64,16 @@ describe('issue #1850 — scoop STL export at single-compartment wide bins', () 
     const result = await exportBin(singleCompartmentScoop(4, 4, 3), 'stl');
     expect(result.data.byteLength).toBeGreaterThan(0);
   }, 120000);
+
+  // Lip-offset polygon (lipOffset > 0) has extra wall-top points before the
+  // arc, structurally different from the no-lip path. Cover it so a future
+  // regression on the lip branch doesn't slip through.
+  it('exports 4×4×3 + auto scoop WITH stacking lip', async () => {
+    const params: BinParams = {
+      ...singleCompartmentScoop(4, 4, 3),
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+    };
+    const result = await exportBin(params, 'stl');
+    expect(result.data.byteLength).toBeGreaterThan(0);
+  }, 120000);
 });
