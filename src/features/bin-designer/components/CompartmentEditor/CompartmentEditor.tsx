@@ -25,6 +25,7 @@ import { SnappingSlider } from '../controls/SnappingSlider';
 import type { SnappingSliderOption } from '../controls/SnappingSlider';
 import {
   getCompartmentCount,
+  getEligibleDividers,
   isRectangularSelection,
   cellIndex,
 } from '@/features/bin-designer/utils/compartments';
@@ -32,7 +33,11 @@ import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { usePreviewColor } from '@/features/bin-designer/hooks/usePreviewColor';
 import { GridCell, GhostPreview } from './CompartmentEditorParts';
+import { DividerHitTargets } from './DividerHitTargets';
 import { DividerTiltSubsection } from './DividerTiltSubsection';
+import { rowKeyOf } from './useDividerTiltSubsection';
+
+const EMPTY_HIGHLIGHT_SET: ReadonlySet<number> = new Set();
 
 export function CompartmentEditor() {
   const t = useTranslation();
@@ -42,23 +47,31 @@ export function CompartmentEditor() {
     compartments,
     width,
     depth,
+    selectedDividerKey,
+    hoveredDividerKey,
     setParam,
     setCompartmentGrid,
     mergeCells,
     splitCompartment,
     setPreviewCompartments,
     setPreviewSelection,
+    setSelectedDividerKey,
+    setHoveredDividerKey,
   } = useDesignerStore(
     useShallow((s) => ({
       compartments: s.params.compartments,
       width: s.params.width,
       depth: s.params.depth,
+      selectedDividerKey: s.ui.selectedDividerKey,
+      hoveredDividerKey: s.ui.hoveredDividerKey,
       setParam: s.setParam,
       setCompartmentGrid: s.setCompartmentGrid,
       mergeCells: s.mergeCells,
       splitCompartment: s.splitCompartment,
       setPreviewCompartments: s.setPreviewCompartments,
       setPreviewSelection: s.setPreviewSelection,
+      setSelectedDividerKey: s.setSelectedDividerKey,
+      setHoveredDividerKey: s.setHoveredDividerKey,
     }))
   );
 
@@ -82,6 +95,30 @@ export function CompartmentEditor() {
     }
     return counts;
   }, [cells]);
+
+  // Eligible divider segments for the hit-target overlay. Recomputed when the
+  // compartment grid changes (cheap O(rows*cols) scan, no perf concern).
+  const eligibleDividers = useMemo(() => getEligibleDividers(compartments), [compartments]);
+
+  // Compartments to brighten alongside the divider hover/selection — hover wins
+  // when both are set so power users can probe other dividers without losing
+  // their inspector context.
+  const dividerHighlightCompartments = useMemo<ReadonlySet<number>>(() => {
+    const activeKey = hoveredDividerKey ?? selectedDividerKey;
+    if (!activeKey) return EMPTY_HIGHLIGHT_SET;
+    const match = eligibleDividers.find(
+      (d) => rowKeyOf(d.compartmentA, d.compartmentB) === activeKey
+    );
+    return match ? new Set([match.compartmentA, match.compartmentB]) : EMPTY_HIGHLIGHT_SET;
+  }, [eligibleDividers, hoveredDividerKey, selectedDividerKey]);
+
+  // Stable label builder for hit-target aria-labels; uses the same wording as
+  // the panel's "edit row" affordance so screen readers hear a consistent name.
+  const rowLabelForHitTarget = useCallback(
+    (a: number, b: number) =>
+      t('binDesigner.angledDividers.editRowLabel', { a: String(a), b: String(b) }),
+    [t]
+  );
 
   // Compute selection rectangle from drag start to current cell
   const computeRectSelection = useCallback(
@@ -435,6 +472,9 @@ export function CompartmentEditor() {
                             !isDragging && (compartmentCellCounts.get(compartmentId) ?? 0) > 1
                           }
                           isDragging={isDragging}
+                          isDividerHoverHighlighted={dividerHighlightCompartments.has(
+                            compartmentId
+                          )}
                           config={compartments}
                           previewColor={previewColor}
                           onPointerDown={handleCellPointerDown}
@@ -447,6 +487,20 @@ export function CompartmentEditor() {
                 );
               })}
             </div>
+            {/* Divider hit targets: clickable lines above the cells, transparent
+                container with per-line pointer-events so cell drag-merge still
+                works. Hidden during cell-merge drag to keep the surface calm. */}
+            {!isDragging && eligibleDividers.length > 0 && (
+              <DividerHitTargets
+                compartments={compartments}
+                dividers={eligibleDividers}
+                selectedKey={selectedDividerKey}
+                hoveredKey={hoveredDividerKey}
+                onSelect={setSelectedDividerKey}
+                onHoverChange={setHoveredDividerKey}
+                rowLabel={rowLabelForHitTarget}
+              />
+            )}
             {/* Ghost preview overlay during cell-select drag */}
             {isDragging && selection.size >= 2 && (
               <GhostPreview

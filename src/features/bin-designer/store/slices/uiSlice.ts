@@ -89,6 +89,18 @@ export function createUISlice(set: Set) {
       });
     },
 
+    setSelectedDividerKey: (key: string | null) => {
+      set((state) => {
+        state.ui.selectedDividerKey = key;
+      });
+    },
+
+    setHoveredDividerKey: (key: string | null) => {
+      set((state) => {
+        state.ui.hoveredDividerKey = key;
+      });
+    },
+
     setColorTool: (tool: ColorTool) => {
       set((state) => {
         state.ui.colorTool = tool;

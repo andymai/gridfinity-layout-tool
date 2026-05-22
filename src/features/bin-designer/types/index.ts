@@ -687,6 +687,21 @@ export interface DesignerUIState {
    * from `params.cellMask` alone when the user hasn't painted anything yet.
    */
   readonly shapeEditorOpen: boolean;
+  /**
+   * Key of the divider currently open in the Diagonal-dividers inspector,
+   * or null when the panel is showing the modified-list view. Format is
+   * `"{compartmentA}-{compartmentB}"` (canonical pair). The hook derives
+   * the actual row from this lazily, so a stale key after a grid mutation
+   * harmlessly falls back to list mode.
+   */
+  readonly selectedDividerKey: string | null;
+  /**
+   * Key of the divider being hovered (either in the list or on the 2D
+   * canvas). Same format as `selectedDividerKey`. Drives the bidirectional
+   * highlight between list rows, canvas divider lines, and adjacent
+   * compartment fills.
+   */
+  readonly hoveredDividerKey: string | null;
 }
 
 /** Undo/redo history for bin parameters with optional mesh cache */
@@ -876,6 +891,8 @@ export interface DesignerState {
   setSplitViewMode: (mode: SplitViewMode) => void;
   setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => void;
   setHoveredColorZone: (zone: HoverableZone | null) => void;
+  setSelectedDividerKey: (key: string | null) => void;
+  setHoveredDividerKey: (key: string | null) => void;
   /** Enter a color tool overlay, or pass null to exit any active tool. */
   setColorTool: (tool: ColorTool) => void;
   /**

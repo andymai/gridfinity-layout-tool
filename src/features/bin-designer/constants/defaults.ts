@@ -329,6 +329,8 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   swapFirstZone: null,
   pickerOverlay: null,
   shapeEditorOpen: false,
+  selectedDividerKey: null,
+  hoveredDividerKey: null,
 };
 
 /** Default empty history */
