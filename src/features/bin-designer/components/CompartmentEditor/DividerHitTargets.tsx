@@ -184,6 +184,7 @@ function DividerHitLine({
       onBlur={onHoverLeave}
       onClick={onClick}
       aria-label={label}
+      aria-pressed={isSelected}
       className="pointer-events-auto absolute cursor-pointer transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
       style={containerStyle}
     >
