@@ -17,9 +17,11 @@
 export function validateMeshData(vertices: Float32Array, normals: Float32Array): void {
   // 3MF Core spec requires `<vertex>` minOccurs=3 and `<triangle>` minOccurs=1.
   // STL binary is technically valid with 0 triangles, but slicers reject it.
-  // Reject at the boundary rather than emit a file the spec forbids.
+  // Reject at the shared boundary so neither path emits an unusable file.
   if (vertices.length === 0) {
-    throw new Error('Cannot export empty mesh (0 triangles): 3MF Core spec requires ≥1 triangle');
+    throw new Error(
+      'Cannot export empty mesh (0 triangles): slicers reject empty meshes and 3MF Core spec forbids them'
+    );
   }
   if (vertices.length % 9 !== 0) {
     throw new Error(`Invalid vertex count: ${vertices.length} is not divisible by 9`);
