@@ -138,16 +138,12 @@ describe('threemfExporter', () => {
       expect(() => build3MFBuffer(vertices, normals, { name: 'test' })).toThrow('length mismatch');
     });
 
-    it('handles empty mesh (0 triangles)', () => {
-      const vertices = new Float32Array(0);
-      const normals = new Float32Array(0);
-      const buffer = build3MFBuffer(vertices, normals, { name: 'empty' });
-
-      const xml = extractModelXML(buffer);
-      expect(xml).toContain('<vertices>');
-      expect(xml).toContain('<triangles>');
-      expect(xml).not.toContain('<vertex ');
-      expect(xml).not.toContain('<triangle ');
+    it('throws on empty mesh (0 triangles) — 3MF Core requires ≥1 triangle', () => {
+      // Previously emitted an empty `<vertices/>`/`<triangles/>` pair, which
+      // violates Core spec minOccurs constraints and is rejected by slicers.
+      expect(() =>
+        build3MFBuffer(new Float32Array(0), new Float32Array(0), { name: 'empty' })
+      ).toThrow(/empty mesh/);
     });
   });
 

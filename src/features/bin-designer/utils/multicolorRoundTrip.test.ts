@@ -345,11 +345,10 @@ describe('multicolor 3MF round-trip', () => {
       expect(xml).not.toMatch(/\bp1="/);
     });
 
-    it('mixed-case hex collapses to single material (no <basematerials>)', async () => {
-      // Regression for the recent isSingleColor case-normalization fix.
-      // Uniform hex length — shorthand expansion (#fff vs #ffffff) is out of
-      // scope of the case-normalization contract.
-      const params = withColors({ body: '#FFFFFF', base: '#ffffff', labelTab: '#FfFfFf' });
+    it('mixed-case AND mixed-length hex collapse to single material (no <basematerials>)', async () => {
+      // Regressions for the case-normalization and shorthand-expansion fixes.
+      // `#FFF`, `#fff`, `#FFFFFF` all canonicalize to `#ffffff`.
+      const params = withColors({ body: '#FFF', base: '#fff', labelTab: '#FFFFFF' });
       const triangles = [...tri(0, 0)];
       const faceGroups: FaceGroupData[] = [{ start: 0, count: 3, tag: FeatureTag.SOCKET }];
       const blob = buildSinglePiece3MF(
@@ -366,9 +365,9 @@ describe('multicolor 3MF round-trip', () => {
     });
 
     it('mixed-case dedup yields N materials, not 2N (only divergent zones add slots)', async () => {
-      // Regression for resolveColorMapping case-normalization: body `#FFFFFF`
-      // and base `#ffffff` (same color, different case) collapse to one slot.
-      const params = withColors({ body: '#FFFFFF', base: '#ffffff', labelTab: '#FF0000' });
+      // Regression for resolveColorMapping case + shorthand normalization:
+      // body `#FFF`, base `#ffffff`, labelTab `#FF0000` → 2 materials, not 3.
+      const params = withColors({ body: '#FFF', base: '#ffffff', labelTab: '#FF0000' });
       const triangles = [...tri(0, 0), ...tri(1, 0)];
       const faceGroups: FaceGroupData[] = [
         { start: 0, count: 3, tag: FeatureTag.SOCKET },

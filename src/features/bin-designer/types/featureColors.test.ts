@@ -124,46 +124,55 @@ describe('resolveColorMapping', () => {
   it('puts body at index 0 and dedupes equal colors', () => {
     const c: FeatureColorConfig = {
       enabled: false,
-      body: '#aaa',
-      lip: { frontLeft: '#aaa', frontRight: '#aaa', backRight: '#aaa', backLeft: '#aaa' },
-      labelTab: '#aaa',
-      base: '#bbb',
-      scoop: '#aaa',
-      dividers: '#aaa',
-      text: '#aaa',
+      body: '#aaaaaa',
+      lip: {
+        frontLeft: '#aaaaaa',
+        frontRight: '#aaaaaa',
+        backRight: '#aaaaaa',
+        backLeft: '#aaaaaa',
+      },
+      labelTab: '#aaaaaa',
+      base: '#bbbbbb',
+      scoop: '#aaaaaa',
+      dividers: '#aaaaaa',
+      text: '#aaaaaa',
     };
     const { colors: palette, colorToIndex, defaultIndex } = resolveColorMapping(c);
     expect(defaultIndex).toBe(0);
-    expect(palette).toEqual(['#aaa', '#bbb']);
-    expect(colorToIndex.get('#aaa')).toBe(0);
-    expect(colorToIndex.get('#bbb')).toBe(1);
+    expect(palette).toEqual(['#aaaaaa', '#bbbbbb']);
+    expect(colorToIndex.get('#aaaaaa')).toBe(0);
+    expect(colorToIndex.get('#bbbbbb')).toBe(1);
   });
 
   it('emits four distinct slots when all lip corners differ', () => {
     const c = colors({
-      lip: { frontLeft: '#1', frontRight: '#2', backRight: '#3', backLeft: '#4' },
+      lip: {
+        frontLeft: '#111111',
+        frontRight: '#222222',
+        backRight: '#333333',
+        backLeft: '#444444',
+      },
     });
     const { colors: palette } = resolveColorMapping(c);
-    expect(palette).toEqual(expect.arrayContaining(['#1', '#2', '#3', '#4']));
+    expect(palette).toEqual(expect.arrayContaining(['#111111', '#222222', '#333333', '#444444']));
   });
 
-  it('normalizes hex to lowercase so mixed-case zones dedupe', () => {
-    // Without normalization the exporter would emit two materials for what
-    // is the same color, breaking lockstep with the slicer-handoff preview
-    // (which already lowercased before deduping). Mirrors the `displaycolor`
-    // convention slicers expect.
+  it('normalizes case AND expands 3-char shorthand so equivalent hex dedupes', () => {
+    // Picker emits 6-char lowercase, but legacy/imported designs may carry
+    // CSS-style shorthand or mixed case. Without normalization the exporter
+    // would spuriously emit two materials for what is the same color.
     const c: FeatureColorConfig = {
       enabled: false,
       body: '#FFF',
-      lip: { frontLeft: '#fff', frontRight: '#fff', backRight: '#fff', backLeft: '#fff' },
-      labelTab: '#FFF',
-      base: '#fff',
-      scoop: '#FFF',
-      dividers: '#fff',
+      lip: { frontLeft: '#fff', frontRight: '#FFFFFF', backRight: '#ffffff', backLeft: '#FfF' },
+      labelTab: '#fFf',
+      base: '#FFFFFF',
+      scoop: '#fff',
+      dividers: '#FfFfFf',
       text: '#FFF',
     };
     const { colors: palette, colorToIndex } = resolveColorMapping(c);
-    expect(palette).toEqual(['#fff']);
-    expect(colorToIndex.get('#fff')).toBe(0);
+    expect(palette).toEqual(['#ffffff']);
+    expect(colorToIndex.get('#ffffff')).toBe(0);
   });
 });

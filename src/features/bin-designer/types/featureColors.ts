@@ -147,6 +147,23 @@ export function featureTagToColorZone(tag: number): ColorZone | null {
   }
 }
 
+const SHORTHAND_HEX = /^#[0-9a-f]{3}$/;
+
+/**
+ * Canonicalize a hex color string for case/length-insensitive comparison and
+ * deduplication. Lowercases and expands 3-char shorthand (`#rgb` → `#rrggbb`)
+ * so legacy/imported configs with mixed conventions collapse to one slot in
+ * the 3MF basematerials section. Inputs that don't look like recognized hex
+ * forms pass through unchanged (lowercased).
+ */
+export function normalizeHex(hex: string): string {
+  const lower = hex.toLowerCase();
+  if (SHORTHAND_HEX.test(lower)) {
+    return `#${lower[1]}${lower[1]}${lower[2]}${lower[2]}${lower[3]}${lower[3]}`;
+  }
+  return lower;
+}
+
 /**
  * True when every zone in `activeZones` matches body. Required because
  * forgetting to filter out hidden-feature zones would flag a single-color
@@ -158,21 +175,17 @@ export function isSingleColor(
   c: FeatureColorConfig,
   activeZones: ReadonlySet<ColorZone> | readonly ColorZone[]
 ): boolean {
-  // Compare in lowercase to stay in lockstep with `resolveColorMapping` —
-  // otherwise a mixed-case design (body `#FFF` + text `#fff`) would
-  // skip the early-exit and emit a `<basematerials>` section with a
-  // single material instead of returning null (no basematerials).
-  const ref = c.body.toLowerCase();
+  // Normalize in lockstep with `resolveColorMapping` — otherwise a mixed-case
+  // or mixed-length design (body `#FFF` + text `#ffffff`) would skip the
+  // early-exit and emit a `<basematerials>` section with a single material
+  // instead of returning null (no basematerials).
+  const ref = normalizeHex(c.body);
   for (const z of activeZones) {
-    if (getZoneColor(c, z).toLowerCase() !== ref) return false;
+    if (normalizeHex(getZoneColor(c, z)) !== ref) return false;
   }
   return true;
 }
 
-/**
- * Dedupe zone colors into a flat list + lookup map. Body always lands
- * at index 0 so it's the default fallback in 3MF / preview groupings.
- */
 /**
  * Subset of `BinParams` that determines which zones are visually
  * meaningful. Declared structurally to avoid a circular import on
@@ -223,20 +236,20 @@ export function resolveColorMapping(c: FeatureColorConfig): {
   colorToIndex: ReadonlyMap<string, number>;
   defaultIndex: number;
 } {
-  // Normalize to lowercase before deduping so legacy/imported designs with
-  // mixed-case hex (e.g. body `#FFF` vs text `#fff`) don't emit two
-  // materials in the 3MF while the slicer-handoff preview shows one.
-  // Lowercase hex is also the standard convention for `displaycolor`.
+  // Normalize via `normalizeHex` before deduping so legacy/imported designs
+  // with mixed-case or mixed-length hex (e.g. body `#FFF` vs text `#ffffff`)
+  // collapse to a single material rather than spuriously splitting.
+  // Lowercase 6-char hex is also the standard convention for `displaycolor`.
   const colorToIndex = new Map<string, number>();
   const colors: string[] = [];
 
-  const bodyHex = c.body.toLowerCase();
+  const bodyHex = normalizeHex(c.body);
   colorToIndex.set(bodyHex, 0);
   colors.push(bodyHex);
 
   for (const z of ZONE_ORDER) {
     if (z === 'body') continue;
-    const hex = getZoneColor(c, z).toLowerCase();
+    const hex = normalizeHex(getZoneColor(c, z));
     if (colorToIndex.has(hex)) continue;
     colorToIndex.set(hex, colors.length);
     colors.push(hex);
