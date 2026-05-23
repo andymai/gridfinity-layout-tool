@@ -77,7 +77,13 @@ function tri(x: number, y: number): number[] {
 async function blobToModelXml(blob: Blob): Promise<string> {
   const bytes = new Uint8Array(await blob.arrayBuffer());
   const entries = unzipSync(bytes);
-  return strFromU8(entries['3D/3dmodel.model']);
+  const model = entries['3D/3dmodel.model'];
+  if (!model) {
+    throw new Error(
+      `3MF missing 3D/3dmodel.model; got entries: ${Object.keys(entries).join(', ')}`
+    );
+  }
+  return strFromU8(model);
 }
 
 interface Material {
@@ -224,12 +230,17 @@ describe('multicolor 3MF round-trip', () => {
         PRINT_SETTINGS,
         true
       );
-      const tris = parseTriangles(await blobToModelXml(blob));
+      const xml = await blobToModelXml(blob);
+      const materials = parseMaterials(xml);
+      const tris = parseTriangles(xml);
 
-      expect(tris[0].p1).toBe(1);
-      expect(tris[1].p1).toBe(1);
-      expect(tris[2].p1).toBe(0);
-      expect(tris[3].p1).toBe(0);
+      // Resolve via material list to keep the assertion self-documenting,
+      // matching the idxFor pattern used by the other tests in this suite.
+      const idxFor = (hex: string) => materials.findIndex((m) => m.color === hex);
+      expect(tris[0].p1).toBe(idxFor('#deadbe')); // LABEL_TAB
+      expect(tris[1].p1).toBe(idxFor('#deadbe')); // LABEL_TAB
+      expect(tris[2].p1).toBe(idxFor('#abc123')); // untagged → body
+      expect(tris[3].p1).toBe(idxFor('#abc123')); // untagged → body
     });
 
     it('TEXT-tagged triangles carry the text zone color when tab/cutout text is active', async () => {
