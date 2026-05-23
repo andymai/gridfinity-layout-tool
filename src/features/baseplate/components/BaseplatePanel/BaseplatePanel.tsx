@@ -62,12 +62,16 @@ export function BaseplatePanel() {
   const setHoveredPieceLabel = useBaseplatePageStore((s) => s.setHoveredPieceLabel);
   const setSelectedPieceLabel = useBaseplatePageStore((s) => s.setSelectedPieceLabel);
 
+  const updateParams = useCallback((patch: Partial<BaseplateParams>) => {
+    const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+    useLayoutStore.getState().setBaseplateParams({ ...current, ...patch });
+  }, []);
+
   const updateParam = useCallback(
     <K extends keyof BaseplateParams>(key: K, value: BaseplateParams[K]) => {
-      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
-      useLayoutStore.getState().setBaseplateParams({ ...current, [key]: value });
+      updateParams({ [key]: value });
     },
-    []
+    [updateParams]
   );
 
   const halfGridMode = useHalfGridModeStore((s) => s.halfGridMode);
@@ -216,7 +220,11 @@ export function BaseplatePanel() {
               <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
                 {t('baseplate.padding')}
               </div>
-              <PaddingSchematic baseplateParams={baseplateParams} updateParam={updateParam} />
+              <PaddingSchematic
+                baseplateParams={baseplateParams}
+                updateParam={updateParam}
+                updateParams={updateParams}
+              />
             </div>
           </div>
         </StickyGroupHeader>

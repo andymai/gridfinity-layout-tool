@@ -20,7 +20,13 @@ vi.mock('@/i18n', () => ({
 
 describe('PaddingSchematic', () => {
   it('renders all four padding steppers (back, front, left, right)', () => {
-    render(<PaddingSchematic baseplateParams={DEFAULT_BASEPLATE_PARAMS} updateParam={vi.fn()} />);
+    render(
+      <PaddingSchematic
+        baseplateParams={DEFAULT_BASEPLATE_PARAMS}
+        updateParam={vi.fn()}
+        updateParams={vi.fn()}
+      />
+    );
     expect(screen.getByLabelText('baseplate.paddingBack')).toBeInTheDocument();
     expect(screen.getByLabelText('baseplate.paddingFront')).toBeInTheDocument();
     expect(screen.getByLabelText('baseplate.paddingLeft')).toBeInTheDocument();
@@ -35,7 +41,9 @@ describe('PaddingSchematic', () => {
       paddingLeft: mm(1.5),
       paddingRight: mm(4.25),
     };
-    render(<PaddingSchematic baseplateParams={params} updateParam={vi.fn()} />);
+    render(
+      <PaddingSchematic baseplateParams={params} updateParam={vi.fn()} updateParams={vi.fn()} />
+    );
     expect(screen.getByLabelText('baseplate.paddingBack')).toHaveValue('2');
     expect(screen.getByLabelText('baseplate.paddingFront')).toHaveValue('3');
     expect(screen.getByLabelText('baseplate.paddingLeft')).toHaveValue('1.5');
@@ -45,7 +53,11 @@ describe('PaddingSchematic', () => {
   it('calls updateParam with the correct key when each side is changed via typed input', () => {
     const updateParam = vi.fn();
     render(
-      <PaddingSchematic baseplateParams={DEFAULT_BASEPLATE_PARAMS} updateParam={updateParam} />
+      <PaddingSchematic
+        baseplateParams={DEFAULT_BASEPLATE_PARAMS}
+        updateParam={updateParam}
+        updateParams={vi.fn()}
+      />
     );
 
     const back = screen.getByLabelText('baseplate.paddingBack');
@@ -64,9 +76,117 @@ describe('PaddingSchematic', () => {
   it('calls updateParam when increment buttons are clicked', () => {
     const updateParam = vi.fn();
     render(
-      <PaddingSchematic baseplateParams={DEFAULT_BASEPLATE_PARAMS} updateParam={updateParam} />
+      <PaddingSchematic
+        baseplateParams={DEFAULT_BASEPLATE_PARAMS}
+        updateParam={updateParam}
+        updateParams={vi.fn()}
+      />
     );
     fireEvent.click(screen.getByLabelText('Increase baseplate.paddingFront'));
     expect(updateParam).toHaveBeenCalledWith('paddingFront', 0.25);
+  });
+
+  it('picking the anchor redistributes current X/Y padding sums in a single batch update', () => {
+    const updateParams = vi.fn();
+    const params = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingBack: mm(5),
+      paddingFront: mm(15),
+      paddingLeft: mm(10),
+      paddingRight: mm(10),
+    };
+    render(
+      <PaddingSchematic
+        baseplateParams={params}
+        updateParam={vi.fn()}
+        updateParams={updateParams}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText('baseplate.paddingAnchor.tl'));
+
+    expect(updateParams).toHaveBeenCalledWith({
+      paddingLeft: 0,
+      paddingRight: 20,
+      paddingBack: 0,
+      paddingFront: 20,
+      paddingAnchor: 'tl',
+    });
+  });
+
+  it('editing a single side flips paddingAnchor to "custom" alongside the value update', () => {
+    const updateParam = vi.fn();
+    const updateParams = vi.fn();
+    const params = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingAnchor: 'tl' as const,
+    };
+    render(
+      <PaddingSchematic
+        baseplateParams={params}
+        updateParam={updateParam}
+        updateParams={updateParams}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText('Increase baseplate.paddingRight'));
+
+    expect(updateParams).toHaveBeenCalledWith({
+      paddingRight: 0.25,
+      paddingAnchor: 'custom',
+    });
+    expect(updateParam).not.toHaveBeenCalled();
+  });
+
+  it('shows the clamp warning after an anchor pick that exceeds PADDING_MAX', () => {
+    const params = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingLeft: mm(95),
+      paddingRight: mm(95),
+    };
+    render(
+      <PaddingSchematic baseplateParams={params} updateParam={vi.fn()} updateParams={vi.fn()} />
+    );
+
+    expect(screen.queryByLabelText('baseplate.paddingAnchor.clampedWarning')).toBeNull();
+    fireEvent.click(screen.getByLabelText('baseplate.paddingAnchor.tl'));
+    expect(screen.getByLabelText('baseplate.paddingAnchor.clampedWarning')).toBeInTheDocument();
+  });
+
+  it('clears the clamp warning when a padding stepper is edited', () => {
+    const params = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingLeft: mm(95),
+      paddingRight: mm(95),
+    };
+    render(
+      <PaddingSchematic baseplateParams={params} updateParam={vi.fn()} updateParams={vi.fn()} />
+    );
+    fireEvent.click(screen.getByLabelText('baseplate.paddingAnchor.tl'));
+    expect(screen.getByLabelText('baseplate.paddingAnchor.clampedWarning')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Increase baseplate.paddingFront'));
+    expect(screen.queryByLabelText('baseplate.paddingAnchor.clampedWarning')).toBeNull();
+  });
+
+  it('does not touch paddingAnchor when already custom (uses single-key update)', () => {
+    const updateParam = vi.fn();
+    const updateParams = vi.fn();
+    const params = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingAnchor: 'custom' as const,
+    };
+    render(
+      <PaddingSchematic
+        baseplateParams={params}
+        updateParam={updateParam}
+        updateParams={updateParams}
+      />
+    );
+
+    fireEvent.click(screen.getByLabelText('Increase baseplate.paddingRight'));
+
+    expect(updateParam).toHaveBeenCalledWith('paddingRight', 0.25);
+    expect(updateParams).not.toHaveBeenCalled();
   });
 });
