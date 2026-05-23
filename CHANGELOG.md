@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.117.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.116.2...gridfinity-layout-tool-v4.117.0) (2026-05-23)
+
+
+### Features
+
+* **baseplate:** add 9-point padding anchor selector ([#1862](https://github.com/andymai/gridfinity-layout-tool/issues/1862)) ([ef27601](https://github.com/andymai/gridfinity-layout-tool/commit/ef27601dac9401e1f73a49cbed59208672c8a0db))
+
 ## [4.116.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.116.1...gridfinity-layout-tool-v4.116.2) (2026-05-23)
 
 
