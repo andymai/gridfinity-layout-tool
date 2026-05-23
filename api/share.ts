@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Validate layoutId - must be provided by client
     if (!isValidShareId(layoutId)) {
       return res.status(400).json({
-        error: 'Invalid or missing layoutId. Must be a 12-character alphanumeric string.',
+        error: 'Invalid or missing layoutId.',
         code: ErrorCode.VALIDATION_ERROR,
       });
     }

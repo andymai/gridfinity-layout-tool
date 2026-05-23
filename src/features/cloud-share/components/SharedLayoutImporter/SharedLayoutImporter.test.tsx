@@ -11,6 +11,7 @@ vi.mock('@/core/storage', () => ({
   getSharedLayoutFromURL: vi.fn(() => null),
   clearSharedLayoutFromURL: vi.fn(),
   getCloudShareIdFromURL: vi.fn(() => null),
+  clearCloudShareFromURL: vi.fn(),
 }));
 
 // Mock API
