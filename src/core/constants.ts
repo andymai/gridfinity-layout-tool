@@ -2,6 +2,7 @@ import type {
   Layout,
   Category,
   BaseplateParams,
+  PaddingAnchor,
   BinId,
   LayoutId,
   LayerId,
@@ -268,6 +269,7 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     paddingRight: mm(clampNumber(obj.paddingRight, 0, 100, 0)),
     paddingFront: mm(clampNumber(obj.paddingFront, 0, 100, 0)),
     paddingBack: mm(clampNumber(obj.paddingBack, 0, 100, 0)),
+    ...(isPaddingAnchor(obj.paddingAnchor) ? { paddingAnchor: obj.paddingAnchor } : {}),
     ...(typeof obj.connectorNubs === 'boolean' ? { connectorNubs: obj.connectorNubs } : {}),
     ...(typeof obj.invertDovetails === 'boolean' ? { invertDovetails: obj.invertDovetails } : {}),
     ...(typeof obj.preferIdenticalPieces === 'boolean'
@@ -309,6 +311,23 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
 function clampNumber(value: unknown, min: number, max: number, defaultVal: number): number {
   if (typeof value !== 'number' || Number.isNaN(value)) return defaultVal;
   return Math.min(max, Math.max(min, value));
+}
+
+const PADDING_ANCHOR_VALUES = new Set<string>([
+  'tl',
+  'tc',
+  'tr',
+  'ml',
+  'c',
+  'mr',
+  'bl',
+  'bc',
+  'br',
+  'custom',
+]);
+
+function isPaddingAnchor(value: unknown): value is PaddingAnchor {
+  return typeof value === 'string' && PADDING_ANCHOR_VALUES.has(value);
 }
 
 /** Default layout name for new layouts */

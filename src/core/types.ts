@@ -28,6 +28,10 @@ export interface Layout {
   baseplateParams?: BaseplateParams; // Per-layout baseplate configuration
 }
 
+/** Nine-point padding distribution anchor. First letter = vertical (t/m/b),
+ * second = horizontal (l/c/r). 'custom' means user-edited per-side, no anchor. */
+export type PaddingAnchor = 'tl' | 'tc' | 'tr' | 'ml' | 'c' | 'mr' | 'bl' | 'bc' | 'br' | 'custom';
+
 /** Baseplate generation parameters stored per-layout.
  * Width/depth/gridUnitMm are derived from the layout's drawer at generation time unless
  * syncWithLayout is false, in which case baseplateWidth/baseplateDepth override drawer dims.
@@ -40,6 +44,7 @@ export interface BaseplateParams {
   readonly paddingRight: Mm;
   readonly paddingFront: Mm;
   readonly paddingBack: Mm;
+  readonly paddingAnchor?: PaddingAnchor;
   /** Enable registration nubs/holes on split piece join edges (default false). */
   readonly connectorNubs?: boolean;
   /** Remove center floor material, keeping only magnet pads (default true). */
