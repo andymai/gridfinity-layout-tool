@@ -35,6 +35,14 @@ function neighbour(current: ConcreteAnchor, dx: number, dy: number): ConcreteAnc
   return ANCHORS[nextRow * 3 + nextCol];
 }
 
+// Roving tabindex: only one button in the radiogroup is in the tab order.
+// When custom (no selection), the first dot becomes the entry point.
+const FIRST_ANCHOR: ConcreteAnchor = 'tl';
+function rovingTabIndex(anchor: ConcreteAnchor, value: PaddingAnchorValue): 0 | -1 {
+  if (value === 'custom') return anchor === FIRST_ANCHOR ? 0 : -1;
+  return anchor === value ? 0 : -1;
+}
+
 export function PaddingAnchor({
   value,
   onChange,
@@ -51,6 +59,7 @@ export function PaddingAnchor({
       if (!delta) return;
       e.preventDefault();
       const next = neighbour(current, delta[0], delta[1]);
+      if (next === current) return;
       onChange(next);
       buttonRefs.current.get(next)?.focus();
     },
@@ -79,6 +88,7 @@ export function PaddingAnchor({
             role="radio"
             aria-checked={selected}
             aria-label={t(`baseplate.paddingAnchor.${anchor}`)}
+            tabIndex={rovingTabIndex(anchor, value)}
             disabled={disabled}
             onClick={() => onChange(anchor)}
             onKeyDown={(e) => handleKeyDown(anchor, e)}

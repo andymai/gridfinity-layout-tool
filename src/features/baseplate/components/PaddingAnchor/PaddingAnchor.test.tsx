@@ -49,14 +49,31 @@ describe('PaddingAnchor', () => {
     expect(onChange).toHaveBeenLastCalledWith('ml');
   });
 
-  it('arrow keys clamp at edges (no wraparound)', () => {
+  it('arrow keys at the grid edge do not fire onChange', () => {
     const onChange = vi.fn();
     render(<PaddingAnchor value="tl" onChange={onChange} />);
     const tl = screen.getByLabelText('baseplate.paddingAnchor.tl');
     fireEvent.keyDown(tl, { key: 'ArrowLeft' });
-    expect(onChange).toHaveBeenLastCalledWith('tl');
     fireEvent.keyDown(tl, { key: 'ArrowUp' });
-    expect(onChange).toHaveBeenLastCalledWith('tl');
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('roving tabindex: only the selected anchor is in tab order', () => {
+    render(<PaddingAnchor value="mr" onChange={vi.fn()} />);
+    for (const radio of screen.getAllByRole('radio')) {
+      const expected =
+        radio.getAttribute('aria-label') === 'baseplate.paddingAnchor.mr' ? '0' : '-1';
+      expect(radio).toHaveAttribute('tabindex', expected);
+    }
+  });
+
+  it('roving tabindex: when value is "custom", only the first anchor (tl) is tabbable', () => {
+    render(<PaddingAnchor value="custom" onChange={vi.fn()} />);
+    for (const radio of screen.getAllByRole('radio')) {
+      const expected =
+        radio.getAttribute('aria-label') === 'baseplate.paddingAnchor.tl' ? '0' : '-1';
+      expect(radio).toHaveAttribute('tabindex', expected);
+    }
   });
 
   it('shows clamp warning badge only when showClampWarning is true', () => {
