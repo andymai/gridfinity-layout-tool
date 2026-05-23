@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from '@/i18n';
 import { PaddingStepper } from '../PaddingStepper';
 import { PaddingAnchor } from '../PaddingAnchor';
@@ -25,9 +25,15 @@ export function PaddingSchematic({
   const t = useTranslation();
   const anchor = baseplateParams.paddingAnchor ?? 'custom';
 
+  // The clamp flag must come from the redistribution result — checking
+  // post-write state always reports `clamped: false` because clamped values
+  // are stable under another anchor split.
+  const [showClampWarning, setShowClampWarning] = useState(false);
+
   const handleAnchorChange = useCallback(
     (next: Exclude<PaddingAnchorValue, 'custom'>) => {
       const distributed = computeAnchoredPaddings(baseplateParams, next);
+      setShowClampWarning(distributed.clamped);
       updateParams({
         paddingLeft: distributed.paddingLeft,
         paddingRight: distributed.paddingRight,
@@ -41,6 +47,7 @@ export function PaddingSchematic({
 
   const handlePaddingChange = useCallback(
     (key: PaddingKey, value: number) => {
+      setShowClampWarning(false);
       if (anchor === 'custom') {
         updateParam(key, mm(value));
       } else {
@@ -49,16 +56,6 @@ export function PaddingSchematic({
     },
     [anchor, updateParam, updateParams]
   );
-
-  const totalPadding =
-    baseplateParams.paddingLeft +
-    baseplateParams.paddingRight +
-    baseplateParams.paddingFront +
-    baseplateParams.paddingBack;
-  const showClampWarning =
-    anchor !== 'custom' &&
-    totalPadding > 0 &&
-    computeAnchoredPaddings(baseplateParams, anchor).clamped;
 
   return (
     <div className="space-y-1">

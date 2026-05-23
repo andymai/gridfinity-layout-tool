@@ -48,6 +48,14 @@ describe('v2 layout.setBaseplateParams', () => {
     expect(result.value.event.payload.previousParams).toEqual(baseParams);
   });
 
+  it('preserves paddingAnchor through the handler', () => {
+    const layout = makeLayout();
+    const params: BaseplateParams = { ...baseParams, paddingAnchor: 'tr' };
+    const result = setBaseplateParams.handle({ params }, { aggregate: layout });
+    if (!isOk(result)) throw new Error('handle failed');
+    expect(result.value.event.payload.params.paddingAnchor).toBe('tr');
+  });
+
   it('apply() installs the new params', () => {
     const layout = makeLayout();
     const result = setBaseplateParams.handle({ params: baseParams }, { aggregate: layout });

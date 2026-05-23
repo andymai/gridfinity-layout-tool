@@ -23,6 +23,9 @@ const payloadSchema = z.object({
     paddingRight: z.number(),
     paddingFront: z.number(),
     paddingBack: z.number(),
+    paddingAnchor: z
+      .enum(['tl', 'tc', 'tr', 'ml', 'c', 'mr', 'bl', 'bc', 'br', 'custom'])
+      .optional(),
     connectorNubs: z.boolean().optional(),
     lightweight: z.boolean().optional(),
     syncWithLayout: z.boolean().optional(),

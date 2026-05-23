@@ -138,6 +138,37 @@ describe('PaddingSchematic', () => {
     expect(updateParam).not.toHaveBeenCalled();
   });
 
+  it('shows the clamp warning after an anchor pick that exceeds PADDING_MAX', () => {
+    const params = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingLeft: mm(95),
+      paddingRight: mm(95),
+    };
+    render(
+      <PaddingSchematic baseplateParams={params} updateParam={vi.fn()} updateParams={vi.fn()} />
+    );
+
+    expect(screen.queryByLabelText('baseplate.paddingAnchor.clampedWarning')).toBeNull();
+    fireEvent.click(screen.getByLabelText('baseplate.paddingAnchor.tl'));
+    expect(screen.getByLabelText('baseplate.paddingAnchor.clampedWarning')).toBeInTheDocument();
+  });
+
+  it('clears the clamp warning when a padding stepper is edited', () => {
+    const params = {
+      ...DEFAULT_BASEPLATE_PARAMS,
+      paddingLeft: mm(95),
+      paddingRight: mm(95),
+    };
+    render(
+      <PaddingSchematic baseplateParams={params} updateParam={vi.fn()} updateParams={vi.fn()} />
+    );
+    fireEvent.click(screen.getByLabelText('baseplate.paddingAnchor.tl'));
+    expect(screen.getByLabelText('baseplate.paddingAnchor.clampedWarning')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Increase baseplate.paddingFront'));
+    expect(screen.queryByLabelText('baseplate.paddingAnchor.clampedWarning')).toBeNull();
+  });
+
   it('does not touch paddingAnchor when already custom (uses single-key update)', () => {
     const updateParam = vi.fn();
     const updateParams = vi.fn();
