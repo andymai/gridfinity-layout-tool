@@ -197,11 +197,12 @@ describe('stlExporter', () => {
       expect(() => exportSTL(vertices, normals)).toThrow('length mismatch');
     });
 
-    it('handles empty mesh (0 triangles)', () => {
-      const vertices = new Float32Array(0);
-      const normals = new Float32Array(0);
-      const blob = exportSTL(vertices, normals, 'empty');
-      expect(blob.size).toBe(84); // 80 header + 4 count (0)
+    it('throws on empty mesh (0 triangles)', () => {
+      // STL binary is structurally valid with 0 triangles, but slicers reject
+      // it and 3MF doesn't allow it — reject at the shared validation boundary.
+      expect(() => exportSTL(new Float32Array(0), new Float32Array(0), 'empty')).toThrow(
+        /empty mesh/
+      );
     });
 
     it('uses default name when none provided', () => {

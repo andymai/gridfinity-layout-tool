@@ -7,7 +7,11 @@
 
 import { useId, useState } from 'react';
 import { ChevronDownIcon } from '@/design-system/Icon';
-import { ZONE_ORDER, getZoneColor } from '@/features/bin-designer/types/featureColors';
+import {
+  ZONE_ORDER,
+  getZoneColor,
+  normalizeHex,
+} from '@/features/bin-designer/types/featureColors';
 import type { ColorZone, FeatureColorConfig } from '@/features/bin-designer/types/featureColors';
 import { useTranslation } from '@/i18n';
 
@@ -34,7 +38,7 @@ function buildFilaments(
   const byHex = new Map<string, Filament>();
   for (const z of ZONE_ORDER) {
     if (!activeZones.has(z)) continue;
-    const hex = getZoneColor(featureColors, z).toLowerCase();
+    const hex = normalizeHex(getZoneColor(featureColors, z));
     const existing = byHex.get(hex);
     if (existing) {
       existing.zones.push(labels[z]);

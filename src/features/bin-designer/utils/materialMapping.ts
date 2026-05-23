@@ -11,6 +11,7 @@ import {
   getZoneColor,
   isSingleColor,
   lipCornerZone,
+  normalizeHex,
   resolveColorMapping,
 } from '../types/featureColors';
 import type { ColorZone, FeatureColorConfig } from '../types/featureColors';
@@ -49,10 +50,8 @@ export function buildTriangleMaterialIndices(
   const lipCenter = computeLipBBoxCenter(faceGroups, triangleXY);
 
   const materialIndexForZone = (zone: ColorZone): number => {
-    // `colorToIndex` is keyed by lowercased hex; normalize here so a config
-    // with mixed-case hex still resolves to the right material slot.
-    const hex = getZoneColor(featureColors, zone).toLowerCase();
-    return colorToIndex.get(hex) ?? defaultIndex;
+    // `colorToIndex` is keyed by `normalizeHex` output.
+    return colorToIndex.get(normalizeHex(getZoneColor(featureColors, zone))) ?? defaultIndex;
   };
 
   for (const group of faceGroups) {
