@@ -50,10 +50,10 @@ describe('computeAnchoredPaddings', () => {
     expect(result.paddingRight).toBe(16.01);
   });
 
-  it('middle-left anchor halves Y but pushes X to right', () => {
-    const result = computeAnchoredPaddings(base(0, 0, 10, 10), 'ml');
+  it('middle-left anchor splits Y evenly and pushes X to right', () => {
+    const result = computeAnchoredPaddings(base(6, 4, 10, 10), 'ml');
     expect(result.paddingLeft).toBe(0);
-    expect(result.paddingRight).toBe(0);
+    expect(result.paddingRight).toBe(10);
     expect(result.paddingBack).toBe(10);
     expect(result.paddingFront).toBe(10);
   });
