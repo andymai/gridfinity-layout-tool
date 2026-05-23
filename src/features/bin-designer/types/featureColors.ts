@@ -158,9 +158,13 @@ export function isSingleColor(
   c: FeatureColorConfig,
   activeZones: ReadonlySet<ColorZone> | readonly ColorZone[]
 ): boolean {
-  const ref = c.body;
+  // Compare in lowercase to stay in lockstep with `resolveColorMapping` —
+  // otherwise a mixed-case design (body `#FFF` + text `#fff`) would
+  // skip the early-exit and emit a `<basematerials>` section with a
+  // single material instead of returning null (no basematerials).
+  const ref = c.body.toLowerCase();
   for (const z of activeZones) {
-    if (getZoneColor(c, z) !== ref) return false;
+    if (getZoneColor(c, z).toLowerCase() !== ref) return false;
   }
   return true;
 }
@@ -219,15 +223,20 @@ export function resolveColorMapping(c: FeatureColorConfig): {
   colorToIndex: ReadonlyMap<string, number>;
   defaultIndex: number;
 } {
+  // Normalize to lowercase before deduping so legacy/imported designs with
+  // mixed-case hex (e.g. body `#FFF` vs text `#fff`) don't emit two
+  // materials in the 3MF while the slicer-handoff preview shows one.
+  // Lowercase hex is also the standard convention for `displaycolor`.
   const colorToIndex = new Map<string, number>();
   const colors: string[] = [];
 
-  colorToIndex.set(c.body, 0);
-  colors.push(c.body);
+  const bodyHex = c.body.toLowerCase();
+  colorToIndex.set(bodyHex, 0);
+  colors.push(bodyHex);
 
   for (const z of ZONE_ORDER) {
     if (z === 'body') continue;
-    const hex = getZoneColor(c, z);
+    const hex = getZoneColor(c, z).toLowerCase();
     if (colorToIndex.has(hex)) continue;
     colorToIndex.set(hex, colors.length);
     colors.push(hex);

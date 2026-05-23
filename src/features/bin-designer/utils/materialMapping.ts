@@ -49,7 +49,9 @@ export function buildTriangleMaterialIndices(
   const lipCenter = computeLipBBoxCenter(faceGroups, triangleXY);
 
   const materialIndexForZone = (zone: ColorZone): number => {
-    const hex = getZoneColor(featureColors, zone);
+    // `colorToIndex` is keyed by lowercased hex; normalize here so a config
+    // with mixed-case hex still resolves to the right material slot.
+    const hex = getZoneColor(featureColors, zone).toLowerCase();
     return colorToIndex.get(hex) ?? defaultIndex;
   };
 
