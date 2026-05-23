@@ -7,6 +7,7 @@ import {
   getSharedLayoutFromURL,
   clearSharedLayoutFromURL,
   getCloudShareIdFromURL,
+  clearCloudShareFromURL,
 } from '@/core/storage';
 import { fetchShare } from '@/core/api/share';
 import { isOk, getUserMessage } from '@/core/result';
@@ -27,7 +28,7 @@ const initialCloudShareId = getCloudShareIdFromURL();
  *
  * Handles two share formats:
  * - URL-encoded (legacy): /#share={base64-encoded-layout}
- * - Cloud share: /l/{12-char-id} (only for layouts in "Shared with me" list)
+ * - Cloud share: /l/{shareId} (fetches from server for any non-local layout)
  */
 export function SharedLayoutImporter() {
   const t = useTranslation();
@@ -157,7 +158,9 @@ export function SharedLayoutImporter() {
     };
   }, []);
 
-  // Handle cloud shares (only for layouts in "Shared with me" list)
+  // Handle cloud shares — fetch any non-local layout referenced in the URL.
+  // First-time recipients of a share link land here; auto-tracking into
+  // "Shared with me" happens after a successful fetch.
   useEffect(() => {
     if (!initialCloudShareId) {
       return;
@@ -173,14 +176,6 @@ export function SharedLayoutImporter() {
       (entry) => entry.id === initialCloudShareId || entry.cloudShare?.id === initialCloudShareId
     );
     if (isLocalLayout) {
-      return;
-    }
-
-    // Only cloud-fetch if this layout is in "Shared with me" list
-    // This prevents incorrectly trying to cloud-fetch local-only layouts
-    // that don't exist (e.g., bookmarked URL after clearing localStorage)
-    const sharedWithMeEntry = getSharedWithMeByShareId(initialCloudShareId);
-    if (!sharedWithMeEntry) {
       return;
     }
 
@@ -220,6 +215,12 @@ export function SharedLayoutImporter() {
       if (!isOk(result)) {
         const message = getUserMessage(result.error);
         addToast(t('toast.sharedLayoutFailed', { error: message }), 'error');
+        // On 404, clear the stale share URL so the address bar reflects the
+        // user's actual layout (e.g. owner returning to a bookmark after the
+        // share was deleted, or anyone opening a deleted/expired link).
+        if (result.error.code === 'API_NOT_FOUND') {
+          clearCloudShareFromURL();
+        }
         return;
       }
 
@@ -248,7 +249,6 @@ export function SharedLayoutImporter() {
     sharedWithMeLoaded,
     libraryEntries,
     sharedLayoutCloudShareId,
-    getSharedWithMeByShareId,
     t,
   ]);
 

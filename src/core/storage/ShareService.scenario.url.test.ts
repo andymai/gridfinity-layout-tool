@@ -126,6 +126,34 @@ describe('getCloudShareIdFromURL', () => {
 
     expect(getCloudShareIdFromURL()).toBeNull();
   });
+
+  it('accepts a legacy UUID share ID', () => {
+    window.location = Object.assign({}, originalLocation, {
+      pathname: '/l/550e8400-e29b-41d4-a716-446655440000',
+      hash: '',
+    });
+
+    expect(getCloudShareIdFromURL()).toBe('550e8400-e29b-41d4-a716-446655440000');
+  });
+
+  it('accepts a legacy UUID share ID with a slug', () => {
+    window.location = Object.assign({}, originalLocation, {
+      pathname: '/l/550e8400-e29b-41d4-a716-446655440000/my-layout',
+      hash: '',
+    });
+
+    expect(getCloudShareIdFromURL()).toBe('550e8400-e29b-41d4-a716-446655440000');
+  });
+
+  it('returns null for a non-v4 UUID-shaped string', () => {
+    // Not a v4 UUID (version nibble is 5, not 4) — isLegacyUUID rejects it.
+    window.location = Object.assign({}, originalLocation, {
+      pathname: '/l/550e8400-e29b-51d4-a716-446655440000',
+      hash: '',
+    });
+
+    expect(getCloudShareIdFromURL()).toBeNull();
+  });
 });
 
 describe('clearCloudShareFromURL', () => {
@@ -178,5 +206,15 @@ describe('clearCloudShareFromURL', () => {
     clearCloudShareFromURL();
 
     expect(window.history.replaceState).not.toHaveBeenCalled();
+  });
+
+  it('clears URL when on /l/{uuid}/{slug} path', () => {
+    window.location = Object.assign({}, originalLocation, {
+      pathname: '/l/550e8400-e29b-41d4-a716-446655440000/my-layout',
+    });
+
+    clearCloudShareFromURL();
+
+    expect(window.history.replaceState).toHaveBeenCalledWith(null, '', '/');
   });
 });
