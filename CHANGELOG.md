@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.116.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.116.1...gridfinity-layout-tool-v4.116.2) (2026-05-23)
+
+
+### Bug Fixes
+
+* **cloud-share:** unblock first-time recipients of share links ([#1860](https://github.com/andymai/gridfinity-layout-tool/issues/1860)) ([b9ea617](https://github.com/andymai/gridfinity-layout-tool/commit/b9ea6178d8e53fcec108a77d6d98de97f90cebe4))
+
 ## [4.116.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.116.0...gridfinity-layout-tool-v4.116.1) (2026-05-23)
 
 
