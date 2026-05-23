@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.116.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.116.0...gridfinity-layout-tool-v4.116.1) (2026-05-23)
+
+
+### Bug Fixes
+
+* **bin-designer:** include text zone in slicer handoff preview ([#1857](https://github.com/andymai/gridfinity-layout-tool/issues/1857)) ([c25ed79](https://github.com/andymai/gridfinity-layout-tool/commit/c25ed79a46ebe231c8da6b38917e72942e9d2045))
+
 ## [4.116.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.115.4...gridfinity-layout-tool-v4.116.0) (2026-05-22)
 
 
