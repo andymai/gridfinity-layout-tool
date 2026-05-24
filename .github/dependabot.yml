@@ -13,6 +13,10 @@ updates:
       prefix: 'chore(deps)'
     labels:
       - 'dependencies'
+    # Mirrors pnpm minimumReleaseAge — see SECURITY.md.
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
     groups:
       # Group all minor and patch updates together
       minor-and-patch:
@@ -71,3 +75,6 @@ updates:
     labels:
       - 'ci'
       - 'dependencies'
+    # Action tag-retag defense — see SECURITY.md.
+    cooldown:
+      default-days: 7

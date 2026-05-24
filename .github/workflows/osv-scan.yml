@@ -1,0 +1,43 @@
+name: OSV Scan
+
+# Complements the pnpm minimumReleaseAge cooldown: cooldown blocks
+# fresh-but-untrusted, OSV blocks old-but-known-bad.
+# PRs are report-only (transitive deps can't always be updated atomically with
+# a feature PR); main + weekly schedule fail closed so the dashboard stays loud.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan-pr:
+    name: OSV Scan (report-only)
+    if: github.event_name == 'pull_request'
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
+    with:
+      scan-args: |-
+        --lockfile=pnpm-lock.yaml
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+  scan-main:
+    name: OSV Scan (blocking)
+    if: github.event_name != 'pull_request'
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
+    with:
+      scan-args: |-
+        --lockfile=pnpm-lock.yaml
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
