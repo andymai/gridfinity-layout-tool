@@ -1,9 +1,9 @@
 // @vitest-environment node
 /**
- * Cutouts (top-down cavity cutouts and wall cutouts) survive the
- * boolean-intersection split path. Splitting builds the body solid without
- * the stacking lip, which earlier silently swallowed cut() failures and
- * dropped cutouts from the output.
+ * Cutouts on solid bins must survive the boolean-intersection split path.
+ * featuresStage hands each cutout shape to booleanStage's cutAllBisect as
+ * an independent cutTarget so a single bad tool no longer drops the whole
+ * set, and export passes pick up `simplify` topology cleanup.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
@@ -45,59 +45,107 @@ function makeRectCutout(overrides: Partial<Cutout> = {}): Cutout {
   };
 }
 
-function totalVerts(pieces: readonly { vertices: Float32Array }[]): number {
-  return pieces.reduce((s, p) => s + p.vertices.length, 0);
+// Buckets the mesh's z values to 0.5mm precision. A carved cavity introduces
+// a new internal floor surface at z = rim − cutDepth, so the bucket set
+// gains an entry the no-cutout baseline doesn't have.
+function uniqueZLevels(verts: Float32Array): Set<number> {
+  const levels = new Set<number>();
+  for (let i = 2; i < verts.length; i += 3) {
+    levels.add(Math.round(verts[i] * 2) / 2);
+  }
+  return levels;
+}
+
+function allPieceVerts(pieces: readonly { vertices: Float32Array }[]): Float32Array {
+  const total = pieces.reduce((s, p) => s + p.vertices.length, 0);
+  const out = new Float32Array(total);
+  let offset = 0;
+  for (const p of pieces) {
+    out.set(p.vertices, offset);
+    offset += p.vertices.length;
+  }
+  return out;
 }
 
 describe('split + top-down cutouts', () => {
-  it('split pieces preserve cutout (delta matches unsplit baseline)', () => {
+  it('carves a cavity floor that the no-cutout baseline lacks (unsplit and split)', () => {
     const generateBin = getGenerateBin();
     const generateSplitPreview = getGenerateSplitPreview();
     const cutout = makeRectCutout();
 
-    const unsplitDelta =
-      generateBin({ ...SOLID_LIPPED_BIN, cutouts: [cutout] }, undefined, true).vertices.length -
-      generateBin({ ...SOLID_LIPPED_BIN, cutouts: [] }, undefined, true).vertices.length;
-    const splitDelta =
-      totalVerts(
+    const unsplitBase = uniqueZLevels(
+      generateBin({ ...SOLID_LIPPED_BIN, cutouts: [] }, undefined, true).vertices
+    );
+    const unsplitCut = uniqueZLevels(
+      generateBin({ ...SOLID_LIPPED_BIN, cutouts: [cutout] }, undefined, true).vertices
+    );
+    expect(
+      [...unsplitCut].filter((z) => !unsplitBase.has(z)),
+      'unsplit: cavity should introduce a z level the no-cutout baseline lacks'
+    ).not.toHaveLength(0);
+
+    const splitBase = uniqueZLevels(
+      allPieceVerts(
+        generateSplitPreview({ ...SOLID_LIPPED_BIN, cutouts: [] }, [0], [], NO_CONNECTORS).pieces
+      )
+    );
+    const splitCut = uniqueZLevels(
+      allPieceVerts(
         generateSplitPreview({ ...SOLID_LIPPED_BIN, cutouts: [cutout] }, [0], [], NO_CONNECTORS)
           .pieces
-      ) -
-      totalVerts(
-        generateSplitPreview({ ...SOLID_LIPPED_BIN, cutouts: [] }, [0], [], NO_CONNECTORS).pieces
-      );
-
-    expect(unsplitDelta, 'sanity: unsplit cutout adds vertices').toBeGreaterThan(0);
+      )
+    );
     expect(
-      splitDelta,
-      `Split-path cutout delta (${splitDelta}) should be on the same order as unsplit (${unsplitDelta}). ` +
-        `If splitDelta ≈ 0 the cutout was silently dropped during split.`
-    ).toBeGreaterThan(unsplitDelta * 0.5);
+      [...splitCut].filter((z) => !splitBase.has(z)),
+      'split: cavity should introduce a z level the no-cutout split baseline lacks'
+    ).not.toHaveLength(0);
   }, 120000);
 
-  it('cutout straddling the split plane appears in both pieces', () => {
+  it('straddling cutout leaves a cavity floor in both split pieces', () => {
     const generateSplitPreview = getGenerateSplitPreview();
-    // Interior width ≈ 249.1mm; bin center sits at ~124.55mm in interior coords.
     const straddler = makeRectCutout({ x: 95, width: 60, cutDepth: 12 });
 
-    const without = generateSplitPreview(
+    const baselinePieces = generateSplitPreview(
       { ...SOLID_LIPPED_BIN, cutouts: [] },
       [0],
       [],
       NO_CONNECTORS
-    );
-    const withCut = generateSplitPreview(
+    ).pieces;
+    const withCutPieces = generateSplitPreview(
       { ...SOLID_LIPPED_BIN, cutouts: [straddler] },
       [0],
       [],
       NO_CONNECTORS
-    );
+    ).pieces;
 
     for (let i = 0; i < 2; i++) {
+      const newLevels = [...uniqueZLevels(withCutPieces[i].vertices)].filter(
+        (z) => !uniqueZLevels(baselinePieces[i].vertices).has(z)
+      );
       expect(
-        withCut.pieces[i].vertices.length,
-        `Piece ${without.pieces[i].label}: straddling cutout should add vertices`
-      ).toBeGreaterThan(without.pieces[i].vertices.length);
+        newLevels,
+        `piece ${withCutPieces[i].label}: straddling cavity should add a z level`
+      ).not.toHaveLength(0);
     }
+  }, 120000);
+
+  it('one bad tool does not drop the rest', () => {
+    // cutAllBisect's bisect recovery: even if one tool is degenerate, the
+    // remaining cutouts should still survive. A zero-size cutout is the
+    // simplest pathological tool we can construct.
+    const generateBin = getGenerateBin();
+    const bad: Cutout = makeRectCutout({ id: 'bad', x: 100, width: 0, depth: 0 });
+    const good = makeRectCutout({ id: 'good', x: 20, y: 20, width: 30, depth: 30, cutDepth: 8 });
+
+    const base = uniqueZLevels(
+      generateBin({ ...SOLID_LIPPED_BIN, cutouts: [] }, undefined, true).vertices
+    );
+    const mixed = uniqueZLevels(
+      generateBin({ ...SOLID_LIPPED_BIN, cutouts: [bad, good] }, undefined, true).vertices
+    );
+    expect(
+      [...mixed].filter((z) => !base.has(z)),
+      'the good cutout should still carve a cavity even when sharing the set with a degenerate tool'
+    ).not.toHaveLength(0);
   }, 120000);
 });
