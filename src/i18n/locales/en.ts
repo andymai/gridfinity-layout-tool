@@ -1847,6 +1847,14 @@ const en: Record<string, string> = {
   'binDesigner.toggleWireframeModeKeyboardShortcut': 'Toggle wireframe mode, keyboard shortcut W',
   'binDesigner.touchGestureHints': 'Touch gesture hints',
   'binDesigner.wire': 'Wire',
+  'binDesigner.xray': 'X-ray',
+  'binDesigner.toggleXray': 'Toggle X-ray (X)',
+  'binDesigner.toggleXrayKeyboardShortcut': 'Toggle X-ray mode, keyboard shortcut X',
+  'binDesigner.projectionPerspective': 'Perspective',
+  'binDesigner.projectionOrthographic': 'Orthographic',
+  'binDesigner.toggleProjection': 'Toggle perspective / orthographic (P)',
+  'binDesigner.toggleProjectionKeyboardShortcut':
+    'Toggle perspective / orthographic projection, keyboard shortcut P',
   'binDesigner.designCreatedAndLinked': 'Design created and linked to bin',
   'binDesigner.designCreatedLinkFailed': 'Design created but linking failed',
   'binDesigner.designCreateFailed': 'Failed to create design',
@@ -1944,6 +1952,14 @@ const en: Record<string, string> = {
   'baseplate.brepFinalizeFailed':
     "Couldn't finalize high-fidelity preview — exported file may differ slightly.",
   'baseplate.elapsed': '{seconds}s',
+  'baseplate.xray': 'X-ray',
+  'baseplate.toggleXray': 'Toggle X-ray (X)',
+  'baseplate.toggleXrayKeyboardShortcut': 'Toggle X-ray mode, keyboard shortcut X',
+  'baseplate.projectionPerspective': 'Perspective',
+  'baseplate.projectionOrthographic': 'Orthographic',
+  'baseplate.toggleProjection': 'Toggle perspective / orthographic (P)',
+  'baseplate.toggleProjectionKeyboardShortcut':
+    'Toggle perspective / orthographic projection, keyboard shortcut P',
 
   // Collaboration
   'collab.connected': 'Connected',

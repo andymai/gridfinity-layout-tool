@@ -29,6 +29,9 @@ import type { PieceMeshEntry, SplitViewMode } from '../../store/baseplatePageSto
 /** Fallback accent hex (amber-500) when CSS var is unavailable. */
 const FALLBACK_ACCENT = '#f59e0b';
 
+/** Face opacity when xray mode is enabled (matches BaseplateMesh). */
+const XRAY_OPACITY = 0.3;
+
 /** Read the current accent color from CSS custom properties. */
 function getAccentHex(): string {
   if (typeof document === 'undefined') return FALLBACK_ACCENT;
@@ -47,6 +50,7 @@ interface PieceMeshProps {
   readonly hoveredPieceLabel: string | null;
   readonly selectedPieceLabel: string | null;
   readonly isPreview: boolean;
+  readonly xray: boolean;
 }
 
 /** Renders a single piece mesh with position offset, color, and interaction. */
@@ -61,6 +65,7 @@ function PieceMesh({
   hoveredPieceLabel,
   selectedPieceLabel,
   isPreview,
+  xray,
 }: PieceMeshProps) {
   const { invalidate } = useThree();
   const colors = useThreeColors();
@@ -168,8 +173,9 @@ function PieceMesh({
             emissive={displayColor}
             emissiveIntensity={emissiveIntensity}
             flatShading={!hasPrecomputedNormals}
-            transparent={isDimmed}
-            opacity={isDimmed ? 0.55 : 1}
+            transparent={isDimmed || xray}
+            opacity={xray ? (isDimmed ? 0.55 * XRAY_OPACITY : XRAY_OPACITY) : isDimmed ? 0.55 : 1}
+            depthWrite={!xray}
           />
         </mesh>
         {edgesGeometry && (
@@ -203,6 +209,7 @@ interface SplitBaseplateMeshesProps {
   readonly totalDepthUnits: number;
   readonly gridUnitMm: number;
   readonly isPreview?: boolean;
+  readonly xray?: boolean;
 }
 
 /**
@@ -213,6 +220,7 @@ export function SplitBaseplateMeshes({
   totalDepthUnits,
   gridUnitMm,
   isPreview = false,
+  xray = false,
 }: SplitBaseplateMeshesProps) {
   const { pieceMeshes, splitViewMode, hoveredPieceLabel, selectedPieceLabel } =
     useBaseplatePageStore(
@@ -246,6 +254,7 @@ export function SplitBaseplateMeshes({
             hoveredPieceLabel={hoveredPieceLabel}
             selectedPieceLabel={selectedPieceLabel}
             isPreview={isPreview}
+            xray={xray}
           />
         );
       })}

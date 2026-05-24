@@ -6,6 +6,8 @@ describe('useDesignerKeyboard', () => {
   const onCameraPreset = vi.fn();
   const onResetView = vi.fn();
   const onToggleWireframe = vi.fn();
+  const onToggleXray = vi.fn();
+  const onToggleProjection = vi.fn();
   const onUndo = vi.fn();
   const onRedo = vi.fn();
 
@@ -15,7 +17,15 @@ describe('useDesignerKeyboard', () => {
 
   function renderKeyboardHook() {
     return renderHook(() =>
-      useDesignerKeyboard({ onCameraPreset, onResetView, onToggleWireframe, onUndo, onRedo })
+      useDesignerKeyboard({
+        onCameraPreset,
+        onResetView,
+        onToggleWireframe,
+        onToggleXray,
+        onToggleProjection,
+        onUndo,
+        onRedo,
+      })
     );
   }
 
@@ -70,6 +80,30 @@ describe('useDesignerKeyboard', () => {
     renderKeyboardHook();
     pressKey('W');
     expect(onToggleWireframe).toHaveBeenCalledOnce();
+  });
+
+  it('maps X key to xray toggle', () => {
+    renderKeyboardHook();
+    pressKey('x');
+    expect(onToggleXray).toHaveBeenCalledOnce();
+  });
+
+  it('maps uppercase X key to xray toggle', () => {
+    renderKeyboardHook();
+    pressKey('X');
+    expect(onToggleXray).toHaveBeenCalledOnce();
+  });
+
+  it('maps P key to projection toggle', () => {
+    renderKeyboardHook();
+    pressKey('p');
+    expect(onToggleProjection).toHaveBeenCalledOnce();
+  });
+
+  it('maps uppercase P key to projection toggle', () => {
+    renderKeyboardHook();
+    pressKey('P');
+    expect(onToggleProjection).toHaveBeenCalledOnce();
   });
 
   it('maps Ctrl+Z to undo', () => {

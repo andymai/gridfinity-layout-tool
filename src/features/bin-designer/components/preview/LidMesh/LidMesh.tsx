@@ -33,6 +33,13 @@ const OPACITY_OPEN = 0.95;
 const OPACITY_INTERP_START_MM = 2;
 const OPACITY_INTERP_END_MM = 5;
 
+/**
+ * Multiplier applied to the lid's computed opacity when xray is active so the
+ * lid drops to ~30% at the open end and ~21% at the closed end — composes with
+ * the explode-driven opacity instead of overwriting it.
+ */
+const XRAY_OPACITY_FACTOR = 0.32;
+
 /** Linear interpolation: 30% closed → 70% open over [2mm, 5mm]. */
 function opacityForOffset(offsetMm: number): number {
   if (offsetMm <= OPACITY_INTERP_START_MM) return OPACITY_CLOSED;
@@ -48,9 +55,11 @@ interface LidMeshProps {
   /** Distance the lid is lifted above its mated position, in mm. 0 = closed. */
   lidOffsetMm: number;
   wireframe?: boolean;
+  /** When true, ghost the lid further so the bin interior is visible through it. */
+  xray?: boolean;
 }
 
-export function LidMesh({ color, lidOffsetMm, wireframe = false }: LidMeshProps) {
+export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }: LidMeshProps) {
   const { invalidate } = useThree();
 
   const { lidMesh, lidGroupZ } = useDesignerStore(
@@ -77,6 +86,7 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false }: LidMeshProps)
     edgeVertices: lidMesh?.edgeVertices ?? null,
   });
 
+  const baseOpacity = opacityForOffset(lidOffsetMm);
   const matProps = useMemo(
     () => ({
       color,
@@ -85,7 +95,8 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false }: LidMeshProps)
       wireframe,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: opacityForOffset(lidOffsetMm),
+      opacity: xray ? baseOpacity * XRAY_OPACITY_FACTOR : baseOpacity,
+      depthWrite: !xray,
       flatShading: !hasPrecomputedNormals,
       // Bias the lid's depth values so it consistently loses depth tests
       // against the bin where their surfaces overlap (lid outer wall vs
@@ -98,7 +109,7 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false }: LidMeshProps)
       polygonOffsetFactor: 4,
       polygonOffsetUnits: 4,
     }),
-    [color, wireframe, hasPrecomputedNormals, lidOffsetMm]
+    [color, wireframe, hasPrecomputedNormals, baseOpacity, xray]
   );
 
   // Invalidate the R3F frame when any visual input changes.

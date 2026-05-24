@@ -507,6 +507,8 @@ export const SHORTCUTS = {
   // 3D Preview shortcuts
   PREVIEW_TOGGLE: 'v',
   PREVIEW_EXPAND: 'Space',
+  TOGGLE_XRAY: 'x',
+  TOGGLE_PROJECTION: 'p',
   // Half-bin mode
   HALF_BIN_TOGGLE: 'h',
   // Layout management

@@ -38,6 +38,9 @@ vi.mock('@react-three/drei', () => ({
   ContactShadows: () => <div data-testid="contact-shadows" />,
   Line: () => <div data-testid="line" />,
   Text: ({ children }: { children: ReactNode }) => <div data-testid="text">{children}</div>,
+  PerspectiveCamera: () => <div data-testid="perspective-camera" />,
+  OrthographicCamera: () => <div data-testid="orthographic-camera" />,
+  Detailed: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
 vi.mock('three', () => {
@@ -158,6 +161,13 @@ vi.mock('three', () => {
     /* mock */
   }
 
+  function PerspectiveCamera() {
+    /* mock */
+  }
+  function OrthographicCamera() {
+    /* mock */
+  }
+
   return {
     Vector2,
     Vector3,
@@ -168,6 +178,8 @@ vi.mock('three', () => {
     Color,
     ShaderMaterial,
     EdgesGeometry,
+    PerspectiveCamera,
+    OrthographicCamera,
     SphereGeometry: function SphereGeometry() {
       return { dispose: vi.fn() };
     },

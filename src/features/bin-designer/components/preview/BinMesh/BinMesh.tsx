@@ -29,10 +29,15 @@ import { buildZoneResolver } from '@/features/bin-designer/utils/zoneResolver';
 
 const EDGE_COLOR = '#000000';
 
+/** Face opacity when xray mode is enabled. Matches brepjs-studio. */
+const XRAY_OPACITY = 0.3;
+
 interface BinMeshProps {
   wireframe: boolean;
   /** Base color for the bin (user-selectable) */
   color: string;
+  /** When true, render with ghosted faces so internal geometry shows through. */
+  xray?: boolean;
   /**
    * Click handler invoked when a color tool is active. `screen` is in
    * viewport coordinates (clientX/clientY) so the parent can anchor a
@@ -41,7 +46,7 @@ interface BinMeshProps {
   onZoneClick?: (zone: ColorZone, screen: { x: number; y: number }) => void;
 }
 
-export function BinMesh({ wireframe, color, onZoneClick }: BinMeshProps) {
+export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMeshProps) {
   const { invalidate } = useThree();
 
   const {
@@ -131,9 +136,12 @@ export function BinMesh({ wireframe, color, onZoneClick }: BinMeshProps) {
           polygonOffset: true,
           polygonOffsetFactor: 1,
           polygonOffsetUnits: 1,
+          transparent: xray,
+          opacity: xray ? XRAY_OPACITY : 1,
+          depthWrite: !xray,
         })
     );
-  }, [multiColorData, wireframe, hasPrecomputedNormals]);
+  }, [multiColorData, wireframe, hasPrecomputedNormals, xray]);
 
   useEffect(() => {
     if (!materials) return;
@@ -180,8 +188,11 @@ export function BinMesh({ wireframe, color, onZoneClick }: BinMeshProps) {
       polygonOffset: true,
       polygonOffsetFactor: 1,
       polygonOffsetUnits: 1,
+      transparent: xray,
+      opacity: xray ? XRAY_OPACITY : 1,
+      depthWrite: !xray,
     }),
-    [baseColor, wireframe, hasPrecomputedNormals]
+    [baseColor, wireframe, hasPrecomputedNormals, xray]
   );
 
   // Pointer handlers active only when a color tool is engaged AND multi-color

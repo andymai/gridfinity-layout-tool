@@ -15,6 +15,9 @@ import { easeOutCubic } from './cameraUtils';
 /** Duration of geometry crossfade in milliseconds. */
 const CROSSFADE_MS = 300;
 
+/** Face opacity when xray mode is enabled (matches bin-designer). */
+const XRAY_OPACITY = 0.3;
+
 interface FadeSnapshot {
   oldGeo: THREE.BufferGeometry;
   oldEdges: THREE.BufferGeometry | null;
@@ -29,9 +32,11 @@ interface FadeSnapshot {
 export function BaseplateMesh({
   color,
   isPreview = false,
+  xray = false,
 }: {
   color: string;
   isPreview?: boolean;
+  xray?: boolean;
 }) {
   const { invalidate } = useThree();
   // While the direct-mesh preview is on screen, desaturate the user's filament
@@ -126,6 +131,16 @@ export function BaseplateMesh({
   if (!geometry) return null;
 
   const isFading = fadeSnapshot !== null;
+  // During fade, opacity = fadeOpacity (0→1). When xray is on, multiply by
+  // XRAY_OPACITY so the crossfade and the xray ghosting compose smoothly.
+  const currentOpacity = isFading
+    ? xray
+      ? fadeOpacity * XRAY_OPACITY
+      : fadeOpacity
+    : xray
+      ? XRAY_OPACITY
+      : 1;
+  const isTransparent = isFading || xray;
 
   return (
     <>
@@ -140,7 +155,8 @@ export function BaseplateMesh({
               emissiveIntensity={fadeSnapshot.oldEmissiveIntensity}
               flatShading={!fadeSnapshot.oldNormals}
               transparent
-              opacity={1 - fadeOpacity}
+              opacity={xray ? (1 - fadeOpacity) * XRAY_OPACITY : 1 - fadeOpacity}
+              depthWrite={!xray}
             />
           </mesh>
           {fadeSnapshot.oldEdges && (
@@ -159,8 +175,9 @@ export function BaseplateMesh({
           emissive={displayColor}
           emissiveIntensity={emissiveIntensity}
           flatShading={!hasPrecomputedNormals}
-          transparent={isFading}
-          opacity={fadeOpacity}
+          transparent={isTransparent}
+          opacity={currentOpacity}
+          depthWrite={!xray}
         />
       </mesh>
       {edgesGeometry && (
