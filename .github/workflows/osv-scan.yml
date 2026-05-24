@@ -1,16 +1,9 @@
 name: OSV Scan
 
-# Scans the lockfile against the OSV/GHSA advisory database. Catches known-bad
-# package versions you may be exposed to, including supply-chain compromises
-# that have been disclosed since the last install. Complements the
-# `minimumReleaseAge` cooldown (which prevents installing fresh-from-publish
-# versions): OSV catches old-but-known-bad, cooldown catches new-but-untrusted.
-#
-# Policy:
-#   - PRs: report-only. We don't block merges since transitive deps sometimes
-#     can't be updated atomically with the rest of a feature PR.
-#   - main / weekly: hard fail so the dashboard stays loud and someone has to
-#     either patch or explicitly waive the finding.
+# Complements the pnpm minimumReleaseAge cooldown: cooldown blocks
+# fresh-but-untrusted, OSV blocks old-but-known-bad.
+# PRs are report-only (transitive deps can't always be updated atomically with
+# a feature PR); main + weekly schedule fail closed so the dashboard stays loud.
 
 on:
   pull_request:
@@ -18,12 +11,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: '0 6 * * 1' # Weekly Monday 6am UTC
-
-permissions:
-  contents: read
-  security-events: write
-  actions: read
+    - cron: '0 6 * * 1'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,6 +22,9 @@ jobs:
     name: OSV Scan (report-only)
     if: github.event_name == 'pull_request'
     uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
+    with:
+      scan-args: |-
+        --lockfile=pnpm-lock.yaml
     permissions:
       actions: read
       contents: read

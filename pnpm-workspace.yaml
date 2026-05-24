@@ -1,28 +1,17 @@
 packages:
   - 'packages/*'
 
-# Supply-chain hardening — see SECURITY.md "Supply Chain" section.
-#
-# Cooldown: reject any package version published less than 7 days ago.
-# Would have blocked axios (Mar 2026), chalk/debug (Sep 2025), durabletask
-# (May 2026), and most Shai-Hulud worm waves outright.
-# pnpm 11 default is 1440 (1 day); we want a wider window.
+# Supply-chain hardening — see SECURITY.md for rationale.
+# Cooldown unit is minutes; 10080 = 7 days.
 minimumReleaseAge: 10080
 
-# Bypass the cooldown for packages we author or otherwise trust to publish
-# safely. Author-owned packages (brepjs, brepkit-wasm) get no security benefit
-# from the cooldown; we'd just be slowing our own release cadence. Reputable
-# org-scoped packages (PostHog, Vercel, TypeScript ESLint, DefinitelyTyped @types)
-# are listed because they release frequently and lockstep — without the bypass,
-# every typescript-eslint or @types/node bump would block install for a week.
-# A compromise of these orgs is still possible but is the same vector the rest
-# of the codebase defends against (Socket, osv-scanner, advisory monitoring).
+# Excluded: user-authored packages (no security benefit from cooldown) +
+# high-trust org scopes that release lockstep (would block install for a
+# week on every dep bump). The trailing entries are temporary — see TODO.
 minimumReleaseAgeExclude:
-  # User-authored — no security benefit from the cooldown.
   - brepjs
   - brepkit-wasm
   - occt-wasm
-  # Reputable orgs that release frequently and lockstep.
   - '@types/*'
   - '@typescript-eslint/*'
   - typescript-eslint
@@ -31,23 +20,16 @@ minimumReleaseAgeExclude:
   - '@vercel/*'
   - '@protobufjs/*'
   - protobufjs
-  # TODO: remove once aged (target 2026-05-26+). These are widely used utility
-  # packages whose latest versions happen to fall inside the 7-day window as of
-  # this PR; they will age in within ~2-3 days. Tracked: keep this block short.
+  # TODO: remove after 2026-05-26 once these have aged past the 7-day window.
   - dompurify
   - lru-cache
   - preact
   - tsx
 
-# Block install / postinstall / prepare scripts by default. Packages that
-# legitimately need to build are allow-listed in `allowBuilds` below.
-# Single highest-value defense against the Shai-Hulud worm class, which
-# spreads via npm lifecycle scripts.
+# Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
+# Packages that need to build are listed in allowBuilds.
 ignoreScripts: true
 
-# Allow-list for build scripts. Adding a package here means its postinstall /
-# install / prepare / build hooks are trusted to execute. Add ONLY packages
-# whose install behavior you have audited or that are clearly native modules.
 allowBuilds:
   core-js: true
   esbuild: true
