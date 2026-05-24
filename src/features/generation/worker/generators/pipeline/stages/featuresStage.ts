@@ -48,8 +48,9 @@ export const featuresStage: PipelineStage = {
           oldSolid.delete();
           cutoutCuts.delete();
           return { ...ctx, solid: newSolid };
-        } catch {
+        } catch (cause) {
           cutoutCuts.delete();
+          throw new Error('Failed to apply cutouts to solid bin', { cause });
         }
       }
       return ctx;
