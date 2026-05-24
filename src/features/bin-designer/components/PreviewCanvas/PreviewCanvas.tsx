@@ -65,30 +65,14 @@ import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { PipetteIcon } from '@/design-system/Icon';
 import { useSwapZoneWithToast } from '../../hooks/useSwapZoneWithToast';
 
-/** localStorage key for persisting the user's preview color preference */
 const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
 const DEFAULT_COLOR = '#d4d8dc';
 
 /**
- * Render the 3D preview canvas for the bin designer.
- *
- * Features:
- * - 3-point lighting (hemisphere + key + fill)
- * - Gradient background for studio photography feel
- * - Normal-based vertex coloring with user-selectable base color
- * - Smooth camera preset transitions (spherical interpolation)
- * - Auto-framing that adjusts when bin dimensions change
- * - Dimension lines showing W×D×H + interior height in mm
- * - Footprint grid matching the bin's unit dimensions
- */
-
-/**
- * Re-publishes the active camera to the thumbnail capture module whenever it
- * changes. The Canvas's `onCreated` callback fires with R3F's transient
- * default camera — which is replaced milliseconds later by CameraRig's drei
- * camera — so capturing there left the thumbnail pipeline holding a dangling
- * reference. This runs inside the Canvas so `useThree().camera` always
- * reflects the current `makeDefault` camera (re-fires on projection swap).
+ * Canvas `onCreated` fires against R3F's transient default camera, which
+ * CameraRig immediately replaces via `makeDefault`. Capturing the camera
+ * there leaves the thumbnail pipeline holding a dangling reference, so we
+ * resync via `useThree().camera` (which also re-fires on projection swap).
  */
 function PreviewContextSync() {
   const { gl, scene, camera } = useThree();
@@ -354,7 +338,6 @@ export function PreviewCanvas() {
             }}
             gl={{ antialias: true, preserveDrawingBuffer: true }}
           >
-            {/* Perspective + Orthographic camera pair with runtime swap. */}
             <CameraRig
               projection={projection}
               initialPosition={[100, -100, 80]}

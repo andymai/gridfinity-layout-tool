@@ -1,14 +1,6 @@
-/* eslint-disable react-refresh/only-export-components -- CAMERA_PRESETS and usePresetTransition are co-located with the camera components they're paired with */
+/* eslint-disable react-refresh/only-export-components -- usePresetTransition (hook) is co-located with the camera components it's paired with */
 
 /**
- * Camera-related pieces of the bin designer's 3D preview:
- *   - `calculateIdealDistance` — perspective-FOV math to frame the bin
- *   - `calculateBinCenter` — Z-aligned center for the orbit target
- *   - `CAMERA_PRESETS` — directional vectors per preset
- *   - `CameraController` — auto-framing component (must be inside Canvas)
- *   - `usePresetTransition` — spherical-interp animation between presets
- *   - `SceneLighting` — theme-aware 3-point lighting
- *
  * Auto-frame and preset transitions branch on the active camera type:
  * perspective animates `position`, orthographic animates `zoom`. Distance ↔
  * zoom conversion uses {@link distanceToOrthoZoom} so both projections share
@@ -29,9 +21,9 @@ function setOrthoZoom(ortho: OrthographicCamera, zoom: number): void {
   ortho.updateProjectionMatrix();
 }
 
-/** Camera positions for each preset (eye position looking toward center) */
-export const CAMERA_PRESETS: Record<CameraPreset, [number, number, number]> = {
-  front: [0, -1, 0.3], // Normalized direction — scaled by distance
+/** Eye-position directions per preset; scaled by distance at apply time. */
+const CAMERA_PRESETS: Record<CameraPreset, [number, number, number]> = {
+  front: [0, -1, 0.3],
   side: [1, 0, 0.3],
   top: [0, -0.01, 1],
   isometric: [0.6, -0.6, 0.5],

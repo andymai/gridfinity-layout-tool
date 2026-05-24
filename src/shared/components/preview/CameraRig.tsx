@@ -1,18 +1,13 @@
 /**
- * Dual perspective/orthographic camera rig with runtime swap.
+ * Dual perspective/orthographic camera rig. Only one camera carries
+ * `makeDefault` at a time; on projection swap we copy pose from the previously
+ * active camera and round-trip `distance ↔ zoom` relative to the orbit target
+ * so on-screen scale survives the toggle. `useLayoutEffect` runs before paint
+ * so the first frame after the swap is already framed.
  *
- * Mounts both a drei `<PerspectiveCamera>` and `<OrthographicCamera>`; only
- * one carries `makeDefault` at a time. On the actual projection swap, copies
- * pose from the previously active camera and round-trips perspective
- * `distance` ↔ orthographic `zoom` relative to the orbit `target` so on-screen
- * scale is preserved. Canvas resizes only refresh the ortho zoom against the
- * ortho camera's *current* pose — they don't masquerade as a swap and reset
- * the user's orbit. `useLayoutEffect` runs before paint so the first frame
- * after the swap is already framed.
- *
- * Both drei cameras are constructed Z-up. Without this they're born default
- * Y-up, OrbitControls binds before any later up-vector reset, and the camera
- * renders rolled ~90° about the view axis on the initial frame.
+ * Both cameras are constructed Z-up. Without this they're born Y-up,
+ * OrbitControls binds before any later up-vector reset, and the camera renders
+ * rolled ~90° about the view axis on the initial frame.
  */
 
 import { useLayoutEffect, useRef } from 'react';
