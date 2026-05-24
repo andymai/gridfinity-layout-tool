@@ -712,10 +712,12 @@ export function buildCutoutCuts(
 
   // Clip each tool individually to the bin interior so cutouts extending past
   // the walls don't punch through them. Shapes that fail to clip are skipped
-  // rather than poisoning the whole set.
-  const clipBoundary = box(innerW, innerD, solidSurfaceZ, { at: [0, 0, solidSurfaceZ / 2] });
+  // rather than poisoning the whole set. The outer try also catches a box()
+  // allocation failure so rawShapes don't leak on that edge.
   const clipped: Shape3D[] = [];
+  let clipBoundary: Shape3D | null = null;
   try {
+    clipBoundary = box(innerW, innerD, solidSurfaceZ, { at: [0, 0, solidSurfaceZ / 2] });
     for (const shape of rawShapes) {
       try {
         clipped.push(unwrap(intersect(shape, clipBoundary)));
@@ -725,8 +727,18 @@ export function buildCutoutCuts(
         shape.delete();
       }
     }
+  } catch (e) {
+    for (const s of rawShapes) {
+      try {
+        s.delete();
+      } catch {
+        // already-disposed shapes can throw; the original failure matters more
+      }
+    }
+    for (const s of clipped) s.delete();
+    throw e;
   } finally {
-    clipBoundary.delete();
+    if (clipBoundary) clipBoundary.delete();
   }
   return clipped;
 }
