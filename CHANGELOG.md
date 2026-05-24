@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.118.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.117.2...gridfinity-layout-tool-v4.118.0) (2026-05-24)
+
+
+### Features
+
+* **preview:** add xray and projection toggles ([#1870](https://github.com/andymai/gridfinity-layout-tool/issues/1870)) ([92eb99b](https://github.com/andymai/gridfinity-layout-tool/commit/92eb99b864c9dbde5b59d7ff7efbea033c579e81))
+
 ## [4.117.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.117.1...gridfinity-layout-tool-v4.117.2) (2026-05-24)
 
 
