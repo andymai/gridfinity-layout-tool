@@ -239,6 +239,7 @@ export function BaseplatePreviewControls({
             className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
             title={t('baseplate.toggleProjection')}
             aria-label={t('baseplate.toggleProjectionKeyboardShortcut')}
+            aria-pressed={projection === 'orthographic'}
           >
             {projection === 'perspective' ? <IconPerspective /> : <IconOrthographic />}
             <span>
@@ -372,6 +373,7 @@ export function BaseplatePreviewControls({
           className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
           title={t('baseplate.toggleProjection')}
           aria-label={t('baseplate.toggleProjectionKeyboardShortcut')}
+          aria-pressed={projection === 'orthographic'}
         >
           {projection === 'perspective' ? <IconPerspective /> : <IconOrthographic />}
         </button>

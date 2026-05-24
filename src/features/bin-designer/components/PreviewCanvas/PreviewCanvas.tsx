@@ -345,7 +345,11 @@ export function PreviewCanvas() {
             gl={{ antialias: true, preserveDrawingBuffer: true }}
           >
             {/* Perspective + Orthographic camera pair with runtime swap. */}
-            <CameraRig projection={projection} initialPosition={[100, -100, 80]} />
+            <CameraRig
+              projection={projection}
+              initialPosition={[100, -100, 80]}
+              target={[0, 0, totalH / 2]}
+            />
 
             {/* Gradient background */}
             <GradientBackground />

@@ -247,7 +247,11 @@ export function BaseplatePreview({
               gl={{ antialias: true }}
               onPointerMissed={handlePointerMissed}
             >
-              <BaseplateCameraRig projection={projection} initialPosition={[100, -100, 80]} />
+              <BaseplateCameraRig
+                projection={projection}
+                initialPosition={[100, -100, 80]}
+                target={[0, 0, totalH / 2]}
+              />
 
               <GradientBackground />
               <SceneLighting />

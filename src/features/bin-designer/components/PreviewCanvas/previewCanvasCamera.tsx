@@ -365,6 +365,7 @@ export function usePresetTransition(
 export function CameraRig({
   projection,
   initialPosition,
+  target = [0, 0, 0],
   fov = CAMERA_FOV,
   near = 0.1,
   far = 2000,
@@ -373,6 +374,14 @@ export function CameraRig({
 }: {
   projection: Projection;
   initialPosition: readonly [number, number, number];
+  /**
+   * World-space orbit target. The scale-preserving distance ↔ zoom math is
+   * computed relative to this point — pass the same target you give to
+   * `<OrbitControls target={...}>` so a projection swap doesn't drift scale
+   * for scenes whose center isn't at the origin (e.g. the bin floor + lid
+   * stack rises along +Z).
+   */
+  target?: readonly [number, number, number];
   fov?: number;
   near?: number;
   far?: number;
@@ -381,38 +390,57 @@ export function CameraRig({
 }) {
   const perspRef = useRef<PerspectiveCameraImpl>(null);
   const orthoRef = useRef<OrthographicCameraImpl>(null);
+  // Track the projection that was active on the previous effect run so a
+  // canvas resize doesn't masquerade as a swap and overwrite the user's
+  // orbited ortho/perspective position with the *other* camera's pose.
+  const prevProjectionRef = useRef<Projection | null>(null);
   const { camera, size, invalidate } = useThree();
+  const [tx, ty, tz] = target;
 
   // Sync position + scale on projection swap. Runs before paint so the first
-  // frame after the swap reflects the round-tripped framing.
+  // frame after the swap reflects the round-tripped framing. The position
+  // copy is gated on an actual projection change — resize-only re-runs only
+  // refresh the ortho zoom against the ortho camera's own current pose.
   useLayoutEffect(() => {
     const persp = perspRef.current;
     const ortho = orthoRef.current;
     if (!persp || !ortho) return;
 
+    const prevProjection = prevProjectionRef.current;
+    const projectionChanged = prevProjection !== null && prevProjection !== projection;
+    const targetVec = new Vector3(tx, ty, tz);
+
     if (projection === 'orthographic') {
-      // Copy perspective position to ortho, derive ortho zoom from current
-      // perspective distance so on-screen scale at the target is preserved.
-      const distance = persp.position.length();
-      ortho.position.copy(persp.position);
-      ortho.up.copy(persp.up);
-      ortho.quaternion.copy(persp.quaternion);
-      if (size.height > 0 && distance > 0) {
-        setOrthoZoom(ortho, distanceToOrthoZoom(distance, fov, size.height));
-      } else {
-        ortho.updateProjectionMatrix();
+      if (projectionChanged) {
+        // One-time copy of perspective pose into ortho on the actual swap.
+        ortho.position.copy(persp.position);
+        ortho.up.copy(persp.up);
+        ortho.quaternion.copy(persp.quaternion);
       }
-    } else {
-      // Copy ortho position to perspective. Direction is preserved; if the
-      // user zoomed in ortho, derive the matching perspective distance and
-      // place the camera along the same direction at that distance.
-      const direction = ortho.position.clone().normalize();
+      // Always recompute zoom against the ortho camera's *current* distance
+      // to the orbit target so resizes keep on-screen scale without
+      // discarding any orbiting the user did in ortho mode.
+      if (size.height > 0) {
+        const distance = ortho.position.distanceTo(targetVec);
+        if (distance > 0) {
+          setOrthoZoom(ortho, distanceToOrthoZoom(distance, fov, size.height));
+        } else {
+          ortho.updateProjectionMatrix();
+        }
+      }
+    } else if (projectionChanged) {
+      // Swap ortho → perspective: derive the equivalent perspective distance
+      // from the ortho camera's current zoom (so the user's ortho-mode zoom
+      // is honored) and place the camera along the same direction relative
+      // to the orbit target.
+      const offset = ortho.position.clone().sub(targetVec);
+      const direction = offset.lengthSq() > 0 ? offset.normalize() : new Vector3(0, 0, 1);
       const distance =
         size.height > 0 && ortho.zoom > 0
           ? orthoZoomToDistance(ortho.zoom, fov, size.height)
-          : ortho.position.length();
-      if (direction.lengthSq() > 0 && distance > 0) {
-        persp.position.copy(direction.multiplyScalar(distance));
+          : ortho.position.distanceTo(targetVec) || persp.position.distanceTo(targetVec);
+      if (distance > 0) {
+        persp.position.copy(direction.multiplyScalar(distance).add(targetVec));
       } else {
         persp.position.copy(ortho.position);
       }
@@ -420,9 +448,13 @@ export function CameraRig({
       persp.quaternion.copy(ortho.quaternion);
       persp.updateProjectionMatrix();
     }
+    // Perspective-mode resize is a no-op — drei's PerspectiveCamera updates
+    // its aspect ratio automatically on canvas resize.
+
+    prevProjectionRef.current = projection;
     invalidate();
     // `camera` is included so we re-sync if R3F reassigns it externally.
-  }, [projection, camera, size.height, fov, invalidate]);
+  }, [projection, camera, size.height, fov, invalidate, tx, ty, tz]);
 
   // Frustum bounds for the ortho camera, pixel-mapped to the canvas. drei
   // re-mounts the projection matrix when these change; size.width/height come
