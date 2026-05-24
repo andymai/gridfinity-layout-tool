@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.118.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.118.0...gridfinity-layout-tool-v4.118.1) (2026-05-24)
+
+
+### Bug Fixes
+
+* **preview:** set Z-up on drei cameras at construction time ([#1874](https://github.com/andymai/gridfinity-layout-tool/issues/1874)) ([99441ee](https://github.com/andymai/gridfinity-layout-tool/commit/99441eef33328b1e24f0803932297ea7629bdef9))
+
 ## [4.118.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.117.2...gridfinity-layout-tool-v4.118.0) (2026-05-24)
 
 
