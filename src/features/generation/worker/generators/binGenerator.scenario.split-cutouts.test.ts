@@ -48,23 +48,18 @@ function makeRectCutout(overrides: Partial<Cutout> = {}): Cutout {
 // Buckets the mesh's z values to 0.5mm precision. A carved cavity introduces
 // a new internal floor surface at z = rim − cutDepth, so the bucket set
 // gains an entry the no-cutout baseline doesn't have.
-function uniqueZLevels(verts: Float32Array): Set<number> {
+function zLevels(...meshes: readonly Float32Array[]): Set<number> {
   const levels = new Set<number>();
-  for (let i = 2; i < verts.length; i += 3) {
-    levels.add(Math.round(verts[i] * 2) / 2);
+  for (const verts of meshes) {
+    for (let i = 2; i < verts.length; i += 3) {
+      levels.add(Math.round(verts[i] * 2) / 2);
+    }
   }
   return levels;
 }
 
-function allPieceVerts(pieces: readonly { vertices: Float32Array }[]): Float32Array {
-  const total = pieces.reduce((s, p) => s + p.vertices.length, 0);
-  const out = new Float32Array(total);
-  let offset = 0;
-  for (const p of pieces) {
-    out.set(p.vertices, offset);
-    offset += p.vertices.length;
-  }
-  return out;
+function pieceZLevels(pieces: readonly { vertices: Float32Array }[]): Set<number> {
+  return zLevels(...pieces.map((p) => p.vertices));
 }
 
 describe('split + top-down cutouts', () => {
@@ -73,10 +68,10 @@ describe('split + top-down cutouts', () => {
     const generateSplitPreview = getGenerateSplitPreview();
     const cutout = makeRectCutout();
 
-    const unsplitBase = uniqueZLevels(
+    const unsplitBase = zLevels(
       generateBin({ ...SOLID_LIPPED_BIN, cutouts: [] }, undefined, true).vertices
     );
-    const unsplitCut = uniqueZLevels(
+    const unsplitCut = zLevels(
       generateBin({ ...SOLID_LIPPED_BIN, cutouts: [cutout] }, undefined, true).vertices
     );
     expect(
@@ -84,16 +79,12 @@ describe('split + top-down cutouts', () => {
       'unsplit: cavity should introduce a z level the no-cutout baseline lacks'
     ).not.toHaveLength(0);
 
-    const splitBase = uniqueZLevels(
-      allPieceVerts(
-        generateSplitPreview({ ...SOLID_LIPPED_BIN, cutouts: [] }, [0], [], NO_CONNECTORS).pieces
-      )
+    const splitBase = pieceZLevels(
+      generateSplitPreview({ ...SOLID_LIPPED_BIN, cutouts: [] }, [0], [], NO_CONNECTORS).pieces
     );
-    const splitCut = uniqueZLevels(
-      allPieceVerts(
-        generateSplitPreview({ ...SOLID_LIPPED_BIN, cutouts: [cutout] }, [0], [], NO_CONNECTORS)
-          .pieces
-      )
+    const splitCut = pieceZLevels(
+      generateSplitPreview({ ...SOLID_LIPPED_BIN, cutouts: [cutout] }, [0], [], NO_CONNECTORS)
+        .pieces
     );
     expect(
       [...splitCut].filter((z) => !splitBase.has(z)),
@@ -119,9 +110,8 @@ describe('split + top-down cutouts', () => {
     ).pieces;
 
     for (let i = 0; i < 2; i++) {
-      const newLevels = [...uniqueZLevels(withCutPieces[i].vertices)].filter(
-        (z) => !uniqueZLevels(baselinePieces[i].vertices).has(z)
-      );
+      const base = zLevels(baselinePieces[i].vertices);
+      const newLevels = [...zLevels(withCutPieces[i].vertices)].filter((z) => !base.has(z));
       expect(
         newLevels,
         `piece ${withCutPieces[i].label}: straddling cavity should add a z level`
@@ -141,10 +131,10 @@ describe('split + top-down cutouts', () => {
     const bad: Cutout = makeRectCutout({ id: 'bad', x: 100, width: 0, depth: 0 });
     const good = makeRectCutout({ id: 'good', x: 20, y: 20, width: 30, depth: 30, cutDepth: 8 });
 
-    const base = uniqueZLevels(
+    const base = zLevels(
       generateBin({ ...SOLID_LIPPED_BIN, cutouts: [] }, undefined, true).vertices
     );
-    const mixed = uniqueZLevels(
+    const mixed = zLevels(
       generateBin({ ...SOLID_LIPPED_BIN, cutouts: [bad, good] }, undefined, true).vertices
     );
     expect(
