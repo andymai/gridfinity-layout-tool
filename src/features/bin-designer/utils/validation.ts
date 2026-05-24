@@ -236,9 +236,10 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
       const totalDividerWidth = maxDividers * params.compartments.thickness;
       const cellWidth = (innerWidth - totalDividerWidth) / params.compartments.cols;
       if (cellWidth < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
+        const maxCols = maxCompartmentsForInner(innerWidth, params.compartments.thickness);
         return err({
           code: 'COMPARTMENT_TOO_SMALL',
-          message: `Too many columns: cells would be ${cellWidth.toFixed(1)}mm wide (min ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm)`,
+          message: cellSizeLimitMessage('columns', maxCols),
           field: 'compartments.cols',
         });
       }
@@ -248,9 +249,10 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
       const totalDividerDepth = maxDividers * params.compartments.thickness;
       const cellDepth = (innerDepth - totalDividerDepth) / params.compartments.rows;
       if (cellDepth < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
+        const maxRows = maxCompartmentsForInner(innerDepth, params.compartments.thickness);
         return err({
           code: 'COMPARTMENT_TOO_SMALL',
-          message: `Too many rows: cells would be ${cellDepth.toFixed(1)}mm deep (min ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm)`,
+          message: cellSizeLimitMessage('rows', maxRows),
           field: 'compartments.rows',
         });
       }
@@ -258,6 +260,28 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
   }
 
   return ok(params);
+}
+
+/**
+ * Largest compartment count that keeps each cell ≥ `MIN_COMPARTMENT_SIZE` along
+ * an inner span. Derived from `N*cell + (N-1)*thickness ≤ inner` with
+ * `cell = MIN_COMPARTMENT_SIZE`, solved for N. Returns at least 1.
+ */
+export function maxCompartmentsForInner(innerMm: number, thicknessMm: number): number {
+  const denom = DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE + thicknessMm;
+  if (denom <= 0) return 1;
+  return Math.max(1, Math.floor((innerMm + thicknessMm) / denom));
+}
+
+/**
+ * Friendly cell-size error: "You've hit the cell-size limit (5mm minimum). At
+ * this bin width you can fit up to N columns." — keeps the actionable bin-
+ * size suggestion in a single sentence instead of leaning on the cells-would-
+ * be-N.Nmm technical form.
+ */
+function cellSizeLimitMessage(axis: 'columns' | 'rows', maxCount: number): string {
+  const dimension = axis === 'columns' ? 'bin width' : 'bin depth';
+  return `You've hit the cell-size limit (${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm minimum). At this ${dimension} you can fit up to ${maxCount} ${axis}.`;
 }
 
 /** Result of computing minimum cell dimensions (in mm) */
@@ -327,10 +351,13 @@ export function validateCompartmentSizes(
     gridUnitMm
   );
 
+  const innerW = width * gridUnitMm - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+  const innerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE - 2 * wallThickness;
+
   if (cols > 1 && minCellW < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
     return err({
       code: 'COMPARTMENT_TOO_SMALL',
-      message: `Compartment cells too small (${minCellW.toFixed(1)}mm wide, min ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm). Reduce grid size or increase bin dimensions.`,
+      message: cellSizeLimitMessage('columns', maxCompartmentsForInner(innerW, dividerThickness)),
       field: 'compartments.cols',
     });
   }
@@ -338,7 +365,7 @@ export function validateCompartmentSizes(
   if (rows > 1 && minCellD < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
     return err({
       code: 'COMPARTMENT_TOO_SMALL',
-      message: `Compartment cells too small (${minCellD.toFixed(1)}mm deep, min ${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm). Reduce grid size or increase bin dimensions.`,
+      message: cellSizeLimitMessage('rows', maxCompartmentsForInner(innerD, dividerThickness)),
       field: 'compartments.rows',
     });
   }

@@ -102,13 +102,14 @@ describe('validateBinParams', () => {
     });
 
     it('should reject cols above maximum', () => {
+      const overMax = DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID + 1;
       const result = validateBinParams(
         makeParams({
           compartments: {
-            cols: 9,
+            cols: overMax,
             rows: 1,
             thickness: 1.2,
-            cells: Array(9)
+            cells: Array(overMax)
               .fill(0)
               .map((_, i) => i),
           },
@@ -631,11 +632,12 @@ describe('validateCompartmentSizes', () => {
     expectOk(result);
   });
 
-  it('includes helpful error message', () => {
+  it('includes helpful error message with bin-size suggestion', () => {
     const result = validateCompartmentSizes(0.5, 0.5, 1.2, 4, 1, 1.2);
     const error = expectErr(result);
-    expect(error.message).toContain('Compartment cells too small');
-    expect(error.message).toContain('min');
+    expect(error.message).toContain('cell-size limit');
+    expect(error.message).toContain('5mm minimum');
+    expect(error.message).toMatch(/up to \d+ columns/);
   });
 
   it('rejects cols less than 1', () => {
