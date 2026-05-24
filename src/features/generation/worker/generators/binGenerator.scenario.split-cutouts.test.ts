@@ -129,10 +129,14 @@ describe('split + top-down cutouts', () => {
     }
   }, 120000);
 
-  it('one bad tool does not drop the rest', () => {
-    // cutAllBisect's bisect recovery: even if one tool is degenerate, the
-    // remaining cutouts should still survive. A zero-size cutout is the
-    // simplest pathological tool we can construct.
+  it('a degenerate cutout in the set is skipped without dropping the others', () => {
+    // Zero-size cutouts are filtered before they reach the boolean (the
+    // shape builder returns null for non-positive dimensions), so this
+    // pins the filter behaviour rather than cutAllBisect's bisect path.
+    // A real bisect-recovery regression test needs a tool that builds
+    // successfully but fails inside cut() — none of our 20+ permutations
+    // surface one consistently, so we cover the architecture via this
+    // weaker but realistic property.
     const generateBin = getGenerateBin();
     const bad: Cutout = makeRectCutout({ id: 'bad', x: 100, width: 0, depth: 0 });
     const good = makeRectCutout({ id: 'good', x: 20, y: 20, width: 30, depth: 30, cutDepth: 8 });
@@ -145,7 +149,7 @@ describe('split + top-down cutouts', () => {
     );
     expect(
       [...mixed].filter((z) => !base.has(z)),
-      'the good cutout should still carve a cavity even when sharing the set with a degenerate tool'
+      'the good cutout should still carve a cavity alongside a filtered-out degenerate tool'
     ).not.toHaveLength(0);
   }, 120000);
 });
