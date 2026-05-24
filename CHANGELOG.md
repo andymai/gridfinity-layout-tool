@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.119.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.118.1...gridfinity-layout-tool-v4.119.0) (2026-05-24)
+
+
+### Features
+
+* **bin-designer:** raise compartment row/col cap from 8 to 12 ([#1873](https://github.com/andymai/gridfinity-layout-tool/issues/1873)) ([5f9fe59](https://github.com/andymai/gridfinity-layout-tool/commit/5f9fe59db5023c70c0775d495ed4f0ac164f8221))
+
 ## [4.118.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.118.0...gridfinity-layout-tool-v4.118.1) (2026-05-24)
 
 
