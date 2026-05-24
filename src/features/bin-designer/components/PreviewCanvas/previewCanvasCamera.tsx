@@ -49,6 +49,9 @@ export const CAMERA_PRESETS: Record<CameraPreset, [number, number, number]> = {
   isometric: [0.6, -0.6, 0.5],
 };
 
+/** World is Z-up across the bin designer; pass to drei cameras at construction. */
+const UP_Z: [number, number, number] = [0, 0, 1];
+
 /** Animation duration for camera transitions (ms) */
 const TRANSITION_DURATION = 500;
 /** Animation duration for auto-framing (ms) */
@@ -468,6 +471,11 @@ export function CameraRig({
         ref={perspRef}
         makeDefault={projection === 'perspective'}
         position={initialPosition}
+        // Z-up at construction time. Without this the camera is born Three.js-
+        // default Y-up; OrbitControls binds before CameraController's effect
+        // flips up, and caches its spherical angles relative to the Y-up
+        // pose — visible as a 90° roll about the view axis on first render.
+        up={UP_Z}
         fov={fov}
         near={near}
         far={far}
@@ -476,6 +484,7 @@ export function CameraRig({
         ref={orthoRef}
         makeDefault={projection === 'orthographic'}
         position={initialPosition}
+        up={UP_Z}
         near={orthoNear}
         far={orthoFar}
         left={-halfW}

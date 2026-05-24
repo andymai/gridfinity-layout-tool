@@ -27,6 +27,9 @@ import { distanceToOrthoZoom, orthoZoomToDistance } from '@/shared/utils/cameraP
 /** Default vertical FOV (degrees) used for the perspective camera and round-trip math. */
 const CAMERA_FOV = 45;
 
+/** World is Z-up across the baseplate preview; pass to drei cameras at construction. */
+const UP_Z: [number, number, number] = [0, 0, 1];
+
 /** Outside-of-hook helper to keep the react-hooks immutability rule satisfied. */
 function setOrthoZoom(ortho: OrthographicCameraImpl, zoom: number): void {
   ortho.zoom = zoom;
@@ -134,6 +137,11 @@ export function BaseplateCameraRig({
         ref={perspRef}
         makeDefault={projection === 'perspective'}
         position={initialPosition}
+        // Z-up at construction time. Without this the camera is born Three.js-
+        // default Y-up; OrbitControls binds before CameraController's effect
+        // flips up, and caches its spherical angles relative to the Y-up pose
+        // — visible as a 90° roll about the view axis on first render.
+        up={UP_Z}
         fov={fov}
         near={near}
         far={far}
@@ -142,6 +150,7 @@ export function BaseplateCameraRig({
         ref={orthoRef}
         makeDefault={projection === 'orthographic'}
         position={initialPosition}
+        up={UP_Z}
         near={orthoNear}
         far={orthoFar}
         left={-halfW}
