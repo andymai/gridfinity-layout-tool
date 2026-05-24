@@ -45,7 +45,7 @@ function makeRectCutout(overrides: Partial<Cutout> = {}): Cutout {
   };
 }
 
-function totalVerts(pieces: { vertices: Float32Array }[]): number {
+function totalVerts(pieces: readonly { vertices: Float32Array }[]): number {
   return pieces.reduce((s, p) => s + p.vertices.length, 0);
 }
 
