@@ -1,6 +1,8 @@
 {
   "maxShortValueLength": 3,
   "keys": [
+    "binDesigner.projectionPerspective",
+    "baseplate.projectionPerspective",
     "settings.gridfinityStandardMm",
     "auth.providerGithub",
     "auth.providerGoogle",

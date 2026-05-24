@@ -8,14 +8,38 @@
  *   - `CameraController` — auto-framing component (must be inside Canvas)
  *   - `usePresetTransition` — spherical-interp animation between presets
  *   - `SceneLighting` — theme-aware 3-point lighting
+ *
+ * Auto-frame and preset transitions branch on the active camera type:
+ * perspective animates `position`, orthographic animates `zoom`. Distance ↔
+ * zoom conversion uses {@link distanceToOrthoZoom} so both projections share
+ * the same "bin fills 65% of viewport" framing math.
  */
 
-import { useRef, useCallback, useEffect, useMemo } from 'react';
+import { useLayoutEffect, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
-import { Vector3, Spherical } from 'three';
+import {
+  PerspectiveCamera as DreiPerspectiveCamera,
+  OrthographicCamera as DreiOrthographicCamera,
+} from '@react-three/drei';
+import { Vector3, Spherical, OrthographicCamera } from 'three';
+import type {
+  PerspectiveCamera as PerspectiveCameraImpl,
+  OrthographicCamera as OrthographicCameraImpl,
+} from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
-import type { CameraPreset } from '../preview';
+import { distanceToOrthoZoom, orthoZoomToDistance } from '@/shared/utils/cameraProjection';
+import type { CameraPreset, Projection } from '../preview';
+
+/**
+ * Set an orthographic camera's zoom and refresh its projection matrix. The
+ * mutation happens outside any hook closure, which keeps the react-hooks
+ * immutability rule happy without disabling it for the call site.
+ */
+function setOrthoZoom(ortho: OrthographicCamera, zoom: number): void {
+  ortho.zoom = zoom;
+  ortho.updateProjectionMatrix();
+}
 
 /** Camera positions for each preset (eye position looking toward center) */
 export const CAMERA_PRESETS: Record<CameraPreset, [number, number, number]> = {
@@ -98,15 +122,21 @@ export function CameraController({
   gridUnitMm: number;
   heightUnitMm: number;
 }) {
-  const { camera, invalidate } = useThree();
+  const { camera, invalidate, size } = useThree();
 
   // Expose invalidate to hooks outside Canvas context
   useEffect(() => {
     invalidateRef.current = invalidate;
   }, [invalidate, invalidateRef]);
-  const animRef = useRef<{
+  const posAnimRef = useRef<{
     startPos: Vector3;
     targetPos: Vector3;
+    startTime: number;
+    duration: number;
+  } | null>(null);
+  const zoomAnimRef = useRef<{
+    startZoom: number;
+    targetZoom: number;
     startTime: number;
     duration: number;
   } | null>(null);
@@ -123,7 +153,9 @@ export function CameraController({
     [width, depth, height, fov, gridUnitMm, heightUnitMm]
   );
 
-  // Auto-frame: when bin dimensions change, smoothly adjust camera distance
+  // Auto-frame: when bin dimensions change, smoothly adjust framing.
+  // Perspective animates position along the current direction; ortho animates
+  // zoom toward the value that yields the same on-screen scale.
   useEffect(() => {
     if (!initializedRef.current) {
       // First render: set camera immediately
@@ -131,6 +163,9 @@ export function CameraController({
       camera.position.copy(direction.multiplyScalar(idealDistance).add(binCenter));
       camera.up.set(0, 0, 1);
       camera.lookAt(binCenter);
+      if (camera instanceof OrthographicCamera && size.height > 0) {
+        setOrthoZoom(camera, distanceToOrthoZoom(idealDistance, fov, size.height));
+      }
       if (controlsRef.current) {
         controlsRef.current.target.copy(binCenter);
         controlsRef.current.update();
@@ -144,21 +179,31 @@ export function CameraController({
     const distanceChange = Math.abs(idealDistance - prevDistance) / prevDistance;
 
     if (distanceChange > REFRAME_THRESHOLD) {
-      // Significant size change: animate to new framing
-      const currentPos = camera.position.clone();
-      const currentDir = currentPos.clone().sub(binCenter).normalize();
-      const targetPos = currentDir.multiplyScalar(idealDistance).add(binCenter);
+      if (camera instanceof OrthographicCamera && size.height > 0) {
+        // Significant size change in ortho: animate zoom toward new ideal
+        zoomAnimRef.current = {
+          startZoom: camera.zoom,
+          targetZoom: distanceToOrthoZoom(idealDistance, fov, size.height),
+          startTime: performance.now(),
+          duration: AUTO_FRAME_DURATION,
+        };
+      } else {
+        // Perspective: animate camera position along the current direction
+        const currentPos = camera.position.clone();
+        const currentDir = currentPos.clone().sub(binCenter).normalize();
+        const targetPos = currentDir.multiplyScalar(idealDistance).add(binCenter);
 
-      animRef.current = {
-        startPos: currentPos,
-        targetPos,
-        startTime: performance.now(),
-        duration: AUTO_FRAME_DURATION,
-      };
+        posAnimRef.current = {
+          startPos: currentPos,
+          targetPos,
+          startTime: performance.now(),
+          duration: AUTO_FRAME_DURATION,
+        };
+      }
     }
 
     prevDistanceRef.current = idealDistance;
-  }, [idealDistance, binCenter, camera, controlsRef]);
+  }, [idealDistance, binCenter, camera, controlsRef, fov, size.height]);
 
   // Update target when bin center changes
   useEffect(() => {
@@ -168,23 +213,37 @@ export function CameraController({
     }
   }, [binCenter, controlsRef]);
 
-  // Animate camera position each frame
+  // Animate camera position / zoom each frame
   useFrame(() => {
-    const anim = animRef.current;
-    if (!anim) return;
+    const posAnim = posAnimRef.current;
+    if (posAnim) {
+      const elapsed = performance.now() - posAnim.startTime;
+      const progress = Math.min(elapsed / posAnim.duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
 
-    const elapsed = performance.now() - anim.startTime;
-    const progress = Math.min(elapsed / anim.duration, 1);
-    // Ease-out cubic
-    const eased = 1 - Math.pow(1 - progress, 3);
+      camera.position.lerpVectors(posAnim.startPos, posAnim.targetPos, eased);
+      camera.lookAt(binCenter);
+      invalidate();
 
-    camera.position.lerpVectors(anim.startPos, anim.targetPos, eased);
-    camera.lookAt(binCenter);
-    invalidate();
+      if (progress >= 1) {
+        posAnimRef.current = null;
+        controlsRef.current?.update();
+      }
+    }
 
-    if (progress >= 1) {
-      animRef.current = null;
-      controlsRef.current?.update();
+    const zoomAnim = zoomAnimRef.current;
+    if (zoomAnim && camera instanceof OrthographicCamera) {
+      const elapsed = performance.now() - zoomAnim.startTime;
+      const progress = Math.min(elapsed / zoomAnim.duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      setOrthoZoom(camera, zoomAnim.startZoom + (zoomAnim.targetZoom - zoomAnim.startZoom) * eased);
+      invalidate();
+
+      if (progress >= 1) {
+        zoomAnimRef.current = null;
+        controlsRef.current?.update();
+      }
     }
   });
 
@@ -193,6 +252,10 @@ export function CameraController({
 
 /**
  * Manages smooth camera preset transitions using spherical coordinate interpolation.
+ *
+ * Position animation works for both projections — for ortho, the "distance"
+ * component is invisible but kept in sync so a later projection swap reads the
+ * correct direction. Zoom is unaffected by presets.
  */
 export function usePresetTransition(
   controlsRef: React.RefObject<OrbitControlsType | null>,
@@ -285,6 +348,143 @@ export function usePresetTransition(
   }, []);
 
   return setCameraPreset;
+}
+
+/**
+ * Mounts both a perspective and orthographic drei camera; only one carries
+ * `makeDefault` at a time. On every projection swap, copies position/up from
+ * the previously active camera to the newly active one and converts the
+ * scale-preserving distance ↔ zoom round-trip via {@link distanceToOrthoZoom}
+ * and {@link orthoZoomToDistance} so the user keeps their angle and apparent
+ * framing across toggles.
+ *
+ * `useLayoutEffect` runs before paint, which lets the new makeDefault camera
+ * adopt the prior position before the first frame renders — compatible with
+ * `frameloop="demand"` since we don't depend on a per-frame sync loop.
+ */
+export function CameraRig({
+  projection,
+  initialPosition,
+  target = [0, 0, 0],
+  fov = CAMERA_FOV,
+  near = 0.1,
+  far = 2000,
+  orthoNear = -20000,
+  orthoFar = 20000,
+}: {
+  projection: Projection;
+  initialPosition: readonly [number, number, number];
+  /**
+   * World-space orbit target. The scale-preserving distance ↔ zoom math is
+   * computed relative to this point — pass the same target you give to
+   * `<OrbitControls target={...}>` so a projection swap doesn't drift scale
+   * for scenes whose center isn't at the origin (e.g. the bin floor + lid
+   * stack rises along +Z).
+   */
+  target?: readonly [number, number, number];
+  fov?: number;
+  near?: number;
+  far?: number;
+  orthoNear?: number;
+  orthoFar?: number;
+}) {
+  const perspRef = useRef<PerspectiveCameraImpl>(null);
+  const orthoRef = useRef<OrthographicCameraImpl>(null);
+  // Track the projection that was active on the previous effect run so a
+  // canvas resize doesn't masquerade as a swap and overwrite the user's
+  // orbited ortho/perspective position with the *other* camera's pose.
+  const prevProjectionRef = useRef<Projection | null>(null);
+  const { camera, size, invalidate } = useThree();
+  const [tx, ty, tz] = target;
+
+  // Sync position + scale on projection swap. Runs before paint so the first
+  // frame after the swap reflects the round-tripped framing. The position
+  // copy is gated on an actual projection change — resize-only re-runs only
+  // refresh the ortho zoom against the ortho camera's own current pose.
+  useLayoutEffect(() => {
+    const persp = perspRef.current;
+    const ortho = orthoRef.current;
+    if (!persp || !ortho) return;
+
+    const prevProjection = prevProjectionRef.current;
+    const projectionChanged = prevProjection !== null && prevProjection !== projection;
+    const targetVec = new Vector3(tx, ty, tz);
+
+    if (projection === 'orthographic') {
+      if (projectionChanged) {
+        // One-time copy of perspective pose into ortho on the actual swap.
+        ortho.position.copy(persp.position);
+        ortho.up.copy(persp.up);
+        ortho.quaternion.copy(persp.quaternion);
+      }
+      // Always recompute zoom against the ortho camera's *current* distance
+      // to the orbit target so resizes keep on-screen scale without
+      // discarding any orbiting the user did in ortho mode.
+      if (size.height > 0) {
+        const distance = ortho.position.distanceTo(targetVec);
+        if (distance > 0) {
+          setOrthoZoom(ortho, distanceToOrthoZoom(distance, fov, size.height));
+        } else {
+          ortho.updateProjectionMatrix();
+        }
+      }
+    } else if (projectionChanged) {
+      // Swap ortho → perspective: derive the equivalent perspective distance
+      // from the ortho camera's current zoom (so the user's ortho-mode zoom
+      // is honored) and place the camera along the same direction relative
+      // to the orbit target.
+      const offset = ortho.position.clone().sub(targetVec);
+      const direction = offset.lengthSq() > 0 ? offset.normalize() : new Vector3(0, 0, 1);
+      const distance =
+        size.height > 0 && ortho.zoom > 0
+          ? orthoZoomToDistance(ortho.zoom, fov, size.height)
+          : ortho.position.distanceTo(targetVec) || persp.position.distanceTo(targetVec);
+      if (distance > 0) {
+        persp.position.copy(direction.multiplyScalar(distance).add(targetVec));
+      } else {
+        persp.position.copy(ortho.position);
+      }
+      persp.up.copy(ortho.up);
+      persp.quaternion.copy(ortho.quaternion);
+      persp.updateProjectionMatrix();
+    }
+    // Perspective-mode resize is a no-op — drei's PerspectiveCamera updates
+    // its aspect ratio automatically on canvas resize.
+
+    prevProjectionRef.current = projection;
+    invalidate();
+    // `camera` is included so we re-sync if R3F reassigns it externally.
+  }, [projection, camera, size.height, fov, invalidate, tx, ty, tz]);
+
+  // Frustum bounds for the ortho camera, pixel-mapped to the canvas. drei
+  // re-mounts the projection matrix when these change; size.width/height come
+  // from `useThree().size` which updates on canvas resize.
+  const halfW = size.width / 2;
+  const halfH = size.height / 2;
+
+  return (
+    <>
+      <DreiPerspectiveCamera
+        ref={perspRef}
+        makeDefault={projection === 'perspective'}
+        position={initialPosition}
+        fov={fov}
+        near={near}
+        far={far}
+      />
+      <DreiOrthographicCamera
+        ref={orthoRef}
+        makeDefault={projection === 'orthographic'}
+        position={initialPosition}
+        near={orthoNear}
+        far={orthoFar}
+        left={-halfW}
+        right={halfW}
+        top={halfH}
+        bottom={-halfH}
+      />
+    </>
+  );
 }
 
 /** Inner component for theme-aware lighting (hooks must be called inside Canvas). */

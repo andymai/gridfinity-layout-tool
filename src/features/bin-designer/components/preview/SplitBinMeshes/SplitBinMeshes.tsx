@@ -29,6 +29,9 @@ const LABEL_OFFSET_MM = 3;
 /** Edge line color (matches BinMesh) */
 const EDGE_COLOR = '#000000';
 
+/** Face opacity when xray mode is enabled (matches BinMesh). */
+const XRAY_OPACITY = 0.3;
+
 /** Fallback accent hex (amber-500) when CSS var is unavailable. */
 const FALLBACK_ACCENT = '#f59e0b';
 
@@ -48,6 +51,7 @@ interface PieceMeshProps {
   readonly isExploded: boolean;
   readonly color: string;
   readonly wireframe: boolean;
+  readonly xray: boolean;
   readonly labelZ: number;
 }
 
@@ -62,6 +66,7 @@ function PieceMesh({
   isExploded,
   color,
   wireframe,
+  xray,
   labelZ,
 }: PieceMeshProps) {
   const { invalidate } = useThree();
@@ -99,6 +104,9 @@ function PieceMesh({
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
+          transparent={xray}
+          opacity={xray ? XRAY_OPACITY : 1}
+          depthWrite={!xray}
         />
       </mesh>
       {!wireframe && edgesGeometry && (
@@ -128,12 +136,13 @@ function PieceMesh({
 interface SplitBinMeshesProps {
   readonly color: string;
   readonly wireframe: boolean;
+  readonly xray?: boolean;
 }
 
 /**
  * Renders all pieces of a split bin with assembled or exploded positioning.
  */
-export function SplitBinMeshes({ color, wireframe }: SplitBinMeshesProps) {
+export function SplitBinMeshes({ color, wireframe, xray = false }: SplitBinMeshesProps) {
   const { splitPieceMeshes, splitViewMode, params } = useDesignerStore(
     useShallow((s) => ({
       splitPieceMeshes: s.ui.splitPieceMeshes,
@@ -179,6 +188,7 @@ export function SplitBinMeshes({ color, wireframe }: SplitBinMeshesProps) {
             isExploded={isExploded}
             color={color}
             wireframe={wireframe}
+            xray={xray}
             labelZ={labelZ}
           />
         );

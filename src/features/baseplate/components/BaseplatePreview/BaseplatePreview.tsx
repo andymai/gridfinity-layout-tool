@@ -12,7 +12,6 @@ import { useRef, useCallback, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
-import * as THREE from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { FootprintGrid } from '@/shared/components/preview/FootprintGrid';
@@ -29,11 +28,13 @@ import { calculateIdealDistance, calculateMaxOrbitDistance } from './cameraUtils
 import { BaseplateMesh } from './BaseplateMesh';
 import { SceneLighting } from './SceneLighting';
 import { CameraController } from './CameraController';
+import { BaseplateCameraRig, type BaseplateProjection } from './BaseplateCameraRig';
 import { DimensionLabels } from './DimensionLabels';
 import { useBaseplatePresetTransition } from './useBaseplatePresetTransition';
 import { BaseplatePreviewControls } from './BaseplatePreviewControls';
 import { overlayStatusText } from './overlayStatusText';
 import { useGenerationElapsed } from './useGenerationElapsed';
+import { useBaseplateKeyboard } from '../../hooks/useBaseplateKeyboard';
 import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
 import { detectWebGL, WebGLFallback } from '@/shared/webgl';
 
@@ -93,6 +94,21 @@ export function BaseplatePreview({
 
   // Camera preset state
   const [activePreset, setActivePreset] = useState<CameraPreset | null>(null);
+  // Projection + xray state (ephemeral, per-viewport)
+  const [projection, setProjection] = useState<BaseplateProjection>('perspective');
+  const [xray, setXray] = useState(false);
+
+  const toggleProjection = useCallback(() => {
+    setProjection((p) => (p === 'perspective' ? 'orthographic' : 'perspective'));
+  }, []);
+  const toggleXray = useCallback(() => {
+    setXray((x) => !x);
+  }, []);
+
+  useBaseplateKeyboard({
+    onToggleXray: toggleXray,
+    onToggleProjection: toggleProjection,
+  });
 
   const setCameraPreset = useBaseplatePresetTransition(
     controlsRef,
@@ -224,12 +240,6 @@ export function BaseplatePreview({
           <PanelErrorBoundary panelName="3D Preview">
             <Canvas
               frameloop="demand"
-              camera={{
-                position: new THREE.Vector3(100, -100, 80),
-                fov: 45,
-                near: 0.1,
-                far: 20000,
-              }}
               onCreated={({ camera }) => {
                 camera.up.set(0, 0, 1);
                 camera.lookAt(0, 0, totalH / 2);
@@ -237,6 +247,12 @@ export function BaseplatePreview({
               gl={{ antialias: true }}
               onPointerMissed={handlePointerMissed}
             >
+              <BaseplateCameraRig
+                projection={projection}
+                initialPosition={[100, -100, 80]}
+                target={[0, 0, totalH / 2]}
+              />
+
               <GradientBackground />
               <SceneLighting />
 
@@ -258,9 +274,10 @@ export function BaseplatePreview({
                   totalDepthUnits={depth}
                   gridUnitMm={gridUnitMm}
                   isPreview={hasDirectPreview}
+                  xray={xray}
                 />
               ) : (
-                <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} />
+                <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} xray={xray} />
               )}
 
               {/* Ghost outline only in assembled mode -- exploded scatters pieces beyond slab bounds */}
@@ -320,10 +337,14 @@ export function BaseplatePreview({
         isSplit={isSplit}
         splitViewMode={splitViewMode}
         filamentColor={filamentColor}
+        projection={projection}
+        xray={xray}
         onCameraPreset={handleCameraPreset}
         onResetView={handleResetView}
         onViewModeChange={setSplitViewMode}
         onColorChange={handleColorChange}
+        onToggleProjection={toggleProjection}
+        onToggleXray={toggleXray}
       />
 
       {hasError && (

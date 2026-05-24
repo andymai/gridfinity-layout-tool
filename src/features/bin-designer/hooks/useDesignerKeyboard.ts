@@ -1,6 +1,6 @@
 /**
  * Keyboard shortcuts for the bin designer preview.
- * Keys 1-4: Camera presets, R: Reset, W: Wireframe toggle.
+ * Keys 1-4: Camera presets, R: Reset, W: Wireframe, X: X-ray, P: Projection.
  */
 
 import { useEffect } from 'react';
@@ -11,6 +11,8 @@ interface UseDesignerKeyboardOptions {
   onCameraPreset: (preset: CameraPreset) => void;
   onResetView: () => void;
   onToggleWireframe: () => void;
+  onToggleXray: () => void;
+  onToggleProjection: () => void;
   onUndo: () => void;
   onRedo: () => void;
   onToolSwitch?: () => void;
@@ -30,19 +32,17 @@ const PRESET_KEYS: Record<string, CameraPreset> = {
  * - Number keys 1–4: switch camera preset (front, side, top, isometric)
  * - R / r: reset the view
  * - W / w: toggle wireframe
+ * - X / x: toggle X-ray
+ * - P / p: toggle projection (perspective ↔ orthographic)
  * - Ctrl/Cmd+Z: undo
  * - Ctrl/Cmd+Y or Ctrl/Cmd+Shift+Z: redo
- *
- * @param onCameraPreset - Called with the selected camera preset when a preset key is pressed
- * @param onResetView - Called when the reset view shortcut is pressed
- * @param onToggleWireframe - Called when the wireframe toggle shortcut is pressed
- * @param onUndo - Called when the undo shortcut is pressed
- * @param onRedo - Called when the redo shortcut is pressed
  */
 export function useDesignerKeyboard({
   onCameraPreset,
   onResetView,
   onToggleWireframe,
+  onToggleXray,
+  onToggleProjection,
   onUndo,
   onRedo,
   onToolSwitch,
@@ -94,10 +94,34 @@ export function useDesignerKeyboard({
       if (e.key === 'w' || e.key === 'W') {
         e.preventDefault();
         onToggleWireframe();
+        return;
+      }
+
+      if (e.key === SHORTCUTS.TOGGLE_XRAY || e.key === SHORTCUTS.TOGGLE_XRAY.toUpperCase()) {
+        e.preventDefault();
+        onToggleXray();
+        return;
+      }
+
+      if (
+        e.key === SHORTCUTS.TOGGLE_PROJECTION ||
+        e.key === SHORTCUTS.TOGGLE_PROJECTION.toUpperCase()
+      ) {
+        e.preventDefault();
+        onToggleProjection();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onCameraPreset, onResetView, onToggleWireframe, onUndo, onRedo, onToolSwitch]);
+  }, [
+    onCameraPreset,
+    onResetView,
+    onToggleWireframe,
+    onToggleXray,
+    onToggleProjection,
+    onUndo,
+    onRedo,
+    onToolSwitch,
+  ]);
 }

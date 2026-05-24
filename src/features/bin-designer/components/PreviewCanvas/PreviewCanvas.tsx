@@ -13,9 +13,9 @@ import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
-import { Vector3 } from 'three';
 import type { PerspectiveCamera } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
+import type { Projection } from '../preview';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { calcMaxGridUnits } from '@/core/constants';
@@ -56,7 +56,12 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
-import { CameraController, usePresetTransition, SceneLighting } from './previewCanvasCamera';
+import {
+  CameraController,
+  CameraRig,
+  usePresetTransition,
+  SceneLighting,
+} from './previewCanvasCamera';
 import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
 import { detectWebGL, WebGLFallback } from '@/shared/webgl';
 import { ColorToolOverlay } from './ColorToolOverlay';
@@ -86,6 +91,8 @@ export function PreviewCanvas() {
   const invalidateRef = useRef<(() => void) | null>(null);
   const webgl = detectWebGL();
   const [wireframe, setWireframe] = useState(false);
+  const [xray, setXray] = useState(false);
+  const [projection, setProjection] = useState<Projection>('perspective');
   const [activePreset, setActivePreset] = useState<CameraPreset | null>('isometric');
   // Lid explode slider (mm above the snapped position). Default = mid-explode
   // so both the lid and the bin's interior are visible when a lid is enabled.
@@ -242,11 +249,21 @@ export function PreviewCanvas() {
     setWireframe((w) => !w);
   }, []);
 
+  const toggleXray = useCallback(() => {
+    setXray((x) => !x);
+  }, []);
+
+  const toggleProjection = useCallback(() => {
+    setProjection((p) => (p === 'perspective' ? 'orthographic' : 'perspective'));
+  }, []);
+
   // Keyboard shortcuts
   useDesignerKeyboard({
     onCameraPreset: setCameraPreset,
     onResetView: resetView,
     onToggleWireframe: toggleWireframe,
+    onToggleXray: toggleXray,
+    onToggleProjection: toggleProjection,
     onUndo: undo,
     onRedo: redo,
     onToolSwitch: navigateToPlanner,
@@ -319,13 +336,7 @@ export function PreviewCanvas() {
         <PanelErrorBoundary panelName="3D Preview">
           <Canvas
             frameloop="demand"
-            camera={{
-              position: new Vector3(100, -100, 80),
-              fov: 45,
-              near: 0.1,
-              far: 2000,
-            }}
-            onCreated={({ camera, gl, scene }) => {
+            onCreated={({ gl, scene, camera }) => {
               camera.up.set(0, 0, 1);
               camera.lookAt(0, 0, totalH / 2);
               setPreviewCanvas(gl.domElement);
@@ -333,6 +344,13 @@ export function PreviewCanvas() {
             }}
             gl={{ antialias: true, preserveDrawingBuffer: true }}
           >
+            {/* Perspective + Orthographic camera pair with runtime swap. */}
+            <CameraRig
+              projection={projection}
+              initialPosition={[100, -100, 80]}
+              target={[0, 0, totalH / 2]}
+            />
+
             {/* Gradient background */}
             <GradientBackground />
 
@@ -352,14 +370,24 @@ export function PreviewCanvas() {
 
             {/* Bin mesh — swap for per-piece meshes when split */}
             {showSplitPieces ? (
-              <SplitBinMeshes color={previewColor} wireframe={wireframe} />
+              <SplitBinMeshes color={previewColor} wireframe={wireframe} xray={xray} />
             ) : (
-              <BinMesh wireframe={wireframe} color={previewColor} onZoneClick={handleZoneClick} />
+              <BinMesh
+                wireframe={wireframe}
+                xray={xray}
+                color={previewColor}
+                onZoneClick={handleZoneClick}
+              />
             )}
 
             {/* Click-lock lid (renders only when params.lid.enabled produced
                 a mesh). `lidOffsetMm` controls position + opacity in lockstep. */}
-            <LidMesh color={previewColor} lidOffsetMm={lidOffsetMm} wireframe={wireframe} />
+            <LidMesh
+              color={previewColor}
+              lidOffsetMm={lidOffsetMm}
+              wireframe={wireframe}
+              xray={xray}
+            />
             {/* Dashed guide line between bin's lip top and lid's mating opening,
                 visible only when the lid is meaningfully exploded. */}
             {params.lid.enabled && params.base.stackingLip && (
@@ -435,9 +463,13 @@ export function PreviewCanvas() {
           {/* Control buttons */}
           <PreviewControls
             wireframe={wireframe}
+            xray={xray}
+            projection={projection}
             previewColor={previewColor}
             activePreset={activePreset}
             onWireframeToggle={toggleWireframe}
+            onXrayToggle={toggleXray}
+            onProjectionToggle={toggleProjection}
             onColorChange={handleColorChange}
             onCameraPreset={setCameraPreset}
             onResetView={resetView}

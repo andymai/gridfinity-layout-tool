@@ -8,8 +8,24 @@ import type { ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
 import { CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks/useResponsive';
+import {
+  IconFront,
+  IconSide,
+  IconTop,
+  IconIso,
+  IconReset,
+  IconWireframe,
+  IconXray,
+  IconPerspective,
+  IconOrthographic,
+  IconAssembled,
+  IconExploded,
+} from './icons';
 
 export type CameraPreset = 'front' | 'side' | 'top' | 'isometric';
+
+/** Projection mode for the preview camera. */
+export type Projection = 'perspective' | 'orthographic';
 
 /** View mode for split bin preview */
 export type SplitViewMode = 'assembled' | 'exploded';
@@ -19,9 +35,13 @@ const SPLIT_VIEW_MODES: readonly SplitViewMode[] = ['assembled', 'exploded'];
 
 interface PreviewControlsProps {
   wireframe: boolean;
+  xray: boolean;
+  projection: Projection;
   previewColor: string;
   activePreset: CameraPreset | null;
   onWireframeToggle: () => void;
+  onXrayToggle: () => void;
+  onProjectionToggle: () => void;
   onColorChange: (color: string) => void;
   onCameraPreset: (preset: CameraPreset) => void;
   onResetView: () => void;
@@ -41,115 +61,6 @@ const PRESETS: Array<{ key: CameraPreset; label: string; shortcut: string }> = [
   { key: 'top', label: 'Top', shortcut: '3' },
   { key: 'isometric', label: 'Iso', shortcut: '4' },
 ];
-
-/** SVG icon for Front preset — cube with front face highlighted */
-function IconFront() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M2 5l6-3 6 3v6l-6 3-6-3V5z" stroke="currentColor" strokeWidth="1.2" opacity="0.4" />
-      <path d="M2 5l6 3v6l-6-3V5z" fill="currentColor" opacity="0.6" />
-      <path d="M2 5l6 3v6l-6-3V5z" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
-  );
-}
-
-/** SVG icon for Side preset — cube with side face highlighted */
-function IconSide() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M2 5l6-3 6 3v6l-6 3-6-3V5z" stroke="currentColor" strokeWidth="1.2" opacity="0.4" />
-      <path d="M14 5l-6 3v6l6-3V5z" fill="currentColor" opacity="0.6" />
-      <path d="M14 5l-6 3v6l6-3V5z" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
-  );
-}
-
-/** SVG icon for Top preset — cube with top face highlighted */
-function IconTop() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M2 5l6-3 6 3v6l-6 3-6-3V5z" stroke="currentColor" strokeWidth="1.2" opacity="0.4" />
-      <path d="M2 5l6-3 6 3-6 3-6-3z" fill="currentColor" opacity="0.6" />
-      <path d="M2 5l6-3 6 3-6 3-6-3z" stroke="currentColor" strokeWidth="1.2" />
-    </svg>
-  );
-}
-
-/** SVG icon for Isometric preset — cube corner perspective */
-function IconIso() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path
-        d="M2 5l6-3 6 3v6l-6 3-6-3V5z"
-        fill="currentColor"
-        opacity="0.15"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <path d="M8 8v6M2 5l6 3M14 5l-6 3" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-    </svg>
-  );
-}
-
-/** SVG icon for Reset — circular arrow */
-function IconReset() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path
-        d="M3.5 2.5v3.5H7"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M3.5 6C4.5 3.5 6.8 2 9 2c3 0 5 2.5 5 5.5S12 13 9 13c-2 0-3.7-1-4.5-2.5"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-/** SVG icon for Wireframe — grid mesh */
-function IconWireframe() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="2" y="2" width="12" height="12" rx="1" stroke="currentColor" strokeWidth="1.2" />
-      <path
-        d="M2 6h12M2 10h12M6 2v12M10 2v12"
-        stroke="currentColor"
-        strokeWidth="0.8"
-        opacity="0.7"
-      />
-    </svg>
-  );
-}
-
-/** SVG icon for Assembled — 2x2 grid of squares packed tight */
-function IconAssembled() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="3" y="3" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
-      <rect x="8.5" y="3" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
-      <rect x="3" y="8.5" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
-      <rect x="8.5" y="8.5" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
-    </svg>
-  );
-}
-
-/** SVG icon for Exploded — 2x2 grid of squares spread to corners */
-function IconExploded() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="1" y="1" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
-      <rect x="10.5" y="1" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
-      <rect x="1" y="10.5" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
-      <rect x="10.5" y="10.5" width="4.5" height="4.5" rx="0.8" fill="currentColor" opacity="0.6" />
-    </svg>
-  );
-}
 
 const VIEW_MODE_ICONS: Record<SplitViewMode, () => ReactNode> = {
   assembled: IconAssembled,
@@ -199,9 +110,13 @@ function ColorPickerContent({
 
 export function PreviewControls({
   wireframe,
+  xray,
+  projection,
   previewColor,
   activePreset,
   onWireframeToggle,
+  onXrayToggle,
+  onProjectionToggle,
   onColorChange,
   onCameraPreset,
   onResetView,
@@ -348,6 +263,40 @@ export function PreviewControls({
             <span>{t('binDesigner.wire')}</span>
           </button>
 
+          {/* X-ray toggle */}
+          <button
+            type="button"
+            onClick={onXrayToggle}
+            className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+              xray
+                ? 'bg-accent text-on-accent'
+                : 'text-content-secondary hover:bg-surface-hover hover:text-content'
+            }`}
+            title={t('binDesigner.toggleXray')}
+            aria-label={t('binDesigner.toggleXrayKeyboardShortcut')}
+            aria-pressed={xray}
+          >
+            <IconXray />
+            <span>{t('binDesigner.xray')}</span>
+          </button>
+
+          {/* Projection toggle (perspective ↔ orthographic) */}
+          <button
+            type="button"
+            onClick={onProjectionToggle}
+            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            title={t('binDesigner.toggleProjection')}
+            aria-label={t('binDesigner.toggleProjectionKeyboardShortcut')}
+            aria-pressed={projection === 'orthographic'}
+          >
+            {projection === 'perspective' ? <IconPerspective /> : <IconOrthographic />}
+            <span>
+              {projection === 'perspective'
+                ? t('binDesigner.projectionPerspective')
+                : t('binDesigner.projectionOrthographic')}
+            </span>
+          </button>
+
           {/* Color picker (hidden in multi-color mode) */}
           {!hideColorPicker && (
             <>
@@ -468,6 +417,34 @@ export function PreviewControls({
             aria-pressed={wireframe}
           >
             <IconWireframe />
+          </button>
+
+          {/* X-ray */}
+          <button
+            type="button"
+            onClick={onXrayToggle}
+            className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+              xray
+                ? 'bg-accent text-on-accent'
+                : 'text-content-secondary hover:bg-surface-hover hover:text-content'
+            }`}
+            title={t('binDesigner.toggleXray')}
+            aria-label={t('binDesigner.toggleXrayKeyboardShortcut')}
+            aria-pressed={xray}
+          >
+            <IconXray />
+          </button>
+
+          {/* Projection toggle */}
+          <button
+            type="button"
+            onClick={onProjectionToggle}
+            className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+            title={t('binDesigner.toggleProjection')}
+            aria-label={t('binDesigner.toggleProjectionKeyboardShortcut')}
+            aria-pressed={projection === 'orthographic'}
+          >
+            {projection === 'perspective' ? <IconPerspective /> : <IconOrthographic />}
           </button>
 
           {/* Color picker (hidden in multi-color mode) */}

@@ -4,8 +4,38 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useTranslation } from '@/i18n';
 import type { SplitViewMode } from '../../store/baseplatePageStore';
 import type { CameraPreset } from './cameraUtils';
+import type { BaseplateProjection } from './BaseplateCameraRig';
 import { IconReset } from './previewIcons';
 import { VIEW_MODE_ICONS, PRESET_ICONS, PRESETS } from './previewConstants';
+
+/** SVG icon for X-ray — eye with pupil */
+function IconXray() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2 8s2.5-4 6-4 6 4 6 4-2.5 4-6 4-6-4-6-4z" stroke="currentColor" strokeWidth="1.2" />
+      <circle cx="8" cy="8" r="1.8" stroke="currentColor" strokeWidth="1.2" opacity="0.7" />
+    </svg>
+  );
+}
+
+/** SVG icon for Perspective projection — converging lines */
+function IconPerspective() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2 13l5-9 5 9M4.5 9.5h6.5" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+/** SVG icon for Orthographic projection — parallel verticals */
+function IconOrthographic() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="3" y="3" width="10" height="10" rx="1" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M3 8h10M8 3v10" stroke="currentColor" strokeWidth="0.8" opacity="0.7" />
+    </svg>
+  );
+}
 
 /** Shared color picker content used in both desktop dropdown and mobile bottom sheet */
 function ColorPickerContent({
@@ -47,19 +77,27 @@ export function BaseplatePreviewControls({
   isSplit,
   splitViewMode,
   filamentColor,
+  projection,
+  xray,
   onCameraPreset,
   onResetView,
   onViewModeChange,
   onColorChange,
+  onToggleProjection,
+  onToggleXray,
 }: {
   activePreset: CameraPreset | null;
   isSplit: boolean;
   splitViewMode: SplitViewMode;
   filamentColor: string;
+  projection: BaseplateProjection;
+  xray: boolean;
   onCameraPreset: (preset: CameraPreset) => void;
   onResetView: () => void;
   onViewModeChange: (mode: SplitViewMode) => void;
   onColorChange: (color: string) => void;
+  onToggleProjection: () => void;
+  onToggleXray: () => void;
 }) {
   const t = useTranslation();
   const { isDesktop } = useResponsive();
@@ -177,6 +215,40 @@ export function BaseplatePreviewControls({
             <span>{t('common.reset')}</span>
           </button>
 
+          {/* X-ray toggle */}
+          <button
+            type="button"
+            onClick={onToggleXray}
+            className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+              xray
+                ? 'bg-accent text-on-accent'
+                : 'text-content-secondary hover:bg-surface-hover hover:text-content'
+            }`}
+            title={t('baseplate.toggleXray')}
+            aria-label={t('baseplate.toggleXrayKeyboardShortcut')}
+            aria-pressed={xray}
+          >
+            <IconXray />
+            <span>{t('baseplate.xray')}</span>
+          </button>
+
+          {/* Projection toggle */}
+          <button
+            type="button"
+            onClick={onToggleProjection}
+            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            title={t('baseplate.toggleProjection')}
+            aria-label={t('baseplate.toggleProjectionKeyboardShortcut')}
+            aria-pressed={projection === 'orthographic'}
+          >
+            {projection === 'perspective' ? <IconPerspective /> : <IconOrthographic />}
+            <span>
+              {projection === 'perspective'
+                ? t('baseplate.projectionPerspective')
+                : t('baseplate.projectionOrthographic')}
+            </span>
+          </button>
+
           {/* Divider */}
           <div className="w-px h-5 bg-stroke-subtle/50" />
 
@@ -276,6 +348,34 @@ export function BaseplatePreviewControls({
           aria-label={t('baseplate.resetView')}
         >
           <IconReset />
+        </button>
+
+        {/* X-ray */}
+        <button
+          type="button"
+          onClick={onToggleXray}
+          className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+            xray
+              ? 'bg-accent text-on-accent'
+              : 'text-content-secondary hover:bg-surface-hover hover:text-content'
+          }`}
+          title={t('baseplate.toggleXray')}
+          aria-label={t('baseplate.toggleXrayKeyboardShortcut')}
+          aria-pressed={xray}
+        >
+          <IconXray />
+        </button>
+
+        {/* Projection toggle */}
+        <button
+          type="button"
+          onClick={onToggleProjection}
+          className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+          title={t('baseplate.toggleProjection')}
+          aria-label={t('baseplate.toggleProjectionKeyboardShortcut')}
+          aria-pressed={projection === 'orthographic'}
+        >
+          {projection === 'perspective' ? <IconPerspective /> : <IconOrthographic />}
         </button>
 
         {/* Spacer to push color picker to right */}
