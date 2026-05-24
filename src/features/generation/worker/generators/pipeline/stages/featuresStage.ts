@@ -39,6 +39,9 @@ export const featuresStage: PipelineStage = {
     // export passes pick up the `simplify` topology cleanup that the rest
     // of the pipeline already benefits from.
     if (dim.solid) {
+      // booleanStage early-returns when ctx.solid is null; building tools
+      // we'd never apply would just leak their WASM shapes.
+      if (!ctx.solid) return ctx;
       const cutoutTools = buildCutoutCuts(params, dim.innerW, dim.innerD, dim.wallHeight);
       for (const tool of cutoutTools) {
         collectOrigins(tool, FeatureTag.CUTOUT, originToTag);
