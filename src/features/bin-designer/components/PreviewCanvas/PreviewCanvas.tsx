@@ -10,7 +10,7 @@
  */
 
 import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
 import type { PerspectiveCamera } from 'three';
@@ -56,12 +56,8 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
-import {
-  CameraController,
-  CameraRig,
-  usePresetTransition,
-  SceneLighting,
-} from './previewCanvasCamera';
+import { CameraController, usePresetTransition, SceneLighting } from './previewCanvasCamera';
+import { CameraRig } from '@/shared/components/preview/CameraRig';
 import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
 import { detectWebGL, WebGLFallback } from '@/shared/webgl';
 import { ColorToolOverlay } from './ColorToolOverlay';
@@ -85,6 +81,23 @@ const DEFAULT_COLOR = '#d4d8dc';
  * - Dimension lines showing W×D×H + interior height in mm
  * - Footprint grid matching the bin's unit dimensions
  */
+
+/**
+ * Re-publishes the active camera to the thumbnail capture module whenever it
+ * changes. The Canvas's `onCreated` callback fires with R3F's transient
+ * default camera — which is replaced milliseconds later by CameraRig's drei
+ * camera — so capturing there left the thumbnail pipeline holding a dangling
+ * reference. This runs inside the Canvas so `useThree().camera` always
+ * reflects the current `makeDefault` camera (re-fires on projection swap).
+ */
+function PreviewContextSync() {
+  const { gl, scene, camera } = useThree();
+  useEffect(() => {
+    setPreviewContext(gl, scene, camera as PerspectiveCamera);
+  }, [gl, scene, camera]);
+  return null;
+}
+
 export function PreviewCanvas() {
   const t = useTranslation();
   const controlsRef = useRef<OrbitControlsType>(null);
@@ -336,11 +349,8 @@ export function PreviewCanvas() {
         <PanelErrorBoundary panelName="3D Preview">
           <Canvas
             frameloop="demand"
-            onCreated={({ gl, scene, camera }) => {
-              camera.up.set(0, 0, 1);
-              camera.lookAt(0, 0, totalH / 2);
+            onCreated={({ gl }) => {
               setPreviewCanvas(gl.domElement);
-              setPreviewContext(gl, scene, camera as PerspectiveCamera);
             }}
             gl={{ antialias: true, preserveDrawingBuffer: true }}
           >
@@ -350,6 +360,7 @@ export function PreviewCanvas() {
               initialPosition={[100, -100, 80]}
               target={[0, 0, totalH / 2]}
             />
+            <PreviewContextSync />
 
             {/* Gradient background */}
             <GradientBackground />

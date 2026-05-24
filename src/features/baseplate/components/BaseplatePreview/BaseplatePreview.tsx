@@ -28,7 +28,7 @@ import { calculateIdealDistance, calculateMaxOrbitDistance } from './cameraUtils
 import { BaseplateMesh } from './BaseplateMesh';
 import { SceneLighting } from './SceneLighting';
 import { CameraController } from './CameraController';
-import { BaseplateCameraRig, type BaseplateProjection } from './BaseplateCameraRig';
+import { CameraRig, type Projection } from '@/shared/components/preview/CameraRig';
 import { DimensionLabels } from './DimensionLabels';
 import { useBaseplatePresetTransition } from './useBaseplatePresetTransition';
 import { BaseplatePreviewControls } from './BaseplatePreviewControls';
@@ -95,7 +95,7 @@ export function BaseplatePreview({
   // Camera preset state
   const [activePreset, setActivePreset] = useState<CameraPreset | null>(null);
   // Projection + xray state (ephemeral, per-viewport)
-  const [projection, setProjection] = useState<BaseplateProjection>('perspective');
+  const [projection, setProjection] = useState<Projection>('perspective');
   const [xray, setXray] = useState(false);
 
   const toggleProjection = useCallback(() => {
@@ -240,17 +240,14 @@ export function BaseplatePreview({
           <PanelErrorBoundary panelName="3D Preview">
             <Canvas
               frameloop="demand"
-              onCreated={({ camera }) => {
-                camera.up.set(0, 0, 1);
-                camera.lookAt(0, 0, totalH / 2);
-              }}
               gl={{ antialias: true }}
               onPointerMissed={handlePointerMissed}
             >
-              <BaseplateCameraRig
+              <CameraRig
                 projection={projection}
                 initialPosition={[100, -100, 80]}
                 target={[0, 0, totalH / 2]}
+                far={20_000}
               />
 
               <GradientBackground />

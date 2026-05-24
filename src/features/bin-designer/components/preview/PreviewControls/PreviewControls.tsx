@@ -22,10 +22,9 @@ import {
   IconExploded,
 } from './icons';
 
-export type CameraPreset = 'front' | 'side' | 'top' | 'isometric';
+import type { Projection } from '@/shared/components/preview/CameraRig';
 
-/** Projection mode for the preview camera. */
-export type Projection = 'perspective' | 'orthographic';
+export type CameraPreset = 'front' | 'side' | 'top' | 'isometric';
 
 /** View mode for split bin preview */
 export type SplitViewMode = 'assembled' | 'exploded';
