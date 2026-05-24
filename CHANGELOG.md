@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.117.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.117.0...gridfinity-layout-tool-v4.117.1) (2026-05-24)
+
+
+### Bug Fixes
+
+* **generation:** surface cutout boolean failures instead of dropping them ([#1864](https://github.com/andymai/gridfinity-layout-tool/issues/1864)) ([e8cb300](https://github.com/andymai/gridfinity-layout-tool/commit/e8cb300ecaf131b64c4e635a024814e18c8b1c85))
+
 ## [4.117.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.116.2...gridfinity-layout-tool-v4.117.0) (2026-05-23)
 
 
