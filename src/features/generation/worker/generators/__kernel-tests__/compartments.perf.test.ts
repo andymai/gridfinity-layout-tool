@@ -15,12 +15,14 @@
  */
 // @vitest-environment node
 import { appendFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBin } from './wasmInit';
 import { buildParams } from './scenarioTypes';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 
-const OUT_FILE = '/tmp/compartments-bench-results.log';
+const OUT_FILE = join(tmpdir(), 'compartments-bench-results.log');
 
 beforeAll(async () => {
   await initBrepjs();
@@ -40,8 +42,11 @@ interface BenchRow {
   triangleCount: number;
 }
 
-const WARMUP_RUNS = 0;
-const MEASURE_RUNS = 1;
+// 1 warmup so the shell cache is hot when measurement starts; 2 measured runs
+// averaged together so a single transient (GC pause, OS noise) doesn't sway
+// the cap decision. Tradeoff: full sweep now takes ~7-10 min instead of ~3.
+const WARMUP_RUNS = 1;
+const MEASURE_RUNS = 2;
 
 /** Build a uniform N×M compartment grid with each cell its own compartment. */
 function makeCells(cols: number, rows: number): number[] {

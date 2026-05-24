@@ -27,7 +27,8 @@ export const DESIGNER_CONSTRAINTS = {
   // Compartment grid
   MIN_COMPARTMENT_GRID: 1, // min rows/cols
   // Max rows/cols. Bumped from 8 to 12 per #1871 after measuring generation
-  // time across grid sizes (see `__kernel-tests__/compartments.perf.test.ts`):
+  // time across grid sizes (see
+  // `src/features/generation/worker/generators/__kernel-tests__/compartments.perf.test.ts`):
   // worst case (no label tabs) 12×12 finishes in ~14s, under the 30s base
   // timeout. 16×16 hits ~39s and risks timeout failures, so 12 is the safe
   // ceiling without also raising `BASE_TIMEOUT_MS`.

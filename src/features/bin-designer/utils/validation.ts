@@ -284,15 +284,21 @@ function cellSizeLimitMessage(axis: 'columns' | 'rows', maxCount: number): strin
   return `You've hit the cell-size limit (${DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}mm minimum). At this ${dimension} you can fit up to ${maxCount} ${axis}.`;
 }
 
-/** Result of computing minimum cell dimensions (in mm) */
+/** Result of computing minimum cell dimensions (in mm). */
 export interface MinCellSize {
   readonly minCellW: number;
   readonly minCellD: number;
+  /** Inner-cavity width (mm) excluding outer walls/tolerance. */
+  readonly innerW: number;
+  /** Inner-cavity depth (mm) excluding outer walls/tolerance. */
+  readonly innerD: number;
 }
 
 /**
  * Computes the minimum individual cell dimensions (mm) for a compartment grid,
- * accounting for inner bin dimensions and divider thickness.
+ * accounting for inner bin dimensions and divider thickness. Returns the inner
+ * span too so callers needing the inverse — "how many compartments fit?" —
+ * don't duplicate the inner-cavity formula.
  *
  * Used to determine if a grid configuration would produce degenerate geometry.
  */
@@ -314,7 +320,7 @@ export function computeMinCellSize(
   const minCellW = (innerW - dividersW) / cols;
   const minCellD = (innerD - dividersD) / rows;
 
-  return { minCellW, minCellD };
+  return { minCellW, minCellD, innerW, innerD };
 }
 
 /**
@@ -341,7 +347,7 @@ export function validateCompartmentSizes(
   }
   if (cols <= 1 && rows <= 1) return ok(undefined);
 
-  const { minCellW, minCellD } = computeMinCellSize(
+  const { minCellW, minCellD, innerW, innerD } = computeMinCellSize(
     width,
     depth,
     wallThickness,
@@ -350,9 +356,6 @@ export function validateCompartmentSizes(
     dividerThickness,
     gridUnitMm
   );
-
-  const innerW = width * gridUnitMm - GRIDFINITY.TOLERANCE - 2 * wallThickness;
-  const innerD = depth * gridUnitMm - GRIDFINITY.TOLERANCE - 2 * wallThickness;
 
   if (cols > 1 && minCellW < DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE) {
     return err({
