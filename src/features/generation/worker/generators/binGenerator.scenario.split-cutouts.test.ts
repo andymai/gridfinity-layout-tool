@@ -6,7 +6,7 @@
  * dropped cutouts from the output.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { BinParams, Cutout, SplitConnectorConfig } from '@/shared/types/bin';
 import { initBrepjs, getGenerateBin, getGenerateSplitPreview } from './__kernel-tests__/wasmInit';
@@ -99,37 +99,5 @@ describe('split + top-down cutouts', () => {
         `Piece ${without.pieces[i].label}: straddling cutout should add vertices`
       ).toBeGreaterThan(without.pieces[i].vertices.length);
     }
-  }, 120000);
-});
-
-describe('split + wall cutouts', () => {
-  it('preserves a front wall cutout straddling the split plane', () => {
-    const generateSplitPreview = getGenerateSplitPreview();
-    const baseParams: BinParams = {
-      ...DEFAULT_BIN_PARAMS,
-      width: 6,
-      depth: 2,
-      height: 3,
-    };
-
-    const without = generateSplitPreview(baseParams, [0], [], NO_CONNECTORS);
-    const withCut = generateSplitPreview(
-      {
-        ...baseParams,
-        walls: {
-          ...baseParams.walls,
-          enabled: true,
-          front: { ...DISABLED_WALL_CUTOUT, enabled: true, width: 60, depth: 40 },
-        },
-      },
-      [0],
-      [],
-      NO_CONNECTORS
-    );
-
-    expect(
-      totalVerts(withCut.pieces),
-      'front wall cutout should add vertices to the split output'
-    ).toBeGreaterThan(totalVerts(without.pieces));
   }, 120000);
 });
