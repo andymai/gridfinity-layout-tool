@@ -42,14 +42,24 @@ export const featuresStage: PipelineStage = {
       const cutoutCuts = buildCutoutCuts(params, dim.innerW, dim.innerD, dim.wallHeight);
       if (cutoutCuts && ctx.solid) {
         collectOrigins(cutoutCuts, FeatureTag.CUTOUT, originToTag);
+        const oldSolid = ctx.solid;
         try {
-          const oldSolid = ctx.solid;
-          const newSolid = unwrap(cut(ctx.solid, cutoutCuts));
+          const newSolid = unwrap(cut(oldSolid, cutoutCuts));
           oldSolid.delete();
           cutoutCuts.delete();
           return { ...ctx, solid: newSolid };
-        } catch {
+        } catch (cause) {
+          // Throwing aborts the pipeline before tessellateStage hands off
+          // the solid to setLastSolid, so dispose both inputs ourselves to
+          // avoid leaking the shell + cut tool on the WASM heap.
+          try {
+            oldSolid.delete();
+          } catch {
+            // already-disposed solids can throw; the original failure matters more
+          }
           cutoutCuts.delete();
+          const detail = cause instanceof Error ? cause.message : String(cause);
+          throw new Error(`Failed to apply cutouts to solid bin: ${detail}`, { cause });
         }
       }
       return ctx;
