@@ -26,7 +26,13 @@ export const DESIGNER_CONSTRAINTS = {
   HEIGHT_STEP: 1, // height units
   // Compartment grid
   MIN_COMPARTMENT_GRID: 1, // min rows/cols
-  MAX_COMPARTMENT_GRID: 8, // max rows/cols
+  // Max rows/cols. Bumped from 8 to 12 per #1871 after measuring generation
+  // time across grid sizes (see
+  // `src/features/generation/worker/generators/__kernel-tests__/compartments.perf.test.ts`):
+  // worst case (no label tabs) 12×12 finishes in ~14s, under the 30s base
+  // timeout. 16×16 hits ~39s and risks timeout failures, so 12 is the safe
+  // ceiling without also raising `BASE_TIMEOUT_MS`.
+  MAX_COMPARTMENT_GRID: 12,
   MIN_COMPARTMENT_THICKNESS: 0.4, // mm divider wall thickness
   MAX_COMPARTMENT_THICKNESS: 2.4, // mm divider wall thickness
   COMPARTMENT_THICKNESS_STEP: 0.1, // mm (legacy — use WALL_THICKNESS_OPTIONS)

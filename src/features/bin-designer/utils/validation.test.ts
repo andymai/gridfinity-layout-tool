@@ -3,6 +3,7 @@ import {
   validateBinParams,
   computeMinCellSize,
   validateCompartmentSizes,
+  maxCompartmentsForInner,
 } from '@/features/bin-designer/utils/validation';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants/gridfinity';
@@ -102,13 +103,14 @@ describe('validateBinParams', () => {
     });
 
     it('should reject cols above maximum', () => {
+      const overMax = DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID + 1;
       const result = validateBinParams(
         makeParams({
           compartments: {
-            cols: 9,
+            cols: overMax,
             rows: 1,
             thickness: 1.2,
-            cells: Array(9)
+            cells: Array(overMax)
               .fill(0)
               .map((_, i) => i),
           },
@@ -626,16 +628,18 @@ describe('validateCompartmentSizes', () => {
   });
 
   it('accepts large bin with max grid', () => {
-    // 8-unit bin, 8x8 grid, 1.2mm dividers
-    const result = validateCompartmentSizes(8, 8, 1.2, 8, 8, 1.2);
+    // 8-unit bin, MAX×MAX compartment grid, 1.2mm dividers
+    const max = DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID;
+    const result = validateCompartmentSizes(8, 8, 1.2, max, max, 1.2);
     expectOk(result);
   });
 
-  it('includes helpful error message', () => {
+  it('includes helpful error message with bin-size suggestion', () => {
     const result = validateCompartmentSizes(0.5, 0.5, 1.2, 4, 1, 1.2);
     const error = expectErr(result);
-    expect(error.message).toContain('Compartment cells too small');
-    expect(error.message).toContain('min');
+    expect(error.message).toContain('cell-size limit');
+    expect(error.message).toContain('5mm minimum');
+    expect(error.message).toMatch(/up to \d+ columns/);
   });
 
   it('rejects cols less than 1', () => {
@@ -650,5 +654,59 @@ describe('validateCompartmentSizes', () => {
     const error = expectErr(result);
     expect(error.code).toBe('COMPARTMENT_GRID_INVALID');
     expect(error.field).toBe('compartments.rows');
+  });
+});
+
+describe('maxCompartmentsForInner', () => {
+  // 5mm minimum cell size + thickness gives N*(5+t) - t ≤ inner ⇒ N ≤ (inner+t)/(5+t)
+  // These cases lock down the inverse-math formula since the validator error
+  // message surfaces the result to end users.
+  it('returns 1 when inner span is smaller than minimum cell size', () => {
+    expect(maxCompartmentsForInner(4, 1.2)).toBe(1);
+  });
+
+  it('returns 1 when inner span exactly equals minimum cell size', () => {
+    expect(maxCompartmentsForInner(5, 1.2)).toBe(1);
+  });
+
+  it('returns 2 when inner span comfortably fits two cells with one divider', () => {
+    // 2 cells × 5mm + 1 divider × 1.2mm = 11.2mm minimum
+    // Use 11.3 to stay off the IEEE-754 boundary (the helper makes no
+    // epsilon-rounding guarantees, only the floor of the literal ratio).
+    expect(maxCompartmentsForInner(11.3, 1.2)).toBe(2);
+    // Just under should still be 1
+    expect(maxCompartmentsForInner(11.1, 1.2)).toBe(1);
+  });
+
+  it('scales linearly with inner span for a fixed thickness', () => {
+    // 1 unit (40mm inner ≈ 1×42 - tolerance - 2*0.95): 5+5+5+5+5+5 = 30, with 5 dividers @1.2 = 36 → fits 6
+    expect(maxCompartmentsForInner(40, 1.2)).toBe(6);
+    // 2 units (~83mm inner): can fit ~13 columns
+    expect(maxCompartmentsForInner(83, 1.2)).toBe(13);
+  });
+
+  it('thicker dividers reduce the max count', () => {
+    // 40mm inner with 0.4mm dividers ⇒ floor(40.4 / 5.4) = 7
+    expect(maxCompartmentsForInner(40, 0.4)).toBe(7);
+    // 40mm inner with 2.4mm dividers ⇒ floor(42.4 / 7.4) = 5
+    expect(maxCompartmentsForInner(40, 2.4)).toBe(5);
+  });
+
+  it('clamps to at least 1 for degenerate inputs', () => {
+    expect(maxCompartmentsForInner(0, 1.2)).toBe(1);
+    expect(maxCompartmentsForInner(-10, 1.2)).toBe(1);
+    expect(maxCompartmentsForInner(50, 0)).toBe(10); // 0-thickness edge case
+  });
+});
+
+describe('validator surfaces the suggested-cap in the error message', () => {
+  // Direct check: a known-tight bin should produce a specific suggested count.
+  // Locks the message-rendering path (helper → message) against future refactors.
+  it('reports the same N that maxCompartmentsForInner computes', () => {
+    // 1×1 bin = ~40mm inner; with 1.2mm dividers, 6 cols max per the helper.
+    // Request 12 cols → should fail with "...up to 6 columns."
+    const result = validateCompartmentSizes(1, 1, 1.2, 12, 1, 1.2);
+    const error = expectErr(result);
+    expect(error.message).toContain('up to 6 columns');
   });
 });
