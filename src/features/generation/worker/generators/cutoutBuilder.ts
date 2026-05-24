@@ -35,7 +35,6 @@ import {
   type ResolvedScoop,
 } from './cutoutScoopHelpers';
 import { sketch } from './meshUtils';
-import { fuseAllOrNull } from './compartmentBuilder';
 import { buildTextSolid } from './textBuilder';
 /** Axis-aligned bounding box in XY. */
 export interface AABB {
@@ -632,9 +631,11 @@ function buildGroupedCutouts(
   return fused;
 }
 /**
- * Build cutout cavity cuts for solid bins.
- * Cutouts cut down from the solid fill surface with configurable depth.
- * All cutout shapes are unioned into a single solid, then boolean-cut from the bin.
+ * Build the list of cutout cavity cut tools for a solid bin.
+ * Each entry is one logical cutout (an ungrouped cutout, a fused-and-scooped
+ * group, or an engraved label) clipped to the bin interior. The pipeline
+ * subtracts them from the shell via the booleanStage's cutAllBisect, which
+ * recovers individual tool failures instead of dropping the whole set.
  *
  * @param params - Bin configuration (reads cutouts array and cutoutConfig.topOffset)
  * @param innerW - Interior width in mm (outer - 2*wall)
@@ -646,8 +647,8 @@ export function buildCutoutCuts(
   innerW: number,
   innerD: number,
   wallHeight: number
-): Shape3D | null {
-  if (params.cutouts.length === 0) return null;
+): Shape3D[] {
+  if (params.cutouts.length === 0) return [];
 
   // Cutout x,y are relative to interior bottom-left corner (0,0).
   // The bin body is centered at model origin, so interior left/front is at -innerW/2, -innerD/2.
@@ -660,16 +661,16 @@ export function buildCutoutCuts(
 
   // Guard: if solidSurfaceZ is non-positive, there's no valid cutting surface
   // (the solid fill is at or below floor level). Skip all cutouts.
-  if (solidSurfaceZ <= 0) return null;
+  if (solidSurfaceZ <= 0) return [];
 
-  const cutoutShapes: Shape3D[] = [];
+  const rawShapes: Shape3D[] = [];
 
   // Partition cutouts by groupId: null -> ungrouped, same groupId -> collected
   const groups = new Map<string, typeof params.cutouts>();
   for (const cutout of params.cutouts) {
     if (cutout.groupId === null) {
       const shape = buildUngroupedCutout(cutout, solidSurfaceZ, originX, originY);
-      if (shape) cutoutShapes.push(shape);
+      if (shape) rawShapes.push(shape);
     } else {
       const list = groups.get(cutout.groupId);
       if (list) {
@@ -682,7 +683,7 @@ export function buildCutoutCuts(
 
   for (const [, groupMembers] of groups) {
     const shape = buildGroupedCutouts(groupMembers, solidSurfaceZ, originX, originY);
-    if (shape) cutoutShapes.push(shape);
+    if (shape) rawShapes.push(shape);
   }
 
   // Per-cutout engraved label text on the bin top, adjacent to each cutout in
@@ -704,25 +705,36 @@ export function buildCutoutCuts(
       innerW,
       innerD
     );
-    if (textShape) cutoutShapes.push(textShape);
+    if (textShape) rawShapes.push(textShape);
   }
 
-  if (cutoutShapes.length === 0) return null;
+  if (rawShapes.length === 0) return [];
 
-  const fusedResult = fuseAllOrNull(cutoutShapes);
-  if (!fusedResult) return null;
-  // fuseAllOrNull may return cutoutShapes[0] directly when length === 1;
-  // dispose the other inputs that were consumed by the fuse.
-  if (cutoutShapes.length > 1) {
-    for (const s of cutoutShapes) s.delete();
+  // Clip each tool individually to the bin interior so cutouts extending past
+  // the walls don't punch through them. Shapes that fail to clip are skipped
+  // rather than poisoning the whole set.
+  let clipBoundary: Shape3D;
+  try {
+    clipBoundary = box(innerW, innerD, solidSurfaceZ, { at: [0, 0, solidSurfaceZ / 2] });
+  } catch (e) {
+    for (const s of rawShapes) s.delete();
+    throw e;
   }
 
-  // Clip cutout union to bin interior so cutouts extending past walls don't
-  // cut through them. The clip boundary covers from floor to the solid surface.
-  const clipBoundary = box(innerW, innerD, solidSurfaceZ, { at: [0, 0, solidSurfaceZ / 2] });
-  const clipped = unwrap(intersect(fusedResult, clipBoundary));
-  fusedResult.delete();
-  clipBoundary.delete();
+  const clipped: Shape3D[] = [];
+  try {
+    for (const shape of rawShapes) {
+      try {
+        clipped.push(unwrap(intersect(shape, clipBoundary)));
+      } catch {
+        // Individual clip failure: drop this tool but keep the rest.
+      } finally {
+        shape.delete();
+      }
+    }
+  } finally {
+    clipBoundary.delete();
+  }
   return clipped;
 }
 

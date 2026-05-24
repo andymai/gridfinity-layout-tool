@@ -12,7 +12,6 @@
  * for the subsequent boolean stage.
  */
 
-import { unwrap, cut } from 'brepjs';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { PipelineContext, PipelineStage } from '../types';
 import { buildCutoutCuts } from '../../featureBuilder';
@@ -34,35 +33,20 @@ export const featuresStage: PipelineStage = {
   execute(ctx: PipelineContext): PipelineContext {
     const { params, dimensions: dim, originToTag } = ctx;
 
-    // Solid mode: apply cutout cut directly (not via booleanStage).
-    // The original code used a bare cut() without simplify options,
-    // so we preserve that behavior by cutting here instead of routing
-    // through the batch boolean stage which applies simplify: forExport.
+    // Solid mode: cutouts are the only feature. Hand each cutout tool to
+    // booleanStage as an independent cutTarget so cutAllBisect can recover
+    // from a single bad tool instead of dropping the whole set, and so
+    // export passes pick up the `simplify` topology cleanup that the rest
+    // of the pipeline already benefits from.
     if (dim.solid) {
-      const cutoutCuts = buildCutoutCuts(params, dim.innerW, dim.innerD, dim.wallHeight);
-      if (cutoutCuts && ctx.solid) {
-        collectOrigins(cutoutCuts, FeatureTag.CUTOUT, originToTag);
-        const oldSolid = ctx.solid;
-        try {
-          const newSolid = unwrap(cut(oldSolid, cutoutCuts));
-          oldSolid.delete();
-          cutoutCuts.delete();
-          return { ...ctx, solid: newSolid };
-        } catch (cause) {
-          // Throwing aborts the pipeline before tessellateStage hands off
-          // the solid to setLastSolid, so dispose both inputs ourselves to
-          // avoid leaking the shell + cut tool on the WASM heap.
-          try {
-            oldSolid.delete();
-          } catch {
-            // already-disposed solids can throw; the original failure matters more
-          }
-          cutoutCuts.delete();
-          const detail = cause instanceof Error ? cause.message : String(cause);
-          throw new Error(`Failed to apply cutouts to solid bin: ${detail}`, { cause });
-        }
+      // booleanStage early-returns when ctx.solid is null; building tools
+      // we'd never apply would just leak their WASM shapes.
+      if (!ctx.solid) return ctx;
+      const cutoutTools = buildCutoutCuts(params, dim.innerW, dim.innerD, dim.wallHeight);
+      for (const tool of cutoutTools) {
+        collectOrigins(tool, FeatureTag.CUTOUT, originToTag);
       }
-      return ctx;
+      return { ...ctx, cutTargets: cutoutTools };
     }
 
     // For non-rectangular (cellMask) bins, run only builders that have

@@ -289,13 +289,12 @@ describe('buildInsertCuts', () => {
 });
 
 describe('buildCutoutCuts', () => {
-  it('returns null for empty cutouts', () => {
+  it('returns an empty list when no cutouts are configured', () => {
     const params: BinParams = { ...DEFAULT_BIN_PARAMS, cutouts: [] };
-    const result = buildCutoutCuts(params, 80, 80, 16);
-    expect(result).toBeNull();
+    expect(buildCutoutCuts(params, 80, 80, 16)).toEqual([]);
   });
 
-  it('builds a rectangle cutout', () => {
+  it('returns one tool per logical cutout for boolean subtraction', () => {
     const params: BinParams = {
       ...DEFAULT_BIN_PARAMS,
       cutoutConfig: { topOffset: 0 },
@@ -315,9 +314,9 @@ describe('buildCutoutCuts', () => {
         },
       ],
     };
-    const result = buildCutoutCuts(params, 80, 80, 16);
-    expect(result).not.toBeNull();
-    const meshed = meshShape(result);
+    const tools = buildCutoutCuts(params, 80, 80, 16);
+    expect(tools).toHaveLength(1);
+    const meshed = meshShape(tools[0]);
     expect(meshed.vertices.length).toBeGreaterThan(0);
   }, 30000);
 });
