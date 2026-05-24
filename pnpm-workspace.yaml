@@ -1,2 +1,83 @@
 packages:
   - 'packages/*'
+
+# Supply-chain hardening — see SECURITY.md "Supply Chain" section.
+#
+# Cooldown: reject any package version published less than 7 days ago.
+# Would have blocked axios (Mar 2026), chalk/debug (Sep 2025), durabletask
+# (May 2026), and most Shai-Hulud worm waves outright.
+# pnpm 11 default is 1440 (1 day); we want a wider window.
+minimumReleaseAge: 10080
+
+# Bypass the cooldown for packages we author or otherwise trust to publish
+# safely. Author-owned packages (brepjs, brepkit-wasm) get no security benefit
+# from the cooldown; we'd just be slowing our own release cadence. Reputable
+# org-scoped packages (PostHog, Vercel, TypeScript ESLint, DefinitelyTyped @types)
+# are listed because they release frequently and lockstep — without the bypass,
+# every typescript-eslint or @types/node bump would block install for a week.
+# A compromise of these orgs is still possible but is the same vector the rest
+# of the codebase defends against (Socket, osv-scanner, advisory monitoring).
+minimumReleaseAgeExclude:
+  # User-authored — no security benefit from the cooldown.
+  - brepjs
+  - brepkit-wasm
+  - occt-wasm
+  # Reputable orgs that release frequently and lockstep.
+  - '@types/*'
+  - '@typescript-eslint/*'
+  - typescript-eslint
+  - '@posthog/*'
+  - posthog-js
+  - '@vercel/*'
+  - '@protobufjs/*'
+  - protobufjs
+  # TODO: remove once aged (target 2026-05-26+). These are widely used utility
+  # packages whose latest versions happen to fall inside the 7-day window as of
+  # this PR; they will age in within ~2-3 days. Tracked: keep this block short.
+  - dompurify
+  - lru-cache
+  - preact
+  - tsx
+
+# Block install / postinstall / prepare scripts by default. Packages that
+# legitimately need to build are allow-listed in `allowBuilds` below.
+# Single highest-value defense against the Shai-Hulud worm class, which
+# spreads via npm lifecycle scripts.
+ignoreScripts: true
+
+# Allow-list for build scripts. Adding a package here means its postinstall /
+# install / prepare / build hooks are trusted to execute. Add ONLY packages
+# whose install behavior you have audited or that are clearly native modules.
+allowBuilds:
+  core-js: true
+  esbuild: true
+  protobufjs: true
+  unrs-resolver: true
+
+peerDependencyRules:
+  allowedVersions:
+    vite-plugin-pwa>vite: '^8.0.0'
+
+overrides:
+  '@vercel/node>undici': '^7.20.0'
+  path-to-regexp: '6.3.0'
+  '@rollup/plugin-replace>magic-string': '0.30.21'
+  '@surma/rollup-plugin-off-main-thread>magic-string': '0.30.21'
+  'workbox-build>@rollup/plugin-node-resolve': '^16.0.0'
+  '@apideck/better-ajv-errors>ajv': '^8.17.1'
+  fast-uri: '^3.1.2'
+  serialize-javascript: '^7.0.3'
+  'eslint-plugin-react-hooks>eslint': '^10.0.3'
+  'eslint-plugin-jsx-a11y>eslint': '^10.0.3'
+  'eslint-plugin-jsx-a11y>minimatch': '^3.1.3'
+  '@vercel/build-utils>minimatch': '^10.2.3'
+  '@vercel/python-analysis>minimatch': '^10.2.3'
+  '@vercel/static-config>ajv': '^8.18.0'
+  'glob>minimatch': '^10.2.3'
+  flatted: '^3.4.2'
+  'posthog-js>dompurify': '^3.4.0'
+  protobufjs: '^7.5.8'
+  'eslint-plugin-i18next>lodash': '^4.18.1'
+  'vitest-axe>lodash-es': '^4.18.1'
+  'picomatch@>=4.0.0 <4.0.4': '^4.0.4'
+  '@vercel/python-analysis>smol-toml': '^1.6.1'

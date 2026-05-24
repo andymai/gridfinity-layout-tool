@@ -13,6 +13,12 @@ updates:
       prefix: 'chore(deps)'
     labels:
       - 'dependencies'
+    # Mirror the pnpm `minimumReleaseAge` cooldown (see pnpm-workspace.yaml).
+    # Keeps Dependabot from opening PRs that would fail install anyway, and
+    # widens the detection window for compromised releases.
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
     groups:
       # Group all minor and patch updates together
       minor-and-patch:
@@ -71,3 +77,9 @@ updates:
     labels:
       - 'ci'
       - 'dependencies'
+    # Cooldown for actions too — defends against the tj-actions tag-retag class
+    # of attack where a compromised maintainer republishes a tag to a malicious
+    # commit. By the time Dependabot opens the PR, the bad version has usually
+    # been detected and rolled back.
+    cooldown:
+      default-days: 7
