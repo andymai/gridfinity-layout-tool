@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.117.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.117.1...gridfinity-layout-tool-v4.117.2) (2026-05-24)
+
+
+### Bug Fixes
+
+* **generation:** route solid-bin cutouts through booleanStage's cutAllBisect ([#1866](https://github.com/andymai/gridfinity-layout-tool/issues/1866)) ([0199ed5](https://github.com/andymai/gridfinity-layout-tool/commit/0199ed5b48a925fd73d87ab293623113041951e5))
+
 ## [4.117.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.117.0...gridfinity-layout-tool-v4.117.1) (2026-05-24)
 
 
