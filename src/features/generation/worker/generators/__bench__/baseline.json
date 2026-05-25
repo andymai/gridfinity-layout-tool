@@ -1,0 +1,50 @@
+{
+  "_about": "Frozen baseline numbers for binGenerator.bench.ts. Captured before the wall-pattern optimizations in this PR landed; used to gauge how much each optimization moves the needle. Re-capture by running `CI=true pnpm exec vitest bench binGenerator --run` and copying the unit-env means into this file (with the new commit + timestamp).",
+  "capturedAt": "2026-05-25T16:11:35Z",
+  "commit": "a63ddb1a",
+  "kernel": "opencascade",
+  "env": "unit (node)",
+  "scenarios": [
+    {
+      "name": "dense_wide_with_cutouts (cold)",
+      "params": "6×4u, height 6u, 12×8 compartments (96), wall pattern honeycomb, 4 wall cutouts (70%×50%)",
+      "meanMs": 2668,
+      "minMs": 2639,
+      "maxMs": 2725,
+      "samples": 3
+    },
+    {
+      "name": "tall_with_cutouts (cold)",
+      "params": "4×4u, height 6u, 6×6 compartments (36), wall pattern honeycomb, 4 wall cutouts (70%×50%)",
+      "meanMs": 2084,
+      "minMs": 2070,
+      "maxMs": 2097,
+      "samples": 3
+    },
+    {
+      "name": "cache_warm_cutout_iter",
+      "params": "dense_wide_with_cutouts + 4 cutout-width nudges (5 generations total per iteration)",
+      "meanMs": 28414,
+      "minMs": 25685,
+      "maxMs": 31144,
+      "samples": 2,
+      "perGenMeanMs": 5683
+    },
+    {
+      "name": "first build (cold): 4×2×6 honeycomb + cutouts",
+      "params": "4×2u, height 6u, honeycomb wall pattern, 4 wall cutouts (70%×50%)",
+      "meanMs": 2126,
+      "minMs": 1941,
+      "maxMs": 2384,
+      "samples": 3
+    },
+    {
+      "name": "cutout-width nudge (warm): base compound should hit cache",
+      "params": "4×2×6 honeycomb + cutouts, two generations per iteration with cutout width changed",
+      "meanMs": 3816,
+      "minMs": 3602,
+      "maxMs": 3935,
+      "samples": 3
+    }
+  ]
+}
