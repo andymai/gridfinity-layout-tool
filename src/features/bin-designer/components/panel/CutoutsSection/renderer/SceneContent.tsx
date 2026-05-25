@@ -32,6 +32,7 @@ import { PathDrawingPreview3D } from './PathDrawingPreview3D';
 import { PathEditOverlay3D } from './PathEditOverlay3D';
 import { RulerMeasurement3D } from './RulerMeasurement3D';
 import { LockBadge3D } from './LockBadge3D';
+import { GroupResultMesh } from './GroupResultMesh';
 import type { RulerMeasurement } from '../handlers/rulerHandler';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 
@@ -246,47 +247,103 @@ export function SceneContent({
           );
         })}
 
-      {/* Grouped cutouts — stencil fill pass (interactive, handles pointer events) */}
-      {cutouts
-        .filter((c) => c.groupId !== null)
-        .map((cutout) => {
-          const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
-          const isRulerActive = mode.type === 'ruler-ready' || mode.type === 'measuring';
-          return (
-            <CutoutShapeMesh
-              key={`${cutout.id}-fill`}
-              cutout={cutout}
-              isSelected={selection.has(cutout.id)}
-              isGrouped={true}
-              isDragging={isDragging && selection.has(cutout.id)}
-              previewOverrides={preview.get(cutout.id)}
-              binColor={binColor}
-              renderMode="fill"
-              onSelect={onSelectCutout}
-              onDoubleClick={onDoubleClickCutout}
-              onDragStart={memoizedDragStart}
-              disablePointerEvents={isVertexEditing || isRulerActive}
-            />
-          );
-        })}
-      {/* Grouped cutouts — stencil stroke pass (visual-only, no interaction) */}
-      {cutouts
-        .filter((c) => c.groupId !== null)
-        .map((cutout) => (
-          <CutoutShapeMesh
-            key={`${cutout.id}-stroke`}
-            cutout={cutout}
-            isSelected={selection.has(cutout.id)}
-            isGrouped={true}
-            isDragging={isDragging && selection.has(cutout.id)}
-            previewOverrides={preview.get(cutout.id)}
-            binColor={binColor}
-            renderMode="stroke"
-            onSelect={onSelectCutout}
-            onDoubleClick={onDoubleClickCutout}
-            onDragStart={memoizedDragStart}
-          />
-        ))}
+      {/*
+       * Grouped cutouts split into two render strategies by op:
+       *   - union (or missing op) → stencil fill+stroke passes that merge
+       *     member outlines visually. The historical path; pixel-perfect SDF.
+       *   - subtract / intersect / exclude → polygon-clipped result mesh.
+       *     Member shapes still render as faint outlines so the user can
+       *     interact with each one; the boolean polygon shows the final cut.
+       */}
+      {(() => {
+        const grouped = cutouts.filter((c) => c.groupId !== null);
+        const isUnionLike = (c: Cutout): boolean => !c.groupOp || c.groupOp === 'union';
+        const unionMembers = grouped.filter(isUnionLike);
+        const otherMembers = grouped.filter((c) => !isUnionLike(c));
+        const nonUnionGroups = new Map<string, Cutout[]>();
+        for (const c of otherMembers) {
+          if (c.groupId === null) continue;
+          const list = nonUnionGroups.get(c.groupId);
+          if (list) list.push(c);
+          else nonUnionGroups.set(c.groupId, [c]);
+        }
+        return (
+          <>
+            {unionMembers.map((cutout) => {
+              const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
+              const isRulerActive = mode.type === 'ruler-ready' || mode.type === 'measuring';
+              return (
+                <CutoutShapeMesh
+                  key={`${cutout.id}-fill`}
+                  cutout={cutout}
+                  isSelected={selection.has(cutout.id)}
+                  isGrouped={true}
+                  isDragging={isDragging && selection.has(cutout.id)}
+                  previewOverrides={preview.get(cutout.id)}
+                  binColor={binColor}
+                  renderMode="fill"
+                  onSelect={onSelectCutout}
+                  onDoubleClick={onDoubleClickCutout}
+                  onDragStart={memoizedDragStart}
+                  disablePointerEvents={isVertexEditing || isRulerActive}
+                />
+              );
+            })}
+            {unionMembers.map((cutout) => (
+              <CutoutShapeMesh
+                key={`${cutout.id}-stroke`}
+                cutout={cutout}
+                isSelected={selection.has(cutout.id)}
+                isGrouped={true}
+                isDragging={isDragging && selection.has(cutout.id)}
+                previewOverrides={preview.get(cutout.id)}
+                binColor={binColor}
+                renderMode="stroke"
+                onSelect={onSelectCutout}
+                onDoubleClick={onDoubleClickCutout}
+                onDragStart={memoizedDragStart}
+              />
+            ))}
+            {[...nonUnionGroups.entries()].map(([gid, members]) => {
+              // Merge preview overrides per member so drag/resize previews show
+              // the correct boolean shape live as the user manipulates members.
+              const live = members.map((m) => {
+                const o = preview.get(m.id);
+                return o ? { ...m, ...o } : m;
+              });
+              const anySelected = members.some((m) => selection.has(m.id));
+              return (
+                <GroupResultMesh
+                  key={`group-result-${gid}`}
+                  members={live}
+                  isSelected={anySelected}
+                  binColor={binColor}
+                />
+              );
+            })}
+            {otherMembers.map((cutout) => {
+              const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
+              const isRulerActive = mode.type === 'ruler-ready' || mode.type === 'measuring';
+              return (
+                <CutoutShapeMesh
+                  key={`${cutout.id}-outline`}
+                  cutout={cutout}
+                  isSelected={selection.has(cutout.id)}
+                  isGrouped={true}
+                  isDragging={isDragging && selection.has(cutout.id)}
+                  previewOverrides={preview.get(cutout.id)}
+                  binColor={binColor}
+                  renderMode="stroke"
+                  onSelect={onSelectCutout}
+                  onDoubleClick={onDoubleClickCutout}
+                  onDragStart={memoizedDragStart}
+                  disablePointerEvents={isVertexEditing || isRulerActive}
+                />
+              );
+            })}
+          </>
+        );
+      })()}
 
       {/* Lock badges on locked cutouts */}
       {cutouts

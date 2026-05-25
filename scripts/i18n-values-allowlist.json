@@ -189,7 +189,9 @@
     "binDesigner.textFont.jetbrains-mono",
     "binDesigner.textFont.allerta-stencil",
     "binDesigner.cutoutEngraveLabelPlaceholder",
-    "binDesigner.angledDividers.stateTilted"
+    "binDesigner.angledDividers.stateTilted",
+    "binDesigner.cutouts.pathfinder.title",
+    "binDesigner.cutouts.transform.rotateField"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

@@ -446,6 +446,26 @@ export interface Insert {
 /** Shape of a top-down cutout into solid bin body */
 export type CutoutShape = 'rectangle' | 'circle' | 'path';
 
+/**
+ * Pathfinder boolean op applied across the members of a cutout group, before
+ * the resulting shape is subtracted from the solid bin top.
+ *
+ *  - `union`     — fuse all members (Illustrator "Unite"; the historical
+ *    grouping behavior, kept as the default when `groupOp` is missing).
+ *  - `subtract`  — top z-ordered member carves a cavity out of the union of
+ *    the rest (Illustrator "Minus Front").
+ *  - `intersect` — keep only the region common to every member.
+ *  - `exclude`   — symmetric difference: union minus intersection
+ *    (Illustrator "Exclude" / XOR).
+ */
+export type GroupOp = 'union' | 'subtract' | 'intersect' | 'exclude';
+
+/** Default applied when a Cutout's `groupOp` is missing (back-compat). */
+export const DEFAULT_GROUP_OP: GroupOp = 'union';
+
+/** Ordered op list for UI rendering and exhaustiveness checks. */
+export const GROUP_OPS: readonly GroupOp[] = ['union', 'subtract', 'intersect', 'exclude'];
+
 /** Per-edge enable flags for split-axis cutout scoops, in the cutout's local frame. */
 export interface CutoutScoopEdges {
   readonly left: boolean;
@@ -511,8 +531,15 @@ export interface Cutout {
   readonly cornerRadius: number;
   /** Optional label for the cutout */
   readonly label: string;
-  /** Group ID for boolean union (null = ungrouped) */
+  /** Group ID for pathfinder boolean ops (null = ungrouped) */
   readonly groupId: string | null;
+  /**
+   * Boolean op shared by all members of this cutout's group.
+   * All members of the same `groupId` are required to carry the same value
+   * (enforced by the slice). Missing/undefined = `'union'` so pre-pathfinder
+   * designs behave identically. Ignored when `groupId` is `null`.
+   */
+  readonly groupOp?: GroupOp;
   /**
    * Scoop radius along the cutout's local width axis (mm).
    * Fillets the Y-aligned bottom edges (left/right walls in local frame).
@@ -860,8 +887,9 @@ export interface DesignerState {
   updateCutout: (id: string, updates: Partial<Cutout>) => void;
   clearCutouts: () => void;
   duplicateCutouts: (cutoutIds: readonly string[]) => void;
-  groupCutouts: (cutoutIds: readonly string[]) => void;
+  groupCutouts: (cutoutIds: readonly string[], op?: GroupOp) => void;
   ungroupCutouts: (cutoutIds: readonly string[]) => void;
+  setGroupOp: (groupId: string, op: GroupOp) => void;
 
   // Transaction + batch cutout actions
   startTransaction: () => void;

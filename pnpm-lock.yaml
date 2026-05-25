@@ -94,6 +94,9 @@ importers:
       occt-wasm:
         specifier: 3.1.0
         version: 3.1.0
+      polygon-clipping:
+        specifier: ^0.15.7
+        version: 0.15.7
       posthog-js:
         specifier: ^1.374.2
         version: 1.374.2
@@ -7314,6 +7317,12 @@ packages:
     engines: { node: '>=18' }
     hasBin: true
 
+  polygon-clipping@0.15.7:
+    resolution:
+      {
+        integrity: sha512-nhfdr83ECBg6xtqOAJab1tbksbBAOMUltN60bU+llHVOL0e5Onm1WpAXXWXVB39L8AJFssoIhEVuy/S90MmotA==,
+      }
+
   possible-typed-array-names@1.1.0:
     resolution:
       {
@@ -7637,6 +7646,12 @@ packages:
         integrity: sha512-q1b3N5QkRUWUl7iyylaaj3kOpIT0N2i9MqIEQXP73GVsN9cw3fdx8X63cEmWhJGi2PPCF23Ijp7ktmd39rawIA==,
       }
 
+  robust-predicates@3.0.3:
+    resolution:
+      {
+        integrity: sha512-NS3levdsRIUOmiJ8FZWCP7LG3QpJyrs/TE0Zpf1yvZu8cAJJ6QMW92H1c7kWpdIHo8RvmLxN/o2JXTKHp74lUA==,
+      }
+
   rolldown@1.0.1:
     resolution:
       {
@@ -7926,6 +7941,13 @@ packages:
       }
     engines: { node: '>= 8' }
     deprecated: The work that was done in this beta branch won't be included in future versions
+
+  splaytree@3.2.3:
+    resolution:
+      {
+        integrity: sha512-7OXrNWzy6CK+r7Ch9OLPBDTKfB6XlWHjX4P0RU5B3IgFuWPeYN0XtRtlexGRjgbQxpfaUve6jTAwBGWuGntz/w==,
+      }
+    engines: { node: '>=18.20 || >=20' }
 
   sprintf-js@1.0.3:
     resolution:
@@ -13347,6 +13369,11 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.2
 
+  polygon-clipping@0.15.7:
+    dependencies:
+      robust-predicates: 3.0.3
+      splaytree: 3.2.3
+
   possible-typed-array-names@1.1.0: {}
 
   postcss@8.5.14:
@@ -13542,6 +13569,8 @@ snapshots:
   reusify@1.1.0: {}
 
   rfdc@1.4.1: {}
+
+  robust-predicates@3.0.3: {}
 
   rolldown@1.0.1:
     dependencies:
@@ -13759,6 +13788,8 @@ snapshots:
   source-map@0.8.0-beta.0:
     dependencies:
       whatwg-url: 7.1.0
+
+  splaytree@3.2.3: {}
 
   sprintf-js@1.0.3: {}
 

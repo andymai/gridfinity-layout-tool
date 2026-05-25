@@ -13,7 +13,6 @@ import {
   drawEllipse,
   cylinder,
   unwrap,
-  fuseAll,
   translate,
   fillet,
   intersect,
@@ -26,8 +25,9 @@ import {
   withScope,
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope } from 'brepjs';
-import type { BinParams, Cutout, PathPoint } from '@/shared/types/bin';
-import { MIN_PATH_POINTS } from '@/shared/types/bin';
+import type { BinParams, Cutout, PathPoint, GroupOp } from '@/shared/types/bin';
+import { MIN_PATH_POINTS, DEFAULT_GROUP_OP } from '@/shared/types/bin';
+import { combineGroupSolids } from './cutoutGroupOps';
 import {
   resolveScoop,
   maxOwnerAxisRadius,
@@ -555,7 +555,7 @@ function buildGroupedCutouts(
   // Track which members actually produced shapes so scoop aggregates
   // use clamped depths and exclude filtered-out zero-dimension members.
   const memberShapes: Shape3D[] = [];
-  const builtMembers: typeof groupMembers = [];
+  const builtMembers: Cutout[] = [];
   const builtDepths: number[] = [];
   for (const cutout of groupMembers) {
     const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
@@ -576,14 +576,17 @@ function buildGroupedCutouts(
   }
   if (memberShapes.length === 0) return null;
 
-  let fused: Shape3D;
-  if (memberShapes.length === 1) {
-    fused = memberShapes[0];
-  } else {
-    fused = unwrap(fuseAll(memberShapes as ValidSolid[]));
-    // fuseAll allocates a new handle; dispose the input member shapes.
-    for (const s of memberShapes) s.delete();
-  }
+  const op: GroupOp = groupMembers[0].groupOp ?? DEFAULT_GROUP_OP;
+
+  const combined = combineGroupSolids(memberShapes, builtMembers, op);
+  for (const s of memberShapes) s.delete();
+  if (!combined) return null;
+
+  // Scoop fillets only apply to union groups — Subtract/Intersect/Exclude can
+  // produce holes or disjoint topologies where "bottom edge" is ambiguous.
+  if (op !== 'union') return combined;
+
+  let fused: Shape3D = combined;
 
   // Per-member axis radii, clamped to each member's geometric limits.
   // Group-level max is used only as an envelope (skip fillet entirely if all are zero).

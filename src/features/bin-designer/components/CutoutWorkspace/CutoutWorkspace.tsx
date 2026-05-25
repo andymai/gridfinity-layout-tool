@@ -43,8 +43,10 @@ export function CutoutWorkspace() {
     duplicateCutouts,
     groupCutouts,
     ungroupCutouts,
+    setGroupOp,
     updateCutoutsBatch,
     removeCutoutsBatch,
+    reorderCutouts,
     undo,
     redo,
     canUndo,
@@ -61,8 +63,10 @@ export function CutoutWorkspace() {
       duplicateCutouts: s.duplicateCutouts,
       groupCutouts: s.groupCutouts,
       ungroupCutouts: s.ungroupCutouts,
+      setGroupOp: s.setGroupOp,
       updateCutoutsBatch: s.updateCutoutsBatch,
       removeCutoutsBatch: s.removeCutoutsBatch,
+      reorderCutouts: s.reorderCutouts,
       undo: s.undo,
       redo: s.redo,
       canUndo: s.history.past.length > 0,
@@ -238,6 +242,9 @@ export function CutoutWorkspace() {
         updateCutoutsBatch,
         lockCutouts,
         unlockCutouts,
+        groupCutouts,
+        setGroupOp,
+        reorderCutouts,
         t,
       }),
     [
@@ -255,6 +262,9 @@ export function CutoutWorkspace() {
       binDepth,
       lockCutouts,
       unlockCutouts,
+      groupCutouts,
+      setGroupOp,
+      reorderCutouts,
       t,
     ]
   );
@@ -276,10 +286,13 @@ export function CutoutWorkspace() {
         binWidth={binWidth}
         binDepth={binDepth}
         onUpdate={updateCutout}
+        onUpdateBatch={updateCutoutsBatch}
         onRemove={removeCutout}
         onDuplicate={duplicateCutouts}
         onGroup={groupCutouts}
         onUngroup={ungroupCutouts}
+        onSetGroupOp={setGroupOp}
+        onReorder={reorderCutouts}
         onClearAll={clearCutouts}
         disabled={isInteracting}
         onShowHelp={handleShowHelp}

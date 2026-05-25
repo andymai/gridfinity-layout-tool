@@ -13,7 +13,9 @@ import type {
   CutoutToggleProperties,
   ReorderDirection,
   PathPoint,
+  GroupOp,
 } from '../../types';
+import { DEFAULT_GROUP_OP } from '../../types';
 import { pushHistoryEntry, dissolveSingletonGroups } from '../helpers';
 import { generateLayoutId } from '@/shared/utils/uuid';
 import { scalePathPoints, translatePathPoints } from '../../utils/pathTransforms';
@@ -189,16 +191,19 @@ export function createCutoutSlice(set: Set) {
       });
     },
 
-    groupCutouts: (cutoutIds: readonly string[]) => {
+    groupCutouts: (cutoutIds: readonly string[], op?: GroupOp) => {
       if (cutoutIds.length < 2) return;
       set((state) => {
         pushHistoryEntry(state);
         // Reuse an existing groupId if any selected cutout already belongs to a group
-        const existingGroupId = state.params.cutouts.find(
+        const existingMember = state.params.cutouts.find(
           (c) => cutoutIds.includes(c.id) && c.groupId !== null
-        )?.groupId;
+        );
+        const existingGroupId = existingMember?.groupId ?? null;
         const groupId = existingGroupId ?? generateLayoutId();
-        // Include all existing members of the reused group
+        // When extending an existing group and the caller didn't override the op,
+        // inherit the group's current op so silent regroups keep their semantics.
+        const groupOp: GroupOp = op ?? existingMember?.groupOp ?? DEFAULT_GROUP_OP;
         const idsToGroup = new Set(cutoutIds);
         if (existingGroupId) {
           for (const c of state.params.cutouts) {
@@ -206,7 +211,7 @@ export function createCutoutSlice(set: Set) {
           }
         }
         state.params.cutouts = state.params.cutouts.map((c) =>
-          idsToGroup.has(c.id) ? { ...c, groupId } : c
+          idsToGroup.has(c.id) ? { ...c, groupId, groupOp } : c
         );
       });
     },
@@ -214,8 +219,27 @@ export function createCutoutSlice(set: Set) {
     ungroupCutouts: (cutoutIds: readonly string[]) => {
       set((state) => {
         pushHistoryEntry(state);
+        state.params.cutouts = state.params.cutouts.map((c) => {
+          if (!cutoutIds.includes(c.id)) return c;
+          const { groupOp: _omit, ...rest } = c;
+          return { ...rest, groupId: null };
+        });
+        // A group can be left with a single member after a partial ungroup;
+        // dissolve that singleton so the Pathfinder UI doesn't pretend a lone
+        // cutout still belongs to an active group.
+        state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
+      });
+    },
+
+    setGroupOp: (groupId: string, op: GroupOp) => {
+      set((state) => {
+        const hasMatchingGroup = state.params.cutouts.some(
+          (c) => c.groupId === groupId && (c.groupOp ?? DEFAULT_GROUP_OP) !== op
+        );
+        if (!hasMatchingGroup) return;
+        pushHistoryEntry(state);
         state.params.cutouts = state.params.cutouts.map((c) =>
-          cutoutIds.includes(c.id) ? { ...c, groupId: null } : c
+          c.groupId === groupId ? { ...c, groupOp: op } : c
         );
       });
     },

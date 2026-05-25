@@ -549,4 +549,139 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(useDesignerStore.getState().params.cutouts[0].locked).toBe(false);
     });
   });
+
+  describe('groupCutouts with op', () => {
+    it('defaults newly-created groups to union', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+
+      groupCutouts(['a', 'b']);
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts[0].groupId).not.toBeNull();
+      expect(cutouts[0].groupOp).toBe('union');
+      expect(cutouts[1].groupOp).toBe('union');
+      expect(cutouts[0].groupId).toBe(cutouts[1].groupId);
+    });
+
+    it('stamps the passed op on all members', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+
+      groupCutouts(['a', 'b'], 'subtract');
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts[0].groupOp).toBe('subtract');
+      expect(cutouts[1].groupOp).toBe('subtract');
+    });
+
+    it('inherits an existing group s op when extending without an explicit op', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      addCutout(createTestCutout({ id: 'c' }));
+
+      groupCutouts(['a', 'b'], 'intersect');
+      groupCutouts(['a', 'c']);
+
+      const { cutouts } = useDesignerStore.getState().params;
+      const opByMember = Object.fromEntries(cutouts.map((c) => [c.id, c.groupOp]));
+      expect(opByMember.a).toBe('intersect');
+      expect(opByMember.b).toBe('intersect');
+      expect(opByMember.c).toBe('intersect');
+    });
+
+    it('ignores groups of size 1 (no-op)', () => {
+      const { addCutout, groupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+
+      groupCutouts(['a'], 'union');
+
+      expect(useDesignerStore.getState().params.cutouts[0].groupId).toBeNull();
+    });
+  });
+
+  describe('setGroupOp', () => {
+    it('updates the op on every member of a group', () => {
+      const { addCutout, groupCutouts, setGroupOp } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      groupCutouts(['a', 'b'], 'union');
+      const groupId = useDesignerStore.getState().params.cutouts[0].groupId!;
+
+      setGroupOp(groupId, 'subtract');
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts[0].groupOp).toBe('subtract');
+      expect(cutouts[1].groupOp).toBe('subtract');
+    });
+
+    it('is a no-op when the group already has the requested op (no history entry)', () => {
+      const { addCutout, groupCutouts, setGroupOp } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      groupCutouts(['a', 'b'], 'subtract');
+      const groupId = useDesignerStore.getState().params.cutouts[0].groupId!;
+      const historyBefore = useDesignerStore.getState().history.past.length;
+
+      setGroupOp(groupId, 'subtract');
+
+      expect(useDesignerStore.getState().history.past.length).toBe(historyBefore);
+    });
+
+    it('does not touch cutouts in other groups', () => {
+      const { addCutout, groupCutouts, setGroupOp } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      addCutout(createTestCutout({ id: 'c' }));
+      addCutout(createTestCutout({ id: 'd' }));
+      groupCutouts(['a', 'b'], 'union');
+      groupCutouts(['c', 'd'], 'intersect');
+      const groupAB = useDesignerStore.getState().params.cutouts[0].groupId!;
+
+      setGroupOp(groupAB, 'exclude');
+
+      const opByMember = Object.fromEntries(
+        useDesignerStore.getState().params.cutouts.map((c) => [c.id, c.groupOp])
+      );
+      expect(opByMember.a).toBe('exclude');
+      expect(opByMember.b).toBe('exclude');
+      expect(opByMember.c).toBe('intersect');
+      expect(opByMember.d).toBe('intersect');
+    });
+  });
+
+  describe('ungroupCutouts', () => {
+    it('clears both groupId and groupOp', () => {
+      const { addCutout, groupCutouts, ungroupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      groupCutouts(['a', 'b'], 'subtract');
+
+      ungroupCutouts(['a', 'b']);
+
+      const { cutouts } = useDesignerStore.getState().params;
+      expect(cutouts[0].groupId).toBeNull();
+      expect(cutouts[0].groupOp).toBeUndefined();
+      expect(cutouts[1].groupId).toBeNull();
+      expect(cutouts[1].groupOp).toBeUndefined();
+    });
+
+    it('dissolves the lone remaining member when a partial ungroup leaves a singleton', () => {
+      const { addCutout, groupCutouts, ungroupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      addCutout(createTestCutout({ id: 'c' }));
+      groupCutouts(['a', 'b', 'c'], 'intersect');
+
+      ungroupCutouts(['a', 'b']);
+
+      const { cutouts } = useDesignerStore.getState().params;
+      const c = cutouts.find((x) => x.id === 'c');
+      expect(c?.groupId).toBeNull();
+      expect(c?.groupOp).toBeUndefined();
+    });
+  });
 });

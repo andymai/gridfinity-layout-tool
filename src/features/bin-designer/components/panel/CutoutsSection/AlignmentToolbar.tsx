@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import type { Cutout } from '@/features/bin-designer/types';
+import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import {
   computeBounds,
@@ -17,6 +17,9 @@ import {
   centerInBin,
 } from './geometry';
 import { autoArrangeCutouts } from './autoArrange';
+import { PathfinderControls } from './PathfinderControls';
+import { TransformControls } from './TransformControls';
+import { ArrangeControls } from './ArrangeControls';
 
 interface AlignmentToolbarProps {
   readonly selectedIds: readonly string[];
@@ -24,8 +27,11 @@ interface AlignmentToolbarProps {
   readonly binWidth: number;
   readonly binDepth: number;
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
-  readonly onGroup: (ids: readonly string[]) => void;
+  readonly onUpdateBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
+  readonly onGroup: (ids: readonly string[], op?: GroupOp) => void;
   readonly onUngroup: (ids: readonly string[]) => void;
+  readonly onSetGroupOp: (groupId: string, op: GroupOp) => void;
+  readonly onReorder: (ids: readonly string[], direction: ReorderDirection) => void;
   readonly onDuplicate: (ids: readonly string[]) => void;
 }
 
@@ -126,8 +132,11 @@ export function AlignmentToolbar({
   binWidth,
   binDepth,
   onUpdate,
+  onUpdateBatch,
   onGroup,
   onUngroup,
+  onSetGroupOp,
+  onReorder,
   onDuplicate,
 }: AlignmentToolbarProps) {
   const t = useTranslation();
@@ -300,6 +309,41 @@ export function AlignmentToolbar({
         </label>
       </div>
 
+      {/* Pathfinder (Adobe Illustrator-style boolean ops) */}
+      <div className="space-y-1">
+        <div className="text-[10px] uppercase tracking-wider text-content-tertiary">
+          {t('binDesigner.cutouts.pathfinder.title')}
+        </div>
+        <PathfinderControls
+          selectedIds={selectedIds}
+          cutouts={cutouts}
+          onGroup={onGroup}
+          onSetGroupOp={onSetGroupOp}
+        />
+      </div>
+
+      {/* Transform: flip + rotate */}
+      <div className="space-y-1">
+        <div className="text-[10px] uppercase tracking-wider text-content-tertiary">
+          {t('binDesigner.cutouts.transform.title')}
+        </div>
+        <TransformControls
+          selectedIds={selectedIds}
+          cutouts={cutouts}
+          binWidth={binWidth}
+          binDepth={binDepth}
+          onUpdateBatch={onUpdateBatch}
+        />
+      </div>
+
+      {/* Arrange: z-order */}
+      <div className="space-y-1">
+        <div className="text-[10px] uppercase tracking-wider text-content-tertiary">
+          {t('binDesigner.cutouts.arrange.title')}
+        </div>
+        <ArrangeControls selectedIds={selectedIds} onReorder={onReorder} />
+      </div>
+
       {/* Actions */}
       <div className="flex flex-wrap gap-2">
         <button
@@ -316,21 +360,13 @@ export function AlignmentToolbar({
         >
           {t('common.duplicate')}
         </button>
-        {hasGroup ? (
+        {hasGroup && (
           <button
             type="button"
             className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors"
             onClick={() => onUngroup(selectedIds)}
           >
             {t('binDesigner.cutouts.ungroup')}
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors"
-            onClick={() => onGroup(selectedIds)}
-          >
-            {t('binDesigner.cutouts.combine')}
           </button>
         )}
       </div>

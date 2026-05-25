@@ -110,8 +110,10 @@ export function pushHistoryEntry(
 /**
  * Auto-dissolve groups that have only one remaining member.
  *
- * After removing cutouts, some groups may be left with a single cutout.
- * These singletons are dissolved by setting their groupId to null.
+ * After removing or ungrouping cutouts, some groups may be left with a
+ * single cutout. These singletons are dissolved by clearing both `groupId`
+ * and `groupOp` so the invariant "`groupOp` set ⇒ `groupId` set" holds and
+ * the Pathfinder UI doesn't treat a lone cutout as an active group.
  */
 export function dissolveSingletonGroups(cutouts: Cutout[]): Cutout[] {
   const groupCounts = new Map<string, number>();
@@ -120,9 +122,11 @@ export function dissolveSingletonGroups(cutouts: Cutout[]): Cutout[] {
       groupCounts.set(c.groupId, (groupCounts.get(c.groupId) ?? 0) + 1);
     }
   }
-  return cutouts.map((c) =>
-    c.groupId && (groupCounts.get(c.groupId) ?? 0) <= 1 ? { ...c, groupId: null } : c
-  );
+  return cutouts.map((c) => {
+    if (!c.groupId || (groupCounts.get(c.groupId) ?? 0) > 1) return c;
+    const { groupOp: _omit, ...rest } = c;
+    return { ...rest, groupId: null };
+  });
 }
 
 /**

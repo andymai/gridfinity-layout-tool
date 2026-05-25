@@ -82,6 +82,21 @@ graph TB
   compound assembly translated to its mated position. `LidSection` exposes
   fit (`tight`/`standard`/`loose` → fit-clearance table in `types/lid.ts`),
   toggles for stack grid + magnets, and floor/wall thickness.
+- **Cutout Pathfinder / `GroupOp`**: cutouts in the same `groupId` share an
+  optional `groupOp` ∈ `'union' | 'subtract' | 'intersect' | 'exclude'`
+  (missing = `'union'` so pre-Pathfinder designs are unchanged). The worker's
+  `cutoutGroupOps.combineGroupSolids` fuses, carves, or XORs the group's
+  member solids into a single cut tool; **Subtract uses the highest-zIndex
+  member as the cutter** against the union of the rest (Illustrator "Minus
+  Front"). The 2D editor preview mirrors the same semantics via
+  `polygon-clipping` in `panel/CutoutsSection/booleanGeometry.ts`, so the
+  live editor matches the exported mesh. **Exclude is computed as `union −
+intersection`, not XOR** — they coincide for 2 members but diverge for
+  3+ (a region in 2 of 3 members survives `union − intersection` but is
+  stripped by symmetric-difference). Scoop fillets are restricted to union
+  groups; the other ops can produce holes or disjoint topologies the
+  adaptive fillet can't reason about. Empty results (e.g. Intersect of
+  disjoint shapes) raise a toast so silent no-ops are debuggable.
 
 ## Gotchas
 
