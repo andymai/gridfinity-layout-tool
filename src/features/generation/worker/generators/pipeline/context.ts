@@ -28,6 +28,7 @@ import {
 import type { ProgressFn } from '../meshUtils';
 import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
 import type { BinDimensions, PipelineContext } from './types';
+import type { PerfCollector } from './perfCollector';
 
 /** Derive all dimensions from bin parameters. */
 function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
@@ -144,7 +145,8 @@ export function createInitialContext(
   params: BinParams,
   onProgress?: ProgressFn,
   forExport = false,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  perfCollector?: PerfCollector
 ): PipelineContext {
   return {
     params,
@@ -159,5 +161,6 @@ export function createInitialContext(
     patternCutTargets: [],
     mesh: null,
     coarseMesh: null,
+    perfCollector,
   };
 }

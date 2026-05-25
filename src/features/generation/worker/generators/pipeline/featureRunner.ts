@@ -49,10 +49,13 @@ export function runFeatureBuilders(
     patternCut: targets.patternCutTargets,
   };
 
+  const perf = ctx.perfCollector;
+
   for (const builder of builders) {
     if (!builder.shouldBuild(ctx)) continue;
     checkCancelled(ctx.signal);
 
+    const builderStart = perf ? performance.now() : 0;
     const key = builder.cacheKey(ctx);
 
     // getFeatureCache returns a clone (caller owns it), or null on miss.
@@ -78,6 +81,8 @@ export function runFeatureBuilders(
       collectOrigins(shape, builder.tag, ctx.originToTag);
       bucketMap[builder.target].push(shape);
     }
+
+    if (perf) perf.recordFeatureBuilder(builder.name, performance.now() - builderStart);
   }
 
   return targets;

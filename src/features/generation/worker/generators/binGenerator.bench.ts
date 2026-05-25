@@ -204,6 +204,94 @@ describe('wall pattern + cutout cache reuse', () => {
   );
 });
 
+// ─── Dense compartments + cutouts (perf instrumentation baseline) ────────────
+//
+// Real-world worst-case scenarios that exercise the wall-pattern cold-cache
+// path: a wide bin with many compartments and all four wall cutouts, a tall
+// bin where hex prisms balloon, and a cache-warm iteration that should land
+// almost entirely in the per-wall LRU.
+//
+// Numbers from these benches feed `__bench__/baseline.json`. When tuning
+// wallPatternBuilder / wallPatternClips, compare here first.
+describe('dense compartments + cutouts (wall pattern cold cache)', () => {
+  const fourCutouts = (width: number, depth: number) => ({
+    ...DEFAULT_BIN_PARAMS.walls,
+    enabled: true,
+    front: { ...DISABLED_WALL_CUTOUT, enabled: true, width, depth },
+    back: { ...DISABLED_WALL_CUTOUT, enabled: true, width, depth },
+    left: { ...DISABLED_WALL_CUTOUT, enabled: true, width, depth },
+    right: { ...DISABLED_WALL_CUTOUT, enabled: true, width, depth },
+    interior: DISABLED_WALL_CUTOUT,
+  });
+
+  const DENSE_WIDE = params({
+    width: 6,
+    depth: 4,
+    height: 6,
+    compartments: {
+      cols: 12,
+      rows: 8,
+      thickness: 1.2,
+      cells: Array.from({ length: 12 * 8 }, (_, i) => i),
+    },
+    wallPattern: { enabled: true, pattern: 'honeycomb' },
+    walls: fourCutouts(70, 50),
+  });
+
+  const TALL_DENSE = params({
+    width: 4,
+    depth: 4,
+    height: 6,
+    compartments: {
+      cols: 6,
+      rows: 6,
+      thickness: 1.2,
+      cells: Array.from({ length: 6 * 6 }, (_, i) => i),
+    },
+    wallPattern: { enabled: true, pattern: 'honeycomb' },
+    walls: fourCutouts(70, 50),
+  });
+
+  bench(
+    'dense_wide_with_cutouts (cold): 6×4×6, 12×8 compartments, 4 cutouts',
+    () => {
+      getGenerateBin()(DENSE_WIDE);
+    },
+    { iterations: 3, warmupIterations: 0 }
+  );
+
+  bench(
+    'tall_with_cutouts (cold): 4×4×6, 6×6 compartments, 4 cutouts',
+    () => {
+      getGenerateBin()(TALL_DENSE);
+    },
+    { iterations: 3, warmupIterations: 0 }
+  );
+
+  bench(
+    'cache_warm_cutout_iter: dense_wide repeated with cutout width nudges',
+    () => {
+      // Warm the base + clipped caches, then iterate cutout widths so
+      // base compounds hit cache but clipped results miss.
+      getGenerateBin()(DENSE_WIDE);
+      for (let i = 0; i < 4; i++) {
+        const width = 68 - i;
+        getGenerateBin()({
+          ...DENSE_WIDE,
+          walls: {
+            ...DENSE_WIDE.walls,
+            front: { ...DENSE_WIDE.walls.front, width },
+            back: { ...DENSE_WIDE.walls.back, width },
+            left: { ...DENSE_WIDE.walls.left, width },
+            right: { ...DENSE_WIDE.walls.right, width },
+          },
+        });
+      }
+    },
+    { iterations: 2, warmupIterations: 1 }
+  );
+});
+
 // ─── Export paths ─────────────────────────────────────────────────────────────
 
 describe('export (forExport=true)', () => {

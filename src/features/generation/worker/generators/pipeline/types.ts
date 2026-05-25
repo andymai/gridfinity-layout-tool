@@ -13,6 +13,7 @@ import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '../../../bridge/types';
 import type { ProgressFn } from '../meshUtils';
+import type { PerfCollector } from './perfCollector';
 
 /** Pre-computed dimensions derived from BinParams. Avoids re-deriving in each stage. */
 export interface BinDimensions {
@@ -64,6 +65,12 @@ export interface PipelineContext {
   readonly mesh: MeshData | null;
   /** Coarse LOD mesh for distance-based rendering (preview only) */
   readonly coarseMesh: MeshData | null;
+  /**
+   * Optional perf collector. Pipeline runner records per-stage timings
+   * into it; wall-pattern builder records per-wall substep timings.
+   * Tests and benchmarks omit it (zero overhead).
+   */
+  readonly perfCollector?: PerfCollector;
 }
 
 /** A single composable pipeline stage. */

@@ -8,7 +8,13 @@
 export { GenerationBridge } from '@/features/generation/bridge';
 export { getActiveBridge, bridgeManager } from '@/features/generation/bridge';
 export { WorkerPool, workerPoolManager } from '@/features/generation/bridge';
-export type { WorkerResponse, MeshData } from '@/features/generation/bridge/types';
+export type {
+  WorkerResponse,
+  MeshData,
+  PerfSnapshot,
+  PerfStageEntry,
+  PerfSubstepEntry,
+} from '@/features/generation/bridge/types';
 export type {
   SplitExportResult,
   GenerationResult,

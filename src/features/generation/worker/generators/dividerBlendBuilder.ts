@@ -26,6 +26,8 @@ import {
   dividerTouchesWall,
   getWallFaceInfo,
   isPerpendicular,
+  type DividerInfo,
+  type OuterWallCutoutInfo,
 } from './dividerBlendTypes';
 import { collectDividers, resolveOuterCutouts } from './dividerBlendResolvers';
 import { buildEndTrimCut, buildParallelTrimCut, buildRampCut } from './dividerBlendCuts';
@@ -137,24 +139,51 @@ export function buildDividerBlends(
 // --- Ramp zone data for wall pattern clipping ---
 
 /**
+ * Pre-computed inputs shared across the 4 walls so we don't redundantly
+ * call `collectDividers` / `resolveOuterCutouts` 8 times per generation.
+ * Build once via `computeWallPatternInputs` and pass into the per-wall
+ * functions below.
+ */
+export interface WallPatternInputs {
+  readonly dividers: readonly DividerInfo[];
+  readonly cutouts: readonly OuterWallCutoutInfo[];
+}
+
+export function computeWallPatternInputs(
+  params: BinParams,
+  innerW: number,
+  innerD: number,
+  wallHeight: number
+): WallPatternInputs {
+  return {
+    dividers: collectDividers(params, innerW, innerD),
+    cutouts: resolveOuterCutouts(params, innerW, innerD, wallHeight),
+  };
+}
+
+/**
  * Compute ramp zones that face a specific wall, for hex pattern clipping.
  *
  * Returns zones where ramp cuts exist on perpendicular dividers that touch
  * this wall. The pattern builder uses these to extend its clip region.
+ *
+ * Pre-computed `inputs` avoid redundant divider/cutout traversal when
+ * called for all 4 walls in the same generation.
  */
 export function computeRampZones(
   wallSide: 'front' | 'back' | 'left' | 'right',
   params: BinParams,
   innerW: number,
   innerD: number,
-  wallHeight: number
+  wallHeight: number,
+  inputs?: WallPatternInputs
 ): RampZone[] {
   if (!params.walls.enabled || params.style !== 'standard') return [];
 
-  const dividers = collectDividers(params, innerW, innerD);
+  const dividers = inputs?.dividers ?? collectDividers(params, innerW, innerD);
   if (dividers.length === 0) return [];
 
-  const cutouts = resolveOuterCutouts(params, innerW, innerD, wallHeight);
+  const cutouts = inputs?.cutouts ?? resolveOuterCutouts(params, innerW, innerD, wallHeight);
   const wallCutout = cutouts.find((c) => c.side === wallSide);
   if (!wallCutout) return [];
 
@@ -206,18 +235,22 @@ export function computeRampZones(
  * regardless of whether a cutout exists. This ensures the hex pattern is
  * cleared where divider walls connect to the outer wall for structural
  * integrity (see issue #1345).
+ *
+ * Pre-computed `inputs.dividers` avoids redundant traversal when called
+ * for all 4 walls in the same generation.
  */
 export function computeDividerJunctionZones(
   wallSide: 'front' | 'back' | 'left' | 'right',
   params: BinParams,
   innerW: number,
   innerD: number,
-  wallHeight: number
+  wallHeight: number,
+  inputs?: WallPatternInputs
 ): RampZone[] {
   // 'solid' intentionally included — junction blocking applies to any fused-wall style
   if (params.style === 'slotted') return [];
 
-  const dividers = collectDividers(params, innerW, innerD);
+  const dividers = inputs?.dividers ?? collectDividers(params, innerW, innerD);
   if (dividers.length === 0) return [];
 
   const wall = getWallFaceInfo(wallSide, innerW, innerD);

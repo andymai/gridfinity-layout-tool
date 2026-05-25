@@ -10,5 +10,8 @@ export type {
   CoarseLODData,
   LidMeshData,
   WorkerCacheStats,
+  PerfSnapshot,
+  PerfStageEntry,
+  PerfSubstepEntry,
 } from '@/features/generation/bridge/types';
 export { FeatureTag } from '@/features/generation/worker/generators/featureTags';

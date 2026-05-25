@@ -114,6 +114,16 @@ export const FEATURE_FLAGS = [
     requiresRefresh: false,
     comingSoon: true,
   },
+  {
+    id: 'show_generation_perf',
+    name: 'Generation Performance Overlay',
+    description:
+      'Show a small overlay in the bin designer with per-stage timings, cache hit rates, hex-center counts, and recent generation history. Useful for diagnosing slow bins and validating optimizations.',
+    status: 'experimental',
+    risk: 'low',
+    addedAt: '2026-05',
+    requiresRefresh: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

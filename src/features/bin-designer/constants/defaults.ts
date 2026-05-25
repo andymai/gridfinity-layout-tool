@@ -310,6 +310,7 @@ export const DEFAULT_GENERATION_STATE: GenerationState = {
   mesh: null,
   progress: 0,
   epoch: 0,
+  perfHistory: [],
 } as const;
 
 /** Default UI state */

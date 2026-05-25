@@ -250,6 +250,44 @@ export interface KernelPerfStatsResponse {
 }
 
 /**
+ * Per-pipeline-stage timing entry. Captures shell, features, boolean,
+ * translate, and tessellate stage durations.
+ */
+export interface PerfStageEntry {
+  readonly name: string;
+  readonly ms: number;
+}
+
+/**
+ * Sub-step timing inside a stage — feature builder or wall pattern phase.
+ * `count` carries an optional scalar (hex centers built, items processed)
+ * useful for spotting "slow per-unit" vs "slow due to volume".
+ */
+export interface PerfSubstepEntry {
+  readonly name: string;
+  readonly ms: number;
+  readonly count?: number;
+}
+
+/**
+ * Snapshot of one generation's timing breakdown. Sent with MESH_RESULT
+ * when the worker has timing instrumentation enabled. Used by the
+ * dev-only PerfOverlay and (in the future) regression guards.
+ */
+export interface PerfSnapshot {
+  readonly totalMs: number;
+  readonly stages: readonly PerfStageEntry[];
+  /** Per-feature-builder timings (compartment walls, inserts, etc.). */
+  readonly featureBuilders: readonly PerfSubstepEntry[];
+  /** Wall-pattern substep timings (base build vs cache hit, clip apply). */
+  readonly wallPatternSubsteps: readonly PerfSubstepEntry[];
+  /** Total hex centers built across all walls. */
+  readonly hexCenterCount: number;
+  /** Number of pattern compounds fed into the final pattern_cut pass. */
+  readonly patternCutToolCount: number;
+}
+
+/**
  * Boolean fallback occurrence — one record per boolean op where bisect
  * recovery kicked in (`batchAttempts > 1` or `singletonFallbacks > 0`).
  * `failedInputCount` over `totalInputs` separates concentrated failures
@@ -313,6 +351,13 @@ export interface MeshResultResponse {
   readonly lidEdgeVertices?: Float32Array;
   readonly lidTriangleCount?: number;
   readonly lidFaceGroups?: readonly FaceGroupData[];
+  /**
+   * Fine-grained timing breakdown. The worker always emits one — overhead
+   * is a handful of `performance.now()` calls — but the field is `?` so
+   * older worker builds (e.g., a stale Service Worker payload on the first
+   * request after deploy) deserialize cleanly.
+   */
+  readonly perfSnapshot?: PerfSnapshot;
 }
 
 export interface ExportResultResponse {
