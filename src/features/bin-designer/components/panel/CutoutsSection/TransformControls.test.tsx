@@ -66,6 +66,29 @@ describe('buildGroupRotationUpdates', () => {
     const updates = buildGroupRotationUpdates([a], 90, 200, 200);
     expect(updates.size).toBe(0);
   });
+
+  it('clamps rotation against the post-rotation position, not the starting one', () => {
+    // Group: a sits near the right wall; b sits left of center. A 180° rotation
+    // around the group center sends a to the left edge — clamping must check
+    // the cutout in its *new* position, not the original right-wall position,
+    // or the bin-bounds check is evaluated against the wrong AABB and the
+    // angle can stay at 180° even when the rotated AABB would overflow.
+    const binWidth = 100;
+    const binDepth = 100;
+    const a = cutout({ id: 'a', x: 80, y: 45, width: 10, depth: 10, rotation: 0 });
+    const b = cutout({ id: 'b', x: 10, y: 45, width: 10, depth: 10, rotation: 0 });
+    const updates = buildGroupRotationUpdates([a, b], 180, binWidth, binDepth);
+    // After 180° around the group's center (50, 50), a's center moves from
+    // (85, 50) to (15, 50) and b's from (15, 50) to (85, 50). Both fit at
+    // 180° when the bounds check uses the new position. The old code clamped
+    // against the *original* position; with a near the right wall, clamping
+    // against the old x=80 would reject the angle even though the rotated
+    // cutout now sits at x=10 and clearly fits.
+    expect(updates.get('a')?.x).toBeCloseTo(10, 5);
+    expect(updates.get('b')?.x).toBeCloseTo(80, 5);
+    expect(updates.get('a')?.rotation).toBe(180);
+    expect(updates.get('b')?.rotation).toBe(180);
+  });
 });
 
 describe('TransformControls', () => {

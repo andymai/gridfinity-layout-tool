@@ -224,6 +224,10 @@ export function createCutoutSlice(set: Set) {
           const { groupOp: _omit, ...rest } = c;
           return { ...rest, groupId: null };
         });
+        // A group can be left with a single member after a partial ungroup;
+        // dissolve that singleton so the Pathfinder UI doesn't pretend a lone
+        // cutout still belongs to an active group.
+        state.params.cutouts = dissolveSingletonGroups(state.params.cutouts);
       });
     },
 

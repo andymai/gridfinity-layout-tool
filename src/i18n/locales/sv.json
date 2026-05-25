@@ -276,7 +276,7 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Öppna fullredigeraren för exakt kontroll, linjaler och justeringsverktyg.",
   "binDesigner.cutouts.nSelected": "{count} urtag markerade",
   "binDesigner.cutouts.paste": "Klistra in",
-  "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder-resultatet är tomt — formerna överlappar inte",
+  "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder-resultatet är tomt — inget kvar att skära",
   "binDesigner.cutouts.pathfinder.exclude": "Exkludera",
   "binDesigner.cutouts.pathfinder.intersect": "Snitta",
   "binDesigner.cutouts.pathfinder.subtract": "Dra ifrån framsida",

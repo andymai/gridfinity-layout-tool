@@ -79,9 +79,17 @@ export function buildGroupRotationUpdates(
     const centerY = (eb.minY + eb.maxY) / 2;
     const rotated = rotateAroundCenter(centerX, centerY, cx, cy, deg);
     const newRotation = (((cutout.rotation + deg) % 360) + 360) % 360;
-    const clampedRotation = clampRotationToBounds(cutout, newRotation, binWidth, binDepth);
     const newX = rotated.x - cutout.width / 2;
     const newY = rotated.y - cutout.depth / 2;
+    // Clamp against the cutout at its post-rotation position — checking the
+    // old position can OK an angle that still overflows once the cutout has
+    // moved across the bin during the group rotation.
+    const clampedRotation = clampRotationToBounds(
+      { ...cutout, x: newX, y: newY },
+      newRotation,
+      binWidth,
+      binDepth
+    );
     updates.set(cutout.id, { x: newX, y: newY, rotation: clampedRotation });
   }
   return updates;

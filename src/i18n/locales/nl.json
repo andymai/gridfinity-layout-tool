@@ -276,7 +276,7 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Open de volledige editor voor nauwkeurige controle, linialen en uitlijngereedschappen.",
   "binDesigner.cutouts.nSelected": "{count} uitsparingen geselecteerd",
   "binDesigner.cutouts.paste": "Plakken",
-  "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder-resultaat is leeg — vormen overlappen niet",
+  "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder-resultaat is leeg — niets om uit te snijden",
   "binDesigner.cutouts.pathfinder.exclude": "Uitsluiten",
   "binDesigner.cutouts.pathfinder.intersect": "Doorsnijden",
   "binDesigner.cutouts.pathfinder.subtract": "Voorgrond aftrekken",

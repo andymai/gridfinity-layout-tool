@@ -276,7 +276,7 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Відкрийте повний редактор для точного керування, лінійок і інструментів вирівнювання.",
   "binDesigner.cutouts.nSelected": "{count} вирізів виділено",
   "binDesigner.cutouts.paste": "Вставити",
-  "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder дав порожній результат — фігури не перекриваються",
+  "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder дав порожній результат — нічого вирізати",
   "binDesigner.cutouts.pathfinder.exclude": "Виключити",
   "binDesigner.cutouts.pathfinder.intersect": "Перетин",
   "binDesigner.cutouts.pathfinder.subtract": "Відняти переднє",

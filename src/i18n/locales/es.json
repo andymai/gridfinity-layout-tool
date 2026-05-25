@@ -276,7 +276,7 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Abre el editor completo para control preciso, reglas y herramientas de alineación.",
   "binDesigner.cutouts.nSelected": "{count} recortes seleccionados",
   "binDesigner.cutouts.paste": "Pegar",
-  "binDesigner.cutouts.pathfinder.emptyResult": "El resultado de Pathfinder está vacío: las formas no se superponen",
+  "binDesigner.cutouts.pathfinder.emptyResult": "El resultado de Pathfinder está vacío: no queda nada para cortar",
   "binDesigner.cutouts.pathfinder.exclude": "Excluir",
   "binDesigner.cutouts.pathfinder.intersect": "Intersecar",
   "binDesigner.cutouts.pathfinder.subtract": "Restar al frente",

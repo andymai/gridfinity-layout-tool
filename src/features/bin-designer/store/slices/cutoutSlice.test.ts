@@ -668,5 +668,20 @@ describe('cutoutSlice - consolidated actions', () => {
       expect(cutouts[1].groupId).toBeNull();
       expect(cutouts[1].groupOp).toBeUndefined();
     });
+
+    it('dissolves the lone remaining member when a partial ungroup leaves a singleton', () => {
+      const { addCutout, groupCutouts, ungroupCutouts } = useDesignerStore.getState();
+      addCutout(createTestCutout({ id: 'a' }));
+      addCutout(createTestCutout({ id: 'b' }));
+      addCutout(createTestCutout({ id: 'c' }));
+      groupCutouts(['a', 'b', 'c'], 'intersect');
+
+      ungroupCutouts(['a', 'b']);
+
+      const { cutouts } = useDesignerStore.getState().params;
+      const c = cutouts.find((x) => x.id === 'c');
+      expect(c?.groupId).toBeNull();
+      expect(c?.groupOp).toBeUndefined();
+    });
   });
 });

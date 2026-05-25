@@ -1426,7 +1426,7 @@
   "binDesigner.cutouts.pathfinder.subtract": "Minus Front",
   "binDesigner.cutouts.pathfinder.intersect": "Intersect",
   "binDesigner.cutouts.pathfinder.exclude": "Exclude",
-  "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder result is empty — shapes don’t overlap",
+  "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder result is empty — nothing left to cut",
   "binDesigner.cutouts.transform.title": "Transform",
   "binDesigner.cutouts.transform.rotate90": "Rotate 90°",
   "binDesigner.cutouts.transform.rotate180": "Rotate 180°",

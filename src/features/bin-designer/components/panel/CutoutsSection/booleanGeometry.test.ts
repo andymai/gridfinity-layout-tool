@@ -112,11 +112,32 @@ describe('applyGroupOp', () => {
   });
 
   describe('exclude', () => {
-    it('returns union minus intersection (XOR)', () => {
+    it('returns union minus intersection (matches XOR for two members)', () => {
       const a = baseCutout({ id: 'a', x: 0, y: 0, width: 10, depth: 10 });
       const b = baseCutout({ id: 'b', x: 5, y: 5, width: 10, depth: 10 });
-      // XOR = 175 − 25 = 150
+      // For 2 members union − intersection equals XOR: 175 − 25 = 150
       expect(totalArea(applyGroupOp([a, b], 'exclude'))).toBeCloseTo(150, 5);
+    });
+
+    it('keeps regions in some but not all members (diverges from XOR for 3+)', () => {
+      // Three identical 10×10 squares laid in a 3×1 chain with 5mm overlap.
+      // a covers [0..10] × [0..10], b covers [5..15] × [0..10], c covers [10..20] × [0..10].
+      // a ∩ b ∩ c = ∅, so union − intersection = union = 5+5+5+5 = 20 wide × 10 = 200 area? No.
+      // Geometry: union spans x∈[0,20] depth=10 → area 200. Intersection = ∅ → result = 200.
+      // XOR would also be 200 here (every region is in odd count) — pick a tighter case:
+      // Three 10×10 squares stacked so all three meet in a small region.
+      const a = baseCutout({ id: 'a', x: 0, y: 0, width: 12, depth: 12 });
+      const b = baseCutout({ id: 'b', x: 4, y: 0, width: 12, depth: 12 });
+      const c = baseCutout({ id: 'c', x: 2, y: 4, width: 12, depth: 12 });
+      // Union − intersection: the small 3-way overlap drops out; everywhere else (including
+      // 2-way overlaps) stays. XOR would also strip the 2-way overlaps because they have
+      // even count (2 members). Worker computes union − intersection, so this test pins
+      // the editor preview to the same semantics.
+      const result = applyGroupOp([a, b, c], 'exclude');
+      const exclude = totalArea(result);
+      const union = totalArea(applyGroupOp([a, b, c], 'union'));
+      const intersect = totalArea(applyGroupOp([a, b, c], 'intersect'));
+      expect(exclude).toBeCloseTo(union - intersect, 2);
     });
   });
 

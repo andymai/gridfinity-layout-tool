@@ -276,7 +276,7 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Öffnen Sie den vollständigen Editor für präzise Steuerung, Lineale und Ausrichtungswerkzeuge.",
   "binDesigner.cutouts.nSelected": "{count} Ausschnitte ausgewählt",
   "binDesigner.cutouts.paste": "Einfügen",
-  "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder-Ergebnis ist leer — Formen überlappen sich nicht",
+  "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder-Ergebnis ist leer — nichts zu schneiden",
   "binDesigner.cutouts.pathfinder.exclude": "Ausschließen",
   "binDesigner.cutouts.pathfinder.intersect": "Schneiden",
   "binDesigner.cutouts.pathfinder.subtract": "Vorne abziehen",

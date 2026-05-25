@@ -276,7 +276,7 @@
   "binDesigner.cutouts.instructionsWorkspaceHint": "Åpne den fullstendige editoren for presis kontroll, linjaler og justeringsverktøy.",
   "binDesigner.cutouts.nSelected": "{count} utskjæringer valgt",
   "binDesigner.cutouts.paste": "Lim inn",
-  "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder-resultatet er tomt — formene overlapper ikke",
+  "binDesigner.cutouts.pathfinder.emptyResult": "Pathfinder-resultatet er tomt — ingenting igjen å skjære",
   "binDesigner.cutouts.pathfinder.exclude": "Ekskluder",
   "binDesigner.cutouts.pathfinder.intersect": "Snitt",
   "binDesigner.cutouts.pathfinder.subtract": "Trekk fra forsiden",

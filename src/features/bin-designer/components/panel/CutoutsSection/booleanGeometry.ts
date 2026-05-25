@@ -160,7 +160,18 @@ export function applyGroupOp(
       return result.length > 0 ? result : null;
     }
     case 'exclude': {
-      const result = polygonClipping.xor(first, ...rest);
+      // The worker computes Exclude as `union − intersection` ("in some but
+      // not all"). For 2 members that matches `xor` (symmetric difference)
+      // exactly, but for 3+ members it diverges: a region present in two
+      // members but not the third is part of `union − intersection` yet
+      // disappears under `xor` (which keeps only odd-count regions).
+      // Mirror the worker so the 2D preview agrees with the exported mesh.
+      const unionResult = polygonClipping.union(first, ...rest);
+      const intersectionResult = polygonClipping.intersection(first, ...rest);
+      if (intersectionResult.length === 0) {
+        return unionResult.length > 0 ? unionResult : null;
+      }
+      const result = polygonClipping.difference(unionResult, intersectionResult);
       return result.length > 0 ? result : null;
     }
     case 'subtract': {
