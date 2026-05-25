@@ -13,7 +13,7 @@ import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
-import type { PerspectiveCamera } from 'three';
+import { PerspectiveCamera } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import type { Projection } from '../preview';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -73,11 +73,20 @@ const DEFAULT_COLOR = '#d4d8dc';
  * CameraRig immediately replaces via `makeDefault`. Capturing the camera
  * there leaves the thumbnail pipeline holding a dangling reference, so we
  * resync via `useThree().camera` (which also re-fires on projection swap).
+ *
+ * Only republish when the active camera is perspective: the thumbnail
+ * pipeline reads `camera.fov` for its preset-framing math, which is
+ * `undefined` on `OrthographicCamera` and would silently yield NaN-positioned
+ * captures (blank PNGs). Drei's `<PerspectiveCamera>` stays mounted across
+ * projection toggles, so the last-published reference remains valid while
+ * the user is in ortho mode.
  */
 function PreviewContextSync() {
   const { gl, scene, camera } = useThree();
   useEffect(() => {
-    setPreviewContext(gl, scene, camera as PerspectiveCamera);
+    if (camera instanceof PerspectiveCamera) {
+      setPreviewContext(gl, scene, camera);
+    }
   }, [gl, scene, camera]);
   return null;
 }
