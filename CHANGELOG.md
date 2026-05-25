@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.120.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.119.1...gridfinity-layout-tool-v4.120.0) (2026-05-25)
+
+
+### Features
+
+* **bin-designer:** pathfinder boolean controls in the cutout editor ([#1878](https://github.com/andymai/gridfinity-layout-tool/issues/1878)) ([3a33c7e](https://github.com/andymai/gridfinity-layout-tool/commit/3a33c7e2f57b9ed157203a2c65a3c62a83bd3c1b))
+
 ## [4.119.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.119.0...gridfinity-layout-tool-v4.119.1) (2026-05-25)
 
 
