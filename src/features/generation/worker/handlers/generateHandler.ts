@@ -17,12 +17,12 @@ import { runGeneration, reportProgress, getActiveRequestId } from './workerConte
 export function handleGenerate(message: GenerateMessage): void {
   const { params, requestId } = message.payload;
   runGeneration(
-    (signal): MeshData => {
+    (signal, perf): MeshData => {
       const onProgress = (stage: string, progress: number) => {
         if (getActiveRequestId() !== requestId) return;
         reportProgress(requestId, stage as 'base' | 'shell' | 'features' | 'merge', progress);
       };
-      const binMesh = generateBin(params, onProgress, false, signal);
+      const binMesh = generateBin(params, onProgress, false, signal, perf);
       // Lid runs sequentially after the bin so a single abort cancels both.
       // The lid is a SECONDARY feature: an OCCT exception during lid build
       // (e.g., on a degenerate polygon footprint) must not poison the
@@ -47,6 +47,10 @@ export function handleGenerate(message: GenerateMessage): void {
 export function handleGenerateBaseplate(message: GenerateBaseplateMessage): void {
   const { params, requestId } = message.payload;
   runGeneration(
+    // Baseplate generation does not use the pipeline / PerfCollector path
+    // (it has its own internal flow), so the collector here just stays empty
+    // and produces a snapshot with only the totalMs filled in. The PerfOverlay
+    // gracefully renders an empty per-stage breakdown.
     (signal) =>
       generateBaseplate(
         params,

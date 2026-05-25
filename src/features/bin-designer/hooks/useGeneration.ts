@@ -35,6 +35,7 @@ export function useGeneration(): void {
   const setGenerationStatus = useDesignerStore((state) => state.setGenerationStatus);
   const setGenerationResult = useDesignerStore((state) => state.setGenerationResult);
   const setWasmStatus = useDesignerStore((state) => state.setWasmStatus);
+  const pushPerfSnapshot = useDesignerStore((state) => state.pushPerfSnapshot);
 
   // Generate bin mesh from current params
   const runGeneration = useCallback(
@@ -69,6 +70,8 @@ export function useGeneration(): void {
 
       try {
         const result = await bridge.generate(currentParams, () => {});
+
+        if (result.perfSnapshot) pushPerfSnapshot(result.perfSnapshot);
 
         setGenerationResult({
           vertices: result.mesh.vertices,
@@ -114,7 +117,7 @@ export function useGeneration(): void {
         setGenerationStatus('error');
       }
     },
-    [setGenerationStatus, setGenerationResult]
+    [setGenerationStatus, setGenerationResult, pushPerfSnapshot]
   );
 
   // Initialize bridge on mount via BridgeManager (ref-counted singleton)

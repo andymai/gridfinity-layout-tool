@@ -127,6 +127,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
               lidMesh,
             },
             timingMs: response.timingMs,
+            perfSnapshot: response.perfSnapshot,
           };
 
           // Cache for deduplication (bin or baseplate — only one is in-flight)

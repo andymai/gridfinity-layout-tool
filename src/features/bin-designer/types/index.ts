@@ -5,7 +5,7 @@
  * generation state, and designer UI state.
  */
 
-import type { FaceGroupData, CoarseLODData } from '@/shared/types/generation';
+import type { FaceGroupData, CoarseLODData, PerfSnapshot } from '@/shared/types/generation';
 
 /**
  * Lid mesh data as stored in the designer store. Mirrors the shared
@@ -588,7 +588,15 @@ export interface GenerationState {
   readonly progress: number;
   /** Increments on changes needing regeneration; cache hits leave epoch unchanged */
   readonly epoch: number;
+  /**
+   * Rolling buffer of recent generation timing snapshots (most recent
+   * last, capped at PERF_HISTORY_LIMIT). Powers the dev PerfOverlay.
+   */
+  readonly perfHistory: readonly PerfSnapshot[];
 }
+
+/** Cap for `generation.perfHistory`. Tiny payloads; safe to keep many. */
+export const PERF_HISTORY_LIMIT = 50;
 
 /** Cached mesh data for undo/redo history entries */
 export interface CachedMesh {
@@ -880,6 +888,8 @@ export interface DesignerState {
   setGenerationStatus: (status: GenerationStatus) => void;
   setGenerationResult: (result: GenerationResult) => void;
   setWasmStatus: (status: WasmStatus) => void;
+  pushPerfSnapshot: (snapshot: PerfSnapshot) => void;
+  clearPerfHistory: () => void;
 
   // UI actions
   setActiveTab: (tab: DesignerTab) => void;

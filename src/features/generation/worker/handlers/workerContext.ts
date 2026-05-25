@@ -15,6 +15,7 @@ import {
   resetBooleanFallbackStats,
 } from '../generators/pipeline/stages/booleanStage';
 import { isAbortError } from '../generators/utils/abort';
+import { PerfCollector } from '../generators/pipeline/perfCollector';
 
 /** Mutable worker state */
 let activeRequestId: string | null = null;
@@ -78,7 +79,7 @@ export function setKernelInitialized(kernel: KernelName, threaded: boolean, core
  * Unified generation pipeline for both bin and baseplate mesh generation.
  */
 export function runGeneration(
-  generator: (signal: AbortSignal) => MeshData,
+  generator: (signal: AbortSignal, perf: PerfCollector) => MeshData,
   requestId: string,
   logPrefix: string,
   copyBuffers: boolean
@@ -89,17 +90,19 @@ export function runGeneration(
   activeController = new AbortController();
   const { signal } = activeController;
   const startTime = performance.now();
+  const perfCollector = new PerfCollector();
 
   try {
     // brepjs perf stats are only meaningful for the opencascade kernel
     if (activeKernel === 'opencascade') resetPerformanceStats();
     resetBooleanFallbackStats();
-    const meshData = generator(signal);
+    const meshData = generator(signal, perfCollector);
 
     if (activeRequestId !== requestId) return;
 
     const timingMs = performance.now() - startTime;
     const kernelPerfStats = activeKernel === 'opencascade' ? getPerformanceStats() : {};
+    const perfSnapshot = perfCollector.snapshot(timingMs);
 
     const maybeCopy = <T extends Float32Array | Uint32Array>(buf: T): T =>
       (copyBuffers ? buf.slice() : buf) as T;
@@ -141,6 +144,7 @@ export function runGeneration(
       timingMs,
       faceGroups: meshData.faceGroups,
       coarseLOD,
+      perfSnapshot,
       ...(lid
         ? {
             lidVertices: lid.vertices,

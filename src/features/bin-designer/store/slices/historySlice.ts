@@ -10,6 +10,18 @@ import type {
   WasmStatus,
   HistoryEntry,
 } from '../../types';
+import { PERF_HISTORY_LIMIT } from '../../types';
+import type { PerfSnapshot, PerfStageEntry, PerfSubstepEntry } from '@/shared/types/generation';
+
+/** Internal write-side mirror of PerfSnapshot used by the Immer reducer. */
+interface MutablePerfSnapshot {
+  totalMs: number;
+  stages: PerfStageEntry[];
+  featureBuilders: PerfSubstepEntry[];
+  wallPatternSubsteps: PerfSubstepEntry[];
+  hexCenterCount: number;
+  patternCutToolCount: number;
+}
 import {
   pushHistoryEntry,
   restoreHistoryEntry,
@@ -124,6 +136,34 @@ export function createHistorySlice(set: Set, get: Get) {
     setWasmStatus: (status: WasmStatus) => {
       set((state) => {
         state.wasmStatus = status;
+      });
+    },
+
+    pushPerfSnapshot: (snapshot: PerfSnapshot) => {
+      set((state) => {
+        // Immer's WritableDraft can't accept the worker payload directly
+        // because PerfSnapshot has deeply-readonly arrays. Re-shape into
+        // a writable mirror, then cast at the assignment edge — the
+        // store type still presents perfHistory as readonly to readers.
+        const mutable: MutablePerfSnapshot = {
+          totalMs: snapshot.totalMs,
+          stages: snapshot.stages.map((s) => ({ ...s })),
+          featureBuilders: snapshot.featureBuilders.map((s) => ({ ...s })),
+          wallPatternSubsteps: snapshot.wallPatternSubsteps.map((s) => ({ ...s })),
+          hexCenterCount: snapshot.hexCenterCount,
+          patternCutToolCount: snapshot.patternCutToolCount,
+        };
+        const prev = state.generation.perfHistory as readonly MutablePerfSnapshot[];
+        const next = [...prev, mutable];
+        const bounded =
+          next.length > PERF_HISTORY_LIMIT ? next.slice(next.length - PERF_HISTORY_LIMIT) : next;
+        (state.generation as { perfHistory: MutablePerfSnapshot[] }).perfHistory = bounded;
+      });
+    },
+
+    clearPerfHistory: () => {
+      set((state) => {
+        (state.generation as { perfHistory: MutablePerfSnapshot[] }).perfHistory = [];
       });
     },
   };

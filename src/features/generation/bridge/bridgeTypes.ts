@@ -16,6 +16,7 @@ import type {
   KernelName,
   KernelPerfCategory,
   BooleanFallbackEntry,
+  PerfSnapshot,
 } from './types';
 
 /** Callback for progress updates during generation */
@@ -25,6 +26,8 @@ export type ProgressCallback = (stage: GenerationStage, progress: number) => voi
 export interface GenerationResult {
   readonly mesh: MeshData;
   readonly timingMs: number;
+  /** Optional fine-grained perf breakdown (present when worker emits one). */
+  readonly perfSnapshot?: PerfSnapshot;
 }
 
 /** Result from a successful BREP export */

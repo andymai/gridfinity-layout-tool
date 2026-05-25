@@ -16,6 +16,7 @@ import { ResizeDivider } from '@/features/bin-designer/components/CutoutWorkspac
 import { loadSplitRatio } from '@/features/bin-designer/components/CutoutWorkspace/splitRatioStorage';
 import { CutoutDesktopOnlyBanner } from './CutoutDesktopOnlyBanner';
 import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge';
+import { PerfOverlay } from '@/features/bin-designer/components/PerfOverlay';
 
 interface DesignerMainContentProps {
   isDesktop: boolean;
@@ -43,6 +44,7 @@ export function DesignerMainContent({
         <div className="relative flex-1 overflow-hidden">
           <PreviewCanvas />
           <ExperimentalKernelBadge />
+          <PerfOverlay />
         </div>
       </main>
     );
@@ -58,6 +60,7 @@ export function DesignerMainContent({
         <div className="relative flex-1 overflow-hidden">
           <PreviewCanvas />
           <ExperimentalKernelBadge />
+          <PerfOverlay />
         </div>
       </main>
     );

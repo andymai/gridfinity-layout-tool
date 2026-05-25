@@ -32,7 +32,11 @@ import {
   CUTOUT_BORDER_WIDTH,
   getExpandedCutoutDimensions,
 } from './wallPatterns';
-import { computeRampZones, computeDividerJunctionZones } from './dividerBlendBuilder';
+import {
+  computeRampZones,
+  computeDividerJunctionZones,
+  computeWallPatternInputs,
+} from './dividerBlendBuilder';
 import { FeatureTag } from './featureTags';
 import { collectOrigins } from './pipeline/collectOrigins';
 import {
@@ -61,7 +65,7 @@ import { buildClippedWallPattern } from './wallPatternCompound';
  * is a clone owned by the caller (cache owns the originals).
  */
 export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
-  const { params, dimensions: dim, signal, originToTag } = ctx;
+  const { params, dimensions: dim, signal, originToTag, perfCollector } = ctx;
   const { innerW, innerD, interiorHeight, hasLip } = dim;
   const patternCutTargets: Shape3D[] = [];
 
@@ -75,11 +79,19 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
   const shapeRadius = calculator.getShapeRadius();
 
   const templateKey = buildCacheKey('v1', patternType, quantize(shapeRadius), quantize(cutDepth));
+  const templateStart = perfCollector ? performance.now() : 0;
   let shapeTemplate = getPatternTemplateCache(templateKey);
+  const templateCacheHit = shapeTemplate !== null;
   if (!shapeTemplate) {
     const sides = calculator.getSidesCount();
     shapeTemplate = sketch(drawPolysides(shapeRadius, sides), 'XY').extrude(cutDepth);
     setPatternTemplateCache(templateKey, shapeTemplate);
+  }
+  if (perfCollector) {
+    perfCollector.recordWallPatternSubstep(
+      templateCacheHit ? 'template_hit' : 'template_build',
+      performance.now() - templateStart
+    );
   }
 
   const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
@@ -88,6 +100,11 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
   // so they fully envelop hex prisms at junction/cutout boundaries (#1354).
   const clipExtrudeDepth = Math.max((maxThickness + lipOverhang) * 2 + 1, cutDepth + 1);
   const clipOvershoot = (hasLip ? LIP_HEIGHT : 0) + 2;
+
+  // Hoisted: dividers and outer cutouts are wall-agnostic, so computing
+  // them once and reusing across all 4 walls saves 6 redundant traversals
+  // per generation (ramp + junction × 4 walls − 2 baseline).
+  const wallPatternInputs = computeWallPatternInputs(params, innerW, innerD, dim.wallHeight);
 
   // Build handle wall defs for clip positioning. Polygon bins use the
   // outermost edge per cardinal (matches handleBuilder), so clip boxes land
@@ -260,10 +277,17 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
     // on custom shapes so there's nothing to blend against or block.
     const rampZones = isPolygon
       ? []
-      : computeRampZones(wall.side, params, innerW, innerD, dim.wallHeight);
+      : computeRampZones(wall.side, params, innerW, innerD, dim.wallHeight, wallPatternInputs);
     const junctionZones = isPolygon
       ? []
-      : computeDividerJunctionZones(wall.side, params, innerW, innerD, dim.wallHeight);
+      : computeDividerJunctionZones(
+          wall.side,
+          params,
+          innerW,
+          innerD,
+          dim.wallHeight,
+          wallPatternInputs
+        );
     // Deduplicate: junction zones (full height) subsume ramp zones at the same offset
     const junctionOffsets = new Set(junctionZones.map((z) => quantize(z.offsetAlongWall)));
     const uniqueRampZones = rampZones.filter(
@@ -316,7 +340,9 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       buildCacheKey('v1', baseKey, cutoutKeyPart, handleKeyPart, rampKeyPart)
     );
 
+    const wallStart = perfCollector ? performance.now() : 0;
     let shape = getFeatureCache(WALL_PATTERN_CLIPPED_CACHE, clippedKey);
+    const clippedCacheHit = shape !== null;
     if (!shape) {
       const built = buildClippedWallPattern(
         shapeTemplate,
@@ -332,11 +358,23 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
         shape = unwrap(clone(built));
       }
     }
+    if (perfCollector) {
+      perfCollector.recordWallPatternSubstep(
+        clippedCacheHit ? `wall_${wall.side}_hit` : `wall_${wall.side}_build`,
+        performance.now() - wallStart,
+        wall.centers.length
+      );
+      // Always count hex centers — measures pattern density even when the
+      // clipped result was served from cache.
+      perfCollector.addHexCenters(wall.centers.length);
+    }
     if (shape) {
       collectOrigins(shape, FeatureTag.WALL_PATTERN, originToTag);
       patternCutTargets.push(shape);
     }
   }
+
+  if (perfCollector) perfCollector.setPatternCutToolCount(patternCutTargets.length);
 
   return patternCutTargets;
 }

@@ -30,4 +30,7 @@ export type {
   SplitPreviewPiece,
   ErrorResponse,
   ProgressResponse,
+  PerfSnapshot,
+  PerfStageEntry,
+  PerfSubstepEntry,
 } from './types';

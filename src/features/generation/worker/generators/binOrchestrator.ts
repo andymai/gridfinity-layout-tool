@@ -17,6 +17,7 @@ import { featuresStage } from './pipeline/stages/featuresStage';
 import { booleanStage } from './pipeline/stages/booleanStage';
 import { translateStage } from './pipeline/stages/translateStage';
 import { tessellateStage } from './pipeline/stages/tessellateStage';
+import type { PerfCollector } from './pipeline/perfCollector';
 
 /**
  * Throws if `params.cellMask` is present but malformed. Checks dimensions
@@ -64,10 +65,11 @@ export function generateBin(
   params: BinParams,
   onProgress?: ProgressFn,
   forExport = false,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  perfCollector?: PerfCollector
 ): MeshData {
   assertValidMask(params);
-  const ctx = createInitialContext(params, onProgress, forExport, signal);
+  const ctx = createInitialContext(params, onProgress, forExport, signal, perfCollector);
   const result = runPipeline(DEFAULT_PIPELINE, ctx);
 
   if (!result.mesh) {
