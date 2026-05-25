@@ -136,7 +136,10 @@ export function PathfinderControls({
     // Pre-check the 2D polygon op so the user gets an immediate hint when
     // the resulting cavity is empty. The worker would silently produce no
     // cut in that case, which is hard to debug from the 3D preview alone.
-    if (op === 'intersect' || op === 'subtract') {
+    // Union can't be empty when there are >=2 valid members; the other three
+    // ops can all collapse to nothing (intersect of disjoint, subtract where
+    // the cutter swallows the base, exclude of perfectly coincident shapes).
+    if (op !== 'union') {
       const selectedCutouts = cutouts.filter((c) => selectedIds.includes(c.id));
       if (selectedCutouts.length >= 2 && applyGroupOp(selectedCutouts, op) === null) {
         addToast({ message: t('binDesigner.cutouts.pathfinder.emptyResult'), type: 'info' });
