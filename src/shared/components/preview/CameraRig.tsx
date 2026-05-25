@@ -1,14 +1,13 @@
 /**
- * Camera rig for the baseplate preview — mirrors the bin-designer rig.
+ * Dual perspective/orthographic camera rig. Only one camera carries
+ * `makeDefault` at a time; on projection swap we copy pose from the previously
+ * active camera and round-trip `distance ↔ zoom` relative to the orbit target
+ * so on-screen scale survives the toggle. `useLayoutEffect` runs before paint
+ * so the first frame after the swap is already framed.
  *
- * Mounts a perspective and orthographic drei camera; only one carries
- * `makeDefault` at a time. On the actual projection swap, copies pose from
- * the previously active camera and round-trips perspective distance ↔
- * orthographic zoom relative to the orbit `target` so on-screen scale is
- * preserved. Canvas resizes only refresh the ortho zoom against the ortho
- * camera's *current* pose — they don't masquerade as a swap and reset the
- * user's orbit. `useLayoutEffect` runs before paint so the first frame
- * after the swap is already framed.
+ * Both cameras are constructed Z-up. Without this they're born Y-up,
+ * OrbitControls binds before any later up-vector reset, and the camera renders
+ * rolled ~90° about the view axis on the initial frame.
  */
 
 import { useLayoutEffect, useRef } from 'react';
@@ -24,22 +23,18 @@ import type {
 } from 'three';
 import { distanceToOrthoZoom, orthoZoomToDistance } from '@/shared/utils/cameraProjection';
 
-/** Default vertical FOV (degrees) used for the perspective camera and round-trip math. */
-const CAMERA_FOV = 45;
+export type Projection = 'perspective' | 'orthographic';
 
-/** World is Z-up across the baseplate preview; pass to drei cameras at construction. */
+const DEFAULT_FOV = 45;
 const UP_Z: [number, number, number] = [0, 0, 1];
 
-/** Outside-of-hook helper to keep the react-hooks immutability rule satisfied. */
 function setOrthoZoom(ortho: OrthographicCameraImpl, zoom: number): void {
   ortho.zoom = zoom;
   ortho.updateProjectionMatrix();
 }
 
-export type BaseplateProjection = 'perspective' | 'orthographic';
-
-interface BaseplateCameraRigProps {
-  projection: BaseplateProjection;
+interface CameraRigProps {
+  projection: Projection;
   initialPosition: readonly [number, number, number];
   /**
    * World-space orbit target. The scale-preserving distance ↔ zoom math is
@@ -50,27 +45,28 @@ interface BaseplateCameraRigProps {
   target?: readonly [number, number, number];
   fov?: number;
   near?: number;
+  /** Perspective far plane. Baseplate previews need a much larger value than bins. */
   far?: number;
   orthoNear?: number;
   orthoFar?: number;
 }
 
-export function BaseplateCameraRig({
+export function CameraRig({
   projection,
   initialPosition,
   target = [0, 0, 0],
-  fov = CAMERA_FOV,
+  fov = DEFAULT_FOV,
   near = 0.1,
-  far = 20000,
+  far = 2000,
   orthoNear = -20000,
   orthoFar = 20000,
-}: BaseplateCameraRigProps) {
+}: CameraRigProps) {
   const perspRef = useRef<PerspectiveCameraImpl>(null);
   const orthoRef = useRef<OrthographicCameraImpl>(null);
-  // Track the projection that was active on the previous effect run so a
-  // canvas resize doesn't masquerade as a swap and overwrite the user's
-  // orbited ortho pose with the perspective camera's last pose.
-  const prevProjectionRef = useRef<BaseplateProjection | null>(null);
+  // Gate the pose-copy on an actual projection change so a canvas resize
+  // doesn't masquerade as a swap and overwrite the user's orbited pose with
+  // the inactive camera's last pose.
+  const prevProjectionRef = useRef<Projection | null>(null);
   const { camera, size, invalidate } = useThree();
   const [tx, ty, tz] = target;
 
@@ -85,7 +81,6 @@ export function BaseplateCameraRig({
 
     if (projection === 'orthographic') {
       if (projectionChanged) {
-        // One-time copy of perspective pose into ortho on the actual swap.
         ortho.position.copy(persp.position);
         ortho.up.copy(persp.up);
         ortho.quaternion.copy(persp.quaternion);
@@ -137,10 +132,6 @@ export function BaseplateCameraRig({
         ref={perspRef}
         makeDefault={projection === 'perspective'}
         position={initialPosition}
-        // Z-up at construction time. Without this the camera is born Three.js-
-        // default Y-up; OrbitControls binds before CameraController's effect
-        // flips up, and caches its spherical angles relative to the Y-up pose
-        // — visible as a 90° roll about the view axis on first render.
         up={UP_Z}
         fov={fov}
         near={near}

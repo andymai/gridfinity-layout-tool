@@ -10,7 +10,8 @@ export {
 export { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
 export { BinDimensions } from './BinDimensions';
 export { BinNameLabel } from '@/shared/components/preview/BinNameLabel';
-export { PreviewControls, type CameraPreset, type Projection } from './PreviewControls';
+export { PreviewControls, type CameraPreset } from './PreviewControls';
+export { type Projection } from '@/shared/components/preview/CameraRig';
 export { PreviewSkeleton } from './PreviewSkeleton';
 export { GradientBackground } from '@/shared/components/preview/GradientBackground';
 export { FootprintGrid } from '@/shared/components/preview/FootprintGrid';

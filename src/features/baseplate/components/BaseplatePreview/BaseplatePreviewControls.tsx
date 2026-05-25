@@ -4,7 +4,7 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useTranslation } from '@/i18n';
 import type { SplitViewMode } from '../../store/baseplatePageStore';
 import type { CameraPreset } from './cameraUtils';
-import type { BaseplateProjection } from './BaseplateCameraRig';
+import type { Projection } from '@/shared/components/preview/CameraRig';
 import { IconReset } from './previewIcons';
 import { VIEW_MODE_ICONS, PRESET_ICONS, PRESETS } from './previewConstants';
 
@@ -90,7 +90,7 @@ export function BaseplatePreviewControls({
   isSplit: boolean;
   splitViewMode: SplitViewMode;
   filamentColor: string;
-  projection: BaseplateProjection;
+  projection: Projection;
   xray: boolean;
   onCameraPreset: (preset: CameraPreset) => void;
   onResetView: () => void;

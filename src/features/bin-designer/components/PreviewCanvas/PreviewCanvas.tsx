@@ -10,10 +10,10 @@
  */
 
 import { useRef, useCallback, useState, useEffect, useMemo } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
-import type { PerspectiveCamera } from 'three';
+import { PerspectiveCamera } from 'three';
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib';
 import type { Projection } from '../preview';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -56,12 +56,8 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { useSettingsStore } from '@/core/store/settings';
-import {
-  CameraController,
-  CameraRig,
-  usePresetTransition,
-  SceneLighting,
-} from './previewCanvasCamera';
+import { CameraController, usePresetTransition, SceneLighting } from './previewCanvasCamera';
+import { CameraRig } from '@/shared/components/preview/CameraRig';
 import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
 import { detectWebGL, WebGLFallback } from '@/shared/webgl';
 import { ColorToolOverlay } from './ColorToolOverlay';
@@ -69,22 +65,32 @@ import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { PipetteIcon } from '@/design-system/Icon';
 import { useSwapZoneWithToast } from '../../hooks/useSwapZoneWithToast';
 
-/** localStorage key for persisting the user's preview color preference */
 const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
 const DEFAULT_COLOR = '#d4d8dc';
 
 /**
- * Render the 3D preview canvas for the bin designer.
+ * Canvas `onCreated` fires against R3F's transient default camera, which
+ * CameraRig immediately replaces via `makeDefault`. Capturing the camera
+ * there leaves the thumbnail pipeline holding a dangling reference, so we
+ * resync via `useThree().camera` (which also re-fires on projection swap).
  *
- * Features:
- * - 3-point lighting (hemisphere + key + fill)
- * - Gradient background for studio photography feel
- * - Normal-based vertex coloring with user-selectable base color
- * - Smooth camera preset transitions (spherical interpolation)
- * - Auto-framing that adjusts when bin dimensions change
- * - Dimension lines showing W×D×H + interior height in mm
- * - Footprint grid matching the bin's unit dimensions
+ * Only republish when the active camera is perspective: the thumbnail
+ * pipeline reads `camera.fov` for its preset-framing math, which is
+ * `undefined` on `OrthographicCamera` and would silently yield NaN-positioned
+ * captures (blank PNGs). Drei's `<PerspectiveCamera>` stays mounted across
+ * projection toggles, so the last-published reference remains valid while
+ * the user is in ortho mode.
  */
+function PreviewContextSync() {
+  const { gl, scene, camera } = useThree();
+  useEffect(() => {
+    if (camera instanceof PerspectiveCamera) {
+      setPreviewContext(gl, scene, camera);
+    }
+  }, [gl, scene, camera]);
+  return null;
+}
+
 export function PreviewCanvas() {
   const t = useTranslation();
   const controlsRef = useRef<OrbitControlsType>(null);
@@ -336,20 +342,17 @@ export function PreviewCanvas() {
         <PanelErrorBoundary panelName="3D Preview">
           <Canvas
             frameloop="demand"
-            onCreated={({ gl, scene, camera }) => {
-              camera.up.set(0, 0, 1);
-              camera.lookAt(0, 0, totalH / 2);
+            onCreated={({ gl }) => {
               setPreviewCanvas(gl.domElement);
-              setPreviewContext(gl, scene, camera as PerspectiveCamera);
             }}
             gl={{ antialias: true, preserveDrawingBuffer: true }}
           >
-            {/* Perspective + Orthographic camera pair with runtime swap. */}
             <CameraRig
               projection={projection}
               initialPosition={[100, -100, 80]}
               target={[0, 0, totalH / 2]}
             />
+            <PreviewContextSync />
 
             {/* Gradient background */}
             <GradientBackground />
