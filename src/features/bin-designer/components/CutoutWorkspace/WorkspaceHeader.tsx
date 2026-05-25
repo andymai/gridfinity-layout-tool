@@ -7,7 +7,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import type { Cutout } from '@/features/bin-designer/types';
+import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
@@ -20,6 +20,9 @@ import {
   centerInBin,
 } from '../panel/CutoutsSection/geometry';
 import { autoArrangeCutouts } from '../panel/CutoutsSection/autoArrange';
+import { PathfinderControls } from '../panel/CutoutsSection/PathfinderControls';
+import { TransformControls } from '../panel/CutoutsSection/TransformControls';
+import { ArrangeControls } from '../panel/CutoutsSection/ArrangeControls';
 type AlignType = 'left' | 'right' | 'top' | 'bottom' | 'center-h' | 'center-v';
 
 function AlignIcon({ type }: { readonly type: AlignType }) {
@@ -208,10 +211,13 @@ interface WorkspaceHeaderProps {
   readonly binWidth: number;
   readonly binDepth: number;
   readonly onUpdate: (id: string, updates: Partial<Cutout>) => void;
+  readonly onUpdateBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   readonly onRemove: (id: string) => void;
   readonly onDuplicate: (ids: readonly string[]) => void;
-  readonly onGroup: (ids: readonly string[]) => void;
+  readonly onGroup: (ids: readonly string[], op?: GroupOp) => void;
   readonly onUngroup: (ids: readonly string[]) => void;
+  readonly onSetGroupOp: (groupId: string, op: GroupOp) => void;
+  readonly onReorder: (ids: readonly string[], direction: ReorderDirection) => void;
   readonly onClearAll: () => void;
   readonly disabled?: boolean;
   readonly onShowHelp?: () => void;
@@ -232,10 +238,13 @@ export function WorkspaceHeader({
   binWidth,
   binDepth,
   onUpdate,
+  onUpdateBatch,
   onRemove,
   onDuplicate,
   onGroup,
   onUngroup,
+  onSetGroupOp,
+  onReorder,
   onClearAll,
   disabled = false,
   onShowHelp,
@@ -433,13 +442,40 @@ export function WorkspaceHeader({
 
         <Separator />
 
-        {/* Center, Auto, Duplicate, Group/Ungroup */}
+        {/* Transform (flip + rotate) */}
+        <TransformControls
+          selectedIds={selectedIds}
+          cutouts={cutouts}
+          binWidth={binWidth}
+          binDepth={binDepth}
+          onUpdateBatch={onUpdateBatch}
+          disabled={disabled}
+        />
+
+        <Separator />
+
+        {/* Pathfinder (4 boolean ops) */}
+        <PathfinderControls
+          selectedIds={selectedIds}
+          cutouts={cutouts}
+          onGroup={onGroup}
+          onSetGroupOp={onSetGroupOp}
+          disabled={disabled}
+          compact
+        />
+
+        <Separator />
+
+        {/* Arrange (z-order) */}
+        <ArrangeControls selectedIds={selectedIds} onReorder={onReorder} disabled={disabled} />
+
+        <Separator />
+
+        {/* Center, Auto, Duplicate, Ungroup */}
         {textBtn(handleCenterInBin, t('binDesigner.cutouts.centerInBin'))}
         <AutoArrangePopover onArrange={handleAutoArrange} />
         {textBtn(() => onDuplicate(selectedIds), t('common.duplicate'))}
-        {hasGroup
-          ? textBtn(() => onUngroup(selectedIds), t('binDesigner.cutouts.ungroup'))
-          : textBtn(() => onGroup(selectedIds), t('binDesigner.cutouts.combine'))}
+        {hasGroup && textBtn(() => onUngroup(selectedIds), t('binDesigner.cutouts.ungroup'))}
 
         <Separator />
         {textBtn(handleClearAllClick, t('binDesigner.cutouts.clearAll'), true)}

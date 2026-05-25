@@ -34,6 +34,7 @@ import { customShapes } from './customShape';
 import { permutationMatrix } from './permutationMatrix';
 import { regressions } from './regressions';
 import { solidCutoutMatrix } from './solidCutoutMatrix';
+import { pathfinderOps } from './pathfinderOps';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -69,4 +70,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...permutationMatrix,
   ...regressions,
   ...solidCutoutMatrix,
+  ...pathfinderOps,
 ];

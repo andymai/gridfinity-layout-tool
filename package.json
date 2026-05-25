@@ -98,6 +98,7 @@
     "ioredis": "^5.10.1",
     "lz-string": "^1.5.0",
     "occt-wasm": "3.1.0",
+    "polygon-clipping": "^0.15.7",
     "posthog-js": "^1.374.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

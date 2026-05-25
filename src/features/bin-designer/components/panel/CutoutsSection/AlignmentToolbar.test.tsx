@@ -27,8 +27,11 @@ const createCutout = (id: string, overrides: Partial<Cutout> = {}): Cutout => ({
 
 describe('AlignmentToolbar', () => {
   const onUpdate = vi.fn();
+  const onUpdateBatch = vi.fn();
   const onGroup = vi.fn();
   const onUngroup = vi.fn();
+  const onSetGroupOp = vi.fn();
+  const onReorder = vi.fn();
   const onDuplicate = vi.fn();
 
   const cutoutA = createCutout('a', { x: 5, y: 5 });
@@ -41,8 +44,11 @@ describe('AlignmentToolbar', () => {
     binWidth: 100,
     binDepth: 100,
     onUpdate,
+    onUpdateBatch,
     onGroup,
     onUngroup,
+    onSetGroupOp,
+    onReorder,
     onDuplicate,
   };
 
@@ -79,16 +85,18 @@ describe('AlignmentToolbar', () => {
     expect(onDuplicate).toHaveBeenCalledWith(['a', 'b']);
   });
 
-  it('shows combine button when no cutouts are grouped', () => {
+  it('renders the Pathfinder section with all four op buttons', () => {
     render(<AlignmentToolbar {...defaultProps} />);
-    expect(screen.getByText('binDesigner.cutouts.combine')).toBeInTheDocument();
-    expect(screen.queryByText('binDesigner.cutouts.ungroup')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('binDesigner.cutouts.pathfinder.union')).toBeInTheDocument();
+    expect(screen.getByLabelText('binDesigner.cutouts.pathfinder.subtract')).toBeInTheDocument();
+    expect(screen.getByLabelText('binDesigner.cutouts.pathfinder.intersect')).toBeInTheDocument();
+    expect(screen.getByLabelText('binDesigner.cutouts.pathfinder.exclude')).toBeInTheDocument();
   });
 
-  it('calls onGroup when combine is clicked', () => {
+  it('groups via Pathfinder Unite button', () => {
     render(<AlignmentToolbar {...defaultProps} />);
-    fireEvent.click(screen.getByText('binDesigner.cutouts.combine'));
-    expect(onGroup).toHaveBeenCalledWith(['a', 'b']);
+    fireEvent.click(screen.getByLabelText('binDesigner.cutouts.pathfinder.union'));
+    expect(onGroup).toHaveBeenCalledWith(['a', 'b'], 'union');
   });
 
   it('shows ungroup button when any cutout has a groupId', () => {
@@ -98,7 +106,6 @@ describe('AlignmentToolbar', () => {
     ];
     render(<AlignmentToolbar {...defaultProps} cutouts={groupedCutouts} />);
     expect(screen.getByText('binDesigner.cutouts.ungroup')).toBeInTheDocument();
-    expect(screen.queryByText('binDesigner.cutouts.combine')).not.toBeInTheDocument();
   });
 
   it('calls onUngroup when ungroup is clicked', () => {
@@ -118,8 +125,10 @@ describe('AlignmentToolbar', () => {
 
   it('renders gap input with default value', () => {
     render(<AlignmentToolbar {...defaultProps} />);
-    const gapInput = screen.getByRole('spinbutton');
-    expect(gapInput).toBeInTheDocument();
+    // Multiple spinbuttons exist now (gap + rotation field). Disambiguate by min attribute.
+    const spinbuttons = screen.getAllByRole('spinbutton');
+    const gapInput = spinbuttons.find((el) => el.getAttribute('min') === '0');
+    expect(gapInput).toBeDefined();
     expect(gapInput).toHaveValue(2);
   });
 

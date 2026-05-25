@@ -12,7 +12,7 @@ import {
   flipSelectionHorizontal,
   flipSelectionVertical,
 } from '../panel/CutoutsSection/geometry';
-import type { Cutout } from '@/features/bin-designer/types';
+import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import type { TFunction } from '@/i18n/context';
 
 interface BuildContextActionsArgs {
@@ -30,6 +30,9 @@ interface BuildContextActionsArgs {
   updateCutoutsBatch: (updates: ReadonlyMap<string, Partial<Cutout>>) => void;
   lockCutouts: (ids: string[]) => void;
   unlockCutouts: (ids: string[]) => void;
+  groupCutouts: (ids: readonly string[], op?: GroupOp) => void;
+  setGroupOp: (groupId: string, op: GroupOp) => void;
+  reorderCutouts: (ids: readonly string[], direction: ReorderDirection) => void;
   t: TFunction;
 }
 
@@ -49,6 +52,9 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
     updateCutoutsBatch,
     lockCutouts,
     unlockCutouts,
+    groupCutouts,
+    setGroupOp,
+    reorderCutouts,
     t,
   } = args;
 
@@ -138,6 +144,52 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
       },
       disabled: anyLocked,
       shortcut: { keys: 'V', shift: true },
+    });
+  }
+
+  if (hasSelection && selection.size >= 2) {
+    const selectedIds = [...selection];
+    const selectedCutouts = cutouts.filter((c) => selection.has(c.id));
+    const sharedGroupId = selectedCutouts.every(
+      (c) => c.groupId !== null && c.groupId === selectedCutouts[0].groupId
+    )
+      ? selectedCutouts[0].groupId
+      : null;
+
+    const dispatchOp = (op: GroupOp): void => {
+      if (sharedGroupId) setGroupOp(sharedGroupId, op);
+      else groupCutouts(selectedIds, op);
+    };
+
+    actions.push({
+      label: t('binDesigner.cutouts.pathfinder.union'),
+      onClick: () => dispatchOp('union'),
+    });
+    actions.push({
+      label: t('binDesigner.cutouts.pathfinder.subtract'),
+      onClick: () => dispatchOp('subtract'),
+    });
+    actions.push({
+      label: t('binDesigner.cutouts.pathfinder.intersect'),
+      onClick: () => dispatchOp('intersect'),
+    });
+    actions.push({
+      label: t('binDesigner.cutouts.pathfinder.exclude'),
+      onClick: () => dispatchOp('exclude'),
+      dividerAfter: true,
+    });
+  }
+
+  if (hasSelection) {
+    const selectedIds = [...selection];
+    actions.push({
+      label: t('binDesigner.cutouts.arrange.bringToFront'),
+      onClick: () => reorderCutouts(selectedIds, 'front'),
+    });
+    actions.push({
+      label: t('binDesigner.cutouts.arrange.sendToBack'),
+      onClick: () => reorderCutouts(selectedIds, 'back'),
+      dividerAfter: true,
     });
   }
 

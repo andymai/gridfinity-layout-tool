@@ -29,6 +29,7 @@ export type {
   Cutout,
   CutoutShape,
   CutoutScoopEdges,
+  GroupOp,
   PathPoint,
   WallPatternConfig,
   WallPatternType,
@@ -54,6 +55,8 @@ export {
   LID_MAGNET_CEILING,
   LID_MIN_RAIL_LENGTH,
   DEFAULT_SCOOP_EDGES,
+  DEFAULT_GROUP_OP,
+  GROUP_OPS,
   TEXT_MAX_LENGTH,
 } from '@/features/bin-designer/types';
 

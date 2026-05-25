@@ -34,9 +34,11 @@ export function CutoutEditor() {
     duplicateCutouts,
     groupCutouts,
     ungroupCutouts,
+    setGroupOp,
     updateCutoutsBatch,
     removeCutoutsBatch,
     updateCutoutConfig,
+    reorderCutouts,
     undo,
     redo,
     canUndo,
@@ -54,9 +56,11 @@ export function CutoutEditor() {
       duplicateCutouts: s.duplicateCutouts,
       groupCutouts: s.groupCutouts,
       ungroupCutouts: s.ungroupCutouts,
+      setGroupOp: s.setGroupOp,
       updateCutoutsBatch: s.updateCutoutsBatch,
       removeCutoutsBatch: s.removeCutoutsBatch,
       updateCutoutConfig: s.updateCutoutConfig,
+      reorderCutouts: s.reorderCutouts,
       undo: s.undo,
       redo: s.redo,
       canUndo: s.history.past.length > 0,
@@ -502,8 +506,11 @@ export function CutoutEditor() {
           binWidth={binWidth}
           binDepth={binDepth}
           onUpdate={updateCutout}
+          onUpdateBatch={updateCutoutsBatch}
           onGroup={groupCutouts}
           onUngroup={ungroupCutouts}
+          onSetGroupOp={setGroupOp}
+          onReorder={reorderCutouts}
           onDuplicate={duplicateCutouts}
         />
       )}

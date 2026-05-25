@@ -39,10 +39,13 @@ const defaultProps = {
   binWidth: 40,
   binDepth: 40,
   onUpdate: vi.fn(),
+  onUpdateBatch: vi.fn(),
   onRemove: vi.fn(),
   onDuplicate: vi.fn(),
   onGroup: vi.fn(),
   onUngroup: vi.fn(),
+  onSetGroupOp: vi.fn(),
+  onReorder: vi.fn(),
   onClearAll: vi.fn(),
 };
 
@@ -152,6 +155,7 @@ describe('WorkspaceHeader', () => {
     expect(screen.getByTitle('binDesigner.cutouts.alignLeft')).toBeInTheDocument();
     expect(screen.getByTitle('binDesigner.cutouts.alignRight')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.cutouts.centerInBin')).toBeInTheDocument();
-    expect(screen.getByText('binDesigner.cutouts.combine')).toBeInTheDocument();
+    // Pathfinder Unite replaces the legacy "Combine" button.
+    expect(screen.getByTitle('binDesigner.cutouts.pathfinder.union')).toBeInTheDocument();
   });
 });
