@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.119.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.119.0...gridfinity-layout-tool-v4.119.1) (2026-05-25)
+
+
+### Performance
+
+* **generation:** instrument + bench + safe wall-pattern optimizations ([#1879](https://github.com/andymai/gridfinity-layout-tool/issues/1879)) ([9051477](https://github.com/andymai/gridfinity-layout-tool/commit/905147733ec780dfcf2842c1f6cdfb0cd80f66c0))
+
 ## [4.119.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.118.1...gridfinity-layout-tool-v4.119.0) (2026-05-24)
 
 
