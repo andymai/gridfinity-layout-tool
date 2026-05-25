@@ -63,31 +63,41 @@ function buildCutoutClipSolid(wall: WallPatternDescriptor, clip: CutoutClipParam
  * Each transform allocates a new WASM handle while the previous becomes
  * garbage; intermediates are disposed so only the final box per segment
  * survives in the returned array. Caller owns the array entries.
+ *
+ * If a transform throws mid-loop, every box built so far is disposed
+ * before re-throwing — otherwise the caller's outer catch never sees
+ * the partial array (since `.push(...fn())` only spreads on success)
+ * and the WASM handles leak.
  */
 function buildHandleClipBoxes(handleClip: HandleClipParams): Shape3D[] {
   const border = CUTOUT_BORDER_WIDTH;
   const hw = handleClip.handleWall;
   const out: Shape3D[] = [];
-  for (const seg of handleClip.segments) {
-    const boxW = seg.width + 2 * border;
-    const boxH = handleClip.effectiveHeight + 2 * border;
-    const profile = drawRectangle(boxW, boxH);
-    const extruded = sketch(profile, 'XZ').extrude(handleClip.clipExtrudeDepth);
-    const centered = translate(extruded, [
-      seg.offset,
-      handleClip.clipExtrudeDepth / 2,
-      handleClip.centerZ,
-    ]);
-    extruded.delete();
-    let hbox = centered;
-    if (hw.rotateZ !== 0) {
-      const rotated = rotate(hbox, hw.rotateZ, { axis: [0, 0, 1] });
+  try {
+    for (const seg of handleClip.segments) {
+      const boxW = seg.width + 2 * border;
+      const boxH = handleClip.effectiveHeight + 2 * border;
+      const profile = drawRectangle(boxW, boxH);
+      const extruded = sketch(profile, 'XZ').extrude(handleClip.clipExtrudeDepth);
+      const centered = translate(extruded, [
+        seg.offset,
+        handleClip.clipExtrudeDepth / 2,
+        handleClip.centerZ,
+      ]);
+      extruded.delete();
+      let hbox = centered;
+      if (hw.rotateZ !== 0) {
+        const rotated = rotate(hbox, hw.rotateZ, { axis: [0, 0, 1] });
+        hbox.delete();
+        hbox = rotated;
+      }
+      const positioned = translate(hbox, [hw.x, hw.y, 0]);
       hbox.delete();
-      hbox = rotated;
+      out.push(positioned);
     }
-    const positioned = translate(hbox, [hw.x, hw.y, 0]);
-    hbox.delete();
-    out.push(positioned);
+  } catch (err) {
+    for (const s of out) disposeQuiet(s);
+    throw err;
   }
   return out;
 }
@@ -107,26 +117,33 @@ function buildHandleClipBoxes(handleClip: HandleClipParams): Shape3D[] {
 function buildRampClipBoxes(wall: WallPatternDescriptor, rampClip: RampZoneClipParams): Shape3D[] {
   const { border, clipExtrudeDepth: rampExtrudeDepth, wallHeight, zones } = rampClip;
   const out: Shape3D[] = [];
-  for (const zone of zones) {
-    const rboxW = zone.width + 2 * border;
-    const rboxH = zone.height + 2 * border;
-    const profile = drawRectangle(rboxW, rboxH);
-    const extruded = sketch(profile, 'XZ').extrude(rampExtrudeDepth);
-    const centerZ = wallHeight - zone.height / 2;
-    const centered = translate(extruded, [0, rampExtrudeDepth / 2, centerZ]);
-    extruded.delete();
-    let rbox = centered;
-    if (wall.zRotation !== undefined) {
-      const rotated = rotate(rbox, wall.zRotation, { axis: [0, 0, 1] });
+  try {
+    for (const zone of zones) {
+      const rboxW = zone.width + 2 * border;
+      const rboxH = zone.height + 2 * border;
+      const profile = drawRectangle(rboxW, rboxH);
+      const extruded = sketch(profile, 'XZ').extrude(rampExtrudeDepth);
+      const centerZ = wallHeight - zone.height / 2;
+      const centered = translate(extruded, [0, rampExtrudeDepth / 2, centerZ]);
+      extruded.delete();
+      let rbox = centered;
+      if (wall.zRotation !== undefined) {
+        const rotated = rotate(rbox, wall.zRotation, { axis: [0, 0, 1] });
+        rbox.delete();
+        rbox = rotated;
+      }
+      const rotZ = wall.zRotation ?? 0;
+      const offsetX = rotZ === 90 || rotZ === -90 ? 0 : zone.offsetAlongWall;
+      const offsetY = rotZ === 90 || rotZ === -90 ? zone.offsetAlongWall : 0;
+      const positioned = translate(rbox, [wall.translateX + offsetX, wall.translateY + offsetY, 0]);
       rbox.delete();
-      rbox = rotated;
+      out.push(positioned);
     }
-    const rotZ = wall.zRotation ?? 0;
-    const offsetX = rotZ === 90 || rotZ === -90 ? 0 : zone.offsetAlongWall;
-    const offsetY = rotZ === 90 || rotZ === -90 ? zone.offsetAlongWall : 0;
-    const positioned = translate(rbox, [wall.translateX + offsetX, wall.translateY + offsetY, 0]);
-    rbox.delete();
-    out.push(positioned);
+  } catch (err) {
+    // See buildHandleClipBoxes for the rationale — caller can't drain a
+    // partial array returned by a throw, so we dispose here.
+    for (const s of out) disposeQuiet(s);
+    throw err;
   }
   return out;
 }
@@ -190,7 +207,20 @@ export function applyWallPatternClips(
   // ownership stays consistent — we always dispose the returned `fused`
   // handle (which is tools[0] in the singleton case). When length > 1,
   // it produces a fresh fused shape; the originals are then disposed.
-  const fused = fuseAllOrNull(tools);
+  // Wrap to catch the rare degenerate-input throw from unwrap(fuseAll(...));
+  // on non-abort we silently drop clipping (matches the prior per-pass
+  // catch semantics) instead of poisoning the whole generation.
+  let fused: Shape3D | null;
+  try {
+    fused = fuseAllOrNull(tools);
+  } catch (err: unknown) {
+    for (const t of tools) disposeQuiet(t);
+    if (isAbortError(err)) {
+      base.delete();
+      throw err;
+    }
+    return base;
+  }
   if (!fused) {
     for (const t of tools) disposeQuiet(t);
     return base;
@@ -210,7 +240,7 @@ export function applyWallPatternClips(
       disposeQuiet(fused);
       throw err;
     }
-    // Non-abort failure: keep base unchanged (matches prior behavior).
+    // Non-abort failure: result still points at base; let it through unchanged.
   } finally {
     disposeQuiet(fused);
   }

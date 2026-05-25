@@ -352,9 +352,10 @@ export interface MeshResultResponse {
   readonly lidTriangleCount?: number;
   readonly lidFaceGroups?: readonly FaceGroupData[];
   /**
-   * Optional fine-grained timing breakdown. Present when the worker has
-   * instrumentation enabled (currently: always on; the overlead is a
-   * handful of `performance.now()` calls).
+   * Fine-grained timing breakdown. The worker always emits one — overhead
+   * is a handful of `performance.now()` calls — but the field is `?` so
+   * older worker builds (e.g., a stale Service Worker payload on the first
+   * request after deploy) deserialize cleanly.
    */
   readonly perfSnapshot?: PerfSnapshot;
 }

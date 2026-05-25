@@ -101,16 +101,19 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
   const clipExtrudeDepth = Math.max((maxThickness + lipOverhang) * 2 + 1, cutDepth + 1);
   const clipOvershoot = (hasLip ? LIP_HEIGHT : 0) + 2;
 
-  // Hoisted: dividers and outer cutouts are wall-agnostic, so computing
-  // them once and reusing across all 4 walls saves 6 redundant traversals
-  // per generation (ramp + junction × 4 walls − 2 baseline).
-  const wallPatternInputs = computeWallPatternInputs(params, innerW, innerD, dim.wallHeight);
-
   // Build handle wall defs for clip positioning. Polygon bins use the
   // outermost edge per cardinal (matches handleBuilder), so clip boxes land
   // on the actual handle cutout location rather than the AABB wall center.
   const cellMask = params.cellMask;
   const isPolygon = isPartialMask(cellMask);
+
+  // Hoisted: dividers and outer cutouts are wall-agnostic, so computing
+  // them once and reusing across all 4 walls saves 6 redundant traversals
+  // per generation (ramp + junction × 4 walls − 2 baseline). Skip entirely
+  // for polygon bins since ramp/junction zones are unused on that path.
+  const wallPatternInputs = isPolygon
+    ? undefined
+    : computeWallPatternInputs(params, innerW, innerD, dim.wallHeight);
   const handleWallDefs: readonly HandleWallDef[] = !params.handles.enabled
     ? []
     : isPolygon
