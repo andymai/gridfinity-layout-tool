@@ -23,7 +23,7 @@ import { classifyLipCorner, computeLipBBoxCenter } from './lipCornerClassifier';
  * zones whose feature isn't enabled, so a stale color on a hidden zone
  * (e.g. a lip corner recolor on a stacking-lip-off bin) doesn't trip
  * multi-color export. Matches the preview's gating. Returns null when
- * the design is single-color (no basematerials section needed).
+ * the design is single-color (no color group section needed).
  */
 export function buildTriangleMaterialIndices(
   faceGroups: readonly FaceGroupData[],
@@ -36,7 +36,7 @@ export function buildTriangleMaterialIndices(
 
   const { colors, colorToIndex, defaultIndex } = resolveColorMapping(featureColors);
 
-  const materials = colors.map((color) => ({ name: color, color }));
+  const materials = colors.map((color) => ({ color }));
   const indices = new Array<number>(triangleCount).fill(defaultIndex);
 
   const triangleXY = (triIdx: number) => {

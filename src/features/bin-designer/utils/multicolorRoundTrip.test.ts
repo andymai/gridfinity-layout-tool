@@ -11,7 +11,7 @@
  *   2. Lip corner round-trip — lip triangles in each XY quadrant carry the
  *      configured corner color's `p1`.
  *   3. Single-color short-circuit — all-same-color (incl. mixed-case hex) emits
- *      no `<basematerials>`; mixed-case dedup yields one material, not two.
+ *      no `<m:colorgroup>`; mixed-case dedup yields one material, not two.
  *   4. Multi-object color contract — only the first piece (bin) carries colors;
  *      ancillary pieces (dividers, lid) ship solid-color.
  *
@@ -87,17 +87,19 @@ async function blobToModelXml(blob: Blob): Promise<string> {
 }
 
 interface Material {
-  readonly name: string;
   readonly color: string;
 }
 
-/** Extract `<base>` entries from inside a `<basematerials>` block, in order. */
+const COLORGROUP_BLOCK_RE = /<m:colorgroup\s+id="(\d+)">([\s\S]*?)<\/m:colorgroup>/;
+const COLOR_ENTRY_RE = /<m:color\s+color="([^"]*)"\s*\/>/g;
+
+/** Extract `<m:color>` entries from inside a `<m:colorgroup>` block, in order. */
 function parseMaterials(xml: string): Material[] {
-  const block = /<basematerials\s+id="(\d+)">([\s\S]*?)<\/basematerials>/.exec(xml);
+  const block = COLORGROUP_BLOCK_RE.exec(xml);
   if (!block) return [];
   const out: Material[] = [];
-  for (const m of block[2].matchAll(/<base\s+name="([^"]*)"\s+displaycolor="([^"]*)"\s*\/>/g)) {
-    out.push({ name: m[1], color: m[2] });
+  for (const m of block[2].matchAll(COLOR_ENTRY_RE)) {
+    out.push({ color: m[1] });
   }
   return out;
 }
@@ -272,7 +274,7 @@ describe('multicolor 3MF round-trip', () => {
       expect(tris.map((t) => t.p1)).toEqual([1, 1]);
     });
 
-    it('every emitted pid resolves to the basematerials block (reference integrity)', async () => {
+    it('every emitted pid resolves to the m:colorgroup block (reference integrity)', async () => {
       const params = withColors({ body: '#fff', base: '#000' });
       const triangles = [...tri(0, 0), ...tri(1, 0)];
       const faceGroups: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.SOCKET }];
@@ -285,14 +287,14 @@ describe('multicolor 3MF round-trip', () => {
         true
       );
       const xml = await blobToModelXml(blob);
-      const pidMatch = /<basematerials\s+id="(\d+)"/.exec(xml);
-      const baseMaterialsId = pidMatch ? Number(pidMatch[1]) : NaN;
+      const pidMatch = /<m:colorgroup\s+id="(\d+)"/.exec(xml);
+      const colorgroupId = pidMatch ? Number(pidMatch[1]) : NaN;
       const materialsCount = parseMaterials(xml).length;
       const tris = parseTriangles(xml);
 
       for (const t of tris) {
         if (t.pid === null) continue;
-        expect(t.pid).toBe(baseMaterialsId);
+        expect(t.pid).toBe(colorgroupId);
         expect(t.p1).not.toBeNull();
         expect(t.p1).toBeGreaterThanOrEqual(0);
         expect(t.p1).toBeLessThan(materialsCount);
@@ -337,7 +339,7 @@ describe('multicolor 3MF round-trip', () => {
   });
 
   describe('single-color short-circuit', () => {
-    it('all-same-color (lowercase) emits no <basematerials>', async () => {
+    it('all-same-color (lowercase) emits no <m:colorgroup>', async () => {
       const params = withColors(); // all zones default to '#d4d8dc'
       const triangles = [...tri(0, 0), ...tri(1, 0)];
       const faceGroups: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.SOCKET }];
@@ -351,12 +353,13 @@ describe('multicolor 3MF round-trip', () => {
       );
       const xml = await blobToModelXml(blob);
 
-      expect(xml).not.toMatch(/<basematerials\b/);
+      expect(xml).not.toMatch(/<m:colorgroup\b/);
+      expect(xml).not.toMatch(/\bxmlns:m=/);
       expect(xml).not.toMatch(/\bpid="/);
       expect(xml).not.toMatch(/\bp1="/);
     });
 
-    it('mixed-case AND mixed-length hex collapse to single material (no <basematerials>)', async () => {
+    it('mixed-case AND mixed-length hex collapse to single material (no <m:colorgroup>)', async () => {
       // Regressions for the case-normalization and shorthand-expansion fixes.
       // `#FFF`, `#fff`, `#FFFFFF` all canonicalize to `#ffffff`.
       const params = withColors({ body: '#FFF', base: '#fff', labelTab: '#FFFFFF' });
@@ -372,7 +375,7 @@ describe('multicolor 3MF round-trip', () => {
       );
       const xml = await blobToModelXml(blob);
 
-      expect(xml).not.toMatch(/<basematerials\b/);
+      expect(xml).not.toMatch(/<m:colorgroup\b/);
     });
 
     it('mixed-case dedup yields N materials, not 2N (only divergent zones add slots)', async () => {
@@ -412,18 +415,21 @@ describe('multicolor 3MF round-trip', () => {
       const blob = buildMultiObject3MF(pieces, faceGroups, params, 'assembly', PRINT_SETTINGS);
       const xml = await blobToModelXml(blob);
 
-      // Exactly one <basematerials> block — for the bin piece.
-      const baseBlocks = xml.match(/<basematerials\b/g) ?? [];
-      expect(baseBlocks).toHaveLength(1);
+      // Exactly one <m:colorgroup> block — for the bin piece.
+      const groupBlocks = xml.match(/<m:colorgroup\b/g) ?? [];
+      expect(groupBlocks).toHaveLength(1);
+
+      // The materials extension namespace is declared on <model>.
+      expect(xml).toMatch(/\bxmlns:m="http:\/\/schemas\.microsoft\.com\/3dmanufacturing\/material/);
 
       // Three <object> entries (bin, divider, lid).
       const objects = xml.match(/<object\s+id="\d+"/g) ?? [];
       expect(objects).toHaveLength(3);
 
-      // The basematerials block precedes the first <object> in document order.
-      const baseAt = xml.indexOf('<basematerials');
+      // The colorgroup block precedes the first <object> in document order.
+      const groupAt = xml.indexOf('<m:colorgroup');
       const firstObjAt = xml.indexOf('<object');
-      expect(baseAt).toBeLessThan(firstObjAt);
+      expect(groupAt).toBeLessThan(firstObjAt);
     });
 
     it('multi-color disabled at the params level disables colors on every piece', async () => {
@@ -439,7 +445,8 @@ describe('multicolor 3MF round-trip', () => {
         PRINT_SETTINGS
       );
       const xml = await blobToModelXml(blob);
-      expect(xml).not.toMatch(/<basematerials\b/);
+      expect(xml).not.toMatch(/<m:colorgroup\b/);
+      expect(xml).not.toMatch(/\bxmlns:m=/);
       expect(xml).not.toMatch(/\bp1="/);
     });
   });

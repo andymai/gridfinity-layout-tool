@@ -16,11 +16,11 @@
 import { zipSync, strToU8 } from 'fflate';
 import { validateMeshData } from './validation';
 
-/** Multi-material color configuration for 3MF basematerials extension */
+/** Multi-material color configuration emitted as a 3MF Materials Extension `<m:colorgroup>`. */
 export interface ThreeMFColorConfig {
-  /** Deduplicated materials list (name + displaycolor) */
-  readonly materials: readonly { readonly name: string; readonly color: string }[];
-  /** Per-triangle material index into the materials array (length = triangle count) */
+  /** Deduplicated color list — one entry per filament slot, in `pid`/`p1` index order. */
+  readonly materials: readonly { readonly color: string }[];
+  /** Per-triangle color index into the materials array (length = triangle count) */
   readonly triangleMaterialIndices: readonly number[];
 }
 
@@ -138,7 +138,7 @@ export function build3MFMultiObjectBuffer(
 
   const files: Record<string, Uint8Array> = {
     '[Content_Types].xml': strToU8(buildContentTypes(!!options.thumbnail)),
-    '_rels/.rels': strToU8(buildRelationships()),
+    '_rels/.rels': strToU8(buildRelationships(!!options.thumbnail)),
     '3D/3dmodel.model': strToU8(buildMultiObjectModelXML(meshes, options)),
   };
 
@@ -166,7 +166,7 @@ export function build3MFBuffer(
   // Build ZIP entries
   const files: Record<string, Uint8Array> = {
     '[Content_Types].xml': strToU8(buildContentTypes(!!options.thumbnail)),
-    '_rels/.rels': strToU8(buildRelationships()),
+    '_rels/.rels': strToU8(buildRelationships(!!options.thumbnail)),
     '3D/3dmodel.model': strToU8(buildModelXML(mesh, options)),
   };
 
@@ -233,21 +233,33 @@ function buildContentTypes(hasThumbnail: boolean): string {
   return xml;
 }
 
-function buildRelationships(): string {
+function buildRelationships(hasThumbnail: boolean): string {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n';
   xml +=
     '  <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" />\n';
+  if (hasThumbnail) {
+    // OPC §11.3 thumbnail relationship — without this, viewers can't discover
+    // the PNG even though Content_Types declares its MIME type.
+    xml +=
+      '  <Relationship Target="/Metadata/thumbnail.png" Id="rel-2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail" />\n';
+  }
   xml += '</Relationships>';
   return xml;
 }
 
 function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   const NS = 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02';
+  const MATERIAL_NS = 'http://schemas.microsoft.com/3dmanufacturing/material/2015/02';
   const hasColors = options.colorConfig && options.colorConfig.materials.length > 0;
 
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-  xml += `<model unit="millimeter" xml:lang="en-US" xmlns="${NS}">\n`;
+  // The `m` materials extension is what BambuStudio/OrcaSlicer read for the
+  // "Standard 3MF Import Color" dialog — the 3MF Core `<basematerials>` element
+  // is silently ignored by their parsers, so we declare the extension only when
+  // we actually emit color content.
+  const matNs = hasColors ? ` xmlns:m="${MATERIAL_NS}" requiredextensions="m"` : '';
+  xml += `<model unit="millimeter" xml:lang="en-US" xmlns="${NS}"${matNs}>\n`;
 
   // Metadata
   xml += `  <metadata name="Title">${escapeXml(options.name)}</metadata>\n`;
@@ -280,17 +292,18 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   // Resources
   xml += '  <resources>\n';
 
-  // Basematerials resource (3MF Core Spec section 5.1 — no namespace prefix)
-  // IDs assigned in ascending document order per 3MF Core Spec §4.1.2
-  const BASEMATERIALS_ID = 1;
+  // Color group resource (3MF Materials Extension v1.0).
+  // IDs assigned in ascending document order per 3MF Core Spec §4.1.2.
+  const COLORGROUP_ID = 1;
   const OBJECT_ID = 2;
   const colorConfig = hasColors ? options.colorConfig : undefined;
   if (colorConfig) {
-    xml += `    <basematerials id="${BASEMATERIALS_ID}">\n`;
+    assertColorConfigShape(colorConfig, mesh.triangles.length);
+    xml += `    <m:colorgroup id="${COLORGROUP_ID}">\n`;
     for (const mat of colorConfig.materials) {
-      xml += `      <base name="${escapeXml(mat.name)}" displaycolor="${escapeXml(mat.color)}" />\n`;
+      xml += `      <m:color color="${escapeXml(mat.color)}" />\n`;
     }
-    xml += '    </basematerials>\n';
+    xml += '    </m:colorgroup>\n';
   }
 
   xml += `    <object id="${colorConfig ? OBJECT_ID : 1}" type="model" name="${escapeXml(options.name)}">\n`;
@@ -309,8 +322,7 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
     const indices = colorConfig.triangleMaterialIndices;
     for (let i = 0; i < mesh.triangles.length; i++) {
       const [v1, v2, v3] = mesh.triangles[i];
-      const pindex = indices[i] ?? 0;
-      xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" pid="${BASEMATERIALS_ID}" p1="${pindex}" />\n`;
+      xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" pid="${COLORGROUP_ID}" p1="${indices[i]}" />\n`;
     }
   } else {
     for (const [v1, v2, v3] of mesh.triangles) {
@@ -364,9 +376,12 @@ function buildMultiObjectModelXML(
   options: ThreeMFOptions
 ): string {
   const NS = 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02';
+  const MATERIAL_NS = 'http://schemas.microsoft.com/3dmanufacturing/material/2015/02';
+  const anyHasColors = objects.some((o) => o.colorConfig && o.colorConfig.materials.length > 0);
 
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-  xml += `<model unit="millimeter" xml:lang="en-US" xmlns="${NS}">\n`;
+  const matNs = anyHasColors ? ` xmlns:m="${MATERIAL_NS}" requiredextensions="m"` : '';
+  xml += `<model unit="millimeter" xml:lang="en-US" xmlns="${NS}"${matNs}>\n`;
 
   // Metadata
   xml += `  <metadata name="Title">${escapeXml(options.name)}</metadata>\n`;
@@ -405,15 +420,16 @@ function buildMultiObjectModelXML(
     const hasColors = obj.colorConfig && obj.colorConfig.materials.length > 0;
     const colorConfig = hasColors ? obj.colorConfig : undefined;
 
-    // Basematerials for this object (if colored)
-    let baseMaterialsId: number | undefined;
+    // Color group for this object (if colored).
+    let colorGroupId: number | undefined;
     if (colorConfig) {
-      baseMaterialsId = nextId++;
-      xml += `    <basematerials id="${baseMaterialsId}">\n`;
+      assertColorConfigShape(colorConfig, obj.mesh.triangles.length);
+      colorGroupId = nextId++;
+      xml += `    <m:colorgroup id="${colorGroupId}">\n`;
       for (const mat of colorConfig.materials) {
-        xml += `      <base name="${escapeXml(mat.name)}" displaycolor="${escapeXml(mat.color)}" />\n`;
+        xml += `      <m:color color="${escapeXml(mat.color)}" />\n`;
       }
-      xml += '    </basematerials>\n';
+      xml += '    </m:colorgroup>\n';
     }
 
     const objectId = nextId++;
@@ -429,12 +445,11 @@ function buildMultiObjectModelXML(
     xml += '        </vertices>\n';
 
     xml += '        <triangles>\n';
-    if (colorConfig && baseMaterialsId !== undefined) {
+    if (colorConfig && colorGroupId !== undefined) {
       const indices = colorConfig.triangleMaterialIndices;
       for (let i = 0; i < obj.mesh.triangles.length; i++) {
         const [v1, v2, v3] = obj.mesh.triangles[i];
-        const pindex = indices[i] ?? 0;
-        xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" pid="${baseMaterialsId}" p1="${pindex}" />\n`;
+        xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" pid="${colorGroupId}" p1="${indices[i]}" />\n`;
       }
     } else {
       for (const [v1, v2, v3] of obj.mesh.triangles) {
@@ -464,7 +479,44 @@ function escapeXml(str: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/;
+
+/**
+ * Materials Extension v1.0 requires `#RRGGBB` or `#RRGGBBAA` (sRGB hex with
+ * leading `#`). Validate up-front so a stray `rgb(...)`, missing `#`, or
+ * 3-digit shorthand can't ship as a parseable-but-rejected 3MF.
+ *
+ * `triangleMaterialIndices` must have exactly one entry per triangle and each
+ * entry must point at a valid color slot — `?? 0` fallbacks silently produced
+ * wrong colors when callers passed short arrays.
+ */
+function assertColorConfigShape(config: ThreeMFColorConfig, triangleCount: number): void {
+  if (config.triangleMaterialIndices.length !== triangleCount) {
+    throw new Error(
+      `3MF color config: triangleMaterialIndices length ${config.triangleMaterialIndices.length} does not match triangle count ${triangleCount}`
+    );
+  }
+  const slotCount = config.materials.length;
+  for (let i = 0; i < config.triangleMaterialIndices.length; i++) {
+    const idx = config.triangleMaterialIndices[i];
+    if (!Number.isInteger(idx) || idx < 0 || idx >= slotCount) {
+      throw new Error(
+        `3MF color config: triangle ${i} index ${idx} out of range [0, ${slotCount})`
+      );
+    }
+  }
+  for (let i = 0; i < config.materials.length; i++) {
+    const color = config.materials[i].color;
+    if (!HEX_COLOR_RE.test(color)) {
+      throw new Error(
+        `3MF color config: material ${i} color "${color}" is not in #RRGGBB or #RRGGBBAA format`
+      );
+    }
+  }
 }
 
 /**
