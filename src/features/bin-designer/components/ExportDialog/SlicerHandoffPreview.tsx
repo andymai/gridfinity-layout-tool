@@ -1,8 +1,9 @@
 /**
  * Filament-mapping preview shown in the export dialog when the design
- * is multi-color and the format is 3MF. Mirrors what slicers see in
- * the 3MF basematerials section so users can plan their AMS/MMU slots
- * before opening the slicer.
+ * is multi-color and the format is 3MF. Mirrors the 3MF Materials
+ * Extension `<m:colorgroup>` block — the structure BambuStudio /
+ * OrcaSlicer parse for their "Standard 3MF Import Color" dialog — so
+ * users can plan their AMS/MMU slots before opening the slicer.
  */
 
 import { useId, useState } from 'react';

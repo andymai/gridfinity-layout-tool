@@ -212,6 +212,17 @@ describe('stlExporter', () => {
       const headerText = String.fromCharCode(...header).replace(/\0+$/, '');
       expect(headerText).toContain('gridfinity-bin');
     });
+
+    it('default header does not start with "solid" (binary STL detection)', () => {
+      // ASCII STL parsers branch on a "solid" prefix. A binary STL whose header
+      // accidentally starts with "solid" gets misread as text. The current
+      // header literal is safe, but the guard exists to survive refactors.
+      const { vertices, normals } = createSingleTriangle();
+      const buffer = buildSTLBuffer(vertices, normals, 'test');
+      const header = new Uint8Array(buffer, 0, 80);
+      const headerText = String.fromCharCode(...header).replace(/\0+$/, '');
+      expect(headerText.toLowerCase()).not.toMatch(/^solid/);
+    });
   });
 
   describe('buildSTLBufferFromIndexed', () => {
@@ -288,14 +299,52 @@ describe('stlExporter', () => {
       expect(view.getFloat32(92, true)).toBeCloseTo(1);
     });
 
-    it('handles empty mesh', () => {
-      const buffer = buildSTLBufferFromIndexed(
-        new Float32Array(0),
-        new Float32Array(0),
-        new Uint32Array(0),
-        'empty'
-      );
-      expect(buffer.byteLength).toBe(84); // header + count only
+    it('rejects empty mesh (slicers reject empty STLs)', () => {
+      expect(() =>
+        buildSTLBufferFromIndexed(
+          new Float32Array(0),
+          new Float32Array(0),
+          new Uint32Array(0),
+          'empty'
+        )
+      ).toThrow(/must be > 0/);
+    });
+
+    it('rejects indices length not divisible by 3', () => {
+      const vertices = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const normals = new Float32Array(9);
+      expect(() =>
+        buildSTLBufferFromIndexed(vertices, normals, new Uint32Array([0, 1]), 't')
+      ).toThrow(/divisible by 3/);
+    });
+
+    it('rejects an out-of-range vertex index', () => {
+      const vertices = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]); // 3 verts
+      const normals = new Float32Array(9);
+      expect(() =>
+        buildSTLBufferFromIndexed(vertices, normals, new Uint32Array([0, 1, 99]), 't')
+      ).toThrow(/out of range/);
+    });
+
+    it('rejects a normals/vertices length mismatch when normals are provided', () => {
+      const vertices = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      const normals = new Float32Array([0, 0, 1, 0, 0, 1]); // length 6, not 9
+      expect(() =>
+        buildSTLBufferFromIndexed(vertices, normals, new Uint32Array([0, 1, 2]), 't')
+      ).toThrow(/normals length/);
+    });
+
+    it('renormalizes non-unit normals to unit length', () => {
+      const vertices = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+      // Normals scaled by 5x — common artifact of upstream boolean ops.
+      const normals = new Float32Array([0, 0, 5, 0, 0, 5, 0, 0, 5]);
+      const buffer = buildSTLBufferFromIndexed(vertices, normals, new Uint32Array([0, 1, 2]), 't');
+      const view = new DataView(buffer);
+      const nx = view.getFloat32(84, true);
+      const ny = view.getFloat32(88, true);
+      const nz = view.getFloat32(92, true);
+      const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+      expect(len).toBeCloseTo(1, 5);
     });
   });
 

@@ -227,12 +227,26 @@ describe('threemfExporter', () => {
       });
       const xml = extractModelXML(buffer);
 
-      expect(xml).toContain('<metadata name="PrintSettings.LayerHeight">0.2</metadata>');
-      expect(xml).toContain('<metadata name="PrintSettings.InfillPercent">15</metadata>');
-      expect(xml).toContain('<metadata name="PrintSettings.Material">PLA</metadata>');
-      expect(xml).toContain('<metadata name="PrintSettings.SupportRequired">false</metadata>');
-      expect(xml).toContain('<metadata name="PrintSettings.EstimatedMinutes">45</metadata>');
-      expect(xml).toContain('<metadata name="PrintSettings.EstimatedGrams">12</metadata>');
+      // Custom metadata names (no registered namespace prefix) get
+      // preserve="true" per 3MF Core §3.7 so consumers don't strip them.
+      expect(xml).toContain(
+        '<metadata name="PrintSettings.LayerHeight" preserve="true">0.2</metadata>'
+      );
+      expect(xml).toContain(
+        '<metadata name="PrintSettings.InfillPercent" preserve="true">15</metadata>'
+      );
+      expect(xml).toContain(
+        '<metadata name="PrintSettings.Material" preserve="true">PLA</metadata>'
+      );
+      expect(xml).toContain(
+        '<metadata name="PrintSettings.SupportRequired" preserve="true">false</metadata>'
+      );
+      expect(xml).toContain(
+        '<metadata name="PrintSettings.EstimatedMinutes" preserve="true">45</metadata>'
+      );
+      expect(xml).toContain(
+        '<metadata name="PrintSettings.EstimatedGrams" preserve="true">12</metadata>'
+      );
     });
 
     it('omits print settings metadata when not provided', () => {
@@ -391,49 +405,51 @@ describe('threemfExporter', () => {
     });
   });
 
-  describe('multi-color basematerials', () => {
-    it('emits basematerials and pid/pindex when colorConfig is provided', () => {
+  describe('multi-color m:colorgroup', () => {
+    it('emits m:colorgroup, namespace, and pid/p1 when colorConfig is provided', () => {
       const { vertices, normals } = createTwoTriangles();
       const buffer = build3MFBuffer(vertices, normals, {
         name: 'color-test',
         colorConfig: {
-          materials: [
-            { name: 'White', color: '#ffffff' },
-            { name: 'Blue', color: '#0000ff' },
-          ],
+          materials: [{ color: '#ffffff' }, { color: '#0000ff' }],
           triangleMaterialIndices: [0, 1],
         },
       });
       const files = unzipSync(buffer);
       const model = strFromU8(files['3D/3dmodel.model']);
 
-      // Basematerials in core namespace (no m: prefix — 3MF Core Spec section 5.1)
-      // IDs in ascending document order per §4.1.2: basematerials=1, object=2
-      expect(model).not.toContain('xmlns:m=');
-      expect(model).toContain('<basematerials id="1">');
-      expect(model).toContain('<base name="White" displaycolor="#ffffff" />');
-      expect(model).toContain('<base name="Blue" displaycolor="#0000ff" />');
-      expect(model).toContain('</basematerials>');
+      // 3MF Materials Extension v1.0 — BambuStudio/OrcaSlicer recognize this
+      // form and trigger their "Standard 3MF Import Color" dialog.
+      expect(model).toContain(
+        'xmlns:m="http://schemas.microsoft.com/3dmanufacturing/material/2015/02"'
+      );
+      expect(model).toContain('requiredextensions="m"');
+      // IDs in ascending document order per §4.1.2: colorgroup=1, object=2
+      expect(model).toContain('<m:colorgroup id="1">');
+      expect(model).toContain('<m:color color="#ffffff" />');
+      expect(model).toContain('<m:color color="#0000ff" />');
+      expect(model).toContain('</m:colorgroup>');
       expect(model).toContain('object id="2"');
       expect(model).toContain('objectid="2"');
 
-      // Triangle material assignments
+      // Triangle color assignments
       expect(model).toMatch(/triangle v1="\d+" v2="\d+" v3="\d+" pid="1" p1="0"/);
       expect(model).toMatch(/triangle v1="\d+" v2="\d+" v3="\d+" pid="1" p1="1"/);
     });
 
-    it('omits basematerials when colorConfig is absent', () => {
+    it('omits m:colorgroup and namespace when colorConfig is absent', () => {
       const { vertices, normals } = createSingleTriangle();
       const buffer = build3MFBuffer(vertices, normals, { name: 'no-color' });
       const files = unzipSync(buffer);
       const model = strFromU8(files['3D/3dmodel.model']);
 
-      expect(model).not.toContain('basematerials');
+      expect(model).not.toContain('m:colorgroup');
       expect(model).not.toContain('pid=');
       expect(model).not.toContain('xmlns:m=');
+      expect(model).not.toContain('requiredextensions=');
     });
 
-    it('omits basematerials when colorConfig has empty materials', () => {
+    it('omits m:colorgroup when colorConfig has empty materials', () => {
       const { vertices, normals } = createSingleTriangle();
       const buffer = build3MFBuffer(vertices, normals, {
         name: 'empty-color',
@@ -442,8 +458,70 @@ describe('threemfExporter', () => {
       const files = unzipSync(buffer);
       const model = strFromU8(files['3D/3dmodel.model']);
 
-      expect(model).not.toContain('basematerials');
+      expect(model).not.toContain('m:colorgroup');
       expect(model).not.toContain('pid=');
+      expect(model).not.toContain('xmlns:m=');
+    });
+
+    it('throws when triangleMaterialIndices length does not match triangle count', () => {
+      const { vertices, normals } = createTwoTriangles();
+      expect(() =>
+        build3MFBuffer(vertices, normals, {
+          name: 'mismatch',
+          colorConfig: {
+            materials: [{ color: '#ffffff' }],
+            triangleMaterialIndices: [0], // 1 entry for 2 triangles
+          },
+        })
+      ).toThrow(/triangleMaterialIndices length/);
+    });
+
+    it('throws when a triangle index points outside the materials array', () => {
+      const { vertices, normals } = createTwoTriangles();
+      expect(() =>
+        build3MFBuffer(vertices, normals, {
+          name: 'out-of-range',
+          colorConfig: {
+            materials: [{ color: '#ffffff' }],
+            triangleMaterialIndices: [0, 5], // index 5 with only 1 slot
+          },
+        })
+      ).toThrow(/out of range/);
+    });
+
+    it('throws on non-conformant hex color strings', () => {
+      const { vertices, normals } = createSingleTriangle();
+      expect(() =>
+        build3MFBuffer(vertices, normals, {
+          name: 'bad-hex',
+          colorConfig: {
+            materials: [{ color: 'rgb(255,0,0)' }],
+            triangleMaterialIndices: [0],
+          },
+        })
+      ).toThrow(/#RRGGBB or #RRGGBBAA/);
+      expect(() =>
+        build3MFBuffer(vertices, normals, {
+          name: 'short-hex',
+          colorConfig: {
+            materials: [{ color: '#fff' }],
+            triangleMaterialIndices: [0],
+          },
+        })
+      ).toThrow(/#RRGGBB or #RRGGBBAA/);
+    });
+
+    it('accepts #RRGGBBAA hex with alpha channel', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'alpha',
+        colorConfig: {
+          materials: [{ color: '#ff000080' }],
+          triangleMaterialIndices: [0],
+        },
+      });
+      const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
+      expect(model).toContain('<m:color color="#ff000080" />');
     });
   });
 
@@ -479,7 +557,7 @@ describe('threemfExporter', () => {
       expect(model).toContain('objectid="3"');
     });
 
-    it('assigns sequential IDs with per-object basematerials', () => {
+    it('assigns sequential IDs with per-object color groups', () => {
       const tri = createSingleTriangle();
       const objects = [
         {
@@ -487,7 +565,7 @@ describe('threemfExporter', () => {
           normals: tri.normals,
           name: 'Colored Bin',
           colorConfig: {
-            materials: [{ name: 'Red', color: '#ff0000' }],
+            materials: [{ color: '#ff0000' }],
             triangleMaterialIndices: [0],
           },
         },
@@ -496,12 +574,13 @@ describe('threemfExporter', () => {
       const buffer = build3MFMultiObjectBuffer(objects, { name: 'test' });
       const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
 
-      // basematerials=1, colored object=2, plain object=3
-      expect(model).toContain('basematerials id="1"');
+      // colorgroup=1, colored object=2, plain object=3
+      expect(model).toContain('m:colorgroup id="1"');
       expect(model).toContain('object id="2"');
       expect(model).toContain('object id="3"');
       expect(model).toContain('objectid="2"');
       expect(model).toContain('objectid="3"');
+      expect(model).toContain('xmlns:m=');
     });
 
     it('export3MFMultiObject produces a Blob with correct MIME', () => {
@@ -702,6 +781,28 @@ describe('threemfExporter', () => {
       const contentTypes = strFromU8(files['[Content_Types].xml']);
 
       expect(contentTypes).toContain('Extension="rels"');
+    });
+
+    it('omits the thumbnail relationship when no thumbnail is provided', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const buffer = build3MFBuffer(vertices, normals, { name: 'test' });
+      const rels = strFromU8(unzipSync(buffer)['_rels/.rels']);
+
+      expect(rels).not.toContain('thumbnail');
+    });
+
+    it('declares the OPC thumbnail relationship when a thumbnail is included', () => {
+      // Without this Relationship, viewers can't discover the thumbnail PNG
+      // even when Content_Types declares its MIME type.
+      const { vertices, normals } = createSingleTriangle();
+      const thumbnail = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
+      const buffer = build3MFBuffer(vertices, normals, { name: 'test', thumbnail });
+      const rels = strFromU8(unzipSync(buffer)['_rels/.rels']);
+
+      expect(rels).toContain('Target="/Metadata/thumbnail.png"');
+      expect(rels).toContain(
+        'Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"'
+      );
     });
   });
 
