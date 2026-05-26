@@ -187,23 +187,12 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
     assertColorConfigShape(colorConfig, mesh.triangles.length);
   }
 
-  // IDs assigned in ascending document order per 3MF Core Spec §4.1.2;
-  // the colorgroup MUST precede the object that references it via pid.
-  const COLORGROUP_ID = 1;
-  const objectId = colorConfig ? 2 : 1;
+  const objectId = 1;
 
-  let xml = openModelElement(!!colorConfig);
+  let xml = openModelElement();
   xml += buildMetadataXml(options);
   xml += '  <resources>\n';
-  if (colorConfig) {
-    xml += buildColorGroupXml(COLORGROUP_ID, colorConfig.materials);
-  }
-  xml += buildObjectXml(
-    objectId,
-    options.name,
-    mesh,
-    colorConfig ? { id: COLORGROUP_ID, indices: colorConfig.triangleMaterialIndices } : null
-  );
+  xml += buildObjectXml(objectId, options.name, mesh, colorConfig?.triangleMaterialIndices);
   xml += '  </resources>\n';
   xml += '  <build>\n';
   xml += renderBuildItems(objectId, options.stack);
@@ -250,24 +239,17 @@ function buildMultiObjectModelXML(
     }
     return { ...obj, colorConfig };
   });
-  const anyHasColors = resolved.some((obj) => obj.colorConfig !== undefined);
 
-  let xml = openModelElement(anyHasColors);
+  let xml = openModelElement();
   xml += buildMetadataXml(options);
   xml += '  <resources>\n';
 
   const objectIds: number[] = [];
   let nextId = 1;
   for (const obj of resolved) {
-    let colorGroup: { id: number; indices: readonly number[] } | null = null;
-    if (obj.colorConfig) {
-      const colorGroupId = nextId++;
-      xml += buildColorGroupXml(colorGroupId, obj.colorConfig.materials);
-      colorGroup = { id: colorGroupId, indices: obj.colorConfig.triangleMaterialIndices };
-    }
     const objectId = nextId++;
     objectIds.push(objectId);
-    xml += buildObjectXml(objectId, obj.name, obj.mesh, colorGroup);
+    xml += buildObjectXml(objectId, obj.name, obj.mesh, obj.colorConfig?.triangleMaterialIndices);
   }
 
   xml += '  </resources>\n';
@@ -281,18 +263,45 @@ function buildMultiObjectModelXML(
 }
 
 const CORE_NS = 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02';
-const MATERIAL_NS = 'http://schemas.microsoft.com/3dmanufacturing/material/2015/02';
+
+function openModelElement(): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="${CORE_NS}">\n`;
+}
 
 /**
- * The `m` materials extension is what BambuStudio/OrcaSlicer parse for their
- * "Standard 3MF Import Color" dialog — the 3MF Core `<basematerials>` element
- * is silently ignored by their parsers. Declare the extension only when we
- * actually emit color content, so single-color exports stay namespace-clean.
+ * Per-filament paint_color encoding table, lifted verbatim from OrcaSlicer's
+ * `CONST_FILAMENTS` (libslic3r/Model.cpp). The string at index N is the
+ * serialized TriangleSelector bit-tree for a leaf triangle entirely painted
+ * with filament/extruder N (1-based). Index 0 is the empty string, meaning
+ * "no override — use the object's default extruder."
+ *
+ * PrusaSlicer reads the same `paint_color` attribute (3mf.cpp:2158) as a
+ * fallback for its own `slic3rpe:mmu_segmentation`, so one emission path
+ * covers Bambu/Orca/Prusa. The Materials Extension `<m:colorgroup>` was
+ * dropped because Orca explicitly ignores triangle `pid`/`p1` (bbs_3mf.cpp
+ * comment lines 3805–3810) and treats each colorgroup as a single object
+ * color, not a multi-slot palette.
  */
-function openModelElement(hasColors: boolean): string {
-  const matNs = hasColors ? ` xmlns:m="${MATERIAL_NS}" requiredextensions="m"` : '';
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" xmlns="${CORE_NS}"${matNs}>\n`;
-}
+const FILAMENT_PAINT_CODES = [
+  '',
+  '4',
+  '8',
+  '0C',
+  '1C',
+  '2C',
+  '3C',
+  '4C',
+  '5C',
+  '6C',
+  '7C',
+  '8C',
+  '9C',
+  'AC',
+  'BC',
+  'CC',
+  'DC',
+] as const;
+const MAX_COLOR_SLOTS = FILAMENT_PAINT_CODES.length;
 
 function buildMetadataXml(options: ThreeMFOptions): string {
   let xml = `  <metadata name="Title">${escapeXml(options.name)}</metadata>\n`;
@@ -317,20 +326,11 @@ function buildMetadataXml(options: ThreeMFOptions): string {
   return xml;
 }
 
-function buildColorGroupXml(id: number, materials: ThreeMFColorConfig['materials']): string {
-  let xml = `    <m:colorgroup id="${id}">\n`;
-  for (const mat of materials) {
-    xml += `      <m:color color="${escapeXml(mat.color)}" />\n`;
-  }
-  xml += '    </m:colorgroup>\n';
-  return xml;
-}
-
 function buildObjectXml(
   objectId: number,
   name: string,
   mesh: IndexedMesh,
-  colorGroup: { id: number; indices: readonly number[] } | null
+  triangleMaterialIndices: readonly number[] | undefined
 ): string {
   let xml = `    <object id="${objectId}" type="model" name="${escapeXml(name)}">\n`;
   xml += '      <mesh>\n        <vertices>\n';
@@ -338,11 +338,16 @@ function buildObjectXml(
     xml += `          <vertex x="${formatFloat(x)}" y="${formatFloat(y)}" z="${formatFloat(z)}" />\n`;
   }
   xml += '        </vertices>\n        <triangles>\n';
-  if (colorGroup) {
-    const { id, indices } = colorGroup;
+  if (triangleMaterialIndices) {
     for (let i = 0; i < mesh.triangles.length; i++) {
       const [v1, v2, v3] = mesh.triangles[i];
-      xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" pid="${id}" p1="${indices[i]}" />\n`;
+      // Slot 0 (body) maps to filament 0 = "" = no paint_color attribute, so
+      // the triangle inherits the object's default extruder. Slots 1..N map
+      // to filaments 1..N with their matching bit-tree code.
+      const code = FILAMENT_PAINT_CODES[triangleMaterialIndices[i]];
+      xml += code
+        ? `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" paint_color="${code}" />\n`
+        : `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" />\n`;
     }
   } else {
     for (const [v1, v2, v3] of mesh.triangles) {
@@ -365,10 +370,9 @@ function escapeXml(str: string): string {
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/;
 
 /**
- * Materials Extension v1.0 requires `#RRGGBB` or `#RRGGBBAA` (sRGB hex with
- * leading `#`); `triangleMaterialIndices` must have exactly one entry per
- * triangle, each pointing at a valid color slot. Violations throw so that
- * out-of-range or missing entries can't silently ship as wrong colors.
+ * Validates color hex format and triangle index range. Caps at the size of
+ * OrcaSlicer's CONST_FILAMENTS table — going past it would emit a paint_color
+ * string the slicer can't decode.
  */
 function assertColorConfigShape(config: ThreeMFColorConfig, triangleCount: number): void {
   if (config.triangleMaterialIndices.length !== triangleCount) {
@@ -377,6 +381,11 @@ function assertColorConfigShape(config: ThreeMFColorConfig, triangleCount: numbe
     );
   }
   const slotCount = config.materials.length;
+  if (slotCount > MAX_COLOR_SLOTS) {
+    throw new Error(
+      `3MF color config: ${slotCount} colors exceeds slicer filament cap of ${MAX_COLOR_SLOTS}`
+    );
+  }
   for (let i = 0; i < config.triangleMaterialIndices.length; i++) {
     const idx = config.triangleMaterialIndices[i];
     if (!Number.isInteger(idx) || idx < 0 || idx >= slotCount) {
