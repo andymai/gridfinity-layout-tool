@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.120.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.0...gridfinity-layout-tool-v4.120.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* **export:** emit 3MF Materials Extension colorgroup for Bambu/Orca + spec audit ([#1883](https://github.com/andymai/gridfinity-layout-tool/issues/1883)) ([d21dbab](https://github.com/andymai/gridfinity-layout-tool/commit/d21dbab7833415a5c202d44f342f0e40d8e69e0f))
+
 ## [4.120.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.119.1...gridfinity-layout-tool-v4.120.0) (2026-05-25)
 
 
