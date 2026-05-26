@@ -570,6 +570,90 @@ describe('threemfExporter', () => {
     });
   });
 
+  // Bambu/Orca read Metadata/project_settings.config via
+  // ConfigBase::load_from_json. Its presence flips DynamicPrintConfig.empty()
+  // to false, which suppresses BambuStudio's "old version, geometry only"
+  // dialog (Plater.cpp:8127). filament_colour also pre-fills the AMS slot
+  // palette with our zone colors.
+  describe('project_settings.config (Bambu warning suppression)', () => {
+    it('emits Metadata/project_settings.config when colorConfig has materials', () => {
+      const { vertices, normals } = createTwoTriangles();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'palette-test',
+        colorConfig: {
+          materials: [{ color: '#aaaaaa' }, { color: '#FF0000' }],
+          triangleMaterialIndices: [0, 1],
+        },
+      });
+      const files = unzipSync(buffer);
+      expect(files['Metadata/project_settings.config']).toBeDefined();
+
+      const config = JSON.parse(strFromU8(files['Metadata/project_settings.config']));
+      expect(config.name).toBe('project_settings');
+      expect(config.from).toBe('Gridfinity Layout Tool');
+      expect(typeof config.version).toBe('string');
+      // Hex codes lowercased — BambuStudio's color comparator is case-sensitive.
+      expect(config.filament_colour).toEqual(['#aaaaaa', '#ff0000']);
+    });
+
+    it('omits project_settings.config when no colorConfig is provided', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const buffer = build3MFBuffer(vertices, normals, { name: 'plain' });
+      const files = unzipSync(buffer);
+      expect(files['Metadata/project_settings.config']).toBeUndefined();
+    });
+
+    it('omits project_settings.config when colorConfig has empty materials', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'empty-palette',
+        colorConfig: { materials: [], triangleMaterialIndices: [] },
+      });
+      const files = unzipSync(buffer);
+      expect(files['Metadata/project_settings.config']).toBeUndefined();
+    });
+
+    it('multi-object: palette aggregates across colored objects, dedup by hex', () => {
+      const tri = createSingleTriangle();
+      const objects = [
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'bin',
+          colorConfig: {
+            materials: [{ color: '#111111' }, { color: '#FF0000' }],
+            triangleMaterialIndices: [0],
+          },
+        },
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'lid',
+          // Repeat #ff0000 (different case) and add a new hue.
+          colorConfig: {
+            materials: [{ color: '#ff0000' }, { color: '#00FF00' }],
+            triangleMaterialIndices: [0],
+          },
+        },
+      ];
+      const buffer = build3MFMultiObjectBuffer(objects, { name: 'multi' });
+      const config = JSON.parse(strFromU8(unzipSync(buffer)['Metadata/project_settings.config']));
+      expect(config.filament_colour).toEqual(['#111111', '#ff0000', '#00ff00']);
+    });
+
+    it('multi-object: omits project_settings.config when no object has a colorConfig', () => {
+      const tri = createSingleTriangle();
+      const buffer = build3MFMultiObjectBuffer(
+        [
+          { vertices: tri.vertices, normals: tri.normals, name: 'a' },
+          { vertices: tri.vertices, normals: tri.normals, name: 'b' },
+        ],
+        { name: 'multi-plain' }
+      );
+      expect(unzipSync(buffer)['Metadata/project_settings.config']).toBeUndefined();
+    });
+  });
+
   describe('multi-object 3MF', () => {
     it('produces a valid ZIP with multiple objects', () => {
       const tri = createSingleTriangle();

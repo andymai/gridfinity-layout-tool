@@ -65,7 +65,11 @@ export function export3MFMultiObject(
   return new Blob([toArrayBuffer(buffer)], { type: THREEMF_MIME });
 }
 
-function packageFiles(modelXml: string, thumbnail: Uint8Array | undefined): Uint8Array {
+function packageFiles(
+  modelXml: string,
+  thumbnail: Uint8Array | undefined,
+  projectSettingsJson: string | undefined
+): Uint8Array {
   const hasThumbnail = !!thumbnail;
   const files: Record<string, Uint8Array> = {
     '[Content_Types].xml': strToU8(buildContentTypes(hasThumbnail)),
@@ -74,6 +78,14 @@ function packageFiles(modelXml: string, thumbnail: Uint8Array | undefined): Uint
   };
   if (thumbnail) {
     files['Metadata/thumbnail.png'] = thumbnail;
+  }
+  if (projectSettingsJson) {
+    // Bambu/Orca read this path via `_extract_project_config_from_archive`.
+    // Its mere presence (with any recognized config key) flips Bambu's
+    // `config_loaded.empty()` check, suppressing the "old version, geometry
+    // only" dialog (Plater.cpp:8127). The `filament_colour` payload doubles
+    // as a hint so the slicer's AMS slots open with our zone palette.
+    files['Metadata/project_settings.config'] = strToU8(projectSettingsJson);
   }
   return zipSync(files, { level: 6 });
 }
@@ -92,7 +104,12 @@ export function build3MFMultiObjectBuffer(
     colorConfig: obj.colorConfig,
   }));
 
-  return packageFiles(buildMultiObjectModelXML(meshes, options), options.thumbnail);
+  const palette = unifiedPalette(meshes.map((m) => m.colorConfig));
+  return packageFiles(
+    buildMultiObjectModelXML(meshes, options),
+    options.thumbnail,
+    palette && buildProjectSettingsConfig(palette)
+  );
 }
 
 export function build3MFBuffer(
@@ -102,7 +119,12 @@ export function build3MFBuffer(
 ): Uint8Array {
   validateMeshData(vertices, normals);
   const mesh = deduplicateVertices(vertices);
-  return packageFiles(buildModelXML(mesh, options), options.thumbnail);
+  const palette = unifiedPalette([options.colorConfig]);
+  return packageFiles(
+    buildModelXML(mesh, options),
+    options.thumbnail,
+    palette && buildProjectSettingsConfig(palette)
+  );
 }
 
 /**
@@ -179,6 +201,58 @@ function buildRelationships(hasThumbnail: boolean): string {
 
 function activeColorConfig(c: ThreeMFColorConfig | undefined): ThreeMFColorConfig | undefined {
   return c && c.materials.length > 0 ? c : undefined;
+}
+
+/**
+ * Collapse the materials lists from one or more color configs into a single
+ * ordered hex palette. Across the multi-object path only the bin currently
+ * carries a colorConfig, but if that ever changes we walk every object and
+ * dedup by hex so the palette stays consistent with the per-triangle slot
+ * indices each object emitted via its own paint_color codes.
+ *
+ * Returns null when no palette would be emitted — single-color exports skip
+ * the project_settings.config entirely (no warning to suppress; no AMS slots
+ * to seed).
+ */
+function unifiedPalette(
+  configs: readonly (ThreeMFColorConfig | undefined)[]
+): readonly string[] | undefined {
+  const seen = new Set<string>();
+  const palette: string[] = [];
+  for (const c of configs) {
+    const active = activeColorConfig(c);
+    if (!active) continue;
+    for (const mat of active.materials) {
+      const hex = mat.color.toLowerCase();
+      if (seen.has(hex)) continue;
+      seen.add(hex);
+      palette.push(hex);
+    }
+  }
+  return palette.length > 0 ? palette : undefined;
+}
+
+/**
+ * Minimal Bambu/Orca `project_settings.config` JSON. The slicer parses this
+ * via `ConfigBase::load_from_json` (Config.cpp:807); any recognized key
+ * flips `DynamicPrintConfig.empty()` to false, which is what gates the
+ * "geometry only" warning. `filament_colour` is the right key for our use
+ * case — `coStrings` per PrintConfig.cpp, displayed as the AMS slot colors.
+ *
+ * Headers (`version`, `name="project_settings"`, `from`) are read into a
+ * key_values map but are advisory: the loader doesn't gate on them.
+ */
+function buildProjectSettingsConfig(palette: readonly string[]): string {
+  return JSON.stringify(
+    {
+      version: '1.0.0.0',
+      name: 'project_settings',
+      from: 'Gridfinity Layout Tool',
+      filament_colour: palette,
+    },
+    null,
+    2
+  );
 }
 
 function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
