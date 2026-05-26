@@ -227,12 +227,26 @@ describe('threemfExporter', () => {
       });
       const xml = extractModelXML(buffer);
 
-      expect(xml).toContain('<metadata name="PrintSettings.LayerHeight">0.2</metadata>');
-      expect(xml).toContain('<metadata name="PrintSettings.InfillPercent">15</metadata>');
-      expect(xml).toContain('<metadata name="PrintSettings.Material">PLA</metadata>');
-      expect(xml).toContain('<metadata name="PrintSettings.SupportRequired">false</metadata>');
-      expect(xml).toContain('<metadata name="PrintSettings.EstimatedMinutes">45</metadata>');
-      expect(xml).toContain('<metadata name="PrintSettings.EstimatedGrams">12</metadata>');
+      // Custom metadata names (no registered namespace prefix) get
+      // preserve="true" per 3MF Core §3.7 so consumers don't strip them.
+      expect(xml).toContain(
+        '<metadata name="PrintSettings.LayerHeight" preserve="true">0.2</metadata>'
+      );
+      expect(xml).toContain(
+        '<metadata name="PrintSettings.InfillPercent" preserve="true">15</metadata>'
+      );
+      expect(xml).toContain(
+        '<metadata name="PrintSettings.Material" preserve="true">PLA</metadata>'
+      );
+      expect(xml).toContain(
+        '<metadata name="PrintSettings.SupportRequired" preserve="true">false</metadata>'
+      );
+      expect(xml).toContain(
+        '<metadata name="PrintSettings.EstimatedMinutes" preserve="true">45</metadata>'
+      );
+      expect(xml).toContain(
+        '<metadata name="PrintSettings.EstimatedGrams" preserve="true">12</metadata>'
+      );
     });
 
     it('omits print settings metadata when not provided', () => {
