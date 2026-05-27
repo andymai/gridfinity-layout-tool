@@ -17,6 +17,7 @@ describe('isLocale', () => {
     expect(isLocale('nb')).toBe(true);
     expect(isLocale('uk')).toBe(true);
     expect(isLocale('sv')).toBe(true);
+    expect(isLocale('ja')).toBe(true);
   });
 
   it('returns false for invalid locale codes', () => {
@@ -30,7 +31,7 @@ describe('isLocale', () => {
 
 describe('SUPPORTED_LOCALES', () => {
   it('contains expected number of locales', () => {
-    expect(SUPPORTED_LOCALES).toHaveLength(9);
+    expect(SUPPORTED_LOCALES).toHaveLength(10);
   });
 
   it('has required properties for each locale', () => {
@@ -106,6 +107,11 @@ describe('detectBrowserLocale', () => {
     it('detects Swedish', () => {
       vi.stubGlobal('navigator', { languages: ['sv'], language: 'sv' });
       expect(detectBrowserLocale()).toBe('sv');
+    });
+
+    it('detects Japanese', () => {
+      vi.stubGlobal('navigator', { languages: ['ja'], language: 'ja' });
+      expect(detectBrowserLocale()).toBe('ja');
     });
   });
 
@@ -194,13 +200,18 @@ describe('detectBrowserLocale', () => {
       vi.stubGlobal('navigator', { languages: ['sv-FI'], language: 'sv-FI' });
       expect(detectBrowserLocale()).toBe('sv');
     });
+
+    it('maps ja-JP to ja', () => {
+      vi.stubGlobal('navigator', { languages: ['ja-JP'], language: 'ja-JP' });
+      expect(detectBrowserLocale()).toBe('ja');
+    });
   });
 
   describe('language preference order', () => {
     it('uses first matching language from preferences', () => {
       vi.stubGlobal('navigator', {
-        languages: ['ja', 'de', 'en'], // Japanese not supported, German is
-        language: 'ja',
+        languages: ['zh', 'de', 'en'], // Chinese not supported, German is
+        language: 'zh',
       });
       expect(detectBrowserLocale()).toBe('de');
     });
@@ -215,7 +226,7 @@ describe('detectBrowserLocale', () => {
 
     it('falls back to en for unsupported languages', () => {
       vi.stubGlobal('navigator', {
-        languages: ['zh', 'ko', 'ja'], // None supported
+        languages: ['zh', 'ko', 'th'], // None supported
         language: 'zh',
       });
       expect(detectBrowserLocale()).toBe('en');
