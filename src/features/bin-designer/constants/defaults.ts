@@ -20,6 +20,7 @@ import type {
   SplitConnectorConfig,
 } from '../types';
 import type { FeatureColorConfig } from '../types/featureColors';
+import { normalizeHex } from '../types/featureColors';
 import type { LidConfig } from '../types/lid';
 import { DEFAULT_LID_CONFIG, LID_CLICK_RAIL_COVERAGE_OPTIONS } from '../types/lid';
 import type { LidClickRails } from '../types/lid';
@@ -209,12 +210,27 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
     const single = resolveColor(raw.lip, body);
     lip = { frontLeft: single, frontRight: single, backRight: single, backLeft: single };
   } else if (raw.lip && typeof raw.lip === 'object') {
-    lip = {
-      frontLeft: raw.lip.frontLeft ?? body,
-      frontRight: raw.lip.frontRight ?? body,
-      backRight: raw.lip.backRight ?? body,
-      backLeft: raw.lip.backLeft ?? body,
-    };
+    const fl = raw.lip.frontLeft ?? body;
+    const fr = raw.lip.frontRight ?? body;
+    const br = raw.lip.backRight ?? body;
+    const bl = raw.lip.backLeft ?? body;
+    // The per-corner lip editor is currently rolled back to a single picker
+    // that mirrors hex into all four slots. Designs saved while the
+    // per-corner editor was live (or imported from a fork) can land here
+    // with mismatched corners — the UI shows one (frontLeft) but the 3D
+    // preview and 3MF exporter both classify lip triangles per quadrant and
+    // honor the mismatch, so the slicer renders colors the picker can't
+    // even display. Canonicalize to frontLeft on load to align all three
+    // surfaces. Per-corner intent is recoverable from version history if
+    // the editor returns. (Discussion #1654 bug #3.)
+    const normalizedFl = normalizeHex(fl);
+    const allMatch =
+      normalizedFl === normalizeHex(fr) &&
+      normalizedFl === normalizeHex(br) &&
+      normalizedFl === normalizeHex(bl);
+    lip = allMatch
+      ? { frontLeft: fl, frontRight: fr, backRight: br, backLeft: bl }
+      : { frontLeft: fl, frontRight: fl, backRight: fl, backLeft: fl };
   } else {
     lip = { frontLeft: body, frontRight: body, backRight: body, backLeft: body };
   }
