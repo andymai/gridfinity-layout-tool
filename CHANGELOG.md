@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.120.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.4...gridfinity-layout-tool-v4.120.5) (2026-05-27)
+
+
+### Bug Fixes
+
+* **export:** off-by-one collapsed body+lip onto the same AMS slot ([#1891](https://github.com/andymai/gridfinity-layout-tool/issues/1891)) ([785ab91](https://github.com/andymai/gridfinity-layout-tool/commit/785ab91c80b56cbb5ad8824d92ad47864b4bac67))
+
 ## [4.120.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.3...gridfinity-layout-tool-v4.120.4) (2026-05-27)
 
 
