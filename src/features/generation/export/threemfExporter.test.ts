@@ -405,8 +405,12 @@ describe('threemfExporter', () => {
     });
   });
 
-  describe('multi-color m:colorgroup', () => {
-    it('emits m:colorgroup, namespace, and pid/p1 when colorConfig is provided', () => {
+  // Both PrusaSlicer (3mf.cpp:2158) and OrcaSlicer/BambuStudio (bbs_3mf.cpp's
+  // MMU_SEGMENTATION_ATTR = "paint_color") read this attribute as the per-triangle
+  // multi-material assignment. The encoding string for each filament slot is the
+  // serialized TriangleSelector bit-tree, lifted from OrcaSlicer Model.cpp:52.
+  describe('multi-color paint_color', () => {
+    it('emits paint_color on triangles whose material index ≠ 0', () => {
       const { vertices, normals } = createTwoTriangles();
       const buffer = build3MFBuffer(vertices, normals, {
         name: 'color-test',
@@ -415,52 +419,76 @@ describe('threemfExporter', () => {
           triangleMaterialIndices: [0, 1],
         },
       });
-      const files = unzipSync(buffer);
-      const model = strFromU8(files['3D/3dmodel.model']);
+      const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
 
-      // 3MF Materials Extension v1.0 — BambuStudio/OrcaSlicer recognize this
-      // form and trigger their "Standard 3MF Import Color" dialog.
-      expect(model).toContain(
-        'xmlns:m="http://schemas.microsoft.com/3dmanufacturing/material/2015/02"'
-      );
-      expect(model).toContain('requiredextensions="m"');
-      // IDs in ascending document order per §4.1.2: colorgroup=1, object=2
-      expect(model).toContain('<m:colorgroup id="1">');
-      expect(model).toContain('<m:color color="#ffffff" />');
-      expect(model).toContain('<m:color color="#0000ff" />');
-      expect(model).toContain('</m:colorgroup>');
-      expect(model).toContain('object id="2"');
-      expect(model).toContain('objectid="2"');
-
-      // Triangle color assignments
-      expect(model).toMatch(/triangle v1="\d+" v2="\d+" v3="\d+" pid="1" p1="0"/);
-      expect(model).toMatch(/triangle v1="\d+" v2="\d+" v3="\d+" pid="1" p1="1"/);
+      // Slot 0 → no paint_color attribute (triangle inherits default extruder)
+      expect(model).toMatch(/<triangle v1="\d+" v2="\d+" v3="\d+" \/>/);
+      // Slot 1 → paint_color="4" per CONST_FILAMENTS[1]
+      expect(model).toMatch(/<triangle v1="\d+" v2="\d+" v3="\d+" paint_color="4" \/>/);
+      // No legacy artifacts from the old colorgroup approach
+      expect(model).not.toContain('pid=');
+      expect(model).not.toContain('p1=');
+      expect(model).not.toContain('m:colorgroup');
+      expect(model).not.toContain('xmlns:m=');
+      expect(model).not.toContain('requiredextensions=');
     });
 
-    it('omits m:colorgroup and namespace when colorConfig is absent', () => {
+    it('emits the correct paint_color code for each filament slot', () => {
+      // Build a 4-triangle mesh, one triangle per material slot, to exercise
+      // every entry of FILAMENT_PAINT_CODES that's likely to ship in a bin.
+      const verts = new Float32Array(4 * 9);
+      for (let i = 0; i < 4; i++) {
+        const base = i * 9;
+        const o = i * 5;
+        verts.set([o, 0, 0, o + 1, 0, 0, o, 1, 0, o + 1, 0, 0].slice(0, 9), base);
+      }
+      const normals = new Float32Array(4 * 9).fill(0);
+      for (let i = 2; i < 4 * 9; i += 3) normals[i] = 1;
+
+      const buffer = build3MFBuffer(verts, normals, {
+        name: 'four-slots',
+        colorConfig: {
+          materials: [
+            { color: '#111111' },
+            { color: '#222222' },
+            { color: '#333333' },
+            { color: '#444444' },
+          ],
+          triangleMaterialIndices: [0, 1, 2, 3],
+        },
+      });
+      const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
+
+      // Slot 0 → no attribute; Slots 1..3 → "4", "8", "0C" per CONST_FILAMENTS
+      const codes = model.match(/paint_color="([^"]+)"/g) ?? [];
+      expect(codes).toContain('paint_color="4"');
+      expect(codes).toContain('paint_color="8"');
+      expect(codes).toContain('paint_color="0C"');
+      expect(codes).toHaveLength(3);
+    });
+
+    it('omits paint_color and namespace when colorConfig is absent', () => {
       const { vertices, normals } = createSingleTriangle();
       const buffer = build3MFBuffer(vertices, normals, { name: 'no-color' });
-      const files = unzipSync(buffer);
-      const model = strFromU8(files['3D/3dmodel.model']);
+      const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
 
+      expect(model).not.toContain('paint_color');
       expect(model).not.toContain('m:colorgroup');
       expect(model).not.toContain('pid=');
       expect(model).not.toContain('xmlns:m=');
       expect(model).not.toContain('requiredextensions=');
     });
 
-    it('omits m:colorgroup when colorConfig has empty materials', () => {
+    it('omits paint_color when colorConfig has empty materials', () => {
       const { vertices, normals } = createSingleTriangle();
       const buffer = build3MFBuffer(vertices, normals, {
         name: 'empty-color',
         colorConfig: { materials: [], triangleMaterialIndices: [] },
       });
-      const files = unzipSync(buffer);
-      const model = strFromU8(files['3D/3dmodel.model']);
+      const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
 
+      expect(model).not.toContain('paint_color');
       expect(model).not.toContain('m:colorgroup');
-      expect(model).not.toContain('pid=');
-      expect(model).not.toContain('xmlns:m=');
     });
 
     it('throws when triangleMaterialIndices length does not match triangle count', () => {
@@ -470,7 +498,7 @@ describe('threemfExporter', () => {
           name: 'mismatch',
           colorConfig: {
             materials: [{ color: '#ffffff' }],
-            triangleMaterialIndices: [0], // 1 entry for 2 triangles
+            triangleMaterialIndices: [0],
           },
         })
       ).toThrow(/triangleMaterialIndices length/);
@@ -483,10 +511,25 @@ describe('threemfExporter', () => {
           name: 'out-of-range',
           colorConfig: {
             materials: [{ color: '#ffffff' }],
-            triangleMaterialIndices: [0, 5], // index 5 with only 1 slot
+            triangleMaterialIndices: [0, 5],
           },
         })
       ).toThrow(/out of range/);
+    });
+
+    it('throws when materials count exceeds the slicer filament cap', () => {
+      const { vertices, normals } = createSingleTriangle();
+      // FILAMENT_PAINT_CODES has 17 entries (slots 0..16); 18 is the first
+      // count that lacks a code.
+      const tooMany = Array.from({ length: 18 }, (_, i) => ({
+        color: `#${i.toString(16).padStart(2, '0').repeat(3)}`,
+      }));
+      expect(() =>
+        build3MFBuffer(vertices, normals, {
+          name: 'too-many',
+          colorConfig: { materials: tooMany, triangleMaterialIndices: [0] },
+        })
+      ).toThrow(/exceeds slicer filament cap/);
     });
 
     it('throws on non-conformant hex color strings', () => {
@@ -513,15 +556,201 @@ describe('threemfExporter', () => {
 
     it('accepts #RRGGBBAA hex with alpha channel', () => {
       const { vertices, normals } = createSingleTriangle();
+      // No throw is sufficient; alpha hex is allowed even though slicers only
+      // honor RGB, because resolveColorMapping may emit alpha-tinted entries.
+      expect(() =>
+        build3MFBuffer(vertices, normals, {
+          name: 'alpha',
+          colorConfig: {
+            materials: [{ color: '#ff000080' }],
+            triangleMaterialIndices: [0],
+          },
+        })
+      ).not.toThrow();
+    });
+  });
+
+  // Bambu/Orca read Metadata/project_settings.config via
+  // ConfigBase::load_from_json. Its presence flips DynamicPrintConfig.empty()
+  // to false, which suppresses BambuStudio's "old version, geometry only"
+  // dialog (Plater.cpp:8127). filament_colour also pre-fills the AMS slot
+  // palette with our zone colors.
+  describe('project_settings.config (Bambu warning suppression)', () => {
+    it('emits Metadata/project_settings.config when colorConfig has materials', () => {
+      const { vertices, normals } = createTwoTriangles();
       const buffer = build3MFBuffer(vertices, normals, {
-        name: 'alpha',
+        name: 'palette-test',
         colorConfig: {
-          materials: [{ color: '#ff000080' }],
-          triangleMaterialIndices: [0],
+          materials: [{ color: '#aaaaaa' }, { color: '#FF0000' }],
+          triangleMaterialIndices: [0, 1],
+        },
+      });
+      const files = unzipSync(buffer);
+      expect(files['Metadata/project_settings.config']).toBeDefined();
+
+      const config = JSON.parse(strFromU8(files['Metadata/project_settings.config']));
+      expect(config.name).toBe('project_settings');
+      expect(config.from).toBe('Gridfinity Layout Tool');
+      expect(typeof config.version).toBe('string');
+      // Hex codes lowercased — BambuStudio's color comparator is case-sensitive.
+      expect(config.filament_colour).toEqual(['#aaaaaa', '#ff0000']);
+    });
+
+    it('omits project_settings.config when no colorConfig is provided', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const buffer = build3MFBuffer(vertices, normals, { name: 'plain' });
+      const files = unzipSync(buffer);
+      expect(files['Metadata/project_settings.config']).toBeUndefined();
+    });
+
+    it('omits project_settings.config when colorConfig has empty materials', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'empty-palette',
+        colorConfig: { materials: [], triangleMaterialIndices: [] },
+      });
+      const files = unzipSync(buffer);
+      expect(files['Metadata/project_settings.config']).toBeUndefined();
+    });
+
+    it('multi-object: accepts identical material arrays across colored objects', () => {
+      // Same materials list shared across objects (mixed-case to confirm
+      // the comparator is case-insensitive). Per-object paint_color slots
+      // resolve to the same filament in the unified palette, so the
+      // emitted filament_colour list matches the shared array (lowercased).
+      const tri = createSingleTriangle();
+      const shared = [{ color: '#111111' }, { color: '#FF0000' }];
+      const objects = [
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'bin',
+          colorConfig: { materials: shared, triangleMaterialIndices: [1] },
+        },
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'lid',
+          colorConfig: { materials: shared, triangleMaterialIndices: [0] },
+        },
+      ];
+      const buffer = build3MFMultiObjectBuffer(objects, { name: 'multi' });
+      const config = JSON.parse(strFromU8(unzipSync(buffer)['Metadata/project_settings.config']));
+      expect(config.filament_colour).toEqual(['#111111', '#ff0000']);
+    });
+
+    it('multi-object: throws when colored objects have mismatched material arrays', () => {
+      // Per-triangle paint_color codes are object-local. If two objects ship
+      // different palettes, code "4" (slot 1) means different filaments in
+      // each object — and the unified filament_colour list can only honor
+      // one mapping. Fail loudly rather than silently produce wrong colors.
+      const tri = createSingleTriangle();
+      const objects = [
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'bin',
+          colorConfig: {
+            materials: [{ color: '#111111' }, { color: '#ff0000' }],
+            triangleMaterialIndices: [0],
+          },
+        },
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'lid',
+          colorConfig: {
+            materials: [{ color: '#111111' }, { color: '#00ff00' }],
+            triangleMaterialIndices: [0],
+          },
+        },
+      ];
+      expect(() => build3MFMultiObjectBuffer(objects, { name: 'multi' })).toThrow(
+        /must share the same materials array/
+      );
+    });
+
+    it('multi-object: omits project_settings.config when no object has a colorConfig', () => {
+      const tri = createSingleTriangle();
+      const buffer = build3MFMultiObjectBuffer(
+        [
+          { vertices: tri.vertices, normals: tri.normals, name: 'a' },
+          { vertices: tri.vertices, normals: tri.normals, name: 'b' },
+        ],
+        { name: 'multi-plain' }
+      );
+      expect(unzipSync(buffer)['Metadata/project_settings.config']).toBeUndefined();
+    });
+
+    // BambuStudio gates project_settings.config loading on the Application
+    // metadata starting with "BambuStudio-" (bbs_3mf.cpp:1898). Without it,
+    // every sidecar is silently skipped with "already parsed or a directory
+    // or not supported" and the "old version, geometry only" dialog fires.
+    // OrcaSlicer has no such gate but is happy either way.
+    it('claims Application=BambuStudio-* when colorConfig is active', () => {
+      const { vertices, normals } = createTwoTriangles();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'bambu-compat',
+        colorConfig: {
+          materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
+          triangleMaterialIndices: [0, 1],
         },
       });
       const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
-      expect(model).toContain('<m:color color="#ff000080" />');
+      expect(model).toMatch(
+        /<metadata name="Application">BambuStudio-\d+\.\d+\.\d+\.\d+<\/metadata>/
+      );
+      expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
+      // Keep our human-readable identity too — Designer is unrelated to the
+      // BambuStudio gate.
+      expect(model).toContain('<metadata name="Designer">Gridfinity Layout Tool</metadata>');
+    });
+
+    it('omits Application metadata for single-color exports', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const model = strFromU8(
+        unzipSync(build3MFBuffer(vertices, normals, { name: 'plain' }))['3D/3dmodel.model']
+      );
+      expect(model).not.toContain('<metadata name="Application">');
+      expect(model).not.toContain('BambuStudio:3mfVersion');
+    });
+
+    it('multi-object: emits BambuStudio Application metadata when any object has colorConfig', () => {
+      const tri = createSingleTriangle();
+      const objects = [
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'colored',
+          colorConfig: {
+            materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
+            triangleMaterialIndices: [1],
+          },
+        },
+        { vertices: tri.vertices, normals: tri.normals, name: 'plain' },
+      ];
+      const model = strFromU8(
+        unzipSync(build3MFMultiObjectBuffer(objects, { name: 'multi-bambu' }))['3D/3dmodel.model']
+      );
+      expect(model).toContain('<metadata name="Application">BambuStudio-');
+      expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
+    });
+
+    it('multi-object: omits Application metadata when no object has colorConfig', () => {
+      const tri = createSingleTriangle();
+      const model = strFromU8(
+        unzipSync(
+          build3MFMultiObjectBuffer(
+            [
+              { vertices: tri.vertices, normals: tri.normals, name: 'a' },
+              { vertices: tri.vertices, normals: tri.normals, name: 'b' },
+            ],
+            { name: 'multi-plain' }
+          )
+        )['3D/3dmodel.model']
+      );
+      expect(model).not.toContain('<metadata name="Application">');
+      expect(model).not.toContain('BambuStudio:3mfVersion');
     });
   });
 
@@ -557,7 +786,7 @@ describe('threemfExporter', () => {
       expect(model).toContain('objectid="3"');
     });
 
-    it('assigns sequential IDs with per-object color groups', () => {
+    it('assigns sequential IDs and embeds paint_color on the colored object only', () => {
       const tri = createSingleTriangle();
       const objects = [
         {
@@ -565,8 +794,8 @@ describe('threemfExporter', () => {
           normals: tri.normals,
           name: 'Colored Bin',
           colorConfig: {
-            materials: [{ color: '#ff0000' }],
-            triangleMaterialIndices: [0],
+            materials: [{ color: '#ff0000' }, { color: '#00ff00' }],
+            triangleMaterialIndices: [1],
           },
         },
         { vertices: tri.vertices, normals: tri.normals, name: 'Divider' },
@@ -574,13 +803,15 @@ describe('threemfExporter', () => {
       const buffer = build3MFMultiObjectBuffer(objects, { name: 'test' });
       const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
 
-      // colorgroup=1, colored object=2, plain object=3
-      expect(model).toContain('m:colorgroup id="1"');
+      // Without colorgroups, IDs are consecutive across objects.
+      expect(model).toContain('object id="1"');
       expect(model).toContain('object id="2"');
-      expect(model).toContain('object id="3"');
+      expect(model).toContain('objectid="1"');
       expect(model).toContain('objectid="2"');
-      expect(model).toContain('objectid="3"');
-      expect(model).toContain('xmlns:m=');
+      // Material index 1 → filament 1 → "4"
+      expect(model).toContain('paint_color="4"');
+      expect(model).not.toContain('m:colorgroup');
+      expect(model).not.toContain('xmlns:m=');
     });
 
     it('export3MFMultiObject produces a Blob with correct MIME', () => {

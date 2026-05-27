@@ -1,22 +1,21 @@
 /**
  * Semantic round-trip tests for multi-color 3MF export.
  *
- * The existing test files (`materialMapping.test.ts`, `binDownloadHelpers.test.ts`,
- * `threemfExporter.test.ts`) cover the layers in isolation. This file pins the
- * end-to-end semantic invariants on the assembled output of
- * `buildSinglePiece3MF` / `buildMultiObject3MF`:
+ * Pins the end-to-end semantic invariants of the assembled output of
+ * `buildSinglePiece3MF` / `buildMultiObject3MF`. Slicers (PrusaSlicer,
+ * BambuStudio, OrcaSlicer) read multi-material painting from a `paint_color`
+ * attribute on each `<triangle>`, encoded per OrcaSlicer's CONST_FILAMENTS
+ * table — these tests decode that attribute back to material slot indices via
+ * `resolveColorMapping` so assertions read in terms of zone colors.
  *
- *   1. FeatureTag → p1 round-trip — every triangle in a face group emits the
- *      `p1` index of that feature's configured zone color.
+ *   1. FeatureTag → paint_color round-trip — every triangle in a face group
+ *      emits the matching filament code for that feature's configured zone.
  *   2. Lip corner round-trip — lip triangles in each XY quadrant carry the
- *      configured corner color's `p1`.
+ *      configured corner color's slot.
  *   3. Single-color short-circuit — all-same-color (incl. mixed-case hex) emits
- *      no `<m:colorgroup>`; mixed-case dedup yields one material, not two.
+ *      no `paint_color` anywhere; mixed-case dedup yields one slot, not two.
  *   4. Multi-object color contract — only the first piece (bin) carries colors;
  *      ancillary pieces (dividers, lid) ship solid-color.
- *
- * All recent multi-color bugs (text zone missing from preview, mixed-case dedup
- * gap, isSingleColor case inconsistency) would have been caught by these.
  *
  * Inputs are hand-crafted: a tiny synthetic binary STL plus face groups that
  * partition the triangle range. Real worker output is too expensive for
@@ -32,6 +31,8 @@ import {
   buildMultiObject3MF,
 } from '@/features/bin-designer/utils/binDownloadHelpers';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
+import { normalizeHex, resolveColorMapping } from '@/features/bin-designer/types/featureColors';
+import { FILAMENT_PAINT_CODES } from '@/features/generation/export/threemfExporter';
 import type { BinParams } from '@/features/bin-designer/types';
 import type { ThreeMFPrintSettings } from '@/shared/generation/export';
 
@@ -86,39 +87,25 @@ async function blobToModelXml(blob: Blob): Promise<string> {
   return strFromU8(model);
 }
 
-interface Material {
-  readonly color: string;
+/**
+ * Decode a paint_color attribute back to a material slot index using the
+ * live FILAMENT_PAINT_CODES from the exporter — keeping the test pinned to
+ * the same table the production code emits.
+ */
+function slotFromCode(code: string | undefined): number {
+  if (code === undefined) return 0; // missing attribute → slot 0 (body)
+  const idx = FILAMENT_PAINT_CODES.indexOf(code as (typeof FILAMENT_PAINT_CODES)[number]);
+  if (idx < 0) throw new Error(`unknown paint_color code: ${code}`);
+  return idx;
 }
 
-const COLORGROUP_BLOCK_RE = /<m:colorgroup\s+id="(\d+)">([\s\S]*?)<\/m:colorgroup>/;
-const COLOR_ENTRY_RE = /<m:color\s+color="([^"]*)"\s*\/>/g;
-
-/** Extract `<m:color>` entries from inside a `<m:colorgroup>` block, in order. */
-function parseMaterials(xml: string): Material[] {
-  const block = COLORGROUP_BLOCK_RE.exec(xml);
-  if (!block) return [];
-  const out: Material[] = [];
-  for (const m of block[2].matchAll(COLOR_ENTRY_RE)) {
-    out.push({ color: m[1] });
-  }
-  return out;
-}
-
-/** Triangle in document order with its emitted `p1` (or `null` if none). */
-interface Triangle {
-  readonly p1: number | null;
-  readonly pid: number | null;
-}
-
-function parseTriangles(xml: string): Triangle[] {
-  const out: Triangle[] = [];
+/** Material slot per triangle in document order. */
+function parseTriangleSlots(xml: string): number[] {
+  const out: number[] = [];
   for (const m of xml.matchAll(
-    /<triangle\s+v1="\d+"\s+v2="\d+"\s+v3="\d+"(?:\s+pid="(\d+)"\s+p1="(\d+)")?\s*\/>/g
+    /<triangle\s+v1="\d+"\s+v2="\d+"\s+v3="\d+"(?:\s+paint_color="([^"]*)")?\s*\/>/g
   )) {
-    out.push({
-      pid: m[1] !== undefined ? Number(m[1]) : null,
-      p1: m[2] !== undefined ? Number(m[2]) : null,
-    });
+    out.push(slotFromCode(m[1]));
   }
   return out;
 }
@@ -169,9 +156,17 @@ function withColors(overrides: Partial<BinParams['featureColors']> = {}): BinPar
 
 // ─── tests ───────────────────────────────────────────────────────────────
 
+/** Map a hex color back to its material slot via the live `resolveColorMapping`. */
+function slotFor(params: BinParams, hex: string): number {
+  const { colorToIndex } = resolveColorMapping(params.featureColors);
+  const slot = colorToIndex.get(normalizeHex(hex));
+  if (slot === undefined) throw new Error(`color ${hex} not present in materials`);
+  return slot;
+}
+
 describe('multicolor 3MF round-trip', () => {
-  describe('FeatureTag → p1 round-trip', () => {
-    it('every triangle in a face group emits the configured zone color index', async () => {
+  describe('FeatureTag → paint_color round-trip', () => {
+    it('every triangle in a face group emits the configured zone color slot', async () => {
       const params = withColors({
         body: '#111111',
         labelTab: '#22ee22',
@@ -200,27 +195,20 @@ describe('multicolor 3MF round-trip', () => {
         true
       );
       const xml = await blobToModelXml(blob);
-      const materials = parseMaterials(xml);
-      const tris = parseTriangles(xml);
+      const slots = parseTriangleSlots(xml);
 
-      // Body always lands at index 0 (per resolveColorMapping).
-      const idxFor = (hex: string) => materials.findIndex((m) => m.color === hex);
-      expect(idxFor('#111111')).toBe(0);
-      expect(idxFor('#22ee22')).toBeGreaterThan(0);
-      expect(idxFor('#3333ee')).toBeGreaterThan(0);
-      expect(idxFor('#ee3333')).toBeGreaterThan(0);
-
-      expect(tris.map((t) => t.p1)).toEqual([
-        idxFor('#22ee22'),
-        idxFor('#22ee22'),
-        idxFor('#3333ee'),
-        idxFor('#3333ee'),
-        idxFor('#ee3333'),
-        idxFor('#ee3333'),
+      expect(slotFor(params, '#111111')).toBe(0);
+      expect(slots).toEqual([
+        slotFor(params, '#22ee22'),
+        slotFor(params, '#22ee22'),
+        slotFor(params, '#3333ee'),
+        slotFor(params, '#3333ee'),
+        slotFor(params, '#ee3333'),
+        slotFor(params, '#ee3333'),
       ]);
     });
 
-    it('untagged triangles default to body (index 0)', async () => {
+    it('untagged triangles default to body (slot 0)', async () => {
       const params = withColors({ body: '#abc123', labelTab: '#deadbe' });
       const triangles = [...tri(0, 0), ...tri(1, 0), ...tri(2, 0), ...tri(3, 0)];
       const faceGroups: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.LABEL_TAB }];
@@ -232,17 +220,12 @@ describe('multicolor 3MF round-trip', () => {
         PRINT_SETTINGS,
         true
       );
-      const xml = await blobToModelXml(blob);
-      const materials = parseMaterials(xml);
-      const tris = parseTriangles(xml);
+      const slots = parseTriangleSlots(await blobToModelXml(blob));
 
-      // Resolve via material list to keep the assertion self-documenting,
-      // matching the idxFor pattern used by the other tests in this suite.
-      const idxFor = (hex: string) => materials.findIndex((m) => m.color === hex);
-      expect(tris[0].p1).toBe(idxFor('#deadbe')); // LABEL_TAB
-      expect(tris[1].p1).toBe(idxFor('#deadbe')); // LABEL_TAB
-      expect(tris[2].p1).toBe(idxFor('#abc123')); // untagged → body
-      expect(tris[3].p1).toBe(idxFor('#abc123')); // untagged → body
+      expect(slots[0]).toBe(slotFor(params, '#deadbe'));
+      expect(slots[1]).toBe(slotFor(params, '#deadbe'));
+      expect(slots[2]).toBe(slotFor(params, '#abc123')); // body → slot 0
+      expect(slots[3]).toBe(slotFor(params, '#abc123'));
     });
 
     it('TEXT-tagged triangles carry the text zone color when tab/cutout text is active', async () => {
@@ -266,38 +249,31 @@ describe('multicolor 3MF round-trip', () => {
         PRINT_SETTINGS,
         true
       );
-      const xml = await blobToModelXml(blob);
-      const materials = parseMaterials(xml);
-      const tris = parseTriangles(xml);
+      const slots = parseTriangleSlots(await blobToModelXml(blob));
 
-      expect(materials.map((m) => m.color)).toEqual(['#222222', '#ee44ee']);
-      expect(tris.map((t) => t.p1)).toEqual([1, 1]);
+      const textSlot = slotFor(params, '#ee44ee');
+      expect(textSlot).toBeGreaterThan(0);
+      expect(slots).toEqual([textSlot, textSlot]);
     });
 
-    it('every emitted pid resolves to the m:colorgroup block (reference integrity)', async () => {
-      const params = withColors({ body: '#fff', base: '#000' });
+    it('every emitted slot index points at a valid material in the mapping', async () => {
+      const params = withColors({ body: '#ffffff', base: '#000000' });
       const triangles = [...tri(0, 0), ...tri(1, 0)];
       const faceGroups: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.SOCKET }];
       const blob = buildSinglePiece3MF(
         buildBinarySTL(triangles),
         faceGroups,
         params,
-        'pid-int',
+        'slot-int',
         PRINT_SETTINGS,
         true
       );
-      const xml = await blobToModelXml(blob);
-      const pidMatch = /<m:colorgroup\s+id="(\d+)"/.exec(xml);
-      const colorgroupId = pidMatch ? Number(pidMatch[1]) : NaN;
-      const materialsCount = parseMaterials(xml).length;
-      const tris = parseTriangles(xml);
+      const slots = parseTriangleSlots(await blobToModelXml(blob));
+      const { colors } = resolveColorMapping(params.featureColors);
 
-      for (const t of tris) {
-        if (t.pid === null) continue;
-        expect(t.pid).toBe(colorgroupId);
-        expect(t.p1).not.toBeNull();
-        expect(t.p1).toBeGreaterThanOrEqual(0);
-        expect(t.p1).toBeLessThan(materialsCount);
+      for (const slot of slots) {
+        expect(slot).toBeGreaterThanOrEqual(0);
+        expect(slot).toBeLessThan(colors.length);
       }
     });
   });
@@ -324,22 +300,19 @@ describe('multicolor 3MF round-trip', () => {
         PRINT_SETTINGS,
         true
       );
-      const xml = await blobToModelXml(blob);
-      const materials = parseMaterials(xml);
-      const tris = parseTriangles(xml);
+      const slots = parseTriangleSlots(await blobToModelXml(blob));
 
-      const idxFor = (hex: string) => materials.findIndex((m) => m.color === hex);
-      expect(tris.map((t) => t.p1)).toEqual([
-        idxFor('#fa0000'),
-        idxFor('#00fa00'),
-        idxFor('#0000fa'),
-        idxFor('#ffffff'),
+      expect(slots).toEqual([
+        slotFor(params, '#fa0000'),
+        slotFor(params, '#00fa00'),
+        slotFor(params, '#0000fa'),
+        slotFor(params, '#ffffff'),
       ]);
     });
   });
 
   describe('single-color short-circuit', () => {
-    it('all-same-color (lowercase) emits no <m:colorgroup>', async () => {
+    it('all-same-color (lowercase) emits no paint_color', async () => {
       const params = withColors(); // all zones default to '#d4d8dc'
       const triangles = [...tri(0, 0), ...tri(1, 0)];
       const faceGroups: FaceGroupData[] = [{ start: 0, count: 6, tag: FeatureTag.SOCKET }];
@@ -353,13 +326,12 @@ describe('multicolor 3MF round-trip', () => {
       );
       const xml = await blobToModelXml(blob);
 
+      expect(xml).not.toMatch(/\bpaint_color="/);
       expect(xml).not.toMatch(/<m:colorgroup\b/);
       expect(xml).not.toMatch(/\bxmlns:m=/);
-      expect(xml).not.toMatch(/\bpid="/);
-      expect(xml).not.toMatch(/\bp1="/);
     });
 
-    it('mixed-case AND mixed-length hex collapse to single material (no <m:colorgroup>)', async () => {
+    it('mixed-case AND mixed-length hex collapse to single material (no paint_color)', async () => {
       // Regressions for the case-normalization and shorthand-expansion fixes.
       // `#FFF`, `#fff`, `#FFFFFF` all canonicalize to `#ffffff`.
       const params = withColors({ body: '#FFF', base: '#fff', labelTab: '#FFFFFF' });
@@ -375,35 +347,22 @@ describe('multicolor 3MF round-trip', () => {
       );
       const xml = await blobToModelXml(blob);
 
-      expect(xml).not.toMatch(/<m:colorgroup\b/);
+      expect(xml).not.toMatch(/\bpaint_color="/);
     });
 
     it('mixed-case dedup yields N materials, not 2N (only divergent zones add slots)', async () => {
       // Regression for resolveColorMapping case + shorthand normalization:
       // body `#FFF`, base `#ffffff`, labelTab `#FF0000` → 2 materials, not 3.
       const params = withColors({ body: '#FFF', base: '#ffffff', labelTab: '#FF0000' });
-      const triangles = [...tri(0, 0), ...tri(1, 0)];
-      const faceGroups: FaceGroupData[] = [
-        { start: 0, count: 3, tag: FeatureTag.SOCKET },
-        { start: 3, count: 3, tag: FeatureTag.LABEL_TAB },
-      ];
-      const blob = buildSinglePiece3MF(
-        buildBinarySTL(triangles),
-        faceGroups,
-        params,
-        'mixed-case-dedup',
-        PRINT_SETTINGS,
-        true
-      );
-      const materials = parseMaterials(await blobToModelXml(blob));
-      expect(materials).toHaveLength(2);
-      // Lowercased per resolveColorMapping's normalization.
-      expect(materials.map((m) => m.color)).toEqual(['#ffffff', '#ff0000']);
+      // Even though the wire format no longer carries materials, the in-memory
+      // mapping is what feeds slot indices to paint_color — assert directly.
+      const { colors } = resolveColorMapping(params.featureColors);
+      expect(colors).toEqual(['#ffffff', '#ff0000']);
     });
   });
 
   describe('multi-object color contract', () => {
-    it('only the first piece (bin) carries colorConfig; ancillary pieces ship solid-color', async () => {
+    it('only the first piece (bin) carries paint_color; ancillary pieces ship solid', async () => {
       const params = withColors({ body: '#aaaaaa', labelTab: '#0000ff' });
       const pieces = [
         { data: buildBinarySTL([...tri(0, 0)]), label: 'bin' },
@@ -415,21 +374,17 @@ describe('multicolor 3MF round-trip', () => {
       const blob = buildMultiObject3MF(pieces, faceGroups, params, 'assembly', PRINT_SETTINGS);
       const xml = await blobToModelXml(blob);
 
-      // Exactly one <m:colorgroup> block — for the bin piece.
-      const groupBlocks = xml.match(/<m:colorgroup\b/g) ?? [];
-      expect(groupBlocks).toHaveLength(1);
-
-      // The materials extension namespace is declared on <model>.
-      expect(xml).toMatch(/\bxmlns:m="http:\/\/schemas\.microsoft\.com\/3dmanufacturing\/material/);
-
       // Three <object> entries (bin, divider, lid).
       const objects = xml.match(/<object\s+id="\d+"/g) ?? [];
       expect(objects).toHaveLength(3);
 
-      // The colorgroup block precedes the first <object> in document order.
-      const groupAt = xml.indexOf('<m:colorgroup');
-      const firstObjAt = xml.indexOf('<object');
-      expect(groupAt).toBeLessThan(firstObjAt);
+      // Exactly one paint_color attribute — on the bin's lone LABEL_TAB triangle.
+      const painted = xml.match(/\bpaint_color="/g) ?? [];
+      expect(painted).toHaveLength(1);
+
+      // Colorgroups + materials namespace are gone for good.
+      expect(xml).not.toMatch(/<m:colorgroup\b/);
+      expect(xml).not.toMatch(/\bxmlns:m=/);
     });
 
     it('multi-color disabled at the params level disables colors on every piece', async () => {
@@ -445,9 +400,9 @@ describe('multicolor 3MF round-trip', () => {
         PRINT_SETTINGS
       );
       const xml = await blobToModelXml(blob);
+      expect(xml).not.toMatch(/\bpaint_color="/);
       expect(xml).not.toMatch(/<m:colorgroup\b/);
       expect(xml).not.toMatch(/\bxmlns:m=/);
-      expect(xml).not.toMatch(/\bp1="/);
     });
   });
 });
