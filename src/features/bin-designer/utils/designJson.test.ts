@@ -327,7 +327,7 @@ describe('validateBinParams', () => {
   it('should validate compartments.rows range', () => {
     const result = validateBinParams({
       ...DEFAULT_BIN_PARAMS,
-      compartments: { cols: 1, rows: 10, thickness: 1.2, cells: [] },
+      compartments: { cols: 1, rows: 13, thickness: 1.2, cells: [] },
     });
 
     expect(result.valid).toBe(false);

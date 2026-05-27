@@ -635,6 +635,24 @@ describe('threemfExporter', () => {
       expect(config.layer_change_gcode).toMatch(/^\s*G92\s*E0\b/);
     });
 
+    // Pin acceleration to "use machine default" so Orca doesn't inherit
+    // Bambu's profile defaults (via our BambuStudio identity claim) and
+    // surface a false-positive comparison warning when the inherited travel
+    // value exceeds the user's printer's machine_max_acceleration_extruding.
+    it('pins acceleration to machine defaults to silence Orca comparison warning', () => {
+      const { vertices, normals } = createTwoTriangles();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'accel',
+        colorConfig: {
+          materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
+          triangleMaterialIndices: [0, 1],
+        },
+      });
+      const config = JSON.parse(strFromU8(unzipSync(buffer)['Metadata/project_settings.config']));
+      expect(config.default_acceleration).toBe('0');
+      expect(config.travel_acceleration).toBe('0');
+    });
+
     it('omits project_settings.config when no colorConfig is provided', () => {
       const { vertices, normals } = createSingleTriangle();
       const buffer = build3MFBuffer(vertices, normals, { name: 'plain' });

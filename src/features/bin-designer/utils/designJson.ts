@@ -6,6 +6,7 @@
  */
 
 import type { BinParams } from '../types';
+import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { migrateParams } from '../constants/defaults';
 import { sanitizeFileName } from './fileNaming';
 
@@ -261,21 +262,26 @@ export function validateBinParams(params: unknown): ValidateBinParamsResult {
   } else {
     const comp = p.compartments as Record<string, unknown>;
 
+    const { MIN_COMPARTMENT_GRID, MAX_COMPARTMENT_GRID } = DESIGNER_CONSTRAINTS;
     if (
       typeof comp.cols !== 'number' ||
       !Number.isInteger(comp.cols) ||
-      comp.cols < 1 ||
-      comp.cols > 8
+      comp.cols < MIN_COMPARTMENT_GRID ||
+      comp.cols > MAX_COMPARTMENT_GRID
     ) {
-      errors.push('compartments.cols must be an integer between 1 and 8');
+      errors.push(
+        `compartments.cols must be an integer between ${MIN_COMPARTMENT_GRID} and ${MAX_COMPARTMENT_GRID}`
+      );
     }
     if (
       typeof comp.rows !== 'number' ||
       !Number.isInteger(comp.rows) ||
-      comp.rows < 1 ||
-      comp.rows > 8
+      comp.rows < MIN_COMPARTMENT_GRID ||
+      comp.rows > MAX_COMPARTMENT_GRID
     ) {
-      errors.push('compartments.rows must be an integer between 1 and 8');
+      errors.push(
+        `compartments.rows must be an integer between ${MIN_COMPARTMENT_GRID} and ${MAX_COMPARTMENT_GRID}`
+      );
     }
     if (!Array.isArray(comp.cells)) {
       errors.push('compartments.cells must be an array');

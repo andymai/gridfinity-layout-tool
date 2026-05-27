@@ -34,18 +34,19 @@ const VALID_ROTATIONS = [0, 90, 180, 270] as const;
 const VALID_TEXT_FONTS = ['atkinson', 'jetbrains-mono', 'allerta-stencil'] as const;
 const VALID_TEXT_MODES = ['engrave', 'emboss', 'through-cut'] as const;
 
-// Constraints (server-side copies of client DESIGNER_CONSTRAINTS)
+// Constraints (server-side copies of client DESIGNER_CONSTRAINTS in
+// src/features/bin-designer/constants/gridfinity.ts — keep in sync).
 const CONSTRAINTS = {
   MIN_DIMENSION: 0.5,
-  MAX_DIMENSION: 8,
+  MAX_DIMENSION: 16,
   MIN_HEIGHT: 2,
   MAX_HEIGHT: 20,
   MAX_DIVIDERS: 10,
   MIN_DIVIDER_THICKNESS: 0.8,
-  MAX_DIVIDER_THICKNESS: 2.0,
+  MAX_DIVIDER_THICKNESS: 2.4,
   MIN_COMPARTMENT_GRID: 1,
-  MAX_COMPARTMENT_GRID: 8,
-  MIN_COMPARTMENT_THICKNESS: 0.8,
+  MAX_COMPARTMENT_GRID: 12,
+  MIN_COMPARTMENT_THICKNESS: 0.4,
   MAX_COMPARTMENT_THICKNESS: 2.4,
   MIN_LABEL_TAB_DEPTH: 8,
   MAX_LABEL_TAB_DEPTH: 20,
