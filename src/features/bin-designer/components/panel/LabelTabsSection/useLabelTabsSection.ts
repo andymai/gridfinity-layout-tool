@@ -52,7 +52,23 @@ export function useLabelTabsSection() {
 
   const setTabDepth = useCallback(
     (depth: number) => {
-      updateLabel({ depth });
+      // Height (when explicitly set) must stay above `depth` so the gusset
+      // has at least 1mm of clearance above the floor. If raising depth
+      // would invalidate the current height, lift height in lockstep — the
+      // alternative is silently returning no geometry from the builder.
+      const currentHeight = label.height;
+      if (currentHeight !== undefined && currentHeight <= depth) {
+        updateLabel({ depth, height: depth + 1 });
+      } else {
+        updateLabel({ depth });
+      }
+    },
+    [label.height, updateLabel]
+  );
+
+  const setTabHeight = useCallback(
+    (h: number) => {
+      updateLabel({ height: h });
     },
     [updateLabel]
   );
@@ -104,6 +120,23 @@ export function useLabelTabsSection() {
     return Math.round(((availableWidth * label.width) / 100) * 10) / 10;
   }, [params, compartments.cols, compartments.thickness, label.width]);
 
+  // Interior cavity height — dynamic max for the tab-height stepper.
+  // Matches `wallHeight` passed to the geometry builder.
+  const wallHeightMm = useMemo(() => binDimensions(params).wallHeight, [params]);
+
+  // Resolved tab height for display: explicit value when set, otherwise
+  // wall top (the default-when-absent contract from `LabelTabConfig`).
+  const tabHeightMm = label.height ?? wallHeightMm;
+  // Did the user explicitly set height? Controls whether the W×D×H summary
+  // shows the third dimension. Keeps unaltered designs visually unchanged.
+  const heightIsExplicit = label.height !== undefined;
+
+  // Dynamic min/max for the tab-height stepper. The geometry layer
+  // requires `height > depth` for a non-degenerate gusset, so the floor
+  // is `depth + 1`. Ceiling is the interior wall height.
+  const tabHeightMin = label.depth + 1;
+  const tabHeightMax = Math.max(tabHeightMin, wallHeightMm);
+
   const sectionSummary = useMemo(() => {
     if (!label.enabled) return undefined;
     const supportName = t(`binDesigner.tabSupport.${label.support}`);
@@ -146,12 +179,23 @@ export function useLabelTabsSection() {
   }, [compartments, t]);
 
   return {
-    state: { label, textDefaults, isUnavailable, tabWidthMm, compartmentTextRows },
+    state: {
+      label,
+      textDefaults,
+      isUnavailable,
+      tabWidthMm,
+      tabHeightMm,
+      heightIsExplicit,
+      tabHeightMin,
+      tabHeightMax,
+      compartmentTextRows,
+    },
     handlers: {
       toggleLabelTabs,
       setTabSupport,
       setTabDepth,
       setTabWidth,
+      setTabHeight,
       setTabAlignment,
       setCompartmentText,
       setTextFont,

@@ -110,4 +110,64 @@ describe('useLabelTabsSection', () => {
     // outerW = 2*42 - 0.5 = 83.5, innerW = 83.5 - 2*1.2 = 81.1, cellW = 81.1
     expect(result.current.state.tabWidthMm).toBeGreaterThan(0);
   });
+
+  describe('tab height', () => {
+    it('heightIsExplicit is false by default and tabHeightMm falls back to wallHeight', () => {
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.heightIsExplicit).toBe(false);
+      // Default bin: 3u tall × 7mm = 21mm minus 5mm socket = 16mm wallHeight.
+      expect(result.current.state.tabHeightMm).toBe(16);
+    });
+
+    it('setTabHeight writes the explicit value', () => {
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.setTabHeight(15);
+      });
+
+      expect(useDesignerStore.getState().params.label.height).toBe(15);
+    });
+
+    it('tabHeightMin equals depth + 1 (gusset floor clearance)', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 12 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.tabHeightMin).toBe(13);
+    });
+
+    it('setTabDepth clamps explicit height up when depth invalidates it', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 10, height: 12 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      // New depth 15 invalidates height 12 (gusset would have zero clearance).
+      act(() => {
+        result.current.handlers.setTabDepth(15);
+      });
+
+      expect(useDesignerStore.getState().params.label.depth).toBe(15);
+      expect(useDesignerStore.getState().params.label.height).toBe(16);
+    });
+
+    it('setTabDepth leaves height untouched when height is unset (default-at-top)', () => {
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.setTabDepth(18);
+      });
+
+      expect(useDesignerStore.getState().params.label.depth).toBe(18);
+      // Optional field stays undefined — no migration of legacy designs.
+      expect(useDesignerStore.getState().params.label.height).toBeUndefined();
+    });
+  });
 });
