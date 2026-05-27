@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.122.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.121.0...gridfinity-layout-tool-v4.122.0) (2026-05-27)
+
+
+### Features
+
+* **label-tabs:** add adjustable shelf height ([#1901](https://github.com/andymai/gridfinity-layout-tool/issues/1901)) ([f03602f](https://github.com/andymai/gridfinity-layout-tool/commit/f03602f701f234970471b4c731918306c5e26e14))
+
 ## [4.121.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.7...gridfinity-layout-tool-v4.121.0) (2026-05-27)
 
 
