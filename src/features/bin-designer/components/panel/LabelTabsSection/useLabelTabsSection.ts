@@ -39,6 +39,11 @@ export function useLabelTabsSection() {
   const tooShort = height <= DESIGNER_CONSTRAINTS.MIN_HEIGHT;
   const isUnavailable = !labelStatus.available || tooShort;
 
+  // Interior cavity height — dynamic max for the tab-height stepper and
+  // the cap for the `setTabDepth` height-clamp. Matches `wallHeight`
+  // passed to the geometry builder.
+  const wallHeightMm = useMemo(() => binDimensions(params).wallHeight, [params]);
+
   const toggleLabelTabs = useCallback(() => {
     updateLabel({ enabled: !label.enabled });
   }, [label.enabled, updateLabel]);
@@ -54,16 +59,21 @@ export function useLabelTabsSection() {
     (depth: number) => {
       // Height (when explicitly set) must stay above `depth` so the gusset
       // has at least 1mm of clearance above the floor. If raising depth
-      // would invalidate the current height, lift height in lockstep — the
-      // alternative is silently returning no geometry from the builder.
+      // would invalidate the current height, lift height in lockstep — and
+      // cap at `wallHeightMm` so we never write a value above the stepper's
+      // own ceiling. Without the cap, pushing depth up to wallHeight on a
+      // short bin would store height = depth + 1 > wallHeight; subsequently
+      // lowering depth wouldn't re-trigger the clamp (`currentHeight <= depth`
+      // is false), and the now-out-of-range height would silently make the
+      // builder drop the tab.
       const currentHeight = label.height;
       if (currentHeight !== undefined && currentHeight <= depth) {
-        updateLabel({ depth, height: depth + 1 });
+        updateLabel({ depth, height: Math.min(depth + 1, wallHeightMm) });
       } else {
         updateLabel({ depth });
       }
     },
-    [label.height, updateLabel]
+    [label.height, updateLabel, wallHeightMm]
   );
 
   const setTabHeight = useCallback(
@@ -119,10 +129,6 @@ export function useLabelTabsSection() {
     }
     return Math.round(((availableWidth * label.width) / 100) * 10) / 10;
   }, [params, compartments.cols, compartments.thickness, label.width]);
-
-  // Interior cavity height — dynamic max for the tab-height stepper.
-  // Matches `wallHeight` passed to the geometry builder.
-  const wallHeightMm = useMemo(() => binDimensions(params).wallHeight, [params]);
 
   // Resolved tab height for display: explicit value when set, otherwise
   // wall top (the default-when-absent contract from `LabelTabConfig`).

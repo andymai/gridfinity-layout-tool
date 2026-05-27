@@ -173,6 +173,27 @@ describe('useLabelTabsSection', () => {
       expect(useDesignerStore.getState().params.label.height).toBe(16);
     });
 
+    it('setTabDepth caps height clamp at wallHeightMm (no out-of-range writes)', () => {
+      // 3u tall bin → wallHeight = 16mm. Start with depth=10, height=11.
+      // Setting depth to 16 (= wallHeight) would naively clamp height to 17,
+      // which would exceed wallHeightMm and silently make the builder drop
+      // the tab once depth is reduced again. The cap keeps height ≤ 16.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 10, height: 11 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.setTabDepth(16);
+      });
+
+      expect(useDesignerStore.getState().params.label.depth).toBe(16);
+      expect(useDesignerStore.getState().params.label.height).toBe(16);
+    });
+
     it('setTabDepth leaves height untouched when height is unset (default-at-top)', () => {
       const { result } = renderHook(() => useLabelTabsSection());
 

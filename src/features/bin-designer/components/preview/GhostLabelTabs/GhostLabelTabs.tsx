@@ -29,6 +29,7 @@ export function GhostLabelTabs() {
     heightUnitMm,
     wallThickness,
     style,
+    baseStyle,
     compartments,
     label,
     generationStatus,
@@ -41,6 +42,7 @@ export function GhostLabelTabs() {
       heightUnitMm: s.params.heightUnitMm,
       wallThickness: s.params.wallThickness,
       style: s.params.style,
+      baseStyle: s.params.base.style,
       compartments: s.params.compartments,
       label: s.params.label,
       generationStatus: s.generation.status,
@@ -53,7 +55,16 @@ export function GhostLabelTabs() {
   const innerW = outerW - 2 * wallThickness;
   const innerD = outerD - 2 * wallThickness;
   const totalH = height * heightUnitMm;
-  const topZ = totalH;
+  // Floor sits at SOCKET_HEIGHT for socketed bins, at z=0 for flat. The wall
+  // top is at totalH in both cases (the socket extends below the floor).
+  // Mirrors `binDimensions`.
+  const wallHeightMm = baseStyle === 'flat' ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
+  const floorZ = baseStyle === 'flat' ? 0 : GRIDFINITY.SOCKET_HEIGHT;
+  // World Z of the shelf TOP. When `label.height` is absent, this matches the
+  // legacy `topZ = totalH` (wall top). With it set, the shelf drops below the
+  // rim — keep the ghost in lockstep with the BREP builder's anchor so the
+  // user sees instant feedback while regeneration is in flight (#1898).
+  const shelfTopWorldZ = floorZ + (label.height ?? wallHeightMm);
 
   const shouldShow =
     label.enabled &&
@@ -225,6 +236,11 @@ export function GhostLabelTabs() {
   if (!geometry || !material) return null;
 
   return (
-    <mesh geometry={geometry} material={material} position={[0, 0, topZ + 0.2]} renderOrder={2} />
+    <mesh
+      geometry={geometry}
+      material={material}
+      position={[0, 0, shelfTopWorldZ + 0.2]}
+      renderOrder={2}
+    />
   );
 }
