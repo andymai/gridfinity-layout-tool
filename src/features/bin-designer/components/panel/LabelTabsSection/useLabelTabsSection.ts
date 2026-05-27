@@ -176,11 +176,19 @@ export function useLabelTabsSection() {
 
   // Dynamic max for the inset stepper. Constrained by:
   //   - the static hard ceiling MAX_LABEL_TAB_INSET (100mm)
-  //   - innerD − depth (so the tab body can't pass the opposite wall)
-  //   - in 'both' mode: (innerD − 2·depth) / 2 (so the two tabs can't collide)
-  // Floor at 0 — degenerate but valid when innerD is tiny.
+  //   - cellD − depth (per-compartment, so the tab body can't pass the
+  //     opposite wall of its OWN compartment — innerD would be too
+  //     permissive on multi-row bins)
+  //   - in 'both' mode: (cellD − 2·depth) / 2 (so the two tabs can't collide
+  //     in the smallest compartment)
+  // Using cellD (= innerD / rows) is conservative for merged compartments
+  // (which could accept larger insets) but matches what the per-compartment
+  // collision guard actually enforces — stops the stepper from offering
+  // values it would instantly warn about. (Greptile review on #1904.)
+  const cellDForUI = innerD / compartments.rows;
   const edgesValue = label.edges ?? 'back';
-  const insetRoom = edgesValue === 'both' ? (innerD - 2 * label.depth) / 2 : innerD - label.depth;
+  const insetRoom =
+    edgesValue === 'both' ? (cellDForUI - 2 * label.depth) / 2 : cellDForUI - label.depth;
   const tabInsetMax = Math.max(
     0,
     Math.min(DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_INSET, Math.floor(insetRoom))

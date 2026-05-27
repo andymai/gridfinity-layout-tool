@@ -238,7 +238,8 @@ describe('useLabelTabsSection', () => {
       expect(result.current.state.tabDepthMax).toBeLessThan(50);
     });
 
-    it('tabInsetMax for back-only mode = innerD - depth', () => {
+    it('tabInsetMax for back-only mode = cellD - depth', () => {
+      // Default 2u × 2u × 3u bin has rows=1, so cellD = innerD ≈ 81mm.
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -246,11 +247,10 @@ describe('useLabelTabsSection', () => {
         },
       });
       const { result } = renderHook(() => useLabelTabsSection());
-      // innerD ≈ 81.1 - 12 ≈ 69 (allows large insets on default 2u bin)
       expect(result.current.state.tabInsetMax).toBeGreaterThan(30);
     });
 
-    it('tabInsetMax tightens in both mode = (innerD - 2·depth) / 2', () => {
+    it('tabInsetMax tightens in both mode = (cellD - 2·depth) / 2', () => {
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -258,9 +258,29 @@ describe('useLabelTabsSection', () => {
         },
       });
       const { result } = renderHook(() => useLabelTabsSection());
-      // (innerD - 2·12) / 2 ≈ (81 - 24) / 2 ≈ 28.5
+      // (cellD - 2·12) / 2 ≈ (81 - 24) / 2 ≈ 28.5
       expect(result.current.state.tabInsetMax).toBeGreaterThan(20);
       expect(result.current.state.tabInsetMax).toBeLessThan(40);
+    });
+
+    it('tabInsetMax uses cellD (not innerD) so multi-row bins get a conservative ceiling', () => {
+      // Greptile review on #1904: with 4 rows on a 2u-deep bin (innerD ≈ 81mm),
+      // cellD ≈ 20mm. Back-only mode with depth=8 → cellD - depth = 12mm.
+      // The pre-fix formula `innerD - depth` would have offered up to 73mm —
+      // most of which the per-compartment collision check rejects.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          compartments: {
+            ...DEFAULT_BIN_PARAMS.compartments,
+            rows: 4,
+            cells: [0, 1, 2, 3],
+          },
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 8, edges: 'back' },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.tabInsetMax).toBeLessThan(15);
     });
 
     it('frontTabCollision fires when both tabs would overlap', () => {

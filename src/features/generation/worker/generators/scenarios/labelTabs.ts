@@ -90,9 +90,9 @@ export const labelTabs: ScenarioCase[] = [
       },
     },
   }),
-  // #1898: collision drop. Tab depth + inset exceed half the compartment
-  // depth, so the front tab is silently dropped per the collision guard.
-  // Only the back tab should appear in the snapshot.
+  // #1898: collision drop. With innerD \u2248 39mm and tabDepth = 20mm,
+  // 2\u00b720 + 2\u00b70 = 40 > 39 so the front tab is silently dropped per the
+  // collision guard. Only the back tab should appear in the snapshot.
   defineScenario('label tabs', '1\u00d71 label both collision drops front', {
     params: {
       width: 1,
@@ -103,7 +103,7 @@ export const labelTabs: ScenarioCase[] = [
         support: 'bracket',
         alignment: 'left',
         edges: 'both',
-        depth: 18,
+        depth: 20,
       },
     },
   }),

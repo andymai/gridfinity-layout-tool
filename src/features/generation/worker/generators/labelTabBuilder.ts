@@ -270,6 +270,21 @@ function buildTabsAtRow(
       continue;
     }
 
+    // Per-compartment depth+inset guard. The tab body uses `tabDepth + inset`
+    // mm of compartment depth; if that exceeds the compartment's available
+    // depth the body would extend past the opposite wall (and fuse into it).
+    // The UI clamps the stepper, but a cloud-share payload can still smuggle
+    // in an invalid combo — silently drop to match the existing bridge guard.
+    // (Copilot review on #1904.)
+    const cellBounds = getCompartmentBounds(params.compartments, cellId);
+    if (cellBounds) {
+      const compartmentDepth = (cellBounds.maxRow - cellBounds.minRow + 1) * cellD;
+      if (tabDepth + inset > compartmentDepth) {
+        col++;
+        continue;
+      }
+    }
+
     // Find extent of consecutive same-compId columns with edges at this row
     let groupEnd = col + 1;
     while (groupEnd < cols) {
