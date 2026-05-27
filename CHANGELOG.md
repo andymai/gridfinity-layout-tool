@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.120.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.6...gridfinity-layout-tool-v4.120.7) (2026-05-27)
+
+
+### Bug Fixes
+
+* pin acceleration to silence Orca + sync server caps with [#1873](https://github.com/andymai/gridfinity-layout-tool/issues/1873) ([#1896](https://github.com/andymai/gridfinity-layout-tool/issues/1896)) ([a07c41d](https://github.com/andymai/gridfinity-layout-tool/commit/a07c41d612f4355eb6d751b315c9dd4e05db2da1))
+
 ## [4.120.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.5...gridfinity-layout-tool-v4.120.6) (2026-05-27)
 
 
