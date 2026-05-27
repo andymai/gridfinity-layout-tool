@@ -2,13 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { FeatureTag } from '@/shared/types/generation';
 import {
   ZONE_ORDER,
+  computeActiveZones,
   featureTagToColorZone,
   getZoneColor,
   isSingleColor,
   lipCornerZone,
   resolveColorMapping,
 } from './featureColors';
-import type { FeatureColorConfig, LipCorner } from './featureColors';
+import type { ActiveZonesParams, FeatureColorConfig, LipCorner } from './featureColors';
 
 const SINGLE = '#d4d8dc';
 
@@ -177,5 +178,40 @@ describe('resolveColorMapping', () => {
     const { colors: palette, colorToIndex } = resolveColorMapping(c);
     expect(palette).toEqual(['#ffffff']);
     expect(colorToIndex.get('#ffffff')).toBe(0);
+  });
+});
+
+describe('computeActiveZones — lid gate', () => {
+  const baseParams: ActiveZonesParams = {
+    base: { style: 'standard', stackingLip: false },
+    label: { enabled: false },
+    scoop: { enabled: false },
+    lid: { enabled: false },
+    compartments: { cells: [0] },
+  };
+
+  it('omits lid when toggle is off', () => {
+    expect(computeActiveZones(baseParams).has('lid')).toBe(false);
+  });
+
+  it('omits lid when toggle is on but stacking lip is off (lid mesh would not generate)', () => {
+    const zones = computeActiveZones({
+      ...baseParams,
+      lid: { enabled: true },
+      base: { style: 'standard', stackingLip: false },
+    });
+    // No lid color row appears for a config where the lid can't actually
+    // print — `shouldGenerateLid` requires a stacking lip for the click
+    // rails to land on.
+    expect(zones.has('lid')).toBe(false);
+  });
+
+  it('adds lid when toggle is on AND stacking lip is present', () => {
+    const zones = computeActiveZones({
+      ...baseParams,
+      lid: { enabled: true },
+      base: { style: 'standard', stackingLip: true },
+    });
+    expect(zones.has('lid')).toBe(true);
   });
 });

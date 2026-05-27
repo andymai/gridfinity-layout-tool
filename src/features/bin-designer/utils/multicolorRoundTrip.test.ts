@@ -425,15 +425,15 @@ describe('multicolor 3MF round-trip', () => {
     });
 
     it('lays the lid out beside the bin in print orientation (bug #4)', async () => {
-      // Single non-degenerate triangle per piece so we can read back exact
-      // vertex coords from the 3MF XML and verify the lid landed beside +
-      // flipped, not stacked above.
+      // `exportLid` pre-rotates the lid into print orientation (floor faces
+      // down → lid sits at negative Z relative to the original mating
+      // pose). The synthetic lid mimics that: triangles at z = -25 .. -20
+      // with the floor at z = -25.
       const params = withColors();
-      // Bin: 10×10×10 mm cube footprint at origin.
+      // Bin: 10×10 footprint at origin, sitting on the plate at z = 0.
       const binTri = [0, 0, 0, 10, 0, 0, 0, 10, 0];
-      // Lid: 8×8 footprint placed above the bin at z=20 (mating orientation),
-      // floor facing up (high z) — same authored layout the worker produces.
-      const lidTri = [0, 0, 20, 8, 0, 20, 0, 8, 20];
+      // Lid: 8×8 footprint, post-orientForPrint (Y inverted, Z below origin).
+      const lidTri = [0, -8, -25, 8, -8, -25, 0, 0, -20];
       const pieces = [
         { data: buildBinarySTL(binTri), label: 'bin' },
         { data: buildBinarySTL(lidTri), label: 'lid' },
@@ -448,11 +448,23 @@ describe('multicolor 3MF round-trip', () => {
       // First 3 vertices = bin, last 3 = lid.
       const lidVerts = vertexCoords.slice(-3);
       const lidMinX = Math.min(...lidVerts.map((v) => v[0]));
+      const lidMaxX = Math.max(...lidVerts.map((v) => v[0]));
+      const lidMinY = Math.min(...lidVerts.map((v) => v[1]));
+      const lidMaxY = Math.max(...lidVerts.map((v) => v[1]));
       const lidMinZ = Math.min(...lidVerts.map((v) => v[2]));
+      const lidMaxZ = Math.max(...lidVerts.map((v) => v[2]));
       // Lid sits to the right of the bin (bin max X = 10, gap = 5).
       expect(lidMinX).toBeCloseTo(15, 5);
-      // Lid bottom aligns with bin bottom (both at z=0) — no more stacking.
+      // Lid width unchanged (8) — no rotation should distort it.
+      expect(lidMaxX - lidMinX).toBeCloseTo(8, 5);
+      // Lid Y centered on bin's Y center (bin center = 5, lid depth = 8 → center at 4).
+      expect((lidMinY + lidMaxY) / 2).toBeCloseTo(5, 5);
+      // Lid bottom aligns with bin bottom (both at z=0) — no more stacking,
+      // and the post-orientForPrint orientation isn't double-flipped.
       expect(lidMinZ).toBeCloseTo(0, 5);
+      // Lid height preserved at 5mm — proof we translated rather than
+      // rotating again (a re-rotation would shift max Z, not just min Z).
+      expect(lidMaxZ - lidMinZ).toBeCloseTo(5, 5);
     });
 
     it('multi-color disabled at the params level disables colors on every piece', async () => {

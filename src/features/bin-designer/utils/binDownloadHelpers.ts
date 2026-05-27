@@ -228,23 +228,24 @@ function flatBBox(vertices: Float32Array): FlatBBox {
 const PRINT_LAYOUT_GAP_MM = 5;
 
 /**
- * Reorient + reposition the lid mesh for printing. Lid is authored in
- * mating orientation (sitting above the bin with the floor at the top) so
- * the STEP compound assembly path can nest it correctly. For 3MF *print*
- * export this leaves body + lid stacked at the same XY in the slicer,
- * confusing users — discussion #1654 bug #4.
+ * Reposition the lid mesh beside the bin for printing. The lid arrives
+ * here already in print orientation — `exportLid` calls `orientForPrint`
+ * on every non-STEP format (lidOrchestrator.ts:116), so the floor already
+ * faces down. What the multi-object 3MF path is missing is the layout:
+ * lid + bin share their authored X range, so the unified centering in
+ * `build3MFMultiObjectBuffer` lands them stacked at the same XY in the
+ * slicer (discussion #1654 bug #4).
  *
- * Rotates 180° around the lid's own YZ bbox center (flips Y and Z about
- * that point, preserving bbox extents and triangle winding via matched
- * normal flip) so the floor faces down. Then translates so:
- *   - lid's bottom (min Z) aligns with bin's bottom — both sit flat on the
- *     same plate level once `centeringTranslation` shifts the combined
- *     bbox to z=0.
- *   - lid's left (min X) sits `PRINT_LAYOUT_GAP_MM` to the right of the
- *     bin's right edge — they print side-by-side, not stacked.
+ * Translates so:
+ *   - lid's bottom (min Z) aligns with bin's bottom — both sit flat on
+ *     the plate once `centeringTranslation` shifts the combined bbox.
+ *   - lid's Y center aligns with bin's Y center (orientForPrint inverts
+ *     Y too; without re-centering the lid lands offset by depth).
+ *   - lid's left (min X) sits `PRINT_LAYOUT_GAP_MM` right of the bin's
+ *     right edge — they print side-by-side, not stacked.
  *
- * 180° rotation preserves orientation (right-handed → right-handed) so
- * triangle winding stays consistent; we just flip normal Y/Z to match.
+ * No rotation here — rotating again would double-flip back into mating
+ * orientation. Normals pass through unchanged.
  */
 function transformLidForPrint(
   lidVertices: Float32Array,
@@ -252,30 +253,19 @@ function transformLidForPrint(
   binBBox: FlatBBox
 ): { vertices: Float32Array; normals: Float32Array } {
   const lidBBox = flatBBox(lidVertices);
-  const cy = (lidBBox.minY + lidBBox.maxY) / 2;
-  const cz = (lidBBox.minZ + lidBBox.maxZ) / 2;
-  // Rotation around an X axis through (cy, cz) leaves the lid's bbox
-  // extents unchanged. After rotation, translate:
-  //   tx: bin.maxX + gap is where the lid's new minX should land. Rotation
-  //       didn't touch X so minX is still lidBBox.minX.
-  //   tz: bin.minZ is the target floor level. Rotation didn't change
-  //       Z extent so minZ is still lidBBox.minZ.
+  const binCy = (binBBox.minY + binBBox.maxY) / 2;
+  const lidCy = (lidBBox.minY + lidBBox.maxY) / 2;
   const tx = binBBox.maxX + PRINT_LAYOUT_GAP_MM - lidBBox.minX;
+  const ty = binCy - lidCy;
   const tz = binBBox.minZ - lidBBox.minZ;
 
   const v = new Float32Array(lidVertices.length);
   for (let i = 0; i < lidVertices.length; i += 3) {
     v[i] = lidVertices[i] + tx;
-    v[i + 1] = 2 * cy - lidVertices[i + 1];
-    v[i + 2] = 2 * cz - lidVertices[i + 2] + tz;
+    v[i + 1] = lidVertices[i + 1] + ty;
+    v[i + 2] = lidVertices[i + 2] + tz;
   }
-  const n = new Float32Array(lidNormals.length);
-  for (let i = 0; i < lidNormals.length; i += 3) {
-    n[i] = lidNormals[i];
-    n[i + 1] = -lidNormals[i + 1];
-    n[i + 2] = -lidNormals[i + 2];
-  }
-  return { vertices: v, normals: n };
+  return { vertices: v, normals: lidNormals };
 }
 
 /**
