@@ -384,10 +384,12 @@ function renderBuildItems(
 ): string {
   const count = stack && stack.count > 1 ? Math.floor(stack.count) : 1;
   const stride = (stack?.zHeightMm ?? 0) + (stack?.spacingMm ?? 0);
+  // tx/ty don't change across stack copies — only the Z stride does — so
+  // format them once outside the loop.
+  const tx = formatFloat(offset.x);
+  const ty = formatFloat(offset.y);
   let out = '';
   for (let i = 0; i < count; i++) {
-    const tx = formatFloat(offset.x);
-    const ty = formatFloat(offset.y);
     const tz = formatFloat(offset.z + i * stride);
     out += `    <item objectid="${objectId}" transform="1 0 0 0 1 0 0 0 1 ${tx} ${ty} ${tz}" />\n`;
   }

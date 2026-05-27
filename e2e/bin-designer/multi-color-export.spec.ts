@@ -39,14 +39,19 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible({ timeout: 30000 });
 
-    // Flip the per-design "Enable multi-color" toggle so the zone color
-    // pickers render. Labs flag alone gates feature *availability*; this
-    // toggle is what activates the multi-color UI for the current bin.
+    // Enable the per-design multi-color toggle so the zone color pickers
+    // render. Labs flag alone gates feature *availability*; this toggle is
+    // what activates the multi-color UI for the current bin. Read
+    // `aria-checked` first so a default-on UI in some future release
+    // doesn't get toggled OFF and silently break the rest of the test.
     const enableMC = page
       .getByRole('switch', { name: /enable multi-color/i })
-      .or(page.getByLabel(/enable multi-color/i));
-    await enableMC.first().waitFor({ state: 'visible', timeout: 10000 });
-    await enableMC.first().click();
+      .or(page.getByLabel(/enable multi-color/i))
+      .first();
+    await enableMC.waitFor({ state: 'visible', timeout: 10000 });
+    if ((await enableMC.getAttribute('aria-checked')) !== 'true') {
+      await enableMC.click();
+    }
 
     for (const [label, hex] of [
       [/^Body: /i, BODY_HEX],
