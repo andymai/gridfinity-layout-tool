@@ -80,15 +80,13 @@ function packageFiles(
     files['Metadata/thumbnail.png'] = thumbnail;
   }
   if (projectSettingsJson) {
-    // OrcaSlicer reads this via `_extract_project_config_from_archive` and
-    // applies `filament_colour` to its AMS slots — so the user opens the
-    // file with the bin's zone palette already pre-filled. BambuStudio
-    // gates the same loader on an "Application=BambuStudio-X.Y.Z" metadata
-    // claim that we deliberately don't make (claiming it caused OrcaSlicer
-    // to reject the file in a version check). Bambu users will see a
-    // dismissible "not from Bambu Lab" dialog and set their AMS palette
-    // manually; paint_color triangle painting still applies because that
-    // lives in the model XML and parses independently of project config.
+    // Both OrcaSlicer and BambuStudio read this via
+    // `_extract_project_config_from_archive` and apply `filament_colour` to
+    // their AMS slots, so the user opens the file with the bin's zone
+    // palette already pre-filled. BambuStudio additionally gates the loader
+    // on an `Application=BambuStudio-X.Y.Z` metadata claim — see
+    // BAMBU_COMPAT_APPLICATION below — without which Bambu silently skips
+    // the sidecar and shows a "not from Bambu Lab" dialog instead.
     files['Metadata/project_settings.config'] = strToU8(projectSettingsJson);
   }
   return zipSync(files, { level: 6 });
@@ -266,9 +264,9 @@ function buildProjectSettingsConfig(palette: readonly string[]): string {
   return JSON.stringify(
     {
       // Headers are advisory — Bambu's load_from_json stores them in a
-      // key_values map but doesn't gate on them. Generic version is fine
-      // since we no longer claim BambuStudio identity.
-      version: '1.0.0.0',
+      // key_values map but doesn't gate on them. Aligned with the Application
+      // metadata version (BAMBU_COMPAT_APPLICATION) for human consistency.
+      version: '2.0.0.0',
       name: 'project_settings',
       from: 'Gridfinity Layout Tool',
 
@@ -311,7 +309,7 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   const objectId = 1;
 
   let xml = openModelElement();
-  xml += buildMetadataXml(options);
+  xml += buildMetadataXml(options, { bambuCompat: !!colorConfig });
   xml += '  <resources>\n';
   xml += buildObjectXml(objectId, options.name, mesh, colorConfig?.triangleMaterialIndices);
   xml += '  </resources>\n';
@@ -361,8 +359,10 @@ function buildMultiObjectModelXML(
     return { ...obj, colorConfig };
   });
 
+  const anyHasColors = resolved.some((obj) => obj.colorConfig !== undefined);
+
   let xml = openModelElement();
-  xml += buildMetadataXml(options);
+  xml += buildMetadataXml(options, { bambuCompat: anyHasColors });
   xml += '  <resources>\n';
 
   const objectIds: number[] = [];
@@ -439,10 +439,42 @@ export const FILAMENT_PAINT_CODES = [
 // One fewer than the table size because we index `[slot + 1]` (slot 0 = filament 1).
 const MAX_COLOR_SLOTS = FILAMENT_PAINT_CODES.length - 1;
 
-function buildMetadataXml(options: ThreeMFOptions): string {
+/**
+ * Version we claim in the `Application` metadata, gated to multi-color
+ * exports. The claim has to start with "BambuStudio-" because BambuStudio's
+ * `dont_load_config` gate at bbs_3mf.cpp:1898-1908 only loads our
+ * `project_settings.config` sidecar when that prefix matches — without it
+ * the AMS palette isn't pre-filled and Bambu shows a "not from Bambu Lab"
+ * dialog.
+ *
+ * Picking the exact version was empirically constrained:
+ *
+ *   - `01.x.x.x` is rejected outright by OrcaSlicer's CLI version check
+ *     (`Version Check: File Version 1.x.x.x not supported by current cli
+ *     version 2.3.1`, exit -24). The check has a hidden minimum beyond the
+ *     maj/min compare in OrcaSlicer.cpp:1589 — I couldn't reproduce the
+ *     reject from reading the source, but it fires reliably for any 1.x.
+ *   - `02.06.x.x` and higher trip Orca 2.3's "file is newer than cli"
+ *     branch and also reject.
+ *   - `02.00.00.00` lands in the sweet spot: Bambu's gate accepts it,
+ *     Orca's version check accepts it, and the file_version stays under
+ *     every Bambu release we'd care about so the slicer doesn't run the
+ *     "translate old project" migration path.
+ *
+ * If beginners are running Orca 1.x (unlikely — it's the 2023 series and
+ * mostly unmaintained) the file will reject. The trade-off is favorable
+ * for the modern install base.
+ */
+const BAMBU_COMPAT_APPLICATION = 'BambuStudio-02.00.00.00';
+
+function buildMetadataXml(options: ThreeMFOptions, flags: { bambuCompat: boolean }): string {
   let xml = `  <metadata name="Title">${escapeXml(options.name)}</metadata>\n`;
   xml += '  <metadata name="Designer">Gridfinity Layout Tool</metadata>\n';
   xml += `  <metadata name="CreationDate">${new Date().toISOString().split('T')[0]}</metadata>\n`;
+  if (flags.bambuCompat) {
+    xml += `  <metadata name="Application">${BAMBU_COMPAT_APPLICATION}</metadata>\n`;
+    xml += '  <metadata name="BambuStudio:3mfVersion">1</metadata>\n';
+  }
   const ps = options.printSettings;
   if (!ps) return xml;
   // 3MF Core §3.7: custom metadata names without a registered namespace prefix

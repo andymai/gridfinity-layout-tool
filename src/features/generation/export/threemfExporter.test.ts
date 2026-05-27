@@ -716,18 +716,17 @@ describe('threemfExporter', () => {
       expect(unzipSync(buffer)['Metadata/project_settings.config']).toBeUndefined();
     });
 
-    // We deliberately do NOT claim BambuStudio identity via `<metadata
-    // name="Application">BambuStudio-X.Y.Z</metadata>`. The earlier attempt
-    // backfired: OrcaSlicer's CLI rejected the file outright with
-    // "File Version 1.0.0.0 not supported by current cli version 2.3.1"
-    // (exit -24), and the GUI loaded a degraded placeholder that landed
-    // off-plate, showed as single color, and triggered downstream g-code
-    // path-out-of-bounds and relative-extruder errors. The cost of skipping
-    // the claim is the one-time "the 3mf is not from Bambu Lab, load
-    // geometry data and color data only" dialog in BambuStudio — which is
-    // dismissible and does NOT block paint_color loading (paint_color is on
-    // triangles in the model XML, parsed independently of project config).
-    it('does not claim BambuStudio identity for multi-color exports', () => {
+    // BambuStudio gates `Metadata/project_settings.config` loading on the
+    // `Application` metadata starting with "BambuStudio-X.Y.Z"
+    // (bbs_3mf.cpp:1898-1908). Claim a version Orca won't reject so both
+    // slicers load our sidecar and pre-fill the AMS palette automatically.
+    //
+    // Version choice (`02.00.00.00`) was empirically derived against
+    // OrcaSlicer 2.3.1 and BambuStudio 2.6.0 CLIs: 01.x.x.x → rejected,
+    // 02.06.x.x+ → rejected, 02.00.00.00 → accepted by both. See the
+    // BAMBU_COMPAT_APPLICATION docstring in threemfExporter.ts for the
+    // full failure modes I ruled out.
+    it('claims BambuStudio identity for multi-color exports', () => {
       const { vertices, normals } = createTwoTriangles();
       const model = strFromU8(
         unzipSync(
@@ -740,13 +739,27 @@ describe('threemfExporter', () => {
           })
         )['3D/3dmodel.model']
       );
-      expect(model).not.toContain('<metadata name="Application">');
-      expect(model).not.toContain('BambuStudio:3mfVersion');
-      // Designer metadata is unaffected — that's our human-readable identity.
+      // Must start with "BambuStudio-" per the gate, and stay at 02.00.x.x
+      // or lower so Orca's CLI version check doesn't reject.
+      expect(model).toMatch(
+        /<metadata name="Application">BambuStudio-02\.00\.\d+\.\d+<\/metadata>/
+      );
+      expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
       expect(model).toContain('<metadata name="Designer">Gridfinity Layout Tool</metadata>');
     });
 
-    it('multi-object: still does not claim BambuStudio identity even with colored objects', () => {
+    it('does NOT claim BambuStudio identity for single-color exports', () => {
+      // No sidecar to gate, so no reason to claim identity. Avoids changing
+      // classification for users who don't need multi-material.
+      const { vertices, normals } = createSingleTriangle();
+      const model = strFromU8(
+        unzipSync(build3MFBuffer(vertices, normals, { name: 'plain' }))['3D/3dmodel.model']
+      );
+      expect(model).not.toContain('<metadata name="Application">');
+      expect(model).not.toContain('BambuStudio:3mfVersion');
+    });
+
+    it('multi-object: claims BambuStudio identity when any object has colorConfig', () => {
       const tri = createSingleTriangle();
       const objects = [
         {
@@ -762,6 +775,28 @@ describe('threemfExporter', () => {
       ];
       const model = strFromU8(
         unzipSync(build3MFMultiObjectBuffer(objects, { name: 'multi-bambu' }))['3D/3dmodel.model']
+      );
+      // Pin the safe version range — same regex as the single-object test
+      // so a future bump to e.g. 02.06.x.x doesn't slip through and break
+      // OrcaSlicer's CLI version check.
+      expect(model).toMatch(
+        /<metadata name="Application">BambuStudio-02\.00\.\d+\.\d+<\/metadata>/
+      );
+      expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
+    });
+
+    it('multi-object: skips BambuStudio identity when no object has colorConfig', () => {
+      const tri = createSingleTriangle();
+      const model = strFromU8(
+        unzipSync(
+          build3MFMultiObjectBuffer(
+            [
+              { vertices: tri.vertices, normals: tri.normals, name: 'a' },
+              { vertices: tri.vertices, normals: tri.normals, name: 'b' },
+            ],
+            { name: 'multi-plain' }
+          )
+        )['3D/3dmodel.model']
       );
       expect(model).not.toContain('<metadata name="Application">');
       expect(model).not.toContain('BambuStudio:3mfVersion');
