@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.120.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.3...gridfinity-layout-tool-v4.120.4) (2026-05-27)
+
+
+### Bug Fixes
+
+* **export:** satisfy OrcaSlicer's multi-material slice validation ([#1889](https://github.com/andymai/gridfinity-layout-tool/issues/1889)) ([fd35a22](https://github.com/andymai/gridfinity-layout-tool/commit/fd35a22d04e418188103815df9dba7dd300b75ab))
+
 ## [4.120.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.2...gridfinity-layout-tool-v4.120.3) (2026-05-27)
 
 
