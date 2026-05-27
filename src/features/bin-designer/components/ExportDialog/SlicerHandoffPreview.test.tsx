@@ -37,6 +37,7 @@ function buildColors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorC
     scoop: '#ffffff',
     dividers: '#ffffff',
     text: '#ffffff',
+    lid: '#ffffff',
     ...overrides,
   };
 }

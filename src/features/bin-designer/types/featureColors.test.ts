@@ -22,6 +22,7 @@ function colors(overrides: Partial<FeatureColorConfig> = {}): FeatureColorConfig
     scoop: SINGLE,
     dividers: SINGLE,
     text: SINGLE,
+    lid: SINGLE,
     ...overrides,
   };
 }
@@ -136,6 +137,7 @@ describe('resolveColorMapping', () => {
       scoop: '#aaaaaa',
       dividers: '#aaaaaa',
       text: '#aaaaaa',
+      lid: '#aaaaaa',
     };
     const { colors: palette, colorToIndex, defaultIndex } = resolveColorMapping(c);
     expect(defaultIndex).toBe(0);
@@ -170,6 +172,7 @@ describe('resolveColorMapping', () => {
       scoop: '#fff',
       dividers: '#FfFfFf',
       text: '#FFF',
+      lid: '#FFF',
     };
     const { colors: palette, colorToIndex } = resolveColorMapping(c);
     expect(palette).toEqual(['#ffffff']);

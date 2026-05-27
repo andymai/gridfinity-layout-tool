@@ -168,6 +168,7 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
   scoop: '#d4d8dc',
   dividers: '#d4d8dc',
   text: '#d4d8dc',
+  lid: '#d4d8dc',
 } as const;
 
 interface LegacyFeatureColorInput {
@@ -180,6 +181,7 @@ interface LegacyFeatureColorInput {
   scoop?: string;
   dividers?: string;
   text?: string;
+  lid?: string;
 }
 
 function resolveColor(raw: string | undefined, fallback: string): string {
@@ -223,6 +225,7 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
   // Text defaults to the label-tab color so single-color designs see no shift
   // when this field is added by migration.
   const text = resolveColor(raw.text, labelTab);
+  const lid = resolveColor(raw.lid, body);
 
   // Pre-`enabled` design counts as multi-color if body or any zone diverges
   // from the default — zone editors only existed behind the old Labs flag, so
@@ -231,7 +234,7 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
   const isCustom = (c: string): boolean => c.toLowerCase() !== bodyLower;
   const hasCustomColor =
     bodyLower !== DEFAULT_FEATURE_COLOR_CONFIG.body.toLowerCase() ||
-    [labelTab, base, scoop, dividers, text].some(isCustom) ||
+    [labelTab, base, scoop, dividers, text, lid].some(isCustom) ||
     [lip.frontLeft, lip.frontRight, lip.backRight, lip.backLeft].some(isCustom);
 
   return {
@@ -243,6 +246,7 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
     scoop,
     dividers,
     text,
+    lid,
   };
 }
 

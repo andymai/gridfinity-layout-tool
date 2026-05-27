@@ -22,6 +22,7 @@ const fc: FeatureColorConfig = {
   scoop: '#aaaaaa',
   dividers: '#aaaaaa',
   text: '#aaaaaa',
+  lid: '#aaaaaa',
 };
 
 describe('ColorsActionsMenu', () => {

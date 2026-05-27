@@ -22,7 +22,12 @@ import type {
 } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
-import { computeActiveZones } from '@/features/bin-designer/types/featureColors';
+import {
+  computeActiveZones,
+  resolveColorMapping,
+  normalizeHex,
+} from '@/features/bin-designer/types/featureColors';
+import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { FORMAT_MIME_TYPES } from '@/shared/generation/exportUtils';
 import type { BinParams, ExportFileFormat } from '@/features/bin-designer/types';
@@ -178,11 +183,46 @@ export function buildSinglePiece3MF(
   });
 }
 
+/** Map ancillary piece label → the ColorZone whose color paints the piece. */
+function pieceZone(label: string): ColorZone | null {
+  if (label === 'lid') return 'lid';
+  if (label === 'divider-horizontal' || label === 'divider-vertical') return 'dividers';
+  return null;
+}
+
+/**
+ * Build a uniform-color colorConfig for an ancillary piece (lid or divider).
+ * Shares the same `materials` array as the bin (per the `unifiedPalette`
+ * invariant in threemfExporter) so per-object slot indices reference the
+ * same unified filament palette, then tags every triangle with the zone's
+ * single slot.
+ */
+function uniformColorConfig(
+  zone: ColorZone,
+  featureColors: BinParams['featureColors'],
+  triangleCount: number
+): ThreeMFColorConfig {
+  const { colors, colorToIndex } = resolveColorMapping(featureColors);
+  const hex = normalizeHex(
+    zone === 'lid'
+      ? featureColors.lid
+      : zone === 'dividers'
+        ? featureColors.dividers
+        : featureColors.body
+  );
+  const slot = colorToIndex.get(hex) ?? 0;
+  return {
+    materials: colors.map((c) => ({ color: c })),
+    triangleMaterialIndices: new Array(triangleCount).fill(slot),
+  };
+}
+
 /**
  * Convert a multi-piece combined export into a single 3MF Blob with named
- * objects. The first piece (bin) gets multi-color material indices; companion
- * pieces (dividers, lid) ship as solid-color. This mirrors the previous
- * inline behaviour in `useExport.ts`.
+ * objects. The first piece (bin) gets per-triangle multi-color material
+ * indices; the lid and dividers ship with a uniform color slot drawn from
+ * `featureColors.lid` / `featureColors.dividers` so a multi-color print
+ * actually swaps filaments between body and lid/divider in the slicer.
  */
 export function buildMultiObject3MF(
   pieces: CombinedExportResult['pieces'],
@@ -192,6 +232,8 @@ export function buildMultiObject3MF(
   threeMFPrintSettings: ThreeMFPrintSettings
 ): Blob {
   const objects: ThreeMFObject[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; runtime guard preserved
+  const multiColorEnabled = params.featureColors?.enabled === true;
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i];
     const parseResult = parseSTLBinary(piece.data);
@@ -201,7 +243,7 @@ export function buildMultiObject3MF(
 
     let colorConfig: ThreeMFColorConfig | undefined;
     /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups is typed non-null, but runtime guard mirrors the single-piece branch as belt-and-suspenders against pipeline shape drift */
-    if (i === 0 && params.featureColors?.enabled && faceGroups) {
+    if (i === 0 && multiColorEnabled && faceGroups) {
       /* eslint-enable @typescript-eslint/no-unnecessary-condition */
       const triangleCount = parseResult.value.vertices.length / 9;
       colorConfig =
@@ -212,6 +254,12 @@ export function buildMultiObject3MF(
           parseResult.value.vertices,
           computeActiveZones(params)
         ) ?? undefined;
+    } else if (i > 0 && multiColorEnabled) {
+      const zone = pieceZone(piece.label);
+      if (zone !== null) {
+        const triangleCount = parseResult.value.vertices.length / 9;
+        colorConfig = uniformColorConfig(zone, params.featureColors, triangleCount);
+      }
     }
 
     objects.push({

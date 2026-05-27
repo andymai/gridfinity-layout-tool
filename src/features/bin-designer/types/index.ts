@@ -838,6 +838,7 @@ export interface DesignerState {
     scoop?: string;
     dividers?: string;
     text?: string;
+    lid?: string;
   }) => void;
   updateLid: (partial: Partial<LidConfig>) => void;
 

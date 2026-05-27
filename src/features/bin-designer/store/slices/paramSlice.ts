@@ -198,6 +198,7 @@ export function createParamSlice(set: Set, get: Get) {
       scoop?: string;
       dividers?: string;
       text?: string;
+      lid?: string;
     }) => {
       set((state) => {
         pushHistoryEntry(state);

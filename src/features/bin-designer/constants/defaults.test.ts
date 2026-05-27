@@ -386,6 +386,7 @@ describe('migrateParams', () => {
       scoop: '#d4d8dc',
       dividers: '#d4d8dc',
       text: '#d4d8dc',
+      lid: '#d4d8dc',
     });
   });
 
@@ -455,6 +456,7 @@ describe('migrateParams', () => {
       // Text zone was added in v4.109. Old payloads default to inheriting the
       // label-tab color so single-color users see no shift on migrate.
       text: '#22c55e',
+      lid: '#22c55e',
     };
     const firstPass = migrateParams({ featureColors: hex });
     const secondPass = migrateParams(firstPass);

@@ -127,7 +127,7 @@ describe('binDownloadHelpers — multi-color export gate', () => {
       expect(objects[1].colorConfig).toBeUndefined();
     });
 
-    it('includes colorConfig only on the first piece when featureColors.enabled is true', () => {
+    it('includes colorConfig on bin (per-triangle) and lid (uniform) when featureColors.enabled is true', () => {
       buildMultiObject3MF(
         pieces,
         FAKE_FACE_GROUPS,
@@ -139,8 +139,9 @@ describe('binDownloadHelpers — multi-color export gate', () => {
         colorConfig?: unknown;
       }>;
       expect(objects[0].colorConfig).toBeDefined();
-      // Ancillary pieces (dividers, lid) always ship solid-color.
-      expect(objects[1].colorConfig).toBeUndefined();
+      // Lid carries a uniform colorConfig referencing featureColors.lid so a
+      // multi-color print actually swaps filaments between body and lid.
+      expect(objects[1].colorConfig).toBeDefined();
     });
   });
 });

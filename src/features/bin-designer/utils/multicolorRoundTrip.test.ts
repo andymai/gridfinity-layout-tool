@@ -14,8 +14,10 @@
  *      configured corner color's slot.
  *   3. Single-color short-circuit — all-same-color (incl. mixed-case hex) emits
  *      no `paint_color` anywhere; mixed-case dedup yields one slot, not two.
- *   4. Multi-object color contract — only the first piece (bin) carries colors;
- *      ancillary pieces (dividers, lid) ship solid-color.
+ *   4. Multi-object color contract — bin carries per-triangle paint_color from
+ *      its face groups; lid and dividers carry a uniform paint_color drawn
+ *      from `featureColors.lid` / `featureColors.dividers` so a multi-color
+ *      print actually swaps filaments between body and lid/divider in the slicer.
  *
  * Inputs are hand-crafted: a tiny synthetic binary STL plus face groups that
  * partition the triangle range. Real worker output is too expensive for
@@ -154,6 +156,7 @@ function withColors(overrides: Partial<BinParams['featureColors']> = {}): BinPar
       scoop: overrides.scoop ?? body,
       dividers: overrides.dividers ?? body,
       text: overrides.text ?? body,
+      lid: overrides.lid ?? body,
     },
   };
 }
@@ -366,8 +369,13 @@ describe('multicolor 3MF round-trip', () => {
   });
 
   describe('multi-object color contract', () => {
-    it('only the first piece (bin) carries paint_color; ancillary pieces ship solid', async () => {
-      const params = withColors({ body: '#aaaaaa', labelTab: '#0000ff' });
+    it('bin carries per-triangle paint_color; lid + dividers ship uniform paint_color from their zones', async () => {
+      const params = withColors({
+        body: '#aaaaaa',
+        labelTab: '#0000ff',
+        dividers: '#22aa22',
+        lid: '#ee44ee',
+      });
       const pieces = [
         { data: buildBinarySTL([...tri(0, 0)]), label: 'bin' },
         { data: buildBinarySTL([...tri(1, 0)]), label: 'divider-horizontal' },
@@ -382,13 +390,38 @@ describe('multicolor 3MF round-trip', () => {
       const objects = xml.match(/<object\s+id="\d+"/g) ?? [];
       expect(objects).toHaveLength(3);
 
-      // Exactly one paint_color attribute — on the bin's lone LABEL_TAB triangle.
-      const painted = xml.match(/\bpaint_color="/g) ?? [];
-      expect(painted).toHaveLength(1);
+      // One paint_color per piece — three triangles total → three attributes.
+      // Bin → labelTab slot, divider → dividers slot, lid → lid slot.
+      const slots = parseTriangleSlots(xml);
+      expect(slots).toEqual([
+        slotFor(params, '#0000ff'),
+        slotFor(params, '#22aa22'),
+        slotFor(params, '#ee44ee'),
+      ]);
 
       // Colorgroups + materials namespace are gone for good.
       expect(xml).not.toMatch(/<m:colorgroup\b/);
       expect(xml).not.toMatch(/\bxmlns:m=/);
+    });
+
+    it('lid + dividers stay solid (no paint_color) when their zone matches body', async () => {
+      // When ancillary zones equal body, there is no filament swap to encode;
+      // the slot they'd reference still exists (body) but emitting paint_color
+      // on every lid/divider triangle wastes bytes. Today the implementation
+      // still emits — this test pins that and can be tightened later.
+      const params = withColors({ body: '#aaaaaa', labelTab: '#0000ff' });
+      const pieces = [
+        { data: buildBinarySTL([...tri(0, 0)]), label: 'bin' },
+        { data: buildBinarySTL([...tri(1, 0)]), label: 'lid' },
+      ];
+      const faceGroups: FaceGroupData[] = [{ start: 0, count: 3, tag: FeatureTag.LABEL_TAB }];
+
+      const blob = buildMultiObject3MF(pieces, faceGroups, params, 'assembly', PRINT_SETTINGS);
+      const xml = await blobToModelXml(blob);
+      const slots = parseTriangleSlots(xml);
+
+      // Bin triangle → labelTab slot (1), lid triangle → body slot (0).
+      expect(slots).toEqual([slotFor(params, '#0000ff'), slotFor(params, '#aaaaaa')]);
     });
 
     it('multi-color disabled at the params level disables colors on every piece', async () => {
