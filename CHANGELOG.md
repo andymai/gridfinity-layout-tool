@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.121.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.7...gridfinity-layout-tool-v4.121.0) (2026-05-27)
+
+
+### Features
+
+* **i18n:** add Japanese (ja) locale ([#1899](https://github.com/andymai/gridfinity-layout-tool/issues/1899)) ([d4f70ab](https://github.com/andymai/gridfinity-layout-tool/commit/d4f70abc8653670bf70d5efa936cf3d094995991))
+
 ## [4.120.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.6...gridfinity-layout-tool-v4.120.7) (2026-05-27)
 
 
