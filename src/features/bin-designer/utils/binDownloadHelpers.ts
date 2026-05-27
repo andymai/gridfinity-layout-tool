@@ -190,6 +190,94 @@ function pieceZone(label: string): ColorZone | null {
   return null;
 }
 
+/** Bounding box of a flat [x,y,z,x,y,z,...] STL vertex array. */
+interface FlatBBox {
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+  readonly minZ: number;
+  readonly maxZ: number;
+}
+function flatBBox(vertices: Float32Array): FlatBBox {
+  let minX = Infinity,
+    maxX = -Infinity;
+  let minY = Infinity,
+    maxY = -Infinity;
+  let minZ = Infinity,
+    maxZ = -Infinity;
+  for (let i = 0; i < vertices.length; i += 3) {
+    const x = vertices[i];
+    const y = vertices[i + 1];
+    const z = vertices[i + 2];
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+    if (z < minZ) minZ = z;
+    if (z > maxZ) maxZ = z;
+  }
+  return { minX, maxX, minY, maxY, minZ, maxZ };
+}
+
+/**
+ * Gap (mm) between bin and lid when laying them out for print.
+ * Large enough that BBS doesn't auto-resolve the placement and the user
+ * can still drag-arrange if desired.
+ */
+const PRINT_LAYOUT_GAP_MM = 5;
+
+/**
+ * Reorient + reposition the lid mesh for printing. Lid is authored in
+ * mating orientation (sitting above the bin with the floor at the top) so
+ * the STEP compound assembly path can nest it correctly. For 3MF *print*
+ * export this leaves body + lid stacked at the same XY in the slicer,
+ * confusing users — discussion #1654 bug #4.
+ *
+ * Rotates 180° around the lid's own YZ bbox center (flips Y and Z about
+ * that point, preserving bbox extents and triangle winding via matched
+ * normal flip) so the floor faces down. Then translates so:
+ *   - lid's bottom (min Z) aligns with bin's bottom — both sit flat on the
+ *     same plate level once `centeringTranslation` shifts the combined
+ *     bbox to z=0.
+ *   - lid's left (min X) sits `PRINT_LAYOUT_GAP_MM` to the right of the
+ *     bin's right edge — they print side-by-side, not stacked.
+ *
+ * 180° rotation preserves orientation (right-handed → right-handed) so
+ * triangle winding stays consistent; we just flip normal Y/Z to match.
+ */
+function transformLidForPrint(
+  lidVertices: Float32Array,
+  lidNormals: Float32Array,
+  binBBox: FlatBBox
+): { vertices: Float32Array; normals: Float32Array } {
+  const lidBBox = flatBBox(lidVertices);
+  const cy = (lidBBox.minY + lidBBox.maxY) / 2;
+  const cz = (lidBBox.minZ + lidBBox.maxZ) / 2;
+  // Rotation around an X axis through (cy, cz) leaves the lid's bbox
+  // extents unchanged. After rotation, translate:
+  //   tx: bin.maxX + gap is where the lid's new minX should land. Rotation
+  //       didn't touch X so minX is still lidBBox.minX.
+  //   tz: bin.minZ is the target floor level. Rotation didn't change
+  //       Z extent so minZ is still lidBBox.minZ.
+  const tx = binBBox.maxX + PRINT_LAYOUT_GAP_MM - lidBBox.minX;
+  const tz = binBBox.minZ - lidBBox.minZ;
+
+  const v = new Float32Array(lidVertices.length);
+  for (let i = 0; i < lidVertices.length; i += 3) {
+    v[i] = lidVertices[i] + tx;
+    v[i + 1] = 2 * cy - lidVertices[i + 1];
+    v[i + 2] = 2 * cz - lidVertices[i + 2] + tz;
+  }
+  const n = new Float32Array(lidNormals.length);
+  for (let i = 0; i < lidNormals.length; i += 3) {
+    n[i] = lidNormals[i];
+    n[i + 1] = -lidNormals[i + 1];
+    n[i + 2] = -lidNormals[i + 2];
+  }
+  return { vertices: v, normals: n };
+}
+
 /**
  * Build a uniform-color colorConfig for an ancillary piece (lid or divider).
  * Shares the same `materials` array as the bin (per the `unifiedPalette`
@@ -234,6 +322,11 @@ export function buildMultiObject3MF(
   const objects: ThreeMFObject[] = [];
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; runtime guard preserved
   const multiColorEnabled = params.featureColors?.enabled === true;
+  // First piece is the bin (per formatPieceDisplayName + caller convention).
+  // Capture its bbox up front so the lid transform can position the lid
+  // beside it without needing to know the bin's authored coordinates a
+  // second time downstream.
+  let binBBox: FlatBBox | null = null;
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i];
     const parseResult = parseSTLBinary(piece.data);
@@ -241,30 +334,37 @@ export function buildMultiObject3MF(
       throw new Error(getUserMessage(parseResult.error));
     }
 
+    let { vertices, normals } = parseResult.value;
+    if (i === 0) {
+      binBBox = flatBBox(vertices);
+    } else if (piece.label === 'lid' && binBBox !== null) {
+      ({ vertices, normals } = transformLidForPrint(vertices, normals, binBBox));
+    }
+
     let colorConfig: ThreeMFColorConfig | undefined;
     /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups is typed non-null, but runtime guard mirrors the single-piece branch as belt-and-suspenders against pipeline shape drift */
     if (i === 0 && multiColorEnabled && faceGroups) {
       /* eslint-enable @typescript-eslint/no-unnecessary-condition */
-      const triangleCount = parseResult.value.vertices.length / 9;
+      const triangleCount = vertices.length / 9;
       colorConfig =
         buildTriangleMaterialIndices(
           faceGroups,
           params.featureColors,
           triangleCount,
-          parseResult.value.vertices,
+          vertices,
           computeActiveZones(params)
         ) ?? undefined;
     } else if (i > 0 && multiColorEnabled) {
       const zone = pieceZone(piece.label);
       if (zone !== null) {
-        const triangleCount = parseResult.value.vertices.length / 9;
+        const triangleCount = vertices.length / 9;
         colorConfig = uniformColorConfig(zone, params.featureColors, triangleCount);
       }
     }
 
     objects.push({
-      vertices: parseResult.value.vertices,
-      normals: parseResult.value.normals,
+      vertices,
+      normals,
       name: formatPieceDisplayName(piece.label, params),
       colorConfig,
     });

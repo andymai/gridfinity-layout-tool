@@ -424,6 +424,37 @@ describe('multicolor 3MF round-trip', () => {
       expect(slots).toEqual([slotFor(params, '#0000ff'), slotFor(params, '#aaaaaa')]);
     });
 
+    it('lays the lid out beside the bin in print orientation (bug #4)', async () => {
+      // Single non-degenerate triangle per piece so we can read back exact
+      // vertex coords from the 3MF XML and verify the lid landed beside +
+      // flipped, not stacked above.
+      const params = withColors();
+      // Bin: 10×10×10 mm cube footprint at origin.
+      const binTri = [0, 0, 0, 10, 0, 0, 0, 10, 0];
+      // Lid: 8×8 footprint placed above the bin at z=20 (mating orientation),
+      // floor facing up (high z) — same authored layout the worker produces.
+      const lidTri = [0, 0, 20, 8, 0, 20, 0, 8, 20];
+      const pieces = [
+        { data: buildBinarySTL(binTri), label: 'bin' },
+        { data: buildBinarySTL(lidTri), label: 'lid' },
+      ];
+      const blob = buildMultiObject3MF(pieces, [], params, 'lid-print', PRINT_SETTINGS);
+      const xml = await blobToModelXml(blob);
+
+      const vertexCoords: number[][] = [];
+      for (const m of xml.matchAll(/<vertex x="([^"]+)" y="([^"]+)" z="([^"]+)" \/>/g)) {
+        vertexCoords.push([parseFloat(m[1]), parseFloat(m[2]), parseFloat(m[3])]);
+      }
+      // First 3 vertices = bin, last 3 = lid.
+      const lidVerts = vertexCoords.slice(-3);
+      const lidMinX = Math.min(...lidVerts.map((v) => v[0]));
+      const lidMinZ = Math.min(...lidVerts.map((v) => v[2]));
+      // Lid sits to the right of the bin (bin max X = 10, gap = 5).
+      expect(lidMinX).toBeCloseTo(15, 5);
+      // Lid bottom aligns with bin bottom (both at z=0) — no more stacking.
+      expect(lidMinZ).toBeCloseTo(0, 5);
+    });
+
     it('multi-color disabled at the params level disables colors on every piece', async () => {
       const params: BinParams = {
         ...DEFAULT_BIN_PARAMS,
