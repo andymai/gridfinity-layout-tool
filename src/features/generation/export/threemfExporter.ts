@@ -294,6 +294,21 @@ function buildProjectSettingsConfig(palette: readonly string[]): string {
       // alternative of every multi-color export failing to slice on first try.
       use_relative_e_distances: '1',
       layer_change_gcode: 'G92 E0 ; Reset extruder for accurate multi-material\n',
+
+      // Defer all acceleration values to the user's printer profile rather
+      // than inheriting whatever Bambu defaults Orca picks up from our
+      // BambuStudio identity claim. Without these, Orca's GCodeWriter caps
+      // travel acceleration against `machine_max_acceleration_extruding` and
+      // surfaces a comparison warning when the inherited Bambu travel value
+      // exceeds the user's printer's extruding limit (a near-certain
+      // mismatch on Marlin/Klipper printers with conservative max accels).
+      // Setting `default_acceleration=0` is the canonical "use machine
+      // default" signal — Orca's `have_default_acceleration =
+      // default_acceleration > 0` gate (slic3r/GUI/ConfigManipulation.cpp)
+      // then hides every per-feature acceleration override in the loaded
+      // config, so the warning never fires.
+      default_acceleration: '0',
+      travel_acceleration: '0',
     },
     null,
     2
