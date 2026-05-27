@@ -271,7 +271,31 @@ function buildProjectSettingsConfig(palette: readonly string[]): string {
       version: '1.0.0.0',
       name: 'project_settings',
       from: 'Gridfinity Layout Tool',
+
       filament_colour: palette,
+
+      // Multi-material printing on non-Bambu Marlin-based printers
+      // (OrcaSlicer's `is_BBL_printer() == false` branch in Print.cpp:1679)
+      // imposes two coupled requirements that the user hits as validation
+      // errors during slice:
+      //
+      //   1. Print.cpp:1434 — the wipe tower (needed to clean the nozzle
+      //      between filament swaps) "is currently only supported with
+      //      relative extruder addressing (use_relative_e_distances=1)".
+      //   2. Print.cpp:1683-1689 — relative extruder addressing then
+      //      requires a `G92 E0` reset in `before_layer_change_gcode` or
+      //      `layer_change_gcode`, because "relative extruder addressing
+      //      requires resetting the extruder position at each layer to
+      //      prevent loss of floating point accuracy."
+      //
+      // Set both so multi-color exports slice without surfacing this
+      // validation error to the user. Bambu users skip the check entirely
+      // (Bambu printers have native multi-material handling) so the
+      // settings are harmless there. Users with a custom layer_change_gcode
+      // will see ours override theirs on import — a small price for the
+      // alternative of every multi-color export failing to slice on first try.
+      use_relative_e_distances: '1',
+      layer_change_gcode: 'G92 E0 ; Reset extruder for accurate multi-material\n',
     },
     null,
     2

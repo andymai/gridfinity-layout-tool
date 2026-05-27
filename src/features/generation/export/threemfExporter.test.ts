@@ -600,6 +600,27 @@ describe('threemfExporter', () => {
       expect(config.filament_colour).toEqual(['#aaaaaa', '#ff0000']);
     });
 
+    // Print.cpp:1683-1689 — OrcaSlicer's slice validation rejects
+    // multi-material prints on non-Bambu Marlin printers unless the project
+    // has relative extruder addressing AND a G92 E0 reset in the layer
+    // gcode. Setting both here makes multi-color exports slice on first try
+    // without surfacing the validation error to the user.
+    it('includes multi-material slice requirements (relative E + G92 E0)', () => {
+      const { vertices, normals } = createTwoTriangles();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'mm-slice',
+        colorConfig: {
+          materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
+          triangleMaterialIndices: [0, 1],
+        },
+      });
+      const config = JSON.parse(strFromU8(unzipSync(buffer)['Metadata/project_settings.config']));
+      expect(config.use_relative_e_distances).toBe('1');
+      // Must match the regex slicer uses to detect the reset:
+      // ^[ \t]*[gG]92[ \t]*[eE](0(\.0*)?|\.0+)[ \t]*(;.*)?$
+      expect(config.layer_change_gcode).toMatch(/^\s*G92\s*E0\b/);
+    });
+
     it('omits project_settings.config when no colorConfig is provided', () => {
       const { vertices, normals } = createSingleTriangle();
       const buffer = build3MFBuffer(vertices, normals, { name: 'plain' });
