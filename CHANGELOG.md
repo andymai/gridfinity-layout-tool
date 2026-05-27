@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.120.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.5...gridfinity-layout-tool-v4.120.6) (2026-05-27)
+
+
+### Bug Fixes
+
+* **export:** center bins on the plate when claiming BambuStudio identity ([#1895](https://github.com/andymai/gridfinity-layout-tool/issues/1895)) ([5edde06](https://github.com/andymai/gridfinity-layout-tool/commit/5edde0656b5ba7bfc79e91c32728da3226e35644))
+* **export:** pre-fill AMS palette for multi-color 3MFs in BambuStudio ([#1893](https://github.com/andymai/gridfinity-layout-tool/issues/1893)) ([b5dac2d](https://github.com/andymai/gridfinity-layout-tool/commit/b5dac2de1e4d9074dd421e291f677c16f4522c1e))
+
 ## [4.120.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.4...gridfinity-layout-tool-v4.120.5) (2026-05-27)
 
 
