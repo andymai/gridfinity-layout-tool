@@ -288,16 +288,11 @@ export function buildMultiObject3MF(
   const objects: ThreeMFObject[] = [];
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; runtime guard preserved
   const multiColorEnabled: boolean = params.featureColors?.enabled ?? false;
-  // First piece is the bin (per formatPieceDisplayName + caller convention).
-  // Capture its bbox so the lid transform can position the lid beside it.
   let binBBox: FlatBBox | null = null;
-  // Track whether the bin produced a colorConfig: the bin short-circuits to
-  // single-color (returns null) when every active zone matches body, and we
-  // must keep ancillary pieces in lockstep — otherwise a config with
-  // `enabled: true` but no actual zone divergence would still flip
-  // `anyHasColors` in `build3MFMultiObjectBuffer` and emit Bambu
-  // compatibility metadata + a filament_colour sidecar for what is
-  // functionally a single-color file.
+  // Bin short-circuits to single-color when every active zone matches body;
+  // ancillary pieces must stay in lockstep or `anyHasColors` in
+  // `build3MFMultiObjectBuffer` would emit Bambu metadata for a file that
+  // is functionally single-color.
   let binHasColorConfig = false;
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i];
