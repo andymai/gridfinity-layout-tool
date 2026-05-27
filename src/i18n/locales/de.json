@@ -566,6 +566,7 @@
   "binDesigner.tabEngravedText": "Gravierter Text",
   "binDesigner.tabEngravedTextAriaLabel": "Gravierter Text für Fach {n}",
   "binDesigner.tabEngravedTextPlaceholder": "z. B. SCHRAUBEN",
+  "binDesigner.tabHeight": "Halterhöhe",
   "binDesigner.tabSupport": "Stütze",
   "binDesigner.tabSupport.bracket": "Bügel",
   "binDesigner.tabSupport.fillet": "Gebogen",

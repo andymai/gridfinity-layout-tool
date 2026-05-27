@@ -566,6 +566,7 @@
   "binDesigner.tabEngravedText": "Texto gravado",
   "binDesigner.tabEngravedTextAriaLabel": "Texto gravado para o compartimento {n}",
   "binDesigner.tabEngravedTextPlaceholder": "ex. PARAFUSOS",
+  "binDesigner.tabHeight": "Altura da aba",
   "binDesigner.tabSupport": "Suporte",
   "binDesigner.tabSupport.bracket": "Suporte aberto",
   "binDesigner.tabSupport.fillet": "Curvado",

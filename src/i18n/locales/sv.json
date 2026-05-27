@@ -566,6 +566,7 @@
   "binDesigner.tabEngravedText": "Graverad text",
   "binDesigner.tabEngravedTextAriaLabel": "Graverad text för fack {n}",
   "binDesigner.tabEngravedTextPlaceholder": "t.ex. SKRUVAR",
+  "binDesigner.tabHeight": "Flikhöjd",
   "binDesigner.tabSupport": "Stöd",
   "binDesigner.tabSupport.bracket": "Konsol",
   "binDesigner.tabSupport.fillet": "Kurvad",
