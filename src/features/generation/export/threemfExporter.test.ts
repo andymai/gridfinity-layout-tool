@@ -570,12 +570,16 @@ describe('threemfExporter', () => {
     });
   });
 
-  // Bambu/Orca read Metadata/project_settings.config via
-  // ConfigBase::load_from_json. Its presence flips DynamicPrintConfig.empty()
-  // to false, which suppresses BambuStudio's "old version, geometry only"
-  // dialog (Plater.cpp:8127). filament_colour also pre-fills the AMS slot
-  // palette with our zone colors.
-  describe('project_settings.config (Bambu warning suppression)', () => {
+  // Metadata/project_settings.config primes the slicer's filament palette
+  // via ConfigBase::load_from_json. OrcaSlicer loads it unconditionally and
+  // applies filament_colour to the AMS slots. BambuStudio gates loading on
+  // an "Application=BambuStudio-X.Y.Z" metadata claim we deliberately don't
+  // make (claiming BambuStudio identity caused OrcaSlicer's CLI to reject
+  // the file with a version-check error and the GUI to load a degraded
+  // placeholder). Net effect: Orca users get the AMS palette pre-filled;
+  // Bambu users dismiss a "not from Bambu Lab" dialog once but paint_color
+  // still applies because it lives on triangles in the model XML.
+  describe('project_settings.config (Orca AMS palette seeding)', () => {
     it('emits Metadata/project_settings.config when colorConfig has materials', () => {
       const { vertices, normals } = createTwoTriangles();
       const buffer = build3MFBuffer(vertices, normals, {
@@ -682,40 +686,37 @@ describe('threemfExporter', () => {
       expect(unzipSync(buffer)['Metadata/project_settings.config']).toBeUndefined();
     });
 
-    // BambuStudio gates project_settings.config loading on the Application
-    // metadata starting with "BambuStudio-" (bbs_3mf.cpp:1898). Without it,
-    // every sidecar is silently skipped with "already parsed or a directory
-    // or not supported" and the "old version, geometry only" dialog fires.
-    // OrcaSlicer has no such gate but is happy either way.
-    it('claims Application=BambuStudio-* when colorConfig is active', () => {
+    // We deliberately do NOT claim BambuStudio identity via `<metadata
+    // name="Application">BambuStudio-X.Y.Z</metadata>`. The earlier attempt
+    // backfired: OrcaSlicer's CLI rejected the file outright with
+    // "File Version 1.0.0.0 not supported by current cli version 2.3.1"
+    // (exit -24), and the GUI loaded a degraded placeholder that landed
+    // off-plate, showed as single color, and triggered downstream g-code
+    // path-out-of-bounds and relative-extruder errors. The cost of skipping
+    // the claim is the one-time "the 3mf is not from Bambu Lab, load
+    // geometry data and color data only" dialog in BambuStudio — which is
+    // dismissible and does NOT block paint_color loading (paint_color is on
+    // triangles in the model XML, parsed independently of project config).
+    it('does not claim BambuStudio identity for multi-color exports', () => {
       const { vertices, normals } = createTwoTriangles();
-      const buffer = build3MFBuffer(vertices, normals, {
-        name: 'bambu-compat',
-        colorConfig: {
-          materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
-          triangleMaterialIndices: [0, 1],
-        },
-      });
-      const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
-      expect(model).toMatch(
-        /<metadata name="Application">BambuStudio-\d+\.\d+\.\d+\.\d+<\/metadata>/
-      );
-      expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
-      // Keep our human-readable identity too — Designer is unrelated to the
-      // BambuStudio gate.
-      expect(model).toContain('<metadata name="Designer">Gridfinity Layout Tool</metadata>');
-    });
-
-    it('omits Application metadata for single-color exports', () => {
-      const { vertices, normals } = createSingleTriangle();
       const model = strFromU8(
-        unzipSync(build3MFBuffer(vertices, normals, { name: 'plain' }))['3D/3dmodel.model']
+        unzipSync(
+          build3MFBuffer(vertices, normals, {
+            name: 'multi',
+            colorConfig: {
+              materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
+              triangleMaterialIndices: [0, 1],
+            },
+          })
+        )['3D/3dmodel.model']
       );
       expect(model).not.toContain('<metadata name="Application">');
       expect(model).not.toContain('BambuStudio:3mfVersion');
+      // Designer metadata is unaffected — that's our human-readable identity.
+      expect(model).toContain('<metadata name="Designer">Gridfinity Layout Tool</metadata>');
     });
 
-    it('multi-object: emits BambuStudio Application metadata when any object has colorConfig', () => {
+    it('multi-object: still does not claim BambuStudio identity even with colored objects', () => {
       const tri = createSingleTriangle();
       const objects = [
         {
@@ -731,23 +732,6 @@ describe('threemfExporter', () => {
       ];
       const model = strFromU8(
         unzipSync(build3MFMultiObjectBuffer(objects, { name: 'multi-bambu' }))['3D/3dmodel.model']
-      );
-      expect(model).toContain('<metadata name="Application">BambuStudio-');
-      expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
-    });
-
-    it('multi-object: omits Application metadata when no object has colorConfig', () => {
-      const tri = createSingleTriangle();
-      const model = strFromU8(
-        unzipSync(
-          build3MFMultiObjectBuffer(
-            [
-              { vertices: tri.vertices, normals: tri.normals, name: 'a' },
-              { vertices: tri.vertices, normals: tri.normals, name: 'b' },
-            ],
-            { name: 'multi-plain' }
-          )
-        )['3D/3dmodel.model']
       );
       expect(model).not.toContain('<metadata name="Application">');
       expect(model).not.toContain('BambuStudio:3mfVersion');
