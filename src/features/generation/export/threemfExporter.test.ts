@@ -266,13 +266,18 @@ describe('threemfExporter', () => {
       expect(xml).not.toContain('test <bin>');
     });
 
-    it('includes build section with object reference', () => {
+    it('includes build section with centered object reference', () => {
       const { vertices, normals } = createSingleTriangle();
       const buffer = build3MFBuffer(vertices, normals, { name: 'test' });
       const xml = extractModelXML(buffer);
 
+      // Build item always carries a transform now — the bbox centroid is
+      // translated to PLATE_CENTER_MM so the bin opens centered on the bed
+      // rather than at the world origin (= bed corner). Pre-#1893 this was
+      // unnecessary because OrcaSlicer's From_Other classifier auto-arranged
+      // on import; claiming BambuStudio identity flips need_arrange = false.
       expect(xml).toContain('<build>');
-      expect(xml).toContain('<item objectid="1" />');
+      expect(xml).toMatch(/<item objectid="1" transform="1 0 0 0 1 0 0 0 1 [^"]+" \/>/);
     });
 
     it('formats floating-point vertices with precision', () => {
@@ -1089,13 +1094,93 @@ describe('threemfExporter', () => {
   // Issue #1642 — auto-stack copies in 3MF. The exporter uses 3MF instancing
   // (single object, multiple <item> entries with Z translation) so file size
   // stays constant regardless of copy count.
+  // Pre-#1893 we shipped no Application metadata so OrcaSlicer classified
+  // our file as `From_Other` and auto-arranged on import. Claiming
+  // BambuStudio identity in #1893 flipped need_arrange=false, so the bin
+  // appeared at world origin (bed corner) instead of centered. Centering
+  // via a build-item transform restores the prior visual behavior while
+  // keeping the AMS-palette-loading benefit of the Bambu identity claim.
+  describe('build item centering (positioning regression fix)', () => {
+    it('centers a 42mm gridfinity bin around PLATE_CENTER_MM (128,128)', () => {
+      // Synthesize a 42x42x42mm cube positioned at origin (the gridfinity
+      // worker's default coordinate space). Centroid (21, 21, 21) → expected
+      // translation (128-21, 128-21, -0) = (107, 107, 0).
+      const verts = new Float32Array([
+        0, 0, 0, 42, 0, 0, 42, 42, 0, 0, 0, 42, 42, 0, 42, 42, 42, 42,
+      ]);
+      const normals = new Float32Array(verts.length).fill(0);
+      for (let i = 2; i < normals.length; i += 3) normals[i] = 1;
+      const xml = extractModelXML(build3MFBuffer(verts, normals, { name: 'bin' }));
+      expect(xml).toContain('transform="1 0 0 0 1 0 0 0 1 107 107 0"');
+    });
+
+    it('multi-object: shares a single offset across all items', () => {
+      // Two cubes at offset origins; combined bbox (0,0,0)→(50,50,42),
+      // centroid (25, 25, 21) → translation (103, 103, 0). All build items
+      // share this translation so relative positions are preserved.
+      const cube = (ox: number, oy: number) =>
+        new Float32Array([
+          ox,
+          oy,
+          0,
+          ox + 10,
+          oy,
+          0,
+          ox + 10,
+          oy + 10,
+          0,
+          ox,
+          oy,
+          42,
+          ox + 10,
+          oy,
+          42,
+          ox + 10,
+          oy + 10,
+          42,
+        ]);
+      const normals = new Float32Array(18).fill(0);
+      for (let i = 2; i < normals.length; i += 3) normals[i] = 1;
+      const xml = strFromU8(
+        unzipSync(
+          build3MFMultiObjectBuffer(
+            [
+              { vertices: cube(0, 0), normals, name: 'a' },
+              { vertices: cube(40, 40), normals, name: 'b' },
+            ],
+            { name: 'multi' }
+          )
+        )['3D/3dmodel.model']
+      );
+      const items = xml.match(/<item objectid="\d+" transform="[^"]+"/g) ?? [];
+      expect(items).toHaveLength(2);
+      // Combined centroid X = (0 + 50)/2 = 25; translation x = 128 - 25 = 103.
+      expect(items[0]).toContain('transform="1 0 0 0 1 0 0 0 1 103 103 0"');
+      expect(items[1]).toContain('transform="1 0 0 0 1 0 0 0 1 103 103 0"');
+    });
+
+    it('lifts the bin to z=0 when its mesh has a negative-z baseline', () => {
+      // Synthetic mesh with vertices straddling z=0 (some at -5, some at +5).
+      // Translation z = -bbox.min.z = -(-5) = +5 so the bin sits on the bed.
+      const verts = new Float32Array([0, 0, -5, 1, 0, -5, 0, 1, -5, 0, 0, 5, 1, 0, 5, 0, 1, 5]);
+      const normals = new Float32Array(verts.length).fill(0);
+      for (let i = 2; i < normals.length; i += 3) normals[i] = 1;
+      const xml = extractModelXML(build3MFBuffer(verts, normals, { name: 'lifted' }));
+      // Translation z component must equal -bbox.min.z = 5.
+      expect(xml).toMatch(/transform="1 0 0 0 1 0 0 0 1 \S+ \S+ 5"/);
+    });
+  });
+
   describe('stack option (issue #1642)', () => {
-    it('emits a single <item> when stack is omitted', () => {
+    // The single-triangle test mesh has bbox (0,0,0)→(1,1,0), centroid
+    // (0.5, 0.5, 0). PLATE_CENTER_MM = (128, 128). Translation per stack
+    // copy i is (127.5, 127.5, i * (zHeightMm + spacingMm)).
+    it('emits a single <item> with centering transform when stack is omitted', () => {
       const { vertices, normals } = createSingleTriangle();
       const xml = extractModelXML(build3MFBuffer(vertices, normals, { name: 'test' }));
       const items = xml.match(/<item /g) ?? [];
       expect(items).toHaveLength(1);
-      expect(xml).not.toContain('transform=');
+      expect(xml).toContain('transform="1 0 0 0 1 0 0 0 1 127.5 127.5 0"');
     });
 
     it('emits a single <item> when stack.count is 1', () => {
@@ -1119,9 +1204,10 @@ describe('threemfExporter', () => {
       );
       const items = xml.match(/<item [^/]*\/>/g) ?? [];
       expect(items).toHaveLength(3);
-      expect(items[0]).toContain('transform="1 0 0 0 1 0 0 0 1 0 0 0"');
-      expect(items[1]).toContain('transform="1 0 0 0 1 0 0 0 1 0 0 7"');
-      expect(items[2]).toContain('transform="1 0 0 0 1 0 0 0 1 0 0 14"');
+      // Stack stride adds to the base centering translation's z, not replaces.
+      expect(items[0]).toContain('transform="1 0 0 0 1 0 0 0 1 127.5 127.5 0"');
+      expect(items[1]).toContain('transform="1 0 0 0 1 0 0 0 1 127.5 127.5 7"');
+      expect(items[2]).toContain('transform="1 0 0 0 1 0 0 0 1 127.5 127.5 14"');
     });
 
     it('adds spacingMm to each successive Z stride', () => {
@@ -1133,8 +1219,8 @@ describe('threemfExporter', () => {
         })
       );
       const items = xml.match(/transform="[^"]+"/g) ?? [];
-      expect(items[0]).toBe('transform="1 0 0 0 1 0 0 0 1 0 0 0"');
-      expect(items[1]).toBe('transform="1 0 0 0 1 0 0 0 1 0 0 5.5"');
+      expect(items[0]).toBe('transform="1 0 0 0 1 0 0 0 1 127.5 127.5 0"');
+      expect(items[1]).toBe('transform="1 0 0 0 1 0 0 0 1 127.5 127.5 5.5"');
     });
 
     it('still references a single object even when stacking many copies', () => {
