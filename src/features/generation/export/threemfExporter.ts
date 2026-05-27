@@ -390,20 +390,22 @@ function openModelElement(): string {
 }
 
 /**
- * Per-slot paint_color encoding table, lifted verbatim from OrcaSlicer's
- * `CONST_FILAMENTS` (libslic3r/Model.cpp). Indexed by the exporter's material
- * slot number, not by slicer filament number:
+ * Per-filament paint_color encoding table, lifted verbatim from OrcaSlicer's
+ * `CONST_FILAMENTS` (libslic3r/Model.cpp). Index N is the bit-tree code for
+ * filament N (1-based) in the slicer's AMS / extruder list:
  *
- *   - Index 0 → `""` (empty). Caller omits the attribute entirely so the
- *     triangle inherits the object's default extruder. The body color is
- *     always slot 0, so most triangles emit no paint_color.
- *   - Index 1 → `"4"`, the bit-tree encoding for filament 1 in the slicer.
- *   - Index 2 → `"8"`, filament 2. ...
- *   - Index N → CONST_FILAMENTS[N], filament N.
+ *   - Index 0 → `""` (no filament; means "no override / default extruder").
+ *     Not used by our exporter — every triangle gets an explicit code so
+ *     zone-to-filament mapping doesn't depend on the object's default
+ *     extruder setting.
+ *   - Index 1 → `"4"`, filament 1.
+ *   - Index 2 → `"8"`, filament 2.
+ *   - Index 3 → `"0C"`, filament 3. ...
  *
- * The off-by-one between "our slot" and "slicer filament" is intentional:
- * slot 0 is special-cased to mean "no override" so a single-color export
- * needs zero attribute writes and zero AMS slots claimed.
+ * Exporter mapping: material slot N (our 0-based slot index in
+ * `colorConfig.materials`) → filament N+1 (slicer 1-based) →
+ * `FILAMENT_PAINT_CODES[N+1]`. So slot 0 (body) → `"4"` (filament 1),
+ * slot 1 → `"8"` (filament 2), etc.
  *
  * PrusaSlicer reads the same `paint_color` attribute (3mf.cpp:2158) as a
  * fallback for its own `slic3rpe:mmu_segmentation`, so one emission path
@@ -412,7 +414,7 @@ function openModelElement(): string {
  * comment lines 3805–3810) and treats each colorgroup as a single object
  * color, not a multi-slot palette.
  *
- * Exported so test code can decode `paint_color` back to slot indices
+ * Exported so test code can decode `paint_color` back to filament indices
  * without maintaining a duplicate copy of the table.
  */
 export const FILAMENT_PAINT_CODES = [
@@ -434,7 +436,8 @@ export const FILAMENT_PAINT_CODES = [
   'CC',
   'DC',
 ] as const;
-const MAX_COLOR_SLOTS = FILAMENT_PAINT_CODES.length;
+// One fewer than the table size because we index `[slot + 1]` (slot 0 = filament 1).
+const MAX_COLOR_SLOTS = FILAMENT_PAINT_CODES.length - 1;
 
 function buildMetadataXml(options: ThreeMFOptions): string {
   let xml = `  <metadata name="Title">${escapeXml(options.name)}</metadata>\n`;
@@ -474,13 +477,18 @@ function buildObjectXml(
   if (triangleMaterialIndices) {
     for (let i = 0; i < mesh.triangles.length; i++) {
       const [v1, v2, v3] = mesh.triangles[i];
-      // Slot 0 (body) maps to filament 0 = "" = no paint_color attribute, so
-      // the triangle inherits the object's default extruder. Slots 1..N map
-      // to filaments 1..N with their matching bit-tree code.
-      const code = FILAMENT_PAINT_CODES[triangleMaterialIndices[i]];
-      xml += code
-        ? `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" paint_color="${code}" />\n`
-        : `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" />\n`;
+      // Map material slot N to filament N+1 in the slicer (1-based) so each
+      // zone lands on its own AMS slot — slot 0 → "4" (filament 1, body),
+      // slot 1 → "8" (filament 2, lip), slot 2 → "0C" (filament 3), etc.
+      // Earlier passes omitted paint_color for slot 0 intending to fall
+      // through to the object's default extruder, but the default IS filament
+      // 1, so body (no attribute) and lip (paint_color="4" = filament 1)
+      // collapsed onto the same physical filament — making 4-zone exports
+      // appear as 2 colors in the slicer. Explicit attribute for every
+      // triangle decouples zone-to-filament mapping from the default-extruder
+      // setting, which the user can re-set per object without color drift.
+      const code = FILAMENT_PAINT_CODES[triangleMaterialIndices[i] + 1];
+      xml += `          <triangle v1="${v1}" v2="${v2}" v3="${v3}" paint_color="${code}" />\n`;
     }
   } else {
     for (const [v1, v2, v3] of mesh.triangles) {

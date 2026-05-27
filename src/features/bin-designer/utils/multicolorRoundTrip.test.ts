@@ -89,14 +89,18 @@ async function blobToModelXml(blob: Blob): Promise<string> {
 
 /**
  * Decode a paint_color attribute back to a material slot index using the
- * live FILAMENT_PAINT_CODES from the exporter — keeping the test pinned to
- * the same table the production code emits.
+ * live FILAMENT_PAINT_CODES from the exporter. The exporter maps slot N to
+ * `FILAMENT_PAINT_CODES[N + 1]` so decoding subtracts 1 to recover the slot.
+ * `code === undefined` (no paint_color attribute) shouldn't appear in any
+ * colored export — colorConfig'd objects emit paint_color on every triangle.
  */
 function slotFromCode(code: string | undefined): number {
-  if (code === undefined) return 0; // missing attribute → slot 0 (body)
+  if (code === undefined) {
+    throw new Error('paint_color missing on triangle of a colored export — expected explicit code');
+  }
   const idx = FILAMENT_PAINT_CODES.indexOf(code as (typeof FILAMENT_PAINT_CODES)[number]);
-  if (idx < 0) throw new Error(`unknown paint_color code: ${code}`);
-  return idx;
+  if (idx <= 0) throw new Error(`unknown paint_color code: ${code}`);
+  return idx - 1;
 }
 
 /** Material slot per triangle in document order. */

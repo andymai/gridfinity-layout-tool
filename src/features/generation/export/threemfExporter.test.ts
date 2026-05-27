@@ -410,7 +410,7 @@ describe('threemfExporter', () => {
   // multi-material assignment. The encoding string for each filament slot is the
   // serialized TriangleSelector bit-tree, lifted from OrcaSlicer Model.cpp:52.
   describe('multi-color paint_color', () => {
-    it('emits paint_color on triangles whose material index ≠ 0', () => {
+    it('emits explicit paint_color on every triangle (slot N → filament N+1)', () => {
       const { vertices, normals } = createTwoTriangles();
       const buffer = build3MFBuffer(vertices, normals, {
         name: 'color-test',
@@ -421,11 +421,17 @@ describe('threemfExporter', () => {
       });
       const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
 
-      // Slot 0 → no paint_color attribute (triangle inherits default extruder)
-      expect(model).toMatch(/<triangle v1="\d+" v2="\d+" v3="\d+" \/>/);
-      // Slot 1 → paint_color="4" per CONST_FILAMENTS[1]
+      // Slot 0 (body) → filament 1 → CONST_FILAMENTS[1] = "4".
+      // Slot 1 → filament 2 → CONST_FILAMENTS[2] = "8".
+      // Both explicit so body and lip land on DIFFERENT AMS slots — the
+      // alternative (omitting the attribute for slot 0) lets body collapse
+      // onto whatever the object's default extruder is, which is also
+      // typically filament 1, making slot-1 paint_color="4" indistinguishable.
       expect(model).toMatch(/<triangle v1="\d+" v2="\d+" v3="\d+" paint_color="4" \/>/);
-      // No legacy artifacts from the old colorgroup approach
+      expect(model).toMatch(/<triangle v1="\d+" v2="\d+" v3="\d+" paint_color="8" \/>/);
+      // No triangle ships without paint_color when a colorConfig is present.
+      expect(model).not.toMatch(/<triangle v1="\d+" v2="\d+" v3="\d+" \/>/);
+      // No legacy artifacts from the old colorgroup approach.
       expect(model).not.toContain('pid=');
       expect(model).not.toContain('p1=');
       expect(model).not.toContain('m:colorgroup');
@@ -433,9 +439,9 @@ describe('threemfExporter', () => {
       expect(model).not.toContain('requiredextensions=');
     });
 
-    it('emits the correct paint_color code for each filament slot', () => {
-      // Build a 4-triangle mesh, one triangle per material slot, to exercise
-      // every entry of FILAMENT_PAINT_CODES that's likely to ship in a bin.
+    it('emits the correct paint_color code for each material slot', () => {
+      // 4 triangles, one per slot, exercises the +1 shift in
+      // FILAMENT_PAINT_CODES[slot + 1] across the slots a typical bin uses.
       const verts = new Float32Array(4 * 9);
       for (let i = 0; i < 4; i++) {
         const base = i * 9;
@@ -459,12 +465,14 @@ describe('threemfExporter', () => {
       });
       const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
 
-      // Slot 0 → no attribute; Slots 1..3 → "4", "8", "0C" per CONST_FILAMENTS
+      // Slots 0..3 → filaments 1..4 → "4", "8", "0C", "1C".
       const codes = model.match(/paint_color="([^"]+)"/g) ?? [];
-      expect(codes).toContain('paint_color="4"');
-      expect(codes).toContain('paint_color="8"');
-      expect(codes).toContain('paint_color="0C"');
-      expect(codes).toHaveLength(3);
+      expect(codes).toEqual([
+        'paint_color="4"',
+        'paint_color="8"',
+        'paint_color="0C"',
+        'paint_color="1C"',
+      ]);
     });
 
     it('omits paint_color and namespace when colorConfig is absent', () => {
@@ -519,9 +527,10 @@ describe('threemfExporter', () => {
 
     it('throws when materials count exceeds the slicer filament cap', () => {
       const { vertices, normals } = createSingleTriangle();
-      // FILAMENT_PAINT_CODES has 17 entries (slots 0..16); 18 is the first
-      // count that lacks a code.
-      const tooMany = Array.from({ length: 18 }, (_, i) => ({
+      // Slot N maps to FILAMENT_PAINT_CODES[N+1]; the table has 17 entries
+      // so the highest valid slot is 15 (→ index 16 = "DC"). 17 slots
+      // (highest = 16, index 17) is the first count without a code.
+      const tooMany = Array.from({ length: 17 }, (_, i) => ({
         color: `#${i.toString(16).padStart(2, '0').repeat(3)}`,
       }));
       expect(() =>
@@ -813,8 +822,8 @@ describe('threemfExporter', () => {
       expect(model).toContain('object id="2"');
       expect(model).toContain('objectid="1"');
       expect(model).toContain('objectid="2"');
-      // Material index 1 → filament 1 → "4"
-      expect(model).toContain('paint_color="4"');
+      // Material slot 1 → filament 2 → "8" (slot N maps to FILAMENT_PAINT_CODES[N+1])
+      expect(model).toContain('paint_color="8"');
       expect(model).not.toContain('m:colorgroup');
       expect(model).not.toContain('xmlns:m=');
     });
