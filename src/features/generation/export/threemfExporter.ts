@@ -307,6 +307,7 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   }
 
   const objectId = 1;
+  const offset = centeringTranslation(computeBBox(mesh.vertices));
 
   let xml = openModelElement();
   xml += buildMetadataXml(options, { bambuCompat: !!colorConfig });
@@ -314,29 +315,83 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   xml += buildObjectXml(objectId, options.name, mesh, colorConfig?.triangleMaterialIndices);
   xml += '  </resources>\n';
   xml += '  <build>\n';
-  xml += renderBuildItems(objectId, options.stack);
+  xml += renderBuildItems(objectId, options.stack, offset);
   xml += '  </build>\n';
   xml += '</model>';
   return xml;
 }
 
 /**
+ * Plate-center coordinates we translate the bin's bbox centroid to so the
+ * file opens centered on the bed. Chosen for the 256×256 mm beds that
+ * BambuStudio A1/X1/P1, Prusa MK4S, and similar most commonly target.
+ * A1 mini (180×180) will see the bin offset 38mm past center — still on
+ * the bed. Pre-#1893 we shipped no Application metadata so OrcaSlicer
+ * classified our file as `From_Other` and auto-arranged on import;
+ * claiming BambuStudio identity flips `need_arrange = false` in the BBS
+ * loader, so we now have to provide the plate position ourselves.
+ */
+const PLATE_CENTER_MM = { x: 128, y: 128 } as const;
+
+interface BBox {
+  readonly min: { x: number; y: number; z: number };
+  readonly max: { x: number; y: number; z: number };
+}
+
+function computeBBox(vertices: readonly (readonly [number, number, number])[]): BBox | null {
+  if (vertices.length === 0) return null;
+  let minX = Infinity,
+    minY = Infinity,
+    minZ = Infinity;
+  let maxX = -Infinity,
+    maxY = -Infinity,
+    maxZ = -Infinity;
+  for (const [x, y, z] of vertices) {
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+    if (z < minZ) minZ = z;
+    if (z > maxZ) maxZ = z;
+  }
+  return { min: { x: minX, y: minY, z: minZ }, max: { x: maxX, y: maxY, z: maxZ } };
+}
+
+/**
+ * Translation that places the bbox centroid at PLATE_CENTER_MM (XY) and
+ * the bottom of the bbox at z=0 (sits on bed). Returns zero for an empty
+ * bbox — let the slicer do whatever it does with an empty mesh.
+ */
+function centeringTranslation(bbox: BBox | null): { x: number; y: number; z: number } {
+  if (!bbox) return { x: 0, y: 0, z: 0 };
+  return {
+    x: PLATE_CENTER_MM.x - (bbox.min.x + bbox.max.x) / 2,
+    y: PLATE_CENTER_MM.y - (bbox.min.y + bbox.max.y) / 2,
+    z: -bbox.min.z,
+  };
+}
+
+/**
  * 3MF transforms are row-major 3×4 (`m11..m13 m21..m23 m31..m33 m41..m43`);
  * the trailing m41/m42/m43 row carries the translation. Stacking is a pure
- * Z translation, so the rotation/scale block stays identity and only m43
- * changes per copy.
+ * Z translation on top of the base centering offset, so the rotation/scale
+ * block stays identity and only m41/m42/m43 vary per copy.
  */
-function renderBuildItems(objectId: number, stack: ThreeMFOptions['stack']): string {
+function renderBuildItems(
+  objectId: number,
+  stack: ThreeMFOptions['stack'],
+  offset: { x: number; y: number; z: number }
+): string {
   const count = stack && stack.count > 1 ? Math.floor(stack.count) : 1;
-  if (count === 1) {
-    return `    <item objectid="${objectId}" />\n`;
-  }
-
   const stride = (stack?.zHeightMm ?? 0) + (stack?.spacingMm ?? 0);
+  // tx/ty don't change across stack copies — only the Z stride does — so
+  // format them once outside the loop.
+  const tx = formatFloat(offset.x);
+  const ty = formatFloat(offset.y);
   let out = '';
   for (let i = 0; i < count; i++) {
-    const dz = formatFloat(i * stride);
-    out += `    <item objectid="${objectId}" transform="1 0 0 0 1 0 0 0 1 0 0 ${dz}" />\n`;
+    const tz = formatFloat(offset.z + i * stride);
+    out += `    <item objectid="${objectId}" transform="1 0 0 0 1 0 0 0 1 ${tx} ${ty} ${tz}" />\n`;
   }
   return out;
 }
@@ -361,6 +416,11 @@ function buildMultiObjectModelXML(
 
   const anyHasColors = resolved.some((obj) => obj.colorConfig !== undefined);
 
+  // Single shared offset across all objects so the bin + dividers + lid keep
+  // their relative positions and the assembly lands centered together.
+  const combinedBBox = mergeBBoxes(resolved.map((obj) => computeBBox(obj.mesh.vertices)));
+  const offset = centeringTranslation(combinedBBox);
+
   let xml = openModelElement();
   xml += buildMetadataXml(options, { bambuCompat: anyHasColors });
   xml += '  <resources>\n';
@@ -375,12 +435,39 @@ function buildMultiObjectModelXML(
 
   xml += '  </resources>\n';
   xml += '  <build>\n';
+  const tx = formatFloat(offset.x);
+  const ty = formatFloat(offset.y);
+  const tz = formatFloat(offset.z);
   for (const id of objectIds) {
-    xml += `    <item objectid="${id}" />\n`;
+    xml += `    <item objectid="${id}" transform="1 0 0 0 1 0 0 0 1 ${tx} ${ty} ${tz}" />\n`;
   }
   xml += '  </build>\n';
   xml += '</model>';
   return xml;
+}
+
+function mergeBBoxes(boxes: readonly (BBox | null)[]): BBox | null {
+  let merged: BBox | null = null;
+  for (const b of boxes) {
+    if (!b) continue;
+    if (!merged) {
+      merged = b;
+      continue;
+    }
+    merged = {
+      min: {
+        x: Math.min(merged.min.x, b.min.x),
+        y: Math.min(merged.min.y, b.min.y),
+        z: Math.min(merged.min.z, b.min.z),
+      },
+      max: {
+        x: Math.max(merged.max.x, b.max.x),
+        y: Math.max(merged.max.y, b.max.y),
+        z: Math.max(merged.max.z, b.max.z),
+      },
+    };
+  }
+  return merged;
 }
 
 const CORE_NS = 'http://schemas.microsoft.com/3dmanufacturing/core/2015/02';

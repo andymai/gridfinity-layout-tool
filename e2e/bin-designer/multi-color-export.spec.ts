@@ -39,6 +39,20 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible({ timeout: 30000 });
 
+    // Enable the per-design multi-color toggle so the zone color pickers
+    // render. Labs flag alone gates feature *availability*; this toggle is
+    // what activates the multi-color UI for the current bin. Read
+    // `aria-checked` first so a default-on UI in some future release
+    // doesn't get toggled OFF and silently break the rest of the test.
+    const enableMC = page
+      .getByRole('switch', { name: /enable multi-color/i })
+      .or(page.getByLabel(/enable multi-color/i))
+      .first();
+    await enableMC.waitFor({ state: 'visible', timeout: 10000 });
+    if ((await enableMC.getAttribute('aria-checked')) !== 'true') {
+      await enableMC.click();
+    }
+
     for (const [label, hex] of [
       [/^Body: /i, BODY_HEX],
       [/^Stacking Lip: /i, LIP_HEX],
@@ -86,13 +100,20 @@ test.describe('Bin Designer — multi-color 3MF export', () => {
     const xml = strFromU8(entries['3D/3dmodel.model']);
 
     // Lower-cased: exporter's hex case is not part of the contract.
-    expect(xml.toLowerCase()).toContain(BODY_HEX);
-    expect(xml.toLowerCase()).toContain(LIP_HEX);
-    expect(xml).toMatch(/<basematerials\b/);
-
-    const triangleMatches = xml.match(/<triangle\b[^/]*p1="(\d+)"/g) ?? [];
+    const config = JSON.parse(strFromU8(entries['Metadata/project_settings.config']));
+    expect(config.filament_colour.map((c: string) => c.toLowerCase())).toEqual(
+      expect.arrayContaining([BODY_HEX, LIP_HEX])
+    );
+    expect(xml).toMatch(/<metadata name="Application">BambuStudio-/);
+    const triangleMatches = xml.match(/<triangle\b[^/]*paint_color="([^"]+)"/g) ?? [];
     expect(triangleMatches.length).toBeGreaterThan(0);
-    const distinctP1 = new Set(triangleMatches.map((m) => /p1="(\d+)"/.exec(m)?.[1]));
-    expect(distinctP1.size).toBeGreaterThanOrEqual(2);
+    const distinctCodes = new Set(triangleMatches.map((m) => /paint_color="([^"]+)"/.exec(m)?.[1]));
+    expect(distinctCodes.size).toBeGreaterThanOrEqual(2);
+
+    // Build item must carry a centering transform so the bin opens on the
+    // plate, not at the bed corner (regression introduced when we claimed
+    // BambuStudio identity flipped Orca's auto-arrange off — see
+    // BAMBU_COMPAT_APPLICATION JSDoc in threemfExporter.ts).
+    expect(xml).toMatch(/<item objectid="\d+" transform="1 0 0 0 1 0 0 0 1 [^"]+" \/>/);
   });
 });
