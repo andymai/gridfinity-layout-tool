@@ -105,7 +105,7 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
 3. **Auto-save only for saved designs** - "Untitled" bins don't persist
 4. **Half-cells get no magnet holes** - only full 1×1 unit cells
 5. **Solid style skips shell** - `keepFull` bypasses `.shell()`, so wallThickness is irrelevant
-6. **Label tabs skip solid bins** - both generation and ghost overlay guard against `style === 'solid'`
+6. **Label tabs skip solid bins** - both generation and ghost overlay guard against `style === 'solid'`. Tabs default to `edges: 'back'` (legacy); `'front'` and `'both'` enable tuck-under ledges (#1898). `inset` (mm) slides the tab inward from its anchor wall for shorter coverage. In `'both'` mode the front tab silently drops when `2·depth + 2·inset > compartmentDepth` and the panel surfaces an inline warning.
 7. **cellMask dimensions must track width × depth** - `cols` must equal
    `Math.round(width × MASK_CELLS_PER_UNIT)` and `rows` the depth equivalent.
    `paramSlice.setCellMask` rejects mismatched masks outright. When the bin

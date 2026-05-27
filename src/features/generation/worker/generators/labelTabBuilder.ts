@@ -8,7 +8,11 @@
 import { draw, unwrap, fuseAll, fuse, cut, translate, withScope, clone } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import type { BinParams, TextStyleDefaults, TextStyleOverride } from '@/shared/types/bin';
-import { compartmentHasTiltedBackWall } from '@/shared/types/bin';
+import {
+  compartmentHasTiltedBackWall,
+  compartmentHasTiltedFrontWall,
+  getCompartmentBounds,
+} from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import { buildFilletProfile } from './filletProfile';
 import { buildTextSolid } from './textBuilder';
@@ -28,12 +32,19 @@ interface TabBuildDimensions {
 
 /**
  * Build a right-triangle profile for label tab gusset supports.
- * The triangle has its right angle at (0, height), with the depth leg
- * running horizontally to (-depth, height) and the height leg running
- * vertically down to (0, 0).
+ * The triangle has its right angle at (0, height); the depth leg runs
+ * horizontally to (depthSign·depth, height); the height leg runs down
+ * to (0, 0).
+ *
+ * `depthSign = -1` (default) places the depth leg in -X, matching the
+ * original back-tab convention. `+1` mirrors the profile into +X for
+ * front-anchored label tabs (#1898).
  */
-function buildGussetProfile(depth: number, height: number): Drawing {
-  return draw([0, height]).lineTo([-depth, height]).lineTo([0, 0]).close();
+function buildGussetProfile(depth: number, height: number, depthSign: 1 | -1 = -1): Drawing {
+  return draw([0, height])
+    .lineTo([depthSign * depth, height])
+    .lineTo([0, 0])
+    .close();
 }
 /**
  * Build label tabs for every compartment.
@@ -107,6 +118,11 @@ function buildLabelTabsInScope(
   if (tabHeight > wallHeight || tabHeight <= 0) return null;
   if (shelfTopZ > wallHeight || shelfTopZ - tabHeight <= 0) return null;
 
+  // Defense in depth: the UI clamps depth ≤ innerD-1, but a cloud-share
+  // payload could carry a config where the tab body would extend past the
+  // opposite wall and fuse into it as a bridge. Silent null-fallback here.
+  if (tabDepth >= innerD) return null;
+
   const dims: TabBuildDimensions = {
     innerW,
     innerD,
@@ -118,15 +134,68 @@ function buildLabelTabsInScope(
     wallThickness,
   };
 
+  const edges = params.label.edges ?? 'back';
+  const includeBack = edges === 'back' || edges === 'both';
+  const includeFront = edges === 'front' || edges === 'both';
+  const collidingFrontIds =
+    edges === 'both' ? findCollidingFrontCompartments(params, dims) : new Set<number>();
+
   const allTabs: Shape3D[] = [];
 
   for (let row = 0; row < rows; row++) {
-    allTabs.push(...buildTabsAtRow(scope, params, row, 'back', dims));
+    if (includeBack) {
+      allTabs.push(...buildTabsAtRow(scope, params, row, 'back', dims, collidingFrontIds));
+    }
+    if (includeFront) {
+      allTabs.push(...buildTabsAtRow(scope, params, row, 'front', dims, collidingFrontIds));
+    }
   }
 
   if (allTabs.length === 0) return null;
   if (allTabs.length === 1) return allTabs[0]; // already scope-registered
   return scope.register(unwrap(fuseAll(allTabs as ValidSolid[])));
+}
+
+/**
+ * For `edges='both'`: identify compartment IDs where the back + front tabs
+ * would collide (2·depth + 2·inset > compartmentDepth) so we can silently
+ * drop the front tab. The UI surfaces the same condition as an inline
+ * warning so the user isn't confused by missing geometry (#1898).
+ */
+function findCollidingFrontCompartments(params: BinParams, dims: TabBuildDimensions): Set<number> {
+  const { cols, rows, cells } = params.compartments;
+  const tabDepth = params.label.depth;
+  const inset = params.label.inset ?? 0;
+  const colliding = new Set<number>();
+  const visited = new Set<number>();
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const cellId = cells[row * cols + col];
+      if (visited.has(cellId)) continue;
+      visited.add(cellId);
+
+      const bounds = getCompartmentBounds(params.compartments, cellId);
+      if (!bounds) continue;
+
+      // Rectangular constraint: any cell at (minRow-1, minCol..maxCol)
+      // differing from cellId means the compartment has a front edge there.
+      // Same logic, mirrored, for the back edge.
+      const hasFrontAnchor =
+        bounds.minRow === 0 || cells[(bounds.minRow - 1) * cols + bounds.minCol] !== cellId;
+      const hasBackAnchor =
+        bounds.maxRow === rows - 1 || cells[(bounds.maxRow + 1) * cols + bounds.minCol] !== cellId;
+
+      if (!hasBackAnchor || !hasFrontAnchor) continue;
+
+      const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * dims.cellD;
+      if (2 * tabDepth + 2 * inset > compartmentDepth) {
+        colliding.add(cellId);
+      }
+    }
+  }
+
+  return colliding;
 }
 
 /**
@@ -145,49 +214,70 @@ function buildTabsAtRow(
   params: BinParams,
   row: number,
   anchor: TabAnchor,
-  dims: TabBuildDimensions
+  dims: TabBuildDimensions,
+  collidingFrontIds: Set<number>
 ): Shape3D[] {
   const { cols, rows, thickness, cells } = params.compartments;
   const widthPercent = params.label.width;
   const alignment = params.label.alignment;
+  const inset = params.label.inset ?? 0;
   const { innerW, innerD, cellW, cellD, tabHeight, tabDepth, shelfTopZ, wallThickness } = dims;
   const wt = wallThickness;
   const gt = thickness;
 
-  // Anchor handling: 'back' anchors to the FAR side of the row (+Y direction);
-  // 'front' anchors to the NEAR side (-Y direction). This commit only wires
-  // 'back' — the 'front' path lands in a follow-up.
-  if (anchor !== 'back') return [];
+  // depthSign tracks which direction the tab body extends from the anchor:
+  //   back  → -Y (tab body extends toward the front of the bin)
+  //   front → +Y (tab body extends toward the back of the bin)
+  // Used to mirror shelf, gusset, fillet, text, and inset geometry.
+  const depthSign: 1 | -1 = anchor === 'back' ? -1 : 1;
 
-  const isLastRow = row === rows - 1;
+  // Row-edge detection differs by anchor:
+  //   back  → has-edge when row is last OR cell behind (+row) differs
+  //   front → has-edge when row is first OR cell in front (-row) differs
+  const isOuterEdgeRow = anchor === 'back' ? row === rows - 1 : row === 0;
+  const neighborRowOffset = anchor === 'back' ? 1 : -1;
+  const hasTiltedAnchorWall =
+    anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
+
   const result: Shape3D[] = [];
   let col = 0;
 
   while (col < cols) {
     const cellId = cells[row * cols + col];
-    const nextRowCellId = isLastRow ? undefined : cells[(row + 1) * cols + col];
+    const neighborCellId = isOuterEdgeRow
+      ? undefined
+      : cells[(row + neighborRowOffset) * cols + col];
 
-    // Check if this cell has a back edge (last row, or different compId behind)
-    const hasBackEdge = isLastRow || cellId !== nextRowCellId;
-    if (!hasBackEdge) {
+    const hasEdge = isOuterEdgeRow || cellId !== neighborCellId;
+    if (!hasEdge) {
       col++;
       continue;
     }
 
-    // Skip tabs whose back wall is a tilted divider — the shelf and gusset
-    // geometry assumes an axis-aligned back wall. The compartment text
+    // Skip tabs whose anchor wall is a tilted divider — the shelf and gusset
+    // geometry assumes an axis-aligned anchor wall. The compartment text
     // input still persists in storage; only the rendering is suppressed.
-    if (compartmentHasTiltedBackWall(params.compartments, cellId)) {
+    if (hasTiltedAnchorWall(params.compartments, cellId)) {
       col++;
       continue;
     }
 
-    // Find extent of consecutive same-compId columns with back edges at this row
+    // For `edges='both'`, drop the front tab in compartments where the
+    // back+front pair would collide (#1898 collision rule). The back tab
+    // is unaffected.
+    if (anchor === 'front' && collidingFrontIds.has(cellId)) {
+      col++;
+      continue;
+    }
+
+    // Find extent of consecutive same-compId columns with edges at this row
     let groupEnd = col + 1;
     while (groupEnd < cols) {
       const gCellId = cells[row * cols + groupEnd];
-      const gNextRowCellId = isLastRow ? undefined : cells[(row + 1) * cols + groupEnd];
-      if (gCellId !== cellId || !(isLastRow || gCellId !== gNextRowCellId)) break;
+      const gNeighborCellId = isOuterEdgeRow
+        ? undefined
+        : cells[(row + neighborRowOffset) * cols + groupEnd];
+      if (gCellId !== cellId || !(isOuterEdgeRow || gCellId !== gNeighborCellId)) break;
       groupEnd++;
     }
 
@@ -234,21 +324,25 @@ function buildTabsAtRow(
       tabXStart = availableCenter - tabWidth / 2;
     }
 
-    // Y position: back edge of this row
-    const backEdgeY = -innerD / 2 + (row + 1) * cellD;
+    // Y position of the anchor wall (front face of back wall, or back face
+    // of front wall — i.e., the interior surface). Inset slides the tab
+    // inward along the body direction (depthSign).
+    const anchorY = anchor === 'back' ? -innerD / 2 + (row + 1) * cellD : -innerD / 2 + row * cellD;
+    const positionY = anchorY + depthSign * inset;
 
     // -- Determine which ends touch a wall --
     const fullWidth = tabWidth >= availableWidth - 0.01;
     const touchesLeft = (fullWidth || alignment === 'left') && hasLeftWall;
     const touchesRight = (fullWidth || alignment === 'right') && hasRightWall;
 
-    // -- Shelf: flat plate with rounded front corners on free ends --
-    // XY footprint extruded along Z for wallThickness.
-    // Only front corners (away from back wall) are rounded on free ends.
+    // -- Shelf: flat plate with rounded corners on the body-front end of
+    // free sides. The shelf body extends along depthSign (negative Y for
+    // back-anchor, positive Y for front-anchor).
     const cornerR = 1; // mm
-    let pen = draw([0, 0]).lineTo([tabWidth, 0]).lineTo([tabWidth, -tabDepth]);
+    const depthExtent = depthSign * tabDepth;
+    let pen = draw([0, 0]).lineTo([tabWidth, 0]).lineTo([tabWidth, depthExtent]);
     if (!touchesRight) pen = pen.customCorner(cornerR);
-    pen = pen.lineTo([0, -tabDepth]);
+    pen = pen.lineTo([0, depthExtent]);
     if (!touchesLeft) pen = pen.customCorner(cornerR);
     const shelf = scope.register(sketch(pen.close(), 'XY', tabHeight - wt).extrude(wt));
 
@@ -280,7 +374,7 @@ function buildTabsAtRow(
         gussetPositions.push(center - gt / 2);
       }
 
-      const gussetProfile = buildGussetProfile(tabDepth, gussetLeg);
+      const gussetProfile = buildGussetProfile(tabDepth, gussetLeg, depthSign);
 
       if (params.label.support === 'solid') {
         // Solid style: single continuous right-triangle prism under the shelf.
@@ -292,7 +386,7 @@ function buildTabsAtRow(
         // The fillet profile spans from Z=0 downward, so we translate it up
         // by gussetLeg to align the top edge with the shelf underside.
         const filletR = Math.min(gussetLeg, tabDepth * 0.8);
-        const filletProfile = buildFilletProfile(filletR, gussetLeg, tabDepth);
+        const filletProfile = buildFilletProfile(filletR, gussetLeg, tabDepth, depthSign);
         const filletExtrude = scope.register(sketch(filletProfile, 'YZ', 0).extrude(tabWidth));
         const filletSupport = scope.register(translate(filletExtrude, [0, 0, gussetLeg]));
         tabSolid = scope.register(
@@ -312,7 +406,8 @@ function buildTabsAtRow(
     }
 
     // Engraved per-compartment text on the shelf top, in local frame so it
-    // travels with the tab through the world translation below.
+    // travels with the tab through the world translation below. centerY is
+    // half-way along the shelf body (depthSign-aware).
     tabSolid = applyTabText(scope, tabSolid, {
       text: params.compartments.compartmentTexts?.[cellId] ?? '',
       textDefaults: params.textDefaults,
@@ -321,11 +416,12 @@ function buildTabsAtRow(
       tabDepth,
       tabHeight,
       shelfThickness: wt,
+      centerYSign: depthSign,
     });
 
-    // Position: X at alignment offset, Y at compartment back edge,
+    // Position: X at alignment offset, Y at anchor wall + inset offset,
     // Z at gusset base (= shelfTopZ - tabHeight).
-    tabSolid = scope.register(translate(tabSolid, [tabXStart, backEdgeY, shelfTopZ - tabHeight]));
+    tabSolid = scope.register(translate(tabSolid, [tabXStart, positionY, shelfTopZ - tabHeight]));
 
     result.push(tabSolid);
 
@@ -336,11 +432,11 @@ function buildTabsAtRow(
 }
 
 /**
- * Apply per-compartment engraved/embossed/through-cut text on the shelf top
- * in the tab's local frame (shelf occupies X:[0,tabWidth], Y:[-tabDepth,0],
- * top face at Z=tabHeight). Through-cut uses the shelf thickness `wt` as
- * the host depth; `allerta-stencil` is auto-substituted (handled inside
- * `buildTextSolid`).
+ * Apply per-compartment engraved/embossed/through-cut text on the shelf top.
+ * The shelf occupies X:[0,tabWidth] and Y:[centerYSign·tabDepth, 0] (back
+ * anchor sweeps to -Y, front anchor to +Y). Through-cut uses the shelf
+ * thickness `wt` as the host depth; `allerta-stencil` is auto-substituted
+ * (handled inside `buildTextSolid`).
  *
  * Falls back to unchanged geometry when text is empty, the font isn't
  * loaded, the auto-fit can't satisfy `minFontSize`, OR the boolean throws —
@@ -357,6 +453,7 @@ function applyTabText(
     tabDepth: number;
     tabHeight: number;
     shelfThickness: number;
+    centerYSign: 1 | -1;
   }
 ): Shape3D {
   const style = { ...ctx.textDefaults, ...ctx.labelTextStyle };
@@ -367,7 +464,7 @@ function applyTabText(
     availW: ctx.tabWidth,
     availD: ctx.tabDepth,
     centerX: ctx.tabWidth / 2,
-    centerY: -ctx.tabDepth / 2,
+    centerY: (ctx.centerYSign * ctx.tabDepth) / 2,
     topZ: ctx.tabHeight,
     depth: style.depth,
     hostThickness: ctx.shelfThickness,
@@ -400,9 +497,11 @@ export const labelTabsFeature: FeatureBuilder = {
     const { dimensions: dim, params } = ctx;
     return compactKey(
       buildCacheKey(
-        // `v3`: tab generation now skips compartments whose back wall is a
-        // tilted divider, so dividerOverrides affects output.
-        'v3',
+        // `v4`: #1898 added `edges` + `inset` to LabelTabConfig. The full
+        // config is already serialized via `stableSerialize(params.label)`,
+        // so the bump is belt-and-suspenders — invalidates any older entry
+        // a returning user might have in IndexedDB.
+        'v4',
         dim.shellKey,
         stableSerialize(params.label),
         quantize(dim.innerW),

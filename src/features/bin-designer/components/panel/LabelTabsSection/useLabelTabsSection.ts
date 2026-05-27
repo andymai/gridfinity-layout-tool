@@ -5,8 +5,14 @@ import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
-import { getCompartmentIds } from '../../../utils/compartments';
-import type { LabelTabAlignment, LabelTabSupport, TextFontFamily, TextMode } from '../../../types';
+import { getCompartmentBounds, getCompartmentIds } from '../../../utils/compartments';
+import type {
+  LabelTabAlignment,
+  LabelTabEdges,
+  LabelTabSupport,
+  TextFontFamily,
+  TextMode,
+} from '../../../types';
 
 export function useLabelTabsSection() {
   const {
@@ -74,6 +80,20 @@ export function useLabelTabsSection() {
       }
     },
     [label.height, updateLabel, wallHeightMm]
+  );
+
+  const setTabEdges = useCallback(
+    (edges: LabelTabEdges) => {
+      updateLabel({ edges });
+    },
+    [updateLabel]
+  );
+
+  const setTabInset = useCallback(
+    (inset: number) => {
+      updateLabel({ inset });
+    },
+    [updateLabel]
   );
 
   const setTabHeight = useCallback(
@@ -147,6 +167,54 @@ export function useLabelTabsSection() {
   const tabHeightMax = wallHeightMm;
   const tabHeightMin = Math.min(label.depth + 1, tabHeightMax);
 
+  // Dynamic max for the tab-depth stepper. Geometry's bridge guard rejects
+  // `tabDepth >= innerD`, so the UI clamps at innerD-1 and never wider than
+  // the static MAX. This prevents the user from configuring a depth that
+  // silently produces no tabs on a small bin.
+  const { innerD } = useMemo(() => binDimensions(params), [params]);
+  const tabDepthMax = Math.min(DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_DEPTH, Math.floor(innerD - 1));
+
+  // Dynamic max for the inset stepper. Constrained by:
+  //   - the static hard ceiling MAX_LABEL_TAB_INSET (100mm)
+  //   - innerD − depth (so the tab body can't pass the opposite wall)
+  //   - in 'both' mode: (innerD − 2·depth) / 2 (so the two tabs can't collide)
+  // Floor at 0 — degenerate but valid when innerD is tiny.
+  const edgesValue = label.edges ?? 'back';
+  const insetRoom = edgesValue === 'both' ? (innerD - 2 * label.depth) / 2 : innerD - label.depth;
+  const tabInsetMax = Math.max(
+    0,
+    Math.min(DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_INSET, Math.floor(insetRoom))
+  );
+
+  // Identify compartments whose front tab will be silently dropped because
+  // `2·depth + 2·inset > compartmentDepth`. Mirrors the geometry-layer
+  // check; surfaces an inline warning so the user understands the gap.
+  const frontTabCollision = useMemo(() => {
+    if (edgesValue !== 'both') return false;
+    const { rows, cols, cells } = compartments;
+    const inset = label.inset ?? 0;
+    const cellD = innerD / rows;
+    const seen = new Set<number>();
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const cellId = cells[row * cols + col];
+        if (seen.has(cellId)) continue;
+        seen.add(cellId);
+        const bounds = getCompartmentBounds(compartments, cellId);
+        if (!bounds) continue;
+        const hasFrontAnchor =
+          bounds.minRow === 0 || cells[(bounds.minRow - 1) * cols + bounds.minCol] !== cellId;
+        const hasBackAnchor =
+          bounds.maxRow === rows - 1 ||
+          cells[(bounds.maxRow + 1) * cols + bounds.minCol] !== cellId;
+        if (!hasFrontAnchor || !hasBackAnchor) continue;
+        const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * cellD;
+        if (2 * label.depth + 2 * inset > compartmentDepth) return true;
+      }
+    }
+    return false;
+  }, [edgesValue, compartments, label.depth, label.inset, innerD]);
+
   const sectionSummary = useMemo(() => {
     if (!label.enabled) return undefined;
     const supportName = t(`binDesigner.tabSupport.${label.support}`);
@@ -198,6 +266,9 @@ export function useLabelTabsSection() {
       heightIsExplicit,
       tabHeightMin,
       tabHeightMax,
+      tabDepthMax,
+      tabInsetMax,
+      frontTabCollision,
       compartmentTextRows,
     },
     handlers: {
@@ -207,6 +278,8 @@ export function useLabelTabsSection() {
       setTabWidth,
       setTabHeight,
       setTabAlignment,
+      setTabEdges,
+      setTabInset,
       setCompartmentText,
       setTextFont,
       setTextMode,

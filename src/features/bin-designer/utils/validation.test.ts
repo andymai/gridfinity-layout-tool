@@ -165,7 +165,7 @@ describe('validateBinParams', () => {
     it('should reject label tab depth out of range', () => {
       const result = validateBinParams(
         makeParams({
-          label: { enabled: true, support: 'bracket', depth: 25, width: 100, alignment: 'left' },
+          label: { enabled: true, support: 'bracket', depth: 60, width: 100, alignment: 'left' },
         })
       );
       const error = expectErr(result);

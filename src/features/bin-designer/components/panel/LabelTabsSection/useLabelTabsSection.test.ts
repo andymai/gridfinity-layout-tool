@@ -206,4 +206,99 @@ describe('useLabelTabsSection', () => {
       expect(useDesignerStore.getState().params.label.height).toBeUndefined();
     });
   });
+
+  describe('edges + inset (#1898)', () => {
+    it('setTabEdges writes the edge value', () => {
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.setTabEdges('both');
+      });
+
+      expect(useDesignerStore.getState().params.label.edges).toBe('both');
+    });
+
+    it('setTabInset writes the inset value', () => {
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.setTabInset(5);
+      });
+
+      expect(useDesignerStore.getState().params.label.inset).toBe(5);
+    });
+
+    it('tabDepthMax clamps against innerD - 1', () => {
+      // 1u × 1u × 3u bin: innerD ≈ 38mm. Bridge guard caps depth at 37.
+      useDesignerStore.setState({
+        params: { ...DEFAULT_BIN_PARAMS, width: 1, depth: 1 },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      // Static max is 50, but dynamic should be smaller.
+      expect(result.current.state.tabDepthMax).toBeLessThan(50);
+    });
+
+    it('tabInsetMax for back-only mode = innerD - depth', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 12, edges: 'back' },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      // innerD ≈ 81.1 - 12 ≈ 69 (allows large insets on default 2u bin)
+      expect(result.current.state.tabInsetMax).toBeGreaterThan(30);
+    });
+
+    it('tabInsetMax tightens in both mode = (innerD - 2·depth) / 2', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 12, edges: 'both' },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      // (innerD - 2·12) / 2 ≈ (81 - 24) / 2 ≈ 28.5
+      expect(result.current.state.tabInsetMax).toBeGreaterThan(20);
+      expect(result.current.state.tabInsetMax).toBeLessThan(40);
+    });
+
+    it('frontTabCollision fires when both tabs would overlap', () => {
+      // 1×1×3u bin, edges='both', depth=18, inset=5 → 2·18 + 2·5 = 46 > innerD≈38.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          width: 1,
+          depth: 1,
+          label: { ...DEFAULT_BIN_PARAMS.label, edges: 'both', depth: 18, inset: 5 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.frontTabCollision).toBe(true);
+    });
+
+    it('frontTabCollision does not fire when there is room for both tabs', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, edges: 'both', depth: 10, inset: 0 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.frontTabCollision).toBe(false);
+    });
+
+    it('frontTabCollision is false in single-edge modes regardless of depth', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          width: 1,
+          depth: 1,
+          label: { ...DEFAULT_BIN_PARAMS.label, edges: 'back', depth: 30, inset: 0 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.frontTabCollision).toBe(false);
+    });
+  });
 });

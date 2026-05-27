@@ -232,6 +232,13 @@ export type LabelTabAlignment = 'left' | 'center' | 'right';
 /** Support structure style for the label tab */
 export type LabelTabSupport = 'bracket' | 'solid' | 'fillet';
 
+/**
+ * Which compartment edges receive label tabs. 'back' (default) is the legacy
+ * behavior. 'front' anchors tabs to the front wall instead, 'both' renders a
+ * tab at each edge — the tuck-under-ledge use case from #1898.
+ */
+export type LabelTabEdges = 'back' | 'front' | 'both';
+
 /** Label tab configuration for back-wall identification shelf */
 export interface LabelTabConfig {
   readonly enabled: boolean;
@@ -255,6 +262,28 @@ export interface LabelTabConfig {
   readonly height?: number;
   /** Horizontal alignment within each compartment column */
   readonly alignment: LabelTabAlignment;
+  /**
+   * Which edges of each compartment receive tabs. When absent (default),
+   * tabs anchor to the back wall — identical to the original behavior.
+   * 'front' anchors to the front wall; 'both' renders a tab at each edge,
+   * which is what the tuck-under-ledge use case from #1898 needs.
+   *
+   * For 'both' on a multi-row layout: each compartment with both a back
+   * AND a front edge gets two tabs (mirroring how the existing back-tab
+   * logic already places one tab per back-edge group, outer or interior).
+   */
+  readonly edges?: LabelTabEdges;
+  /**
+   * Distance in mm the tab moves INWARD from its anchor wall. For 'back',
+   * positive `inset` moves toward the front; for 'front', positive moves
+   * toward the back; for 'both', both tabs move inward symmetrically.
+   *
+   * Bounds: `[0, MAX_LABEL_TAB_INSET]`, with a runtime clamp based on the
+   * compartment depth so the tab can't pass the opposite wall. When 'both'
+   * tabs would collide (2·depth + 2·inset > compartmentDepth), the front
+   * tab is silently dropped and the UI shows an inline warning.
+   */
+  readonly inset?: number;
   /**
    * Optional per-design style override for engraved compartment text on
    * label tabs. When omitted, `BinParams.textDefaults` apply unchanged.

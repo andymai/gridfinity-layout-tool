@@ -21,6 +21,7 @@ import {
   validateDividerOverrides,
   compartmentHasTiltedEdge,
   compartmentHasTiltedBackWall,
+  compartmentHasTiltedFrontWall,
   deriveWallSegments,
   fromDividerConfig,
 } from '@/features/bin-designer/utils/compartments';
@@ -1329,6 +1330,45 @@ describe('compartments', () => {
         dividerOverrides: [{ compartmentA: 0, compartmentB: 2, offsetStart: 5, offsetEnd: -5 }],
       };
       expect(compartmentHasTiltedBackWall(config, 0)).toBe(true);
+    });
+
+    it('compartmentHasTiltedFrontWall returns false without overrides', () => {
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+      };
+      expect(compartmentHasTiltedFrontWall(config, 0)).toBe(false);
+      expect(compartmentHasTiltedFrontWall(config, 1)).toBe(false);
+    });
+
+    it('flags the front-wall tilt only for the back compartment in a 1×2', () => {
+      // Mirror of the back-wall test. The divider between compartment 0
+      // (front) and 1 (back) is the BACK wall of 0 AND the FRONT wall of 1.
+      // Only compartment 1's front wall should report tilted.
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: -5 }],
+      };
+      expect(compartmentHasTiltedFrontWall(config, 0)).toBe(false);
+      expect(compartmentHasTiltedFrontWall(config, 1)).toBe(true);
+    });
+
+    it('compartmentHasTiltedFrontWall returns false for the front-most row', () => {
+      // Compartment 0 is in the front-most row (minRow === 0) — its front
+      // wall is the bin's outer front wall, which can't be tilted.
+      const config: CompartmentConfig = {
+        cols: 1,
+        rows: 2,
+        thickness: 1.2,
+        cells: [0, 1],
+        dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: -5 }],
+      };
+      expect(compartmentHasTiltedFrontWall(config, 0)).toBe(false);
     });
   });
 });

@@ -136,6 +136,8 @@ exports[`inserts > 2×2 with rounded-rect insert 1`] = `2976`;
 
 exports[`inserts > 2×2 with slot insert 1`] = `3024`;
 
+exports[`label tabs > 1×1 label both collision drops front 1`] = `1372`;
+
 exports[`label tabs > 2×2 label bracket center 1`] = `3628`;
 
 exports[`label tabs > 2×2 label bracket left 1`] = `3628`;
@@ -144,7 +146,13 @@ exports[`label tabs > 2×2 label bracket right 1`] = `3628`;
 
 exports[`label tabs > 2×2 label disabled 1`] = `2812`;
 
+exports[`label tabs > 2×2 label front edge 1`] = `3628`;
+
 exports[`label tabs > 2×2 label solid left 1`] = `3380`;
+
+exports[`label tabs > 2×2×4 label both + inset 5mm 1`] = `3140`;
+
+exports[`label tabs > 2×2×4 label both edges 1`] = `4444`;
 
 exports[`label tabs > 2×2×6 label dropped (height = 20mm) 1`] = `3280`;
 

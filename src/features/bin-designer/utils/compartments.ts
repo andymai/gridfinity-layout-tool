@@ -478,6 +478,41 @@ export function compartmentHasTiltedBackWall(
 }
 
 /**
+ * True when the compartment's FRONT wall is a tilted divider. Mirror of
+ * `compartmentHasTiltedBackWall` for front-anchored label tabs (#1898).
+ *
+ * "Front" = the -Y direction in interior coords (the lower-row neighbor in
+ * the cell grid). A front wall is tilted when the compartment has a front
+ * neighbor (not touching the bin's actual front wall) AND a divider override
+ * pairs the two compartments.
+ */
+export function compartmentHasTiltedFrontWall(
+  config: CompartmentConfig,
+  compartmentId: number
+): boolean {
+  const overrides = config.dividerOverrides;
+  if (!overrides || overrides.length === 0) return false;
+  const bounds = getCompartmentBounds(config, compartmentId);
+  if (!bounds) return false;
+  if (bounds.minRow === 0) return false;
+  const frontRow = bounds.minRow - 1;
+  const overrideKeys = new Set<string>();
+  for (const o of overrides) {
+    const a = Math.min(o.compartmentA, o.compartmentB);
+    const b = Math.max(o.compartmentA, o.compartmentB);
+    overrideKeys.add(`${a}|${b}`);
+  }
+  for (let col = bounds.minCol; col <= bounds.maxCol; col++) {
+    const neighborId = config.cells[frontRow * config.cols + col];
+    if (neighborId === compartmentId) continue;
+    const a = Math.min(compartmentId, neighborId);
+    const b = Math.max(compartmentId, neighborId);
+    if (overrideKeys.has(`${a}|${b}`)) return true;
+  }
+  return false;
+}
+
+/**
  * True when two compartments share at least one cell-boundary edge. With the
  * existing rectangle constraint, that boundary is automatically contiguous;
  * no further "single segment" check is needed in practice.

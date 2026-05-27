@@ -280,6 +280,8 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     depth: 12,
     width: 100,
     alignment: 'left',
+    edges: 'back',
+    inset: 0,
   },
   walls: {
     enabled: false,

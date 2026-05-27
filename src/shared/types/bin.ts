@@ -17,6 +17,7 @@ export type {
   ScoopConfig,
   LabelTabConfig,
   LabelTabAlignment,
+  LabelTabEdges,
   WallCutout,
   WallCutoutShape,
   WallConfig,
@@ -79,6 +80,8 @@ export {
 export {
   compartmentHasTiltedEdge,
   compartmentHasTiltedBackWall,
+  compartmentHasTiltedFrontWall,
+  getCompartmentBounds,
   rectStraddlesTiltedDivider,
 } from '@/features/bin-designer/utils/compartments';
 export type {

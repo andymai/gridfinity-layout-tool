@@ -254,11 +254,15 @@ function computeDividerVolume(
   return totalLength * thickness * dividerH;
 }
 /**
- * Volume of label tabs (one per compartment column, back wall).
+ * Volume of label tabs (one per compartment column, per active edge).
  *
  * Each tab consists of:
  * - Shelf: horizontal plate (depth × width × wallThickness)
  * - Support: bracket gussets or solid triangle underneath
+ *
+ * Per-edge multiplier: 1 for 'back' or 'front' alone, 2 for 'both' (#1898).
+ * Note: this still over-counts merged compartments (uses `cols` rather than
+ * walking back-edge groups) — tracked separately, not regressed by this PR.
  */
 function computeLabelTabVolume(params: BinParams, outerW: number, wallThickness: number): number {
   const { cols } = params.compartments;
@@ -283,7 +287,10 @@ function computeLabelTabVolume(params: BinParams, outerW: number, wallThickness:
     supportVolume = 0.5 * tabDepth * tabDepth * wallThickness;
   }
 
-  return cols * (shelfVolume + supportVolume);
+  const edges = params.label.edges ?? 'back';
+  const edgeCount = edges === 'both' ? 2 : 1;
+
+  return cols * edgeCount * (shelfVolume + supportVolume);
 }
 
 /**

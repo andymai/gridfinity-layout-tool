@@ -80,32 +80,42 @@ export function GhostLabelTabs() {
     const widthPercent = label.width;
     const tabDepth = Math.min(label.depth, cellD);
     const alignment = label.alignment;
+    const inset = label.inset ?? 0;
+    const edges = label.edges ?? 'back';
+    const includeBack = edges === 'back' || edges === 'both';
+    const includeFront = edges === 'front' || edges === 'both';
 
     const matrices: THREE.Matrix4[] = [];
 
-    // Iterate per-row, grouping consecutive same-compartment columns that share
-    // a back edge. Produces one tab spanning merged columns instead of separate
-    // per-column tabs with incorrect divider deductions.
-    for (let row = 0; row < rows; row++) {
-      const isLastRow = row === rows - 1;
-      let col = 0;
+    // Build per-row tab quads for one anchor (back or front). Mirrors the
+    // worker-side grouping in `labelTabBuilder.ts` — both must stay in sync
+    // so the ghost overlay matches the eventual BREP output.
+    const buildAnchorRow = (row: number, anchor: 'back' | 'front') => {
+      const depthSign = anchor === 'back' ? -1 : 1;
+      const isOuterEdgeRow = anchor === 'back' ? row === rows - 1 : row === 0;
+      const neighborRowOffset = anchor === 'back' ? 1 : -1;
 
+      let col = 0;
       while (col < cols) {
         const cellId = cells[row * cols + col];
-        const nextRowCellId = isLastRow ? undefined : cells[(row + 1) * cols + col];
+        const neighborCellId = isOuterEdgeRow
+          ? undefined
+          : cells[(row + neighborRowOffset) * cols + col];
 
-        const hasBackEdge = isLastRow || cellId !== nextRowCellId;
-        if (!hasBackEdge) {
+        const hasEdge = isOuterEdgeRow || cellId !== neighborCellId;
+        if (!hasEdge) {
           col++;
           continue;
         }
 
-        // Find extent of consecutive same-compId columns with back edges
+        // Find extent of consecutive same-compId columns with edges
         let groupEnd = col + 1;
         while (groupEnd < cols) {
           const gCellId = cells[row * cols + groupEnd];
-          const gNextRowCellId = isLastRow ? undefined : cells[(row + 1) * cols + groupEnd];
-          if (gCellId !== cellId || !(isLastRow || gCellId !== gNextRowCellId)) break;
+          const gNeighborCellId = isOuterEdgeRow
+            ? undefined
+            : cells[(row + neighborRowOffset) * cols + groupEnd];
+          if (gCellId !== cellId || !(isOuterEdgeRow || gCellId !== gNeighborCellId)) break;
           groupEnd++;
         }
 
@@ -144,15 +154,23 @@ export function GhostLabelTabs() {
           tabXStart = availableCenter - tabWidth / 2;
         }
 
-        const backEdgeY = -innerD / 2 + (row + 1) * cellD;
+        const anchorY =
+          anchor === 'back' ? -innerD / 2 + (row + 1) * cellD : -innerD / 2 + row * cellD;
+        const positionY = anchorY + depthSign * inset;
+        const centerY = positionY + depthSign * (tabDepth / 2);
 
         const matrix = new THREE.Matrix4();
         matrix.makeScale(tabWidth, tabDepth, 1);
-        matrix.setPosition(tabXStart + tabWidth / 2, backEdgeY - tabDepth / 2, 0);
+        matrix.setPosition(tabXStart + tabWidth / 2, centerY, 0);
         matrices.push(matrix);
 
         col = groupEnd;
       }
+    };
+
+    for (let row = 0; row < rows; row++) {
+      if (includeBack) buildAnchorRow(row, 'back');
+      if (includeFront) buildAnchorRow(row, 'front');
     }
 
     if (matrices.length === 0) return null;
@@ -206,6 +224,8 @@ export function GhostLabelTabs() {
     label.width,
     label.depth,
     label.alignment,
+    label.edges,
+    label.inset,
   ]);
 
   const material = useMemo(() => {
