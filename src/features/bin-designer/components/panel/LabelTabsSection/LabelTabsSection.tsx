@@ -43,7 +43,7 @@ export function LabelTabsSection() {
       disabledReason={meta.disabledReason}
       valueSummary={meta.summary}
     >
-      {/* Width + Depth steppers side by side */}
+      {/* Width + Depth + Height steppers side by side */}
       <div className="flex items-end gap-2">
         <div className="flex-1 min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
@@ -95,13 +95,39 @@ export function LabelTabsSection() {
             ariaLabel="Tab depth"
           />
         </div>
+        <div className="flex-1 min-w-0">
+          <span className="mb-1 block text-xs text-content-tertiary">
+            {t('binDesigner.tabHeight')}
+          </span>
+          <StepperControl
+            value={state.tabHeightMm}
+            onChange={handlers.setTabHeight}
+            onStep={(delta) =>
+              handlers.setTabHeight(
+                Math.min(
+                  state.tabHeightMax,
+                  Math.max(
+                    state.tabHeightMin,
+                    state.tabHeightMm + delta * DESIGNER_CONSTRAINTS.LABEL_TAB_HEIGHT_STEP
+                  )
+                )
+              )
+            }
+            min={state.tabHeightMin}
+            max={state.tabHeightMax}
+            step={DESIGNER_CONSTRAINTS.LABEL_TAB_HEIGHT_STEP}
+            variant="desktop"
+            ariaLabel="Tab height"
+          />
+        </div>
       </div>
 
-      {/* Physical tab dimensions */}
+      {/* Physical tab dimensions — only show H when explicitly set, so unaltered designs stay visually unchanged */}
       <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
         <RulerIcon size="xs" />
         <span className="tabular-nums">
-          {state.tabWidthMm} × {state.label.depth} mm
+          {state.tabWidthMm} × {state.label.depth}
+          {state.heightIsExplicit ? ` × ${state.tabHeightMm}` : ''} mm
         </span>
       </div>
 

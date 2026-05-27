@@ -1371,6 +1371,7 @@ const en: Record<string, string> = {
   'binDesigner.tabSupport.solid': 'Solid',
   'binDesigner.tabDepth': 'Tab depth',
   'binDesigner.tabWidth': 'Tab width',
+  'binDesigner.tabHeight': 'Tab height',
   'binDesigner.tabAlignment': 'Tab alignment',
   'binDesigner.alignment.left': 'Left',
   'binDesigner.alignment.center': 'Center',

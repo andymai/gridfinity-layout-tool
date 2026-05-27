@@ -33,4 +33,18 @@ export const labelTabs: ScenarioCase[] = [
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket', alignment: 'right' },
     },
   }),
+  // Tall bin (6u \u2192 wallHeight \u2248 37mm) so the explicit `height: 20mm` lands
+  // well below the wall top, exercising the dropped-shelf path from #1898.
+  defineScenario('label tabs', '2\u00d72\u00d76 label dropped (height = 20mm)', {
+    params: {
+      height: 6,
+      label: {
+        ...DEFAULT_BIN_PARAMS.label,
+        enabled: true,
+        support: 'bracket',
+        alignment: 'left',
+        height: 20,
+      },
+    },
+  }),
 ];

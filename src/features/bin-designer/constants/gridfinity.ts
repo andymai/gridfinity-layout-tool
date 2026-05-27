@@ -44,6 +44,14 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_LABEL_TAB_WIDTH: 10, // % of compartment column width
   MAX_LABEL_TAB_WIDTH: 100, // %
   LABEL_TAB_WIDTH_STEP: 5, // %
+  // Tab height is the Z position of the shelf TOP above the cavity floor (mm).
+  // Default (field absent) = wall top. Lowering creates a tuck-under pocket
+  // between the rim and the shelf. The dynamic max is the interior wall
+  // height (computed at render time); the dynamic min is `tabDepth + 1` so
+  // the gusset retains 1mm of clearance above the floor.
+  MIN_LABEL_TAB_HEIGHT: 9, // mm — derived from MIN_LABEL_TAB_DEPTH + 1
+  MAX_LABEL_TAB_HEIGHT: 140, // mm — derived from MAX_HEIGHT (20) * heightUnitMm (7)
+  LABEL_TAB_HEIGHT_STEP: 1, // mm
   MAX_HISTORY: 100, // undo/redo states
   // Wall thickness
   MIN_WALL_THICKNESS: 0.4, // mm (1-wall for 0.4mm nozzle)

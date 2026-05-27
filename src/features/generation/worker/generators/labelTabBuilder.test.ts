@@ -151,6 +151,95 @@ describe('buildLabelTabs', () => {
     });
   });
 
+  describe('tab height (vertical position)', () => {
+    it('omitting height anchors the shelf at the wall top (legacy behavior)', async () => {
+      const { buildLabelTabs } = await import('./labelTabBuilder');
+      const { mesh } = await import('brepjs');
+      const wallHeight = 35;
+      const wt = 1.2;
+      const params = {
+        ...DEFAULT_BIN_PARAMS,
+        // Note: no `height` field → must produce the pre-#1898 geometry.
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' as const },
+      };
+      const result = buildLabelTabs(params, 80, 80, wallHeight, wt);
+      expect(result).not.toBeNull();
+
+      const tessellated = mesh(result!, { tolerance: 0.1, angularTolerance: 10 });
+      const verts = tessellated.vertices;
+      let maxZ = -Infinity;
+      for (let i = 2; i < verts.length; i += 3) {
+        if (verts[i] > maxZ) maxZ = verts[i];
+      }
+      // Shelf top should reach the wall top.
+      expect(maxZ).toBeCloseTo(wallHeight, 1);
+    });
+
+    it('explicit height drops the shelf below the wall top', async () => {
+      const { buildLabelTabs } = await import('./labelTabBuilder');
+      const { mesh } = await import('brepjs');
+      const wallHeight = 50;
+      const wt = 1.2;
+      const tabDepth = 12;
+      const tabHeight = 20;
+      const params = {
+        ...DEFAULT_BIN_PARAMS,
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          support: 'bracket' as const,
+          depth: tabDepth,
+          height: tabHeight,
+        },
+      };
+      const result = buildLabelTabs(params, 80, 80, wallHeight, wt);
+      expect(result).not.toBeNull();
+
+      const tessellated = mesh(result!, { tolerance: 0.1, angularTolerance: 10 });
+      const verts = tessellated.vertices;
+      let maxZ = -Infinity;
+      let minZ = Infinity;
+      for (let i = 2; i < verts.length; i += 3) {
+        if (verts[i] > maxZ) maxZ = verts[i];
+        if (verts[i] < minZ) minZ = verts[i];
+      }
+      // Shelf top must sit at the requested height, not at the wall top.
+      expect(maxZ).toBeCloseTo(tabHeight, 1);
+      // Gusset bottom = tabHeight - tabDepth = 8mm above the floor.
+      expect(minZ).toBeCloseTo(tabHeight - tabDepth, 1);
+    });
+
+    it('returns null when height exceeds wall height', async () => {
+      const { buildLabelTabs } = await import('./labelTabBuilder');
+      const params = {
+        ...DEFAULT_BIN_PARAMS,
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          height: 50, // > wallHeight
+        },
+      };
+      // wallHeight = 35, height = 50 → invalid.
+      const result = buildLabelTabs(params, 80, 80, 35, 1.2);
+      expect(result).toBeNull();
+    });
+
+    it('returns null when height <= depth (no room for gusset)', async () => {
+      const { buildLabelTabs } = await import('./labelTabBuilder');
+      const params = {
+        ...DEFAULT_BIN_PARAMS,
+        label: {
+          ...DEFAULT_BIN_PARAMS.label,
+          enabled: true,
+          depth: 12,
+          height: 12, // shelfTopZ - tabHeight = 0 → degenerate
+        },
+      };
+      const result = buildLabelTabs(params, 80, 80, 35, 1.2);
+      expect(result).toBeNull();
+    });
+  });
+
   it.each(['solid', 'bracket', 'fillet'] as const)(
     '%s support reaches the front edge of the shelf (no overhang gap)',
     async (support) => {

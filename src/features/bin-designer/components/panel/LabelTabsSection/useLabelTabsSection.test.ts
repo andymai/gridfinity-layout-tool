@@ -110,4 +110,100 @@ describe('useLabelTabsSection', () => {
     // outerW = 2*42 - 0.5 = 83.5, innerW = 83.5 - 2*1.2 = 81.1, cellW = 81.1
     expect(result.current.state.tabWidthMm).toBeGreaterThan(0);
   });
+
+  describe('tab height', () => {
+    it('heightIsExplicit is false by default and tabHeightMm falls back to wallHeight', () => {
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.heightIsExplicit).toBe(false);
+      // Default bin: 3u tall × 7mm = 21mm minus 5mm socket = 16mm wallHeight.
+      expect(result.current.state.tabHeightMm).toBe(16);
+    });
+
+    it('setTabHeight writes the explicit value', () => {
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.setTabHeight(15);
+      });
+
+      expect(useDesignerStore.getState().params.label.height).toBe(15);
+    });
+
+    it('tabHeightMin equals depth + 1 (gusset floor clearance)', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 12 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.tabHeightMin).toBe(13);
+    });
+
+    it('tabHeightMax never exceeds wallHeight even when depth + 1 would', () => {
+      // 3u tall bin → wallHeight = 16mm. depth = 20mm pushes the depth-derived
+      // floor (21) past the ceiling; max must stay at wallHeight and min must
+      // collapse to it so the stepper can't request a Z the builder rejects.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 20 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.tabHeightMax).toBe(16);
+      expect(result.current.state.tabHeightMin).toBe(16);
+    });
+
+    it('setTabDepth clamps explicit height up when depth invalidates it', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 10, height: 12 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      // New depth 15 invalidates height 12 (gusset would have zero clearance).
+      act(() => {
+        result.current.handlers.setTabDepth(15);
+      });
+
+      expect(useDesignerStore.getState().params.label.depth).toBe(15);
+      expect(useDesignerStore.getState().params.label.height).toBe(16);
+    });
+
+    it('setTabDepth caps height clamp at wallHeightMm (no out-of-range writes)', () => {
+      // 3u tall bin → wallHeight = 16mm. Start with depth=10, height=11.
+      // Setting depth to 16 (= wallHeight) would naively clamp height to 17,
+      // which would exceed wallHeightMm and silently make the builder drop
+      // the tab once depth is reduced again. The cap keeps height ≤ 16.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 10, height: 11 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.setTabDepth(16);
+      });
+
+      expect(useDesignerStore.getState().params.label.depth).toBe(16);
+      expect(useDesignerStore.getState().params.label.height).toBe(16);
+    });
+
+    it('setTabDepth leaves height untouched when height is unset (default-at-top)', () => {
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.setTabDepth(18);
+      });
+
+      expect(useDesignerStore.getState().params.label.depth).toBe(18);
+      // Optional field stays undefined — no migration of legacy designs.
+      expect(useDesignerStore.getState().params.label.height).toBeUndefined();
+    });
+  });
 });

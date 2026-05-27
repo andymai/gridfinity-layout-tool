@@ -52,6 +52,12 @@ const CONSTRAINTS = {
   MAX_LABEL_TAB_DEPTH: 20,
   MIN_LABEL_TAB_WIDTH: 10, // %
   MAX_LABEL_TAB_WIDTH: 100, // %
+  // Label tab height is the Z of the shelf top above the cavity floor (mm).
+  // Static bounds for API payloads — the client's UI uses a dynamic max
+  // tied to the current bin's interior height. Floor (9) = MIN_LABEL_TAB_DEPTH + 1;
+  // ceiling (140) = MAX_HEIGHT * 7mm (heightUnitMm).
+  MIN_LABEL_TAB_HEIGHT: 9,
+  MAX_LABEL_TAB_HEIGHT: 140,
   MAGNET_MIN_DEPTH: 2.0,
   MAGNET_MAX_DEPTH: 4.0,
   MAX_INSERTS: 20,
@@ -496,6 +502,22 @@ function validateLabel(label: unknown): string | null {
       !['left', 'center', 'right'].includes(label.alignment as string)
     ) {
       return 'label.alignment must be "left", "center", or "right"';
+    }
+    // Optional field; absent = anchor shelf at the wall top (legacy behavior).
+    if (label.height !== undefined) {
+      if (
+        !isNumber(label.height) ||
+        !inRange(label.height, CONSTRAINTS.MIN_LABEL_TAB_HEIGHT, CONSTRAINTS.MAX_LABEL_TAB_HEIGHT)
+      ) {
+        return `label.height must be ${CONSTRAINTS.MIN_LABEL_TAB_HEIGHT}-${CONSTRAINTS.MAX_LABEL_TAB_HEIGHT}`;
+      }
+      // Cross-field: gusset needs at least 1mm clearance above the floor,
+      // so the shelf top must sit above the tab depth. Without this guard,
+      // the payload passes range checks but the builder silently drops the
+      // tab — the consumer's design loses geometry with no error signal.
+      if (isNumber(label.depth) && label.height <= label.depth) {
+        return 'label.height must be greater than label.depth';
+      }
     }
   }
   return null;

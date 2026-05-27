@@ -566,6 +566,7 @@
   "binDesigner.tabEngravedText": "Гравірований текст",
   "binDesigner.tabEngravedTextAriaLabel": "Гравірований текст для відсіку {n}",
   "binDesigner.tabEngravedTextPlaceholder": "напр. ГВИНТИ",
+  "binDesigner.tabHeight": "Висота виступу",
   "binDesigner.tabSupport": "Підтримка",
   "binDesigner.tabSupport.bracket": "Кронштейн",
   "binDesigner.tabSupport.fillet": "Закруглена",

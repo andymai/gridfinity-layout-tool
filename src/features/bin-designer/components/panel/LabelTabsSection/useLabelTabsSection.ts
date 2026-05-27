@@ -39,6 +39,11 @@ export function useLabelTabsSection() {
   const tooShort = height <= DESIGNER_CONSTRAINTS.MIN_HEIGHT;
   const isUnavailable = !labelStatus.available || tooShort;
 
+  // Interior cavity height — dynamic max for the tab-height stepper and
+  // the cap for the `setTabDepth` height-clamp. Matches `wallHeight`
+  // passed to the geometry builder.
+  const wallHeightMm = useMemo(() => binDimensions(params).wallHeight, [params]);
+
   const toggleLabelTabs = useCallback(() => {
     updateLabel({ enabled: !label.enabled });
   }, [label.enabled, updateLabel]);
@@ -52,7 +57,28 @@ export function useLabelTabsSection() {
 
   const setTabDepth = useCallback(
     (depth: number) => {
-      updateLabel({ depth });
+      // Height (when explicitly set) must stay above `depth` so the gusset
+      // has at least 1mm of clearance above the floor. If raising depth
+      // would invalidate the current height, lift height in lockstep — and
+      // cap at `wallHeightMm` so we never write a value above the stepper's
+      // own ceiling. Without the cap, pushing depth up to wallHeight on a
+      // short bin would store height = depth + 1 > wallHeight; subsequently
+      // lowering depth wouldn't re-trigger the clamp (`currentHeight <= depth`
+      // is false), and the now-out-of-range height would silently make the
+      // builder drop the tab.
+      const currentHeight = label.height;
+      if (currentHeight !== undefined && currentHeight <= depth) {
+        updateLabel({ depth, height: Math.min(depth + 1, wallHeightMm) });
+      } else {
+        updateLabel({ depth });
+      }
+    },
+    [label.height, updateLabel, wallHeightMm]
+  );
+
+  const setTabHeight = useCallback(
+    (h: number) => {
+      updateLabel({ height: h });
     },
     [updateLabel]
   );
@@ -104,6 +130,23 @@ export function useLabelTabsSection() {
     return Math.round(((availableWidth * label.width) / 100) * 10) / 10;
   }, [params, compartments.cols, compartments.thickness, label.width]);
 
+  // Resolved tab height for display: explicit value when set, otherwise
+  // wall top (the default-when-absent contract from `LabelTabConfig`).
+  const tabHeightMm = label.height ?? wallHeightMm;
+  // Did the user explicitly set height? Controls whether the W×D×H summary
+  // shows the third dimension. Keeps unaltered designs visually unchanged.
+  const heightIsExplicit = label.height !== undefined;
+
+  // Dynamic min/max for the tab-height stepper. The geometry layer
+  // requires `height > depth` for a non-degenerate gusset (floor = depth + 1)
+  // and `height <= wallHeight` (ceiling = interior wall height).
+  // When the depth-derived floor exceeds the wall ceiling (a deep tab in a
+  // short bin), the only valid value is the wall top; collapse min onto max
+  // so the stepper can't request a Z the builder would reject — never let
+  // the stepper expose a max above the actual wall height.
+  const tabHeightMax = wallHeightMm;
+  const tabHeightMin = Math.min(label.depth + 1, tabHeightMax);
+
   const sectionSummary = useMemo(() => {
     if (!label.enabled) return undefined;
     const supportName = t(`binDesigner.tabSupport.${label.support}`);
@@ -146,12 +189,23 @@ export function useLabelTabsSection() {
   }, [compartments, t]);
 
   return {
-    state: { label, textDefaults, isUnavailable, tabWidthMm, compartmentTextRows },
+    state: {
+      label,
+      textDefaults,
+      isUnavailable,
+      tabWidthMm,
+      tabHeightMm,
+      heightIsExplicit,
+      tabHeightMin,
+      tabHeightMax,
+      compartmentTextRows,
+    },
     handlers: {
       toggleLabelTabs,
       setTabSupport,
       setTabDepth,
       setTabWidth,
+      setTabHeight,
       setTabAlignment,
       setCompartmentText,
       setTextFont,

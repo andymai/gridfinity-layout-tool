@@ -566,6 +566,7 @@
   "binDesigner.tabEngravedText": "Texto grabado",
   "binDesigner.tabEngravedTextAriaLabel": "Texto grabado para el compartimento {n}",
   "binDesigner.tabEngravedTextPlaceholder": "p. ej. TORNILLOS",
+  "binDesigner.tabHeight": "Altura de pestaña",
   "binDesigner.tabSupport": "Soporte",
   "binDesigner.tabSupport.bracket": "Soporte abierto",
   "binDesigner.tabSupport.fillet": "Curvado",

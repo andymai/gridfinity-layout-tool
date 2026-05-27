@@ -566,6 +566,7 @@
   "binDesigner.tabEngravedText": "Texte gravé",
   "binDesigner.tabEngravedTextAriaLabel": "Texte gravé pour le compartiment {n}",
   "binDesigner.tabEngravedTextPlaceholder": "p. ex. VIS",
+  "binDesigner.tabHeight": "Hauteur d'onglet",
   "binDesigner.tabSupport": "Support",
   "binDesigner.tabSupport.bracket": "Étrier",
   "binDesigner.tabSupport.fillet": "Courbé",

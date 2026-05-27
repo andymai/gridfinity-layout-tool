@@ -566,6 +566,7 @@
   "binDesigner.tabEngravedText": "Gegraveerde tekst",
   "binDesigner.tabEngravedTextAriaLabel": "Gegraveerde tekst voor compartiment {n}",
   "binDesigner.tabEngravedTextPlaceholder": "bijv. SCHROEVEN",
+  "binDesigner.tabHeight": "Tabhoogte",
   "binDesigner.tabSupport": "Steun",
   "binDesigner.tabSupport.bracket": "Beugel",
   "binDesigner.tabSupport.fillet": "Gebogen",

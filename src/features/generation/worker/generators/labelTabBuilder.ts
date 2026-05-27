@@ -77,12 +77,25 @@ function buildLabelTabsInScope(
   const wt = wallThickness;
   const gt = thickness; // gusset thickness = compartment divider thickness
 
-  // Tab envelope height equals depth (design invariant).
+  // Tab envelope height equals depth (design invariant — the gusset is a
+  // 45° right triangle, so its vertical leg matches its horizontal leg).
   // Gusset height is tabHeight - wt (shelf occupies the top wt).
   const tabHeight = tabDepth;
 
-  // Safety: tab must fit within wall height
+  // `shelfTopZ` is the Z of the shelf TOP above the cavity floor (mm).
+  // When `params.label.height` is undefined, anchor to the wall top — the
+  // original behavior. When explicitly set, place the shelf at that Z so
+  // the user can drop it down to leave a tuck-under pocket above (#1898).
+  // The geometry is built in a local frame (shelf top at Z=tabHeight) and
+  // then translated up by `shelfTopZ - tabHeight`, so the entire
+  // shelf+gusset assembly slides down as a unit.
+  const shelfTopZ = params.label.height ?? wallHeight;
+
+  // Safety: tab must fit within wall height AND between floor and shelfTopZ.
+  // `shelfTopZ - tabHeight` is the Z of the gusset bottom; if it's <= 0 the
+  // gusset would clip the floor.
   if (tabHeight > wallHeight || tabHeight <= 0) return null;
+  if (shelfTopZ > wallHeight || shelfTopZ - tabHeight <= 0) return null;
 
   const cellW = innerW / cols;
   const cellD = innerD / rows;
@@ -255,10 +268,9 @@ function buildLabelTabsInScope(
         shelfThickness: wt,
       });
 
-      // Position: X at alignment offset, Y at compartment back edge, Z at tab base
-      tabSolid = scope.register(
-        translate(tabSolid, [tabXStart, backEdgeY, wallHeight - tabHeight])
-      );
+      // Position: X at alignment offset, Y at compartment back edge,
+      // Z at gusset base (= shelfTopZ - tabHeight).
+      tabSolid = scope.register(translate(tabSolid, [tabXStart, backEdgeY, shelfTopZ - tabHeight]));
 
       allTabs.push(tabSolid);
 

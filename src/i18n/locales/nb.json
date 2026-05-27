@@ -566,6 +566,7 @@
   "binDesigner.tabEngravedText": "Gravert tekst",
   "binDesigner.tabEngravedTextAriaLabel": "Gravert tekst for rom {n}",
   "binDesigner.tabEngravedTextPlaceholder": "f.eks. SKRUER",
+  "binDesigner.tabHeight": "Fanehøyde",
   "binDesigner.tabSupport": "Støtte",
   "binDesigner.tabSupport.bracket": "Brakett",
   "binDesigner.tabSupport.fillet": "Buet",
