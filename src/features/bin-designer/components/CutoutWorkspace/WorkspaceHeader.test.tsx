@@ -155,7 +155,6 @@ describe('WorkspaceHeader', () => {
     expect(screen.getByTitle('binDesigner.cutouts.alignLeft')).toBeInTheDocument();
     expect(screen.getByTitle('binDesigner.cutouts.alignRight')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.cutouts.centerInBin')).toBeInTheDocument();
-    // Pathfinder Unite replaces the legacy "Combine" button.
     expect(screen.getByTitle('binDesigner.cutouts.pathfinder.union')).toBeInTheDocument();
   });
 });

@@ -95,9 +95,16 @@ describe('validateDesignerShare', () => {
 
     it('rejects width above maximum', () => {
       const payload = validPayload();
-      payload.params.width = 10;
+      payload.params.width = 17;
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
+    });
+
+    it('accepts width at the 16 boundary (matches client MAX_DIMENSION)', () => {
+      const payload = validPayload();
+      payload.params.width = 16;
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
     });
 
     it('rejects height below minimum', () => {
@@ -173,6 +180,15 @@ describe('validateDesignerShare', () => {
       payload.params.compartments.cols = 15;
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
+    });
+
+    it('accepts cols at the 12 boundary (client cap raised in #1873)', () => {
+      const payload = validPayload();
+      payload.params.compartments.cols = 12;
+      payload.params.compartments.rows = 12;
+      payload.params.compartments.cells = Array.from({ length: 144 }, (_, i) => i);
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
     });
 
     it('rejects compartment thickness out of range', () => {
