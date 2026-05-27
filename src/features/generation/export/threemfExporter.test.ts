@@ -613,7 +613,37 @@ describe('threemfExporter', () => {
       expect(files['Metadata/project_settings.config']).toBeUndefined();
     });
 
-    it('multi-object: palette aggregates across colored objects, dedup by hex', () => {
+    it('multi-object: accepts identical material arrays across colored objects', () => {
+      // Same materials list shared across objects (mixed-case to confirm
+      // the comparator is case-insensitive). Per-object paint_color slots
+      // resolve to the same filament in the unified palette, so the
+      // emitted filament_colour list matches the shared array (lowercased).
+      const tri = createSingleTriangle();
+      const shared = [{ color: '#111111' }, { color: '#FF0000' }];
+      const objects = [
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'bin',
+          colorConfig: { materials: shared, triangleMaterialIndices: [1] },
+        },
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'lid',
+          colorConfig: { materials: shared, triangleMaterialIndices: [0] },
+        },
+      ];
+      const buffer = build3MFMultiObjectBuffer(objects, { name: 'multi' });
+      const config = JSON.parse(strFromU8(unzipSync(buffer)['Metadata/project_settings.config']));
+      expect(config.filament_colour).toEqual(['#111111', '#ff0000']);
+    });
+
+    it('multi-object: throws when colored objects have mismatched material arrays', () => {
+      // Per-triangle paint_color codes are object-local. If two objects ship
+      // different palettes, code "4" (slot 1) means different filaments in
+      // each object — and the unified filament_colour list can only honor
+      // one mapping. Fail loudly rather than silently produce wrong colors.
       const tri = createSingleTriangle();
       const objects = [
         {
@@ -621,7 +651,7 @@ describe('threemfExporter', () => {
           normals: tri.normals,
           name: 'bin',
           colorConfig: {
-            materials: [{ color: '#111111' }, { color: '#FF0000' }],
+            materials: [{ color: '#111111' }, { color: '#ff0000' }],
             triangleMaterialIndices: [0],
           },
         },
@@ -629,16 +659,15 @@ describe('threemfExporter', () => {
           vertices: tri.vertices,
           normals: tri.normals,
           name: 'lid',
-          // Repeat #ff0000 (different case) and add a new hue.
           colorConfig: {
-            materials: [{ color: '#ff0000' }, { color: '#00FF00' }],
+            materials: [{ color: '#111111' }, { color: '#00ff00' }],
             triangleMaterialIndices: [0],
           },
         },
       ];
-      const buffer = build3MFMultiObjectBuffer(objects, { name: 'multi' });
-      const config = JSON.parse(strFromU8(unzipSync(buffer)['Metadata/project_settings.config']));
-      expect(config.filament_colour).toEqual(['#111111', '#ff0000', '#00ff00']);
+      expect(() => build3MFMultiObjectBuffer(objects, { name: 'multi' })).toThrow(
+        /must share the same materials array/
+      );
     });
 
     it('multi-object: omits project_settings.config when no object has a colorConfig', () => {
@@ -681,6 +710,44 @@ describe('threemfExporter', () => {
       const { vertices, normals } = createSingleTriangle();
       const model = strFromU8(
         unzipSync(build3MFBuffer(vertices, normals, { name: 'plain' }))['3D/3dmodel.model']
+      );
+      expect(model).not.toContain('<metadata name="Application">');
+      expect(model).not.toContain('BambuStudio:3mfVersion');
+    });
+
+    it('multi-object: emits BambuStudio Application metadata when any object has colorConfig', () => {
+      const tri = createSingleTriangle();
+      const objects = [
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'colored',
+          colorConfig: {
+            materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
+            triangleMaterialIndices: [1],
+          },
+        },
+        { vertices: tri.vertices, normals: tri.normals, name: 'plain' },
+      ];
+      const model = strFromU8(
+        unzipSync(build3MFMultiObjectBuffer(objects, { name: 'multi-bambu' }))['3D/3dmodel.model']
+      );
+      expect(model).toContain('<metadata name="Application">BambuStudio-');
+      expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
+    });
+
+    it('multi-object: omits Application metadata when no object has colorConfig', () => {
+      const tri = createSingleTriangle();
+      const model = strFromU8(
+        unzipSync(
+          build3MFMultiObjectBuffer(
+            [
+              { vertices: tri.vertices, normals: tri.normals, name: 'a' },
+              { vertices: tri.vertices, normals: tri.normals, name: 'b' },
+            ],
+            { name: 'multi-plain' }
+          )
+        )['3D/3dmodel.model']
       );
       expect(model).not.toContain('<metadata name="Application">');
       expect(model).not.toContain('BambuStudio:3mfVersion');

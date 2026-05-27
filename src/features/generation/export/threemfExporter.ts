@@ -204,32 +204,48 @@ function activeColorConfig(c: ThreeMFColorConfig | undefined): ThreeMFColorConfi
 }
 
 /**
- * Collapse the materials lists from one or more color configs into a single
- * ordered hex palette. Across the multi-object path only the bin currently
- * carries a colorConfig, but if that ever changes we walk every object and
- * dedup by hex so the palette stays consistent with the per-triangle slot
- * indices each object emitted via its own paint_color codes.
+ * Resolve the palette emitted into `Metadata/project_settings.config` from one
+ * or more colorConfigs. Returns undefined when no palette would be emitted —
+ * single-color exports skip the sidecar entirely.
  *
- * Returns null when no palette would be emitted — single-color exports skip
- * the project_settings.config entirely (no warning to suppress; no AMS slots
- * to seed).
+ * **Invariant:** every colored object in a multi-object export must share the
+ * same materials array (same order, same colors). Per-triangle `paint_color`
+ * codes are object-local references into the object's own slot list, so two
+ * objects with differently-ordered palettes would resolve the same code to
+ * different filaments in the unified `filament_colour` list. Throws on
+ * mismatch rather than silently producing wrong colors. Today only the bin
+ * carries a colorConfig in the multi-object path, but locking down the
+ * invariant lets that change safely later.
  */
 function unifiedPalette(
   configs: readonly (ThreeMFColorConfig | undefined)[]
 ): readonly string[] | undefined {
-  const seen = new Set<string>();
-  const palette: string[] = [];
-  for (const c of configs) {
-    const active = activeColorConfig(c);
-    if (!active) continue;
-    for (const mat of active.materials) {
-      const hex = mat.color.toLowerCase();
-      if (seen.has(hex)) continue;
-      seen.add(hex);
-      palette.push(hex);
+  const actives = configs
+    .map(activeColorConfig)
+    .filter((c): c is ThreeMFColorConfig => c !== undefined);
+  if (actives.length === 0) return undefined;
+
+  const first = actives[0].materials;
+  for (let i = 1; i < actives.length; i++) {
+    if (!materialsMatch(first, actives[i].materials)) {
+      throw new Error(
+        '3MF multi-object: all colored objects must share the same materials array (same order, same colors); ' +
+          'per-object paint_color slot indices would otherwise misalign with the unified filament palette.'
+      );
     }
   }
-  return palette.length > 0 ? palette : undefined;
+  return first.map((m) => m.color.toLowerCase());
+}
+
+function materialsMatch(
+  a: ThreeMFColorConfig['materials'],
+  b: ThreeMFColorConfig['materials']
+): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].color.toLowerCase() !== b[i].color.toLowerCase()) return false;
+  }
+  return true;
 }
 
 /**
@@ -245,7 +261,12 @@ function unifiedPalette(
 function buildProjectSettingsConfig(palette: readonly string[]): string {
   return JSON.stringify(
     {
-      version: '1.0.0.0',
+      // Mirrors BAMBU_COMPAT_APPLICATION's version segment so the JSON
+      // metadata and the Application metadata agree on which "version" we
+      // claim. Bambu's load_from_json reads `version` into a key_values map
+      // but doesn't gate on it, so this is advisory; alignment is for human
+      // and round-trip-tool consistency.
+      version: '01.00.00.00',
       name: 'project_settings',
       from: 'Gridfinity Layout Tool',
       filament_colour: palette,
