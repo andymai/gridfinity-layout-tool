@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.120.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.1...gridfinity-layout-tool-v4.120.2) (2026-05-27)
+
+
+### Bug Fixes
+
+* **export:** paint per-triangle via paint_color for Bambu/Orca/Prusa ([#1885](https://github.com/andymai/gridfinity-layout-tool/issues/1885)) ([1dc8f34](https://github.com/andymai/gridfinity-layout-tool/commit/1dc8f3438e4f1b293c17dd60a33a260632cd38cf))
+
 ## [4.120.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.0...gridfinity-layout-tool-v4.120.1) (2026-05-26)
 
 
