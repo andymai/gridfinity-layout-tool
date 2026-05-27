@@ -32,6 +32,7 @@ import {
 } from '@/features/bin-designer/utils/binDownloadHelpers';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import { normalizeHex, resolveColorMapping } from '@/features/bin-designer/types/featureColors';
+import { FILAMENT_PAINT_CODES } from '@/features/generation/export/threemfExporter';
 import type { BinParams } from '@/features/bin-designer/types';
 import type { ThreeMFPrintSettings } from '@/shared/generation/export';
 
@@ -87,31 +88,10 @@ async function blobToModelXml(blob: Blob): Promise<string> {
 }
 
 /**
- * OrcaSlicer's CONST_FILAMENTS table (Model.cpp:52). The exporter writes
- * `paint_color="<code>"` where the code is the entry at the material slot
- * index — slot 0 emits nothing (default extruder).
+ * Decode a paint_color attribute back to a material slot index using the
+ * live FILAMENT_PAINT_CODES from the exporter — keeping the test pinned to
+ * the same table the production code emits.
  */
-const FILAMENT_PAINT_CODES = [
-  '',
-  '4',
-  '8',
-  '0C',
-  '1C',
-  '2C',
-  '3C',
-  '4C',
-  '5C',
-  '6C',
-  '7C',
-  '8C',
-  '9C',
-  'AC',
-  'BC',
-  'CC',
-  'DC',
-] as const;
-
-/** Decode a paint_color attribute back to a material slot index. */
 function slotFromCode(code: string | undefined): number {
   if (code === undefined) return 0; // missing attribute → slot 0 (body)
   const idx = FILAMENT_PAINT_CODES.indexOf(code as (typeof FILAMENT_PAINT_CODES)[number]);

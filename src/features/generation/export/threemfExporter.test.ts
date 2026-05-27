@@ -421,9 +421,9 @@ describe('threemfExporter', () => {
       });
       const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
 
-      // Material slot 0 → filament 0 = no paint_color attribute (default extruder)
+      // Slot 0 → no paint_color attribute (triangle inherits default extruder)
       expect(model).toMatch(/<triangle v1="\d+" v2="\d+" v3="\d+" \/>/);
-      // Material slot 1 → filament 1 → CONST_FILAMENTS[1] = "4"
+      // Slot 1 → paint_color="4" per CONST_FILAMENTS[1]
       expect(model).toMatch(/<triangle v1="\d+" v2="\d+" v3="\d+" paint_color="4" \/>/);
       // No legacy artifacts from the old colorgroup approach
       expect(model).not.toContain('pid=');
@@ -460,7 +460,7 @@ describe('threemfExporter', () => {
       const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
 
       // Slot 0 → no attribute; Slots 1..3 → "4", "8", "0C" per CONST_FILAMENTS
-      const codes = (model.match(/paint_color="([^"]+)"/g) ?? []).map((m) => m);
+      const codes = model.match(/paint_color="([^"]+)"/g) ?? [];
       expect(codes).toContain('paint_color="4"');
       expect(codes).toContain('paint_color="8"');
       expect(codes).toContain('paint_color="0C"');

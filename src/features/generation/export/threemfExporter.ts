@@ -343,11 +343,20 @@ function openModelElement(): string {
 }
 
 /**
- * Per-filament paint_color encoding table, lifted verbatim from OrcaSlicer's
- * `CONST_FILAMENTS` (libslic3r/Model.cpp). The string at index N is the
- * serialized TriangleSelector bit-tree for a leaf triangle entirely painted
- * with filament/extruder N (1-based). Index 0 is the empty string, meaning
- * "no override — use the object's default extruder."
+ * Per-slot paint_color encoding table, lifted verbatim from OrcaSlicer's
+ * `CONST_FILAMENTS` (libslic3r/Model.cpp). Indexed by the exporter's material
+ * slot number, not by slicer filament number:
+ *
+ *   - Index 0 → `""` (empty). Caller omits the attribute entirely so the
+ *     triangle inherits the object's default extruder. The body color is
+ *     always slot 0, so most triangles emit no paint_color.
+ *   - Index 1 → `"4"`, the bit-tree encoding for filament 1 in the slicer.
+ *   - Index 2 → `"8"`, filament 2. ...
+ *   - Index N → CONST_FILAMENTS[N], filament N.
+ *
+ * The off-by-one between "our slot" and "slicer filament" is intentional:
+ * slot 0 is special-cased to mean "no override" so a single-color export
+ * needs zero attribute writes and zero AMS slots claimed.
  *
  * PrusaSlicer reads the same `paint_color` attribute (3mf.cpp:2158) as a
  * fallback for its own `slic3rpe:mmu_segmentation`, so one emission path
@@ -355,8 +364,11 @@ function openModelElement(): string {
  * dropped because Orca explicitly ignores triangle `pid`/`p1` (bbs_3mf.cpp
  * comment lines 3805–3810) and treats each colorgroup as a single object
  * color, not a multi-slot palette.
+ *
+ * Exported so test code can decode `paint_color` back to slot indices
+ * without maintaining a duplicate copy of the table.
  */
-const FILAMENT_PAINT_CODES = [
+export const FILAMENT_PAINT_CODES = [
   '',
   '4',
   '8',
