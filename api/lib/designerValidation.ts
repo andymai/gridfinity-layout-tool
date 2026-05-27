@@ -504,12 +504,20 @@ function validateLabel(label: unknown): string | null {
       return 'label.alignment must be "left", "center", or "right"';
     }
     // Optional field; absent = anchor shelf at the wall top (legacy behavior).
-    if (
-      label.height !== undefined &&
-      (!isNumber(label.height) ||
-        !inRange(label.height, CONSTRAINTS.MIN_LABEL_TAB_HEIGHT, CONSTRAINTS.MAX_LABEL_TAB_HEIGHT))
-    ) {
-      return `label.height must be ${CONSTRAINTS.MIN_LABEL_TAB_HEIGHT}-${CONSTRAINTS.MAX_LABEL_TAB_HEIGHT}`;
+    if (label.height !== undefined) {
+      if (
+        !isNumber(label.height) ||
+        !inRange(label.height, CONSTRAINTS.MIN_LABEL_TAB_HEIGHT, CONSTRAINTS.MAX_LABEL_TAB_HEIGHT)
+      ) {
+        return `label.height must be ${CONSTRAINTS.MIN_LABEL_TAB_HEIGHT}-${CONSTRAINTS.MAX_LABEL_TAB_HEIGHT}`;
+      }
+      // Cross-field: gusset needs at least 1mm clearance above the floor,
+      // so the shelf top must sit above the tab depth. Without this guard,
+      // the payload passes range checks but the builder silently drops the
+      // tab — the consumer's design loses geometry with no error signal.
+      if (isNumber(label.depth) && label.height <= label.depth) {
+        return 'label.height must be greater than label.depth';
+      }
     }
   }
   return null;

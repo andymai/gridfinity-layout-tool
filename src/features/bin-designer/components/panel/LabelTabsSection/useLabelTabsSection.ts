@@ -132,10 +132,14 @@ export function useLabelTabsSection() {
   const heightIsExplicit = label.height !== undefined;
 
   // Dynamic min/max for the tab-height stepper. The geometry layer
-  // requires `height > depth` for a non-degenerate gusset, so the floor
-  // is `depth + 1`. Ceiling is the interior wall height.
-  const tabHeightMin = label.depth + 1;
-  const tabHeightMax = Math.max(tabHeightMin, wallHeightMm);
+  // requires `height > depth` for a non-degenerate gusset (floor = depth + 1)
+  // and `height <= wallHeight` (ceiling = interior wall height).
+  // When the depth-derived floor exceeds the wall ceiling (a deep tab in a
+  // short bin), the only valid value is the wall top; collapse min onto max
+  // so the stepper can't request a Z the builder would reject — never let
+  // the stepper expose a max above the actual wall height.
+  const tabHeightMax = wallHeightMm;
+  const tabHeightMin = Math.min(label.depth + 1, tabHeightMax);
 
   const sectionSummary = useMemo(() => {
     if (!label.enabled) return undefined;

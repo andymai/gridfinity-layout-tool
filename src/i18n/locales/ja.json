@@ -566,6 +566,7 @@
   "binDesigner.tabEngravedText": "彫刻文字",
   "binDesigner.tabEngravedTextAriaLabel": "区画{n}の彫刻文字",
   "binDesigner.tabEngravedTextPlaceholder": "例: SCREWS",
+  "binDesigner.tabHeight": "タブの高さ",
   "binDesigner.tabSupport": "サポート",
   "binDesigner.tabSupport.bracket": "ブラケット",
   "binDesigner.tabSupport.fillet": "曲線状",

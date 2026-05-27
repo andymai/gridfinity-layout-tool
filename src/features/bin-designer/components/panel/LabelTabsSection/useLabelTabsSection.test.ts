@@ -140,6 +140,21 @@ describe('useLabelTabsSection', () => {
       expect(result.current.state.tabHeightMin).toBe(13);
     });
 
+    it('tabHeightMax never exceeds wallHeight even when depth + 1 would', () => {
+      // 3u tall bin → wallHeight = 16mm. depth = 20mm pushes the depth-derived
+      // floor (21) past the ceiling; max must stay at wallHeight and min must
+      // collapse to it so the stepper can't request a Z the builder rejects.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 20 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.tabHeightMax).toBe(16);
+      expect(result.current.state.tabHeightMin).toBe(16);
+    });
+
     it('setTabDepth clamps explicit height up when depth invalidates it', () => {
       useDesignerStore.setState({
         params: {
