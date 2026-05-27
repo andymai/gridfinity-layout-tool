@@ -214,15 +214,11 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
     const fr = raw.lip.frontRight ?? body;
     const br = raw.lip.backRight ?? body;
     const bl = raw.lip.backLeft ?? body;
-    // The per-corner lip editor is currently rolled back to a single picker
-    // that mirrors hex into all four slots. Designs saved while the
-    // per-corner editor was live (or imported from a fork) can land here
-    // with mismatched corners — the UI shows one (frontLeft) but the 3D
-    // preview and 3MF exporter both classify lip triangles per quadrant and
-    // honor the mismatch, so the slicer renders colors the picker can't
-    // even display. Canonicalize to frontLeft on load to align all three
-    // surfaces. Per-corner intent is recoverable from version history if
-    // the editor returns. (Discussion #1654 bug #3.)
+    // The per-corner editor is rolled back to a single picker (mirrors
+    // hex into all four slots). Designs saved with mismatched corners
+    // become unreachable from the UI but the 3D preview + 3MF exporter
+    // still honor the mismatch — canonicalize to `frontLeft` so all
+    // three surfaces agree (discussion #1654 bug #3).
     const normalizedFl = normalizeHex(fl);
     const allMatch =
       normalizedFl === normalizeHex(fr) &&

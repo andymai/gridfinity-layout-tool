@@ -24,8 +24,9 @@ import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
 import {
   computeActiveZones,
-  resolveColorMapping,
+  getZoneColor,
   normalizeHex,
+  resolveColorMapping,
 } from '@/features/bin-designer/types/featureColors';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
@@ -220,32 +221,16 @@ function flatBBox(vertices: Float32Array): FlatBBox {
   return { minX, maxX, minY, maxY, minZ, maxZ };
 }
 
-/**
- * Gap (mm) between bin and lid when laying them out for print.
- * Large enough that BBS doesn't auto-resolve the placement and the user
- * can still drag-arrange if desired.
- */
 const PRINT_LAYOUT_GAP_MM = 5;
 
 /**
- * Reposition the lid mesh beside the bin for printing. The lid arrives
- * here already in print orientation — `exportLid` calls `orientForPrint`
- * on every non-STEP format (lidOrchestrator.ts:116), so the floor already
- * faces down. What the multi-object 3MF path is missing is the layout:
- * lid + bin share their authored X range, so the unified centering in
- * `build3MFMultiObjectBuffer` lands them stacked at the same XY in the
- * slicer (discussion #1654 bug #4).
- *
- * Translates so:
- *   - lid's bottom (min Z) aligns with bin's bottom — both sit flat on
- *     the plate once `centeringTranslation` shifts the combined bbox.
- *   - lid's Y center aligns with bin's Y center (orientForPrint inverts
- *     Y too; without re-centering the lid lands offset by depth).
- *   - lid's left (min X) sits `PRINT_LAYOUT_GAP_MM` right of the bin's
- *     right edge — they print side-by-side, not stacked.
- *
- * No rotation here — rotating again would double-flip back into mating
- * orientation. Normals pass through unchanged.
+ * Reposition the lid beside the bin. The lid arrives already in print
+ * orientation — `exportLid` applies `orientForPrint` for every non-STEP
+ * format — so this only does the layout: align floors, center the lid's
+ * Y on the bin's, and slide it `PRINT_LAYOUT_GAP_MM` right of the bin so
+ * the unified centering in `build3MFMultiObjectBuffer` doesn't land them
+ * stacked at the same XY (discussion #1654 bug #4). Rotating again would
+ * double-flip back into mating orientation.
  */
 function transformLidForPrint(
   lidVertices: Float32Array,
@@ -270,10 +255,8 @@ function transformLidForPrint(
 
 /**
  * Build a uniform-color colorConfig for an ancillary piece (lid or divider).
- * Shares the same `materials` array as the bin (per the `unifiedPalette`
- * invariant in threemfExporter) so per-object slot indices reference the
- * same unified filament palette, then tags every triangle with the zone's
- * single slot.
+ * Materials match the bin's palette so `unifiedPalette`'s same-materials
+ * invariant holds across all objects in the 3MF.
  */
 function uniformColorConfig(
   zone: ColorZone,
@@ -281,14 +264,7 @@ function uniformColorConfig(
   triangleCount: number
 ): ThreeMFColorConfig {
   const { colors, colorToIndex } = resolveColorMapping(featureColors);
-  const hex = normalizeHex(
-    zone === 'lid'
-      ? featureColors.lid
-      : zone === 'dividers'
-        ? featureColors.dividers
-        : featureColors.body
-  );
-  const slot = colorToIndex.get(hex) ?? 0;
+  const slot = colorToIndex.get(normalizeHex(getZoneColor(featureColors, zone))) ?? 0;
   return {
     materials: colors.map((c) => ({ color: c })),
     triangleMaterialIndices: new Array(triangleCount).fill(slot),
@@ -313,10 +289,16 @@ export function buildMultiObject3MF(
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; runtime guard preserved
   const multiColorEnabled: boolean = params.featureColors?.enabled ?? false;
   // First piece is the bin (per formatPieceDisplayName + caller convention).
-  // Capture its bbox up front so the lid transform can position the lid
-  // beside it without needing to know the bin's authored coordinates a
-  // second time downstream.
+  // Capture its bbox so the lid transform can position the lid beside it.
   let binBBox: FlatBBox | null = null;
+  // Track whether the bin produced a colorConfig: the bin short-circuits to
+  // single-color (returns null) when every active zone matches body, and we
+  // must keep ancillary pieces in lockstep — otherwise a config with
+  // `enabled: true` but no actual zone divergence would still flip
+  // `anyHasColors` in `build3MFMultiObjectBuffer` and emit Bambu
+  // compatibility metadata + a filament_colour sidecar for what is
+  // functionally a single-color file.
+  let binHasColorConfig = false;
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i];
     const parseResult = parseSTLBinary(piece.data);
@@ -342,7 +324,8 @@ export function buildMultiObject3MF(
           vertices,
           computeActiveZones(params)
         ) ?? undefined;
-    } else if (i > 0 && multiColorEnabled) {
+      binHasColorConfig = colorConfig !== undefined;
+    } else if (i > 0 && multiColorEnabled && binHasColorConfig) {
       const zone = pieceZone(piece.label);
       if (zone !== null) {
         const triangleCount = vertices.length / 9;

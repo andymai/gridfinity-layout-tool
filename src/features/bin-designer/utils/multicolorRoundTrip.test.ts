@@ -424,6 +424,24 @@ describe('multicolor 3MF round-trip', () => {
       expect(slots).toEqual([slotFor(params, '#0000ff'), slotFor(params, '#aaaaaa')]);
     });
 
+    it('emits no paint_color anywhere when featureColors.enabled but every active zone equals body', async () => {
+      // Edge case Greptile flagged: enabled=true but the bin's
+      // buildTriangleMaterialIndices short-circuits to null (single color).
+      // Ancillary pieces must short-circuit in lockstep or BambuStudio
+      // compatibility metadata + filament_colour sidecar would land on a
+      // functionally single-color file.
+      const params = withColors({ body: '#aaaaaa' });
+      const pieces = [
+        { data: buildBinarySTL([...tri(0, 0)]), label: 'bin' },
+        { data: buildBinarySTL([...tri(1, 0)]), label: 'divider-horizontal' },
+        { data: buildBinarySTL([...tri(2, 0)]), label: 'lid' },
+      ];
+      const blob = buildMultiObject3MF(pieces, [], params, 'assembly', PRINT_SETTINGS);
+      const xml = await blobToModelXml(blob);
+      expect(xml).not.toMatch(/\bpaint_color="/);
+      expect(xml).not.toMatch(/<m:colorgroup\b/);
+    });
+
     it('lays the lid out beside the bin in print orientation (bug #4)', async () => {
       // `exportLid` pre-rotates the lid into print orientation (floor faces
       // down → lid sits at negative Z relative to the original mating

@@ -206,8 +206,6 @@ export interface ActiveZonesParams {
   readonly base: { readonly style: BaseStyle; readonly stackingLip: boolean };
   readonly label: { readonly enabled: boolean };
   readonly scoop: { readonly enabled: boolean };
-  /** Persisted lid toggle. Activation also requires a stacking lip and
-   *  the absence of lid blockers — see `lidEffectivelyEnabled` below. */
   readonly lid: { readonly enabled: boolean };
   readonly compartments: {
     readonly cells: readonly number[];
@@ -240,13 +238,9 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   }
   if (p.label.enabled) zones.add('labelTab');
   if (p.scoop.enabled) zones.add('scoop');
-  // Lid mesh only ships when both the toggle and a stacking lip are present
-  // (`shouldGenerateLid` adds a blocker check beyond that; not modelled here
-  // because `ActiveZonesParams` is intentionally a structural subset of
-  // BinParams and the blocker scan needs the full params shape). Catches
-  // the common "user toggled lid without enabling stacking lip" foot-gun
-  // — without this gate the panel would show a Lid color row that never
-  // affects the export.
+  // Lid needs a stacking lip to click into; `shouldGenerateLid` enforces
+  // the same precondition. Without this guard the panel would expose a
+  // Lid color row for a config the worker won't export.
   if (p.lid.enabled && p.base.stackingLip) zones.add('lid');
   if (hasDividers) zones.add('dividers');
   if (hasTabText || hasCutoutText) zones.add('text');
