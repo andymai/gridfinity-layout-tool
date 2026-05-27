@@ -241,6 +241,18 @@ export interface LabelTabConfig {
   readonly depth: number;
   /** Width of each tab as percentage of compartment column width (1-100) */
   readonly width: number;
+  /**
+   * Z position of the shelf TOP above the cavity floor, in mm. When absent
+   * (default), the shelf anchors to the wall top — identical to the original
+   * label-tab behavior. Lowering this value drops the shelf down, creating a
+   * tuck-under pocket between the stacking rim and the shelf (useful for
+   * keeping springy contents from popping out — see issue #1898).
+   *
+   * Bounds enforced by the UI: `[tabDepth + 1, interiorHeight]`. The geometry
+   * layer also guards against degenerate configs (returns null when the
+   * gusset has no room).
+   */
+  readonly height?: number;
   /** Horizontal alignment within each compartment column */
   readonly alignment: LabelTabAlignment;
   /**
