@@ -321,7 +321,7 @@ export function buildMultiObject3MF(
 ): Blob {
   const objects: ThreeMFObject[] = [];
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; runtime guard preserved
-  const multiColorEnabled = params.featureColors?.enabled === true;
+  const multiColorEnabled: boolean = params.featureColors?.enabled ?? false;
   // First piece is the bin (per formatPieceDisplayName + caller convention).
   // Capture its bbox up front so the lid transform can position the lid
   // beside it without needing to know the bin's authored coordinates a
@@ -342,9 +342,7 @@ export function buildMultiObject3MF(
     }
 
     let colorConfig: ThreeMFColorConfig | undefined;
-    /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups is typed non-null, but runtime guard mirrors the single-piece branch as belt-and-suspenders against pipeline shape drift */
     if (i === 0 && multiColorEnabled && faceGroups) {
-      /* eslint-enable @typescript-eslint/no-unnecessary-condition */
       const triangleCount = vertices.length / 9;
       colorConfig =
         buildTriangleMaterialIndices(
