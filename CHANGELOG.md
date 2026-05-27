@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.120.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.2...gridfinity-layout-tool-v4.120.3) (2026-05-27)
+
+
+### Bug Fixes
+
+* **export:** drop BambuStudio identity claim — OrcaSlicer rejects it ([#1887](https://github.com/andymai/gridfinity-layout-tool/issues/1887)) ([692646c](https://github.com/andymai/gridfinity-layout-tool/commit/692646c02fef2920528f20a61255ab133f632c5c))
+
 ## [4.120.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.120.1...gridfinity-layout-tool-v4.120.2) (2026-05-27)
 
 
