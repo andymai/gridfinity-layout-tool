@@ -264,7 +264,7 @@ function buildModelXML(mesh: IndexedMesh, options: ThreeMFOptions): string {
   const objectId = 1;
 
   let xml = openModelElement();
-  xml += buildMetadataXml(options);
+  xml += buildMetadataXml(options, { bambuCompat: !!colorConfig });
   xml += '  <resources>\n';
   xml += buildObjectXml(objectId, options.name, mesh, colorConfig?.triangleMaterialIndices);
   xml += '  </resources>\n';
@@ -314,8 +314,10 @@ function buildMultiObjectModelXML(
     return { ...obj, colorConfig };
   });
 
+  const anyHasColors = resolved.some((obj) => obj.colorConfig !== undefined);
+
   let xml = openModelElement();
-  xml += buildMetadataXml(options);
+  xml += buildMetadataXml(options, { bambuCompat: anyHasColors });
   xml += '  <resources>\n';
 
   const objectIds: number[] = [];
@@ -389,10 +391,31 @@ export const FILAMENT_PAINT_CODES = [
 ] as const;
 const MAX_COLOR_SLOTS = FILAMENT_PAINT_CODES.length;
 
-function buildMetadataXml(options: ThreeMFOptions): string {
+/**
+ * Version string we claim in the `Application` metadata. Must start with
+ * "BambuStudio-" to satisfy BambuStudio's gate (bbs_3mf.cpp:1898-1908) that
+ * decides whether to load our `project_settings.config` sidecar. Choosing
+ * `01.00.00.00` puts us well below any current BambuStudio version so the
+ * file_version <= app_version branch is taken — the slicer doesn't warn
+ * about a "newer 3mf version", and with config_loaded populated by our
+ * filament_colour list the "geometry only" branch is skipped too.
+ *
+ * OrcaSlicer's classifier also keys on this prefix and reclassifies us
+ * from `From_Other` (its silent path) to `From_BBS` — but its warning
+ * branch is also gated on config_loaded.empty(), so we stay silent there.
+ *
+ * PrusaSlicer reads this metadata into a String slot it doesn't act on.
+ */
+const BAMBU_COMPAT_APPLICATION = 'BambuStudio-01.00.00.00';
+
+function buildMetadataXml(options: ThreeMFOptions, flags: { bambuCompat: boolean }): string {
   let xml = `  <metadata name="Title">${escapeXml(options.name)}</metadata>\n`;
   xml += '  <metadata name="Designer">Gridfinity Layout Tool</metadata>\n';
   xml += `  <metadata name="CreationDate">${new Date().toISOString().split('T')[0]}</metadata>\n`;
+  if (flags.bambuCompat) {
+    xml += `  <metadata name="Application">${BAMBU_COMPAT_APPLICATION}</metadata>\n`;
+    xml += '  <metadata name="BambuStudio:3mfVersion">1</metadata>\n';
+  }
   const ps = options.printSettings;
   if (!ps) return xml;
   // 3MF Core §3.7: custom metadata names without a registered namespace prefix

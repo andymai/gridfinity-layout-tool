@@ -652,6 +652,39 @@ describe('threemfExporter', () => {
       );
       expect(unzipSync(buffer)['Metadata/project_settings.config']).toBeUndefined();
     });
+
+    // BambuStudio gates project_settings.config loading on the Application
+    // metadata starting with "BambuStudio-" (bbs_3mf.cpp:1898). Without it,
+    // every sidecar is silently skipped with "already parsed or a directory
+    // or not supported" and the "old version, geometry only" dialog fires.
+    // OrcaSlicer has no such gate but is happy either way.
+    it('claims Application=BambuStudio-* when colorConfig is active', () => {
+      const { vertices, normals } = createTwoTriangles();
+      const buffer = build3MFBuffer(vertices, normals, {
+        name: 'bambu-compat',
+        colorConfig: {
+          materials: [{ color: '#aaaaaa' }, { color: '#ff0000' }],
+          triangleMaterialIndices: [0, 1],
+        },
+      });
+      const model = strFromU8(unzipSync(buffer)['3D/3dmodel.model']);
+      expect(model).toMatch(
+        /<metadata name="Application">BambuStudio-\d+\.\d+\.\d+\.\d+<\/metadata>/
+      );
+      expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
+      // Keep our human-readable identity too — Designer is unrelated to the
+      // BambuStudio gate.
+      expect(model).toContain('<metadata name="Designer">Gridfinity Layout Tool</metadata>');
+    });
+
+    it('omits Application metadata for single-color exports', () => {
+      const { vertices, normals } = createSingleTriangle();
+      const model = strFromU8(
+        unzipSync(build3MFBuffer(vertices, normals, { name: 'plain' }))['3D/3dmodel.model']
+      );
+      expect(model).not.toContain('<metadata name="Application">');
+      expect(model).not.toContain('BambuStudio:3mfVersion');
+    });
   });
 
   describe('multi-object 3MF', () => {
