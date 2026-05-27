@@ -776,7 +776,12 @@ describe('threemfExporter', () => {
       const model = strFromU8(
         unzipSync(build3MFMultiObjectBuffer(objects, { name: 'multi-bambu' }))['3D/3dmodel.model']
       );
-      expect(model).toContain('<metadata name="Application">BambuStudio-');
+      // Pin the safe version range — same regex as the single-object test
+      // so a future bump to e.g. 02.06.x.x doesn't slip through and break
+      // OrcaSlicer's CLI version check.
+      expect(model).toMatch(
+        /<metadata name="Application">BambuStudio-02\.00\.\d+\.\d+<\/metadata>/
+      );
       expect(model).toContain('<metadata name="BambuStudio:3mfVersion">1</metadata>');
     });
 

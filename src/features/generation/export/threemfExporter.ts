@@ -80,15 +80,13 @@ function packageFiles(
     files['Metadata/thumbnail.png'] = thumbnail;
   }
   if (projectSettingsJson) {
-    // OrcaSlicer reads this via `_extract_project_config_from_archive` and
-    // applies `filament_colour` to its AMS slots — so the user opens the
-    // file with the bin's zone palette already pre-filled. BambuStudio
-    // gates the same loader on an "Application=BambuStudio-X.Y.Z" metadata
-    // claim that we deliberately don't make (claiming it caused OrcaSlicer
-    // to reject the file in a version check). Bambu users will see a
-    // dismissible "not from Bambu Lab" dialog and set their AMS palette
-    // manually; paint_color triangle painting still applies because that
-    // lives in the model XML and parses independently of project config.
+    // Both OrcaSlicer and BambuStudio read this via
+    // `_extract_project_config_from_archive` and apply `filament_colour` to
+    // their AMS slots, so the user opens the file with the bin's zone
+    // palette already pre-filled. BambuStudio additionally gates the loader
+    // on an `Application=BambuStudio-X.Y.Z` metadata claim — see
+    // BAMBU_COMPAT_APPLICATION below — without which Bambu silently skips
+    // the sidecar and shows a "not from Bambu Lab" dialog instead.
     files['Metadata/project_settings.config'] = strToU8(projectSettingsJson);
   }
   return zipSync(files, { level: 6 });
@@ -266,9 +264,9 @@ function buildProjectSettingsConfig(palette: readonly string[]): string {
   return JSON.stringify(
     {
       // Headers are advisory — Bambu's load_from_json stores them in a
-      // key_values map but doesn't gate on them. Generic version is fine
-      // since we no longer claim BambuStudio identity.
-      version: '1.0.0.0',
+      // key_values map but doesn't gate on them. Aligned with the Application
+      // metadata version (BAMBU_COMPAT_APPLICATION) for human consistency.
+      version: '2.0.0.0',
       name: 'project_settings',
       from: 'Gridfinity Layout Tool',
 
