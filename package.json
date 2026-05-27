@@ -73,7 +73,7 @@
       "name": "Total JS (gzip)",
       "path": "dist/assets/*.js",
       "gzip": true,
-      "limit": "1600 kB"
+      "limit": "1640 kB"
     }
   ],
   "dependencies": {

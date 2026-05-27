@@ -58,6 +58,10 @@ const LANGUAGE_MAP: Partial<Record<string, Locale>> = {
   sv: 'sv',
   'sv-SE': 'sv',
   'sv-FI': 'sv', // Finland Swedish
+
+  // Japanese
+  ja: 'ja',
+  'ja-JP': 'ja',
 };
 
 /**
