@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { countConnectorKeys } from './connectorKeys';
+import { countConnectorKeys, computeSeamJunctions } from './connectorKeys';
 import { computeBaseplateTiling } from './splitPlanner';
 import type { BaseplateParams } from '@/shared/types/bin';
 
@@ -87,5 +87,57 @@ describe('countConnectorKeys', () => {
       backJoinPieces.reduce((n, p) => n + Math.max(0, Math.ceil(p.widthUnits) - 1), 0);
 
     expect(countConnectorKeys(tiling, params)).toBe(expected);
+  });
+});
+
+describe('computeSeamJunctions', () => {
+  it('returns [] unless bowtie connectors are active', () => {
+    const params = makeParams({ width: 18, depth: 12, connectorNubs: true });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(computeSeamJunctions(tiling, params)).toEqual([]);
+  });
+
+  it('count equals countConnectorKeys (single source of truth)', () => {
+    const params = makeParams({
+      width: 18,
+      depth: 12,
+      connectorNubs: true,
+      connectorStyle: 'bowtie',
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    expect(computeSeamJunctions(tiling, params).length).toBe(countConnectorKeys(tiling, params));
+  });
+
+  it('places junctions in the centered frame, on seam lines, with correct axis', () => {
+    const params = makeParams({
+      width: 18,
+      depth: 12,
+      connectorNubs: true,
+      connectorStyle: 'bowtie',
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    const junctions = computeSeamJunctions(tiling, params);
+    expect(junctions.length).toBeGreaterThan(0);
+
+    const g = params.gridUnitMm;
+    const halfW = (tiling.totalWidthUnits * g) / 2;
+    const halfD = (tiling.totalDepthUnits * g) / 2;
+
+    // Every junction sits inside the centered baseplate bounds.
+    for (const j of junctions) {
+      expect(j.xMm).toBeGreaterThanOrEqual(-halfW);
+      expect(j.xMm).toBeLessThanOrEqual(halfW);
+      expect(j.yMm).toBeGreaterThanOrEqual(-halfD);
+      expect(j.yMm).toBeLessThanOrEqual(halfD);
+    }
+
+    // x-axis junctions lie on a vertical seam: their X is an interior grid line
+    // (a multiple of the grid unit offset from the left edge, not the outer edge).
+    for (const j of junctions.filter((k) => k.axis === 'x')) {
+      const fromLeft = j.xMm + halfW;
+      expect(Math.abs(fromLeft - Math.round(fromLeft / g) * g)).toBeLessThan(1e-6);
+      expect(fromLeft).toBeGreaterThan(0);
+      expect(fromLeft).toBeLessThan(2 * halfW);
+    }
   });
 });

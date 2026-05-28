@@ -1,47 +1,117 @@
 /**
- * Bowtie connector key accounting for split baseplates.
+ * Bowtie connector key accounting + placement for split baseplates.
  *
  * In bowtie mode every join edge is a female groove and a separate, identical
  * key part is hammered into each seam junction. This module is the single
- * source of truth for HOW MANY keys a tiling needs, so the export count and the
- * print guide never disagree.
+ * source of truth for WHERE the keys go (and therefore HOW MANY), so the export
+ * count, the print guide, and the 3D preview never disagree.
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
-import type { BaseplateTiling } from '../types/tiling';
+import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 
 /**
- * Interior cell boundaries along one edge of `units` grid units.
- *
- * Mirrors `decomposeCells()` in the worker's `cellDecomposition.ts`: N full
- * 1u cells plus an optional trailing 0.5u cell, with one boundary between each
- * adjacent pair. Replicated here (rather than imported) to avoid a cross-feature
- * dependency on the generation worker; the count is guarded by a unit test.
+ * One seated bowtie key location, in the same centered world frame the preview
+ * uses for pieces (origin at the baseplate center, +X right, +Y back, mm).
  */
-function interiorBoundaries(units: number): number {
-  const fullCells = Math.floor(units);
-  const hasHalf = units - fullCells >= 0.5 - 1e-10;
-  const cellCount = fullCells + (hasHalf ? 1 : 0);
-  return Math.max(0, cellCount - 1);
+export interface SeamJunction {
+  readonly xMm: number;
+  readonly yMm: number;
+  /**
+   * Orientation of the key's long axis:
+   * - 'x': vertical seam (between left/right pieces) — key spans in X (no rotation).
+   * - 'y': horizontal seam (between front/back pieces) — key rotated 90° about Z.
+   */
+  readonly axis: 'x' | 'y';
 }
 
 /**
- * Number of bowtie connector keys needed to assemble a split baseplate — one
- * per seam junction. Each junction is an interior cell boundary along a join
- * edge. Walk the pieces counting only RIGHT (vertical seams) and BACK
- * (horizontal seams) join edges, so every internal junction is counted exactly
- * once. Valid because the tiling is a strict grid: a vertical seam's two
- * adjacent pieces share the same row depth, so their grooves align.
+ * Interior cell-boundary offsets along one edge of `units` grid units, measured
+ * from the edge's center (mm). Mirrors `decomposeCells` + `computeCellBoundariesMm`
+ * in the worker's `cellDecomposition.ts`: N full 1u cells plus an optional
+ * trailing 0.5u cell, with one boundary between each adjacent pair. The trailing
+ * half-cell flips to the start when `fractionalEdge === 'start'`. Replicated here
+ * (rather than imported) to avoid a cross-feature dependency on the generation
+ * worker; parity is guarded by unit tests.
+ */
+function interiorBoundaryOffsetsMm(
+  units: number,
+  gridUnitMm: number,
+  fractionalEdge: 'start' | 'end' | 'none'
+): number[] {
+  const fullCells = Math.floor(units);
+  const hasHalf = units - fullCells >= 0.5 - 1e-10;
+  const cells: number[] = Array<number>(fullCells).fill(1);
+  if (hasHalf) cells.push(0.5);
+  if (fractionalEdge === 'start') cells.reverse();
+
+  const totalMm = units * gridUnitMm;
+  const offsets: number[] = [];
+  let pos = 0;
+  for (let i = 0; i < cells.length - 1; i++) {
+    pos += cells[i] * gridUnitMm;
+    offsets.push(pos - totalMm / 2);
+  }
+  return offsets;
+}
+
+function isBowtie(params: BaseplateParams): boolean {
+  return params.connectorNubs === true && params.connectorStyle === 'bowtie';
+}
+
+/**
+ * Seated bowtie key locations for a split baseplate. Walk the pieces emitting a
+ * junction for every interior boundary on each RIGHT (vertical seam) and BACK
+ * (horizontal seam) join edge — so every internal seam junction is produced
+ * exactly once. Valid because the tiling is a strict grid: a seam's two adjacent
+ * pieces share the same cross-axis size, so their grooves align.
  *
- * Returns 0 unless bowtie connectors are active.
+ * Coordinates match `SplitBaseplateMeshes` piece centering exactly:
+ *   center = gridOffset * gridUnitMm + pieceSize / 2 - total / 2
+ *
+ * Returns [] unless bowtie connectors are active.
+ */
+export function computeSeamJunctions(
+  tiling: BaseplateTiling,
+  params: BaseplateParams
+): SeamJunction[] {
+  if (!isBowtie(params)) return [];
+
+  const g = params.gridUnitMm;
+  const totalWmm = tiling.totalWidthUnits * g;
+  const totalDmm = tiling.totalDepthUnits * g;
+  const junctions: SeamJunction[] = [];
+
+  const fracX = (p: BaseplatePiece): 'start' | 'end' | 'none' => p.fractionalEdgeX;
+  const fracY = (p: BaseplatePiece): 'start' | 'end' | 'none' => p.fractionalEdgeY;
+
+  for (const piece of tiling.pieces) {
+    const pieceWmm = piece.widthUnits * g;
+    const pieceDmm = piece.depthUnits * g;
+    const centerX = piece.gridOffsetX * g + pieceWmm / 2 - totalWmm / 2;
+    const centerY = piece.gridOffsetY * g + pieceDmm / 2 - totalDmm / 2;
+
+    if (piece.edges.right === 'join') {
+      const seamX = piece.gridOffsetX * g + pieceWmm - totalWmm / 2;
+      for (const off of interiorBoundaryOffsetsMm(piece.depthUnits, g, fracY(piece))) {
+        junctions.push({ xMm: seamX, yMm: centerY + off, axis: 'x' });
+      }
+    }
+    if (piece.edges.back === 'join') {
+      const seamY = piece.gridOffsetY * g + pieceDmm - totalDmm / 2;
+      for (const off of interiorBoundaryOffsetsMm(piece.widthUnits, g, fracX(piece))) {
+        junctions.push({ xMm: centerX + off, yMm: seamY, axis: 'y' });
+      }
+    }
+  }
+  return junctions;
+}
+
+/**
+ * Number of bowtie connector keys a split baseplate needs — one per seam
+ * junction. Derived from {@link computeSeamJunctions} so the count and the
+ * placements can never diverge. Returns 0 unless bowtie connectors are active.
  */
 export function countConnectorKeys(tiling: BaseplateTiling, params: BaseplateParams): number {
-  if (!params.connectorNubs || params.connectorStyle !== 'bowtie') return 0;
-
-  let count = 0;
-  for (const piece of tiling.pieces) {
-    if (piece.edges.right === 'join') count += interiorBoundaries(piece.depthUnits);
-    if (piece.edges.back === 'join') count += interiorBoundaries(piece.widthUnits);
-  }
-  return count;
+  return computeSeamJunctions(tiling, params).length;
 }
