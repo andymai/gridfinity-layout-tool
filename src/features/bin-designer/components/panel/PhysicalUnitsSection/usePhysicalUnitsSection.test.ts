@@ -3,13 +3,11 @@ import { renderHook, act } from '@testing-library/react';
 import { usePhysicalUnitsSection } from './usePhysicalUnitsSection';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store';
+import { resetAllStores } from '@/test/testUtils';
 
 describe('usePhysicalUnitsSection', () => {
   beforeEach(() => {
-    // Reset layout store to defaults (gridUnitMm: 42, heightUnitMm: 7)
-    const state = useLayoutStore.getState();
-    state.setGridUnitMm(42);
-    state.setHeightUnitMm(7);
+    resetAllStores();
   });
 
   it('returns grid and height unit values from layout store', () => {
