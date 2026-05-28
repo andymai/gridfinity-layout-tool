@@ -61,6 +61,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
     stackingLip,
     labelEnabled,
     scoopEnabled,
+    lidEnabled,
     cells,
     hoveredColorZone,
     colorTool,
@@ -78,6 +79,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
       stackingLip: s.params.base.stackingLip,
       labelEnabled: s.params.label.enabled,
       scoopEnabled: s.params.scoop.enabled,
+      lidEnabled: s.params.lid.enabled,
       cells: s.params.compartments.cells,
       hoveredColorZone: s.ui.hoveredColorZone,
       colorTool: s.ui.colorTool,
@@ -93,9 +95,10 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
         base: { style: baseStyle, stackingLip },
         label: { enabled: labelEnabled },
         scoop: { enabled: scoopEnabled },
+        lid: { enabled: lidEnabled },
         compartments: { cells },
       }),
-    [baseStyle, stackingLip, labelEnabled, scoopEnabled, cells]
+    [baseStyle, stackingLip, labelEnabled, scoopEnabled, lidEnabled, cells]
   );
 
   // Build multi-color groups when feature is active

@@ -388,6 +388,7 @@ describe('migrateParams', () => {
       scoop: '#d4d8dc',
       dividers: '#d4d8dc',
       text: '#d4d8dc',
+      lid: '#d4d8dc',
     });
   });
 
@@ -407,6 +408,54 @@ describe('migrateParams', () => {
     // Legacy design had diverged colors but no `enabled` field — back-fill to true
     // so its multi-color look is preserved post-migration.
     expect(result.featureColors.enabled).toBe(true);
+  });
+
+  it('canonicalizes mismatched lip corners to frontLeft on load (bug #3)', () => {
+    // The per-corner lip editor was rolled back to a single picker that
+    // mirrors hex into all four slots. Designs saved while the per-corner
+    // editor was live can land with mismatched corners — the picker shows
+    // frontLeft but the 3D preview and 3MF exporter both classify lip
+    // triangles per quadrant and honor the mismatch, producing slicer
+    // output that doesn't match what the picker displays. Canonicalize
+    // to frontLeft on load.
+    const mismatched = {
+      enabled: true,
+      body: '#222222',
+      lip: {
+        frontLeft: '#ff00ff',
+        frontRight: '#00ff00',
+        backRight: '#0000ff',
+        backLeft: '#ffff00',
+      },
+      labelTab: '#222222',
+    };
+    const result = migrateParams({ featureColors: mismatched });
+    expect(result.featureColors.lip).toEqual({
+      frontLeft: '#ff00ff',
+      frontRight: '#ff00ff',
+      backRight: '#ff00ff',
+      backLeft: '#ff00ff',
+    });
+  });
+
+  it('preserves lip corners when they already match (no spurious mutation)', () => {
+    const matched = {
+      enabled: true,
+      body: '#222222',
+      lip: {
+        frontLeft: '#ff0000',
+        frontRight: '#ff0000',
+        backRight: '#ff0000',
+        backLeft: '#ff0000',
+      },
+    };
+    const result = migrateParams({ featureColors: matched });
+    expect(result.featureColors.lip).toEqual({
+      frontLeft: '#ff0000',
+      frontRight: '#ff0000',
+      backRight: '#ff0000',
+      backLeft: '#ff0000',
+    });
   });
 
   it('expands the legacy single-color lip into four matching corners', () => {
@@ -457,6 +506,7 @@ describe('migrateParams', () => {
       // Text zone was added in v4.109. Old payloads default to inheriting the
       // label-tab color so single-color users see no shift on migrate.
       text: '#22c55e',
+      lid: '#22c55e',
     };
     const firstPass = migrateParams({ featureColors: hex });
     const secondPass = migrateParams(firstPass);

@@ -57,6 +57,7 @@ export function ColorsSection() {
     stackingLip,
     labelEnabled,
     scoopEnabled,
+    lidEnabled,
     cells,
     colorTool,
   } = useDesignerStore(
@@ -66,6 +67,7 @@ export function ColorsSection() {
       stackingLip: s.params.base.stackingLip,
       labelEnabled: s.params.label.enabled,
       scoopEnabled: s.params.scoop.enabled,
+      lidEnabled: s.params.lid.enabled,
       cells: s.params.compartments.cells,
       colorTool: s.ui.colorTool,
     }))
@@ -81,15 +83,17 @@ export function ColorsSection() {
         base: { style: baseStyle, stackingLip },
         label: { enabled: labelEnabled },
         scoop: { enabled: scoopEnabled },
+        lid: { enabled: lidEnabled },
         compartments: { cells },
       }),
-    [baseStyle, stackingLip, labelEnabled, scoopEnabled, cells]
+    [baseStyle, stackingLip, labelEnabled, scoopEnabled, lidEnabled, cells]
   );
   const hasLip = activeZones.has('lip:frontLeft');
   const hasLabelTabs = activeZones.has('labelTab');
   const hasBase = activeZones.has('base');
   const hasScoop = activeZones.has('scoop');
   const hasDividers = activeZones.has('dividers');
+  const hasLid = activeZones.has('lid');
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it; preserve the runtime fallback
   const featureColors: FeatureColorConfig = rawColors ?? DEFAULT_FEATURE_COLOR_CONFIG;
@@ -128,14 +132,15 @@ export function ColorsSection() {
     if (hasLabelTabs) map.set('labelTab', featureColors.labelTab);
     if (hasScoop) map.set('scoop', featureColors.scoop);
     if (hasDividers) map.set('dividers', featureColors.dividers);
+    if (hasLid) map.set('lid', featureColors.lid);
     return map;
-  }, [featureColors, hasBase, hasLip, hasLabelTabs, hasScoop, hasDividers]);
+  }, [featureColors, hasBase, hasLip, hasLabelTabs, hasScoop, hasDividers, hasLid]);
 
   // Bump a tick whenever a group's visible-zone count grows. ColorGroup
   // auto-opens on each tick change so a newly-enabled feature is never
   // trapped behind a stale collapsed header.
   const interiorCount = (hasScoop ? 1 : 0) + (hasDividers ? 1 : 0);
-  const addonsCount = hasLabelTabs ? 1 : 0;
+  const addonsCount = (hasLabelTabs ? 1 : 0) + (hasLid ? 1 : 0);
   const [interiorGrowthTick, setInteriorGrowthTick] = useState(0);
   const [addonsGrowthTick, setAddonsGrowthTick] = useState(0);
   const prevInteriorCountRef = useRef(interiorCount);
@@ -364,7 +369,7 @@ export function ColorsSection() {
 
           <ColorGroup
             title={t('binDesigner.colors.group.addons')}
-            visible={hasLabelTabs}
+            visible={hasLabelTabs || hasLid}
             growthTick={addonsGrowthTick}
           >
             {hasLabelTabs &&
@@ -374,6 +379,14 @@ export function ColorsSection() {
                 featureColors.labelTab,
                 DEFAULT_FEATURE_COLOR_CONFIG.labelTab,
                 (hex) => updateFeatureColors({ labelTab: hex })
+              )}
+            {hasLid &&
+              renderZone(
+                'lid',
+                t('binDesigner.colors.lid'),
+                featureColors.lid,
+                DEFAULT_FEATURE_COLOR_CONFIG.lid,
+                (hex) => updateFeatureColors({ lid: hex })
               )}
           </ColorGroup>
         </>

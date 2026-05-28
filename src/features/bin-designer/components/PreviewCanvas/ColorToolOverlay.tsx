@@ -41,6 +41,8 @@ function defaultForZone(zone: ColorZone): string {
       return DEFAULT_FEATURE_COLOR_CONFIG.dividers;
     case 'text':
       return DEFAULT_FEATURE_COLOR_CONFIG.text;
+    case 'lid':
+      return DEFAULT_FEATURE_COLOR_CONFIG.lid;
     case 'lip:frontLeft':
       return DEFAULT_FEATURE_COLOR_CONFIG.lip.frontLeft;
     case 'lip:frontRight':
@@ -69,6 +71,7 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
     stackingLip,
     labelEnabled,
     scoopEnabled,
+    lidEnabled,
     cells,
     setColorTool,
     updateFeatureColors,
@@ -85,6 +88,7 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
       stackingLip: s.params.base.stackingLip,
       labelEnabled: s.params.label.enabled,
       scoopEnabled: s.params.scoop.enabled,
+      lidEnabled: s.params.lid.enabled,
       cells: s.params.compartments.cells,
       setColorTool: s.setColorTool,
       updateFeatureColors: s.updateFeatureColors,
@@ -123,9 +127,10 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
         base: { style: baseStyle, stackingLip },
         label: { enabled: labelEnabled },
         scoop: { enabled: scoopEnabled },
+        lid: { enabled: lidEnabled },
         compartments: { cells },
       }),
-    [baseStyle, stackingLip, labelEnabled, scoopEnabled, cells]
+    [baseStyle, stackingLip, labelEnabled, scoopEnabled, lidEnabled, cells]
   );
 
   const otherColors = useMemo(() => {

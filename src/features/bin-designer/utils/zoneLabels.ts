@@ -30,6 +30,8 @@ export function zoneTranslationKey(zone: ColorZone): string {
       return 'binDesigner.colors.zone.dividers';
     case 'text':
       return 'binDesigner.colors.zone.text';
+    case 'lid':
+      return 'binDesigner.colors.zone.lid';
   }
 }
 
@@ -41,6 +43,7 @@ export type ZoneColorPatch =
   | { scoop: string }
   | { dividers: string }
   | { text: string }
+  | { lid: string }
   | { lip: Partial<FeatureColorConfig['lip']> };
 
 /**
@@ -66,6 +69,8 @@ export function zoneColorPatch(zone: ColorZone, hex: string): ZoneColorPatch {
       return { dividers: hex };
     case 'text':
       return { text: hex };
+    case 'lid':
+      return { lid: hex };
     case 'lip:frontLeft':
     case 'lip:frontRight':
     case 'lip:backRight':

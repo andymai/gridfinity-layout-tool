@@ -20,6 +20,7 @@ import type {
   SplitConnectorConfig,
 } from '../types';
 import type { FeatureColorConfig } from '../types/featureColors';
+import { normalizeHex } from '../types/featureColors';
 import type { LidConfig } from '../types/lid';
 import { DEFAULT_LID_CONFIG, LID_CLICK_RAIL_COVERAGE_OPTIONS } from '../types/lid';
 import type { LidClickRails } from '../types/lid';
@@ -168,6 +169,7 @@ export const DEFAULT_FEATURE_COLOR_CONFIG: FeatureColorConfig = {
   scoop: '#d4d8dc',
   dividers: '#d4d8dc',
   text: '#d4d8dc',
+  lid: '#d4d8dc',
 } as const;
 
 interface LegacyFeatureColorInput {
@@ -180,6 +182,7 @@ interface LegacyFeatureColorInput {
   scoop?: string;
   dividers?: string;
   text?: string;
+  lid?: string;
 }
 
 function resolveColor(raw: string | undefined, fallback: string): string {
@@ -207,12 +210,23 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
     const single = resolveColor(raw.lip, body);
     lip = { frontLeft: single, frontRight: single, backRight: single, backLeft: single };
   } else if (raw.lip && typeof raw.lip === 'object') {
-    lip = {
-      frontLeft: raw.lip.frontLeft ?? body,
-      frontRight: raw.lip.frontRight ?? body,
-      backRight: raw.lip.backRight ?? body,
-      backLeft: raw.lip.backLeft ?? body,
-    };
+    const fl = raw.lip.frontLeft ?? body;
+    const fr = raw.lip.frontRight ?? body;
+    const br = raw.lip.backRight ?? body;
+    const bl = raw.lip.backLeft ?? body;
+    // The per-corner editor is rolled back to a single picker (mirrors
+    // hex into all four slots). Designs saved with mismatched corners
+    // become unreachable from the UI but the 3D preview + 3MF exporter
+    // still honor the mismatch — canonicalize to `frontLeft` so all
+    // three surfaces agree (discussion #1654 bug #3).
+    const normalizedFl = normalizeHex(fl);
+    const allMatch =
+      normalizedFl === normalizeHex(fr) &&
+      normalizedFl === normalizeHex(br) &&
+      normalizedFl === normalizeHex(bl);
+    lip = allMatch
+      ? { frontLeft: fl, frontRight: fr, backRight: br, backLeft: bl }
+      : { frontLeft: fl, frontRight: fl, backRight: fl, backLeft: fl };
   } else {
     lip = { frontLeft: body, frontRight: body, backRight: body, backLeft: body };
   }
@@ -223,6 +237,7 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
   // Text defaults to the label-tab color so single-color designs see no shift
   // when this field is added by migration.
   const text = resolveColor(raw.text, labelTab);
+  const lid = resolveColor(raw.lid, body);
 
   // Pre-`enabled` design counts as multi-color if body or any zone diverges
   // from the default — zone editors only existed behind the old Labs flag, so
@@ -231,7 +246,7 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
   const isCustom = (c: string): boolean => c.toLowerCase() !== bodyLower;
   const hasCustomColor =
     bodyLower !== DEFAULT_FEATURE_COLOR_CONFIG.body.toLowerCase() ||
-    [labelTab, base, scoop, dividers, text].some(isCustom) ||
+    [labelTab, base, scoop, dividers, text, lid].some(isCustom) ||
     [lip.frontLeft, lip.frontRight, lip.backRight, lip.backLeft].some(isCustom);
 
   return {
@@ -243,6 +258,7 @@ function migrateFeatureColors(raw: LegacyFeatureColorInput | undefined): Feature
     scoop,
     dividers,
     text,
+    lid,
   };
 }
 

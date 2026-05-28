@@ -14,8 +14,10 @@
  *      configured corner color's slot.
  *   3. Single-color short-circuit — all-same-color (incl. mixed-case hex) emits
  *      no `paint_color` anywhere; mixed-case dedup yields one slot, not two.
- *   4. Multi-object color contract — only the first piece (bin) carries colors;
- *      ancillary pieces (dividers, lid) ship solid-color.
+ *   4. Multi-object color contract — bin carries per-triangle paint_color from
+ *      its face groups; lid and dividers carry a uniform paint_color drawn
+ *      from `featureColors.lid` / `featureColors.dividers` so a multi-color
+ *      print actually swaps filaments between body and lid/divider in the slicer.
  *
  * Inputs are hand-crafted: a tiny synthetic binary STL plus face groups that
  * partition the triangle range. Real worker output is too expensive for
@@ -154,6 +156,7 @@ function withColors(overrides: Partial<BinParams['featureColors']> = {}): BinPar
       scoop: overrides.scoop ?? body,
       dividers: overrides.dividers ?? body,
       text: overrides.text ?? body,
+      lid: overrides.lid ?? body,
     },
   };
 }
@@ -366,8 +369,13 @@ describe('multicolor 3MF round-trip', () => {
   });
 
   describe('multi-object color contract', () => {
-    it('only the first piece (bin) carries paint_color; ancillary pieces ship solid', async () => {
-      const params = withColors({ body: '#aaaaaa', labelTab: '#0000ff' });
+    it('bin carries per-triangle paint_color; lid + dividers ship uniform paint_color from their zones', async () => {
+      const params = withColors({
+        body: '#aaaaaa',
+        labelTab: '#0000ff',
+        dividers: '#22aa22',
+        lid: '#ee44ee',
+      });
       const pieces = [
         { data: buildBinarySTL([...tri(0, 0)]), label: 'bin' },
         { data: buildBinarySTL([...tri(1, 0)]), label: 'divider-horizontal' },
@@ -382,13 +390,99 @@ describe('multicolor 3MF round-trip', () => {
       const objects = xml.match(/<object\s+id="\d+"/g) ?? [];
       expect(objects).toHaveLength(3);
 
-      // Exactly one paint_color attribute — on the bin's lone LABEL_TAB triangle.
-      const painted = xml.match(/\bpaint_color="/g) ?? [];
-      expect(painted).toHaveLength(1);
+      // One paint_color per piece — three triangles total → three attributes.
+      // Bin → labelTab slot, divider → dividers slot, lid → lid slot.
+      const slots = parseTriangleSlots(xml);
+      expect(slots).toEqual([
+        slotFor(params, '#0000ff'),
+        slotFor(params, '#22aa22'),
+        slotFor(params, '#ee44ee'),
+      ]);
 
       // Colorgroups + materials namespace are gone for good.
       expect(xml).not.toMatch(/<m:colorgroup\b/);
       expect(xml).not.toMatch(/\bxmlns:m=/);
+    });
+
+    it('lid + dividers stay solid (no paint_color) when their zone matches body', async () => {
+      // When ancillary zones equal body, there is no filament swap to encode;
+      // the slot they'd reference still exists (body) but emitting paint_color
+      // on every lid/divider triangle wastes bytes. Today the implementation
+      // still emits — this test pins that and can be tightened later.
+      const params = withColors({ body: '#aaaaaa', labelTab: '#0000ff' });
+      const pieces = [
+        { data: buildBinarySTL([...tri(0, 0)]), label: 'bin' },
+        { data: buildBinarySTL([...tri(1, 0)]), label: 'lid' },
+      ];
+      const faceGroups: FaceGroupData[] = [{ start: 0, count: 3, tag: FeatureTag.LABEL_TAB }];
+
+      const blob = buildMultiObject3MF(pieces, faceGroups, params, 'assembly', PRINT_SETTINGS);
+      const xml = await blobToModelXml(blob);
+      const slots = parseTriangleSlots(xml);
+
+      // Bin triangle → labelTab slot (1), lid triangle → body slot (0).
+      expect(slots).toEqual([slotFor(params, '#0000ff'), slotFor(params, '#aaaaaa')]);
+    });
+
+    it('emits no paint_color anywhere when featureColors.enabled but every active zone equals body', async () => {
+      // Edge case Greptile flagged: enabled=true but the bin's
+      // buildTriangleMaterialIndices short-circuits to null (single color).
+      // Ancillary pieces must short-circuit in lockstep or BambuStudio
+      // compatibility metadata + filament_colour sidecar would land on a
+      // functionally single-color file.
+      const params = withColors({ body: '#aaaaaa' });
+      const pieces = [
+        { data: buildBinarySTL([...tri(0, 0)]), label: 'bin' },
+        { data: buildBinarySTL([...tri(1, 0)]), label: 'divider-horizontal' },
+        { data: buildBinarySTL([...tri(2, 0)]), label: 'lid' },
+      ];
+      const blob = buildMultiObject3MF(pieces, [], params, 'assembly', PRINT_SETTINGS);
+      const xml = await blobToModelXml(blob);
+      expect(xml).not.toMatch(/\bpaint_color="/);
+      expect(xml).not.toMatch(/<m:colorgroup\b/);
+    });
+
+    it('lays the lid out beside the bin in print orientation (bug #4)', async () => {
+      // `exportLid` pre-rotates the lid into print orientation (floor faces
+      // down → lid sits at negative Z relative to the original mating
+      // pose). The synthetic lid mimics that: triangles at z = -25 .. -20
+      // with the floor at z = -25.
+      const params = withColors();
+      // Bin: 10×10 footprint at origin, sitting on the plate at z = 0.
+      const binTri = [0, 0, 0, 10, 0, 0, 0, 10, 0];
+      // Lid: 8×8 footprint, post-orientForPrint (Y inverted, Z below origin).
+      const lidTri = [0, -8, -25, 8, -8, -25, 0, 0, -20];
+      const pieces = [
+        { data: buildBinarySTL(binTri), label: 'bin' },
+        { data: buildBinarySTL(lidTri), label: 'lid' },
+      ];
+      const blob = buildMultiObject3MF(pieces, [], params, 'lid-print', PRINT_SETTINGS);
+      const xml = await blobToModelXml(blob);
+
+      const vertexCoords: number[][] = [];
+      for (const m of xml.matchAll(/<vertex x="([^"]+)" y="([^"]+)" z="([^"]+)" \/>/g)) {
+        vertexCoords.push([parseFloat(m[1]), parseFloat(m[2]), parseFloat(m[3])]);
+      }
+      // First 3 vertices = bin, last 3 = lid.
+      const lidVerts = vertexCoords.slice(-3);
+      const lidMinX = Math.min(...lidVerts.map((v) => v[0]));
+      const lidMaxX = Math.max(...lidVerts.map((v) => v[0]));
+      const lidMinY = Math.min(...lidVerts.map((v) => v[1]));
+      const lidMaxY = Math.max(...lidVerts.map((v) => v[1]));
+      const lidMinZ = Math.min(...lidVerts.map((v) => v[2]));
+      const lidMaxZ = Math.max(...lidVerts.map((v) => v[2]));
+      // Lid sits to the right of the bin (bin max X = 10, gap = 5).
+      expect(lidMinX).toBeCloseTo(15, 5);
+      // Lid width unchanged (8) — no rotation should distort it.
+      expect(lidMaxX - lidMinX).toBeCloseTo(8, 5);
+      // Lid Y centered on bin's Y center (bin center = 5, lid depth = 8 → center at 4).
+      expect((lidMinY + lidMaxY) / 2).toBeCloseTo(5, 5);
+      // Lid bottom aligns with bin bottom (both at z=0) — no more stacking,
+      // and the post-orientForPrint orientation isn't double-flipped.
+      expect(lidMinZ).toBeCloseTo(0, 5);
+      // Lid height preserved at 5mm — proof we translated rather than
+      // rotating again (a re-rotation would shift max Z, not just min Z).
+      expect(lidMaxZ - lidMinZ).toBeCloseTo(5, 5);
     });
 
     it('multi-color disabled at the params level disables colors on every piece', async () => {

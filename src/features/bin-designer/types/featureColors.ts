@@ -48,6 +48,13 @@ export interface FeatureColorConfig {
    * multi-material printers can paint a contrasting filament here.
    */
   readonly text: string;
+  /**
+   * Click-lock lid (separate `<object>` in the 3MF). Lid has no FeatureTag
+   * inside the bin mesh — it's classified by piece label at the 3MF assembly
+   * step, not by per-triangle face groups. Defaults to body color so
+   * single-color users see no change.
+   */
+  readonly lid: string;
 }
 
 /**
@@ -67,7 +74,8 @@ export type ColorZone =
   | 'base'
   | 'scoop'
   | 'dividers'
-  | 'text';
+  | 'text'
+  | 'lid';
 
 /** Hover target — accepts every ColorZone plus the lip group header. */
 export type HoverableZone = ColorZone | 'lip';
@@ -88,6 +96,7 @@ export const ZONE_ORDER: readonly ColorZone[] = [
   'scoop',
   'dividers',
   'text',
+  'lid',
 ] as const;
 
 /** Position of a zone in ZONE_ORDER. */
@@ -109,6 +118,8 @@ export function getZoneColor(c: FeatureColorConfig, z: ColorZone): string {
       return c.dividers;
     case 'text':
       return c.text;
+    case 'lid':
+      return c.lid;
     case 'lip:frontLeft':
       return c.lip.frontLeft;
     case 'lip:frontRight':
@@ -195,6 +206,7 @@ export interface ActiveZonesParams {
   readonly base: { readonly style: BaseStyle; readonly stackingLip: boolean };
   readonly label: { readonly enabled: boolean };
   readonly scoop: { readonly enabled: boolean };
+  readonly lid: { readonly enabled: boolean };
   readonly compartments: {
     readonly cells: readonly number[];
     readonly compartmentTexts?: readonly string[];
@@ -226,6 +238,10 @@ export function computeActiveZones(p: ActiveZonesParams): ReadonlySet<ColorZone>
   }
   if (p.label.enabled) zones.add('labelTab');
   if (p.scoop.enabled) zones.add('scoop');
+  // Lid needs a stacking lip to click into; `shouldGenerateLid` enforces
+  // the same precondition. Without this guard the panel would expose a
+  // Lid color row for a config the worker won't export.
+  if (p.lid.enabled && p.base.stackingLip) zones.add('lid');
   if (hasDividers) zones.add('dividers');
   if (hasTabText || hasCutoutText) zones.add('text');
   return zones;

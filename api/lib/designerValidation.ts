@@ -567,6 +567,7 @@ const ALLOWED_FEATURE_COLOR_KEYS = new Set([
   'scoop',
   'dividers',
   'text',
+  'lid',
 ]);
 const ALLOWED_LIP_CORNER_KEYS = new Set<string>(LIP_CORNERS);
 
@@ -589,7 +590,7 @@ function validateFeatureColors(value: unknown): string | null {
     return 'featureColors.enabled must be boolean';
   }
 
-  for (const key of ['body', 'labelTab', 'base', 'scoop', 'dividers', 'text'] as const) {
+  for (const key of ['body', 'labelTab', 'base', 'scoop', 'dividers', 'text', 'lid'] as const) {
     if (value[key] !== undefined && !isValidColor(value[key])) {
       return `featureColors.${key} must be a hex color`;
     }

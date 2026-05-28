@@ -22,7 +22,13 @@ import type {
 } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/features/bin-designer/utils/stlParser';
 import { buildTriangleMaterialIndices } from '@/features/bin-designer/utils/materialMapping';
-import { computeActiveZones } from '@/features/bin-designer/types/featureColors';
+import {
+  computeActiveZones,
+  getZoneColor,
+  normalizeHex,
+  resolveColorMapping,
+} from '@/features/bin-designer/types/featureColors';
+import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { FORMAT_MIME_TYPES } from '@/shared/generation/exportUtils';
 import type { BinParams, ExportFileFormat } from '@/features/bin-designer/types';
@@ -178,11 +184,99 @@ export function buildSinglePiece3MF(
   });
 }
 
+/** Map ancillary piece label → the ColorZone whose color paints the piece. */
+function pieceZone(label: string): ColorZone | null {
+  if (label === 'lid') return 'lid';
+  if (label === 'divider-horizontal' || label === 'divider-vertical') return 'dividers';
+  return null;
+}
+
+/** Bounding box of a flat [x,y,z,x,y,z,...] STL vertex array. */
+interface FlatBBox {
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+  readonly minZ: number;
+  readonly maxZ: number;
+}
+function flatBBox(vertices: Float32Array): FlatBBox {
+  let minX = Infinity,
+    maxX = -Infinity;
+  let minY = Infinity,
+    maxY = -Infinity;
+  let minZ = Infinity,
+    maxZ = -Infinity;
+  for (let i = 0; i < vertices.length; i += 3) {
+    const x = vertices[i];
+    const y = vertices[i + 1];
+    const z = vertices[i + 2];
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+    if (z < minZ) minZ = z;
+    if (z > maxZ) maxZ = z;
+  }
+  return { minX, maxX, minY, maxY, minZ, maxZ };
+}
+
+const PRINT_LAYOUT_GAP_MM = 5;
+
+/**
+ * Reposition the lid beside the bin. The lid arrives already in print
+ * orientation — `exportLid` applies `orientForPrint` for every non-STEP
+ * format — so this only does the layout: align floors, center the lid's
+ * Y on the bin's, and slide it `PRINT_LAYOUT_GAP_MM` right of the bin so
+ * the unified centering in `build3MFMultiObjectBuffer` doesn't land them
+ * stacked at the same XY (discussion #1654 bug #4). Rotating again would
+ * double-flip back into mating orientation.
+ */
+function transformLidForPrint(
+  lidVertices: Float32Array,
+  lidNormals: Float32Array,
+  binBBox: FlatBBox
+): { vertices: Float32Array; normals: Float32Array } {
+  const lidBBox = flatBBox(lidVertices);
+  const binCy = (binBBox.minY + binBBox.maxY) / 2;
+  const lidCy = (lidBBox.minY + lidBBox.maxY) / 2;
+  const tx = binBBox.maxX + PRINT_LAYOUT_GAP_MM - lidBBox.minX;
+  const ty = binCy - lidCy;
+  const tz = binBBox.minZ - lidBBox.minZ;
+
+  const v = new Float32Array(lidVertices.length);
+  for (let i = 0; i < lidVertices.length; i += 3) {
+    v[i] = lidVertices[i] + tx;
+    v[i + 1] = lidVertices[i + 1] + ty;
+    v[i + 2] = lidVertices[i + 2] + tz;
+  }
+  return { vertices: v, normals: lidNormals };
+}
+
+/**
+ * Build a uniform-color colorConfig for an ancillary piece (lid or divider).
+ * Materials match the bin's palette so `unifiedPalette`'s same-materials
+ * invariant holds across all objects in the 3MF.
+ */
+function uniformColorConfig(
+  zone: ColorZone,
+  featureColors: BinParams['featureColors'],
+  triangleCount: number
+): ThreeMFColorConfig {
+  const { colors, colorToIndex } = resolveColorMapping(featureColors);
+  const slot = colorToIndex.get(normalizeHex(getZoneColor(featureColors, zone))) ?? 0;
+  return {
+    materials: colors.map((c) => ({ color: c })),
+    triangleMaterialIndices: new Array(triangleCount).fill(slot),
+  };
+}
+
 /**
  * Convert a multi-piece combined export into a single 3MF Blob with named
- * objects. The first piece (bin) gets multi-color material indices; companion
- * pieces (dividers, lid) ship as solid-color. This mirrors the previous
- * inline behaviour in `useExport.ts`.
+ * objects. The first piece (bin) gets per-triangle multi-color material
+ * indices; the lid and dividers ship with a uniform color slot drawn from
+ * `featureColors.lid` / `featureColors.dividers` so a multi-color print
+ * actually swaps filaments between body and lid/divider in the slicer.
  */
 export function buildMultiObject3MF(
   pieces: CombinedExportResult['pieces'],
@@ -192,6 +286,14 @@ export function buildMultiObject3MF(
   threeMFPrintSettings: ThreeMFPrintSettings
 ): Blob {
   const objects: ThreeMFObject[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors typed required but legacy persisted configs may omit it; runtime guard preserved
+  const multiColorEnabled: boolean = params.featureColors?.enabled ?? false;
+  let binBBox: FlatBBox | null = null;
+  // Bin short-circuits to single-color when every active zone matches body;
+  // ancillary pieces must stay in lockstep or `anyHasColors` in
+  // `build3MFMultiObjectBuffer` would emit Bambu metadata for a file that
+  // is functionally single-color.
+  let binHasColorConfig = false;
   for (let i = 0; i < pieces.length; i++) {
     const piece = pieces[i];
     const parseResult = parseSTLBinary(piece.data);
@@ -199,24 +301,36 @@ export function buildMultiObject3MF(
       throw new Error(getUserMessage(parseResult.error));
     }
 
+    let { vertices, normals } = parseResult.value;
+    if (i === 0) {
+      binBBox = flatBBox(vertices);
+    } else if (piece.label === 'lid' && binBBox !== null) {
+      ({ vertices, normals } = transformLidForPrint(vertices, normals, binBBox));
+    }
+
     let colorConfig: ThreeMFColorConfig | undefined;
-    /* eslint-disable @typescript-eslint/no-unnecessary-condition -- faceGroups is typed non-null, but runtime guard mirrors the single-piece branch as belt-and-suspenders against pipeline shape drift */
-    if (i === 0 && params.featureColors?.enabled && faceGroups) {
-      /* eslint-enable @typescript-eslint/no-unnecessary-condition */
-      const triangleCount = parseResult.value.vertices.length / 9;
+    if (i === 0 && multiColorEnabled && faceGroups) {
+      const triangleCount = vertices.length / 9;
       colorConfig =
         buildTriangleMaterialIndices(
           faceGroups,
           params.featureColors,
           triangleCount,
-          parseResult.value.vertices,
+          vertices,
           computeActiveZones(params)
         ) ?? undefined;
+      binHasColorConfig = colorConfig !== undefined;
+    } else if (i > 0 && multiColorEnabled && binHasColorConfig) {
+      const zone = pieceZone(piece.label);
+      if (zone !== null) {
+        const triangleCount = vertices.length / 9;
+        colorConfig = uniformColorConfig(zone, params.featureColors, triangleCount);
+      }
     }
 
     objects.push({
-      vertices: parseResult.value.vertices,
-      normals: parseResult.value.normals,
+      vertices,
+      normals,
       name: formatPieceDisplayName(piece.label, params),
       colorConfig,
     });
