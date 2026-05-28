@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.123.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.0...gridfinity-layout-tool-v4.123.1) (2026-05-28)
+
+
+### Bug Fixes
+
+* **split-bin:** cut stacking lip with wall cutouts ([#1908](https://github.com/andymai/gridfinity-layout-tool/issues/1908)) ([5c041ff](https://github.com/andymai/gridfinity-layout-tool/commit/5c041ffd679d3f24619783c8dddd31630b2562d1))
+
 ## [4.123.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.122.0...gridfinity-layout-tool-v4.123.0) (2026-05-28)
 
 
