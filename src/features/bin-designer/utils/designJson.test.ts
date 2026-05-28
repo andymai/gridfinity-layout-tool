@@ -4,10 +4,11 @@ import {
   exportDesignJSON,
   downloadDesignAsFile,
   parseDesignJSON,
-  validateBinParams,
+  validateImportedBinParams,
 } from './designJson';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams } from '../types';
+import { testT as t } from '@/test/i18nTestUtils';
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
@@ -108,7 +109,7 @@ describe('downloadDesignAsFile', () => {
 describe('parseDesignJSON', () => {
   it('should parse valid design JSON', () => {
     const json = exportDesignJSON('Test Bin', DEFAULT_BIN_PARAMS);
-    const result = parseDesignJSON(json);
+    const result = parseDesignJSON(json, t);
 
     expect(result.design).not.toBeNull();
     expect(result.design?.name).toBe('Test Bin');
@@ -117,7 +118,7 @@ describe('parseDesignJSON', () => {
   });
 
   it('should return errors for invalid JSON', () => {
-    const result = parseDesignJSON('invalid json');
+    const result = parseDesignJSON('invalid json', t);
 
     expect(result.design).toBeNull();
     expect(result.errors.length).toBeGreaterThan(0);
@@ -125,7 +126,7 @@ describe('parseDesignJSON', () => {
   });
 
   it('should return errors for non-object root', () => {
-    const result = parseDesignJSON('"string"');
+    const result = parseDesignJSON('"string"', t);
 
     expect(result.design).toBeNull();
     expect(result.errors).toContain('Invalid design file: root must be an object');
@@ -138,7 +139,7 @@ describe('parseDesignJSON', () => {
       name: 'Test',
       params: DEFAULT_BIN_PARAMS,
     };
-    const result = parseDesignJSON(JSON.stringify(data));
+    const result = parseDesignJSON(JSON.stringify(data), t);
 
     expect(result.design).toBeNull();
     expect(result.errors.some((e) => e.includes('Invalid design type'))).toBe(true);
@@ -150,7 +151,7 @@ describe('parseDesignJSON', () => {
       name: 'Test',
       params: DEFAULT_BIN_PARAMS,
     };
-    const result = parseDesignJSON(JSON.stringify(data));
+    const result = parseDesignJSON(JSON.stringify(data), t);
 
     expect(result.design).toBeNull();
     expect(result.errors.some((e) => e.includes('version'))).toBe(true);
@@ -162,7 +163,7 @@ describe('parseDesignJSON', () => {
       version: '1.0',
       params: DEFAULT_BIN_PARAMS,
     };
-    const result = parseDesignJSON(JSON.stringify(data));
+    const result = parseDesignJSON(JSON.stringify(data), t);
 
     expect(result.design).toBeNull();
     expect(result.errors.some((e) => e.includes('name'))).toBe(true);
@@ -175,7 +176,7 @@ describe('parseDesignJSON', () => {
       name: 'Test',
       params: 'not-an-object',
     };
-    const result = parseDesignJSON(JSON.stringify(data));
+    const result = parseDesignJSON(JSON.stringify(data), t);
 
     expect(result.design).toBeNull();
     expect(result.errors.some((e) => e.includes('params'))).toBe(true);
@@ -192,7 +193,7 @@ describe('parseDesignJSON', () => {
         scoop: true,
       },
     };
-    const result = parseDesignJSON(JSON.stringify(data));
+    const result = parseDesignJSON(JSON.stringify(data), t);
 
     expect(result.design).not.toBeNull();
     expect(result.design?.params.scoop).toEqual({
@@ -210,174 +211,199 @@ describe('parseDesignJSON', () => {
       params: DEFAULT_BIN_PARAMS,
       // No _meta field
     };
-    const result = parseDesignJSON(JSON.stringify(data));
+    const result = parseDesignJSON(JSON.stringify(data), t);
 
     expect(result.design).not.toBeNull();
     expect(result.errors).toHaveLength(0);
   });
 });
 
-describe('validateBinParams', () => {
+describe('validateImportedBinParams', () => {
   it('should validate valid params', () => {
-    const result = validateBinParams(DEFAULT_BIN_PARAMS);
+    const result = validateImportedBinParams(DEFAULT_BIN_PARAMS, t);
 
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
 
   it('should reject non-object params', () => {
-    const result = validateBinParams('not an object');
+    const result = validateImportedBinParams('not an object', t);
 
     expect(result.valid).toBe(false);
     expect(result.errors).toContain('params must be an object');
   });
 
   it('should reject null params', () => {
-    const result = validateBinParams(null);
+    const result = validateImportedBinParams(null, t);
 
     expect(result.valid).toBe(false);
     expect(result.errors).toContain('params must be an object');
   });
 
   it('should validate width', () => {
-    const result = validateBinParams({ ...DEFAULT_BIN_PARAMS, width: -1 });
+    const result = validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, width: -1 }, t);
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('width'))).toBe(true);
   });
 
   it('should reject non-finite width', () => {
-    const result = validateBinParams({ ...DEFAULT_BIN_PARAMS, width: NaN });
+    const result = validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, width: NaN }, t);
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('width'))).toBe(true);
   });
 
   it('should validate depth', () => {
-    const result = validateBinParams({ ...DEFAULT_BIN_PARAMS, depth: 0 });
+    const result = validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, depth: 0 }, t);
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('depth'))).toBe(true);
   });
 
   it('should validate height', () => {
-    const result = validateBinParams({ ...DEFAULT_BIN_PARAMS, height: -5 });
+    const result = validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, height: -5 }, t);
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('height'))).toBe(true);
   });
 
   it('should validate gridUnitMm', () => {
-    const result = validateBinParams({ ...DEFAULT_BIN_PARAMS, gridUnitMm: 0 });
+    const result = validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, gridUnitMm: 0 }, t);
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('gridUnitMm'))).toBe(true);
   });
 
   it('should validate heightUnitMm', () => {
-    const result = validateBinParams({ ...DEFAULT_BIN_PARAMS, heightUnitMm: -1 });
+    const result = validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, heightUnitMm: -1 }, t);
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('heightUnitMm'))).toBe(true);
   });
 
   it('should validate base structure', () => {
-    const result = validateBinParams({ ...DEFAULT_BIN_PARAMS, base: 'not an object' });
+    const result = validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, base: 'not an object' }, t);
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('base'))).toBe(true);
   });
 
   it('should validate base.style', () => {
-    const result = validateBinParams({ ...DEFAULT_BIN_PARAMS, base: { style: 123 } });
+    const result = validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, base: { style: 123 } }, t);
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('base.style'))).toBe(true);
   });
 
   it('should validate style enum', () => {
-    const result = validateBinParams({ ...DEFAULT_BIN_PARAMS, style: 'invalid' });
+    const result = validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, style: 'invalid' }, t);
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('style'))).toBe(true);
   });
 
   it('should accept valid style values', () => {
-    expect(validateBinParams({ ...DEFAULT_BIN_PARAMS, style: 'standard' }).valid).toBe(true);
-    expect(validateBinParams({ ...DEFAULT_BIN_PARAMS, style: 'slotted' }).valid).toBe(true);
+    expect(validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, style: 'standard' }, t).valid).toBe(
+      true
+    );
+    expect(validateImportedBinParams({ ...DEFAULT_BIN_PARAMS, style: 'slotted' }, t).valid).toBe(
+      true
+    );
   });
 
   it('should validate compartments structure', () => {
-    const result = validateBinParams({ ...DEFAULT_BIN_PARAMS, compartments: 'not an object' });
+    const result = validateImportedBinParams(
+      { ...DEFAULT_BIN_PARAMS, compartments: 'not an object' },
+      t
+    );
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('compartments'))).toBe(true);
   });
 
   it('should validate compartments.cols range', () => {
-    const result = validateBinParams({
-      ...DEFAULT_BIN_PARAMS,
-      compartments: { cols: 0, rows: 1, thickness: 1.2, cells: [] },
-    });
+    const result = validateImportedBinParams(
+      {
+        ...DEFAULT_BIN_PARAMS,
+        compartments: { cols: 0, rows: 1, thickness: 1.2, cells: [] },
+      },
+      t
+    );
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('compartments.cols'))).toBe(true);
   });
 
   it('should validate compartments.rows range', () => {
-    const result = validateBinParams({
-      ...DEFAULT_BIN_PARAMS,
-      compartments: { cols: 1, rows: 13, thickness: 1.2, cells: [] },
-    });
+    const result = validateImportedBinParams(
+      {
+        ...DEFAULT_BIN_PARAMS,
+        compartments: { cols: 1, rows: 13, thickness: 1.2, cells: [] },
+      },
+      t
+    );
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('compartments.rows'))).toBe(true);
   });
 
   it('should validate compartments.cells is array', () => {
-    const result = validateBinParams({
-      ...DEFAULT_BIN_PARAMS,
-      compartments: { cols: 1, rows: 1, thickness: 1.2, cells: 'not an array' },
-    });
+    const result = validateImportedBinParams(
+      {
+        ...DEFAULT_BIN_PARAMS,
+        compartments: { cols: 1, rows: 1, thickness: 1.2, cells: 'not an array' },
+      },
+      t
+    );
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('compartments.cells'))).toBe(true);
   });
 
   it('should validate compartments.cells length matches cols × rows', () => {
-    const result = validateBinParams({
-      ...DEFAULT_BIN_PARAMS,
-      compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1] },
-    });
+    const result = validateImportedBinParams(
+      {
+        ...DEFAULT_BIN_PARAMS,
+        compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1] },
+      },
+      t
+    );
 
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('compartments.cells length'))).toBe(true);
   });
 
   it('should accept valid compartments', () => {
-    const result = validateBinParams({
-      ...DEFAULT_BIN_PARAMS,
-      compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] },
-    });
+    const result = validateImportedBinParams(
+      {
+        ...DEFAULT_BIN_PARAMS,
+        compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] },
+      },
+      t
+    );
 
     expect(result.valid).toBe(true);
   });
 
   it('should accept half-unit dimensions', () => {
-    const result = validateBinParams(makeParams({ width: 1.5, depth: 2.5 }));
+    const result = validateImportedBinParams(makeParams({ width: 1.5, depth: 2.5 }), t);
 
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
 
   it('should collect multiple validation errors', () => {
-    const result = validateBinParams({
-      ...DEFAULT_BIN_PARAMS,
-      width: -1,
-      depth: 0,
-      height: NaN,
-      style: 'invalid',
-    });
+    const result = validateImportedBinParams(
+      {
+        ...DEFAULT_BIN_PARAMS,
+        width: -1,
+        depth: 0,
+        height: NaN,
+        style: 'invalid',
+      },
+      t
+    );
 
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(1);

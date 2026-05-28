@@ -23,7 +23,10 @@ export function DeleteAccountDialog({
   const t = useTranslation();
   return (
     <Dialog.Root open={isOpen} onClose={onCancel} size="md">
-      <Dialog.Header title={t('syncDialog.deleteAccount.title')} />
+      <Dialog.Header
+        title={t('syncDialog.deleteAccount.title')}
+        closeAriaLabel={t('common.closeDialog')}
+      />
       <Dialog.Body>
         <p className="text-sm text-content-secondary">{t('syncDialog.deleteAccount.message')}</p>
         <p className="text-sm text-content-secondary mt-3">

@@ -179,10 +179,10 @@ export function LayoutList({
           layout,
           `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`
         );
-        announceToScreenReader('Layout downloaded');
+        announceToScreenReader(t('layouts.announce.downloaded'));
       }
     },
-    [getLayoutData, announceToScreenReader]
+    [getLayoutData, announceToScreenReader, t]
   );
 
   const handleSwitch = useCallback(
@@ -197,27 +197,35 @@ export function LayoutList({
   const handleRename = useCallback(
     (id: string, newName: string) => {
       onRename(id, newName);
-      announceToScreenReader(`Layout renamed to ${newName}`);
+      announceToScreenReader(t('layouts.announce.renamedTo', { name: newName }));
     },
-    [onRename, announceToScreenReader]
+    [onRename, announceToScreenReader, t]
   );
 
   const handleDuplicate = useCallback(
     (id: string) => {
       const entry = entries.find((e) => e.id === id);
       onDuplicate(id);
-      announceToScreenReader(`Duplicated ${entry?.name || 'layout'}`);
+      announceToScreenReader(
+        t('layouts.announce.duplicated', {
+          name: entry?.name || t('layouts.announce.fallbackName'),
+        })
+      );
     },
-    [entries, onDuplicate, announceToScreenReader]
+    [entries, onDuplicate, announceToScreenReader, t]
   );
 
   const handleDelete = useCallback(
     (id: string) => {
       const entry = entries.find((e) => e.id === id);
       onDelete(id);
-      announceToScreenReader(`${entry?.name || 'Layout'} deleted`);
+      announceToScreenReader(
+        t('layouts.announce.deleted', {
+          name: entry?.name || t('layouts.announce.fallbackNameCapitalized'),
+        })
+      );
     },
-    [entries, onDelete, announceToScreenReader]
+    [entries, onDelete, announceToScreenReader, t]
   );
 
   return (

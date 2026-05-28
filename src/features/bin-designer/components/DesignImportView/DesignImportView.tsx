@@ -36,33 +36,36 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const processInput = useCallback((text: string) => {
-    setJsonText(text);
-    setErrors([]);
-    setPreview(null);
-    setValidDesign(null);
+  const processInput = useCallback(
+    (text: string) => {
+      setJsonText(text);
+      setErrors([]);
+      setPreview(null);
+      setValidDesign(null);
 
-    if (!text.trim()) return;
+      if (!text.trim()) return;
 
-    // Try to parse as design JSON
-    const result = parseDesignJSON(text);
+      // Try to parse as design JSON
+      const result = parseDesignJSON(text, t);
 
-    if (result.design) {
-      const { name, params } = result.design;
-      const compartmentCount = params.compartments.cells.filter(
-        (id, index, arr) => arr.indexOf(id) === index
-      ).length;
+      if (result.design) {
+        const { name, params } = result.design;
+        const compartmentCount = params.compartments.cells.filter(
+          (id, index, arr) => arr.indexOf(id) === index
+        ).length;
 
-      setPreview({
-        name,
-        dimensions: `${params.width}×${params.depth}×${params.height}`,
-        compartmentCount,
-      });
-      setValidDesign(result.design);
-    } else {
-      setErrors(result.errors);
-    }
-  }, []);
+        setPreview({
+          name,
+          dimensions: `${params.width}×${params.depth}×${params.height}`,
+          compartmentCount,
+        });
+        setValidDesign(result.design);
+      } else {
+        setErrors(result.errors);
+      }
+    },
+    [t]
+  );
 
   const handleTextChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -109,7 +112,7 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
 
       const file = files[0];
       if (!file.name.endsWith('.json')) {
-        setErrors(['Please drop a JSON file']);
+        setErrors([t('binDesigner.designJson.error.mustBeJsonFile')]);
         return;
       }
 
@@ -120,7 +123,7 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
       };
       reader.readAsText(file);
     },
-    [processInput]
+    [processInput, t]
   );
 
   const handleImport = useCallback(() => {

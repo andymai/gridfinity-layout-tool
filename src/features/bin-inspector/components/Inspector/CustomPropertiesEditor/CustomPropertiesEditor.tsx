@@ -45,27 +45,31 @@ export function CustomPropertiesEditor({
 
     // Validate
     if (!trimmedKey) {
-      setError('Property name is required');
+      setError(t('binDesigner.customProperty.error.nameRequired'));
       return;
     }
 
     if (!trimmedValue) {
-      setError('Property value is required');
+      setError(t('binDesigner.customProperty.error.valueRequired'));
       return;
     }
 
     if (RESERVED_PROPERTY_KEYS.includes(trimmedKey as (typeof RESERVED_PROPERTY_KEYS)[number])) {
-      setError(`"${trimmedKey}" is a reserved field name`);
+      setError(t('binDesigner.customProperty.error.reservedName', { name: trimmedKey }));
       return;
     }
 
     if (trimmedKey in customProperties) {
-      setError('Property name already exists');
+      setError(t('binDesigner.customProperty.error.nameExists'));
       return;
     }
 
     if (properties.length >= CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT) {
-      setError(`Maximum ${CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT} properties allowed`);
+      setError(
+        t('binDesigner.customProperty.error.maxReached', {
+          max: CONSTRAINTS.CUSTOM_PROPERTY_MAX_COUNT,
+        })
+      );
       return;
     }
 

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { describeBin, getStatusAnnouncement } from './a11y';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams } from '../types';
+import { testT as t } from '@/test/i18nTestUtils';
 
 describe('a11y utilities', () => {
   describe('describeBin', () => {
@@ -148,31 +149,35 @@ describe('a11y utilities', () => {
 
   describe('getStatusAnnouncement', () => {
     it('announces WASM loading', () => {
-      expect(getStatusAnnouncement('loading', 'idle', false)).toBe('Loading 3D engine');
+      expect(getStatusAnnouncement('loading', 'idle', false, t)).toBe('Loading 3D engine');
     });
 
     it('announces WASM error', () => {
-      expect(getStatusAnnouncement('error', 'idle', false)).toBe('Error: 3D engine failed to load');
+      expect(getStatusAnnouncement('error', 'idle', false, t)).toBe(
+        'Error: 3D engine failed to load'
+      );
     });
 
     it('announces mesh generation in progress', () => {
-      expect(getStatusAnnouncement('ready', 'generating', true)).toBe('Generating bin mesh');
+      expect(getStatusAnnouncement('ready', 'generating', true, t)).toBe('Generating bin mesh');
     });
 
     it('announces generation error', () => {
-      expect(getStatusAnnouncement('ready', 'error', false)).toBe('Error: mesh generation failed');
+      expect(getStatusAnnouncement('ready', 'error', false, t)).toBe(
+        'Error: mesh generation failed'
+      );
     });
 
     it('announces completion when mesh is available', () => {
-      expect(getStatusAnnouncement('ready', 'complete', true)).toBe('Bin preview updated');
+      expect(getStatusAnnouncement('ready', 'complete', true, t)).toBe('Bin preview updated');
     });
 
     it('returns null for idle state', () => {
-      expect(getStatusAnnouncement('ready', 'idle', false)).toBeNull();
+      expect(getStatusAnnouncement('ready', 'idle', false, t)).toBeNull();
     });
 
     it('returns null for unloaded WASM', () => {
-      expect(getStatusAnnouncement('unloaded', 'idle', false)).toBeNull();
+      expect(getStatusAnnouncement('unloaded', 'idle', false, t)).toBeNull();
     });
   });
 });

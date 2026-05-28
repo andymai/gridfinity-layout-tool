@@ -1,4 +1,3 @@
-export { describeBin, getStatusAnnouncement } from './a11y';
 export {
   createUniformGrid,
   createSingleCell,

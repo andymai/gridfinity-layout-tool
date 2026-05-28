@@ -265,7 +265,7 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
           <div
             className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin motion-reduce:animate-none"
             role="status"
-            aria-label="Loading"
+            aria-label={t('common.loading')}
           />
         </div>
       </LocaleContext.Provider>

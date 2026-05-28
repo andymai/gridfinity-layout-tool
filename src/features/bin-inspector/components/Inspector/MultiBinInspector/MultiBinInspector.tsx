@@ -156,7 +156,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
               !commonCategory ? { value: '', label: getMixedLabel(), disabled: true } : undefined
             }
             colorSwatch={categoryColor}
-            ariaLabel="Category for selected bins"
+            ariaLabel={t('inspector.multi.categoryAria')}
             variant={variant}
           />
         </div>
@@ -180,7 +180,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                   ? { value: '', label: getMixedLayerLabel(), disabled: true }
                   : undefined
               }
-              ariaLabel="Layer for selected bins"
+              ariaLabel={t('inspector.multi.layerAria')}
               variant={variant}
             />
           </div>
@@ -192,7 +192,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
           <BulkIncrementControl
             displayValue={sameHeight ? `${minHeight}u` : `${minHeight}–${maxHeight}u`}
             onStep={updateMultiHeight}
-            ariaLabelPrefix="height for all bins"
+            ariaLabelPrefix={t('inspector.multi.heightAriaPrefix')}
             variant={variant}
           />
         </div>
@@ -209,7 +209,7 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
             <BulkIncrementControl
               displayValue={sameClearance ? `${minClearance}u` : `${minClearance}–${maxClearance}u`}
               onStep={updateMultiClearance}
-              ariaLabelPrefix="clearance for all bins"
+              ariaLabelPrefix={t('inspector.multi.clearanceAriaPrefix')}
               decreaseDisabled={maxClearance <= 0}
               variant={variant}
             />

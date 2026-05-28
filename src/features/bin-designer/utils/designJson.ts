@@ -6,6 +6,7 @@
  */
 
 import type { BinParams } from '../types';
+import type { TFunction } from '@/i18n';
 import { DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { migrateParams } from '../constants/defaults';
 import { sanitizeFileName } from './fileNaming';
@@ -102,11 +103,12 @@ export interface ParseDesignResult {
  * Validates schema structure and bin parameters, then applies migration for backward compatibility.
  *
  * @param json - JSON string to parse
+ * @param t - Translation function for localized error messages
  * @returns Parsed design with name and params, or null with error messages
  *
  * @example
  * ```ts
- * const result = parseDesignJSON(jsonString);
+ * const result = parseDesignJSON(jsonString, t);
  * if (result.design) {
  *   loadDesign(result.design.name, result.design.params);
  * } else {
@@ -114,7 +116,7 @@ export interface ParseDesignResult {
  * }
  * ```
  */
-export function parseDesignJSON(json: string): ParseDesignResult {
+export function parseDesignJSON(json: string, t: TFunction): ParseDesignResult {
   const errors: string[] = [];
 
   // Parse JSON
@@ -124,7 +126,7 @@ export function parseDesignJSON(json: string): ParseDesignResult {
   } catch (e) {
     return {
       design: null,
-      errors: [`Invalid JSON: ${(e as Error).message}`],
+      errors: [t('binDesigner.designJson.error.invalidJson', { message: (e as Error).message })],
     };
   }
 
@@ -132,7 +134,7 @@ export function parseDesignJSON(json: string): ParseDesignResult {
   if (!parsed || typeof parsed !== 'object') {
     return {
       design: null,
-      errors: ['Invalid design file: root must be an object'],
+      errors: [t('binDesigner.designJson.error.rootNotObject')],
     };
   }
 
@@ -140,28 +142,26 @@ export function parseDesignJSON(json: string): ParseDesignResult {
 
   // Validate type field
   if (data.type !== 'gridfinity-bin-design') {
-    errors.push(
-      `Invalid design type: expected "gridfinity-bin-design", got "${String(data.type)}"`
-    );
+    errors.push(t('binDesigner.designJson.error.invalidType', { got: String(data.type) }));
   }
 
   // Validate version field
   if (!data.version || typeof data.version !== 'string') {
-    errors.push('Missing or invalid version field');
+    errors.push(t('binDesigner.designJson.error.missingVersion'));
   }
 
   // Validate name field
   if (!data.name || typeof data.name !== 'string') {
-    errors.push('Missing or invalid name field');
+    errors.push(t('binDesigner.designJson.error.missingName'));
   }
 
   // Validate params field
   if (!data.params || typeof data.params !== 'object') {
-    errors.push('Missing or invalid params field');
+    errors.push(t('binDesigner.designJson.error.missingParams'));
   } else {
-    const paramsValidation = validateBinParams(data.params);
-    if (!paramsValidation.valid) {
-      errors.push(...paramsValidation.errors);
+    const paramsCheck = validateImportedBinParams(data.params, t);
+    if (!paramsCheck.valid) {
+      errors.push(...paramsCheck.errors);
     }
   }
 
@@ -196,23 +196,24 @@ export interface ValidateBinParamsResult {
  * Does not perform exhaustive validation - migrateParams handles missing fields.
  *
  * @param params - Unknown value to validate as BinParams
+ * @param t - Translation function for localized error messages
  * @returns Validation result with success flag and error messages
  *
  * @example
  * ```ts
- * const result = validateBinParams(unknownData);
+ * const result = validateImportedBinParams(unknownData, t);
  * if (result.valid) {
  *   const params = migrateParams(unknownData as Partial<BinParams>);
  * }
  * ```
  */
-export function validateBinParams(params: unknown): ValidateBinParamsResult {
+export function validateImportedBinParams(params: unknown, t: TFunction): ValidateBinParamsResult {
   const errors: string[] = [];
 
   if (!params || typeof params !== 'object') {
     return {
       valid: false,
-      errors: ['params must be an object'],
+      errors: [t('binDesigner.designJson.error.paramsNotObject')],
     };
   }
 
@@ -220,45 +221,45 @@ export function validateBinParams(params: unknown): ValidateBinParamsResult {
 
   // Validate dimensions
   if (typeof p.width !== 'number' || !Number.isFinite(p.width) || p.width <= 0) {
-    errors.push('width must be a positive finite number');
+    errors.push(t('binDesigner.designJson.error.widthInvalid'));
   }
   if (typeof p.depth !== 'number' || !Number.isFinite(p.depth) || p.depth <= 0) {
-    errors.push('depth must be a positive finite number');
+    errors.push(t('binDesigner.designJson.error.depthInvalid'));
   }
   if (typeof p.height !== 'number' || !Number.isFinite(p.height) || p.height <= 0) {
-    errors.push('height must be a positive finite number');
+    errors.push(t('binDesigner.designJson.error.heightInvalid'));
   }
 
   // Validate grid/height units
   if (typeof p.gridUnitMm !== 'number' || !Number.isFinite(p.gridUnitMm) || p.gridUnitMm <= 0) {
-    errors.push('gridUnitMm must be a positive finite number');
+    errors.push(t('binDesigner.designJson.error.gridUnitMmInvalid'));
   }
   if (
     typeof p.heightUnitMm !== 'number' ||
     !Number.isFinite(p.heightUnitMm) ||
     p.heightUnitMm <= 0
   ) {
-    errors.push('heightUnitMm must be a positive finite number');
+    errors.push(t('binDesigner.designJson.error.heightUnitMmInvalid'));
   }
 
   // Validate base config
   if (!p.base || typeof p.base !== 'object') {
-    errors.push('base must be an object');
+    errors.push(t('binDesigner.designJson.error.baseNotObject'));
   } else {
     const base = p.base as Record<string, unknown>;
     if (typeof base.style !== 'string') {
-      errors.push('base.style must be a string');
+      errors.push(t('binDesigner.designJson.error.baseStyleNotString'));
     }
   }
 
   // Validate style
   if (typeof p.style !== 'string' || !['standard', 'slotted'].includes(p.style)) {
-    errors.push('style must be one of: standard, slotted');
+    errors.push(t('binDesigner.designJson.error.styleInvalid'));
   }
 
   // Validate compartments config
   if (!p.compartments || typeof p.compartments !== 'object') {
-    errors.push('compartments must be an object');
+    errors.push(t('binDesigner.designJson.error.compartmentsNotObject'));
   } else {
     const comp = p.compartments as Record<string, unknown>;
 
@@ -270,7 +271,10 @@ export function validateBinParams(params: unknown): ValidateBinParamsResult {
       comp.cols > MAX_COMPARTMENT_GRID
     ) {
       errors.push(
-        `compartments.cols must be an integer between ${MIN_COMPARTMENT_GRID} and ${MAX_COMPARTMENT_GRID}`
+        t('binDesigner.designJson.error.compartmentsColsRange', {
+          min: MIN_COMPARTMENT_GRID,
+          max: MAX_COMPARTMENT_GRID,
+        })
       );
     }
     if (
@@ -280,17 +284,23 @@ export function validateBinParams(params: unknown): ValidateBinParamsResult {
       comp.rows > MAX_COMPARTMENT_GRID
     ) {
       errors.push(
-        `compartments.rows must be an integer between ${MIN_COMPARTMENT_GRID} and ${MAX_COMPARTMENT_GRID}`
+        t('binDesigner.designJson.error.compartmentsRowsRange', {
+          min: MIN_COMPARTMENT_GRID,
+          max: MAX_COMPARTMENT_GRID,
+        })
       );
     }
     if (!Array.isArray(comp.cells)) {
-      errors.push('compartments.cells must be an array');
+      errors.push(t('binDesigner.designJson.error.compartmentsCellsNotArray'));
     } else {
       const expectedLength =
         typeof comp.cols === 'number' && typeof comp.rows === 'number' ? comp.cols * comp.rows : 0;
       if (comp.cells.length !== expectedLength) {
         errors.push(
-          `compartments.cells length must equal cols × rows (expected ${expectedLength}, got ${comp.cells.length})`
+          t('binDesigner.designJson.error.compartmentsCellsLength', {
+            expected: expectedLength,
+            got: comp.cells.length,
+          })
         );
       }
     }

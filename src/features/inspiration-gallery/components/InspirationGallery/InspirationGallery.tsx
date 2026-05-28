@@ -146,11 +146,11 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
     (theme: InspirationTheme | 'all') => {
       setSelectedTheme(theme);
       const count = themeCounts[theme];
-      const label = theme === 'all' ? 'all themes' : THEME_CONFIG[theme].label;
-      announceToScreenReader(`Showing ${count} ${label} layouts`);
+      const label = theme === 'all' ? t('gallery.announce.allThemes') : THEME_CONFIG[theme].label;
+      announceToScreenReader(t('gallery.announce.showing', { count, label }));
       trackEvent('ui.featureUsed', { feature: `gallery_filter_${theme}` });
     },
-    [announceToScreenReader, themeCounts]
+    [announceToScreenReader, themeCounts, t]
   );
 
   const handleSelectLayout = useCallback((layout: InspirationLayout) => {
@@ -178,7 +178,9 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
         if (isOk(switchResult)) {
           setTemplateApplied(true);
           addToast(t('toast.galleryAdded', { name: previewLayout.name }), 'success');
-          announceToScreenReader(`${previewLayout.name} added to your library`);
+          announceToScreenReader(
+            t('gallery.announce.addedToLibrary', { name: previewLayout.name })
+          );
           trackEvent('ui.templateApplied', { templateId: previewLayout.id });
           trackBinCreated({
             method: 'import',

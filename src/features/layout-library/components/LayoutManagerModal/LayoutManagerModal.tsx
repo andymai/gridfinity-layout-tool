@@ -90,8 +90,8 @@ function LayoutManagerModalContent({
   // Announce modal opened
   useEffect(() => {
     const count = library.entries.length;
-    announceToScreenReader(`Layouts dialog opened. ${count} layouts available.`);
-  }, [announceToScreenReader, library.entries.length]);
+    announceToScreenReader(t('layouts.announce.dialogOpened', { count }));
+  }, [announceToScreenReader, library.entries.length, t]);
 
   // Handle escape key and focus trap
   useEffect(() => {
@@ -133,20 +133,24 @@ function LayoutManagerModalContent({
       const entry = library.entries.find((e) => e.id === id);
       const result = await switchLayout(layoutId(id));
       if (isOk(result)) {
-        announceToScreenReader(`Switched to ${entry?.name || 'layout'}`);
+        announceToScreenReader(
+          t('layouts.announce.switchedTo', {
+            name: entry?.name || t('layouts.announce.fallbackName'),
+          })
+        );
         onClose();
       }
     },
-    [library.entries, switchLayout, announceToScreenReader, onClose]
+    [library.entries, switchLayout, announceToScreenReader, onClose, t]
   );
 
   const handleCreate = useCallback(async () => {
     const result = await createNewLayout();
     if (isOk(result)) {
-      announceToScreenReader('New layout created');
+      announceToScreenReader(t('toast.layoutCreated'));
       onClose();
     }
-  }, [createNewLayout, announceToScreenReader, onClose]);
+  }, [createNewLayout, announceToScreenReader, onClose, t]);
 
   const handleDelete = useCallback(
     async (id: string) => {
@@ -183,11 +187,11 @@ function LayoutManagerModalContent({
       if (isOk(result)) {
         // Switch to the imported layout
         await switchLayout(layoutId(result.value));
-        announceToScreenReader(`Imported ${layout.name}`);
+        announceToScreenReader(t('layouts.announce.imported', { name: layout.name }));
         onClose();
       }
     },
-    [importLayoutFromJSON, switchLayout, announceToScreenReader, onClose]
+    [importLayoutFromJSON, switchLayout, announceToScreenReader, onClose, t]
   );
 
   const handleImportArchive = useCallback(
@@ -208,7 +212,7 @@ function LayoutManagerModalContent({
             }),
             'success'
           );
-          announceToScreenReader(`Imported ${result.imported} layouts`);
+          announceToScreenReader(t('layouts.announce.importedCount', { count: result.imported }));
           onClose();
         } else {
           addToast(t('layouts.archiveImportFailed'), 'error');

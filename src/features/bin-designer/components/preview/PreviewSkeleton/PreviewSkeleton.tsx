@@ -28,20 +28,19 @@ export function PreviewSkeleton({
 }: PreviewSkeletonProps) {
   const t = useTranslation();
   const getMessage = () => {
-    if (wasmStatus === 'loading') return 'Initializing engine...';
-    if (wasmStatus === 'error') return 'Engine failed to load';
-    if (generationStatus === 'generating') return 'Generating mesh...';
-    if (generationStatus === 'error') return 'Generation failed';
-    return 'Loading preview...';
+    if (wasmStatus === 'loading') return t('binDesigner.preview.initializingEngine');
+    if (wasmStatus === 'error') return t('binDesigner.preview.engineLoadFailed');
+    if (generationStatus === 'generating') return t('binDesigner.preview.generatingMesh');
+    if (generationStatus === 'error') return t('binDesigner.preview.generationFailed');
+    return t('binDesigner.preview.loadingPreview');
   };
 
   const getHelpText = () => {
-    if (wasmStatus === 'error')
-      return 'The WebAssembly engine could not be loaded. Check your connection and try again.';
+    if (wasmStatus === 'error') return t('binDesigner.preview.engineLoadHelpText');
     if (generationStatus === 'error') {
       return errorMessage
-        ? `${errorMessage}. Try adjusting parameters or retry.`
-        : 'Mesh generation encountered an error. Try adjusting parameters or retry.';
+        ? t('binDesigner.preview.generationHelpTextWithError', { error: errorMessage })
+        : t('binDesigner.preview.generationHelpText');
     }
     return null;
   };

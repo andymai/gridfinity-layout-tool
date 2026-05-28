@@ -171,7 +171,7 @@ export function HandleSection() {
                         max={C.MAX_HANDLE_WIDTH}
                         step={C.HANDLE_WIDTH_STEP}
                         variant="desktop"
-                        ariaLabel="Handle width"
+                        ariaLabel={t('binDesigner.handles.widthAria')}
                       />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -197,7 +197,7 @@ export function HandleSection() {
                         max={C.MAX_HANDLE_HEIGHT}
                         step={C.HANDLE_HEIGHT_STEP}
                         variant="desktop"
-                        ariaLabel="Handle height"
+                        ariaLabel={t('binDesigner.handles.heightAria')}
                       />
                     </div>
                   </div>
@@ -239,7 +239,7 @@ export function HandleSection() {
                           max={C.MAX_HANDLE_CORNER_RADIUS}
                           step={C.HANDLE_CORNER_RADIUS_STEP}
                           variant="desktop"
-                          ariaLabel="Handle corner radius"
+                          ariaLabel={t('binDesigner.handles.cornerRadiusAria')}
                         />
                       </div>
                     </div>
@@ -343,7 +343,7 @@ export function HandleSection() {
                       max={Math.round(C.MAX_HANDLE_VERTICAL_POSITION * 100)}
                       step={Math.round(C.HANDLE_VERTICAL_POSITION_STEP * 100)}
                       variant="desktop"
-                      ariaLabel="Handle vertical position"
+                      ariaLabel={t('binDesigner.handles.verticalPositionAria')}
                     />
                   </div>
                 )}
@@ -368,7 +368,7 @@ export function HandleSection() {
                     max={C.MAX_HANDLE_COUNT}
                     step={1}
                     variant="desktop"
-                    ariaLabel="Handle count"
+                    ariaLabel={t('binDesigner.handles.countAria')}
                   />
                 </div>
               </div>

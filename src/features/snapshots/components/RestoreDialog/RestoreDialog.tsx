@@ -18,7 +18,7 @@ export function RestoreDialog({ snapshot, onReplace, onCreateCopy, onClose }: Re
 
   return (
     <Dialog.Root open={!!snapshot} onClose={onClose} size="sm">
-      <Dialog.Header title={t('snapshots.restore')} />
+      <Dialog.Header title={t('snapshots.restore')} closeAriaLabel={t('common.closeDialog')} />
       <Dialog.Body>
         <div className="flex items-start gap-4 mb-4">
           <LayoutThumbnail preview={snapshot.preview} size={64} />

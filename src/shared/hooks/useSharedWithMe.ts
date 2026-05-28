@@ -15,6 +15,7 @@ import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { fetchShare } from '@/core/api/share';
 import { isOk, getUserMessage } from '@/core/result';
 import { useLayoutActivation } from '@/shared/hooks/useLayoutActivation';
+import { useTranslation } from '@/i18n';
 
 export type SharedWithMeStatus = 'idle' | 'loading' | 'error';
 
@@ -34,6 +35,7 @@ interface SharedWithMeActions {
  * Hook for accessing and managing "Shared with me" layouts.
  */
 export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
+  const t = useTranslation();
   const [status, setStatus] = useState<SharedWithMeStatus>('idle');
   const [error, setError] = useState<string | null>(null);
 
@@ -76,7 +78,7 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
   const openSharedLayout = useCallback(
     async (entry: SharedWithMeEntry): Promise<boolean> => {
       if (!navigator.onLine) {
-        setError("You're offline. Connect to the internet to open shared layouts.");
+        setError(t('share.error.offline'));
         setStatus('error');
         return false;
       }
@@ -95,13 +97,13 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
         // If not found, mark entry as deleted
         if (result.error.code === 'API_NOT_FOUND') {
           updateSharedWithMe(entry.id, { status: 'deleted' });
-          setError('This shared layout has been deleted by its owner.');
+          setError(t('share.error.deletedByOwner'));
         } else {
           setError(message);
         }
 
         setStatus('error');
-        addToast(`Failed to open shared layout: ${message}`, 'error');
+        addToast(t('share.toast.openFailed', { message }), 'error');
         return false;
       }
 
@@ -120,7 +122,7 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
       });
 
       // Load layout and reset UI state
-      activateLayout(layout, SHARED_PREVIEW_ID, `Opened shared layout: ${layout.name}`);
+      activateLayout(layout, SHARED_PREVIEW_ID, t('share.history.opened', { name: layout.name }));
 
       // Set preview state so the banner shows
       setSharedLayoutPreview(
@@ -134,7 +136,7 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
       setStatus('idle');
       return true;
     },
-    [updateSharedWithMe, activateLayout, setSharedLayoutPreview, addToast]
+    [updateSharedWithMe, activateLayout, setSharedLayoutPreview, addToast, t]
   );
 
   /**
@@ -143,9 +145,9 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
   const removeLayout = useCallback(
     (id: string) => {
       removeSharedWithMe(id);
-      announceToScreenReader('Removed shared layout from list.');
+      announceToScreenReader(t('share.announce.removedFromList'));
     },
-    [removeSharedWithMe, announceToScreenReader]
+    [removeSharedWithMe, announceToScreenReader, t]
   );
 
   return {

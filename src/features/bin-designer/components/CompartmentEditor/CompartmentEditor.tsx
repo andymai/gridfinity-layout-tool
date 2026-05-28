@@ -320,15 +320,16 @@ export function CompartmentEditor() {
   // Dynamic instruction text
   const instructionText = useMemo(() => {
     if (isDragging && selection.size >= 2) {
-      if (selectionAction === 'merge') return `Release to merge ${selection.size} cells`;
-      if (selectionAction === 'split') return 'Release to split';
-      return 'Drag to select';
+      if (selectionAction === 'merge')
+        return t('binDesigner.compartmentEditor.releaseToMerge', { count: selection.size });
+      if (selectionAction === 'split') return t('binDesigner.compartmentEditor.releaseToSplit');
+      return t('binDesigner.compartmentEditor.dragToSelect');
     }
     if (hoveredIsSplittable && !isDragging) {
-      return 'Click to split';
+      return t('binDesigner.compartmentEditor.clickToSplit');
     }
-    return 'Drag to merge, click to split';
-  }, [isDragging, selection.size, selectionAction, hoveredIsSplittable]);
+    return t('binDesigner.compartmentEditor.dragOrClick');
+  }, [isDragging, selection.size, selectionAction, hoveredIsSplittable, t]);
 
   // Compute aspect ratio from bin dimensions, clamped to avoid extreme shapes
   const aspectRatio = depth > 0 ? Math.min(2, Math.max(0.5, width / depth)) : 1;

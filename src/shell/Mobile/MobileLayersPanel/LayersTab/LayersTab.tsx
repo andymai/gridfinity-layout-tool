@@ -69,7 +69,7 @@ export function LayersTab() {
       batch(() => {
         updateLayer(renameLayerId, { name: trimmed.slice(0, CONSTRAINTS.LABEL_MAX_LENGTH) });
       });
-      announceToScreenReader(`Renamed to ${trimmed}`);
+      announceToScreenReader(t('layers.announce.renamedTo', { name: trimmed }));
     }
     setRenameLayerId(null);
     setRenameValue('');

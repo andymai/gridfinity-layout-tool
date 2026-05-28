@@ -22,6 +22,7 @@ import { trackEvent } from '@/shared/analytics/posthog';
 import { useMutations } from '@/shared/contexts/MutationsContext';
 import { slugify } from '@/shared/utils/slug';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
+import { useTranslation } from '@/i18n';
 
 export type CloudShareStatus = 'idle' | 'sharing' | 'updating' | 'deleting' | 'success' | 'error';
 
@@ -59,6 +60,7 @@ interface CloudShareActions {
  * @param layoutId - Optional layout ID (defaults to active layout)
  */
 export function useCloudShare(layoutId?: string): CloudShareState & CloudShareActions {
+  const t = useTranslation();
   const [status, setStatus] = useState<CloudShareStatus>('idle');
   const [result, setResult] = useState<CloudShareResult | null>(null);
   const [error, setError] = useState<CloudShareError | null>(null);
@@ -115,7 +117,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       });
 
       setStatus('success');
-      announceToScreenReader('Layout shared successfully. Link copied to clipboard.');
+      announceToScreenReader(t('cloudShare.announce.sharedSuccess'));
 
       // Track for ML telemetry (share is high-quality signal)
       mlTracking.trackSnapshot('share');
@@ -124,7 +126,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       // Auto-copy URL
       void copyToClipboard(response.url);
     },
-    [targetLayoutId, setCloudShare, announceToScreenReader]
+    [targetLayoutId, setCloudShare, announceToScreenReader, t]
   );
 
   const handleError = useCallback(
@@ -137,16 +139,16 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         retryAfter: 'retryAfter' in err ? err.retryAfter : undefined,
       });
       setStatus('error');
-      announceToScreenReader(`Share failed: ${message}`);
+      announceToScreenReader(t('cloudShare.announce.shareFailed', { message }));
     },
-    [announceToScreenReader]
+    [announceToScreenReader, t]
   );
 
   const share = useCallback(
     async (permission: SharePermission = 'view'): Promise<boolean> => {
       if (!navigator.onLine) {
         setError({
-          message: "You're offline. Connect to the internet to share.",
+          message: t('cloudShare.error.offlineShare'),
           code: 'NETWORK_ERROR',
         });
         setStatus('error');
@@ -170,14 +172,14 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         return false;
       }
     },
-    [targetLayoutId, layout, authorName, handleSuccess, handleError]
+    [targetLayoutId, layout, authorName, handleSuccess, handleError, t]
   );
 
   const updatePermissionAction = useCallback(
     async (permission: SharePermission): Promise<boolean> => {
       if (!existingShare) {
         setError({
-          message: 'No existing share to update.',
+          message: t('cloudShare.error.noExistingShare'),
           code: 'NOT_FOUND',
         });
         setStatus('error');
@@ -186,7 +188,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
 
       if (!navigator.onLine) {
         setError({
-          message: "You're offline. Connect to the internet to update.",
+          message: t('cloudShare.error.offlineUpdate'),
           code: 'NETWORK_ERROR',
         });
         setStatus('error');
@@ -224,8 +226,8 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         setStatus('success');
         announceToScreenReader(
           permission === 'edit'
-            ? 'Share updated. Anyone with the link can now edit.'
-            : 'Share updated. Anyone with the link can view.'
+            ? t('cloudShare.announce.shareUpdatedEdit')
+            : t('cloudShare.announce.shareUpdatedView')
         );
         return true;
       } else {
@@ -233,13 +235,13 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
         if (result.error.code === 'API_NOT_FOUND') {
           clearCloudShare(targetLayoutId);
           setError({
-            message: 'Share was deleted. Create a new share instead.',
+            message: t('cloudShare.error.shareWasDeleted'),
             code: result.error.code,
           });
         } else if (result.error.code === 'API_UNAUTHORIZED') {
           clearCloudShare(targetLayoutId);
           setError({
-            message: 'Unable to update share. Create a new share instead.',
+            message: t('cloudShare.error.unableToUpdate'),
             code: result.error.code,
           });
         } else {
@@ -256,6 +258,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       clearCloudShare,
       handleError,
       announceToScreenReader,
+      t,
     ]
   );
 
@@ -266,7 +269,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
 
     if (!navigator.onLine) {
       setError({
-        message: "You're offline. Connect to the internet to delete.",
+        message: t('cloudShare.error.offlineDelete'),
         code: 'NETWORK_ERROR',
       });
       setStatus('error');
@@ -285,7 +288,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       clearCloudShare(targetLayoutId);
       setStatus('idle');
       setResult(null);
-      announceToScreenReader('Share deleted successfully.');
+      announceToScreenReader(t('cloudShare.announce.deleted'));
       return true;
     } else {
       // If not found, it's already deleted - clear local state
@@ -298,7 +301,7 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
       handleError(result.error);
       return false;
     }
-  }, [existingShare, targetLayoutId, clearCloudShare, handleError, announceToScreenReader]);
+  }, [existingShare, targetLayoutId, clearCloudShare, handleError, announceToScreenReader, t]);
 
   const copyUrl = useCallback(async (): Promise<boolean> => {
     // Construct URL using unified /l/{shareId}/{slug} format
@@ -308,10 +311,10 @@ export function useCloudShare(layoutId?: string): CloudShareState & CloudShareAc
     const url = `${window.location.origin}/l/${shareId}/${slugify(layout.name)}`;
     const success = await copyToClipboard(url);
     if (success) {
-      announceToScreenReader('Link copied to clipboard.');
+      announceToScreenReader(t('cloudShare.announce.linkCopied'));
     }
     return success;
-  }, [result, existingShare, layout.name, announceToScreenReader]);
+  }, [result, existingShare, layout.name, announceToScreenReader, t]);
 
   const reset = useCallback(() => {
     setStatus('idle');

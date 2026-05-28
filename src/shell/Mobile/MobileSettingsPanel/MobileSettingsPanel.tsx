@@ -88,7 +88,7 @@ export function MobileSettingsPanel() {
               max={CONSTRAINTS.GRID_MAX}
               step={widthStep}
               variant="mobile"
-              ariaLabel="Drawer width in grid units"
+              ariaLabel={t('sidebar.drawerWidthAria')}
             />
           </div>
 
@@ -103,7 +103,7 @@ export function MobileSettingsPanel() {
               max={CONSTRAINTS.GRID_MAX}
               step={depthStep}
               variant="mobile"
-              ariaLabel="Drawer depth in grid units"
+              ariaLabel={t('sidebar.drawerDepthAria')}
             />
           </div>
         </div>
@@ -117,7 +117,7 @@ export function MobileSettingsPanel() {
             min={1}
             max={CONSTRAINTS.GRID_MAX}
             variant="mobile"
-            ariaLabel="Drawer height in units"
+            ariaLabel={t('sidebar.drawerHeightAria')}
             displayValue={`${drawer.height}u`}
           />
         </div>
@@ -199,7 +199,7 @@ export function MobileSettingsPanel() {
             </p>
           </div>
 
-          <SettingsRow label="Print bed size" unit="mm" variant="mobile">
+          <SettingsRow label={t('settings.printBedSizeLabel')} unit="mm" variant="mobile">
             <PrintBedInput
               width={printBedSize}
               depth={printBedDepth}

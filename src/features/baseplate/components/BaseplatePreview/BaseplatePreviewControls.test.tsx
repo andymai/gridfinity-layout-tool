@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('@/core/constants', () => ({
-  FILAMENT_COLORS: [{ color: '#d4d8dc', name: 'Silver' }],
+  FILAMENT_COLORS: [{ color: '#d4d8dc', nameKey: 'colors.filament.lightGrey' }],
 }));
 
 vi.mock('@/shared/hooks/useResponsive', () => ({

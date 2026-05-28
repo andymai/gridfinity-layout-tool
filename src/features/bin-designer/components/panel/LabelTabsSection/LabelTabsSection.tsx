@@ -116,7 +116,7 @@ export function LabelTabsSection() {
             max={DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH}
             step={DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP}
             variant="desktop"
-            ariaLabel="Tab width"
+            ariaLabel={t('binDesigner.labelTabs.widthAria')}
           />
         </div>
         <div className="min-w-0">
@@ -141,7 +141,7 @@ export function LabelTabsSection() {
             max={state.tabDepthMax}
             step={DESIGNER_CONSTRAINTS.LABEL_TAB_DEPTH_STEP}
             variant="desktop"
-            ariaLabel="Tab depth"
+            ariaLabel={t('binDesigner.labelTabs.depthAria')}
           />
         </div>
         <div className="min-w-0">
@@ -166,7 +166,7 @@ export function LabelTabsSection() {
             max={state.tabHeightMax}
             step={DESIGNER_CONSTRAINTS.LABEL_TAB_HEIGHT_STEP}
             variant="desktop"
-            ariaLabel="Tab height"
+            ariaLabel={t('binDesigner.labelTabs.heightAria')}
           />
         </div>
         <div className="min-w-0">
@@ -191,7 +191,7 @@ export function LabelTabsSection() {
             max={state.tabInsetMax}
             step={DESIGNER_CONSTRAINTS.LABEL_TAB_INSET_STEP}
             variant="desktop"
-            ariaLabel="Tab inset"
+            ariaLabel={t('binDesigner.labelTabs.insetAria')}
           />
         </div>
       </div>

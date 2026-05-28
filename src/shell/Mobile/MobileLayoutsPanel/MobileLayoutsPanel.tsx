@@ -96,31 +96,39 @@ export function MobileLayoutsPanel() {
       const entry = findEntry(entries, id);
       const result = await switchLayout(layoutId(id));
       if (isOk(result)) {
-        announceToScreenReader(`Switched to ${entry?.name ?? 'layout'}`);
+        announceToScreenReader(
+          t('layouts.announce.switchedTo', {
+            name: entry?.name ?? t('layouts.announce.fallbackName'),
+          })
+        );
         closeMobilePanel();
       }
     },
-    [activeLayoutId, switchLayout, entries, announceToScreenReader, closeMobilePanel]
+    [activeLayoutId, switchLayout, entries, announceToScreenReader, closeMobilePanel, t]
   );
 
   const handleCreateNew = useCallback(async () => {
     const result = await createNewLayout();
     if (isOk(result)) {
-      announceToScreenReader('New layout created');
+      announceToScreenReader(t('toast.layoutCreated'));
       closeMobilePanel();
     }
-  }, [createNewLayout, announceToScreenReader, closeMobilePanel]);
+  }, [createNewLayout, announceToScreenReader, closeMobilePanel, t]);
 
   const handleDuplicate = useCallback(
     async (id: string) => {
       const entry = findEntry(entries, id);
       const result = await duplicateLayout(layoutId(id));
       if (isOk(result)) {
-        announceToScreenReader(`Duplicated ${entry?.name ?? 'layout'}`);
+        announceToScreenReader(
+          t('layouts.announce.duplicated', {
+            name: entry?.name ?? t('layouts.announce.fallbackName'),
+          })
+        );
       }
       resetSwipe();
     },
-    [duplicateLayout, entries, announceToScreenReader, resetSwipe]
+    [duplicateLayout, entries, announceToScreenReader, resetSwipe, t]
   );
 
   const handleShare = useCallback(
@@ -146,11 +154,11 @@ export function MobileLayoutsPanel() {
     const trimmed = renameValue.trim();
     if (trimmed) {
       renameLayout(layoutId(renameLayoutId), trimmed);
-      announceToScreenReader(`Renamed to ${trimmed}`);
+      announceToScreenReader(t('layouts.announce.renamedTo', { name: trimmed }));
     }
     setRenameLayoutId(null);
     setRenameValue('');
-  }, [renameLayoutId, renameValue, renameLayout, announceToScreenReader]);
+  }, [renameLayoutId, renameValue, renameLayout, announceToScreenReader, t]);
 
   const handleCopyLink = useCallback(
     async (id: string) => {
@@ -160,12 +168,16 @@ export function MobileLayoutsPanel() {
         const url = generateShareableURL(layout);
         const success = await copyToClipboard(url);
         if (success) {
-          announceToScreenReader(`Link copied for ${entry?.name ?? 'layout'}`);
+          announceToScreenReader(
+            t('layouts.announce.linkCopiedFor', {
+              name: entry?.name ?? t('layouts.announce.fallbackName'),
+            })
+          );
         }
       }
       setShareMenuId(null);
     },
-    [activeLayoutId, currentLayout, entries, announceToScreenReader]
+    [activeLayoutId, currentLayout, entries, announceToScreenReader, t]
   );
 
   const handleDownload = useCallback(
@@ -177,11 +189,11 @@ export function MobileLayoutsPanel() {
           layout,
           `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`
         );
-        announceToScreenReader('Layout downloaded');
+        announceToScreenReader(t('layouts.announce.downloaded'));
       }
       setShareMenuId(null);
     },
-    [activeLayoutId, currentLayout, entries, announceToScreenReader]
+    [activeLayoutId, currentLayout, entries, announceToScreenReader, t]
   );
 
   const handleCloudShare = useCallback((id: string) => {
@@ -192,22 +204,26 @@ export function MobileLayoutsPanel() {
   const handleDeleteRequest = useCallback(
     (id: string) => {
       if (entries.length <= 1) {
-        announceToScreenReader('Cannot delete the only layout');
+        announceToScreenReader(t('layouts.announce.cannotDeleteOnly'));
         return;
       }
       setDeleteLayoutId(id);
       resetSwipe();
     },
-    [entries.length, announceToScreenReader, resetSwipe]
+    [entries.length, announceToScreenReader, resetSwipe, t]
   );
 
   const confirmDelete = useCallback(() => {
     if (!deleteLayoutId) return;
     const entry = findEntry(entries, deleteLayoutId);
     void deleteLayout(layoutId(deleteLayoutId));
-    announceToScreenReader(`${entry?.name ?? 'Layout'} deleted`);
+    announceToScreenReader(
+      t('layouts.announce.deleted', {
+        name: entry?.name ?? t('layouts.announce.fallbackNameCapitalized'),
+      })
+    );
     setDeleteLayoutId(null);
-  }, [deleteLayoutId, deleteLayout, entries, announceToScreenReader]);
+  }, [deleteLayoutId, deleteLayout, entries, announceToScreenReader, t]);
 
   const handleTouchStart = useCallback(
     (_e: React.TouchEvent, id: string) => {

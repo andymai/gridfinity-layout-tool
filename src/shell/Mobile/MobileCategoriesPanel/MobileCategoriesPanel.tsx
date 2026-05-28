@@ -159,7 +159,7 @@ export function MobileCategoriesPanel() {
 
                   {/* Color grid */}
                   <div className="grid grid-cols-6 gap-2">
-                    {CATEGORY_COLOR_PALETTE.map(({ color, name }) => (
+                    {CATEGORY_COLOR_PALETTE.map(({ color, nameKey }) => (
                       <button
                         key={color}
                         onClick={() => handleUpdateColor(category.id, color)}
@@ -171,7 +171,7 @@ export function MobileCategoriesPanel() {
                               ? '0 0 0 3px var(--color-primary)'
                               : 'var(--shadow-sm)',
                         }}
-                        aria-label={name}
+                        aria-label={t(nameKey)}
                       />
                     ))}
                   </div>

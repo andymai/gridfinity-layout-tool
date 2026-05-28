@@ -2314,6 +2314,224 @@ const en: Record<string, string> = {
   'webgl.fallback.body':
     'WebGL is disabled or unsupported. Try enabling hardware acceleration in your browser settings, updating your graphics drivers, or switching browsers.',
   'webgl.fallback.helpLink': 'Check WebGL support',
+
+  // Design-system aria-labels
+  'common.closeDialog': 'Close dialog',
+
+  // Bin move blocked toasts (useBinInspector)
+  'toast.binBlocked.collision': 'Another bin occupies this position',
+  'toast.binBlocked.clearance': 'Blocked by a taller bin below',
+  'toast.binBlocked.exceedsHeight': 'Bin would exceed drawer height',
+  'toast.binBlocked.default': 'Cannot move bin here',
+
+  // Custom property editor inline errors
+  'binDesigner.customProperty.error.nameRequired': 'Property name is required',
+  'binDesigner.customProperty.error.valueRequired': 'Property value is required',
+  'binDesigner.customProperty.error.nameExists': 'Property name already exists',
+  'binDesigner.customProperty.error.reservedName': '"{name}" is a reserved field name',
+  'binDesigner.customProperty.error.maxReached': 'Maximum {max} properties allowed',
+
+  // Multi-bin inspector aria-labels
+  'inspector.multi.categoryAria': 'Category for selected bins',
+  'inspector.multi.layerAria': 'Layer for selected bins',
+  'inspector.multi.heightAriaPrefix': 'height for all bins',
+  'inspector.multi.clearanceAriaPrefix': 'clearance for all bins',
+
+  // Sidebar / settings dimension aria-labels
+  'sidebar.drawerWidthAria': 'Drawer width in grid units',
+  'sidebar.drawerDepthAria': 'Drawer depth in grid units',
+  'sidebar.drawerHeightAria': 'Drawer height in units',
+  'settings.printBedSizeLabel': 'Print bed size',
+
+  // Design JSON import validation
+  'binDesigner.designJson.error.invalidJson': 'Invalid JSON: {message}',
+  'binDesigner.designJson.error.rootNotObject': 'Invalid design file: root must be an object',
+  'binDesigner.designJson.error.invalidType':
+    'Invalid design type: expected "gridfinity-bin-design", got "{got}"',
+  'binDesigner.designJson.error.missingVersion': 'Missing or invalid version field',
+  'binDesigner.designJson.error.missingName': 'Missing or invalid name field',
+  'binDesigner.designJson.error.missingParams': 'Missing or invalid params field',
+  'binDesigner.designJson.error.paramsNotObject': 'params must be an object',
+  'binDesigner.designJson.error.widthInvalid': 'width must be a positive finite number',
+  'binDesigner.designJson.error.depthInvalid': 'depth must be a positive finite number',
+  'binDesigner.designJson.error.heightInvalid': 'height must be a positive finite number',
+  'binDesigner.designJson.error.gridUnitMmInvalid': 'gridUnitMm must be a positive finite number',
+  'binDesigner.designJson.error.heightUnitMmInvalid':
+    'heightUnitMm must be a positive finite number',
+  'binDesigner.designJson.error.baseNotObject': 'base must be an object',
+  'binDesigner.designJson.error.baseStyleNotString': 'base.style must be a string',
+  'binDesigner.designJson.error.styleInvalid': 'style must be one of: standard, slotted',
+  'binDesigner.designJson.error.compartmentsNotObject': 'compartments must be an object',
+  'binDesigner.designJson.error.compartmentsCellsNotArray': 'compartments.cells must be an array',
+  'binDesigner.designJson.error.compartmentsColsRange':
+    'compartments.cols must be an integer between {min} and {max}',
+  'binDesigner.designJson.error.compartmentsRowsRange':
+    'compartments.rows must be an integer between {min} and {max}',
+  'binDesigner.designJson.error.compartmentsCellsLength':
+    'compartments.cells length must equal cols × rows (expected {expected}, got {got})',
+  'binDesigner.designJson.error.mustBeJsonFile': 'Please drop a JSON file',
+
+  // Bin-designer toasts
+  'binDesigner.toast.designDuplicated': 'Duplicated "{name}"',
+  'binDesigner.toast.designDeleted': 'Deleted "{name}"',
+  'binDesigner.toast.designDuplicateFailed': 'Failed to duplicate design',
+  'binDesigner.toast.designDeleteFailed': 'Failed to delete design',
+  'binDesigner.toast.sharedDesignLoaded': 'Shared design loaded',
+  'binDesigner.toast.sharedDesignLoadFailed': 'Failed to load shared design',
+  'binDesigner.toast.shareLinkCopied': 'Share link copied to clipboard',
+
+  // Bin-designer screen-reader announcements
+  'binDesigner.announce.loadingEngine': 'Loading 3D engine',
+  'binDesigner.announce.engineLoadError': 'Error: 3D engine failed to load',
+  'binDesigner.announce.generatingMesh': 'Generating bin mesh',
+  'binDesigner.announce.meshGenerationError': 'Error: mesh generation failed',
+  'binDesigner.announce.previewUpdated': 'Bin preview updated',
+
+  // Baseplate / generation errors
+  'baseplate.toast.engineInitFailed': 'Failed to initialize 3D engine: {message}',
+
+  // Bin-designer preview
+  'binDesigner.preview.initializingEngine': 'Initializing engine...',
+  'binDesigner.preview.engineLoadFailed': 'Engine failed to load',
+  'binDesigner.preview.generatingMesh': 'Generating mesh...',
+  'binDesigner.preview.generationFailed': 'Generation failed',
+  'binDesigner.preview.loadingPreview': 'Loading preview...',
+  'binDesigner.preview.engineLoadHelpText':
+    'The WebAssembly engine could not be loaded. Check your connection and try again.',
+  'binDesigner.preview.generationHelpText':
+    'Mesh generation encountered an error. Try adjusting parameters or retry.',
+  'binDesigner.preview.generationHelpTextWithError': '{error}. Try adjusting parameters or retry.',
+
+  // Compartment editor status hints
+  'binDesigner.compartmentEditor.releaseToMerge': 'Release to merge {count} cells',
+  'binDesigner.compartmentEditor.releaseToSplit': 'Release to split',
+  'binDesigner.compartmentEditor.dragToSelect': 'Drag to select',
+  'binDesigner.compartmentEditor.clickToSplit': 'Click to split',
+  'binDesigner.compartmentEditor.dragOrClick': 'Drag to merge, click to split',
+  'binDesigner.compartmentEditor.compartmentAriaSplittable':
+    'Compartment {n}, {dimension}, click to split',
+  'binDesigner.compartmentEditor.compartmentAria': 'Compartment {n}, {dimension}',
+  'binDesigner.compartmentEditor.cellAria': 'Cell {col}, {row}',
+
+  // Handles aria-labels
+  'binDesigner.handles.cornerRadiusAria': 'Handle corner radius',
+  'binDesigner.handles.verticalPositionAria': 'Handle vertical position',
+
+  // Grid editor resize handles
+  'gridEditor.resize.westAria': 'Resize left edge',
+  'gridEditor.resize.eastAria': 'Resize right edge',
+  'gridEditor.resize.northAria': 'Resize top edge',
+  'gridEditor.resize.southAria': 'Resize bottom edge',
+  'gridEditor.resize.northwestAria': 'Resize top-left corner',
+  'gridEditor.resize.northeastAria': 'Resize top-right corner',
+  'gridEditor.resize.southwestAria': 'Resize bottom-left corner',
+  'gridEditor.resize.southeastAria': 'Resize bottom-right corner',
+
+  // Quick label popover placeholder
+  'gridEditor.quickLabel.placeholder': 'Enter label...',
+
+  // Grid stash confirm
+  'grid.moveToStashConfirm': 'Move to Stash',
+  'grid.resizeWillStashBins': '{count} bin(s) will be moved to stash. Continue?',
+
+  // Import modal inline errors
+  'layouts.import.error.invalidJsonFormat': 'Invalid JSON format',
+  'layouts.import.error.noJsonProvided': 'No JSON provided',
+  'layouts.import.error.fileTooLarge': 'File too large ({sizeMb} MB). Maximum is {maxMb} MB.',
+
+  // Shared layout
+  'share.error.deletedByOwner': 'This shared layout has been deleted by its owner.',
+  'share.announce.removedFromList': 'Removed shared layout from list.',
+  'share.error.offline': "You're offline. Connect to the internet to open shared layouts.",
+  'share.toast.openFailed': 'Failed to open shared layout: {message}',
+  'share.history.opened': 'Opened shared layout: {name}',
+
+  // Layouts panel announcements
+  'layouts.announce.cannotDeleteOnly': 'Cannot delete the only layout',
+
+  // Layers panel announcements
+  'layers.announce.renamedTo': 'Renamed to {name}',
+
+  // Half-bin mode remediation
+  'halfBinMode.toast.movedToStaging': 'Moved {count} bin(s) to staging',
+
+  // Inspiration gallery announcements
+  'gallery.announce.showing': 'Showing {count} {label} layouts',
+  'gallery.announce.allThemes': 'all themes',
+  'gallery.announce.addedToLibrary': '{name} added to your library',
+  'layouts.announce.switchedTo': 'Switched to {name}',
+  'layouts.announce.duplicated': 'Duplicated {name}',
+  'layouts.announce.renamedTo': 'Renamed to {name}',
+  'layouts.announce.linkCopiedFor': 'Link copied for {name}',
+  'layouts.announce.downloaded': 'Layout downloaded',
+  'layouts.announce.fallbackName': 'layout',
+  'layouts.announce.deleted': '{name} deleted',
+  'layouts.announce.fallbackNameCapitalized': 'Layout',
+  'layouts.announce.dialogOpened': 'Layouts dialog opened. {count} layouts available.',
+  'layouts.announce.imported': 'Imported {name}',
+  'layouts.announce.importedCount': 'Imported {count} layouts',
+
+  // Category color palette
+  'colors.category.coral': 'Coral',
+  'colors.category.orange': 'Orange',
+  'colors.category.amber': 'Amber',
+  'colors.category.lime': 'Lime',
+  'colors.category.green': 'Green',
+  'colors.category.teal': 'Teal',
+  'colors.category.sky': 'Sky',
+  'colors.category.indigo': 'Indigo',
+  'colors.category.purple': 'Purple',
+  'colors.category.pink': 'Pink',
+  'colors.category.cloud': 'Cloud',
+  'colors.category.charcoal': 'Charcoal',
+  'colors.category.slate': 'Slate',
+  'colors.category.stone': 'Stone',
+
+  // Color name "{name} color" template for aria-labels
+  'colors.colorAriaLabel': '{name} color',
+
+  // Filament color names
+  'colors.filament.white': 'White',
+  'colors.filament.lightGrey': 'Light Grey',
+  'colors.filament.darkGrey': 'Dark Grey',
+  'colors.filament.black': 'Black',
+  'colors.filament.cream': 'Cream',
+  'colors.filament.red': 'Red',
+  'colors.filament.blue': 'Blue',
+  'colors.filament.green': 'Green',
+  'colors.filament.orange': 'Orange',
+  'colors.filament.purple': 'Purple',
+
+  // Cloud-share announcements / errors
+  'cloudShare.announce.sharedSuccess': 'Layout shared successfully. Link copied to clipboard.',
+  'cloudShare.announce.deleted': 'Share deleted successfully.',
+  'cloudShare.announce.linkCopied': 'Link copied to clipboard.',
+  'cloudShare.announce.layoutDiscarded': 'Shared layout discarded, returned to your layouts',
+  'cloudShare.announce.shareFailed': 'Share failed: {message}',
+  'cloudShare.announce.shareUpdatedEdit': 'Share updated. Anyone with the link can now edit.',
+  'cloudShare.announce.shareUpdatedView': 'Share updated. Anyone with the link can view.',
+  'cloudShare.announce.layoutSaved': 'Layout saved: {name}',
+  'cloudShare.error.offlineShare': "You're offline. Connect to the internet to share.",
+  'cloudShare.error.offlineUpdate': "You're offline. Connect to the internet to update.",
+  'cloudShare.error.offlineDelete': "You're offline. Connect to the internet to delete.",
+  'cloudShare.error.noExistingShare': 'No existing share to update.',
+  'cloudShare.error.shareWasDeleted': 'Share was deleted. Create a new share instead.',
+  'cloudShare.error.unableToUpdate': 'Unable to update share. Create a new share instead.',
+
+  // Single-bin inspector aria-labels
+  'inspector.single.heightAria': 'Bin height',
+  'inspector.single.clearanceAria': 'Bin clearance',
+  'inspector.single.categoryAria': 'Bin category',
+
+  // Bin-designer section aria-labels
+  'binDesigner.scoop.radiusAria': 'Scoop radius',
+  'binDesigner.labelTabs.widthAria': 'Tab width',
+  'binDesigner.labelTabs.depthAria': 'Tab depth',
+  'binDesigner.labelTabs.heightAria': 'Tab height',
+  'binDesigner.labelTabs.insetAria': 'Tab inset',
+  'binDesigner.handles.widthAria': 'Handle width',
+  'binDesigner.handles.heightAria': 'Handle height',
+  'binDesigner.handles.countAria': 'Handle count',
 };
 
 export default en;

@@ -218,12 +218,20 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       const result = await duplicateDesign(design.id);
       if (isOk(result)) {
         setDesigns((prev) => [result.value, ...prev]);
-        addToast({ message: `Duplicated "${design.name}"`, type: 'success', duration: 2000 });
+        addToast({
+          message: t('binDesigner.toast.designDuplicated', { name: design.name }),
+          type: 'success',
+          duration: 2000,
+        });
       } else {
-        addToast({ message: 'Failed to duplicate design', type: 'error', duration: 4000 });
+        addToast({
+          message: t('binDesigner.toast.designDuplicateFailed'),
+          type: 'error',
+          duration: 4000,
+        });
       }
     },
-    [addToast]
+    [addToast, t]
   );
 
   const handleDelete = useCallback(
@@ -232,12 +240,20 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       if (isOk(result)) {
         setDesigns((prev) => prev.filter((d) => d.id !== design.id));
         removeRegistryEntry(design.id);
-        addToast({ message: `Deleted "${design.name}"`, type: 'success', duration: 2000 });
+        addToast({
+          message: t('binDesigner.toast.designDeleted', { name: design.name }),
+          type: 'success',
+          duration: 2000,
+        });
       } else {
-        addToast({ message: 'Failed to delete design', type: 'error', duration: 4000 });
+        addToast({
+          message: t('binDesigner.toast.designDeleteFailed'),
+          type: 'error',
+          duration: 4000,
+        });
       }
     },
-    [addToast]
+    [addToast, t]
   );
 
   const getGridColumns = useCallback(() => {
