@@ -12,10 +12,11 @@ export function usePhysicalUnitsSection() {
       heightUnitMm: s.layout.heightUnitMm,
     }))
   );
-  const { printBedSize, updateSetting } = useSettingsStore(
+  const { printBedSize, printBedDepth, updateSettings } = useSettingsStore(
     useShallow((s) => ({
       printBedSize: s.settings.defaultPrintBedSize,
-      updateSetting: s.updateSetting,
+      printBedDepth: s.settings.defaultPrintBedDepth ?? s.settings.defaultPrintBedSize,
+      updateSettings: s.updateSettings,
     }))
   );
   const t = useTranslation();
@@ -29,10 +30,15 @@ export function usePhysicalUnitsSection() {
   }, []);
 
   const handlePrintBedChange = useCallback(
-    (value: number) => {
-      updateSetting('defaultPrintBedSize', Math.max(42, Math.min(500, value)));
+    (width: number, depth?: number) => {
+      const clampedWidth = Math.max(42, Math.min(500, width));
+      const clampedDepth = depth === undefined ? undefined : Math.max(42, Math.min(500, depth));
+      updateSettings({
+        defaultPrintBedSize: clampedWidth,
+        defaultPrintBedDepth: clampedDepth,
+      });
     },
-    [updateSetting]
+    [updateSettings]
   );
 
   const meta: SectionMeta = useMemo(
@@ -41,7 +47,7 @@ export function usePhysicalUnitsSection() {
   );
 
   return {
-    state: { gridUnitMm, heightUnitMm, printBedSize },
+    state: { gridUnitMm, heightUnitMm, printBedSize, printBedDepth },
     handlers: { handleGridUnitChange, handleHeightUnitChange, handlePrintBedChange },
     meta,
     t,

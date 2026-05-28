@@ -45,13 +45,36 @@ describe('usePhysicalUnitsSection', () => {
     expect(result.current.meta.summary).toBe('42mm grid, 7mm height');
   });
 
-  it('returns print bed size from settings store', () => {
+  it('returns print bed width and depth from settings store', () => {
     const { result } = renderHook(() => usePhysicalUnitsSection());
 
     expect(result.current.state.printBedSize).toBe(256);
+    expect(result.current.state.printBedDepth).toBe(256);
   });
 
-  it('handlePrintBedChange updates settings store', () => {
+  it('printBedDepth falls back to printBedSize when unset (linked)', () => {
+    useSettingsStore.getState().updateSettings({
+      defaultPrintBedSize: 256,
+      defaultPrintBedDepth: undefined,
+    });
+    const { result } = renderHook(() => usePhysicalUnitsSection());
+
+    expect(result.current.state.printBedDepth).toBe(256);
+  });
+
+  it('printBedDepth reflects independent depth when unlinked', () => {
+    useSettingsStore.getState().updateSettings({
+      defaultPrintBedSize: 256,
+      defaultPrintBedDepth: 180,
+    });
+    const { result } = renderHook(() => usePhysicalUnitsSection());
+
+    expect(result.current.state.printBedSize).toBe(256);
+    expect(result.current.state.printBedDepth).toBe(180);
+  });
+
+  it('handlePrintBedChange with single arg clears depth (linked)', () => {
+    useSettingsStore.getState().updateSettings({ defaultPrintBedDepth: 180 });
     const { result } = renderHook(() => usePhysicalUnitsSection());
 
     act(() => {
@@ -59,19 +82,33 @@ describe('usePhysicalUnitsSection', () => {
     });
 
     expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(300);
+    expect(useSettingsStore.getState().settings.defaultPrintBedDepth).toBeUndefined();
   });
 
-  it('handlePrintBedChange clamps to valid range', () => {
+  it('handlePrintBedChange with both args stores independent depth', () => {
     const { result } = renderHook(() => usePhysicalUnitsSection());
 
     act(() => {
-      result.current.handlers.handlePrintBedChange(10);
+      result.current.handlers.handlePrintBedChange(300, 180);
+    });
+
+    expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(300);
+    expect(useSettingsStore.getState().settings.defaultPrintBedDepth).toBe(180);
+  });
+
+  it('handlePrintBedChange clamps both dimensions to valid range', () => {
+    const { result } = renderHook(() => usePhysicalUnitsSection());
+
+    act(() => {
+      result.current.handlers.handlePrintBedChange(10, 999);
     });
     expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(42);
+    expect(useSettingsStore.getState().settings.defaultPrintBedDepth).toBe(500);
 
     act(() => {
       result.current.handlers.handlePrintBedChange(999);
     });
     expect(useSettingsStore.getState().settings.defaultPrintBedSize).toBe(500);
+    expect(useSettingsStore.getState().settings.defaultPrintBedDepth).toBeUndefined();
   });
 });

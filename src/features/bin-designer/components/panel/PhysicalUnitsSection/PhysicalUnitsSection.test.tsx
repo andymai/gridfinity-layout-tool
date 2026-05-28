@@ -19,9 +19,9 @@ describe('PhysicalUnitsSection', () => {
     expect(screen.getByLabelText('Height unit')).toBeInTheDocument();
   });
 
-  it('renders print bed input', () => {
+  it('renders print bed width input (linked by default)', () => {
     render(<PhysicalUnitsSection />);
-    expect(screen.getByLabelText('Print bed')).toBeInTheDocument();
+    expect(screen.getByLabelText('Print bed width')).toBeInTheDocument();
   });
 
   it('expands when a help-jump targets binDesigner:base so the print-bed marker is reachable', () => {
