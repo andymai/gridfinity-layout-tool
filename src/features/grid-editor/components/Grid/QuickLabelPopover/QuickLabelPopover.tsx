@@ -147,7 +147,7 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
               maxLength={CONSTRAINTS.LABEL_MAX_LENGTH}
-              placeholder="Enter label..."
+              placeholder={t('gridEditor.quickLabel.placeholder')}
               className="input w-full px-3 py-2 pr-8 text-sm"
               style={{ minWidth: '200px' }}
             />

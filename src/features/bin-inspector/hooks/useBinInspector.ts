@@ -273,11 +273,11 @@ export function useBinInspector(): UseBinInspectorReturn {
 
       if (!result.valid) {
         const reasons: Record<string, string> = {
-          collision: 'Another bin occupies this position',
-          blocked_zone: 'Blocked by a taller bin below',
-          exceeds_height: 'Bin would exceed drawer height',
+          collision: t('toast.binBlocked.collision'),
+          blocked_zone: t('toast.binBlocked.clearance'),
+          exceeds_height: t('toast.binBlocked.exceedsHeight'),
         };
-        addToast(reasons[result.reason] || 'Cannot move bin here', 'error');
+        addToast(reasons[result.reason] || t('toast.binBlocked.default'), 'error');
         return;
       }
 

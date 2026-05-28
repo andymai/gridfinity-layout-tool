@@ -81,7 +81,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
         setErrors(validation.errors);
       }
     } catch {
-      setErrors(['Invalid JSON format']);
+      setErrors([t('layouts.import.error.invalidJsonFormat')]);
     }
   };
 
@@ -102,7 +102,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
 
   const handleImport = () => {
     if (!jsonText.trim()) {
-      setErrors(['No JSON provided']);
+      setErrors([t('layouts.import.error.noJsonProvided')]);
       return;
     }
 
@@ -131,7 +131,7 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
         setErrors(validation.errors);
       }
     } catch {
-      setErrors(['Invalid JSON format']);
+      setErrors([t('layouts.import.error.invalidJsonFormat')]);
     }
   };
 

@@ -11,10 +11,12 @@ import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
 import { fetchDesignerShare } from '@/features/bin-designer/hooks/useDesignerSharing';
 import { migrateParams } from '@/features/bin-designer/constants/defaults';
+import { useTranslation } from '@/i18n';
 
 export function useShareLoading(): boolean {
   const setParams = useDesignerStore((s) => s.setParams);
   const addToast = useToastStore((s) => s.addToast);
+  const t = useTranslation();
 
   const shareHandled = useRef(false);
   const [shareLoading, setShareLoading] = useState(() => {
@@ -39,13 +41,21 @@ export function useShareLoading(): boolean {
     void fetchDesignerShare(shareId).then((result) => {
       if (isOk(result)) {
         setParams(migrateParams(result.value));
-        addToast({ message: 'Shared design loaded', type: 'success', duration: 3000 });
+        addToast({
+          message: t('binDesigner.toast.sharedDesignLoaded'),
+          type: 'success',
+          duration: 3000,
+        });
       } else {
-        addToast({ message: 'Failed to load shared design', type: 'error', duration: 5000 });
+        addToast({
+          message: t('binDesigner.toast.sharedDesignLoadFailed'),
+          type: 'error',
+          duration: 5000,
+        });
       }
       setShareLoading(false);
     });
-  }, [setParams, addToast]);
+  }, [setParams, addToast, t]);
 
   return shareLoading;
 }

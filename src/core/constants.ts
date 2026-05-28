@@ -167,36 +167,39 @@ export function hasFractionalDimensions(rect: {
 /** Default category color (slate gray) - used as fallback when category is undefined */
 export const DEFAULT_CATEGORY_COLOR = '#6b7280';
 
-/** Curated color palette for categories, optimized for dark UI backgrounds */
+/**
+ * Curated color palette for categories, optimized for dark UI backgrounds.
+ * `name` is the English fallback; `nameKey` is the i18n translation key used at render.
+ */
 export const CATEGORY_COLOR_PALETTE = [
-  { color: '#f87171', name: 'Coral' },
-  { color: '#fb923c', name: 'Orange' },
-  { color: '#fbbf24', name: 'Amber' },
-  { color: '#a3e635', name: 'Lime' },
-  { color: '#4ade80', name: 'Green' },
-  { color: '#2dd4bf', name: 'Teal' },
-  { color: '#38bdf8', name: 'Sky' },
-  { color: '#818cf8', name: 'Indigo' },
-  { color: '#c084fc', name: 'Purple' },
-  { color: '#f472b6', name: 'Pink' },
-  { color: '#e2e8f0', name: 'Cloud' },
-  { color: '#334155', name: 'Charcoal' },
-  { color: '#94a3b8', name: 'Slate' },
-  { color: '#a8a29e', name: 'Stone' },
+  { color: '#f87171', name: 'Coral', nameKey: 'colors.category.coral' },
+  { color: '#fb923c', name: 'Orange', nameKey: 'colors.category.orange' },
+  { color: '#fbbf24', name: 'Amber', nameKey: 'colors.category.amber' },
+  { color: '#a3e635', name: 'Lime', nameKey: 'colors.category.lime' },
+  { color: '#4ade80', name: 'Green', nameKey: 'colors.category.green' },
+  { color: '#2dd4bf', name: 'Teal', nameKey: 'colors.category.teal' },
+  { color: '#38bdf8', name: 'Sky', nameKey: 'colors.category.sky' },
+  { color: '#818cf8', name: 'Indigo', nameKey: 'colors.category.indigo' },
+  { color: '#c084fc', name: 'Purple', nameKey: 'colors.category.purple' },
+  { color: '#f472b6', name: 'Pink', nameKey: 'colors.category.pink' },
+  { color: '#e2e8f0', name: 'Cloud', nameKey: 'colors.category.cloud' },
+  { color: '#334155', name: 'Charcoal', nameKey: 'colors.category.charcoal' },
+  { color: '#94a3b8', name: 'Slate', nameKey: 'colors.category.slate' },
+  { color: '#a8a29e', name: 'Stone', nameKey: 'colors.category.stone' },
 ] as const;
 
 /** Common 3D printing filament colors for the baseplate preview color picker. */
 export const FILAMENT_COLORS = [
-  { color: '#f5f5f5', name: 'White' },
-  { color: '#d4d8dc', name: 'Light Grey' },
-  { color: '#6b7280', name: 'Dark Grey' },
-  { color: '#1f2937', name: 'Black' },
-  { color: '#fef3c7', name: 'Cream' },
-  { color: '#ef4444', name: 'Red' },
-  { color: '#3b82f6', name: 'Blue' },
-  { color: '#22c55e', name: 'Green' },
-  { color: '#f97316', name: 'Orange' },
-  { color: '#a855f7', name: 'Purple' },
+  { color: '#f5f5f5', name: 'White', nameKey: 'colors.filament.white' },
+  { color: '#d4d8dc', name: 'Light Grey', nameKey: 'colors.filament.lightGrey' },
+  { color: '#6b7280', name: 'Dark Grey', nameKey: 'colors.filament.darkGrey' },
+  { color: '#1f2937', name: 'Black', nameKey: 'colors.filament.black' },
+  { color: '#fef3c7', name: 'Cream', nameKey: 'colors.filament.cream' },
+  { color: '#ef4444', name: 'Red', nameKey: 'colors.filament.red' },
+  { color: '#3b82f6', name: 'Blue', nameKey: 'colors.filament.blue' },
+  { color: '#22c55e', name: 'Green', nameKey: 'colors.filament.green' },
+  { color: '#f97316', name: 'Orange', nameKey: 'colors.filament.orange' },
+  { color: '#a855f7', name: 'Purple', nameKey: 'colors.filament.purple' },
 ] as const;
 
 /** Curated 20-color preset grid for the filament palette editor popover. */

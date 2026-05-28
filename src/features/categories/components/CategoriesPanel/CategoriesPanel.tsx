@@ -25,21 +25,24 @@ interface ColorPaletteGridProps {
 function ColorPaletteGrid({ selectedColor, onColorSelect, t }: ColorPaletteGridProps) {
   return (
     <div className="grid grid-cols-7 gap-1.5">
-      {CATEGORY_COLOR_PALETTE.map(({ color, name }) => (
-        <button
-          key={color}
-          onClick={() => onColorSelect(color)}
-          className="w-6 h-6 rounded transition-all duration-150 hover:scale-110 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-accent"
-          style={{
-            backgroundColor: color,
-            boxShadow:
-              selectedColor === color ? '0 0 0 2px var(--color-primary)' : 'var(--shadow-sm)',
-          }}
-          title={name}
-          aria-label={t('categories.setColorTo', { name })}
-          aria-pressed={selectedColor === color}
-        />
-      ))}
+      {CATEGORY_COLOR_PALETTE.map(({ color, nameKey }) => {
+        const name = t(nameKey);
+        return (
+          <button
+            key={color}
+            onClick={() => onColorSelect(color)}
+            className="w-6 h-6 rounded transition-all duration-150 hover:scale-110 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-accent"
+            style={{
+              backgroundColor: color,
+              boxShadow:
+                selectedColor === color ? '0 0 0 2px var(--color-primary)' : 'var(--shadow-sm)',
+            }}
+            title={name}
+            aria-label={t('categories.setColorTo', { name })}
+            aria-pressed={selectedColor === color}
+          />
+        );
+      })}
     </div>
   );
 }

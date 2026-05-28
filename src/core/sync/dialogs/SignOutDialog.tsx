@@ -20,7 +20,10 @@ export function SignOutDialog({ isOpen, localCount, onChoice, onCancel }: SignOu
   const t = useTranslation();
   return (
     <Dialog.Root open={isOpen} onClose={onCancel} size="md">
-      <Dialog.Header title={t('syncDialog.signOut.title')} />
+      <Dialog.Header
+        title={t('syncDialog.signOut.title')}
+        closeAriaLabel={t('common.closeDialog')}
+      />
       <Dialog.Body>
         <p className="text-sm text-content-secondary">
           {t('syncDialog.signOut.message', { count: localCount })}

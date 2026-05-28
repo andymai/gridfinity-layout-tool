@@ -502,10 +502,12 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
             title={t('grid.resizeGrid')}
             message={
               pendingResize
-                ? `${pendingResize.clippedBinIds.length} bin${pendingResize.clippedBinIds.length > 1 ? 's' : ''} will be moved to stash. Continue?`
+                ? pendingResize.clippedBinIds.length === 1
+                  ? t('grid.resizeWillStashBin')
+                  : t('grid.resizeWillStashBins', { count: pendingResize.clippedBinIds.length })
                 : ''
             }
-            confirmText="Move to Stash"
+            confirmText={t('grid.moveToStashConfirm')}
             onConfirm={confirmResize}
             onCancel={cancelResize}
           />

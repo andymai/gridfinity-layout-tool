@@ -10,6 +10,8 @@ import {
   getHandleVisual,
   isCornerHandle,
 } from '@/features/grid-editor/utils/handlePositioning';
+import { useTranslation } from '@/i18n';
+import type { TFunction } from '@/i18n';
 
 interface ResizeHandleProps {
   handle: ResizeHandleType;
@@ -23,6 +25,7 @@ interface ResizeHandleProps {
  * Renders touch target and visual indicator based on configuration.
  */
 function ResizeHandleComponent({ handle, placement, variant, onPointerDown }: ResizeHandleProps) {
+  const t = useTranslation();
   const position = getHandlePosition(handle, placement);
   const visual = getHandleVisual(handle);
 
@@ -30,7 +33,7 @@ function ResizeHandleComponent({ handle, placement, variant, onPointerDown }: Re
   const isPrimary = variant === 'primary';
 
   // Accessibility labels (only for primary variant)
-  const ariaLabel = isPrimary ? getAriaLabel(handle) : undefined;
+  const ariaLabel = isPrimary ? getAriaLabel(handle, t) : undefined;
   const role = isPrimary ? 'slider' : undefined;
   const ariaOrientation = isPrimary ? getAriaOrientation(handle) : undefined;
 
@@ -80,16 +83,16 @@ function ResizeHandleComponent({ handle, placement, variant, onPointerDown }: Re
 /**
  * Get aria-label for accessibility.
  */
-function getAriaLabel(handle: ResizeHandleType): string {
+function getAriaLabel(handle: ResizeHandleType, t: TFunction): string {
   const labels: Record<ResizeHandleType, string> = {
-    w: 'Resize left edge',
-    e: 'Resize right edge',
-    n: 'Resize top edge',
-    s: 'Resize bottom edge',
-    nw: 'Resize top-left corner',
-    ne: 'Resize top-right corner',
-    sw: 'Resize bottom-left corner',
-    se: 'Resize bottom-right corner',
+    w: t('gridEditor.resize.westAria'),
+    e: t('gridEditor.resize.eastAria'),
+    n: t('gridEditor.resize.northAria'),
+    s: t('gridEditor.resize.southAria'),
+    nw: t('gridEditor.resize.northwestAria'),
+    ne: t('gridEditor.resize.northeastAria'),
+    sw: t('gridEditor.resize.southwestAria'),
+    se: t('gridEditor.resize.southeastAria'),
   };
   return labels[handle];
 }

@@ -6,6 +6,7 @@
  */
 
 import type { BinParams, GenerationStatus, WasmStatus } from '../types';
+import type { TFunction } from '@/i18n';
 
 /**
  * Generate a screen reader description of the current bin.
@@ -58,12 +59,13 @@ export function describeBin(params: BinParams): string {
 export function getStatusAnnouncement(
   wasmStatus: WasmStatus,
   generationStatus: GenerationStatus,
-  hasMesh: boolean
+  hasMesh: boolean,
+  t: TFunction
 ): string | null {
-  if (wasmStatus === 'loading') return 'Loading 3D engine';
-  if (wasmStatus === 'error') return 'Error: 3D engine failed to load';
-  if (generationStatus === 'generating') return 'Generating bin mesh';
-  if (generationStatus === 'error') return 'Error: mesh generation failed';
-  if (generationStatus === 'complete' && hasMesh) return 'Bin preview updated';
+  if (wasmStatus === 'loading') return t('binDesigner.announce.loadingEngine');
+  if (wasmStatus === 'error') return t('binDesigner.announce.engineLoadError');
+  if (generationStatus === 'generating') return t('binDesigner.announce.generatingMesh');
+  if (generationStatus === 'error') return t('binDesigner.announce.meshGenerationError');
+  if (generationStatus === 'complete' && hasMesh) return t('binDesigner.announce.previewUpdated');
   return null;
 }

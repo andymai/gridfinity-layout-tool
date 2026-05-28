@@ -12,6 +12,7 @@ import {
   getCompartmentFill,
   getPreviewBorderColor,
 } from '@/features/bin-designer/hooks/usePreviewColor';
+import { useTranslation } from '@/i18n';
 
 /** Renders a single cell in the compartment grid with dynamic styling and keyboard support. */
 export function GridCell({
@@ -44,6 +45,7 @@ export function GridCell({
   onPointerEnter: (idx: number) => void;
   onPointerLeave: () => void;
 }) {
+  const t = useTranslation();
   const col = idx % config.cols;
   const row = Math.floor(idx / config.cols);
 
@@ -116,8 +118,16 @@ export function GridCell({
 
   // Determine the cell's accessible label
   const cellLabel = dimensionLabel
-    ? `Compartment ${compartmentId + 1}, ${dimensionLabel}, ${isSplittable ? 'click to split' : ''}`
-    : `Cell ${col + 1}, ${row + 1}`;
+    ? isSplittable
+      ? t('binDesigner.compartmentEditor.compartmentAriaSplittable', {
+          n: compartmentId + 1,
+          dimension: dimensionLabel,
+        })
+      : t('binDesigner.compartmentEditor.compartmentAria', {
+          n: compartmentId + 1,
+          dimension: dimensionLabel,
+        })
+    : t('binDesigner.compartmentEditor.cellAria', { col: col + 1, row: row + 1 });
 
   // Reveal the dimension label only when this specific cell is hovered.
   const showDimensionLabel = isHovered && dimensionLabel;

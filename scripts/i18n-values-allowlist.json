@@ -191,7 +191,17 @@
     "binDesigner.cutoutEngraveLabelPlaceholder",
     "binDesigner.angledDividers.stateTilted",
     "binDesigner.cutouts.pathfinder.title",
-    "binDesigner.cutouts.transform.rotateField"
+    "binDesigner.cutouts.transform.rotateField",
+    "colors.category.amber",
+    "colors.category.coral",
+    "colors.category.indigo",
+    "colors.category.lime",
+    "colors.category.orange",
+    "colors.category.pink",
+    "colors.filament.orange",
+    "binDesigner.compartmentEditor.cellAria",
+    "layouts.announce.fallbackName",
+    "layouts.announce.fallbackNameCapitalized"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

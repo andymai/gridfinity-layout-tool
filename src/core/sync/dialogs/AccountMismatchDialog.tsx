@@ -24,7 +24,10 @@ export function AccountMismatchDialog({
   const t = useTranslation();
   return (
     <Dialog.Root open={isOpen} onClose={() => {}} size="md">
-      <Dialog.Header title={t('syncDialog.accountMismatch.title')} />
+      <Dialog.Header
+        title={t('syncDialog.accountMismatch.title')}
+        closeAriaLabel={t('common.closeDialog')}
+      />
       <Dialog.Body>
         <p className="text-sm text-content-secondary">
           {t('syncDialog.accountMismatch.message', {

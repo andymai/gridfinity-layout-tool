@@ -324,7 +324,7 @@ export function Sidebar() {
                         max={CONSTRAINTS.GRID_MAX}
                         step={widthStep}
                         variant="compact"
-                        ariaLabel="Drawer width in grid units"
+                        ariaLabel={t('sidebar.drawerWidthAria')}
                       />
                     </div>
                     <div>
@@ -342,7 +342,7 @@ export function Sidebar() {
                         max={CONSTRAINTS.GRID_MAX}
                         step={depthStep}
                         variant="compact"
-                        ariaLabel="Drawer depth in grid units"
+                        ariaLabel={t('sidebar.drawerDepthAria')}
                       />
                     </div>
                     <div>
@@ -358,7 +358,7 @@ export function Sidebar() {
                         min={1}
                         max={CONSTRAINTS.GRID_MAX}
                         variant="compact"
-                        ariaLabel="Drawer height in units"
+                        ariaLabel={t('sidebar.drawerHeightAria')}
                         displayValue={`${drawer.height}u`}
                       />
                     </div>

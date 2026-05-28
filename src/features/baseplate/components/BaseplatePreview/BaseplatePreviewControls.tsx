@@ -45,9 +45,10 @@ function ColorPickerContent({
   previewColor: string;
   onColorSelect: (color: string) => void;
 }) {
+  const t = useTranslation();
   return (
     <div className="grid grid-cols-7 gap-1.5">
-      {FILAMENT_COLORS.map(({ color, name }) => (
+      {FILAMENT_COLORS.map(({ color, nameKey }) => (
         <button
           key={color}
           type="button"
@@ -55,7 +56,7 @@ function ColorPickerContent({
           className={`rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
             previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
           }`}
-          aria-label={`${name} color`}
+          aria-label={t('colors.colorAriaLabel', { name: t(nameKey) })}
           aria-selected={previewColor === color}
           role="option"
         >

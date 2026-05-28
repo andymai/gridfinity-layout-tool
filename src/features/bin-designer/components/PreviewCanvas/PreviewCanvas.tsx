@@ -210,7 +210,7 @@ export function PreviewCanvas() {
 
   // Screen reader description
   const binDescription = describeBin(params);
-  const statusAnnouncement = getStatusAnnouncement(wasmStatus, generationStatus, hasMesh);
+  const statusAnnouncement = getStatusAnnouncement(wasmStatus, generationStatus, hasMesh, t);
 
   const undo = useDesignerStore((s) => s.undo);
   const redo = useDesignerStore((s) => s.redo);

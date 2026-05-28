@@ -73,7 +73,11 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      addToast({ message: 'Share link copied to clipboard', type: 'success', duration: 2000 });
+      addToast({
+        message: t('binDesigner.toast.shareLinkCopied'),
+        type: 'success',
+        duration: 2000,
+      });
       // Clear existing timeout before setting a new one
       if (copyTimeoutRef.current) {
         clearTimeout(copyTimeoutRef.current);
@@ -86,7 +90,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
       // Fallback: select the input text
       inputRef.current?.select();
     }
-  }, [shareUrl, addToast]);
+  }, [shareUrl, addToast, t]);
 
   const handleLoad = useCallback(async () => {
     const input = loadInput.trim();
@@ -99,10 +103,14 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
     const loadedParams = await loadShared(id);
     if (loadedParams) {
       setParams(migrateParams(loadedParams));
-      addToast({ message: 'Shared design loaded', type: 'success', duration: 3000 });
+      addToast({
+        message: t('binDesigner.toast.sharedDesignLoaded'),
+        type: 'success',
+        duration: 3000,
+      });
       onClose();
     }
-  }, [loadInput, loadShared, setParams, onClose, addToast]);
+  }, [loadInput, loadShared, setParams, onClose, addToast, t]);
 
   if (!open) return null;
 

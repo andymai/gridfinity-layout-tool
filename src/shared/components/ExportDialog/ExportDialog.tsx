@@ -192,7 +192,7 @@ export function ExportDialog({
 
   return (
     <Dialog.Root open={open} onClose={onClose} size="md">
-      <Dialog.Header title={t('common.export')} />
+      <Dialog.Header title={t('common.export')} closeAriaLabel={t('common.closeDialog')} />
       <Dialog.Body>
         <div className="pb-2">
           {/* Section Title */}

@@ -239,7 +239,7 @@ export function HandleSection() {
                           max={C.MAX_HANDLE_CORNER_RADIUS}
                           step={C.HANDLE_CORNER_RADIUS_STEP}
                           variant="desktop"
-                          ariaLabel="Handle corner radius"
+                          ariaLabel={t('binDesigner.handles.cornerRadiusAria')}
                         />
                       </div>
                     </div>
@@ -343,7 +343,7 @@ export function HandleSection() {
                       max={Math.round(C.MAX_HANDLE_VERTICAL_POSITION * 100)}
                       step={Math.round(C.HANDLE_VERTICAL_POSITION_STEP * 100)}
                       variant="desktop"
-                      ariaLabel="Handle vertical position"
+                      ariaLabel={t('binDesigner.handles.verticalPositionAria')}
                     />
                   </div>
                 )}

@@ -328,12 +328,23 @@ export interface DialogHeaderProps {
   showCloseButton?: boolean;
 
   /**
+   * Aria-label for the close button. Pass a translated string when available.
+   * @default 'Close dialog'
+   */
+  closeAriaLabel?: string;
+
+  /**
    * Additional content to render in the header.
    */
   children?: ReactNode;
 }
 
-function DialogHeader({ title, showCloseButton = true, children }: DialogHeaderProps) {
+function DialogHeader({
+  title,
+  showCloseButton = true,
+  closeAriaLabel = 'Close dialog',
+  children,
+}: DialogHeaderProps) {
   const { titleId, onClose } = useDialogContext();
 
   return (
@@ -344,7 +355,7 @@ function DialogHeader({ title, showCloseButton = true, children }: DialogHeaderP
       <div className="flex items-center gap-2">
         {children}
         {showCloseButton && (
-          <Button iconOnly size="sm" variant="ghost" onClick={onClose} aria-label="Close dialog">
+          <Button iconOnly size="sm" variant="ghost" onClick={onClose} aria-label={closeAriaLabel}>
             <XIcon size="sm" />
           </Button>
         )}
