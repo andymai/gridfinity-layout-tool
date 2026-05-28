@@ -193,7 +193,7 @@ describe('printEstimates', () => {
       expect(highInfill.printTimeMinutes).toBeGreaterThan(baseline.printTimeMinutes);
     });
 
-    it('solid label support uses less volume than bracket', () => {
+    it('solid label support uses more volume than bracket', () => {
       const bracket = estimatePrint({
         ...DEFAULT_BIN_PARAMS,
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
@@ -202,9 +202,10 @@ describe('printEstimates', () => {
         ...DEFAULT_BIN_PARAMS,
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'solid' },
       });
-      // Solid = 1 triangle per tab, bracket = 2 gussets per tab → bracket uses more
-      expect(solid.volumeMm3).toBeLessThan(bracket.volumeMm3);
-      expect(solid.volumeMm3).toBeGreaterThan(0);
+      // Solid extrudes a triangular prism the full shelf width; bracket only
+      // emits thin gussets spaced ~10mm apart. Solid uses substantially more.
+      expect(solid.volumeMm3).toBeGreaterThan(bracket.volumeMm3);
+      expect(bracket.volumeMm3).toBeGreaterThan(0);
     });
 
     it('lower infill decreases print time', () => {

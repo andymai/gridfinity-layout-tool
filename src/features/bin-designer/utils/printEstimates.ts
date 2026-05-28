@@ -10,7 +10,7 @@
  * This avoids expensive mesh-based volume integration.
  */
 
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams, LabelTabSupport } from '@/features/bin-designer/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
 import {
   compartmentHasTiltedBackWall,
@@ -258,16 +258,24 @@ function computeDividerVolume(
   // Volume = total wall length × thickness × height
   return totalLength * thickness * dividerH;
 }
+/** Builder constant: max unsupported shelf span between bracket gussets. */
+const BRACKET_GUSSET_SPACING_MM = 10;
+
+interface LabelTabGeom {
+  readonly tabDepth: number;
+  readonly gussetLeg: number;
+  readonly wallThickness: number;
+  readonly dividerThickness: number;
+  readonly widthPercent: number;
+  readonly inset: number;
+  readonly support: LabelTabSupport;
+}
+
 /**
- * Volume of label tabs.
- *
- * Each tab is a horizontal shelf with a support (bracket gussets or a solid
- * triangular prism). To match the geometry produced by `buildTabsAtRow`, we
- * walk every (row, anchor) pair, group consecutive same-compartment cells
- * sharing an edge at that row, and emit one tab per group. Mirroring the
- * builder's skip conditions (tilted anchor wall, depth+inset overrun, and
- * `edges='both'` collision drops) keeps the estimate aligned with what the
- * builder actually generates.
+ * Volume of label tabs, mirroring `labelTabBuilder.buildTabsAtRow`'s
+ * grouping and skip conditions (tilted anchor wall, depth+inset overrun,
+ * `edges='both'` collisions) so the estimate tracks what the builder
+ * actually generates.
  */
 function computeLabelTabVolume(
   params: BinParams,
@@ -275,7 +283,7 @@ function computeLabelTabVolume(
   outerD: number,
   wallThickness: number
 ): number {
-  const { cols, rows } = params.compartments;
+  const { cols, rows, thickness } = params.compartments;
   const { depth: tabDepth, width: widthPercent, support } = params.label;
   const inset = params.label.inset ?? 0;
   const edges = params.label.edges ?? 'back';
@@ -288,17 +296,17 @@ function computeLabelTabVolume(
   // Mirrors the bridge guard in `buildLabelTabsInScope`.
   if (tabDepth >= innerD) return 0;
 
-  // Per-tab support is independent of tab width:
-  // - bracket: two triangular gussets at the edges (interior gussets are
-  //   ignored — they're a second-order correction)
-  // - solid: a triangular prism. We keep the existing approximation that
-  //   scales support by `wallThickness`; the geometry actually extrudes by
-  //   `tabWidth` but that's a separate magnitude issue, not in scope for
-  //   this counting fix.
-  const supportVolumePerTab =
-    support === 'bracket'
-      ? 2 * 0.5 * tabDepth * tabDepth * wallThickness
-      : 0.5 * tabDepth * tabDepth * wallThickness;
+  // `gussetLeg` clamps at 0 so a tabDepth ≤ wallThickness yields shelf-only
+  // volume (no support), matching the builder's guard on degenerate geometry.
+  const geom: LabelTabGeom = {
+    tabDepth,
+    gussetLeg: Math.max(0, tabDepth - wallThickness),
+    wallThickness,
+    dividerThickness: thickness,
+    widthPercent,
+    inset,
+    support,
+  };
 
   const includeBack = edges === 'back' || edges === 'both';
   const includeFront = edges === 'front' || edges === 'both';
@@ -308,42 +316,40 @@ function computeLabelTabVolume(
   let volume = 0;
   for (let row = 0; row < rows; row++) {
     if (includeBack) {
-      volume += sumTabVolumesAtRow(
-        params,
-        row,
-        'back',
-        cellW,
-        cellD,
-        tabDepth,
-        widthPercent,
-        wallThickness,
-        inset,
-        supportVolumePerTab,
-        null
-      );
+      volume += sumTabVolumesAtRow(params, row, 'back', cellW, cellD, geom, null);
     }
     if (includeFront) {
-      volume += sumTabVolumesAtRow(
-        params,
-        row,
-        'front',
-        cellW,
-        cellD,
-        tabDepth,
-        widthPercent,
-        wallThickness,
-        inset,
-        supportVolumePerTab,
-        collidingFrontIds
-      );
+      volume += sumTabVolumesAtRow(params, row, 'front', cellW, cellD, geom, collidingFrontIds);
     }
   }
   return volume;
 }
 
 /**
- * Sum tab volumes anchored on one row's `back` or `front` edge. Mirrors
- * `labelTabBuilder.buildTabsAtRow`'s grouping + skip logic.
+ * Per-tab volume as a function of shelf width. Support depends on style:
+ *   - `solid` / `fillet`: triangular prism extruded the full shelf width.
+ *     Fillet has a concave profile but the over-estimate is small.
+ *   - `bracket`: ~`ceil(tabWidth / BRACKET_GUSSET_SPACING_MM)` gussets,
+ *     each extruded by the divider thickness (within ±1 of the builder).
+ */
+function tabContribution(geom: LabelTabGeom, tabWidth: number): number {
+  if (tabWidth <= 0) return 0;
+  const shelf = geom.tabDepth * tabWidth * geom.wallThickness;
+  if (geom.gussetLeg <= 0) return shelf;
+  const triangleArea = 0.5 * geom.tabDepth * geom.gussetLeg;
+  const support =
+    geom.support === 'bracket'
+      ? Math.max(1, Math.ceil(tabWidth / BRACKET_GUSSET_SPACING_MM)) *
+        triangleArea *
+        geom.dividerThickness
+      : triangleArea * tabWidth;
+  return shelf + support;
+}
+
+/**
+ * Sum tab volumes for one row + anchor edge. Mirrors the grouping and
+ * skip logic of `labelTabBuilder.buildTabsAtRow`, including the
+ * `thickness/2` boundary deduction at real divider walls.
  */
 function sumTabVolumesAtRow(
   params: BinParams,
@@ -351,29 +357,25 @@ function sumTabVolumesAtRow(
   anchor: 'back' | 'front',
   cellW: number,
   cellD: number,
-  tabDepth: number,
-  widthPercent: number,
-  wallThickness: number,
-  inset: number,
-  supportVolumePerTab: number,
+  geom: LabelTabGeom,
   collidingFrontIds: Set<number> | null
 ): number {
-  const { cols, rows, cells } = params.compartments;
+  const { cols, rows, cells, thickness } = params.compartments;
   const isOuterEdgeRow = anchor === 'back' ? row === rows - 1 : row === 0;
   const neighborRowOffset = anchor === 'back' ? 1 : -1;
   const hasTiltedAnchorWall =
     anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
 
+  const cellAt = (c: number): number => cells[row * cols + c];
+  const anchorsTab = (c: number): boolean =>
+    isOuterEdgeRow || cellAt(c) !== cells[(row + neighborRowOffset) * cols + c];
+
   let volume = 0;
   let col = 0;
 
   while (col < cols) {
-    const cellId = cells[row * cols + col];
-    const neighborCellId = isOuterEdgeRow
-      ? undefined
-      : cells[(row + neighborRowOffset) * cols + col];
-    const hasEdge = isOuterEdgeRow || cellId !== neighborCellId;
-    if (!hasEdge) {
+    const cellId = cellAt(col);
+    if (!anchorsTab(col)) {
       col++;
       continue;
     }
@@ -389,28 +391,31 @@ function sumTabVolumesAtRow(
     const bounds = getCompartmentBounds(params.compartments, cellId);
     if (bounds) {
       const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * cellD;
-      if (tabDepth + inset > compartmentDepth) {
+      if (geom.tabDepth + geom.inset > compartmentDepth) {
         col++;
         continue;
       }
     }
 
-    // Walk consecutive same-cellId columns that all have an edge at this row.
     let groupEnd = col + 1;
-    while (groupEnd < cols) {
-      const gCellId = cells[row * cols + groupEnd];
-      const gNeighborCellId = isOuterEdgeRow
-        ? undefined
-        : cells[(row + neighborRowOffset) * cols + groupEnd];
-      if (gCellId !== cellId || !(isOuterEdgeRow || gCellId !== gNeighborCellId)) break;
+    while (groupEnd < cols && cellAt(groupEnd) === cellId && anchorsTab(groupEnd)) {
       groupEnd++;
     }
 
     const groupCols = groupEnd - col;
-    const tabWidth = (groupCols * cellW * widthPercent) / 100;
-    if (tabWidth > 0) {
-      volume += tabDepth * tabWidth * wallThickness + supportVolumePerTab;
-    }
+    const groupMinCol = col;
+    const groupMaxCol = groupEnd - 1;
+
+    // Deduct half the divider thickness on either side that borders an
+    // actual divider wall (a different compartment). Outer bin walls don't
+    // deduct — the cellW already starts inside the bin wall.
+    const leftDeduction = groupMinCol > 0 && cellAt(groupMinCol - 1) !== cellId ? thickness / 2 : 0;
+    const rightDeduction =
+      groupMaxCol < cols - 1 && cellAt(groupMaxCol + 1) !== cellId ? thickness / 2 : 0;
+    const availableWidth = groupCols * cellW - leftDeduction - rightDeduction;
+    const tabWidth = (availableWidth * geom.widthPercent) / 100;
+
+    volume += tabContribution(geom, tabWidth);
     col = groupEnd;
   }
 
@@ -418,9 +423,9 @@ function sumTabVolumesAtRow(
 }
 
 /**
- * Mirror of `labelTabBuilder.findCollidingFrontCompartments`: when
- * `edges='both'`, identify compartments whose back+front tab pair would
- * collide so we can drop the front tab from the estimate.
+ * For `edges='both'`, identify compartments whose back+front tab pair would
+ * collide so the front tab is dropped from the estimate. Mirror of
+ * `labelTabBuilder.findCollidingFrontCompartments`.
  */
 function findCollidingFrontIds(
   params: BinParams,
