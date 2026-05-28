@@ -12,6 +12,11 @@
 
 import type { BinParams } from '@/features/bin-designer/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
+import {
+  compartmentHasTiltedBackWall,
+  compartmentHasTiltedFrontWall,
+  getCompartmentBounds,
+} from '@/features/bin-designer/utils/compartments';
 import { isFeatureActive } from '@/shared/constraints';
 import {
   PLA_DENSITY,
@@ -130,7 +135,7 @@ function computeBinVolume(params: BinParams): number {
 
   // Label tabs (shelf + support structure)
   if (isFeatureActive(params, 'label')) {
-    volume += computeLabelTabVolume(params, outerW, wallThickness);
+    volume += computeLabelTabVolume(params, outerW, outerD, wallThickness);
   }
 
   // Scoops (remove material from compartment front walls)
@@ -254,43 +259,202 @@ function computeDividerVolume(
   return totalLength * thickness * dividerH;
 }
 /**
- * Volume of label tabs (one per compartment column, per active edge).
+ * Volume of label tabs.
  *
- * Each tab consists of:
- * - Shelf: horizontal plate (depth × width × wallThickness)
- * - Support: bracket gussets or solid triangle underneath
- *
- * Per-edge multiplier: 1 for 'back' or 'front' alone, 2 for 'both' (#1898).
- * Note: this still over-counts merged compartments (uses `cols` rather than
- * walking back-edge groups) — tracked separately, not regressed by this PR.
+ * Each tab is a horizontal shelf with a support (bracket gussets or a solid
+ * triangular prism). To match the geometry produced by `buildTabsAtRow`, we
+ * walk every (row, anchor) pair, group consecutive same-compartment cells
+ * sharing an edge at that row, and emit one tab per group. Mirroring the
+ * builder's skip conditions (tilted anchor wall, depth+inset overrun, and
+ * `edges='both'` collision drops) keeps the estimate aligned with what the
+ * builder actually generates.
  */
-function computeLabelTabVolume(params: BinParams, outerW: number, wallThickness: number): number {
-  const { cols } = params.compartments;
+function computeLabelTabVolume(
+  params: BinParams,
+  outerW: number,
+  outerD: number,
+  wallThickness: number
+): number {
+  const { cols, rows } = params.compartments;
   const { depth: tabDepth, width: widthPercent, support } = params.label;
+  const inset = params.label.inset ?? 0;
+  const edges = params.label.edges ?? 'back';
 
   const innerW = outerW - 2 * wallThickness;
-  const colWidth = innerW / cols;
-  const tabWidth = (colWidth * widthPercent) / 100;
+  const innerD = outerD - 2 * wallThickness;
+  const cellW = innerW / cols;
+  const cellD = innerD / rows;
 
-  // Shelf: horizontal plate
-  const shelfThickness = wallThickness;
-  const shelfVolume = tabDepth * tabWidth * shelfThickness;
+  // Mirrors the bridge guard in `buildLabelTabsInScope`.
+  if (tabDepth >= innerD) return 0;
 
-  // Support structure beneath the shelf
-  let supportVolume: number;
-  if (support === 'bracket') {
-    // Two triangular gussets per tab
-    const gussetSize = tabDepth;
-    supportVolume = 2 * 0.5 * gussetSize * gussetSize * wallThickness;
-  } else {
-    // Solid triangular fill
-    supportVolume = 0.5 * tabDepth * tabDepth * wallThickness;
+  // Per-tab support is independent of tab width:
+  // - bracket: two triangular gussets at the edges (interior gussets are
+  //   ignored — they're a second-order correction)
+  // - solid: a triangular prism. We keep the existing approximation that
+  //   scales support by `wallThickness`; the geometry actually extrudes by
+  //   `tabWidth` but that's a separate magnitude issue, not in scope for
+  //   this counting fix.
+  const supportVolumePerTab =
+    support === 'bracket'
+      ? 2 * 0.5 * tabDepth * tabDepth * wallThickness
+      : 0.5 * tabDepth * tabDepth * wallThickness;
+
+  const includeBack = edges === 'back' || edges === 'both';
+  const includeFront = edges === 'front' || edges === 'both';
+  const collidingFrontIds =
+    edges === 'both' ? findCollidingFrontIds(params, cellD, tabDepth, inset) : null;
+
+  let volume = 0;
+  for (let row = 0; row < rows; row++) {
+    if (includeBack) {
+      volume += sumTabVolumesAtRow(
+        params,
+        row,
+        'back',
+        cellW,
+        cellD,
+        tabDepth,
+        widthPercent,
+        wallThickness,
+        inset,
+        supportVolumePerTab,
+        null
+      );
+    }
+    if (includeFront) {
+      volume += sumTabVolumesAtRow(
+        params,
+        row,
+        'front',
+        cellW,
+        cellD,
+        tabDepth,
+        widthPercent,
+        wallThickness,
+        inset,
+        supportVolumePerTab,
+        collidingFrontIds
+      );
+    }
+  }
+  return volume;
+}
+
+/**
+ * Sum tab volumes anchored on one row's `back` or `front` edge. Mirrors
+ * `labelTabBuilder.buildTabsAtRow`'s grouping + skip logic.
+ */
+function sumTabVolumesAtRow(
+  params: BinParams,
+  row: number,
+  anchor: 'back' | 'front',
+  cellW: number,
+  cellD: number,
+  tabDepth: number,
+  widthPercent: number,
+  wallThickness: number,
+  inset: number,
+  supportVolumePerTab: number,
+  collidingFrontIds: Set<number> | null
+): number {
+  const { cols, rows, cells } = params.compartments;
+  const isOuterEdgeRow = anchor === 'back' ? row === rows - 1 : row === 0;
+  const neighborRowOffset = anchor === 'back' ? 1 : -1;
+  const hasTiltedAnchorWall =
+    anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
+
+  let volume = 0;
+  let col = 0;
+
+  while (col < cols) {
+    const cellId = cells[row * cols + col];
+    const neighborCellId = isOuterEdgeRow
+      ? undefined
+      : cells[(row + neighborRowOffset) * cols + col];
+    const hasEdge = isOuterEdgeRow || cellId !== neighborCellId;
+    if (!hasEdge) {
+      col++;
+      continue;
+    }
+    if (hasTiltedAnchorWall(params.compartments, cellId)) {
+      col++;
+      continue;
+    }
+    if (anchor === 'front' && collidingFrontIds?.has(cellId)) {
+      col++;
+      continue;
+    }
+
+    const bounds = getCompartmentBounds(params.compartments, cellId);
+    if (bounds) {
+      const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * cellD;
+      if (tabDepth + inset > compartmentDepth) {
+        col++;
+        continue;
+      }
+    }
+
+    // Walk consecutive same-cellId columns that all have an edge at this row.
+    let groupEnd = col + 1;
+    while (groupEnd < cols) {
+      const gCellId = cells[row * cols + groupEnd];
+      const gNeighborCellId = isOuterEdgeRow
+        ? undefined
+        : cells[(row + neighborRowOffset) * cols + groupEnd];
+      if (gCellId !== cellId || !(isOuterEdgeRow || gCellId !== gNeighborCellId)) break;
+      groupEnd++;
+    }
+
+    const groupCols = groupEnd - col;
+    const tabWidth = (groupCols * cellW * widthPercent) / 100;
+    if (tabWidth > 0) {
+      volume += tabDepth * tabWidth * wallThickness + supportVolumePerTab;
+    }
+    col = groupEnd;
   }
 
-  const edges = params.label.edges ?? 'back';
-  const edgeCount = edges === 'both' ? 2 : 1;
+  return volume;
+}
 
-  return cols * edgeCount * (shelfVolume + supportVolume);
+/**
+ * Mirror of `labelTabBuilder.findCollidingFrontCompartments`: when
+ * `edges='both'`, identify compartments whose back+front tab pair would
+ * collide so we can drop the front tab from the estimate.
+ */
+function findCollidingFrontIds(
+  params: BinParams,
+  cellD: number,
+  tabDepth: number,
+  inset: number
+): Set<number> {
+  const { cols, rows, cells } = params.compartments;
+  const colliding = new Set<number>();
+  const visited = new Set<number>();
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const cellId = cells[row * cols + col];
+      if (visited.has(cellId)) continue;
+      visited.add(cellId);
+
+      const bounds = getCompartmentBounds(params.compartments, cellId);
+      if (!bounds) continue;
+
+      const hasFrontAnchor =
+        bounds.minRow === 0 || cells[(bounds.minRow - 1) * cols + bounds.minCol] !== cellId;
+      const hasBackAnchor =
+        bounds.maxRow === rows - 1 || cells[(bounds.maxRow + 1) * cols + bounds.minCol] !== cellId;
+      if (!hasBackAnchor || !hasFrontAnchor) continue;
+
+      const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * cellD;
+      if (2 * tabDepth + 2 * inset > compartmentDepth) {
+        colliding.add(cellId);
+      }
+    }
+  }
+
+  return colliding;
 }
 
 /**
