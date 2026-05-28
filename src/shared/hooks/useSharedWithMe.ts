@@ -97,7 +97,7 @@ export function useSharedWithMe(): SharedWithMeState & SharedWithMeActions {
         // If not found, mark entry as deleted
         if (result.error.code === 'API_NOT_FOUND') {
           updateSharedWithMe(entry.id, { status: 'deleted' });
-          setError(t('share.toast.deletedByOwner'));
+          setError(t('share.error.deletedByOwner'));
         } else {
           setError(message);
         }

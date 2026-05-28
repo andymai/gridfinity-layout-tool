@@ -53,7 +53,7 @@ export function ScoopSection() {
             max={DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS}
             step={DESIGNER_CONSTRAINTS.SCOOP_RADIUS_STEP}
             variant="desktop"
-            ariaLabel="Scoop radius"
+            ariaLabel={t('binDesigner.scoop.radiusAria')}
           />
         )}
         {state.isAutoRadius && (

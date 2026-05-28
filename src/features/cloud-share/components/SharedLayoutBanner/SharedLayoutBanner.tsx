@@ -134,7 +134,7 @@ export function SharedLayoutBanner() {
 
       // Show feedback
       addToast(t('share.banner.discarded'), 'info');
-      announceToScreenReader('Shared layout discarded, returned to your layouts');
+      announceToScreenReader(t('cloudShare.announce.layoutDiscarded'));
     } catch (error) {
       console.error('[SharedLayoutBanner] Failed to restore layout:', error);
       addToast(t('toast.genericError'), 'error');

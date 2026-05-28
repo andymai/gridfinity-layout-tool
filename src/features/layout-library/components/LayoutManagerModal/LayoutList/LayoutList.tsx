@@ -179,10 +179,10 @@ export function LayoutList({
           layout,
           `${entry.name.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.json`
         );
-        announceToScreenReader('Layout downloaded');
+        announceToScreenReader(t('layouts.announce.downloaded'));
       }
     },
-    [getLayoutData, announceToScreenReader]
+    [getLayoutData, announceToScreenReader, t]
   );
 
   const handleSwitch = useCallback(

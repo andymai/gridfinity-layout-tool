@@ -112,7 +112,7 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
 
       const file = files[0];
       if (!file.name.endsWith('.json')) {
-        setErrors([t('binDesigner.toast.dropJsonFile')]);
+        setErrors([t('binDesigner.designJson.error.mustBeJsonFile')]);
         return;
       }
 

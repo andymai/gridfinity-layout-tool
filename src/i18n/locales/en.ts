@@ -2369,6 +2369,7 @@ const en: Record<string, string> = {
     'compartments.rows must be an integer between {min} and {max}',
   'binDesigner.designJson.error.compartmentsCellsLength':
     'compartments.cells length must equal cols × rows (expected {expected}, got {got})',
+  'binDesigner.designJson.error.mustBeJsonFile': 'Please drop a JSON file',
 
   // Bin-designer toasts
   'binDesigner.toast.designDuplicated': 'Duplicated "{name}"',
@@ -2378,7 +2379,6 @@ const en: Record<string, string> = {
   'binDesigner.toast.sharedDesignLoaded': 'Shared design loaded',
   'binDesigner.toast.sharedDesignLoadFailed': 'Failed to load shared design',
   'binDesigner.toast.shareLinkCopied': 'Share link copied to clipboard',
-  'binDesigner.toast.dropJsonFile': 'Please drop a JSON file',
 
   // Bin-designer screen-reader announcements
   'binDesigner.announce.loadingEngine': 'Loading 3D engine',
@@ -2430,21 +2430,20 @@ const en: Record<string, string> = {
   // Grid stash confirm
   'grid.moveToStashConfirm': 'Move to Stash',
   'grid.resizeWillStashBins': '{count} bins will be moved to stash. Continue?',
-  'grid.resizeWillStashBin': '1 bin will be moved to stash. Continue?',
 
   // Import modal inline errors
   'layouts.import.error.invalidJsonFormat': 'Invalid JSON format',
   'layouts.import.error.noJsonProvided': 'No JSON provided',
+  'layouts.import.error.fileTooLarge': 'File too large ({sizeMb} MB). Maximum is {maxMb} MB.',
 
   // Shared layout
-  'share.toast.deletedByOwner': 'This shared layout has been deleted by its owner.',
+  'share.error.deletedByOwner': 'This shared layout has been deleted by its owner.',
   'share.announce.removedFromList': 'Removed shared layout from list.',
   'share.error.offline': "You're offline. Connect to the internet to open shared layouts.",
   'share.toast.openFailed': 'Failed to open shared layout: {message}',
   'share.history.opened': 'Opened shared layout: {name}',
 
   // Layouts panel announcements
-  'layouts.announce.created': 'New layout created',
   'layouts.announce.cannotDeleteOnly': 'Cannot delete the only layout',
   'layouts.announce.switchedTo': 'Switched to {name}',
   'layouts.announce.duplicated': 'Duplicated {name}',
@@ -2454,6 +2453,9 @@ const en: Record<string, string> = {
   'layouts.announce.fallbackName': 'layout',
   'layouts.announce.deleted': '{name} deleted',
   'layouts.announce.fallbackNameCapitalized': 'Layout',
+  'layouts.announce.dialogOpened': 'Layouts dialog opened. {count} layouts available.',
+  'layouts.announce.imported': 'Imported {name}',
+  'layouts.announce.importedCount': 'Imported {count} layouts',
 
   // Category color palette
   'colors.category.coral': 'Coral',
@@ -2485,6 +2487,36 @@ const en: Record<string, string> = {
   'colors.filament.green': 'Green',
   'colors.filament.orange': 'Orange',
   'colors.filament.purple': 'Purple',
+
+  // Cloud-share announcements / errors
+  'cloudShare.announce.sharedSuccess': 'Layout shared successfully. Link copied to clipboard.',
+  'cloudShare.announce.deleted': 'Share deleted successfully.',
+  'cloudShare.announce.linkCopied': 'Link copied to clipboard.',
+  'cloudShare.announce.layoutDiscarded': 'Shared layout discarded, returned to your layouts',
+  'cloudShare.announce.shareFailed': 'Share failed: {message}',
+  'cloudShare.announce.shareUpdatedEdit': 'Share updated. Anyone with the link can now edit.',
+  'cloudShare.announce.shareUpdatedView': 'Share updated. Anyone with the link can view.',
+  'cloudShare.error.offlineShare': "You're offline. Connect to the internet to share.",
+  'cloudShare.error.offlineUpdate': "You're offline. Connect to the internet to update.",
+  'cloudShare.error.offlineDelete': "You're offline. Connect to the internet to delete.",
+  'cloudShare.error.noExistingShare': 'No existing share to update.',
+  'cloudShare.error.shareWasDeleted': 'Share was deleted. Create a new share instead.',
+  'cloudShare.error.unableToUpdate': 'Unable to update share. Create a new share instead.',
+
+  // Single-bin inspector aria-labels
+  'inspector.single.heightAria': 'Bin height',
+  'inspector.single.clearanceAria': 'Bin clearance',
+  'inspector.single.categoryAria': 'Bin category',
+
+  // Bin-designer section aria-labels
+  'binDesigner.scoop.radiusAria': 'Scoop radius',
+  'binDesigner.labelTabs.widthAria': 'Tab width',
+  'binDesigner.labelTabs.depthAria': 'Tab depth',
+  'binDesigner.labelTabs.heightAria': 'Tab height',
+  'binDesigner.labelTabs.insetAria': 'Tab inset',
+  'binDesigner.handles.widthAria': 'Handle width',
+  'binDesigner.handles.heightAria': 'Handle height',
+  'binDesigner.handles.countAria': 'Handle count',
 };
 
 export default en;

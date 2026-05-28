@@ -43,73 +43,76 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const processInput = useCallback((text: string) => {
-    setJsonText(text);
-    setErrors([]);
-    setPreview(null);
-    setArchivePreview(null);
-    setValidLayout(null);
-    setValidArchive(null);
+  const processInput = useCallback(
+    (text: string) => {
+      setJsonText(text);
+      setErrors([]);
+      setPreview(null);
+      setArchivePreview(null);
+      setValidLayout(null);
+      setValidArchive(null);
 
-    if (!text.trim()) return;
+      if (!text.trim()) return;
 
-    // Check if it's a share URL
-    const shareMatch = text.match(/#share=([A-Za-z0-9_-]+)/);
-    if (shareMatch) {
-      const encoded = shareMatch[1];
-      const result = decodeLayoutFromURL(encoded);
-      if (result.layout) {
-        setPreview({
-          name: result.layout.name,
-          drawerSize: `${result.layout.drawer.width}×${result.layout.drawer.depth}×${result.layout.drawer.height}`,
-          layerCount: result.layout.layers.length,
-          binCount: result.layout.bins.length,
-        });
-        setValidLayout(result.layout);
-      } else {
-        setErrors(result.errors);
-      }
-      return;
-    }
-
-    // Try to parse as JSON
-    try {
-      const data: unknown = JSON.parse(text);
-
-      // Check if it's a bulk archive
-      if (isArchiveFormat(data)) {
-        setArchivePreview({
-          layoutCount: data.layouts.length,
-          exportedAt: data._archive.exportedAt,
-        });
-        setValidArchive(data);
+      // Check if it's a share URL
+      const shareMatch = text.match(/#share=([A-Za-z0-9_-]+)/);
+      if (shareMatch) {
+        const encoded = shareMatch[1];
+        const result = decodeLayoutFromURL(encoded);
+        if (result.layout) {
+          setPreview({
+            name: result.layout.name,
+            drawerSize: `${result.layout.drawer.width}×${result.layout.drawer.depth}×${result.layout.drawer.height}`,
+            layerCount: result.layout.layers.length,
+            binCount: result.layout.bins.length,
+          });
+          setValidLayout(result.layout);
+        } else {
+          setErrors(result.errors);
+        }
         return;
       }
 
-      const validation = validateImport(data);
+      // Try to parse as JSON
+      try {
+        const data: unknown = JSON.parse(text);
 
-      if (validation.valid) {
-        const { layout } = validation;
-        const raw = data as Record<string, unknown>;
-        const linkedDesignCount =
-          Array.isArray(raw.linkedDesigns) && raw.linkedDesigns.length > 0
-            ? raw.linkedDesigns.length
-            : undefined;
-        setPreview({
-          name: layout.name,
-          drawerSize: `${layout.drawer.width}×${layout.drawer.depth}×${layout.drawer.height}`,
-          layerCount: layout.layers.length,
-          binCount: layout.bins.length,
-          linkedDesignCount,
-        });
-        setValidLayout(layout);
-      } else {
-        setErrors(validation.errors);
+        // Check if it's a bulk archive
+        if (isArchiveFormat(data)) {
+          setArchivePreview({
+            layoutCount: data.layouts.length,
+            exportedAt: data._archive.exportedAt,
+          });
+          setValidArchive(data);
+          return;
+        }
+
+        const validation = validateImport(data);
+
+        if (validation.valid) {
+          const { layout } = validation;
+          const raw = data as Record<string, unknown>;
+          const linkedDesignCount =
+            Array.isArray(raw.linkedDesigns) && raw.linkedDesigns.length > 0
+              ? raw.linkedDesigns.length
+              : undefined;
+          setPreview({
+            name: layout.name,
+            drawerSize: `${layout.drawer.width}×${layout.drawer.depth}×${layout.drawer.height}`,
+            layerCount: layout.layers.length,
+            binCount: layout.bins.length,
+            linkedDesignCount,
+          });
+          setValidLayout(layout);
+        } else {
+          setErrors(validation.errors);
+        }
+      } catch {
+        setErrors([t('layouts.import.error.invalidJsonFormat')]);
       }
-    } catch {
-      setErrors(['Invalid JSON format']);
-    }
-  }, []);
+    },
+    [t]
+  );
 
   const handleTextChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -122,7 +125,10 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
     (file: File) => {
       if (file.size > MAX_FILE_SIZE_BYTES) {
         setErrors([
-          `File too large (${Math.round(file.size / 1024 / 1024)} MB). Maximum is 50 MB.`,
+          t('layouts.import.error.fileTooLarge', {
+            sizeMb: Math.round(file.size / 1024 / 1024),
+            maxMb: 50,
+          }),
         ]);
         return;
       }
@@ -133,7 +139,7 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
       };
       reader.readAsText(file);
     },
-    [processInput]
+    [processInput, t]
   );
 
   const handleFileUpload = useCallback(
@@ -168,13 +174,13 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
 
       const file = files[0];
       if (!file.name.endsWith('.json')) {
-        setErrors(['Please drop a JSON file']);
+        setErrors([t('binDesigner.designJson.error.mustBeJsonFile')]);
         return;
       }
 
       readFile(file);
     },
-    [readFile]
+    [readFile, t]
   );
 
   const handleImport = useCallback(async () => {

@@ -186,7 +186,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               min={constraints.minHeight}
               max={constraints.maxHeight}
               variant={variant}
-              ariaLabel="Bin height"
+              ariaLabel={t('inspector.single.heightAria')}
               displayValue={`${bin.height}u`}
             />
             <div className="mt-1 space-y-0.5 text-[10px] text-content-disabled">
@@ -227,7 +227,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 min={0}
                 max={constraints.maxClearance}
                 variant={variant}
-                ariaLabel="Bin clearance"
+                ariaLabel={t('inspector.single.clearanceAria')}
                 displayValue={`${bin.clearanceHeight || 0}u`}
               />
               <div className="text-center mt-1 text-[10px] text-content-disabled">
@@ -260,7 +260,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             onChange={(value) => updateField('category', value)}
             options={categories.map((c) => ({ id: c.id, name: c.name }))}
             colorSwatch={category?.color || DEFAULT_CATEGORY_COLOR}
-            ariaLabel="Bin category"
+            ariaLabel={t('inspector.single.categoryAria')}
             variant={variant}
           />
         </div>

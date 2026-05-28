@@ -110,7 +110,7 @@ export function MobileLayoutsPanel() {
   const handleCreateNew = useCallback(async () => {
     const result = await createNewLayout();
     if (isOk(result)) {
-      announceToScreenReader(t('layouts.announce.created'));
+      announceToScreenReader(t('toast.layoutCreated'));
       closeMobilePanel();
     }
   }, [createNewLayout, announceToScreenReader, closeMobilePanel, t]);

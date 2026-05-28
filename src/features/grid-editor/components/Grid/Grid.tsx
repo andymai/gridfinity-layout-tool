@@ -502,9 +502,7 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
             title={t('grid.resizeGrid')}
             message={
               pendingResize
-                ? pendingResize.clippedBinIds.length === 1
-                  ? t('grid.resizeWillStashBin')
-                  : t('grid.resizeWillStashBins', { count: pendingResize.clippedBinIds.length })
+                ? t('grid.resizeWillStashBins', { count: pendingResize.clippedBinIds.length })
                 : ''
             }
             confirmText={t('grid.moveToStashConfirm')}
