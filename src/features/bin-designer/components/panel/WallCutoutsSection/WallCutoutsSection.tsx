@@ -252,7 +252,7 @@ function PositionDisclosure({
 
 export function WallCutoutsSection() {
   const { state, handlers, meta, t, STEP } = useWallCutoutsSection();
-  const { walls, activeSides, linked, blocksLid } = state;
+  const { walls, activeSides, linked, blocksLid, showDensityHint } = state;
 
   const sharedSide = activeSides.length > 0 ? activeSides[0] : undefined;
   const hideDepth = walls.shape === 'scoop';
@@ -384,6 +384,13 @@ export function WallCutoutsSection() {
                   </div>
                 ))}
             </>
+          )}
+
+          {/* Density expectation hint (issue #1882) */}
+          {showDensityHint && (
+            <p className="text-xs text-content-tertiary leading-snug">
+              {t('binDesigner.wallCutouts.densityHint')}
+            </p>
           )}
 
           {/* Interior walls */}

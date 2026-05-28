@@ -668,6 +668,7 @@
   "binDesigner.touchGestureHints": "タッチジェスチャーヒント",
   "binDesigner.wallCutouts": "壁の切り欠き",
   "binDesigner.wallCutouts.back": "奥",
+  "binDesigner.wallCutouts.densityHint": "仕切りが多いと壁の切り欠きが薄板を重ねたように見えます。内部の切り欠きを使うと開口部が各仕切りを貫通します。",
   "binDesigner.wallCutouts.front": "手前",
   "binDesigner.wallCutouts.height": "高さ",
   "binDesigner.wallCutouts.independent": "個別",

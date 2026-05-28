@@ -668,6 +668,7 @@
   "binDesigner.touchGestureHints": "Dicas de gestos de toque",
   "binDesigner.wallCutouts": "Recortes de parede",
   "binDesigner.wallCutouts.back": "Traseira",
+  "binDesigner.wallCutouts.densityHint": "Muitos compartimentos fazem os recortes de parede parecerem uma pilha de ripas — recortes internos levam a abertura através de cada divisória.",
   "binDesigner.wallCutouts.front": "Frontal",
   "binDesigner.wallCutouts.height": "Altura",
   "binDesigner.wallCutouts.independent": "Independente",

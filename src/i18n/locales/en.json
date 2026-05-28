@@ -1511,6 +1511,7 @@
   "binDesigner.wallCutouts.offset": "Offset",
   "binDesigner.wallCutouts.widthUnit.percent": "%",
   "binDesigner.wallCutouts.widthUnit.mm": "mm",
+  "binDesigner.wallCutouts.densityHint": "Many compartments make wall cutouts look like a stack of slats — interior cutouts carry the opening through each divider.",
   "binDesigner.handles": "Handles",
   "binDesigner.handles.enable": "Enable handles",
   "binDesigner.handles.sides": "Sides",

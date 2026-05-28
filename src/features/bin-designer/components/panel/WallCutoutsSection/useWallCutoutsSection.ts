@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useSettingsStore } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
 import { isLidBlockedBySection } from '@/features/bin-designer/utils/lidCompatibility';
@@ -14,9 +15,16 @@ import { DISABLED_WALL_CUTOUT } from '@/features/bin-designer/constants/defaults
 import type { SectionMeta } from '../types';
 
 const ALL_SIDES: readonly WallSide[] = ['front', 'back', 'left', 'right', 'interior'];
+const OUTER_SIDES: readonly WallSide[] = ['front', 'back', 'left', 'right'];
 const STEP = 5;
 const DEFAULT_SPAN = 70;
 const DEFAULT_HEIGHT = 50;
+
+/**
+ * Compartment count at or above which wall cutouts read as a stack of slats.
+ * Drives the expectation hint (issue #1882) rather than any geometry change.
+ */
+const DENSITY_HINT_THRESHOLD = 5;
 
 export function useWallCutoutsSection() {
   const { walls, updateWalls, updateWallSide, params } = useDesignerStore(
@@ -28,7 +36,16 @@ export function useWallCutoutsSection() {
     }))
   );
   const t = useTranslation();
-  const [linked, setLinked] = useState(true);
+  const { linked, updateSetting } = useSettingsStore(
+    useShallow((s) => ({
+      linked: s.settings.wallCutoutsLinked,
+      updateSetting: s.updateSetting,
+    }))
+  );
+
+  // True once the user has made an explicit interior choice this session, so
+  // the auto-coupling below won't resurrect an interior they turned off.
+  const interiorUserSet = useRef(false);
 
   const featureStatus = getFeatureStatus(params, 'wallCutouts');
   const isUnavailable = !featureStatus.available;
@@ -42,11 +59,37 @@ export function useWallCutoutsSection() {
   }, [walls]);
 
   const toggleEnabled = useCallback(() => {
-    updateWalls({ enabled: !walls.enabled });
-  }, [walls.enabled, updateWalls]);
+    if (walls.enabled) {
+      updateWalls({ enabled: false });
+      return;
+    }
+    // Enabling on a multi-compartment bin: also cut the interior dividers so
+    // the opening carries through the bin instead of leaving full-height
+    // dividers behind notched outer walls (issue #1882). Skipped once the user
+    // has made an explicit interior choice, so turning it off stays off.
+    const hasDividers = params.compartments.cols > 1 || params.compartments.rows > 1;
+    if (hasDividers && !walls.interior.enabled && !interiorUserSet.current) {
+      const source = OUTER_SIDES.map((s) => walls[s]).find((c) => c.enabled);
+      updateWalls({
+        enabled: true,
+        interior: {
+          enabled: true,
+          width: source?.width ?? DEFAULT_SPAN,
+          depth: source?.depth ?? DEFAULT_HEIGHT,
+          alignment: source?.alignment ?? 'center',
+          offset: source?.offset ?? 0,
+          widthMm: source?.widthMm ?? null,
+        },
+      });
+      return;
+    }
+    updateWalls({ enabled: true });
+  }, [walls, updateWalls, params.compartments]);
 
   const toggleSide = useCallback(
     (side: WallSide) => {
+      // An explicit interior toggle opts out of the auto-coupling above.
+      if (side === 'interior') interiorUserSet.current = true;
       const current = walls[side];
       if (current.enabled) {
         updateWallSide(side, DISABLED_WALL_CUTOUT);
@@ -101,8 +144,8 @@ export function useWallCutoutsSection() {
   );
 
   const toggleLinked = useCallback(() => {
-    setLinked((prev) => !prev);
-  }, []);
+    updateSetting('wallCutoutsLinked', !linked);
+  }, [updateSetting, linked]);
 
   const setShape = useCallback(
     (shape: WallCutoutShape) => {
@@ -144,6 +187,16 @@ export function useWallCutoutsSection() {
     });
   }, [walls, activeSides, t]);
 
+  // Dense bins render wall cutouts as a stack of slats no matter what — surface
+  // a quiet expectation hint rather than changing geometry (issue #1882).
+  const showDensityHint = useMemo(() => {
+    if (!walls.enabled || activeSides.length === 0) return false;
+    return (
+      params.compartments.cols >= DENSITY_HINT_THRESHOLD ||
+      params.compartments.rows >= DENSITY_HINT_THRESHOLD
+    );
+  }, [walls.enabled, activeSides.length, params.compartments.cols, params.compartments.rows]);
+
   const disabledReason = featureStatus.reason ? t(featureStatus.reason) : undefined;
 
   // True when the user's wall-cutout config is blocking the click-lock
@@ -161,7 +214,7 @@ export function useWallCutoutsSection() {
   );
 
   return {
-    state: { walls, activeSides, linked, blocksLid },
+    state: { walls, activeSides, linked, blocksLid, showDensityHint },
     handlers: {
       toggleEnabled,
       toggleSide,

@@ -668,6 +668,7 @@
   "binDesigner.touchGestureHints": "Tips för pekgester",
   "binDesigner.wallCutouts": "Väggurtag",
   "binDesigner.wallCutouts.back": "Bak",
+  "binDesigner.wallCutouts.densityHint": "Många fack får väggurtagen att se ut som en trave lameller — inre urtag för öppningen genom varje mellanvägg.",
   "binDesigner.wallCutouts.front": "Fram",
   "binDesigner.wallCutouts.height": "Höjd",
   "binDesigner.wallCutouts.independent": "Oberoende",
