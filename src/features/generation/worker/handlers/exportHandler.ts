@@ -6,13 +6,14 @@ import { unwrap, compound, exportSTEP, translate } from 'brepjs';
 import type {
   ExportMessage,
   ExportBaseplateMessage,
+  ExportConnectorKeyMessage,
   ExportDividersMessage,
   ExportCombinedMessage,
   CombinedExportPiece,
 } from '../../bridge/types';
 import { exportBin } from '../generators/binGenerator';
 import { getLastSolid } from '../generators/shapeCache';
-import { exportBaseplate } from '../generators/baseplateGenerator';
+import { exportBaseplate, exportConnectorKey } from '../generators/baseplateGenerator';
 import { exportDividers, exportDividerPiecesSeparately } from '../generators/dividerExport';
 import { buildUniqueDividerPieces } from '../generators/dividerBuilder';
 import { exportLid } from '../generators/lidOrchestrator';
@@ -58,6 +59,26 @@ export async function handleExportBaseplate(message: ExportBaseplateMessage): Pr
       return { data: result.data, format: payload.format, fileName: result.fileName };
     },
     'Baseplate export failed',
+    (p) => [p.data],
+    classifyExportError
+  );
+}
+
+export async function handleExportConnectorKey(message: ExportConnectorKeyMessage): Promise<void> {
+  const payload = message.payload;
+  await runExport(
+    payload.requestId,
+    'BASEPLATE_EXPORT_RESULT',
+    async () => {
+      const result = await exportConnectorKey(
+        payload.params,
+        payload.format,
+        payload.tolerance,
+        payload.angularTolerance
+      );
+      return { data: result.data, format: payload.format, fileName: result.fileName };
+    },
+    'Connector key export failed',
     (p) => [p.data],
     classifyExportError
   );

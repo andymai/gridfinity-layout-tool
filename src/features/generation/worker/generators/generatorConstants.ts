@@ -103,6 +103,12 @@ export const TONGUE_TIP_HALF = 1.3;
 
 /** Per-side clearance added to the groove for FDM tolerance (mm) */
 export const TONGUE_CLEARANCE = 0.15;
+
+// Bowtie-key connector style: both seam edges are female grooves and a separate
+// bowtie key (double dovetail, wide at both ends) is hammered in from the top.
+// The key holds vertically by friction, so its grooves use a tighter per-side
+// clearance than the slip-fit dovetail. Print-test tuned — start conservative.
+export const BOWTIE_KEY_CLEARANCE = 0.05;
 export const NUB_DIAMETER = 1.5;
 export const NUB_DEPTH = 0.8;
 const HOLE_CLEARANCE = 0.1;

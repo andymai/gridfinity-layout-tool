@@ -44,6 +44,7 @@ export function computePieceFingerprint(params: BaseplateParams): string {
     // that differ only in the persisted invertDovetails value.
     `id:${params.preferIdenticalPieces ? 0 : params.invertDovetails ? 1 : 0}`,
     `ip:${params.preferIdenticalPieces ? 1 : 0}`,
+    `cs:${params.connectorStyle ?? 'dovetail'}`,
     `lw:${params.lightweight ? 1 : 0}`,
     params.cornerRadius === undefined ? 'cr:default' : `cr:${params.cornerRadius}`,
   ];

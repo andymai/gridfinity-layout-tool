@@ -22,6 +22,7 @@ import { useBaseplatePageStore } from '../store/baseplatePageStore';
 import { buildFullParams } from '../utils/buildFullParams';
 import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
 import { assignGroupNames } from '../utils/pieceNaming';
+import { countConnectorKeys } from '../utils/connectorKeys';
 import { generatePrintGuide } from '../utils/printGuide';
 import { generateBaseplateFileName, toNamingParams } from '../utils/fileNaming';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
@@ -199,6 +200,19 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             pieces.push({ data, label: name });
           }
 
+          // Bowtie connectors ship a separate, identical key part hammered into
+          // every seam junction — one STL, printed N times.
+          const keyCount = countConnectorKeys(tiling, fullParams);
+          if (keyCount > 0) {
+            const keyResult = await bridge.exportConnectorKey(fullParams, bridgeFormat);
+            let keyData = keyResult.data;
+            if (format === '3mf') {
+              const blob = convertStlTo3mf(keyData, `${baseNameNoExt}_key`, stackCopies);
+              keyData = await blob.arrayBuffer();
+            }
+            pieces.push({ data: keyData, label: 'key' });
+          }
+
           // Generate print guide
           const guideText = generatePrintGuide({
             tiling,
@@ -207,6 +221,10 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             parentParams: fullParams,
             fileExtension: extension,
             baseFileName: baseNameNoExt,
+            connectorKey:
+              keyCount > 0
+                ? { fileName: `${baseNameNoExt}_key${extension}`, count: keyCount }
+                : undefined,
           });
 
           const zip = packagePiecesAsZip(pieces, baseNameNoExt, extension, [

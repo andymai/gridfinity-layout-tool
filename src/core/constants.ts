@@ -275,6 +275,9 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     ...(typeof obj.preferIdenticalPieces === 'boolean'
       ? { preferIdenticalPieces: obj.preferIdenticalPieces }
       : {}),
+    ...(obj.connectorStyle === 'dovetail' || obj.connectorStyle === 'bowtie'
+      ? { connectorStyle: obj.connectorStyle }
+      : {}),
     ...(typeof obj.lightweight === 'boolean' ? { lightweight: obj.lightweight } : {}),
     ...(typeof obj.syncWithLayout === 'boolean' ? { syncWithLayout: obj.syncWithLayout } : {}),
     ...(typeof obj.baseplateWidth === 'number'

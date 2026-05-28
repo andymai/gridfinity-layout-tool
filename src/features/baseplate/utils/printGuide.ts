@@ -27,10 +27,13 @@ export interface PrintGuideInput {
   readonly parentParams: BaseplateParams;
   readonly fileExtension: string;
   readonly baseFileName: string;
+  /** Bowtie connector key part, when present — printed `count` times. */
+  readonly connectorKey?: { readonly fileName: string; readonly count: number };
 }
 
 export function generatePrintGuide(input: PrintGuideInput): string {
-  const { tiling, groups, groupNames, parentParams, fileExtension, baseFileName } = input;
+  const { tiling, groups, groupNames, parentParams, fileExtension, baseFileName, connectorKey } =
+    input;
 
   const sections = [
     generateHeader(tiling, parentParams, groupNames.size),
@@ -42,11 +45,23 @@ export function generatePrintGuide(input: PrintGuideInput): string {
       fileExtension,
       baseFileName
     ),
+    ...(connectorKey ? [generateConnectorKeySection(connectorKey)] : []),
     generateGridMap(tiling, groups, groupNames),
     generateFooter(),
   ];
 
   return sections.join('\n\n');
+}
+
+function generateConnectorKeySection(key: { fileName: string; count: number }): string {
+  const copyText = key.count === 1 ? 'Print 1 copy' : `Print ${key.count} copies`;
+  return [
+    '─── Connector keys ──────────────────────────────',
+    '',
+    `  bowtie_key (${key.fileName})`,
+    `    ${copyText}`,
+    '    Hammer one into each seam junction from the top, flush with the surface.',
+  ].join('\n');
 }
 
 function generateHeader(
@@ -62,7 +77,8 @@ function generateHeader(
     params.paddingFront > 0 ||
     params.paddingBack > 0;
   if (hasPadding) features.push('padded');
-  if (params.connectorNubs) features.push('connectors');
+  if (params.connectorNubs)
+    features.push(params.connectorStyle === 'bowtie' ? 'bowtie connectors' : 'connectors');
 
   const featureStr = features.length > 0 ? features.join(', ') : 'standard';
   const totalPieces = tiling.pieces.length;
@@ -100,7 +116,12 @@ function generatePieceTable(
     // tongue is male — matches the actual STL bbox so users know what fits the
     // bed. Under preferIdenticalPieces (paired mode) every join edge carries a
     // tongue regardless of side, so both sides of each axis claim protrusion.
-    const tongue = parentParams.connectorNubs ? TONGUE_PROTRUSION_MM : 0;
+    // Bowtie connectors are flush at the seam (both sides female), so no tongue
+    // protrusion is added to the piece bbox — only the integral dovetail protrudes.
+    const tongue =
+      parentParams.connectorNubs && parentParams.connectorStyle !== 'bowtie'
+        ? TONGUE_PROTRUSION_MM
+        : 0;
     const isPaired = !!parentParams.preferIdenticalPieces && !!parentParams.connectorNubs;
     const startMale = !parentParams.invertDovetails;
     const widthMm =
@@ -130,7 +151,8 @@ function generatePieceTable(
 
     const features: string[] = [];
     if (parentParams.magnetHoles) features.push('magnet holes');
-    if (parentParams.connectorNubs) features.push('connectors');
+    if (parentParams.connectorNubs)
+      features.push(parentParams.connectorStyle === 'bowtie' ? 'bowtie grooves' : 'connectors');
     const hasPadding =
       params.paddingLeft > 0 ||
       params.paddingRight > 0 ||
