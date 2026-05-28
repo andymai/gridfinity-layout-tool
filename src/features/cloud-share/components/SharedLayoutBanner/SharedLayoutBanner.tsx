@@ -105,7 +105,7 @@ export function SharedLayoutBanner() {
 
     // Show feedback
     addToast(t('toast.savedToLayouts', { name: savedLayout.name }), 'success');
-    announceToScreenReader(`Layout saved: ${savedLayout.name}`);
+    announceToScreenReader(t('cloudShare.announce.layoutSaved', { name: savedLayout.name }));
   };
 
   const handleDiscard = async () => {

@@ -25,6 +25,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import { useTranslation } from '@/i18n';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { bridgeManager, workerPoolManager } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
@@ -140,6 +141,7 @@ const NO_OP_PROGRESS = (_stage: string, _progress: number): void => {};
  * when layout params change. Uses the shared worker pool for parallel split piece generation.
  */
 export function useBaseplateGeneration(): void {
+  const t = useTranslation();
   const bridgeRef = useRef<GenerationBridge | null>(null);
   const poolRef = useRef<WorkerPool | null>(null);
   const initializedRef = useRef(false);
@@ -527,7 +529,9 @@ export function useBaseplateGeneration(): void {
       .catch((e: unknown) => {
         if (cancelled) return;
         const message = e instanceof Error ? e.message : String(e);
-        useToastStore.getState().addToast(`Failed to initialize 3D engine: ${message}`, 'error');
+        useToastStore
+          .getState()
+          .addToast(t('baseplate.toast.engineInitFailed', { message }), 'error');
         setWasmStatus('error');
       });
 
@@ -542,7 +546,7 @@ export function useBaseplateGeneration(): void {
         workerPoolManager.release();
       }
     };
-  }, [setWasmStatus, runBrepGeneration]);
+  }, [setWasmStatus, runBrepGeneration, t]);
 
   // Re-generate on every params change. Direct-mesh runs synchronously here
   // (renders before bridge is ready); BREP runs in background once bridge exists.

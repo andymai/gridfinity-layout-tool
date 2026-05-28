@@ -2387,6 +2387,9 @@ const en: Record<string, string> = {
   'binDesigner.announce.meshGenerationError': 'Error: mesh generation failed',
   'binDesigner.announce.previewUpdated': 'Bin preview updated',
 
+  // Baseplate / generation errors
+  'baseplate.toast.engineInitFailed': 'Failed to initialize 3D engine: {message}',
+
   // Bin-designer preview
   'binDesigner.preview.initializingEngine': 'Initializing engine...',
   'binDesigner.preview.engineLoadFailed': 'Engine failed to load',
@@ -2445,6 +2448,17 @@ const en: Record<string, string> = {
 
   // Layouts panel announcements
   'layouts.announce.cannotDeleteOnly': 'Cannot delete the only layout',
+
+  // Layers panel announcements
+  'layers.announce.renamedTo': 'Renamed to {name}',
+
+  // Half-bin mode remediation
+  'halfBinMode.toast.movedToStaging': 'Moved {count} bin(s) to staging',
+
+  // Inspiration gallery announcements
+  'gallery.announce.showing': 'Showing {count} {label} layouts',
+  'gallery.announce.allThemes': 'all themes',
+  'gallery.announce.addedToLibrary': '{name} added to your library',
   'layouts.announce.switchedTo': 'Switched to {name}',
   'layouts.announce.duplicated': 'Duplicated {name}',
   'layouts.announce.renamedTo': 'Renamed to {name}',
@@ -2496,6 +2510,7 @@ const en: Record<string, string> = {
   'cloudShare.announce.shareFailed': 'Share failed: {message}',
   'cloudShare.announce.shareUpdatedEdit': 'Share updated. Anyone with the link can now edit.',
   'cloudShare.announce.shareUpdatedView': 'Share updated. Anyone with the link can view.',
+  'cloudShare.announce.layoutSaved': 'Layout saved: {name}',
   'cloudShare.error.offlineShare': "You're offline. Connect to the internet to share.",
   'cloudShare.error.offlineUpdate': "You're offline. Connect to the internet to update.",
   'cloudShare.error.offlineDelete': "You're offline. Connect to the internet to delete.",

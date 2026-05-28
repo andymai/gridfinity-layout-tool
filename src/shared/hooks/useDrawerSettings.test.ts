@@ -234,7 +234,7 @@ describe('useDrawerSettings', () => {
       // Toast should reflect actual count moved (1), not original violation count (2)
       const toasts = useToastStore.getState().toasts;
       const lastToast = toasts[toasts.length - 1];
-      expect(lastToast.message).toBe('Moved 1 bin to staging');
+      expect(lastToast.message).toBe('Moved 1 bin(s) to staging');
     });
 
     it('handleRemediate moves fractional bins to staging', () => {

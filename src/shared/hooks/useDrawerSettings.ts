@@ -338,8 +338,8 @@ export function useDrawerSettings(): UseDrawerSettingsReturn {
 
     // Close modal and show success message
     setShowHalfBinBlockedModal(false);
-    addToast(`Moved ${movedCount} bin${movedCount !== 1 ? 's' : ''} to staging`, 'success');
-  }, [halfBinViolation, updateBin, setHalfGridMode, addToast]);
+    addToast(t('halfBinMode.toast.movedToStaging', { count: movedCount }), 'success');
+  }, [halfBinViolation, updateBin, setHalfGridMode, addToast, t]);
 
   // Save current settings as defaults
   const handleSaveDefaults = useCallback(() => {
