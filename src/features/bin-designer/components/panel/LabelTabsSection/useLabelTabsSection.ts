@@ -194,15 +194,21 @@ export function useLabelTabsSection() {
     Math.min(DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_INSET, Math.floor(insetRoom))
   );
 
-  // Identify compartments whose front tab will be silently dropped because
-  // `2·depth + 2·inset > compartmentDepth`. Mirrors the geometry-layer
-  // check; surfaces an inline warning so the user understands the gap.
-  const frontTabCollision = useMemo(() => {
-    if (edgesValue !== 'both') return false;
+  // Detect ALL conditions that cause a tab to be silently dropped by the
+  // geometry layer. Computes the worst-case compartment depths so the
+  // Auto-fix button (below) and the inline warning fire for any of:
+  //   - global bridge:    tabDepth >= innerD
+  //   - per-compartment:  tabDepth + inset > compartmentDepth (single edge)
+  //   - both collision:   2·tabDepth + 2·inset > compartmentDepth (both edges)
+  //   - height misconfig: tabHeight > wallHeight OR tabHeight ≤ tabDepth
+  // The fix algorithm in `autoFixDimensions` (below) walks these in the
+  // priority order: inset → depth → height → edges.
+  const compartmentDepths = useMemo(() => {
     const { rows, cols, cells } = compartments;
-    const inset = label.inset ?? 0;
     const cellD = innerD / rows;
     const seen = new Set<number>();
+    let minAny = Infinity;
+    let minBothAnchored = Infinity;
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
         const cellId = cells[row * cols + col];
@@ -210,18 +216,131 @@ export function useLabelTabsSection() {
         seen.add(cellId);
         const bounds = getCompartmentBounds(compartments, cellId);
         if (!bounds) continue;
+        const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * cellD;
         const hasFrontAnchor =
           bounds.minRow === 0 || cells[(bounds.minRow - 1) * cols + bounds.minCol] !== cellId;
         const hasBackAnchor =
           bounds.maxRow === rows - 1 ||
           cells[(bounds.maxRow + 1) * cols + bounds.minCol] !== cellId;
-        if (!hasFrontAnchor || !hasBackAnchor) continue;
-        const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * cellD;
-        if (2 * label.depth + 2 * inset > compartmentDepth) return true;
+        if (hasFrontAnchor || hasBackAnchor) {
+          if (compartmentDepth < minAny) minAny = compartmentDepth;
+        }
+        if (hasFrontAnchor && hasBackAnchor) {
+          if (compartmentDepth < minBothAnchored) minBothAnchored = compartmentDepth;
+        }
       }
     }
+    return { minAny, minBothAnchored };
+  }, [compartments, innerD]);
+
+  const tabsWillSilentlyDrop = useMemo(() => {
+    const inset = label.inset ?? 0;
+    const depth = label.depth;
+    // Global bridge: tab body would punch the opposite outer wall.
+    if (depth >= innerD) return true;
+    // Per-compartment: tab body + inset exceeds compartment depth.
+    if (Number.isFinite(compartmentDepths.minAny) && depth + inset > compartmentDepths.minAny) {
+      return true;
+    }
+    // Both-mode collision in the smallest both-anchored compartment.
+    if (
+      edgesValue === 'both' &&
+      Number.isFinite(compartmentDepths.minBothAnchored) &&
+      2 * depth + 2 * inset > compartmentDepths.minBothAnchored
+    ) {
+      return true;
+    }
+    // Global height guard: tabHeight = tabDepth, must be ≤ wallHeight. This
+    // also covers the implicit `height = wallHeight` default — the geometry
+    // drops everything when `tabDepth > wallHeight`, no matter whether the
+    // user touched the height field.
+    if (depth > wallHeightMm) return true;
+    if (depth <= 0) return true;
+    // Explicit height constraints.
+    if (label.height !== undefined) {
+      if (label.height > wallHeightMm) return true;
+      if (label.height <= depth) return true;
+    }
     return false;
-  }, [edgesValue, compartments, label.depth, label.inset, innerD]);
+  }, [label.depth, label.inset, label.height, edgesValue, innerD, compartmentDepths, wallHeightMm]);
+
+  // Auto-fix: walk the priority order inset → depth → height → edges,
+  // applying the smallest change(s) that get the geometry to generate. Goal
+  // is to preserve user intent (edges/alignment/support) while undoing the
+  // dimensional misconfig. Mutates via `updateLabel` so the change is a
+  // single undo entry (Ctrl+Z restores the prior state).
+  const autoFixDimensions = useCallback(() => {
+    const minAny = Number.isFinite(compartmentDepths.minAny) ? compartmentDepths.minAny : innerD;
+    const minBoth = Number.isFinite(compartmentDepths.minBothAnchored)
+      ? compartmentDepths.minBothAnchored
+      : innerD;
+
+    let nextDepth = label.depth;
+    const nextInset = 0;
+    let nextEdges: typeof edgesValue = edgesValue;
+    let nextHeight = label.height;
+    let nextEnabled = label.enabled;
+
+    const MIN_DEPTH = DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH;
+    // Height-derived ceiling: tabHeight = tabDepth, must be ≤ wallHeight
+    // (and strictly < explicit height when set). Use `nextHeight - 1` when
+    // explicit so we keep ≥1mm gusset clearance; else use wallHeight - 1.
+    const heightCeiling = Math.floor((nextHeight ?? wallHeightMm) - 1);
+    const maxDepthForSingle = Math.max(
+      MIN_DEPTH,
+      Math.min(tabDepthMax, Math.floor(minAny) - 1, heightCeiling)
+    );
+    const maxDepthForBoth = Math.max(
+      MIN_DEPTH,
+      Math.min(tabDepthMax, Math.floor(minBoth / 2) - 1, heightCeiling)
+    );
+
+    // Step 1 + 2: inset → 0, then clamp depth to fit the current edges mode.
+    if (nextEdges === 'both' && 2 * MIN_DEPTH > minBoth) {
+      // Step 4 (fallback): even minimum depth can't fit two tabs. Demote.
+      nextEdges = 'back';
+      nextDepth = Math.min(nextDepth, maxDepthForSingle);
+    } else if (nextEdges === 'both') {
+      nextDepth = Math.min(nextDepth, maxDepthForBoth);
+    } else {
+      nextDepth = Math.min(nextDepth, maxDepthForSingle);
+    }
+    nextDepth = Math.max(MIN_DEPTH, nextDepth);
+
+    // Step 3: keep height valid given the (possibly new) depth.
+    if (nextHeight !== undefined) {
+      const minHeight = nextDepth + 1;
+      const maxHeight = wallHeightMm;
+      if (minHeight > maxHeight) {
+        // Bin is too short for any valid (depth, height) pair → disable feature.
+        nextEnabled = false;
+      } else {
+        nextHeight = Math.min(maxHeight, Math.max(minHeight, nextHeight));
+      }
+    } else if (nextDepth >= wallHeightMm) {
+      // No explicit height, but the implicit-default (wall top) won't fit
+      // the chosen depth either. Disable.
+      nextEnabled = false;
+    }
+
+    updateLabel({
+      enabled: nextEnabled,
+      depth: nextDepth,
+      inset: nextInset,
+      edges: nextEdges,
+      ...(nextHeight !== undefined ? { height: nextHeight } : {}),
+    });
+  }, [
+    label.depth,
+    label.height,
+    label.enabled,
+    edgesValue,
+    compartmentDepths,
+    innerD,
+    tabDepthMax,
+    wallHeightMm,
+    updateLabel,
+  ]);
 
   const sectionSummary = useMemo(() => {
     if (!label.enabled) return undefined;
@@ -276,7 +395,7 @@ export function useLabelTabsSection() {
       tabHeightMax,
       tabDepthMax,
       tabInsetMax,
-      frontTabCollision,
+      tabsWillSilentlyDrop,
       compartmentTextRows,
     },
     handlers: {
@@ -288,6 +407,7 @@ export function useLabelTabsSection() {
       setTabAlignment,
       setTabEdges,
       setTabInset,
+      autoFixDimensions,
       setCompartmentText,
       setTextFont,
       setTextMode,

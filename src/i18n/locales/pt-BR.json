@@ -563,6 +563,7 @@
   "binDesigner.stylesMutuallyExclusive": "Apenas um estilo de recipiente pode estar ativo",
   "binDesigner.tabAlignment": "Alinhamento da aba",
   "binDesigner.tabAlignmentHint": "Onde a aba fica dentro do compartimento quando é mais estreita que a largura total.",
+  "binDesigner.tabAutoFix": "Corrigir auto",
   "binDesigner.tabBothCollisionWarning": "Profundidade insuficiente para ambas as abas neste compartimento. Reduza a profundidade ou o recuo.",
   "binDesigner.tabDepth": "Profundidade da aba",
   "binDesigner.tabEdges": "Bordas da aba",

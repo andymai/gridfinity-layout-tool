@@ -563,6 +563,7 @@
   "binDesigner.stylesMutuallyExclusive": "Un seul style de bac peut être actif",
   "binDesigner.tabAlignment": "Alignement d'onglet",
   "binDesigner.tabAlignmentHint": "Où l'onglet se place dans le compartiment lorsqu'il est plus étroit que la largeur totale.",
+  "binDesigner.tabAutoFix": "Corriger auto",
   "binDesigner.tabBothCollisionWarning": "Pas assez de profondeur pour les deux onglets dans ce compartiment. Réduisez la profondeur ou le retrait.",
   "binDesigner.tabDepth": "Profondeur d'onglet",
   "binDesigner.tabEdges": "Bords d'onglet",

@@ -1382,6 +1382,7 @@ const en: Record<string, string> = {
   'binDesigner.tabInset': 'Tab inset',
   'binDesigner.tabBothCollisionWarning':
     'Not enough depth for both tabs in this compartment. Reduce Depth or Inset.',
+  'binDesigner.tabAutoFix': 'Auto-fix',
   'binDesigner.alignment.left': 'Left',
   'binDesigner.alignment.center': 'Center',
   'binDesigner.alignment.right': 'Right',

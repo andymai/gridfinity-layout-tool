@@ -563,6 +563,7 @@
   "binDesigner.stylesMutuallyExclusive": "Bare én beholdersstil kan være aktiv",
   "binDesigner.tabAlignment": "Fanejustering",
   "binDesigner.tabAlignmentHint": "Hvor fanen sitter i rommet når den er smalere enn full bredde.",
+  "binDesigner.tabAutoFix": "Auto-fiks",
   "binDesigner.tabBothCollisionWarning": "Ikke nok dybde for begge faner i dette rommet. Reduser dybde eller innrykk.",
   "binDesigner.tabDepth": "Fanedybde",
   "binDesigner.tabEdges": "Fanekanter",

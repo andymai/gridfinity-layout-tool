@@ -563,6 +563,7 @@
   "binDesigner.stylesMutuallyExclusive": "Nur ein Behälterstil kann aktiv sein",
   "binDesigner.tabAlignment": "Halterausrichtung",
   "binDesigner.tabAlignmentHint": "Wo der Halter im Fach sitzt, wenn er schmaler als die volle Breite ist.",
+  "binDesigner.tabAutoFix": "Automatisch korrigieren",
   "binDesigner.tabBothCollisionWarning": "Nicht genug Tiefe für beide Halter in diesem Fach. Tiefe oder Versatz reduzieren.",
   "binDesigner.tabDepth": "Haltertiefe",
   "binDesigner.tabEdges": "Halterkanten",

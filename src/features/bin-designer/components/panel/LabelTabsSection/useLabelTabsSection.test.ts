@@ -283,7 +283,7 @@ describe('useLabelTabsSection', () => {
       expect(result.current.state.tabInsetMax).toBeLessThan(15);
     });
 
-    it('frontTabCollision fires when both tabs would overlap', () => {
+    it('tabsWillSilentlyDrop fires when both tabs would overlap', () => {
       // 1×1×3u bin, edges='both', depth=18, inset=5 → 2·18 + 2·5 = 46 > innerD≈38.
       useDesignerStore.setState({
         params: {
@@ -294,10 +294,10 @@ describe('useLabelTabsSection', () => {
         },
       });
       const { result } = renderHook(() => useLabelTabsSection());
-      expect(result.current.state.frontTabCollision).toBe(true);
+      expect(result.current.state.tabsWillSilentlyDrop).toBe(true);
     });
 
-    it('frontTabCollision does not fire when there is room for both tabs', () => {
+    it('tabsWillSilentlyDrop does not fire when there is room for both tabs', () => {
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
@@ -305,20 +305,170 @@ describe('useLabelTabsSection', () => {
         },
       });
       const { result } = renderHook(() => useLabelTabsSection());
-      expect(result.current.state.frontTabCollision).toBe(false);
+      expect(result.current.state.tabsWillSilentlyDrop).toBe(false);
     });
 
-    it('frontTabCollision is false in single-edge modes regardless of depth', () => {
+    it('tabsWillSilentlyDrop also fires when single-edge depth+inset overflows compartment', () => {
+      // 1×1×3u bin, edges='back', depth=30, inset=15 → 45 > innerD≈38.
       useDesignerStore.setState({
         params: {
           ...DEFAULT_BIN_PARAMS,
           width: 1,
           depth: 1,
-          label: { ...DEFAULT_BIN_PARAMS.label, edges: 'back', depth: 30, inset: 0 },
+          label: { ...DEFAULT_BIN_PARAMS.label, edges: 'back', depth: 30, inset: 15 },
         },
       });
       const { result } = renderHook(() => useLabelTabsSection());
-      expect(result.current.state.frontTabCollision).toBe(false);
+      expect(result.current.state.tabsWillSilentlyDrop).toBe(true);
+    });
+
+    it('tabsWillSilentlyDrop fires when bridge guard would drop tab', () => {
+      // depth >= innerD pushes the tab body through the opposite wall.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          width: 1,
+          depth: 1,
+          label: { ...DEFAULT_BIN_PARAMS.label, edges: 'back', depth: 45, inset: 0 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+      expect(result.current.state.tabsWillSilentlyDrop).toBe(true);
+    });
+  });
+
+  describe('auto-fix', () => {
+    it('clamps inset to 0 when both-mode collision fires', () => {
+      // 2u bin, edges='both', depth=12, inset=30 → triggers collision.
+      // Auto-fix priority: inset → depth → ... so dropping inset to 0
+      // should be enough (2·12 + 0 = 24 < ~81 innerD).
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, edges: 'both', depth: 12, inset: 30 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.autoFixDimensions();
+      });
+
+      const after = useDesignerStore.getState().params.label;
+      expect(after.inset).toBe(0);
+      expect(after.edges).toBe('both');
+      expect(after.depth).toBe(12);
+    });
+
+    it('clamps depth when bridge guard would fire', () => {
+      // 1×1×3u bin, depth=45 ≥ innerD≈38 → bridge guard. Auto-fix
+      // clamps depth down to fit (innerD - 1 ≈ 37, but limited by
+      // tabDepthMax which floors innerD - 1).
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          width: 1,
+          depth: 1,
+          label: { ...DEFAULT_BIN_PARAMS.label, edges: 'back', depth: 45, inset: 0 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.autoFixDimensions();
+      });
+
+      const after = useDesignerStore.getState().params.label;
+      expect(after.depth).toBeLessThan(45);
+      expect(after.edges).toBe('back');
+      expect(result.current.state.tabsWillSilentlyDrop).toBe(false);
+    });
+
+    it('demotes edges=both → back when even minimum depth cannot fit two tabs', () => {
+      // 0.5u bin: innerD ≈ 18mm. MIN_LABEL_TAB_DEPTH = 8mm so 2·8 = 16 fits,
+      // but if we shrink further with a smaller cell... actually let's use a
+      // multi-row setup where individual cells are too small for two tabs.
+      // 1×1 bin with 5 rows: cellD = innerD/5 ≈ 7.6mm. 2·8 = 16 > 7.6 → demote.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          width: 1,
+          depth: 1,
+          compartments: {
+            ...DEFAULT_BIN_PARAMS.compartments,
+            rows: 5,
+            cells: [0, 1, 2, 3, 4],
+          },
+          label: { ...DEFAULT_BIN_PARAMS.label, edges: 'both', depth: 12, inset: 0 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.autoFixDimensions();
+      });
+
+      const after = useDesignerStore.getState().params.label;
+      expect(after.edges).toBe('back');
+    });
+
+    it('clamps height back into range when it is too low for the current depth', () => {
+      // 5u-tall bin → wallHeight ≈ 30mm, so depth=12 fits comfortably.
+      // height=10 is invalid (height ≤ depth) → auto-fix lifts height to
+      // depth+1.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          height: 5,
+          label: { ...DEFAULT_BIN_PARAMS.label, depth: 12, height: 10 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.autoFixDimensions();
+      });
+
+      const after = useDesignerStore.getState().params.label;
+      expect(after.height).toBeGreaterThan(after.depth);
+    });
+
+    it('clamps depth down to fit the wall height ceiling when too deep', () => {
+      // 3u-tall bin: wallHeight ≈ 16mm. depth=20 means tabHeight=depth=20 >
+      // wallHeight → the global height guard fires and no geometry can be
+      // produced. Auto-fix clamps depth to (height-1) when height is set,
+      // or (wallHeight-1) when height is implicit.
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, depth: 20, height: 15 },
+        },
+      });
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.autoFixDimensions();
+      });
+
+      const after = useDesignerStore.getState().params.label;
+      expect(after.enabled).toBe(true);
+      expect(after.depth).toBeLessThan(after.height!);
+      expect(after.depth).toBeLessThanOrEqual(14);
+    });
+
+    it('does not touch state when geometry already fits', () => {
+      // Default config — should be a no-op.
+      const before = useDesignerStore.getState().params.label;
+      const { result } = renderHook(() => useLabelTabsSection());
+
+      act(() => {
+        result.current.handlers.autoFixDimensions();
+      });
+
+      const after = useDesignerStore.getState().params.label;
+      expect(after.depth).toBe(before.depth);
+      expect(after.edges).toBe(before.edges ?? 'back');
+      expect(after.inset).toBe(before.inset ?? 0);
     });
   });
 });

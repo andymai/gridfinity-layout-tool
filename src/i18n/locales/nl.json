@@ -563,6 +563,7 @@
   "binDesigner.stylesMutuallyExclusive": "Slechts één bakstijl kan actief zijn",
   "binDesigner.tabAlignment": "Tabuitlijning",
   "binDesigner.tabAlignmentHint": "Waar de tab in het vak zit wanneer deze smaller is dan de volledige breedte.",
+  "binDesigner.tabAutoFix": "Automatisch herstellen",
   "binDesigner.tabBothCollisionWarning": "Niet genoeg diepte voor beide tabs in dit vak. Verklein de diepte of inspringing.",
   "binDesigner.tabDepth": "Tabdiepte",
   "binDesigner.tabEdges": "Tabranden",

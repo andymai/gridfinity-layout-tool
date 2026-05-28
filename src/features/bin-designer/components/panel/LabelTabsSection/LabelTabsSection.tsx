@@ -76,11 +76,18 @@ export function LabelTabsSection() {
             );
           })}
         </div>
-        {state.frontTabCollision && (
-          <p className="mt-1 flex items-start gap-1 text-xs text-warning">
+        {state.tabsWillSilentlyDrop && (
+          <div className="mt-1 flex items-start gap-2 text-xs text-warning">
             <InfoIcon size="xs" className="mt-0.5 shrink-0" />
-            <span>{t('binDesigner.tabBothCollisionWarning')}</span>
-          </p>
+            <span className="flex-1">{t('binDesigner.tabBothCollisionWarning')}</span>
+            <button
+              type="button"
+              onClick={handlers.autoFixDimensions}
+              className="shrink-0 font-medium text-accent hover:text-accent/80 transition-colors"
+            >
+              {t('binDesigner.tabAutoFix')}
+            </button>
+          </div>
         )}
       </div>
 

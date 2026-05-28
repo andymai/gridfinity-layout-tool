@@ -563,6 +563,7 @@
   "binDesigner.stylesMutuallyExclusive": "Solo un estilo de contenedor puede estar activo",
   "binDesigner.tabAlignment": "Alineación de pestaña",
   "binDesigner.tabAlignmentHint": "Dónde se sitúa la pestaña dentro del compartimento cuando es más estrecha que el ancho completo.",
+  "binDesigner.tabAutoFix": "Corregir automáticamente",
   "binDesigner.tabBothCollisionWarning": "No hay suficiente profundidad para ambas pestañas en este compartimento. Reduce Profundidad o Sangría.",
   "binDesigner.tabDepth": "Profundidad de pestaña",
   "binDesigner.tabEdges": "Bordes de pestaña",

@@ -563,6 +563,7 @@
   "binDesigner.stylesMutuallyExclusive": "Може бути активним лише один стиль біна",
   "binDesigner.tabAlignment": "Вирівнювання виступу",
   "binDesigner.tabAlignmentHint": "Де виступ розташовується у відсіку, коли він вужчий за повну ширину.",
+  "binDesigner.tabAutoFix": "Авто-виправити",
   "binDesigner.tabBothCollisionWarning": "Недостатньо глибини для обох виступів у цьому відсіку. Зменшіть глибину або відступ.",
   "binDesigner.tabDepth": "Глибина виступу",
   "binDesigner.tabEdges": "Краї виступу",

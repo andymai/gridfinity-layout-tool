@@ -563,6 +563,7 @@
   "binDesigner.stylesMutuallyExclusive": "Endast en fackstil kan vara aktiv",
   "binDesigner.tabAlignment": "Flikjustering",
   "binDesigner.tabAlignmentHint": "Var fliken sitter i facket när den är smalare än full bredd.",
+  "binDesigner.tabAutoFix": "Korrigera automatiskt",
   "binDesigner.tabBothCollisionWarning": "Inte tillräckligt djup för båda flikarna i detta fack. Minska djup eller indrag.",
   "binDesigner.tabDepth": "Flikdjup",
   "binDesigner.tabEdges": "Flikkanter",
