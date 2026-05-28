@@ -159,6 +159,15 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
     no longer takes. Don't remove the `key="multi-color"` /
     `key="single-color"` props — and if you add a third branch (e.g. a new
     material strategy) give it its own key too.
+15. **Split connectors have two joints** — `splitConnectors.enabled` adds a 45°
+    floor scarf lap (always). `splitConnectors.wallLocking` (sub-toggle in
+    `SplitOptionsSection`, **default off**, #1869) additionally fuses vertical
+    dovetails onto the **exterior perimeter walls only**, reinforced by a boss
+    that thickens the wall **inward only** (preserving the Gridfinity
+    footprint). The dovetail is a constant-Z extrusion (self-supporting) and
+    stops below the rim so the stacking lip is untouched. Geometry lives in
+    `generation/worker/generators/splitConnectorBuilder.ts`. Off by default
+    because vertical drop-in fit still needs physical print validation.
 
 ## Thumbnail Pipeline
 

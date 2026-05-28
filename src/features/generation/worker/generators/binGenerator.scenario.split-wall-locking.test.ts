@@ -98,3 +98,48 @@ describe('split bin wall locking connectors (#1869)', () => {
     expect(totalTriCount(a.pieces)).toBe(totalTriCount(b.pieces));
   }, 60000);
 });
+
+/**
+ * The connector geometry swaps axes via makePlanPoint/bossDims for depth-direction
+ * cuts. Exercise a Y-axis split so that path can't regress unnoticed.
+ */
+describe('split bin wall locking connectors — Y-axis (depth) cut', () => {
+  const TALL_DEPTH_PARAMS: BinParams = {
+    ...DEFAULT_BIN_PARAMS,
+    width: 2,
+    depth: 8,
+    height: 6,
+  };
+  const CUT_X: number[] = [];
+  const CUT_Y = [0];
+
+  it('produces valid full-height pieces with wall locking enabled', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    const result = generateSplitPreview(TALL_DEPTH_PARAMS, CUT_X, CUT_Y, WALL_LOCKING);
+
+    expect(result.pieces).toHaveLength(2);
+    const totalH = TALL_DEPTH_PARAMS.height * GRIDFINITY.HEIGHT_UNIT;
+    for (const piece of result.pieces) {
+      expect(hasNoNaNOrInfinity(piece.vertices)).toBe(true);
+      expect(piece.indices.length).toBeGreaterThan(0);
+      const bb = boundingBox(piece.vertices);
+      expect(bb.maxZ - bb.minZ).toBeGreaterThan(totalH);
+    }
+  }, 60000);
+
+  it('adds connector geometry beyond the floor-only joint', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    const withWalls = generateSplitPreview(TALL_DEPTH_PARAMS, CUT_X, CUT_Y, WALL_LOCKING);
+    const floorOnly = generateSplitPreview(TALL_DEPTH_PARAMS, CUT_X, CUT_Y, FLOOR_ONLY);
+    expect(totalTriCount(withWalls.pieces)).toBeGreaterThan(totalTriCount(floorOnly.pieces));
+  }, 60000);
+
+  it('does not disturb the stacking lip (top Z unchanged)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    const withWalls = generateSplitPreview(TALL_DEPTH_PARAMS, CUT_X, CUT_Y, WALL_LOCKING);
+    const floorOnly = generateSplitPreview(TALL_DEPTH_PARAMS, CUT_X, CUT_Y, FLOOR_ONLY);
+    for (let i = 0; i < withWalls.pieces.length; i++) {
+      expect(maxZ(withWalls.pieces[i].vertices)).toBeCloseTo(maxZ(floorOnly.pieces[i].vertices), 1);
+    }
+  }, 60000);
+});
