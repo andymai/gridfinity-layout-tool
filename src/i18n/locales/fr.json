@@ -668,6 +668,7 @@
   "binDesigner.touchGestureHints": "Indications de gestes tactiles",
   "binDesigner.wallCutouts": "Découpes de paroi",
   "binDesigner.wallCutouts.back": "Arrière",
+  "binDesigner.wallCutouts.densityHint": "De nombreux compartiments font ressembler les découpes de paroi à un empilement de lamelles — les découpes intérieures prolongent l'ouverture à travers chaque séparation.",
   "binDesigner.wallCutouts.front": "Avant",
   "binDesigner.wallCutouts.height": "Hauteur",
   "binDesigner.wallCutouts.independent": "Indépendant",

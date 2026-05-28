@@ -668,6 +668,7 @@
   "binDesigner.touchGestureHints": "Підказки сенсорних жестів",
   "binDesigner.wallCutouts": "Вирізи в стінах",
   "binDesigner.wallCutouts.back": "Ззаду",
+  "binDesigner.wallCutouts.densityHint": "Багато відсіків роблять вирізи у стінках схожими на стос пластин — внутрішні вирізи продовжують отвір крізь кожну перегородку.",
   "binDesigner.wallCutouts.front": "Спереду",
   "binDesigner.wallCutouts.height": "Висота",
   "binDesigner.wallCutouts.independent": "Незалежні",

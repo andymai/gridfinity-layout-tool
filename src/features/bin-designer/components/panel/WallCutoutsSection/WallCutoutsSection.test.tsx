@@ -66,4 +66,29 @@ describe('WallCutoutsSection', () => {
     expect(screen.getByText('Scoop')).toBeDefined();
     expect(screen.getByText('Funnel')).toBeDefined();
   });
+
+  it('shows the density hint on a high-compartment bin with cutouts enabled', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        compartments: { cols: 1, rows: 9, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5, 6, 7, 8] },
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+      },
+    });
+
+    render(<WallCutoutsSection />);
+    expect(screen.getByText(/stack of slats/)).toBeDefined();
+  });
+
+  it('hides the density hint on a low-compartment bin', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        walls: { ...DEFAULT_BIN_PARAMS.walls, enabled: true },
+      },
+    });
+
+    render(<WallCutoutsSection />);
+    expect(screen.queryByText(/stack of slats/)).toBeNull();
+  });
 });

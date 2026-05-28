@@ -189,6 +189,12 @@ export interface UserSettings {
    */
   designListViewMode: 'grid' | 'list';
 
+  /**
+   * Whether the wall-cutouts editor edits all active sides together.
+   * Persisted so unlinking to adjust sides independently survives a reload.
+   */
+  wallCutoutsLinked: boolean;
+
   // Print view preferences
   printViewSettings: PrintViewSettings;
 
@@ -304,6 +310,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   stashMaxHeight: null, // null = use default 33vh
   layoutManagerViewMode: 'grid',
   designListViewMode: 'grid',
+  wallCutoutsLinked: true,
 
   // Print view preferences
   printViewSettings: { ...DEFAULT_PRINT_VIEW_SETTINGS },

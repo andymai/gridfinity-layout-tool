@@ -668,6 +668,7 @@
   "binDesigner.touchGestureHints": "Touch-Gesten-Hinweise",
   "binDesigner.wallCutouts": "Wandausschnitte",
   "binDesigner.wallCutouts.back": "Hinten",
+  "binDesigner.wallCutouts.densityHint": "Viele Fächer lassen Wandausschnitte wie einen Stapel Lamellen aussehen — Innenausschnitte führen die Öffnung durch jede Trennwand.",
   "binDesigner.wallCutouts.front": "Vorne",
   "binDesigner.wallCutouts.height": "Höhe",
   "binDesigner.wallCutouts.independent": "Unabhängig",

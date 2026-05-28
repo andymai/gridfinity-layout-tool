@@ -668,6 +668,7 @@
   "binDesigner.touchGestureHints": "Indicaciones de gestos táctiles",
   "binDesigner.wallCutouts": "Recortes de pared",
   "binDesigner.wallCutouts.back": "Trasera",
+  "binDesigner.wallCutouts.densityHint": "Muchos compartimentos hacen que los recortes de pared parezcan una pila de láminas — los recortes interiores prolongan la abertura a través de cada divisor.",
   "binDesigner.wallCutouts.front": "Frontal",
   "binDesigner.wallCutouts.height": "Altura",
   "binDesigner.wallCutouts.independent": "Independiente",
