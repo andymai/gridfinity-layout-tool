@@ -26,9 +26,21 @@
  *   overhang, producing a channel/ramp that opens cleanly at the mating face.
  */
 
-import { drawRectangle, unwrap, fuse, cut, translate, getBounds, translateDrawing } from 'brepjs';
+import {
+  drawRectangle,
+  draw,
+  box,
+  unwrap,
+  fuse,
+  cut,
+  translate,
+  getBounds,
+  translateDrawing,
+} from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import type { SplitConnectorConfig } from '@/shared/types/bin';
+import { sketch } from './meshUtils';
+import { TONGUE_PROTRUSION, TONGUE_BASE_HALF, TONGUE_TIP_HALF } from './generatorConstants';
 
 /** Overlap into the piece body so booleans have shared volume (mm). */
 export const OVERLAP = 1.0;
@@ -50,6 +62,15 @@ const SCARF_SLOPE = Math.tan(SCARF_ANGLE);
 
 /** Width taper slope: 45° taper at each end of the scarf lap for self-supporting FDM. */
 const WIDTH_TAPER_SLOPE = 1.0;
+
+/** Default wall dovetail height as a fraction of interior wall height (stops clear of the lip). */
+const DEFAULT_WALL_DOVETAIL_HEIGHT_FRACTION = 0.8;
+
+/** Inward boss margin (mm) added around the dovetail footprint so the thin wall has material. */
+const WALL_BOSS_MARGIN = 0.8;
+
+/** How far the reinforcing boss runs along the cut-normal into the piece body (mm). */
+const WALL_BOSS_DEPTH = TONGUE_PROTRUSION + 0.8;
 
 type Extent = [number, number, number];
 
@@ -303,8 +324,8 @@ function addScarfLapFeature(
 // ── Connector Orchestration ─────────────────────────────────────────────────
 
 /**
- * Add floor scarf lap connectors for a cut face.
- * Walls use simple butt joints (no interlock features).
+ * Add connectors for a cut face: a floor scarf lap (always, when enabled) plus
+ * optional vertical dovetail locking connectors on the exterior side walls.
  */
 function addConnectors(
   face: CutFace,
@@ -345,6 +366,129 @@ function addConnectors(
         face.pieceCenterOffset
       );
     }
+  }
+
+  // ── Wall locking dovetails (vertical, on exterior perimeter walls) ──────────
+  if (config.wallLocking) {
+    addWallDovetails(face, context, config, fuseTargets, cutTargets);
+  }
+}
+
+/**
+ * Add vertical dovetail locking connectors to the exterior perimeter walls a cut
+ * crosses. The tongue/groove cross-section is constant along Z (the build axis),
+ * so it prints self-supporting; the reinforcing boss thickens the wall inward
+ * only, preserving the Gridfinity external footprint. The dovetail spans a
+ * fraction of the wall height and stops clear of the rim so the stacking lip is
+ * never disturbed.
+ *
+ * Convention matches the floor lap: male faces grow a tongue, female faces have a
+ * matching groove + clearance cut from a boss.
+ */
+function addWallDovetails(
+  face: CutFace,
+  context: BinGeometryContext,
+  config: SplitConnectorConfig,
+  fuseTargets: Shape3D[],
+  cutTargets: Shape3D[]
+): void {
+  const wallHeight = context.wallTopZ - context.floorZ;
+  const heightFraction = config.ridgeHeightFraction ?? DEFAULT_WALL_DOVETAIL_HEIGHT_FRACTION;
+  const dovetailH = wallHeight * heightFraction;
+  if (dovetailH < MIN_FEATURE_HEIGHT) return;
+
+  const half = face.binEdgeLength / 2;
+  const pieceMin = face.pieceCenterOffset - face.pieceEdgeLength / 2;
+  const pieceMax = face.pieceCenterOffset + face.pieceEdgeLength / 2;
+  const tol = 1e-3;
+
+  // The cut crosses a perimeter wall wherever this piece's perpendicular span
+  // reaches the bin boundary (±half). Interior pieces touch neither.
+  const perimeters: number[] = [];
+  if (Math.abs(pieceMin + half) < tol) perimeters.push(-half);
+  if (Math.abs(pieceMax - half) < tol) perimeters.push(half);
+
+  // Don't let a boss eat more than ~40% of a narrow piece's perpendicular span.
+  const bossPerpDepth = 2 * TONGUE_TIP_HALF + config.clearance + WALL_BOSS_MARGIN;
+  if (bossPerpDepth > face.pieceEdgeLength * 0.4) return;
+
+  for (const perimeter of perimeters) {
+    buildWallConnector(
+      face.axis,
+      face.position,
+      perimeter,
+      face.isMale,
+      context.floorZ,
+      dovetailH,
+      config.clearance,
+      bossPerpDepth,
+      fuseTargets,
+      cutTargets
+    );
+  }
+}
+
+/** Map (protrusion-axis coord, perpendicular coord) → world [x, y] for the given cut axis. */
+function makePlanPoint(axis: 'x' | 'y'): (prot: number, perp: number) => [number, number] {
+  return axis === 'x' ? (prot, perp) => [prot, perp] : (prot, perp) => [perp, prot];
+}
+
+/**
+ * Build the boss + tongue (male) or boss + groove (female) for one perimeter wall
+ * and push them onto the fuse/cut target lists.
+ */
+function buildWallConnector(
+  axis: 'x' | 'y',
+  cutPos: number,
+  perimeter: number,
+  isMale: boolean,
+  floorZ: number,
+  dovetailH: number,
+  clearance: number,
+  bossPerpDepth: number,
+  fuseTargets: Shape3D[],
+  cutTargets: Shape3D[]
+): void {
+  const pt = makePlanPoint(axis);
+  const P = TONGUE_PROTRUSION;
+  const bW = TONGUE_BASE_HALF;
+  const tW = TONGUE_TIP_HALF;
+
+  // Toward the bin center (the only direction the boss may thicken).
+  const inward = perimeter > 0 ? -1 : 1;
+  // The tongue lives on the boundary's +axis side, so its widest edge sits flush
+  // with the outer wall face; the taper then opens inward.
+  const perpC = perimeter + inward * tW;
+  // This piece's body is behind the cut: male on the −axis side, female on +axis.
+  const bodySign = isMale ? -1 : 1;
+
+  // ── Reinforcing boss: inward thickening over the dovetail footprint ──────────
+  const protCenter = cutPos + (bodySign * WALL_BOSS_DEPTH) / 2;
+  const perpCenter = perimeter + (inward * bossPerpDepth) / 2;
+  const zCenter = floorZ + dovetailH / 2;
+  const bossProt = WALL_BOSS_DEPTH;
+  const bossDims =
+    axis === 'x' ? ([bossProt, bossPerpDepth] as const) : ([bossPerpDepth, bossProt] as const);
+  const [bossCx, bossCy] = pt(protCenter, perpCenter);
+  fuseTargets.push(box(bossDims[0], bossDims[1], dovetailH, { at: [bossCx, bossCy, zCenter] }));
+
+  // ── Dovetail tongue / groove ─────────────────────────────────────────────────
+  if (isMale) {
+    const profile = draw(pt(cutPos - OVERLAP, perpC - bW))
+      .lineTo(pt(cutPos - OVERLAP, perpC + bW))
+      .lineTo(pt(cutPos + P, perpC + tW))
+      .lineTo(pt(cutPos + P, perpC - tW))
+      .close();
+    fuseTargets.push(sketch(profile, 'XY', floorZ).extrude(dovetailH));
+  } else {
+    const gB = bW + clearance;
+    const gT = tW + clearance;
+    const profile = draw(pt(cutPos - OVERLAP, perpC - gB))
+      .lineTo(pt(cutPos - OVERLAP, perpC + gB))
+      .lineTo(pt(cutPos + P + clearance, perpC + gT))
+      .lineTo(pt(cutPos + P + clearance, perpC - gT))
+      .close();
+    cutTargets.push(sketch(profile, 'XY', floorZ).extrude(dovetailH));
   }
 }
 

@@ -396,9 +396,18 @@ export interface SplitConnectorConfig {
   readonly tongueProtrusion: number;
   /** Tongue cross-section thickness — kept for backward compat, unused by scarf lap (mm) */
   readonly tongueThickness: number;
-  /** Reserved for future wall ridge feature — ridge width as fraction of wall thickness */
+  /** Add vertical dovetail locking connectors to exterior side walls at each cut (default: false). */
+  readonly wallLocking?: boolean;
+  /**
+   * Reserved: nominal dovetail width hint as a fraction of wall thickness. Actual width is
+   * clamped to the FDM minimum and driven by the local thickening boss, since raw thin walls
+   * (≈1.2mm) yield sub-printable widths.
+   */
   readonly ridgeWidthFraction?: number;
-  /** Reserved for future wall ridge feature — ridge height as fraction of wall height */
+  /**
+   * Wall dovetail height as a fraction of interior wall height (default 0.8). The dovetail
+   * stops below the rim so it never collides with the stacking lip.
+   */
   readonly ridgeHeightFraction?: number;
 }
 

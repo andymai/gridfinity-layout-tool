@@ -5,6 +5,7 @@ import { SplitOptionsSection } from './SplitOptionsSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
+import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 
 describe('SplitOptionsSection', () => {
   beforeEach(() => {
@@ -68,5 +69,50 @@ describe('SplitOptionsSection', () => {
     expect(screen.queryByText('Fit clearance')).not.toBeInTheDocument();
     expect(screen.queryByText('Tongue width')).not.toBeInTheDocument();
     expect(screen.queryByText('Tongue depth')).not.toBeInTheDocument();
+  });
+
+  it('shows the wall locking sub-toggle while connectors are enabled', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 8,
+        depth: 3,
+        splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: true },
+      },
+    });
+
+    render(<SplitOptionsSection />);
+    expect(screen.getByText('Wall locking')).toBeInTheDocument();
+  });
+
+  it('hides the wall locking sub-toggle when connectors are disabled', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 8,
+        depth: 3,
+        splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: false },
+      },
+    });
+
+    render(<SplitOptionsSection />);
+    expect(screen.queryByText('Wall locking')).not.toBeInTheDocument();
+  });
+
+  it('toggles wall locking', async () => {
+    const user = userEvent.setup();
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 8,
+        depth: 3,
+        splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: true },
+      },
+    });
+
+    render(<SplitOptionsSection />);
+    await user.click(screen.getByRole('switch', { name: 'Wall locking' }));
+
+    expect(useDesignerStore.getState().params.splitConnectors?.wallLocking).toBe(true);
   });
 });

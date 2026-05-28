@@ -1619,6 +1619,9 @@ const en: Record<string, string> = {
   'binDesigner.splitAxisDepth': 'depth',
   'binDesigner.splitAxisBoth': 'width × depth',
   'binDesigner.splitConnectors': 'Alignment connectors',
+  'binDesigner.splitWallLocking': 'Wall locking',
+  'binDesigner.splitWallLockingHint':
+    'Adds dovetail connectors to the side walls to stop tall pieces splaying. Needs print testing — glue is still recommended.',
   'binDesigner.splitAssembled': 'Assembled',
   'binDesigner.splitExploded': 'Exploded',
   'binDesigner.cutouts.instructions':
