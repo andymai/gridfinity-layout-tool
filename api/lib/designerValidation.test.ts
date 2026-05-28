@@ -328,7 +328,7 @@ describe('validateDesignerShare', () => {
     it('rejects label tab depth out of range', () => {
       const payload = validPayload();
       (payload.params.label as Record<string, unknown>).enabled = true;
-      (payload.params.label as Record<string, unknown>).depth = 25;
+      (payload.params.label as Record<string, unknown>).depth = 60;
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
     });
@@ -354,6 +354,40 @@ describe('validateDesignerShare', () => {
       const payload = validPayload();
       (payload.params.label as Record<string, unknown>).enabled = true;
       (payload.params.label as Record<string, unknown>).support = 'invalid';
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('accepts edges = back/front/both (#1898)', () => {
+      for (const edges of ['back', 'front', 'both']) {
+        const payload = validPayload();
+        (payload.params.label as Record<string, unknown>).enabled = true;
+        (payload.params.label as Record<string, unknown>).edges = edges;
+        const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+        expect(result.valid).toBe(true);
+      }
+    });
+
+    it('rejects an invalid edges value', () => {
+      const payload = validPayload();
+      (payload.params.label as Record<string, unknown>).enabled = true;
+      (payload.params.label as Record<string, unknown>).edges = 'sideways';
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(false);
+    });
+
+    it('accepts a valid inset value', () => {
+      const payload = validPayload();
+      (payload.params.label as Record<string, unknown>).enabled = true;
+      (payload.params.label as Record<string, unknown>).inset = 5;
+      const result = validateDesignerShare(payload, JSON.stringify(payload).length);
+      expect(result.valid).toBe(true);
+    });
+
+    it('rejects an inset value above the hard ceiling', () => {
+      const payload = validPayload();
+      (payload.params.label as Record<string, unknown>).enabled = true;
+      (payload.params.label as Record<string, unknown>).inset = 200;
       const result = validateDesignerShare(payload, JSON.stringify(payload).length);
       expect(result.valid).toBe(false);
     });

@@ -24,7 +24,7 @@ const HEIGHT_CLEARANCE = 0.1;
  * concave arc. The height leg equals the clamped radius. The depth leg
  * defaults to the radius but can be overridden to match the shelf depth.
  *
- * Coordinate system (looking from front):
+ * Coordinate system (default `depthSign: -1`, looking from front):
  * ```
  * (0, 0) ── (-depth, 0)     shelf underside
  *   |              ╲
@@ -35,13 +35,24 @@ const HEIGHT_CLEARANCE = 0.1;
  * @param radius - Fillet arc radius in mm (controls curvature of the support)
  * @param height - Available vertical space below the shelf in mm
  * @param depth - Horizontal depth of the profile in mm (defaults to clamped radius)
+ * @param depthSign - `-1` (default) extends the depth leg in `-X`, matching
+ *   the original back-tab / handle-ledge convention. `+1` mirrors the profile
+ *   into `+X`, used by front-anchored label tabs (#1898).
  * @returns Closed 2D Drawing suitable for extrusion
  */
-export function buildFilletProfile(radius: number, height: number, depth?: number): Drawing {
+export function buildFilletProfile(
+  radius: number,
+  height: number,
+  depth?: number,
+  depthSign: 1 | -1 = -1
+): Drawing {
   const maxR = height - HEIGHT_CLEARANCE;
   const fallbackDepth = depth ?? MIN_RADIUS;
   if (maxR < MIN_RADIUS)
-    return draw([0, 0]).lineTo([-fallbackDepth, 0]).lineTo([0, -MIN_RADIUS]).close();
+    return draw([0, 0])
+      .lineTo([depthSign * fallbackDepth, 0])
+      .lineTo([0, -MIN_RADIUS])
+      .close();
   const safeR = Math.max(MIN_RADIUS, Math.min(radius, maxR));
   const effectiveDepth = depth ?? safeR;
 
@@ -52,10 +63,11 @@ export function buildFilletProfile(radius: number, height: number, depth?: numbe
   const sagitta = chord * 0.15;
 
   // Draw: shelf tip → origin → wall bottom → arc back to shelf tip.
-  // Negative sagitta curves toward the origin (concave scoop).
-  return draw([-effectiveDepth, 0])
+  // Sagitta sign flips with depthSign so the arc stays concave to the
+  // triangle interior in both orientations.
+  return draw([depthSign * effectiveDepth, 0])
     .lineTo([0, 0])
     .lineTo([0, -safeR])
-    .sagittaArc(-effectiveDepth, safeR, -sagitta)
+    .sagittaArc(depthSign * effectiveDepth, safeR, depthSign * sagitta)
     .close();
 }

@@ -47,4 +47,64 @@ export const labelTabs: ScenarioCase[] = [
       },
     },
   }),
+  // #1898: front-anchored tab on a 2\u00d72 bin. Exercises the mirrored
+  // grouping, shelf, gusset, and text-center logic for the front edge.
+  defineScenario('label tabs', '2\u00d72 label front edge', {
+    params: {
+      label: {
+        ...DEFAULT_BIN_PARAMS.label,
+        enabled: true,
+        support: 'bracket',
+        alignment: 'left',
+        edges: 'front',
+      },
+    },
+  }),
+  // #1898: both edges on a 2\u00d72 bin. Each compartment gets a back tab AND
+  // a front tab. Compartment depth here is comfortably > 2\u00b7tabDepth, so no
+  // collision drop fires.
+  defineScenario('label tabs', '2\u00d72\u00d74 label both edges', {
+    params: {
+      height: 4,
+      label: {
+        ...DEFAULT_BIN_PARAMS.label,
+        enabled: true,
+        support: 'bracket',
+        alignment: 'left',
+        edges: 'both',
+      },
+    },
+  }),
+  // #1898: 'both' + non-zero inset. Verifies that both tabs slide inward
+  // symmetrically by `inset` mm from their respective anchor walls.
+  defineScenario('label tabs', '2\u00d72\u00d74 label both + inset 5mm', {
+    params: {
+      height: 4,
+      label: {
+        ...DEFAULT_BIN_PARAMS.label,
+        enabled: true,
+        support: 'solid',
+        alignment: 'center',
+        edges: 'both',
+        inset: 5,
+      },
+    },
+  }),
+  // #1898: collision drop. With innerD \u2248 39mm and tabDepth = 20mm,
+  // 2\u00b720 + 2\u00b70 = 40 > 39 so the front tab is silently dropped per the
+  // collision guard. Only the back tab should appear in the snapshot.
+  defineScenario('label tabs', '1\u00d71 label both collision drops front', {
+    params: {
+      width: 1,
+      depth: 1,
+      label: {
+        ...DEFAULT_BIN_PARAMS.label,
+        enabled: true,
+        support: 'bracket',
+        alignment: 'left',
+        edges: 'both',
+        depth: 20,
+      },
+    },
+  }),
 ];

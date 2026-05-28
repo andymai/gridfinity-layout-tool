@@ -49,7 +49,8 @@ const CONSTRAINTS = {
   MIN_COMPARTMENT_THICKNESS: 0.4,
   MAX_COMPARTMENT_THICKNESS: 2.4,
   MIN_LABEL_TAB_DEPTH: 8,
-  MAX_LABEL_TAB_DEPTH: 20,
+  // Raised from 20 → 50 in #1898 to enable tuck-under ledges for wire bins.
+  MAX_LABEL_TAB_DEPTH: 50,
   MIN_LABEL_TAB_WIDTH: 10, // %
   MAX_LABEL_TAB_WIDTH: 100, // %
   // Label tab height is the Z of the shelf top above the cavity floor (mm).
@@ -58,6 +59,9 @@ const CONSTRAINTS = {
   // ceiling (140) = MAX_HEIGHT * 7mm (heightUnitMm).
   MIN_LABEL_TAB_HEIGHT: 9,
   MAX_LABEL_TAB_HEIGHT: 140,
+  // Inset moves the tab inward from its anchor wall (#1898).
+  MIN_LABEL_TAB_INSET: 0,
+  MAX_LABEL_TAB_INSET: 100,
   MAGNET_MIN_DEPTH: 2.0,
   MAGNET_MAX_DEPTH: 4.0,
   MAX_INSERTS: 20,
@@ -517,6 +521,19 @@ function validateLabel(label: unknown): string | null {
       // tab — the consumer's design loses geometry with no error signal.
       if (isNumber(label.depth) && label.height <= label.depth) {
         return 'label.height must be greater than label.depth';
+      }
+    }
+    // Optional field (#1898); absent = back-edge anchor (legacy).
+    if (label.edges !== undefined && !['back', 'front', 'both'].includes(label.edges as string)) {
+      return 'label.edges must be "back", "front", or "both"';
+    }
+    // Optional field (#1898); absent = 0 (tab abuts anchor wall).
+    if (label.inset !== undefined) {
+      if (
+        !isNumber(label.inset) ||
+        !inRange(label.inset, CONSTRAINTS.MIN_LABEL_TAB_INSET, CONSTRAINTS.MAX_LABEL_TAB_INSET)
+      ) {
+        return `label.inset must be ${CONSTRAINTS.MIN_LABEL_TAB_INSET}-${CONSTRAINTS.MAX_LABEL_TAB_INSET}`;
       }
     }
   }

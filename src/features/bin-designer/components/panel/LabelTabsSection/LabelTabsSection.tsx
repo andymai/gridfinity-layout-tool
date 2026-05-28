@@ -12,11 +12,18 @@ import type { SelectOption } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { TEXT_MAX_LENGTH } from '../../../types';
-import type { LabelTabAlignment, LabelTabSupport, TextFontFamily, TextMode } from '../../../types';
+import type {
+  LabelTabAlignment,
+  LabelTabEdges,
+  LabelTabSupport,
+  TextFontFamily,
+  TextMode,
+} from '../../../types';
 import { useLabelTabsSection } from './useLabelTabsSection';
 
 const ALIGNMENT_OPTIONS: LabelTabAlignment[] = ['left', 'center', 'right'];
 const SUPPORT_OPTIONS: LabelTabSupport[] = ['bracket', 'solid', 'fillet'];
+const EDGES_OPTIONS: LabelTabEdges[] = ['back', 'front', 'both'];
 const MODE_OPTIONS: TextMode[] = ['engrave', 'emboss', 'through-cut'];
 
 const FONT_OPTIONS: readonly TextFontFamily[] = [
@@ -43,9 +50,51 @@ export function LabelTabsSection() {
       disabledReason={meta.disabledReason}
       valueSummary={meta.summary}
     >
-      {/* Width + Depth + Height steppers side by side */}
-      <div className="flex items-end gap-2">
-        <div className="flex-1 min-w-0">
+      {/* Edges picker — the most fundamental choice (1 tab vs 2) and the entry
+          point for the tuck-under-ledge use case (#1898). */}
+      <div>
+        <span className="text-xs font-medium text-content-secondary mb-1 block">
+          {t('binDesigner.tabEdges')}
+        </span>
+        <div role="group" aria-label={t('binDesigner.tabEdges')} className="flex gap-1">
+          {EDGES_OPTIONS.map((option) => {
+            const current = state.label.edges ?? 'back';
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => handlers.setTabEdges(option)}
+                aria-pressed={current === option}
+                className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                  current === option
+                    ? 'bg-accent text-on-accent'
+                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+                }`}
+              >
+                {t(`binDesigner.tabEdges.${option}`)}
+              </button>
+            );
+          })}
+        </div>
+        {state.tabsWillSilentlyDrop && (
+          <div className="mt-1 flex items-start gap-2 text-xs text-warning">
+            <InfoIcon size="xs" className="mt-0.5 shrink-0" />
+            <span className="flex-1">{t('binDesigner.tabBothCollisionWarning')}</span>
+            <button
+              type="button"
+              onClick={handlers.autoFixDimensions}
+              className="shrink-0 font-medium text-accent hover:text-accent/80 transition-colors"
+            >
+              {t('binDesigner.tabAutoFix')}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Width × Depth / Height × Inset — 2×2 grid keeps four steppers
+          readable on narrow viewports. */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
             {t('binDesigner.tabWidth')}
           </span>
@@ -70,7 +119,7 @@ export function LabelTabsSection() {
             ariaLabel="Tab width"
           />
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
             {t('binDesigner.tabDepth')}
           </span>
@@ -80,7 +129,7 @@ export function LabelTabsSection() {
             onStep={(delta) =>
               handlers.setTabDepth(
                 Math.min(
-                  DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_DEPTH,
+                  state.tabDepthMax,
                   Math.max(
                     DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH,
                     state.label.depth + delta * DESIGNER_CONSTRAINTS.LABEL_TAB_DEPTH_STEP
@@ -89,13 +138,13 @@ export function LabelTabsSection() {
               )
             }
             min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH}
-            max={DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_DEPTH}
+            max={state.tabDepthMax}
             step={DESIGNER_CONSTRAINTS.LABEL_TAB_DEPTH_STEP}
             variant="desktop"
             ariaLabel="Tab depth"
           />
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
             {t('binDesigner.tabHeight')}
           </span>
@@ -120,6 +169,31 @@ export function LabelTabsSection() {
             ariaLabel="Tab height"
           />
         </div>
+        <div className="min-w-0">
+          <span className="mb-1 block text-xs text-content-tertiary">
+            {t('binDesigner.tabInset')}
+          </span>
+          <StepperControl
+            value={state.label.inset ?? 0}
+            onChange={handlers.setTabInset}
+            onStep={(delta) =>
+              handlers.setTabInset(
+                Math.min(
+                  state.tabInsetMax,
+                  Math.max(
+                    DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_INSET,
+                    (state.label.inset ?? 0) + delta * DESIGNER_CONSTRAINTS.LABEL_TAB_INSET_STEP
+                  )
+                )
+              )
+            }
+            min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_INSET}
+            max={state.tabInsetMax}
+            step={DESIGNER_CONSTRAINTS.LABEL_TAB_INSET_STEP}
+            variant="desktop"
+            ariaLabel="Tab inset"
+          />
+        </div>
       </div>
 
       {/* Physical tab dimensions — only show H when explicitly set, so unaltered designs stay visually unchanged */}
@@ -131,28 +205,35 @@ export function LabelTabsSection() {
         </span>
       </div>
 
-      {/* Alignment — `<span>` heading because no single input owns the group label */}
-      <div>
-        <span className="text-xs font-medium text-content-secondary mb-1 block">
-          {t('binDesigner.tabAlignment')}
-        </span>
-        <div role="group" aria-label={t('binDesigner.tabAlignment')} className="flex gap-1">
-          {ALIGNMENT_OPTIONS.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => handlers.setTabAlignment(option)}
-              className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                state.label.alignment === option
-                  ? 'bg-accent text-on-accent'
-                  : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-              }`}
-            >
-              {t(`binDesigner.alignment.${option}`)}
-            </button>
-          ))}
+      {/* Alignment — hidden when width=100% because the control has no visible
+          effect at full width (the tab spans the whole compartment column).
+          Showing an inert control was the root cause of #1898's UX confusion. */}
+      {state.label.width < DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH && (
+        <div>
+          <span className="text-xs font-medium text-content-secondary mb-1 flex items-center gap-1">
+            {t('binDesigner.tabAlignment')}
+            <span title={t('binDesigner.tabAlignmentHint')} className="inline-flex">
+              <InfoIcon size="xs" className="text-content-tertiary" />
+            </span>
+          </span>
+          <div role="group" aria-label={t('binDesigner.tabAlignment')} className="flex gap-1">
+            {ALIGNMENT_OPTIONS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => handlers.setTabAlignment(option)}
+                className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
+                  state.label.alignment === option
+                    ? 'bg-accent text-on-accent'
+                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
+                }`}
+              >
+                {t(`binDesigner.alignment.${option}`)}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Support picker — `<span>` heading; segmented control gets the group label */}
       <div>

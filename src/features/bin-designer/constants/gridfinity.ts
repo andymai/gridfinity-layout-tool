@@ -39,11 +39,21 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_COMPARTMENT_SIZE: 5, // mm (minimum viable compartment dimension)
   // Label tabs
   MIN_LABEL_TAB_DEPTH: 8, // mm
-  MAX_LABEL_TAB_DEPTH: 20, // mm
+  // Raised from 20 → 50 in #1898 so tuck-under ledges for wire bins have
+  // enough material to actually retain springy contents. Runtime clamp in
+  // the UI tightens the stepper to `min(50, innerD - 1)` so the tab can't
+  // span past the opposite wall on small bins.
+  MAX_LABEL_TAB_DEPTH: 50, // mm
   LABEL_TAB_DEPTH_STEP: 1, // mm
   MIN_LABEL_TAB_WIDTH: 10, // % of compartment column width
   MAX_LABEL_TAB_WIDTH: 100, // %
   LABEL_TAB_WIDTH_STEP: 5, // %
+  // Inset moves the tab inward from its anchor wall. Hard ceiling here;
+  // the UI tightens further per compartment depth and edges mode so two
+  // tabs in 'both' mode can't collide.
+  MIN_LABEL_TAB_INSET: 0, // mm
+  MAX_LABEL_TAB_INSET: 100, // mm
+  LABEL_TAB_INSET_STEP: 1, // mm
   // Tab height is the Z position of the shelf TOP above the cavity floor (mm).
   // Default (field absent) = wall top. Lowering creates a tuck-under pocket
   // between the rim and the shelf. The dynamic max is the interior wall
