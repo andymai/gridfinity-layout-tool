@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.123.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.4...gridfinity-layout-tool-v4.123.5) (2026-05-28)
+
+
+### Bug Fixes
+
+* **i18n:** translate hardcoded UI strings that bypassed t() lookups ([#1915](https://github.com/andymai/gridfinity-layout-tool/issues/1915)) ([c308a3f](https://github.com/andymai/gridfinity-layout-tool/commit/c308a3f5163d8436270dc4b1f2941432fa774861))
+
 ## [4.123.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.3...gridfinity-layout-tool-v4.123.4) (2026-05-28)
 
 
