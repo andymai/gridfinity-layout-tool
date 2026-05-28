@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.123.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.2...gridfinity-layout-tool-v4.123.3) (2026-05-28)
+
+
+### Bug Fixes
+
+* **bin-designer:** show both print bed dimensions in Physical Units ([#1910](https://github.com/andymai/gridfinity-layout-tool/issues/1910)) ([7ce5670](https://github.com/andymai/gridfinity-layout-tool/commit/7ce567074837f059b24dd48f35a59a3d03408a15))
+
 ## [4.123.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.1...gridfinity-layout-tool-v4.123.2) (2026-05-28)
 
 
