@@ -1054,7 +1054,7 @@
   "grid.preview.collapse": "Réduire l'aperçu",
   "grid.preview.expand": "Développer l'aperçu",
   "grid.resizeGrid": "Redimensionner la grille",
-  "grid.resizeWillStashBins": "{count} bins seront déplacés vers la réserve. Continuer ?",
+  "grid.resizeWillStashBins": "{count} bin(s) seront déplacés vers la réserve. Continuer ?",
   "grid.side": "Côté",
   "grid.sideView": "Vue latérale",
   "grid.split": "Diviser",

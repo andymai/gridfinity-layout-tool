@@ -8,18 +8,7 @@ import {
 } from './designJson';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams } from '../types';
-import en from '@/i18n/locales/en';
-import type { TFunction } from '@/i18n';
-
-const t: TFunction = (key, vars) => {
-  let template = en[key] ?? key;
-  if (vars) {
-    for (const [k, v] of Object.entries(vars)) {
-      template = template.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
-    }
-  }
-  return template;
-};
+import { testT as t } from '@/test/i18nTestUtils';
 
 function makeParams(overrides: Partial<BinParams> = {}): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };

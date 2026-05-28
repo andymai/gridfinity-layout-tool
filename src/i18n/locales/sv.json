@@ -1054,7 +1054,7 @@
   "grid.preview.collapse": "Komprimera förhandsvisning",
   "grid.preview.expand": "Expandera förhandsvisning",
   "grid.resizeGrid": "Ändra storlek på rutnät",
-  "grid.resizeWillStashBins": "{count} bins flyttas till stash. Fortsätt?",
+  "grid.resizeWillStashBins": "{count} bin(s) flyttas till stash. Fortsätt?",
   "grid.side": "Sida",
   "grid.sideView": "Sidovy",
   "grid.split": "Dela",

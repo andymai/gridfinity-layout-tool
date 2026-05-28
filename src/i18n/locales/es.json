@@ -1054,7 +1054,7 @@
   "grid.preview.collapse": "Contraer vista previa",
   "grid.preview.expand": "Expandir vista previa",
   "grid.resizeGrid": "Redimensionar cuadrícula",
-  "grid.resizeWillStashBins": "{count} bins se moverán a la reserva. ¿Continuar?",
+  "grid.resizeWillStashBins": "{count} bin(s) se moverán a la reserva. ¿Continuar?",
   "grid.side": "Lateral",
   "grid.sideView": "Vista lateral",
   "grid.split": "Dividir",

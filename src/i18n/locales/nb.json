@@ -1054,7 +1054,7 @@
   "grid.preview.collapse": "Skjul forhåndsvisning",
   "grid.preview.expand": "Utvid forhåndsvisning",
   "grid.resizeGrid": "Endre størrelse på rutenett",
-  "grid.resizeWillStashBins": "{count} bins flyttes til stash. Fortsette?",
+  "grid.resizeWillStashBins": "{count} bin(s) flyttes til stash. Fortsette?",
   "grid.side": "Side",
   "grid.sideView": "Sidevisning",
   "grid.split": "Del",

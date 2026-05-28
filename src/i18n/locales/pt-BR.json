@@ -1054,7 +1054,7 @@
   "grid.preview.collapse": "Recolher pré-visualização",
   "grid.preview.expand": "Expandir pré-visualização",
   "grid.resizeGrid": "Redimensionar grade",
-  "grid.resizeWillStashBins": "{count} bins serão movidos para a área de espera. Continuar?",
+  "grid.resizeWillStashBins": "{count} bin(s) serão movidos para a área de espera. Continuar?",
   "grid.side": "Lateral",
   "grid.sideView": "Vista lateral",
   "grid.split": "Dividir",

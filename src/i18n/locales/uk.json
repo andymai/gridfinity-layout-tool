@@ -1054,7 +1054,7 @@
   "grid.preview.collapse": "Згорнути перегляд",
   "grid.preview.expand": "Розгорнути перегляд",
   "grid.resizeGrid": "Змінити розмір сітки",
-  "grid.resizeWillStashBins": "{count} бінів буде переміщено в архів. Продовжити?",
+  "grid.resizeWillStashBins": "{count} бін(ів) буде переміщено в архів. Продовжити?",
   "grid.side": "Збоку",
   "grid.sideView": "Вигляд збоку",
   "grid.split": "Розділити",

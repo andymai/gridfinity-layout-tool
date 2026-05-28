@@ -103,11 +103,12 @@ export interface ParseDesignResult {
  * Validates schema structure and bin parameters, then applies migration for backward compatibility.
  *
  * @param json - JSON string to parse
+ * @param t - Translation function for localized error messages
  * @returns Parsed design with name and params, or null with error messages
  *
  * @example
  * ```ts
- * const result = parseDesignJSON(jsonString);
+ * const result = parseDesignJSON(jsonString, t);
  * if (result.design) {
  *   loadDesign(result.design.name, result.design.params);
  * } else {
@@ -195,11 +196,12 @@ export interface ValidateBinParamsResult {
  * Does not perform exhaustive validation - migrateParams handles missing fields.
  *
  * @param params - Unknown value to validate as BinParams
+ * @param t - Translation function for localized error messages
  * @returns Validation result with success flag and error messages
  *
  * @example
  * ```ts
- * const result = validateImportedBinParams(unknownData);
+ * const result = validateImportedBinParams(unknownData, t);
  * if (result.valid) {
  *   const params = migrateParams(unknownData as Partial<BinParams>);
  * }

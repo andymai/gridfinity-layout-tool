@@ -1054,7 +1054,7 @@
   "grid.preview.collapse": "Vorschau einklappen",
   "grid.preview.expand": "Vorschau ausklappen",
   "grid.resizeGrid": "Raster anpassen",
-  "grid.resizeWillStashBins": "{count} Bins werden in den Stash verschoben. Fortfahren?",
+  "grid.resizeWillStashBins": "{count} Bin(s) werden in den Stash verschoben. Fortfahren?",
   "grid.side": "Seite",
   "grid.sideView": "Seitenansicht",
   "grid.split": "Teilen",

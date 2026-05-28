@@ -2432,7 +2432,7 @@ const en: Record<string, string> = {
 
   // Grid stash confirm
   'grid.moveToStashConfirm': 'Move to Stash',
-  'grid.resizeWillStashBins': '{count} bins will be moved to stash. Continue?',
+  'grid.resizeWillStashBins': '{count} bin(s) will be moved to stash. Continue?',
 
   // Import modal inline errors
   'layouts.import.error.invalidJsonFormat': 'Invalid JSON format',

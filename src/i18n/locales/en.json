@@ -2039,7 +2039,7 @@
   "gridEditor.resize.southeastAria": "Resize bottom-right corner",
   "gridEditor.quickLabel.placeholder": "Enter label...",
   "grid.moveToStashConfirm": "Move to Stash",
-  "grid.resizeWillStashBins": "{count} bins will be moved to stash. Continue?",
+  "grid.resizeWillStashBins": "{count} bin(s) will be moved to stash. Continue?",
   "layouts.import.error.invalidJsonFormat": "Invalid JSON format",
   "layouts.import.error.noJsonProvided": "No JSON provided",
   "layouts.import.error.fileTooLarge": "File too large ({sizeMb} MB). Maximum is {maxMb} MB.",

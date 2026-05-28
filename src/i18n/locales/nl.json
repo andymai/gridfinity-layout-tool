@@ -1054,7 +1054,7 @@
   "grid.preview.collapse": "Preview invouwen",
   "grid.preview.expand": "Preview uitvouwen",
   "grid.resizeGrid": "Grid formaat wijzigen",
-  "grid.resizeWillStashBins": "{count} bins worden naar stash verplaatst. Doorgaan?",
+  "grid.resizeWillStashBins": "{count} bin(s) worden naar stash verplaatst. Doorgaan?",
   "grid.side": "Zijkant",
   "grid.sideView": "Zijaanzicht",
   "grid.split": "Splitsen",
