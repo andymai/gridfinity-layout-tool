@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.123.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.3...gridfinity-layout-tool-v4.123.4) (2026-05-28)
+
+
+### Bug Fixes
+
+* **estimates:** count label tabs by group, not by column ([#1913](https://github.com/andymai/gridfinity-layout-tool/issues/1913)) ([77b3b48](https://github.com/andymai/gridfinity-layout-tool/commit/77b3b4848f23a3721d98f017aaa8995b700eaae1))
+
 ## [4.123.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.2...gridfinity-layout-tool-v4.123.3) (2026-05-28)
 
 
