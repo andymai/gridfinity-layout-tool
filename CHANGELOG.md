@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.123.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.5...gridfinity-layout-tool-v4.123.6) (2026-05-28)
+
+
+### Bug Fixes
+
+* **vite:** exclude occt-wasm from optimizeDeps pre-bundling ([#1917](https://github.com/andymai/gridfinity-layout-tool/issues/1917)) ([fb52ea7](https://github.com/andymai/gridfinity-layout-tool/commit/fb52ea7c6d54f5b5a853f1e9663061100d329beb))
+
 ## [4.123.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.4...gridfinity-layout-tool-v4.123.5) (2026-05-28)
 
 
