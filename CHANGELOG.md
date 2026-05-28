@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.123.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.6...gridfinity-layout-tool-v4.123.7) (2026-05-28)
+
+
+### Bug Fixes
+
+* **bin-designer:** wall cutouts now carry through dividers ([#1882](https://github.com/andymai/gridfinity-layout-tool/issues/1882)) ([#1919](https://github.com/andymai/gridfinity-layout-tool/issues/1919)) ([0b1e872](https://github.com/andymai/gridfinity-layout-tool/commit/0b1e872329a764bca2e55a5a5492fd805026156d))
+
 ## [4.123.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.5...gridfinity-layout-tool-v4.123.6) (2026-05-28)
 
 
