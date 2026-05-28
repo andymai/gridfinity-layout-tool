@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.123.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.122.0...gridfinity-layout-tool-v4.123.0) (2026-05-28)
+
+
+### Features
+
+* **label-tabs:** tuck-under ledges for wire bins ([#1904](https://github.com/andymai/gridfinity-layout-tool/issues/1904)) ([1b63337](https://github.com/andymai/gridfinity-layout-tool/commit/1b633374730623c052d30757cdcee3f71c6efab1))
+
 ## [4.122.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.121.0...gridfinity-layout-tool-v4.122.0) (2026-05-27)
 
 
