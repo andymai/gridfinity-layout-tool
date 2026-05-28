@@ -30,6 +30,7 @@ import { getLastSolid, setLastSolid } from './shapeCache';
 import { applySplitConnectors, computeCutFaces } from './splitConnectorBuilder';
 import type { BinGeometryContext } from './splitConnectorBuilder';
 import { buildLipSlotCuts } from './slotBuilder';
+import { buildWallCutoutCuts } from './wallCutoutBuilder';
 import { isAbortError } from './utils/abort';
 
 /** Result of a split export: array of piece buffers with grid labels */
@@ -224,6 +225,33 @@ function splitSolidIntoPieces(
           lipSolid = newLip;
         } finally {
           lipCuts.delete();
+        }
+      }
+    }
+
+    // Same situation for wall cutouts: the body got its wall cutouts via the
+    // normal pipeline on bodyParams (where dim.hasLip=false, so the cutters
+    // only overshoot the wall top by 2mm). The freshly-built lip would
+    // otherwise still seal off the opening that should pass cleanly through
+    // both wall and lip. Pass hasLip=true so the cutters extend through the
+    // full lip zone, then shift them up by floorZ to convert body-local Z
+    // (floor at Z=0) into absolute bin Z (socket bottom at Z=0).
+    if (params.walls.enabled) {
+      const innerW = outerW - 2 * params.wallThickness;
+      const innerD = outerD - 2 * params.wallThickness;
+      const wallCuts = buildWallCutoutCuts(params, innerW, innerD, wallHeight, true);
+      if (wallCuts) {
+        let positioned = wallCuts;
+        if (floorZ !== 0) {
+          positioned = translate(wallCuts, [0, 0, floorZ]);
+          wallCuts.delete();
+        }
+        try {
+          const newLip = unwrap(cut(lipSolid as ValidSolid, positioned as ValidSolid));
+          lipSolid.delete();
+          lipSolid = newLip;
+        } finally {
+          positioned.delete();
         }
       }
     }
