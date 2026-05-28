@@ -193,7 +193,7 @@ describe('printEstimates', () => {
       expect(highInfill.printTimeMinutes).toBeGreaterThan(baseline.printTimeMinutes);
     });
 
-    it('solid label support uses less volume than bracket', () => {
+    it('solid label support uses more volume than bracket', () => {
       const bracket = estimatePrint({
         ...DEFAULT_BIN_PARAMS,
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'bracket' },
@@ -202,9 +202,10 @@ describe('printEstimates', () => {
         ...DEFAULT_BIN_PARAMS,
         label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'solid' },
       });
-      // Solid = 1 triangle per tab, bracket = 2 gussets per tab → bracket uses more
-      expect(solid.volumeMm3).toBeLessThan(bracket.volumeMm3);
-      expect(solid.volumeMm3).toBeGreaterThan(0);
+      // Solid extrudes a triangular prism the full shelf width; bracket only
+      // emits thin gussets spaced ~10mm apart. Solid uses substantially more.
+      expect(solid.volumeMm3).toBeGreaterThan(bracket.volumeMm3);
+      expect(bracket.volumeMm3).toBeGreaterThan(0);
     });
 
     it('lower infill decreases print time', () => {
@@ -288,6 +289,143 @@ describe('printEstimates', () => {
       expect(bothAxes.volumeMm3).toBe(standard.volumeMm3);
       expect(oneAxis.volumeMm3).toBeLessThan(standard.volumeMm3);
       expect(noSlots.volumeMm3).toBeLessThan(oneAxis.volumeMm3);
+    });
+
+    // ─── Label tab counting (issue #1905) ────────────────────────────────
+
+    describe('label tab counting', () => {
+      const enabledLabel = { ...DEFAULT_BIN_PARAMS.label, enabled: true };
+
+      it('merged 2x1 row counts as one tab, not two', () => {
+        // cells=[0,0] → one compartment spanning both columns. The geometry
+        // emits one tab; the estimate must match (regression test for the
+        // old `cols × tabVolume` over-count).
+        const merged: BinParams = {
+          ...DEFAULT_BIN_PARAMS,
+          compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 0] },
+          label: enabledLabel,
+        };
+        const split: BinParams = {
+          ...merged,
+          compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] },
+        };
+        const withoutLabel = (p: BinParams) =>
+          estimatePrint({ ...p, label: { ...p.label, enabled: false } }).volumeMm3;
+
+        const mergedLabelVol = estimatePrint(merged).volumeMm3 - withoutLabel(merged);
+        const splitLabelVol = estimatePrint(split).volumeMm3 - withoutLabel(split);
+
+        // Shelf area is identical (one wide shelf vs two half-width shelves),
+        // but the merged version has one support instead of two.
+        expect(mergedLabelVol).toBeLessThan(splitLabelVol);
+      });
+
+      it('accounts for interior-row back walls (1x3 vertical stack)', () => {
+        // 1 col × 3 rows with three compartments → three back walls (two
+        // dividers + outer back), so three tabs. The old `cols × …` formula
+        // billed only 1 tab regardless of row count.
+        const stack: BinParams = {
+          ...DEFAULT_BIN_PARAMS,
+          depth: 3,
+          compartments: { cols: 1, rows: 3, thickness: 1.2, cells: [0, 1, 2] },
+          label: enabledLabel,
+        };
+        const oneTab: BinParams = {
+          ...stack,
+          compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
+        };
+        const labelVol = (p: BinParams) =>
+          estimatePrint(p).volumeMm3 -
+          estimatePrint({ ...p, label: { ...p.label, enabled: false } }).volumeMm3;
+
+        // Three tabs should add roughly 3× the volume of one tab in the same
+        // shell (same cellW, so same per-tab shelf width).
+        expect(labelVol(stack)).toBeGreaterThan(labelVol(oneTab) * 2.5);
+      });
+
+      it('skips tab when back wall is a tilted divider', () => {
+        // dividerOverrides between two compartments makes their shared wall
+        // tilted; the builder skips that tab.
+        const withTilt: BinParams = {
+          ...DEFAULT_BIN_PARAMS,
+          depth: 2,
+          compartments: {
+            cols: 1,
+            rows: 2,
+            thickness: 1.2,
+            cells: [0, 1],
+            dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: 5, offsetEnd: -5 }],
+          },
+          label: enabledLabel,
+        };
+        const noTilt: BinParams = {
+          ...withTilt,
+          compartments: { cols: 1, rows: 2, thickness: 1.2, cells: [0, 1] },
+        };
+        const labelVol = (p: BinParams) =>
+          estimatePrint(p).volumeMm3 -
+          estimatePrint({ ...p, label: { ...p.label, enabled: false } }).volumeMm3;
+
+        // Tilt drops one of the two tabs; the remaining outer-back tab still
+        // contributes, so withTilt has roughly half the label contribution.
+        expect(labelVol(withTilt)).toBeLessThan(labelVol(noTilt));
+        expect(labelVol(withTilt)).toBeGreaterThan(0);
+      });
+
+      it("drops front tab when edges='both' would collide", () => {
+        // 1×1 grid where 2·depth + 2·inset > compartmentDepth: front tab
+        // collides with back tab and is silently dropped (only back remains).
+        const tiny: BinParams = {
+          ...DEFAULT_BIN_PARAMS,
+          depth: 1,
+          compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
+          label: { ...enabledLabel, edges: 'both', depth: 18, inset: 2 },
+        };
+        const back: BinParams = {
+          ...tiny,
+          label: { ...tiny.label, edges: 'back' },
+        };
+        const labelVol = (p: BinParams) =>
+          estimatePrint(p).volumeMm3 -
+          estimatePrint({ ...p, label: { ...p.label, enabled: false } }).volumeMm3;
+
+        // With collision, 'both' degrades to the back-only result.
+        expect(labelVol(tiny)).toBeCloseTo(labelVol(back), 0);
+      });
+
+      it('skips tab when depth+inset exceeds compartment depth', () => {
+        // Single-row, single-comp: cellD ≈ 81.6mm. Depth 80 + inset 10 = 90 >
+        // 81.6 → builder skips. Sanity-check no tab volume is added.
+        const skip: BinParams = {
+          ...DEFAULT_BIN_PARAMS,
+          depth: 2,
+          compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
+          label: { ...enabledLabel, depth: 80, inset: 10 },
+        };
+        const skipLabelVol =
+          estimatePrint(skip).volumeMm3 -
+          estimatePrint({ ...skip, label: { ...skip.label, enabled: false } }).volumeMm3;
+        expect(skipLabelVol).toBe(0);
+      });
+
+      it("'both' edges with non-colliding compartment doubles the tab volume", () => {
+        // Large enough compartment that back+front fit without collision.
+        const back: BinParams = {
+          ...DEFAULT_BIN_PARAMS,
+          depth: 4,
+          compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
+          label: { ...enabledLabel, edges: 'back' },
+        };
+        const both: BinParams = {
+          ...back,
+          label: { ...back.label, edges: 'both' },
+        };
+        const labelVol = (p: BinParams) =>
+          estimatePrint(p).volumeMm3 -
+          estimatePrint({ ...p, label: { ...p.label, enabled: false } }).volumeMm3;
+
+        expect(labelVol(both)).toBeGreaterThan(labelVol(back) * 1.8);
+      });
     });
   });
 

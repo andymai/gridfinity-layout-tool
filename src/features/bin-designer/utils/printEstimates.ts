@@ -10,8 +10,13 @@
  * This avoids expensive mesh-based volume integration.
  */
 
-import type { BinParams } from '@/features/bin-designer/types';
+import type { BinParams, LabelTabSupport } from '@/features/bin-designer/types';
 import { GRIDFINITY, STYLE_WALL_THICKNESS } from '@/features/bin-designer/constants/gridfinity';
+import {
+  compartmentHasTiltedBackWall,
+  compartmentHasTiltedFrontWall,
+  getCompartmentBounds,
+} from '@/features/bin-designer/utils/compartments';
 import { isFeatureActive } from '@/shared/constraints';
 import {
   PLA_DENSITY,
@@ -130,7 +135,7 @@ function computeBinVolume(params: BinParams): number {
 
   // Label tabs (shelf + support structure)
   if (isFeatureActive(params, 'label')) {
-    volume += computeLabelTabVolume(params, outerW, wallThickness);
+    volume += computeLabelTabVolume(params, outerW, outerD, wallThickness);
   }
 
   // Scoops (remove material from compartment front walls)
@@ -253,44 +258,208 @@ function computeDividerVolume(
   // Volume = total wall length × thickness × height
   return totalLength * thickness * dividerH;
 }
+/** Builder constant: max unsupported shelf span between bracket gussets. */
+const BRACKET_GUSSET_SPACING_MM = 10;
+
+interface LabelTabGeom {
+  readonly tabDepth: number;
+  readonly gussetLeg: number;
+  readonly wallThickness: number;
+  readonly dividerThickness: number;
+  readonly widthPercent: number;
+  readonly inset: number;
+  readonly support: LabelTabSupport;
+}
+
 /**
- * Volume of label tabs (one per compartment column, per active edge).
- *
- * Each tab consists of:
- * - Shelf: horizontal plate (depth × width × wallThickness)
- * - Support: bracket gussets or solid triangle underneath
- *
- * Per-edge multiplier: 1 for 'back' or 'front' alone, 2 for 'both' (#1898).
- * Note: this still over-counts merged compartments (uses `cols` rather than
- * walking back-edge groups) — tracked separately, not regressed by this PR.
+ * Volume of label tabs, mirroring `labelTabBuilder.buildTabsAtRow`'s
+ * grouping and skip conditions (tilted anchor wall, depth+inset overrun,
+ * `edges='both'` collisions) so the estimate tracks what the builder
+ * actually generates.
  */
-function computeLabelTabVolume(params: BinParams, outerW: number, wallThickness: number): number {
-  const { cols } = params.compartments;
+function computeLabelTabVolume(
+  params: BinParams,
+  outerW: number,
+  outerD: number,
+  wallThickness: number
+): number {
+  const { cols, rows, thickness } = params.compartments;
   const { depth: tabDepth, width: widthPercent, support } = params.label;
+  const inset = params.label.inset ?? 0;
+  const edges = params.label.edges ?? 'back';
 
   const innerW = outerW - 2 * wallThickness;
-  const colWidth = innerW / cols;
-  const tabWidth = (colWidth * widthPercent) / 100;
+  const innerD = outerD - 2 * wallThickness;
+  const cellW = innerW / cols;
+  const cellD = innerD / rows;
 
-  // Shelf: horizontal plate
-  const shelfThickness = wallThickness;
-  const shelfVolume = tabDepth * tabWidth * shelfThickness;
+  // Mirrors the bridge guard in `buildLabelTabsInScope`.
+  if (tabDepth >= innerD) return 0;
 
-  // Support structure beneath the shelf
-  let supportVolume: number;
-  if (support === 'bracket') {
-    // Two triangular gussets per tab
-    const gussetSize = tabDepth;
-    supportVolume = 2 * 0.5 * gussetSize * gussetSize * wallThickness;
-  } else {
-    // Solid triangular fill
-    supportVolume = 0.5 * tabDepth * tabDepth * wallThickness;
+  // `gussetLeg` clamps at 0 so a tabDepth ≤ wallThickness yields shelf-only
+  // volume (no support), matching the builder's guard on degenerate geometry.
+  const geom: LabelTabGeom = {
+    tabDepth,
+    gussetLeg: Math.max(0, tabDepth - wallThickness),
+    wallThickness,
+    dividerThickness: thickness,
+    widthPercent,
+    inset,
+    support,
+  };
+
+  const includeBack = edges === 'back' || edges === 'both';
+  const includeFront = edges === 'front' || edges === 'both';
+  const collidingFrontIds =
+    edges === 'both' ? findCollidingFrontIds(params, cellD, tabDepth, inset) : null;
+
+  let volume = 0;
+  for (let row = 0; row < rows; row++) {
+    if (includeBack) {
+      volume += sumTabVolumesAtRow(params, row, 'back', cellW, cellD, geom, null);
+    }
+    if (includeFront) {
+      volume += sumTabVolumesAtRow(params, row, 'front', cellW, cellD, geom, collidingFrontIds);
+    }
+  }
+  return volume;
+}
+
+/**
+ * Per-tab volume as a function of shelf width. Support depends on style:
+ *   - `solid` / `fillet`: triangular prism extruded the full shelf width.
+ *     Fillet has a concave profile but the over-estimate is small.
+ *   - `bracket`: ~`ceil(tabWidth / BRACKET_GUSSET_SPACING_MM)` gussets,
+ *     each extruded by the divider thickness (within ±1 of the builder).
+ */
+function tabContribution(geom: LabelTabGeom, tabWidth: number): number {
+  if (tabWidth <= 0) return 0;
+  const shelf = geom.tabDepth * tabWidth * geom.wallThickness;
+  if (geom.gussetLeg <= 0) return shelf;
+  const triangleArea = 0.5 * geom.tabDepth * geom.gussetLeg;
+  const support =
+    geom.support === 'bracket'
+      ? Math.max(1, Math.ceil(tabWidth / BRACKET_GUSSET_SPACING_MM)) *
+        triangleArea *
+        geom.dividerThickness
+      : triangleArea * tabWidth;
+  return shelf + support;
+}
+
+/**
+ * Sum tab volumes for one row + anchor edge. Mirrors the grouping and
+ * skip logic of `labelTabBuilder.buildTabsAtRow`, including the
+ * `thickness/2` boundary deduction at real divider walls.
+ */
+function sumTabVolumesAtRow(
+  params: BinParams,
+  row: number,
+  anchor: 'back' | 'front',
+  cellW: number,
+  cellD: number,
+  geom: LabelTabGeom,
+  collidingFrontIds: Set<number> | null
+): number {
+  const { cols, rows, cells, thickness } = params.compartments;
+  const isOuterEdgeRow = anchor === 'back' ? row === rows - 1 : row === 0;
+  const neighborRowOffset = anchor === 'back' ? 1 : -1;
+  const hasTiltedAnchorWall =
+    anchor === 'back' ? compartmentHasTiltedBackWall : compartmentHasTiltedFrontWall;
+
+  const cellAt = (c: number): number => cells[row * cols + c];
+  const anchorsTab = (c: number): boolean =>
+    isOuterEdgeRow || cellAt(c) !== cells[(row + neighborRowOffset) * cols + c];
+
+  let volume = 0;
+  let col = 0;
+
+  while (col < cols) {
+    const cellId = cellAt(col);
+    if (!anchorsTab(col)) {
+      col++;
+      continue;
+    }
+    if (hasTiltedAnchorWall(params.compartments, cellId)) {
+      col++;
+      continue;
+    }
+    if (anchor === 'front' && collidingFrontIds?.has(cellId)) {
+      col++;
+      continue;
+    }
+
+    const bounds = getCompartmentBounds(params.compartments, cellId);
+    if (bounds) {
+      const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * cellD;
+      if (geom.tabDepth + geom.inset > compartmentDepth) {
+        col++;
+        continue;
+      }
+    }
+
+    let groupEnd = col + 1;
+    while (groupEnd < cols && cellAt(groupEnd) === cellId && anchorsTab(groupEnd)) {
+      groupEnd++;
+    }
+
+    const groupCols = groupEnd - col;
+    const groupMinCol = col;
+    const groupMaxCol = groupEnd - 1;
+
+    // Deduct half the divider thickness on either side that borders an
+    // actual divider wall (a different compartment). Outer bin walls don't
+    // deduct — the cellW already starts inside the bin wall.
+    const leftDeduction = groupMinCol > 0 && cellAt(groupMinCol - 1) !== cellId ? thickness / 2 : 0;
+    const rightDeduction =
+      groupMaxCol < cols - 1 && cellAt(groupMaxCol + 1) !== cellId ? thickness / 2 : 0;
+    const availableWidth = groupCols * cellW - leftDeduction - rightDeduction;
+    const tabWidth = (availableWidth * geom.widthPercent) / 100;
+
+    volume += tabContribution(geom, tabWidth);
+    col = groupEnd;
   }
 
-  const edges = params.label.edges ?? 'back';
-  const edgeCount = edges === 'both' ? 2 : 1;
+  return volume;
+}
 
-  return cols * edgeCount * (shelfVolume + supportVolume);
+/**
+ * For `edges='both'`, identify compartments whose back+front tab pair would
+ * collide so the front tab is dropped from the estimate. Mirror of
+ * `labelTabBuilder.findCollidingFrontCompartments`.
+ */
+function findCollidingFrontIds(
+  params: BinParams,
+  cellD: number,
+  tabDepth: number,
+  inset: number
+): Set<number> {
+  const { cols, rows, cells } = params.compartments;
+  const colliding = new Set<number>();
+  const visited = new Set<number>();
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const cellId = cells[row * cols + col];
+      if (visited.has(cellId)) continue;
+      visited.add(cellId);
+
+      const bounds = getCompartmentBounds(params.compartments, cellId);
+      if (!bounds) continue;
+
+      const hasFrontAnchor =
+        bounds.minRow === 0 || cells[(bounds.minRow - 1) * cols + bounds.minCol] !== cellId;
+      const hasBackAnchor =
+        bounds.maxRow === rows - 1 || cells[(bounds.maxRow + 1) * cols + bounds.minCol] !== cellId;
+      if (!hasBackAnchor || !hasFrontAnchor) continue;
+
+      const compartmentDepth = (bounds.maxRow - bounds.minRow + 1) * cellD;
+      if (2 * tabDepth + 2 * inset > compartmentDepth) {
+        colliding.add(cellId);
+      }
+    }
+  }
+
+  return colliding;
 }
 
 /**
