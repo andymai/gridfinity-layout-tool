@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
@@ -36,8 +36,16 @@ export function useWallCutoutsSection() {
     }))
   );
   const t = useTranslation();
-  const linked = useSettingsStore((s) => s.settings.wallCutoutsLinked);
-  const updateSetting = useSettingsStore((s) => s.updateSetting);
+  const { linked, updateSetting } = useSettingsStore(
+    useShallow((s) => ({
+      linked: s.settings.wallCutoutsLinked,
+      updateSetting: s.updateSetting,
+    }))
+  );
+
+  // True once the user has made an explicit interior choice this session, so
+  // the auto-coupling below won't resurrect an interior they turned off.
+  const interiorUserSet = useRef(false);
 
   const featureStatus = getFeatureStatus(params, 'wallCutouts');
   const isUnavailable = !featureStatus.available;
@@ -57,10 +65,10 @@ export function useWallCutoutsSection() {
     }
     // Enabling on a multi-compartment bin: also cut the interior dividers so
     // the opening carries through the bin instead of leaving full-height
-    // dividers behind notched outer walls (issue #1882). One-time on enable —
-    // if the user later turns interior off, it stays off.
+    // dividers behind notched outer walls (issue #1882). Skipped once the user
+    // has made an explicit interior choice, so turning it off stays off.
     const hasDividers = params.compartments.cols > 1 || params.compartments.rows > 1;
-    if (hasDividers && !walls.interior.enabled) {
+    if (hasDividers && !walls.interior.enabled && !interiorUserSet.current) {
       const source = OUTER_SIDES.map((s) => walls[s]).find((c) => c.enabled);
       updateWalls({
         enabled: true,
@@ -80,6 +88,8 @@ export function useWallCutoutsSection() {
 
   const toggleSide = useCallback(
     (side: WallSide) => {
+      // An explicit interior toggle opts out of the auto-coupling above.
+      if (side === 'interior') interiorUserSet.current = true;
       const current = walls[side];
       if (current.enabled) {
         updateWallSide(side, DISABLED_WALL_CUTOUT);
@@ -181,9 +191,11 @@ export function useWallCutoutsSection() {
   // a quiet expectation hint rather than changing geometry (issue #1882).
   const showDensityHint = useMemo(() => {
     if (!walls.enabled || activeSides.length === 0) return false;
-    const { cols, rows } = params.compartments;
-    return cols >= DENSITY_HINT_THRESHOLD || rows >= DENSITY_HINT_THRESHOLD;
-  }, [walls.enabled, activeSides.length, params.compartments]);
+    return (
+      params.compartments.cols >= DENSITY_HINT_THRESHOLD ||
+      params.compartments.rows >= DENSITY_HINT_THRESHOLD
+    );
+  }, [walls.enabled, activeSides.length, params.compartments.cols, params.compartments.rows]);
 
   const disabledReason = featureStatus.reason ? t(featureStatus.reason) : undefined;
 

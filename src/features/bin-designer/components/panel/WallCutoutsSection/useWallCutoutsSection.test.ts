@@ -11,8 +11,10 @@ describe('useWallCutoutsSection', () => {
       params: { ...DEFAULT_BIN_PARAMS },
     });
     // `linked` is a persisted user setting; reset the settings singleton so
-    // state doesn't leak between tests.
+    // state doesn't leak between tests, and clear the localStorage it writes
+    // through so it can't bleed into other test files.
     useSettingsStore.setState({ settings: { ...DEFAULT_SETTINGS } });
+    localStorage.clear();
   });
 
   it('returns disabled state by default', () => {
@@ -457,6 +459,33 @@ describe('useWallCutoutsSection', () => {
       const { walls } = useDesignerStore.getState().params;
       expect(walls.enabled).toBe(true);
       expect(walls.interior.enabled).toBe(false);
+    });
+
+    it('does not resurrect interior the user explicitly disabled across a feature off/on cycle', () => {
+      useDesignerStore.setState({
+        params: {
+          ...DEFAULT_BIN_PARAMS,
+          compartments: { cols: 1, rows: 9, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5, 6, 7, 8] },
+        },
+      });
+
+      const { result } = renderHook(() => useWallCutoutsSection());
+
+      // Enable cutouts → interior auto-on.
+      act(() => result.current.handlers.toggleEnabled());
+      expect(useDesignerStore.getState().params.walls.interior.enabled).toBe(true);
+
+      // User explicitly turns interior off.
+      act(() => result.current.handlers.toggleSide('interior'));
+      expect(useDesignerStore.getState().params.walls.interior.enabled).toBe(false);
+
+      // Toggle the whole feature off, then back on.
+      act(() => result.current.handlers.toggleEnabled());
+      act(() => result.current.handlers.toggleEnabled());
+
+      // Interior must stay off — the auto-coupling must not override the
+      // user's explicit choice.
+      expect(useDesignerStore.getState().params.walls.interior.enabled).toBe(false);
     });
 
     it('does not re-enable interior the user already disabled when toggling the feature off', () => {
