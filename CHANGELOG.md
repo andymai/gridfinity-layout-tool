@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.123.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.1...gridfinity-layout-tool-v4.123.2) (2026-05-28)
+
+
+### Bug Fixes
+
+* **export:** multi-color polish (lid color, lid layout, lip parity) ([#1903](https://github.com/andymai/gridfinity-layout-tool/issues/1903)) ([303d938](https://github.com/andymai/gridfinity-layout-tool/commit/303d938736cc712c9a16c4d619990915e26cae43))
+
 ## [4.123.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.0...gridfinity-layout-tool-v4.123.1) (2026-05-28)
 
 
