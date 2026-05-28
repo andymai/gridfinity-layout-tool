@@ -107,8 +107,12 @@ export const TONGUE_CLEARANCE = 0.15;
 // Bowtie-key connector style: both seam edges are female grooves and a separate
 // bowtie key (double dovetail, wide at both ends) is hammered in from the top.
 // The key holds vertically by friction, so its grooves use a tighter per-side
-// clearance than the slip-fit dovetail. Print-test tuned — start conservative.
-export const BOWTIE_KEY_CLEARANCE = 0.05;
+// clearance than the slip-fit dovetail. 0.075mm/side (0.15mm total) lands at the
+// snug "finger-snap" end of FDM dovetail fits for PLA/PETG — FDM pockets shrink,
+// so realized fit is tighter still. Drop toward 0.05 for a harder press; the
+// dominant fit factor is first-layer elephant-foot squish, so see the print
+// guide's connector-key tuning notes before changing this.
+export const BOWTIE_KEY_CLEARANCE = 0.075;
 export const NUB_DIAMETER = 1.5;
 export const NUB_DEPTH = 0.8;
 const HOLE_CLEARANCE = 0.1;

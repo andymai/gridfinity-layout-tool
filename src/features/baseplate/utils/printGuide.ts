@@ -61,6 +61,13 @@ function generateConnectorKeySection(key: { fileName: string; count: number }): 
     `  bowtie_key (${key.fileName})`,
     `    ${copyText}`,
     '    Hammer one into each seam junction from the top, flush with the surface.',
+    '',
+    '    Fit is a tight press fit (~0.15mm total clearance). For best results:',
+    '      • Use a 0.4mm nozzle — larger nozzles lose the dovetail detail.',
+    '      • Set initial-layer horizontal expansion to about -0.1 to -0.2mm to',
+    '        cancel first-layer squish (the biggest cause of an over-tight key).',
+    '      • Print the key flat on the bed (as oriented); 2+ walls.',
+    "      • Won't seat? Lower flow ~5% or sand the key. Too loose? Raise flow ~5%.",
   ].join('\n');
 }
 
