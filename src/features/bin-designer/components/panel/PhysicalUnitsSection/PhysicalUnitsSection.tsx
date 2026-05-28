@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
+import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 import { usePhysicalUnitsSection } from './usePhysicalUnitsSection';
 
@@ -64,14 +65,11 @@ export function PhysicalUnitsSection() {
           tooltip={t('binDesigner.printBedTooltip')}
           unit="mm"
         >
-          <DeferredNumberInput
-            value={state.printBedSize}
+          <PrintBedInput
+            width={state.printBedSize}
+            depth={state.printBedDepth}
             onChange={handlers.handlePrintBedChange}
-            min={42}
-            max={500}
-            step={10}
-            className="input w-14 py-0.5 px-1 text-xs text-right"
-            aria-label={t('settings.printBed')}
+            variant="compact"
           />
         </SettingsRow>
       </div>
