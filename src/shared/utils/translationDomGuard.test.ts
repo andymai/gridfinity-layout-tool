@@ -15,6 +15,18 @@ describe('installTranslationDomGuard', () => {
   afterAll(() => {
     Node.prototype.removeChild = originalRemoveChild;
     Node.prototype.insertBefore = originalInsertBefore;
+    // Drop the prototype brand so the guard can be re-installed by other files.
+    Reflect.deleteProperty(Node.prototype, '__translationDomGuardInstalled__');
+  });
+
+  it('is idempotent — a second install does not re-wrap the methods', () => {
+    const patchedRemove = Node.prototype.removeChild;
+    const patchedInsert = Node.prototype.insertBefore;
+
+    installTranslationDomGuard();
+
+    expect(Node.prototype.removeChild).toBe(patchedRemove);
+    expect(Node.prototype.insertBefore).toBe(patchedInsert);
   });
 
   it('still removes a real child node', () => {

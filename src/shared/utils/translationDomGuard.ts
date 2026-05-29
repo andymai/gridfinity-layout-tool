@@ -12,12 +12,22 @@
  * visually harmless. See facebook/react#11538.
  */
 
-let installed = false;
+// Branding the prototype (not a module-level boolean) ties the
+// idempotency check to the same global object the patch mutates. A module
+// re-evaluation (e.g. vi.resetModules()) can't then desync a fresh "installed"
+// flag from the already-patched prototype and double-wrap the methods.
+const GUARD_FLAG = '__translationDomGuardInstalled__';
 
 export function installTranslationDomGuard(): void {
-  if (installed) return;
   if (typeof Node !== 'function') return;
-  installed = true;
+
+  const proto = Node.prototype as unknown as Record<string, unknown>;
+  if (proto[GUARD_FLAG]) return;
+  Object.defineProperty(proto, GUARD_FLAG, {
+    value: true,
+    enumerable: false,
+    configurable: true,
+  });
 
   // eslint-disable-next-line @typescript-eslint/unbound-method -- intentional: invoked via .call(this, …) below
   const originalRemoveChild = Node.prototype.removeChild;
