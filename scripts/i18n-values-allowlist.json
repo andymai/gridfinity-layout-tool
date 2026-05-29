@@ -182,7 +182,7 @@
     "baseplate.connectorNubsHelp",
     "baseplate.connectorStyle.label",
     "baseplate.connectorStyle.dovetail",
-    "baseplate.connectorStyle.bowtie",
+    "baseplate.connectorStyle.dovetailKey",
     "export.format",
     "export.nameStyle.compact",
     "binDesigner.lid.outerDimensions",

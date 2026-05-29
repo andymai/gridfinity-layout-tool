@@ -317,7 +317,7 @@ describe('migrateBaseplateParams', () => {
     expect(result.connectorNubs).toBeUndefined();
   });
 
-  it('preserves connectorStyle when bowtie', () => {
+  it('preserves connectorStyle when dovetail key', () => {
     const stored = {
       magnetHoles: false,
       magnetDiameter: 6.5,
@@ -327,10 +327,10 @@ describe('migrateBaseplateParams', () => {
       paddingFront: 0,
       paddingBack: 0,
       connectorNubs: true,
-      connectorStyle: 'bowtie',
+      connectorStyle: 'dovetailKey',
     };
     const result = migrateBaseplateParams(stored);
-    expect(result.connectorStyle).toBe('bowtie');
+    expect(result.connectorStyle).toBe('dovetailKey');
   });
 
   it('omits connectorStyle when absent or invalid', () => {

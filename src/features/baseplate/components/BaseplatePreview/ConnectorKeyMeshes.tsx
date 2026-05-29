@@ -1,8 +1,8 @@
 /**
- * Renders the seated bowtie connector keys in the split-baseplate preview.
+ * Renders the seated dovetail keys in the split-baseplate preview.
  *
- * A key is a straight extrusion of the same 6-point bowtie profile the worker
- * builds (`buildBowtieKey`), so this procedural mesh is geometrically identical
+ * A key is a straight extrusion of the same 6-point dovetail key profile the worker
+ * builds (`buildDovetailKey`), so this procedural mesh is geometrically identical
  * to the exported part — no BREP round-trip needed for a draft preview. One key
  * is placed at every seam junction (see `computeSeamJunctions`), rotated 90° on
  * horizontal seams. Hidden in exploded mode, since keys only make sense when the
@@ -19,15 +19,12 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { buildFullParams } from '../../utils/buildFullParams';
 import { computeSeamJunctions } from '../../utils/connectorKeys';
+import {
+  TONGUE_PROTRUSION,
+  TONGUE_BASE_HALF,
+  TONGUE_TIP_HALF,
+} from '@/shared/constants/connectors';
 
-// Bowtie key footprint — must stay in lockstep with TONGUE_* in the worker's
-// generatorConstants.ts (cross-feature import is disallowed, so these are copies).
-// Narrow at the waist (BASE), wide at the wing tips (TIP), wings reach ±PROTRUSION.
-// No test catches drift; the worker's scenario test checks the EXPORTED key, not
-// this preview mesh — keep these three in sync by hand if the dovetail is retuned.
-const KEY_PROTRUSION = 1.5;
-const KEY_BASE_HALF = 1.0;
-const KEY_TIP_HALF = 1.3;
 /** Retaining floor above magnet holes — mirrors MAGNET_FLOOR in the generator. */
 const MAGNET_FLOOR = 0.5;
 
@@ -40,11 +37,11 @@ function getAccentHex(): string {
   return raw || FALLBACK_ACCENT;
 }
 
-/** Build the bowtie profile centered on the origin, long axis along X. */
+/** Build the dovetail key profile centered on the origin, long axis along X. */
 function buildKeyGeometry(totalHeight: number): THREE.ExtrudeGeometry {
-  const P = KEY_PROTRUSION;
-  const bW = KEY_BASE_HALF;
-  const tW = KEY_TIP_HALF;
+  const P = TONGUE_PROTRUSION;
+  const bW = TONGUE_BASE_HALF;
+  const tW = TONGUE_TIP_HALF;
   const shape = new THREE.Shape();
   shape.moveTo(-P, tW);
   shape.lineTo(0, bW);

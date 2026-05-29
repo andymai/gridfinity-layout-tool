@@ -138,10 +138,10 @@ export interface BaseplateParams {
   readonly preferIdenticalPieces?: boolean;
   /**
    * Connector geometry on join edges when `connectorNubs` is enabled
-   * (default 'dovetail'). 'bowtie' makes both seam edges female and ships a
-   * separate hammered-in bowtie key instead of an integral male tongue.
+   * (default 'dovetail'). 'dovetailKey' makes both seam edges female and ships a
+   * separate hammered-in dovetail key instead of an integral male tongue.
    */
-  readonly connectorStyle?: 'dovetail' | 'bowtie';
+  readonly connectorStyle?: 'dovetail' | 'dovetailKey';
   /** Remove center floor material, keeping only magnet pads. */
   readonly lightweight?: boolean;
   /** Uniform outer corner radius in mm. */

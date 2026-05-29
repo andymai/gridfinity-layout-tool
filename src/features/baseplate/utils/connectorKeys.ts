@@ -1,17 +1,17 @@
 /**
- * Bowtie connector key accounting + placement for split baseplates.
+ * Dovetail key accounting + placement for split baseplates.
  *
- * In bowtie mode every join edge is a female groove and a separate, identical
+ * In dovetail key mode every join edge is a female groove and a separate, identical
  * key part is hammered into each seam junction. This module is the single
  * source of truth for WHERE the keys go (and therefore HOW MANY), so the export
  * count, the print guide, and the 3D preview never disagree.
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
-import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
+import type { BaseplateTiling } from '../types/tiling';
 
 /**
- * One seated bowtie key location, in the same centered world frame the preview
+ * One seated dovetail key location, in the same centered world frame the preview
  * uses for pieces (origin at the baseplate center, +X right, +Y back, mm).
  */
 export interface SeamJunction {
@@ -55,12 +55,12 @@ function interiorBoundaryOffsetsMm(
   return offsets;
 }
 
-function isBowtie(params: BaseplateParams): boolean {
-  return params.connectorNubs === true && params.connectorStyle === 'bowtie';
+function isDovetailKey(params: BaseplateParams): boolean {
+  return params.connectorNubs === true && params.connectorStyle === 'dovetailKey';
 }
 
 /**
- * Seated bowtie key locations for a split baseplate. Walk the pieces emitting a
+ * Seated dovetail key locations for a split baseplate. Walk the pieces emitting a
  * junction for every interior boundary on each RIGHT (vertical seam) and BACK
  * (horizontal seam) join edge — so every internal seam junction is produced
  * exactly once. Valid because the tiling is a strict grid: a seam's two adjacent
@@ -69,21 +69,18 @@ function isBowtie(params: BaseplateParams): boolean {
  * Coordinates match `SplitBaseplateMeshes` piece centering exactly:
  *   center = gridOffset * gridUnitMm + pieceSize / 2 - total / 2
  *
- * Returns [] unless bowtie connectors are active.
+ * Returns [] unless dovetail key connectors are active.
  */
 export function computeSeamJunctions(
   tiling: BaseplateTiling,
   params: BaseplateParams
 ): SeamJunction[] {
-  if (!isBowtie(params)) return [];
+  if (!isDovetailKey(params)) return [];
 
   const g = params.gridUnitMm;
   const totalWmm = tiling.totalWidthUnits * g;
   const totalDmm = tiling.totalDepthUnits * g;
   const junctions: SeamJunction[] = [];
-
-  const fracX = (p: BaseplatePiece): 'start' | 'end' | 'none' => p.fractionalEdgeX;
-  const fracY = (p: BaseplatePiece): 'start' | 'end' | 'none' => p.fractionalEdgeY;
 
   for (const piece of tiling.pieces) {
     const pieceWmm = piece.widthUnits * g;
@@ -93,13 +90,13 @@ export function computeSeamJunctions(
 
     if (piece.edges.right === 'join') {
       const seamX = piece.gridOffsetX * g + pieceWmm - totalWmm / 2;
-      for (const off of interiorBoundaryOffsetsMm(piece.depthUnits, g, fracY(piece))) {
+      for (const off of interiorBoundaryOffsetsMm(piece.depthUnits, g, piece.fractionalEdgeY)) {
         junctions.push({ xMm: seamX, yMm: centerY + off, axis: 'x' });
       }
     }
     if (piece.edges.back === 'join') {
       const seamY = piece.gridOffsetY * g + pieceDmm - totalDmm / 2;
-      for (const off of interiorBoundaryOffsetsMm(piece.widthUnits, g, fracX(piece))) {
+      for (const off of interiorBoundaryOffsetsMm(piece.widthUnits, g, piece.fractionalEdgeX)) {
         junctions.push({ xMm: centerX + off, yMm: seamY, axis: 'y' });
       }
     }
@@ -108,9 +105,9 @@ export function computeSeamJunctions(
 }
 
 /**
- * Number of bowtie connector keys a split baseplate needs — one per seam
+ * Number of dovetail keys a split baseplate needs — one per seam
  * junction. Derived from {@link computeSeamJunctions} so the count and the
- * placements can never diverge. Returns 0 unless bowtie connectors are active.
+ * placements can never diverge. Returns 0 unless dovetail key connectors are active.
  */
 export function countConnectorKeys(tiling: BaseplateTiling, params: BaseplateParams): number {
   return computeSeamJunctions(tiling, params).length;

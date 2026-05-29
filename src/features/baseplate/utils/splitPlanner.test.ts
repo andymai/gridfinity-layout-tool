@@ -817,6 +817,23 @@ describe('pieceToBaseplateParams', () => {
     expect(result.connectorNubs).toBe(true);
   });
 
+  it('passes through connectorStyle from parent params', () => {
+    // Regression: dovetail key style must reach per-piece BREP generation. Dropping
+    // it here makes every split piece generate dovetail tongues regardless of
+    // the selected style (the cs: fingerprint token and mesh cache key both go
+    // stale to 'dovetail'), so the preview never shows dovetail key grooves.
+    const parent = makeParams({
+      width: 10,
+      depth: 8,
+      connectorNubs: true,
+      connectorStyle: 'dovetailKey',
+    });
+    const tiling = computeBaseplateTiling(parent, 256);
+    const piece = tiling.pieces[0];
+    const result = pieceToBaseplateParams(piece, parent);
+    expect(result.connectorStyle).toBe('dovetailKey');
+  });
+
   it('connectorNubs defaults to undefined when not set', () => {
     const parent = makeParams({ width: 10, depth: 8 });
     const tiling = computeBaseplateTiling(parent, 256);

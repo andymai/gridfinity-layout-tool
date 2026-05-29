@@ -200,14 +200,17 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             pieces.push({ data, label: name });
           }
 
-          // Bowtie connectors ship a separate, identical key part hammered into
+          // Dovetail key connectors ship a separate, identical key part hammered into
           // every seam junction — one STL, printed N times.
           const keyCount = countConnectorKeys(tiling, fullParams);
           if (keyCount > 0) {
             const keyResult = await bridge.exportConnectorKey(fullParams, bridgeFormat);
             let keyData = keyResult.data;
             if (format === '3mf') {
-              const blob = convertStlTo3mf(keyData, `${baseNameNoExt}_key`, stackCopies);
+              // The key is a discrete part (one per seam junction, count in the
+              // guide), not a plate — the plate Z-stack count doesn't apply, so
+              // never stack it.
+              const blob = convertStlTo3mf(keyData, `${baseNameNoExt}_key`, 1);
               keyData = await blob.arrayBuffer();
             }
             pieces.push({ data: keyData, label: 'key' });

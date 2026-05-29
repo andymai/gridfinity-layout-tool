@@ -23,7 +23,7 @@ function makeParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
 
 describe('countConnectorKeys', () => {
   it('returns 0 when connectors are off', () => {
-    const params = makeParams({ width: 18, depth: 12, connectorStyle: 'bowtie' });
+    const params = makeParams({ width: 18, depth: 12, connectorStyle: 'dovetailKey' });
     const tiling = computeBaseplateTiling(params, 256);
     expect(tiling.isSplit).toBe(true);
     expect(countConnectorKeys(tiling, params)).toBe(0);
@@ -40,7 +40,7 @@ describe('countConnectorKeys', () => {
       width: 4,
       depth: 4,
       connectorNubs: true,
-      connectorStyle: 'bowtie',
+      connectorStyle: 'dovetailKey',
     });
     const tiling = computeBaseplateTiling(params, 256);
     expect(tiling.isSplit).toBe(false);
@@ -52,7 +52,7 @@ describe('countConnectorKeys', () => {
       width: 18,
       depth: 12,
       connectorNubs: true,
-      connectorStyle: 'bowtie',
+      connectorStyle: 'dovetailKey',
     });
     const tiling = computeBaseplateTiling(params, 256);
 
@@ -76,7 +76,7 @@ describe('countConnectorKeys', () => {
       width: 12,
       depth: 3,
       connectorNubs: true,
-      connectorStyle: 'bowtie',
+      connectorStyle: 'dovetailKey',
     });
     const tiling = computeBaseplateTiling(params, 256);
 
@@ -91,7 +91,7 @@ describe('countConnectorKeys', () => {
 });
 
 describe('computeSeamJunctions', () => {
-  it('returns [] unless bowtie connectors are active', () => {
+  it('returns [] unless dovetail key connectors are active', () => {
     const params = makeParams({ width: 18, depth: 12, connectorNubs: true });
     const tiling = computeBaseplateTiling(params, 256);
     expect(computeSeamJunctions(tiling, params)).toEqual([]);
@@ -102,7 +102,7 @@ describe('computeSeamJunctions', () => {
       width: 18,
       depth: 12,
       connectorNubs: true,
-      connectorStyle: 'bowtie',
+      connectorStyle: 'dovetailKey',
     });
     const tiling = computeBaseplateTiling(params, 256);
     expect(computeSeamJunctions(tiling, params).length).toBe(countConnectorKeys(tiling, params));
@@ -113,7 +113,7 @@ describe('computeSeamJunctions', () => {
       width: 18,
       depth: 12,
       connectorNubs: true,
-      connectorStyle: 'bowtie',
+      connectorStyle: 'dovetailKey',
     });
     const tiling = computeBaseplateTiling(params, 256);
     const junctions = computeSeamJunctions(tiling, params);

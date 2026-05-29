@@ -17,7 +17,7 @@ vi.mock('@react-three/fiber', () => ({
   useThree: () => ({ invalidate: vi.fn() }),
 }));
 
-// Layout store: a bowtie + split configuration.
+// Layout store: a dovetail key + split configuration.
 vi.mock('@/core/store/layout', () => ({
   useLayoutStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
@@ -33,7 +33,7 @@ vi.mock('@/core/store/layout', () => ({
           paddingFront: 0,
           paddingBack: 0,
           connectorNubs: true,
-          connectorStyle: 'bowtie',
+          connectorStyle: 'dovetailKey',
         },
       },
     }),

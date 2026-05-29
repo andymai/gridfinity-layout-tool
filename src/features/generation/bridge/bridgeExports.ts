@@ -250,7 +250,7 @@ export function exportBaseplate(
 }
 
 /**
- * Export the standalone bowtie connector key. Reuses the `'export'` slot and
+ * Export the standalone dovetail key. Reuses the `'export'` slot and
  * the BASEPLATE_EXPORT_RESULT response (same data/format/fileName shape).
  */
 export function exportConnectorKey(

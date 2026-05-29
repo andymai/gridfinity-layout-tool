@@ -1,13 +1,13 @@
 // @vitest-environment node
 /**
- * Scenario tests for bowtie-key connectors (issue #1610).
+ * Scenario tests for dovetail-key connectors (issue #1610).
  *
- * Bowtie mode cuts a female groove on BOTH sides of every seam and ships a
+ * Dovetail key mode cuts a female groove on BOTH sides of every seam and ships a
  * separate hammered-in key. These tests verify, against the real OCCT kernel,
  * that:
- *   1. a bowtie baseplate exports a watertight STL (the doubled grooves don't
+ *   1. a dovetail key baseplate exports a watertight STL (the doubled grooves don't
  *      create boundary/non-manifold edges), and
- *   2. the standalone connector key is a valid solid with the expected bowtie
+ *   2. the standalone connector key is a valid solid with the expected dovetail key
  *      footprint — narrow waist at the seam, wide wings, key length = 2×P.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -115,18 +115,18 @@ function analyze(stl: ArrayBuffer): MeshStats {
   };
 }
 
-describe('baseplateGenerator — bowtie connectors (issue #1610)', () => {
+describe('baseplateGenerator — dovetail key connectors (issue #1610)', () => {
   const TEST_TIMEOUT_MS = 60_000;
 
   it(
-    'bowtie baseplate with join edges exports a watertight STL',
+    'dovetail key baseplate with join edges exports a watertight STL',
     async () => {
       // A middle tile with three join edges: every seam side is a female groove.
       const params = defaults({
         width: 5,
         depth: 4,
         connectorNubs: true,
-        connectorStyle: 'bowtie',
+        connectorStyle: 'dovetailKey',
         edges: { left: 'exterior', right: 'join', front: 'join', back: 'join' },
       });
 
@@ -142,9 +142,9 @@ describe('baseplateGenerator — bowtie connectors (issue #1610)', () => {
   );
 
   it(
-    'connector key is a valid solid with a bowtie footprint',
+    'connector key is a valid solid with a dovetail key footprint',
     async () => {
-      const params = defaults({ connectorNubs: true, connectorStyle: 'bowtie' });
+      const params = defaults({ connectorNubs: true, connectorStyle: 'dovetailKey' });
       const { data, fileName } = await exportConnectorKey(params, 'stl');
       const stats = analyze(data);
 

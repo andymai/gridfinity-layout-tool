@@ -74,7 +74,7 @@ export interface ExportBaseplatePayload {
 }
 
 /**
- * Export the standalone bowtie connector key. Reuses the BASEPLATE_EXPORT_RESULT
+ * Export the standalone dovetail key. Reuses the BASEPLATE_EXPORT_RESULT
  * response shape (data + format + fileName) since the payload is identical.
  */
 export interface ExportConnectorKeyMessage {

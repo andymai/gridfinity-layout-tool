@@ -82,15 +82,15 @@ describe('computePieceFingerprint', () => {
     expect(computePieceFingerprint(inverted)).not.toBe(computePieceFingerprint(normal));
   });
 
-  it('produces different keys for bowtie vs dovetail connector style', () => {
+  it('produces different keys for dovetail key vs dovetail connector style', () => {
     const dovetail = makeParams({ width: 3, depth: 3, connectorNubs: true });
-    const bowtie = makeParams({
+    const dovetailKey = makeParams({
       width: 3,
       depth: 3,
       connectorNubs: true,
-      connectorStyle: 'bowtie',
+      connectorStyle: 'dovetailKey',
     });
-    expect(computePieceFingerprint(bowtie)).not.toBe(computePieceFingerprint(dovetail));
+    expect(computePieceFingerprint(dovetailKey)).not.toBe(computePieceFingerprint(dovetail));
   });
 
   it("treats an explicit 'dovetail' style as the default (undefined)", () => {

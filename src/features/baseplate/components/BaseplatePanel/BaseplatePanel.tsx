@@ -253,18 +253,22 @@ export function BaseplatePanel() {
                   <>
                     <SettingsRow label={t('baseplate.connectorStyle.label')}>
                       <Select
+                        size="sm"
                         value={baseplateParams.connectorStyle ?? 'dovetail'}
                         onValueChange={(v) =>
-                          updateParam('connectorStyle', v === 'bowtie' ? 'bowtie' : undefined)
+                          updateParam(
+                            'connectorStyle',
+                            v === 'dovetailKey' ? 'dovetailKey' : undefined
+                          )
                         }
                         options={[
                           { id: 'dovetail', name: t('baseplate.connectorStyle.dovetail') },
-                          { id: 'bowtie', name: t('baseplate.connectorStyle.bowtie') },
+                          { id: 'dovetailKey', name: t('baseplate.connectorStyle.dovetailKey') },
                         ]}
                         aria-label={t('baseplate.connectorStyle.label')}
                       />
                     </SettingsRow>
-                    {baseplateParams.connectorStyle !== 'bowtie' &&
+                    {baseplateParams.connectorStyle !== 'dovetailKey' &&
                       baseplateParams.preferIdenticalPieces !== true && (
                         <Checkbox
                           checked={baseplateParams.invertDovetails === true}

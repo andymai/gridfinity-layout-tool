@@ -57,7 +57,7 @@ import { sanitizeParams, tagOp, buildSlabProfile } from './baseplateSlab';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import { buildMagnetHoles } from './baseplateMagnets';
-import { buildConnectors, buildBowtieKey } from './baseplateConnectors';
+import { buildConnectors, buildDovetailKey } from './baseplateConnectors';
 import { computeBaseplateEdgeLines } from './baseplateEdges';
 import { buildBaseplateSTL } from './baseplateSTL';
 
@@ -373,7 +373,7 @@ export async function exportBaseplate(
 }
 
 /**
- * Export the standalone bowtie connector key (one identical part hammered into
+ * Export the standalone dovetail key (one identical part hammered into
  * every seam junction). Height matches the plate so the seated key is flush.
  */
 export async function exportConnectorKey(
@@ -385,7 +385,7 @@ export async function exportConnectorKey(
   const params = sanitizeParams(rawParams);
   const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
   const totalHeight = SOCKET_HEIGHT + floorDepth;
-  const key = buildBowtieKey(totalHeight);
+  const key = buildDovetailKey(totalHeight);
   try {
     const name = 'connector_key';
     if (format === 'step') {

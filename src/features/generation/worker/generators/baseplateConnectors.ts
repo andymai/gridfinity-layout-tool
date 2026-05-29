@@ -20,11 +20,11 @@
  * Convention: left/front = tongue (male, fused), right/back = groove (female,
  * cut). Inverted by `invertDovetails`.
  *
- * Bowtie-key style (`connectorStyle === 'bowtie'`): every join edge is female
- * (groove only, no tongue), and a separate `buildBowtieKey()` part is hammered
- * into the seam. Two opposing grooves across a seam form one bowtie cavity —
+ * Dovetail-key style (`connectorStyle === 'dovetailKey'`): every join edge is female
+ * (groove only, no tongue), and a separate `buildDovetailKey()` part is hammered
+ * into the seam. Two opposing grooves across a seam form one dovetail key cavity —
  * narrow at the seam, wide into each piece — that the key locks into. The
- * groove uses the tighter `BOWTIE_KEY_CLEARANCE` for a press fit. `invertDovetails`
+ * groove uses the tighter `DOVETAIL_KEY_CLEARANCE` for a press fit. `invertDovetails`
  * and `preferIdenticalPieces` are ignored in this mode (seams are symmetric).
  *
  * All profiles are drawn on the XY plane (normal=+Z) and extruded downward,
@@ -40,7 +40,7 @@ import {
   TONGUE_BASE_HALF,
   TONGUE_TIP_HALF,
   TONGUE_CLEARANCE,
-  BOWTIE_KEY_CLEARANCE,
+  DOVETAIL_KEY_CLEARANCE,
   COPLANAR_MARGIN,
   COPLANAR_OVERLAP,
   sketch,
@@ -71,16 +71,16 @@ export function buildConnectors(
 
   if (!connectorNubs || !edges) return { nubs: tongues, holes: grooves };
 
-  // Bowtie mode: every join edge is a female groove (no tongues), and a
+  // Dovetail key mode: every join edge is a female groove (no tongues), and a
   // separate hammered-in key spans the seam. Handedness toggles (invert /
   // paired) are meaningless when both sides are female, so they're bypassed.
-  const bowtie = params.connectorStyle === 'bowtie';
+  const isDovetailKey = params.connectorStyle === 'dovetailKey';
 
-  const invert = !!invertDovetails && !bowtie;
+  const invert = !!invertDovetails && !isDovetailKey;
   // In paired mode invertDovetails is intentionally ignored — the layout is
   // 180°-rotationally symmetric by construction, so an "invert" toggle would
   // produce the same physical connector orientation on both sides.
-  const paired = !!preferIdenticalPieces && !bowtie;
+  const paired = !!preferIdenticalPieces && !isDovetailKey;
 
   const halfW = totalW / 2;
   const halfD = totalD / 2;
@@ -88,7 +88,7 @@ export function buildConnectors(
   const P = TONGUE_PROTRUSION;
   const bW = TONGUE_BASE_HALF; // half-width at wall (narrow)
   const tW = TONGUE_TIP_HALF; // half-width at tip (wide)
-  const cl = bowtie ? BOWTIE_KEY_CLEARANCE : TONGUE_CLEARANCE;
+  const cl = isDovetailKey ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE;
   const ext = COPLANAR_MARGIN;
 
   // Honors fractionalEdgeX/Y so dovetails land on cell boundaries even when
@@ -173,7 +173,7 @@ export function buildConnectors(
       const w = def.wallPos;
       const d = def.protrudeDir;
 
-      if (bowtie) {
+      if (isDovetailKey) {
         // Both sides of every seam are female; the key supplies the male half.
         grooves.push(makeGroove(pt, w, bp, d, P, bW, tW, cl, ext, totalHeight));
       } else if (paired) {
@@ -240,17 +240,17 @@ function makeGroove(
 }
 
 /**
- * Free-standing bowtie key for `connectorStyle === 'bowtie'`: two dovetail
+ * Free-standing dovetail key for `connectorStyle === 'dovetailKey'`: two dovetail
  * tongues mirrored across the waist into one prism, centered on the origin with
  * its long axis along X. Narrow at the waist (`TONGUE_BASE_HALF`, sits at the
  * seam), wide at both wing tips (`TONGUE_TIP_HALF`, captured inside each piece).
  *
  * Built at nominal tongue dimensions — the seam grooves carry
- * `BOWTIE_KEY_CLEARANCE`, so the per-face gap to the pocket comes from there.
+ * `DOVETAIL_KEY_CLEARANCE`, so the per-face gap to the pocket comes from there.
  * Extruded upward so the bottom sits at Z=0 (bed-ready); full height matches the
  * plate's `totalHeight` so the seated key is flush with the plate top.
  */
-export function buildBowtieKey(totalHeight: number): Shape3D {
+export function buildDovetailKey(totalHeight: number): Shape3D {
   const P = TONGUE_PROTRUSION;
   const bW = TONGUE_BASE_HALF;
   const tW = TONGUE_TIP_HALF;
