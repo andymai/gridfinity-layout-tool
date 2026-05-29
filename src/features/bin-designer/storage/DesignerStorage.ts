@@ -271,9 +271,10 @@ export async function updateDesignTags(
     return loadResult;
   }
 
+  // saveDesign normalizes tags; pass them through raw like updateDesignName.
   return saveDesign({
     ...loadResult.value,
-    tags: normalizeTags(tags),
+    tags,
   });
 }
 

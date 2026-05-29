@@ -11,6 +11,13 @@ describe('normalizeTags', () => {
     expect(normalizeTags([long])).toEqual(['x'.repeat(MAX_TAG_LENGTH)]);
   });
 
+  it('strips control chars (matching the server) so the sync contract holds', () => {
+    // Interior tab + null byte: the client must strip these exactly as the
+    // server's sanitizeString does, or the tag would flicker on sync pull.
+    expect(normalizeTags(['a\tb', 'x\x00y'])).toEqual(['ab', 'xy']);
+    expect(normalizeTags(['\x00\x1F'])).toEqual([]);
+  });
+
   it(`caps total count at ${MAX_TAGS}`, () => {
     const many = Array.from({ length: MAX_TAGS + 3 }, (_, i) => `t${i}`);
     expect(normalizeTags(many)).toHaveLength(MAX_TAGS);
