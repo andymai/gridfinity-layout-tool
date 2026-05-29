@@ -35,7 +35,7 @@ export function TagEditDialog({
 
   return (
     <Dialog.Root open={open} onClose={onClose} size="sm">
-      <Dialog.Header title={title} />
+      <Dialog.Header title={title} closeAriaLabel={t('common.closeDialog')} />
       <Dialog.Body>
         <TagInput value={tags} onChange={setTags} />
       </Dialog.Body>

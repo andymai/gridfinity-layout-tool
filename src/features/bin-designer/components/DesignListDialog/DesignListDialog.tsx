@@ -16,7 +16,7 @@ import {
   updateDesignTags,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { collectTags, filterByTags } from '@/features/bin-designer/utils/tagFilter';
-import { normalizeTags } from '@/features/bin-designer/utils/tags';
+import { normalizeTags, tagsEqual } from '@/features/bin-designer/utils/tags';
 import { TagFilterBar } from './TagFilterBar';
 import { BulkActionBar } from './BulkActionBar';
 import { TagEditDialog } from './TagEditDialog';
@@ -147,6 +147,16 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
 
   // Union of every tag across designs, for the filter bar.
   const allTags = useMemo(() => collectTags(designs), [designs]);
+
+  // Drop active filters whose tag no longer exists (e.g. after deleting the last
+  // design carrying it). Otherwise the list can get stuck showing nothing while
+  // the filter bar — which hides when no tags exist — offers no way to clear it.
+  const prunedActiveTags = activeTags.filter((tag) =>
+    allTags.some((t) => t.toLowerCase() === tag.toLowerCase())
+  );
+  if (prunedActiveTags.length !== activeTags.length) {
+    setActiveTags(prunedActiveTags);
+  }
 
   // Filter and sort designs
   const sortedDesigns = useMemo(() => {
@@ -285,6 +295,11 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
 
       if (edit.mode === 'single' && edit.design) {
         const next = normalizeTags(rawTags);
+        // Skip the write (and its updatedAt bump + sync) when nothing changed.
+        if (tagsEqual(next, edit.design.tags ?? [])) {
+          setTagEdit(null);
+          return;
+        }
         const result = await updateDesignTags(edit.design.id, next);
         if (isOk(result)) {
           const saved = result.value;
@@ -299,10 +314,11 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         const updated = new Map<string, SavedDesign>();
         for (const d of targets) {
           // Bulk = add the entered tags to each design's existing set (union).
-          const result = await updateDesignTags(
-            d.id,
-            normalizeTags([...(d.tags ?? []), ...rawTags])
-          );
+          const nextTags = normalizeTags([...(d.tags ?? []), ...rawTags]);
+          // Only write designs whose tag set actually changes — a no-op bulk
+          // tag shouldn't bump updatedAt or trigger a sync for every design.
+          if (tagsEqual(nextTags, d.tags ?? [])) continue;
+          const result = await updateDesignTags(d.id, nextTags);
           if (isOk(result)) updated.set(result.value.id, result.value);
         }
         if (updated.size > 0) {
@@ -324,21 +340,23 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
 
   const handleBulkDelete = useCallback(async () => {
     const ids = [...selection.selectedIds];
-    let deleted = 0;
+    // Track only the IDs that actually deleted, so a partial storage failure
+    // doesn't drop a still-present design from the UI.
+    const deletedIds: string[] = [];
     for (const id of ids) {
       const design = designs.find((d) => d.id === id);
       if (!design) continue;
       const result = await deleteDesign(design.id);
       if (isOk(result)) {
         removeRegistryEntry(design.id);
-        deleted += 1;
+        deletedIds.push(id);
       }
     }
-    if (deleted > 0) {
-      const removed = new Set(ids);
+    if (deletedIds.length > 0) {
+      const removed = new Set(deletedIds);
       setDesigns((prev) => prev.filter((d) => !removed.has(d.id)));
       addToast({
-        message: t('binDesigner.bulk.toastDeleted', { count: deleted }),
+        message: t('binDesigner.bulk.toastDeleted', { count: deletedIds.length }),
         type: 'success',
         duration: 2000,
       });
@@ -731,9 +749,9 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         <TagEditDialog
           open
           title={
-            tagEdit?.mode === 'bulk'
+            tagEdit.mode === 'bulk'
               ? t('binDesigner.bulk.tagTitle', { count: selection.count })
-              : t('binDesigner.tags.editForDesign', { name: tagEdit?.design?.name ?? '' })
+              : t('binDesigner.tags.editForDesign', { name: tagEdit.design?.name ?? '' })
           }
           initialTags={tagEdit.mode === 'single' ? (tagEdit.design?.tags ?? []) : []}
           saveLabel={

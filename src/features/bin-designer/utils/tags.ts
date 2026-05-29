@@ -37,3 +37,8 @@ export function normalizeTags(input: unknown): string[] {
   }
   return out;
 }
+
+/** True when two already-normalized tag lists are identical (same order, same values). */
+export function tagsEqual(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && a.every((tag, i) => tag === b[i]);
+}
