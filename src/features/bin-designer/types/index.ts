@@ -853,6 +853,8 @@ export interface SavedDesign {
   readonly updatedAt: string;
   /** Per-design export filename preference (null = use defaults) */
   readonly exportFileNameConfig: ExportFileNameConfig | null;
+  /** User-assigned organization tags. Absent on pre-tags designs. */
+  readonly tags?: readonly string[];
 }
 
 // Store Types

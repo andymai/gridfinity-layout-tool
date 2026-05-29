@@ -14,6 +14,7 @@ import {
   loadDesign,
   saveDesign,
 } from '@/features/bin-designer/storage/DesignerStorage';
+import { normalizeTags } from '@/features/bin-designer/utils/tags';
 import { subscribe as subscribeDesignerEvents } from './designerEvents';
 
 // Lives in features/ because BinParams is feature-internal; core/ can't
@@ -36,18 +37,26 @@ function toMs(iso: string): number {
  * Accept either the new `{ name, params }` wrapper or the legacy bare
  * `BinParams` shape so pre-name cloud blobs still apply cleanly.
  */
-function unwrap(payload: unknown): { name?: string; params: BinParams } {
+function unwrap(payload: unknown): { name?: string; params: BinParams; tags?: string[] } {
   if (payload !== null && typeof payload === 'object' && 'params' in payload) {
-    const { name, params } = payload as { name?: unknown; params: unknown };
+    const { name, params, tags } = payload as {
+      name?: unknown;
+      params: unknown;
+      tags?: unknown;
+    };
     if (typeof params === 'object' && params !== null) {
       // Empty/whitespace-only remote names become `undefined` so the
       // fallback chain kicks in. The server stores `name = ''` when an
       // older client pushes the legacy bare-params shape; we must not
       // overwrite a real local name with that empty.
       const trimmed = typeof name === 'string' ? name.trim() : '';
+      // `undefined` (legacy payload with no tags field) lets the local
+      // fallback win; an explicit array (even empty) is authoritative.
+      const normalizedTags = tags === undefined ? undefined : normalizeTags(tags);
       return {
         name: trimmed === '' ? undefined : trimmed,
         params: params as BinParams,
+        tags: normalizedTags,
       };
     }
   }
@@ -60,7 +69,7 @@ export const designAdapter: DesignAdapter = {
     if (!isOk(result)) return [];
     return result.value.map((d) => ({
       id: d.id,
-      payload: { name: d.name, params: d.params },
+      payload: { name: d.name, params: d.params, tags: d.tags },
       modifiedAt: toMs(d.updatedAt),
     }));
   },
@@ -71,7 +80,7 @@ export const designAdapter: DesignAdapter = {
     const d = result.value;
     return {
       id: d.id,
-      payload: { name: d.name, params: d.params },
+      payload: { name: d.name, params: d.params, tags: d.tags },
       modifiedAt: toMs(d.updatedAt),
     };
   },
@@ -83,17 +92,21 @@ export const designAdapter: DesignAdapter = {
       // exportFileNameConfig) on update.
       const existing = await loadDesign(designId(item.id));
       const base = isOk(existing) ? existing.value : null;
-      const { name: remoteName, params } = unwrap(item.payload);
+      const { name: remoteName, params, tags: remoteTags } = unwrap(item.payload);
       // LWW: engine only calls applyRemote when remote is newer, so a
       // remote rename must win. Local name is only a fallback for legacy
       // payloads with no name; the literal covers a legacy fresh-device pull.
       const name = remoteName ?? base?.name ?? 'Synced design';
+      // Same LWW logic for tags: a remote array (even empty) wins; only a
+      // legacy payload that omits tags entirely falls back to local.
+      const tags = remoteTags ?? base?.tags;
       const result = await saveDesign({
         id: designId(item.id),
         name,
         params,
         thumbnail: base?.thumbnail ?? null,
         exportFileNameConfig: base?.exportFileNameConfig ?? null,
+        tags,
       });
       if (!isOk(result)) {
         throw new Error(`saveDesign failed for ${item.id}`);

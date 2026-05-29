@@ -73,10 +73,80 @@ function mockPayload(body: unknown): void {
   fetchMock.mockResolvedValue({ ok: true, status: 200, text: async () => JSON.stringify(body) });
 }
 
+// Mirror the real design envelope + index-size accounting from
+// api/sync/designs/[id].ts, including the `tags` sibling. Tags appear with the
+// same key+value on both sides, so a consistent pair must produce no drift —
+// the regression guard for the tags-are-byte-neutral invariant in delta.ts.
+const designParams = { width: 2, depth: 2, height: 6, style: 'standard' };
+
+function designBlob(
+  uid: string,
+  id: string,
+  tags: string[],
+  name = 'Bin',
+  modifiedAt = T
+): BlobRow {
+  const body = JSON.stringify({
+    design: { name, params: designParams, tags },
+    modifiedAt,
+    schemaVersion: 1,
+  });
+  return {
+    uid,
+    kind: 'designs',
+    id,
+    size: Buffer.byteLength(body),
+    url: `https://blob/${uid}/${id}`,
+    uploadedAt: new Date(modifiedAt),
+  };
+}
+
+function designEntry(
+  uid: string,
+  id: string,
+  tags: string[],
+  name = 'Bin',
+  modifiedAt = T
+): IndexRow {
+  const indexBody = JSON.stringify({
+    name,
+    tags,
+    type: 'designer',
+    version: 1,
+    params: designParams,
+  });
+  return {
+    uid,
+    kind: 'designs',
+    id,
+    entry: { modifiedAt, sizeBytes: Buffer.byteLength(indexBody) },
+    tombstone: false,
+  };
+}
+
 describe('analyze', () => {
   it('clean inventory produces no membership findings', async () => {
     const blob = layoutBlob('u1', 'a');
     const entry = layoutEntry('u1', 'a');
+    const findings = await analyze(makeInventory([blob], [entry]), { fetchPayloads: false });
+    expect(findings).toEqual([]);
+  });
+
+  it('a tagged design with consistent blob/index sizes produces no drift', async () => {
+    const tags = ['kitchen', 'screws'];
+    const blob = designBlob('u1', 'd1', tags);
+    const entry = designEntry('u1', 'd1', tags);
+    // Tags cancel in delta = blob.size - index.sizeBytes, so the delta must
+    // equal the structural envelope overhead exactly.
+    expect(blob.size - entry.entry.sizeBytes).toBe(expectedEnvelopeDelta('designs', T));
+    const findings = await analyze(makeInventory([blob], [entry]), { fetchPayloads: false });
+    expect(findings).toEqual([]);
+  });
+
+  it('an untagged design (tags=[]) is also drift-free', async () => {
+    const blob = designBlob('u1', 'd2', []);
+    const entry = designEntry('u1', 'd2', []);
+    expect(blob.size - entry.entry.sizeBytes).toBe(expectedEnvelopeDelta('designs', T));
     const findings = await analyze(makeInventory([blob], [entry]), { fetchPayloads: false });
     expect(findings).toEqual([]);
   });

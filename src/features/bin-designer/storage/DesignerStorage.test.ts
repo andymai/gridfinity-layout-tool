@@ -12,6 +12,7 @@ import {
   setActiveDesignId,
   createNewDesign,
   initializeDesigner,
+  updateDesignTags,
 } from '@/features/bin-designer/storage/DesignerStorage';
 import { DEFAULT_BIN_PARAMS } from '../constants/defaults';
 import type { BinParams } from '../types';
@@ -565,6 +566,99 @@ describe('DesignerStorage', () => {
 
       // Should have cleared the stale reference
       expect(getActiveDesignId()).not.toBe('deleted-design');
+    });
+  });
+
+  describe('tags', () => {
+    it('persists and reloads tags', async () => {
+      const saved = expectOk(
+        await saveDesign({
+          name: 'Tagged',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+          tags: ['kitchen', 'screws'],
+        })
+      );
+      const loaded = expectOk(await loadDesign(saved.id));
+      expect(loaded.tags).toEqual(['kitchen', 'screws']);
+    });
+
+    it('normalizes tags on save (trim, dedupe, drop empty)', async () => {
+      const saved = expectOk(
+        await saveDesign({
+          name: 'Messy',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+          tags: [' Kitchen ', 'kitchen', '', '  '],
+        })
+      );
+      expect(saved.tags).toEqual(['Kitchen']);
+    });
+
+    it('omits the tags field entirely when there are no tags', async () => {
+      const saved = expectOk(
+        await saveDesign({
+          name: 'Untagged',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+        })
+      );
+      expect(saved.tags).toBeUndefined();
+    });
+
+    it('preserves existing tags when an update omits them', async () => {
+      const saved = expectOk(
+        await saveDesign({
+          name: 'Keep',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+          tags: ['keep-me'],
+        })
+      );
+      const renamed = expectOk(
+        await saveDesign({
+          id: saved.id,
+          name: 'Renamed',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+        })
+      );
+      expect(renamed.tags).toEqual(['keep-me']);
+    });
+
+    it('updateDesignTags replaces the tag set and can clear it', async () => {
+      const saved = expectOk(
+        await saveDesign({
+          name: 'Edit',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+          tags: ['old'],
+        })
+      );
+      const tagged = expectOk(await updateDesignTags(saved.id, ['new', 'fresh']));
+      expect(tagged.tags).toEqual(['new', 'fresh']);
+      const cleared = expectOk(await updateDesignTags(saved.id, []));
+      expect(cleared.tags).toBeUndefined();
+    });
+
+    it('carries tags through duplicate', async () => {
+      const saved = expectOk(
+        await saveDesign({
+          name: 'Original',
+          params: DEFAULT_BIN_PARAMS,
+          thumbnail: null,
+          exportFileNameConfig: null,
+          tags: ['kitchen'],
+        })
+      );
+      const dup = expectOk(await duplicateDesign(saved.id));
+      expect(dup.tags).toEqual(['kitchen']);
     });
   });
 });

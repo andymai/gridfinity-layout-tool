@@ -93,6 +93,12 @@ export interface SyncAdapter<T = unknown> {
 export interface DesignSyncPayload {
   name: string;
   params: unknown;
+  /**
+   * Organization tags. Like `name`, these ride alongside `params` (not
+   * inside it) so they survive the cloud round-trip; the server stores them
+   * as a sibling field in the design envelope.
+   */
+  tags?: readonly string[];
 }
 
 export type LayoutAdapter = SyncAdapter<Layout>;

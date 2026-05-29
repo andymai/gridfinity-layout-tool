@@ -4,7 +4,7 @@ import { ErrorCode } from '../../lib/shared.js';
 import { logger } from '../../lib/logger.js';
 import { checkRateLimit, getRedis } from '../../lib/rateLimit.js';
 import { requireSession } from '../../lib/session.js';
-import { validateDesignerShare } from '../../lib/designerValidation.js';
+import { validateDesignerShare, sanitizeTags } from '../../lib/designerValidation.js';
 import { sanitizeString } from '../../lib/validation.js';
 import { deleteBlob, getJson, putJson } from '../../lib/blobStore.js';
 import { getEntry, tombstone, upsertEntry, type IndexEntry } from '../../lib/userIndex.js';
@@ -17,7 +17,7 @@ export const SCHEMA_VERSION = 1 as const;
 const MAX_NAME_LENGTH = 100;
 
 interface DesignEnvelope {
-  /** `{ name, params }` wrapper; readers parse with `unwrapDesignPayload`. */
+  /** `{ name, params, tags }` wrapper; readers parse with `unwrapDesignPayload`. */
   design: unknown;
   modifiedAt: number;
   schemaVersion: typeof SCHEMA_VERSION;
@@ -115,16 +115,20 @@ interface PutBody {
  * two are unambiguous. Returns `null` if the wrapper is malformed (e.g.
  * `name` is present but isn't a string) so the caller can 400.
  */
-function unwrapDesignPayload(design: unknown): { name: string | null; params: unknown } | null {
+function unwrapDesignPayload(
+  design: unknown
+): { name: string | null; params: unknown; tags: unknown } | null {
   if (design === null || typeof design !== 'object') return null;
-  const { name, params } = design as { name?: unknown; params?: unknown };
+  const { name, params, tags } = design as { name?: unknown; params?: unknown; tags?: unknown };
   if (typeof params === 'object' && params !== null) {
     // Wrapper shape: name must be a string or absent. Reject other types
     // so malformed clients can't silently drop the user-visible field.
     if (name !== undefined && typeof name !== 'string') return null;
-    return { name: name ?? null, params };
+    // `tags` is sanitized (not strictly validated) downstream, so any shape
+    // is tolerated here; non-array input becomes [].
+    return { name: name ?? null, params, tags };
   }
-  return { name: null, params: design };
+  return { name: null, params: design, tags: undefined };
 }
 
 async function handlePut(
@@ -159,6 +163,9 @@ async function handlePut(
   // null bytes and control chars, trim, and truncate. Legacy bare-params
   // posts have no name; they persist as '' and the adapter falls back.
   const name = sanitizeString(unwrapped.name ?? '', MAX_NAME_LENGTH);
+  // Tags ride alongside `name` (not inside `params`), so they bypass the
+  // params validator and are sanitized/capped here instead.
+  const tags = sanitizeTags(unwrapped.tags);
 
   // Two byte counts intentionally: `preValidationBytes` is what the
   // validator's 100 KB size cap sees — purely a CPU guard against huge
@@ -172,7 +179,7 @@ async function handlePut(
     params: unwrapped.params,
   };
   const preValidationBytes = Buffer.byteLength(
-    JSON.stringify({ name, ...validationPayload }),
+    JSON.stringify({ name, tags, ...validationPayload }),
     'utf8'
   );
   const validation = validateDesignerShare(validationPayload, preValidationBytes);
@@ -181,7 +188,13 @@ async function handlePut(
     return;
   }
   const sizeBytes = Buffer.byteLength(
-    JSON.stringify({ name, type: 'designer', version: 1, params: validation.payload.params }),
+    JSON.stringify({
+      name,
+      tags,
+      type: 'designer',
+      version: 1,
+      params: validation.payload.params,
+    }),
     'utf8'
   );
 
@@ -199,11 +212,12 @@ async function handlePut(
       return;
     }
     if (existing.modifiedAt === modifiedAt) {
-      // Equal-ms tie: hash over `{ name, params }` so renames also participate.
+      // Equal-ms tie: hash over `{ name, params, tags }` so renames and
+      // tag-only edits also participate.
       const stored = await getJson<DesignEnvelope>(blobPath(userId, id));
       // See layouts/[id].ts for the missing-blob rationale.
       if (stored !== null) {
-        const candidate = { name, params: validation.payload.params };
+        const candidate = { name, params: validation.payload.params, tags };
         const order = compareForTiebreaker(candidate, stored.design);
         if (order <= 0) {
           res.status(409).json({
@@ -242,9 +256,9 @@ async function handlePut(
   }
 
   // Always emit the new wrapper shape. Legacy posts become `name = ''`;
-  // readers fall back from there.
+  // readers fall back from there. `tags` is always an array (possibly empty).
   const envelope: DesignEnvelope = {
-    design: { name, params: validation.payload.params },
+    design: { name, params: validation.payload.params, tags },
     modifiedAt,
     schemaVersion: SCHEMA_VERSION,
   };

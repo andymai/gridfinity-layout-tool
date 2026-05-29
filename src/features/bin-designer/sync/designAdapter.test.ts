@@ -25,7 +25,12 @@ const samplePayload = (name = 'D'): { name: string; params: BinParams } => ({
   params: sampleParams(),
 });
 
-function savedDesign(id: string, updatedAt: string, name = 'D'): SavedDesign {
+function savedDesign(
+  id: string,
+  updatedAt: string,
+  name = 'D',
+  tags?: readonly string[]
+): SavedDesign {
   return {
     id: designId(id),
     name,
@@ -34,6 +39,7 @@ function savedDesign(id: string, updatedAt: string, name = 'D'): SavedDesign {
     createdAt: updatedAt,
     updatedAt,
     exportFileNameConfig: null,
+    ...(tags ? { tags } : {}),
   };
 }
 
@@ -78,6 +84,69 @@ describe('designAdapter.get', () => {
     expect(item?.id).toBe('d1');
     expect(item?.modifiedAt).toBe(Date.parse('2026-03-01T00:00:00.000Z'));
     expect(item?.payload).toEqual({ name: 'My Bin', params: {} });
+  });
+});
+
+describe('designAdapter tags', () => {
+  it('list carries tags in the payload', async () => {
+    listDesignsMock.mockResolvedValueOnce(
+      ok([savedDesign('a', '2026-01-01T00:00:00.000Z', 'Alpha', ['kitchen', 'screws'])])
+    );
+    const items = await designAdapter.list();
+    expect(items[0].payload.tags).toEqual(['kitchen', 'screws']);
+  });
+
+  it('get carries tags in the payload', async () => {
+    loadDesignMock.mockResolvedValueOnce(
+      ok(savedDesign('d1', '2026-03-01T00:00:00.000Z', 'My Bin', ['tools']))
+    );
+    const item = await designAdapter.get('d1');
+    expect(item?.payload.tags).toEqual(['tools']);
+  });
+
+  it('applyRemote writes the remote tags (LWW: remote wins)', async () => {
+    loadDesignMock.mockResolvedValueOnce(
+      ok(savedDesign('d1', '2026-01-01T00:00:00.000Z', 'D', ['local-only']))
+    );
+    saveDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-04-01T00:00:00.000Z')));
+
+    await designAdapter.applyRemote({
+      id: 'd1',
+      payload: { name: 'D', params: sampleParams(), tags: ['remote-a', 'remote-b'] },
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(saveDesignMock.mock.calls[0][0].tags).toEqual(['remote-a', 'remote-b']);
+  });
+
+  it('applyRemote: an explicit empty remote tag array clears local tags', async () => {
+    loadDesignMock.mockResolvedValueOnce(
+      ok(savedDesign('d1', '2026-01-01T00:00:00.000Z', 'D', ['gone']))
+    );
+    saveDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-04-01T00:00:00.000Z')));
+
+    await designAdapter.applyRemote({
+      id: 'd1',
+      payload: { name: 'D', params: sampleParams(), tags: [] },
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(saveDesignMock.mock.calls[0][0].tags).toEqual([]);
+  });
+
+  it('applyRemote: a legacy payload with no tags field falls back to local tags', async () => {
+    loadDesignMock.mockResolvedValueOnce(
+      ok(savedDesign('d1', '2026-01-01T00:00:00.000Z', 'D', ['keep-local']))
+    );
+    saveDesignMock.mockResolvedValueOnce(ok(savedDesign('d1', '2026-04-01T00:00:00.000Z')));
+
+    await designAdapter.applyRemote({
+      id: 'd1',
+      payload: { name: 'D', params: sampleParams() }, // no tags key
+      modifiedAt: Date.parse('2026-04-01T00:00:00.000Z'),
+    });
+
+    expect(saveDesignMock.mock.calls[0][0].tags).toEqual(['keep-local']);
   });
 });
 
