@@ -1,25 +1,31 @@
 /**
- * Clickable overlay rendering one hit target per eligible divider segment.
+ * Clickable overlay rendering one hit target per eligible divider segment, plus
+ * a discoverability dot at every divider and a live tilt line for dividers that
+ * carry an override (or an in-flight drag preview).
  *
  * Layered above the cell grid but below the ghost-preview, with
- * `pointer-events: none` on the container so cell drag-merge still works;
- * each individual line opts back into pointer events via `pointer-events: auto`.
+ * `pointer-events: none` on the container so cell drag-merge still works; each
+ * individual hit line opts back into pointer events via `pointer-events: auto`.
  *
- * Segment span is derived from the two compartments' shared boundary in grid
- * coords, mirroring the worker's per-pair derivation. Visual y is flipped
- * (`flex-col-reverse` parent) so percentages anchor to `bottom`, not `top`.
+ * Geometry mirrors the worker's per-pair derivation. Percentages are top-down
+ * (grid row 0 is the visual bottom, so `y = (1 − row/rows)·100`). The tilt line
+ * lives in an SVG with `preserveAspectRatio="none"` so endpoints land on the
+ * correct cell fractions; `vector-effect: non-scaling-stroke` keeps the stroke
+ * an even width despite the non-uniform scale, and dots are positioned divs so
+ * they stay round.
  */
 
-import type { CompartmentConfig } from '@/features/bin-designer/types';
-import {
-  getCompartmentBounds,
-  type EligibleDivider,
-} from '@/features/bin-designer/utils/compartments';
+import type { CompartmentConfig, DividerTiltPreview } from '@/features/bin-designer/types';
+import type { EligibleDivider } from '@/features/bin-designer/utils/compartments';
+import { computeSegmentSpan, overlayLineGeom, type SegmentSpan } from './dividerOverlayGeom';
 import { rowKeyOf } from './useDividerTiltSubsection';
 
 interface DividerHitTargetsProps {
   readonly compartments: CompartmentConfig;
   readonly dividers: readonly EligibleDivider[];
+  readonly interiorW: number;
+  readonly interiorD: number;
+  readonly preview: DividerTiltPreview | null;
   readonly selectedKey: string | null;
   readonly hoveredKey: string | null;
   readonly onSelect: (key: string) => void;
@@ -30,6 +36,9 @@ interface DividerHitTargetsProps {
 export function DividerHitTargets({
   compartments,
   dividers,
+  interiorW,
+  interiorD,
+  preview,
   selectedKey,
   hoveredKey,
   onSelect,
@@ -38,15 +47,56 @@ export function DividerHitTargets({
 }: DividerHitTargetsProps) {
   return (
     <div className="pointer-events-none absolute inset-2 z-10">
+      {/* Tilt lines (visual only). Drawn first so dots + hit targets sit on top. */}
+      <svg
+        className="absolute inset-0 h-full w-full overflow-visible"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        {dividers.map((d) => {
+          const span = computeSegmentSpan(compartments, d);
+          if (!span) return null;
+          const key = rowKeyOf(d.compartmentA, d.compartmentB);
+          const ov =
+            preview && preview.key === key
+              ? { offsetStart: preview.offsetStart, offsetEnd: preview.offsetEnd }
+              : { offsetStart: d.offsetStart, offsetEnd: d.offsetEnd };
+          if (ov.offsetStart === 0 && ov.offsetEnd === 0) return null;
+          const line = overlayLineGeom(span, ov.offsetStart, ov.offsetEnd, interiorW, interiorD);
+          const isActive = selectedKey === key || hoveredKey === key;
+          return (
+            <line
+              key={key}
+              x1={line.x1}
+              y1={line.y1}
+              x2={line.x2}
+              y2={line.y2}
+              className={isActive ? 'stroke-accent' : 'stroke-accent/60'}
+              strokeWidth={2}
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          );
+        })}
+      </svg>
+
       {dividers.map((d) => {
         const span = computeSegmentSpan(compartments, d);
         if (!span) return null;
         const key = rowKeyOf(d.compartmentA, d.compartmentB);
         const isTilted = d.offsetStart !== 0 || d.offsetEnd !== 0;
+        const ov =
+          preview && preview.key === key
+            ? { offsetStart: preview.offsetStart, offsetEnd: preview.offsetEnd }
+            : { offsetStart: d.offsetStart, offsetEnd: d.offsetEnd };
+        const dot = overlayLineGeom(span, ov.offsetStart, ov.offsetEnd, interiorW, interiorD);
         return (
           <DividerHitLine
             key={key}
             span={span}
+            dotX={dot.cx}
+            dotY={dot.cy}
             isHovered={hoveredKey === key}
             isSelected={selectedKey === key}
             isTilted={isTilted}
@@ -61,64 +111,10 @@ export function DividerHitTargets({
   );
 }
 
-interface SegmentSpan {
-  readonly axis: 'vertical' | 'horizontal';
-  /** Column or row boundary in [1, gridDim-1] (the perpendicular coord of the line). */
-  readonly axisCoord: number;
-  /** Start of the segment along the parallel axis, in [0, gridDim]. */
-  readonly spanStart: number;
-  /** End (exclusive) of the segment, in [0, gridDim]. */
-  readonly spanEnd: number;
-  /** Length of the grid dimension parallel to the segment. */
-  readonly parallelDim: number;
-  /** Length of the grid dimension perpendicular to the segment. */
-  readonly perpDim: number;
-}
-
-/**
- * Find the contiguous run of cell boundaries where the (compartmentA, compartmentB)
- * pair appears. With the rectangular-compartment invariant the run is unique
- * and contiguous, so a single scan along the perpendicular axis is enough.
- */
-function computeSegmentSpan(
-  config: CompartmentConfig,
-  divider: EligibleDivider
-): SegmentSpan | null {
-  const aBounds = getCompartmentBounds(config, divider.compartmentA);
-  const bBounds = getCompartmentBounds(config, divider.compartmentB);
-  if (!aBounds || !bBounds) return null;
-
-  if (divider.axis === 'vertical') {
-    const axisCoord = Math.min(aBounds.maxCol, bBounds.maxCol) + 1;
-    const spanStart = Math.max(aBounds.minRow, bBounds.minRow);
-    const spanEnd = Math.min(aBounds.maxRow, bBounds.maxRow) + 1;
-    if (spanEnd <= spanStart) return null;
-    return {
-      axis: 'vertical',
-      axisCoord,
-      spanStart,
-      spanEnd,
-      parallelDim: config.rows,
-      perpDim: config.cols,
-    };
-  }
-
-  const axisCoord = Math.min(aBounds.maxRow, bBounds.maxRow) + 1;
-  const spanStart = Math.max(aBounds.minCol, bBounds.minCol);
-  const spanEnd = Math.min(aBounds.maxCol, bBounds.maxCol) + 1;
-  if (spanEnd <= spanStart) return null;
-  return {
-    axis: 'horizontal',
-    axisCoord,
-    spanStart,
-    spanEnd,
-    parallelDim: config.cols,
-    perpDim: config.rows,
-  };
-}
-
 interface DividerHitLineProps {
   readonly span: SegmentSpan;
+  readonly dotX: number;
+  readonly dotY: number;
   readonly isHovered: boolean;
   readonly isSelected: boolean;
   readonly isTilted: boolean;
@@ -133,6 +129,8 @@ const HIT_THICKNESS_PX = 14;
 
 function DividerHitLine({
   span,
+  dotX,
+  dotY,
   isHovered,
   isSelected,
   isTilted,
@@ -146,8 +144,8 @@ function DividerHitLine({
   const startPct = (span.spanStart / span.parallelDim) * 100;
   const endPct = ((span.parallelDim - span.spanEnd) / span.parallelDim) * 100;
 
-  // The hit target is wider than the visible line so touch users can hit it
-  // reliably; the visible line is a thin stripe centered inside via ::after.
+  // The hit target is wider than any visible affordance so touch users can hit
+  // it reliably along the divider's nominal (straight) position.
   const containerStyle = isVertical
     ? {
         left: `calc(${perpPct}% - ${HIT_THICKNESS_PX / 2}px)`,
@@ -162,33 +160,35 @@ function DividerHitLine({
         height: `${HIT_THICKNESS_PX}px`,
       };
 
-  // Inner stripe is the visible affordance; brightens on hover and selection.
-  const stripeClass = isVertical
-    ? 'absolute inset-y-0 left-1/2 -translate-x-1/2'
-    : 'absolute inset-x-0 top-1/2 -translate-y-1/2';
-  const stripeThickness = isVertical ? 'w-[2px]' : 'h-[2px]';
-  const stripeColor = isSelected
-    ? 'bg-accent'
+  // Discoverability dot at the divider midpoint; brightens + grows on hover and
+  // selection. Subtle by default so dense grids don't get noisy.
+  const dotState = isSelected
+    ? 'bg-accent scale-125'
     : isHovered
-      ? 'bg-accent/80'
+      ? 'bg-accent scale-110'
       : isTilted
-        ? 'bg-accent/40'
-        : 'bg-transparent';
+        ? 'bg-accent/70'
+        : 'bg-accent/30';
 
   return (
-    <button
-      type="button"
-      onPointerEnter={onHoverEnter}
-      onPointerLeave={onHoverLeave}
-      onFocus={onHoverEnter}
-      onBlur={onHoverLeave}
-      onClick={onClick}
-      aria-label={label}
-      aria-pressed={isSelected}
-      className="pointer-events-auto absolute cursor-pointer transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
-      style={containerStyle}
-    >
-      <span className={`${stripeClass} ${stripeThickness} ${stripeColor} transition-colors`} />
-    </button>
+    <>
+      <button
+        type="button"
+        onPointerEnter={onHoverEnter}
+        onPointerLeave={onHoverLeave}
+        onFocus={onHoverEnter}
+        onBlur={onHoverLeave}
+        onClick={onClick}
+        aria-label={label}
+        aria-pressed={isSelected}
+        className="pointer-events-auto absolute cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+        style={containerStyle}
+      />
+      <span
+        aria-hidden="true"
+        className={`pointer-events-none absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-[transform,background-color] ${dotState}`}
+        style={{ left: `${dotX}%`, top: `${dotY}%` }}
+      />
+    </>
   );
 }

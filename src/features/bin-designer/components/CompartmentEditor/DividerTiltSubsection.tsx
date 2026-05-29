@@ -1,30 +1,49 @@
 import { useRef, useState } from 'react';
-import { ArrowLeftIcon, InfoIcon, RotateCcwIcon, XIcon } from '@/design-system/Icon';
+import { ArrowLeftIcon, InfoIcon, RotateCcwIcon } from '@/design-system/Icon';
 import { Popover } from '@/design-system/Popover';
+import { Slider } from '@/design-system/Slider';
+import { Collapsible } from '@/design-system/Collapsible';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
-import type { CompartmentConfig } from '@/features/bin-designer/types';
 import {
-  TILT_UI_MAX,
-  TILT_UI_STEP,
-  getEndpointLabelKeys,
-  useDividerTiltSubsection,
-  type TiltRow,
-} from './useDividerTiltSubsection';
+  ANGLE_PRESETS_DEG,
+  ANGLE_UI_MAX_DEG,
+  ANGLE_UI_STEP_DEG,
+  SHIFT_UI_STEP_MM,
+} from '@/features/bin-designer/utils/dividerAngle';
+import type { CompartmentConfig } from '@/features/bin-designer/types';
+import { useDividerTiltSubsection, type TiltRow } from './useDividerTiltSubsection';
 
 export function DividerTiltSubsection() {
-  const { compartments, rows, modifiedRows, hasAnyOverride, selectedRow, hoveredKey, handlers, t } =
-    useDividerTiltSubsection();
+  const {
+    compartments,
+    rows,
+    hasAnyOverride,
+    activeConflicts,
+    selectedRow,
+    selectedAngleShift,
+    hoveredKey,
+    handlers,
+    t,
+  } = useDividerTiltSubsection();
 
   if (rows.length === 0) return null;
 
   return (
     <div className="mt-3 border-t border-stroke-subtle/40 pt-3">
       {selectedRow ? (
-        <InspectorView row={selectedRow} compartments={compartments} handlers={handlers} t={t} />
+        <InspectorView
+          row={selectedRow}
+          compartments={compartments}
+          angleDeg={selectedAngleShift.angleDeg}
+          shiftMm={selectedAngleShift.shiftMm}
+          conflicts={activeConflicts}
+          handlers={handlers}
+          t={t}
+        />
       ) : (
         <ListView
-          modifiedRows={modifiedRows}
+          rows={rows}
           compartments={compartments}
           hasAnyOverride={hasAnyOverride}
           hoveredKey={hoveredKey}
@@ -36,11 +55,13 @@ export function DividerTiltSubsection() {
   );
 }
 
-type Handlers = ReturnType<typeof useDividerTiltSubsection>['handlers'];
-type Translate = ReturnType<typeof useDividerTiltSubsection>['t'];
+type Hook = ReturnType<typeof useDividerTiltSubsection>;
+type Handlers = Hook['handlers'];
+type Translate = Hook['t'];
+type Conflict = Hook['activeConflicts'][number];
 
 interface ListViewProps {
-  readonly modifiedRows: readonly TiltRow[];
+  readonly rows: readonly TiltRow[];
   readonly compartments: CompartmentConfig;
   readonly hasAnyOverride: boolean;
   readonly hoveredKey: string | null;
@@ -48,14 +69,7 @@ interface ListViewProps {
   readonly t: Translate;
 }
 
-function ListView({
-  modifiedRows,
-  compartments,
-  hasAnyOverride,
-  hoveredKey,
-  handlers,
-  t,
-}: ListViewProps) {
+function ListView({ rows, compartments, hasAnyOverride, hoveredKey, handlers, t }: ListViewProps) {
   return (
     <>
       <div className="mb-2 flex items-baseline justify-between">
@@ -75,72 +89,19 @@ function ListView({
           </button>
         )}
       </div>
-      {modifiedRows.length === 0 ? (
-        <EmptyState t={t} />
-      ) : (
-        <div className="flex flex-col gap-1">
-          {modifiedRows.map((row) => (
-            <ModifiedDividerRow
-              key={row.key}
-              row={row}
-              compartments={compartments}
-              isHovered={hoveredKey === row.key}
-              handlers={handlers}
-              t={t}
-            />
-          ))}
-        </div>
-      )}
+      <div className="flex max-h-48 flex-col gap-1 overflow-y-auto">
+        {rows.map((row) => (
+          <DividerRow
+            key={row.key}
+            row={row}
+            compartments={compartments}
+            isHovered={hoveredKey === row.key}
+            handlers={handlers}
+            t={t}
+          />
+        ))}
+      </div>
     </>
-  );
-}
-
-function EmptyState({ t }: { readonly t: Translate }) {
-  return (
-    <div className="flex flex-col items-center gap-2 px-3 py-4 text-center">
-      <EmptyStateDiagram />
-      <p className="text-xs text-content-secondary">
-        {t('binDesigner.angledDividers.emptyHeading')}
-      </p>
-      <p className="text-[11px] text-content-tertiary">
-        {t('binDesigner.angledDividers.emptyCta')}
-      </p>
-    </div>
-  );
-}
-
-const EMPTY_DIAGRAM_W = 56;
-const EMPTY_DIAGRAM_H = 36;
-
-function EmptyStateDiagram() {
-  return (
-    <svg
-      width={EMPTY_DIAGRAM_W}
-      height={EMPTY_DIAGRAM_H}
-      viewBox={`0 0 ${EMPTY_DIAGRAM_W} ${EMPTY_DIAGRAM_H}`}
-      aria-hidden="true"
-      className="text-content-tertiary"
-    >
-      <rect
-        x={1}
-        y={1}
-        width={EMPTY_DIAGRAM_W - 2}
-        height={EMPTY_DIAGRAM_H - 2}
-        rx={3}
-        fill="none"
-        className="stroke-stroke-subtle"
-        strokeWidth={1}
-      />
-      <line
-        x1={EMPTY_DIAGRAM_W * 0.65}
-        y1={2}
-        x2={EMPTY_DIAGRAM_W * 0.35}
-        y2={EMPTY_DIAGRAM_H - 2}
-        strokeWidth={1.75}
-        className="stroke-accent"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }
 
@@ -172,7 +133,7 @@ function InfoPopoverButton({ t }: { readonly t: Translate }) {
   );
 }
 
-interface ModifiedDividerRowProps {
+interface DividerRowProps {
   readonly row: TiltRow;
   readonly compartments: CompartmentConfig;
   readonly isHovered: boolean;
@@ -180,36 +141,19 @@ interface ModifiedDividerRowProps {
   readonly t: Translate;
 }
 
-function ModifiedDividerRow({
-  row,
-  compartments,
-  isHovered,
-  handlers,
-  t,
-}: ModifiedDividerRowProps) {
+function DividerRow({ row, compartments, isHovered, handlers, t }: DividerRowProps) {
   const rowLabel = t('binDesigner.angledDividers.rowLabel', {
     a: String(row.compartmentA + 1),
     b: String(row.compartmentB + 1),
-  });
-  const stateLabel = t('binDesigner.angledDividers.stateTilted', {
-    start: String(Math.round(row.offsetStart * 10) / 10),
-    end: String(Math.round(row.offsetEnd * 10) / 10),
   });
 
   return (
     <div
       onPointerEnter={() => handlers.hoverDivider(row.key)}
       onPointerLeave={() => handlers.hoverDivider(null)}
-      // Focus-capture mirrors pointerEnter so keyboard users get the same
-      // canvas + compartment highlight as mouse users when they tab onto the
-      // row. Capture phase + check that focus is leaving the wrapper entirely
-      // (relatedTarget outside) so tabbing between the edit and ✕ buttons
-      // inside the row doesn't flicker the highlight off.
       onFocusCapture={() => handlers.hoverDivider(row.key)}
       onBlurCapture={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) {
-          handlers.hoverDivider(null);
-        }
+        if (!e.currentTarget.contains(e.relatedTarget)) handlers.hoverDivider(null);
       }}
       className={`flex items-center rounded-md border bg-surface-elevated transition-colors ${
         isHovered
@@ -228,15 +172,13 @@ function ModifiedDividerRow({
       >
         <DividerMiniDiagram compartments={compartments} row={row} />
         <span className="text-xs font-medium text-content-secondary tabular-nums">{rowLabel}</span>
-        <span className="ml-auto text-[11px] tabular-nums text-content-tertiary">{stateLabel}</span>
-      </button>
-      <button
-        type="button"
-        onClick={() => handlers.resetRow(row)}
-        aria-label={t('binDesigner.angledDividers.resetRow')}
-        className="px-1.5 py-1.5 text-content-tertiary transition-colors hover:text-content-secondary"
-      >
-        <XIcon size="xs" />
+        {row.hasTilt && (
+          <span className="ml-auto text-[11px] font-medium tabular-nums text-accent">
+            {t('binDesigner.angledDividers.badgeAngle', {
+              angle: String(Math.round(row.angleDeg)),
+            })}
+          </span>
+        )}
       </button>
     </div>
   );
@@ -245,14 +187,22 @@ function ModifiedDividerRow({
 interface InspectorViewProps {
   readonly row: TiltRow;
   readonly compartments: CompartmentConfig;
+  readonly angleDeg: number;
+  readonly shiftMm: number;
+  readonly conflicts: readonly Conflict[];
   readonly handlers: Handlers;
   readonly t: Translate;
 }
 
-function InspectorView({ row, compartments, handlers, t }: InspectorViewProps) {
-  const labelKeys = getEndpointLabelKeys(row.axis);
-  const startLabel = t(`binDesigner.angledDividers.${labelKeys.start}`);
-  const endLabel = t(`binDesigner.angledDividers.${labelKeys.end}`);
+function InspectorView({
+  row,
+  compartments,
+  angleDeg,
+  shiftMm,
+  conflicts,
+  handlers,
+  t,
+}: InspectorViewProps) {
   const axisLabel = t(
     row.axis === 'vertical'
       ? 'binDesigner.angledDividers.axisVertical'
@@ -262,6 +212,9 @@ function InspectorView({ row, compartments, handlers, t }: InspectorViewProps) {
     a: String(row.compartmentA + 1),
     b: String(row.compartmentB + 1),
   });
+  const angleLabel = t('binDesigner.angledDividers.angleLabel');
+  const disabled = row.geometry === null;
+  const shiftRange = row.geometry ?? { offsetMin: 0, offsetMax: 0 };
 
   return (
     <div className="flex flex-col gap-2.5">
@@ -285,6 +238,7 @@ function InspectorView({ row, compartments, handlers, t }: InspectorViewProps) {
           </button>
         )}
       </div>
+
       <div className="flex items-center gap-2">
         <DividerMiniDiagram compartments={compartments} row={row} />
         <div className="flex flex-col">
@@ -292,42 +246,84 @@ function InspectorView({ row, compartments, handlers, t }: InspectorViewProps) {
           <span className="text-[11px] text-content-tertiary">{axisLabel}</span>
         </div>
       </div>
-      <div className="flex items-end gap-2">
-        <TiltStepper
-          label={startLabel}
-          value={row.offsetStart}
-          onSet={(v) => handlers.setOffset(row, 'start', v)}
+
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-content-tertiary">{angleLabel}</span>
+          <StepperControl
+            value={angleDeg}
+            onChange={(v) => handlers.commitTilt(row, { angleDeg: v, shiftMm })}
+            onStep={(delta) => handlers.commitTilt(row, { angleDeg: angleDeg + delta, shiftMm })}
+            min={-ANGLE_UI_MAX_DEG}
+            max={ANGLE_UI_MAX_DEG}
+            step={1}
+            variant="desktop"
+            ariaLabel={angleLabel}
+            disabled={disabled}
+          />
+        </div>
+        <Slider
+          value={angleDeg}
+          onChange={(v) => handlers.previewTilt(row, { angleDeg: v, shiftMm })}
+          onCommit={(v) => handlers.commitTilt(row, { angleDeg: v, shiftMm })}
+          min={-ANGLE_UI_MAX_DEG}
+          max={ANGLE_UI_MAX_DEG}
+          step={ANGLE_UI_STEP_DEG}
+          disabled={disabled}
+          aria-label={angleLabel}
+          aria-valuetext={t('binDesigner.angledDividers.badgeAngle', {
+            angle: String(Math.round(angleDeg)),
+          })}
         />
-        <TiltStepper
-          label={endLabel}
-          value={row.offsetEnd}
-          onSet={(v) => handlers.setOffset(row, 'end', v)}
-        />
+        <div className="flex flex-wrap gap-1">
+          {ANGLE_PRESETS_DEG.map((preset) => (
+            <button
+              key={preset}
+              type="button"
+              disabled={disabled}
+              onClick={() => handlers.commitTilt(row, { angleDeg: preset, shiftMm })}
+              className={`rounded border px-1.5 py-0.5 text-[11px] font-medium tabular-nums transition-colors disabled:opacity-40 ${
+                Math.round(angleDeg) === preset
+                  ? 'border-accent bg-accent/10 text-accent'
+                  : 'border-stroke-subtle text-content-tertiary hover:border-stroke hover:text-content-secondary'
+              }`}
+            >
+              {t('binDesigner.angledDividers.badgeAngle', { angle: String(preset) })}
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
-  );
-}
 
-interface TiltStepperProps {
-  readonly label: string;
-  readonly value: number;
-  readonly onSet: (next: number) => void;
-}
+      <Collapsible
+        title={t('binDesigner.angledDividers.fineTune')}
+        size="sm"
+        defaultExpanded={false}
+      >
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-content-tertiary">
+            {t('binDesigner.angledDividers.shiftLabel')}
+          </span>
+          <StepperControl
+            value={shiftMm}
+            onChange={(v) => handlers.commitTilt(row, { angleDeg, shiftMm: v })}
+            onStep={(delta) =>
+              handlers.commitTilt(row, { angleDeg, shiftMm: shiftMm + delta * SHIFT_UI_STEP_MM })
+            }
+            min={shiftRange.offsetMin}
+            max={shiftRange.offsetMax}
+            step={SHIFT_UI_STEP_MM}
+            variant="desktop"
+            ariaLabel={t('binDesigner.angledDividers.shiftLabel')}
+            disabled={disabled}
+          />
+        </div>
+      </Collapsible>
 
-function TiltStepper({ label, value, onSet }: TiltStepperProps) {
-  return (
-    <div className="min-w-0 flex-1">
-      <span className="mb-1 block text-[11px] text-content-tertiary">{label}</span>
-      <StepperControl
-        value={value}
-        onChange={onSet}
-        onStep={(delta) => onSet(value + delta * TILT_UI_STEP)}
-        min={-TILT_UI_MAX}
-        max={TILT_UI_MAX}
-        step={TILT_UI_STEP}
-        variant="desktop"
-        ariaLabel={label}
-      />
+      {row.hasTilt && conflicts.length > 0 && (
+        <p className="rounded bg-warning-muted px-2 py-1.5 text-[11px] text-content-secondary">
+          {t('binDesigner.angledDividers.conflictNotice')}
+        </p>
+      )}
     </div>
   );
 }
@@ -355,6 +351,9 @@ function DividerMiniDiagram({ compartments, row }: MiniDiagramProps) {
     ? (Math.min(aBounds.maxCol, bBounds.maxCol) + 1) * (DIAGRAM_W / cols)
     : DIAGRAM_H - (Math.min(aBounds.maxRow, bBounds.maxRow) + 1) * (DIAGRAM_H / gridRows);
 
+  // A small visual lean so tilted rows read as diagonal at a glance.
+  const lean = row.hasTilt ? Math.sign(row.angleDeg) * Math.min(4, Math.abs(row.angleDeg) / 12) : 0;
+
   return (
     <svg
       width={DIAGRAM_W}
@@ -371,10 +370,10 @@ function DividerMiniDiagram({ compartments, row }: MiniDiagramProps) {
         className="stroke-stroke-subtle"
       />
       <line
-        x1={isVertical ? boundary : 0}
-        y1={isVertical ? 0 : boundary}
-        x2={isVertical ? boundary : DIAGRAM_W}
-        y2={isVertical ? DIAGRAM_H : boundary}
+        x1={isVertical ? boundary - lean : 0}
+        y1={isVertical ? 0 : boundary - lean}
+        x2={isVertical ? boundary + lean : DIAGRAM_W}
+        y2={isVertical ? DIAGRAM_H : boundary + lean}
         strokeWidth={1.5}
         className="stroke-accent"
       />

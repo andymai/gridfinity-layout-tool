@@ -351,6 +351,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   shapeEditorOpen: false,
   selectedDividerKey: null,
   hoveredDividerKey: null,
+  dividerTiltPreview: null,
 };
 
 /** Default empty history */

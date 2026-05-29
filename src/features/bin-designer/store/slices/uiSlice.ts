@@ -11,6 +11,7 @@ import type {
   PickerOverlayState,
   SplitViewMode,
   SplitPieceMeshEntry,
+  DividerTiltPreview,
 } from '../../types';
 import type { ColorZone, HoverableZone, LipCorner } from '../../types/featureColors';
 import { LIP_CORNERS, lipCornerZone } from '../../types/featureColors';
@@ -98,6 +99,12 @@ export function createUISlice(set: Set) {
     setHoveredDividerKey: (key: string | null) => {
       set((state) => {
         state.ui.hoveredDividerKey = key;
+      });
+    },
+
+    setDividerTiltPreview: (preview: DividerTiltPreview | null) => {
+      set((state) => {
+        state.ui.dividerTiltPreview = preview;
       });
     },
 
