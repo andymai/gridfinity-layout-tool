@@ -81,10 +81,14 @@ export function CameraController({
   // the geometry's farthest corner clips off-screen at maximum zoom for
   // large baseplates (50×50 + 100mm padding pushes the corner past 21m).
   useEffect(() => {
+    // Same live-camera read as the framing init below: on first mount the
+    // `camera` closure is still R3F's throwaway default, so setting far on it
+    // leaves the real camera at its seed far value (large baseplates clip for
+    // one frame). `camera` stays in the deps so a projection swap re-runs this.
     const targetFar = calculateFarPlane(calculateMaxOrbitDistance(idealDistance));
-    setCameraFar(camera, targetFar);
+    setCameraFar(get().camera, targetFar);
     invalidate();
-  }, [camera, idealDistance, invalidate]);
+  }, [camera, idealDistance, invalidate, get]);
 
   const animRef = useRef<{
     startPos: THREE.Vector3;
