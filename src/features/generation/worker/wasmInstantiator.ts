@@ -110,6 +110,19 @@ export async function loadBrepkit(): Promise<WasmLoadResult> {
 }
 
 /**
+ * Strong references to live `OcctKernel` wrappers, held for the worker's
+ * lifetime. The wrapper owns the raw Embind kernel and frees it via a
+ * `FinalizationRegistry` when collected; brepjs's `OcctWasmAdapter` only
+ * borrows the raw kernel, so dropping the wrapper lets GC delete the kernel
+ * out from under the adapter — the next generation then throws "Cannot pass
+ * deleted object as a pointer of type OcctKernel*". Pinning the wrapper here
+ * keeps it reachable; `worker.terminate()` frees the whole WASM heap, so no
+ * explicit disposal is needed. Removable once brepjs's adapter retains the
+ * wrapper itself (andymai/brepjs#1091).
+ */
+const retainedOcctWasmKernels = new Set<unknown>();
+
+/**
  * Load and initialize the occt-wasm geometry kernel.
  *
  * Uses occt-wasm 3.0's public `OcctKernel.init()` and the
@@ -130,6 +143,8 @@ export async function loadOcctWasm(): Promise<WasmLoadResult> {
   ]);
 
   const kernel = await OcctKernel.init({ wasm: occtWasmUrlMod.default });
+  // Pin the wrapper for the worker's lifetime — see `retainedOcctWasmKernels`.
+  retainedOcctWasmKernels.add(kernel);
   // occt-wasm 3.0's exported `OcctWasmModule` still omits `VectorString` /
   // `getExceptionMessage`, and `OcctRawKernel` still omits IGES + XCAF
   // methods that brepjs's interface declares. Both surfaces exist at
