@@ -45,7 +45,7 @@ const CAMERA_FOV = 45;
  * Calculate ideal camera distance to frame a bin of the given dimensions.
  * Uses perspective camera FOV geometry to ensure the bin fills ~65% of viewport.
  */
-function calculateIdealDistance(
+export function calculateIdealDistance(
   width: number,
   depth: number,
   height: number,
@@ -72,7 +72,7 @@ function calculateIdealDistance(
  * Calculate the bin's center point in 3D space (for camera target).
  * Mesh is centered at (0, 0) in XY, base at Z=0 — only height affects the target.
  */
-function calculateBinCenter(
+export function calculateBinCenter(
   _width: number,
   _depth: number,
   height: number,
@@ -154,7 +154,11 @@ export function CameraController({
     if (cameraChanged && projectionChanged) {
       // Projection toggle swapped the active camera; CameraRig copies the pose
       // across, so adopt the new camera without re-framing to preserve the
-      // user's current orbit and zoom.
+      // user's current orbit and zoom. Any in-flight auto-frame animation was
+      // computed in the previous camera's basis — dropping it stops useFrame
+      // from dragging the adopted camera toward that stale target.
+      posAnimRef.current = null;
+      zoomAnimRef.current = null;
       framedCameraRef.current = camera;
       prevDistanceRef.current = idealDistance;
       return;
@@ -164,6 +168,8 @@ export function CameraController({
       // First framing of this camera (initial mount, or R3F replacing its
       // transient default with the real makeDefault camera). Frame to the
       // ideal isometric distance so the bin fits the viewport at any size.
+      posAnimRef.current = null;
+      zoomAnimRef.current = null;
       const direction = new Vector3(...CAMERA_PRESETS.isometric).normalize();
       camera.position.copy(direction.multiplyScalar(idealDistance).add(binCenter));
       camera.up.set(0, 0, 1);
