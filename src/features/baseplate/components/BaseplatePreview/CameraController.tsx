@@ -51,7 +51,7 @@ export function CameraController({
   paddingFront: number;
   paddingBack: number;
 }) {
-  const { camera, invalidate, size } = useThree();
+  const { camera, invalidate, size, get } = useThree();
   const initializedRef = useRef(false);
 
   // Expose invalidate to hooks outside Canvas context
@@ -102,12 +102,18 @@ export function CameraController({
 
   useEffect(() => {
     if (!initializedRef.current) {
+      // Read the live default camera, not the closure value. drei's
+      // makeDefault swaps the real camera in during a layout effect that only
+      // takes hold on the *next* render, so the closure here still points at
+      // R3F's throwaway initial camera. Framing that one would latch
+      // initializedRef and leave the real camera stuck at its seed position.
+      const activeCamera = get().camera;
       const direction = new THREE.Vector3(...CAMERA_PRESETS.top).normalize();
-      camera.position.copy(direction.multiplyScalar(idealDistance).add(binCenter));
-      camera.up.set(0, 0, 1);
-      camera.lookAt(binCenter);
-      if (camera instanceof OrthographicCamera && size.height > 0) {
-        setOrthoZoom(camera, distanceToOrthoZoom(idealDistance, fov, size.height));
+      activeCamera.position.copy(direction.multiplyScalar(idealDistance).add(binCenter));
+      activeCamera.up.set(0, 0, 1);
+      activeCamera.lookAt(binCenter);
+      if (activeCamera instanceof OrthographicCamera && size.height > 0) {
+        setOrthoZoom(activeCamera, distanceToOrthoZoom(idealDistance, fov, size.height));
       }
       if (controlsRef.current) {
         controlsRef.current.target.copy(binCenter);
@@ -144,7 +150,7 @@ export function CameraController({
     }
 
     prevDistanceRef.current = idealDistance;
-  }, [idealDistance, binCenter, camera, controlsRef, fov, size.height]);
+  }, [idealDistance, binCenter, camera, controlsRef, fov, size.height, get]);
 
   useEffect(() => {
     if (controlsRef.current && initializedRef.current) {
