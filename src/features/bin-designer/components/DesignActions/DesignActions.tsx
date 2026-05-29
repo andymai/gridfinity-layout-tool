@@ -10,6 +10,7 @@ interface DesignActionsProps {
   onLoad: () => void;
   onDownloadJSON: () => void;
   onRename: () => void;
+  onEditTags: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
 }
@@ -24,6 +25,7 @@ export function DesignActions({
   onLoad,
   onDownloadJSON,
   onRename,
+  onEditTags,
   onDuplicate,
   onDelete,
 }: DesignActionsProps) {
@@ -197,6 +199,29 @@ export function DesignActions({
                 />
               </svg>
               {t('common.rename')}
+            </button>
+
+            {/* Edit tags */}
+            <button
+              role="menuitem"
+              onClick={handleAction(onEditTags)}
+              className="w-full px-3 py-2.5 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+            >
+              <svg
+                className="w-4 h-4 text-content-secondary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A1.99 1.99 0 013 7V4a1 1 0 011-1z"
+                />
+              </svg>
+              {t('binDesigner.tags.editAction')}
             </button>
 
             {/* Duplicate */}

@@ -1,0 +1,1 @@
+export { DesignTagChips } from './DesignTagChips';

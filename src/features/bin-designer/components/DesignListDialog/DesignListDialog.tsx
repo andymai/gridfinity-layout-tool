@@ -13,7 +13,14 @@ import {
   deleteDesign,
   duplicateDesign,
   saveDesign,
+  updateDesignTags,
 } from '@/features/bin-designer/storage/DesignerStorage';
+import { collectTags, filterByTags } from '@/features/bin-designer/utils/tagFilter';
+import { normalizeTags } from '@/features/bin-designer/utils/tags';
+import { TagFilterBar } from './TagFilterBar';
+import { BulkActionBar } from './BulkActionBar';
+import { TagEditDialog } from './TagEditDialog';
+import { useDesignSelection } from './useDesignSelection';
 import { removeRegistryEntry } from '../../store/customBinRegistry';
 import { useDesignerStore } from '../../store';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
@@ -61,6 +68,12 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [focusedIndex, setFocusedIndex] = useState(0);
   const [showImport, setShowImport] = useState(false);
+  const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [tagEdit, setTagEdit] = useState<{ mode: 'single' | 'bulk'; design?: SavedDesign } | null>(
+    null
+  );
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const selection = useDesignSelection();
   const itemRefs = useRef<Map<string, HTMLDivElement | HTMLLIElement>>(new Map());
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -102,6 +115,10 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     setFocusedIndex(0);
     setLoading(true);
     setShowImport(false);
+    setActiveTags([]);
+    setTagEdit(null);
+    setShowBulkDeleteConfirm(false);
+    selection.exit();
   } else if (!open && prevOpen) {
     setPrevOpen(false);
   }
@@ -128,12 +145,15 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   }, []);
   useThumbnailRegeneration(designs, handleThumbnailUpdated);
 
+  // Union of every tag across designs, for the filter bar.
+  const allTags = useMemo(() => collectTags(designs), [designs]);
+
   // Filter and sort designs
   const sortedDesigns = useMemo(() => {
-    let filtered = designs;
+    let filtered = filterByTags(designs, activeTags);
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = designs.filter((d) => d.name.toLowerCase().includes(query));
+      filtered = filtered.filter((d) => d.name.toLowerCase().includes(query));
     }
 
     return [...filtered].sort((a, b) => {
@@ -154,7 +174,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
           return b.updatedAt.localeCompare(a.updatedAt);
       }
     });
-  }, [designs, searchQuery, sortBy, currentDesignId]);
+  }, [designs, activeTags, searchQuery, sortBy, currentDesignId]);
 
   // Get localized sort options
   const localizedSortOptions = useMemo(
@@ -255,6 +275,93 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     },
     [addToast, t]
   );
+
+  // --- Tag editing (single + bulk) ---
+
+  const handleSaveTags = useCallback(
+    async (rawTags: string[]) => {
+      const edit = tagEdit;
+      if (!edit) return;
+
+      if (edit.mode === 'single' && edit.design) {
+        const next = normalizeTags(rawTags);
+        const result = await updateDesignTags(edit.design.id, next);
+        if (isOk(result)) {
+          const saved = result.value;
+          setDesigns((prev) => prev.map((d) => (d.id === saved.id ? saved : d)));
+          if (saved.id === currentDesignId) {
+            useDesignerStore.getState().setDesignName(saved.name);
+          }
+        }
+      } else if (edit.mode === 'bulk') {
+        const ids = selection.selectedIds;
+        const targets = designs.filter((d) => ids.has(d.id));
+        const updated = new Map<string, SavedDesign>();
+        for (const d of targets) {
+          // Bulk = add the entered tags to each design's existing set (union).
+          const result = await updateDesignTags(
+            d.id,
+            normalizeTags([...(d.tags ?? []), ...rawTags])
+          );
+          if (isOk(result)) updated.set(result.value.id, result.value);
+        }
+        if (updated.size > 0) {
+          setDesigns((prev) => prev.map((d) => updated.get(d.id) ?? d));
+          addToast({
+            message: t('binDesigner.bulk.toastTagged', { count: updated.size }),
+            type: 'success',
+            duration: 2000,
+          });
+        }
+        selection.exit();
+      }
+      setTagEdit(null);
+    },
+    [tagEdit, selection, designs, currentDesignId, addToast, t]
+  );
+
+  // --- Bulk actions ---
+
+  const handleBulkDelete = useCallback(async () => {
+    const ids = [...selection.selectedIds];
+    let deleted = 0;
+    for (const id of ids) {
+      const design = designs.find((d) => d.id === id);
+      if (!design) continue;
+      const result = await deleteDesign(design.id);
+      if (isOk(result)) {
+        removeRegistryEntry(design.id);
+        deleted += 1;
+      }
+    }
+    if (deleted > 0) {
+      const removed = new Set(ids);
+      setDesigns((prev) => prev.filter((d) => !removed.has(d.id)));
+      addToast({
+        message: t('binDesigner.bulk.toastDeleted', { count: deleted }),
+        type: 'success',
+        duration: 2000,
+      });
+    }
+    setShowBulkDeleteConfirm(false);
+    selection.exit();
+  }, [selection, designs, addToast, t]);
+
+  const handleBulkExport = useCallback(() => {
+    const ids = selection.selectedIds;
+    const targets = designs.filter((d) => ids.has(d.id));
+    for (const d of targets) {
+      downloadDesignAsFile(d.name, d.params);
+    }
+    if (targets.length > 0) {
+      addToast({
+        message: t('binDesigner.bulk.toastExported', { count: targets.length }),
+        type: 'success',
+        duration: 2000,
+      });
+    }
+    selection.exit();
+  }, [selection, designs, addToast, t]);
 
   const getGridColumns = useCallback(() => {
     if (effectiveViewMode === 'list' || !gridRef.current) return 1;
@@ -368,7 +475,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
       }}
     >
       <div
-        className="mx-4 max-h-[80vh] w-full max-w-lg overflow-hidden rounded-xl border border-stroke-subtle bg-surface-secondary shadow-xl flex flex-col"
+        className="mx-4 max-h-[80vh] w-full max-w-4xl overflow-hidden rounded-xl border border-stroke-subtle bg-surface-secondary shadow-xl flex flex-col"
         role="dialog"
         aria-modal="true"
         aria-label={t('binDesigner.savedDesigns')}
@@ -377,6 +484,14 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         <div className="flex items-center justify-between border-b border-stroke-subtle px-5 py-4">
           <h2 className="text-lg font-semibold text-content">{t('binDesigner.savedDesigns')}</h2>
           <div className="flex flex-wrap items-center gap-2">
+            {!showImport && designs.length > 0 && !selection.active && (
+              <button
+                onClick={() => selection.enter()}
+                className="rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content border border-stroke transition-colors hover:bg-surface-hover"
+              >
+                {t('binDesigner.select')}
+              </button>
+            )}
             <button
               onClick={() => setShowImport(true)}
               className="rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content border border-stroke transition-colors hover:bg-surface-hover"
@@ -499,6 +614,31 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                 gridLabel: t('binDesigner.gridView'),
               }}
               onKeyboardNav={handleKeyboardNav}
+              headerContent={
+                selection.active ? (
+                  <BulkActionBar
+                    count={selection.count}
+                    onSelectAll={() => selection.selectAll(sortedDesigns.map((d) => d.id))}
+                    onTag={() => setTagEdit({ mode: 'bulk' })}
+                    onExport={handleBulkExport}
+                    onDelete={() => setShowBulkDeleteConfirm(true)}
+                    onCancel={() => selection.exit()}
+                  />
+                ) : (
+                  <TagFilterBar
+                    allTags={allTags}
+                    activeTags={activeTags}
+                    onToggle={(tag) =>
+                      setActiveTags((prev) =>
+                        prev.some((x) => x.toLowerCase() === tag.toLowerCase())
+                          ? prev.filter((x) => x.toLowerCase() !== tag.toLowerCase())
+                          : [...prev, tag]
+                      )
+                    }
+                    onClear={() => setActiveTags([])}
+                  />
+                )
+              }
               renderGrid={(items) => (
                 <div
                   ref={gridRef}
@@ -515,9 +655,13 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                       onSelect={() => handleLoad(design)}
                       onDownloadJSON={() => handleDownloadJSON(design)}
                       onRename={(newName) => void handleRename(design, newName)}
+                      onEditTags={() => setTagEdit({ mode: 'single', design })}
                       onDuplicate={() => void handleDuplicate(design)}
                       onDelete={() => void handleDelete(design)}
                       onFocus={() => setFocusedIndex(index)}
+                      selectionActive={selection.active}
+                      isSelected={selection.isSelected(design.id)}
+                      onToggleSelect={() => selection.toggle(design.id)}
                       itemRef={(el) => {
                         if (el) itemRefs.current.set(design.id, el);
                         else itemRefs.current.delete(design.id);
@@ -537,9 +681,13 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                       onSelect={() => handleLoad(design)}
                       onDownloadJSON={() => handleDownloadJSON(design)}
                       onRename={(newName) => void handleRename(design, newName)}
+                      onEditTags={() => setTagEdit({ mode: 'single', design })}
                       onDuplicate={() => void handleDuplicate(design)}
                       onDelete={() => void handleDelete(design)}
                       onFocus={() => setFocusedIndex(index)}
+                      selectionActive={selection.active}
+                      isSelected={selection.isSelected(design.id)}
+                      onToggleSelect={() => selection.toggle(design.id)}
                       itemRef={(el) => {
                         if (el) itemRefs.current.set(design.id, el);
                         else itemRefs.current.delete(design.id);
@@ -578,6 +726,30 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         confirmText={t('binDesigner.newDesign')}
         onConfirm={handleConfirmNewDesign}
         onCancel={() => setShowNewDesignConfirm(false)}
+      />
+      {tagEdit !== null && (
+        <TagEditDialog
+          open
+          title={
+            tagEdit?.mode === 'bulk'
+              ? t('binDesigner.bulk.tagTitle', { count: selection.count })
+              : t('binDesigner.tags.editForDesign', { name: tagEdit?.design?.name ?? '' })
+          }
+          initialTags={tagEdit.mode === 'single' ? (tagEdit.design?.tags ?? []) : []}
+          saveLabel={
+            tagEdit.mode === 'bulk' ? t('binDesigner.bulk.tagApply') : t('binDesigner.tags.save')
+          }
+          onSave={(tags) => void handleSaveTags(tags)}
+          onClose={() => setTagEdit(null)}
+        />
+      )}
+      <ConfirmDialog
+        isOpen={showBulkDeleteConfirm}
+        title={t('binDesigner.bulk.deleteTitle')}
+        message={t('binDesigner.bulk.deleteConfirm', { count: selection.count })}
+        confirmText={t('binDesigner.bulk.delete')}
+        onConfirm={() => void handleBulkDelete()}
+        onCancel={() => setShowBulkDeleteConfirm(false)}
       />
     </div>
   );

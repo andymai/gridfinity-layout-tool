@@ -165,3 +165,6 @@ src/shared/components/Toast/Toast.tsx
 src/shared/components/ToolSwitcher/ToolSwitcher.tsx
 src/shared/components/TwoClickDeleteButton/TwoClickDeleteButton.tsx
 src/shared/components/ViewModeToggle/ViewModeToggle.tsx
+src/features/bin-designer/components/DesignListDialog/TagInput/TagInput.tsx
+src/features/bin-designer/components/DesignListDialog/TagFilterBar/TagFilterBar.tsx
+src/features/bin-designer/components/DesignListDialog/BulkActionBar/BulkActionBar.tsx

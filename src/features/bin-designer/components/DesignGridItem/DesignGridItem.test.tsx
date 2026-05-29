@@ -32,6 +32,7 @@ describe('DesignGridItem', () => {
     onSelect: vi.fn(),
     onDownloadJSON: vi.fn(),
     onRename: vi.fn(),
+    onEditTags: vi.fn(),
     onDuplicate: vi.fn(),
     onDelete: vi.fn(),
     onFocus: vi.fn(),
