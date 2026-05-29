@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.123.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.7...gridfinity-layout-tool-v4.123.8) (2026-05-29)
+
+
+### Bug Fixes
+
+* **baseplate:** restore top-down fit-in-view as the default camera ([#1923](https://github.com/andymai/gridfinity-layout-tool/issues/1923)) ([5ca6bd5](https://github.com/andymai/gridfinity-layout-tool/commit/5ca6bd506682fdc92e788a8f534a64b5ce358ad1))
+
 ## [4.123.7](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.6...gridfinity-layout-tool-v4.123.7) (2026-05-28)
 
 
