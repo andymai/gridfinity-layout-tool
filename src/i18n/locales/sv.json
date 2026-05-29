@@ -614,7 +614,7 @@
   "binDesigner.splitAxisWidth": "bredd",
   "binDesigner.splitConnectors": "Justeringskontakter",
   "binDesigner.splitWallLocking": "Vägglåsning",
-  "binDesigner.splitWallLockingHint": "Lägger till laxstjärtskontakter på sidoväggarna så att höga delar inte sprätter ut. Kräver utskriftstest – limning rekommenderas fortfarande.",
+  "binDesigner.splitWallLockingHint": "Förstärker sidoväggarnas skarvar så att höga delar håller sig i linje. Kräver utskriftstest – limning rekommenderas fortfarande.",
   "binDesigner.splitExploded": "Splittrad",
   "binDesigner.splitExport.colorLossWarning": "Delad export förlorar färgdata — varje del skrivs ut i en enda färg. Stäng av delningen för att behålla dina färgzoner.",
   "binDesigner.splitExport.downloadSplit": "Ladda ner delad {format} (ZIP)",

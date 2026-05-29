@@ -614,7 +614,7 @@
   "binDesigner.splitAxisWidth": "ancho",
   "binDesigner.splitConnectors": "Conectores de alineación",
   "binDesigner.splitWallLocking": "Bloqueo de paredes",
-  "binDesigner.splitWallLockingHint": "Añade conectores de cola de milano a las paredes laterales para evitar que las piezas altas se abran. Requiere pruebas de impresión; se sigue recomendando pegar.",
+  "binDesigner.splitWallLockingHint": "Refuerza las uniones de las paredes laterales para que las piezas altas queden alineadas. Requiere pruebas de impresión; se sigue recomendando pegar.",
   "binDesigner.splitExploded": "Explosionado",
   "binDesigner.splitExport.colorLossWarning": "La exportación dividida descarta los datos de color — cada pieza se imprimirá en un solo color. Desactiva la división para conservar tus zonas de color.",
   "binDesigner.splitExport.downloadSplit": "Descargar {format} dividido (ZIP)",

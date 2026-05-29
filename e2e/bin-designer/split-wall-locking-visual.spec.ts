@@ -3,7 +3,7 @@
  *
  * Drives the designer to an oversized (splitting) bin, then toggles the
  * "Wall locking" sub-option and captures before/after screenshots of the
- * 3D split preview. A pixel diff confirms the wall dovetails are actually
+ * 3D split preview. A pixel diff confirms the wall keys are actually
  * generated and rendered — closing the loop from store → worker → canvas.
  *
  * Run with: `pnpm test:e2e e2e/bin-designer/split-wall-locking-visual.spec.ts`

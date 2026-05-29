@@ -614,7 +614,7 @@
   "binDesigner.splitAxisWidth": "breedte",
   "binDesigner.splitConnectors": "Uitlijnconnectoren",
   "binDesigner.splitWallLocking": "Wandvergrendeling",
-  "binDesigner.splitWallLockingHint": "Voegt zwaluwstaartverbindingen toe aan de zijwanden zodat hoge stukken niet uitwaaieren. Vereist printtests — lijmen blijft aanbevolen.",
+  "binDesigner.splitWallLockingHint": "Versterkt de naden van de zijwanden zodat hoge stukken uitgelijnd blijven. Vereist printtests — lijmen blijft aanbevolen.",
   "binDesigner.splitExploded": "Geëxplodeerd",
   "binDesigner.splitExport.colorLossWarning": "Gesplitste export verliest kleurgegevens — elk stuk wordt in één kleur geprint. Schakel splitsen uit om uw kleurzones te behouden.",
   "binDesigner.splitExport.downloadSplit": "Gesplitste {format} downloaden (ZIP)",

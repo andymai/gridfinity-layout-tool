@@ -1621,7 +1621,7 @@ const en: Record<string, string> = {
   'binDesigner.splitConnectors': 'Alignment connectors',
   'binDesigner.splitWallLocking': 'Wall locking',
   'binDesigner.splitWallLockingHint':
-    'Adds dovetail connectors to the side walls to stop tall pieces splaying. Needs print testing — glue is still recommended.',
+    'Reinforces the side-wall seams so tall split pieces stay aligned. Needs print testing — glue is still recommended.',
   'binDesigner.splitAssembled': 'Assembled',
   'binDesigner.splitExploded': 'Exploded',
   'binDesigner.cutouts.instructions':

@@ -40,7 +40,7 @@ import {
 import type { Shape3D, Sketch } from 'brepjs';
 import type { SplitConnectorConfig } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
-import { TONGUE_PROTRUSION, TONGUE_BASE_HALF, TONGUE_TIP_HALF } from './generatorConstants';
+import { TONGUE_PROTRUSION, TONGUE_TIP_HALF } from './generatorConstants';
 
 /** Overlap into the piece body so booleans have shared volume (mm). */
 export const OVERLAP = 1.0;
@@ -63,14 +63,45 @@ const SCARF_SLOPE = Math.tan(SCARF_ANGLE);
 /** Width taper slope: 45° taper at each end of the scarf lap for self-supporting FDM. */
 const WIDTH_TAPER_SLOPE = 1.0;
 
-/** Default wall dovetail height as a fraction of interior wall height (stops clear of the lip). */
-const DEFAULT_WALL_DOVETAIL_HEIGHT_FRACTION = 0.8;
+/** Default wall key height as a fraction of interior wall height (stops clear of the lip). */
+const DEFAULT_WALL_KEY_HEIGHT_FRACTION = 0.8;
 
-/** Inward boss margin (mm) added around the dovetail footprint so the thin wall has material. */
+/** Inward boss margin (mm) added around the key footprint so the thin wall has material. */
 const WALL_BOSS_MARGIN = 0.8;
 
-/** How far the reinforcing boss runs along the cut-normal into the piece body (mm). */
-const WALL_BOSS_DEPTH = TONGUE_PROTRUSION + 0.8;
+/** Half-width of the straight wall key, measured along the cut line (mm). */
+const WALL_KEY_HALF_WIDTH = TONGUE_TIP_HALF;
+
+/** How far the key protrudes across the cut into the mating piece (mm). */
+const WALL_KEY_PROTRUSION = TONGUE_PROTRUSION;
+
+export interface WallKeyGeometry {
+  /** Inward distance from the outer wall face to the key's perpendicular center (mm). */
+  readonly perpInset: number;
+  /** Total inward thickness of the reinforcing boss from the outer wall face (mm). */
+  readonly bossPerpDepth: number;
+  /** Remaining intact outer wall skin after the groove is cut (mm). Must stay > 0. */
+  readonly outerSkin: number;
+}
+
+/**
+ * Perpendicular placement of a wall key. The key is a straight (non-undercut)
+ * tongue/groove so the two halves assemble by pressing together horizontally —
+ * an undercut would force a vertical drop-in, which is impossible past the
+ * partial-height groove and the stacking lip.
+ *
+ * The key is inset from the outer wall face by the full wall thickness so the
+ * groove cut (key + clearance) never reaches the exterior face — without the
+ * inset the female groove punches a hole through the outer wall. The boss
+ * restores material inward to host the feature.
+ */
+export function wallKeyGeometry(wallThickness: number, clearance: number): WallKeyGeometry {
+  const perpInset = wallThickness + WALL_KEY_HALF_WIDTH;
+  const bossPerpDepth = perpInset + WALL_KEY_HALF_WIDTH + clearance + WALL_BOSS_MARGIN;
+  // Key sits at the inner wall face; the groove only eats `clearance` into it.
+  const outerSkin = wallThickness - clearance;
+  return { perpInset, bossPerpDepth, outerSkin };
+}
 
 type Extent = [number, number, number];
 
@@ -368,24 +399,27 @@ function addConnectors(
     }
   }
 
-  // ── Wall locking dovetails (vertical, on exterior perimeter walls) ──────────
+  // ── Wall locking keys (straight, press-together, on exterior perimeter walls) ─
   if (config.wallLocking) {
-    addWallDovetails(face, context, config, fuseTargets, cutTargets);
+    addWallKeys(face, context, config, fuseTargets, cutTargets);
   }
 }
 
 /**
- * Add vertical dovetail locking connectors to the exterior perimeter walls a cut
- * crosses. The tongue/groove cross-section is constant along Z (the build axis),
- * so it prints self-supporting; the reinforcing boss thickens the wall inward
- * only, preserving the Gridfinity external footprint. The dovetail spans a
- * fraction of the wall height and stops clear of the rim so the stacking lip is
- * never disturbed.
+ * Add straight alignment keys to the exterior perimeter walls a cut crosses.
+ *
+ * The key is a straight (non-undercut) tongue/groove so the two halves press
+ * together horizontally — the natural assembly motion, and the only one
+ * compatible with a partial-height feature that leaves the stacking lip intact.
+ * The protruding tongue has a 45° chamfered underside so it prints
+ * self-supporting and self-guides on insertion. A reinforcing boss thickens the
+ * wall inward only (preserving the Gridfinity footprint); the key is inset from
+ * the outer face so the groove can't breach the exterior wall.
  *
  * Convention matches the floor lap: male faces grow a tongue, female faces have a
- * matching groove + clearance cut from a boss.
+ * matching groove + clearance.
  */
-function addWallDovetails(
+function addWallKeys(
   face: CutFace,
   context: BinGeometryContext,
   config: SplitConnectorConfig,
@@ -393,9 +427,9 @@ function addWallDovetails(
   cutTargets: Shape3D[]
 ): void {
   const wallHeight = context.wallTopZ - context.floorZ;
-  const heightFraction = config.ridgeHeightFraction ?? DEFAULT_WALL_DOVETAIL_HEIGHT_FRACTION;
-  const dovetailH = wallHeight * heightFraction;
-  if (dovetailH < MIN_FEATURE_HEIGHT) return;
+  const heightFraction = config.ridgeHeightFraction ?? DEFAULT_WALL_KEY_HEIGHT_FRACTION;
+  const keyHeight = wallHeight * heightFraction;
+  if (keyHeight < MIN_FEATURE_HEIGHT) return;
 
   const half = face.binEdgeLength / 2;
   const pieceMin = face.pieceCenterOffset - face.pieceEdgeLength / 2;
@@ -408,20 +442,20 @@ function addWallDovetails(
   if (Math.abs(pieceMin + half) < tol) perimeters.push(-half);
   if (Math.abs(pieceMax - half) < tol) perimeters.push(half);
 
-  // Don't let a boss eat more than ~40% of a narrow piece's perpendicular span.
-  const bossPerpDepth = 2 * TONGUE_TIP_HALF + config.clearance + WALL_BOSS_MARGIN;
-  if (bossPerpDepth > face.pieceEdgeLength * 0.4) return;
+  const geom = wallKeyGeometry(context.wallThickness, config.clearance);
+  // Don't let a boss eat more than ~45% of a narrow piece's perpendicular span.
+  if (geom.bossPerpDepth > face.pieceEdgeLength * 0.45) return;
 
   for (const perimeter of perimeters) {
-    buildWallConnector(
+    buildWallKey(
       face.axis,
       face.position,
       perimeter,
       face.isMale,
       context.floorZ,
-      dovetailH,
+      keyHeight,
       config.clearance,
-      bossPerpDepth,
+      geom,
       fuseTargets,
       cutTargets
     );
@@ -434,61 +468,76 @@ function makePlanPoint(axis: 'x' | 'y'): (prot: number, perp: number) => [number
 }
 
 /**
- * Build the boss + tongue (male) or boss + groove (female) for one perimeter wall
- * and push them onto the fuse/cut target lists.
+ * Build the boss + straight key (tongue for male, groove for female) for one
+ * perimeter wall and push them onto the fuse/cut target lists.
+ *
+ * The key body is a prism extruded along the perpendicular (cut-line) axis from
+ * a profile in the protrusion×height plane: full height at the wall, with a 45°
+ * ramp on the protruding underside for self-support. `inflate` (= clearance on
+ * the female) grows the groove so the tongue seats with a glue gap.
  */
-function buildWallConnector(
+function buildWallKey(
   axis: 'x' | 'y',
   cutPos: number,
   perimeter: number,
   isMale: boolean,
   floorZ: number,
-  dovetailH: number,
+  keyHeight: number,
   clearance: number,
-  bossPerpDepth: number,
+  geom: WallKeyGeometry,
   fuseTargets: Shape3D[],
   cutTargets: Shape3D[]
 ): void {
   const pt = makePlanPoint(axis);
-  const P = TONGUE_PROTRUSION;
-  const bW = TONGUE_BASE_HALF;
-  const tW = TONGUE_TIP_HALF;
+  const P = WALL_KEY_PROTRUSION;
+  const halfW = WALL_KEY_HALF_WIDTH;
 
   // Toward the bin center (the only direction the boss may thicken).
   const inward = perimeter > 0 ? -1 : 1;
-  // The tongue lives on the boundary's +axis side, so its widest edge sits flush
-  // with the outer wall face; the taper then opens inward.
-  const perpC = perimeter + inward * tW;
+  const perpC = perimeter + inward * geom.perpInset;
   // This piece's body is behind the cut: male on the −axis side, female on +axis.
   const bodySign = isMale ? -1 : 1;
 
-  // ── Reinforcing boss: inward thickening over the dovetail footprint ──────────
-  const protCenter = cutPos + (bodySign * WALL_BOSS_DEPTH) / 2;
-  const perpCenter = perimeter + (inward * bossPerpDepth) / 2;
-  const zCenter = floorZ + dovetailH / 2;
-  const bossProt = WALL_BOSS_DEPTH;
+  // ── Reinforcing boss: inward thickening over the key footprint ───────────────
+  const bossProt = P + 0.8;
+  const protCenter = cutPos + (bodySign * bossProt) / 2;
+  const perpCenter = perimeter + (inward * geom.bossPerpDepth) / 2;
+  const zCenter = floorZ + keyHeight / 2;
   const bossDims =
-    axis === 'x' ? ([bossProt, bossPerpDepth] as const) : ([bossPerpDepth, bossProt] as const);
+    axis === 'x'
+      ? ([bossProt, geom.bossPerpDepth] as const)
+      : ([geom.bossPerpDepth, bossProt] as const);
   const [bossCx, bossCy] = pt(protCenter, perpCenter);
-  fuseTargets.push(box(bossDims[0], bossDims[1], dovetailH, { at: [bossCx, bossCy, zCenter] }));
+  fuseTargets.push(box(bossDims[0], bossDims[1], keyHeight, { at: [bossCx, bossCy, zCenter] }));
 
-  // ── Dovetail tongue / groove ─────────────────────────────────────────────────
+  // ── Straight key (tongue fused on male, groove cut on female) ────────────────
+  const inflate = isMale ? 0 : clearance;
+  const w = halfW + inflate;
+  const protTip = cutPos + P + inflate;
+  const top = floorZ + keyHeight + inflate;
+  // Profile in the (protrusion-axis, Z) plane; the protruding underside ramps up
+  // at 45° from the cut face to the tip so the overhang is self-supporting.
+  const plane = axis === 'x' ? 'XZ' : 'YZ';
+  const profile = draw([cutPos - OVERLAP, floorZ])
+    .lineTo([cutPos - OVERLAP, top])
+    .lineTo([protTip, top])
+    .lineTo([protTip, floorZ + P])
+    .lineTo([cutPos, floorZ])
+    .close();
+  // Sketch at the perpendicular origin and extrude along the plane normal; the
+  // normal's sign is plane-dependent, so re-center the prism on perpC explicitly.
+  const raw = sketch(profile, plane, 0).extrude(2 * w);
+  const b = getBounds(raw);
+  const lo = axis === 'x' ? b.yMin : b.xMin;
+  const hi = axis === 'x' ? b.yMax : b.xMax;
+  const shift = perpC - (lo + hi) / 2;
+  const key = translate(raw, axis === 'x' ? [0, shift, 0] : [shift, 0, 0]);
+  raw.delete();
+
   if (isMale) {
-    const profile = draw(pt(cutPos - OVERLAP, perpC - bW))
-      .lineTo(pt(cutPos - OVERLAP, perpC + bW))
-      .lineTo(pt(cutPos + P, perpC + tW))
-      .lineTo(pt(cutPos + P, perpC - tW))
-      .close();
-    fuseTargets.push(sketch(profile, 'XY', floorZ).extrude(dovetailH));
+    fuseTargets.push(key);
   } else {
-    const gB = bW + clearance;
-    const gT = tW + clearance;
-    const profile = draw(pt(cutPos - OVERLAP, perpC - gB))
-      .lineTo(pt(cutPos - OVERLAP, perpC + gB))
-      .lineTo(pt(cutPos + P + clearance, perpC + gT))
-      .lineTo(pt(cutPos + P + clearance, perpC - gT))
-      .close();
-    cutTargets.push(sketch(profile, 'XY', floorZ).extrude(dovetailH));
+    cutTargets.push(key);
   }
 }
 

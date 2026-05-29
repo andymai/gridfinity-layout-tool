@@ -2,10 +2,11 @@
 /**
  * Scenario tests for wall locking connectors on split bin pieces (issue #1869).
  *
- * Wall locking adds vertical dovetails to the exterior perimeter walls at each
- * cut so tall pieces resist splaying. The dovetail runs along the build (Z)
- * direction — a constant cross-section per layer, so it prints self-supporting
- * — and stops below the rim so it never disturbs the stacking lip.
+ * Wall locking adds straight alignment keys to the exterior perimeter walls at
+ * each cut so tall pieces resist splaying. The keys assemble by pressing the
+ * halves together (no undercut), have a 45° chamfered protruding underside so
+ * they print self-supporting, and stop below the rim so the stacking lip is
+ * never disturbed.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
@@ -71,7 +72,7 @@ describe('split bin wall locking connectors (#1869)', () => {
     const withWalls = generateSplitPreview(TALL_PARAMS, CUT_PLANES_X, CUT_PLANES_Y, WALL_LOCKING);
     const floorOnly = generateSplitPreview(TALL_PARAMS, CUT_PLANES_X, CUT_PLANES_Y, FLOOR_ONLY);
 
-    // The dovetails + bosses are real geometry, so the meshes must differ.
+    // The keys + bosses are real geometry, so the meshes must differ.
     // A silently-dropped boolean (isResultValid shrink guard) would make these equal.
     expect(totalTriCount(withWalls.pieces)).toBeGreaterThan(totalTriCount(floorOnly.pieces));
   }, 60000);

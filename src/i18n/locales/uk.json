@@ -614,7 +614,7 @@
   "binDesigner.splitAxisWidth": "ширини",
   "binDesigner.splitConnectors": "З’єднувачі для вирівнювання",
   "binDesigner.splitWallLocking": "Фіксація стінок",
-  "binDesigner.splitWallLockingHint": "Додає з’єднувачі типу «ластівчин хвіст» на бічні стінки, щоб високі частини не розходилися. Потребує тестового друку — клей усе ще рекомендовано.",
+  "binDesigner.splitWallLockingHint": "Підсилює шви бічних стінок, щоб високі частини залишалися вирівняними. Потребує тестового друку — клей усе ще рекомендовано.",
   "binDesigner.splitExploded": "Розгорнуто",
   "binDesigner.splitExport.colorLossWarning": "Розділений експорт відкидає дані кольору — кожна частина друкується одним кольором. Вимкніть розділення, щоб зберегти зони кольорів.",
   "binDesigner.splitExport.downloadSplit": "Завантажити розділений {format} (ZIP)",

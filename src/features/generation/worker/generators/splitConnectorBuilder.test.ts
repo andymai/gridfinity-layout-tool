@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { CutFace, BinGeometryContext } from './splitConnectorBuilder';
 import type { applySplitConnectors as ApplySplitConnectorsFn } from './splitConnectorBuilder';
+import { wallKeyGeometry } from './splitConnectorBuilder';
 
 // Mock brepjs to avoid WASM loading.
 // All mock shapes have a delete() stub so disposal calls in production code
@@ -87,5 +88,29 @@ describe('splitConnectorBuilder', () => {
     };
     const result = applySplitConnectors('piece' as never, [baseFace], context, baseConfig);
     expect(result).toBeDefined();
+  });
+});
+
+describe('wallKeyGeometry', () => {
+  const wallThicknesses = [0.8, 1.2, 1.6, 2.0, 2.4];
+  const clearances = [0, 0.15, 0.3];
+
+  it('always leaves a positive outer wall skin (groove never breaches the exterior)', () => {
+    for (const wt of wallThicknesses) {
+      for (const cl of clearances) {
+        const { outerSkin } = wallKeyGeometry(wt, cl);
+        expect(outerSkin).toBeGreaterThan(0);
+        // The groove only eats `clearance` into the wall, so the skin is wt − clearance.
+        expect(outerSkin).toBeCloseTo(wt - cl, 6);
+      }
+    }
+  });
+
+  it('insets the key behind the outer skin and sizes the boss to enclose it', () => {
+    for (const wt of wallThicknesses) {
+      const { perpInset, bossPerpDepth } = wallKeyGeometry(wt, 0.15);
+      expect(perpInset).toBeGreaterThan(wt); // key sits behind the intact wall
+      expect(bossPerpDepth).toBeGreaterThan(perpInset); // boss reaches past the groove
+    }
   });
 });
