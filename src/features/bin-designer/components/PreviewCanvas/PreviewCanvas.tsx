@@ -364,6 +364,7 @@ export function PreviewCanvas() {
             <CameraController
               controlsRef={controlsRef}
               invalidateRef={invalidateRef}
+              projection={projection}
               width={width}
               depth={depth}
               height={height}
