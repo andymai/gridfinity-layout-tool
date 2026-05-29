@@ -796,6 +796,20 @@ export interface DesignerUIState {
    * compartment fills.
    */
   readonly hoveredDividerKey: string | null;
+  /**
+   * Transient divider tilt being dragged in the inspector, mirrored to the 2D
+   * canvas for a live preview. Never persisted and never pushed to undo — the
+   * real `DividerOverride` is committed on pointer release. Null when no drag
+   * is in flight.
+   */
+  readonly dividerTiltPreview: DividerTiltPreview | null;
+}
+
+/** In-flight divider tilt used only for live preview (see `dividerTiltPreview`). */
+export interface DividerTiltPreview {
+  readonly key: string;
+  readonly offsetStart: number;
+  readonly offsetEnd: number;
 }
 
 /** Undo/redo history for bin parameters with optional mesh cache */
@@ -991,6 +1005,7 @@ export interface DesignerState {
   setHoveredColorZone: (zone: HoverableZone | null) => void;
   setSelectedDividerKey: (key: string | null) => void;
   setHoveredDividerKey: (key: string | null) => void;
+  setDividerTiltPreview: (preview: DividerTiltPreview | null) => void;
   /** Enter a color tool overlay, or pass null to exit any active tool. */
   setColorTool: (tool: ColorTool) => void;
   /**

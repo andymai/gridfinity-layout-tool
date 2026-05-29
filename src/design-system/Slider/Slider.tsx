@@ -5,8 +5,14 @@ import { interactiveTransition } from '../variants';
 export interface SliderProps {
   /** Current value */
   value: number;
-  /** Called when value changes */
+  /** Called on every value change (continuously during a drag). */
   onChange: (value: number) => void;
+  /**
+   * Called once when the user finishes a change — pointer release or a keyboard
+   * step. Use this to commit a single undo entry while `onChange` drives a
+   * transient live preview during the drag.
+   */
+  onCommit?: (value: number) => void;
   /** Minimum value */
   min: number;
   /** Maximum value */
@@ -39,6 +45,7 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
     {
       value,
       onChange,
+      onCommit,
       min,
       max,
       step = 1,
@@ -104,8 +111,9 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
         if (!isDragging) return;
         e.currentTarget.releasePointerCapture(e.pointerId);
         setIsDragging(false);
+        onCommit?.(pointerToValue(e.clientX));
       },
-      [isDragging]
+      [isDragging, onCommit, pointerToValue]
     );
 
     const handleKeyDown = useCallback(
@@ -130,10 +138,14 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
         }
 
         if (newValue !== undefined && newValue !== value) {
-          onChange(Number(newValue.toFixed(10)));
+          const committed = Number(newValue.toFixed(10));
+          onChange(committed);
+          // Each keyboard step is a discrete change — commit it immediately so
+          // arrow-key edits land in undo history individually.
+          onCommit?.(committed);
         }
       },
-      [disabled, value, min, max, step, onChange]
+      [disabled, value, min, max, step, onChange, onCommit]
     );
 
     const thumbActive = isDragging || isHovering;

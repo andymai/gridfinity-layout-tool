@@ -11,12 +11,12 @@ const baseCompartments = (cols: number, rows: number): CompartmentConfig => ({
   cells: Array.from({ length: cols * rows }, (_, i) => i),
 });
 
-const verticalDivider = (a = 0, b = 1): EligibleDivider => ({
+const verticalDivider = (a = 0, b = 1, offsetStart = 0, offsetEnd = 0): EligibleDivider => ({
   compartmentA: a,
   compartmentB: b,
   axis: 'vertical',
-  offsetStart: 0,
-  offsetEnd: 0,
+  offsetStart,
+  offsetEnd,
 });
 
 const horizontalDivider = (a = 0, b = 1): EligibleDivider => ({
@@ -30,17 +30,24 @@ const horizontalDivider = (a = 0, b = 1): EligibleDivider => ({
 const noop = (): void => {};
 const rowLabel = (a: number, b: number): string => `Edit divider between Comp ${a} and Comp ${b}`;
 
+const baseProps = {
+  interiorW: 80,
+  interiorD: 40,
+  preview: null,
+  selectedKey: null,
+  hoveredKey: null,
+  onSelect: noop,
+  onHoverChange: noop,
+  rowLabel,
+};
+
 describe('DividerHitTargets', () => {
   it('renders one hit target per eligible divider', () => {
     render(
       <DividerHitTargets
+        {...baseProps}
         compartments={baseCompartments(2, 2)}
         dividers={[verticalDivider(0, 1), horizontalDivider(0, 2)]}
-        selectedKey={null}
-        hoveredKey={null}
-        onSelect={noop}
-        onHoverChange={noop}
-        rowLabel={rowLabel}
       />
     );
     const targets = screen.getAllByRole('button', { name: /Edit divider between Comp/i });
@@ -51,13 +58,10 @@ describe('DividerHitTargets', () => {
     const onSelect = vi.fn();
     render(
       <DividerHitTargets
+        {...baseProps}
         compartments={baseCompartments(2, 1)}
         dividers={[verticalDivider(0, 1)]}
-        selectedKey={null}
-        hoveredKey={null}
         onSelect={onSelect}
-        onHoverChange={noop}
-        rowLabel={rowLabel}
       />
     );
     fireEvent.click(screen.getByRole('button', { name: /Edit divider/i }));
@@ -68,13 +72,10 @@ describe('DividerHitTargets', () => {
     const onHoverChange = vi.fn();
     render(
       <DividerHitTargets
+        {...baseProps}
         compartments={baseCompartments(2, 1)}
         dividers={[verticalDivider(0, 1)]}
-        selectedKey={null}
-        hoveredKey={null}
-        onSelect={noop}
         onHoverChange={onHoverChange}
-        rowLabel={rowLabel}
       />
     );
     const target = screen.getByRole('button', { name: /Edit divider/i });
@@ -84,35 +85,43 @@ describe('DividerHitTargets', () => {
     expect(onHoverChange).toHaveBeenLastCalledWith(null);
   });
 
-  it('skips dividers with degenerate span (no shared run)', () => {
-    // Compartments with no shared boundary — passing an EligibleDivider for them
-    // would be malformed, but the helper should defensively skip rather than crash.
-    const config: CompartmentConfig = {
-      cols: 2,
-      rows: 2,
-      thickness: 1.2,
-      // [0, 1, 2, 3] — every cell is its own compartment, so 0 and 3 are diagonal,
-      // not adjacent. A divider claiming to span between them has no segment.
-      cells: [0, 1, 2, 3],
-    };
-    render(
+  it('draws a tilt line only for dividers that carry an offset', () => {
+    const { container, rerender } = render(
       <DividerHitTargets
-        compartments={config}
-        dividers={[
-          {
-            compartmentA: 0,
-            compartmentB: 3,
-            axis: 'vertical',
-            offsetStart: 0,
-            offsetEnd: 0,
-          },
-        ]}
-        selectedKey={null}
-        hoveredKey={null}
-        onSelect={noop}
-        onHoverChange={noop}
-        rowLabel={rowLabel}
+        {...baseProps}
+        compartments={baseCompartments(2, 1)}
+        dividers={[verticalDivider(0, 1, 0, 0)]}
       />
+    );
+    expect(container.querySelector('line')).toBeNull();
+
+    rerender(
+      <DividerHitTargets
+        {...baseProps}
+        compartments={baseCompartments(2, 1)}
+        dividers={[verticalDivider(0, 1, -8, 8)]}
+      />
+    );
+    expect(container.querySelector('line')).not.toBeNull();
+  });
+
+  it('uses the live preview offsets when the preview targets the divider', () => {
+    const { container } = render(
+      <DividerHitTargets
+        {...baseProps}
+        compartments={baseCompartments(2, 1)}
+        dividers={[verticalDivider(0, 1, 0, 0)]}
+        preview={{ key: '0-1', offsetStart: -6, offsetEnd: 6 }}
+      />
+    );
+    // Straight committed override but an active preview → a tilt line appears.
+    expect(container.querySelector('line')).not.toBeNull();
+  });
+
+  it('skips dividers with degenerate span (no shared run)', () => {
+    const config: CompartmentConfig = { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] };
+    render(
+      <DividerHitTargets {...baseProps} compartments={config} dividers={[verticalDivider(0, 3)]} />
     );
     expect(screen.queryByRole('button')).toBeNull();
   });

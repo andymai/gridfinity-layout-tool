@@ -44,35 +44,27 @@ test.describe('Angled dividers — visual', () => {
     await expect(canvas).toBeVisible({ timeout: 120_000 });
     await waitForGenerationComplete(page);
 
-    // Default is 1×1 (no divider) — bump rows to make the panel eligible.
+    // Default is 1×1 (no divider) — bump rows to make a divider eligible. The
+    // "Diagonal dividers" panel then lists every eligible divider directly.
     await page.getByRole('button', { name: /increase rows/i }).click();
     await expect(page.getByRole('spinbutton', { name: /^rows$/i })).toHaveValue('2', {
       timeout: 5000,
     });
 
-    // FeatureToggle uses role="switch" (not button). i18n label "Diagonal dividers".
-    const angledSwitch = page.getByRole('switch', { name: /diagonal dividers/i });
-    await expect(angledSwitch).toBeVisible({ timeout: 15_000 });
-    await angledSwitch.scrollIntoViewIfNeeded();
+    // Open the divider inspector by selecting the (only) eligible divider row.
+    const dividerRow = page.getByRole('button', { name: /edit divider between comp/i }).first();
+    await expect(dividerRow).toBeVisible({ timeout: 15_000 });
+    await dividerRow.scrollIntoViewIfNeeded();
 
     await waitForGenerationComplete(page);
     const beforeBuf = await canvas.screenshot();
 
-    await angledSwitch.click();
-    // FeatureToggle has a separate "Customize" button that expands the body.
-    const customizeBtn = page.getByRole('button', { name: /^customize$/i }).first();
-    await expect(customizeBtn).toBeVisible({ timeout: 5000 });
-    await customizeBtn.click();
+    await dividerRow.click();
 
-    await page
-      .getByRole('spinbutton', { name: /start \(mm\)/i })
-      .first()
-      .fill('15');
-    await page.keyboard.press('Tab');
-    await page
-      .getByRole('spinbutton', { name: /end \(mm\)/i })
-      .first()
-      .fill('-15');
+    // Angle-first inspector: type an exact angle to tilt the divider.
+    const angleField = page.getByRole('spinbutton', { name: /^angle$/i });
+    await expect(angleField).toBeVisible({ timeout: 5000 });
+    await angleField.fill('20');
     await page.keyboard.press('Tab');
 
     await waitForGenerationComplete(page);

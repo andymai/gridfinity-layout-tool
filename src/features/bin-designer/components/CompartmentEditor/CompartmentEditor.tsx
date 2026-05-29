@@ -29,6 +29,7 @@ import {
   isRectangularSelection,
   cellIndex,
 } from '@/features/bin-designer/utils/compartments';
+import { getInteriorDims } from '@/features/bin-designer/utils/dividerAngle';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { usePreviewColor } from '@/features/bin-designer/hooks/usePreviewColor';
@@ -47,6 +48,9 @@ export function CompartmentEditor() {
     compartments,
     width,
     depth,
+    gridUnitMm,
+    wallThickness,
+    dividerTiltPreview,
     selectedDividerKey,
     hoveredDividerKey,
     setParam,
@@ -62,6 +66,9 @@ export function CompartmentEditor() {
       compartments: s.params.compartments,
       width: s.params.width,
       depth: s.params.depth,
+      gridUnitMm: s.params.gridUnitMm,
+      wallThickness: s.params.wallThickness,
+      dividerTiltPreview: s.ui.dividerTiltPreview,
       selectedDividerKey: s.ui.selectedDividerKey,
       hoveredDividerKey: s.ui.hoveredDividerKey,
       setParam: s.setParam,
@@ -74,6 +81,13 @@ export function CompartmentEditor() {
       setHoveredDividerKey: s.setHoveredDividerKey,
     }))
   );
+
+  const { innerW: interiorW, innerD: interiorD } = getInteriorDims({
+    width,
+    depth,
+    gridUnitMm,
+    wallThickness,
+  });
 
   const { cols, rows, thickness, cells } = compartments;
 
@@ -495,6 +509,9 @@ export function CompartmentEditor() {
               <DividerHitTargets
                 compartments={compartments}
                 dividers={eligibleDividers}
+                interiorW={interiorW}
+                interiorD={interiorD}
+                preview={dividerTiltPreview}
                 selectedKey={selectedDividerKey}
                 hoveredKey={hoveredDividerKey}
                 onSelect={setSelectedDividerKey}
