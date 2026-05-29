@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.125.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.124.0...gridfinity-layout-tool-v4.125.0) (2026-05-29)
+
+
+### Features
+
+* **baseplate:** dovetail-key connectors for split baseplates ([#1610](https://github.com/andymai/gridfinity-layout-tool/issues/1610)) ([#1921](https://github.com/andymai/gridfinity-layout-tool/issues/1921)) ([7c1c1d3](https://github.com/andymai/gridfinity-layout-tool/commit/7c1c1d3822835f58c45aabeda506d0fd8d5a215c))
+
 ## [4.124.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.8...gridfinity-layout-tool-v4.124.0) (2026-05-29)
 
 
