@@ -372,7 +372,7 @@ function addScarfLapFeature(
 
 /**
  * Add connectors for a cut face: a floor scarf lap (always, when enabled) plus
- * optional vertical dovetail locking connectors on the exterior side walls.
+ * optional press-together wall-locking connectors on the exterior side walls.
  */
 function addConnectors(
   face: CutFace,
@@ -585,8 +585,9 @@ function buildPilaster(
     .lineTo([vFloor, floorZ])
     .close();
   const raw = sketch(profile, plane, 0).extrude(geom.pilasterProtDepth);
+  // The cut-normal is the cut axis itself, so re-center along `axis`.
   const protCenter = cutPos + (bodySign * geom.pilasterProtDepth) / 2;
-  return recenterAxis(raw, axis === 'x' ? 'x' : 'y', protCenter);
+  return recenterAxis(raw, axis, protCenter);
 }
 
 /**
@@ -610,9 +611,11 @@ function buildKey(
   const keyTop = floorZ + keyHeight + inflate;
   const lead = Math.min(WALL_KEY_LEADIN, WALL_KEY_PROTRUSION - 0.2, keyHeight / 2);
   const perpC = perimeter + inward * geom.perpInset;
+  const perpAxis = axis === 'x' ? 'y' : 'x';
 
   // Profile in (cut-normal, Z): 45° underside ramp (self-supporting) + a lead-in
-  // chamfer on the top/tip so the halves guide together as they press in.
+  // chamfer on the top/tip so the halves guide together as they press in. The key
+  // extrudes along the cut line (perpAxis), so its profile lives in the cut plane.
   const plane = axis === 'x' ? 'XZ' : 'YZ';
   const profile = draw([cutPos - OVERLAP, floorZ])
     .lineTo([cutPos - OVERLAP, keyTop])
@@ -622,7 +625,7 @@ function buildKey(
     .lineTo([cutPos, floorZ])
     .close();
   const raw = sketch(profile, plane, 0).extrude(2 * halfW);
-  return recenterAxis(raw, axis === 'x' ? 'y' : 'x', perpC);
+  return recenterAxis(raw, perpAxis, perpC);
 }
 
 /** Shorten a feature to stay within piece bounds and avoid perpendicular cut corners. */
