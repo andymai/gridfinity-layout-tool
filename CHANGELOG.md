@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.124.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.8...gridfinity-layout-tool-v4.124.0) (2026-05-29)
+
+
+### Features
+
+* **split-bin:** wall connectors to keep tall split pieces aligned ([#1922](https://github.com/andymai/gridfinity-layout-tool/issues/1922)) ([f3102f1](https://github.com/andymai/gridfinity-layout-tool/commit/f3102f11af2f1880fbb413b1d1d579ecda0175af))
+
 ## [4.123.8](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.123.7...gridfinity-layout-tool-v4.123.8) (2026-05-29)
 
 
