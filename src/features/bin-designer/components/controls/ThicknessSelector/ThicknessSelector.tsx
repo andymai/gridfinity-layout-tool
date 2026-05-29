@@ -60,8 +60,8 @@ export function ThicknessSelector({
   );
 
   return (
-    <div className={disabled ? 'opacity-50' : ''}>
-      <div className="mb-2 flex items-center justify-between">
+    <div>
+      <div className={`mb-2 flex items-center justify-between ${disabled ? 'opacity-50' : ''}`}>
         <span className="text-xs font-medium text-content-secondary">{label}</span>
         <span className="text-xs tabular-nums text-content-tertiary">{value} mm</span>
       </div>
