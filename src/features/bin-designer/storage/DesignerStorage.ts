@@ -23,6 +23,7 @@ import { THUMBNAIL_VERSION } from '@/features/bin-designer/types';
 import { DEFAULT_BIN_PARAMS, migrateParams } from '@/features/bin-designer/constants/defaults';
 import { DEFAULT_EXPORT_FILE_NAME_CONFIG } from '@/features/bin-designer/utils/fileNaming';
 import { emit as emitDesignerEvent } from '@/features/bin-designer/sync/designerEvents';
+import { normalizeTags } from '@/features/bin-designer/utils/tags';
 
 const DB_NAME = 'gridfinity-designer-v1';
 const DB_VERSION = 1;
@@ -78,14 +79,19 @@ export async function saveDesign(
     const db = await getDb();
     const now = new Date().toISOString();
 
-    // Only check for existing createdAt when updating (id provided)
+    // Only check for existing record when updating (id provided): preserves
+    // createdAt and lets an omitted `tags` fall back to the stored tags rather
+    // than silently clearing them.
     let createdAt = now;
+    let existing: SavedDesign | undefined;
     if (design.id) {
-      const existing = (await db.get(DESIGNS_STORE, design.id)) as SavedDesign | undefined;
+      existing = (await db.get(DESIGNS_STORE, design.id)) as SavedDesign | undefined;
       if (existing) {
         createdAt = existing.createdAt;
       }
     }
+
+    const tags = normalizeTags(design.tags ?? existing?.tags);
 
     const savedDesign: SavedDesign = {
       id: design.id ?? generateDesignId(),
@@ -97,6 +103,7 @@ export async function saveDesign(
       exportFileNameConfig: design.exportFileNameConfig ?? null,
       createdAt,
       updatedAt: now,
+      ...(tags.length > 0 ? { tags } : {}),
     };
 
     await db.put(DESIGNS_STORE, savedDesign);
@@ -191,6 +198,7 @@ export async function duplicateDesign(id: DesignId): Promise<Result<SavedDesign,
     exportFileNameConfig: original.exportFileNameConfig
       ? { ...original.exportFileNameConfig }
       : null,
+    tags: original.tags,
   });
 }
 
@@ -243,6 +251,30 @@ export async function updateDesignName(
   return saveDesign({
     ...loadResult.value,
     name,
+  });
+}
+
+/**
+ * Replace the tag set on an existing design. Tags are normalized (trimmed,
+ * deduped, capped) before persisting.
+ *
+ * @param id - The design ID
+ * @param tags - The new tag list (raw; normalized on save)
+ * @returns A `Result` with the updated `SavedDesign` on success, or a `StorageError` on failure
+ */
+export async function updateDesignTags(
+  id: DesignId,
+  tags: readonly string[]
+): Promise<Result<SavedDesign, StorageError>> {
+  const loadResult = await loadDesign(id);
+  if (isErr(loadResult)) {
+    return loadResult;
+  }
+
+  // saveDesign normalizes tags; pass them through raw like updateDesignName.
+  return saveDesign({
+    ...loadResult.value,
+    tags,
   });
 }
 

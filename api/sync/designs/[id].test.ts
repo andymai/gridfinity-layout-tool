@@ -192,7 +192,7 @@ describe('PUT', () => {
     );
 
     const storedEnvelope = [...blobStore.values()][0] as {
-      design: { name: string; params: unknown };
+      design: { name: string; params: unknown; tags: string[] };
     };
     const indexHash = [...redisHashes.values()].find((h) => h.size > 0);
     const encoded = [...(indexHash?.values() ?? [])][0];
@@ -201,6 +201,7 @@ describe('PUT', () => {
     const expected = Buffer.byteLength(
       JSON.stringify({
         name: storedEnvelope.design.name,
+        tags: storedEnvelope.design.tags,
         type: 'designer',
         version: 1,
         params: storedEnvelope.design.params,
@@ -292,6 +293,42 @@ describe('PUT', () => {
       res as unknown as VercelResponse
     );
     expect(res._status).toBe(400);
+  });
+
+  it('stores sanitized tags in the envelope and round-trips them through GET', async () => {
+    const { default: handler } = await import('./[id]');
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: {
+          design: {
+            name: 'Tagged',
+            params: VALID_DESIGN,
+            tags: ['  kitchen ', 'kitchen', '', 'screws'],
+          },
+          modifiedAt: 1000,
+        },
+      }),
+      makeRes() as unknown as VercelResponse
+    );
+    const getRes = makeRes();
+    await handler(makeReq({ method: 'GET' }), getRes as unknown as VercelResponse);
+    const body = getRes._body as { envelope: { design: { tags: string[] } } };
+    expect(body.envelope.design.tags).toEqual(['kitchen', 'screws']);
+  });
+
+  it('always stores tags as an array (empty) even when the wrapper omits them', async () => {
+    const { default: handler } = await import('./[id]');
+    const res = makeRes();
+    await handler(
+      makeReq({
+        method: 'PUT',
+        body: { design: { name: 'No Tags', params: VALID_DESIGN }, modifiedAt: 1000 },
+      }),
+      res as unknown as VercelResponse
+    );
+    const body = res._body as { envelope: { design: { tags: unknown } } };
+    expect(body.envelope.design.tags).toEqual([]);
   });
 
   it('rejects 409 when remote is newer', async () => {

@@ -45,10 +45,11 @@ graph TB
 - `store/customBinRegistry.ts` — syncs saved designs to layout planner palette
 - `store/cutoutSelection.ts` — cutout editor selection state
 - `hooks/useGeneration.ts` — triggers geometry regeneration via bridge (bin + optional companion lid)
-- `storage/DesignerStorage.ts` — IndexedDB persistence for saved designs
+- `storage/DesignerStorage.ts` — IndexedDB persistence for saved designs (incl. optional `tags`; `updateDesignTags` replaces a design's tag set)
 - `constants/` — Gridfinity geometry constants, default params, designer constraints
 - `types/` — TypeScript types for designer state, cutouts, compartments, lid config
 - `utils/` — validation, print estimates, file naming, design JSON serialization
+- `utils/tags.ts` — `normalizeTags` (trim/strip-control-chars/dedupe/cap: 12 tags × 32 chars)
 
 ## Critical Concepts
 
@@ -182,6 +183,16 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
     exhaustive `addWallConnectors` switch in
     `generation/worker/generators/splitConnectorBuilder.ts` (the compiler flags it
     until handled), reuse `perimeterWalls()` for placement, and add it to the UI.
+
+16. **Design tags sync as a `name`-sibling, not inside `params`** — `tags` rides
+    alongside `name` in the design envelope (`{ name, params, tags }`), so it
+    never passes through the BinParams share validator. `saveDesign` normalizes
+    and persists it; an omitted `tags` on update **preserves** the stored set,
+    while an explicit `[]` **clears** it. The sync adapter applies LWW (a remote
+    array — even empty — wins; a legacy payload with no `tags` key falls back to
+    local). `normalizeTags` (client) and `sanitizeTags` (server) **must** stay
+    identical — same 12×32 caps **and** the same control-char stripping — or a
+    tag the client keeps but the server rewrites would flicker on the next pull.
 
 ## Thumbnail Pipeline
 

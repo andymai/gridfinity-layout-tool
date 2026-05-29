@@ -13,6 +13,38 @@ import {
   isObject,
   validationError,
 } from './validationUtils.js';
+import { sanitizeString } from './validation.js';
+
+/**
+ * Tag limits. Cross-boundary contract: these MUST match `MAX_TAGS` /
+ * `MAX_TAG_LENGTH` in `src/features/bin-designer/utils/tags.ts`, so a tag the
+ * client accepts is never silently dropped on sync.
+ */
+export const DESIGN_TAG_MAX_COUNT = 12;
+export const DESIGN_TAG_MAX_LENGTH = 32;
+
+/**
+ * Sanitize a raw design tag list: coerce to strings, strip control chars,
+ * trim, cap length, drop empties, dedupe case-insensitively (first casing
+ * wins), cap count. Non-array input yields `[]`. Lenient (sanitize, don't
+ * reject) so a slightly-malformed client never 400s a whole design save.
+ */
+export function sanitizeTags(input: unknown): string[] {
+  if (!Array.isArray(input)) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of input) {
+    if (typeof raw !== 'string') continue;
+    const clean = sanitizeString(raw, DESIGN_TAG_MAX_LENGTH);
+    if (clean === '') continue;
+    const key = clean.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(clean);
+    if (out.length >= DESIGN_TAG_MAX_COUNT) break;
+  }
+  return out;
+}
 
 // Type-safe enum validation. Mirror the client unions in
 // `src/features/bin-designer/types/index.ts` — when a value is added there
