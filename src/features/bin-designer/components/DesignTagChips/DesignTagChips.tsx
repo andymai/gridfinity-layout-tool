@@ -9,14 +9,12 @@ export function DesignTagChips({ tags, max = 3 }: DesignTagChipsProps) {
   if (tags.length === 0) return null;
   const shown = tags.slice(0, max);
   const overflow = tags.length - shown.length;
-  // Tag values are user-authored data, not translatable UI copy; the join
-  // separator and the "+N" overflow are non-linguistic. Computing them as
-  // plain strings (not JSX-inline literals) keeps i18next/no-literal-string happy.
-  const ariaLabel = tags.join(', ');
+  // As a plain string (not a JSX-inline literal) so i18next/no-literal-string
+  // doesn't flag this non-linguistic count indicator.
   const overflowLabel = `+${overflow}`;
 
   return (
-    <div className="flex flex-wrap items-center gap-1" aria-label={ariaLabel}>
+    <div className="flex flex-wrap items-center gap-1">
       {shown.map((tag) => (
         <span
           key={tag}

@@ -7,11 +7,10 @@ export interface SelectionState {
 }
 
 export type SelectionAction =
-  | { type: 'ENTER'; id?: string }
+  | { type: 'ENTER' }
   | { type: 'EXIT' }
   | { type: 'TOGGLE'; id: string }
   | { type: 'SELECT_ALL'; ids: readonly string[] }
-  | { type: 'CLEAR' }
   | { type: 'PRUNE'; ids: readonly string[] };
 
 export const initialSelectionState: SelectionState = {
@@ -22,7 +21,7 @@ export const initialSelectionState: SelectionState = {
 export function selectionReducer(state: SelectionState, action: SelectionAction): SelectionState {
   switch (action.type) {
     case 'ENTER':
-      return { active: true, selected: new Set(action.id ? [action.id] : []) };
+      return { active: true, selected: new Set() };
     case 'EXIT':
       return initialSelectionState;
     case 'TOGGLE': {
@@ -33,8 +32,6 @@ export function selectionReducer(state: SelectionState, action: SelectionAction)
     }
     case 'SELECT_ALL':
       return { ...state, selected: new Set(action.ids) };
-    case 'CLEAR':
-      return { ...state, selected: new Set() };
     case 'PRUNE': {
       const keep = new Set(action.ids);
       return { ...state, selected: new Set([...state.selected].filter((id) => keep.has(id))) };
@@ -47,11 +44,10 @@ export interface DesignSelection {
   selectedIds: ReadonlySet<string>;
   count: number;
   isSelected: (id: string) => boolean;
-  enter: (id?: string) => void;
+  enter: () => void;
   exit: () => void;
   toggle: (id: string) => void;
   selectAll: (ids: readonly string[]) => void;
-  clear: () => void;
   prune: (ids: readonly string[]) => void;
 }
 
@@ -65,11 +61,10 @@ export function useDesignSelection(): DesignSelection {
       selectedIds: state.selected,
       count: state.selected.size,
       isSelected: (id: string) => state.selected.has(id),
-      enter: (id?: string) => dispatch({ type: 'ENTER', id }),
+      enter: () => dispatch({ type: 'ENTER' }),
       exit: () => dispatch({ type: 'EXIT' }),
       toggle: (id: string) => dispatch({ type: 'TOGGLE', id }),
       selectAll: (ids: readonly string[]) => dispatch({ type: 'SELECT_ALL', ids }),
-      clear: () => dispatch({ type: 'CLEAR' }),
       prune: (ids: readonly string[]) => dispatch({ type: 'PRUNE', ids }),
     }),
     [state]

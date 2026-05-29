@@ -175,7 +175,6 @@ export function DesignGridItem({
             ` · ${t('binDesigner.compartmentsShort', { count: numCompartments })}`}
         </p>
 
-        {/* Tags */}
         {design.tags && design.tags.length > 0 && (
           <div className="mt-1">
             <DesignTagChips tags={design.tags} />

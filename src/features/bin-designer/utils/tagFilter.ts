@@ -27,3 +27,11 @@ export function filterByTags(
     return wanted.every((w) => has.has(w));
   });
 }
+
+/** Add or remove a tag from a list, comparing case-insensitively. */
+export function toggleTag(tags: readonly string[], tag: string): string[] {
+  const key = tag.toLowerCase();
+  return tags.some((t) => t.toLowerCase() === key)
+    ? tags.filter((t) => t.toLowerCase() !== key)
+    : [...tags, tag];
+}

@@ -15,7 +15,7 @@ import {
   saveDesign,
   updateDesignTags,
 } from '@/features/bin-designer/storage/DesignerStorage';
-import { collectTags, filterByTags } from '@/features/bin-designer/utils/tagFilter';
+import { collectTags, filterByTags, toggleTag } from '@/features/bin-designer/utils/tagFilter';
 import { normalizeTags, tagsEqual } from '@/features/bin-designer/utils/tags';
 import { TagFilterBar } from './TagFilterBar';
 import { BulkActionBar } from './BulkActionBar';
@@ -145,7 +145,6 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   }, []);
   useThumbnailRegeneration(designs, handleThumbnailUpdated);
 
-  // Union of every tag across designs, for the filter bar.
   const allTags = useMemo(() => collectTags(designs), [designs]);
 
   // Drop active filters whose tag no longer exists (e.g. after deleting the last
@@ -156,6 +155,16 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   );
   if (prunedActiveTags.length !== activeTags.length) {
     setActiveTags(prunedActiveTags);
+  }
+
+  // Drop selected IDs for designs that no longer exist (e.g. a single delete via
+  // the row menu while in selection mode) so the count and bulk actions stay honest.
+  if (selection.active && selection.count > 0) {
+    const presentIds = designs.map((d) => d.id);
+    const present = new Set<string>(presentIds);
+    if ([...selection.selectedIds].some((id) => !present.has(id))) {
+      selection.prune(presentIds);
+    }
   }
 
   // Filter and sort designs
@@ -286,8 +295,6 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     [addToast, t]
   );
 
-  // --- Tag editing (single + bulk) ---
-
   const handleSaveTags = useCallback(
     async (rawTags: string[]) => {
       const edit = tagEdit;
@@ -335,8 +342,6 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     },
     [tagEdit, selection, designs, currentDesignId, addToast, t]
   );
-
-  // --- Bulk actions ---
 
   const handleBulkDelete = useCallback(async () => {
     const ids = [...selection.selectedIds];
@@ -646,13 +651,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                   <TagFilterBar
                     allTags={allTags}
                     activeTags={activeTags}
-                    onToggle={(tag) =>
-                      setActiveTags((prev) =>
-                        prev.some((x) => x.toLowerCase() === tag.toLowerCase())
-                          ? prev.filter((x) => x.toLowerCase() !== tag.toLowerCase())
-                          : [...prev, tag]
-                      )
-                    }
+                    onToggle={(tag) => setActiveTags((prev) => toggleTag(prev, tag))}
                     onClear={() => setActiveTags([])}
                   />
                 )

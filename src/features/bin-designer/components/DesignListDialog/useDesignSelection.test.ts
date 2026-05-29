@@ -7,14 +7,10 @@ describe('selectionReducer', () => {
     expect(initialSelectionState.selected.size).toBe(0);
   });
 
-  it('ENTER activates selection mode and optionally seeds one id', () => {
-    const seeded = selectionReducer(initialSelectionState, { type: 'ENTER', id: 'a' });
-    expect(seeded.active).toBe(true);
-    expect([...seeded.selected]).toEqual(['a']);
-
-    const empty = selectionReducer(initialSelectionState, { type: 'ENTER' });
-    expect(empty.active).toBe(true);
-    expect(empty.selected.size).toBe(0);
+  it('ENTER activates selection mode with an empty selection', () => {
+    const entered = selectionReducer(initialSelectionState, { type: 'ENTER' });
+    expect(entered.active).toBe(true);
+    expect(entered.selected.size).toBe(0);
   });
 
   it('TOGGLE adds then removes an id', () => {
@@ -30,12 +26,6 @@ describe('selectionReducer', () => {
       { type: 'SELECT_ALL', ids: ['a', 'b', 'c'] }
     );
     expect([...s.selected].sort()).toEqual(['a', 'b', 'c']);
-  });
-
-  it('CLEAR empties the selection but stays in selection mode', () => {
-    const s = selectionReducer({ active: true, selected: new Set(['a', 'b']) }, { type: 'CLEAR' });
-    expect(s.active).toBe(true);
-    expect(s.selected.size).toBe(0);
   });
 
   it('EXIT clears the selection and leaves selection mode', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { collectTags, filterByTags } from './tagFilter';
+import { collectTags, filterByTags, toggleTag } from './tagFilter';
 import type { SavedDesign } from '../types';
 
 function design(id: string, tags?: string[]): SavedDesign {
@@ -54,5 +54,19 @@ describe('filterByTags', () => {
 
   it('excludes untagged designs when any tag is active', () => {
     expect(filterByTags(designs, ['garage']).map((d) => d.id)).toEqual(['c']);
+  });
+});
+
+describe('toggleTag', () => {
+  it('adds a tag that is absent', () => {
+    expect(toggleTag(['a'], 'b')).toEqual(['a', 'b']);
+  });
+
+  it('removes a tag that is present, case-insensitively', () => {
+    expect(toggleTag(['Kitchen', 'screws'], 'kitchen')).toEqual(['screws']);
+  });
+
+  it('does not duplicate-add when a case variant is already present', () => {
+    expect(toggleTag(['Kitchen'], 'kitchen')).toEqual([]);
   });
 });
