@@ -67,8 +67,14 @@ const WIDTH_TAPER_SLOPE = 1.0;
 /** Key vertical extent as a fraction of interior wall height (lead-in tapers above it). */
 const DEFAULT_WALL_KEY_HEIGHT_FRACTION = 0.8;
 
-/** Half-width of the slim wall key, measured along the cut line (mm). */
-const WALL_KEY_HALF_WIDTH = 0.9;
+/**
+ * Half-width of the slim wall key (mm). Doubled (1.0mm), this is the key's footprint
+ * along the cut line — which, on a perimeter wall, is also its inward reach. Sized so the
+ * reinforcing pilaster is basically flush (≈0.1mm bump) at the thickest selectable wall
+ * (`WALL_THICKNESS_OPTIONS` max = 2.6mm); thinner walls still grow a pilaster. The tongue
+ * stays a comfortable ~2.5 perimeters at a 0.4mm nozzle. See `wallKeyGeometry`.
+ */
+const WALL_KEY_HALF_WIDTH = 0.5;
 
 /**
  * Intact outer wall skin kept in front of the groove (mm). The key is anchored this far
