@@ -71,7 +71,7 @@ describe('SplitOptionsSection', () => {
     expect(screen.queryByText('Tongue depth')).not.toBeInTheDocument();
   });
 
-  it('shows the wall locking sub-toggle while connectors are enabled', () => {
+  it('shows the wall connectors toggle even when alignment connectors are enabled', () => {
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -82,10 +82,26 @@ describe('SplitOptionsSection', () => {
     });
 
     render(<SplitOptionsSection />);
-    expect(screen.getByText('Wall locking')).toBeInTheDocument();
+    expect(screen.getByText('Wall connectors')).toBeInTheDocument();
   });
 
-  it('hides the wall locking sub-toggle when connectors are disabled', () => {
+  it('shows the wall connectors toggle independently when alignment connectors are off', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 8,
+        depth: 3,
+        // Alignment connectors OFF — wall connectors are a sibling toggle, still offered.
+        splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: false },
+      },
+    });
+
+    render(<SplitOptionsSection />);
+    expect(screen.getByText('Wall connectors')).toBeInTheDocument();
+  });
+
+  it('toggles wall connectors with alignment connectors disabled', async () => {
+    const user = userEvent.setup();
     useDesignerStore.setState({
       params: {
         ...DEFAULT_BIN_PARAMS,
@@ -96,22 +112,7 @@ describe('SplitOptionsSection', () => {
     });
 
     render(<SplitOptionsSection />);
-    expect(screen.queryByText('Wall locking')).not.toBeInTheDocument();
-  });
-
-  it('toggles wall locking', async () => {
-    const user = userEvent.setup();
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        width: 8,
-        depth: 3,
-        splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: true },
-      },
-    });
-
-    render(<SplitOptionsSection />);
-    await user.click(screen.getByRole('switch', { name: 'Wall locking' }));
+    await user.click(screen.getByRole('switch', { name: 'Wall connectors' }));
 
     expect(useDesignerStore.getState().params.splitConnectors?.wallConnector).toBe('key');
   });

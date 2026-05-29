@@ -29,16 +29,11 @@ export function SplitOptionsSection() {
         onChange={handlers.toggleEnabled}
       />
 
-      {config.enabled && (
-        <div className="space-y-1 pl-4">
-          <FeatureToggle
-            label={t('binDesigner.splitWallLocking')}
-            checked={config.wallConnector === 'key'}
-            onChange={handlers.toggleWallConnector}
-          />
-          <p className="text-xs text-content-secondary">{t('binDesigner.splitWallLockingHint')}</p>
-        </div>
-      )}
+      <FeatureToggle
+        label={t('binDesigner.splitWallConnectors')}
+        checked={config.wallConnector === 'key'}
+        onChange={handlers.toggleWallConnector}
+      />
     </div>
   );
 }

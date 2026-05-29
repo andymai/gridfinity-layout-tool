@@ -40,6 +40,18 @@ const WALL_LOCKING: SplitConnectorConfig = {
   enabled: true,
   wallConnector: 'key',
 };
+/** No connectors at all — plain cut pieces. */
+const NO_CONNECTORS: SplitConnectorConfig = {
+  ...DEFAULT_SPLIT_CONNECTOR_CONFIG,
+  enabled: false,
+  wallConnector: 'none',
+};
+/** Wall connectors with the floor scarf (alignment connectors) turned OFF. */
+const WALL_ONLY: SplitConnectorConfig = {
+  ...DEFAULT_SPLIT_CONNECTOR_CONFIG,
+  enabled: false,
+  wallConnector: 'key',
+};
 
 function totalTriCount(pieces: { indices: { length: number } }[]): number {
   return pieces.reduce((sum, p) => sum + p.indices.length / 3, 0);
@@ -97,6 +109,38 @@ describe('split bin wall locking connectors (#1869)', () => {
       enabled: true,
     });
     expect(totalTriCount(a.pieces)).toBe(totalTriCount(b.pieces));
+  }, 60000);
+
+  it('applies wall connectors with the alignment-connector (floor scarf) toggle OFF', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    const wallOnly = generateSplitPreview(TALL_PARAMS, CUT_PLANES_X, CUT_PLANES_Y, WALL_ONLY);
+    const none = generateSplitPreview(TALL_PARAMS, CUT_PLANES_X, CUT_PLANES_Y, NO_CONNECTORS);
+
+    // Wall connectors are independent of the floor scarf: with `enabled: false` they must
+    // still add real key + pilaster geometry on top of plain cut pieces.
+    expect(wallOnly.pieces).toHaveLength(2);
+    for (const piece of wallOnly.pieces) {
+      expect(hasNoNaNOrInfinity(piece.vertices)).toBe(true);
+      expect(piece.indices.length).toBeGreaterThan(0);
+    }
+    expect(totalTriCount(wallOnly.pieces)).toBeGreaterThan(totalTriCount(none.pieces));
+  }, 60000);
+
+  it('hosts the key in a thick wall (no boolean failure on the skip-pilaster path)', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    // A 4mm wall fully encloses the key, so `addKeyConnectors` skips the pilaster — exercise
+    // that path end-to-end to confirm the key still fuses/cuts cleanly into the thick wall.
+    const thickParams: BinParams = { ...TALL_PARAMS, wallThickness: 4 };
+    const result = generateSplitPreview(thickParams, CUT_PLANES_X, CUT_PLANES_Y, WALL_LOCKING);
+
+    expect(result.pieces).toHaveLength(2);
+    const totalH = thickParams.height * GRIDFINITY.HEIGHT_UNIT;
+    for (const piece of result.pieces) {
+      expect(hasNoNaNOrInfinity(piece.vertices)).toBe(true);
+      expect(piece.indices.length).toBeGreaterThan(0);
+      const bb = boundingBox(piece.vertices);
+      expect(bb.maxZ - bb.minZ).toBeGreaterThan(totalH);
+    }
   }, 60000);
 });
 

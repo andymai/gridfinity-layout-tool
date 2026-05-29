@@ -1619,9 +1619,7 @@ const en: Record<string, string> = {
   'binDesigner.splitAxisDepth': 'depth',
   'binDesigner.splitAxisBoth': 'width × depth',
   'binDesigner.splitConnectors': 'Alignment connectors',
-  'binDesigner.splitWallLocking': 'Wall locking',
-  'binDesigner.splitWallLockingHint':
-    'Reinforces the side-wall seams so tall split pieces stay aligned. Needs print testing — glue is still recommended.',
+  'binDesigner.splitWallConnectors': 'Wall connectors',
   'binDesigner.splitAssembled': 'Assembled',
   'binDesigner.splitExploded': 'Exploded',
   'binDesigner.cutouts.instructions':

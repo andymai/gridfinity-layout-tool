@@ -1,8 +1,8 @@
 /**
- * One-shot visual verification for #1869 (wall locking connectors).
+ * One-shot visual verification for #1869 (wall connectors).
  *
  * Drives the designer to an oversized (splitting) bin, then toggles the
- * "Wall locking" sub-option and captures before/after screenshots of the
+ * "Wall connectors" option and captures before/after screenshots of the
  * 3D split preview. A pixel diff confirms the wall keys are actually
  * generated and rendered — closing the loop from store → worker → canvas.
  *
@@ -24,8 +24,8 @@ async function waitForGenerationComplete(page: Page): Promise<void> {
   });
 }
 
-test.describe('Split wall locking — visual', () => {
-  test('enabling wall locking visibly changes the split preview', async ({ page }) => {
+test.describe('Split wall connectors — visual', () => {
+  test('enabling wall connectors visibly changes the split preview', async ({ page }) => {
     test.setTimeout(180_000);
     await page.goto('/designer');
 
@@ -38,7 +38,7 @@ test.describe('Split wall locking — visual', () => {
     await page.getByRole('spinbutton', { name: 'Width' }).blur();
 
     // The split options panel only renders once the bin needs splitting.
-    const wallLockSwitch = page.getByRole('switch', { name: /wall locking/i });
+    const wallLockSwitch = page.getByRole('switch', { name: /wall connectors/i });
     await expect(wallLockSwitch).toBeVisible({ timeout: 15_000 });
     await wallLockSwitch.scrollIntoViewIfNeeded();
     await waitForGenerationComplete(page);
