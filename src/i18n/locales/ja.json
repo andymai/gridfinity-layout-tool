@@ -613,6 +613,7 @@
   "binDesigner.splitAxisInfo": "{axis}方向に{count}個のパーツへ分割",
   "binDesigner.splitAxisWidth": "幅",
   "binDesigner.splitConnectors": "位置合わせコネクタ",
+  "binDesigner.splitWallConnectors": "壁コネクタ",
   "binDesigner.splitExploded": "分解表示",
   "binDesigner.splitExport.colorLossWarning": "分割エクスポートでは現在色データが失われます — 各パーツは単色で印刷されます。色ゾーンを保持するには分割を無効にしてください。",
   "binDesigner.splitExport.downloadSplit": "分割{format}をダウンロード(ZIP)",

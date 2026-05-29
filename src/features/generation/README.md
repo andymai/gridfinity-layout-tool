@@ -52,7 +52,7 @@ graph TB
 - `worker/generators/dividerExport.ts` — standalone divider STL export
 - `worker/generators/wallPatterns.ts` — hexgrid/slot patterns
 - `worker/generators/slotBuilder.ts` — wall slot cutout geometry
-- `worker/generators/splitConnectorBuilder.ts` — connector nubs for split bin assembly
+- `worker/generators/splitConnectorBuilder.ts` — split-piece joints: floor scarf lap + optional press-together wall-locking keys (#1869)
 - `worker/generators/baseplateGenerator.ts` — baseplate BREP generation
 - `worker/generators/baseplateDirectMesh.ts` — direct mesh generation orchestrator for baseplate preview (procedural, no BREP)
 - `worker/generators/directMeshBuilder.ts` — `MeshBuilder` class + `faceNormal`, `tangentVectors`, segment-count constants

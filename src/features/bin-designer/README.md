@@ -159,6 +159,29 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
     no longer takes. Don't remove the `key="multi-color"` /
     `key="single-color"` props — and if you add a third branch (e.g. a new
     material strategy) give it its own key too.
+15. **Split connectors have two independent joints** — two sibling toggles in
+    `SplitOptionsSection`, gated separately (neither is a child of the other):
+    - **Alignment connectors** (`splitConnectors.enabled`) — a 45° floor scarf lap.
+    - **Wall connectors** (`splitConnectors.wallConnector`, a `WallConnectorStyle`:
+      `'none'` | `'key'`, **default `'none'`**, #1869) — a connector on the
+      **exterior perimeter walls only**. The `'key'` style is a straight
+      (non-undercut) tongue/groove so the halves **press together horizontally**
+      — an undercut dovetail would force a vertical drop-in, impossible past the
+      partial-height groove and the stacking lip. The protruding tongue has a 45°
+      chamfered underside (self-supporting), and the key is **anchored a fixed skin
+      behind the outer face** so the groove can't breach the exterior wall (see
+      `wallKeyGeometry`). Stops below the rim so the lip is untouched.
+
+    Either toggle works with the other off — the call site in `splitBinBuilder.ts`
+    runs the connector pass when _either_ is on, and `addConnectors` self-gates each
+    feature. **Thicker walls add no extra material:** the key is reinforced by an
+    inward pilaster _only when the wall is too thin to host it_. Because `perpInset`
+    is anchored to a fixed outer skin (not the wall thickness), a thicker wall
+    envelops the key and `addKeyConnectors` drops the pilaster entirely.
+    **Adding a connector type:** extend `WallConnectorStyle`, add a `case` to the
+    exhaustive `addWallConnectors` switch in
+    `generation/worker/generators/splitConnectorBuilder.ts` (the compiler flags it
+    until handled), reuse `perimeterWalls()` for placement, and add it to the UI.
 
 ## Thumbnail Pipeline
 

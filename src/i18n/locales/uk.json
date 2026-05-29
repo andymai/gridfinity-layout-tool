@@ -613,6 +613,7 @@
   "binDesigner.splitAxisInfo": "Розділити вздовж {axis} на {count} частин",
   "binDesigner.splitAxisWidth": "ширини",
   "binDesigner.splitConnectors": "З’єднувачі для вирівнювання",
+  "binDesigner.splitWallConnectors": "З’єднувачі стінок",
   "binDesigner.splitExploded": "Розгорнуто",
   "binDesigner.splitExport.colorLossWarning": "Розділений експорт відкидає дані кольору — кожна частина друкується одним кольором. Вимкніть розділення, щоб зберегти зони кольорів.",
   "binDesigner.splitExport.downloadSplit": "Завантажити розділений {format} (ZIP)",

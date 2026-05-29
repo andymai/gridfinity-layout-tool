@@ -613,6 +613,7 @@
   "binDesigner.splitAxisInfo": "Aufteilung entlang {axis} in {count} Teile",
   "binDesigner.splitAxisWidth": "Breite",
   "binDesigner.splitConnectors": "Ausrichtungsverbinder",
+  "binDesigner.splitWallConnectors": "Wandverbinder",
   "binDesigner.splitExploded": "Explodiert",
   "binDesigner.splitExport.colorLossWarning": "Geteilter Export verwirft Farbdaten — jedes Teil wird einfarbig gedruckt. Deaktiviere das Teilen, um deine Farbzonen zu behalten.",
   "binDesigner.splitExport.downloadSplit": "Geteiltes {format} herunterladen (ZIP)",

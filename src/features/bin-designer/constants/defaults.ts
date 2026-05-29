@@ -77,6 +77,7 @@ export const DEFAULT_SPLIT_CONNECTOR_CONFIG: SplitConnectorConfig = {
   clearance: 0.15,
   tongueThickness: 2.4, // legacy — unused by scarf lap, kept for saved design compat
   tongueProtrusion: 3.0,
+  wallConnector: 'none',
   ridgeWidthFraction: 0.35,
   ridgeHeightFraction: 0.8,
 } as const;

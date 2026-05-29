@@ -613,6 +613,7 @@
   "binDesigner.splitAxisInfo": "Découpe le long de {axis} en {count} pièces",
   "binDesigner.splitAxisWidth": "largeur",
   "binDesigner.splitConnectors": "Connecteurs d'alignement",
+  "binDesigner.splitWallConnectors": "Connecteurs de parois",
   "binDesigner.splitExploded": "Éclaté",
   "binDesigner.splitExport.colorLossWarning": "L'export découpé supprime les données de couleur — chaque pièce sera imprimée d'une seule couleur. Désactivez la découpe pour conserver vos zones de couleur.",
   "binDesigner.splitExport.downloadSplit": "Télécharger le {format} découpé (ZIP)",

@@ -57,12 +57,18 @@ export function useSplitOptionsSection() {
     setParam('splitConnectors', { ...config, enabled: !config.enabled });
   }, [config, setParam]);
 
+  const toggleWallConnector = useCallback(() => {
+    const next = config.wallConnector === 'key' ? 'none' : 'key';
+    setParam('splitConnectors', { ...config, wallConnector: next });
+  }, [config, setParam]);
+
   const handlers = useMemo(
     () => ({
       toggleEnabled,
+      toggleWallConnector,
       setSplitViewMode,
     }),
-    [toggleEnabled, setSplitViewMode]
+    [toggleEnabled, toggleWallConnector, setSplitViewMode]
   );
 
   return {

@@ -28,6 +28,12 @@ export function SplitOptionsSection() {
         checked={config.enabled}
         onChange={handlers.toggleEnabled}
       />
+
+      <FeatureToggle
+        label={t('binDesigner.splitWallConnectors')}
+        checked={config.wallConnector === 'key'}
+        onChange={handlers.toggleWallConnector}
+      />
     </div>
   );
 }

@@ -35,6 +35,7 @@ export type {
   WallPatternConfig,
   WallPatternType,
   SplitConnectorConfig,
+  WallConnectorStyle,
   HandleConfig,
   HandleCutoutShape,
   HandleSide,

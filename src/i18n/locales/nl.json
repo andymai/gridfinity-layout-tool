@@ -613,6 +613,7 @@
   "binDesigner.splitAxisInfo": "Gesplitst langs {axis} in {count} delen",
   "binDesigner.splitAxisWidth": "breedte",
   "binDesigner.splitConnectors": "Uitlijnconnectoren",
+  "binDesigner.splitWallConnectors": "Wandconnectoren",
   "binDesigner.splitExploded": "Geëxplodeerd",
   "binDesigner.splitExport.colorLossWarning": "Gesplitste export verliest kleurgegevens — elk stuk wordt in één kleur geprint. Schakel splitsen uit om uw kleurzones te behouden.",
   "binDesigner.splitExport.downloadSplit": "Gesplitste {format} downloaden (ZIP)",

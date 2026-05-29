@@ -1619,6 +1619,7 @@ const en: Record<string, string> = {
   'binDesigner.splitAxisDepth': 'depth',
   'binDesigner.splitAxisBoth': 'width × depth',
   'binDesigner.splitConnectors': 'Alignment connectors',
+  'binDesigner.splitWallConnectors': 'Wall connectors',
   'binDesigner.splitAssembled': 'Assembled',
   'binDesigner.splitExploded': 'Exploded',
   'binDesigner.cutouts.instructions':

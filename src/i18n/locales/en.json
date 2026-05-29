@@ -1387,6 +1387,7 @@
   "binDesigner.splitAxisDepth": "depth",
   "binDesigner.splitAxisBoth": "width × depth",
   "binDesigner.splitConnectors": "Alignment connectors",
+  "binDesigner.splitWallConnectors": "Wall connectors",
   "binDesigner.splitAssembled": "Assembled",
   "binDesigner.splitExploded": "Exploded",
   "binDesigner.cutouts.instructions": "Draw rectangles, circles, and custom pen paths as tool-shaped recesses in the solid bin top.",

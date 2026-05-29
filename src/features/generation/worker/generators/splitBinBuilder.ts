@@ -354,7 +354,12 @@ function splitSolidIntoPieces(
 
         cuttingBox.delete();
 
-        if (connectorConfig?.enabled) {
+        // Alignment connectors (floor scarf) and wall connectors are independent
+        // toggles — apply when either is on; each feature self-gates inside the builder.
+        if (
+          connectorConfig &&
+          (connectorConfig.enabled || connectorConfig.wallConnector === 'key')
+        ) {
           const cutFaces = computeCutFaces(
             col,
             row,

@@ -613,6 +613,7 @@
   "binDesigner.splitAxisInfo": "Delt langs {axis} i {count} deler",
   "binDesigner.splitAxisWidth": "bredde",
   "binDesigner.splitConnectors": "Justeringskoblinger",
+  "binDesigner.splitWallConnectors": "Veggkoblinger",
   "binDesigner.splitExploded": "Eksplodert",
   "binDesigner.splitExport.colorLossWarning": "Delt eksport mister fargedata — hver del skrives ut i én farge. Slå av deling for å beholde fargesonene.",
   "binDesigner.splitExport.downloadSplit": "Last ned delt {format} (ZIP)",

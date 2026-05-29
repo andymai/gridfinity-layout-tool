@@ -4,8 +4,11 @@
  * Generates FDM-friendly zero-overhang connectors on cut faces so split
  * bin pieces can be aligned and glued together without print supports.
  *
- * - Wall connectors: simple butt joints. Walls meet at the cut face with
- *   no interlock features. The floor scarf lap provides alignment.
+ * - Wall connectors (optional): press-together alignment keys + reinforcing
+ *   pilasters on the exterior perimeter walls. Toggled independently of the
+ *   floor scarf. A thicker wall hosts the key in its own material, so the
+ *   inward pilaster shrinks — and is dropped entirely once the wall encloses
+ *   the groove.
  * - Floor connectors: 45° scarf lap joint. The male piece extends past
  *   the cut face with a 45° underside slope; the female piece has a
  *   matching 45° ramp cut into its floor. Both surfaces are at the FDM
@@ -26,9 +29,19 @@
  *   overhang, producing a channel/ramp that opens cleanly at the mating face.
  */
 
-import { drawRectangle, unwrap, fuse, cut, translate, getBounds, translateDrawing } from 'brepjs';
+import {
+  drawRectangle,
+  draw,
+  unwrap,
+  fuse,
+  cut,
+  translate,
+  getBounds,
+  translateDrawing,
+} from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
-import type { SplitConnectorConfig } from '@/shared/types/bin';
+import type { SplitConnectorConfig, WallConnectorStyle } from '@/shared/types/bin';
+import { sketch } from './meshUtils';
 
 /** Overlap into the piece body so booleans have shared volume (mm). */
 export const OVERLAP = 1.0;
@@ -50,6 +63,83 @@ const SCARF_SLOPE = Math.tan(SCARF_ANGLE);
 
 /** Width taper slope: 45° taper at each end of the scarf lap for self-supporting FDM. */
 const WIDTH_TAPER_SLOPE = 1.0;
+
+/** Key vertical extent as a fraction of interior wall height (lead-in tapers above it). */
+const DEFAULT_WALL_KEY_HEIGHT_FRACTION = 0.8;
+
+/**
+ * Half-width of the slim wall key (mm). Doubled (1.0mm), this is the key's footprint
+ * along the cut line — which, on a perimeter wall, is also its inward reach. Sized so the
+ * reinforcing pilaster is basically flush (≈0.1mm bump) at the thickest selectable wall
+ * (`WALL_THICKNESS_OPTIONS` max = 2.6mm); thinner walls still grow a pilaster. The tongue
+ * stays a comfortable ~2.5 perimeters at a 0.4mm nozzle. See `wallKeyGeometry`.
+ */
+const WALL_KEY_HALF_WIDTH = 0.5;
+
+/**
+ * Intact outer wall skin kept in front of the groove (mm). The key is anchored this far
+ * behind the exterior face regardless of wall thickness, so a thicker wall envelops the
+ * key rather than pushing it deeper. ~2 perimeters at a 0.4mm nozzle — printable, and the
+ * seam is glued anyway.
+ */
+const WALL_KEY_OUTER_SKIN = 0.8;
+
+/** How far the key protrudes across the cut into the mating piece (mm). */
+const WALL_KEY_PROTRUSION = 1.2;
+
+/** Lead-in chamfer at the top/tip of the key so the halves self-guide together (mm). */
+const WALL_KEY_LEADIN = 0.6;
+
+/** Snug margin (mm, per side) between the key footprint and the pilaster edge. */
+const WALL_PILASTER_MARGIN = 0.6;
+
+/** Inward draft of the pilaster's cavity-facing face: fractional pull-back at the top. */
+const WALL_PILASTER_DRAFT = 0.12;
+
+/** Height of the region at the pilaster top where its inner face ramps back to the wall (mm). */
+const WALL_PILASTER_TOP_TAPER = 3;
+
+/** Residual inner depth where the pilaster melts into the wall just below the lip (mm). */
+const WALL_PILASTER_TOP_MIN = 0.4;
+
+/** 45° chamfer at the pilaster's floor junction (mm). */
+const WALL_PILASTER_FLOOR_CHAMFER = 0.6;
+
+export interface WallKeyGeometry {
+  /** Inward distance from the outer wall face to the key's perpendicular center (mm). */
+  readonly perpInset: number;
+  /** Inward perpendicular footprint of the pilaster from the outer wall face (mm). */
+  readonly pilasterPerpDepth: number;
+  /** Pilaster depth along the cut-normal into the piece body (mm). */
+  readonly pilasterProtDepth: number;
+  /** Remaining intact outer wall skin after the groove is cut (mm). Must stay > 0. */
+  readonly outerSkin: number;
+}
+
+/**
+ * Placement of a wall key + its reinforcing pilaster. The key is a straight
+ * (non-undercut) tongue/groove so the two halves assemble by pressing together
+ * horizontally — an undercut would force a vertical drop-in, impossible past the
+ * partial-height groove and the stacking lip.
+ *
+ * The key is anchored a fixed skin (`WALL_KEY_OUTER_SKIN`) behind the exterior face
+ * rather than behind the full wall thickness, so the groove cut never breaches the
+ * outside no matter how thick the wall is. Because the inset no longer grows with
+ * `wallThickness`, a thicker wall envelops the key in its own material instead of
+ * pushing it deeper — and `pilasterPerpDepth` then exceeds the wall by less and less,
+ * until `addKeyConnectors` drops the pilaster entirely (no extra inward material).
+ */
+export function wallKeyGeometry(wallThickness: number, clearance: number): WallKeyGeometry {
+  const grooveHalf = WALL_KEY_HALF_WIDTH + clearance;
+  const perpInset = WALL_KEY_OUTER_SKIN + grooveHalf;
+  const grooveInnerEdge = perpInset + grooveHalf;
+  const pilasterPerpDepth = grooveInnerEdge + WALL_PILASTER_MARGIN;
+  const pilasterProtDepth = WALL_KEY_PROTRUSION + clearance + WALL_PILASTER_MARGIN;
+  // Intact outer skin in front of the groove. Capped at the wall thickness for thin
+  // walls, where the groove sits fully inward of the wall (hosted by the pilaster).
+  const outerSkin = Math.min(WALL_KEY_OUTER_SKIN, wallThickness);
+  return { perpInset, pilasterPerpDepth, pilasterProtDepth, outerSkin };
+}
 
 type Extent = [number, number, number];
 
@@ -303,8 +393,10 @@ function addScarfLapFeature(
 // ── Connector Orchestration ─────────────────────────────────────────────────
 
 /**
- * Add floor scarf lap connectors for a cut face.
- * Walls use simple butt joints (no interlock features).
+ * Add connectors for a cut face. Two independent features:
+ *  - Floor scarf lap — the "alignment connectors" toggle (`config.enabled`).
+ *  - Wall connectors — its own toggle (`config.wallConnector`), gated separately so it
+ *    can be used with the floor scarf off (and vice versa).
  */
 function addConnectors(
   face: CutFace,
@@ -316,19 +408,15 @@ function addConnectors(
   const wallHeight = context.wallTopZ - context.floorZ;
   if (wallHeight <= 0) return;
 
-  const wt = context.wallThickness;
-  const pieceMin = face.pieceCenterOffset - face.pieceEdgeLength / 2;
-  const pieceMax = face.pieceCenterOffset + face.pieceEdgeLength / 2;
-
   // ── Floor scarf lap (45° self-supporting joint, centered on piece) ──────
   const ft = context.floorThickness;
-  if (ft >= MIN_FEATURE_HEIGHT) {
-    const margin = wt + ft * SCARF_SLOPE;
+  if (config.enabled && ft >= MIN_FEATURE_HEIGHT) {
+    const margin = context.wallThickness + ft * SCARF_SLOPE;
     const effectiveWidth = shortenForCorners(
       face.pieceEdgeLength * 0.7,
       face.pieceCenterOffset,
-      pieceMin,
-      pieceMax,
+      face.pieceCenterOffset - face.pieceEdgeLength / 2,
+      face.pieceCenterOffset + face.pieceEdgeLength / 2,
       face.perpendicularCuts,
       margin
     );
@@ -346,6 +434,230 @@ function addConnectors(
       );
     }
   }
+
+  // ── Wall connectors (optional, on exterior perimeter walls) ──────────────────
+  addWallConnectors(face, context, config, fuseTargets, cutTargets);
+}
+
+/**
+ * Dispatch to the configured wall-connector builder.
+ *
+ * This is the extension point for new wall connector types. To add one:
+ *   1. Add a member to `WallConnectorStyle` (in shared/types/bin).
+ *   2. Add a `case` here that calls your builder — the exhaustive `never` check
+ *      below makes the compiler flag this switch until you do.
+ *   3. Implement the builder using `perimeterWalls()` for placement and pushing
+ *      onto `fuseTargets` / `cutTargets`, mirroring `addKeyConnectors`.
+ *   4. Surface it in the SplitOptionsSection UI.
+ */
+function addWallConnectors(
+  face: CutFace,
+  context: BinGeometryContext,
+  config: SplitConnectorConfig,
+  fuseTargets: Shape3D[],
+  cutTargets: Shape3D[]
+): void {
+  const style: WallConnectorStyle = config.wallConnector ?? 'none';
+  switch (style) {
+    case 'none':
+      return;
+    case 'key':
+      addKeyConnectors(face, context, config, fuseTargets, cutTargets);
+      return;
+    default: {
+      const _exhaustive: never = style;
+      return _exhaustive;
+    }
+  }
+}
+
+/** A perimeter wall a cut crosses, with the directions a connector needs to orient itself. */
+interface PerimeterWall {
+  /** Perpendicular coordinate of the wall (±binEdgeLength/2). */
+  readonly perimeter: number;
+  /** Sign pointing toward the bin center — the only direction a connector may thicken. */
+  readonly inward: -1 | 1;
+  /** Sign pointing into this piece's body behind the cut (male −axis, female +axis). */
+  readonly bodySign: -1 | 1;
+}
+
+/**
+ * The exterior perimeter walls a cut face crosses. A cut crosses a perimeter
+ * wall wherever this piece's perpendicular span reaches the bin boundary
+ * (±half); interior pieces touch neither. Shared by all wall-connector builders.
+ */
+function perimeterWalls(face: CutFace): PerimeterWall[] {
+  const half = face.binEdgeLength / 2;
+  const pieceMin = face.pieceCenterOffset - face.pieceEdgeLength / 2;
+  const pieceMax = face.pieceCenterOffset + face.pieceEdgeLength / 2;
+  const tol = 1e-3;
+  const bodySign = face.isMale ? -1 : 1;
+
+  const walls: PerimeterWall[] = [];
+  if (Math.abs(pieceMin + half) < tol) walls.push({ perimeter: -half, inward: 1, bodySign });
+  if (Math.abs(pieceMax - half) < tol) walls.push({ perimeter: half, inward: -1, bodySign });
+  return walls;
+}
+
+/**
+ * 'key' connector: a slim press-together alignment key on each exterior perimeter
+ * wall. A thin wall is reinforced by a full-height inward pilaster; a wall thick
+ * enough to enclose the key hosts it directly and the pilaster is skipped (no extra
+ * material — see `wallKeyGeometry`).
+ *
+ * The key is a straight (non-undercut) tongue/groove so the two halves press
+ * together horizontally — the natural assembly motion, and the only one
+ * compatible with a partial-height feature that leaves the stacking lip intact.
+ * The protruding tongue has a 45° chamfered underside so it prints
+ * self-supporting and self-guides on insertion. When present, the pilaster thickens
+ * the wall inward only (preserving the Gridfinity footprint); the key is anchored a
+ * fixed skin behind the outer face so the groove can't breach the exterior wall.
+ *
+ * Convention matches the floor lap: male faces grow a tongue, female faces have a
+ * matching groove + clearance.
+ */
+function addKeyConnectors(
+  face: CutFace,
+  context: BinGeometryContext,
+  config: SplitConnectorConfig,
+  fuseTargets: Shape3D[],
+  cutTargets: Shape3D[]
+): void {
+  const wallHeight = context.wallTopZ - context.floorZ;
+  const heightFraction = config.ridgeHeightFraction ?? DEFAULT_WALL_KEY_HEIGHT_FRACTION;
+  const keyHeight = wallHeight * heightFraction;
+  if (keyHeight < MIN_FEATURE_HEIGHT) return;
+
+  const geom = wallKeyGeometry(context.wallThickness, config.clearance);
+
+  // The pilaster only adds material where it reaches past the existing wall. Once the
+  // wall is thick enough to enclose the groove (+margin) it hosts the key on its own,
+  // so we skip the pilaster — the "use the thicker wall instead of adding material" path.
+  const needsPilaster = geom.pilasterPerpDepth > context.wallThickness + EPSILON;
+
+  // A pilaster intrudes into the cavity; don't let it eat more than ~45% of a narrow
+  // piece's span. Without a pilaster the slim key always fits, so the guard only applies
+  // when one is actually added.
+  if (needsPilaster && geom.pilasterPerpDepth > face.pieceEdgeLength * 0.45) return;
+
+  for (const { perimeter, inward, bodySign } of perimeterWalls(face)) {
+    if (needsPilaster) {
+      fuseTargets.push(
+        buildPilaster(
+          face.axis,
+          face.position,
+          perimeter,
+          inward,
+          bodySign,
+          context.floorZ,
+          context.wallTopZ,
+          geom
+        )
+      );
+    }
+
+    const key = buildKey(
+      face.axis,
+      face.position,
+      perimeter,
+      inward,
+      context.floorZ,
+      keyHeight,
+      face.isMale ? 0 : config.clearance,
+      geom
+    );
+    (face.isMale ? fuseTargets : cutTargets).push(key);
+  }
+}
+
+/** Re-center a freshly extruded prism on `target` along the given world axis (extrude sign is plane-dependent). */
+function recenterAxis(solid: Shape3D, worldAxis: 'x' | 'y', target: number): Shape3D {
+  const b = getBounds(solid);
+  const lo = worldAxis === 'x' ? b.xMin : b.yMin;
+  const hi = worldAxis === 'x' ? b.xMax : b.yMax;
+  const shift = target - (lo + hi) / 2;
+  const moved = translate(solid, worldAxis === 'x' ? [shift, 0, 0] : [0, shift, 0]);
+  solid.delete();
+  return moved;
+}
+
+/**
+ * Build the reinforcing pilaster: a full-interior-height buttress that thickens
+ * the wall inward only. Its cavity-facing silhouette (a profile in the
+ * perpendicular×Z plane, extruded along the cut-normal) gives a 45° chamfer at
+ * the floor, a subtle inward draft, and a top that tapers back into the wall
+ * just below the lip — so it reads as designed rather than a glued-on block.
+ */
+function buildPilaster(
+  axis: 'x' | 'y',
+  cutPos: number,
+  perimeter: number,
+  inward: -1 | 1,
+  bodySign: -1 | 1,
+  floorZ: number,
+  wallTopZ: number,
+  geom: WallKeyGeometry
+): Shape3D {
+  const depth = geom.pilasterPerpDepth;
+  const vOut = perimeter; // outer wall face (no outward growth)
+  const vFull = perimeter + inward * depth;
+  const vDraftTop = perimeter + inward * depth * (1 - WALL_PILASTER_DRAFT);
+  const vTopMin = perimeter + inward * WALL_PILASTER_TOP_MIN;
+  const vFloor = perimeter + inward * Math.max(0, depth - WALL_PILASTER_FLOOR_CHAMFER);
+  const cham = Math.min(WALL_PILASTER_FLOOR_CHAMFER, (wallTopZ - floorZ) * 0.25);
+  const topStart = Math.max(floorZ + cham + 0.5, wallTopZ - WALL_PILASTER_TOP_TAPER);
+
+  // Silhouette in (perpendicular, Z); extruded along the cut-normal (prot) axis.
+  const plane = axis === 'x' ? 'YZ' : 'XZ';
+  const profile = draw([vOut, floorZ])
+    .lineTo([vOut, wallTopZ])
+    .lineTo([vTopMin, wallTopZ])
+    .lineTo([vDraftTop, topStart])
+    .lineTo([vFull, floorZ + cham])
+    .lineTo([vFloor, floorZ])
+    .close();
+  const raw = sketch(profile, plane, 0).extrude(geom.pilasterProtDepth);
+  // The cut-normal is the cut axis itself, so re-center along `axis`.
+  const protCenter = cutPos + (bodySign * geom.pilasterProtDepth) / 2;
+  return recenterAxis(raw, axis, protCenter);
+}
+
+/**
+ * Build the slim alignment key. The tongue (male, `inflate` = 0) protrudes from
+ * the cut face with a 45° self-supporting underside and a lead-in chamfer at the
+ * top/tip; the groove (female, `inflate` = clearance) is the same shape grown by
+ * the fit clearance. Extruded along the cut line and centered on the key axis.
+ */
+function buildKey(
+  axis: 'x' | 'y',
+  cutPos: number,
+  perimeter: number,
+  inward: -1 | 1,
+  floorZ: number,
+  keyHeight: number,
+  inflate: number,
+  geom: WallKeyGeometry
+): Shape3D {
+  const halfW = WALL_KEY_HALF_WIDTH + inflate;
+  const protTip = cutPos + WALL_KEY_PROTRUSION + inflate;
+  const keyTop = floorZ + keyHeight + inflate;
+  const lead = Math.min(WALL_KEY_LEADIN, WALL_KEY_PROTRUSION - 0.2, keyHeight / 2);
+  const perpC = perimeter + inward * geom.perpInset;
+  const perpAxis = axis === 'x' ? 'y' : 'x';
+
+  // Profile in (cut-normal, Z): 45° underside ramp (self-supporting) + a lead-in
+  // chamfer on the top/tip so the halves guide together as they press in. The key
+  // extrudes along the cut line (perpAxis), so its profile lives in the cut plane.
+  const plane = axis === 'x' ? 'XZ' : 'YZ';
+  const profile = draw([cutPos - OVERLAP, floorZ])
+    .lineTo([cutPos - OVERLAP, keyTop])
+    .lineTo([protTip - lead, keyTop])
+    .lineTo([protTip, keyTop - lead])
+    .lineTo([protTip, floorZ + WALL_KEY_PROTRUSION])
+    .lineTo([cutPos, floorZ])
+    .close();
+  const raw = sketch(profile, plane, 0).extrude(2 * halfW);
+  return recenterAxis(raw, perpAxis, perpC);
 }
 
 /** Shorten a feature to stay within piece bounds and avoid perpendicular cut corners. */

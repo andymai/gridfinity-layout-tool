@@ -613,6 +613,7 @@
   "binDesigner.splitAxisInfo": "Dela längs {axis} i {count} delar",
   "binDesigner.splitAxisWidth": "bredd",
   "binDesigner.splitConnectors": "Justeringskontakter",
+  "binDesigner.splitWallConnectors": "Väggkontakter",
   "binDesigner.splitExploded": "Splittrad",
   "binDesigner.splitExport.colorLossWarning": "Delad export förlorar färgdata — varje del skrivs ut i en enda färg. Stäng av delningen för att behålla dina färgzoner.",
   "binDesigner.splitExport.downloadSplit": "Ladda ner delad {format} (ZIP)",
