@@ -16,6 +16,7 @@ import type { Cutout, CutoutScoopEdges } from '@/features/bin-designer/types';
 import { DEFAULT_SCOOP_EDGES } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { SliderInput } from '@/features/bin-designer/components/controls/SliderInput';
+import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 
 interface CutoutScoopControlsProps {
   readonly cutout: Cutout;
@@ -194,11 +195,9 @@ function EdgeChip({ label, ariaLabel, on, disabled, onToggle }: EdgeChipProps) {
       disabled={disabled}
       aria-label={ariaLabel}
       aria-pressed={on}
-      className={`h-5 min-w-[20px] rounded text-[10px] font-medium transition-colors px-1 ${
-        on
-          ? 'bg-accent/15 text-accent hover:bg-accent/25'
-          : 'bg-surface-subtle text-content-tertiary hover:bg-surface-subtle/70'
-      } disabled:opacity-50 disabled:cursor-not-allowed`}
+      className={`h-5 min-w-[20px] rounded px-1 text-[10px] font-medium leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50 ${
+        on ? SEGMENT_ACTIVE : SEGMENT_INACTIVE
+      }`}
     >
       {label}
     </button>

@@ -7,6 +7,7 @@
 
 import type { ReorderDirection } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
+import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
 
 interface ArrangeControlsProps {
   readonly selectedIds: readonly string[];
@@ -26,7 +27,7 @@ export function ArrangeControls({
   const btn = (direction: ReorderDirection, label: string, content: React.ReactNode) => (
     <button
       type="button"
-      className="rounded p-1 text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className={getSegmentClass(false, { size: 'icon' })}
       onClick={() => onReorder(selectedIds, direction)}
       title={label}
       aria-label={label}

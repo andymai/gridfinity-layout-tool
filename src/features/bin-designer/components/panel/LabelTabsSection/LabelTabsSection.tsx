@@ -7,6 +7,7 @@
 
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperControl } from '@/shared/components/StepperControl';
+import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { Input, Select, InfoIcon } from '@/design-system';
 import type { SelectOption } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
@@ -56,7 +57,7 @@ export function LabelTabsSection() {
         <span className="text-xs font-medium text-content-secondary mb-1 block">
           {t('binDesigner.tabEdges')}
         </span>
-        <div role="group" aria-label={t('binDesigner.tabEdges')} className="flex gap-1">
+        <div role="group" aria-label={t('binDesigner.tabEdges')} className={SEGMENT_GROUP_CLASS}>
           {EDGES_OPTIONS.map((option) => {
             const current = state.label.edges ?? 'back';
             return (
@@ -65,11 +66,7 @@ export function LabelTabsSection() {
                 type="button"
                 onClick={() => handlers.setTabEdges(option)}
                 aria-pressed={current === option}
-                className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                  current === option
-                    ? 'bg-accent text-on-accent'
-                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                }`}
+                className={`flex-1 ${getSegmentClass(current === option)}`}
               >
                 {t(`binDesigner.tabEdges.${option}`)}
               </button>
@@ -216,17 +213,18 @@ export function LabelTabsSection() {
               <InfoIcon size="xs" className="text-content-tertiary" />
             </span>
           </span>
-          <div role="group" aria-label={t('binDesigner.tabAlignment')} className="flex gap-1">
+          <div
+            role="group"
+            aria-label={t('binDesigner.tabAlignment')}
+            className={SEGMENT_GROUP_CLASS}
+          >
             {ALIGNMENT_OPTIONS.map((option) => (
               <button
                 key={option}
                 type="button"
                 onClick={() => handlers.setTabAlignment(option)}
-                className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                  state.label.alignment === option
-                    ? 'bg-accent text-on-accent'
-                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                }`}
+                aria-pressed={state.label.alignment === option}
+                className={`flex-1 ${getSegmentClass(state.label.alignment === option)}`}
               >
                 {t(`binDesigner.alignment.${option}`)}
               </button>
@@ -240,17 +238,14 @@ export function LabelTabsSection() {
         <span className="text-xs font-medium text-content-secondary mb-1 block">
           {t('binDesigner.tabSupport')}
         </span>
-        <div role="group" aria-label={t('binDesigner.tabSupport')} className="flex gap-1">
+        <div role="group" aria-label={t('binDesigner.tabSupport')} className={SEGMENT_GROUP_CLASS}>
           {SUPPORT_OPTIONS.map((option) => (
             <button
               key={option}
               type="button"
               onClick={() => handlers.setTabSupport(option)}
-              className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                state.label.support === option
-                  ? 'bg-accent text-on-accent'
-                  : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-              }`}
+              aria-pressed={state.label.support === option}
+              className={`flex-1 ${getSegmentClass(state.label.support === option)}`}
             >
               {t(`binDesigner.tabSupport.${option}`)}
             </button>
@@ -273,18 +268,18 @@ export function LabelTabsSection() {
             <span className="mb-1 block text-xs text-content-tertiary">
               {t('binDesigner.textMode')}
             </span>
-            <div role="group" aria-label={t('binDesigner.textMode')} className="flex gap-1">
+            <div
+              role="group"
+              aria-label={t('binDesigner.textMode')}
+              className={SEGMENT_GROUP_CLASS}
+            >
               {MODE_OPTIONS.map((option) => (
                 <button
                   key={option}
                   type="button"
                   onClick={() => handlers.setTextMode(option)}
                   aria-pressed={state.textDefaults.mode === option}
-                  className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    state.textDefaults.mode === option
-                      ? 'bg-accent text-on-accent'
-                      : 'border border-stroke-subtle bg-surface text-content-secondary hover:bg-surface-hover'
-                  }`}
+                  className={`flex-1 ${getSegmentClass(state.textDefaults.mode === option)}`}
                 >
                   {t(`binDesigner.textMode.${option}`)}
                 </button>

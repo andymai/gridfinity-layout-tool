@@ -15,6 +15,7 @@ import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { flipSelectionHorizontal, flipSelectionVertical } from './geometryFlips';
 import { buildGroupRotationUpdates } from './pathfinderHelpers';
+import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
 
 interface TransformControlsProps {
   readonly selectedIds: readonly string[];
@@ -58,7 +59,7 @@ export function TransformControls({
   const btn = (onClick: () => void, label: string, content: React.ReactNode) => (
     <button
       type="button"
-      className="rounded p-1 text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className={getSegmentClass(false, { size: 'icon' })}
       onClick={onClick}
       title={label}
       aria-label={label}

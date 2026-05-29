@@ -17,6 +17,7 @@ import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { applyGroupOp } from './booleanGeometry';
 import { resolveActiveOp } from './pathfinderHelpers';
+import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
 
 interface PathfinderControlsProps {
   readonly selectedIds: readonly string[];
@@ -160,11 +161,7 @@ export function PathfinderControls({
           <button
             key={op}
             type="button"
-            className={`flex items-center gap-1 rounded px-1.5 py-1 text-[11px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-              isActive
-                ? 'bg-accent/15 text-accent ring-1 ring-accent/40'
-                : 'text-content-tertiary hover:bg-surface-hover hover:text-content'
-            }`}
+            className={getSegmentClass(isActive, { size: 'sm' })}
             onClick={() => handleClick(op)}
             disabled={allDisabled}
             title={label}

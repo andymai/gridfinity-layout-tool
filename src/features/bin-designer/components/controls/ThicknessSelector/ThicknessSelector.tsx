@@ -7,6 +7,7 @@
 
 import { useCallback, useRef } from 'react';
 import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
+import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 
 interface ThicknessSelectorProps {
   /** Display label */
@@ -59,14 +60,14 @@ export function ThicknessSelector({
   );
 
   return (
-    <div className={disabled ? 'opacity-50' : ''}>
-      <div className="mb-2 flex items-center justify-between">
+    <div>
+      <div className={`mb-2 flex items-center justify-between ${disabled ? 'opacity-50' : ''}`}>
         <span className="text-xs font-medium text-content-secondary">{label}</span>
         <span className="text-xs tabular-nums text-content-tertiary">{value} mm</span>
       </div>
       <div
         ref={groupRef}
-        className="flex gap-1"
+        className={SEGMENT_GROUP_CLASS}
         role="radiogroup"
         aria-label={label}
         tabIndex={-1}
@@ -84,11 +85,7 @@ export function ThicknessSelector({
               aria-label={`${option}mm`}
               disabled={disabled}
               onClick={() => onChange(option)}
-              className={`flex-1 rounded-md px-1 py-1.5 text-xs font-medium tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
-                isActive
-                  ? 'bg-accent text-on-accent shadow-sm'
-                  : 'bg-surface-secondary text-content-secondary hover:bg-surface-tertiary'
-              } disabled:cursor-not-allowed`}
+              className={`flex-1 tabular-nums ${getSegmentClass(isActive)}`}
             >
               {option}
             </button>

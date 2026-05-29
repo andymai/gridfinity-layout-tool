@@ -13,6 +13,7 @@ import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { SliderInput } from '@/features/bin-designer/components/controls/SliderInput';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
+import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { clampRotationToBounds, getRotatedBounds } from '../panel/CutoutsSection/geometry';
 import { CutoutScoopControls } from './CutoutScoopControls';
 import { Checkbox, Input } from '@/design-system';
@@ -494,7 +495,11 @@ function CutoutEngraveLabelControls({
             <span className="mb-1 block text-[10px] uppercase tracking-wide text-content-tertiary">
               {t('binDesigner.cutoutTextSide')}
             </span>
-            <div role="group" aria-label={t('binDesigner.cutoutTextSide')} className="flex gap-1">
+            <div
+              role="group"
+              aria-label={t('binDesigner.cutoutTextSide')}
+              className={SEGMENT_GROUP_CLASS}
+            >
               {SIDE_OPTIONS.map(({ side: opt, glyph }) => (
                 <button
                   key={opt}
@@ -504,11 +509,7 @@ function CutoutEngraveLabelControls({
                   aria-pressed={side === opt}
                   aria-label={t(`binDesigner.cutoutTextSide.${opt}`)}
                   title={t(`binDesigner.cutoutTextSide.${opt}`)}
-                  className={`flex-1 rounded px-2 py-1 text-xs font-medium leading-none transition-colors ${
-                    side === opt
-                      ? 'bg-accent text-on-accent'
-                      : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                  }`}
+                  className={`flex-1 leading-none ${getSegmentClass(side === opt)}`}
                 >
                   {glyph}
                 </button>
