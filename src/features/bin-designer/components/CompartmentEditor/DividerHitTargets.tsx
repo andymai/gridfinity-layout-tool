@@ -186,7 +186,7 @@ function DividerHitLine({
       />
       <span
         aria-hidden="true"
-        className={`pointer-events-none absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-transform ${dotState}`}
+        className={`pointer-events-none absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-[transform,background-color] ${dotState}`}
         style={{ left: `${dotX}%`, top: `${dotY}%` }}
       />
     </>
