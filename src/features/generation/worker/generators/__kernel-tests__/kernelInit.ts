@@ -45,6 +45,17 @@ export async function initBrepkitKernel(): Promise<void> {
 }
 
 /**
+ * Strong references to live `OcctKernel` wrappers. The wrapper owns the raw
+ * Embind kernel and deletes it via a `FinalizationRegistry` when collected,
+ * but `OcctWasmAdapter` only borrows the raw kernel — so without this pin a GC
+ * pass frees the kernel out from under the adapter and the next op throws
+ * "Cannot pass deleted object as a pointer of type OcctKernel*". Mirrors the
+ * worker's `wasmInstantiator.loadOcctWasm` retention. Removable once brepjs's
+ * adapter retains the wrapper itself (andymai/brepjs#1091).
+ */
+const retainedOcctWasmKernels = new Set<unknown>();
+
+/**
  * Initialize occt-wasm kernel and register it with brepjs under id `'occt-wasm'`.
  * Coexists with `'occt'` (brepjs-opencascade) for parity comparisons.
  */
@@ -56,6 +67,9 @@ export async function initOcctWasmKernel(): Promise<void> {
   const wasmPath = join(process.cwd(), 'node_modules/occt-wasm/dist/occt-wasm.wasm');
   const wasmBinary = readFileSync(wasmPath);
   const kernel = await OcctKernel.init({ wasm: wasmBinary });
+  // Pin the wrapper so the FinalizationRegistry can't reclaim the raw kernel
+  // while the adapter is still using it — see `retainedOcctWasmKernels` above.
+  retainedOcctWasmKernels.add(kernel);
   // occt-wasm 3.0's exported types are still narrower than brepjs's expected
   // shape (missing VectorString/getExceptionMessage on the module, IGES/XCAF
   // methods on the raw kernel). All present at runtime — filed upstream.
