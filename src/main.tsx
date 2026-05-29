@@ -25,6 +25,12 @@ import {
 import { connectDesignLinking } from '@/features/design-linking/subscribers';
 import { InitErrorFallback } from '@/shell/InitErrorFallback';
 import { isSmokeMode } from '@/shared/utils/smokeMode';
+import { installTranslationDomGuard } from '@/shared/utils/translationDomGuard';
+
+// Browser page-translation rewraps text nodes under React, which otherwise
+// crashes the reconciler with insertBefore/removeChild NotFoundError. Install
+// the guard before any DOM is created so every boot path is covered.
+installTranslationDomGuard();
 
 // Smoke mode (?smoke=1) boots a synthetic fixture and reports back to a parent listener.
 // Must short-circuit ahead of www-migration paths, which would otherwise reload/redirect

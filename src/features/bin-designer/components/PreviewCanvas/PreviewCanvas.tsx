@@ -321,6 +321,11 @@ export function PreviewCanvas() {
       onPointerDown={onDoubleTapPointerDown}
       onPointerUp={onDoubleTapPointerUp}
       onPointerCancel={onDoubleTapPointerCancel}
+      // Page translators rewrap the frequently-updated overlay/status text
+      // below, desyncing React's DOM and crashing the reconciler. This is a
+      // 3D tool surface (icons + live status), so opting it out of translation
+      // costs nothing and keeps the canvas subtree stable.
+      translate="no"
     >
       {/* ARIA live region for status announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
