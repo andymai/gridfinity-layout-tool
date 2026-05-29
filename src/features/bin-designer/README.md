@@ -160,18 +160,22 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
     `key="single-color"` props — and if you add a third branch (e.g. a new
     material strategy) give it its own key too.
 15. **Split connectors have two joints** — `splitConnectors.enabled` adds a 45°
-    floor scarf lap (always). `splitConnectors.wallLocking` (sub-toggle in
-    `SplitOptionsSection`, **default off**, #1869) additionally adds straight
-    alignment keys to the **exterior perimeter walls only**, reinforced by a boss
-    that thickens the wall **inward only** (preserving the Gridfinity footprint).
-    The key is a straight (non-undercut) tongue/groove so the halves **press
+    floor scarf lap (always). `splitConnectors.wallConnector` (a
+    `WallConnectorStyle`: `'none'` | `'key'`; sub-toggle in `SplitOptionsSection`,
+    **default `'none'`**, #1869) adds an optional connector to the **exterior
+    perimeter walls only**, reinforced by a full-height pilaster that thickens
+    the wall **inward only** (preserving the Gridfinity footprint). The `'key'`
+    style is a straight (non-undercut) tongue/groove so the halves **press
     together horizontally** — an undercut dovetail would force a vertical
     drop-in, which is impossible past the partial-height groove and the stacking
     lip. The protruding tongue has a 45° chamfered underside (self-supporting),
     and the key is **inset from the outer face** so the groove can't breach the
     exterior wall (see `wallKeyGeometry`). Stops below the rim so the lip is
-    untouched. Geometry: `generation/worker/generators/splitConnectorBuilder.ts`.
-    Off by default pending physical print validation.
+    untouched. **Adding a connector type:** extend `WallConnectorStyle`, add a
+    `case` to the exhaustive `addWallConnectors` switch in
+    `generation/worker/generators/splitConnectorBuilder.ts` (the compiler flags
+    it until handled), reuse `perimeterWalls()` for placement, and add it to the
+    UI. Off by default pending physical print validation.
 
 ## Thumbnail Pipeline
 

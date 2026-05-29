@@ -37,7 +37,7 @@ import {
   translateDrawing,
 } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
-import type { SplitConnectorConfig } from '@/shared/types/bin';
+import type { SplitConnectorConfig, WallConnectorStyle } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 
 /** Overlap into the piece body so booleans have shared volume (mm). */
@@ -415,27 +415,86 @@ function addConnectors(
     }
   }
 
-  // ── Wall locking keys (straight, press-together, on exterior perimeter walls) ─
-  if (config.wallLocking) {
-    addWallKeys(face, context, config, fuseTargets, cutTargets);
-  }
+  // ── Wall connectors (optional, on exterior perimeter walls) ──────────────────
+  addWallConnectors(face, context, config, fuseTargets, cutTargets);
 }
 
 /**
- * Add straight alignment keys to the exterior perimeter walls a cut crosses.
+ * Dispatch to the configured wall-connector builder.
+ *
+ * This is the extension point for new wall connector types. To add one:
+ *   1. Add a member to `WallConnectorStyle` (in shared/types/bin).
+ *   2. Add a `case` here that calls your builder — the exhaustive `never` check
+ *      below makes the compiler flag this switch until you do.
+ *   3. Implement the builder using `perimeterWalls()` for placement and pushing
+ *      onto `fuseTargets` / `cutTargets`, mirroring `addKeyConnectors`.
+ *   4. Surface it in the SplitOptionsSection UI.
+ */
+function addWallConnectors(
+  face: CutFace,
+  context: BinGeometryContext,
+  config: SplitConnectorConfig,
+  fuseTargets: Shape3D[],
+  cutTargets: Shape3D[]
+): void {
+  const style: WallConnectorStyle = config.wallConnector ?? 'none';
+  switch (style) {
+    case 'none':
+      return;
+    case 'key':
+      addKeyConnectors(face, context, config, fuseTargets, cutTargets);
+      return;
+    default: {
+      const _exhaustive: never = style;
+      return _exhaustive;
+    }
+  }
+}
+
+/** A perimeter wall a cut crosses, with the directions a connector needs to orient itself. */
+interface PerimeterWall {
+  /** Perpendicular coordinate of the wall (±binEdgeLength/2). */
+  readonly perimeter: number;
+  /** Sign pointing toward the bin center — the only direction a connector may thicken. */
+  readonly inward: -1 | 1;
+  /** Sign pointing into this piece's body behind the cut (male −axis, female +axis). */
+  readonly bodySign: -1 | 1;
+}
+
+/**
+ * The exterior perimeter walls a cut face crosses. A cut crosses a perimeter
+ * wall wherever this piece's perpendicular span reaches the bin boundary
+ * (±half); interior pieces touch neither. Shared by all wall-connector builders.
+ */
+function perimeterWalls(face: CutFace): PerimeterWall[] {
+  const half = face.binEdgeLength / 2;
+  const pieceMin = face.pieceCenterOffset - face.pieceEdgeLength / 2;
+  const pieceMax = face.pieceCenterOffset + face.pieceEdgeLength / 2;
+  const tol = 1e-3;
+  const bodySign = face.isMale ? -1 : 1;
+
+  const walls: PerimeterWall[] = [];
+  if (Math.abs(pieceMin + half) < tol) walls.push({ perimeter: -half, inward: 1, bodySign });
+  if (Math.abs(pieceMax - half) < tol) walls.push({ perimeter: half, inward: -1, bodySign });
+  return walls;
+}
+
+/**
+ * 'key' connector: a slim press-together alignment key on each exterior perimeter
+ * wall, hosted by a full-height reinforcing pilaster.
  *
  * The key is a straight (non-undercut) tongue/groove so the two halves press
  * together horizontally — the natural assembly motion, and the only one
  * compatible with a partial-height feature that leaves the stacking lip intact.
  * The protruding tongue has a 45° chamfered underside so it prints
- * self-supporting and self-guides on insertion. A reinforcing boss thickens the
- * wall inward only (preserving the Gridfinity footprint); the key is inset from
- * the outer face so the groove can't breach the exterior wall.
+ * self-supporting and self-guides on insertion. The pilaster thickens the wall
+ * inward only (preserving the Gridfinity footprint); the key is inset from the
+ * outer face so the groove can't breach the exterior wall.
  *
  * Convention matches the floor lap: male faces grow a tongue, female faces have a
  * matching groove + clearance.
  */
-function addWallKeys(
+function addKeyConnectors(
   face: CutFace,
   context: BinGeometryContext,
   config: SplitConnectorConfig,
@@ -447,26 +506,11 @@ function addWallKeys(
   const keyHeight = wallHeight * heightFraction;
   if (keyHeight < MIN_FEATURE_HEIGHT) return;
 
-  const half = face.binEdgeLength / 2;
-  const pieceMin = face.pieceCenterOffset - face.pieceEdgeLength / 2;
-  const pieceMax = face.pieceCenterOffset + face.pieceEdgeLength / 2;
-  const tol = 1e-3;
-
-  // The cut crosses a perimeter wall wherever this piece's perpendicular span
-  // reaches the bin boundary (±half). Interior pieces touch neither.
-  const perimeters: number[] = [];
-  if (Math.abs(pieceMin + half) < tol) perimeters.push(-half);
-  if (Math.abs(pieceMax - half) < tol) perimeters.push(half);
-
   const geom = wallKeyGeometry(context.wallThickness, config.clearance);
   // Don't let a pilaster eat more than ~45% of a narrow piece's perpendicular span.
   if (geom.pilasterPerpDepth > face.pieceEdgeLength * 0.45) return;
 
-  for (const perimeter of perimeters) {
-    const inward = perimeter > 0 ? -1 : 1;
-    // This piece's body is behind the cut: male on the −axis side, female on +axis.
-    const bodySign = face.isMale ? -1 : 1;
-
+  for (const { perimeter, inward, bodySign } of perimeterWalls(face)) {
     fuseTargets.push(
       buildPilaster(
         face.axis,

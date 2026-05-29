@@ -33,12 +33,12 @@ const CUT_PLANES_Y: number[] = [];
 const FLOOR_ONLY: SplitConnectorConfig = {
   ...DEFAULT_SPLIT_CONNECTOR_CONFIG,
   enabled: true,
-  wallLocking: false,
+  wallConnector: 'none',
 };
 const WALL_LOCKING: SplitConnectorConfig = {
   ...DEFAULT_SPLIT_CONNECTOR_CONFIG,
   enabled: true,
-  wallLocking: true,
+  wallConnector: 'key',
 };
 
 function totalTriCount(pieces: { indices: { length: number } }[]): number {

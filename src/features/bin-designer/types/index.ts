@@ -386,6 +386,15 @@ export interface WallPatternConfig {
   readonly pattern: WallPatternType;
 }
 
+/**
+ * Style of alignment connector added to the exterior side walls at each cut.
+ * `'none'` disables wall connectors; `'key'` is the press-together alignment key.
+ * Extend this union (and the dispatcher in `splitConnectorBuilder.ts`) to add
+ * new wall connector types — the dispatcher's exhaustive switch will flag every
+ * place that must handle the new member.
+ */
+export type WallConnectorStyle = 'none' | 'key';
+
 /** Configuration for alignment connectors on split bin cut faces */
 export interface SplitConnectorConfig {
   /** Whether to add alignment connectors (default: true when split needed) */
@@ -396,16 +405,16 @@ export interface SplitConnectorConfig {
   readonly tongueProtrusion: number;
   /** Tongue cross-section thickness — kept for backward compat, unused by scarf lap (mm) */
   readonly tongueThickness: number;
-  /** Add vertical dovetail locking connectors to exterior side walls at each cut (default: false). */
-  readonly wallLocking?: boolean;
+  /** Wall connector style added to exterior side walls at each cut (default: 'none'). */
+  readonly wallConnector?: WallConnectorStyle;
   /**
-   * Reserved: nominal dovetail width hint as a fraction of wall thickness. Actual width is
-   * clamped to the FDM minimum and driven by the local thickening boss, since raw thin walls
+   * Reserved: nominal key width hint as a fraction of wall thickness. Actual width is
+   * clamped to the FDM minimum and driven by the local pilaster, since raw thin walls
    * (≈1.2mm) yield sub-printable widths.
    */
   readonly ridgeWidthFraction?: number;
   /**
-   * Wall dovetail height as a fraction of interior wall height (default 0.8). The dovetail
+   * Wall key height as a fraction of interior wall height (default 0.8). The key
    * stops below the rim so it never collides with the stacking lip.
    */
   readonly ridgeHeightFraction?: number;

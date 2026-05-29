@@ -113,6 +113,6 @@ describe('SplitOptionsSection', () => {
     render(<SplitOptionsSection />);
     await user.click(screen.getByRole('switch', { name: 'Wall locking' }));
 
-    expect(useDesignerStore.getState().params.splitConnectors?.wallLocking).toBe(true);
+    expect(useDesignerStore.getState().params.splitConnectors?.wallConnector).toBe('key');
   });
 });

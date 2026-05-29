@@ -33,8 +33,8 @@ export function SplitOptionsSection() {
         <div className="space-y-1 pl-4">
           <FeatureToggle
             label={t('binDesigner.splitWallLocking')}
-            checked={!!config.wallLocking}
-            onChange={handlers.toggleWallLocking}
+            checked={config.wallConnector === 'key'}
+            onChange={handlers.toggleWallConnector}
           />
           <p className="text-xs text-content-secondary">{t('binDesigner.splitWallLockingHint')}</p>
         </div>

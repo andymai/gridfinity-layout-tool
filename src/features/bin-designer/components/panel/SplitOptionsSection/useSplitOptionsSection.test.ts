@@ -58,17 +58,17 @@ describe('useSplitOptionsSection', () => {
     expect(useDesignerStore.getState().params.splitConnectors?.enabled).toBe(false);
   });
 
-  it('toggleWallLocking writes wallLocking to store', () => {
+  it('toggleWallConnector writes wallConnector to store', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, width: 8 },
     });
     const { result } = renderHook(() => useSplitOptionsSection());
 
     act(() => {
-      result.current.handlers.toggleWallLocking();
+      result.current.handlers.toggleWallConnector();
     });
 
-    expect(useDesignerStore.getState().params.splitConnectors?.wallLocking).toBe(true);
+    expect(useDesignerStore.getState().params.splitConnectors?.wallConnector).toBe('key');
   });
 
   it('exposes splitViewMode from UI state', () => {
