@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.127.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.126.1...gridfinity-layout-tool-v4.127.0) (2026-05-29)
+
+
+### Features
+
+* **bin-designer:** add synced organization tags to saved designs ([#1936](https://github.com/andymai/gridfinity-layout-tool/issues/1936)) ([7d732ba](https://github.com/andymai/gridfinity-layout-tool/commit/7d732bab7603101077f511de12fb0c23d8ba467a))
+
 ## [4.126.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.126.0...gridfinity-layout-tool-v4.126.1) (2026-05-29)
 
 
