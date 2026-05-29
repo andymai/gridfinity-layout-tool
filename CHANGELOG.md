@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.126.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.125.2...gridfinity-layout-tool-v4.126.0) (2026-05-29)
+
+
+### Features
+
+* **bin-designer:** angle-first diagonal divider editing ([#1932](https://github.com/andymai/gridfinity-layout-tool/issues/1932)) ([7b892b7](https://github.com/andymai/gridfinity-layout-tool/commit/7b892b78c96841d85a576f321e2dc4ed641ee1ab))
+
 ## [4.125.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.125.1...gridfinity-layout-tool-v4.125.2) (2026-05-29)
 
 
