@@ -106,11 +106,11 @@ describe('wallKeyGeometry', () => {
     }
   });
 
-  it('insets the key behind the outer skin and sizes the boss to enclose it', () => {
+  it('insets the key behind the outer skin and sizes the pilaster to enclose it', () => {
     for (const wt of wallThicknesses) {
-      const { perpInset, bossPerpDepth } = wallKeyGeometry(wt, 0.15);
+      const { perpInset, pilasterPerpDepth } = wallKeyGeometry(wt, 0.15);
       expect(perpInset).toBeGreaterThan(wt); // key sits behind the intact wall
-      expect(bossPerpDepth).toBeGreaterThan(perpInset); // boss reaches past the groove
+      expect(pilasterPerpDepth).toBeGreaterThan(perpInset); // pilaster reaches past the groove
     }
   });
 });

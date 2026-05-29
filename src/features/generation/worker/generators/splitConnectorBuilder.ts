@@ -29,7 +29,6 @@
 import {
   drawRectangle,
   draw,
-  box,
   unwrap,
   fuse,
   cut,
@@ -40,7 +39,6 @@ import {
 import type { Shape3D, Sketch } from 'brepjs';
 import type { SplitConnectorConfig } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
-import { TONGUE_PROTRUSION, TONGUE_TIP_HALF } from './generatorConstants';
 
 /** Overlap into the piece body so booleans have shared volume (mm). */
 export const OVERLAP = 1.0;
@@ -63,44 +61,62 @@ const SCARF_SLOPE = Math.tan(SCARF_ANGLE);
 /** Width taper slope: 45° taper at each end of the scarf lap for self-supporting FDM. */
 const WIDTH_TAPER_SLOPE = 1.0;
 
-/** Default wall key height as a fraction of interior wall height (stops clear of the lip). */
+/** Key vertical extent as a fraction of interior wall height (lead-in tapers above it). */
 const DEFAULT_WALL_KEY_HEIGHT_FRACTION = 0.8;
 
-/** Inward boss margin (mm) added around the key footprint so the thin wall has material. */
-const WALL_BOSS_MARGIN = 0.8;
-
-/** Half-width of the straight wall key, measured along the cut line (mm). */
-const WALL_KEY_HALF_WIDTH = TONGUE_TIP_HALF;
+/** Half-width of the slim wall key, measured along the cut line (mm). */
+const WALL_KEY_HALF_WIDTH = 0.9;
 
 /** How far the key protrudes across the cut into the mating piece (mm). */
-const WALL_KEY_PROTRUSION = TONGUE_PROTRUSION;
+const WALL_KEY_PROTRUSION = 1.2;
+
+/** Lead-in chamfer at the top/tip of the key so the halves self-guide together (mm). */
+const WALL_KEY_LEADIN = 0.6;
+
+/** Snug margin (mm, per side) between the key footprint and the pilaster edge. */
+const WALL_PILASTER_MARGIN = 0.6;
+
+/** Inward draft of the pilaster's cavity-facing face: fractional pull-back at the top. */
+const WALL_PILASTER_DRAFT = 0.12;
+
+/** Height of the region at the pilaster top where its inner face ramps back to the wall (mm). */
+const WALL_PILASTER_TOP_TAPER = 3;
+
+/** Residual inner depth where the pilaster melts into the wall just below the lip (mm). */
+const WALL_PILASTER_TOP_MIN = 0.4;
+
+/** 45° chamfer at the pilaster's floor junction (mm). */
+const WALL_PILASTER_FLOOR_CHAMFER = 0.6;
 
 export interface WallKeyGeometry {
   /** Inward distance from the outer wall face to the key's perpendicular center (mm). */
   readonly perpInset: number;
-  /** Total inward thickness of the reinforcing boss from the outer wall face (mm). */
-  readonly bossPerpDepth: number;
+  /** Inward perpendicular footprint of the pilaster from the outer wall face (mm). */
+  readonly pilasterPerpDepth: number;
+  /** Pilaster depth along the cut-normal into the piece body (mm). */
+  readonly pilasterProtDepth: number;
   /** Remaining intact outer wall skin after the groove is cut (mm). Must stay > 0. */
   readonly outerSkin: number;
 }
 
 /**
- * Perpendicular placement of a wall key. The key is a straight (non-undercut)
- * tongue/groove so the two halves assemble by pressing together horizontally —
- * an undercut would force a vertical drop-in, which is impossible past the
+ * Placement of a wall key + its reinforcing pilaster. The key is a straight
+ * (non-undercut) tongue/groove so the two halves assemble by pressing together
+ * horizontally — an undercut would force a vertical drop-in, impossible past the
  * partial-height groove and the stacking lip.
  *
  * The key is inset from the outer wall face by the full wall thickness so the
  * groove cut (key + clearance) never reaches the exterior face — without the
- * inset the female groove punches a hole through the outer wall. The boss
- * restores material inward to host the feature.
+ * inset the female groove punches a hole through the outer wall. The pilaster
+ * restores material inward (only) to host the feature.
  */
 export function wallKeyGeometry(wallThickness: number, clearance: number): WallKeyGeometry {
   const perpInset = wallThickness + WALL_KEY_HALF_WIDTH;
-  const bossPerpDepth = perpInset + WALL_KEY_HALF_WIDTH + clearance + WALL_BOSS_MARGIN;
+  const pilasterPerpDepth = perpInset + WALL_KEY_HALF_WIDTH + clearance + WALL_PILASTER_MARGIN;
+  const pilasterProtDepth = WALL_KEY_PROTRUSION + clearance + WALL_PILASTER_MARGIN;
   // Key sits at the inner wall face; the groove only eats `clearance` into it.
   const outerSkin = wallThickness - clearance;
-  return { perpInset, bossPerpDepth, outerSkin };
+  return { perpInset, pilasterPerpDepth, pilasterProtDepth, outerSkin };
 }
 
 type Extent = [number, number, number];
@@ -443,102 +459,126 @@ function addWallKeys(
   if (Math.abs(pieceMax - half) < tol) perimeters.push(half);
 
   const geom = wallKeyGeometry(context.wallThickness, config.clearance);
-  // Don't let a boss eat more than ~45% of a narrow piece's perpendicular span.
-  if (geom.bossPerpDepth > face.pieceEdgeLength * 0.45) return;
+  // Don't let a pilaster eat more than ~45% of a narrow piece's perpendicular span.
+  if (geom.pilasterPerpDepth > face.pieceEdgeLength * 0.45) return;
 
   for (const perimeter of perimeters) {
-    buildWallKey(
+    const inward = perimeter > 0 ? -1 : 1;
+    // This piece's body is behind the cut: male on the −axis side, female on +axis.
+    const bodySign = face.isMale ? -1 : 1;
+
+    fuseTargets.push(
+      buildPilaster(
+        face.axis,
+        face.position,
+        perimeter,
+        inward,
+        bodySign,
+        context.floorZ,
+        context.wallTopZ,
+        geom
+      )
+    );
+
+    const key = buildKey(
       face.axis,
       face.position,
       perimeter,
-      face.isMale,
+      inward,
       context.floorZ,
       keyHeight,
-      config.clearance,
-      geom,
-      fuseTargets,
-      cutTargets
+      face.isMale ? 0 : config.clearance,
+      geom
     );
+    (face.isMale ? fuseTargets : cutTargets).push(key);
   }
 }
 
-/** Map (protrusion-axis coord, perpendicular coord) → world [x, y] for the given cut axis. */
-function makePlanPoint(axis: 'x' | 'y'): (prot: number, perp: number) => [number, number] {
-  return axis === 'x' ? (prot, perp) => [prot, perp] : (prot, perp) => [perp, prot];
+/** Re-center a freshly extruded prism on `target` along the given world axis (extrude sign is plane-dependent). */
+function recenterAxis(solid: Shape3D, worldAxis: 'x' | 'y', target: number): Shape3D {
+  const b = getBounds(solid);
+  const lo = worldAxis === 'x' ? b.xMin : b.yMin;
+  const hi = worldAxis === 'x' ? b.xMax : b.yMax;
+  const shift = target - (lo + hi) / 2;
+  const moved = translate(solid, worldAxis === 'x' ? [shift, 0, 0] : [0, shift, 0]);
+  solid.delete();
+  return moved;
 }
 
 /**
- * Build the boss + straight key (tongue for male, groove for female) for one
- * perimeter wall and push them onto the fuse/cut target lists.
- *
- * The key body is a prism extruded along the perpendicular (cut-line) axis from
- * a profile in the protrusion×height plane: full height at the wall, with a 45°
- * ramp on the protruding underside for self-support. `inflate` (= clearance on
- * the female) grows the groove so the tongue seats with a glue gap.
+ * Build the reinforcing pilaster: a full-interior-height buttress that thickens
+ * the wall inward only. Its cavity-facing silhouette (a profile in the
+ * perpendicular×Z plane, extruded along the cut-normal) gives a 45° chamfer at
+ * the floor, a subtle inward draft, and a top that tapers back into the wall
+ * just below the lip — so it reads as designed rather than a glued-on block.
  */
-function buildWallKey(
+function buildPilaster(
   axis: 'x' | 'y',
   cutPos: number,
   perimeter: number,
-  isMale: boolean,
+  inward: -1 | 1,
+  bodySign: -1 | 1,
+  floorZ: number,
+  wallTopZ: number,
+  geom: WallKeyGeometry
+): Shape3D {
+  const depth = geom.pilasterPerpDepth;
+  const vOut = perimeter; // outer wall face (no outward growth)
+  const vFull = perimeter + inward * depth;
+  const vDraftTop = perimeter + inward * depth * (1 - WALL_PILASTER_DRAFT);
+  const vTopMin = perimeter + inward * WALL_PILASTER_TOP_MIN;
+  const vFloor = perimeter + inward * Math.max(0, depth - WALL_PILASTER_FLOOR_CHAMFER);
+  const cham = Math.min(WALL_PILASTER_FLOOR_CHAMFER, (wallTopZ - floorZ) * 0.25);
+  const topStart = Math.max(floorZ + cham + 0.5, wallTopZ - WALL_PILASTER_TOP_TAPER);
+
+  // Silhouette in (perpendicular, Z); extruded along the cut-normal (prot) axis.
+  const plane = axis === 'x' ? 'YZ' : 'XZ';
+  const profile = draw([vOut, floorZ])
+    .lineTo([vOut, wallTopZ])
+    .lineTo([vTopMin, wallTopZ])
+    .lineTo([vDraftTop, topStart])
+    .lineTo([vFull, floorZ + cham])
+    .lineTo([vFloor, floorZ])
+    .close();
+  const raw = sketch(profile, plane, 0).extrude(geom.pilasterProtDepth);
+  const protCenter = cutPos + (bodySign * geom.pilasterProtDepth) / 2;
+  return recenterAxis(raw, axis === 'x' ? 'x' : 'y', protCenter);
+}
+
+/**
+ * Build the slim alignment key. The tongue (male, `inflate` = 0) protrudes from
+ * the cut face with a 45° self-supporting underside and a lead-in chamfer at the
+ * top/tip; the groove (female, `inflate` = clearance) is the same shape grown by
+ * the fit clearance. Extruded along the cut line and centered on the key axis.
+ */
+function buildKey(
+  axis: 'x' | 'y',
+  cutPos: number,
+  perimeter: number,
+  inward: -1 | 1,
   floorZ: number,
   keyHeight: number,
-  clearance: number,
-  geom: WallKeyGeometry,
-  fuseTargets: Shape3D[],
-  cutTargets: Shape3D[]
-): void {
-  const pt = makePlanPoint(axis);
-  const P = WALL_KEY_PROTRUSION;
-  const halfW = WALL_KEY_HALF_WIDTH;
-
-  // Toward the bin center (the only direction the boss may thicken).
-  const inward = perimeter > 0 ? -1 : 1;
+  inflate: number,
+  geom: WallKeyGeometry
+): Shape3D {
+  const halfW = WALL_KEY_HALF_WIDTH + inflate;
+  const protTip = cutPos + WALL_KEY_PROTRUSION + inflate;
+  const keyTop = floorZ + keyHeight + inflate;
+  const lead = Math.min(WALL_KEY_LEADIN, WALL_KEY_PROTRUSION - 0.2, keyHeight / 2);
   const perpC = perimeter + inward * geom.perpInset;
-  // This piece's body is behind the cut: male on the −axis side, female on +axis.
-  const bodySign = isMale ? -1 : 1;
 
-  // ── Reinforcing boss: inward thickening over the key footprint ───────────────
-  const bossProt = P + 0.8;
-  const protCenter = cutPos + (bodySign * bossProt) / 2;
-  const perpCenter = perimeter + (inward * geom.bossPerpDepth) / 2;
-  const zCenter = floorZ + keyHeight / 2;
-  const bossDims =
-    axis === 'x'
-      ? ([bossProt, geom.bossPerpDepth] as const)
-      : ([geom.bossPerpDepth, bossProt] as const);
-  const [bossCx, bossCy] = pt(protCenter, perpCenter);
-  fuseTargets.push(box(bossDims[0], bossDims[1], keyHeight, { at: [bossCx, bossCy, zCenter] }));
-
-  // ── Straight key (tongue fused on male, groove cut on female) ────────────────
-  const inflate = isMale ? 0 : clearance;
-  const w = halfW + inflate;
-  const protTip = cutPos + P + inflate;
-  const top = floorZ + keyHeight + inflate;
-  // Profile in the (protrusion-axis, Z) plane; the protruding underside ramps up
-  // at 45° from the cut face to the tip so the overhang is self-supporting.
+  // Profile in (cut-normal, Z): 45° underside ramp (self-supporting) + a lead-in
+  // chamfer on the top/tip so the halves guide together as they press in.
   const plane = axis === 'x' ? 'XZ' : 'YZ';
   const profile = draw([cutPos - OVERLAP, floorZ])
-    .lineTo([cutPos - OVERLAP, top])
-    .lineTo([protTip, top])
-    .lineTo([protTip, floorZ + P])
+    .lineTo([cutPos - OVERLAP, keyTop])
+    .lineTo([protTip - lead, keyTop])
+    .lineTo([protTip, keyTop - lead])
+    .lineTo([protTip, floorZ + WALL_KEY_PROTRUSION])
     .lineTo([cutPos, floorZ])
     .close();
-  // Sketch at the perpendicular origin and extrude along the plane normal; the
-  // normal's sign is plane-dependent, so re-center the prism on perpC explicitly.
-  const raw = sketch(profile, plane, 0).extrude(2 * w);
-  const b = getBounds(raw);
-  const lo = axis === 'x' ? b.yMin : b.xMin;
-  const hi = axis === 'x' ? b.yMax : b.xMax;
-  const shift = perpC - (lo + hi) / 2;
-  const key = translate(raw, axis === 'x' ? [0, shift, 0] : [shift, 0, 0]);
-  raw.delete();
-
-  if (isMale) {
-    fuseTargets.push(key);
-  } else {
-    cutTargets.push(key);
-  }
+  const raw = sketch(profile, plane, 0).extrude(2 * halfW);
+  return recenterAxis(raw, axis === 'x' ? 'y' : 'x', perpC);
 }
 
 /** Shorten a feature to stay within piece bounds and avoid perpendicular cut corners. */
