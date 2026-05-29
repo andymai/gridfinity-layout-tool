@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.125.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.125.1...gridfinity-layout-tool-v4.125.2) (2026-05-29)
+
+
+### Bug Fixes
+
+* **generation:** retain occt-wasm kernel wrapper to prevent GC use-after-free ([#1930](https://github.com/andymai/gridfinity-layout-tool/issues/1930)) ([e56a8fa](https://github.com/andymai/gridfinity-layout-tool/commit/e56a8fa27de7ffdbd5bd427f0fdae7cd65687aac))
+
 ## [4.125.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.125.0...gridfinity-layout-tool-v4.125.1) (2026-05-29)
 
 
