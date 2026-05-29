@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.126.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.126.0...gridfinity-layout-tool-v4.126.1) (2026-05-29)
+
+
+### Bug Fixes
+
+* **bin-designer:** stop 3D preview crashing when the browser auto-translates ([#1934](https://github.com/andymai/gridfinity-layout-tool/issues/1934)) ([d5d4d6a](https://github.com/andymai/gridfinity-layout-tool/commit/d5d4d6a4ea066a1ba4f8db115094a63431ee7d95))
+
 ## [4.126.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.125.2...gridfinity-layout-tool-v4.126.0) (2026-05-29)
 
 
