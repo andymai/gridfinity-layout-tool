@@ -57,7 +57,7 @@ import { sanitizeParams, tagOp, buildSlabProfile } from './baseplateSlab';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import { buildMagnetHoles } from './baseplateMagnets';
-import { buildConnectors } from './baseplateConnectors';
+import { buildConnectors, buildDovetailKey } from './baseplateConnectors';
 import { computeBaseplateEdgeLines } from './baseplateEdges';
 import { buildBaseplateSTL } from './baseplateSTL';
 
@@ -369,5 +369,36 @@ export async function exportBaseplate(
     return { data, fileName: `${name}.stl` };
   } finally {
     baseplate.delete();
+  }
+}
+
+/**
+ * Export the standalone dovetail key (one identical part hammered into
+ * every seam junction). Height matches the plate so the seated key is flush.
+ */
+export async function exportConnectorKey(
+  rawParams: BaseplateParams,
+  format: ExportFormat,
+  tolerance?: number,
+  angularTolerance?: number
+): Promise<{ data: ArrayBuffer; fileName: string }> {
+  const params = sanitizeParams(rawParams);
+  const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
+  const totalHeight = SOCKET_HEIGHT + floorDepth;
+  const key = buildDovetailKey(totalHeight);
+  try {
+    const name = 'connector_key';
+    if (format === 'step') {
+      const blob = unwrap(exportSTEP(key));
+      const data = await blob.arrayBuffer();
+      return { data, fileName: `${name}.step` };
+    }
+    const tol = tolerance ?? 0.01;
+    const angTol = angularTolerance ?? 5;
+    const meshResult = mesh(key, { tolerance: tol, angularTolerance: angTol });
+    const data = buildBaseplateSTL(meshResult, name);
+    return { data, fileName: `${name}.stl` };
+  } finally {
+    key.delete();
   }
 }

@@ -317,6 +317,38 @@ describe('migrateBaseplateParams', () => {
     expect(result.connectorNubs).toBeUndefined();
   });
 
+  it('preserves connectorStyle when dovetail key', () => {
+    const stored = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+      connectorNubs: true,
+      connectorStyle: 'dovetailKey',
+    };
+    const result = migrateBaseplateParams(stored);
+    expect(result.connectorStyle).toBe('dovetailKey');
+  });
+
+  it('omits connectorStyle when absent or invalid', () => {
+    const base = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+    };
+    expect(migrateBaseplateParams(base).connectorStyle).toBeUndefined();
+    expect(
+      migrateBaseplateParams({ ...base, connectorStyle: 'nonsense' }).connectorStyle
+    ).toBeUndefined();
+  });
+
   it('migrates old format (no paddingLeft) preserving magnets', () => {
     const stored = { magnetHoles: true, magnetDiameter: 8, magnetDepth: 3 };
     const result = migrateBaseplateParams(stored);

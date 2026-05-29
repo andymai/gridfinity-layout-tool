@@ -136,6 +136,45 @@ export function hasMeshOnScreen(state: {
 
 const NO_OP_PROGRESS = (_stage: string, _progress: number): void => {};
 
+type LayoutStoreState = ReturnType<typeof useLayoutStore.getState>;
+
+/**
+ * The layout fields whose change must trigger a baseplate regeneration. Used as
+ * the single source of truth for BOTH the `useShallow` selection and the regen
+ * effect's dependency — they previously duplicated this list, and a geometry
+ * param (`connectorStyle`) dropped from one half silently stopped regeneration
+ * (the exploded preview kept its stale dovetail pieces). Keeping it in one place
+ * means a new geometry param is wired in by adding it here once.
+ */
+export function selectGenerationTriggers(state: LayoutStoreState) {
+  const bp = state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+  return {
+    drawerWidth: state.layout.drawer.width,
+    drawerDepth: state.layout.drawer.depth,
+    gridUnitMm: state.layout.gridUnitMm,
+    printBedSize: state.layout.printBedSize,
+    printBedDepth: state.layout.printBedDepth,
+    fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
+    fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
+    magnetHoles: bp.magnetHoles,
+    magnetDiameter: bp.magnetDiameter,
+    magnetDepth: bp.magnetDepth,
+    paddingLeft: bp.paddingLeft,
+    paddingRight: bp.paddingRight,
+    paddingFront: bp.paddingFront,
+    paddingBack: bp.paddingBack,
+    connectorNubs: bp.connectorNubs,
+    connectorStyle: bp.connectorStyle,
+    syncWithLayout: bp.syncWithLayout,
+    baseplateWidth: bp.baseplateWidth,
+    baseplateDepth: bp.baseplateDepth,
+    cornerRadius: bp.cornerRadius,
+    cornerRadii: bp.cornerRadii,
+    invertDovetails: bp.invertDovetails,
+    preferIdenticalPieces: bp.preferIdenticalPieces,
+  };
+}
+
 /**
  * Manages the GenerationBridge lifecycle and auto-regeneration
  * when layout params change. Uses the shared worker pool for parallel split piece generation.
@@ -157,6 +196,12 @@ export function useBaseplateGeneration(): void {
   const directMeshStartRef = useRef<number>(0);
   const directMeshDurationRef = useRef<number>(0);
 
+  // Single memoized selection drives both the values used below and the regen
+  // effect's dependency (see `selectGenerationTriggers`). `useShallow` keeps the
+  // object reference stable until any tracked field changes, so depending on the
+  // whole object is equivalent to listing every field — without the duplication
+  // that previously let `connectorStyle` fall out of the trigger set.
+  const generationTriggers = useLayoutStore(useShallow(selectGenerationTriggers));
   const {
     drawerWidth,
     drawerDepth,
@@ -165,50 +210,7 @@ export function useBaseplateGeneration(): void {
     printBedDepth,
     fractionalEdgeX,
     fractionalEdgeY,
-    magnetHoles,
-    magnetDiameter,
-    magnetDepth,
-    paddingLeft,
-    paddingRight,
-    paddingFront,
-    paddingBack,
-    connectorNubs,
-    syncWithLayout,
-    baseplateWidth,
-    baseplateDepth,
-    cornerRadius,
-    cornerRadii,
-    invertDovetails,
-    preferIdenticalPieces,
-  } = useLayoutStore(
-    useShallow((state) => {
-      const bp = state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
-      return {
-        drawerWidth: state.layout.drawer.width,
-        drawerDepth: state.layout.drawer.depth,
-        gridUnitMm: state.layout.gridUnitMm,
-        printBedSize: state.layout.printBedSize,
-        printBedDepth: state.layout.printBedDepth,
-        fractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
-        fractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
-        magnetHoles: bp.magnetHoles,
-        magnetDiameter: bp.magnetDiameter,
-        magnetDepth: bp.magnetDepth,
-        paddingLeft: bp.paddingLeft,
-        paddingRight: bp.paddingRight,
-        paddingFront: bp.paddingFront,
-        paddingBack: bp.paddingBack,
-        connectorNubs: bp.connectorNubs,
-        syncWithLayout: bp.syncWithLayout,
-        baseplateWidth: bp.baseplateWidth,
-        baseplateDepth: bp.baseplateDepth,
-        cornerRadius: bp.cornerRadius,
-        cornerRadii: bp.cornerRadii,
-        invertDovetails: bp.invertDovetails,
-        preferIdenticalPieces: bp.preferIdenticalPieces,
-      };
-    })
-  );
+  } = generationTriggers;
 
   const setGenerationStatus = useBaseplatePageStore((s) => s.setGenerationStatus);
   const setGenerationResult = useBaseplatePageStore((s) => s.setGenerationResult);
@@ -561,7 +563,11 @@ export function useBaseplateGeneration(): void {
       fractionalEdgeY
     );
     runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
+    // `generationTriggers` carries the trigger-only params (connectorStyle,
+    // magnets, padding, corners, …); its reference changes whenever any of them
+    // does. The named values are listed because they're read directly above.
   }, [
+    generationTriggers,
     drawerWidth,
     drawerDepth,
     gridUnitMm,
@@ -569,21 +575,6 @@ export function useBaseplateGeneration(): void {
     printBedDepth,
     fractionalEdgeX,
     fractionalEdgeY,
-    magnetHoles,
-    magnetDiameter,
-    magnetDepth,
-    paddingLeft,
-    paddingRight,
-    paddingFront,
-    paddingBack,
-    connectorNubs,
-    syncWithLayout,
-    baseplateWidth,
-    baseplateDepth,
-    cornerRadius,
-    cornerRadii,
-    invertDovetails,
-    preferIdenticalPieces,
     runGeneration,
   ]);
 }

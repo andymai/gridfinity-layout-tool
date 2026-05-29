@@ -19,6 +19,7 @@ import { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
 import { GradientBackground } from '@/shared/components/preview/GradientBackground';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { SplitBaseplateMeshes } from './SplitBaseplateMeshes';
+import { ConnectorKeyMeshes } from './ConnectorKeyMeshes';
 import { GhostPaddingOutline } from './GhostPaddingOutline';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useSettingsStore } from '@/core/store';
@@ -266,13 +267,16 @@ export function BaseplatePreview({
               />
 
               {isSplit ? (
-                <SplitBaseplateMeshes
-                  totalWidthUnits={width}
-                  totalDepthUnits={depth}
-                  gridUnitMm={gridUnitMm}
-                  isPreview={hasDirectPreview}
-                  xray={xray}
-                />
+                <>
+                  <SplitBaseplateMeshes
+                    totalWidthUnits={width}
+                    totalDepthUnits={depth}
+                    gridUnitMm={gridUnitMm}
+                    isPreview={hasDirectPreview}
+                    xray={xray}
+                  />
+                  <ConnectorKeyMeshes />
+                </>
               ) : (
                 <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} xray={xray} />
               )}

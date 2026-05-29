@@ -19,6 +19,7 @@ export type WorkerMessage =
   | CleanupMessage
   | ExportMessage
   | ExportBaseplateMessage
+  | ExportConnectorKeyMessage
   | ExportDividersMessage
   | ExportCombinedMessage
   | ExportSplitMessage
@@ -70,6 +71,15 @@ export interface ExportBaseplatePayload {
   readonly format: ExportFormat;
   readonly tolerance?: number;
   readonly angularTolerance?: number;
+}
+
+/**
+ * Export the standalone dovetail key. Reuses the BASEPLATE_EXPORT_RESULT
+ * response shape (data + format + fileName) since the payload is identical.
+ */
+export interface ExportConnectorKeyMessage {
+  readonly type: 'EXPORT_CONNECTOR_KEY';
+  readonly payload: ExportBaseplatePayload;
 }
 
 export interface ExportMessage {

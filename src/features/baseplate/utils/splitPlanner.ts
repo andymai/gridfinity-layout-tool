@@ -12,6 +12,10 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
+// The fit checker subtracts the tongue protrusion from the bed budget on male
+// join edges — otherwise pieces that compute to exactly the bed width on paper
+// exceed it as STLs (#1498).
+import { TONGUE_PROTRUSION } from '@/shared/constants/connectors';
 import type {
   BaseplatePiece,
   BaseplateTiling,
@@ -21,17 +25,6 @@ import type {
 
 /** Threshold for detecting a fractional half-unit (avoids floating-point noise). */
 const FRACTIONAL_THRESHOLD = 0.49;
-
-/**
- * How far the dovetail tongue protrudes past the slab wall on a join edge.
- * Mirrors `TONGUE_PROTRUSION` in `features/generation/.../generatorConstants.ts`
- * (cross-feature import is forbidden by module boundaries; keep these in sync).
- *
- * The fit checker must subtract this from the bed budget on any join edge whose
- * tongue is male — otherwise pieces that compute to exactly the bed width on
- * paper exceed it as STLs (#1498).
- */
-const TONGUE_PROTRUSION_MM = 1.5;
 
 /**
  * Per-axis configuration: bed budget, padding, and dovetail overhang on each end.
@@ -61,7 +54,7 @@ function makeAxisConfig(
   // Under preferIdenticalPieces, every join edge places a tongue+groove pair —
   // so both sides claim a tongue and the bed budget must reserve for both,
   // not just the conventionally-male side.
-  const tongue = connectorNubs ? TONGUE_PROTRUSION_MM : 0;
+  const tongue = connectorNubs ? TONGUE_PROTRUSION : 0;
   const paired = !!preferIdenticalPieces && !!connectorNubs;
   if (paired) {
     return { bedMm, paddingStart, paddingEnd, startMaleMm: tongue, endMaleMm: tongue };
@@ -534,6 +527,9 @@ export function pieceToBaseplateParams(
     fractionalEdgeY: flipY ? flip(fracY) : fracY,
     edges: rot ? rotateEdges180(piece.edges) : piece.edges,
     connectorNubs: parentParams.connectorNubs,
+    // Dovetail key seams are symmetric, so connectorStyle is rotation-invariant —
+    // copy it straight through (unlike padding/edges, which rotate with `rot`).
+    connectorStyle: parentParams.connectorStyle,
     invertDovetails: parentParams.invertDovetails,
     preferIdenticalPieces: parentParams.preferIdenticalPieces,
     lightweight: parentParams.lightweight,

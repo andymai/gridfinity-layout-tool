@@ -27,6 +27,7 @@ const payloadSchema = z.object({
       .enum(['tl', 'tc', 'tr', 'ml', 'c', 'mr', 'bl', 'bc', 'br', 'custom'])
       .optional(),
     connectorNubs: z.boolean().optional(),
+    connectorStyle: z.enum(['dovetail', 'dovetailKey']).optional(),
     lightweight: z.boolean().optional(),
     syncWithLayout: z.boolean().optional(),
     baseplateWidth: z.number().optional(),

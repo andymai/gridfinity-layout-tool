@@ -137,6 +137,12 @@ export interface BaseplateParams {
    * split planner also prefers max-uniform tilings when this is set.
    */
   readonly preferIdenticalPieces?: boolean;
+  /**
+   * Connector geometry on join edges when `connectorNubs` is enabled
+   * (default 'dovetail'). 'dovetailKey' makes both seam edges female and ships a
+   * separate hammered-in dovetail key instead of an integral male tongue.
+   */
+  readonly connectorStyle?: 'dovetail' | 'dovetailKey';
   /** Remove center floor material, keeping only magnet pads. */
   readonly lightweight?: boolean;
   /** Uniform outer corner radius in mm. */

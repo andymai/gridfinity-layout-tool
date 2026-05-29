@@ -67,6 +67,13 @@ export interface BaseplateParams {
    * and may add 1–2 pieces compared to the piece-minimizing default.
    */
   readonly preferIdenticalPieces?: boolean;
+  /**
+   * Connector geometry on join edges when `connectorNubs` is enabled
+   * (default 'dovetail'). 'dovetailKey' cuts a female groove on both sides of each
+   * seam and ships a separate, hammered-in dovetail key part instead of an
+   * integral male tongue. Only meaningful when `connectorNubs` is true.
+   */
+  readonly connectorStyle?: 'dovetail' | 'dovetailKey';
   /** Uniform outer corner radius in mm (default: Gridfinity spec 2.5mm). */
   readonly cornerRadius?: Mm;
   /** Per-corner radius overrides. When set, takes precedence over cornerRadius. */

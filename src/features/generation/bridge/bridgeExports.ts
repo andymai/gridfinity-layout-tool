@@ -248,3 +248,30 @@ export function exportBaseplate(
     })
   );
 }
+
+/**
+ * Export the standalone dovetail key. Reuses the `'export'` slot and
+ * the BASEPLATE_EXPORT_RESULT response (same data/format/fileName shape).
+ */
+export function exportConnectorKey(
+  ctx: BridgeExportContext,
+  params: BaseplateParams,
+  format: ExportFormat,
+  options?: { tolerance?: number; angularTolerance?: number }
+): Promise<BaseplateExportResult> {
+  return runExport<BaseplateExportResult>(
+    ctx,
+    'export',
+    computeBaseplateTimeoutMs(params),
+    (requestId) => ({
+      type: 'EXPORT_CONNECTOR_KEY',
+      payload: {
+        params,
+        requestId,
+        format,
+        tolerance: options?.tolerance,
+        angularTolerance: options?.angularTolerance,
+      },
+    })
+  );
+}

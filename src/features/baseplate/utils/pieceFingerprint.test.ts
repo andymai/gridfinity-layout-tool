@@ -82,6 +82,28 @@ describe('computePieceFingerprint', () => {
     expect(computePieceFingerprint(inverted)).not.toBe(computePieceFingerprint(normal));
   });
 
+  it('produces different keys for dovetail key vs dovetail connector style', () => {
+    const dovetail = makeParams({ width: 3, depth: 3, connectorNubs: true });
+    const dovetailKey = makeParams({
+      width: 3,
+      depth: 3,
+      connectorNubs: true,
+      connectorStyle: 'dovetailKey',
+    });
+    expect(computePieceFingerprint(dovetailKey)).not.toBe(computePieceFingerprint(dovetail));
+  });
+
+  it("treats an explicit 'dovetail' style as the default (undefined)", () => {
+    const implicit = makeParams({ width: 3, depth: 3, connectorNubs: true });
+    const explicit = makeParams({
+      width: 3,
+      depth: 3,
+      connectorNubs: true,
+      connectorStyle: 'dovetail',
+    });
+    expect(computePieceFingerprint(explicit)).toBe(computePieceFingerprint(implicit));
+  });
+
   it('produces different keys when cornerRadii differ', () => {
     const a = makeParams({
       width: 3,

@@ -20,6 +20,13 @@
  * Convention: left/front = tongue (male, fused), right/back = groove (female,
  * cut). Inverted by `invertDovetails`.
  *
+ * Dovetail-key style (`connectorStyle === 'dovetailKey'`): every join edge is female
+ * (groove only, no tongue), and a separate `buildDovetailKey()` part is hammered
+ * into the seam. Two opposing grooves across a seam form one dovetail key cavity —
+ * narrow at the seam, wide into each piece — that the key locks into. The
+ * groove uses the tighter `DOVETAIL_KEY_CLEARANCE` for a press fit. `invertDovetails`
+ * and `preferIdenticalPieces` are ignored in this mode (seams are symmetric).
+ *
  * All profiles are drawn on the XY plane (normal=+Z) and extruded downward,
  * matching the pre-Z-shift coordinate system (slab top at Z=0, bottom at
  * Z=-totalHeight).
@@ -33,6 +40,7 @@ import {
   TONGUE_BASE_HALF,
   TONGUE_TIP_HALF,
   TONGUE_CLEARANCE,
+  DOVETAIL_KEY_CLEARANCE,
   COPLANAR_MARGIN,
   COPLANAR_OVERLAP,
   sketch,
@@ -63,11 +71,16 @@ export function buildConnectors(
 
   if (!connectorNubs || !edges) return { nubs: tongues, holes: grooves };
 
-  const invert = !!invertDovetails;
+  // Dovetail key mode: every join edge is a female groove (no tongues), and a
+  // separate hammered-in key spans the seam. Handedness toggles (invert /
+  // paired) are meaningless when both sides are female, so they're bypassed.
+  const isDovetailKey = params.connectorStyle === 'dovetailKey';
+
+  const invert = !!invertDovetails && !isDovetailKey;
   // In paired mode invertDovetails is intentionally ignored — the layout is
   // 180°-rotationally symmetric by construction, so an "invert" toggle would
   // produce the same physical connector orientation on both sides.
-  const paired = !!preferIdenticalPieces;
+  const paired = !!preferIdenticalPieces && !isDovetailKey;
 
   const halfW = totalW / 2;
   const halfD = totalD / 2;
@@ -75,7 +88,7 @@ export function buildConnectors(
   const P = TONGUE_PROTRUSION;
   const bW = TONGUE_BASE_HALF; // half-width at wall (narrow)
   const tW = TONGUE_TIP_HALF; // half-width at tip (wide)
-  const cl = TONGUE_CLEARANCE;
+  const cl = isDovetailKey ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE;
   const ext = COPLANAR_MARGIN;
 
   // Honors fractionalEdgeX/Y so dovetails land on cell boundaries even when
@@ -160,7 +173,10 @@ export function buildConnectors(
       const w = def.wallPos;
       const d = def.protrudeDir;
 
-      if (paired) {
+      if (isDovetailKey) {
+        // Both sides of every seam are female; the key supplies the male half.
+        grooves.push(makeGroove(pt, w, bp, d, P, bW, tW, cl, ext, totalHeight));
+      } else if (paired) {
         const mBp = bp + def.maleOffsetSign * PAIR_HALF_OFFSET;
         const fBp = bp - def.maleOffsetSign * PAIR_HALF_OFFSET;
         tongues.push(makeTongue(pt, w, mBp, d, P, bW, tW, totalHeight));
@@ -221,4 +237,29 @@ function makeGroove(
     .lineTo(pt(w + d * ext, bp - gB))
     .close();
   return sketch(profile, 'XY', COPLANAR_MARGIN).extrude(-(totalHeight + 2 * COPLANAR_MARGIN));
+}
+
+/**
+ * Free-standing dovetail key for `connectorStyle === 'dovetailKey'`: two dovetail
+ * tongues mirrored across the waist into one prism, centered on the origin with
+ * its long axis along X. Narrow at the waist (`TONGUE_BASE_HALF`, sits at the
+ * seam), wide at both wing tips (`TONGUE_TIP_HALF`, captured inside each piece).
+ *
+ * Built at nominal tongue dimensions — the seam grooves carry
+ * `DOVETAIL_KEY_CLEARANCE`, so the per-face gap to the pocket comes from there.
+ * Extruded upward so the bottom sits at Z=0 (bed-ready); full height matches the
+ * plate's `totalHeight` so the seated key is flush with the plate top.
+ */
+export function buildDovetailKey(totalHeight: number): Shape3D {
+  const P = TONGUE_PROTRUSION;
+  const bW = TONGUE_BASE_HALF;
+  const tW = TONGUE_TIP_HALF;
+  const profile = draw([-P, tW])
+    .lineTo([0, bW])
+    .lineTo([P, tW])
+    .lineTo([P, -tW])
+    .lineTo([0, -bW])
+    .lineTo([-P, -tW])
+    .close();
+  return sketch(profile, 'XY', 0).extrude(totalHeight);
 }

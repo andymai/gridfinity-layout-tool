@@ -15,6 +15,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
+import { Select } from '@/design-system/Select';
 import { RulerIcon } from '@/design-system/Icon';
 import { Stepper } from '@/design-system/Stepper';
 import { useTranslation } from '@/i18n';
@@ -250,13 +251,33 @@ export function BaseplatePanel() {
                 />
                 {baseplateParams.connectorNubs === true && (
                   <>
-                    {baseplateParams.preferIdenticalPieces !== true && (
-                      <Checkbox
-                        checked={baseplateParams.invertDovetails === true}
-                        onChange={(checked) => updateParam('invertDovetails', checked || undefined)}
-                        label={t('baseplate.dovetails.invert')}
+                    <SettingsRow label={t('baseplate.connectorStyle.label')}>
+                      <Select
+                        size="sm"
+                        value={baseplateParams.connectorStyle ?? 'dovetail'}
+                        onValueChange={(v) =>
+                          updateParam(
+                            'connectorStyle',
+                            v === 'dovetailKey' ? 'dovetailKey' : undefined
+                          )
+                        }
+                        options={[
+                          { id: 'dovetail', name: t('baseplate.connectorStyle.dovetail') },
+                          { id: 'dovetailKey', name: t('baseplate.connectorStyle.dovetailKey') },
+                        ]}
+                        aria-label={t('baseplate.connectorStyle.label')}
                       />
-                    )}
+                    </SettingsRow>
+                    {baseplateParams.connectorStyle !== 'dovetailKey' &&
+                      baseplateParams.preferIdenticalPieces !== true && (
+                        <Checkbox
+                          checked={baseplateParams.invertDovetails === true}
+                          onChange={(checked) =>
+                            updateParam('invertDovetails', checked || undefined)
+                          }
+                          label={t('baseplate.dovetails.invert')}
+                        />
+                      )}
                     <Checkbox
                       checked={baseplateParams.preferIdenticalPieces === true}
                       onChange={(checked) =>

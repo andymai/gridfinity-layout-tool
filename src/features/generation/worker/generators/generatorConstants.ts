@@ -83,26 +83,16 @@ export function resolveCornerRadii(
   };
 }
 
-// Split baseplate pieces use discrete dovetail connectors at grid cell boundary
-// intersections along join edges. Each connector is a trapezoidal prism with the
-// classic dovetail fan shape visible from the top (X-Y plane): narrower at the
-// wall (BASE_HALF), wider at the protruding tip (TIP_HALF).
-// Assembly: pieces drop in from above (Z-axis). The dovetail taper is in the
-// X-Y plane, so vertical insertion is unimpeded. Once seated, the wider tip
-// prevents horizontal pull-out through the narrower groove opening.
-// Convention: left/front edges get tongues (male), right/back get grooves (female).
+// Dovetail connector geometry is shared with the baseplate feature (which can't
+// import worker constants across the module boundary), so it lives in shared/.
+export {
+  TONGUE_PROTRUSION,
+  TONGUE_BASE_HALF,
+  TONGUE_TIP_HALF,
+  TONGUE_CLEARANCE,
+  DOVETAIL_KEY_CLEARANCE,
+} from '@/shared/constants/connectors';
 
-/** How far the tongue protrudes horizontally from the wall face (mm) */
-export const TONGUE_PROTRUSION = 1.5;
-
-/** Half-width at the wall face — narrow end of the dovetail (mm) */
-export const TONGUE_BASE_HALF = 1.0;
-
-/** Half-width at the protruding tip — wide end of the dovetail (mm) */
-export const TONGUE_TIP_HALF = 1.3;
-
-/** Per-side clearance added to the groove for FDM tolerance (mm) */
-export const TONGUE_CLEARANCE = 0.15;
 export const NUB_DIAMETER = 1.5;
 export const NUB_DEPTH = 0.8;
 const HOLE_CLEARANCE = 0.1;
