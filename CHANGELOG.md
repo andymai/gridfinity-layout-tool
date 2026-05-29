@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.125.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.125.0...gridfinity-layout-tool-v4.125.1) (2026-05-29)
+
+
+### Bug Fixes
+
+* **bin-designer:** fit default 3D preview to screen at any bin size ([#1928](https://github.com/andymai/gridfinity-layout-tool/issues/1928)) ([b26601b](https://github.com/andymai/gridfinity-layout-tool/commit/b26601b4d221144da5a23d8cd02e160badd666dc))
+
 ## [4.125.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.124.0...gridfinity-layout-tool-v4.125.0) (2026-05-29)
 
 
