@@ -24,6 +24,7 @@ import type { ColorZone, FeatureColorConfig } from '@/features/bin-designer/type
 import type { SavedColorPalette } from '@/core/store/settings.types';
 import { useTranslation } from '@/i18n';
 import { PipetteIcon } from '@/design-system/Icon';
+import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
 import { ColorZoneRow } from './ColorZoneRow';
 import { ColorGroup } from './ColorGroup';
@@ -246,10 +247,8 @@ export function ColorsSection() {
               aria-pressed={colorTool === 'eyedropper'}
               aria-label={t('binDesigner.colors.eyedropper.enter')}
               title={t('binDesigner.colors.eyedropper.enter')}
-              className={`flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent ${
-                colorTool === 'eyedropper'
-                  ? 'bg-accent text-on-accent'
-                  : 'text-content-tertiary hover:bg-surface-hover hover:text-content-secondary'
+              className={`flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset ${
+                colorTool === 'eyedropper' ? SEGMENT_ACTIVE : SEGMENT_INACTIVE
               }`}
             >
               <PipetteIcon size="sm" />

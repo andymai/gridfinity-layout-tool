@@ -34,4 +34,24 @@ describe('LabelTabsSection', () => {
     fireEvent.change(input, { target: { value: 'SCREWS' } });
     expect(useDesignerStore.getState().params.compartments.compartmentTexts).toEqual(['SCREWS']);
   });
+
+  it('exposes aria-pressed on the support picker reflecting the active option', () => {
+    render(<LabelTabsSection />);
+    // The pickers live inside the collapsed "Customize" disclosure.
+    fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+    // Default support is 'bracket'.
+    expect(screen.getByRole('button', { name: 'Bracket', pressed: true })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Solid', pressed: false })).toBeInTheDocument();
+  });
+
+  it('exposes aria-pressed on the alignment picker when it is visible', () => {
+    // Alignment is hidden at full width; shrink the tab so the picker renders.
+    useDesignerStore.setState((s) => ({
+      params: { ...s.params, label: { ...s.params.label, width: 50, alignment: 'center' } },
+    }));
+    render(<LabelTabsSection />);
+    fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+    expect(screen.getByRole('button', { name: 'Center', pressed: true })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Left', pressed: false })).toBeInTheDocument();
+  });
 });
