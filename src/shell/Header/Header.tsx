@@ -12,7 +12,7 @@ import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
-import { LayoutQuickSwitch } from '@/features/layout-library/components/LayoutQuickSwitch';
+import { LayoutQuickSwitch } from '@/features/layout-library';
 import { PresenceAvatars } from '../Collab';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useTranslation } from '@/i18n';
@@ -132,7 +132,6 @@ export function Header({ saveStatus }: HeaderProps) {
           </button>
         )}
 
-        {/* Layout quick-switch (thumbnail dropdown); manage opens the modal */}
         <LayoutQuickSwitch onManage={() => setShowLayoutManager(true)} />
 
         {/* Print Button */}
