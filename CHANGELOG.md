@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.130.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.129.1...gridfinity-layout-tool-v4.130.0) (2026-05-30)
+
+
+### Features
+
+* non-integral bins — overhang, over-tile baseplates, and fractional feet ([#1945](https://github.com/andymai/gridfinity-layout-tool/issues/1945)) ([cbc177e](https://github.com/andymai/gridfinity-layout-tool/commit/cbc177eaf9686ea477ca797e97b40f8c86221949))
+
 ## [4.129.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.129.0...gridfinity-layout-tool-v4.129.1) (2026-05-30)
 
 
