@@ -1,5 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeTags, MAX_TAGS, MAX_TAG_LENGTH } from './tags';
+import { normalizeTags, tagsEqual, MAX_TAGS, MAX_TAG_LENGTH } from './tags';
+
+describe('tagsEqual', () => {
+  it('is true for identical lists', () => {
+    expect(tagsEqual(['a', 'b'], ['a', 'b'])).toBe(true);
+  });
+  it('is false for different length, values, or order', () => {
+    expect(tagsEqual(['a'], ['a', 'b'])).toBe(false);
+    expect(tagsEqual(['a', 'b'], ['a', 'c'])).toBe(false);
+    expect(tagsEqual(['a', 'b'], ['b', 'a'])).toBe(false);
+  });
+  it('treats two empty lists as equal', () => {
+    expect(tagsEqual([], [])).toBe(true);
+  });
+});
 
 describe('normalizeTags', () => {
   it('trims, drops empties, and dedupes case-insensitively keeping first casing', () => {

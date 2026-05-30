@@ -1,7 +1,9 @@
 import { useTranslation, useFormatting } from '@/i18n';
 import { useInlineEdit } from '@/shared/hooks';
+import { Checkbox } from '@/design-system';
 import { BinDesignThumbnail } from '../BinDesignThumbnail';
 import { DesignActions } from '../DesignActions';
+import { DesignTagChips } from '../DesignTagChips';
 import type { SavedDesign } from '../../types';
 
 interface DesignListItemProps {
@@ -11,10 +13,15 @@ interface DesignListItemProps {
   onSelect: () => void;
   onDownloadJSON: () => void;
   onRename: (newName: string) => void;
+  onEditTags: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
   onFocus: () => void;
   itemRef: (el: HTMLLIElement | null) => void;
+  /** Bulk-selection mode: clicking toggles selection instead of loading. */
+  selectionActive?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 }
 
 /**
@@ -28,10 +35,14 @@ export function DesignListItem({
   onSelect,
   onDownloadJSON,
   onRename,
+  onEditTags,
   onDuplicate,
   onDelete,
   onFocus,
   itemRef,
+  selectionActive = false,
+  isSelected = false,
+  onToggleSelect,
 }: DesignListItemProps) {
   const t = useTranslation();
   const { formatRelativeDate } = useFormatting();
@@ -52,9 +63,14 @@ export function DesignListItem({
   const { width, depth, height, compartments } = design.params;
   const numCompartments = new Set(compartments.cells).size;
 
+  const activate = () => {
+    if (selectionActive) onToggleSelect?.();
+    else onSelect();
+  };
+
   const handleClick = () => {
     if (!isEditing) {
-      onSelect();
+      activate();
     }
   };
 
@@ -65,7 +81,7 @@ export function DesignListItem({
     }
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onSelect();
+      activate();
     }
   };
 
@@ -83,9 +99,11 @@ export function DesignListItem({
         cursor-pointer transition-colors outline-none
         focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-secondary
         ${
-          isActive
-            ? 'border-accent bg-accent/10 ring-1 ring-accent/30'
-            : 'border-stroke-subtle hover:bg-surface-hover'
+          isSelected
+            ? 'border-accent bg-accent/10 ring-1 ring-accent/40'
+            : isActive
+              ? 'border-accent bg-accent/10 ring-1 ring-accent/30'
+              : 'border-stroke-subtle hover:bg-surface-hover'
         }
       `}
     >
@@ -94,6 +112,22 @@ export function DesignListItem({
         <span className="absolute -top-2 left-3 rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface">
           {t('layouts.active')}
         </span>
+      )}
+
+      {/* Selection checkbox (bulk mode) */}
+      {selectionActive && (
+        <div
+          role="presentation"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelect?.();
+          }}
+        >
+          <Checkbox
+            checked={isSelected}
+            aria-label={t('binDesigner.selectDesign', { name: design.name })}
+          />
+        </div>
       )}
 
       {/* Thumbnail */}
@@ -137,6 +171,11 @@ export function DesignListItem({
         <p className="text-[11px] text-content-tertiary">
           {formatRelativeDate(design.updatedAt, { includeTime: true })}
         </p>
+        {design.tags && design.tags.length > 0 && (
+          <div className="mt-1">
+            <DesignTagChips tags={design.tags} />
+          </div>
+        )}
       </div>
 
       {/* Actions - always visible on touch, hover/focus on desktop */}
@@ -147,6 +186,7 @@ export function DesignListItem({
           onLoad={onSelect}
           onDownloadJSON={onDownloadJSON}
           onRename={startEditing}
+          onEditTags={onEditTags}
           onDuplicate={onDuplicate}
           onDelete={onDelete}
         />

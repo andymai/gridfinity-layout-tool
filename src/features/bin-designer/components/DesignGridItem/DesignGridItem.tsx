@@ -1,7 +1,9 @@
 import { useTranslation, useFormatting } from '@/i18n';
 import { useInlineEdit } from '@/shared/hooks';
+import { Checkbox } from '@/design-system';
 import { BinDesignThumbnail } from '../BinDesignThumbnail';
 import { DesignActions } from '../DesignActions';
+import { DesignTagChips } from '../DesignTagChips';
 import type { SavedDesign } from '../../types';
 
 interface DesignGridItemProps {
@@ -11,10 +13,15 @@ interface DesignGridItemProps {
   onSelect: () => void;
   onDownloadJSON: () => void;
   onRename: (newName: string) => void;
+  onEditTags: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
   onFocus: () => void;
   itemRef: (el: HTMLDivElement | null) => void;
+  /** Bulk-selection mode: clicking toggles selection instead of loading. */
+  selectionActive?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 }
 
 /**
@@ -29,10 +36,14 @@ export function DesignGridItem({
   onSelect,
   onDownloadJSON,
   onRename,
+  onEditTags,
   onDuplicate,
   onDelete,
   onFocus,
   itemRef,
+  selectionActive = false,
+  isSelected = false,
+  onToggleSelect,
 }: DesignGridItemProps) {
   const t = useTranslation();
   const { formatRelativeDate } = useFormatting();
@@ -53,9 +64,14 @@ export function DesignGridItem({
   const { width, depth, height, compartments } = design.params;
   const numCompartments = new Set(compartments.cells).size;
 
+  const activate = () => {
+    if (selectionActive) onToggleSelect?.();
+    else onSelect();
+  };
+
   const handleClick = () => {
     if (!isEditing) {
-      onSelect();
+      activate();
     }
   };
 
@@ -66,7 +82,7 @@ export function DesignGridItem({
     }
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onSelect();
+      activate();
     }
   };
 
@@ -83,9 +99,32 @@ export function DesignGridItem({
         group relative flex flex-col rounded-lg border-2
         cursor-pointer transition-colors outline-none overflow-hidden
         focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface-secondary
-        ${isActive ? 'border-accent' : 'border-transparent hover:border-accent/50'}
+        ${
+          isSelected
+            ? 'border-accent ring-2 ring-accent/40'
+            : isActive
+              ? 'border-accent'
+              : 'border-transparent hover:border-accent/50'
+        }
       `}
     >
+      {/* Selection checkbox (bulk mode) */}
+      {selectionActive && (
+        <div
+          className="absolute top-1.5 left-1.5 z-10"
+          role="presentation"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelect?.();
+          }}
+        >
+          <Checkbox
+            checked={isSelected}
+            aria-label={t('binDesigner.selectDesign', { name: design.name })}
+          />
+        </div>
+      )}
+
       {/* Active badge */}
       {isActive && (
         <span className="absolute top-1.5 right-1.5 z-10 rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface">
@@ -136,8 +175,15 @@ export function DesignGridItem({
             ` · ${t('binDesigner.compartmentsShort', { count: numCompartments })}`}
         </p>
 
-        {/* Date and actions row */}
-        <div className="flex items-center justify-between mt-1.5">
+        {design.tags && design.tags.length > 0 && (
+          <div className="mt-1">
+            <DesignTagChips tags={design.tags} />
+          </div>
+        )}
+
+        {/* Date and actions row — pinned to the bottom so dates align across a
+            row regardless of how many tags each card shows */}
+        <div className="flex items-center justify-between mt-auto pt-1.5">
           <p className="text-[10px] text-content-tertiary">
             {formatRelativeDate(design.updatedAt)}
           </p>
@@ -150,6 +196,7 @@ export function DesignGridItem({
               onLoad={onSelect}
               onDownloadJSON={onDownloadJSON}
               onRename={startEditing}
+              onEditTags={onEditTags}
               onDuplicate={onDuplicate}
               onDelete={onDelete}
             />

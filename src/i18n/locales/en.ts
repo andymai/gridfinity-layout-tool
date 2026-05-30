@@ -1902,6 +1902,33 @@ const en: Record<string, string> = {
   'binDesigner.moreActionsForDesign': 'More actions for {name}',
   'binDesigner.compartmentsShort': '{count} comp.',
 
+  // Design tags
+  'binDesigner.tags.addPlaceholder': 'Add a tag…',
+  'binDesigner.tags.max': 'Up to {count} tags',
+  'binDesigner.tags.remove': 'Remove tag {tag}',
+  'binDesigner.tags.editAction': 'Edit tags',
+  'binDesigner.tags.editForDesign': 'Edit tags for {name}',
+  'binDesigner.tags.save': 'Save',
+  'binDesigner.tags.filterLabel': 'Filter by tag',
+  'binDesigner.tags.clearFilter': 'Clear filters',
+
+  // Bulk selection / actions
+  'binDesigner.select': 'Select',
+  'binDesigner.selectDesign': 'Select {name}',
+  'binDesigner.bulk.selected': '{count} selected',
+  'binDesigner.bulk.selectAll': 'Select all',
+  'binDesigner.bulk.cancelSelection': 'Cancel',
+  'binDesigner.bulk.delete': 'Delete',
+  'binDesigner.bulk.export': 'Export',
+  'binDesigner.bulk.tag': 'Tag',
+  'binDesigner.bulk.deleteTitle': 'Delete designs',
+  'binDesigner.bulk.deleteConfirm': 'Delete {count} selected design(s)? This can’t be undone.',
+  'binDesigner.bulk.tagTitle': 'Add tags to {count} design(s)',
+  'binDesigner.bulk.tagApply': 'Add tags',
+  'binDesigner.bulk.toastDeleted': 'Deleted {count} design(s)',
+  'binDesigner.bulk.toastTagged': 'Tagged {count} design(s)',
+  'binDesigner.bulk.toastExported': 'Exported {count} design(s)',
+
   // Baseplate Generator (standalone feature)
   'baseplate.title': 'Baseplate',
   'baseplate.magnetHoles': 'Magnet holes',

@@ -20,6 +20,7 @@ describe('DesignActions', () => {
     onLoad: vi.fn(),
     onDownloadJSON: vi.fn(),
     onRename: vi.fn(),
+    onEditTags: vi.fn(),
     onDuplicate: vi.fn(),
     onDelete: vi.fn(),
   };
@@ -90,6 +91,20 @@ describe('DesignActions', () => {
 
     fireEvent.click(screen.getByRole('menuitem', { name: /rename/i }));
     expect(onRename).toHaveBeenCalled();
+  });
+
+  it('calls onEditTags when Edit tags is clicked', async () => {
+    const onEditTags = vi.fn();
+    render(<DesignActions {...defaultProps} onEditTags={onEditTags} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /more actions/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('menuitem', { name: /edit tags/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('menuitem', { name: /edit tags/i }));
+    expect(onEditTags).toHaveBeenCalled();
   });
 
   it('calls onDuplicate when Duplicate is clicked', async () => {
