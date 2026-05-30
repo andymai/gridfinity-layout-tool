@@ -38,7 +38,13 @@ export function addPlateFace(
   gridD: number,
   cells: ReadonlyArray<CellInfo>,
   z: number,
-  faceUp: boolean
+  faceUp: boolean,
+  /**
+   * Whether to fill the padding margin with a solid ring. False for over-tile,
+   * where the margin is tiled with frame pockets (passed in `cells`) instead —
+   * their openings + corner gussets cover the margin, so a ring would hide them.
+   */
+  drawRing = true
 ): void {
   const nz = faceUp ? 1 : -1;
   const gridHalfW = (gridW * gridUnitMm) / 2;
@@ -54,7 +60,7 @@ export function addPlateFace(
     );
   });
 
-  if (hasPadding) {
+  if (drawRing && hasPadding) {
     addRingFace(mb, outerPts, offsetX, offsetY, gridHalfW, gridHalfD, z, 0, 0, nz, faceUp);
   }
 

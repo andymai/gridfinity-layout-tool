@@ -589,3 +589,43 @@ describe('baseplateDirectMesh', () => {
     }
   });
 });
+
+describe('direct mesh — over-tile margin pockets', () => {
+  it('adds margin pockets (more triangles) while keeping the slab footprint', () => {
+    const padded = generateDirect(
+      defaults({ paddingLeft: 12, paddingRight: 12, paddingFront: 12, paddingBack: 12 }),
+      noop
+    );
+    const tiled = generateDirect(
+      defaults({
+        paddingLeft: 12,
+        paddingRight: 12,
+        paddingFront: 12,
+        paddingBack: 12,
+        overTile: true,
+      }),
+      noop
+    );
+
+    // Frame pockets cut into the margin → strictly more geometry.
+    expect(tiled.triangleCount).toBeGreaterThan(padded.triangleCount);
+    // Same outer slab footprint (additive — margins gain pockets, slab unchanged).
+    const a = computeBounds(padded.vertices);
+    const b = computeBounds(tiled.vertices);
+    expect(b.maxX - b.minX).toBeCloseTo(a.maxX - a.minX, 1);
+    expect(b.maxY - b.minY).toBeCloseTo(a.maxY - a.minY, 1);
+  });
+
+  it('leaves a sub-threshold margin alone (no pockets added)', () => {
+    const off = defaults({ paddingLeft: 3, paddingRight: 3, paddingFront: 3, paddingBack: 3 });
+    const on = defaults({
+      paddingLeft: 3,
+      paddingRight: 3,
+      paddingFront: 3,
+      paddingBack: 3,
+      overTile: true,
+    });
+    // 3mm margins are below the printable threshold → no frame pockets either way.
+    expect(generateDirect(on, noop).triangleCount).toBe(generateDirect(off, noop).triangleCount);
+  });
+});
