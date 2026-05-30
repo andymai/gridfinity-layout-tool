@@ -20,9 +20,11 @@ export interface ResolvedOverhang {
   readonly right: number;
   readonly front: number;
   readonly back: number;
+  /** Add grid-aligned feet under the overhang region (default false). */
+  readonly feet: boolean;
 }
 
-const ZERO: ResolvedOverhang = { left: 0, right: 0, front: 0, back: 0 };
+const ZERO: ResolvedOverhang = { left: 0, right: 0, front: 0, back: 0, feet: false };
 
 /**
  * Footprint expansion derived from an overhang: how much wider/deeper the outer
@@ -47,6 +49,7 @@ export function resolveOverhang(overhang: OverhangConfig | undefined): ResolvedO
     right: Math.max(0, overhang.right),
     front: Math.max(0, overhang.front),
     back: Math.max(0, overhang.back),
+    feet: overhang.feet ?? false,
   };
 }
 
@@ -69,5 +72,5 @@ export function overhangExpansion(o: ResolvedOverhang): OverhangExpansion {
 export function overhangKey(o: ResolvedOverhang): string {
   if (!hasOverhang(o)) return '0';
   const q = (n: number): number => Math.round(n * 100) / 100;
-  return `${q(o.left)},${q(o.right)},${q(o.front)},${q(o.back)}`;
+  return `${q(o.left)},${q(o.right)},${q(o.front)},${q(o.back)},${o.feet ? 'f' : ''}`;
 }

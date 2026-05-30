@@ -539,6 +539,8 @@
   "binDesigner.noSavedDesignsYet": "Aucun design enregistré",
   "binDesigner.openDesignList": "Ouvrir la liste des designs",
   "binDesigner.or": "ou",
+  "binDesigner.overhang.feet": "Pieds sous le débord",
+  "binDesigner.overhang.feetHint": "Ajoute des pieds alignés sur la grille sous le débord là où ils sont imprimables, au lieu d’un fond plat.",
   "binDesigner.overhang.hint": "Étend les parois vers l'extérieur pour combler un espace de tiroir. Les pieds de la base ne bougent pas, laissant un fond plat sous le débord.",
   "binDesigner.overhang.side.back": "Arrière",
   "binDesigner.overhang.side.front": "Avant",

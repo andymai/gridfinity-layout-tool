@@ -1500,6 +1500,9 @@ const en: Record<string, string> = {
   'binDesigner.overhang.side.right': 'Right',
   'binDesigner.overhang.side.front': 'Front',
   'binDesigner.overhang.side.back': 'Back',
+  'binDesigner.overhang.feet': 'Feet under overhang',
+  'binDesigner.overhang.feetHint':
+    'Add grid-aligned feet beneath the overhang where they fit to print, instead of a flat bottom.',
   'binDesigner.fingerScoop': 'Finger scoop',
   'binDesigner.fingerScoopUnavailableSlotted': 'Not available for slotted or solid bins',
   'binDesigner.scoopRadius': 'Radius',

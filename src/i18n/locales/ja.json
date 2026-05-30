@@ -539,6 +539,8 @@
   "binDesigner.noSavedDesignsYet": "保存済みデザインはまだありません",
   "binDesigner.openDesignList": "デザイン一覧を開く",
   "binDesigner.or": "または",
+  "binDesigner.overhang.feet": "オーバーハング下の脚",
+  "binDesigner.overhang.feetHint": "平らな底面の代わりに、印刷可能な箇所にグリッド整列した脚をオーバーハングの下に追加します。",
   "binDesigner.overhang.hint": "壁を外側に広げて引き出しの隙間を埋めます。ベースの脚はそのままで、オーバーハングの下は平らな底になります。",
   "binDesigner.overhang.side.back": "後",
   "binDesigner.overhang.side.front": "前",

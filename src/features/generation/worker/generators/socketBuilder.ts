@@ -33,8 +33,10 @@ import {
   SOCKET_TAPER_WIDTH,
   MIN_PRINTABLE_TILE_MM,
   forEachCell,
+  decomposeCells,
   type CellInfo,
 } from './generatorTypes';
+import { hasOverhang, type ResolvedOverhang } from './overhang';
 import { socketCacheKey, getSocketCache, setSocketCache } from './shapeCache';
 import {
   hasHalfBinDetail,
@@ -402,5 +404,109 @@ export function buildBaseSocket(
     }
 
     return setSocketCache(key, result); // result NOT registered — survives scope
+  });
+}
+
+interface OverhangAxisEntry {
+  readonly units: number;
+  /** Cell center in mm, in the bin-centered frame (nominal grid centered at 0). */
+  readonly center: number;
+  readonly strip: boolean;
+}
+
+/**
+ * Lay out one axis as `[startStrip?, ...nominal cells, endStrip?]`. Nominal
+ * cells keep their existing centered positions; an overhang strip is added
+ * outboard on a side only when it's at least `minStripMm` wide (else flat).
+ */
+function overhangAxisEntries(
+  grid: number,
+  startMm: number,
+  endMm: number,
+  gridUnitMm: number,
+  minStripMm: number
+): OverhangAxisEntry[] {
+  const totalNom = grid * gridUnitMm;
+  const entries: OverhangAxisEntry[] = [];
+  if (startMm >= minStripMm) {
+    entries.push({ units: startMm / gridUnitMm, center: -totalNom / 2 - startMm / 2, strip: true });
+  }
+  let offset = 0;
+  for (const s of decomposeCells(grid)) {
+    entries.push({ units: s, center: offset + (s * gridUnitMm) / 2 - totalNom / 2, strip: false });
+    offset += s * gridUnitMm;
+  }
+  if (endMm >= minStripMm) {
+    entries.push({ units: endMm / gridUnitMm, center: totalNom / 2 + endMm / 2, strip: true });
+  }
+  return entries;
+}
+
+/**
+ * Build the grid-aligned feet that sit under a bin's overhang region.
+ *
+ * The nominal feet (origin-centered) come from {@link buildBaseSocket}; this
+ * adds the "frame" of feet around them — the 2D product of per-axis cell lists
+ * where at least one axis is an overhang strip (edge strips subdivided per
+ * nominal cell, plus corners). Strips narrower than the printable threshold are
+ * dropped, leaving a flat bottom there. Returns `null` when there's no overhang
+ * or every strip is sub-threshold. Caller fuses the result onto the base socket.
+ */
+export function buildOverhangFeet(
+  gridW: number,
+  gridD: number,
+  overhang: ResolvedOverhang,
+  gridUnitMm: number,
+  forExport: boolean
+): Shape3D | null {
+  if (!hasOverhang(overhang)) return null;
+  const xs = overhangAxisEntries(
+    gridW,
+    overhang.left,
+    overhang.right,
+    gridUnitMm,
+    MIN_PRINTABLE_TILE_MM
+  );
+  const ys = overhangAxisEntries(
+    gridD,
+    overhang.front,
+    overhang.back,
+    gridUnitMm,
+    MIN_PRINTABLE_TILE_MM
+  );
+
+  const frame: CellInfo[] = [];
+  for (const x of xs) {
+    for (const y of ys) {
+      // Nominal×nominal feet are produced by the base socket — skip them here.
+      if (!x.strip && !y.strip) continue;
+      frame.push({
+        widthUnits: x.units,
+        depthUnits: y.units,
+        centerX: x.center,
+        centerY: y.center,
+      });
+    }
+  }
+  if (frame.length === 0) return null;
+
+  return withScope((scope: DisposalScope) => {
+    const sockets: Shape3D[] = frame.map((cell) => {
+      const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
+      const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
+      return translate(
+        scope.register(
+          forExport
+            ? buildSingleCellSocket(cellW_mm, cellD_mm)
+            : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
+        ),
+        [cell.centerX, cell.centerY, 0]
+      );
+    });
+    const result = unwrap(fuseAll(sockets as ValidSolid[], { optimisation: 'commonFace' }));
+    for (const s of sockets) {
+      if (s !== result) s.delete();
+    }
+    return result; // NOT registered — survives scope
   });
 }

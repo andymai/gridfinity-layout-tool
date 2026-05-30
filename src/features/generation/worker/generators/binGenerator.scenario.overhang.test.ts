@@ -79,3 +79,47 @@ describe('bin overhang geometry', () => {
     expect(bb.maxY - bb.minY).toBeCloseTo(base.maxY - base.minY, 1);
   });
 });
+
+describe('overhang feet toggle', () => {
+  const OVERHANG = { left: 12, right: 12, front: 12, back: 12 };
+
+  it('adds grid-aligned feet under the overhang without dropping the bottom', () => {
+    const generateBin = getGenerateBin();
+    const flat = generateBin(
+      buildParams({ width: 2, depth: 2, overhang: { ...OVERHANG, feet: false } }),
+      undefined,
+      true
+    );
+    const withFeet = generateBin(
+      buildParams({ width: 2, depth: 2, overhang: { ...OVERHANG, feet: true } }),
+      undefined,
+      true
+    );
+    assertStructurallyValid(withFeet, 'overhang feet');
+
+    const flatBB = boundingBox(flat.vertices);
+    const feetBB = boundingBox(withFeet.vertices);
+    // Same outer body footprint + bottom (feet don't drop below the nominal feet)
+    expect(feetBB.maxX - feetBB.minX).toBeCloseTo(flatBB.maxX - flatBB.minX, 1);
+    expect(feetBB.minZ).toBeCloseTo(flatBB.minZ, 1);
+    // Frame feet add geometry under the overhang strips/corners.
+    expect(withFeet.triangleCount).toBeGreaterThan(flat.triangleCount);
+  });
+
+  it('drops sub-threshold overhang strips (no feet, equals flat bottom)', () => {
+    const generateBin = getGenerateBin();
+    // 3mm per side is below the printable foot threshold → no frame feet.
+    const tiny = { left: 3, right: 3, front: 3, back: 3 };
+    const flat = generateBin(
+      buildParams({ width: 2, depth: 2, overhang: { ...tiny, feet: false } }),
+      undefined,
+      true
+    );
+    const withFeet = generateBin(
+      buildParams({ width: 2, depth: 2, overhang: { ...tiny, feet: true } }),
+      undefined,
+      true
+    );
+    expect(withFeet.triangleCount).toBe(flat.triangleCount);
+  });
+});

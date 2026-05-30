@@ -11,7 +11,7 @@ describe('DesignerStore - overhang actions', () => {
     updateOverhang({ right: 5 });
 
     const { overhang } = useDesignerStore.getState().params;
-    expect(overhang).toEqual({ left: 0, right: 5, front: 0, back: 0 });
+    expect(overhang).toEqual({ left: 0, right: 5, front: 0, back: 0, feet: false });
   });
 
   it('merges successive partial updates', () => {
@@ -20,7 +20,15 @@ describe('DesignerStore - overhang actions', () => {
     updateOverhang({ back: 3 });
 
     const { overhang } = useDesignerStore.getState().params;
-    expect(overhang).toEqual({ left: 2, right: 0, front: 0, back: 3 });
+    expect(overhang).toEqual({ left: 2, right: 0, front: 0, back: 3, feet: false });
+  });
+
+  it('toggles the feet flag while preserving side values', () => {
+    const { updateOverhang } = useDesignerStore.getState();
+    updateOverhang({ left: 5, feet: true });
+
+    const { overhang } = useDesignerStore.getState().params;
+    expect(overhang).toEqual({ left: 5, right: 0, front: 0, back: 0, feet: true });
   });
 
   it('clamps negative values to zero (outward-only)', () => {

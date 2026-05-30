@@ -92,6 +92,14 @@ export function ParameterPanel() {
           >
             <DimensionsSection />
           </div>
+          <div
+            data-help-target="bd-overhang"
+            className="px-4 py-4 border-b border-stroke-subtle/50"
+          >
+            {/* Advanced drawer-fit control next to the dimensions; collapsed by
+                default and gated off internally for custom-shape (mask) bins. */}
+            <OverhangSection />
+          </div>
           <div data-help-target="bd-shape" className="px-4 py-4 border-b border-stroke-subtle/50">
             <ShapeSection />
           </div>
@@ -108,14 +116,6 @@ export function ParameterPanel() {
             {/* Wall thickness works for any footprint; pattern/cutouts/handle
                 gate themselves inside WallsSection. */}
             <WallsSection />
-          </div>
-          <div
-            data-help-target="bd-overhang"
-            className="px-4 py-4 border-b border-stroke-subtle/50"
-          >
-            {/* Overhang grows the outer body to fill a drawer gap; gated off
-                internally for custom-shape (mask) bins. */}
-            <OverhangSection />
           </div>
           <div data-help-target="bd-lid" className="px-4 py-4">
             {/* Lid is a companion piece auto-fit to the bin's lip. Internally

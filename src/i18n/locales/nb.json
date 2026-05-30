@@ -539,6 +539,8 @@
   "binDesigner.noSavedDesignsYet": "Ingen lagrede design ennå",
   "binDesigner.openDesignList": "Åpne designliste",
   "binDesigner.or": "eller",
+  "binDesigner.overhang.feet": "Føtter under overhenget",
+  "binDesigner.overhang.feetHint": "Legg til rutejusterte føtter under overhenget der det er plass til å skrive dem ut, i stedet for en flat bunn.",
   "binDesigner.overhang.hint": "Utvider veggene utover for å fylle en skuffeåpning. Basisføttene blir værende, slik at det blir en flat bunn under overhenget.",
   "binDesigner.overhang.side.back": "Bak",
   "binDesigner.overhang.side.front": "Foran",

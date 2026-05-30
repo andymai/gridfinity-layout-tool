@@ -5,9 +5,9 @@ import { useTranslation } from '@/i18n';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { OverhangConfig } from '@/features/bin-designer/types';
 
-const ZERO_OVERHANG: OverhangConfig = { left: 0, right: 0, front: 0, back: 0 };
+const ZERO_OVERHANG: OverhangConfig = { left: 0, right: 0, front: 0, back: 0, feet: false };
 
-export type OverhangSide = keyof OverhangConfig;
+export type OverhangSide = 'left' | 'right' | 'front' | 'back';
 
 export function useOverhangSection() {
   const { overhang, updateOverhang, isCustomShape } = useDesignerStore(
@@ -25,6 +25,10 @@ export function useOverhangSection() {
     },
     [updateOverhang]
   );
+
+  const toggleFeet = useCallback(() => {
+    updateOverhang({ feet: !(overhang.feet ?? false) });
+  }, [overhang.feet, updateOverhang]);
 
   const total = overhang.left + overhang.right + overhang.front + overhang.back;
 
@@ -45,8 +49,8 @@ export function useOverhangSection() {
   const disabledReason = isCustomShape ? t('binDesigner.shape.custom.hint') : undefined;
 
   return {
-    state: { overhang, isCustomShape },
-    handlers: { setSide },
+    state: { overhang, isCustomShape, feet: overhang.feet ?? false, hasOverhang: total > 0 },
+    handlers: { setSide, toggleFeet },
     meta: { summary, disabledReason },
     t,
   };

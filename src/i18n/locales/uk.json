@@ -539,6 +539,8 @@
   "binDesigner.noSavedDesignsYet": "Збережених дизайнів ще немає",
   "binDesigner.openDesignList": "Відкрити список дизайнів",
   "binDesigner.or": "або",
+  "binDesigner.overhang.feet": "Ніжки під виступом",
+  "binDesigner.overhang.feetHint": "Додає вирівняні по сітці ніжки під виступом там, де їх можна надрукувати, замість плаского дна.",
   "binDesigner.overhang.hint": "Розширює стінки назовні, щоб заповнити проміжок у шухляді. Ніжки основи залишаються на місці, утворюючи пласке дно під виступом.",
   "binDesigner.overhang.side.back": "Ззаду",
   "binDesigner.overhang.side.front": "Спереду",

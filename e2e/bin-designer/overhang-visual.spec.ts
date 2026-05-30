@@ -1,9 +1,10 @@
 /**
  * One-shot visual verification for per-side bin overhang (#1641).
  *
- * Confirms the Overhang panel renders its four per-side controls and that
- * driving one side actually changes the 3D preview — closing the
- * panel → store → worker → canvas loop, not just the unit/store tests.
+ * Confirms the Overhang panel (a collapsed-by-default disclosure near the
+ * dimension controls) drives the 3D preview: expanding it, setting a side, and
+ * toggling feet-under-overhang each change the canvas — closing the
+ * panel → store → worker → canvas loop.
  *
  * Run with: `pnpm test:e2e e2e/bin-designer/overhang-visual.spec.ts`
  */
@@ -24,7 +25,7 @@ async function waitForGenerationComplete(page: Page): Promise<void> {
 }
 
 test.describe('Bin overhang — visual', () => {
-  test('overhang panel renders and drives the 3D preview', async ({ page }) => {
+  test('overhang panel drives the 3D preview, including the feet toggle', async ({ page }) => {
     test.setTimeout(180_000);
     await page.goto('/designer');
 
@@ -32,17 +33,22 @@ test.describe('Bin overhang — visual', () => {
     await expect(canvas).toBeVisible({ timeout: 120_000 });
     await waitForGenerationComplete(page);
 
-    // The Overhang section + its four per-side controls render.
-    await expect(page.getByText('Overhang', { exact: true })).toBeVisible({ timeout: 15_000 });
+    // Collapsed by default: the header reports aria-expanded=false.
+    const header = page.getByRole('button', { name: /^Overhang/i });
+    await expect(header).toBeVisible({ timeout: 15_000 });
+    await expect(header).toHaveAttribute('aria-expanded', 'false');
+
+    // Expand the disclosure → the four per-side controls + feet toggle appear.
+    await header.click();
+    await expect(header).toHaveAttribute('aria-expanded', 'true');
     for (const side of ['Left', 'Right', 'Front', 'Back']) {
       await expect(page.getByText(side, { exact: true }).first()).toBeVisible();
     }
+    await expect(page.getByText(/Feet under overhang/i)).toBeVisible();
 
     const beforeBuf = await canvas.screenshot();
 
     // Drive the "Right" overhang badge → type an outward expansion.
-    // Default badges read "0 mm"; the overhang sliders are the only zero-mm
-    // sliders on the designer panel.
     const zeroBadges = page.getByRole('button', { name: '0 mm' });
     await expect(zeroBadges.nth(1)).toBeVisible({ timeout: 10_000 });
     await zeroBadges.nth(1).click();
@@ -51,12 +57,20 @@ test.describe('Bin overhang — visual', () => {
     await page.keyboard.press('Enter');
 
     await waitForGenerationComplete(page);
-    const afterBuf = await canvas.screenshot();
+    const afterOverhang = await canvas.screenshot();
+    expect(beforeBuf.equals(afterOverhang)).toBe(false);
 
-    // Load-bearing: if the panel didn't drive generation the buffers match.
-    expect(beforeBuf.equals(afterBuf)).toBe(false);
+    // Toggle feet-under-overhang → the base geometry changes again.
+    await page.getByText(/Feet under overhang/i).click();
+    await waitForGenerationComplete(page);
+    const afterFeet = await canvas.screenshot();
+    expect(afterOverhang.equals(afterFeet)).toBe(false);
 
     await test.info().attach('overhang-before.png', { body: beforeBuf, contentType: 'image/png' });
-    await test.info().attach('overhang-after.png', { body: afterBuf, contentType: 'image/png' });
+    await test.info().attach('overhang-expanded.png', {
+      body: afterOverhang,
+      contentType: 'image/png',
+    });
+    await test.info().attach('overhang-feet.png', { body: afterFeet, contentType: 'image/png' });
   });
 });

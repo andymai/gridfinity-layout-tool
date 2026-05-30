@@ -539,6 +539,8 @@
   "binDesigner.noSavedDesignsYet": "Nog geen opgeslagen designs",
   "binDesigner.openDesignList": "Designlijst openen",
   "binDesigner.or": "of",
+  "binDesigner.overhang.feet": "Voetjes onder de overhang",
+  "binDesigner.overhang.feetHint": "Voeg rasteruitgelijnde voetjes onder de overhang toe waar ze printbaar zijn, in plaats van een vlakke bodem.",
   "binDesigner.overhang.hint": "Laat de wanden naar buiten groeien om een ladekier te vullen. De basisvoeten blijven staan, met een vlakke bodem onder de overhang.",
   "binDesigner.overhang.side.back": "Achter",
   "binDesigner.overhang.side.front": "Voor",

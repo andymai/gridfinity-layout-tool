@@ -395,6 +395,13 @@ export interface OverhangConfig {
   readonly right: number;
   readonly front: number;
   readonly back: number;
+  /**
+   * When true, add grid-aligned gridfinity feet under the overhang region
+   * (clipped feet in any strip/corner wide enough to print; flat elsewhere).
+   * When false (default), the overhang has a flat bottom — feet stay at the
+   * nominal footprint.
+   */
+  readonly feet?: boolean;
 }
 
 // Wall Pattern Types

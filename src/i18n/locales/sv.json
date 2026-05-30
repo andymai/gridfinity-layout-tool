@@ -539,6 +539,8 @@
   "binDesigner.noSavedDesignsYet": "Inga sparade designer ännu",
   "binDesigner.openDesignList": "Öppna designlista",
   "binDesigner.or": "eller",
+  "binDesigner.overhang.feet": "Fötter under överhänget",
+  "binDesigner.overhang.feetHint": "Lägg till rutnätsjusterade fötter under överhänget där de får plats att skrivas ut, i stället för en plan botten.",
   "binDesigner.overhang.hint": "Utvidgar väggarna utåt för att fylla en lådspringa. Basfötterna stannar kvar, vilket ger en plan botten under överhänget.",
   "binDesigner.overhang.side.back": "Bak",
   "binDesigner.overhang.side.front": "Fram",

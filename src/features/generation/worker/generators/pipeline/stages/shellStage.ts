@@ -12,8 +12,9 @@ import { unwrap, fuse, translate, withScope } from 'brepjs';
 import type { DisposalScope } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
-import { buildBaseSocket } from '../../socketBuilder';
+import { buildBaseSocket, buildOverhangFeet } from '../../socketBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
+import { hasOverhang } from '../../overhang';
 import {
   buildCompartmentCavityDrawings,
   buildCompartmentsCacheKey,
@@ -113,7 +114,7 @@ export const shellStage: PipelineStage = {
       // Box uses BOX_CORNER_RADIUS (3.75mm) while socket uses SOCKET_CORNER_RADIUS
       // (4mm), so they do NOT share a common face at Z=0 — full boolean required.
       scope.register(binBody);
-      const base = scope.register(
+      let base = scope.register(
         buildBaseSocket(
           params.width,
           params.depth,
@@ -128,6 +129,19 @@ export const shellStage: PipelineStage = {
           params.cellMask
         )
       );
+      // Optional grid-aligned feet under the overhang region (flat bottom otherwise).
+      if (dim.overhang.feet && hasOverhang(dim.overhang)) {
+        const feet = buildOverhangFeet(
+          params.width,
+          params.depth,
+          dim.overhang,
+          params.gridUnitMm,
+          true
+        );
+        if (feet) {
+          base = scope.register(unwrap(fuse(base, scope.register(feet))));
+        }
+      }
       collectOrigins(base, FeatureTag.SOCKET, originToTag);
 
       checkCancelled(signal);

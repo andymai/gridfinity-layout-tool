@@ -539,6 +539,8 @@
   "binDesigner.noSavedDesignsYet": "Nenhum design salvo ainda",
   "binDesigner.openDesignList": "Abrir lista de designs",
   "binDesigner.or": "ou",
+  "binDesigner.overhang.feet": "Pés sob a saliência",
+  "binDesigner.overhang.feetHint": "Adiciona pés alinhados à grade sob a saliência onde couberem para imprimir, em vez de um fundo plano.",
   "binDesigner.overhang.hint": "Expande as paredes para fora para preencher a folga da gaveta. Os pés da base permanecem no lugar, deixando um fundo plano sob a saliência.",
   "binDesigner.overhang.side.back": "Trás",
   "binDesigner.overhang.side.front": "Frente",
