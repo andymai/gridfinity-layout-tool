@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.129.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.129.0...gridfinity-layout-tool-v4.129.1) (2026-05-30)
+
+
+### Bug Fixes
+
+* **print-export:** make print-bed link toggle clearly visible ([#1943](https://github.com/andymai/gridfinity-layout-tool/issues/1943)) ([c780f99](https://github.com/andymai/gridfinity-layout-tool/commit/c780f993fcf071e64696f1220418fb196461a3c0)), closes [#1938](https://github.com/andymai/gridfinity-layout-tool/issues/1938)
+
 ## [4.129.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.128.0...gridfinity-layout-tool-v4.129.0) (2026-05-30)
 
 
