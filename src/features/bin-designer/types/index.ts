@@ -400,6 +400,12 @@ export interface OverhangConfig {
    * (clipped feet in any strip/corner wide enough to print; flat elsewhere).
    * When false (default), the overhang has a flat bottom — feet stay at the
    * nominal footprint.
+   *
+   * Compatibility rule: these feet seat in an over-tiled baseplate's edge
+   * pockets only when the per-side overhang equals the baseplate's per-side
+   * padding (and the bin sits against that wall). Both use the same `frameCells`
+   * layout, and the foot is `CLEARANCE` smaller than the pocket — see
+   * `overtileFit.scenario.test.ts`.
    */
   readonly feet?: boolean;
 }
