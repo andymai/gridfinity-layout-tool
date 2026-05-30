@@ -206,3 +206,76 @@ export function forEachCell(
     xOffset += cellW_units * unit;
   }
 }
+
+/** Per-side margin widths in mm around a grid (left/right = X, front/back = Y). */
+export interface SideMargins {
+  readonly left: number;
+  readonly right: number;
+  readonly front: number;
+  readonly back: number;
+}
+
+interface MarginAxisEntry {
+  readonly units: number;
+  /** Cell center in mm, origin-centered to match {@link forEachCell}. */
+  readonly center: number;
+  readonly margin: boolean;
+}
+
+function marginAxisEntries(
+  grid: number,
+  startMm: number,
+  endMm: number,
+  unit: number,
+  minMm: number
+): MarginAxisEntry[] {
+  const totalNom = grid * unit;
+  const entries: MarginAxisEntry[] = [];
+  if (startMm >= minMm) {
+    entries.push({ units: startMm / unit, center: -totalNom / 2 - startMm / 2, margin: true });
+  }
+  let offset = 0;
+  for (const s of decomposeCells(grid)) {
+    entries.push({ units: s, center: offset + (s * unit) / 2 - totalNom / 2, margin: false });
+    offset += s * unit;
+  }
+  if (endMm >= minMm) {
+    entries.push({ units: endMm / unit, center: totalNom / 2 + endMm / 2, margin: true });
+  }
+  return entries;
+}
+
+/**
+ * Build the "frame" of clipped cells around a nominal grid — used to fill a
+ * margin (bin overhang region, or baseplate drawer-fit padding) with
+ * grid-aligned cells. Returns the 2D product of per-axis entries where at least
+ * one axis is a margin strip (edge strips subdivided per nominal cell, plus
+ * corners). Nominal×nominal cells are NOT included — the caller already has
+ * those. A margin narrower than `minStripMm` is dropped (left flat/solid).
+ *
+ * Cell centers are origin-centered to match {@link forEachCell}, so frame cells
+ * compose directly with the nominal grid.
+ */
+export function frameCells(
+  gridW: number,
+  gridD: number,
+  margins: SideMargins,
+  gridUnitMm: number,
+  minStripMm: number
+): CellInfo[] {
+  const xs = marginAxisEntries(gridW, margins.left, margins.right, gridUnitMm, minStripMm);
+  const ys = marginAxisEntries(gridD, margins.front, margins.back, gridUnitMm, minStripMm);
+  const cells: CellInfo[] = [];
+  for (const x of xs) {
+    for (const y of ys) {
+      if (!x.margin && !y.margin) continue;
+      cells.push({
+        widthUnits: x.units,
+        depthUnits: y.units,
+        centerX: x.center,
+        centerY: y.center,
+      });
+    }
+  }
+  return cells;
+}

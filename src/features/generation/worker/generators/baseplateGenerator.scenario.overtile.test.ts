@@ -2,10 +2,10 @@
 /**
  * Geometry validation for baseplate over-tile mode (issue #1641).
  *
- * Over-tile converts the drawer-fit padding into a functional clipped grid tile
- * per axis (sliver leftovers fall back to solid padding). The drawer span is
- * unchanged, so the slab AABB matches the padded baseplate; what differs is that
- * the padding margin is now pocketed grid rather than solid plastic.
+ * Over-tile is additive: it keeps the standard grid + slab and cuts grid-aligned
+ * clipped pockets into the drawer-fit padding margins (per-side; a margin below
+ * the printable threshold stays solid padding). The slab AABB is unchanged — the
+ * padding region just gains pockets instead of solid plastic.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initBrepjs, getGenerateBaseplate } from './__kernel-tests__/wasmInit';
@@ -25,10 +25,10 @@ const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => 
   magnetHoles: false,
   magnetDiameter: 6.5,
   magnetDepth: 2.4,
-  paddingLeft: 6,
-  paddingRight: 6,
-  paddingFront: 6,
-  paddingBack: 6,
+  paddingLeft: 12,
+  paddingRight: 12,
+  paddingFront: 12,
+  paddingBack: 12,
   fractionalEdgeX: 'end',
   fractionalEdgeY: 'end',
   lightweight: true,
@@ -36,7 +36,7 @@ const defaults = (overrides: Partial<BaseplateParams> = {}): BaseplateParams => 
 });
 
 describe('baseplate over-tile geometry', () => {
-  it('produces a valid slab matching the drawer span (padding becomes tiles)', () => {
+  it('adds margin pockets while keeping the same slab footprint', () => {
     const gen = getGenerateBaseplate();
     const padded = boundingBox(gen(defaults({ overTile: false }), NO_OP, true).vertices);
 
@@ -44,12 +44,35 @@ describe('baseplate over-tile geometry', () => {
     assertStructurallyValid(result, 'over-tile');
     const tiled = boundingBox(result.vertices);
 
-    // Same drawer footprint — over-tile only redistributes the margin into grid.
+    // Additive — the slab outer footprint is unchanged.
     expect(tiled.maxX - tiled.minX).toBeCloseTo(padded.maxX - padded.minX, 1);
     expect(tiled.maxY - tiled.minY).toBeCloseTo(padded.maxY - padded.minY, 1);
-    // More pocketed cells than the padded plate → more triangles.
+    // The 12mm margins (>= the 8mm threshold) gain clipped pockets → more triangles.
     const paddedTris = gen(defaults({ overTile: false }), NO_OP, true).triangleCount;
     expect(result.triangleCount).toBeGreaterThan(paddedTris);
+  });
+
+  it('over-tiles per side: tiles a wide margin, leaves a sliver margin solid', () => {
+    const gen = getGenerateBaseplate();
+    // X margins 12mm (tiled), Y margins 3mm (sub-threshold → stay solid padding).
+    const params = defaults({
+      overTile: true,
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingFront: 3,
+      paddingBack: 3,
+    });
+    const off = defaults({
+      overTile: false,
+      paddingLeft: 12,
+      paddingRight: 12,
+      paddingFront: 3,
+      paddingBack: 3,
+    });
+    const result = gen(params, NO_OP, true);
+    assertStructurallyValid(result, 'mixed per-side over-tile');
+    // X margins add pockets; Y margins don't → still more triangles than padded.
+    expect(result.triangleCount).toBeGreaterThan(gen(off, NO_OP, true).triangleCount);
   });
 
   it('falls back to solid padding when the leftover is a sliver', () => {

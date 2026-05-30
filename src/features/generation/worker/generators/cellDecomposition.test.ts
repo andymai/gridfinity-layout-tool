@@ -3,6 +3,7 @@ import {
   decomposeCells,
   decomposeHalfCells,
   forEachCell,
+  frameCells,
   computeCellBoundariesMm,
 } from './cellDecomposition';
 import type { CellInfo } from './cellDecomposition';
@@ -225,5 +226,39 @@ describe('computeCellBoundariesMm', () => {
     // depth=2.5, grid=50 → cells [1,1,0.5] frac=end. Boundaries at 50, 100.
     // Centered at 62.5 → -12.5, 37.5.
     expect(computeCellBoundariesMm(2.5, 50, 'end')).toEqual([-12.5, 37.5]);
+  });
+});
+
+describe('frameCells', () => {
+  const NONE = { left: 0, right: 0, front: 0, back: 0 };
+
+  it('returns no cells when there are no margins', () => {
+    expect(frameCells(3, 2, NONE, 42, 8)).toEqual([]);
+  });
+
+  it('builds a full frame around the grid when all margins clear the threshold', () => {
+    // 2×2 grid, 12mm margins all sides: axes are [margin,1,1,margin] each →
+    // 4×4 product minus the 2×2 nominal interior = 12 frame cells.
+    const cells = frameCells(2, 2, { left: 12, right: 12, front: 12, back: 12 }, 42, 8);
+    expect(cells).toHaveLength(12);
+    // Margin strip cell width = 12/42 units; left strip sits beyond the grid
+    // edge at -(2*42)/2 = -42.
+    const left = cells.find((c) => c.centerX < -42);
+    expect(left?.widthUnits).toBeCloseTo(12 / 42, 6);
+  });
+
+  it('drops a sub-threshold margin (per-side)', () => {
+    // Left 12mm (kept), right 3mm (dropped) → only the left strip + its corners.
+    const cells = frameCells(2, 2, { left: 12, right: 3, front: 0, back: 0 }, 42, 8);
+    // Only the left strip subdivided per nominal row (2 cells), no right/corners.
+    expect(cells).toHaveLength(2);
+    expect(cells.every((c) => c.centerX < 0)).toBe(true);
+  });
+
+  it('places margin strips outboard of the nominal grid', () => {
+    const cells = frameCells(2, 2, { left: 0, right: 0, front: 0, back: 12 }, 42, 8);
+    // Back (+Y) strip only: 2 cells (one per nominal column), beyond +Y grid edge.
+    expect(cells).toHaveLength(2);
+    expect(cells.every((c) => c.centerY > 42)).toBe(true);
   });
 });

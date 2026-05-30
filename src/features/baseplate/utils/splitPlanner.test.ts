@@ -758,6 +758,26 @@ describe('pieceToBaseplateParams', () => {
     expect(result.paddingRight).toBe(0); // join edge
   });
 
+  it('propagates overTile to pieces so split plates fill their margins', () => {
+    const on = makeParams({
+      width: 10,
+      depth: 8,
+      paddingLeft: 12,
+      paddingRight: 12,
+      overTile: true,
+    });
+    const tiling = computeBaseplateTiling(on, 256);
+    expect(tiling.isSplit).toBe(true);
+    for (const piece of tiling.pieces) {
+      expect(pieceToBaseplateParams(piece, on).overTile).toBe(true);
+    }
+    // Off (or unset) stays off.
+    const off = makeParams({ width: 10, depth: 8, paddingLeft: 12, paddingRight: 12 });
+    expect(
+      pieceToBaseplateParams(computeBaseplateTiling(off, 256).pieces[0], off).overTile
+    ).toBeFalsy();
+  });
+
   it('defaults fractionalEdge to end when piece has none', () => {
     const parent = makeParams({ width: 10, depth: 4 });
     const tiling = computeBaseplateTiling(parent, 256);
