@@ -526,6 +526,9 @@ export function pieceToBaseplateParams(
     fractionalEdgeX: flipX ? flip(fracX) : fracX,
     fractionalEdgeY: flipY ? flip(fracY) : fracY,
     edges: rot ? rotateEdges180(piece.edges) : piece.edges,
+    // overTile is intentionally not propagated: it's a whole-drawer concept, and
+    // the split planner already resolves per-piece fractional edges + paddings on
+    // the integer grid. Split pieces therefore render with solid padding (v1).
     connectorNubs: parentParams.connectorNubs,
     // Dovetail key seams are symmetric, so connectorStyle is rotation-invariant —
     // copy it straight through (unlike padding/edges, which rotate with `rot`).

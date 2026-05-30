@@ -46,6 +46,10 @@ import { buildMaskDrawing, buildMaskDrawingInset, buildMaskHoleDrawings } from '
 
 const logger = createLogger('boxBuilder');
 
+function translateDrawing(d: Drawing, offX: number, offY: number): Drawing {
+  return offX !== 0 || offY !== 0 ? d.translate(offX, offY) : d;
+}
+
 /**
  * Build a hollow-walls + closed-floor shell without relying on brepjs
  * `shell()`. brepjs 15.x's shell operation fails on concave-perimeter
@@ -201,8 +205,7 @@ export function buildBinBox(
    */
   // Asymmetric overhang shifts the centered rounded-rect off the origin so the
   // wider side reaches further out; symmetric/zero overhang leaves it centered.
-  const recenter = (d: Drawing): Drawing =>
-    offX !== 0 || offY !== 0 ? d.translate(offX, offY) : d;
+  const recenter = (d: Drawing): Drawing => translateDrawing(d, offX, offY);
 
   const makeFootprint = (): Drawing =>
     polygon
@@ -445,8 +448,7 @@ function buildTopShapeLoft(
     const d = outerD - 2 * inset;
     const r = Math.max(BOX_CORNER_RADIUS - inset, 0.1);
     const rect = drawRoundedRectangle(w, d, r);
-    const placed = offX !== 0 || offY !== 0 ? rect.translate(offX, offY) : rect;
-    return placed.sketchOnPlane('XY', z) as Sketch;
+    return translateDrawing(rect, offX, offY).sketchOnPlane('XY', z) as Sketch;
   };
 
   // Outer: rectangular tube at bin outer edge (2 sections → no extra edges)
@@ -608,10 +610,7 @@ function buildTopShapeSweep(
     const outerRect = drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS);
     const boxSketch = polygon
       ? (buildMaskDrawing(cellMask, gridUnitMm).sketchOnPlane() as Sketch)
-      : ((offX !== 0 || offY !== 0
-          ? outerRect.translate(offX, offY)
-          : outerRect
-        ).sketchOnPlane() as Sketch);
+      : (translateDrawing(outerRect, offX, offY).sketchOnPlane() as Sketch);
     let swept: Shape3D = boxSketch.sweepSketch(topProfile, { withContact: true });
 
     for (const hole of holeDrawings) {

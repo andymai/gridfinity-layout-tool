@@ -311,6 +311,22 @@ describe('migrateBaseplateParams', () => {
     expect(result.connectorNubs).toBeUndefined();
   });
 
+  it('preserves overTile across a save/load round-trip', () => {
+    const base = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 6,
+      paddingRight: 6,
+      paddingFront: 0,
+      paddingBack: 0,
+    };
+    expect(migrateBaseplateParams({ ...base, overTile: true }).overTile).toBe(true);
+    expect(migrateBaseplateParams({ ...base, overTile: false }).overTile).toBe(false);
+    // Absent → undefined (treated as off downstream)
+    expect(migrateBaseplateParams(base).overTile).toBeUndefined();
+  });
+
   it('returns defaults for null input', () => {
     const result = migrateBaseplateParams(null);
     expect(result.magnetHoles).toBe(false);
