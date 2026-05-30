@@ -79,7 +79,7 @@ export function PrintBedInput({
     ? 'input w-14 py-0.5 px-1 text-xs text-right'
     : 'input w-20 h-10 text-center';
   const iconSize = isCompact ? 'w-3 h-3' : 'w-4 h-4';
-  const btnClass = `flex-shrink-0 rounded text-content-disabled hover:text-content-tertiary transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent ${isCompact ? 'p-0.5' : 'p-1'}`;
+  const btnClass = `flex-shrink-0 rounded border border-stroke-subtle text-content-secondary hover:text-content hover:bg-surface-hover hover:border-stroke transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent ${isCompact ? 'p-0.5' : 'p-1'}`;
 
   const linkButton = (
     <button
