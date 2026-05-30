@@ -15,12 +15,14 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
+import { MIN_PRINTABLE_TILE_MM } from './generatorConstants';
 
 /**
  * Smallest printable clipped tile, in mm. Below this the pocket walls get too
- * thin/short to be useful, so the axis keeps solid padding instead.
+ * thin/short to be useful, so the axis keeps solid padding instead. Shares the
+ * project-wide printable-tile floor so it can't drift from the bin foot rule.
  */
-export const MIN_OVERTILE_TILE_MM = 8;
+export const MIN_OVERTILE_TILE_MM = MIN_PRINTABLE_TILE_MM;
 
 const EPS = 1e-9;
 
@@ -64,9 +66,10 @@ function resolveAxis(
   const units = spanMm / gridUnitMm;
   const fullTiles = Math.floor(units + EPS);
   const remainderMm = (units - fullTiles) * gridUnitMm;
-  // A leftover at/above the threshold becomes a clipped tile; anything smaller
-  // is an unprintable sliver, so keep solid padding on this axis.
-  if (remainderMm < minTileMm - EPS) {
+  // A whole-unit leftover (remainder ~0, e.g. padding exactly = one grid unit)
+  // tiles cleanly as full cells. Only a *fractional* leftover below the
+  // printable threshold is an unprintable sliver → keep solid padding.
+  if (remainderMm > EPS && remainderMm < minTileMm - EPS) {
     return { units: gridCount, padStart, padEnd, overTiled: false };
   }
   return { units, padStart: 0, padEnd: 0, overTiled: true };

@@ -30,6 +30,15 @@ export const PLATE_CORNER_RADIUS = CORNER_RADIUS;
 /** Thin floor under each magnet hole — retains the magnet (mm) */
 export const MAGNET_FLOOR = 0.5;
 
+/**
+ * Smallest printable clipped grid tile / edge foot (mm). Below this the tapered
+ * socket profile's insets collapse, so a fractional remainder this narrow is
+ * dropped (flat bottom) or falls back to solid padding. Shared by the baseplate
+ * over-tile resolver and the bin fractional-foot decomposition so the two stay
+ * in lockstep.
+ */
+export const MIN_PRINTABLE_TILE_MM = 8;
+
 /** Z extension above/below to avoid coplanar boolean failures (mm). */
 export const COPLANAR_MARGIN = 1;
 

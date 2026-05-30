@@ -544,7 +544,6 @@
   "binDesigner.overhang.side.front": "Frente",
   "binDesigner.overhang.side.left": "Izquierda",
   "binDesigner.overhang.side.right": "Derecha",
-  "binDesigner.overhang.summary": "L{left} R{right} F{front} B{back} mm",
   "binDesigner.overhang.title": "Voladizo",
   "binDesigner.pasteDesignJson": "o pegar JSON de diseño",
   "binDesigner.pasteShareUrl": "Pegar URL o ID de compartir",

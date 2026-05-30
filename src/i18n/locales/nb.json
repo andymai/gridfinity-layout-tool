@@ -544,7 +544,6 @@
   "binDesigner.overhang.side.front": "Foran",
   "binDesigner.overhang.side.left": "Venstre",
   "binDesigner.overhang.side.right": "Høyre",
-  "binDesigner.overhang.summary": "L{left} R{right} F{front} B{back} mm",
   "binDesigner.overhang.title": "Overheng",
   "binDesigner.pasteDesignJson": "eller lim inn design JSON",
   "binDesigner.pasteShareUrl": "Lim inn delingslenke eller ID",

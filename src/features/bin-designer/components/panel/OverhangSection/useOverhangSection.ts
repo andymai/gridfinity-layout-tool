@@ -30,13 +30,15 @@ export function useOverhangSection() {
 
   const summary = useMemo(() => {
     if (isCustomShape || total <= 0) return undefined;
-    return t('binDesigner.overhang.summary', {
-      left: String(overhang.left),
-      right: String(overhang.right),
-      front: String(overhang.front),
-      back: String(overhang.back),
-    });
-  }, [isCustomShape, total, overhang, t]);
+    // Compact axis-code chip (only non-zero sides), e.g. "L3 B2 mm". The codes
+    // L/R/F/B + mm are glanceable, not translatable prose.
+    const parts: string[] = [];
+    if (overhang.left > 0) parts.push(`L${overhang.left}`);
+    if (overhang.right > 0) parts.push(`R${overhang.right}`);
+    if (overhang.front > 0) parts.push(`F${overhang.front}`);
+    if (overhang.back > 0) parts.push(`B${overhang.back}`);
+    return `${parts.join(' ')} mm`;
+  }, [isCustomShape, total, overhang]);
 
   // Overhang is suppressed for custom-shape (mask) bins in the generator, so
   // surface that as a disabled state rather than silently ignoring input.

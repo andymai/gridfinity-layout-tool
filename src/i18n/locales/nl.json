@@ -544,7 +544,6 @@
   "binDesigner.overhang.side.front": "Voor",
   "binDesigner.overhang.side.left": "Links",
   "binDesigner.overhang.side.right": "Rechts",
-  "binDesigner.overhang.summary": "L{left} R{right} F{front} B{back} mm",
   "binDesigner.overhang.title": "Overhang",
   "binDesigner.pasteDesignJson": "of plak ontwerp-JSON",
   "binDesigner.pasteShareUrl": "Plak deel-URL of ID",

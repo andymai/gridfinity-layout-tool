@@ -544,7 +544,6 @@
   "binDesigner.overhang.side.front": "Avant",
   "binDesigner.overhang.side.left": "Gauche",
   "binDesigner.overhang.side.right": "Droite",
-  "binDesigner.overhang.summary": "L{left} R{right} F{front} B{back} mm",
   "binDesigner.overhang.title": "Débord",
   "binDesigner.pasteDesignJson": "ou collez le JSON de design",
   "binDesigner.pasteShareUrl": "Coller l'URL ou l'ID de partage",

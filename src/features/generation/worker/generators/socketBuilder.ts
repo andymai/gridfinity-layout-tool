@@ -31,6 +31,7 @@ import {
   SOCKET_BIG_TAPER,
   SOCKET_VERTICAL_PART,
   SOCKET_TAPER_WIDTH,
+  MIN_PRINTABLE_TILE_MM,
   forEachCell,
   type CellInfo,
 } from './generatorTypes';
@@ -56,9 +57,10 @@ import {
 /**
  * Smallest printable edge foot, in mm. A fractional bin whose trailing strip is
  * narrower than this drops the foot entirely (flat bottom there) rather than
- * emit a degenerate sliver — below ~6mm the tapered socket insets collapse.
+ * emit a degenerate sliver. Shares the project-wide printable-tile floor so it
+ * can't drift from the baseplate over-tile rule.
  */
-export const MIN_FOOT_TILE_MM = 8;
+export const MIN_FOOT_TILE_MM = MIN_PRINTABLE_TILE_MM;
 
 function forEachSocketCell(
   gridW: number,

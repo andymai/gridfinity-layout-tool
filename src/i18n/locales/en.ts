@@ -1496,7 +1496,6 @@ const en: Record<string, string> = {
   'binDesigner.overhang.title': 'Overhang',
   'binDesigner.overhang.hint':
     'Grow the walls outward to fill a drawer gap. The base feet stay put, leaving a flat bottom under the overhang.',
-  'binDesigner.overhang.summary': 'L{left} R{right} F{front} B{back} mm',
   'binDesigner.overhang.side.left': 'Left',
   'binDesigner.overhang.side.right': 'Right',
   'binDesigner.overhang.side.front': 'Front',

@@ -78,4 +78,15 @@ describe('resolveBaseplateTiling', () => {
     expect(Math.floor(t.unitsX)).toBe(5);
     expect((t.unitsX - 5) * 42).toBeCloseTo(8, 6);
   });
+
+  it('tiles a whole-unit leftover as full cells (no fractional remainder)', () => {
+    // Padding totals exactly one grid unit (21 + 21 = 42mm). The leftover is a
+    // full tile, not a sliver — over-tile must still apply, not fall back.
+    const t = resolveBaseplateTiling(params({ overTile: true, paddingLeft: 21, paddingRight: 21 }));
+    expect(t.overTiledX).toBe(true);
+    expect(t.padLeft).toBe(0);
+    expect(t.padRight).toBe(0);
+    expect(t.unitsX).toBeCloseTo(5, 6); // 4 + one full tile, no fractional part
+    expect(t.unitsX % 1).toBeCloseTo(0, 6);
+  });
 });

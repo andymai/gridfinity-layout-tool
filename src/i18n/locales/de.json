@@ -544,7 +544,6 @@
   "binDesigner.overhang.side.front": "Vorne",
   "binDesigner.overhang.side.left": "Links",
   "binDesigner.overhang.side.right": "Rechts",
-  "binDesigner.overhang.summary": "L{left} R{right} F{front} B{back} mm",
   "binDesigner.overhang.title": "Überstand",
   "binDesigner.pasteDesignJson": "oder Design-JSON einfügen",
   "binDesigner.pasteShareUrl": "Teilen-URL oder ID einfügen",

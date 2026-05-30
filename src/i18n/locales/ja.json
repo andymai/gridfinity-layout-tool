@@ -544,7 +544,6 @@
   "binDesigner.overhang.side.front": "前",
   "binDesigner.overhang.side.left": "左",
   "binDesigner.overhang.side.right": "右",
-  "binDesigner.overhang.summary": "L{left} R{right} F{front} B{back} mm",
   "binDesigner.overhang.title": "オーバーハング",
   "binDesigner.pasteDesignJson": "またはデザインJSONを貼り付け",
   "binDesigner.pasteShareUrl": "共有URLまたはIDを貼り付け",
