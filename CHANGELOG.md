@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.129.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.128.0...gridfinity-layout-tool-v4.129.0) (2026-05-30)
+
+
+### Features
+
+* **layout-library:** header thumbnail quick-switch for layouts ([#1941](https://github.com/andymai/gridfinity-layout-tool/issues/1941)) ([6ec4ec2](https://github.com/andymai/gridfinity-layout-tool/commit/6ec4ec2e992356788050f5d16a1b5ef748a04849))
+
 ## [4.128.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.127.0...gridfinity-layout-tool-v4.128.0) (2026-05-30)
 
 
