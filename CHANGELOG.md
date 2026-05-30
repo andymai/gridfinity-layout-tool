@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.128.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.127.0...gridfinity-layout-tool-v4.128.0) (2026-05-30)
+
+
+### Features
+
+* **bin-designer:** organize saved designs with tags, filtering, and bulk actions ([#1939](https://github.com/andymai/gridfinity-layout-tool/issues/1939)) ([86feab6](https://github.com/andymai/gridfinity-layout-tool/commit/86feab627f30701a014c103716e7360205317e13))
+
 ## [4.127.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.126.1...gridfinity-layout-tool-v4.127.0) (2026-05-29)
 
 
