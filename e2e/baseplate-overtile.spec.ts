@@ -1,11 +1,10 @@
 /**
  * Visual verification for baseplate over-tile mode (#1641).
  *
- * On an unsplit plate, enabling over-tile replaces the solid padding margin
- * with clipped grid tiles, which must change the rendered baseplate. The
- * `/baseplate` route is reachable directly (only the sidebar entry button is
- * labs-gated), and editing the dimensions shrinks the plate to a single piece
- * so over-tile actually applies (it's intentionally skipped for split pieces).
+ * Enabling over-tile replaces the solid padding margin with clipped grid tiles,
+ * which must change the rendered baseplate. The `/baseplate` route is reachable
+ * directly (only the sidebar entry button is labs-gated). A single (unsplit)
+ * plate keeps the assertion simple, but over-tile applies to split plates too.
  */
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
@@ -42,8 +41,8 @@ test.describe('Baseplate over-tile — visual', () => {
 
     const before = await settledCanvas(page);
 
-    // The over-tile toggle is gated on having padding to convert.
-    const overTile = page.getByText(/Fill padding with grid/i);
+    // The over-tile toggle (a switch) is gated on having padding to convert.
+    const overTile = page.getByRole('switch', { name: /Fill padding with grid/i });
     await expect(overTile).toBeVisible({ timeout: 10_000 });
     await overTile.click();
 

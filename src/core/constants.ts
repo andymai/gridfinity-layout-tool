@@ -223,6 +223,14 @@ export const FILAMENT_PRESET_COLORS = [
   { color: '#fcd34d', name: 'Neon Yellow' },
 ] as const;
 
+/**
+ * Smallest drawer-fit margin (mm) that over-tile fills with a clipped grid
+ * pocket. Below this the pocket walls are too thin/short to print, so that side
+ * stays solid padding. Single source for the worker geometry
+ * (`MIN_PRINTABLE_TILE_MM`) and the baseplate UI's per-side tiling feedback.
+ */
+export const OVER_TILE_MIN_MARGIN_MM = 8;
+
 /** Default baseplate parameters: no magnets, no padding */
 export const DEFAULT_BASEPLATE_PARAMS: BaseplateParams = {
   magnetHoles: false,
