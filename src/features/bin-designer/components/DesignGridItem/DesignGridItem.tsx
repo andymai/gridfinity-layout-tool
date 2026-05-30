@@ -181,8 +181,9 @@ export function DesignGridItem({
           </div>
         )}
 
-        {/* Date and actions row */}
-        <div className="flex items-center justify-between mt-1.5">
+        {/* Date and actions row — pinned to the bottom so dates align across a
+            row regardless of how many tags each card shows */}
+        <div className="flex items-center justify-between mt-auto pt-1.5">
           <p className="text-[10px] text-content-tertiary">
             {formatRelativeDate(design.updatedAt)}
           </p>
