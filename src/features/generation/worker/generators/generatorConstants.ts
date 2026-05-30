@@ -6,6 +6,7 @@
  */
 
 import { GRIDFINITY } from '@/shared/constants/bin';
+import { OVER_TILE_MIN_MARGIN_MM } from '@/core/constants';
 export const SIZE = GRIDFINITY.GRID_SIZE;
 export const HEIGHT_UNIT = GRIDFINITY.HEIGHT_UNIT;
 export const CLEARANCE = GRIDFINITY.TOLERANCE;
@@ -29,6 +30,15 @@ export const PLATE_CORNER_RADIUS = CORNER_RADIUS;
 
 /** Thin floor under each magnet hole — retains the magnet (mm) */
 export const MAGNET_FLOOR = 0.5;
+
+/**
+ * Smallest printable clipped grid tile / edge foot (mm). Below this the tapered
+ * socket profile's insets collapse, so a fractional remainder this narrow is
+ * dropped (flat bottom) or falls back to solid padding. Aliases the shared
+ * `OVER_TILE_MIN_MARGIN_MM` so the worker geometry and the baseplate UI's
+ * per-side tiling feedback can't drift.
+ */
+export const MIN_PRINTABLE_TILE_MM = OVER_TILE_MIN_MARGIN_MM;
 
 /** Z extension above/below to avoid coplanar boolean failures (mm). */
 export const COPLANAR_MARGIN = 1;

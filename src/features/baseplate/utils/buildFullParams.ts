@@ -35,6 +35,7 @@ export function buildFullParams(
     paddingBack: stored.paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
+    overTile: stored.overTile,
     connectorNubs: stored.connectorNubs,
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,

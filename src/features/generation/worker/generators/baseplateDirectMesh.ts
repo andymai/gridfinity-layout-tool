@@ -31,15 +31,17 @@ import type { MeshData } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
   forEachCell,
+  frameCells,
   checkCancelled,
   MAGNET_FLOOR,
+  MIN_PRINTABLE_TILE_MM,
   NUB_DIAMETER,
   NUB_DEPTH,
   HOLE_DIAMETER,
   HOLE_DEPTH,
   computeConnectorPositions,
 } from './generatorTypes';
-import type { ProgressFn, CellInfo, ForEachCellOptions } from './generatorTypes';
+import type { ProgressFn, CellInfo, ForEachCellOptions, SideMargins } from './generatorTypes';
 import { MeshBuilder, CORNER_SEGMENTS } from './directMeshBuilder';
 import { roundedRectPointsSelective } from './directMeshShapes';
 import { addPocketWalls, addOuterWalls } from './directMeshWalls';
@@ -91,6 +93,7 @@ export function generateBaseplateDirect(
     fractionalEdgeY,
     edges,
     connectorNubs,
+    overTile,
   } = params;
 
   const mb = new MeshBuilder();
@@ -110,9 +113,26 @@ export function generateBaseplateDirect(
 
   const cellOpts: ForEachCellOptions = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
 
-  // Collect all cells
+  // Collect all cells. Over-tile adds clipped pockets in the padding margins
+  // (same frameCells layout as the BREP build). The solid padding ring is then
+  // suppressed so the margin reads as grid — but ONLY when every padded side is
+  // fully tiled (margin 0 or >= threshold). A sub-threshold margin keeps its
+  // solid padding, so the ring must stay (the BREP pass renders the exact mix).
   const cells: CellInfo[] = [];
   forEachCell(width, depth, (cell) => cells.push(cell), cellOpts);
+  let tiledMargin = false;
+  if (overTile) {
+    const margins: SideMargins = {
+      left: paddingLeft,
+      right: paddingRight,
+      front: paddingFront,
+      back: paddingBack,
+    };
+    cells.push(...frameCells(width, depth, margins, gridUnitMm, MIN_PRINTABLE_TILE_MM));
+    tiledMargin = [paddingLeft, paddingRight, paddingFront, paddingBack].every(
+      (p) => p < 1e-6 || p >= MIN_PRINTABLE_TILE_MM
+    );
+  }
 
   onProgress('base', 0.1);
   checkCancelled(signal);
@@ -143,7 +163,8 @@ export function generateBaseplateDirect(
     depth,
     cells,
     totalHeight,
-    true
+    true,
+    !tiledMargin
   );
 
   onProgress('base', 0.6);
@@ -157,7 +178,19 @@ export function generateBaseplateDirect(
   if (magnetHoles) {
     addSolidBottomFace(mb, outerPts, slabOffsetX, slabOffsetY);
   } else {
-    addPlateFace(mb, outerPts, slabOffsetX, slabOffsetY, gridUnitMm, width, depth, cells, 0, false);
+    addPlateFace(
+      mb,
+      outerPts,
+      slabOffsetX,
+      slabOffsetY,
+      gridUnitMm,
+      width,
+      depth,
+      cells,
+      0,
+      false,
+      !tiledMargin
+    );
   }
 
   onProgress('base', 0.7);

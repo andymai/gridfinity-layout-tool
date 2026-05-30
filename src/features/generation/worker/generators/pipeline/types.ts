@@ -14,6 +14,7 @@ import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '../../../bridge/types';
 import type { ProgressFn } from '../meshUtils';
 import type { PerfCollector } from './perfCollector';
+import type { ResolvedOverhang } from '../overhang';
 
 /** Pre-computed dimensions derived from BinParams. Avoids re-deriving in each stage. */
 export interface BinDimensions {
@@ -42,6 +43,12 @@ export interface BinDimensions {
    * `boxBuilder.buildBinBox` for the cut path.
    */
   readonly compartmentsBakedIntoShell: boolean;
+  /**
+   * Resolved per-side outward body expansion (mm), clamped to >= 0. All-zero
+   * when the bin has no overhang. The box body + stacking lip + floor grow by
+   * these amounts; the base sockets stay at the nominal footprint.
+   */
+  readonly overhang: ResolvedOverhang;
 }
 
 /** Immutable context threaded through pipeline stages. */

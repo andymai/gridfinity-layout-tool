@@ -40,10 +40,15 @@ import {
 import { getBoxCache, setBoxCache, getLipCache, setLipCache } from './shapeCache';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import { hashMask, isPartialMask, type CellMask } from '@/shared/utils/cellMask';
+import { hasOverhang, overhangExpansion, overhangKey, type ResolvedOverhang } from './overhang';
 import { createLogger } from '@/core/logger';
 import { buildMaskDrawing, buildMaskDrawingInset, buildMaskHoleDrawings } from './maskPolygon';
 
 const logger = createLogger('boxBuilder');
+
+function translateDrawing(d: Drawing, offX: number, offY: number): Drawing {
+  return offX !== 0 || offY !== 0 ? d.translate(offX, offY) : d;
+}
 
 /**
  * Build a hollow-walls + closed-floor shell without relying on brepjs
@@ -148,9 +153,17 @@ export function buildBinBox(
    * `buildCompartmentCavityDrawings` and issue #1753.
    */
   compartmentCavityDrawings?: readonly Drawing[],
-  compartmentCavityKey?: string
+  compartmentCavityKey?: string,
+  /**
+   * Per-side outward expansion (mm) of the outer body. Grows the footprint
+   * (and lowers the floor footprint) without touching the base sockets, so the
+   * overhang region ends up with a flat bottom. Suppressed for polygon masks.
+   */
+  overhang?: ResolvedOverhang
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
+  const ov = polygon ? undefined : overhang;
+  const exp = ov && hasOverhang(ov) ? overhangExpansion(ov) : null;
   const useMultiCavity =
     !solid &&
     !polygon &&
@@ -166,15 +179,22 @@ export function buildBinBox(
     solid,
     quantize(cutoutTopOffset),
     polygon ? hashMask(cellMask) : 'rect',
-    useMultiCavity ? (compartmentCavityKey ?? 'comp') : 'none'
+    useMultiCavity ? (compartmentCavityKey ?? 'comp') : 'none',
+    ov ? overhangKey(ov) : '0'
   );
   const cached = getBoxCache(boxKey);
   if (cached) {
     return cached;
   }
 
-  const outerW = gridW * gridUnitMm - CLEARANCE;
-  const outerD = gridD * gridUnitMm - CLEARANCE;
+  // Outer body grows by the per-side overhang; the asymmetry between opposite
+  // sides shifts the footprint center so each wall lands at the right place.
+  // The interior expands in lockstep (shell/inner offset use the same dims),
+  // keeping wall thickness uniform — the extra material fills the drawer gap.
+  const outerW = gridW * gridUnitMm - CLEARANCE + (exp?.addW ?? 0);
+  const outerD = gridD * gridUnitMm - CLEARANCE + (exp?.addD ?? 0);
+  const offX = exp?.offsetX ?? 0;
+  const offY = exp?.offsetY ?? 0;
 
   /**
    * Footprint drawings: rounded rectangle for rectangular bins, polygon
@@ -183,18 +203,24 @@ export function buildBinBox(
    * directly. Built as factories so we only pay for a drawing when the
    * branch that needs it actually runs.
    */
+  // Asymmetric overhang shifts the centered rounded-rect off the origin so the
+  // wider side reaches further out; symmetric/zero overhang leaves it centered.
+  const recenter = (d: Drawing): Drawing => translateDrawing(d, offX, offY);
+
   const makeFootprint = (): Drawing =>
     polygon
       ? buildMaskDrawing(cellMask, gridUnitMm)
-      : drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS);
+      : recenter(drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS));
 
   const makeInnerFootprint = (): Drawing =>
     polygon
       ? buildMaskDrawingInset(cellMask, gridUnitMm, wallThickness)
-      : drawRoundedRectangle(
-          Math.max(outerW - 2 * wallThickness, 0.1),
-          Math.max(outerD - 2 * wallThickness, 0.1),
-          Math.max(BOX_CORNER_RADIUS - wallThickness, 0)
+      : recenter(
+          drawRoundedRectangle(
+            Math.max(outerW - 2 * wallThickness, 0.1),
+            Math.max(outerD - 2 * wallThickness, 0.1),
+            Math.max(BOX_CORNER_RADIUS - wallThickness, 0)
+          )
         );
 
   // Holes in the mask (O-shape-style interiors) — pre-extracted so every
@@ -385,7 +411,9 @@ function buildTopShapeLoft(
   outerD: number,
   includeLip: boolean,
   cellMask?: CellMask,
-  gridUnitMm: number = SIZE
+  gridUnitMm: number = SIZE,
+  offX: number = 0,
+  offY: number = 0
 ): Shape3D {
   const LIP_EXTENSION = includeLip ? 1.2 : 0;
   const polygon = isPartialMask(cellMask);
@@ -419,7 +447,8 @@ function buildTopShapeLoft(
     const w = outerW - 2 * inset;
     const d = outerD - 2 * inset;
     const r = Math.max(BOX_CORNER_RADIUS - inset, 0.1);
-    return drawRoundedRectangle(w, d, r).sketchOnPlane('XY', z) as Sketch;
+    const rect = drawRoundedRectangle(w, d, r);
+    return translateDrawing(rect, offX, offY).sketchOnPlane('XY', z) as Sketch;
   };
 
   // Outer: rectangular tube at bin outer edge (2 sections → no extra edges)
@@ -535,7 +564,9 @@ function buildTopShapeSweep(
   outerD: number,
   includeLip: boolean,
   cellMask?: CellMask,
-  gridUnitMm: number = SIZE
+  gridUnitMm: number = SIZE,
+  offX: number = 0,
+  offY: number = 0
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
   const topProfile = (plane: Plane, _origin: Vec3): Sketch => {
@@ -576,9 +607,10 @@ function buildTopShapeSweep(
   const holeDrawings = polygon ? buildMaskHoleDrawings(cellMask, gridUnitMm) : [];
 
   return withScope((scope: DisposalScope) => {
+    const outerRect = drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS);
     const boxSketch = polygon
       ? (buildMaskDrawing(cellMask, gridUnitMm).sketchOnPlane() as Sketch)
-      : (drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS).sketchOnPlane() as Sketch);
+      : (translateDrawing(outerRect, offX, offY).sketchOnPlane() as Sketch);
     let swept: Shape3D = boxSketch.sweepSketch(topProfile, { withContact: true });
 
     for (const hole of holeDrawings) {
@@ -622,35 +654,44 @@ export function buildTopShape(
   gridD: number,
   includeLip: boolean,
   gridUnitMm: number = SIZE,
-  cellMask?: CellMask
+  cellMask?: CellMask,
+  overhang?: ResolvedOverhang
 ): Shape3D {
   const polygon = isPartialMask(cellMask);
+  // Overhang is suppressed for polygon masks (the mask defines the footprint).
+  const ov = polygon ? undefined : overhang;
+  const exp = ov && hasOverhang(ov) ? overhangExpansion(ov) : null;
   const lipKey = buildCacheKey(
     'v4',
     quantize(gridW),
     quantize(gridD),
     quantize(gridUnitMm),
     includeLip,
-    polygon ? hashMask(cellMask) : 'rect'
+    polygon ? hashMask(cellMask) : 'rect',
+    ov ? overhangKey(ov) : '0'
   );
   const cached = getLipCache(lipKey);
   if (cached) {
     return cached;
   }
 
-  const outerW = gridW * gridUnitMm - CLEARANCE;
-  const outerD = gridD * gridUnitMm - CLEARANCE;
+  // Lip grows with the body so a bin stacked on top still mates flush across
+  // the full (overhung) perimeter.
+  const outerW = gridW * gridUnitMm - CLEARANCE + (exp?.addW ?? 0);
+  const outerD = gridD * gridUnitMm - CLEARANCE + (exp?.addD ?? 0);
+  const offX = exp?.offsetX ?? 0;
+  const offY = exp?.offsetY ?? 0;
 
   // Loft-cut for all kernels: produces analytic surfaces and avoids an OCCT
   // BRepOffsetAPI_MakePipeShell bug where the profile direction flips on
   // certain non-square aspect ratios, causing the lip to overhang (#1379).
   let result: Shape3D;
   try {
-    result = buildTopShapeLoft(outerW, outerD, includeLip, cellMask, gridUnitMm);
+    result = buildTopShapeLoft(outerW, outerD, includeLip, cellMask, gridUnitMm, offX, offY);
   } catch {
     // Loft failed — fall back to sweep path (kernel regression).
     // NOTE: sweep has the OCCT profile-flip bug on non-square spines (#1379)
-    result = buildTopShapeSweep(outerW, outerD, includeLip, cellMask, gridUnitMm);
+    result = buildTopShapeSweep(outerW, outerD, includeLip, cellMask, gridUnitMm, offX, offY);
   }
 
   return setLipCache(lipKey, result);

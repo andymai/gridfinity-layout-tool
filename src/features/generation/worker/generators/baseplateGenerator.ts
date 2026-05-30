@@ -44,12 +44,14 @@ import type { MeshData, ExportFormat } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
   forEachCell,
+  frameCells,
   toIndexedMeshData,
   checkCancelled,
   MAGNET_FLOOR,
+  MIN_PRINTABLE_TILE_MM,
   resolveCornerRadii,
 } from './generatorTypes';
-import type { ProgressFn } from './generatorTypes';
+import type { ProgressFn, CellInfo, SideMargins } from './generatorTypes';
 import { buildLightweightFloorCutters } from './lightweightFloorCutter';
 import { meshResultCache, slabWithPocketsCache } from './baseplateCaches';
 import { meshCacheKey, slabPocketsCacheKey } from './baseplateCacheKeys';
@@ -159,6 +161,7 @@ export function buildBaseplateSolid(
     fractionalEdgeX,
     fractionalEdgeY,
     edges,
+    overTile,
   } = params;
 
   const floorDepth = magnetHoles ? MAGNET_FLOOR + magnetDepth : 0;
@@ -196,21 +199,33 @@ export function buildBaseplateSolid(
     // Cut pockets — through-cut when no magnets, partial when magnets leave a floor
     const throughCut = !magnetHoles;
     const pockets: Shape3D[] = [];
-    forEachCell(
-      width,
-      depth,
-      (cell) => {
-        const cellW_mm = cell.widthUnits * gridUnitMm;
-        const cellD_mm = cell.depthUnits * gridUnitMm;
-        const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
-        // pocket from getPocketTemplate is a clone owned by caller — translate
-        // produces a new shape, so dispose the pre-translation clone.
-        const positioned = translate(pocket, [cell.centerX, cell.centerY, 0]);
-        pocket.delete();
-        pockets.push(positioned);
-      },
-      cellOpts
-    );
+    const addPocket = (cell: CellInfo): void => {
+      const cellW_mm = cell.widthUnits * gridUnitMm;
+      const cellD_mm = cell.depthUnits * gridUnitMm;
+      const pocket = getPocketTemplate(cellW_mm, cellD_mm, forExport, throughCut);
+      // pocket from getPocketTemplate is a clone owned by caller — translate
+      // produces a new shape, so dispose the pre-translation clone.
+      const positioned = translate(pocket, [cell.centerX, cell.centerY, 0]);
+      pocket.delete();
+      pockets.push(positioned);
+    };
+    forEachCell(width, depth, addPocket, cellOpts);
+
+    // Over-tile: fill the drawer-fit padding margins with grid-aligned clipped
+    // pockets (per-side; a margin below the printable threshold stays solid
+    // padding). Additive — the slab, full pockets, magnets, and offset are
+    // unchanged, so this composes cleanly with split pieces.
+    if (overTile) {
+      const margins: SideMargins = {
+        left: paddingLeft,
+        right: paddingRight,
+        front: paddingFront,
+        back: paddingBack,
+      };
+      for (const cell of frameCells(width, depth, margins, gridUnitMm, MIN_PRINTABLE_TILE_MM)) {
+        addPocket(cell);
+      }
+    }
 
     if (pockets.length > 0) {
       baseplate = cutInBatches(baseplate, pockets);

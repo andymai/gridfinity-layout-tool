@@ -19,6 +19,7 @@ import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { ScoopSection } from '../panel/ScoopSection';
 import { WallsSection } from '../panel/WallsSection';
+import { OverhangSection } from '../panel/OverhangSection';
 import { LidSection } from '../panel/LidSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
 import { SplitOptionsSection } from '../panel/SplitOptionsSection';
@@ -90,6 +91,14 @@ export function ParameterPanel() {
             className="px-4 py-4 border-b border-stroke-subtle/50"
           >
             <DimensionsSection />
+          </div>
+          <div
+            data-help-target="bd-overhang"
+            className="px-4 py-4 border-b border-stroke-subtle/50"
+          >
+            {/* Advanced drawer-fit control next to the dimensions; collapsed by
+                default and gated off internally for custom-shape (mask) bins. */}
+            <OverhangSection />
           </div>
           <div data-help-target="bd-shape" className="px-4 py-4 border-b border-stroke-subtle/50">
             <ShapeSection />

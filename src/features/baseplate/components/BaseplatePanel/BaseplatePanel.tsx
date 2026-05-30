@@ -16,7 +16,7 @@ import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { Select } from '@/design-system/Select';
-import { RulerIcon } from '@/design-system/Icon';
+import { RulerIcon, LayoutGridIcon } from '@/design-system/Icon';
 import { Stepper } from '@/design-system/Stepper';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
@@ -33,6 +33,7 @@ import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { EditableDimensions } from './EditableDimensions';
 import { PaddingSchematic } from './PaddingSchematic';
 import { SplitViewStrip } from './SplitViewStrip';
+import { resolveOverTileStatus } from '../../utils/overTileStatus';
 import { PADDING_MAX } from '../PaddingStepper';
 import type { BaseplateParams } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
@@ -116,6 +117,8 @@ export function BaseplatePanel() {
     baseplateParams.paddingRight > 0 ||
     baseplateParams.paddingFront > 0 ||
     baseplateParams.paddingBack > 0;
+  const overTileStatus = resolveOverTileStatus(baseplateParams);
+  const overTileOn = baseplateParams.overTile === true && overTileStatus.canOverTile;
 
   const minMm = CONSTRAINTS.GRID_MIN * gridUnitMm;
   const maxMm = CONSTRAINTS.GRID_MAX * gridUnitMm + PADDING_MAX * 2;
@@ -226,6 +229,38 @@ export function BaseplatePanel() {
                 updateParam={updateParam}
                 updateParams={updateParams}
               />
+              {hasPadding && (
+                <div className="border-t border-stroke-subtle pt-3">
+                  <FeatureToggle
+                    label={t('baseplate.overTile')}
+                    badge={<LayoutGridIcon size="xs" className="text-content-tertiary" />}
+                    checked={overTileOn}
+                    onChange={() => updateParam('overTile', baseplateParams.overTile !== true)}
+                    disabledReason={
+                      overTileStatus.canOverTile ? undefined : t('baseplate.overTileTooSmall')
+                    }
+                    primaryControls={
+                      <div className="space-y-1 text-[11px] leading-relaxed">
+                        <p className="text-content-tertiary">{t('baseplate.overTileHint')}</p>
+                        {overTileStatus.tiled.length > 0 && (
+                          <p className="text-content-secondary">
+                            {t('baseplate.overTileFills', {
+                              sides: overTileStatus.tiled.map((e) => t(e.labelKey)).join(', '),
+                            })}
+                          </p>
+                        )}
+                        {overTileStatus.tooSmall.length > 0 && (
+                          <p className="text-content-tertiary">
+                            {t('baseplate.overTileKeptSolid', {
+                              sides: overTileStatus.tooSmall.map((e) => t(e.labelKey)).join(', '),
+                            })}
+                          </p>
+                        )}
+                      </div>
+                    }
+                  />
+                </div>
+              )}
             </div>
           </div>
         </StickyGroupHeader>

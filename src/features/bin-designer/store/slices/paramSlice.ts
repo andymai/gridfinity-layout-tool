@@ -10,6 +10,7 @@ import type {
   LabelTabConfig,
   ScoopConfig,
   WallConfig,
+  OverhangConfig,
   WallCutout,
   WallSide,
   WallPatternConfig,
@@ -150,6 +151,29 @@ export function createParamSlice(set: Set, get: Get) {
       set((state) => {
         pushHistoryEntry(state);
         state.params.walls = { ...state.params.walls, ...partial };
+      });
+    },
+
+    updateOverhang: (partial: Partial<OverhangConfig>) => {
+      set((state) => {
+        pushHistoryEntry(state);
+        // Overhang is outward-only; clamp each side to >= 0 so the store never
+        // holds an inverting value (the generator clamps too, defensively).
+        const current = state.params.overhang ?? {
+          left: 0,
+          right: 0,
+          front: 0,
+          back: 0,
+          feet: false,
+        };
+        const next = { ...current, ...partial };
+        state.params.overhang = {
+          left: Math.max(0, next.left),
+          right: Math.max(0, next.right),
+          front: Math.max(0, next.front),
+          back: Math.max(0, next.back),
+          feet: next.feet ?? false,
+        };
       });
     },
 

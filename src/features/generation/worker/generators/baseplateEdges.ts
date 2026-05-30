@@ -14,10 +14,12 @@ import {
   MAGNET_FLOOR,
   MAGNET_OFFSETS,
   INSET_BOT,
+  MIN_PRINTABLE_TILE_MM,
   pocketCornerRadius,
   forEachCell,
+  frameCells,
 } from './generatorTypes';
-import type { ForEachCellOptions } from './generatorTypes';
+import type { ForEachCellOptions, CellInfo, SideMargins } from './generatorTypes';
 
 /** Segments per rounded corner arc for edge lines */
 const EDGE_CORNER_SEGMENTS = 4;
@@ -281,6 +283,7 @@ export function computeBaseplateEdgeLines(params: BaseplateParams): Float32Array
     fractionalEdgeX,
     fractionalEdgeY,
     edges,
+    overTile,
   } = params;
 
   const floorDepth = magnetHoles ? MAGNET_FLOOR + magnetDepth : 0;
@@ -313,51 +316,60 @@ export function computeBaseplateEdgeLines(params: BaseplateParams): Float32Array
 
   // ── Pocket openings, floors, and vertical wall edges for each cell ──
   const cellOpts: ForEachCellOptions = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
-  forEachCell(
-    width,
-    depth,
-    (cell) => {
-      const cellW = cell.widthUnits * gridUnitMm;
-      const cellD = cell.depthUnits * gridUnitMm;
-      const cr = pocketCornerRadius(cellW, cellD);
+  const addCellEdges = (cell: CellInfo): void => {
+    const cellW = cell.widthUnits * gridUnitMm;
+    const cellD = cell.depthUnits * gridUnitMm;
+    const cr = pocketCornerRadius(cellW, cellD);
 
+    pushEdgeLoop(
+      buf,
+      edgeRoundedRect(cellW, cellD, cr, EDGE_CORNER_SEGMENTS),
+      totalHeight,
+      cell.centerX,
+      cell.centerY
+    );
+
+    const botW = cellW - 2 * INSET_BOT;
+    const botD = cellD - 2 * INSET_BOT;
+    const botR = Math.max(cr - INSET_BOT, 0.1);
+    const pocketFloorZ = floorDepth > 0 ? floorDepth : 0;
+
+    if (floorDepth > 0) {
       pushEdgeLoop(
         buf,
-        edgeRoundedRect(cellW, cellD, cr, EDGE_CORNER_SEGMENTS),
-        totalHeight,
+        edgeRoundedRect(botW, botD, botR, EDGE_CORNER_SEGMENTS),
+        floorDepth,
         cell.centerX,
         cell.centerY
       );
+    }
 
-      const botW = cellW - 2 * INSET_BOT;
-      const botD = cellD - 2 * INSET_BOT;
-      const botR = Math.max(cr - INSET_BOT, 0.1);
-      const pocketFloorZ = floorDepth > 0 ? floorDepth : 0;
+    const topTransition = roundedRectTransitionPts(cellW, cellD, cr);
+    const botTransition = roundedRectTransitionPts(botW, botD, botR);
+    pushVerticalEdges(
+      buf,
+      topTransition,
+      botTransition,
+      totalHeight,
+      pocketFloorZ,
+      cell.centerX,
+      cell.centerY
+    );
+  };
+  forEachCell(width, depth, addCellEdges, cellOpts);
 
-      if (floorDepth > 0) {
-        pushEdgeLoop(
-          buf,
-          edgeRoundedRect(botW, botD, botR, EDGE_CORNER_SEGMENTS),
-          floorDepth,
-          cell.centerX,
-          cell.centerY
-        );
-      }
-
-      const topTransition = roundedRectTransitionPts(cellW, cellD, cr);
-      const botTransition = roundedRectTransitionPts(botW, botD, botR);
-      pushVerticalEdges(
-        buf,
-        topTransition,
-        botTransition,
-        totalHeight,
-        pocketFloorZ,
-        cell.centerX,
-        cell.centerY
-      );
-    },
-    cellOpts
-  );
+  // Over-tile: clipped pockets in the padding margins (matches the BREP build).
+  if (overTile) {
+    const margins: SideMargins = {
+      left: paddingLeft,
+      right: paddingRight,
+      front: paddingFront,
+      back: paddingBack,
+    };
+    for (const cell of frameCells(width, depth, margins, gridUnitMm, MIN_PRINTABLE_TILE_MM)) {
+      addCellEdges(cell);
+    }
+  }
 
   if (magnetHoles) {
     const magnetRadius = magnetDiameter / 2;

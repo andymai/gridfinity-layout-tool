@@ -45,6 +45,12 @@ export interface BaseplateParams {
   readonly paddingFront: Mm;
   readonly paddingBack: Mm;
   readonly paddingAnchor?: PaddingAnchor;
+  /**
+   * Over-tile mode: fill the drawer-fit padding with functional Gridfinity grid
+   * (a clipped tile per axis) instead of a solid plastic margin. A sub-threshold
+   * sliver falls back to solid padding. Default false.
+   */
+  readonly overTile?: boolean;
   /** Enable registration nubs/holes on split piece join edges (default false). */
   readonly connectorNubs?: boolean;
   /** Remove center floor material, keeping only magnet pads (default true). */

@@ -375,6 +375,41 @@ export interface WallConfig {
   readonly interior: WallCutout;
 }
 
+/**
+ * Per-side outward expansion of the bin body, in mm.
+ *
+ * Each side grows the outer wall (and stacking lip) outward by the given
+ * amount so the bin can fill the centering gap left when an integral grid
+ * doesn't perfectly fit a drawer. The base sockets/feet stay at the nominal
+ * footprint, leaving a flat bottom under the overhang region — the overhang
+ * does not protrude downward to fill an empty grid square.
+ *
+ * Values are outward-only (>= 0). All-zero (or omitted) means no overhang and
+ * the bin uses the standard rectangle path with no geometry change.
+ *
+ * Coordinate convention matches the grid: `left`/`right` are -X/+X,
+ * `front`/`back` are -Y/+Y.
+ */
+export interface OverhangConfig {
+  readonly left: number;
+  readonly right: number;
+  readonly front: number;
+  readonly back: number;
+  /**
+   * When true, add grid-aligned gridfinity feet under the overhang region
+   * (clipped feet in any strip/corner wide enough to print; flat elsewhere).
+   * When false (default), the overhang has a flat bottom — feet stay at the
+   * nominal footprint.
+   *
+   * Compatibility rule: these feet seat in an over-tiled baseplate's edge
+   * pockets only when the per-side overhang equals the baseplate's per-side
+   * padding (and the bin sits against that wall). Both use the same `frameCells`
+   * layout, and the foot is `CLEARANCE` smaller than the pocket — see
+   * `overtileFit.scenario.test.ts`.
+   */
+  readonly feet?: boolean;
+}
+
 // Wall Pattern Types
 
 /** Supported wall pattern types. Extensible via pattern registry. */
@@ -470,6 +505,12 @@ export interface BinParams {
    * bin has a `(2*width) × (2*depth)` mask.
    */
   readonly cellMask?: CellMask;
+  /**
+   * Optional per-side outward body expansion (mm) to fill a drawer-fit gap.
+   * Omitted or all-zero leaves the bin on the standard rectangle path.
+   * Ignored for custom-shape (`cellMask`) bins in v1.
+   */
+  readonly overhang?: OverhangConfig;
 }
 
 // Insert Types
@@ -889,6 +930,7 @@ export interface DesignerState {
   updateLabel: (partial: Partial<LabelTabConfig>) => void;
   updateScoop: (partial: Partial<ScoopConfig>) => void;
   updateWalls: (partial: Partial<WallConfig>) => void;
+  updateOverhang: (partial: Partial<OverhangConfig>) => void;
   updateWallSide: (side: WallSide, partial: Partial<WallCutout>) => void;
   updateHandles: (partial: Partial<HandleConfig>) => void;
   updateHandleSide: (side: HandleWallSide, partial: Partial<HandleSide>) => void;

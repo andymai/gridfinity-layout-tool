@@ -321,6 +321,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
   featureColors: DEFAULT_FEATURE_COLOR_CONFIG,
   lid: DEFAULT_LID_CONFIG,
   textDefaults: DEFAULT_TEXT_STYLE_DEFAULTS,
+  overhang: { left: 0, right: 0, front: 0, back: 0, feet: false },
 } as const;
 
 /** Default generation state */

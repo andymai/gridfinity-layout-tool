@@ -55,9 +55,10 @@ describe('createInitialContext', () => {
     const ctx = createInitialContext(createTestParams());
 
     // shellKey uses buildCacheKey with v6 prefix, gridUnitMm, quantized floats,
-    // a 'rect' mask segment (no cellMask), and a 'none' compartments segment
-    // (single-compartment default — no multi-cavity cut path). v6 bumped from
-    // v5 when the compartments segment was added (#1753).
+    // a 'rect' mask segment (no cellMask), a 'none' compartments segment
+    // (single-compartment default — no multi-cavity cut path), and a trailing
+    // overhang segment ('0' when there's no overhang). v6 bumped from v5 when
+    // the compartments segment was added (#1753).
     const expected = [
       'v6',
       2,
@@ -76,6 +77,7 @@ describe('createInitialContext', () => {
       false,
       'rect',
       'none',
+      '0', // overhang segment (no overhang)
     ].join('|');
 
     expect(ctx.dimensions.shellKey).toBe(expected);

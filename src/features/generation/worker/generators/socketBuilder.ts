@@ -31,9 +31,12 @@ import {
   SOCKET_BIG_TAPER,
   SOCKET_VERTICAL_PART,
   SOCKET_TAPER_WIDTH,
+  MIN_PRINTABLE_TILE_MM,
   forEachCell,
+  frameCells,
   type CellInfo,
 } from './generatorTypes';
+import { hasOverhang, type ResolvedOverhang } from './overhang';
 import { socketCacheKey, getSocketCache, setSocketCache } from './shapeCache';
 import {
   hasHalfBinDetail,
@@ -53,6 +56,14 @@ import {
  * regardless of mask detail — preserves the existing `base.halfSockets`
  * toggle behaviour.
  */
+/**
+ * Smallest printable edge foot, in mm. A fractional bin whose trailing strip is
+ * narrower than this drops the foot entirely (flat bottom there) rather than
+ * emit a degenerate sliver. Shares the project-wide printable-tile floor so it
+ * can't drift from the baseplate over-tile rule.
+ */
+export const MIN_FOOT_TILE_MM = MIN_PRINTABLE_TILE_MM;
+
 function forEachSocketCell(
   gridW: number,
   gridD: number,
@@ -69,7 +80,15 @@ function forEachSocketCell(
   const needsPerCellSplit = mask !== undefined && isPartialMask(mask) && hasHalfBinDetail(mask);
 
   if (!needsPerCellSplit) {
-    forEachCell(gridW, gridD, callback, { gridUnitMm });
+    // Fractional feet: a non-0.5 trailing dimension (e.g. 1.7u) gets a clipped
+    // edge foot matching the true footprint instead of snapping to a half cell.
+    // Backward-safe — multiples of 0.5 decompose identically. Sub-threshold
+    // slivers are dropped (flat bottom), mirroring the over-tile baseplate.
+    forEachCell(gridW, gridD, callback, {
+      gridUnitMm,
+      fractional: true,
+      minFractionUnits: MIN_FOOT_TILE_MM / gridUnitMm,
+    });
     return;
   }
 
@@ -385,5 +404,52 @@ export function buildBaseSocket(
     }
 
     return setSocketCache(key, result); // result NOT registered — survives scope
+  });
+}
+
+/**
+ * Build the grid-aligned feet that sit under a bin's overhang region.
+ *
+ * The nominal feet (origin-centered) come from {@link buildBaseSocket}; this
+ * adds the "frame" of clipped feet around them (see {@link frameCells}) — strips
+ * narrower than the printable threshold are dropped, leaving a flat bottom
+ * there. Returns `null` when there's no overhang or every strip is
+ * sub-threshold. Caller fuses the result onto the base socket.
+ */
+export function buildOverhangFeet(
+  gridW: number,
+  gridD: number,
+  overhang: ResolvedOverhang,
+  gridUnitMm: number,
+  forExport: boolean
+): Shape3D | null {
+  if (!hasOverhang(overhang)) return null;
+  const frame = frameCells(
+    gridW,
+    gridD,
+    { left: overhang.left, right: overhang.right, front: overhang.front, back: overhang.back },
+    gridUnitMm,
+    MIN_PRINTABLE_TILE_MM
+  );
+  if (frame.length === 0) return null;
+
+  return withScope((scope: DisposalScope) => {
+    const sockets: Shape3D[] = frame.map((cell) => {
+      const cellW_mm = cell.widthUnits * gridUnitMm - CLEARANCE;
+      const cellD_mm = cell.depthUnits * gridUnitMm - CLEARANCE;
+      return translate(
+        scope.register(
+          forExport
+            ? buildSingleCellSocket(cellW_mm, cellD_mm)
+            : buildSimplifiedCellSocket(cellW_mm, cellD_mm)
+        ),
+        [cell.centerX, cell.centerY, 0]
+      );
+    });
+    const result = unwrap(fuseAll(sockets as ValidSolid[], { optimisation: 'commonFace' }));
+    for (const s of sockets) {
+      if (s !== result) s.delete();
+    }
+    return result; // NOT registered — survives scope
   });
 }

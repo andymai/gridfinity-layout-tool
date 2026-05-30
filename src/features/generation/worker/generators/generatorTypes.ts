@@ -30,6 +30,7 @@ export {
   LIP_OVERLAP,
   PLATE_CORNER_RADIUS,
   MAGNET_FLOOR,
+  MIN_PRINTABLE_TILE_MM,
   COPLANAR_MARGIN,
   COPLANAR_OVERLAP,
   HOLE_OFFSET,
@@ -48,8 +49,8 @@ export {
   HOLE_DEPTH,
   NUB_CIRCLE_SEGMENTS,
 } from './generatorConstants';
-export { decomposeCells, decomposeHalfCells, forEachCell } from './cellDecomposition';
-export type { CellInfo, ForEachCellOptions } from './cellDecomposition';
+export { decomposeCells, decomposeHalfCells, forEachCell, frameCells } from './cellDecomposition';
+export type { CellInfo, ForEachCellOptions, SideMargins } from './cellDecomposition';
 export { sketch, checkCancelled, toIndexedMeshData } from './meshUtils';
 export type { ProgressFn, BooleanOpts } from './meshUtils';
 export { computeConnectorPositions } from './connectorUtils';

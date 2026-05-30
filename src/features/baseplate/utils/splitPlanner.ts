@@ -526,6 +526,11 @@ export function pieceToBaseplateParams(
     fractionalEdgeX: flipX ? flip(fracX) : fracX,
     fractionalEdgeY: flipY ? flip(fracY) : fracY,
     edges: rot ? rotateEdges180(piece.edges) : piece.edges,
+    // Over-tile is additive (clipped pockets in each piece's exterior padding
+    // margin) and leaves the slab/grid/offset unchanged, so it propagates to
+    // pieces cleanly: interior join edges have zero padding → no pockets, and
+    // exterior padded edges get the gap-filling tiles.
+    overTile: parentParams.overTile,
     connectorNubs: parentParams.connectorNubs,
     // Dovetail key seams are symmetric, so connectorStyle is rotation-invariant —
     // copy it straight through (unlike padding/edges, which rotate with `rot`).
