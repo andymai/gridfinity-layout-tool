@@ -93,8 +93,8 @@ const en: Record<string, string> = {
   // Header
   'header.editLayoutName': 'Click to edit layout name',
   'header.layoutName': 'Layout name',
-  'header.layouts': 'Layouts',
-  'header.openLayoutManager': 'Open layout manager',
+  'header.switchLayout': 'Switch layout (current: {name})',
+  'header.manageLayouts': 'Manage layouts',
   'header.print': 'Print',
   'header.printLayout': 'Print layout',
   'header.saving': 'Saving...',

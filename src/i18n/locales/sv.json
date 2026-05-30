@@ -1080,9 +1080,7 @@
   "header.help": "Hjälp",
   "header.helpAndShortcuts": "Visa hjälp och kortkommandon",
   "header.layoutName": "Layoutnamn",
-  "header.layouts": "Layouter",
   "header.loadingLayouts": "Laddar layouter",
-  "header.openLayoutManager": "Öppna layouthanteraren",
   "header.pressForHelp": "Tryck",
   "header.print": "Skriv ut",
   "header.printLayout": "Skriv ut layout",
@@ -2138,5 +2136,7 @@
   "binDesigner.bulk.tagApply": "Lägg till taggar",
   "binDesigner.bulk.toastDeleted": "Tog bort {count} design",
   "binDesigner.bulk.toastTagged": "Taggade {count} design",
-  "binDesigner.bulk.toastExported": "Exporterade {count} design"
+  "binDesigner.bulk.toastExported": "Exporterade {count} design",
+  "header.switchLayout": "Byt layout (nuvarande: {name})",
+  "header.manageLayouts": "Hantera layouter"
 }

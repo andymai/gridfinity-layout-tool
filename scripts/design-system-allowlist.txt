@@ -168,3 +168,4 @@ src/shared/components/ViewModeToggle/ViewModeToggle.tsx
 src/features/bin-designer/components/DesignListDialog/TagInput/TagInput.tsx
 src/features/bin-designer/components/DesignListDialog/TagFilterBar/TagFilterBar.tsx
 src/features/bin-designer/components/DesignListDialog/BulkActionBar/BulkActionBar.tsx
+src/features/layout-library/components/LayoutQuickSwitch/LayoutQuickSwitch.tsx

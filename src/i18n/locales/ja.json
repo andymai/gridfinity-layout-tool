@@ -1080,9 +1080,7 @@
   "header.help": "ヘルプ",
   "header.helpAndShortcuts": "ヘルプとキーボードショートカットを表示",
   "header.layoutName": "レイアウト名",
-  "header.layouts": "レイアウト",
   "header.loadingLayouts": "レイアウトを読み込み中",
-  "header.openLayoutManager": "レイアウトマネージャーを開く",
   "header.pressForHelp": "ヒント:",
   "header.print": "印刷",
   "header.printLayout": "レイアウトを印刷",
@@ -2138,5 +2136,7 @@
   "binDesigner.bulk.tagApply": "タグを追加",
   "binDesigner.bulk.toastDeleted": "{count}件のデザインを削除しました",
   "binDesigner.bulk.toastTagged": "{count}件のデザインにタグを付けました",
-  "binDesigner.bulk.toastExported": "{count}件のデザインをエクスポートしました"
+  "binDesigner.bulk.toastExported": "{count}件のデザインをエクスポートしました",
+  "header.switchLayout": "レイアウトを切り替え（現在: {name}）",
+  "header.manageLayouts": "レイアウトを管理"
 }

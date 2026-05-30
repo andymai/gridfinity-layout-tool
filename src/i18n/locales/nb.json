@@ -1080,9 +1080,7 @@
   "header.help": "Hjelp",
   "header.helpAndShortcuts": "Vis hjelp og hurtigtaster",
   "header.layoutName": "Layout-navn",
-  "header.layouts": "Oppsett",
   "header.loadingLayouts": "Laster layouts",
-  "header.openLayoutManager": "Åpne layout-håndtering",
   "header.pressForHelp": "Trykk",
   "header.print": "Skriv ut",
   "header.printLayout": "Skriv ut layout",
@@ -2138,5 +2136,7 @@
   "binDesigner.bulk.tagApply": "Legg til etiketter",
   "binDesigner.bulk.toastDeleted": "Slettet {count} design",
   "binDesigner.bulk.toastTagged": "Merket {count} design",
-  "binDesigner.bulk.toastExported": "Eksporterte {count} design"
+  "binDesigner.bulk.toastExported": "Eksporterte {count} design",
+  "header.switchLayout": "Bytt layout (gjeldende: {name})",
+  "header.manageLayouts": "Administrer layouter"
 }

@@ -1080,9 +1080,7 @@
   "header.help": "Довідка",
   "header.helpAndShortcuts": "Показати довідку та клавіатурні скорочення",
   "header.layoutName": "Назва розкладки",
-  "header.layouts": "Розкладки",
   "header.loadingLayouts": "Завантаження розкладок",
-  "header.openLayoutManager": "Відкрити менеджер розкладок",
   "header.pressForHelp": "Натисніть",
   "header.print": "Друк",
   "header.printLayout": "Роздрукувати розкладку",
@@ -2138,5 +2136,7 @@
   "binDesigner.bulk.tagApply": "Додати теги",
   "binDesigner.bulk.toastDeleted": "Видалено {count} дизайнів",
   "binDesigner.bulk.toastTagged": "Позначено {count} дизайнів",
-  "binDesigner.bulk.toastExported": "Експортовано {count} дизайнів"
+  "binDesigner.bulk.toastExported": "Експортовано {count} дизайнів",
+  "header.switchLayout": "Змінити розкладку (поточна: {name})",
+  "header.manageLayouts": "Керувати розкладками"
 }

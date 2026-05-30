@@ -25,6 +25,16 @@ vi.mock('@/features/layout-library/components/LayoutManagerModal', () => ({
     ) : null,
 }));
 
+// Mock the LayoutQuickSwitch (depends on the library store / SVG thumbnails).
+// Its "Manage" path is what opens the layout manager modal in the header.
+vi.mock('@/features/layout-library/components/LayoutQuickSwitch', () => ({
+  LayoutQuickSwitch: ({ onManage }: { onManage: () => void }) => (
+    <button aria-label="Open layout manager" onClick={onManage}>
+      Layouts
+    </button>
+  ),
+}));
+
 // Mock the PrintModal to avoid deep component tree
 vi.mock('@/features/print-export/components/PrintModal', () => ({
   PrintModal: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>

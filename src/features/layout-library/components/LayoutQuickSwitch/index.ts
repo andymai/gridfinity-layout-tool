@@ -1,0 +1,1 @@
+export { LayoutQuickSwitch } from './LayoutQuickSwitch';
