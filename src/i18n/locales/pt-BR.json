@@ -1080,9 +1080,7 @@
   "header.help": "Ajuda",
   "header.helpAndShortcuts": "Mostrar ajuda e atalhos de teclado",
   "header.layoutName": "Nome do layout",
-  "header.layouts": "Layouts",
   "header.loadingLayouts": "Carregando layouts",
-  "header.openLayoutManager": "Abrir gerenciador de layouts",
   "header.pressForHelp": "Pressione",
   "header.print": "Imprimir",
   "header.printLayout": "Imprimir layout",
@@ -2138,5 +2136,7 @@
   "binDesigner.bulk.tagApply": "Adicionar etiquetas",
   "binDesigner.bulk.toastDeleted": "{count} design(s) excluído(s)",
   "binDesigner.bulk.toastTagged": "{count} design(s) etiquetado(s)",
-  "binDesigner.bulk.toastExported": "{count} design(s) exportado(s)"
+  "binDesigner.bulk.toastExported": "{count} design(s) exportado(s)",
+  "header.switchLayout": "Trocar de layout (atual: {name})",
+  "header.manageLayouts": "Gerenciar layouts"
 }

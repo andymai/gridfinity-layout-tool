@@ -1080,9 +1080,7 @@
   "header.help": "Hulp",
   "header.helpAndShortcuts": "Hulp en sneltoetsen tonen",
   "header.layoutName": "Layoutnaam",
-  "header.layouts": "Indelingen",
   "header.loadingLayouts": "Layouts laden",
-  "header.openLayoutManager": "Layoutbeheer openen",
   "header.pressForHelp": "Druk op",
   "header.print": "Afdrukken",
   "header.printLayout": "Layout afdrukken",
@@ -2138,5 +2136,7 @@
   "binDesigner.bulk.tagApply": "Labels toevoegen",
   "binDesigner.bulk.toastDeleted": "{count} ontwerp(en) verwijderd",
   "binDesigner.bulk.toastTagged": "{count} ontwerp(en) gelabeld",
-  "binDesigner.bulk.toastExported": "{count} ontwerp(en) geëxporteerd"
+  "binDesigner.bulk.toastExported": "{count} ontwerp(en) geëxporteerd",
+  "header.switchLayout": "Layout wisselen (huidig: {name})",
+  "header.manageLayouts": "Layouts beheren"
 }

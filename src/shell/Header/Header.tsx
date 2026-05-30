@@ -12,6 +12,7 @@ import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
+import { LayoutQuickSwitch } from '@/features/layout-library';
 import { PresenceAvatars } from '../Collab';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useTranslation } from '@/i18n';
@@ -131,20 +132,7 @@ export function Header({ saveStatus }: HeaderProps) {
           </button>
         )}
 
-        {/* Layout Manager Button */}
-        <button
-          onClick={() => setShowLayoutManager(true)}
-          className={`px-2 py-1.5 text-sm leading-none rounded-md transition-all ${activePress} text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5`}
-          title={`${t('header.openLayoutManager')} (${modKey}+O)`}
-          aria-label={t('header.openLayoutManager')}
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {ICON_PATHS.layers.map((d) => (
-              <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-            ))}
-          </svg>
-          {!isTablet && <span className="hidden sm:inline">{t('header.layouts')}</span>}
-        </button>
+        <LayoutQuickSwitch onManage={() => setShowLayoutManager(true)} />
 
         {/* Print Button */}
         <button
