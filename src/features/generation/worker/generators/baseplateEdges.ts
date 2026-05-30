@@ -18,6 +18,7 @@ import {
   forEachCell,
 } from './generatorTypes';
 import type { ForEachCellOptions } from './generatorTypes';
+import { resolveBaseplateTiling, minFractionUnits } from './baseplateTiling';
 
 /** Segments per rounded corner arc for edge lines */
 const EDGE_CORNER_SEGMENTS = 4;
@@ -268,29 +269,28 @@ function pushVerticalEdges(
  */
 export function computeBaseplateEdgeLines(params: BaseplateParams): Float32Array {
   const {
-    width,
-    depth,
     gridUnitMm,
     magnetHoles,
     magnetDiameter,
     magnetDepth,
-    paddingLeft,
-    paddingRight,
-    paddingFront,
-    paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
     edges,
   } = params;
 
+  // Mirror the build's over-tile resolution so preview edges/magnet rings match
+  // the generated geometry (effective tiling, effective paddings).
+  const { unitsX, unitsY, padLeft, padRight, padFront, padBack, fractional } =
+    resolveBaseplateTiling(params);
+
   const floorDepth = magnetHoles ? MAGNET_FLOOR + magnetDepth : 0;
   const totalHeight = SOCKET_HEIGHT + floorDepth;
-  const totalW = width * gridUnitMm + paddingLeft + paddingRight;
-  const totalD = depth * gridUnitMm + paddingFront + paddingBack;
+  const totalW = unitsX * gridUnitMm + padLeft + padRight;
+  const totalD = unitsY * gridUnitMm + padFront + padBack;
   const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
   const cornerR = Math.min(PLATE_CORNER_RADIUS, maxRadius);
-  const slabOffsetX = (paddingRight - paddingLeft) / 2;
-  const slabOffsetY = (paddingBack - paddingFront) / 2;
+  const slabOffsetX = (padRight - padLeft) / 2;
+  const slabOffsetY = (padBack - padFront) / 2;
 
   const buf: number[] = [];
 
@@ -312,10 +312,16 @@ export function computeBaseplateEdgeLines(params: BaseplateParams): Float32Array
   );
 
   // ── Pocket openings, floors, and vertical wall edges for each cell ──
-  const cellOpts: ForEachCellOptions = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
+  const cellOpts: ForEachCellOptions = {
+    fractionalEdgeX,
+    fractionalEdgeY,
+    gridUnitMm,
+    fractional,
+    minFractionUnits: minFractionUnits(gridUnitMm),
+  };
   forEachCell(
-    width,
-    depth,
+    unitsX,
+    unitsY,
     (cell) => {
       const cellW = cell.widthUnits * gridUnitMm;
       const cellD = cell.depthUnits * gridUnitMm;
@@ -368,8 +374,8 @@ export function computeBaseplateEdgeLines(params: BaseplateParams): Float32Array
     }
 
     forEachCell(
-      width,
-      depth,
+      unitsX,
+      unitsY,
       (cell) => {
         if (cell.widthUnits < 1 || cell.depthUnits < 1) return;
         for (const [dx, dy] of MAGNET_OFFSETS) {

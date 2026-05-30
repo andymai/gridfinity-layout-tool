@@ -60,6 +60,7 @@ import { buildMagnetHoles } from './baseplateMagnets';
 import { buildConnectors, buildDovetailKey } from './baseplateConnectors';
 import { computeBaseplateEdgeLines } from './baseplateEdges';
 import { buildBaseplateSTL } from './baseplateSTL';
+import { resolveBaseplateTiling, minFractionUnits } from './baseplateTiling';
 
 export {
   clearBaseplateCaches,
@@ -146,28 +147,34 @@ export function buildBaseplateSolid(
   probe?: BaseplateProbe
 ): Shape3D {
   const {
-    width,
-    depth,
     gridUnitMm,
     magnetHoles,
     magnetDiameter,
     magnetDepth,
-    paddingLeft,
-    paddingRight,
-    paddingFront,
-    paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
     edges,
   } = params;
 
+  // Over-tile resolution: when enabled, the drawer-fit padding on each axis
+  // becomes a clipped grid tile (sliver leftovers fall back to padding). The
+  // drawer span is unchanged, so slab size/offsets use the *effective* values.
+  const tiling = resolveBaseplateTiling(params);
+  const { unitsX, unitsY, padLeft, padRight, padFront, padBack } = tiling;
+
   const floorDepth = magnetHoles ? MAGNET_FLOOR + magnetDepth : 0;
-  const totalW = width * gridUnitMm + paddingLeft + paddingRight;
-  const totalD = depth * gridUnitMm + paddingFront + paddingBack;
+  const totalW = unitsX * gridUnitMm + padLeft + padRight;
+  const totalD = unitsY * gridUnitMm + padFront + padBack;
   const totalHeight = SOCKET_HEIGHT + floorDepth;
-  const slabOffsetX = (paddingRight - paddingLeft) / 2;
-  const slabOffsetY = (paddingBack - paddingFront) / 2;
-  const cellOpts = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
+  const slabOffsetX = (padRight - padLeft) / 2;
+  const slabOffsetY = (padBack - padFront) / 2;
+  const cellOpts = {
+    fractionalEdgeX,
+    fractionalEdgeY,
+    gridUnitMm,
+    fractional: tiling.fractional,
+    minFractionUnits: minFractionUnits(gridUnitMm),
+  };
 
   // Cached separately so that toggling magnets or connectors doesn't redo the
   // pocket boolean cuts.
@@ -197,8 +204,8 @@ export function buildBaseplateSolid(
     const throughCut = !magnetHoles;
     const pockets: Shape3D[] = [];
     forEachCell(
-      width,
-      depth,
+      unitsX,
+      unitsY,
       (cell) => {
         const cellW_mm = cell.widthUnits * gridUnitMm;
         const cellD_mm = cell.depthUnits * gridUnitMm;
@@ -229,10 +236,7 @@ export function buildBaseplateSolid(
   // Max radius: half a grid unit + padding. The arc can enter the corner cell
   // but won't reach past the cell center, preserving the pocket structure.
   // Also clamped to half the slab to prevent degenerate geometry.
-  const minPadding = Math.min(
-    Math.min(paddingLeft, paddingRight),
-    Math.min(paddingFront, paddingBack)
-  );
+  const minPadding = Math.min(Math.min(padLeft, padRight), Math.min(padFront, padBack));
   const cellLimit = gridUnitMm / 2 + minPadding;
   const geomLimit = Math.min(totalW, totalD) / 2 - 0.1;
   const maxRadius = Math.min(cellLimit, geomLimit);
@@ -258,7 +262,7 @@ export function buildBaseplateSolid(
   // Magnet hole cutters — built and cut in batches to limit WASM memory.
   // A 16x16 grid produces 1024 magnet holes; holding all simultaneously can OOM.
   if (magnetHoles) {
-    const holes = buildMagnetHoles(width, depth, magnetDiameter / 2, magnetDepth, cellOpts);
+    const holes = buildMagnetHoles(unitsX, unitsY, magnetDiameter / 2, magnetDepth, cellOpts);
     baseplate = cutInBatches(baseplate, holes);
     probe?.('magnetHolesCut', baseplate);
   }
@@ -266,8 +270,8 @@ export function buildBaseplateSolid(
   // Lightweight floor cutters (cross-shaped material removal)
   if (magnetHoles && params.lightweight !== false) {
     const floorCutters = buildLightweightFloorCutters(
-      width,
-      depth,
+      unitsX,
+      unitsY,
       magnetDiameter / 2,
       magnetDepth,
       cellOpts

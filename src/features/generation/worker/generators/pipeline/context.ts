@@ -29,6 +29,7 @@ import type { ProgressFn } from '../meshUtils';
 import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
 import type { BinDimensions, PipelineContext } from './types';
 import type { PerfCollector } from './perfCollector';
+import { resolveOverhang, overhangKey, type ResolvedOverhang } from '../overhang';
 
 /** Derive all dimensions from bin parameters. */
 function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
@@ -97,6 +98,12 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   const { cellMask } = params;
   const maskKeySegment = isPartialMask(cellMask) ? hashMask(cellMask) : 'rect';
   const compartmentsKey = compartmentsBakedIntoShell ? buildCompartmentsCacheKey(params) : 'none';
+
+  // Overhang is a rectangle-path feature in v1: a custom-shape mask defines its
+  // own exact footprint, so suppress overhang when a partial mask is present.
+  const overhang: ResolvedOverhang = isPartialMask(cellMask)
+    ? { left: 0, right: 0, front: 0, back: 0 }
+    : resolveOverhang(params.overhang);
   const shellKey = compactKey(
     buildCacheKey(
       'v6',
@@ -115,7 +122,8 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
       params.base.stackingLip,
       solid,
       maskKeySegment,
-      compartmentsKey
+      compartmentsKey,
+      overhangKey(overhang)
     )
   );
 
@@ -137,6 +145,7 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
     withMagnet,
     withScrew,
     compartmentsBakedIntoShell,
+    overhang,
   };
 }
 

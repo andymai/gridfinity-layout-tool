@@ -19,6 +19,7 @@ import { BaseSection } from '../panel/BaseSection';
 import { LabelTabsSection } from '../panel/LabelTabsSection';
 import { ScoopSection } from '../panel/ScoopSection';
 import { WallsSection } from '../panel/WallsSection';
+import { OverhangSection } from '../panel/OverhangSection';
 import { LidSection } from '../panel/LidSection';
 import { PhysicalUnitsSection } from '../panel/PhysicalUnitsSection';
 import { SplitOptionsSection } from '../panel/SplitOptionsSection';
@@ -107,6 +108,14 @@ export function ParameterPanel() {
             {/* Wall thickness works for any footprint; pattern/cutouts/handle
                 gate themselves inside WallsSection. */}
             <WallsSection />
+          </div>
+          <div
+            data-help-target="bd-overhang"
+            className="px-4 py-4 border-b border-stroke-subtle/50"
+          >
+            {/* Overhang grows the outer body to fill a drawer gap; gated off
+                internally for custom-shape (mask) bins. */}
+            <OverhangSection />
           </div>
           <div data-help-target="bd-lid" className="px-4 py-4">
             {/* Lid is a companion piece auto-fit to the bin's lip. Internally

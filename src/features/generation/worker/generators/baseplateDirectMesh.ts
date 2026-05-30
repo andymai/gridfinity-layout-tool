@@ -40,6 +40,7 @@ import {
   computeConnectorPositions,
 } from './generatorTypes';
 import type { ProgressFn, CellInfo, ForEachCellOptions } from './generatorTypes';
+import { resolveBaseplateTiling, minFractionUnits } from './baseplateTiling';
 import { MeshBuilder, CORNER_SEGMENTS } from './directMeshBuilder';
 import { roundedRectPointsSelective } from './directMeshShapes';
 import { addPocketWalls, addOuterWalls } from './directMeshWalls';
@@ -77,42 +78,47 @@ export function generateBaseplateDirect(
   checkCancelled(signal);
 
   const {
-    width,
-    depth,
     gridUnitMm,
     magnetHoles,
     magnetDiameter,
     magnetDepth,
-    paddingLeft,
-    paddingRight,
-    paddingFront,
-    paddingBack,
     fractionalEdgeX,
     fractionalEdgeY,
     edges,
     connectorNubs,
   } = params;
 
+  // Over-tile resolution (matches the BREP path) so the fast preview and the
+  // exported geometry agree: padding becomes clipped tiles, slivers fall back.
+  const tiling = resolveBaseplateTiling(params);
+  const { unitsX, unitsY, padLeft, padRight, padFront, padBack } = tiling;
+
   const mb = new MeshBuilder();
 
   // Slab dimensions — taller when magnets require a solid floor
   const floorDepth = magnetHoles ? MAGNET_FLOOR + magnetDepth : 0;
   const totalHeight = SOCKET_HEIGHT + floorDepth;
-  const totalW = width * gridUnitMm + paddingLeft + paddingRight;
-  const totalD = depth * gridUnitMm + paddingFront + paddingBack;
+  const totalW = unitsX * gridUnitMm + padLeft + padRight;
+  const totalD = unitsY * gridUnitMm + padFront + padBack;
   const maxRadius = Math.min(totalW, totalD) / 2 - 0.1;
   const resolved = resolveCornerRadii(params, maxRadius);
   const cornerR = Math.min(Math.max(resolved.tl, resolved.tr, resolved.bl, resolved.br), maxRadius);
 
   // Slab center offset for asymmetric padding (grid stays at origin)
-  const slabOffsetX = (paddingRight - paddingLeft) / 2;
-  const slabOffsetY = (paddingBack - paddingFront) / 2;
+  const slabOffsetX = (padRight - padLeft) / 2;
+  const slabOffsetY = (padBack - padFront) / 2;
 
-  const cellOpts: ForEachCellOptions = { fractionalEdgeX, fractionalEdgeY, gridUnitMm };
+  const cellOpts: ForEachCellOptions = {
+    fractionalEdgeX,
+    fractionalEdgeY,
+    gridUnitMm,
+    fractional: tiling.fractional,
+    minFractionUnits: minFractionUnits(gridUnitMm),
+  };
 
   // Collect all cells
   const cells: CellInfo[] = [];
-  forEachCell(width, depth, (cell) => cells.push(cell), cellOpts);
+  forEachCell(unitsX, unitsY, (cell) => cells.push(cell), cellOpts);
 
   onProgress('base', 0.1);
   checkCancelled(signal);
@@ -139,8 +145,8 @@ export function generateBaseplateDirect(
     slabOffsetX,
     slabOffsetY,
     gridUnitMm,
-    width,
-    depth,
+    unitsX,
+    unitsY,
     cells,
     totalHeight,
     true
@@ -157,7 +163,18 @@ export function generateBaseplateDirect(
   if (magnetHoles) {
     addSolidBottomFace(mb, outerPts, slabOffsetX, slabOffsetY);
   } else {
-    addPlateFace(mb, outerPts, slabOffsetX, slabOffsetY, gridUnitMm, width, depth, cells, 0, false);
+    addPlateFace(
+      mb,
+      outerPts,
+      slabOffsetX,
+      slabOffsetY,
+      gridUnitMm,
+      unitsX,
+      unitsY,
+      cells,
+      0,
+      false
+    );
   }
 
   onProgress('base', 0.7);
@@ -175,8 +192,8 @@ export function generateBaseplateDirect(
     const nubRadius = NUB_DIAMETER / 2;
     const holeRadius = HOLE_DIAMETER / 2;
     const connPositions = computeConnectorPositions(
-      width,
-      depth,
+      unitsX,
+      unitsY,
       gridUnitMm,
       totalHeight,
       totalW,

@@ -99,6 +99,10 @@ export const DESIGNER_CONSTRAINTS = {
   MIN_SCOOP_RADIUS: 5, // mm
   MAX_SCOOP_RADIUS: 25, // mm
   SCOOP_RADIUS_STEP: 1, // mm
+  // Per-side body overhang (fills the drawer-fit gap; outward-only)
+  MIN_OVERHANG: 0, // mm
+  MAX_OVERHANG: 21, // mm (half a 42mm grid unit — beyond this, add a grid cell)
+  OVERHANG_STEP: 0.5, // mm
   // Handle holes
   MIN_HANDLE_WIDTH: 10, // % of wall span
   MAX_HANDLE_WIDTH: 100, // %

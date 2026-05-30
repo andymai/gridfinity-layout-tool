@@ -68,7 +68,8 @@ export const shellStage: PipelineStage = {
         params.gridUnitMm,
         params.cellMask,
         compartmentCavityDrawings,
-        compartmentCavityKey
+        compartmentCavityKey,
+        dim.overhang
       );
       collectOrigins(binBody, FeatureTag.BASE, originToTag);
 
@@ -81,7 +82,14 @@ export const shellStage: PipelineStage = {
             // the scope disposes that intermediate after translate produces
             // the positioned copy.
             const lipBase = scope.register(
-              buildTopShape(params.width, params.depth, true, params.gridUnitMm, params.cellMask)
+              buildTopShape(
+                params.width,
+                params.depth,
+                true,
+                params.gridUnitMm,
+                params.cellMask,
+                dim.overhang
+              )
             );
             const top = scope.register(translate(lipBase, [0, 0, dim.wallHeight - LIP_OVERLAP]));
             collectOrigins(top, FeatureTag.LIP, originToTag);
@@ -130,7 +138,14 @@ export const shellStage: PipelineStage = {
           // the scope disposes that intermediate after translate produces
           // the positioned copy.
           const lipBase = scope.register(
-            buildTopShape(params.width, params.depth, true, params.gridUnitMm, params.cellMask)
+            buildTopShape(
+              params.width,
+              params.depth,
+              true,
+              params.gridUnitMm,
+              params.cellMask,
+              dim.overhang
+            )
           );
           const top = scope.register(translate(lipBase, [0, 0, dim.wallHeight - LIP_OVERLAP]));
           collectOrigins(top, FeatureTag.LIP, originToTag);

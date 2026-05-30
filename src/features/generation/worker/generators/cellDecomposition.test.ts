@@ -28,6 +28,47 @@ describe('decomposeCells', () => {
   it('decomposes 1.0 into [1]', () => {
     expect(decomposeCells(1.0)).toEqual([1]);
   });
+
+  it('snaps fractional remainders to 0.5 by default (legacy behavior)', () => {
+    expect(decomposeCells(1.7)).toEqual([1, 0.5]);
+    expect(decomposeCells(4.3)).toEqual([1, 1, 1, 1]);
+  });
+});
+
+describe('decomposeCells (fractional mode)', () => {
+  it('emits the exact trailing remainder instead of snapping to 0.5', () => {
+    expect(decomposeCells(1.7, { fractional: true })).toEqual([1, 0.7]);
+    const [a, b, c, d, frac] = decomposeCells(4.3, { fractional: true });
+    expect([a, b, c, d]).toEqual([1, 1, 1, 1]);
+    expect(frac).toBeCloseTo(0.3, 10);
+  });
+
+  it('emits only full cells for an integer dimension', () => {
+    expect(decomposeCells(3.0, { fractional: true })).toEqual([1, 1, 1]);
+  });
+
+  it('emits a sub-half remainder as its own cell', () => {
+    // 2.2 -> [1, 1, 0.2]
+    const cells = decomposeCells(2.2, { fractional: true });
+    expect(cells).toHaveLength(3);
+    expect(cells[0]).toBe(1);
+    expect(cells[1]).toBe(1);
+    expect(cells[2]).toBeCloseTo(0.2, 10);
+  });
+
+  it('drops a remainder below minFractionUnits (flat-strip / padding-fallback rule)', () => {
+    // 2.05 with a 0.2u floor -> the 0.05 sliver is dropped
+    expect(decomposeCells(2.05, { fractional: true, minFractionUnits: 0.2 })).toEqual([1, 1]);
+    // a remainder at or above the floor is kept
+    expect(decomposeCells(2.3, { fractional: true, minFractionUnits: 0.2 })[2]).toBeCloseTo(
+      0.3,
+      10
+    );
+  });
+
+  it('drops a near-zero floating remainder', () => {
+    expect(decomposeCells(3 + 1e-12, { fractional: true })).toEqual([1, 1, 1]);
+  });
 });
 
 describe('decomposeHalfCells', () => {
@@ -113,6 +154,45 @@ describe('forEachCell', () => {
     expect(cells[0].centerX).toBe(-25);
     expect(cells[1].centerX).toBe(25);
     expect(cells[0].centerY).toBe(0);
+  });
+
+  it('emits an exact fractional edge cell in fractional mode', () => {
+    const cells: CellInfo[] = [];
+    forEachCell(2.3, 1, (cell) => cells.push(cell), { fractional: true });
+
+    // 2.3u -> [1, 1, 0.3]
+    expect(cells).toHaveLength(3);
+    expect(cells[0].widthUnits).toBe(1);
+    expect(cells[1].widthUnits).toBe(1);
+    expect(cells[2].widthUnits).toBeCloseTo(0.3, 10);
+    // Fractional cell sits on the positive-X edge by default
+    const totalW = 2.3 * SIZE;
+    expect(cells[2].centerX).toBeCloseTo(totalW / 2 - (0.3 * SIZE) / 2, 6);
+  });
+
+  it('places the fractional edge cell on the negative side with fractionalEdgeX=start', () => {
+    const cells: CellInfo[] = [];
+    forEachCell(2.3, 1, (cell) => cells.push(cell), {
+      fractional: true,
+      fractionalEdgeX: 'start',
+    });
+
+    expect(cells).toHaveLength(3);
+    expect(cells[0].widthUnits).toBeCloseTo(0.3, 10);
+    const totalW = 2.3 * SIZE;
+    expect(cells[0].centerX).toBeCloseTo(-totalW / 2 + (0.3 * SIZE) / 2, 6);
+  });
+
+  it('drops a sub-threshold fractional edge cell', () => {
+    const cells: CellInfo[] = [];
+    forEachCell(2.05, 1, (cell) => cells.push(cell), {
+      fractional: true,
+      minFractionUnits: 0.2,
+    });
+
+    // 0.05 sliver dropped -> only the two full cells remain
+    expect(cells).toHaveLength(2);
+    expect(cells.every((c) => c.widthUnits === 1)).toBe(true);
   });
 });
 

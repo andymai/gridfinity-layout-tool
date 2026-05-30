@@ -226,6 +226,18 @@ export function BaseplatePanel() {
                 updateParam={updateParam}
                 updateParams={updateParams}
               />
+              {hasPadding && (
+                <div className="border-t border-stroke-subtle pt-3">
+                  <Checkbox
+                    checked={baseplateParams.overTile === true}
+                    onChange={() => updateParam('overTile', baseplateParams.overTile !== true)}
+                    label={t('baseplate.overTile')}
+                  />
+                  <p className="mt-1 text-[11px] leading-relaxed text-content-tertiary">
+                    {t('baseplate.overTileHint')}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </StickyGroupHeader>

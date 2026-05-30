@@ -53,6 +53,13 @@ import {
  * regardless of mask detail — preserves the existing `base.halfSockets`
  * toggle behaviour.
  */
+/**
+ * Smallest printable edge foot, in mm. A fractional bin whose trailing strip is
+ * narrower than this drops the foot entirely (flat bottom there) rather than
+ * emit a degenerate sliver — below ~6mm the tapered socket insets collapse.
+ */
+export const MIN_FOOT_TILE_MM = 8;
+
 function forEachSocketCell(
   gridW: number,
   gridD: number,
@@ -69,7 +76,15 @@ function forEachSocketCell(
   const needsPerCellSplit = mask !== undefined && isPartialMask(mask) && hasHalfBinDetail(mask);
 
   if (!needsPerCellSplit) {
-    forEachCell(gridW, gridD, callback, { gridUnitMm });
+    // Fractional feet: a non-0.5 trailing dimension (e.g. 1.7u) gets a clipped
+    // edge foot matching the true footprint instead of snapping to a half cell.
+    // Backward-safe — multiples of 0.5 decompose identically. Sub-threshold
+    // slivers are dropped (flat bottom), mirroring the over-tile baseplate.
+    forEachCell(gridW, gridD, callback, {
+      gridUnitMm,
+      fractional: true,
+      minFractionUnits: MIN_FOOT_TILE_MM / gridUnitMm,
+    });
     return;
   }
 

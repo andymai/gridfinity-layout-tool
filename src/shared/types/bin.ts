@@ -47,6 +47,7 @@ export type {
   TextStyleDefaults,
   TextStyleOverride,
   DividerOverride,
+  OverhangConfig,
 } from '@/features/bin-designer/types';
 
 export {
@@ -124,6 +125,13 @@ export interface BaseplateParams {
   readonly fractionalEdgeX: 'start' | 'end';
   /** Where the half-unit cell sits on the Y axis ('start' = front, 'end' = back) */
   readonly fractionalEdgeY: 'start' | 'end';
+  /**
+   * Over-tile mode: fill the drawer-fit padding with functional grid instead of
+   * a solid plastic margin. Each axis's leftover becomes one clipped tile on the
+   * `fractionalEdge` anchor; a sub-threshold sliver falls back to solid padding.
+   * Default false (standard centered grid + padding).
+   */
+  readonly overTile?: boolean;
   /** Edge classification for split pieces — omit for single (unsplit) baseplates. */
   readonly edges?: BaseplateEdges;
   /** Enable registration nubs/holes on join edges for split piece alignment. */

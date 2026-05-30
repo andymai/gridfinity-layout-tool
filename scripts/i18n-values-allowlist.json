@@ -19,6 +19,8 @@
     "binDesigner.handles.summary",
     "binDesigner.wallCutouts.summary",
     "binDesigner.compartmentsShort",
+    "binDesigner.overhang.summary",
+    "binDesigner.overhang.title",
     "binDesigner.designCount",
     "binDesigner.designs",
     "binDesigner.dimensions",

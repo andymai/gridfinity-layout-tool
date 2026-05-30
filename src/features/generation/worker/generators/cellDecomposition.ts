@@ -17,6 +17,28 @@ export interface CellInfo {
   readonly centerY: number;
 }
 
+const FRACTION_EPS = 1e-9;
+
+/**
+ * Options for {@link decomposeCells}.
+ */
+export interface DecomposeOptions {
+  /**
+   * Emit the trailing remainder at its exact fractional size instead of
+   * snapping it to a 0.5 half-cell. Used by over-tile baseplates and
+   * fractional-foot bins, where the edge cell fills an arbitrary leftover
+   * (e.g. a 1.7u axis decomposes to `[1, 0.7]` rather than `[1, 0.5]`).
+   */
+  readonly fractional?: boolean;
+  /**
+   * Minimum trailing-cell size, in grid units. In `fractional` mode a
+   * remainder smaller than this is dropped (no cell emitted) so the caller
+   * can leave that edge strip flat — the "drop foot / fall back to padding"
+   * sliver rule. Defaults to emitting any positive remainder.
+   */
+  readonly minFractionUnits?: number;
+}
+
 /**
  * Decompose a grid dimension (in units) into an array of cell sizes (in units).
  * Full cells are 1.0 unit; a trailing half-cell is 0.5 unit.
@@ -26,8 +48,24 @@ export interface CellInfo {
  *   1.5 -> [1, 0.5]
  *   0.5 -> [0.5]
  *   3.0 -> [1, 1, 1]
+ *
+ * With `fractional: true` the trailing remainder is emitted at its exact size
+ * (subject to `minFractionUnits`) instead of snapping to 0.5:
+ *   1.7 -> [1, 0.7]
+ *   4.3 -> [1, 1, 1, 1, 0.3]
+ *   2.05 with minFractionUnits 0.2 -> [1, 1]   (0.05 sliver dropped)
  */
-export function decomposeCells(gridUnits: number): number[] {
+export function decomposeCells(gridUnits: number, options: DecomposeOptions = {}): number[] {
+  if (options.fractional) {
+    const fullCells = Math.floor(gridUnits + FRACTION_EPS);
+    const remainder = gridUnits - fullCells;
+    const cells: number[] = Array<number>(fullCells).fill(1);
+    const minFraction = options.minFractionUnits ?? FRACTION_EPS;
+    if (remainder > FRACTION_EPS && remainder >= minFraction - FRACTION_EPS) {
+      cells.push(remainder);
+    }
+    return cells;
+  }
   const fullCells = Math.floor(gridUnits);
   const hasHalf = gridUnits - fullCells >= 0.5 - 1e-10;
   const cells: number[] = Array<number>(fullCells).fill(1);
@@ -94,6 +132,18 @@ export interface ForEachCellOptions {
   readonly fractionalEdgeY?: 'start' | 'end';
   /** Grid unit size in mm. Defaults to standard Gridfinity 42mm. */
   readonly gridUnitMm?: number;
+  /**
+   * Emit exact fractional trailing cells instead of snapping to 0.5
+   * (over-tile baseplates, fractional-foot bins). Ignored when
+   * `halfSockets` is set. See {@link DecomposeOptions.fractional}.
+   */
+  readonly fractional?: boolean;
+  /**
+   * Minimum trailing-cell size in units; smaller remainders are dropped.
+   * Only consulted in `fractional` mode. See
+   * {@link DecomposeOptions.minFractionUnits}.
+   */
+  readonly minFractionUnits?: number;
 }
 
 /**
@@ -118,7 +168,13 @@ export function forEachCell(
       ? { halfSockets: optionsOrHalfSockets }
       : optionsOrHalfSockets;
 
-  const decompose = opts.halfSockets ? decomposeHalfCells : decomposeCells;
+  const decompose = opts.halfSockets
+    ? decomposeHalfCells
+    : (units: number): number[] =>
+        decomposeCells(units, {
+          fractional: opts.fractional,
+          minFractionUnits: opts.minFractionUnits,
+        });
   const cellsW = decompose(gridW);
   const cellsD = decompose(gridD);
 
