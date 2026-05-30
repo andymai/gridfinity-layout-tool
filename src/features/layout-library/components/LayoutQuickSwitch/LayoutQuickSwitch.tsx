@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLayoutSwitcher } from '@/shared/hooks';
+import { useLayoutStore } from '@/core/store';
+import { computePreview } from '@/core/storage';
 import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import type { LayoutPreview } from '@/core/types';
 import { layoutId } from '@/core/types';
@@ -78,10 +80,19 @@ function MenuAction({ onClick, children }: MenuActionProps) {
 export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
   const t = useTranslation();
   const { activeLayoutId, library, switchLayout, createNewLayout } = useLayoutSwitcher();
+  const currentLayout = useLayoutStore((s) => s.layout);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const activeEntry = library.entries.find((e) => e.id === activeLayoutId) ?? library.entries[0];
+  // In shared-preview / embed mode the active layout isn't a library entry, so
+  // the trigger reflects the live layout store instead of mislabeling itself
+  // with entries[0].
+  const activeEntry = library.entries.find((e) => e.id === activeLayoutId);
+  const triggerName = activeEntry?.name ?? currentLayout.name;
+  const triggerPreview = useMemo(
+    () => activeEntry?.preview ?? computePreview(currentLayout),
+    [activeEntry, currentLayout]
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -113,8 +124,6 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
     await createNewLayout();
   }, [createNewLayout]);
 
-  if (library.entries.length === 0) return null;
-
   return (
     <div ref={containerRef} className="relative">
       <button
@@ -122,9 +131,9 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
         className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={t('header.switchLayout', { name: activeEntry.name })}
+        aria-label={t('header.switchLayout', { name: triggerName })}
       >
-        <Thumb preview={activeEntry.preview} size={30} className="h-6 w-8" />
+        <Thumb preview={triggerPreview} size={30} className="h-6 w-8" />
         <Icon name="chevron" className="h-3.5 w-3.5" />
       </button>
 
@@ -154,7 +163,7 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
             );
           })}
 
-          <div className="my-1 border-t border-stroke-subtle" />
+          {library.entries.length > 0 && <div className="my-1 border-t border-stroke-subtle" />}
 
           <MenuAction onClick={() => void handleNew()}>
             <Icon name="plus" className="h-4 w-4" />
