@@ -18,6 +18,13 @@ const LOGOUT_ICON: readonly string[] = [
   'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
 ];
 
+const SYNC_STATUS_KEYS: Record<SyncState, string> = {
+  idle: 'dock.syncStatusIdle',
+  syncing: 'dock.syncStatusSyncing',
+  offline: 'dock.syncStatusOffline',
+  error: 'dock.syncStatusError',
+};
+
 interface UserDockProps {
   variant?: 'default' | 'compact';
   onOpenSettings?: () => void;
@@ -46,6 +53,9 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
   const avatarSeed = isAuthed ? user.email : deviceId;
   const avatarStatus: SyncState | null = isAuthed ? syncState : null;
   const hairline = isAuthed ? PROVIDER_INFO[user.provider].hairlineColor : null;
+  const compactLabel = isAuthed
+    ? `${user.email} · ${t(SYNC_STATUS_KEYS[syncState])}`
+    : t('dock.signInTooltip');
 
   const handleOpenSettings = onOpenSettings
     ? () => {
@@ -94,7 +104,8 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
           <div
             className="w-full flex justify-center py-2 text-content-secondary"
             title={isAuthed ? user.email : t('dock.signInTooltip')}
-            aria-label={isAuthed ? user.email : t('dock.signInTooltip')}
+            aria-label={compactLabel}
+            role="status"
           >
             <DockAvatar seed={avatarSeed} size={24} status={avatarStatus} muted={!isAuthed} />
           </div>
@@ -204,13 +215,6 @@ function AnonymousMenuContent({ layoutCount, onOpenSettings, t }: AnonymousMenuC
     </>
   );
 }
-
-const SYNC_STATUS_KEYS: Record<SyncState, string> = {
-  idle: 'dock.syncStatusIdle',
-  syncing: 'dock.syncStatusSyncing',
-  offline: 'dock.syncStatusOffline',
-  error: 'dock.syncStatusError',
-};
 
 const SYNC_DOT_CLASS: Record<SyncState, string> = {
   idle: 'bg-success',

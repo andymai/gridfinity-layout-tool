@@ -40,4 +40,15 @@ describe('BinGridIdenticon', () => {
     const { container } = render(<BinGridIdenticon seed="a" />);
     expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
   });
+
+  it('uses hueOverride instead of the seed-derived hue', () => {
+    const seed = 'override@example.com';
+    const { cells } = identiconFromSeed(seed);
+    const firstFilled = cells.findIndex(Boolean);
+    const row = Math.floor(firstFilled / 4);
+
+    const { container } = render(<BinGridIdenticon seed={seed} hueOverride={123} />);
+    const rects = container.querySelectorAll('rect');
+    expect(rects[firstFilled].getAttribute('fill')).toBe(identiconCellColor(123, row, false));
+  });
 });

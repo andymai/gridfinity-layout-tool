@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { identiconFromSeed, identiconCellColor, IDENTICON_GRID } from './identicon';
+import { identiconFromSeed, identiconCellColor, hueFromHex, IDENTICON_GRID } from './identicon';
 
 const CELLS = IDENTICON_GRID * IDENTICON_GRID;
 
@@ -45,6 +45,54 @@ describe('identiconFromSeed', () => {
     const b = identiconFromSeed('bob@example.com');
     const differs = a.hue !== b.hue || a.cells.some((c, i) => c !== b.cells[i]);
     expect(differs).toBe(true);
+  });
+
+  it('keeps both vertical halves populated so the mark never looks half-rendered', () => {
+    const half = (IDENTICON_GRID / 2) * IDENTICON_GRID;
+    for (let i = 0; i < 500; i++) {
+      const { cells } = identiconFromSeed(`balance-${i}@example.com`);
+      const top = cells.slice(0, half).some(Boolean);
+      const bottom = cells.slice(half).some(Boolean);
+      expect(top).toBe(true);
+      expect(bottom).toBe(true);
+    }
+  });
+
+  it('enforces a minimum fill density', () => {
+    for (let i = 0; i < 500; i++) {
+      const { cells } = identiconFromSeed(`density-${i}@example.com`);
+      // min 3 of 8 left cells, mirrored => at least 6 filled
+      expect(cells.filter(Boolean).length).toBeGreaterThanOrEqual(6);
+    }
+  });
+
+  it('keeps every curated hue clear of the sync-status colors', () => {
+    const statusHues = [142, 221, 33, 0]; // success, info, amber, error
+    const palette = new Set<number>();
+    for (let i = 0; i < 400; i++) palette.add(identiconFromSeed(`palette-${i}`).hue);
+    for (const hue of palette) {
+      for (const status of statusHues) {
+        const delta = Math.min(Math.abs(hue - status), 360 - Math.abs(hue - status));
+        expect(delta).toBeGreaterThan(20);
+      }
+    }
+  });
+});
+
+describe('hueFromHex', () => {
+  it('extracts the hue from primaries', () => {
+    expect(hueFromHex('#ff0000')).toBe(0);
+    expect(hueFromHex('#00ff00')).toBe(120);
+    expect(hueFromHex('#0000ff')).toBe(240);
+  });
+
+  it('tolerates a missing leading hash', () => {
+    expect(hueFromHex('00ff00')).toBe(120);
+  });
+
+  it('falls back to 0 for invalid input', () => {
+    expect(hueFromHex('not-a-color')).toBe(0);
+    expect(hueFromHex('#fff')).toBe(0);
   });
 });
 

@@ -5,6 +5,8 @@ interface BinGridIdenticonProps {
   seed: string;
   size?: number;
   muted?: boolean;
+  /** Override the seed-derived hue, e.g. a collaborator's session color. */
+  hueOverride?: number;
 }
 
 const PAD = 10;
@@ -14,8 +16,14 @@ const RADIUS = 4;
 const EMPTY_FILL = 'var(--color-stroke-subtle)';
 const EMPTY_OPACITY = 0.3;
 
-export function BinGridIdenticon({ seed, size = 28, muted = false }: BinGridIdenticonProps) {
-  const { cells, hue } = useMemo(() => identiconFromSeed(seed), [seed]);
+export function BinGridIdenticon({
+  seed,
+  size = 28,
+  muted = false,
+  hueOverride,
+}: BinGridIdenticonProps) {
+  const { cells, hue: seedHue } = useMemo(() => identiconFromSeed(seed), [seed]);
+  const hue = hueOverride ?? seedHue;
 
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true" className="flex-none">

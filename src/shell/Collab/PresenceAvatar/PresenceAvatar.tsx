@@ -1,9 +1,8 @@
 /**
  * Individual avatar component for presence display.
  *
- * Renders a circular avatar with:
- * - Colored background (from participant's assigned color)
- * - Initials derived from participant name
+ * Renders a bin-grid identicon avatar with:
+ * - A pattern derived from the participant name and a hue from their assigned color
  * - Crown icon overlay for owner
  * - Ring highlight for self
  * - Optional name text display
@@ -11,8 +10,9 @@
 
 import { memo } from 'react';
 import type { Participant } from '@/shared/hooks/usePresence';
-import { getInitials } from '@/shared/hooks/usePresence';
 import { useTranslation } from '@/i18n';
+import { BinGridIdenticon } from '@/shared/components/UserDock/BinGridIdenticon';
+import { hueFromHex } from '@/shared/components/UserDock/identicon';
 
 interface PresenceAvatarProps {
   /** Participant data */
@@ -26,24 +26,23 @@ interface PresenceAvatarProps {
 }
 
 /** Size-specific dimensions */
-const SIZE_CONFIG: Record<'sm' | 'md' | 'lg', { container: string; text: string; crown: string }> =
-  {
-    sm: {
-      container: 'w-6 h-6',
-      text: 'text-[10px]',
-      crown: 'w-2.5 h-2.5 -top-0.5 -right-0.5',
-    },
-    md: {
-      container: 'w-8 h-8',
-      text: 'text-xs',
-      crown: 'w-3 h-3 -top-0.5 -right-0.5',
-    },
-    lg: {
-      container: 'w-10 h-10',
-      text: 'text-sm',
-      crown: 'w-3.5 h-3.5 -top-1 -right-1',
-    },
-  };
+const SIZE_CONFIG: Record<'sm' | 'md' | 'lg', { container: string; px: number; crown: string }> = {
+  sm: {
+    container: 'w-6 h-6',
+    px: 24,
+    crown: 'w-2.5 h-2.5 -top-0.5 -right-0.5',
+  },
+  md: {
+    container: 'w-8 h-8',
+    px: 32,
+    crown: 'w-3 h-3 -top-0.5 -right-0.5',
+  },
+  lg: {
+    container: 'w-10 h-10',
+    px: 40,
+    crown: 'w-3.5 h-3.5 -top-1 -right-1',
+  },
+};
 
 /**
  * Crown SVG icon for owner badge.
@@ -73,26 +72,23 @@ export const PresenceAvatar = memo(function PresenceAvatar({
 }: PresenceAvatarProps) {
   const t = useTranslation();
   const { name, color, isOwner, isSelf } = participant;
-  const initials = getInitials(name);
   const config = SIZE_CONFIG[size];
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      {/* Avatar circle */}
+      {/* Avatar identicon */}
       <div className="relative inline-block">
         <div
           className={`
             ${config.container}
-            rounded-full
+            rounded-md overflow-hidden
             flex items-center justify-center
-            font-medium text-white
             ${isSelf ? 'ring-2 ring-accent ring-offset-1 ring-offset-surface' : ''}
           `.trim()}
-          style={{ backgroundColor: color }}
           title={isSelf ? `${name} (you)` : name}
           aria-label={isSelf ? `${name} (you)` : name}
         >
-          <span className={config.text}>{initials}</span>
+          <BinGridIdenticon seed={name} size={config.px} hueOverride={hueFromHex(color)} />
         </div>
 
         {/* Crown badge for owner */}
