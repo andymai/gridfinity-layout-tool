@@ -143,6 +143,28 @@ describe('binDownloadHelpers — multi-color export gate', () => {
       // multi-color print actually swaps filaments between body and lid.
       expect(objects[1].colorConfig).toBeDefined();
     });
+
+    // discussion #1654: a distinct lid color must resolve to a non-body slot,
+    // otherwise the lid silently exports body-colored. The earlier test only
+    // checked the lid had *a* config, not that it referenced the lid filament.
+    it('lid resolves to a distinct (non-body) material slot when its color diverges', () => {
+      const params: BinParams = {
+        ...paramsWithMultiColor(true),
+        lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+        base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
+        featureColors: {
+          ...paramsWithMultiColor(true).featureColors,
+          lid: '#ff0000', // distinct from body (#3b82f6)
+        },
+      };
+      buildMultiObject3MF(pieces, FAKE_FACE_GROUPS, params, 'assembly', PRINT_SETTINGS);
+      const objects = export3MFMultiObjectSpy.mock.calls[0][0] as Array<{
+        colorConfig?: { triangleMaterialIndices: readonly number[] };
+      }>;
+      const lidSlots = objects[1].colorConfig?.triangleMaterialIndices ?? [];
+      expect(lidSlots.length).toBeGreaterThan(0);
+      expect(lidSlots.every((s) => s !== 0)).toBe(true);
+    });
   });
 });
 

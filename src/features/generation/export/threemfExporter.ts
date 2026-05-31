@@ -68,7 +68,8 @@ export function export3MFMultiObject(
 function packageFiles(
   modelXml: string,
   thumbnail: Uint8Array | undefined,
-  projectSettingsJson: string | undefined
+  projectSettingsJson: string | undefined,
+  modelSettingsXml?: string
 ): Uint8Array {
   const hasThumbnail = !!thumbnail;
   const files: Record<string, Uint8Array> = {
@@ -78,6 +79,13 @@ function packageFiles(
   };
   if (thumbnail) {
     files['Metadata/thumbnail.png'] = thumbnail;
+  }
+  if (modelSettingsXml) {
+    // BambuStudio/OrcaSlicer read per-object settings (including the base
+    // `extruder` assignment) from this sidecar. It's what colors a whole
+    // uniform secondary object — the lid — by filament; `paint_color` alone
+    // leaves it on the default extruder (body). See `buildModelSettingsConfig`.
+    files['Metadata/model_settings.config'] = strToU8(modelSettingsXml);
   }
   if (projectSettingsJson) {
     // Both OrcaSlicer and BambuStudio read this via
@@ -110,7 +118,8 @@ export function build3MFMultiObjectBuffer(
   return packageFiles(
     buildMultiObjectModelXML(meshes, options),
     options.thumbnail,
-    palette && buildProjectSettingsConfig(palette)
+    palette && buildProjectSettingsConfig(palette),
+    buildModelSettingsConfig(meshes)
   );
 }
 
@@ -459,6 +468,63 @@ function buildMultiObjectModelXML(
   xml += '  </build>\n';
   xml += '</model>';
   return xml;
+}
+
+/**
+ * Most frequent material slot across a triangle→slot list. For a uniform
+ * object (lid, divider) that's its single slot; for the multi-zone bin it's
+ * the body, which is the right base extruder since per-triangle `paint_color`
+ * overrides the rest. Ties resolve to the lower slot index, so a bin with no
+ * dominant zone falls back to body (slot 0) rather than an arbitrary feature.
+ */
+function dominantSlot(triangleMaterialIndices: readonly number[]): number {
+  const counts = new Map<number, number>();
+  for (const slot of triangleMaterialIndices) {
+    counts.set(slot, (counts.get(slot) ?? 0) + 1);
+  }
+  let best = 0;
+  let bestCount = -1;
+  for (const [slot, n] of counts) {
+    if (n > bestCount || (n === bestCount && slot < best)) {
+      bestCount = n;
+      best = slot;
+    }
+  }
+  return best;
+}
+
+/**
+ * Per-object settings sidecar (`Metadata/model_settings.config`) assigning
+ * each colored object its base `extruder` = dominant slot + 1 (slicers are
+ * 1-based, matching the `paint_color` slot→filament mapping). BambuStudio and
+ * OrcaSlicer color a whole object by this extruder; without it every object
+ * defaults to extruder 1 (body), so a uniform secondary object like the lid
+ * renders body-colored even though its triangles carry the correct
+ * `paint_color` (discussion #1654). Purely additive — slicers that ignore the
+ * sidecar fall back to today's paint_color-only behavior, so it can't regress
+ * the already-working multi-zone bin.
+ *
+ * Returns undefined when no object carries colors (single-color assemblies
+ * need no extruder overrides).
+ */
+function buildModelSettingsConfig(
+  meshes: readonly { name: string; colorConfig?: ThreeMFColorConfig }[]
+): string | undefined {
+  const entries: string[] = [];
+  meshes.forEach((m, i) => {
+    const colorConfig = activeColorConfig(m.colorConfig);
+    if (!colorConfig) return;
+    const extruder = dominantSlot(colorConfig.triangleMaterialIndices) + 1;
+    const objectId = i + 1;
+    entries.push(
+      `  <object id="${objectId}">\n` +
+        `    <metadata key="name" value="${escapeXml(m.name)}"/>\n` +
+        `    <metadata key="extruder" value="${extruder}"/>\n` +
+        `  </object>\n`
+    );
+  });
+  if (entries.length === 0) return undefined;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<config>\n${entries.join('')}</config>\n`;
 }
 
 function mergeBBoxes(boxes: readonly (BBox | null)[]): BBox | null {

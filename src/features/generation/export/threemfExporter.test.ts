@@ -739,6 +739,50 @@ describe('threemfExporter', () => {
       expect(unzipSync(buffer)['Metadata/project_settings.config']).toBeUndefined();
     });
 
+    // discussion #1654: a uniform-color secondary object (the lid) ships every
+    // triangle with one paint_color code, but BambuStudio colors a whole
+    // object by its assigned extruder — with none assigned it defaults to
+    // extruder 1 (body), so the lid renders body-colored despite correct
+    // paint_color. Emitting model_settings.config with each object's dominant
+    // slot as its base extruder lets BBS color uniform objects natively.
+    it('multi-object: assigns per-object base extruder in model_settings.config', () => {
+      const tri = createSingleTriangle();
+      const shared = [{ color: '#d4d8dc' }, { color: '#ff0000' }];
+      const objects = [
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'Bin 2x2x3',
+          colorConfig: { materials: shared, triangleMaterialIndices: [0] },
+        },
+        {
+          vertices: tri.vertices,
+          normals: tri.normals,
+          name: 'Lid 2x2x3',
+          colorConfig: { materials: shared, triangleMaterialIndices: [1] },
+        },
+      ];
+      const files = unzipSync(build3MFMultiObjectBuffer(objects, { name: 'multi' }));
+      const cfg = files['Metadata/model_settings.config'];
+      expect(cfg).toBeDefined();
+      const xml = strFromU8(cfg);
+      // Bin (object 1) → body extruder 1; Lid (object 2) → its filament (slot 1 → extruder 2).
+      expect(xml).toMatch(/<object id="1">[\s\S]*?key="extruder" value="1"[\s\S]*?<\/object>/);
+      expect(xml).toMatch(/<object id="2">[\s\S]*?key="extruder" value="2"[\s\S]*?<\/object>/);
+    });
+
+    it('multi-object: omits model_settings.config when no object has a colorConfig', () => {
+      const tri = createSingleTriangle();
+      const buffer = build3MFMultiObjectBuffer(
+        [
+          { vertices: tri.vertices, normals: tri.normals, name: 'a' },
+          { vertices: tri.vertices, normals: tri.normals, name: 'b' },
+        ],
+        { name: 'multi-plain' }
+      );
+      expect(unzipSync(buffer)['Metadata/model_settings.config']).toBeUndefined();
+    });
+
     // BambuStudio gates `Metadata/project_settings.config` loading on the
     // `Application` metadata starting with "BambuStudio-X.Y.Z"
     // (bbs_3mf.cpp:1898-1908). Claim a version Orca won't reject so both
