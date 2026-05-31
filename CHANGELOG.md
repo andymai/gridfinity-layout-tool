@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.132.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.131.0...gridfinity-layout-tool-v4.132.0) (2026-05-31)
+
+
+### Features
+
+* generated bin-grid identicon avatars (dock + collaborators) ([#1950](https://github.com/andymai/gridfinity-layout-tool/issues/1950)) ([4be33b8](https://github.com/andymai/gridfinity-layout-tool/commit/4be33b88763ad9bc750e8e611e1d47b8315f488e))
+
 ## [4.131.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.130.0...gridfinity-layout-tool-v4.131.0) (2026-05-31)
 
 
