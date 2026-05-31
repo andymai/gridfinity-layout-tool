@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.132.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.132.1...gridfinity-layout-tool-v4.132.2) (2026-05-31)
+
+
+### Bug Fixes
+
+* **print-export:** color the lid by extruder so BambuStudio renders it ([#1955](https://github.com/andymai/gridfinity-layout-tool/issues/1955)) ([860b645](https://github.com/andymai/gridfinity-layout-tool/commit/860b645b6feb1b4dc15c704f3ace221a6da18220))
+
 ## [4.132.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.132.0...gridfinity-layout-tool-v4.132.1) (2026-05-31)
 
 
