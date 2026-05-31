@@ -984,11 +984,10 @@ input[type='range']:hover::-moz-range-thumb {
   animation: quickstart-icon-intro 320ms ease-out backwards;
 }
 
-/* UserDock: sync ring states.
-   The ring is a layer behind the avatar. Idle/error use a solid background;
-   syncing rotates a conic-gradient via the layer's transform; offline uses a
-   dashed border. The blanket prefers-reduced-motion rule above neutralizes
-   the spin and pulse without per-rule overrides. */
+/* UserDock: sync status badge.
+   The badge is a solid corner dot beside the avatar. Idle/offline are static;
+   syncing and error pulse opacity. The blanket prefers-reduced-motion rule
+   above neutralizes the pulse without per-rule overrides. */
 @keyframes status-syncing {
   0%,
   100% {
