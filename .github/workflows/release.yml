@@ -42,6 +42,21 @@ jobs:
         if: steps.release.outputs.pr
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ fromJSON(steps.release.outputs.pr).number }}
+        # `gh pr merge --auto` enables auto-merge, but GitHub rejects the call
+        # (`Pull request is in unstable status`) in the brief window before the PR's
+        # required checks register. Retry until they settle so the release isn't
+        # left un-merged by a startup race.
         run: |
-          gh pr merge ${{ fromJSON(steps.release.outputs.pr).number }} \
-            --auto --squash --repo ${{ github.repository }}
+          for attempt in $(seq 1 6); do
+            if gh pr merge "$PR_NUMBER" --auto --squash --repo "$GITHUB_REPOSITORY"; then
+              echo "Auto-merge enabled on attempt $attempt."
+              exit 0
+            fi
+            if [ "$attempt" -lt 6 ]; then
+              echo "Attempt $attempt failed to enable auto-merge; retrying in 10s..."
+              sleep 10
+            fi
+          done
+          echo "::error::Failed to enable auto-merge on PR #$PR_NUMBER after 6 attempts."
+          exit 1
