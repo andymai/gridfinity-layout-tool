@@ -410,6 +410,9 @@ export interface OverhangConfig {
   readonly feet?: boolean;
 }
 
+/** Overhang-section hover-highlight target: a wall side or the bottom feet ring. */
+export type OverhangHighlightSide = 'left' | 'right' | 'front' | 'back' | 'feet';
+
 // Wall Pattern Types
 
 /** Supported wall pattern types. Extensible via pattern registry. */
@@ -797,6 +800,8 @@ export interface DesignerUIState {
   readonly splitPieceMeshes: readonly SplitPieceMeshEntry[];
   /** Currently hovered color zone in the panel (for 3D preview glow feedback) */
   readonly hoveredColorZone: HoverableZone | null;
+  /** Overhang control hovered/focused in the panel → 3D wall highlight. Transient. */
+  readonly hoveredOverhangSide: OverhangHighlightSide | null;
   /**
    * Active color tool overlay. `'eyedropper'` lets the user click a zone in
    * the 3D preview to recolor it; `'swap-pick-first'` and `'swap-pick-second'`
@@ -1047,6 +1052,7 @@ export interface DesignerState {
   setSplitViewMode: (mode: SplitViewMode) => void;
   setSplitPieceMeshes: (meshes: readonly SplitPieceMeshEntry[]) => void;
   setHoveredColorZone: (zone: HoverableZone | null) => void;
+  setHoveredOverhangSide: (side: OverhangHighlightSide | null) => void;
   setSelectedDividerKey: (key: string | null) => void;
   setHoveredDividerKey: (key: string | null) => void;
   setDividerTiltPreview: (preview: DividerTiltPreview | null) => void;

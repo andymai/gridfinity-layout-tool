@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
@@ -10,10 +10,11 @@ const ZERO_OVERHANG: OverhangConfig = { left: 0, right: 0, front: 0, back: 0, fe
 export type OverhangSide = 'left' | 'right' | 'front' | 'back';
 
 export function useOverhangSection() {
-  const { overhang, updateOverhang, isCustomShape } = useDesignerStore(
+  const { overhang, updateOverhang, setHoveredOverhangSide, isCustomShape } = useDesignerStore(
     useShallow((s) => ({
       overhang: s.params.overhang ?? ZERO_OVERHANG,
       updateOverhang: s.updateOverhang,
+      setHoveredOverhangSide: s.setHoveredOverhangSide,
       isCustomShape: isPartialMask(s.params.cellMask),
     }))
   );
@@ -29,6 +30,21 @@ export function useOverhangSection() {
   const toggleFeet = useCallback(() => {
     updateOverhang({ feet: !(overhang.feet ?? false) });
   }, [overhang.feet, updateOverhang]);
+
+  const setHovered = useCallback(
+    (side: OverhangSide | 'feet' | null) => {
+      setHoveredOverhangSide(side);
+    },
+    [setHoveredOverhangSide]
+  );
+
+  // Leave/blur handlers can't fire if the section unmounts or gets disabled
+  // (inert custom-shape) mid-hover, which would strand the preview overlay.
+  // Clear the transient highlight on unmount and whenever the section disables.
+  useEffect(() => {
+    if (isCustomShape) setHoveredOverhangSide(null);
+    return () => setHoveredOverhangSide(null);
+  }, [isCustomShape, setHoveredOverhangSide]);
 
   const total = overhang.left + overhang.right + overhang.front + overhang.back;
 
@@ -50,7 +66,7 @@ export function useOverhangSection() {
 
   return {
     state: { overhang, isCustomShape, feet: overhang.feet ?? false, hasOverhang: total > 0 },
-    handlers: { setSide, toggleFeet },
+    handlers: { setSide, toggleFeet, setHovered },
     meta: { summary, disabledReason },
     t,
   };

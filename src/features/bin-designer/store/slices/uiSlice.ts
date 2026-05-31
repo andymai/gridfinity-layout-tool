@@ -12,6 +12,7 @@ import type {
   SplitViewMode,
   SplitPieceMeshEntry,
   DividerTiltPreview,
+  OverhangHighlightSide,
 } from '../../types';
 import type { ColorZone, HoverableZone, LipCorner } from '../../types/featureColors';
 import { LIP_CORNERS, lipCornerZone } from '../../types/featureColors';
@@ -87,6 +88,12 @@ export function createUISlice(set: Set) {
     setHoveredColorZone: (zone: HoverableZone | null) => {
       set((state) => {
         state.ui.hoveredColorZone = zone;
+      });
+    },
+
+    setHoveredOverhangSide: (side: OverhangHighlightSide | null) => {
+      set((state) => {
+        state.ui.hoveredOverhangSide = side;
       });
     },
 

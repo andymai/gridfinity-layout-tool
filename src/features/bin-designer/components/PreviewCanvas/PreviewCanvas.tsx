@@ -41,6 +41,7 @@ import {
   GhostCutouts,
   GhostWallCutouts,
   GhostHandles,
+  OverhangHighlight,
   BinSplitLines,
   SplitBinMeshes,
   type CameraPreset,
@@ -414,6 +415,9 @@ export function PreviewCanvas() {
             <GhostCutouts />
             <GhostWallCutouts />
             <GhostHandles />
+
+            {/* Overhang-section hover highlight — lights up the affected wall */}
+            <OverhangHighlight />
 
             {/* Split lines for oversized bins — hidden when pieces are shown */}
             {!showSplitPieces && <BinSplitLines />}

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { OverhangSection } from './OverhangSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
@@ -28,6 +28,32 @@ describe('OverhangSection', () => {
     });
     render(<OverhangSection />);
     expect(screen.getByText(/L3/)).toBeDefined();
+  });
+
+  it('sets and clears the hovered side on pointer enter/leave', () => {
+    render(<OverhangSection />);
+    // React derives onMouseEnter/Leave from delegated mouseover/mouseout.
+    const left = screen.getByText('Left');
+    fireEvent.mouseOver(left);
+    expect(useDesignerStore.getState().ui.hoveredOverhangSide).toBe('left');
+    fireEvent.mouseOut(left);
+    expect(useDesignerStore.getState().ui.hoveredOverhangSide).toBeNull();
+  });
+
+  it('does not target the feet region when there is no overhang', () => {
+    render(<OverhangSection />);
+    fireEvent.mouseOver(screen.getByText('Feet under overhang'));
+    // Feet toggle is disabled without overhang → hover stays null.
+    expect(useDesignerStore.getState().ui.hoveredOverhangSide).toBeNull();
+  });
+
+  it('targets the feet region when an overhang exists', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, overhang: { left: 0, right: 4, front: 0, back: 0 } },
+    });
+    render(<OverhangSection />);
+    fireEvent.mouseOver(screen.getByText('Feet under overhang'));
+    expect(useDesignerStore.getState().ui.hoveredOverhangSide).toBe('feet');
   });
 
   it('disables the controls for custom-shape bins', () => {
