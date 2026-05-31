@@ -53,8 +53,10 @@ jobs:
               echo "Auto-merge enabled on attempt $attempt."
               exit 0
             fi
-            echo "Attempt $attempt failed to enable auto-merge; retrying in 10s..."
-            sleep 10
+            if [ "$attempt" -lt 6 ]; then
+              echo "Attempt $attempt failed to enable auto-merge; retrying in 10s..."
+              sleep 10
+            fi
           done
           echo "::error::Failed to enable auto-merge on PR #$PR_NUMBER after 6 attempts."
           exit 1
