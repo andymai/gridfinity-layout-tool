@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.132.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.132.0...gridfinity-layout-tool-v4.132.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* **print-export:** preserve overhang when splitting an oversized bin ([#1952](https://github.com/andymai/gridfinity-layout-tool/issues/1952)) ([570a2ca](https://github.com/andymai/gridfinity-layout-tool/commit/570a2ca166f97de48a4baf16a3e2787af7ed6d8b))
+
 ## [4.132.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.131.0...gridfinity-layout-tool-v4.132.0) (2026-05-31)
 
 
