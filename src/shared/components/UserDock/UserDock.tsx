@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { cn } from '@/design-system/cn';
 import { useTranslation } from '@/i18n';
@@ -7,14 +7,23 @@ import { signInUrl } from '@/core/sync/session/sessionApi';
 import { useSyncStatusStore, type SyncState } from '@/core/sync/status';
 import { useSignOutFlow } from '@/shared/sync/useSignOutFlow';
 import { useLibraryStore } from '@/core/store/library';
+import { getDeviceId } from '@/shared/utils/deviceId';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
-import { SyncRing } from './SyncRing';
+import { BinGridIdenticon } from './BinGridIdenticon';
+import { StatusBadge } from './StatusBadge';
 import { useDockMenu } from './useDockMenu';
 import { PROVIDER_INFO } from './providers';
 
 const LOGOUT_ICON: readonly string[] = [
   'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
 ];
+
+const SYNC_STATUS_KEYS: Record<SyncState, string> = {
+  idle: 'dock.syncStatusIdle',
+  syncing: 'dock.syncStatusSyncing',
+  offline: 'dock.syncStatusOffline',
+  error: 'dock.syncStatusError',
+};
 
 interface UserDockProps {
   variant?: 'default' | 'compact';
@@ -35,15 +44,18 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
     void signOut();
   }, [close, signOut]);
 
+  const deviceId = useMemo(() => getDeviceId(), []);
+
   if (status === 'unknown') return null;
 
   const isCompact = variant === 'compact';
   const isAuthed = status === 'authenticated' && user !== null;
-  const ringState: SyncState | 'none' = isAuthed ? syncState : 'none';
-  const initial = isAuthed
-    ? (user.displayName ?? user.email).trim().charAt(0).toUpperCase() || '?'
-    : '';
+  const avatarSeed = isAuthed ? user.email : deviceId;
+  const avatarStatus: SyncState | null = isAuthed ? syncState : null;
   const hairline = isAuthed ? PROVIDER_INFO[user.provider].hairlineColor : null;
+  const compactLabel = isAuthed
+    ? `${user.email} · ${t(SYNC_STATUS_KEYS[syncState])}`
+    : t('dock.signInTooltip');
 
   const handleOpenSettings = onOpenSettings
     ? () => {
@@ -92,13 +104,10 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
           <div
             className="w-full flex justify-center py-2 text-content-secondary"
             title={isAuthed ? user.email : t('dock.signInTooltip')}
-            aria-label={isAuthed ? user.email : t('dock.signInTooltip')}
+            aria-label={compactLabel}
+            role="status"
           >
-            {isAuthed ? (
-              <SyncRing state={ringState} initial={initial} size={24} />
-            ) : (
-              <LocalAvatar size={24} />
-            )}
+            <DockAvatar seed={avatarSeed} size={24} status={avatarStatus} muted={!isAuthed} />
           </div>
         ) : (
           <button
@@ -113,11 +122,7 @@ export function UserDock({ variant = 'default', onOpenSettings }: UserDockProps)
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset'
             )}
           >
-            {isAuthed ? (
-              <SyncRing state={ringState} initial={initial} size={28} />
-            ) : (
-              <LocalAvatar size={28} />
-            )}
+            <DockAvatar seed={avatarSeed} size={28} status={avatarStatus} muted={!isAuthed} />
             <span className="flex-1 truncate text-left">
               {isAuthed ? (user.displayName ?? user.email) : t('dock.workingLocally')}
             </span>
@@ -211,13 +216,6 @@ function AnonymousMenuContent({ layoutCount, onOpenSettings, t }: AnonymousMenuC
   );
 }
 
-const SYNC_STATUS_KEYS: Record<SyncState, string> = {
-  idle: 'dock.syncStatusIdle',
-  syncing: 'dock.syncStatusSyncing',
-  offline: 'dock.syncStatusOffline',
-  error: 'dock.syncStatusError',
-};
-
 const SYNC_DOT_CLASS: Record<SyncState, string> = {
   idle: 'bg-success',
   syncing: 'bg-info animate-pulse',
@@ -302,21 +300,21 @@ function Caret({ up }: { up: boolean }) {
   );
 }
 
-function LocalAvatar({ size }: { size: number }) {
+function DockAvatar({
+  seed,
+  size,
+  status,
+  muted,
+}: {
+  seed: string;
+  size: number;
+  status: SyncState | null;
+  muted: boolean;
+}) {
   return (
-    <span
-      aria-hidden="true"
-      className="inline-flex items-center justify-center rounded-full bg-primary-muted text-content-secondary flex-none"
-      style={{ width: size, height: size }}
-    >
-      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2m-9 0h12m-12 0a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2"
-        />
-      </svg>
+    <span className="relative inline-flex flex-none" style={{ width: size, height: size }}>
+      <BinGridIdenticon seed={seed} size={size} muted={muted} />
+      {status && <StatusBadge state={status} size={size} />}
     </span>
   );
 }

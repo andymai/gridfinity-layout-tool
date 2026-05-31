@@ -249,4 +249,18 @@ describe('UserDock', () => {
     const labelled = container.querySelector('[aria-label="Working locally · Sign in to sync"]');
     expect(labelled).toBeTruthy();
   });
+
+  it('compact variant announces sync status for screen readers when authed', () => {
+    setSession('authenticated', {
+      userId: 'u1',
+      provider: 'google',
+      email: 'andy@example.com',
+      displayName: 'Andy',
+    });
+    useSyncStatusStore.setState({ state: 'syncing', pendingCount: 1 });
+    const { container } = render(<UserDock variant="compact" />);
+    const labelled = container.querySelector('[role="status"][aria-label*="andy@example.com"]');
+    expect(labelled).toBeTruthy();
+    expect(labelled?.getAttribute('aria-label')).toContain('Syncing');
+  });
 });

@@ -33,9 +33,10 @@ describe('PresenceAvatar', () => {
     render(<PresenceAvatar participant={mockParticipant} />);
   });
 
-  it('displays user initials', () => {
-    render(<PresenceAvatar participant={mockParticipant} />);
-    expect(screen.getByText('TU')).toBeInTheDocument();
+  it('renders an identicon grid for the participant', () => {
+    const { container } = render(<PresenceAvatar participant={mockParticipant} />);
+    // 4x4 identicon = 16 cells
+    expect(container.querySelectorAll('svg rect')).toHaveLength(16);
   });
 
   it('displays user name when showName is true', () => {
