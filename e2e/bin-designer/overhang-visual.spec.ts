@@ -73,4 +73,42 @@ test.describe('Bin overhang — visual', () => {
     });
     await test.info().attach('overhang-feet.png', { body: afterFeet, contentType: 'image/png' });
   });
+
+  test('hovering an overhang control highlights the matching wall', async ({ page }) => {
+    test.setTimeout(180_000);
+    await page.goto('/designer');
+
+    const canvas = page.locator('canvas').first();
+    await expect(canvas).toBeVisible({ timeout: 120_000 });
+    await waitForGenerationComplete(page);
+
+    const header = page.getByRole('button', { name: /^Overhang/i });
+    await expect(header).toBeVisible({ timeout: 15_000 });
+    await header.click();
+    await expect(header).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByText('Left', { exact: true }).first()).toBeVisible();
+
+    // Baseline with the pointer off the panel controls.
+    await header.hover();
+    await page.waitForTimeout(250);
+    const baseline = await canvas.screenshot();
+
+    // Hovering a side control lights up its wall (translucent overlay) even at 0mm.
+    await page.getByText('Left', { exact: true }).first().hover();
+    await page.waitForTimeout(250);
+    const hovered = await canvas.screenshot();
+    expect(baseline.equals(hovered)).toBe(false);
+
+    // Moving the pointer away clears the highlight.
+    await header.hover();
+    await page.waitForTimeout(250);
+    const cleared = await canvas.screenshot();
+    expect(cleared.equals(hovered)).toBe(false);
+
+    await test.info().attach('highlight-baseline.png', {
+      body: baseline,
+      contentType: 'image/png',
+    });
+    await test.info().attach('highlight-hovered.png', { body: hovered, contentType: 'image/png' });
+  });
 });

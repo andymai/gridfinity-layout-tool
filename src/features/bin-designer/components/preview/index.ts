@@ -25,5 +25,6 @@ export { GhostDividerPieces } from './GhostDividerPieces/GhostDividerPieces';
 export { GhostCutouts } from './GhostCutouts';
 export { GhostWallCutouts } from './GhostWallCutouts';
 export { GhostHandles } from './GhostHandles';
+export { OverhangHighlight } from './OverhangHighlight';
 export { BinSplitLines } from './BinSplitLines';
 export { SplitBinMeshes } from './SplitBinMeshes/SplitBinMeshes';

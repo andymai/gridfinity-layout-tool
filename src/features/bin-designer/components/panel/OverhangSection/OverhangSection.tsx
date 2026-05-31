@@ -38,19 +38,33 @@ export function OverhangSection() {
       <FeatureGate disabled={state.isCustomShape} reason={meta.disabledReason ?? ''}>
         <div className="space-y-3">
           {sides.map(({ side, label }) => (
-            <SliderInput
+            // Wrapper relays hover + keyboard focus to the 3D wall highlight
+            // without touching the shared SliderInput primitive (onFocus/onBlur
+            // bubble from the inner input).
+            <div
               key={side}
-              label={label}
-              value={state.overhang[side]}
-              onChange={(v) => handlers.setSide(side, v)}
-              min={DESIGNER_CONSTRAINTS.MIN_OVERHANG}
-              max={DESIGNER_CONSTRAINTS.MAX_OVERHANG}
-              step={DESIGNER_CONSTRAINTS.OVERHANG_STEP}
-              unit="mm"
-            />
+              onMouseEnter={() => handlers.setHovered(side)}
+              onMouseLeave={() => handlers.setHovered(null)}
+              onFocus={() => handlers.setHovered(side)}
+              onBlur={() => handlers.setHovered(null)}
+            >
+              <SliderInput
+                label={label}
+                value={state.overhang[side]}
+                onChange={(v) => handlers.setSide(side, v)}
+                min={DESIGNER_CONSTRAINTS.MIN_OVERHANG}
+                max={DESIGNER_CONSTRAINTS.MAX_OVERHANG}
+                step={DESIGNER_CONSTRAINTS.OVERHANG_STEP}
+                unit="mm"
+              />
+            </div>
           ))}
           <div
             className="group flex cursor-pointer items-center justify-between pt-1"
+            onMouseEnter={state.hasOverhang ? () => handlers.setHovered('feet') : undefined}
+            onMouseLeave={state.hasOverhang ? () => handlers.setHovered(null) : undefined}
+            onFocus={state.hasOverhang ? () => handlers.setHovered('feet') : undefined}
+            onBlur={state.hasOverhang ? () => handlers.setHovered(null) : undefined}
             onClick={state.hasOverhang ? handlers.toggleFeet : undefined}
             onKeyDown={(e) => {
               if (state.hasOverhang && (e.key === 'Enter' || e.key === ' ')) {
