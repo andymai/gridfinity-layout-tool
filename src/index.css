@@ -989,13 +989,17 @@ input[type='range']:hover::-moz-range-thumb {
    syncing rotates a conic-gradient via the layer's transform; offline uses a
    dashed border. The blanket prefers-reduced-motion rule above neutralizes
    the spin and pulse without per-rule overrides. */
-@keyframes sync-ring-spin {
-  to {
-    transform: rotate(360deg);
+@keyframes status-syncing {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
   }
 }
 
-@keyframes sync-ring-breath {
+@keyframes status-error {
   0%,
   100% {
     opacity: 1;
@@ -1005,12 +1009,12 @@ input[type='range']:hover::-moz-range-thumb {
   }
 }
 
-.animate-sync-ring-spin {
-  animation: sync-ring-spin 1.2s linear infinite;
+.animate-status-syncing {
+  animation: status-syncing 1.4s ease-in-out infinite;
 }
 
-.animate-sync-ring-breath {
-  animation: sync-ring-breath 2s ease-in-out infinite;
+.animate-status-error {
+  animation: status-error 1.8s ease-in-out infinite;
 }
 
 /* Onboarding: sidebar gallery pulse glow */
