@@ -42,7 +42,9 @@ jobs:
         if: steps.release.outputs.pr
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          PR_NUMBER: ${{ fromJSON(steps.release.outputs.pr).number }}
+          # Guard fromJSON: when no release PR is created the output is empty and
+          # fromJSON('') errors at template-eval time even though `if:` skips the step.
+          PR_NUMBER: ${{ steps.release.outputs.pr && fromJSON(steps.release.outputs.pr).number }}
         # `gh pr merge --auto` enables auto-merge, but GitHub rejects the call
         # (`Pull request is in unstable status`) in the brief window before the PR's
         # required checks register. Retry until they settle so the release isn't
