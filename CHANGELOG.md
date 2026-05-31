@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.132.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.132.2...gridfinity-layout-tool-v4.132.3) (2026-05-31)
+
+
+### Bug Fixes
+
+* **bin-designer:** allow fractional magnet depth input ([#1958](https://github.com/andymai/gridfinity-layout-tool/issues/1958)) ([2aee382](https://github.com/andymai/gridfinity-layout-tool/commit/2aee382224e0d8cbf3c0d77a2188cd24ce50f5c6))
+
 ## [4.132.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.132.1...gridfinity-layout-tool-v4.132.2) (2026-05-31)
 
 
