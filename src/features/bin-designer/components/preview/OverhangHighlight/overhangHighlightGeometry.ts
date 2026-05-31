@@ -3,8 +3,8 @@
  *
  * Pure box math, kept out of the R3F component so coordinate correctness is
  * unit-testable without a WebGL context. The bin is centered at the origin in
- * XY (matching FootprintGrid/BinMesh): `right`/`left` are ∓X walls,
- * `back`/`front` are ∓Y walls, Z is height with z=0 at the bottom of the feet.
+ * XY (matching FootprintGrid/BinMesh): `left`/`right` are −X/+X walls,
+ * `front`/`back` are −Y/+Y walls, Z is height with z=0 at the bottom of the feet.
  *
  * The wall/overhang region spans `[wallBottomZ, wallTopZ]` — the flat bottom
  * under the overhang sits at the socket top, so wall sides start above the

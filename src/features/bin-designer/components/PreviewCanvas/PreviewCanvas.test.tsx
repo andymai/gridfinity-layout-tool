@@ -183,6 +183,9 @@ vi.mock('three', () => {
     SphereGeometry: function SphereGeometry() {
       return { dispose: vi.fn() };
     },
+    MeshBasicMaterial: function MeshBasicMaterial() {
+      return { dispose: vi.fn() };
+    },
     FrontSide: 0,
     DoubleSide: 2,
   };

@@ -99,11 +99,12 @@ test.describe('Bin overhang — visual', () => {
     const hovered = await canvas.screenshot();
     expect(baseline.equals(hovered)).toBe(false);
 
-    // Moving the pointer away clears the highlight.
+    // Moving the pointer away clears the highlight, returning to the baseline.
     await header.hover();
     await page.waitForTimeout(250);
     const cleared = await canvas.screenshot();
     expect(cleared.equals(hovered)).toBe(false);
+    expect(cleared.equals(baseline)).toBe(true);
 
     await test.info().attach('highlight-baseline.png', {
       body: baseline,

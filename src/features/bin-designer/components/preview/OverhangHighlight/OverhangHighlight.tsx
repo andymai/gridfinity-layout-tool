@@ -85,7 +85,7 @@ export function OverhangHighlight() {
     <group renderOrder={3}>
       {boxes.map((box, i) => (
         <mesh
-          key={i}
+          key={`${side}-${i}`}
           position={box.center as [number, number, number]}
           material={material}
           renderOrder={3}

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
@@ -37,6 +37,14 @@ export function useOverhangSection() {
     },
     [setHoveredOverhangSide]
   );
+
+  // Leave/blur handlers can't fire if the section unmounts or gets disabled
+  // (inert custom-shape) mid-hover, which would strand the preview overlay.
+  // Clear the transient highlight on unmount and whenever the section disables.
+  useEffect(() => {
+    if (isCustomShape) setHoveredOverhangSide(null);
+    return () => setHoveredOverhangSide(null);
+  }, [isCustomShape, setHoveredOverhangSide]);
 
   const total = overhang.left + overhang.right + overhang.front + overhang.back;
 
