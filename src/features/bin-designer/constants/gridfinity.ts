@@ -73,7 +73,7 @@ export const DESIGNER_CONSTRAINTS = {
   MAGNET_DIAMETER_STEP: 0.1, // mm
   MIN_MAGNET_HEIGHT: 1.0, // mm
   MAX_MAGNET_HEIGHT: 4.0, // mm
-  MAGNET_HEIGHT_STEP: 0.5, // mm
+  MAGNET_HEIGHT_STEP: 0.1, // mm
   // Screw holes (diameter in UI and store)
   MIN_SCREW_DIAMETER: 2.0, // mm
   MAX_SCREW_DIAMETER: 6.0, // mm
