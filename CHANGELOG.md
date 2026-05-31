@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.131.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.130.0...gridfinity-layout-tool-v4.131.0) (2026-05-31)
+
+
+### Features
+
+* **bin-designer:** highlight the affected wall when hovering overhang controls ([#1947](https://github.com/andymai/gridfinity-layout-tool/issues/1947)) ([2c9d6d8](https://github.com/andymai/gridfinity-layout-tool/commit/2c9d6d8a671f619a72d5223efa328566af66cae7))
+
 ## [4.130.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.129.1...gridfinity-layout-tool-v4.130.0) (2026-05-30)
 
 
