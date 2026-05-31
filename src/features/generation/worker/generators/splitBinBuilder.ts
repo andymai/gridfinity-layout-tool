@@ -32,6 +32,8 @@ import type { BinGeometryContext } from './splitConnectorBuilder';
 import { buildLipSlotCuts } from './slotBuilder';
 import { buildWallCutoutCuts } from './wallCutoutBuilder';
 import { isAbortError } from './utils/abort';
+import { resolveOverhang } from './overhang';
+import { isPartialMask } from '@/shared/utils/cellMask';
 
 /** Result of a split export: array of piece buffers with grid labels */
 export interface SplitExportResult {
@@ -268,9 +270,16 @@ function splitSolidIntoPieces(
   const adjustedCutPlanesX = shiftCutPlanesOffCellBoundaries(cutPlanesX, params.width, gridUnitMm);
   const adjustedCutPlanesY = shiftCutPlanesOffCellBoundaries(cutPlanesY, params.depth, gridUnitMm);
 
+  // An overhang grows the outer body past the nominal grid footprint (the base
+  // sockets stay put). The body spans [-outerW/2 - left, outerW/2 + right] and
+  // [-outerD/2 - front, outerD/2 + back]; the outermost cutting boxes must reach
+  // those edges or the boolean intersect clips the overhang off (#1949).
+  // Suppressed for partial masks, matching the geometry pipeline.
+  const overhang = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
+
   // Boundary arrays: [left edge, ...cut planes, right edge]
-  const xBounds = [-outerW / 2, ...adjustedCutPlanesX, outerW / 2];
-  const yBounds = [-outerD / 2, ...adjustedCutPlanesY, outerD / 2];
+  const xBounds = [-outerW / 2 - overhang.left, ...adjustedCutPlanesX, outerW / 2 + overhang.right];
+  const yBounds = [-outerD / 2 - overhang.front, ...adjustedCutPlanesY, outerD / 2 + overhang.back];
 
   // Outer edges of the cutting box are expanded by this margin to avoid
   // coplanar faces with bin geometry, which cause OCCT booleans to
