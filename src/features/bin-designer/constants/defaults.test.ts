@@ -767,3 +767,29 @@ describe('GRIDFINITY constants', () => {
     expect(GRIDFINITY.MAGNET_DEPTH).toBeGreaterThan(0);
   });
 });
+
+describe('DESIGNER_CONSTRAINTS magnet depth step', () => {
+  it('MAGNET_HEIGHT_STEP is 0.1mm to allow fractional input', () => {
+    expect(DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP).toBe(0.1);
+  });
+
+  it('validateBinParams rejects magnetDepth not on 0.1mm grid', () => {
+    const params = {
+      ...DEFAULT_BIN_PARAMS,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, magnetDepth: 2.25 },
+    };
+    const result = validateBinParams(params);
+    expect(result).toMatchObject({ ok: false });
+    if (!result.ok) {
+      expect(result.error.code).toBe('MAGNET_HEIGHT_INVALID_STEP');
+    }
+  });
+
+  it('validateBinParams accepts fractional magnetDepth on 0.1mm grid', () => {
+    const params = {
+      ...DEFAULT_BIN_PARAMS,
+      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' as const, magnetDepth: 2.3 },
+    };
+    expectOk(validateBinParams(params));
+  });
+});

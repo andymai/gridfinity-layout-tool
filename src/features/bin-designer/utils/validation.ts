@@ -126,6 +126,13 @@ export function validateBinParams(params: BinParams): Result<BinParams, Designer
         field: 'base.magnetDepth',
       });
     }
+    if (!isValidStep(params.base.magnetDepth, DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP)) {
+      return err({
+        code: 'MAGNET_HEIGHT_INVALID_STEP',
+        message: `Magnet depth must be in ${DESIGNER_CONSTRAINTS.MAGNET_HEIGHT_STEP}mm increments`,
+        field: 'base.magnetDepth',
+      });
+    }
   }
 
   // Screw dimension check (only when screw is enabled)
