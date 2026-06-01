@@ -2188,6 +2188,7 @@ const en: Record<string, string> = {
   'commandPalette.newLayout': 'New Layout',
   'commandPalette.duplicateLayout': 'Duplicate Layout',
   'commandPalette.switchToDesigner': 'Switch to Bins',
+  'commandPalette.openBinExamples': 'Browse Bin Examples',
 
   // Tools commands (extended)
   'commandPalette.togglePaintMode': 'Toggle Paint Mode',
@@ -2201,6 +2202,86 @@ const en: Record<string, string> = {
   'commandPalette.footer.run': 'Run',
   'commandPalette.footer.navigate': 'Navigate',
   'commandPalette.footer.commandCount': '{count} commands',
+
+  // Bin example gallery entry points
+  'binExamples.sidebarEntry': 'Design Showcase',
+  'binExamples.sidebarHint': 'See what the bin designer can do',
+
+  // Bin example gallery UI
+  'binExamples.gallery.title': 'Design showcase',
+  'binExamples.gallery.subtitle': 'A showcase of what the bin designer can create',
+  'binExamples.gallery.count': '{count} examples',
+  'binExamples.gallery.gridLabel': 'Bin example designs',
+  'binExamples.searchPlaceholder': 'Search examples…',
+  'binExamples.searchLabel': 'Search example designs',
+  'binExamples.empty': 'No examples match your filters.',
+  'binExamples.clearFilters': 'Clear filters',
+  'binExamples.all': 'All',
+  'binExamples.filterByTechnique': 'Filter by technique',
+  'binExamples.backToGallery': 'Back to gallery',
+  'binExamples.description': 'Description',
+  'binExamples.dimensions': 'Dimensions',
+  'binExamples.width': 'Width',
+  'binExamples.depth': 'Depth',
+  'binExamples.height': 'Height',
+  'binExamples.useAsNewDesign': 'Use as new design',
+  'binExamples.useAsNewDesignHint': 'Creates a new saved design you can edit.',
+  'binExamples.creating': 'Creating…',
+  'binExamples.toast.designCreated': 'Created a new design from the example.',
+  'binExamples.toast.designCreateFailed': 'Could not create a design from this example.',
+
+  // Bin example technique labels
+  'binExamples.technique.compartments': 'Compartments',
+  'binExamples.technique.wallCutouts': 'Wall cutouts',
+  'binExamples.technique.scoop': 'Scoop',
+  'binExamples.technique.labelTab': 'Label tab',
+  'binExamples.technique.slotted': 'Slotted',
+  'binExamples.technique.lid': 'Lid',
+  'binExamples.technique.handles': 'Handles',
+  'binExamples.technique.customShape': 'Custom shape',
+  'binExamples.technique.wallPattern': 'Wall pattern',
+
+  // Bin example presets — wall cutouts
+  'binExamples.wallCutout2x4Cable.name': '2×4 Cable Bin',
+  'binExamples.wallCutout2x4Cable.description':
+    'A deep 2×4 bin with a front wall cutout to route charging cables out of the drawer.',
+
+  // Bin example presets — scoops
+  'binExamples.scoop2x3Ramp.name': '2×3 Scoop Bin',
+  'binExamples.scoop2x3Ramp.description':
+    'A 2×3 bin with a scoop ramp for grabbing hardware out of a larger pile.',
+
+  // Bin example presets — lids
+  'binExamples.lid2x2.name': '2×2 Lidded Bin',
+  'binExamples.lid2x2.description':
+    'A 2×2 bin with a click-lock lid that keeps small parts safely enclosed.',
+
+  // Bin example presets — styles
+  'binExamples.slotted2x2.name': '2×2 Slotted Bin',
+  'binExamples.slotted2x2.description':
+    'A 2×2 bin in the slotted style, with wall slots for removable dividers.',
+
+  // Bin example presets — custom shapes
+  'binExamples.customLShape.name': 'L-Shaped Corner Bin',
+  'binExamples.customLShape.description':
+    'A 2×2 custom-shape bin with one quadrant removed to wrap around a drawer obstacle.',
+
+  // Bin example presets — hero showcases
+  'binExamples.heroMulticolorOrganizer.name': 'Multicolor Organizer',
+  'binExamples.heroMulticolorOrganizer.description':
+    'A 3×2 organizer with a colored scoop, label tab, and rim — multi-material printing in one design.',
+  'binExamples.heroHoneycombCaddy.name': 'Honeycomb Caddy',
+  'binExamples.heroHoneycombCaddy.description':
+    'A 2×3 caddy with honeycomb walls and a scoop ramp for a light, fast-printing carry tray.',
+  'binExamples.heroHandledTote.name': 'Handled Tote',
+  'binExamples.heroHandledTote.description':
+    'A tall 3×2 tote with front and back grip handles for carrying parts between benches.',
+  'binExamples.heroEngravedTray.name': 'Engraved Tray',
+  'binExamples.heroEngravedTray.description':
+    'A 1×4 tray with numbered, engraved compartments for step-by-step sorting.',
+  'binExamples.heroUShape.name': 'U-Shape Bin',
+  'binExamples.heroUShape.description':
+    'A 3×2 custom-shape bin with a U cutout and scoop for wrapping around an obstacle.',
 
   // Snapping Slider (shared component)
   'snappingSlider.default': 'Default',

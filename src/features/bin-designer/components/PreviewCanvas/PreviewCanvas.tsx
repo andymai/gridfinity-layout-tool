@@ -92,7 +92,16 @@ function PreviewContextSync() {
   return null;
 }
 
-export function PreviewCanvas() {
+interface PreviewCanvasProps {
+  /**
+   * Hide non-mesh chrome (footprint grid, dimension lines/labels, name label)
+   * so only the bin on its gradient background is captured. Used by the
+   * dev-only thumbnail route; the normal designer leaves it false.
+   */
+  readonly hideChrome?: boolean;
+}
+
+export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   const t = useTranslation();
   const controlsRef = useRef<OrbitControlsType>(null);
   const invalidateRef = useRef<(() => void) | null>(null);
@@ -423,10 +432,12 @@ export function PreviewCanvas() {
             {!showSplitPieces && <BinSplitLines />}
 
             {/* Footprint grid */}
-            <FootprintGrid width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
+            {!hideChrome && (
+              <FootprintGrid width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
+            )}
 
             {/* Dimension markers and labels — hidden for split pieces */}
-            {!showSplitPieces && (
+            {!hideChrome && !showSplitPieces && (
               <>
                 <BinAxisLabels width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
                 <BinDimensions

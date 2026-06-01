@@ -1085,3 +1085,6 @@ export interface DesignerState {
   ) => void;
   toggleHalfGridMode: () => void;
 }
+
+export type { ExampleDesign, ExampleTechnique } from './exampleGallery';
+export { TECHNIQUE_CONFIG } from './exampleGallery';

@@ -38,6 +38,7 @@ export { designAdapter } from './sync/designAdapter';
 
 // --- Components ---
 export { DesignerPage } from './components';
+export { ExampleGallery } from './components/ExampleGallery';
 
 // --- Help modal integration ---
 export { helpEntries } from './helpEntries';
