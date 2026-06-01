@@ -45,10 +45,10 @@ export function DevThumbnailRoute() {
 
   // Once generation completes with a real mesh, publish the capture bridge.
   //
-  // The preview's label components use drei's troika `<Text>`, which suspends
-  // the subtree while its font loads. While suspended, React hides this route
-  // (`display: none`), so capturing then yields a blank frame. We therefore
-  // wait until the route is actually laid out (non-zero rect) for a few
+  // R3F's Canvas measures its drawing buffer via a ResizeObserver; if it
+  // observed a 0×0 box while the route was first mounting, the buffer locks at
+  // zero and captures come back blank. We wait until the route is actually
+  // laid out (non-zero rect) and the canvas reports a real size for a few
   // consecutive frames before declaring readiness.
   useEffect(() => {
     if (status !== 'complete' || !mesh?.vertices) return;
@@ -116,7 +116,7 @@ export function DevThumbnailRoute() {
         height: '100vh',
       }}
     >
-      <PreviewCanvas />
+      <PreviewCanvas hideChrome />
     </div>
   );
 }

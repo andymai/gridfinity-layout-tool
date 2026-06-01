@@ -2208,6 +2208,119 @@ const en: Record<string, string> = {
   'binExamples.sidebarEntry': 'Bin Examples',
   'binExamples.sidebarHint': 'Start from a ready-made design',
 
+  // Bin example technique labels
+  'binExamples.technique.compartments': 'Compartments',
+  'binExamples.technique.wallCutouts': 'Wall cutouts',
+  'binExamples.technique.floorCutouts': 'Floor cutouts',
+  'binExamples.technique.scoop': 'Scoop',
+  'binExamples.technique.labelTab': 'Label tab',
+  'binExamples.technique.solid': 'Solid',
+  'binExamples.technique.slotted': 'Slotted',
+  'binExamples.technique.halfBin': 'Half bin',
+  'binExamples.technique.lid': 'Lid',
+  'binExamples.technique.handles': 'Handles',
+  'binExamples.technique.customShape': 'Custom shape',
+
+  // Bin example presets — compartments
+  'binExamples.compartments2x2Split.name': '2×2 Two-Compartment',
+  'binExamples.compartments2x2Split.description':
+    'A 2×2 bin split into two side-by-side compartments — the everyday divided organizer.',
+  'binExamples.compartments3x2Grid.name': '3×2 Six-Compartment Grid',
+  'binExamples.compartments3x2Grid.description':
+    'A 3×2 bin divided into six equal cells for sorting small parts.',
+  'binExamples.compartments1x3Rows.name': '1×3 Three-Row Tray',
+  'binExamples.compartments1x3Rows.description':
+    'A slim 1×3 bin stacked into three front-to-back rows.',
+  'binExamples.compartments3x2Mixed.name': '3×2 Mixed Layout',
+  'binExamples.compartments3x2Mixed.description':
+    'A 3×2 bin with one wide top compartment over three narrow cells.',
+
+  // Bin example presets — wall cutouts
+  'binExamples.wallCutout2x4Cable.name': '2×4 Cable Bin',
+  'binExamples.wallCutout2x4Cable.description':
+    'A deep 2×4 bin with a front wall cutout to route charging cables out of the drawer.',
+  'binExamples.wallCutout1x3Finger.name': '1×3 Finger-Access Tray',
+  'binExamples.wallCutout1x3Finger.description':
+    'A narrow 1×3 tray with a scooped front cutout for easy fingertip access.',
+
+  // Bin example presets — floor cutouts
+  'binExamples.floorCutout2x3Rect.name': '2×3 Rectangular Cavity',
+  'binExamples.floorCutout2x3Rect.description':
+    'A solid 2×3 block with a single rectangular pocket cut into the top.',
+  'binExamples.floorCutout2x2Circles.name': '2×2 Twin Sockets',
+  'binExamples.floorCutout2x2Circles.description':
+    'A solid 2×2 block with two circular sockets for round tools or jars.',
+
+  // Bin example presets — scoops
+  'binExamples.scoop1x2Ramp.name': '1×2 Scoop Tray',
+  'binExamples.scoop1x2Ramp.description':
+    'A 1×2 bin with a front scoop ramp that sweeps small parts toward your fingers.',
+  'binExamples.scoop2x3Ramp.name': '2×3 Scoop Bin',
+  'binExamples.scoop2x3Ramp.description':
+    'A 2×3 bin with a scoop ramp for grabbing hardware out of a larger pile.',
+  'binExamples.scoop1x1Deep.name': '1×1 Deep Scoop',
+  'binExamples.scoop1x1Deep.description':
+    'A tall 1×1 bin with a scoop ramp for reaching the bottom of a deep cavity.',
+
+  // Bin example presets — label tabs
+  'binExamples.labelTab2x2.name': '2×2 Labeled Bin',
+  'binExamples.labelTab2x2.description':
+    'A 2×2 bin with a back-wall label tab for at-a-glance identification.',
+  'binExamples.labelTab1x4.name': '1×4 Labeled Drawer Bin',
+  'binExamples.labelTab1x4.description':
+    'A long 1×4 bin with a centered label tab for deep drawers.',
+  'binExamples.labelTab3x2Solid.name': '3×2 Solid-Support Label',
+  'binExamples.labelTab3x2Solid.description':
+    'A 3×2 bin with a solid-backed label tab for a sturdier writing surface.',
+
+  // Bin example presets — styles
+  'binExamples.solid1x1x6Block.name': '1×1×6 Solid Riser',
+  'binExamples.solid1x1x6Block.description':
+    'A tall solid 1×1 block — a blank starting point for custom cutouts or a spacer.',
+  'binExamples.solid2x2Block.name': '2×2 Solid Block',
+  'binExamples.solid2x2Block.description':
+    'A 2×2 solid block ready to be drilled with floor cutouts for custom inserts.',
+  'binExamples.slotted2x2.name': '2×2 Slotted Bin',
+  'binExamples.slotted2x2.description':
+    'A 2×2 bin in the slotted style, with wall slots for removable dividers.',
+  'binExamples.noLip2x2.name': '2×2 No-Lip Bin',
+  'binExamples.noLip2x2.description':
+    'A 2×2 bin without a stacking lip — sits flush for low-clearance drawers.',
+  'binExamples.magnetBase2x2.name': '2×2 Magnet Base',
+  'binExamples.magnetBase2x2.description':
+    'A 2×2 bin with magnet pockets in the base for a firm grip on a magnetic baseplate.',
+  'binExamples.halfSocket2x2.name': '2×2 Half-Socket Base',
+  'binExamples.halfSocket2x2.description':
+    'A 2×2 bin with half-pitch sockets for seating on a half-grid baseplate.',
+
+  // Bin example presets — half bins
+  'binExamples.halfBin15x15.name': '1.5×1.5 Half-Grid Bin',
+  'binExamples.halfBin15x15.description':
+    'A fractional 1.5×1.5 bin that fills awkward half-grid gaps in a drawer.',
+  'binExamples.halfBin05x2Strip.name': '0.5×2 Half Strip',
+  'binExamples.halfBin05x2Strip.description':
+    'A narrow 0.5×2 strip for slotting between full-size bins.',
+
+  // Bin example presets — showcase builds
+  'binExamples.showcase3x3Organizer.name': '3×3 Workbench Organizer',
+  'binExamples.showcase3x3Organizer.description':
+    'A 3×3 nine-cell organizer combining dividers, label tabs, and scoop ramps.',
+  'binExamples.showcase2x4CableLid.name': '2×4 Cable Box with Lid',
+  'binExamples.showcase2x4CableLid.description':
+    'An enclosed 2×4 cable bin with front and back wall cutouts and a click-lock lid.',
+  'binExamples.showcase3x2ToolTray.name': '3×2 Tool Tray',
+  'binExamples.showcase3x2ToolTray.description':
+    'A solid 3×2 tray with two milled tool pockets and a label tab.',
+  'binExamples.showcase4x3HardwareSorter.name': '4×3 Hardware Sorter',
+  'binExamples.showcase4x3HardwareSorter.description':
+    'A twelve-cell 4×3 sorter with label tabs for screws, nuts, and washers.',
+  'binExamples.showcaseLShape2x2.name': 'L-Shaped Corner Bin',
+  'binExamples.showcaseLShape2x2.description':
+    'A 2×2 custom-shape bin with one quadrant removed to wrap around a drawer obstacle.',
+  'binExamples.showcase2x2MagnetLabeled.name': '2×2 Magnetic Labeled Bin',
+  'binExamples.showcase2x2MagnetLabeled.description':
+    'A 2×2 bin pairing a magnet base, two compartments, and a label tab.',
+
   // Snapping Slider (shared component)
   'snappingSlider.default': 'Default',
   'snappingSlider.select': 'Select {value}{unit}',

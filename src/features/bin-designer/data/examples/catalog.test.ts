@@ -25,8 +25,7 @@ describe('example catalog integrity', () => {
     }
   });
 
-  // TODO: unskip once binExamples i18n keys are added (Task 12/13)
-  it.skip('every i18n key exists in English bundle', () => {
+  it('every i18n key exists in English bundle', () => {
     // en is a flat Record<string, string> with dotted keys
     void import('@/i18n/locales/en').then(({ default: en }) => {
       for (const e of EXAMPLE_DESIGNS) {
