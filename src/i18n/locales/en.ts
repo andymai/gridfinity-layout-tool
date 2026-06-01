@@ -192,8 +192,6 @@ const en: Record<string, string> = {
   // Grid Toolbar
   'toolbar.showLayersPanel': 'Show layers panel',
   'toolbar.exitPaintMode': 'Exit paint mode',
-  'toolbar.clickToExitPaint': 'Click to exit paint mode',
-  'toolbar.paint': 'Paint {width}×{depth}',
   'toolbar.moveMode': 'Move Mode',
   'toolbar.toMove': 'to move',
   'toolbar.toPlace': 'to place',
@@ -1136,7 +1134,6 @@ const en: Record<string, string> = {
   'toast.dragFromStash': 'Drag bin from stash to place it on a layer',
   'toast.customPropertySet': 'Set "{key}" on {count} bins',
   'toast.resizeTip': 'Tip: Drag the handles to resize',
-  'toast.paintModeHint': 'Paint Mode: Drag to fill area, press Esc or click × to exit',
   'toast.stashCleared': 'Deleted {count} stashed bins',
   'toast.galleryAddFailed': 'Failed to add layout',
   'toast.galleryAdded': 'Added "{name}"',

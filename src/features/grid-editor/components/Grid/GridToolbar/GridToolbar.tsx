@@ -26,8 +26,6 @@ export interface GridToolbarProps {
   activeLayer: Layer | undefined;
   /** Whether toolbar is narrow (show overflow menu) */
   isNarrowToolbar: boolean;
-  /** Whether paint hint should pulse */
-  shouldPulsePaintHint: boolean;
 }
 
 export const GridToolbar = memo(function GridToolbar({
@@ -36,7 +34,6 @@ export const GridToolbar = memo(function GridToolbar({
   layers,
   activeLayer,
   isNarrowToolbar,
-  shouldPulsePaintHint,
 }: GridToolbarProps) {
   const t = useTranslation();
   const { zoom, canZoomIn, canZoomOut, zoomIn, zoomOut, fitToScreen } = zoomState;
@@ -51,23 +48,15 @@ export const GridToolbar = memo(function GridToolbar({
       }))
     );
 
-  const {
-    paintSize,
-    setPaintSize,
-    keyboardDragMode,
-    keyboardResizeMode,
-    setKeyboardDragMode,
-    setKeyboardResizeMode,
-  } = useInteractionStore(
-    useShallow((state) => ({
-      paintSize: state.paintSize,
-      setPaintSize: state.setPaintSize,
-      keyboardDragMode: state.keyboardDragMode,
-      keyboardResizeMode: state.keyboardResizeMode,
-      setKeyboardDragMode: state.setKeyboardDragMode,
-      setKeyboardResizeMode: state.setKeyboardResizeMode,
-    }))
-  );
+  const { keyboardDragMode, keyboardResizeMode, setKeyboardDragMode, setKeyboardResizeMode } =
+    useInteractionStore(
+      useShallow((state) => ({
+        keyboardDragMode: state.keyboardDragMode,
+        keyboardResizeMode: state.keyboardResizeMode,
+        setKeyboardDragMode: state.setKeyboardDragMode,
+        setKeyboardResizeMode: state.setKeyboardResizeMode,
+      }))
+    );
   const { showIsometricPreview, toggleIsometricPreview } = useViewStore(
     useShallow((state) => ({
       showIsometricPreview: state.showIsometricPreview,
@@ -132,42 +121,6 @@ export const GridToolbar = memo(function GridToolbar({
                 />
               </svg>
             )}
-          </button>
-        )}
-
-        {/* Paint mode indicator */}
-        {paintSize && (
-          <button
-            onClick={() => setPaintSize(null)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary-muted border border-accent hover:bg-accent/20 transition-colors cursor-pointer ${shouldPulsePaintHint ? 'animate-pulse motion-reduce:animate-none' : ''}`}
-            aria-label={t('toolbar.exitPaintMode')}
-            title={t('toolbar.clickToExitPaint')}
-          >
-            <svg
-              className="w-4 h-4 text-accent"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-              />
-            </svg>
-            <span className="text-sm text-accent font-medium leading-none">
-              {t('toolbar.paint', { width: paintSize.width, depth: paintSize.depth })}
-            </span>
-            <svg
-              className="w-4 h-4 text-accent/60"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
           </button>
         )}
 

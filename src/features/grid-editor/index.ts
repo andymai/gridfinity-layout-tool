@@ -14,7 +14,6 @@ export { Grid } from './components/Grid';
 export {
   useGridAxisLabels,
   useGridCoords,
-  useGridFirstUseHints,
   useGridNavigation,
   useGridResize,
   useGridRowColumnSelection,
