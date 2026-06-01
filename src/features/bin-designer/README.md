@@ -209,6 +209,28 @@ Both paths feed the same `THUMBNAIL_VERSION` invariant: any thumbnail saved is s
 
 **Indexed-mesh contract:** the worker emits an indexed mesh (deduplicated vertices + `Uint32Array` indices). Both render paths MUST call `geometry.setIndex(new THREE.BufferAttribute(indices, 1))` — without it Three.js draws random triangles between consecutive vertices and produces visually-corrupted "spaghetti" thumbnails. The shared `useMeshGeometry` hook handles this for the live canvas; the offscreen regenerator handles it inline.
 
+## Example Gallery (inspiration)
+
+A curated, browsable catalog of example bin designs users import as a **new** saved design (copy semantics — never mutates current work). It lives inside this feature (not a separate slice) because it needs designer internals (`saveDesign`, `setActiveDesignId`, thumbnail capture) that cross-feature import rules forbid reaching from another feature.
+
+### Key files
+
+- `components/ExampleGallery/` — modal (`ExampleGallery.tsx`), `ExampleCard`, `ExamplePreviewOverlay`, `TechniqueFilterPills`, and the pure `useExampleGalleryFilters.ts` (`filterAndSortExamples`).
+- `data/examples/` — one file per technique group + `showcase.ts`, aggregated in `index.ts` (`EXAMPLE_DESIGNS`). Each preset spreads `DEFAULT_BIN_PARAMS` and overrides only the technique fields.
+- `data/examples/thumbnails/*.png` — committed, pre-rendered (one per example).
+- `data/examples/catalog.test.ts` — integrity guard (unique ids, `validateBinParams` per preset, metrics==params, thumbnail-exists, i18n keys resolve).
+- `store/galleryFavorites.ts` — localStorage-backed favorite ids (preference state; never touches saved designs).
+- `utils/exampleToDesign.ts` — `saveDesign` (fresh id) + `setActiveDesignId`; relies on `saveDesign`'s `put` event to sync the custom-bin registry.
+- `types/exampleGallery.ts` — `ExampleDesign`, `ExampleTechnique`, `TECHNIQUE_CONFIG`.
+- `components/DevThumbnailRoute/` + `scripts/gen-example-thumbnails.ts` — dev-only render route (gated on `import.meta.env.DEV`) + Playwright generator (`pnpm gen:example-thumbnails`).
+
+### Concepts & gotchas
+
+1. **Open-state in a core store** — `@/core/store/binExampleGallery` (open/close/toggle). The modal is mounted once in `App.tsx` (always-present shell, so it works on every route), opened from three entry points: the designer "Browse examples" button, a Sidebar entry, and the `open-bin-examples` command-palette command (which can't import this feature, so it flips the core flag).
+2. **Thumbnails need a browser** — they use `THREE.WebGLRenderer` + the brepjs worker, so they can't be generated in node. Regenerate via the dev route + Playwright script after changing presets. The dev route renders with `PreviewCanvas`'s `hideChrome` prop (no grid/labels) for clean thumbnails.
+3. **Catalog grounded in real usage** — presets and `popular` tags reflect production design-corpus adoption (footprints, heights, feature mix), not guesses.
+4. **i18n** — example name/description and technique labels are keys under `binExamples.*` in `en.ts` (en.json is generated; the other locales are translated and key-parity-enforced).
+
 ## Integration
 
 - `?placeBin=WxDxH` URL param places bin at (0,0) in Layout Planner
