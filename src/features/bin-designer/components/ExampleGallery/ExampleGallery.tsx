@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useGalleryFavoritesStore } from '@/features/bin-designer/store/galleryFavorites';
 import { EXAMPLE_DESIGNS } from '@/features/bin-designer/data/examples';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 import { useTranslation } from '@/i18n';
-import { filterAndSortExamples } from './useExampleGalleryFilters';
-import type { GalleryFilters, GallerySort } from './useExampleGalleryFilters';
+import { filterExamples } from './useExampleGalleryFilters';
+import type { GalleryFilters } from './useExampleGalleryFilters';
 import { ExampleCard } from './ExampleCard';
 import { TechniqueFilterPills } from './TechniqueFilterPills';
 import { ExamplePreviewOverlay } from './ExamplePreviewOverlay';
@@ -13,25 +12,20 @@ interface ExampleGalleryProps {
   onClose: () => void;
 }
 
-type EditableFilters = Omit<GalleryFilters, 'favoriteIds'>;
-
-const DEFAULT_FILTERS: EditableFilters = {
+const DEFAULT_FILTERS: GalleryFilters = {
   search: '',
   technique: null,
-  sort: 'recommended',
-  favoritesOnly: false,
 };
 
 export function ExampleGallery({ onClose }: ExampleGalleryProps) {
   const t = useTranslation();
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const favoriteIds = useGalleryFavoritesStore((state) => state.favoriteIds);
 
-  const [filters, setFilters] = useState<EditableFilters>(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState<GalleryFilters>(DEFAULT_FILTERS);
   const [previewExample, setPreviewExample] = useState<ExampleDesign | null>(null);
 
-  const filteredExamples = filterAndSortExamples(EXAMPLE_DESIGNS, { ...filters, favoriteIds });
+  const filteredExamples = filterExamples(EXAMPLE_DESIGNS, filters);
 
   // Lock body scroll
   useEffect(() => {
@@ -86,10 +80,6 @@ export function ExampleGallery({ onClose }: ExampleGalleryProps) {
     setPreviewExample(null);
   }, []);
 
-  const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilters((prev) => ({ ...prev, sort: e.target.value as GallerySort }));
-  }, []);
-
   return (
     <>
       {/* Backdrop */}
@@ -122,51 +112,6 @@ export function ExampleGallery({ onClose }: ExampleGalleryProps) {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Sort */}
-              <select
-                value={filters.sort}
-                onChange={handleSortChange}
-                className="text-sm bg-surface border border-stroke-subtle rounded-lg px-2 py-1.5 text-content"
-                aria-label={t('binExamples.sortBy')}
-              >
-                <option value="recommended">{t('binExamples.sort.recommended')}</option>
-                <option value="popular">{t('binExamples.sort.popular')}</option>
-                <option value="size">{t('binExamples.sort.size')}</option>
-                <option value="complexity">{t('binExamples.sort.complexity')}</option>
-              </select>
-
-              {/* Favorites toggle */}
-              <button
-                type="button"
-                onClick={() =>
-                  setFilters((prev) => ({ ...prev, favoritesOnly: !prev.favoritesOnly }))
-                }
-                className={`
-                  p-1.5 rounded-lg transition-colors
-                  ${
-                    filters.favoritesOnly
-                      ? 'text-accent bg-accent/10'
-                      : 'text-content-secondary hover:text-content hover:bg-surface'
-                  }
-                `}
-                aria-label={t('binExamples.favoritesOnly')}
-                aria-pressed={filters.favoritesOnly}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill={filters.favoritesOnly ? 'currentColor' : 'none'}
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
-                  />
-                </svg>
-              </button>
-
               {/* Close */}
               <button
                 ref={closeButtonRef}
@@ -186,23 +131,21 @@ export function ExampleGallery({ onClose }: ExampleGalleryProps) {
             </div>
           </div>
 
-          {/* Search + filter row */}
-          <div className="px-4 pb-2 flex items-center gap-3">
+          {/* Search, then wrapping filter pills (no horizontal scroll) */}
+          <div className="px-4 pb-2 space-y-2">
             <input
               type="search"
               value={filters.search}
               onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
               placeholder={t('binExamples.searchPlaceholder')}
-              className="flex-1 text-sm bg-surface border border-stroke-subtle rounded-lg px-3 py-1.5 text-content placeholder:text-content-disabled"
+              className="w-full text-sm bg-surface border border-stroke-subtle rounded-lg px-3 py-1.5 text-content placeholder:text-content-disabled"
               aria-label={t('binExamples.searchLabel')}
             />
-            <div className="overflow-x-auto">
-              <TechniqueFilterPills
-                examples={EXAMPLE_DESIGNS}
-                selected={filters.technique}
-                onChange={(technique) => setFilters((prev) => ({ ...prev, technique }))}
-              />
-            </div>
+            <TechniqueFilterPills
+              examples={EXAMPLE_DESIGNS}
+              selected={filters.technique}
+              onChange={(technique) => setFilters((prev) => ({ ...prev, technique }))}
+            />
           </div>
         </div>
 

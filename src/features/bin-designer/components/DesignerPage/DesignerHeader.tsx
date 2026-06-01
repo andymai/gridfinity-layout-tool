@@ -8,7 +8,6 @@
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
-import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from '@/i18n';
 import { SaveStatusIndicator } from './SaveStatusIndicator';
@@ -29,7 +28,6 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
   const designName = useDesignerStore((s) => s.designName);
   const setDesignListOpen = useDesignerStore((s) => s.setDesignListOpen);
   const setExportDialogOpen = useDesignerStore((s) => s.setExportDialogOpen);
-  const openGallery = useBinExampleGalleryStore((s) => s.open);
   const canExport = useDesignerStore(
     (s) =>
       s.generation.mesh !== null &&
@@ -109,24 +107,6 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 />
               </svg>
               <span className="hidden lg:inline">{t('binDesigner.designs')}</span>
-            </button>
-
-            {/* Browse examples button */}
-            <button
-              onClick={openGallery}
-              className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
-              title={t('binExamples.browseButton')}
-              aria-label={t('binExamples.browseButton')}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                />
-              </svg>
-              <span className="hidden lg:inline">{t('binExamples.browseButton')}</span>
             </button>
 
             {/* Export button */}
@@ -259,22 +239,6 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                   strokeLinejoin="round"
                   strokeWidth={2}
                   d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
-            </button>
-
-            {/* Browse examples button */}
-            <button
-              onClick={openGallery}
-              className="btn btn-ghost btn-icon"
-              aria-label={t('binExamples.browseButton')}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
                 />
               </svg>
             </button>

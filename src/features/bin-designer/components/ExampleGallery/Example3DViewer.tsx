@@ -3,12 +3,10 @@ import { Canvas } from '@react-three/fiber';
 import { Bounds, Center, OrbitControls, useGLTF } from '@react-three/drei';
 import { meshUrl } from '@/features/bin-designer/data/examples/meshes';
 import { thumbnailUrl } from '@/features/bin-designer/data/examples/thumbnails';
+import { GradientBackground } from '@/features/bin-designer/components/preview/GradientBackground/GradientBackground';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
 import { useTranslation } from '@/i18n';
-
-/** Match the pre-rendered thumbnail backdrop so the thumbnail->3D swap is seamless. */
-const BACKGROUND = '#1a1d21';
 
 // Self-hosted Draco decoder (public/draco/) — CSP forbids the default gstatic CDN.
 useGLTF.setDecoderPath('/draco/');
@@ -56,8 +54,10 @@ export function Example3DViewer({ example }: Example3DViewerProps) {
         // OrbitControls orbits/auto-rotates around vertical instead of tumbling.
         camera={{ position: [180, -180, 150], up: [0, 0, 1], fov: 35 }}
         gl={{ antialias: true }}
-        style={{ background: BACKGROUND, borderRadius: '0.5rem' }}
+        style={{ borderRadius: '0.5rem' }}
       >
+        {/* Same theme-aware gradient the 2D thumbnail was captured with. */}
+        <GradientBackground />
         <ambientLight intensity={0.8} />
         <directionalLight position={[5, -5, 8]} intensity={1.4} />
         <directionalLight position={[-6, 4, 3]} intensity={0.5} />
@@ -82,7 +82,6 @@ export function Example3DViewer({ example }: Example3DViewerProps) {
         className={`pointer-events-none absolute inset-0 h-full w-full rounded-lg object-contain transition-opacity duration-500 ${
           ready ? 'opacity-0' : 'opacity-100'
         }`}
-        style={{ background: BACKGROUND }}
       />
     </div>
   );

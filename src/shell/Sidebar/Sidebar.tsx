@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback, useEffect, Suspense } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
-import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';
 import { RulerIcon } from '@/design-system/Icon';
@@ -54,7 +53,6 @@ export function Sidebar() {
   const [gridSizeExpanded, setGridSizeExpanded] = useState(true);
   const [physicalUnitsExpanded, setPhysicalUnitsExpanded] = useState(isDesktop);
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
-  const openBinExampleGallery = useBinExampleGalleryStore((s) => s.open);
 
   const handleScroll = useCallback(() => {
     if (scrollRef.current) {
@@ -279,53 +277,6 @@ export function Sidebar() {
                   </div>
                   <div className="text-xs text-content-tertiary">
                     {t('sidebar.inspirationHint')}
-                  </div>
-                </div>
-                <svg
-                  className="w-4 h-4 text-content-tertiary group-hover:translate-x-0.5 transition-transform"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  {ICON_PATHS.chevronRight.map((d) => (
-                    <path
-                      key={d}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d={d}
-                    />
-                  ))}
-                </svg>
-              </button>
-              <button
-                onClick={openBinExampleGallery}
-                className="w-full flex items-center gap-3 text-left p-3 mt-2 rounded-lg hover:bg-surface-hover border border-stroke-subtle transition-all group"
-              >
-                <div className="w-10 h-10 rounded-lg bg-surface-elevated flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <svg
-                    className="w-5 h-5 text-content-secondary"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    {ICON_PATHS.cube.map((d) => (
-                      <path
-                        key={d}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d={d}
-                      />
-                    ))}
-                  </svg>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-content">
-                    {t('binExamples.sidebarEntry')}
-                  </div>
-                  <div className="text-xs text-content-tertiary">
-                    {t('binExamples.sidebarHint')}
                   </div>
                 </div>
                 <svg

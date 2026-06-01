@@ -17,7 +17,7 @@ export function TechniqueFilterPills({ examples, selected, onChange }: Technique
     <div
       role="tablist"
       aria-label={t('binExamples.filterByTechnique')}
-      className="flex gap-2 min-w-max"
+      className="flex flex-wrap gap-2"
     >
       <button
         type="button"

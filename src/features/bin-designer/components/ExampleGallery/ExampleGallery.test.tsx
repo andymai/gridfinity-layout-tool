@@ -25,12 +25,12 @@ describe('ExampleGallery', () => {
     const { container } = render(<ExampleGallery onClose={vi.fn()} />);
     const totalImages = cardThumbCount(container);
 
-    const solidCount = EXAMPLE_DESIGNS.filter((e) => e.techniques.includes('solid')).length;
+    const slottedCount = EXAMPLE_DESIGNS.filter((e) => e.techniques.includes('slotted')).length;
 
-    const solidPill = screen.getByRole('tab', { name: 'Solid' });
-    fireEvent.click(solidPill);
+    const slottedPill = screen.getByRole('tab', { name: 'Slotted' });
+    fireEvent.click(slottedPill);
 
-    expect(cardThumbCount(container)).toBe(solidCount);
-    expect(solidCount).toBeLessThan(totalImages);
+    expect(cardThumbCount(container)).toBe(slottedCount);
+    expect(slottedCount).toBeLessThan(totalImages);
   });
 });

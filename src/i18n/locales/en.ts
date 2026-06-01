@@ -2204,28 +2204,18 @@ const en: Record<string, string> = {
   'commandPalette.footer.commandCount': '{count} commands',
 
   // Bin example gallery entry points
-  'binExamples.browseButton': 'Browse examples',
-  'binExamples.sidebarEntry': 'Bin Examples',
-  'binExamples.sidebarHint': 'Start from a ready-made design',
+  'binExamples.sidebarEntry': 'Design Showcase',
+  'binExamples.sidebarHint': 'See what the bin designer can do',
 
   // Bin example gallery UI
-  'binExamples.gallery.title': 'Bin example designs',
-  'binExamples.gallery.subtitle': 'Start from a ready-made design and make it your own',
+  'binExamples.gallery.title': 'Design showcase',
+  'binExamples.gallery.subtitle': 'A showcase of what the bin designer can create',
   'binExamples.gallery.count': '{count} examples',
   'binExamples.gallery.gridLabel': 'Bin example designs',
-  'binExamples.sortBy': 'Sort by',
-  'binExamples.sort.recommended': 'Recommended',
-  'binExamples.sort.popular': 'Most popular',
-  'binExamples.sort.size': 'Size',
-  'binExamples.sort.complexity': 'Complexity',
-  'binExamples.favoritesOnly': 'Show favorites only',
   'binExamples.searchPlaceholder': 'Search examples…',
   'binExamples.searchLabel': 'Search example designs',
   'binExamples.empty': 'No examples match your filters.',
   'binExamples.clearFilters': 'Clear filters',
-  'binExamples.popular': 'Popular',
-  'binExamples.addFavorite': 'Add to favorites',
-  'binExamples.removeFavorite': 'Remove from favorites',
   'binExamples.all': 'All',
   'binExamples.filterByTechnique': 'Filter by technique',
   'binExamples.backToGallery': 'Back to gallery',
@@ -2243,51 +2233,23 @@ const en: Record<string, string> = {
   // Bin example technique labels
   'binExamples.technique.compartments': 'Compartments',
   'binExamples.technique.wallCutouts': 'Wall cutouts',
-  'binExamples.technique.floorCutouts': 'Floor cutouts',
   'binExamples.technique.scoop': 'Scoop',
   'binExamples.technique.labelTab': 'Label tab',
-  'binExamples.technique.solid': 'Solid',
   'binExamples.technique.slotted': 'Slotted',
-  'binExamples.technique.halfBin': 'Half bin',
   'binExamples.technique.lid': 'Lid',
   'binExamples.technique.handles': 'Handles',
   'binExamples.technique.customShape': 'Custom shape',
-  'binExamples.technique.baseOptions': 'Base options',
   'binExamples.technique.wallPattern': 'Wall pattern',
-
-  // Bin example presets — compartments
-  'binExamples.compartments3x2Grid.name': '3×2 Six-Compartment Grid',
-  'binExamples.compartments3x2Grid.description':
-    'A 3×2 bin divided into six equal cells for sorting small parts.',
-  'binExamples.compartments3x2Mixed.name': '3×2 Mixed Layout',
-  'binExamples.compartments3x2Mixed.description':
-    'A 3×2 bin with one wide top compartment over three narrow cells.',
 
   // Bin example presets — wall cutouts
   'binExamples.wallCutout2x4Cable.name': '2×4 Cable Bin',
   'binExamples.wallCutout2x4Cable.description':
     'A deep 2×4 bin with a front wall cutout to route charging cables out of the drawer.',
-  'binExamples.wallCutout1x3Finger.name': '1×3 Finger-Access Tray',
-  'binExamples.wallCutout1x3Finger.description':
-    'A narrow 1×3 tray with a scooped front cutout for easy fingertip access.',
-
-  // Bin example presets — floor cutouts
-  'binExamples.floorCutout2x3Rect.name': '2×3 Rectangular Cavity',
-  'binExamples.floorCutout2x3Rect.description':
-    'A solid 2×3 block with a single rectangular pocket cut into the top.',
-  'binExamples.floorCutout2x2Pockets.name': '2×2 Parts Tray',
-  'binExamples.floorCutout2x2Pockets.description':
-    'A solid 2×2 block with four recessed pockets for sorting small parts.',
 
   // Bin example presets — scoops
   'binExamples.scoop2x3Ramp.name': '2×3 Scoop Bin',
   'binExamples.scoop2x3Ramp.description':
     'A 2×3 bin with a scoop ramp for grabbing hardware out of a larger pile.',
-
-  // Bin example presets — label tabs
-  'binExamples.labelTab3x2Solid.name': '3×2 Solid-Support Label',
-  'binExamples.labelTab3x2Solid.description':
-    'A 3×2 bin with a solid-backed label tab for a sturdier writing surface.',
 
   // Bin example presets — lids
   'binExamples.lid2x2.name': '2×2 Lidded Bin',
@@ -2295,34 +2257,11 @@ const en: Record<string, string> = {
     'A 2×2 bin with a click-lock lid that keeps small parts safely enclosed.',
 
   // Bin example presets — styles
-  'binExamples.solid1x1x6Block.name': '1×1×6 Solid Riser',
-  'binExamples.solid1x1x6Block.description':
-    'A tall solid 1×1 block — a blank starting point for custom cutouts or a spacer.',
   'binExamples.slotted2x2.name': '2×2 Slotted Bin',
   'binExamples.slotted2x2.description':
     'A 2×2 bin in the slotted style, with wall slots for removable dividers.',
-  'binExamples.wallPattern2x2.name': '2×2 Honeycomb Walls',
-  'binExamples.wallPattern2x2.description':
-    'A 2×2 bin with honeycomb wall pattern for a lightweight, ventilated build.',
 
-  // Bin example presets — half bins
-  'binExamples.halfBin05x2Strip.name': '0.5×2 Half Strip',
-  'binExamples.halfBin05x2Strip.description':
-    'A narrow 0.5×2 strip for slotting between full-size bins.',
-
-  // Bin example presets — showcase builds
-  'binExamples.showcase3x3Organizer.name': '3×3 Workbench Organizer',
-  'binExamples.showcase3x3Organizer.description':
-    'A 3×3 nine-cell organizer combining dividers, label tabs, and scoop ramps.',
-  'binExamples.showcase2x4CableLid.name': '2×4 Cable Box with Lid',
-  'binExamples.showcase2x4CableLid.description':
-    'An enclosed 2×4 cable bin with front and back wall cutouts and a click-lock lid.',
-  'binExamples.showcase3x2ToolTray.name': '3×2 Tool Tray',
-  'binExamples.showcase3x2ToolTray.description':
-    'A solid 3×2 tray with two milled tool pockets and a label tab.',
-  'binExamples.showcase4x3HardwareSorter.name': '4×3 Hardware Sorter',
-  'binExamples.showcase4x3HardwareSorter.description':
-    'A twelve-cell 4×3 sorter with label tabs for screws, nuts, and washers.',
+  // Bin example presets — custom shapes
   'binExamples.customLShape.name': 'L-Shaped Corner Bin',
   'binExamples.customLShape.description':
     'A 2×2 custom-shape bin with one quadrant removed to wrap around a drawer obstacle.',
@@ -2330,40 +2269,19 @@ const en: Record<string, string> = {
   // Bin example presets — hero showcases
   'binExamples.heroMulticolorOrganizer.name': 'Multicolor Organizer',
   'binExamples.heroMulticolorOrganizer.description':
-    'A 3×2 organizer with colored dividers, scoop, and label tab — multi-material printing in one design.',
+    'A 3×2 organizer with a colored scoop, label tab, and rim — multi-material printing in one design.',
   'binExamples.heroHoneycombCaddy.name': 'Honeycomb Caddy',
   'binExamples.heroHoneycombCaddy.description':
     'A 2×3 caddy with honeycomb walls and a scoop ramp for a light, fast-printing carry tray.',
-  'binExamples.heroLiddedPartsBox.name': 'Lidded Parts Box',
-  'binExamples.heroLiddedPartsBox.description':
-    'A divided 2×2 box with a click-lock lid that keeps four sorted compartments sealed.',
   'binExamples.heroHandledTote.name': 'Handled Tote',
   'binExamples.heroHandledTote.description':
     'A tall 3×2 tote with front and back grip handles for carrying parts between benches.',
   'binExamples.heroEngravedTray.name': 'Engraved Tray',
   'binExamples.heroEngravedTray.description':
     'A 1×4 tray with numbered, engraved compartments for step-by-step sorting.',
-  'binExamples.heroTShape.name': 'T-Shape Bin',
-  'binExamples.heroTShape.description':
-    'A 3×3 custom-shape bin formed into a T to fit around an awkward drawer layout.',
   'binExamples.heroUShape.name': 'U-Shape Bin',
   'binExamples.heroUShape.description':
     'A 3×2 custom-shape bin with a U cutout and scoop for wrapping around an obstacle.',
-  'binExamples.heroOFrame.name': 'O-Frame Bin',
-  'binExamples.heroOFrame.description':
-    'A 3×3 custom-shape bin with a hollow center frame for ring-shaped storage.',
-  'binExamples.heroHexBitHolder.name': 'Hex Bit Holder',
-  'binExamples.heroHexBitHolder.description':
-    'A solid 2×2 block drilled with sixteen pockets for organizing screwdriver bits.',
-  'binExamples.heroSocketCaddy.name': 'Socket Caddy',
-  'binExamples.heroSocketCaddy.description':
-    'A solid 2×3 block with graduated pockets sized for a row of sockets.',
-  'binExamples.heroHalfPitchSorter.name': 'Half-Pitch Sorter',
-  'binExamples.heroHalfPitchSorter.description':
-    'A 2×2 sorter on half-pitch sockets with sixteen fine compartments for tiny parts.',
-  'binExamples.heroDividedScooped.name': 'Divided Scoop Bin',
-  'binExamples.heroDividedScooped.description':
-    'A 2×3 bin pairing six colored compartments with a scoop ramp for easy access.',
 
   // Snapping Slider (shared component)
   'snappingSlider.default': 'Default',

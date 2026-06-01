@@ -5,8 +5,17 @@
  * resizes it to a small data URL for storage in IndexedDB.
  */
 
-import type { WebGLRenderer, Scene, PerspectiveCamera, Object3D, Material } from 'three';
-import { Vector3, Group, Mesh, BufferGeometry, BufferAttribute } from 'three';
+import type { WebGLRenderer, Scene, PerspectiveCamera, Object3D, Material, Color } from 'three';
+import {
+  Vector3,
+  Group,
+  Mesh,
+  LineSegments,
+  LineBasicMaterial,
+  BufferGeometry,
+  BufferAttribute,
+  MeshStandardMaterial,
+} from 'three';
 import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
 
 /** Thumbnail size for IndexedDB storage (high res for crisp display at any size) */
@@ -158,134 +167,121 @@ function isMesh(obj: Object3D): obj is Mesh {
   return 'isMesh' in obj && obj.isMesh === true;
 }
 
-/**
- * Key a geometry by its attribute layout. mergeGeometries() requires every
- * member of a merge to share the exact same attribute names and item sizes, so
- * geometries with differing layouts must land in separate merge buckets. Index
- * presence is normalized away before merging (see exportPreviewGlb), so it is
- * deliberately excluded from the signature.
- */
-function attributeSignature(geo: BufferGeometry): string {
-  return Object.keys(geo.attributes)
-    .sort()
-    .map((name) => `${name}:${geo.attributes[name].itemSize}`)
-    .join(',');
+function isLineSegments(obj: Object3D): obj is LineSegments {
+  return 'isLineSegments' in obj && obj.isLineSegments === true;
 }
 
-/** Material fields that distinguish exported appearance (all optional by type). */
-interface MaterialAppearance {
-  color?: { getHexString: () => string };
-  emissive?: { getHexString: () => string };
-  metalness?: number;
-  roughness?: number;
-  opacity?: number;
-  transparent?: boolean;
-  side?: number;
-  emissiveIntensity?: number;
-}
+/** Black edge lines, matching BinMesh's `EDGE_COLOR` in the 2D preview. */
+const EXPORT_EDGE_COLOR = 0x000000;
 
-/**
- * Key a material by its visible appearance rather than instance identity. The
- * bin preview assigns a fresh material instance per feature mesh even when the
- * appearance is identical, so identity-keyed buckets never merge. Hashing the
- * appearance lets like-looking meshes collapse into one primitive while keeping
- * distinct colors/finishes separate.
- */
-function materialSignature(material: Material): string {
-  const m: MaterialAppearance = material;
-  return [
-    material.type,
-    m.color ? m.color.getHexString() : '',
-    m.emissive ? m.emissive.getHexString() : '',
-    m.metalness === undefined ? '' : String(m.metalness),
-    m.roughness === undefined ? '' : String(m.roughness),
-    m.opacity === undefined ? '' : String(m.opacity),
-    m.transparent === true ? 't' : 'f',
-    m.side === undefined ? '' : String(m.side),
-    m.emissiveIntensity === undefined ? '' : String(m.emissiveIntensity),
-  ].join('|');
-}
-
-interface MergeBucket {
-  material: Material;
-  geometries: BufferGeometry[];
-}
-
-/**
- * Route a single-material geometry into a merge bucket keyed by both material
- * appearance and attribute layout, so every geometry in a bucket is mergeable
- * into one primitive that keeps that material's appearance.
- */
-function addToBuckets(
-  buckets: Map<string, MergeBucket>,
-  geo: BufferGeometry,
-  material: Material
-): void {
-  const bucketKey = `${materialSignature(material)}::${attributeSignature(geo)}`;
-  const bucket = buckets.get(bucketKey);
-  if (bucket) {
-    bucket.geometries.push(geo);
-  } else {
-    buckets.set(bucketKey, { material, geometries: [geo] });
-  }
-}
-
-/**
- * Split a multi-material (array-material) geometry into one non-indexed
- * geometry per material slot, copying only the triangles each slot's groups
- * cover. The bin body is exported as a single geometry with hundreds of
- * single-material groups; GLTFExporter would emit one primitive per group,
- * re-fragmenting the buffer. Collapsing per slot lets the merge step rebuild it
- * as one primitive per distinct material.
- */
-function splitByMaterialGroup(
-  geo: BufferGeometry,
-  materials: readonly Material[]
-): { geometry: BufferGeometry; material: Material }[] {
-  const attributeNames = Object.keys(geo.attributes);
-  if (!attributeNames.includes('position')) return [];
-  const byIndex = new Map<number, number[]>();
-  for (const grp of geo.groups) {
-    const materialIndex = grp.materialIndex ?? 0;
-    const ranges = byIndex.get(materialIndex) ?? [];
-    for (let i = grp.start; i < grp.start + grp.count; i++) ranges.push(i);
-    byIndex.set(materialIndex, ranges);
-  }
-
-  const out: { geometry: BufferGeometry; material: Material }[] = [];
-  for (const [materialIndex, vertexIndices] of byIndex) {
-    const material = materials.at(materialIndex);
-    if (!material) continue;
-    const slot = new BufferGeometry();
-    for (const name of attributeNames) {
-      const src = geo.getAttribute(name);
-      const itemSize = src.itemSize;
-      const dst = new Float32Array(vertexIndices.length * itemSize);
-      for (let v = 0; v < vertexIndices.length; v++) {
-        const dstBase = v * itemSize;
-        for (let c = 0; c < itemSize; c++) {
-          dst[dstBase + c] = src.getComponent(vertexIndices[v], c);
-        }
-      }
-      slot.setAttribute(name, new BufferAttribute(dst, itemSize));
+export function __debugSceneMaterials(): unknown {
+  if (!previewScene) return null;
+  const out: unknown[] = [];
+  previewScene.traverse((obj) => {
+    if (!obj.visible || !isMesh(obj)) return;
+    const geo = obj.geometry;
+    const mat = obj.material;
+    if (Array.isArray(mat)) {
+      out.push({
+        name: obj.name,
+        type: 'array',
+        materials: mat.map((m) => {
+          const c = (m as { color?: Color }).color;
+          return { type: m.type, hex: c ? c.getHexString() : null };
+        }),
+        groups: geo.groups.map((g) => ({ mi: g.materialIndex, count: g.count })),
+        vertexCount: geo.getAttribute('position')?.count ?? 0,
+      });
+    } else {
+      const c = (mat as { color?: Color }).color;
+      out.push({
+        name: obj.name,
+        type: 'single',
+        hex: c ? c.getHexString() : null,
+        vertexCount: geo.getAttribute('position')?.count ?? 0,
+      });
     }
-    out.push({ geometry: slot, material });
-  }
+  });
   return out;
+}
+
+/** Reads a `.color` Color off a material instance without a non-null assertion. */
+function materialColor(material: Material): Color | null {
+  const c = (material as { color?: Color }).color;
+  return c ?? null;
+}
+
+/** Representative finish for the single baked export material (matches BinMesh). */
+const EXPORT_ROUGHNESS = 0.45;
+const EXPORT_METALNESS = 0;
+
+/**
+ * Build a per-vertex linear-RGB color buffer for one mesh's geometry, reading
+ * the ACTUAL rendered material color of each face.
+ *
+ * For an array material, each geometry group names a `materialIndex`; we look up
+ * that slot's material `.color` and paint every vertex the group covers. For a
+ * single material, every vertex takes that one color. THREE.Color components are
+ * already in linear working space, which is exactly what glTF `COLOR_0` expects,
+ * so the components are copied straight through with no extra conversion.
+ *
+ * Returns null for a mesh whose material exposes no color at all (shadow/ground
+ * helper planes), so the export can skip it rather than bake stray white.
+ */
+function bakeVertexColors(
+  geo: BufferGeometry,
+  material: Material | Material[]
+): Float32Array | null {
+  const vertexCount = geo.getAttribute('position').count;
+
+  const paint = (
+    colors: Float32Array,
+    start: number,
+    end: number,
+    rgb: readonly [number, number, number]
+  ): void => {
+    for (let v = start; v < end; v++) {
+      colors[v * 3] = rgb[0];
+      colors[v * 3 + 1] = rgb[1];
+      colors[v * 3 + 2] = rgb[2];
+    }
+  };
+
+  if (Array.isArray(material)) {
+    const bodyColor = material.map(materialColor).find((c) => c !== null) ?? null;
+    if (!bodyColor) return null;
+    const colors = new Float32Array(vertexCount * 3);
+    // Body color is the baseline for any vertex no group covers (e.g. ungrouped
+    // ranges between feature groups), matching how those faces render gray.
+    paint(colors, 0, vertexCount, [bodyColor.r, bodyColor.g, bodyColor.b]);
+    for (const grp of geo.groups) {
+      const mat = material.at(grp.materialIndex ?? 0);
+      const color = mat ? materialColor(mat) : null;
+      const rgb: readonly [number, number, number] = color
+        ? [color.r, color.g, color.b]
+        : [bodyColor.r, bodyColor.g, bodyColor.b];
+      paint(colors, grp.start, grp.start + grp.count, rgb);
+    }
+    return colors;
+  }
+
+  const color = materialColor(material);
+  if (!color) return null;
+  const colors = new Float32Array(vertexCount * 3);
+  paint(colors, 0, vertexCount, [color.r, color.g, color.b]);
+  return colors;
 }
 
 /**
  * Export the registered preview scene as a binary GLB (glTF) ArrayBuffer.
  *
- * Bakes world transforms into each visible mesh's geometry and reuses the
- * rendered materials so feature colors carry into the export. Lights and
- * line/edge overlays are excluded (only `Mesh` objects are collected).
- *
- * Geometries sharing one material appearance and attribute layout are merged
- * into a single primitive (multi-material meshes are first split per slot, then
- * merged): the bin preview is built from many small meshes / many single-material
- * groups, and Draco compression at gen time has per-primitive overhead that
- * would otherwise dwarf (and even invert) its savings on hundreds of primitives.
+ * Reads each visible mesh's real rendered material color(s) and bakes them into
+ * a per-vertex `color` attribute on ONE merged geometry, exported with a single
+ * `MeshStandardMaterial({ vertexColors: true })`. Baking the true colors avoids
+ * the GLTFExporter default-material substitution that previously dropped some
+ * feature colors (e.g. divider teal), and collapsing to one primitive keeps
+ * Draco's per-primitive overhead negligible. Lights and line/edge overlays are
+ * excluded (only `Mesh` objects are collected).
  *
  * @returns A GLB ArrayBuffer, or `null` if no preview scene is registered or
  *   the scene contains no visible meshes.
@@ -295,50 +291,75 @@ export async function exportPreviewGlb(): Promise<ArrayBuffer | null> {
 
   previewScene.updateMatrixWorld(true);
 
-  // Bucket geometries by (material appearance, attribute layout) so each bucket
-  // is mergeable. Keying on appearance (not instance identity) is essential: the
-  // preview gives every feature mesh a distinct material instance, so without it
-  // every bucket has one member and nothing merges.
-  const buckets = new Map<string, MergeBucket>();
+  const geometries: BufferGeometry[] = [];
+  const edgeGeometries: BufferGeometry[] = [];
   previewScene.traverse((obj) => {
-    if (!obj.visible || !isMesh(obj)) return;
-    let geo = obj.geometry.clone();
-    geo.applyMatrix4(obj.matrixWorld);
-    // Normalize to non-indexed so geometries with and without an index buffer
-    // (and with differing index types) merge without mergeGeometries rejecting
-    // the batch. Draco re-indexes on its own at compression time.
-    if (geo.index) geo = geo.toNonIndexed();
-    if (Array.isArray(obj.material)) {
-      for (const part of splitByMaterialGroup(geo, obj.material)) {
-        addToBuckets(buckets, part.geometry, part.material);
-      }
+    if (!obj.visible) return;
+
+    // Precomputed BREP edge lines — baked so the live 3D preview shows the same
+    // black outlines as the 2D thumbnail. Position only; black material below.
+    if (isLineSegments(obj)) {
+      const edge = obj.geometry.clone();
+      edge.applyMatrix4(obj.matrixWorld);
+      const stripped = new BufferGeometry();
+      stripped.setAttribute('position', edge.getAttribute('position'));
+      edgeGeometries.push(stripped);
       return;
     }
-    geo.clearGroups();
-    addToBuckets(buckets, geo, obj.material);
+
+    if (!isMesh(obj)) return;
+    let geo = obj.geometry.clone();
+    geo.applyMatrix4(obj.matrixWorld);
+    // Non-indexed so vertices are unshared across faces: a per-vertex color can
+    // then represent per-face material colors without bleeding across groups,
+    // and merging never trips on mismatched index buffers. Draco re-indexes at
+    // compression time.
+    if (geo.index) geo = geo.toNonIndexed();
+
+    const colors = bakeVertexColors(geo, obj.material);
+    // A color-less mesh (shadow/ground helper) bakes no buffer — skip it rather
+    // than merge a layout-mismatched geometry.
+    if (!colors) return;
+
+    // Strip every attribute except position + the baked color so all geometries
+    // share one layout and mergeGeometries accepts the batch.
+    const merged = new BufferGeometry();
+    merged.setAttribute('position', geo.getAttribute('position'));
+    merged.setAttribute('color', new BufferAttribute(colors, 3));
+    geometries.push(merged);
   });
+
+  if (geometries.length === 0) return null;
 
   const { mergeGeometries } = await import('three/examples/jsm/utils/BufferGeometryUtils.js');
 
-  const group = new Group();
-  for (const { material, geometries } of buckets.values()) {
-    if (geometries.length === 1) {
-      group.add(new Mesh(geometries[0], material));
-      continue;
-    }
-    // mergeGeometries returns null on incompatible input despite its non-null
-    // type; route through unknown so the runtime-null fallback stays honest and
-    // nothing is silently dropped from the export.
-    const mergeResult: unknown = mergeGeometries(geometries, false);
-    if (mergeResult instanceof BufferGeometry) {
-      mergeResult.clearGroups();
-      group.add(new Mesh(mergeResult, material));
-    } else {
-      for (const geo of geometries) group.add(new Mesh(geo, material));
-    }
-  }
+  // mergeGeometries returns null on incompatible input despite its non-null
+  // type; the typed helper isolates that runtime-null contract.
+  const merge = (parts: BufferGeometry[]): BufferGeometry | null => {
+    const result: unknown = mergeGeometries(parts, false);
+    return result instanceof BufferGeometry ? result : null;
+  };
 
-  if (group.children.length === 0) return null;
+  const combined = geometries.length === 1 ? geometries[0] : merge(geometries);
+  if (!combined) return null;
+  combined.clearGroups();
+
+  const group = new Group();
+  group.add(
+    new Mesh(
+      combined,
+      new MeshStandardMaterial({
+        vertexColors: true,
+        roughness: EXPORT_ROUGHNESS,
+        metalness: EXPORT_METALNESS,
+      })
+    )
+  );
+
+  const edges = edgeGeometries.length === 1 ? edgeGeometries[0] : merge(edgeGeometries);
+  if (edges) {
+    group.add(new LineSegments(edges, new LineBasicMaterial({ color: EXPORT_EDGE_COLOR })));
+  }
 
   const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
   const out = await new GLTFExporter().parseAsync(group, { binary: true, onlyVisible: true });

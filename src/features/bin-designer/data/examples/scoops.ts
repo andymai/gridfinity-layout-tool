@@ -9,7 +9,6 @@ export const SCOOP_EXAMPLES: ExampleDesign[] = [
     descriptionKey: 'binExamples.scoop2x3Ramp.description',
     techniques: ['scoop'],
     tier: 'technique',
-    popular: false,
     tags: ['scoop', 'hardware', '2x3'],
     complexity: 1,
     colored: true,

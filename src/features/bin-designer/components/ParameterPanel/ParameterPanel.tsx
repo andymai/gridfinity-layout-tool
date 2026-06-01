@@ -31,6 +31,7 @@ import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOptionsSection';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { isPartialMask } from '@/shared/utils/cellMask';
@@ -49,6 +50,7 @@ export function ParameterPanel() {
     }))
   );
   const { needsSplit } = useSplitOptionsSection();
+  const openExampleGallery = useBinExampleGalleryStore((s) => s.open);
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
   const customShapeReason = t('binDesigner.shape.custom.hint');
 
@@ -179,6 +181,44 @@ export function ParameterPanel() {
             <PhysicalUnitsSection />
           </div>
         </StickyGroupHeader>
+
+        {/* Design Showcase entry — opens the bin-example gallery (below Physical Units) */}
+        <div className="px-4 py-4 border-b border-stroke-subtle">
+          <button
+            onClick={openExampleGallery}
+            className="w-full flex items-center gap-3 text-left p-3 rounded-lg bg-gradient-to-r from-accent/10 to-info/10 hover:from-accent/20 hover:to-info/20 border border-accent/20 transition-all group"
+          >
+            <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <svg
+                className="w-5 h-5 text-accent"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"
+                />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-content">
+                {t('binExamples.sidebarEntry')}
+              </div>
+              <div className="text-xs text-content-tertiary">{t('binExamples.sidebarHint')}</div>
+            </div>
+            <svg
+              className="w-4 h-4 text-content-tertiary group-hover:translate-x-0.5 transition-transform"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
 
         {/* Attribution */}
         <div className="px-4 py-4 text-content-disabled text-[10px] leading-relaxed">

@@ -9,7 +9,6 @@ export const LID_EXAMPLES: ExampleDesign[] = [
     descriptionKey: 'binExamples.lid2x2.description',
     techniques: ['lid'],
     tier: 'technique',
-    popular: false,
     tags: ['lid', 'enclosed', '2x2'],
     complexity: 1,
     colored: true,

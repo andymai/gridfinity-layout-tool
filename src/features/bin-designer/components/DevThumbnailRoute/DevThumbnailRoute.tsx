@@ -18,6 +18,7 @@ import { EXAMPLE_DESIGNS } from '@/features/bin-designer/data/examples';
 import {
   captureThumbnailAtPreset,
   exportPreviewGlb,
+  __debugSceneMaterials,
 } from '@/features/bin-designer/utils/thumbnail';
 
 const THUMBNAIL_SIZE = 512;
@@ -98,6 +99,8 @@ export function DevThumbnailRoute() {
           for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
           return btoa(bin);
         };
+        (window as unknown as { __debugScene?: () => unknown }).__debugScene =
+          __debugSceneMaterials;
         bridge.__thumbnailReady = true;
         return;
       }
