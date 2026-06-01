@@ -51,7 +51,6 @@ describe('GridToolbar', () => {
     layers: mockLayers,
     activeLayer: mockActiveLayer,
     isNarrowToolbar: false,
-    shouldPulsePaintHint: false,
   };
 
   beforeEach(() => {
@@ -158,64 +157,6 @@ describe('GridToolbar', () => {
       fireEvent.click(screen.getByText('Layer 1'));
 
       expect(mockToggleLeftPanel).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('paint mode indicator', () => {
-    it('shows paint mode indicator when active', () => {
-      useInteractionStore.setState({
-        paintSize: { width: 2, depth: 3 },
-      });
-
-      const { container } = render(<GridToolbar {...defaultProps} />);
-
-      // Paint mode shows an indicator with the paint icon (pencil SVG)
-      const paintIcon = container.querySelector('path[d*="M15.232 5.232"]');
-      expect(paintIcon).toBeInTheDocument();
-    });
-
-    it('does not show paint mode indicator when inactive', () => {
-      const { container } = render(<GridToolbar {...defaultProps} />);
-
-      // No paint icon when paint mode is off
-      const paintIcon = container.querySelector('path[d*="M15.232 5.232"]');
-      expect(paintIcon).not.toBeInTheDocument();
-    });
-
-    it('exits paint mode when clicked', () => {
-      const mockSetPaintSize = vi.fn();
-      useInteractionStore.setState({
-        paintSize: { width: 2, depth: 3 },
-        setPaintSize: mockSetPaintSize,
-      });
-
-      const { container } = render(<GridToolbar {...defaultProps} />);
-
-      // Find and click the paint mode button (contains X icon)
-      const paintButton = container.querySelector('button[aria-label*="exitPaintMode"]');
-      if (paintButton) {
-        fireEvent.click(paintButton);
-        expect(mockSetPaintSize).toHaveBeenCalledWith(null);
-      }
-    });
-
-    it('applies pulse animation when shouldPulsePaintHint is true', () => {
-      useInteractionStore.setState({
-        paintSize: { width: 1, depth: 1 },
-      });
-
-      const { container } = render(<GridToolbar {...defaultProps} shouldPulsePaintHint={true} />);
-
-      // Paint button should have animate-pulse class (find by paint icon)
-      const paintIcon = container.querySelector('path[d*="M15.232 5.232"]');
-      const paintButton = paintIcon?.closest('button');
-
-      if (paintButton) {
-        expect(paintButton).toHaveClass('animate-pulse');
-      } else {
-        // If button not found, at least verify component rendered
-        expect(container.querySelector('[data-grid-toolbar]')).toBeInTheDocument();
-      }
     });
   });
 

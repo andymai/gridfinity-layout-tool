@@ -134,9 +134,6 @@ vi.mock('@/features/grid-editor/hooks', () => ({
     handleRowClick: vi.fn(),
     handleColumnClick: vi.fn(),
   }),
-  useGridFirstUseHints: () => ({
-    shouldPulsePaintHint: false,
-  }),
   useGridCoords: () => ({
     getPixelCoords: vi.fn(() => ({ nx: 0.5, ny: 0.5 })),
   }),

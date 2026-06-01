@@ -1,5 +1,6 @@
 import { useState, type RefObject } from 'react';
 import { Popover } from '@/design-system';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { useTranslation } from '@/i18n';
 
 // Square sizes
@@ -53,7 +54,7 @@ function SizeButton({
       onClick={onClick}
       className={`flex flex-col items-center justify-end gap-1 h-[52px] p-1.5 rounded-lg border transition-colors ${
         isActive
-          ? 'bg-accent/20 border-accent/40'
+          ? 'bg-accent/20 border-accent/40 ring-1 ring-accent/50'
           : 'border-transparent hover:bg-surface-hover hover:border-stroke-subtle'
       }`}
       aria-label={t('layers.paintSizeAriaLabel', {
@@ -107,8 +108,24 @@ export function SizeSelectorPopover({
 
   return (
     <Popover anchorRef={anchorRef} isOpen={isOpen} onClose={onClose} className="w-[264px]">
+      {/* Header reinforces the brush identity */}
+      <div className="flex items-center gap-1.5 px-3 pt-3 pb-0.5 text-[11px] font-semibold uppercase tracking-wider text-content-secondary">
+        <svg
+          className="w-3.5 h-3.5 text-accent"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          {ICON_PATHS.brush.map((d) => (
+            <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+          ))}
+        </svg>
+        {t('layers.sizeSelector')}
+      </div>
+
       {/* Squares section */}
-      <div className="px-3 pt-3">
+      <div className="px-3 pt-1">
         <div className="text-[11px] font-medium text-content-secondary uppercase tracking-wider mb-1.5">
           {t('layers.squares')}
         </div>

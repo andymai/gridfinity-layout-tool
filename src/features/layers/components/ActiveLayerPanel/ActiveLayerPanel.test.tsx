@@ -73,7 +73,7 @@ describe('ActiveLayerPanel', () => {
     it('renders size selector button', () => {
       render(<ActiveLayerPanel />);
 
-      expect(screen.getByText('Bin Palette')).toBeInTheDocument();
+      expect(screen.getByText('Size Brush')).toBeInTheDocument();
     });
 
     it('renders fill gaps button with count', () => {
@@ -101,7 +101,7 @@ describe('ActiveLayerPanel', () => {
     it('opens popover when size button clicked', () => {
       render(<ActiveLayerPanel />);
 
-      fireEvent.click(screen.getByText('Bin Palette'));
+      fireEvent.click(screen.getByText('Size Brush'));
 
       expect(screen.getByTestId('size-popover')).toBeInTheDocument();
     });
@@ -109,7 +109,7 @@ describe('ActiveLayerPanel', () => {
     it('displays sizes in popover', () => {
       render(<ActiveLayerPanel />);
 
-      fireEvent.click(screen.getByText('Bin Palette'));
+      fireEvent.click(screen.getByText('Size Brush'));
 
       expect(screen.getByText('1×1')).toBeInTheDocument();
       expect(screen.getByText('2×2')).toBeInTheDocument();
@@ -121,7 +121,7 @@ describe('ActiveLayerPanel', () => {
     it('displays squares and rectangles sections in popover', () => {
       render(<ActiveLayerPanel />);
 
-      fireEvent.click(screen.getByText('Bin Palette'));
+      fireEvent.click(screen.getByText('Size Brush'));
 
       expect(screen.getByText('Squares')).toBeInTheDocument();
       expect(screen.getByText('Rectangles')).toBeInTheDocument();
@@ -133,7 +133,7 @@ describe('ActiveLayerPanel', () => {
       render(<ActiveLayerPanel />);
 
       // Open popover
-      fireEvent.click(screen.getByText('Bin Palette'));
+      fireEvent.click(screen.getByText('Size Brush'));
       // Click a size
       fireEvent.click(screen.getByText('2×2'));
 
@@ -161,6 +161,20 @@ describe('ActiveLayerPanel', () => {
 
       expect(screen.getByText('Fill 80 gaps')).toBeInTheDocument();
       expect(screen.queryByText(/Fill with/)).not.toBeInTheDocument();
+    });
+
+    it('shows the paint-mode status strip when a size is loaded', () => {
+      useInteractionStore.setState({ paintSize: { width: 2, depth: 2 } });
+
+      render(<ActiveLayerPanel />);
+
+      expect(screen.getByRole('status')).toHaveTextContent('Painting 2×2');
+    });
+
+    it('hides the status strip when no size is loaded', () => {
+      render(<ActiveLayerPanel />);
+
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
   });
 
@@ -308,7 +322,7 @@ describe('ActiveLayerPanel', () => {
       render(<ActiveLayerPanel />);
 
       // Open popover
-      fireEvent.click(screen.getByText('Bin Palette'));
+      fireEvent.click(screen.getByText('Size Brush'));
 
       expect(screen.getByText('Wide')).toBeInTheDocument();
     });
@@ -317,7 +331,7 @@ describe('ActiveLayerPanel', () => {
       render(<ActiveLayerPanel />);
 
       // Open popover
-      fireEvent.click(screen.getByText('Bin Palette'));
+      fireEvent.click(screen.getByText('Size Brush'));
 
       // Click to rotate
       fireEvent.click(screen.getByText('Wide'));
@@ -331,7 +345,7 @@ describe('ActiveLayerPanel', () => {
       render(<ActiveLayerPanel />);
 
       // Open popover
-      fireEvent.click(screen.getByText('Bin Palette'));
+      fireEvent.click(screen.getByText('Size Brush'));
 
       // Shift+click on 2×2
       const button = screen.getByText('2×2').closest('button')!;

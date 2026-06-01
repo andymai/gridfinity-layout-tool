@@ -42,7 +42,6 @@ graph TB
 - `hooks/useGridNavigation.ts` — keyboard navigation between bins
 - `hooks/useGridAxisLabels.ts` — row/column label generation
 - `hooks/useGridRowColumnSelection.ts` — row/column selection highlight
-- `hooks/useGridFirstUseHints.ts` — first-time-use tutorials
 
 ### Utils
 

@@ -11,7 +11,6 @@ import {
   useGridZoom,
   useGridAxisLabels,
   useGridRowColumnSelection,
-  useGridFirstUseHints,
   useAlignBins,
   useGridCoords,
 } from '@/features/grid-editor/hooks';
@@ -219,11 +218,6 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
     activeLayerId,
   });
 
-  // First-use hints hook - paint mode toast and pulse
-  const { shouldPulsePaintHint } = useGridFirstUseHints({
-    paintSize,
-  });
-
   // Get active layer info (memoized to prevent recalculation on every render)
   const activeLayer = useMemo(
     () => layers.find((l) => l.id === activeLayerId),
@@ -304,7 +298,6 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
               layers={layers}
               activeLayer={activeLayer}
               isNarrowToolbar={isNarrowToolbar}
-              shouldPulsePaintHint={shouldPulsePaintHint}
             />
           )}
 

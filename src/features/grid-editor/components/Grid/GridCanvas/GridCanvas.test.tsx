@@ -314,7 +314,7 @@ describe('GridCanvas', () => {
       expect(wrapper.style.cursor).toBe('crosshair');
     });
 
-    it('shows cell cursor in paint mode', () => {
+    it('shows the brush cursor in paint mode', () => {
       useInteractionStore.setState({
         paintSize: { width: 2, depth: 2 },
       });
@@ -322,7 +322,9 @@ describe('GridCanvas', () => {
       const { container } = renderGridCanvas();
 
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.style.cursor).toBe('cell');
+      // Custom inline SVG paintbrush with a 'cell' keyword fallback.
+      expect(wrapper.style.cursor).toContain('cell');
+      expect(wrapper.style.cursor).toContain('svg');
     });
   });
 
