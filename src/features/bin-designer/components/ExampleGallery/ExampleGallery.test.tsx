@@ -9,24 +9,28 @@ vi.mock('@/features/bin-designer/utils/exampleToDesign', () => ({
 }));
 
 describe('ExampleGallery', () => {
+  // Count only card thumbnails, not incidental icon SVGs that may expose role="img".
+  const cardThumbCount = (container: HTMLElement): number =>
+    container.querySelectorAll('[data-example-card] img').length;
+
   it('renders a dialog with at least one example card', () => {
     const onClose = vi.fn();
-    render(<ExampleGallery onClose={onClose} />);
+    const { container } = render(<ExampleGallery onClose={onClose} />);
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     // at least one example thumbnail rendered
-    expect(screen.getAllByRole('img').length).toBeGreaterThan(0);
+    expect(cardThumbCount(container)).toBeGreaterThan(0);
   });
 
   it('filtering by a technique pill narrows the grid', () => {
-    render(<ExampleGallery onClose={vi.fn()} />);
-    const totalImages = screen.getAllByRole('img').length;
+    const { container } = render(<ExampleGallery onClose={vi.fn()} />);
+    const totalImages = cardThumbCount(container);
 
     const solidCount = EXAMPLE_DESIGNS.filter((e) => e.techniques.includes('solid')).length;
 
     const solidPill = screen.getByRole('tab', { name: 'Solid' });
     fireEvent.click(solidPill);
 
-    expect(screen.getAllByRole('img').length).toBe(solidCount);
+    expect(cardThumbCount(container)).toBe(solidCount);
     expect(solidCount).toBeLessThan(totalImages);
   });
 });
