@@ -25,17 +25,16 @@ describe('example catalog integrity', () => {
     }
   });
 
-  it('every i18n key exists in English bundle', () => {
+  it('every i18n key exists in English bundle', async () => {
     // en is a flat Record<string, string> with dotted keys
-    void import('@/i18n/locales/en').then(({ default: en }) => {
-      for (const e of EXAMPLE_DESIGNS) {
-        expect(e.nameKey in en, `${e.id} nameKey "${e.nameKey}" missing from en`).toBe(true);
-        expect(
-          e.descriptionKey in en,
-          `${e.id} descriptionKey "${e.descriptionKey}" missing from en`
-        ).toBe(true);
-      }
-    });
+    const { default: en } = await import('@/i18n/locales/en');
+    for (const e of EXAMPLE_DESIGNS) {
+      expect(e.nameKey in en, `${e.id} nameKey "${e.nameKey}" missing from en`).toBe(true);
+      expect(
+        e.descriptionKey in en,
+        `${e.id} descriptionKey "${e.descriptionKey}" missing from en`
+      ).toBe(true);
+    }
   });
 
   it('every thumbnail asset exists on disk', () => {

@@ -2195,6 +2195,7 @@
   "binExamples.technique.lid": "Tampa",
   "binExamples.technique.handles": "Alças",
   "binExamples.technique.customShape": "Forma personalizada",
+  "binExamples.technique.baseOptions": "Opções de base",
   "binExamples.compartments2x2Split.name": "2×2 de dois compartimentos",
   "binExamples.compartments2x2Split.description": "Um bin 2×2 dividido em dois compartimentos lado a lado — o organizador dividido do dia a dia.",
   "binExamples.compartments3x2Grid.name": "Grade 3×2 de seis compartimentos",

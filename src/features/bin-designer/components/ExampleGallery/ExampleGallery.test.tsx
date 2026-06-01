@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { EXAMPLE_DESIGNS } from '@/features/bin-designer/data/examples';
 import { ExampleGallery } from './ExampleGallery';
 
 vi.mock('@/features/bin-designer/utils/exampleToDesign', () => ({
@@ -18,7 +19,14 @@ describe('ExampleGallery', () => {
 
   it('filtering by a technique pill narrows the grid', () => {
     render(<ExampleGallery onClose={vi.fn()} />);
-    // smoke: dialog has technique filter controls
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    const totalImages = screen.getAllByRole('img').length;
+
+    const solidCount = EXAMPLE_DESIGNS.filter((e) => e.techniques.includes('solid')).length;
+
+    const solidPill = screen.getByRole('tab', { name: 'Solid' });
+    fireEvent.click(solidPill);
+
+    expect(screen.getAllByRole('img').length).toBe(solidCount);
+    expect(solidCount).toBeLessThan(totalImages);
   });
 });

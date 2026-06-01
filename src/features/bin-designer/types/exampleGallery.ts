@@ -11,7 +11,8 @@ export type ExampleTechnique =
   | 'halfBin'
   | 'lid'
   | 'handles'
-  | 'customShape';
+  | 'customShape'
+  | 'baseOptions';
 
 export interface ExampleDesign {
   readonly id: string;
@@ -44,4 +45,5 @@ export const TECHNIQUE_CONFIG: Record<ExampleTechnique, { readonly labelKey: str
   lid: { labelKey: 'binExamples.technique.lid' },
   handles: { labelKey: 'binExamples.technique.handles' },
   customShape: { labelKey: 'binExamples.technique.customShape' },
+  baseOptions: { labelKey: 'binExamples.technique.baseOptions' },
 };

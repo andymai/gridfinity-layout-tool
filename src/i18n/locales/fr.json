@@ -2195,6 +2195,7 @@
   "binExamples.technique.lid": "Couvercle",
   "binExamples.technique.handles": "Poignées",
   "binExamples.technique.customShape": "Forme personnalisée",
+  "binExamples.technique.baseOptions": "Options de base",
   "binExamples.compartments2x2Split.name": "2×2 à deux compartiments",
   "binExamples.compartments2x2Split.description": "Un bac 2×2 divisé en deux compartiments côte à côte — l'organiseur compartimenté du quotidien.",
   "binExamples.compartments3x2Grid.name": "Grille 3×2 à six compartiments",

@@ -2195,6 +2195,7 @@
   "binExamples.technique.lid": "Кришка",
   "binExamples.technique.handles": "Ручки",
   "binExamples.technique.customShape": "Власна форма",
+  "binExamples.technique.baseOptions": "Параметри основи",
   "binExamples.compartments2x2Split.name": "2×2 з двома відсіками",
   "binExamples.compartments2x2Split.description": "Бін 2×2, поділений на два сусідні відсіки — повсякденний органайзер із перегородкою.",
   "binExamples.compartments3x2Grid.name": "Сітка 3×2 на шість відсіків",

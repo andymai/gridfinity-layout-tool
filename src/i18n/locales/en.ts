@@ -2252,6 +2252,7 @@ const en: Record<string, string> = {
   'binExamples.technique.lid': 'Lid',
   'binExamples.technique.handles': 'Handles',
   'binExamples.technique.customShape': 'Custom shape',
+  'binExamples.technique.baseOptions': 'Base options',
 
   // Bin example presets — compartments
   'binExamples.compartments2x2Split.name': '2×2 Two-Compartment',

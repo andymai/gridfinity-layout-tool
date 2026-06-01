@@ -130,7 +130,7 @@ export function ExamplePreviewOverlay({ example, onClose, onBack }: ExamplePrevi
                 <MetricCard label={t('binExamples.height')} value={`${height}`} />
               </div>
               <p className="text-xs text-content-tertiary mt-1">
-                {`${width * example.metrics.gridUnitMm}×${depth * example.metrics.gridUnitMm}×${height * 7}mm`}
+                {`${width * example.metrics.gridUnitMm}×${depth * example.metrics.gridUnitMm}×${height * example.params.heightUnitMm}mm`}
               </p>
             </div>
           </div>

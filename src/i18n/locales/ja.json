@@ -2195,6 +2195,7 @@
   "binExamples.technique.lid": "蓋",
   "binExamples.technique.handles": "ハンドル",
   "binExamples.technique.customShape": "カスタム形状",
+  "binExamples.technique.baseOptions": "ベースオプション",
   "binExamples.compartments2x2Split.name": "2×2 2区画",
   "binExamples.compartments2x2Split.description": "2×2のビンを横並びの2つの区画に分割した、日常使いの仕切り付きオーガナイザーです。",
   "binExamples.compartments3x2Grid.name": "3×2 6区画グリッド",

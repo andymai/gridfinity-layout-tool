@@ -1927,6 +1927,7 @@
   "binExamples.technique.lid": "Lid",
   "binExamples.technique.handles": "Handles",
   "binExamples.technique.customShape": "Custom shape",
+  "binExamples.technique.baseOptions": "Base options",
   "binExamples.compartments2x2Split.name": "2×2 Two-Compartment",
   "binExamples.compartments2x2Split.description": "A 2×2 bin split into two side-by-side compartments — the everyday divided organizer.",
   "binExamples.compartments3x2Grid.name": "3×2 Six-Compartment Grid",

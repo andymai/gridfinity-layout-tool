@@ -2195,6 +2195,7 @@
   "binExamples.technique.lid": "Lock",
   "binExamples.technique.handles": "Handtag",
   "binExamples.technique.customShape": "Anpassad form",
+  "binExamples.technique.baseOptions": "Basalternativ",
   "binExamples.compartments2x2Split.name": "2×2 med två fack",
   "binExamples.compartments2x2Split.description": "En 2×2-bin uppdelad i två fack sida vid sida — den vardagliga indelade organisatören.",
   "binExamples.compartments3x2Grid.name": "3×2 rutnät med sex fack",

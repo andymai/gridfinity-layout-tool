@@ -2195,6 +2195,7 @@
   "binExamples.technique.lid": "Lokk",
   "binExamples.technique.handles": "Håndtak",
   "binExamples.technique.customShape": "Egendefinert form",
+  "binExamples.technique.baseOptions": "Bunn-valg",
   "binExamples.compartments2x2Split.name": "2×2 med to rom",
   "binExamples.compartments2x2Split.description": "En 2×2-bin delt i to rom side om side — den daglige inndelte organisereren.",
   "binExamples.compartments3x2Grid.name": "3×2 rutenett med seks rom",

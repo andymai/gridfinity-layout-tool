@@ -2195,6 +2195,7 @@
   "binExamples.technique.lid": "Deksel",
   "binExamples.technique.handles": "Handgrepen",
   "binExamples.technique.customShape": "Aangepaste vorm",
+  "binExamples.technique.baseOptions": "Basisopties",
   "binExamples.compartments2x2Split.name": "2×2 met twee compartimenten",
   "binExamples.compartments2x2Split.description": "Een 2×2-bin opgedeeld in twee compartimenten naast elkaar — de alledaagse verdeelde organizer.",
   "binExamples.compartments3x2Grid.name": "3×2 raster met zes compartimenten",

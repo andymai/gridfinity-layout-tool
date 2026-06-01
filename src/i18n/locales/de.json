@@ -2195,6 +2195,7 @@
   "binExamples.technique.lid": "Deckel",
   "binExamples.technique.handles": "Griffe",
   "binExamples.technique.customShape": "Freie Form",
+  "binExamples.technique.baseOptions": "Bodenoptionen",
   "binExamples.compartments2x2Split.name": "2×2 Zwei-Fach",
   "binExamples.compartments2x2Split.description": "Ein 2×2-Bin, der in zwei nebeneinanderliegende Fächer geteilt ist — der alltägliche unterteilte Organizer.",
   "binExamples.compartments3x2Grid.name": "3×2 Sechs-Fach-Raster",
