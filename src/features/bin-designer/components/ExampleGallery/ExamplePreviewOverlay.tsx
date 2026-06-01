@@ -30,6 +30,10 @@ export function ExamplePreviewOverlay({ example, onClose, onBack }: ExamplePrevi
       const result = await exampleToDesign(example, t);
       if (isOk(result)) {
         addToast(t('binExamples.toast.designCreated'), 'success');
+        // Switch to the Bin Designer so the freshly-created design is shown
+        // (the gallery can be opened from the layout planner too). App.tsx
+        // listens for this event and navigates to the designer route.
+        window.dispatchEvent(new Event('switch-to-designer'));
         onClose();
       } else {
         addToast(t('binExamples.toast.designCreateFailed'), 'error');

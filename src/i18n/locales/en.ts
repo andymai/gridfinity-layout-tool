@@ -2280,9 +2280,9 @@ const en: Record<string, string> = {
   'binExamples.floorCutout2x3Rect.name': '2×3 Rectangular Cavity',
   'binExamples.floorCutout2x3Rect.description':
     'A solid 2×3 block with a single rectangular pocket cut into the top.',
-  'binExamples.floorCutout2x2Circles.name': '2×2 Twin Sockets',
-  'binExamples.floorCutout2x2Circles.description':
-    'A solid 2×2 block with two circular sockets for round tools or jars.',
+  'binExamples.floorCutout2x2Pockets.name': '2×2 Parts Tray',
+  'binExamples.floorCutout2x2Pockets.description':
+    'A solid 2×2 block with four recessed pockets for sorting small parts.',
 
   // Bin example presets — scoops
   'binExamples.scoop1x2Ramp.name': '1×2 Scoop Tray',

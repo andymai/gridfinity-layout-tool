@@ -9,6 +9,7 @@
  *
  * Usage: pnpm run dev (separately), then `pnpm run gen:example-thumbnails`.
  * Set BASE_URL if the dev server is not on the default port.
+ * Set EXAMPLE_ID=<id>[,<id>] to (re)render only specific examples.
  */
 
 import { chromium } from '@playwright/test';
@@ -30,7 +31,10 @@ async function main() {
   const page = await browser.newPage({ viewport: { width: 512, height: 512 } });
   page.on('console', (msg) => console.error(`[page:${msg.type()}] ${msg.text()}`));
 
-  for (const e of EXAMPLE_DESIGNS) {
+  const only = process.env.EXAMPLE_ID?.split(',').map((s) => s.trim());
+  const targets = only ? EXAMPLE_DESIGNS.filter((e) => only.includes(e.id)) : EXAMPLE_DESIGNS;
+
+  for (const e of targets) {
     await page.goto(`${BASE}/?devThumbnails=1&example=${e.id}`);
     await page.waitForFunction(
       () => (window as unknown as ThumbnailCaptureBridge).__thumbnailReady === true,
