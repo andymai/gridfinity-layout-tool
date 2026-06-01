@@ -213,22 +213,26 @@ Both paths feed the same `THUMBNAIL_VERSION` invariant: any thumbnail saved is s
 
 A curated, browsable catalog of example bin designs users import as a **new** saved design (copy semantics — never mutates current work). It lives inside this feature (not a separate slice) because it needs designer internals (`saveDesign`, `setActiveDesignId`, thumbnail capture) that cross-feature import rules forbid reaching from another feature.
 
+Cards show a static thumbnail; the detail view loads a live, rotatable 3D preview from a pre-generated mesh — no in-browser geometry kernel call needed to inspect an example.
+
 ### Key files
 
-- `components/ExampleGallery/` — modal (`ExampleGallery.tsx`), `ExampleCard`, `ExamplePreviewOverlay`, `TechniqueFilterPills`, and the pure `useExampleGalleryFilters.ts` (`filterAndSortExamples`).
-- `data/examples/` — one file per technique group + `showcase.ts`, aggregated in `index.ts` (`EXAMPLE_DESIGNS`). Each preset spreads `DEFAULT_BIN_PARAMS` and overrides only the technique fields.
-- `data/examples/thumbnails/*.png` — committed, pre-rendered (one per example).
-- `data/examples/catalog.test.ts` — integrity guard (unique ids, `validateBinParams` per preset, metrics==params, thumbnail-exists, i18n keys resolve).
+- `components/ExampleGallery/` — modal (`ExampleGallery.tsx`), `ExampleCard`, `ExamplePreviewOverlay`, `TechniqueFilterPills`, the live `Example3DViewer.tsx` (loads the bundled Draco GLB into a Three.js canvas), and the pure `useExampleGalleryFilters.ts` (`filterAndSortExamples`).
+- `data/examples/` — one file per technique group + `showcase.ts`, `heroes.ts`, and `palette.ts`, aggregated in `index.ts` (`EXAMPLE_DESIGNS`). Each preset spreads `DEFAULT_BIN_PARAMS` and overrides only the technique fields.
+- `data/examples/palette.ts` — the cohesive gallery color system: `PALETTE` (named swatches) + `coloredFeatures()`, which builds a `FeatureColorConfig` so showcase/hero presets carry consistent per-zone colors (`colored: true`).
+- `data/examples/thumbnails/*.png` — committed static thumbnails (one per example).
+- `data/examples/meshes/*.glb` — committed Draco-compressed GLB previews (one per example), resolved via `meshUrl(id)`. The decoder is self-hosted in `public/draco/` so the viewer needs no CDN.
+- `data/examples/catalog.test.ts` — integrity guard (unique ids, `validateBinParams` per preset, metrics==params, thumbnail-bundled, mesh-bundled, i18n keys resolve).
 - `store/galleryFavorites.ts` — localStorage-backed favorite ids (preference state; never touches saved designs).
 - `utils/exampleToDesign.ts` — `saveDesign` (fresh id) + `setActiveDesignId`; relies on `saveDesign`'s `put` event to sync the custom-bin registry.
-- `types/exampleGallery.ts` — `ExampleDesign`, `ExampleTechnique`, `TECHNIQUE_CONFIG`.
+- `types/exampleGallery.ts` — `ExampleDesign`, `ExampleTechnique`, `TECHNIQUE_CONFIG` (techniques include `wallPattern` for honeycomb/ventilated walls).
 - `components/DevThumbnailRoute/` + `scripts/gen-example-thumbnails.ts` — dev-only render route (gated on `import.meta.env.DEV`) + Playwright generator (`pnpm gen:example-thumbnails`).
 
 ### Concepts & gotchas
 
 1. **Open-state in a core store** — `@/core/store/binExampleGallery` (open/close/toggle). The modal is mounted once in `App.tsx` (always-present shell, so it works on every route), opened from three entry points: the designer "Browse examples" button, a Sidebar entry, and the `open-bin-examples` command-palette command (which can't import this feature, so it flips the core flag).
-2. **Thumbnails need a browser** — they use `THREE.WebGLRenderer` + the brepjs worker, so they can't be generated in node. Regenerate via the dev route + Playwright script after changing presets. The dev route renders with `PreviewCanvas`'s `hideChrome` prop (no grid/labels) for clean thumbnails.
-3. **Catalog grounded in real usage** — presets and `popular` tags reflect production design-corpus adoption (footprints, heights, feature mix), not guesses.
+2. **Thumbnails and meshes need a browser** — thumbnails use `THREE.WebGLRenderer` and meshes come from the brepjs worker, so neither can be generated in node. Regenerate via the dev route + Playwright script after changing presets. The dev route renders with `PreviewCanvas`'s `hideChrome` prop (no grid/labels) for clean output. GLB previews are Draco-compressed; the preview meshes must be merged per-material before Draco encoding to keep file sizes small.
+3. **Catalog grounded in real usage** — presets and `popular` tags reflect production design-corpus adoption (footprints, heights, feature mix), not guesses. The `heroes.ts` group shows richer, multi-technique builds tinted via `palette.ts`.
 4. **i18n** — example name/description and technique labels are keys under `binExamples.*` in `en.ts` (en.json is generated; the other locales are translated and key-parity-enforced).
 
 ## Integration

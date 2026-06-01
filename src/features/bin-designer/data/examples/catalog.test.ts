@@ -45,9 +45,7 @@ describe('example catalog integrity', () => {
     }
   });
 
-  // TODO: unskip once the full GLB asset regen has populated meshes/ for every
-  // example (currently only a proof subset is committed).
-  it.skip('every example has a bundled mesh', () => {
+  it('every example has a bundled mesh', () => {
     for (const e of EXAMPLE_DESIGNS) {
       expect(meshUrl(e.id), `${e.id} mesh not bundled`).toBeTruthy();
     }
