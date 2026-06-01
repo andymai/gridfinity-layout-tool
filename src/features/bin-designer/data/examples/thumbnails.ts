@@ -1,11 +1,11 @@
 // Resolve gallery thumbnails to bundled, hashed URLs. A raw '/src/...png' path
 // is a filesystem location, not a servable URL — only assets Vite sees (imported
 // or via import.meta.glob) get emitted, so string paths 404 at runtime.
-const modules = import.meta.glob('./thumbnails/*.png', {
+const modules: Record<string, string> = import.meta.glob('./thumbnails/*.png', {
   eager: true,
   query: '?url',
   import: 'default',
-}) as Record<string, string>;
+});
 
 const URL_BY_ID: Record<string, string> = {};
 for (const [path, url] of Object.entries(modules)) {
