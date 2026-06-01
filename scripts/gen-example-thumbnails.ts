@@ -18,15 +18,18 @@ import { resolve } from 'node:path';
 import { EXAMPLE_DESIGNS } from '../src/features/bin-designer/data/examples';
 
 const OUT = resolve(process.cwd(), 'src/features/bin-designer/data/examples/thumbnails');
+const MESH_OUT = resolve(process.cwd(), 'src/features/bin-designer/data/examples/meshes');
 const BASE = process.env.BASE_URL ?? 'http://localhost:5173';
 
 interface ThumbnailCaptureBridge {
   __thumbnailReady?: boolean;
   __captureThumbnail?: () => string | null;
+  __exportGlb?: () => Promise<string | null>;
 }
 
 async function main() {
   mkdirSync(OUT, { recursive: true });
+  mkdirSync(MESH_OUT, { recursive: true });
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 512, height: 512 } });
   page.on('console', (msg) => console.error(`[page:${msg.type()}] ${msg.text()}`));
@@ -51,6 +54,16 @@ async function main() {
       Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ''), 'base64')
     );
     console.error(`wrote ${e.id}.png`);
+
+    const glb = await page.evaluate(
+      () => (window as unknown as ThumbnailCaptureBridge).__exportGlb?.() ?? null
+    );
+    if (glb) {
+      writeFileSync(resolve(MESH_OUT, `${e.id}.glb`), Buffer.from(glb, 'base64'));
+      console.error(`wrote ${e.id}.glb`);
+    } else {
+      console.error(`no GLB for ${e.id} (export returned null)`);
+    }
   }
 
   await browser.close();

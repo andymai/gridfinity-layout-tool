@@ -15,13 +15,17 @@ import { PreviewCanvas } from '@/features/bin-designer/components/PreviewCanvas'
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { EXAMPLE_DESIGNS } from '@/features/bin-designer/data/examples';
-import { captureThumbnailAtPreset } from '@/features/bin-designer/utils/thumbnail';
+import {
+  captureThumbnailAtPreset,
+  exportPreviewGlb,
+} from '@/features/bin-designer/utils/thumbnail';
 
 const THUMBNAIL_SIZE = 512;
 
 interface ThumbnailCaptureBridge {
   __thumbnailReady?: boolean;
   __captureThumbnail?: () => string | null;
+  __exportGlb?: () => Promise<string | null>;
 }
 
 export function DevThumbnailRoute() {
@@ -86,6 +90,14 @@ export function DevThumbnailRoute() {
             },
             { size: THUMBNAIL_SIZE, mimeType: 'image/png' }
           );
+        bridge.__exportGlb = async (): Promise<string | null> => {
+          const buf = await exportPreviewGlb();
+          if (!buf) return null;
+          let bin = '';
+          const bytes = new Uint8Array(buf);
+          for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+          return btoa(bin);
+        };
         bridge.__thumbnailReady = true;
         return;
       }

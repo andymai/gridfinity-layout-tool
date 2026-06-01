@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useToastStore } from '@/core/store/toast';
 import { isOk } from '@/core/result';
 import { exampleToDesign } from '@/features/bin-designer/utils/exampleToDesign';
-import { thumbnailUrl } from '@/features/bin-designer/data/examples/thumbnails';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 import { TECHNIQUE_CONFIG } from '@/features/bin-designer/types/exampleGallery';
 import { useTranslation } from '@/i18n';
+import { Example3DViewer } from './Example3DViewer';
 
 interface ExamplePreviewOverlayProps {
   example: ExampleDesign;
@@ -103,14 +103,10 @@ export function ExamplePreviewOverlay({ example, onClose, onBack }: ExamplePrevi
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto scrollbar-thin flex flex-col md:flex-row">
-          {/* Image */}
+          {/* Preview: live 3D viewer (falls back to static thumbnail when no mesh) */}
           <div className="flex-1 p-6 flex items-center justify-center bg-surface">
             <div className="bg-surface-secondary rounded-xl p-4 w-full flex items-center justify-center">
-              <img
-                src={thumbnailUrl(example.id) ?? ''}
-                alt={t(example.nameKey)}
-                className="max-w-full max-h-[40vh] object-contain"
-              />
+              <Example3DViewer example={example} />
             </div>
           </div>
 

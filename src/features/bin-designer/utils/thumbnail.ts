@@ -6,7 +6,7 @@
  */
 
 import type { WebGLRenderer, Scene, PerspectiveCamera, Object3D } from 'three';
-import { Vector3 } from 'three';
+import { Vector3, Group, Mesh } from 'three';
 import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
 
 /** Thumbnail size for IndexedDB storage (high res for crisp display at any size) */
@@ -152,6 +152,40 @@ export function captureThumbnail(options?: ThumbnailCaptureOptions): string | nu
     // Canvas may be tainted or unavailable
     return null;
   }
+}
+
+function isMesh(obj: Object3D): obj is Mesh {
+  return 'isMesh' in obj && obj.isMesh === true;
+}
+
+/**
+ * Export the registered preview scene as a binary GLB (glTF) ArrayBuffer.
+ *
+ * Bakes world transforms into each visible mesh's geometry and reuses the
+ * rendered materials so feature colors carry into the export. Lights and
+ * line/edge overlays are excluded (only `Mesh` objects are collected).
+ *
+ * @returns A GLB ArrayBuffer, or `null` if no preview scene is registered or
+ *   the scene contains no visible meshes.
+ */
+export async function exportPreviewGlb(): Promise<ArrayBuffer | null> {
+  if (!previewScene) return null;
+
+  previewScene.updateMatrixWorld(true);
+
+  const group = new Group();
+  previewScene.traverse((obj) => {
+    if (!obj.visible || !isMesh(obj)) return;
+    const geo = obj.geometry.clone();
+    geo.applyMatrix4(obj.matrixWorld);
+    group.add(new Mesh(geo, obj.material));
+  });
+
+  if (group.children.length === 0) return null;
+
+  const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
+  const out = await new GLTFExporter().parseAsync(group, { binary: true, onlyVisible: true });
+  return out as ArrayBuffer;
 }
 
 /**

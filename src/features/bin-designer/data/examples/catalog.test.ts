@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { EXAMPLE_DESIGNS } from './index';
 import { thumbnailUrl } from './thumbnails';
+import { meshUrl } from './meshes';
 import { validateBinParams } from '@/features/bin-designer/utils/validation';
 import { isOk } from '@/core/result';
 
@@ -41,6 +42,14 @@ describe('example catalog integrity', () => {
     // PNG would 404 at runtime); stronger than a filesystem-existence check.
     for (const e of EXAMPLE_DESIGNS) {
       expect(thumbnailUrl(e.id), `${e.id} thumbnail not bundled`).toBeTruthy();
+    }
+  });
+
+  // TODO: unskip once the full GLB asset regen has populated meshes/ for every
+  // example (currently only a proof subset is committed).
+  it.skip('every example has a bundled mesh', () => {
+    for (const e of EXAMPLE_DESIGNS) {
+      expect(meshUrl(e.id), `${e.id} mesh not bundled`).toBeTruthy();
     }
   });
 });
