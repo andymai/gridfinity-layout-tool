@@ -3,6 +3,7 @@ import {
   DISABLED_WALL_CUTOUT,
 } from '@/features/bin-designer/constants/defaults';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
+import { PALETTE, coloredFeatures } from './palette';
 
 export const WALL_CUTOUT_EXAMPLES: ExampleDesign[] = [
   {
@@ -10,10 +11,11 @@ export const WALL_CUTOUT_EXAMPLES: ExampleDesign[] = [
     nameKey: 'binExamples.wallCutout2x4Cable.name',
     descriptionKey: 'binExamples.wallCutout2x4Cable.description',
     techniques: ['wallCutouts'],
-    tier: 'technique',
+    tier: 'showcase',
     popular: true,
     tags: ['cable', 'desk', '2x4'],
-    complexity: 1,
+    complexity: 2,
+    colored: true,
     params: {
       ...DEFAULT_BIN_PARAMS,
       width: 2,
@@ -34,6 +36,14 @@ export const WALL_CUTOUT_EXAMPLES: ExampleDesign[] = [
         left: DISABLED_WALL_CUTOUT,
         right: DISABLED_WALL_CUTOUT,
       },
+      featureColors: coloredFeatures({
+        lip: {
+          frontLeft: PALETTE.amber,
+          frontRight: PALETTE.amber,
+          backRight: PALETTE.amber,
+          backLeft: PALETTE.amber,
+        },
+      }),
     },
     metrics: { width: 2, depth: 4, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
@@ -42,10 +52,11 @@ export const WALL_CUTOUT_EXAMPLES: ExampleDesign[] = [
     nameKey: 'binExamples.wallCutout1x3Finger.name',
     descriptionKey: 'binExamples.wallCutout1x3Finger.description',
     techniques: ['wallCutouts'],
-    tier: 'technique',
+    tier: 'showcase',
     popular: false,
     tags: ['finger-access', 'tray', '1x3'],
-    complexity: 1,
+    complexity: 2,
+    colored: true,
     params: {
       ...DEFAULT_BIN_PARAMS,
       width: 1,
@@ -67,6 +78,14 @@ export const WALL_CUTOUT_EXAMPLES: ExampleDesign[] = [
         left: DISABLED_WALL_CUTOUT,
         right: DISABLED_WALL_CUTOUT,
       },
+      featureColors: coloredFeatures({
+        lip: {
+          frontLeft: PALETTE.teal,
+          frontRight: PALETTE.teal,
+          backRight: PALETTE.teal,
+          backLeft: PALETTE.teal,
+        },
+      }),
     },
     metrics: { width: 1, depth: 3, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
@@ -113,10 +132,11 @@ export const FLOOR_CUTOUT_EXAMPLES: ExampleDesign[] = [
     nameKey: 'binExamples.floorCutout2x2Pockets.name',
     descriptionKey: 'binExamples.floorCutout2x2Pockets.description',
     techniques: ['floorCutouts'],
-    tier: 'technique',
+    tier: 'showcase',
     popular: false,
     tags: ['pockets', 'parts-tray', '2x2'],
-    complexity: 1,
+    complexity: 2,
+    colored: true,
     params: {
       ...DEFAULT_BIN_PARAMS,
       width: 2,
@@ -179,6 +199,7 @@ export const FLOOR_CUTOUT_EXAMPLES: ExampleDesign[] = [
         },
       ],
       cutoutConfig: { ...DEFAULT_BIN_PARAMS.cutoutConfig },
+      featureColors: coloredFeatures({ base: PALETTE.teal }),
     },
     metrics: { width: 2, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },

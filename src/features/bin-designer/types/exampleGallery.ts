@@ -31,18 +31,6 @@ export interface ExampleDesign {
     readonly height: number;
     readonly gridUnitMm: number;
   };
-  /**
-   * Optional presentation overrides for the pre-rendered thumbnail + initial
-   * 3D pose. Azimuth/elevation in degrees; zoom is a multiplier on the framed
-   * distance (>1 = further). Omitted = the default isometric framing.
-   */
-  readonly camera?: {
-    readonly azimuth?: number;
-    readonly elevation?: number;
-    readonly zoom?: number;
-  };
-  /** Lid/explode amount (0..1) applied when rendering. Omitted = 0. */
-  readonly explode?: number;
   /** Whether this example uses multi-color feature colors (selective color). */
   readonly colored?: boolean;
 }

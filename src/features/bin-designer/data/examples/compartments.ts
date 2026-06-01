@@ -1,25 +1,8 @@
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
+import { PALETTE, coloredFeatures } from './palette';
 
 export const COMPARTMENT_EXAMPLES: ExampleDesign[] = [
-  {
-    id: 'compartments-2x2-split',
-    nameKey: 'binExamples.compartments2x2Split.name',
-    descriptionKey: 'binExamples.compartments2x2Split.description',
-    techniques: ['compartments'],
-    tier: 'technique',
-    popular: true,
-    tags: ['divided', 'organizer', '2x2'],
-    complexity: 1,
-    params: {
-      ...DEFAULT_BIN_PARAMS,
-      width: 2,
-      depth: 2,
-      height: 3,
-      compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 1, cells: [0, 1] },
-    },
-    metrics: { width: 2, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
-  },
   {
     id: 'compartments-3x2-grid',
     nameKey: 'binExamples.compartments3x2Grid.name',
@@ -44,37 +27,15 @@ export const COMPARTMENT_EXAMPLES: ExampleDesign[] = [
     metrics: { width: 3, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
-    id: 'compartments-1x3-rows',
-    nameKey: 'binExamples.compartments1x3Rows.name',
-    descriptionKey: 'binExamples.compartments1x3Rows.description',
-    techniques: ['compartments'],
-    tier: 'technique',
-    popular: false,
-    tags: ['divided', 'rows', '1x3'],
-    complexity: 1,
-    params: {
-      ...DEFAULT_BIN_PARAMS,
-      width: 1,
-      depth: 3,
-      height: 3,
-      compartments: {
-        ...DEFAULT_BIN_PARAMS.compartments,
-        cols: 1,
-        rows: 3,
-        cells: [0, 1, 2],
-      },
-    },
-    metrics: { width: 1, depth: 3, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
-  },
-  {
     id: 'compartments-3x2-mixed',
     nameKey: 'binExamples.compartments3x2Mixed.name',
     descriptionKey: 'binExamples.compartments3x2Mixed.description',
     techniques: ['compartments'],
-    tier: 'technique',
+    tier: 'showcase',
     popular: false,
     tags: ['divided', 'mixed', '3x2'],
-    complexity: 1,
+    complexity: 2,
+    colored: true,
     params: {
       ...DEFAULT_BIN_PARAMS,
       width: 3,
@@ -87,6 +48,7 @@ export const COMPARTMENT_EXAMPLES: ExampleDesign[] = [
         // Top row is one wide compartment; bottom row split into three.
         cells: [0, 0, 0, 1, 2, 3],
       },
+      featureColors: coloredFeatures({ dividers: PALETTE.teal }),
     },
     metrics: { width: 3, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },

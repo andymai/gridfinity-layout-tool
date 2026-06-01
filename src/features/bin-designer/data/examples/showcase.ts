@@ -4,7 +4,7 @@ import {
 } from '@/features/bin-designer/constants/defaults';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 import type { CellMask } from '@/shared/utils/cellMask';
-
+import { PALETTE, coloredFeatures } from './palette';
 
 /** 2×2 bin (4×4 half-cells) with the top-right 1u quadrant removed → L-shape. */
 const L_SHAPE_MASK: CellMask = {
@@ -40,6 +40,7 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
     popular: true,
     tags: ['organizer', 'divided', 'labeled', '3x3'],
     complexity: 3,
+    colored: true,
     params: {
       ...DEFAULT_BIN_PARAMS,
       width: 3,
@@ -53,6 +54,11 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
       },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, alignment: 'center' },
       scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+      featureColors: coloredFeatures({
+        dividers: PALETTE.teal,
+        labelTab: PALETTE.amber,
+        scoop: PALETTE.coral,
+      }),
     },
     metrics: { width: 3, depth: 3, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
@@ -64,7 +70,8 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
     tier: 'showcase',
     popular: false,
     tags: ['cable', 'lid', 'enclosed', '2x4'],
-    complexity: 2,
+    complexity: 3,
+    colored: true,
     params: {
       ...DEFAULT_BIN_PARAMS,
       width: 2,
@@ -92,7 +99,9 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
         left: DISABLED_WALL_CUTOUT,
         right: DISABLED_WALL_CUTOUT,
       },
+      base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: true },
       lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
+      featureColors: coloredFeatures({ lid: PALETTE.amber }),
     },
     metrics: { width: 2, depth: 4, height: 5, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
@@ -105,6 +114,7 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
     popular: false,
     tags: ['tool-tray', 'cavity', 'labeled', '3x2'],
     complexity: 2,
+    colored: true,
     params: {
       ...DEFAULT_BIN_PARAMS,
       width: 3,
@@ -142,6 +152,7 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
         },
       ],
       cutoutConfig: { ...DEFAULT_BIN_PARAMS.cutoutConfig },
+      featureColors: coloredFeatures({ labelTab: PALETTE.amber }),
     },
     metrics: { width: 3, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
@@ -153,28 +164,30 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
     tier: 'showcase',
     popular: false,
     tags: ['hardware', 'sorter', 'labeled', '4x3'],
-    complexity: 2,
+    complexity: 3,
+    colored: true,
     params: {
       ...DEFAULT_BIN_PARAMS,
       width: 4,
       depth: 3,
-      height: 4,
+      height: 3,
       compartments: {
         ...DEFAULT_BIN_PARAMS.compartments,
-        cols: 4,
+        cols: 6,
         rows: 3,
-        cells: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        cells: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
       },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, alignment: 'center' },
+      featureColors: coloredFeatures({ dividers: PALETTE.teal }),
     },
-    metrics: { width: 4, depth: 3, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
+    metrics: { width: 4, depth: 3, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
-    id: 'showcase-l-shape-2x2',
-    nameKey: 'binExamples.showcaseLShape2x2.name',
-    descriptionKey: 'binExamples.showcaseLShape2x2.description',
+    id: 'custom-l-shape',
+    nameKey: 'binExamples.customLShape.name',
+    descriptionKey: 'binExamples.customLShape.description',
     techniques: ['customShape'],
-    tier: 'showcase',
+    tier: 'technique',
     popular: false,
     tags: ['custom-shape', 'l-shape', '2x2'],
     complexity: 1,
@@ -184,31 +197,6 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
       depth: 2,
       height: 4,
       cellMask: L_SHAPE_MASK,
-    },
-    metrics: { width: 2, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
-  },
-  {
-    id: 'showcase-2x2-magnet-labeled',
-    nameKey: 'binExamples.showcase2x2MagnetLabeled.name',
-    descriptionKey: 'binExamples.showcase2x2MagnetLabeled.description',
-    techniques: ['compartments', 'labelTab'],
-    tier: 'showcase',
-    popular: false,
-    tags: ['magnet', 'divided', 'labeled', '2x2'],
-    complexity: 2,
-    params: {
-      ...DEFAULT_BIN_PARAMS,
-      width: 2,
-      depth: 2,
-      height: 4,
-      base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
-      compartments: {
-        ...DEFAULT_BIN_PARAMS.compartments,
-        cols: 2,
-        rows: 1,
-        cells: [0, 1],
-      },
-      label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, alignment: 'center' },
     },
     metrics: { width: 2, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
