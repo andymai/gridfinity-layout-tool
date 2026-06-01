@@ -76,6 +76,42 @@ describe('PaddingAnchor', () => {
     }
   });
 
+  it('renders a directional arrow rotated toward each edge/corner cell', () => {
+    render(<PaddingAnchor value="custom" onChange={vi.fn()} />);
+    const cases: Array<[string, string]> = [
+      ['tl', 'rotate-45'],
+      ['tc', 'rotate-90'],
+      ['ml', 'rotate-0'],
+      ['mr', 'rotate-180'],
+      ['br', 'rotate-[225deg]'],
+    ];
+    for (const [anchor, rotation] of cases) {
+      const svg = screen.getByLabelText(`baseplate.paddingAnchor.${anchor}`).querySelector('svg');
+      expect(svg).not.toBeNull();
+      expect(svg).toHaveClass(rotation);
+    }
+  });
+
+  it('renders the center cell as a target glyph rather than an arrow', () => {
+    render(<PaddingAnchor value="custom" onChange={vi.fn()} />);
+    const center = screen.getByLabelText('baseplate.paddingAnchor.c');
+    expect(center.querySelector('svg')).toBeNull();
+    expect(center.querySelector('span.rounded-full')).not.toBeNull();
+  });
+
+  it('gives the selected cell a filled tile', () => {
+    render(<PaddingAnchor value="tr" onChange={vi.fn()} />);
+    expect(screen.getByLabelText('baseplate.paddingAnchor.tr')).toHaveClass('bg-content');
+  });
+
+  it('exposes a hover tooltip mirroring each cell label', () => {
+    render(<PaddingAnchor value="custom" onChange={vi.fn()} />);
+    expect(screen.getByLabelText('baseplate.paddingAnchor.bl')).toHaveAttribute(
+      'title',
+      'baseplate.paddingAnchor.bl'
+    );
+  });
+
   it('shows clamp warning badge only when showClampWarning is true', () => {
     const { rerender } = render(
       <PaddingAnchor value="tl" onChange={vi.fn()} showClampWarning={false} />

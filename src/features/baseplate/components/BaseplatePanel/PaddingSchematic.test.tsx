@@ -169,6 +169,26 @@ describe('PaddingSchematic', () => {
     expect(screen.queryByLabelText('baseplate.paddingAnchor.clampedWarning')).toBeNull();
   });
 
+  it('shows the "Custom" caption only when the anchor is custom', () => {
+    const { rerender } = render(
+      <PaddingSchematic
+        baseplateParams={{ ...DEFAULT_BASEPLATE_PARAMS, paddingAnchor: 'custom' }}
+        updateParam={vi.fn()}
+        updateParams={vi.fn()}
+      />
+    );
+    expect(screen.getByText('baseplate.paddingAnchor.custom')).toBeInTheDocument();
+
+    rerender(
+      <PaddingSchematic
+        baseplateParams={{ ...DEFAULT_BASEPLATE_PARAMS, paddingAnchor: 'tl' }}
+        updateParam={vi.fn()}
+        updateParams={vi.fn()}
+      />
+    );
+    expect(screen.queryByText('baseplate.paddingAnchor.custom')).toBeNull();
+  });
+
   it('does not touch paddingAnchor when already custom (uses single-key update)', () => {
     const updateParam = vi.fn();
     const updateParams = vi.fn();

@@ -88,6 +88,7 @@
   "baseplate.paddingAnchor.bc": "Förankra bins fram-mitten",
   "baseplate.paddingAnchor.bl": "Förankra bins fram-vänster",
   "baseplate.paddingAnchor.br": "Förankra bins fram-höger",
+  "baseplate.paddingAnchor.custom": "Anpassad",
   "baseplate.paddingAnchor.c": "Centrera bins",
   "baseplate.paddingAnchor.clampedWarning": "Utfyllnaden begränsades till tillåtet intervall; bin-positionen matchar kanske inte exakt den valda förankringen.",
   "baseplate.paddingAnchor.label": "Utfyllnadsförankring",

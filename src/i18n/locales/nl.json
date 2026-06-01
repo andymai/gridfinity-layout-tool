@@ -88,6 +88,7 @@
   "baseplate.paddingAnchor.bc": "Bins voor-midden verankeren",
   "baseplate.paddingAnchor.bl": "Bins voor-links verankeren",
   "baseplate.paddingAnchor.br": "Bins voor-rechts verankeren",
+  "baseplate.paddingAnchor.custom": "Aangepast",
   "baseplate.paddingAnchor.c": "Bins centreren",
   "baseplate.paddingAnchor.clampedWarning": "De vulling is beperkt tot het toegestane bereik; de positie van de bins komt mogelijk niet exact overeen met het gekozen anker.",
   "baseplate.paddingAnchor.label": "Vullingsanker",

@@ -88,6 +88,7 @@
   "baseplate.paddingAnchor.bc": "Прив'язати бункери до передньої центральної",
   "baseplate.paddingAnchor.bl": "Прив'язати бункери до передньої лівої",
   "baseplate.paddingAnchor.br": "Прив'язати бункери до передньої правої",
+  "baseplate.paddingAnchor.custom": "Власні",
   "baseplate.paddingAnchor.c": "Центрувати бункери",
   "baseplate.paddingAnchor.clampedWarning": "Відступ було обмежено допустимим діапазоном; положення бункерів може не точно відповідати обраній прив'язці.",
   "baseplate.paddingAnchor.label": "Прив'язка відступів",

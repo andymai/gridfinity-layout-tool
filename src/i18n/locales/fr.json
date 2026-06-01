@@ -88,6 +88,7 @@
   "baseplate.paddingAnchor.bc": "Ancrer les bacs avant-centre",
   "baseplate.paddingAnchor.bl": "Ancrer les bacs avant-gauche",
   "baseplate.paddingAnchor.br": "Ancrer les bacs avant-droite",
+  "baseplate.paddingAnchor.custom": "Personnalisé",
   "baseplate.paddingAnchor.c": "Centrer les bacs",
   "baseplate.paddingAnchor.clampedWarning": "La marge a été limitée à la plage autorisée ; la position des bacs peut ne pas correspondre exactement à l'ancrage sélectionné.",
   "baseplate.paddingAnchor.label": "Ancrage de marge",

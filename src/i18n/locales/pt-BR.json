@@ -88,6 +88,7 @@
   "baseplate.paddingAnchor.bc": "Ancorar bins frente-centro",
   "baseplate.paddingAnchor.bl": "Ancorar bins frente-esquerda",
   "baseplate.paddingAnchor.br": "Ancorar bins frente-direita",
+  "baseplate.paddingAnchor.custom": "Personalizado",
   "baseplate.paddingAnchor.c": "Centralizar bins",
   "baseplate.paddingAnchor.clampedWarning": "O preenchimento foi limitado ao intervalo permitido; a posição dos bins pode não corresponder exatamente à âncora selecionada.",
   "baseplate.paddingAnchor.label": "Âncora de preenchimento",

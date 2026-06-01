@@ -1959,6 +1959,7 @@ const en: Record<string, string> = {
   'baseplate.paddingAnchor.bl': 'Anchor bins front-left',
   'baseplate.paddingAnchor.bc': 'Anchor bins front-center',
   'baseplate.paddingAnchor.br': 'Anchor bins front-right',
+  'baseplate.paddingAnchor.custom': 'Custom',
   'baseplate.paddingAnchor.clampedWarning':
     'Padding was clamped to the allowed range; the bin position may not match the selected anchor exactly.',
   'baseplate.editDimensions': 'Edit baseplate dimensions',

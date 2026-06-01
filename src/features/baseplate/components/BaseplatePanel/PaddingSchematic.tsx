@@ -76,12 +76,20 @@ export function PaddingSchematic({
           value={baseplateParams.paddingLeft}
           onChange={(v) => handlePaddingChange('paddingLeft', v)}
         />
-        <div className="flex-1 min-h-16 rounded border border-dashed border-stroke-subtle bg-surface-secondary/50">
-          <PaddingAnchor
-            value={anchor}
-            onChange={handleAnchorChange}
-            showClampWarning={showClampWarning}
-          />
+        <div className="flex min-h-16 flex-1 flex-col rounded-md border border-stroke-subtle bg-surface-secondary/50">
+          <div className="flex-1">
+            <PaddingAnchor
+              value={anchor}
+              onChange={handleAnchorChange}
+              showClampWarning={showClampWarning}
+            />
+          </div>
+          <div
+            aria-live="polite"
+            className="flex h-4 items-center justify-center text-[10px] leading-none text-content-tertiary"
+          >
+            {anchor === 'custom' ? t('baseplate.paddingAnchor.custom') : ''}
+          </div>
         </div>
         <PaddingStepper
           orientation="vertical"

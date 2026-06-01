@@ -88,6 +88,7 @@
   "baseplate.paddingAnchor.bc": "Forankre bins foran-midten",
   "baseplate.paddingAnchor.bl": "Forankre bins foran-venstre",
   "baseplate.paddingAnchor.br": "Forankre bins foran-høyre",
+  "baseplate.paddingAnchor.custom": "Egendefinert",
   "baseplate.paddingAnchor.c": "Sentrer bins",
   "baseplate.paddingAnchor.clampedWarning": "Polstringen ble begrenset til tillatt område; bin-posisjonen samsvarer kanskje ikke nøyaktig med det valgte ankeret.",
   "baseplate.paddingAnchor.label": "Polstringsanker",

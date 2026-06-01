@@ -88,6 +88,7 @@
   "baseplate.paddingAnchor.bc": "Bins vorne mittig verankern",
   "baseplate.paddingAnchor.bl": "Bins vorne-links verankern",
   "baseplate.paddingAnchor.br": "Bins vorne-rechts verankern",
+  "baseplate.paddingAnchor.custom": "Benutzerdefiniert",
   "baseplate.paddingAnchor.c": "Bins zentrieren",
   "baseplate.paddingAnchor.clampedWarning": "Padding wurde auf den zulässigen Bereich begrenzt; die Bin-Position passt möglicherweise nicht genau zur gewählten Verankerung.",
   "baseplate.paddingAnchor.label": "Padding-Verankerung",
