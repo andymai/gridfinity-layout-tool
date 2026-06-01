@@ -2149,5 +2149,9 @@
   "binDesigner.bulk.toastTagged": "{count} modèle(s) étiqueté(s)",
   "binDesigner.bulk.toastExported": "{count} modèle(s) exporté(s)",
   "header.switchLayout": "Changer de layout (actuel : {name})",
-  "header.manageLayouts": "Gérer les layouts"
+  "header.manageLayouts": "Gérer les layouts",
+  "binExamples.browseButton": "Browse examples",
+  "binExamples.sidebarEntry": "Bin Examples",
+  "binExamples.sidebarHint": "Start from a ready-made design",
+  "commandPalette.openBinExamples": "Browse Bin Examples"
 }

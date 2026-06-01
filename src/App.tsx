@@ -8,6 +8,7 @@ import {
   useLabsStore,
 } from '@/core/store';
 import { useSharedPreviewStore } from '@/core/store/sharedPreview';
+import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { initLayoutAnalytics } from '@/core/store/layoutAnalytics';
 import {
   useAutoSave,
@@ -105,6 +106,9 @@ const MobileLayout = lazyWithRetry(() =>
 const CollabProvider = lazyWithRetry(() =>
   import('@/shell/Collab/CollabProvider').then(namedExport('CollabProvider'))
 );
+const BinExampleGallery = lazyWithRetry(() =>
+  import('@/features/bin-designer').then(namedExport('ExampleGallery'))
+);
 
 let hasRenderedInitialLayout = false;
 
@@ -123,6 +127,8 @@ export default function App() {
   const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette({
     disabled: isDesignerRoute || isBaseplateRoute,
   });
+  const binExampleGalleryOpen = useBinExampleGalleryStore((s) => s.isOpen);
+  const closeBinExampleGallery = useBinExampleGalleryStore((s) => s.close);
   const [commandPaletteInitialQuery, setCommandPaletteInitialQuery] = useState('');
 
   // Allow external surfaces (e.g. HelpModal's empty-state fall-through) to open
@@ -515,6 +521,11 @@ export default function App() {
       )}
       {routeContent}
       <ToastContainer />
+      {binExampleGalleryOpen && (
+        <Suspense fallback={null}>
+          <BinExampleGallery onClose={closeBinExampleGallery} />
+        </Suspense>
+      )}
       {!isMobile && commandPaletteOpen && (
         <Suspense fallback={null}>
           <CommandPalette

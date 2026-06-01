@@ -2149,5 +2149,9 @@
   "binDesigner.bulk.toastTagged": "{count}件のデザインにタグを付けました",
   "binDesigner.bulk.toastExported": "{count}件のデザインをエクスポートしました",
   "header.switchLayout": "レイアウトを切り替え（現在: {name}）",
-  "header.manageLayouts": "レイアウトを管理"
+  "header.manageLayouts": "レイアウトを管理",
+  "binExamples.browseButton": "Browse examples",
+  "binExamples.sidebarEntry": "Bin Examples",
+  "binExamples.sidebarHint": "Start from a ready-made design",
+  "commandPalette.openBinExamples": "Browse Bin Examples"
 }

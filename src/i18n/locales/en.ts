@@ -2188,6 +2188,7 @@ const en: Record<string, string> = {
   'commandPalette.newLayout': 'New Layout',
   'commandPalette.duplicateLayout': 'Duplicate Layout',
   'commandPalette.switchToDesigner': 'Switch to Bins',
+  'commandPalette.openBinExamples': 'Browse Bin Examples',
 
   // Tools commands (extended)
   'commandPalette.togglePaintMode': 'Toggle Paint Mode',
@@ -2201,6 +2202,11 @@ const en: Record<string, string> = {
   'commandPalette.footer.run': 'Run',
   'commandPalette.footer.navigate': 'Navigate',
   'commandPalette.footer.commandCount': '{count} commands',
+
+  // Bin example gallery entry points
+  'binExamples.browseButton': 'Browse examples',
+  'binExamples.sidebarEntry': 'Bin Examples',
+  'binExamples.sidebarHint': 'Start from a ready-made design',
 
   // Snapping Slider (shared component)
   'snappingSlider.default': 'Default',

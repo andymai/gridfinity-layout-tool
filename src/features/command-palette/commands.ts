@@ -85,6 +85,12 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     keywords: ['designer', 'bin', 'cad', 'stl', '3d'],
   },
   {
+    id: 'open-bin-examples',
+    labelKey: 'commandPalette.openBinExamples',
+    category: 'navigation',
+    keywords: ['examples', 'inspiration', 'templates', 'bin', 'designs'],
+  },
+  {
     id: 'open-help',
     labelKey: 'commandPalette.openHelp',
     category: 'navigation',

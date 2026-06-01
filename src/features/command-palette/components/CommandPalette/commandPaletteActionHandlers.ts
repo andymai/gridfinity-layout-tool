@@ -22,6 +22,7 @@ import {
   useToastStore,
   useSharePopoverStore,
 } from '@/core/store';
+import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { batch } from '@/core/cqrs';
 import { useMutations } from '@/shared/contexts';
@@ -200,6 +201,9 @@ export function useActionHandlers(): Record<string, ActionHandler> {
           'noopener,noreferrer'
         ),
       'switch-to-designer': () => dispatchWindowEvent('switch-to-designer'),
+      'open-bin-examples': () => {
+        useBinExampleGalleryStore.getState().open();
+      },
       'new-layout': () => {
         void createNewLayout();
       },

@@ -2149,5 +2149,9 @@
   "binDesigner.bulk.toastTagged": "{count} ontwerp(en) gelabeld",
   "binDesigner.bulk.toastExported": "{count} ontwerp(en) geëxporteerd",
   "header.switchLayout": "Layout wisselen (huidig: {name})",
-  "header.manageLayouts": "Layouts beheren"
+  "header.manageLayouts": "Layouts beheren",
+  "binExamples.browseButton": "Browse examples",
+  "binExamples.sidebarEntry": "Bin Examples",
+  "binExamples.sidebarHint": "Start from a ready-made design",
+  "commandPalette.openBinExamples": "Browse Bin Examples"
 }
