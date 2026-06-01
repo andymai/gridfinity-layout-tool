@@ -11,6 +11,8 @@
 
 import { ExportDialog } from '@/features/bin-designer/components/ExportDialog';
 import { DesignListDialog } from '@/features/bin-designer/components/DesignListDialog';
+import { ExampleGallery } from '@/features/bin-designer/components/ExampleGallery/ExampleGallery';
+import { useBinExampleGalleryStore } from '@/core/store/binExampleGallery';
 import { useGeneration } from '@/features/bin-designer/hooks/useGeneration';
 import { useSyncPhysicalUnits } from '@/features/bin-designer/hooks/useSyncPhysicalUnits';
 import { useDesignerInit } from '@/features/bin-designer/hooks/useDesignerInit';
@@ -65,6 +67,8 @@ export function DesignerPage() {
   const cutoutEditorOpen = useDesignerStore((s) => s.ui.cutoutEditorOpen);
   const designListOpen = useDesignerStore((s) => s.ui.designListOpen);
   const setDesignListOpen = useDesignerStore((s) => s.setDesignListOpen);
+  const galleryOpen = useBinExampleGalleryStore((s) => s.isOpen);
+  const closeGallery = useBinExampleGalleryStore((s) => s.close);
 
   const nameEditor = useDesignNameEditor();
   const shareLoading = useShareLoading();
@@ -91,6 +95,7 @@ export function DesignerPage() {
       {/* Modals */}
       <ExportDialog />
       <DesignListDialog open={designListOpen} onClose={() => setDesignListOpen(false)} />
+      {galleryOpen && <ExampleGallery onClose={closeGallery} />}
     </div>
   );
 }
