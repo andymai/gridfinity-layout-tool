@@ -15,7 +15,18 @@
 import { chromium } from '@playwright/test';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+// gltf-pipeline ships no types; processGlb takes a glb Buffer and resolves { glb }.
+import gltfPipeline from 'gltf-pipeline';
 import { EXAMPLE_DESIGNS } from '../src/features/bin-designer/data/examples';
+
+interface GltfPipeline {
+  processGlb: (
+    glb: Buffer,
+    options: { dracoOptions: { compressionLevel: number } }
+  ) => Promise<{ glb: Buffer }>;
+}
+
+const { processGlb } = gltfPipeline as unknown as GltfPipeline;
 
 const OUT = resolve(process.cwd(), 'src/features/bin-designer/data/examples/thumbnails');
 const MESH_OUT = resolve(process.cwd(), 'src/features/bin-designer/data/examples/meshes');
@@ -59,8 +70,12 @@ async function main() {
       () => (window as unknown as ThumbnailCaptureBridge).__exportGlb?.() ?? null
     );
     if (glb) {
-      writeFileSync(resolve(MESH_OUT, `${e.id}.glb`), Buffer.from(glb, 'base64'));
-      console.error(`wrote ${e.id}.glb`);
+      const raw = Buffer.from(glb, 'base64');
+      const { glb: compressed } = await processGlb(raw, {
+        dracoOptions: { compressionLevel: 7 },
+      });
+      writeFileSync(resolve(MESH_OUT, `${e.id}.glb`), compressed);
+      console.error(`wrote ${e.id}.glb (${raw.length} -> ${compressed.length} bytes, draco)`);
     } else {
       console.error(`no GLB for ${e.id} (export returned null)`);
     }

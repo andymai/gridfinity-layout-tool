@@ -5,8 +5,8 @@
  * resizes it to a small data URL for storage in IndexedDB.
  */
 
-import type { WebGLRenderer, Scene, PerspectiveCamera, Object3D } from 'three';
-import { Vector3, Group, Mesh } from 'three';
+import type { WebGLRenderer, Scene, PerspectiveCamera, Object3D, Material } from 'three';
+import { Vector3, Group, Mesh, BufferGeometry, BufferAttribute } from 'three';
 import { ISOMETRIC_DIRECTION, calculateIdealDistance } from './cameraFraming';
 
 /** Thumbnail size for IndexedDB storage (high res for crisp display at any size) */
@@ -159,11 +159,133 @@ function isMesh(obj: Object3D): obj is Mesh {
 }
 
 /**
+ * Key a geometry by its attribute layout. mergeGeometries() requires every
+ * member of a merge to share the exact same attribute names and item sizes, so
+ * geometries with differing layouts must land in separate merge buckets. Index
+ * presence is normalized away before merging (see exportPreviewGlb), so it is
+ * deliberately excluded from the signature.
+ */
+function attributeSignature(geo: BufferGeometry): string {
+  return Object.keys(geo.attributes)
+    .sort()
+    .map((name) => `${name}:${geo.attributes[name].itemSize}`)
+    .join(',');
+}
+
+/** Material fields that distinguish exported appearance (all optional by type). */
+interface MaterialAppearance {
+  color?: { getHexString: () => string };
+  emissive?: { getHexString: () => string };
+  metalness?: number;
+  roughness?: number;
+  opacity?: number;
+  transparent?: boolean;
+  side?: number;
+  emissiveIntensity?: number;
+}
+
+/**
+ * Key a material by its visible appearance rather than instance identity. The
+ * bin preview assigns a fresh material instance per feature mesh even when the
+ * appearance is identical, so identity-keyed buckets never merge. Hashing the
+ * appearance lets like-looking meshes collapse into one primitive while keeping
+ * distinct colors/finishes separate.
+ */
+function materialSignature(material: Material): string {
+  const m: MaterialAppearance = material;
+  return [
+    material.type,
+    m.color ? m.color.getHexString() : '',
+    m.emissive ? m.emissive.getHexString() : '',
+    m.metalness === undefined ? '' : String(m.metalness),
+    m.roughness === undefined ? '' : String(m.roughness),
+    m.opacity === undefined ? '' : String(m.opacity),
+    m.transparent === true ? 't' : 'f',
+    m.side === undefined ? '' : String(m.side),
+    m.emissiveIntensity === undefined ? '' : String(m.emissiveIntensity),
+  ].join('|');
+}
+
+interface MergeBucket {
+  material: Material;
+  geometries: BufferGeometry[];
+}
+
+/**
+ * Route a single-material geometry into a merge bucket keyed by both material
+ * appearance and attribute layout, so every geometry in a bucket is mergeable
+ * into one primitive that keeps that material's appearance.
+ */
+function addToBuckets(
+  buckets: Map<string, MergeBucket>,
+  geo: BufferGeometry,
+  material: Material
+): void {
+  const bucketKey = `${materialSignature(material)}::${attributeSignature(geo)}`;
+  const bucket = buckets.get(bucketKey);
+  if (bucket) {
+    bucket.geometries.push(geo);
+  } else {
+    buckets.set(bucketKey, { material, geometries: [geo] });
+  }
+}
+
+/**
+ * Split a multi-material (array-material) geometry into one non-indexed
+ * geometry per material slot, copying only the triangles each slot's groups
+ * cover. The bin body is exported as a single geometry with hundreds of
+ * single-material groups; GLTFExporter would emit one primitive per group,
+ * re-fragmenting the buffer. Collapsing per slot lets the merge step rebuild it
+ * as one primitive per distinct material.
+ */
+function splitByMaterialGroup(
+  geo: BufferGeometry,
+  materials: readonly Material[]
+): { geometry: BufferGeometry; material: Material }[] {
+  const attributeNames = Object.keys(geo.attributes);
+  if (!attributeNames.includes('position')) return [];
+  const byIndex = new Map<number, number[]>();
+  for (const grp of geo.groups) {
+    const materialIndex = grp.materialIndex ?? 0;
+    const ranges = byIndex.get(materialIndex) ?? [];
+    for (let i = grp.start; i < grp.start + grp.count; i++) ranges.push(i);
+    byIndex.set(materialIndex, ranges);
+  }
+
+  const out: { geometry: BufferGeometry; material: Material }[] = [];
+  for (const [materialIndex, vertexIndices] of byIndex) {
+    const material = materials.at(materialIndex);
+    if (!material) continue;
+    const slot = new BufferGeometry();
+    for (const name of attributeNames) {
+      const src = geo.getAttribute(name);
+      const itemSize = src.itemSize;
+      const dst = new Float32Array(vertexIndices.length * itemSize);
+      for (let v = 0; v < vertexIndices.length; v++) {
+        const dstBase = v * itemSize;
+        for (let c = 0; c < itemSize; c++) {
+          dst[dstBase + c] = src.getComponent(vertexIndices[v], c);
+        }
+      }
+      slot.setAttribute(name, new BufferAttribute(dst, itemSize));
+    }
+    out.push({ geometry: slot, material });
+  }
+  return out;
+}
+
+/**
  * Export the registered preview scene as a binary GLB (glTF) ArrayBuffer.
  *
  * Bakes world transforms into each visible mesh's geometry and reuses the
  * rendered materials so feature colors carry into the export. Lights and
  * line/edge overlays are excluded (only `Mesh` objects are collected).
+ *
+ * Geometries sharing one material appearance and attribute layout are merged
+ * into a single primitive (multi-material meshes are first split per slot, then
+ * merged): the bin preview is built from many small meshes / many single-material
+ * groups, and Draco compression at gen time has per-primitive overhead that
+ * would otherwise dwarf (and even invert) its savings on hundreds of primitives.
  *
  * @returns A GLB ArrayBuffer, or `null` if no preview scene is registered or
  *   the scene contains no visible meshes.
@@ -173,13 +295,48 @@ export async function exportPreviewGlb(): Promise<ArrayBuffer | null> {
 
   previewScene.updateMatrixWorld(true);
 
-  const group = new Group();
+  // Bucket geometries by (material appearance, attribute layout) so each bucket
+  // is mergeable. Keying on appearance (not instance identity) is essential: the
+  // preview gives every feature mesh a distinct material instance, so without it
+  // every bucket has one member and nothing merges.
+  const buckets = new Map<string, MergeBucket>();
   previewScene.traverse((obj) => {
     if (!obj.visible || !isMesh(obj)) return;
-    const geo = obj.geometry.clone();
+    let geo = obj.geometry.clone();
     geo.applyMatrix4(obj.matrixWorld);
-    group.add(new Mesh(geo, obj.material));
+    // Normalize to non-indexed so geometries with and without an index buffer
+    // (and with differing index types) merge without mergeGeometries rejecting
+    // the batch. Draco re-indexes on its own at compression time.
+    if (geo.index) geo = geo.toNonIndexed();
+    if (Array.isArray(obj.material)) {
+      for (const part of splitByMaterialGroup(geo, obj.material)) {
+        addToBuckets(buckets, part.geometry, part.material);
+      }
+      return;
+    }
+    geo.clearGroups();
+    addToBuckets(buckets, geo, obj.material);
   });
+
+  const { mergeGeometries } = await import('three/examples/jsm/utils/BufferGeometryUtils.js');
+
+  const group = new Group();
+  for (const { material, geometries } of buckets.values()) {
+    if (geometries.length === 1) {
+      group.add(new Mesh(geometries[0], material));
+      continue;
+    }
+    // mergeGeometries returns null on incompatible input despite its non-null
+    // type; route through unknown so the runtime-null fallback stays honest and
+    // nothing is silently dropped from the export.
+    const mergeResult: unknown = mergeGeometries(geometries, false);
+    if (mergeResult instanceof BufferGeometry) {
+      mergeResult.clearGroups();
+      group.add(new Mesh(mergeResult, material));
+    } else {
+      for (const geo of geometries) group.add(new Mesh(geo, material));
+    }
+  }
 
   if (group.children.length === 0) return null;
 

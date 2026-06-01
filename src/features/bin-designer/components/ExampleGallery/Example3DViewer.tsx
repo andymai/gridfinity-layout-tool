@@ -10,12 +10,15 @@ import { useTranslation } from '@/i18n';
 /** Match the pre-rendered thumbnail backdrop so the thumbnail->3D swap is seamless. */
 const BACKGROUND = '#1a1d21';
 
+// Self-hosted Draco decoder (public/draco/) — CSP forbids the default gstatic CDN.
+useGLTF.setDecoderPath('/draco/');
+
 interface Example3DViewerProps {
   example: ExampleDesign;
 }
 
 function Model({ url, onReady }: { url: string; onReady: () => void }) {
-  const gltf = useGLTF(url);
+  const gltf = useGLTF(url, true);
   // useGLTF suspends until the asset resolves, so reaching here means the model
   // is loaded; signal the overlay to fade out after commit (not during render).
   useEffect(() => {
