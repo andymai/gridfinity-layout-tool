@@ -89,6 +89,13 @@ const DesignerPage = lazyWithRetry(() =>
 const BaseplatePage = lazyWithRetry(() =>
   import('@/features/baseplate').then(namedExport('BaseplatePage'))
 );
+// Dev-only: pre-renders one gallery example for the thumbnail generator.
+// Inert in production via the `import.meta.env.DEV` gate at the route below.
+const DevThumbnailRoute = lazyWithRetry(() =>
+  import('@/features/bin-designer/components/DevThumbnailRoute').then(
+    namedExport('DevThumbnailRoute')
+  )
+);
 const HelpModal = lazyWithRetry(() =>
   import('@/shell/Modals/HelpModal').then(namedExport('HelpModal'))
 );
@@ -109,6 +116,10 @@ export default function App() {
 
   const { isDesignerRoute, navigateToDesigner } = useDesignerRouting();
   const { isBaseplateRoute } = useBaseplateRouting();
+  // Dev-only thumbnail capture route. Suppresses layout/designer routing so
+  // those hooks don't rewrite the URL and strip the query params we depend on.
+  const isDevThumbnailRoute =
+    import.meta.env.DEV && new URLSearchParams(window.location.search).get('devThumbnails') === '1';
   const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette({
     disabled: isDesignerRoute || isBaseplateRoute,
   });
@@ -223,7 +234,7 @@ export default function App() {
   useKeyboard();
   const saveStatus = useAutoSave();
   useCrossTabSync();
-  useLayoutRouting({ skip: isDesignerRoute || isBaseplateRoute });
+  useLayoutRouting({ skip: isDesignerRoute || isBaseplateRoute || isDevThumbnailRoute });
   usePWAUpdate();
   useAnalytics();
   useEngagementNudges();
@@ -300,6 +311,14 @@ export default function App() {
   };
 
   const routeContent = (() => {
+    if (isDevThumbnailRoute) {
+      return (
+        <Suspense fallback={null}>
+          <DevThumbnailRoute />
+        </Suspense>
+      );
+    }
+
     if (isDesignerRoute) {
       return (
         <Suspense fallback={<LoadingFallback label={t('loading.designer')} />}>

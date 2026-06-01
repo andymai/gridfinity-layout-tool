@@ -54,6 +54,7 @@
     "check:missing-tests": "./scripts/check-missing-tests.sh",
     "check:component-structure": "./scripts/check-component-structure.sh",
     "sync-admin": "tsx scripts/sync-admin/index.ts",
+    "gen:example-thumbnails": "tsx --tsconfig tsconfig.app.json scripts/gen-example-thumbnails.ts",
     "bench": "vitest bench",
     "bench:json": "vitest bench --outputJson benchmarks/latest.json",
     "knip": "knip",

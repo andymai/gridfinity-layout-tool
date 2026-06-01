@@ -115,14 +115,27 @@ export function captureThumbnailPNG(): Promise<Uint8Array | null> {
  * @returns A WebP data URL for the generated thumbnail, or `null` if the
  *   preview canvas or 2D context is unavailable or if an error occurs.
  */
-export function captureThumbnail(): string | null {
+export interface ThumbnailCaptureOptions {
+  /** Output edge length in pixels. Defaults to THUMBNAIL_SIZE. */
+  readonly size?: number;
+  /** Image MIME type. Defaults to 'image/webp'. */
+  readonly mimeType?: 'image/webp' | 'image/png';
+  /** Encoder quality (ignored for PNG). Defaults to 0.9. */
+  readonly quality?: number;
+}
+
+export function captureThumbnail(options?: ThumbnailCaptureOptions): string | null {
   if (!previewCanvasEl) return null;
+
+  const size = options?.size ?? THUMBNAIL_SIZE;
+  const mimeType = options?.mimeType ?? 'image/webp';
+  const quality = options?.quality ?? 0.9;
 
   try {
     // Create an offscreen canvas at thumbnail size
     const offscreen = document.createElement('canvas');
-    offscreen.width = THUMBNAIL_SIZE;
-    offscreen.height = THUMBNAIL_SIZE;
+    offscreen.width = size;
+    offscreen.height = size;
     const ctx = offscreen.getContext('2d');
     if (!ctx) return null;
 
@@ -132,10 +145,9 @@ export function captureThumbnail(): string | null {
     const srcX = (src.width - srcSize) / 2;
     const srcY = (src.height - srcSize) / 2;
 
-    ctx.drawImage(src, srcX, srcY, srcSize, srcSize, 0, 0, THUMBNAIL_SIZE, THUMBNAIL_SIZE);
+    ctx.drawImage(src, srcX, srcY, srcSize, srcSize, 0, 0, size, size);
 
-    // Export as WebP for best quality/size ratio (0.9 quality for crisp details)
-    return offscreen.toDataURL('image/webp', 0.9);
+    return offscreen.toDataURL(mimeType, quality);
   } catch {
     // Canvas may be tainted or unavailable
     return null;
@@ -152,16 +164,19 @@ export function captureThumbnail(): string | null {
  * @param binDimensions - Width, depth, height in grid units for framing
  * @returns WebP data URL or null
  */
-export function captureThumbnailAtPreset(binDimensions: {
-  width: number;
-  depth: number;
-  height: number;
-  gridUnitMm: number;
-  heightUnitMm: number;
-}): string | null {
+export function captureThumbnailAtPreset(
+  binDimensions: {
+    width: number;
+    depth: number;
+    height: number;
+    gridUnitMm: number;
+    heightUnitMm: number;
+  },
+  options?: ThumbnailCaptureOptions
+): string | null {
   if (!previewRenderer || !previewScene || !previewCamera) {
     // Context not registered — fall back to current-view capture
-    return captureThumbnail();
+    return captureThumbnail(options);
   }
 
   try {
@@ -204,7 +219,7 @@ export function captureThumbnailAtPreset(binDimensions: {
     previewRenderer.render(previewScene, previewCamera);
 
     // Capture from the canvas
-    const result = captureThumbnail();
+    const result = captureThumbnail(options);
 
     // Restore ghost visibility
     for (const { obj } of hiddenObjects) {
@@ -222,6 +237,6 @@ export function captureThumbnailAtPreset(binDimensions: {
 
     return result;
   } catch {
-    return captureThumbnail();
+    return captureThumbnail(options);
   }
 }

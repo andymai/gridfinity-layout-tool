@@ -39,8 +39,7 @@ describe('example catalog integrity', () => {
     });
   });
 
-  // Thumbnails are generated in a later task. Skip until then.
-  it.skip('every thumbnail asset exists on disk', () => {
+  it('every thumbnail asset exists on disk', () => {
     for (const e of EXAMPLE_DESIGNS) {
       const rel = e.thumbnail.replace(/^\//, '');
       expect(existsSync(resolve(process.cwd(), rel)), `${e.id} thumbnail missing`).toBe(true);
