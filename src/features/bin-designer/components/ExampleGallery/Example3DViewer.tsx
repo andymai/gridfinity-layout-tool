@@ -49,7 +49,9 @@ export function Example3DViewer({ example }: Example3DViewerProps) {
   return (
     <div className="relative w-full" style={{ aspectRatio: '1 / 1', maxHeight: '40vh' }}>
       <Canvas
-        camera={{ position: [180, -180, 150], fov: 35 }}
+        // Bin geometry is Z-up (designer convention); orient the camera so
+        // OrbitControls orbits/auto-rotates around vertical instead of tumbling.
+        camera={{ position: [180, -180, 150], up: [0, 0, 1], fov: 35 }}
         gl={{ antialias: true }}
         style={{ background: BACKGROUND, borderRadius: '0.5rem' }}
       >

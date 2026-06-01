@@ -6,6 +6,7 @@ import { LABEL_EXAMPLES } from './labels';
 import { STYLE_EXAMPLES } from './styles';
 import { HALF_BIN_EXAMPLES } from './halfBin';
 import { SHOWCASE_EXAMPLES } from './showcase';
+import { HERO_EXAMPLES } from './heroes';
 
 export const EXAMPLE_DESIGNS: readonly ExampleDesign[] = [
   ...COMPARTMENT_EXAMPLES,
@@ -16,6 +17,7 @@ export const EXAMPLE_DESIGNS: readonly ExampleDesign[] = [
   ...STYLE_EXAMPLES,
   ...HALF_BIN_EXAMPLES,
   ...SHOWCASE_EXAMPLES,
+  ...HERO_EXAMPLES,
 ];
 
 export function getExamplesByTechnique(technique: ExampleTechnique): ExampleDesign[] {
