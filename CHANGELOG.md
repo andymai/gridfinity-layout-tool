@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.134.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.133.0...gridfinity-layout-tool-v4.134.0) (2026-06-01)
+
+
+### Features
+
+* add a bin design showcase gallery ([#1964](https://github.com/andymai/gridfinity-layout-tool/issues/1964)) ([3f05b56](https://github.com/andymai/gridfinity-layout-tool/commit/3f05b561e003751b3cb08117c5a72d127006167c))
+
 ## [4.133.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.132.3...gridfinity-layout-tool-v4.133.0) (2026-06-01)
 
 
