@@ -148,10 +148,17 @@ export function ActiveLayerPanel() {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+              d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42"
             />
           </svg>
-          {paintSize ? `${paintSize.width}×${paintSize.depth}` : t('layers.sizeSelector')}
+          {paintSize ? (
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" aria-hidden="true" />
+              {`${paintSize.width}×${paintSize.depth}`}
+            </span>
+          ) : (
+            t('layers.sizeSelector')
+          )}
           <svg
             className={`w-3 h-3 opacity-60 shrink-0 transition-transform ${popoverOpen ? 'rotate-180' : ''}`}
             fill="none"
@@ -161,6 +168,32 @@ export function ActiveLayerPanel() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
+
+        {/* Status strip: makes paint mode unmistakable while a size is loaded */}
+        {paintSize && (
+          <div
+            role="status"
+            className="flex items-center gap-1.5 rounded-md border border-accent/30 bg-accent/10 px-2 py-1 text-[11px] leading-tight text-accent"
+          >
+            <svg
+              className="w-3 h-3 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42"
+              />
+            </svg>
+            <span>
+              {t('layers.brushStatus', { width: paintSize.width, depth: paintSize.depth })}
+            </span>
+          </div>
+        )}
 
         {/* Row 2: Fill — shows "Fill with NxN" when size selected, "Fill gaps" otherwise */}
         {paintSize ? (

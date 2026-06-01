@@ -49,9 +49,9 @@ test.describe('Add Bins Flow', () => {
   });
 
   test('can select a bin size from palette', async ({ page }) => {
-    // Find the bin palette section (CollapsibleSection uses button with text, not heading)
+    // Find the size brush section (CollapsibleSection uses button with text, not heading)
     const sidebar = getSidebar(page);
-    await expect(sidebar.getByRole('button', { name: /Bin Palette/i })).toBeVisible();
+    await expect(sidebar.getByRole('button', { name: /Size Brush/i })).toBeVisible();
 
     // Click on a 2x2 square size button
     await selectBinSize(page, 2, 2);

@@ -5,11 +5,16 @@ import { useLayoutStore, useSelectionStore, useViewStore, useInteractionStore } 
 import { useGridCoords, useGridTemplate } from '@/features/grid-editor/hooks';
 import { toPixels } from '@/features/grid-editor/utils/fractionalPixels';
 import { Bin } from '../Bin';
+import { BrushHoverGhost } from '../BrushHoverGhost';
 import { getBlockedZones } from '@/shared/utils/collision';
 import { getLayerBins } from '@/shared/utils/bins';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import type { Coord, ResizeHandle, BinId, LayerId } from '@/core/types';
 import { useTranslation } from '@/i18n';
+
+// Amber paintbrush cursor shown while a brush size is loaded (falls back to
+// the cell cursor if the inline SVG can't be loaded). Color matches --color-accent.
+const BRUSH_CURSOR = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42'/></svg>") 2 20, cell`;
 
 interface GridCanvasProps {
   gridRef: RefObject<HTMLDivElement | null>;
@@ -236,7 +241,7 @@ export function GridCanvas({
       onPointerDownCapture={handlePointerDownCapture}
       onPointerDown={handlePointerDown}
       style={{
-        cursor: paintSize ? 'cell' : 'crosshair',
+        cursor: paintSize ? BRUSH_CURSOR : 'crosshair',
         // Always disable native touch actions on the grid canvas.
         // Per CSS spec, browser determines touch behavior at pointerdown time and
         // ignores subsequent changes. Conditional touchAction caused draw gestures
@@ -397,6 +402,9 @@ export function GridCanvas({
             onStartResize={onStartResize}
           />
         ))}
+
+        {/* Brush footprint preview that follows the cursor in paint mode */}
+        <BrushHoverGhost gridRef={gridRef} cellSize={cellSize} gap={gap} />
       </div>
     </div>
   );

@@ -266,7 +266,7 @@ export async function countBins(page: Page): Promise<number> {
  * Helper to select a bin size from the palette.
  */
 export async function selectBinSize(page: Page, width: number, depth: number) {
-  const paletteTrigger = page.getByRole('button', { name: /Bin Palette/i });
+  const paletteTrigger = page.getByRole('button', { name: /Size Brush/i });
   await paletteTrigger.click();
 
   const sizeButton = page

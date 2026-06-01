@@ -53,7 +53,7 @@ function SizeButton({
       onClick={onClick}
       className={`flex flex-col items-center justify-end gap-1 h-[52px] p-1.5 rounded-lg border transition-colors ${
         isActive
-          ? 'bg-accent/20 border-accent/40'
+          ? 'bg-accent/20 border-accent/40 ring-1 ring-accent/50'
           : 'border-transparent hover:bg-surface-hover hover:border-stroke-subtle'
       }`}
       aria-label={t('layers.paintSizeAriaLabel', {
@@ -107,8 +107,27 @@ export function SizeSelectorPopover({
 
   return (
     <Popover anchorRef={anchorRef} isOpen={isOpen} onClose={onClose} className="w-[264px]">
+      {/* Header reinforces the brush identity */}
+      <div className="flex items-center gap-1.5 px-3 pt-3 pb-0.5 text-[11px] font-semibold uppercase tracking-wider text-content-secondary">
+        <svg
+          className="w-3.5 h-3.5 text-accent"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42"
+          />
+        </svg>
+        {t('layers.sizeSelector')}
+      </div>
+
       {/* Squares section */}
-      <div className="px-3 pt-3">
+      <div className="px-3 pt-1">
         <div className="text-[11px] font-medium text-content-secondary uppercase tracking-wider mb-1.5">
           {t('layers.squares')}
         </div>
