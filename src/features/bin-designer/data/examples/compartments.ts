@@ -18,7 +18,6 @@ export const COMPARTMENT_EXAMPLES: ExampleDesign[] = [
       height: 3,
       compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 1, cells: [0, 1] },
     },
-    thumbnail: '/src/features/bin-designer/data/examples/thumbnails/compartments-2x2-split.png',
     metrics: { width: 2, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -42,7 +41,6 @@ export const COMPARTMENT_EXAMPLES: ExampleDesign[] = [
         cells: [0, 1, 2, 3, 4, 5],
       },
     },
-    thumbnail: '/src/features/bin-designer/data/examples/thumbnails/compartments-3x2-grid.png',
     metrics: { width: 3, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -66,7 +64,6 @@ export const COMPARTMENT_EXAMPLES: ExampleDesign[] = [
         cells: [0, 1, 2],
       },
     },
-    thumbnail: '/src/features/bin-designer/data/examples/thumbnails/compartments-1x3-rows.png',
     metrics: { width: 1, depth: 3, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -91,7 +88,6 @@ export const COMPARTMENT_EXAMPLES: ExampleDesign[] = [
         cells: [0, 0, 0, 1, 2, 3],
       },
     },
-    thumbnail: '/src/features/bin-designer/data/examples/thumbnails/compartments-3x2-mixed.png',
     metrics: { width: 3, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
 ];

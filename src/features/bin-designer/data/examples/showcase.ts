@@ -5,7 +5,6 @@ import {
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 import type { CellMask } from '@/shared/utils/cellMask';
 
-const THUMB = '/src/features/bin-designer/data/examples/thumbnails';
 
 /** 2×2 bin (4×4 half-cells) with the top-right 1u quadrant removed → L-shape. */
 const L_SHAPE_MASK: CellMask = {
@@ -55,7 +54,6 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, alignment: 'center' },
       scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
     },
-    thumbnail: `${THUMB}/showcase-3x3-organizer.png`,
     metrics: { width: 3, depth: 3, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -96,7 +94,6 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
       },
       lid: { ...DEFAULT_BIN_PARAMS.lid, enabled: true },
     },
-    thumbnail: `${THUMB}/showcase-2x4-cable-lid.png`,
     metrics: { width: 2, depth: 4, height: 5, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -146,7 +143,6 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
       ],
       cutoutConfig: { ...DEFAULT_BIN_PARAMS.cutoutConfig },
     },
-    thumbnail: `${THUMB}/showcase-3x2-tool-tray.png`,
     metrics: { width: 3, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -171,7 +167,6 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
       },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, alignment: 'center' },
     },
-    thumbnail: `${THUMB}/showcase-4x3-hardware-sorter.png`,
     metrics: { width: 4, depth: 3, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -190,7 +185,6 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
       height: 4,
       cellMask: L_SHAPE_MASK,
     },
-    thumbnail: `${THUMB}/showcase-l-shape-2x2.png`,
     metrics: { width: 2, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -216,7 +210,6 @@ export const SHOWCASE_EXAMPLES: ExampleDesign[] = [
       },
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, alignment: 'center' },
     },
-    thumbnail: `${THUMB}/showcase-2x2-magnet-labeled.png`,
     metrics: { width: 2, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
 ];

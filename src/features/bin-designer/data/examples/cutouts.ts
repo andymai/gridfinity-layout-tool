@@ -4,7 +4,6 @@ import {
 } from '@/features/bin-designer/constants/defaults';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 
-const THUMB = '/src/features/bin-designer/data/examples/thumbnails';
 
 export const WALL_CUTOUT_EXAMPLES: ExampleDesign[] = [
   {
@@ -37,7 +36,6 @@ export const WALL_CUTOUT_EXAMPLES: ExampleDesign[] = [
         right: DISABLED_WALL_CUTOUT,
       },
     },
-    thumbnail: `${THUMB}/wall-cutout-2x4-cable.png`,
     metrics: { width: 2, depth: 4, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -71,7 +69,6 @@ export const WALL_CUTOUT_EXAMPLES: ExampleDesign[] = [
         right: DISABLED_WALL_CUTOUT,
       },
     },
-    thumbnail: `${THUMB}/wall-cutout-1x3-finger.png`,
     metrics: { width: 1, depth: 3, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
 ];
@@ -110,7 +107,6 @@ export const FLOOR_CUTOUT_EXAMPLES: ExampleDesign[] = [
       ],
       cutoutConfig: { ...DEFAULT_BIN_PARAMS.cutoutConfig },
     },
-    thumbnail: `${THUMB}/floor-cutout-2x3-rect.png`,
     metrics: { width: 2, depth: 3, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -159,7 +155,6 @@ export const FLOOR_CUTOUT_EXAMPLES: ExampleDesign[] = [
       ],
       cutoutConfig: { ...DEFAULT_BIN_PARAMS.cutoutConfig },
     },
-    thumbnail: `${THUMB}/floor-cutout-2x2-circles.png`,
     metrics: { width: 2, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
 ];

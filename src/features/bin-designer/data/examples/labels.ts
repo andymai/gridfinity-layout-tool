@@ -1,7 +1,6 @@
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 
-const THUMB = '/src/features/bin-designer/data/examples/thumbnails';
 
 export const LABEL_EXAMPLES: ExampleDesign[] = [
   {
@@ -20,7 +19,6 @@ export const LABEL_EXAMPLES: ExampleDesign[] = [
       height: 3,
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
     },
-    thumbnail: `${THUMB}/label-tab-2x2.png`,
     metrics: { width: 2, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -39,7 +37,6 @@ export const LABEL_EXAMPLES: ExampleDesign[] = [
       height: 3,
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, alignment: 'center' },
     },
-    thumbnail: `${THUMB}/label-tab-1x4.png`,
     metrics: { width: 1, depth: 4, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -58,7 +55,6 @@ export const LABEL_EXAMPLES: ExampleDesign[] = [
       height: 3,
       label: { ...DEFAULT_BIN_PARAMS.label, enabled: true, support: 'solid', alignment: 'center' },
     },
-    thumbnail: `${THUMB}/label-tab-3x2-solid.png`,
     metrics: { width: 3, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
 ];

@@ -1,7 +1,6 @@
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 
-const THUMB = '/src/features/bin-designer/data/examples/thumbnails';
 
 export const STYLE_EXAMPLES: ExampleDesign[] = [
   {
@@ -21,7 +20,6 @@ export const STYLE_EXAMPLES: ExampleDesign[] = [
       style: 'solid',
       base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
     },
-    thumbnail: `${THUMB}/solid-1x1x6-block.png`,
     metrics: { width: 1, depth: 1, height: 6, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -41,7 +39,6 @@ export const STYLE_EXAMPLES: ExampleDesign[] = [
       style: 'solid',
       base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
     },
-    thumbnail: `${THUMB}/solid-2x2-block.png`,
     metrics: { width: 2, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -60,7 +57,6 @@ export const STYLE_EXAMPLES: ExampleDesign[] = [
       height: 4,
       style: 'slotted',
     },
-    thumbnail: `${THUMB}/slotted-2x2.png`,
     metrics: { width: 2, depth: 2, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -79,7 +75,6 @@ export const STYLE_EXAMPLES: ExampleDesign[] = [
       height: 3,
       base: { ...DEFAULT_BIN_PARAMS.base, stackingLip: false },
     },
-    thumbnail: `${THUMB}/no-lip-2x2.png`,
     metrics: { width: 2, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -98,7 +93,6 @@ export const STYLE_EXAMPLES: ExampleDesign[] = [
       height: 3,
       base: { ...DEFAULT_BIN_PARAMS.base, style: 'magnet' },
     },
-    thumbnail: `${THUMB}/magnet-base-2x2.png`,
     metrics: { width: 2, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -117,7 +111,6 @@ export const STYLE_EXAMPLES: ExampleDesign[] = [
       height: 3,
       base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
     },
-    thumbnail: `${THUMB}/half-socket-2x2.png`,
     metrics: { width: 2, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
 ];

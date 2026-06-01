@@ -1,3 +1,4 @@
+import { thumbnailUrl } from '@/features/bin-designer/data/examples/thumbnails';
 import { useGalleryFavoritesStore } from '@/features/bin-designer/store/galleryFavorites';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 import { TECHNIQUE_CONFIG } from '@/features/bin-designer/types/exampleGallery';
@@ -47,7 +48,7 @@ export function ExampleCard({ example, onSelect, index, tabIndex = 0, onFocus }:
       {/* Thumbnail */}
       <div className="aspect-square bg-surface rounded overflow-hidden mb-2 flex items-center justify-center relative">
         <img
-          src={example.thumbnail}
+          src={thumbnailUrl(example.id) ?? ''}
           alt={t(example.nameKey)}
           loading="lazy"
           className="w-full h-full object-cover"

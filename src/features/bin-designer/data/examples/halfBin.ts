@@ -1,7 +1,6 @@
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 
-const THUMB = '/src/features/bin-designer/data/examples/thumbnails';
 
 export const HALF_BIN_EXAMPLES: ExampleDesign[] = [
   {
@@ -19,7 +18,6 @@ export const HALF_BIN_EXAMPLES: ExampleDesign[] = [
       depth: 1.5,
       height: 3,
     },
-    thumbnail: `${THUMB}/half-bin-1_5x1_5.png`,
     metrics: { width: 1.5, depth: 1.5, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -37,7 +35,6 @@ export const HALF_BIN_EXAMPLES: ExampleDesign[] = [
       depth: 2,
       height: 3,
     },
-    thumbnail: `${THUMB}/half-bin-0_5x2-strip.png`,
     metrics: { width: 0.5, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
 ];

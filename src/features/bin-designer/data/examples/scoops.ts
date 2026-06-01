@@ -1,7 +1,6 @@
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 
-const THUMB = '/src/features/bin-designer/data/examples/thumbnails';
 
 export const SCOOP_EXAMPLES: ExampleDesign[] = [
   {
@@ -20,7 +19,6 @@ export const SCOOP_EXAMPLES: ExampleDesign[] = [
       height: 3,
       scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
     },
-    thumbnail: `${THUMB}/scoop-1x2-ramp.png`,
     metrics: { width: 1, depth: 2, height: 3, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -39,7 +37,6 @@ export const SCOOP_EXAMPLES: ExampleDesign[] = [
       height: 4,
       scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
     },
-    thumbnail: `${THUMB}/scoop-2x3-ramp.png`,
     metrics: { width: 2, depth: 3, height: 4, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
   {
@@ -58,7 +55,6 @@ export const SCOOP_EXAMPLES: ExampleDesign[] = [
       height: 5,
       scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
     },
-    thumbnail: `${THUMB}/scoop-1x1-deep.png`,
     metrics: { width: 1, depth: 1, height: 5, gridUnitMm: DEFAULT_BIN_PARAMS.gridUnitMm },
   },
 ];

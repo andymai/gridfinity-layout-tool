@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { EXAMPLE_DESIGNS } from './index';
+import { thumbnailUrl } from './thumbnails';
 import { validateBinParams } from '@/features/bin-designer/utils/validation';
 import { isOk } from '@/core/result';
 
@@ -37,10 +36,11 @@ describe('example catalog integrity', () => {
     }
   });
 
-  it('every thumbnail asset exists on disk', () => {
+  it('every example resolves to a bundled thumbnail URL', () => {
+    // Asserts the asset is actually emitted by Vite (a committed-but-unimported
+    // PNG would 404 at runtime); stronger than a filesystem-existence check.
     for (const e of EXAMPLE_DESIGNS) {
-      const rel = e.thumbnail.replace(/^\//, '');
-      expect(existsSync(resolve(process.cwd(), rel)), `${e.id} thumbnail missing`).toBe(true);
+      expect(thumbnailUrl(e.id), `${e.id} thumbnail not bundled`).toBeTruthy();
     }
   });
 });

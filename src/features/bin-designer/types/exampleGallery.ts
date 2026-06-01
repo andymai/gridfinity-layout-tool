@@ -24,7 +24,6 @@ export interface ExampleDesign {
   readonly tags: readonly string[];
   readonly complexity: number;
   readonly params: BinParams;
-  readonly thumbnail: string;
   readonly metrics: {
     readonly width: number;
     readonly depth: number;
