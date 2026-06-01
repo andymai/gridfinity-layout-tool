@@ -11,9 +11,7 @@ interface TechniqueFilterPillsProps {
 export function TechniqueFilterPills({ examples, selected, onChange }: TechniqueFilterPillsProps) {
   const t = useTranslation();
 
-  const techniques = Array.from(
-    new Set(examples.flatMap((e) => e.techniques))
-  ) as ExampleTechnique[];
+  const techniques = Array.from(new Set(examples.flatMap((e) => e.techniques)));
 
   return (
     <div

@@ -13,12 +13,13 @@ interface ExampleGalleryProps {
   onClose: () => void;
 }
 
-const DEFAULT_FILTERS: GalleryFilters = {
+type EditableFilters = Omit<GalleryFilters, 'favoriteIds'>;
+
+const DEFAULT_FILTERS: EditableFilters = {
   search: '',
   technique: null,
   sort: 'recommended',
   favoritesOnly: false,
-  favoriteIds: [],
 };
 
 export function ExampleGallery({ onClose }: ExampleGalleryProps) {
@@ -27,18 +28,10 @@ export function ExampleGallery({ onClose }: ExampleGalleryProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const favoriteIds = useGalleryFavoritesStore((state) => state.favoriteIds);
 
-  const [filters, setFilters] = useState<GalleryFilters>({
-    ...DEFAULT_FILTERS,
-    favoriteIds,
-  });
+  const [filters, setFilters] = useState<EditableFilters>(DEFAULT_FILTERS);
   const [previewExample, setPreviewExample] = useState<ExampleDesign | null>(null);
 
-  // Keep favoriteIds in sync with store so filtering works live
-  useEffect(() => {
-    setFilters((prev) => ({ ...prev, favoriteIds }));
-  }, [favoriteIds]);
-
-  const filteredExamples = filterAndSortExamples(EXAMPLE_DESIGNS, filters);
+  const filteredExamples = filterAndSortExamples(EXAMPLE_DESIGNS, { ...filters, favoriteIds });
 
   // Lock body scroll
   useEffect(() => {
@@ -53,24 +46,20 @@ export function ExampleGallery({ onClose }: ExampleGalleryProps) {
     closeButtonRef.current?.focus();
   }, []);
 
-  // Escape to close (or close preview first)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+  // Modal key handling lives on the dialog element itself: its onKeyDown
+  // stops propagation so app-wide shortcuts don't fire, which would also
+  // swallow document-level listeners. Handle Escape + focus trap here.
+  const handleDialogKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      e.stopPropagation();
       if (e.key === 'Escape') {
         if (previewExample) {
           setPreviewExample(null);
         } else {
           onClose();
         }
+        return;
       }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, previewExample]);
-
-  // Focus trap
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Tab' && modalRef.current) {
         const focusable = modalRef.current.querySelectorAll<HTMLElement>(
           'button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -85,10 +74,9 @@ export function ExampleGallery({ onClose }: ExampleGalleryProps) {
           first.focus();
         }
       }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+    },
+    [onClose, previewExample]
+  );
 
   const handleSelectExample = useCallback((example: ExampleDesign) => {
     setPreviewExample(example);
@@ -120,7 +108,7 @@ export function ExampleGallery({ onClose }: ExampleGalleryProps) {
         aria-labelledby="example-gallery-title"
         className="fixed z-50 bg-surface-elevated flex flex-col animate-scale-in inset-4 md:inset-8 lg:inset-12 xl:inset-16 rounded-xl max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
+        onKeyDown={handleDialogKeyDown}
         tabIndex={-1}
       >
         {/* Header */}

@@ -20,15 +20,7 @@ export function ExamplePreviewOverlay({ example, onClose, onBack }: ExamplePrevi
 
   useEffect(() => {
     closeButtonRef.current?.focus();
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onBack();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onBack]);
+  }, []);
 
   const handleUse = async () => {
     if (isImporting) return;
@@ -60,7 +52,10 @@ export function ExamplePreviewOverlay({ example, onClose, onBack }: ExamplePrevi
       <div
         className="relative bg-surface-elevated rounded-xl shadow-2xl flex flex-col overflow-hidden animate-scale-in w-full max-w-2xl max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.key === 'Escape') onBack();
+        }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="example-preview-title"

@@ -206,7 +206,10 @@
     "colors.filament.orange",
     "binDesigner.compartmentEditor.cellAria",
     "layouts.announce.fallbackName",
-    "layouts.announce.fallbackNameCapitalized"
+    "layouts.announce.fallbackNameCapitalized",
+    "binExamples.popular",
+    "binExamples.description",
+    "binExamples.dimensions"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",
