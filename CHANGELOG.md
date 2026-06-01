@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.133.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.132.3...gridfinity-layout-tool-v4.133.0) (2026-06-01)
+
+
+### Features
+
+* rebrand the bin palette as "Size Brush" with clear paint-mode feedback ([#1962](https://github.com/andymai/gridfinity-layout-tool/issues/1962)) ([ec129ff](https://github.com/andymai/gridfinity-layout-tool/commit/ec129ff72e780f0cdb562d0b6f9a14617963ec67))
+
 ## [4.132.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.132.2...gridfinity-layout-tool-v4.132.3) (2026-05-31)
 
 
