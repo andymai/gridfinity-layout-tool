@@ -124,6 +124,16 @@ const SAMPLE_STEP_MM = 0.25;
  */
 function cornerMaterialMissingFraction(control: Float32Array, test: Float32Array): number {
   const b = meshBounds(control);
+  // Corner regions are derived from the control's bounds and reused to probe
+  // the test mesh, so the two must share outer dimensions or the comparison
+  // is meaningless. Fail loudly if a caller passes mismatched bins.
+  const tb = meshBounds(test);
+  const align = SAMPLE_STEP_MM / 2;
+  expect(tb.minX, 'control/test minX must align').toBeCloseTo(b.minX, 1);
+  expect(tb.maxX, 'control/test maxX must align').toBeCloseTo(b.maxX, 1);
+  expect(tb.minY, 'control/test minY must align').toBeCloseTo(b.minY, 1);
+  expect(tb.maxY, 'control/test maxY must align').toBeCloseTo(b.maxY, 1);
+  expect(Math.abs(tb.maxZ - b.maxZ), 'control/test height must align').toBeLessThan(align);
   const z = b.minZ + (b.maxZ - b.minZ) * 0.7; // upper wall band, below the rim
   const cornersX: Array<[number, number]> = [
     [b.minX, 1],

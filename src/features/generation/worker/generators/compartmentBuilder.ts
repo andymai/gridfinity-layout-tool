@@ -208,7 +208,10 @@ export function buildCompartmentsCacheKey(params: BinParams): string {
       params.compartments.rows,
       quantize(params.compartments.thickness),
       params.compartments.cells.join(','),
-      stableSerialize(params.compartments.dividerOverrides ?? [])
+      stableSerialize(params.compartments.dividerOverrides ?? []),
+      // Cavity corner rounding depends on wallThickness; include it so this
+      // sub-key stays self-consistent even if used standalone in future.
+      quantize(params.wallThickness)
     )
   );
 }
