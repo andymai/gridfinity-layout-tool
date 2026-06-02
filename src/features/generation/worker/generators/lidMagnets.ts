@@ -54,9 +54,7 @@ export function cutMagnetHoles(scope: DisposalScope, body: Shape3D, inputs: LidI
         if (!isCellFilled(cellMask, cellX, cellY)) return;
       }
       for (const [ox, oy] of LID_MAGNET_OFFSETS) {
-        const cylinder = drawCircle(radius)
-          .sketchOnPlane('XY', holeZ)
-          .extrude(holeHeight) as Shape3D;
+        const cylinder = drawCircle(radius).sketchOnPlane('XY', holeZ).extrude(holeHeight);
         cutters.push(
           scope.register(translate(cylinder, [cell.centerX + ox, cell.centerY + oy, 0]))
         );

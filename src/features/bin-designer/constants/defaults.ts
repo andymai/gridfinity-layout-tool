@@ -12,7 +12,6 @@ import type {
   HandleSide,
   WallCutout,
   WallConfig,
-  WallCutoutShape,
   SlotConfig,
   DividerPieceConfig,
   WallPatternConfig,
@@ -25,6 +24,8 @@ import type { LidConfig } from '../types/lid';
 import { DEFAULT_LID_CONFIG, LID_CLICK_RAIL_COVERAGE_OPTIONS } from '../types/lid';
 import type { LidClickRails } from '../types/lid';
 import type { TextStyleDefaults } from '../types/text';
+import { migrateWalls } from './paramMigration';
+import type { LegacyWallConfig } from './paramMigration';
 import { DEFAULT_TEXT_STYLE_DEFAULTS } from '../types/text';
 
 /** Default slot configuration: vertical (x-axis) enabled, 20mm pitch */
@@ -362,19 +363,6 @@ export const DEFAULT_HISTORY: DesignerHistory = {
   future: [],
 } as const;
 
-/** Legacy wall config where sides could be numbers instead of WallCutout objects. */
-interface LegacyWallConfig {
-  enabled?: boolean;
-  shape?: WallCutoutShape;
-  width?: number;
-  depth?: number;
-  front?: number | Partial<WallCutout>;
-  back?: number | Partial<WallCutout>;
-  left?: number | Partial<WallCutout>;
-  right?: number | Partial<WallCutout>;
-  interior?: Partial<WallCutout>;
-}
-
 /** Legacy fields that may appear in saved designs from older versions. */
 interface LegacyFields {
   dividers?: { x: number; y: number; thickness: number };
@@ -455,106 +443,7 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   }
 
   // Migrate old number-based WallConfig to WallCutout format
-  let wallsConfig: WallConfig = DEFAULT_BIN_PARAMS.walls;
-  if (params.walls !== undefined) {
-    const raw = params.walls as LegacyWallConfig;
-
-    // Helper: infer enabled from non-zero values
-    const inferEnabled = (cutout: WallCutout): WallCutout => ({
-      ...cutout,
-      enabled: cutout.enabled || cutout.width > 0 || cutout.depth > 0,
-    });
-
-    // Detect legacy format: values are numbers instead of WallCutout objects
-    if (
-      typeof raw.front === 'number' ||
-      typeof raw.back === 'number' ||
-      typeof raw.left === 'number' ||
-      typeof raw.right === 'number'
-    ) {
-      const toWallCutout = (val: number | Partial<WallCutout> | undefined): WallCutout => {
-        if (typeof val === 'number') {
-          return {
-            ...DISABLED_WALL_CUTOUT,
-            enabled: val > 0,
-            width: val,
-            depth: val > 0 ? 100 : 0,
-          };
-        }
-        if (val && typeof val === 'object' && 'width' in val) {
-          return inferEnabled({
-            ...DEFAULT_BIN_PARAMS.walls.front,
-            ...val,
-          });
-        }
-        return DEFAULT_BIN_PARAMS.walls.front;
-      };
-      const front = toWallCutout(raw.front);
-      const back = toWallCutout(raw.back);
-      const left = toWallCutout(raw.left);
-      const right = toWallCutout(raw.right);
-      const interior = raw.interior
-        ? inferEnabled({
-            ...DEFAULT_BIN_PARAMS.walls.interior,
-            ...raw.interior,
-          })
-        : DEFAULT_BIN_PARAMS.walls.interior;
-      const anySideEnabled =
-        front.enabled || back.enabled || left.enabled || right.enabled || interior.enabled;
-      wallsConfig = {
-        enabled: anySideEnabled,
-        shape: DEFAULT_BIN_PARAMS.walls.shape,
-        width: DEFAULT_BIN_PARAMS.walls.width,
-        depth: DEFAULT_BIN_PARAMS.walls.depth,
-        front,
-        back,
-        left,
-        right,
-        interior,
-      };
-    } else {
-      // New/current format: merge each side with defaults
-      const mergeSide = (
-        defaultSide: WallCutout,
-        rawSide: Partial<WallCutout> | undefined
-      ): WallCutout => {
-        const merged = { ...defaultSide, ...rawSide };
-        // Backfill enabled for old saves that lack the field
-        if (rawSide && !('enabled' in rawSide)) {
-          return inferEnabled(merged);
-        }
-        return merged;
-      };
-      const asCutout = (
-        v: number | Partial<WallCutout> | undefined
-      ): Partial<WallCutout> | undefined => (typeof v === 'number' ? undefined : v);
-      const front = mergeSide(DEFAULT_BIN_PARAMS.walls.front, asCutout(raw.front));
-      const back = mergeSide(DEFAULT_BIN_PARAMS.walls.back, asCutout(raw.back));
-      const left = mergeSide(DEFAULT_BIN_PARAMS.walls.left, asCutout(raw.left));
-      const right = mergeSide(DEFAULT_BIN_PARAMS.walls.right, asCutout(raw.right));
-      const interior = mergeSide(DEFAULT_BIN_PARAMS.walls.interior, raw.interior);
-
-      // Backfill top-level enabled/width/depth for old saves missing these fields
-      const hasGlobalEnabled = 'enabled' in raw && typeof raw.enabled === 'boolean';
-      const anySideEnabled =
-        front.enabled || back.enabled || left.enabled || right.enabled || interior.enabled;
-      const VALID_SHAPES: readonly WallCutoutShape[] = ['u-shape', 'scoop', 'funnel'];
-      wallsConfig = {
-        enabled: hasGlobalEnabled ? raw.enabled === true : anySideEnabled,
-        shape:
-          raw.shape && VALID_SHAPES.includes(raw.shape)
-            ? raw.shape
-            : DEFAULT_BIN_PARAMS.walls.shape,
-        width: typeof raw.width === 'number' ? raw.width : DEFAULT_BIN_PARAMS.walls.width,
-        depth: typeof raw.depth === 'number' ? raw.depth : DEFAULT_BIN_PARAMS.walls.depth,
-        front,
-        back,
-        left,
-        right,
-        interior,
-      };
-    }
-  }
+  const wallsConfig = migrateWalls(params.walls, DEFAULT_BIN_PARAMS.walls, DISABLED_WALL_CUTOUT);
 
   // Migrate legacy base.solid=true → style='solid'
   const baseConfig = { ...DEFAULT_BIN_PARAMS.base, ...(params.base ?? {}) };

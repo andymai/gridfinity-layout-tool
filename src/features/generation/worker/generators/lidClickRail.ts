@@ -99,7 +99,7 @@ function buildClickRailBar(
   // Sketch on YZ plane (perpendicular to wall direction = X axis).
   const profile = clickShape2D(wallBottomZ, cavityWallX);
   const sketch = profile.sketchOnPlane('YZ', -length / 2);
-  return scope.register(sketch.extrude(length) as Shape3D);
+  return scope.register(sketch.extrude(length));
 }
 
 /**

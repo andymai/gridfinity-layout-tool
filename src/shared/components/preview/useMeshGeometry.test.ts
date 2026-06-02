@@ -71,7 +71,7 @@ describe('useMeshGeometry', () => {
       const { result } = renderHook(() => useMeshGeometry(arrays));
       const geometry = result.current.geometry;
       expect(geometry).not.toBeNull();
-      const posCount = geometry!.attributes['position']!.count;
+      const posCount = geometry!.attributes['position'].count;
       for (const g of geometry!.groups) {
         expect(g.start + g.count).toBeLessThanOrEqual(posCount);
       }

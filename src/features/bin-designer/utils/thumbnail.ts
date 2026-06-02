@@ -174,6 +174,18 @@ function isLineSegments(obj: Object3D): obj is LineSegments {
 /** Black edge lines, matching BinMesh's `EDGE_COLOR` in the 2D preview. */
 const EXPORT_EDGE_COLOR = 0x000000;
 
+/**
+ * `BufferGeometry.getAttribute` is typed non-null upstream but returns
+ * `undefined` when the attribute is absent. Re-widen so the runtime guard the
+ * value actually needs isn't flagged as an unnecessary condition.
+ */
+function positionVertexCount(geo: BufferGeometry): number {
+  const pos = geo.getAttribute('position') as
+    | ReturnType<BufferGeometry['getAttribute']>
+    | undefined;
+  return pos ? pos.count : 0;
+}
+
 export function __debugSceneMaterials(): unknown {
   if (!previewScene) return null;
   const out: unknown[] = [];
@@ -190,7 +202,7 @@ export function __debugSceneMaterials(): unknown {
           return { type: m.type, hex: c ? c.getHexString() : null };
         }),
         groups: geo.groups.map((g) => ({ mi: g.materialIndex, count: g.count })),
-        vertexCount: geo.getAttribute('position')?.count ?? 0,
+        vertexCount: positionVertexCount(geo),
       });
     } else {
       const c = (mat as { color?: Color }).color;
@@ -198,7 +210,7 @@ export function __debugSceneMaterials(): unknown {
         name: obj.name,
         type: 'single',
         hex: c ? c.getHexString() : null,
-        vertexCount: geo.getAttribute('position')?.count ?? 0,
+        vertexCount: positionVertexCount(geo),
       });
     }
   });

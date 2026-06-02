@@ -21,6 +21,7 @@ import type {
   DedupCache,
   ExportSlot,
   PendingExport,
+  PendingExportMap,
   ThreadingInfo,
 } from './bridgeTypes';
 
@@ -38,8 +39,7 @@ export interface MessageHandlerContext {
   readonly adaptiveDebounce: AdaptiveDebounce;
   readonly binCache: DedupCache;
   readonly baseplateCache: DedupCache;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- pendingExports values are PendingExport<T> with different T per slot; type safety enforced at each call site
-  readonly pendingExports: Map<ExportSlot, PendingExport<any>>;
+  readonly pendingExports: PendingExportMap;
   clearPending: () => void;
   clearExportTimer: (pending: PendingExport<unknown>) => void;
   resolveExport: (slot: ExportSlot, requestId: string, result: unknown) => boolean;

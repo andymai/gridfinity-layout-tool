@@ -41,6 +41,7 @@ import {
   type DedupCache,
   type ExportSlot,
   type PendingExport,
+  type PendingExportMap,
 } from './bridgeTypes';
 import { extractThreadingInfo, createDedupCache } from './bridgeHelpers';
 import { installMessageHandler } from './bridgeMessageHandler';
@@ -105,8 +106,7 @@ export class GenerationBridge {
   onBooleanFallbackStats: BooleanFallbackStatsCallback | null = null;
 
   /** Pending export requests keyed by slot. Only one per slot at a time. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Values are PendingExport<T> with different T per slot; type safety is enforced at each call site
-  readonly pendingExports = new Map<ExportSlot, PendingExport<any>>();
+  readonly pendingExports: PendingExportMap = new Map();
 
   constructor(kernel: KernelName = 'occt-wasm') {
     this.kernel = kernel;

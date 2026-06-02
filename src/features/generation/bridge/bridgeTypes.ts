@@ -132,6 +132,14 @@ export interface PendingExport<T> {
 }
 
 /**
+ * Pending export requests keyed by slot — at most one per slot at a time.
+ * Each slot resolves a different result type, so the stored `PendingExport<T>`
+ * is heterogeneous; per-slot type safety is enforced at each call site.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- heterogeneous T per slot; type safety enforced at each call site
+export type PendingExportMap = Map<ExportSlot, PendingExport<any>>;
+
+/**
  * Custom error thrown when an export request hits its timeout budget.
  * The error message also passes the `/timeout/` regex used by the worker
  * classifier so any downstream wrappers map it to {@link ExportErrorCode}
