@@ -9,9 +9,14 @@ vi.mock('@/shared/analytics/posthog', () => ({
   track3DRenderError: vi.fn(),
 }));
 
-// Mock storage
+// Mock storage: the boundary now offers a non-destructive backup, not a wipe.
 vi.mock('@/core/storage', () => ({
-  clearAllAppData: vi.fn().mockResolvedValue(undefined),
+  downloadArchive: vi.fn().mockResolvedValue({ json: '{}', layoutCount: 0 }),
+}));
+
+// Mock the library store the boundary reads imperatively.
+vi.mock('@/core/store/library', () => ({
+  useLibraryStore: { getState: () => ({ library: { entries: [], folders: [] } }) },
 }));
 
 // Mock getStaticTranslation since it's not a hook
@@ -23,9 +28,10 @@ vi.mock('@/i18n', async (importOriginal) => {
       const translations: Record<string, string> = {
         'errorBoundary.heading': 'Something went wrong',
         'errorBoundary.description': 'An unexpected error occurred.',
-        'errorBoundary.hint': 'Try refreshing or resetting.',
+        'errorBoundary.hint': 'Try again or download a backup.',
         'errorBoundary.tryAgain': 'Try Again',
-        'errorBoundary.resetAppData': 'Reset App Data',
+        'errorBoundary.downloadBackup': 'Download Backup',
+        'errorBoundary.backupError': "Couldn't create a backup.",
       };
       return translations[key] ?? key;
     },
@@ -84,11 +90,9 @@ describe('ErrorBoundary', () => {
     );
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
 
-    // After clicking Try Again, the error boundary resets
     shouldThrow = false;
     fireEvent.click(screen.getByText('Try Again'));
 
-    // Need to force a rerender to see the updated child
     rerender(
       <ErrorBoundary>
         <DynamicChild />
@@ -97,72 +101,44 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('Child content')).toBeInTheDocument();
   });
 
-  it('renders both action buttons', () => {
+  it('offers a non-destructive backup instead of a reset', () => {
     render(
       <ErrorBoundary>
         <ThrowingChild shouldThrow={true} />
       </ErrorBoundary>
     );
     expect(screen.getByText('Try Again')).toBeInTheDocument();
-    expect(screen.getByText('Reset App Data')).toBeInTheDocument();
+    expect(screen.getByText('Download Backup')).toBeInTheDocument();
+    // The destructive wipe must not be reachable from the crash screen.
+    expect(screen.queryByText(/reset app data/i)).not.toBeInTheDocument();
   });
 
-  it('calls clearAllAppData and reloads on Reset App Data click', async () => {
-    const { clearAllAppData } = await import('@/core/storage');
-    const reloadMock = vi.fn();
-    const originalLocation = window.location;
-    Object.defineProperty(window, 'location', {
-      value: { reload: reloadMock },
-      writable: true,
-      configurable: true,
-    });
+  it('downloads a backup archive on Download Backup click', async () => {
+    const { downloadArchive } = await import('@/core/storage');
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>
+    );
 
-    try {
-      render(
-        <ErrorBoundary>
-          <ThrowingChild shouldThrow={true} />
-        </ErrorBoundary>
-      );
-
-      fireEvent.click(screen.getByText('Reset App Data'));
-      expect(clearAllAppData).toHaveBeenCalled();
-      await vi.waitFor(() => expect(reloadMock).toHaveBeenCalled());
-    } finally {
-      Object.defineProperty(window, 'location', {
-        value: originalLocation,
-        writable: true,
-        configurable: true,
-      });
-    }
+    fireEvent.click(screen.getByText('Download Backup'));
+    expect(downloadArchive).toHaveBeenCalled();
   });
 
-  it('reloads even if clearAllAppData rejects', async () => {
-    const { clearAllAppData } = await import('@/core/storage');
-    vi.mocked(clearAllAppData).mockRejectedValueOnce(new Error('IDB failure'));
-    const reloadMock = vi.fn();
-    const originalLocation = window.location;
-    Object.defineProperty(window, 'location', {
-      value: { reload: reloadMock },
-      writable: true,
-      configurable: true,
-    });
+  it('shows an error message when the backup fails', async () => {
+    const { downloadArchive } = await import('@/core/storage');
+    vi.mocked(downloadArchive).mockRejectedValueOnce(new Error('export failed'));
 
-    try {
-      render(
-        <ErrorBoundary>
-          <ThrowingChild shouldThrow={true} />
-        </ErrorBoundary>
-      );
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>
+    );
 
-      fireEvent.click(screen.getByText('Reset App Data'));
-      await vi.waitFor(() => expect(reloadMock).toHaveBeenCalled());
-    } finally {
-      Object.defineProperty(window, 'location', {
-        value: originalLocation,
-        writable: true,
-        configurable: true,
-      });
-    }
+    fireEvent.click(screen.getByText('Download Backup'));
+    await vi.waitFor(() =>
+      expect(screen.getByText("Couldn't create a backup.")).toBeInTheDocument()
+    );
   });
 
   it('has aria-live assertive on error fallback for screen readers', () => {

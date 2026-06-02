@@ -1,25 +1,29 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
 import { captureException, track3DRenderError } from '@/shared/analytics/posthog';
-import { clearAllAppData } from '@/core/storage';
+import { downloadArchive } from '@/core/storage';
+import { useLibraryStore } from '@/core/store/library';
 import { getStaticTranslation } from '@/i18n';
 
 interface Props {
   children: ReactNode;
 }
 
+type BackupState = 'idle' | 'working' | 'done' | 'error';
+
 interface State {
   hasError: boolean;
   error: Error | null;
+  backupState: BackupState;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, backupState: 'idle' };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
   }
 
@@ -33,17 +37,22 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState({ hasError: false, error: null, backupState: 'idle' });
   };
 
-  handleClearStorage = () => {
-    void clearAllAppData()
-      .catch(() => {})
-      .then(() => window.location.reload());
+  // Non-destructive: exports every saved layout (and its linked designs) to a
+  // JSON file the user can re-import. Intentionally no "reset" button here —
+  // wiping data is reachable only from Settings → Storage, behind a confirm.
+  handleDownloadBackup = () => {
+    this.setState({ backupState: 'working' });
+    void downloadArchive(useLibraryStore.getState().library)
+      .then(() => this.setState({ backupState: 'done' }))
+      .catch(() => this.setState({ backupState: 'error' }));
   };
 
   render() {
     if (this.state.hasError) {
+      const { backupState } = this.state;
       return (
         <div
           className="h-screen flex items-center justify-center bg-surface p-8"
@@ -88,10 +97,19 @@ export class ErrorBoundary extends Component<Props, State> {
               <button onClick={this.handleReset} className="btn btn-secondary">
                 {getStaticTranslation('errorBoundary.tryAgain')}
               </button>
-              <button onClick={this.handleClearStorage} className="btn btn-danger">
-                {getStaticTranslation('errorBoundary.resetAppData')}
+              <button
+                onClick={this.handleDownloadBackup}
+                className="btn btn-primary"
+                disabled={backupState === 'working'}
+              >
+                {getStaticTranslation('errorBoundary.downloadBackup')}
               </button>
             </div>
+            {backupState === 'error' && (
+              <p className="text-sm text-error mt-4">
+                {getStaticTranslation('errorBoundary.backupError')}
+              </p>
+            )}
             {/* eslint-enable i18next/no-literal-string */}
           </div>
         </div>
