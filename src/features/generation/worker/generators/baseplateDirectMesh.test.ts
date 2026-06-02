@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { BaseplateParams } from '@/shared/types/bin';
 import { pocketCornerRadius } from './generatorConstants';
+import { initTestKernel } from '@/test/initTestKernel';
 
 // BREP generator requires OpenCascade WASM init
 type BrepGenerateFn = (
@@ -32,16 +33,7 @@ let generateBrep: BrepGenerateFn;
 let generateDirect: DirectGenerateFn;
 
 beforeAll(async () => {
-  // Init OpenCascade WASM for BREP generator
-  const { initFromOC } = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await opencascade({ wasmBinary });
-  initFromOC(OC);
+  await initTestKernel();
 
   const brep = await import('./baseplateGenerator');
   generateBrep = brep.generateBaseplate;

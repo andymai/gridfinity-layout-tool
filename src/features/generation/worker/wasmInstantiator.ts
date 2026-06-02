@@ -7,10 +7,8 @@
  * Vite's ?url imports to ensure the correct path in all environments.
  */
 
-import { initFromOC, registerKernel, BrepkitAdapter, loadFont } from 'brepjs';
+import { registerKernel, BrepkitAdapter, loadFont } from 'brepjs';
 
-import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
-import singleWasmUrl from 'brepjs-opencascade/src/brepjs_single.wasm?url';
 import atkinsonFontUrl from './assets/fonts/AtkinsonHyperlegible-Regular.ttf?url';
 import jetbrainsMonoFontUrl from './assets/fonts/JetBrainsMono-Regular.ttf?url';
 import allertaStencilFontUrl from './assets/fonts/AllertaStencil-Regular.ttf?url';
@@ -33,35 +31,14 @@ function getHardwareConcurrency(): number {
 }
 
 /**
- * Load and initialize OpenCascade.
- *
- * Initialises the brepjs kernel with the loaded OpenCascade instance.
- */
-export async function loadOpenCascade(): Promise<WasmLoadResult> {
-  const hardwareConcurrency = getHardwareConcurrency();
-
-  const moduleConfig = {
-    locateFile: (path: string) => (path.endsWith('.wasm') ? singleWasmUrl : path),
-  };
-  const OC = await (opencascadeSingleInit as (config: typeof moduleConfig) => Promise<unknown>)(
-    moduleConfig
-  );
-
-  initFromOC(OC);
-  await loadEmbeddedFonts();
-
-  return { isThreaded: false, hardwareConcurrency };
-}
-
-/**
  * Loads the bundled engraved-text fonts into the brepjs font registry.
  * Failures are swallowed: the worker keeps running and text generation
  * downgrades to a no-op (label tabs without engraving), so a network
  * blip on the font asset never bricks the whole generation pipeline.
  *
- * Called from both OCCT loaders (`loadOpenCascade` and `loadOcctWasm`);
- * brepkit-wasm skips font loading because it doesn't implement the
- * topology operations `textBuilder` needs.
+ * Called from the occt-wasm loader (`loadOcctWasm`); brepkit-wasm skips
+ * font loading because it doesn't implement the topology operations
+ * `textBuilder` needs.
  */
 const EMBEDDED_FONTS: readonly { readonly family: string; readonly url: string }[] = [
   { family: 'atkinson', url: atkinsonFontUrl },
@@ -125,11 +102,10 @@ const retainedOcctWasmKernels = new Set<unknown>();
 /**
  * Load and initialize the occt-wasm geometry kernel.
  *
- * Uses occt-wasm 3.0's public `OcctKernel.init()` and the
+ * Uses occt-wasm's public `OcctKernel.init()` and the
  * `getRawModule()` / `getRawKernel()` accessors, which return types
  * structurally compatible with brepjs's `OcctWasmAdapter` constructor.
- * Registered under kernel id `'occt-wasm'` to coexist with `'occt'`
- * (brepjs-opencascade).
+ * Registered under kernel id `'occt-wasm'` — the production default kernel.
  */
 export async function loadOcctWasm(): Promise<WasmLoadResult> {
   const hardwareConcurrency = getHardwareConcurrency();

@@ -1344,7 +1344,6 @@
   "labs.engine.reloadToast": "Recarregue para aplicar a mudança do motor 3D.",
   "labs.engine.segmentBrepkit": "BrepKit",
   "labs.engine.segmentDefault": "Padrão",
-  "labs.engine.segmentOcctWasm": "OCCT atualizado",
   "labs.engine.statusStable": "Estável",
   "labs.engine.title": "Motor 3D",
   "labs.experimentalKernel.labsSettings": "Configurações do Labs",

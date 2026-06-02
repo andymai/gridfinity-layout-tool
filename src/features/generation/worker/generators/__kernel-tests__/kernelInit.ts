@@ -10,20 +10,6 @@
  * scenario-file import chain.
  */
 
-/** Initialize OCCT via brepjs-opencascade WASM binary. */
-export async function initOcctKernel(): Promise<void> {
-  const { initFromOC } = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await (opencascade as (opts?: Record<string, unknown>) => Promise<unknown>)({
-    wasmBinary,
-  });
-  initFromOC(OC);
-}
-
 /** Initialize brepkit-wasm kernel and register it with brepjs. */
 export async function initBrepkitKernel(): Promise<void> {
   const { registerKernel, BrepkitAdapter } = await import('brepjs');
@@ -57,7 +43,7 @@ const retainedOcctWasmKernels = new Set<unknown>();
 
 /**
  * Initialize occt-wasm kernel and register it with brepjs under id `'occt-wasm'`.
- * Coexists with `'occt'` (brepjs-opencascade) for parity comparisons.
+ * This is the production default geometry kernel.
  */
 export async function initOcctWasmKernel(): Promise<void> {
   const { registerKernel, OcctWasmAdapter } = await import('brepjs');

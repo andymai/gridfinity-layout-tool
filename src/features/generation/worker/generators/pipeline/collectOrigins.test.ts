@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { Shape3D } from 'brepjs';
 import type * as CollectOriginsModule from './collectOrigins';
+import { initTestKernel } from '@/test/initTestKernel';
 import type * as ShapeCacheModule from '../shapeCache';
 import { FeatureTag } from '../featureTags';
 
@@ -24,14 +25,7 @@ let unwrap: <T>(r: { value: T } | T) => T;
 
 beforeAll(async () => {
   const brepjs = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await opencascade({ wasmBinary });
-  brepjs.initFromOC(OC);
+  await initTestKernel();
 
   collectOrigins = (await import('./collectOrigins')).collectOrigins;
   const shapeCache = await import('../shapeCache');

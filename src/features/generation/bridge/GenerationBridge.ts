@@ -108,7 +108,7 @@ export class GenerationBridge {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Values are PendingExport<T> with different T per slot; type safety is enforced at each call site
   readonly pendingExports = new Map<ExportSlot, PendingExport<any>>();
 
-  constructor(kernel: KernelName = 'opencascade') {
+  constructor(kernel: KernelName = 'occt-wasm') {
     this.kernel = kernel;
   }
 

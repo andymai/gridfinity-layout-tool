@@ -2099,7 +2099,6 @@ const en: Record<string, string> = {
   'labs.engine.title': '3D Engine',
   'labs.engine.ariaLabel': 'Select 3D engine',
   'labs.engine.segmentDefault': 'Default',
-  'labs.engine.segmentOcctWasm': 'Updated OCCT',
   'labs.engine.segmentBrepkit': 'BrepKit',
   'labs.engine.statusStable': 'Stable',
   'labs.engine.descriptionDefault':

@@ -36,8 +36,7 @@ export function extractThreadingInfo(data: {
     Number.isFinite(data.hardwareConcurrency) && data.hardwareConcurrency > 0
       ? data.hardwareConcurrency
       : 4;
-  const kernel: KernelName =
-    data.kernel === 'brepkit' || data.kernel === 'occt-wasm' ? data.kernel : 'opencascade';
+  const kernel: KernelName = data.kernel === 'brepkit' ? 'brepkit' : 'occt-wasm';
   return { isThreaded, hardwareConcurrency, kernel };
 }
 

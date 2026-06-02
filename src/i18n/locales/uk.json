@@ -1344,7 +1344,6 @@
   "labs.engine.reloadToast": "Перезавантажте, щоб застосувати зміну 3D-рушія.",
   "labs.engine.segmentBrepkit": "BrepKit",
   "labs.engine.segmentDefault": "Стандартний",
-  "labs.engine.segmentOcctWasm": "Оновлений OCCT",
   "labs.engine.statusStable": "Стабільний",
   "labs.engine.title": "3D-рушій",
   "labs.experimentalKernel.labsSettings": "Налаштування Labs",

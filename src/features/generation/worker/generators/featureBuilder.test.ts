@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import type { Shape3D } from 'brepjs';
+import { initTestKernel } from '@/test/initTestKernel';
 
 type BuildCompartmentWallsFn = (
   params: BinParams,
@@ -49,15 +50,8 @@ let buildWallCutoutCuts: BuildWallCutoutCutsFn;
 let meshShape: (shape: unknown) => { vertices: ArrayLike<number>; triangles: ArrayLike<number> };
 
 beforeAll(async () => {
-  const { initFromOC, mesh: meshFn } = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await opencascade({ wasmBinary });
-  initFromOC(OC);
+  const { mesh: meshFn } = await import('brepjs');
+  await initTestKernel();
 
   const mod = await import('./featureBuilder');
   buildCompartmentWalls = mod.buildCompartmentWalls;

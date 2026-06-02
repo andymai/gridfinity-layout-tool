@@ -95,11 +95,10 @@ export const workerPoolManager = new WorkerPoolManager();
 
 /**
  * Pick the geometry kernel from labs flags. Mirrors `BridgeManager.resolveKernel`;
- * brepkit wins if both experiments are toggled on.
+ * occt-wasm is the default, `brepkit_kernel` opts into the alternative kernel.
  */
 function resolveKernel(): KernelName {
   const labs = useLabsStore.getState();
   if (labs.isFeatureEnabled('brepkit_kernel')) return 'brepkit';
-  if (labs.isFeatureEnabled('occt_wasm_kernel')) return 'occt-wasm';
-  return 'opencascade';
+  return 'occt-wasm';
 }

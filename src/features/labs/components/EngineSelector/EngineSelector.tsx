@@ -1,4 +1,3 @@
-import { useShallow } from 'zustand/react/shallow';
 import { SegmentedControl } from '@/shared/components/SegmentedControl';
 import { useLabsStore, useToastStore } from '@/core/store';
 import { getFeature, type FeatureFlag } from '@/core/labs';
@@ -6,53 +5,33 @@ import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
 import { useTranslation } from '@/i18n';
 import { FeatureStatusBadge } from '../FeatureStatusBadge';
 import { InfoIcon } from '../icons';
-import { BREPKIT_ID, OCCT_WASM_ID } from './kernelIds';
+import { BREPKIT_ID } from './kernelIds';
 
-type Engine = 'default' | 'occt-wasm' | 'brepkit';
+type Engine = 'default' | 'brepkit';
 
-const ENGINE_FLAGS: Record<Engine, { brepkit: boolean; occt: boolean }> = {
-  default: { brepkit: false, occt: false },
-  'occt-wasm': { brepkit: false, occt: true },
-  brepkit: { brepkit: true, occt: false },
-};
-
-function deriveEngine(brepkit: boolean, occt: boolean): Engine {
-  if (brepkit) return 'brepkit';
-  if (occt) return 'occt-wasm';
-  return 'default';
+function deriveEngine(brepkit: boolean): Engine {
+  return brepkit ? 'brepkit' : 'default';
 }
 
 function selectedFeatureFor(engine: Engine): FeatureFlag | undefined {
-  switch (engine) {
-    case 'brepkit':
-      return getFeature(BREPKIT_ID);
-    case 'occt-wasm':
-      return getFeature(OCCT_WASM_ID);
-    case 'default':
-      return undefined;
-  }
+  return engine === 'brepkit' ? getFeature(BREPKIT_ID) : undefined;
 }
 
 export function EngineSelector() {
   const t = useTranslation();
-  const { brepkitEnabled, occtWasmEnabled } = useLabsStore(
-    useShallow((state) => ({
-      brepkitEnabled: state.preferences.enabledFeatures[BREPKIT_ID] ?? false,
-      occtWasmEnabled: state.preferences.enabledFeatures[OCCT_WASM_ID] ?? false,
-    }))
+  const brepkitEnabled = useLabsStore(
+    (state) => state.preferences.enabledFeatures[BREPKIT_ID] ?? false
   );
 
-  const current = deriveEngine(brepkitEnabled, occtWasmEnabled);
+  const current = deriveEngine(brepkitEnabled);
 
   const handleChange = (next: Engine) => {
-    const target = ENGINE_FLAGS[next];
-    if (brepkitEnabled === target.brepkit && occtWasmEnabled === target.occt) return;
+    const wantBrepkit = next === 'brepkit';
+    if (brepkitEnabled === wantBrepkit) return;
 
     const labs = useLabsStore.getState();
-    if (target.brepkit) labs.enableFeature(BREPKIT_ID);
+    if (wantBrepkit) labs.enableFeature(BREPKIT_ID);
     else labs.disableFeature(BREPKIT_ID);
-    if (target.occt) labs.enableFeature(OCCT_WASM_ID);
-    else labs.disableFeature(OCCT_WASM_ID);
 
     trackEvent('labs_engine_changed', { from: current, to: next });
 
@@ -74,7 +53,6 @@ export function EngineSelector() {
 
   const options = [
     { value: 'default' as const, label: t('labs.engine.segmentDefault') },
-    { value: 'occt-wasm' as const, label: t('labs.engine.segmentOcctWasm') },
     { value: 'brepkit' as const, label: t('labs.engine.segmentBrepkit') },
   ];
 

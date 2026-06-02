@@ -1,5 +1,5 @@
 /**
- * Primes the HTTP cache with the OpenCascade WASM binary during idle time.
+ * Primes the HTTP cache with geometry-kernel WASM binaries during idle time.
  *
  * Uses a background fetch() instead of <link rel="preload"> because the WASM
  * is consumed by a Web Worker, not the document. Preload hints track usage at
@@ -9,34 +9,15 @@
  * is reusable by the worker without warnings or CORS-mode mismatches.
  */
 
-import singleWasm from 'brepjs-opencascade/src/brepjs_single.wasm?url';
 import brepkitWasm from 'brepkit-wasm/brepkit_wasm_bg.wasm?url';
 import occtWasm from 'occt-wasm/dist/occt-wasm.wasm?url';
 
-let preloaded = false;
 let brepkitPreloaded = false;
 let occtWasmPreloaded = false;
 
-export function preloadWasmBinary(): void {
-  if (preloaded) return;
-
-  try {
-    // Fire-and-forget fetch that mirrors Emscripten's credentials mode.
-    // The response is discarded — we only care about priming the HTTP cache.
-    void fetch(singleWasm, { credentials: 'same-origin' }).catch(() => {
-      // Network failure is non-fatal; the worker will attempt its own fetch.
-      preloaded = false;
-    });
-
-    preloaded = true;
-  } catch {
-    // Leave preloaded false so a later call can retry
-  }
-}
-
 /**
  * Primes the HTTP cache with the brepkit WASM binary during idle time.
- * Same pattern as `preloadWasmBinary()` but for the Rust-native kernel.
+ * Same pattern as `preloadOcctWasm()` but for the Rust-native kernel.
  */
 export function preloadBrepkitWasm(): void {
   if (brepkitPreloaded) return;
@@ -54,7 +35,7 @@ export function preloadBrepkitWasm(): void {
 
 /**
  * Primes the HTTP cache with the occt-wasm binary during idle time.
- * Same pattern as `preloadWasmBinary()` but for the alternative OCCT build.
+ * occt-wasm is the default geometry kernel.
  */
 export function preloadOcctWasm(): void {
   if (occtWasmPreloaded) return;

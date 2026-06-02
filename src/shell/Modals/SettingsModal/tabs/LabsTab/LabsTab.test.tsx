@@ -66,7 +66,7 @@ vi.mock('@/features/labs/components', () => ({
     <svg className={className} data-testid="sparkles-icon" />
   ),
   EngineSelector: () => <div data-testid="engine-selector">Engine Selector</div>,
-  KERNEL_FEATURE_IDS: ['brepkit_kernel', 'occt_wasm_kernel'] as const,
+  KERNEL_FEATURE_IDS: ['brepkit_kernel'] as const,
 }));
 
 describe('LabsTab', () => {

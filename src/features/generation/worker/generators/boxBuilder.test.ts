@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { Shape3D } from 'brepjs';
+import { initTestKernel } from '@/test/initTestKernel';
 
 type BuildBinBoxFn = (
   gridW: number,
@@ -26,15 +27,8 @@ let shapeBounds: (shape: unknown) => {
 };
 
 beforeAll(async () => {
-  const { initFromOC, mesh: meshFn, getBounds } = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await opencascade({ wasmBinary });
-  initFromOC(OC);
+  const { mesh: meshFn, getBounds } = await import('brepjs');
+  await initTestKernel();
 
   const mod = await import('./boxBuilder');
   buildBinBox = mod.buildBinBox;
