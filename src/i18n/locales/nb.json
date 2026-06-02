@@ -989,6 +989,7 @@
   "errorBoundary.downloadBackup": "Last ned sikkerhetskopi",
   "errorBoundary.backupError": "Kunne ikke opprette en sikkerhetskopi. Prøv å oppdatere siden.",
   "errorBoundary.tryAgain": "Prøv igjen",
+  "errorBoundary.undoLastChange": "Angre siste endring",
   "export.customFileName": "Egendefinert filnavn",
   "export.downloadFormat": "Last ned {format}",
   "export.exporting": "Eksporterer...",

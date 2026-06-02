@@ -989,6 +989,7 @@
   "errorBoundary.downloadBackup": "Baixar backup",
   "errorBoundary.backupError": "Não foi possível criar um backup. Atualize a página.",
   "errorBoundary.tryAgain": "Tentar novamente",
+  "errorBoundary.undoLastChange": "Desfazer última alteração",
   "export.customFileName": "Nome de arquivo personalizado",
   "export.downloadFormat": "Baixar {format}",
   "export.exporting": "Exportando...",

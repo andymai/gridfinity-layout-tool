@@ -989,6 +989,7 @@
   "errorBoundary.downloadBackup": "Télécharger une sauvegarde",
   "errorBoundary.backupError": "Impossible de créer une sauvegarde. Actualisez la page.",
   "errorBoundary.tryAgain": "Réessayer",
+  "errorBoundary.undoLastChange": "Annuler la dernière modification",
   "export.customFileName": "Nom de fichier personnalisé",
   "export.downloadFormat": "Télécharger {format}",
   "export.exporting": "Exportation...",

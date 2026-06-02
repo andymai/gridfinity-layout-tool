@@ -989,6 +989,7 @@
   "errorBoundary.downloadBackup": "Sicherung herunterladen",
   "errorBoundary.backupError": "Sicherung konnte nicht erstellt werden. Aktualisieren Sie die Seite.",
   "errorBoundary.tryAgain": "Erneut versuchen",
+  "errorBoundary.undoLastChange": "Letzte Änderung rückgängig machen",
   "export.customFileName": "Benutzerdefinierter Dateiname",
   "export.downloadFormat": "{format} herunterladen",
   "export.exporting": "Exportiere...",

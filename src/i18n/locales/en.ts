@@ -43,6 +43,7 @@ const en: Record<string, string> = {
   'errorBoundary.hint':
     'Try again or refresh the page. You can download a backup of your layouts to keep them safe.',
   'errorBoundary.tryAgain': 'Try Again',
+  'errorBoundary.undoLastChange': 'Undo Last Change',
   'errorBoundary.downloadBackup': 'Download Backup',
   'errorBoundary.backupError': "Couldn't create a backup. Try refreshing the page.",
 

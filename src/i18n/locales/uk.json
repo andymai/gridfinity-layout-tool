@@ -989,6 +989,7 @@
   "errorBoundary.downloadBackup": "Завантажити резервну копію",
   "errorBoundary.backupError": "Не вдалося створити резервну копію. Оновіть сторінку.",
   "errorBoundary.tryAgain": "Спробувати знову",
+  "errorBoundary.undoLastChange": "Скасувати останню зміну",
   "export.customFileName": "Користувацьке ім’я файлу",
   "export.downloadFormat": "Завантажити {format}",
   "export.exporting": "Експортується...",

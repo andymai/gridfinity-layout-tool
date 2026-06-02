@@ -2,6 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ErrorBoundary } from './ErrorBoundary';
 
+const { undoMock, historyState } = vi.hoisted(() => ({
+  undoMock: vi.fn(),
+  historyState: { canUndo: true },
+}));
+
 // Mock analytics
 vi.mock('@/shared/analytics/posthog', () => ({
   trackEvent: vi.fn(),
@@ -19,6 +24,11 @@ vi.mock('@/core/store/library', () => ({
   useLibraryStore: { getState: () => ({ library: { entries: [], folders: [] } }) },
 }));
 
+// Mock the undo history store. `historyState.canUndo` is mutable per test.
+vi.mock('@/core/cqrs/undo/historyStore', () => ({
+  useHistoryStore: { getState: () => ({ canUndo: historyState.canUndo, undo: undoMock }) },
+}));
+
 // Mock getStaticTranslation since it's not a hook
 vi.mock('@/i18n', async (importOriginal) => {
   const original = await importOriginal<Record<string, unknown>>();
@@ -30,6 +40,7 @@ vi.mock('@/i18n', async (importOriginal) => {
         'errorBoundary.description': 'An unexpected error occurred.',
         'errorBoundary.hint': 'Try again or download a backup.',
         'errorBoundary.tryAgain': 'Try Again',
+        'errorBoundary.undoLastChange': 'Undo Last Change',
         'errorBoundary.downloadBackup': 'Download Backup',
         'errorBoundary.backupError': "Couldn't create a backup.",
       };
@@ -46,6 +57,8 @@ function ThrowingChild({ shouldThrow }: { shouldThrow: boolean }) {
 describe('ErrorBoundary', () => {
   beforeEach(() => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
+    historyState.canUndo = true;
+    undoMock.mockClear();
   });
 
   it('renders children when no error occurs', () => {
@@ -139,6 +152,56 @@ describe('ErrorBoundary', () => {
     await vi.waitFor(() =>
       expect(screen.getByText("Couldn't create a backup.")).toBeInTheDocument()
     );
+  });
+
+  it('offers Undo Last Change when the edit history has an undoable step', () => {
+    historyState.canUndo = true;
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>
+    );
+    expect(screen.getByText('Undo Last Change')).toBeInTheDocument();
+  });
+
+  it('hides Undo Last Change when there is no undo history', () => {
+    historyState.canUndo = false;
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>
+    );
+    expect(screen.queryByText('Undo Last Change')).not.toBeInTheDocument();
+  });
+
+  it('reverts the last change and recovers the app on Undo click', () => {
+    historyState.canUndo = true;
+    let shouldThrow = true;
+    const DynamicChild = () => {
+      if (shouldThrow) throw new Error('Test error');
+      return <div>Child content</div>;
+    };
+
+    const { rerender } = render(
+      <ErrorBoundary>
+        <DynamicChild />
+      </ErrorBoundary>
+    );
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+
+    // Simulate undo reverting the bad state that caused the crash.
+    undoMock.mockImplementation(() => {
+      shouldThrow = false;
+    });
+    fireEvent.click(screen.getByText('Undo Last Change'));
+    expect(undoMock).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <ErrorBoundary>
+        <DynamicChild />
+      </ErrorBoundary>
+    );
+    expect(screen.getByText('Child content')).toBeInTheDocument();
   });
 
   it('has aria-live assertive on error fallback for screen readers', () => {

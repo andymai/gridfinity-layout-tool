@@ -989,6 +989,7 @@
   "errorBoundary.downloadBackup": "Ladda ner säkerhetskopia",
   "errorBoundary.backupError": "Det gick inte att skapa en säkerhetskopia. Ladda om sidan.",
   "errorBoundary.tryAgain": "Försök igen",
+  "errorBoundary.undoLastChange": "Ångra senaste ändringen",
   "export.customFileName": "Anpassat filnamn",
   "export.downloadFormat": "Ladda ner {format}",
   "export.exporting": "Exporterar...",

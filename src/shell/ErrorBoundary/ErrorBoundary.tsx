@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { captureException, track3DRenderError } from '@/shared/analytics/posthog';
 import { downloadArchive } from '@/core/storage';
 import { useLibraryStore } from '@/core/store/library';
+import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { getStaticTranslation } from '@/i18n';
 
 interface Props {
@@ -15,16 +16,29 @@ interface State {
   hasError: boolean;
   error: Error | null;
   backupState: BackupState;
+  /** Whether the layout edit history had an undoable step when the error was caught. */
+  canUndo: boolean;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null, backupState: 'idle' };
+    this.state = { hasError: false, error: null, backupState: 'idle', canUndo: false };
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
-    return { hasError: true, error };
+    // Capture undo availability at catch time: if the crash was triggered by
+    // the last layout edit, reverting it is the fastest route back to a
+    // working state. Read imperatively — the store lives outside the React tree.
+    // Guarded: an early-boot crash may hit this before the store is ready, and
+    // this method must never throw.
+    let canUndo: boolean;
+    try {
+      canUndo = useHistoryStore.getState().canUndo;
+    } catch {
+      canUndo = false;
+    }
+    return { hasError: true, error, canUndo };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
@@ -37,7 +51,20 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null, backupState: 'idle' });
+    this.setState({ hasError: false, error: null, backupState: 'idle', canUndo: false });
+  };
+
+  // Revert the most recent layout edit, then re-mount the app. `undo()`
+  // dispatches synchronously, so the layout store is restored before the
+  // children re-render. If the crash came from that edit, this recovers the
+  // app without a reload or any data loss (the change stays redoable).
+  handleUndo = () => {
+    try {
+      useHistoryStore.getState().undo();
+    } catch {
+      // If undo itself fails, fall through to a plain retry.
+    }
+    this.handleReset();
   };
 
   // Non-destructive: exports every saved layout (and its linked designs) to a
@@ -93,10 +120,15 @@ export class ErrorBoundary extends Component<Props, State> {
               </pre>
             )}
             {/* eslint-disable i18next/no-literal-string -- translation keys */}
-            <div className="flex gap-3 justify-center">
+            <div className="flex flex-wrap gap-3 justify-center">
               <button onClick={this.handleReset} className="btn btn-secondary">
                 {getStaticTranslation('errorBoundary.tryAgain')}
               </button>
+              {this.state.canUndo && (
+                <button onClick={this.handleUndo} className="btn btn-secondary">
+                  {getStaticTranslation('errorBoundary.undoLastChange')}
+                </button>
+              )}
               <button
                 onClick={this.handleDownloadBackup}
                 className="btn btn-primary"

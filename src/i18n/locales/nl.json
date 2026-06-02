@@ -989,6 +989,7 @@
   "errorBoundary.downloadBackup": "Back-up downloaden",
   "errorBoundary.backupError": "Kan geen back-up maken. Vernieuw de pagina.",
   "errorBoundary.tryAgain": "Opnieuw proberen",
+  "errorBoundary.undoLastChange": "Laatste wijziging ongedaan maken",
   "export.customFileName": "Aangepaste bestandsnaam",
   "export.downloadFormat": "{format} downloaden",
   "export.exporting": "Exporteren...",
