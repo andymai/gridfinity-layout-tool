@@ -59,8 +59,8 @@ importers:
         specifier: ^3.7.0
         version: 3.7.0
       brepjs:
-        specifier: 18.40.1
-        version: 18.40.1(brepkit-wasm@2.101.2)(occt-wasm@3.2.1)
+        specifier: 18.41.1
+        version: 18.41.1(brepkit-wasm@2.101.2)(occt-wasm@3.2.1)
       brepkit-wasm:
         specifier: ^2.101.2
         version: 2.101.2
@@ -4794,10 +4794,10 @@ packages:
       }
     engines: { node: '>=8' }
 
-  brepjs@18.40.1:
+  brepjs@18.41.1:
     resolution:
       {
-        integrity: sha512-77sCkucNYFxum+ymw6nOujvd076wU1OSGEjaJOvPCXyoxuUTa4llNUFeDMKmbZCqDKTiX4QnaOlX47z1dbTD4Q==,
+        integrity: sha512-iUZkHkgeqPeZOZXxzlZMPHaDI1VYjCy4qkiVrNCMERvoXiz86vida+R6Vh/4ge/EHa121Q9ll+figaqf81hHFg==,
       }
     engines: { node: '>=24' }
     peerDependencies:
@@ -12049,7 +12049,7 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
-  brepjs@18.40.1(brepkit-wasm@2.101.2)(occt-wasm@3.2.1):
+  brepjs@18.41.1(brepkit-wasm@2.101.2)(occt-wasm@3.2.1):
     dependencies:
       flatbush: 4.5.1
       opentype.js: 1.3.4
