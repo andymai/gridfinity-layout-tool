@@ -54,9 +54,6 @@ export function buildCompartmentCavityDrawings(
   innerD: number
 ): readonly Drawing[] {
   const lookup = buildOverrideLookup(params.compartments.dividerOverrides);
-  // Match the inner footprint radius of the hollow shell (boxBuilder), so a
-  // bin-corner cavity reproduces the same rounded inner corner as a
-  // single-compartment bin.
   const cornerRadius = Math.max(BOX_CORNER_RADIUS - params.wallThickness, 0);
   const drawings: Drawing[] = [];
   for (const id of new Set(params.compartments.cells)) {
@@ -74,23 +71,23 @@ export function buildCompartmentCavityDrawings(
  */
 function cavityDrawing(corners: CavityCorners, cornerRadius: number): Drawing {
   const { bl, br, tr, tl, exterior } = corners;
-  // The fillet trims `r` from each adjacent edge; cap at half the smaller
-  // span so opposing fillets on the same edge can't overrun each other.
-  const cavW = Math.min(br[0] - bl[0], tr[0] - tl[0]);
-  const cavD = Math.min(tl[1] - bl[1], tr[1] - br[1]);
+  // Cap the radius at half the smaller span so opposing fillets can't overrun.
+  const { cavW, cavD } = cavitySpan(corners);
   const r = Math.max(0, Math.min(cornerRadius, cavW / 2 - 0.05, cavD / 2 - 0.05));
   const rBL = exterior.bl ? r : 0;
   const rBR = exterior.br ? r : 0;
   const rTR = exterior.tr ? r : 0;
   const rTL = exterior.tl ? r : 0;
 
-  if (r <= 0.1 || (!rBL && !rBR && !rTR && !rTL)) {
+  if (r <= 0.1 || !hasExteriorCorner(exterior)) {
     return draw(bl).lineTo(br).lineTo(tr).lineTo(tl).close();
   }
 
-  // Start mid-bottom-edge so close() forms a real edge through BL, letting
-  // customCorner(rBL) apply to it (mirrors buildSlabFootprint in
+  // Start at the midpoint of BL→BR so close() forms a real edge through BL,
+  // letting customCorner(rBL) apply to it (mirrors buildSlabProfile in
   // baseplateSlab.ts). Starting at a corner would make close() degenerate.
+  // Use the true midpoint (not [mid_x, bl[1]]): an override can tilt the
+  // bottom edge (bl[1] !== br[1]), and the start point must stay on it.
   let pen = draw([(bl[0] + br[0]) / 2, (bl[1] + br[1]) / 2]);
   pen = pen.lineTo(br);
   if (rBR > 0) pen = pen.customCorner(rBR);
@@ -114,6 +111,24 @@ interface CavityCorners {
    * junctions and stay sharp.
    */
   exterior: { bl: boolean; br: boolean; tr: boolean; tl: boolean };
+}
+
+/** Whether any cavity corner sits on the bin perimeter (and so gets rounded). */
+function hasExteriorCorner(exterior: CavityCorners['exterior']): boolean {
+  return exterior.bl || exterior.br || exterior.tr || exterior.tl;
+}
+
+/**
+ * Width and depth of a cavity, taken as the smaller of each pair of opposing
+ * edges so override displacement can't inflate the span used for fillet
+ * clamping or clearance checks.
+ */
+function cavitySpan(corners: CavityCorners): { cavW: number; cavD: number } {
+  const { bl, br, tr, tl } = corners;
+  return {
+    cavW: Math.min(br[0] - bl[0], tr[0] - tl[0]),
+    cavD: Math.min(tl[1] - bl[1], tr[1] - br[1]),
+  };
 }
 
 /**
@@ -145,10 +160,9 @@ function cavityCorners(
   const br: [number, number] = [xMax, yMin];
   const tr: [number, number] = [xMax, yMax];
   const tl: [number, number] = [xMin, yMax];
-  // A corner is on the bin perimeter when both of its edges are exterior:
-  // left edge at minCol===0, right at maxCol===cols-1, front at minRow===0,
-  // back at maxRow===rows-1. Override displacement only touches interior
-  // edges, so exterior corners are never shifted.
+  // A corner is on the bin perimeter when both of its edges are exterior.
+  // Override displacement only touches interior edges, so exterior corners
+  // are never shifted (safe to round).
   const left = minCol === 0;
   const right = maxCol === cols - 1;
   const front = minRow === 0;
@@ -209,8 +223,7 @@ export function buildCompartmentsCacheKey(params: BinParams): string {
       quantize(params.compartments.thickness),
       params.compartments.cells.join(','),
       stableSerialize(params.compartments.dividerOverrides ?? []),
-      // Cavity corner rounding depends on wallThickness; include it so this
-      // sub-key stays self-consistent even if used standalone in future.
+      // Cavity corner rounding depends on wallThickness.
       quantize(params.wallThickness)
     )
   );
@@ -330,6 +343,37 @@ export function compartmentCavitiesAreViable(
     const compD =
       (maxRow - minRow + 1) * cellD - (minRow > 0 ? half : 0) - (maxRow < rows - 1 ? half : 0);
     if (compW < minDim || compD < minDim) return false;
+  }
+  return true;
+}
+
+/**
+ * Whether every bin-perimeter cavity corner can be rounded with the full
+ * inner-shell radius (`BOX_CORNER_RADIUS − wallThickness`). On thin walls a
+ * corner compartment narrower than twice that radius can only be partially
+ * rounded, so its sharp residue still pokes past the outer arc and reopens
+ * the #1968 corner gap — such bins must fall back to the additive-fuse path
+ * (whose rounded hollow shell has no corner gap). Thick-walled bins are
+ * always safe: a sharp cavity corner never reaches past the arc, so cell
+ * size is irrelevant.
+ */
+export function compartmentCornersRoundCleanly(
+  params: BinParams,
+  innerW: number,
+  innerD: number
+): boolean {
+  const targetR = BOX_CORNER_RADIUS - params.wallThickness;
+  // Sharp corners only over-cut below BOX_CORNER_RADIUS·(1 − 1/√2); above
+  // that threshold there is no gap to fix regardless of compartment size.
+  if (targetR <= BOX_CORNER_RADIUS / Math.SQRT2) return true;
+  const need = 2 * targetR;
+  const lookup = buildOverrideLookup(params.compartments.dividerOverrides);
+  for (const id of new Set(params.compartments.cells)) {
+    const corners = cavityCorners(params, innerW, innerD, id, lookup);
+    if (!corners) continue;
+    if (!hasExteriorCorner(corners.exterior)) continue;
+    const { cavW, cavD } = cavitySpan(corners);
+    if (cavW < need || cavD < need) return false;
   }
   return true;
 }

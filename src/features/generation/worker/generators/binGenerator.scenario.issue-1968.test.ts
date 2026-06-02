@@ -181,46 +181,75 @@ const TEST_TIMEOUT_MS = 90_000;
 // under this.
 const NOISE_TOLERANCE = 0.05;
 
+/**
+ * Assert a divider bin keeps its corners intact, using a single-compartment
+ * bin of the same outer dimensions as the control. `dividers` overrides only
+ * the compartment grid (and optionally dividerOverrides) on top of `dims`.
+ */
+async function expectCornersIntact(
+  dims: Partial<BinParams>,
+  dividers: BinParams['compartments']
+): Promise<void> {
+  const control = thinWalledBin({
+    ...dims,
+    compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
+  });
+  const test = thinWalledBin({ ...dims, compartments: dividers });
+  const controlTris = trianglesFromStl((await exportBin(control, 'stl')).data);
+  clearAllCaches();
+  const testTris = trianglesFromStl((await exportBin(test, 'stl')).data);
+  expect(cornerMaterialMissingFraction(controlTris, testTris)).toBeLessThan(NOISE_TOLERANCE);
+}
+
 describe('issue #1968 — corner gap with dividers on thin-walled bins', () => {
   it(
     'single column divider keeps the corners intact (2×2, 0.8mm wall)',
-    async () => {
-      const control = thinWalledBin({
-        width: 2,
-        depth: 2,
-        compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
-      });
-      const withDivider = thinWalledBin({
-        width: 2,
-        depth: 2,
-        compartments: { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] },
-      });
-      const controlTris = trianglesFromStl((await exportBin(control, 'stl')).data);
-      clearAllCaches();
-      const testTris = trianglesFromStl((await exportBin(withDivider, 'stl')).data);
-      expect(cornerMaterialMissingFraction(controlTris, testTris)).toBeLessThan(NOISE_TOLERANCE);
-    },
+    () =>
+      expectCornersIntact(
+        { width: 2, depth: 2 },
+        { cols: 2, rows: 1, thickness: 1.2, cells: [0, 1] }
+      ),
     TEST_TIMEOUT_MS
   );
 
   it(
     "reporter's config — 2-col × 4-row grid keeps the corners intact (0.8mm wall)",
-    async () => {
-      const control = thinWalledBin({
-        width: 2,
-        depth: 4,
-        compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
-      });
-      const withGrid = thinWalledBin({
-        width: 2,
-        depth: 4,
-        compartments: { cols: 2, rows: 4, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5, 6, 7] },
-      });
-      const controlTris = trianglesFromStl((await exportBin(control, 'stl')).data);
-      clearAllCaches();
-      const testTris = trianglesFromStl((await exportBin(withGrid, 'stl')).data);
-      expect(cornerMaterialMissingFraction(controlTris, testTris)).toBeLessThan(NOISE_TOLERANCE);
-    },
+    () =>
+      expectCornersIntact(
+        { width: 2, depth: 4 },
+        { cols: 2, rows: 4, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5, 6, 7] }
+      ),
+    TEST_TIMEOUT_MS
+  );
+
+  it(
+    // Narrow corner cells can't fit the full corner radius, so the cut path
+    // would only partially round them and reopen the gap — these bins must
+    // fall back to the additive path. 8 columns on a 1-wide bin ≈ 5mm cells.
+    'narrow corner cells stay intact via the additive fallback (1×1, 8 cols, 0.8mm wall)',
+    () =>
+      expectCornersIntact(
+        { width: 1, depth: 1 },
+        { cols: 8, rows: 1, thickness: 1.2, cells: [0, 1, 2, 3, 4, 5, 6, 7] }
+      ),
+    TEST_TIMEOUT_MS
+  );
+
+  it(
+    // Tilted dividers take the cut path too; exterior corners are never tilted,
+    // so they must still round cleanly.
+    'tilted divider keeps the corners intact (2×4 bin, 1×2 grid, ±20mm tilt, 0.8mm wall)',
+    () =>
+      expectCornersIntact(
+        { width: 2, depth: 4 },
+        {
+          cols: 1,
+          rows: 2,
+          thickness: 1.2,
+          cells: [0, 1],
+          dividerOverrides: [{ compartmentA: 0, compartmentB: 1, offsetStart: -20, offsetEnd: 20 }],
+        }
+      ),
     TEST_TIMEOUT_MS
   );
 });
