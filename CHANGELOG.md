@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.136.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.135.0...gridfinity-layout-tool-v4.136.0) (2026-06-02)
+
+
+### Features
+
+* **kernel:** make occt-wasm the default geometry kernel, remove legacy opencascade ([#1970](https://github.com/andymai/gridfinity-layout-tool/issues/1970)) ([5f5db50](https://github.com/andymai/gridfinity-layout-tool/commit/5f5db5094292c089142805dd72ed1f4d39d9a924))
+
+
+### Bug Fixes
+
+* **generation:** round cavity corners to fix corner gap on thin-walled dividers ([#1968](https://github.com/andymai/gridfinity-layout-tool/issues/1968)) ([#1969](https://github.com/andymai/gridfinity-layout-tool/issues/1969)) ([918eff5](https://github.com/andymai/gridfinity-layout-tool/commit/918eff5fe9c36c1d54d8b4648fdb7a318b961ada))
+
 ## [4.135.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.134.0...gridfinity-layout-tool-v4.135.0) (2026-06-02)
 
 
