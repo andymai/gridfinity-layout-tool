@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.135.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.134.0...gridfinity-layout-tool-v4.135.0) (2026-06-02)
+
+
+### Features
+
+* **baseplate:** make padding alignment control self-explanatory ([#1966](https://github.com/andymai/gridfinity-layout-tool/issues/1966)) ([24bed71](https://github.com/andymai/gridfinity-layout-tool/commit/24bed712d6c2ee9555e4a3f2c9531df88860aeba))
+
 ## [4.134.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.133.0...gridfinity-layout-tool-v4.134.0) (2026-06-01)
 
 
