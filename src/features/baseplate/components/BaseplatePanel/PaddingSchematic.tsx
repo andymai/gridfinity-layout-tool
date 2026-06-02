@@ -85,10 +85,14 @@ export function PaddingSchematic({
             />
           </div>
           <div
+            role="status"
             aria-live="polite"
+            aria-atomic
             className="flex h-4 items-center justify-center text-[10px] leading-none text-content-tertiary"
           >
-            {anchor === 'custom' ? t('baseplate.paddingAnchor.custom') : ''}
+            {/* Non-breaking space (not '') keeps the row height without making the
+                live region announce a blank update when the anchor leaves custom. */}
+            {anchor === 'custom' ? t('baseplate.paddingAnchor.custom') : ' '}
           </div>
         </div>
         <PaddingStepper
