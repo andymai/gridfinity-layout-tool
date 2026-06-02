@@ -34,21 +34,21 @@ exports[`bin styles > 2×2 standard 1`] = `2812`;
 
 exports[`combined features > 1.5×2 flat + slotted + 3×2 merged compartments 1`] = `1300`;
 
-exports[`combined features > 2×2 compartments + insert (overlap interaction) 1`] = `3052`;
+exports[`combined features > 2×2 compartments + insert (overlap interaction) 1`] = `3164`;
 
-exports[`combined features > 2×2 label tabs with merged compartments 1`] = `4332`;
+exports[`combined features > 2×2 label tabs with merged compartments 1`] = `4518`;
 
-exports[`combined features > 2×2 standard + lip + 2×2 compartments + scoop 1`] = `5352`;
+exports[`combined features > 2×2 standard + lip + 2×2 compartments + scoop 1`] = `5856`;
 
 exports[`combined features > 4×4 magnet + label bracket + half-sockets 1`] = `18048`;
 
 exports[`compartments > 2×2 bin with 1×1 (none) compartments 1`] = `2812`;
 
-exports[`compartments > 2×2 bin with 2×2 compartments 1`] = `2852`;
+exports[`compartments > 2×2 bin with 2×2 compartments 1`] = `2988`;
 
-exports[`compartments > 2×2 bin with 3×2 merged top-left compartments 1`] = `2880`;
+exports[`compartments > 2×2 bin with 3×2 merged top-left compartments 1`] = `3016`;
 
-exports[`compartments > 2×2 bin with 4×4 dense grid compartments 1`] = `3140`;
+exports[`compartments > 2×2 bin with 4×4 dense grid compartments 1`] = `3276`;
 
 exports[`custom-shape > 1.5×1.5 half-bin L user halfSockets off 1`] = `2918`;
 
@@ -112,17 +112,17 @@ exports[`height > 2×2 height minimum (2u) 1`] = `2812`;
 
 exports[`height > 2×2 height tall (10u) 1`] = `2812`;
 
-exports[`honeycomb junction > 2×2 bin, 2×1 compartments + front + interior cutouts 1`] = `6572`;
+exports[`honeycomb junction > 2×2 bin, 2×1 compartments + front + interior cutouts 1`] = `6798`;
 
-exports[`honeycomb junction > 2×2 bin, 2×1 compartments + front cutout 1`] = `6508`;
+exports[`honeycomb junction > 2×2 bin, 2×1 compartments + front cutout 1`] = `6734`;
 
-exports[`honeycomb junction > 2×2 bin, 2×1 compartments, cutouts on (sides off) 1`] = `6636`;
+exports[`honeycomb junction > 2×2 bin, 2×1 compartments, cutouts on (sides off) 1`] = `6872`;
 
-exports[`honeycomb junction > 2×2 bin, 2×1 compartments, no cutouts 1`] = `6636`;
+exports[`honeycomb junction > 2×2 bin, 2×1 compartments, no cutouts 1`] = `6872`;
 
-exports[`honeycomb junction > 2×2 bin, 2×2 compartments + interior cutouts 1`] = `6676`;
+exports[`honeycomb junction > 2×2 bin, 2×2 compartments + interior cutouts 1`] = `6928`;
 
-exports[`honeycomb junction > 2×2 bin, 2×2 compartments, no cutouts 1`] = `6532`;
+exports[`honeycomb junction > 2×2 bin, 2×2 compartments, no cutouts 1`] = `6784`;
 
 exports[`honeycomb junction > 2×2×4 honeycomb baseline (no dividers) 1`] = `6940`;
 
@@ -162,7 +162,7 @@ exports[`multiple inserts > 2×2 with 2 circle inserts 1`] = `3304`;
 
 exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `4000`;
 
-exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `4132`;
+exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `4596`;
 
 exports[`scoop > 2×2 scoop auto radius 1`] = `4000`;
 
