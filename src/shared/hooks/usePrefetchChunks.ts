@@ -1,11 +1,7 @@
 import { useEffect } from 'react';
 import { useResponsive } from './useResponsive';
 import { scheduleIdleCallback, cancelIdleCallback } from '@/shared/utils/idle';
-import {
-  preloadWasmBinary,
-  preloadBrepkitWasm,
-  preloadOcctWasm,
-} from '@/shared/generation/wasmPreload';
+import { preloadBrepkitWasm, preloadOcctWasm } from '@/shared/generation/wasmPreload';
 import { useLabsStore } from '@/core/store/labs';
 
 /** How long to wait after mount before starting prefetch (ms) */
@@ -74,10 +70,8 @@ export function usePrefetchChunks(): void {
         const labs = useLabsStore.getState();
         if (labs.isFeatureEnabled('brepkit_kernel')) {
           preloadBrepkitWasm();
-        } else if (labs.isFeatureEnabled('occt_wasm_kernel')) {
-          preloadOcctWasm();
         } else {
-          preloadWasmBinary();
+          preloadOcctWasm();
         }
 
         // Tier 1: High priority — features most users navigate to quickly

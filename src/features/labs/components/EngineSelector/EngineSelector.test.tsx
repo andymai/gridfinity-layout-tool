@@ -19,14 +19,13 @@ vi.mock('../FeatureStatusBadge', () => ({
   ),
 }));
 
-function setEnabled(brepkit: boolean, occt: boolean) {
+function setBrepkitEnabled(brepkit: boolean) {
   useLabsStore.setState((prev) => ({
     preferences: {
       ...prev.preferences,
       enabledFeatures: {
         ...prev.preferences.enabledFeatures,
         brepkit_kernel: brepkit,
-        occt_wasm_kernel: occt,
       },
       lastModified: new Date().toISOString(),
     },
@@ -45,48 +44,37 @@ describe('EngineSelector', () => {
     vi.mocked(trackEvent).mockClear();
   });
 
-  it('marks Default as active when neither flag is on', () => {
+  it('marks Default (occt-wasm) as active when the brepkit flag is off', () => {
     render(<EngineSelector />);
     expect(getSegment('labs.engine.segmentDefault')).toHaveAttribute('aria-pressed', 'true');
-    expect(getSegment('labs.engine.segmentOcctWasm')).toHaveAttribute('aria-pressed', 'false');
     expect(getSegment('labs.engine.segmentBrepkit')).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('reflects Updated OCCT when occt_wasm_kernel is enabled', () => {
-    setEnabled(false, true);
-    render(<EngineSelector />);
-    expect(getSegment('labs.engine.segmentOcctWasm')).toHaveAttribute('aria-pressed', 'true');
-  });
-
-  it('prefers BrepKit when both flags are somehow on', () => {
-    setEnabled(true, true);
+  it('reflects BrepKit when brepkit_kernel is enabled', () => {
+    setBrepkitEnabled(true);
     render(<EngineSelector />);
     expect(getSegment('labs.engine.segmentBrepkit')).toHaveAttribute('aria-pressed', 'true');
+    expect(getSegment('labs.engine.segmentDefault')).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('switching to BrepKit enables brepkit_kernel and disables occt_wasm_kernel', () => {
-    setEnabled(false, true);
+  it('switching to BrepKit enables brepkit_kernel', () => {
     render(<EngineSelector />);
     fireEvent.click(getSegment('labs.engine.segmentBrepkit'));
 
-    const flags = useLabsStore.getState().preferences.enabledFeatures;
-    expect(flags.brepkit_kernel).toBe(true);
-    expect(flags.occt_wasm_kernel).toBe(false);
+    expect(useLabsStore.getState().preferences.enabledFeatures.brepkit_kernel).toBe(true);
   });
 
-  it('switching to Default clears both kernel flags', () => {
-    setEnabled(true, false);
+  it('switching to Default clears the brepkit flag', () => {
+    setBrepkitEnabled(true);
     render(<EngineSelector />);
     fireEvent.click(getSegment('labs.engine.segmentDefault'));
 
-    const flags = useLabsStore.getState().preferences.enabledFeatures;
-    expect(flags.brepkit_kernel).toBe(false);
-    expect(flags.occt_wasm_kernel).toBe(false);
+    expect(useLabsStore.getState().preferences.enabledFeatures.brepkit_kernel).toBe(false);
   });
 
   it('emits a toast with a Reload action on each segment change', () => {
     render(<EngineSelector />);
-    fireEvent.click(getSegment('labs.engine.segmentOcctWasm'));
+    fireEvent.click(getSegment('labs.engine.segmentBrepkit'));
 
     const toasts = useToastStore.getState().toasts;
     expect(toasts).toHaveLength(1);
@@ -95,12 +83,11 @@ describe('EngineSelector', () => {
   });
 
   it('tracks labs_engine_changed with from/to', () => {
-    setEnabled(false, true);
     render(<EngineSelector />);
     fireEvent.click(getSegment('labs.engine.segmentBrepkit'));
 
     expect(trackEvent).toHaveBeenCalledWith('labs_engine_changed', {
-      from: 'occt-wasm',
+      from: 'default',
       to: 'brepkit',
     });
   });
@@ -113,20 +100,8 @@ describe('EngineSelector', () => {
     expect(trackEvent).not.toHaveBeenCalled();
   });
 
-  it('reconciles stale state when both flags are on and the displayed-active segment is clicked', () => {
-    setEnabled(true, true);
-    render(<EngineSelector />);
-    fireEvent.click(getSegment('labs.engine.segmentBrepkit'));
-
-    const flags = useLabsStore.getState().preferences.enabledFeatures;
-    expect(flags.brepkit_kernel).toBe(true);
-    expect(flags.occt_wasm_kernel).toBe(false);
-    expect(useToastStore.getState().toasts).toHaveLength(1);
-  });
-
   it('replaces a prior reload toast instead of stacking on rapid switches', () => {
     render(<EngineSelector />);
-    fireEvent.click(getSegment('labs.engine.segmentOcctWasm'));
     fireEvent.click(getSegment('labs.engine.segmentBrepkit'));
     fireEvent.click(getSegment('labs.engine.segmentDefault'));
 
@@ -136,7 +111,7 @@ describe('EngineSelector', () => {
   });
 
   it('shows the experimental warning when BrepKit is selected', () => {
-    setEnabled(true, false);
+    setBrepkitEnabled(true);
     render(<EngineSelector />);
     expect(screen.getByText(/still in development/i)).toBeInTheDocument();
   });

@@ -1344,7 +1344,6 @@
   "labs.engine.reloadToast": "Lade neu, um die 3D-Engine-Änderung anzuwenden.",
   "labs.engine.segmentBrepkit": "BrepKit",
   "labs.engine.segmentDefault": "Standard",
-  "labs.engine.segmentOcctWasm": "OCCT aktualisiert",
   "labs.engine.statusStable": "Stabil",
   "labs.engine.title": "3D-Engine",
   "labs.experimentalKernel.labsSettings": "Labs-Einstellungen",

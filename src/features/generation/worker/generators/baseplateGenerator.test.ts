@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { BaseplateParams } from '@/shared/types/bin';
 import type { MeshData } from '../../bridge/types';
+import { initTestKernel } from '@/test/initTestKernel';
 
 type GenerateFn = (
   params: BaseplateParams,
@@ -13,15 +14,7 @@ type GenerateFn = (
 let generateBaseplate: GenerateFn;
 
 beforeAll(async () => {
-  const { initFromOC } = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await opencascade({ wasmBinary });
-  initFromOC(OC);
+  await initTestKernel();
 
   const mod = await import('./baseplateGenerator');
   generateBaseplate = mod.generateBaseplate;

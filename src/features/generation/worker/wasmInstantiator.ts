@@ -1,16 +1,15 @@
 /**
- * Orchestrates WASM loading for OpenCascade.
+ * Orchestrates geometry-kernel WASM loading for the generation worker — occt-wasm
+ * (the default kernel) or brepkit-wasm (opt-in via Labs).
  *
- * The Emscripten-generated JS uses environment detection (window, importScripts)
- * to locate the .wasm file. In Vite's ES module workers, neither exists, so the
- * WASM path resolves incorrectly. We provide explicit locateFile overrides using
- * Vite's ?url imports to ensure the correct path in all environments.
+ * Emscripten-generated JS locates its .wasm via environment detection (window,
+ * importScripts); in Vite's ES module workers neither exists, so the path
+ * resolves incorrectly. We pass an explicit URL from Vite's ?url import instead,
+ * which resolves correctly in all environments.
  */
 
-import { initFromOC, registerKernel, BrepkitAdapter, loadFont } from 'brepjs';
+import { registerKernel, BrepkitAdapter, loadFont } from 'brepjs';
 
-import opencascadeSingleInit from 'brepjs-opencascade/src/brepjs_single.js';
-import singleWasmUrl from 'brepjs-opencascade/src/brepjs_single.wasm?url';
 import atkinsonFontUrl from './assets/fonts/AtkinsonHyperlegible-Regular.ttf?url';
 import jetbrainsMonoFontUrl from './assets/fonts/JetBrainsMono-Regular.ttf?url';
 import allertaStencilFontUrl from './assets/fonts/AllertaStencil-Regular.ttf?url';
@@ -33,35 +32,14 @@ function getHardwareConcurrency(): number {
 }
 
 /**
- * Load and initialize OpenCascade.
- *
- * Initialises the brepjs kernel with the loaded OpenCascade instance.
- */
-export async function loadOpenCascade(): Promise<WasmLoadResult> {
-  const hardwareConcurrency = getHardwareConcurrency();
-
-  const moduleConfig = {
-    locateFile: (path: string) => (path.endsWith('.wasm') ? singleWasmUrl : path),
-  };
-  const OC = await (opencascadeSingleInit as (config: typeof moduleConfig) => Promise<unknown>)(
-    moduleConfig
-  );
-
-  initFromOC(OC);
-  await loadEmbeddedFonts();
-
-  return { isThreaded: false, hardwareConcurrency };
-}
-
-/**
  * Loads the bundled engraved-text fonts into the brepjs font registry.
  * Failures are swallowed: the worker keeps running and text generation
  * downgrades to a no-op (label tabs without engraving), so a network
  * blip on the font asset never bricks the whole generation pipeline.
  *
- * Called from both OCCT loaders (`loadOpenCascade` and `loadOcctWasm`);
- * brepkit-wasm skips font loading because it doesn't implement the
- * topology operations `textBuilder` needs.
+ * Called from the occt-wasm loader (`loadOcctWasm`); brepkit-wasm skips
+ * font loading because it doesn't implement the topology operations
+ * `textBuilder` needs.
  */
 const EMBEDDED_FONTS: readonly { readonly family: string; readonly url: string }[] = [
   { family: 'atkinson', url: atkinsonFontUrl },
@@ -110,32 +88,15 @@ export async function loadBrepkit(): Promise<WasmLoadResult> {
 }
 
 /**
- * Strong references to live `OcctKernel` wrappers, held for the worker's
- * lifetime. The wrapper owns the raw Embind kernel and frees it via a
- * `FinalizationRegistry` when collected; brepjs's `OcctWasmAdapter` only
- * borrows the raw kernel, so dropping the wrapper lets GC delete the kernel
- * out from under the adapter — the next generation then throws "Cannot pass
- * deleted object as a pointer of type OcctKernel*". Pinning the wrapper here
- * keeps it reachable; `worker.terminate()` frees the whole WASM heap, so no
- * explicit disposal is needed. Removable once brepjs's adapter retains the
- * wrapper itself (andymai/brepjs#1091).
- */
-const retainedOcctWasmKernels = new Set<unknown>();
-
-/**
  * Load and initialize the occt-wasm geometry kernel.
  *
- * Uses occt-wasm 3.0's public `OcctKernel.init()` and the
- * `getRawModule()` / `getRawKernel()` accessors, which return types
- * structurally compatible with brepjs's `OcctWasmAdapter` constructor.
- * Registered under kernel id `'occt-wasm'` to coexist with `'occt'`
- * (brepjs-opencascade).
+ * Registered under kernel id `'occt-wasm'` — the production default kernel.
  */
 export async function loadOcctWasm(): Promise<WasmLoadResult> {
   const hardwareConcurrency = getHardwareConcurrency();
 
-  // Dynamic imports keep occt-wasm out of the main worker chunk; Vite emits
-  // a separate chunk + WASM asset that only fetches when the labs flag is on.
+  // Dynamic imports keep occt-wasm out of the main worker chunk; Vite emits a
+  // separate chunk + WASM asset, fetched when geometry generation first runs.
   const [{ OcctWasmAdapter }, { OcctKernel }, occtWasmUrlMod] = await Promise.all([
     import('brepjs'),
     import('occt-wasm'),
@@ -143,16 +104,17 @@ export async function loadOcctWasm(): Promise<WasmLoadResult> {
   ]);
 
   const kernel = await OcctKernel.init({ wasm: occtWasmUrlMod.default });
-  // Pin the wrapper for the worker's lifetime — see `retainedOcctWasmKernels`.
-  retainedOcctWasmKernels.add(kernel);
-  // occt-wasm 3.0's exported `OcctWasmModule` still omits `VectorString` /
-  // `getExceptionMessage`, and `OcctRawKernel` still omits IGES + XCAF
-  // methods that brepjs's interface declares. Both surfaces exist at
-  // runtime; the structural-type widening is incomplete on the occt-wasm
-  // side. Filed upstream — keep the cast until exports match.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument -- see comment above
-  const adapter = new OcctWasmAdapter(kernel.getRawModule() as any, kernel.getRawKernel() as any);
-  registerKernel('occt-wasm', adapter);
+  // fromKernel retains the wrapper for the worker's lifetime, so no manual GC
+  // pin is needed (worker.terminate() frees the whole WASM heap). The cast
+  // bridges occt-wasm's exported module type, still narrower than brepjs's
+  // expected owner (missing VectorString / getExceptionMessage); both exist at
+  // runtime — filed upstream.
+  registerKernel(
+    'occt-wasm',
+    OcctWasmAdapter.fromKernel(
+      kernel as unknown as Parameters<typeof OcctWasmAdapter.fromKernel>[0]
+    )
+  );
 
   // Engraved-text APIs are kernel-agnostic at brepjs's surface but use
   // OCCT primitives under the hood; occt-wasm satisfies them, so font

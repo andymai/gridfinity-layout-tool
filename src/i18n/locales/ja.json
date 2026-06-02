@@ -1344,7 +1344,6 @@
   "labs.engine.reloadToast": "3Dエンジンの変更を適用するには再読み込みが必要です。",
   "labs.engine.segmentBrepkit": "BrepKit",
   "labs.engine.segmentDefault": "デフォルト",
-  "labs.engine.segmentOcctWasm": "OCCT(更新版)",
   "labs.engine.statusStable": "安定版",
   "labs.engine.title": "3Dエンジン",
   "labs.experimentalKernel.labsSettings": "ラボ設定",

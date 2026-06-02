@@ -2,21 +2,26 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock all heavy dependencies before importing the module under test
 vi.mock('brepjs', () => ({
-  initFromOC: vi.fn(),
   registerKernel: vi.fn(),
   BrepkitAdapter: vi.fn(),
+  OcctWasmAdapter: Object.assign(vi.fn(), { fromKernel: vi.fn(() => ({})) }),
+  loadFont: vi.fn(),
 }));
 
-// Mock Emscripten single-threaded factory
-const mockSingleInit = vi.fn();
-vi.mock('brepjs-opencascade/src/brepjs_single.js', () => ({
-  default: (...args: unknown[]) => mockSingleInit(...args),
+// Mock occt-wasm kernel factory
+const mockGetRawModule = vi.fn(() => ({}));
+const mockGetRawKernel = vi.fn(() => ({}));
+const mockOcctInit = vi.fn(async () => ({
+  getRawModule: mockGetRawModule,
+  getRawKernel: mockGetRawKernel,
+}));
+vi.mock('occt-wasm', () => ({
+  OcctKernel: { init: (...args: unknown[]) => mockOcctInit(...args) },
+}));
+vi.mock('occt-wasm/dist/occt-wasm.wasm?url', () => ({
+  default: '/mocked/occt-wasm.wasm',
 }));
 
-// Mock WASM URL import
-vi.mock('brepjs-opencascade/src/brepjs_single.wasm?url', () => ({
-  default: '/mocked/brepjs_single.wasm',
-}));
 vi.mock('brepkit-wasm', () => ({
   // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- Mock class for BrepKernel constructor
   BrepKernel: class MockBrepKernel {},
@@ -25,47 +30,22 @@ vi.mock('brepkit-wasm', () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   vi.resetModules();
-  mockSingleInit.mockResolvedValue({ ready: true });
 });
 
 describe('wasmInstantiator', () => {
-  it('uses single-threaded init with locateFile override', async () => {
-    const { loadOpenCascade } = await import('./wasmInstantiator');
+  describe('loadOcctWasm', () => {
+    it('initializes occt-wasm and registers it as the kernel', async () => {
+      const { registerKernel, OcctWasmAdapter } = await import('brepjs');
+      const { loadOcctWasm } = await import('./wasmInstantiator');
 
-    const result = await loadOpenCascade();
+      const result = await loadOcctWasm();
 
-    expect(mockSingleInit).toHaveBeenCalledTimes(1);
-    expect(mockSingleInit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        locateFile: expect.any(Function),
-      })
-    );
-
-    const { locateFile } = mockSingleInit.mock.calls[0][0] as {
-      locateFile: (p: string) => string;
-    };
-    expect(locateFile('brepjs_single.wasm')).toBe('/mocked/brepjs_single.wasm');
-    expect(locateFile('other.js')).toBe('other.js');
-
-    expect(result.isThreaded).toBe(false);
-    expect(result.hardwareConcurrency).toBeGreaterThan(0);
-  });
-
-  it('calls initFromOC with factory result', async () => {
-    const { initFromOC } = await import('brepjs');
-    const { loadOpenCascade } = await import('./wasmInstantiator');
-
-    await loadOpenCascade();
-
-    expect(initFromOC).toHaveBeenCalledWith({ ready: true });
-  });
-
-  it('returns hardwareConcurrency from navigator', async () => {
-    const { loadOpenCascade } = await import('./wasmInstantiator');
-
-    const result = await loadOpenCascade();
-
-    expect(result.hardwareConcurrency).toBeGreaterThan(0);
+      expect(mockOcctInit).toHaveBeenCalledWith({ wasm: '/mocked/occt-wasm.wasm' });
+      expect(OcctWasmAdapter.fromKernel).toHaveBeenCalledTimes(1);
+      expect(registerKernel).toHaveBeenCalledWith('occt-wasm', expect.anything());
+      expect(result.isThreaded).toBe(false);
+      expect(result.hardwareConcurrency).toBeGreaterThan(0);
+    });
   });
 
   describe('loadBrepkit', () => {

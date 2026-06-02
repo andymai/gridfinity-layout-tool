@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, beforeAll } from 'vitest';
 import type { Shape3D } from 'brepjs';
+import { initTestKernel } from '@/test/initTestKernel';
 
 type BuildCellSocketFn = (cellW_mm: number, cellD_mm: number) => Shape3D;
 type BuildBaseSocketFn = (
@@ -22,15 +23,8 @@ let buildSimplifiedCellSocket: BuildCellSocketFn;
 let meshShape: (shape: unknown) => { vertices: ArrayLike<number>; triangles: ArrayLike<number> };
 
 beforeAll(async () => {
-  const { initFromOC, mesh: meshFn } = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await opencascade({ wasmBinary });
-  initFromOC(OC);
+  const { mesh: meshFn } = await import('brepjs');
+  await initTestKernel();
 
   const mod = await import('./socketBuilder');
   buildBaseSocket = mod.buildBaseSocket;

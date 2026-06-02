@@ -36,13 +36,13 @@ class MockWorker {
     const msgType = (data as { type: string }).type;
     // Auto-respond to INIT
     if (msgType === 'INIT') {
-      const kernel = (data as { kernel?: string }).kernel ?? 'opencascade';
+      const kernel = (data as { kernel?: string }).kernel ?? 'occt-wasm';
       setTimeout(() => {
         this.simulateResponse({
           type: 'INIT_READY',
           isThreaded: false,
           hardwareConcurrency: 4,
-          kernel: kernel as 'opencascade' | 'brepkit',
+          kernel: kernel as 'occt-wasm' | 'brepkit',
         });
       }, 0);
     }
@@ -110,7 +110,7 @@ describe('GenerationBridge', () => {
       await initPromise;
 
       expect(mockWorkerInstance).not.toBeNull();
-      expect(getWorker().messages[0]).toEqual({ type: 'INIT', kernel: 'opencascade' });
+      expect(getWorker().messages[0]).toEqual({ type: 'INIT', kernel: 'occt-wasm' });
     });
 
     it('passes kernel name from constructor in INIT message', async () => {

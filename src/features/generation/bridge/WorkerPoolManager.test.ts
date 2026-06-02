@@ -71,12 +71,12 @@ describe('WorkerPoolManager', () => {
     expect(manager.get()).toBeNull();
   });
 
-  it('passes opencascade kernel by default', async () => {
+  it('passes occt-wasm kernel by default', async () => {
     const manager = new WorkerPoolManager();
     await manager.acquire();
 
     const { WorkerPool: MockCtor } = await import('./WorkerPool');
-    expect(vi.mocked(MockCtor)).toHaveBeenCalledWith(undefined, 'opencascade');
+    expect(vi.mocked(MockCtor)).toHaveBeenCalledWith(undefined, 'occt-wasm');
   });
 
   it('passes brepkit kernel when brepkit_kernel feature is enabled', async () => {

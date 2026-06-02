@@ -70,15 +70,15 @@ exports[`custom-shape > 3×3 L with lip 1`] = `5282`;
 
 exports[`custom-shape > 3×3 O-shape (ring) with lip 1`] = `5552`;
 
-exports[`custom-shape > 3×3 T with lip 1`] = `4384`;
+exports[`custom-shape > 3×3 T with lip 1`] = `4388`;
 
-exports[`custom-shape > 3×3 U with front + left handles (multi-side polygon) 1`] = `5832`;
+exports[`custom-shape > 3×3 U with front + left handles (multi-side polygon) 1`] = `5836`;
 
-exports[`custom-shape > 3×3 U with front cutout (single candidate edge) 1`] = `5432`;
+exports[`custom-shape > 3×3 U with front cutout (single candidate edge) 1`] = `5436`;
 
-exports[`custom-shape > 3×3 U with honeycomb pattern (multi-side polygon pattern) 1`] = `18646`;
+exports[`custom-shape > 3×3 U with honeycomb pattern (multi-side polygon pattern) 1`] = `18650`;
 
-exports[`custom-shape > 3×3 U with lip 1`] = `5352`;
+exports[`custom-shape > 3×3 U with lip 1`] = `5356`;
 
 exports[`dimensions > 0.5×0.5 no lip 1`] = `468`;
 
@@ -180,7 +180,7 @@ exports[`solid cutouts > 2×2 solid with circle cutout 1`] = `2784`;
 
 exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`] = `2700`;
 
-exports[`solid cutouts > 2×2 solid with ellipse cutout 1`] = `3166`;
+exports[`solid cutouts > 2×2 solid with ellipse cutout 1`] = `2548`;
 
 exports[`solid cutouts > 2×2 solid with grouped cutouts 1`] = `2578`;
 
@@ -192,7 +192,7 @@ exports[`solid cutouts > 2×2 solid with rectangle with scoop cutout 1`] = `3244
 
 exports[`solid cutouts > 2×2 solid with rectangle, edge gate disables a single wall 1`] = `2862`;
 
-exports[`solid cutouts > 2×2 solid with rectangle, split scoop (W only) cuts only left/right walls 1`] = `2712`;
+exports[`solid cutouts > 2×2 solid with rectangle, split scoop (W only) cuts only left/right walls 1`] = `2688`;
 
 exports[`solid cutouts > 2×2 solid with rotated 45° cutout 1`] = `2580`;
 

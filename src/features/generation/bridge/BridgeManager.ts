@@ -162,13 +162,11 @@ export class BridgeManager {
 export const bridgeManager = new BridgeManager();
 
 /**
- * Pick the geometry kernel from labs flags. Both `brepkit_kernel` and
- * `occt_wasm_kernel` are mutually exclusive experiments; if both are
- * accidentally toggled on, brepkit wins (older flag takes precedence).
+ * Pick the geometry kernel from labs flags. occt-wasm is the default engine;
+ * `brepkit_kernel` opts into the alternative Rust-native kernel.
  */
 function resolveKernel(): KernelName {
   const labs = useLabsStore.getState();
   if (labs.isFeatureEnabled('brepkit_kernel')) return 'brepkit';
-  if (labs.isFeatureEnabled('occt_wasm_kernel')) return 'occt-wasm';
-  return 'opencascade';
+  return 'occt-wasm';
 }

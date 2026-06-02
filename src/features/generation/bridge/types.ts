@@ -8,7 +8,7 @@
 import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
 
 /** Geometry kernel backend for BREP operations */
-export type KernelName = 'opencascade' | 'brepkit' | 'occt-wasm';
+export type KernelName = 'brepkit' | 'occt-wasm';
 export type WorkerMessage =
   | InitMessage
   | GenerateMessage

@@ -21,7 +21,7 @@ import { PerfCollector } from '../generators/pipeline/perfCollector';
 let activeRequestId: string | null = null;
 let activeController: AbortController | null = null;
 let kernelInitialized = false;
-let activeKernel: KernelName = 'opencascade';
+let activeKernel: KernelName = 'occt-wasm';
 let isThreaded = false;
 let hardwareConcurrency = 4;
 
@@ -93,15 +93,14 @@ export function runGeneration(
   const perfCollector = new PerfCollector();
 
   try {
-    // brepjs perf stats are only meaningful for the opencascade kernel
-    if (activeKernel === 'opencascade') resetPerformanceStats();
+    resetPerformanceStats();
     resetBooleanFallbackStats();
     const meshData = generator(signal, perfCollector);
 
     if (activeRequestId !== requestId) return;
 
     const timingMs = performance.now() - startTime;
-    const kernelPerfStats = activeKernel === 'opencascade' ? getPerformanceStats() : {};
+    const kernelPerfStats = getPerformanceStats();
     const perfSnapshot = perfCollector.snapshot(timingMs);
 
     const maybeCopy = <T extends Float32Array | Uint32Array>(buf: T): T =>
@@ -177,9 +176,7 @@ export function runGeneration(
     resetAllShapeCacheStats();
     resetBaseplateCacheStats();
 
-    if (activeKernel === 'opencascade') {
-      respond({ type: 'KERNEL_PERF_STATS', requestId, stats: kernelPerfStats });
-    }
+    respond({ type: 'KERNEL_PERF_STATS', requestId, stats: kernelPerfStats });
 
     const fallbackRecords = getBooleanFallbackStats();
     if (fallbackRecords.length > 0) {

@@ -4,7 +4,8 @@ import { usePrefetchChunks } from './usePrefetchChunks';
 
 // Mock WASM preload — we only care that it's called, not its internals
 vi.mock('@/shared/generation/wasmPreload', () => ({
-  preloadWasmBinary: vi.fn(),
+  preloadOcctWasm: vi.fn(),
+  preloadBrepkitWasm: vi.fn(),
 }));
 
 // Mock useResponsive to control device type

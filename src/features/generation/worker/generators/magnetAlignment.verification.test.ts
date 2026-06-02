@@ -15,6 +15,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import type { MeshData } from '@/features/generation/bridge/types';
+import { initTestKernel } from '@/test/initTestKernel';
 import { HOLE_OFFSET, SIZE } from './generatorTypes';
 
 type GenerateFn = (
@@ -25,15 +26,7 @@ type GenerateFn = (
 let generateBin: GenerateFn;
 
 beforeAll(async () => {
-  const { initFromOC } = await import('brepjs');
-  const opencascade = (await import('brepjs-opencascade/src/brepjs_single.js')).default;
-  const { readFileSync } = await import('fs');
-  const { join } = await import('path');
-
-  const wasmPath = join(process.cwd(), 'node_modules/brepjs-opencascade/src/brepjs_single.wasm');
-  const wasmBinary = readFileSync(wasmPath);
-  const OC = await opencascade({ wasmBinary });
-  initFromOC(OC);
+  await initTestKernel();
 
   const mod = await import('@/features/generation/worker/generators/binGenerator');
   generateBin = mod.generateBin;

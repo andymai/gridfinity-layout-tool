@@ -73,7 +73,7 @@ export class WorkerPool {
   private poolSize: number;
   private readonly kernel: KernelName;
 
-  constructor(poolSize?: number, kernel: KernelName = 'opencascade') {
+  constructor(poolSize?: number, kernel: KernelName = 'occt-wasm') {
     this.poolSize = poolSize ?? defaultPoolSize();
     this.kernel = kernel;
   }
