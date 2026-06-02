@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('brepjs', () => ({
   registerKernel: vi.fn(),
   BrepkitAdapter: vi.fn(),
-  OcctWasmAdapter: vi.fn(),
+  OcctWasmAdapter: Object.assign(vi.fn(), { fromKernel: vi.fn(() => ({})) }),
   loadFont: vi.fn(),
 }));
 
@@ -41,7 +41,7 @@ describe('wasmInstantiator', () => {
       const result = await loadOcctWasm();
 
       expect(mockOcctInit).toHaveBeenCalledWith({ wasm: '/mocked/occt-wasm.wasm' });
-      expect(OcctWasmAdapter).toHaveBeenCalledTimes(1);
+      expect(OcctWasmAdapter.fromKernel).toHaveBeenCalledTimes(1);
       expect(registerKernel).toHaveBeenCalledWith('occt-wasm', expect.anything());
       expect(result.isThreaded).toBe(false);
       expect(result.hardwareConcurrency).toBeGreaterThan(0);
