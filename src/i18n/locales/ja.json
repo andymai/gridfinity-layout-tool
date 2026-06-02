@@ -88,6 +88,7 @@
   "baseplate.paddingAnchor.bc": "ビンを手前中央に配置",
   "baseplate.paddingAnchor.bl": "ビンを手前左に配置",
   "baseplate.paddingAnchor.br": "ビンを手前右に配置",
+  "baseplate.paddingAnchor.custom": "カスタム",
   "baseplate.paddingAnchor.c": "ビンを中央に配置",
   "baseplate.paddingAnchor.clampedWarning": "余白が許容範囲に丸められました。ビンの位置が選択したアンカーと正確に一致しない場合があります。",
   "baseplate.paddingAnchor.label": "余白アンカー",

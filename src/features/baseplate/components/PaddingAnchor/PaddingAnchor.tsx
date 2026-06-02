@@ -1,6 +1,6 @@
 import { useCallback, useRef, type KeyboardEvent } from 'react';
 import { cn } from '@/design-system/cn';
-import { AlertTriangleIcon } from '@/design-system/Icon';
+import { AlertTriangleIcon, ArrowLeftIcon } from '@/design-system/Icon';
 import { focusRing, interactiveTransition } from '@/design-system/variants';
 import { useTranslation } from '@/i18n';
 import type { PaddingAnchor as PaddingAnchorValue } from '@/core/types';
@@ -24,6 +24,22 @@ const ARROW_DELTAS: Record<string, readonly [number, number] | undefined> = {
   ArrowDown: [0, 1],
 };
 
+// ArrowLeftIcon points left (west). Rotating it clockwise by these amounts aims
+// each cell's arrow at the drawer corner/edge that anchor snaps the baseplate to.
+// `null` marks the center cell, which renders a target glyph instead of an arrow.
+// Classes are spelled out literally so Tailwind's JIT emits the arbitrary rotations.
+const ARROW_ROTATION: Record<ConcreteAnchor, string | null> = {
+  tl: 'rotate-45',
+  tc: 'rotate-90',
+  tr: 'rotate-[135deg]',
+  ml: 'rotate-0',
+  c: null,
+  mr: 'rotate-180',
+  bl: 'rotate-[315deg]',
+  bc: 'rotate-[270deg]',
+  br: 'rotate-[225deg]',
+};
+
 function clampToGrid(v: number): number {
   return Math.max(0, Math.min(2, v));
 }
@@ -41,6 +57,18 @@ const FIRST_ANCHOR: ConcreteAnchor = 'tl';
 function rovingTabIndex(anchor: ConcreteAnchor, value: PaddingAnchorValue): 0 | -1 {
   if (value === 'custom') return anchor === FIRST_ANCHOR ? 0 : -1;
   return anchor === value ? 0 : -1;
+}
+
+function CellGlyph({ anchor }: { readonly anchor: ConcreteAnchor }) {
+  const rotation = ARROW_ROTATION[anchor];
+  if (rotation === null) {
+    return (
+      <span className="flex h-2 w-2 items-center justify-center rounded-full border border-current">
+        <span className="h-0.5 w-0.5 rounded-full bg-current" />
+      </span>
+    );
+  }
+  return <ArrowLeftIcon size="sm" className={cn('h-3 w-3', rotation)} strokeWidth={2.25} />;
 }
 
 export function PaddingAnchor({
@@ -77,6 +105,7 @@ export function PaddingAnchor({
     >
       {ANCHORS.map((anchor) => {
         const selected = value === anchor;
+        const cellLabel = t(`baseplate.paddingAnchor.${anchor}`);
         return (
           <button
             key={anchor}
@@ -87,21 +116,24 @@ export function PaddingAnchor({
             type="button"
             role="radio"
             aria-checked={selected}
-            aria-label={t(`baseplate.paddingAnchor.${anchor}`)}
+            aria-label={cellLabel}
+            title={cellLabel}
             tabIndex={rovingTabIndex(anchor, value)}
             disabled={disabled}
             onClick={() => onChange(anchor)}
             onKeyDown={(e) => handleKeyDown(anchor, e)}
             className={cn(
-              'flex h-3.5 w-3.5 items-center justify-center rounded-full border',
+              'flex h-5 w-5 items-center justify-center rounded-md border',
               selected
-                ? 'border-content bg-content'
-                : 'border-stroke-subtle bg-surface-elevated hover:border-content-secondary hover:bg-surface-hover',
+                ? 'border-content bg-content text-surface'
+                : 'border-transparent text-content-tertiary hover:border-stroke-subtle hover:bg-surface-hover hover:text-content-secondary',
               'disabled:cursor-not-allowed disabled:opacity-50',
               interactiveTransition,
               ...focusRing
             )}
-          />
+          >
+            <CellGlyph anchor={anchor} />
+          </button>
         );
       })}
       {showClampWarning && (

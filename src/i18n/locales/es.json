@@ -88,6 +88,7 @@
   "baseplate.paddingAnchor.bc": "Anclar bins frente-centro",
   "baseplate.paddingAnchor.bl": "Anclar bins frente-izquierda",
   "baseplate.paddingAnchor.br": "Anclar bins frente-derecha",
+  "baseplate.paddingAnchor.custom": "Personalizado",
   "baseplate.paddingAnchor.c": "Centrar bins",
   "baseplate.paddingAnchor.clampedWarning": "El relleno se limitó al rango permitido; la posición de los bins puede no coincidir exactamente con el anclaje seleccionado.",
   "baseplate.paddingAnchor.label": "Anclaje de relleno",
