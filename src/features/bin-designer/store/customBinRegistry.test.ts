@@ -45,6 +45,20 @@ describe('customBinRegistry', () => {
       expect(loadRegistry()).toEqual([]);
     });
 
+    it('drops entries that are missing or have wrong-typed fields', () => {
+      const mixed = [
+        makeRef('bin-1'),
+        { id: 'bin-2', name: 'No dimensions' },
+        { id: 42, name: 'Numeric id', width: 1, depth: 1, height: 1, updatedAt: 'x' },
+        null,
+        'not an object',
+        makeRef('bin-3'),
+      ];
+      localStorage.setItem('gridfinity-custom-bins-v1', JSON.stringify(mixed));
+      const loaded = loadRegistry();
+      expect(loaded.map((r) => r.id)).toEqual(['bin-1', 'bin-3']);
+    });
+
     it('strips legacy thumbnail field from stored entries', () => {
       const legacyRefs = [
         {

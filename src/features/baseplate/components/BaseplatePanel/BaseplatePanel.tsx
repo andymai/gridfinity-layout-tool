@@ -17,7 +17,6 @@ import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { Select } from '@/design-system/Select';
 import { RulerIcon, LayoutGridIcon } from '@/design-system/Icon';
-import { Stepper } from '@/design-system/Stepper';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
@@ -33,6 +32,8 @@ import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { EditableDimensions } from './EditableDimensions';
 import { PaddingSchematic } from './PaddingSchematic';
 import { SplitViewStrip } from './SplitViewStrip';
+import { CornerRadiusControl } from './CornerRadiusControl';
+import { GridDimensionStepper } from './GridDimensionStepper';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
 import { PADDING_MAX } from '../PaddingStepper';
 import type { BaseplateParams } from '@/core/types';
@@ -441,135 +442,8 @@ export function BaseplatePanel() {
     </div>
   );
 }
-/** Corner radius controls with optional per-corner mode. */
-function CornerRadiusControl({
-  cornerRadius,
-  cornerRadii,
-  maxRadius,
-  onUniformChange,
-  onPerCornerChange,
-}: {
-  readonly cornerRadius: number | undefined;
-  readonly cornerRadii:
-    | { readonly tl: number; readonly tr: number; readonly bl: number; readonly br: number }
-    | undefined;
-  readonly maxRadius: number;
-  readonly onUniformChange: (r: number) => void;
-  readonly onPerCornerChange: (radii: { tl: number; tr: number; bl: number; br: number }) => void;
-}) {
-  const t = useTranslation();
-  const perCorner = cornerRadii !== undefined;
-  const uniformR = cornerRadius ?? 2.5;
-
-  return (
-    <>
-      <SliderInput
-        label={t('baseplate.cornerRadius')}
-        value={uniformR}
-        onChange={onUniformChange}
-        min={0}
-        max={maxRadius}
-        step={0.5}
-        unit="mm"
-        info={t('baseplate.cornerRadiusInfo')}
-        disabled={perCorner}
-      />
-      <Checkbox
-        label={t('baseplate.cornerRadiusUnlink')}
-        checked={perCorner}
-        onChange={() => {
-          if (perCorner) {
-            onUniformChange(cornerRadii.tl);
-          } else {
-            onPerCornerChange({ tl: uniformR, tr: uniformR, bl: uniformR, br: uniformR });
-          }
-        }}
-      />
-      {perCorner && (
-        <>
-          <SliderInput
-            label={t('baseplate.cornerRadiusTL')}
-            value={cornerRadii.tl}
-            onChange={(v) => onPerCornerChange({ ...cornerRadii, tl: v })}
-            min={0}
-            max={maxRadius}
-            step={0.5}
-            unit="mm"
-          />
-          <SliderInput
-            label={t('baseplate.cornerRadiusTR')}
-            value={cornerRadii.tr}
-            onChange={(v) => onPerCornerChange({ ...cornerRadii, tr: v })}
-            min={0}
-            max={maxRadius}
-            step={0.5}
-            unit="mm"
-          />
-          <SliderInput
-            label={t('baseplate.cornerRadiusBL')}
-            value={cornerRadii.bl}
-            onChange={(v) => onPerCornerChange({ ...cornerRadii, bl: v })}
-            min={0}
-            max={maxRadius}
-            step={0.5}
-            unit="mm"
-          />
-          <SliderInput
-            label={t('baseplate.cornerRadiusBR')}
-            value={cornerRadii.br}
-            onChange={(v) => onPerCornerChange({ ...cornerRadii, br: v })}
-            min={0}
-            max={maxRadius}
-            step={0.5}
-            unit="mm"
-          />
-        </>
-      )}
-    </>
-  );
-}
-
 /** Print Settings header summary: "{gridUnit}mm · {bed}mm" or "{gridUnit}mm · {w}×{d}mm" for asymmetric beds. */
 function formatPrintSettingsSummary(gridUnitMm: number, bedW: number, bedD: number): string {
   const bed = bedW === bedD ? `${bedW}mm` : `${bedW}\u00d7${bedD}mm`;
   return `${gridUnitMm}mm \u00b7 ${bed}`;
-}
-
-interface GridDimensionStepperProps {
-  readonly label: string;
-  readonly value: number;
-  readonly onChange: (value: number) => void;
-  readonly halfGridMode: boolean;
-  readonly disabled: boolean;
-}
-
-/** Compact stepper for a custom grid width or depth dimension (grid units). */
-function GridDimensionStepper({
-  label,
-  value,
-  onChange,
-  halfGridMode,
-  disabled,
-}: GridDimensionStepperProps) {
-  const step = halfGridMode ? 0.5 : 1;
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-content-tertiary">{label}</span>
-      <Stepper
-        size="sm"
-        value={value}
-        onChange={onChange}
-        onStep={(delta) =>
-          onChange(
-            Math.min(CONSTRAINTS.GRID_MAX, Math.max(CONSTRAINTS.GRID_MIN, value + delta * step))
-          )
-        }
-        disabled={disabled}
-        min={CONSTRAINTS.GRID_MIN}
-        max={CONSTRAINTS.GRID_MAX}
-        step={step}
-        aria-label={label}
-      />
-    </div>
-  );
 }

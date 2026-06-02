@@ -19,13 +19,12 @@ import type {
   SplitPreviewResult,
   BaseplateExportResult,
   ExportSlot,
-  PendingExport,
+  PendingExportMap,
 } from './bridgeTypes';
 
 export interface BridgeExportContext {
   prepareExport: (slot: ExportSlot) => Promise<string>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- pendingExports values are PendingExport<T> with different T per slot; type safety enforced at each call site
-  readonly pendingExports: Map<ExportSlot, PendingExport<any>>;
+  readonly pendingExports: PendingExportMap;
   startExportTimeout: (slot: ExportSlot, requestId: string, timeoutMs: number) => void;
   postMessage: (message: WorkerMessage) => void;
 }

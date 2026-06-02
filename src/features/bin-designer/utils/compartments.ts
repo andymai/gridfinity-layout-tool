@@ -8,6 +8,12 @@
  * - Deriving divider wall segments from the cell map
  */
 
+/* eslint-disable max-lines -- Cohesive compartment-grid algorithms (grid build, merge/split,
+   id renumbering, divider derivation) are tightly coupled: normalizeIds() renumbers cell IDs on
+   every merge/split, so the derivation here and any parallel arrays must stay in lockstep
+   (CLAUDE.md gotcha #6). Splitting these print-critical paths for a soft line-count limit risks
+   regressions; kept together deliberately. */
+
 import type { CompartmentConfig, DividerOverride } from '../types';
 
 // Grid Creation

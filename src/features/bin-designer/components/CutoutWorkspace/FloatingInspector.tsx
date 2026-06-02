@@ -375,7 +375,7 @@ export function FloatingInspector({
           <CutoutEngraveLabelControls
             key={`${singleCutout.id}-text`}
             cutout={singleCutout}
-            disabled={disabled ?? false}
+            disabled={disabled}
             onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
           />
         </div>

@@ -44,17 +44,39 @@ export interface CustomBinRef {
 }
 
 /**
+ * Validate one raw localStorage entry and project it onto the `CustomBinRef`
+ * shape. Returns `null` for anything that does not match so malformed or
+ * legacy records are dropped rather than trusted. Building the object
+ * explicitly also discards the legacy `thumbnail` field (and any other extra
+ * keys) without copying them into the in-memory registry.
+ */
+function parseEntry(raw: unknown): CustomBinRef | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const { id, name, width, depth, height, updatedAt } = raw as Record<string, unknown>;
+  if (
+    typeof id !== 'string' ||
+    typeof name !== 'string' ||
+    typeof width !== 'number' ||
+    typeof depth !== 'number' ||
+    typeof height !== 'number' ||
+    typeof updatedAt !== 'string'
+  ) {
+    return null;
+  }
+  return { id: id as DesignId, name, width, depth, height, updatedAt };
+}
+
+/**
  * Retrieve the saved custom bin registry from localStorage.
  *
- * @returns The array of saved `CustomBinRef` entries; returns an empty array if no registry is stored, the stored value is not a valid array, or reading/parsing fails.
+ * @returns The array of saved `CustomBinRef` entries; returns an empty array if no registry is stored, the stored value is not a valid array, or reading/parsing fails. Malformed entries are dropped individually.
  */
 export function loadRegistry(): CustomBinRef[] {
-  const result = loadFromLocalStorage<Array<Record<string, unknown>>>(REGISTRY_KEY);
+  const result = loadFromLocalStorage<unknown>(REGISTRY_KEY);
   if (!isOk(result) || !result.value) return [];
   if (!Array.isArray(result.value)) return [];
 
-  // Strip legacy thumbnail field to reduce localStorage usage
-  return result.value.map(({ thumbnail: _, ...rest }) => rest as unknown as CustomBinRef);
+  return result.value.map(parseEntry).filter((entry): entry is CustomBinRef => entry !== null);
 }
 
 /**

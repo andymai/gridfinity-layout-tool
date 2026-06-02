@@ -6,6 +6,11 @@
  * and ungrouped cutouts with individual fillets.
  */
 
+/* eslint-disable max-lines -- Cohesive cutout geometry builder; the boolean grouping, adaptive
+   scoop fillets, and path/shape construction share local helpers and geometry invariants.
+   Splitting these print-critical paths for a soft line-count limit risks regressions; kept
+   together deliberately. */
+
 import {
   draw,
   drawRoundedRectangle,

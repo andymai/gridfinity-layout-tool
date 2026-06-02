@@ -100,8 +100,6 @@ export function buildMatingShell(scope: DisposalScope, inputs: LidInputs): Shape
 export function buildLidFloor(scope: DisposalScope, inputs: LidInputs): Shape3D {
   const { topThickness } = inputs;
   return scope.register(
-    buildOutlineDrawing(inputs, 0)
-      .sketchOnPlane('XY', -topThickness)
-      .extrude(topThickness) as Shape3D
+    buildOutlineDrawing(inputs, 0).sketchOnPlane('XY', -topThickness).extrude(topThickness)
   );
 }
