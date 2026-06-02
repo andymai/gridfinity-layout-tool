@@ -18,6 +18,7 @@ import {
   buildCompartmentsCacheKey,
   compartmentCavitiesAreViable,
   compartmentCavitiesAreViableWithOverrides,
+  compartmentCornersRoundCleanly,
   compartmentEdgesAreSinglePair,
   compartmentsAreRectangular,
   hasDividerOverrides,
@@ -88,6 +89,7 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
     hasMultipleCompartments(params) &&
     compartmentsAreRectangular(params) &&
     compartmentCavitiesAreViable(params, innerW, innerD) &&
+    compartmentCornersRoundCleanly(params, innerW, innerD) &&
     overridesAllowCutPath;
 
   // Shell cache key — versioned + quantized for deterministic matching.
