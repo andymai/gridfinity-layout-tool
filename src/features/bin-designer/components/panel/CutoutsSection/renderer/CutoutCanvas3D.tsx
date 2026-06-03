@@ -17,6 +17,7 @@ import type {
 } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { ResizeHandle, InteractionMode, PreviewMap } from '../useCutoutInteraction';
+import type { FitCue } from '../cutoutSectionVisibility';
 import type { SegmentHoverInfo } from '../handlers';
 import type { RulerMeasurement } from '../handlers/rulerHandler';
 import type { AlignmentGuide } from '../geometry';
@@ -106,6 +107,8 @@ export interface CutoutCanvas3DProps {
   readonly rulerMeasurement?: RulerMeasurement | null;
   /** Ref to keep ruler handler informed of current zoom */
   readonly rulerZoomRef?: RefObject<number>;
+  /** Active insertion-fit cue to draw on the single-selected cutout. */
+  readonly fitCue?: FitCue;
 }
 
 export function CutoutCanvas3D({
@@ -119,6 +122,7 @@ export function CutoutCanvas3D({
   preview,
   mode,
   drawingPreview,
+  fitCue,
   pathDrawingPreview,
   activeGuides,
   marquee,
@@ -299,6 +303,7 @@ export function CutoutCanvas3D({
         tooltipInfo={tooltipInfo}
         groupBounds={groupBounds}
         drawingPreview={drawingPreview}
+        fitCue={fitCue}
         pathDrawingPreview={pathDrawingPreview}
         activeGuides={activeGuides}
         marqueeWorld={marqueeWorld}
