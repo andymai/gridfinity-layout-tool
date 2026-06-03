@@ -119,7 +119,7 @@ export function SingleCutoutInspector({
             />
           </div>
           <SliderInput
-            label="Rotation"
+            label={t('binDesigner.cutouts.rotation')}
             value={getEffective(cutout, preview, 'rotation')}
             onChange={(rotation) => {
               const clamped = clampRotationToBounds(cutout, rotation, binWidth, binDepth);
@@ -132,7 +132,7 @@ export function SingleCutoutInspector({
             disabled={disabled}
           />
           <SliderInput
-            label="Depth"
+            label={t('binDesigner.cutouts.cutDepth')}
             value={cutout.cutDepth}
             onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
             min={0.5}

@@ -113,6 +113,24 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   size. Polygons are sized **across-flats** (matches hex/Allen specs);
   per-shape sizing + hardware presets live in `CutoutShapeControls`.
 
+- **Entry chamfer**: `chamferWidth` (mm) lofts a ~45° flare at the cut's top rim
+  so parts self-center on insertion. The generator builds it via `loftWith`
+  between the nominal profile and a `chamferWidth`-expanded top profile; it
+  composes with scoop fillets and is clamped to `cutDepth − 0.2` so it can't
+  exceed the pocket. Available on `rectangle` / `circle` / `polygon` / `slot`.
+
+- **Parametric arrays**: a cutout can carry a `CutoutArrayConfig` (`array`) that
+  replicates it across a `grid`, `staggered`, or `radial` pattern from a single
+  **master**. Placement math lives in `@/shared/utils/cutoutArray`
+  (`arrayInstances` → offsets, `expandCutoutArray` → concrete `Cutout[]`), shared
+  by the worker (cut tools) and the 2D editor (instance meshes) so both derive
+  identical positions. Instance 0 is always the master (a real cut, keeps its
+  id/placement); derived instances get ids `${master.id}::a${i}`. Total instances
+  are capped at `MAX_ARRAY_INSTANCES`. Arrays are restricted to **ungrouped,
+  non-path** cutouts; `flattenCutoutArray` / `applyFlattenArray` bake instances
+  into independent cutouts. Array controls appear in both the full-screen
+  workspace and the sidebar editor (`CutoutArrayControls`).
+
 ## Gotchas
 
 1. **Compartment cells must form rectangles** - `isRectangularSelection()` validates

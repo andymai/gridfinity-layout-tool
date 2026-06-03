@@ -25,15 +25,25 @@ export function FitCueOverlay3D({ cutout, cue }: FitCueOverlay3DProps) {
     // Clearance adds `clearance` to each bbox dimension; the chamfer's top rim
     // flares by `2·chamfer`. Expand about the cutout center so the cue is
     // concentric with the drawn nominal outline.
-    const expand = cue === 'clearance' ? (cutout.clearance ?? 0) : 2 * (cutout.chamferWidth ?? 0);
+    const isClearance = cue === 'clearance';
+    const expand = isClearance ? (cutout.clearance ?? 0) : 2 * (cutout.chamferWidth ?? 0);
     if (expand <= 0.001 || cutout.shape === 'path') return null;
+
+    // Polygon clearance scales width proportionally with depth so the shape
+    // stays regular — matching the generator (cutoutBuilder). Other cases add
+    // `expand` to both axes.
+    const depth = cutout.depth + expand;
+    const width =
+      isClearance && cutout.shape === 'polygon' && cutout.depth > 0
+        ? cutout.width * (depth / cutout.depth)
+        : cutout.width + expand;
 
     const expanded: Cutout = {
       ...cutout,
-      x: cutout.x - expand / 2,
-      y: cutout.y - expand / 2,
-      width: cutout.width + expand,
-      depth: cutout.depth + expand,
+      x: cutout.x - (width - cutout.width) / 2,
+      y: cutout.y - (depth - cutout.depth) / 2,
+      width,
+      depth,
     };
     const poly = cutoutToPolygon(expanded);
     if (!poly || poly.length === 0) return null;
