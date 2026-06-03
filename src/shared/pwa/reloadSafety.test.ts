@@ -73,6 +73,29 @@ describe('reloadSafety', () => {
       expect(isEditableElementFocused()).toBe(true);
     });
 
+    it('detects a focused numeric input', () => {
+      const input = document.createElement('input');
+      input.type = 'number';
+      document.body.appendChild(input);
+      input.focus();
+      expect(isEditableElementFocused()).toBe(true);
+    });
+
+    it('ignores a focused non-text input (checkbox)', () => {
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      document.body.appendChild(checkbox);
+      checkbox.focus();
+      expect(isEditableElementFocused()).toBe(false);
+    });
+
+    it('ignores a focused select', () => {
+      const select = document.createElement('select');
+      document.body.appendChild(select);
+      select.focus();
+      expect(isEditableElementFocused()).toBe(false);
+    });
+
     it('detects a contenteditable element', () => {
       const div = document.createElement('div');
       div.setAttribute('contenteditable', 'true');

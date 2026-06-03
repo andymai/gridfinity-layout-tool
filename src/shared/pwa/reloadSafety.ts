@@ -56,20 +56,44 @@ export function isRecentlyActive(windowMs: number, now: number = Date.now()): bo
   return lastInputAt !== 0 && now - lastInputAt < windowMs;
 }
 
-/** Reset the input clock. Test-only. */
+/** Reset the input clock and tear down any listeners. Test-only. */
 export function resetActivityClock(): void {
   lastInputAt = 0;
+  detach?.();
+  detach = null;
+  trackerCount = 0;
 }
+
+/** Input types that don't hold typed text, so focus on them shouldn't block a reload. */
+const NON_TEXT_INPUT_TYPES = new Set([
+  'button',
+  'checkbox',
+  'color',
+  'file',
+  'hidden',
+  'image',
+  'radio',
+  'range',
+  'reset',
+  'submit',
+]);
 
 /**
  * True when focus is in a text-editable element (label/notes field, etc.).
  * Reloading mid-edit would discard whatever the user is typing.
+ *
+ * Scoped to genuine text entry: a focused checkbox/radio/range/button or a
+ * <select> must not count, since focus is sticky (it survives going idle) and
+ * would otherwise permanently block the long-idle auto-apply.
  */
 export function isEditableElementFocused(): boolean {
   const el = document.activeElement as HTMLElement | null;
   if (!el) return false;
   const tag = el.tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  if (tag === 'TEXTAREA') return true;
+  if (tag === 'INPUT') {
+    return !NON_TEXT_INPUT_TYPES.has((el as HTMLInputElement).type);
+  }
   if (el.isContentEditable) return true;
   // Attribute fallback: `isContentEditable` (which also resolves inherited
   // editability) isn't implemented in every environment.
