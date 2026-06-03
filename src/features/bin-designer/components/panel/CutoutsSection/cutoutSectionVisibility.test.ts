@@ -65,4 +65,11 @@ describe('formatFitSummary', () => {
       'No fit allowance'
     );
   });
+
+  it('clamps the chamfer to cut depth (matches the control)', () => {
+    // chamfer 2mm but cutDepth 0.5 → capped at 0.3mm, like CutoutFitControls.
+    expect(
+      formatFitSummary(c({ shape: 'circle', clearance: 0, chamferWidth: 2, cutDepth: 0.5 }), labels)
+    ).toBe('Chamfer 0.3mm');
+  });
 });

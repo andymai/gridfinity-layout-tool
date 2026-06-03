@@ -28,12 +28,17 @@ export function hasFitControls(cutout: Pick<Cutout, 'shape' | 'cutDepth'>): bool
  * are passed in (already localized) to keep this free of the i18n hook type.
  */
 export function formatFitSummary(
-  cutout: Pick<Cutout, 'shape' | 'clearance' | 'chamferWidth'>,
+  cutout: Pick<Cutout, 'shape' | 'clearance' | 'chamferWidth' | 'cutDepth'>,
   labels: { readonly clearance: string; readonly chamfer: string; readonly none: string }
 ): string {
   const parts: string[] = [];
   const clearance = CLEARANCE_SHAPES.includes(cutout.shape) ? (cutout.clearance ?? 0) : 0;
-  const chamfer = CHAMFER_SHAPES.includes(cutout.shape) ? (cutout.chamferWidth ?? 0) : 0;
+  // Clamp to the same cap CutoutFitControls applies, so a chamfer left over from
+  // a deeper cut doesn't read larger here than the control (and the worker) use.
+  const maxChamfer = Math.max(0, cutout.cutDepth - 0.2);
+  const chamfer = CHAMFER_SHAPES.includes(cutout.shape)
+    ? Math.min(cutout.chamferWidth ?? 0, maxChamfer)
+    : 0;
   if (clearance > 0) parts.push(`${labels.clearance} +${clearance}mm`);
   if (chamfer > 0) parts.push(`${labels.chamfer} ${chamfer}mm`);
   return parts.length > 0 ? parts.join(' · ') : labels.none;
