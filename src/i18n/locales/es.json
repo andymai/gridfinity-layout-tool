@@ -987,6 +987,7 @@
   "errorBoundary.heading": "Algo salió mal",
   "errorBoundary.hint": "Vuelve a intentarlo o actualiza la página. Puedes descargar una copia de seguridad de tus diseños para conservarlos.",
   "errorBoundary.downloadBackup": "Descargar copia de seguridad",
+  "errorBoundary.backupDone": "Copia de seguridad descargada.",
   "errorBoundary.backupError": "No se pudo crear la copia de seguridad. Actualiza la página.",
   "errorBoundary.tryAgain": "Intentar de nuevo",
   "errorBoundary.undoLastChange": "Deshacer último cambio",

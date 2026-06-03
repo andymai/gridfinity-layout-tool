@@ -41,6 +41,7 @@ const fallback: Translations = {
   'errorBoundary.tryAgain': 'Try Again',
   'errorBoundary.undoLastChange': 'Undo Last Change',
   'errorBoundary.downloadBackup': 'Download Backup',
+  'errorBoundary.backupDone': 'Backup downloaded.',
   'errorBoundary.backupError': "Couldn't create a backup. Try refreshing the page.",
   'common.loading': 'Loading...',
   'seo.title': 'Gridfinity Planner & Layout Tool — Free Bin Generator',

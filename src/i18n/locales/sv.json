@@ -987,6 +987,7 @@
   "errorBoundary.heading": "Något gick fel",
   "errorBoundary.hint": "Försök igen eller ladda om sidan. Du kan ladda ner en säkerhetskopia av dina layouter för att spara dem.",
   "errorBoundary.downloadBackup": "Ladda ner säkerhetskopia",
+  "errorBoundary.backupDone": "Säkerhetskopia nedladdad.",
   "errorBoundary.backupError": "Det gick inte att skapa en säkerhetskopia. Ladda om sidan.",
   "errorBoundary.tryAgain": "Försök igen",
   "errorBoundary.undoLastChange": "Ångra senaste ändringen",

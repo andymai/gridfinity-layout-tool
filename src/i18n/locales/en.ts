@@ -45,6 +45,7 @@ const en: Record<string, string> = {
   'errorBoundary.tryAgain': 'Try Again',
   'errorBoundary.undoLastChange': 'Undo Last Change',
   'errorBoundary.downloadBackup': 'Download Backup',
+  'errorBoundary.backupDone': 'Backup downloaded.',
   'errorBoundary.backupError': "Couldn't create a backup. Try refreshing the page.",
 
   'common.customize': 'Customize',

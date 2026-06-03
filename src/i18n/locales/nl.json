@@ -987,6 +987,7 @@
   "errorBoundary.heading": "Er is iets misgegaan",
   "errorBoundary.hint": "Probeer het opnieuw of vernieuw de pagina. Je kunt een back-up van je indelingen downloaden om ze veilig te bewaren.",
   "errorBoundary.downloadBackup": "Back-up downloaden",
+  "errorBoundary.backupDone": "Back-up gedownload.",
   "errorBoundary.backupError": "Kan geen back-up maken. Vernieuw de pagina.",
   "errorBoundary.tryAgain": "Opnieuw proberen",
   "errorBoundary.undoLastChange": "Laatste wijziging ongedaan maken",

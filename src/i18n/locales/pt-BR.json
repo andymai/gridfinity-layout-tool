@@ -987,6 +987,7 @@
   "errorBoundary.heading": "Algo deu errado",
   "errorBoundary.hint": "Tente novamente ou atualize a página. Você pode baixar um backup dos seus layouts para mantê-los seguros.",
   "errorBoundary.downloadBackup": "Baixar backup",
+  "errorBoundary.backupDone": "Backup baixado.",
   "errorBoundary.backupError": "Não foi possível criar um backup. Atualize a página.",
   "errorBoundary.tryAgain": "Tentar novamente",
   "errorBoundary.undoLastChange": "Desfazer última alteração",

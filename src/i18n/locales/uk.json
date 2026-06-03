@@ -987,6 +987,7 @@
   "errorBoundary.heading": "Щось пішло не так",
   "errorBoundary.hint": "Спробуйте ще раз або оновіть сторінку. Ви можете завантажити резервну копію своїх розкладок, щоб зберегти їх.",
   "errorBoundary.downloadBackup": "Завантажити резервну копію",
+  "errorBoundary.backupDone": "Резервну копію завантажено.",
   "errorBoundary.backupError": "Не вдалося створити резервну копію. Оновіть сторінку.",
   "errorBoundary.tryAgain": "Спробувати знову",
   "errorBoundary.undoLastChange": "Скасувати останню зміну",

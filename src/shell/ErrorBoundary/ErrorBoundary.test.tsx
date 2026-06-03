@@ -15,13 +15,19 @@ vi.mock('@/shared/analytics/posthog', () => ({
 }));
 
 // Mock storage: the boundary now offers a non-destructive backup, not a wipe.
+// Mock resolves with the real ExportResult shape ({ json, exported, skipped }).
 vi.mock('@/core/storage', () => ({
-  downloadArchive: vi.fn().mockResolvedValue({ json: '{}', layoutCount: 0 }),
+  downloadArchive: vi.fn().mockResolvedValue({ json: '{}', exported: 0, skipped: 0 }),
 }));
 
-// Mock the library store the boundary reads imperatively.
+// Mock the library store the boundary reads imperatively. Minimal but
+// correctly-shaped LayoutLibrary to avoid drift from the real type.
 vi.mock('@/core/store/library', () => ({
-  useLibraryStore: { getState: () => ({ library: { entries: [], folders: [] } }) },
+  useLibraryStore: {
+    getState: () => ({
+      library: { version: '1.0', activeLayoutId: 'test-layout', settings: {}, entries: [] },
+    }),
+  },
 }));
 
 // Mock the undo history store. `historyState.canUndo` is mutable per test.
@@ -42,6 +48,7 @@ vi.mock('@/i18n', async (importOriginal) => {
         'errorBoundary.tryAgain': 'Try Again',
         'errorBoundary.undoLastChange': 'Undo Last Change',
         'errorBoundary.downloadBackup': 'Download Backup',
+        'errorBoundary.backupDone': 'Backup downloaded.',
         'errorBoundary.backupError': "Couldn't create a backup.",
       };
       return translations[key] ?? key;
@@ -136,6 +143,17 @@ describe('ErrorBoundary', () => {
 
     fireEvent.click(screen.getByText('Download Backup'));
     expect(downloadArchive).toHaveBeenCalled();
+  });
+
+  it('confirms when the backup download succeeds', async () => {
+    render(
+      <ErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </ErrorBoundary>
+    );
+
+    fireEvent.click(screen.getByText('Download Backup'));
+    await vi.waitFor(() => expect(screen.getByText('Backup downloaded.')).toBeInTheDocument());
   });
 
   it('shows an error message when the backup fails', async () => {

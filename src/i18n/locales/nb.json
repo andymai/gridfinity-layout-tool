@@ -987,6 +987,7 @@
   "errorBoundary.heading": "Noe gikk galt",
   "errorBoundary.hint": "Prøv igjen eller oppdater siden. Du kan laste ned en sikkerhetskopi av oppsettene dine for å ta vare på dem.",
   "errorBoundary.downloadBackup": "Last ned sikkerhetskopi",
+  "errorBoundary.backupDone": "Sikkerhetskopi lastet ned.",
   "errorBoundary.backupError": "Kunne ikke opprette en sikkerhetskopi. Prøv å oppdatere siden.",
   "errorBoundary.tryAgain": "Prøv igjen",
   "errorBoundary.undoLastChange": "Angre siste endring",
