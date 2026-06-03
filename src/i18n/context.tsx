@@ -37,9 +37,12 @@ const fallback: Translations = {
   'errorBoundary.heading': 'Something went wrong',
   'errorBoundary.description': 'The app encountered an unexpected error. Your layout data is safe.',
   'errorBoundary.hint':
-    'Try refreshing the page. If the problem persists, resetting app data will restore defaults while your browser may still have cached data.',
+    'Try again or refresh the page. You can download a backup of your layouts to keep them safe.',
   'errorBoundary.tryAgain': 'Try Again',
-  'errorBoundary.resetAppData': 'Reset App Data',
+  'errorBoundary.undoLastChange': 'Undo Last Change',
+  'errorBoundary.downloadBackup': 'Download Backup',
+  'errorBoundary.backupDone': 'Backup downloaded.',
+  'errorBoundary.backupError': "Couldn't create a backup. Try refreshing the page.",
   'common.loading': 'Loading...',
   'seo.title': 'Gridfinity Planner & Layout Tool — Free Bin Generator',
   'seo.description':

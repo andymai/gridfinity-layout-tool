@@ -1,7 +1,5 @@
 /* eslint-disable i18next/no-literal-string -- Catastrophic fallback; i18n may not be available */
 
-import { clearAllAppData } from '@/core/storage';
-
 /** Shown when IndexedDB initialization fails and the app cannot load saved data. */
 export function InitErrorFallback({ error }: { error: Error }) {
   return (
@@ -25,23 +23,21 @@ export function InitErrorFallback({ error }: { error: Error }) {
         </div>
         <h1 className="text-lg font-semibold mb-2 text-content">Unable to load app</h1>
         <p className="text-sm text-content-secondary mb-4">
-          There was a problem loading your saved data. This is usually caused by corrupted storage.
-          Try clearing your browser data for this site.
+          There was a problem loading your saved data. This is often temporary — reloading usually
+          fixes it. Your layouts and designs have not been deleted.
         </p>
         <pre className="text-left text-xs rounded-lg p-3 mb-4 overflow-auto max-h-24 text-error bg-surface-elevated border border-stroke-subtle">
           {error.message}
         </pre>
-        <button
-          onClick={() => {
-            // clearAllAppData is async and awaits IDB; reload after it completes
-            void clearAllAppData()
-              .catch(() => {})
-              .then(() => window.location.reload());
-          }}
-          className="btn btn-primary"
-        >
-          Clear Data & Reload
+        <button onClick={() => window.location.reload()} className="btn btn-primary">
+          Reload
         </button>
+        <p className="text-xs text-content-tertiary mt-4">
+          If reloading doesn&rsquo;t help, your browser&rsquo;s stored data for this site may be
+          corrupted. You can clear it from your browser&rsquo;s site settings to recover. That
+          removes your saved layouts, so export a backup first if you can still open the app
+          elsewhere.
+        </p>
       </div>
     </div>
   );
