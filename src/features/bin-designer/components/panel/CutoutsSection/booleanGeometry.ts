@@ -135,6 +135,14 @@ function pathRing(c: Cutout): Ring | null {
 /**
  * Convert a cutout to a polygon-clipping `Polygon` (single outer ring,
  * no holes). Returns `null` for cutouts that are too degenerate to outline.
+ *
+ * Insertion `clearance` is intentionally NOT applied here: the editor shows the
+ * nominal size the user typed, while the worker expands by clearance at cut
+ * time. For grouped Pathfinder previews this means two insert shapes can read
+ * as touching-but-separate in the preview yet merge in the exported mesh — a
+ * sub-millimetre discrepancy we accept so the on-screen outline matches the
+ * entered dimensions. Don't "fix" this by adding clearance without revisiting
+ * that trade-off.
  */
 export function cutoutToPolygon(c: Cutout): Polygon | null {
   if (c.shape === 'path') {

@@ -103,14 +103,17 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
 
   useEffect(() => () => strokeGeometry?.dispose(), [strokeGeometry]);
 
+  // Keyed only on the distance field (i.e. geometry) so dragging doesn't
+  // recompile the shader; the color/opacity uniforms are updated in-place
+  // below, mirroring SDFShapeMesh.
   const fillMaterial = useMemo(() => {
     if (!distField) return null;
     return new THREE.ShaderMaterial({
       vertexShader: outlineVertexShader,
       fragmentShader: outlineFragmentShader,
       uniforms: {
-        u_fillColor: { value: new THREE.Vector3(cutFillColor.r, cutFillColor.g, cutFillColor.b) },
-        u_opacity: { value: isDragging ? 0.85 : 0.95 },
+        u_fillColor: { value: new THREE.Vector3() },
+        u_opacity: { value: 0.95 },
         u_distField: { value: distField.texture },
         u_boundsMin: { value: new THREE.Vector2(distField.boundsMin[0], distField.boundsMin[1]) },
         u_boundsSize: {
@@ -121,7 +124,14 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
       depthTest: false,
       side: THREE.DoubleSide,
     });
-  }, [cutFillColor, isDragging, distField]);
+  }, [distField]);
+
+  useEffect(() => {
+    if (!fillMaterial) return;
+    const u = fillMaterial.uniforms;
+    (u.u_fillColor.value as THREE.Vector3).set(cutFillColor.r, cutFillColor.g, cutFillColor.b);
+    u.u_opacity.value = isDragging ? 0.85 : 0.95;
+  }, [fillMaterial, cutFillColor, isDragging]);
 
   useEffect(() => () => fillMaterial?.dispose(), [fillMaterial]);
 
