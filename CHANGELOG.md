@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.136.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.136.1...gridfinity-layout-tool-v4.136.2) (2026-06-03)
+
+
+### Bug Fixes
+
+* **generation:** include overhang expansion in innerW/innerD ([#1984](https://github.com/andymai/gridfinity-layout-tool/issues/1984)) ([d6f4e4a](https://github.com/andymai/gridfinity-layout-tool/commit/d6f4e4ad8e92d67c415cb5b4ce8bcc04e7e6b965))
+
 ## [4.136.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.136.0...gridfinity-layout-tool-v4.136.1) (2026-06-03)
 
 
