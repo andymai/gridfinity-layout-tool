@@ -10,7 +10,9 @@
  * space keeps working unchanged — only the outline itself knows it's an N-gon.
  */
 
-import { MIN_POLYGON_SIDES, MAX_POLYGON_SIDES } from '@/features/bin-designer/types';
+// Import via the shared barrel (not @/features/*) so this shared utility never
+// reaches into a feature — keeps the features → shared → core direction intact.
+import { MIN_POLYGON_SIDES, MAX_POLYGON_SIDES } from '@/shared/types/bin';
 
 export interface PolygonPoint {
   readonly x: number;
@@ -84,6 +86,17 @@ export function regularPolygonPoints(sides: number, width: number, depth: number
 }
 
 /**
+ * Width-to-depth aspect ratio of a regular polygon in flat-top orientation
+ * (≈1.1547 for a hexagon: point-to-point is wider than flat-to-flat).
+ */
+function polygonAspect(sides: number): number {
+  const b = boundsOf(unitPolygonVertices(sides));
+  const uw = b.maxX - b.minX;
+  const uh = b.maxY - b.minY;
+  return uh > 0 ? uw / uh : 1;
+}
+
+/**
  * Width × depth bounding box for a *regular* polygon with the given across-flats
  * distance. Across-flats is the flat-to-flat span, which in the flat-top
  * orientation is the vertical (depth) extent; the horizontal (width) extent is
@@ -94,11 +107,20 @@ export function polygonBoxFromAcrossFlats(
   acrossFlats: number
 ): { width: number; depth: number } {
   const safeAf = Math.max(0, acrossFlats);
-  const b = boundsOf(unitPolygonVertices(sides));
-  const uw = b.maxX - b.minX;
-  const uh = b.maxY - b.minY;
-  const aspect = uh > 0 ? uw / uh : 1;
-  return { width: safeAf * aspect, depth: safeAf };
+  return { width: safeAf * polygonAspect(sides), depth: safeAf };
+}
+
+/**
+ * Largest across-flats that keeps a *regular* polygon inside both bin
+ * dimensions. Because a flat-top polygon is wider than it is tall, the width
+ * (not just the depth) can be the binding constraint — so cap by both, which
+ * prevents the box from being clamped on one axis and distorted into an
+ * irregular shape.
+ */
+export function maxAcrossFlats(sides: number, maxWidth: number, maxDepth: number): number {
+  const aspect = polygonAspect(sides);
+  const widthLimited = aspect > 0 ? maxWidth / aspect : maxWidth;
+  return Math.max(0, Math.min(maxDepth, widthLimited));
 }
 
 /**

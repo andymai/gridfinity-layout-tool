@@ -12,7 +12,11 @@ import {
   DEFAULT_POLYGON_SIDES,
   CLEARANCE_SHAPES,
 } from '@/features/bin-designer/types';
-import { polygonBoxFromAcrossFlats, acrossFlatsFromBox } from '@/shared/utils/cutoutPolygon';
+import {
+  polygonBoxFromAcrossFlats,
+  acrossFlatsFromBox,
+  maxAcrossFlats,
+} from '@/shared/utils/cutoutPolygon';
 import { useTranslation } from '@/i18n';
 import { Select } from '@/design-system';
 import type { SelectOption } from '@/design-system';
@@ -47,9 +51,14 @@ export function CutoutShapeControls({
   const sides = cutout.sides ?? DEFAULT_POLYGON_SIDES;
   const isClearanceShape = CLEARANCE_SHAPES.includes(cutout.shape);
 
-  /** Apply a new across-flats value, preserving the regular-polygon aspect + center. */
+  /**
+   * Apply a new across-flats value, preserving the regular-polygon aspect +
+   * center. Clamped so the derived width can't exceed maxWidth (which would
+   * otherwise distort the polygon when resizeKeepingCenter clips one axis).
+   */
   const applyAcrossFlats = (acrossFlats: number, nextSides: number = sides): void => {
-    const box = polygonBoxFromAcrossFlats(nextSides, acrossFlats);
+    const af = Math.min(acrossFlats, maxAcrossFlats(nextSides, maxWidth, maxDepth));
+    const box = polygonBoxFromAcrossFlats(nextSides, af);
     const resized = resizeKeepingCenter(cutout, box.width, box.depth, maxWidth, maxDepth);
     onUpdate({ sides: nextSides, ...resized });
   };
@@ -78,7 +87,7 @@ export function CutoutShapeControls({
             value={acrossFlatsFromBox(sides, cutout.depth)}
             onChange={(af) => applyAcrossFlats(af)}
             min={2}
-            max={maxDepth}
+            max={maxAcrossFlats(sides, maxWidth, maxDepth)}
             step={0.5}
             unit="mm"
             disabled={disabled}

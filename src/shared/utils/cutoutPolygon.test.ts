@@ -4,6 +4,7 @@ import {
   regularPolygonPoints,
   polygonBoxFromAcrossFlats,
   acrossFlatsFromBox,
+  maxAcrossFlats,
   slotCornerRadius,
 } from './cutoutPolygon';
 
@@ -76,6 +77,27 @@ describe('polygonBoxFromAcrossFlats', () => {
     const box = polygonBoxFromAcrossFlats(6, 10);
     const b = bounds(regularPolygonPoints(6, box.width, box.depth));
     expect(b.maxY - b.minY).toBeCloseTo(10, 4);
+  });
+});
+
+describe('maxAcrossFlats', () => {
+  it('is bound by width when the polygon is wider than it is tall', () => {
+    // Hexagon aspect ≈1.1547 → width is the binding constraint when maxWidth==maxDepth.
+    const af = maxAcrossFlats(6, 100, 100);
+    const box = polygonBoxFromAcrossFlats(6, af);
+    expect(box.width).toBeLessThanOrEqual(100 + 1e-6);
+    expect(box.depth).toBeLessThanOrEqual(100 + 1e-6);
+    expect(af).toBeLessThan(100); // width limit kicks in below the depth limit
+  });
+
+  it('keeps the resulting box regular within both bounds', () => {
+    const af = maxAcrossFlats(6, 60, 200);
+    const box = polygonBoxFromAcrossFlats(6, af);
+    expect(box.width).toBeCloseTo(60, 4); // width-limited
+  });
+
+  it('never returns negative', () => {
+    expect(maxAcrossFlats(6, 0, 0)).toBe(0);
   });
 });
 

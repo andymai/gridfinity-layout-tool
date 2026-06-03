@@ -137,7 +137,7 @@ function buildUnrotatedCutoutShape(cutout: {
   // center (cutout.x + cutout.width/2), so the enlarged shape stays aligned.
   // Missing clearance / non-insert shapes keep their exact nominal size.
   const clearance =
-    CLEARANCE_SHAPES.includes(cutout.shape as never) && cutout.clearance
+    CLEARANCE_SHAPES.includes(cutout.shape as never) && cutout.clearance !== undefined
       ? Math.max(0, cutout.clearance)
       : 0;
   const w = cutout.width + clearance;
