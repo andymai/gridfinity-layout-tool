@@ -241,9 +241,9 @@ export interface Cutout {
    */
   readonly engraveLabel?: boolean;
   /**
-   * Which side of the cutout (in its local rotated frame) the engraved
-   * label sits on. Defaults to 'top' (back-of-cutout in local frame).
-   * Ignored when `engraveLabel` is false.
+   * Which side of the cutout the engraved label sits on, in WORLD coordinates
+   * (top = +Y, does not rotate with the cutout — see {@link CutoutTextSide}).
+   * Defaults to 'top'. Ignored when `engraveLabel` is false.
    */
   readonly textSide?: CutoutTextSide;
   /**

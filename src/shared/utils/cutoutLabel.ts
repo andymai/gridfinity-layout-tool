@@ -122,6 +122,11 @@ export function cutoutLabelPlacement(
       centerX = (maxX + interiorMaxX) / 2;
       centerY = (minY + maxY) / 2;
       break;
+    default:
+      // Defensive: corrupt/hand-edited data could carry a side outside the
+      // union, leaving the placement fields unassigned. Bail rather than
+      // return garbage.
+      return null;
   }
   if (availW <= 0 || availD <= 0) return null;
   return { centerX, centerY, availW, availD };

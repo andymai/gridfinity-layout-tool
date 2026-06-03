@@ -16,9 +16,13 @@ export type TextMode = 'engrave' | 'emboss' | 'through-cut';
 export type TextFontFamily = 'atkinson' | 'jetbrains-mono' | 'allerta-stencil';
 
 /**
- * Which side of a cutout the engraved text sits on, expressed in the
- * cutout's local frame (rotates with the cutout). Text orientation
- * itself stays world-aligned for legibility.
+ * Which side of a cutout the engraved text sits on. Interpreted in WORLD
+ * coordinates (top = +Y, bottom = -Y, left = -X, right = +X) — it does NOT
+ * rotate with the cutout. The label is placed in the gap between the cutout's
+ * rotation-aware AABB and the bin interior on that side, and the text reads
+ * left-to-right regardless of cutout rotation. See
+ * `@/shared/utils/cutoutLabel` (`cutoutLabelPlacement`), the single
+ * placement implementation shared by the generation engraver and the 2D editor.
  */
 export type CutoutTextSide = 'top' | 'bottom' | 'left' | 'right';
 

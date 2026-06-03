@@ -5,14 +5,18 @@
  * rectangle → enable "Engrave label" + type text → confirm the label appears
  * on the editor canvas (it previously only showed in the 3D preview).
  *
- * Not part of CI — manual `pnpm test:e2e` invocation for review-time checks.
+ * Opt-in only — heavy WebGL interaction with a loose pixel-diff assertion, so
+ * it's gated behind RUN_VISUAL_E2E to stay out of the default `pnpm test:e2e`
+ * run.
  *
  * Run with:
- *   pnpm test:e2e e2e/bin-designer/cutout-engraved-label-visual.spec.ts --project=chromium
+ *   RUN_VISUAL_E2E=1 pnpm test:e2e e2e/bin-designer/cutout-engraved-label-visual.spec.ts --project=chromium
  */
 
 import type { Page } from '@playwright/test';
 import { test, expect } from '../fixtures';
+
+test.skip(!process.env.RUN_VISUAL_E2E, 'manual visual spec — set RUN_VISUAL_E2E=1 to run');
 
 test.use({
   launchOptions: {
