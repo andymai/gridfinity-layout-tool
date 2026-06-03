@@ -17,6 +17,27 @@ export const solidCutouts: ScenarioCase[] = [
       cutouts: [makeCutout({ shape: 'circle', width: 20, depth: 20 })],
     },
   }),
+  defineScenario('solid cutouts', '2\u00d72 solid with hexagon (polygon) cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [makeCutout({ shape: 'polygon', sides: 6, width: 18, depth: 16 })],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with hexagon cutout + insertion clearance', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [makeCutout({ shape: 'polygon', sides: 6, width: 18, depth: 16, clearance: 0.2 })],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with slot (stadium) cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [makeCutout({ shape: 'slot', width: 30, depth: 12 })],
+    },
+  }),
   defineScenario('solid cutouts', '2\u00d72 solid with rectangle with scoop cutout', {
     params: {
       style: 'solid',

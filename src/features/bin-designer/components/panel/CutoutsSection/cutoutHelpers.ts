@@ -4,6 +4,19 @@
  */
 
 import type { Cutout, CutoutShape } from '@/features/bin-designer/types';
+import {
+  DEFAULT_POLYGON_SIDES,
+  DEFAULT_CUTOUT_CLEARANCE,
+  CLEARANCE_SHAPES,
+} from '@/features/bin-designer/types';
+import { polygonBoxFromAcrossFlats } from '@/shared/utils/cutoutPolygon';
+import {
+  DEFAULT_RECT_SIZE,
+  DEFAULT_CIRCLE_SIZE,
+  DEFAULT_POLYGON_ACROSS_FLATS,
+  DEFAULT_SLOT_WIDTH,
+  DEFAULT_SLOT_DEPTH,
+} from './cutoutInteractionTypes';
 
 export interface ClonedCutout extends Cutout {
   readonly originalId: string;
@@ -71,6 +84,41 @@ export function addClonedCutouts(
   return clones;
 }
 
+/** Width × depth of a click-to-placed cutout, per shape (mm). */
+export function defaultPlaceSize(shape: CutoutShape): { width: number; depth: number } {
+  switch (shape) {
+    case 'circle':
+      return { width: DEFAULT_CIRCLE_SIZE, depth: DEFAULT_CIRCLE_SIZE };
+    case 'polygon':
+      return polygonBoxFromAcrossFlats(DEFAULT_POLYGON_SIDES, DEFAULT_POLYGON_ACROSS_FLATS);
+    case 'slot':
+      return { width: DEFAULT_SLOT_WIDTH, depth: DEFAULT_SLOT_DEPTH };
+    default:
+      return { width: DEFAULT_RECT_SIZE, depth: DEFAULT_RECT_SIZE };
+  }
+}
+
+/**
+ * Resize a cutout to `newWidth × newDepth` while keeping its center fixed, then
+ * clamp the origin into `[0, max]`. Used when polygon side-count / across-flats
+ * edits change the bounding box and we don't want the shape to jump.
+ */
+export function resizeKeepingCenter(
+  cutout: Pick<Cutout, 'x' | 'y' | 'width' | 'depth'>,
+  newWidth: number,
+  newDepth: number,
+  maxWidth: number,
+  maxDepth: number
+): { x: number; y: number; width: number; depth: number } {
+  const cx = cutout.x + cutout.width / 2;
+  const cy = cutout.y + cutout.depth / 2;
+  const width = Math.min(newWidth, maxWidth);
+  const depth = Math.min(newDepth, maxDepth);
+  const x = Math.max(0, Math.min(cx - width / 2, maxWidth - width));
+  const y = Math.max(0, Math.min(cy - depth / 2, maxDepth - depth));
+  return { x, y, width, depth };
+}
+
 /** Default cutout properties shared by click-to-place and draw-to-place. */
 export function createDefaultCutout(
   id: string,
@@ -92,5 +140,9 @@ export function createDefaultCutout(
     cornerRadius: 0,
     label: '',
     groupId: null,
+    // Hexagon by default — the bit-organizer staple. Ignored for other shapes.
+    ...(shape === 'polygon' ? { sides: DEFAULT_POLYGON_SIDES } : {}),
+    // Insert shapes get a small fit allowance so spec-sized parts drop in.
+    ...(CLEARANCE_SHAPES.includes(shape) ? { clearance: DEFAULT_CUTOUT_CLEARANCE } : {}),
   };
 }

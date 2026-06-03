@@ -180,6 +180,55 @@ export function CutoutShapeToolbar({
       )}
 
       {wrap(
+        t('binDesigner.cutouts.addPolygon'),
+        'G',
+        <button
+          type="button"
+          className={`${btnBase} ${activeShape === 'polygon' ? btnActive : btnInactive}`}
+          onClick={() => handleClick('polygon')}
+          aria-label={t('binDesigner.cutouts.addPolygon')}
+          title={!vertical ? t('binDesigner.cutouts.addPolygon') : undefined}
+        >
+          <svg
+            className={iconSize}
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          >
+            {/* Flat-top hexagon */}
+            <path d="M3.5 1.5h7L13 7l-2.5 5.5h-7L1 7z" />
+          </svg>
+          {!vertical && t('binDesigner.cutouts.addPolygon')}
+        </button>
+      )}
+
+      {wrap(
+        t('binDesigner.cutouts.addSlot'),
+        'S',
+        <button
+          type="button"
+          className={`${btnBase} ${activeShape === 'slot' ? btnActive : btnInactive}`}
+          onClick={() => handleClick('slot')}
+          aria-label={t('binDesigner.cutouts.addSlot')}
+          title={!vertical ? t('binDesigner.cutouts.addSlot') : undefined}
+        >
+          <svg
+            className={iconSize}
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            {/* Stadium / capsule */}
+            <rect x="1" y="4" width="12" height="6" rx="3" />
+          </svg>
+          {!vertical && t('binDesigner.cutouts.addSlot')}
+        </button>
+      )}
+
+      {wrap(
         t('binDesigner.cutouts.penTool'),
         'P',
         <button

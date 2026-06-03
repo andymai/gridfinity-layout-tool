@@ -10,6 +10,7 @@ import { useTranslation } from '@/i18n';
 import { SliderInput } from '../../controls/SliderInput';
 import { clampRotationToBounds, flipCutoutHorizontal, flipCutoutVertical } from './geometry';
 import { CutoutScoopControls } from '../../CutoutWorkspace/CutoutScoopControls';
+import { CutoutShapeControls } from './CutoutShapeControls';
 
 interface CutoutPropertyPanelProps {
   readonly cutout: Cutout;
@@ -103,6 +104,13 @@ export function CutoutPropertyPanel({
             disabled={disabled}
           />
         )}
+        <CutoutShapeControls
+          cutout={cutout}
+          maxWidth={maxWidth}
+          maxDepth={maxDepth}
+          onUpdate={(patch) => onUpdate(cutout.id, patch)}
+          disabled={disabled}
+        />
         <CutoutScoopControls
           key={cutout.id}
           cutout={cutout}

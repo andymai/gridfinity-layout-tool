@@ -8,6 +8,7 @@
  */
 
 import { useEffect } from 'react';
+import type { CutoutShape } from '@/features/bin-designer/types';
 import type { PathDrawingPreviewState } from './handlers';
 import type { RulerMeasurement } from './handlers/rulerHandler';
 import type { InteractionMode, PreviewMap } from './cutoutInteractionTypes';
@@ -18,7 +19,7 @@ interface DrawingPreviewState {
   readonly y: number;
   readonly width: number;
   readonly depth: number;
-  readonly shape: 'rectangle' | 'circle' | 'path';
+  readonly shape: CutoutShape;
 }
 
 interface UseCutoutRecoveryOptions {

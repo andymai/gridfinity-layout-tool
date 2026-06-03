@@ -63,6 +63,24 @@ describe('cutoutToPolygon', () => {
     expect(cutoutToPolygon(c)).toBeNull();
   });
 
+  it('produces a 6-vertex ring for a hexagon polygon', () => {
+    const polygon = cutoutToPolygon(
+      baseCutout({ shape: 'polygon', sides: 6, width: 18, depth: 16 })
+    );
+    expect(polygon).toHaveLength(1);
+    expect(polygon![0]).toHaveLength(6);
+  });
+
+  it('honors the polygon side count', () => {
+    const tri = cutoutToPolygon(baseCutout({ shape: 'polygon', sides: 3 }));
+    expect(tri![0]).toHaveLength(3);
+  });
+
+  it('rounds a slot into many vertices (fully-rounded ends)', () => {
+    const polygon = cutoutToPolygon(baseCutout({ shape: 'slot', width: 30, depth: 12 }));
+    expect(polygon![0].length).toBeGreaterThan(20);
+  });
+
   it('rotates a rectangle around its center', () => {
     const polygon = cutoutToPolygon(baseCutout({ rotation: 45 }))!;
     const xs = polygon[0].map(([x]) => x);

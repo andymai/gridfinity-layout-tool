@@ -8,6 +8,8 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import type { CutoutShape } from '@/features/bin-designer/types';
+import { DEFAULT_POLYGON_SIDES } from '@/features/bin-designer/types';
+import { regularPolygonPoints, slotCornerRadius } from '@/shared/utils/cutoutPolygon';
 import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
 
 interface DrawingPreview3DProps {
@@ -24,17 +26,40 @@ export function DrawingPreview3D({ x, y, width, depth, shape }: DrawingPreview3D
   const lineObj = useMemo(() => {
     let points: THREE.Vector3[];
 
+    const cx = x + width / 2;
+    const cy = y + depth / 2;
+
     if (shape === 'circle') {
       const segments = 64;
       points = [];
       const rx = width / 2;
       const ry = depth / 2;
-      const cx = x + rx;
-      const cy = y + ry;
       for (let i = 0; i <= segments; i++) {
         const theta = (i / segments) * Math.PI * 2;
         points.push(new THREE.Vector3(cx + rx * Math.cos(theta), cy + ry * Math.sin(theta), 0.04));
       }
+    } else if (shape === 'polygon') {
+      const poly = regularPolygonPoints(DEFAULT_POLYGON_SIDES, width, depth);
+      points = poly.map((p) => new THREE.Vector3(cx + p.x, cy + p.y, 0.04));
+      if (poly.length > 0) points.push(new THREE.Vector3(cx + poly[0].x, cy + poly[0].y, 0.04));
+    } else if (shape === 'slot') {
+      const r = slotCornerRadius(width, depth);
+      points = [];
+      const quad = 12;
+      // Four rounded corners walked CCW from bottom-left.
+      const corners: [number, number, number][] = [
+        [x + r, y + r, Math.PI],
+        [x + width - r, y + r, -Math.PI / 2],
+        [x + width - r, y + depth - r, 0],
+        [x + r, y + depth - r, Math.PI / 2],
+      ];
+      for (const [acx, acy, start] of corners) {
+        for (let i = 0; i <= quad; i++) {
+          const a = start + (Math.PI / 2) * (i / quad);
+          points.push(new THREE.Vector3(acx + r * Math.cos(a), acy + r * Math.sin(a), 0.04));
+        }
+      }
+      if (points.length > 0) points.push(points[0].clone());
     } else {
       points = [
         new THREE.Vector3(x, y, 0.04),

@@ -15,7 +15,16 @@
 
 import polygonClipping, { type MultiPolygon, type Polygon, type Ring } from 'polygon-clipping';
 import type { Cutout, GroupOp } from '@/features/bin-designer/types';
-import { DEFAULT_GROUP_OP, MIN_PATH_POINTS } from '@/features/bin-designer/types';
+import {
+  DEFAULT_GROUP_OP,
+  MIN_PATH_POINTS,
+  DEFAULT_POLYGON_SIDES,
+} from '@/features/bin-designer/types';
+import {
+  regularPolygonPoints,
+  slotCornerRadius,
+  clampPolygonSides,
+} from '@/shared/utils/cutoutPolygon';
 import { flattenPath, type Point2D } from './pathGeometryBezier';
 
 /** Number of segments used to flatten a circular cutout outline. */
@@ -99,6 +108,20 @@ function circleRing(c: Cutout): Ring {
   return ring;
 }
 
+/** Build the outline ring for a regular-polygon cutout, rotated around center. */
+function polygonRing(c: Cutout): Ring | null {
+  const cx = c.x + c.width / 2;
+  const cy = c.y + c.depth / 2;
+  const pts = regularPolygonPoints(
+    clampPolygonSides(c.sides ?? DEFAULT_POLYGON_SIDES),
+    c.width,
+    c.depth
+  );
+  if (pts.length < 3) return null;
+  // Points are centered at origin; offset to the cutout center, then rotate.
+  return pts.map((p): [number, number] => rotatePair(cx + p.x, cy + p.y, cx, cy, c.rotation));
+}
+
 /** Build the outline ring for a bezier path cutout (vertices are absolute mm). */
 function pathRing(c: Cutout): Ring | null {
   if (!c.path || c.path.length < MIN_PATH_POINTS) return null;
@@ -120,6 +143,14 @@ export function cutoutToPolygon(c: Cutout): Polygon | null {
   }
   if (c.width <= 0 || c.depth <= 0) return null;
   if (c.shape === 'circle') return [circleRing(c)];
+  if (c.shape === 'polygon') {
+    const ring = polygonRing(c);
+    return ring ? [ring] : null;
+  }
+  if (c.shape === 'slot') {
+    // Stadium = rounded rect with fully-rounded ends (radius = half short side).
+    return [rectangleRing({ ...c, cornerRadius: slotCornerRadius(c.width, c.depth) })];
+  }
   return [rectangleRing(c)];
 }
 

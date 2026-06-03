@@ -29,13 +29,8 @@ import { snapToNearestTarget, computeMeasurement } from './handlers/rulerHandler
 import type { RulerMeasurement, SnapTarget } from './handlers/rulerHandler';
 import { MIN_CUTOUT_SIZE, type AlignmentGuide } from './geometry';
 import { rectFitsInMask, type MaskCellSize } from './maskFit';
-import { createDefaultCutout } from './cutoutHelpers';
-import {
-  type InteractionMode,
-  type PreviewMap,
-  DEFAULT_RECT_SIZE,
-  DEFAULT_CIRCLE_SIZE,
-} from './cutoutInteractionTypes';
+import { createDefaultCutout, defaultPlaceSize } from './cutoutHelpers';
+import { type InteractionMode, type PreviewMap } from './cutoutInteractionTypes';
 
 interface DrawingPreviewState {
   readonly x: number;
@@ -212,28 +207,22 @@ export function useCutoutPointerHandlers(
   /** Click-to-place: create a default-sized shape centered at the click position. */
   const commitPendingPlace = useCallback(
     (placeMode: Extract<InteractionMode, { type: 'pending-place' }>) => {
-      const defaultSize = placeMode.shape === 'circle' ? DEFAULT_CIRCLE_SIZE : DEFAULT_RECT_SIZE;
-      const x = Math.max(
-        0,
-        Math.min(snap(placeMode.startMmX - defaultSize / 2), binWidth - defaultSize)
-      );
-      const y = Math.max(
-        0,
-        Math.min(snap(placeMode.startMmY - defaultSize / 2), binDepth - defaultSize)
-      );
+      const { width: defaultW, depth: defaultD } = defaultPlaceSize(placeMode.shape);
+      const x = Math.max(0, Math.min(snap(placeMode.startMmX - defaultW / 2), binWidth - defaultW));
+      const y = Math.max(0, Math.min(snap(placeMode.startMmY - defaultD / 2), binDepth - defaultD));
 
       // Polygon mask: reject click-to-place inside an unfilled notch.
       if (
         cellMask &&
         maskCellSize &&
-        !rectFitsInMask(cellMask, x, y, defaultSize, defaultSize, maskCellSize)
+        !rectFitsInMask(cellMask, x, y, defaultW, defaultD, maskCellSize)
       ) {
         setMode({ type: 'idle' });
         return;
       }
 
       const newId = crypto.randomUUID();
-      onAdd(createDefaultCutout(newId, placeMode.shape, x, y, defaultSize, defaultSize));
+      onAdd(createDefaultCutout(newId, placeMode.shape, x, y, defaultW, defaultD));
       setSelection(new Set([newId]));
       setMode({ type: 'idle' });
     },

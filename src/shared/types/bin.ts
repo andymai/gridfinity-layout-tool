@@ -61,6 +61,8 @@ export {
   DEFAULT_GROUP_OP,
   GROUP_OPS,
   TEXT_MAX_LENGTH,
+  DEFAULT_POLYGON_SIDES,
+  CLEARANCE_SHAPES,
 } from '@/features/bin-designer/types';
 
 /**

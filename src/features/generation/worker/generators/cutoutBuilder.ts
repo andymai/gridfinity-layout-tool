@@ -31,7 +31,17 @@ import {
 } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope } from 'brepjs';
 import type { BinParams, Cutout, PathPoint, GroupOp } from '@/shared/types/bin';
-import { MIN_PATH_POINTS, DEFAULT_GROUP_OP } from '@/shared/types/bin';
+import {
+  MIN_PATH_POINTS,
+  DEFAULT_GROUP_OP,
+  DEFAULT_POLYGON_SIDES,
+  CLEARANCE_SHAPES,
+} from '@/shared/types/bin';
+import {
+  regularPolygonPoints,
+  slotCornerRadius,
+  clampPolygonSides,
+} from '@/shared/utils/cutoutPolygon';
 import { combineGroupSolids } from './cutoutGroupOps';
 import {
   resolveScoop,
@@ -116,17 +126,47 @@ function buildUnrotatedCutoutShape(cutout: {
   readonly depth: number;
   readonly cutDepth: number;
   readonly cornerRadius: number;
+  readonly sides?: number;
+  readonly clearance?: number;
   readonly path?: readonly PathPoint[];
 }): Shape3D | null {
   if (cutout.cutDepth <= 0 || cutout.width <= 0 || cutout.depth <= 0) return null;
 
+  // Insertion clearance enlarges the cut symmetrically about its own center so a
+  // part cut to spec drops in. The cutout stays positioned by its nominal
+  // center (cutout.x + cutout.width/2), so the enlarged shape stays aligned.
+  // Missing clearance / non-insert shapes keep their exact nominal size.
+  const clearance =
+    CLEARANCE_SHAPES.includes(cutout.shape as never) && cutout.clearance
+      ? Math.max(0, cutout.clearance)
+      : 0;
+  const w = cutout.width + clearance;
+  const d = cutout.depth + clearance;
+
   switch (cutout.shape) {
     case 'circle': {
-      const rx = cutout.width / 2;
-      const ry = cutout.depth / 2;
+      const rx = w / 2;
+      const ry = d / 2;
       return Math.abs(rx - ry) < 0.01
         ? cylinder(rx, cutout.cutDepth)
         : sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
+    }
+    case 'polygon': {
+      const pts = regularPolygonPoints(
+        clampPolygonSides(cutout.sides ?? DEFAULT_POLYGON_SIDES),
+        w,
+        d
+      );
+      if (pts.length < 3) {
+        return box(w, d, cutout.cutDepth, { at: [0, 0, cutout.cutDepth / 2] });
+      }
+      let pen = draw([pts[0].x, pts[0].y]);
+      for (let i = 1; i < pts.length; i++) pen = pen.lineTo([pts[i].x, pts[i].y]);
+      return sketch(pen.close(), 'XY').extrude(cutout.cutDepth);
+    }
+    case 'slot': {
+      const r = Math.max(0.01, slotCornerRadius(w, d) - 0.01);
+      return sketch(drawRoundedRectangle(w, d, r), 'XY').extrude(cutout.cutDepth);
     }
     case 'path': {
       try {
@@ -166,6 +206,8 @@ function buildCutoutShape(cutout: {
   readonly cutDepth: number;
   readonly rotation: number;
   readonly cornerRadius: number;
+  readonly sides?: number;
+  readonly clearance?: number;
   readonly path?: readonly PathPoint[];
 }): Shape3D | null {
   let shape = buildUnrotatedCutoutShape(cutout);

@@ -5,8 +5,34 @@
 
 import type { CutoutTextSide, TextStyleOverride } from './text';
 
-/** Shape of a top-down cutout into solid bin body */
-export type CutoutShape = 'rectangle' | 'circle' | 'path';
+/**
+ * Shape of a top-down cutout into solid bin body.
+ *
+ *  - `polygon` — regular N-gon (hex bits, sockets, Allen keys). Side count is
+ *    stored in {@link Cutout.sides}; vertices are derived to fill the
+ *    `width × depth` bounding box, so all bounds/resize/rotation math is shared
+ *    with the other shapes.
+ *  - `slot` — stadium/capsule: a rounded rectangle whose corner radius is
+ *    always half its short side (fully rounded ends). For tools laid flat.
+ */
+export type CutoutShape = 'rectangle' | 'circle' | 'path' | 'polygon' | 'slot';
+
+/** Minimum side count for a polygon cutout (triangle). */
+export const MIN_POLYGON_SIDES = 3;
+/** Maximum side count for a polygon cutout. */
+export const MAX_POLYGON_SIDES = 12;
+/** Default side count for a new polygon cutout (hexagon — the bit-organizer staple). */
+export const DEFAULT_POLYGON_SIDES = 6;
+
+/**
+ * Default insertion clearance (mm) added to an insert-style cutout's nominal
+ * size so a part cut to spec (e.g. a 6.35mm hex bit) actually drops in. Applied
+ * to circle/polygon/slot only; freeform paths and rectangles cut to exact size.
+ */
+export const DEFAULT_CUTOUT_CLEARANCE = 0.2;
+
+/** Shapes that accept an insertion {@link Cutout.clearance} offset. */
+export const CLEARANCE_SHAPES: readonly CutoutShape[] = ['circle', 'polygon', 'slot'];
 
 /**
  * Pathfinder boolean op applied across the members of a cutout group, before
@@ -127,6 +153,19 @@ export interface Cutout {
   readonly zIndex?: number;
   /** Path vertices for pen tool shapes (required when shape === 'path') */
   readonly path?: PathPoint[];
+  /**
+   * Side count for regular-polygon cutouts (required when shape === 'polygon').
+   * Clamped to [{@link MIN_POLYGON_SIDES}, {@link MAX_POLYGON_SIDES}]. Ignored
+   * for every other shape.
+   */
+  readonly sides?: number;
+  /**
+   * Insertion clearance in mm added to the nominal outline so a part cut to
+   * spec actually fits. Applied at generation time to {@link CLEARANCE_SHAPES}
+   * (circle/polygon/slot); the editor shows the nominal size. Missing/undefined
+   * = no clearance, so pre-existing designs are cut identically.
+   */
+  readonly clearance?: number;
   /**
    * When true, `label` is also engraved on the bin top adjacent to this
    * cutout. Default false so existing designs render unchanged after

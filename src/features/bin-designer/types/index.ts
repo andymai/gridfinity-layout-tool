@@ -563,7 +563,17 @@ export type {
   CutoutConfig,
   Cutout,
 } from './cutout';
-export { DEFAULT_GROUP_OP, GROUP_OPS, DEFAULT_SCOOP_EDGES, MIN_PATH_POINTS } from './cutout';
+export {
+  DEFAULT_GROUP_OP,
+  GROUP_OPS,
+  DEFAULT_SCOOP_EDGES,
+  MIN_PATH_POINTS,
+  MIN_POLYGON_SIDES,
+  MAX_POLYGON_SIDES,
+  DEFAULT_POLYGON_SIDES,
+  DEFAULT_CUTOUT_CLEARANCE,
+  CLEARANCE_SHAPES,
+} from './cutout';
 
 // Generation Types
 
