@@ -32,6 +32,7 @@
     "binDesigner.formatSTL",
     "binDesigner.cutouts.addRectangle",
     "binDesigner.cutouts.addPolygon",
+    "binDesigner.cutouts.section.label",
     "binDesigner.cutouts.label",
     "binDesigner.cutouts.rotation",
     "binDesigner.cutouts.scoopUniform",

@@ -17,6 +17,10 @@ import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmen
 import { clampRotationToBounds, getRotatedBounds } from '../panel/CutoutsSection/geometry';
 import { CutoutScoopControls } from './CutoutScoopControls';
 import { CutoutShapeControls } from '../panel/CutoutsSection/CutoutShapeControls';
+import { CutoutFitControls } from '../panel/CutoutsSection/CutoutFitControls';
+import { hasFitControls } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { Checkbox, Input } from '@/design-system';
 
 const SIDE_OPTIONS: readonly { readonly side: CutoutTextSide; readonly glyph: string }[] = [
@@ -45,6 +49,8 @@ interface FloatingInspectorProps {
   /** Whether to hide (during drag/resize/rotate) */
   readonly hidden?: boolean;
   readonly disabled?: boolean;
+  /** Notifies the editor which insertion-fit cue (if any) to draw on the canvas. */
+  readonly onFitCue?: (cue: FitCue) => void;
 }
 
 /** Merge preview overrides into a cutout to get the effective state */
@@ -95,6 +101,7 @@ export function FloatingInspector({
   canvasHeight,
   hidden = false,
   disabled = false,
+  onFitCue,
 }: FloatingInspectorProps) {
   const t = useTranslation();
 
@@ -284,110 +291,138 @@ export function FloatingInspector({
         }
       }}
     >
-      {/* Single selection: compact inputs for position/size, sliders for rotation/depth */}
+      {/* Single selection: sectioned property groups (Transform / Shape / Fit / Label) */}
       {singleCutout && (
-        <div className="space-y-1.5">
-          {/* Position & size: 2-column compact grid */}
-          <div className="grid grid-cols-2 gap-1">
-            <CompactNumberInput
-              label="X"
-              value={getEffective(singleCutout, preview, 'x')}
-              onChange={(x) => onUpdate(singleCutout.id, { x })}
-              min={0}
-              max={binWidth - singleCutout.width}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
-            <CompactNumberInput
-              label="Y"
-              value={getEffective(singleCutout, preview, 'y')}
-              onChange={(y) => onUpdate(singleCutout.id, { y })}
-              min={0}
-              max={binDepth - singleCutout.depth}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
-            <CompactNumberInput
-              label="W"
-              value={getEffective(singleCutout, preview, 'width')}
-              onChange={(width) => onUpdate(singleCutout.id, { width })}
-              min={2}
-              max={binWidth}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
-            <CompactNumberInput
-              label="H"
-              value={getEffective(singleCutout, preview, 'depth')}
-              onChange={(depth) => onUpdate(singleCutout.id, { depth })}
-              min={2}
-              max={binDepth}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
-          </div>
-          {/* Rotation, corner radius, depth: full-width sliders */}
-          <SliderInput
-            label="Rotation"
-            value={getEffective(singleCutout, preview, 'rotation')}
-            onChange={(rotation) => {
-              const clamped = clampRotationToBounds(singleCutout, rotation, binWidth, binDepth);
-              onUpdate(singleCutout.id, { rotation: clamped });
-            }}
-            min={0}
-            max={359}
-            step={1}
-            unit="°"
-            disabled={disabled}
-          />
-          {singleCutout.shape === 'rectangle' && (
-            <SliderInput
-              label={t('binDesigner.cutouts.cornerRadius')}
-              value={singleCutout.cornerRadius}
-              onChange={(cornerRadius) => onUpdate(singleCutout.id, { cornerRadius })}
-              min={0}
-              max={Math.min(singleCutout.width, singleCutout.depth) / 2}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
+        <div className="space-y-2.5">
+          <CollapsibleSection title={t('binDesigner.cutouts.section.transform')} variant="small">
+            <div className="space-y-1.5">
+              {/* Position & size: 2-column compact grid */}
+              <div className="grid grid-cols-2 gap-1">
+                <CompactNumberInput
+                  label="X"
+                  value={getEffective(singleCutout, preview, 'x')}
+                  onChange={(x) => onUpdate(singleCutout.id, { x })}
+                  min={0}
+                  max={binWidth - singleCutout.width}
+                  step={0.5}
+                  unit="mm"
+                  disabled={disabled}
+                />
+                <CompactNumberInput
+                  label="Y"
+                  value={getEffective(singleCutout, preview, 'y')}
+                  onChange={(y) => onUpdate(singleCutout.id, { y })}
+                  min={0}
+                  max={binDepth - singleCutout.depth}
+                  step={0.5}
+                  unit="mm"
+                  disabled={disabled}
+                />
+                <CompactNumberInput
+                  label="W"
+                  value={getEffective(singleCutout, preview, 'width')}
+                  onChange={(width) => onUpdate(singleCutout.id, { width })}
+                  min={2}
+                  max={binWidth}
+                  step={0.5}
+                  unit="mm"
+                  disabled={disabled}
+                />
+                <CompactNumberInput
+                  label="H"
+                  value={getEffective(singleCutout, preview, 'depth')}
+                  onChange={(depth) => onUpdate(singleCutout.id, { depth })}
+                  min={2}
+                  max={binDepth}
+                  step={0.5}
+                  unit="mm"
+                  disabled={disabled}
+                />
+              </div>
+              <SliderInput
+                label="Rotation"
+                value={getEffective(singleCutout, preview, 'rotation')}
+                onChange={(rotation) => {
+                  const clamped = clampRotationToBounds(singleCutout, rotation, binWidth, binDepth);
+                  onUpdate(singleCutout.id, { rotation: clamped });
+                }}
+                min={0}
+                max={359}
+                step={1}
+                unit="°"
+                disabled={disabled}
+              />
+              <SliderInput
+                label="Depth"
+                value={singleCutout.cutDepth}
+                onChange={(cutDepth) => onUpdate(singleCutout.id, { cutDepth })}
+                min={0.5}
+                max={maxCutDepth}
+                step={0.5}
+                unit="mm"
+                disabled={disabled}
+              />
+            </div>
+          </CollapsibleSection>
+
+          <CollapsibleSection title={t('binDesigner.cutouts.section.shape')} variant="small">
+            <div className="space-y-1.5">
+              {singleCutout.shape === 'rectangle' && (
+                <SliderInput
+                  label={t('binDesigner.cutouts.cornerRadius')}
+                  value={singleCutout.cornerRadius}
+                  onChange={(cornerRadius) => onUpdate(singleCutout.id, { cornerRadius })}
+                  min={0}
+                  max={Math.min(singleCutout.width, singleCutout.depth) / 2}
+                  step={0.5}
+                  unit="mm"
+                  disabled={disabled}
+                />
+              )}
+              <CutoutShapeControls
+                cutout={singleCutout}
+                maxWidth={binWidth}
+                maxDepth={binDepth}
+                onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
+                disabled={disabled}
+              />
+              <CutoutScoopControls
+                key={singleCutout.id}
+                cutout={singleCutout}
+                preview={preview.get(singleCutout.id)}
+                disabled={disabled}
+                onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
+              />
+            </div>
+          </CollapsibleSection>
+
+          {hasFitControls(singleCutout) && (
+            <CollapsibleSection
+              title={t('binDesigner.cutouts.section.fit')}
+              variant="small"
+              defaultExpanded={false}
+            >
+              <CutoutFitControls
+                cutout={singleCutout}
+                onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
+                onCueChange={onFitCue}
+                disabled={disabled}
+              />
+            </CollapsibleSection>
           )}
-          <SliderInput
-            label="Depth"
-            value={singleCutout.cutDepth}
-            onChange={(cutDepth) => onUpdate(singleCutout.id, { cutDepth })}
-            min={0.5}
-            max={maxCutDepth}
-            step={0.5}
-            unit="mm"
-            disabled={disabled}
-          />
-          {/* Shape-specific: polygon sides/across-flats + presets, insertion
-              clearance, entry chamfer. Same component as the sidebar panel. */}
-          <CutoutShapeControls
-            cutout={singleCutout}
-            maxWidth={binWidth}
-            maxDepth={binDepth}
-            onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
-            disabled={disabled}
-          />
-          <CutoutScoopControls
-            key={singleCutout.id}
-            cutout={singleCutout}
-            preview={preview.get(singleCutout.id)}
-            disabled={disabled}
-            onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
-          />
-          <CutoutEngraveLabelControls
-            key={`${singleCutout.id}-text`}
-            cutout={singleCutout}
-            disabled={disabled}
-            onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
-          />
+
+          <CollapsibleSection
+            title={t('binDesigner.cutouts.section.label')}
+            variant="small"
+            defaultExpanded={false}
+          >
+            <CutoutEngraveLabelControls
+              key={`${singleCutout.id}-text`}
+              cutout={singleCutout}
+              disabled={disabled}
+              onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
+            />
+          </CollapsibleSection>
         </div>
       )}
 

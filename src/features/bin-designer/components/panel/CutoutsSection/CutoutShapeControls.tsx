@@ -1,9 +1,9 @@
 /**
- * Shape-specific cutout controls: polygon side-count + across-flats sizing,
- * hardware presets, the insertion-clearance field, and the entry chamfer.
- * Rectangle corner-radius stays in the parent panel, but this component still
- * renders for rectangles (the chamfer applies to them) — it returns no extra
- * controls only for shapes with neither parametric sizing nor a fit allowance.
+ * Shape-sizing controls: polygon side-count + across-flats, and hardware
+ * presets (hex/Allen for polygons, socket drives/diameters for circles).
+ * Insertion fit (clearance/chamfer) lives in {@link CutoutFitControls}.
+ *
+ * Renders nothing for shapes without parametric sizing (rectangle/slot/path).
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
@@ -11,9 +11,6 @@ import {
   MIN_POLYGON_SIDES,
   MAX_POLYGON_SIDES,
   DEFAULT_POLYGON_SIDES,
-  CLEARANCE_SHAPES,
-  CHAMFER_SHAPES,
-  MAX_CUTOUT_CHAMFER,
 } from '@/features/bin-designer/types';
 import {
   polygonBoxFromAcrossFlats,
@@ -21,15 +18,10 @@ import {
   maxAcrossFlats,
 } from '@/shared/utils/cutoutPolygon';
 import { useTranslation } from '@/i18n';
-import { Select } from '@/design-system';
-import type { SelectOption } from '@/design-system';
 import { SliderInput } from '../../controls/SliderInput';
 import { resizeKeepingCenter } from './cutoutHelpers';
-import {
-  HEX_ACROSS_FLATS_PRESETS,
-  CIRCLE_DIAMETER_PRESETS,
-  type CutoutSizePreset,
-} from './cutoutShapePresets';
+import { HEX_ACROSS_FLATS_PRESETS, CIRCLE_DIAMETER_PRESETS } from './cutoutShapePresets';
+import { CutoutPresetMenu } from './CutoutPresetMenu';
 
 interface CutoutShapeControlsProps {
   readonly cutout: Cutout;
@@ -37,10 +29,6 @@ interface CutoutShapeControlsProps {
   readonly maxDepth: number;
   readonly onUpdate: (patch: Partial<Cutout>) => void;
   readonly disabled?: boolean;
-}
-
-function presetOptions(presets: readonly CutoutSizePreset[]): SelectOption[] {
-  return presets.map((p) => ({ id: p.id, name: p.label }));
 }
 
 export function CutoutShapeControls({
@@ -52,10 +40,6 @@ export function CutoutShapeControls({
 }: CutoutShapeControlsProps) {
   const t = useTranslation();
   const sides = cutout.sides ?? DEFAULT_POLYGON_SIDES;
-  const isClearanceShape = CLEARANCE_SHAPES.includes(cutout.shape);
-  const isChamferShape = CHAMFER_SHAPES.includes(cutout.shape);
-  // A straight wall must remain below the bevel, so cap the chamfer by cut depth.
-  const maxChamfer = Math.max(0, Math.min(MAX_CUTOUT_CHAMFER, cutout.cutDepth - 0.2));
 
   /**
    * Apply a new across-flats value, preserving the regular-polygon aspect +
@@ -75,84 +59,48 @@ export function CutoutShapeControls({
     onUpdate(resized);
   };
 
-  return (
-    <>
-      {cutout.shape === 'polygon' && (
-        <>
-          <SliderInput
-            label={t('binDesigner.cutouts.sides')}
-            value={sides}
-            onChange={(s) => applyAcrossFlats(acrossFlatsFromBox(s, cutout.depth), s)}
-            min={MIN_POLYGON_SIDES}
-            max={MAX_POLYGON_SIDES}
-            step={1}
-            disabled={disabled}
-          />
-          <SliderInput
-            label={t('binDesigner.cutouts.acrossFlats')}
-            value={acrossFlatsFromBox(sides, cutout.depth)}
-            onChange={(af) => applyAcrossFlats(af)}
-            min={2}
-            max={maxAcrossFlats(sides, maxWidth, maxDepth)}
-            step={0.5}
-            unit="mm"
-            disabled={disabled}
-          />
-          <Select
-            aria-label={t('binDesigner.cutouts.sizePreset')}
-            placeholder={t('binDesigner.cutouts.sizePreset')}
-            value=""
-            options={presetOptions(HEX_ACROSS_FLATS_PRESETS)}
-            onValueChange={(id) => {
-              const preset = HEX_ACROSS_FLATS_PRESETS.find((p) => p.id === id);
-              if (preset) applyAcrossFlats(preset.mm);
-            }}
-            disabled={disabled}
-          />
-        </>
-      )}
-
-      {cutout.shape === 'circle' && (
-        <Select
-          aria-label={t('binDesigner.cutouts.sizePreset')}
-          placeholder={t('binDesigner.cutouts.sizePreset')}
-          value=""
-          options={presetOptions(CIRCLE_DIAMETER_PRESETS)}
-          onValueChange={(id) => {
-            const preset = CIRCLE_DIAMETER_PRESETS.find((p) => p.id === id);
-            if (preset) applyDiameter(preset.mm);
-          }}
-          disabled={disabled}
-        />
-      )}
-
-      {isClearanceShape && (
+  if (cutout.shape === 'polygon') {
+    return (
+      <div className="space-y-1.5">
         <SliderInput
-          label={t('binDesigner.cutouts.clearance')}
-          value={cutout.clearance ?? 0}
-          onChange={(clearance) => onUpdate({ clearance })}
-          min={0}
-          max={2}
-          step={0.05}
-          unit="mm"
-          info={t('binDesigner.cutouts.clearanceInfo')}
+          label={t('binDesigner.cutouts.sides')}
+          value={sides}
+          onChange={(s) => applyAcrossFlats(acrossFlatsFromBox(s, cutout.depth), s)}
+          min={MIN_POLYGON_SIDES}
+          max={MAX_POLYGON_SIDES}
+          step={1}
           disabled={disabled}
         />
-      )}
-
-      {isChamferShape && maxChamfer > 0 && (
         <SliderInput
-          label={t('binDesigner.cutouts.chamfer')}
-          value={Math.min(cutout.chamferWidth ?? 0, maxChamfer)}
-          onChange={(chamferWidth) => onUpdate({ chamferWidth })}
-          min={0}
-          max={maxChamfer}
-          step={0.25}
+          label={t('binDesigner.cutouts.acrossFlats')}
+          value={acrossFlatsFromBox(sides, cutout.depth)}
+          onChange={(af) => applyAcrossFlats(af)}
+          min={2}
+          max={maxAcrossFlats(sides, maxWidth, maxDepth)}
+          step={0.5}
           unit="mm"
-          info={t('binDesigner.cutouts.chamferInfo')}
           disabled={disabled}
         />
-      )}
-    </>
-  );
+        <CutoutPresetMenu
+          presets={HEX_ACROSS_FLATS_PRESETS}
+          label={t('binDesigner.cutouts.sizePreset')}
+          onPick={(mm) => applyAcrossFlats(mm)}
+          disabled={disabled}
+        />
+      </div>
+    );
+  }
+
+  if (cutout.shape === 'circle') {
+    return (
+      <CutoutPresetMenu
+        presets={CIRCLE_DIAMETER_PRESETS}
+        label={t('binDesigner.cutouts.sizePreset')}
+        onPick={applyDiameter}
+        disabled={disabled}
+      />
+    );
+  }
+
+  return null;
 }
