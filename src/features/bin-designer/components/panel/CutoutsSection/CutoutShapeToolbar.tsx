@@ -90,11 +90,11 @@ export function CutoutShapeToolbar({
   };
 
   const btnBase = vertical
-    ? 'flex items-center justify-center rounded p-2 transition-colors'
-    : 'flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors';
-  const btnActive = 'bg-accent text-on-accent';
+    ? 'flex items-center justify-center rounded-md p-2 transition-all duration-100 active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60'
+    : 'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all duration-100 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60';
+  const btnActive = 'bg-accent text-on-accent shadow-sm ring-1 ring-accent/40';
   const btnInactive =
-    'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover';
+    'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content-primary hover:border-stroke';
   const iconSize = vertical ? 'h-5 w-5' : 'h-3.5 w-3.5';
 
   /** Conditionally wraps a button in a ToolbarTooltip (vertical mode only) */
