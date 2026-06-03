@@ -6,7 +6,7 @@
  * effect is legible.
  */
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import type { Cutout } from '@/features/bin-designer/types';
 import type { FitCue } from '../cutoutSectionVisibility';
@@ -57,6 +57,15 @@ export function FitCueOverlay3D({ cutout, cue }: FitCueOverlay3DProps) {
     line.renderOrder = RENDER_ORDER.DRAWING_PREVIEW;
     return line;
   }, [cutout, cue]);
+
+  // r3f does not dispose replaced <primitive> objects — release the geometry +
+  // material when the line changes (every slider tick) or on unmount.
+  useEffect(() => {
+    return () => {
+      lineObj?.geometry.dispose();
+      (lineObj?.material as THREE.Material | undefined)?.dispose();
+    };
+  }, [lineObj]);
 
   if (!lineObj) return null;
   return <primitive object={lineObj} />;

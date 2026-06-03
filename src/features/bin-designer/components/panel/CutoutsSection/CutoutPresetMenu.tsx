@@ -4,7 +4,7 @@
  * "jump to a spec size" — e.g. 1/4" hex or a socket drive.
  */
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Select } from '@/design-system';
 import type { SelectOption } from '@/design-system';
 import type { CutoutSizePreset } from './cutoutShapePresets';
@@ -25,6 +25,7 @@ export function CutoutPresetMenu({ presets, label, onPick, disabled }: CutoutPre
   // a pick, so without this the change is easy to miss for a small nudge.
   const [confirm, setConfirm] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => (timer.current ? clearTimeout(timer.current) : undefined), []);
 
   return (
     <div className="space-y-0.5">

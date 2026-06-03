@@ -6,7 +6,7 @@
  * Renders nothing for shapes without parametric sizing (rectangle/slot/path).
  */
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import {
   MIN_POLYGON_SIDES,
@@ -51,6 +51,7 @@ export function CutoutShapeControls({
     if (flashTimer.current) clearTimeout(flashTimer.current);
     flashTimer.current = setTimeout(() => setFlashSize(false), 900);
   };
+  useEffect(() => () => (flashTimer.current ? clearTimeout(flashTimer.current) : undefined), []);
 
   /**
    * Apply a new across-flats value, preserving the regular-polygon aspect +
