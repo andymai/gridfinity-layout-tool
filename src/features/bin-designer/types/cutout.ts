@@ -35,6 +35,23 @@ export const DEFAULT_CUTOUT_CLEARANCE = 0.2;
 export const CLEARANCE_SHAPES: readonly CutoutShape[] = ['circle', 'polygon', 'slot'];
 
 /**
+ * Default entry-chamfer width (mm) used when a cutout's chamfer is first
+ * enabled. A ~45° bevel of this width at the top rim lets bits/sockets
+ * self-center and drop in without binding.
+ */
+export const DEFAULT_CUTOUT_CHAMFER = 1;
+
+/** Largest entry-chamfer width (mm) the editor allows. */
+export const MAX_CUTOUT_CHAMFER = 5;
+
+/**
+ * Shapes that accept an entry {@link Cutout.chamferWidth}. Freeform paths are
+ * excluded — a constant-offset outset of an arbitrary bezier outline isn't
+ * well-defined, so chamfers are limited to the parametric shapes.
+ */
+export const CHAMFER_SHAPES: readonly CutoutShape[] = ['rectangle', 'circle', 'polygon', 'slot'];
+
+/**
  * Pathfinder boolean op applied across the members of a cutout group, before
  * the resulting shape is subtracted from the solid bin top.
  *
@@ -166,6 +183,13 @@ export interface Cutout {
    * = no clearance, so pre-existing designs are cut identically.
    */
   readonly clearance?: number;
+  /**
+   * Entry-chamfer width in mm: a ~45° bevel at the top rim that flares the
+   * opening outward so parts self-center on insertion. Applied at generation
+   * time to {@link CHAMFER_SHAPES}; the 2D editor shows the nominal opening.
+   * Missing/undefined/0 = straight walls, so existing designs are unchanged.
+   */
+  readonly chamferWidth?: number;
   /**
    * When true, `label` is also engraved on the bin top adjacent to this
    * cutout. Default false so existing designs render unchanged after

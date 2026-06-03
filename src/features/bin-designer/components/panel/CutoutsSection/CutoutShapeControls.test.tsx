@@ -49,9 +49,23 @@ describe('CutoutShapeControls', () => {
     expect(screen.getByText('binDesigner.cutouts.clearance')).toBeInTheDocument();
   });
 
-  it('renders nothing extra for a rectangle (no insert clearance)', () => {
+  it('offers an entry chamfer for a rectangle but no clearance or sides', () => {
     renderControls(makeCutout({ shape: 'rectangle' }));
+    expect(screen.getByText('binDesigner.cutouts.chamfer')).toBeInTheDocument();
     expect(screen.queryByText('binDesigner.cutouts.clearance')).not.toBeInTheDocument();
     expect(screen.queryByText('binDesigner.cutouts.sides')).not.toBeInTheDocument();
+  });
+
+  it('offers an entry chamfer for every parametric shape', () => {
+    for (const shape of ['rectangle', 'circle', 'polygon', 'slot'] as const) {
+      const { unmount } = renderControls(makeCutout({ shape, sides: 6 }));
+      expect(screen.getByText('binDesigner.cutouts.chamfer')).toBeInTheDocument();
+      unmount();
+    }
+  });
+
+  it('hides the chamfer when cut depth is too shallow to bevel', () => {
+    renderControls(makeCutout({ shape: 'circle', cutDepth: 0.1 }));
+    expect(screen.queryByText('binDesigner.cutouts.chamfer')).not.toBeInTheDocument();
   });
 });

@@ -176,6 +176,16 @@ exports[`slotted variations > slotted with both axes 1`] = `3628`;
 
 exports[`slotted variations > slotted without lip 1`] = `1380`;
 
+exports[`solid cutouts > 2×2 solid with chamfered + scooped rectangle cutout 1`] = `3574`;
+
+exports[`solid cutouts > 2×2 solid with chamfered circle cutout 1`] = `2654`;
+
+exports[`solid cutouts > 2×2 solid with chamfered hexagon cutout 1`] = `2638`;
+
+exports[`solid cutouts > 2×2 solid with chamfered rectangle cutout 1`] = `2710`;
+
+exports[`solid cutouts > 2×2 solid with chamfered slot cutout 1`] = `2944`;
+
 exports[`solid cutouts > 2×2 solid with circle cutout 1`] = `2784`;
 
 exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`] = `2700`;

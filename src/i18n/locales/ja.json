@@ -276,6 +276,8 @@
   "binDesigner.cutouts.sizePreset": "一般的なサイズ",
   "binDesigner.cutouts.clearance": "クリアランス",
   "binDesigner.cutouts.clearanceInfo": "部品が入るように追加する余裕",
+  "binDesigner.cutouts.chamfer": "入口面取り",
+  "binDesigner.cutouts.chamferInfo": "部品が中心に収まる面取り縁",
   "binDesigner.cutouts.addRectangle": "長方形",
   "binDesigner.cutouts.alignBottom": "下揃え",
   "binDesigner.cutouts.alignCenterH": "水平方向中央揃え",

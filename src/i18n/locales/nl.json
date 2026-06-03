@@ -276,6 +276,8 @@
   "binDesigner.cutouts.sizePreset": "Gangbare maten",
   "binDesigner.cutouts.clearance": "Speling",
   "binDesigner.cutouts.clearanceInfo": "Extra ruimte zodat onderdelen passen",
+  "binDesigner.cutouts.chamfer": "Invoerafschuining",
+  "binDesigner.cutouts.chamferInfo": "Schuine rand zodat onderdelen zichzelf centreren",
   "binDesigner.cutouts.addRectangle": "Rechthoek",
   "binDesigner.cutouts.alignBottom": "Onder uitlijnen",
   "binDesigner.cutouts.alignCenterH": "Horizontaal centreren",

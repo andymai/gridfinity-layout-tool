@@ -1,8 +1,9 @@
 /**
  * Shape-specific cutout controls: polygon side-count + across-flats sizing,
- * hardware presets, and the insertion-clearance field. Rectangle corner-radius
- * stays in the parent panel; this component only renders for the shapes that
- * need extra parameters (polygon / circle / slot).
+ * hardware presets, the insertion-clearance field, and the entry chamfer.
+ * Rectangle corner-radius stays in the parent panel, but this component still
+ * renders for rectangles (the chamfer applies to them) — it returns no extra
+ * controls only for shapes with neither parametric sizing nor a fit allowance.
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
@@ -11,6 +12,8 @@ import {
   MAX_POLYGON_SIDES,
   DEFAULT_POLYGON_SIDES,
   CLEARANCE_SHAPES,
+  CHAMFER_SHAPES,
+  MAX_CUTOUT_CHAMFER,
 } from '@/features/bin-designer/types';
 import {
   polygonBoxFromAcrossFlats,
@@ -50,6 +53,9 @@ export function CutoutShapeControls({
   const t = useTranslation();
   const sides = cutout.sides ?? DEFAULT_POLYGON_SIDES;
   const isClearanceShape = CLEARANCE_SHAPES.includes(cutout.shape);
+  const isChamferShape = CHAMFER_SHAPES.includes(cutout.shape);
+  // A straight wall must remain below the bevel, so cap the chamfer by cut depth.
+  const maxChamfer = Math.max(0, Math.min(MAX_CUTOUT_CHAMFER, cutout.cutDepth - 0.2));
 
   /**
    * Apply a new across-flats value, preserving the regular-polygon aspect +
@@ -130,6 +136,20 @@ export function CutoutShapeControls({
           step={0.05}
           unit="mm"
           info={t('binDesigner.cutouts.clearanceInfo')}
+          disabled={disabled}
+        />
+      )}
+
+      {isChamferShape && maxChamfer > 0 && (
+        <SliderInput
+          label={t('binDesigner.cutouts.chamfer')}
+          value={Math.min(cutout.chamferWidth ?? 0, maxChamfer)}
+          onChange={(chamferWidth) => onUpdate({ chamferWidth })}
+          min={0}
+          max={maxChamfer}
+          step={0.25}
+          unit="mm"
+          info={t('binDesigner.cutouts.chamferInfo')}
           disabled={disabled}
         />
       )}

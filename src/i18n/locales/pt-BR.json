@@ -276,6 +276,8 @@
   "binDesigner.cutouts.sizePreset": "Tamanhos comuns",
   "binDesigner.cutouts.clearance": "Folga",
   "binDesigner.cutouts.clearanceInfo": "Tamanho extra para as peças encaixarem",
+  "binDesigner.cutouts.chamfer": "Chanfro de entrada",
+  "binDesigner.cutouts.chamferInfo": "Borda chanfrada para as peças se centralizarem",
   "binDesigner.cutouts.addRectangle": "Retângulo",
   "binDesigner.cutouts.alignBottom": "Alinhar abaixo",
   "binDesigner.cutouts.alignCenterH": "Centralizar horizontalmente",

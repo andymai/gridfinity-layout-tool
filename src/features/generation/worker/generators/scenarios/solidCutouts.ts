@@ -31,6 +31,49 @@ export const solidCutouts: ScenarioCase[] = [
       cutouts: [makeCutout({ shape: 'polygon', sides: 6, width: 18, depth: 16, clearance: 0.2 })],
     },
   }),
+  defineScenario('solid cutouts', '2\u00d72 solid with chamfered hexagon cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [
+        makeCutout({ shape: 'polygon', sides: 6, width: 18, depth: 16, chamferWidth: 1.5 }),
+      ],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with chamfered circle cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [makeCutout({ shape: 'circle', width: 20, depth: 20, chamferWidth: 2 })],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with chamfered rectangle cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [makeCutout({ shape: 'rectangle', width: 22, depth: 16, chamferWidth: 1.5 })],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with chamfered + scooped rectangle cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      // Scoop fillets the loft's bottom edges (which exist at z=0) on top of the
+      // chamfer flare \u2014 exercise that the two features compose without failure.
+      cutouts: [
+        makeCutout({ shape: 'rectangle', width: 22, depth: 16, chamferWidth: 1.5, scoopRadius: 2 }),
+      ],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with chamfered slot cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      // Slot's chamfer flares a derived (half-short-side) corner radius, unlike
+      // the other shapes \u2014 exercise that loft path explicitly.
+      cutouts: [makeCutout({ shape: 'slot', width: 30, depth: 12, chamferWidth: 1.5 })],
+    },
+  }),
   defineScenario('solid cutouts', '2\u00d72 solid with slot (stadium) cutout', {
     params: {
       style: 'solid',

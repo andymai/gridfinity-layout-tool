@@ -276,6 +276,8 @@
   "binDesigner.cutouts.sizePreset": "Vanliga storlekar",
   "binDesigner.cutouts.clearance": "Spelrum",
   "binDesigner.cutouts.clearanceInfo": "Extra storlek så att delar passar",
+  "binDesigner.cutouts.chamfer": "Insticksfas",
+  "binDesigner.cutouts.chamferInfo": "Fasad kant så att delar centreras",
   "binDesigner.cutouts.addRectangle": "Rektangel",
   "binDesigner.cutouts.alignBottom": "Justera nederst",
   "binDesigner.cutouts.alignCenterH": "Centrera horisontellt",

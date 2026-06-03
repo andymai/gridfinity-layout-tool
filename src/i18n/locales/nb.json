@@ -276,6 +276,8 @@
   "binDesigner.cutouts.sizePreset": "Vanlige størrelser",
   "binDesigner.cutouts.clearance": "Klaring",
   "binDesigner.cutouts.clearanceInfo": "Ekstra størrelse så deler passer",
+  "binDesigner.cutouts.chamfer": "Innføringsfas",
+  "binDesigner.cutouts.chamferInfo": "Skråkant så deler sentrerer seg selv",
   "binDesigner.cutouts.addRectangle": "Rektangel",
   "binDesigner.cutouts.alignBottom": "Juster til bunnen",
   "binDesigner.cutouts.alignCenterH": "Sentrer horisontalt",

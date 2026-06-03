@@ -65,6 +65,7 @@ export {
   MAX_POLYGON_SIDES,
   DEFAULT_POLYGON_SIDES,
   CLEARANCE_SHAPES,
+  CHAMFER_SHAPES,
 } from '@/features/bin-designer/types';
 
 /**

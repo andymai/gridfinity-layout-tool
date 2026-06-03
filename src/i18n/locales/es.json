@@ -276,6 +276,8 @@
   "binDesigner.cutouts.sizePreset": "Tamaños comunes",
   "binDesigner.cutouts.clearance": "Holgura",
   "binDesigner.cutouts.clearanceInfo": "Tamaño extra para que las piezas entren",
+  "binDesigner.cutouts.chamfer": "Bisel de entrada",
+  "binDesigner.cutouts.chamferInfo": "Borde biselado para que las piezas se autocentren",
   "binDesigner.cutouts.addRectangle": "Rectángulo",
   "binDesigner.cutouts.alignBottom": "Alinear abajo",
   "binDesigner.cutouts.alignCenterH": "Centrar horizontalmente",

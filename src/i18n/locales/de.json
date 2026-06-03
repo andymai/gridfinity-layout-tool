@@ -276,6 +276,8 @@
   "binDesigner.cutouts.sizePreset": "Gängige Größen",
   "binDesigner.cutouts.clearance": "Spiel",
   "binDesigner.cutouts.clearanceInfo": "Zusätzliche Größe, damit Teile hineinpassen",
+  "binDesigner.cutouts.chamfer": "Einführfase",
+  "binDesigner.cutouts.chamferInfo": "Abgeschrägter Rand zum Selbstzentrieren der Teile",
   "binDesigner.cutouts.addRectangle": "Rechteck",
   "binDesigner.cutouts.alignBottom": "Unten ausrichten",
   "binDesigner.cutouts.alignCenterH": "Horizontal zentrieren",
