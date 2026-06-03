@@ -12,7 +12,8 @@ import { clampRotationToBounds, flipCutoutHorizontal, flipCutoutVertical } from 
 import { CutoutScoopControls } from '../../CutoutWorkspace/CutoutScoopControls';
 import { CutoutShapeControls } from './CutoutShapeControls';
 import { CutoutFitControls } from './CutoutFitControls';
-import { hasFitControls } from './cutoutSectionVisibility';
+import { CutoutShapeBadge } from './CutoutShapeBadge';
+import { hasFitControls, formatFitSummary } from './cutoutSectionVisibility';
 import type { FitCue } from './cutoutSectionVisibility';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 
@@ -44,6 +45,9 @@ export function CutoutPropertyPanel({
 
   return (
     <div className="space-y-2.5 rounded border border-stroke-subtle bg-surface-elevated p-3">
+      <div className="border-b border-stroke-subtle pb-2">
+        <CutoutShapeBadge cutout={cutout} />
+      </div>
       <CollapsibleSection title={t('binDesigner.cutouts.section.transform')} variant="small">
         <div className="space-y-1">
           <SliderInput
@@ -151,6 +155,11 @@ export function CutoutPropertyPanel({
           title={t('binDesigner.cutouts.section.fit')}
           variant="small"
           defaultExpanded={false}
+          summary={formatFitSummary(cutout, {
+            clearance: t('binDesigner.cutouts.clearance'),
+            chamfer: t('binDesigner.cutouts.chamfer'),
+            none: t('binDesigner.cutouts.fitNone'),
+          })}
         >
           <CutoutFitControls
             cutout={cutout}

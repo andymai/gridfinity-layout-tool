@@ -21,3 +21,20 @@ export function hasFitControls(cutout: Pick<Cutout, 'shape' | 'cutDepth'>): bool
   const isChamfer = CHAMFER_SHAPES.includes(cutout.shape) && cutout.cutDepth - 0.2 > 0;
   return isClearance || isChamfer;
 }
+
+/**
+ * Compact state line for the collapsed Fit section, e.g. "Clearance +0.2mm"
+ * — so the default insertion allowance is legible without expanding. Labels
+ * are passed in (already localized) to keep this free of the i18n hook type.
+ */
+export function formatFitSummary(
+  cutout: Pick<Cutout, 'shape' | 'clearance' | 'chamferWidth'>,
+  labels: { readonly clearance: string; readonly chamfer: string; readonly none: string }
+): string {
+  const parts: string[] = [];
+  const clearance = CLEARANCE_SHAPES.includes(cutout.shape) ? (cutout.clearance ?? 0) : 0;
+  const chamfer = CHAMFER_SHAPES.includes(cutout.shape) ? (cutout.chamferWidth ?? 0) : 0;
+  if (clearance > 0) parts.push(`${labels.clearance} +${clearance}mm`);
+  if (chamfer > 0) parts.push(`${labels.chamfer} ${chamfer}mm`);
+  return parts.length > 0 ? parts.join(' · ') : labels.none;
+}

@@ -18,7 +18,8 @@ import { clampRotationToBounds, getRotatedBounds } from '../panel/CutoutsSection
 import { CutoutScoopControls } from './CutoutScoopControls';
 import { CutoutShapeControls } from '../panel/CutoutsSection/CutoutShapeControls';
 import { CutoutFitControls } from '../panel/CutoutsSection/CutoutFitControls';
-import { hasFitControls } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import { CutoutShapeBadge } from '../panel/CutoutsSection/CutoutShapeBadge';
+import { hasFitControls, formatFitSummary } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { Checkbox, Input } from '@/design-system';
@@ -294,6 +295,9 @@ export function FloatingInspector({
       {/* Single selection: sectioned property groups (Transform / Shape / Fit / Label) */}
       {singleCutout && (
         <div className="space-y-2.5">
+          <div className="border-b border-stroke-subtle pb-2">
+            <CutoutShapeBadge cutout={singleCutout} />
+          </div>
           <CollapsibleSection title={t('binDesigner.cutouts.section.transform')} variant="small">
             <div className="space-y-1.5">
               {/* Position & size: 2-column compact grid */}
@@ -401,6 +405,11 @@ export function FloatingInspector({
               title={t('binDesigner.cutouts.section.fit')}
               variant="small"
               defaultExpanded={false}
+              summary={formatFitSummary(singleCutout, {
+                clearance: t('binDesigner.cutouts.clearance'),
+                chamfer: t('binDesigner.cutouts.chamfer'),
+                none: t('binDesigner.cutouts.fitNone'),
+              })}
             >
               <CutoutFitControls
                 cutout={singleCutout}

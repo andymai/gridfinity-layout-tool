@@ -6,6 +6,7 @@
  * Renders nothing for shapes without parametric sizing (rectangle/slot/path).
  */
 
+import { useRef, useState } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import {
   MIN_POLYGON_SIDES,
@@ -40,6 +41,16 @@ export function CutoutShapeControls({
 }: CutoutShapeControlsProps) {
   const t = useTranslation();
   const sides = cutout.sides ?? DEFAULT_POLYGON_SIDES;
+
+  // Briefly emphasize the size field when a hardware preset sets it, so the
+  // change is noticed even when it's a small nudge.
+  const [flashSize, setFlashSize] = useState(false);
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flash = (): void => {
+    setFlashSize(true);
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    flashTimer.current = setTimeout(() => setFlashSize(false), 900);
+  };
 
   /**
    * Apply a new across-flats value, preserving the regular-polygon aspect +
@@ -79,12 +90,17 @@ export function CutoutShapeControls({
           max={maxAcrossFlats(sides, maxWidth, maxDepth)}
           step={0.5}
           unit="mm"
+          info={t('binDesigner.cutouts.acrossFlatsInfo')}
           disabled={disabled}
+          highlight={flashSize}
         />
         <CutoutPresetMenu
           presets={HEX_ACROSS_FLATS_PRESETS}
           label={t('binDesigner.cutouts.sizePreset')}
-          onPick={(mm) => applyAcrossFlats(mm)}
+          onPick={(mm) => {
+            applyAcrossFlats(mm);
+            flash();
+          }}
           disabled={disabled}
         />
       </div>

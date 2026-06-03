@@ -16,6 +16,7 @@ import { CutoutCanvas3D } from './renderer';
 import { CutoutShapeToolbar } from './CutoutShapeToolbar';
 import { useSvgImport } from './svgImport';
 import { CutoutPropertyPanel } from './CutoutPropertyPanel';
+import type { FitCue } from './cutoutSectionVisibility';
 import { AlignmentToolbar } from './AlignmentToolbar';
 import { CutoutContextMenu } from './CutoutContextMenu';
 import type { ContextMenuAction } from './CutoutContextMenu';
@@ -86,6 +87,7 @@ export function CutoutEditor() {
   const canvasHeight = (CANVAS_WIDTH * binDepth) / binWidth;
 
   const [gridSize, setGridSize] = useState(0.5);
+  const [fitCue, setFitCue] = useState<FitCue>(null);
 
   const {
     mode,
@@ -474,6 +476,7 @@ export function CutoutEditor() {
           canvasHeight={canvasHeight}
           selection={selection}
           preview={preview}
+          fitCue={fitCue}
           mode={mode}
           drawingPreview={drawingPreview}
           pathDrawingPreview={pathDrawingPreview}
@@ -526,6 +529,7 @@ export function CutoutEditor() {
           onRemove={removeCutout}
           onDuplicate={duplicateCutouts}
           disabled={isInteracting}
+          onFitCue={setFitCue}
         />
       )}
 

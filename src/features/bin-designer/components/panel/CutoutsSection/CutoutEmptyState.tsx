@@ -61,6 +61,8 @@ export function CutoutEmptyState({ variant }: CutoutEmptyStateProps) {
         <div className="text-left text-xs space-y-1.5 text-content-tertiary w-full mt-2">
           <ShortcutHint shortcut="R" label={t('binDesigner.cutouts.shortcutRect')} />
           <ShortcutHint shortcut="C" label={t('binDesigner.cutouts.shortcutCircle')} />
+          <ShortcutHint shortcut="G" label={t('binDesigner.cutouts.shortcutPolygon')} />
+          <ShortcutHint shortcut="S" label={t('binDesigner.cutouts.shortcutSlot')} />
           <ShortcutHint shortcut="P" label={t('binDesigner.cutouts.shortcutPen')} />
           {isWorkspace && (
             <ShortcutHint shortcut="V" label={t('binDesigner.cutouts.shortcutSelect')} />

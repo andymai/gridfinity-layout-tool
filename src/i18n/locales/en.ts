@@ -1642,7 +1642,10 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.addSlot': 'Slot',
   'binDesigner.cutouts.sides': 'Sides',
   'binDesigner.cutouts.acrossFlats': 'Across flats',
-  'binDesigner.cutouts.sizePreset': 'Common sizes',
+  'binDesigner.cutouts.acrossFlatsInfo': 'Flat-to-flat width — matches hex bit / Allen specs',
+  'binDesigner.cutouts.sizePreset': 'Hardware sizes',
+  'binDesigner.cutouts.fitNone': 'No fit allowance',
+  'binDesigner.cutouts.shapeName.path': 'Path',
   'binDesigner.cutouts.clearance': 'Clearance',
   'binDesigner.cutouts.clearanceInfo': 'Extra size added so parts drop in',
   'binDesigner.cutouts.chamfer': 'Entry chamfer',
@@ -1720,6 +1723,8 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.shortcutSelect': 'Select tool',
   'binDesigner.cutouts.shortcutRect': 'Draw rectangle',
   'binDesigner.cutouts.shortcutCircle': 'Draw circle',
+  'binDesigner.cutouts.shortcutPolygon': 'Draw polygon',
+  'binDesigner.cutouts.shortcutSlot': 'Draw slot',
   'binDesigner.cutouts.shortcutPen': 'Draw custom path',
   'binDesigner.cutouts.clearAllConfirmTitle': 'Clear All Cutouts',
   'binDesigner.cutouts.clearAllConfirmMessage':
@@ -1740,7 +1745,7 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.showHelp': 'Show help',
   'binDesigner.cutoutEditor.quickstart.title': 'Cutout Editor',
   'binDesigner.cutoutEditor.quickstart.shapes':
-    'Shapes (R · C · P) — drag to draw rectangles, circles, or Bézier paths',
+    'Shapes (R · C · G · S · P) — rectangles, circles, polygons, slots, or Bézier paths',
   'binDesigner.cutoutEditor.quickstart.select':
     'Select (V) — drag a marquee, Shift+click to extend',
   'binDesigner.cutoutEditor.quickstart.vertex':
