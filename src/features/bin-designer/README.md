@@ -99,6 +99,20 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   adaptive fillet can't reason about. Empty results (e.g. Intersect of
   disjoint shapes) raise a toast so silent no-ops are debuggable.
 
+- **Cutout shapes**: beyond `rectangle` / `circle` / `path` (pen), the editor
+  has two parametric primitives for bit/socket organizers — `polygon`
+  (regular N-gon, `sides` 3–12, flat-top hex default) and `slot`
+  (stadium/capsule = rounded-rect at half-short-side radius). A polygon's
+  vertices are **derived to fill the `width × depth` box** (shared math in
+  `@/shared/utils/cutoutPolygon`, used by both the worker and the 2D editor),
+  so every bounds/resize/rotation/align helper is reused unchanged — only the
+  outline generation, `booleanGeometry`, and the renderer branch on shape
+  (polygon → `PolygonShapeMesh`; slot → SDF rounded box). Insert shapes
+  (circle/polygon/slot) carry an optional `clearance` (mm) added to the cut at
+  generation time so spec-sized parts fit; the 2D editor shows the nominal
+  size. Polygons are sized **across-flats** (matches hex/Allen specs);
+  per-shape sizing + hardware presets live in `CutoutShapeControls`.
+
 ## Gotchas
 
 1. **Compartment cells must form rectangles** - `isRectangularSelection()` validates
