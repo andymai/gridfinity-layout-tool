@@ -44,6 +44,7 @@ import {
   clampPolygonSides,
 } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { cutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
 import { combineGroupSolids } from './cutoutGroupOps';
 import {
   resolveScoop,
@@ -81,40 +82,6 @@ function computeRotationSafeAABB(cx: number, cy: number, width: number, depth: n
  * `originX/Y` is the bin-interior origin in world coords (= -innerW/2,
  * -innerD/2), so the returned AABB sits in the interior frame.
  */
-function cutoutWorldAabb(
-  cutout: Pick<Cutout, 'x' | 'y' | 'width' | 'depth' | 'rotation'>,
-  originX: number,
-  originY: number
-): AABB {
-  const cx = originX + cutout.x + cutout.width / 2;
-  const cy = originY + cutout.y + cutout.depth / 2;
-  const hw = cutout.width / 2;
-  const hd = cutout.depth / 2;
-  if (cutout.rotation === 0) {
-    return { minX: cx - hw, maxX: cx + hw, minY: cy - hd, maxY: cy + hd };
-  }
-  const θ = (cutout.rotation * Math.PI) / 180;
-  const c = Math.cos(θ);
-  const s = Math.sin(θ);
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minY = Infinity;
-  let maxY = -Infinity;
-  for (const [lx, ly] of [
-    [-hw, -hd],
-    [hw, -hd],
-    [hw, hd],
-    [-hw, hd],
-  ] as const) {
-    const wx = cx + lx * c - ly * s;
-    const wy = cy + lx * s + ly * c;
-    if (wx < minX) minX = wx;
-    if (wx > maxX) maxX = wx;
-    if (wy < minY) minY = wy;
-    if (wy > maxY) maxY = wy;
-  }
-  return { minX, maxX, minY, maxY };
-}
 /**
  * 2D outline for a parametric cutout shape, centered at origin. Shared by the
  * straight-extrude path and the chamfer loft so both agree on the profile.
@@ -908,10 +875,10 @@ export function buildCutoutCuts(
  * cutout's footprint — `cutoutWorldAabb()` projects the four rotated corners
  * and takes their min/max.
  *
- * Available space = the gap between the cutout's rotated AABB edge and the
- * bin interior boundary in the chosen direction, minus 2·margin. Returns
- * `null` when even the minimum font size won't fit — better silent skip than
- * a visually broken engraving.
+ * Placement (side gap + rotation-aware AABB) is delegated to
+ * `cutoutLabelPlacement` so the 2D editor preview tracks this engraving.
+ * Returns `null` when there's no room or the minimum font size won't fit —
+ * better a silent skip than a visually broken engraving.
  */
 function buildCutoutLabelEngrave(
   cutout: Cutout,
@@ -923,53 +890,9 @@ function buildCutoutLabelEngrave(
   innerW: number,
   innerD: number
 ): Shape3D | null {
-  const side = cutout.textSide ?? 'top';
-  // World-coord AABB of the cutout (in interior frame: origin at bin center),
-  // rotation-aware so labels don't overlap a rotated cutout.
-  const {
-    minX: aabbMinX,
-    maxX: aabbMaxX,
-    minY: aabbMinY,
-    maxY: aabbMaxY,
-  } = cutoutWorldAabb(cutout, originX, originY);
-
-  // Interior bounds in the same frame.
-  const interiorMinX = -innerW / 2;
-  const interiorMaxX = innerW / 2;
-  const interiorMinY = -innerD / 2;
-  const interiorMaxY = innerD / 2;
-
-  let availW: number;
-  let availD: number;
-  let centerX: number;
-  let centerY: number;
-  switch (side) {
-    case 'top':
-      availW = aabbMaxX - aabbMinX;
-      availD = interiorMaxY - aabbMaxY;
-      centerX = (aabbMinX + aabbMaxX) / 2;
-      centerY = (aabbMaxY + interiorMaxY) / 2;
-      break;
-    case 'bottom':
-      availW = aabbMaxX - aabbMinX;
-      availD = aabbMinY - interiorMinY;
-      centerX = (aabbMinX + aabbMaxX) / 2;
-      centerY = (interiorMinY + aabbMinY) / 2;
-      break;
-    case 'left':
-      availW = aabbMinX - interiorMinX;
-      availD = aabbMaxY - aabbMinY;
-      centerX = (interiorMinX + aabbMinX) / 2;
-      centerY = (aabbMinY + aabbMaxY) / 2;
-      break;
-    case 'right':
-      availW = interiorMaxX - aabbMaxX;
-      availD = aabbMaxY - aabbMinY;
-      centerX = (aabbMaxX + interiorMaxX) / 2;
-      centerY = (aabbMinY + aabbMaxY) / 2;
-      break;
-  }
-  if (availW <= 0 || availD <= 0) return null;
+  const placement = cutoutLabelPlacement(cutout, innerW, innerD, originX, originY);
+  if (!placement) return null;
+  const { centerX, centerY, availW, availD } = placement;
 
   return withScope((scope: DisposalScope): Shape3D | null => {
     // Cutout text is engrave-only this PR. The design-level mode is

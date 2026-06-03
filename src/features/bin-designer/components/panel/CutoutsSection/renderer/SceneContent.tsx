@@ -19,6 +19,7 @@ import type { SegmentHoverInfo } from '../handlers';
 import type { AlignmentGuide } from '../geometry';
 import { EditorBackground3D } from './EditorBackground3D';
 import { CutoutShapeMesh } from './CutoutShapeMesh';
+import { CutoutLabel3D } from './CutoutLabel3D';
 import { CutoutHandles3D } from './CutoutHandles3D';
 import { RotationHandle3D } from './RotationHandle3D';
 import { SmartGuides3D } from './SmartGuides3D';
@@ -366,6 +367,9 @@ export function SceneContent({
           </>
         );
       })()}
+
+      {/* Engraved labels mirroring the printed bin-top engraving */}
+      <CutoutLabel3D cutouts={cutouts} binWidth={binWidth} binDepth={binDepth} preview={preview} />
 
       {/* Lock badges on locked cutouts */}
       {cutouts

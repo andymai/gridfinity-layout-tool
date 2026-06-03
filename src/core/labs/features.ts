@@ -95,13 +95,11 @@ export const FEATURE_FLAGS = [
     name: 'Engraved Text',
     description:
       'Engrave, emboss, or cut text directly into label tabs and beside cutouts. Type a label per compartment or per cutout and it prints into the model.',
-    status: 'experimental',
+    status: 'graduated',
     risk: 'medium',
-    warning:
-      'Coming soon. The editor UI and 3D engraving pipeline ship in follow-up updates; flipping this flag today has no visible effect.',
     addedAt: '2026-05',
+    graduatedAt: '2026-06',
     requiresRefresh: false,
-    comingSoon: true,
   },
   {
     id: 'show_generation_perf',
