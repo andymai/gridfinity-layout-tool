@@ -30,7 +30,7 @@ import type { ProgressFn } from '../meshUtils';
 import { buildCacheKey, quantize, compactKey } from '../cacheKeyUtils';
 import type { BinDimensions, PipelineContext } from './types';
 import type { PerfCollector } from './perfCollector';
-import { resolveOverhang, overhangKey } from '../overhang';
+import { resolveOverhang, overhangKey, hasOverhang, overhangExpansion } from '../overhang';
 
 /** Derive all dimensions from bin parameters. */
 function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions {
@@ -51,8 +51,20 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   const gridUnit = params.gridUnitMm ?? SIZE;
   const outerW = params.width * gridUnit - CLEARANCE;
   const outerD = params.depth * gridUnit - CLEARANCE;
-  const innerW = outerW - 2 * params.wallThickness;
-  const innerD = outerD - 2 * params.wallThickness;
+
+  // Resolve overhang before innerW/innerD so interior features (compartments,
+  // scoops, label tabs, etc.) see the actual available space. The box shell
+  // expands in lockstep with the overhang, so innerW/innerD must include the
+  // per-side addW/addD expansion.
+  // Overhang is suppressed for polygon masks (the mask defines its own footprint).
+  const { cellMask } = params;
+  const overhang = resolveOverhang(isPartialMask(cellMask) ? undefined : params.overhang);
+  const ovhExp = hasOverhang(overhang) ? overhangExpansion(overhang) : null;
+
+  const innerW = outerW + (ovhExp?.addW ?? 0) - 2 * params.wallThickness;
+  const innerD = outerD + (ovhExp?.addD ?? 0) - 2 * params.wallThickness;
+  const innerOffsetX = ovhExp?.offsetX ?? 0;
+  const innerOffsetY = ovhExp?.offsetY ?? 0;
   const isSlotted = params.style === 'slotted';
 
   const withMagnet =
@@ -97,13 +109,9 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // rectangular bins continue to share the existing cache bucket. The
   // compartments segment is "none" unless the bin uses the multi-cavity
   // cut path, so single-compartment bins keep their existing cache bucket.
-  const { cellMask } = params;
   const maskKeySegment = isPartialMask(cellMask) ? hashMask(cellMask) : 'rect';
   const compartmentsKey = compartmentsBakedIntoShell ? buildCompartmentsCacheKey(params) : 'none';
 
-  // Overhang is a rectangle-path feature in v1: a custom-shape mask defines its
-  // own exact footprint, so suppress overhang when a partial mask is present.
-  const overhang = resolveOverhang(isPartialMask(cellMask) ? undefined : params.overhang);
   const shellKey = compactKey(
     buildCacheKey(
       'v6',
@@ -146,6 +154,8 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
     withScrew,
     compartmentsBakedIntoShell,
     overhang,
+    innerOffsetX,
+    innerOffsetY,
   };
 }
 

@@ -92,6 +92,57 @@ describe('createInitialContext', () => {
     expect(ctx.originToTag.size).toBe(0);
   });
 
+  it('includes overhang expansion in innerW/innerD', () => {
+    const noOverhang = createInitialContext(createTestParams({ width: 2, depth: 2 }));
+    const withOverhang = createInitialContext(
+      createTestParams({
+        width: 2,
+        depth: 2,
+        overhang: { left: 5, right: 5, front: 4, back: 4 },
+      })
+    );
+    // outerW stays nominal (socket footprint unchanged)
+    expect(withOverhang.dimensions.outerW).toBeCloseTo(noOverhang.dimensions.outerW);
+    // innerW must grow by addW (10mm) so interior features use the full space
+    expect(withOverhang.dimensions.innerW).toBeCloseTo(noOverhang.dimensions.innerW + 10, 5);
+    expect(withOverhang.dimensions.innerD).toBeCloseTo(noOverhang.dimensions.innerD + 8, 5);
+  });
+
+  it('innerW/innerD are unchanged with zero overhang', () => {
+    const ctx = createInitialContext(
+      createTestParams({
+        overhang: { left: 0, right: 0, front: 0, back: 0 },
+      })
+    );
+    const baseline = createInitialContext(createTestParams());
+    expect(ctx.dimensions.innerW).toBeCloseTo(baseline.dimensions.innerW, 5);
+    expect(ctx.dimensions.innerD).toBeCloseTo(baseline.dimensions.innerD, 5);
+  });
+
+  it('innerOffsetX/Y are zero for symmetric overhang', () => {
+    const ctx = createInitialContext(
+      createTestParams({ overhang: { left: 5, right: 5, front: 4, back: 4 } })
+    );
+    expect(ctx.dimensions.innerOffsetX).toBe(0);
+    expect(ctx.dimensions.innerOffsetY).toBe(0);
+  });
+
+  it('innerOffsetX/Y are zero with no overhang', () => {
+    const ctx = createInitialContext(createTestParams());
+    expect(ctx.dimensions.innerOffsetX).toBe(0);
+    expect(ctx.dimensions.innerOffsetY).toBe(0);
+  });
+
+  it('innerOffsetX/Y reflect asymmetric overhang cavity shift', () => {
+    // right=6, left=0  → offsetX = (6-0)/2 = 3  (cavity shifts toward +X)
+    // back=4,  front=0 → offsetY = (4-0)/2 = 2
+    const ctx = createInitialContext(
+      createTestParams({ overhang: { left: 0, right: 6, front: 0, back: 4 } })
+    );
+    expect(ctx.dimensions.innerOffsetX).toBeCloseTo(3, 5);
+    expect(ctx.dimensions.innerOffsetY).toBeCloseTo(2, 5);
+  });
+
   it('should use params.gridUnitMm instead of hardcoded 42mm', () => {
     const ctx = createInitialContext(createTestParams({ gridUnitMm: 50 }));
     const dim = ctx.dimensions;

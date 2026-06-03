@@ -51,9 +51,15 @@ export const shellStage: PipelineStage = {
     // path will be taken (rectangular bin + non-solid + rectangular comps).
     // The cache key in `dim.shellKey` already discriminates on the comp grid
     // so we can safely pass `undefined` for the default path.
-    const compartmentCavityDrawings = dim.compartmentsBakedIntoShell
+    const rawCavityDrawings = dim.compartmentsBakedIntoShell
       ? buildCompartmentCavityDrawings(params, dim.innerW, dim.innerD)
       : undefined;
+    // For asymmetric overhang the inner cavity centre is at (innerOffsetX, innerOffsetY);
+    // shift the cavity drawings so they cut the correct region of the box body.
+    const compartmentCavityDrawings =
+      rawCavityDrawings && (dim.innerOffsetX !== 0 || dim.innerOffsetY !== 0)
+        ? rawCavityDrawings.map((d) => d.translate(dim.innerOffsetX, dim.innerOffsetY))
+        : rawCavityDrawings;
     const compartmentCavityKey = dim.compartmentsBakedIntoShell
       ? buildCompartmentsCacheKey(params)
       : undefined;

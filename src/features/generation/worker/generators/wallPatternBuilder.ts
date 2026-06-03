@@ -14,7 +14,7 @@
  *   - `wallPatternClips`     — cutout/handle/ramp clipping passes
  */
 
-import { drawPolysides, unwrap, clone } from 'brepjs';
+import { drawPolysides, unwrap, clone, translate } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { PipelineContext } from './pipeline/types';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
@@ -66,7 +66,7 @@ import { buildClippedWallPattern } from './wallPatternCompound';
  */
 export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
   const { params, dimensions: dim, signal, originToTag, perfCollector } = ctx;
-  const { innerW, innerD, interiorHeight, hasLip } = dim;
+  const { innerW, innerD, interiorHeight, hasLip, innerOffsetX, innerOffsetY } = dim;
   const patternCutTargets: Shape3D[] = [];
 
   const patternResult = getPatternDescriptors(params, innerW, innerD, interiorHeight);
@@ -372,6 +372,11 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       perfCollector.addHexCenters(wall.centers.length);
     }
     if (shape) {
+      if (innerOffsetX !== 0 || innerOffsetY !== 0) {
+        const old = shape;
+        shape = translate(old, [innerOffsetX, innerOffsetY, 0]);
+        old.delete();
+      }
       collectOrigins(shape, FeatureTag.WALL_PATTERN, originToTag);
       patternCutTargets.push(shape);
     }

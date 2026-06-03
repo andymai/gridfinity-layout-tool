@@ -80,6 +80,72 @@ describe('bin overhang geometry', () => {
   });
 });
 
+describe('overhang with interior features', () => {
+  it('scoop ramp uses expanded interior space (regression: innerD was not including overhang)', () => {
+    const generateBin = getGenerateBin();
+    const SCOOP = { enabled: true as const, radius: 'auto' as const };
+    const OVH = { left: 5, right: 5, front: 5, back: 5 };
+
+    // Build all four combinations to isolate the scoop-delta under each condition.
+    const base = generateBin(buildParams({ width: 2, depth: 2 }), undefined, true);
+    const baseScoop = generateBin(
+      buildParams({ width: 2, depth: 2, scoop: SCOOP }),
+      undefined,
+      true
+    );
+    const ovh = generateBin(buildParams({ width: 2, depth: 2, overhang: OVH }), undefined, true);
+    const ovhScoop = generateBin(
+      buildParams({ width: 2, depth: 2, scoop: SCOOP, overhang: OVH }),
+      undefined,
+      true
+    );
+
+    assertStructurallyValid(baseScoop, 'scoop no overhang');
+    assertStructurallyValid(ovhScoop, 'scoop with overhang');
+
+    // The scoop-delta is how many triangles the scoop adds to the plain shell.
+    // Before the fix, innerD was nominal regardless of overhang, so both deltas
+    // would be identical. After the fix, the overhang shell has a larger inner
+    // cavity, so the scoop carves more geometry and its delta is different.
+    const scoopDeltaNoOverhang = baseScoop.triangleCount - base.triangleCount;
+    const scoopDeltaWithOverhang = ovhScoop.triangleCount - ovh.triangleCount;
+    expect(scoopDeltaNoOverhang).toBeGreaterThan(0);
+    expect(scoopDeltaWithOverhang).toBeGreaterThan(0);
+    expect(scoopDeltaWithOverhang).not.toBe(scoopDeltaNoOverhang);
+  });
+
+  it('asymmetric overhang: interior features are structurally valid (centering offset applied)', () => {
+    const generateBin = getGenerateBin();
+    // right-only overhang: cavity centre shifts +X by 5mm (offsetX = 5).
+    // Before the centering fix, scoops would extend 5mm into the left wall.
+    // After the fix, all features translate by (innerOffsetX, innerOffsetY).
+    const result = generateBin(
+      buildParams({
+        width: 2,
+        depth: 2,
+        overhang: { left: 0, right: 10, front: 0, back: 0 },
+        scoop: { enabled: true, radius: 'auto' },
+      }),
+      undefined,
+      true
+    );
+    assertStructurallyValid(result, 'asymmetric overhang with scoop');
+
+    // front-only overhang: cavity centre shifts +Y by 5mm (offsetY = 5).
+    const result2 = generateBin(
+      buildParams({
+        width: 2,
+        depth: 2,
+        overhang: { left: 0, right: 0, front: 0, back: 10 },
+        scoop: { enabled: true, radius: 'auto' },
+      }),
+      undefined,
+      true
+    );
+    assertStructurallyValid(result2, 'back-only overhang with scoop');
+  });
+});
+
 describe('overhang feet toggle', () => {
   const OVERHANG = { left: 12, right: 12, front: 12, back: 12 };
 

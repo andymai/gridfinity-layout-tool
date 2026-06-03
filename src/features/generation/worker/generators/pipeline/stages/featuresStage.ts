@@ -12,6 +12,7 @@
  * for the subsequent boolean stage.
  */
 
+import { translate } from 'brepjs';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import type { PipelineContext, PipelineStage } from '../types';
 import { buildCutoutCuts } from '../../featureBuilder';
@@ -42,7 +43,14 @@ export const featuresStage: PipelineStage = {
       // booleanStage early-returns when ctx.solid is null; building tools
       // we'd never apply would just leak their WASM shapes.
       if (!ctx.solid) return ctx;
-      const cutoutTools = buildCutoutCuts(params, dim.innerW, dim.innerD, dim.wallHeight);
+      const rawTools = buildCutoutCuts(params, dim.innerW, dim.innerD, dim.wallHeight);
+      const { innerOffsetX, innerOffsetY } = dim;
+      const cutoutTools = rawTools.map((tool) => {
+        if (innerOffsetX === 0 && innerOffsetY === 0) return tool;
+        const shifted = translate(tool, [innerOffsetX, innerOffsetY, 0]);
+        tool.delete();
+        return shifted;
+      });
       for (const tool of cutoutTools) {
         collectOrigins(tool, FeatureTag.CUTOUT, originToTag);
       }
