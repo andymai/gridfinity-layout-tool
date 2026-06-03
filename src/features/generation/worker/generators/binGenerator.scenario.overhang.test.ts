@@ -113,6 +113,37 @@ describe('overhang with interior features', () => {
     expect(scoopDeltaWithOverhang).toBeGreaterThan(0);
     expect(scoopDeltaWithOverhang).not.toBe(scoopDeltaNoOverhang);
   });
+
+  it('asymmetric overhang: interior features are structurally valid (centering offset applied)', () => {
+    const generateBin = getGenerateBin();
+    // right-only overhang: cavity centre shifts +X by 5mm (offsetX = 5).
+    // Before the centering fix, scoops would extend 5mm into the left wall.
+    // After the fix, all features translate by (innerOffsetX, innerOffsetY).
+    const result = generateBin(
+      buildParams({
+        width: 2,
+        depth: 2,
+        overhang: { left: 0, right: 10, front: 0, back: 0 },
+        scoop: { enabled: true, radius: 'auto' },
+      }),
+      undefined,
+      true
+    );
+    assertStructurallyValid(result, 'asymmetric overhang with scoop');
+
+    // front-only overhang: cavity centre shifts +Y by 5mm (offsetY = 5).
+    const result2 = generateBin(
+      buildParams({
+        width: 2,
+        depth: 2,
+        overhang: { left: 0, right: 0, front: 0, back: 10 },
+        scoop: { enabled: true, radius: 'auto' },
+      }),
+      undefined,
+      true
+    );
+    assertStructurallyValid(result2, 'back-only overhang with scoop');
+  });
 });
 
 describe('overhang feet toggle', () => {

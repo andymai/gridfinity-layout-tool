@@ -49,6 +49,15 @@ export interface BinDimensions {
    * these amounts; the base sockets stay at the nominal footprint.
    */
   readonly overhang: ResolvedOverhang;
+  /**
+   * X shift of the inner cavity centre relative to the bin origin, in mm.
+   * Equal to `(overhang.right - overhang.left) / 2`. Zero for symmetric or
+   * absent overhang. All interior feature builders translate their geometry
+   * by `(innerOffsetX, innerOffsetY)` so features stay centred in the cavity.
+   */
+  readonly innerOffsetX: number;
+  /** Y shift of the inner cavity centre — `(overhang.back - overhang.front) / 2`. */
+  readonly innerOffsetY: number;
 }
 
 /** Immutable context threaded through pipeline stages. */

@@ -14,7 +14,7 @@
  * - One clone per path — never two
  */
 
-import { clone, unwrap } from 'brepjs';
+import { clone, translate, unwrap } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { PipelineContext } from './types';
 import type { FeatureBuilder } from './featureBuilder';
@@ -73,6 +73,14 @@ export function runFeatureBuilders(
     }
 
     if (shape) {
+      // Apply asymmetric-overhang cavity offset before tagging so
+      // collectOrigins maps the face IDs of the final, positioned shape.
+      const { innerOffsetX, innerOffsetY } = ctx.dimensions;
+      if (innerOffsetX !== 0 || innerOffsetY !== 0) {
+        const old = shape;
+        shape = translate(old, [innerOffsetX, innerOffsetY, 0]);
+        old.delete();
+      }
       // `clone()` drops the face-origin WeakMap (shellCache uses
       // `translate([0,0,0])` for that reason), but here it's safe because
       // `collectOrigins` re-tags the freshly cloned shape on every
