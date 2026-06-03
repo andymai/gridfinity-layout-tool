@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.136.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.136.0...gridfinity-layout-tool-v4.136.1) (2026-06-03)
+
+
+### Bug Fixes
+
+* **error-boundary:** remove one-click destructive reset from crash screens ([#1979](https://github.com/andymai/gridfinity-layout-tool/issues/1979)) ([185cb07](https://github.com/andymai/gridfinity-layout-tool/commit/185cb071d0a950e6aa1180a8533dcf5d19ba5636))
+
 ## [4.136.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.135.0...gridfinity-layout-tool-v4.136.0) (2026-06-02)
 
 
