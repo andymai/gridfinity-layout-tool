@@ -10,8 +10,9 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import type { ThreeEvent } from '@react-three/fiber';
 import type { Cutout } from '@/features/bin-designer/types';
+import { DEFAULT_POLYGON_SIDES } from '@/features/bin-designer/types';
+import { regularPolygonPoints, clampPolygonSides } from '@/shared/utils/cutoutPolygon';
 import { triangulatePath } from '../pathGeometry';
-import { polygonOutlinePoints } from '../cutoutOutline';
 import { RENDER_ORDER, ACCENT_COLOR_HEX } from './constants';
 import {
   outlineVertexShader,
@@ -54,8 +55,18 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
     [cutout, previewOverrides]
   );
 
-  // Absolute-mm vertices, then their bbox center for local-space rendering.
-  const points = useMemo(() => polygonOutlinePoints(effective), [effective]);
+  // Local-space (origin-centered) vertices — these depend only on the polygon's
+  // sides + box, NOT its x/y, so the distance field + geometry are not re-baked
+  // when the cutout is merely translated. The group position places it in world.
+  const points = useMemo(
+    () =>
+      regularPolygonPoints(
+        clampPolygonSides(effective.sides ?? DEFAULT_POLYGON_SIDES),
+        effective.width,
+        effective.depth
+      ),
+    [effective.sides, effective.width, effective.depth]
+  );
   const centerX = effective.x + effective.width / 2;
   const centerY = effective.y + effective.depth / 2;
   const area = effective.width * effective.depth;
@@ -76,30 +87,30 @@ export const PolygonShapeMesh = memo(function PolygonShapeMesh({
     if (indices.length === 0) return null;
     const positions = new Float32Array(points.length * 3);
     for (let i = 0; i < points.length; i++) {
-      positions[i * 3] = points[i].x - centerX;
-      positions[i * 3 + 1] = points[i].y - centerY;
+      positions[i * 3] = points[i].x;
+      positions[i * 3 + 1] = points[i].y;
       positions[i * 3 + 2] = 0.02;
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     geo.setIndex(indices);
     return geo;
-  }, [points, centerX, centerY]);
+  }, [points]);
 
   useEffect(() => () => fillGeometry?.dispose(), [fillGeometry]);
 
   const distField = useMemo(() => {
     if (points.length < MIN_POLYLINE_POINTS) return null;
-    return bakeDistanceField(points, centerX, centerY);
-  }, [points, centerX, centerY]);
+    return bakeDistanceField(points, 0, 0);
+  }, [points]);
 
   useEffect(() => () => distField?.texture.dispose(), [distField]);
 
   const strokeGeometry = useMemo(() => {
     if (points.length < MIN_POLYLINE_POINTS) return null;
-    const loop = points.map((p) => new THREE.Vector3(p.x - centerX, p.y - centerY, 0.02));
+    const loop = points.map((p) => new THREE.Vector3(p.x, p.y, 0.02));
     return new THREE.BufferGeometry().setFromPoints(loop);
-  }, [points, centerX, centerY]);
+  }, [points]);
 
   useEffect(() => () => strokeGeometry?.dispose(), [strokeGeometry]);
 

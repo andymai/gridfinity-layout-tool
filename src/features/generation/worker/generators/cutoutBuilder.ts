@@ -140,8 +140,14 @@ function buildUnrotatedCutoutShape(cutout: {
     (CLEARANCE_SHAPES as readonly string[]).includes(cutout.shape) && cutout.clearance !== undefined
       ? Math.max(0, cutout.clearance)
       : 0;
-  const w = cutout.width + clearance;
   const d = cutout.depth + clearance;
+  // Polygons scale uniformly (across-flats = depth grows by clearance) so the
+  // result stays a *regular* N-gon; a flat additive box offset would skew the
+  // width/depth ratio. Other shapes use a symmetric additive offset.
+  const w =
+    cutout.shape === 'polygon' && cutout.depth > 0
+      ? cutout.width * (d / cutout.depth)
+      : cutout.width + clearance;
 
   switch (cutout.shape) {
     case 'circle': {
@@ -165,6 +171,9 @@ function buildUnrotatedCutoutShape(cutout: {
       return sketch(pen.close(), 'XY').extrude(cutout.cutDepth);
     }
     case 'slot': {
+      // Back the radius off the exact half-short-side by a hair: an exact
+      // half-height radius makes drawRoundedRectangle emit a degenerate
+      // zero-length straight segment on the short edges, which OCCT rejects.
       const r = Math.max(0.01, slotCornerRadius(w, d) - 0.01);
       return sketch(drawRoundedRectangle(w, d, r), 'XY').extrude(cutout.cutDepth);
     }
