@@ -1,8 +1,7 @@
 /**
- * Single-selection body of the FloatingInspector: the shape pill plus the
- * Transform / Shape / Fit / Array / Label sections. Split out of
- * FloatingInspector to keep that file under the line cap and to isolate the
- * single-cutout property surface from the panel's positioning logic.
+ * Single-selection body of the cutout inspector: the shape pill plus the
+ * Transform / Shape / Fit / Array / Label sections. Rendered by InspectorContent
+ * inside the docked InspectorDock; isolated here to keep files under the line cap.
  */
 
 import type { Cutout, CutoutTextSide } from '@/features/bin-designer/types';

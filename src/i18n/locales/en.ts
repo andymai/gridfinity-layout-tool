@@ -1762,6 +1762,12 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.lock': 'Lock',
   'binDesigner.cutoutEditor.unlock': 'Unlock',
   'binDesigner.cutoutEditor.showHelp': 'Show help',
+  'binDesigner.cutoutEditor.inspectorTitle': 'Properties',
+  'binDesigner.cutoutEditor.inspectorCollapse': 'Collapse panel',
+  'binDesigner.cutoutEditor.inspectorExpand': 'Expand panel',
+  'binDesigner.cutoutEditor.inspectorResize': 'Resize panel',
+  'binDesigner.cutoutEditor.inspectorEmptyTitle': 'No selection',
+  'binDesigner.cutoutEditor.inspectorEmptyHint': 'Select a shape to edit its properties',
   'binDesigner.cutoutEditor.quickstart.title': 'Cutout Editor',
   'binDesigner.cutoutEditor.quickstart.shapes':
     'Shapes (R · C · G · S · P) — rectangles, circles, polygons, slots, or Bézier paths',
