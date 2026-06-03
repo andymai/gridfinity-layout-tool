@@ -302,7 +302,7 @@ export function FloatingInspector({
           </div>
           <div className="space-y-0.5">
             <SliderInput
-              label="Rotation"
+              label={t('binDesigner.cutouts.rotation')}
               value={sharedRotation ?? 0}
               onChange={(rotation) => handleBatchUpdate('rotation', rotation)}
               min={0}
@@ -312,7 +312,7 @@ export function FloatingInspector({
               disabled={disabled}
             />
             <SliderInput
-              label="Depth"
+              label={t('binDesigner.cutouts.cutDepth')}
               value={sharedCutDepth ?? 5}
               onChange={(cutDepth) => handleBatchUpdate('cutDepth', cutDepth)}
               min={0.5}

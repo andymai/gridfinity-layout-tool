@@ -106,8 +106,8 @@ describe('FloatingInspector', () => {
     expect(screen.getByTestId('compact-input-H')).toBeInTheDocument();
 
     // Sliders for rotation, depth, and scoop
-    expect(screen.getByTestId('slider-input-Rotation')).toBeInTheDocument();
-    expect(screen.getByTestId('slider-input-Depth')).toBeInTheDocument();
+    expect(screen.getByTestId('slider-input-binDesigner.cutouts.rotation')).toBeInTheDocument();
+    expect(screen.getByTestId('slider-input-binDesigner.cutouts.cutDepth')).toBeInTheDocument();
     expect(screen.getByTestId('slider-input-binDesigner.cutouts.scoopRadius')).toBeInTheDocument();
   });
 
@@ -150,8 +150,8 @@ describe('FloatingInspector', () => {
     expect(screen.getByText(/2\s+bindesigner\.cutouteditor\.actions/i)).toBeInTheDocument();
 
     // Should only show rotation, depth, and split-axis scoop sliders for multi-select
-    expect(screen.getByTestId('slider-input-Rotation')).toBeInTheDocument();
-    expect(screen.getByTestId('slider-input-Depth')).toBeInTheDocument();
+    expect(screen.getByTestId('slider-input-binDesigner.cutouts.rotation')).toBeInTheDocument();
+    expect(screen.getByTestId('slider-input-binDesigner.cutouts.cutDepth')).toBeInTheDocument();
     expect(screen.getByTestId('slider-input-binDesigner.cutouts.scoopW')).toBeInTheDocument();
     expect(screen.getByTestId('slider-input-binDesigner.cutouts.scoopD')).toBeInTheDocument();
 
@@ -261,8 +261,8 @@ describe('FloatingInspector', () => {
 
       const panel = container.firstChild as HTMLElement;
       const initialLeft = panel.style.left;
-      const rotationSlider = screen.getByTestId('slider-input-Rotation');
-      const depthSlider = screen.getByTestId('slider-input-Depth');
+      const rotationSlider = screen.getByTestId('slider-input-binDesigner.cutouts.rotation');
+      const depthSlider = screen.getByTestId('slider-input-binDesigner.cutouts.cutDepth');
 
       // Focus an input (locks position)
       fireEvent.focusIn(rotationSlider, { relatedTarget: null });
@@ -297,7 +297,7 @@ describe('FloatingInspector', () => {
 
       const panel = container.firstChild as HTMLElement;
       const initialLeft = panel.style.left;
-      const rotationSlider = screen.getByTestId('slider-input-Rotation');
+      const rotationSlider = screen.getByTestId('slider-input-binDesigner.cutouts.rotation');
 
       // Focus an input (locks position)
       fireEvent.focusIn(rotationSlider, { relatedTarget: null });
@@ -333,7 +333,7 @@ describe('FloatingInspector', () => {
 
       // Interact with panel to engage position lock
       fireEvent.pointerDown(panel);
-      fireEvent.focusIn(screen.getByTestId('slider-input-Rotation'), { relatedTarget: null });
+      fireEvent.focusIn(screen.getByTestId('slider-input-binDesigner.cutouts.rotation'), { relatedTarget: null });
 
       const lockedLeft = panel.style.left;
 
@@ -380,7 +380,7 @@ describe('FloatingInspector', () => {
 
       // Interact with panel to engage position lock
       fireEvent.pointerDown(panel);
-      fireEvent.focusIn(screen.getByTestId('slider-input-Rotation'), { relatedTarget: null });
+      fireEvent.focusIn(screen.getByTestId('slider-input-binDesigner.cutouts.rotation'), { relatedTarget: null });
 
       const lockedLeft = panel.style.left;
 
