@@ -51,6 +51,43 @@ export const MAX_CUTOUT_CHAMFER = 5;
  */
 export const CHAMFER_SHAPES: readonly CutoutShape[] = ['rectangle', 'circle', 'polygon', 'slot'];
 
+/** Layout mode for a parametric cutout array. */
+export type CutoutArrayMode = 'grid' | 'staggered' | 'radial';
+
+/** Ordered mode list for UI rendering + exhaustiveness checks. */
+export const CUTOUT_ARRAY_MODES: readonly CutoutArrayMode[] = ['grid', 'staggered', 'radial'];
+
+/** Max instances an array may expand to — a guardrail against runaway geometry. */
+export const MAX_ARRAY_INSTANCES = 400;
+/** Max per-axis count / radial count in the editor. */
+export const MAX_ARRAY_COUNT = 50;
+
+/**
+ * Parametric array driven by a single master {@link Cutout}. The master's
+ * shape/size/depth/fit all apply to every instance; only the layout
+ * (mode + counts + spacing) lives here. Instances are **derived** at
+ * generation/render time and never stored, so there's no per-instance state to
+ * migrate. A flat config (all modes' fields present) lets the user toggle modes
+ * without losing each mode's settings.
+ */
+export interface CutoutArrayConfig {
+  readonly mode: CutoutArrayMode;
+  /** grid / staggered: columns (X) and rows (Y), each ≥ 1. */
+  readonly cols: number;
+  readonly rows: number;
+  /** grid / staggered: center-to-center spacing (mm). */
+  readonly pitchX: number;
+  readonly pitchY: number;
+  /** radial: number of instances around the ring, ≥ 1. */
+  readonly count: number;
+  /** radial: ring radius (mm) from the master center to each instance center. */
+  readonly radius: number;
+  /** radial: angle (deg) of the first instance, measured CCW from +X. */
+  readonly startAngle: number;
+  /** radial: when true, each instance is rotated to face the ring center. */
+  readonly rotateToCenter: boolean;
+}
+
 /**
  * Pathfinder boolean op applied across the members of a cutout group, before
  * the resulting shape is subtracted from the solid bin top.
@@ -190,6 +227,13 @@ export interface Cutout {
    * Missing/undefined/0 = straight walls, so existing designs are unchanged.
    */
   readonly chamferWidth?: number;
+  /**
+   * Optional parametric array: this cutout is the master, replicated across the
+   * grid/ring described by {@link CutoutArrayConfig}. Instances are derived at
+   * generation/render time. Missing = a single cutout. Arrays are restricted to
+   * ungrouped cutouts (`groupId === null`).
+   */
+  readonly array?: CutoutArrayConfig;
   /**
    * When true, `label` is also engraved on the bin top adjacent to this
    * cutout. Default false so existing designs render unchanged after

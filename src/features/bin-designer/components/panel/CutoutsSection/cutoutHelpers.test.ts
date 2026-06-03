@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { createDefaultCutout, defaultPlaceSize, resizeKeepingCenter } from './cutoutHelpers';
+import {
+  createDefaultCutout,
+  defaultPlaceSize,
+  resizeKeepingCenter,
+  flattenCutoutArray,
+} from './cutoutHelpers';
+import type { Cutout } from '@/features/bin-designer/types';
 
 describe('createDefaultCutout', () => {
   it('seeds a default hexagon side count for polygons', () => {
@@ -49,5 +55,48 @@ describe('resizeKeepingCenter', () => {
     expect(r.y).toBe(0);
     expect(r.width).toBe(30);
     expect(r.depth).toBe(30);
+  });
+});
+
+describe('flattenCutoutArray', () => {
+  const master = (over: Partial<Cutout> = {}): Cutout => ({
+    id: 'm',
+    shape: 'circle',
+    x: 0,
+    y: 0,
+    width: 8,
+    depth: 8,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+    ...over,
+  });
+
+  it('is a no-op when there is no array', () => {
+    expect(flattenCutoutArray(master())).toEqual({ masterPatch: {}, added: [] });
+  });
+
+  it('strips the array from the master and adds the other instances with fresh ids', () => {
+    const c = master({
+      array: {
+        mode: 'grid',
+        cols: 3,
+        rows: 1,
+        pitchX: 10,
+        pitchY: 10,
+        count: 3,
+        radius: 20,
+        startAngle: 0,
+        rotateToCenter: true,
+      },
+    });
+    const { masterPatch, added } = flattenCutoutArray(c);
+    expect(masterPatch).toEqual({ array: undefined });
+    expect(added).toHaveLength(2); // 3 instances − the master
+    expect(added.every((a) => a.array === undefined)).toBe(true);
+    expect(new Set(added.map((a) => a.id)).size).toBe(2); // unique ids
+    expect(added.every((a) => a.id !== 'm')).toBe(true);
   });
 });

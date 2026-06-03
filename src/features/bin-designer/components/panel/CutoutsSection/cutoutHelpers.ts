@@ -10,6 +10,7 @@ import {
   CLEARANCE_SHAPES,
 } from '@/features/bin-designer/types';
 import { polygonBoxFromAcrossFlats } from '@/shared/utils/cutoutPolygon';
+import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import {
   DEFAULT_RECT_SIZE,
   DEFAULT_CIRCLE_SIZE,
@@ -117,6 +118,22 @@ export function resizeKeepingCenter(
   const x = Math.max(0, Math.min(cx - width / 2, maxWidth - width));
   const y = Math.max(0, Math.min(cy - depth / 2, maxDepth - depth));
   return { x, y, width, depth };
+}
+
+/**
+ * Bake an array master into independent cutouts. The master keeps its id (array
+ * stripped, still at instance-0 position); the other instances become new
+ * cutouts with fresh ids. Returns the patch for the master plus the cutouts to
+ * add. No-op shape when there's no array.
+ */
+export function flattenCutoutArray(master: Cutout): {
+  masterPatch: Partial<Cutout>;
+  added: Cutout[];
+} {
+  if (!master.array) return { masterPatch: {}, added: [] };
+  const instances = expandCutoutArray(master);
+  const added = instances.slice(1).map((inst) => ({ ...inst, id: crypto.randomUUID() }));
+  return { masterPatch: { array: undefined }, added };
 }
 
 /** Default cutout properties shared by click-to-place and draw-to-place. */

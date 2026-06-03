@@ -562,6 +562,8 @@ export type {
   CutoutToggleProperties,
   CutoutConfig,
   Cutout,
+  CutoutArrayMode,
+  CutoutArrayConfig,
 } from './cutout';
 export {
   DEFAULT_GROUP_OP,
@@ -576,6 +578,9 @@ export {
   DEFAULT_CUTOUT_CHAMFER,
   MAX_CUTOUT_CHAMFER,
   CHAMFER_SHAPES,
+  CUTOUT_ARRAY_MODES,
+  MAX_ARRAY_INSTANCES,
+  MAX_ARRAY_COUNT,
 } from './cutout';
 
 // Generation Types

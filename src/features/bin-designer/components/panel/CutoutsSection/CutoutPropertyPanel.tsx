@@ -13,7 +13,9 @@ import { CutoutScoopControls } from '../../CutoutWorkspace/CutoutScoopControls';
 import { CutoutShapeControls } from './CutoutShapeControls';
 import { CutoutFitControls } from './CutoutFitControls';
 import { CutoutShapeBadge } from './CutoutShapeBadge';
-import { hasFitControls, formatFitSummary } from './cutoutSectionVisibility';
+import { hasFitControls, formatFitSummary, canArray } from './cutoutSectionVisibility';
+import { CutoutArrayControls } from './CutoutArrayControls';
+import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import type { FitCue } from './cutoutSectionVisibility';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 
@@ -28,6 +30,8 @@ interface CutoutPropertyPanelProps {
   readonly disabled?: boolean;
   /** Notifies the editor which insertion-fit cue (if any) to draw on the canvas. */
   readonly onFitCue?: (cue: FitCue) => void;
+  /** Flatten the cutout's array into independent cutouts. */
+  readonly onFlattenArray?: (id: string) => void;
 }
 
 export function CutoutPropertyPanel({
@@ -40,6 +44,7 @@ export function CutoutPropertyPanel({
   onDuplicate,
   disabled = false,
   onFitCue,
+  onFlattenArray,
 }: CutoutPropertyPanelProps) {
   const t = useTranslation();
 
@@ -165,6 +170,28 @@ export function CutoutPropertyPanel({
             cutout={cutout}
             onUpdate={(patch) => onUpdate(cutout.id, patch)}
             onCueChange={onFitCue}
+            disabled={disabled}
+          />
+        </CollapsibleSection>
+      )}
+
+      {canArray(cutout) && (
+        <CollapsibleSection
+          title={t('binDesigner.cutouts.section.array')}
+          variant="small"
+          defaultExpanded={false}
+          summary={
+            cutout.array
+              ? t('binDesigner.cutouts.array.instances', {
+                  count: arrayInstanceCount(cutout.array),
+                })
+              : t('binDesigner.cutouts.array.off')
+          }
+        >
+          <CutoutArrayControls
+            cutout={cutout}
+            onUpdate={(patch) => onUpdate(cutout.id, patch)}
+            onFlatten={() => onFlattenArray?.(cutout.id)}
             disabled={disabled}
           />
         </CollapsibleSection>

@@ -24,6 +24,7 @@ import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
 import { useSvgImport } from '../panel/CutoutsSection/svgImport';
 import { FloatingInspector } from './FloatingInspector';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import { flattenCutoutArray } from '../panel/CutoutsSection/cutoutHelpers';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
 import { TopRuler, LeftRuler, RulerCorner } from './Rulers';
 import { CutoutQuickstartOverlay } from './CutoutQuickstartOverlay';
@@ -125,6 +126,17 @@ export function CutoutWorkspace() {
 
   const [gridSize, setGridSize] = useState(0.5);
   const [fitCue, setFitCue] = useState<FitCue>(null);
+
+  const handleFlattenArray = useCallback(
+    (id: string) => {
+      const master = cutouts.find((c) => c.id === id);
+      if (!master?.array) return;
+      const { masterPatch, added } = flattenCutoutArray(master);
+      updateCutout(id, masterPatch);
+      for (const c of added) addCutout(c);
+    },
+    [cutouts, updateCutout, addCutout]
+  );
 
   const {
     mode,
@@ -406,6 +418,7 @@ export function CutoutWorkspace() {
                 hidden={isInteracting}
                 disabled={isInteracting}
                 onFitCue={setFitCue}
+                onFlattenArray={handleFlattenArray}
               />
             </div>
           </div>

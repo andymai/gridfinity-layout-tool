@@ -19,7 +19,13 @@ import { CutoutScoopControls } from './CutoutScoopControls';
 import { CutoutShapeControls } from '../panel/CutoutsSection/CutoutShapeControls';
 import { CutoutFitControls } from '../panel/CutoutsSection/CutoutFitControls';
 import { CutoutShapeBadge } from '../panel/CutoutsSection/CutoutShapeBadge';
-import { hasFitControls, formatFitSummary } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import {
+  hasFitControls,
+  formatFitSummary,
+  canArray,
+} from '../panel/CutoutsSection/cutoutSectionVisibility';
+import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
+import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { Checkbox, Input } from '@/design-system';
@@ -52,6 +58,8 @@ interface FloatingInspectorProps {
   readonly disabled?: boolean;
   /** Notifies the editor which insertion-fit cue (if any) to draw on the canvas. */
   readonly onFitCue?: (cue: FitCue) => void;
+  /** Flatten the selected cutout's array into independent cutouts. */
+  readonly onFlattenArray?: (id: string) => void;
 }
 
 /** Merge preview overrides into a cutout to get the effective state */
@@ -103,6 +111,7 @@ export function FloatingInspector({
   hidden = false,
   disabled = false,
   onFitCue,
+  onFlattenArray,
 }: FloatingInspectorProps) {
   const t = useTranslation();
 
@@ -415,6 +424,28 @@ export function FloatingInspector({
                 cutout={singleCutout}
                 onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
                 onCueChange={onFitCue}
+                disabled={disabled}
+              />
+            </CollapsibleSection>
+          )}
+
+          {canArray(singleCutout) && (
+            <CollapsibleSection
+              title={t('binDesigner.cutouts.section.array')}
+              variant="small"
+              defaultExpanded={false}
+              summary={
+                singleCutout.array
+                  ? t('binDesigner.cutouts.array.instances', {
+                      count: arrayInstanceCount(singleCutout.array),
+                    })
+                  : t('binDesigner.cutouts.array.off')
+              }
+            >
+              <CutoutArrayControls
+                cutout={singleCutout}
+                onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
+                onFlatten={() => onFlattenArray?.(singleCutout.id)}
                 disabled={disabled}
               />
             </CollapsibleSection>

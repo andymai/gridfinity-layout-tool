@@ -17,6 +17,7 @@ import { CutoutShapeToolbar } from './CutoutShapeToolbar';
 import { useSvgImport } from './svgImport';
 import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 import type { FitCue } from './cutoutSectionVisibility';
+import { flattenCutoutArray } from './cutoutHelpers';
 import { AlignmentToolbar } from './AlignmentToolbar';
 import { CutoutContextMenu } from './CutoutContextMenu';
 import type { ContextMenuAction } from './CutoutContextMenu';
@@ -88,6 +89,17 @@ export function CutoutEditor() {
 
   const [gridSize, setGridSize] = useState(0.5);
   const [fitCue, setFitCue] = useState<FitCue>(null);
+
+  const handleFlattenArray = useCallback(
+    (id: string) => {
+      const master = cutouts.find((c) => c.id === id);
+      if (!master?.array) return;
+      const { masterPatch, added } = flattenCutoutArray(master);
+      updateCutout(id, masterPatch);
+      for (const c of added) addCutout(c);
+    },
+    [cutouts, updateCutout, addCutout]
+  );
 
   const {
     mode,
@@ -530,6 +542,7 @@ export function CutoutEditor() {
           onDuplicate={duplicateCutouts}
           disabled={isInteracting}
           onFitCue={setFitCue}
+          onFlattenArray={handleFlattenArray}
         />
       )}
 

@@ -15,6 +15,11 @@ export function hasShapeControls(shape: Cutout['shape']): boolean {
   return shape === 'polygon' || shape === 'circle';
 }
 
+/** Arrays apply to ungrouped, non-path cutouts (parametric shapes only). */
+export function canArray(cutout: Pick<Cutout, 'shape' | 'groupId'>): boolean {
+  return cutout.shape !== 'path' && cutout.groupId === null;
+}
+
 /** True when a shape exposes any insertion-fit control (clearance / chamfer). */
 export function hasFitControls(cutout: Pick<Cutout, 'shape' | 'cutDepth'>): boolean {
   const isClearance = CLEARANCE_SHAPES.includes(cutout.shape);

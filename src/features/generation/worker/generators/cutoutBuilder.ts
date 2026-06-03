@@ -43,6 +43,7 @@ import {
   slotCornerRadius,
   clampPolygonSides,
 } from '@/shared/utils/cutoutPolygon';
+import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { combineGroupSolids } from './cutoutGroupOps';
 import {
   resolveScoop,
@@ -822,12 +823,15 @@ export function buildCutoutCuts(
 
   const rawShapes: Shape3D[] = [];
 
-  // Partition cutouts by groupId: null -> ungrouped, same groupId -> collected
+  // Partition cutouts by groupId: null -> ungrouped, same groupId -> collected.
+  // Array masters (always ungrouped) expand into one cut per instance first.
   const groups = new Map<string, typeof params.cutouts>();
   for (const cutout of params.cutouts) {
     if (cutout.groupId === null) {
-      const shape = buildUngroupedCutout(cutout, solidSurfaceZ, originX, originY);
-      if (shape) rawShapes.push(shape);
+      for (const instance of expandCutoutArray(cutout)) {
+        const shape = buildUngroupedCutout(instance, solidSurfaceZ, originX, originY);
+        if (shape) rawShapes.push(shape);
+      }
     } else {
       const list = groups.get(cutout.groupId);
       if (list) {

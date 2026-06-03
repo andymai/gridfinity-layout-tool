@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { hasShapeControls, hasFitControls, formatFitSummary } from './cutoutSectionVisibility';
+import {
+  hasShapeControls,
+  hasFitControls,
+  formatFitSummary,
+  canArray,
+} from './cutoutSectionVisibility';
 import type { Cutout } from '@/features/bin-designer/types';
 
 function c(overrides: Partial<Cutout> = {}): Cutout {
@@ -35,6 +40,17 @@ describe('hasFitControls', () => {
     expect(hasFitControls(c({ shape: 'circle' }))).toBe(true);
     expect(hasFitControls(c({ shape: 'rectangle' }))).toBe(true);
     expect(hasFitControls(c({ shape: 'path' }))).toBe(false);
+  });
+});
+
+describe('canArray', () => {
+  it('allows ungrouped non-path shapes', () => {
+    expect(canArray({ shape: 'circle', groupId: null })).toBe(true);
+    expect(canArray({ shape: 'rectangle', groupId: null })).toBe(true);
+  });
+  it('excludes paths and grouped cutouts', () => {
+    expect(canArray({ shape: 'path', groupId: null })).toBe(false);
+    expect(canArray({ shape: 'circle', groupId: 'g1' })).toBe(false);
   });
 });
 

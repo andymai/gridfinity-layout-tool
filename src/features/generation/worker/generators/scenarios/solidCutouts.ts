@@ -81,6 +81,85 @@ export const solidCutouts: ScenarioCase[] = [
       cutouts: [makeCutout({ shape: 'slot', width: 30, depth: 12 })],
     },
   }),
+  defineScenario('solid cutouts', '2\u00d72 solid with 3\u00d72 grid array of circles', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [
+        makeCutout({
+          shape: 'circle',
+          x: 8,
+          y: 8,
+          width: 8,
+          depth: 8,
+          array: {
+            mode: 'grid',
+            cols: 3,
+            rows: 2,
+            pitchX: 14,
+            pitchY: 14,
+            count: 6,
+            radius: 20,
+            startAngle: 0,
+            rotateToCenter: true,
+          },
+        }),
+      ],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with staggered hex array', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [
+        makeCutout({
+          shape: 'polygon',
+          sides: 6,
+          x: 6,
+          y: 6,
+          width: 12,
+          depth: 11,
+          array: {
+            mode: 'staggered',
+            cols: 3,
+            rows: 3,
+            pitchX: 14,
+            pitchY: 12,
+            count: 6,
+            radius: 20,
+            startAngle: 0,
+            rotateToCenter: true,
+          },
+        }),
+      ],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with radial array (rotate-to-center)', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [
+        makeCutout({
+          shape: 'slot',
+          x: 40,
+          y: 36,
+          width: 12,
+          depth: 5,
+          array: {
+            mode: 'radial',
+            cols: 1,
+            rows: 1,
+            pitchX: 0,
+            pitchY: 0,
+            count: 6,
+            radius: 22,
+            startAngle: 0,
+            rotateToCenter: true,
+          },
+        }),
+      ],
+    },
+  }),
   defineScenario('solid cutouts', '2\u00d72 solid with rectangle with scoop cutout', {
     params: {
       style: 'solid',
