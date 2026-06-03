@@ -80,6 +80,44 @@ describe('bin overhang geometry', () => {
   });
 });
 
+describe('overhang with interior features', () => {
+  it('scoop ramp uses expanded interior space (regression: innerD was not including overhang)', () => {
+    const generateBin = getGenerateBin();
+    const SCOOP = { enabled: true as const, radius: 'auto' as const };
+
+    const noOverhang = generateBin(
+      buildParams({ width: 2, depth: 2, scoop: SCOOP }),
+      undefined,
+      true
+    );
+    const withOverhang = generateBin(
+      buildParams({
+        width: 2,
+        depth: 2,
+        scoop: SCOOP,
+        overhang: { left: 5, right: 5, front: 5, back: 5 },
+      }),
+      undefined,
+      true
+    );
+
+    assertStructurallyValid(noOverhang, 'scoop no overhang');
+    assertStructurallyValid(withOverhang, 'scoop with overhang');
+
+    // With overhang the outer body is larger and so is the interior.
+    // The scoop ramp is positioned relative to innerD, so the two meshes
+    // must differ — if innerD was identical (the old bug), they would be
+    // structurally the same scoop just inside a larger shell.
+    const baseW = boundingBox(noOverhang.vertices);
+    const ovhW = boundingBox(withOverhang.vertices);
+    // Outer body grew by 10mm on each axis
+    expect(ovhW.maxX - ovhW.minX).toBeGreaterThan(baseW.maxX - baseW.minX + 9);
+    expect(ovhW.maxY - ovhW.minY).toBeGreaterThan(baseW.maxY - baseW.minY + 9);
+    // Triangle counts differ because the scoop carves a differently-sized cavity
+    expect(withOverhang.triangleCount).not.toBe(noOverhang.triangleCount);
+  });
+});
+
 describe('overhang feet toggle', () => {
   const OVERHANG = { left: 12, right: 12, front: 12, back: 12 };
 
