@@ -2085,6 +2085,8 @@
   "toast.selectedByCategory": "Виділено {count} бінів категорії {name}",
   "toast.selectionInverted": "Виділення інвертовано ({count} бінів)",
   "toast.sessionRestored": "Сесію відновлено",
+  "toast.updateAvailable": "Доступна нова версія",
+  "toast.updateReload": "Перезавантажити",
   "toast.sharedLayoutFailed": "Не вдалося завантажити спільну розкладку: {error}",
   "toast.stagingCleared": "Очищено {count} бінів зі сховку",
   "toast.stashCleared": "Видалено {count} бінів зі сховку",

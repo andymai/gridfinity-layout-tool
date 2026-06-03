@@ -2085,6 +2085,8 @@
   "toast.selectedByCategory": "Markerade {count} {name}-fack",
   "toast.selectionInverted": "Markeringen inverterad ({count} fack)",
   "toast.sessionRestored": "Session återställd",
+  "toast.updateAvailable": "En ny version är tillgänglig",
+  "toast.updateReload": "Ladda om",
   "toast.sharedLayoutFailed": "Det gick inte att ladda delad layout: {error}",
   "toast.stagingCleared": "Rensade {count} fack från förråd",
   "toast.stashCleared": "Raderade {count} fack i förrådet",

@@ -2085,6 +2085,8 @@
   "toast.selectedByCategory": "{count} {name} Bin(s) ausgewählt",
   "toast.selectionInverted": "Auswahl umgekehrt ({count} Bin(s))",
   "toast.sessionRestored": "Sitzung wiederhergestellt",
+  "toast.updateAvailable": "Eine neue Version ist verfügbar",
+  "toast.updateReload": "Neu laden",
   "toast.sharedLayoutFailed": "Geteiltes Layout laden fehlgeschlagen: {error}",
   "toast.stagingCleared": "{count} Bin(s) aus der Ablage gelöscht",
   "toast.stashCleared": "{count} gestashte Bins gelöscht",
