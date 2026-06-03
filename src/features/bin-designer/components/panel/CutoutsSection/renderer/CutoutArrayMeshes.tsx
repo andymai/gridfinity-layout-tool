@@ -9,7 +9,7 @@
  * expansion, so the whole array follows the interaction.
  */
 
-import { memo, useMemo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import type { Cutout } from '@/features/bin-designer/types';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
@@ -41,6 +41,7 @@ function MasterMarker({ cx, cy }: { readonly cx: number; readonly cy: number }) 
     }
     return new THREE.BufferGeometry().setFromPoints(pts);
   }, [cx, cy]);
+  useEffect(() => () => ring.dispose(), [ring]);
   return (
     <lineLoop geometry={ring} renderOrder={RENDER_ORDER.SHAPES + 2}>
       <lineBasicMaterial color={ACCENT} transparent opacity={0.9} depthTest={false} />

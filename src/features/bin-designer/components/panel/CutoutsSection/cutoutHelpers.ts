@@ -136,6 +136,24 @@ export function flattenCutoutArray(master: Cutout): {
   return { masterPatch: { array: undefined }, added };
 }
 
+/**
+ * Look up an array master by id and bake it into independent cutouts via the
+ * store callbacks. No-op when the id isn't an array master. Shared by the
+ * full-screen workspace and the sidebar editor so both flatten identically.
+ */
+export function applyFlattenArray(
+  id: string,
+  cutouts: readonly Cutout[],
+  updateCutout: (id: string, patch: Partial<Cutout>) => void,
+  addCutout: (cutout: Cutout) => void
+): void {
+  const master = cutouts.find((c) => c.id === id);
+  if (!master?.array) return;
+  const { masterPatch, added } = flattenCutoutArray(master);
+  updateCutout(id, masterPatch);
+  for (const cutout of added) addCutout(cutout);
+}
+
 /** Default cutout properties shared by click-to-place and draw-to-place. */
 export function createDefaultCutout(
   id: string,

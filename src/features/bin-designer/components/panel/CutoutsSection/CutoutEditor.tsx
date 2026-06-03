@@ -17,7 +17,7 @@ import { CutoutShapeToolbar } from './CutoutShapeToolbar';
 import { useSvgImport } from './svgImport';
 import { CutoutPropertyPanel } from './CutoutPropertyPanel';
 import type { FitCue } from './cutoutSectionVisibility';
-import { flattenCutoutArray } from './cutoutHelpers';
+import { applyFlattenArray } from './cutoutHelpers';
 import { AlignmentToolbar } from './AlignmentToolbar';
 import { CutoutContextMenu } from './CutoutContextMenu';
 import type { ContextMenuAction } from './CutoutContextMenu';
@@ -91,13 +91,7 @@ export function CutoutEditor() {
   const [fitCue, setFitCue] = useState<FitCue>(null);
 
   const handleFlattenArray = useCallback(
-    (id: string) => {
-      const master = cutouts.find((c) => c.id === id);
-      if (!master?.array) return;
-      const { masterPatch, added } = flattenCutoutArray(master);
-      updateCutout(id, masterPatch);
-      for (const c of added) addCutout(c);
-    },
+    (id: string) => applyFlattenArray(id, cutouts, updateCutout, addCutout),
     [cutouts, updateCutout, addCutout]
   );
 
