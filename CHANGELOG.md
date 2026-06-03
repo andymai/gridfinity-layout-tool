@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.139.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.138.0...gridfinity-layout-tool-v4.139.0) (2026-06-03)
+
+
+### Features
+
+* **pwa:** apply updates without interrupting active sessions ([#1990](https://github.com/andymai/gridfinity-layout-tool/issues/1990)) ([51b788d](https://github.com/andymai/gridfinity-layout-tool/commit/51b788d8235a4db423039e39fbc843c3dd67b849))
+
 ## [4.138.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.137.0...gridfinity-layout-tool-v4.138.0) (2026-06-03)
 
 
