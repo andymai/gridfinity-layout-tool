@@ -84,37 +84,34 @@ describe('overhang with interior features', () => {
   it('scoop ramp uses expanded interior space (regression: innerD was not including overhang)', () => {
     const generateBin = getGenerateBin();
     const SCOOP = { enabled: true as const, radius: 'auto' as const };
+    const OVH = { left: 5, right: 5, front: 5, back: 5 };
 
-    const noOverhang = generateBin(
+    // Build all four combinations to isolate the scoop-delta under each condition.
+    const base = generateBin(buildParams({ width: 2, depth: 2 }), undefined, true);
+    const baseScoop = generateBin(
       buildParams({ width: 2, depth: 2, scoop: SCOOP }),
       undefined,
       true
     );
-    const withOverhang = generateBin(
-      buildParams({
-        width: 2,
-        depth: 2,
-        scoop: SCOOP,
-        overhang: { left: 5, right: 5, front: 5, back: 5 },
-      }),
+    const ovh = generateBin(buildParams({ width: 2, depth: 2, overhang: OVH }), undefined, true);
+    const ovhScoop = generateBin(
+      buildParams({ width: 2, depth: 2, scoop: SCOOP, overhang: OVH }),
       undefined,
       true
     );
 
-    assertStructurallyValid(noOverhang, 'scoop no overhang');
-    assertStructurallyValid(withOverhang, 'scoop with overhang');
+    assertStructurallyValid(baseScoop, 'scoop no overhang');
+    assertStructurallyValid(ovhScoop, 'scoop with overhang');
 
-    // With overhang the outer body is larger and so is the interior.
-    // The scoop ramp is positioned relative to innerD, so the two meshes
-    // must differ — if innerD was identical (the old bug), they would be
-    // structurally the same scoop just inside a larger shell.
-    const baseW = boundingBox(noOverhang.vertices);
-    const ovhW = boundingBox(withOverhang.vertices);
-    // Outer body grew by 10mm on each axis
-    expect(ovhW.maxX - ovhW.minX).toBeGreaterThan(baseW.maxX - baseW.minX + 9);
-    expect(ovhW.maxY - ovhW.minY).toBeGreaterThan(baseW.maxY - baseW.minY + 9);
-    // Triangle counts differ because the scoop carves a differently-sized cavity
-    expect(withOverhang.triangleCount).not.toBe(noOverhang.triangleCount);
+    // The scoop-delta is how many triangles the scoop adds to the plain shell.
+    // Before the fix, innerD was nominal regardless of overhang, so both deltas
+    // would be identical. After the fix, the overhang shell has a larger inner
+    // cavity, so the scoop carves more geometry and its delta is different.
+    const scoopDeltaNoOverhang = baseScoop.triangleCount - base.triangleCount;
+    const scoopDeltaWithOverhang = ovhScoop.triangleCount - ovh.triangleCount;
+    expect(scoopDeltaNoOverhang).toBeGreaterThan(0);
+    expect(scoopDeltaWithOverhang).toBeGreaterThan(0);
+    expect(scoopDeltaWithOverhang).not.toBe(scoopDeltaNoOverhang);
   });
 });
 

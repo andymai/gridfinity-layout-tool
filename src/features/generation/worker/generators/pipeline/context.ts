@@ -63,6 +63,13 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
 
   const innerW = outerW + (ovhExp?.addW ?? 0) - 2 * params.wallThickness;
   const innerD = outerD + (ovhExp?.addD ?? 0) - 2 * params.wallThickness;
+  // NOTE: for symmetric overhang (left=right, front=back) ovhExp.offsetX/Y = 0 and
+  // all interior features remain correctly centred at the origin. For *asymmetric*
+  // overhang the cavity centre shifts by (offsetX, offsetY) in boxBuilder, but
+  // feature builders still place geometry at the origin, so they will be slightly
+  // off-centre. The error equals |offsetX| = |(right-left)/2| — small in practice
+  // and bounded by half the asymmetry. A follow-up should carry innerOffsetX/Y
+  // through BinDimensions and shift feature builder origins accordingly.
   const isSlotted = params.style === 'slotted';
 
   const withMagnet =
