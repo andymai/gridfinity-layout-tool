@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.138.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.137.0...gridfinity-layout-tool-v4.138.0) (2026-06-03)
+
+
+### Features
+
+* **cutouts:** show engraved labels in the 2D cut editor ([#1988](https://github.com/andymai/gridfinity-layout-tool/issues/1988)) ([5d56658](https://github.com/andymai/gridfinity-layout-tool/commit/5d566582ae5d8faa21d5d11e4005f2d6b8df8d1b))
+
 ## [4.137.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.136.2...gridfinity-layout-tool-v4.137.0) (2026-06-03)
 
 
