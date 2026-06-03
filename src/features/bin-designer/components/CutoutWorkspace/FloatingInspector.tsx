@@ -16,6 +16,7 @@ import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { clampRotationToBounds, getRotatedBounds } from '../panel/CutoutsSection/geometry';
 import { CutoutScoopControls } from './CutoutScoopControls';
+import { CutoutShapeControls } from '../panel/CutoutsSection/CutoutShapeControls';
 import { Checkbox, Input } from '@/design-system';
 
 const SIDE_OPTIONS: readonly { readonly side: CutoutTextSide; readonly glyph: string }[] = [
@@ -363,6 +364,15 @@ export function FloatingInspector({
             max={maxCutDepth}
             step={0.5}
             unit="mm"
+            disabled={disabled}
+          />
+          {/* Shape-specific: polygon sides/across-flats + presets, insertion
+              clearance, entry chamfer. Same component as the sidebar panel. */}
+          <CutoutShapeControls
+            cutout={singleCutout}
+            maxWidth={binWidth}
+            maxDepth={binDepth}
+            onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
             disabled={disabled}
           />
           <CutoutScoopControls
