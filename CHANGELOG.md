@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.137.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.136.2...gridfinity-layout-tool-v4.137.0) (2026-06-03)
+
+
+### Features
+
+* custom cutout shapes, entry chamfers, and parametric arrays for organizers ([#1985](https://github.com/andymai/gridfinity-layout-tool/issues/1985)) ([c6517a5](https://github.com/andymai/gridfinity-layout-tool/commit/c6517a589f1533899015757b95c7ce4aeed907e2))
+
 ## [4.136.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.136.1...gridfinity-layout-tool-v4.136.2) (2026-06-03)
 
 
