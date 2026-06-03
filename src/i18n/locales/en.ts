@@ -1145,6 +1145,8 @@ const en: Record<string, string> = {
   'toast.online': 'Back online',
   'toast.offline': "You're offline. Changes save locally.",
   'toast.updating': 'Updating to latest version...',
+  'toast.updateAvailable': 'A new version is available',
+  'toast.updateReload': 'Reload',
   'toast.sessionRestored': 'Session restored',
   'toast.rotateRepositioned': 'Bin rotated and moved {distance} cell(s) to fit',
   'toast.binsSwapped': 'Bins swapped positions',

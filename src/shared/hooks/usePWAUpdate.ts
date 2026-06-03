@@ -18,6 +18,13 @@ import { isSmokeMode } from '@/shared/utils/smokeMode';
 import { runUpdateSmokeTest, type SmokeGateResult } from '@/shared/pwa/smokeGate';
 import { getSmokeGateFlag } from '@/shared/pwa/featureFlag';
 import { isIosStandalonePwa } from '@/shared/pwa/iosBypass';
+import {
+  startActivityTracking,
+  isRecentlyActive,
+  isEditableElementFocused,
+  isModalOpen,
+} from '@/shared/pwa/reloadSafety';
+import { useSyncStatusStore } from '@/core/sync/status';
 import { getPosthogInstance } from '@/shared/analytics/posthog/init';
 
 /**
@@ -48,7 +55,7 @@ function captureSmokeEvent(name: string, props: Record<string, unknown>): void {
   }
 }
 
-// Toast duration for update notification
+// Toast duration for the brief "updating" notice shown right before reload
 const UPDATE_TOAST_MS = 5000;
 
 // Background polling interval (every 15 minutes when tab is active)
@@ -60,8 +67,16 @@ const UPDATE_THROTTLE_MS = 60 * 1000;
 // How often to check if safe to reload while waiting (1 second)
 const IDLE_CHECK_INTERVAL_MS = 1000;
 
-// Max time to wait for idle before forcing reload (2 minutes)
-const MAX_IDLE_WAIT_MS = 2 * 60 * 1000;
+// How long to wait silently for an idle moment before surfacing the update
+// prompt. Inside this window an update applies invisibly if the user pauses.
+const SILENT_WINDOW_MS = 60 * 1000;
+
+// Treat the user as actively present for this long after their last input.
+const ACTIVITY_DEBOUNCE_MS = 30 * 1000;
+
+// Safety net: auto-apply a still-pending update once the user has been
+// continuously idle this long (or whenever they background the tab).
+const LONG_IDLE_MS = 5 * 60 * 1000;
 
 // Session storage key to prevent reload loops
 const RELOAD_FLAG_KEY = 'pwa-update-pending-reload';
@@ -104,6 +119,27 @@ function isSafeToReload(): boolean {
 
   // Don't reload during keyboard drag/resize mode
   if (interaction.keyboardDragMode || interaction.keyboardResizeMode) {
+    return false;
+  }
+
+  // Don't reload while the user is typing in a text field (label/notes editing)
+  if (isEditableElementFocused()) {
+    return false;
+  }
+
+  // Don't reload with a modal/dialog open — in-progress form state would be lost
+  if (isModalOpen()) {
+    return false;
+  }
+
+  // Don't reload right after recent input — they're mid-task even without a
+  // specific interaction flag set (e.g. moving the cursor, deciding).
+  if (isRecentlyActive(ACTIVITY_DEBOUNCE_MS)) {
+    return false;
+  }
+
+  // Don't reload while a layout sync is pushing changes to storage
+  if (useSyncStatusStore.getState().state === 'syncing') {
     return false;
   }
 
@@ -156,6 +192,65 @@ function waitForSafeReload(timeoutMs: number, signal?: AbortSignal): Promise<boo
       clearInterval(intervalId);
       resolve(false);
     });
+  });
+}
+
+type AutoApplyTrigger = 'idle' | 'hidden' | 'aborted';
+
+/**
+ * Wait for the safety-net condition that auto-applies a still-pending update
+ * without an explicit click: either the tab is backgrounded while safe, or the
+ * app has been continuously safe-to-reload for LONG_IDLE_MS. Either trigger
+ * still respects every blocking signal — a hidden tab with an open modal or an
+ * in-flight sync keeps waiting.
+ */
+function waitForAutoApply(signal: AbortSignal): Promise<AutoApplyTrigger> {
+  return new Promise((resolve) => {
+    if (signal.aborted) {
+      resolve('aborted');
+      return;
+    }
+
+    let safeSince: number | null = isSafeToReload() ? Date.now() : null;
+
+    const cleanup = (): void => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', evaluate);
+      signal.removeEventListener('abort', onAbort);
+    };
+
+    const evaluate = (): void => {
+      if (signal.aborted) {
+        cleanup();
+        resolve('aborted');
+        return;
+      }
+      if (!isSafeToReload()) {
+        safeSince = null;
+        return;
+      }
+      if (safeSince === null) safeSince = Date.now();
+      if (document.hidden) {
+        cleanup();
+        resolve('hidden');
+        return;
+      }
+      if (Date.now() - safeSince >= LONG_IDLE_MS) {
+        cleanup();
+        resolve('idle');
+      }
+    };
+
+    const onAbort = (): void => {
+      cleanup();
+      resolve('aborted');
+    };
+
+    const intervalId = setInterval(evaluate, IDLE_CHECK_INTERVAL_MS);
+    document.addEventListener('visibilitychange', evaluate);
+    signal.addEventListener('abort', onAbort);
+
+    evaluate();
   });
 }
 
@@ -279,10 +374,10 @@ function restoreEphemeralState(): boolean {
  * - SW is currently installing
  * - Checked within last minute
  *
- * When a new version is available:
- * - Waits until user is idle (no active interaction, no staging bins)
- * - Shows a toast notification
- * - Auto-reloads after a short delay
+ * When a new version is available it is applied without interrupting active
+ * work (see the needRefresh effect): a brief silent window, then a persistent
+ * click-to-update toast backed by a long-idle / tab-hidden safety net. It never
+ * force-reloads while the user is mid-task.
  */
 export function usePWAUpdate(): void {
   const t = useTranslation();
@@ -417,10 +512,25 @@ export function usePWAUpdate(): void {
     };
   }, [checkForUpdate, skipRegistration]);
 
-  // Handle update notification and auto-reload when idle.
+  // Track user input so isSafeToReload() can defer while they're actively using
+  // the app (see ACTIVITY_DEBOUNCE_MS).
+  useEffect(() => {
+    if (skipRegistration) return;
+    return startActivityTracking();
+  }, [skipRegistration]);
+
+  // Apply an available update without interrupting active work.
+  //
   // The smoke gate (when enabled via PostHog flag) runs first: it activates the
-  // new SW manually, spawns a hidden iframe to verify the new bundle boots,
-  // and either green-lights the reload or rolls back the precache.
+  // new SW manually, spawns a hidden iframe to verify the new bundle boots, and
+  // either green-lights the reload or rolls back the precache.
+  //
+  // The reload itself is hybrid:
+  //   1. Wait up to SILENT_WINDOW_MS for an idle moment and reload quietly.
+  //   2. If the user is still active, surface a persistent "Update available"
+  //      toast they can act on, while a safety net auto-applies once they go
+  //      idle (LONG_IDLE_MS) or background the tab. We never force a reload
+  //      out from under an active session.
   useEffect(() => {
     if (!needRefresh || hasTriggeredReload.current) return;
 
@@ -438,7 +548,34 @@ export function usePWAUpdate(): void {
 
     // Use AbortController for cleanup on unmount
     const abortController = new AbortController();
-    let toastTimeoutId: number | undefined;
+    const { signal } = abortController;
+    let reloaded = false;
+
+    // Apply the update now: persist UI state, then SKIP_WAITING + reload. Shared
+    // by the silent path, the long-idle/hidden safety net, and the explicit
+    // toast click — the click deliberately bypasses isSafeToReload(), since
+    // clicking "Reload" is unambiguous intent that overrides the blocking checks.
+    const performReload = (): void => {
+      if (reloaded || signal.aborted) return;
+      reloaded = true;
+
+      try {
+        sessionStorage.setItem(RELOAD_FLAG_KEY, Date.now().toString());
+      } catch {
+        // best-effort
+      }
+
+      // Save UI state right before reload (after smoke success in the gated path,
+      // so we never leave stale ephemeral state behind a failed gate run).
+      saveEphemeralState(gatherEphemeralState());
+
+      addToast(t('toast.updating'), 'info', UPDATE_TOAST_MS);
+
+      // updateServiceWorker(true) sends SKIP_WAITING + reloads. In the gated
+      // path the new SW is already 'activated', so SKIP_WAITING is a no-op
+      // and only the reload runs.
+      void updateServiceWorker(true);
+    };
 
     const gatedUpdate = async (): Promise<void> => {
       const registration = registrationRef.current;
@@ -454,7 +591,7 @@ export function usePWAUpdate(): void {
           smokeInProgress = false;
         }
 
-        if (abortController.signal.aborted) return;
+        if (signal.aborted) return;
 
         if (!result.ok) {
           captureSmokeEvent('pwa_smoke_failed', {
@@ -495,57 +632,40 @@ export function usePWAUpdate(): void {
         });
       }
 
-      // Common reload path — used by both the gated-success branch and the
-      // flag-disabled / iOS-bypass / no-waiting-worker fall-through.
       // Re-check abort: getSmokeGateFlag can take up to 2s, plenty of time
       // for the component to unmount.
-      if (abortController.signal.aborted) return;
+      if (signal.aborted) return;
 
-      try {
-        sessionStorage.setItem(RELOAD_FLAG_KEY, Date.now().toString());
-      } catch {
-        // best-effort
-      }
-
-      const wasSafe = await waitForSafeReload(MAX_IDLE_WAIT_MS, abortController.signal);
+      // Phase 1 — apply silently if the user goes idle within the short window.
+      const wentIdle = await waitForSafeReload(SILENT_WINDOW_MS, signal);
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- signal can flip between awaits
-      if (abortController.signal.aborted) return;
-      if (!wasSafe) {
-        console.warn('Timed out waiting for idle, proceeding with update');
+      if (signal.aborted) return;
+      if (wentIdle) {
+        performReload();
+        return;
       }
 
-      addToast(t('toast.updating'), 'info', UPDATE_TOAST_MS);
-
-      // Brief delay so the user actually sees the toast (cancellable).
-      await new Promise<void>((resolve) => {
-        if (abortController.signal.aborted) {
-          resolve();
-          return;
-        }
-        toastTimeoutId = window.setTimeout(resolve, UPDATE_TOAST_MS);
-        abortController.signal.addEventListener('abort', () => {
-          clearTimeout(toastTimeoutId);
-          resolve();
-        });
+      // Phase 2 — still active: surface a persistent prompt and keep a safety
+      // net running. Dismissing the toast leaves the update pending (no re-nag);
+      // the net still applies it on long idle or when the tab is backgrounded.
+      addToast({
+        message: t('toast.updateAvailable'),
+        type: 'info',
+        duration: 0,
+        action: { label: t('toast.updateReload'), onClick: performReload },
       });
 
-      // Save UI state right before reload (after smoke success in the gated path,
-      // so we never leave stale ephemeral state behind a failed gate run).
-      saveEphemeralState(gatherEphemeralState());
-
-      // updateServiceWorker(true) sends SKIP_WAITING + reloads. In the gated
-      // path the new SW is already 'activated', so SKIP_WAITING is a no-op
-      // and only the reload runs.
-      void updateServiceWorker(true);
+      // waitForAutoApply resolves 'aborted' on unmount; performReload also
+      // guards on signal.aborted, so no second check is needed here.
+      const trigger = await waitForAutoApply(signal);
+      if (trigger === 'aborted') return;
+      performReload();
     };
 
     void gatedUpdate();
 
     return () => {
       abortController.abort();
-      if (toastTimeoutId !== undefined) {
-        clearTimeout(toastTimeoutId);
-      }
     };
   }, [needRefresh, addToast, updateServiceWorker, t]);
 

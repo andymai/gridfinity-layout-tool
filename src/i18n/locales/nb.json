@@ -2085,6 +2085,8 @@
   "toast.selectedByCategory": "Valgte {count} {name} bin(s)",
   "toast.selectionInverted": "Invertert utvalg ({count} bin(s))",
   "toast.sessionRestored": "Økt gjenopprettet",
+  "toast.updateAvailable": "En ny versjon er tilgjengelig",
+  "toast.updateReload": "Last inn på nytt",
   "toast.sharedLayoutFailed": "Kunne ikke laste delt layout: {error}",
   "toast.stagingCleared": "Tømt {count} bin(s) fra stash",
   "toast.stashCleared": "Slettet {count} stashede bins",

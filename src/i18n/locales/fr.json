@@ -2085,6 +2085,8 @@
   "toast.selectedByCategory": "{count} bin(s) {name} sélectionnés",
   "toast.selectionInverted": "Sélection inversée ({count} bin(s))",
   "toast.sessionRestored": "Session restaurée",
+  "toast.updateAvailable": "Une nouvelle version est disponible",
+  "toast.updateReload": "Recharger",
   "toast.sharedLayoutFailed": "Échec du chargement du layout partagé : {error}",
   "toast.stagingCleared": "{count} bin(s) supprimé(s) du stash",
   "toast.stashCleared": "{count} bins du stash supprimés",

@@ -2085,6 +2085,8 @@
   "toast.selectedByCategory": "{count} {name} bin(s) geselecteerd",
   "toast.selectionInverted": "Selectie omgekeerd ({count} bin(s))",
   "toast.sessionRestored": "Sessie hersteld",
+  "toast.updateAvailable": "Er is een nieuwe versie beschikbaar",
+  "toast.updateReload": "Opnieuw laden",
   "toast.sharedLayoutFailed": "Laden van gedeelde layout mislukt: {error}",
   "toast.stagingCleared": "{count} bin(s) uit opslag verwijderd",
   "toast.stashCleared": "{count} opgeslagen bins verwijderd",

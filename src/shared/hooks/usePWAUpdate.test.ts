@@ -9,11 +9,12 @@ import { useToastStore } from '@/core/store/toast';
 import { resetAllStores, setupFakeTimers } from '@/test/testUtils';
 import { STAGING_ID } from '@/core/constants';
 import { saveEphemeralState, type EphemeralState } from '@/shared/utils/ephemeralState';
+import { resetActivityClock } from '@/shared/pwa/reloadSafety';
 
 // Constants from usePWAUpdate (mirrored for testing)
-const UPDATE_TOAST_MS = 5000;
 const IDLE_CHECK_INTERVAL_MS = 1000;
-const MAX_IDLE_WAIT_MS = 2 * 60 * 1000;
+const SILENT_WINDOW_MS = 60 * 1000;
+const LONG_IDLE_MS = 5 * 60 * 1000;
 
 // Track mock functions from the virtual module
 let mockNeedRefresh = false;
@@ -62,6 +63,7 @@ describe('usePWAUpdate', () => {
     timerUtils = setupFakeTimers();
     vi.clearAllMocks();
     resetAllStores();
+    resetActivityClock();
 
     // Reset module-level mock state
     mockNeedRefresh = false;
@@ -267,17 +269,13 @@ describe('usePWAUpdate', () => {
         mockOnRegisteredSW?.('/sw.js', mockRegistration);
       });
 
-      // Flush pending promises and advance through idle check + toast duration.
-      // The first microtask flush resolves the awaited getSmokeGateFlag() promise
-      // (mocked to resolve `false`); subsequent flushes drive the rest of the chain.
+      // Idle at detection: the silent-window wait resolves immediately, so the
+      // reload happens with no artificial delay. The first microtask flush
+      // resolves the awaited getSmokeGateFlag() (mocked `false`); the rest drive
+      // waitForSafeReload's synchronous resolve and performReload.
       await act(async () => {
-        await Promise.resolve(); // Flush getSmokeGateFlag()
-        await Promise.resolve(); // Flush waitForSafeReload's initial resolve
-
-        timerUtils.advanceTime(IDLE_CHECK_INTERVAL_MS);
         await Promise.resolve();
-
-        timerUtils.advanceTime(UPDATE_TOAST_MS);
+        await Promise.resolve();
         await Promise.resolve();
       });
 
@@ -539,56 +537,9 @@ describe('usePWAUpdate', () => {
   });
 
   describe('update flow', () => {
-    it('shows toast before updating', async () => {
-      mockNeedRefresh = true;
-
-      renderHook(() => usePWAUpdate());
-
-      act(() => {
-        mockOnRegisteredSW?.('/sw.js', mockRegistration);
-      });
-
-      // Flush promises and wait for idle check (should pass immediately)
-      await act(async () => {
-        timerUtils.advanceTime(IDLE_CHECK_INTERVAL_MS);
-        await Promise.resolve();
-      });
-
-      const toasts = useToastStore.getState().toasts;
-      expect(toasts.some((t) => t.message.includes('Updating'))).toBe(true);
-    });
-
-    it('waits for toast duration before updating', async () => {
-      mockNeedRefresh = true;
-
-      renderHook(() => usePWAUpdate());
-
-      act(() => {
-        mockOnRegisteredSW?.('/sw.js', mockRegistration);
-      });
-
-      // Flush promises after idle check
-      await act(async () => {
-        timerUtils.advanceTime(IDLE_CHECK_INTERVAL_MS);
-        await Promise.resolve();
-      });
-
-      // updateServiceWorker not called yet (waiting for toast duration)
-      expect(mockUpdateServiceWorker).not.toHaveBeenCalled();
-
-      // After toast duration
-      await act(async () => {
-        timerUtils.advanceTime(UPDATE_TOAST_MS);
-        await Promise.resolve();
-      });
-
-      expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true);
-    });
-
-    it('times out waiting for idle after max wait time', async () => {
-      mockNeedRefresh = true;
-
-      // Keep interaction active
+    // Set an active interaction so the silent window can't reload, forcing the
+    // flow into the persistent-prompt + safety-net path.
+    const setActiveInteraction = () => {
       useInteractionStore.setState({
         interaction: {
           type: 'drag',
@@ -599,8 +550,22 @@ describe('usePWAUpdate', () => {
           currentY: 0,
         },
       });
+    };
 
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // Drive the flow past the silent window while active. Returns once the
+    // persistent prompt has been surfaced.
+    const advancePastSilentWindow = async () => {
+      await act(async () => {
+        await Promise.resolve(); // getSmokeGateFlag()
+        await Promise.resolve(); // enter waitForSafeReload (not safe → interval)
+        timerUtils.advanceTime(SILENT_WINDOW_MS + IDLE_CHECK_INTERVAL_MS);
+        await Promise.resolve(); // resolve(false) → addToast + waitForAutoApply
+        await Promise.resolve();
+      });
+    };
+
+    it('reloads silently and shows the updating toast when idle', async () => {
+      mockNeedRefresh = true;
 
       renderHook(() => usePWAUpdate());
 
@@ -608,31 +573,146 @@ describe('usePWAUpdate', () => {
         mockOnRegisteredSW?.('/sw.js', mockRegistration);
       });
 
-      // Advance through all the idle checks until timeout
-      // The check runs every 1 second, so we need to advance in steps
       await act(async () => {
-        // Flush gate-flag + initial isSafeToReload check before driving the loop.
         await Promise.resolve();
         await Promise.resolve();
-        for (let elapsed = 0; elapsed <= MAX_IDLE_WAIT_MS; elapsed += IDLE_CHECK_INTERVAL_MS) {
-          timerUtils.advanceTime(IDLE_CHECK_INTERVAL_MS);
-          await Promise.resolve();
-        }
-      });
-
-      // Should have warned about timeout
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Timed out'));
-
-      // Now advance through toast duration
-      await act(async () => {
-        timerUtils.advanceTime(UPDATE_TOAST_MS);
         await Promise.resolve();
       });
 
-      // Should have updated anyway
+      expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true);
+      const toasts = useToastStore.getState().toasts;
+      expect(toasts.some((toast) => toast.message.includes('Updating'))).toBe(true);
+    });
+
+    it('does not reload while the user is active; surfaces a persistent prompt', async () => {
+      mockNeedRefresh = true;
+      setActiveInteraction();
+
+      renderHook(() => usePWAUpdate());
+
+      act(() => {
+        mockOnRegisteredSW?.('/sw.js', mockRegistration);
+      });
+
+      await advancePastSilentWindow();
+
+      // No reload while active...
+      expect(mockUpdateServiceWorker).not.toHaveBeenCalled();
+      // ...and a persistent (duration 0) prompt with a Reload action is shown.
+      const prompt = useToastStore
+        .getState()
+        .toasts.find((toast) => toast.message.includes('new version'));
+      expect(prompt).toBeDefined();
+      expect(prompt?.duration).toBe(0);
+      expect(prompt?.action?.label).toBe('Reload');
+    });
+
+    it('reloads immediately when the prompt action is clicked, even while active', async () => {
+      mockNeedRefresh = true;
+      setActiveInteraction();
+
+      renderHook(() => usePWAUpdate());
+
+      act(() => {
+        mockOnRegisteredSW?.('/sw.js', mockRegistration);
+      });
+
+      await advancePastSilentWindow();
+
+      const prompt = useToastStore
+        .getState()
+        .toasts.find((toast) => toast.message.includes('new version'));
+
+      // Still actively dragging — an explicit click overrides the blocking checks.
+      act(() => {
+        void prompt?.action?.onClick();
+      });
+
+      expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true);
+    });
+
+    it('auto-applies via the safety net once the user goes idle long enough', async () => {
+      mockNeedRefresh = true;
+      setActiveInteraction();
+
+      renderHook(() => usePWAUpdate());
+
+      act(() => {
+        mockOnRegisteredSW?.('/sw.js', mockRegistration);
+      });
+
+      await advancePastSilentWindow();
+      expect(mockUpdateServiceWorker).not.toHaveBeenCalled();
+
+      // User stops interacting — the safety net should apply after LONG_IDLE_MS.
+      act(() => {
+        useInteractionStore.setState({ interaction: null });
+      });
+
+      await act(async () => {
+        timerUtils.advanceTime(IDLE_CHECK_INTERVAL_MS); // first safe poll arms safeSince
+        await Promise.resolve();
+        timerUtils.advanceTime(LONG_IDLE_MS); // continuous idle elapses
+        await Promise.resolve();
+      });
+
+      expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true);
+    });
+
+    it('auto-applies when the tab is backgrounded while safe', async () => {
+      mockNeedRefresh = true;
+      setActiveInteraction();
+
+      renderHook(() => usePWAUpdate());
+
+      act(() => {
+        mockOnRegisteredSW?.('/sw.js', mockRegistration);
+      });
+
+      await advancePastSilentWindow();
+
+      // Clear the blocking interaction, then background the tab.
+      act(() => {
+        useInteractionStore.setState({ interaction: null });
+        Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
       expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true);
 
-      consoleSpy.mockRestore();
+      Object.defineProperty(document, 'hidden', { value: false, configurable: true });
+    });
+
+    it('does not reload a backgrounded tab while a blocking signal is active', async () => {
+      mockNeedRefresh = true;
+      setActiveInteraction();
+
+      renderHook(() => usePWAUpdate());
+
+      act(() => {
+        mockOnRegisteredSW?.('/sw.js', mockRegistration);
+      });
+
+      await advancePastSilentWindow();
+
+      // Background the tab but keep the interaction active — hidden must still
+      // respect blocking signals.
+      act(() => {
+        Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(mockUpdateServiceWorker).not.toHaveBeenCalled();
+
+      Object.defineProperty(document, 'hidden', { value: false, configurable: true });
     });
 
     it('saves ephemeral state before triggering update', async () => {
@@ -648,23 +728,16 @@ describe('usePWAUpdate', () => {
         mockOnRegisteredSW?.('/sw.js', mockRegistration);
       });
 
-      // Complete the update flow. Extra flushes account for the awaited
-      // getSmokeGateFlag() and waitForSafeReload() promises in the gatedUpdate
-      // chain (gate is mocked to disabled, so it falls straight through).
+      // Idle path: reloads immediately after the silent-window check resolves.
       await act(async () => {
         await Promise.resolve();
         await Promise.resolve();
-        timerUtils.advanceTime(IDLE_CHECK_INTERVAL_MS);
-        await Promise.resolve();
-        timerUtils.advanceTime(UPDATE_TOAST_MS);
         await Promise.resolve();
       });
 
-      // Check that state was saved to sessionStorage
-      // Note: The state will be saved just before updateServiceWorker is called
       expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true);
-      // State should have been saved (we can't easily verify the contents since
-      // the real updateServiceWorker would reload the page, but we verify the call)
+      // State should have been saved just before the reload (we verify the call;
+      // the real updateServiceWorker would reload the page).
     });
   });
 
