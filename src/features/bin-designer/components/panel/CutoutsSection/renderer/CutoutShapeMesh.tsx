@@ -26,6 +26,8 @@ import {
   STROKE_WIDTH_GROUPED_PX,
 } from './constants';
 import { PathShapeMesh } from './PathShapeMesh';
+import { PolygonShapeMesh } from './PolygonShapeMesh';
+import { slotCornerRadius } from '@/shared/utils/cutoutPolygon';
 
 const STROKE_SELECTED = new THREE.Color(ACCENT_COLOR_HEX);
 
@@ -51,6 +53,24 @@ export const CutoutShapeMesh = memo(function CutoutShapeMesh(props: CutoutShapeM
   if (props.cutout.shape === 'path') {
     return (
       <PathShapeMesh
+        cutout={props.cutout}
+        isSelected={props.isSelected}
+        isGrouped={props.isGrouped}
+        isDragging={props.isDragging}
+        previewOverrides={props.previewOverrides}
+        binColor={props.binColor}
+        onSelect={props.onSelect}
+        onDoubleClick={props.onDoubleClick}
+        onDragStart={props.onDragStart}
+        disablePointerEvents={props.disablePointerEvents}
+      />
+    );
+  }
+
+  // Regular polygons (hex/n-gon) also need a triangulated mesh, not an SDF quad.
+  if (props.cutout.shape === 'polygon') {
+    return (
+      <PolygonShapeMesh
         cutout={props.cutout}
         isSelected={props.isSelected}
         isGrouped={props.isGrouped}
@@ -116,6 +136,11 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
         : STROKE_WIDTH_DEFAULT_PX;
   const strokeWidth = strokeWidthPx / zoom; // Convert screen px to world mm
   const shapeType = effective.shape === 'circle' ? 1 : 0;
+  // Slot = rounded box with fully-rounded ends; its radius is derived, not stored.
+  const effectiveCornerRadius =
+    effective.shape === 'slot'
+      ? slotCornerRadius(effective.width, effective.depth)
+      : effective.cornerRadius;
 
   // SDF material — recreated only when renderMode changes (which picks both
   // the fragment shader and the stencil config). All numeric/color uniforms
@@ -173,7 +198,7 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
   useEffect(() => {
     const u = material.uniforms;
     (u.u_size.value as THREE.Vector2).set(effective.width, effective.depth);
-    u.u_cornerRadius.value = effective.cornerRadius;
+    u.u_cornerRadius.value = effectiveCornerRadius;
     (u.u_fillColor.value as THREE.Vector4).set(
       cutFillColor.r,
       cutFillColor.g,
@@ -183,7 +208,16 @@ const SDFShapeMesh = memo(function SDFShapeMesh({
     (u.u_strokeColor.value as THREE.Vector4).set(strokeColor.r, strokeColor.g, strokeColor.b, 1);
     u.u_strokeWidth.value = strokeWidth;
     u.u_shapeType.value = shapeType;
-  }, [material, effective, fillOpacity, cutFillColor, strokeColor, strokeWidth, shapeType]);
+  }, [
+    material,
+    effective,
+    fillOpacity,
+    cutFillColor,
+    strokeColor,
+    strokeWidth,
+    shapeType,
+    effectiveCornerRadius,
+  ]);
 
   // Geometry sized to the shape
   const geometry = useMemo(() => {

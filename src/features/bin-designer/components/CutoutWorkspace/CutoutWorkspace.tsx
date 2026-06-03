@@ -23,6 +23,8 @@ import { WorkspaceHeader } from './WorkspaceHeader';
 import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
 import { useSvgImport } from '../panel/CutoutsSection/svgImport';
 import { FloatingInspector } from './FloatingInspector';
+import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import { applyFlattenArray } from '../panel/CutoutsSection/cutoutHelpers';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
 import { TopRuler, LeftRuler, RulerCorner } from './Rulers';
 import { CutoutQuickstartOverlay } from './CutoutQuickstartOverlay';
@@ -123,6 +125,12 @@ export function CutoutWorkspace() {
   const rulerPanY = cameraCenter.y + canvasHeight / (2 * zoom) - binDepth;
 
   const [gridSize, setGridSize] = useState(0.5);
+  const [fitCue, setFitCue] = useState<FitCue>(null);
+
+  const handleFlattenArray = useCallback(
+    (id: string) => applyFlattenArray(id, cutouts, updateCutout, addCutout),
+    [cutouts, updateCutout, addCutout]
+  );
 
   const {
     mode,
@@ -245,6 +253,7 @@ export function CutoutWorkspace() {
         groupCutouts,
         setGroupOp,
         reorderCutouts,
+        flattenArray: handleFlattenArray,
         t,
       }),
     [
@@ -265,6 +274,7 @@ export function CutoutWorkspace() {
       groupCutouts,
       setGroupOp,
       reorderCutouts,
+      handleFlattenArray,
       t,
     ]
   );
@@ -355,6 +365,7 @@ export function CutoutWorkspace() {
                 canvasHeight={canvasHeight}
                 selection={selection}
                 preview={preview}
+                fitCue={fitCue}
                 mode={mode}
                 drawingPreview={drawingPreview}
                 pathDrawingPreview={pathDrawingPreview}
@@ -402,6 +413,8 @@ export function CutoutWorkspace() {
                 canvasHeight={canvasHeight}
                 hidden={isInteracting}
                 disabled={isInteracting}
+                onFitCue={setFitCue}
+                onFlattenArray={handleFlattenArray}
               />
             </div>
           </div>

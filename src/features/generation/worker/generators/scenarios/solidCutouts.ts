@@ -17,6 +17,149 @@ export const solidCutouts: ScenarioCase[] = [
       cutouts: [makeCutout({ shape: 'circle', width: 20, depth: 20 })],
     },
   }),
+  defineScenario('solid cutouts', '2\u00d72 solid with hexagon (polygon) cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [makeCutout({ shape: 'polygon', sides: 6, width: 18, depth: 16 })],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with hexagon cutout + insertion clearance', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [makeCutout({ shape: 'polygon', sides: 6, width: 18, depth: 16, clearance: 0.2 })],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with chamfered hexagon cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [
+        makeCutout({ shape: 'polygon', sides: 6, width: 18, depth: 16, chamferWidth: 1.5 }),
+      ],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with chamfered circle cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [makeCutout({ shape: 'circle', width: 20, depth: 20, chamferWidth: 2 })],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with chamfered rectangle cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [makeCutout({ shape: 'rectangle', width: 22, depth: 16, chamferWidth: 1.5 })],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with chamfered + scooped rectangle cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      // Scoop fillets the loft's bottom edges (which exist at z=0) on top of the
+      // chamfer flare \u2014 exercise that the two features compose without failure.
+      cutouts: [
+        makeCutout({ shape: 'rectangle', width: 22, depth: 16, chamferWidth: 1.5, scoopRadius: 2 }),
+      ],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with chamfered slot cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      // Slot's chamfer flares a derived (half-short-side) corner radius, unlike
+      // the other shapes \u2014 exercise that loft path explicitly.
+      cutouts: [makeCutout({ shape: 'slot', width: 30, depth: 12, chamferWidth: 1.5 })],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with slot (stadium) cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [makeCutout({ shape: 'slot', width: 30, depth: 12 })],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with 3\u00d72 grid array of circles', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [
+        makeCutout({
+          shape: 'circle',
+          x: 8,
+          y: 8,
+          width: 8,
+          depth: 8,
+          array: {
+            mode: 'grid',
+            cols: 3,
+            rows: 2,
+            pitchX: 14,
+            pitchY: 14,
+            count: 6,
+            radius: 20,
+            startAngle: 0,
+            rotateToCenter: true,
+          },
+        }),
+      ],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with staggered hex array', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [
+        makeCutout({
+          shape: 'polygon',
+          sides: 6,
+          x: 6,
+          y: 6,
+          width: 12,
+          depth: 11,
+          array: {
+            mode: 'staggered',
+            cols: 3,
+            rows: 3,
+            pitchX: 14,
+            pitchY: 12,
+            count: 6,
+            radius: 20,
+            startAngle: 0,
+            rotateToCenter: true,
+          },
+        }),
+      ],
+    },
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with radial array (rotate-to-center)', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      cutouts: [
+        makeCutout({
+          shape: 'slot',
+          x: 40,
+          y: 36,
+          width: 12,
+          depth: 5,
+          array: {
+            mode: 'radial',
+            cols: 1,
+            rows: 1,
+            pitchX: 0,
+            pitchY: 0,
+            count: 6,
+            radius: 22,
+            startAngle: 0,
+            rotateToCenter: true,
+          },
+        }),
+      ],
+    },
+  }),
   defineScenario('solid cutouts', '2\u00d72 solid with rectangle with scoop cutout', {
     params: {
       style: 'solid',

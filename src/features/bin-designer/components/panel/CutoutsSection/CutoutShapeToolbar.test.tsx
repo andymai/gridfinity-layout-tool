@@ -70,6 +70,36 @@ describe('CutoutShapeToolbar', () => {
     expect(onSelectShape).toHaveBeenCalledWith({ type: 'placing', shape: 'circle' });
   });
 
+  it('enters placing mode when clicking polygon button', () => {
+    const onSelectShape = vi.fn();
+    render(
+      <CutoutShapeToolbar
+        mode={idleMode}
+        onSelectShape={onSelectShape}
+        snapEnabled={true}
+        onSnapToggle={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByTitle('binDesigner.cutouts.addPolygon'));
+    expect(onSelectShape).toHaveBeenCalledWith({ type: 'placing', shape: 'polygon' });
+  });
+
+  it('enters placing mode when clicking slot button', () => {
+    const onSelectShape = vi.fn();
+    render(
+      <CutoutShapeToolbar
+        mode={idleMode}
+        onSelectShape={onSelectShape}
+        snapEnabled={true}
+        onSnapToggle={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByTitle('binDesigner.cutouts.addSlot'));
+    expect(onSelectShape).toHaveBeenCalledWith({ type: 'placing', shape: 'slot' });
+  });
+
   it('returns to idle mode when clicking pointer button', () => {
     const onSelectShape = vi.fn();
     render(

@@ -5,8 +5,88 @@
 
 import type { CutoutTextSide, TextStyleOverride } from './text';
 
-/** Shape of a top-down cutout into solid bin body */
-export type CutoutShape = 'rectangle' | 'circle' | 'path';
+/**
+ * Shape of a top-down cutout into solid bin body.
+ *
+ *  - `polygon` — regular N-gon (hex bits, sockets, Allen keys). Side count is
+ *    stored in {@link Cutout.sides}; vertices are derived to fill the
+ *    `width × depth` bounding box, so all bounds/resize/rotation math is shared
+ *    with the other shapes.
+ *  - `slot` — stadium/capsule: a rounded rectangle whose corner radius is
+ *    always half its short side (fully rounded ends). For tools laid flat.
+ */
+export type CutoutShape = 'rectangle' | 'circle' | 'path' | 'polygon' | 'slot';
+
+/** Minimum side count for a polygon cutout (triangle). */
+export const MIN_POLYGON_SIDES = 3;
+/** Maximum side count for a polygon cutout. */
+export const MAX_POLYGON_SIDES = 12;
+/** Default side count for a new polygon cutout (hexagon — the bit-organizer staple). */
+export const DEFAULT_POLYGON_SIDES = 6;
+
+/**
+ * Default insertion clearance (mm) added to an insert-style cutout's nominal
+ * size so a part cut to spec (e.g. a 6.35mm hex bit) actually drops in. Applied
+ * to circle/polygon/slot only; freeform paths and rectangles cut to exact size.
+ */
+export const DEFAULT_CUTOUT_CLEARANCE = 0.2;
+
+/** Shapes that accept an insertion {@link Cutout.clearance} offset. */
+export const CLEARANCE_SHAPES: readonly CutoutShape[] = ['circle', 'polygon', 'slot'];
+
+/**
+ * Default entry-chamfer width (mm) used when a cutout's chamfer is first
+ * enabled. A ~45° bevel of this width at the top rim lets bits/sockets
+ * self-center and drop in without binding.
+ */
+export const DEFAULT_CUTOUT_CHAMFER = 1;
+
+/** Largest entry-chamfer width (mm) the editor allows. */
+export const MAX_CUTOUT_CHAMFER = 5;
+
+/**
+ * Shapes that accept an entry {@link Cutout.chamferWidth}. Freeform paths are
+ * excluded — a constant-offset outset of an arbitrary bezier outline isn't
+ * well-defined, so chamfers are limited to the parametric shapes.
+ */
+export const CHAMFER_SHAPES: readonly CutoutShape[] = ['rectangle', 'circle', 'polygon', 'slot'];
+
+/** Layout mode for a parametric cutout array. */
+export type CutoutArrayMode = 'grid' | 'staggered' | 'radial';
+
+/** Ordered mode list for UI rendering + exhaustiveness checks. */
+export const CUTOUT_ARRAY_MODES: readonly CutoutArrayMode[] = ['grid', 'staggered', 'radial'];
+
+/** Max instances an array may expand to — a guardrail against runaway geometry. */
+export const MAX_ARRAY_INSTANCES = 400;
+/** Max per-axis count / radial count in the editor. */
+export const MAX_ARRAY_COUNT = 50;
+
+/**
+ * Parametric array driven by a single master {@link Cutout}. The master's
+ * shape/size/depth/fit all apply to every instance; only the layout
+ * (mode + counts + spacing) lives here. Instances are **derived** at
+ * generation/render time and never stored, so there's no per-instance state to
+ * migrate. A flat config (all modes' fields present) lets the user toggle modes
+ * without losing each mode's settings.
+ */
+export interface CutoutArrayConfig {
+  readonly mode: CutoutArrayMode;
+  /** grid / staggered: columns (X) and rows (Y), each ≥ 1. */
+  readonly cols: number;
+  readonly rows: number;
+  /** grid / staggered: center-to-center spacing (mm). */
+  readonly pitchX: number;
+  readonly pitchY: number;
+  /** radial: number of instances around the ring, ≥ 1. */
+  readonly count: number;
+  /** radial: ring radius (mm) from the master center to each instance center. */
+  readonly radius: number;
+  /** radial: angle (deg) of the first instance, measured CCW from +X. */
+  readonly startAngle: number;
+  /** radial: when true, each instance is rotated to face the ring center. */
+  readonly rotateToCenter: boolean;
+}
 
 /**
  * Pathfinder boolean op applied across the members of a cutout group, before
@@ -127,6 +207,33 @@ export interface Cutout {
   readonly zIndex?: number;
   /** Path vertices for pen tool shapes (required when shape === 'path') */
   readonly path?: PathPoint[];
+  /**
+   * Side count for regular-polygon cutouts (required when shape === 'polygon').
+   * Clamped to [{@link MIN_POLYGON_SIDES}, {@link MAX_POLYGON_SIDES}]. Ignored
+   * for every other shape.
+   */
+  readonly sides?: number;
+  /**
+   * Insertion clearance in mm added to the nominal outline so a part cut to
+   * spec actually fits. Applied at generation time to {@link CLEARANCE_SHAPES}
+   * (circle/polygon/slot); the editor shows the nominal size. Missing/undefined
+   * = no clearance, so pre-existing designs are cut identically.
+   */
+  readonly clearance?: number;
+  /**
+   * Entry-chamfer width in mm: a ~45° bevel at the top rim that flares the
+   * opening outward so parts self-center on insertion. Applied at generation
+   * time to {@link CHAMFER_SHAPES}; the 2D editor shows the nominal opening.
+   * Missing/undefined/0 = straight walls, so existing designs are unchanged.
+   */
+  readonly chamferWidth?: number;
+  /**
+   * Optional parametric array: this cutout is the master, replicated across the
+   * grid/ring described by {@link CutoutArrayConfig}. Instances are derived at
+   * generation/render time. Missing = a single cutout. Arrays are restricted to
+   * ungrouped cutouts (`groupId === null`).
+   */
+  readonly array?: CutoutArrayConfig;
   /**
    * When true, `label` is also engraved on the bin top adjacent to this
    * cutout. Default false so existing designs render unchanged after

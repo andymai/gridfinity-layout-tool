@@ -90,11 +90,11 @@ export function CutoutShapeToolbar({
   };
 
   const btnBase = vertical
-    ? 'flex items-center justify-center rounded p-2 transition-colors'
-    : 'flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors';
-  const btnActive = 'bg-accent text-on-accent';
+    ? 'flex items-center justify-center rounded-md p-2 transition-all duration-100 active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60'
+    : 'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all duration-100 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60';
+  const btnActive = 'bg-accent text-on-accent shadow-sm ring-1 ring-accent/40';
   const btnInactive =
-    'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover';
+    'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content-primary hover:border-stroke';
   const iconSize = vertical ? 'h-5 w-5' : 'h-3.5 w-3.5';
 
   /** Conditionally wraps a button in a ToolbarTooltip (vertical mode only) */
@@ -176,6 +176,55 @@ export function CutoutShapeToolbar({
             <circle cx="7" cy="7" r="5.5" />
           </svg>
           {!vertical && t('binDesigner.cutouts.addCircle')}
+        </button>
+      )}
+
+      {wrap(
+        t('binDesigner.cutouts.addPolygon'),
+        'G',
+        <button
+          type="button"
+          className={`${btnBase} ${activeShape === 'polygon' ? btnActive : btnInactive}`}
+          onClick={() => handleClick('polygon')}
+          aria-label={t('binDesigner.cutouts.addPolygon')}
+          title={!vertical ? t('binDesigner.cutouts.addPolygon') : undefined}
+        >
+          <svg
+            className={iconSize}
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          >
+            {/* Flat-top hexagon */}
+            <path d="M3.5 1.5h7L13 7l-2.5 5.5h-7L1 7z" />
+          </svg>
+          {!vertical && t('binDesigner.cutouts.addPolygon')}
+        </button>
+      )}
+
+      {wrap(
+        t('binDesigner.cutouts.addSlot'),
+        'S',
+        <button
+          type="button"
+          className={`${btnBase} ${activeShape === 'slot' ? btnActive : btnInactive}`}
+          onClick={() => handleClick('slot')}
+          aria-label={t('binDesigner.cutouts.addSlot')}
+          title={!vertical ? t('binDesigner.cutouts.addSlot') : undefined}
+        >
+          <svg
+            className={iconSize}
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            {/* Stadium / capsule */}
+            <rect x="1" y="4" width="12" height="6" rx="3" />
+          </svg>
+          {!vertical && t('binDesigner.cutouts.addSlot')}
         </button>
       )}
 

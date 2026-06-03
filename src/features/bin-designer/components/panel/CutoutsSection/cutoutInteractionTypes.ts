@@ -17,6 +17,11 @@ export type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
 /** Default sizes for click-to-place (mm) */
 export const DEFAULT_RECT_SIZE = 20;
 export const DEFAULT_CIRCLE_SIZE = 15;
+/** Across-flats for a click-placed polygon (≈ a chunky 1/2" socket / large hex bit). */
+export const DEFAULT_POLYGON_ACROSS_FLATS = 14;
+/** Click-placed slot is an oblong capsule, not a square (which would render round). */
+export const DEFAULT_SLOT_WIDTH = 30;
+export const DEFAULT_SLOT_DEPTH = 12;
 
 /** Paste offset in mm — each successive paste shifts by this amount */
 export const PASTE_OFFSET = 2;

@@ -213,7 +213,7 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
       }
       break;
 
-    // Ctrl+G group / Ctrl+Shift+G ungroup
+    // Ctrl+G group / Ctrl+Shift+G ungroup; bare G switches to polygon tool
     case 'g':
       if (mod) {
         e.preventDefault();
@@ -222,6 +222,10 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
         } else if (ctx.selection.size >= 2) {
           ctx.onGroup?.([...ctx.selection]);
         }
+      } else {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        ctx.setMode({ type: 'placing', shape: 'polygon' });
       }
       break;
     case 'G':
@@ -250,6 +254,15 @@ export function handleCutoutKeyDown(e: KeyboardEvent, ctx: KeyboardHandlerContex
         e.preventDefault();
         e.stopImmediatePropagation();
         ctx.setMode({ type: 'placing', shape: 'path' });
+      }
+      break;
+
+    // S: switch to slot tool
+    case 's':
+      if (!mod) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        ctx.setMode({ type: 'placing', shape: 'slot' });
       }
       break;
 

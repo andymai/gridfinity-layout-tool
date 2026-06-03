@@ -29,9 +29,21 @@ import {
   clone,
   withScope,
 } from 'brepjs';
-import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope } from 'brepjs';
+import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
 import type { BinParams, Cutout, PathPoint, GroupOp } from '@/shared/types/bin';
-import { MIN_PATH_POINTS, DEFAULT_GROUP_OP } from '@/shared/types/bin';
+import {
+  MIN_PATH_POINTS,
+  DEFAULT_GROUP_OP,
+  DEFAULT_POLYGON_SIDES,
+  CLEARANCE_SHAPES,
+  CHAMFER_SHAPES,
+} from '@/shared/types/bin';
+import {
+  regularPolygonPoints,
+  slotCornerRadius,
+  clampPolygonSides,
+} from '@/shared/utils/cutoutPolygon';
+import { expandCutoutArray } from '@/shared/utils/cutoutArray';
 import { combineGroupSolids } from './cutoutGroupOps';
 import {
   resolveScoop,
@@ -103,6 +115,83 @@ function cutoutWorldAabb(
   }
   return { minX, maxX, minY, maxY };
 }
+/**
+ * 2D outline for a parametric cutout shape, centered at origin. Shared by the
+ * straight-extrude path and the chamfer loft so both agree on the profile.
+ * Paths are not parametric and are handled separately.
+ */
+function cutoutProfileDrawing(p: {
+  readonly shape: string;
+  readonly w: number;
+  readonly d: number;
+  readonly cornerRadius: number;
+  readonly sides?: number;
+}): Drawing {
+  switch (p.shape) {
+    case 'circle':
+      return drawEllipse(p.w / 2, p.d / 2);
+    case 'polygon': {
+      const pts = regularPolygonPoints(
+        clampPolygonSides(p.sides ?? DEFAULT_POLYGON_SIDES),
+        p.w,
+        p.d
+      );
+      // Mirror the straight-extrude path's guard: a degenerate vertex set
+      // (zero-size box) falls back to a bounding-box rect rather than crashing
+      // the kernel on an empty wire.
+      if (pts.length < 3) return drawRoundedRectangle(p.w, p.d, 0.01);
+      let pen = draw([pts[0].x, pts[0].y]);
+      for (let i = 1; i < pts.length; i++) pen = pen.lineTo([pts[i].x, pts[i].y]);
+      return pen.close();
+    }
+    case 'slot':
+      return drawRoundedRectangle(p.w, p.d, Math.max(0.01, slotCornerRadius(p.w, p.d) - 0.01));
+    case 'rectangle':
+    default: {
+      const maxCR = Math.min(p.w, p.d) / 2 - 0.01;
+      const r = p.cornerRadius > 0 ? Math.min(p.cornerRadius, maxCR) : 0.01;
+      return drawRoundedRectangle(p.w, p.d, Math.max(0.01, r));
+    }
+  }
+}
+
+/**
+ * Entry-chamfer cutout: a straight prism that flares outward over the top
+ * `chamfer` mm so the opening is a ~45° countersink (bits self-center). Built
+ * as a 3-section ruled loft — nominal at the bottom, nominal again at
+ * `cutDepth − chamfer`, then the outset profile at the top rim. The outset
+ * grows each bounding dimension by `2·chamfer` (and the corner radius by
+ * `chamfer`), matching the vertical drop for a true 45° bevel.
+ */
+function buildChamferedCutoutShape(p: {
+  readonly shape: string;
+  readonly w: number;
+  readonly d: number;
+  readonly cornerRadius: number;
+  readonly sides?: number;
+  readonly cutDepth: number;
+  readonly chamfer: number;
+}): Shape3D {
+  const profile = (w: number, dd: number, cr: number, z: number): Sketch =>
+    cutoutProfileDrawing({
+      shape: p.shape,
+      w,
+      d: dd,
+      cornerRadius: cr,
+      sides: p.sides,
+    }).sketchOnPlane('XY', z) as Sketch;
+
+  const base = profile(p.w, p.d, p.cornerRadius, 0);
+  const straightTop = profile(p.w, p.d, p.cornerRadius, p.cutDepth - p.chamfer);
+  const flared = profile(
+    p.w + 2 * p.chamfer,
+    p.d + 2 * p.chamfer,
+    p.cornerRadius + p.chamfer,
+    p.cutDepth
+  );
+  return base.loftWith([straightTop, flared], { ruled: true });
+}
+
 /** Create an extruded cutout shape centered at origin, **without rotation**.
  *  Splitting out rotation lets callers apply axis-aware fillets in the
  *  cutout's canonical local frame (W along X, D along Y) before rotating.
@@ -116,17 +205,75 @@ function buildUnrotatedCutoutShape(cutout: {
   readonly depth: number;
   readonly cutDepth: number;
   readonly cornerRadius: number;
+  readonly sides?: number;
+  readonly clearance?: number;
+  readonly chamferWidth?: number;
   readonly path?: readonly PathPoint[];
 }): Shape3D | null {
   if (cutout.cutDepth <= 0 || cutout.width <= 0 || cutout.depth <= 0) return null;
 
+  // Insertion clearance enlarges the cut symmetrically about its own center so a
+  // part cut to spec drops in. The cutout stays positioned by its nominal
+  // center (cutout.x + cutout.width/2), so the enlarged shape stays aligned.
+  // Missing clearance / non-insert shapes keep their exact nominal size.
+  const clearance =
+    (CLEARANCE_SHAPES as readonly string[]).includes(cutout.shape) && cutout.clearance !== undefined
+      ? Math.max(0, cutout.clearance)
+      : 0;
+  const d = cutout.depth + clearance;
+  // Polygons scale uniformly (across-flats = depth grows by clearance) so the
+  // result stays a *regular* N-gon; a flat additive box offset would skew the
+  // width/depth ratio. Other shapes use a symmetric additive offset.
+  const w =
+    cutout.shape === 'polygon' && cutout.depth > 0
+      ? cutout.width * (d / cutout.depth)
+      : cutout.width + clearance;
+
+  // Entry chamfer: flare the top rim. Clamp so a straight wall always remains
+  // below the bevel (loft needs cutDepth − chamfer > 0).
+  const chamfer =
+    (CHAMFER_SHAPES as readonly string[]).includes(cutout.shape) && cutout.chamferWidth
+      ? Math.max(0, Math.min(cutout.chamferWidth, cutout.cutDepth - 0.2))
+      : 0;
+  if (chamfer > 0.05) {
+    return buildChamferedCutoutShape({
+      shape: cutout.shape,
+      w,
+      d,
+      cornerRadius: cutout.cornerRadius,
+      sides: cutout.sides,
+      cutDepth: cutout.cutDepth,
+      chamfer,
+    });
+  }
+
   switch (cutout.shape) {
     case 'circle': {
-      const rx = cutout.width / 2;
-      const ry = cutout.depth / 2;
+      const rx = w / 2;
+      const ry = d / 2;
       return Math.abs(rx - ry) < 0.01
         ? cylinder(rx, cutout.cutDepth)
         : sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
+    }
+    case 'polygon': {
+      const pts = regularPolygonPoints(
+        clampPolygonSides(cutout.sides ?? DEFAULT_POLYGON_SIDES),
+        w,
+        d
+      );
+      if (pts.length < 3) {
+        return box(w, d, cutout.cutDepth, { at: [0, 0, cutout.cutDepth / 2] });
+      }
+      let pen = draw([pts[0].x, pts[0].y]);
+      for (let i = 1; i < pts.length; i++) pen = pen.lineTo([pts[i].x, pts[i].y]);
+      return sketch(pen.close(), 'XY').extrude(cutout.cutDepth);
+    }
+    case 'slot': {
+      // Back the radius off the exact half-short-side by a hair: an exact
+      // half-height radius makes drawRoundedRectangle emit a degenerate
+      // zero-length straight segment on the short edges, which OCCT rejects.
+      const r = Math.max(0.01, slotCornerRadius(w, d) - 0.01);
+      return sketch(drawRoundedRectangle(w, d, r), 'XY').extrude(cutout.cutDepth);
     }
     case 'path': {
       try {
@@ -166,6 +313,9 @@ function buildCutoutShape(cutout: {
   readonly cutDepth: number;
   readonly rotation: number;
   readonly cornerRadius: number;
+  readonly sides?: number;
+  readonly clearance?: number;
+  readonly chamferWidth?: number;
   readonly path?: readonly PathPoint[];
 }): Shape3D | null {
   let shape = buildUnrotatedCutoutShape(cutout);
@@ -673,12 +823,15 @@ export function buildCutoutCuts(
 
   const rawShapes: Shape3D[] = [];
 
-  // Partition cutouts by groupId: null -> ungrouped, same groupId -> collected
+  // Partition cutouts by groupId: null -> ungrouped, same groupId -> collected.
+  // Array masters (always ungrouped) expand into one cut per instance first.
   const groups = new Map<string, typeof params.cutouts>();
   for (const cutout of params.cutouts) {
     if (cutout.groupId === null) {
-      const shape = buildUngroupedCutout(cutout, solidSurfaceZ, originX, originY);
-      if (shape) rawShapes.push(shape);
+      for (const instance of expandCutoutArray(cutout)) {
+        const shape = buildUngroupedCutout(instance, solidSurfaceZ, originX, originY);
+        if (shape) rawShapes.push(shape);
+      }
     } else {
       const list = groups.get(cutout.groupId);
       if (list) {

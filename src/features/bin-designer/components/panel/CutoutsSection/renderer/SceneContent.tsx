@@ -24,7 +24,10 @@ import { RotationHandle3D } from './RotationHandle3D';
 import { SmartGuides3D } from './SmartGuides3D';
 import { DimensionTooltip3D } from './DimensionTooltip3D';
 import { DimensionAnnotations3D } from './DimensionAnnotations3D';
+import { CutoutArrayMeshes } from './CutoutArrayMeshes';
 import { DrawingPreview3D } from './DrawingPreview3D';
+import { FitCueOverlay3D } from './FitCueOverlay3D';
+import type { FitCue } from '../cutoutSectionVisibility';
 import { GroupBounds3D } from './GroupBounds3D';
 import { MarqueeBox3D } from './MarqueeBox3D';
 import { InteractionPlane } from './InteractionPlane';
@@ -86,6 +89,8 @@ export interface SceneContentProps {
   readonly tooltipInfo: TooltipInfo | null;
   readonly groupBounds: GroupBoundsData | null;
   readonly drawingPreview: DrawingPreview | null;
+  /** Active insertion-fit cue to draw on the single-selected cutout. */
+  readonly fitCue?: FitCue;
   readonly pathDrawingPreview: {
     readonly points: readonly PathPoint[];
     readonly cursorX: number;
@@ -142,6 +147,7 @@ export function SceneContent({
   tooltipInfo,
   groupBounds,
   drawingPreview,
+  fitCue,
   pathDrawingPreview,
   activeGuides,
   marqueeWorld,
@@ -224,12 +230,28 @@ export function SceneContent({
         onPointerUp={onPointerUp}
       />
 
-      {/* Ungrouped cutout shapes — normal rendering */}
+      {/* Ungrouped cutout shapes — normal rendering (arrays expand to instances) */}
       {cutouts
         .filter((c) => c.groupId === null)
         .map((cutout) => {
           const isVertexEditing = mode.type === 'vertex-editing' && mode.cutoutId === cutout.id;
           const isRulerActive = mode.type === 'ruler-ready' || mode.type === 'measuring';
+          if (cutout.array) {
+            return (
+              <CutoutArrayMeshes
+                key={cutout.id}
+                master={cutout}
+                isSelected={selection.has(cutout.id)}
+                isDragging={isDragging && selection.has(cutout.id)}
+                previewOverride={preview.get(cutout.id)}
+                binColor={binColor}
+                onSelect={onSelectCutout}
+                onDoubleClick={onDoubleClickCutout}
+                onDragStart={memoizedDragStart}
+                disablePointerEvents={isVertexEditing || isRulerActive}
+              />
+            );
+          }
           return (
             <CutoutShapeMesh
               key={cutout.id}
@@ -440,6 +462,18 @@ export function SceneContent({
           width={drawingPreview.width}
           depth={drawingPreview.depth}
           shape={drawingPreview.shape}
+        />
+      )}
+
+      {/* Insertion-fit cue: dashed true-footprint while a fit field is focused */}
+      {fitCue && selectedCutout && (
+        <FitCueOverlay3D
+          cutout={
+            preview.get(selectedCutout.id)
+              ? { ...selectedCutout, ...preview.get(selectedCutout.id) }
+              : selectedCutout
+          }
+          cue={fitCue}
         />
       )}
 

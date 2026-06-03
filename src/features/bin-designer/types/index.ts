@@ -562,8 +562,26 @@ export type {
   CutoutToggleProperties,
   CutoutConfig,
   Cutout,
+  CutoutArrayMode,
+  CutoutArrayConfig,
 } from './cutout';
-export { DEFAULT_GROUP_OP, GROUP_OPS, DEFAULT_SCOOP_EDGES, MIN_PATH_POINTS } from './cutout';
+export {
+  DEFAULT_GROUP_OP,
+  GROUP_OPS,
+  DEFAULT_SCOOP_EDGES,
+  MIN_PATH_POINTS,
+  MIN_POLYGON_SIDES,
+  MAX_POLYGON_SIDES,
+  DEFAULT_POLYGON_SIDES,
+  DEFAULT_CUTOUT_CLEARANCE,
+  CLEARANCE_SHAPES,
+  DEFAULT_CUTOUT_CHAMFER,
+  MAX_CUTOUT_CHAMFER,
+  CHAMFER_SHAPES,
+  CUTOUT_ARRAY_MODES,
+  MAX_ARRAY_INSTANCES,
+  MAX_ARRAY_COUNT,
+} from './cutout';
 
 // Generation Types
 

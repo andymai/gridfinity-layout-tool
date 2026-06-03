@@ -30,6 +30,8 @@ interface SliderInputProps {
   info?: string;
   /** Whether the control is disabled */
   disabled?: boolean;
+  /** Transient emphasis ring — e.g. flashed when a preset sets this value. */
+  highlight?: boolean;
 }
 
 export function SliderInput({
@@ -42,6 +44,7 @@ export function SliderInput({
   unit,
   info,
   disabled = false,
+  highlight = false,
 }: SliderInputProps) {
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -101,7 +104,13 @@ export function SliderInput({
   const valueText = unit ? `${value} ${unit}` : String(value);
 
   return (
-    <div className={disabled ? 'opacity-50' : ''}>
+    <div
+      className={cn(
+        'rounded-md transition-[box-shadow] duration-500',
+        disabled && 'opacity-50',
+        highlight && 'ring-2 ring-accent/70 ring-offset-1 ring-offset-surface'
+      )}
+    >
       {/* Label row with editable value badge */}
       <div className="flex items-center justify-between mb-1">
         <label

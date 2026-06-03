@@ -29,6 +29,7 @@ export type {
   InsertShape,
   Cutout,
   CutoutShape,
+  CutoutArrayConfig,
   CutoutScoopEdges,
   GroupOp,
   PathPoint,
@@ -61,6 +62,12 @@ export {
   DEFAULT_GROUP_OP,
   GROUP_OPS,
   TEXT_MAX_LENGTH,
+  MIN_POLYGON_SIDES,
+  MAX_POLYGON_SIDES,
+  DEFAULT_POLYGON_SIDES,
+  CLEARANCE_SHAPES,
+  CHAMFER_SHAPES,
+  MAX_ARRAY_INSTANCES,
 } from '@/features/bin-designer/types';
 
 /**

@@ -8,22 +8,12 @@
  */
 
 import { useMemo, useRef, useState, useCallback, useEffect } from 'react';
-import type { Cutout, CutoutTextSide } from '@/features/bin-designer/types';
-import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types';
+import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { SliderInput } from '@/features/bin-designer/components/controls/SliderInput';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
-import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import { clampRotationToBounds, getRotatedBounds } from '../panel/CutoutsSection/geometry';
-import { CutoutScoopControls } from './CutoutScoopControls';
-import { Checkbox, Input } from '@/design-system';
-
-const SIDE_OPTIONS: readonly { readonly side: CutoutTextSide; readonly glyph: string }[] = [
-  { side: 'top', glyph: '↑' },
-  { side: 'bottom', glyph: '↓' },
-  { side: 'left', glyph: '←' },
-  { side: 'right', glyph: '→' },
-] as const;
+import { getRotatedBounds } from '../panel/CutoutsSection/geometry';
+import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import { SingleCutoutInspector } from './SingleCutoutInspector';
 
 interface FloatingInspectorProps {
   readonly cutouts: readonly Cutout[];
@@ -44,6 +34,10 @@ interface FloatingInspectorProps {
   /** Whether to hide (during drag/resize/rotate) */
   readonly hidden?: boolean;
   readonly disabled?: boolean;
+  /** Notifies the editor which insertion-fit cue (if any) to draw on the canvas. */
+  readonly onFitCue?: (cue: FitCue) => void;
+  /** Flatten the selected cutout's array into independent cutouts. */
+  readonly onFlattenArray?: (id: string) => void;
 }
 
 /** Merge preview overrides into a cutout to get the effective state */
@@ -94,6 +88,8 @@ export function FloatingInspector({
   canvasHeight,
   hidden = false,
   disabled = false,
+  onFitCue,
+  onFlattenArray,
 }: FloatingInspectorProps) {
   const t = useTranslation();
 
@@ -283,102 +279,19 @@ export function FloatingInspector({
         }
       }}
     >
-      {/* Single selection: compact inputs for position/size, sliders for rotation/depth */}
+      {/* Single selection: sectioned property groups (Transform / Shape / Fit / Array / Label) */}
       {singleCutout && (
-        <div className="space-y-1.5">
-          {/* Position & size: 2-column compact grid */}
-          <div className="grid grid-cols-2 gap-1">
-            <CompactNumberInput
-              label="X"
-              value={getEffective(singleCutout, preview, 'x')}
-              onChange={(x) => onUpdate(singleCutout.id, { x })}
-              min={0}
-              max={binWidth - singleCutout.width}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
-            <CompactNumberInput
-              label="Y"
-              value={getEffective(singleCutout, preview, 'y')}
-              onChange={(y) => onUpdate(singleCutout.id, { y })}
-              min={0}
-              max={binDepth - singleCutout.depth}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
-            <CompactNumberInput
-              label="W"
-              value={getEffective(singleCutout, preview, 'width')}
-              onChange={(width) => onUpdate(singleCutout.id, { width })}
-              min={2}
-              max={binWidth}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
-            <CompactNumberInput
-              label="H"
-              value={getEffective(singleCutout, preview, 'depth')}
-              onChange={(depth) => onUpdate(singleCutout.id, { depth })}
-              min={2}
-              max={binDepth}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
-          </div>
-          {/* Rotation, corner radius, depth: full-width sliders */}
-          <SliderInput
-            label="Rotation"
-            value={getEffective(singleCutout, preview, 'rotation')}
-            onChange={(rotation) => {
-              const clamped = clampRotationToBounds(singleCutout, rotation, binWidth, binDepth);
-              onUpdate(singleCutout.id, { rotation: clamped });
-            }}
-            min={0}
-            max={359}
-            step={1}
-            unit="°"
-            disabled={disabled}
-          />
-          {singleCutout.shape === 'rectangle' && (
-            <SliderInput
-              label={t('binDesigner.cutouts.cornerRadius')}
-              value={singleCutout.cornerRadius}
-              onChange={(cornerRadius) => onUpdate(singleCutout.id, { cornerRadius })}
-              min={0}
-              max={Math.min(singleCutout.width, singleCutout.depth) / 2}
-              step={0.5}
-              unit="mm"
-              disabled={disabled}
-            />
-          )}
-          <SliderInput
-            label="Depth"
-            value={singleCutout.cutDepth}
-            onChange={(cutDepth) => onUpdate(singleCutout.id, { cutDepth })}
-            min={0.5}
-            max={maxCutDepth}
-            step={0.5}
-            unit="mm"
-            disabled={disabled}
-          />
-          <CutoutScoopControls
-            key={singleCutout.id}
-            cutout={singleCutout}
-            preview={preview.get(singleCutout.id)}
-            disabled={disabled}
-            onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
-          />
-          <CutoutEngraveLabelControls
-            key={`${singleCutout.id}-text`}
-            cutout={singleCutout}
-            disabled={disabled}
-            onUpdate={(patch) => onUpdate(singleCutout.id, patch)}
-          />
-        </div>
+        <SingleCutoutInspector
+          cutout={singleCutout}
+          preview={preview}
+          binWidth={binWidth}
+          binDepth={binDepth}
+          maxCutDepth={maxCutDepth}
+          onUpdate={onUpdate}
+          onFitCue={onFitCue}
+          onFlattenArray={onFlattenArray}
+          disabled={disabled}
+        />
       )}
 
       {/* Multi selection: shared fields */}
@@ -389,7 +302,7 @@ export function FloatingInspector({
           </div>
           <div className="space-y-0.5">
             <SliderInput
-              label="Rotation"
+              label={t('binDesigner.cutouts.rotation')}
               value={sharedRotation ?? 0}
               onChange={(rotation) => handleBatchUpdate('rotation', rotation)}
               min={0}
@@ -399,7 +312,7 @@ export function FloatingInspector({
               disabled={disabled}
             />
             <SliderInput
-              label="Depth"
+              label={t('binDesigner.cutouts.cutDepth')}
               value={sharedCutDepth ?? 5}
               onChange={(cutDepth) => handleBatchUpdate('cutDepth', cutDepth)}
               min={0.5}
@@ -439,87 +352,6 @@ export function FloatingInspector({
             {t('binDesigner.cutoutEditor.locked')}
           </span>
         </div>
-      )}
-    </div>
-  );
-}
-
-interface CutoutEngraveLabelControlsProps {
-  readonly cutout: Cutout;
-  readonly disabled: boolean;
-  readonly onUpdate: (patch: Partial<Cutout>) => void;
-}
-
-/**
- * Compact engraved-label controls for a single selected cutout — toggle,
- * text input, and side picker. Mode + font + depth use the design-level
- * `textDefaults`; per-instance overrides are deferred to a follow-up.
- *
- * Layout mirrors the rest of the inspector (compact rows, small icon-only
- * segmented control for the side direction) so it slots into the existing
- * visual rhythm without a heavyweight new section.
- */
-function CutoutEngraveLabelControls({
-  cutout,
-  disabled,
-  onUpdate,
-}: CutoutEngraveLabelControlsProps) {
-  const t = useTranslation();
-  const enabled = cutout.engraveLabel ?? false;
-  const side: CutoutTextSide = cutout.textSide ?? 'top';
-
-  return (
-    <div className="flex flex-col gap-1.5 border-t border-stroke-subtle pt-2">
-      <label className="flex items-center gap-2 text-xs text-content-secondary cursor-pointer">
-        <Checkbox
-          checked={enabled}
-          onChange={(checked) => onUpdate({ engraveLabel: checked })}
-          disabled={disabled}
-          aria-label={t('binDesigner.cutoutEngraveLabel')}
-        />
-        <span>{t('binDesigner.cutoutEngraveLabel')}</span>
-      </label>
-      {enabled && (
-        <>
-          <Input
-            type="text"
-            size="sm"
-            value={cutout.label}
-            maxLength={TEXT_MAX_LENGTH}
-            onChange={(e) => onUpdate({ label: e.target.value })}
-            disabled={disabled}
-            placeholder={t('binDesigner.cutoutEngraveLabelPlaceholder')}
-            aria-label={t('binDesigner.cutoutEngraveLabel')}
-          />
-          <div>
-            <span className="mb-1 block text-[10px] uppercase tracking-wide text-content-tertiary">
-              {t('binDesigner.cutoutTextSide')}
-            </span>
-            <div
-              role="group"
-              aria-label={t('binDesigner.cutoutTextSide')}
-              className={SEGMENT_GROUP_CLASS}
-            >
-              {SIDE_OPTIONS.map(({ side: opt, glyph }) => (
-                <button
-                  key={opt}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => onUpdate({ textSide: opt })}
-                  aria-pressed={side === opt}
-                  aria-label={t(`binDesigner.cutoutTextSide.${opt}`)}
-                  title={t(`binDesigner.cutoutTextSide.${opt}`)}
-                  className={`flex-1 leading-none ${getSegmentClass(side === opt)}`}
-                >
-                  {glyph}
-                </button>
-              ))}
-            </div>
-          </div>
-          <p className="text-[10px] text-content-tertiary">
-            {t('binDesigner.cutoutEngraveLabelEngraveOnly')}
-          </p>
-        </>
       )}
     </div>
   );
