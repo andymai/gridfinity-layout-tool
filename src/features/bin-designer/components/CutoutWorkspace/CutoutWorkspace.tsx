@@ -259,6 +259,7 @@ export function CutoutWorkspace() {
         groupCutouts,
         setGroupOp,
         reorderCutouts,
+        flattenArray: handleFlattenArray,
         t,
       }),
     [
@@ -279,6 +280,7 @@ export function CutoutWorkspace() {
       groupCutouts,
       setGroupOp,
       reorderCutouts,
+      handleFlattenArray,
       t,
     ]
   );

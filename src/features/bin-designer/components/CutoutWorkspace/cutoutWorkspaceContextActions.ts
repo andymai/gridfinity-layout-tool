@@ -12,6 +12,8 @@ import {
   flipSelectionHorizontal,
   flipSelectionVertical,
 } from '../panel/CutoutsSection/geometry';
+import { canArray } from '../panel/CutoutsSection/cutoutSectionVisibility';
+import { defaultArrayConfig } from '@/shared/utils/cutoutArray';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import type { TFunction } from '@/i18n/context';
 
@@ -33,6 +35,7 @@ interface BuildContextActionsArgs {
   groupCutouts: (ids: readonly string[], op?: GroupOp) => void;
   setGroupOp: (groupId: string, op: GroupOp) => void;
   reorderCutouts: (ids: readonly string[], direction: ReorderDirection) => void;
+  flattenArray: (id: string) => void;
   t: TFunction;
 }
 
@@ -55,6 +58,7 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
     groupCutouts,
     setGroupOp,
     reorderCutouts,
+    flattenArray,
     t,
   } = args;
 
@@ -107,6 +111,27 @@ export function buildCutoutContextActions(args: BuildContextActionsArgs): Contex
         },
         shortcut: { keys: 'R' },
       });
+
+      if (canArray(cutout)) {
+        if (cutout.array) {
+          actions.push({
+            label: t('binDesigner.cutouts.array.flatten'),
+            onClick: () => flattenArray(cutout.id),
+          });
+          actions.push({
+            label: t('binDesigner.cutouts.array.remove'),
+            onClick: () => updateCutout(cutout.id, { array: undefined }),
+          });
+        } else {
+          actions.push({
+            label: t('binDesigner.cutouts.array.create'),
+            onClick: () =>
+              updateCutout(cutout.id, {
+                array: defaultArrayConfig(cutout.width, cutout.depth),
+              }),
+          });
+        }
+      }
     }
   }
 
