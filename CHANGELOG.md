@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.144.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.144.1...gridfinity-layout-tool-v4.144.2) (2026-06-04)
+
+
+### Bug Fixes
+
+* **cutouts:** translate path vertices for array instances ([#2006](https://github.com/andymai/gridfinity-layout-tool/issues/2006)) ([95730c9](https://github.com/andymai/gridfinity-layout-tool/commit/95730c9e2e8521d061e6615b763323a4b2fbe826))
+
 ## [4.144.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.144.0...gridfinity-layout-tool-v4.144.1) (2026-06-04)
 
 
