@@ -20,6 +20,15 @@ describe('createDefaultCutout', () => {
     expect(createDefaultCutout('id', 'rectangle', 0, 0, 20, 20).clearance).toBeUndefined();
     expect(createDefaultCutout('id', 'rectangle', 0, 0, 20, 20).sides).toBeUndefined();
   });
+
+  it('seeds a tasteful entry chamfer for insert shapes, scaled and clamped', () => {
+    // ~10% of the tightest dimension, clamped to 0.4–0.8mm.
+    expect(createDefaultCutout('id', 'circle', 0, 0, 6, 6).chamferWidth).toBe(0.6);
+    expect(createDefaultCutout('id', 'circle', 0, 0, 3, 3).chamferWidth).toBe(0.4); // min clamp
+    expect(createDefaultCutout('id', 'circle', 0, 0, 25, 25).chamferWidth).toBe(0.8); // max clamp
+    // Rectangles are pockets/windows, not insert holes — left sharp.
+    expect(createDefaultCutout('id', 'rectangle', 0, 0, 20, 20).chamferWidth).toBeUndefined();
+  });
 });
 
 describe('defaultPlaceSize', () => {

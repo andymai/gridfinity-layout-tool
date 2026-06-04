@@ -190,6 +190,8 @@ export function CutoutPropertyPanel({
         >
           <CutoutArrayControls
             cutout={cutout}
+            binWidth={maxWidth}
+            binDepth={maxDepth}
             onUpdate={(patch) => onUpdate(cutout.id, patch)}
             onFlatten={() => onFlattenArray?.(cutout.id)}
             disabled={disabled}

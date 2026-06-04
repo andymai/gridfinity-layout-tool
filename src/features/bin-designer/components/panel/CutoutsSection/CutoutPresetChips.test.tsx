@@ -17,14 +17,23 @@ const PRESETS: CutoutSizePreset[] = [
 const MORE = 'binDesigner.cutouts.sizePresetMore';
 
 describe('CutoutPresetChips', () => {
-  it('renders the first N presets as chips plus a "+N" expander for the rest', () => {
+  it('renders the first N presets as chips plus an overflow-count expander for the rest', () => {
     render(<CutoutPresetChips presets={PRESETS} onPick={vi.fn()} maxChips={2} />);
     expect(screen.getByRole('button', { name: '1/4" hex bit (6.35mm)' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Allen 2mm' })).toBeInTheDocument();
     // Overflow presets are hidden until expanded.
     expect(screen.queryByRole('button', { name: 'Allen 3mm' })).not.toBeInTheDocument();
+    // The expander shows how many sizes are hidden (a disclosure count, not "+N").
     const more = screen.getByRole('button', { name: MORE });
-    expect(more).toHaveTextContent('+2');
+    expect(more).toHaveTextContent('2');
+  });
+
+  it('drops the overflow count once expanded', () => {
+    render(<CutoutPresetChips presets={PRESETS} onPick={vi.fn()} maxChips={2} />);
+    const more = screen.getByRole('button', { name: MORE });
+    fireEvent.click(more);
+    expect(more).toHaveTextContent('');
+    expect(more).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('reveals the remaining presets when the expander is clicked', () => {
@@ -35,7 +44,9 @@ describe('CutoutPresetChips', () => {
   });
 
   it('shortens the chip label to the spec fraction or the mm value', () => {
-    render(<CutoutPresetChips presets={PRESETS} onPick={vi.fn()} maxChips={2} />);
+    // maxChips=4 shows every preset (no expander) so the "2" mm-fallback chip
+    // can't collide with the expander's overflow count.
+    render(<CutoutPresetChips presets={PRESETS} onPick={vi.fn()} maxChips={4} />);
     expect(screen.getByText('1/4"')).toBeInTheDocument(); // fraction token
     expect(screen.getByText('2')).toBeInTheDocument(); // mm fallback
   });

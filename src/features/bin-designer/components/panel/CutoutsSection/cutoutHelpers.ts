@@ -8,6 +8,7 @@ import {
   DEFAULT_POLYGON_SIDES,
   DEFAULT_CUTOUT_CLEARANCE,
   CLEARANCE_SHAPES,
+  defaultEntryChamfer,
 } from '@/features/bin-designer/types';
 import { polygonBoxFromAcrossFlats } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
@@ -163,6 +164,7 @@ export function createDefaultCutout(
   width: number,
   depth: number
 ): Cutout {
+  const cutDepth = 5;
   return {
     id,
     shape,
@@ -170,14 +172,20 @@ export function createDefaultCutout(
     y,
     width,
     depth,
-    cutDepth: 5,
+    cutDepth,
     rotation: 0,
     cornerRadius: 0,
     label: '',
     groupId: null,
     // Hexagon by default — the bit-organizer staple. Ignored for other shapes.
     ...(shape === 'polygon' ? { sides: DEFAULT_POLYGON_SIDES } : {}),
-    // Insert shapes get a small fit allowance so spec-sized parts drop in.
-    ...(CLEARANCE_SHAPES.includes(shape) ? { clearance: DEFAULT_CUTOUT_CLEARANCE } : {}),
+    // Insert shapes get a small fit allowance plus a self-centering entry
+    // chamfer so spec-sized parts drop in cleanly and the top rim looks finished.
+    ...(CLEARANCE_SHAPES.includes(shape)
+      ? {
+          clearance: DEFAULT_CUTOUT_CLEARANCE,
+          chamferWidth: defaultEntryChamfer(Math.min(width, depth), cutDepth),
+        }
+      : {}),
   };
 }

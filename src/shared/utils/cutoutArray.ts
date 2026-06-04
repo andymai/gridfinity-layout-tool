@@ -11,7 +11,13 @@
  */
 
 import type { Cutout, CutoutArrayConfig } from '@/features/bin-designer/types';
-import { MAX_ARRAY_INSTANCES } from '@/features/bin-designer/types';
+import { MAX_ARRAY_INSTANCES, MAX_ARRAY_COUNT } from '@/features/bin-designer/types';
+
+/** Absolute editor caps for array spacing (mm), independent of bin size. */
+export const ARRAY_MIN_PITCH = 1;
+export const ARRAY_MAX_PITCH = 200;
+export const ARRAY_MIN_RADIUS = 1;
+export const ARRAY_MAX_RADIUS = 200;
 
 export interface ArrayInstance {
   /** Center offset from the master center (mm). */
@@ -115,6 +121,80 @@ export function expandCutoutArray(cutout: Cutout): Cutout[] {
       rotation: (((cutout.rotation + inst.drot) % 360) + 360) % 360,
     };
   });
+}
+
+/** Per-field upper bounds that keep an array within the bin's physical footprint. */
+export interface ArrayFieldBounds {
+  readonly maxCols: number;
+  readonly maxRows: number;
+  readonly maxPitchX: number;
+  readonly maxPitchY: number;
+  readonly maxRadius: number;
+}
+
+const clampNum = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
+const floorToHalf = (v: number): number => Math.floor(v * 2) / 2;
+
+/**
+ * Feasible upper bounds for each array field given the master cutout's size and
+ * position and the bin interior. The grid grows in +X/+Y from the master, so a
+ * field's max is whatever keeps the furthest instance inside the bin (and the
+ * total within {@link MAX_ARRAY_INSTANCES}). Each bound is computed against the
+ * other fields as-is, so editing one never silently rewrites the others.
+ */
+export function arrayFieldBounds(
+  cutout: Cutout,
+  binWidth: number,
+  binDepth: number,
+  config: CutoutArrayConfig
+): ArrayFieldBounds {
+  const { width: w, depth: d } = cutout;
+  // Room for the array to grow from the master's far edge to the bin edge.
+  const availX = Math.max(0, binWidth - cutout.x - w);
+  const availY = Math.max(0, binDepth - cutout.y - d);
+  const staggered = config.mode === 'staggered';
+  const cols = clampCount(config.cols);
+  const rows = clampCount(config.rows);
+
+  // How many extra steps fit at the current pitch, plus the master itself.
+  const stepsX =
+    config.pitchX > 0
+      ? Math.floor((availX - (staggered ? config.pitchX / 2 : 0)) / config.pitchX)
+      : 0;
+  const stepsY = config.pitchY > 0 ? Math.floor(availY / config.pitchY) : 0;
+  const maxCols = clampNum(
+    Math.min(1 + Math.max(0, stepsX), Math.floor(MAX_ARRAY_INSTANCES / rows)),
+    1,
+    MAX_ARRAY_COUNT
+  );
+  const maxRows = clampNum(
+    Math.min(1 + Math.max(0, stepsY), Math.floor(MAX_ARRAY_INSTANCES / cols)),
+    1,
+    MAX_ARRAY_COUNT
+  );
+
+  // Largest pitch that keeps the current counts inside the bin.
+  const colSpan = cols - 1 + (staggered ? 0.5 : 0);
+  const rowSpan = rows - 1;
+  const maxPitchX = clampNum(
+    floorToHalf(colSpan > 0 ? availX / colSpan : ARRAY_MAX_PITCH),
+    ARRAY_MIN_PITCH,
+    ARRAY_MAX_PITCH
+  );
+  const maxPitchY = clampNum(
+    floorToHalf(rowSpan > 0 ? availY / rowSpan : ARRAY_MAX_PITCH),
+    ARRAY_MIN_PITCH,
+    ARRAY_MAX_PITCH
+  );
+
+  // Radial ring must fit within the smaller bin dimension around the master.
+  const maxRadius = clampNum(
+    floorToHalf((Math.min(binWidth, binDepth) - Math.max(w, d)) / 2),
+    ARRAY_MIN_RADIUS,
+    ARRAY_MAX_RADIUS
+  );
+
+  return { maxCols, maxRows, maxPitchX, maxPitchY, maxRadius };
 }
 
 /** A sensible default config for a freshly-enabled array, sized off the master. */

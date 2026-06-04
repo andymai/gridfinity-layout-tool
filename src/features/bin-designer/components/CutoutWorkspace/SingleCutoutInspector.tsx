@@ -218,6 +218,8 @@ export function SingleCutoutInspector({
         >
           <CutoutArrayControls
             cutout={cutout}
+            binWidth={binWidth}
+            binDepth={binDepth}
             onUpdate={(patch) => onUpdate(cutout.id, patch)}
             onFlatten={() => onFlattenArray?.(cutout.id)}
             disabled={disabled}

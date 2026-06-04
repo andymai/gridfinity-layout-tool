@@ -63,7 +63,7 @@ export function CutoutBoardSettings({
             <div
               role="group"
               aria-label={t('binDesigner.gridSize')}
-              className="inline-flex rounded-md bg-surface p-0.5"
+              className="inline-flex gap-0.5 rounded-lg bg-surface-tertiary p-0.5"
             >
               {GRID_SIZES.map((size) => (
                 <button

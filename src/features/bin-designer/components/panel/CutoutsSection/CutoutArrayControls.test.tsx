@@ -37,10 +37,26 @@ function makeCutout(overrides: Partial<Cutout> = {}): Cutout {
   };
 }
 
+/** Render with a roomy bin so feasibility clamping doesn't interfere with assertions. */
+function renderControls(
+  cutout: Cutout,
+  handlers: { onUpdate?: (patch: Partial<Cutout>) => void; onFlatten?: () => void } = {}
+) {
+  return render(
+    <CutoutArrayControls
+      cutout={cutout}
+      binWidth={300}
+      binDepth={300}
+      onUpdate={handlers.onUpdate ?? vi.fn()}
+      onFlatten={handlers.onFlatten ?? vi.fn()}
+    />
+  );
+}
+
 describe('CutoutArrayControls', () => {
   it('offers a create button when there is no array', () => {
     const onUpdate = vi.fn();
-    render(<CutoutArrayControls cutout={makeCutout()} onUpdate={onUpdate} onFlatten={vi.fn()} />);
+    renderControls(makeCutout(), { onUpdate });
     fireEvent.click(screen.getByText('binDesigner.cutouts.array.create'));
     expect(onUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ array: expect.objectContaining({ mode: 'grid' }) })
@@ -48,13 +64,7 @@ describe('CutoutArrayControls', () => {
   });
 
   it('shows grid fields (cols/rows/pitch) for a grid array', () => {
-    render(
-      <CutoutArrayControls
-        cutout={makeCutout({ array: arrayCfg })}
-        onUpdate={vi.fn()}
-        onFlatten={vi.fn()}
-      />
-    );
+    renderControls(makeCutout({ array: arrayCfg }));
     expect(screen.getByText('binDesigner.cutouts.array.cols')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.cutouts.array.rows')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.cutouts.array.pitchX')).toBeInTheDocument();
@@ -62,13 +72,7 @@ describe('CutoutArrayControls', () => {
   });
 
   it('shows radial fields (count/radius/angle) for a radial array', () => {
-    render(
-      <CutoutArrayControls
-        cutout={makeCutout({ array: { ...arrayCfg, mode: 'radial' } })}
-        onUpdate={vi.fn()}
-        onFlatten={vi.fn()}
-      />
-    );
+    renderControls(makeCutout({ array: { ...arrayCfg, mode: 'radial' } }));
     expect(screen.getByText('binDesigner.cutouts.array.count')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.cutouts.array.radius')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.cutouts.array.startAngle')).toBeInTheDocument();
@@ -77,39 +81,21 @@ describe('CutoutArrayControls', () => {
 
   it('switching mode preserves other params (flat config)', () => {
     const onUpdate = vi.fn();
-    render(
-      <CutoutArrayControls
-        cutout={makeCutout({ array: arrayCfg })}
-        onUpdate={onUpdate}
-        onFlatten={vi.fn()}
-      />
-    );
+    renderControls(makeCutout({ array: arrayCfg }), { onUpdate });
     fireEvent.click(screen.getByText('binDesigner.cutouts.array.mode.radial'));
     expect(onUpdate).toHaveBeenCalledWith({ array: { ...arrayCfg, mode: 'radial' } });
   });
 
   it('flatten button invokes onFlatten', () => {
     const onFlatten = vi.fn();
-    render(
-      <CutoutArrayControls
-        cutout={makeCutout({ array: arrayCfg })}
-        onUpdate={vi.fn()}
-        onFlatten={onFlatten}
-      />
-    );
+    renderControls(makeCutout({ array: arrayCfg }), { onFlatten });
     fireEvent.click(screen.getByText('binDesigner.cutouts.array.flatten'));
     expect(onFlatten).toHaveBeenCalledOnce();
   });
 
   it('remove button clears the array', () => {
     const onUpdate = vi.fn();
-    render(
-      <CutoutArrayControls
-        cutout={makeCutout({ array: arrayCfg })}
-        onUpdate={onUpdate}
-        onFlatten={vi.fn()}
-      />
-    );
+    renderControls(makeCutout({ array: arrayCfg }), { onUpdate });
     fireEvent.click(screen.getByText('binDesigner.cutouts.array.remove'));
     expect(onUpdate).toHaveBeenCalledWith({ array: undefined });
   });
