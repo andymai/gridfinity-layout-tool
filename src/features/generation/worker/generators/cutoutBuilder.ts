@@ -47,6 +47,7 @@ import {
   clampPolygonSides,
 } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { dropCoincidentPoints } from '@/shared/utils/polyline';
 import { cutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
 import { combineGroupSolids } from './cutoutGroupOps';
 import {
@@ -306,11 +307,9 @@ function buildPathCutoutShape(cutout: {
   const path = cutout.path;
   if (!path || path.length < MIN_PATH_POINTS) return fallbackRect();
 
-  // Flatten bezier path to polyline, then drop coincident points. Snap-to-grid
-  // (two clicks in one grid cell) and clampPathToBounds can leave duplicate
-  // consecutive vertices in the committed path; the zero-length edge they
-  // produce makes OCCT reject close()/extrude(), collapsing the whole cut to
-  // the bounding-box rectangle fallback. Need 3+ distinct points for a wire.
+  // Flatten bezier path to polyline, dropping coincident vertices that would
+  // collapse the wire to the bbox fallback (see dropCoincidentPoints). Need 3+
+  // distinct points for a closed wire.
   const polyline = dropCoincidentPoints(flattenPathToPolyline(path));
   if (polyline.length < 3) return fallbackRect();
 
@@ -331,33 +330,6 @@ function buildPathCutoutShape(cutout: {
   const wire = pen.close();
 
   return sketch(wire, 'XY').extrude(cutout.cutDepth);
-}
-
-/** Two points closer than this (mm) are treated as the same vertex. Far below
- * any printable resolution and the 0.5mm editor snap grid, so it only ever
- * collapses genuine duplicates, never distinct geometry. */
-const COINCIDENT_POINT_EPSILON = 1e-3;
-
-/**
- * Drop consecutive coincident points from a closed polyline, including a
- * trailing point that coincides with the first (the wrap-around closing edge).
- * Each removed point would otherwise become a zero-length edge that OCCT
- * rejects, forcing the path cut to fall back to a bounding-box rectangle.
- */
-function dropCoincidentPoints(
-  poly: readonly { x: number; y: number }[]
-): Array<{ x: number; y: number }> {
-  const eps2 = COINCIDENT_POINT_EPSILON * COINCIDENT_POINT_EPSILON;
-  const near = (a: { x: number; y: number }, b: { x: number; y: number }): boolean =>
-    (a.x - b.x) ** 2 + (a.y - b.y) ** 2 <= eps2;
-
-  const out: Array<{ x: number; y: number }> = [];
-  for (const p of poly) {
-    if (out.length === 0 || !near(out[out.length - 1], p)) out.push({ x: p.x, y: p.y });
-  }
-  // Closing edge: the last point must differ from the first too.
-  while (out.length > 1 && near(out[out.length - 1], out[0])) out.pop();
-  return out;
 }
 
 /** Flatten a closed bezier path to an open polyline for 3D generation.
