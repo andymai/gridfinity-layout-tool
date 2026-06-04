@@ -151,19 +151,28 @@ describe('expandCutoutArray', () => {
       width: 10,
       depth: 10,
       path,
-      array: cfg({ mode: 'grid', cols: 2, rows: 1, pitchX: 30, pitchY: 30 }),
+      array: cfg({ mode: 'grid', cols: 2, rows: 2, pitchX: 30, pitchY: 30 }),
     });
+    // Instance order is row-major: [master, +x, +y, +x+y].
     const out = expandCutoutArray(c);
 
-    // Second instance shifts +30 in x; its path must shift with it.
+    // Instance 1 (col 1, row 0) shifts +30 in x; its path must shift with it.
     expect(out[1].x).toBe(40);
     expect(out[1].path?.map((p) => [p.x, p.y])).toEqual([
       [40, 10],
       [50, 10],
       [45, 20],
     ]);
+    // Instance 2 (col 0, row 1) shifts +30 in y — exercises the Y-axis branch.
+    expect(out[2].y).toBe(40);
+    expect(out[2].path?.map((p) => [p.x, p.y])).toEqual([
+      [10, 40],
+      [20, 40],
+      [15, 50],
+    ]);
     // Relative bezier handles are unchanged by translation.
     expect(out[1].path?.[0].handleOut).toEqual({ dx: 2, dy: 0 });
+    expect(out[2].path?.[0].handleOut).toEqual({ dx: 2, dy: 0 });
     // Master instance keeps the original vertices.
     expect(out[0].path?.map((p) => [p.x, p.y])).toEqual([
       [10, 10],
