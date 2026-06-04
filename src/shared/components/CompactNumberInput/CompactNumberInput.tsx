@@ -154,9 +154,11 @@ export function CompactNumberInput({
     >
       <span
         className={cn(
-          'select-none px-1.5 text-[10px] leading-none text-content-tertiary',
-          !disabled && 'cursor-ew-resize',
-          'min-w-[1.5rem]'
+          'min-w-[1.5rem] select-none px-1.5 text-[10px] leading-none text-content-tertiary',
+          // Hint that the label is a drag handle: brighten + a dotted underline on hover.
+          !disabled &&
+            'cursor-ew-resize decoration-dotted underline-offset-2 hover:text-content-secondary hover:underline',
+          scrubbing && 'text-accent'
         )}
         onPointerDown={handleScrubStart}
         role="slider"

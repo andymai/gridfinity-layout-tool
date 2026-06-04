@@ -165,28 +165,30 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
           <span className="text-xs font-semibold uppercase tracking-wider text-content-secondary">
             {t('binDesigner.cutoutEditor.inspectorTitle')}
           </span>
-          <div className="ml-auto flex items-center gap-0.5">
-            <button
-              type="button"
-              onClick={onDuplicate}
-              disabled={!hasSelection || !onDuplicate}
-              className={ICON_BTN}
-              aria-label={t('binDesigner.cutoutEditor.duplicate')}
-              title={t('binDesigner.cutoutEditor.duplicate')}
-            >
-              <Icon paths={ICON_PATHS.duplicate} />
-            </button>
-            <button
-              type="button"
-              onClick={onDelete}
-              disabled={!hasSelection || !onDelete}
-              className={`${ICON_BTN} hover:text-danger`}
-              aria-label={t('binDesigner.cutoutEditor.delete')}
-              title={t('binDesigner.cutoutEditor.delete')}
-            >
-              <Icon paths={ICON_PATHS.trash} />
-            </button>
-          </div>
+          {hasSelection && (
+            <div className="ml-auto flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={onDuplicate}
+                disabled={!onDuplicate}
+                className={ICON_BTN}
+                aria-label={t('binDesigner.cutoutEditor.duplicate')}
+                title={t('binDesigner.cutoutEditor.duplicate')}
+              >
+                <Icon paths={ICON_PATHS.duplicate} />
+              </button>
+              <button
+                type="button"
+                onClick={onDelete}
+                disabled={!onDelete}
+                className={`${ICON_BTN} hover:text-danger`}
+                aria-label={t('binDesigner.cutoutEditor.delete')}
+                title={t('binDesigner.cutoutEditor.delete')}
+              >
+                <Icon paths={ICON_PATHS.trash} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

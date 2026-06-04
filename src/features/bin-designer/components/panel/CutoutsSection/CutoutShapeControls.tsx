@@ -80,6 +80,7 @@ export function CutoutShapeControls({
             {t('binDesigner.cutouts.sides')}
           </span>
           <Stepper
+            className="w-28"
             value={sides}
             onChange={(s) => applyAcrossFlats(acrossFlatsFromBox(s, cutout.depth), s)}
             onStep={(delta) => {

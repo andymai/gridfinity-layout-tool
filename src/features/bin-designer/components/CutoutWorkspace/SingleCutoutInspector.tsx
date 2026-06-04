@@ -183,7 +183,7 @@ export function SingleCutoutInspector({
         </div>
       </CollapsibleSection>
 
-      <div className="px-1 pt-1 text-[10px] font-medium uppercase tracking-wide text-content-tertiary">
+      <div className="mt-1 border-t border-stroke-subtle pt-3 text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
         {t('binDesigner.cutouts.section.advanced')}
       </div>
 

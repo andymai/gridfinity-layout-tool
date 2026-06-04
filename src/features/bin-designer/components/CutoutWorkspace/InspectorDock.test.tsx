@@ -55,10 +55,10 @@ describe('InspectorDock', () => {
     expect(screen.getByLabelText('binDesigner.cutoutEditor.inspectorResize')).toBeInTheDocument();
   });
 
-  it('disables the duplicate/delete actions when nothing is selected', () => {
+  it('hides the duplicate/delete actions when nothing is selected', () => {
     render(<InspectorDock {...baseProps} onDuplicate={vi.fn()} onDelete={vi.fn()} />);
-    expect(screen.getByLabelText('binDesigner.cutoutEditor.duplicate')).toBeDisabled();
-    expect(screen.getByLabelText('binDesigner.cutoutEditor.delete')).toBeDisabled();
+    expect(screen.queryByLabelText('binDesigner.cutoutEditor.duplicate')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('binDesigner.cutoutEditor.delete')).not.toBeInTheDocument();
   });
 
   it('fires duplicate/delete handlers for the current selection', () => {

@@ -7,13 +7,6 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
-// Stub the "More…" dropdown so we can assert overflow presets are routed there.
-vi.mock('./CutoutPresetMenu', () => ({
-  CutoutPresetMenu: ({ presets }: { presets: readonly CutoutSizePreset[] }) => (
-    <div data-testid="more-menu" data-count={presets.length} />
-  ),
-}));
-
 const PRESETS: CutoutSizePreset[] = [
   { id: 'a', label: '1/4" hex bit (6.35mm)', mm: 6.35 },
   { id: 'b', label: 'Allen 2mm', mm: 2 },
@@ -21,15 +14,24 @@ const PRESETS: CutoutSizePreset[] = [
   { id: 'd', label: 'Allen 4mm', mm: 4 },
 ];
 
+const MORE = 'binDesigner.cutouts.sizePresetMore';
+
 describe('CutoutPresetChips', () => {
-  it('renders the first N presets as chips and routes the rest to the More menu', () => {
+  it('renders the first N presets as chips plus a "+N" expander for the rest', () => {
     render(<CutoutPresetChips presets={PRESETS} onPick={vi.fn()} maxChips={2} />);
-    // Two chips, labelled by full spec for a11y.
     expect(screen.getByRole('button', { name: '1/4" hex bit (6.35mm)' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Allen 2mm' })).toBeInTheDocument();
-    // Remaining 2 presets live in the More menu.
-    const more = screen.getByTestId('more-menu');
-    expect(more).toHaveAttribute('data-count', '2');
+    // Overflow presets are hidden until expanded.
+    expect(screen.queryByRole('button', { name: 'Allen 3mm' })).not.toBeInTheDocument();
+    const more = screen.getByRole('button', { name: MORE });
+    expect(more).toHaveTextContent('+2');
+  });
+
+  it('reveals the remaining presets when the expander is clicked', () => {
+    render(<CutoutPresetChips presets={PRESETS} onPick={vi.fn()} maxChips={2} />);
+    fireEvent.click(screen.getByRole('button', { name: MORE }));
+    expect(screen.getByRole('button', { name: 'Allen 3mm' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Allen 4mm' })).toBeInTheDocument();
   });
 
   it('shortens the chip label to the spec fraction or the mm value', () => {
@@ -57,8 +59,8 @@ describe('CutoutPresetChips', () => {
     );
   });
 
-  it('omits the More menu when all presets fit as chips', () => {
+  it('omits the expander when all presets fit as chips', () => {
     render(<CutoutPresetChips presets={PRESETS} onPick={vi.fn()} maxChips={4} />);
-    expect(screen.queryByTestId('more-menu')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: MORE })).not.toBeInTheDocument();
   });
 });
