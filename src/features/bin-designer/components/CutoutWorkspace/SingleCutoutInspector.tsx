@@ -4,7 +4,7 @@
  * inside the docked InspectorDock; isolated here to keep files under the line cap.
  */
 
-import type { Cutout, CutoutTextSide } from '@/features/bin-designer/types';
+import type { Cutout, CutoutArrayConfig, CutoutTextSide } from '@/features/bin-designer/types';
 import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
@@ -31,6 +31,16 @@ const SIDE_OPTIONS: readonly { readonly side: CutoutTextSide; readonly glyph: st
   { side: 'left', glyph: '←' },
   { side: 'right', glyph: '→' },
 ] as const;
+
+/**
+ * Compact at-a-glance array summary, e.g. `6×3 · 18` (grid) or `⟳ 8` (radial).
+ * Numbers + symbols only, so it reads identically across locales.
+ */
+function formatArraySummary(config: CutoutArrayConfig): string {
+  const count = arrayInstanceCount(config);
+  if (config.mode === 'radial') return `⟳ ${count}`;
+  return `${config.cols}×${config.rows} · ${count}`;
+}
 
 /** Effective field value, merging this cutout's live preview override. */
 function getEffective<K extends keyof Cutout>(
@@ -173,6 +183,10 @@ export function SingleCutoutInspector({
         </div>
       </CollapsibleSection>
 
+      <div className="px-1 pt-1 text-[10px] font-medium uppercase tracking-wide text-content-tertiary">
+        {t('binDesigner.cutouts.section.advanced')}
+      </div>
+
       {hasFitControls(cutout) && (
         <CollapsibleSection
           title={t('binDesigner.cutouts.section.fit')}
@@ -199,11 +213,7 @@ export function SingleCutoutInspector({
           variant="small"
           defaultExpanded={false}
           summary={
-            cutout.array
-              ? t('binDesigner.cutouts.array.instances', {
-                  count: arrayInstanceCount(cutout.array),
-                })
-              : t('binDesigner.cutouts.array.off')
+            cutout.array ? formatArraySummary(cutout.array) : t('binDesigner.cutouts.array.off')
           }
         >
           <CutoutArrayControls

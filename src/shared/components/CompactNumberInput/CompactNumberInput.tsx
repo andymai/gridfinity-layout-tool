@@ -23,7 +23,12 @@ interface CompactNumberInputProps {
   readonly info?: string;
   /** Transient emphasis ring — flashed when a preset sets this value. */
   readonly highlight?: boolean;
+  /** Selected items have differing values — show a "mixed" placeholder until edited. */
+  readonly indeterminate?: boolean;
 }
+
+/** Placeholder glyph shown when a multi-selection has mixed values (en dash). */
+const MIXED_GLYPH = '–';
 
 /** Pixels of horizontal drag per step increment while scrubbing. */
 const PIXELS_PER_STEP = 6;
@@ -48,6 +53,7 @@ export function CompactNumberInput({
   disabled = false,
   info,
   highlight = false,
+  indeterminate = false,
 }: CompactNumberInputProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
@@ -66,9 +72,10 @@ export function CompactNumberInput({
 
   const startEditing = useCallback(() => {
     if (disabled) return;
-    setEditValue(formatValue(value));
+    // Mixed selection: start from an empty field so a typed value unifies all.
+    setEditValue(indeterminate ? '' : formatValue(value));
     setEditing(true);
-  }, [disabled, value, formatValue]);
+  }, [disabled, indeterminate, value, formatValue]);
 
   useEffect(() => {
     if (editing && inputRef.current) {
@@ -179,13 +186,18 @@ export function CompactNumberInput({
           onClick={startEditing}
           disabled={disabled}
           className={cn(
-            'min-w-0 flex-1 select-none pr-1 text-right text-xs tabular-nums text-content outline-none',
+            'min-w-0 flex-1 select-none pr-1 text-right text-xs tabular-nums outline-none',
+            indeterminate ? 'text-content-tertiary' : 'text-content',
             !disabled && 'cursor-text',
             scrubbing && 'text-accent'
           )}
-          aria-label={`${label}: ${formatValue(value)}${unit ? ` ${unit}` : ''}`}
+          aria-label={
+            indeterminate
+              ? `${label}: mixed`
+              : `${label}: ${formatValue(value)}${unit ? ` ${unit}` : ''}`
+          }
         >
-          {formatValue(value)}
+          {indeterminate ? MIXED_GLYPH : formatValue(value)}
         </button>
       )}
       {unit && <span className="select-none pr-1.5 text-[10px] text-content-disabled">{unit}</span>}

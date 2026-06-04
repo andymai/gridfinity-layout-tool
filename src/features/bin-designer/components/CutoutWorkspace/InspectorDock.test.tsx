@@ -54,4 +54,27 @@ describe('InspectorDock', () => {
     render(<InspectorDock {...baseProps} />);
     expect(screen.getByLabelText('binDesigner.cutoutEditor.inspectorResize')).toBeInTheDocument();
   });
+
+  it('disables the duplicate/delete actions when nothing is selected', () => {
+    render(<InspectorDock {...baseProps} onDuplicate={vi.fn()} onDelete={vi.fn()} />);
+    expect(screen.getByLabelText('binDesigner.cutoutEditor.duplicate')).toBeDisabled();
+    expect(screen.getByLabelText('binDesigner.cutoutEditor.delete')).toBeDisabled();
+  });
+
+  it('fires duplicate/delete handlers for the current selection', () => {
+    const onDuplicate = vi.fn();
+    const onDelete = vi.fn();
+    render(
+      <InspectorDock
+        {...baseProps}
+        selection={new Set(['c1'])}
+        onDuplicate={onDuplicate}
+        onDelete={onDelete}
+      />
+    );
+    fireEvent.click(screen.getByLabelText('binDesigner.cutoutEditor.duplicate'));
+    fireEvent.click(screen.getByLabelText('binDesigner.cutoutEditor.delete'));
+    expect(onDuplicate).toHaveBeenCalledTimes(1);
+    expect(onDelete).toHaveBeenCalledTimes(1);
+  });
 });

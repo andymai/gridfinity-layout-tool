@@ -6,16 +6,16 @@
  * being edited. Drag the left edge to resize; collapse to a thin rail to
  * reclaim canvas width. Width + collapsed state persist across sessions.
  *
- * Chrome mirrors the main ParameterPanel sidebar (header + scrollable body)
- * for visual consistency with the rest of the designer.
+ * Chrome mirrors the layout planner's RightPanel / bin inspector (scroll-shadow
+ * header, shared icon set, ghost icon buttons) for visual consistency.
  */
 
 import { useCallback, useRef, useState } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { cn } from '@/design-system/cn';
+import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
-import { InspectorContent } from './InspectorContent';
+import { InspectorContent, type BoardSettings } from './InspectorContent';
 import {
   INSPECTOR_MAX_WIDTH,
   INSPECTOR_MIN_WIDTH,
@@ -37,30 +37,35 @@ interface InspectorDockProps {
   readonly disabled?: boolean;
   readonly onFitCue?: (cue: FitCue) => void;
   readonly onFlattenArray?: (id: string) => void;
+  /** Editor-level settings shown when nothing is selected. */
+  readonly board?: BoardSettings;
+  /** Duplicate the current selection. */
+  readonly onDuplicate?: () => void;
+  /** Delete the current selection. */
+  readonly onDelete?: () => void;
 }
 
-function ChevronRight() {
+const ICON_BTN =
+  'flex-shrink-0 rounded-md p-1.5 text-content-tertiary transition-colors hover:bg-surface-hover hover:text-content disabled:pointer-events-none disabled:opacity-40';
+
+function Icon({ paths }: { readonly paths: readonly string[] }) {
   return (
-    <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden>
-      <path d="M6 4l4 4-4 4" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+      {paths.map((d) => (
+        <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+      ))}
     </svg>
   );
 }
 
-function ChevronLeft() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden>
-      <path d="M10 4L6 8l4 4" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-export function InspectorDock(props: InspectorDockProps) {
+export function InspectorDock({ board, onDuplicate, onDelete, ...content }: InspectorDockProps) {
   const t = useTranslation();
   const [width, setWidth] = useState(loadInspectorWidth);
   const [collapsed, setCollapsed] = useState(loadInspectorCollapsed);
+  const [isScrolled, setIsScrolled] = useState(false);
   const dockRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
+  const hasSelection = content.selection.size > 0;
 
   const toggleCollapsed = useCallback(() => {
     setCollapsed((prev) => {
@@ -68,6 +73,10 @@ export function InspectorDock(props: InspectorDockProps) {
       saveInspectorCollapsed(next);
       return next;
     });
+  }, []);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setIsScrolled(e.currentTarget.scrollTop > 0);
   }, []);
 
   const handleResizeStart = useCallback((e: React.PointerEvent) => {
@@ -100,30 +109,30 @@ export function InspectorDock(props: InspectorDockProps) {
 
   if (collapsed) {
     return (
-      <div className="flex w-9 flex-shrink-0 flex-col items-center border-l border-stroke-subtle bg-surface-secondary">
+      <aside className="flex w-12 flex-shrink-0 flex-col items-center border-l border-stroke-subtle bg-surface-secondary py-2">
         <button
           type="button"
           onClick={toggleCollapsed}
-          className="mt-2 rounded p-1.5 text-content-tertiary transition-colors hover:bg-surface-hover hover:text-content"
+          className={ICON_BTN}
           aria-label={t('binDesigner.cutoutEditor.inspectorExpand')}
           title={t('binDesigner.cutoutEditor.inspectorExpand')}
         >
-          <ChevronLeft />
+          <Icon paths={ICON_PATHS.chevronDoubleLeft} />
         </button>
         <span
-          className="mt-3 text-[10px] uppercase tracking-wide text-content-tertiary"
+          className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-content-tertiary"
           style={{ writingMode: 'vertical-rl' }}
         >
           {t('binDesigner.cutoutEditor.inspectorTitle')}
         </span>
-      </div>
+      </aside>
     );
   }
 
   return (
-    <div
+    <aside
       ref={dockRef}
-      className="relative flex flex-shrink-0 flex-col border-l border-stroke-subtle bg-surface-secondary"
+      className="animate-fade-in relative flex flex-shrink-0 flex-col overflow-hidden border-l border-stroke-subtle bg-surface-secondary"
       style={{ width }}
     >
       {/* Left-edge resize handle */}
@@ -138,25 +147,56 @@ export function InspectorDock(props: InspectorDockProps) {
       </div>
 
       {/* Header */}
-      <div className="flex flex-shrink-0 items-center justify-between border-b border-stroke-subtle px-3 py-2">
-        <span className="text-xs font-semibold text-content-secondary">
-          {t('binDesigner.cutoutEditor.inspectorTitle')}
-        </span>
-        <button
-          type="button"
-          onClick={toggleCollapsed}
-          className="rounded p-1 text-content-tertiary transition-colors hover:bg-surface-hover hover:text-content"
-          aria-label={t('binDesigner.cutoutEditor.inspectorCollapse')}
-          title={t('binDesigner.cutoutEditor.inspectorCollapse')}
-        >
-          <ChevronRight />
-        </button>
+      <div
+        className={`flex flex-shrink-0 flex-col border-b border-stroke-subtle transition-shadow duration-200 ${
+          isScrolled ? 'shadow-elevated' : ''
+        }`}
+      >
+        <div className="flex items-center gap-2 px-4 py-2">
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className={ICON_BTN}
+            aria-label={t('binDesigner.cutoutEditor.inspectorCollapse')}
+            title={t('binDesigner.cutoutEditor.inspectorCollapse')}
+          >
+            <Icon paths={ICON_PATHS.chevronDoubleRight} />
+          </button>
+          <span className="text-xs font-semibold uppercase tracking-wider text-content-secondary">
+            {t('binDesigner.cutoutEditor.inspectorTitle')}
+          </span>
+          <div className="ml-auto flex items-center gap-0.5">
+            <button
+              type="button"
+              onClick={onDuplicate}
+              disabled={!hasSelection || !onDuplicate}
+              className={ICON_BTN}
+              aria-label={t('binDesigner.cutoutEditor.duplicate')}
+              title={t('binDesigner.cutoutEditor.duplicate')}
+            >
+              <Icon paths={ICON_PATHS.duplicate} />
+            </button>
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={!hasSelection || !onDelete}
+              className={`${ICON_BTN} hover:text-danger`}
+              aria-label={t('binDesigner.cutoutEditor.delete')}
+              title={t('binDesigner.cutoutEditor.delete')}
+            >
+              <Icon paths={ICON_PATHS.trash} />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Scrollable body */}
-      <div className={cn('flex-1 overflow-y-scroll scrollbar-thin px-3 py-3')}>
-        <InspectorContent {...props} />
+      <div
+        onScroll={handleScroll}
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin px-4 py-3"
+      >
+        <InspectorContent {...content} board={board} />
       </div>
-    </div>
+    </aside>
   );
 }

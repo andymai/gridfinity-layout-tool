@@ -257,4 +257,17 @@ describe('CompactNumberInput', () => {
 
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
+
+  it('shows a mixed placeholder when indeterminate, not the value', () => {
+    render(<CompactNumberInput label="R" value={42} onChange={vi.fn()} indeterminate />);
+    expect(screen.getByRole('button', { name: 'R: mixed' })).toBeInTheDocument();
+    expect(screen.queryByText('42')).not.toBeInTheDocument();
+  });
+
+  it('opens an empty editor from the mixed state so a typed value unifies all', async () => {
+    const user = userEvent.setup();
+    render(<CompactNumberInput label="R" value={42} onChange={vi.fn()} indeterminate />);
+    await user.click(screen.getByRole('button', { name: 'R: mixed' }));
+    expect(screen.getByRole('textbox')).toHaveValue('');
+  });
 });

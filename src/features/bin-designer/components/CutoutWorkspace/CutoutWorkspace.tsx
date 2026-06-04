@@ -414,6 +414,14 @@ export function CutoutWorkspace() {
           disabled={isInteracting}
           onFitCue={setFitCue}
           onFlattenArray={handleFlattenArray}
+          onDuplicate={duplicateSelected}
+          onDelete={deleteSelected}
+          board={{
+            gridSize,
+            onGridSizeChange: setGridSize,
+            snapEnabled,
+            onSnapToggle: setSnapEnabled,
+          }}
         />
       </div>
 

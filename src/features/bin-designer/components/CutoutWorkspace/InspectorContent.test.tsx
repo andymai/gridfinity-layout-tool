@@ -8,8 +8,22 @@ vi.mock('@/i18n', () => ({
 }));
 
 vi.mock('@/shared/components/CompactNumberInput', () => ({
-  CompactNumberInput: ({ label, value }: { label: string; value: number }) => (
-    <input data-testid={`compact-input-${label}`} data-label={label} value={value} readOnly />
+  CompactNumberInput: ({
+    label,
+    value,
+    indeterminate,
+  }: {
+    label: string;
+    value: number;
+    indeterminate?: boolean;
+  }) => (
+    <input
+      data-testid={`compact-input-${label}`}
+      data-label={label}
+      data-indeterminate={indeterminate ? 'true' : 'false'}
+      value={value}
+      readOnly
+    />
   ),
 }));
 
@@ -133,5 +147,47 @@ describe('InspectorContent', () => {
       />
     );
     expect(screen.getByTestId('compact-input-X')).toHaveValue('42');
+  });
+
+  it('renders board settings in the empty state when a board is provided', () => {
+    render(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={[createCutout()]}
+        board={{
+          gridSize: 0.5,
+          onGridSizeChange: vi.fn(),
+          snapEnabled: true,
+          onSnapToggle: vi.fn(),
+        }}
+      />
+    );
+    // Board footprint from binWidth × binDepth, plus the placeholder is gone.
+    expect(screen.getByText('100 × 100 mm')).toBeInTheDocument();
+    expect(
+      screen.queryByText('binDesigner.cutoutEditor.inspectorEmptyTitle')
+    ).not.toBeInTheDocument();
+  });
+
+  it('marks a multi-select field as indeterminate when values differ', () => {
+    const a = createCutout({ id: 'a', rotation: 0, cutDepth: 5 });
+    const b = createCutout({ id: 'b', rotation: 90, cutDepth: 5 });
+    render(
+      <InspectorContent
+        {...defaultProps}
+        cutouts={[a, b]}
+        selection={new Set(['a', 'b'])}
+        onUpdateBatch={vi.fn()}
+      />
+    );
+    // rotation differs → indeterminate; cutDepth matches → not.
+    expect(screen.getByTestId('compact-input-binDesigner.cutouts.rotation')).toHaveAttribute(
+      'data-indeterminate',
+      'true'
+    );
+    expect(screen.getByTestId('compact-input-binDesigner.cutouts.cutDepth')).toHaveAttribute(
+      'data-indeterminate',
+      'false'
+    );
   });
 });

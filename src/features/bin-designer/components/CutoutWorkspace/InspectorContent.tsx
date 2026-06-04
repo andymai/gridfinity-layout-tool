@@ -11,6 +11,15 @@ import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
+import { CutoutBoardSettings } from './CutoutBoardSettings';
+
+/** Editor-level settings surfaced in the empty (no-selection) state. */
+export interface BoardSettings {
+  readonly gridSize: number;
+  readonly onGridSizeChange: (size: number) => void;
+  readonly snapEnabled: boolean;
+  readonly onSnapToggle: (enabled: boolean) => void;
+}
 
 interface InspectorContentProps {
   readonly cutouts: readonly Cutout[];
@@ -24,6 +33,7 @@ interface InspectorContentProps {
   readonly disabled?: boolean;
   readonly onFitCue?: (cue: FitCue) => void;
   readonly onFlattenArray?: (id: string) => void;
+  readonly board?: BoardSettings;
 }
 
 /** Effective field value, merging this cutout's live preview override. */
@@ -63,6 +73,7 @@ export function InspectorContent({
   disabled = false,
   onFitCue,
   onFlattenArray,
+  board,
 }: InspectorContentProps) {
   const t = useTranslation();
 
@@ -72,6 +83,19 @@ export function InspectorContent({
   );
 
   if (selectedCutouts.length === 0) {
+    if (board) {
+      return (
+        <CutoutBoardSettings
+          gridSize={board.gridSize}
+          onGridSizeChange={board.onGridSizeChange}
+          snapEnabled={board.snapEnabled}
+          onSnapToggle={board.onSnapToggle}
+          binWidth={binWidth}
+          binDepth={binDepth}
+          cutoutCount={cutouts.length}
+        />
+      );
+    }
     return (
       <div className="flex h-full flex-col items-center justify-center gap-1 px-4 text-center">
         <p className="text-xs text-content-secondary">
@@ -134,13 +158,14 @@ export function InspectorContent({
 
       {!isSingle && selectedCutouts.length > 1 && (
         <>
-          <div className="text-[10px] font-medium text-content-secondary">
-            {selectedCutouts.length} {t('binDesigner.cutoutEditor.actions').toLowerCase()}
+          <div className="text-[10px] font-medium uppercase tracking-wide text-content-tertiary">
+            {t('binDesigner.cutoutEditor.selectedCount', { count: selectedCutouts.length })}
           </div>
           <div className="grid grid-cols-2 gap-1">
             <CompactNumberInput
               label={t('binDesigner.cutouts.rotation')}
               value={sharedRotation ?? 0}
+              indeterminate={sharedRotation === null}
               onChange={(rotation) => handleBatchUpdate('rotation', rotation)}
               min={0}
               max={359}
@@ -151,6 +176,7 @@ export function InspectorContent({
             <CompactNumberInput
               label={t('binDesigner.cutouts.cutDepth')}
               value={sharedCutDepth ?? 5}
+              indeterminate={sharedCutDepth === null}
               onChange={(cutDepth) => handleBatchUpdate('cutDepth', cutDepth)}
               min={0.5}
               max={maxCutDepth}
@@ -161,6 +187,7 @@ export function InspectorContent({
             <CompactNumberInput
               label={t('binDesigner.cutouts.scoopW')}
               value={sharedScoopRadiusW ?? 0}
+              indeterminate={sharedScoopRadiusW === null}
               onChange={(scoopRadiusW) => handleScoopAxisBatch('scoopRadiusW', scoopRadiusW)}
               min={0}
               max={sharedCutDepth ?? maxCutDepth}
@@ -171,6 +198,7 @@ export function InspectorContent({
             <CompactNumberInput
               label={t('binDesigner.cutouts.scoopD')}
               value={sharedScoopRadiusD ?? 0}
+              indeterminate={sharedScoopRadiusD === null}
               onChange={(scoopRadiusD) => handleScoopAxisBatch('scoopRadiusD', scoopRadiusD)}
               min={0}
               max={sharedCutDepth ?? maxCutDepth}
