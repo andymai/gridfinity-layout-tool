@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.141.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.140.0...gridfinity-layout-tool-v4.141.0) (2026-06-04)
+
+
+### Features
+
+* **cutout-editor:** polish side-panel controls + smart fit defaults ([#1997](https://github.com/andymai/gridfinity-layout-tool/issues/1997)) ([ed43124](https://github.com/andymai/gridfinity-layout-tool/commit/ed4312406bc4b56c68d45dc1c3a00eeed9e4c8b0))
+
 ## [4.140.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.139.0...gridfinity-layout-tool-v4.140.0) (2026-06-04)
 
 
