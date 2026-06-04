@@ -133,6 +133,53 @@ describe('expandCutoutArray', () => {
     const out = expandCutoutArray(c);
     expect(out.map((o) => o.rotation)).toEqual([0, 90, 180, 270]);
   });
+
+  // A path cutout stores absolute vertices; shifting only x/y leaves every
+  // instance's path at the master's location, so the editor renders them all
+  // stacked on the master (and flattening bakes that collapse in). The path
+  // must translate by the same per-instance offset as x/y.
+  it('translates path vertices for non-master instances so the path follows the instance', () => {
+    const path = [
+      { x: 10, y: 10, handleIn: null, handleOut: { dx: 2, dy: 0 }, symmetric: true },
+      { x: 20, y: 10, handleIn: null, handleOut: null, symmetric: true },
+      { x: 15, y: 20, handleIn: null, handleOut: null, symmetric: true },
+    ];
+    const c = master({
+      shape: 'path',
+      x: 10,
+      y: 10,
+      width: 10,
+      depth: 10,
+      path,
+      array: cfg({ mode: 'grid', cols: 2, rows: 2, pitchX: 30, pitchY: 30 }),
+    });
+    // Instance order is row-major: [master, +x, +y, +x+y].
+    const out = expandCutoutArray(c);
+
+    // Instance 1 (col 1, row 0) shifts +30 in x; its path must shift with it.
+    expect(out[1].x).toBe(40);
+    expect(out[1].path?.map((p) => [p.x, p.y])).toEqual([
+      [40, 10],
+      [50, 10],
+      [45, 20],
+    ]);
+    // Instance 2 (col 0, row 1) shifts +30 in y — exercises the Y-axis branch.
+    expect(out[2].y).toBe(40);
+    expect(out[2].path?.map((p) => [p.x, p.y])).toEqual([
+      [10, 40],
+      [20, 40],
+      [15, 50],
+    ]);
+    // Relative bezier handles are unchanged by translation.
+    expect(out[1].path?.[0].handleOut).toEqual({ dx: 2, dy: 0 });
+    expect(out[2].path?.[0].handleOut).toEqual({ dx: 2, dy: 0 });
+    // Master instance keeps the original vertices.
+    expect(out[0].path?.map((p) => [p.x, p.y])).toEqual([
+      [10, 10],
+      [20, 10],
+      [15, 20],
+    ]);
+  });
 });
 
 describe('defaultArrayConfig', () => {
