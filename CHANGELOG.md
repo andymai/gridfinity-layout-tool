@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.140.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.139.0...gridfinity-layout-tool-v4.140.0) (2026-06-04)
+
+
+### Features
+
+* **cutouts:** cutout editor inspector overhaul (dock + number-first controls + states) ([#1995](https://github.com/andymai/gridfinity-layout-tool/issues/1995)) ([be5934c](https://github.com/andymai/gridfinity-layout-tool/commit/be5934c9b57a2df6a8565e673755982cd9ba255a))
+
 ## [4.139.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.138.0...gridfinity-layout-tool-v4.139.0) (2026-06-03)
 
 
