@@ -253,6 +253,7 @@
   "binDesigner.cutoutEditor.quickstart.title": "Schnellstart",
   "binDesigner.cutoutEditor.quickstart.vertex": "Punktbearbeitung — Doppelklick auf einen Pfad, um seine Punkte zu bearbeiten",
   "binDesigner.cutoutEditor.redo": "Wiederholen (Strg+Umschalt+Z)",
+  "binDesigner.cutoutEditor.multiSelectToolbar": "Auswahlaktionen",
   "binDesigner.cutoutEditor.showHelp": "Hilfe anzeigen",
   "binDesigner.cutoutEditor.inspectorTitle": "Eigenschaften",
   "binDesigner.cutoutEditor.inspectorCollapse": "Bereich einklappen",

@@ -253,6 +253,7 @@
   "binDesigner.cutoutEditor.quickstart.title": "Редактор вирізів",
   "binDesigner.cutoutEditor.quickstart.vertex": "Редагування вузлів — подвійний клік на контурі для точного налаштування",
   "binDesigner.cutoutEditor.redo": "Повторити (Ctrl+Shift+Z)",
+  "binDesigner.cutoutEditor.multiSelectToolbar": "Дії з вибором",
   "binDesigner.cutoutEditor.showHelp": "Показати довідку",
   "binDesigner.cutoutEditor.inspectorTitle": "Властивості",
   "binDesigner.cutoutEditor.inspectorCollapse": "Згорнути панель",

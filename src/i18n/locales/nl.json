@@ -253,6 +253,7 @@
   "binDesigner.cutoutEditor.quickstart.title": "Snelstart",
   "binDesigner.cutoutEditor.quickstart.vertex": "Vertex-bewerking — dubbelklik op een pad om punten te verfijnen",
   "binDesigner.cutoutEditor.redo": "Opnieuw (Ctrl+Shift+Z)",
+  "binDesigner.cutoutEditor.multiSelectToolbar": "Selectie-acties",
   "binDesigner.cutoutEditor.showHelp": "Help weergeven",
   "binDesigner.cutoutEditor.inspectorTitle": "Eigenschappen",
   "binDesigner.cutoutEditor.inspectorCollapse": "Paneel inklappen",

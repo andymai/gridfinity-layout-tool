@@ -253,6 +253,7 @@
   "binDesigner.cutoutEditor.quickstart.title": "Urtagsredigerare",
   "binDesigner.cutoutEditor.quickstart.vertex": "Punktredigering — dubbelklicka på en bana för att justera punkter",
   "binDesigner.cutoutEditor.redo": "Gör om (Ctrl+Shift+Z)",
+  "binDesigner.cutoutEditor.multiSelectToolbar": "Valhandlingar",
   "binDesigner.cutoutEditor.showHelp": "Visa hjälp",
   "binDesigner.cutoutEditor.inspectorTitle": "Egenskaper",
   "binDesigner.cutoutEditor.inspectorCollapse": "Fäll ihop panel",

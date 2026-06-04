@@ -211,4 +211,33 @@ describe('arrayFieldBounds', () => {
     const b = arrayFieldBounds(cut({ width: 1 }), 10_000, 10_000, cfg({ rows: 80, pitchX: 2 }));
     expect(b.maxCols).toBeLessThanOrEqual(5);
   });
+
+  it('minPitchX/Y are floorToHalf(dimension) + 1mm wall gap', () => {
+    // 15mm × 10mm: floorToHalf(15)=15 → minPitchX=16, floorToHalf(10)=10 → minPitchY=11
+    const b = arrayFieldBounds(cut({ width: 15, depth: 10 }), 200, 200, cfg());
+    expect(b.minPitchX).toBe(16);
+    expect(b.minPitchY).toBe(11);
+  });
+
+  it('minPitchX rounds fractional width down to nearest 0.5 before adding gap', () => {
+    // 15.5mm width: floorToHalf(15.5)=15.5 → minPitchX=16.5
+    const b = arrayFieldBounds(cut({ width: 15.5, depth: 8 }), 200, 200, cfg());
+    expect(b.minPitchX).toBe(16.5);
+    expect(b.minPitchY).toBe(9);
+  });
+
+  it('minPitchX/Y floor to ARRAY_MIN_PITCH for tiny cutouts', () => {
+    // 0.5mm cutout: floorToHalf(0.5)+1=1.5, but ARRAY_MIN_PITCH=1 → max(1, 1.5)=1.5
+    // Verify it is at least ARRAY_MIN_PITCH (=1) regardless of cutout size.
+    const b = arrayFieldBounds(cut({ width: 0.1, depth: 0.1 }), 200, 200, cfg());
+    expect(b.minPitchX).toBeGreaterThanOrEqual(1);
+    expect(b.minPitchY).toBeGreaterThanOrEqual(1);
+  });
+
+  it('minPitchX/Y are independent of bin size', () => {
+    const small = arrayFieldBounds(cut({ width: 15, depth: 10 }), 100, 100, cfg());
+    const large = arrayFieldBounds(cut({ width: 15, depth: 10 }), 10_000, 10_000, cfg());
+    expect(small.minPitchX).toBe(large.minPitchX);
+    expect(small.minPitchY).toBe(large.minPitchY);
+  });
 });

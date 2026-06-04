@@ -253,6 +253,7 @@
   "binDesigner.cutoutEditor.quickstart.title": "切り欠きエディター",
   "binDesigner.cutoutEditor.quickstart.vertex": "頂点編集 — パスをダブルクリックして個別の点を微調整",
   "binDesigner.cutoutEditor.redo": "やり直し(Ctrl+Shift+Z)",
+  "binDesigner.cutoutEditor.multiSelectToolbar": "選択アクション",
   "binDesigner.cutoutEditor.showHelp": "ヘルプを表示",
   "binDesigner.cutoutEditor.inspectorTitle": "プロパティ",
   "binDesigner.cutoutEditor.inspectorCollapse": "パネルを折りたたむ",

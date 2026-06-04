@@ -253,6 +253,7 @@
   "binDesigner.cutoutEditor.quickstart.title": "Démarrage rapide",
   "binDesigner.cutoutEditor.quickstart.vertex": "Édition de sommets — double-clic sur un tracé pour ajuster ses points",
   "binDesigner.cutoutEditor.redo": "Rétablir (Ctrl+Maj+Z)",
+  "binDesigner.cutoutEditor.multiSelectToolbar": "Actions de sélection",
   "binDesigner.cutoutEditor.showHelp": "Afficher l'aide",
   "binDesigner.cutoutEditor.inspectorTitle": "Propriétés",
   "binDesigner.cutoutEditor.inspectorCollapse": "Réduire le panneau",

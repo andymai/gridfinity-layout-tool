@@ -80,72 +80,70 @@ export function SingleCutoutInspector({
       </div>
       <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
         <CollapsibleSection title={t('binDesigner.cutouts.section.transform')} variant="small">
-          <div className="space-y-1.5">
-            <div className="grid grid-cols-2 gap-1">
-              <CompactNumberInput
-                label="X"
-                value={getEffective(cutout, preview, 'x')}
-                onChange={(x) => onUpdate(cutout.id, { x })}
-                min={0}
-                max={binWidth - cutout.width}
-                step={0.5}
-                unit="mm"
-                disabled={disabled}
-              />
-              <CompactNumberInput
-                label="Y"
-                value={getEffective(cutout, preview, 'y')}
-                onChange={(y) => onUpdate(cutout.id, { y })}
-                min={0}
-                max={binDepth - cutout.depth}
-                step={0.5}
-                unit="mm"
-                disabled={disabled}
-              />
-              <CompactNumberInput
-                label="W"
-                value={getEffective(cutout, preview, 'width')}
-                onChange={(width) => onUpdate(cutout.id, { width })}
-                min={2}
-                max={binWidth}
-                step={0.5}
-                unit="mm"
-                disabled={disabled}
-              />
-              <CompactNumberInput
-                label="H"
-                value={getEffective(cutout, preview, 'depth')}
-                onChange={(depth) => onUpdate(cutout.id, { depth })}
-                min={2}
-                max={binDepth}
-                step={0.5}
-                unit="mm"
-                disabled={disabled}
-              />
-              <CompactNumberInput
-                label={t('binDesigner.cutouts.rotation')}
-                value={getEffective(cutout, preview, 'rotation')}
-                onChange={(rotation) => {
-                  const clamped = clampRotationToBounds(cutout, rotation, binWidth, binDepth);
-                  onUpdate(cutout.id, { rotation: clamped });
-                }}
-                min={0}
-                max={359}
-                step={1}
-                unit="°"
-                disabled={disabled}
-              />
-              <CompactNumberInput
-                label={t('binDesigner.cutouts.cutDepth')}
-                value={cutout.cutDepth}
-                onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
-                min={0.5}
-                max={maxCutDepth}
-                step={0.5}
-                unit="mm"
-                disabled={disabled}
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-1">
+            <CompactNumberInput
+              label="X"
+              value={getEffective(cutout, preview, 'x')}
+              onChange={(x) => onUpdate(cutout.id, { x })}
+              min={0}
+              max={binWidth - cutout.width}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
+            <CompactNumberInput
+              label="Y"
+              value={getEffective(cutout, preview, 'y')}
+              onChange={(y) => onUpdate(cutout.id, { y })}
+              min={0}
+              max={binDepth - cutout.depth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
+            <CompactNumberInput
+              label="W"
+              value={getEffective(cutout, preview, 'width')}
+              onChange={(width) => onUpdate(cutout.id, { width })}
+              min={2}
+              max={binWidth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
+            <CompactNumberInput
+              label="H"
+              value={getEffective(cutout, preview, 'depth')}
+              onChange={(depth) => onUpdate(cutout.id, { depth })}
+              min={2}
+              max={binDepth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
+            <CompactNumberInput
+              label={t('binDesigner.cutouts.rotation')}
+              value={getEffective(cutout, preview, 'rotation')}
+              onChange={(rotation) => {
+                const clamped = clampRotationToBounds(cutout, rotation, binWidth, binDepth);
+                onUpdate(cutout.id, { rotation: clamped });
+              }}
+              min={0}
+              max={359}
+              step={1}
+              unit="°"
+              disabled={disabled}
+            />
+            <CompactNumberInput
+              label={t('binDesigner.cutouts.cutDepth')}
+              value={cutout.cutDepth}
+              onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
+              min={0.5}
+              max={maxCutDepth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
           </div>
         </CollapsibleSection>
       </div>
