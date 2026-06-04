@@ -283,7 +283,6 @@ export function SnappingSlider({
 
           {/* Visual thumb - larger for touch, follows drag smoothly */}
           <SliderThumb
-            active={isDragging}
             dragging={isDragging}
             className="top-1/2 -translate-x-1/2 -translate-y-1/2"
             style={{ left: `${getPosition(thumbPosition)}%` }}

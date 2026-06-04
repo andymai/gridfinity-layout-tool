@@ -43,6 +43,7 @@ export function SliderThumb({ active, dragging, disabled, className, style }: Sl
   return (
     <div
       data-testid="slider-thumb"
+      aria-hidden="true"
       className={cn(
         'pointer-events-none absolute flex h-5 w-5 items-center justify-center gap-[3px] rounded-full',
         'bg-gradient-to-b from-accent-hover to-accent',
