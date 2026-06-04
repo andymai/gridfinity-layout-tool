@@ -97,10 +97,9 @@ export function DrawingPreview3D({ x, y, width, depth, shape }: DrawingPreview3D
     line.computeLineDistances();
     line.renderOrder = RENDER_ORDER.DRAWING_PREVIEW;
 
-    // Fill: closed shape without the repeated last point
-    const fillPts = pts2D[pts2D.length - 1]?.equals(pts2D[0] ?? new THREE.Vector2())
-      ? pts2D.slice(0, -1)
-      : pts2D;
+    // buildOutlinePoints2D closes every outline by repeating the first point;
+    // THREE.Shape closes implicitly, so drop the duplicate before building the fill.
+    const fillPts = pts2D[pts2D.length - 1].equals(pts2D[0]) ? pts2D.slice(0, -1) : pts2D;
     const fill = new THREE.ShapeGeometry(new THREE.Shape(fillPts));
 
     return { lineObj: line, fillGeometry: fill };

@@ -27,6 +27,12 @@ vi.mock('@/shared/components/CompactNumberInput', () => ({
   ),
 }));
 
+vi.mock('@/shared/components/SliderInput', () => ({
+  SliderInput: ({ label, value }: { label: string; value: number }) => (
+    <input data-testid={`slider-input-${label}`} data-label={label} value={value} readOnly />
+  ),
+}));
+
 vi.mock('../panel/CutoutsSection/geometry', () => ({
   clampRotationToBounds: (_c: Cutout, rotation: number) => rotation,
   getRotatedBounds: (c: Cutout) => ({
@@ -92,9 +98,7 @@ describe('InspectorContent', () => {
         selection={new Set(['cutout1'])}
       />
     );
-    expect(
-      screen.getByTestId('compact-input-binDesigner.cutouts.cornerRadius')
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('slider-input-binDesigner.cutouts.cornerRadius')).toBeInTheDocument();
 
     rerender(
       <InspectorContent
@@ -104,7 +108,7 @@ describe('InspectorContent', () => {
       />
     );
     expect(
-      screen.queryByTestId('compact-input-binDesigner.cutouts.cornerRadius')
+      screen.queryByTestId('slider-input-binDesigner.cutouts.cornerRadius')
     ).not.toBeInTheDocument();
   });
 

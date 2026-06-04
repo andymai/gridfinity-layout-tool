@@ -25,6 +25,28 @@ vi.mock('@/shared/components/CompactNumberInput', () => ({
   ),
 }));
 
+vi.mock('@/shared/components/SliderInput', () => ({
+  SliderInput: ({
+    label,
+    value,
+    onChange,
+    disabled,
+  }: {
+    label: string;
+    value: number;
+    onChange: (v: number) => void;
+    disabled?: boolean;
+  }) => (
+    <input
+      data-testid={`slider-input-${label}`}
+      data-label={label}
+      value={value}
+      disabled={disabled}
+      onChange={(e) => onChange(Number(e.target.value))}
+    />
+  ),
+}));
+
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
@@ -50,7 +72,7 @@ describe('CutoutScoopControls', () => {
   it('renders uniform slider by default for rectangle', () => {
     const onUpdate = vi.fn();
     render(<CutoutScoopControls cutout={makeCutout()} onUpdate={onUpdate} />);
-    expect(screen.getByTestId('compact-input-binDesigner.cutouts.scoopRadius')).toBeInTheDocument();
+    expect(screen.getByTestId('slider-input-binDesigner.cutouts.scoopRadius')).toBeInTheDocument();
     expect(
       screen.queryByTestId('compact-input-binDesigner.cutouts.scoopW')
     ).not.toBeInTheDocument();
@@ -60,7 +82,7 @@ describe('CutoutScoopControls', () => {
   it('writes both axes when uniform slider changes', () => {
     const onUpdate = vi.fn();
     render(<CutoutScoopControls cutout={makeCutout()} onUpdate={onUpdate} />);
-    const slider = screen.getByTestId('compact-input-binDesigner.cutouts.scoopRadius');
+    const slider = screen.getByTestId('slider-input-binDesigner.cutouts.scoopRadius');
     fireEvent.change(slider, { target: { value: '4' } });
     expect(onUpdate).toHaveBeenCalledWith({ scoopRadiusW: 4, scoopRadiusD: 4 });
   });
@@ -108,7 +130,7 @@ describe('CutoutScoopControls', () => {
     const onUpdate = vi.fn();
     render(<CutoutScoopControls cutout={makeCutout({ shape: 'circle' })} onUpdate={onUpdate} />);
     expect(screen.queryByText('binDesigner.cutouts.scoopSplit')).not.toBeInTheDocument();
-    expect(screen.getByTestId('compact-input-binDesigner.cutouts.scoopRadius')).toBeInTheDocument();
+    expect(screen.getByTestId('slider-input-binDesigner.cutouts.scoopRadius')).toBeInTheDocument();
   });
 
   it('hides edge toggles for grouped cutouts', () => {
