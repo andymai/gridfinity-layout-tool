@@ -122,6 +122,13 @@ export function expandCutoutArray(cutout: Cutout): Cutout[] {
       x: cx + inst.dx - cutout.width / 2,
       y: cy + inst.dy - cutout.depth / 2,
       rotation: (((cutout.rotation + inst.drot) % 360) + 360) % 360,
+      // Path vertices are absolute, so they must move with the instance —
+      // otherwise editor previews (and flattened arrays) stack every path
+      // instance on the master. Handles are relative offsets and stay as-is.
+      // (The worker rebuilds geometry from the master and ignores this path.)
+      ...(cutout.path
+        ? { path: cutout.path.map((p) => ({ ...p, x: p.x + inst.dx, y: p.y + inst.dy })) }
+        : {}),
     };
   });
 }
