@@ -152,7 +152,13 @@ export const DEFAULT_SCOOP_EDGES: CutoutScoopEdges = {
   back: true,
 };
 
-/** Minimum number of anchor points required to form a closed path shape */
+/**
+ * Minimum number of *anchor* points to form a closed path. Two is enough
+ * because a 2-anchor path with bezier handles closes into a curve (a lens).
+ * The separate *geometric* minimum — ≥3 distinct flattened points for a
+ * fillable/printable area — is enforced on the flattened polyline by the
+ * renderer (`MIN_POLYLINE_POINTS`) and the worker, not here.
+ */
 export const MIN_PATH_POINTS = 2;
 
 /** A vertex in a bezier path with optional control handles */

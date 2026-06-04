@@ -248,7 +248,7 @@ export function handleVertexEditPointerUp(
 /**
  * Handle keydown events during vertex editing.
  *
- * - Delete/Backspace: remove the selected vertex (if 3+ points remain)
+ * - Delete/Backspace: remove the selected vertex (down to MIN_PATH_POINTS anchors)
  * - Escape: exit vertex editing mode
  */
 export function handleVertexEditKeyDown(
@@ -266,7 +266,7 @@ export function handleVertexEditKeyDown(
       if (mode.selectedPointIndex === null) return;
 
       const updated = removePoint(path, mode.selectedPointIndex);
-      if (!updated) return; // fewer than 3 points would remain
+      if (!updated) return; // would drop below MIN_PATH_POINTS anchors
 
       event.preventDefault();
       setters.onUpdate(cutout.id, pathBoundsUpdate(updated));

@@ -4,7 +4,7 @@
  * Manages multi-click path creation with bezier handle support.
  * Each click adds a corner point; dragging after click creates
  * symmetric bezier handles. Closing the path (clicking near the
- * first point with 3+ points) commits the shape.
+ * first point with MIN_PATH_POINTS+ points) commits the shape.
  */
 
 import type { PathPoint } from '@/features/bin-designer/types';
@@ -56,7 +56,7 @@ export interface PathDrawingSetters {
  *
  * - First click (no existing mode): creates the first corner point and
  *   transitions to path-drawing mode.
- * - Subsequent clicks: if near the first point (and 3+ points exist),
+ * - Subsequent clicks: if near the first point (and MIN_PATH_POINTS+ exist),
  *   closes and commits the path. Otherwise appends a new corner point.
  * - Shift key constrains the new point angle to 45-degree increments
  *   relative to the last point.
@@ -270,7 +270,7 @@ export function handlePathDrawingPointerUp(
  * Start repositioning an existing vertex during path drawing.
  *
  * Called when the user clicks on a vertex dot in the drawing preview.
- * If the click is on the first vertex with 3+ points, closes the path instead.
+ * If the click is on the first vertex with MIN_PATH_POINTS+ points, closes the path instead.
  */
 export function handlePathDrawingVertexDown(
   mode: PathDrawingMode,
