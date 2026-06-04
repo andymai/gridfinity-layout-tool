@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.144.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.144.0...gridfinity-layout-tool-v4.144.1) (2026-06-04)
+
+
+### Bug Fixes
+
+* **generation:** stop path cutouts collapsing to a rectangle on duplicate vertices ([#2004](https://github.com/andymai/gridfinity-layout-tool/issues/2004)) ([a4fc6dd](https://github.com/andymai/gridfinity-layout-tool/commit/a4fc6ddc898c4a47b6c10353ef77951017bef456))
+
 ## [4.144.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.143.0...gridfinity-layout-tool-v4.144.0) (2026-06-04)
 
 
