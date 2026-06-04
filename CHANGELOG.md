@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.143.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.142.0...gridfinity-layout-tool-v4.143.0) (2026-06-04)
+
+
+### Features
+
+* **cutout-editor:** inspector panel UX overhaul + array tile performance ([20890d6](https://github.com/andymai/gridfinity-layout-tool/commit/20890d6eaa913aa42840db4167df4e78a8043bb5))
+
 ## [4.142.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.141.0...gridfinity-layout-tool-v4.142.0) (2026-06-04)
 
 
