@@ -612,7 +612,11 @@ input[type='range']::-webkit-slider-thumb {
     0 0 0 2px var(--color-surface),
     var(--shadow-sm);
   margin-top: -7px;
-  transition: all var(--transition-fast);
+  /* Visual state only — animating position would lag the knob behind drags. */
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    filter var(--transition-fast);
 }
 
 input[type='range']::-moz-range-thumb {
@@ -632,7 +636,10 @@ input[type='range']::-moz-range-thumb {
   box-shadow:
     0 0 0 2px var(--color-surface),
     var(--shadow-sm);
-  transition: all var(--transition-fast);
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    filter var(--transition-fast);
 }
 
 input[type='range']:hover::-webkit-slider-thumb {

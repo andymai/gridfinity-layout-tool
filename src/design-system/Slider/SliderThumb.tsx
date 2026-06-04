@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react';
 import { cn } from '../cn';
-import { interactiveTransition } from '../variants';
 
 interface SliderThumbProps {
   /** Hover or drag — brightens the knob and adds a soft accent glow. */
@@ -47,7 +46,10 @@ export function SliderThumb({ active, dragging, disabled, className, style }: Sl
       className={cn(
         'pointer-events-none absolute flex h-5 w-5 items-center justify-center gap-[3px] rounded-full',
         'bg-gradient-to-b from-accent-hover to-accent',
-        interactiveTransition,
+        // Transition only the visual state — NOT position. The thumb is placed
+        // via an inline `left`/`bottom`; animating it would make the knob lag
+        // behind the pointer during a drag.
+        'transition-[box-shadow,transform,filter] duration-100 ease-out',
         shadow,
         lifted && 'scale-105 brightness-110',
         className
