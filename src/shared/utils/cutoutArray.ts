@@ -152,15 +152,15 @@ export function arrayFieldBounds(
   // Room for the array to grow from the master's far edge to the bin edge.
   const availX = Math.max(0, binWidth - cutout.x - w);
   const availY = Math.max(0, binDepth - cutout.y - d);
-  const staggered = config.mode === 'staggered';
   const cols = clampCount(config.cols);
   const rows = clampCount(config.rows);
+  // The half-pitch X shift only exists once there's an odd row to shift, so it
+  // only widens the footprint when staggered AND rows > 1.
+  const stagger = config.mode === 'staggered' && rows > 1 ? config.pitchX / 2 : 0;
+  const colExtraSpan = config.mode === 'staggered' && rows > 1 ? 0.5 : 0;
 
   // How many extra steps fit at the current pitch, plus the master itself.
-  const stepsX =
-    config.pitchX > 0
-      ? Math.floor((availX - (staggered ? config.pitchX / 2 : 0)) / config.pitchX)
-      : 0;
+  const stepsX = config.pitchX > 0 ? Math.floor((availX - stagger) / config.pitchX) : 0;
   const stepsY = config.pitchY > 0 ? Math.floor(availY / config.pitchY) : 0;
   const maxCols = clampNum(
     Math.min(1 + Math.max(0, stepsX), Math.floor(MAX_ARRAY_INSTANCES / rows)),
@@ -174,7 +174,7 @@ export function arrayFieldBounds(
   );
 
   // Largest pitch that keeps the current counts inside the bin.
-  const colSpan = cols - 1 + (staggered ? 0.5 : 0);
+  const colSpan = cols - 1 + colExtraSpan;
   const rowSpan = rows - 1;
   const maxPitchX = clampNum(
     floorToHalf(colSpan > 0 ? availX / colSpan : ARRAY_MAX_PITCH),
@@ -187,12 +187,16 @@ export function arrayFieldBounds(
     ARRAY_MAX_PITCH
   );
 
-  // Radial ring must fit within the smaller bin dimension around the master.
-  const maxRadius = clampNum(
-    floorToHalf((Math.min(binWidth, binDepth) - Math.max(w, d)) / 2),
-    ARRAY_MIN_RADIUS,
-    ARRAY_MAX_RADIUS
+  // Radial ring is centered on the master, so it can only grow until it reaches
+  // the nearest bin edge — bound by the master box's smallest edge clearance,
+  // which (unlike a bin-wide span) respects an off-center master.
+  const edgeClearance = Math.min(
+    cutout.x,
+    cutout.y,
+    binWidth - (cutout.x + w),
+    binDepth - (cutout.y + d)
   );
+  const maxRadius = clampNum(floorToHalf(edgeClearance), ARRAY_MIN_RADIUS, ARRAY_MAX_RADIUS);
 
   return { maxCols, maxRows, maxPitchX, maxPitchY, maxRadius };
 }

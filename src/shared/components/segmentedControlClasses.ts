@@ -29,6 +29,10 @@ const SEGMENT_BASE =
 
 /** Selected segment inside a track: a raised neutral pill lifting off the recess. */
 const SEGMENT_PILL_ACTIVE = 'bg-surface-elevated text-content shadow-sm';
+// Deliberately equal to SEGMENT_INACTIVE: both systems share the same quiet
+// "off" treatment, and only their *active* states differ (raised pill vs accent
+// tint). Kept as distinct constants so each system can evolve independently —
+// don't collapse them.
 const SEGMENT_PILL_INACTIVE =
   'text-content-tertiary hover:bg-surface-hover hover:text-content-secondary';
 

@@ -36,6 +36,8 @@ interface StepperControlProps {
   max: number;
   /** Step size for the input (default: 1) */
   step?: number;
+  /** Decimal places for the editable input's fractional display (default 1). */
+  inputDecimals?: number;
   /** Visual variant */
   variant?: StepperVariant;
   /** Accessibility label for the input/display */
@@ -136,6 +138,7 @@ export function StepperControl({
   min,
   max,
   step = 1,
+  inputDecimals,
   variant = 'desktop',
   ariaLabel,
   displayValue,
@@ -251,6 +254,7 @@ export function StepperControl({
           min={min}
           max={max}
           step={step}
+          decimals={inputDecimals}
           className={inputClass}
           aria-label={ariaLabel}
         />

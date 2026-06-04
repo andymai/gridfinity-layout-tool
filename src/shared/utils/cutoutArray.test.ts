@@ -172,10 +172,31 @@ describe('arrayFieldBounds', () => {
     expect(b.maxPitchX).toBe(30);
   });
 
-  it('caps radius so the radial ring fits the smaller bin dimension', () => {
-    // (min(120,80) - max(10,10)) / 2 = 35.
-    const b = arrayFieldBounds(cut(), 120, 80, cfg({ mode: 'radial' }));
-    expect(b.maxRadius).toBe(35);
+  it('caps radius to the master box edge clearance, respecting position', () => {
+    // 10mm master centered in 120×80: edge clearance = min(55, 35, 55, 35) = 35.
+    const centered = arrayFieldBounds(cut({ x: 55, y: 35 }), 120, 80, cfg({ mode: 'radial' }));
+    expect(centered.maxRadius).toBe(35);
+    // Same master pushed toward an edge has less room, so a smaller radius.
+    const offCenter = arrayFieldBounds(cut({ x: 10, y: 35 }), 120, 80, cfg({ mode: 'radial' }));
+    expect(offCenter.maxRadius).toBe(10);
+  });
+
+  it('does not apply the stagger offset when there is only one row', () => {
+    // rows=1 ⇒ no odd row to shift, so staggered cols/pitch match a plain grid.
+    const staggered = arrayFieldBounds(
+      cut(),
+      60,
+      300,
+      cfg({ mode: 'staggered', rows: 1, cols: 3, pitchX: 12 })
+    );
+    const grid = arrayFieldBounds(
+      cut(),
+      60,
+      300,
+      cfg({ mode: 'grid', rows: 1, cols: 3, pitchX: 12 })
+    );
+    expect(staggered.maxCols).toBe(grid.maxCols);
+    expect(staggered.maxPitchX).toBe(grid.maxPitchX);
   });
 
   it('never drops a field below its minimum even when the master fills the bin', () => {
