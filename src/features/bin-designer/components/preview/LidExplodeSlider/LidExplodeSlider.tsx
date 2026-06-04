@@ -15,6 +15,7 @@ import { useCallback, useId, useRef, useState } from 'react';
 import { useTranslation } from '@/i18n';
 import { cn } from '@/design-system/cn';
 import { interactiveTransition } from '@/design-system/variants';
+import { SliderThumb } from '@/design-system/Slider';
 
 /**
  * Slider range in mm. Closed position is exactly the lid's mated
@@ -147,15 +148,21 @@ export function LidExplodeSlider({ value, onChange }: LidExplodeSliderProps) {
           style={{ height: `${percent}%` }}
         />
 
+        {/* Value bubble — shown beside the thumb while dragging. */}
+        {isDragging && (
+          <div
+            className="animate-scale-in pointer-events-none absolute right-full z-10 mr-1.5 translate-y-1/2 rounded-md border border-stroke-subtle bg-surface-elevated px-2 py-0.5 text-xs font-semibold tabular-nums text-content shadow-md"
+            style={{ bottom: `${percent}%` }}
+          >
+            {value}
+          </div>
+        )}
+
         {/* Thumb — `bottom: percent%` so 0% sits at the closed end, 100% at open. */}
-        <div
-          data-testid="slider-thumb"
-          className={cn(
-            'pointer-events-none absolute left-1/2 h-5 w-5 -translate-x-1/2 translate-y-1/2 rounded-full border-2 border-accent bg-surface shadow-sm',
-            interactiveTransition,
-            thumbActive && 'scale-110 shadow-md',
-            isDragging && 'ring-2 ring-accent/30'
-          )}
+        <SliderThumb
+          active={thumbActive}
+          dragging={isDragging}
+          className="left-1/2 -translate-x-1/2 translate-y-1/2"
           style={{ bottom: `${percent}%` }}
         />
 
