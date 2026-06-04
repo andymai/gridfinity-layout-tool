@@ -13,6 +13,10 @@ import type { PathPoint } from '@/features/bin-designer/types';
 /** Default bezier flattening tolerance in mm */
 const DEFAULT_FLATTEN_TOLERANCE = 0.1;
 
+/** Two points closer than this (mm) collapse to one. Far below the 0.5mm editor
+ * snap grid and any printable resolution, so only genuine duplicates merge. */
+const COINCIDENT_POINT_EPSILON = 1e-3;
+
 export interface Point2D {
   readonly x: number;
   readonly y: number;
@@ -149,5 +153,28 @@ export function flattenPath(
     }
   }
 
-  return result;
+  // Drop coincident consecutive vertices. Snap-to-grid (two clicks in one cell)
+  // and clampPathToBounds can leave duplicate points in a committed path; the
+  // zero-length edge makes earclip bail out (empty fill in the cut editor) and
+  // OCCT reject the wire in the worker (cut collapses to a bbox rectangle).
+  return dropCoincidentPoints(result, closed);
+}
+
+/**
+ * Remove consecutive coincident points from a flattened polyline. When
+ * `closed`, also drops a trailing point coincident with the first so the
+ * implicit closing edge is never zero-length.
+ */
+function dropCoincidentPoints(poly: readonly Point2D[], closed: boolean): Point2D[] {
+  const eps2 = COINCIDENT_POINT_EPSILON * COINCIDENT_POINT_EPSILON;
+  const near = (a: Point2D, b: Point2D): boolean => (a.x - b.x) ** 2 + (a.y - b.y) ** 2 <= eps2;
+
+  const out: Point2D[] = [];
+  for (const p of poly) {
+    if (out.length === 0 || !near(out[out.length - 1], p)) out.push({ x: p.x, y: p.y });
+  }
+  if (closed) {
+    while (out.length > 1 && near(out[out.length - 1], out[0])) out.pop();
+  }
+  return out;
 }
