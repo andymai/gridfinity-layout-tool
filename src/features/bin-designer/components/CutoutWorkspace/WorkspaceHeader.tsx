@@ -365,8 +365,7 @@ export function WorkspaceHeader({
       {label}
     </button>
   );
-  const renderContextActions = () => {
-    // No selection: Clear All + Show All
+  const renderMainRowActions = () => {
     if (selection.size === 0) {
       return (
         <div className="flex items-center gap-0.5">
@@ -375,8 +374,6 @@ export function WorkspaceHeader({
         </div>
       );
     }
-
-    // Single selection: Duplicate + Delete
     if (selection.size === 1 && singleCutout) {
       return (
         <div className="flex items-center gap-0.5">
@@ -388,11 +385,21 @@ export function WorkspaceHeader({
         </div>
       );
     }
-
-    // Multi-selection (2+): alignment row, distribute, center, auto, duplicate, group
     return (
-      <div className="flex items-center gap-0.5">
-        {/* Alignment icons */}
+      <span className="text-[11px] text-content-tertiary">
+        {t('binDesigner.cutoutEditor.selectedCount', { count: selection.size })}
+      </span>
+    );
+  };
+
+  const renderMultiSelectToolbar = () => {
+    if (selection.size < 2) return null;
+    return (
+      <div
+        role="toolbar"
+        aria-label={t('binDesigner.cutoutEditor.multiSelectToolbar')}
+        className="flex items-center gap-0.5 border-t border-stroke-subtle px-3 py-1"
+      >
         {iconBtn(
           () => handleAlign('left'),
           t('binDesigner.cutouts.alignLeft'),
@@ -423,10 +430,7 @@ export function WorkspaceHeader({
           t('binDesigner.cutouts.alignBottom'),
           <AlignIcon type="bottom" />
         )}
-
         <Separator />
-
-        {/* Distribute */}
         {iconBtn(
           handleDistributeH,
           t('binDesigner.cutouts.distributeH'),
@@ -439,10 +443,7 @@ export function WorkspaceHeader({
           <DistributeVIcon />,
           selectedIds.length < 3
         )}
-
         <Separator />
-
-        {/* Transform (flip + rotate) */}
         <TransformControls
           selectedIds={selectedIds}
           cutouts={cutouts}
@@ -451,10 +452,7 @@ export function WorkspaceHeader({
           onUpdateBatch={onUpdateBatch}
           disabled={disabled}
         />
-
         <Separator />
-
-        {/* Pathfinder (4 boolean ops) */}
         <PathfinderControls
           selectedIds={selectedIds}
           cutouts={cutouts}
@@ -463,20 +461,13 @@ export function WorkspaceHeader({
           disabled={disabled}
           compact
         />
-
         <Separator />
-
-        {/* Arrange (z-order) */}
         <ArrangeControls selectedIds={selectedIds} onReorder={onReorder} disabled={disabled} />
-
-        <Separator />
-
-        {/* Center, Auto, Duplicate, Ungroup */}
+        <div className="flex-1" />
         {textBtn(handleCenterInBin, t('binDesigner.cutouts.centerInBin'))}
         <AutoArrangePopover onArrange={handleAutoArrange} />
         {textBtn(() => onDuplicate(selectedIds), t('common.duplicate'))}
         {hasGroup && textBtn(() => onUngroup(selectedIds), t('binDesigner.cutouts.ungroup'))}
-
         <Separator />
         {textBtn(handleClearAllClick, t('binDesigner.cutouts.clearAll'), true)}
       </div>
@@ -484,161 +475,155 @@ export function WorkspaceHeader({
   };
 
   return (
-    <div className="flex h-10 items-center justify-between border-b border-stroke-subtle px-3 bg-surface-secondary">
-      {/* Left: title, undo/redo, coords */}
-      <div className="flex items-center gap-3 flex-shrink-0">
-        <span className="text-sm font-medium text-content">
-          {t('binDesigner.cutoutEditor.title')}
-        </span>
-
-        {/* Undo/Redo buttons */}
-        <div className="flex items-center gap-0.5">
-          <button
-            type="button"
-            onClick={onUndo}
-            disabled={!canUndo}
-            className="rounded p-1 text-content-secondary hover:text-content disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            title={t('binDesigner.cutoutEditor.undo')}
-            aria-label={t('binDesigner.cutoutEditor.undo')}
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 14L4 9l5-5" />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 9h10.5a5.5 5.5 0 0 1 0 11H12"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={onRedo}
-            disabled={!canRedo}
-            className="rounded p-1 text-content-secondary hover:text-content disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            title={t('binDesigner.cutoutEditor.redo')}
-            aria-label={t('binDesigner.cutoutEditor.redo')}
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 14l5-5-5-5" />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M20 9H9.5a5.5 5.5 0 0 0 0 11H12"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Cursor coordinate readout */}
-        {cursorWorldPos && (
-          <span className="text-[10px] font-mono text-content-tertiary tabular-nums">
-            {}
-            {`X: ${cursorWorldPos.x.toFixed(1)} \u00a0 Y: ${cursorWorldPos.y.toFixed(1)}`}
+    <div className="flex flex-col border-b border-stroke-subtle bg-surface-secondary">
+      <div className="flex h-10 items-center justify-between px-3">
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <span className="text-sm font-medium text-content">
+            {t('binDesigner.cutoutEditor.title')}
           </span>
-        )}
-      </div>
 
-      {/* Center: context-sensitive actions */}
-      <div className="flex items-center justify-center flex-1 min-w-0 mx-3 overflow-x-clip">
-        {renderContextActions()}
-      </div>
-
-      {/* Right: zoom + done */}
-      <div className="flex items-center gap-2 flex-shrink-0">
-        {/* Zoom controls */}
-        <div className="flex items-center gap-0.5 rounded border border-stroke-subtle bg-surface-elevated">
-          <button
-            type="button"
-            onClick={onZoomOut}
-            className="px-1.5 py-0.5 text-xs text-content-secondary hover:text-content transition-colors"
-            title={t('binDesigner.cutoutEditor.zoomOut')}
-            aria-label={t('binDesigner.cutoutEditor.zoomOut')}
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={onFitToView}
-            className="min-w-[3.5rem] px-1 py-0.5 text-[11px] font-medium text-content-secondary hover:text-content tabular-nums transition-colors"
-            title={t('binDesigner.cutoutEditor.fitToView')}
-            aria-label={t('binDesigner.cutoutEditor.fitToView')}
-          >
-            {zoomPercent}%
-          </button>
-          <button
-            type="button"
-            onClick={onZoomIn}
-            className="px-1.5 py-0.5 text-xs text-content-secondary hover:text-content transition-colors"
-            title={t('binDesigner.cutoutEditor.zoomIn')}
-            aria-label={t('binDesigner.cutoutEditor.zoomIn')}
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
+          <div className="flex items-center gap-0.5">
+            <button
+              type="button"
+              onClick={onUndo}
+              disabled={!canUndo}
+              className="rounded p-1 text-content-secondary hover:text-content disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title={t('binDesigner.cutoutEditor.undo')}
+              aria-label={t('binDesigner.cutoutEditor.undo')}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
                 strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 14L4 9l5-5" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 9h10.5a5.5 5.5 0 0 1 0 11H12"
+                />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={onRedo}
+              disabled={!canRedo}
+              className="rounded p-1 text-content-secondary hover:text-content disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title={t('binDesigner.cutoutEditor.redo')}
+              aria-label={t('binDesigner.cutoutEditor.redo')}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 14l5-5-5-5" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M20 9H9.5a5.5 5.5 0 0 0 0 11H12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {cursorWorldPos && (
+            <span className="text-[10px] font-mono text-content-tertiary tabular-nums">
+              {`X: ${cursorWorldPos.x.toFixed(1)} \u00a0 Y: ${cursorWorldPos.y.toFixed(1)}`}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center justify-center flex-1 min-w-0 mx-3">
+          {renderMainRowActions()}
+        </div>
+
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-0.5 rounded border border-stroke-subtle bg-surface-elevated">
+            <button
+              type="button"
+              onClick={onZoomOut}
+              className="px-1.5 py-0.5 text-xs text-content-secondary hover:text-content transition-colors"
+              title={t('binDesigner.cutoutEditor.zoomOut')}
+              aria-label={t('binDesigner.cutoutEditor.zoomOut')}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={onFitToView}
+              className="min-w-[3.5rem] px-1 py-0.5 text-[11px] font-medium text-content-secondary hover:text-content tabular-nums transition-colors"
+              title={t('binDesigner.cutoutEditor.fitToView')}
+              aria-label={t('binDesigner.cutoutEditor.fitToView')}
+            >
+              {zoomPercent}%
+            </button>
+            <button
+              type="button"
+              onClick={onZoomIn}
+              className="px-1.5 py-0.5 text-xs text-content-secondary hover:text-content transition-colors"
+              title={t('binDesigner.cutoutEditor.zoomIn')}
+              aria-label={t('binDesigner.cutoutEditor.zoomIn')}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {onShowHelp && (
+            <button
+              type="button"
+              onClick={onShowHelp}
+              className="rounded p-1.5 text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors"
+              title={t('binDesigner.cutoutEditor.showHelp')}
+              aria-label={t('binDesigner.cutoutEditor.showHelp')}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path strokeLinecap="round" d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setCutoutEditorOpen(false)}
+            className="rounded-md px-4 py-1.5 text-xs font-semibold bg-accent text-on-accent hover:bg-accent/90 shadow-sm transition-colors"
+          >
+            {t('binDesigner.cutoutEditor.done')}
           </button>
         </div>
 
-        {/* Help button */}
-        {onShowHelp && (
-          <button
-            type="button"
-            onClick={onShowHelp}
-            className="rounded p-1.5 text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors"
-            title={t('binDesigner.cutoutEditor.showHelp')}
-            aria-label={t('binDesigner.cutoutEditor.showHelp')}
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path strokeLinecap="round" d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-          </button>
-        )}
-
-        {/* Done button */}
-        <button
-          type="button"
-          onClick={() => setCutoutEditorOpen(false)}
-          className="rounded-md px-4 py-1.5 text-xs font-semibold bg-accent text-on-accent hover:bg-accent/90 shadow-sm transition-colors"
-        >
-          {t('binDesigner.cutoutEditor.done')}
-        </button>
+        <ConfirmDialog
+          isOpen={clearConfirm}
+          title={t('binDesigner.cutouts.clearAllConfirmTitle')}
+          message={t('binDesigner.cutouts.clearAllConfirmMessage', { count: cutouts.length })}
+          confirmText={t('binDesigner.cutouts.clearAll')}
+          destructive
+          onConfirm={onClearAll}
+          onCancel={() => setClearConfirm(false)}
+        />
       </div>
-
-      <ConfirmDialog
-        isOpen={clearConfirm}
-        title={t('binDesigner.cutouts.clearAllConfirmTitle')}
-        message={t('binDesigner.cutouts.clearAllConfirmMessage', { count: cutouts.length })}
-        confirmText={t('binDesigner.cutouts.clearAll')}
-        destructive
-        onConfirm={onClearAll}
-        onCancel={() => setClearConfirm(false)}
-      />
+      {renderMultiSelectToolbar()}
     </div>
   );
 }

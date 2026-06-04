@@ -1761,6 +1761,7 @@ const en: Record<string, string> = {
   'binDesigner.cutoutEditor.locked': 'Locked',
   'binDesigner.cutoutEditor.lock': 'Lock',
   'binDesigner.cutoutEditor.unlock': 'Unlock',
+  'binDesigner.cutoutEditor.multiSelectToolbar': 'Selection actions',
   'binDesigner.cutoutEditor.showHelp': 'Show help',
   'binDesigner.cutoutEditor.inspectorTitle': 'Properties',
   'binDesigner.cutoutEditor.inspectorCollapse': 'Collapse panel',

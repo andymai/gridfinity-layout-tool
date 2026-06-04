@@ -253,6 +253,7 @@
   "binDesigner.cutoutEditor.quickstart.title": "Inicio rápido",
   "binDesigner.cutoutEditor.quickstart.vertex": "Edición de vértices — doble clic en un trazado para ajustar sus puntos",
   "binDesigner.cutoutEditor.redo": "Rehacer (Ctrl+Mayús+Z)",
+  "binDesigner.cutoutEditor.multiSelectToolbar": "Acciones de selección",
   "binDesigner.cutoutEditor.showHelp": "Mostrar ayuda",
   "binDesigner.cutoutEditor.inspectorTitle": "Propiedades",
   "binDesigner.cutoutEditor.inspectorCollapse": "Contraer panel",

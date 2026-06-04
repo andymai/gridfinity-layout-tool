@@ -74,18 +74,6 @@ function computeRotationSafeAABB(cx: number, cy: number, width: number, depth: n
 }
 
 /**
- * Tight world-coord AABB for a cutout, accounting for `cutout.rotation`.
- *
- * Projects the four corners through the rotation matrix (around the cutout's
- * own center) and takes their min/max. Unrotated cutouts return their plain
- * extent; rotated ones get a true axis-aligned envelope (smaller than
- * `computeRotationSafeAABB`'s diagonal-based safe box, which would push
- * adjacent text farther out than necessary).
- *
- * `originX/Y` is the bin-interior origin in world coords (= -innerW/2,
- * -innerD/2), so the returned AABB sits in the interior frame.
- */
-/**
  * 2D outline for a parametric cutout shape, centered at origin. Shared by the
  * straight-extrude path and the chamfer loft so both agree on the profile.
  * Paths are not parametric and are handled separately.
@@ -778,12 +766,7 @@ function buildArrayUngroupedCutouts(
   if (effectiveDepth <= 0 || !cutout.array) return [];
 
   const instances = expandCutoutArray(cutout);
-  if (instances.length <= 1) {
-    const shape = instances[0]
-      ? buildUngroupedCutout(instances[0], solidSurfaceZ, originX, originY)
-      : null;
-    return shape ? [shape] : [];
-  }
+  if (instances.length === 0) return [];
 
   // Radial + rotateToCenter: each instance has a unique rotation angle.
   // All other modes (grid, staggered, radial without rotateToCenter): uniform.

@@ -253,6 +253,7 @@
   "binDesigner.cutoutEditor.quickstart.title": "Hurtigstart",
   "binDesigner.cutoutEditor.quickstart.vertex": "Punktredigering — dobbeltklikk en sti for å justere punktene",
   "binDesigner.cutoutEditor.redo": "Gjør om (Ctrl+Shift+Z)",
+  "binDesigner.cutoutEditor.multiSelectToolbar": "Valg-handlinger",
   "binDesigner.cutoutEditor.showHelp": "Vis hjelp",
   "binDesigner.cutoutEditor.inspectorTitle": "Egenskaper",
   "binDesigner.cutoutEditor.inspectorCollapse": "Skjul panel",
