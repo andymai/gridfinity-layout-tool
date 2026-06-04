@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.142.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.141.0...gridfinity-layout-tool-v4.142.0) (2026-06-04)
+
+
+### Features
+
+* **slider:** tactile grip knob with app-matched polish ([#1999](https://github.com/andymai/gridfinity-layout-tool/issues/1999)) ([a6f6cdd](https://github.com/andymai/gridfinity-layout-tool/commit/a6f6cddee2ed7c21eca83ceed4e967c5fd0aca69))
+
 ## [4.141.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.140.0...gridfinity-layout-tool-v4.141.0) (2026-06-04)
 
 
