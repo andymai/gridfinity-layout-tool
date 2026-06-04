@@ -15,7 +15,7 @@ import { useState } from 'react';
 import type { Cutout, CutoutScoopEdges } from '@/features/bin-designer/types';
 import { DEFAULT_SCOOP_EDGES } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { SliderInput } from '@/features/bin-designer/components/controls/SliderInput';
+import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 
 interface CutoutScoopControlsProps {
@@ -71,7 +71,7 @@ export function CutoutScoopControls({
   if (!supportsSplit || !expanded) {
     return (
       <div className="space-y-1">
-        <SliderInput
+        <CompactNumberInput
           label={t('binDesigner.cutouts.scoopRadius')}
           value={uniformValue}
           onChange={handleUniformChange}
@@ -120,26 +120,28 @@ export function CutoutScoopControls({
           {t('binDesigner.cutouts.scoopUniform')}
         </button>
       </div>
-      <SliderInput
-        label={t('binDesigner.cutouts.scoopW')}
-        value={radiusW}
-        onChange={(scoopRadiusW) => onUpdate({ scoopRadiusW })}
-        min={0}
-        max={maxScoop}
-        step={0.5}
-        unit="mm"
-        disabled={disabled}
-      />
-      <SliderInput
-        label={t('binDesigner.cutouts.scoopD')}
-        value={radiusD}
-        onChange={(scoopRadiusD) => onUpdate({ scoopRadiusD })}
-        min={0}
-        max={maxScoop}
-        step={0.5}
-        unit="mm"
-        disabled={disabled}
-      />
+      <div className="grid grid-cols-2 gap-1">
+        <CompactNumberInput
+          label={t('binDesigner.cutouts.scoopW')}
+          value={radiusW}
+          onChange={(scoopRadiusW) => onUpdate({ scoopRadiusW })}
+          min={0}
+          max={maxScoop}
+          step={0.5}
+          unit="mm"
+          disabled={disabled}
+        />
+        <CompactNumberInput
+          label={t('binDesigner.cutouts.scoopD')}
+          value={radiusD}
+          onChange={(scoopRadiusD) => onUpdate({ scoopRadiusD })}
+          min={0}
+          max={maxScoop}
+          step={0.5}
+          unit="mm"
+          disabled={disabled}
+        />
+      </div>
       {supportsEdges && (
         <div className="flex items-center gap-1 pt-0.5">
           <span className="text-[10px] text-content-tertiary mr-1">

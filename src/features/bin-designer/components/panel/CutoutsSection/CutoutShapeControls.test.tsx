@@ -46,12 +46,12 @@ describe('CutoutShapeControls', () => {
     renderControls(makeCutout({ shape: 'polygon', sides: 6 }));
     expect(screen.getByText('binDesigner.cutouts.sides')).toBeInTheDocument();
     expect(screen.getByText('binDesigner.cutouts.acrossFlats')).toBeInTheDocument();
-    expect(screen.getByLabelText('binDesigner.cutouts.sizePreset')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.sizePreset')).toBeInTheDocument();
   });
 
   it('shows only a preset menu for a circle (no sides)', () => {
     renderControls(makeCutout({ shape: 'circle' }));
-    expect(screen.getByLabelText('binDesigner.cutouts.sizePreset')).toBeInTheDocument();
+    expect(screen.getByText('binDesigner.cutouts.sizePreset')).toBeInTheDocument();
     expect(screen.queryByText('binDesigner.cutouts.sides')).not.toBeInTheDocument();
   });
 

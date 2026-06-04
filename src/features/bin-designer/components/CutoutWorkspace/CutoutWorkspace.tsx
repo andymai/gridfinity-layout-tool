@@ -22,7 +22,7 @@ import { CutoutCanvas3D } from '../panel/CutoutsSection/renderer';
 import { WorkspaceHeader } from './WorkspaceHeader';
 import { CutoutShapeToolbar } from '../panel/CutoutsSection/CutoutShapeToolbar';
 import { useSvgImport } from '../panel/CutoutsSection/svgImport';
-import { FloatingInspector } from './FloatingInspector';
+import { InspectorDock } from './InspectorDock';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { applyFlattenArray } from '../panel/CutoutsSection/cutoutHelpers';
 import { CutoutContextMenu } from '../panel/CutoutsSection/CutoutContextMenu';
@@ -397,28 +397,32 @@ export function CutoutWorkspace() {
                 rulerMeasurement={rulerMeasurement}
                 rulerZoomRef={rulerZoomRef}
               />
-              {/* Floating inspector overlay */}
-              <FloatingInspector
-                cutouts={cutouts}
-                selection={selection}
-                preview={preview}
-                binWidth={binWidth}
-                binDepth={binDepth}
-                maxCutDepth={wallHeight}
-                onUpdate={updateCutout}
-                onUpdateBatch={updateCutoutsBatch}
-                zoom={zoom}
-                cameraCenter={cameraCenter}
-                canvasWidth={canvasWidth}
-                canvasHeight={canvasHeight}
-                hidden={isInteracting}
-                disabled={isInteracting}
-                onFitCue={setFitCue}
-                onFlattenArray={handleFlattenArray}
-              />
             </div>
           </div>
         </div>
+
+        {/* Right: docked properties inspector */}
+        <InspectorDock
+          cutouts={cutouts}
+          selection={selection}
+          preview={preview}
+          binWidth={binWidth}
+          binDepth={binDepth}
+          maxCutDepth={wallHeight}
+          onUpdate={updateCutout}
+          onUpdateBatch={updateCutoutsBatch}
+          disabled={isInteracting}
+          onFitCue={setFitCue}
+          onFlattenArray={handleFlattenArray}
+          onDuplicate={duplicateSelected}
+          onDelete={deleteSelected}
+          board={{
+            gridSize,
+            onGridSizeChange: setGridSize,
+            snapEnabled,
+            onSnapToggle: setSnapEnabled,
+          }}
+        />
       </div>
 
       {/* Quickstart overlay */}

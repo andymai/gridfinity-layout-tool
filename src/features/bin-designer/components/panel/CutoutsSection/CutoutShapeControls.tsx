@@ -19,10 +19,11 @@ import {
   maxAcrossFlats,
 } from '@/shared/utils/cutoutPolygon';
 import { useTranslation } from '@/i18n';
-import { SliderInput } from '../../controls/SliderInput';
+import { Stepper } from '@/design-system';
+import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { resizeKeepingCenter } from './cutoutHelpers';
 import { HEX_ACROSS_FLATS_PRESETS, CIRCLE_DIAMETER_PRESETS } from './cutoutShapePresets';
-import { CutoutPresetMenu } from './CutoutPresetMenu';
+import { CutoutPresetChips } from './CutoutPresetChips';
 
 interface CutoutShapeControlsProps {
   readonly cutout: Cutout;
@@ -74,16 +75,27 @@ export function CutoutShapeControls({
   if (cutout.shape === 'polygon') {
     return (
       <div className="space-y-1.5">
-        <SliderInput
-          label={t('binDesigner.cutouts.sides')}
-          value={sides}
-          onChange={(s) => applyAcrossFlats(acrossFlatsFromBox(s, cutout.depth), s)}
-          min={MIN_POLYGON_SIDES}
-          max={MAX_POLYGON_SIDES}
-          step={1}
-          disabled={disabled}
-        />
-        <SliderInput
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-medium text-content-secondary">
+            {t('binDesigner.cutouts.sides')}
+          </span>
+          <Stepper
+            className="w-28"
+            value={sides}
+            onChange={(s) => applyAcrossFlats(acrossFlatsFromBox(s, cutout.depth), s)}
+            onStep={(delta) => {
+              const next = Math.max(MIN_POLYGON_SIDES, Math.min(MAX_POLYGON_SIDES, sides + delta));
+              applyAcrossFlats(acrossFlatsFromBox(next, cutout.depth), next);
+            }}
+            min={MIN_POLYGON_SIDES}
+            max={MAX_POLYGON_SIDES}
+            step={1}
+            size="sm"
+            disabled={disabled}
+            aria-label={t('binDesigner.cutouts.sides')}
+          />
+        </div>
+        <CompactNumberInput
           label={t('binDesigner.cutouts.acrossFlats')}
           value={acrossFlatsFromBox(sides, cutout.depth)}
           onChange={(af) => applyAcrossFlats(af)}
@@ -95,9 +107,9 @@ export function CutoutShapeControls({
           disabled={disabled}
           highlight={flashSize}
         />
-        <CutoutPresetMenu
+        <CutoutPresetChips
           presets={HEX_ACROSS_FLATS_PRESETS}
-          label={t('binDesigner.cutouts.sizePreset')}
+          activeMm={acrossFlatsFromBox(sides, cutout.depth)}
           onPick={(mm) => {
             applyAcrossFlats(mm);
             flash();
@@ -110,9 +122,9 @@ export function CutoutShapeControls({
 
   if (cutout.shape === 'circle') {
     return (
-      <CutoutPresetMenu
+      <CutoutPresetChips
         presets={CIRCLE_DIAMETER_PRESETS}
-        label={t('binDesigner.cutouts.sizePreset')}
+        activeMm={cutout.width}
         onPick={applyDiameter}
         disabled={disabled}
       />

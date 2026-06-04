@@ -1,14 +1,12 @@
 /**
- * Single-selection body of the FloatingInspector: the shape pill plus the
- * Transform / Shape / Fit / Array / Label sections. Split out of
- * FloatingInspector to keep that file under the line cap and to isolate the
- * single-cutout property surface from the panel's positioning logic.
+ * Single-selection body of the cutout inspector: the shape pill plus the
+ * Transform / Shape / Fit / Array / Label sections. Rendered by InspectorContent
+ * inside the docked InspectorDock; isolated here to keep files under the line cap.
  */
 
-import type { Cutout, CutoutTextSide } from '@/features/bin-designer/types';
+import type { Cutout, CutoutArrayConfig, CutoutTextSide } from '@/features/bin-designer/types';
 import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { SliderInput } from '@/features/bin-designer/components/controls/SliderInput';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { clampRotationToBounds } from '../panel/CutoutsSection/geometry';
@@ -33,6 +31,16 @@ const SIDE_OPTIONS: readonly { readonly side: CutoutTextSide; readonly glyph: st
   { side: 'left', glyph: '←' },
   { side: 'right', glyph: '→' },
 ] as const;
+
+/**
+ * Compact at-a-glance array summary, e.g. `6×3 · 18` (grid) or `⟳ 8` (radial).
+ * Numbers + symbols only, so it reads identically across locales.
+ */
+function formatArraySummary(config: CutoutArrayConfig): string {
+  const count = arrayInstanceCount(config);
+  if (config.mode === 'radial') return `⟳ ${count}`;
+  return `${config.cols}×${config.rows} · ${count}`;
+}
 
 /** Effective field value, merging this cutout's live preview override. */
 function getEffective<K extends keyof Cutout>(
@@ -117,37 +125,37 @@ export function SingleCutoutInspector({
               unit="mm"
               disabled={disabled}
             />
+            <CompactNumberInput
+              label={t('binDesigner.cutouts.rotation')}
+              value={getEffective(cutout, preview, 'rotation')}
+              onChange={(rotation) => {
+                const clamped = clampRotationToBounds(cutout, rotation, binWidth, binDepth);
+                onUpdate(cutout.id, { rotation: clamped });
+              }}
+              min={0}
+              max={359}
+              step={1}
+              unit="°"
+              disabled={disabled}
+            />
+            <CompactNumberInput
+              label={t('binDesigner.cutouts.cutDepth')}
+              value={cutout.cutDepth}
+              onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
+              min={0.5}
+              max={maxCutDepth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
           </div>
-          <SliderInput
-            label={t('binDesigner.cutouts.rotation')}
-            value={getEffective(cutout, preview, 'rotation')}
-            onChange={(rotation) => {
-              const clamped = clampRotationToBounds(cutout, rotation, binWidth, binDepth);
-              onUpdate(cutout.id, { rotation: clamped });
-            }}
-            min={0}
-            max={359}
-            step={1}
-            unit="°"
-            disabled={disabled}
-          />
-          <SliderInput
-            label={t('binDesigner.cutouts.cutDepth')}
-            value={cutout.cutDepth}
-            onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
-            min={0.5}
-            max={maxCutDepth}
-            step={0.5}
-            unit="mm"
-            disabled={disabled}
-          />
         </div>
       </CollapsibleSection>
 
       <CollapsibleSection title={t('binDesigner.cutouts.section.shape')} variant="small">
         <div className="space-y-1.5">
           {cutout.shape === 'rectangle' && (
-            <SliderInput
+            <CompactNumberInput
               label={t('binDesigner.cutouts.cornerRadius')}
               value={cutout.cornerRadius}
               onChange={(cornerRadius) => onUpdate(cutout.id, { cornerRadius })}
@@ -175,6 +183,10 @@ export function SingleCutoutInspector({
         </div>
       </CollapsibleSection>
 
+      <div className="mt-1 border-t border-stroke-subtle pt-3 text-[10px] font-semibold uppercase tracking-wider text-content-tertiary">
+        {t('binDesigner.cutouts.section.advanced')}
+      </div>
+
       {hasFitControls(cutout) && (
         <CollapsibleSection
           title={t('binDesigner.cutouts.section.fit')}
@@ -201,11 +213,7 @@ export function SingleCutoutInspector({
           variant="small"
           defaultExpanded={false}
           summary={
-            cutout.array
-              ? t('binDesigner.cutouts.array.instances', {
-                  count: arrayInstanceCount(cutout.array),
-                })
-              : t('binDesigner.cutouts.array.off')
+            cutout.array ? formatArraySummary(cutout.array) : t('binDesigner.cutouts.array.off')
           }
         >
           <CutoutArrayControls

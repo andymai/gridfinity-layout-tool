@@ -14,7 +14,7 @@ import {
   MAX_CUTOUT_CHAMFER,
 } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { SliderInput } from '../../controls/SliderInput';
+import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import type { FitCue } from './cutoutSectionVisibility';
 
 interface CutoutFitControlsProps {
@@ -50,7 +50,7 @@ export function CutoutFitControls({
     <div className="space-y-1.5">
       {isClearanceShape && (
         <div {...cueProps('clearance')}>
-          <SliderInput
+          <CompactNumberInput
             label={t('binDesigner.cutouts.clearance')}
             value={cutout.clearance ?? 0}
             onChange={(clearance) => onUpdate({ clearance })}
@@ -66,7 +66,7 @@ export function CutoutFitControls({
 
       {isChamferShape && maxChamfer > 0 && (
         <div {...cueProps('chamfer')}>
-          <SliderInput
+          <CompactNumberInput
             label={t('binDesigner.cutouts.chamfer')}
             value={Math.min(cutout.chamferWidth ?? 0, maxChamfer)}
             onChange={(chamferWidth) => onUpdate({ chamferWidth })}
