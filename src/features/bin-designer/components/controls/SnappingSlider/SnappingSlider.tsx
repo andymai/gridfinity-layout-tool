@@ -11,6 +11,7 @@
 
 import { useId, useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from '@/i18n';
+import { SliderThumb } from '@/design-system/Slider';
 
 export interface SnappingSliderOption {
   /** The numeric value */
@@ -281,10 +282,9 @@ export function SnappingSlider({
           />
 
           {/* Visual thumb - larger for touch, follows drag smoothly */}
-          <div
-            className={`pointer-events-none absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-accent bg-surface shadow-md transition-transform ${
-              isDragging ? 'scale-110' : ''
-            }`}
+          <SliderThumb
+            dragging={isDragging}
+            className="top-1/2 -translate-x-1/2 -translate-y-1/2"
             style={{ left: `${getPosition(thumbPosition)}%` }}
           />
         </div>

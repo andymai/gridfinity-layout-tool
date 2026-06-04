@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useId, useRef, useState } from 'react';
 import { cn } from '../cn';
 import { interactiveTransition } from '../variants';
+import { SliderThumb } from './SliderThumb';
 
 export interface SliderProps {
   /** Current value */
@@ -189,15 +190,22 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
             style={{ width: `${percent}%` }}
           />
 
+          {/* Value bubble — shown above the thumb while dragging */}
+          {isDragging && !disabled && (
+            <div
+              className="animate-scale-in pointer-events-none absolute -top-1.5 z-10 -translate-x-1/2 -translate-y-full rounded-md border border-stroke-subtle bg-surface-elevated px-2 py-0.5 text-xs font-semibold tabular-nums text-content shadow-md"
+              style={{ left: `${percent}%` }}
+            >
+              {value}
+            </div>
+          )}
+
           {/* Thumb */}
-          <div
-            data-testid="slider-thumb"
-            className={cn(
-              'pointer-events-none absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-accent bg-surface shadow-sm',
-              interactiveTransition,
-              thumbActive && !disabled && 'scale-110 shadow-md',
-              isDragging && !disabled && 'ring-2 ring-accent/30'
-            )}
+          <SliderThumb
+            active={thumbActive}
+            dragging={isDragging}
+            disabled={disabled}
+            className="top-1/2 -translate-x-1/2 -translate-y-1/2"
             style={{ left: `${percent}%` }}
           />
 

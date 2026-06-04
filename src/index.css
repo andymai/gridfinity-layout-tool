@@ -589,30 +589,75 @@ input[type='range']::-moz-range-track {
   height: 4px;
 }
 
+/* Filled, grip-textured knob matching the design-system SliderThumb. The
+   repeating-linear-gradient fakes three grip lines (pseudo-elements can't hold
+   child nodes); the linear-gradient gives the raised top-light body. The
+   2px surface halo keeps the knob crisp where it overlaps the accent fill. */
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  background: var(--color-accent);
+  height: 18px;
+  width: 18px;
   border-radius: 50%;
-  height: 14px;
-  width: 14px;
-  margin-top: -5px;
+  background:
+    repeating-linear-gradient(
+        90deg,
+        transparent 0 5px,
+        color-mix(in srgb, var(--text-on-accent) 45%, transparent) 5px 6px,
+        transparent 6px 8px
+      )
+      center / 9px 8px no-repeat,
+    linear-gradient(to bottom, var(--color-accent-hover), var(--color-accent));
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    var(--shadow-sm);
+  margin-top: -7px;
+  /* Visual state only — animating position would lag the knob behind drags. */
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    filter var(--transition-fast);
 }
 
 input[type='range']::-moz-range-thumb {
-  background: var(--color-accent);
+  height: 18px;
+  width: 18px;
   border: none;
   border-radius: 50%;
-  height: 14px;
-  width: 14px;
+  background:
+    repeating-linear-gradient(
+        90deg,
+        transparent 0 5px,
+        color-mix(in srgb, var(--text-on-accent) 45%, transparent) 5px 6px,
+        transparent 6px 8px
+      )
+      center / 9px 8px no-repeat,
+    linear-gradient(to bottom, var(--color-accent-hover), var(--color-accent));
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    var(--shadow-sm);
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    filter var(--transition-fast);
 }
 
 input[type='range']:hover::-webkit-slider-thumb {
-  background: var(--color-accent-hover);
+  transform: scale(1.05);
+  filter: brightness(1.1);
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    0 0 0 5px var(--color-accent-muted),
+    var(--shadow-md);
 }
 
 input[type='range']:hover::-moz-range-thumb {
-  background: var(--color-accent-hover);
+  transform: scale(1.05);
+  filter: brightness(1.1);
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    0 0 0 5px var(--color-accent-muted),
+    var(--shadow-md);
 }
 
 /* ===========================================
