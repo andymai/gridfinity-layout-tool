@@ -167,6 +167,14 @@ describe('flattenPath', () => {
     expect(result.length).toBeGreaterThan(4);
     expect(result[0]).toEqual({ x: 0, y: 0 });
   });
+
+  it('drops consecutive coincident vertices (snap-to-grid duplicate)', () => {
+    const result = flattenPath([pt(0, 0), pt(10, 0), pt(10, 0), pt(5, 10)]);
+    expect(result).toHaveLength(3);
+    for (let i = 1; i < result.length; i++) {
+      expect(result[i]).not.toEqual(result[i - 1]);
+    }
+  });
 });
 
 // ─── Triangulation ──────────────────────────────────────────────────────────
@@ -213,6 +221,17 @@ describe('triangulatePath', () => {
       { x: 7, y: 5 },
       { x: 3, y: 7 },
     ]);
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.length % 3).toBe(0);
+  });
+
+  // Snap-to-grid (two clicks in one cell) and clampPathToBounds can leave a
+  // duplicate consecutive vertex in a committed path. The zero-length edge
+  // made earclip bail out (empty result → no fill in the cut editor) while the
+  // worker fell back to a bounding-box rectangle. flattenPath now drops the
+  // coincident point so the fill renders the real polygon.
+  it('renders a fill for a path with a duplicate consecutive vertex', () => {
+    const result = triangulatePath(flattenPath([pt(0, 0), pt(10, 0), pt(10, 0), pt(5, 10)]));
     expect(result.length).toBeGreaterThan(0);
     expect(result.length % 3).toBe(0);
   });

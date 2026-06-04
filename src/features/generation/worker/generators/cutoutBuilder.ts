@@ -47,6 +47,7 @@ import {
   clampPolygonSides,
 } from '@/shared/utils/cutoutPolygon';
 import { expandCutoutArray } from '@/shared/utils/cutoutArray';
+import { dropCoincidentPoints } from '@/shared/utils/polyline';
 import { cutoutLabelPlacement } from '@/shared/utils/cutoutLabel';
 import { combineGroupSolids } from './cutoutGroupOps';
 import {
@@ -306,8 +307,10 @@ function buildPathCutoutShape(cutout: {
   const path = cutout.path;
   if (!path || path.length < MIN_PATH_POINTS) return fallbackRect();
 
-  // Flatten bezier path to polyline — need 3+ flattened points for a closed wire
-  const polyline = flattenPathToPolyline(path);
+  // Flatten bezier path to polyline, dropping coincident vertices that would
+  // collapse the wire to the bbox fallback (see dropCoincidentPoints). Need 3+
+  // distinct points for a closed wire.
+  const polyline = dropCoincidentPoints(flattenPathToPolyline(path));
   if (polyline.length < 3) return fallbackRect();
 
   // Reject self-intersecting polylines that would produce invalid 3D geometry

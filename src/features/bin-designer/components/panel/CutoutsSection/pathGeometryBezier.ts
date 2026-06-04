@@ -9,6 +9,7 @@
  */
 
 import type { PathPoint } from '@/features/bin-designer/types';
+import { dropCoincidentPoints } from '@/shared/utils/polyline';
 
 /** Default bezier flattening tolerance in mm */
 const DEFAULT_FLATTEN_TOLERANCE = 0.1;
@@ -149,5 +150,7 @@ export function flattenPath(
     }
   }
 
-  return result;
+  // Drop coincident vertices that would otherwise stall earclip triangulation
+  // (see dropCoincidentPoints).
+  return dropCoincidentPoints(result, closed);
 }
