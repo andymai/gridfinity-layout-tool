@@ -283,6 +283,7 @@
   "binDesigner.cutouts.fitNone": "Aucune marge d'ajustement",
   "binDesigner.cutouts.shapeName.path": "Tracé",
   "binDesigner.cutouts.sizePreset": "Tailles standard",
+  "binDesigner.cutouts.sizePresetMore": "Plus de tailles…",
   "binDesigner.cutouts.clearance": "Jeu",
   "binDesigner.cutouts.clearanceInfo": "Marge ajoutée pour que les pièces entrent",
   "binDesigner.cutouts.chamfer": "Chanfrein d'entrée",

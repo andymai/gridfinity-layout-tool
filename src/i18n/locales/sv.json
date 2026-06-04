@@ -283,6 +283,7 @@
   "binDesigner.cutouts.fitNone": "Ingen passtolerans",
   "binDesigner.cutouts.shapeName.path": "Bana",
   "binDesigner.cutouts.sizePreset": "Standardstorlekar",
+  "binDesigner.cutouts.sizePresetMore": "Fler storlekar…",
   "binDesigner.cutouts.clearance": "Spelrum",
   "binDesigner.cutouts.clearanceInfo": "Extra storlek så att delar passar",
   "binDesigner.cutouts.chamfer": "Insticksfas",

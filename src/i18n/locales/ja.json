@@ -283,6 +283,7 @@
   "binDesigner.cutouts.fitNone": "はめあい代なし",
   "binDesigner.cutouts.shapeName.path": "パス",
   "binDesigner.cutouts.sizePreset": "規格サイズ",
+  "binDesigner.cutouts.sizePresetMore": "その他のサイズ…",
   "binDesigner.cutouts.clearance": "クリアランス",
   "binDesigner.cutouts.clearanceInfo": "部品が入るように追加する余裕",
   "binDesigner.cutouts.chamfer": "入口面取り",

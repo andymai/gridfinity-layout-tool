@@ -283,6 +283,7 @@
   "binDesigner.cutouts.fitNone": "Sin holgura de ajuste",
   "binDesigner.cutouts.shapeName.path": "Trazado",
   "binDesigner.cutouts.sizePreset": "Tamaños estándar",
+  "binDesigner.cutouts.sizePresetMore": "Más tamaños…",
   "binDesigner.cutouts.clearance": "Holgura",
   "binDesigner.cutouts.clearanceInfo": "Tamaño extra para que las piezas entren",
   "binDesigner.cutouts.chamfer": "Bisel de entrada",

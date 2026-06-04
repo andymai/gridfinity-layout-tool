@@ -283,6 +283,7 @@
   "binDesigner.cutouts.fitNone": "Keine Passungszugabe",
   "binDesigner.cutouts.shapeName.path": "Pfad",
   "binDesigner.cutouts.sizePreset": "Normgrößen",
+  "binDesigner.cutouts.sizePresetMore": "Weitere Größen…",
   "binDesigner.cutouts.clearance": "Spiel",
   "binDesigner.cutouts.clearanceInfo": "Zusätzliche Größe, damit Teile hineinpassen",
   "binDesigner.cutouts.chamfer": "Einführfase",

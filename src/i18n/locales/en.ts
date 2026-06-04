@@ -1646,6 +1646,7 @@ const en: Record<string, string> = {
   'binDesigner.cutouts.acrossFlats': 'Across flats',
   'binDesigner.cutouts.acrossFlatsInfo': 'Flat-to-flat width — matches hex bit / Allen specs',
   'binDesigner.cutouts.sizePreset': 'Hardware sizes',
+  'binDesigner.cutouts.sizePresetMore': 'More sizes…',
   'binDesigner.cutouts.fitNone': 'No fit allowance',
   'binDesigner.cutouts.shapeName.path': 'Path',
   'binDesigner.cutouts.clearance': 'Clearance',

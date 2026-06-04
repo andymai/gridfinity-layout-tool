@@ -7,7 +7,6 @@
 import type { Cutout, CutoutTextSide } from '@/features/bin-designer/types';
 import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { SliderInput } from '@/features/bin-designer/components/controls/SliderInput';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { clampRotationToBounds } from '../panel/CutoutsSection/geometry';
@@ -116,37 +115,37 @@ export function SingleCutoutInspector({
               unit="mm"
               disabled={disabled}
             />
+            <CompactNumberInput
+              label={t('binDesigner.cutouts.rotation')}
+              value={getEffective(cutout, preview, 'rotation')}
+              onChange={(rotation) => {
+                const clamped = clampRotationToBounds(cutout, rotation, binWidth, binDepth);
+                onUpdate(cutout.id, { rotation: clamped });
+              }}
+              min={0}
+              max={359}
+              step={1}
+              unit="°"
+              disabled={disabled}
+            />
+            <CompactNumberInput
+              label={t('binDesigner.cutouts.cutDepth')}
+              value={cutout.cutDepth}
+              onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
+              min={0.5}
+              max={maxCutDepth}
+              step={0.5}
+              unit="mm"
+              disabled={disabled}
+            />
           </div>
-          <SliderInput
-            label={t('binDesigner.cutouts.rotation')}
-            value={getEffective(cutout, preview, 'rotation')}
-            onChange={(rotation) => {
-              const clamped = clampRotationToBounds(cutout, rotation, binWidth, binDepth);
-              onUpdate(cutout.id, { rotation: clamped });
-            }}
-            min={0}
-            max={359}
-            step={1}
-            unit="°"
-            disabled={disabled}
-          />
-          <SliderInput
-            label={t('binDesigner.cutouts.cutDepth')}
-            value={cutout.cutDepth}
-            onChange={(cutDepth) => onUpdate(cutout.id, { cutDepth })}
-            min={0.5}
-            max={maxCutDepth}
-            step={0.5}
-            unit="mm"
-            disabled={disabled}
-          />
         </div>
       </CollapsibleSection>
 
       <CollapsibleSection title={t('binDesigner.cutouts.section.shape')} variant="small">
         <div className="space-y-1.5">
           {cutout.shape === 'rectangle' && (
-            <SliderInput
+            <CompactNumberInput
               label={t('binDesigner.cutouts.cornerRadius')}
               value={cutout.cornerRadius}
               onChange={(cornerRadius) => onUpdate(cutout.id, { cornerRadius })}

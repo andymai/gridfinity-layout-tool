@@ -283,6 +283,7 @@
   "binDesigner.cutouts.fitNone": "Без припуску на підгін",
   "binDesigner.cutouts.shapeName.path": "Контур",
   "binDesigner.cutouts.sizePreset": "Стандартні розміри",
+  "binDesigner.cutouts.sizePresetMore": "Більше розмірів…",
   "binDesigner.cutouts.clearance": "Зазор",
   "binDesigner.cutouts.clearanceInfo": "Додатковий розмір, щоб деталі входили",
   "binDesigner.cutouts.chamfer": "Вхідна фаска",

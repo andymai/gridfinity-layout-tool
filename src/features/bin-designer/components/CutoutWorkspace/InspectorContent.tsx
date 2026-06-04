@@ -8,7 +8,7 @@
 import { useMemo } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { SliderInput } from '@/features/bin-designer/components/controls/SliderInput';
+import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { SingleCutoutInspector } from './SingleCutoutInspector';
 
@@ -137,8 +137,8 @@ export function InspectorContent({
           <div className="text-[10px] font-medium text-content-secondary">
             {selectedCutouts.length} {t('binDesigner.cutoutEditor.actions').toLowerCase()}
           </div>
-          <div className="space-y-0.5">
-            <SliderInput
+          <div className="grid grid-cols-2 gap-1">
+            <CompactNumberInput
               label={t('binDesigner.cutouts.rotation')}
               value={sharedRotation ?? 0}
               onChange={(rotation) => handleBatchUpdate('rotation', rotation)}
@@ -148,7 +148,7 @@ export function InspectorContent({
               unit="°"
               disabled={disabled}
             />
-            <SliderInput
+            <CompactNumberInput
               label={t('binDesigner.cutouts.cutDepth')}
               value={sharedCutDepth ?? 5}
               onChange={(cutDepth) => handleBatchUpdate('cutDepth', cutDepth)}
@@ -158,7 +158,7 @@ export function InspectorContent({
               unit="mm"
               disabled={disabled}
             />
-            <SliderInput
+            <CompactNumberInput
               label={t('binDesigner.cutouts.scoopW')}
               value={sharedScoopRadiusW ?? 0}
               onChange={(scoopRadiusW) => handleScoopAxisBatch('scoopRadiusW', scoopRadiusW)}
@@ -168,7 +168,7 @@ export function InspectorContent({
               unit="mm"
               disabled={disabled}
             />
-            <SliderInput
+            <CompactNumberInput
               label={t('binDesigner.cutouts.scoopD')}
               value={sharedScoopRadiusD ?? 0}
               onChange={(scoopRadiusD) => handleScoopAxisBatch('scoopRadiusD', scoopRadiusD)}

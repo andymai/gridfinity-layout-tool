@@ -216,4 +216,45 @@ describe('CompactNumberInput', () => {
     // Component exits edit mode but doesn't call onChange with invalid value
     await waitFor(() => expect(screen.queryByRole('textbox')).not.toBeInTheDocument());
   });
+
+  it('applies a fine step with Alt+ArrowUp', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<CompactNumberInput label="X" value={10} onChange={onChange} step={1} />);
+
+    await user.click(screen.getByRole('button'));
+    await user.keyboard('{Alt>}{ArrowUp}{/Alt}');
+
+    expect(onChange).toHaveBeenCalledWith(10.1);
+  });
+
+  it('exposes a slider role on the draggable label', () => {
+    render(<CompactNumberInput label="X" value={10} onChange={vi.fn()} min={0} max={50} />);
+    const slider = screen.getByRole('slider', { name: 'X' });
+    expect(slider).toHaveAttribute('aria-valuenow', '10');
+    expect(slider).toHaveAttribute('aria-valuemax', '50');
+  });
+
+  it('scrubs the value when dragging the label horizontally', () => {
+    const onChange = vi.fn();
+    render(<CompactNumberInput label="X" value={10} onChange={onChange} step={1} />);
+
+    const slider = screen.getByRole('slider', { name: 'X' });
+    fireEvent.pointerDown(slider, { clientX: 100 });
+    fireEvent.pointerMove(document, { clientX: 118 }); // +18px → 3 steps
+    expect(onChange).toHaveBeenLastCalledWith(13);
+    fireEvent.pointerUp(document);
+  });
+
+  it('does not enter edit mode after a scrub drag', () => {
+    const onChange = vi.fn();
+    render(<CompactNumberInput label="X" value={10} onChange={onChange} step={1} />);
+
+    const slider = screen.getByRole('slider', { name: 'X' });
+    fireEvent.pointerDown(slider, { clientX: 100 });
+    fireEvent.pointerMove(document, { clientX: 130 });
+    fireEvent.pointerUp(document);
+
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
 });

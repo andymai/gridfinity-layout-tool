@@ -13,12 +13,6 @@ vi.mock('@/shared/components/CompactNumberInput', () => ({
   ),
 }));
 
-vi.mock('@/features/bin-designer/components/controls/SliderInput', () => ({
-  SliderInput: ({ label, value }: { label: string; value: number }) => (
-    <input data-testid={`slider-input-${label}`} data-label={label} value={value} readOnly />
-  ),
-}));
-
 vi.mock('../panel/CutoutsSection/geometry', () => ({
   clampRotationToBounds: (_c: Cutout, rotation: number) => rotation,
   getRotatedBounds: (c: Cutout) => ({
@@ -72,8 +66,8 @@ describe('InspectorContent', () => {
     expect(screen.getByTestId('compact-input-Y')).toBeInTheDocument();
     expect(screen.getByTestId('compact-input-W')).toBeInTheDocument();
     expect(screen.getByTestId('compact-input-H')).toBeInTheDocument();
-    expect(screen.getByTestId('slider-input-binDesigner.cutouts.rotation')).toBeInTheDocument();
-    expect(screen.getByTestId('slider-input-binDesigner.cutouts.cutDepth')).toBeInTheDocument();
+    expect(screen.getByTestId('compact-input-binDesigner.cutouts.rotation')).toBeInTheDocument();
+    expect(screen.getByTestId('compact-input-binDesigner.cutouts.cutDepth')).toBeInTheDocument();
   });
 
   it('shows the corner-radius slider only for rectangles', () => {
@@ -84,7 +78,9 @@ describe('InspectorContent', () => {
         selection={new Set(['cutout1'])}
       />
     );
-    expect(screen.getByTestId('slider-input-binDesigner.cutouts.cornerRadius')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('compact-input-binDesigner.cutouts.cornerRadius')
+    ).toBeInTheDocument();
 
     rerender(
       <InspectorContent
@@ -94,7 +90,7 @@ describe('InspectorContent', () => {
       />
     );
     expect(
-      screen.queryByTestId('slider-input-binDesigner.cutouts.cornerRadius')
+      screen.queryByTestId('compact-input-binDesigner.cutouts.cornerRadius')
     ).not.toBeInTheDocument();
   });
 
@@ -109,8 +105,8 @@ describe('InspectorContent', () => {
         onUpdateBatch={vi.fn()}
       />
     );
-    expect(screen.getByTestId('slider-input-binDesigner.cutouts.rotation')).toBeInTheDocument();
-    expect(screen.getByTestId('slider-input-binDesigner.cutouts.cutDepth')).toBeInTheDocument();
+    expect(screen.getByTestId('compact-input-binDesigner.cutouts.rotation')).toBeInTheDocument();
+    expect(screen.getByTestId('compact-input-binDesigner.cutouts.cutDepth')).toBeInTheDocument();
     // X/Y/W/H are single-selection only
     expect(screen.queryByTestId('compact-input-X')).not.toBeInTheDocument();
   });

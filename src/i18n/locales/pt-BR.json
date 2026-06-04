@@ -283,6 +283,7 @@
   "binDesigner.cutouts.fitNone": "Sem folga de encaixe",
   "binDesigner.cutouts.shapeName.path": "Caminho",
   "binDesigner.cutouts.sizePreset": "Tamanhos padrão",
+  "binDesigner.cutouts.sizePresetMore": "Mais tamanhos…",
   "binDesigner.cutouts.clearance": "Folga",
   "binDesigner.cutouts.clearanceInfo": "Tamanho extra para as peças encaixarem",
   "binDesigner.cutouts.chamfer": "Chanfro de entrada",

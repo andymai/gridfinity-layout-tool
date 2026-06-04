@@ -283,6 +283,7 @@
   "binDesigner.cutouts.fitNone": "Ingen passklaring",
   "binDesigner.cutouts.shapeName.path": "Bane",
   "binDesigner.cutouts.sizePreset": "Standardstørrelser",
+  "binDesigner.cutouts.sizePresetMore": "Flere størrelser…",
   "binDesigner.cutouts.clearance": "Klaring",
   "binDesigner.cutouts.clearanceInfo": "Ekstra størrelse så deler passer",
   "binDesigner.cutouts.chamfer": "Innføringsfas",
