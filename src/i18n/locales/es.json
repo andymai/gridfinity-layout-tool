@@ -297,7 +297,6 @@
   "binDesigner.cutouts.section.shape": "Forma",
   "binDesigner.cutouts.section.fit": "Ajuste e inserción",
   "binDesigner.cutouts.section.label": "Etiqueta",
-  "binDesigner.cutouts.section.advanced": "Avanzado",
   "binDesigner.cutouts.section.array": "Matriz",
   "binDesigner.cutouts.array.create": "Crear matriz",
   "binDesigner.cutouts.array.off": "Desactivado",

@@ -28,7 +28,10 @@ import {
   curveLength,
   clone,
   withScope,
+  composeTransforms,
+  transformCopy,
 } from 'brepjs';
+import type { TransformOp } from 'brepjs';
 import type { Shape3D, ValidSolid, Edge, Dimension, DisposalScope, Drawing, Sketch } from 'brepjs';
 import type { BinParams, Cutout, PathPoint, GroupOp } from '@/shared/types/bin';
 import {
@@ -756,6 +759,84 @@ function buildGroupedCutouts(
   return fused;
 }
 /**
+ * Build all positioned instances of an array cutout using transformCopy.
+ *
+ * Builds the master shape (extrude + scoop fillet) exactly once, then clones
+ * and positions each instance with a single OCCT matrix operation. For a grid
+ * with N instances this reduces scoop fillet calls from N to 1.
+ *
+ * Radial arrays with rotateToCenter get per-instance rotation composed with
+ * the translate; all other modes bake the master rotation in up front.
+ */
+function buildArrayUngroupedCutouts(
+  cutout: BinParams['cutouts'][number],
+  solidSurfaceZ: number,
+  originX: number,
+  originY: number
+): Shape3D[] {
+  const effectiveDepth = Math.min(cutout.cutDepth, solidSurfaceZ);
+  if (effectiveDepth <= 0 || !cutout.array) return [];
+
+  const instances = expandCutoutArray(cutout);
+  if (instances.length <= 1) {
+    const shape = instances[0]
+      ? buildUngroupedCutout(instances[0], solidSurfaceZ, originX, originY)
+      : null;
+    return shape ? [shape] : [];
+  }
+
+  // Radial + rotateToCenter: each instance has a unique rotation angle.
+  // All other modes (grid, staggered, radial without rotateToCenter): uniform.
+  const nonUniformRotation = cutout.array.mode === 'radial' && cutout.array.rotateToCenter;
+
+  let master = buildUnrotatedCutoutShape({ ...cutout, cutDepth: effectiveDepth });
+  if (!master) return [];
+
+  const scoop = resolveScoop(cutout, effectiveDepth);
+  if (scoop.w > 0 || scoop.d > 0) {
+    const filleted = applyAxisAwareScoop(master, cutout, scoop);
+    if (filleted !== master) {
+      master.delete();
+      master = filleted;
+    }
+  }
+
+  // Bake the uniform rotation into master so instances only need a translate.
+  if (!nonUniformRotation && cutout.rotation !== 0) {
+    const rotated = rotate(master, -cutout.rotation, { axis: [0, 0, 1] });
+    master.delete();
+    master = rotated;
+  }
+
+  const zOffset = solidSurfaceZ - effectiveDepth;
+  const results: Shape3D[] = [];
+
+  try {
+    for (const instance of instances) {
+      const tx = originX + instance.x + instance.width / 2;
+      const ty = originY + instance.y + instance.depth / 2;
+
+      const ops: TransformOp[] = [];
+      if (nonUniformRotation && instance.rotation !== 0) {
+        ops.push({ type: 'rotate', angle: -instance.rotation, axis: [0, 0, 1] });
+      }
+      ops.push({ type: 'translate', v: [tx, ty, zOffset] });
+
+      const trsf = composeTransforms(ops);
+      try {
+        results.push(transformCopy(master, trsf));
+      } finally {
+        trsf.cleanup();
+      }
+    }
+  } finally {
+    master.delete();
+  }
+
+  return results;
+}
+
+/**
  * Build the list of cutout cavity cut tools for a solid bin.
  * Each entry is one logical cutout (an ungrouped cutout, a fused-and-scooped
  * group, or an engraved label) clipped to the bin interior. The pipeline
@@ -795,8 +876,10 @@ export function buildCutoutCuts(
   const groups = new Map<string, typeof params.cutouts>();
   for (const cutout of params.cutouts) {
     if (cutout.groupId === null) {
-      for (const instance of expandCutoutArray(cutout)) {
-        const shape = buildUngroupedCutout(instance, solidSurfaceZ, originX, originY);
+      if (cutout.array) {
+        rawShapes.push(...buildArrayUngroupedCutouts(cutout, solidSurfaceZ, originX, originY));
+      } else {
+        const shape = buildUngroupedCutout(cutout, solidSurfaceZ, originX, originY);
         if (shape) rawShapes.push(shape);
       }
     } else {

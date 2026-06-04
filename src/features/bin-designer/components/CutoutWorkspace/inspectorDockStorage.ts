@@ -5,7 +5,7 @@ const COLLAPSED_KEY = 'gridfinity-cutout-inspector-collapsed';
 
 export const INSPECTOR_MIN_WIDTH = 220;
 export const INSPECTOR_MAX_WIDTH = 420;
-export const INSPECTOR_DEFAULT_WIDTH = 264;
+export const INSPECTOR_DEFAULT_WIDTH = 288;
 
 export function loadInspectorWidth(): number {
   try {

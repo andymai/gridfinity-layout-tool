@@ -124,7 +124,6 @@ function FitStepRow({
         min={min}
         max={max}
         step={FIT_STEP}
-        inputDecimals={2}
         ariaLabel={label}
         disabled={disabled}
       />

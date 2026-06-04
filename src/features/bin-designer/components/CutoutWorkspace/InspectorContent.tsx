@@ -101,7 +101,7 @@ export function InspectorContent({
         <p className="text-xs text-content-secondary">
           {t('binDesigner.cutoutEditor.inspectorEmptyTitle')}
         </p>
-        <p className="text-[11px] text-content-tertiary">
+        <p className="text-xs text-content-tertiary">
           {t('binDesigner.cutoutEditor.inspectorEmptyHint')}
         </p>
       </div>

@@ -204,7 +204,7 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
       {/* Scrollable body */}
       <div
         onScroll={handleScroll}
-        className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin px-4 py-3"
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto scrollbar-thin px-4 pt-0 pb-3"
       >
         <InspectorContent {...content} board={board} />
       </div>

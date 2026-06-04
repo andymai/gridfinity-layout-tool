@@ -19,6 +19,9 @@ export const ARRAY_MAX_PITCH = 200;
 export const ARRAY_MIN_RADIUS = 1;
 export const ARRAY_MAX_RADIUS = 200;
 
+/** Minimum printed wall between adjacent array instances (mm). */
+export const ARRAY_MIN_WALL_GAP = 1;
+
 export interface ArrayInstance {
   /** Center offset from the master center (mm). */
   readonly dx: number;
@@ -123,10 +126,12 @@ export function expandCutoutArray(cutout: Cutout): Cutout[] {
   });
 }
 
-/** Per-field upper bounds that keep an array within the bin's physical footprint. */
+/** Per-field bounds that keep an array within the bin's physical footprint. */
 export interface ArrayFieldBounds {
   readonly maxCols: number;
   readonly maxRows: number;
+  readonly minPitchX: number;
+  readonly minPitchY: number;
   readonly maxPitchX: number;
   readonly maxPitchY: number;
   readonly maxRadius: number;
@@ -198,7 +203,11 @@ export function arrayFieldBounds(
   );
   const maxRadius = clampNum(floorToHalf(edgeClearance), ARRAY_MIN_RADIUS, ARRAY_MAX_RADIUS);
 
-  return { maxCols, maxRows, maxPitchX, maxPitchY, maxRadius };
+  // Minimum pitch that preserves at least ARRAY_MIN_WALL_GAP of material between instances.
+  const minPitchX = Math.max(ARRAY_MIN_PITCH, floorToHalf(w) + ARRAY_MIN_WALL_GAP);
+  const minPitchY = Math.max(ARRAY_MIN_PITCH, floorToHalf(d) + ARRAY_MIN_WALL_GAP);
+
+  return { maxCols, maxRows, minPitchX, minPitchY, maxPitchX, maxPitchY, maxRadius };
 }
 
 /** A sensible default config for a freshly-enabled array, sized off the master. */

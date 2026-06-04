@@ -16,6 +16,7 @@ import type { Cutout, CutoutScoopEdges } from '@/features/bin-designer/types';
 import { DEFAULT_SCOOP_EDGES } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
+import { SliderInput } from '@/shared/components/SliderInput';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 
 interface CutoutScoopControlsProps {
@@ -70,8 +71,8 @@ export function CutoutScoopControls({
 
   if (!supportsSplit || !expanded) {
     return (
-      <div className="space-y-1">
-        <CompactNumberInput
+      <div className="space-y-1.5">
+        <SliderInput
           label={t('binDesigner.cutouts.scoopRadius')}
           value={uniformValue}
           onChange={handleUniformChange}
@@ -106,7 +107,7 @@ export function CutoutScoopControls({
   };
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs text-content-tertiary">
           {t('binDesigner.cutouts.scoopRadius')}
@@ -143,8 +144,8 @@ export function CutoutScoopControls({
         />
       </div>
       {supportsEdges && (
-        <div className="flex items-center gap-1 pt-0.5">
-          <span className="text-[10px] text-content-tertiary mr-1">
+        <div className="flex items-center gap-1.5 pt-0.5">
+          <span className="text-[10px] text-content-tertiary">
             {t('binDesigner.cutouts.scoopEdges')}
           </span>
           <EdgeChip

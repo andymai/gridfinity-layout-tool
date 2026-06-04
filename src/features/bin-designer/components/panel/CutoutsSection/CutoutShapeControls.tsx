@@ -19,7 +19,6 @@ import {
   maxAcrossFlats,
 } from '@/shared/utils/cutoutPolygon';
 import { useTranslation } from '@/i18n';
-import { Stepper } from '@/design-system';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 import { resizeKeepingCenter } from './cutoutHelpers';
 import { HEX_ACROSS_FLATS_PRESETS, CIRCLE_DIAMETER_PRESETS } from './cutoutShapePresets';
@@ -75,26 +74,18 @@ export function CutoutShapeControls({
   if (cutout.shape === 'polygon') {
     return (
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-medium text-content-secondary">
-            {t('binDesigner.cutouts.sides')}
-          </span>
-          <Stepper
-            className="w-28"
-            value={sides}
-            onChange={(s) => applyAcrossFlats(acrossFlatsFromBox(s, cutout.depth), s)}
-            onStep={(delta) => {
-              const next = Math.max(MIN_POLYGON_SIDES, Math.min(MAX_POLYGON_SIDES, sides + delta));
-              applyAcrossFlats(acrossFlatsFromBox(next, cutout.depth), next);
-            }}
-            min={MIN_POLYGON_SIDES}
-            max={MAX_POLYGON_SIDES}
-            step={1}
-            size="sm"
-            disabled={disabled}
-            aria-label={t('binDesigner.cutouts.sides')}
-          />
-        </div>
+        <CompactNumberInput
+          label={t('binDesigner.cutouts.sides')}
+          value={sides}
+          onChange={(s) => {
+            const next = Math.max(MIN_POLYGON_SIDES, Math.min(MAX_POLYGON_SIDES, Math.round(s)));
+            applyAcrossFlats(acrossFlatsFromBox(next, cutout.depth), next);
+          }}
+          min={MIN_POLYGON_SIDES}
+          max={MAX_POLYGON_SIDES}
+          step={1}
+          disabled={disabled}
+        />
         <CompactNumberInput
           label={t('binDesigner.cutouts.acrossFlats')}
           value={acrossFlatsFromBox(sides, cutout.depth)}

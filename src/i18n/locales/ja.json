@@ -297,7 +297,6 @@
   "binDesigner.cutouts.section.shape": "形状",
   "binDesigner.cutouts.section.fit": "はめあいと挿入",
   "binDesigner.cutouts.section.label": "ラベル",
-  "binDesigner.cutouts.section.advanced": "詳細設定",
   "binDesigner.cutouts.section.array": "配列",
   "binDesigner.cutouts.array.create": "配列を作成",
   "binDesigner.cutouts.array.off": "オフ",

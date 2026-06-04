@@ -297,7 +297,6 @@
   "binDesigner.cutouts.section.shape": "Form",
   "binDesigner.cutouts.section.fit": "Passform och insättning",
   "binDesigner.cutouts.section.label": "Etikett",
-  "binDesigner.cutouts.section.advanced": "Avancerat",
   "binDesigner.cutouts.section.array": "Matris",
   "binDesigner.cutouts.array.create": "Skapa matris",
   "binDesigner.cutouts.array.off": "Av",

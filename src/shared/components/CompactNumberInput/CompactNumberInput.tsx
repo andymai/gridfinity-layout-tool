@@ -154,7 +154,7 @@ export function CompactNumberInput({
     >
       <span
         className={cn(
-          'min-w-[1.5rem] select-none px-1.5 text-[10px] leading-none transition-colors',
+          'min-w-[1.5rem] select-none px-1.5 text-xs leading-none transition-colors',
           // Persistent drag-handle affordance (After Effects "scrubby slider"): the
           // label always carries a dotted underline + ew-resize cursor so it reads as
           // draggable at rest, then brightens on hover and goes accent while scrubbing.
