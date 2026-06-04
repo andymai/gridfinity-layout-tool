@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.144.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.143.0...gridfinity-layout-tool-v4.144.0) (2026-06-04)
+
+
+### Features
+
+* **cutout-editor:** responsive multi-select toolbar + accessibility + tests ([#2002](https://github.com/andymai/gridfinity-layout-tool/issues/2002)) ([ef07a66](https://github.com/andymai/gridfinity-layout-tool/commit/ef07a6693fd27bbb1834f0e44be94defbb967c71))
+
 ## [4.143.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.142.0...gridfinity-layout-tool-v4.143.0) (2026-06-04)
 
 
