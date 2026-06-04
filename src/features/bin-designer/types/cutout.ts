@@ -34,15 +34,43 @@ export const DEFAULT_CUTOUT_CLEARANCE = 0.2;
 /** Shapes that accept an insertion {@link Cutout.clearance} offset. */
 export const CLEARANCE_SHAPES: readonly CutoutShape[] = ['circle', 'polygon', 'slot'];
 
-/**
- * Default entry-chamfer width (mm) used when a cutout's chamfer is first
- * enabled. A ~45° bevel of this width at the top rim lets bits/sockets
- * self-center and drop in without binding.
- */
-export const DEFAULT_CUTOUT_CHAMFER = 1;
-
 /** Largest entry-chamfer width (mm) the editor allows. */
 export const MAX_CUTOUT_CHAMFER = 5;
+
+/** Straight wall (mm) that must remain below the bevel, so a chamfer never
+ *  consumes the full cut depth. */
+const MIN_STRAIGHT_WALL = 0.2;
+
+const ENTRY_CHAMFER_SIZE_FRACTION = 0.1;
+const ENTRY_CHAMFER_SNAP = 0.2;
+const MIN_ENTRY_CHAMFER = 0.4;
+const MAX_ENTRY_CHAMFER_DEFAULT = 0.8;
+
+/**
+ * Largest entry-chamfer width (mm) a cut of `cutDepth` can take while keeping a
+ * {@link MIN_STRAIGHT_WALL} straight section below the bevel. Returns 0 when the
+ * cut is too shallow for any chamfer.
+ */
+export function maxEntryChamfer(cutDepth: number): number {
+  return Math.max(0, Math.min(MAX_CUTOUT_CHAMFER, cutDepth - MIN_STRAIGHT_WALL));
+}
+
+/**
+ * Smart entry-chamfer width (mm) auto-applied when an insert-style cutout is
+ * created. A ~45° bevel at the top rim lets bits/sockets self-center and drop
+ * in without binding, and leaves a clean, polished rim. Scales with the hole's
+ * tightest dimension (~10%), snapped to the 0.2mm editor grid and clamped to a
+ * tasteful 0.4–0.8mm so small holes get a crisp edge-break while large holes
+ * never funnel — then capped by cut-depth headroom (a straight wall must remain
+ * below the bevel).
+ */
+export function defaultEntryChamfer(holeSize: number, cutDepth: number): number {
+  const raw = ENTRY_CHAMFER_SIZE_FRACTION * holeSize;
+  const snapped = Math.round(raw / ENTRY_CHAMFER_SNAP) * ENTRY_CHAMFER_SNAP;
+  const tasteful = Math.min(MAX_ENTRY_CHAMFER_DEFAULT, Math.max(MIN_ENTRY_CHAMFER, snapped));
+  // toFixed tidies float noise from the snap (e.g. 0.6000000000000001).
+  return Number(Math.min(tasteful, maxEntryChamfer(cutDepth)).toFixed(2));
+}
 
 /**
  * Shapes that accept an entry {@link Cutout.chamferWidth}. Freeform paths are

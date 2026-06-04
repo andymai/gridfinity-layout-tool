@@ -154,10 +154,13 @@ export function CompactNumberInput({
     >
       <span
         className={cn(
-          'min-w-[1.5rem] select-none px-1.5 text-[10px] leading-none text-content-tertiary',
-          // Hint that the label is a drag handle: brighten + a dotted underline on hover.
+          'min-w-[1.5rem] select-none px-1.5 text-[10px] leading-none transition-colors',
+          // Persistent drag-handle affordance (After Effects "scrubby slider"): the
+          // label always carries a dotted underline + ew-resize cursor so it reads as
+          // draggable at rest, then brightens on hover and goes accent while scrubbing.
+          disabled && 'text-content-tertiary',
           !disabled &&
-            'cursor-ew-resize decoration-dotted underline-offset-2 hover:text-content-secondary hover:underline',
+            'cursor-ew-resize text-content-secondary underline decoration-dotted underline-offset-2 hover:text-content',
           scrubbing && 'text-accent'
         )}
         onPointerDown={handleScrubStart}

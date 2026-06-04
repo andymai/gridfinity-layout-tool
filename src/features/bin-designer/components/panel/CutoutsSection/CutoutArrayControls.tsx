@@ -6,14 +6,22 @@
 
 import type { Cutout, CutoutArrayMode, CutoutArrayConfig } from '@/features/bin-designer/types';
 import { CUTOUT_ARRAY_MODES, MAX_ARRAY_COUNT } from '@/features/bin-designer/types';
-import { arrayInstanceCount, defaultArrayConfig } from '@/shared/utils/cutoutArray';
+import {
+  arrayInstanceCount,
+  defaultArrayConfig,
+  arrayFieldBounds,
+  ARRAY_MIN_PITCH,
+  ARRAY_MIN_RADIUS,
+} from '@/shared/utils/cutoutArray';
 import { useTranslation } from '@/i18n';
-import { Checkbox } from '@/design-system';
+import { Checkbox, Stepper } from '@/design-system';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import { SliderInput } from '../../controls/SliderInput';
 
 interface CutoutArrayControlsProps {
   readonly cutout: Cutout;
+  /** Bin interior dimensions (mm) — array layout is clamped to fit within them. */
+  readonly binWidth: number;
+  readonly binDepth: number;
   readonly onUpdate: (patch: Partial<Cutout>) => void;
   readonly onFlatten: () => void;
   readonly disabled?: boolean;
@@ -21,6 +29,8 @@ interface CutoutArrayControlsProps {
 
 export function CutoutArrayControls({
   cutout,
+  binWidth,
+  binDepth,
   onUpdate,
   onFlatten,
   disabled = false,
@@ -47,10 +57,10 @@ export function CutoutArrayControls({
   }
 
   const count = arrayInstanceCount(array);
+  const bounds = arrayFieldBounds(cutout, binWidth, binDepth, array);
 
   return (
     <div className="space-y-1.5">
-      {/* Mode segmented control */}
       <div className={SEGMENT_GROUP_CLASS}>
         {CUTOUT_ARRAY_MODES.map((mode: CutoutArrayMode) => (
           <button
@@ -67,7 +77,7 @@ export function CutoutArrayControls({
 
       {array.mode === 'radial' ? (
         <>
-          <SliderInput
+          <ArrayStepRow
             label={t('binDesigner.cutouts.array.count')}
             value={array.count}
             onChange={(v) => setArray({ count: v })}
@@ -76,17 +86,17 @@ export function CutoutArrayControls({
             step={1}
             disabled={disabled}
           />
-          <SliderInput
+          <ArrayStepRow
             label={t('binDesigner.cutouts.array.radius')}
             value={array.radius}
             onChange={(v) => setArray({ radius: v })}
-            min={1}
-            max={200}
+            min={ARRAY_MIN_RADIUS}
+            max={bounds.maxRadius}
             step={0.5}
             unit="mm"
             disabled={disabled}
           />
-          <SliderInput
+          <ArrayStepRow
             label={t('binDesigner.cutouts.array.startAngle')}
             value={array.startAngle}
             onChange={(v) => setArray({ startAngle: v })}
@@ -108,42 +118,40 @@ export function CutoutArrayControls({
         </>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-1.5">
-            <SliderInput
-              label={t('binDesigner.cutouts.array.cols')}
-              value={array.cols}
-              onChange={(v) => setArray({ cols: v })}
-              min={1}
-              max={MAX_ARRAY_COUNT}
-              step={1}
-              disabled={disabled}
-            />
-            <SliderInput
-              label={t('binDesigner.cutouts.array.rows')}
-              value={array.rows}
-              onChange={(v) => setArray({ rows: v })}
-              min={1}
-              max={MAX_ARRAY_COUNT}
-              step={1}
-              disabled={disabled}
-            />
-          </div>
-          <SliderInput
+          <ArrayStepRow
+            label={t('binDesigner.cutouts.array.cols')}
+            value={array.cols}
+            onChange={(v) => setArray({ cols: v })}
+            min={1}
+            max={bounds.maxCols}
+            step={1}
+            disabled={disabled}
+          />
+          <ArrayStepRow
+            label={t('binDesigner.cutouts.array.rows')}
+            value={array.rows}
+            onChange={(v) => setArray({ rows: v })}
+            min={1}
+            max={bounds.maxRows}
+            step={1}
+            disabled={disabled}
+          />
+          <ArrayStepRow
             label={t('binDesigner.cutouts.array.pitchX')}
             value={array.pitchX}
             onChange={(v) => setArray({ pitchX: v })}
-            min={1}
-            max={200}
+            min={ARRAY_MIN_PITCH}
+            max={bounds.maxPitchX}
             step={0.5}
             unit="mm"
             disabled={disabled}
           />
-          <SliderInput
+          <ArrayStepRow
             label={t('binDesigner.cutouts.array.pitchY')}
             value={array.pitchY}
             onChange={(v) => setArray({ pitchY: v })}
-            min={1}
-            max={200}
+            min={ARRAY_MIN_PITCH}
+            max={bounds.maxPitchY}
             step={0.5}
             unit="mm"
             disabled={disabled}
@@ -174,6 +182,50 @@ export function CutoutArrayControls({
           {t('binDesigner.cutouts.array.remove')}
         </button>
       </div>
+    </div>
+  );
+}
+
+interface ArrayStepRowProps {
+  readonly label: string;
+  readonly value: number;
+  readonly onChange: (value: number) => void;
+  readonly min: number;
+  readonly max: number;
+  readonly step?: number;
+  readonly unit?: string;
+  readonly disabled?: boolean;
+}
+
+/** Label + numeric stepper row. Type for an exact value, or +/- by `step`. */
+function ArrayStepRow({
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  step = 1,
+  unit,
+  disabled,
+}: ArrayStepRowProps) {
+  const clamp = (v: number): number => Math.min(max, Math.max(min, Number(v.toFixed(3))));
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-xs text-content-secondary">
+        {label}
+        {unit ? <span className="ml-1 text-content-tertiary">{unit}</span> : null}
+      </span>
+      <Stepper
+        size="sm"
+        value={value}
+        onChange={(v) => onChange(clamp(v))}
+        onStep={(delta) => onChange(clamp(value + delta * step))}
+        min={min}
+        max={max}
+        step={step}
+        aria-label={label}
+        disabled={disabled}
+      />
     </div>
   );
 }

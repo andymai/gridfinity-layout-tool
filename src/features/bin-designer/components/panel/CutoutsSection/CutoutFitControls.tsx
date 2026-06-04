@@ -8,14 +8,14 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import {
-  CLEARANCE_SHAPES,
-  CHAMFER_SHAPES,
-  MAX_CUTOUT_CHAMFER,
-} from '@/features/bin-designer/types';
+import { CLEARANCE_SHAPES, CHAMFER_SHAPES, maxEntryChamfer } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
+import { StepperControl } from '@/shared/components/StepperControl';
 import type { FitCue } from './cutoutSectionVisibility';
+
+/** Stepper increment for fit fields — coarse enough to tune by clicking, while
+ *  the text field still accepts off-grid values for precise tuning. */
+const FIT_STEP = 0.2;
 
 interface CutoutFitControlsProps {
   readonly cutout: Cutout;
@@ -33,12 +33,11 @@ export function CutoutFitControls({
   const t = useTranslation();
   const isClearanceShape = CLEARANCE_SHAPES.includes(cutout.shape);
   const isChamferShape = CHAMFER_SHAPES.includes(cutout.shape);
-  // A straight wall must remain below the bevel, so cap the chamfer by cut depth.
-  const maxChamfer = Math.max(0, Math.min(MAX_CUTOUT_CHAMFER, cutout.cutDepth - 0.2));
+  const maxChamfer = maxEntryChamfer(cutout.cutDepth);
 
   // Show the cue while a fit control is being interacted with (focus enters on
-  // both the slider and the number field; pointerenter covers slider drags
-  // without a prior tab-focus). Cleared on blur/leave.
+  // both the buttons and the number field; pointerenter covers drags without a
+  // prior tab-focus). Cleared on blur/leave.
   const cueProps = (cue: Exclude<FitCue, null>) => ({
     onFocusCapture: () => onCueChange?.(cue),
     onPointerEnter: () => onCueChange?.(cue),
@@ -49,36 +48,86 @@ export function CutoutFitControls({
   return (
     <div className="space-y-1.5">
       {isClearanceShape && (
-        <div {...cueProps('clearance')}>
-          <CompactNumberInput
-            label={t('binDesigner.cutouts.clearance')}
-            value={cutout.clearance ?? 0}
-            onChange={(clearance) => onUpdate({ clearance })}
-            min={0}
-            max={2}
-            step={0.05}
-            unit="mm"
-            info={t('binDesigner.cutouts.clearanceInfo')}
-            disabled={disabled}
-          />
-        </div>
+        <FitStepRow
+          {...cueProps('clearance')}
+          label={t('binDesigner.cutouts.clearance')}
+          info={t('binDesigner.cutouts.clearanceInfo')}
+          unit="mm"
+          value={cutout.clearance ?? 0}
+          onChange={(clearance) => onUpdate({ clearance })}
+          min={0}
+          max={2}
+          disabled={disabled}
+        />
       )}
 
       {isChamferShape && maxChamfer > 0 && (
-        <div {...cueProps('chamfer')}>
-          <CompactNumberInput
-            label={t('binDesigner.cutouts.chamfer')}
-            value={Math.min(cutout.chamferWidth ?? 0, maxChamfer)}
-            onChange={(chamferWidth) => onUpdate({ chamferWidth })}
-            min={0}
-            max={maxChamfer}
-            step={0.25}
-            unit="mm"
-            info={t('binDesigner.cutouts.chamferInfo')}
-            disabled={disabled}
-          />
-        </div>
+        <FitStepRow
+          {...cueProps('chamfer')}
+          label={t('binDesigner.cutouts.chamfer')}
+          info={t('binDesigner.cutouts.chamferInfo')}
+          unit="mm"
+          value={Math.min(cutout.chamferWidth ?? 0, maxChamfer)}
+          onChange={(chamferWidth) => onUpdate({ chamferWidth })}
+          min={0}
+          max={maxChamfer}
+          disabled={disabled}
+        />
       )}
+    </div>
+  );
+}
+
+interface FitStepRowProps {
+  readonly label: string;
+  readonly info: string;
+  readonly unit: string;
+  readonly value: number;
+  readonly onChange: (value: number) => void;
+  readonly min: number;
+  readonly max: number;
+  readonly disabled?: boolean;
+  readonly onFocusCapture?: () => void;
+  readonly onBlurCapture?: () => void;
+  readonly onPointerEnter?: () => void;
+  readonly onPointerLeave?: () => void;
+}
+
+/**
+ * Label + numeric stepper row for a fit field. The +/- buttons move by
+ * {@link FIT_STEP}; the text field accepts any fractional mm value (clamped,
+ * never snapped to the step grid) for precise tuning.
+ */
+function FitStepRow({
+  label,
+  info,
+  unit,
+  value,
+  onChange,
+  min,
+  max,
+  disabled,
+  ...cueHandlers
+}: FitStepRowProps) {
+  const clamp = (v: number): number => Math.min(max, Math.max(min, Number(v.toFixed(3))));
+  return (
+    <div className="flex items-center justify-between gap-2" title={info} {...cueHandlers}>
+      <span className="text-xs text-content-secondary">
+        {label}
+        <span className="ml-1 text-content-tertiary">{unit}</span>
+      </span>
+      <StepperControl
+        variant="compact"
+        value={value}
+        onChange={(v) => onChange(clamp(v))}
+        onStep={(delta) => onChange(clamp(value + delta * FIT_STEP))}
+        min={min}
+        max={max}
+        step={FIT_STEP}
+        inputDecimals={2}
+        ariaLabel={label}
+        disabled={disabled}
+      />
     </div>
   );
 }

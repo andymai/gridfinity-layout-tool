@@ -121,8 +121,12 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
 - **Entry chamfer**: `chamferWidth` (mm) lofts a ~45° flare at the cut's top rim
   so parts self-center on insertion. The generator builds it via `loftWith`
   between the nominal profile and a `chamferWidth`-expanded top profile; it
-  composes with scoop fillets and is clamped to `cutDepth − 0.2` so it can't
-  exceed the pocket. Available on `rectangle` / `circle` / `polygon` / `slot`.
+  composes with scoop fillets and is clamped to `maxEntryChamfer(cutDepth)` (a
+  `MIN_STRAIGHT_WALL` straight section must remain below the bevel). New
+  insert-style holes seed a size-scaled default via `defaultEntryChamfer`
+  (~10% of the tightest dimension, clamped to a tasteful 0.4–0.8mm). Available
+  on `rectangle` / `circle` / `polygon` / `slot`. The editor exposes tolerance +
+  chamfer as 0.2mm steppers that still accept off-grid fractional typing.
 
 - **Parametric arrays**: a cutout can carry a `CutoutArrayConfig` (`array`) that
   replicates it across a `grid`, `staggered`, or `radial` pattern from a single
@@ -131,9 +135,11 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
   by the worker (cut tools) and the 2D editor (instance meshes) so both derive
   identical positions. Instance 0 is always the master (a real cut, keeps its
   id/placement); derived instances get ids `${master.id}::a${i}`. Total instances
-  are capped at `MAX_ARRAY_INSTANCES`. Arrays are restricted to **ungrouped,
-  non-path** cutouts; `flattenCutoutArray` / `applyFlattenArray` bake instances
-  into independent cutouts. Array controls appear in both the full-screen
+  are capped at `MAX_ARRAY_INSTANCES`, and the editor clamps counts, pitch, and
+  radius to feasible bounds (`arrayFieldBounds`) so an array can't be grown past
+  the bin footprint. Arrays are restricted to **ungrouped, non-path** cutouts;
+  `flattenCutoutArray` / `applyFlattenArray` bake instances into independent
+  cutouts. Array controls (now `+/-` steppers) appear in both the full-screen
   workspace and the sidebar editor (`CutoutArrayControls`).
 
 ## Gotchas

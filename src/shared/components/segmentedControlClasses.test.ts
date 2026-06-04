@@ -7,19 +7,21 @@ import {
 } from './segmentedControlClasses';
 
 describe('getSegmentClass', () => {
-  it('applies the accent tint + ring when active', () => {
+  it('renders a raised neutral pill when active', () => {
     const cls = getSegmentClass(true);
-    expect(cls).toContain('bg-accent/15');
-    expect(cls).toContain('text-accent');
-    expect(cls).toContain('ring-1');
-    expect(cls).toContain('ring-accent/40');
+    expect(cls).toContain('bg-surface-elevated');
+    expect(cls).toContain('text-content');
+    expect(cls).toContain('shadow-sm');
+    // The selected segment is a neutral pill, not an accent tint — that accent
+    // treatment is reserved for independent on/off toggles (SEGMENT_ACTIVE).
+    expect(cls).not.toContain('bg-accent/15');
   });
 
   it('applies the quiet inactive treatment when not active', () => {
     const cls = getSegmentClass(false);
     expect(cls).toContain('text-content-tertiary');
     expect(cls).toContain('hover:bg-surface-hover');
-    expect(cls).not.toContain('bg-accent/15');
+    expect(cls).not.toContain('bg-surface-elevated');
   });
 
   it('uses compact sizing for sm and default sizing for md', () => {
@@ -42,9 +44,15 @@ describe('getSegmentClass', () => {
     expect(cls).toContain('disabled:cursor-not-allowed');
   });
 
-  it('exposes color fragments and a group container class for bespoke call sites', () => {
+  it('exposes accent on/off fragments for bespoke independent toggles', () => {
     expect(SEGMENT_ACTIVE).toContain('bg-accent/15');
     expect(SEGMENT_INACTIVE).toContain('text-content-tertiary');
+  });
+
+  it('renders the group container as a recessed track', () => {
     expect(SEGMENT_GROUP_CLASS).toContain('flex');
+    expect(SEGMENT_GROUP_CLASS).toContain('bg-surface-tertiary');
+    expect(SEGMENT_GROUP_CLASS).toContain('rounded-lg');
+    expect(SEGMENT_GROUP_CLASS).toContain('p-0.5');
   });
 });

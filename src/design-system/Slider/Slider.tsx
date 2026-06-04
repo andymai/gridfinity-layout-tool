@@ -154,7 +154,10 @@ export const Slider = forwardRef<HTMLDivElement, SliderProps>(
       <div
         ref={ref}
         className={cn(
-          'relative',
+          // Inset by the thumb radius (w-5 ⇒ 10px) so the round handle at 0%/100%
+          // stays inside the component box — otherwise it overhangs the track and
+          // gets sheared by scroll/overflow ancestors (e.g. the inspector dock).
+          'relative px-2.5',
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
           className
         )}

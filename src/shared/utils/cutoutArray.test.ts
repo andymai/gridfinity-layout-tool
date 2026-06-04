@@ -3,6 +3,7 @@ import {
   arrayInstances,
   arrayInstanceCount,
   defaultArrayConfig,
+  arrayFieldBounds,
   expandCutoutArray,
   type ArrayInstance,
 } from './cutoutArray';
@@ -140,5 +141,74 @@ describe('defaultArrayConfig', () => {
     expect(c.pitchX).toBeGreaterThan(15);
     expect(c.pitchY).toBeGreaterThan(10);
     expect(c.mode).toBe('grid');
+  });
+});
+
+describe('arrayFieldBounds', () => {
+  const cut = (overrides: Partial<Cutout> = {}): Cutout => ({
+    id: 'm',
+    shape: 'circle',
+    x: 0,
+    y: 0,
+    width: 10,
+    depth: 10,
+    cutDepth: 5,
+    rotation: 0,
+    cornerRadius: 0,
+    label: '',
+    groupId: null,
+    ...overrides,
+  });
+
+  it('caps columns to what fits the bin at the current pitch', () => {
+    // 10mm master at x=0 in a 60mm bin, 12mm pitch: 1 + floor((60-10)/12) = 5.
+    const b = arrayFieldBounds(cut(), 60, 300, cfg({ pitchX: 12, cols: 3 }));
+    expect(b.maxCols).toBe(5);
+  });
+
+  it('caps pitch to what keeps the current columns inside the bin', () => {
+    // 4 cols, 10mm master at x=0 in 100mm bin: span over 3 gaps ⇒ (100-10)/3 = 30mm.
+    const b = arrayFieldBounds(cut(), 100, 300, cfg({ cols: 4, pitchX: 12 }));
+    expect(b.maxPitchX).toBe(30);
+  });
+
+  it('caps radius to the master box edge clearance, respecting position', () => {
+    // 10mm master centered in 120×80: edge clearance = min(55, 35, 55, 35) = 35.
+    const centered = arrayFieldBounds(cut({ x: 55, y: 35 }), 120, 80, cfg({ mode: 'radial' }));
+    expect(centered.maxRadius).toBe(35);
+    // Same master pushed toward an edge has less room, so a smaller radius.
+    const offCenter = arrayFieldBounds(cut({ x: 10, y: 35 }), 120, 80, cfg({ mode: 'radial' }));
+    expect(offCenter.maxRadius).toBe(10);
+  });
+
+  it('does not apply the stagger offset when there is only one row', () => {
+    // rows=1 ⇒ no odd row to shift, so staggered cols/pitch match a plain grid.
+    const staggered = arrayFieldBounds(
+      cut(),
+      60,
+      300,
+      cfg({ mode: 'staggered', rows: 1, cols: 3, pitchX: 12 })
+    );
+    const grid = arrayFieldBounds(
+      cut(),
+      60,
+      300,
+      cfg({ mode: 'grid', rows: 1, cols: 3, pitchX: 12 })
+    );
+    expect(staggered.maxCols).toBe(grid.maxCols);
+    expect(staggered.maxPitchX).toBe(grid.maxPitchX);
+  });
+
+  it('never drops a field below its minimum even when the master fills the bin', () => {
+    const b = arrayFieldBounds(cut({ x: 0, width: 50 }), 50, 50, cfg({ pitchX: 12 }));
+    expect(b.maxCols).toBe(1);
+    expect(b.maxPitchX).toBeGreaterThanOrEqual(1);
+    expect(b.maxRadius).toBeGreaterThanOrEqual(1);
+  });
+
+  it('honors the global instance cap given the other axis count', () => {
+    // 80 rows × maxCols ≤ 400 ⇒ maxCols ≤ 5, even though spatially more would fit.
+    const b = arrayFieldBounds(cut({ width: 1 }), 10_000, 10_000, cfg({ rows: 80, pitchX: 2 }));
+    expect(b.maxCols).toBeLessThanOrEqual(5);
   });
 });
