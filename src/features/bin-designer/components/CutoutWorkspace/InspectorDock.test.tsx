@@ -50,9 +50,27 @@ describe('InspectorDock', () => {
     expect(loadInspectorCollapsed()).toBe(false);
   });
 
-  it('exposes a resize separator when expanded', () => {
+  it('exposes a resize separator with width value semantics when expanded', () => {
     render(<InspectorDock {...baseProps} />);
-    expect(screen.getByLabelText('binDesigner.cutoutEditor.inspectorResize')).toBeInTheDocument();
+    const sep = screen.getByLabelText('binDesigner.cutoutEditor.inspectorResize');
+    expect(sep).toHaveAttribute('role', 'separator');
+    expect(sep).toHaveAttribute('aria-valuenow');
+    expect(sep).toHaveAttribute('aria-valuemin');
+    expect(sep).toHaveAttribute('aria-valuemax');
+  });
+
+  it('reports collapse/expand state via aria-expanded', () => {
+    const { rerender } = render(<InspectorDock {...baseProps} />);
+    expect(screen.getByLabelText('binDesigner.cutoutEditor.inspectorCollapse')).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+    localStorage.setItem('gridfinity-cutout-inspector-collapsed', '1');
+    rerender(<InspectorDock {...baseProps} key="collapsed" />);
+    expect(screen.getByLabelText('binDesigner.cutoutEditor.inspectorExpand')).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
   });
 
   it('hides the duplicate/delete actions when nothing is selected', () => {

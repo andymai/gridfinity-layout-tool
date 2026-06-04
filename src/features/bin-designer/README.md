@@ -28,7 +28,12 @@ graph TB
 - `components/DesignerPage.tsx` — main UI entry point
 - `components/ParameterPanel.tsx` — parameter editing sidebar with collapsible sections
 - `components/PreviewCanvas.tsx` — 3D preview with Three.js (renders bin + optional lid + explode slider)
-- `components/CutoutWorkspace` — dedicated 3D editor for floor/wall cutouts
+- `components/CutoutWorkspace` — dedicated 3D editor for floor/wall cutouts. Properties live in
+  a docked, resizable/collapsible `InspectorDock` (width + collapsed state persisted via
+  `inspectorDockStorage`), not a floating overlay. `InspectorContent` switches between
+  single-select sections, multi-select shared fields (mixed values show a "—" placeholder),
+  and an empty board-settings state; number-first `CompactNumberInput` (drag-scrub + type)
+  replaces sliders, and hardware-size presets surface as quick-pick chips.
 - `components/panel/ShapeSection/` — "Custom shape" toggle + paint-style half-bin grid editor
   (L/T/U presets, reset-to-rectangle link, O-shape-capable cellMask painting)
 - `components/panel/LidSection/` — click-lock lid toggle, fit pills, magnet/grid toggles, thickness sliders

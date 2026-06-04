@@ -98,6 +98,7 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
       draggingRef.current = false;
       document.removeEventListener('pointermove', handleMove);
       document.removeEventListener('pointerup', handleUp);
+      document.removeEventListener('pointercancel', handleUp);
       if (dockRef.current) {
         saveInspectorWidth(dockRef.current.getBoundingClientRect().width);
       }
@@ -105,6 +106,9 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
 
     document.addEventListener('pointermove', handleMove);
     document.addEventListener('pointerup', handleUp);
+    // Cancelled gestures (OS interruption, lost capture) must also end the drag,
+    // otherwise draggingRef stays true and the dock keeps resizing on later moves.
+    document.addEventListener('pointercancel', handleUp);
   }, []);
 
   if (collapsed) {
@@ -114,6 +118,7 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
           type="button"
           onClick={toggleCollapsed}
           className={ICON_BTN}
+          aria-expanded={false}
           aria-label={t('binDesigner.cutoutEditor.inspectorExpand')}
           title={t('binDesigner.cutoutEditor.inspectorExpand')}
         >
@@ -142,6 +147,9 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
         role="separator"
         aria-orientation="vertical"
         aria-label={t('binDesigner.cutoutEditor.inspectorResize')}
+        aria-valuenow={Math.round(width)}
+        aria-valuemin={INSPECTOR_MIN_WIDTH}
+        aria-valuemax={INSPECTOR_MAX_WIDTH}
       >
         <div className="absolute inset-y-0 left-1 w-px bg-transparent transition-colors group-hover:bg-accent/60" />
       </div>
@@ -157,6 +165,7 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
             type="button"
             onClick={toggleCollapsed}
             className={ICON_BTN}
+            aria-expanded
             aria-label={t('binDesigner.cutoutEditor.inspectorCollapse')}
             title={t('binDesigner.cutoutEditor.inspectorCollapse')}
           >
