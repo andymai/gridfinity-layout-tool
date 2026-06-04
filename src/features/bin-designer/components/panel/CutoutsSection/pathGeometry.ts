@@ -76,7 +76,8 @@ export function insertPoint(
   return result;
 }
 
-/** Remove a point from a path at the given index. Requires 3+ points to remain. */
+/** Remove a point from a path at the given index. Won't drop below
+ * MIN_PATH_POINTS anchors (returns null instead). */
 export function removePoint(points: readonly PathPoint[], index: number): PathPoint[] | null {
   if (points.length <= MIN_PATH_POINTS) return null;
   const result = [...points];

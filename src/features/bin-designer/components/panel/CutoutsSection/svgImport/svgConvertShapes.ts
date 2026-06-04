@@ -16,6 +16,7 @@ import type { Matrix } from './svgTransform';
 import type { ViewBox } from './types';
 import { applyMatrix, isIdentityOrTranslate, transformPoint } from './svgTransform';
 import { getPathBounds } from '../pathGeometry';
+import { dropCoincidentPoints } from '@/shared/utils/polyline';
 
 export function wrapSingle(spec: ParsedCutoutSpec | null): ParsedCutoutSpec[] | null {
   return spec ? [spec] : null;
@@ -79,9 +80,13 @@ export function pointsToPathSpec(
  * flattens the curve, matching what the renderer / vertex editor compute.
  */
 export function pathPointsToSpec(pathPoints: PathPoint[]): ParsedCutoutSpec | null {
-  if (pathPoints.length < 2) return null;
+  // SVG closes shapes by repeating the first vertex, and source art often has
+  // duplicate/near-duplicate anchors; strip them so stored path data is
+  // canonical instead of relying solely on render-time dedup.
+  const cleaned = dropCoincidentPoints(pathPoints);
+  if (cleaned.length < 2) return null;
 
-  const { minX, minY, maxX, maxY } = getPathBounds(pathPoints);
+  const { minX, minY, maxX, maxY } = getPathBounds(cleaned);
   const width = maxX - minX;
   const depth = maxY - minY;
 
@@ -95,7 +100,7 @@ export function pathPointsToSpec(pathPoints: PathPoint[]): ParsedCutoutSpec | nu
     depth,
     cornerRadius: 0,
     rotation: 0,
-    path: pathPoints,
+    path: cleaned,
   };
 }
 

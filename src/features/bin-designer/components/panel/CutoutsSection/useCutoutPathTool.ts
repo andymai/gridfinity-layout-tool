@@ -20,10 +20,12 @@ import {
 import type { PathDrawingPreviewState, SegmentHoverInfo } from './handlers';
 import {
   CLOSE_SNAP_THRESHOLD,
+  MIN_PATH_POINTS,
   clampPathToBounds,
   getPathBounds,
   isSelfIntersecting,
 } from './pathGeometry';
+import { dropCoincidentPoints } from '@/shared/utils/polyline';
 import { rectFitsInMask, type MaskCellSize } from './maskFit';
 import { createDefaultCutout } from './cutoutHelpers';
 import type { InteractionMode, PreviewMap } from './cutoutInteractionTypes';
@@ -81,8 +83,18 @@ export function useCutoutPathTool({
   /** Commit a closed path as a new cutout. */
   const commitPath = useCallback(
     (points: readonly PathPoint[]) => {
-      // Clamp to bin bounds so cutout never extends outside the bin surface
-      const clamped = clampPathToBounds(points, binWidth, binDepth);
+      // Clamp to bin bounds so cutout never extends outside the bin surface,
+      // then drop coincident anchors. Clamping two points onto the same edge
+      // (and snap-to-grid) can leave a zero-length edge; storing the deduped
+      // path keeps the data canonical rather than relying on render-time dedup.
+      const clamped = dropCoincidentPoints(clampPathToBounds(points, binWidth, binDepth));
+
+      // Degenerate after dedup (e.g. all anchors coincident) — nothing to cut.
+      if (clamped.length < MIN_PATH_POINTS) {
+        setPathDrawingPreview(null);
+        setMode({ type: 'idle' });
+        return;
+      }
 
       // Reject self-intersecting paths that would produce invalid 3D geometry
       if (isSelfIntersecting(clamped)) {
