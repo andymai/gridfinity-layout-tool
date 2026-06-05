@@ -84,9 +84,12 @@ function generateConnectorKeySection(
   ].join('\n');
 }
 
-/** Signed mm string for print-guide notes, e.g. "+0.05mm", "-0.1mm". */
+/** Signed mm string for print-guide notes, e.g. "+0.05mm", "-0.10mm". */
 function formatSignedMm(value: number): string {
-  return `${value > 0 ? '+' : ''}${value}mm`;
+  // toFixed(2) matches the 0.05 step precision and the clearance values already
+  // printed with toFixed(2) in this file, and guards against float noise if a
+  // future path writes connectorFitOffset without snapping.
+  return `${value > 0 ? '+' : ''}${value.toFixed(2)}mm`;
 }
 
 function generateHeader(

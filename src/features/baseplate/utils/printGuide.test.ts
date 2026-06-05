@@ -201,7 +201,7 @@ describe('generatePrintGuide', () => {
       makeParams({ width: 8, depth: 4, connectorNubs: true, connectorFitOffset: 0.1 })
     );
     // Per-side clearance = nominal 0.15 + 0.1 = 0.25mm.
-    expect(guide).toContain('Connector fit: +0.1mm');
+    expect(guide).toContain('Connector fit: +0.10mm');
     expect(guide).toContain('0.250mm per-side clearance');
   });
 

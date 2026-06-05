@@ -188,6 +188,7 @@
     "baseplate.connectorStyle.label",
     "baseplate.connectorStyle.dovetail",
     "baseplate.connectorStyle.dovetailKey",
+    "baseplate.connectorFit.label",
     "export.format",
     "export.nameStyle.compact",
     "binDesigner.lid.outerDimensions",
