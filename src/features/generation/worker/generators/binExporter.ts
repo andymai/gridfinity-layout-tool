@@ -33,13 +33,17 @@ export interface ExportResult {
 async function runExportAttempt(
   params: BinParams,
   format: ExportFormat,
-  name: string
+  name: string,
+  onProgress?: (progress: number) => void
 ): Promise<ExportResult> {
+  onProgress?.(0.02);
   let faceGroups: readonly FaceGroupData[] | undefined;
   if (!isLastSolidExportQuality()) {
-    const meshData = generateBin(params, undefined, true);
+    // Generation is the bulk of export → map its stage progress to 2%–85%.
+    const meshData = generateBin(params, (_stage, p) => onProgress?.(0.02 + p * 0.83), true);
     faceGroups = meshData.faceGroups;
   }
+  onProgress?.(0.85);
 
   const solid = getLastSolid();
   if (!solid) {
@@ -51,6 +55,7 @@ async function runExportAttempt(
     // skip the re-mesh that the STL/3MF path needs.
     const blob = unwrapExportBlob(exportSTEP(solid), 'STEP');
     const data = await blob.arrayBuffer();
+    onProgress?.(1);
     return { data, fileName: `${name}.step` };
   }
 
@@ -68,6 +73,7 @@ async function runExportAttempt(
     }));
   }
 
+  onProgress?.(0.92);
   const blob = unwrapExportBlob(
     exportSTL(solid, {
       tolerance: EXPORT_TOLERANCE,
@@ -77,6 +83,7 @@ async function runExportAttempt(
     'STL'
   );
   const data = await blob.arrayBuffer();
+  onProgress?.(1);
   return { data, fileName: `${name}.stl`, faceGroups };
 }
 
@@ -104,11 +111,15 @@ async function runExportAttempt(
  * STL: binary mesh at the fixed export tolerance.
  * STEP: exact BREP geometry (lossless, CAD-interoperable).
  */
-export async function exportBin(params: BinParams, format: ExportFormat): Promise<ExportResult> {
+export async function exportBin(
+  params: BinParams,
+  format: ExportFormat,
+  onProgress?: (progress: number) => void
+): Promise<ExportResult> {
   const name = `gridfinity-${params.width}x${params.depth}x${params.height}`;
 
   try {
-    return await runExportAttempt(params, format, name);
+    return await runExportAttempt(params, format, name, onProgress);
   } catch (firstError) {
     // Discard any cached state and try once more with a completely fresh
     // solid. If this second attempt also fails, rethrow the second error
@@ -116,7 +127,7 @@ export async function exportBin(params: BinParams, format: ExportFormat): Promis
     // fresh-solid path gives us the cleanest diagnostic stack.
     setLastSolid(null);
     try {
-      return await runExportAttempt(params, format, name);
+      return await runExportAttempt(params, format, name, onProgress);
     } catch (retryError) {
       // Attach context about the first failure so telemetry can see both.
       if (retryError instanceof Error && firstError instanceof Error) {

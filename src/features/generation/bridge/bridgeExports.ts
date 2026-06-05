@@ -38,7 +38,8 @@ function runExport<T>(
   ctx: BridgeExportContext,
   slot: ExportSlot,
   timeoutMs: number,
-  buildMessage: (requestId: string) => WorkerMessage
+  buildMessage: (requestId: string) => WorkerMessage,
+  onProgress?: (progress: number) => void
 ): Promise<T> {
   return ctx.prepareExport(slot).then(
     (requestId) =>
@@ -48,6 +49,7 @@ function runExport<T>(
           reject,
           requestId,
           timer: null,
+          onProgress,
         });
         ctx.startExportTimeout(slot, requestId, timeoutMs);
         ctx.postMessage(buildMessage(requestId));
@@ -59,7 +61,11 @@ export function exportBin(
   ctx: BridgeExportContext,
   params: BinParams,
   format: ExportFormat,
-  options?: { tolerance?: number; angularTolerance?: number }
+  options?: {
+    tolerance?: number;
+    angularTolerance?: number;
+    onProgress?: (progress: number) => void;
+  }
 ): Promise<ExportResult> {
   return runExport<ExportResult>(
     ctx,
@@ -74,7 +80,8 @@ export function exportBin(
         tolerance: options?.tolerance,
         angularTolerance: options?.angularTolerance,
       },
-    })
+    }),
+    options?.onProgress
   );
 }
 
@@ -94,7 +101,11 @@ export function exportCombined(
   ctx: BridgeExportContext,
   params: BinParams,
   format: ExportFormat,
-  options?: { tolerance?: number; angularTolerance?: number }
+  options?: {
+    tolerance?: number;
+    angularTolerance?: number;
+    onProgress?: (progress: number) => void;
+  }
 ): Promise<CombinedExportResult> {
   return runExport<CombinedExportResult>(
     ctx,
@@ -109,7 +120,8 @@ export function exportCombined(
         tolerance: options?.tolerance,
         angularTolerance: options?.angularTolerance,
       },
-    })
+    }),
+    options?.onProgress
   );
 }
 

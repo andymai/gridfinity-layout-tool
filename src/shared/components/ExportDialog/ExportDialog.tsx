@@ -47,8 +47,13 @@ export interface ExportDialogProps {
   /** Override download button label */
   downloadLabel?: string;
 
-  /** Optional progress for multi-piece exports */
-  exportProgress?: { current: number; total: number } | null;
+  /**
+   * Optional determinate export progress. `current`/`total` drive the bar
+   * percentage; multi-piece exports leave `label` unset to get the default
+   * "piece X of Y" copy, while a single-bin export passes a percentage
+   * (`current` 0–100, `total` 100) plus a `label` like "Exporting…".
+   */
+  exportProgress?: { current: number; total: number; label?: string } | null;
 
   /** Optional split export banner */
   splitBanner?: {
@@ -329,18 +334,22 @@ export function ExportDialog({
           {exportProgress && (
             <div className="mb-4">
               <div className="mb-1.5 text-xs text-content-secondary">
-                {t('export.progressLabel', {
-                  current: exportProgress.current,
-                  total: exportProgress.total,
-                })}
+                {exportProgress.label ??
+                  t('export.progressLabel', {
+                    current: exportProgress.current,
+                    total: exportProgress.total,
+                  })}
               </div>
               <ProgressBar
                 value={progressPercent}
                 size="sm"
-                label={t('export.progressLabel', {
-                  current: exportProgress.current,
-                  total: exportProgress.total,
-                })}
+                label={
+                  exportProgress.label ??
+                  t('export.progressLabel', {
+                    current: exportProgress.current,
+                    total: exportProgress.total,
+                  })
+                }
               />
             </div>
           )}

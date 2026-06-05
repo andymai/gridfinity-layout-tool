@@ -123,6 +123,8 @@ export interface PendingExport<T> {
   readonly resolve: (result: T) => void;
   readonly reject: (error: Error) => void;
   readonly requestId: string;
+  /** Optional 0–1 progress callback, invoked as the worker reports PROGRESS. */
+  readonly onProgress?: (progress: number) => void;
   /**
    * Timeout handle that cancels the export and rejects the promise if the
    * worker becomes unresponsive. Cleared whenever the request resolves,
