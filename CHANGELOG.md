@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.145.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.144.2...gridfinity-layout-tool-v4.145.0) (2026-06-05)
+
+
+### Features
+
+* **generation:** faster live 3D preview via Manifold draft kernel ([#2009](https://github.com/andymai/gridfinity-layout-tool/issues/2009)) ([8cead49](https://github.com/andymai/gridfinity-layout-tool/commit/8cead492b7537f255520a5e60f99f96439307048))
+
 ## [4.144.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.144.1...gridfinity-layout-tool-v4.144.2) (2026-06-04)
 
 
