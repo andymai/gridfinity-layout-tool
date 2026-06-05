@@ -33,6 +33,28 @@ describe('HandleSection', () => {
     expect(screen.getByText('Right')).toBeDefined();
   });
 
+  it('renders the back side chip as off + disabled when a label tab blocks it', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        label: { ...DEFAULT_BIN_PARAMS.label, enabled: true },
+        handles: {
+          ...DEFAULT_BIN_PARAMS.handles,
+          enabled: true,
+          // Stored as enabled, but the active label tab blocks the back handle.
+          back: { ...DEFAULT_BIN_PARAMS.handles.back, enabled: true },
+        },
+      },
+    });
+
+    render(<HandleSection />);
+    const back = screen.getByRole('switch', { name: 'Back' });
+    expect(back.disabled).toBe(true);
+    // Must read as off (not an accent-tinted "on"), matching generation which
+    // skips back handles while a label tab is active.
+    expect(back.getAttribute('aria-checked')).toBe('false');
+  });
+
   it('does not show controls when disabled', () => {
     render(<HandleSection />);
     expect(screen.queryByText('Front')).toBeNull();

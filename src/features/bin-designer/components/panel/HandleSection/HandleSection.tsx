@@ -120,18 +120,23 @@ export function HandleSection() {
           {/* Side toggle chips — same order as WallCutoutsSection: L R F B */}
           <div className={SEGMENT_GROUP_CLASS}>
             {HANDLE_SIDES.map((side) => {
-              const isActive = handles[side].enabled;
               const isDisabled = side === 'back' && isBackDisabled;
+              // A disabled side is functionally off (generation skips back
+              // handles while a label tab is active), so present it as off —
+              // neutral styling + aria-checked=false — even if its stored
+              // `enabled` flag is still true. Otherwise the blocked chip reads
+              // as "on" (accent tint), implying the setting is still in effect.
+              const effectiveActive = handles[side].enabled && !isDisabled;
               return (
                 <button
                   key={side}
                   type="button"
                   role="switch"
-                  aria-checked={isActive}
+                  aria-checked={effectiveActive}
                   disabled={isDisabled}
                   title={isDisabled ? t('binDesigner.handles.backDisabledByLabelTab') : undefined}
                   onClick={() => handlers.toggleSide(side)}
-                  className={`flex-1 ${sideChipClass(isActive)}`}
+                  className={`flex-1 ${sideChipClass(effectiveActive)}`}
                 >
                   {t(`binDesigner.handles.${side}`)}
                 </button>
