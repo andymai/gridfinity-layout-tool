@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.145.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.145.0...gridfinity-layout-tool-v4.145.1) (2026-06-05)
+
+
+### Bug Fixes
+
+* **labs:** re-render feature toggles when flags change ([#2011](https://github.com/andymai/gridfinity-layout-tool/issues/2011)) ([80b2ab0](https://github.com/andymai/gridfinity-layout-tool/commit/80b2ab02fa5cc40b392351bf8f63ee10d95d9b3a))
+
 ## [4.145.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.144.2...gridfinity-layout-tool-v4.145.0) (2026-06-05)
 
 
