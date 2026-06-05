@@ -17,9 +17,9 @@ type BridgeResult = Awaited<ReturnType<GenerationBridge['generate']>>;
 
 /**
  * Map a worker generation result to the store's mesh payload. The typed-array
- * buffers are referenced as-is (the worker already cloned them before transfer,
- * so they're detached from worker memory); only the `readonly` faceGroups
- * arrays are spread into mutable copies the Immer store can ingest.
+ * buffers are referenced as-is — the worker cloned them before transfer, so
+ * they're detached from worker memory — while the `readonly` faceGroups arrays
+ * are spread into mutable copies the Immer store can ingest.
  */
 function toMeshPayload(result: BridgeResult): GenerationResult {
   return {
@@ -119,7 +119,9 @@ export function useGeneration(): void {
           .generateImmediate(currentParams, () => {})
           .then((draft) => {
             if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
-            if (draft.perfSnapshot) pushPerfSnapshot(draft.perfSnapshot);
+            // Draft perf is intentionally not pushed to perfHistory — the overlay
+            // diagnoses the exact pipeline, and interleaving draft-kernel timings
+            // would skew it. Only the exact result records a snapshot.
             setDraftResult(toMeshPayload(draft));
           })
           .catch(() => {

@@ -94,6 +94,24 @@ const EMPTY_MESH = {
   timingMs: 0,
 } as const;
 
+/**
+ * Fill one group's slots in the pre-sized piece-mesh array: the first piece
+ * keeps the original result, duplicates get cloned typed arrays so Three.js
+ * never shares buffers across pieces.
+ */
+function fillGroupMeshEntries(
+  meshEntries: PieceMeshEntry[],
+  group: { indices: readonly number[] },
+  pieces: BaseplateTiling['pieces'],
+  result: GenerationResult,
+  source: 'direct' | 'brep'
+): void {
+  group.indices.forEach((pieceIdx, j) => {
+    const pieceResult = j === 0 ? result : cloneGenerationResult(result);
+    meshEntries[pieceIdx] = buildPieceMeshEntry(pieceResult, pieces[pieceIdx], source);
+  });
+}
+
 /** Clone mesh buffers so each piece gets independent typed arrays for Three.js. */
 function cloneGenerationResult(result: GenerationResult): GenerationResult {
   return {
@@ -111,6 +129,19 @@ function cloneGenerationResult(result: GenerationResult): GenerationResult {
 /** Wrap a MeshData in a GenerationResult shape so the same builders work for both paths. */
 function wrapMeshAsResult(mesh: MeshData, timingMs: number): GenerationResult {
   return { mesh, timingMs };
+}
+
+/** Single-mesh store payload for the unsplit baseplate (draft and BREP share this shape). */
+function toSingleMesh(result: GenerationResult, source: 'direct' | 'brep') {
+  return {
+    vertices: result.mesh.vertices,
+    normals: result.mesh.normals,
+    indices: result.mesh.indices,
+    edgeVertices: result.mesh.edgeVertices,
+    error: null,
+    timingMs: result.timingMs,
+    source,
+  };
 }
 
 /**
@@ -256,15 +287,8 @@ export function useBaseplateGeneration(): void {
           const mesh = generateBaseplateDirect(fullParams, NO_OP_PROGRESS);
           if (generationEpochRef.current !== epoch) return tiling;
 
-          setGenerationResult({
-            vertices: mesh.vertices,
-            normals: mesh.normals,
-            indices: mesh.indices,
-            edgeVertices: mesh.edgeVertices,
-            error: null,
-            timingMs: performance.now() - directMeshStartRef.current,
-            source: 'direct',
-          });
+          const timingMs = performance.now() - directMeshStartRef.current;
+          setGenerationResult(toSingleMesh(wrapMeshAsResult(mesh, timingMs), 'direct'));
           setPieceMeshes([]);
         } else {
           // Split: generate one direct-mesh per unique piece group, clone for duplicates.
@@ -274,15 +298,11 @@ export function useBaseplateGeneration(): void {
           const meshEntries: PieceMeshEntry[] = new Array(tiling.pieces.length);
 
           for (const group of groups.values()) {
-            const baseMesh = generateBaseplateDirect(group.params, NO_OP_PROGRESS);
-            const baseResult = wrapMeshAsResult(baseMesh, 0);
-
-            for (let j = 0; j < group.indices.length; j++) {
-              const pieceIdx = group.indices[j];
-              const piece = tiling.pieces[pieceIdx];
-              const result = j === 0 ? baseResult : cloneGenerationResult(baseResult);
-              meshEntries[pieceIdx] = buildPieceMeshEntry(result, piece, 'direct');
-            }
+            const baseResult = wrapMeshAsResult(
+              generateBaseplateDirect(group.params, NO_OP_PROGRESS),
+              0
+            );
+            fillGroupMeshEntries(meshEntries, group, tiling.pieces, baseResult, 'direct');
           }
 
           if (generationEpochRef.current !== epoch) return tiling;
@@ -309,12 +329,12 @@ export function useBaseplateGeneration(): void {
   );
 
   /**
-   * Phase 1 (Manifold preview variant): a fast draft that runs the REAL
-   * `generateBaseplate` on the Manifold kernel at draft quality, replacing the
-   * hand-maintained procedural direct-mesh when the `manifold_preview` flag is
-   * on. More faithful than direct-mesh (same code path as the exact BREP), at
-   * the cost of a WASM round-trip. Returns `false` when no preview bridge is
-   * available or the draft throws, so the caller can fall back to direct-mesh.
+   * Phase 1 (Manifold preview variant): a fast draft that runs the real
+   * `generateBaseplate` on the Manifold kernel at draft quality when the
+   * `manifold_preview` flag is on. More faithful than the procedural direct-mesh
+   * (same code path as the exact BREP) at the cost of a WASM round-trip. Returns
+   * `false` when no preview bridge is available or the draft throws, so the
+   * caller can fall back to direct-mesh.
    *
    * The exact BREP always supersedes: drafts at or below `finalizedEpochRef`
    * are dropped (the draft is async and may resolve after the BREP it races).
@@ -336,15 +356,7 @@ export function useBaseplateGeneration(): void {
         if (!tiling.isSplit) {
           const result = await preview.generateBaseplate(fullParams, NO_OP_PROGRESS);
           if (!stillCurrent()) return true;
-          setGenerationResult({
-            vertices: result.mesh.vertices,
-            normals: result.mesh.normals,
-            indices: result.mesh.indices,
-            edgeVertices: result.mesh.edgeVertices,
-            error: null,
-            timingMs: result.timingMs,
-            source: 'direct',
-          });
+          setGenerationResult(toSingleMesh(result, 'direct'));
           setPieceMeshes([]);
         } else {
           const groups = groupPiecesByFingerprint(tiling.pieces, fullParams);
@@ -355,12 +367,7 @@ export function useBaseplateGeneration(): void {
           for (const group of groups.values()) {
             const baseResult = await preview.generateBaseplate(group.params, NO_OP_PROGRESS);
             if (!stillCurrent()) return true;
-            for (let j = 0; j < group.indices.length; j++) {
-              const pieceIdx = group.indices[j];
-              const piece = tiling.pieces[pieceIdx];
-              const result = j === 0 ? baseResult : cloneGenerationResult(baseResult);
-              meshEntries[pieceIdx] = buildPieceMeshEntry(result, piece, 'direct');
-            }
+            fillGroupMeshEntries(meshEntries, group, tiling.pieces, baseResult, 'direct');
           }
 
           if (!stillCurrent()) return true;
@@ -408,15 +415,7 @@ export function useBaseplateGeneration(): void {
           const result = await bridge.generateBaseplate(fullParams, NO_OP_PROGRESS);
           if (generationEpochRef.current !== epoch) return;
 
-          setGenerationResult({
-            vertices: result.mesh.vertices,
-            normals: result.mesh.normals,
-            indices: result.mesh.indices,
-            edgeVertices: result.mesh.edgeVertices,
-            error: null,
-            timingMs: result.timingMs,
-            source: 'brep',
-          });
+          setGenerationResult(toSingleMesh(result, 'brep'));
           setPieceMeshes([]);
           setGenerationStatus('complete');
         } else {
@@ -452,20 +451,18 @@ export function useBaseplateGeneration(): void {
             }
           }
 
-          // Build mesh entries: original for first piece in group, clone for duplicates.
           // `new Array(n)` returns `any[]`; we pre-size the typed slot.
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const meshEntries: PieceMeshEntry[] = new Array(totalCount);
           for (let groupIdx = 0; groupIdx < uniqueGroups.length; groupIdx++) {
             const group = uniqueGroups[groupIdx];
-            const result = uniqueResults[groupIdx];
-
-            for (let j = 0; j < group.indices.length; j++) {
-              const pieceIdx = group.indices[j];
-              const piece = tiling.pieces[pieceIdx];
-              const pieceResult = j === 0 ? result : cloneGenerationResult(result);
-              meshEntries[pieceIdx] = buildPieceMeshEntry(pieceResult, piece, 'brep');
-            }
+            fillGroupMeshEntries(
+              meshEntries,
+              group,
+              tiling.pieces,
+              uniqueResults[groupIdx],
+              'brep'
+            );
           }
 
           setSplitProgress(null);

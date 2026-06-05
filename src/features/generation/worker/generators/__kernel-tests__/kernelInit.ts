@@ -43,13 +43,6 @@ export async function initOcctWasmKernel(): Promise<void> {
   const wasmBinary = readFileSync(wasmPath);
   const kernel = await OcctKernel.init({ wasm: wasmBinary });
   // fromKernel retains the wrapper for the adapter's lifetime, so no manual GC
-  // pin is needed. The cast bridges occt-wasm's exported module type, still
-  // narrower than brepjs's expected owner (missing VectorString /
-  // getExceptionMessage); both exist at runtime — filed upstream.
-  registerKernel(
-    'occt-wasm',
-    OcctWasmAdapter.fromKernel(
-      kernel as unknown as Parameters<typeof OcctWasmAdapter.fromKernel>[0]
-    )
-  );
+  // pin is needed.
+  registerKernel('occt-wasm', OcctWasmAdapter.fromKernel(kernel));
 }
