@@ -36,6 +36,8 @@
   "baseplate.connectorStyle.label": "Connector style",
   "baseplate.connectorStyle.dovetail": "Dovetail",
   "baseplate.connectorStyle.dovetailKey": "Dovetail key",
+  "baseplate.connectorFit.label": "Connector fit",
+  "baseplate.connectorFit.info": "Ajusta la holgura del conector (mm) para adaptar el encaje a tu impresora y filamento. Mayor = más holgado, menor = más apretado.",
   "baseplate.cornerRadius": "Radio de esquina",
   "baseplate.cornerRadiusBL": "Inferior izquierda",
   "baseplate.cornerRadiusBR": "Inferior derecha",

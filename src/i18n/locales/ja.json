@@ -36,6 +36,8 @@
   "baseplate.connectorStyle.label": "Connector style",
   "baseplate.connectorStyle.dovetail": "Dovetail",
   "baseplate.connectorStyle.dovetailKey": "Dovetail key",
+  "baseplate.connectorFit.label": "Connector fit",
+  "baseplate.connectorFit.info": "コネクタの隙間（mm）を調整し、プリンターとフィラメントに合わせて嵌合を最適化します。大きい＝緩い、小さい＝きつい。",
   "baseplate.cornerRadius": "角の半径",
   "baseplate.cornerRadiusBL": "左下",
   "baseplate.cornerRadiusBR": "右下",

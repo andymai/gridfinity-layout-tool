@@ -36,6 +36,8 @@
   "baseplate.connectorStyle.label": "Connector style",
   "baseplate.connectorStyle.dovetail": "Dovetail",
   "baseplate.connectorStyle.dovetailKey": "Dovetail key",
+  "baseplate.connectorFit.label": "Connector fit",
+  "baseplate.connectorFit.info": "Регулює зазор з'єднувача (мм) для підлаштування підгону під ваш принтер і філамент. Більше = вільніше, менше = щільніше.",
   "baseplate.cornerRadius": "Радіус кута",
   "baseplate.cornerRadiusBL": "Нижній лівий",
   "baseplate.cornerRadiusBR": "Нижній правий",

@@ -189,4 +189,44 @@ describe('generatePrintGuide', () => {
     expect(guide).toContain('Hammer one into each seam junction');
     expect(keyCount).toBeGreaterThan(0);
   });
+
+  // issue #2024 — the connector fit offset must surface in the guide.
+  it('omits a connector-fit line when the offset is zero', () => {
+    const guide = buildGuide(makeParams({ width: 8, depth: 4, connectorNubs: true }));
+    expect(guide).not.toContain('Connector fit:');
+  });
+
+  it('surfaces a non-zero connector-fit offset in the header for integral dovetails', () => {
+    const guide = buildGuide(
+      makeParams({ width: 8, depth: 4, connectorNubs: true, connectorFitOffset: 0.1 })
+    );
+    // Per-side clearance = nominal 0.15 + 0.1 = 0.25mm.
+    expect(guide).toContain('Connector fit: +0.10mm');
+    expect(guide).toContain('0.250mm per-side clearance');
+  });
+
+  it('reflects the offset in the dovetail-key total clearance note', () => {
+    const params = makeParams({
+      width: 8,
+      depth: 4,
+      connectorNubs: true,
+      connectorStyle: 'dovetailKey',
+      connectorFitOffset: 0.05,
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    const groupNames = assignGroupNames(groups, tiling.pieces);
+    const guide = generatePrintGuide({
+      tiling,
+      groups,
+      groupNames,
+      parentParams: params,
+      fileExtension: '.stl',
+      baseFileName: 'gridfinity-baseplate',
+      connectorKey: { fileName: 'k.stl', count: countConnectorKeys(tiling, params) },
+    });
+    // Key base clearance 0.075 + 0.05 = 0.125/side → 0.25mm total.
+    expect(guide).toContain('Fit offset +0.05mm applied');
+    expect(guide).toContain('0.25mm total clearance');
+  });
 });

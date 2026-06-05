@@ -36,6 +36,8 @@
   "baseplate.connectorStyle.label": "Connector style",
   "baseplate.connectorStyle.dovetail": "Dovetail",
   "baseplate.connectorStyle.dovetailKey": "Dovetail key",
+  "baseplate.connectorFit.label": "Connector fit",
+  "baseplate.connectorFit.info": "Past de connectorspeling (mm) aan om de passing af te stemmen op je printer en filament. Hoger = losser, lager = strakker.",
   "baseplate.cornerRadius": "Hoekradius",
   "baseplate.cornerRadiusBL": "Linksonder",
   "baseplate.cornerRadiusBR": "Rechtsonder",

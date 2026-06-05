@@ -36,6 +36,8 @@
   "baseplate.connectorStyle.label": "Connector style",
   "baseplate.connectorStyle.dovetail": "Dovetail",
   "baseplate.connectorStyle.dovetailKey": "Dovetail key",
+  "baseplate.connectorFit.label": "Connector fit",
+  "baseplate.connectorFit.info": "Passt den Verbinderspalt (mm) an, um die Passung für Drucker und Filament abzustimmen. Höher = lockerer, niedriger = strammer.",
   "baseplate.cornerRadius": "Eckenradius",
   "baseplate.cornerRadiusBL": "Unten-links",
   "baseplate.cornerRadiusBR": "Unten-rechts",

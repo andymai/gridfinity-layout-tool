@@ -101,6 +101,7 @@ export {
   TONGUE_TIP_HALF,
   TONGUE_CLEARANCE,
   DOVETAIL_KEY_CLEARANCE,
+  effectiveClearance,
 } from '@/shared/constants/connectors';
 
 export const NUB_DIAMETER = 1.5;

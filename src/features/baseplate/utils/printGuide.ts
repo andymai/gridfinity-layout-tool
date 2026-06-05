@@ -12,7 +12,12 @@ import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { PieceGroup } from './pieceFingerprint';
 import { colToLetter } from './splitPlanner';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
-import { TONGUE_PROTRUSION } from '@/shared/constants/connectors';
+import {
+  TONGUE_PROTRUSION,
+  TONGUE_CLEARANCE,
+  DOVETAIL_KEY_CLEARANCE,
+  effectiveClearance,
+} from '@/shared/constants/connectors';
 
 const SOCKET_HEIGHT = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 /** Retaining floor thickness above magnet holes (generation-specific, not in GRIDFINITY_SPEC) */
@@ -43,7 +48,7 @@ export function generatePrintGuide(input: PrintGuideInput): string {
       fileExtension,
       baseFileName
     ),
-    ...(connectorKey ? [generateConnectorKeySection(connectorKey)] : []),
+    ...(connectorKey ? [generateConnectorKeySection(connectorKey, parentParams)] : []),
     generateGridMap(tiling, groups, groupNames),
     generateFooter(),
   ];
@@ -51,8 +56,18 @@ export function generatePrintGuide(input: PrintGuideInput): string {
   return sections.join('\n\n');
 }
 
-function generateConnectorKeySection(key: { fileName: string; count: number }): string {
+function generateConnectorKeySection(
+  key: { fileName: string; count: number },
+  params: BaseplateParams
+): string {
   const copyText = key.count === 1 ? 'Print 1 copy' : `Print ${key.count} copies`;
+  const offset = params.connectorFitOffset ?? 0;
+  // Total clearance = both per-side grooves of the key cavity combined.
+  const totalClearance = 2 * effectiveClearance(DOVETAIL_KEY_CLEARANCE, offset);
+  const fitNote =
+    offset === 0
+      ? `    Fit is a tight press fit (~${totalClearance.toFixed(2)}mm total clearance). For best results:`
+      : `    Fit offset ${formatSignedMm(offset)} applied → ~${totalClearance.toFixed(2)}mm total clearance. For best results:`;
   return [
     '─── Connector keys ──────────────────────────────',
     '',
@@ -60,13 +75,21 @@ function generateConnectorKeySection(key: { fileName: string; count: number }): 
     `    ${copyText}`,
     '    Hammer one into each seam junction from the top, flush with the surface.',
     '',
-    '    Fit is a tight press fit (~0.15mm total clearance). For best results:',
+    fitNote,
     '      • Use a 0.4mm nozzle — larger nozzles lose the dovetail detail.',
     '      • Set initial-layer horizontal expansion to about -0.1 to -0.2mm to',
     '        cancel first-layer squish (the biggest cause of an over-tight key).',
     '      • Print the key flat on the bed (as oriented); 2+ walls.',
-    "      • Won't seat? Lower flow ~5% or sand the key. Too loose? Raise flow ~5%.",
+    "      • Won't seat? Raise the Connector fit offset (looser). Too loose? Lower it.",
   ].join('\n');
+}
+
+/** Signed mm string for print-guide notes, e.g. "+0.05mm", "-0.10mm". */
+function formatSignedMm(value: number): string {
+  // toFixed(2) matches the 0.05 step precision and the clearance values already
+  // printed with toFixed(2) in this file, and guards against float noise if a
+  // future path writes connectorFitOffset without snapping.
+  return `${value > 0 ? '+' : ''}${value.toFixed(2)}mm`;
 }
 
 function generateHeader(
@@ -100,6 +123,19 @@ function generateHeader(
     `  Features:     ${featureStr}`,
     `  Total pieces: ${totalPieces}${totalPieces > 1 ? ` (${uniqueCount} unique)` : ''}`,
   ];
+
+  // Surface the connector fit offset whenever connectors are on and the user
+  // has dialed it off-nominal — applies to the integral dovetail (which has no
+  // dedicated tuning section) as well as the dovetail key.
+  const offset = params.connectorFitOffset ?? 0;
+  if (params.connectorNubs && offset !== 0) {
+    const baseClearance =
+      params.connectorStyle === 'dovetailKey' ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE;
+    const perSide = effectiveClearance(baseClearance, offset);
+    lines.push(
+      `  Connector fit: ${formatSignedMm(offset)} (${perSide.toFixed(3)}mm per-side clearance)`
+    );
+  }
 
   return lines.join('\n');
 }

@@ -36,8 +36,30 @@ import { CornerRadiusControl } from './CornerRadiusControl';
 import { GridDimensionStepper } from './GridDimensionStepper';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
 import { PADDING_MAX } from '../PaddingStepper';
+import { Stepper } from '@/design-system/Stepper';
+import {
+  CONNECTOR_FIT_OFFSET_MIN,
+  CONNECTOR_FIT_OFFSET_MAX,
+  CONNECTOR_FIT_OFFSET_STEP,
+} from '@/shared/constants/connectors';
 import type { BaseplateParams } from '@/core/types';
 import { gridUnits, mm } from '@/core/types';
+
+/** Snap a connector fit offset to its step and clamp to the allowed range,
+ * absorbing IEEE-754 drift from repeated ±0.05 button clicks. */
+function snapConnectorFitOffset(value: number): number {
+  const snapped = Math.round(value / CONNECTOR_FIT_OFFSET_STEP) * CONNECTOR_FIT_OFFSET_STEP;
+  const clamped = Math.max(CONNECTOR_FIT_OFFSET_MIN, Math.min(CONNECTOR_FIT_OFFSET_MAX, snapped));
+  // Round to 2dp so values like 0.30000000000000004 don't leak into the UI/cache.
+  return Math.round(clamped * 100) / 100;
+}
+
+/** Signed mm label for the connector fit offset, e.g. "+0.05 mm", "0 mm". */
+function formatConnectorFitOffset(value: number): string {
+  if (value === 0) return '0 mm';
+  const sign = value > 0 ? '+' : '−'; // U+2212 minus for typographic consistency
+  return `${sign}${Math.abs(value)} mm`;
+}
 
 export function BaseplatePanel() {
   const t = useTranslation();
@@ -284,6 +306,12 @@ export function BaseplatePanel() {
                   onChange={() =>
                     updateParam('connectorNubs', baseplateParams.connectorNubs !== true)
                   }
+                  valueSummary={
+                    baseplateParams.connectorNubs === true &&
+                    (baseplateParams.connectorFitOffset ?? 0) !== 0
+                      ? formatConnectorFitOffset(baseplateParams.connectorFitOffset ?? 0)
+                      : undefined
+                  }
                 />
                 {baseplateParams.connectorNubs === true && (
                   <>
@@ -302,6 +330,29 @@ export function BaseplatePanel() {
                           { id: 'dovetailKey', name: t('baseplate.connectorStyle.dovetailKey') },
                         ]}
                         aria-label={t('baseplate.connectorStyle.label')}
+                      />
+                    </SettingsRow>
+                    <SettingsRow
+                      label={t('baseplate.connectorFit.label')}
+                      tooltip={t('baseplate.connectorFit.info')}
+                    >
+                      <Stepper
+                        size="sm"
+                        value={baseplateParams.connectorFitOffset ?? 0}
+                        onStep={(delta) => {
+                          const next = snapConnectorFitOffset(
+                            (baseplateParams.connectorFitOffset ?? 0) +
+                              delta * CONNECTOR_FIT_OFFSET_STEP
+                          );
+                          updateParam('connectorFitOffset', next === 0 ? undefined : next);
+                        }}
+                        min={CONNECTOR_FIT_OFFSET_MIN}
+                        max={CONNECTOR_FIT_OFFSET_MAX}
+                        step={CONNECTOR_FIT_OFFSET_STEP}
+                        displayValue={formatConnectorFitOffset(
+                          baseplateParams.connectorFitOffset ?? 0
+                        )}
+                        aria-label={t('baseplate.connectorFit.label')}
                       />
                     </SettingsRow>
                     {baseplateParams.connectorStyle !== 'dovetailKey' &&

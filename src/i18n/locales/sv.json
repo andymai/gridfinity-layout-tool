@@ -36,6 +36,8 @@
   "baseplate.connectorStyle.label": "Connector style",
   "baseplate.connectorStyle.dovetail": "Dovetail",
   "baseplate.connectorStyle.dovetailKey": "Dovetail key",
+  "baseplate.connectorFit.label": "Connector fit",
+  "baseplate.connectorFit.info": "Justerar kopplingsspelet (mm) för att anpassa passformen till din skrivare och ditt filament. Högre = lösare, lägre = stramare.",
   "baseplate.cornerRadius": "Hörnradie",
   "baseplate.cornerRadiusBL": "Nedre vänster",
   "baseplate.cornerRadiusBR": "Nedre höger",

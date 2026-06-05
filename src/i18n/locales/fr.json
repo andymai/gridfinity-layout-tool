@@ -36,6 +36,8 @@
   "baseplate.connectorStyle.label": "Connector style",
   "baseplate.connectorStyle.dovetail": "Dovetail",
   "baseplate.connectorStyle.dovetailKey": "Dovetail key",
+  "baseplate.connectorFit.label": "Connector fit",
+  "baseplate.connectorFit.info": "Ajuste le jeu du connecteur (mm) pour adapter l'ajustement à votre imprimante et votre filament. Plus élevé = plus lâche, plus bas = plus serré.",
   "baseplate.cornerRadius": "Rayon de coin",
   "baseplate.cornerRadiusBL": "Bas-gauche",
   "baseplate.cornerRadiusBR": "Bas-droit",

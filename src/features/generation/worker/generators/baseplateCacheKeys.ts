@@ -13,8 +13,19 @@
 
 import type { BaseplateParams } from '@/shared/types/bin';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
+import { TONGUE_CLEARANCE, DOVETAIL_KEY_CLEARANCE, effectiveClearance } from './generatorConstants';
 
 export function meshCacheKey(params: BaseplateParams, forExport: boolean): string {
+  // Key on the CLAMPED effective groove clearance, not the raw fit offset, so
+  // offsets that collapse to identical geometry share a cache entry (e.g. any
+  // tighter-than-floor value clamps to 0). Gated on connectorNubs because the
+  // offset has no geometric effect when connectors are off. `connectorStyle` is
+  // already part of the key, so the per-style base clearance is disambiguated.
+  const baseClearance =
+    params.connectorStyle === 'dovetailKey' ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE;
+  const connectorClearance = params.connectorNubs
+    ? effectiveClearance(baseClearance, params.connectorFitOffset ?? 0)
+    : 0;
   return buildCacheKey(
     'v1',
     quantize(params.width),
@@ -37,6 +48,7 @@ export function meshCacheKey(params: BaseplateParams, forExport: boolean): strin
     params.connectorNubs ?? false,
     params.invertDovetails ?? false,
     params.connectorStyle ?? 'dovetail',
+    quantize(connectorClearance),
     params.lightweight ?? true,
     quantize(params.cornerRadius ?? -1),
     quantize(params.cornerRadii?.tl ?? -1),

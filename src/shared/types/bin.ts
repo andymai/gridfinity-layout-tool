@@ -158,6 +158,14 @@ export interface BaseplateParams {
    * separate hammered-in dovetail key instead of an integral male tongue.
    */
   readonly connectorStyle?: 'dovetail' | 'dovetailKey';
+  /**
+   * User fit offset (mm) added to the per-side groove clearance to compensate
+   * for printer/filament variation (issue #2024). Positive = looser, negative =
+   * tighter; clamped so effective clearance never goes negative. Default 0
+   * leaves the nominal clearance unchanged. See `effectiveClearance` in
+   * `@/shared/constants/connectors`.
+   */
+  readonly connectorFitOffset?: number;
   /** Remove center floor material, keeping only magnet pads. */
   readonly lightweight?: boolean;
   /** Uniform outer corner radius in mm. */

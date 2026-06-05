@@ -80,6 +80,14 @@ export interface BaseplateParams {
    * integral male tongue. Only meaningful when `connectorNubs` is true.
    */
   readonly connectorStyle?: 'dovetail' | 'dovetailKey';
+  /**
+   * User fit offset (mm) added to the per-side connector groove clearance to
+   * compensate for printer/filament variation (issue #2024). Positive = looser,
+   * negative = tighter; clamped so effective clearance never goes negative.
+   * Default 0 / undefined leaves the nominal clearance unchanged. Only meaningful
+   * when `connectorNubs` is true.
+   */
+  readonly connectorFitOffset?: number;
   /** Uniform outer corner radius in mm (default: Gridfinity spec 2.5mm). */
   readonly cornerRadius?: Mm;
   /** Per-corner radius overrides. When set, takes precedence over cornerRadius. */

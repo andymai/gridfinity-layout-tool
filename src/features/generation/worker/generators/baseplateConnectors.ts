@@ -41,6 +41,7 @@ import {
   TONGUE_TIP_HALF,
   TONGUE_CLEARANCE,
   DOVETAIL_KEY_CLEARANCE,
+  effectiveClearance,
   COPLANAR_MARGIN,
   COPLANAR_OVERLAP,
   sketch,
@@ -88,7 +89,11 @@ export function buildConnectors(
   const P = TONGUE_PROTRUSION;
   const bW = TONGUE_BASE_HALF; // half-width at wall (narrow)
   const tW = TONGUE_TIP_HALF; // half-width at tip (wide)
-  const cl = isDovetailKey ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE;
+  // Per-side groove clearance, shifted by the user's fit offset (issue #2024)
+  // and clamped so it can never go negative. The tongue/key stay at nominal
+  // size — only the groove the user prints around them grows or shrinks.
+  const baseClearance = isDovetailKey ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE;
+  const cl = effectiveClearance(baseClearance, params.connectorFitOffset ?? 0);
   const ext = COPLANAR_MARGIN;
 
   // Honors fractionalEdgeX/Y so dovetails land on cell boundaries even when
