@@ -1,13 +1,13 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`inserts > 2×2 with circle insert 1`] = `3080`;
+exports[`inserts > 2×2 with circle insert 1`] = `3032`;
 
-exports[`inserts > 2×2 with hexagon insert 1`] = `3080`;
+exports[`inserts > 2×2 with hexagon insert 1`] = `3032`;
 
-exports[`inserts > 2×2 with rectangle insert 1`] = `2848`;
+exports[`inserts > 2×2 with rectangle insert 1`] = `2816`;
 
-exports[`inserts > 2×2 with rounded-rect insert 1`] = `2976`;
+exports[`inserts > 2×2 with rounded-rect insert 1`] = `2944`;
 
-exports[`inserts > 2×2 with slot insert 1`] = `3024`;
+exports[`inserts > 2×2 with slot insert 1`] = `2984`;
 
-exports[`multiple inserts > 2×2 with 2 circle inserts 1`] = `3304`;
+exports[`multiple inserts > 2×2 with 2 circle inserts 1`] = `3264`;

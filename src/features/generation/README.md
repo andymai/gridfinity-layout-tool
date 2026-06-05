@@ -79,11 +79,11 @@ graph TB
 
 Composable stages in `pipeline/stages/`, orchestrated by `pipeline/runner.ts`:
 
-1. **Shell** (`shellStage`) — socket + box body + lip assembly, cached by shellKey
-2. **Features** (`featuresStage`) — compartments, inserts, slots, labels, scoops, wall cutouts, patterns
+1. **Shell** (`shellStage`) — box body + lip (cached by shellKey) is `ctx.solid`; the base socket is built separately. **Preview** keeps the socket in `ctx.deferredSolid` (skips the socket↔body fuse — ~80% of cold-shell time); **export** fuses it into `ctx.solid` for a watertight model.
+2. **Features** (`featuresStage`) — compartments, inserts, slots, labels, scoops, wall cutouts, patterns (cut the body only; the socket is never feature-cut)
 3. **Boolean** (`booleanStage`) — batch fuse additive + cut subtractive via `fuseAllBisect` / `cutAllBisect` (n-way batch first, recursive bisect on failure)
-4. **Translate** (`translateStage`) — Z-offset for socket-based bins
-5. **Tessellate** (`tessellateStage`) — dynamic quality mesh + edge extraction
+4. **Translate** (`translateStage`) — Z-offset for socket-based bins (applied to `solid` **and** `deferredSolid` so they stay aligned)
+5. **Tessellate** (`tessellateStage`) — dynamic quality mesh + edge extraction; meshes `deferredSolid` separately and concatenates via `mergeShapeMeshes` (visually identical to the fused shell — socket meets the body only at a hidden interface)
 
 ## Worker Protocol
 

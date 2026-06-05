@@ -10,7 +10,7 @@
 
 import { mesh, meshEdges } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
-import { toIndexedMeshData } from '../../utils/mesh';
+import { toIndexedMeshData, mergeShapeMeshes, concatFloat32 } from '../../utils/mesh';
 import { computeTessellationTolerances } from '../../utils/tolerances';
 import { setLastSolid } from '../../shapeCache';
 
@@ -34,13 +34,28 @@ export const tessellateStage: PipelineStage = {
       dim.maxDimension
     );
 
-    const shapeMesh = mesh(solid, { tolerance, angularTolerance });
-    const edgeMesh = meshEdges(solid, {
+    const edgeAngular = angularTolerance * 0.5;
+    let shapeMesh = mesh(solid, { tolerance, angularTolerance });
+    let edgeLines: ArrayLike<number> = meshEdges(solid, {
       tolerance,
-      angularTolerance: angularTolerance * 0.5,
-    });
+      angularTolerance: edgeAngular,
+    }).lines;
+
+    // Preview path: the base socket is kept out of `solid` to skip the
+    // expensive socket↔body fuse. Tessellate it separately and concatenate —
+    // the socket is never feature-cut and only meets the body at a hidden
+    // interface, so the merged mesh is visually identical to the fused shell.
+    const { deferredSolid } = ctx;
+    if (deferredSolid) {
+      const socketMesh = mesh(deferredSolid, { tolerance, angularTolerance });
+      shapeMesh = mergeShapeMeshes(shapeMesh, socketMesh);
+      const socketEdges = meshEdges(deferredSolid, { tolerance, angularTolerance: edgeAngular });
+      edgeLines = concatFloat32(edgeLines, socketEdges.lines);
+      deferredSolid.delete();
+    }
+
     ctx.onProgress?.('merge', 1.0);
-    const meshData = toIndexedMeshData(shapeMesh, edgeMesh.lines, ctx.originToTag);
-    return { ...ctx, mesh: meshData, coarseMesh: null, solid: null };
+    const meshData = toIndexedMeshData(shapeMesh, edgeLines, ctx.originToTag);
+    return { ...ctx, mesh: meshData, coarseMesh: null, solid: null, deferredSolid: null };
   },
 };

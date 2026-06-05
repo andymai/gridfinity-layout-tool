@@ -1,9 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`compartments > 2×2 bin with 1×1 (none) compartments 1`] = `2812`;
+exports[`compartments > 2×2 bin with 1×1 (none) compartments 1`] = `2796`;
 
-exports[`compartments > 2×2 bin with 2×2 compartments 1`] = `2924`;
+exports[`compartments > 2×2 bin with 2×2 compartments 1`] = `2908`;
 
-exports[`compartments > 2×2 bin with 3×2 merged top-left compartments 1`] = `2952`;
+exports[`compartments > 2×2 bin with 3×2 merged top-left compartments 1`] = `2936`;
 
-exports[`compartments > 2×2 bin with 4×4 dense grid compartments 1`] = `3212`;
+exports[`compartments > 2×2 bin with 4×4 dense grid compartments 1`] = `3196`;

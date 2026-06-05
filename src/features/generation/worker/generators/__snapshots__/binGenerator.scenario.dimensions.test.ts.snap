@@ -1,21 +1,21 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`dimensions > 0.5×0.5 no lip 1`] = `468`;
+exports[`dimensions > 0.5×0.5 no lip 1`] = `464`;
 
-exports[`dimensions > 0.5×0.5 with lip 1`] = `1372`;
+exports[`dimensions > 0.5×0.5 with lip 1`] = `1368`;
 
-exports[`dimensions > 1.5×2 fractional no lip 1`] = `1260`;
+exports[`dimensions > 1.5×2 fractional no lip 1`] = `1244`;
 
-exports[`dimensions > 1.5×2 fractional with lip 1`] = `2812`;
+exports[`dimensions > 1.5×2 fractional with lip 1`] = `2796`;
 
-exports[`dimensions > 1×1 no lip 1`] = `468`;
+exports[`dimensions > 1×1 no lip 1`] = `464`;
 
-exports[`dimensions > 1×1 with lip 1`] = `1372`;
+exports[`dimensions > 1×1 with lip 1`] = `1368`;
 
-exports[`dimensions > 2×2 no lip 1`] = `1260`;
+exports[`dimensions > 2×2 no lip 1`] = `1244`;
 
-exports[`dimensions > 2×2 with lip 1`] = `2812`;
+exports[`dimensions > 2×2 with lip 1`] = `2796`;
 
-exports[`dimensions > 4×4 no lip 1`] = `3500`;
+exports[`dimensions > 4×4 no lip 1`] = `3436`;
 
-exports[`dimensions > 4×4 with lip 1`] = `7996`;
+exports[`dimensions > 4×4 with lip 1`] = `7932`;

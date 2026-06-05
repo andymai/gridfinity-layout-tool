@@ -37,6 +37,7 @@ export type WorkerMessage =
   | InitMessage
   | GenerateMessage
   | EstimateMessage
+  | WarmMessage
   | GenerateBaseplateMessage
   | GenerateSplitPreviewMessage
   | GenerateSplitPreviewRangeMessage
@@ -66,6 +67,15 @@ export interface GenerateMessage {
  */
 export interface EstimateMessage {
   readonly type: 'ESTIMATE';
+  readonly payload: GeneratePayload;
+}
+
+/**
+ * Speculative idle warm: build the export-quality (fused) shell so a subsequent
+ * export skips the deferred socket↔body fuse. No mesh is returned.
+ */
+export interface WarmMessage {
+  readonly type: 'WARM';
   readonly payload: GeneratePayload;
 }
 
@@ -258,6 +268,7 @@ export type WorkerResponse =
   | KernelPerfStatsResponse
   | BooleanFallbackStatsResponse
   | CleanupDoneResponse
+  | WarmDoneResponse
   | ErrorResponse;
 
 /** Per-cache statistics snapshot from the worker. */
@@ -279,6 +290,11 @@ export interface CacheStatsResponse {
 
 export interface CleanupDoneResponse {
   readonly type: 'CLEANUP_DONE';
+}
+
+export interface WarmDoneResponse {
+  readonly type: 'WARM_DONE';
+  readonly requestId: string;
 }
 
 /** Per-category kernel performance timing from brepjs. */

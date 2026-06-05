@@ -5,6 +5,7 @@
 import type {
   GenerateMessage,
   GenerateBaseplateMessage,
+  WarmMessage,
   LidMeshData,
   MeshData,
 } from '../../bridge/types';
@@ -12,7 +13,18 @@ import { generateBin } from '../generators/binGenerator';
 import { generateBaseplate } from '../generators/baseplateGenerator';
 import { generateLid } from '../generators/lidOrchestrator';
 import { isAbortError } from '../generators/utils/abort';
-import { runGeneration, reportProgress, getActiveRequestId } from './workerContext';
+import { runGeneration, runWarm, reportProgress, getActiveRequestId } from './workerContext';
+
+/**
+ * Speculative idle warm: build the export-quality (fused) shell so the next
+ * export skips the deferred socket↔body fuse. Best-effort, no mesh returned.
+ */
+export function handleWarm(message: WarmMessage): void {
+  const { params, requestId } = message.payload;
+  runWarm(requestId, (signal) => {
+    generateBin(params, undefined, true, signal);
+  });
+}
 
 export function handleGenerate(message: GenerateMessage): void {
   const { params, requestId } = message.payload;

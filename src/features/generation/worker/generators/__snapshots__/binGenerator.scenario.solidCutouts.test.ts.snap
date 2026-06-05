@@ -1,49 +1,49 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`solid cutouts > 2×2 solid with 3×2 grid array of circles 1`] = `3436`;
+exports[`solid cutouts > 2×2 solid with 3×2 grid array of circles 1`] = `3420`;
 
-exports[`solid cutouts > 2×2 solid with chamfered + scooped rectangle cutout 1`] = `3574`;
+exports[`solid cutouts > 2×2 solid with chamfered + scooped rectangle cutout 1`] = `3558`;
 
-exports[`solid cutouts > 2×2 solid with chamfered circle cutout 1`] = `2654`;
+exports[`solid cutouts > 2×2 solid with chamfered circle cutout 1`] = `2638`;
 
-exports[`solid cutouts > 2×2 solid with chamfered hexagon cutout 1`] = `2638`;
+exports[`solid cutouts > 2×2 solid with chamfered hexagon cutout 1`] = `2622`;
 
-exports[`solid cutouts > 2×2 solid with chamfered rectangle cutout 1`] = `2710`;
+exports[`solid cutouts > 2×2 solid with chamfered rectangle cutout 1`] = `2694`;
 
-exports[`solid cutouts > 2×2 solid with chamfered slot cutout 1`] = `2944`;
+exports[`solid cutouts > 2×2 solid with chamfered slot cutout 1`] = `2928`;
 
-exports[`solid cutouts > 2×2 solid with circle cutout 1`] = `2784`;
+exports[`solid cutouts > 2×2 solid with circle cutout 1`] = `2768`;
 
-exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`] = `2700`;
+exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`] = `2684`;
 
-exports[`solid cutouts > 2×2 solid with ellipse cutout 1`] = `2548`;
+exports[`solid cutouts > 2×2 solid with ellipse cutout 1`] = `2532`;
 
-exports[`solid cutouts > 2×2 solid with grouped cutouts 1`] = `2578`;
+exports[`solid cutouts > 2×2 solid with grouped cutouts 1`] = `2562`;
 
-exports[`solid cutouts > 2×2 solid with hexagon (polygon) cutout 1`] = `2580`;
+exports[`solid cutouts > 2×2 solid with hexagon (polygon) cutout 1`] = `2564`;
 
-exports[`solid cutouts > 2×2 solid with hexagon cutout + insertion clearance 1`] = `2584`;
+exports[`solid cutouts > 2×2 solid with hexagon cutout + insertion clearance 1`] = `2568`;
 
-exports[`solid cutouts > 2×2 solid with path cutout having closing bezier curve 1`] = `2740`;
+exports[`solid cutouts > 2×2 solid with path cutout having closing bezier curve 1`] = `2724`;
 
-exports[`solid cutouts > 2×2 solid with radial array (rotate-to-center) 1`] = `3352`;
+exports[`solid cutouts > 2×2 solid with radial array (rotate-to-center) 1`] = `3336`;
 
-exports[`solid cutouts > 2×2 solid with rectangle cutout 1`] = `2568`;
+exports[`solid cutouts > 2×2 solid with rectangle cutout 1`] = `2552`;
 
-exports[`solid cutouts > 2×2 solid with rectangle with scoop cutout 1`] = `3244`;
+exports[`solid cutouts > 2×2 solid with rectangle with scoop cutout 1`] = `3228`;
 
-exports[`solid cutouts > 2×2 solid with rectangle, edge gate disables a single wall 1`] = `2862`;
+exports[`solid cutouts > 2×2 solid with rectangle, edge gate disables a single wall 1`] = `2846`;
 
-exports[`solid cutouts > 2×2 solid with rectangle, split scoop (W only) cuts only left/right walls 1`] = `2688`;
+exports[`solid cutouts > 2×2 solid with rectangle, split scoop (W only) cuts only left/right walls 1`] = `2672`;
 
-exports[`solid cutouts > 2×2 solid with rotated 45° cutout 1`] = `2580`;
+exports[`solid cutouts > 2×2 solid with rotated 45° cutout 1`] = `2564`;
 
-exports[`solid cutouts > 2×2 solid with rounded-rectangle cutout 1`] = `2696`;
+exports[`solid cutouts > 2×2 solid with rounded-rectangle cutout 1`] = `2680`;
 
-exports[`solid cutouts > 2×2 solid with slot (stadium) cutout 1`] = `2762`;
+exports[`solid cutouts > 2×2 solid with slot (stadium) cutout 1`] = `2746`;
 
-exports[`solid cutouts > 2×2 solid with staggered hex array 1`] = `2764`;
+exports[`solid cutouts > 2×2 solid with staggered hex array 1`] = `2748`;
 
-exports[`solid cutouts > 2×2 solid with topOffset 1`] = `2560`;
+exports[`solid cutouts > 2×2 solid with topOffset 1`] = `2544`;
 
-exports[`solid cutouts > 2×2 solid with triangular path cutout 1`] = `2560`;
+exports[`solid cutouts > 2×2 solid with triangular path cutout 1`] = `2544`;

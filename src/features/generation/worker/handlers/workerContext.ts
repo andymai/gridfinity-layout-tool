@@ -215,6 +215,31 @@ export function runGeneration(
 }
 
 /**
+ * Speculative export-shell warm. Runs an export-quality generation (which
+ * populates the export-shell cache + lastSolid) so a subsequent export skips
+ * the deferred socket↔body fuse. Best-effort: abort or any failure is swallowed
+ * (a warm must never surface an error), and no mesh is transferred back.
+ */
+export function runWarm(requestId: string, generator: (signal: AbortSignal) => void): void {
+  if (!requireKernel(requestId)) return;
+  activeRequestId = requestId;
+  activeController = new AbortController();
+  try {
+    generator(activeController.signal);
+  } catch (e) {
+    if (!isAbortError(e)) {
+      console.warn('[Warm] export warm failed (non-fatal):', formatError(e));
+    }
+  } finally {
+    if (activeRequestId === requestId) {
+      activeRequestId = null;
+      activeController = null;
+    }
+    respond({ type: 'WARM_DONE', requestId });
+  }
+}
+
+/**
  * Classify an export-side error by inspecting its message.
  *
  * Codes feed the main-thread resilience wrapper (see `exportWithResilience`):
