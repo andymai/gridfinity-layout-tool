@@ -22,6 +22,40 @@ export interface WasmLoadResult {
   readonly hardwareConcurrency: number;
 }
 
+/**
+ * Fetch a kernel's WASM binary from its Vite-resolved `?url` and verify it is
+ * actually WebAssembly before handing it to the kernel.
+ *
+ * A valid module starts with the 4-byte magic `\0asm`. When the requested asset
+ * URL no longer exists — a stale service worker or browser cache holding an old
+ * build's hashed asset path after a redeploy/dep-bump — the SPA server answers
+ * `200 text/html` with `index.html` instead of `404`. Emscripten would then try
+ * to compile that HTML and abort with an opaque
+ * `CompileError: ... doesn't start with '\0asm'`. Validating here turns that into
+ * an actionable error that names the URL and the real cause.
+ */
+async function fetchWasmBinary(url: string, label: string): Promise<ArrayBuffer> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(
+      `${label} WASM fetch failed: ${response.status} ${response.statusText} (${url})`
+    );
+  }
+  const buffer = await response.arrayBuffer();
+  const header = new Uint8Array(buffer, 0, Math.min(4, buffer.byteLength));
+  const isWasm =
+    header[0] === 0x00 && header[1] === 0x61 && header[2] === 0x73 && header[3] === 0x6d;
+  if (!isWasm) {
+    const contentType = response.headers.get('content-type') ?? 'unknown';
+    throw new Error(
+      `${label} WASM asset returned ${contentType}, not a WebAssembly binary (${url}). ` +
+        `A stale cache or service worker is likely serving a missing asset — hard-reload the page ` +
+        `(or clear the service worker) to fetch the current build.`
+    );
+  }
+  return buffer;
+}
+
 /** Get hardware concurrency with robust validation. */
 function getHardwareConcurrency(): number {
   return typeof navigator !== 'undefined' &&
@@ -102,13 +136,20 @@ export async function loadManifold(): Promise<WasmLoadResult> {
 
   // Dynamic imports keep the manifold WASM out of the main worker chunk. The
   // Emscripten factory locates its .wasm by environment detection, which fails
-  // in Vite ES module workers; pass the ?url-resolved path via locateFile.
+  // in Vite ES module workers; fetch+validate the ?url-resolved binary ourselves
+  // and hand it to the factory so a stale-asset HTML response fails loud here
+  // rather than as an opaque WASM CompileError deep in Emscripten.
   const [{ default: ManifoldModule }, manifoldWasmUrlMod] = await Promise.all([
     import('manifold-3d'),
     import('manifold-3d/manifold.wasm?url'),
   ]);
 
-  const module = await ManifoldModule({ locateFile: () => manifoldWasmUrlMod.default });
+  const wasmBinary = await fetchWasmBinary(manifoldWasmUrlMod.default, 'Manifold');
+  // The published manifold-3d types only expose `locateFile`, but the Emscripten
+  // runtime also honors `wasmBinary` (skips its own fetch entirely).
+  const module = await ManifoldModule({ wasmBinary } as unknown as {
+    locateFile: () => string;
+  });
   module.setup();
   initFromManifold(module);
   getKernel('manifold').setQuality?.('draft');
@@ -132,7 +173,11 @@ export async function loadOcctWasm(): Promise<WasmLoadResult> {
     import('occt-wasm/dist/occt-wasm.wasm?url'),
   ]);
 
-  const kernel = await OcctKernel.init({ wasm: occtWasmUrlMod.default });
+  // Fetch+validate the binary ourselves so a stale/missing asset (SPA serving
+  // index.html for the hashed .wasm path) fails with an actionable error instead
+  // of OcctKernel.init aborting with "module doesn't start with '\0asm'".
+  const wasmBinary = await fetchWasmBinary(occtWasmUrlMod.default, 'OCCT');
+  const kernel = await OcctKernel.init({ wasm: wasmBinary });
   // fromKernel retains the wrapper for the worker's lifetime, so no manual GC
   // pin is needed (worker.terminate() frees the whole WASM heap).
   registerKernel('occt-wasm', OcctWasmAdapter.fromKernel(kernel));

@@ -49,16 +49,60 @@ test.describe('Manifold draft preview — visual', () => {
     // Record whether the Manifold preview worker fetched its WASM — proof the
     // draft path is exercised, not silently bypassed.
     let manifoldWasmRequested = false;
+    // Capture every kernel WASM response (occt-wasm main engine + manifold
+    // preview). A stale/missing asset makes the SPA serve index.html (200
+    // text/html) for the .wasm URL; the kernel then aborts compiling HTML with
+    // "module doesn't start with '\0asm'". Asserting these are real binaries
+    // guards that exact failure mode (#engine-init-stale-asset).
+    const kernelWasmResponses: { url: string; status: number; contentType: string }[] = [];
     page.on('request', (req) => {
       if (/manifold.*\.wasm/i.test(req.url())) manifoldWasmRequested = true;
     });
+    page.on('response', (resp) => {
+      const url = resp.url();
+      if (/(manifold|occt-wasm).*\.wasm/i.test(url)) {
+        kernelWasmResponses.push({
+          url,
+          status: resp.status(),
+          contentType: resp.headers()['content-type'] ?? '',
+        });
+      }
+    });
+    // Catch the worker's CompileError even if it's swallowed into a soft error
+    // state rather than thrown to the page.
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+    page.on('pageerror', (err) => consoleErrors.push(err.message));
 
     await enableManifoldPreview(page);
     await page.goto('/designer');
 
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible({ timeout: 120_000 });
+
+    // The main engine must initialize: the preview never enters the
+    // "Engine failed to load" error state (shown when the kernel WASM fails to
+    // compile — e.g. an HTML response for the .wasm asset).
+    await expect(page.getByText('Engine failed to load')).toHaveCount(0);
+
     await waitForGenerationComplete(page);
+
+    // The engine-failed state must not have flashed up at any point during init.
+    await expect(page.getByText('Engine failed to load')).toHaveCount(0);
+
+    // Every kernel WASM the page fetched must be a real WebAssembly binary, not
+    // an HTML fallback. (No request → the assertion below on the draft path and
+    // a rendered canvas still gate the test.)
+    for (const r of kernelWasmResponses) {
+      expect(r.status, `WASM ${r.url} status`).toBeLessThan(400);
+      expect(r.contentType, `WASM ${r.url} content-type`).not.toContain('html');
+    }
+    expect(
+      consoleErrors.filter((e) => /doesn't start with '\\0asm'|kernel init failed/i.test(e)),
+      'kernel WASM compile errors in console'
+    ).toEqual([]);
 
     const settledWithFlag = await canvas.screenshot();
     // Non-blank: a rendered bin produces a non-trivial PNG.
