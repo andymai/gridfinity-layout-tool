@@ -14,7 +14,7 @@ interface ShapeMesh {
   faceGroups: FaceGroup[];
 }
 
-function concatFloat32(a: Float32Array, b: Float32Array): Float32Array {
+export function concatFloat32(a: ArrayLike<number>, b: ArrayLike<number>): Float32Array {
   const out = new Float32Array(a.length + b.length);
   out.set(a, 0);
   out.set(b, a.length);

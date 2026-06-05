@@ -10,16 +10,9 @@
 
 import { mesh, meshEdges } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
-import { toIndexedMeshData, mergeShapeMeshes } from '../../utils/mesh';
+import { toIndexedMeshData, mergeShapeMeshes, concatFloat32 } from '../../utils/mesh';
 import { computeTessellationTolerances } from '../../utils/tolerances';
 import { setLastSolid } from '../../shapeCache';
-
-function concatFloat32(a: ArrayLike<number>, b: ArrayLike<number>): Float32Array {
-  const out = new Float32Array(a.length + b.length);
-  out.set(a, 0);
-  out.set(b, a.length);
-  return out;
-}
 
 export const tessellateStage: PipelineStage = {
   name: 'merge',

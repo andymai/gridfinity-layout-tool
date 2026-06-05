@@ -11,7 +11,7 @@
  */
 
 import { unwrap, fuse, translate, withScope } from 'brepjs';
-import type { DisposalScope } from 'brepjs';
+import type { DisposalScope, Shape3D } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket, buildOverhangFeet } from '../../socketBuilder';
@@ -130,32 +130,39 @@ export const shellStage: PipelineStage = {
       params.gridUnitMm,
       params.cellMask
     );
-    if (dim.overhang.feet && hasOverhang(dim.overhang)) {
-      const feet = buildOverhangFeet(
-        params.width,
-        params.depth,
-        dim.overhang,
-        params.gridUnitMm,
-        true
-      );
-      if (feet) {
-        const withFeet = unwrap(fuse(socket, feet));
-        socket.delete();
-        feet.delete();
-        socket = withFeet;
+    // `withScope` can't wrap this section (it must yield TWO survivors — body
+    // and socket — on the preview path), so dispose manually on any throw to
+    // match the exception-safety the scoped code had: a failed OCCT fuse must
+    // not leak the body/socket/feet WASM handles.
+    let feet: Shape3D | null = null;
+    try {
+      if (dim.overhang.feet && hasOverhang(dim.overhang)) {
+        feet = buildOverhangFeet(params.width, params.depth, dim.overhang, params.gridUnitMm, true);
+        if (feet) {
+          const withFeet = unwrap(fuse(socket, feet));
+          socket.delete();
+          feet.delete();
+          feet = null;
+          socket = withFeet;
+        }
       }
-    }
-    collectOrigins(socket, FeatureTag.SOCKET, originToTag);
+      collectOrigins(socket, FeatureTag.SOCKET, originToTag);
 
-    if (forExport) {
-      // Watertight: fuse the socket into the body for a single solid.
-      const full = unwrap(fuse(body, socket));
-      body.delete();
+      if (forExport) {
+        // Watertight: fuse the socket into the body for a single solid.
+        const full = unwrap(fuse(body, socket));
+        body.delete();
+        socket.delete();
+        return { ...ctx, solid: full, deferredSolid: null };
+      }
+
+      // Preview: defer the socket fuse — tessellate stage meshes + concatenates.
+      return { ...ctx, solid: body, deferredSolid: socket };
+    } catch (e: unknown) {
       socket.delete();
-      return { ...ctx, solid: full, deferredSolid: null };
+      body.delete();
+      feet?.delete();
+      throw e;
     }
-
-    // Preview: defer the socket fuse — tessellate stage meshes + concatenates.
-    return { ...ctx, solid: body, deferredSolid: socket };
   },
 };
