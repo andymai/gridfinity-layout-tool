@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.146.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.145.2...gridfinity-layout-tool-v4.146.0) (2026-06-05)
+
+
+### Features
+
+* **labs:** graduate faster live preview out of labs ([#2021](https://github.com/andymai/gridfinity-layout-tool/issues/2021)) ([2e0c764](https://github.com/andymai/gridfinity-layout-tool/commit/2e0c7640ea4022933b213964224ea38fb40e0b35))
+
 ## [4.145.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.145.1...gridfinity-layout-tool-v4.145.2) (2026-06-05)
 
 
