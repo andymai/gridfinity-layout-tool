@@ -21,6 +21,7 @@ export const FAST_EXACT_SKIP_MS = 1000;
 export type WorkerMessage =
   | InitMessage
   | GenerateMessage
+  | EstimateMessage
   | GenerateBaseplateMessage
   | GenerateSplitPreviewMessage
   | GenerateSplitPreviewRangeMessage
@@ -41,6 +42,15 @@ export interface InitMessage {
 
 export interface GenerateMessage {
   readonly type: 'GENERATE';
+  readonly payload: GeneratePayload;
+}
+
+/**
+ * Ask the worker to predict the cost of generating `params` from its cache
+ * state + last observed stage timings — cheap (~ms), no geometry built.
+ */
+export interface EstimateMessage {
+  readonly type: 'ESTIMATE';
   readonly payload: GeneratePayload;
 }
 
@@ -221,6 +231,7 @@ export interface FaceGroupData {
 export type WorkerResponse =
   | InitReadyResponse
   | ProgressResponse
+  | EstimateResultResponse
   | MeshResultResponse
   | SplitPreviewResultResponse
   | BaseplateExportResultResponse
@@ -341,6 +352,13 @@ export interface InitReadyResponse {
   readonly hardwareConcurrency: number;
   /** Which geometry kernel was loaded */
   readonly kernel: KernelName;
+}
+
+export interface EstimateResultResponse {
+  readonly type: 'ESTIMATE_RESULT';
+  readonly requestId: string;
+  /** Predicted generation duration in ms; null when the worker can't tell (treat as slow). */
+  readonly predictedMs: number | null;
 }
 
 export interface ProgressResponse {

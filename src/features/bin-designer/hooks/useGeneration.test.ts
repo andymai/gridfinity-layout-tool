@@ -10,6 +10,7 @@ const mockBridge = {
   init: vi.fn(),
   generate: vi.fn(),
   generateImmediate: vi.fn(),
+  estimateGenerate: vi.fn(),
   destroy: vi.fn(),
   cancel: vi.fn(),
   getThreadingInfo: vi.fn(() => ({ isThreaded: false, hardwareConcurrency: 4 })),
@@ -63,6 +64,10 @@ describe('useGeneration', () => {
     mockAcquirePreview.mockReset();
     mockAcquirePreview.mockResolvedValue(null); // preview off by default
     mockReleasePreview.mockReset();
+    // Unknown estimate = slow → the draft path stays active unless a test
+    // explicitly predicts a fast exact.
+    (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockReset();
+    (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
     // Full store reset
     useDesignerStore.setState({
@@ -265,9 +270,9 @@ describe('useGeneration', () => {
       destroy: vi.fn(),
     } as unknown as GenerationBridge;
     mockAcquirePreview.mockResolvedValue(previewBridge);
-    // Default mockBridge.generate resolves with timingMs: 5 — well under
-    // FAST_EXACT_SKIP_MS, so after the initial generation the next exact is
-    // predicted fast and the draft must not be dispatched.
+    // The exact worker's cache-aware estimate predicts a fast build — well
+    // under FAST_EXACT_SKIP_MS — so the draft must not be dispatched.
+    (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockResolvedValue(200);
 
     renderHook(() => useGeneration());
     await act(async () => {

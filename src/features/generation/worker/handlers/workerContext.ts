@@ -16,6 +16,7 @@ import {
 } from '../generators/pipeline/stages/booleanStage';
 import { isAbortError } from '../generators/utils/abort';
 import { PerfCollector } from '../generators/pipeline/perfCollector';
+import { recordCompletedGeneration } from '../generators/estimateBin';
 
 /** Mutable worker state */
 let activeRequestId: string | null = null;
@@ -102,6 +103,7 @@ export function runGeneration(
     const timingMs = performance.now() - startTime;
     const kernelPerfStats = getPerformanceStats();
     const perfSnapshot = perfCollector.snapshot(timingMs);
+    recordCompletedGeneration(perfSnapshot);
 
     const maybeCopy = <T extends Float32Array | Uint32Array>(buf: T): T =>
       (copyBuffers ? buf.slice() : buf) as T;

@@ -20,6 +20,7 @@ import type { KernelName } from '../bridge/types';
 import type { WasmLoadResult } from './wasmInstantiator';
 import { loadBrepkit, loadManifold, loadOcctWasm } from './wasmInstantiator';
 import { clearAllCaches } from './generators/shapeCache';
+import { estimateBinGeneration } from './generators/estimateBin';
 import { clearBaseplateCaches } from './generators/baseplateGenerator';
 import {
   respond,
@@ -86,6 +87,14 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'GENERATE':
         handleGenerate(message);
+        break;
+
+      case 'ESTIMATE':
+        respond({
+          type: 'ESTIMATE_RESULT',
+          requestId: message.payload.requestId,
+          predictedMs: estimateBinGeneration(message.payload.params),
+        });
         break;
 
       case 'GENERATE_BASEPLATE':

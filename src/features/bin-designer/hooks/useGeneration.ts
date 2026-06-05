@@ -65,9 +65,6 @@ export function useGeneration(): void {
   // Highest token whose exact result has been applied — drafts at or below it
   // are stale and dropped (covers the exact-resolves-before-draft race).
   const finalizedTokenRef = useRef(0);
-  // Worker compute time of the most recent exact result; predicts whether the
-  // next exact will land fast enough that a draft would just read as flicker.
-  const lastExactMsRef = useRef<number | null>(null);
 
   const { params, epoch } = useDesignerStore(
     useShallow((state) => ({
@@ -114,26 +111,30 @@ export function useGeneration(): void {
       const token = ++genTokenRef.current;
       setGenerationStatus('generating');
 
-      // Fast draft on the leading edge (best-effort): renders immediately while
-      // the exact geometry computes. Dropped if superseded or already finalized.
-      // Skipped entirely when the exact is predicted to be fast — a draft
-      // replaced within ~a second is just flicker (see FAST_EXACT_SKIP_MS).
-      const expectSlowExact =
-        lastExactMsRef.current === null || lastExactMsRef.current >= FAST_EXACT_SKIP_MS;
+      // Fast draft on the leading edge (best-effort): renders while the exact
+      // geometry computes. Skipped when the exact worker's cache-aware estimate
+      // predicts a fast build — a draft replaced within ~a second is just
+      // flicker (see FAST_EXACT_SKIP_MS). The estimate resolves in a few ms
+      // when the worker is idle; null (no history / worker busy mid-generation
+      // / timeout) means slow, so the draft proceeds.
       const preview = previewBridgeRef.current;
-      if (preview && !preview.isDestroyed && expectSlowExact) {
-        void preview
-          .generateImmediate(currentParams, () => {})
-          .then((draft) => {
-            if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
-            // Draft perf is intentionally not pushed to perfHistory — the overlay
-            // diagnoses the exact pipeline, and interleaving draft-kernel timings
-            // would skew it. Only the exact result records a snapshot.
-            setDraftResult(toMeshPayload(draft));
-          })
-          .catch(() => {
-            // Draft failure is non-fatal — the exact path below still runs.
-          });
+      if (preview && !preview.isDestroyed) {
+        void bridge.estimateGenerate(currentParams).then((predictedMs) => {
+          if (predictedMs !== null && predictedMs < FAST_EXACT_SKIP_MS) return;
+          if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
+          void preview
+            .generateImmediate(currentParams, () => {})
+            .then((draft) => {
+              if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
+              // Draft perf is intentionally not pushed to perfHistory — the overlay
+              // diagnoses the exact pipeline, and interleaving draft-kernel timings
+              // would skew it. Only the exact result records a snapshot.
+              setDraftResult(toMeshPayload(draft));
+            })
+            .catch(() => {
+              // Draft failure is non-fatal — the exact path below still runs.
+            });
+        });
       }
 
       try {
@@ -142,7 +143,6 @@ export function useGeneration(): void {
         // A newer edit superseded this one; let its results win instead.
         if (token !== genTokenRef.current) return;
         finalizedTokenRef.current = token;
-        lastExactMsRef.current = result.timingMs;
 
         if (result.perfSnapshot) pushPerfSnapshot(result.perfSnapshot);
 
