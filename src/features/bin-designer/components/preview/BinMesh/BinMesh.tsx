@@ -11,9 +11,9 @@
  *   centroid quadrant relative to the lip's outer bbox center.
  */
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import { useThree } from '@react-three/fiber';
+import { useThree, useFrame } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { Detailed } from '@react-three/drei';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -28,6 +28,10 @@ import {
 import { buildZoneResolver } from '@/features/bin-designer/utils/zoneResolver';
 
 const EDGE_COLOR = '#000000';
+
+/** Edge-overlay fade-in duration after a Manifold draft (edges popping in at
+ * full strength is the most jarring part of the draft→exact swap). */
+const EDGE_FADE_MS = 250;
 
 /** Face opacity when xray mode is enabled. Matches brepjs-studio. */
 const XRAY_OPACITY = 0.3;
@@ -124,6 +128,38 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
   });
 
   const coarseGeometry = useCoarseGeometry(coarseLOD);
+
+  // Fade the edge overlay in whenever it (re)appears — Manifold drafts suppress
+  // edges, so this softens the draft→exact swap (and the first load). The
+  // canvas renders on demand, so keep invalidating while the fade runs.
+  const edgeMatRef = useRef<THREE.LineBasicMaterial>(null);
+  const edgeFadeStartRef = useRef<number | null>(null);
+  const hadEdgesRef = useRef(false);
+  useLayoutEffect(() => {
+    const hasEdges = edgesGeometry !== null;
+    if (hasEdges && !hadEdgesRef.current) {
+      edgeFadeStartRef.current = performance.now();
+      if (edgeMatRef.current) {
+        edgeMatRef.current.transparent = true;
+        edgeMatRef.current.opacity = 0;
+      }
+      invalidate();
+    }
+    hadEdgesRef.current = hasEdges;
+  }, [edgesGeometry, invalidate]);
+  useFrame(() => {
+    const start = edgeFadeStartRef.current;
+    const mat = edgeMatRef.current;
+    if (start === null || !mat) return;
+    const t = Math.min(1, (performance.now() - start) / EDGE_FADE_MS);
+    mat.opacity = t * (2 - t); // ease-out
+    if (t >= 1) {
+      edgeFadeStartRef.current = null;
+      mat.transparent = false;
+      mat.opacity = 1;
+    }
+    invalidate();
+  });
 
   // Allocate one material per zone. Hover state is applied separately via
   // emissiveIntensity mutation, so a pointer move doesn't rebuild + dispose
@@ -283,7 +319,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
       )}
       {!wireframe && edgesGeometry && (
         <lineSegments geometry={edgesGeometry} renderOrder={1}>
-          <lineBasicMaterial color={EDGE_COLOR} depthTest={true} />
+          <lineBasicMaterial ref={edgeMatRef} color={EDGE_COLOR} depthTest={true} />
         </lineSegments>
       )}
     </group>
