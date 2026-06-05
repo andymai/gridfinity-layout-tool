@@ -93,6 +93,16 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
       case 'PROGRESS':
         if (response.requestId === ctx.currentRequestId && ctx.onProgress) {
           ctx.onProgress(response.stage, response.progress);
+        } else {
+          // Export requests live in `pendingExports` (keyed by slot, not the
+          // live generate requestId) — route their progress to the export's
+          // own callback so the export dialog can show a determinate bar.
+          for (const pending of ctx.pendingExports.values()) {
+            if (pending.requestId === response.requestId) {
+              pending.onProgress?.(response.progress);
+              break;
+            }
+          }
         }
         break;
 

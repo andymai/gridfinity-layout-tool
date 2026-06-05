@@ -47,11 +47,15 @@ export const tessellateStage: PipelineStage = {
     // interface, so the merged mesh is visually identical to the fused shell.
     const { deferredSolid } = ctx;
     if (deferredSolid) {
-      const socketMesh = mesh(deferredSolid, { tolerance, angularTolerance });
-      shapeMesh = mergeShapeMeshes(shapeMesh, socketMesh);
-      const socketEdges = meshEdges(deferredSolid, { tolerance, angularTolerance: edgeAngular });
-      edgeLines = concatFloat32(edgeLines, socketEdges.lines);
-      deferredSolid.delete();
+      try {
+        const socketMesh = mesh(deferredSolid, { tolerance, angularTolerance });
+        shapeMesh = mergeShapeMeshes(shapeMesh, socketMesh);
+        const socketEdges = meshEdges(deferredSolid, { tolerance, angularTolerance: edgeAngular });
+        edgeLines = concatFloat32(edgeLines, socketEdges.lines);
+      } finally {
+        // Dispose even if mesh/meshEdges throws, so the WASM handle never leaks.
+        deferredSolid.delete();
+      }
     }
 
     ctx.onProgress?.('merge', 1.0);

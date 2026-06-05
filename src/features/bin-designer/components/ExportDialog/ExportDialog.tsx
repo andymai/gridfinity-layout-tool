@@ -62,6 +62,7 @@ export function ExportDialog() {
     estimates,
     isExporting,
     isExportingBin,
+    exportProgress: exportFraction,
     downloadBin,
     needsSplit,
     splitPieceCount,
@@ -198,6 +199,15 @@ export function ExportDialog() {
       displayExtension={displayExtension}
       canExport={canExport && engineReady}
       isExporting={isExporting}
+      exportProgress={
+        isExportingBin
+          ? {
+              current: Math.round(exportFraction * 100),
+              total: 100,
+              label: t('binDesigner.exporting'),
+            }
+          : null
+      }
       onDownload={() => void handleDownload()}
       downloadLabel={downloadLabel}
       splitBanner={

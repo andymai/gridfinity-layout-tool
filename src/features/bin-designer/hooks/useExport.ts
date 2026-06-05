@@ -58,6 +58,8 @@ interface UseExportReturn {
   readonly isExportingBin: boolean;
   /** Whether any export is currently in progress */
   readonly isExporting: boolean;
+  /** Export progress in [0, 1] while exporting (for a determinate progress bar). */
+  readonly exportProgress: number;
   /** Whether mesh data is available for export (bridge active + mesh exists) */
   readonly canExport: boolean;
   /** Whether the geometry engine is ready to handle export requests */
@@ -129,6 +131,8 @@ export function useExport(): UseExportReturn {
 
   const [isExportingBin, setIsExportingBin] = useState(false);
   const isExporting = isExportingBin;
+  // 0–1 export progress for the determinate progress bar (worker-reported).
+  const [exportProgress, setExportProgress] = useState(0);
 
   // Track engine readiness via bridgeManager subscription. `subscribe()` fires
   // synchronously with the current state, so the initial value is correct.
@@ -321,6 +325,7 @@ export function useExport(): UseExportReturn {
       }
 
       setIsExportingBin(true);
+      setExportProgress(0);
       const startTime = performance.now();
       let retryCount = 0;
       let restartCount = 0;
@@ -333,7 +338,10 @@ export function useExport(): UseExportReturn {
         const exportResult = await exportWithResilience(() => {
           const bridge = getActiveBridge();
           if (!bridge) throw new Error('Bridge not available');
-          return bridge.exportCombined(params, workerFormat);
+          // Reset per attempt so a resilience retry restarts the bar at 0
+          // rather than jumping backwards from where the failed attempt left off.
+          setExportProgress(0);
+          return bridge.exportCombined(params, workerFormat, { onProgress: setExportProgress });
         });
         retryCount = exportResult.retryCount;
         restartCount = exportResult.restartCount;
@@ -540,6 +548,7 @@ export function useExport(): UseExportReturn {
   return {
     isExporting,
     isExportingBin,
+    exportProgress,
     canExport,
     engineReady,
     hasDividers,

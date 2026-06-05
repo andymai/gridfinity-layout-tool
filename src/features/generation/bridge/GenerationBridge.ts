@@ -283,7 +283,11 @@ export class GenerationBridge {
   exportBin(
     params: BinParams,
     format: ExportFormat,
-    options?: { tolerance?: number; angularTolerance?: number }
+    options?: {
+      tolerance?: number;
+      angularTolerance?: number;
+      onProgress?: (progress: number) => void;
+    }
   ): Promise<ExportResult> {
     return exportBinImpl(this, params, format, options);
   }
@@ -295,7 +299,11 @@ export class GenerationBridge {
   exportCombined(
     params: BinParams,
     format: ExportFormat,
-    options?: { tolerance?: number; angularTolerance?: number }
+    options?: {
+      tolerance?: number;
+      angularTolerance?: number;
+      onProgress?: (progress: number) => void;
+    }
   ): Promise<CombinedExportResult> {
     return exportCombinedImpl(this, params, format, options);
   }

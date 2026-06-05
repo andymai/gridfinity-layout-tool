@@ -185,7 +185,11 @@ describe('useExport', () => {
       });
     });
 
-    expect(mockExportCombined).toHaveBeenCalledWith(expect.any(Object), 'stl');
+    expect(mockExportCombined).toHaveBeenCalledWith(
+      expect.any(Object),
+      'stl',
+      expect.objectContaining({ onProgress: expect.any(Function) })
+    );
     expect(mockCreateObjectURL).toHaveBeenCalledWith(expect.any(Blob));
     expect(mockAnchor.click).toHaveBeenCalled();
     expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
@@ -246,7 +250,11 @@ describe('useExport', () => {
       });
     });
 
-    expect(mockExportCombined).toHaveBeenCalledWith(expect.any(Object), 'step');
+    expect(mockExportCombined).toHaveBeenCalledWith(
+      expect.any(Object),
+      'step',
+      expect.objectContaining({ onProgress: expect.any(Function) })
+    );
     expect(mockAnchor.download).toContain('.step');
 
     createElementSpy.mockRestore();

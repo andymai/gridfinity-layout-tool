@@ -22,7 +22,7 @@ import { lidAnchorZ } from '../generators/lidConstants';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { LID_FIT_CLEARANCE } from '@/shared/types/bin';
 import { shouldGenerateLid } from '@/shared/types/bin';
-import { runExport, classifyExportError } from './workerContext';
+import { runExport, reportProgress, classifyExportError } from './workerContext';
 
 export async function handleExport(message: ExportMessage): Promise<void> {
   const payload = message.payload;
@@ -30,7 +30,9 @@ export async function handleExport(message: ExportMessage): Promise<void> {
     payload.requestId,
     'EXPORT_RESULT',
     async () => {
-      const result = await exportBin(payload.params, payload.format);
+      const result = await exportBin(payload.params, payload.format, (p) =>
+        reportProgress(payload.requestId, 'merge', p)
+      );
       return {
         data: result.data,
         format: payload.format,
@@ -117,8 +119,12 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
       // Export the bin first (regenerates solid if needed). exportBin runs
       // at the fixed export tolerance; the explicit `tolerance` /
       // `angularTolerance` from the payload still flow into divider and lid
-      // exports below which carry their own tessellation knobs.
-      const binResult = await exportBin(params, format);
+      // exports below which carry their own tessellation knobs. The bin is the
+      // bulk of the work, so map its progress to 0–95% and report 100% once the
+      // (fast) divider/lid pieces finish below.
+      const binResult = await exportBin(params, format, (p) =>
+        reportProgress(requestId, 'merge', p * 0.95)
+      );
 
       const hasDividers =
         params.style === 'slotted' && (params.slotConfig.x.enabled || params.slotConfig.y.enabled);
@@ -127,6 +133,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
       const hasLid = shouldGenerateLid(params);
 
       if (!hasDividers && !hasLid) {
+        reportProgress(requestId, 'merge', 1);
         return {
           pieces: [{ data: binResult.data, label: 'bin' }] as CombinedExportPiece[],
           format,
@@ -169,6 +176,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
           const assembly = compound([binSolid, ...dividerSolids, ...(lidSolid ? [lidSolid] : [])]);
           const blob = unwrap(exportSTEP(assembly));
 
+          reportProgress(requestId, 'merge', 1);
           return {
             pieces: [
               { data: await blob.arrayBuffer(), label: 'assembly' },
@@ -199,6 +207,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         }
       }
 
+      reportProgress(requestId, 'merge', 1);
       return { pieces, format, faceGroups: binResult.faceGroups };
     },
     'Combined export failed',
