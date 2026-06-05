@@ -3,6 +3,7 @@ import { useThree, useFrame } from '@react-three/fiber';
 import { useShallow } from 'zustand/react/shallow';
 import type * as THREE from 'three';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
+import { useLabsStore } from '@/core/store/labs';
 import {
   MESH_MATERIAL_PROPS,
   EDGE_MATERIAL_PROPS,
@@ -60,8 +61,18 @@ export function BaseplateMesh({
       edgeVertices: s.generation.mesh?.edgeVertices ?? null,
     }))
   );
+  // With manifold_preview on, the on-screen draft is a Manifold mesh whose edge
+  // lines are triangulation noise (not clean B-rep edges) — suppress them; the
+  // BREP result restores real edges. Flag off ⇒ the draft is the procedural
+  // direct-mesh, whose edges are clean and stay visible.
+  const manifoldPreviewOn = useLabsStore((s) => s.isFeatureEnabled('manifold_preview'));
+  const hideDraftEdges = isPreview && manifoldPreviewOn;
+  const meshInputs = useMemo(
+    () => (hideDraftEdges ? { ...meshArrays, edgeVertices: null } : meshArrays),
+    [meshArrays, hideDraftEdges]
+  );
 
-  const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry(meshArrays);
+  const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry(meshInputs);
 
   // Crossfade: fade snapshot is state (safe for render), timing is ref (for useFrame)
   const prevGeoRef = useRef<THREE.BufferGeometry | null>(null);
