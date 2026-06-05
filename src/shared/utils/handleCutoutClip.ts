@@ -35,8 +35,6 @@ export interface HandleWallDef {
 
 /** Default vertical center of handle hole as fraction of interior height (from floor). */
 export const DEFAULT_VERTICAL_POSITION = 0.7;
-/** U-shape floor overshoot for clean boolean cut (mm). */
-export const U_SHAPE_OVERSHOOT = 5;
 /** Clearance gap between handle edge and cutout edge (mm). */
 export const CUTOUT_CLEARANCE = 1.0;
 /** Minimum handle segment width to generate (mm). */

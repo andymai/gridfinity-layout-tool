@@ -2,7 +2,7 @@
  * Handle hole builder for Gridfinity bins.
  *
  * Generates through-hole cutouts in bin walls as finger grips.
- * Supports 4 shapes (rectangle, oval, scoop, u-shape), adjustable
+ * Supports 3 shapes (rectangle, oval, scoop), adjustable
  * vertical position, multi-handle per wall, per-side overrides,
  * interior wall handles, and optional chamfer.
  *
@@ -19,7 +19,6 @@ import {
   buildHandleWallDefs,
   computeHandleHoleGeometry,
   computeWallHandleSegments,
-  U_SHAPE_OVERSHOOT,
 } from '@/shared/utils/handleCutoutClip';
 import type { HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
@@ -149,7 +148,6 @@ function buildHandleHolesInScope(
 
   const lipOverhang = hasLip ? LIP_TAPER_WIDTH : 0;
   const extrudeDepth = (wallThickness + lipOverhang) * 2 + 1;
-  const isUShape = shape === 'u-shape';
 
   // Non-rectangular footprints map each outer side to its outermost matching
   // polygon edge (silently skipping sides with no edge). Rect bins use the
@@ -186,18 +184,11 @@ function buildHandleHolesInScope(
     const sideRadius = side.cornerRadius ?? globalRadius;
 
     // Compute vertical geometry
-    let centerZ: number;
-    let effectiveHeight: number;
-    if (isUShape) {
-      // Auto-anchor: U-shape extends from floor upward, with overshoot below
-      const clampedHeight = Math.min(sideHeight, interiorHeight);
-      effectiveHeight = clampedHeight + U_SHAPE_OVERSHOOT;
-      centerZ = (clampedHeight - U_SHAPE_OVERSHOOT) / 2;
-    } else {
-      const geom = computeHandleHoleGeometry(interiorHeight, sideHeight, verticalPosition);
-      centerZ = geom.centerZ;
-      effectiveHeight = geom.effectiveHeight;
-    }
+    const { centerZ, effectiveHeight } = computeHandleHoleGeometry(
+      interiorHeight,
+      sideHeight,
+      verticalPosition
+    );
     if (effectiveHeight < 1) continue;
 
     // Multi-handle: compute offsets, then split each around wall cutout
@@ -242,7 +233,7 @@ function buildHandleHolesInScope(
 
   // Interior wall handles — skipped on polygon bins (compartment walls are
   // filtered out for custom shapes, so there's nothing to cut through).
-  if (interior && !isUShape && !isPolygon) {
+  if (interior && !isPolygon) {
     const { cols, rows, cells } = params.compartments;
     if (cols > 1 || rows > 1) {
       const cellW = innerW / cols;

@@ -1832,7 +1832,6 @@ const en: Record<string, string> = {
   'binDesigner.handles.shape.rectangle': 'Rectangle',
   'binDesigner.handles.shape.oval': 'Oval',
   'binDesigner.handles.shape.scoop': 'Scoop',
-  'binDesigner.handles.shape.uShape': 'U-Shape',
   'binDesigner.handles.verticalPosition': 'Vertical position',
   'binDesigner.handles.count': 'Count',
   'binDesigner.handles.chamfer': 'Chamfer edges',

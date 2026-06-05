@@ -16,7 +16,6 @@ import {
   buildHandleWallDefs,
   computeHandleHoleGeometry,
   computeWallHandleSegments,
-  U_SHAPE_OVERSHOOT,
 } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
 
@@ -72,8 +71,6 @@ export function GhostHandles() {
     style !== 'solid' &&
     generationStatus === 'generating';
 
-  const isUShape = handles.shape === 'u-shape';
-
   const geometry = useMemo(() => {
     if (!shouldShow) return null;
 
@@ -90,18 +87,11 @@ export function GhostHandles() {
       const sideHeight = side.height ?? handles.height;
 
       // Compute vertical geometry per-side (matches handleBuilder)
-      let effectiveHeight: number;
-      if (isUShape) {
-        const clampedHeight = Math.min(sideHeight, interiorHeight);
-        effectiveHeight = clampedHeight + U_SHAPE_OVERSHOOT;
-      } else {
-        const geom = computeHandleHoleGeometry(
-          interiorHeight,
-          sideHeight,
-          handles.verticalPosition
-        );
-        effectiveHeight = geom.effectiveHeight;
-      }
+      const { effectiveHeight } = computeHandleHoleGeometry(
+        interiorHeight,
+        sideHeight,
+        handles.verticalPosition
+      );
       if (effectiveHeight < 1) continue;
 
       const wallCutout = wallConfig.enabled ? wallConfig[wall.side] : undefined;
@@ -183,7 +173,6 @@ export function GhostHandles() {
     label.enabled,
     wallConfig,
     interiorHeight,
-    isUShape,
   ]);
 
   const material = useMemo(() => {
@@ -212,12 +201,7 @@ export function GhostHandles() {
 
   const socketZ = isFlat ? 0 : GRIDFINITY.SOCKET_HEIGHT;
   // Use variable vertical position for ghost mesh world-space position
-  let holeZ: number;
-  if (isUShape) {
-    holeZ = socketZ + (Math.min(handles.height, interiorHeight) - U_SHAPE_OVERSHOOT) / 2;
-  } else {
-    holeZ = socketZ + interiorHeight * handles.verticalPosition;
-  }
+  const holeZ = socketZ + interiorHeight * handles.verticalPosition;
 
   return <mesh geometry={geometry} material={material} position={[0, 0, holeZ]} renderOrder={2} />;
 }

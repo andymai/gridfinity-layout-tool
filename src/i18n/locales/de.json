@@ -491,7 +491,6 @@
   "binDesigner.handles.shape.oval": "Oval",
   "binDesigner.handles.shape.rectangle": "Rechteck",
   "binDesigner.handles.shape.scoop": "Schaufel",
-  "binDesigner.handles.shape.uShape": "U-Form",
   "binDesigner.handles.sides": "Seiten",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Breite Löcher erfordern möglicherweise Stützstrukturen beim Drucken",

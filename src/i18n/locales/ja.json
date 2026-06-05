@@ -491,7 +491,6 @@
   "binDesigner.handles.shape.oval": "楕円",
   "binDesigner.handles.shape.rectangle": "長方形",
   "binDesigner.handles.shape.scoop": "スクープ",
-  "binDesigner.handles.shape.uShape": "U字",
   "binDesigner.handles.sides": "辺",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "広い穴は印刷時にサポートが必要な場合があります",

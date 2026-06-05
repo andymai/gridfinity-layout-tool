@@ -302,7 +302,7 @@ export interface LabelTabConfig {
 export type HandleWallSide = 'front' | 'back' | 'left' | 'right';
 
 /** Handle cutout shape */
-export type HandleCutoutShape = 'rectangle' | 'oval' | 'scoop' | 'u-shape';
+export type HandleCutoutShape = 'rectangle' | 'oval' | 'scoop';
 
 /** Per-side handle configuration */
 export interface HandleSide {
@@ -326,9 +326,9 @@ export interface HandleConfig {
   readonly width: number;
   /** Hole height in mm (vertical extent). Default: 15 */
   readonly height: number;
-  /** Corner radius in mm (0 = sharp rectangle). Default: 10. Used for rectangle and u-shape only. */
+  /** Corner radius in mm (0 = sharp rectangle). Default: 10. Used for rectangle only. */
   readonly cornerRadius: number;
-  /** Vertical position as fraction 0-1 from floor. Default: 0.7. Ignored for u-shape (auto-anchored to bottom). */
+  /** Vertical position as fraction 0-1 from floor. Default: 0.7. */
   readonly verticalPosition: number;
   /** Number of handles per wall side (1-3). Default: 1 */
   readonly count: number;

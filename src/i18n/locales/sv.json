@@ -491,7 +491,6 @@
   "binDesigner.handles.shape.oval": "Oval",
   "binDesigner.handles.shape.rectangle": "Rektangel",
   "binDesigner.handles.shape.scoop": "Skopa",
-  "binDesigner.handles.shape.uShape": "U-form",
   "binDesigner.handles.sides": "Sidor",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Breda hål kan kräva stöd vid utskrift",

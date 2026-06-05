@@ -491,7 +491,6 @@
   "binDesigner.handles.shape.oval": "Ovaal",
   "binDesigner.handles.shape.rectangle": "Rechthoek",
   "binDesigner.handles.shape.scoop": "Schep",
-  "binDesigner.handles.shape.uShape": "U-vorm",
   "binDesigner.handles.sides": "Zijden",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Brede gaten hebben mogelijk ondersteuning nodig bij het printen",

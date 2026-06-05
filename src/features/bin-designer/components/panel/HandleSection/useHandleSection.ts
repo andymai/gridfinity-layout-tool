@@ -129,9 +129,7 @@ export function useHandleSection() {
   const summary = useMemo(() => {
     if (!handles.enabled || activeSides.length === 0) return undefined;
     const sideNames = activeSides.map((s) => t(`binDesigner.handles.${s}`)).join(', ');
-    const shapeName = t(
-      `binDesigner.handles.shape.${handles.shape === 'u-shape' ? 'uShape' : handles.shape}`
-    );
+    const shapeName = t(`binDesigner.handles.shape.${handles.shape}`);
     const countSuffix = handles.count > 1 ? ` ×${handles.count}` : '';
     return t('binDesigner.handles.summary', {
       shape: shapeName + countSuffix,
@@ -150,8 +148,7 @@ export function useHandleSection() {
     [isUnavailable, summary, disabledReason]
   );
 
-  const isUShape = handles.shape === 'u-shape';
-  const showCornerRadius = handles.shape === 'rectangle' || handles.shape === 'u-shape';
+  const showCornerRadius = handles.shape === 'rectangle';
   // Interior handles are skipped on polygon bins (no compartment walls exist
   // for custom shapes), so hide the toggle there to prevent a silent no-op.
   const hasCompartments =
@@ -163,7 +160,6 @@ export function useHandleSection() {
       isBackDisabled,
       handleWidthMm,
       linked,
-      isUShape,
       showCornerRadius,
       hasCompartments,
       activeSides,
