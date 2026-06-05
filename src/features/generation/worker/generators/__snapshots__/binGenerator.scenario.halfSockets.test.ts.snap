@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`half-sockets > 1.5×1.5 with half sockets 1`] = `5212`;
+
+exports[`half-sockets > 1×1 with half sockets 1`] = `2812`;
+
+exports[`half-sockets > 2×2 with half sockets 1`] = `8572`;
