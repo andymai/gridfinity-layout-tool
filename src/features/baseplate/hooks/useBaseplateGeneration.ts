@@ -183,8 +183,15 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
 export function useBaseplateGeneration(): void {
   const t = useTranslation();
   const bridgeRef = useRef<GenerationBridge | null>(null);
+  const previewBridgeRef = useRef<GenerationBridge | null>(null);
   const poolRef = useRef<WorkerPool | null>(null);
   const initializedRef = useRef(false);
+  /**
+   * Highest epoch whose exact (BREP) result has been applied. The Manifold
+   * draft is async, so it can resolve after the BREP it races; dropping drafts
+   * at or below this epoch keeps a late draft from overwriting a fresh exact.
+   */
+  const finalizedEpochRef = useRef(0);
   /**
    * Flips to true after the first BREP run completes (success or failure).
    * Used to label the very first BREP as a cold-WASM start in analytics —
@@ -302,6 +309,76 @@ export function useBaseplateGeneration(): void {
   );
 
   /**
+   * Phase 1 (Manifold preview variant): a fast draft that runs the REAL
+   * `generateBaseplate` on the Manifold kernel at draft quality, replacing the
+   * hand-maintained procedural direct-mesh when the `manifold_preview` flag is
+   * on. More faithful than direct-mesh (same code path as the exact BREP), at
+   * the cost of a WASM round-trip. Returns `false` when no preview bridge is
+   * available or the draft throws, so the caller can fall back to direct-mesh.
+   *
+   * The exact BREP always supersedes: drafts at or below `finalizedEpochRef`
+   * are dropped (the draft is async and may resolve after the BREP it races).
+   */
+  const runManifoldDraftPreview = useCallback(
+    async (
+      fullParams: FullBaseplateParams,
+      tiling: BaseplateTiling,
+      epoch: number
+    ): Promise<boolean> => {
+      const preview = previewBridgeRef.current;
+      if (!preview || preview.isDestroyed) return false;
+
+      const start = performance.now();
+      const stillCurrent = () =>
+        generationEpochRef.current === epoch && epoch > finalizedEpochRef.current;
+
+      try {
+        if (!tiling.isSplit) {
+          const result = await preview.generateBaseplate(fullParams, NO_OP_PROGRESS);
+          if (!stillCurrent()) return true;
+          setGenerationResult({
+            vertices: result.mesh.vertices,
+            normals: result.mesh.normals,
+            indices: result.mesh.indices,
+            edgeVertices: result.mesh.edgeVertices,
+            error: null,
+            timingMs: result.timingMs,
+            source: 'direct',
+          });
+          setPieceMeshes([]);
+        } else {
+          const groups = groupPiecesByFingerprint(tiling.pieces, fullParams);
+          // `new Array(n)` returns `any[]`; we pre-size the typed slot.
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          const meshEntries: PieceMeshEntry[] = new Array(tiling.pieces.length);
+
+          for (const group of groups.values()) {
+            const baseResult = await preview.generateBaseplate(group.params, NO_OP_PROGRESS);
+            if (!stillCurrent()) return true;
+            for (let j = 0; j < group.indices.length; j++) {
+              const pieceIdx = group.indices[j];
+              const piece = tiling.pieces[pieceIdx];
+              const result = j === 0 ? baseResult : cloneGenerationResult(baseResult);
+              meshEntries[pieceIdx] = buildPieceMeshEntry(result, piece, 'direct');
+            }
+          }
+
+          if (!stillCurrent()) return true;
+          setPieceMeshes(meshEntries);
+          setGenerationResult(EMPTY_MESH);
+        }
+      } catch {
+        return false; // draft failed — caller falls back to the procedural direct-mesh
+      } finally {
+        directMeshDurationRef.current = performance.now() - start;
+      }
+
+      return true;
+    },
+    [setGenerationResult, setPieceMeshes]
+  );
+
+  /**
    * Phase 2: BREP generation via WASM bridge. Replaces direct-mesh on success.
    *
    * Uses the precomputed tiling from the direct-mesh phase. For splits, runs
@@ -398,6 +475,9 @@ export function useBaseplateGeneration(): void {
         }
         shouldTrack = true;
         succeeded = true;
+        // Mark this epoch's exact result as authoritative so a late Manifold
+        // draft (async) can't overwrite it.
+        finalizedEpochRef.current = epoch;
       } catch (e: unknown) {
         // These three early returns are intentional non-events: bridge
         // cancellation (e.g. unmount) and superseded epochs aren't user-
@@ -460,19 +540,52 @@ export function useBaseplateGeneration(): void {
     (fullParams: FullBaseplateParams, bedWidthMm: number, bedDepthMm: number) => {
       const epoch = ++generationEpochRef.current;
       // Flip to 'generating' before BREP starts so the bottom pill is visible
-      // during the direct-mesh-only window (when the bridge isn't ready yet).
+      // during the draft-only window (when the bridge isn't ready yet).
       // Without this, the pill is hidden for the whole 4-8 s WASM-load period
-      // even though the user can see the direct-mesh preview.
+      // even though the user can see the draft preview.
       setGenerationStatus('generating');
-      const tiling = runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
+
+      const preview = previewBridgeRef.current;
+      let tiling: BaseplateTiling;
+      if (preview && !preview.isDestroyed) {
+        // manifold_preview on: draft with the Manifold kernel (real generator,
+        // draft quality) instead of the procedural direct-mesh.
+        tiling = computeBaseplateTiling(fullParams, bedWidthMm, bedDepthMm);
+        setTiling(tiling);
+        setSplitProgress(null);
+        setDedupStats(null);
+        void runManifoldDraftPreview(fullParams, tiling, epoch).then((handled) => {
+          // Draft unavailable/failed and not yet superseded — fall back to the
+          // instant procedural preview so the canvas still fills before BREP.
+          if (
+            !handled &&
+            generationEpochRef.current === epoch &&
+            epoch > finalizedEpochRef.current
+          ) {
+            runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
+          }
+        });
+      } else {
+        tiling = runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
+      }
+
       void runBrepGeneration(fullParams, tiling, epoch);
     },
-    [setGenerationStatus, runDirectMeshPreview, runBrepGeneration]
+    [
+      setGenerationStatus,
+      setTiling,
+      setSplitProgress,
+      setDedupStats,
+      runManifoldDraftPreview,
+      runDirectMeshPreview,
+      runBrepGeneration,
+    ]
   );
 
   // Initialize bridge via BridgeManager + worker pool on mount
   useEffect(() => {
     let cancelled = false;
+    let acquiredPreview = false;
 
     setWasmStatus('loading');
 
@@ -511,8 +624,26 @@ export function useBaseplateGeneration(): void {
             // Non-fatal — falls back to sequential generation
           });
 
-        // Bridge is ready — kick off BREP for the current params. Direct-mesh
-        // has already populated the canvas via the params-change effect.
+        // Best-effort Manifold draft-preview bridge (null when manifold_preview
+        // is off or the kernel fails to load — drafts fall back to direct-mesh).
+        void bridgeManager
+          .acquirePreview()
+          .then((previewBridge) => {
+            if (cancelled) {
+              if (previewBridge) bridgeManager.releasePreview();
+              return;
+            }
+            if (previewBridge) {
+              acquiredPreview = true;
+              previewBridgeRef.current = previewBridge;
+            }
+          })
+          .catch(() => {
+            // Draft preview unavailable; direct-mesh + BREP proceed.
+          });
+
+        // Bridge is ready — kick off BREP for the current params. The draft has
+        // already populated the canvas via the params-change effect.
         const layoutState = useLayoutStore.getState();
         const stored = layoutState.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
         const params = buildFullParams(
@@ -543,6 +674,8 @@ export function useBaseplateGeneration(): void {
       bridgeRef.current = null;
       initializedRef.current = false;
       bridgeManager.release();
+      previewBridgeRef.current = null;
+      if (acquiredPreview) bridgeManager.releasePreview();
 
       if (poolRef.current) {
         poolRef.current = null;
