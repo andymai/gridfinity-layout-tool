@@ -10,12 +10,16 @@ import { useTranslation } from '@/i18n';
 
 export function LabsDrawer() {
   const t = useTranslation();
-  const { isOpen, closeDrawer, toggleFeature, isFeatureEnabled } = useLabsStore(
+  // Subscribe to `enabledFeatures` (a fresh object on every toggle) — not the
+  // stable `isFeatureEnabled` reference — so the switches re-render when a flag
+  // flips. The drawer only renders toggleable (experimental/preview) features,
+  // for which enabled state is exactly `enabledFeatures[id]`.
+  const { isOpen, closeDrawer, toggleFeature, enabledFeatures } = useLabsStore(
     useShallow((state) => ({
       isOpen: state.isDrawerOpen,
       closeDrawer: state.closeDrawer,
       toggleFeature: state.toggleFeature,
-      isFeatureEnabled: state.isFeatureEnabled,
+      enabledFeatures: state.preferences.enabledFeatures,
     }))
   );
 
@@ -96,7 +100,7 @@ export function LabsDrawer() {
                   <FeatureCard
                     key={feature.id}
                     feature={feature}
-                    isEnabled={isFeatureEnabled(feature.id as FeatureId)}
+                    isEnabled={enabledFeatures[feature.id as FeatureId] ?? false}
                     onToggle={() => toggleFeature(feature.id as FeatureId)}
                   />
                 ))}
