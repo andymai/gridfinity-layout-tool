@@ -14,10 +14,14 @@ import { useTranslation } from '@/i18n';
 export function LabsTab() {
   const t = useTranslation();
 
-  const { toggleFeature, isFeatureEnabled } = useLabsStore(
+  // Subscribe to `enabledFeatures` (a fresh object on every toggle) — not the
+  // stable `isFeatureEnabled` reference — so the switches re-render when a flag
+  // flips. The tab only renders toggleable (experimental/preview) features,
+  // for which enabled state is exactly `enabledFeatures[id]`.
+  const { toggleFeature, enabledFeatures } = useLabsStore(
     useShallow((state) => ({
       toggleFeature: state.toggleFeature,
-      isFeatureEnabled: state.isFeatureEnabled,
+      enabledFeatures: state.preferences.enabledFeatures,
     }))
   );
 
@@ -45,7 +49,7 @@ export function LabsTab() {
               <FeatureCard
                 key={feature.id}
                 feature={feature}
-                isEnabled={isFeatureEnabled(feature.id as FeatureId)}
+                isEnabled={enabledFeatures[feature.id as FeatureId] ?? false}
                 onToggle={() => toggleFeature(feature.id as FeatureId)}
               />
             ))}

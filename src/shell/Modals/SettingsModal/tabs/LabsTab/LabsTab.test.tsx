@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { LabsTab } from './LabsTab';
 
 const mockToggleFeature = vi.hoisted(() => vi.fn());
-const mockIsFeatureEnabled = vi.hoisted(() => vi.fn(() => true));
+const mockEnabledFeatures = vi.hoisted((): Record<string, boolean> => ({ binDesigner: true }));
 const mockFeatures = vi.hoisted(() => ({
   toggleable: [
     {
@@ -26,7 +26,7 @@ vi.mock('@/core/store', () => ({
   useLabsStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
       toggleFeature: mockToggleFeature,
-      isFeatureEnabled: mockIsFeatureEnabled,
+      preferences: { enabledFeatures: mockEnabledFeatures },
     }),
 }));
 
@@ -81,7 +81,7 @@ describe('LabsTab', () => {
   });
 
   it('FeatureCard receives correct isEnabled and onToggle props', () => {
-    mockIsFeatureEnabled.mockReturnValue(true);
+    mockEnabledFeatures.binDesigner = true;
     render(<LabsTab />);
     const card = screen.getByTestId('feature-card');
     expect(card).toHaveAttribute('data-enabled', 'true');

@@ -69,12 +69,18 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
-function mockLabsStore(overrides: { isDrawerOpen?: boolean; closeDrawer?: () => void } = {}) {
+function mockLabsStore(
+  overrides: {
+    isDrawerOpen?: boolean;
+    closeDrawer?: () => void;
+    enabledFeatures?: Record<string, boolean>;
+  } = {}
+) {
   const state = {
     isDrawerOpen: overrides.isDrawerOpen ?? true,
     closeDrawer: overrides.closeDrawer ?? vi.fn(),
     toggleFeature: vi.fn(),
-    isFeatureEnabled: vi.fn(() => false),
+    preferences: { enabledFeatures: overrides.enabledFeatures ?? {} },
   };
   vi.mocked(useLabsStore).mockImplementation((selector) => (selector ? selector(state) : state));
   return state;
