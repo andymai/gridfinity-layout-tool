@@ -166,10 +166,14 @@ export const shellStage: PipelineStage = {
         // Watertight: fuse the socket into the body for a single solid, and
         // cache it so re-exports and the idle warm skip this fuse next time.
         const full = unwrap(fuse(body, socket));
+        // Cache + clone BEFORE deleting the inputs: if `translate` throws, the
+        // catch must not double-delete already-freed body/socket handles, and
+        // `full` is already owned by the cache (not leaked).
+        setExportShellCache(dim.shellKey, full);
+        const cloned = translate(full, [0, 0, 0]);
         body.delete();
         socket.delete();
-        setExportShellCache(dim.shellKey, full);
-        return { ...ctx, solid: translate(full, [0, 0, 0]), deferredSolid: null };
+        return { ...ctx, solid: cloned, deferredSolid: null };
       }
 
       // Preview: defer the socket fuse — tessellate stage meshes + concatenates.
