@@ -4,22 +4,22 @@ exports[`base styles > flat base no lip 1`] = `204`;
 
 exports[`base styles > flat base with lip 1`] = `892`;
 
-exports[`base styles > magnet base no lip 1`] = `804`;
+exports[`base styles > magnet base no lip 1`] = `800`;
 
-exports[`base styles > magnet base with lip 1`] = `1900`;
+exports[`base styles > magnet base with lip 1`] = `1896`;
 
-exports[`base styles > magnet+screw base no lip 1`] = `1028`;
+exports[`base styles > magnet+screw base no lip 1`] = `1040`;
 
-exports[`base styles > magnet+screw base with lip 1`] = `2268`;
+exports[`base styles > magnet+screw base with lip 1`] = `2280`;
 
-exports[`base styles > screw base no lip 1`] = `692`;
+exports[`base styles > screw base no lip 1`] = `704`;
 
-exports[`base styles > screw base with lip 1`] = `1740`;
+exports[`base styles > screw base with lip 1`] = `1752`;
 
-exports[`base styles > standard base no lip 1`] = `468`;
+exports[`base styles > standard base no lip 1`] = `464`;
 
-exports[`base styles > standard base with lip 1`] = `1372`;
+exports[`base styles > standard base with lip 1`] = `1368`;
 
-exports[`base styles > weighted base no lip 1`] = `468`;
+exports[`base styles > weighted base no lip 1`] = `464`;
 
-exports[`base styles > weighted base with lip 1`] = `1372`;
+exports[`base styles > weighted base with lip 1`] = `1368`;

@@ -69,6 +69,16 @@ export interface PipelineContext {
   readonly onProgress?: ProgressFn;
   /** Current bin solid — updated by each stage */
   readonly solid: Shape3D | null;
+  /**
+   * Deferred additive solid (the base socket) kept OUT of `solid` on the
+   * preview path so features cut only the body and the expensive socket↔body
+   * fuse is skipped. Tessellated alongside `solid` and merged into one mesh
+   * (the socket is never cut by features and only meets the body at a hidden
+   * internal interface, so the rendered result is identical to the fused
+   * shell). Null on the export path, where the socket is fused into `solid`
+   * for a watertight model.
+   */
+  readonly deferredSolid: Shape3D | null;
   /** Face provenance tracking — intentionally mutable (passed by reference) */
   readonly originToTag: Map<number, number>;
   /** Additive feature shapes to fuse into the bin */

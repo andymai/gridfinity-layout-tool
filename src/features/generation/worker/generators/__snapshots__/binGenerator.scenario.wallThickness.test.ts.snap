@@ -1,5 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`wall thickness > 2×2 thick (2.4mm) walls 1`] = `2700`;
+exports[`wall thickness > 2×2 thick (2.4mm) walls 1`] = `2684`;
 
-exports[`wall thickness > 2×2 thin (0.4mm) walls 1`] = `2900`;
+exports[`wall thickness > 2×2 thin (0.4mm) walls 1`] = `2884`;

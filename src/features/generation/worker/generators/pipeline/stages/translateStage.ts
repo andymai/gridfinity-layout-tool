@@ -20,9 +20,15 @@ export const translateStage: PipelineStage = {
 
   execute(ctx: PipelineContext): PipelineContext {
     if (!ctx.solid) return ctx;
-    const oldSolid = ctx.solid;
     const newSolid = translate(ctx.solid, [0, 0, SOCKET_HEIGHT]);
-    oldSolid.delete();
-    return { ...ctx, solid: newSolid };
+    ctx.solid.delete();
+    // Shift the deferred socket (preview path) by the same offset so it stays
+    // aligned with the body.
+    let newDeferred = ctx.deferredSolid;
+    if (ctx.deferredSolid) {
+      newDeferred = translate(ctx.deferredSolid, [0, 0, SOCKET_HEIGHT]);
+      ctx.deferredSolid.delete();
+    }
+    return { ...ctx, solid: newSolid, deferredSolid: newDeferred };
   },
 };

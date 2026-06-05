@@ -174,6 +174,7 @@ export function createInitialContext(
     signal,
     onProgress,
     solid: null,
+    deferredSolid: null,
     originToTag: new Map<number, number>(),
     fuseTargets: [],
     cutTargets: [],
