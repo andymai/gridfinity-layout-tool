@@ -1,0 +1,43 @@
+name: Setup pnpm + Node
+description: >-
+  Install pnpm, set up Node, restore the pnpm store (with restore-keys so a
+  changed lockfile only downloads the delta instead of a full cold install),
+  and install dependencies with --frozen-lockfile.
+
+inputs:
+  node-version:
+    description: Node.js version to install.
+    required: false
+    default: '24'
+
+runs:
+  using: composite
+  steps:
+    - name: Install pnpm
+      uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+
+    - name: Setup Node.js
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Resolve pnpm store path
+      shell: bash
+      run: echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+    # Explicit store cache with restore-keys. setup-node's built-in `cache: pnpm`
+    # only restores on an exact lockfile-hash match, so any dependency bump is a
+    # full cold download (~4min stalls observed). The restore-keys fallback
+    # restores the most recent store and pnpm fetches only the changed packages.
+    - name: Cache pnpm store
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: ${{ env.PNPM_STORE_PATH }}
+        key: pnpm-store-${{ runner.os }}-node${{ inputs.node-version }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: |
+          pnpm-store-${{ runner.os }}-node${{ inputs.node-version }}-
+          pnpm-store-${{ runner.os }}-
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
