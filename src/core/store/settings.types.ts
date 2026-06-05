@@ -195,6 +195,12 @@ export interface UserSettings {
    */
   wallCutoutsLinked: boolean;
 
+  /**
+   * Whether the handles editor edits all active sides together.
+   * Persisted so unlinking to adjust sides independently survives a reload.
+   */
+  handlesLinked: boolean;
+
   // Print view preferences
   printViewSettings: PrintViewSettings;
 
@@ -311,6 +317,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   layoutManagerViewMode: 'grid',
   designListViewMode: 'grid',
   wallCutoutsLinked: true,
+  handlesLinked: true,
 
   // Print view preferences
   printViewSettings: { ...DEFAULT_PRINT_VIEW_SETTINGS },

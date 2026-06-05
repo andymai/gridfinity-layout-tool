@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useSettingsStore } from '@/core/store/settings';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { useTranslation } from '@/i18n';
 import { getFeatureStatus } from '@/shared/constraints';
@@ -22,7 +23,12 @@ export function useHandleSection() {
     }))
   );
   const t = useTranslation();
-  const [linked, setLinked] = useState(true);
+  const { linked, updateSetting } = useSettingsStore(
+    useShallow((s) => ({
+      linked: s.settings.handlesLinked,
+      updateSetting: s.updateSetting,
+    }))
+  );
 
   const featureStatus = getFeatureStatus(params, 'handles');
   const isUnavailable = !featureStatus.available;
@@ -91,7 +97,10 @@ export function useHandleSection() {
     () => updateHandles({ interior: !handles.interior }),
     [handles.interior, updateHandles]
   );
-  const toggleLinked = useCallback(() => setLinked((prev) => !prev), []);
+  const toggleLinked = useCallback(
+    () => updateSetting('handlesLinked', !linked),
+    [updateSetting, linked]
+  );
 
   // Per-side setters
   const setSideWidth = useCallback(
