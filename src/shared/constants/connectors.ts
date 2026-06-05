@@ -34,3 +34,31 @@ export const TONGUE_CLEARANCE = 0.15;
  * so see the print guide's connector-key tuning notes before changing this.
  */
 export const DOVETAIL_KEY_CLEARANCE = 0.075;
+
+/**
+ * User-tunable fit offset (mm) added to the per-side groove clearance so people
+ * can compensate for printer/filament variation (issue #2024). Signed: a
+ * positive value loosens the groove, a negative value tightens it. The same
+ * offset rides on top of both style defaults (slip-fit and dovetail key).
+ */
+export const CONNECTOR_FIT_OFFSET_MIN = -0.3;
+export const CONNECTOR_FIT_OFFSET_MAX = 0.3;
+export const CONNECTOR_FIT_OFFSET_STEP = 0.05;
+
+/**
+ * Floor for the effective per-side groove clearance (mm). A negative clearance
+ * would mean the groove is smaller than the tongue — an interference fit that
+ * can't seat and can produce degenerate booleans — so the user's fit offset is
+ * clamped to never push effective clearance below this.
+ */
+export const MIN_CONNECTOR_CLEARANCE = 0;
+
+/**
+ * Effective per-side groove clearance after applying the user's fit offset,
+ * clamped at {@link MIN_CONNECTOR_CLEARANCE} so it can never go negative. Single
+ * source of truth shared by the generation worker (which cuts the grooves), the
+ * cache keys, and the print guide so the three can't drift.
+ */
+export function effectiveClearance(baseClearance: number, fitOffset: number): number {
+  return Math.max(MIN_CONNECTOR_CLEARANCE, baseClearance + fitOffset);
+}

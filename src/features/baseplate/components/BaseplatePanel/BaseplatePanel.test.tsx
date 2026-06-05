@@ -223,6 +223,75 @@ describe('BaseplatePanel', () => {
     expect(screen.getByRole('switch')).toBeInTheDocument();
   });
 
+  describe('connector fit offset (issue #2024)', () => {
+    beforeEach(() => {
+      mockTiling = splitTiling;
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        connectorNubs: true,
+      };
+    });
+
+    it('renders the Connector fit stepper only when connectors are enabled', () => {
+      render(<BaseplatePanel />);
+      expect(screen.getByLabelText('baseplate.connectorFit.label')).toHaveTextContent('0 mm');
+    });
+
+    it('hides the Connector fit stepper when connectors are disabled', () => {
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        connectorNubs: false,
+      };
+      render(<BaseplatePanel />);
+      expect(screen.queryByLabelText('baseplate.connectorFit.label')).not.toBeInTheDocument();
+    });
+
+    it('steps the offset up by one 0.05mm increment', () => {
+      render(<BaseplatePanel />);
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Increase baseplate.connectorFit.label' })
+      );
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ connectorFitOffset: 0.05 })
+      );
+    });
+
+    it('steps the offset down into negative (tighter) territory', () => {
+      render(<BaseplatePanel />);
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Decrease baseplate.connectorFit.label' })
+      );
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ connectorFitOffset: -0.05 })
+      );
+    });
+
+    it('clears the offset back to undefined when stepping returns to zero', () => {
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        connectorNubs: true,
+        connectorFitOffset: 0.05,
+      };
+      render(<BaseplatePanel />);
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Decrease baseplate.connectorFit.label' })
+      );
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ connectorFitOffset: undefined })
+      );
+    });
+
+    it('renders a signed mm display for a non-zero offset', () => {
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        connectorNubs: true,
+        connectorFitOffset: 0.1,
+      };
+      render(<BaseplatePanel />);
+      expect(screen.getByLabelText('baseplate.connectorFit.label')).toHaveTextContent('+0.1 mm');
+    });
+  });
+
   it('renders print bed size stepper', () => {
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.printBedSize')).toBeInTheDocument();

@@ -40,6 +40,7 @@ export function buildFullParams(
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,
     connectorStyle: stored.connectorStyle,
+    connectorFitOffset: stored.connectorFitOffset,
     lightweight: stored.lightweight,
     cornerRadius: stored.cornerRadius,
     cornerRadii: stored.cornerRadii,

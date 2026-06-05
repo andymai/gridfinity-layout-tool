@@ -37,6 +37,7 @@ export function meshCacheKey(params: BaseplateParams, forExport: boolean): strin
     params.connectorNubs ?? false,
     params.invertDovetails ?? false,
     params.connectorStyle ?? 'dovetail',
+    quantize(params.connectorFitOffset ?? 0),
     params.lightweight ?? true,
     quantize(params.cornerRadius ?? -1),
     quantize(params.cornerRadii?.tl ?? -1),

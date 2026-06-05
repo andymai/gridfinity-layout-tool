@@ -2060,6 +2060,9 @@ const en: Record<string, string> = {
   'baseplate.connectorStyle.label': 'Connector style',
   'baseplate.connectorStyle.dovetail': 'Dovetail',
   'baseplate.connectorStyle.dovetailKey': 'Dovetail key',
+  'baseplate.connectorFit.label': 'Connector fit',
+  'baseplate.connectorFit.info':
+    'Adjusts the connector gap (mm) to tune fit for your printer and filament. Higher = looser, lower = tighter.',
   'baseplate.dovetails.invert': 'Invert dovetails',
   'baseplate.preferIdenticalPieces': 'Fewer unique parts (rotate to fit)',
   'baseplate.cornerRadius': 'Corner radius',

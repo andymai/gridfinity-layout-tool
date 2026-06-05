@@ -373,6 +373,46 @@ describe('migrateBaseplateParams', () => {
     expect(result.connectorNubs).toBeUndefined();
   });
 
+  // issue #2024 — the user's connector fit offset must survive save/load.
+  it('preserves connectorFitOffset across a save/load round-trip', () => {
+    const base = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+      connectorNubs: true,
+    };
+    expect(migrateBaseplateParams({ ...base, connectorFitOffset: 0.15 }).connectorFitOffset).toBe(
+      0.15
+    );
+    expect(migrateBaseplateParams({ ...base, connectorFitOffset: -0.1 }).connectorFitOffset).toBe(
+      -0.1
+    );
+    // Absent → undefined (nominal clearance downstream).
+    expect(migrateBaseplateParams(base).connectorFitOffset).toBeUndefined();
+  });
+
+  it('clamps an out-of-range connectorFitOffset to the allowed bounds', () => {
+    const base = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+      connectorNubs: true,
+    };
+    // Beyond ±0.3 collapses to the boundary.
+    expect(migrateBaseplateParams({ ...base, connectorFitOffset: 5 }).connectorFitOffset).toBe(0.3);
+    expect(migrateBaseplateParams({ ...base, connectorFitOffset: -5 }).connectorFitOffset).toBe(
+      -0.3
+    );
+  });
+
   it('preserves invertDovetails, lightweight, cornerRadius, and cornerRadii', () => {
     const stored = {
       magnetHoles: false,

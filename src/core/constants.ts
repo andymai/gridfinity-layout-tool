@@ -9,6 +9,7 @@ import type {
   CategoryId,
 } from './types';
 import { binId, layerId, categoryId, mm, gridUnits, heightUnits } from './types';
+import { CONNECTOR_FIT_OFFSET_MIN, CONNECTOR_FIT_OFFSET_MAX } from '@/shared/constants/connectors';
 export const CONSTRAINTS = {
   GRID_MIN: 0.5, // Minimum drawer dimension (supports half-unit increments)
   GRID_MAX: 50,
@@ -286,6 +287,16 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
       : {}),
     ...(obj.connectorStyle === 'dovetail' || obj.connectorStyle === 'dovetailKey'
       ? { connectorStyle: obj.connectorStyle }
+      : {}),
+    ...(typeof obj.connectorFitOffset === 'number'
+      ? {
+          connectorFitOffset: clampNumber(
+            obj.connectorFitOffset,
+            CONNECTOR_FIT_OFFSET_MIN,
+            CONNECTOR_FIT_OFFSET_MAX,
+            0
+          ),
+        }
       : {}),
     ...(typeof obj.lightweight === 'boolean' ? { lightweight: obj.lightweight } : {}),
     ...(typeof obj.syncWithLayout === 'boolean' ? { syncWithLayout: obj.syncWithLayout } : {}),
