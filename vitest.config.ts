@@ -34,6 +34,14 @@ const domIncludes = [
   'src/shell/**/*.test.{ts,tsx}',
 ];
 
+// Heavy brepjs/OpenCascade WASM generator tests. Isolated into their own
+// project (same node env/setup as `unit`) so CI can run them on dedicated
+// runners — Vitest shards by hashing the file path, not by duration, so left
+// in `unit` they cluster onto one shard and dominate wall time. The `unit`
+// project excludes these to avoid double-counting; the full local/coverage run
+// still executes all three projects.
+const generatorIncludes = ['src/features/generation/worker/generators/**/*.test.ts'];
+
 export default defineConfig({
   plugins: [react()],
   test: {
@@ -78,7 +86,7 @@ export default defineConfig({
             'scripts/**/*.test.ts',
             'packages/**/*.test.ts',
           ],
-          exclude: [...sharedExclude, ...domIncludes],
+          exclude: [...sharedExclude, ...domIncludes, ...generatorIncludes],
         },
       },
       {
@@ -88,6 +96,16 @@ export default defineConfig({
           environment: 'jsdom',
           setupFiles: ['./src/test/setup.ts', './src/test/setup-dom.ts'],
           include: domIncludes,
+          exclude: sharedExclude,
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'generators',
+          environment: 'node',
+          setupFiles: ['./src/test/setup.ts'],
+          include: generatorIncludes,
           exclude: sharedExclude,
         },
       },
