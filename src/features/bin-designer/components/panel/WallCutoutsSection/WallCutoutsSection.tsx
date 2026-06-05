@@ -1,13 +1,21 @@
 /**
  * Wall cutouts section: U-shaped notches from the top of bin walls.
  *
- * Controls: master toggle, shape selector, side toggle chips, linked/independent mode,
- * span/height steppers with %/mm toggle, collapsible position controls (alignment + offset).
+ * Controls: master toggle, shape picker, spatial side selector, linked/independent
+ * mode, span/height steppers with %/mm toggle, collapsible position controls
+ * (alignment + offset). Shares its selectors, steppers, and disclosure with the
+ * handle section via panel/shared so the two panels read identically.
  */
 
-import { useState } from 'react';
 import { FeatureToggle } from '../FeatureToggle';
-import { StepperControl } from '@/shared/components/StepperControl';
+import {
+  ShapePicker,
+  SideSelector,
+  StepperField,
+  AdvancedDisclosure,
+  LinkIcon,
+  type SideState,
+} from '../shared';
 import { useWallCutoutsSection } from './useWallCutoutsSection';
 import type {
   WallSide,
@@ -17,7 +25,7 @@ import type {
 } from '@/features/bin-designer/types';
 
 const SIDE_ORDER: readonly Exclude<WallSide, 'interior'>[] = ['left', 'right', 'front', 'back'];
-const ALIGNMENT_OPTIONS: LabelTabAlignment[] = ['left', 'center', 'right'];
+const ALIGNMENT_OPTIONS: readonly LabelTabAlignment[] = ['left', 'center', 'right'];
 const OFFSET_STEP = 1;
 
 const SHAPE_OPTIONS: readonly { value: WallCutoutShape; labelKey: string }[] = [
@@ -26,61 +34,12 @@ const SHAPE_OPTIONS: readonly { value: WallCutoutShape; labelKey: string }[] = [
   { value: 'funnel', labelKey: 'binDesigner.wallCutouts.shape.funnel' },
 ];
 
-/** Inline SVG chain-link icon (12×12). */
-function LinkIcon({ linked }: { linked: boolean }) {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="flex-shrink-0"
-    >
-      {linked ? (
-        <>
-          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-        </>
-      ) : (
-        <>
-          <path d="M18.84 12.25l1.72-1.71a5 5 0 0 0-7.07-7.07l-3 3a5 5 0 0 0 .12 7.19" />
-          <path d="M5.16 11.75l-1.72 1.71a5 5 0 0 0 7.07 7.07l3-3a5 5 0 0 0-.12-7.19" />
-          <line x1="2" y1="2" x2="22" y2="22" />
-        </>
-      )}
-    </svg>
-  );
-}
-
-/** Inline SVG chevron (8×8). */
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="8"
-      height="8"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`flex-shrink-0 transition-transform ${open ? 'rotate-90' : ''}`}
-    >
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  );
-}
-
-/** Whether a cutout has non-default positioning (worth showing in collapsed label). */
+/** Whether a cutout has non-default positioning (worth auto-expanding to show). */
 function hasCustomPosition(cfg: WallCutout): boolean {
   return cfg.alignment !== 'center' || cfg.offset !== 0;
 }
 
-/** Span + height steppers on one row, with optional %/mm toggle on the span. */
+/** Span + height steppers on one row, with a %/mm unit toggle on the span. */
 function SizeControls({
   side,
   cfg,
@@ -98,75 +57,68 @@ function SizeControls({
   heightLabel: string;
   step: number;
 }) {
+  const widthMm = cfg.widthMm ?? 1;
   const isMmMode = cfg.widthMm !== null;
 
   return (
     <div className="flex items-end gap-2">
-      {/* Span stepper */}
-      <div className="flex-1 min-w-0">
-        <span className="mb-1 block text-xs text-content-tertiary">{spanLabel}</span>
-        {isMmMode ? (
-          <StepperControl
-            value={cfg.widthMm}
-            onChange={(v) => handlers.setSideWidthMm(side, Math.max(1, v))}
-            onStep={(delta) =>
-              handlers.setSideWidthMm(side, Math.max(1, (cfg.widthMm as number) + delta))
-            }
-            min={1}
-            max={500}
-            step={1}
-            variant="desktop"
-            ariaLabel="Span mm"
-            commitMode="deferred"
-          />
-        ) : (
-          <StepperControl
-            value={cfg.width}
-            onChange={(v) => handlers.setSideWidth(side, v)}
-            onStep={(delta) =>
-              handlers.setSideWidth(side, Math.max(0, Math.min(100, cfg.width + delta * step)))
-            }
-            min={0}
-            max={100}
-            step={step}
-            variant="desktop"
-            ariaLabel="Span %"
-            commitMode="deferred"
-          />
-        )}
-      </div>
+      {isMmMode ? (
+        <StepperField
+          label={spanLabel}
+          unit="mm"
+          value={widthMm}
+          onChange={(v) => handlers.setSideWidthMm(side, Math.max(1, v))}
+          onStep={(delta) => handlers.setSideWidthMm(side, Math.max(1, widthMm + delta))}
+          min={1}
+          max={500}
+          step={1}
+          variant="desktop"
+          ariaLabel="Span mm"
+          commitMode="deferred"
+        />
+      ) : (
+        <StepperField
+          label={spanLabel}
+          unit="%"
+          value={cfg.width}
+          onChange={(v) => handlers.setSideWidth(side, v)}
+          onStep={(delta) =>
+            handlers.setSideWidth(side, Math.max(0, Math.min(100, cfg.width + delta * step)))
+          }
+          min={0}
+          max={100}
+          step={step}
+          variant="desktop"
+          ariaLabel="Span %"
+          commitMode="deferred"
+        />
+      )}
 
-      {/* %/mm toggle */}
+      {/* %/mm unit toggle for the span */}
       <button
         type="button"
         onClick={() => handlers.setSideWidthMm(side, isMmMode ? null : 30)}
-        className={`shrink-0 rounded px-1.5 py-1 text-xs font-medium transition-colors ${
-          isMmMode
-            ? 'bg-accent text-on-accent'
-            : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-        }`}
+        className="shrink-0 rounded-md border border-stroke-subtle bg-surface-elevated px-1.5 py-1 text-xs font-medium text-content-secondary transition-colors hover:bg-surface-hover"
       >
         {isMmMode ? 'mm' : '%'}
       </button>
 
-      {/* Height stepper */}
       {!hideDepth && (
-        <div className="flex-1 min-w-0">
-          <span className="mb-1 block text-xs text-content-tertiary">{heightLabel}</span>
-          <StepperControl
-            value={cfg.depth}
-            onChange={(v) => handlers.setSideDepth(side, v)}
-            onStep={(delta) =>
-              handlers.setSideDepth(side, Math.max(0, Math.min(100, cfg.depth + delta * step)))
-            }
-            min={0}
-            max={100}
-            step={step}
-            variant="desktop"
-            ariaLabel="Height %"
-            commitMode="deferred"
-          />
-        </div>
+        <StepperField
+          label={heightLabel}
+          unit="%"
+          value={cfg.depth}
+          onChange={(v) => handlers.setSideDepth(side, v)}
+          onStep={(delta) =>
+            handlers.setSideDepth(side, Math.max(0, Math.min(100, cfg.depth + delta * step)))
+          }
+          min={0}
+          max={100}
+          step={step}
+          variant="desktop"
+          ariaLabel="Height %"
+          commitMode="deferred"
+        />
       )}
     </div>
   );
@@ -185,68 +137,45 @@ function PositionDisclosure({
   t: (key: string) => string;
 }) {
   const isCustom = hasCustomPosition(cfg);
-  const [manualOpen, setManualOpen] = useState(false);
-  const isOpen = manualOpen || isCustom;
-
   const alignmentLabel = t(`binDesigner.alignment.${cfg.alignment}`);
   const summary = isCustom
     ? `${alignmentLabel}${cfg.offset !== 0 ? ` ${cfg.offset > 0 ? '+' : ''}${cfg.offset}mm` : ''}`
     : alignmentLabel;
 
   return (
-    <div>
-      <button
-        type="button"
-        onClick={() => setManualOpen((prev) => !prev)}
-        className="flex items-center gap-1.5 text-xs text-content-tertiary hover:text-content-secondary transition-colors"
-      >
-        <ChevronIcon open={isOpen} />
-        <span>{t('binDesigner.wallCutouts.position')}:</span>
-        <span className="text-content-secondary font-medium">{summary}</span>
-      </button>
+    <AdvancedDisclosure
+      label={`${t('binDesigner.wallCutouts.position')}:`}
+      summary={summary}
+      forceOpen={isCustom}
+    >
+      <ShapePicker
+        options={ALIGNMENT_OPTIONS.map((value) => ({
+          value,
+          label: t(`binDesigner.alignment.${value}`),
+        }))}
+        value={cfg.alignment}
+        onChange={(value) => handlers.setSideAlignment(side, value)}
+        ariaLabel={t('binDesigner.wallCutouts.position')}
+      />
 
-      {isOpen && (
-        <div className="mt-2 space-y-2 ml-3.5">
-          {/* Alignment picker */}
-          <div className="flex gap-1">
-            {ALIGNMENT_OPTIONS.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => handlers.setSideAlignment(side, option)}
-                className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                  cfg.alignment === option
-                    ? 'bg-accent text-on-accent'
-                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                }`}
-              >
-                {t(`binDesigner.alignment.${option}`)}
-              </button>
-            ))}
-          </div>
-
-          {/* Offset stepper */}
-          {(cfg.alignment !== 'center' || cfg.offset !== 0) && (
-            <div>
-              <span className="mb-1 block text-xs text-content-tertiary">
-                {t('binDesigner.wallCutouts.offset')}
-              </span>
-              <StepperControl
-                value={cfg.offset}
-                onChange={(v) => handlers.setSideOffset(side, v)}
-                onStep={(delta) => handlers.setSideOffset(side, cfg.offset + delta * OFFSET_STEP)}
-                min={-50}
-                max={50}
-                step={OFFSET_STEP}
-                variant="desktop"
-                ariaLabel="Offset mm"
-                commitMode="deferred"
-              />
-            </div>
-          )}
+      {(cfg.alignment !== 'center' || cfg.offset !== 0) && (
+        <div className="flex">
+          <StepperField
+            label={t('binDesigner.wallCutouts.offset')}
+            unit="mm"
+            value={cfg.offset}
+            onChange={(v) => handlers.setSideOffset(side, v)}
+            onStep={(delta) => handlers.setSideOffset(side, cfg.offset + delta * OFFSET_STEP)}
+            min={-50}
+            max={50}
+            step={OFFSET_STEP}
+            variant="desktop"
+            ariaLabel="Offset mm"
+            commitMode="deferred"
+          />
         </div>
       )}
-    </div>
+    </AdvancedDisclosure>
   );
 }
 
@@ -256,6 +185,12 @@ export function WallCutoutsSection() {
 
   const sharedSide = activeSides.length > 0 ? activeSides[0] : undefined;
   const hideDepth = walls.shape === 'scoop';
+
+  const sideStates: SideState[] = SIDE_ORDER.map((side) => ({
+    side,
+    label: t(`binDesigner.wallCutouts.${side}`),
+    active: walls[side].enabled,
+  }));
 
   return (
     <FeatureToggle
@@ -279,49 +214,20 @@ export function WallCutoutsSection() {
       }
       primaryControls={
         <div className="space-y-3">
-          {/* Shape selector */}
-          <div className="flex gap-1">
-            {SHAPE_OPTIONS.map(({ value, labelKey }) => {
-              const isActive = walls.shape === value;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => handlers.setShape(value)}
-                  className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    isActive
-                      ? 'bg-accent text-on-accent'
-                      : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                  }`}
-                >
-                  {t(labelKey)}
-                </button>
-              );
-            })}
-          </div>
+          {/* Shape picker */}
+          <ShapePicker
+            options={SHAPE_OPTIONS.map(({ value, labelKey }) => ({ value, label: t(labelKey) }))}
+            value={walls.shape}
+            onChange={handlers.setShape}
+            ariaLabel={t('binDesigner.wallCutouts')}
+          />
 
-          {/* Side toggle chips */}
-          <div className="flex gap-1">
-            {SIDE_ORDER.map((side) => {
-              const isActive = walls[side].enabled;
-              return (
-                <button
-                  key={side}
-                  type="button"
-                  role="switch"
-                  aria-checked={isActive}
-                  onClick={() => handlers.toggleSide(side)}
-                  className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    isActive
-                      ? 'bg-accent text-on-accent'
-                      : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                  }`}
-                >
-                  {t(`binDesigner.wallCutouts.${side}`)}
-                </button>
-              );
-            })}
-          </div>
+          {/* Spatial side selector */}
+          <SideSelector
+            sides={sideStates}
+            onToggle={(side) => handlers.toggleSide(side)}
+            ariaLabel={t('binDesigner.wallCutouts')}
+          />
 
           {/* Controls — shown when at least one side is active */}
           {activeSides.length > 0 && (
@@ -368,7 +274,7 @@ export function WallCutoutsSection() {
               {!linked &&
                 SIDE_ORDER.filter((side) => walls[side].enabled).map((side) => (
                   <div key={side} className="space-y-2">
-                    <label className="text-xs font-medium text-content-secondary block">
+                    <label className="block text-xs font-medium text-content-secondary">
                       {t(`binDesigner.wallCutouts.${side}`)}
                     </label>
                     <SizeControls
@@ -386,26 +292,26 @@ export function WallCutoutsSection() {
             </>
           )}
 
-          {/* Density expectation hint (issue #1882) */}
+          {/* Density expectation hint (issue #1882) — contextual */}
           {showDensityHint && (
-            <p className="text-xs text-content-tertiary leading-snug">
+            <p className="text-xs leading-snug text-content-tertiary">
               {t('binDesigner.wallCutouts.densityHint')}
             </p>
           )}
 
           {/* Interior walls */}
           <div className="border-t border-stroke-subtle/50 pt-2">
-            <label className="flex items-center gap-2 text-xs text-content-secondary cursor-pointer">
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-content-secondary">
               <input
                 type="checkbox"
                 checked={walls.interior.enabled}
                 onChange={() => handlers.toggleSide('interior')}
-                className="rounded border-stroke-subtle text-accent focus:ring-accent h-3.5 w-3.5"
+                className="h-3.5 w-3.5 rounded border-stroke-subtle text-accent focus:ring-accent"
               />
               {t('binDesigner.wallCutouts.interior')}
             </label>
             {walls.interior.enabled && !linked && (
-              <div className="mt-2 ml-6">
+              <div className="ml-6 mt-2">
                 <SizeControls
                   side="interior"
                   cfg={walls.interior}
