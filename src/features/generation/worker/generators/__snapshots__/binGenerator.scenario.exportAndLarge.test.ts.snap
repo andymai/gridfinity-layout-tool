@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`asymmetric dimensions > 0.5×4 extreme asymmetry 1`] = `2620`;
+
+exports[`export mode > 2×2 default params (forExport=true) 1`] = `5276`;
+
+exports[`large bin > 8×8 standard 1`] = `23180`;

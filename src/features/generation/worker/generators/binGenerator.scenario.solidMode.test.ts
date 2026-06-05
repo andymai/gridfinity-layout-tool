@@ -1,0 +1,5 @@
+// @vitest-environment node
+import { runScenarios } from './__kernel-tests__/scenarioRunner';
+import { solidMode } from './scenarios/solidMode';
+
+runScenarios(solidMode);

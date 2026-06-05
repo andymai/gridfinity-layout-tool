@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`scoop + lip interaction > scoop with lip (single compartment, front-row offset active) 1`] = `4000`;
+
+exports[`scoop + lip interaction > scoop with lip + 2 rows (front-row offset vs interior-row) 1`] = `4738`;
+
+exports[`scoop > 2×2 scoop auto radius 1`] = `4000`;
+
+exports[`scoop > 2×2 scoop disabled 1`] = `2812`;
+
+exports[`scoop > 2×2 scoop radius 10mm 1`] = `4032`;
