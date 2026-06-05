@@ -45,14 +45,14 @@ export function HandleSection() {
   } = state;
 
   const sideStates: SideState[] = HANDLE_SIDES.map((side) => {
+    // The back handle is blocked while a label tab occupies that wall.
+    // SideSelector renders a disabled side as off, so the stored `enabled`
+    // flag can pass through unchanged.
     const isDisabled = side === 'back' && isBackDisabled;
-    // A disabled side is functionally off (generation skips back handles while a
-    // label tab is active), so present it as off even if its stored `enabled`
-    // flag is still true — otherwise the blocked side reads as "on".
     return {
       side,
       label: t(`binDesigner.handles.${side}`),
-      active: handles[side].enabled && !isDisabled,
+      active: handles[side].enabled,
       disabled: isDisabled,
       title: isDisabled ? t('binDesigner.handles.backDisabledByLabelTab') : undefined,
     };

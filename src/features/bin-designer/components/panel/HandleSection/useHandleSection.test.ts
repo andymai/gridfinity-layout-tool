@@ -3,12 +3,18 @@ import { renderHook, act } from '@testing-library/react';
 import { useHandleSection } from './useHandleSection';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { useSettingsStore, DEFAULT_SETTINGS } from '@/core/store/settings';
 
 describe('useHandleSection', () => {
   beforeEach(() => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS },
     });
+    // `linked` is a persisted user setting; reset the settings singleton so
+    // state doesn't leak between tests, and clear the localStorage it writes
+    // through so it can't bleed into other test files.
+    useSettingsStore.setState({ settings: { ...DEFAULT_SETTINGS } });
+    localStorage.clear();
   });
 
   it('returns disabled state by default', () => {
@@ -216,6 +222,33 @@ describe('useHandleSection', () => {
 
     const { result } = renderHook(() => useHandleSection());
     expect(result.current.state.handleWidthMm).toBeNull();
+  });
+
+  describe('linked state persistence', () => {
+    it('starts in linked mode by default', () => {
+      const { result } = renderHook(() => useHandleSection());
+      expect(result.current.state.linked).toBe(true);
+    });
+
+    it('persists linked toggle to user settings', () => {
+      const { result } = renderHook(() => useHandleSection());
+
+      act(() => {
+        result.current.handlers.toggleLinked();
+      });
+
+      expect(result.current.state.linked).toBe(false);
+      expect(useSettingsStore.getState().settings.handlesLinked).toBe(false);
+    });
+
+    it('reads persisted linked state on a fresh mount', () => {
+      useSettingsStore.setState({
+        settings: { ...DEFAULT_SETTINGS, handlesLinked: false },
+      });
+
+      const { result } = renderHook(() => useHandleSection());
+      expect(result.current.state.linked).toBe(false);
+    });
   });
 
   it('hides Interior toggle on polygon bins even when compartments exist', () => {

@@ -47,20 +47,26 @@ const CHIP_BASE =
 export function SideSelector({ sides, onToggle, ariaLabel }: SideSelectorProps) {
   return (
     <div role="group" aria-label={ariaLabel} className="grid grid-cols-3 grid-rows-3 gap-1">
-      {sides.map(({ side, label, active, disabled, title }) => (
-        <button
-          key={side}
-          type="button"
-          role="switch"
-          aria-checked={active}
-          disabled={disabled}
-          title={title}
-          onClick={() => onToggle(side)}
-          className={`${SIDE_CELL[side]} ${CHIP_BASE} ${active ? SEGMENT_ACTIVE : SEGMENT_INACTIVE}`}
-        >
-          {label}
-        </button>
-      ))}
+      {sides.map(({ side, label, active, disabled, title }) => {
+        // A disabled side always reads as off — both visually and for ARIA —
+        // regardless of the `active` the caller passes, so a blocked side can
+        // never appear enabled.
+        const isOn = active && !disabled;
+        return (
+          <button
+            key={side}
+            type="button"
+            role="switch"
+            aria-checked={isOn}
+            disabled={disabled}
+            title={title}
+            onClick={() => onToggle(side)}
+            className={`${SIDE_CELL[side]} ${CHIP_BASE} ${isOn ? SEGMENT_ACTIVE : SEGMENT_INACTIVE}`}
+          >
+            {label}
+          </button>
+        );
+      })}
 
       {/* Center bin glyph — grounds the four sides in physical space. */}
       <div aria-hidden className="col-start-2 row-start-2 flex items-center justify-center">

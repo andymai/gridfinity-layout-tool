@@ -25,6 +25,18 @@ describe('SideSelector', () => {
     expect(back.getAttribute('title')).toBe('Blocked');
   });
 
+  it('forces a disabled side to read as off even when active is passed true', () => {
+    const sides: SideState[] = [
+      { side: 'left', label: 'Left', active: false },
+      { side: 'right', label: 'Right', active: false },
+      { side: 'front', label: 'Front', active: false },
+      // Stored as active, but blocked — must announce as off.
+      { side: 'back', label: 'Back', active: true, disabled: true },
+    ];
+    render(<SideSelector sides={sides} onToggle={() => {}} ariaLabel="Sides" />);
+    expect(screen.getByRole('switch', { name: 'Back' }).getAttribute('aria-checked')).toBe('false');
+  });
+
   it('toggles a side on click', () => {
     const onToggle = vi.fn();
     render(<SideSelector sides={SIDES} onToggle={onToggle} ariaLabel="Sides" />);
