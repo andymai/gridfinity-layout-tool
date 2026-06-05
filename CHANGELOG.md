@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.147.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.146.1...gridfinity-layout-tool-v4.147.0) (2026-06-05)
+
+
+### Features
+
+* **bin-designer:** remove broken u-shape handle; segment shape & side selectors ([#2026](https://github.com/andymai/gridfinity-layout-tool/issues/2026)) ([83c8729](https://github.com/andymai/gridfinity-layout-tool/commit/83c87295a83f1ea1e6f927995561ce65a7cd4802))
+
 ## [4.146.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.146.0...gridfinity-layout-tool-v4.146.1) (2026-06-05)
 
 
