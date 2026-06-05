@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { isErr } from '@/core/result';
 import { useDesignerStore } from '../store';
-import { bridgeManager } from '@/shared/generation/bridge';
+import { bridgeManager, createDraftSkipGate } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { validateCompartmentSizes } from '../utils/validation';
 import {
@@ -11,7 +11,36 @@ import {
   trackKernelPerformance,
   trackBooleanFallbacks,
 } from '@/shared/analytics/posthog';
-import type { BinParams } from '../types';
+import type { BinParams, GenerationResult } from '../types';
+
+type BridgeResult = Awaited<ReturnType<GenerationBridge['generate']>>;
+
+/**
+ * Map a worker generation result to the store's mesh payload. The typed-array
+ * buffers are referenced as-is — the worker cloned them before transfer, so
+ * they're detached from worker memory — while the `readonly` faceGroups arrays
+ * are spread into mutable copies the Immer store can ingest.
+ */
+function toMeshPayload(result: BridgeResult): GenerationResult {
+  return {
+    vertices: result.mesh.vertices,
+    normals: result.mesh.normals,
+    indices: result.mesh.indices,
+    edgeVertices: result.mesh.edgeVertices,
+    faceGroups: result.mesh.faceGroups ? [...result.mesh.faceGroups] : undefined,
+    coarseLOD: result.mesh.coarseLOD,
+    lidMesh: result.mesh.lidMesh
+      ? {
+          ...result.mesh.lidMesh,
+          faceGroups: result.mesh.lidMesh.faceGroups
+            ? [...result.mesh.lidMesh.faceGroups]
+            : undefined,
+        }
+      : undefined,
+    error: null,
+    timingMs: result.timingMs,
+  };
+}
 
 /**
  * Manages the GenerationBridge lifecycle and epoch-based auto-regeneration.
@@ -19,11 +48,24 @@ import type { BinParams } from '../types';
  * Initializes the bridge on mount, triggers generation when epoch changes,
  * skips generation on cache hits (epoch unchanged after undo/redo), and
  * releases the bridge on unmount.
+ *
+ * When the `manifold_preview` Labs flag is on, a second (Manifold) bridge
+ * renders a fast draft on the leading edge of each edit while the exact
+ * occt-wasm geometry computes; the exact result always supersedes the draft.
+ * A monotonic token guards arbitration: a draft is dropped if a newer edit has
+ * started or the exact result for its edit has already landed.
  */
 export function useGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
+  const previewBridgeRef = useRef<GenerationBridge | null>(null);
   const initializedRef = useRef(false);
   const prevEpochRef = useRef(-1);
+  // Monotonic per-generation token; the most recent dispatch wins.
+  const genTokenRef = useRef(0);
+  // Highest token whose exact result has been applied — drafts at or below it
+  // are stale and dropped (covers the exact-resolves-before-draft race).
+  const finalizedTokenRef = useRef(0);
+  const draftSkipGate = useRef(createDraftSkipGate()).current;
 
   const { params, epoch } = useDesignerStore(
     useShallow((state) => ({
@@ -34,8 +76,27 @@ export function useGeneration(): void {
 
   const setGenerationStatus = useDesignerStore((state) => state.setGenerationStatus);
   const setGenerationResult = useDesignerStore((state) => state.setGenerationResult);
+  const setDraftResult = useDesignerStore((state) => state.setDraftResult);
   const setWasmStatus = useDesignerStore((state) => state.setWasmStatus);
   const pushPerfSnapshot = useDesignerStore((state) => state.pushPerfSnapshot);
+
+  const dispatchDraft = useCallback(
+    (preview: GenerationBridge, currentParams: BinParams, token: number) => {
+      void preview
+        .generateImmediate(currentParams, () => {})
+        .then((draft) => {
+          if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
+          // Draft perf is intentionally not pushed to perfHistory — the overlay
+          // diagnoses the exact pipeline, and interleaving draft-kernel timings
+          // would skew it. Only the exact result records a snapshot.
+          setDraftResult(toMeshPayload(draft));
+        })
+        .catch(() => {
+          // Draft failure is non-fatal — the exact path still runs.
+        });
+    },
+    [setDraftResult]
+  );
 
   // Generate bin mesh from current params
   const runGeneration = useCallback(
@@ -66,39 +127,36 @@ export function useGeneration(): void {
         return;
       }
 
+      const token = ++genTokenRef.current;
       setGenerationStatus('generating');
+
+      // Fast draft on the leading edge (best-effort): renders while the exact
+      // geometry computes. Skipped when the exact worker's cache-aware estimate
+      // predicts a build faster than the gate's threshold — a draft replaced
+      // almost immediately is just flicker, and the threshold drops during a
+      // scrub (see draftPolicy). The estimate resolves in a few ms when the
+      // worker is idle; null (no history / worker busy mid-generation /
+      // timeout) means slow, so the draft proceeds.
+      const skipBelowMs = draftSkipGate();
+      const preview = previewBridgeRef.current;
+      if (preview && !preview.isDestroyed) {
+        void bridge.estimateGenerate(currentParams).then((predictedMs) => {
+          if (predictedMs !== null && predictedMs < skipBelowMs) return;
+          if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
+          dispatchDraft(preview, currentParams, token);
+        });
+      }
 
       try {
         const result = await bridge.generate(currentParams, () => {});
 
+        // A newer edit superseded this one; let its results win instead.
+        if (token !== genTokenRef.current) return;
+        finalizedTokenRef.current = token;
+
         if (result.perfSnapshot) pushPerfSnapshot(result.perfSnapshot);
 
-        setGenerationResult({
-          vertices: result.mesh.vertices,
-          normals: result.mesh.normals,
-          indices: result.mesh.indices,
-          edgeVertices: result.mesh.edgeVertices,
-          faceGroups: result.mesh.faceGroups ? [...result.mesh.faceGroups] : undefined,
-          coarseLOD: result.mesh.coarseLOD,
-          // Spread lid faceGroups into a mutable array so the Immer store
-          // can ingest it (the worker payload is `readonly`). The
-          // typed-array buffers (vertices/normals/indices/edgeVertices)
-          // are intentionally referenced as-is: `workerContext.maybeCopy`
-          // already cloned them on the worker side before transfer, so
-          // the main-thread arrays are detached from the worker's memory
-          // and safe to keep. (The bin-mesh fields above follow the same
-          // pattern by leaving the worker's typed arrays untouched.)
-          lidMesh: result.mesh.lidMesh
-            ? {
-                ...result.mesh.lidMesh,
-                faceGroups: result.mesh.lidMesh.faceGroups
-                  ? [...result.mesh.lidMesh.faceGroups]
-                  : undefined,
-              }
-            : undefined,
-          error: null,
-          timingMs: result.timingMs,
-        });
+        setGenerationResult(toMeshPayload(result));
         setGenerationStatus('complete');
       } catch (e) {
         // Cancelled requests are expected during rapid param changes
@@ -117,12 +175,13 @@ export function useGeneration(): void {
         setGenerationStatus('error');
       }
     },
-    [setGenerationStatus, setGenerationResult, pushPerfSnapshot]
+    [setGenerationStatus, setGenerationResult, dispatchDraft, pushPerfSnapshot, draftSkipGate]
   );
 
   // Initialize bridge on mount via BridgeManager (ref-counted singleton)
   useEffect(() => {
     let cancelled = false;
+    let acquiredPreview = false;
     setWasmStatus('loading');
 
     bridgeManager
@@ -134,6 +193,11 @@ export function useGeneration(): void {
         }
         bridgeRef.current = bridge;
         setWasmStatus('ready');
+        // Mark ready as soon as the exact bridge is up — deliberately before the
+        // preview bridge is acquired below. The draft is a best-effort
+        // enhancement; gating readiness on it would make edits during the
+        // Manifold WASM load (which can lag the exact bridge) do nothing at all.
+        // Edits in that brief window simply run exact-only until the preview joins.
         initializedRef.current = true;
 
         // Track WASM threading capabilities for analytics
@@ -147,7 +211,10 @@ export function useGeneration(): void {
         bridge.onKernelPerfStats = trackKernelPerformance;
         bridge.onBooleanFallbackStats = trackBooleanFallbacks;
 
-        // Trigger initial generation
+        // Trigger the initial generation immediately — deliberately NOT gated on
+        // the preview bridge. The first render runs exact-only; gating it on
+        // the optional Manifold WASM load would make the first paint slower
+        // than with the flag off. The draft joins for subsequent edits.
         const currentState = useDesignerStore.getState();
         prevEpochRef.current = currentState.generation.epoch;
         void runGeneration(currentState.params);
@@ -156,13 +223,41 @@ export function useGeneration(): void {
         if (!cancelled) setWasmStatus('error');
       });
 
+    // Acquire the best-effort draft-preview bridge in parallel with the exact
+    // bridge above (null when the flag is off or the kernel fails to load —
+    // never fatal). Its WASM is a fraction of occt-wasm's, so on a cold start
+    // it typically resolves seconds earlier; if no generation has started yet,
+    // render a pre-draft instead of leaving the skeleton up for the whole
+    // exact-worker load. The pre-draft claims a token so the initial exact
+    // generation (and any edit) supersedes it through normal arbitration.
+    void bridgeManager
+      .acquirePreview()
+      .then((preview) => {
+        if (!preview) return;
+        if (cancelled) {
+          bridgeManager.releasePreview();
+          return;
+        }
+        acquiredPreview = true;
+        previewBridgeRef.current = preview;
+        if (genTokenRef.current === 0) {
+          const token = ++genTokenRef.current;
+          dispatchDraft(preview, useDesignerStore.getState().params, token);
+        }
+      })
+      .catch(() => {
+        // Draft preview unavailable; exact-only generation proceeds.
+      });
+
     return () => {
       cancelled = true;
       bridgeRef.current = null;
+      previewBridgeRef.current = null;
       initializedRef.current = false;
       bridgeManager.release();
+      if (acquiredPreview) bridgeManager.releasePreview();
     };
-  }, [setWasmStatus, runGeneration]);
+  }, [setWasmStatus, runGeneration, dispatchDraft]);
 
   // Re-generate when epoch changes (after initialization)
   useEffect(() => {

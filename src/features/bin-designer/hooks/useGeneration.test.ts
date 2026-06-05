@@ -10,6 +10,7 @@ const mockBridge = {
   init: vi.fn(),
   generate: vi.fn(),
   generateImmediate: vi.fn(),
+  estimateGenerate: vi.fn(),
   destroy: vi.fn(),
   cancel: vi.fn(),
   getThreadingInfo: vi.fn(() => ({ isThreaded: false, hardwareConcurrency: 4 })),
@@ -18,15 +19,22 @@ const mockBridge = {
 const mockAcquire = vi.fn<() => Promise<GenerationBridge>>();
 const mockRelease = vi.fn();
 const mockGet = vi.fn<() => GenerationBridge | null>();
+const mockAcquirePreview = vi.fn<() => Promise<GenerationBridge | null>>();
+const mockReleasePreview = vi.fn();
 
 vi.mock('@/shared/generation/bridge', () => ({
   bridgeManager: {
     acquire: () => mockAcquire(),
     release: () => mockRelease(),
     get: () => mockGet(),
+    acquirePreview: () => mockAcquirePreview(),
+    releasePreview: () => mockReleasePreview(),
   },
   GenerationBridge: vi.fn(),
   getActiveBridge: vi.fn(),
+  FAST_EXACT_SKIP_MS: 1000,
+  // Stable threshold — burst behavior is covered by draftPolicy's own tests.
+  createDraftSkipGate: () => () => 1000,
 }));
 
 describe('useGeneration', () => {
@@ -55,11 +63,18 @@ describe('useGeneration', () => {
     mockRelease.mockReset();
     mockGet.mockReset();
     mockGet.mockReturnValue(mockBridge);
+    mockAcquirePreview.mockReset();
+    mockAcquirePreview.mockResolvedValue(null); // preview off by default
+    mockReleasePreview.mockReset();
+    // Unknown estimate = slow → the draft path stays active unless a test
+    // explicitly predicts a fast exact.
+    (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockReset();
+    (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockResolvedValue(null);
 
     // Full store reset
     useDesignerStore.setState({
       wasmStatus: 'unloaded',
-      generation: { status: 'idle', mesh: null, progress: 0 },
+      generation: { status: 'idle', mesh: null, isDraft: false, progress: 0 },
     });
   });
 
@@ -171,5 +186,161 @@ describe('useGeneration', () => {
     const state = useDesignerStore.getState();
     expect(state.generation.status).toBe('error');
     expect(state.generation.mesh?.error).toBe('Generation failed');
+  });
+
+  it('renders the draft first, then the exact result supersedes it (manifold_preview)', async () => {
+    const draftVerts = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    const exactVerts = new Float32Array([0, 0, 0, 2, 0, 0, 0, 2, 0]);
+    const meshOf = (vertices: Float32Array, timingMs = 1) => ({
+      mesh: {
+        vertices,
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 1,
+      },
+      timingMs,
+    });
+
+    const previewBridge = {
+      isDestroyed: false,
+      generateImmediate: vi.fn().mockResolvedValue(meshOf(draftVerts)),
+      destroy: vi.fn(),
+    } as unknown as GenerationBridge;
+    mockAcquirePreview.mockResolvedValue(previewBridge);
+
+    // The initial render runs exact-only (preview bridge isn't acquired until
+    // after the first generation). Its SLOW timing (>= FAST_EXACT_SKIP_MS)
+    // keeps the draft path active for the edit, whose exact is held open so
+    // the draft is guaranteed to apply first.
+    let resolveExact: (v: unknown) => void = () => {};
+    (mockBridge.generate as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(meshOf(exactVerts, 5000))
+      .mockReturnValueOnce(
+        new Promise((r) => {
+          resolveExact = r;
+        })
+      );
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // Initial generation is exact-only — no draft, preview now acquired.
+    expect(useDesignerStore.getState().generation.isDraft).toBe(false);
+
+    // Edit now that the preview bridge is live → draft on the leading edge.
+    await act(async () => {
+      useDesignerStore.setState((s) => ({ generation: { ...s.generation, epoch: 1 } }));
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // Draft on screen; status stays 'generating' (exact still computing).
+    let gen = useDesignerStore.getState().generation;
+    expect(gen.isDraft).toBe(true);
+    expect(gen.mesh?.vertices).toBe(draftVerts);
+    expect(gen.status).toBe('generating');
+
+    // Exact lands and supersedes the draft.
+    await act(async () => {
+      resolveExact(meshOf(exactVerts));
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    gen = useDesignerStore.getState().generation;
+    expect(gen.isDraft).toBe(false);
+    expect(gen.mesh?.vertices).toBe(exactVerts);
+    expect(gen.status).toBe('complete');
+  });
+
+  it('renders a Manifold pre-draft while the exact worker is still loading (cold start)', async () => {
+    const draftVerts = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    const previewBridge = {
+      isDestroyed: false,
+      generateImmediate: vi.fn().mockResolvedValue({
+        mesh: {
+          vertices: draftVerts,
+          normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
+          edgeVertices: new Float32Array(0),
+          triangleCount: 1,
+        },
+        timingMs: 1,
+      }),
+      destroy: vi.fn(),
+    } as unknown as GenerationBridge;
+    mockAcquirePreview.mockResolvedValue(previewBridge);
+
+    // Hold the exact bridge open — the Manifold worker's WASM is far smaller,
+    // so on a real cold start it resolves seconds earlier.
+    let resolveAcquire: (bridge: GenerationBridge) => void = () => {};
+    mockAcquire.mockReturnValue(
+      new Promise<GenerationBridge>((r) => {
+        resolveAcquire = r;
+      })
+    );
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // Pre-draft on screen while the exact worker is still initializing.
+    let state = useDesignerStore.getState();
+    expect(state.wasmStatus).toBe('loading');
+    expect(state.generation.isDraft).toBe(true);
+    expect(state.generation.mesh?.vertices).toBe(draftVerts);
+
+    // Exact bridge arrives → initial generation supersedes the pre-draft.
+    await act(async () => {
+      resolveAcquire(mockBridge);
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    state = useDesignerStore.getState();
+    expect(state.wasmStatus).toBe('ready');
+    expect(state.generation.isDraft).toBe(false);
+    expect(state.generation.status).toBe('complete');
+    expect(state.generation.mesh?.vertices).not.toBe(draftVerts);
+  });
+
+  it('skips the draft when the last exact was fast — no flicker (manifold_preview)', async () => {
+    const previewBridge = {
+      isDestroyed: false,
+      // Resolves defensively so a wrongly-dispatched draft fails the assertion
+      // below rather than crashing on `.then` of undefined.
+      generateImmediate: vi.fn().mockResolvedValue({
+        mesh: {
+          vertices: new Float32Array(9),
+          normals: new Float32Array(9),
+          indices: new Uint32Array([0, 1, 2]),
+          edgeVertices: new Float32Array(0),
+          triangleCount: 1,
+        },
+        timingMs: 1,
+      }),
+      destroy: vi.fn(),
+    } as unknown as GenerationBridge;
+    mockAcquirePreview.mockResolvedValue(previewBridge);
+    // The exact worker's cache-aware estimate predicts a fast build — well
+    // under FAST_EXACT_SKIP_MS — so the draft must not be dispatched.
+    (mockBridge.estimateGenerate as ReturnType<typeof vi.fn>).mockResolvedValue(200);
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // Edit after a fast exact → straight to exact, no draft.
+    await act(async () => {
+      useDesignerStore.setState((s) => ({ generation: { ...s.generation, epoch: 1 } }));
+      await vi.advanceTimersByTimeAsync(201);
+    });
+
+    expect(previewBridge.generateImmediate).not.toHaveBeenCalled();
+    const gen = useDesignerStore.getState().generation;
+    expect(gen.isDraft).toBe(false);
+    expect(gen.status).toBe('complete');
   });
 });

@@ -8,10 +8,35 @@
 import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/types/bin';
 
 /** Geometry kernel backend for BREP operations */
-export type KernelName = 'brepkit' | 'occt-wasm';
+export type KernelName = 'brepkit' | 'occt-wasm' | 'manifold';
+
+/**
+ * Skip the Manifold draft when the exact build is expected to finish faster
+ * than this (ms, predicted from the previous exact generation). A draft that's
+ * replaced within ~a second reads as flicker — two visual jumps for no real
+ * feedback win — so fast generations (small/cache-warm) go straight to exact.
+ * No history yet (cold start) counts as slow.
+ */
+export const FAST_EXACT_SKIP_MS = 1000;
+
+/**
+ * Edits arriving closer together than this are a scrub (slider drag, stepper
+ * burst, key hold). The exact is debounced and won't land until the burst
+ * settles, so the draft-vs-exact comparison changes: without a draft the
+ * preview is dead for the whole scrub.
+ */
+export const EDIT_BURST_WINDOW_MS = 350;
+
+/**
+ * Draft-skip threshold while scrubbing — only skip the draft when the exact
+ * is genuinely realtime-fast (can keep up with the edit rate); otherwise keep
+ * drafting for continuous feedback.
+ */
+export const BURST_EXACT_SKIP_MS = 300;
 export type WorkerMessage =
   | InitMessage
   | GenerateMessage
+  | EstimateMessage
   | GenerateBaseplateMessage
   | GenerateSplitPreviewMessage
   | GenerateSplitPreviewRangeMessage
@@ -32,6 +57,15 @@ export interface InitMessage {
 
 export interface GenerateMessage {
   readonly type: 'GENERATE';
+  readonly payload: GeneratePayload;
+}
+
+/**
+ * Ask the worker to predict the cost of generating `params` from its cache
+ * state + last observed stage timings — cheap (~ms), no geometry built.
+ */
+export interface EstimateMessage {
+  readonly type: 'ESTIMATE';
   readonly payload: GeneratePayload;
 }
 
@@ -212,6 +246,7 @@ export interface FaceGroupData {
 export type WorkerResponse =
   | InitReadyResponse
   | ProgressResponse
+  | EstimateResultResponse
   | MeshResultResponse
   | SplitPreviewResultResponse
   | BaseplateExportResultResponse
@@ -332,6 +367,13 @@ export interface InitReadyResponse {
   readonly hardwareConcurrency: number;
   /** Which geometry kernel was loaded */
   readonly kernel: KernelName;
+}
+
+export interface EstimateResultResponse {
+  readonly type: 'ESTIMATE_RESULT';
+  readonly requestId: string;
+  /** Predicted generation duration in ms; null when the worker can't tell (treat as slow). */
+  readonly predictedMs: number | null;
 }
 
 export interface ProgressResponse {

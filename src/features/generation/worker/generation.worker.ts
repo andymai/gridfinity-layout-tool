@@ -18,8 +18,9 @@ import './symbolDisposePolyfill';
 import type { WorkerMessage } from '../bridge/types';
 import type { KernelName } from '../bridge/types';
 import type { WasmLoadResult } from './wasmInstantiator';
-import { loadBrepkit, loadOcctWasm } from './wasmInstantiator';
+import { loadBrepkit, loadManifold, loadOcctWasm } from './wasmInstantiator';
 import { clearAllCaches } from './generators/shapeCache';
+import { estimateBinGeneration } from './generators/estimateBin';
 import { clearBaseplateCaches } from './generators/baseplateGenerator';
 import {
   respond,
@@ -49,6 +50,9 @@ async function initKernel(kernel: KernelName = 'occt-wasm'): Promise<void> {
   switch (kernel) {
     case 'brepkit':
       result = await loadBrepkit();
+      break;
+    case 'manifold':
+      result = await loadManifold();
       break;
     case 'occt-wasm':
       result = await loadOcctWasm();
@@ -83,6 +87,14 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'GENERATE':
         handleGenerate(message);
+        break;
+
+      case 'ESTIMATE':
+        respond({
+          type: 'ESTIMATE_RESULT',
+          requestId: message.payload.requestId,
+          predictedMs: estimateBinGeneration(message.payload.params),
+        });
         break;
 
       case 'GENERATE_BASEPLATE':

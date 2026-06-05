@@ -36,6 +36,14 @@ export class BridgeManager {
   private engineReadyState = false;
   private readyListeners = new Set<EngineReadyListener>();
 
+  // Optional Manifold draft-preview bridge (separate worker), ref-counted on
+  // its own so toggling the `manifold_preview` flag never disturbs the exact
+  // bridge's lifecycle.
+  private previewBridge: GenerationBridge | null = null;
+  private previewRefCount = 0;
+  private previewInitPromise: Promise<void> | null = null;
+  private previewIdleTimer: ReturnType<typeof setTimeout> | null = null;
+
   /**
    * Acquire a reference to the shared bridge. Increments ref count.
    * Initializes the bridge if not already running.
@@ -83,6 +91,56 @@ export class BridgeManager {
         this.setEngineReady(false);
       }, IDLE_TIMEOUT_MS);
     }
+  }
+
+  /**
+   * Acquire the Manifold draft-preview bridge, or `null` when the
+   * `manifold_preview` Labs flag is off (or the kernel fails to init — draft
+   * is a best-effort enhancement, never fatal). Ref-counted + idle-kept like
+   * the exact bridge. Caller MUST call `releasePreview()` when done.
+   */
+  async acquirePreview(): Promise<GenerationBridge | null> {
+    if (!useLabsStore.getState().isFeatureEnabled('manifold_preview')) return null;
+
+    this.previewRefCount++;
+    if (this.previewIdleTimer !== null) {
+      clearTimeout(this.previewIdleTimer);
+      this.previewIdleTimer = null;
+    }
+
+    if (!this.previewBridge || this.previewBridge.isDestroyed) {
+      this.previewBridge = new GenerationBridge('manifold');
+      this.previewInitPromise = this.previewBridge.init();
+    }
+
+    try {
+      await this.previewInitPromise;
+    } catch {
+      // Best-effort: a failed preview kernel is non-fatal. Clean up and return
+      // null so callers silently fall back to exact-only (matches the contract).
+      this.previewRefCount = Math.max(0, this.previewRefCount - 1);
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- bridge may be nulled by a concurrent releasePreview() during await
+      if (this.previewBridge) this.previewBridge.destroy();
+      this.previewBridge = null;
+      this.previewInitPromise = null;
+      return null;
+    }
+
+    return this.previewBridge;
+  }
+
+  /** Release a reference to the preview bridge; idle-destroys at zero refs. */
+  releasePreview(): void {
+    this.previewRefCount = Math.max(0, this.previewRefCount - 1);
+    if (this.previewRefCount > 0) return;
+
+    if (this.previewIdleTimer !== null) clearTimeout(this.previewIdleTimer);
+    this.previewIdleTimer = setTimeout(() => {
+      this.previewIdleTimer = null;
+      this.previewBridge?.destroy();
+      this.previewBridge = null;
+      this.previewInitPromise = null;
+    }, IDLE_TIMEOUT_MS);
   }
 
   /**

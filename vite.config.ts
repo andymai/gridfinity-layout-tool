@@ -30,8 +30,10 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    // Exclude WASM module from Vite's dependency pre-bundling
-    exclude: ['brepjs-opencascade', 'brepkit-wasm', 'occt-wasm'],
+    // Exclude WASM modules from Vite's dependency pre-bundling. Pre-bundling the
+    // Emscripten ESM glue can break its WASM instantiation, and a stale pre-bundle
+    // is one way the kernel asset URL goes wrong; keep every geometry kernel out.
+    exclude: ['brepjs-opencascade', 'brepkit-wasm', 'occt-wasm', 'manifold-3d'],
   },
   worker: {
     format: 'es',

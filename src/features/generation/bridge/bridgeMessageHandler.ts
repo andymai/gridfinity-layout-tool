@@ -40,6 +40,7 @@ export interface MessageHandlerContext {
   readonly binCache: DedupCache;
   readonly baseplateCache: DedupCache;
   readonly pendingExports: PendingExportMap;
+  readonly pendingEstimates: Map<string, (predictedMs: number | null) => void>;
   clearPending: () => void;
   clearExportTimer: (pending: PendingExport<unknown>) => void;
   resolveExport: (slot: ExportSlot, requestId: string, result: unknown) => boolean;
@@ -92,6 +93,10 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
         if (response.requestId === ctx.currentRequestId && ctx.onProgress) {
           ctx.onProgress(response.stage, response.progress);
         }
+        break;
+
+      case 'ESTIMATE_RESULT':
+        ctx.pendingEstimates.get(response.requestId)?.(response.predictedMs);
         break;
 
       case 'MESH_RESULT':

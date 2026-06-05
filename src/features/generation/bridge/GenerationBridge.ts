@@ -108,6 +108,10 @@ export class GenerationBridge {
   /** Pending export requests keyed by slot. Only one per slot at a time. */
   readonly pendingExports: PendingExportMap = new Map();
 
+  /** Pending cost-estimate requests keyed by their requestId. */
+  readonly pendingEstimates = new Map<string, (predictedMs: number | null) => void>();
+  private estimateSeq = 0;
+
   constructor(kernel: KernelName = 'occt-wasm') {
     this.kernel = kernel;
   }
@@ -195,6 +199,30 @@ export class GenerationBridge {
   /** Generate immediately without debounce — for initial generation or user-triggered regeneration. */
   generateImmediate(params: BinParams, onProgress?: ProgressCallback): Promise<GenerationResult> {
     return generateBinImpl(this, params, onProgress, false);
+  }
+
+  /**
+   * Predict the cost of generating `params` from the worker's cache state and
+   * last observed stage timings. Resolves `null` when the worker has no
+   * history, or doesn't answer within the timeout — the worker is single-
+   * threaded, so no answer means a generation is already in flight, i.e.
+   * things ARE slow. Callers must treat `null` as slow.
+   */
+  estimateGenerate(params: BinParams, timeoutMs = 30): Promise<number | null> {
+    if (this.isDestroyed || !this.worker) return Promise.resolve(null);
+    const requestId = `estimate-${++this.estimateSeq}`;
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => {
+        this.pendingEstimates.delete(requestId);
+        resolve(null);
+      }, timeoutMs);
+      this.pendingEstimates.set(requestId, (predictedMs) => {
+        clearTimeout(timer);
+        this.pendingEstimates.delete(requestId);
+        resolve(predictedMs);
+      });
+      this.postMessage({ type: 'ESTIMATE', payload: { params, requestId } });
+    });
   }
 
   /** Cancel any in-flight generation request */

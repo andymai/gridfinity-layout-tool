@@ -43,13 +43,25 @@ export async function initOcctWasmKernel(): Promise<void> {
   const wasmBinary = readFileSync(wasmPath);
   const kernel = await OcctKernel.init({ wasm: wasmBinary });
   // fromKernel retains the wrapper for the adapter's lifetime, so no manual GC
-  // pin is needed. The cast bridges occt-wasm's exported module type, still
-  // narrower than brepjs's expected owner (missing VectorString /
-  // getExceptionMessage); both exist at runtime — filed upstream.
-  registerKernel(
-    'occt-wasm',
-    OcctWasmAdapter.fromKernel(
-      kernel as unknown as Parameters<typeof OcctWasmAdapter.fromKernel>[0]
-    )
-  );
+  // pin is needed.
+  registerKernel('occt-wasm', OcctWasmAdapter.fromKernel(kernel));
+}
+
+/**
+ * Initialize the Manifold mesh-CSG kernel and register it under id `'manifold'`,
+ * pinned to draft quality (matching the production preview worker). Lets scenario
+ * tests exercise the draft path that the bin designer / baseplate previews use.
+ */
+export async function initManifoldKernel(): Promise<void> {
+  const { initFromManifold, getKernel } = await import('brepjs');
+  const ManifoldModule = (await import('manifold-3d')).default;
+  const { readFileSync } = await import('fs');
+  const { join } = await import('path');
+  const wasmBinary = readFileSync(join(process.cwd(), 'node_modules/manifold-3d/manifold.wasm'));
+  // Published manifold-3d types only expose `locateFile`, but the Emscripten
+  // runtime also honors `wasmBinary` (matches the production loader).
+  const module = await ManifoldModule({ wasmBinary } as unknown as { locateFile: () => string });
+  module.setup();
+  initFromManifold(module);
+  getKernel('manifold').setQuality?.('draft');
 }

@@ -612,6 +612,12 @@ export interface GenerationResult {
 export interface GenerationState {
   readonly status: GenerationStatus;
   readonly mesh: GenerationResult | null;
+  /**
+   * True when `mesh` is a fast draft from the Manifold preview kernel and the
+   * exact occt-wasm geometry is still computing. Drives the "sharpening…" hint.
+   * Always false once the exact result lands (or when preview is off).
+   */
+  readonly isDraft: boolean;
   readonly progress: number;
   /** Increments on changes needing regeneration; cache hits leave epoch unchanged */
   readonly epoch: number;
@@ -935,6 +941,8 @@ export interface DesignerState {
   // Generation actions
   setGenerationStatus: (status: GenerationStatus) => void;
   setGenerationResult: (result: GenerationResult) => void;
+  /** Apply a fast draft mesh from the preview kernel (renders, marks `isDraft`, skips history cache). */
+  setDraftResult: (result: GenerationResult) => void;
   setWasmStatus: (status: WasmStatus) => void;
   pushPerfSnapshot: (snapshot: PerfSnapshot) => void;
   clearPerfHistory: () => void;

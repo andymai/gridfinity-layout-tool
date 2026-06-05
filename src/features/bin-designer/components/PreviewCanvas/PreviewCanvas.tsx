@@ -134,6 +134,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   const {
     wasmStatus,
     generationStatus,
+    isDraft,
     hasMesh,
     meshError,
     params,
@@ -149,6 +150,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
     useShallow((s) => ({
       wasmStatus: s.wasmStatus,
       generationStatus: s.generation.status,
+      isDraft: s.generation.isDraft,
       hasMesh: s.generation.mesh !== null && s.generation.mesh.vertices !== null,
       meshError: s.generation.mesh?.error ?? null,
       params: s.params,
@@ -314,8 +316,13 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   const height = params.height;
   const totalH = height * params.heightUnitMm;
 
-  const showSkeleton = !hasMesh || wasmStatus !== 'ready';
-  const showOverlay = generationStatus === 'generating' && hasMesh;
+  // A Manifold pre-draft can land while the exact worker's WASM is still
+  // loading (cold start) — show it rather than the skeleton; the overlay below
+  // keeps signalling that the exact geometry is still on its way.
+  const showSkeleton = !hasMesh || wasmStatus === 'error' || (wasmStatus !== 'ready' && !isDraft);
+  // Keep the loading indicator up while a fast draft is shown and the exact
+  // geometry is still computing (manifold_preview), not just during 'generating'.
+  const showOverlay = (generationStatus === 'generating' || isDraft) && hasMesh;
 
   // Cursor swap only applies when multi-color is on too — `colorTool` is
   // cleared on disable, but guard defensively in case state ever drifts.

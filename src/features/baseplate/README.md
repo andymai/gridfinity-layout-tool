@@ -36,7 +36,7 @@ graph TB
 
 - **Sync mode**: `syncWithLayout: true` reads drawer dims from layout store; `false` uses custom grid size
 - **Split tiling**: baseplates exceeding print bed are partitioned into labeled pieces (A1, B2, etc.)
-- **Two-phase preview**: direct-mesh (procedural, no WASM) renders immediately on every params change; BREP (high-fidelity) silently swaps in once ready. `MeshResult.source` records which path produced the visible mesh
+- **Two-phase preview**: direct-mesh (procedural, no WASM) renders immediately on every params change; BREP (high-fidelity) silently swaps in once ready. `MeshResult.source` records which path produced the visible mesh. With the `manifold_preview` Labs flag on, the draft phase instead runs the real `generateBaseplate` on the Manifold kernel at draft quality (`runManifoldDraftPreview`) — more faithful than the procedural approximation — falling back to direct-mesh if the preview bridge is unavailable. A `finalizedEpochRef` guards the now-async draft so a late draft can't overwrite a fresher BREP result
 - **Graceful BREP failure**: if BREP errors after a direct-mesh preview is on screen, the preview stays visible and a non-blocking toast surfaces the failure — avoids the red error overlay swallowing a still-usable canvas
 - **Epoch detection**: rapid param changes bump an epoch counter; stale in-flight results (direct or BREP) are discarded
 - **Ephemeral store**: `baseplatePageStore` resets on unmount; persistent params live in layout store

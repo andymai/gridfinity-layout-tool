@@ -24,6 +24,7 @@ import {
 import { useMeshGeometry } from './useMeshGeometry';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
 import { useSettingsStore } from '@/core/store';
+import { useLabsStore } from '@/core/store/labs';
 import type { PieceMeshEntry, SplitViewMode } from '../../store/baseplatePageStore';
 
 /** Fallback accent hex (amber-500) when CSS var is unavailable. */
@@ -82,7 +83,18 @@ function PieceMesh({
     : MESH_MATERIAL_PROPS.emissiveIntensity;
   const accentHex = useMemo(() => getAccentHex(), []);
 
-  const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry(entry.mesh);
+  // With manifold_preview on, a piece still in its draft phase (source
+  // 'direct') is a Manifold mesh whose edge lines are triangulation noise —
+  // suppress them per piece; pieces that have upgraded to BREP keep their
+  // clean edges. Flag off ⇒ the draft is the procedural direct-mesh (clean).
+  const manifoldPreviewOn = useLabsStore((s) => s.isFeatureEnabled('manifold_preview'));
+  const hideDraftEdges = manifoldPreviewOn && entry.mesh.source === 'direct';
+  const meshInputs = useMemo(
+    () => (hideDraftEdges ? { ...entry.mesh, edgeVertices: null } : entry.mesh),
+    [entry.mesh, hideDraftEdges]
+  );
+
+  const { geometry, edgesGeometry, hasPrecomputedNormals } = useMeshGeometry(meshInputs);
 
   const setHoveredPieceLabel = useBaseplatePageStore((s) => s.setHoveredPieceLabel);
   const setSelectedPieceLabel = useBaseplatePageStore((s) => s.setSelectedPieceLabel);

@@ -202,6 +202,18 @@ export function setFeatureCache(feature: string, key: string, shape: Shape3D): v
   getOrCreateFeatureCache(feature).set(key, shape);
 }
 
+// Non-cloning probes for the generation cost estimator — it only needs to know
+// whether a stage would be a cache hit, and the metadata-preserving clone in
+// the getters is far too expensive for a prediction.
+
+export function hasShellCache(key: string): boolean {
+  return shellCache.get(key) !== undefined;
+}
+
+export function hasFeatureCache(feature: string, key: string): boolean {
+  return getOrCreateFeatureCache(feature).get(key) !== undefined;
+}
+
 /** Clear all shape caches, disposing WASM handles. Required when switching geometry kernels in tests. */
 export function clearAllCaches(): void {
   for (const cache of staticLruCaches) {
