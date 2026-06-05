@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.148.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.147.0...gridfinity-layout-tool-v4.148.0) (2026-06-05)
+
+
+### Features
+
+* **export:** determinate progress bar instead of a spinner ([#2028](https://github.com/andymai/gridfinity-layout-tool/issues/2028)) ([3f1e970](https://github.com/andymai/gridfinity-layout-tool/commit/3f1e970a450d936c2147364112f4b030014a8b9e))
+
 ## [4.147.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.146.1...gridfinity-layout-tool-v4.147.0) (2026-06-05)
 
 
