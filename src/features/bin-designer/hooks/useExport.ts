@@ -338,6 +338,9 @@ export function useExport(): UseExportReturn {
         const exportResult = await exportWithResilience(() => {
           const bridge = getActiveBridge();
           if (!bridge) throw new Error('Bridge not available');
+          // Reset per attempt so a resilience retry restarts the bar at 0
+          // rather than jumping backwards from where the failed attempt left off.
+          setExportProgress(0);
           return bridge.exportCombined(params, workerFormat, { onProgress: setExportProgress });
         });
         retryCount = exportResult.retryCount;

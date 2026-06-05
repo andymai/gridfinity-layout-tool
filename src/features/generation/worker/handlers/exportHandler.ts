@@ -133,6 +133,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
       const hasLid = shouldGenerateLid(params);
 
       if (!hasDividers && !hasLid) {
+        reportProgress(requestId, 'merge', 1);
         return {
           pieces: [{ data: binResult.data, label: 'bin' }] as CombinedExportPiece[],
           format,
@@ -175,6 +176,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
           const assembly = compound([binSolid, ...dividerSolids, ...(lidSolid ? [lidSolid] : [])]);
           const blob = unwrap(exportSTEP(assembly));
 
+          reportProgress(requestId, 'merge', 1);
           return {
             pieces: [
               { data: await blob.arrayBuffer(), label: 'assembly' },
@@ -205,6 +207,7 @@ export async function handleExportCombined(message: ExportCombinedMessage): Prom
         }
       }
 
+      reportProgress(requestId, 'merge', 1);
       return { pieces, format, faceGroups: binResult.faceGroups };
     },
     'Combined export failed',
