@@ -56,19 +56,25 @@ jobs:
           project-id: ${{ secrets.POSTHOG_PROJECT_ID }}
           api-key: ${{ secrets.POSTHOG_API_KEY }}
 
-  # PRs: Sharded test suite without coverage (fast feedback, 4 parallel runners).
-  #   Vitest assigns files to shards by hashing the file path, so the heavy
-  #   brepjs/WASM generator tests scatter unevenly; 4 shards keeps the slowest
-  #   shard well below the ~10min a 2-way split produced.
-  # Main: Full test suite with coverage thresholds (regression guard, single runner)
+  # PRs: Split into two test groups for fast, balanced feedback (6 runners).
+  #   Vitest shards by hashing the file path, not by duration, so the heavy
+  #   brepjs/OpenCascade WASM generator tests (their own `generators` project)
+  #   would otherwise cluster onto one shard and dominate wall time. Running
+  #   them on dedicated shards decouples that bottleneck from hash luck. After
+  #   the scenario monolith was split (#2017) the generator floor is ~166s
+  #   (split-robustness), so both groups get 3 shards to land ~150-170s each.
+  # Main: Full test suite (all projects) with coverage thresholds, single runner.
   test:
-    name: Unit Tests (${{ matrix.shard }})
+    name: Unit Tests (${{ matrix.name }})
     if: ${{ !startsWith(github.head_ref, 'release-please--') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: ${{ github.event_name == 'pull_request' && fromJSON('["1/4", "2/4", "3/4", "4/4"]') || fromJSON('["1/1"]') }}
+        include: >-
+          ${{ github.event_name == 'pull_request'
+          && fromJSON('[{"name":"generators 1/3","group":"generators","shard":"1/3"},{"name":"generators 2/3","group":"generators","shard":"2/3"},{"name":"generators 3/3","group":"generators","shard":"3/3"},{"name":"core 1/3","group":"core","shard":"1/3"},{"name":"core 2/3","group":"core","shard":"2/3"},{"name":"core 3/3","group":"core","shard":"3/3"}]')
+          || fromJSON('[{"name":"full","group":"full","shard":"1/1"}]') }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -92,14 +98,18 @@ jobs:
       - name: Run tests
         env:
           GIT_REF: ${{ github.ref }}
+          GROUP: ${{ matrix.group }}
           SHARD: ${{ matrix.shard }}
         run: |
           if [ "$GIT_REF" = "refs/heads/main" ]; then
-            echo "Running with coverage (main branch)"
+            echo "Running full suite with coverage (main branch)"
             pnpm vitest run --coverage -u
+          elif [ "$GROUP" = "generators" ]; then
+            echo "Running generators project (shard $SHARD)"
+            pnpm vitest run --project=generators --shard="$SHARD" -u
           else
-            echo "Running without coverage (PR, shard $SHARD)"
-            pnpm vitest run --shard="$SHARD" -u
+            echo "Running core projects unit+dom (shard $SHARD)"
+            pnpm vitest run --project=unit --project=dom --shard="$SHARD" -u
           fi
 
       - name: Upload coverage report
