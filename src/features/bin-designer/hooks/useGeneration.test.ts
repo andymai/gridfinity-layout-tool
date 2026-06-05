@@ -201,23 +201,37 @@ describe('useGeneration', () => {
     } as unknown as GenerationBridge;
     mockAcquirePreview.mockResolvedValue(previewBridge);
 
-    // Hold the exact result open so the draft is guaranteed to apply first.
+    // The initial render runs exact-only (preview bridge isn't acquired until
+    // after the first generation). The post-mount edit's exact is held open so
+    // the draft is guaranteed to apply first.
     let resolveExact: (v: unknown) => void = () => {};
-    (mockBridge.generate as ReturnType<typeof vi.fn>).mockReturnValue(
-      new Promise((r) => {
-        resolveExact = r;
-      })
-    );
+    (mockBridge.generate as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce(meshOf(exactVerts))
+      .mockReturnValueOnce(
+        new Promise((r) => {
+          resolveExact = r;
+        })
+      );
 
     renderHook(() => useGeneration());
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1);
     });
 
-    // Draft is on screen, flagged as a draft.
+    // Initial generation is exact-only — no draft, preview now acquired.
+    expect(useDesignerStore.getState().generation.isDraft).toBe(false);
+
+    // Edit now that the preview bridge is live → draft on the leading edge.
+    await act(async () => {
+      useDesignerStore.setState((s) => ({ generation: { ...s.generation, epoch: 1 } }));
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // Draft on screen; status stays 'generating' (exact still computing).
     let gen = useDesignerStore.getState().generation;
     expect(gen.isDraft).toBe(true);
     expect(gen.mesh?.vertices).toBe(draftVerts);
+    expect(gen.status).toBe('generating');
 
     // Exact lands and supersedes the draft.
     await act(async () => {

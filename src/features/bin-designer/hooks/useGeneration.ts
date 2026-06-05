@@ -168,7 +168,7 @@ export function useGeneration(): void {
 
     bridgeManager
       .acquire()
-      .then(async (bridge) => {
+      .then((bridge) => {
         if (cancelled) {
           bridgeManager.release();
           return;
@@ -193,27 +193,30 @@ export function useGeneration(): void {
         bridge.onKernelPerfStats = trackKernelPerformance;
         bridge.onBooleanFallbackStats = trackBooleanFallbacks;
 
-        // Best-effort draft-preview bridge (null when the flag is off or the
-        // Manifold kernel fails to load — never blocks the exact pipeline).
-        try {
-          const preview = await bridgeManager.acquirePreview();
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- cancelled may flip during the await above (cleanup runs in the async gap)
-          if (cancelled) {
-            if (preview) bridgeManager.releasePreview();
-            return;
-          }
-          if (preview) {
-            acquiredPreview = true;
-            previewBridgeRef.current = preview;
-          }
-        } catch {
-          // Draft preview unavailable; exact-only generation proceeds.
-        }
-
-        // Trigger initial generation
+        // Trigger the initial generation immediately — deliberately NOT gated on
+        // the preview bridge below. The first render runs exact-only; gating it
+        // on the optional Manifold WASM load would make the first paint slower
+        // than with the flag off. The draft joins for subsequent edits.
         const currentState = useDesignerStore.getState();
         prevEpochRef.current = currentState.generation.epoch;
         void runGeneration(currentState.params);
+
+        // Acquire the best-effort draft-preview bridge in the background (null
+        // when the flag is off or the kernel fails to load — never fatal).
+        void bridgeManager
+          .acquirePreview()
+          .then((preview) => {
+            if (!preview) return;
+            if (cancelled) {
+              bridgeManager.releasePreview();
+              return;
+            }
+            acquiredPreview = true;
+            previewBridgeRef.current = preview;
+          })
+          .catch(() => {
+            // Draft preview unavailable; exact-only generation proceeds.
+          });
       })
       .catch((_e: unknown) => {
         if (!cancelled) setWasmStatus('error');

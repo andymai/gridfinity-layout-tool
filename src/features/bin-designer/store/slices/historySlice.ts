@@ -115,7 +115,10 @@ export function createHistorySlice(set: Set, get: Get) {
       set((state) => {
         state.generation.mesh = result;
         state.generation.isDraft = true;
-        state.generation.status = result.error ? 'error' : 'complete';
+        // Status stays 'generating' — the exact result is still computing, so the
+        // draft must NOT look terminal. Flows gated on 'complete' (thumbnail
+        // capture, autosave, split preview) would otherwise fire on the coarse
+        // draft; `setGenerationResult` sets the terminal status when exact lands.
       });
       // Drafts are mesh-approximate; never seed the undo/redo mesh cache with
       // them — history must hold exact geometry, which the exact result sets.

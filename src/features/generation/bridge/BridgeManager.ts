@@ -115,13 +115,15 @@ export class BridgeManager {
 
     try {
       await this.previewInitPromise;
-    } catch (error: unknown) {
+    } catch {
+      // Best-effort: a failed preview kernel is non-fatal. Clean up and return
+      // null so callers silently fall back to exact-only (matches the contract).
       this.previewRefCount = Math.max(0, this.previewRefCount - 1);
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- bridge may be nulled by a concurrent releasePreview() during await
       if (this.previewBridge) this.previewBridge.destroy();
       this.previewBridge = null;
       this.previewInitPromise = null;
-      throw error;
+      return null;
     }
 
     return this.previewBridge;
