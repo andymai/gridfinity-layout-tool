@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { isErr } from '@/core/result';
 import { useDesignerStore } from '../store';
-import { bridgeManager, FAST_EXACT_SKIP_MS } from '@/shared/generation/bridge';
+import { bridgeManager, createDraftSkipGate } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { validateCompartmentSizes } from '../utils/validation';
 import {
@@ -65,6 +65,7 @@ export function useGeneration(): void {
   // Highest token whose exact result has been applied — drafts at or below it
   // are stale and dropped (covers the exact-resolves-before-draft race).
   const finalizedTokenRef = useRef(0);
+  const draftSkipGate = useRef(createDraftSkipGate()).current;
 
   const { params, epoch } = useDesignerStore(
     useShallow((state) => ({
@@ -113,14 +114,16 @@ export function useGeneration(): void {
 
       // Fast draft on the leading edge (best-effort): renders while the exact
       // geometry computes. Skipped when the exact worker's cache-aware estimate
-      // predicts a fast build — a draft replaced within ~a second is just
-      // flicker (see FAST_EXACT_SKIP_MS). The estimate resolves in a few ms
-      // when the worker is idle; null (no history / worker busy mid-generation
-      // / timeout) means slow, so the draft proceeds.
+      // predicts a build faster than the gate's threshold — a draft replaced
+      // almost immediately is just flicker, and the threshold drops during a
+      // scrub (see draftPolicy). The estimate resolves in a few ms when the
+      // worker is idle; null (no history / worker busy mid-generation /
+      // timeout) means slow, so the draft proceeds.
+      const skipBelowMs = draftSkipGate();
       const preview = previewBridgeRef.current;
       if (preview && !preview.isDestroyed) {
         void bridge.estimateGenerate(currentParams).then((predictedMs) => {
-          if (predictedMs !== null && predictedMs < FAST_EXACT_SKIP_MS) return;
+          if (predictedMs !== null && predictedMs < skipBelowMs) return;
           if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
           void preview
             .generateImmediate(currentParams, () => {})
@@ -165,7 +168,7 @@ export function useGeneration(): void {
         setGenerationStatus('error');
       }
     },
-    [setGenerationStatus, setGenerationResult, setDraftResult, pushPerfSnapshot]
+    [setGenerationStatus, setGenerationResult, setDraftResult, pushPerfSnapshot, draftSkipGate]
   );
 
   // Initialize bridge on mount via BridgeManager (ref-counted singleton)

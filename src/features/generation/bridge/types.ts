@@ -18,6 +18,21 @@ export type KernelName = 'brepkit' | 'occt-wasm' | 'manifold';
  * No history yet (cold start) counts as slow.
  */
 export const FAST_EXACT_SKIP_MS = 1000;
+
+/**
+ * Edits arriving closer together than this are a scrub (slider drag, stepper
+ * burst, key hold). The exact is debounced and won't land until the burst
+ * settles, so the draft-vs-exact comparison changes: without a draft the
+ * preview is dead for the whole scrub.
+ */
+export const EDIT_BURST_WINDOW_MS = 350;
+
+/**
+ * Draft-skip threshold while scrubbing — only skip the draft when the exact
+ * is genuinely realtime-fast (can keep up with the edit rate); otherwise keep
+ * drafting for continuous feedback.
+ */
+export const BURST_EXACT_SKIP_MS = 300;
 export type WorkerMessage =
   | InitMessage
   | GenerateMessage

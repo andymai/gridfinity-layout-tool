@@ -33,6 +33,8 @@ vi.mock('@/shared/generation/bridge', () => ({
   GenerationBridge: vi.fn(),
   getActiveBridge: vi.fn(),
   FAST_EXACT_SKIP_MS: 1000,
+  // Stable threshold — burst behavior is covered by draftPolicy's own tests.
+  createDraftSkipGate: () => () => 1000,
 }));
 
 describe('useGeneration', () => {

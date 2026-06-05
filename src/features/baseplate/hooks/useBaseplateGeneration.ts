@@ -27,7 +27,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useTranslation } from '@/i18n';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { bridgeManager, workerPoolManager, FAST_EXACT_SKIP_MS } from '@/shared/generation/bridge';
+import { bridgeManager, workerPoolManager, createDraftSkipGate } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import type { WorkerPool } from '@/shared/generation/bridge';
 import {
@@ -46,7 +46,7 @@ import { computeBaseplateTiling } from '../utils/splitPlanner';
 import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
 import type { BaseplateParams as FullBaseplateParams } from '@/shared/types/bin';
 import type { PieceMeshEntry } from '../store/baseplatePageStore';
-import type { GenerationResult, MeshData } from '@/shared/generation/bridge';
+import type { GenerationResult } from '@/shared/generation/bridge';
 import type { BaseplateTiling } from '../types/tiling';
 
 /** Build a PieceMeshEntry from a generation result and tiling piece metadata */
@@ -124,11 +124,6 @@ function cloneGenerationResult(result: GenerationResult): GenerationResult {
     },
     timingMs: 0,
   };
-}
-
-/** Wrap a MeshData in a GenerationResult shape so the same builders work for both paths. */
-function wrapMeshAsResult(mesh: MeshData, timingMs: number): GenerationResult {
-  return { mesh, timingMs };
 }
 
 /** Single-mesh store payload for the unsplit baseplate (draft and BREP share this shape). */
@@ -242,6 +237,7 @@ export function useBaseplateGeneration(): void {
   const previewKindRef = useRef<'direct' | 'manifold'>('direct');
   /** Last successful BREP wall-clock — predicts whether a draft is worth showing. */
   const lastBrepMsRef = useRef<number | null>(null);
+  const draftSkipGate = useRef(createDraftSkipGate()).current;
 
   // Single memoized selection drives both the values used below and the regen
   // effect's dependency (see `selectGenerationTriggers`). `useShallow` keeps the
@@ -296,7 +292,7 @@ export function useBaseplateGeneration(): void {
           if (generationEpochRef.current !== epoch) return tiling;
 
           const timingMs = performance.now() - directMeshStartRef.current;
-          setGenerationResult(toSingleMesh(wrapMeshAsResult(mesh, timingMs), 'direct'));
+          setGenerationResult(toSingleMesh({ mesh, timingMs }, 'direct'));
           setPieceMeshes([]);
         } else {
           // Split: generate one direct-mesh per unique piece group, clone for duplicates.
@@ -306,11 +302,9 @@ export function useBaseplateGeneration(): void {
           const meshEntries: PieceMeshEntry[] = new Array(tiling.pieces.length);
 
           for (const group of groups.values()) {
-            const baseResult = wrapMeshAsResult(
-              generateBaseplateDirect(group.params, NO_OP_PROGRESS),
-              0
-            );
-            fillGroupMeshEntries(meshEntries, group, tiling.pieces, baseResult, 'direct');
+            const mesh = generateBaseplateDirect(group.params, NO_OP_PROGRESS);
+            const result = { mesh, timingMs: 0 };
+            fillGroupMeshEntries(meshEntries, group, tiling.pieces, result, 'direct');
           }
 
           if (generationEpochRef.current !== epoch) return tiling;
@@ -551,6 +545,9 @@ export function useBaseplateGeneration(): void {
   const runGeneration = useCallback(
     (fullParams: FullBaseplateParams, bedWidthMm: number, bedDepthMm: number) => {
       const epoch = ++generationEpochRef.current;
+      // Track edit cadence on every regen, preview bridge or not, so a scrub
+      // is recognized from its first rapid edit (see draftPolicy).
+      const skipBelowMs = draftSkipGate();
       // Flip to 'generating' before BREP starts so the bottom pill is visible
       // during the draft-only window (when the bridge isn't ready yet).
       // Without this, the pill is hidden for the whole 4-8 s WASM-load period
@@ -568,7 +565,7 @@ export function useBaseplateGeneration(): void {
         setDedupStats(null);
         // Skip the draft when BREP is predicted fast — the previous mesh stays
         // on screen until the quick exact crossfades in (no intermediate jump).
-        if (lastBrepMsRef.current === null || lastBrepMsRef.current >= FAST_EXACT_SKIP_MS) {
+        if (lastBrepMsRef.current === null || lastBrepMsRef.current >= skipBelowMs) {
           void runManifoldDraftPreview(fullParams, tiling, epoch).then((handled) => {
             // Draft unavailable/failed and not yet superseded — fall back to the
             // instant procedural preview so the canvas still fills before BREP.
@@ -595,6 +592,7 @@ export function useBaseplateGeneration(): void {
       runManifoldDraftPreview,
       runDirectMeshPreview,
       runBrepGeneration,
+      draftSkipGate,
     ]
   );
 
