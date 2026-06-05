@@ -120,6 +120,27 @@ jobs:
           path: coverage/
           retention-days: 5
 
+  # Single stable gate that passes only if every Unit Tests shard passed.
+  # Branch protection requires this one context instead of the individual
+  # shard names, so shard/group counts can change without updating the ruleset.
+  # always() so it still runs (and fails) when a shard fails; skipped for
+  # release-please PRs in lockstep with the test job above.
+  test-gate:
+    name: Unit Tests Complete
+    needs: [test]
+    if: ${{ always() && !startsWith(github.head_ref, 'release-please--') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all unit-test shards passed
+        env:
+          TEST_RESULT: ${{ needs.test.result }}
+        run: |
+          if [ "$TEST_RESULT" != "success" ]; then
+            echo "Unit test shards did not all pass (result: $TEST_RESULT)"
+            exit 1
+          fi
+          echo "All unit-test shards passed."
+
   # PRs + main: Lint, i18n, module boundaries, union exhaustiveness
   # All checks run to completion so every failure is visible in one pass
   quality:
