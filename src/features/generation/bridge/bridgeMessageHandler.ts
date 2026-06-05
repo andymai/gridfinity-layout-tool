@@ -30,6 +30,7 @@ export interface MessageHandlerContext {
   initPromise: Promise<void> | null;
   threadingInfo: ThreadingInfo | null;
   currentRequestId: string | null;
+  isWarming: boolean;
   pendingResolve: ((result: GenerationResult) => void) | null;
   pendingReject: ((error: Error) => void) | null;
   onProgress: ProgressCallback | null;
@@ -93,6 +94,10 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
         if (response.requestId === ctx.currentRequestId && ctx.onProgress) {
           ctx.onProgress(response.stage, response.progress);
         }
+        break;
+
+      case 'WARM_DONE':
+        ctx.isWarming = false;
         break;
 
       case 'ESTIMATE_RESULT':

@@ -82,6 +82,9 @@ export class GenerationBridge {
   worker: Worker | null = null;
   initPromise: Promise<void> | null = null;
   currentRequestId: string | null = null;
+  /** True while a speculative idle export-warm is in flight (clears on WARM_DONE). */
+  isWarming = false;
+  private warmSeq = 0;
   debounceTimer: ReturnType<typeof setTimeout> | null = null;
   generationTimer: ReturnType<typeof setTimeout> | null = null;
   pendingResolve: ((result: GenerationResult) => void) | null = null;
@@ -223,6 +226,21 @@ export class GenerationBridge {
       });
       this.postMessage({ type: 'ESTIMATE', payload: { params, requestId } });
     });
+  }
+
+  /**
+   * Speculatively build the export-quality (fused) shell during idle so a
+   * subsequent export skips the deferred socket↔body fuse. Best-effort and
+   * fire-and-forget: skipped when the worker is busy or already warming, and
+   * cleared on WARM_DONE. A new generation simply queues behind an in-flight
+   * warm (the separate Manifold draft worker keeps the preview responsive).
+   */
+  warmExport(params: BinParams): void {
+    if (this.isDestroyed || !this.worker) return;
+    if (this.isWarming || this.currentRequestId) return;
+    this.isWarming = true;
+    const requestId = `warm-${++this.warmSeq}`;
+    this.postMessage({ type: 'WARM', payload: { params, requestId } });
   }
 
   /** Cancel any in-flight generation request */

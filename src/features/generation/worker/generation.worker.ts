@@ -29,7 +29,7 @@ import {
   getKernelInfo,
   cancelRequest,
 } from './handlers/workerContext';
-import { handleGenerate, handleGenerateBaseplate } from './handlers/generateHandler';
+import { handleGenerate, handleWarm, handleGenerateBaseplate } from './handlers/generateHandler';
 import {
   handleExport,
   handleExportBaseplate,
@@ -87,6 +87,10 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'GENERATE':
         handleGenerate(message);
+        break;
+
+      case 'WARM':
+        handleWarm(message);
         break;
 
       case 'ESTIMATE':

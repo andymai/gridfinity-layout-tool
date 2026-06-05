@@ -55,6 +55,9 @@ function toMeshPayload(result: BridgeResult): GenerationResult {
  * A monotonic token guards arbitration: a draft is dropped if a newer edit has
  * started or the exact result for its edit has already landed.
  */
+/** Idle gap after the exact result before speculatively warming the export shell. */
+const EXPORT_WARM_IDLE_MS = 2000;
+
 export function useGeneration(): void {
   const bridgeRef = useRef<GenerationBridge | null>(null);
   const previewBridgeRef = useRef<GenerationBridge | null>(null);
@@ -66,6 +69,10 @@ export function useGeneration(): void {
   // are stale and dropped (covers the exact-resolves-before-draft race).
   const finalizedTokenRef = useRef(0);
   const draftSkipGate = useRef(createDraftSkipGate()).current;
+  // After the exact result settles, idle-warm the export-quality (fused) shell
+  // so the first export skips the deferred socket↔body fuse. Cancelled (timer
+  // cleared) on the next edit so the warm only runs when the user has paused.
+  const warmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { params, epoch } = useDesignerStore(
     useShallow((state) => ({
@@ -128,6 +135,11 @@ export function useGeneration(): void {
       }
 
       const token = ++genTokenRef.current;
+      // A new edit cancels any pending idle export-warm.
+      if (warmTimerRef.current !== null) {
+        clearTimeout(warmTimerRef.current);
+        warmTimerRef.current = null;
+      }
       setGenerationStatus('generating');
 
       // Fast draft on the leading edge (best-effort): renders while the exact
@@ -158,6 +170,14 @@ export function useGeneration(): void {
 
         setGenerationResult(toMeshPayload(result));
         setGenerationStatus('complete');
+
+        // Once the user pauses, speculatively warm the export-quality shell so
+        // the first export skips the deferred socket↔body fuse. (Any prior timer
+        // was already cleared at the start of this generation.)
+        warmTimerRef.current = setTimeout(() => {
+          warmTimerRef.current = null;
+          bridgeRef.current?.warmExport(currentParams);
+        }, EXPORT_WARM_IDLE_MS);
       } catch (e) {
         // Cancelled requests are expected during rapid param changes
         if (e instanceof Error && e.message === 'Generation cancelled') {
@@ -251,6 +271,10 @@ export function useGeneration(): void {
 
     return () => {
       cancelled = true;
+      if (warmTimerRef.current !== null) {
+        clearTimeout(warmTimerRef.current);
+        warmTimerRef.current = null;
+      }
       bridgeRef.current = null;
       previewBridgeRef.current = null;
       initializedRef.current = false;

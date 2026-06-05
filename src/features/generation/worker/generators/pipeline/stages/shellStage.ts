@@ -21,7 +21,12 @@ import {
   buildCompartmentCavityDrawings,
   buildCompartmentsCacheKey,
 } from '../../compartmentBuilder';
-import { getShellCache, setShellCache } from '../../shapeCache';
+import {
+  getShellCache,
+  setShellCache,
+  getExportShellCache,
+  setExportShellCache,
+} from '../../shapeCache';
 import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
@@ -36,6 +41,15 @@ export const shellStage: PipelineStage = {
 
   execute(ctx: PipelineContext): PipelineContext {
     const { params, dimensions: dim, signal, onProgress, originToTag, forExport } = ctx;
+
+    // Export fast path: the fused body+socket shell was built by a previous
+    // export or the idle warm — skip building/fusing entirely.
+    if (forExport && !dim.isFlat) {
+      const cachedExport = getExportShellCache(dim.shellKey);
+      if (cachedExport) {
+        return { ...ctx, solid: cachedExport, deferredSolid: null };
+      }
+    }
 
     // ── BODY (box + optional lip) — cached by shellKey. ──────────────────────
     // `getShellCache` returns a metadata-preserving clone so BASE/LIP face-origin
@@ -149,11 +163,13 @@ export const shellStage: PipelineStage = {
       collectOrigins(socket, FeatureTag.SOCKET, originToTag);
 
       if (forExport) {
-        // Watertight: fuse the socket into the body for a single solid.
+        // Watertight: fuse the socket into the body for a single solid, and
+        // cache it so re-exports and the idle warm skip this fuse next time.
         const full = unwrap(fuse(body, socket));
         body.delete();
         socket.delete();
-        return { ...ctx, solid: full, deferredSolid: null };
+        setExportShellCache(dim.shellKey, full);
+        return { ...ctx, solid: translate(full, [0, 0, 0]), deferredSolid: null };
       }
 
       // Preview: defer the socket fuse — tessellate stage meshes + concatenates.
