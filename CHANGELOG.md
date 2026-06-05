@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.149.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.148.0...gridfinity-layout-tool-v4.149.0) (2026-06-05)
+
+
+### Features
+
+* **baseplate:** adjustable connector fit offset ([#2024](https://github.com/andymai/gridfinity-layout-tool/issues/2024)) ([#2030](https://github.com/andymai/gridfinity-layout-tool/issues/2030)) ([ab6bbe5](https://github.com/andymai/gridfinity-layout-tool/commit/ab6bbe5ef07871b6ecaef7ff158956ba7a98b7fa))
+
 ## [4.148.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.147.0...gridfinity-layout-tool-v4.148.0) (2026-06-05)
 
 
