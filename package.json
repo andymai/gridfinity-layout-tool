@@ -87,7 +87,7 @@
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.4.0",
     "arctic": "^3.7.0",
-    "brepjs": "18.66.1",
+    "brepjs": "18.66.2",
     "brepkit-wasm": "^2.101.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
