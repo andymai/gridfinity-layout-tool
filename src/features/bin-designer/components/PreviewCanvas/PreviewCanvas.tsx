@@ -316,7 +316,10 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
   const height = params.height;
   const totalH = height * params.heightUnitMm;
 
-  const showSkeleton = !hasMesh || wasmStatus !== 'ready';
+  // A Manifold pre-draft can land while the exact worker's WASM is still
+  // loading (cold start) — show it rather than the skeleton; the overlay below
+  // keeps signalling that the exact geometry is still on its way.
+  const showSkeleton = !hasMesh || wasmStatus === 'error' || (wasmStatus !== 'ready' && !isDraft);
   // Keep the loading indicator up while a fast draft is shown and the exact
   // geometry is still computing (manifold_preview), not just during 'generating'.
   const showOverlay = (generationStatus === 'generating' || isDraft) && hasMesh;

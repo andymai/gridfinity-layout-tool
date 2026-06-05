@@ -254,6 +254,57 @@ describe('useGeneration', () => {
     expect(gen.status).toBe('complete');
   });
 
+  it('renders a Manifold pre-draft while the exact worker is still loading (cold start)', async () => {
+    const draftVerts = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    const previewBridge = {
+      isDestroyed: false,
+      generateImmediate: vi.fn().mockResolvedValue({
+        mesh: {
+          vertices: draftVerts,
+          normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+          indices: new Uint32Array([0, 1, 2]),
+          edgeVertices: new Float32Array(0),
+          triangleCount: 1,
+        },
+        timingMs: 1,
+      }),
+      destroy: vi.fn(),
+    } as unknown as GenerationBridge;
+    mockAcquirePreview.mockResolvedValue(previewBridge);
+
+    // Hold the exact bridge open — the Manifold worker's WASM is far smaller,
+    // so on a real cold start it resolves seconds earlier.
+    let resolveAcquire: (bridge: GenerationBridge) => void = () => {};
+    mockAcquire.mockReturnValue(
+      new Promise<GenerationBridge>((r) => {
+        resolveAcquire = r;
+      })
+    );
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // Pre-draft on screen while the exact worker is still initializing.
+    let state = useDesignerStore.getState();
+    expect(state.wasmStatus).toBe('loading');
+    expect(state.generation.isDraft).toBe(true);
+    expect(state.generation.mesh?.vertices).toBe(draftVerts);
+
+    // Exact bridge arrives → initial generation supersedes the pre-draft.
+    await act(async () => {
+      resolveAcquire(mockBridge);
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    state = useDesignerStore.getState();
+    expect(state.wasmStatus).toBe('ready');
+    expect(state.generation.isDraft).toBe(false);
+    expect(state.generation.status).toBe('complete');
+    expect(state.generation.mesh?.vertices).not.toBe(draftVerts);
+  });
+
   it('skips the draft when the last exact was fast — no flicker (manifold_preview)', async () => {
     const previewBridge = {
       isDestroyed: false,

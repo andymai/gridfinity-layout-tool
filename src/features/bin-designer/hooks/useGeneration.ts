@@ -80,6 +80,24 @@ export function useGeneration(): void {
   const setWasmStatus = useDesignerStore((state) => state.setWasmStatus);
   const pushPerfSnapshot = useDesignerStore((state) => state.pushPerfSnapshot);
 
+  const dispatchDraft = useCallback(
+    (preview: GenerationBridge, currentParams: BinParams, token: number) => {
+      void preview
+        .generateImmediate(currentParams, () => {})
+        .then((draft) => {
+          if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
+          // Draft perf is intentionally not pushed to perfHistory — the overlay
+          // diagnoses the exact pipeline, and interleaving draft-kernel timings
+          // would skew it. Only the exact result records a snapshot.
+          setDraftResult(toMeshPayload(draft));
+        })
+        .catch(() => {
+          // Draft failure is non-fatal — the exact path still runs.
+        });
+    },
+    [setDraftResult]
+  );
+
   // Generate bin mesh from current params
   const runGeneration = useCallback(
     async (currentParams: BinParams) => {
@@ -125,18 +143,7 @@ export function useGeneration(): void {
         void bridge.estimateGenerate(currentParams).then((predictedMs) => {
           if (predictedMs !== null && predictedMs < skipBelowMs) return;
           if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
-          void preview
-            .generateImmediate(currentParams, () => {})
-            .then((draft) => {
-              if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
-              // Draft perf is intentionally not pushed to perfHistory — the overlay
-              // diagnoses the exact pipeline, and interleaving draft-kernel timings
-              // would skew it. Only the exact result records a snapshot.
-              setDraftResult(toMeshPayload(draft));
-            })
-            .catch(() => {
-              // Draft failure is non-fatal — the exact path below still runs.
-            });
+          dispatchDraft(preview, currentParams, token);
         });
       }
 
@@ -168,7 +175,7 @@ export function useGeneration(): void {
         setGenerationStatus('error');
       }
     },
-    [setGenerationStatus, setGenerationResult, setDraftResult, pushPerfSnapshot, draftSkipGate]
+    [setGenerationStatus, setGenerationResult, dispatchDraft, pushPerfSnapshot, draftSkipGate]
   );
 
   // Initialize bridge on mount via BridgeManager (ref-counted singleton)
@@ -205,32 +212,41 @@ export function useGeneration(): void {
         bridge.onBooleanFallbackStats = trackBooleanFallbacks;
 
         // Trigger the initial generation immediately — deliberately NOT gated on
-        // the preview bridge below. The first render runs exact-only; gating it
-        // on the optional Manifold WASM load would make the first paint slower
+        // the preview bridge. The first render runs exact-only; gating it on
+        // the optional Manifold WASM load would make the first paint slower
         // than with the flag off. The draft joins for subsequent edits.
         const currentState = useDesignerStore.getState();
         prevEpochRef.current = currentState.generation.epoch;
         void runGeneration(currentState.params);
-
-        // Acquire the best-effort draft-preview bridge in the background (null
-        // when the flag is off or the kernel fails to load — never fatal).
-        void bridgeManager
-          .acquirePreview()
-          .then((preview) => {
-            if (!preview) return;
-            if (cancelled) {
-              bridgeManager.releasePreview();
-              return;
-            }
-            acquiredPreview = true;
-            previewBridgeRef.current = preview;
-          })
-          .catch(() => {
-            // Draft preview unavailable; exact-only generation proceeds.
-          });
       })
       .catch((_e: unknown) => {
         if (!cancelled) setWasmStatus('error');
+      });
+
+    // Acquire the best-effort draft-preview bridge in parallel with the exact
+    // bridge above (null when the flag is off or the kernel fails to load —
+    // never fatal). Its WASM is a fraction of occt-wasm's, so on a cold start
+    // it typically resolves seconds earlier; if no generation has started yet,
+    // render a pre-draft instead of leaving the skeleton up for the whole
+    // exact-worker load. The pre-draft claims a token so the initial exact
+    // generation (and any edit) supersedes it through normal arbitration.
+    void bridgeManager
+      .acquirePreview()
+      .then((preview) => {
+        if (!preview) return;
+        if (cancelled) {
+          bridgeManager.releasePreview();
+          return;
+        }
+        acquiredPreview = true;
+        previewBridgeRef.current = preview;
+        if (genTokenRef.current === 0) {
+          const token = ++genTokenRef.current;
+          dispatchDraft(preview, useDesignerStore.getState().params, token);
+        }
+      })
+      .catch(() => {
+        // Draft preview unavailable; exact-only generation proceeds.
       });
 
     return () => {
@@ -241,7 +257,7 @@ export function useGeneration(): void {
       bridgeManager.release();
       if (acquiredPreview) bridgeManager.releasePreview();
     };
-  }, [setWasmStatus, runGeneration]);
+  }, [setWasmStatus, runGeneration, dispatchDraft]);
 
   // Re-generate when epoch changes (after initialization)
   useEffect(() => {
