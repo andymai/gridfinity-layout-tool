@@ -8,6 +8,12 @@
 
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperControl } from '@/shared/components/StepperControl';
+import {
+  getSegmentClass,
+  SEGMENT_GROUP_CLASS,
+  SEGMENT_ACTIVE,
+  SEGMENT_INACTIVE,
+} from '@/shared/components/segmentedControlClasses';
 import { RulerIcon } from '@/design-system/Icon';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { useHandleSection, HANDLE_SIDES } from './useHandleSection';
@@ -19,7 +25,6 @@ const SHAPE_OPTIONS: readonly { value: HandleCutoutShape; labelKey: string }[] =
   { value: 'rectangle', labelKey: 'binDesigner.handles.shape.rectangle' },
   { value: 'oval', labelKey: 'binDesigner.handles.shape.oval' },
   { value: 'scoop', labelKey: 'binDesigner.handles.shape.scoop' },
-  { value: 'u-shape', labelKey: 'binDesigner.handles.shape.uShape' },
 ];
 
 /** Inline SVG chain-link icon (12x12). */
@@ -52,15 +57,21 @@ function LinkIcon({ linked }: { linked: boolean }) {
   );
 }
 
+/**
+ * Side chip base dimensions. Matches the shape selector's segment pills
+ * (px-2 py-1 text-xs rounded-md) so both rails read identically, but the
+ * sides are independent on/off toggles — they use the accent-tint
+ * SEGMENT_ACTIVE/SEGMENT_INACTIVE treatment instead of the single-select
+ * raised pill (getSegmentClass).
+ */
+const SIDE_CHIP_BASE =
+  'flex items-center justify-center rounded-md px-2 py-1 text-xs font-medium transition-colors ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset ' +
+  'disabled:cursor-not-allowed disabled:opacity-50';
+
 /** Side chip button class based on state. */
-function sideChipClass(isDisabled: boolean, isActive: boolean): string {
-  if (isDisabled) {
-    return 'border border-stroke-subtle bg-surface-secondary text-content-tertiary cursor-not-allowed opacity-50';
-  }
-  if (isActive) {
-    return 'bg-accent text-on-accent';
-  }
-  return 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover';
+function sideChipClass(isActive: boolean): string {
+  return `${SIDE_CHIP_BASE} ${isActive ? SEGMENT_ACTIVE : SEGMENT_INACTIVE}`;
 }
 
 export function HandleSection() {
@@ -70,7 +81,6 @@ export function HandleSection() {
     isBackDisabled,
     handleWidthMm,
     linked,
-    isUShape,
     showCornerRadius,
     hasCompartments,
     activeSides,
@@ -86,38 +96,47 @@ export function HandleSection() {
       primaryControls={
         <div className="space-y-3">
           {/* Shape selector */}
-          <div className="flex gap-1">
-            {SHAPE_OPTIONS.map(({ value, labelKey }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => handlers.setShape(value)}
-                className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                  handles.shape === value
-                    ? 'bg-accent text-on-accent'
-                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                }`}
-              >
-                {t(labelKey)}
-              </button>
-            ))}
+          <div
+            role="group"
+            aria-label={t('binDesigner.handles.shape')}
+            className={SEGMENT_GROUP_CLASS}
+          >
+            {SHAPE_OPTIONS.map(({ value, labelKey }) => {
+              const isActive = handles.shape === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => handlers.setShape(value)}
+                  className={`flex-1 ${getSegmentClass(isActive)}`}
+                >
+                  {t(labelKey)}
+                </button>
+              );
+            })}
           </div>
 
           {/* Side toggle chips — same order as WallCutoutsSection: L R F B */}
-          <div className="flex gap-1">
+          <div className={SEGMENT_GROUP_CLASS}>
             {HANDLE_SIDES.map((side) => {
-              const isActive = handles[side].enabled;
               const isDisabled = side === 'back' && isBackDisabled;
+              // A disabled side is functionally off (generation skips back
+              // handles while a label tab is active), so present it as off —
+              // neutral styling + aria-checked=false — even if its stored
+              // `enabled` flag is still true. Otherwise the blocked chip reads
+              // as "on" (accent tint), implying the setting is still in effect.
+              const effectiveActive = handles[side].enabled && !isDisabled;
               return (
                 <button
                   key={side}
                   type="button"
                   role="switch"
-                  aria-checked={isActive}
+                  aria-checked={effectiveActive}
                   disabled={isDisabled}
                   title={isDisabled ? t('binDesigner.handles.backDisabledByLabelTab') : undefined}
                   onClick={() => handlers.toggleSide(side)}
-                  className={`flex-1 rounded px-2 py-1 text-xs font-medium transition-colors ${sideChipClass(isDisabled, isActive)}`}
+                  className={`flex-1 ${sideChipClass(effectiveActive)}`}
                 >
                   {t(`binDesigner.handles.${side}`)}
                 </button>
@@ -213,7 +232,7 @@ export function HandleSection() {
                     </div>
                   )}
 
-                  {/* Corner radius — only for rectangle and u-shape */}
+                  {/* Corner radius — only for rectangle */}
                   {showCornerRadius && (
                     <div className="flex items-end gap-2">
                       <div className="flex-1 min-w-0">
@@ -319,34 +338,32 @@ export function HandleSection() {
 
               {/* Global controls: vertical position + count (always visible, not per-side) */}
               <div className="flex items-end gap-2">
-                {/* Vertical position — hidden for u-shape (auto-anchored to bottom) */}
-                {!isUShape && (
-                  <div className="flex-1 min-w-0">
-                    <span className="mb-1 block text-xs text-content-tertiary">
-                      {}
-                      {t('binDesigner.handles.verticalPosition')} {'(%)'}
-                    </span>
-                    <StepperControl
-                      value={Math.round(handles.verticalPosition * 100)}
-                      onChange={(v) => handlers.setVerticalPosition(v / 100)}
-                      onStep={(delta) => {
-                        const step = C.HANDLE_VERTICAL_POSITION_STEP * 100;
-                        const current = Math.round(handles.verticalPosition * 100);
-                        handlers.setVerticalPosition(
-                          Math.min(
-                            C.MAX_HANDLE_VERTICAL_POSITION,
-                            Math.max(C.MIN_HANDLE_VERTICAL_POSITION, (current + delta * step) / 100)
-                          )
-                        );
-                      }}
-                      min={Math.round(C.MIN_HANDLE_VERTICAL_POSITION * 100)}
-                      max={Math.round(C.MAX_HANDLE_VERTICAL_POSITION * 100)}
-                      step={Math.round(C.HANDLE_VERTICAL_POSITION_STEP * 100)}
-                      variant="desktop"
-                      ariaLabel={t('binDesigner.handles.verticalPositionAria')}
-                    />
-                  </div>
-                )}
+                {/* Vertical position */}
+                <div className="flex-1 min-w-0">
+                  <span className="mb-1 block text-xs text-content-tertiary">
+                    {}
+                    {t('binDesigner.handles.verticalPosition')} {'(%)'}
+                  </span>
+                  <StepperControl
+                    value={Math.round(handles.verticalPosition * 100)}
+                    onChange={(v) => handlers.setVerticalPosition(v / 100)}
+                    onStep={(delta) => {
+                      const step = C.HANDLE_VERTICAL_POSITION_STEP * 100;
+                      const current = Math.round(handles.verticalPosition * 100);
+                      handlers.setVerticalPosition(
+                        Math.min(
+                          C.MAX_HANDLE_VERTICAL_POSITION,
+                          Math.max(C.MIN_HANDLE_VERTICAL_POSITION, (current + delta * step) / 100)
+                        )
+                      );
+                    }}
+                    min={Math.round(C.MIN_HANDLE_VERTICAL_POSITION * 100)}
+                    max={Math.round(C.MAX_HANDLE_VERTICAL_POSITION * 100)}
+                    step={Math.round(C.HANDLE_VERTICAL_POSITION_STEP * 100)}
+                    variant="desktop"
+                    ariaLabel={t('binDesigner.handles.verticalPositionAria')}
+                  />
+                </div>
 
                 {/* Count stepper — shares row with vertical position */}
                 <div className="flex-1 min-w-0">

@@ -491,7 +491,6 @@
   "binDesigner.handles.shape.oval": "Óvalo",
   "binDesigner.handles.shape.rectangle": "Rectángulo",
   "binDesigner.handles.shape.scoop": "Cuchara",
-  "binDesigner.handles.shape.uShape": "U",
   "binDesigner.handles.sides": "Lados",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Los agujeros anchos pueden requerir soportes al imprimir",

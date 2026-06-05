@@ -9,6 +9,7 @@ import type {
   GenerationState,
   DesignerHistory,
   HandleConfig,
+  HandleCutoutShape,
   HandleSide,
   WallCutout,
   WallConfig,
@@ -82,6 +83,9 @@ export const DEFAULT_SPLIT_CONNECTOR_CONFIG: SplitConnectorConfig = {
   ridgeWidthFraction: 0.35,
   ridgeHeightFraction: 0.8,
 } as const;
+
+/** Handle cutout shapes still supported — used to coerce retired values on load. */
+const VALID_HANDLE_SHAPES: readonly HandleCutoutShape[] = ['rectangle', 'oval', 'scoop'];
 
 /** Default per-side handle config: enabled=false, no per-side overrides */
 export const DEFAULT_HANDLE_SIDE: HandleSide = {
@@ -505,6 +509,11 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
   const handlesConfig: HandleConfig = {
     ...DEFAULT_HANDLE_CONFIG,
     ...(cleanHandles as Partial<HandleConfig>),
+    // Coerce removed/unknown shapes (e.g. the retired 'u-shape') back to the
+    // default so old saves don't carry a value the type no longer allows.
+    shape: VALID_HANDLE_SHAPES.includes(cleanHandles.shape as HandleCutoutShape)
+      ? (cleanHandles.shape as HandleCutoutShape)
+      : DEFAULT_HANDLE_CONFIG.shape,
     front: { ...DEFAULT_HANDLE_CONFIG.front, ...((rawHandles.front as object | undefined) ?? {}) },
     back: { ...DEFAULT_HANDLE_CONFIG.back, ...((rawHandles.back as object | undefined) ?? {}) },
     left: { ...DEFAULT_HANDLE_CONFIG.left, ...((rawHandles.left as object | undefined) ?? {}) },

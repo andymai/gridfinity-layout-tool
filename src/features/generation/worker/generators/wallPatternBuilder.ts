@@ -43,7 +43,6 @@ import {
   buildHandleWallDefs,
   computeHandleHoleGeometry,
   computeWallHandleSegments,
-  U_SHAPE_OVERSHOOT,
 } from '@/shared/utils/handleCutoutClip';
 import type { HandleSegment, HandleWallDef } from '@/shared/utils/handleCutoutClip';
 import { computeMultiHandleOffsets } from '@/shared/utils/handleLayout';
@@ -197,26 +196,12 @@ export function buildWallPatterns(ctx: PipelineContext): Shape3D[] {
       params.handles[wall.side]?.enabled &&
       !(wall.side === 'back' && params.label.enabled)
     ) {
-      const isUShape = params.handles.shape === 'u-shape';
       const side = params.handles[wall.side];
       const sideHeight = side.height ?? params.handles.height;
       const sideWidth = side.width ?? params.handles.width;
 
-      let handleCenterZ: number;
-      let handleEffHeight: number;
-      if (isUShape) {
-        const clampedHeight = Math.min(sideHeight, interiorHeight);
-        handleEffHeight = clampedHeight + U_SHAPE_OVERSHOOT;
-        handleCenterZ = (clampedHeight - U_SHAPE_OVERSHOOT) / 2;
-      } else {
-        const geom = computeHandleHoleGeometry(
-          interiorHeight,
-          sideHeight,
-          params.handles.verticalPosition
-        );
-        handleCenterZ = geom.centerZ;
-        handleEffHeight = geom.effectiveHeight;
-      }
+      const { centerZ: handleCenterZ, effectiveHeight: handleEffHeight } =
+        computeHandleHoleGeometry(interiorHeight, sideHeight, params.handles.verticalPosition);
 
       if (handleEffHeight >= 1) {
         const handleCutoutCfg = params.walls.enabled ? params.walls[wall.side] : undefined;

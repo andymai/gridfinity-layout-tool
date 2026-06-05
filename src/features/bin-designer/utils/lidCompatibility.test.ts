@@ -387,43 +387,6 @@ describe('checkLidCompatibility', () => {
       expect(issue?.sides).toEqual(['front']);
     });
 
-    it('u-shape handles use floor-anchored geometry (ignore verticalPosition)', () => {
-      // U-shape extends from the floor up to `min(requestedHeight, interiorHeight)`,
-      // matching `handleBuilder.ts:clampedHeight`. verticalPosition is ignored.
-      // Interior height = 14mm, lipBottom = 9.6mm. A u-shape handle 12mm tall
-      // tops out at Z=12mm → above the lip → should warn even with
-      // verticalPosition=0 (which would clamp non-u-shape handles to 0).
-      const params = withOverrides({
-        handles: {
-          ...DEFAULT_BIN_PARAMS.handles,
-          enabled: true,
-          shape: 'u-shape',
-          height: 12,
-          verticalPosition: 0,
-          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
-          back: { ...DEFAULT_BIN_PARAMS.handles.back, enabled: false },
-          left: { ...DEFAULT_BIN_PARAMS.handles.left, enabled: false },
-          right: { ...DEFAULT_BIN_PARAMS.handles.right, enabled: false },
-        },
-      });
-      const issue = checkLidCompatibility(params).find((i) => i.id === 'handles');
-      expect(issue?.sides).toEqual(['front']);
-    });
-
-    it('short u-shape handles do NOT warn (top below lip)', () => {
-      // A 5mm u-shape handle tops out at Z=5mm, well below lipBottom=9.6mm.
-      const params = withOverrides({
-        handles: {
-          ...DEFAULT_BIN_PARAMS.handles,
-          enabled: true,
-          shape: 'u-shape',
-          height: 5,
-          front: { ...DEFAULT_BIN_PARAMS.handles.front, enabled: true },
-        },
-      });
-      expect(checkLidCompatibility(params).find((i) => i.id === 'handles')).toBeUndefined();
-    });
-
     it('does NOT warn when the handle sits clear of the lip (low verticalPosition)', () => {
       const params = withOverrides({
         handles: {

@@ -195,22 +195,6 @@ export const handles: ScenarioCase[] = [
     },
     timeout: 60_000,
   }),
-  defineScenario('handles', 'u-shape handles auto-anchored to floor', {
-    assert: 'structural',
-    params: {
-      width: 2,
-      depth: 2,
-      height: 5,
-      handles: {
-        ...DEFAULT_BIN_PARAMS.handles,
-        enabled: true,
-        shape: 'u-shape',
-        front: ENABLED_SIDE,
-        left: ENABLED_SIDE,
-      },
-    },
-    timeout: 60_000,
-  }),
   defineScenario('handles', 'multi-handle count=2 on wide bin', {
     assert: 'structural',
     params: {

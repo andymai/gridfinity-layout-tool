@@ -491,7 +491,6 @@
   "binDesigner.handles.shape.oval": "Овал",
   "binDesigner.handles.shape.rectangle": "Прямокутник",
   "binDesigner.handles.shape.scoop": "Захват",
-  "binDesigner.handles.shape.uShape": "U-форма",
   "binDesigner.handles.sides": "Сторони",
   "binDesigner.handles.summary": "{shape} {sides}: {height}мм",
   "binDesigner.handles.supportNote": "Широкі отвори можуть потребувати підпор під час друку",

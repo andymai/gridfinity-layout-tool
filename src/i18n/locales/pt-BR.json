@@ -491,7 +491,6 @@
   "binDesigner.handles.shape.oval": "Oval",
   "binDesigner.handles.shape.rectangle": "Retângulo",
   "binDesigner.handles.shape.scoop": "Concha",
-  "binDesigner.handles.shape.uShape": "U",
   "binDesigner.handles.sides": "Lados",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Furos largos podem precisar de suportes na impressão",

@@ -491,7 +491,6 @@
   "binDesigner.handles.shape.oval": "Ovale",
   "binDesigner.handles.shape.rectangle": "Rectangle",
   "binDesigner.handles.shape.scoop": "Cuillère",
-  "binDesigner.handles.shape.uShape": "U",
   "binDesigner.handles.sides": "Côtés",
   "binDesigner.handles.summary": "{shape} {sides}: {height}mm",
   "binDesigner.handles.supportNote": "Les trous larges peuvent nécessiter des supports lors de l'impression",

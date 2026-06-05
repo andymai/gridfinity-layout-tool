@@ -24,11 +24,6 @@ describe('buildHandleProfile', () => {
     expect(profile).not.toBeNull();
   });
 
-  it('returns a valid Drawing for u-shape (open bottom)', () => {
-    const profile = buildHandleProfile('u-shape', defaultArgs);
-    expect(profile).not.toBeNull();
-  });
-
   it('clamps corner radius to half of smallest dimension', () => {
     const profile = buildHandleProfile('rectangle', { width: 10, height: 10, cornerRadius: 20 });
     expect(profile).not.toBeNull();
