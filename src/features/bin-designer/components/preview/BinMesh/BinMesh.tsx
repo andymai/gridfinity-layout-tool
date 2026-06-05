@@ -54,6 +54,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
     normals,
     indices,
     edgeVertices,
+    isDraft,
     faceGroups,
     coarseLOD,
     featureColors,
@@ -71,6 +72,7 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
       normals: s.generation.mesh?.normals ?? null,
       indices: s.generation.mesh?.indices ?? null,
       edgeVertices: s.generation.mesh?.edgeVertices ?? null,
+      isDraft: s.generation.isDraft,
       faceGroups: s.generation.mesh?.faceGroups ?? null,
       coarseLOD: s.generation.mesh?.coarseLOD ?? null,
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- featureColors is typed required but legacy persisted configs may omit it
@@ -114,7 +116,10 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
     vertices,
     normals,
     indices,
-    edgeVertices,
+    // Manifold drafts have only triangulated mesh edges (not clean B-rep edges),
+    // which render as wireframe noise — suppress them; the exact result restores
+    // real edges when it supersedes the draft.
+    edgeVertices: isDraft ? null : edgeVertices,
     faceGroups: multiColorData?.groups,
   });
 
