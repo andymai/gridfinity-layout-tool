@@ -13,9 +13,15 @@ vi.mock('../EngineSelector', () => ({
   KERNEL_FEATURE_IDS: ['brepkit_kernel'] as const,
 }));
 
-// A real, low-risk, toggleable experimental feature.
+// A real, low-risk, toggleable experimental feature. Resolve it up front and
+// fail loudly if it ever disappears from the labs config, rather than letting
+// an empty name silently break the `getByText` lookup below.
 const FEATURE_ID = 'show_generation_perf';
-const FEATURE_NAME = getFeature(FEATURE_ID)?.name ?? '';
+const FEATURE = getFeature(FEATURE_ID);
+if (!FEATURE) {
+  throw new Error(`Labs feature "${FEATURE_ID}" no longer exists; update this regression test`);
+}
+const FEATURE_NAME = FEATURE.name;
 
 describe('LabsDrawer toggle reactivity (regression)', () => {
   beforeEach(() => {
