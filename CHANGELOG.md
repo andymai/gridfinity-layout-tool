@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.150.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.149.0...gridfinity-layout-tool-v4.150.0) (2026-06-05)
+
+
+### Features
+
+* **bin-designer:** unify wall-cutout and handle panel UI ([#2032](https://github.com/andymai/gridfinity-layout-tool/issues/2032)) ([659ed48](https://github.com/andymai/gridfinity-layout-tool/commit/659ed48445f22af7b0ccc6e352fff0df9891ad6c))
+
 ## [4.149.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.148.0...gridfinity-layout-tool-v4.149.0) (2026-06-05)
 
 
