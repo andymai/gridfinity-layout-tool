@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { isErr } from '@/core/result';
 import { useDesignerStore } from '../store';
-import { bridgeManager } from '@/shared/generation/bridge';
+import { bridgeManager, FAST_EXACT_SKIP_MS } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import { validateCompartmentSizes } from '../utils/validation';
 import {
@@ -65,6 +65,9 @@ export function useGeneration(): void {
   // Highest token whose exact result has been applied — drafts at or below it
   // are stale and dropped (covers the exact-resolves-before-draft race).
   const finalizedTokenRef = useRef(0);
+  // Worker compute time of the most recent exact result; predicts whether the
+  // next exact will land fast enough that a draft would just read as flicker.
+  const lastExactMsRef = useRef<number | null>(null);
 
   const { params, epoch } = useDesignerStore(
     useShallow((state) => ({
@@ -113,8 +116,12 @@ export function useGeneration(): void {
 
       // Fast draft on the leading edge (best-effort): renders immediately while
       // the exact geometry computes. Dropped if superseded or already finalized.
+      // Skipped entirely when the exact is predicted to be fast — a draft
+      // replaced within ~a second is just flicker (see FAST_EXACT_SKIP_MS).
+      const expectSlowExact =
+        lastExactMsRef.current === null || lastExactMsRef.current >= FAST_EXACT_SKIP_MS;
       const preview = previewBridgeRef.current;
-      if (preview && !preview.isDestroyed) {
+      if (preview && !preview.isDestroyed && expectSlowExact) {
         void preview
           .generateImmediate(currentParams, () => {})
           .then((draft) => {
@@ -135,6 +142,7 @@ export function useGeneration(): void {
         // A newer edit superseded this one; let its results win instead.
         if (token !== genTokenRef.current) return;
         finalizedTokenRef.current = token;
+        lastExactMsRef.current = result.timingMs;
 
         if (result.perfSnapshot) pushPerfSnapshot(result.perfSnapshot);
 

@@ -9,6 +9,15 @@ import type { BinParams, BaseplateParams, SplitConnectorConfig } from '@/shared/
 
 /** Geometry kernel backend for BREP operations */
 export type KernelName = 'brepkit' | 'occt-wasm' | 'manifold';
+
+/**
+ * Skip the Manifold draft when the exact build is expected to finish faster
+ * than this (ms, predicted from the previous exact generation). A draft that's
+ * replaced within ~a second reads as flicker — two visual jumps for no real
+ * feedback win — so fast generations (small/cache-warm) go straight to exact.
+ * No history yet (cold start) counts as slow.
+ */
+export const FAST_EXACT_SKIP_MS = 1000;
 export type WorkerMessage =
   | InitMessage
   | GenerateMessage

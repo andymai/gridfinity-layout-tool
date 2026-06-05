@@ -8,6 +8,7 @@
 export { GenerationBridge } from '@/features/generation/bridge';
 export { getActiveBridge, bridgeManager } from '@/features/generation/bridge';
 export { WorkerPool, workerPoolManager } from '@/features/generation/bridge';
+export { FAST_EXACT_SKIP_MS } from '@/features/generation/bridge/types';
 export type {
   WorkerResponse,
   MeshData,

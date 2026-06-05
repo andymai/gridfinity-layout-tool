@@ -27,7 +27,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useTranslation } from '@/i18n';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
-import { bridgeManager, workerPoolManager } from '@/shared/generation/bridge';
+import { bridgeManager, workerPoolManager, FAST_EXACT_SKIP_MS } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import type { WorkerPool } from '@/shared/generation/bridge';
 import {
@@ -235,13 +235,13 @@ export function useBaseplateGeneration(): void {
   const directMeshStartRef = useRef<number>(0);
   const directMeshDurationRef = useRef<number>(0);
   /**
-   * Which preview path produced the on-screen first frame this generation:
-   * `'manifold'` for the Manifold draft kernel, `'direct'` for the synchronous
-   * procedural fallback. Set by whichever path last wrote `directMeshDurationRef`
-   * so `baseplate_preview_timing` can split the two (their timings differ — a
-   * Manifold draft is a WASM round-trip, the procedural path is synchronous).
+   * Which path produced the first on-screen frame — `'manifold'` (draft kernel,
+   * a WASM round-trip) vs `'direct'` (synchronous procedural) — set alongside
+   * `directMeshDurationRef` so `baseplate_preview_timing` can split the two.
    */
   const previewKindRef = useRef<'direct' | 'manifold'>('direct');
+  /** Last successful BREP wall-clock — predicts whether a draft is worth showing. */
+  const lastBrepMsRef = useRef<number | null>(null);
 
   // Single memoized selection drives both the values used below and the regen
   // effect's dependency (see `selectGenerationTriggers`). `useShallow` keeps the
@@ -523,6 +523,9 @@ export function useBaseplateGeneration(): void {
         }
         shouldTrack = true;
       } finally {
+        // Feed the draft-skip prediction — successful runs only, so a
+        // cancelled/errored run can't fake a "fast" BREP.
+        if (succeeded) lastBrepMsRef.current = performance.now() - brepStart;
         if (shouldTrack) {
           firstBrepDoneRef.current = true;
           trackBaseplatePreviewTiming({
@@ -563,17 +566,21 @@ export function useBaseplateGeneration(): void {
         setTiling(tiling);
         setSplitProgress(null);
         setDedupStats(null);
-        void runManifoldDraftPreview(fullParams, tiling, epoch).then((handled) => {
-          // Draft unavailable/failed and not yet superseded — fall back to the
-          // instant procedural preview so the canvas still fills before BREP.
-          if (
-            !handled &&
-            generationEpochRef.current === epoch &&
-            epoch > finalizedEpochRef.current
-          ) {
-            runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
-          }
-        });
+        // Skip the draft when BREP is predicted fast — the previous mesh stays
+        // on screen until the quick exact crossfades in (no intermediate jump).
+        if (lastBrepMsRef.current === null || lastBrepMsRef.current >= FAST_EXACT_SKIP_MS) {
+          void runManifoldDraftPreview(fullParams, tiling, epoch).then((handled) => {
+            // Draft unavailable/failed and not yet superseded — fall back to the
+            // instant procedural preview so the canvas still fills before BREP.
+            if (
+              !handled &&
+              generationEpochRef.current === epoch &&
+              epoch > finalizedEpochRef.current
+            ) {
+              runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
+            }
+          });
+        }
       } else {
         tiling = runDirectMeshPreview(fullParams, bedWidthMm, bedDepthMm, epoch);
       }
