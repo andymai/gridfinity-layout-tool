@@ -329,6 +329,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
 export const DEFAULT_GENERATION_STATE: GenerationState = {
   status: 'idle',
   mesh: null,
+  isDraft: false,
   progress: 0,
   epoch: 0,
   perfHistory: [],

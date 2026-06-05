@@ -111,9 +111,20 @@ export function createHistorySlice(set: Set, get: Get) {
       });
     },
 
+    setDraftResult: (result: GenerationResult) => {
+      set((state) => {
+        state.generation.mesh = result;
+        state.generation.isDraft = true;
+        state.generation.status = result.error ? 'error' : 'complete';
+      });
+      // Drafts are mesh-approximate; never seed the undo/redo mesh cache with
+      // them — history must hold exact geometry, which the exact result sets.
+    },
+
     setGenerationResult: (result: GenerationResult) => {
       set((state) => {
         state.generation.mesh = result;
+        state.generation.isDraft = false;
         state.generation.status = result.error ? 'error' : 'complete';
       });
 

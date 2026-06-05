@@ -18,12 +18,16 @@ const mockBridge = {
 const mockAcquire = vi.fn<() => Promise<GenerationBridge>>();
 const mockRelease = vi.fn();
 const mockGet = vi.fn<() => GenerationBridge | null>();
+const mockAcquirePreview = vi.fn<() => Promise<GenerationBridge | null>>();
+const mockReleasePreview = vi.fn();
 
 vi.mock('@/shared/generation/bridge', () => ({
   bridgeManager: {
     acquire: () => mockAcquire(),
     release: () => mockRelease(),
     get: () => mockGet(),
+    acquirePreview: () => mockAcquirePreview(),
+    releasePreview: () => mockReleasePreview(),
   },
   GenerationBridge: vi.fn(),
   getActiveBridge: vi.fn(),
@@ -55,11 +59,14 @@ describe('useGeneration', () => {
     mockRelease.mockReset();
     mockGet.mockReset();
     mockGet.mockReturnValue(mockBridge);
+    mockAcquirePreview.mockReset();
+    mockAcquirePreview.mockResolvedValue(null); // preview off by default
+    mockReleasePreview.mockReset();
 
     // Full store reset
     useDesignerStore.setState({
       wasmStatus: 'unloaded',
-      generation: { status: 'idle', mesh: null, progress: 0 },
+      generation: { status: 'idle', mesh: null, isDraft: false, progress: 0 },
     });
   });
 
@@ -171,5 +178,56 @@ describe('useGeneration', () => {
     const state = useDesignerStore.getState();
     expect(state.generation.status).toBe('error');
     expect(state.generation.mesh?.error).toBe('Generation failed');
+  });
+
+  it('renders the draft first, then the exact result supersedes it (manifold_preview)', async () => {
+    const draftVerts = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+    const exactVerts = new Float32Array([0, 0, 0, 2, 0, 0, 0, 2, 0]);
+    const meshOf = (vertices: Float32Array) => ({
+      mesh: {
+        vertices,
+        normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+        indices: new Uint32Array([0, 1, 2]),
+        edgeVertices: new Float32Array(0),
+        triangleCount: 1,
+      },
+      timingMs: 1,
+    });
+
+    const previewBridge = {
+      isDestroyed: false,
+      generateImmediate: vi.fn().mockResolvedValue(meshOf(draftVerts)),
+      destroy: vi.fn(),
+    } as unknown as GenerationBridge;
+    mockAcquirePreview.mockResolvedValue(previewBridge);
+
+    // Hold the exact result open so the draft is guaranteed to apply first.
+    let resolveExact: (v: unknown) => void = () => {};
+    (mockBridge.generate as ReturnType<typeof vi.fn>).mockReturnValue(
+      new Promise((r) => {
+        resolveExact = r;
+      })
+    );
+
+    renderHook(() => useGeneration());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    // Draft is on screen, flagged as a draft.
+    let gen = useDesignerStore.getState().generation;
+    expect(gen.isDraft).toBe(true);
+    expect(gen.mesh?.vertices).toBe(draftVerts);
+
+    // Exact lands and supersedes the draft.
+    await act(async () => {
+      resolveExact(meshOf(exactVerts));
+      await vi.advanceTimersByTimeAsync(1);
+    });
+
+    gen = useDesignerStore.getState().generation;
+    expect(gen.isDraft).toBe(false);
+    expect(gen.mesh?.vertices).toBe(exactVerts);
+    expect(gen.status).toBe('complete');
   });
 });

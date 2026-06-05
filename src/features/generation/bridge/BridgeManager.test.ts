@@ -424,6 +424,68 @@ describe('BridgeManager', () => {
   });
 
   // -------------------------------------------------------------------------
+  // acquirePreview() / releasePreview()
+  // -------------------------------------------------------------------------
+
+  describe('acquirePreview()', () => {
+    afterEach(() => {
+      mockIsFeatureEnabled = () => false;
+    });
+
+    it('returns null and creates no bridge when manifold_preview is off', async () => {
+      mockIsFeatureEnabled = () => false;
+      const preview = await manager.acquirePreview();
+
+      expect(preview).toBeNull();
+      expect(mockInstances).toHaveLength(0);
+    });
+
+    it('creates a manifold bridge when manifold_preview is on', async () => {
+      mockIsFeatureEnabled = (flag) => flag === 'manifold_preview';
+      const preview = await manager.acquirePreview();
+
+      const { GenerationBridge: MockCtor } = await import('./GenerationBridge');
+      expect(vi.mocked(MockCtor)).toHaveBeenCalledWith('manifold');
+      expect(preview).toBe(asBridge(mockInstances[0]));
+      expect(mockInstances[0].init).toHaveBeenCalledTimes(1);
+    });
+
+    it('reuses one preview bridge across repeated acquires', async () => {
+      mockIsFeatureEnabled = (flag) => flag === 'manifold_preview';
+      const first = await manager.acquirePreview();
+      const second = await manager.acquirePreview();
+
+      expect(first).toBe(second);
+      expect(mockInstances).toHaveLength(1);
+    });
+
+    it('idle-destroys the preview bridge after the last release', async () => {
+      mockIsFeatureEnabled = (flag) => flag === 'manifold_preview';
+      await manager.acquirePreview();
+      manager.releasePreview();
+
+      vi.advanceTimersByTime(29_999);
+      expect(mockInstances[0].destroy).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(1);
+      expect(mockInstances[0].destroy).toHaveBeenCalledTimes(1);
+    });
+
+    it('preview lifecycle is independent of the exact bridge', async () => {
+      mockIsFeatureEnabled = (flag) => flag === 'manifold_preview';
+      await manager.acquire(); // exact bridge — mockInstances[0]
+      await manager.acquirePreview(); // preview bridge — mockInstances[1]
+      expect(mockInstances).toHaveLength(2);
+
+      manager.releasePreview();
+      vi.advanceTimersByTime(30_000);
+
+      // Preview destroyed; exact untouched (still has a live ref).
+      expect(mockInstances[1].destroy).toHaveBeenCalledTimes(1);
+      expect(mockInstances[0].destroy).not.toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // Module-level singleton smoke test
   // -------------------------------------------------------------------------
 
