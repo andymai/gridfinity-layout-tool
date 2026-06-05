@@ -234,6 +234,14 @@ export function useBaseplateGeneration(): void {
   /** Time the most recent direct-mesh phase started — used to compute BREP elapsed for analytics. */
   const directMeshStartRef = useRef<number>(0);
   const directMeshDurationRef = useRef<number>(0);
+  /**
+   * Which preview path produced the on-screen first frame this generation:
+   * `'manifold'` for the Manifold draft kernel, `'direct'` for the synchronous
+   * procedural fallback. Set by whichever path last wrote `directMeshDurationRef`
+   * so `baseplate_preview_timing` can split the two (their timings differ — a
+   * Manifold draft is a WASM round-trip, the procedural path is synchronous).
+   */
+  const previewKindRef = useRef<'direct' | 'manifold'>('direct');
 
   // Single memoized selection drives both the values used below and the regen
   // effect's dependency (see `selectGenerationTriggers`). `useShallow` keeps the
@@ -321,6 +329,7 @@ export function useBaseplateGeneration(): void {
         // unreachable, but moving this out of the success-only path hardens
         // it against any future async refactor of the direct-mesh generator.
         directMeshDurationRef.current = performance.now() - directMeshStartRef.current;
+        previewKindRef.current = 'direct';
       }
 
       return tiling;
@@ -378,6 +387,7 @@ export function useBaseplateGeneration(): void {
         return false; // draft failed — caller falls back to the procedural direct-mesh
       } finally {
         directMeshDurationRef.current = performance.now() - start;
+        previewKindRef.current = 'manifold';
       }
 
       return true;
@@ -470,11 +480,12 @@ export function useBaseplateGeneration(): void {
           setGenerationResult(EMPTY_MESH);
           setGenerationStatus('complete');
         }
+        // Mark this epoch's exact result as authoritative before anything else
+        // so a late Manifold draft (async) can't overwrite it — mirrors the
+        // bin-designer hook's finalize-first ordering.
+        finalizedEpochRef.current = epoch;
         shouldTrack = true;
         succeeded = true;
-        // Mark this epoch's exact result as authoritative so a late Manifold
-        // draft (async) can't overwrite it.
-        finalizedEpochRef.current = epoch;
       } catch (e: unknown) {
         // These three early returns are intentional non-events: bridge
         // cancellation (e.g. unmount) and superseded epochs aren't user-
@@ -516,6 +527,7 @@ export function useBaseplateGeneration(): void {
           firstBrepDoneRef.current = true;
           trackBaseplatePreviewTiming({
             directMeshMs: directMeshDurationRef.current,
+            previewKind: previewKindRef.current,
             brepMs: performance.now() - brepStart,
             pieceCount: tiling.pieces.length,
             isSplit: tiling.isSplit,

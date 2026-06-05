@@ -129,7 +129,10 @@ export function trackBooleanFallbacks(payload: {
  * (BREP) for the baseplate page. Lets us validate the perceived-perf win
  * post-launch and catch regressions if the direct-mesh path stalls.
  *
- * `directMeshMs` is the synchronous procedural path (~50-200 ms typical).
+ * `directMeshMs` is the time-to-first-preview. `previewKind` says which path
+ * produced it: `'direct'` is the synchronous procedural placeholder (~50-200 ms
+ * typical); `'manifold'` is the Manifold draft kernel (a WASM round-trip, so
+ * slower) — split on `preview_kind` before comparing these timings.
  * `brepMs` is the WASM BREP path (~1-3 s warm, +2-4 s cold for WASM init).
  * `pieceCount` is 1 for unsplit baseplates; >1 for split tilings.
  * `success` distinguishes completed BREP from errored/timed-out runs so
@@ -137,6 +140,7 @@ export function trackBooleanFallbacks(payload: {
  */
 export function trackBaseplatePreviewTiming(payload: {
   directMeshMs: number;
+  previewKind: 'direct' | 'manifold';
   brepMs: number;
   pieceCount: number;
   isSplit: boolean;
@@ -145,6 +149,7 @@ export function trackBaseplatePreviewTiming(payload: {
 }): void {
   trackEvent('baseplate_preview_timing', {
     direct_mesh_ms: Math.round(payload.directMeshMs * 10) / 10,
+    preview_kind: payload.previewKind,
     brep_ms: Math.round(payload.brepMs * 10) / 10,
     piece_count: payload.pieceCount,
     is_split: payload.isSplit,
