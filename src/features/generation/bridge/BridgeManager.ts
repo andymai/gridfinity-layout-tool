@@ -36,9 +36,8 @@ export class BridgeManager {
   private engineReadyState = false;
   private readyListeners = new Set<EngineReadyListener>();
 
-  // Optional Manifold draft-preview bridge (separate worker), ref-counted on
-  // its own so toggling the `manifold_preview` flag never disturbs the exact
-  // bridge's lifecycle.
+  // Manifold draft-preview bridge (separate worker), ref-counted on its own so
+  // its lifecycle stays independent of the exact bridge.
   private previewBridge: GenerationBridge | null = null;
   private previewRefCount = 0;
   private previewInitPromise: Promise<void> | null = null;
@@ -94,10 +93,11 @@ export class BridgeManager {
   }
 
   /**
-   * Acquire the Manifold draft-preview bridge, or `null` when the
-   * `manifold_preview` Labs flag is off (or the kernel fails to init — draft
-   * is a best-effort enhancement, never fatal). Ref-counted + idle-kept like
-   * the exact bridge. Caller MUST call `releasePreview()` when done.
+   * Acquire the Manifold draft-preview bridge, or `null` when the kernel fails
+   * to init — draft is a best-effort enhancement, never fatal. The
+   * `manifold_preview` feature is graduated (always on), so the flag gate here
+   * only returns null if the feature were ever un-graduated. Ref-counted +
+   * idle-kept like the exact bridge. Caller MUST call `releasePreview()` when done.
    */
   async acquirePreview(): Promise<GenerationBridge | null> {
     if (!useLabsStore.getState().isFeatureEnabled('manifold_preview')) return null;
