@@ -56,7 +56,10 @@ jobs:
           project-id: ${{ secrets.POSTHOG_PROJECT_ID }}
           api-key: ${{ secrets.POSTHOG_API_KEY }}
 
-  # PRs: Sharded test suite without coverage (fast feedback, 2 parallel runners)
+  # PRs: Sharded test suite without coverage (fast feedback, 4 parallel runners).
+  #   Vitest assigns files to shards by hashing the file path, so the heavy
+  #   brepjs/WASM generator tests scatter unevenly; 4 shards keeps the slowest
+  #   shard well below the ~10min a 2-way split produced.
   # Main: Full test suite with coverage thresholds (regression guard, single runner)
   test:
     name: Unit Tests (${{ matrix.shard }})
@@ -65,7 +68,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: ${{ github.event_name == 'pull_request' && fromJSON('["1/2", "2/2"]') || fromJSON('["1/1"]') }}
+        shard: ${{ github.event_name == 'pull_request' && fromJSON('["1/4", "2/4", "3/4", "4/4"]') || fromJSON('["1/1"]') }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
