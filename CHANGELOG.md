@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.146.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.146.0...gridfinity-layout-tool-v4.146.1) (2026-06-05)
+
+
+### Performance
+
+* **generation:** defer base-socket fuse to export for faster cold preview ([#2023](https://github.com/andymai/gridfinity-layout-tool/issues/2023)) ([0bf922b](https://github.com/andymai/gridfinity-layout-tool/commit/0bf922b457781322581a65b10d9250c9da1bf5a1))
+
 ## [4.146.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.145.2...gridfinity-layout-tool-v4.146.0) (2026-06-05)
 
 
