@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.145.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.145.1...gridfinity-layout-tool-v4.145.2) (2026-06-05)
+
+
+### Bug Fixes
+
+* **deps:** bump brepjs 18.66.1 -&gt; 18.66.2 (Manifold honeycomb wall-pattern fix) ([#2014](https://github.com/andymai/gridfinity-layout-tool/issues/2014)) ([40e1979](https://github.com/andymai/gridfinity-layout-tool/commit/40e197966f0e156b33cb976d91b1b0a22ba3ad4e))
+
 ## [4.145.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.145.0...gridfinity-layout-tool-v4.145.1) (2026-06-05)
 
 
