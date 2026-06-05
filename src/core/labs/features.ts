@@ -116,12 +116,11 @@ export const FEATURE_FLAGS = [
     name: 'Faster Live Preview',
     description:
       'Draft the 3D preview with a faster engine while you edit, then sharpen to the exact model when you pause. Speeds up the bin designer on complex bins; exports always use the exact engine.',
-    status: 'experimental',
+    status: 'graduated',
     risk: 'low',
-    warning:
-      'The draft preview is mesh-approximate — fillets, scoops, and engraved text may look rougher until the exact model finishes. Reload the page after toggling.',
     addedAt: '2026-06',
-    requiresRefresh: true,
+    graduatedAt: '2026-06',
+    requiresRefresh: false,
   },
 ] as const satisfies readonly FeatureFlag[];
 
