@@ -20,14 +20,15 @@ import type { MeshData } from '@/features/generation/bridge/types';
 
 // ─── Kernel selection ────────────────────────────────────────────────────────
 
-type KernelName = 'brepkit' | 'occt-wasm';
+type KernelName = 'brepkit' | 'occt-wasm' | 'manifold';
 
-type EnvKernelName = 'wasm' | 'brepkit' | 'occt-wasm';
+type EnvKernelName = 'wasm' | 'brepkit' | 'occt-wasm' | 'manifold';
 
 const ENV_TO_KERNEL: Partial<Record<string, KernelName>> = {
   wasm: 'brepkit',
   brepkit: 'brepkit',
   'occt-wasm': 'occt-wasm',
+  manifold: 'manifold',
 };
 
 function resolveKernel(): KernelName {
@@ -35,7 +36,7 @@ function resolveKernel(): KernelName {
   if (!env) return 'occt-wasm';
   const mapped = ENV_TO_KERNEL[env];
   if (mapped) return mapped;
-  const valid: readonly EnvKernelName[] = ['wasm', 'brepkit', 'occt-wasm'];
+  const valid: readonly EnvKernelName[] = ['wasm', 'brepkit', 'occt-wasm', 'manifold'];
   throw new Error(`Invalid BREPJS_KERNEL="${env}". Must be one of: ${valid.join(', ')}`);
 }
 
@@ -115,7 +116,11 @@ let exportSplitBinFn: ExportSplitBinFn | undefined;
 // ─── Kernel-specific init ────────────────────────────────────────────────────
 // Delegates to shared kernelInit.ts to avoid duplicating WASM loading logic.
 
-import { initBrepkitKernel as initWasmKernel, initOcctWasmKernel } from './kernelInit';
+import {
+  initBrepkitKernel as initWasmKernel,
+  initOcctWasmKernel,
+  initManifoldKernel,
+} from './kernelInit';
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
@@ -128,6 +133,8 @@ export async function initBrepjs(): Promise<void> {
 
   if (kernelName === 'brepkit') {
     await initWasmKernel();
+  } else if (kernelName === 'manifold') {
+    await initManifoldKernel();
   } else {
     await initOcctWasmKernel();
   }
