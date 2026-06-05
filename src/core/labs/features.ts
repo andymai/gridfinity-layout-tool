@@ -111,6 +111,18 @@ export const FEATURE_FLAGS = [
     addedAt: '2026-05',
     requiresRefresh: false,
   },
+  {
+    id: 'manifold_preview',
+    name: 'Faster Live Preview',
+    description:
+      'Draft the 3D preview with a faster engine while you edit, then sharpen to the exact model when you pause. Speeds up the bin designer on complex bins; exports always use the exact engine.',
+    status: 'experimental',
+    risk: 'low',
+    warning:
+      'The draft preview is mesh-approximate — fillets, scoops, and engraved text may look rougher until the exact model finishes. Reload the page after toggling.',
+    addedAt: '2026-06',
+    requiresRefresh: true,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];

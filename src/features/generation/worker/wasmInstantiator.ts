@@ -8,7 +8,7 @@
  * which resolves correctly in all environments.
  */
 
-import { registerKernel, BrepkitAdapter, loadFont } from 'brepjs';
+import { registerKernel, BrepkitAdapter, loadFont, initFromManifold, getKernel } from 'brepjs';
 
 import atkinsonFontUrl from './assets/fonts/AtkinsonHyperlegible-Regular.ttf?url';
 import jetbrainsMonoFontUrl from './assets/fonts/JetBrainsMono-Regular.ttf?url';
@@ -88,6 +88,35 @@ export async function loadBrepkit(): Promise<WasmLoadResult> {
 }
 
 /**
+ * Load and initialize the Manifold mesh-CSG geometry kernel for fast draft
+ * previews. Registered under kernel id `'manifold'`.
+ *
+ * Manifold tessellates at build time (not extraction time), so we pin draft
+ * quality on the adapter once here — every solid built in this worker uses the
+ * coarse circular-segment setting. Like brepkit, Manifold doesn't implement the
+ * topology ops `textBuilder` needs, so font loading is skipped (draft previews
+ * omit engraved text). Exact geometry + text stay on the occt-wasm worker.
+ */
+export async function loadManifold(): Promise<WasmLoadResult> {
+  const hardwareConcurrency = getHardwareConcurrency();
+
+  // Dynamic imports keep the manifold WASM out of the main worker chunk. The
+  // Emscripten factory locates its .wasm by environment detection, which fails
+  // in Vite ES module workers; pass the ?url-resolved path via locateFile.
+  const [{ default: ManifoldModule }, manifoldWasmUrlMod] = await Promise.all([
+    import('manifold-3d'),
+    import('manifold-3d/manifold.wasm?url'),
+  ]);
+
+  const module = await ManifoldModule({ locateFile: () => manifoldWasmUrlMod.default });
+  module.setup();
+  initFromManifold(module);
+  getKernel('manifold').setQuality?.('draft');
+
+  return { isThreaded: false, hardwareConcurrency };
+}
+
+/**
  * Load and initialize the occt-wasm geometry kernel.
  *
  * Registered under kernel id `'occt-wasm'` — the production default kernel.
@@ -105,16 +134,8 @@ export async function loadOcctWasm(): Promise<WasmLoadResult> {
 
   const kernel = await OcctKernel.init({ wasm: occtWasmUrlMod.default });
   // fromKernel retains the wrapper for the worker's lifetime, so no manual GC
-  // pin is needed (worker.terminate() frees the whole WASM heap). The cast
-  // bridges occt-wasm's exported module type, still narrower than brepjs's
-  // expected owner (missing VectorString / getExceptionMessage); both exist at
-  // runtime — filed upstream.
-  registerKernel(
-    'occt-wasm',
-    OcctWasmAdapter.fromKernel(
-      kernel as unknown as Parameters<typeof OcctWasmAdapter.fromKernel>[0]
-    )
-  );
+  // pin is needed (worker.terminate() frees the whole WASM heap).
+  registerKernel('occt-wasm', OcctWasmAdapter.fromKernel(kernel));
 
   // Engraved-text APIs are kernel-agnostic at brepjs's surface but use
   // OCCT primitives under the hood; occt-wasm satisfies them, so font
