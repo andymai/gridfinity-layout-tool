@@ -236,6 +236,12 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
     local). `normalizeTags` (client) and `sanitizeTags` (server) **must** stay
     identical — same 12×32 caps **and** the same control-char stripping — or a
     tag the client keeps but the server rewrites would flicker on the next pull.
+17. **Draft preview is best-effort and supersedable** — with the `manifold_preview`
+    Labs flag on, `useGeneration` renders a fast Manifold draft (`setDraftResult`,
+    `generation.isDraft = true`) on each edit, then the exact occt-wasm result
+    supersedes it. A monotonic token drops a draft once a newer edit starts or the
+    exact for its edit has landed (covers the exact-resolves-before-draft race).
+    Drafts skip the undo/redo mesh cache — history holds exact geometry only.
 
 ## Thumbnail Pipeline
 

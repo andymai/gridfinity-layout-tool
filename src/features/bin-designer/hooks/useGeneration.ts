@@ -173,6 +173,11 @@ export function useGeneration(): void {
         }
         bridgeRef.current = bridge;
         setWasmStatus('ready');
+        // Mark ready as soon as the exact bridge is up — deliberately before the
+        // preview bridge is acquired below. The draft is a best-effort
+        // enhancement; gating readiness on it would make edits during the
+        // Manifold WASM load (which can lag the exact bridge) do nothing at all.
+        // Edits in that brief window simply run exact-only until the preview joins.
         initializedRef.current = true;
 
         // Track WASM threading capabilities for analytics
