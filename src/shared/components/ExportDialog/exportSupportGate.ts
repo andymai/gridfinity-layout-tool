@@ -22,7 +22,16 @@ interface ExportSupportState {
 function load(): ExportSupportState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as ExportSupportState;
+    if (raw) {
+      // Validate the shape — a parseable-but-malformed payload (e.g. `{}` or a
+      // non-numeric count) must not poison the counter with NaN and permanently
+      // suppress the prompt.
+      const parsed = JSON.parse(raw) as Partial<ExportSupportState>;
+      return {
+        exportCount: Number.isFinite(parsed.exportCount) ? (parsed.exportCount as number) : 0,
+        lastShown: typeof parsed.lastShown === 'string' ? parsed.lastShown : undefined,
+      };
+    }
   } catch {
     /* ignore malformed / unavailable storage */
   }
@@ -39,8 +48,9 @@ function save(state: ExportSupportState): void {
 
 function cooledDown(lastShown: string | undefined): boolean {
   if (!lastShown) return true;
-  const elapsed = Date.now() - new Date(lastShown).getTime();
-  return elapsed > COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+  const last = new Date(lastShown).getTime();
+  if (Number.isNaN(last)) return true; // unparseable timestamp → treat as cooled down
+  return Date.now() - last >= COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
 }
 
 /**

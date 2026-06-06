@@ -30,6 +30,17 @@ describe('recordExportAndShouldPromptSupport', () => {
     expect(recordExportAndShouldPromptSupport()).toBe(false); // 4th — still cooling
   });
 
+  it('recovers from a malformed payload instead of being permanently suppressed', () => {
+    localStorage.setItem(KEY, '{"exportCount":"oops"}'); // non-numeric count
+    expect(recordExportAndShouldPromptSupport()).toBe(false); // counts as 1st
+    expect(recordExportAndShouldPromptSupport()).toBe(true); // 2nd → shown
+  });
+
+  it('treats an unparseable lastShown timestamp as cooled down', () => {
+    localStorage.setItem(KEY, JSON.stringify({ exportCount: 5, lastShown: 'not-a-date' }));
+    expect(recordExportAndShouldPromptSupport()).toBe(true);
+  });
+
   it('prompts again after the cooldown expires', () => {
     recordExportAndShouldPromptSupport(); // 1st
     expect(recordExportAndShouldPromptSupport()).toBe(true); // 2nd — shown, stamps cooldown

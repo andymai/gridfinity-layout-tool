@@ -24,8 +24,8 @@ import { useTranslation } from '@/i18n';
 import {
   ExportDialog as SharedExportDialog,
   ExportSupportPrompt,
+  recordExportAndShouldPromptSupport,
 } from '@/shared/components/ExportDialog';
-import { recordExportAndShouldPromptSupport } from '@/shared/components/ExportDialog/exportSupportGate';
 import type { ExportFileFormat } from '@/features/bin-designer/types';
 
 /** File extension display for each format (split ZIP overrides STL) */

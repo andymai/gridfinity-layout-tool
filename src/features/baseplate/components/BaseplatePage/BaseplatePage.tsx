@@ -28,8 +28,11 @@ import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNamin
 import { buildFullParams } from '../../utils/buildFullParams';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
 import { BaseplatePreview } from '../BaseplatePreview/BaseplatePreview';
-import { ExportDialog, ExportSupportPrompt } from '@/shared/components/ExportDialog';
-import { recordExportAndShouldPromptSupport } from '@/shared/components/ExportDialog/exportSupportGate';
+import {
+  ExportDialog,
+  ExportSupportPrompt,
+  recordExportAndShouldPromptSupport,
+} from '@/shared/components/ExportDialog';
 import { useToastStore } from '@/core/store/toast';
 import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge';
 import type { ExportFileFormat } from '@/shared/types/bin';
