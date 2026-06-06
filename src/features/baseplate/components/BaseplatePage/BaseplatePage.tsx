@@ -28,7 +28,9 @@ import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNamin
 import { buildFullParams } from '../../utils/buildFullParams';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
 import { BaseplatePreview } from '../BaseplatePreview/BaseplatePreview';
-import { ExportDialog } from '@/shared/components/ExportDialog';
+import { ExportDialog, ExportSupportPrompt } from '@/shared/components/ExportDialog';
+import { recordExportAndShouldPromptSupport } from '@/shared/components/ExportDialog/exportSupportGate';
+import { useToastStore } from '@/core/store/toast';
 import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge';
 import type { ExportFileFormat } from '@/shared/types/bin';
 
@@ -94,6 +96,7 @@ export function BaseplatePage() {
   const setStackCopies = useBaseplatePageStore((s) => s.setStackCopies);
 
   const [splitEnabled, setSplitEnabled] = useState(true);
+  const [justExported, setJustExported] = useState(false);
 
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
 
@@ -120,10 +123,34 @@ export function BaseplatePage() {
   const displayExtension = useSplitExport ? '.zip' : FORMAT_EXTENSIONS[activeFormat];
 
   const handleDownload = useCallback(() => {
-    void downloadBaseplate(activeFormat, useSplitExport);
-  }, [downloadBaseplate, activeFormat, useSplitExport]);
+    void downloadBaseplate(activeFormat, useSplitExport).then((succeeded) => {
+      if (!succeeded) return;
+      // Show the support view only to returning makers (2nd+ export), at most
+      // once per cooldown; otherwise take the low-friction path.
+      if (recordExportAndShouldPromptSupport()) {
+        setJustExported(true);
+        return;
+      }
+      // Split/dedup exports are already confirmed by toasts from the hook;
+      // single-file gets a brief confirmation here. Then close.
+      if (!useSplitExport) {
+        useToastStore.getState().addToast(t('export.complete'), 'success', 3000);
+      }
+      setExportDialogOpen(false);
+    });
+  }, [downloadBaseplate, activeFormat, useSplitExport, setExportDialogOpen, t]);
 
-  const closeExportDialog = useCallback(() => setExportDialogOpen(false), [setExportDialogOpen]);
+  const closeExportDialog = useCallback(() => {
+    setJustExported(false);
+    setExportDialogOpen(false);
+  }, [setExportDialogOpen]);
+
+  // Re-opening the dialog always returns to the form, never a stale success view.
+  const prevExportOpenRef = useRef(exportDialogOpen);
+  useEffect(() => {
+    if (exportDialogOpen && !prevExportOpenRef.current) setJustExported(false);
+    prevExportOpenRef.current = exportDialogOpen;
+  }, [exportDialogOpen]);
 
   const { paddingLeft, paddingRight, paddingFront, paddingBack } = baseplateParams;
   const synced = baseplateParams.syncWithLayout !== false;
@@ -278,6 +305,14 @@ export function BaseplatePage() {
         noMeshWarning={t('export.noMeshWarning')}
         sectionTitle={t('baseplate.export.threeDModel')}
         sectionDescription={t('baseplate.export.threeDModelDescription')}
+        exported={justExported}
+        successContent={
+          <ExportSupportPrompt
+            fileName={`${fileName.replace(/\.[^/.]+$/, '')}${displayExtension}`}
+            onDone={closeExportDialog}
+            source="baseplate_export"
+          />
+        }
       />
     </div>
   );

@@ -108,12 +108,10 @@ const en: Record<string, string> = {
   'header.redo': 'Redo ({mod}+Y)',
   'header.showHelp': 'Show keyboard shortcuts (? or /)',
   'header.helpAndShortcuts': 'Show help and keyboard shortcuts',
-  'header.pressForHelp': 'Press',
-  'header.forHelp': 'for help',
   'header.help': 'Help',
   'header.sendFeedback': 'Feedback',
   'header.starOnGithub': 'Star',
-  'header.tip': 'Tip',
+  'header.supportOnKofi': 'Support me on Ko-fi',
   'header.loadingLayouts': 'Loading layouts',
   'header.changeLanguage': 'Change language',
   'header.selectLanguage': 'Select language',
@@ -1254,9 +1252,12 @@ const en: Record<string, string> = {
   'export.exporting': 'Exporting...',
   'export.noMeshWarning': 'Generate a mesh first to enable export',
   'export.progressLabel': 'Exporting piece {current} of {total}',
+  'export.complete': 'Export complete',
+  'export.support.downloading': '{fileName} is downloading',
+  'export.support.pitch': 'This tool is free and ad-free.',
+  'export.support.starGithub': 'Or star it on GitHub',
 
   // Baseplate-specific export keys
-  'baseplate.export.success': '{format} baseplate exported successfully',
   'baseplate.export.splitSuccess': 'Baseplate exported ({count} pieces)',
   'baseplate.export.splitBanner':
     'Baseplate exceeds {size}mm print bed — will export as {count} pieces in a ZIP with print guide',
@@ -1335,7 +1336,6 @@ const en: Record<string, string> = {
 
   // Bin Designer
   'binDesigner.exportSTL': 'Export bin as STL',
-  'binDesigner.exportSuccess': '{format} exported successfully',
   'binDesigner.clickToRename': 'Click to rename design',
   'binDesigner.openDesignList': 'Open design list',
   'binDesigner.dimensions': 'Dimensions',
@@ -2481,11 +2481,9 @@ const en: Record<string, string> = {
   // Engagement Nudges
   'engagement.feedbackNudge': 'Have ideas for the tool? Your feedback shapes what gets built next.',
   'engagement.giveFeedback': 'Share Feedback',
-  'engagement.kofiNudge':
-    'Enjoying the Gridfinity Layout Tool? Tips help keep it free and maintained.',
   'engagement.support': 'Support on Ko-fi',
   'engagement.feedbackThankYou':
-    'Thanks for your feedback! If you enjoy the tool, consider supporting on Ko-fi.',
+    'Thanks for the feedback! If the tool saves you time, a tip on Ko-fi keeps it free and ad-free.',
   'engagement.layoutPromotion.message':
     'Planning another drawer? Save this layout and start a new one.',
   'engagement.layoutPromotion.action': 'Open Layout Library',

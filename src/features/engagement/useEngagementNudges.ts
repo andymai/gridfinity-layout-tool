@@ -1,9 +1,8 @@
 /**
- * Hook that manages engagement-gated nudge toasts.
+ * Hook that manages the engagement-gated feedback nudge toast.
  *
- * Checks the engagement gate periodically (every minute) and shows
- * feedback rating or Ko-fi support toasts when criteria are met.
- * Each nudge type has an independent 30-day cooldown.
+ * Checks the engagement gate periodically (every minute) and shows the
+ * feedback-rating toast when criteria are met, with a 30-day cooldown.
  */
 
 import { useEffect, useRef } from 'react';
@@ -18,13 +17,11 @@ import {
 } from './engagementTracker';
 
 const CHECK_INTERVAL_MS = 60_000; // Re-check every minute
-const KOFI_URL = 'https://ko-fi.com/andyaragon';
 
 /**
- * Mount this hook once at the app level. It:
- * 1. Records the session start on mount
- * 2. Periodically checks engagement gate + cooldowns
- * 3. Shows at most one nudge per session (feedback first, then Ko-fi)
+ * Mount this hook once at the app level. It records the session start on mount,
+ * then periodically checks the engagement gate + cooldown and shows the
+ * feedback nudge at most once per session.
  */
 export function useEngagementNudges(): void {
   const t = useTranslation();
@@ -34,10 +31,12 @@ export function useEngagementNudges(): void {
     recordSessionStart();
   }, []);
 
+  // Feedback nudge only. Ko-fi was deliberately removed from this timer-based
+  // poll (it barely converted here) — the Ko-fi ask now lives in the header and
+  // the export dialog's post-export success view.
   useEffect(() => {
     function checkAndShowNudge(): void {
-      // Only show one nudge per check cycle — prioritize feedback
-      const nudgeOrder: NudgeType[] = ['feedback_rating', 'kofi_support'];
+      const nudgeOrder: NudgeType[] = ['feedback_rating'];
 
       for (const nudgeType of nudgeOrder) {
         if (shownThisSession.current.has(nudgeType)) continue;
@@ -90,26 +89,6 @@ function showNudgeToast(nudgeType: NudgeType, t: (key: string) => string): void 
     // Fallback: if the user doesn't click the action, start cooldown after 30s
     setTimeout(() => {
       if (!dismissed) recordNudgeDismissal('feedback_rating');
-    }, 30_000);
-  }
-
-  if (nudgeType === 'kofi_support') {
-    addToast({
-      message: t('engagement.kofiNudge'),
-      type: 'info',
-      duration: 0,
-      action: {
-        label: t('engagement.support'),
-        onClick: () => {
-          dismissed = true;
-          trackEvent('nudge_clicked', { nudge_type: 'kofi_support' });
-          recordNudgeDismissal('kofi_support');
-          window.open(KOFI_URL, '_blank', 'noopener,noreferrer');
-        },
-      },
-    });
-    setTimeout(() => {
-      if (!dismissed) recordNudgeDismissal('kofi_support');
     }, 30_000);
   }
 }
