@@ -9,14 +9,7 @@ import { useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { toCreasedNormals } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { CoarseLODData } from '@/shared/types/generation';
-
-/**
- * Crease angle threshold (radians). Edges where adjacent face normals differ
- * by more than this angle get sharp (split) normals; smoother transitions are
- * interpolated. 35° catches the lip chamfer edges (~45°) while preserving
- * smooth shading on gentle curves like scoop ramps and fillets.
- */
-const CREASE_ANGLE = (35 * Math.PI) / 180;
+import { CREASE_ANGLE_DEG, CREASE_ANGLE_RAD } from '@/shared/constants/tessellation';
 
 /** Per-face group defining a material index range within the index buffer */
 export interface MeshFaceGroup {
@@ -67,7 +60,7 @@ export function useMeshGeometry(arrays: MeshArrays): MeshGeometryResult {
       // normals at BREP edges where face normals diverge (e.g. lip chamfer).
       // toCreasedNormals converts to non-indexed internally.
       geo.computeVertexNormals();
-      const creased = toCreasedNormals(geo, CREASE_ANGLE);
+      const creased = toCreasedNormals(geo, CREASE_ANGLE_RAD);
       geo.dispose();
       geo = creased;
     } else {
@@ -100,8 +93,7 @@ export function useMeshGeometry(arrays: MeshArrays): MeshGeometryResult {
     // This gives the direct-mesh preview crisp BREP-style outlines without
     // requiring the generator to author edge geometry by hand.
     if (!geometry) return null;
-    const CREASE_ANGLE_DEGREES = 35;
-    return new THREE.EdgesGeometry(geometry, CREASE_ANGLE_DEGREES);
+    return new THREE.EdgesGeometry(geometry, CREASE_ANGLE_DEG);
   }, [edgeVertices, geometry]);
 
   useEffect(() => {
