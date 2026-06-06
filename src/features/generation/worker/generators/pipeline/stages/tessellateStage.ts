@@ -8,9 +8,10 @@
  * tessellation cost. Enable by setting coarseMesh in the return value.
  */
 
-import { mesh, meshEdges } from 'brepjs';
+import { mesh, meshEdges, getKernelCapabilities } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { toIndexedMeshData, mergeShapeMeshes, concatFloat32 } from '../../utils/mesh';
+import { creaseEdges } from '../../utils';
 import { computeTessellationTolerances } from '../../utils/tolerances';
 import { setLastSolid } from '../../shapeCache';
 
@@ -36,10 +37,15 @@ export const tessellateStage: PipelineStage = {
 
     const edgeAngular = angularTolerance * 0.5;
     let shapeMesh = mesh(solid, { tolerance, angularTolerance });
-    let edgeLines: ArrayLike<number> = meshEdges(solid, {
-      tolerance,
-      angularTolerance: edgeAngular,
-    }).lines;
+
+    // Build-time kernels (manifold draft) have no B-rep topology, so their
+    // meshEdges() returns the full triangle wireframe. Recover clean feature
+    // edges from the mesh via dihedral crease detection. Extract-time kernels
+    // (occt) keep their native analytic edge extractor.
+    const buildTime = getKernelCapabilities().tessellationModel === 'build-time';
+    let edgeLines: ArrayLike<number> = buildTime
+      ? creaseEdges(shapeMesh)
+      : meshEdges(solid, { tolerance, angularTolerance: edgeAngular }).lines;
 
     // Preview path: the base socket is kept out of `solid` to skip the
     // expensive socket↔body fuse. Tessellate it separately and concatenate —
@@ -50,8 +56,10 @@ export const tessellateStage: PipelineStage = {
       try {
         const socketMesh = mesh(deferredSolid, { tolerance, angularTolerance });
         shapeMesh = mergeShapeMeshes(shapeMesh, socketMesh);
-        const socketEdges = meshEdges(deferredSolid, { tolerance, angularTolerance: edgeAngular });
-        edgeLines = concatFloat32(edgeLines, socketEdges.lines);
+        const socketEdges = buildTime
+          ? creaseEdges(socketMesh)
+          : meshEdges(deferredSolid, { tolerance, angularTolerance: edgeAngular }).lines;
+        edgeLines = concatFloat32(edgeLines, socketEdges);
       } finally {
         // Dispose even if mesh/meshEdges throws, so the WASM handle never leaks.
         deferredSolid.delete();
