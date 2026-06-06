@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.150.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.150.0...gridfinity-layout-tool-v4.150.1) (2026-06-06)
+
+
+### Bug Fixes
+
+* **bin-designer:** make panel buttons read as buttons ([#2034](https://github.com/andymai/gridfinity-layout-tool/issues/2034)) ([84181b3](https://github.com/andymai/gridfinity-layout-tool/commit/84181b39a959fe5d87214216908a658a729e8aba))
+
 ## [4.150.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.149.0...gridfinity-layout-tool-v4.150.0) (2026-06-05)
 
 
