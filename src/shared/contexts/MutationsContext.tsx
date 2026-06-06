@@ -19,6 +19,7 @@
 import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { createCqrsMutations, commandBus } from '@/core/cqrs';
+import type { CommandBus } from '@/core/cqrs';
 import type {
   Bin,
   Layer,
@@ -91,12 +92,37 @@ export interface Mutations {
 
 const MutationsContext = createContext<Mutations | null>(null);
 
+// Live indirection over the `commandBus` binding. The mutations adapter is
+// built over this shim, never over a snapshot of `commandBus`, so a transient
+// `undefined` at build time — a chunk-level static-import cycle (#1466/#1563)
+// or a stale chunk that resolves the binding late — can no longer poison the
+// singleton: every dispatch re-reads the current binding. The arrow methods
+// defer the read to call time, which is also why this passes
+// `local/no-init-time-imported-call` (#1566).
+const liveCommandBus: CommandBus = {
+  dispatch(command) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- `commandBus` is typed non-nullable but can resolve to `undefined` at runtime under chunk-level import cycles / stale chunks (#1466/#1563); the guard is the whole point of this shim
+    if (!commandBus) {
+      throw new Error(
+        'Command bus unavailable — the app likely loaded a stale build. Reload the page to continue.'
+      );
+    }
+    return commandBus.dispatch(command);
+  },
+  use(middleware) {
+    commandBus.use(middleware);
+  },
+  resetMiddleware() {
+    commandBus.resetMiddleware();
+  },
+};
+
 // Lazy: building at module init would capture `commandBus` before its
 // chunk has evaluated under chunk-level static-import cycles (#1466),
 // so every mutation would close over `undefined` and throw on dispatch.
 let cqrsMutationsSingleton: Mutations | null = null;
 function getCqrsMutations(): Mutations {
-  cqrsMutationsSingleton ??= createCqrsMutations(commandBus);
+  cqrsMutationsSingleton ??= createCqrsMutations(liveCommandBus);
   return cqrsMutationsSingleton;
 }
 
