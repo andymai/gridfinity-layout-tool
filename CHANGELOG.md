@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.151.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.151.0...gridfinity-layout-tool-v4.151.1) (2026-06-06)
+
+
+### Bug Fixes
+
+* **cqrs:** build mutations over a live commandBus shim to survive chunk-cycle races ([#2038](https://github.com/andymai/gridfinity-layout-tool/issues/2038)) ([a50f975](https://github.com/andymai/gridfinity-layout-tool/commit/a50f975c61e928f0da7b50d273f3c83c1e5d2824))
+
 ## [4.151.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.150.1...gridfinity-layout-tool-v4.151.0) (2026-06-06)
 
 
