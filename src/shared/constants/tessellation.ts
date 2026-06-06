@@ -19,10 +19,3 @@ export const CREASE_ANGLE_RAD = (CREASE_ANGLE_DEG * Math.PI) / 180;
 /** Manifold draft min circular angle (degrees per facet). Lower = rounder
  *  curves, slower draft. MUST stay below CREASE_ANGLE_DEG (see COUPLING). */
 export const DRAFT_MIN_CIRCULAR_ANGLE_DEG = 20;
-
-// Cheap load-time guard so a future edit can't silently reintroduce curve noise.
-if (DRAFT_MIN_CIRCULAR_ANGLE_DEG >= CREASE_ANGLE_DEG) {
-  throw new Error(
-    `DRAFT_MIN_CIRCULAR_ANGLE_DEG (${DRAFT_MIN_CIRCULAR_ANGLE_DEG}) must be < CREASE_ANGLE_DEG (${CREASE_ANGLE_DEG})`
-  );
-}

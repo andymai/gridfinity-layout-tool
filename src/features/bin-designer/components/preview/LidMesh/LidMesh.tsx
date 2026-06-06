@@ -62,14 +62,13 @@ interface LidMeshProps {
 export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }: LidMeshProps) {
   const { invalidate } = useThree();
 
-  const { lidMesh, lidGroupZ, isDraft } = useDesignerStore(
+  const { lidMesh, lidGroupZ } = useDesignerStore(
     useShallow((s) => {
       const { height, heightUnitMm, base } = s.params;
       const lipTopZ = binLipTopWorldZ(height, heightUnitMm, base.stackingLip);
       const anchorZ = lidAnchorZ(heightUnitMm, LID_FIT_CLEARANCE);
       return {
         lidMesh: s.generation.mesh?.lidMesh ?? null,
-        isDraft: s.generation.isDraft,
         // Mated position: lid local Z = anchorZ aligns with the bin's
         // lip top. The lid group (where local Z=0 lands) is then
         // lipTopZ - anchorZ; anchorZ is negative, so the lid floor sits
@@ -84,8 +83,7 @@ export function LidMesh({ color, lidOffsetMm, wireframe = false, xray = false }:
     vertices: lidMesh?.vertices ?? null,
     normals: lidMesh?.normals ?? null,
     indices: lidMesh?.indices ?? null,
-    // Suppress the noisy triangulated-mesh wireframe on Manifold drafts (see BinMesh).
-    edgeVertices: isDraft ? null : (lidMesh?.edgeVertices ?? null),
+    edgeVertices: lidMesh?.edgeVertices ?? null,
   });
 
   const baseOpacity = opacityForOffset(lidOffsetMm);

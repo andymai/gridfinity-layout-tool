@@ -6,13 +6,13 @@
  * rejects (lid disabled, no stacking lip, or a blocker is active).
  */
 
-import { mesh, meshEdges, rotate, exportSTL, exportSTEP } from 'brepjs';
+import { mesh, meshEdges, getKernelCapabilities, rotate, exportSTL, exportSTEP } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { LidMeshData, ExportFormat } from '../../bridge/types';
 import type { ProgressFn } from './generatorTypes';
 import { buildLid } from './lidBuilder';
-import { toIndexedMeshData } from './utils/mesh';
+import { toIndexedMeshData, creaseEdges } from './utils';
 import { computeTessellationTolerances } from './utils/tolerances';
 import { checkCancelled } from './meshUtils';
 import { shouldGenerateLid } from '@/shared/types/bin';
@@ -73,13 +73,13 @@ export function generateLid(
     );
 
     const shapeMesh = mesh(solid, { tolerance, angularTolerance });
-    const edgeMesh = meshEdges(solid, {
-      tolerance,
-      angularTolerance: angularTolerance * 0.5,
-    });
+    const buildTime = getKernelCapabilities().tessellationModel === 'build-time';
+    const edgeLines = buildTime
+      ? creaseEdges(shapeMesh)
+      : meshEdges(solid, { tolerance, angularTolerance: angularTolerance * 0.5 }).lines;
     onProgress?.('merge', 1.0);
 
-    return toIndexedMeshData(shapeMesh, edgeMesh.lines, originToTag);
+    return toIndexedMeshData(shapeMesh, edgeLines, originToTag);
   } finally {
     solid.delete();
   }
