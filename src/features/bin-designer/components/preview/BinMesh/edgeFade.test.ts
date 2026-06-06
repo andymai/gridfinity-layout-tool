@@ -32,9 +32,11 @@ describe('nextEdgeFade', () => {
     ).toBe(null);
   });
 
-  it('treats first appearance as appear even at finalize (covers no-draft first load)', () => {
+  it('returns appear (not finalize) when edges first appear on the finalize transition', () => {
+    // prevIsDraft was true, but there were no edges yet — first-appearance wins
+    // over the finalize branch, so this fades in from 0 rather than the floor.
     expect(
-      nextEdgeFade({ prevHadEdges: false, hasEdges: true, prevIsDraft: false, isDraft: false })
+      nextEdgeFade({ prevHadEdges: false, hasEdges: true, prevIsDraft: true, isDraft: false })
     ).toBe('appear');
   });
 
