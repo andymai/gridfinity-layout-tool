@@ -30,6 +30,7 @@ import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { bridgeManager, workerPoolManager, createDraftSkipGate } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
 import type { WorkerPool } from '@/shared/generation/bridge';
+import { captureWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
 import {
   trackWasmThreadingStatus,
   trackCachePerformance,
@@ -681,6 +682,7 @@ export function useBaseplateGeneration(): void {
           .getState()
           .addToast(t('baseplate.toast.engineInitFailed', { message }), 'error');
         setWasmStatus('error');
+        captureWasmLoadFailure(e, 'baseplate_preview');
       });
 
     return () => {
