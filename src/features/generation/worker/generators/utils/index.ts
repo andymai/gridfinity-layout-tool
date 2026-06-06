@@ -7,3 +7,5 @@ export { fuseAllOrNull } from './shapeOps';
 export { toIndexedMeshData } from './mesh';
 export { computeTessellationTolerances } from './tolerances';
 export type { TessellationTolerances } from './tolerances';
+export { creaseEdges } from './creaseEdges';
+export type { CreaseEdgeMesh } from './creaseEdges';

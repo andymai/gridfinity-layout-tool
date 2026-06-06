@@ -10,6 +10,7 @@
 
 import { registerKernel, BrepkitAdapter, loadFont, initFromManifold, getKernel } from 'brepjs';
 
+import { DRAFT_MIN_CIRCULAR_ANGLE_DEG } from '@/shared/constants/tessellation';
 import atkinsonFontUrl from './assets/fonts/AtkinsonHyperlegible-Regular.ttf?url';
 import jetbrainsMonoFontUrl from './assets/fonts/JetBrainsMono-Regular.ttf?url';
 import allertaStencilFontUrl from './assets/fonts/AllertaStencil-Regular.ttf?url';
@@ -152,7 +153,16 @@ export async function loadManifold(): Promise<WasmLoadResult> {
   });
   module.setup();
   initFromManifold(module);
-  getKernel('manifold').setQuality?.('draft');
+  const manifoldKernel = getKernel('manifold');
+  manifoldKernel.setQuality?.('draft');
+  // setQuality('draft') sets a 30° min circular angle (~12-gon circles). Tighten
+  // it for rounder curve rims, staying below CREASE_ANGLE_DEG so the worker's
+  // crease extractor doesn't emit longitudinal facet lines. The raw manifold
+  // module is exposed as `.oc`.
+  const manifoldModule = (
+    manifoldKernel as { oc?: { setMinCircularAngle?: (deg: number) => void } }
+  ).oc;
+  manifoldModule?.setMinCircularAngle?.(DRAFT_MIN_CIRCULAR_ANGLE_DEG);
 
   return { isThreaded: false, hardwareConcurrency };
 }

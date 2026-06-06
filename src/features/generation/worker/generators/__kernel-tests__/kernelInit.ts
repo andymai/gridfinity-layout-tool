@@ -10,6 +10,8 @@
  * scenario-file import chain.
  */
 
+import { DRAFT_MIN_CIRCULAR_ANGLE_DEG } from '@/shared/constants/tessellation';
+
 /** Initialize brepkit-wasm kernel and register it with brepjs. */
 export async function initBrepkitKernel(): Promise<void> {
   const { registerKernel, BrepkitAdapter } = await import('brepjs');
@@ -63,5 +65,11 @@ export async function initManifoldKernel(): Promise<void> {
   const module = await ManifoldModule({ wasmBinary } as unknown as { locateFile: () => string });
   module.setup();
   initFromManifold(module);
-  getKernel('manifold').setQuality?.('draft');
+  const manifoldKernel = getKernel('manifold');
+  manifoldKernel.setQuality?.('draft');
+  // Mirror wasmInstantiator: tighten the draft circular angle so test/scenario
+  // runs match production draft curve fidelity (stays below CREASE_ANGLE_DEG).
+  (
+    manifoldKernel as { oc?: { setMinCircularAngle?: (deg: number) => void } }
+  ).oc?.setMinCircularAngle?.(DRAFT_MIN_CIRCULAR_ANGLE_DEG);
 }

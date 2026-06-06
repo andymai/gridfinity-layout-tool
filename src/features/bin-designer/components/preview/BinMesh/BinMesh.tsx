@@ -26,12 +26,17 @@ import {
   hoveredMaterialIndices,
 } from '@/features/bin-designer/utils/multiColorGroups';
 import { buildZoneResolver } from '@/features/bin-designer/utils/zoneResolver';
+import { nextEdgeFade } from './edgeFade';
 
 const EDGE_COLOR = '#000000';
 
 /** Edge-overlay fade-in duration after a Manifold draft (edges popping in at
  * full strength is the most jarring part of the draft→exact swap). */
 const EDGE_FADE_MS = 250;
+
+/** Finalize fade starts from this opacity (not 0) so already-visible draft
+ *  edges never blink to invisible when the final swaps in. */
+const EDGE_FINALIZE_FADE_FLOOR = 0.55;
 
 /** Face opacity when xray mode is enabled. Matches brepjs-studio. */
 const XRAY_OPACITY = 0.3;
@@ -120,45 +125,58 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
     vertices,
     normals,
     indices,
-    // Manifold drafts have only triangulated mesh edges (not clean B-rep edges),
-    // which render as wireframe noise — suppress them; the exact result restores
-    // real edges when it supersedes the draft.
-    edgeVertices: isDraft ? null : edgeVertices,
+    // Drafts now ship clean dihedral crease edges from the worker (see
+    // creaseEdges.ts), so render them directly instead of suppressing and
+    // recomputing EdgesGeometry on the main thread every draft tick.
+    edgeVertices,
     faceGroups: multiColorData?.groups,
   });
 
   const coarseGeometry = useCoarseGeometry(coarseLOD);
 
-  // Fade the edge overlay in whenever it (re)appears — Manifold drafts suppress
-  // edges, so this softens the draft→exact swap (and the first load). The
+  // Fade the edge overlay in whenever it (re)appears, and gently fade on the
+  // draft→final swap (already-visible edges never blink to invisible). The
   // canvas renders on demand, so keep invalidating while the fade runs.
   const edgeMatRef = useRef<THREE.LineBasicMaterial>(null);
   const edgeFadeStartRef = useRef<number | null>(null);
   const hadEdgesRef = useRef(false);
+  const prevIsDraftRef = useRef(false);
+  const fadeFromRef = useRef(0);
   useLayoutEffect(() => {
     const hasEdges = edgesGeometry !== null;
-    if (hasEdges && !hadEdgesRef.current) {
+    const kind = nextEdgeFade({
+      prevHadEdges: hadEdgesRef.current,
+      hasEdges,
+      prevIsDraft: prevIsDraftRef.current,
+      isDraft,
+    });
+    if (kind !== null) {
+      fadeFromRef.current = kind === 'finalize' ? EDGE_FINALIZE_FADE_FLOOR : 0;
       edgeFadeStartRef.current = performance.now();
       if (edgeMatRef.current) {
         edgeMatRef.current.transparent = true;
-        edgeMatRef.current.opacity = 0;
+        edgeMatRef.current.opacity = fadeFromRef.current;
       }
       invalidate();
     }
     hadEdgesRef.current = hasEdges;
-  }, [edgesGeometry, invalidate]);
+    prevIsDraftRef.current = isDraft;
+  }, [edgesGeometry, isDraft, invalidate]);
   useFrame(() => {
     const start = edgeFadeStartRef.current;
     const mat = edgeMatRef.current;
     if (start === null || !mat) return;
     const t = Math.min(1, (performance.now() - start) / EDGE_FADE_MS);
-    mat.opacity = t * (2 - t); // ease-out
+    const eased = t * (2 - t); // ease-out
+    const from = fadeFromRef.current;
+    mat.opacity = from + (1 - from) * eased;
     if (t >= 1) {
       edgeFadeStartRef.current = null;
       mat.transparent = false;
       mat.opacity = 1;
+    } else {
+      invalidate();
     }
-    invalidate();
   });
 
   // Allocate one material per zone. Hover state is applied separately via
