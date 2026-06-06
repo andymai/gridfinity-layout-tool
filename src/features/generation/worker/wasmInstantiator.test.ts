@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { DRAFT_MIN_CIRCULAR_ANGLE_DEG } from '@/shared/constants/tessellation';
+
+// Spy for the manifold kernel's raw-module circular-angle override.
+const mockSetMinCircularAngle = vi.fn();
+
 // Mock all heavy dependencies before importing the module under test
 vi.mock('brepjs', () => ({
   registerKernel: vi.fn(),
@@ -7,7 +12,13 @@ vi.mock('brepjs', () => ({
   OcctWasmAdapter: Object.assign(vi.fn(), { fromKernel: vi.fn(() => ({})) }),
   loadFont: vi.fn(),
   initFromManifold: vi.fn(),
-  getKernel: vi.fn(() => ({ setQuality: vi.fn() })),
+  // Return an object that satisfies both the setQuality call (all kernels) and
+  // the .oc.setMinCircularAngle override (manifold only). Non-manifold paths
+  // never access .oc, so including it here is safe.
+  getKernel: vi.fn(() => ({
+    setQuality: vi.fn(),
+    oc: { setMinCircularAngle: mockSetMinCircularAngle },
+  })),
 }));
 
 // Mock occt-wasm kernel factory
@@ -121,6 +132,7 @@ describe('wasmInstantiator', () => {
       expect(mockManifoldSetup).toHaveBeenCalledTimes(1);
       expect(initFromManifold).toHaveBeenCalledTimes(1);
       expect(getKernel).toHaveBeenCalledWith('manifold');
+      expect(mockSetMinCircularAngle).toHaveBeenCalledWith(DRAFT_MIN_CIRCULAR_ANGLE_DEG);
       expect(result.isThreaded).toBe(false);
       expect(result.hardwareConcurrency).toBeGreaterThan(0);
     });
