@@ -92,28 +92,35 @@ export interface Mutations {
 
 const MutationsContext = createContext<Mutations | null>(null);
 
+// Resolve the live `commandBus` binding at call time. `commandBus` is typed
+// non-nullable, but under a chunk-level static-import cycle (#1466/#1563) or a
+// stale chunk it can transiently resolve to `undefined`; surfacing that as an
+// actionable error beats the cryptic native `TypeError`.
+function requireCommandBus(): CommandBus {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- see above: `commandBus` can be undefined at runtime despite its type; the guard is the whole point of this shim
+  if (!commandBus) {
+    throw new Error(
+      'Command bus unavailable — the app likely loaded a stale build. Reload the page to continue.'
+    );
+  }
+  return commandBus;
+}
+
 // Live indirection over the `commandBus` binding. The mutations adapter is
 // built over this shim, never over a snapshot of `commandBus`, so a transient
-// `undefined` at build time — a chunk-level static-import cycle (#1466/#1563)
-// or a stale chunk that resolves the binding late — can no longer poison the
-// singleton: every dispatch re-reads the current binding. The arrow methods
-// defer the read to call time, which is also why this passes
+// `undefined` at build time can no longer poison the singleton: every method
+// re-reads the current binding via `requireCommandBus()`. Reading inside the
+// method bodies (not at init) is also why this passes
 // `local/no-init-time-imported-call` (#1566).
 const liveCommandBus: CommandBus = {
   dispatch(command) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- `commandBus` is typed non-nullable but can resolve to `undefined` at runtime under chunk-level import cycles / stale chunks (#1466/#1563); the guard is the whole point of this shim
-    if (!commandBus) {
-      throw new Error(
-        'Command bus unavailable — the app likely loaded a stale build. Reload the page to continue.'
-      );
-    }
-    return commandBus.dispatch(command);
+    return requireCommandBus().dispatch(command);
   },
   use(middleware) {
-    commandBus.use(middleware);
+    requireCommandBus().use(middleware);
   },
   resetMiddleware() {
-    commandBus.resetMiddleware();
+    requireCommandBus().resetMiddleware();
   },
 };
 
