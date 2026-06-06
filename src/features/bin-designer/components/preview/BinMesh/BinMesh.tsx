@@ -174,8 +174,9 @@ export function BinMesh({ wireframe, color, xray = false, onZoneClick }: BinMesh
       edgeFadeStartRef.current = null;
       mat.transparent = false;
       mat.opacity = 1;
+    } else {
+      invalidate();
     }
-    invalidate();
   });
 
   // Allocate one material per zone. Hover state is applied separately via

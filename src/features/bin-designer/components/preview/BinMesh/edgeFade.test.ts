@@ -37,4 +37,16 @@ describe('nextEdgeFade', () => {
       nextEdgeFade({ prevHadEdges: false, hasEdges: true, prevIsDraft: false, isDraft: false })
     ).toBe('appear');
   });
+
+  it('fades appear on the first draft tick of a new generation', () => {
+    expect(
+      nextEdgeFade({ prevHadEdges: false, hasEdges: true, prevIsDraft: false, isDraft: true })
+    ).toBe('appear');
+  });
+
+  it('does nothing when edges disappear (mesh cleared)', () => {
+    expect(
+      nextEdgeFade({ prevHadEdges: true, hasEdges: false, prevIsDraft: false, isDraft: false })
+    ).toBe(null);
+  });
 });
