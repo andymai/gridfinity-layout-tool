@@ -3,10 +3,7 @@ import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { LanguageSelector } from '@/shared/components/LanguageSelector';
-
-const GITHUB_ISSUES_URL = 'https://github.com/andymai/gridfinity-layout-tool/issues';
-const GITHUB_REPO_URL = 'https://github.com/andymai/gridfinity-layout-tool';
-const KOFI_URL = 'https://ko-fi.com/andyaragon';
+import { GITHUB_ISSUES_URL, GITHUB_REPO_URL, KOFI_URL } from '@/shared/constants/links';
 
 /**
  * Shared header support links: Language selector, Feedback, Help, GitHub, and Ko-fi tip.
@@ -82,35 +79,19 @@ export function HeaderSupportLinks() {
       {/* Help */}
       <button
         onClick={handleHelpClick}
-        className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary relative flex items-center"
+        className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
         title={t('header.showHelp')}
         aria-label={t('header.helpAndShortcuts')}
       >
-        <span className="xl:hidden flex items-center gap-1">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span className="hidden lg:inline">{t('header.help')}</span>
-        </span>
-        <span className="hidden xl:inline">
-          {t('header.pressForHelp')}{' '}
-          <kbd
-            className="mx-1 px-2 py-1 text-xs font-mono rounded text-content leading-none"
-            style={{
-              backgroundColor: 'var(--bg-primary)',
-              border: '1px solid var(--border-default)',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            ?
-          </kbd>{' '}
-          {t('header.forHelp')}
-        </span>
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span className="hidden lg:inline">{t('header.help')}</span>
       </button>
 
       {/* GitHub */}
@@ -128,17 +109,18 @@ export function HeaderSupportLinks() {
         <span className="hidden lg:inline">{t('header.starOnGithub')}</span>
       </a>
 
-      {/* Ko-fi tip */}
+      {/* Ko-fi support — the official Widget_2 button reproduced natively (the site's
+          CSP blocks the remote ko-fi script). Accent fill via btn-primary, official
+          animated cup logo, white label like the widget. */}
       <button
         onClick={handleKofiClick}
-        className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
-        title={t('header.tip')}
-        aria-label={t('header.tip')}
+        className="btn btn-primary px-3 py-1.5 text-sm leading-none flex items-center gap-1.5"
+        style={{ color: '#fff', textShadow: '0 1px 1px rgba(34, 34, 34, 0.15)' }}
+        title={t('header.supportOnKofi')}
+        aria-label={t('header.supportOnKofi')}
       >
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-        </svg>
-        <span className="hidden lg:inline">{t('header.tip')}</span>
+        <img src="/kofi-cup.png" alt="" aria-hidden="true" className="kofi-cup-wiggle h-4 w-auto" />
+        <span className="hidden xl:inline">{t('header.supportOnKofi')}</span>
       </button>
     </>
   );

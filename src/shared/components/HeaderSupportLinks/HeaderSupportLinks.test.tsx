@@ -60,9 +60,9 @@ describe('HeaderSupportLinks', () => {
     );
   });
 
-  it('renders Ko-fi tip button', () => {
+  it('renders Ko-fi support button', () => {
     render(<HeaderSupportLinks />);
-    expect(screen.getByLabelText('header.tip')).toBeInTheDocument();
+    expect(screen.getByLabelText('header.supportOnKofi')).toBeInTheDocument();
   });
 
   it('opens GitHub Issues on feedback click', () => {
@@ -104,11 +104,11 @@ describe('HeaderSupportLinks', () => {
     window.removeEventListener('open-help-modal', handler);
   });
 
-  it('opens Ko-fi on tip click', () => {
+  it('opens Ko-fi on support click', () => {
     const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     render(<HeaderSupportLinks />);
 
-    fireEvent.click(screen.getByLabelText('header.tip'));
+    fireEvent.click(screen.getByLabelText('header.supportOnKofi'));
 
     expect(openSpy).toHaveBeenCalledWith(
       'https://ko-fi.com/andyaragon',

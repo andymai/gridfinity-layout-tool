@@ -21,7 +21,11 @@ import { generateFileName } from '@/features/bin-designer/utils/fileNaming';
 import { getSTLFileSize, estimate3MFFileSize } from '@/shared/generation/export';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
-import { ExportDialog as SharedExportDialog } from '@/shared/components/ExportDialog';
+import {
+  ExportDialog as SharedExportDialog,
+  ExportSupportPrompt,
+  recordExportAndShouldPromptSupport,
+} from '@/shared/components/ExportDialog';
 import type { ExportFileFormat } from '@/features/bin-designer/types';
 
 /** File extension display for each format (split ZIP overrides STL) */
@@ -69,9 +73,13 @@ export function ExportDialog() {
     downloadSplit,
   } = useExport();
   const [splitEnabled, setSplitEnabled] = useState(true);
+  const [justExported, setJustExported] = useState(false);
   const addToast = useToastStore((s) => s.addToast);
 
-  const closeDialog = useCallback(() => setExportDialogOpen(false), [setExportDialogOpen]);
+  const closeDialog = useCallback(() => {
+    setJustExported(false);
+    setExportDialogOpen(false);
+  }, [setExportDialogOpen]);
 
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
   const showSplitBanner = needsSplit && activeFormat !== 'step';
@@ -93,6 +101,8 @@ export function ExportDialog() {
   useEffect(() => {
     const justOpened = exportDialogOpen && !prevOpenRef.current;
     prevOpenRef.current = exportDialogOpen;
+    // Re-opening the dialog always returns to the form, never a stale success view.
+    if (justOpened) setJustExported(false);
     if (
       justOpened &&
       isMultiColor &&
@@ -152,13 +162,25 @@ export function ExportDialog() {
 
     if (!succeeded) return;
 
-    addToast({
-      message: useSplitExport
-        ? t('binDesigner.splitExport.success', { count: splitPieceCount })
-        : t('binDesigner.exportSuccess', { format: activeFormat.toUpperCase() }),
-      type: 'success',
-      duration: 3000,
-    });
+    // Split exports always surface their piece count, support view or not.
+    if (useSplitExport) {
+      addToast({
+        message: t('binDesigner.splitExport.success', { count: splitPieceCount }),
+        type: 'success',
+        duration: 3000,
+      });
+    }
+
+    // The support view is reserved for returning makers (2nd+ export), at most
+    // once per cooldown; everyone else just gets the low-friction auto-close.
+    if (recordExportAndShouldPromptSupport()) {
+      setJustExported(true);
+      return;
+    }
+
+    if (!useSplitExport) {
+      addToast({ message: t('export.complete'), type: 'success', duration: 3000 });
+    }
     closeDialog();
   }, [
     useSplitExport,
@@ -262,6 +284,14 @@ export function ExportDialog() {
       noMeshWarning={t('binDesigner.generateAMeshFirstToEnableExport')}
       sectionTitle={t('binDesigner.threeDModel')}
       sectionDescription={t('binDesigner.threeDModelDescription')}
+      exported={justExported}
+      successContent={
+        <ExportSupportPrompt
+          fileName={`${fileName.replace(/\.[^/.]+$/, '')}${displayExtension}`}
+          onDone={closeDialog}
+          source="bin_designer_export"
+        />
+      }
     />
   );
 }

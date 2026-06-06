@@ -1102,6 +1102,43 @@ input[type='range']:hover::-moz-range-thumb {
   border-radius: var(--radius-md);
 }
 
+/* Ko-fi cup — the wiggle from the official Widget_2 button (storage.ko-fi.com),
+   reproduced here because CSP blocks the remote script. The blanket
+   prefers-reduced-motion rule below disables it automatically. */
+.kofi-cup-wiggle {
+  transform-origin: center;
+  animation: kofi-wiggle 3s infinite;
+  animation-delay: 3s;
+}
+
+@keyframes kofi-wiggle {
+  0%,
+  60% {
+    transform: rotate(0) scale(1);
+  }
+  75% {
+    transform: rotate(0) scale(1.12);
+  }
+  80% {
+    transform: rotate(0) scale(1.1);
+  }
+  84% {
+    transform: rotate(-10deg) scale(1.1);
+  }
+  88% {
+    transform: rotate(10deg) scale(1.1);
+  }
+  92% {
+    transform: rotate(-10deg) scale(1.1);
+  }
+  96% {
+    transform: rotate(10deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(0) scale(1);
+  }
+}
+
 /* ===========================================
    REDUCED MOTION
    =========================================== */

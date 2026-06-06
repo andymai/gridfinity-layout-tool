@@ -32,7 +32,10 @@ interface UseBaseplateExportReturn {
   readonly isExporting: boolean;
   readonly canExport: boolean;
   readonly exportProgress: { current: number; total: number } | null;
-  readonly downloadBaseplate: (format: ExportFileFormat, splitEnabled?: boolean) => Promise<void>;
+  readonly downloadBaseplate: (
+    format: ExportFileFormat,
+    splitEnabled?: boolean
+  ) => Promise<boolean>;
 }
 
 const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
@@ -127,7 +130,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       const bridge = getActiveBridge();
       if (!bridge) {
         useToastStore.getState().addToast(t('baseplate.exportNotReady'), 'error');
-        return;
+        return false;
       }
 
       setIsExporting(true);
@@ -258,17 +261,14 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
             triggerDownload(blob, baseName);
           }
-
-          useToastStore
-            .getState()
-            .addToast(t('baseplate.export.success', { format: format.toUpperCase() }), 'success');
+          // Single-file success is conveyed by the dialog's inline success view.
         }
 
-        // Auto-close the export dialog after successful download
-        useBaseplatePageStore.getState().setExportDialogOpen(false);
+        return true;
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Export failed';
         useToastStore.getState().addToast(message, 'error');
+        return false;
       } finally {
         setIsExporting(false);
         setExportProgress(null);

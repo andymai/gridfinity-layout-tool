@@ -114,6 +114,15 @@ export interface ExportDialogProps {
   sectionTitle?: string;
   /** Section description text */
   sectionDescription?: string;
+
+  /**
+   * When true (and `successContent` is provided), the dialog body shows the
+   * post-export success view instead of the form. Callers flip this on a
+   * successful download and reset it when the dialog re-opens.
+   */
+  exported?: boolean;
+  /** Post-export success view (e.g. a support prompt). */
+  successContent?: ReactNode;
 }
 
 export function ExportDialog({
@@ -141,6 +150,8 @@ export function ExportDialog({
   noMeshWarning,
   sectionTitle,
   sectionDescription,
+  exported,
+  successContent,
 }: ExportDialogProps) {
   const t = useTranslation();
   const customInputRef = useRef<HTMLInputElement>(null);
@@ -199,208 +210,212 @@ export function ExportDialog({
     <Dialog.Root open={open} onClose={onClose} size="md">
       <Dialog.Header title={t('common.export')} closeAriaLabel={t('common.closeDialog')} />
       <Dialog.Body>
-        <div className="pb-2">
-          {/* Section Title */}
-          {sectionTitle && (
-            <>
-              <h3 className="mb-1 text-sm font-semibold text-content">{sectionTitle}</h3>
-              {sectionDescription && (
-                <p className="mb-4 text-xs text-content-secondary">{sectionDescription}</p>
-              )}
-            </>
-          )}
+        {exported && successContent ? (
+          successContent
+        ) : (
+          <div className="pb-2">
+            {/* Section Title */}
+            {sectionTitle && (
+              <>
+                <h3 className="mb-1 text-sm font-semibold text-content">{sectionTitle}</h3>
+                {sectionDescription && (
+                  <p className="mb-4 text-xs text-content-secondary">{sectionDescription}</p>
+                )}
+              </>
+            )}
 
-          {/* Format Selector */}
-          <FormatSelector
-            activeFormat={activeFormat}
-            onChange={handleFormatChange}
-            formatLabel={t('export.format')}
-            formatStates={formatStates}
-          />
+            {/* Format Selector */}
+            <FormatSelector
+              activeFormat={activeFormat}
+              onChange={handleFormatChange}
+              formatLabel={t('export.format')}
+              formatStates={formatStates}
+            />
 
-          {/* File Name */}
-          <div className="mb-4">
-            <label className="mb-2 block text-sm font-medium text-content-secondary">
-              {t('export.fileName')}
-            </label>
-            <div className="flex items-center rounded-md border border-stroke-subtle bg-surface">
-              {fileNameConfig.style === 'custom' ? (
-                <input
-                  ref={customInputRef}
-                  type="text"
-                  value={fileNameConfig.customName}
-                  onChange={(e) => handleCustomNameChange(e.target.value)}
-                  className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-content outline-none"
-                  placeholder={t('export.filenamePlaceholder')}
-                  aria-label={t('export.customFileName')}
-                  maxLength={128}
+            {/* File Name */}
+            <div className="mb-4">
+              <label className="mb-2 block text-sm font-medium text-content-secondary">
+                {t('export.fileName')}
+              </label>
+              <div className="flex items-center rounded-md border border-stroke-subtle bg-surface">
+                {fileNameConfig.style === 'custom' ? (
+                  <input
+                    ref={customInputRef}
+                    type="text"
+                    value={fileNameConfig.customName}
+                    onChange={(e) => handleCustomNameChange(e.target.value)}
+                    className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-content outline-none"
+                    placeholder={t('export.filenamePlaceholder')}
+                    aria-label={t('export.customFileName')}
+                    maxLength={128}
+                  />
+                ) : (
+                  <span
+                    className="flex-1 cursor-text truncate px-3 py-2 text-sm text-content"
+                    onClick={() => handleStyleChange('custom')}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') handleStyleChange('custom');
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t('export.customFileName')}
+                  >
+                    {fileNameWithoutExt}
+                  </span>
+                )}
+                <span className="shrink-0 border-l border-stroke-subtle px-2 py-2 text-sm text-content-tertiary">
+                  {displayExtension}
+                </span>
+              </div>
+              <div className="mt-2 flex gap-2">
+                <NameStyleButton
+                  active={fileNameConfig.style === 'descriptive'}
+                  onClick={() => handleStyleChange('descriptive')}
+                  label={t('export.nameStyle.descriptive')}
                 />
-              ) : (
-                <span
-                  className="flex-1 cursor-text truncate px-3 py-2 text-sm text-content"
+                <NameStyleButton
+                  active={fileNameConfig.style === 'compact'}
+                  onClick={() => handleStyleChange('compact')}
+                  label={t('export.nameStyle.compact')}
+                />
+                <NameStyleButton
+                  active={fileNameConfig.style === 'custom'}
                   onClick={() => handleStyleChange('custom')}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') handleStyleChange('custom');
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={t('export.customFileName')}
-                >
-                  {fileNameWithoutExt}
-                </span>
-              )}
-              <span className="shrink-0 border-l border-stroke-subtle px-2 py-2 text-sm text-content-tertiary">
-                {displayExtension}
-              </span>
-            </div>
-            <div className="mt-2 flex gap-2">
-              <NameStyleButton
-                active={fileNameConfig.style === 'descriptive'}
-                onClick={() => handleStyleChange('descriptive')}
-                label={t('export.nameStyle.descriptive')}
-              />
-              <NameStyleButton
-                active={fileNameConfig.style === 'compact'}
-                onClick={() => handleStyleChange('compact')}
-                label={t('export.nameStyle.compact')}
-              />
-              <NameStyleButton
-                active={fileNameConfig.style === 'custom'}
-                onClick={() => handleStyleChange('custom')}
-                label={t('export.nameStyle.custom')}
-              />
-            </div>
-          </div>
-
-          {/* Split Export Banner */}
-          {splitBanner && (
-            <div className="mb-4 rounded-lg border border-warning bg-warning-muted p-3">
-              <p className="mb-2 text-xs text-warning">{splitBanner.message}</p>
-              <label className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={splitBanner.checked}
-                  onChange={(e) => splitBanner.onCheckedChange(e.target.checked)}
-                  className="h-4 w-4 rounded border-warning text-warning focus:ring-warning"
+                  label={t('export.nameStyle.custom')}
                 />
-                <span className="text-xs font-medium text-warning">
-                  {splitBanner.checkboxLabel}
-                </span>
-              </label>
+              </div>
             </div>
-          )}
 
-          {warningBanner && (
-            <div className="mb-4 rounded-lg border border-warning bg-warning-muted p-3">
-              <p className="text-xs text-warning">{warningBanner.message}</p>
-            </div>
-          )}
+            {/* Split Export Banner */}
+            {splitBanner && (
+              <div className="mb-4 rounded-lg border border-warning bg-warning-muted p-3">
+                <p className="mb-2 text-xs text-warning">{splitBanner.message}</p>
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={splitBanner.checked}
+                    onChange={(e) => splitBanner.onCheckedChange(e.target.checked)}
+                    className="h-4 w-4 rounded border-warning text-warning focus:ring-warning"
+                  />
+                  <span className="text-xs font-medium text-warning">
+                    {splitBanner.checkboxLabel}
+                  </span>
+                </label>
+              </div>
+            )}
 
-          {extras}
+            {warningBanner && (
+              <div className="mb-4 rounded-lg border border-warning bg-warning-muted p-3">
+                <p className="text-xs text-warning">{warningBanner.message}</p>
+              </div>
+            )}
 
-          {/* Vertical Stacking */}
-          {stackOptions && (
-            <div className="mb-4">
-              <label
-                htmlFor="export-stack-copies"
-                className="mb-2 block text-sm font-medium text-content-secondary"
-              >
-                {stackOptions.label}
-              </label>
-              <input
-                id="export-stack-copies"
-                type="number"
-                min={stackOptions.min}
-                max={stackOptions.max}
-                step={1}
-                value={stackOptions.value}
-                onChange={(e) => {
-                  const next = Number.parseInt(e.target.value, 10);
-                  if (Number.isFinite(next)) {
-                    stackOptions.onChange(
-                      Math.max(stackOptions.min, Math.min(stackOptions.max, next))
-                    );
+            {extras}
+
+            {/* Vertical Stacking */}
+            {stackOptions && (
+              <div className="mb-4">
+                <label
+                  htmlFor="export-stack-copies"
+                  className="mb-2 block text-sm font-medium text-content-secondary"
+                >
+                  {stackOptions.label}
+                </label>
+                <input
+                  id="export-stack-copies"
+                  type="number"
+                  min={stackOptions.min}
+                  max={stackOptions.max}
+                  step={1}
+                  value={stackOptions.value}
+                  onChange={(e) => {
+                    const next = Number.parseInt(e.target.value, 10);
+                    if (Number.isFinite(next)) {
+                      stackOptions.onChange(
+                        Math.max(stackOptions.min, Math.min(stackOptions.max, next))
+                      );
+                    }
+                  }}
+                  className="w-24 rounded-md border border-stroke-subtle bg-surface px-3 py-2 text-sm text-content outline-none focus:border-stroke"
+                />
+                {stackOptions.description && (
+                  <p className="mt-1 text-xs text-content-secondary">{stackOptions.description}</p>
+                )}
+              </div>
+            )}
+
+            {/* Export Progress */}
+            {exportProgress && (
+              <div className="mb-4">
+                <div className="mb-1.5 text-xs text-content-secondary">
+                  {exportProgress.label ??
+                    t('export.progressLabel', {
+                      current: exportProgress.current,
+                      total: exportProgress.total,
+                    })}
+                </div>
+                <ProgressBar
+                  value={progressPercent}
+                  size="sm"
+                  label={
+                    exportProgress.label ??
+                    t('export.progressLabel', {
+                      current: exportProgress.current,
+                      total: exportProgress.total,
+                    })
                   }
-                }}
-                className="w-24 rounded-md border border-stroke-subtle bg-surface px-3 py-2 text-sm text-content outline-none focus:border-stroke"
-              />
-              {stackOptions.description && (
-                <p className="mt-1 text-xs text-content-secondary">{stackOptions.description}</p>
-              )}
-            </div>
-          )}
-
-          {/* Export Progress */}
-          {exportProgress && (
-            <div className="mb-4">
-              <div className="mb-1.5 text-xs text-content-secondary">
-                {exportProgress.label ??
-                  t('export.progressLabel', {
-                    current: exportProgress.current,
-                    total: exportProgress.total,
-                  })}
+                />
               </div>
-              <ProgressBar
-                value={progressPercent}
-                size="sm"
-                label={
-                  exportProgress.label ??
-                  t('export.progressLabel', {
-                    current: exportProgress.current,
-                    total: exportProgress.total,
-                  })
-                }
-              />
-            </div>
-          )}
+            )}
 
-          {/* Print Estimates */}
-          {estimates && estimates.length > 0 && (
-            <div className="mb-5 rounded-lg border border-stroke-subtle bg-surface p-3">
-              {estimatesTitle && (
-                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-tertiary">
-                  {estimatesTitle}
-                </h3>
-              )}
-              <div className="grid grid-cols-2 gap-y-1.5 text-sm">
-                {estimates.map((est) => (
-                  <EstimateRow key={est.label} label={est.label} value={est.value} />
-                ))}
+            {/* Print Estimates */}
+            {estimates && estimates.length > 0 && (
+              <div className="mb-5 rounded-lg border border-stroke-subtle bg-surface p-3">
+                {estimatesTitle && (
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-content-tertiary">
+                    {estimatesTitle}
+                  </h3>
+                )}
+                <div className="grid grid-cols-2 gap-y-1.5 text-sm">
+                  {estimates.map((est) => (
+                    <EstimateRow key={est.label} label={est.label} value={est.value} />
+                  ))}
+                </div>
+                {estimatesDisclaimer && (
+                  <p className="mt-2 text-[10px] text-content-disabled">{estimatesDisclaimer}</p>
+                )}
               </div>
-              {estimatesDisclaimer && (
-                <p className="mt-2 text-[10px] text-content-disabled">{estimatesDisclaimer}</p>
-              )}
-            </div>
-          )}
+            )}
 
-          {/* Primary Download Button */}
-          <button
-            onClick={onDownload}
-            disabled={!canExport || isExporting}
-            aria-busy={isExporting || undefined}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-info px-4 py-2.5 text-sm font-medium text-white transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
-          >
-            {isExporting && !exportProgress && <ExportSpinner />}
-            {resolvedDownloadLabel}
-          </button>
-
-          {/* Secondary Download Button */}
-          {secondaryDownload?.visible && (
+            {/* Primary Download Button */}
             <button
-              onClick={secondaryDownload.onClick}
-              disabled={isExporting || secondaryDownload.isExporting}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-info bg-transparent px-4 py-2.5 text-sm font-medium text-info transition-colors hover:bg-info-muted disabled:cursor-not-allowed disabled:border-stroke-subtle disabled:text-content-disabled"
+              onClick={onDownload}
+              disabled={!canExport || isExporting}
+              aria-busy={isExporting || undefined}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-info px-4 py-2.5 text-sm font-medium text-white transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
             >
-              {secondaryDownload.isExporting && <ExportSpinner />}
-              {secondaryDownload.label}
+              {isExporting && !exportProgress && <ExportSpinner />}
+              {resolvedDownloadLabel}
             </button>
-          )}
 
-          {/* No mesh warning */}
-          {noMeshWarning && !canExport && (
-            <p className="mt-2 text-center text-xs text-warning">{noMeshWarning}</p>
-          )}
-        </div>
+            {/* Secondary Download Button */}
+            {secondaryDownload?.visible && (
+              <button
+                onClick={secondaryDownload.onClick}
+                disabled={isExporting || secondaryDownload.isExporting}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-info bg-transparent px-4 py-2.5 text-sm font-medium text-info transition-colors hover:bg-info-muted disabled:cursor-not-allowed disabled:border-stroke-subtle disabled:text-content-disabled"
+              >
+                {secondaryDownload.isExporting && <ExportSpinner />}
+                {secondaryDownload.label}
+              </button>
+            )}
+
+            {/* No mesh warning */}
+            {noMeshWarning && !canExport && (
+              <p className="mt-2 text-center text-xs text-warning">{noMeshWarning}</p>
+            )}
+          </div>
+        )}
       </Dialog.Body>
     </Dialog.Root>
   );
