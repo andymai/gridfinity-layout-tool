@@ -7,9 +7,7 @@
 import { useTranslation } from '@/i18n';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
-
-const KOFI_URL = 'https://ko-fi.com/andyaragon';
-const GITHUB_REPO_URL = 'https://github.com/andymai/gridfinity-layout-tool';
+import { GITHUB_REPO_URL, KOFI_URL } from '@/shared/constants/links';
 
 export interface ExportSupportPromptProps {
   /** Resolved download filename, shown in the confirmation line. */

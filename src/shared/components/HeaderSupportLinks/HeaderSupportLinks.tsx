@@ -3,10 +3,7 @@ import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { LanguageSelector } from '@/shared/components/LanguageSelector';
-
-const GITHUB_ISSUES_URL = 'https://github.com/andymai/gridfinity-layout-tool/issues';
-const GITHUB_REPO_URL = 'https://github.com/andymai/gridfinity-layout-tool';
-const KOFI_URL = 'https://ko-fi.com/andyaragon';
+import { GITHUB_ISSUES_URL, GITHUB_REPO_URL, KOFI_URL } from '@/shared/constants/links';
 
 /**
  * Shared header support links: Language selector, Feedback, Help, GitHub, and Ko-fi tip.
