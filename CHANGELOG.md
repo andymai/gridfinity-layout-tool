@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.152.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.151.2...gridfinity-layout-tool-v4.152.0) (2026-06-06)
+
+
+### Features
+
+* revamp Ko-fi support prompts in header and export flow ([#2042](https://github.com/andymai/gridfinity-layout-tool/issues/2042)) ([02ed517](https://github.com/andymai/gridfinity-layout-tool/commit/02ed517880833eff34f9aba63d0615f7be94850a))
+
 ## [4.151.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.151.1...gridfinity-layout-tool-v4.151.2) (2026-06-06)
 
 
