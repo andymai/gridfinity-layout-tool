@@ -4,13 +4,12 @@
  * Lays the four bin walls out in their physical positions around a center bin
  * glyph — Back on top, Front on the bottom, Left and Right flanking — so the
  * control maps directly onto the bin you're editing instead of an abstract row
- * of L/R/F/B letters. Each side is an independent on/off `switch`; the accent
- * tint (SEGMENT_ACTIVE/INACTIVE) is the "this is on" signal. A side can be
- * disabled (e.g. the back handle while a label tab occupies that wall), in which
- * case it reads as off and shows an explanatory tooltip.
+ * of L/R/F/B letters. Each side is an independent on/off `switch` rendered as a
+ * solid button: a filled accent fill when on, a bordered surface chip when off,
+ * so every side reads unmistakably as a clickable button. A side can be disabled
+ * (e.g. the back handle while a label tab occupies that wall), in which case it
+ * reads as off and shows an explanatory tooltip.
  */
-
-import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 
 /** The four selectable walls, in their physical screen positions. */
 export type Side = 'left' | 'right' | 'front' | 'back';
@@ -40,9 +39,15 @@ const SIDE_CELL: Record<Side, string> = {
 };
 
 const CHIP_BASE =
-  'flex items-center justify-center rounded-md px-2 py-1 text-xs font-medium transition-colors ' +
+  'flex items-center justify-center rounded-md border px-2 py-1 text-xs font-medium transition-colors ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset ' +
   'disabled:cursor-not-allowed disabled:opacity-50';
+
+/** Filled accent button when on. */
+const CHIP_ON = 'border-accent bg-accent text-on-accent';
+/** Bordered surface button when off — clearly a button, clearly not selected. */
+const CHIP_OFF =
+  'border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content';
 
 export function SideSelector({ sides, onToggle, ariaLabel }: SideSelectorProps) {
   return (
@@ -61,7 +66,7 @@ export function SideSelector({ sides, onToggle, ariaLabel }: SideSelectorProps) 
             disabled={disabled}
             title={title}
             onClick={() => onToggle(side)}
-            className={`${SIDE_CELL[side]} ${CHIP_BASE} ${isOn ? SEGMENT_ACTIVE : SEGMENT_INACTIVE}`}
+            className={`${SIDE_CELL[side]} ${CHIP_BASE} ${isOn ? CHIP_ON : CHIP_OFF}`}
           >
             {label}
           </button>

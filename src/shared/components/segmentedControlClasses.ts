@@ -6,8 +6,8 @@
  * Two distinct visual systems live here:
  *
  * 1. Single-select segmentation (`SEGMENT_GROUP_CLASS` + `getSegmentClass`):
- *    a recessed track holding segments, where the selected segment is a raised
- *    neutral pill. Matches the design-system `SegmentedControl` so these read
+ *    a bordered track holding segments, where the selected segment is a raised
+ *    neutral pill. Matches the global-nav ToolSwitcher so these read
  *    unmistakably as segmented controls rather than a loose row of chips.
  *
  * 2. Independent boolean toggles (`SEGMENT_ACTIVE` / `SEGMENT_INACTIVE`):
@@ -45,8 +45,13 @@ export const SEGMENT_ACTIVE = 'bg-accent/15 text-accent ring-1 ring-accent/40';
 export const SEGMENT_INACTIVE =
   'text-content-tertiary hover:bg-surface-hover hover:text-content-secondary';
 
-/** Container class for a single-select segment group: the recessed track. */
-export const SEGMENT_GROUP_CLASS = 'flex gap-0.5 rounded-lg bg-surface-tertiary p-0.5';
+/**
+ * Container class for a single-select segment group: a bordered track that
+ * reads unmistakably as a segmented control. Matches the global-nav
+ * ToolSwitcher (bordered `bg-surface` track + raised `bg-surface-elevated`
+ * active pill) so the two look like the same component.
+ */
+export const SEGMENT_GROUP_CLASS = 'flex rounded-lg border border-stroke-subtle bg-surface p-0.5';
 
 const SIZE_CLASS: Record<SegmentSize, string> = {
   icon: 'p-1 text-[11px]',

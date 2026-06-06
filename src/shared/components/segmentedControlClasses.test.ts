@@ -49,9 +49,10 @@ describe('getSegmentClass', () => {
     expect(SEGMENT_INACTIVE).toContain('text-content-tertiary');
   });
 
-  it('renders the group container as a recessed track', () => {
+  it('renders the group container as a bordered track (matches ToolSwitcher)', () => {
     expect(SEGMENT_GROUP_CLASS).toContain('flex');
-    expect(SEGMENT_GROUP_CLASS).toContain('bg-surface-tertiary');
+    expect(SEGMENT_GROUP_CLASS).toContain('border');
+    expect(SEGMENT_GROUP_CLASS).toContain('bg-surface');
     expect(SEGMENT_GROUP_CLASS).toContain('rounded-lg');
     expect(SEGMENT_GROUP_CLASS).toContain('p-0.5');
   });
