@@ -10,7 +10,7 @@ export type {
   DividersExportResult,
 } from './GenerationBridge';
 export { getActiveBridge } from './bridgeRef';
-export { bridgeManager } from './BridgeManager';
+export { bridgeManager, getActiveKernel } from './BridgeManager';
 export { WorkerPool } from './WorkerPool';
 export { WorkerPoolManager, workerPoolManager } from './WorkerPoolManager';
 export type {

@@ -228,3 +228,12 @@ function resolveKernel(): KernelName {
   if (labs.isFeatureEnabled('brepkit_kernel')) return 'brepkit';
   return 'occt-wasm';
 }
+
+/**
+ * The kernel the exact bridge would load right now. Exposed so callers can
+ * attribute a load failure to a specific kernel in telemetry (a failed bridge
+ * never exists to query, so the resolved choice is the only signal).
+ */
+export function getActiveKernel(): KernelName {
+  return resolveKernel();
+}

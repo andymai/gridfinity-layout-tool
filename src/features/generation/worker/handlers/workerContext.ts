@@ -7,7 +7,13 @@
  */
 
 import { getPerformanceStats, resetPerformanceStats } from 'brepjs';
-import type { WorkerResponse, MeshData, KernelName, ExportErrorCode } from '../../bridge/types';
+import type {
+  WorkerResponse,
+  MeshData,
+  KernelName,
+  ExportErrorCode,
+  PerfSnapshot,
+} from '../../bridge/types';
 import { getAllShapeCacheStats, resetAllShapeCacheStats } from '../generators/shapeCache';
 import { getBaseplateCacheStats, resetBaseplateCacheStats } from '../generators/baseplateGenerator';
 import {
@@ -29,6 +35,26 @@ let hardwareConcurrency = 4;
 /** Post a typed response to the main thread */
 export function respond(response: WorkerResponse): void {
   self.postMessage(response);
+}
+
+/**
+ * Convert pipeline stage timings into the kernel-perf stats shape, namespaced
+ * with a `stage_` prefix so they never collide with brepjs's op categories.
+ * Each stage is recorded once per generation, so `count` tallies occurrences.
+ */
+function stageStats(snapshot: PerfSnapshot): Record<string, { totalMs: number; count: number }> {
+  const acc = new Map<string, { totalMs: number; count: number }>();
+  for (const { name, ms } of snapshot.stages) {
+    const key = `stage_${name}`;
+    const prev = acc.get(key);
+    if (prev) {
+      prev.totalMs += ms;
+      prev.count += 1;
+    } else {
+      acc.set(key, { totalMs: ms, count: 1 });
+    }
+  }
+  return Object.fromEntries(acc);
 }
 
 /** Post a progress update */
@@ -101,9 +127,15 @@ export function runGeneration(
     if (activeRequestId !== requestId) return;
 
     const timingMs = performance.now() - startTime;
-    const kernelPerfStats = getPerformanceStats();
     const perfSnapshot = perfCollector.snapshot(timingMs);
     recordCompletedGeneration(perfSnapshot);
+    // brepjs's perf categories are populated only by the legacy opencascade
+    // adapter. occt-wasm (the default kernel) routes booleans through its C++
+    // BooleanPipeline and doesn't instrument mesh timing, so getPerformanceStats
+    // returns all-zero counts and `generation_kernel_perf` would never fire
+    // (its emit guard drops zero-count categories). Fold in the kernel-agnostic
+    // pipeline stage timings so the metric survives any kernel.
+    const kernelPerfStats = { ...getPerformanceStats(), ...stageStats(perfSnapshot) };
 
     const maybeCopy = <T extends Float32Array | Uint32Array>(buf: T): T =>
       (copyBuffers ? buf.slice() : buf) as T;
