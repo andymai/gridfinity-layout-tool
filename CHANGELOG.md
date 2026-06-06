@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.151.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.151.1...gridfinity-layout-tool-v4.151.2) (2026-06-06)
+
+
+### Bug Fixes
+
+* **generation:** surface 3D engine load failures and restore kernel-perf metric ([#2040](https://github.com/andymai/gridfinity-layout-tool/issues/2040)) ([0ce40eb](https://github.com/andymai/gridfinity-layout-tool/commit/0ce40eb86b89b33b9d30600cf4d3209bcd58c178))
+
 ## [4.151.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.151.0...gridfinity-layout-tool-v4.151.1) (2026-06-06)
 
 
