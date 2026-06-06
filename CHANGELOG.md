@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.151.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.150.1...gridfinity-layout-tool-v4.151.0) (2026-06-06)
+
+
+### Features
+
+* match manifold draft edge lines to occt-wasm ([#2036](https://github.com/andymai/gridfinity-layout-tool/issues/2036)) ([391e46b](https://github.com/andymai/gridfinity-layout-tool/commit/391e46b3e9f1efde997e89b7c507e06e2908d2af))
+
 ## [4.150.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.150.0...gridfinity-layout-tool-v4.150.1) (2026-06-06)
 
 
