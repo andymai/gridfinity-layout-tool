@@ -70,11 +70,12 @@ export function creaseEdges(
   }
 
   // 3. Edge (welded id pair) → adjacent triangle indices.
+  const size = weld.size;
   const edgeMap = new Map<number, number[]>();
   const edgeKey = (i: number, j: number): number => {
     const lo = i < j ? i : j;
     const hi = i < j ? j : i;
-    return lo * weld.size + hi;
+    return lo * size + hi;
   };
   const addEdge = (i: number, j: number, t: number): void => {
     const key = edgeKey(i, j);
@@ -93,7 +94,6 @@ export function creaseEdges(
 
   // 4. Emit creases (dihedral past threshold) and naked boundary edges.
   const cosThreshold = Math.cos((thresholdDeg * Math.PI) / 180);
-  const size = weld.size;
   const out: number[] = [];
   const pushVert = (id: number): void => {
     const v = idToVert[id];
