@@ -49,7 +49,9 @@ export class WebGLErrorBoundary extends Component<Props, State> {
       if (error.message.includes(WEBGL_CONTEXT_ERROR)) {
         return <WebGLFallback reason="context-failed" component={this.props.component} />;
       }
-      // Not a WebGL-context failure — let the outer boundary deal with it.
+      // Not a WebGL-context failure — re-throw from render() so React unwinds to
+      // the outer PanelErrorBoundary. This delegation is exercised by the
+      // "rethrows non-WebGL errors" test; keep that test if you touch this.
       throw error;
     }
     return this.props.children;

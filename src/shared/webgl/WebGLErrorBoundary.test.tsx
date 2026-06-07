@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Component } from 'react';
 import type { ReactNode } from 'react';
@@ -28,6 +28,10 @@ describe('WebGLErrorBoundary', () => {
   beforeEach(() => {
     resetWebGLDetectionCacheForTests();
     vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('renders children when no error', () => {
