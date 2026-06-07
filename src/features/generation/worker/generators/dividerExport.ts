@@ -6,12 +6,13 @@
  * in their slicer as needed.
  */
 
-import { unwrap, fuse, exportSTL, exportSTEP } from 'brepjs';
+import { unwrap, fuse, exportSTEP } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { ExportFormat, CombinedExportPiece } from '../../bridge/types';
 import { GRIDFINITY } from '@/shared/constants/bin';
 import { buildUniqueDividerPieces } from './dividerBuilder';
 import { unwrapExportBlob } from './utils/exportUnwrap';
+import { exportSolidToStl } from './utils/stlMeshFallback';
 
 const CLEARANCE = GRIDFINITY.TOLERANCE;
 const SOCKET_HEIGHT = GRIDFINITY.SOCKET_HEIGHT;
@@ -62,17 +63,8 @@ export async function exportDividers(
       nextPieceToFree = i + 1;
     }
 
-    const blob = unwrapExportBlob(
-      exportSTL(combined, {
-        tolerance: 0.01,
-        angularTolerance: 5,
-        binary: true,
-      }),
-      'STL'
-    );
-    const data = await blob.arrayBuffer();
-
     const name = `gridfinity-${params.width}x${params.depth}-divider`;
+    const data = await exportSolidToStl(combined, name, 0.01, 5);
     return { data, fileName: `${name}.stl` };
   } finally {
     combined.delete();
@@ -122,11 +114,8 @@ export async function exportDividerPiecesSeparately(
         const blob = unwrapExportBlob(exportSTEP(pieces[i]), 'STEP');
         results.push({ data: await blob.arrayBuffer(), label: labels[i] });
       } else {
-        const blob = unwrapExportBlob(
-          exportSTL(pieces[i], { tolerance, angularTolerance, binary: true }),
-          'STL'
-        );
-        results.push({ data: await blob.arrayBuffer(), label: labels[i] });
+        const data = await exportSolidToStl(pieces[i], labels[i], tolerance, angularTolerance);
+        results.push({ data, label: labels[i] });
       }
     }
   } finally {
