@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.153.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.153.0...gridfinity-layout-tool-v4.153.1) (2026-06-07)
+
+
+### Bug Fixes
+
+* **preview:** degrade gracefully when WebGL context creation fails ([#2052](https://github.com/andymai/gridfinity-layout-tool/issues/2052)) ([a594fed](https://github.com/andymai/gridfinity-layout-tool/commit/a594fedde904bfb5423a034ba811c16f03117a97))
+
 ## [4.153.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.152.2...gridfinity-layout-tool-v4.153.0) (2026-06-07)
 
 
