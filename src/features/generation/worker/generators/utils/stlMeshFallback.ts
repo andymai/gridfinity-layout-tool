@@ -31,7 +31,7 @@ export function exportSolidMeshToStl(
   tolerance: number,
   angularTolerance: number
 ): ArrayBuffer {
-  const m = mesh(solid, { tolerance, angularTolerance });
+  const m = mesh(solid, { tolerance, angularTolerance, cache: true });
   const vertices = m.vertices instanceof Float32Array ? m.vertices : new Float32Array(m.vertices);
   const normals = m.normals instanceof Float32Array ? m.normals : new Float32Array(m.normals);
   const indices = m.triangles instanceof Uint32Array ? m.triangles : new Uint32Array(m.triangles);
@@ -63,7 +63,16 @@ export async function exportSolidToStl(
   } catch (occtStlError) {
     try {
       return exportSolidMeshToStl(solid, name, tolerance, angularTolerance);
-    } catch {
+    } catch (meshFallbackError) {
+      // Both writers failed — the geometry is genuinely unexportable. Rethrow
+      // OCCT's error (its message carries the user-facing actionable hint, and
+      // its `cause` the structured BrepError), but record the fallback failure
+      // on a separate property so telemetry can tell "OCCT failed, fallback
+      // also failed" apart from "OCCT failed, fallback succeeded".
+      if (occtStlError instanceof Error) {
+        (occtStlError as Error & { meshFallbackCause?: unknown }).meshFallbackCause =
+          meshFallbackError;
+      }
       throw occtStlError;
     }
   }

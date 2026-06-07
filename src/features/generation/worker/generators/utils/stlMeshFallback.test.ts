@@ -6,6 +6,7 @@
  * (production `STL_EXPORT_FAILED` failures, #1760 / #1850 family).
  */
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { mesh } from 'brepjs';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import type { BinParams } from '@/shared/types/bin';
 import { initBrepjs, getGenerateBin } from '../__kernel-tests__/wasmInit';
@@ -57,7 +58,7 @@ describe('exportSolidMeshToStl', () => {
     expect(hasNoNaNOrInfinity(vertices), 'STL vertices must be finite').toBe(true);
   });
 
-  it('writes triangles matching the meshed solid, not OCCT, so it succeeds whenever the preview does', () => {
+  it('writes exactly the meshed triangles, not OCCT, so it succeeds whenever the preview does', () => {
     const generateBin = getGenerateBin();
     generateBin(scoopBin(3, 5, 9), undefined, true);
     const solid = getLastSolid();
@@ -72,6 +73,16 @@ describe('exportSolidMeshToStl', () => {
     const parsed = parseSTLBinary(data);
     expect(isOk(parsed)).toBe(true);
     if (!isOk(parsed)) throw new Error('unreachable');
-    expect(parsed.value.vertices.length / 9).toBeGreaterThan(100);
+
+    // The STL must contain exactly the triangles mesh() produced — that's what
+    // makes the fallback succeed whenever the preview (also mesh()-driven) does.
+    const m = mesh(solid, {
+      tolerance: EXPORT_TOLERANCE,
+      angularTolerance: EXPORT_ANGULAR_TOLERANCE,
+      cache: true,
+    });
+    const meshTriangleCount = m.triangles.length / 3;
+    expect(meshTriangleCount).toBeGreaterThan(100);
+    expect(parsed.value.vertices.length / 9).toBe(meshTriangleCount);
   });
 });
