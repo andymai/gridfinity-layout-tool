@@ -6,7 +6,7 @@
  * rejects (lid disabled, no stacking lip, or a blocker is active).
  */
 
-import { mesh, meshEdges, getKernelCapabilities, rotate, exportSTL, exportSTEP } from 'brepjs';
+import { mesh, meshEdges, getKernelCapabilities, rotate, exportSTEP } from 'brepjs';
 import type { Shape3D } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { LidMeshData, ExportFormat } from '../../bridge/types';
@@ -17,6 +17,7 @@ import { computeTessellationTolerances } from './utils/tolerances';
 import { checkCancelled } from './meshUtils';
 import { shouldGenerateLid } from '@/shared/types/bin';
 import { unwrapExportBlob } from './utils/exportUnwrap';
+import { exportSolidToStl } from './utils/stlMeshFallback';
 
 /**
  * Rotate the lid 180° around the X axis so the floor's outer surface
@@ -125,15 +126,7 @@ export async function exportLid(
       return { data, fileName: `${name}.step` };
     }
 
-    const blob = unwrapExportBlob(
-      exportSTL(solid, {
-        tolerance,
-        angularTolerance,
-        binary: true,
-      }),
-      'STL'
-    );
-    const data = await blob.arrayBuffer();
+    const data = await exportSolidToStl(solid, name, tolerance, angularTolerance);
     return { data, fileName: `${name}.stl` };
   } finally {
     solid.delete();

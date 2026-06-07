@@ -2,7 +2,7 @@
  * Bin export — converts the last generated solid to STL or STEP format.
  */
 
-import { exportSTL, exportSTEP, mesh } from 'brepjs';
+import { exportSTEP, mesh } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import type { ExportFormat, FaceGroupData } from '../../bridge/types';
 
@@ -11,6 +11,7 @@ import { FeatureTag } from './featureTags';
 import { getLastSolid, isLastSolidExportQuality, setLastSolid } from './shapeCache';
 import { EXPORT_ANGULAR_TOLERANCE, EXPORT_TOLERANCE } from './utils/tolerances';
 import { unwrapExportBlob } from './utils/exportUnwrap';
+import { exportSolidToStl } from './utils/stlMeshFallback';
 
 /** Export result with binary data and suggested file name. */
 export interface ExportResult {
@@ -74,15 +75,9 @@ async function runExportAttempt(
   }
 
   onProgress?.(0.92);
-  const blob = unwrapExportBlob(
-    exportSTL(solid, {
-      tolerance: EXPORT_TOLERANCE,
-      angularTolerance: EXPORT_ANGULAR_TOLERANCE,
-      binary: true,
-    }),
-    'STL'
-  );
-  const data = await blob.arrayBuffer();
+  // `faceGroups` above indexes into the same mesh() tessellation the fallback
+  // writes from, so 3MF material alignment survives an OCCT-writer failure.
+  const data = await exportSolidToStl(solid, name, EXPORT_TOLERANCE, EXPORT_ANGULAR_TOLERANCE);
   onProgress?.(1);
   return { data, fileName: `${name}.stl`, faceGroups };
 }
