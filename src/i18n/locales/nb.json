@@ -146,6 +146,7 @@
   "binDesigner.angledDividers.rowLabel": "Rom {a} ↔ Rom {b}",
   "binDesigner.angledDividers.slotIncompatible": "Spor støttes ikke på skrå skillevegger — kommer i v2.",
   "binDesigner.angledDividers.title": "Skrå skillevegger",
+  "binDesigner.angledDividers.toggleLabel": "Slå på redigering av skrå skillevegger",
   "binDesigner.announce.engineLoadError": "Feil: 3D-motoren kunne ikke lastes",
   "binDesigner.announce.generatingMesh": "Genererer bin-mesh",
   "binDesigner.announce.loadingEngine": "Laster 3D-motor",

@@ -146,6 +146,7 @@
   "binDesigner.angledDividers.rowLabel": "区画{a}↔区画{b}",
   "binDesigner.angledDividers.slotIncompatible": "スロットは斜め仕切り板に対応していません — v2で対応予定です。",
   "binDesigner.angledDividers.title": "斜め仕切り板",
+  "binDesigner.angledDividers.toggleLabel": "斜め仕切り板の編集を有効にする",
   "binDesigner.announce.engineLoadError": "エラー：3Dエンジンの読み込みに失敗しました",
   "binDesigner.announce.generatingMesh": "ビンメッシュを生成中",
   "binDesigner.announce.loadingEngine": "3Dエンジンを読み込み中",

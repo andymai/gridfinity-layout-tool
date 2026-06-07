@@ -146,6 +146,7 @@
   "binDesigner.angledDividers.rowLabel": "Fach {a} ↔ Fach {b}",
   "binDesigner.angledDividers.slotIncompatible": "Schlitze werden auf diagonalen Trennwänden nicht unterstützt – kommt in v2.",
   "binDesigner.angledDividers.title": "Diagonale Trennwände",
+  "binDesigner.angledDividers.toggleLabel": "Bearbeitung diagonaler Trennwände aktivieren",
   "binDesigner.announce.engineLoadError": "Fehler: 3D-Engine konnte nicht geladen werden",
   "binDesigner.announce.generatingMesh": "Bin-Mesh wird generiert",
   "binDesigner.announce.loadingEngine": "3D-Engine wird geladen",

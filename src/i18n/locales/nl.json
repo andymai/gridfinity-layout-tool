@@ -146,6 +146,7 @@
   "binDesigner.angledDividers.rowLabel": "Vak {a} ↔ Vak {b}",
   "binDesigner.angledDividers.slotIncompatible": "Sleuven worden niet ondersteund op diagonale scheidingen — komt in v2.",
   "binDesigner.angledDividers.title": "Diagonale scheidingen",
+  "binDesigner.angledDividers.toggleLabel": "Bewerken van diagonale scheidingen inschakelen",
   "binDesigner.announce.engineLoadError": "Fout: kon de 3D-engine niet laden",
   "binDesigner.announce.generatingMesh": "Bin-mesh wordt gegenereerd",
   "binDesigner.announce.loadingEngine": "3D-engine wordt geladen",

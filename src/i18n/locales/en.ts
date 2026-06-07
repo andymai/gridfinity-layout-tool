@@ -1393,6 +1393,7 @@ const en: Record<string, string> = {
   'binDesigner.tabEngravedTextPlaceholder': 'e.g. SCREWS',
   'binDesigner.tabEngravedTextAriaLabel': 'Engraved text for compartment {n}',
   'binDesigner.angledDividers.title': 'Diagonal dividers',
+  'binDesigner.angledDividers.toggleLabel': 'Enable diagonal divider editing',
   'binDesigner.angledDividers.rowLabel': 'Comp {a} ↔ Comp {b}',
   'binDesigner.angledDividers.editRowLabel': 'Edit divider between Comp {a} and Comp {b}',
   'binDesigner.angledDividers.resetAll': 'Reset all',

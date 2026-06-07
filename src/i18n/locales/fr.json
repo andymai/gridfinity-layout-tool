@@ -146,6 +146,7 @@
   "binDesigner.angledDividers.rowLabel": "Comp. {a} ↔ Comp. {b}",
   "binDesigner.angledDividers.slotIncompatible": "Les fentes ne sont pas prises en charge sur les séparateurs diagonaux — à venir dans la v2.",
   "binDesigner.angledDividers.title": "Séparateurs diagonaux",
+  "binDesigner.angledDividers.toggleLabel": "Activer l'édition des séparateurs diagonaux",
   "binDesigner.announce.engineLoadError": "Erreur : impossible de charger le moteur 3D",
   "binDesigner.announce.generatingMesh": "Génération du maillage du bin",
   "binDesigner.announce.loadingEngine": "Chargement du moteur 3D",

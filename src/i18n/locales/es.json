@@ -146,6 +146,7 @@
   "binDesigner.angledDividers.rowLabel": "Compart. {a} ↔ Compart. {b}",
   "binDesigner.angledDividers.slotIncompatible": "Las ranuras no se admiten en divisores diagonales — disponible en v2.",
   "binDesigner.angledDividers.title": "Divisores diagonales",
+  "binDesigner.angledDividers.toggleLabel": "Activar la edición de divisores diagonales",
   "binDesigner.announce.engineLoadError": "Error: el motor 3D no se pudo cargar",
   "binDesigner.announce.generatingMesh": "Generando malla del bin",
   "binDesigner.announce.loadingEngine": "Cargando motor 3D",

@@ -2,8 +2,13 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DividerTiltSubsection } from './DividerTiltSubsection';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
 import { resetAllStores } from '@/test/testUtils';
+
+const enableAngledDividers = (): void => {
+  useSettingsStore.getState().updateSetting('angledDividersEnabled', true);
+};
 
 describe('DividerTiltSubsection', () => {
   beforeEach(() => {
@@ -12,6 +17,9 @@ describe('DividerTiltSubsection', () => {
       params: DEFAULT_BIN_PARAMS,
       ui: { ...s.ui, selectedDividerKey: null, hoveredDividerKey: null, dividerTiltPreview: null },
     }));
+    // Angled-divider editing is an advanced opt-in (off by default); enable it
+    // so the existing behavioural specs exercise the list/inspector content.
+    enableAngledDividers();
   });
 
   const setGrid = (cols: number, rows: number): void => {
@@ -124,5 +132,61 @@ describe('DividerTiltSubsection', () => {
     render(<DividerTiltSubsection />);
     openInspector();
     expect(screen.queryByText(/removed along tilted dividers/i)).toBeNull();
+  });
+
+  describe('advanced opt-in toggle', () => {
+    const disableAngledDividers = (): void => {
+      useSettingsStore.getState().updateSetting('angledDividersEnabled', false);
+    };
+
+    it('shows the opt-in toggle but hides the editing list when disabled', () => {
+      disableAngledDividers();
+      setGrid(2, 2); // 4 eligible dividers
+      render(<DividerTiltSubsection />);
+      expect(
+        screen.getByRole('switch', { name: /enable diagonal divider editing/i })
+      ).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Edit divider between Comp/i })).toBeNull();
+    });
+
+    it('enabling the toggle reveals the divider list and persists the preference', () => {
+      disableAngledDividers();
+      setGrid(2, 2);
+      render(<DividerTiltSubsection />);
+      fireEvent.click(screen.getByRole('switch', { name: /enable diagonal divider editing/i }));
+      expect(useSettingsStore.getState().settings.angledDividersEnabled).toBe(true);
+      expect(screen.getAllByRole('button', { name: /Edit divider between Comp/i })).toHaveLength(4);
+    });
+
+    it('preserves existing tilts when the feature is disabled (render-only, not editable)', () => {
+      setGrid(2, 1);
+      useDesignerStore.getState().setDividerOverride(0, 1, -8, 8);
+      disableAngledDividers();
+      render(<DividerTiltSubsection />);
+      // Editing UI is gone…
+      expect(screen.queryByRole('button', { name: /Edit divider between Comp/i })).toBeNull();
+      // …but the override data survives so the 3D model still generates the tilt.
+      expect(useDesignerStore.getState().params.compartments.dividerOverrides).toHaveLength(1);
+    });
+
+    it('clears active selection, hover, and in-flight preview when toggled off', () => {
+      setGrid(2, 1);
+      render(<DividerTiltSubsection />);
+      openInspector();
+      // Seed every transient divider-UI key so toggling off must clear them all.
+      useDesignerStore.setState((s) => ({
+        ui: {
+          ...s.ui,
+          hoveredDividerKey: '0-1',
+          dividerTiltPreview: { key: '0-1', offsetStart: -5, offsetEnd: 5 },
+        },
+      }));
+      expect(useDesignerStore.getState().ui.selectedDividerKey).not.toBeNull();
+      fireEvent.click(screen.getByRole('switch', { name: /enable diagonal divider editing/i }));
+      const ui = useDesignerStore.getState().ui;
+      expect(ui.selectedDividerKey).toBeNull();
+      expect(ui.hoveredDividerKey).toBeNull();
+      expect(ui.dividerTiltPreview).toBeNull();
+    });
   });
 });

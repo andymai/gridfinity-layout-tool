@@ -146,6 +146,7 @@
   "binDesigner.angledDividers.rowLabel": "Fack {a} ↔ Fack {b}",
   "binDesigner.angledDividers.slotIncompatible": "Spår stöds inte på diagonala avdelare — kommer i v2.",
   "binDesigner.angledDividers.title": "Diagonala avdelare",
+  "binDesigner.angledDividers.toggleLabel": "Aktivera redigering av diagonala avdelare",
   "binDesigner.announce.engineLoadError": "Fel: 3D-motorn kunde inte laddas",
   "binDesigner.announce.generatingMesh": "Genererar bin-mesh",
   "binDesigner.announce.loadingEngine": "Laddar 3D-motor",

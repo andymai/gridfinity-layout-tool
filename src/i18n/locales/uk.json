@@ -146,6 +146,7 @@
   "binDesigner.angledDividers.rowLabel": "Відділ. {a} ↔ Відділ. {b}",
   "binDesigner.angledDividers.slotIncompatible": "Прорізи не підтримуються на діагональних перегородках — у v2.",
   "binDesigner.angledDividers.title": "Діагональні перегородки",
+  "binDesigner.angledDividers.toggleLabel": "Увімкнути редагування діагональних перегородок",
   "binDesigner.announce.engineLoadError": "Помилка: не вдалося завантажити 3D-рушій",
   "binDesigner.announce.generatingMesh": "Створення меша біна",
   "binDesigner.announce.loadingEngine": "Завантаження 3D-рушія",

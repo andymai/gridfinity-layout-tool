@@ -19,6 +19,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { useSettingsStore } from '@/core/store/settings';
 import { DESIGNER_CONSTRAINTS, WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { SnappingSlider } from '../controls/SnappingSlider';
@@ -81,6 +82,11 @@ export function CompartmentEditor() {
       setHoveredDividerKey: s.setHoveredDividerKey,
     }))
   );
+
+  // Angled dividers are an advanced opt-in (see DividerTiltSubsection). Keep the
+  // on-grid hit-target overlay hidden until the user enables editing so dense
+  // grids stay legible (issue #2044).
+  const angledDividersEnabled = useSettingsStore((s) => s.settings.angledDividersEnabled);
 
   const { innerW: interiorW, innerD: interiorD } = getInteriorDims({
     width,
@@ -505,7 +511,7 @@ export function CompartmentEditor() {
             {/* Divider hit targets: clickable lines above the cells, transparent
                 container with per-line pointer-events so cell drag-merge still
                 works. Hidden during cell-merge drag to keep the surface calm. */}
-            {!isDragging && eligibleDividers.length > 0 && (
+            {!isDragging && angledDividersEnabled && eligibleDividers.length > 0 && (
               <DividerHitTargets
                 compartments={compartments}
                 dividers={eligibleDividers}

@@ -146,6 +146,7 @@
   "binDesigner.angledDividers.rowLabel": "Compart. {a} ↔ Compart. {b}",
   "binDesigner.angledDividers.slotIncompatible": "Encaixes não são suportados em divisórias diagonais — em breve na v2.",
   "binDesigner.angledDividers.title": "Divisórias diagonais",
+  "binDesigner.angledDividers.toggleLabel": "Ativar edição de divisórias diagonais",
   "binDesigner.announce.engineLoadError": "Erro: falha ao carregar o motor 3D",
   "binDesigner.announce.generatingMesh": "Gerando malha do bin",
   "binDesigner.announce.loadingEngine": "Carregando motor 3D",
