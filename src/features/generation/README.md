@@ -50,6 +50,7 @@ graph TB
 - `worker/generators/featureBuilder.ts` — barrel re-export of all builder modules
 - `worker/generators/dividerBuilder.ts` — divider piece generation
 - `worker/generators/dividerExport.ts` — standalone divider STL export
+- `worker/generators/utils/stlMeshFallback.ts` — `exportSolidToStl`: OCCT-primary STL writer with a mesh-based fallback for topologies OCCT's `StlAPI.Write` rejects but `mesh()` triangulates (the `STL_EXPORT_FAILED` class, #1760/#1850). Used by bin/divider/lid exporters; OCCT stays primary so success is byte-identical and 3MF faceGroups stay aligned
 - `worker/generators/wallPatterns.ts` — hexgrid/slot patterns
 - `worker/generators/slotBuilder.ts` — wall slot cutout geometry
 - `worker/generators/splitConnectorBuilder.ts` — split-piece joints: floor scarf lap + optional press-together wall-locking keys (#1869)
