@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.153.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.153.1...gridfinity-layout-tool-v4.153.2) (2026-06-07)
+
+
+### Bug Fixes
+
+* **export:** recover STL exports that OCCT's writer rejects ([#2051](https://github.com/andymai/gridfinity-layout-tool/issues/2051)) ([3c53ded](https://github.com/andymai/gridfinity-layout-tool/commit/3c53dedd50c02a215ca5114b099de734d4925b49))
+
 ## [4.153.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.153.0...gridfinity-layout-tool-v4.153.1) (2026-06-07)
 
 
