@@ -242,6 +242,15 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
     supersedes it. A monotonic token drops a draft once a newer edit starts or the
     exact for its edit has landed (covers the exact-resolves-before-draft race).
     Drafts skip the undo/redo mesh cache — history holds exact geometry only.
+18. **Angled dividers are an advanced opt-in, gating UI only** — the editing
+    surfaces (the `DividerTiltSubsection` tilt list/inspector and the on-grid
+    `DividerHitTargets` overlay in `CompartmentEditor`) are hidden unless
+    `settings.angledDividersEnabled` is on (default `false`, persisted; toggled
+    inline from the compact header in the Grid Dividers panel). The gate is
+    **UI-only**: `compartments.dividerOverrides` and the worker geometry path are
+    untouched, so a saved design with tilts still renders and exports them while
+    the toggle is off — only editing is hidden (#2044). Toggling off clears the
+    in-flight selection/hover/preview so the canvas overlay drops cleanly.
 
 ## Thumbnail Pipeline
 

@@ -169,13 +169,24 @@ describe('DividerTiltSubsection', () => {
       expect(useDesignerStore.getState().params.compartments.dividerOverrides).toHaveLength(1);
     });
 
-    it('clears any active selection when toggled off', () => {
+    it('clears active selection, hover, and in-flight preview when toggled off', () => {
       setGrid(2, 1);
       render(<DividerTiltSubsection />);
       openInspector();
+      // Seed every transient divider-UI key so toggling off must clear them all.
+      useDesignerStore.setState((s) => ({
+        ui: {
+          ...s.ui,
+          hoveredDividerKey: '0-1',
+          dividerTiltPreview: { key: '0-1', offsetStart: -5, offsetEnd: 5 },
+        },
+      }));
       expect(useDesignerStore.getState().ui.selectedDividerKey).not.toBeNull();
       fireEvent.click(screen.getByRole('switch', { name: /enable diagonal divider editing/i }));
-      expect(useDesignerStore.getState().ui.selectedDividerKey).toBeNull();
+      const ui = useDesignerStore.getState().ui;
+      expect(ui.selectedDividerKey).toBeNull();
+      expect(ui.hoveredDividerKey).toBeNull();
+      expect(ui.dividerTiltPreview).toBeNull();
     });
   });
 });
