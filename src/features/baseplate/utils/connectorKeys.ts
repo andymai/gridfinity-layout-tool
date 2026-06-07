@@ -55,8 +55,12 @@ function interiorBoundaryOffsetsMm(
   return offsets;
 }
 
-function isDovetailKey(params: BaseplateParams): boolean {
-  return params.connectorNubs === true && params.connectorStyle === 'dovetailKey';
+/** Styles that ship a separate part seated at every seam junction. */
+function hasSeatedConnector(params: BaseplateParams): boolean {
+  return (
+    params.connectorNubs === true &&
+    (params.connectorStyle === 'dovetailKey' || params.connectorStyle === 'snapClip')
+  );
 }
 
 /**
@@ -69,13 +73,13 @@ function isDovetailKey(params: BaseplateParams): boolean {
  * Coordinates match `SplitBaseplateMeshes` piece centering exactly:
  *   center = gridOffset * gridUnitMm + pieceSize / 2 - total / 2
  *
- * Returns [] unless dovetail key connectors are active.
+ * Returns [] unless a seated-connector style (dovetail key / snap clip) is active.
  */
 export function computeSeamJunctions(
   tiling: BaseplateTiling,
   params: BaseplateParams
 ): SeamJunction[] {
-  if (!isDovetailKey(params)) return [];
+  if (!hasSeatedConnector(params)) return [];
 
   const g = params.gridUnitMm;
   const totalWmm = tiling.totalWidthUnits * g;

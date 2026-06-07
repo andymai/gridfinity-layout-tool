@@ -59,7 +59,7 @@ import { sanitizeParams, tagOp, buildSlabProfile } from './baseplateSlab';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import { buildMagnetHoles } from './baseplateMagnets';
-import { buildConnectors, buildDovetailKey } from './baseplateConnectors';
+import { buildConnectors, buildDovetailKey, buildSnapClipForPrint } from './baseplateConnectors';
 import { computeBaseplateEdgeLines } from './baseplateEdges';
 import { buildBaseplateSTL } from './baseplateSTL';
 
@@ -400,7 +400,11 @@ export async function exportConnectorKey(
   const params = sanitizeParams(rawParams);
   const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
   const totalHeight = SOCKET_HEIGHT + floorDepth;
-  const key = buildDovetailKey(totalHeight);
+  // Snap clip ships its own bed-flat part; dovetail key is the legacy default.
+  const key =
+    params.connectorStyle === 'snapClip'
+      ? buildSnapClipForPrint(totalHeight)
+      : buildDovetailKey(totalHeight);
   try {
     const name = 'connector_key';
     if (format === 'step') {

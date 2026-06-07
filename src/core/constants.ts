@@ -285,7 +285,9 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     ...(typeof obj.preferIdenticalPieces === 'boolean'
       ? { preferIdenticalPieces: obj.preferIdenticalPieces }
       : {}),
-    ...(obj.connectorStyle === 'dovetail' || obj.connectorStyle === 'dovetailKey'
+    ...(obj.connectorStyle === 'dovetail' ||
+    obj.connectorStyle === 'dovetailKey' ||
+    obj.connectorStyle === 'snapClip'
       ? { connectorStyle: obj.connectorStyle }
       : {}),
     ...(typeof obj.connectorFitOffset === 'number'

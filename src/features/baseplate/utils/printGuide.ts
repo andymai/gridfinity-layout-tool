@@ -16,6 +16,7 @@ import {
   TONGUE_PROTRUSION,
   TONGUE_CLEARANCE,
   DOVETAIL_KEY_CLEARANCE,
+  SNAP_CLIP_CLEARANCE,
   effectiveClearance,
 } from '@/shared/constants/connectors';
 
@@ -107,7 +108,11 @@ function generateHeader(
   if (hasPadding) features.push('padded');
   if (params.connectorNubs)
     features.push(
-      params.connectorStyle === 'dovetailKey' ? 'dovetail key connectors' : 'connectors'
+      params.connectorStyle === 'dovetailKey'
+        ? 'dovetail key connectors'
+        : params.connectorStyle === 'snapClip'
+          ? 'snap clip connectors'
+          : 'connectors'
     );
 
   const featureStr = features.length > 0 ? features.join(', ') : 'standard';
@@ -130,7 +135,11 @@ function generateHeader(
   const offset = params.connectorFitOffset ?? 0;
   if (params.connectorNubs && offset !== 0) {
     const baseClearance =
-      params.connectorStyle === 'dovetailKey' ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE;
+      params.connectorStyle === 'dovetailKey'
+        ? DOVETAIL_KEY_CLEARANCE
+        : params.connectorStyle === 'snapClip'
+          ? SNAP_CLIP_CLEARANCE
+          : TONGUE_CLEARANCE;
     const perSide = effectiveClearance(baseClearance, offset);
     lines.push(
       `  Connector fit: ${formatSignedMm(offset)} (${perSide.toFixed(3)}mm per-side clearance)`
@@ -159,12 +168,12 @@ function generatePieceTable(
     // tongue is male — matches the actual STL bbox so users know what fits the
     // bed. Under preferIdenticalPieces (paired mode) every join edge carries a
     // tongue regardless of side, so both sides of each axis claim protrusion.
-    // Dovetail key connectors are flush at the seam (both sides female), so no tongue
-    // protrusion is added to the piece bbox — only the integral dovetail protrudes.
-    const tongue =
-      parentParams.connectorNubs && parentParams.connectorStyle !== 'dovetailKey'
-        ? TONGUE_PROTRUSION
-        : 0;
+    // Dovetail key and snap clip connectors are flush at the seam (both sides
+    // female), so no tongue protrusion is added to the piece bbox — only the
+    // integral dovetail protrudes.
+    const isIntegralDovetail =
+      parentParams.connectorStyle === undefined || parentParams.connectorStyle === 'dovetail';
+    const tongue = parentParams.connectorNubs && isIntegralDovetail ? TONGUE_PROTRUSION : 0;
     const isPaired = !!parentParams.preferIdenticalPieces && !!parentParams.connectorNubs;
     const startMale = !parentParams.invertDovetails;
     const widthMm =
@@ -196,7 +205,11 @@ function generatePieceTable(
     if (parentParams.magnetHoles) features.push('magnet holes');
     if (parentParams.connectorNubs)
       features.push(
-        parentParams.connectorStyle === 'dovetailKey' ? 'dovetail key grooves' : 'connectors'
+        parentParams.connectorStyle === 'dovetailKey'
+          ? 'dovetail key grooves'
+          : parentParams.connectorStyle === 'snapClip'
+            ? 'snap clip pockets'
+            : 'connectors'
       );
     const hasPadding =
       params.paddingLeft > 0 ||

@@ -36,6 +36,7 @@
   "baseplate.connectorStyle.label": "Connector style",
   "baseplate.connectorStyle.dovetail": "Dovetail",
   "baseplate.connectorStyle.dovetailKey": "Dovetail key",
+  "baseplate.connectorStyle.snapClip": "Snap clip",
   "baseplate.connectorFit.label": "Connector fit",
   "baseplate.connectorFit.info": "Ajusta a folga do conector (mm) para adequar o encaixe à sua impressora e filamento. Maior = mais folgado, menor = mais apertado.",
   "baseplate.cornerRadius": "Raio de canto",

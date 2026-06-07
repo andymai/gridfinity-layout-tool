@@ -23,6 +23,8 @@ import {
   TONGUE_PROTRUSION,
   TONGUE_BASE_HALF,
   TONGUE_TIP_HALF,
+  SNAP_CLIP,
+  snapClipLevels,
 } from '@/shared/constants/connectors';
 
 /** Retaining floor above magnet holes — mirrors MAGNET_FLOOR in the generator. */
@@ -55,6 +57,52 @@ function buildKeyGeometry(totalHeight: number): THREE.ExtrudeGeometry {
     bevelEnabled: false,
     steps: 1,
   });
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+/**
+ * Build the snap-clip ("staple") silhouette: two legs + flush bridge + central
+ * flex slot + outward barbs, matching the worker's `buildSnapClip`. Drawn in the
+ * cross-section (X = cross-seam, Y = up) and extruded along the seam by the clip
+ * length, then baked into world orientation — bridge top at Z=0, legs hanging to
+ * −legBottom, length along X — so the same per-junction Z-rotation as the
+ * dovetail key seats it. Levels come from the shared `snapClipLevels`.
+ */
+function buildSnapClipGeometry(totalHeight: number): THREE.ExtrudeGeometry {
+  const lv = snapClipLevels(totalHeight, 0);
+  const g = SNAP_CLIP.GAP_HALF;
+  const br = SNAP_CLIP.BRIDGE_THK;
+  const { legOuter, barbTip, apexZ, catchZ, leadZ, legBottom } = lv;
+  const shape = new THREE.Shape();
+  shape.moveTo(-legOuter, 0);
+  shape.lineTo(legOuter, 0);
+  shape.lineTo(legOuter, catchZ);
+  shape.lineTo(barbTip, apexZ);
+  shape.lineTo(legOuter, leadZ);
+  shape.lineTo(legOuter, -legBottom);
+  shape.lineTo(g, -legBottom);
+  shape.lineTo(g, -br);
+  shape.lineTo(-g, -br);
+  shape.lineTo(-g, -legBottom);
+  shape.lineTo(-legOuter, -legBottom);
+  shape.lineTo(-legOuter, leadZ);
+  shape.lineTo(-barbTip, apexZ);
+  shape.lineTo(-legOuter, catchZ);
+  shape.closePath();
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: SNAP_CLIP.LEG_L,
+    bevelEnabled: false,
+    steps: 1,
+  });
+  // Cross-section is in XY (X=cross-seam, Y=up), length along Z. Stand it up so
+  // up→Z and length→X: rotateX(+90°) (Y→Z, length Z→−Y), then rotateZ(+90°)
+  // (−Y length → +X, cross-seam X → +Y). Centers the length on the seam point.
+  geometry.rotateX(Math.PI / 2);
+  geometry.rotateZ(Math.PI / 2);
+  // After the rotations the length axis lands on X ∈ [0, LEG_L]; recenter it on
+  // the seam junction.
+  geometry.translate(-SNAP_CLIP.LEG_L / 2, 0, 0);
   geometry.computeVertexNormals();
   return geometry;
 }
@@ -106,7 +154,11 @@ export function ConnectorKeyMeshes() {
     GRIDFINITY_SPEC.SOCKET_HEIGHT +
     (fullParams.magnetHoles ? MAGNET_FLOOR + fullParams.magnetDepth : 0);
 
-  const geometry = useMemo(() => buildKeyGeometry(totalHeight), [totalHeight]);
+  const isSnapClip = fullParams.connectorStyle === 'snapClip';
+  const geometry = useMemo(
+    () => (isSnapClip ? buildSnapClipGeometry(totalHeight) : buildKeyGeometry(totalHeight)),
+    [isSnapClip, totalHeight]
+  );
   // Read on every render so a runtime theme/accent switch is reflected.
   const accentHex = getAccentHex();
 
@@ -128,7 +180,13 @@ export function ConnectorKeyMeshes() {
           key={i}
           geometry={geometry}
           position={[j.xMm, j.yMm, 0.1]}
-          rotation={[0, 0, j.axis === 'y' ? Math.PI / 2 : 0]}
+          // Snap clip length runs ALONG the seam (perpendicular to the dovetail
+          // key's bridge), so its per-junction rotation is offset 90° from the key.
+          rotation={[
+            0,
+            0,
+            isSnapClip ? (j.axis === 'y' ? 0 : Math.PI / 2) : j.axis === 'y' ? Math.PI / 2 : 0,
+          ]}
           renderOrder={2}
         >
           <meshStandardMaterial
