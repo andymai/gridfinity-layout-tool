@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.152.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.152.0...gridfinity-layout-tool-v4.152.1) (2026-06-07)
+
+
+### Bug Fixes
+
+* **bin-designer:** gate angled dividers behind advanced opt-in ([#2046](https://github.com/andymai/gridfinity-layout-tool/issues/2046)) ([60e5ea3](https://github.com/andymai/gridfinity-layout-tool/commit/60e5ea379cbbe911a151683e6fbd03bd8a7d76a7))
+
 ## [4.152.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.151.2...gridfinity-layout-tool-v4.152.0) (2026-06-06)
 
 
