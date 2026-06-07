@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.152.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.152.1...gridfinity-layout-tool-v4.152.2) (2026-06-07)
+
+
+### Bug Fixes
+
+* **generation:** bump occt-wasm to 3.3.0 for Safari/iOS engine load ([#2045](https://github.com/andymai/gridfinity-layout-tool/issues/2045)) ([81dd719](https://github.com/andymai/gridfinity-layout-tool/commit/81dd71928bc6ff853cd72758612fe8fbaf60daf5))
+
 ## [4.152.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.152.0...gridfinity-layout-tool-v4.152.1) (2026-06-07)
 
 
