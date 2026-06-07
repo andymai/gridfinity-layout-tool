@@ -251,6 +251,14 @@ intersection`, not XOR** — they coincide for 2 members but diverge for
     untouched, so a saved design with tilts still renders and exports them while
     the toggle is off — only editing is hidden (#2044). Toggling off clears the
     in-flight selection/hover/preview so the canvas overlay drops cleanly.
+19. **WebGL context failure is terminal for the session, by design** — the
+    `PreviewCanvas` `<Canvas>` is wrapped in `WebGLErrorBoundary` (inside
+    `PanelErrorBoundary`). When three.js can't acquire a GL context (slot
+    exhaustion, GPU-process loss), the boundary renders `WebGLFallback` with
+    **no Retry** and flips `detectWebGL()` to unavailable so subsequent renders
+    skip the canvas — re-mounting would just re-throw, which previously produced
+    rapid error bursts. Recovery requires a page reload. Non-WebGL render errors
+    still bubble to `PanelErrorBoundary`'s generic retry UI.
 
 ## Thumbnail Pipeline
 

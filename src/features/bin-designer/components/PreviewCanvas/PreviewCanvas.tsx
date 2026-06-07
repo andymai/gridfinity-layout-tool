@@ -60,7 +60,7 @@ import { useSettingsStore } from '@/core/store/settings';
 import { CameraController, usePresetTransition, SceneLighting } from './previewCanvasCamera';
 import { CameraRig } from '@/shared/components/preview/CameraRig';
 import { TouchHint, GeneratingIndicator } from './previewCanvasOverlays';
-import { detectWebGL, WebGLFallback } from '@/shared/webgl';
+import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
 import { ColorToolOverlay } from './ColorToolOverlay';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { PipetteIcon } from '@/design-system/Icon';
@@ -362,125 +362,127 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
         />
       ) : (
         <PanelErrorBoundary panelName="3D Preview">
-          <Canvas
-            frameloop="demand"
-            onCreated={({ gl }) => {
-              setPreviewCanvas(gl.domElement);
-            }}
-            gl={{ antialias: true, preserveDrawingBuffer: true }}
-          >
-            <CameraRig
-              projection={projection}
-              initialPosition={[100, -100, 80]}
-              target={[0, 0, totalH / 2]}
-            />
-            <PreviewContextSync />
+          <WebGLErrorBoundary component="designer">
+            <Canvas
+              frameloop="demand"
+              onCreated={({ gl }) => {
+                setPreviewCanvas(gl.domElement);
+              }}
+              gl={{ antialias: true, preserveDrawingBuffer: true }}
+            >
+              <CameraRig
+                projection={projection}
+                initialPosition={[100, -100, 80]}
+                target={[0, 0, totalH / 2]}
+              />
+              <PreviewContextSync />
 
-            {/* Gradient background */}
-            <GradientBackground />
+              {/* Gradient background */}
+              <GradientBackground />
 
-            {/* 3-point lighting (theme-aware ground bounce) */}
-            <SceneLighting />
+              {/* 3-point lighting (theme-aware ground bounce) */}
+              <SceneLighting />
 
-            {/* Camera controller for auto-framing */}
-            <CameraController
-              controlsRef={controlsRef}
-              invalidateRef={invalidateRef}
-              projection={projection}
-              width={width}
-              depth={depth}
-              height={height}
-              gridUnitMm={params.gridUnitMm}
-              heightUnitMm={params.heightUnitMm}
-            />
+              {/* Camera controller for auto-framing */}
+              <CameraController
+                controlsRef={controlsRef}
+                invalidateRef={invalidateRef}
+                projection={projection}
+                width={width}
+                depth={depth}
+                height={height}
+                gridUnitMm={params.gridUnitMm}
+                heightUnitMm={params.heightUnitMm}
+              />
 
-            {/* Bin mesh — swap for per-piece meshes when split */}
-            {showSplitPieces ? (
-              <SplitBinMeshes color={previewColor} wireframe={wireframe} xray={xray} />
-            ) : (
-              <BinMesh
+              {/* Bin mesh — swap for per-piece meshes when split */}
+              {showSplitPieces ? (
+                <SplitBinMeshes color={previewColor} wireframe={wireframe} xray={xray} />
+              ) : (
+                <BinMesh
+                  wireframe={wireframe}
+                  xray={xray}
+                  color={previewColor}
+                  onZoneClick={handleZoneClick}
+                />
+              )}
+
+              {/* Click-lock lid (renders only when params.lid.enabled produced
+                a mesh). `lidOffsetMm` controls position + opacity in lockstep. */}
+              <LidMesh
+                color={previewColor}
+                lidOffsetMm={lidOffsetMm}
                 wireframe={wireframe}
                 xray={xray}
-                color={previewColor}
-                onZoneClick={handleZoneClick}
               />
-            )}
-
-            {/* Click-lock lid (renders only when params.lid.enabled produced
-                a mesh). `lidOffsetMm` controls position + opacity in lockstep. */}
-            <LidMesh
-              color={previewColor}
-              lidOffsetMm={lidOffsetMm}
-              wireframe={wireframe}
-              xray={xray}
-            />
-            {/* Dashed guide line between bin's lip top and lid's mating opening,
+              {/* Dashed guide line between bin's lip top and lid's mating opening,
                 visible only when the lid is meaningfully exploded. */}
-            {params.lid.enabled && params.base.stackingLip && (
-              <LidGuideLine lidOffsetMm={lidOffsetMm} />
-            )}
+              {params.lid.enabled && params.base.stackingLip && (
+                <LidGuideLine lidOffsetMm={lidOffsetMm} />
+              )}
 
-            {/* Ghost outlines during generation */}
-            <GhostWireframe />
-            <GhostDividers />
-            <GhostCompartmentPreview />
-            <GhostLabelTabs />
-            <GhostScoops />
-            <GhostSlotLines />
-            <GhostDividerPieces />
-            <GhostCutouts />
-            <GhostWallCutouts />
-            <GhostHandles />
+              {/* Ghost outlines during generation */}
+              <GhostWireframe />
+              <GhostDividers />
+              <GhostCompartmentPreview />
+              <GhostLabelTabs />
+              <GhostScoops />
+              <GhostSlotLines />
+              <GhostDividerPieces />
+              <GhostCutouts />
+              <GhostWallCutouts />
+              <GhostHandles />
 
-            {/* Overhang-section hover highlight — lights up the affected wall */}
-            <OverhangHighlight />
+              {/* Overhang-section hover highlight — lights up the affected wall */}
+              <OverhangHighlight />
 
-            {/* Split lines for oversized bins — hidden when pieces are shown */}
-            {!showSplitPieces && <BinSplitLines />}
+              {/* Split lines for oversized bins — hidden when pieces are shown */}
+              {!showSplitPieces && <BinSplitLines />}
 
-            {/* Footprint grid */}
-            {!hideChrome && (
-              <FootprintGrid width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
-            )}
+              {/* Footprint grid */}
+              {!hideChrome && (
+                <FootprintGrid width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
+              )}
 
-            {/* Dimension markers and labels — hidden for split pieces */}
-            {!hideChrome && !showSplitPieces && (
-              <>
-                <BinAxisLabels width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
-                <BinDimensions
-                  width={width}
-                  depth={depth}
-                  height={height}
-                  gridUnitMm={params.gridUnitMm}
-                  heightUnitMm={params.heightUnitMm}
-                  stackingLip={params.base.stackingLip}
-                />
-                <BinNameLabel
-                  width={width}
-                  depth={depth}
-                  gridUnitMm={params.gridUnitMm}
-                  name={designName}
-                />
-              </>
-            )}
+              {/* Dimension markers and labels — hidden for split pieces */}
+              {!hideChrome && !showSplitPieces && (
+                <>
+                  <BinAxisLabels width={width} depth={depth} gridUnitMm={params.gridUnitMm} />
+                  <BinDimensions
+                    width={width}
+                    depth={depth}
+                    height={height}
+                    gridUnitMm={params.gridUnitMm}
+                    heightUnitMm={params.heightUnitMm}
+                    stackingLip={params.base.stackingLip}
+                  />
+                  <BinNameLabel
+                    width={width}
+                    depth={depth}
+                    gridUnitMm={params.gridUnitMm}
+                    name={designName}
+                  />
+                </>
+              )}
 
-            {/* Orbit controls - Z-up with polar limits, pan disabled on mobile */}
-            <OrbitControls
-              ref={controlsRef}
-              makeDefault
-              target={[0, 0, totalH / 2]}
-              enableDamping
-              dampingFactor={0.12}
-              rotateSpeed={isTouchDevice ? 1.0 : 0.8}
-              zoomSpeed={isTouchDevice ? 1.2 : 1.0}
-              minDistance={20}
-              maxDistance={800}
-              maxPolarAngle={Math.PI * 0.85}
-              minPolarAngle={Math.PI * 0.05}
-              enablePan={isDesktop}
-              onStart={handleOrbitStart}
-            />
-          </Canvas>
+              {/* Orbit controls - Z-up with polar limits, pan disabled on mobile */}
+              <OrbitControls
+                ref={controlsRef}
+                makeDefault
+                target={[0, 0, totalH / 2]}
+                enableDamping
+                dampingFactor={0.12}
+                rotateSpeed={isTouchDevice ? 1.0 : 0.8}
+                zoomSpeed={isTouchDevice ? 1.2 : 1.0}
+                minDistance={20}
+                maxDistance={800}
+                maxPolarAngle={Math.PI * 0.85}
+                minPolarAngle={Math.PI * 0.05}
+                enablePan={isDesktop}
+                onStart={handleOrbitStart}
+              />
+            </Canvas>
+          </WebGLErrorBoundary>
 
           {/* Nostalgic loading indicator (bottom center) */}
           {showOverlay && <GeneratingIndicator />}
