@@ -17,6 +17,7 @@ import { useTranslation } from '@/i18n';
 import { isSmokeMode } from '@/shared/utils/smokeMode';
 import { runUpdateSmokeTest, type SmokeGateResult } from '@/shared/pwa/smokeGate';
 import { checkBootVersionFreshness } from '@/shared/pwa/bootVersionCheck';
+import { PRECACHE_PREFIX } from '@/shared/pwa/cacheNames';
 import { getSmokeGateFlag } from '@/shared/pwa/featureFlag';
 import { isIosStandalonePwa } from '@/shared/pwa/iosBypass';
 import {
@@ -33,9 +34,6 @@ import { getPosthogInstance } from '@/shared/analytics/posthog/init';
  * smoke run while one is already in flight. Reset by `gatedUpdate()` on exit.
  */
 let smokeInProgress = false;
-
-/** Cache name prefix used by Workbox precache (matches `cacheId: 'gridfinity-v1'`). */
-const PRECACHE_PREFIX = 'gridfinity-v1-precache-';
 
 async function clearPrecaches(): Promise<void> {
   try {

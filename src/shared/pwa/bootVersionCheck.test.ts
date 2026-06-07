@@ -63,6 +63,12 @@ describe('checkBootVersionFreshness', () => {
     expect(recoverStaleBundle).not.toHaveBeenCalled();
   });
 
+  it('no-ops on a non-200 version.json response', async () => {
+    mockVersionFetch({ version: '9.9.9', gitSha: 'newer-sha', buildTime: 'x' }, false);
+    await checkBootVersionFreshness();
+    expect(recoverStaleBundle).not.toHaveBeenCalled();
+  });
+
   it('no-ops when the deployed gitSha is unknown', async () => {
     mockVersionFetch({ version: '9.9.9', gitSha: 'unknown', buildTime: 'x' });
     await checkBootVersionFreshness();

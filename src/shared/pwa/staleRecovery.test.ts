@@ -11,6 +11,8 @@ const reload = vi.fn();
 const cacheDelete = vi.fn().mockResolvedValue(true);
 const unregister = vi.fn().mockResolvedValue(true);
 
+const realLocation = window.location;
+
 beforeEach(() => {
   sessionStorage.clear();
   capture.mockClear();
@@ -18,9 +20,11 @@ beforeEach(() => {
   cacheDelete.mockClear();
   unregister.mockClear();
 
+  // Preserve the real Location shape (href/origin/...) and override only reload,
+  // so code reading other fields still works.
   Object.defineProperty(window, 'location', {
     configurable: true,
-    value: { reload },
+    value: { ...realLocation, href: realLocation.href, origin: realLocation.origin, reload },
   });
 
   vi.stubGlobal('caches', {
@@ -39,6 +43,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  Object.defineProperty(window, 'location', { configurable: true, value: realLocation });
   vi.unstubAllGlobals();
 });
 

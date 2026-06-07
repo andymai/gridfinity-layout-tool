@@ -13,13 +13,10 @@
  */
 
 import { getPosthogInstance } from '@/shared/analytics/posthog/init';
+import { PRECACHE_PREFIX, WASM_CACHE } from './cacheNames';
 
 /** sessionStorage key — set once a recovery has been attempted this tab session. */
 export const STALE_RECOVERY_FLAG = 'pwa-stale-recovery-done';
-
-/** Caches to drop: the Workbox precache (shell) and the runtime wasm cache. */
-const PRECACHE_PREFIX = 'gridfinity-v1-precache-';
-const WASM_CACHE = 'wasm-binaries';
 
 function alreadyRecovered(): boolean {
   try {
@@ -87,8 +84,6 @@ export async function recoverStaleBundle(reason: string): Promise<boolean> {
   await clearStaleCaches();
   await unregisterServiceWorkers();
 
-  // Hard reload — with the SW unregistered and caches cleared, this fetches the
-  // latest shell + assets from the network.
   window.location.reload();
   return true;
 }

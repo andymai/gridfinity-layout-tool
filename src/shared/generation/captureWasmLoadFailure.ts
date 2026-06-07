@@ -14,10 +14,9 @@ import { getActiveKernel } from '@/shared/generation/bridge';
 import { recoverStaleBundle } from '@/shared/pwa/staleRecovery';
 import { isStaleAssetError } from './wasmLoadError';
 
-export function captureWasmLoadFailure(
-  error: unknown,
-  surface: 'bin_designer_preview' | 'baseplate_preview'
-): void {
+type WasmLoadSurface = 'bin_designer_preview' | 'baseplate_preview';
+
+export function captureWasmLoadFailure(error: unknown, surface: WasmLoadSurface): void {
   captureException(error instanceof Error ? error : new Error(String(error)), {
     surface,
     kernel: getActiveKernel(),
@@ -32,10 +31,7 @@ export function captureWasmLoadFailure(
  * returning user on an old bundle recovers on the spot instead of staring at a
  * dead "Failed to load 3D engine" state.
  */
-export function handleWasmLoadFailure(
-  error: unknown,
-  surface: 'bin_designer_preview' | 'baseplate_preview'
-): void {
+export function handleWasmLoadFailure(error: unknown, surface: WasmLoadSurface): void {
   captureWasmLoadFailure(error, surface);
   if (isStaleAssetError(error)) {
     void recoverStaleBundle(`wasm_load_failure:${surface}`);
