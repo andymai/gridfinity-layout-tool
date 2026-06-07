@@ -16,6 +16,7 @@ import type { BinId } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { isSmokeMode } from '@/shared/utils/smokeMode';
 import { runUpdateSmokeTest, type SmokeGateResult } from '@/shared/pwa/smokeGate';
+import { checkBootVersionFreshness } from '@/shared/pwa/bootVersionCheck';
 import { getSmokeGateFlag } from '@/shared/pwa/featureFlag';
 import { isIosStandalonePwa } from '@/shared/pwa/iosBypass';
 import {
@@ -517,6 +518,15 @@ export function usePWAUpdate(): void {
   useEffect(() => {
     if (skipRegistration) return;
     return startActivityTracking();
+  }, [skipRegistration]);
+
+  // Boot freshness check: the SW can serve a stale precached shell, so the
+  // running bundle may be behind the live deploy. Compare /version.json's gitSha
+  // to this build's and self-heal before the user hits a load failure. One-shot
+  // per session (recoverStaleBundle is guarded), complements the SW polling.
+  useEffect(() => {
+    if (skipRegistration) return;
+    void checkBootVersionFreshness();
   }, [skipRegistration]);
 
   // Apply an available update without interrupting active work.

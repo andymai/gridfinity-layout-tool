@@ -17,6 +17,11 @@ const STALE_ASSET_SIGNATURES = [
   'script failed to load',
   'Failed to fetch dynamically imported module',
   'WASM fetch failed',
+  // A cached old bundle running on a browser that can't compile an instruction
+  // the old build used (e.g. relaxed-SIMD on some Safari/iOS WebKit). Current
+  // builds no longer emit it, so seeing it means the client is on stale cached
+  // code — recoverable by fetching the latest bundle.
+  'relaxed simd instructions not supported',
 ] as const;
 
 export function isStaleAssetError(error: unknown): boolean {

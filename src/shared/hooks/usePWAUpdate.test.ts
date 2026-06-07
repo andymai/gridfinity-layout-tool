@@ -36,6 +36,9 @@ vi.mock('@/shared/pwa/iosBypass', () => ({
 vi.mock('@/shared/pwa/smokeGate', () => ({
   runUpdateSmokeTest: vi.fn(),
 }));
+vi.mock('@/shared/pwa/bootVersionCheck', () => ({
+  checkBootVersionFreshness: vi.fn().mockResolvedValue(undefined),
+}));
 
 // Mock the virtual:pwa-register/react module
 vi.mock('virtual:pwa-register/react', () => ({

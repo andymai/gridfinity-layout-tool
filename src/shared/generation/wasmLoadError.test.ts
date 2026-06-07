@@ -29,6 +29,17 @@ describe('isStaleAssetError', () => {
     ).toBe(true);
   });
 
+  it('flags the relaxed-SIMD compile failure from a stale cached bundle', () => {
+    expect(
+      isStaleAssetError(
+        new Error(
+          "Kernel init failed: Aborted(CompileError: WebAssembly.Module doesn't parse at byte 301: " +
+            'relaxed simd instructions not supported, in function at index 219).'
+        )
+      )
+    ).toBe(true);
+  });
+
   it('does not flag unrelated generation errors', () => {
     expect(isStaleAssetError(new Error('Split export range failed: STL_EXPORT_FAILED'))).toBe(
       false
