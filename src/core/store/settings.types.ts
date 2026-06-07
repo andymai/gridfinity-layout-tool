@@ -201,6 +201,15 @@ export interface UserSettings {
    */
   handlesLinked: boolean;
 
+  /**
+   * Whether angled (diagonal) divider editing is exposed in the bin designer.
+   * Off by default — it's an advanced feature, so the editing UI (the tilt list
+   * and the on-grid hit targets) stays hidden until the user opts in. Existing
+   * tilts on a saved design still generate regardless of this flag; only the
+   * editing affordances are gated.
+   */
+  angledDividersEnabled: boolean;
+
   // Print view preferences
   printViewSettings: PrintViewSettings;
 
@@ -318,6 +327,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   designListViewMode: 'grid',
   wallCutoutsLinked: true,
   handlesLinked: true,
+  angledDividersEnabled: false,
 
   // Print view preferences
   printViewSettings: { ...DEFAULT_PRINT_VIEW_SETTINGS },

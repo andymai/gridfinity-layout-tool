@@ -2,8 +2,10 @@ import { useRef, useState } from 'react';
 import { ArrowLeftIcon, InfoIcon, RotateCcwIcon } from '@/design-system/Icon';
 import { Popover } from '@/design-system/Popover';
 import { Slider } from '@/design-system/Slider';
+import { Switch } from '@/design-system/Switch';
 import { Collapsible } from '@/design-system/Collapsible';
 import { StepperControl } from '@/shared/components/StepperControl';
+import { useSettingsStore } from '@/core/store/settings';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
 import {
   ANGLE_PRESETS_DEG,
@@ -27,30 +29,71 @@ export function DividerTiltSubsection() {
     t,
   } = useDividerTiltSubsection();
 
+  const enabled = useSettingsStore((s) => s.settings.angledDividersEnabled);
+  const updateSetting = useSettingsStore((s) => s.updateSetting);
+
   if (rows.length === 0) return null;
+
+  // Advanced opt-in: angled dividers are off by default so dense grids don't
+  // drown the panel in per-divider rows (see issue #2044). Toggling off also
+  // drops any in-flight selection/hover so the canvas overlay clears cleanly.
+  const toggleEnabled = (): void => {
+    const next = !enabled;
+    updateSetting('angledDividersEnabled', next);
+    if (!next) {
+      handlers.selectDivider(null);
+      handlers.hoverDivider(null);
+    }
+  };
 
   return (
     <div className="mt-3 border-t border-stroke-subtle/40 pt-3">
-      {selectedRow ? (
-        <InspectorView
-          row={selectedRow}
-          compartments={compartments}
-          angleDeg={selectedAngleShift.angleDeg}
-          shiftMm={selectedAngleShift.shiftMm}
-          conflicts={activeConflicts}
-          handlers={handlers}
-          t={t}
-        />
-      ) : (
-        <ListView
-          rows={rows}
-          compartments={compartments}
-          hasAnyOverride={hasAnyOverride}
-          hoveredKey={hoveredKey}
-          handlers={handlers}
-          t={t}
-        />
-      )}
+      <div className={`flex items-center justify-between ${enabled ? 'mb-2' : ''}`}>
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-content-tertiary">
+            {t('binDesigner.angledDividers.title')}
+          </h3>
+          <InfoPopoverButton t={t} />
+        </div>
+        <div className="flex items-center gap-2">
+          {enabled && hasAnyOverride && (
+            <button
+              type="button"
+              onClick={handlers.resetAll}
+              className="text-[11px] font-medium text-accent transition-colors hover:text-accent/80"
+            >
+              {t('binDesigner.angledDividers.resetAll')}
+            </button>
+          )}
+          <Switch
+            checked={enabled}
+            onChange={toggleEnabled}
+            size="sm"
+            aria-label={t('binDesigner.angledDividers.toggleLabel')}
+          />
+        </div>
+      </div>
+
+      {enabled &&
+        (selectedRow ? (
+          <InspectorView
+            row={selectedRow}
+            compartments={compartments}
+            angleDeg={selectedAngleShift.angleDeg}
+            shiftMm={selectedAngleShift.shiftMm}
+            conflicts={activeConflicts}
+            handlers={handlers}
+            t={t}
+          />
+        ) : (
+          <ListView
+            rows={rows}
+            compartments={compartments}
+            hoveredKey={hoveredKey}
+            handlers={handlers}
+            t={t}
+          />
+        ))}
     </div>
   );
 }
@@ -63,45 +106,25 @@ type Conflict = Hook['activeConflicts'][number];
 interface ListViewProps {
   readonly rows: readonly TiltRow[];
   readonly compartments: CompartmentConfig;
-  readonly hasAnyOverride: boolean;
   readonly hoveredKey: string | null;
   readonly handlers: Handlers;
   readonly t: Translate;
 }
 
-function ListView({ rows, compartments, hasAnyOverride, hoveredKey, handlers, t }: ListViewProps) {
+function ListView({ rows, compartments, hoveredKey, handlers, t }: ListViewProps) {
   return (
-    <>
-      <div className="mb-2 flex items-baseline justify-between">
-        <div className="flex items-center gap-1.5">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-content-tertiary">
-            {t('binDesigner.angledDividers.title')}
-          </h3>
-          <InfoPopoverButton t={t} />
-        </div>
-        {hasAnyOverride && (
-          <button
-            type="button"
-            onClick={handlers.resetAll}
-            className="text-[11px] font-medium text-accent transition-colors hover:text-accent/80"
-          >
-            {t('binDesigner.angledDividers.resetAll')}
-          </button>
-        )}
-      </div>
-      <div className="flex max-h-48 flex-col gap-1 overflow-y-auto">
-        {rows.map((row) => (
-          <DividerRow
-            key={row.key}
-            row={row}
-            compartments={compartments}
-            isHovered={hoveredKey === row.key}
-            handlers={handlers}
-            t={t}
-          />
-        ))}
-      </div>
-    </>
+    <div className="flex max-h-48 flex-col gap-1 overflow-y-auto">
+      {rows.map((row) => (
+        <DividerRow
+          key={row.key}
+          row={row}
+          compartments={compartments}
+          isHovered={hoveredKey === row.key}
+          handlers={handlers}
+          t={t}
+        />
+      ))}
+    </div>
   );
 }
 
