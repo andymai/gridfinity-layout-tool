@@ -2,9 +2,9 @@
 
 exports[`solid cutouts > 2×2 solid with 3×2 grid array of circles 1`] = `3420`;
 
-exports[`solid cutouts > 2×2 solid with chamfered + scooped rectangle cutout 1`] = `3558`;
+exports[`solid cutouts > 2×2 solid with chamfered + scooped rectangle cutout 1`] = `3564`;
 
-exports[`solid cutouts > 2×2 solid with chamfered circle cutout 1`] = `2638`;
+exports[`solid cutouts > 2×2 solid with chamfered circle cutout 1`] = `2640`;
 
 exports[`solid cutouts > 2×2 solid with chamfered hexagon cutout 1`] = `2622`;
 
