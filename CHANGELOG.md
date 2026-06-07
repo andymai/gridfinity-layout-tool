@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.153.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.152.2...gridfinity-layout-tool-v4.153.0) (2026-06-07)
+
+
+### Features
+
+* **pwa:** self-heal stale bundles on refresh/revisit ([#2049](https://github.com/andymai/gridfinity-layout-tool/issues/2049)) ([e7c4897](https://github.com/andymai/gridfinity-layout-tool/commit/e7c489732935b2fee088dd8c28001d47fe372eca))
+
 ## [4.152.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.152.1...gridfinity-layout-tool-v4.152.2) (2026-06-07)
 
 
