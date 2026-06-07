@@ -354,7 +354,9 @@ export function buildSnapClip(totalHeight: number): Shape3D {
     .lineTo([-legOuter, catchZ])
     .close();
   const seated = sketch(profile, 'XZ', 0).extrude(SNAP_CLIP.LEG_L);
-  return translate(seated, [0, SNAP_CLIP.LEG_L / 2, 0]); // center on the seam axis
+  const centered = translate(seated, [0, SNAP_CLIP.LEG_L / 2, 0]); // center on the seam axis
+  seated.delete(); // translate returns a new shape; free the intermediate
+  return centered;
 }
 
 /**
@@ -369,5 +371,8 @@ export function buildSnapClipForPrint(totalHeight: number): Shape3D {
   // in-plane with no supports. The rotated part centers on Z∈[−L/2,L/2]; lift
   // by L/2 so the bottom rests at Z=0.
   const laid = rotate(seated, 90, { axis: [1, 0, 0] });
-  return translate(laid, [0, 0, SNAP_CLIP.LEG_L / 2]);
+  seated.delete();
+  const lifted = translate(laid, [0, 0, SNAP_CLIP.LEG_L / 2]);
+  laid.delete();
+  return lifted;
 }

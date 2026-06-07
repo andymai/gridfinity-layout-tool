@@ -63,25 +63,42 @@ function generateConnectorKeySection(
 ): string {
   const copyText = key.count === 1 ? 'Print 1 copy' : `Print ${key.count} copies`;
   const offset = params.connectorFitOffset ?? 0;
-  // Total clearance = both per-side grooves of the key cavity combined.
-  const totalClearance = 2 * effectiveClearance(DOVETAIL_KEY_CLEARANCE, offset);
+  const isSnapClip = params.connectorStyle === 'snapClip';
+  // Total clearance = both per-side pocket walls of the seated part combined.
+  const baseClearance = isSnapClip ? SNAP_CLIP_CLEARANCE : DOVETAIL_KEY_CLEARANCE;
+  const totalClearance = 2 * effectiveClearance(baseClearance, offset);
+  const partName = isSnapClip ? 'snap_clip' : 'dovetail_key';
+  const seatLine = isSnapClip
+    ? '    Press one into each seam junction from the top until it clicks; the bridge sits flush.'
+    : '    Hammer one into each seam junction from the top, flush with the surface.';
   const fitNote =
     offset === 0
       ? `    Fit is a tight press fit (~${totalClearance.toFixed(2)}mm total clearance). For best results:`
       : `    Fit offset ${formatSignedMm(offset)} applied → ~${totalClearance.toFixed(2)}mm total clearance. For best results:`;
+  const tips = isSnapClip
+    ? [
+        '      • Use a 0.4mm nozzle — larger nozzles lose the barb detail.',
+        '      • Set initial-layer horizontal expansion to about -0.1 to -0.2mm to',
+        '        cancel first-layer squish (the biggest cause of an over-tight clip).',
+        '      • Print flat on the bed (as oriented) so the barbs print in-plane; 2+ walls.',
+        "      • Won't click in? Raise the Connector fit offset (looser). Too loose? Lower it.",
+      ]
+    : [
+        '      • Use a 0.4mm nozzle — larger nozzles lose the dovetail detail.',
+        '      • Set initial-layer horizontal expansion to about -0.1 to -0.2mm to',
+        '        cancel first-layer squish (the biggest cause of an over-tight key).',
+        '      • Print the key flat on the bed (as oriented); 2+ walls.',
+        "      • Won't seat? Raise the Connector fit offset (looser). Too loose? Lower it.",
+      ];
   return [
     '─── Connector keys ──────────────────────────────',
     '',
-    `  dovetail_key (${key.fileName})`,
+    `  ${partName} (${key.fileName})`,
     `    ${copyText}`,
-    '    Hammer one into each seam junction from the top, flush with the surface.',
+    seatLine,
     '',
     fitNote,
-    '      • Use a 0.4mm nozzle — larger nozzles lose the dovetail detail.',
-    '      • Set initial-layer horizontal expansion to about -0.1 to -0.2mm to',
-    '        cancel first-layer squish (the biggest cause of an over-tight key).',
-    '      • Print the key flat on the bed (as oriented); 2+ walls.',
-    "      • Won't seat? Raise the Connector fit offset (looser). Too loose? Lower it.",
+    ...tips,
   ].join('\n');
 }
 
