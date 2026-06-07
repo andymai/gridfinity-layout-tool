@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { detectWebGL, resetWebGLDetectionCacheForTests } from './detectWebGL';
+import { detectWebGL, markWebGLUnavailable, resetWebGLDetectionCacheForTests } from './detectWebGL';
 
 afterEach(() => {
   resetWebGLDetectionCacheForTests();
@@ -51,5 +51,30 @@ describe('detectWebGL', () => {
     detectWebGL();
 
     expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it('releases the probe context so it does not consume a slot', () => {
+    const loseContext = vi.fn();
+    const fakeGl = {
+      isContextLost: () => false,
+      getExtension: vi.fn(() => ({ loseContext })),
+    } as unknown as WebGLRenderingContext;
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(fakeGl);
+
+    expect(detectWebGL()).toEqual({ available: true });
+    expect(loseContext).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('markWebGLUnavailable', () => {
+  it('overrides the cache so detectWebGL() reports unavailable', () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+      isContextLost: () => false,
+    } as unknown as WebGLRenderingContext);
+    expect(detectWebGL().available).toBe(true);
+
+    markWebGLUnavailable('context-failed');
+
+    expect(detectWebGL()).toEqual({ available: false, reason: 'context-failed' });
   });
 });
