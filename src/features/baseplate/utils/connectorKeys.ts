@@ -1,10 +1,11 @@
 /**
- * Dovetail key accounting + placement for split baseplates.
+ * Seated-connector accounting + placement for split baseplates.
  *
- * In dovetail key mode every join edge is a female groove and a separate, identical
- * key part is hammered into each seam junction. This module is the single
- * source of truth for WHERE the keys go (and therefore HOW MANY), so the export
- * count, the print guide, and the 3D preview never disagree.
+ * The dovetail-key and snap-clip styles both make every join edge female and
+ * ship a separate part seated at each seam junction (a hammered-in key, or a
+ * top-inserted snap clip). This module is the single source of truth for WHERE
+ * those parts go (and therefore HOW MANY), so the export count, the print guide,
+ * and the 3D preview never disagree.
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';

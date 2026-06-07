@@ -155,6 +155,10 @@ export function ConnectorKeyMeshes() {
     (fullParams.magnetHoles ? MAGNET_FLOOR + fullParams.magnetDepth : 0);
 
   const isSnapClip = fullParams.connectorStyle === 'snapClip';
+  // On a slab too thin to flex, the worker skips snap pockets — so the preview
+  // must not draw a clip that wouldn't exist. (Unreachable at standard socket
+  // heights; a guard against future thinner-base options.)
+  const snapViable = !isSnapClip || snapClipLevels(totalHeight, 0).viable;
   const geometry = useMemo(
     () => (isSnapClip ? buildSnapClipGeometry(totalHeight) : buildKeyGeometry(totalHeight)),
     [isSnapClip, totalHeight]
@@ -171,7 +175,8 @@ export function ConnectorKeyMeshes() {
   }, [geometry, junctions, invalidate]);
 
   // Keys only make sense seated in assembled pieces; skip in exploded view.
-  if (splitViewMode === 'exploded' || junctions.length === 0) return null;
+  // A non-viable snap clip has no pockets in the worker, so draw nothing.
+  if (splitViewMode === 'exploded' || junctions.length === 0 || !snapViable) return null;
 
   return (
     <>
