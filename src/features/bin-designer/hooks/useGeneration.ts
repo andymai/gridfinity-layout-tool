@@ -4,7 +4,7 @@ import { isErr } from '@/core/result';
 import { useDesignerStore } from '../store';
 import { bridgeManager, createDraftSkipGate } from '@/shared/generation/bridge';
 import type { GenerationBridge } from '@/shared/generation/bridge';
-import { captureWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
+import { handleWasmLoadFailure } from '@/shared/generation/captureWasmLoadFailure';
 import { validateCompartmentSizes } from '../utils/validation';
 import {
   trackWasmThreadingStatus,
@@ -243,7 +243,7 @@ export function useGeneration(): void {
       .catch((e: unknown) => {
         if (cancelled) return;
         setWasmStatus('error');
-        captureWasmLoadFailure(e, 'bin_designer_preview');
+        handleWasmLoadFailure(e, 'bin_designer_preview');
       });
 
     // Acquire the best-effort draft-preview bridge in parallel with the exact

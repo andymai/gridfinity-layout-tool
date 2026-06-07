@@ -44,6 +44,13 @@ const generatorIncludes = ['src/features/generation/worker/generators/**/*.test.
 
 export default defineConfig({
   plugins: [react()],
+  // Build-time version constants (provided by versionPlugin in the real build).
+  // Defined here so PWA modules that reference them are testable under Vitest.
+  define: {
+    __APP_VERSION__: JSON.stringify('0.0.0-test'),
+    __GIT_SHA__: JSON.stringify('test-sha'),
+    __BUILD_TIME__: JSON.stringify('1970-01-01T00:00:00.000Z'),
+  },
   test: {
     globals: true,
     testTimeout: 30000,
