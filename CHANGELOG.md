@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.155.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.0...gridfinity-layout-tool-v4.155.1) (2026-06-08)
+
+
+### Bug Fixes
+
+* **print-export:** correct filament & print-time estimates (were too high) ([#2065](https://github.com/andymai/gridfinity-layout-tool/issues/2065)) ([6208360](https://github.com/andymai/gridfinity-layout-tool/commit/62083601c6dde221faf04fa503638bf76084fe5b))
+
 ## [4.155.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.154.0...gridfinity-layout-tool-v4.155.0) (2026-06-08)
 
 
