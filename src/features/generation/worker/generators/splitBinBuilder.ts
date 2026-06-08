@@ -155,6 +155,11 @@ export function shiftCutPlanesOffCellBoundaries(
  * Ensures the solid exists, computes cutting regions, applies connectors, and
  * returns each piece solid with positioning metadata.
  *
+ * When `pieceIndices` is given, only those pieces (by col-major flat index) are
+ * cut and returned; the rest are skipped before any boolean work. The full bin
+ * solid is still generated (it's the input to every cut), but the per-piece
+ * intersect — the dominant split cost — runs only for the requested pieces.
+ *
  * When the bin has a stacking lip, the body and lip are split separately and
  * then fused per-piece. This avoids an OCCT bug where intersecting the fused
  * bin+lip solid crashes at certain wall thicknesses (e.g. 1.6mm) due to
@@ -164,7 +169,8 @@ function splitSolidIntoPieces(
   params: BinParams,
   cutPlanesX: readonly number[],
   cutPlanesY: readonly number[],
-  splitConnectorConfig?: SplitConnectorConfig
+  splitConnectorConfig?: SplitConnectorConfig,
+  pieceIndices?: ReadonlySet<number>
 ): SplitPieceInfo[] {
   const hasLip = params.base.stackingLip;
 
@@ -292,11 +298,33 @@ function splitSolidIntoPieces(
   // belt to the suspenders of the cell-boundary shift.
   const INTERIOR_MARGIN = 0.01;
 
+  const numCols = xBounds.length - 1;
+  const numRows = yBounds.length - 1;
+
   const pieces: SplitPieceInfo[] = [];
 
   try {
-    for (let col = 0; col < xBounds.length - 1; col++) {
-      for (let row = 0; row < yBounds.length - 1; row++) {
+    // Validate requested indices against the col-major flat index space
+    // (flatIndex = col * numRows + row), matching the pool's distributeRoundRobin.
+    // Must run inside the try so the finally still disposes lipSolid and resets
+    // the shape cache on a bad index (a lipped bin would otherwise leak lipSolid
+    // and leave the lipless body solid cached as export-quality).
+    if (pieceIndices) {
+      for (const idx of pieceIndices) {
+        if (idx < 0 || idx >= numCols * numRows) {
+          throw new Error(`Piece index ${idx} out of range [0, ${numCols * numRows})`);
+        }
+      }
+    }
+
+    for (let col = 0; col < numCols; col++) {
+      for (let row = 0; row < numRows; row++) {
+        // Skip the expensive boolean cut for pieces this caller didn't ask
+        // for. Each pool worker only builds the pieces it will tessellate, so
+        // the per-piece intersect cost (the split bottleneck) is no longer
+        // duplicated across every worker.
+        if (pieceIndices && !pieceIndices.has(col * numRows + row)) continue;
+
         const xMin = xBounds[col];
         const xMax = xBounds[col + 1];
         const yMin = yBounds[row];
@@ -329,17 +357,30 @@ function splitSolidIntoPieces(
         bodyClone.delete();
 
         // Validate that the boolean intersection preserved the full geometry.
-        // If OCCT silently dropped walls/lip due to coplanarity, the Z extent
-        // will be far shorter than expected (e.g. ~5mm socket-only vs ~25mm).
+        // The Z extent comes out far shorter than the bin height in two cases:
+        // (1) on a HOLLOW bin, a piece bounded by interior cuts on all four
+        // sides sits entirely inside the open cavity, so it legitimately has
+        // only a floor and no walls — not a bug; (2) OCCT dropped walls because
+        // a cut plane went coplanar with an internal wall — a bug worth
+        // reporting. A solid bin has no cavity, so case (1) can't apply to it.
         const pieceBounds = getBounds(piece);
         const actualZ = pieceBounds.zMax - pieceBounds.zMin;
         if (actualZ < totalHeight * 0.8) {
           piece.delete();
           cuttingBox.delete();
+          const isFullyInterior = col > 0 && col < numCols - 1 && row > 0 && row < numRows - 1;
+          if (isFullyInterior && !params.base.solid) {
+            throw new Error(
+              `Split piece ${colLabel}${row + 1} falls entirely inside this bin's open cavity, ` +
+                `so it has only a ${actualZ.toFixed(1)}mm floor and no walls to print. ` +
+                `Split the bin into strips (cut along one axis only) so every piece keeps a ` +
+                `perimeter wall, or make it a solid bin if you need a full grid of pieces.`
+            );
+          }
           throw new Error(
             `Split piece ${colLabel}${row + 1} lost geometry: ` +
               `expected body Z≈${totalHeight.toFixed(1)}mm (lip fused separately), got ${actualZ.toFixed(1)}mm. ` +
-              `This is likely caused by a coplanar cut plane — please report this bug.`
+              `This usually means a cut plane landed coplanar with an internal wall — please report this bug.`
           );
         }
 
@@ -471,18 +512,26 @@ function tessellatePiece(
 
   const pieceCenterX = xMinFromOrigin - outerW / 2 + widthMm / 2;
   const pieceCenterY = yMinFromOrigin - outerD / 2 + depthMm / 2;
-  const centeredPiece = translate(pieceSolid, [-pieceCenterX, -pieceCenterY, 0]);
 
-  const shapeMesh = mesh(centeredPiece, {
-    tolerance: PREVIEW_TOLERANCE,
-    angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
-  });
-  const edgeMesh = meshEdges(centeredPiece, {
-    tolerance: PREVIEW_TOLERANCE,
-    angularTolerance: PREVIEW_ANGULAR_TOLERANCE * 0.5,
-  });
-  centeredPiece.delete();
-  const meshData = toIndexedMeshData(shapeMesh, edgeMesh.lines);
+  // translate() returns a fresh shape; the original pieceSolid is never used
+  // again after tessellation, so dispose it here. Without this the per-piece
+  // boolean solids leak WASM memory across repeated preview generations.
+  let meshData;
+  try {
+    const centeredPiece = translate(pieceSolid, [-pieceCenterX, -pieceCenterY, 0]);
+    const shapeMesh = mesh(centeredPiece, {
+      tolerance: PREVIEW_TOLERANCE,
+      angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
+    });
+    const edgeMesh = meshEdges(centeredPiece, {
+      tolerance: PREVIEW_TOLERANCE,
+      angularTolerance: PREVIEW_ANGULAR_TOLERANCE * 0.5,
+    });
+    centeredPiece.delete();
+    meshData = toIndexedMeshData(shapeMesh, edgeMesh.lines);
+  } finally {
+    pieceSolid.delete();
+  }
 
   return {
     vertices: meshData.vertices,
@@ -567,8 +616,9 @@ export function generateSplitPreview(
  * Generate split preview meshes for a subset of pieces.
  *
  * Each pool worker calls this with its assigned pieceIndices. The full solid
- * is regenerated per worker (each has independent WASM), but only the
- * assigned pieces are tessellated — the expensive per-piece work.
+ * is regenerated per worker (each has independent WASM), but only the assigned
+ * pieces are cut and tessellated — the per-piece boolean cut is the dominant
+ * split cost, so skipping unassigned pieces is what makes the pool scale.
  */
 export function generateSplitPreviewRange(
   params: BinParams,
@@ -577,21 +627,21 @@ export function generateSplitPreviewRange(
   pieceIndices: readonly number[],
   splitConnectorConfig?: SplitConnectorConfig
 ): SplitPreviewResult {
-  const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
+  const splitPieces = splitSolidIntoPieces(
+    params,
+    cutPlanesX,
+    cutPlanesY,
+    splitConnectorConfig,
+    new Set(pieceIndices)
+  );
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
   const gridUnitMm = params.gridUnitMm ?? SIZE;
   const outerW = params.width * gridUnitMm - CLEARANCE;
   const outerD = params.depth * gridUnitMm - CLEARANCE;
 
-  const pieces: SplitPreviewResult['pieces'] = [];
-  for (const idx of pieceIndices) {
-    if (idx < 0 || idx >= splitPieces.length) {
-      throw new Error(`Piece index ${idx} out of range [0, ${splitPieces.length})`);
-    }
-    pieces.push(tessellatePiece(splitPieces[idx], outerW, outerD, gridUnitMm));
-  }
-
-  return { pieces };
+  // splitPieces are exactly the requested pieces (cut-skipped otherwise);
+  // tessellate them all. The pool re-sorts by col/row, so order is irrelevant.
+  return { pieces: splitPieces.map((piece) => tessellatePiece(piece, outerW, outerD, gridUnitMm)) };
 }
 
 /**
@@ -614,26 +664,28 @@ export async function exportSplitBinRange(
   angularTolerance = 5,
   splitConnectorConfig?: SplitConnectorConfig
 ): Promise<SplitExportResult> {
-  const splitPieces = splitSolidIntoPieces(params, cutPlanesX, cutPlanesY, splitConnectorConfig);
+  const splitPieces = splitSolidIntoPieces(
+    params,
+    cutPlanesX,
+    cutPlanesY,
+    splitConnectorConfig,
+    new Set(pieceIndices)
+  );
 
+  // splitPieces are exactly the requested pieces — export them all.
   const pieces: SplitExportResult['pieces'] = [];
-  const processed = new Set<number>();
+  let nextIdx = 0;
   try {
-    for (const idx of pieceIndices) {
-      if (idx < 0 || idx >= splitPieces.length) {
-        throw new Error(`Piece index ${idx} out of range [0, ${splitPieces.length})`);
-      }
-
-      processed.add(idx);
-      const piece = splitPieces[idx];
+    for (; nextIdx < splitPieces.length; nextIdx++) {
+      const piece = splitPieces[nextIdx];
       const data = tessellateAndExportPiece(piece, tolerance, angularTolerance);
       pieces.push({ data, label: piece.label, col: piece.col, row: piece.row });
     }
   } finally {
-    // tessellateAndExportPiece disposes the solids it processed (including
-    // the one that threw, via its own try/finally). Dispose everything else.
-    for (let i = 0; i < splitPieces.length; i++) {
-      if (!processed.has(i)) splitPieces[i].solid.delete();
+    // tessellateAndExportPiece disposes the solid it processed (including on
+    // throw). Dispose any pieces past that point that were never handed off.
+    for (let i = nextIdx + 1; i < splitPieces.length; i++) {
+      splitPieces[i].solid.delete();
     }
   }
 
