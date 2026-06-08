@@ -12,6 +12,17 @@ import {
 // ── Bridge mock ──────────────────────────────────────────────────────────────
 
 const mockGenerateSplitPreview = vi.fn();
+const mockDraftGenerateSplitPreview = vi.fn();
+// Null by default → no draft bridge (exact-only), so existing exact-path tests
+// are unaffected. Individual tests set a draft bridge to exercise arbitration.
+type PreviewBridge = {
+  generateSplitPreview: typeof mockDraftGenerateSplitPreview;
+  isDestroyed: boolean;
+} | null;
+let mockPreviewBridge: PreviewBridge = null;
+const mockReleasePreview = vi.fn();
+// Overridable so a test can defer the bridge acquire (simulate a late load).
+let acquirePreviewImpl: () => Promise<PreviewBridge> = () => Promise.resolve(mockPreviewBridge);
 
 vi.mock('@/shared/generation/bridge', () => ({
   getActiveBridge: () => ({
@@ -21,6 +32,10 @@ vi.mock('@/shared/generation/bridge', () => ({
     get: () => null,
     acquire: () => Promise.reject(new Error('No pool in test')),
     release: () => {},
+  },
+  bridgeManager: {
+    acquirePreview: () => acquirePreviewImpl(),
+    releasePreview: () => mockReleasePreview(),
   },
 }));
 
@@ -116,6 +131,9 @@ describe('useSplitPreview', () => {
     vi.clearAllMocks();
     resetStores();
     mockGenerateSplitPreview.mockResolvedValue(makeSplitResult(2));
+    mockDraftGenerateSplitPreview.mockResolvedValue(makeSplitResult(2));
+    mockPreviewBridge = null; // exact-only unless a test opts into the draft bridge
+    acquirePreviewImpl = () => Promise.resolve(mockPreviewBridge);
   });
 
   afterEach(() => {
@@ -294,6 +312,110 @@ describe('useSplitPreview', () => {
     const afterFirst = useDesignerStore.getState().ui.splitPieceMeshes;
 
     expect(afterFirst).toHaveLength(afterSecond.length);
+  });
+
+  // ── Manifold draft path ─────────────────────────────────────────────────
+
+  /** Enable the draft (Manifold) preview bridge for a test. */
+  function enableDraftBridge() {
+    mockPreviewBridge = {
+      generateSplitPreview: mockDraftGenerateSplitPreview,
+      isDestroyed: false,
+    };
+  }
+
+  it('renders a draft split before the exact generation completes', async () => {
+    enableDraftBridge();
+    mockDraftGenerateSplitPreview.mockResolvedValue(makeSplitResult(2));
+    // Status stays 'generating' — the exact path is gated on completion, so any
+    // meshes here come from the draft.
+    setOversizedExplodedState({ generationStatus: 'generating' });
+
+    renderHook(() => useSplitPreview());
+    await flush();
+
+    expect(mockDraftGenerateSplitPreview).toHaveBeenCalledTimes(1);
+    expect(mockGenerateSplitPreview).not.toHaveBeenCalled();
+    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(2);
+  });
+
+  it('exact result supersedes the draft once main generation completes', async () => {
+    enableDraftBridge();
+    mockDraftGenerateSplitPreview.mockResolvedValue(makeSplitResult(2));
+    mockGenerateSplitPreview.mockResolvedValue(makeSplitResult(4));
+    setOversizedExplodedState({ generationStatus: 'generating' });
+
+    const { rerender } = renderHook(() => useSplitPreview());
+    await flush(); // draft lands (2 pieces)
+    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(2);
+
+    completeMainGeneration();
+    rerender();
+    await flush(); // exact lands (4 pieces), superseding the draft
+
+    expect(mockGenerateSplitPreview).toHaveBeenCalledTimes(1);
+    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(4);
+  });
+
+  it('drops a slow draft that resolves after the exact result finalized', async () => {
+    enableDraftBridge();
+    // Draft resolves manually, after the exact result.
+    let resolveDraft: (r: ReturnType<typeof makeSplitResult>) => void = () => {};
+    mockDraftGenerateSplitPreview.mockReturnValue(
+      new Promise((res) => {
+        resolveDraft = res;
+      })
+    );
+    mockGenerateSplitPreview.mockResolvedValue(makeSplitResult(4));
+    setOversizedExplodedState({ generationStatus: 'generating' });
+
+    const { rerender } = renderHook(() => useSplitPreview());
+    await flush();
+
+    completeMainGeneration();
+    rerender();
+    await flush(); // exact lands (4 pieces) and finalizes the token
+    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(4);
+
+    // The stale draft resolves late — must NOT clobber the exact result.
+    await act(async () => {
+      resolveDraft(makeSplitResult(2));
+      await Promise.resolve();
+    });
+    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(4);
+  });
+
+  it('does NOT downgrade the exact result when the draft bridge loads late', async () => {
+    // The bridge resolves only when we call it — simulating Manifold loading
+    // after the exact split has already finalized for this edit.
+    let resolveAcquire: (b: PreviewBridge) => void = () => {};
+    acquirePreviewImpl = () =>
+      new Promise<PreviewBridge>((res) => {
+        resolveAcquire = res;
+      });
+    mockGenerateSplitPreview.mockResolvedValue(makeSplitResult(4));
+    mockDraftGenerateSplitPreview.mockResolvedValue(makeSplitResult(2));
+    setOversizedExplodedState({ generationStatus: 'generating' });
+
+    const { rerender } = renderHook(() => useSplitPreview());
+    completeMainGeneration();
+    rerender();
+    await flush(); // exact lands (4 pieces) and finalizes — no draft bridge yet
+    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(4);
+
+    // Bridge finishes loading now (late). The previewReady re-fire must NOT
+    // dispatch a draft for the already-finalized edit, nor overwrite the exact.
+    await act(async () => {
+      resolveAcquire({
+        generateSplitPreview: mockDraftGenerateSplitPreview,
+        isDestroyed: false,
+      });
+      await Promise.resolve();
+    });
+    await flush();
+
+    expect(mockDraftGenerateSplitPreview).not.toHaveBeenCalled();
+    expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(4);
   });
 
   // ── Switching between modes preserves meshes ────────────────────────────
