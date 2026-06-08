@@ -22,6 +22,26 @@ export const HEX_PATTERN_BONUS_MS = 15_000;
 export const HEX_PLUS_CUTOUT_BONUS_MS = 15_000;
 
 /**
+ * Extra time per grid cell of footprint (width × depth) above the floor, granted
+ * only when the hex pattern is enabled.
+ *
+ * The hex-pattern boolean cut (subtracting hundreds of hex prisms from the bin)
+ * is the generation bottleneck, and its cost scales with wall *area*, not just
+ * height — yet the other bonuses key off height and feature flags alone. A wide,
+ * short hex bin (e.g. 16×16×4) therefore used to get only the base + hex budget
+ * while legitimately needing far longer, and timed out mid-generation. This term
+ * restores the missing area dimension. Gated on hex because a plain large bin
+ * has no pattern cut and finishes quickly.
+ */
+export const HEX_FOOTPRINT_BONUS_MS_PER_CELL = 250;
+
+/**
+ * Footprint (in whole grid cells) below which no footprint bonus accrues — the
+ * base budget already covers normal-sized bins. 16 = a 4×4 grid.
+ */
+export const HEX_FOOTPRINT_BONUS_FLOOR_CELLS = 16;
+
+/**
  * Bonus per 2 height units above the reference height.
  *
  * Applied **unconditionally** (not gated on the hex pattern) because tessellation
@@ -66,6 +86,11 @@ export function computeGenerationTimeoutMs(params: BinParams): number {
     if (hasAnyActiveCutoutSide(params)) {
       timeout += HEX_PLUS_CUTOUT_BONUS_MS;
     }
+    // Round fractional grids up — a partial cell still carries a full cell's
+    // worth of hex tessellation along that edge.
+    const cells = Math.ceil(params.width) * Math.ceil(params.depth);
+    const chargeableCells = Math.max(0, cells - HEX_FOOTPRINT_BONUS_FLOOR_CELLS);
+    timeout += chargeableCells * HEX_FOOTPRINT_BONUS_MS_PER_CELL;
   }
 
   const heightOverFloor = Math.max(0, params.height - HEIGHT_BONUS_FLOOR_UNITS);
