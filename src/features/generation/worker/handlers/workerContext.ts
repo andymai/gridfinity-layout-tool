@@ -141,6 +141,16 @@ export function runGeneration(
         }
       : undefined;
 
+    // Prepare snap-clip connector buffers when present (split snap-clip plates)
+    const connectorKey = meshData.connectorKeyMesh
+      ? {
+          vertices: maybeCopy(meshData.connectorKeyMesh.vertices),
+          normals: maybeCopy(meshData.connectorKeyMesh.normals),
+          indices: maybeCopy(meshData.connectorKeyMesh.indices),
+          triangleCount: meshData.connectorKeyMesh.triangleCount,
+        }
+      : undefined;
+
     const response: WorkerResponse = {
       type: 'MESH_RESULT',
       requestId,
@@ -163,6 +173,14 @@ export function runGeneration(
             lidFaceGroups: lid.faceGroups,
           }
         : {}),
+      ...(connectorKey
+        ? {
+            connectorKeyVertices: connectorKey.vertices,
+            connectorKeyNormals: connectorKey.normals,
+            connectorKeyIndices: connectorKey.indices,
+            connectorKeyTriangleCount: connectorKey.triangleCount,
+          }
+        : {}),
     };
 
     const transfer = [verts.buffer, norms.buffer, idxs.buffer, edges.buffer];
@@ -175,6 +193,13 @@ export function runGeneration(
         lid.normals.buffer,
         lid.indices.buffer,
         lid.edgeVertices.buffer
+      );
+    }
+    if (connectorKey) {
+      transfer.push(
+        connectorKey.vertices.buffer,
+        connectorKey.normals.buffer,
+        connectorKey.indices.buffer
       );
     }
     const nonEmptyTransfer = transfer.filter((b) => b.byteLength > 0);

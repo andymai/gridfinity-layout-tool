@@ -17,6 +17,7 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { useLayoutStore } from '@/core/store/layout';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
+import type { ConnectorKeyMesh } from '../../store/baseplatePageStore';
 import { buildFullParams } from '../../utils/buildFullParams';
 import { computeSeamJunctions } from '../../utils/connectorKeys';
 import {
@@ -59,6 +60,23 @@ function buildKeyGeometry(totalHeight: number): THREE.ExtrudeGeometry {
   });
   geometry.computeVertexNormals();
   return geometry;
+}
+
+/**
+ * Build a THREE geometry from the worker's seated snap-clip mesh (the exact
+ * socket-relieved part). The worker builds it seated — cross-seam on X,
+ * along-seam on Y, up on Z, bridge top at Z=0 — so rotate the length onto X and
+ * lift it flush to the plate top, matching the draft `buildSnapClipGeometry`
+ * frame; the per-junction placement then seats both identically.
+ */
+function connectorMeshToGeometry(m: ConnectorKeyMesh, totalHeight: number): THREE.BufferGeometry {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(m.vertices, 3));
+  geo.setAttribute('normal', new THREE.BufferAttribute(m.normals, 3));
+  geo.setIndex(new THREE.BufferAttribute(m.indices, 1));
+  geo.rotateZ(Math.PI / 2);
+  geo.translate(0, 0, totalHeight);
+  return geo;
 }
 
 type Corner = { r: number; chamfer?: boolean };
@@ -183,8 +201,12 @@ function buildSnapClipGeometry(totalHeight: number): THREE.ExtrudeGeometry {
 export function ConnectorKeyMeshes() {
   const { invalidate } = useThree();
 
-  const { tiling, splitViewMode } = useBaseplatePageStore(
-    useShallow((s) => ({ tiling: s.tiling, splitViewMode: s.splitViewMode }))
+  const { tiling, splitViewMode, connectorKeyMesh } = useBaseplatePageStore(
+    useShallow((s) => ({
+      tiling: s.tiling,
+      splitViewMode: s.splitViewMode,
+      connectorKeyMesh: s.connectorKeyMesh,
+    }))
   );
 
   const {
@@ -232,10 +254,13 @@ export function ConnectorKeyMeshes() {
   // must not draw a clip that wouldn't exist. (Unreachable at standard socket
   // heights; a guard against future thinner-base options.)
   const snapViable = !isSnapClip || snapClipLevels(totalHeight, 0).viable;
-  const geometry = useMemo(
-    () => (isSnapClip ? buildSnapClipGeometry(totalHeight) : buildKeyGeometry(totalHeight)),
-    [isSnapClip, totalHeight]
-  );
+  // Prefer the worker-meshed clip (the exact socket-relieved part). Until BREP
+  // supplies it, fall back to the procedural draft clip so the seat isn't empty.
+  const geometry = useMemo(() => {
+    if (isSnapClip && connectorKeyMesh)
+      return connectorMeshToGeometry(connectorKeyMesh, totalHeight);
+    return isSnapClip ? buildSnapClipGeometry(totalHeight) : buildKeyGeometry(totalHeight);
+  }, [isSnapClip, connectorKeyMesh, totalHeight]);
   // Read on every render so a runtime theme/accent switch is reflected.
   const accentHex = getAccentHex();
 

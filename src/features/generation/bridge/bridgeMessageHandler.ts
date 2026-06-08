@@ -135,6 +135,19 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
                   faceGroups: response.lidFaceGroups,
                 }
               : undefined;
+          // Seated snap-clip mesh is optional; all four fields arrive together.
+          const connectorKeyMesh =
+            response.connectorKeyVertices &&
+            response.connectorKeyNormals &&
+            response.connectorKeyIndices &&
+            response.connectorKeyTriangleCount !== undefined
+              ? {
+                  vertices: response.connectorKeyVertices,
+                  normals: response.connectorKeyNormals,
+                  indices: response.connectorKeyIndices,
+                  triangleCount: response.connectorKeyTriangleCount,
+                }
+              : undefined;
           const result: GenerationResult = {
             mesh: {
               vertices: response.vertices,
@@ -145,6 +158,7 @@ export function installMessageHandler(ctx: MessageHandlerContext): void {
               faceGroups: response.faceGroups,
               coarseLOD: response.coarseLOD,
               lidMesh,
+              connectorKeyMesh,
             },
             timingMs: response.timingMs,
             perfSnapshot: response.perfSnapshot,

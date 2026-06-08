@@ -36,6 +36,17 @@ interface MeshResult {
   readonly source?: 'direct' | 'brep';
 }
 
+/**
+ * Seated snap-clip connector mesh, generated once by the worker (the exact
+ * socket-relieved part) and seated at every seam junction by the preview.
+ */
+export interface ConnectorKeyMesh {
+  readonly vertices: Float32Array;
+  readonly normals: Float32Array;
+  readonly indices: Uint32Array;
+  readonly triangleCount: number;
+}
+
 /** A generated mesh for a single piece in a split baseplate. */
 export interface PieceMeshEntry {
   readonly label: string;
@@ -70,6 +81,7 @@ interface BaseplatePageState {
   tiling: BaseplateTiling | null;
   /** Generated meshes for each piece when split */
   pieceMeshes: readonly PieceMeshEntry[];
+  connectorKeyMesh: ConnectorKeyMesh | null;
   /** View mode for split preview */
   splitViewMode: SplitViewMode;
   /** Progress for multi-piece generation: null when not splitting */
@@ -97,6 +109,7 @@ interface BaseplatePageState {
   bumpEpoch: () => void;
   setTiling: (tiling: BaseplateTiling | null) => void;
   setPieceMeshes: (meshes: readonly PieceMeshEntry[]) => void;
+  setConnectorKeyMesh: (mesh: ConnectorKeyMesh | null) => void;
   setSplitViewMode: (mode: SplitViewMode) => void;
   setSplitProgress: (progress: { current: number; total: number } | null) => void;
   setHoveredPieceLabel: (label: string | null) => void;
@@ -118,6 +131,7 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     wasmStatus: 'unloaded',
     tiling: null,
     pieceMeshes: [],
+    connectorKeyMesh: null,
     splitViewMode: 'exploded',
     splitProgress: null,
     dedupStats: null,
@@ -167,6 +181,12 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
         state.pieceMeshes = meshes as PieceMeshEntry[];
         state.hoveredPieceLabel = null;
         state.selectedPieceLabel = null;
+      });
+    },
+
+    setConnectorKeyMesh: (mesh) => {
+      set((state) => {
+        state.connectorKeyMesh = mesh;
       });
     },
 
