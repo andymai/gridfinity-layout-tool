@@ -654,7 +654,7 @@ describe('generatePrintList', () => {
     expect(rows[0].binCount).toBe(2);
   });
 
-  it('uses nozzle size from printSettings for filament estimates', () => {
+  it('filament estimate is independent of nozzle size (bin geometry is fixed)', () => {
     const bins: Bin[] = [
       {
         id: '1',
@@ -677,8 +677,9 @@ describe('generatePrintList', () => {
       ...DEFAULT_PRINT_SETTINGS,
       nozzleSizeMm: 0.6,
     });
-    // 0.6mm nozzle → thicker walls → more filament
-    expect(rows06[0].filament).toBeGreaterThan(rows04[0].filament);
+    // The bin's CAD wall is a fixed spec thickness; nozzle only affects how the
+    // slicer fills it and the print speed, never the part's filament volume.
+    expect(rows06[0].filament).toBe(rows04[0].filament);
   });
 });
 

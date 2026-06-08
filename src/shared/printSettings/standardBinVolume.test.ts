@@ -5,51 +5,84 @@ import {
 } from '@/shared/printSettings/standardBinVolume';
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
+/**
+ * Ground-truth solid volumes (mm³) measured from the REAL OCCT generator via
+ * `measureVolume(getLastSolid())` for standard bins (socket base + stacking
+ * lip, single compartment, default 42mm grid / 7mm height units).
+ *
+ * These replace the previous fabricated "PrusaSlicer calibration" numbers,
+ * which did not match the actual generated geometry (a 1×1×3u bin is 6241mm³
+ * solid ≈ 2.59m, not the 2.3m the old data claimed). The analytical model is
+ * expected to reproduce these within ±10%.
+ *
+ * Reproduce: generate each bin with `generateBin(buildParams({width,depth,height}))`,
+ * read `getLastSolid()`, then `unwrap(measureVolume(solid))`.
+ */
+const OCCT_GROUND_TRUTH: ReadonlyArray<readonly [number, number, number, number]> = [
+  [1, 1, 3, 6241],
+  [1, 2, 3, 10609],
+  [2, 2, 3, 17094],
+  [3, 3, 3, 32180],
+  [1, 1, 6, 10167],
+  [2, 2, 6, 25253],
+  [2, 2, 9, 33413],
+  [1, 1, 2, 4932],
+  [3, 2, 5, 30429],
+  [4, 4, 6, 68127],
+];
+
 describe('standardBinVolume', () => {
-  describe('estimateStandardBinVolume', () => {
-    it('returns positive volume for a 1×1×3u bin', () => {
-      const volume = estimateStandardBinVolume(1, 1, 3);
-      expect(volume).toBeGreaterThan(0);
-    });
+  describe('estimateStandardBinVolume — OCCT ground-truth accuracy (±10%)', () => {
+    for (const [w, d, h, truth] of OCCT_GROUND_TRUTH) {
+      it(`${w}×${d}×${h}u ≈ ${truth}mm³ (real generated solid)`, () => {
+        const volume = estimateStandardBinVolume(w, d, h);
+        expect(volume).toBeGreaterThan(truth * 0.9);
+        expect(volume).toBeLessThan(truth * 1.1);
+      });
+    }
+  });
 
+  describe('estimateStandardBinVolume — invariants', () => {
     it('returns positive volume for fractional bins (0.5×0.5×2u)', () => {
-      const volume = estimateStandardBinVolume(0.5, 0.5, 2);
-      expect(volume).toBeGreaterThan(0);
+      expect(estimateStandardBinVolume(0.5, 0.5, 2)).toBeGreaterThan(0);
     });
 
-    it('is monotonic: larger bins have more volume', () => {
-      const v1x1 = estimateStandardBinVolume(1, 1, 3);
-      const v2x2 = estimateStandardBinVolume(2, 2, 3);
-      const v3x3 = estimateStandardBinVolume(3, 3, 3);
-      expect(v2x2).toBeGreaterThan(v1x1);
-      expect(v3x3).toBeGreaterThan(v2x2);
+    it('is monotonic in footprint and height', () => {
+      expect(estimateStandardBinVolume(2, 2, 3)).toBeGreaterThan(
+        estimateStandardBinVolume(1, 1, 3)
+      );
+      expect(estimateStandardBinVolume(3, 3, 3)).toBeGreaterThan(
+        estimateStandardBinVolume(2, 2, 3)
+      );
+      expect(estimateStandardBinVolume(2, 2, 6)).toBeGreaterThan(
+        estimateStandardBinVolume(2, 2, 3)
+      );
     });
 
-    it('is monotonic: taller bins have more volume', () => {
-      const v3u = estimateStandardBinVolume(2, 2, 3);
-      const v6u = estimateStandardBinVolume(2, 2, 6);
-      expect(v6u).toBeGreaterThan(v3u);
+    it('never returns negative volume for tiny bins', () => {
+      expect(estimateStandardBinVolume(0.5, 0.5, 2)).toBeGreaterThanOrEqual(0);
     });
 
-    it('0.6mm nozzle produces more material than 0.4mm (thicker walls)', () => {
-      const v04 = estimateStandardBinVolume(2, 2, 3, 0.4);
-      const v06 = estimateStandardBinVolume(2, 2, 3, 0.6);
-      expect(v06).toBeGreaterThan(v04);
+    it('socket/base volume scales down with a smaller grid pitch', () => {
+      // Half-pitch (30mm) cells hold materially less base material than 42mm.
+      expect(estimateStandardBinVolume(2, 2, 3, 30)).toBeLessThan(
+        estimateStandardBinVolume(2, 2, 3, 42)
+      );
     });
 
-    it('never returns negative volume', () => {
-      // Tiny bin where walls might exceed interior
-      const volume = estimateStandardBinVolume(0.5, 0.5, 2, 1.0);
-      expect(volume).toBeGreaterThanOrEqual(0);
-    });
-
-    it('socket volume scales with gridUnitMm (regression: hardcoded 42mm cellSize)', () => {
-      // Same bin spec at half-pitch (30mm) vs standard (42mm). Sockets are
-      // per-cell shell structures whose footprint follows gridUnitMm — a
-      // 30mm cell socket holds materially less material than a 42mm one.
-      const standard = estimateStandardBinVolume(2, 2, 3, 0.4, 42);
-      const halfPitch = estimateStandardBinVolume(2, 2, 3, 0.4, 30);
-      expect(halfPitch).toBeLessThan(standard);
+    it('is independent of nozzle size (bin CAD geometry is fixed)', () => {
+      // The generated bin wall is a fixed spec thickness; the user's nozzle
+      // only affects slicing/print-time, never the part volume. Volume must
+      // not change with nozzle.
+      const v04 = estimateStandardBinFilament(2, 2, 3, {
+        ...DEFAULT_PRINT_SETTINGS,
+        nozzleSizeMm: 0.4,
+      }).volumeMm3;
+      const v06 = estimateStandardBinFilament(2, 2, 3, {
+        ...DEFAULT_PRINT_SETTINGS,
+        nozzleSizeMm: 0.6,
+      }).volumeMm3;
+      expect(v06).toBe(v04);
     });
   });
 
@@ -63,7 +96,14 @@ describe('standardBinVolume', () => {
       expect(est.costUSD).toBeGreaterThan(0);
     });
 
-    it('is monotonic: larger bins cost more', () => {
+    it('filament length matches the OCCT solid volume conversion (1×1×3u ≈ 2.59m)', () => {
+      const est = estimateStandardBinFilament(1, 1, 3);
+      // 6241mm³ / 2.405mm² / 1000 ≈ 2.59m
+      expect(est.metersFilament).toBeGreaterThan(2.59 * 0.9);
+      expect(est.metersFilament).toBeLessThan(2.59 * 1.1);
+    });
+
+    it('is monotonic: larger bins cost more and take longer', () => {
       const small = estimateStandardBinFilament(1, 1, 3);
       const large = estimateStandardBinFilament(3, 3, 3);
       expect(large.metersFilament).toBeGreaterThan(small.metersFilament);
@@ -71,49 +111,7 @@ describe('standardBinVolume', () => {
       expect(large.printTimeMinutes).toBeGreaterThan(small.printTimeMinutes);
     });
 
-    // Calibration regression: compare analytical model against the 4 real
-    // PrusaSlicer data points within ±30%. The analytical model computes
-    // solid geometry, not actual slicer toolpaths, so some deviation is expected.
-    describe('calibration regression (±30% of slicer data)', () => {
-      it('1×1×3u: ~2.3m from slicer', () => {
-        const est = estimateStandardBinFilament(1, 1, 3);
-        expect(est.metersFilament).toBeGreaterThan(2.3 * 0.7);
-        expect(est.metersFilament).toBeLessThan(2.3 * 1.3);
-      });
-
-      it('1×2×3u: ~3.7m from slicer', () => {
-        const est = estimateStandardBinFilament(1, 2, 3);
-        expect(est.metersFilament).toBeGreaterThan(3.7 * 0.7);
-        expect(est.metersFilament).toBeLessThan(3.7 * 1.3);
-      });
-
-      it('2×2×3u: ~5.6m from slicer', () => {
-        const est = estimateStandardBinFilament(2, 2, 3);
-        expect(est.metersFilament).toBeGreaterThan(5.6 * 0.7);
-        expect(est.metersFilament).toBeLessThan(5.6 * 1.3);
-      });
-
-      it('3×3×3u: ~9.9m from slicer', () => {
-        const est = estimateStandardBinFilament(3, 3, 3);
-        expect(est.metersFilament).toBeGreaterThan(9.9 * 0.7);
-        expect(est.metersFilament).toBeLessThan(9.9 * 1.3);
-      });
-    });
-
-    it('uses nozzle size from settings', () => {
-      const est04 = estimateStandardBinFilament(2, 2, 3, {
-        ...DEFAULT_PRINT_SETTINGS,
-        nozzleSizeMm: 0.4,
-      });
-      const est06 = estimateStandardBinFilament(2, 2, 3, {
-        ...DEFAULT_PRINT_SETTINGS,
-        nozzleSizeMm: 0.6,
-      });
-      // 0.6mm nozzle → thicker walls → more volume → more filament
-      expect(est06.volumeMm3).toBeGreaterThan(est04.volumeMm3);
-    });
-
-    it('larger nozzle has lower time-per-meter (higher extrusion rate)', () => {
+    it('larger nozzle prints faster (lower time) for the same part', () => {
       const est04 = estimateStandardBinFilament(2, 2, 3, {
         ...DEFAULT_PRINT_SETTINGS,
         nozzleSizeMm: 0.4,
@@ -122,9 +120,7 @@ describe('standardBinVolume', () => {
         ...DEFAULT_PRINT_SETTINGS,
         nozzleSizeMm: 0.8,
       });
-      const timePerMeter04 = est04.printTimeMinutes / est04.metersFilament;
-      const timePerMeter08 = est08.printTimeMinutes / est08.metersFilament;
-      expect(timePerMeter08).toBeLessThan(timePerMeter04);
+      expect(est08.printTimeMinutes).toBeLessThan(est04.printTimeMinutes);
     });
   });
 });

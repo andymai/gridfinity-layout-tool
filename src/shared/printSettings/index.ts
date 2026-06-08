@@ -1,15 +1,14 @@
 /**
  * Shared print estimation constants, types, and scaling helpers.
  *
- * Used by both the bin-designer (analytical volume) and print-export
- * (heuristic) estimation systems to ensure consistent defaults and
+ * Used by both the bin-designer and print-export estimators (via
+ * `standardBinSolidComponents`) so they agree on geometry, defaults, and
  * parametric time scaling.
  *
- * Calibrated via least-squares regression on real prints:
- * - Printer: 0.4mm nozzle, 0.2mm layer height, 15% infill
- * - Data: 1×1×3u (2.3m, 24min), 1×2×3u (3.7m, 30min),
- *         2×2×3u (5.6m, 35min), 3×3×3u (9.9m, 52min)
- * - Max error: ~1 min per bin across calibration set
+ * Volume constants are calibrated to ground-truth solid volumes measured from
+ * the real OCCT generator (see `standardBinVolume.ts`). Time constants are
+ * derived from an effective volumetric flow rate (`EFFECTIVE_FLOW_MM3_PER_S`);
+ * absolute print times are printer-speed dependent and approximate.
  */
 /** PLA density in g/cm³ */
 export const PLA_DENSITY = 1.24;
@@ -25,11 +24,27 @@ export const BASELINE_LAYER_HEIGHT = 0.2;
 /** Infill % the time model was calibrated against */
 export const BASELINE_INFILL = 15;
 
-/** Per-job overhead: bed heating, first layer, cooling (minutes) */
+/**
+ * Per-plate overhead: bed heating, slow first layer, and cooldown (minutes).
+ * Incurred once per print plate (see `estimatePrintJobs`), not per bin or per
+ * distinct bin type.
+ */
 export const OVERHEAD_MINUTES = 16;
 
-/** Extrusion rate: extrusion + travel + retractions (minutes per meter) */
-export const MINUTES_PER_METER = 3.6;
+/**
+ * Effective volumetric throughput for a 0.4mm-nozzle PLA print (mm³/s),
+ * averaged over perimeters, solid layers, travel, and acceleration. Typical
+ * quality prints land around 10–12 mm³/s effective; we use 11.
+ */
+export const EFFECTIVE_FLOW_MM3_PER_S = 11;
+
+/**
+ * Extrusion rate (minutes per meter of 1.75mm filament), derived from the
+ * effective volumetric flow rather than hand-tuned:
+ *   1m of filament = FILAMENT_AREA_MM2 × 1000 ≈ 2405 mm³
+ *   minutes/m = 2405 / EFFECTIVE_FLOW_MM3_PER_S / 60 ≈ 3.6
+ */
+export const MINUTES_PER_METER = (FILAMENT_AREA_MM2 * 1000) / EFFECTIVE_FLOW_MM3_PER_S / 60;
 /** User-configurable print settings stored in global preferences. */
 export interface PrintSettings {
   /** Filament cost in USD per kilogram */
@@ -90,5 +105,9 @@ export function scalePrintTime(baseMinutes: number, settings: PrintSettings): nu
   return baseMinutes * nozzleSpeedFactor * layerScale * infillScale;
 }
 export { GRIDFINITY_SPEC, wallThicknessForNozzle } from './gridfinityGeometry';
-export type { StandardBinEstimate } from './standardBinVolume';
-export { estimateStandardBinVolume, estimateStandardBinFilament } from './standardBinVolume';
+export type { StandardBinEstimate, StandardBinComponents } from './standardBinVolume';
+export {
+  estimateStandardBinVolume,
+  estimateStandardBinFilament,
+  standardBinSolidComponents,
+} from './standardBinVolume';

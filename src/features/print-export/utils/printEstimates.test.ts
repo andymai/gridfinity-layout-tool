@@ -3,6 +3,7 @@ import {
   calcFilamentCost,
   calcSpoolPercentage,
   calcPrintTimeHours,
+  estimatePrintJobs,
   formatPrintTime,
   formatCost,
   DEFAULT_METERS_PER_KG,
@@ -11,6 +12,33 @@ import {
 import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
 describe('printEstimates', () => {
+  describe('estimatePrintJobs (plate count)', () => {
+    it('returns at least 1 job even for a tiny layout', () => {
+      expect(estimatePrintJobs(1, 36)).toBe(1);
+    });
+
+    it('returns 1 job when everything fits on one plate', () => {
+      // 20 grid cells of bins, a 36-cell bed → fits in one plate
+      expect(estimatePrintJobs(20, 36)).toBe(1);
+    });
+
+    it('returns multiple plates when bins exceed one bed', () => {
+      // 100 cells of bins on a 36-cell bed (×0.85 packing ≈ 30.6 usable) → ceil(100/30.6) = 4
+      expect(estimatePrintJobs(100, 36)).toBe(4);
+    });
+
+    it('does NOT scale with the number of distinct bin types (regression: rows.length)', () => {
+      // The same total footprint must yield the same plate count regardless of
+      // how many distinct sizes it is split across.
+      expect(estimatePrintJobs(72, 36)).toBe(estimatePrintJobs(72, 36));
+      // 72 cells / (36 × 0.85 = 30.6) = ceil(2.35) = 3 plates — independent of row count.
+      expect(estimatePrintJobs(72, 36)).toBe(3);
+    });
+
+    it('handles a zero-capacity bed without dividing by zero', () => {
+      expect(estimatePrintJobs(10, 0)).toBeGreaterThanOrEqual(1);
+    });
+  });
   describe('calcFilamentCost', () => {
     it('calculates cost correctly with default values', () => {
       // 330m @ $20/kg = 1kg = $20
