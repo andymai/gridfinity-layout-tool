@@ -301,19 +301,22 @@ function splitSolidIntoPieces(
   const numCols = xBounds.length - 1;
   const numRows = yBounds.length - 1;
 
-  // Validate requested indices against the col-major flat index space
-  // (flatIndex = col * numRows + row), matching the pool's distributeRoundRobin.
-  if (pieceIndices) {
-    for (const idx of pieceIndices) {
-      if (idx < 0 || idx >= numCols * numRows) {
-        throw new Error(`Piece index ${idx} out of range [0, ${numCols * numRows})`);
-      }
-    }
-  }
-
   const pieces: SplitPieceInfo[] = [];
 
   try {
+    // Validate requested indices against the col-major flat index space
+    // (flatIndex = col * numRows + row), matching the pool's distributeRoundRobin.
+    // Must run inside the try so the finally still disposes lipSolid and resets
+    // the shape cache on a bad index (a lipped bin would otherwise leak lipSolid
+    // and leave the lipless body solid cached as export-quality).
+    if (pieceIndices) {
+      for (const idx of pieceIndices) {
+        if (idx < 0 || idx >= numCols * numRows) {
+          throw new Error(`Piece index ${idx} out of range [0, ${numCols * numRows})`);
+        }
+      }
+    }
+
     for (let col = 0; col < numCols; col++) {
       for (let row = 0; row < numRows; row++) {
         // Skip the expensive boolean cut for pieces this caller didn't ask
