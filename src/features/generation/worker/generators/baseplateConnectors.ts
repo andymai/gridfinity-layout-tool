@@ -32,15 +32,17 @@
  * Z=-totalHeight).
  */
 
-import { draw, rotate, translate } from 'brepjs';
-import type { Shape3D } from 'brepjs';
+import { draw, rotate, translate, intersect, cutAll } from 'brepjs';
+import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
+import { isOk, unwrap } from '@/core/result';
 import {
   TONGUE_PROTRUSION,
   TONGUE_BASE_HALF,
   TONGUE_TIP_HALF,
   TONGUE_CLEARANCE,
   DOVETAIL_KEY_CLEARANCE,
+  CLEARANCE,
   SNAP_CLIP,
   snapClipLevels,
   effectiveClearance,
@@ -50,6 +52,7 @@ import {
 } from './generatorTypes';
 import type { SnapClipLevels } from '@/shared/constants/connectors';
 import { computeCellBoundariesMm } from './cellDecomposition';
+import { buildSingleCellSocket } from './socketBuilder';
 
 /**
  * Half the separation between the tongue and groove of a paired connector,
@@ -323,6 +326,58 @@ function makeSnapPocket(
   return [throat, chamber];
 }
 
+/** Per-side gap between the relieved clip and the nominal seated bin foot (mm). */
+const SNAP_CLIP_SOCKET_RELIEF_GAP = 0.3;
+
+/**
+ * Carve the clip's top-bridge outer corners back so they clear the bin feet of
+ * the edge sockets flanking each seam.
+ *
+ * The gridfinity socket mouth opens to the FULL cell at the slab top
+ * (`INSET_TOP = 0`), so a top-inserted staple's flush bridge otherwise pokes
+ * into the open socket corners exactly where a bin foot seats — ~0.7mm³ per
+ * adjacent foot, all of it in the top `BRIDGE_THK` band (the deep barb/ledge
+ * snap features sit inside the foot's 4mm corner radius and don't interfere).
+ *
+ * The relief subtracts the four neighbouring full-cell foot envelopes (grown by
+ * {@link SNAP_CLIP_SOCKET_RELIEF_GAP}) but only ABOVE the catch ledge, so the
+ * snap engagement is provably untouched. Full-cell neighbours are the worst
+ * case, so the single printed clip part clears half-cell, margin, and corner
+ * neighbours too. Reuses {@link buildSingleCellSocket} so the relief tracks the
+ * real socket profile and can't drift.
+ */
+function relieveClipForSockets(clip: Shape3D, totalHeight: number, gridUnitMm: number): Shape3D {
+  const lv = snapClipLevels(totalHeight, 0);
+  // Cover the bridge band + margin, but stay clear above the catch ledge so the
+  // barb and its catch face are never touched. totalHeight ≥ SOCKET_HEIGHT keeps
+  // catchZ ≤ −2.8, so this floor always lands safely above it.
+  const floorZ = -(SNAP_CLIP.BRIDGE_THK + 0.8);
+  if (floorZ <= lv.catchZ) return clip;
+
+  const footCell = gridUnitMm - CLEARANCE + 2 * SNAP_CLIP_SOCKET_RELIEF_GAP;
+  const half = gridUnitMm / 2;
+  const cutters: ValidSolid[] = [];
+  for (const sx of [-1, 1] as const) {
+    for (const sy of [-1, 1] as const) {
+      const cx = sx * half;
+      const cy = sy * half;
+      const foot = translate(buildSingleCellSocket(footCell, footCell), [cx, cy, 0]);
+      const cap = sketch(
+        draw([cx - gridUnitMm, cy - gridUnitMm])
+          .lineTo([cx + gridUnitMm, cy - gridUnitMm])
+          .lineTo([cx + gridUnitMm, cy + gridUnitMm])
+          .lineTo([cx - gridUnitMm, cy + gridUnitMm])
+          .close(),
+        'XY',
+        floorZ
+      ).extrude(COPLANAR_MARGIN - floorZ);
+      const capped = intersect(foot, cap);
+      cutters.push((isOk(capped) ? capped.value : foot) as ValidSolid);
+    }
+  }
+  return unwrap(cutAll(clip as ValidSolid, cutters));
+}
+
 /**
  * Free-standing snap clip ("staple") for `connectorStyle === 'snapClip'`: two
  * legs joined by a flush top bridge with a central flex slot, each leg carrying
@@ -331,9 +386,11 @@ function makeSnapPocket(
  * directly into the seam; the export path rotates it flat for printing.
  *
  * Nominal dimensions (no clearance — the pockets carry it). Cross-section in
- * X-Z, extruded along the seam (Y).
+ * X-Z, extruded along the seam (Y). The top-bridge corners are relieved against
+ * the adjacent edge sockets ({@link relieveClipForSockets}) so a seated clip
+ * doesn't block bins in the sockets flanking the seam.
  */
-export function buildSnapClip(totalHeight: number): Shape3D {
+export function buildSnapClip(totalHeight: number, gridUnitMm: number): Shape3D {
   const lv = snapClipLevels(totalHeight, 0);
   const g = SNAP_CLIP.GAP_HALF;
   const br = SNAP_CLIP.BRIDGE_THK;
@@ -356,7 +413,9 @@ export function buildSnapClip(totalHeight: number): Shape3D {
   const seated = sketch(profile, 'XZ', 0).extrude(SNAP_CLIP.LEG_L);
   const centered = translate(seated, [0, SNAP_CLIP.LEG_L / 2, 0]); // center on the seam axis
   seated.delete(); // translate returns a new shape; free the intermediate
-  return centered;
+  const relieved = relieveClipForSockets(centered, totalHeight, gridUnitMm);
+  if (relieved !== centered) centered.delete();
+  return relieved;
 }
 
 /**
@@ -364,8 +423,8 @@ export function buildSnapClip(totalHeight: number): Shape3D {
  * so the staple silhouette (barbs + flex slot) prints in-plane with no supports,
  * building up along the clip length. Bottom rests at Z=0.
  */
-export function buildSnapClipForPrint(totalHeight: number): Shape3D {
-  const seated = buildSnapClip(totalHeight); // top Z=0, legs to −legBottom, length Y∈[−L/2,L/2]
+export function buildSnapClipForPrint(totalHeight: number, gridUnitMm: number): Shape3D {
+  const seated = buildSnapClip(totalHeight, gridUnitMm); // top Z=0, legs to −legBottom, length Y∈[−L/2,L/2]
   // Rotate +90° about X (+Y→+Z): a staple-silhouette end face drops onto the
   // bed and the build height becomes the clip length, so barbs/flex print
   // in-plane with no supports. The rotated part centers on Z∈[−L/2,L/2]; lift

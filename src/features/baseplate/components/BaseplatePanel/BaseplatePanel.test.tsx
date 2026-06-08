@@ -292,6 +292,78 @@ describe('BaseplatePanel', () => {
     });
   });
 
+  describe('connectors selector', () => {
+    beforeEach(() => {
+      mockTiling = splitTiling;
+    });
+
+    it('shows "none" when connectors are disabled', () => {
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        connectorNubs: false,
+      };
+      render(<BaseplatePanel />);
+      expect(screen.getByRole('combobox', { name: 'baseplate.connectors.label' })).toHaveValue(
+        'none'
+      );
+    });
+
+    it('reflects the active connector style when enabled', () => {
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        connectorNubs: true,
+        connectorStyle: 'snapClip',
+      };
+      render(<BaseplatePanel />);
+      expect(screen.getByRole('combobox', { name: 'baseplate.connectors.label' })).toHaveValue(
+        'snapClip'
+      );
+    });
+
+    it('disables connectors when "none" is selected', () => {
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        connectorNubs: true,
+        connectorStyle: 'snapClip',
+      };
+      render(<BaseplatePanel />);
+      fireEvent.change(screen.getByRole('combobox', { name: 'baseplate.connectors.label' }), {
+        target: { value: 'none' },
+      });
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ connectorNubs: false, connectorStyle: undefined })
+      );
+    });
+
+    it('enables connectors and sets the style when a style is picked', () => {
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        connectorNubs: false,
+      };
+      render(<BaseplatePanel />);
+      fireEvent.change(screen.getByRole('combobox', { name: 'baseplate.connectors.label' }), {
+        target: { value: 'snapClip' },
+      });
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ connectorNubs: true, connectorStyle: 'snapClip' })
+      );
+    });
+
+    it('stores plain dovetail as undefined style', () => {
+      mockLayoutState.layout.baseplateParams = {
+        ...DEFAULT_BASEPLATE_PARAMS,
+        connectorNubs: false,
+      };
+      render(<BaseplatePanel />);
+      fireEvent.change(screen.getByRole('combobox', { name: 'baseplate.connectors.label' }), {
+        target: { value: 'dovetail' },
+      });
+      expect(mockSetBaseplateParams).toHaveBeenCalledWith(
+        expect.objectContaining({ connectorNubs: true, connectorStyle: undefined })
+      );
+    });
+  });
+
   it('renders print bed size stepper', () => {
     render(<BaseplatePanel />);
     expect(screen.getByText('baseplate.printBedSize')).toBeInTheDocument();

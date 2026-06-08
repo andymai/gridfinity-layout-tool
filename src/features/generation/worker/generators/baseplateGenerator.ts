@@ -403,7 +403,7 @@ export async function exportConnectorKey(
   // Snap clip ships its own bed-flat part; dovetail key is the legacy default.
   const key =
     params.connectorStyle === 'snapClip'
-      ? buildSnapClipForPrint(totalHeight)
+      ? buildSnapClipForPrint(totalHeight, params.gridUnitMm)
       : buildDovetailKey(totalHeight);
   try {
     const name = 'connector_key';

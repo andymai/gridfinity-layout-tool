@@ -140,18 +140,19 @@ describe('baseplateGenerator — snap-clip connectors (issue #1610)', () => {
   );
 
   it(
-    'clip matches the brepjs-verify-proven geometry and prints bed-flat',
+    'clip prints bed-flat with top-bridge corners relieved for the edge sockets',
     () => {
-      // SOCKET_HEIGHT slab (no magnets) = 5mm — the thin-slab case proven
-      // standalone (clip 60.45mm³, seated with zero pocket interference).
+      // SOCKET_HEIGHT slab (no magnets) = 5mm. The nominal clip is 60.45mm³;
+      // relieving the top-bridge corners against the four neighbouring full-cell
+      // bin feet removes ~6.6mm³ so a seated clip clears bins in the edge
+      // sockets flanking each seam (see snapClipSocketInterference.test.ts).
       const totalHeight = 5;
-      const clip = buildSnapClip(totalHeight);
+      const clip = buildSnapClip(totalHeight, 42);
       const vClip = vol(clip);
-      // Ties the worker geometry to the standalone brepjs-verify proof.
-      expect(vClip, 'clip volume matches the proven design').toBeCloseTo(60.45, 0);
+      expect(vClip, 'relieved clip volume').toBeCloseTo(53.84, 1);
 
       // Print orientation is a rigid transform — volume is preserved exactly.
-      const printClip = buildSnapClipForPrint(totalHeight);
+      const printClip = buildSnapClipForPrint(totalHeight, 42);
       expect(vol(printClip), 'print orientation preserves volume').toBeCloseTo(vClip, 2);
 
       clip.delete();
