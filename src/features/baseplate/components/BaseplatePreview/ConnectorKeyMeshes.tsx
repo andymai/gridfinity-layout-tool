@@ -105,10 +105,11 @@ function roundedShape(
  * its FDM-balanced edge treatments (slot-root + slot-mouth fillets, top chamfer;
  * barb/bearing faces crisp). Drawn in the cross-section (X = cross-seam, Y = up)
  * and extruded along the seam by the clip length, then baked into world
- * orientation — bridge top at Z=0, legs hanging to −legBottom, length along X —
- * so the same per-junction Z-rotation as the dovetail key seats it. Levels come
- * from the shared `snapClipLevels`. (The socket-clearance relief the worker
- * applies is omitted here — a cosmetic-only gap in the preview.)
+ * orientation — length along X, lifted so the bridge top sits flush with the
+ * plate top and the legs hang into the seam — so the same per-junction
+ * Z-rotation as the dovetail key seats it. Levels come from the shared
+ * `snapClipLevels`. (The socket-clearance relief the worker applies is omitted
+ * here — a cosmetic-only gap in the preview.)
  */
 function buildSnapClipGeometry(totalHeight: number): THREE.ExtrudeGeometry {
   const lv = snapClipLevels(totalHeight, 0);

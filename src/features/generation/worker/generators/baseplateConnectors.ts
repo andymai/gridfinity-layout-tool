@@ -32,7 +32,7 @@
  * Z=-totalHeight).
  */
 
-import { draw, rotate, translate, intersect, cutAll } from 'brepjs';
+import { draw, rotate, translate, intersect, cutAll, clone } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
 import { isOk, unwrap } from '@/core/result';
@@ -356,12 +356,14 @@ function relieveClipForSockets(clip: Shape3D, totalHeight: number, gridUnitMm: n
 
   const footCell = gridUnitMm - CLEARANCE + 2 * SNAP_CLIP_SOCKET_RELIEF_GAP;
   const half = gridUnitMm / 2;
+  // Loft the foot once and clone it to each of the four neighbouring cells.
+  const baseFoot = buildSingleCellSocket(footCell, footCell);
   const cutters: ValidSolid[] = [];
   for (const sx of [-1, 1] as const) {
     for (const sy of [-1, 1] as const) {
       const cx = sx * half;
       const cy = sy * half;
-      const foot = translate(buildSingleCellSocket(footCell, footCell), [cx, cy, 0]);
+      const foot = translate(unwrap(clone(baseFoot)), [cx, cy, 0]);
       const cap = sketch(
         draw([cx - gridUnitMm, cy - gridUnitMm])
           .lineTo([cx + gridUnitMm, cy - gridUnitMm])
@@ -372,10 +374,20 @@ function relieveClipForSockets(clip: Shape3D, totalHeight: number, gridUnitMm: n
         floorZ
       ).extrude(COPLANAR_MARGIN - floorZ);
       const capped = intersect(foot, cap);
-      cutters.push((isOk(capped) ? capped.value : foot) as ValidSolid);
+      cap.delete();
+      if (isOk(capped)) {
+        cutters.push(capped.value as ValidSolid);
+        foot.delete();
+      } else {
+        cutters.push(foot as ValidSolid);
+      }
     }
   }
-  return unwrap(cutAll(clip as ValidSolid, cutters));
+  // cutAll keeps its inputs; free the tools (the caller owns `clip`).
+  const relieved = unwrap(cutAll(clip as ValidSolid, cutters));
+  for (const c of cutters) c.delete();
+  baseFoot.delete();
+  return relieved;
 }
 
 /**

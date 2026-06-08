@@ -313,14 +313,10 @@ export function BaseplatePanel() {
                         updateParams({ connectorNubs: false, connectorStyle: undefined });
                         return;
                       }
+                      // 'dovetail' is the default, stored as undefined.
                       updateParams({
                         connectorNubs: true,
-                        connectorStyle:
-                          v === 'dovetailKey'
-                            ? 'dovetailKey'
-                            : v === 'snapClip'
-                              ? 'snapClip'
-                              : undefined,
+                        connectorStyle: v === 'dovetailKey' || v === 'snapClip' ? v : undefined,
                       });
                     }}
                     options={[
