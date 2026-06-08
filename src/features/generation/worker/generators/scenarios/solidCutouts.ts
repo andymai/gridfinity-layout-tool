@@ -14,7 +14,7 @@ const SOLID_BASE = { ...DEFAULT_BIN_PARAMS.base, solid: true };
  * the boolean dropped it, and the bin came out uncut but valid. A real cut
  * carves interior walls and so adds triangles over the bare solid bin.
  */
-const mustCut: ScenarioCase['compareWith'] = {
+const mustCut: NonNullable<ScenarioCase['compareWith']> = {
   params: { style: 'solid', base: SOLID_BASE, cutouts: [] },
   assert: (withCut, noCut) => expect(withCut.triangleCount).toBeGreaterThan(noCut.triangleCount),
 };
