@@ -116,9 +116,14 @@ function buildSnapClipGeometry(totalHeight: number): THREE.ExtrudeGeometry {
   const g = SNAP_CLIP.GAP_HALF;
   const br = SNAP_CLIP.BRIDGE_THK;
   const { legOuter, barbTip, apexZ, catchZ, leadZ, legBottom } = lv;
-  const rTop = 0.4;
   const rRoot = 0.4;
   const rSlot = 0.3;
+  // Approximate the worker's socket relief (relieveClipForSockets) which the
+  // preview can't reproduce exactly without CSG: a larger 45° top-edge chamfer
+  // pulls the bridge's outer corners in along roughly the socket taper, so the
+  // seated clip reads as clearing the adjacent bin sockets rather than blocking
+  // them. Cosmetic only — the exact rounded relief lives in the exported part.
+  const rTopRelief = 0.9;
   const pts: Array<[number, number]> = [
     [-legOuter, 0],
     [legOuter, 0],
@@ -136,8 +141,8 @@ function buildSnapClipGeometry(totalHeight: number): THREE.ExtrudeGeometry {
     [-legOuter, catchZ],
   ];
   const corners: Corner[] = [
-    { r: rTop, chamfer: true }, // top-left
-    { r: rTop, chamfer: true }, // top-right
+    { r: rTopRelief, chamfer: true }, // top-left — approximates socket relief
+    { r: rTopRelief, chamfer: true }, // top-right — approximates socket relief
     { r: 0 },
     { r: 0 }, // barb apex — crisp
     { r: 0 },
