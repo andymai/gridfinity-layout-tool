@@ -101,8 +101,12 @@ export {
   TONGUE_TIP_HALF,
   TONGUE_CLEARANCE,
   DOVETAIL_KEY_CLEARANCE,
+  SNAP_CLIP,
+  SNAP_CLIP_CLEARANCE,
+  snapClipLevels,
   effectiveClearance,
 } from '@/shared/constants/connectors';
+export type { SnapClipLevels } from '@/shared/constants/connectors';
 
 export const NUB_DIAMETER = 1.5;
 export const NUB_DEPTH = 0.8;

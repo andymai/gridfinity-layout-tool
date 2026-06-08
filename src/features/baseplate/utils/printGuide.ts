@@ -16,6 +16,7 @@ import {
   TONGUE_PROTRUSION,
   TONGUE_CLEARANCE,
   DOVETAIL_KEY_CLEARANCE,
+  SNAP_CLIP_CLEARANCE,
   effectiveClearance,
 } from '@/shared/constants/connectors';
 
@@ -62,25 +63,42 @@ function generateConnectorKeySection(
 ): string {
   const copyText = key.count === 1 ? 'Print 1 copy' : `Print ${key.count} copies`;
   const offset = params.connectorFitOffset ?? 0;
-  // Total clearance = both per-side grooves of the key cavity combined.
-  const totalClearance = 2 * effectiveClearance(DOVETAIL_KEY_CLEARANCE, offset);
+  const isSnapClip = params.connectorStyle === 'snapClip';
+  // Total clearance = both per-side pocket walls of the seated part combined.
+  const baseClearance = isSnapClip ? SNAP_CLIP_CLEARANCE : DOVETAIL_KEY_CLEARANCE;
+  const totalClearance = 2 * effectiveClearance(baseClearance, offset);
+  const partName = isSnapClip ? 'snap_clip' : 'dovetail_key';
+  const seatLine = isSnapClip
+    ? '    Press one into each seam junction from the top until it clicks; the bridge sits flush.'
+    : '    Hammer one into each seam junction from the top, flush with the surface.';
   const fitNote =
     offset === 0
       ? `    Fit is a tight press fit (~${totalClearance.toFixed(2)}mm total clearance). For best results:`
       : `    Fit offset ${formatSignedMm(offset)} applied → ~${totalClearance.toFixed(2)}mm total clearance. For best results:`;
+  const tips = isSnapClip
+    ? [
+        '      • Use a 0.4mm nozzle — larger nozzles lose the barb detail.',
+        '      • Set initial-layer horizontal expansion to about -0.1 to -0.2mm to',
+        '        cancel first-layer squish (the biggest cause of an over-tight clip).',
+        '      • Print flat on the bed (as oriented) so the barbs print in-plane; 2+ walls.',
+        "      • Won't click in? Raise the Connector fit offset (looser). Too loose? Lower it.",
+      ]
+    : [
+        '      • Use a 0.4mm nozzle — larger nozzles lose the dovetail detail.',
+        '      • Set initial-layer horizontal expansion to about -0.1 to -0.2mm to',
+        '        cancel first-layer squish (the biggest cause of an over-tight key).',
+        '      • Print the key flat on the bed (as oriented); 2+ walls.',
+        "      • Won't seat? Raise the Connector fit offset (looser). Too loose? Lower it.",
+      ];
   return [
     '─── Connector keys ──────────────────────────────',
     '',
-    `  dovetail_key (${key.fileName})`,
+    `  ${partName} (${key.fileName})`,
     `    ${copyText}`,
-    '    Hammer one into each seam junction from the top, flush with the surface.',
+    seatLine,
     '',
     fitNote,
-    '      • Use a 0.4mm nozzle — larger nozzles lose the dovetail detail.',
-    '      • Set initial-layer horizontal expansion to about -0.1 to -0.2mm to',
-    '        cancel first-layer squish (the biggest cause of an over-tight key).',
-    '      • Print the key flat on the bed (as oriented); 2+ walls.',
-    "      • Won't seat? Raise the Connector fit offset (looser). Too loose? Lower it.",
+    ...tips,
   ].join('\n');
 }
 
@@ -107,7 +125,11 @@ function generateHeader(
   if (hasPadding) features.push('padded');
   if (params.connectorNubs)
     features.push(
-      params.connectorStyle === 'dovetailKey' ? 'dovetail key connectors' : 'connectors'
+      params.connectorStyle === 'dovetailKey'
+        ? 'dovetail key connectors'
+        : params.connectorStyle === 'snapClip'
+          ? 'snap clip connectors'
+          : 'connectors'
     );
 
   const featureStr = features.length > 0 ? features.join(', ') : 'standard';
@@ -130,7 +152,11 @@ function generateHeader(
   const offset = params.connectorFitOffset ?? 0;
   if (params.connectorNubs && offset !== 0) {
     const baseClearance =
-      params.connectorStyle === 'dovetailKey' ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE;
+      params.connectorStyle === 'dovetailKey'
+        ? DOVETAIL_KEY_CLEARANCE
+        : params.connectorStyle === 'snapClip'
+          ? SNAP_CLIP_CLEARANCE
+          : TONGUE_CLEARANCE;
     const perSide = effectiveClearance(baseClearance, offset);
     lines.push(
       `  Connector fit: ${formatSignedMm(offset)} (${perSide.toFixed(3)}mm per-side clearance)`
@@ -159,12 +185,12 @@ function generatePieceTable(
     // tongue is male — matches the actual STL bbox so users know what fits the
     // bed. Under preferIdenticalPieces (paired mode) every join edge carries a
     // tongue regardless of side, so both sides of each axis claim protrusion.
-    // Dovetail key connectors are flush at the seam (both sides female), so no tongue
-    // protrusion is added to the piece bbox — only the integral dovetail protrudes.
-    const tongue =
-      parentParams.connectorNubs && parentParams.connectorStyle !== 'dovetailKey'
-        ? TONGUE_PROTRUSION
-        : 0;
+    // Dovetail key and snap clip connectors are flush at the seam (both sides
+    // female), so no tongue protrusion is added to the piece bbox — only the
+    // integral dovetail protrudes.
+    const isIntegralDovetail =
+      parentParams.connectorStyle === undefined || parentParams.connectorStyle === 'dovetail';
+    const tongue = parentParams.connectorNubs && isIntegralDovetail ? TONGUE_PROTRUSION : 0;
     const isPaired = !!parentParams.preferIdenticalPieces && !!parentParams.connectorNubs;
     const startMale = !parentParams.invertDovetails;
     const widthMm =
@@ -196,7 +222,11 @@ function generatePieceTable(
     if (parentParams.magnetHoles) features.push('magnet holes');
     if (parentParams.connectorNubs)
       features.push(
-        parentParams.connectorStyle === 'dovetailKey' ? 'dovetail key grooves' : 'connectors'
+        parentParams.connectorStyle === 'dovetailKey'
+          ? 'dovetail key grooves'
+          : parentParams.connectorStyle === 'snapClip'
+            ? 'snap clip pockets'
+            : 'connectors'
       );
     const hasPadding =
       params.paddingLeft > 0 ||

@@ -62,3 +62,109 @@ export const MIN_CONNECTOR_CLEARANCE = 0;
 export function effectiveClearance(baseClearance: number, fitOffset: number): number {
   return Math.max(MIN_CONNECTOR_CLEARANCE, baseClearance + fitOffset);
 }
+
+/**
+ * Snap-clip ("staple") connector geometry, shared between the generation worker
+ * (which cuts the seam pockets and builds the standalone clip) and the baseplate
+ * feature (bed budget, print-guide bbox, seated-clip preview).
+ *
+ * The clip is one X-Z cross-section extruded along the seam: two legs joined by a
+ * flush top bridge with a central flex slot, each leg carrying an outward-facing
+ * barb (triangular catch + lead-in) near its tip. On insertion the legs pinch
+ * inward past the pocket throat, then splay out so the barbs catch the chamber
+ * ledge. Mirror grooves on both seam sides form the blind pockets.
+ *
+ * Validated standalone via brepjs-verify: clip is a valid solid, and the seated
+ * clip clears the pockets with zero interference (fuse-volume == tiles + clip).
+ * The depths below are clamped to the slab height at build time so the snap
+ * still seats on a thin baseplate and deepens automatically on taller bases.
+ */
+export const SNAP_CLIP = {
+  /** Half-width of the central flex slot (inner leg face sits at ±this). */
+  GAP_HALF: 0.75,
+  /** Leg thickness across the seam (mm). */
+  LEG_W: 1.2,
+  /** Outward barb protrusion past the leg face = engagement depth (mm). */
+  BARB_DEPTH: 0.45,
+  /** Top bridge thickness; also the flush-recess depth in the slab top (mm). */
+  BRIDGE_THK: 1.2,
+  /** Clip length along the seam (mm). */
+  LEG_L: 5.0,
+  /** Sealed floor left under the blind pocket so it never breaches the bottom (mm). */
+  POCKET_FLOOR: 0.6,
+  /** Clearance under the leg tips above the pocket floor (mm). */
+  FLOOR_GAP: 0.3,
+  /** Barb apex height above the leg tip (mm) — a fixed snap feature; only the
+   *  leg LENGTH scales with slab height, giving taller bases a longer flex beam. */
+  BARB_APEX_FROM_TIP: 0.8,
+  /** Catch (back) face rise from barb apex to the ledge (mm); shallow = removable. */
+  CATCH_DROP: 0.5,
+  /** Lead-in (insertion) face drop from barb apex toward the tip (mm). */
+  LEAD_DROP: 0.5,
+  /** Minimum leg length below the bridge for the snap to function (mm). Below
+   *  this the slab is too thin to flex; the generator skips snap pockets. */
+  MIN_LEG: 2.0,
+} as const;
+
+/** Per-side pocket-wall clearance for the snap clip (mm), before fit offset. */
+export const SNAP_CLIP_CLEARANCE = 0.1;
+
+/** Resolved snap-clip Z-levels and X-positions for a given slab height. */
+export interface SnapClipLevels {
+  /** Whether the slab is deep enough to flex; false → generator skips pockets. */
+  readonly viable: boolean;
+  /** Per-side pocket clearance after the fit offset. */
+  readonly cl: number;
+  /** Blind pocket depth below the top (mm). */
+  readonly pocketDepth: number;
+  /** Clip leg-tip depth below the top (mm). */
+  readonly legBottom: number;
+  /** Barb apex Z (negative, below top). */
+  readonly apexZ: number;
+  /** Catch-ledge Z (negative). */
+  readonly catchZ: number;
+  /** Lead-in face bottom Z (negative). */
+  readonly leadZ: number;
+  /** Outer leg face X (= GAP_HALF + LEG_W). */
+  readonly legOuter: number;
+  /** Barb apex X (= legOuter + BARB_DEPTH). */
+  readonly barbTip: number;
+  /** Pocket throat outer-wall depth into the piece (mm). */
+  readonly throatDepthX: number;
+  /** Pocket chamber outer-wall depth into the piece (mm). */
+  readonly chamberDepthX: number;
+}
+
+/**
+ * Resolve the snap-clip geometry levels from the slab height. The barb is a
+ * fixed-size feature near the leg tip; only the leg LENGTH scales with
+ * `totalHeight`, so a taller base gets a longer flex beam (stronger snap)
+ * automatically. Pocket clearance (throat/chamber only — the clip stays nominal)
+ * folds in via {@link effectiveClearance}. Single source of truth shared by the
+ * generation worker (pockets + clip), the seated-clip preview, and the bed math.
+ */
+export function snapClipLevels(totalHeight: number, fitOffset: number): SnapClipLevels {
+  const cl = effectiveClearance(SNAP_CLIP_CLEARANCE, fitOffset);
+  const pocketDepth = totalHeight - SNAP_CLIP.POCKET_FLOOR;
+  const legBottom = pocketDepth - SNAP_CLIP.FLOOR_GAP;
+  const apexZ = -(legBottom - SNAP_CLIP.BARB_APEX_FROM_TIP);
+  const catchZ = apexZ + SNAP_CLIP.CATCH_DROP;
+  const leadZ = apexZ - SNAP_CLIP.LEAD_DROP;
+  const legOuter = SNAP_CLIP.GAP_HALF + SNAP_CLIP.LEG_W;
+  const barbTip = legOuter + SNAP_CLIP.BARB_DEPTH;
+  const viable =
+    legBottom - SNAP_CLIP.BRIDGE_THK >= SNAP_CLIP.MIN_LEG && catchZ < -SNAP_CLIP.BRIDGE_THK;
+  return {
+    viable,
+    cl,
+    pocketDepth,
+    legBottom,
+    apexZ,
+    catchZ,
+    leadZ,
+    legOuter,
+    barbTip,
+    throatDepthX: legOuter + cl,
+    chamberDepthX: barbTip + cl,
+  };
+}

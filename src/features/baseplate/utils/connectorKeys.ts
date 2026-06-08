@@ -1,10 +1,11 @@
 /**
- * Dovetail key accounting + placement for split baseplates.
+ * Seated-connector accounting + placement for split baseplates.
  *
- * In dovetail key mode every join edge is a female groove and a separate, identical
- * key part is hammered into each seam junction. This module is the single
- * source of truth for WHERE the keys go (and therefore HOW MANY), so the export
- * count, the print guide, and the 3D preview never disagree.
+ * The dovetail-key and snap-clip styles both make every join edge female and
+ * ship a separate part seated at each seam junction (a hammered-in key, or a
+ * top-inserted snap clip). This module is the single source of truth for WHERE
+ * those parts go (and therefore HOW MANY), so the export count, the print guide,
+ * and the 3D preview never disagree.
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
@@ -55,8 +56,12 @@ function interiorBoundaryOffsetsMm(
   return offsets;
 }
 
-function isDovetailKey(params: BaseplateParams): boolean {
-  return params.connectorNubs === true && params.connectorStyle === 'dovetailKey';
+/** Styles that ship a separate part seated at every seam junction. */
+function hasSeatedConnector(params: BaseplateParams): boolean {
+  return (
+    params.connectorNubs === true &&
+    (params.connectorStyle === 'dovetailKey' || params.connectorStyle === 'snapClip')
+  );
 }
 
 /**
@@ -69,13 +74,13 @@ function isDovetailKey(params: BaseplateParams): boolean {
  * Coordinates match `SplitBaseplateMeshes` piece centering exactly:
  *   center = gridOffset * gridUnitMm + pieceSize / 2 - total / 2
  *
- * Returns [] unless dovetail key connectors are active.
+ * Returns [] unless a seated-connector style (dovetail key / snap clip) is active.
  */
 export function computeSeamJunctions(
   tiling: BaseplateTiling,
   params: BaseplateParams
 ): SeamJunction[] {
-  if (!isDovetailKey(params)) return [];
+  if (!hasSeatedConnector(params)) return [];
 
   const g = params.gridUnitMm;
   const totalWmm = tiling.totalWidthUnits * g;
@@ -105,9 +110,10 @@ export function computeSeamJunctions(
 }
 
 /**
- * Number of dovetail keys a split baseplate needs — one per seam
+ * Number of seated connector parts a split baseplate needs — one per seam
  * junction. Derived from {@link computeSeamJunctions} so the count and the
- * placements can never diverge. Returns 0 unless dovetail key connectors are active.
+ * placements can never diverge. Returns 0 unless a seated-connector style
+ * (dovetail key or snap clip) is active.
  */
 export function countConnectorKeys(tiling: BaseplateTiling, params: BaseplateParams): number {
   return computeSeamJunctions(tiling, params).length;

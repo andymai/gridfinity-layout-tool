@@ -40,7 +40,7 @@ import {
 } from 'brepjs';
 import type { Shape3D, ValidSolid, BooleanPipelineStep } from 'brepjs';
 import type { BaseplateParams } from '@/shared/types/bin';
-import type { MeshData, ExportFormat } from '../../bridge/types';
+import type { MeshData, ExportFormat, ConnectorKeyMeshData } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
   forEachCell,
@@ -59,7 +59,13 @@ import { sanitizeParams, tagOp, buildSlabProfile } from './baseplateSlab';
 import { cutInBatches } from './baseplateBatchOps';
 import { getPocketTemplate } from './baseplatePockets';
 import { buildMagnetHoles } from './baseplateMagnets';
-import { buildConnectors, buildDovetailKey } from './baseplateConnectors';
+import {
+  buildConnectors,
+  buildDovetailKey,
+  buildSnapClip,
+  buildSnapClipForPrint,
+} from './baseplateConnectors';
+import { snapClipLevels } from '@/shared/constants/connectors';
 import { computeBaseplateEdgeLines } from './baseplateEdges';
 import { buildBaseplateSTL } from './baseplateSTL';
 
@@ -132,11 +138,45 @@ export function generateBaseplate(
 
     onProgress('base', 1);
 
-    const result = toIndexedMeshData(meshResult, edgeVerts);
+    const baseMesh = toIndexedMeshData(meshResult, edgeVerts);
+    // Attach the exact seated snap-clip so the preview renders the real
+    // socket-relieved part instead of a procedural approximation. Same for every
+    // junction, so the main thread reuses one copy across all seats.
+    const connectorKeyMesh = buildConnectorKeyMeshIfNeeded(params);
+    const result = connectorKeyMesh ? { ...baseMesh, connectorKeyMesh } : baseMesh;
     meshResultCache.set(cacheKey, result);
     return result;
   } finally {
     baseplate.delete();
+  }
+}
+
+/**
+ * Mesh the seated snap-clip connector when this baseplate uses one on a join
+ * edge. Returns undefined for every other style/edge so the field stays absent.
+ * The clip is the same regardless of which piece carries it; the main thread
+ * keeps one copy and seats it at each junction.
+ */
+function buildConnectorKeyMeshIfNeeded(params: BaseplateParams): ConnectorKeyMeshData | undefined {
+  if (!params.connectorNubs || params.connectorStyle !== 'snapClip') return undefined;
+  const hasJoinEdge = params.edges ? Object.values(params.edges).some((e) => e === 'join') : false;
+  if (!hasJoinEdge) return undefined;
+
+  const totalHeight = SOCKET_HEIGHT + (params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0);
+  if (!snapClipLevels(totalHeight, params.connectorFitOffset ?? 0).viable) return undefined;
+
+  const clip = buildSnapClip(totalHeight, params.gridUnitMm);
+  try {
+    const clipMesh = mesh(clip, { tolerance: 0.05, angularTolerance: 10 });
+    const indexed = toIndexedMeshData(clipMesh, new Float32Array(0));
+    return {
+      vertices: indexed.vertices,
+      normals: indexed.normals,
+      indices: indexed.indices,
+      triangleCount: indexed.triangleCount,
+    };
+  } finally {
+    clip.delete();
   }
 }
 
@@ -400,7 +440,11 @@ export async function exportConnectorKey(
   const params = sanitizeParams(rawParams);
   const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
   const totalHeight = SOCKET_HEIGHT + floorDepth;
-  const key = buildDovetailKey(totalHeight);
+  // Snap clip ships its own bed-flat part; dovetail key is the legacy default.
+  const key =
+    params.connectorStyle === 'snapClip'
+      ? buildSnapClipForPrint(totalHeight, params.gridUnitMm)
+      : buildDovetailKey(totalHeight);
   try {
     const name = 'connector_key';
     if (format === 'step') {

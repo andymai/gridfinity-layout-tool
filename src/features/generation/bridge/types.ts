@@ -419,6 +419,11 @@ export interface MeshResultResponse {
   readonly lidEdgeVertices?: Float32Array;
   readonly lidTriangleCount?: number;
   readonly lidFaceGroups?: readonly FaceGroupData[];
+  /** Seated snap-clip connector mesh — present only for split snap-clip plates. */
+  readonly connectorKeyVertices?: Float32Array;
+  readonly connectorKeyNormals?: Float32Array;
+  readonly connectorKeyIndices?: Uint32Array;
+  readonly connectorKeyTriangleCount?: number;
   /**
    * Fine-grained timing breakdown. The worker always emits one — overhead
    * is a handful of `performance.now()` calls — but the field is `?` so
@@ -545,6 +550,24 @@ export interface MeshData {
   readonly coarseLOD?: CoarseLODData;
   /** Optional click-lock lid mesh — separate solid that pairs with the bin. */
   readonly lidMesh?: LidMeshData;
+  /**
+   * Optional seated snap-clip connector mesh — the exact relieved part the
+   * baseplate ships, so the preview can render it instead of an approximation.
+   * Present only for split snap-clip baseplates.
+   */
+  readonly connectorKeyMesh?: ConnectorKeyMeshData;
+}
+
+/**
+ * Mesh data for the seated snap-clip connector (single accent-colored solid,
+ * no edge lines or face groups). Built in the worker so the preview matches the
+ * exported, socket-relieved part exactly.
+ */
+export interface ConnectorKeyMeshData {
+  readonly vertices: Float32Array;
+  readonly normals: Float32Array;
+  readonly indices: Uint32Array;
+  readonly triangleCount: number;
 }
 
 /** Mesh data for the click-lock lid (companion piece, separate solid). */

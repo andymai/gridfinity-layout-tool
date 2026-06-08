@@ -190,6 +190,44 @@ describe('generatePrintGuide', () => {
     expect(keyCount).toBeGreaterThan(0);
   });
 
+  it('snap-clip mode reports flush plates and a snap-clip-specific key section (#1610)', () => {
+    const params = makeParams({
+      width: 8,
+      depth: 4,
+      connectorNubs: true,
+      connectorStyle: 'snapClip',
+    });
+    const tiling = computeBaseplateTiling(params, 256);
+    const groups = groupPiecesByFingerprint(tiling.pieces, params);
+    const groupNames = assignGroupNames(groups, tiling.pieces);
+    const keyCount = countConnectorKeys(tiling, params);
+    const guide = generatePrintGuide({
+      tiling,
+      groups,
+      groupNames,
+      parentParams: params,
+      fileExtension: '.stl',
+      baseFileName: 'gridfinity-baseplate',
+      connectorKey: { fileName: 'gridfinity-baseplate_key.stl', count: keyCount },
+    });
+
+    // Female pockets on both seam sides → flush plates, no 1.5mm tongue.
+    expect(guide).toContain('168.0 × 168.0');
+    expect(guide).not.toContain('169.5');
+
+    // Snap-clip-specific copy, NOT the dovetail wording.
+    expect(guide).toContain('snap clip connectors');
+    expect(guide).toContain('snap_clip (');
+    expect(guide).toContain('until it clicks');
+    expect(guide).toContain('barbs print in-plane');
+    expect(guide).not.toContain('Hammer one into each seam junction');
+    expect(guide).not.toContain('dovetail_key (');
+    expect(keyCount).toBeGreaterThan(0);
+
+    // Fit note uses the snap-clip per-side clearance (0.1), not the dovetail key's.
+    expect(guide).toContain('0.20mm total clearance');
+  });
+
   // issue #2024 — the connector fit offset must surface in the guide.
   it('omits a connector-fit line when the offset is zero', () => {
     const guide = buildGuide(makeParams({ width: 8, depth: 4, connectorNubs: true }));

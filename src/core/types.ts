@@ -77,9 +77,11 @@ export interface BaseplateParams {
    * Connector geometry on join edges when `connectorNubs` is enabled
    * (default 'dovetail'). 'dovetailKey' cuts a female groove on both sides of each
    * seam and ships a separate, hammered-in dovetail key part instead of an
-   * integral male tongue. Only meaningful when `connectorNubs` is true.
+   * integral male tongue. 'snapClip' cuts a blind, ledged pocket on both sides of
+   * each seam and ships a separate top-insert snap clip (a "staple") whose barbs
+   * catch the pocket ledges. Only meaningful when `connectorNubs` is true.
    */
-  readonly connectorStyle?: 'dovetail' | 'dovetailKey';
+  readonly connectorStyle?: 'dovetail' | 'dovetailKey' | 'snapClip';
   /**
    * User fit offset (mm) added to the per-side connector groove clearance to
    * compensate for printer/filament variation (issue #2024). Positive = looser,

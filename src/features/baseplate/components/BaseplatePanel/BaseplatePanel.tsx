@@ -300,38 +300,36 @@ export function BaseplatePanel() {
           <div className="space-y-3 px-4 py-3">
             {tiling?.isSplit && (
               <>
-                <FeatureToggle
-                  label={t('baseplate.connectorNubs')}
-                  checked={baseplateParams.connectorNubs === true}
-                  onChange={() =>
-                    updateParam('connectorNubs', baseplateParams.connectorNubs !== true)
-                  }
-                  valueSummary={
-                    baseplateParams.connectorNubs === true &&
-                    (baseplateParams.connectorFitOffset ?? 0) !== 0
-                      ? formatConnectorFitOffset(baseplateParams.connectorFitOffset ?? 0)
-                      : undefined
-                  }
-                />
+                <SettingsRow label={t('baseplate.connectors.label')}>
+                  <Select
+                    size="sm"
+                    value={
+                      baseplateParams.connectorNubs === true
+                        ? (baseplateParams.connectorStyle ?? 'dovetail')
+                        : 'none'
+                    }
+                    onValueChange={(v) => {
+                      if (v === 'none') {
+                        updateParams({ connectorNubs: false, connectorStyle: undefined });
+                        return;
+                      }
+                      // 'dovetail' is the default, stored as undefined.
+                      updateParams({
+                        connectorNubs: true,
+                        connectorStyle: v === 'dovetailKey' || v === 'snapClip' ? v : undefined,
+                      });
+                    }}
+                    options={[
+                      { id: 'none', name: t('baseplate.connectors.none') },
+                      { id: 'dovetail', name: t('baseplate.connectorStyle.dovetail') },
+                      { id: 'dovetailKey', name: t('baseplate.connectorStyle.dovetailKey') },
+                      { id: 'snapClip', name: t('baseplate.connectorStyle.snapClip') },
+                    ]}
+                    aria-label={t('baseplate.connectors.label')}
+                  />
+                </SettingsRow>
                 {baseplateParams.connectorNubs === true && (
                   <>
-                    <SettingsRow label={t('baseplate.connectorStyle.label')}>
-                      <Select
-                        size="sm"
-                        value={baseplateParams.connectorStyle ?? 'dovetail'}
-                        onValueChange={(v) =>
-                          updateParam(
-                            'connectorStyle',
-                            v === 'dovetailKey' ? 'dovetailKey' : undefined
-                          )
-                        }
-                        options={[
-                          { id: 'dovetail', name: t('baseplate.connectorStyle.dovetail') },
-                          { id: 'dovetailKey', name: t('baseplate.connectorStyle.dovetailKey') },
-                        ]}
-                        aria-label={t('baseplate.connectorStyle.label')}
-                      />
-                    </SettingsRow>
                     <SettingsRow
                       label={t('baseplate.connectorFit.label')}
                       tooltip={t('baseplate.connectorFit.info')}
@@ -356,6 +354,7 @@ export function BaseplatePanel() {
                       />
                     </SettingsRow>
                     {baseplateParams.connectorStyle !== 'dovetailKey' &&
+                      baseplateParams.connectorStyle !== 'snapClip' &&
                       baseplateParams.preferIdenticalPieces !== true && (
                         <Checkbox
                           checked={baseplateParams.invertDovetails === true}

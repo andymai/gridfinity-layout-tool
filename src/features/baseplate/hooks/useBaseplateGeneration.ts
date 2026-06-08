@@ -261,8 +261,33 @@ export function useBaseplateGeneration(): void {
   const setWasmStatus = useBaseplatePageStore((s) => s.setWasmStatus);
   const setTiling = useBaseplatePageStore((s) => s.setTiling);
   const setPieceMeshes = useBaseplatePageStore((s) => s.setPieceMeshes);
+  const setConnectorKeyMesh = useBaseplatePageStore((s) => s.setConnectorKeyMesh);
   const setSplitProgress = useBaseplatePageStore((s) => s.setSplitProgress);
   const setDedupStats = useBaseplatePageStore((s) => s.setDedupStats);
+
+  /**
+   * Store the seated snap-clip mesh from a batch of piece results (every snap-clip
+   * piece carries an identical copy; the first wins), or clear it when none do —
+   * e.g. dovetail keys or a single unsplit plate.
+   */
+  const applyConnectorKeyMesh = useCallback(
+    (results: readonly GenerationResult[]): void => {
+      for (const r of results) {
+        const m = r.mesh.connectorKeyMesh;
+        if (m) {
+          setConnectorKeyMesh({
+            vertices: m.vertices,
+            normals: m.normals,
+            indices: m.indices,
+            triangleCount: m.triangleCount,
+          });
+          return;
+        }
+      }
+      setConnectorKeyMesh(null);
+    },
+    [setConnectorKeyMesh]
+  );
 
   /**
    * Phase 1: Synchronous direct-mesh preview.
@@ -286,6 +311,10 @@ export function useBaseplateGeneration(): void {
       setTiling(tiling);
       setSplitProgress(null);
       setDedupStats(null);
+      // The procedural direct mesh can't build the relieved clip; clear any stale
+      // one so the preview falls back to its draft clip until BREP supplies the
+      // exact mesh.
+      setConnectorKeyMesh(null);
 
       try {
         if (!tiling.isSplit) {
@@ -329,7 +358,14 @@ export function useBaseplateGeneration(): void {
 
       return tiling;
     },
-    [setTiling, setGenerationResult, setPieceMeshes, setSplitProgress, setDedupStats]
+    [
+      setTiling,
+      setGenerationResult,
+      setPieceMeshes,
+      setConnectorKeyMesh,
+      setSplitProgress,
+      setDedupStats,
+    ]
   );
 
   /**
@@ -422,6 +458,7 @@ export function useBaseplateGeneration(): void {
 
           setGenerationResult(toSingleMesh(result, 'brep'));
           setPieceMeshes([]);
+          setConnectorKeyMesh(null);
           setGenerationStatus('complete');
         } else {
           const pool = poolRef.current;
@@ -472,6 +509,7 @@ export function useBaseplateGeneration(): void {
 
           setSplitProgress(null);
           setPieceMeshes(meshEntries);
+          applyConnectorKeyMesh(uniqueResults);
           setGenerationResult(EMPTY_MESH);
           setGenerationStatus('complete');
         }
@@ -535,7 +573,15 @@ export function useBaseplateGeneration(): void {
         }
       }
     },
-    [setGenerationStatus, setGenerationResult, setPieceMeshes, setSplitProgress, setDedupStats]
+    [
+      setGenerationStatus,
+      setGenerationResult,
+      setPieceMeshes,
+      applyConnectorKeyMesh,
+      setConnectorKeyMesh,
+      setSplitProgress,
+      setDedupStats,
+    ]
   );
 
   /**
