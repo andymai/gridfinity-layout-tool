@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.155.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.2...gridfinity-layout-tool-v4.155.3) (2026-06-08)
+
+
+### Performance
+
+* **split:** cut only each worker's assigned pieces ([#2069](https://github.com/andymai/gridfinity-layout-tool/issues/2069)) ([b1adcd3](https://github.com/andymai/gridfinity-layout-tool/commit/b1adcd36db6e78d3ee6c8408ea9c7174b730fa19))
+
 ## [4.155.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.1...gridfinity-layout-tool-v4.155.2) (2026-06-08)
 
 
