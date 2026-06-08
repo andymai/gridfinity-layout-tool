@@ -386,30 +386,48 @@ function relieveClipForSockets(clip: Shape3D, totalHeight: number, gridUnitMm: n
  * directly into the seam; the export path rotates it flat for printing.
  *
  * Nominal dimensions (no clearance — the pockets carry it). Cross-section in
- * X-Z, extruded along the seam (Y). The top-bridge corners are relieved against
- * the adjacent edge sockets ({@link relieveClipForSockets}) so a seated clip
- * doesn't block bins in the sockets flanking the seam.
+ * X-Z, extruded along the seam (Y). The profile carries FDM-balanced edge
+ * treatments — flex-slot root fillets (relieve the hinge stress riser), a
+ * top-edge chamfer, and slot-mouth fillets — which all sweep into clean vertical
+ * walls in the print orientation (no overhang, no print cost); the barb apex,
+ * catch face, and leg bearing faces stay crisp. The top-bridge corners are then
+ * relieved against the adjacent edge sockets ({@link relieveClipForSockets}) so
+ * a seated clip doesn't block bins in the sockets flanking the seam.
  */
 export function buildSnapClip(totalHeight: number, gridUnitMm: number): Shape3D {
   const lv = snapClipLevels(totalHeight, 0);
   const g = SNAP_CLIP.GAP_HALF;
   const br = SNAP_CLIP.BRIDGE_THK;
   const { legOuter, barbTip, apexZ, catchZ, leadZ, legBottom } = lv;
+  // Profile edge-treatments. The part prints as a constant cross-section prism
+  // (silhouette swept along the seam), so every corner here sweeps into a clean
+  // vertical wall — no overhang, no FDM print cost. Radii are absolute and the
+  // adjacent segments only grow with slab height, so they fit at every height.
+  // Kept crisp on purpose: the barb apex + catch face (grip) and the leg outer
+  // faces (bearing against the pocket throat).
+  const R_TOP = 0.4; // top-edge chamfer — finished push surface, broken edge
+  const R_ROOT = 0.4; // flex-slot root fillet — relieves the hinge stress riser
+  const R_SLOT = 0.3; // slot-mouth fillet — clean opening, no sharp inner notch
   const profile = draw([-legOuter, 0])
     .lineTo([legOuter, 0])
+    .customCorner(R_TOP, 'chamfer')
     .lineTo([legOuter, catchZ])
     .lineTo([barbTip, apexZ])
     .lineTo([legOuter, leadZ])
     .lineTo([legOuter, -legBottom])
     .lineTo([g, -legBottom])
+    .customCorner(R_SLOT)
     .lineTo([g, -br])
+    .customCorner(R_ROOT)
     .lineTo([-g, -br])
+    .customCorner(R_ROOT)
     .lineTo([-g, -legBottom])
+    .customCorner(R_SLOT)
     .lineTo([-legOuter, -legBottom])
     .lineTo([-legOuter, leadZ])
     .lineTo([-barbTip, apexZ])
     .lineTo([-legOuter, catchZ])
-    .close();
+    .closeWithCustomCorner(R_TOP, 'chamfer');
   const seated = sketch(profile, 'XZ', 0).extrude(SNAP_CLIP.LEG_L);
   const centered = translate(seated, [0, SNAP_CLIP.LEG_L / 2, 0]); // center on the seam axis
   seated.delete(); // translate returns a new shape; free the intermediate

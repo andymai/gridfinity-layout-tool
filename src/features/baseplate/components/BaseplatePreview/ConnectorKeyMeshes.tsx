@@ -61,35 +61,96 @@ function buildKeyGeometry(totalHeight: number): THREE.ExtrudeGeometry {
   return geometry;
 }
 
+type Corner = { r: number; chamfer?: boolean };
+
+/** Emit a closed THREE.Shape over `pts`, rounding/chamfering tagged corners. */
+function roundedShape(
+  pts: ReadonlyArray<[number, number]>,
+  corners: readonly Corner[]
+): THREE.Shape {
+  const n = pts.length;
+  const pull = (i: number, j: number, r: number): [number, number] => {
+    const [ax, ay] = pts[i];
+    const [bx, by] = pts[j];
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len = Math.hypot(dx, dy) || 1;
+    return [ax + (dx / len) * r, ay + (dy / len) * r];
+  };
+  const entry = (i: number): [number, number] =>
+    corners[i].r > 0 ? pull(i, (i + n - 1) % n, corners[i].r) : pts[i];
+  const exit = (i: number): [number, number] =>
+    corners[i].r > 0 ? pull(i, (i + 1) % n, corners[i].r) : pts[i];
+
+  const shape = new THREE.Shape();
+  const [sx, sy] = exit(0);
+  shape.moveTo(sx, sy);
+  for (let k = 1; k <= n; k++) {
+    const i = k % n;
+    const [ex, ey] = entry(i);
+    shape.lineTo(ex, ey);
+    if (corners[i].r > 0) {
+      const [ox, oy] = exit(i);
+      if (corners[i].chamfer) shape.lineTo(ox, oy);
+      else shape.quadraticCurveTo(pts[i][0], pts[i][1], ox, oy);
+    }
+  }
+  shape.closePath();
+  return shape;
+}
+
 /**
  * Build the snap-clip ("staple") silhouette: two legs + flush bridge + central
- * flex slot + outward barbs, matching the worker's `buildSnapClip`. Drawn in the
- * cross-section (X = cross-seam, Y = up) and extruded along the seam by the clip
- * length, then baked into world orientation — bridge top at Z=0, legs hanging to
- * −legBottom, length along X — so the same per-junction Z-rotation as the
- * dovetail key seats it. Levels come from the shared `snapClipLevels`.
+ * flex slot + outward barbs, matching the worker's `buildSnapClip` — including
+ * its FDM-balanced edge treatments (slot-root + slot-mouth fillets, top chamfer;
+ * barb/bearing faces crisp). Drawn in the cross-section (X = cross-seam, Y = up)
+ * and extruded along the seam by the clip length, then baked into world
+ * orientation — bridge top at Z=0, legs hanging to −legBottom, length along X —
+ * so the same per-junction Z-rotation as the dovetail key seats it. Levels come
+ * from the shared `snapClipLevels`. (The socket-clearance relief the worker
+ * applies is omitted here — a cosmetic-only gap in the preview.)
  */
 function buildSnapClipGeometry(totalHeight: number): THREE.ExtrudeGeometry {
   const lv = snapClipLevels(totalHeight, 0);
   const g = SNAP_CLIP.GAP_HALF;
   const br = SNAP_CLIP.BRIDGE_THK;
   const { legOuter, barbTip, apexZ, catchZ, leadZ, legBottom } = lv;
-  const shape = new THREE.Shape();
-  shape.moveTo(-legOuter, 0);
-  shape.lineTo(legOuter, 0);
-  shape.lineTo(legOuter, catchZ);
-  shape.lineTo(barbTip, apexZ);
-  shape.lineTo(legOuter, leadZ);
-  shape.lineTo(legOuter, -legBottom);
-  shape.lineTo(g, -legBottom);
-  shape.lineTo(g, -br);
-  shape.lineTo(-g, -br);
-  shape.lineTo(-g, -legBottom);
-  shape.lineTo(-legOuter, -legBottom);
-  shape.lineTo(-legOuter, leadZ);
-  shape.lineTo(-barbTip, apexZ);
-  shape.lineTo(-legOuter, catchZ);
-  shape.closePath();
+  const rTop = 0.4;
+  const rRoot = 0.4;
+  const rSlot = 0.3;
+  const pts: Array<[number, number]> = [
+    [-legOuter, 0],
+    [legOuter, 0],
+    [legOuter, catchZ],
+    [barbTip, apexZ],
+    [legOuter, leadZ],
+    [legOuter, -legBottom],
+    [g, -legBottom],
+    [g, -br],
+    [-g, -br],
+    [-g, -legBottom],
+    [-legOuter, -legBottom],
+    [-legOuter, leadZ],
+    [-barbTip, apexZ],
+    [-legOuter, catchZ],
+  ];
+  const corners: Corner[] = [
+    { r: rTop, chamfer: true }, // top-left
+    { r: rTop, chamfer: true }, // top-right
+    { r: 0 },
+    { r: 0 }, // barb apex — crisp
+    { r: 0 },
+    { r: 0 }, // leg tip — crisp bearing face
+    { r: rSlot }, // slot mouth
+    { r: rRoot }, // slot root
+    { r: rRoot }, // slot root
+    { r: rSlot }, // slot mouth
+    { r: 0 }, // leg tip — crisp bearing face
+    { r: 0 },
+    { r: 0 }, // barb apex — crisp
+    { r: 0 },
+  ];
+  const shape = roundedShape(pts, corners);
   const geometry = new THREE.ExtrudeGeometry(shape, {
     depth: SNAP_CLIP.LEG_L,
     bevelEnabled: false,
