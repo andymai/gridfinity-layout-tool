@@ -355,17 +355,18 @@ function splitSolidIntoPieces(
 
         // Validate that the boolean intersection preserved the full geometry.
         // The Z extent comes out far shorter than the bin height in two cases:
-        // (1) a piece bounded by interior cuts on all four sides sits entirely
-        // inside the bin's open cavity, so it legitimately has only a floor and
-        // no walls — not a bug; (2) OCCT dropped walls because a cut plane went
-        // coplanar with an internal wall — that one is a bug worth reporting.
+        // (1) on a HOLLOW bin, a piece bounded by interior cuts on all four
+        // sides sits entirely inside the open cavity, so it legitimately has
+        // only a floor and no walls — not a bug; (2) OCCT dropped walls because
+        // a cut plane went coplanar with an internal wall — a bug worth
+        // reporting. A solid bin has no cavity, so case (1) can't apply to it.
         const pieceBounds = getBounds(piece);
         const actualZ = pieceBounds.zMax - pieceBounds.zMin;
         if (actualZ < totalHeight * 0.8) {
           piece.delete();
           cuttingBox.delete();
           const isFullyInterior = col > 0 && col < numCols - 1 && row > 0 && row < numRows - 1;
-          if (isFullyInterior) {
+          if (isFullyInterior && !params.base.solid) {
             throw new Error(
               `Split piece ${colLabel}${row + 1} falls entirely inside this bin's open cavity, ` +
                 `so it has only a ${actualZ.toFixed(1)}mm floor and no walls to print. ` +
@@ -508,18 +509,26 @@ function tessellatePiece(
 
   const pieceCenterX = xMinFromOrigin - outerW / 2 + widthMm / 2;
   const pieceCenterY = yMinFromOrigin - outerD / 2 + depthMm / 2;
-  const centeredPiece = translate(pieceSolid, [-pieceCenterX, -pieceCenterY, 0]);
 
-  const shapeMesh = mesh(centeredPiece, {
-    tolerance: PREVIEW_TOLERANCE,
-    angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
-  });
-  const edgeMesh = meshEdges(centeredPiece, {
-    tolerance: PREVIEW_TOLERANCE,
-    angularTolerance: PREVIEW_ANGULAR_TOLERANCE * 0.5,
-  });
-  centeredPiece.delete();
-  const meshData = toIndexedMeshData(shapeMesh, edgeMesh.lines);
+  // translate() returns a fresh shape; the original pieceSolid is never used
+  // again after tessellation, so dispose it here. Without this the per-piece
+  // boolean solids leak WASM memory across repeated preview generations.
+  let meshData;
+  try {
+    const centeredPiece = translate(pieceSolid, [-pieceCenterX, -pieceCenterY, 0]);
+    const shapeMesh = mesh(centeredPiece, {
+      tolerance: PREVIEW_TOLERANCE,
+      angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
+    });
+    const edgeMesh = meshEdges(centeredPiece, {
+      tolerance: PREVIEW_TOLERANCE,
+      angularTolerance: PREVIEW_ANGULAR_TOLERANCE * 0.5,
+    });
+    centeredPiece.delete();
+    meshData = toIndexedMeshData(shapeMesh, edgeMesh.lines);
+  } finally {
+    pieceSolid.delete();
+  }
 
   return {
     vertices: meshData.vertices,

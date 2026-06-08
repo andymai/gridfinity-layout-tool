@@ -31,10 +31,17 @@ const PARAMS: BinParams = {
   base: { ...DEFAULT_BIN_PARAMS.base, style: 'socket', stackingLip: true },
 };
 
-/** Interior cut planes for `n` equal pieces across a span (mm from center). */
-function cutPlanes(spanMm: number, n: number): number[] {
+/**
+ * Interior cut planes for `n` equal pieces across a span (mm from center).
+ * Nudged a fraction of a cell off socket-cell boundaries — real print-bed
+ * planes rarely land exactly on a wall, and the production path shifts them via
+ * shiftCutPlanesOffCellBoundaries; nudging here keeps the test off OCCT's
+ * coplanar-wall-drop edge case (#1676) rather than relying on the 0.1mm shift.
+ */
+function cutPlanes(spanMm: number, n: number, gridUnitMm = GRID): number[] {
   const planes: number[] = [];
-  for (let i = 1; i < n; i++) planes.push(-spanMm / 2 + (spanMm * i) / n);
+  const nudge = 0.27 * gridUnitMm;
+  for (let i = 1; i < n; i++) planes.push(-spanMm / 2 + (spanMm * i) / n + nudge);
   return planes;
 }
 
