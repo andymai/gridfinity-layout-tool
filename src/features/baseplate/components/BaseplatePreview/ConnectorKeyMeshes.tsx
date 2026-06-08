@@ -118,15 +118,8 @@ function buildSnapClipGeometry(totalHeight: number): THREE.ExtrudeGeometry {
   const rTop = 0.4;
   const rRoot = 0.4;
   const rSlot = 0.3;
-  // Centre alignment V-groove — matches the worker's buildSnapClip (runs along
-  // the seam as an "align to the seam" cue).
-  const grooveHalf = 0.4;
-  const grooveDepth = 0.35;
   const pts: Array<[number, number]> = [
     [-legOuter, 0],
-    [-grooveHalf, 0],
-    [0, -grooveDepth],
-    [grooveHalf, 0],
     [legOuter, 0],
     [legOuter, catchZ],
     [barbTip, apexZ],
@@ -143,9 +136,6 @@ function buildSnapClipGeometry(totalHeight: number): THREE.ExtrudeGeometry {
   ];
   const corners: Corner[] = [
     { r: rTop, chamfer: true }, // top-left
-    { r: 0 }, // groove edge
-    { r: 0 }, // groove bottom
-    { r: 0 }, // groove edge
     { r: rTop, chamfer: true }, // top-right
     { r: 0 },
     { r: 0 }, // barb apex — crisp

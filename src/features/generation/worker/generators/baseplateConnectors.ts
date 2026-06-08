@@ -388,10 +388,9 @@ function relieveClipForSockets(clip: Shape3D, totalHeight: number, gridUnitMm: n
  * Nominal dimensions (no clearance — the pockets carry it). Cross-section in
  * X-Z, extruded along the seam (Y). The profile carries FDM-balanced edge
  * treatments — flex-slot root fillets (relieve the hinge stress riser), a
- * top-edge chamfer, slot-mouth fillets, and a centre alignment V-groove (an
- * "align to the seam" cue) — which all sweep into clean vertical walls in the
- * print orientation (no overhang, no print cost); the barb apex, catch face,
- * and leg bearing faces stay crisp. The top-bridge corners are then
+ * top-edge chamfer, and slot-mouth fillets — which all sweep into clean vertical
+ * walls in the print orientation (no overhang, no print cost); the barb apex,
+ * catch face, and leg bearing faces stay crisp. The top-bridge corners are then
  * relieved against the adjacent edge sockets ({@link relieveClipForSockets}) so
  * a seated clip doesn't block bins in the sockets flanking the seam.
  */
@@ -409,18 +408,7 @@ export function buildSnapClip(totalHeight: number, gridUnitMm: number): Shape3D 
   const R_TOP = 0.4; // top-edge chamfer — finished push surface, broken edge
   const R_ROOT = 0.4; // flex-slot root fillet — relieves the hinge stress riser
   const R_SLOT = 0.3; // slot-mouth fillet — clean opening, no sharp inner notch
-  // Alignment line: a shallow V-groove down the bridge centre. It runs the clip
-  // length (along the seam), so it reads as the seam continuing across the clip —
-  // an "align this to the seam" cue that also shows every clip is the same part
-  // rotated to fit. Along the seam = vertical in the print orientation, so it
-  // prints support-free; it sits on the inter-socket ridge (X=0), clear of the
-  // socket relief. Depth stays well above the flex slot (br).
-  const GROOVE_HALF = 0.4;
-  const GROOVE_DEPTH = 0.35;
   const profile = draw([-legOuter, 0])
-    .lineTo([-GROOVE_HALF, 0])
-    .lineTo([0, -GROOVE_DEPTH])
-    .lineTo([GROOVE_HALF, 0])
     .lineTo([legOuter, 0])
     .customCorner(R_TOP, 'chamfer')
     .lineTo([legOuter, catchZ])
