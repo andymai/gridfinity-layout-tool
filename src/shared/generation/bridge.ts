@@ -23,6 +23,7 @@ export type {
 } from '@/features/generation/bridge/types';
 export type {
   SplitExportResult,
+  SplitPreviewResult,
   GenerationResult,
   BaseplateExportResult,
   CombinedExportResult,
