@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.155.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.3...gridfinity-layout-tool-v4.155.4) (2026-06-08)
+
+
+### Performance
+
+* **split:** render a Manifold draft split on the leading edge ([#2071](https://github.com/andymai/gridfinity-layout-tool/issues/2071)) ([ddb84e7](https://github.com/andymai/gridfinity-layout-tool/commit/ddb84e7a6152243e81434ebdcb359906f1f823d7))
+
 ## [4.155.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.2...gridfinity-layout-tool-v4.155.3) (2026-06-08)
 
 
