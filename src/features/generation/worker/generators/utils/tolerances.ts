@@ -25,7 +25,10 @@ export const EXPORT_ANGULAR_TOLERANCE = 5;
  *
  * Quality tiers:
  * - Export: fine (0.01mm) for STL/STEP accuracy
- * - Lip bins: tight to preserve chamfer profile at corner junctions
+ * - Lip bins: tight to preserve chamfer profile at corner junctions, but
+ *   relaxed on large bins so a giant hex-riddled wall isn't meshed at
+ *   near-export fidelity just to keep a 2.6mm rim chamfer smooth — cutting the
+ *   preview mesh weight (memory/transfer/GPU), not the generation time itself
  * - Small bins (≤200mm): moderate quality
  * - Large bins (>200mm): coarser for preview speed
  */
@@ -38,9 +41,15 @@ export function computeTessellationTolerances(
     return { tolerance: EXPORT_TOLERANCE, angularTolerance: EXPORT_ANGULAR_TOLERANCE };
   }
   if (hasLip) {
+    // The chamfer needs fine tessellation, but only at the rim — pinning the
+    // whole solid at a flat 0.06 ceiling bloated the preview triangle count on
+    // large hex bins (wall area, not the lip, dominates the face count). Let the
+    // tolerance grow with size, capped at 0.15mm (the coarse tier's floor) so the
+    // chamfer stays acceptable while large walls shed triangles. Normal bins
+    // (<300mm) are unaffected: maxDimension/5000 stays ≤0.06 below that.
     return {
-      tolerance: Math.min(0.06, Math.max(0.03, maxDimension / 5000)),
-      angularTolerance: 8,
+      tolerance: Math.min(0.15, Math.max(0.03, maxDimension / 5000)),
+      angularTolerance: maxDimension > 200 ? 12 : 8,
     };
   }
   if (maxDimension <= 200) {

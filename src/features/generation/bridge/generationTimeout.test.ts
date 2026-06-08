@@ -10,11 +10,15 @@ import {
   BASEPLATE_MAX_TIMEOUT_MS,
   HEX_PATTERN_BONUS_MS,
   HEX_PLUS_CUTOUT_BONUS_MS,
+  HEX_FOOTPRINT_BONUS_MS_PER_CELL,
+  HEX_FOOTPRINT_BONUS_FLOOR_CELLS,
   HEIGHT_BONUS_MS,
   MAX_TIMEOUT_MS,
   computeBaseplateTimeoutMs,
   computeGenerationTimeoutMs,
 } from './generationTimeout';
+
+const HEX_ON = { enabled: true, pattern: 'honeycomb' } as const;
 
 function params(overrides: Partial<BinParams> = {}): BinParams {
   return { ...DEFAULT_BIN_PARAMS, ...overrides };
@@ -111,6 +115,39 @@ describe('computeGenerationTimeoutMs', () => {
     );
   });
 
+  it('grants a footprint bonus to large hex bins, scaled per grid cell above the floor', () => {
+    // 8×8 = 64 cells; 64 - 16 floor = 48 chargeable cells.
+    const t = computeGenerationTimeoutMs(
+      params({ width: 8, depth: 8, height: 3, wallPattern: HEX_ON })
+    );
+    expect(t).toBe(BASE_TIMEOUT_MS + HEX_PATTERN_BONUS_MS + 48 * HEX_FOOTPRINT_BONUS_MS_PER_CELL);
+  });
+
+  it('rounds fractional footprint dimensions up when costing cells', () => {
+    const frac = computeGenerationTimeoutMs(
+      params({ width: 7.5, depth: 8, height: 3, wallPattern: HEX_ON })
+    );
+    const rounded = computeGenerationTimeoutMs(
+      params({ width: 8, depth: 8, height: 3, wallPattern: HEX_ON })
+    );
+    expect(frac).toBe(rounded);
+  });
+
+  it('does not grant a footprint bonus below the cell floor', () => {
+    // 4×4 = 16 cells = exactly the floor → no footprint bonus.
+    const t = computeGenerationTimeoutMs(
+      params({ width: 4, depth: 4, height: 3, wallPattern: HEX_ON })
+    );
+    expect(t).toBe(BASE_TIMEOUT_MS + HEX_PATTERN_BONUS_MS);
+    expect(HEX_FOOTPRINT_BONUS_FLOOR_CELLS).toBe(16);
+  });
+
+  it('does not grant a footprint bonus when the hex pattern is off', () => {
+    // A large plain bin tessellates fast — footprint cost is hex-driven.
+    const t = computeGenerationTimeoutMs(params({ width: 12, depth: 12, height: 3 }));
+    expect(t).toBe(BASE_TIMEOUT_MS);
+  });
+
   it('caps at the maximum timeout', () => {
     const t = computeGenerationTimeoutMs(
       params({
@@ -124,6 +161,31 @@ describe('computeGenerationTimeoutMs', () => {
       })
     );
     expect(t).toBe(MAX_TIMEOUT_MS);
+  });
+
+  it('caps a large-footprint hex bin at the maximum timeout', () => {
+    const t = computeGenerationTimeoutMs(
+      params({ width: 16, depth: 16, height: 6, wallPattern: HEX_ON })
+    );
+    expect(t).toBe(MAX_TIMEOUT_MS);
+  });
+
+  it('clamps non-finite or invalid dimensions into the supported range', () => {
+    // Mid-edit UI state can transiently present NaN/negative dims. setTimeout(NaN)
+    // coerces to 0ms and would cancel generation immediately, so the budget must
+    // stay finite and ≥ BASE regardless of input.
+    const cases = [
+      params({ width: Number.NaN, depth: 8, height: 6, wallPattern: HEX_ON }),
+      params({ width: 8, depth: Number.POSITIVE_INFINITY, height: 6, wallPattern: HEX_ON }),
+      params({ width: -4, depth: 8, height: 6, wallPattern: HEX_ON }),
+      params({ width: 8, depth: 8, height: Number.NaN, wallPattern: HEX_ON }),
+    ];
+    for (const p of cases) {
+      const t = computeGenerationTimeoutMs(p);
+      expect(Number.isFinite(t)).toBe(true);
+      expect(t).toBeGreaterThanOrEqual(BASE_TIMEOUT_MS);
+      expect(t).toBeLessThanOrEqual(MAX_TIMEOUT_MS);
+    }
   });
 });
 
