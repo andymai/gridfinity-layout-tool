@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useConnectorSampleExport } from './useConnectorSampleExport';
 import { triggerDownload } from '@/shared/generation/exportUtils';
+import { resetAllStores } from '@/test/testUtils';
 
 vi.mock('@/i18n', () => ({
   useTranslation:
@@ -39,6 +40,7 @@ vi.mock('@/shared/generation/export', () => ({
 
 describe('useConnectorSampleExport', () => {
   beforeEach(() => {
+    resetAllStores();
     activeBridge = null;
     vi.mocked(triggerDownload).mockClear();
   });
@@ -77,6 +79,20 @@ describe('useConnectorSampleExport', () => {
     expect(ok).toBe(true);
     expect(exportConnectorSample).toHaveBeenCalledWith(expect.anything(), 'stl');
     expect(triggerDownload).toHaveBeenCalledTimes(1);
+  });
+
+  it('honors a custom base name in the downloaded filename', async () => {
+    const exportConnectorSample = vi
+      .fn()
+      .mockResolvedValue({ data: new ArrayBuffer(8), fileName: 'x.stl' });
+    activeBridge = { exportConnectorSample };
+
+    const { result } = renderHook(() => useConnectorSampleExport());
+    await act(async () => {
+      await result.current.downloadSample('stl', 'my-card');
+    });
+
+    expect(triggerDownload).toHaveBeenCalledWith(expect.anything(), 'my-card.stl');
   });
 
   it('requests STL from the bridge and converts it for 3MF', async () => {

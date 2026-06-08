@@ -27,12 +27,13 @@ import {
 } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat } from '@/shared/types/bin';
 
-const SAMPLE_BASE_NAME = 'connector-fit-sample';
+/** Default download name when the dialog isn't given a custom one. */
+export const CONNECTOR_SAMPLE_BASE_NAME = 'connector-fit-sample';
 
 interface UseConnectorSampleExportReturn {
   readonly isExporting: boolean;
   readonly canExport: boolean;
-  readonly downloadSample: (format: ExportFileFormat) => Promise<boolean>;
+  readonly downloadSample: (format: ExportFileFormat, baseName?: string) => Promise<boolean>;
 }
 
 function convertStlTo3mf(stlData: ArrayBuffer, name: string): Blob {
@@ -80,7 +81,7 @@ export function useConnectorSampleExport(): UseConnectorSampleExportReturn {
   const canExport = getActiveBridge() !== null;
 
   const downloadSample = useCallback(
-    async (format: ExportFileFormat) => {
+    async (format: ExportFileFormat, baseName: string = CONNECTOR_SAMPLE_BASE_NAME) => {
       const bridge = getActiveBridge();
       if (!bridge) {
         useToastStore.getState().addToast(t('baseplate.exportNotReady'), 'error');
@@ -100,12 +101,12 @@ export function useConnectorSampleExport(): UseConnectorSampleExportReturn {
 
         if (format === '3mf') {
           const stlResult = await bridge.exportConnectorSample(fullParams, 'stl');
-          const blob = convertStlTo3mf(stlResult.data, SAMPLE_BASE_NAME);
-          triggerDownload(blob, `${SAMPLE_BASE_NAME}${FORMAT_EXTENSIONS['3mf']}`);
+          const blob = convertStlTo3mf(stlResult.data, baseName);
+          triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS['3mf']}`);
         } else {
           const result = await bridge.exportConnectorSample(fullParams, format);
           const blob = new Blob([result.data], { type: FORMAT_MIME_TYPES[format] });
-          triggerDownload(blob, `${SAMPLE_BASE_NAME}${FORMAT_EXTENSIONS[format]}`);
+          triggerDownload(blob, `${baseName}${FORMAT_EXTENSIONS[format]}`);
         }
         return true;
       } catch (error: unknown) {

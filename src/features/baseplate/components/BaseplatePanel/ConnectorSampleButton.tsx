@@ -12,11 +12,12 @@ import { LayoutGridIcon } from '@/design-system/Icon';
 import { ExportDialog } from '@/shared/components/ExportDialog';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
-import { useConnectorSampleExport } from '../../hooks/useConnectorSampleExport';
+import {
+  useConnectorSampleExport,
+  CONNECTOR_SAMPLE_BASE_NAME,
+} from '../../hooks/useConnectorSampleExport';
 import { FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
-
-const SAMPLE_BASE_NAME = 'connector-fit-sample';
 
 export function ConnectorSampleButton() {
   const t = useTranslation();
@@ -34,17 +35,17 @@ export function ConnectorSampleButton() {
   const baseName =
     fileNameConfig.style === 'custom' && fileNameConfig.customName.trim() !== ''
       ? fileNameConfig.customName.trim()
-      : SAMPLE_BASE_NAME;
+      : CONNECTOR_SAMPLE_BASE_NAME;
 
   const handleDownload = useCallback(() => {
-    void downloadSample(activeFormat).then((succeeded) => {
+    void downloadSample(activeFormat, baseName).then((succeeded) => {
       if (!succeeded) return;
       useToastStore
         .getState()
         .addToast(t('baseplate.connectorSample.exportComplete'), 'success', 3000);
       setOpen(false);
     });
-  }, [downloadSample, activeFormat, t]);
+  }, [downloadSample, activeFormat, baseName, t]);
 
   const tips = useMemo(
     () => [
