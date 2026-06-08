@@ -1,6 +1,23 @@
+import { expect } from 'vitest';
 import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { defineScenario, makeCutout } from '../__kernel-tests__/scenarioTypes';
 import type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
+
+const SOLID_BASE = { ...DEFAULT_BIN_PARAMS.base, solid: true };
+
+/**
+ * Reusable comparison guard: the cutout MUST actually subtract material.
+ *
+ * Structural-validity (the default scenario assert) can't catch a silent
+ * no-op cut — an uncut bin is still valid. This was the chamfered-circle bug:
+ * the chamfer loft emitted an invalid shell for the periodic ellipse profile,
+ * the boolean dropped it, and the bin came out uncut but valid. A real cut
+ * carves interior walls and so adds triangles over the bare solid bin.
+ */
+const mustCut: NonNullable<ScenarioCase['compareWith']> = {
+  params: { style: 'solid', base: SOLID_BASE, cutouts: [] },
+  assert: (withCut, noCut) => expect(withCut.triangleCount).toBeGreaterThan(noCut.triangleCount),
+};
 
 export const solidCutouts: ScenarioCase[] = [
   defineScenario('solid cutouts', '2\u00d72 solid with rectangle cutout', {
@@ -39,13 +56,30 @@ export const solidCutouts: ScenarioCase[] = [
         makeCutout({ shape: 'polygon', sides: 6, width: 18, depth: 16, chamferWidth: 1.5 }),
       ],
     },
+    compareWith: mustCut,
   }),
   defineScenario('solid cutouts', '2\u00d72 solid with chamfered circle cutout', {
     params: {
       style: 'solid',
       base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
-      cutouts: [makeCutout({ shape: 'circle', width: 20, depth: 20, chamferWidth: 2 })],
+      cutouts: [
+        makeCutout({ shape: 'circle', x: 30, y: 30, width: 20, depth: 20, chamferWidth: 2 }),
+      ],
     },
+    compareWith: mustCut,
+  }),
+  defineScenario('solid cutouts', '2\u00d72 solid with chamfered ellipse cutout', {
+    params: {
+      style: 'solid',
+      base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
+      // Width \u2260 depth \u2192 a true ellipse. Same periodic-edge profile as the circle,
+      // so it exercises the polygonal-approximation loft path that replaced the
+      // invalid drawEllipse loft; the cut must still land.
+      cutouts: [
+        makeCutout({ shape: 'circle', x: 26, y: 32, width: 28, depth: 16, chamferWidth: 1.5 }),
+      ],
+    },
+    compareWith: mustCut,
   }),
   defineScenario('solid cutouts', '2\u00d72 solid with chamfered rectangle cutout', {
     params: {
@@ -73,6 +107,7 @@ export const solidCutouts: ScenarioCase[] = [
       // the other shapes \u2014 exercise that loft path explicitly.
       cutouts: [makeCutout({ shape: 'slot', width: 30, depth: 12, chamferWidth: 1.5 })],
     },
+    compareWith: mustCut,
   }),
   defineScenario('solid cutouts', '2\u00d72 solid with slot (stadium) cutout', {
     params: {
@@ -224,6 +259,7 @@ export const solidCutouts: ScenarioCase[] = [
       base: { ...DEFAULT_BIN_PARAMS.base, solid: true },
       cutouts: [makeCutout({ shape: 'circle', width: 20, depth: 30 })],
     },
+    compareWith: mustCut,
   }),
   defineScenario('solid cutouts', '2\u00d72 solid with grouped cutouts', {
     params: {

@@ -15,7 +15,6 @@ import {
   draw,
   drawRoundedRectangle,
   box,
-  drawEllipse,
   cylinder,
   unwrap,
   translate,
@@ -75,9 +74,31 @@ function computeRotationSafeAABB(cx: number, cy: number, width: number, depth: n
 }
 
 /**
- * 2D outline for a parametric cutout shape, centered at origin. Shared by the
- * straight-extrude path and the chamfer loft so both agree on the profile.
- * Paths are not parametric and are handled separately.
+ * Vertex count for the polygonal circle/ellipse approximation.
+ *
+ * brepjs's `drawEllipse` yields a single periodic edge with no vertices. That
+ * breaks two kernel ops: extruding it produces an invalid (non-solid) prism,
+ * and `loftWith({ ruled: true })` has nothing to rule between. In both cases the
+ * resulting shape is dropped by the downstream boolean, so the cut silently
+ * no-ops while the bin stays valid. A fine polygon gives explicit vertices the
+ * extrude and ruled loft both need (the same reason polygon/slot/rectangle cut
+ * fine); 64 sides is visually smooth at print scale.
+ */
+const ELLIPSE_SEGMENTS = 64;
+
+/** Closed fine-polygon approximation of an ellipse (semi-axes rx, ry), centered at origin. */
+function ellipsePolygonDrawing(rx: number, ry: number): Drawing {
+  let pen = draw([rx, 0]);
+  for (let i = 1; i < ELLIPSE_SEGMENTS; i++) {
+    const a = (i / ELLIPSE_SEGMENTS) * Math.PI * 2;
+    pen = pen.lineTo([rx * Math.cos(a), ry * Math.sin(a)]);
+  }
+  return pen.close();
+}
+
+/**
+ * 2D outline for a parametric cutout shape, centered at origin. Used by the
+ * chamfer loft. Paths are not parametric and are handled separately.
  */
 function cutoutProfileDrawing(p: {
   readonly shape: string;
@@ -88,7 +109,7 @@ function cutoutProfileDrawing(p: {
 }): Drawing {
   switch (p.shape) {
     case 'circle':
-      return drawEllipse(p.w / 2, p.d / 2);
+      return ellipsePolygonDrawing(p.w / 2, p.d / 2);
     case 'polygon': {
       const pts = regularPolygonPoints(
         clampPolygonSides(p.sides ?? DEFAULT_POLYGON_SIDES),
@@ -210,9 +231,12 @@ function buildUnrotatedCutoutShape(cutout: {
     case 'circle': {
       const rx = w / 2;
       const ry = d / 2;
+      // True circle → smooth cylinder. Ellipse (rx≠ry) → polygon prism: a
+      // `drawEllipse` extrude produces an invalid solid that the boolean drops,
+      // so the cut silently no-ops (see ELLIPSE_SEGMENTS).
       return Math.abs(rx - ry) < 0.01
         ? cylinder(rx, cutout.cutDepth)
-        : sketch(drawEllipse(rx, ry), 'XY').extrude(cutout.cutDepth);
+        : sketch(ellipsePolygonDrawing(rx, ry), 'XY').extrude(cutout.cutDepth);
     }
     case 'polygon': {
       const pts = regularPolygonPoints(
