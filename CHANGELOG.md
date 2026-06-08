@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.153.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.153.2...gridfinity-layout-tool-v4.153.3) (2026-06-08)
+
+
+### Bug Fixes
+
+* **generation:** footprint-aware timeout budget + relax large-bin lip tessellation ([#2056](https://github.com/andymai/gridfinity-layout-tool/issues/2056)) ([2381109](https://github.com/andymai/gridfinity-layout-tool/commit/23811096a4eaa98c84e893ac2e568c78c9110ee6))
+
 ## [4.153.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.153.1...gridfinity-layout-tool-v4.153.2) (2026-06-07)
 
 
