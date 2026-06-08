@@ -122,7 +122,11 @@ export class WorkerPool {
   ): Promise<SplitPreviewResult> {
     await this.ensureWorkers();
 
-    const groups = distributeRoundRobin(totalPieceCount, this.bridges.length);
+    // Cap active workers to the piece count: each worker regenerates the full
+    // solid, so spinning up more workers than pieces only adds redundant
+    // full-gen work with no piece to show for it.
+    const activeWorkers = Math.min(totalPieceCount, this.bridges.length);
+    const groups = distributeRoundRobin(totalPieceCount, activeWorkers);
     let completed = 0;
 
     const taskGroups = groups.map((pieceIndices, bridgeIdx) => {
@@ -174,7 +178,9 @@ export class WorkerPool {
   ): Promise<SplitExportResult> {
     await this.ensureWorkers();
 
-    const groups = distributeRoundRobin(totalPieceCount, this.bridges.length);
+    // Cap active workers to the piece count (see generateSplitPreview).
+    const activeWorkers = Math.min(totalPieceCount, this.bridges.length);
+    const groups = distributeRoundRobin(totalPieceCount, activeWorkers);
     let completed = 0;
 
     const taskGroups = groups.map((pieceIndices, bridgeIdx) => {
