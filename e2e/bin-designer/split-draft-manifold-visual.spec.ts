@@ -44,16 +44,22 @@ test.describe('Manifold draft split — visual', () => {
     });
     await waitForGenerationComplete(page);
 
-    const split = await canvas.screenshot({ path: '/tmp/split-draft-1.png' });
+    const split = await canvas.screenshot();
 
     // Edit the bin; the split preview must re-render (draft then exact).
     await page.getByRole('spinbutton', { name: 'Height' }).fill('6');
     await page.getByRole('spinbutton', { name: 'Height' }).blur();
     await waitForGenerationComplete(page);
 
-    const splitEdited = await canvas.screenshot({ path: '/tmp/split-draft-2.png' });
+    const splitEdited = await canvas.screenshot();
 
     // The taller bin must produce a visibly different split preview.
-    expect(Buffer.compare(split, splitEdited)).not.toBe(0);
+    expect(split.equals(splitEdited)).toBe(false);
+
+    await test.info().attach('split-preview.png', { body: split, contentType: 'image/png' });
+    await test.info().attach('split-preview-taller.png', {
+      body: splitEdited,
+      contentType: 'image/png',
+    });
   });
 });

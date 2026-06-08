@@ -18,7 +18,7 @@
  * Clears meshes when the bin no longer needs splitting.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
@@ -73,13 +73,21 @@ export function useSplitPreview(): void {
   );
 
   // Use params.gridUnitMm (the bin's actual grid unit) rather than
-  // defaultGridUnitMm from settings, which may be stale
-  const maxGrid = calcMaxGridUnits(defaultPrintBedSize, params.gridUnitMm, defaultPrintBedDepth);
+  // defaultGridUnitMm from settings, which may be stale. Memoized on its
+  // primitive inputs so it's stable across renders — otherwise a fresh object
+  // each render would re-run the effects (and re-dispatch split work) below.
+  const maxGrid = useMemo(
+    () => calcMaxGridUnits(defaultPrintBedSize, params.gridUnitMm, defaultPrintBedDepth),
+    [defaultPrintBedSize, params.gridUnitMm, defaultPrintBedDepth]
+  );
   const needsSplit = params.width > maxGrid.width || params.depth > maxGrid.depth;
 
-  // Monotonic per-edit token; the most recent dispatch wins. finalizedToken is
-  // the highest token whose EXACT result has been applied — drafts at or below
-  // it are stale (covers the exact-resolves-before-draft race).
+  // Monotonic per-EDIT token, bumped only when params/maxGrid change (below) —
+  // never by draft dispatch or bridge readiness. Both the draft and exact paths
+  // read the current edit's token, so a draft that arrives after the exact
+  // result for the SAME edit (token <= finalizedToken) is dropped rather than
+  // downgrading the preview. finalizedToken is the highest token whose EXACT
+  // result has been applied.
   const genTokenRef = useRef(0);
   const finalizedTokenRef = useRef(0);
   const prevStatusRef = useRef(generationStatus);
@@ -117,6 +125,15 @@ export function useSplitPreview(): void {
     };
   }, []);
 
+  // Bump the per-edit token whenever the edit identity changes. Declared before
+  // the draft/exact effects so they read the already-incremented token on the
+  // same render. The draft effect also re-runs on previewReady (late bridge
+  // acquire) WITHOUT bumping, so a draft for an already-finalized edit is
+  // correctly dropped instead of overwriting the exact result.
+  useEffect(() => {
+    genTokenRef.current += 1;
+  }, [params, maxGrid]);
+
   // Draft path: render a fast Manifold split on the leading edge of each edit,
   // without waiting for the exact main generation to finish.
   useEffect(() => {
@@ -124,7 +141,10 @@ export function useSplitPreview(): void {
     const preview = previewBridgeRef.current;
     if (!preview || preview.isDestroyed) return;
 
-    const token = ++genTokenRef.current;
+    // Read (don't bump) the current edit's token. Skip entirely if the exact
+    // result for this edit already landed — a late draft must not downgrade it.
+    const token = genTokenRef.current;
+    if (token <= finalizedTokenRef.current) return;
     const { cutPlanesX, cutPlanesY, splitConnectorConfig } = computeSplitInputs(params, maxGrid);
 
     void preview
@@ -162,11 +182,11 @@ export function useSplitPreview(): void {
     const bridge = getActiveBridge();
     if (!bridge) return;
 
-    // Claim a fresh token so a stale exact (from a superseded edit) can't
-    // overwrite a newer one, and finalize it on success so a slow draft for an
-    // earlier edit is dropped. Bumping past any in-flight draft for this same
-    // edit is fine — by justCompleted the draft has already served its purpose.
-    const token = ++genTokenRef.current;
+    // Read the current edit's token (bumped by the edit effect above, shared
+    // with the draft). On success we finalize it so a slow draft for this edit
+    // is dropped; if a newer edit arrives mid-flight, token !== genToken drops
+    // this stale exact.
+    const token = genTokenRef.current;
     const { cutPlanesX, cutPlanesY, totalPieceCount, splitConnectorConfig } = computeSplitInputs(
       params,
       maxGrid
