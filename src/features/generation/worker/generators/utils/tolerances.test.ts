@@ -25,8 +25,10 @@ describe('computeTessellationTolerances', () => {
 
   it('relaxes the lip tolerance on large bins instead of pinning it at 0.06', () => {
     // Regression: the lip branch used to clamp at 0.06 for ANY size, so a
-    // 16-grid bin (~672mm) was tessellated at near-export fidelity in preview,
-    // exploding the hex-wall triangle count and timing out generation.
+    // 16-grid bin (~672mm) was meshed at near-export fidelity in preview,
+    // bloating the preview triangle count (memory/transfer/GPU weight). This
+    // does not drive the generation timeout — the hex boolean cut does — but a
+    // lighter preview mesh is worth it on large bins.
     const small = computeTessellationTolerances(false, true, 100).tolerance;
     const large = computeTessellationTolerances(false, true, 672).tolerance;
     expect(large).toBeGreaterThan(0.06);

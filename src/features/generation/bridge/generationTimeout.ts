@@ -78,6 +78,15 @@ function hasAnyActiveCutoutSide(params: BinParams): boolean {
  * Clamped to `[BASE_TIMEOUT_MS, MAX_TIMEOUT_MS]`.
  */
 export function computeGenerationTimeoutMs(params: BinParams): number {
+  // Defensive against transient bad inputs — mid-edit UI state can briefly
+  // present NaN/negative dimensions. setTimeout(NaN) coerces to 0ms, which would
+  // cancel the request before the worker can run. Floor bad dims to 0 (no
+  // footprint/height bonus) and clamp the result below. Mirrors
+  // computeBaseplateTimeoutMs.
+  const safeWidth = Number.isFinite(params.width) && params.width > 0 ? params.width : 0;
+  const safeDepth = Number.isFinite(params.depth) && params.depth > 0 ? params.depth : 0;
+  const safeHeight = Number.isFinite(params.height) && params.height > 0 ? params.height : 0;
+
   let timeout = BASE_TIMEOUT_MS;
 
   const hasHexPattern = params.wallPattern.enabled;
@@ -87,17 +96,19 @@ export function computeGenerationTimeoutMs(params: BinParams): number {
       timeout += HEX_PLUS_CUTOUT_BONUS_MS;
     }
     // Round fractional grids up — a partial cell still carries a full cell's
-    // worth of hex tessellation along that edge.
-    const cells = Math.ceil(params.width) * Math.ceil(params.depth);
+    // worth of hex pattern-cut work along that edge.
+    const cells = Math.ceil(safeWidth) * Math.ceil(safeDepth);
     const chargeableCells = Math.max(0, cells - HEX_FOOTPRINT_BONUS_FLOOR_CELLS);
     timeout += chargeableCells * HEX_FOOTPRINT_BONUS_MS_PER_CELL;
   }
 
-  const heightOverFloor = Math.max(0, params.height - HEIGHT_BONUS_FLOOR_UNITS);
+  const heightOverFloor = Math.max(0, safeHeight - HEIGHT_BONUS_FLOOR_UNITS);
   const heightBuckets = Math.floor(heightOverFloor / HEIGHT_BONUS_BUCKET_UNITS);
   timeout += heightBuckets * HEIGHT_BONUS_MS;
 
-  return Math.min(MAX_TIMEOUT_MS, timeout);
+  // Clamp to [BASE, MAX] — the guards above keep `timeout` finite, and this
+  // makes the documented contract self-enforcing.
+  return Math.max(BASE_TIMEOUT_MS, Math.min(MAX_TIMEOUT_MS, timeout));
 }
 
 /** Per-cell cost of magnet-hole boolean subtractions, in ms. */

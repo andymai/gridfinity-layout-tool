@@ -169,6 +169,24 @@ describe('computeGenerationTimeoutMs', () => {
     );
     expect(t).toBe(MAX_TIMEOUT_MS);
   });
+
+  it('clamps non-finite or invalid dimensions into the supported range', () => {
+    // Mid-edit UI state can transiently present NaN/negative dims. setTimeout(NaN)
+    // coerces to 0ms and would cancel generation immediately, so the budget must
+    // stay finite and ≥ BASE regardless of input.
+    const cases = [
+      params({ width: Number.NaN, depth: 8, height: 6, wallPattern: HEX_ON }),
+      params({ width: 8, depth: Number.POSITIVE_INFINITY, height: 6, wallPattern: HEX_ON }),
+      params({ width: -4, depth: 8, height: 6, wallPattern: HEX_ON }),
+      params({ width: 8, depth: 8, height: Number.NaN, wallPattern: HEX_ON }),
+    ];
+    for (const p of cases) {
+      const t = computeGenerationTimeoutMs(p);
+      expect(Number.isFinite(t)).toBe(true);
+      expect(t).toBeGreaterThanOrEqual(BASE_TIMEOUT_MS);
+      expect(t).toBeLessThanOrEqual(MAX_TIMEOUT_MS);
+    }
+  });
 });
 
 describe('computeBaseplateTimeoutMs', () => {
