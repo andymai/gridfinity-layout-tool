@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.154.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.153.3...gridfinity-layout-tool-v4.154.0) (2026-06-08)
+
+
+### Features
+
+* **baseplate:** snap-together clip connectors ([#1610](https://github.com/andymai/gridfinity-layout-tool/issues/1610)) ([#2055](https://github.com/andymai/gridfinity-layout-tool/issues/2055)) ([39de331](https://github.com/andymai/gridfinity-layout-tool/commit/39de33121d3159798dc565d557d9631534dbf769))
+
 ## [4.153.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.153.2...gridfinity-layout-tool-v4.153.3) (2026-06-08)
 
 
