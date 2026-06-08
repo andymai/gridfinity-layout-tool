@@ -46,6 +46,7 @@ export type WorkerMessage =
   | ExportMessage
   | ExportBaseplateMessage
   | ExportConnectorKeyMessage
+  | ExportConnectorSampleMessage
   | ExportDividersMessage
   | ExportCombinedMessage
   | ExportSplitMessage
@@ -123,6 +124,16 @@ export interface ExportBaseplatePayload {
  */
 export interface ExportConnectorKeyMessage {
   readonly type: 'EXPORT_CONNECTOR_KEY';
+  readonly payload: ExportBaseplatePayload;
+}
+
+/**
+ * Export the connector fit-sample tray (a calibration card sweeping all three
+ * connector styles across a fit-offset ladder). Reuses the BASEPLATE_EXPORT_RESULT
+ * response shape (data + format + fileName) and the ExportBaseplatePayload.
+ */
+export interface ExportConnectorSampleMessage {
+  readonly type: 'EXPORT_CONNECTOR_SAMPLE';
   readonly payload: ExportBaseplatePayload;
 }
 

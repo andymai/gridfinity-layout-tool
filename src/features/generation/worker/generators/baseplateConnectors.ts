@@ -223,7 +223,7 @@ export function buildConnectors(
  * extended COPLANAR_OVERLAP into the slab so the fuse has shared volume rather
  * than a degenerate coplanar interface at the wall face (issue #1407).
  */
-function makeTongue(
+export function makeTongue(
   pt: (wall: number, bp: number) => [number, number],
   w: number,
   bp: number,
@@ -242,7 +242,7 @@ function makeTongue(
 }
 
 /** Dovetail groove: matching shape + clearance, extended beyond wall and in Z. */
-function makeGroove(
+export function makeGroove(
   pt: (wall: number, bp: number) => [number, number],
   w: number,
   bp: number,
@@ -301,7 +301,7 @@ export function buildDovetailKey(totalHeight: number): Shape3D {
  * seated-clip preview can't drift. Proven standalone with brepjs-verify: at the
  * thin 5mm slab the seated clip clears the pockets with zero interference.
  */
-function makeSnapPocket(
+export function makeSnapPocket(
   pt: (wall: number, bp: number) => [number, number],
   w: number,
   bp: number,

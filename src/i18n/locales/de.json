@@ -2257,5 +2257,14 @@
   "export.support.downloading": "{fileName} wird heruntergeladen",
   "export.support.pitch": "Dieses Tool ist kostenlos und werbefrei.",
   "export.support.starGithub": "Oder gib ihm einen Stern auf GitHub",
-  "export.complete": "Export abgeschlossen"
+  "export.complete": "Export abgeschlossen",
+  "baseplate.connectorSample.button": "Passungsmuster drucken",
+  "baseplate.connectorSample.dialogTitle": "Verbinder-Passungsmuster",
+  "baseplate.connectorSample.dialogDescription": "Ein kleiner Kalibrierungsdruck aller drei Verbinderstile über eine Reihe von Passungsabständen. Drucken Sie ihn, finden Sie die Passung, die einrastet, und stellen Sie dann „Verbinderpassung“ auf diesen Wert ein, bevor Sie die vollständige Grundplatte drucken.",
+  "baseplate.connectorSample.tipsTitle": "Drucktipps",
+  "baseplate.connectorSample.tip1": "Flach und ohne Stützen drucken.",
+  "baseplate.connectorSample.tip2": "Verwenden Sie denselben Drucker, dasselbe Filament und dieselbe Düse wie für die Grundplatte.",
+  "baseplate.connectorSample.tip3": "Jedes Musterstück ist mit seinem Stil (DT / DK / SC) und Passungsabstand beschriftet.",
+  "baseplate.connectorSample.tip4": "Die richtige Passung gefunden? Stellen Sie „Verbinderpassung“ auf diesen Abstand ein.",
+  "baseplate.connectorSample.exportComplete": "Passungsmuster exportiert"
 }

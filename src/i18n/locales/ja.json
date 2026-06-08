@@ -2257,5 +2257,14 @@
   "export.support.downloading": "{fileName} をダウンロードしています",
   "export.support.pitch": "このツールは無料・広告なしです。",
   "export.support.starGithub": "または GitHub でスターを付ける",
-  "export.complete": "エクスポート完了"
+  "export.complete": "エクスポート完了",
+  "baseplate.connectorSample.button": "フィットサンプルを印刷",
+  "baseplate.connectorSample.dialogTitle": "コネクタのフィットサンプル",
+  "baseplate.connectorSample.dialogDescription": "3種類すべてのコネクタスタイルを、複数のフィットオフセットにわたって試せる小さなキャリブレーション印刷です。印刷してぴったりはまるフィットを見つけ、ベースプレート全体を印刷する前に「コネクタフィット」をその値に設定してください。",
+  "baseplate.connectorSample.tipsTitle": "印刷のヒント",
+  "baseplate.connectorSample.tip1": "サポートなしで平らに印刷してください。",
+  "baseplate.connectorSample.tip2": "ベースプレートを印刷するのと同じプリンター・フィラメント・ノズルを使用してください。",
+  "baseplate.connectorSample.tip3": "各クーポンにはスタイル（DT / DK / SC）とフィットオフセットが表示されています。",
+  "baseplate.connectorSample.tip4": "ぴったりのフィットが見つかりましたか？「コネクタフィット」をそのオフセットに設定してください。",
+  "baseplate.connectorSample.exportComplete": "フィットサンプルを書き出しました"
 }

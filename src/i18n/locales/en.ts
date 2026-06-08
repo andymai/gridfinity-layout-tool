@@ -2067,6 +2067,18 @@ const en: Record<string, string> = {
     'Adjusts the connector gap (mm) to tune fit for your printer and filament. Higher = looser, lower = tighter.',
   'baseplate.dovetails.invert': 'Invert dovetails',
   'baseplate.preferIdenticalPieces': 'Fewer unique parts (rotate to fit)',
+  'baseplate.connectorSample.button': 'Print fit sample',
+  'baseplate.connectorSample.dialogTitle': 'Connector fit sample',
+  'baseplate.connectorSample.dialogDescription':
+    'A small calibration print of all three connector styles across a range of fit offsets. Print it, find the fit that clicks, then set Connector fit to that value before printing the full baseplate.',
+  'baseplate.connectorSample.tipsTitle': 'Print tips',
+  'baseplate.connectorSample.tip1': 'Print flat with no supports.',
+  'baseplate.connectorSample.tip2':
+    "Use the same printer, filament, and nozzle you'll print the baseplate with.",
+  'baseplate.connectorSample.tip3':
+    'Each coupon is labeled with its style (DT / DK / SC) and fit offset.',
+  'baseplate.connectorSample.tip4': 'Found the right fit? Set Connector fit to that offset.',
+  'baseplate.connectorSample.exportComplete': 'Fit sample exported',
   'baseplate.cornerRadius': 'Corner radius',
   'baseplate.cornerRadiusInfo': 'Outer corner radius for fitting in rounded enclosures',
   'baseplate.cornerRadiusTL': 'Top-left',

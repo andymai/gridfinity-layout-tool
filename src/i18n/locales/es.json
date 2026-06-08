@@ -2257,5 +2257,14 @@
   "export.support.downloading": "{fileName} se está descargando",
   "export.support.pitch": "Esta herramienta es gratuita y sin anuncios.",
   "export.support.starGithub": "O dale una estrella en GitHub",
-  "export.complete": "Exportación completa"
+  "export.complete": "Exportación completa",
+  "baseplate.connectorSample.button": "Imprimir muestra de ajuste",
+  "baseplate.connectorSample.dialogTitle": "Muestra de ajuste del conector",
+  "baseplate.connectorSample.dialogDescription": "Una pequeña impresión de calibración de los tres estilos de conector a lo largo de una serie de ajustes. Imprímela, encuentra el ajuste que encaja y luego establece «Ajuste del conector» en ese valor antes de imprimir la placa base completa.",
+  "baseplate.connectorSample.tipsTitle": "Consejos de impresión",
+  "baseplate.connectorSample.tip1": "Imprime en plano y sin soportes.",
+  "baseplate.connectorSample.tip2": "Usa la misma impresora, filamento y boquilla con los que imprimirás la placa base.",
+  "baseplate.connectorSample.tip3": "Cada cupón está etiquetado con su estilo (DT / DK / SC) y su ajuste.",
+  "baseplate.connectorSample.tip4": "¿Encontraste el ajuste adecuado? Establece «Ajuste del conector» en ese valor.",
+  "baseplate.connectorSample.exportComplete": "Muestra de ajuste exportada"
 }

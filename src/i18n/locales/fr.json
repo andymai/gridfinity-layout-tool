@@ -2257,5 +2257,14 @@
   "export.support.downloading": "Téléchargement de {fileName}",
   "export.support.pitch": "Cet outil est gratuit et sans publicité.",
   "export.support.starGithub": "Ou mettez une étoile sur GitHub",
-  "export.complete": "Export terminé"
+  "export.complete": "Export terminé",
+  "baseplate.connectorSample.button": "Imprimer l'échantillon d'ajustement",
+  "baseplate.connectorSample.dialogTitle": "Échantillon d'ajustement du connecteur",
+  "baseplate.connectorSample.dialogDescription": "Une petite impression de calibrage des trois styles de connecteur sur une plage d'ajustements. Imprimez-la, trouvez l'ajustement qui s'enclenche, puis réglez « Ajustement du connecteur » sur cette valeur avant d'imprimer la plaque de base complète.",
+  "baseplate.connectorSample.tipsTitle": "Conseils d'impression",
+  "baseplate.connectorSample.tip1": "Imprimez à plat, sans supports.",
+  "baseplate.connectorSample.tip2": "Utilisez la même imprimante, le même filament et la même buse que pour la plaque de base.",
+  "baseplate.connectorSample.tip3": "Chaque échantillon est étiqueté avec son style (DT / DK / SC) et son ajustement.",
+  "baseplate.connectorSample.tip4": "Vous avez trouvé le bon ajustement ? Réglez « Ajustement du connecteur » sur cette valeur.",
+  "baseplate.connectorSample.exportComplete": "Échantillon d'ajustement exporté"
 }

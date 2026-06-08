@@ -286,3 +286,33 @@ export function exportConnectorKey(
     })
   );
 }
+
+/**
+ * Export the connector fit-sample tray. The tray's work (≈30 coupon booleans +
+ * embossed labels) is fixed regardless of the user's baseplate footprint, so it
+ * uses a fixed generous timeout rather than the footprint-derived budget.
+ */
+const CONNECTOR_SAMPLE_TIMEOUT_MS = 180_000;
+
+export function exportConnectorSample(
+  ctx: BridgeExportContext,
+  params: BaseplateParams,
+  format: ExportFormat,
+  options?: { tolerance?: number; angularTolerance?: number }
+): Promise<BaseplateExportResult> {
+  return runExport<BaseplateExportResult>(
+    ctx,
+    'export',
+    CONNECTOR_SAMPLE_TIMEOUT_MS,
+    (requestId) => ({
+      type: 'EXPORT_CONNECTOR_SAMPLE',
+      payload: {
+        params,
+        requestId,
+        format,
+        tolerance: options?.tolerance,
+        angularTolerance: options?.angularTolerance,
+      },
+    })
+  );
+}

@@ -2257,5 +2257,14 @@
   "export.support.downloading": "{fileName} wordt gedownload",
   "export.support.pitch": "Deze tool is gratis en advertentievrij.",
   "export.support.starGithub": "Of geef het een ster op GitHub",
-  "export.complete": "Export voltooid"
+  "export.complete": "Export voltooid",
+  "baseplate.connectorSample.button": "Pasvormmonster afdrukken",
+  "baseplate.connectorSample.dialogTitle": "Pasvormmonster connector",
+  "baseplate.connectorSample.dialogDescription": "Een kleine kalibratieprint van alle drie de connectorstijlen over een reeks pasvorm-offsets. Print hem, zoek de pasvorm die vastklikt en stel daarna «Connectorpasvorm» in op die waarde voordat je de volledige basisplaat print.",
+  "baseplate.connectorSample.tipsTitle": "Printtips",
+  "baseplate.connectorSample.tip1": "Plat printen, zonder supports.",
+  "baseplate.connectorSample.tip2": "Gebruik dezelfde printer, hetzelfde filament en dezelfde nozzle als waarmee je de basisplaat print.",
+  "baseplate.connectorSample.tip3": "Elk monster is gelabeld met zijn stijl (DT / DK / SC) en pasvorm-offset.",
+  "baseplate.connectorSample.tip4": "De juiste pasvorm gevonden? Stel «Connectorpasvorm» in op die offset.",
+  "baseplate.connectorSample.exportComplete": "Pasvormmonster geëxporteerd"
 }
