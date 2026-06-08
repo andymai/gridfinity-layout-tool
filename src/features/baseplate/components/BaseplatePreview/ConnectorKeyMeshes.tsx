@@ -118,8 +118,15 @@ function buildSnapClipGeometry(totalHeight: number): THREE.ExtrudeGeometry {
   const rTop = 0.4;
   const rRoot = 0.4;
   const rSlot = 0.3;
+  // Centre alignment V-groove — matches the worker's buildSnapClip (runs along
+  // the seam as an "align to the seam" cue).
+  const grooveHalf = 0.4;
+  const grooveDepth = 0.35;
   const pts: Array<[number, number]> = [
     [-legOuter, 0],
+    [-grooveHalf, 0],
+    [0, -grooveDepth],
+    [grooveHalf, 0],
     [legOuter, 0],
     [legOuter, catchZ],
     [barbTip, apexZ],
@@ -136,6 +143,9 @@ function buildSnapClipGeometry(totalHeight: number): THREE.ExtrudeGeometry {
   ];
   const corners: Corner[] = [
     { r: rTop, chamfer: true }, // top-left
+    { r: 0 }, // groove edge
+    { r: 0 }, // groove bottom
+    { r: 0 }, // groove edge
     { r: rTop, chamfer: true }, // top-right
     { r: 0 },
     { r: 0 }, // barb apex — crisp
@@ -164,6 +174,12 @@ function buildSnapClipGeometry(totalHeight: number): THREE.ExtrudeGeometry {
   // After the rotations the length axis lands on X ∈ [0, LEG_L]; recenter it on
   // the seam junction.
   geometry.translate(-SNAP_CLIP.LEG_L / 2, 0, 0);
+  // The clip seats from the TOP: bridge top at the plate top, legs hanging down
+  // into the seam. After the rotations its top is at Z=0 and it hangs to
+  // −legBottom, so lift it by totalHeight to sit flush with the plate top
+  // (the assembled plate spans Z ∈ [0, totalHeight]); the shared per-junction
+  // placement then adds the same small +Z proud-offset the dovetail key uses.
+  geometry.translate(0, 0, totalHeight);
   geometry.computeVertexNormals();
   return geometry;
 }
