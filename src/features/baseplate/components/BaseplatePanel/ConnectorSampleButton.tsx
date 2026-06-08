@@ -13,15 +13,10 @@ import { ExportDialog } from '@/shared/components/ExportDialog';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { useConnectorSampleExport } from '../../hooks/useConnectorSampleExport';
+import { FORMAT_EXTENSIONS } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat, ExportFileNameConfig } from '@/shared/types/bin';
 
 const SAMPLE_BASE_NAME = 'connector-fit-sample';
-
-const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
-  stl: '.stl',
-  step: '.step',
-  '3mf': '.3mf',
-};
 
 export function ConnectorSampleButton() {
   const t = useTranslation();

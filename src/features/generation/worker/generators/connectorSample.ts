@@ -62,15 +62,15 @@ import {
 } from './baseplateConnectors';
 import { buildTextSolid } from './textBuilder';
 import { buildBaseplateSTL } from './baseplateSTL';
+import { sanitizeParams } from './baseplateSlab';
 
 /** Fit-offset ladder swept across the columns, centered on nominal (0). */
 const SAMPLE_OFFSETS: readonly number[] = [-0.1, -0.05, 0, 0.05, 0.1];
 
 interface SampleStyle {
   readonly key: 'dovetail' | 'dovetailKey' | 'snapClip';
-  /** Short label prefix embossed on each coupon (e.g. "DT"). */
   readonly abbr: string;
-  /** Whether the row ships a shared loose part (key/clip). */
+  /** Shared loose part this row ships (inserted into each pair to feel the fit), if any. */
   readonly loose: 'key' | 'clip' | null;
 }
 
@@ -82,18 +82,18 @@ const SAMPLE_STYLES: readonly SampleStyle[] = [
 
 // Tray layout (mm). A coupon's long axis is X so the embossed label reads
 // left-to-right; the seam runs along X, so a pair stacks front/back along Y.
-const COUPON_X = 15; // coupon length (label axis)
-const COUPON_Y = 9; // coupon depth (across the seam)
-const COUPON_FILLET = 1.4; // rounded top-view corners — finished look, broken edges
-const SEAM_GAP = 5; // gap between the two coupons of a pair (printed separated)
-const COL_GAP = 7; // gap between offset columns
-const ROW_GAP = 10; // gap between style rows
-const LABEL_DEPTH = 0.6; // emboss height above the top face
+const COUPON_X = 15;
+const COUPON_Y = 9;
+const COUPON_FILLET = 1.4;
+const SEAM_GAP = 5;
+const COL_GAP = 7;
+const ROW_GAP = 10;
+const LABEL_DEPTH = 0.6;
 const LABEL_MARGIN = 1.4;
 const LABEL_MIN_FONT = 1.0;
 const LABEL_MAX_FONT = 2.4;
 
-const CELL_Y = 2 * COUPON_Y + SEAM_GAP; // total Y footprint of one mated pair
+const CELL_Y = 2 * COUPON_Y + SEAM_GAP;
 const COL_PITCH = COUPON_X + COL_GAP;
 const ROW_PITCH = CELL_Y + ROW_GAP;
 
@@ -108,7 +108,6 @@ function formatOffset(v: number): string {
   return v > 0 ? `+${s}` : s;
 }
 
-/** Rounded-rectangle top-view profile centered at (cx, cy). */
 function roundedRect(cx: number, cy: number, w: number, h: number, r: number): Drawing {
   const x0 = cx - w / 2;
   const x1 = cx + w / 2;
@@ -225,13 +224,21 @@ function buildCoupon(
   });
 }
 
+function couponHeight(params: BaseplateParams): number {
+  const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
+  return SOCKET_HEIGHT + floorDepth;
+}
+
 /**
  * Build all fit-sample pieces as separate, bed-resting solids. Caller owns the
  * returned shapes (frees them after compounding).
  */
-export function buildConnectorSampleTray(params: BaseplateParams): Shape3D[] {
-  const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
-  const totalHeight = SOCKET_HEIGHT + floorDepth;
+export function buildConnectorSampleTray(rawParams: BaseplateParams): Shape3D[] {
+  // Clamp grid unit / magnet depth (and reject non-finite values) the same way
+  // every sibling exporter does — a bad magnetDepth would otherwise make
+  // totalHeight NaN and corrupt every coupon, pocket, and clip.
+  const params = sanitizeParams(rawParams);
+  const totalHeight = couponHeight(params);
   const gridUnitMm = params.gridUnitMm;
 
   const nRows = SAMPLE_STYLES.length;
@@ -293,20 +300,28 @@ export function buildConnectorSampleTray(params: BaseplateParams): Shape3D[] {
 
 /** Export the connector fit-sample tray as a single STL or STEP file. */
 export async function exportConnectorSample(
-  params: BaseplateParams,
+  rawParams: BaseplateParams,
   format: ExportFormat,
   tolerance?: number,
   angularTolerance?: number
 ): Promise<{ data: ArrayBuffer; fileName: string }> {
-  const floorDepth = params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0;
-  const totalHeight = SOCKET_HEIGHT + floorDepth;
+  const params = sanitizeParams(rawParams);
+  const totalHeight = couponHeight(params);
 
+  // Free the individual pieces / tray even if compound or the bed lift throws,
+  // so a boolean failure can't strand 32 solids.
   const pieces = buildConnectorSampleTray(params);
-  const tray = compound(pieces);
+  let lifted: Shape3D;
+  try {
+    const tray = compound(pieces);
+    // Lift the whole tray so every piece rests on the bed (Z≥0).
+    lifted = translate(tray, [0, 0, totalHeight]);
+    tray.delete();
+  } catch (e) {
+    for (const p of pieces) p.delete();
+    throw e;
+  }
   for (const p of pieces) p.delete();
-  // Lift the whole tray so every piece rests on the bed (Z≥0).
-  const lifted = translate(tray, [0, 0, totalHeight]);
-  tray.delete();
 
   try {
     const name = 'connector_fit_sample';

@@ -20,16 +20,14 @@ import { isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { buildFullParams } from '../utils/buildFullParams';
-import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
+import {
+  FORMAT_MIME_TYPES,
+  FORMAT_EXTENSIONS,
+  triggerDownload,
+} from '@/shared/generation/exportUtils';
 import type { ExportFileFormat } from '@/shared/types/bin';
 
 const SAMPLE_BASE_NAME = 'connector-fit-sample';
-
-const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
-  stl: '.stl',
-  step: '.step',
-  '3mf': '.3mf',
-};
 
 interface UseConnectorSampleExportReturn {
   readonly isExporting: boolean;

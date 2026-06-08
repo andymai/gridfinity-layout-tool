@@ -123,6 +123,16 @@ describe('connectorSample — fit-sample tray', () => {
   );
 
   it(
+    'exports a non-empty STEP tray',
+    async () => {
+      const { data, fileName } = await exportConnectorSample(defaults(), 'step');
+      expect(fileName).toBe('connector_fit_sample.step');
+      expect(data.byteLength).toBeGreaterThan(0);
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it(
     'magnet-hole baseplates produce taller, still-valid coupons',
     () => {
       const pieces = buildConnectorSampleTray(defaults({ magnetHoles: true, magnetDepth: 2.4 }));
