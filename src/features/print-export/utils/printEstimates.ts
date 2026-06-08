@@ -62,8 +62,10 @@ const BED_PACKING_EFFICIENCY = 0.85;
  * @returns Whole number of plates (always ≥ 1)
  */
 export function estimatePrintJobs(totalFootprintUnits: number, bedCapacityUnits: number): number {
+  // Nothing to print → no plates (and no overhead time).
+  if (totalFootprintUnits <= 0) return 0;
   const usable = bedCapacityUnits * BED_PACKING_EFFICIENCY;
-  if (usable <= 0 || totalFootprintUnits <= 0) return 1;
+  if (usable <= 0) return 1; // unknown bed capacity → assume a single plate
   return Math.max(1, Math.ceil(totalFootprintUnits / usable));
 }
 

@@ -13,7 +13,11 @@ import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
 
 describe('printEstimates', () => {
   describe('estimatePrintJobs (plate count)', () => {
-    it('returns at least 1 job even for a tiny layout', () => {
+    it('returns 0 jobs for an empty layout (no overhead time)', () => {
+      expect(estimatePrintJobs(0, 36)).toBe(0);
+    });
+
+    it('returns at least 1 job for any non-empty layout', () => {
       expect(estimatePrintJobs(1, 36)).toBe(1);
     });
 
@@ -27,16 +31,15 @@ describe('printEstimates', () => {
       expect(estimatePrintJobs(100, 36)).toBe(4);
     });
 
-    it('does NOT scale with the number of distinct bin types (regression: rows.length)', () => {
-      // The same total footprint must yield the same plate count regardless of
-      // how many distinct sizes it is split across.
-      expect(estimatePrintJobs(72, 36)).toBe(estimatePrintJobs(72, 36));
-      // 72 cells / (36 × 0.85 = 30.6) = ceil(2.35) = 3 plates — independent of row count.
+    it('depends only on total footprint, not the number of distinct bin types', () => {
+      // Regression for the old `rows.length` overhead: plate count is a pure
+      // function of total footprint vs bed capacity.
+      // 72 cells / (36 × 0.85 = 30.6) = ceil(2.35) = 3 plates.
       expect(estimatePrintJobs(72, 36)).toBe(3);
     });
 
     it('handles a zero-capacity bed without dividing by zero', () => {
-      expect(estimatePrintJobs(10, 0)).toBeGreaterThanOrEqual(1);
+      expect(estimatePrintJobs(10, 0)).toBe(1);
     });
   });
   describe('calcFilamentCost', () => {

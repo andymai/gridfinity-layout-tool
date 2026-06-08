@@ -9,9 +9,9 @@
  * The model is a three-term fit to ground-truth solid volumes measured from
  * the real OCCT generator (`measureVolume(getLastSolid())`):
  *
- *   V_solid ≈ perimeter · WALL_EFF · heightMm   (perimeter walls)
- *           + FLOOR_FEET_PER_CELL · cells        (floor + base feet per cell)
- *           + perimeter · LIP_AREA               (stacking lip)
+ *   V_solid ≈ perimeter · WALL_EFF · heightMm            (perimeter walls)
+ *           + BASE_VOL_PER_CELL_AREA · cellArea · cells  (floor + base feet)
+ *           + perimeter · LIP_AREA                        (stacking lip)
  *
  * It reproduces the generated geometry within ~2% across bins from 1×1×2u to
  * 4×4×6u (see standardBinVolume.test.ts for the documented ground-truth set).
