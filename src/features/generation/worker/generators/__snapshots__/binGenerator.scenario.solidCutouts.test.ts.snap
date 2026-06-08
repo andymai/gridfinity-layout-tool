@@ -4,7 +4,9 @@ exports[`solid cutouts > 2×2 solid with 3×2 grid array of circles 1`] = `3420`
 
 exports[`solid cutouts > 2×2 solid with chamfered + scooped rectangle cutout 1`] = `3564`;
 
-exports[`solid cutouts > 2×2 solid with chamfered circle cutout 1`] = `2640`;
+exports[`solid cutouts > 2×2 solid with chamfered circle cutout 1`] = `3044`;
+
+exports[`solid cutouts > 2×2 solid with chamfered ellipse cutout 1`] = `3044`;
 
 exports[`solid cutouts > 2×2 solid with chamfered hexagon cutout 1`] = `2622`;
 
@@ -16,7 +18,7 @@ exports[`solid cutouts > 2×2 solid with circle cutout 1`] = `2768`;
 
 exports[`solid cutouts > 2×2 solid with curved path cutout (bezier handles) 1`] = `2684`;
 
-exports[`solid cutouts > 2×2 solid with ellipse cutout 1`] = `2532`;
+exports[`solid cutouts > 2×2 solid with ellipse cutout 1`] = `2796`;
 
 exports[`solid cutouts > 2×2 solid with grouped cutouts 1`] = `2562`;
 
