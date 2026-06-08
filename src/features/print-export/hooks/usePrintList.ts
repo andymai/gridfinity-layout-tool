@@ -17,6 +17,7 @@ import {
   calcFilamentCost,
   calcSpoolPercentage,
   calcPrintTimeHours,
+  estimatePrintJobs,
   DEFAULT_METERS_PER_KG,
 } from '@/features/print-export/utils/printEstimates';
 import type {
@@ -131,17 +132,30 @@ export function usePrintList(): UsePrintListReturn {
     const totalFilament = Math.round(rows.reduce((sum, r) => sum + r.filament, 0) * 10) / 10;
     const hasAnySplits = rows.some((r) => r.needsSplit);
 
+    // Overhead is per-plate, not per distinct bin type. Estimate plate count
+    // from total bin footprint vs. how many grid cells fit on the bed.
+    const totalFootprintUnits = rows.reduce((sum, r) => sum + r.area * r.binCount, 0);
+    const bedCapacityUnits = maxGridUnits.width * maxGridUnits.depth;
+    const numPrintJobs = estimatePrintJobs(totalFootprintUnits, bedCapacityUnits);
+
     return {
       totalBins,
       totalPieces,
       totalFilament,
       totalCost: calcFilamentCost(totalFilament, config.filamentCostPerKg, config.metersPerKg),
-      totalPrintTimeHours: calcPrintTimeHours(totalFilament, rows.length, printSettings),
+      totalPrintTimeHours: calcPrintTimeHours(totalFilament, numPrintJobs, printSettings),
       spoolEstimate: Math.ceil((totalFilament / config.metersPerKg) * 10) / 10,
       spoolPercentage: calcSpoolPercentage(totalFilament, config.metersPerKg),
       hasAnySplits,
     };
-  }, [rows, config.filamentCostPerKg, config.metersPerKg, printSettings]);
+  }, [
+    rows,
+    config.filamentCostPerKg,
+    config.metersPerKg,
+    printSettings,
+    maxGridUnits.width,
+    maxGridUnits.depth,
+  ]);
 
   const setSort = useCallback((key: PrintListSortKey) => {
     setFilters((f) => ({

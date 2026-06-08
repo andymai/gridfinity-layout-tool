@@ -42,11 +42,45 @@ export function calcSpoolPercentage(
 }
 
 /**
+ * Fraction of the grid-aligned bed area realistically usable for bins once
+ * brim/skirt margins and imperfect packing are accounted for. Gridfinity bins
+ * tile on the grid so packing is efficient, but edges and clearances cost some
+ * capacity.
+ */
+const BED_PACKING_EFFICIENCY = 0.85;
+
+/**
+ * Estimate the number of print plates (jobs) needed for a layout.
+ *
+ * Overhead (bed heating, first layer, cooldown) is incurred once per *plate*,
+ * not once per distinct bin type. This replaces the previous `rows.length`
+ * heuristic, which charged overhead for every unique size/label/category group
+ * and massively inflated time for varied layouts.
+ *
+ * @param totalFootprintUnits - Total bin footprint in grid cells (Σ width×depth×count)
+ * @param bedCapacityUnits - Grid cells that fit on the print bed
+ * @returns Whole number of plates (always ≥ 1)
+ */
+export function estimatePrintJobs(totalFootprintUnits: number, bedCapacityUnits: number): number {
+  // Nothing to print → no plates (and no overhead time).
+  if (totalFootprintUnits <= 0) return 0;
+  const usable = bedCapacityUnits * BED_PACKING_EFFICIENCY;
+  if (usable <= 0) return 1; // unknown bed capacity → assume a single plate
+  return Math.max(1, Math.ceil(totalFootprintUnits / usable));
+}
+
+/**
  * Print time estimate based on filament length and number of print jobs.
  *
  * Computes base extrusion time from filament length, scales it via
  * `scalePrintTime` for nozzle/layer/infill settings, then adds
  * per-job overhead (bed heating, first layer, cooling).
+ *
+ * The extrusion rate (`MINUTES_PER_METER`) corresponds to an effective
+ * volumetric throughput of ~11 mm³/s for a 0.4mm-nozzle PLA print (including
+ * perimeters, travel, and acceleration losses) — see `MINUTES_PER_METER` in
+ * `@/shared/printSettings`. `numPrintJobs` should be the estimated plate count
+ * (see `estimatePrintJobs`), not the number of distinct bin types.
  *
  * Returns hours (1 decimal place).
  */

@@ -30,7 +30,8 @@ describe('shared printSettings', () => {
       expect(BASELINE_LAYER_HEIGHT).toBe(0.2);
       expect(BASELINE_INFILL).toBe(15);
       expect(OVERHEAD_MINUTES).toBe(16);
-      expect(MINUTES_PER_METER).toBe(3.6);
+      // Derived from ~11 mm³/s effective volumetric flow: 2405 / 11 / 60 ≈ 3.64
+      expect(MINUTES_PER_METER).toBeCloseTo(3.64, 2);
     });
   });
 

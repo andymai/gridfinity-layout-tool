@@ -25,6 +25,7 @@ import {
   MINUTES_PER_METER,
   DEFAULT_PRINT_SETTINGS,
   scalePrintTime,
+  standardBinSolidComponents,
   type PrintSettings,
 } from '@/shared/printSettings';
 import {
@@ -95,14 +96,17 @@ export function formatFilament(meters: number): string {
 /**
  * Computes total material volume analytically from bin parameters.
  *
- * Components:
- * 1. Outer shell (walls + bottom)
- * 2. Base socket (per-cell baseplate interface)
- * 3. Stacking lip (top perimeter profile)
- * 4. Divider walls
- * 5. Corner gussets (solid style)
- * 6. Label tabs (if enabled)
- * 7. Scoops (if enabled, negative — removes material)
+ * The standard bin shell (perimeter walls + floor + base socket feet +
+ * stacking lip) reuses the shared, OCCT-calibrated estimator
+ * (`standardBinSolidComponents`) so the designer and print-export agree on the
+ * base geometry. Feature deltas are layered on top:
+ *   + Divider walls
+ *   + Label tabs
+ *   − Scoops (removes material)
+ *   − Honeycomb wall reduction
+ *
+ * (The previous local hollow-box model treated the bottom 7mm as a solid slab,
+ * over-reporting standard bins by ~3–6×.)
  */
 function computeBinVolume(params: BinParams): number {
   const wallThickness = STYLE_WALL_THICKNESS[params.style] ?? GRIDFINITY.WALL_THICKNESS;
@@ -115,18 +119,16 @@ function computeBinVolume(params: BinParams): number {
   // Base height (7mm dead space: profile + bridge + floor, no cavity here)
   const bottomH = GRIDFINITY.BASE_HEIGHT;
 
-  let volume = 0;
-
-  // Shell volume (outer walls + bottom)
-  volume += computeHollowBoxVolume(outerW, outerD, totalH, wallThickness, bottomH);
-
-  // Base socket (per grid cell, tapered profile that slides onto baseplate)
-  volume += computeBaseSocketVolume(params.width, params.depth, params.gridUnitMm);
-
-  // Stacking lip (sits on top of bin body)
-  if (params.base.stackingLip) {
-    volume += computeStackingLipVolume(outerW, outerD);
-  }
+  // Standard bin shell: walls + floor + base feet (+ lip when enabled),
+  // from the shared OCCT-calibrated model.
+  const shell = standardBinSolidComponents(
+    params.width,
+    params.depth,
+    params.height,
+    params.gridUnitMm,
+    params.heightUnitMm
+  );
+  let volume = shell.walls + shell.base + (params.base.stackingLip ? shell.lip : 0);
 
   // Divider volumes (standard style only — slotted/solid don't use interior dividers)
   if (params.style === 'standard') {
@@ -151,65 +153,6 @@ function computeBinVolume(params: BinParams): number {
 
   // Volume cannot be negative (scoops on tiny bins)
   return Math.max(0, volume);
-}
-/**
- * Volume of a hollow box (outer - inner cavity).
- */
-function computeHollowBoxVolume(
-  w: number,
-  d: number,
-  h: number,
-  wall: number,
-  bottomH: number
-): number {
-  const outerVol = w * d * h;
-  const innerW = w - 2 * wall;
-  const innerD = d - 2 * wall;
-  const innerH = h - bottomH;
-
-  if (innerW <= 0 || innerD <= 0 || innerH <= 0) {
-    return outerVol; // Solid block (walls too thick)
-  }
-
-  return outerVol - innerW * innerD * innerH;
-}
-
-/**
- * Volume of base socket structure (per-cell interface to baseplate).
- *
- * Each full grid cell has a tapered socket (~5mm deep). The socket is a
- * thin-walled shell approximately 3.5mm thick around the cell perimeter.
- * Half-cells share proportional socket volume.
- */
-function computeBaseSocketVolume(
-  widthUnits: number,
-  depthUnits: number,
-  gridUnitMm: number
-): number {
-  // Each 1×1 cell: gridUnitMm×gridUnitMm footprint, socket shell ~3.5mm thick, 5mm deep.
-  // Clamp innerSide to 0 so a tiny gridUnitMm (< 2·shellThickness = 7mm) doesn't
-  // produce a negative socket volume that masks undercounts elsewhere.
-  const shellThickness = 3.5;
-  const outerArea = gridUnitMm * gridUnitMm;
-  const innerSide = Math.max(0, gridUnitMm - 2 * shellThickness);
-  const innerArea = innerSide * innerSide;
-  const shellArea = outerArea - innerArea;
-  const volumePerFullCell = shellArea * GRIDFINITY.SOCKET_HEIGHT;
-
-  // Scale by actual grid area (handles fractional cells like 1.5×2)
-  return volumePerFullCell * widthUnits * depthUnits;
-}
-
-/**
- * Volume of stacking lip (4.4mm tall perimeter profile on top of bin).
- *
- * The lip is a thin-walled band around the bin perimeter. We approximate
- * it as a rectangular ring with average width ~2mm.
- */
-function computeStackingLipVolume(outerW: number, outerD: number): number {
-  const lipThickness = 2; // mm average wall thickness of lip profile
-  const perimeter = 2 * (outerW + outerD);
-  return perimeter * lipThickness * GRIDFINITY.LIP_HEIGHT;
 }
 /**
  * Volume of all divider walls inside the cavity.

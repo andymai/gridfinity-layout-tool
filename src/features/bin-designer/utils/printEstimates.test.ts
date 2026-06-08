@@ -6,7 +6,7 @@ import {
   formatFilament,
 } from '@/features/bin-designer/utils/printEstimates';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants/defaults';
-import { DEFAULT_PRINT_SETTINGS } from '@/shared/printSettings';
+import { DEFAULT_PRINT_SETTINGS, estimateStandardBinVolume } from '@/shared/printSettings';
 import type { BinParams } from '@/features/bin-designer/types';
 
 describe('printEstimates', () => {
@@ -101,12 +101,23 @@ describe('printEstimates', () => {
       expect(large.printTimeMinutes).toBeGreaterThan(small.printTimeMinutes);
     });
 
-    it('volume is reasonable for a 2x2x3 standard bin', () => {
+    it('matches the OCCT-measured solid volume for a 2×2×3 standard bin (±15%)', () => {
+      // Ground truth from the real generator: 2×2×3u solid = 17094 mm³.
+      // The old hollow-box model treated the bottom 7mm as a solid slab and
+      // reported ~67000 mm³ (≈4× too high). The consolidated model reuses the
+      // OCCT-calibrated shared base geometry.
       const est = estimatePrint(DEFAULT_BIN_PARAMS);
-      // A 2x2x3 bin with base socket and lip: should be more material than before
-      // Shell + socket + lip volume between 10,000 and 150,000 mm³
-      expect(est.volumeMm3).toBeGreaterThan(10000);
-      expect(est.volumeMm3).toBeLessThan(150000);
+      expect(est.volumeMm3).toBeGreaterThan(17094 * 0.85);
+      expect(est.volumeMm3).toBeLessThan(17094 * 1.15);
+    });
+
+    it('a plain standard bin matches the shared print-export estimator', () => {
+      // The designer and print-export must agree on the base geometry of an
+      // unfeatured bin (consolidation regression).
+      const designer = estimatePrint(DEFAULT_BIN_PARAMS).volumeMm3;
+      const shared = estimateStandardBinVolume(2, 2, 3);
+      expect(designer).toBeGreaterThan(shared * 0.9);
+      expect(designer).toBeLessThan(shared * 1.1);
     });
 
     it('returns rounded values', () => {
@@ -224,8 +235,10 @@ describe('printEstimates', () => {
         layerHeightMm: 0.1,
         infillPercent: 100,
       });
-      // 0.1mm layers (2×) × 100% infill (1.425×) ≈ 2.85×
-      expect(extreme.printTimeMinutes).toBeGreaterThan(baseline.printTimeMinutes * 2);
+      // The extrusion portion scales by 0.1mm layers (2×) × 100% infill
+      // (1 + 0.003×85 = 1.255×) ≈ 2.5×, but the fixed per-plate overhead is not
+      // scaled, so the total-time ratio for a small bin lands around 1.9×.
+      expect(extreme.printTimeMinutes).toBeGreaterThan(baseline.printTimeMinutes * 1.8);
     });
 
     // ─── Honeycomb wall reduction ─────────────────────────────────────
