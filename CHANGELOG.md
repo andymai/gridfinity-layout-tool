@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.155.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.154.0...gridfinity-layout-tool-v4.155.0) (2026-06-08)
+
+
+### Features
+
+* **baseplate:** connector fit-sample test print ([#2059](https://github.com/andymai/gridfinity-layout-tool/issues/2059)) ([5e724b4](https://github.com/andymai/gridfinity-layout-tool/commit/5e724b4865c2e4594c26633d8d027392db24d8ea))
+
 ## [4.154.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.153.3...gridfinity-layout-tool-v4.154.0) (2026-06-08)
 
 
