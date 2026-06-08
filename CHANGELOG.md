@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.155.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.1...gridfinity-layout-tool-v4.155.2) (2026-06-08)
+
+
+### Bug Fixes
+
+* **cutouts:** circle cutouts with a chamfer or oval size now cut in 3D ([#2067](https://github.com/andymai/gridfinity-layout-tool/issues/2067)) ([fbe0e05](https://github.com/andymai/gridfinity-layout-tool/commit/fbe0e05d30b1ed68fbec0c7f4090d091a43f3c42))
+
 ## [4.155.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.0...gridfinity-layout-tool-v4.155.1) (2026-06-08)
 
 
