@@ -13,6 +13,13 @@ export const FORMAT_MIME_TYPES: Record<ExportFileFormat, string> = {
   '3mf': 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml',
 };
 
+/** File extensions for each export format. */
+export const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
+  stl: '.stl',
+  step: '.step',
+  '3mf': '.3mf',
+};
+
 /** Trigger a browser download from a Blob. */
 export function triggerDownload(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);

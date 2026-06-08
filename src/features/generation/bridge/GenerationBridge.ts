@@ -55,6 +55,7 @@ import {
   exportSplitBinRange as exportSplitBinRangeImpl,
   exportBaseplate as exportBaseplateImpl,
   exportConnectorKey as exportConnectorKeyImpl,
+  exportConnectorSample as exportConnectorSampleImpl,
 } from './bridgeExports';
 import type { KernelName } from './types';
 
@@ -390,6 +391,14 @@ export class GenerationBridge {
     options?: { tolerance?: number; angularTolerance?: number }
   ): Promise<BaseplateExportResult> {
     return exportConnectorKeyImpl(this, params, format, options);
+  }
+
+  exportConnectorSample(
+    params: BaseplateParams,
+    format: ExportFormat,
+    options?: { tolerance?: number; angularTolerance?: number }
+  ): Promise<BaseplateExportResult> {
+    return exportConnectorSampleImpl(this, params, format, options);
   }
 
   /** Whether the bridge has been destroyed */

@@ -34,6 +34,7 @@ import { PaddingSchematic } from './PaddingSchematic';
 import { SplitViewStrip } from './SplitViewStrip';
 import { CornerRadiusControl } from './CornerRadiusControl';
 import { GridDimensionStepper } from './GridDimensionStepper';
+import { ConnectorSampleButton } from './ConnectorSampleButton';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
 import { PADDING_MAX } from '../PaddingStepper';
 import { Stepper } from '@/design-system/Stepper';
@@ -371,6 +372,7 @@ export function BaseplatePanel() {
                       }
                       label={t('baseplate.preferIdenticalPieces')}
                     />
+                    <ConnectorSampleButton />
                   </>
                 )}
               </>

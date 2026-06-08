@@ -2257,5 +2257,14 @@
   "export.support.downloading": "{fileName} lastes ned",
   "export.support.pitch": "Dette verktøyet er gratis og reklamefritt.",
   "export.support.starGithub": "Eller gi det en stjerne på GitHub",
-  "export.complete": "Eksport fullført"
+  "export.complete": "Eksport fullført",
+  "baseplate.connectorSample.button": "Skriv ut passprøve",
+  "baseplate.connectorSample.dialogTitle": "Passprøve for kobling",
+  "baseplate.connectorSample.dialogDescription": "En liten kalibreringsutskrift av alle tre koblingsstilene over en rekke passforskyvninger. Skriv den ut, finn passformen som klikker, og still deretter «Koblingspassform» til den verdien før du skriver ut hele bunnplaten.",
+  "baseplate.connectorSample.tipsTitle": "Utskriftstips",
+  "baseplate.connectorSample.tip1": "Skriv ut flatt uten støtter.",
+  "baseplate.connectorSample.tip2": "Bruk samme skriver, filament og dyse som du skal skrive ut bunnplaten med.",
+  "baseplate.connectorSample.tip3": "Hver prøvebit er merket med stil (DT / DK / SC) og passforskyvning.",
+  "baseplate.connectorSample.tip4": "Fant du riktig passform? Still «Koblingspassform» til den forskyvningen.",
+  "baseplate.connectorSample.exportComplete": "Passprøve eksportert"
 }

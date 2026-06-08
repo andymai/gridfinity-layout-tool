@@ -2257,5 +2257,14 @@
   "export.support.downloading": "{fileName} завантажується",
   "export.support.pitch": "Цей інструмент безкоштовний і без реклами.",
   "export.support.starGithub": "Або поставте зірку на GitHub",
-  "export.complete": "Експорт завершено"
+  "export.complete": "Експорт завершено",
+  "baseplate.connectorSample.button": "Надрукувати зразок припасування",
+  "baseplate.connectorSample.dialogTitle": "Зразок припасування з’єднувача",
+  "baseplate.connectorSample.dialogDescription": "Невеликий калібрувальний друк усіх трьох стилів з’єднувачів у діапазоні зміщень припасування. Надрукуйте його, знайдіть припасування, яке клацає, а потім встановіть «Припасування з’єднувача» на це значення перед друком усієї опорної плити.",
+  "baseplate.connectorSample.tipsTitle": "Поради щодо друку",
+  "baseplate.connectorSample.tip1": "Друкуйте плоско, без підтримок.",
+  "baseplate.connectorSample.tip2": "Використовуйте той самий принтер, філамент і сопло, що й для опорної плити.",
+  "baseplate.connectorSample.tip3": "Кожен зразок позначено стилем (DT / DK / SC) і зміщенням припасування.",
+  "baseplate.connectorSample.tip4": "Знайшли потрібне припасування? Встановіть «Припасування з’єднувача» на це зміщення.",
+  "baseplate.connectorSample.exportComplete": "Зразок припасування експортовано"
 }

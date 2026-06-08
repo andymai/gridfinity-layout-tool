@@ -2257,5 +2257,14 @@
   "export.support.downloading": "{fileName} está sendo baixado",
   "export.support.pitch": "Esta ferramenta é gratuita e sem anúncios.",
   "export.support.starGithub": "Ou dê uma estrela no GitHub",
-  "export.complete": "Exportação concluída"
+  "export.complete": "Exportação concluída",
+  "baseplate.connectorSample.button": "Imprimir amostra de encaixe",
+  "baseplate.connectorSample.dialogTitle": "Amostra de encaixe do conector",
+  "baseplate.connectorSample.dialogDescription": "Uma pequena impressão de calibração dos três estilos de conector ao longo de uma faixa de ajustes de encaixe. Imprima-a, encontre o encaixe que se prende e depois defina «Encaixe do conector» com esse valor antes de imprimir a placa base completa.",
+  "baseplate.connectorSample.tipsTitle": "Dicas de impressão",
+  "baseplate.connectorSample.tip1": "Imprima na horizontal, sem suportes.",
+  "baseplate.connectorSample.tip2": "Use a mesma impressora, filamento e bico com que você imprimirá a placa base.",
+  "baseplate.connectorSample.tip3": "Cada amostra é rotulada com seu estilo (DT / DK / SC) e ajuste de encaixe.",
+  "baseplate.connectorSample.tip4": "Encontrou o encaixe certo? Defina «Encaixe do conector» com esse valor.",
+  "baseplate.connectorSample.exportComplete": "Amostra de encaixe exportada"
 }

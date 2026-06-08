@@ -34,6 +34,7 @@ import {
   handleExport,
   handleExportBaseplate,
   handleExportConnectorKey,
+  handleExportConnectorSample,
   handleExportDividers,
   handleExportCombined,
 } from './handlers/exportHandler';
@@ -123,6 +124,10 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
 
       case 'EXPORT_CONNECTOR_KEY':
         await handleExportConnectorKey(message);
+        break;
+
+      case 'EXPORT_CONNECTOR_SAMPLE':
+        await handleExportConnectorSample(message);
         break;
 
       case 'EXPORT_DIVIDERS':

@@ -2257,5 +2257,14 @@
   "export.support.downloading": "{fileName} laddas ner",
   "export.support.pitch": "Det här verktyget är gratis och reklamfritt.",
   "export.support.starGithub": "Eller ge det en stjärna på GitHub",
-  "export.complete": "Export klar"
+  "export.complete": "Export klar",
+  "baseplate.connectorSample.button": "Skriv ut passprov",
+  "baseplate.connectorSample.dialogTitle": "Passprov för koppling",
+  "baseplate.connectorSample.dialogDescription": "En liten kalibreringsutskrift av alla tre kopplingsstilar över ett antal passningsförskjutningar. Skriv ut den, hitta passningen som klickar och ställ sedan in «Kopplingspassning» på det värdet innan du skriver ut hela bottenplattan.",
+  "baseplate.connectorSample.tipsTitle": "Utskriftstips",
+  "baseplate.connectorSample.tip1": "Skriv ut platt utan stöd.",
+  "baseplate.connectorSample.tip2": "Använd samma skrivare, filament och munstycke som du skriver ut bottenplattan med.",
+  "baseplate.connectorSample.tip3": "Varje provbit är märkt med sin stil (DT / DK / SC) och passningsförskjutning.",
+  "baseplate.connectorSample.tip4": "Hittade du rätt passning? Ställ in «Kopplingspassning» på den förskjutningen.",
+  "baseplate.connectorSample.exportComplete": "Passprov exporterat"
 }
