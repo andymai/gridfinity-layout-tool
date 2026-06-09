@@ -494,28 +494,30 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
           )}
 
           {/* Control buttons */}
-          <PreviewControls
-            wireframe={wireframe}
-            xray={xray}
-            projection={projection}
-            previewColor={previewColor}
-            activePreset={activePreset}
-            onWireframeToggle={toggleWireframe}
-            onXrayToggle={toggleXray}
-            onProjectionToggle={toggleProjection}
-            onColorChange={handleColorChange}
-            onCameraPreset={setCameraPreset}
-            onResetView={resetView}
-            needsSplit={needsSplit}
-            splitViewMode={splitViewMode}
-            onSplitViewModeChange={setSplitViewMode}
-            hideColorPicker={showColors}
-          />
+          {!hideChrome && (
+            <PreviewControls
+              wireframe={wireframe}
+              xray={xray}
+              projection={projection}
+              previewColor={previewColor}
+              activePreset={activePreset}
+              onWireframeToggle={toggleWireframe}
+              onXrayToggle={toggleXray}
+              onProjectionToggle={toggleProjection}
+              onColorChange={handleColorChange}
+              onCameraPreset={setCameraPreset}
+              onResetView={resetView}
+              needsSplit={needsSplit}
+              splitViewMode={splitViewMode}
+              onSplitViewModeChange={setSplitViewMode}
+              hideColorPicker={showColors}
+            />
+          )}
 
           {/* Eyedropper toolbar button — only when multi-color is on. The
               button is paired with one in the Colors panel header; both
               enter eyedropper mode. */}
-          {showColors && (
+          {!hideChrome && showColors && (
             <button
               type="button"
               onClick={() => setColorTool(colorTool === 'eyedropper' ? null : 'eyedropper')}

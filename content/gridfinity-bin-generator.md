@@ -75,6 +75,8 @@ A parametric bin generator that runs in your browser. Set your dimensions, add c
 
 [CTA: Start Making a Bin](/designer)
 
+![Gridfinity bin with honeycomb wall pattern and scoop ramp rendered in the bin generator's 3D preview](/images/landing/honeycomb-caddy-bin.png '1200x675')
+
 ## How It Works
 
 1. **Set your size.** Pick width, depth, and height in grid units. Need something between standard sizes? Half-bin mode gives you 0.5-unit precision.

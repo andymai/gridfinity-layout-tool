@@ -141,4 +141,5 @@ Your tallest bin plus baseplate (about 5mm) needs to fit when the drawer closes.
 
 **Ignoring what you actually use.** Don't organize around what you think you should have. Organize around what you reach for.
 
+![Gridfinity layout planner showing a fully planned tool drawer with labeled, color-coded bins](/images/landing/tool-drawer-layout.png '1200x675')
 [CTA: Open the Layout Tool](/)

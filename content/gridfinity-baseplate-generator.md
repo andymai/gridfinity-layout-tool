@@ -67,6 +67,8 @@ A parametric baseplate generator that runs in your browser. Set your grid size, 
 
 [CTA: Start Generating](/baseplate?standalone=1)
 
+![Gridfinity baseplate generator showing an 11 by 9 magnet-hole baseplate in an isometric 3D preview](/images/landing/baseplate-preview.png '1200x675')
+
 ## How It Works
 
 1. **Set your size.** Pick width and depth in grid units, or sync with your existing layout to match your drawer automatically.
