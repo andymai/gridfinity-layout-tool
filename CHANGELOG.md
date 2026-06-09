@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.155.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.5...gridfinity-layout-tool-v4.155.6) (2026-06-09)
+
+
+### Bug Fixes
+
+* **preview:** build a fuse-free lip for the Manifold draft ([#2076](https://github.com/andymai/gridfinity-layout-tool/issues/2076)) ([f6147fb](https://github.com/andymai/gridfinity-layout-tool/commit/f6147fb33a8422d491807329525648dfcd9a43e6))
+
 ## [4.155.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.4...gridfinity-layout-tool-v4.155.5) (2026-06-09)
 
 
