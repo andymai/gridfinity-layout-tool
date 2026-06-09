@@ -176,9 +176,10 @@ function replaceOnce(
   if (!pattern.test(html)) {
     throw new Error(`build-route-entries: pattern not found for ${label}: ${String(pattern)}`);
   }
-  return typeof replacement === 'string'
-    ? html.replace(pattern, replacement)
-    : html.replace(pattern, replacement);
+  // Wrap string replacements in a function so `$&`/`$1` sequences in page
+  // copy are inserted literally instead of being interpreted by replace().
+  const replacer = typeof replacement === 'string' ? (): string => replacement : replacement;
+  return html.replace(pattern, replacer);
 }
 
 function escapeAttr(value: string): string {

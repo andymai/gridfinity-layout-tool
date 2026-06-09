@@ -496,7 +496,7 @@ async function main(): Promise<void> {
       });
       await captureDesignerRender(browser, {
         outFile: resolve(LANDING_OUT, 'bit-organizer-bin.png'),
-        query: `params=${Buffer.from(JSON.stringify(BIT_ORGANIZER_PARAMS)).toString('base64')}`,
+        query: `params=${encodeURIComponent(Buffer.from(JSON.stringify(BIT_ORGANIZER_PARAMS)).toString('base64'))}`,
         theme: 'light',
         zoomSteps: 5,
       });

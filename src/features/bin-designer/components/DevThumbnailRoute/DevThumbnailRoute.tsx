@@ -54,10 +54,13 @@ export function DevThumbnailRoute() {
     }
     const rawParams = search.get('params');
     if (rawParams) {
+      // URLSearchParams decodes an unencoded '+' as a space; also accept
+      // base64url payloads so callers don't have to worry about either.
+      const normalized = rawParams.replace(/ /g, '+').replace(/-/g, '+').replace(/_/g, '/');
       try {
-        setParams(JSON.parse(atob(rawParams)) as Parameters<typeof setParams>[0]);
-      } catch {
-        console.error('[DevThumbnailRoute] invalid params payload');
+        setParams(JSON.parse(atob(normalized)) as Parameters<typeof setParams>[0]);
+      } catch (e) {
+        console.error('[DevThumbnailRoute] invalid params payload', e);
       }
     }
   }, [setParams]);

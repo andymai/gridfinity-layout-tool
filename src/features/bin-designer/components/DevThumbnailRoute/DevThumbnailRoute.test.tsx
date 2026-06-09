@@ -51,6 +51,17 @@ describe('DevThumbnailRoute', () => {
     expect(useDesignerStore.getState().params.width).toBe(example.params.width);
   });
 
+  it('recovers a payload whose base64 plus signs decayed to spaces', () => {
+    // btoa('{"width":5,"depth":4,"name":">a"}') contains '+'; when the query
+    // string carries it unencoded, URLSearchParams decodes '+' as a space.
+    const payload = btoa('{"width":5,"depth":4,"name":">a"}');
+    expect(payload).toContain('+');
+    setSearch(`?devThumbnails=1&params=${payload}`);
+    render(<DevThumbnailRoute />);
+    expect(useDesignerStore.getState().params.width).toBe(5);
+    expect(useDesignerStore.getState().params.depth).toBe(4);
+  });
+
   it('ignores an invalid params payload without throwing', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const before = useDesignerStore.getState().params.width;
