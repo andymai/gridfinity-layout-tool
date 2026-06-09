@@ -16,6 +16,7 @@ import {
   getBounds,
   mesh,
   meshEdges,
+  getKernelCapabilities,
 } from 'brepjs';
 import type { Shape3D, ValidSolid } from 'brepjs';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
@@ -24,6 +25,7 @@ import { SIZE, CLEARANCE, SOCKET_HEIGHT } from './generatorTypes';
 import { buildSTLBufferFromIndexed } from '@/features/generation/export/stlExporter';
 import { LIP_HEIGHT, LIP_TAPER_WIDTH } from './generatorConstants';
 import { toIndexedMeshData } from './utils/mesh';
+import { creaseEdges } from './utils';
 import { buildTopShape } from './boxBuilder';
 import { generateBin } from './binOrchestrator';
 import { getLastSolid, setLastSolid } from './shapeCache';
@@ -519,16 +521,29 @@ function tessellatePiece(
   let meshData;
   try {
     const centeredPiece = translate(pieceSolid, [-pieceCenterX, -pieceCenterY, 0]);
-    const shapeMesh = mesh(centeredPiece, {
-      tolerance: PREVIEW_TOLERANCE,
-      angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
-    });
-    const edgeMesh = meshEdges(centeredPiece, {
-      tolerance: PREVIEW_TOLERANCE,
-      angularTolerance: PREVIEW_ANGULAR_TOLERANCE * 0.5,
-    });
-    centeredPiece.delete();
-    meshData = toIndexedMeshData(shapeMesh, edgeMesh.lines);
+    // Dispose centeredPiece in a finally so a throw in mesh()/meshEdges()/
+    // creaseEdges() doesn't leak the translated WASM handle.
+    try {
+      const shapeMesh = mesh(centeredPiece, {
+        tolerance: PREVIEW_TOLERANCE,
+        angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
+      });
+      // Build-time kernels (manifold draft) have no B-rep topology, so
+      // `meshEdges()` returns the full triangle wireframe — every facet line,
+      // not feature edges. That paints the freshly-cut faces and curved socket
+      // walls as wireframe noise. Recover clean feature edges from the mesh via
+      // dihedral crease detection, mirroring `tessellateStage` for whole bins.
+      const buildTime = getKernelCapabilities().tessellationModel === 'build-time';
+      const edgeLines = buildTime
+        ? creaseEdges(shapeMesh)
+        : meshEdges(centeredPiece, {
+            tolerance: PREVIEW_TOLERANCE,
+            angularTolerance: PREVIEW_ANGULAR_TOLERANCE * 0.5,
+          }).lines;
+      meshData = toIndexedMeshData(shapeMesh, edgeLines);
+    } finally {
+      centeredPiece.delete();
+    }
   } finally {
     pieceSolid.delete();
   }

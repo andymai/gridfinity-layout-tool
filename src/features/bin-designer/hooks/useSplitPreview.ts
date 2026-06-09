@@ -23,7 +23,12 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
 import { calcMaxGridUnits } from '@/core/constants';
-import { getActiveBridge, workerPoolManager, bridgeManager } from '@/shared/generation/bridge';
+import {
+  getActiveBridge,
+  workerPoolManager,
+  bridgeManager,
+  createDraftSkipGate,
+} from '@/shared/generation/bridge';
 import type { GenerationBridge, SplitPreviewResult } from '@/shared/generation/bridge';
 import { getSplitPieceCount, getSplitPlanePositionsMm } from '@/shared/utils/splitPositions';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
@@ -92,6 +97,10 @@ export function useSplitPreview(): void {
   const finalizedTokenRef = useRef(0);
   const prevStatusRef = useRef(generationStatus);
   const previewBridgeRef = useRef<GenerationBridge | null>(null);
+  // Shared with useGeneration's bin draft: returns the current skip threshold
+  // (FAST_EXACT_SKIP_MS, tightened to BURST_EXACT_SKIP_MS mid-scrub). Read
+  // `.current` inside the effect, never during render.
+  const draftSkipGateRef = useRef(createDraftSkipGate());
   // Flips true once the Manifold bridge is acquired so the draft effect re-runs
   // and dispatches a draft for the current params (the bridge usually resolves
   // after the first render, so the initial edit would otherwise miss its draft).
@@ -147,16 +156,38 @@ export function useSplitPreview(): void {
     if (token <= finalizedTokenRef.current) return;
     const { cutPlanesX, cutPlanesY, splitConnectorConfig } = computeSplitInputs(params, maxGrid);
 
-    void preview
-      .generateSplitPreview(params, cutPlanesX, cutPlanesY, { splitConnectorConfig })
-      .then((result) => {
-        // Dropped if a newer edit started or this edit's exact result landed.
+    const dispatchDraft = (): void => {
+      void preview
+        .generateSplitPreview(params, cutPlanesX, cutPlanesY, { splitConnectorConfig })
+        .then((result) => {
+          // Dropped if a newer edit started or this edit's exact result landed.
+          if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
+          useDesignerStore.getState().setSplitPieceMeshes(toMeshEntries(result));
+        })
+        .catch(() => {
+          // Draft failure is non-fatal — the exact path still runs.
+        });
+    };
+
+    // Skip the draft when the exact pipeline is predicted to finish faster than
+    // the gate's threshold — a draft replaced almost immediately is just
+    // flicker, and the threshold tightens during a scrub (see draftPolicy).
+    // The estimate covers the exact bin build; the split cut runs on top, so the
+    // true exact-split time is at least this. Split bins exceed the print bed
+    // (large), so in practice this rarely skips — matching the bin draft's
+    // behavior for consistency. null (no history / worker busy mid-generation /
+    // timeout) means slow, so the draft proceeds.
+    const skipBelowMs = draftSkipGateRef.current();
+    const exact = getActiveBridge();
+    if (exact && !exact.isDestroyed) {
+      void exact.estimateGenerate(params).then((predictedMs) => {
+        if (predictedMs !== null && predictedMs < skipBelowMs) return;
         if (token !== genTokenRef.current || token <= finalizedTokenRef.current) return;
-        useDesignerStore.getState().setSplitPieceMeshes(toMeshEntries(result));
-      })
-      .catch(() => {
-        // Draft failure is non-fatal — the exact path still runs.
+        dispatchDraft();
       });
+    } else {
+      dispatchDraft();
+    }
   }, [needsSplit, params, maxGrid, previewReady]);
 
   // Exact path: runs after the main bin generation finishes so the worker's

@@ -13,6 +13,11 @@ import {
 
 const mockGenerateSplitPreview = vi.fn();
 const mockDraftGenerateSplitPreview = vi.fn();
+// Exact-build time estimate consulted by the draft-skip gate. null = no
+// history / worker busy → treated as slow → draft proceeds (the default, so
+// existing draft tests are unaffected). A test can resolve a fast value to
+// exercise the skip path.
+const mockEstimateGenerate = vi.fn<() => Promise<number | null>>(() => Promise.resolve(null));
 // Null by default → no draft bridge (exact-only), so existing exact-path tests
 // are unaffected. Individual tests set a draft bridge to exercise arbitration.
 type PreviewBridge = {
@@ -27,7 +32,10 @@ let acquirePreviewImpl: () => Promise<PreviewBridge> = () => Promise.resolve(moc
 vi.mock('@/shared/generation/bridge', () => ({
   getActiveBridge: () => ({
     generateSplitPreview: mockGenerateSplitPreview,
+    estimateGenerate: mockEstimateGenerate,
+    isDestroyed: false,
   }),
+  createDraftSkipGate: () => () => 1000,
   workerPoolManager: {
     get: () => null,
     acquire: () => Promise.reject(new Error('No pool in test')),
@@ -44,6 +52,10 @@ vi.mock('@/shared/generation/bridge', () => ({
 /** Flush pending microtasks so async effects resolve. */
 async function flush(): Promise<void> {
   await act(async () => {
+    // Several microtask cycles: the draft path awaits the exact-build estimate
+    // before dispatching, then awaits the split result — each is its own hop.
+    await Promise.resolve();
+    await Promise.resolve();
     await Promise.resolve();
   });
 }
@@ -132,6 +144,7 @@ describe('useSplitPreview', () => {
     resetStores();
     mockGenerateSplitPreview.mockResolvedValue(makeSplitResult(2));
     mockDraftGenerateSplitPreview.mockResolvedValue(makeSplitResult(2));
+    mockEstimateGenerate.mockResolvedValue(null); // slow by default → draft proceeds
     mockPreviewBridge = null; // exact-only unless a test opts into the draft bridge
     acquirePreviewImpl = () => Promise.resolve(mockPreviewBridge);
   });
@@ -337,6 +350,20 @@ describe('useSplitPreview', () => {
     expect(mockDraftGenerateSplitPreview).toHaveBeenCalledTimes(1);
     expect(mockGenerateSplitPreview).not.toHaveBeenCalled();
     expect(useDesignerStore.getState().ui.splitPieceMeshes).toHaveLength(2);
+  });
+
+  it('skips the draft when the exact build is predicted faster than the gate', async () => {
+    enableDraftBridge();
+    // Exact predicted at 50ms — under the 1000ms gate, so the draft would just
+    // flicker before the exact lands. The gate suppresses it.
+    mockEstimateGenerate.mockResolvedValue(50);
+    mockDraftGenerateSplitPreview.mockResolvedValue(makeSplitResult(2));
+    setOversizedExplodedState({ generationStatus: 'generating' });
+
+    renderHook(() => useSplitPreview());
+    await flush();
+
+    expect(mockDraftGenerateSplitPreview).not.toHaveBeenCalled();
   });
 
   it('exact result supersedes the draft once main generation completes', async () => {
