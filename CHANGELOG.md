@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.155.5](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.4...gridfinity-layout-tool-v4.155.5) (2026-06-09)
+
+
+### Bug Fixes
+
+* **split:** clean split draft preview edges and skip redundant drafts ([#2073](https://github.com/andymai/gridfinity-layout-tool/issues/2073)) ([0bcbeef](https://github.com/andymai/gridfinity-layout-tool/commit/0bcbeef1dcdc8fb43a524c148d8ca2b7b3bedddc))
+
 ## [4.155.4](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.3...gridfinity-layout-tool-v4.155.4) (2026-06-08)
 
 
