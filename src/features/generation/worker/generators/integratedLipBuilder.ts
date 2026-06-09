@@ -71,7 +71,8 @@ export function buildBinBoxWithLip(
   const wt = wallThickness;
 
   // Lip inner-profile insets (mirror buildTopShapeLoft's INNER_* values).
-  const INNER_ANGLE = 1.2; // LIP_EXTENSION
+  const LIP_EXTENSION = 1.2; // overhang depth = angled-support inset at its base
+  const INNER_ANGLE = LIP_EXTENSION;
   const INNER_BASE = LIP_TAPER_WIDTH; // 2.6
   const INNER_MID = LIP_BIG_TAPER; // 1.9
 
@@ -80,7 +81,7 @@ export function buildBinBoxWithLip(
   // upper wall (this is the coincident region the fuse z-fights on).
   const lipBaseZ = wallHeight - LIP_OVERLAP;
   const zAngleBottom = lipBaseZ - LIP_TAPER_WIDTH;
-  const zExt = lipBaseZ - 1.2;
+  const zExt = lipBaseZ - LIP_EXTENSION;
   const zTaper1 = lipBaseZ + LIP_SMALL_TAPER;
   const zVert = lipBaseZ + LIP_SMALL_TAPER + LIP_VERTICAL_PART;
   const zPeak = lipBaseZ + LIP_HEIGHT;
@@ -123,7 +124,8 @@ export function buildBinBoxWithLip(
   return withScope((scope: DisposalScope) => {
     // Single outer prism: footprint extruded from the floor up to the lip peak.
     // The body wall and lip outer share this one face — no coincidence to fight.
-    const outer = sketch(makeOuterFootprint()).extrude(zPeak);
+    // Registered so the scope disposes it; `cut` does not consume its inputs.
+    const outer = scope.register(sketch(makeOuterFootprint()).extrude(zPeak));
 
     // ONE inner cut tool: the straight bin cavity flowing into the lip's inner
     // taper, as a single ruled loft. A single tool means there is no
