@@ -521,24 +521,29 @@ function tessellatePiece(
   let meshData;
   try {
     const centeredPiece = translate(pieceSolid, [-pieceCenterX, -pieceCenterY, 0]);
-    const shapeMesh = mesh(centeredPiece, {
-      tolerance: PREVIEW_TOLERANCE,
-      angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
-    });
-    // Build-time kernels (manifold draft) have no B-rep topology, so
-    // `meshEdges()` returns the full triangle wireframe — every facet line,
-    // not feature edges. That paints the freshly-cut faces and curved socket
-    // walls as wireframe noise. Recover clean feature edges from the mesh via
-    // dihedral crease detection, mirroring `tessellateStage` for whole bins.
-    const buildTime = getKernelCapabilities().tessellationModel === 'build-time';
-    const edgeLines = buildTime
-      ? creaseEdges(shapeMesh)
-      : meshEdges(centeredPiece, {
-          tolerance: PREVIEW_TOLERANCE,
-          angularTolerance: PREVIEW_ANGULAR_TOLERANCE * 0.5,
-        }).lines;
-    centeredPiece.delete();
-    meshData = toIndexedMeshData(shapeMesh, edgeLines);
+    // Dispose centeredPiece in a finally so a throw in mesh()/meshEdges()/
+    // creaseEdges() doesn't leak the translated WASM handle.
+    try {
+      const shapeMesh = mesh(centeredPiece, {
+        tolerance: PREVIEW_TOLERANCE,
+        angularTolerance: PREVIEW_ANGULAR_TOLERANCE,
+      });
+      // Build-time kernels (manifold draft) have no B-rep topology, so
+      // `meshEdges()` returns the full triangle wireframe — every facet line,
+      // not feature edges. That paints the freshly-cut faces and curved socket
+      // walls as wireframe noise. Recover clean feature edges from the mesh via
+      // dihedral crease detection, mirroring `tessellateStage` for whole bins.
+      const buildTime = getKernelCapabilities().tessellationModel === 'build-time';
+      const edgeLines = buildTime
+        ? creaseEdges(shapeMesh)
+        : meshEdges(centeredPiece, {
+            tolerance: PREVIEW_TOLERANCE,
+            angularTolerance: PREVIEW_ANGULAR_TOLERANCE * 0.5,
+          }).lines;
+      meshData = toIndexedMeshData(shapeMesh, edgeLines);
+    } finally {
+      centeredPiece.delete();
+    }
   } finally {
     pieceSolid.delete();
   }
