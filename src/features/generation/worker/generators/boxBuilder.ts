@@ -392,6 +392,7 @@ export function buildBinBox(
     return setBoxCache(boxKey, result);
   });
 }
+
 /**
  * Build the stacking lip using a ruled loft + boolean cut.
  *

@@ -220,6 +220,14 @@ export function buildMaskDrawingAtInset(
 }
 
 /**
+ * Whether the mask encloses any empty cells (O-shape interiors). `maskToPolygon`
+ * returns the outer perimeter as loop 0 and one loop per enclosed hole.
+ */
+export function maskHasHoles(mask: CellMask): boolean {
+  return maskToPolygon(mask).length > 1;
+}
+
+/**
  * Build one Drawing per inner hole in the mask. Each drawing represents
  * the cavity region in CCW orientation, grown outward from the nominal
  * hole boundary by `insetMm` so the extruded cut carries clearance on

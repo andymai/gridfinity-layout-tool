@@ -10,12 +10,14 @@
  * EXPORT path the socket is fused into `solid` for a watertight model.
  */
 
-import { unwrap, fuse, translate, withScope } from 'brepjs';
+import { unwrap, fuse, translate, withScope, getKernelCapabilities } from 'brepjs';
 import type { DisposalScope, Shape3D } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket, buildOverhangFeet } from '../../socketBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
+import { buildBinBoxWithLip } from '../../integratedLipBuilder';
+import { maskHasHoles } from '../../maskPolygon';
 import { hasOverhang } from '../../overhang';
 import {
   buildCompartmentCavityDrawings,
@@ -76,7 +78,40 @@ export const shellStage: PipelineStage = {
         ? buildCompartmentsCacheKey(params)
         : undefined;
 
+      // Mesh kernels (the Manifold draft) leave the body↔lip fuse's coincident
+      // outer-wall faces undissolved → z-fighting at the rounded corners (#2074).
+      // Build the body+lip as a single fuse-free solid instead, but only for the
+      // common case the integrated builder covers; everything else keeps the
+      // exact-faithful fuse below. Draft-only: the export path is an exact kernel.
+      const integratedLip =
+        dim.hasLip &&
+        !dim.solid &&
+        !dim.compartmentsBakedIntoShell &&
+        getKernelCapabilities().tessellationModel === 'build-time' &&
+        !(params.cellMask && maskHasHoles(params.cellMask));
+
       const built = withScope((scope: DisposalScope) => {
+        if (integratedLip) {
+          try {
+            const integrated = buildBinBoxWithLip(
+              params.width,
+              params.depth,
+              dim.wallHeight,
+              params.wallThickness,
+              params.gridUnitMm,
+              params.cellMask,
+              dim.overhang
+            );
+            // One solid: the lip is not a separable origin here, so the whole
+            // body carries the BASE tag (the exact path preserves the LIP tag).
+            collectOrigins(integrated, FeatureTag.BASE, originToTag);
+            return integrated;
+          } catch (e: unknown) {
+            if (isAbortError(e)) throw e;
+            // Integrated build failed — fall through to the fuse path.
+          }
+        }
+
         const binBody = buildBinBox(
           params.width,
           params.depth,
