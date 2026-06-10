@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.158.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.157.0...gridfinity-layout-tool-v4.158.0) (2026-06-10)
+
+
+### Features
+
+* **rightpanel:** add nozzle size input to the desktop print list ([#2082](https://github.com/andymai/gridfinity-layout-tool/issues/2082)) ([2f5d8f8](https://github.com/andymai/gridfinity-layout-tool/commit/2f5d8f882fd327b27244f17f121a46f2eed8ae39))
+
 ## [4.157.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.156.0...gridfinity-layout-tool-v4.157.0) (2026-06-10)
 
 
