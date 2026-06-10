@@ -28,7 +28,9 @@ describe('findBottomEdges', () => {
       expect(edges.length).toBe(4);
       for (const e of edges) {
         const b = getBounds(e);
-        // Every selected edge lies in the z≈0 plane — no vertical edge leaks in.
+        // Every selected edge lies fully in the z≈0 plane — no vertical edge
+        // (which spans up to the top) leaks in, in either direction.
+        expect(b.zMin).toBeGreaterThanOrEqual(-0.1);
         expect(b.zMax).toBeLessThanOrEqual(0.1);
       }
     } finally {
