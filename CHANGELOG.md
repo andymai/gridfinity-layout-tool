@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.160.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.159.1...gridfinity-layout-tool-v4.160.0) (2026-06-10)
+
+
+### Features
+
+* **shell:** unify attribution footer across layout, bin designer, and baseplate ([#2091](https://github.com/andymai/gridfinity-layout-tool/issues/2091)) ([3d1905e](https://github.com/andymai/gridfinity-layout-tool/commit/3d1905ee848b9e7de6293d59c54439fa79d39c12))
+
 ## [4.159.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.159.0...gridfinity-layout-tool-v4.159.1) (2026-06-10)
 
 
