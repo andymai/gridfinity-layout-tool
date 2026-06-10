@@ -96,7 +96,8 @@ export function useConnectorSampleExport(): UseConnectorSampleExportReturn {
           drawerDepth,
           gridUnitMm,
           fractionalEdgeX,
-          fractionalEdgeY
+          fractionalEdgeY,
+          useSettingsStore.getState().settings.printSettings.nozzleSizeMm
         );
 
         if (format === '3mf') {

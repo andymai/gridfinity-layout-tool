@@ -122,4 +122,22 @@ describe('wallKeyGeometry', () => {
     // A thick wall encloses the key, so the pilaster adds no material at all.
     expect(intrusion(4.0)).toBe(0);
   });
+
+  it('matches the legacy key footprint at the 0.4mm baseline (no regression)', () => {
+    const legacy = wallKeyGeometry(1.2, 0.15);
+    const explicit04 = wallKeyGeometry(1.2, 0.15, 0.4);
+    expect(explicit04.keyHalfWidth).toBe(legacy.keyHalfWidth);
+    expect(explicit04.protrusion).toBe(legacy.protrusion);
+    // Legacy: 1.0mm full key width (half 0.5), 1.2mm protrusion.
+    expect(legacy.keyHalfWidth).toBeCloseTo(0.5, 10);
+    expect(legacy.protrusion).toBeCloseTo(1.2, 10);
+  });
+
+  it('scales the key tongue to at least two perimeters on a wider nozzle', () => {
+    const wide = wallKeyGeometry(1.2, 0.15, 0.6);
+    // Full tongue width = 2 × half must clear two 0.6mm beads (1.2mm).
+    expect(2 * wide.keyHalfWidth).toBeGreaterThanOrEqual(2 * 0.6 - 1e-9);
+    // And the intact outer skin must grow too, so a fat bead can't breach it.
+    expect(wide.outerSkin).toBeGreaterThan(wallKeyGeometry(1.2, 0.15, 0.4).outerSkin - 1e-9);
+  });
 });

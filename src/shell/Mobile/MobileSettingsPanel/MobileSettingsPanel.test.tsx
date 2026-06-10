@@ -6,22 +6,26 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
-vi.mock('@/core/store/settings', () => ({
-  useSettingsStore: (selector: (state: Record<string, unknown>) => unknown) =>
-    selector({
-      settings: {
-        analyticsEnabled: true,
-        stlSearchSites: [],
-        defaultDrawerWidth: 6,
-        defaultDrawerDepth: 4,
-        defaultDrawerHeight: 6,
-        defaultLayerHeight: 6,
-        defaultPrintBedSize: 256,
-        defaultGridUnitMm: 42,
-      },
-      updateSetting: vi.fn(),
-    }),
-}));
+vi.mock('@/core/store/settings', () => {
+  const state = {
+    settings: {
+      analyticsEnabled: true,
+      stlSearchSites: [],
+      defaultDrawerWidth: 6,
+      defaultDrawerDepth: 4,
+      defaultDrawerHeight: 6,
+      defaultLayerHeight: 6,
+      defaultPrintBedSize: 256,
+      defaultGridUnitMm: 42,
+      printSettings: { nozzleSizeMm: 0.4 },
+    },
+    updateSetting: vi.fn(),
+  };
+  const useSettingsStore = (selector: (state: Record<string, unknown>) => unknown) =>
+    selector(state);
+  useSettingsStore.getState = () => state;
+  return { useSettingsStore };
+});
 
 vi.mock('@/core/store/labs', () => {
   const state = {

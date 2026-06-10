@@ -16,7 +16,8 @@ export function buildFullParams(
   drawerDepth: number,
   gridUnitMm: number,
   fractionalEdgeX: 'start' | 'end',
-  fractionalEdgeY: 'start' | 'end'
+  fractionalEdgeY: 'start' | 'end',
+  nozzleSizeMm?: number
 ): FullBaseplateParams {
   const synced = stored.syncWithLayout !== false;
   const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
@@ -26,6 +27,7 @@ export function buildFullParams(
     width,
     depth,
     gridUnitMm,
+    nozzleSizeMm,
     magnetHoles: stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,

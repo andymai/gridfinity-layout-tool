@@ -431,7 +431,10 @@ export function useExport(): UseExportReturn {
         const gridSizeMm = params.gridUnitMm;
         const cutPlanesX = getSplitPlanePositionsMm(params.width, maxGrid.width, gridSizeMm);
         const cutPlanesY = getSplitPlanePositionsMm(params.depth, maxGrid.depth, gridSizeMm);
-        const connectorConfig = params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
+        const connectorConfig = {
+          ...(params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG),
+          nozzleSizeMm: useSettingsStore.getState().settings.printSettings.nozzleSizeMm,
+        };
         const totalPieceCount = getSplitPieceCount(
           params.width,
           params.depth,

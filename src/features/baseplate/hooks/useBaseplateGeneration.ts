@@ -39,6 +39,7 @@ import {
   trackBaseplatePreviewTiming,
 } from '@/shared/analytics/posthog';
 import { useToastStore } from '@/core/store/toast';
+import { useSettingsStore } from '@/core/store/settings';
 import { getStaticTranslation } from '@/i18n';
 import { generateBaseplateDirect } from '@/shared/generation/directMesh';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
@@ -713,7 +714,8 @@ export function useBaseplateGeneration(): void {
           layoutState.layout.drawer.depth,
           layoutState.layout.gridUnitMm,
           layoutState.layout.drawer.fractionalEdgeX ?? 'end',
-          layoutState.layout.drawer.fractionalEdgeY ?? 'end'
+          layoutState.layout.drawer.fractionalEdgeY ?? 'end',
+          useSettingsStore.getState().settings.printSettings.nozzleSizeMm
         );
         const bedW = layoutState.layout.printBedSize;
         const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
@@ -756,7 +758,8 @@ export function useBaseplateGeneration(): void {
       drawerDepth,
       gridUnitMm,
       fractionalEdgeX,
-      fractionalEdgeY
+      fractionalEdgeY,
+      useSettingsStore.getState().settings.printSettings.nozzleSizeMm
     );
     runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
     // `generationTriggers` carries the trigger-only params (connectorStyle,
