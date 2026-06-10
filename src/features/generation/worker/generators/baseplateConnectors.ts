@@ -90,7 +90,7 @@ export function buildConnectors(
   // to flex, skip them (the part would snap off rather than click). The UI
   // still offers the style; the geometry simply degrades to no connectors.
   const snapLevels = isSnapClip
-    ? snapClipLevels(totalHeight, params.connectorFitOffset ?? 0)
+    ? snapClipLevels(totalHeight, params.connectorFitOffset ?? 0, params.nozzleSizeMm)
     : null;
   if (isSnapClip && (!snapLevels || !snapLevels.viable)) return { nubs: tongues, holes: grooves };
 
@@ -110,7 +110,7 @@ export function buildConnectors(
   // and clamped so it can never go negative. The tongue/key stay at nominal
   // size — only the groove the user prints around them grows or shrinks.
   const baseClearance = isDovetailKey ? DOVETAIL_KEY_CLEARANCE : TONGUE_CLEARANCE;
-  const cl = effectiveClearance(baseClearance, params.connectorFitOffset ?? 0);
+  const cl = effectiveClearance(baseClearance, params.connectorFitOffset ?? 0, params.nozzleSizeMm);
   const ext = COPLANAR_MARGIN;
 
   // Honors fractionalEdgeX/Y so dovetails land on cell boundaries even when
@@ -346,8 +346,13 @@ const SNAP_CLIP_SOCKET_RELIEF_GAP = 0.3;
  * neighbours too. Reuses {@link buildSingleCellSocket} so the relief tracks the
  * real socket profile and can't drift.
  */
-function relieveClipForSockets(clip: Shape3D, totalHeight: number, gridUnitMm: number): Shape3D {
-  const lv = snapClipLevels(totalHeight, 0);
+function relieveClipForSockets(
+  clip: Shape3D,
+  totalHeight: number,
+  gridUnitMm: number,
+  nozzleSizeMm?: number
+): Shape3D {
+  const lv = snapClipLevels(totalHeight, 0, nozzleSizeMm);
   // Cover the bridge band + margin, but stay clear above the catch ledge so the
   // barb and its catch face are never touched. totalHeight ≥ SOCKET_HEIGHT keeps
   // catchZ ≤ −2.8, so this floor always lands safely above it.
@@ -406,8 +411,12 @@ function relieveClipForSockets(clip: Shape3D, totalHeight: number, gridUnitMm: n
  * relieved against the adjacent edge sockets ({@link relieveClipForSockets}) so
  * a seated clip doesn't block bins in the sockets flanking the seam.
  */
-export function buildSnapClip(totalHeight: number, gridUnitMm: number): Shape3D {
-  const lv = snapClipLevels(totalHeight, 0);
+export function buildSnapClip(
+  totalHeight: number,
+  gridUnitMm: number,
+  nozzleSizeMm?: number
+): Shape3D {
+  const lv = snapClipLevels(totalHeight, 0, nozzleSizeMm);
   const g = SNAP_CLIP.GAP_HALF;
   const br = SNAP_CLIP.BRIDGE_THK;
   const { legOuter, barbTip, apexZ, catchZ, leadZ, legBottom } = lv;
@@ -443,7 +452,7 @@ export function buildSnapClip(totalHeight: number, gridUnitMm: number): Shape3D 
   const seated = sketch(profile, 'XZ', 0).extrude(SNAP_CLIP.LEG_L);
   const centered = translate(seated, [0, SNAP_CLIP.LEG_L / 2, 0]); // center on the seam axis
   seated.delete(); // translate returns a new shape; free the intermediate
-  const relieved = relieveClipForSockets(centered, totalHeight, gridUnitMm);
+  const relieved = relieveClipForSockets(centered, totalHeight, gridUnitMm, nozzleSizeMm);
   if (relieved !== centered) centered.delete();
   return relieved;
 }
@@ -453,8 +462,12 @@ export function buildSnapClip(totalHeight: number, gridUnitMm: number): Shape3D 
  * so the staple silhouette (barbs + flex slot) prints in-plane with no supports,
  * building up along the clip length. Bottom rests at Z=0.
  */
-export function buildSnapClipForPrint(totalHeight: number, gridUnitMm: number): Shape3D {
-  const seated = buildSnapClip(totalHeight, gridUnitMm); // top Z=0, legs to −legBottom, length Y∈[−L/2,L/2]
+export function buildSnapClipForPrint(
+  totalHeight: number,
+  gridUnitMm: number,
+  nozzleSizeMm?: number
+): Shape3D {
+  const seated = buildSnapClip(totalHeight, gridUnitMm, nozzleSizeMm); // top Z=0, legs to −legBottom, length Y∈[−L/2,L/2]
   // Rotate +90° about X (+Y→+Z): a staple-silhouette end face drops onto the
   // bed and the build height becomes the clip length, so barbs/flex print
   // in-plane with no supports. The rotated part centers on Z∈[−L/2,L/2]; lift

@@ -168,6 +168,13 @@ export interface BaseplateParams {
    * `@/shared/constants/connectors`.
    */
   readonly connectorFitOffset?: number;
+  /**
+   * Nozzle diameter (mm) the baseplate + connectors print with. Dovetail-key and
+   * snap-clip feature sizes and pocket clearances scale up with it so they stay
+   * printable on wider nozzles. Omitted/undefined = 0.4mm baseline (geometry
+   * unchanged from pre-nozzle-aware behavior). Mirrors `settings.printSettings.nozzleSizeMm`.
+   */
+  readonly nozzleSizeMm?: number;
   /** Remove center floor material, keeping only magnet pads. */
   readonly lightweight?: boolean;
   /** Uniform outer corner radius in mm. */

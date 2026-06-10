@@ -12,7 +12,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
+import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
+import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
+import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { Select } from '@/design-system/Select';
@@ -87,6 +90,12 @@ export function BaseplatePanel() {
   );
   const setHoveredPieceLabel = useBaseplatePageStore((s) => s.setHoveredPieceLabel);
   const setSelectedPieceLabel = useBaseplatePageStore((s) => s.setSelectedPieceLabel);
+
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  const handleNozzleChange = useCallback((value: number) => {
+    const current = useSettingsStore.getState().settings.printSettings;
+    useSettingsStore.getState().updateSetting('printSettings', { ...current, nozzleSizeMm: value });
+  }, []);
 
   const updateParams = useCallback((patch: Partial<BaseplateParams>) => {
     const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
@@ -286,6 +295,25 @@ export function BaseplatePanel() {
                 </div>
               )}
             </div>
+
+            {/* Nozzle size — scales connector/lock features so they stay printable. */}
+            <div className="border-t border-stroke-subtle pt-3">
+              <SettingsRow
+                label={t('settings.nozzleSize')}
+                tooltip={t('baseplate.nozzleSizeTooltip')}
+                unit="mm"
+              >
+                <DeferredNumberInput
+                  value={nozzleSizeMm}
+                  onChange={handleNozzleChange}
+                  min={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN}
+                  max={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX}
+                  step={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP}
+                  className="input w-14 py-0.5 px-1 text-xs text-right"
+                  aria-label={t('settings.nozzleSize')}
+                />
+              </SettingsRow>
+            </div>
           </div>
         </StickyGroupHeader>
 
@@ -373,6 +401,11 @@ export function BaseplatePanel() {
                       label={t('baseplate.preferIdenticalPieces')}
                     />
                     <ConnectorSampleButton />
+                    {nozzleSizeMm > NOZZLE_BASELINE && (
+                      <p className="text-[11px] leading-relaxed text-content-tertiary">
+                        {t('baseplate.connectorNozzleNotice', { nozzle: nozzleSizeMm })}
+                      </p>
+                    )}
                   </>
                 )}
               </>

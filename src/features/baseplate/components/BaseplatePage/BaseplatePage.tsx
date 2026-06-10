@@ -34,6 +34,7 @@ import {
   recordExportAndShouldPromptSupport,
 } from '@/shared/components/ExportDialog';
 import { useToastStore } from '@/core/store/toast';
+import { useSettingsStore } from '@/core/store/settings';
 import { ExperimentalKernelBadge } from '@/shared/components/ExperimentalKernelBadge';
 import type { ExportFileFormat } from '@/shared/types/bin';
 
@@ -103,6 +104,8 @@ export function BaseplatePage() {
 
   const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
 
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+
   const fullParams = useMemo(
     () =>
       buildFullParams(
@@ -111,9 +114,18 @@ export function BaseplatePage() {
         drawerDepth,
         gridUnitMm,
         fractionalEdgeX,
-        fractionalEdgeY
+        fractionalEdgeY,
+        nozzleSizeMm
       ),
-    [baseplateParams, drawerWidth, drawerDepth, gridUnitMm, fractionalEdgeX, fractionalEdgeY]
+    [
+      baseplateParams,
+      drawerWidth,
+      drawerDepth,
+      gridUnitMm,
+      fractionalEdgeX,
+      fractionalEdgeY,
+      nozzleSizeMm,
+    ]
   );
 
   const fileName = useMemo(

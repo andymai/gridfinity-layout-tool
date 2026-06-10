@@ -44,13 +44,17 @@ interface SplitInputs {
 
 function computeSplitInputs(
   params: BinParams,
-  maxGrid: { width: number; depth: number }
+  maxGrid: { width: number; depth: number },
+  nozzleSizeMm: number
 ): SplitInputs {
+  const baseConfig = params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
   return {
     cutPlanesX: getSplitPlanePositionsMm(params.width, maxGrid.width, params.gridUnitMm),
     cutPlanesY: getSplitPlanePositionsMm(params.depth, maxGrid.depth, params.gridUnitMm),
     totalPieceCount: getSplitPieceCount(params.width, params.depth, maxGrid.width, maxGrid.depth),
-    splitConnectorConfig: params.splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG,
+    // Stamp the shared print-setting nozzle onto the connector config so the
+    // worker scales features/clearances to it — without persisting it per-design.
+    splitConnectorConfig: { ...baseConfig, nozzleSizeMm },
   };
 }
 
@@ -70,10 +74,11 @@ export function useSplitPreview(): void {
     }))
   );
 
-  const { defaultPrintBedSize, defaultPrintBedDepth } = useSettingsStore(
+  const { defaultPrintBedSize, defaultPrintBedDepth, nozzleSizeMm } = useSettingsStore(
     useShallow((s) => ({
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
       defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
+      nozzleSizeMm: s.settings.printSettings.nozzleSizeMm,
     }))
   );
 
@@ -154,7 +159,11 @@ export function useSplitPreview(): void {
     // result for this edit already landed — a late draft must not downgrade it.
     const token = genTokenRef.current;
     if (token <= finalizedTokenRef.current) return;
-    const { cutPlanesX, cutPlanesY, splitConnectorConfig } = computeSplitInputs(params, maxGrid);
+    const { cutPlanesX, cutPlanesY, splitConnectorConfig } = computeSplitInputs(
+      params,
+      maxGrid,
+      nozzleSizeMm
+    );
 
     const dispatchDraft = (): void => {
       void preview
@@ -188,7 +197,7 @@ export function useSplitPreview(): void {
     } else {
       dispatchDraft();
     }
-  }, [needsSplit, params, maxGrid, previewReady]);
+  }, [needsSplit, params, maxGrid, previewReady, nozzleSizeMm]);
 
   // Exact path: runs after the main bin generation finishes so the worker's
   // cached solid matches the current params, then supersedes the draft.
@@ -220,7 +229,8 @@ export function useSplitPreview(): void {
     const token = genTokenRef.current;
     const { cutPlanesX, cutPlanesY, totalPieceCount, splitConnectorConfig } = computeSplitInputs(
       params,
-      maxGrid
+      maxGrid,
+      nozzleSizeMm
     );
 
     // Try to acquire the pool for parallel generation, fall back to single bridge.
@@ -259,5 +269,5 @@ export function useSplitPreview(): void {
       .finally(() => {
         if (usingPool) workerPoolManager.release();
       });
-  }, [needsSplit, generationStatus, params, maxGrid]);
+  }, [needsSplit, generationStatus, params, maxGrid, nozzleSizeMm]);
 }

@@ -12,6 +12,7 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
+import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import {
   TONGUE_CLEARANCE,
@@ -33,7 +34,14 @@ export function meshCacheKey(params: BaseplateParams, forExport: boolean): strin
         ? SNAP_CLIP_CLEARANCE
         : TONGUE_CLEARANCE;
   const connectorClearance = params.connectorNubs
-    ? effectiveClearance(baseClearance, params.connectorFitOffset ?? 0)
+    ? effectiveClearance(baseClearance, params.connectorFitOffset ?? 0, params.nozzleSizeMm)
+    : 0;
+  // Nozzle scales connector feature sizes (snap-clip barb/leg) independently of
+  // the clearance term, so it must key the cache or wider-nozzle geometry would
+  // alias onto the 0.4mm build. Only meaningful when connectors are on; folded to
+  // 0 otherwise so connector-off plates keep sharing one entry across nozzles.
+  const connectorNozzle = params.connectorNubs
+    ? quantize(params.nozzleSizeMm ?? NOZZLE_BASELINE)
     : 0;
   return buildCacheKey(
     'v1',
@@ -59,6 +67,7 @@ export function meshCacheKey(params: BaseplateParams, forExport: boolean): strin
     params.preferIdenticalPieces ?? false,
     params.connectorStyle ?? 'dovetail',
     quantize(connectorClearance),
+    connectorNozzle,
     params.lightweight ?? true,
     quantize(params.cornerRadius ?? -1),
     quantize(params.cornerRadii?.tl ?? -1),

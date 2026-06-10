@@ -15,6 +15,7 @@ import * as THREE from 'three';
 import { useShallow } from 'zustand/react/shallow';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { useLayoutStore } from '@/core/store/layout';
+import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS } from '@/core/constants';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import type { ConnectorKeyMesh } from '../../store/baseplatePageStore';
@@ -227,6 +228,8 @@ export function ConnectorKeyMeshes() {
     }))
   );
 
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+
   const fullParams = useMemo(
     () =>
       buildFullParams(
@@ -235,9 +238,18 @@ export function ConnectorKeyMeshes() {
         drawerDepth,
         gridUnitMm,
         fractionalEdgeX,
-        fractionalEdgeY
+        fractionalEdgeY,
+        nozzleSizeMm
       ),
-    [baseplateParams, drawerWidth, drawerDepth, gridUnitMm, fractionalEdgeX, fractionalEdgeY]
+    [
+      baseplateParams,
+      drawerWidth,
+      drawerDepth,
+      gridUnitMm,
+      fractionalEdgeX,
+      fractionalEdgeY,
+      nozzleSizeMm,
+    ]
   );
 
   const junctions = useMemo(
@@ -253,7 +265,7 @@ export function ConnectorKeyMeshes() {
   // On a slab too thin to flex, the worker skips snap pockets — so the preview
   // must not draw a clip that wouldn't exist. (Unreachable at standard socket
   // heights; a guard against future thinner-base options.)
-  const snapViable = !isSnapClip || snapClipLevels(totalHeight, 0).viable;
+  const snapViable = !isSnapClip || snapClipLevels(totalHeight, 0, nozzleSizeMm).viable;
   // Prefer the worker-meshed clip (the exact socket-relieved part). Until BREP
   // supplies it, fall back to the procedural draft clip so the seat isn't empty.
   const geometry = useMemo(() => {

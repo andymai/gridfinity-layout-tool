@@ -10,7 +10,8 @@ const AXIS_KEYS = {
 
 export function SplitOptionsSection() {
   const t = useTranslation();
-  const { needsSplit, pieceCount, splitAxis, config, handlers } = useSplitOptionsSection();
+  const { needsSplit, pieceCount, splitAxis, config, handlers, nozzleSizeMm, showNozzleNotice } =
+    useSplitOptionsSection();
 
   if (!needsSplit) return null;
 
@@ -34,6 +35,12 @@ export function SplitOptionsSection() {
         checked={config.wallConnector === 'key'}
         onChange={handlers.toggleWallConnector}
       />
+
+      {showNozzleNotice && (
+        <p className="text-[11px] leading-relaxed text-content-tertiary">
+          {t('binDesigner.splitConnectorNozzleNotice', { nozzle: nozzleSizeMm })}
+        </p>
+      )}
     </div>
   );
 }

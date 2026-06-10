@@ -429,6 +429,7 @@ function splitSolidIntoPieces(
             wallTopZ,
             wallThickness: params.wallThickness,
             floorThickness: params.wallThickness,
+            nozzleSizeMm: connectorConfig.nozzleSizeMm,
           };
           piece = applySplitConnectors(piece, cutFaces, geometryContext, connectorConfig);
         }

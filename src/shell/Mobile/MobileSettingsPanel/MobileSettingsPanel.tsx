@@ -1,7 +1,9 @@
-import { useState, Suspense } from 'react';
+import { useCallback, useState, Suspense } from 'react';
 // Import stores directly to avoid circular dependency via barrel export
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
+import { useSettingsStore } from '@/core/store/settings';
 import { CONSTRAINTS } from '@/core/constants';
+import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { RulerIcon } from '@/design-system/Icon';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { HalfGridModeBlockedModal } from '@/shell/Modals';
@@ -64,6 +66,12 @@ export function MobileSettingsPanel() {
     setShowHalfBinBlockedModal,
     halfBinViolation,
   } = useDrawerSettings();
+
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  const setNozzleSizeMm = useCallback((value: number) => {
+    const current = useSettingsStore.getState().settings.printSettings;
+    useSettingsStore.getState().updateSetting('printSettings', { ...current, nozzleSizeMm: value });
+  }, []);
 
   const openSettingsModal = (tab?: SettingsTabId) => {
     setSettingsInitialTab(tab);
@@ -207,6 +215,22 @@ export function MobileSettingsPanel() {
               variant="mobile"
             />
           </SettingsRow>
+
+          <div>
+            <SettingsRow label={t('settings.nozzleSize')} unit="mm" variant="mobile">
+              <DeferredNumberInput
+                value={nozzleSizeMm}
+                onChange={setNozzleSizeMm}
+                className="input w-20 h-10 text-center"
+                min={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN}
+                max={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX}
+                step={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP}
+              />
+            </SettingsRow>
+            <p className="text-xs text-content-tertiary mt-1">
+              {t('settings.nozzleSizeMobileHint')}
+            </p>
+          </div>
 
           <button
             type="button"

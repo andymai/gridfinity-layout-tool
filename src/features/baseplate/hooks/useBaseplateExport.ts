@@ -142,7 +142,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           drawerDepth,
           gridUnitMm,
           fractionalEdgeX,
-          fractionalEdgeY
+          fractionalEdgeY,
+          useSettingsStore.getState().settings.printSettings.nozzleSizeMm
         );
 
         const baseName = generateBaseplateFileName(

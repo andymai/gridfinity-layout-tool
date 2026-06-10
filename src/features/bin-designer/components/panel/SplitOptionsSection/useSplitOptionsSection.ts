@@ -5,6 +5,7 @@ import { useSettingsStore } from '@/core/store';
 import { calcMaxGridUnits } from '@/core/constants';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import { getSplitPieceCount } from '@/shared/utils/splitPositions';
+import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 
 export type SplitAxis = 'width' | 'depth' | 'both';
 
@@ -22,10 +23,11 @@ export function useSplitOptionsSection() {
       }))
     );
 
-  const { defaultPrintBedSize, defaultPrintBedDepth } = useSettingsStore(
+  const { defaultPrintBedSize, defaultPrintBedDepth, nozzleSizeMm } = useSettingsStore(
     useShallow((s) => ({
       defaultPrintBedSize: s.settings.defaultPrintBedSize,
       defaultPrintBedDepth: s.settings.defaultPrintBedDepth,
+      nozzleSizeMm: s.settings.printSettings.nozzleSizeMm,
     }))
   );
 
@@ -71,6 +73,13 @@ export function useSplitOptionsSection() {
     [toggleEnabled, toggleWallConnector, setSplitViewMode]
   );
 
+  // A wider nozzle enlarges connector/wall-lock features and clearances; the
+  // worker drops a feature that no longer fits a narrow piece. Surface that as an
+  // advisory only when it's relevant: a connector is on AND the nozzle is wider
+  // than the 0.4mm baseline (at which geometry is unchanged).
+  const connectorsOn = config.enabled || config.wallConnector === 'key';
+  const showNozzleNotice = connectorsOn && nozzleSizeMm > NOZZLE_BASELINE;
+
   return {
     needsSplit,
     pieceCount,
@@ -78,5 +87,7 @@ export function useSplitOptionsSection() {
     config,
     splitViewMode,
     handlers,
+    nozzleSizeMm,
+    showNozzleNotice,
   };
 }

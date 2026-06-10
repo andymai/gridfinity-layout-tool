@@ -163,9 +163,10 @@ function buildConnectorKeyMeshIfNeeded(params: BaseplateParams): ConnectorKeyMes
   if (!hasJoinEdge) return undefined;
 
   const totalHeight = SOCKET_HEIGHT + (params.magnetHoles ? MAGNET_FLOOR + params.magnetDepth : 0);
-  if (!snapClipLevels(totalHeight, params.connectorFitOffset ?? 0).viable) return undefined;
+  if (!snapClipLevels(totalHeight, params.connectorFitOffset ?? 0, params.nozzleSizeMm).viable)
+    return undefined;
 
-  const clip = buildSnapClip(totalHeight, params.gridUnitMm);
+  const clip = buildSnapClip(totalHeight, params.gridUnitMm, params.nozzleSizeMm);
   try {
     const clipMesh = mesh(clip, { tolerance: 0.05, angularTolerance: 10 });
     const indexed = toIndexedMeshData(clipMesh, new Float32Array(0));
@@ -443,7 +444,7 @@ export async function exportConnectorKey(
   // Snap clip ships its own bed-flat part; dovetail key is the legacy default.
   const key =
     params.connectorStyle === 'snapClip'
-      ? buildSnapClipForPrint(totalHeight, params.gridUnitMm)
+      ? buildSnapClipForPrint(totalHeight, params.gridUnitMm, params.nozzleSizeMm)
       : buildDovetailKey(totalHeight);
   try {
     const name = 'connector_key';

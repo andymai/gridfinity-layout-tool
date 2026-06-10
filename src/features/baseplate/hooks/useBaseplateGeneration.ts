@@ -39,6 +39,7 @@ import {
   trackBaseplatePreviewTiming,
 } from '@/shared/analytics/posthog';
 import { useToastStore } from '@/core/store/toast';
+import { useSettingsStore } from '@/core/store/settings';
 import { getStaticTranslation } from '@/i18n';
 import { generateBaseplateDirect } from '@/shared/generation/directMesh';
 import { useBaseplatePageStore } from '../store/baseplatePageStore';
@@ -255,6 +256,11 @@ export function useBaseplateGeneration(): void {
     fractionalEdgeX,
     fractionalEdgeY,
   } = generationTriggers;
+
+  // Nozzle lives in the settings store (not the layout triggers). Subscribe to it
+  // reactively so changing it re-runs the regenerate effect below — otherwise
+  // connector geometry stays at the old nozzle until another param changes.
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
 
   const setGenerationStatus = useBaseplatePageStore((s) => s.setGenerationStatus);
   const setGenerationResult = useBaseplatePageStore((s) => s.setGenerationResult);
@@ -713,7 +719,8 @@ export function useBaseplateGeneration(): void {
           layoutState.layout.drawer.depth,
           layoutState.layout.gridUnitMm,
           layoutState.layout.drawer.fractionalEdgeX ?? 'end',
-          layoutState.layout.drawer.fractionalEdgeY ?? 'end'
+          layoutState.layout.drawer.fractionalEdgeY ?? 'end',
+          useSettingsStore.getState().settings.printSettings.nozzleSizeMm
         );
         const bedW = layoutState.layout.printBedSize;
         const bedD = layoutState.layout.printBedDepth ?? layoutState.layout.printBedSize;
@@ -756,7 +763,8 @@ export function useBaseplateGeneration(): void {
       drawerDepth,
       gridUnitMm,
       fractionalEdgeX,
-      fractionalEdgeY
+      fractionalEdgeY,
+      nozzleSizeMm
     );
     runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
     // `generationTriggers` carries the trigger-only params (connectorStyle,
@@ -771,6 +779,7 @@ export function useBaseplateGeneration(): void {
     printBedDepth,
     fractionalEdgeX,
     fractionalEdgeY,
+    nozzleSizeMm,
     runGeneration,
   ]);
 }

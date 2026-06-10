@@ -126,6 +126,29 @@ describe('split bin wall locking connectors (#1869)', () => {
     expect(totalTriCount(wallOnly.pieces)).toBeGreaterThan(totalTriCount(none.pieces));
   }, 60000);
 
+  it('builds valid, non-dropped wall-lock geometry on a 0.6mm nozzle', () => {
+    const generateSplitPreview = getGenerateSplitPreview();
+    // The wall key + skin + protrusion scale up for a 0.6mm nozzle. Prove the
+    // enlarged features still build a watertight, full-height solid in the kernel
+    // (not silently dropped by the shrink guard) and add real geometry over a
+    // plain cut — this is the printability fix the whole change exists for.
+    const wide: SplitConnectorConfig = { ...WALL_LOCKING, nozzleSizeMm: 0.6 };
+    const result = generateSplitPreview(TALL_PARAMS, CUT_PLANES_X, CUT_PLANES_Y, wide);
+    const none = generateSplitPreview(TALL_PARAMS, CUT_PLANES_X, CUT_PLANES_Y, NO_CONNECTORS);
+
+    expect(result.pieces).toHaveLength(2);
+    const totalH = TALL_PARAMS.height * GRIDFINITY.HEIGHT_UNIT;
+    for (const piece of result.pieces) {
+      expect(hasNoNaNOrInfinity(piece.vertices)).toBe(true);
+      expect(hasNoNaNOrInfinity(piece.normals)).toBe(true);
+      expect(piece.indices.length).toBeGreaterThan(0);
+      const bb = boundingBox(piece.vertices);
+      expect(bb.maxZ - bb.minZ).toBeGreaterThan(totalH);
+    }
+    // The scaled key actually cut/fused — geometry exceeds the plain cut.
+    expect(totalTriCount(result.pieces)).toBeGreaterThan(totalTriCount(none.pieces));
+  }, 60000);
+
   it('hosts the key in a thick wall (no boolean failure on the skip-pilaster path)', () => {
     const generateSplitPreview = getGenerateSplitPreview();
     // A 4mm wall fully encloses the key, so `addKeyConnectors` skips the pilaster — exercise

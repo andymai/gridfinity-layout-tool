@@ -717,6 +717,8 @@ const en: Record<string, string> = {
   'settings.printLayerHeight': 'Layer height (slicer)',
   'settings.infillPercent': 'Infill',
   'settings.nozzleSize': 'Nozzle size',
+  'settings.nozzleSizeMobileHint':
+    'Connectors, wall locks, and baseplate clips scale to this so they print on wider nozzles.',
 
   // Default Categories
   'settings.defaultCategories': 'Default Categories',
@@ -1632,6 +1634,8 @@ const en: Record<string, string> = {
   'binDesigner.splitAxisBoth': 'width × depth',
   'binDesigner.splitConnectors': 'Alignment connectors',
   'binDesigner.splitWallConnectors': 'Wall connectors',
+  'binDesigner.splitConnectorNozzleNotice':
+    'Sized for a {nozzle}mm nozzle — connectors are enlarged to stay printable; very small pieces may omit them.',
   'binDesigner.splitAssembled': 'Assembled',
   'binDesigner.splitExploded': 'Exploded',
   'binDesigner.cutouts.instructions':
@@ -1905,6 +1909,8 @@ const en: Record<string, string> = {
   'binDesigner.previewColorOptions': 'Preview color options',
   'binDesigner.printBedTooltip':
     'Your printer bed size. Bins larger than this will offer split export.',
+  'binDesigner.nozzleSizeTooltip':
+    'Your printer nozzle diameter. Split-bin connectors and wall locks scale to it so they stay printable on wider nozzles. Geometry is unchanged at 0.4mm.',
   'binDesigner.estimate.filament': 'Filament',
   'binDesigner.estimate.weight': 'Weight',
   'binDesigner.estimate.time': 'Time',
@@ -2047,6 +2053,10 @@ const en: Record<string, string> = {
   'baseplate.magnetDepthInfo': '2mm for typical 6\u00d72mm magnets',
   'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
   'baseplate.printBedTooltip': 'Baseplates larger than this are split automatically.',
+  'baseplate.nozzleSizeTooltip':
+    'Your printer nozzle diameter. Dovetail keys and snap clips scale to it so they stay printable on wider nozzles. Geometry is unchanged at 0.4mm.',
+  'baseplate.connectorNozzleNotice':
+    'Sized for a {nozzle}mm nozzle — dovetail keys and snap clips are enlarged to stay printable.',
   'baseplate.wasmLoadFailed': 'Failed to load 3D engine',
   'baseplate.generationFailed': 'Baseplate generation failed',
   'baseplate.errorRetryHint':

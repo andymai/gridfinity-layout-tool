@@ -41,6 +41,11 @@ import {
 } from 'brepjs';
 import type { Shape3D, Sketch } from 'brepjs';
 import type { SplitConnectorConfig, WallConnectorStyle } from '@/shared/types/bin';
+import {
+  NOZZLE_BASELINE,
+  scaleFeature,
+  scaleClearance,
+} from '@/shared/printSettings/connectorScaling';
 import { sketch } from './meshUtils';
 
 /** Overlap into the piece body so booleans have shared volume (mm). */
@@ -114,6 +119,10 @@ export interface WallKeyGeometry {
   readonly pilasterProtDepth: number;
   /** Remaining intact outer wall skin after the groove is cut (mm). Must stay > 0. */
   readonly outerSkin: number;
+  /** Nozzle-scaled half-width of the key tongue along the cut line (mm). */
+  readonly keyHalfWidth: number;
+  /** Nozzle-scaled protrusion of the key across the cut into the mating piece (mm). */
+  readonly protrusion: number;
 }
 
 /**
@@ -129,16 +138,28 @@ export interface WallKeyGeometry {
  * pushing it deeper — and `pilasterPerpDepth` then exceeds the wall by less and less,
  * until `addKeyConnectors` drops the pilaster entirely (no extra inward material).
  */
-export function wallKeyGeometry(wallThickness: number, clearance: number): WallKeyGeometry {
-  const grooveHalf = WALL_KEY_HALF_WIDTH + clearance;
-  const perpInset = WALL_KEY_OUTER_SKIN + grooveHalf;
+export function wallKeyGeometry(
+  wallThickness: number,
+  clearance: number,
+  nozzleSizeMm: number = NOZZLE_BASELINE
+): WallKeyGeometry {
+  // Scale the 0.4mm-tuned footprint up on a wider nozzle: the tongue stays ≥2
+  // perimeters wide, the intact outer skin in front of the groove stays ≥2
+  // perimeters, and the protrusion stays ≥2 perimeters of engagement. All three
+  // are exactly the legacy value at ≤0.4mm (no regression).
+  const keyHalfWidth = scaleFeature(WALL_KEY_HALF_WIDTH * 2, nozzleSizeMm) / 2;
+  const outerSkinNom = scaleFeature(WALL_KEY_OUTER_SKIN, nozzleSizeMm);
+  const protrusion = scaleFeature(WALL_KEY_PROTRUSION, nozzleSizeMm);
+
+  const grooveHalf = keyHalfWidth + clearance;
+  const perpInset = outerSkinNom + grooveHalf;
   const grooveInnerEdge = perpInset + grooveHalf;
   const pilasterPerpDepth = grooveInnerEdge + WALL_PILASTER_MARGIN;
-  const pilasterProtDepth = WALL_KEY_PROTRUSION + clearance + WALL_PILASTER_MARGIN;
+  const pilasterProtDepth = protrusion + clearance + WALL_PILASTER_MARGIN;
   // Intact outer skin in front of the groove. Capped at the wall thickness for thin
   // walls, where the groove sits fully inward of the wall (hosted by the pilaster).
-  const outerSkin = Math.min(WALL_KEY_OUTER_SKIN, wallThickness);
-  return { perpInset, pilasterPerpDepth, pilasterProtDepth, outerSkin };
+  const outerSkin = Math.min(outerSkinNom, wallThickness);
+  return { perpInset, pilasterPerpDepth, pilasterProtDepth, outerSkin, keyHalfWidth, protrusion };
 }
 
 type Extent = [number, number, number];
@@ -158,6 +179,12 @@ export interface BinGeometryContext {
   readonly wallTopZ: number;
   readonly wallThickness: number;
   readonly floorThickness: number;
+  /**
+   * Nozzle diameter (mm) the pieces print with. Drives feature/clearance scaling
+   * so connectors stay printable on wider nozzles. Defaults to the 0.4mm baseline
+   * when omitted, leaving geometry identical to pre-nozzle-aware behavior.
+   */
+  readonly nozzleSizeMm?: number;
 }
 
 export function applySplitConnectors(
@@ -339,16 +366,17 @@ function addScarfLapFeature(
   floorThickness: number,
   floorZ: number,
   effectiveWidth: number,
-  edgeOffset: number
+  edgeOffset: number,
+  minFeatureWidth: number
 ): void {
   const overlapLen = floorThickness * SCARF_SLOPE;
 
   // Width taper: 45° at each end reduces effective width at the tip
   const taperEach = Math.min(
     overlapLen * WIDTH_TAPER_SLOPE,
-    effectiveWidth / 2 - MIN_FEATURE_WIDTH / 2
+    effectiveWidth / 2 - minFeatureWidth / 2
   );
-  const tipWidth = Math.max(MIN_FEATURE_WIDTH, effectiveWidth - 2 * Math.max(0, taperEach));
+  const tipWidth = Math.max(minFeatureWidth, effectiveWidth - 2 * Math.max(0, taperEach));
 
   if (face.isMale) {
     // Male: wedge extends past cut face. Base (full height) is inside piece,
@@ -408,6 +436,13 @@ function addConnectors(
   const wallHeight = context.wallTopZ - context.floorZ;
   if (wallHeight <= 0) return;
 
+  // Nozzle-scaled feature floor + bead-grown clearance. Identical to the legacy
+  // 0.7mm / config.clearance at ≤0.4mm; wider nozzles get a ≥2-perimeter floor and
+  // a looser fit so the scarf/key don't seize.
+  const nozzle = context.nozzleSizeMm ?? NOZZLE_BASELINE;
+  const minWidth = scaleFeature(MIN_FEATURE_WIDTH, nozzle);
+  const effClearance = scaleClearance(config.clearance, nozzle);
+
   // ── Floor scarf lap (45° self-supporting joint, centered on piece) ──────
   const ft = context.floorThickness;
   if (config.enabled && ft >= MIN_FEATURE_HEIGHT) {
@@ -421,16 +456,17 @@ function addConnectors(
       margin
     );
 
-    if (effectiveWidth >= MIN_FEATURE_WIDTH - EPSILON) {
+    if (effectiveWidth >= minWidth - EPSILON) {
       addScarfLapFeature(
         face,
-        config.clearance,
+        effClearance,
         fuseTargets,
         cutTargets,
         ft,
         context.floorZ,
         effectiveWidth,
-        face.pieceCenterOffset
+        face.pieceCenterOffset,
+        minWidth
       );
     }
   }
@@ -528,7 +564,9 @@ function addKeyConnectors(
   const keyHeight = wallHeight * heightFraction;
   if (keyHeight < MIN_FEATURE_HEIGHT) return;
 
-  const geom = wallKeyGeometry(context.wallThickness, config.clearance);
+  const nozzle = context.nozzleSizeMm ?? NOZZLE_BASELINE;
+  const effClearance = scaleClearance(config.clearance, nozzle);
+  const geom = wallKeyGeometry(context.wallThickness, effClearance, nozzle);
 
   // The pilaster only adds material where it reaches past the existing wall. Once the
   // wall is thick enough to enclose the groove (+margin) it hosts the key on its own,
@@ -563,7 +601,7 @@ function addKeyConnectors(
       inward,
       context.floorZ,
       keyHeight,
-      face.isMale ? 0 : config.clearance,
+      face.isMale ? 0 : effClearance,
       geom
     );
     (face.isMale ? fuseTargets : cutTargets).push(key);
@@ -638,10 +676,10 @@ function buildKey(
   inflate: number,
   geom: WallKeyGeometry
 ): Shape3D {
-  const halfW = WALL_KEY_HALF_WIDTH + inflate;
-  const protTip = cutPos + WALL_KEY_PROTRUSION + inflate;
+  const halfW = geom.keyHalfWidth + inflate;
+  const protTip = cutPos + geom.protrusion + inflate;
   const keyTop = floorZ + keyHeight + inflate;
-  const lead = Math.min(WALL_KEY_LEADIN, WALL_KEY_PROTRUSION - 0.2, keyHeight / 2);
+  const lead = Math.min(WALL_KEY_LEADIN, geom.protrusion - 0.2, keyHeight / 2);
   const perpC = perimeter + inward * geom.perpInset;
   const perpAxis = axis === 'x' ? 'y' : 'x';
 
@@ -653,7 +691,7 @@ function buildKey(
     .lineTo([cutPos - OVERLAP, keyTop])
     .lineTo([protTip - lead, keyTop])
     .lineTo([protTip, keyTop - lead])
-    .lineTo([protTip, floorZ + WALL_KEY_PROTRUSION])
+    .lineTo([protTip, floorZ + geom.protrusion])
     .lineTo([cutPos, floorZ])
     .close();
   const raw = sketch(profile, plane, 0).extrude(2 * halfW);

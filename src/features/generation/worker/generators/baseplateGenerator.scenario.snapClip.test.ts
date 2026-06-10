@@ -140,6 +140,37 @@ describe('baseplateGenerator — snap-clip connectors (issue #1610)', () => {
   );
 
   it(
+    'scales the snap clip for a 0.6mm nozzle — still watertight, barb enlarged',
+    async () => {
+      // The 0.45mm barb is sub-bead at 0.6mm (the slicer would drop it). It must
+      // scale to ≥1 full bead while the plate stays watertight.
+      const params = defaults({
+        width: 5,
+        depth: 4,
+        connectorNubs: true,
+        connectorStyle: 'snapClip',
+        nozzleSizeMm: 0.6,
+        edges: { left: 'exterior', right: 'join', front: 'join', back: 'join' },
+      });
+      const { data } = await exportBaseplate(params, 'stl');
+      const stats = analyze(data);
+      expect(stats.hasNaN, 'no NaN vertices').toBe(false);
+      expect(stats.triangleCount).toBeGreaterThan(0);
+      expect(stats.nonManifoldEdges, 'non-manifold edges').toBe(0);
+      expect(stats.boundaryEdges, 'boundary edges').toBe(0);
+
+      // The clip part itself grows: the deeper barb adds engagement material, so
+      // the 0.6mm clip has strictly more volume than the 0.4mm baseline.
+      const baseline = buildSnapClip(5, 42);
+      const wide = buildSnapClip(5, 42, 0.6);
+      expect(vol(wide)).toBeGreaterThan(vol(baseline));
+      baseline.delete();
+      wide.delete();
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it(
     'clip prints bed-flat with top-bridge corners relieved for the edge sockets',
     () => {
       // SOCKET_HEIGHT slab (no magnets) = 5mm. The sharp staple is 60.45mm³;

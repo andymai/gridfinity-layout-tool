@@ -263,17 +263,20 @@ export function buildConnectorSampleTray(rawParams: BaseplateParams): Shape3D[] 
       let frontFeature: CouponFeature;
       let backFeature: CouponFeature;
       if (style.key === 'snapClip') {
-        const levels = snapClipLevels(totalHeight, offset);
+        const levels = snapClipLevels(totalHeight, offset, params.nozzleSizeMm);
         frontFeature = { kind: 'pocket', levels };
         backFeature = { kind: 'pocket', levels };
       } else if (style.key === 'dovetailKey') {
-        const clearance = effectiveClearance(DOVETAIL_KEY_CLEARANCE, offset);
+        const clearance = effectiveClearance(DOVETAIL_KEY_CLEARANCE, offset, params.nozzleSizeMm);
         frontFeature = { kind: 'groove', clearance };
         backFeature = { kind: 'groove', clearance };
       } else {
         // Integral dovetail: nominal tongue, offset rides on the female groove.
         frontFeature = { kind: 'tongue' };
-        backFeature = { kind: 'groove', clearance: effectiveClearance(TONGUE_CLEARANCE, offset) };
+        backFeature = {
+          kind: 'groove',
+          clearance: effectiveClearance(TONGUE_CLEARANCE, offset, params.nozzleSizeMm),
+        };
       }
 
       pieces.push(buildCoupon(cx, frontCenterY, totalHeight, label, frontWallY, 1, frontFeature));
@@ -287,7 +290,7 @@ export function buildConnectorSampleTray(rawParams: BaseplateParams): Shape3D[] 
       const looseX = originX + nCols * COL_PITCH;
       const part =
         style.loose === 'clip'
-          ? buildSnapClipForPrint(totalHeight, gridUnitMm)
+          ? buildSnapClipForPrint(totalHeight, gridUnitMm, params.nozzleSizeMm)
           : buildDovetailKey(totalHeight);
       const placed = translate(part, [looseX, cellY, -totalHeight]);
       part.delete();

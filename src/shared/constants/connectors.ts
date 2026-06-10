@@ -13,6 +13,12 @@
  * the waist into one part hammered into the seam.
  */
 
+import {
+  NOZZLE_BASELINE,
+  scaleFeature,
+  scaleClearance,
+} from '@/shared/printSettings/connectorScaling';
+
 /** How far the tongue protrudes horizontally from the wall face (mm). */
 export const TONGUE_PROTRUSION = 1.5;
 
@@ -54,13 +60,23 @@ export const CONNECTOR_FIT_OFFSET_STEP = 0.05;
 export const MIN_CONNECTOR_CLEARANCE = 0;
 
 /**
- * Effective per-side groove clearance after applying the user's fit offset,
- * clamped at {@link MIN_CONNECTOR_CLEARANCE} so it can never go negative. Single
- * source of truth shared by the generation worker (which cuts the grooves), the
- * cache keys, and the print guide so the three can't drift.
+ * Effective per-side groove clearance after growing the base with bead width and
+ * applying the user's fit offset, clamped at {@link MIN_CONNECTOR_CLEARANCE} so it
+ * can never go negative. Single source of truth shared by the generation worker
+ * (which cuts the grooves), the cache keys, and the print guide so the three can't
+ * drift.
+ *
+ * `nozzleSizeMm` defaults to the 0.4mm baseline, where the bead-growth term is
+ * zero and the result is exactly `baseClearance + fitOffset` (no regression). On a
+ * wider nozzle the fatter extrusion overshoots into the groove, so the base
+ * clearance grows (see {@link scaleClearance}) to keep a press-fit from seizing.
  */
-export function effectiveClearance(baseClearance: number, fitOffset: number): number {
-  return Math.max(MIN_CONNECTOR_CLEARANCE, baseClearance + fitOffset);
+export function effectiveClearance(
+  baseClearance: number,
+  fitOffset: number,
+  nozzleSizeMm: number = NOZZLE_BASELINE
+): number {
+  return Math.max(MIN_CONNECTOR_CLEARANCE, scaleClearance(baseClearance, nozzleSizeMm) + fitOffset);
 }
 
 /**
@@ -136,22 +152,33 @@ export interface SnapClipLevels {
 }
 
 /**
- * Resolve the snap-clip geometry levels from the slab height. The barb is a
- * fixed-size feature near the leg tip; only the leg LENGTH scales with
- * `totalHeight`, so a taller base gets a longer flex beam (stronger snap)
- * automatically. Pocket clearance (throat/chamber only — the clip stays nominal)
- * folds in via {@link effectiveClearance}. Single source of truth shared by the
- * generation worker (pockets + clip), the seated-clip preview, and the bed math.
+ * Resolve the snap-clip geometry levels from the slab height and nozzle. The leg
+ * LENGTH scales with `totalHeight`, so a taller base gets a longer flex beam
+ * (stronger snap) automatically. The leg WIDTH and barb DEPTH scale with the
+ * nozzle so they stay printable on wider nozzles (the barb apex height above the
+ * tip stays fixed). Pocket clearance (throat/chamber only — the clip stays
+ * nominal) folds in via {@link effectiveClearance}. Single source of truth shared
+ * by the generation worker (pockets + clip), the seated-clip preview, and the bed math.
  */
-export function snapClipLevels(totalHeight: number, fitOffset: number): SnapClipLevels {
-  const cl = effectiveClearance(SNAP_CLIP_CLEARANCE, fitOffset);
+export function snapClipLevels(
+  totalHeight: number,
+  fitOffset: number,
+  nozzleSizeMm: number = NOZZLE_BASELINE
+): SnapClipLevels {
+  const cl = effectiveClearance(SNAP_CLIP_CLEARANCE, fitOffset, nozzleSizeMm);
+  // Scale the leg + barb up on a wider nozzle: the leg stays ≥2 perimeters across
+  // the seam, and the outward barb stays ≥1 full bead so the slicer can actually
+  // lay it down — a 0.45mm barb vanishes under a 0.6mm nozzle. Both are exactly the
+  // legacy value at ≤0.4mm (no regression).
+  const legW = scaleFeature(SNAP_CLIP.LEG_W, nozzleSizeMm);
+  const barbDepth = scaleFeature(SNAP_CLIP.BARB_DEPTH, nozzleSizeMm, 1);
   const pocketDepth = totalHeight - SNAP_CLIP.POCKET_FLOOR;
   const legBottom = pocketDepth - SNAP_CLIP.FLOOR_GAP;
   const apexZ = -(legBottom - SNAP_CLIP.BARB_APEX_FROM_TIP);
   const catchZ = apexZ + SNAP_CLIP.CATCH_DROP;
   const leadZ = apexZ - SNAP_CLIP.LEAD_DROP;
-  const legOuter = SNAP_CLIP.GAP_HALF + SNAP_CLIP.LEG_W;
-  const barbTip = legOuter + SNAP_CLIP.BARB_DEPTH;
+  const legOuter = SNAP_CLIP.GAP_HALF + legW;
+  const barbTip = legOuter + barbDepth;
   const viable =
     legBottom - SNAP_CLIP.BRIDGE_THK >= SNAP_CLIP.MIN_LEG && catchZ < -SNAP_CLIP.BRIDGE_THK;
   return {
