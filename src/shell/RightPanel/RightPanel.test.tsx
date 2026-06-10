@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RightPanel } from '@/shell/RightPanel';
-import { useLayoutStore, useViewStore } from '@/core/store';
+import { useLayoutStore, useViewStore, useSettingsStore } from '@/core/store';
 import { resetAllStores } from '@/test/testUtils';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector';
 import type { UsePrintListReturn } from '@/features/print-export/hooks/usePrintList';
@@ -451,6 +451,24 @@ describe('RightPanel', () => {
       render(<RightPanel />);
 
       expect(screen.getByTestId('print-list-summary')).toBeInTheDocument();
+    });
+
+    it('renders the nozzle size input when rows exist', () => {
+      render(<RightPanel />);
+
+      expect(screen.getByLabelText('Nozzle size')).toBeInTheDocument();
+    });
+
+    it('updates the shared nozzle setting when the input changes', () => {
+      render(<RightPanel />);
+
+      const input = screen.getByLabelText('Nozzle size');
+      // DeferredNumberInput commits on blur; change to a value distinct from the
+      // 0.4mm default so the commit isn't skipped as a no-op.
+      fireEvent.change(input, { target: { value: '0.6' } });
+      fireEvent.blur(input);
+
+      expect(useSettingsStore.getState().settings.printSettings.nozzleSizeMm).toBe(0.6);
     });
 
     it('selects bins when row clicked', () => {
