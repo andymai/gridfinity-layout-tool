@@ -577,8 +577,16 @@ export function Sidebar() {
 
             {/* Attribution */}
             <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">
-              <div className="text-content-secondary text-[11px] font-semibold mb-1">
+              <div className="text-content-secondary text-[11px] font-semibold mb-1 flex items-baseline gap-1.5">
                 {t('sidebar.appName')}
+                <a
+                  href={`https://github.com/andymai/gridfinity-layout-tool/releases/tag/v${__APP_VERSION__}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] font-normal text-content-disabled hover:text-content-tertiary hover:underline"
+                >
+                  {t('sidebar.version', { version: __APP_VERSION__ })}
+                </a>
               </div>
               {t('sidebar.gridfinityBy')}{' '}
               <a

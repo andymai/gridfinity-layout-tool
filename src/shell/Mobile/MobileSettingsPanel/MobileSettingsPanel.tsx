@@ -296,6 +296,19 @@ export function MobileSettingsPanel() {
 
       {/* Info */}
       <section className="pt-4 text-center border-t border-stroke-subtle">
+        <div className="flex items-baseline justify-center gap-1.5 mb-2">
+          <span className="text-xs font-semibold text-content-secondary">
+            {t('sidebar.appName')}
+          </span>
+          <a
+            href={`https://github.com/andymai/gridfinity-layout-tool/releases/tag/v${__APP_VERSION__}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] text-content-disabled hover:text-content-tertiary hover:underline"
+          >
+            {t('sidebar.version', { version: __APP_VERSION__ })}
+          </a>
+        </div>
         <div className="text-xs text-content-disabled leading-relaxed">
           <a
             href="https://www.youtube.com/c/ZackFreedman"

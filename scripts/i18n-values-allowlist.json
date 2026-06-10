@@ -142,6 +142,7 @@
     "sidebar.appName",
     "sidebar.github",
     "sidebar.privacy",
+    "sidebar.version",
     "feedback.cancel",
     "feedback.categoryBug",
     "feedback.categoryFeature",

@@ -243,6 +243,7 @@ const en: Record<string, string> = {
   'sidebar.tip': 'Tip',
   'sidebar.github': 'GitHub',
   'sidebar.appName': 'Gridfinity Layout Tool',
+  'sidebar.version': 'v{version}',
   'sidebar.privacy': 'Privacy',
   'sidebar.terms': 'Terms',
   'sidebar.toggleHalfBinMode': 'Toggle half-grid mode',

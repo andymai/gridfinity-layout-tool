@@ -1933,6 +1933,7 @@
   "share.toast.permissionUpdated": "Дозвіл оновлено на \"{label}\"",
   "share.useShareLinkInstead": "Скористайтесь натомість посиланням",
   "sidebar.appName": "Gridfinity Layout Tool",
+  "sidebar.version": "v{version}",
   "sidebar.bottom": "Низ",
   "sidebar.collapseLeftPanel": "Згорнути ліву панель",
   "sidebar.collapsePanel": "Згорнути панель",

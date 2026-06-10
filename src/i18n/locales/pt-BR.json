@@ -1933,6 +1933,7 @@
   "share.toast.permissionUpdated": "Permissão atualizada para \"{label}\"",
   "share.useShareLinkInstead": "Usar link de compartilhamento",
   "sidebar.appName": "Gridfinity Layout Tool",
+  "sidebar.version": "v{version}",
   "sidebar.bottom": "Embaixo",
   "sidebar.collapseLeftPanel": "Recolher painel esquerdo",
   "sidebar.collapsePanel": "Recolher painel",
