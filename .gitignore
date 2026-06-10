@@ -82,3 +82,7 @@ src/i18n/locales/en.json
 # Transient benchmark output (baselines are tracked)
 benchmarks/latest.json
 .claude/scheduled_tasks.lock
+
+# Local scratch dirs: brepjs-verify part output and Ko-fi cover art (never committed)
+/brand/
+/brep-parts/
