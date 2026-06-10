@@ -8,7 +8,7 @@ export function AttributionFooter() {
       <div className="text-content-secondary text-[11px] font-semibold mb-1 flex items-baseline gap-1.5">
         {t('sidebar.appName')}
         <a
-          href={`https://github.com/andymai/gridfinity-layout-tool/releases/tag/v${__APP_VERSION__}`}
+          href="https://github.com/andymai/gridfinity-layout-tool/releases"
           target="_blank"
           rel="noopener noreferrer"
           className="text-[10px] font-normal text-content-disabled hover:text-content-tertiary hover:underline"

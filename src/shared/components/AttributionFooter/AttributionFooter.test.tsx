@@ -7,7 +7,10 @@ describe('AttributionFooter', () => {
     render(<AttributionFooter />);
     expect(screen.getByText('Gridfinity Layout Tool')).toBeInTheDocument();
     const versionLink = screen.getByRole('link', { name: /v\d+\.\d+\.\d+/ });
-    expect(versionLink).toHaveAttribute('href', expect.stringContaining('releases/tag/'));
+    expect(versionLink).toHaveAttribute(
+      'href',
+      'https://github.com/andymai/gridfinity-layout-tool/releases'
+    );
   });
 
   it('renders attribution links', () => {
