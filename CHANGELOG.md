@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.160.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.160.0...gridfinity-layout-tool-v4.160.1) (2026-06-10)
+
+
+### Bug Fixes
+
+* **shell:** simplify version badge link to /releases ([#2095](https://github.com/andymai/gridfinity-layout-tool/issues/2095)) ([10601d9](https://github.com/andymai/gridfinity-layout-tool/commit/10601d9425b958ada0a518358ab13277ef347e72))
+
 ## [4.160.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.159.1...gridfinity-layout-tool-v4.160.0) (2026-06-10)
 
 
