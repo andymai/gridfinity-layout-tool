@@ -19,7 +19,7 @@ import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { UserDock } from '@/shared/components/UserDock';
-import { AttributionFooter } from '@/shared/components/AttributionFooter/AttributionFooter';
+import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 import { useOnboarding } from '@/features/onboarding';

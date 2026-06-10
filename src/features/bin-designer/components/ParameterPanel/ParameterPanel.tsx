@@ -36,7 +36,7 @@ import { useSplitOptionsSection } from '../panel/SplitOptionsSection/useSplitOpt
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { isPartialMask } from '@/shared/utils/cellMask';
 import { UserDock } from '@/shared/components/UserDock';
-import { AttributionFooter } from '@/shared/components/AttributionFooter/AttributionFooter';
+import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
 
 export function ParameterPanel() {
