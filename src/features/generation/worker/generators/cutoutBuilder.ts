@@ -128,9 +128,18 @@ function cutoutProfileDrawing(p: {
       return drawRoundedRectangle(p.w, p.d, Math.max(0.01, slotCornerRadius(p.w, p.d) - 0.01));
     case 'rectangle':
     default: {
+      // Sharp corners when no radius is requested. A 0.01mm "rounded" corner is
+      // a near-degenerate arc; lofting it leaves a pinched corner seam that a
+      // later scoop fillet corrupts into open sliver faces at the flared rim
+      // (GH #2085). A true four-line rectangle gives the loft clean corner edges
+      // the fillet blends cleanly, exactly like the non-chamfered box path.
+      if (p.cornerRadius <= 0) {
+        const hw = p.w / 2;
+        const hd = p.d / 2;
+        return draw([-hw, -hd]).lineTo([hw, -hd]).lineTo([hw, hd]).lineTo([-hw, hd]).close();
+      }
       const maxCR = Math.min(p.w, p.d) / 2 - 0.01;
-      const r = p.cornerRadius > 0 ? Math.min(p.cornerRadius, maxCR) : 0.01;
-      return drawRoundedRectangle(p.w, p.d, Math.max(0.01, r));
+      return drawRoundedRectangle(p.w, p.d, Math.min(p.cornerRadius, maxCR));
     }
   }
 }

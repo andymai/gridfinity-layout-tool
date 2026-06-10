@@ -82,21 +82,22 @@ function analyze(stl: ArrayBuffer, label: string): ManifoldStats {
 }
 
 /**
- * Scenarios whose exported STL is still non-manifold after three GH #2085
- * repairs: the interior-void-shell collapse (`keepOuterShell`), the scoop-fillet
- * vertical-edge fix (`findBottomEdges` selects only flat bottom-plane edges), and
- * the deferred-socket export fuse (the base socket is fused after features, so
- * additive feature fuses run on the socket-less body — see shellStage). The
- * remainder split across distinct root causes — the through-wall handle cut, the
- * entry-chamfer loft, and single-shell pinch edges where two solid regions kiss
- * along one edge (XOR, touching inserts). Un-skip each as its root cause is
- * fixed. Keyed by `${category} › ${name}`.
+ * Scenarios whose exported STL is still non-manifold after the GH #2085 repairs
+ * (interior-void-shell collapse, the scoop-fillet flat-bottom-edge selector, the
+ * sharp-corner chamfer profile, and the deferred-socket export fuse — see
+ * `keepOuterShell`, `findBottomEdges`, `cutoutProfileDrawing`, and shellStage).
+ *
+ * The two left are not boolean artifacts but a genuine geometry pathology: two
+ * cavity cuts placed exactly tangent leave a zero-thickness knife-edge pinch in
+ * the wall between them (a single non-manifold edge along the contact line). A
+ * watertight mesh can't represent a measure-zero contact, so these can only be
+ * made manifold by perturbing the design (overlapping or separating the
+ * cavities) — a product decision, not a generation bug. Keyed by
+ * `${category} › ${name}`.
  */
 const QUARANTINED_NON_MANIFOLD = new Set<string>([
-  'handles › oval shape handles on front wall',
   'multiple inserts › 2×2 with 2 circle inserts',
   'pathfinder › exclude group: XOR keeps non-overlapping regions',
-  'solid cutouts › 2×2 solid with chamfered + scooped rectangle cutout',
 ]);
 
 describe('export integrity: full scenario matrix → binary STL', () => {
