@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.156.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.6...gridfinity-layout-tool-v4.156.0) (2026-06-10)
+
+
+### Features
+
+* **seo:** real product imagery, per-route meta, and four keyword landing pages ([#2078](https://github.com/andymai/gridfinity-layout-tool/issues/2078)) ([451d634](https://github.com/andymai/gridfinity-layout-tool/commit/451d6340847b12fe14e2d71304f569e564a7872c))
+
 ## [4.155.6](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.5...gridfinity-layout-tool-v4.155.6) (2026-06-09)
 
 
