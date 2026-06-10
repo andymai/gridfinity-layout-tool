@@ -265,6 +265,8 @@ const en: Record<string, string> = {
   'rightPanel.filamentMeters': 'Estimated filament (meters)',
   'rightPanel.binList': 'Bin List',
   'rightPanel.binProperties': 'Bin Properties',
+  'rightPanel.nozzleSizeTooltip':
+    'Your printer nozzle diameter. Drives the print-time estimate and scales split connectors, wall locks, and baseplate connectors so they stay printable on wider nozzles.',
   'rightPanel.collapseRightPanel': 'Collapse right panel',
   'rightPanel.copyBinListAsTsv': 'Copy bin list as TSV',
   'rightPanel.customPropertiesCount': '{count} custom properties',

@@ -1725,6 +1725,7 @@
   "printBedInput.widthAriaLabel": "プリントベッドの幅",
   "rightPanel.binList": "ビンリスト",
   "rightPanel.binProperties": "ビンプロパティ",
+  "rightPanel.nozzleSizeTooltip": "プリンターのノズル径。印刷時間の見積もりに使われ、分割ビンのコネクタ、壁ロック、ベースプレートのコネクタを拡大して太いノズルでも印刷できるようにします。",
   "rightPanel.collapsePanel": "パネルを折りたたむ",
   "rightPanel.collapseRightPanel": "右パネルを折りたたむ",
   "rightPanel.copyBinListAsTsv": "ビンリストをTSVとしてコピー",

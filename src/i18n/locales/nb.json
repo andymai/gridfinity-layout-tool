@@ -1725,6 +1725,7 @@
   "printBedInput.widthAriaLabel": "Printbed-bredde",
   "rightPanel.binList": "Bin-liste",
   "rightPanel.binProperties": "Bin-egenskaper",
+  "rightPanel.nozzleSizeTooltip": "Dysediameteren til skriveren din. Bestemmer estimatet for utskriftstid og skalerer koblinger for delte binger, vegglåser og bunnplatekoblinger så de forblir utskrivbare med bredere dyser.",
   "rightPanel.collapsePanel": "Skjul panel",
   "rightPanel.collapseRightPanel": "Skjul høyre panel",
   "rightPanel.copyBinListAsTsv": "Kopier bin-liste som TSV",

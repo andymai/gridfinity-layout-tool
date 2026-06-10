@@ -1725,6 +1725,7 @@
   "printBedInput.widthAriaLabel": "Druckbett-Breite",
   "rightPanel.binList": "Bin-Liste",
   "rightPanel.binProperties": "Bin-Eigenschaften",
+  "rightPanel.nozzleSizeTooltip": "Düsendurchmesser deines Druckers. Bestimmt die Druckzeitschätzung und skaliert Verbinder geteilter Bins, Wandsperren und Grundplatten-Verbinder, damit sie auf breiteren Düsen druckbar bleiben.",
   "rightPanel.collapsePanel": "Panel einklappen",
   "rightPanel.collapseRightPanel": "Rechtes Panel einklappen",
   "rightPanel.copyBinListAsTsv": "Bin-Liste als TSV kopieren",

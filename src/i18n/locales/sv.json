@@ -1725,6 +1725,7 @@
   "printBedInput.widthAriaLabel": "Utskriftsbäddens bredd",
   "rightPanel.binList": "Facklista",
   "rightPanel.binProperties": "Fackegenskaper",
+  "rightPanel.nozzleSizeTooltip": "Munstycksdiametern på din skrivare. Styr uppskattningen av utskriftstid och skalar kopplingar för delade lådor, vägglås och bottenplattskopplingar så att de förblir utskrivbara med bredare munstycken.",
   "rightPanel.collapsePanel": "Komprimera panel",
   "rightPanel.collapseRightPanel": "Komprimera höger panel",
   "rightPanel.copyBinListAsTsv": "Kopiera facklista som TSV",
