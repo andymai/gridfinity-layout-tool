@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.159.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.158.0...gridfinity-layout-tool-v4.159.0) (2026-06-10)
+
+
+### Features
+
+* **shell:** display app version in sidebar and mobile settings footer ([#2089](https://github.com/andymai/gridfinity-layout-tool/issues/2089)) ([ccd4fca](https://github.com/andymai/gridfinity-layout-tool/commit/ccd4fcadf53f209934f2c922ede6c5dc1e2ae2f6)), closes [#2087](https://github.com/andymai/gridfinity-layout-tool/issues/2087)
+
+
+### Bug Fixes
+
+* **export:** make scoop/label-tab STL exports watertight ([#2086](https://github.com/andymai/gridfinity-layout-tool/issues/2086)) ([7d935bc](https://github.com/andymai/gridfinity-layout-tool/commit/7d935bc55a95ce3f3ed731203339525f9d73b12a))
+
 ## [4.158.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.157.0...gridfinity-layout-tool-v4.158.0) (2026-06-10)
 
 
