@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  NOZZLE_BASELINE,
-  scaleFeature,
-  scaleClearance,
-  isFeaturePrintable,
-} from './connectorScaling';
+import { NOZZLE_BASELINE, scaleFeature, scaleClearance } from './connectorScaling';
 
 describe('scaleFeature', () => {
   it('returns the 0.4mm value unchanged at the baseline (zero regression)', () => {
@@ -48,20 +43,8 @@ describe('scaleClearance', () => {
   it('honors a custom growth rate', () => {
     expect(scaleClearance(0.1, 0.6, 1.0)).toBeCloseTo(0.3);
   });
-});
 
-describe('isFeaturePrintable', () => {
-  it('passes when the available space covers the required beads', () => {
-    expect(isFeaturePrintable(1.2, 0.6)).toBe(true);
-    expect(isFeaturePrintable(0.8, 0.4)).toBe(true);
-  });
-
-  it('fails when a wide nozzle outgrows the available space', () => {
-    expect(isFeaturePrintable(1.0, 0.6)).toBe(false); // needs 1.2
-    expect(isFeaturePrintable(0.45, 0.6, 1)).toBe(false); // needs 0.6
-  });
-
-  it('treats the baseline constant as 0.4mm', () => {
+  it('pins the baseline constant at 0.4mm (the tuning all the helpers assume)', () => {
     expect(NOZZLE_BASELINE).toBe(0.4);
   });
 });

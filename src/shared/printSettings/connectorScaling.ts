@@ -65,17 +65,3 @@ export function scaleClearance(
 ): number {
   return base04 + growthPerMm * Math.max(0, nozzleSizeMm - NOZZLE_BASELINE);
 }
-
-/**
- * Whether a feature requiring a minimum solid wall of `requiredBeads` perimeters
- * can be printed at this nozzle given the space `availableMm` the geometry can
- * give it. Used by the skip-and-warn path: when false, the builder drops the
- * feature and the UI explains why rather than shipping geometry the slicer guts.
- */
-export function isFeaturePrintable(
-  availableMm: number,
-  nozzleSizeMm: number,
-  requiredBeads: number = DEFAULT_FEATURE_PERIMETERS
-): boolean {
-  return availableMm + 1e-9 >= requiredBeads * nozzleSizeMm;
-}

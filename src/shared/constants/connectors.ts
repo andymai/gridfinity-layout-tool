@@ -152,12 +152,13 @@ export interface SnapClipLevels {
 }
 
 /**
- * Resolve the snap-clip geometry levels from the slab height. The barb is a
- * fixed-size feature near the leg tip; only the leg LENGTH scales with
- * `totalHeight`, so a taller base gets a longer flex beam (stronger snap)
- * automatically. Pocket clearance (throat/chamber only — the clip stays nominal)
- * folds in via {@link effectiveClearance}. Single source of truth shared by the
- * generation worker (pockets + clip), the seated-clip preview, and the bed math.
+ * Resolve the snap-clip geometry levels from the slab height and nozzle. The leg
+ * LENGTH scales with `totalHeight`, so a taller base gets a longer flex beam
+ * (stronger snap) automatically. The leg WIDTH and barb DEPTH scale with the
+ * nozzle so they stay printable on wider nozzles (the barb apex height above the
+ * tip stays fixed). Pocket clearance (throat/chamber only — the clip stays
+ * nominal) folds in via {@link effectiveClearance}. Single source of truth shared
+ * by the generation worker (pockets + clip), the seated-clip preview, and the bed math.
  */
 export function snapClipLevels(
   totalHeight: number,

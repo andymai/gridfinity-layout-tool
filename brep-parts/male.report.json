@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "shapeType": "Compound",
+  "checks": [
+    {
+      "name": "positiveVolume",
+      "passed": true
+    }
+  ],
+  "measurements": {
+    "volume": 692.2649006622515,
+    "area": 535.1792673176978,
+    "bounds": {
+      "xMin": -7.5,
+      "xMax": 7.5,
+      "yMin": -9,
+      "yMax": 1.5,
+      "zMin": -5,
+      "zMax": 0
+    }
+  },
+  "errors": [],
+  "errorInfos": [],
+  "hints": [],
+  "assertions": []
+}

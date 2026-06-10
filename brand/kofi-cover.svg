@@ -1,0 +1,147 @@
+<svg width="1200" height="400" viewBox="0 0 1200 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#312e81"/>
+      <stop offset="42%" stop-color="#1d4ed8"/>
+      <stop offset="78%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#2dd4bf"/>
+    </linearGradient>
+
+    <radialGradient id="glow" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="amber" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="coral" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fb7185"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+    <linearGradient id="lime" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#a3e635"/>
+      <stop offset="100%" stop-color="#65a30d"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+    <filter id="textShadow" x="-20%" y="-40%" width="140%" height="200%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.5"/>
+    </filter>
+
+    <pattern id="grid42" width="42" height="42" patternUnits="userSpaceOnUse">
+      <path d="M 42 0 L 0 0 0 42" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="400" fill="url(#bg)"/>
+  <rect width="1200" height="400" fill="url(#grid42)"/>
+  <rect width="1200" height="400" fill="url(#glow)"/>
+
+  <!-- Ambient blobs -->
+  <circle cx="240" cy="380" r="150" fill="#2dd4bf" opacity="0.12" filter="url(#soft)"/>
+  <circle cx="980" cy="30" r="130" fill="#818cf8" opacity="0.14" filter="url(#soft)"/>
+
+  <!-- ===================== Floating bins ===================== -->
+
+  <!-- A: amber 3-slot bin, top-left, bleeds off canvas -->
+  <g transform="translate(105, 62) rotate(-12)">
+    <rect x="-96" y="-58" width="200" height="140" rx="18" fill="#0f172a" opacity="0.30" filter="url(#soft)" transform="translate(8, 16)"/>
+    <rect x="-100" y="-64" width="200" height="140" rx="18" fill="#92400e"/>
+    <rect x="-100" y="-70" width="200" height="140" rx="18" fill="url(#amber)"/>
+    <rect x="-88" y="-58" width="56" height="116" rx="9" fill="#451a03" opacity="0.45"/>
+    <rect x="-26" y="-58" width="56" height="116" rx="9" fill="#451a03" opacity="0.45"/>
+    <rect x="36" y="-58" width="52" height="116" rx="9" fill="#451a03" opacity="0.45"/>
+    <rect x="-97" y="-67" width="194" height="134" rx="15" fill="none" stroke="#fef3c7" stroke-opacity="0.5" stroke-width="2"/>
+  </g>
+
+  <!-- B: sky 2-slot bin, bottom-left -->
+  <g transform="translate(185, 332) rotate(8)">
+    <rect x="-71" y="-44" width="150" height="100" rx="15" fill="#0f172a" opacity="0.30" filter="url(#soft)" transform="translate(7, 14)"/>
+    <rect x="-75" y="-45" width="150" height="100" rx="15" fill="#075985"/>
+    <rect x="-75" y="-50" width="150" height="100" rx="15" fill="url(#sky)"/>
+    <rect x="-65" y="-40" width="62" height="80" rx="8" fill="#082f49" opacity="0.45"/>
+    <rect x="3" y="-40" width="62" height="80" rx="8" fill="#082f49" opacity="0.45"/>
+    <rect x="-72" y="-47" width="144" height="94" rx="12" fill="none" stroke="#e0f2fe" stroke-opacity="0.5" stroke-width="2"/>
+  </g>
+
+  <!-- C: lime square bin, upper-left-of-center -->
+  <g transform="translate(350, 52) rotate(10)">
+    <rect x="-42" y="-36" width="90" height="90" rx="13" fill="#0f172a" opacity="0.28" filter="url(#soft)" transform="translate(6, 12)"/>
+    <rect x="-45" y="-41" width="90" height="90" rx="13" fill="#3f6212"/>
+    <rect x="-45" y="-45" width="90" height="90" rx="13" fill="url(#lime)"/>
+    <rect x="-36" y="-36" width="72" height="72" rx="8" fill="#1a2e05" opacity="0.42"/>
+    <rect x="-42" y="-42" width="84" height="84" rx="10" fill="none" stroke="#ecfccb" stroke-opacity="0.5" stroke-width="2"/>
+  </g>
+
+  <!-- D: coral wide bin, top-right, bleeds off canvas -->
+  <g transform="translate(1078, 70) rotate(12)">
+    <rect x="-91" y="-52" width="190" height="130" rx="17" fill="#0f172a" opacity="0.30" filter="url(#soft)" transform="translate(8, 15)"/>
+    <rect x="-95" y="-59" width="190" height="130" rx="17" fill="#9f1239"/>
+    <rect x="-95" y="-65" width="190" height="130" rx="17" fill="url(#coral)"/>
+    <rect x="-83" y="-53" width="166" height="106" rx="10" fill="#4c0519" opacity="0.42"/>
+    <rect x="-92" y="-62" width="184" height="124" rx="14" fill="none" stroke="#ffe4e6" stroke-opacity="0.5" stroke-width="2"/>
+  </g>
+
+  <!-- E: lime 4-cavity bin, bottom-right, bleeds off canvas -->
+  <g transform="translate(1035, 338) rotate(-9)">
+    <rect x="-76" y="-70" width="160" height="160" rx="17" fill="#0f172a" opacity="0.30" filter="url(#soft)" transform="translate(8, 15)"/>
+    <rect x="-80" y="-75" width="160" height="160" rx="17" fill="#3f6212"/>
+    <rect x="-80" y="-80" width="160" height="160" rx="17" fill="url(#lime)"/>
+    <rect x="-68" y="-68" width="64" height="64" rx="8" fill="#1a2e05" opacity="0.42"/>
+    <rect x="4" y="-68" width="64" height="64" rx="8" fill="#1a2e05" opacity="0.42"/>
+    <rect x="-68" y="4" width="64" height="64" rx="8" fill="#1a2e05" opacity="0.42"/>
+    <rect x="4" y="4" width="64" height="64" rx="8" fill="#1a2e05" opacity="0.42"/>
+    <rect x="-77" y="-77" width="154" height="154" rx="14" fill="none" stroke="#ecfccb" stroke-opacity="0.5" stroke-width="2"/>
+  </g>
+
+  <!-- F: small amber bin, bottom right-of-center -->
+  <g transform="translate(872, 352) rotate(-14)">
+    <rect x="-33" y="-28" width="70" height="70" rx="11" fill="#0f172a" opacity="0.28" filter="url(#soft)" transform="translate(5, 10)"/>
+    <rect x="-35" y="-32" width="70" height="70" rx="11" fill="#92400e"/>
+    <rect x="-35" y="-35" width="70" height="70" rx="11" fill="url(#amber)"/>
+    <rect x="-27" y="-27" width="54" height="54" rx="7" fill="#451a03" opacity="0.42"/>
+    <rect x="-32" y="-32" width="64" height="64" rx="8" fill="none" stroke="#fef3c7" stroke-opacity="0.5" stroke-width="2"/>
+  </g>
+
+  <!-- G: small sky bin, top center-right -->
+  <g transform="translate(815, 30) rotate(-8)">
+    <rect x="-36" y="-30" width="76" height="76" rx="11" fill="#0f172a" opacity="0.26" filter="url(#soft)" transform="translate(5, 10)"/>
+    <rect x="-38" y="-34" width="76" height="76" rx="11" fill="#075985"/>
+    <rect x="-38" y="-38" width="76" height="76" rx="11" fill="url(#sky)"/>
+    <rect x="-29" y="-29" width="58" height="58" rx="7" fill="#082f49" opacity="0.42"/>
+    <rect x="-35" y="-35" width="70" height="70" rx="8" fill="none" stroke="#e0f2fe" stroke-opacity="0.5" stroke-width="2"/>
+  </g>
+
+  <!-- H: tiny coral accent, bottom left-of-center, mostly cropped -->
+  <g transform="translate(458, 392) rotate(16)">
+    <rect x="-32" y="-30" width="66" height="66" rx="10" fill="#9f1239"/>
+    <rect x="-32" y="-33" width="66" height="66" rx="10" fill="url(#coral)"/>
+    <rect x="-24" y="-25" width="50" height="50" rx="6" fill="#4c0519" opacity="0.42"/>
+    <rect x="-29" y="-30" width="60" height="60" rx="7" fill="none" stroke="#ffe4e6" stroke-opacity="0.5" stroke-width="2"/>
+  </g>
+
+  <!-- Sparkles -->
+  <g fill="#ffffff">
+    <circle cx="290" cy="160" r="3" opacity="0.55"/>
+    <circle cx="985" cy="155" r="3.5" opacity="0.5"/>
+    <circle cx="500" cy="90" r="2.5" opacity="0.45"/>
+    <circle cx="720" cy="320" r="2.5" opacity="0.45"/>
+    <path d="M 388 300 l 5 0 m -2.5 -2.5 l 0 5" stroke="#ffffff" stroke-opacity="0.5" stroke-width="1.6"/>
+    <path d="M 960 110 l 6 0 m -3 -3 l 0 6" stroke="#ffffff" stroke-opacity="0.5" stroke-width="1.6"/>
+  </g>
+
+  <!-- ===================== Text ===================== -->
+  <g filter="url(#textShadow)" text-anchor="middle">
+    <text x="600" y="198" font-family="'Inter Display', Inter, system-ui, sans-serif" font-size="68" font-weight="800" letter-spacing="-1.5" fill="#ffffff">Gridfinity Layout Tool</text>
+    <text x="600" y="248" font-family="Inter, 'Inter Display', system-ui, sans-serif" font-size="25" font-weight="500" letter-spacing="0.3" fill="#ccfbf1">Design drawer layouts for 3D printing</text>
+  </g>
+</svg>
