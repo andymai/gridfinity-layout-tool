@@ -48,7 +48,9 @@ export function scaleFeature(
   nozzleSizeMm: number,
   perimeters: number = DEFAULT_FEATURE_PERIMETERS
 ): number {
-  if (nozzleSizeMm <= NOZZLE_BASELINE) return base04;
+  // A non-finite nozzle (corrupt persisted setting, bad imported design) would
+  // otherwise propagate NaN into the geometry; treat it as the baseline.
+  if (!Number.isFinite(nozzleSizeMm) || nozzleSizeMm <= NOZZLE_BASELINE) return base04;
   return Math.max(base04, perimeters * nozzleSizeMm);
 }
 
@@ -63,5 +65,7 @@ export function scaleClearance(
   nozzleSizeMm: number,
   growthPerMm: number = CLEARANCE_GROWTH_PER_MM
 ): number {
-  return base04 + growthPerMm * Math.max(0, nozzleSizeMm - NOZZLE_BASELINE);
+  // Guard against a non-finite nozzle so NaN can't leak into the groove clearance.
+  const over = Number.isFinite(nozzleSizeMm) ? Math.max(0, nozzleSizeMm - NOZZLE_BASELINE) : 0;
+  return base04 + growthPerMm * over;
 }

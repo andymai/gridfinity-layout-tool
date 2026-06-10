@@ -15,6 +15,7 @@ import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
+import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { Select } from '@/design-system/Select';
@@ -400,7 +401,7 @@ export function BaseplatePanel() {
                       label={t('baseplate.preferIdenticalPieces')}
                     />
                     <ConnectorSampleButton />
-                    {nozzleSizeMm > 0.4 && (
+                    {nozzleSizeMm > NOZZLE_BASELINE && (
                       <p className="text-[11px] leading-relaxed text-content-tertiary">
                         {t('baseplate.connectorNozzleNotice', { nozzle: nozzleSizeMm })}
                       </p>

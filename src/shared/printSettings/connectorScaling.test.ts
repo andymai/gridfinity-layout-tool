@@ -27,6 +27,11 @@ describe('scaleFeature', () => {
     expect(scaleFeature(0.45, 0.6, 1)).toBeCloseTo(0.6);
     expect(scaleFeature(0.45, 0.8, 1)).toBeCloseTo(0.8);
   });
+
+  it('falls back to the legacy value for a non-finite nozzle (no NaN geometry)', () => {
+    expect(scaleFeature(0.7, NaN)).toBe(0.7);
+    expect(scaleFeature(0.7, Infinity)).toBe(0.7);
+  });
 });
 
 describe('scaleClearance', () => {
@@ -42,6 +47,10 @@ describe('scaleClearance', () => {
 
   it('honors a custom growth rate', () => {
     expect(scaleClearance(0.1, 0.6, 1.0)).toBeCloseTo(0.3);
+  });
+
+  it('falls back to the base clearance for a non-finite nozzle', () => {
+    expect(scaleClearance(0.15, NaN)).toBe(0.15);
   });
 
   it('pins the baseline constant at 0.4mm (the tuning all the helpers assume)', () => {
