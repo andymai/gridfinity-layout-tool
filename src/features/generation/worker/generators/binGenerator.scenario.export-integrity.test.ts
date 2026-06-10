@@ -11,7 +11,8 @@
  *     feature combination.
  *  2. The solid is non-empty and watertight — no boundary edges (hole-free) for
  *     every scenario, and fully 2-manifold except for a documented handful whose
- *     input has a measure-zero self-contact (see TANGENT_CONTACT_SCENARIOS).
+ *     input has a measure-zero self-contact (see
+ *     MEASURE_ZERO_SELF_CONTACT_SCENARIOS).
  *  3. No NaN/Infinity coordinates.
  *
  * Generation validity (vertex counts, structure) is already covered by
@@ -95,17 +96,27 @@ function analyze(stl: ArrayBuffer, label: string): ManifoldStats {
  *    overlapping rectangles always meets at the overlap's corners, so the two
  *    kept regions touch along the corner edges by construction.
  *
- * A watertight mesh can't represent a measure-zero contact, so forcing these to
- * be 2-manifold would mean silently perturbing the user's geometry. They are
+ * A 2-manifold mesh can't represent a measure-zero contact, so forcing these to
+ * be manifold would mean silently perturbing the user's geometry. They are
  * still printable: the mesh has NO boundary edges (no holes), and slicers
  * resolve the self-contact via the fill rule. So instead of skipping them, the
  * matrix holds them to the real printable guarantee — zero boundary edges — and
- * tolerates the inherent non-manifold contact. Keyed by `${category} › ${name}`.
+ * tolerates a bounded, inherent non-manifold contact (asserted below). Keyed by
+ * `${category} › ${name}`.
  */
-const TANGENT_CONTACT_SCENARIOS = new Set<string>([
+const MEASURE_ZERO_SELF_CONTACT_SCENARIOS = new Set<string>([
   'multiple inserts › 2×2 with 2 circle inserts',
   'pathfinder › exclude group: XOR keeps non-overlapping regions',
 ]);
+
+/**
+ * Upper bound on the non-manifold edges tolerated along a measure-zero
+ * self-contact. Observed baselines are 1 (circle tangent point) and 2 (XOR
+ * overlap corners); the small headroom absorbs minor tessellation differences,
+ * while a genuine manifold-breaking regression — which scatters non-manifold
+ * edges across whole walls — blows past the cap and trips the test.
+ */
+const MAX_MEASURE_ZERO_CONTACT_EDGES = 8;
 
 describe('export integrity: full scenario matrix → binary STL', () => {
   // Reset the last-solid pointer so each scenario actually builds and exports
@@ -122,7 +133,7 @@ describe('export integrity: full scenario matrix → binary STL', () => {
 
   for (const scenario of ALL_SCENARIOS) {
     const label = `${scenario.category} › ${scenario.name}`;
-    const tangentContact = TANGENT_CONTACT_SCENARIOS.has(label);
+    const measureZeroSelfContact = MEASURE_ZERO_SELF_CONTACT_SCENARIOS.has(label);
     it(
       label,
       async () => {
@@ -140,14 +151,27 @@ describe('export integrity: full scenario matrix → binary STL', () => {
 
         // 4. Hole-free: no boundary edges. This is the real printable-watertight
         //    guarantee and holds for EVERY scenario, including the measure-zero
-        //    tangent-contact cases.
+        //    self-contact cases.
         expect(stats.boundaryEdges, `${scenario.name}: boundary edges`).toBe(0);
 
         // 5. Fully 2-manifold (no edge shared by >2 triangles) — required of
-        //    every scenario except the documented tangent-contact cases, whose
-        //    inherent measure-zero self-contact can't be made manifold without
-        //    perturbing the input (see TANGENT_CONTACT_SCENARIOS).
-        if (!tangentContact) {
+        //    every scenario except the documented measure-zero self-contact
+        //    cases (see MEASURE_ZERO_SELF_CONTACT_SCENARIOS). Those are bounded
+        //    on BOTH sides rather than left unchecked: a lower bound of >0 makes
+        //    the carve-out self-expiring — if a kernel upgrade ever resolves the
+        //    pinch, this fails and signals the scenario can rejoin the strict
+        //    tier — and the upper cap catches a hole-free-but-manifold-broken
+        //    regression that the boundary-edge check (4) alone would miss.
+        if (measureZeroSelfContact) {
+          expect(
+            stats.nonManifoldEdges,
+            `${scenario.name}: non-manifold edges (self-contact must persist)`
+          ).toBeGreaterThan(0);
+          expect(
+            stats.nonManifoldEdges,
+            `${scenario.name}: non-manifold edges (must stay bounded)`
+          ).toBeLessThanOrEqual(MAX_MEASURE_ZERO_CONTACT_EDGES);
+        } else {
           expect(stats.nonManifoldEdges, `${scenario.name}: non-manifold edges`).toBe(0);
         }
       },
