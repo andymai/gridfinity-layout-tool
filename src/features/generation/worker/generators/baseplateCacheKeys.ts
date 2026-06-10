@@ -12,6 +12,7 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
+import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { buildCacheKey, quantize } from './cacheKeyUtils';
 import {
   TONGUE_CLEARANCE,
@@ -39,7 +40,9 @@ export function meshCacheKey(params: BaseplateParams, forExport: boolean): strin
   // the clearance term, so it must key the cache or wider-nozzle geometry would
   // alias onto the 0.4mm build. Only meaningful when connectors are on; folded to
   // 0 otherwise so connector-off plates keep sharing one entry across nozzles.
-  const connectorNozzle = params.connectorNubs ? quantize(params.nozzleSizeMm ?? 0.4) : 0;
+  const connectorNozzle = params.connectorNubs
+    ? quantize(params.nozzleSizeMm ?? NOZZLE_BASELINE)
+    : 0;
   return buildCacheKey(
     'v1',
     quantize(params.width),

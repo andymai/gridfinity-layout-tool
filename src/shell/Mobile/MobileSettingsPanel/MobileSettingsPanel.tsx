@@ -1,4 +1,4 @@
-import { useState, Suspense } from 'react';
+import { useCallback, useState, Suspense } from 'react';
 // Import stores directly to avoid circular dependency via barrel export
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { useSettingsStore } from '@/core/store/settings';
@@ -68,10 +68,10 @@ export function MobileSettingsPanel() {
   } = useDrawerSettings();
 
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
-  const setNozzleSizeMm = (value: number) => {
+  const setNozzleSizeMm = useCallback((value: number) => {
     const current = useSettingsStore.getState().settings.printSettings;
     useSettingsStore.getState().updateSetting('printSettings', { ...current, nozzleSizeMm: value });
-  };
+  }, []);
 
   const openSettingsModal = (tab?: SettingsTabId) => {
     setSettingsInitialTab(tab);

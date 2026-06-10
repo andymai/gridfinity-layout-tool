@@ -12,23 +12,16 @@ export function usePhysicalUnitsSection() {
       heightUnitMm: s.layout.heightUnitMm,
     }))
   );
-  const {
-    printBedSize,
-    printBedDepth,
-    nozzleSizeMm,
-    printSettings,
-    updateSettings,
-    updateSetting,
-  } = useSettingsStore(
-    useShallow((s) => ({
-      printBedSize: s.settings.defaultPrintBedSize,
-      printBedDepth: s.settings.defaultPrintBedDepth ?? s.settings.defaultPrintBedSize,
-      nozzleSizeMm: s.settings.printSettings.nozzleSizeMm,
-      printSettings: s.settings.printSettings,
-      updateSettings: s.updateSettings,
-      updateSetting: s.updateSetting,
-    }))
-  );
+  const { printBedSize, printBedDepth, nozzleSizeMm, updateSettings, updateSetting } =
+    useSettingsStore(
+      useShallow((s) => ({
+        printBedSize: s.settings.defaultPrintBedSize,
+        printBedDepth: s.settings.defaultPrintBedDepth ?? s.settings.defaultPrintBedSize,
+        nozzleSizeMm: s.settings.printSettings.nozzleSizeMm,
+        updateSettings: s.updateSettings,
+        updateSetting: s.updateSetting,
+      }))
+    );
   const t = useTranslation();
 
   const handleGridUnitChange = useCallback((value: number) => {
@@ -53,9 +46,10 @@ export function usePhysicalUnitsSection() {
 
   const handleNozzleChange = useCallback(
     (value: number) => {
-      updateSetting('printSettings', { ...printSettings, nozzleSizeMm: value });
+      const current = useSettingsStore.getState().settings.printSettings;
+      updateSetting('printSettings', { ...current, nozzleSizeMm: value });
     },
-    [updateSetting, printSettings]
+    [updateSetting]
   );
 
   const meta: SectionMeta = useMemo(
