@@ -257,6 +257,11 @@ export function useBaseplateGeneration(): void {
     fractionalEdgeY,
   } = generationTriggers;
 
+  // Nozzle lives in the settings store (not the layout triggers). Subscribe to it
+  // reactively so changing it re-runs the regenerate effect below — otherwise
+  // connector geometry stays at the old nozzle until another param changes.
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+
   const setGenerationStatus = useBaseplatePageStore((s) => s.setGenerationStatus);
   const setGenerationResult = useBaseplatePageStore((s) => s.setGenerationResult);
   const setWasmStatus = useBaseplatePageStore((s) => s.setWasmStatus);
@@ -759,7 +764,7 @@ export function useBaseplateGeneration(): void {
       gridUnitMm,
       fractionalEdgeX,
       fractionalEdgeY,
-      useSettingsStore.getState().settings.printSettings.nozzleSizeMm
+      nozzleSizeMm
     );
     runGeneration(params, printBedSize, printBedDepth ?? printBedSize);
     // `generationTriggers` carries the trigger-only params (connectorStyle,
@@ -774,6 +779,7 @@ export function useBaseplateGeneration(): void {
     printBedDepth,
     fractionalEdgeX,
     fractionalEdgeY,
+    nozzleSizeMm,
     runGeneration,
   ]);
 }
