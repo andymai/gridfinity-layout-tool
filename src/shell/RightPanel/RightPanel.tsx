@@ -1,10 +1,14 @@
 import React, { Suspense, useState, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
+import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
+import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { exportPrintListTSV } from '@/core/storage';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { ConfirmDialog, CollapsibleSection } from '@/shared/components';
+import { SettingsRow } from '@/shared/components/SettingsRow';
+import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
@@ -63,6 +67,13 @@ export function RightPanel() {
 
   // Use the print list hook
   const printList = usePrintList();
+
+  // Shared nozzle size — drives both the print-time estimate and connector scaling.
+  const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  const handleNozzleChange = useCallback((value: number) => {
+    const current = useSettingsStore.getState().settings.printSettings;
+    useSettingsStore.getState().updateSetting('printSettings', { ...current, nozzleSizeMm: value });
+  }, []);
 
   if (collapsed) {
     return (
@@ -511,6 +522,27 @@ export function RightPanel() {
                   )}
                 </div>
 
+                {printList.rows.length > 0 && (
+                  <div className="px-4 py-2 border-t border-stroke-subtle">
+                    <SettingsRow
+                      label={t('settings.nozzleSize')}
+                      htmlFor="rightPanelNozzle"
+                      tooltip={t('rightPanel.nozzleSizeTooltip')}
+                      unit="mm"
+                    >
+                      <DeferredNumberInput
+                        id="rightPanelNozzle"
+                        value={nozzleSizeMm}
+                        onChange={handleNozzleChange}
+                        min={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN}
+                        max={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX}
+                        step={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP}
+                        className="input w-14 py-0.5 px-1 text-xs text-right"
+                        aria-label={t('settings.nozzleSize')}
+                      />
+                    </SettingsRow>
+                  </div>
+                )}
                 {printList.rows.length > 0 && (
                   <PrintListSummary
                     totalBins={printList.totalBins}

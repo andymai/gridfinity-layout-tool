@@ -1725,6 +1725,7 @@
   "printBedInput.widthAriaLabel": "Largura da mesa de impressão",
   "rightPanel.binList": "Lista de Bins",
   "rightPanel.binProperties": "Propriedades do Bin",
+  "rightPanel.nozzleSizeTooltip": "Diâmetro do bico da sua impressora. Determina a estimativa de tempo de impressão e escala os conectores de caixas divididas, as travas de parede e os conectores da placa-base para continuarem imprimíveis com bicos mais largos.",
   "rightPanel.collapsePanel": "Recolher painel",
   "rightPanel.collapseRightPanel": "Recolher painel direito",
   "rightPanel.copyBinListAsTsv": "Copiar lista de bins como TSV",

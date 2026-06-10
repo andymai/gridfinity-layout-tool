@@ -1725,6 +1725,7 @@
   "printBedInput.widthAriaLabel": "Ширина друкарського стола",
   "rightPanel.binList": "Список бінів",
   "rightPanel.binProperties": "Властивості біна",
+  "rightPanel.nozzleSizeTooltip": "Діаметр сопла вашого принтера. Визначає оцінку часу друку та масштабує конектори розділених контейнерів, настінні фіксатори та конектори опорної плити, щоб вони лишалися придатними для друку ширшими соплами.",
   "rightPanel.collapsePanel": "Згорнути панель",
   "rightPanel.collapseRightPanel": "Згорнути праву панель",
   "rightPanel.copyBinListAsTsv": "Копіювати список бінів як TSV",

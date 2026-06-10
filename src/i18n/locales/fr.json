@@ -1725,6 +1725,7 @@
   "printBedInput.widthAriaLabel": "Largeur du plateau",
   "rightPanel.binList": "Liste des bins",
   "rightPanel.binProperties": "Propriétés des bins",
+  "rightPanel.nozzleSizeTooltip": "Diamètre de la buse de votre imprimante. Détermine l'estimation du temps d'impression et adapte les connecteurs des bacs divisés, les verrous de paroi et les connecteurs de plaque de base pour qu'ils restent imprimables avec des buses plus larges.",
   "rightPanel.collapsePanel": "Réduire le panneau",
   "rightPanel.collapseRightPanel": "Réduire le panneau droit",
   "rightPanel.copyBinListAsTsv": "Copier la liste des bins en TSV",

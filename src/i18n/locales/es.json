@@ -1725,6 +1725,7 @@
   "printBedInput.widthAriaLabel": "Ancho de la cama de impresión",
   "rightPanel.binList": "Lista de Bins",
   "rightPanel.binProperties": "Propiedades de Bin",
+  "rightPanel.nozzleSizeTooltip": "Diámetro de la boquilla de tu impresora. Determina la estimación de tiempo de impresión y escala los conectores de bandejas divididas, los seguros de pared y los conectores de placa base para que sigan siendo imprimibles con boquillas más anchas.",
   "rightPanel.collapsePanel": "Contraer panel",
   "rightPanel.collapseRightPanel": "Contraer panel derecho",
   "rightPanel.copyBinListAsTsv": "Copiar lista de bins como TSV",

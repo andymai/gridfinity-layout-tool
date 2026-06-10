@@ -1725,6 +1725,7 @@
   "printBedInput.widthAriaLabel": "Printbed-breedte",
   "rightPanel.binList": "Bin lijst",
   "rightPanel.binProperties": "Bin eigenschappen",
+  "rightPanel.nozzleSizeTooltip": "Nozzlediameter van je printer. Bepaalt de printtijdschatting en schaalt connectoren van gesplitste bakken, wandvergrendelingen en grondplaatconnectoren zodat ze met bredere nozzles printbaar blijven.",
   "rightPanel.collapsePanel": "Paneel invouwen",
   "rightPanel.collapseRightPanel": "Rechter paneel invouwen",
   "rightPanel.copyBinListAsTsv": "Bin lijst kopiëren als TSV",
