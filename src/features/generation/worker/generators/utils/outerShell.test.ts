@@ -115,6 +115,11 @@ describe('keepOuterShell', () => {
     const after = await meshDefects(fixed);
     expect(after.nonManifold).toBe(0);
     expect(after.boundary).toBe(0);
+
+    // keepOuterShell returned a fresh clone; dispose both WASM handles so the
+    // leak doesn't skew brepjs live-handle counts in later tests.
+    (solid as { delete(): void }).delete();
+    fixed.delete();
   }, 60_000);
 
   it('repairs the scoop bin end-to-end through the export pipeline', async () => {
