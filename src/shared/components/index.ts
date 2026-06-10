@@ -1,6 +1,7 @@
 // Shared UI Components
 // Reusable UI primitives with no domain coupling
 
+export { AttributionFooter } from './AttributionFooter/AttributionFooter';
 export { Checkbox } from './Checkbox';
 export { CollapsibleSection } from './CollapsibleSection';
 export { ConfirmDialog } from './ConfirmDialog';

@@ -28,6 +28,7 @@ import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { SliderInput } from '@/shared/components/SliderInput';
 import { UserDock } from '@/shared/components/UserDock';
+import { AttributionFooter } from '@/shared/components/AttributionFooter/AttributionFooter';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { HelpTargetMarker } from '@/shared/help/HelpTargetMarker';
 import { helpJumpEventName } from '@/shared/help/helpJumpDispatcher';
@@ -523,6 +524,7 @@ export function BaseplatePanel() {
           />
         )}
       </div>
+      <AttributionFooter />
       {cloudSyncEnabled && <UserDock />}
     </div>
   );

@@ -19,6 +19,7 @@ import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { UserDock } from '@/shared/components/UserDock';
+import { AttributionFooter } from '@/shared/components/AttributionFooter/AttributionFooter';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
 import { useOnboarding } from '@/features/onboarding';
@@ -528,13 +529,15 @@ export function Sidebar() {
                 link equity from the SPA to /what-is-gridfinity et al. (which had zero
                 inbound links from the SPA before this section existed). */}
             <div className="px-4 py-4 border-t border-stroke-subtle">
-              <h2 className="text-xs leading-none font-semibold text-content-tertiary uppercase tracking-wider mb-2">
+              <h2 className="text-xs leading-none font-semibold text-content-tertiary mb-2">
                 {t('sidebar.learn')}
               </h2>
               <ul className="text-[11px] leading-relaxed space-y-1">
                 <li>
                   <a
                     href="/what-is-gridfinity"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-content-tertiary hover:text-content hover:underline"
                   >
                     {t('sidebar.learn.whatIs')}
@@ -543,6 +546,8 @@ export function Sidebar() {
                 <li>
                   <a
                     href="/guide"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-content-tertiary hover:text-content hover:underline"
                   >
                     {t('sidebar.learn.guide')}
@@ -551,6 +556,8 @@ export function Sidebar() {
                 <li>
                   <a
                     href="/gridfinity-bin-generator"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-content-tertiary hover:text-content hover:underline"
                   >
                     {t('sidebar.learn.binGenerator')}
@@ -559,6 +566,8 @@ export function Sidebar() {
                 <li>
                   <a
                     href="/gridfinity-baseplate-generator"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-content-tertiary hover:text-content hover:underline"
                   >
                     {t('sidebar.learn.baseplateGenerator')}
@@ -567,6 +576,8 @@ export function Sidebar() {
                 <li>
                   <a
                     href="/gridfinity-sizes"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-content-tertiary hover:text-content hover:underline"
                   >
                     {t('sidebar.learn.sizes')}
@@ -575,84 +586,7 @@ export function Sidebar() {
               </ul>
             </div>
 
-            {/* Attribution */}
-            <div className="px-4 py-4 border-t border-stroke-subtle text-content-disabled text-[10px] leading-relaxed">
-              <div className="text-content-secondary text-[11px] font-semibold mb-1 flex items-baseline gap-1.5">
-                {t('sidebar.appName')}
-                <a
-                  href={`https://github.com/andymai/gridfinity-layout-tool/releases/tag/v${__APP_VERSION__}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[10px] font-normal text-content-disabled hover:text-content-tertiary hover:underline"
-                >
-                  {t('sidebar.version', { version: __APP_VERSION__ })}
-                </a>
-              </div>
-              {t('sidebar.gridfinityBy')}{' '}
-              <a
-                href="https://www.youtube.com/c/ZackFreedman"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-content-tertiary hover:underline"
-              >
-                Zack Freedman
-              </a>
-              <br />
-              {t('sidebar.toolBy')}{' '}
-              <a
-                href="https://www.linkedin.com/in/andyhmai/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-content-tertiary hover:underline"
-              >
-                Andy Aragon
-              </a>{' '}
-              ·{' '}
-              <a
-                href="https://ko-fi.com/andyaragon"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-accent hover:underline"
-              >
-                <svg
-                  className="w-3 h-3 inline-block align-text-bottom mr-0.5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  {ICON_PATHS.heart.map((d) => (
-                    <path key={d} d={d} />
-                  ))}
-                </svg>
-                {t('sidebar.tip')}
-              </a>{' '}
-              ·{' '}
-              <a
-                href="https://github.com/andymai/gridfinity-layout-tool"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-content-tertiary hover:underline"
-              >
-                {t('sidebar.github')}
-              </a>{' '}
-              ·{' '}
-              <a
-                href="/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-content-tertiary hover:underline"
-              >
-                {t('sidebar.privacy')}
-              </a>{' '}
-              ·{' '}
-              <a
-                href="/terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-content-tertiary hover:underline"
-              >
-                {t('sidebar.terms')}
-              </a>
-            </div>
+            <AttributionFooter />
           </div>
           {cloudSyncEnabled && (
             <UserDock
