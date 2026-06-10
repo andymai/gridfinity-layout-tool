@@ -14,6 +14,7 @@ import { toIndexedMeshData, mergeShapeMeshes, concatFloat32 } from '../../utils/
 import { creaseEdges } from '../../utils';
 import { computeTessellationTolerances } from '../../utils/tolerances';
 import { setLastSolid } from '../../shapeCache';
+import { keepOuterShell } from '../../utils/outerShell';
 
 export const tessellateStage: PipelineStage = {
   name: 'merge',
@@ -24,8 +25,16 @@ export const tessellateStage: PipelineStage = {
   },
 
   execute(ctx: PipelineContext): PipelineContext {
-    const { solid, dimensions: dim, forExport } = ctx;
-    if (!solid) return ctx;
+    const { solid: rawSolid, dimensions: dim, forExport } = ctx;
+    if (!rawSolid) return ctx;
+
+    // Additive feature fuses can leave interior void shells inside an otherwise
+    // valid export solid; STL tessellates them as doubled (non-manifold) faces.
+    // Collapse to the single outer shell so the exported mesh is watertight.
+    // Export only — the preview path meshes the body and deferred socket
+    // separately and never feeds this solid to an exporter.
+    const solid = forExport ? keepOuterShell(rawSolid) : rawSolid;
+    if (solid !== rawSolid) rawSolid.delete();
 
     setLastSolid(solid, forExport);
 
