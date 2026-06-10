@@ -32,11 +32,11 @@ exports[`solid cutouts > 2×2 solid with radial array (rotate-to-center) 1`] = `
 
 exports[`solid cutouts > 2×2 solid with rectangle cutout 1`] = `2552`;
 
-exports[`solid cutouts > 2×2 solid with rectangle with scoop cutout 1`] = `3228`;
+exports[`solid cutouts > 2×2 solid with rectangle with scoop cutout 1`] = `2624`;
 
-exports[`solid cutouts > 2×2 solid with rectangle, edge gate disables a single wall 1`] = `2846`;
+exports[`solid cutouts > 2×2 solid with rectangle, edge gate disables a single wall 1`] = `2612`;
 
-exports[`solid cutouts > 2×2 solid with rectangle, split scoop (W only) cuts only left/right walls 1`] = `2672`;
+exports[`solid cutouts > 2×2 solid with rectangle, split scoop (W only) cuts only left/right walls 1`] = `2616`;
 
 exports[`solid cutouts > 2×2 solid with rotated 45° cutout 1`] = `2564`;
 

@@ -423,7 +423,20 @@ function polylineSelfIntersects(poly: readonly { x: number; y: number }[]): bool
   }
   return false;
 }
-/** Find edges near a target Z height within XY bounds, with tolerance margins. */
+/**
+ * Find the bottom-plane edges within XY bounds — the edges a scoop fillet should
+ * round.
+ *
+ * Selects edges that lie *flat* in the z≈zTarget plane (the cutout floor), not
+ * merely edges that touch it. A box's four vertical corner edges have
+ * `zMin = zTarget` but span the full cut depth; the older "z range overlaps
+ * zTarget" test picked them up, so the scoop fillet rounded the corners all the
+ * way to the top rim. That left a degenerate sliver face where the rounded
+ * vertical surface met the sharp top edges — an open (single-face) edge that
+ * survives as a non-manifold edge in the exported STL (GH #2085). Requiring the
+ * whole edge to sit in the bottom plane keeps verticals sharp and scoops only
+ * the floor ring, as intended.
+ */
 export function findBottomEdges(
   shape: Shape3D,
   zTarget: number,
@@ -433,12 +446,12 @@ export function findBottomEdges(
   return edgeFinder()
     .when((e) => {
       const bounds = getBounds(e);
-      const zOverlaps = bounds.zMin <= zTarget + 0.1 && bounds.zMax >= zTarget - 0.1;
+      const inBottomPlane = bounds.zMin >= zTarget - 0.1 && bounds.zMax <= zTarget + 0.1;
       const xOverlaps =
         bounds.xMax >= xyBounds.minX - margin && bounds.xMin <= xyBounds.maxX + margin;
       const yOverlaps =
         bounds.yMax >= xyBounds.minY - margin && bounds.yMin <= xyBounds.maxY + margin;
-      return zOverlaps && xOverlaps && yOverlaps;
+      return inBottomPlane && xOverlaps && yOverlaps;
     })
     .findAll(shape);
 }

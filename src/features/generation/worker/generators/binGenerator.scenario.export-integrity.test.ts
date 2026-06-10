@@ -83,11 +83,13 @@ function analyze(stl: ArrayBuffer, label: string): ManifoldStats {
 
 /**
  * Scenarios whose exported STL is still non-manifold after the interior-void-
- * shell repair (`keepOuterShell`). They split across three further root causes
- * — magnet/screw+feature combos with an open/residually-non-manifold outer
- * shell, the through-wall handle cut, and single-shell pinch edges (XOR,
- * touching inserts, solid-cutout scoops). Tracked in GH #2085; un-skip each as
- * its root cause is fixed. Keyed by `${category} › ${name}`.
+ * shell repair (`keepOuterShell`) and the scoop-fillet vertical-edge fix
+ * (`findBottomEdges` now selects only flat bottom-plane edges, GH #2085). The
+ * remainder split across distinct root causes — magnet/screw+feature combos
+ * with an open/residually-non-manifold outer shell, the through-wall handle
+ * cut, the entry-chamfer loft, and single-shell pinch edges where two solid
+ * regions kiss along one edge (XOR, touching inserts). Un-skip each as its root
+ * cause is fixed. Keyed by `${category} › ${name}`.
  */
 const QUARANTINED_NON_MANIFOLD = new Set<string>([
   'combined features › 4×4 magnet + label bracket + half-sockets',
@@ -97,9 +99,6 @@ const QUARANTINED_NON_MANIFOLD = new Set<string>([
   'handles › oval shape handles on front wall',
   'multiple inserts › 2×2 with 2 circle inserts',
   'pathfinder › exclude group: XOR keeps non-overlapping regions',
-  'solid cutouts › 2×2 solid with rectangle, edge gate disables a single wall',
-  'solid cutouts › 2×2 solid with rectangle with scoop cutout',
-  'solid+cutout matrix › solid + grouped cutouts with scoop at 45°',
   'solid cutouts › 2×2 solid with chamfered + scooped rectangle cutout',
 ]);
 
