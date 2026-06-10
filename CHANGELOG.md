@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.157.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.156.0...gridfinity-layout-tool-v4.157.0) (2026-06-10)
+
+
+### Features
+
+* **connectors:** make split/baseplate connectors print on wider nozzles ([#2080](https://github.com/andymai/gridfinity-layout-tool/issues/2080)) ([54e9a7f](https://github.com/andymai/gridfinity-layout-tool/commit/54e9a7f4c4fccb24ad8d45b921872305e16688c6))
+
 ## [4.156.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.155.6...gridfinity-layout-tool-v4.156.0) (2026-06-10)
 
 
