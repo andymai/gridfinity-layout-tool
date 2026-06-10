@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.159.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.159.0...gridfinity-layout-tool-v4.159.1) (2026-06-10)
+
+
+### Bug Fixes
+
+* **export:** watertight STL for scoop, magnet+feature, chamfer, and handle bins ([#2085](https://github.com/andymai/gridfinity-layout-tool/issues/2085)) ([#2088](https://github.com/andymai/gridfinity-layout-tool/issues/2088)) ([3c1ad13](https://github.com/andymai/gridfinity-layout-tool/commit/3c1ad13d19aa61282c9f00e6c10522bb7cdacac6))
+
 ## [4.159.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.158.0...gridfinity-layout-tool-v4.159.0) (2026-06-10)
 
 
