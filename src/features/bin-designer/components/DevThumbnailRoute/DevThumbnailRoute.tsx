@@ -42,10 +42,27 @@ export function DevThumbnailRoute() {
   useGeneration();
 
   // Load the requested example's params into the store once on mount.
+  // `params=<base64 JSON>` renders an arbitrary partial-params design instead
+  // (used by gen-seo-images for marketing renders with no gallery example).
   useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get('example');
+    const search = new URLSearchParams(window.location.search);
+    const id = search.get('example');
     const example = EXAMPLE_DESIGNS.find((e) => e.id === id);
-    if (example) setParams(example.params);
+    if (example) {
+      setParams(example.params);
+      return;
+    }
+    const rawParams = search.get('params');
+    if (rawParams) {
+      // URLSearchParams decodes an unencoded '+' as a space; also accept
+      // base64url payloads so callers don't have to worry about either.
+      const normalized = rawParams.replace(/ /g, '+').replace(/-/g, '+').replace(/_/g, '/');
+      try {
+        setParams(JSON.parse(atob(normalized)) as Parameters<typeof setParams>[0]);
+      } catch (e) {
+        console.error('[DevThumbnailRoute] invalid params payload', e);
+      }
+    }
   }, [setParams]);
 
   // Once generation completes with a real mesh, publish the capture bridge.

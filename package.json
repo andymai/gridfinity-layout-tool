@@ -22,8 +22,9 @@
   ],
   "scripts": {
     "dev": "pnpm run build:content && pnpm run build:en-locale && vite",
-    "build": "pnpm run build:content && pnpm run build:en-locale && tsc -b && vite build",
+    "build": "pnpm run build:content && pnpm run build:en-locale && tsc -b && vite build && tsx scripts/build-route-entries.ts",
     "build:content": "tsx scripts/build-content.ts",
+    "gen:seo-images": "tsx scripts/gen-seo-images.ts",
     "build:en-locale": "tsx scripts/build-en-locale.ts",
     "lint": "NODE_OPTIONS=--max-old-space-size=8192 eslint . --cache --cache-location node_modules/.cache/eslint/",
     "lint:fix": "NODE_OPTIONS=--max-old-space-size=8192 eslint . --fix --cache --cache-location node_modules/.cache/eslint/",

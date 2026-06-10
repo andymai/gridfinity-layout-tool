@@ -613,3 +613,98 @@ body {
     overflow-x: auto;
   }
 }
+
+/* ===========================================
+   CONTENT IMAGES
+   =========================================== */
+.content-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: var(--space-lg) 0;
+  border-radius: 8px;
+  border: 1px solid var(--color-stroke-subtle);
+}
+
+/* ===========================================
+   CALCULATOR WIDGET
+   =========================================== */
+.calc {
+  margin: var(--space-lg) 0;
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-stroke-subtle);
+  border-radius: 12px;
+}
+
+.calc__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+.calc__field label {
+  display: block;
+  margin-bottom: var(--space-xs);
+  font-size: 0.85rem;
+  color: var(--color-content-secondary);
+}
+
+.calc__field input {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--color-content);
+  background: var(--color-bg);
+  border: 1px solid var(--color-stroke-subtle);
+  border-radius: 8px;
+}
+
+.calc__field input:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+
+.calc__results {
+  margin-top: var(--space-lg);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+.calc__result {
+  padding: var(--space-md);
+  background: var(--color-bg);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.calc__result-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.calc__result-label {
+  display: block;
+  margin-top: var(--space-xs);
+  font-size: 0.8rem;
+  color: var(--color-content-secondary);
+}
+
+.calc__note {
+  margin-top: var(--space-md);
+  font-size: 0.85rem;
+  color: var(--color-content-tertiary);
+}
+
+@media (max-width: 600px) {
+  .calc__grid,
+  .calc__results {
+    grid-template-columns: 1fr;
+  }
+}

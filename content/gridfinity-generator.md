@@ -113,6 +113,8 @@ A free online Gridfinity generator for storage bins and baseplates. Set the dime
 
 [CTA: Open Bin Generator](/designer?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=bin) &nbsp; [CTA: Open Baseplate Generator](/baseplate?utm_source=gridfinity-generator&utm_medium=hero&utm_campaign=baseplate)
 
+![Custom Gridfinity organizer bin with compartments, label tabs, and scoop ramps rendered in the generator's 3D preview](/images/landing/multicolor-organizer-bin.png '1200x675')
+
 ## What This Generator Makes
 
 Gridfinity is a modular storage system designed by Zack Freedman. It defines a 42mm grid where bins click into baseplates. To actually use Gridfinity, you need both pieces — bins sized to your stuff, and baseplates sized to your drawer. This generator handles both.

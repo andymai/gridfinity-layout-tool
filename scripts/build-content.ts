@@ -101,6 +101,10 @@ const FOOTER_LINKS: Record<
     baseplate: string;
     sizes: string;
     guide: string;
+    toolDrawer: string;
+    kitchen: string;
+    calculator: string;
+    software: string;
     privacy: string;
     terms: string;
   }
@@ -112,6 +116,10 @@ const FOOTER_LINKS: Record<
     baseplate: 'Baseplate Generator',
     sizes: 'Sizes Reference',
     guide: 'Planning Guide',
+    toolDrawer: 'Tool Drawers',
+    kitchen: 'Kitchen Drawers',
+    calculator: 'Calculator',
+    software: 'Software Comparison',
     privacy: 'Privacy',
     terms: 'Terms',
   },
@@ -122,6 +130,10 @@ const FOOTER_LINKS: Record<
     baseplate: 'Grundplatten-Generator',
     sizes: 'Größenübersicht',
     guide: 'Planungsleitfaden',
+    toolDrawer: 'Werkzeugschubladen',
+    kitchen: 'Küchenschubladen',
+    calculator: 'Rechner',
+    software: 'Software-Vergleich',
     privacy: 'Datenschutz',
     terms: 'Nutzungsbedingungen',
   },
@@ -132,6 +144,10 @@ const FOOTER_LINKS: Record<
     baseplate: 'Générateur de plaques',
     sizes: 'Référence des tailles',
     guide: 'Guide de planification',
+    toolDrawer: 'Tiroirs à outils',
+    kitchen: 'Tiroirs de cuisine',
+    calculator: 'Calculateur',
+    software: 'Comparatif logiciels',
     privacy: 'Confidentialité',
     terms: 'Conditions',
   },
@@ -142,6 +158,10 @@ const FOOTER_LINKS: Record<
     baseplate: 'Generador de placas',
     sizes: 'Referencia de tamaños',
     guide: 'Guía de planificación',
+    toolDrawer: 'Cajones de herramientas',
+    kitchen: 'Cajones de cocina',
+    calculator: 'Calculadora',
+    software: 'Comparativa de software',
     privacy: 'Privacidad',
     terms: 'Términos',
   },
@@ -152,6 +172,10 @@ const FOOTER_LINKS: Record<
     baseplate: 'Gerador de placas',
     sizes: 'Referência de tamanhos',
     guide: 'Guia de planejamento',
+    toolDrawer: 'Gavetas de ferramentas',
+    kitchen: 'Gavetas de cozinha',
+    calculator: 'Calculadora',
+    software: 'Comparativo de softwares',
     privacy: 'Privacidade',
     terms: 'Termos',
   },
@@ -162,6 +186,10 @@ const FOOTER_LINKS: Record<
     baseplate: 'Bodemplaat-generator',
     sizes: 'Maatreferentie',
     guide: 'Planningsgids',
+    toolDrawer: 'Gereedschapslades',
+    kitchen: 'Keukenlades',
+    calculator: 'Calculator',
+    software: 'Softwarevergelijking',
     privacy: 'Privacy',
     terms: 'Voorwaarden',
   },
@@ -172,6 +200,10 @@ const FOOTER_LINKS: Record<
     baseplate: 'Bottenplatta-generator',
     sizes: 'Storleksreferens',
     guide: 'Planeringsguide',
+    toolDrawer: 'Verktygslådor',
+    kitchen: 'Kökslådor',
+    calculator: 'Kalkylator',
+    software: 'Programjämförelse',
     privacy: 'Integritet',
     terms: 'Villkor',
   },
@@ -182,6 +214,10 @@ const FOOTER_LINKS: Record<
     baseplate: 'Grunnplate-generator',
     sizes: 'Størrelsesreferanse',
     guide: 'Planleggingsveiledning',
+    toolDrawer: 'Verktøyskuffer',
+    kitchen: 'Kjøkkenskuffer',
+    calculator: 'Kalkulator',
+    software: 'Programvaresammenligning',
     privacy: 'Personvern',
     terms: 'Vilkår',
   },
@@ -192,10 +228,22 @@ const FOOTER_LINKS: Record<
     baseplate: 'Генератор основи',
     sizes: 'Довідник розмірів',
     guide: 'Посібник з планування',
+    toolDrawer: 'Шухляди для інструментів',
+    kitchen: 'Кухонні шухляди',
+    calculator: 'Калькулятор',
+    software: 'Порівняння програм',
     privacy: 'Конфіденційність',
     terms: 'Умови',
   },
 };
+
+// Per-page OG images live at public/og/<slug>.png; locale variants share the
+// English page's image. Falls back to the site-wide og-image.png when absent.
+function perPageOgImage(slug: string): string | null {
+  return fs.existsSync(path.join(OUTPUT_DIR, 'og', `${slug}.png`))
+    ? `${SITE_URL}/og/${slug}.png`
+    : null;
+}
 
 function getUrl(slug: string, locale: Locale): string {
   return locale === DEFAULT_LOCALE ? `${SITE_URL}/${slug}` : `${SITE_URL}/${locale}/${slug}`;
@@ -293,7 +341,7 @@ function generateHtml(
     navCta,
   } = frontmatter;
   const canonicalUrl = getUrl(slug, locale);
-  const image = ogImage || `${SITE_URL}/og-image.png`;
+  const image = ogImage || perPageOgImage(slug) || `${SITE_URL}/og-image.png`;
   const labels = LOCALE_LABELS[locale];
   // No localized SPA root (e.g. /de/) exists — the in-app i18n auto-detects
   // browser language from the canonical English SPA at /. Linking logo/CTA
@@ -541,6 +589,10 @@ ${breadcrumbsHtml}${content}${faqsHtml}
         <a href="/gridfinity-baseplate-generator">${escapeHtml(FOOTER_LINKS[locale].baseplate)}</a>
         <a href="/gridfinity-sizes">${escapeHtml(FOOTER_LINKS[locale].sizes)}</a>
         <a href="${localizedPath('guide', locale)}">${escapeHtml(FOOTER_LINKS[locale].guide)}</a>
+        <a href="/gridfinity-tool-drawer">${escapeHtml(FOOTER_LINKS[locale].toolDrawer)}</a>
+        <a href="/gridfinity-kitchen-drawer">${escapeHtml(FOOTER_LINKS[locale].kitchen)}</a>
+        <a href="/gridfinity-calculator">${escapeHtml(FOOTER_LINKS[locale].calculator)}</a>
+        <a href="/gridfinity-software">${escapeHtml(FOOTER_LINKS[locale].software)}</a>
         <a href="/privacy">${escapeHtml(FOOTER_LINKS[locale].privacy)}</a>
         <a href="/terms">${escapeHtml(FOOTER_LINKS[locale].terms)}</a>
       </div>
@@ -671,6 +723,13 @@ function configureMarked(): void {
         const content = this.parser.parse(tokens);
         return `<div class="content-callout">${content}</div>\n`;
       },
+      // `![alt](src "WxH")` — the title slot carries intrinsic dimensions so the
+      // browser reserves space before the image loads (no CLS).
+      image({ href, title, text }) {
+        const dims = title?.match(/^(\d+)x(\d+)$/);
+        const sizeAttrs = dims ? ` width="${dims[1]}" height="${dims[2]}"` : '';
+        return `<img class="content-img" src="${escapeHtml(href)}" alt="${escapeHtml(text)}"${sizeAttrs} loading="lazy" decoding="async">`;
+      },
     },
   });
 }
@@ -778,7 +837,14 @@ interface SitemapPage {
 // Bump CONTENT_LASTMOD when shipping a substantive content change so search
 // engines re-crawl the affected URLs. Hardcoded (not `new Date()`) to avoid
 // every build advertising the entire sitemap as updated.
-const CONTENT_LASTMOD = '2026-05-18';
+const CONTENT_LASTMOD = '2026-06-09';
+
+// SPA routes with their own static HTML entry (see scripts/build-route-entries.ts).
+// English-only, no locale variants.
+const APP_ROUTES: Record<string, SitemapPage> = {
+  designer: { basePriority: 0.9, changefreq: 'monthly' },
+  baseplate: { basePriority: 0.9, changefreq: 'monthly' },
+};
 
 const SITEMAP_PAGES: Record<string, SitemapPage> = {
   'gridfinity-generator': { basePriority: 0.95, changefreq: 'weekly' },
@@ -787,7 +853,18 @@ const SITEMAP_PAGES: Record<string, SitemapPage> = {
   'gridfinity-bin-generator': { basePriority: 0.9, changefreq: 'monthly' },
   'gridfinity-baseplate-generator': { basePriority: 0.9, changefreq: 'monthly' },
   'gridfinity-sizes': { basePriority: 0.8, changefreq: 'monthly' },
+  'gridfinity-tool-drawer': { basePriority: 0.8, changefreq: 'monthly' },
+  'gridfinity-kitchen-drawer': { basePriority: 0.8, changefreq: 'monthly' },
+  'gridfinity-calculator': { basePriority: 0.8, changefreq: 'monthly' },
+  'gridfinity-software': { basePriority: 0.7, changefreq: 'monthly' },
 };
+
+function sitemapImageXml(slug: string): string {
+  const image = perPageOgImage(slug);
+  return image
+    ? `    <image:image>\n      <image:loc>${image}</image:loc>\n    </image:image>\n`
+    : '';
+}
 
 function writeSitemap(localesBySlug: Map<string, Set<Locale>>): void {
   const out: string[] = [
@@ -801,12 +878,21 @@ function writeSitemap(localesBySlug: Map<string, Set<Locale>>): void {
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>${SITE_URL}/og-image.png</image:loc>
+      <image:loc>${SITE_URL}/images/landing/tool-drawer-layout.png</image:loc>
       <image:title>Gridfinity Layout Tool - Design Drawer Layouts for 3D Printing</image:title>
       <image:caption>Free online tool to design Gridfinity drawer organizer layouts with drag-and-drop bin placement, multi-layer support, and 3D preview</image:caption>
     </image:image>
   </url>`,
   ];
+
+  for (const [slug, config] of Object.entries(APP_ROUTES)) {
+    out.push(`  <url>
+    <loc>${SITE_URL}/${slug}</loc>
+    <lastmod>${CONTENT_LASTMOD}</lastmod>
+    <changefreq>${config.changefreq}</changefreq>
+    <priority>${config.basePriority.toFixed(1)}</priority>
+${sitemapImageXml(slug)}  </url>`);
+  }
 
   for (const [slug, config] of Object.entries(SITEMAP_PAGES)) {
     const locales = localesBySlug.get(slug);
@@ -830,7 +916,7 @@ function writeSitemap(localesBySlug: Map<string, Set<Locale>>): void {
     <changefreq>${config.changefreq}</changefreq>
     <priority>${priority}</priority>
 ${hreflang}
-  </url>`);
+${locale === DEFAULT_LOCALE ? sitemapImageXml(slug) : ''}  </url>`);
     }
   }
 

@@ -77,4 +77,5 @@ This tool helps with step 3. Mock up your layout, see how everything fits, then 
 
 If you're ready to plan a drawer, the guide walks through measuring, planning, and exporting a print list.
 
+![A 3D-printed style Gridfinity bin with six compartments and label tabs, rendered in 3D](/images/landing/multicolor-organizer-bin.png '1200x675')
 [CTA: Read the Planning Guide](/guide)
