@@ -2,12 +2,14 @@
  * Shell stage — assembles the bin body (box + stacking lip) and the base socket.
  *
  * The BODY (box + lip) is cached by shellKey and is what features cut. The base
- * socket is built separately (its own cache). On the PREVIEW path the socket is
- * left OUT of `solid` and carried in `deferredSolid` — the expensive socket↔body
- * fuse (≈80% of cold-shell time) is skipped; the tessellate stage meshes the two
- * and concatenates them, which is visually identical because the socket is never
- * feature-cut and only meets the body at a hidden internal interface. On the
- * EXPORT path the socket is fused into `solid` for a watertight model.
+ * socket is built separately (its own cache) and left OUT of `solid` on BOTH
+ * paths — carried in `deferredSolid` so feature fuses/cuts run on the simpler
+ * socket-less body. The tessellate stage then resolves it: PREVIEW meshes the
+ * body and socket separately and concatenates (skips the ≈80%-of-cold-shell
+ * socket↔body fuse), while EXPORT fuses the socket into the featured body for a
+ * single watertight solid. Deferring past features — not just past the body —
+ * also keeps additive feature fuses off the socket-laden body, which otherwise
+ * went non-manifold (GH #2085); see the socket-deferral note below.
  */
 
 import { unwrap, fuse, translate, withScope, getKernelCapabilities } from 'brepjs';
@@ -23,12 +25,7 @@ import {
   buildCompartmentCavityDrawings,
   buildCompartmentsCacheKey,
 } from '../../compartmentBuilder';
-import {
-  getShellCache,
-  setShellCache,
-  getExportShellCache,
-  setExportShellCache,
-} from '../../shapeCache';
+import { getShellCache, setShellCache } from '../../shapeCache';
 import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
 import { collectOrigins } from '../collectOrigins';
@@ -42,16 +39,7 @@ export const shellStage: PipelineStage = {
   },
 
   execute(ctx: PipelineContext): PipelineContext {
-    const { params, dimensions: dim, signal, onProgress, originToTag, forExport } = ctx;
-
-    // Export fast path: the fused body+socket shell was built by a previous
-    // export or the idle warm — skip building/fusing entirely.
-    if (forExport && !dim.isFlat) {
-      const cachedExport = getExportShellCache(dim.shellKey);
-      if (cachedExport) {
-        return { ...ctx, solid: cachedExport, deferredSolid: null };
-      }
-    }
+    const { params, dimensions: dim, signal, onProgress, originToTag } = ctx;
 
     // ── BODY (box + optional lip) — cached by shellKey. ──────────────────────
     // `getShellCache` returns a metadata-preserving clone so BASE/LIP face-origin
@@ -197,21 +185,18 @@ export const shellStage: PipelineStage = {
       }
       collectOrigins(socket, FeatureTag.SOCKET, originToTag);
 
-      if (forExport) {
-        // Watertight: fuse the socket into the body for a single solid, and
-        // cache it so re-exports and the idle warm skip this fuse next time.
-        const full = unwrap(fuse(body, socket));
-        // Cache + clone BEFORE deleting the inputs: if `translate` throws, the
-        // catch must not double-delete already-freed body/socket handles, and
-        // `full` is already owned by the cache (not leaked).
-        setExportShellCache(dim.shellKey, full);
-        const cloned = translate(full, [0, 0, 0]);
-        body.delete();
-        socket.delete();
-        return { ...ctx, solid: cloned, deferredSolid: null };
-      }
-
-      // Preview: defer the socket fuse — tessellate stage meshes + concatenates.
+      // Defer the socket on BOTH paths. Preview meshes it separately (skips the
+      // fuse); export fuses it in at the tessellate stage, AFTER features.
+      //
+      // Fusing the socket here (before features) made additive feature fuses —
+      // the label-bracket especially — go non-manifold: OCCT's fuse of the
+      // bracket onto a socket-laden body left T-junction (faces=3) edges far
+      // from the interface, so the exported STL was not watertight (GH #2085).
+      // The same bracket fuses cleanly onto the socket-less body, so deferring
+      // the socket to last keeps every feature fuse on a simpler solid and the
+      // final socket fuse (onto the featured body) stays manifold. The socket is
+      // never feature-cut — it only meets the body at the hidden floor interface
+      // — so order is geometrically equivalent, just numerically robust.
       return { ...ctx, solid: body, deferredSolid: socket };
     } catch (e: unknown) {
       socket.delete();

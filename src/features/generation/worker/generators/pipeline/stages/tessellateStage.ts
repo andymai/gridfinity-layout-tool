@@ -8,7 +8,7 @@
  * tessellation cost. Enable by setting coarseMesh in the return value.
  */
 
-import { mesh, meshEdges, getKernelCapabilities } from 'brepjs';
+import { mesh, meshEdges, getKernelCapabilities, unwrap, fuse } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { toIndexedMeshData, mergeShapeMeshes, concatFloat32 } from '../../utils/mesh';
 import { creaseEdges } from '../../utils';
@@ -25,8 +25,28 @@ export const tessellateStage: PipelineStage = {
   },
 
   execute(ctx: PipelineContext): PipelineContext {
-    const { solid: rawSolid, dimensions: dim, forExport } = ctx;
+    let rawSolid = ctx.solid;
+    const { dimensions: dim, forExport } = ctx;
     if (!rawSolid) return ctx;
+
+    // EXPORT: fuse the deferred base socket into the featured body for a single
+    // watertight solid. The socket is deferred past the feature stage (see
+    // shellStage) so feature fuses run on the socket-less body — fusing it
+    // earlier made additive features like the label bracket non-manifold
+    // (GH #2085). On failure, leave the socket deferred so the separate-mesh
+    // path below still produces a complete (if seam-split) export rather than
+    // throwing. PREVIEW keeps the socket deferred and meshes it separately.
+    if (forExport && ctx.deferredSolid) {
+      try {
+        const fused = unwrap(fuse(rawSolid, ctx.deferredSolid));
+        rawSolid.delete();
+        ctx.deferredSolid.delete();
+        rawSolid = fused;
+        ctx = { ...ctx, solid: fused, deferredSolid: null };
+      } catch {
+        // Fuse failed — fall through with the socket still deferred.
+      }
+    }
 
     // Additive feature fuses can leave interior void shells inside an otherwise
     // valid export solid; STL tessellates them as doubled (non-manifold) faces.
@@ -56,10 +76,11 @@ export const tessellateStage: PipelineStage = {
       ? creaseEdges(shapeMesh)
       : meshEdges(solid, { tolerance, angularTolerance: edgeAngular }).lines;
 
-    // Preview path: the base socket is kept out of `solid` to skip the
-    // expensive socket↔body fuse. Tessellate it separately and concatenate —
-    // the socket is never feature-cut and only meets the body at a hidden
-    // interface, so the merged mesh is visually identical to the fused shell.
+    // Socket still deferred — the preview path (which skips the expensive
+    // socket↔body fuse) or an export whose fuse failed above. Tessellate it
+    // separately and concatenate: the socket is never feature-cut and only
+    // meets the body at a hidden interface, so the merged mesh is visually
+    // identical to the fused shell (though not watertight at the seam).
     const { deferredSolid } = ctx;
     if (deferredSolid) {
       try {

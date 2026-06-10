@@ -59,10 +59,6 @@ const socketCache = new LRUCache<Shape3D>('socket', 20, disposeShape);
 const lipCache = new LRUCache<Shape3D>('lip', 20, disposeShape);
 const boxCache = new LRUCache<Shape3D>('box', 20, disposeShape);
 const shellCache = new LRUCache<Shape3D>('shell', 15, disposeShape);
-// Fused full shell (body + base socket) at export quality. Populated lazily on
-// export and proactively by the idle warm, so exports skip the socket↔body fuse
-// that the preview path defers. Keyed by the same shellKey as the body.
-const exportShellCache = new LRUCache<Shape3D>('exportShell', 8, disposeShape);
 
 const socket = createCloningAccessors(socketCache);
 const box = createCloningAccessors(boxCache);
@@ -94,14 +90,8 @@ function getOrCreateFeatureCache(name: string): LRUCache<Shape3D> {
   return cache;
 }
 
-/** Static LRU caches (socket, lip, box, shell, exportShell). */
-const staticLruCaches: readonly LRUCache<Shape3D>[] = [
-  socketCache,
-  lipCache,
-  boxCache,
-  shellCache,
-  exportShellCache,
-];
+/** Static LRU caches (socket, lip, box, shell). */
+const staticLruCaches: readonly LRUCache<Shape3D>[] = [socketCache, lipCache, boxCache, shellCache];
 
 export function socketCacheKey(
   gridW: number,
@@ -154,21 +144,6 @@ export function getShellCache(key: string): Shape3D | null {
 
 export function setShellCache(key: string, shape: Shape3D): void {
   shellCache.set(key, shape);
-}
-
-/** Fused export-quality shell (body + socket). Metadata-preserving clone on hit. */
-export function getExportShellCache(key: string): Shape3D | null {
-  const cached = exportShellCache.get(key);
-  if (cached === undefined) return null;
-  return translate(cached, [0, 0, 0]);
-}
-
-export function setExportShellCache(key: string, shape: Shape3D): void {
-  exportShellCache.set(key, shape);
-}
-
-export function hasExportShellCache(key: string): boolean {
-  return exportShellCache.get(key) !== undefined;
 }
 
 /** Returns raw shape (no clone) — caller uses transformCopy which is non-destructive. */
