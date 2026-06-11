@@ -122,4 +122,32 @@ describe('buildFullParams', () => {
       expect(result.depth).toBe(8);
     });
   });
+
+  describe('fractionalEdge when unsynced', () => {
+    it('uses drawer fractional edge when synced', () => {
+      const stored = { ...storedBase, syncWithLayout: true };
+      const result = buildFullParams(stored, 10, 8, 42, 'start', 'start');
+      expect(result.fractionalEdgeX).toBe('start');
+      expect(result.fractionalEdgeY).toBe('start');
+    });
+
+    it('uses stored fractional edge when not synced', () => {
+      const stored = {
+        ...storedBase,
+        syncWithLayout: false,
+        fractionalEdgeX: 'start' as const,
+        fractionalEdgeY: 'start' as const,
+      };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.fractionalEdgeX).toBe('start');
+      expect(result.fractionalEdgeY).toBe('start');
+    });
+
+    it("defaults stored fractional edge to 'end' when unsynced and not set", () => {
+      const stored = { ...storedBase, syncWithLayout: false };
+      const result = buildFullParams(stored, 10, 8, 42, 'start', 'start');
+      expect(result.fractionalEdgeX).toBe('end');
+      expect(result.fractionalEdgeY).toBe('end');
+    });
+  });
 });

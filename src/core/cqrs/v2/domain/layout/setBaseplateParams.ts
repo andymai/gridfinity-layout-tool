@@ -33,6 +33,8 @@ const payloadSchema = z.object({
     baseplateWidth: z.number().optional(),
     baseplateDepth: z.number().optional(),
     invertDovetails: z.boolean().optional(),
+    fractionalEdgeX: z.enum(['start', 'end']).optional(),
+    fractionalEdgeY: z.enum(['start', 'end']).optional(),
     cornerRadius: z.number().optional(),
     cornerRadii: z
       .object({

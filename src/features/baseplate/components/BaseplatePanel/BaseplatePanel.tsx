@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
+import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { DEFAULT_BASEPLATE_PARAMS, CONSTRAINTS } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
@@ -70,17 +71,27 @@ export function BaseplatePanel() {
   const t = useTranslation();
   const cloudSyncEnabled = useFeatureFlag('cloud_sync');
 
-  const { drawerWidth, drawerDepth, gridUnitMm, printBedSize, printBedDepth, baseplateParams } =
-    useLayoutStore(
-      useShallow((state) => ({
-        drawerWidth: state.layout.drawer.width,
-        drawerDepth: state.layout.drawer.depth,
-        gridUnitMm: state.layout.gridUnitMm,
-        printBedSize: state.layout.printBedSize,
-        printBedDepth: state.layout.printBedDepth,
-        baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
-      }))
-    );
+  const {
+    drawerWidth,
+    drawerDepth,
+    drawerFractionalEdgeX,
+    drawerFractionalEdgeY,
+    gridUnitMm,
+    printBedSize,
+    printBedDepth,
+    baseplateParams,
+  } = useLayoutStore(
+    useShallow((state) => ({
+      drawerWidth: state.layout.drawer.width,
+      drawerDepth: state.layout.drawer.depth,
+      drawerFractionalEdgeX: state.layout.drawer.fractionalEdgeX ?? 'end',
+      drawerFractionalEdgeY: state.layout.drawer.fractionalEdgeY ?? 'end',
+      gridUnitMm: state.layout.gridUnitMm,
+      printBedSize: state.layout.printBedSize,
+      printBedDepth: state.layout.printBedDepth,
+      baseplateParams: state.layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS,
+    }))
+  );
 
   const { tiling, hoveredPieceLabel, selectedPieceLabel } = useBaseplatePageStore(
     useShallow((s) => ({
@@ -126,7 +137,8 @@ export function BaseplatePanel() {
 
   const handleSyncToggle = useCallback(
     (checked: boolean) => {
-      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      const layoutState = useLayoutStore.getState().layout;
+      const current = layoutState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
       if (checked) {
         useLayoutStore.getState().setBaseplateParams({ ...current, syncWithLayout: true });
       } else {
@@ -135,10 +147,25 @@ export function BaseplatePanel() {
           syncWithLayout: false,
           baseplateWidth: drawerWidth,
           baseplateDepth: drawerDepth,
+          fractionalEdgeX: layoutState.drawer.fractionalEdgeX ?? 'end',
+          fractionalEdgeY: layoutState.drawer.fractionalEdgeY ?? 'end',
         });
       }
     },
     [drawerWidth, drawerDepth]
+  );
+
+  const handleFractionalEdgeChange = useCallback(
+    (axis: 'x' | 'y', edge: 'start' | 'end') => {
+      if (baseplateParams.syncWithLayout !== false) {
+        useLayoutStore
+          .getState()
+          .updateDrawer(axis === 'x' ? { fractionalEdgeX: edge } : { fractionalEdgeY: edge });
+      } else {
+        updateParam(axis === 'x' ? 'fractionalEdgeX' : 'fractionalEdgeY', edge);
+      }
+    },
+    [baseplateParams.syncWithLayout, updateParam]
   );
 
   const gridWidthMm = effectiveWidth * gridUnitMm;
@@ -153,6 +180,15 @@ export function BaseplatePanel() {
     baseplateParams.paddingBack > 0;
   const overTileStatus = resolveOverTileStatus(baseplateParams);
   const overTileOn = baseplateParams.overTile === true && overTileStatus.canOverTile;
+
+  const hasFractionalWidth = effectiveWidth % 1 !== 0;
+  const hasFractionalDepth = effectiveDepth % 1 !== 0;
+  const fractionalEdgeX = synced
+    ? drawerFractionalEdgeX
+    : (baseplateParams.fractionalEdgeX ?? 'end');
+  const fractionalEdgeY = synced
+    ? drawerFractionalEdgeY
+    : (baseplateParams.fractionalEdgeY ?? 'end');
 
   const minMm = CONSTRAINTS.GRID_MIN * gridUnitMm;
   const maxMm = CONSTRAINTS.GRID_MAX * gridUnitMm + PADDING_MAX * 2;
@@ -228,6 +264,39 @@ export function BaseplatePanel() {
                 disabled={synced}
               />
             </div>
+            {/* Fractional edge position — shown when the effective dimensions are half-unit */}
+            {(hasFractionalWidth || hasFractionalDepth) && (
+              <div className="space-y-1.5">
+                <div className="text-content-tertiary text-[10px] mb-1">
+                  {t('sidebar.halfUnitEdgePosition')}
+                </div>
+                {hasFractionalWidth && (
+                  <FractionalEdgeToggle
+                    axis="x"
+                    label={t('common.width')}
+                    value={fractionalEdgeX}
+                    onChange={handleFractionalEdgeChange}
+                    startTitle={t('sidebar.halfBinLeft')}
+                    startLabel={t('sidebar.left')}
+                    endTitle={t('sidebar.halfBinRight')}
+                    endLabel={t('sidebar.right')}
+                  />
+                )}
+                {hasFractionalDepth && (
+                  <FractionalEdgeToggle
+                    axis="y"
+                    label={t('common.depth')}
+                    value={fractionalEdgeY}
+                    onChange={handleFractionalEdgeChange}
+                    startTitle={t('sidebar.halfBinBottom')}
+                    startLabel={t('sidebar.bottom')}
+                    endTitle={t('sidebar.halfBinTop')}
+                    endLabel={t('sidebar.top')}
+                  />
+                )}
+              </div>
+            )}
+
             {/* mm summary under steppers — matches the layout-mode drawer dimensions pattern.
                 When padding > 0, show a trailing 'incl. padding' note so users see the total
                 is grid + padding, not grid alone. */}

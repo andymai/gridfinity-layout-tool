@@ -99,6 +99,10 @@ export interface BaseplateParams {
     readonly bl: Mm;
     readonly br: Mm;
   };
+  /** Which edge carries the half-unit column when baseplateWidth is fractional and syncWithLayout is false. Defaults to 'end' (right). */
+  readonly fractionalEdgeX?: FractionalEdge;
+  /** Which edge carries the half-unit row when baseplateDepth is fractional and syncWithLayout is false. Defaults to 'end' (top). */
+  readonly fractionalEdgeY?: FractionalEdge;
 }
 
 /** Position of fractional edge when drawer has half-unit dimensions */
