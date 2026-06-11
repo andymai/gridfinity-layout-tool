@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.161.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.161.0...gridfinity-layout-tool-v4.161.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* **bin-designer:** address divider-height review comments ([#2099](https://github.com/andymai/gridfinity-layout-tool/issues/2099)) ([b699765](https://github.com/andymai/gridfinity-layout-tool/commit/b6997652bb8420ebf563fc72e30a402e350971e3))
+
 ## [4.161.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.160.1...gridfinity-layout-tool-v4.161.0) (2026-06-11)
 
 
