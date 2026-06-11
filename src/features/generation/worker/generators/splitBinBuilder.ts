@@ -201,13 +201,30 @@ function splitSolidIntoPieces(
   const floorZ = isFlat ? 0 : SOCKET_HEIGHT;
   const wallTopZ = floorZ + wallHeight;
 
+  // An overhang grows the outer body past the nominal grid footprint (#1949);
+  // both the lip and the outermost cutting boxes must track it. Suppressed for
+  // partial masks, matching the geometry pipeline.
+  const overhang = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
+
   // Build lip solid separately if needed. The lip is positioned at
   // wallTopZ (= totalHeight for both flat and socket bases after the
   // socket Z-offset applied in generateBin), shifted down by
   // LIP_FUSE_OVERLAP to ensure a volumetric overlap for clean fusing.
+  //
+  // Pass cellMask + overhang so the lip footprint matches the body: rectangular
+  // bins are unaffected, but custom shapes (L/U) and overhung bins would
+  // otherwise get a full-rectangle, nominal-size lip that juts past or falls
+  // short of the actual body edge once fused per-piece.
   let lipSolid: Shape3D | undefined;
   if (hasLip) {
-    const lipBase = buildTopShape(params.width, params.depth, true, params.gridUnitMm);
+    const lipBase = buildTopShape(
+      params.width,
+      params.depth,
+      true,
+      params.gridUnitMm,
+      params.cellMask,
+      overhang
+    );
     lipSolid = translate(lipBase, [0, 0, wallTopZ - LIP_FUSE_OVERLAP]);
     lipBase.delete();
 
@@ -278,13 +295,10 @@ function splitSolidIntoPieces(
   const adjustedCutPlanesX = shiftCutPlanesOffCellBoundaries(cutPlanesX, params.width, gridUnitMm);
   const adjustedCutPlanesY = shiftCutPlanesOffCellBoundaries(cutPlanesY, params.depth, gridUnitMm);
 
-  // An overhang grows the outer body past the nominal grid footprint (the base
-  // sockets stay put). The body spans [-outerW/2 - left, outerW/2 + right] and
-  // [-outerD/2 - front, outerD/2 + back]; the outermost cutting boxes must reach
-  // those edges or the boolean intersect clips the overhang off (#1949).
-  // Suppressed for partial masks, matching the geometry pipeline.
-  const overhang = resolveOverhang(isPartialMask(params.cellMask) ? undefined : params.overhang);
-
+  // The outermost cutting boxes must reach the overhung body edges (resolved
+  // above) or the boolean intersect clips the overhang off (#1949). The body
+  // spans [-outerW/2 - left, outerW/2 + right] and [-outerD/2 - front,
+  // outerD/2 + back].
   // Boundary arrays: [left edge, ...cut planes, right edge]
   const xBounds = [-outerW / 2 - overhang.left, ...adjustedCutPlanesX, outerW / 2 + overhang.right];
   const yBounds = [-outerD / 2 - overhang.front, ...adjustedCutPlanesY, outerD / 2 + overhang.back];
