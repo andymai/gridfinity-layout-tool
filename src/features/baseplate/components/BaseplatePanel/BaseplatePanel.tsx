@@ -222,12 +222,15 @@ export function BaseplatePanel() {
       const halfPadWidth = Math.floor((remainderWidth / 2) * 100) / 100;
       const halfPadDepth = Math.floor((remainderDepth / 2) * 100) / 100;
 
-      const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
+      const layoutState = useLayoutStore.getState().layout;
+      const current = layoutState.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
       useLayoutStore.getState().setBaseplateParams({
         ...current,
         syncWithLayout: false,
         baseplateWidth: gridUnits(snappedWidth),
         baseplateDepth: gridUnits(snappedDepth),
+        fractionalEdgeX: layoutState.drawer.fractionalEdgeX ?? 'end',
+        fractionalEdgeY: layoutState.drawer.fractionalEdgeY ?? 'end',
         paddingLeft: mm(halfPadWidth),
         paddingRight: mm(halfPadWidth),
         paddingFront: mm(halfPadDepth),

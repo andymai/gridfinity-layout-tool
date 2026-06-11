@@ -123,7 +123,7 @@ describe('buildFullParams', () => {
     });
   });
 
-  describe('fractionalEdge when unsynced', () => {
+  describe('fractionalEdge sync/unsync', () => {
     it('uses drawer fractional edge when synced', () => {
       const stored = { ...storedBase, syncWithLayout: true };
       const result = buildFullParams(stored, 10, 8, 42, 'start', 'start');
