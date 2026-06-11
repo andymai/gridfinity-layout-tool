@@ -9,6 +9,7 @@ export {
 } from './LidExplodeSlider';
 export { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
 export { BinDimensions } from './BinDimensions';
+export { CompartmentDimensions } from './CompartmentDimensions/CompartmentDimensions';
 export { BinNameLabel } from '@/shared/components/preview/BinNameLabel';
 export { PreviewControls, type CameraPreset } from './PreviewControls';
 export { type Projection } from '@/shared/components/preview/CameraRig';

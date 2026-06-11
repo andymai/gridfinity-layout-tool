@@ -360,6 +360,7 @@ export const DEFAULT_UI_STATE: DesignerUIState = {
   selectedDividerKey: null,
   hoveredDividerKey: null,
   dividerTiltPreview: null,
+  hoveredCompartmentId: null,
 };
 
 /** Default empty history */

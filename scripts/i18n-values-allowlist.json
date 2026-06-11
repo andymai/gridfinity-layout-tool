@@ -24,6 +24,8 @@
     "binDesigner.designs",
     "binDesigner.dimensions",
     "binDesigner.dividerAutoHeight",
+    "binDesigner.compartmentEditor.cavityExact",
+    "binDesigner.compartmentEditor.cavitySummary",
     "binDesigner.experimental",
     "binDesigner.multiColor.experimental",
     "binDesigner.colors.zone.base",

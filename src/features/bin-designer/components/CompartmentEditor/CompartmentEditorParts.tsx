@@ -6,7 +6,11 @@
  */
 
 import { useMemo, type ReactNode } from 'react';
-import { cellIndex, getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
+import { cellIndex } from '@/features/bin-designer/utils/compartments';
+import {
+  compartmentCavity,
+  formatCompactMm,
+} from '@/features/bin-designer/utils/compartmentDimensions';
 import type { CompartmentConfig } from '@/features/bin-designer/types';
 import {
   getCompartmentFill,
@@ -24,6 +28,8 @@ export function GridCell({
   isDragging,
   isDividerHoverHighlighted = false,
   config,
+  interiorW,
+  interiorD,
   previewColor,
   onPointerDown,
   onPointerEnter,
@@ -40,6 +46,10 @@ export function GridCell({
    *  doesn't care about divider hover don't have to thread the prop. */
   isDividerHoverHighlighted?: boolean;
   config: CompartmentConfig;
+  /** Interior cavity width of the whole bin in mm (for the hover dimension label). */
+  interiorW: number;
+  /** Interior cavity depth of the whole bin in mm. */
+  interiorD: number;
   previewColor: string;
   onPointerDown: (idx: number) => void;
   onPointerEnter: (idx: number) => void;
@@ -104,15 +114,16 @@ export function GridCell({
   }
   const boxShadow = shadowParts.length > 0 ? shadowParts.join(', ') : 'none';
 
-  // Show dimension label on the visual top-left cell of multi-cell compartments (hover only)
+  // Show the compartment's usable cavity size (mm) on its anchor cell, revealed
+  // on hover. The compact in-cell label is W×D (footprint); the full W×D×H is
+  // carried by the summary line and the 3D dimension lines. The whole bin's H
+  // is the same for every compartment, so repeating it per cell adds noise.
   const isTopLeftOfCompartment = !hasVisualTopNeighbor && !hasLeftNeighbor;
   let dimensionLabel: string | null = null;
-  if (isTopLeftOfCompartment && isSplittable) {
-    const bounds = getCompartmentBounds(config, compartmentId);
-    if (bounds) {
-      const cWidth = bounds.maxCol - bounds.minCol + 1;
-      const cHeight = bounds.maxRow - bounds.minRow + 1;
-      dimensionLabel = `${cWidth}×${cHeight}`;
+  if (isTopLeftOfCompartment) {
+    const cavity = compartmentCavity(config, compartmentId, interiorW, interiorD);
+    if (cavity) {
+      dimensionLabel = `${formatCompactMm(cavity.width)}×${formatCompactMm(cavity.depth)}`;
     }
   }
 
@@ -173,7 +184,7 @@ export function GridCell({
       {/* Dimension label - shown on hover only */}
       {dimensionLabel && (
         <span
-          className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] font-bold tabular-nums transition-opacity duration-100"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center whitespace-nowrap text-[9px] font-bold tabular-nums transition-opacity duration-100"
           style={{
             color: 'var(--color-accent)',
             opacity: showDimensionLabel ? 1 : 0,

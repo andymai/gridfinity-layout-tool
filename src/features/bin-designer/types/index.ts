@@ -775,6 +775,13 @@ export interface DesignerUIState {
    * is in flight.
    */
   readonly dividerTiltPreview: DividerTiltPreview | null;
+  /**
+   * Compartment currently hovered (or selected) in the 2D grid editor, by
+   * compartment id. Drives the 3D `CompartmentDimensions` overlay so the
+   * preview shows that one compartment's cavity dimensions on demand. Null
+   * when nothing is hovered (the 3D view stays uncluttered at rest).
+   */
+  readonly hoveredCompartmentId: number | null;
 }
 
 /** In-flight divider tilt used only for live preview (see `dividerTiltPreview`). */
@@ -986,6 +993,7 @@ export interface DesignerState {
   setSelectedDividerKey: (key: string | null) => void;
   setHoveredDividerKey: (key: string | null) => void;
   setDividerTiltPreview: (preview: DividerTiltPreview | null) => void;
+  setHoveredCompartmentId: (id: number | null) => void;
   /** Enter a color tool overlay, or pass null to exit any active tool. */
   setColorTool: (tool: ColorTool) => void;
   /**

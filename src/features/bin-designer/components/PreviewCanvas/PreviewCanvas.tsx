@@ -28,6 +28,7 @@ import {
   LID_OFFSET_DEFAULT,
   BinAxisLabels,
   BinDimensions,
+  CompartmentDimensions,
   BinNameLabel,
   PreviewControls,
   PreviewSkeleton,
@@ -456,6 +457,8 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
                     heightUnitMm={params.heightUnitMm}
                     stackingLip={params.base.stackingLip}
                   />
+                  {/* Active-compartment cavity dimensions (hover/select driven) */}
+                  <CompartmentDimensions />
                   <BinNameLabel
                     width={width}
                     depth={depth}

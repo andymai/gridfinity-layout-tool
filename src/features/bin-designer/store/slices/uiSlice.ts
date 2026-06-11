@@ -115,6 +115,12 @@ export function createUISlice(set: Set) {
       });
     },
 
+    setHoveredCompartmentId: (id: number | null) => {
+      set((state) => {
+        state.ui.hoveredCompartmentId = id;
+      });
+    },
+
     setColorTool: (tool: ColorTool) => {
       set((state) => {
         state.ui.colorTool = tool;
