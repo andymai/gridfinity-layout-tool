@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.162.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.161.1...gridfinity-layout-tool-v4.162.0) (2026-06-11)
+
+
+### Features
+
+* **bin-designer:** show compartment dimensions in mm and tile by size ([#2101](https://github.com/andymai/gridfinity-layout-tool/issues/2101)) ([fd004e3](https://github.com/andymai/gridfinity-layout-tool/commit/fd004e3aef51563f7f273fecb31adc6ea8a6afe1))
+
 ## [4.161.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.161.0...gridfinity-layout-tool-v4.161.1) (2026-06-11)
 
 
