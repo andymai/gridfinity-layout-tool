@@ -75,6 +75,28 @@ export function calculateDividerHeight(
 }
 
 /**
+ * Minimum interior compartment-divider height in mm. Below this a partial
+ * divider becomes a barely-printable sliver, so numeric heights clamp up to it.
+ */
+export const MIN_COMPARTMENT_DIVIDER_HEIGHT = 2;
+
+/**
+ * Resolve the effective interior compartment-divider height in mm.
+ *
+ * `'auto'`/undefined → the full interior height (the historical full-height
+ * divider). A numeric value is clamped to
+ * `[MIN_COMPARTMENT_DIVIDER_HEIGHT, interiorHeight]` so dividers stay printable
+ * and never poke above the rim.
+ */
+export function resolveCompartmentDividerHeight(
+  dividerHeight: number | 'auto' | undefined,
+  interiorHeight: number
+): number {
+  if (dividerHeight === undefined || dividerHeight === 'auto') return interiorHeight;
+  return Math.min(interiorHeight, Math.max(MIN_COMPARTMENT_DIVIDER_HEIGHT, dividerHeight));
+}
+
+/**
  * Calculate the divider length for a given axis.
  *
  * The divider spans the interior dimension plus tab engagement on each side.

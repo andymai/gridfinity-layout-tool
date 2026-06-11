@@ -4,6 +4,8 @@ import {
   calculateDividerHeight,
   calculateDividerLength,
   getEffectiveSlotDimensions,
+  resolveCompartmentDividerHeight,
+  MIN_COMPARTMENT_DIVIDER_HEIGHT,
 } from './slotMath';
 
 describe('calculateSlotPositions', () => {
@@ -79,6 +81,34 @@ describe('calculateDividerHeight', () => {
   it('returns explicit height regardless of lip', () => {
     expect(calculateDividerHeight({ height: 15 }, 30, true)).toBe(15);
     expect(calculateDividerHeight({ height: 15 }, 30, false)).toBe(15);
+  });
+});
+
+describe('resolveCompartmentDividerHeight', () => {
+  it('returns full interior height when undefined (default)', () => {
+    expect(resolveCompartmentDividerHeight(undefined, 30)).toBe(30);
+  });
+
+  it("returns full interior height when 'auto'", () => {
+    expect(resolveCompartmentDividerHeight('auto', 30)).toBe(30);
+  });
+
+  it('passes through an in-range numeric height', () => {
+    expect(resolveCompartmentDividerHeight(12, 30)).toBe(12);
+  });
+
+  it('clamps below the minimum up to MIN_COMPARTMENT_DIVIDER_HEIGHT', () => {
+    expect(resolveCompartmentDividerHeight(0.5, 30)).toBe(MIN_COMPARTMENT_DIVIDER_HEIGHT);
+    expect(resolveCompartmentDividerHeight(-5, 30)).toBe(MIN_COMPARTMENT_DIVIDER_HEIGHT);
+  });
+
+  it('clamps above the interior height down to the interior height', () => {
+    expect(resolveCompartmentDividerHeight(100, 30)).toBe(30);
+  });
+
+  it('never exceeds interior height even when min would push past it', () => {
+    // Degenerate tiny bin: interior height below the printable minimum.
+    expect(resolveCompartmentDividerHeight(5, 1)).toBe(1);
   });
 });
 

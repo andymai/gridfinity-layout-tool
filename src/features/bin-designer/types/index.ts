@@ -194,6 +194,18 @@ export interface CompartmentConfig {
    * `remapDividerOverrides` on any cell mutation that renumbers IDs.
    */
   readonly dividerOverrides?: DividerOverride[];
+  /**
+   * Optional global height (mm) for the interior divider walls. `'auto'` or
+   * omitted means full interior height (below the lip taper) — the historical
+   * behavior. A numeric value produces partial-height dividers that rise from
+   * the floor and are truncated flat; it is clamped to
+   * `[MIN_COMPARTMENT_DIVIDER_HEIGHT, interior height]` at generation.
+   *
+   * A numeric value also forces the additive divider-wall path (the cut-based
+   * multi-cavity shell can't express a divider that stops short of the rim),
+   * mirroring how `dividerOverrides` already opt out of that path.
+   */
+  readonly dividerHeight?: number | 'auto';
 }
 
 /**
@@ -885,6 +897,8 @@ export interface DesignerState {
   splitCompartment: (compartmentId: number) => void;
   resetCompartments: () => void;
   setCompartmentText: (compartmentId: number, text: string) => void;
+  /** Set the global interior divider height in mm, or 'auto' for full height. */
+  setCompartmentDividerHeight: (height: number | 'auto') => void;
 
   // Angled-divider override actions
   setDividerOverride: (

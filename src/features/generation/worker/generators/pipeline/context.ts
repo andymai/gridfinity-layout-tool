@@ -94,6 +94,12 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
     !hasDividerOverrides(params) ||
     (compartmentEdgesAreSinglePair(params) &&
       compartmentCavitiesAreViableWithOverrides(params, innerW, innerD));
+  // A partial divider height can't be expressed by the cut-based multi-cavity
+  // shell (cut pockets reach the rim, so the leftover divider is always full
+  // height). Fall back to the additive divider-wall path — which builds short
+  // wall boxes from the floor — exactly as tilt overrides already do.
+  const dividerHeightIsFull =
+    params.compartments.dividerHeight === undefined || params.compartments.dividerHeight === 'auto';
   const compartmentsBakedIntoShell =
     !isSlotted &&
     !solid &&
@@ -102,7 +108,8 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
     compartmentsAreRectangular(params) &&
     compartmentCavitiesAreViable(params, innerW, innerD) &&
     compartmentCornersRoundCleanly(params, innerW, innerD) &&
-    overridesAllowCutPath;
+    overridesAllowCutPath &&
+    dividerHeightIsFull;
 
   // Shell cache key — versioned + quantized for deterministic matching.
   // Mask hash is included only when the mask triggers the polygon path so

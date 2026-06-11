@@ -249,4 +249,30 @@ describe('createInitialContext', () => {
       expect(ctx.dimensions.halfSockets).toBe(false);
     });
   });
+
+  describe('partial divider height routing', () => {
+    const fourCompartments = (overrides?: Partial<BinParams['compartments']>) =>
+      createTestParams({
+        width: 4,
+        depth: 4,
+        compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3], ...overrides },
+      });
+
+    it('bakes rectangular compartments into the shell at full (auto) height', () => {
+      const ctx = createInitialContext(fourCompartments());
+      expect(ctx.dimensions.compartmentsBakedIntoShell).toBe(true);
+    });
+
+    it('routes a numeric (partial) divider height to the additive wall path', () => {
+      // The cut-based shell can't express a divider that stops short of the
+      // rim, so a partial height must disable the bake-into-shell path.
+      const ctx = createInitialContext(fourCompartments({ dividerHeight: 8 }));
+      expect(ctx.dimensions.compartmentsBakedIntoShell).toBe(false);
+    });
+
+    it("keeps the cut path for an explicit 'auto' divider height", () => {
+      const ctx = createInitialContext(fourCompartments({ dividerHeight: 'auto' }));
+      expect(ctx.dimensions.compartmentsBakedIntoShell).toBe(true);
+    });
+  });
 });

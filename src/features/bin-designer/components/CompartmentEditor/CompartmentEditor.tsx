@@ -36,6 +36,7 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 import { usePreviewColor } from '@/features/bin-designer/hooks/usePreviewColor';
 import { GridCell, GhostPreview } from './CompartmentEditorParts';
 import { DividerHitTargets } from './DividerHitTargets';
+import { DividerHeightControl } from './DividerHeightControl';
 import { DividerTiltSubsection } from './DividerTiltSubsection';
 import { rowKeyOf } from './useDividerTiltSubsection';
 
@@ -538,9 +539,9 @@ export function CompartmentEditor() {
         </section>
       )}
 
-      {/* Wall thickness (only when there are dividers) */}
+      {/* Wall thickness + divider height (only when there are dividers) */}
       {compartmentCount > 1 && (
-        <section>
+        <section className="space-y-4">
           <SnappingSlider
             label={t('binDesigner.wallThickness')}
             value={thickness}
@@ -548,6 +549,7 @@ export function CompartmentEditor() {
             options={thicknessOptions}
             unit="mm"
           />
+          <DividerHeightControl />
         </section>
       )}
 

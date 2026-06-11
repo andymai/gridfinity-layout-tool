@@ -145,6 +145,17 @@ export function validateCompartments(compartments: unknown): string | null {
       }
     }
   }
+  // Optional global divider height. Either the literal 'auto' or a finite
+  // millimeter value within the bin's possible interior height range. A direct
+  // HTTP POST could otherwise smuggle in NaN/absurd values; the generator
+  // clamps, but reject early to keep payloads honest. Ceiling mirrors the
+  // label-tab cap (MAX_HEIGHT * heightUnitMm = 140mm), the tallest a bin gets.
+  if (compartments.dividerHeight !== undefined) {
+    const h = compartments.dividerHeight;
+    if (h !== 'auto' && (!isNumber(h) || !inRange(h, 0, 140))) {
+      return `compartments.dividerHeight must be 'auto' or a number 0-140`;
+    }
+  }
   // Optional per-divider tilt overrides. Mirrors the client-side
   // `DIVIDER_OFFSET_MAX_MM = 200` cap and the canonical pair ordering rule
   // (compartmentA < compartmentB) so a direct HTTP POST can't smuggle in

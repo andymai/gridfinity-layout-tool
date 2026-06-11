@@ -780,4 +780,39 @@ describe('DesignerStore - compartment actions', () => {
       expect(params.compartments.compartmentTexts).toEqual(['A']);
     });
   });
+
+  describe('setCompartmentDividerHeight', () => {
+    it('stores a numeric height on the compartments config', () => {
+      const { setCompartmentDividerHeight } = useDesignerStore.getState();
+      setCompartmentDividerHeight(12);
+      expect(useDesignerStore.getState().params.compartments.dividerHeight).toBe(12);
+    });
+
+    it("omits the field entirely when set to 'auto' (tidy persisted JSON)", () => {
+      const { setCompartmentDividerHeight } = useDesignerStore.getState();
+      setCompartmentDividerHeight(12);
+      setCompartmentDividerHeight('auto');
+      expect(useDesignerStore.getState().params.compartments).not.toHaveProperty('dividerHeight');
+    });
+
+    it('pushes a history entry on a real change', () => {
+      const { setCompartmentDividerHeight } = useDesignerStore.getState();
+      setCompartmentDividerHeight(10);
+      expect(useDesignerStore.getState().history.past).toHaveLength(1);
+    });
+
+    it('is a no-op when the value is unchanged (no history spam)', () => {
+      const { setCompartmentDividerHeight } = useDesignerStore.getState();
+      setCompartmentDividerHeight(10);
+      setCompartmentDividerHeight(10);
+      expect(useDesignerStore.getState().history.past).toHaveLength(1);
+    });
+
+    it("treats undefined and 'auto' as the same state (no redundant history)", () => {
+      // Default has no dividerHeight (== auto); setting 'auto' must not record.
+      const { setCompartmentDividerHeight } = useDesignerStore.getState();
+      setCompartmentDividerHeight('auto');
+      expect(useDesignerStore.getState().history.past).toHaveLength(0);
+    });
+  });
 });

@@ -11,6 +11,7 @@ import type { BinParams, DividerOverride } from '@/shared/types/bin';
 import { buildCacheKey, compactKey, quantize, stableSerialize } from './cacheKeyUtils';
 import { sketch } from './meshUtils';
 import { BOX_CORNER_RADIUS } from './generatorConstants';
+import { resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 
 // Re-export for backwards compatibility with existing imports
 export { fuseAllOrNull } from './utils/shapeOps';
@@ -703,7 +704,10 @@ export const compartmentWallsFeature: FeatureBuilder = {
         params.compartments.rows,
         quantize(params.compartments.thickness),
         params.compartments.cells.join(','),
-        stableSerialize(params.compartments.dividerOverrides ?? [])
+        stableSerialize(params.compartments.dividerOverrides ?? []),
+        quantize(
+          resolveCompartmentDividerHeight(params.compartments.dividerHeight, dim.interiorHeight)
+        )
       )
     );
   },
@@ -712,7 +716,10 @@ export const compartmentWallsFeature: FeatureBuilder = {
       ctx.params,
       ctx.dimensions.innerW,
       ctx.dimensions.innerD,
-      ctx.dimensions.interiorHeight
+      resolveCompartmentDividerHeight(
+        ctx.params.compartments.dividerHeight,
+        ctx.dimensions.interiorHeight
+      )
     );
     return result ? [result] : null;
   },

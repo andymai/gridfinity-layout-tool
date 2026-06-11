@@ -400,6 +400,27 @@ export function createParamSlice(set: Set, get: Get) {
       });
     },
 
+    setCompartmentDividerHeight: (height: number | 'auto') => {
+      const { params } = get();
+      const prev = params.compartments.dividerHeight;
+      // No-op guard: the stepper fires on every tick; an unchanged value must
+      // not push a history entry. Treat undefined and 'auto' as the same state.
+      const prevIsAuto = prev === undefined || prev === 'auto';
+      if (height === 'auto' ? prevIsAuto : prev === height) return;
+
+      set((state) => {
+        pushHistoryEntry(state);
+        if (height === 'auto') {
+          // Omit the field entirely so persisted JSON stays tidy and the bin
+          // shares the full-height cache bucket / cut-path geometry.
+          const { dividerHeight: _drop, ...rest } = state.params.compartments;
+          state.params.compartments = rest;
+        } else {
+          state.params.compartments = { ...state.params.compartments, dividerHeight: height };
+        }
+      });
+    },
+
     setTextDefaults: (partial: Partial<TextStyleDefaults>) => {
       set((state) => {
         pushHistoryEntry(state);
