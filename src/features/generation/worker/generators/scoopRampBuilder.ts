@@ -5,7 +5,16 @@
  * to help slide items out of the bin.
  */
 
-import { draw, translate, withScope, clone, unwrap, fuseAll } from 'brepjs';
+import {
+  draw,
+  drawRoundedRectangle,
+  translate,
+  withScope,
+  clone,
+  unwrap,
+  fuseAll,
+  intersect,
+} from 'brepjs';
 import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
@@ -14,7 +23,7 @@ import {
   computeLipOffset,
   computeInteriorHeight,
 } from '@/shared/utils/scoopCalculations';
-import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH } from './generatorConstants';
+import { LIP_SMALL_TAPER, LIP_TAPER_WIDTH, BOX_CORNER_RADIUS } from './generatorConstants';
 import { findCompartmentBounds } from './compartmentBuilder';
 import { compartmentHasTiltedEdge } from '@/shared/types/bin';
 /**
@@ -169,8 +178,28 @@ function buildScoopRampsInScope(
 
   // Inline fuse so the fused handle is registered in scope.
   if (scoopShapes.length === 0) return null;
-  if (scoopShapes.length === 1) return scoopShapes[0]; // already scope-registered
-  return scope.register(unwrap(fuseAll(scoopShapes as ValidSolid[])));
+  const fused =
+    scoopShapes.length === 1
+      ? scoopShapes[0] // already scope-registered
+      : scope.register(unwrap(fuseAll(scoopShapes as ValidSolid[])));
+
+  // Thin-walled bins round the inner cavity corners to radius
+  // (BOX_CORNER_RADIUS − wallThickness), but the scoop is a straight full-width
+  // prism with SQUARE corners. At the bin's front-outer corners those square
+  // corners poke through the rounded outer wall and stick out of the bin. Below
+  // the geometric threshold wallThickness < BOX_CORNER_RADIUS·(1 − 1/√2) the
+  // square corner overshoots the outer arc (same condition the cavity cut
+  // guards in compartmentBuilder, #1968). Clip the scoop to the rounded inner
+  // footprint so its corners follow the wall; skip the boolean above the
+  // threshold where there is nothing to trim.
+  if (wallThickness < BOX_CORNER_RADIUS * (1 - Math.SQRT1_2)) {
+    const cavityCornerR = Math.max(BOX_CORNER_RADIUS - wallThickness, 0.1);
+    const footprint = scope.register(
+      sketch(drawRoundedRectangle(innerW, innerD, cavityCornerR), 'XY', -1).extrude(wallHeight + 2)
+    );
+    return scope.register(unwrap(intersect(fused as ValidSolid, footprint as ValidSolid)));
+  }
+  return fused;
 }
 
 // --- FeatureBuilder protocol ---

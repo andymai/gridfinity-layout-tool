@@ -5,7 +5,7 @@
  * at the back edge of each compartment.
  */
 
-import { draw, unwrap, fuseAll, fuse, cut, translate, withScope, clone } from 'brepjs';
+import { draw, unwrap, fuseAll, fuse, cut, intersect, translate, withScope, clone } from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
 import type { BinParams, TextStyleDefaults, TextStyleOverride } from '@/shared/types/bin';
 import {
@@ -355,11 +355,17 @@ function buildTabsAtRow(
     // back-anchor, positive Y for front-anchor).
     const cornerR = 1; // mm
     const depthExtent = depthSign * tabDepth;
-    let pen = draw([0, 0]).lineTo([tabWidth, 0]).lineTo([tabWidth, depthExtent]);
-    if (!touchesRight) pen = pen.customCorner(cornerR);
-    pen = pen.lineTo([0, depthExtent]);
-    if (!touchesLeft) pen = pen.customCorner(cornerR);
-    const shelf = scope.register(sketch(pen.close(), 'XY', tabHeight - wt).extrude(wt));
+    // Shelf/footprint outline: rounded front corners on free (non-wall) ends.
+    // Built fresh each call so it can be sketched independently for the shelf
+    // plate and (below) the full-height support clip.
+    const buildOutline = (): Drawing => {
+      let p = draw([0, 0]).lineTo([tabWidth, 0]).lineTo([tabWidth, depthExtent]);
+      if (!touchesRight) p = p.customCorner(cornerR);
+      p = p.lineTo([0, depthExtent]);
+      if (!touchesLeft) p = p.customCorner(cornerR);
+      return p.close();
+    };
+    const shelf = scope.register(sketch(buildOutline(), 'XY', tabHeight - wt).extrude(wt));
 
     // -- Gussets: 45deg triangular supports under the shelf --
     // Free ends get edge gussets for structural support.
@@ -417,6 +423,21 @@ function buildTabsAtRow(
 
         const fusedGussets = scope.register(unwrap(fuseAll(gussetShapes as ValidSolid[])));
         tabSolid = scope.register(unwrap(fuse(tabSolid as ValidSolid, fusedGussets)));
+      }
+
+      // The shelf plate rounds its free-end front corners, but the support
+      // (solid prism / fillet / edge gussets) runs to the full square corner —
+      // poking "points" past the rounded shelf on partial-width and centered
+      // tabs. Clip the support to the shelf footprint (full tab height) so it
+      // can never exceed the plate outline. Only free ends are rounded, so
+      // skip the boolean when both ends sit flush against a wall.
+      if (!touchesLeft || !touchesRight) {
+        const footprint = scope.register(
+          sketch(buildOutline(), 'XY', -0.1).extrude(tabHeight + 0.2)
+        );
+        tabSolid = scope.register(
+          unwrap(intersect(tabSolid as ValidSolid, footprint as ValidSolid))
+        );
       }
     }
 
