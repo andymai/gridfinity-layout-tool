@@ -193,11 +193,20 @@ function buildScoopRampsInScope(
   // footprint so its corners follow the wall; skip the boolean above the
   // threshold where there is nothing to trim.
   if (wallThickness < BOX_CORNER_RADIUS * (1 - Math.SQRT1_2)) {
-    const cavityCornerR = Math.max(BOX_CORNER_RADIUS - wallThickness, 0.1);
-    const footprint = scope.register(
-      sketch(drawRoundedRectangle(innerW, innerD, cavityCornerR), 'XY', -1).extrude(wallHeight + 2)
-    );
-    return scope.register(unwrap(intersect(fused as ValidSolid, footprint as ValidSolid)));
+    try {
+      const cavityCornerR = Math.max(BOX_CORNER_RADIUS - wallThickness, 0.1);
+      const footprint = scope.register(
+        sketch(drawRoundedRectangle(innerW, innerD, cavityCornerR), 'XY', -1).extrude(
+          wallHeight + 2
+        )
+      );
+      return scope.register(unwrap(intersect(fused as ValidSolid, footprint as ValidSolid)));
+    } catch {
+      // The clip only trims a sub-mm corner overshoot — best-effort, like the
+      // other booleans here. A kernel failure must not sink the whole bin
+      // build, so fall back to the un-clipped scoop.
+      return fused;
+    }
   }
   return fused;
 }

@@ -432,12 +432,17 @@ function buildTabsAtRow(
       // can never exceed the plate outline. Only free ends are rounded, so
       // skip the boolean when both ends sit flush against a wall.
       if (!touchesLeft || !touchesRight) {
-        const footprint = scope.register(
-          sketch(buildOutline(), 'XY', -0.1).extrude(tabHeight + 0.2)
-        );
-        tabSolid = scope.register(
-          unwrap(intersect(tabSolid as ValidSolid, footprint as ValidSolid))
-        );
+        try {
+          const footprint = scope.register(
+            sketch(buildOutline(), 'XY', -0.1).extrude(tabHeight + 0.2)
+          );
+          tabSolid = scope.register(
+            unwrap(intersect(tabSolid as ValidSolid, footprint as ValidSolid))
+          );
+        } catch {
+          // Best-effort cosmetic clip (mirrors the text-boolean fallback
+          // below): keep the un-clipped support rather than fail the tab build.
+        }
       }
     }
 
