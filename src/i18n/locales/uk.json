@@ -2275,9 +2275,9 @@
   "baseplate.connectorSample.tip4": "Знайшли потрібне припасування? Встановіть «Припасування з’єднувача» на це зміщення.",
   "baseplate.connectorSample.exportComplete": "Зразок припасування експортовано",
   "binDesigner.compartmentEditor.smallestOpening": "Найменший отвір (mm)",
-  "binDesigner.compartmentEditor.openingWidth": "Ширина",
-  "binDesigner.compartmentEditor.openingDepth": "Глибина",
-  "binDesigner.compartmentEditor.grid": "Сітка",
+  "binDesigner.compartmentEditor.openingWidth": "Ширина (mm)",
+  "binDesigner.compartmentEditor.openingDepth": "Глибина (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Округлюється вгору, щоб рівномірно заповнити контейнер · крайні відсіки ширші",
-  "binDesigner.compartmentEditor.maxGridReached": "Макс. {max} у ряд"
+  "binDesigner.compartmentEditor.maxGridReached": "Макс. {max} у ряд",
+  "binDesigner.compartmentEditor.setBySize": "За розміром"
 }

@@ -2618,10 +2618,10 @@ const en: Record<string, string> = {
     'Compartment {n}, {dimension}, click to split',
   'binDesigner.compartmentEditor.compartmentAria': 'Compartment {n}, {dimension}',
   'binDesigner.compartmentEditor.cellAria': 'Cell {col}, {row}',
+  'binDesigner.compartmentEditor.setBySize': 'Set by size',
   'binDesigner.compartmentEditor.smallestOpening': 'Smallest opening (mm)',
-  'binDesigner.compartmentEditor.openingWidth': 'Width',
-  'binDesigner.compartmentEditor.openingDepth': 'Depth',
-  'binDesigner.compartmentEditor.grid': 'Grid',
+  'binDesigner.compartmentEditor.openingWidth': 'Width (mm)',
+  'binDesigner.compartmentEditor.openingDepth': 'Depth (mm)',
   'binDesigner.compartmentEditor.tileEvenlyNote':
     'Rounds up to tile the bin evenly · edge compartments are wider',
   'binDesigner.compartmentEditor.maxGridReached': 'Max {max} across',

@@ -2275,9 +2275,9 @@
   "baseplate.connectorSample.tip4": "Die richtige Passung gefunden? Stellen Sie „Verbinderpassung“ auf diesen Abstand ein.",
   "baseplate.connectorSample.exportComplete": "Passungsmuster exportiert",
   "binDesigner.compartmentEditor.smallestOpening": "Kleinste Öffnung (mm)",
-  "binDesigner.compartmentEditor.openingWidth": "Breite",
-  "binDesigner.compartmentEditor.openingDepth": "Tiefe",
-  "binDesigner.compartmentEditor.grid": "Raster",
+  "binDesigner.compartmentEditor.openingWidth": "Breite (mm)",
+  "binDesigner.compartmentEditor.openingDepth": "Tiefe (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Wird aufgerundet, um die Box gleichmäßig zu füllen · Randfächer sind breiter",
-  "binDesigner.compartmentEditor.maxGridReached": "Max. {max} quer"
+  "binDesigner.compartmentEditor.maxGridReached": "Max. {max} quer",
+  "binDesigner.compartmentEditor.setBySize": "Nach Größe"
 }

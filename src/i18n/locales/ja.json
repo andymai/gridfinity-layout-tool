@@ -2275,9 +2275,9 @@
   "baseplate.connectorSample.tip4": "ぴったりのフィットが見つかりましたか？「コネクタフィット」をそのオフセットに設定してください。",
   "baseplate.connectorSample.exportComplete": "フィットサンプルを書き出しました",
   "binDesigner.compartmentEditor.smallestOpening": "最小の開口部 (mm)",
-  "binDesigner.compartmentEditor.openingWidth": "幅",
-  "binDesigner.compartmentEditor.openingDepth": "奥行き",
-  "binDesigner.compartmentEditor.grid": "グリッド",
+  "binDesigner.compartmentEditor.openingWidth": "幅 (mm)",
+  "binDesigner.compartmentEditor.openingDepth": "奥行き (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "ビンを均等に分割するため切り上げられます · 端の区画は広くなります",
-  "binDesigner.compartmentEditor.maxGridReached": "最大 {max} 列"
+  "binDesigner.compartmentEditor.maxGridReached": "最大 {max} 列",
+  "binDesigner.compartmentEditor.setBySize": "サイズで指定"
 }

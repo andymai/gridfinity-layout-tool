@@ -2275,9 +2275,9 @@
   "baseplate.connectorSample.tip4": "¿Encontraste el ajuste adecuado? Establece «Ajuste del conector» en ese valor.",
   "baseplate.connectorSample.exportComplete": "Muestra de ajuste exportada",
   "binDesigner.compartmentEditor.smallestOpening": "Abertura más pequeña (mm)",
-  "binDesigner.compartmentEditor.openingWidth": "Ancho",
-  "binDesigner.compartmentEditor.openingDepth": "Profundidad",
-  "binDesigner.compartmentEditor.grid": "Cuadrícula",
+  "binDesigner.compartmentEditor.openingWidth": "Ancho (mm)",
+  "binDesigner.compartmentEditor.openingDepth": "Profundidad (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Se redondea hacia arriba para llenar la caja de forma uniforme · los compartimentos de los bordes son más anchos",
-  "binDesigner.compartmentEditor.maxGridReached": "Máx. {max} de ancho"
+  "binDesigner.compartmentEditor.maxGridReached": "Máx. {max} de ancho",
+  "binDesigner.compartmentEditor.setBySize": "Por tamaño"
 }

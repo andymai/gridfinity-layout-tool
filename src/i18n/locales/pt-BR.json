@@ -2275,9 +2275,9 @@
   "baseplate.connectorSample.tip4": "Encontrou o encaixe certo? Defina «Encaixe do conector» com esse valor.",
   "baseplate.connectorSample.exportComplete": "Amostra de encaixe exportada",
   "binDesigner.compartmentEditor.smallestOpening": "Menor abertura (mm)",
-  "binDesigner.compartmentEditor.openingWidth": "Largura",
-  "binDesigner.compartmentEditor.openingDepth": "Profundidade",
-  "binDesigner.compartmentEditor.grid": "Grade",
+  "binDesigner.compartmentEditor.openingWidth": "Largura (mm)",
+  "binDesigner.compartmentEditor.openingDepth": "Profundidade (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Arredondado para cima para preencher a caixa uniformemente · os compartimentos das bordas são mais largos",
-  "binDesigner.compartmentEditor.maxGridReached": "Máx. {max} de largura"
+  "binDesigner.compartmentEditor.maxGridReached": "Máx. {max} de largura",
+  "binDesigner.compartmentEditor.setBySize": "Por tamanho"
 }

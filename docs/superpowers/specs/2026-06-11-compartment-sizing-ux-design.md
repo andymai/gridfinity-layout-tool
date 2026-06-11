@@ -2,7 +2,22 @@
 
 **Date:** 2026-06-11
 **Feature area:** `src/features/bin-designer` — `CompartmentEditor`
-**Status:** Approved for implementation
+**Status:** Implemented (see revision below)
+
+## Revision (2026-06-11, post-review)
+
+After seeing the size-led panel, the direction changed: **the Columns/Rows
+steppers are the primary control, and manual mm sizing is an advanced opt-in.**
+The fit-guarantee model and the single-source-of-truth principle below still
+hold — only the hierarchy changed:
+
+- Primary view: Columns/Rows `StepperControl`s with visible labels.
+- "Set by size" is a collapsible disclosure (collapsed by default). Expanding it
+  reveals the mm Width/Depth fields (same solver-snap behavior). Keeping them out
+  of the DOM by default also avoids an accessible-name collision with the bin's
+  own Width/Depth controls (`CompartmentEditor` renders inside `ParameterPanel`) —
+  the size fields use `(mm)`-suffixed labels so they're unambiguous when expanded.
+- Divider height returns to the wall-thickness section (its original home).
 
 ## Problem
 

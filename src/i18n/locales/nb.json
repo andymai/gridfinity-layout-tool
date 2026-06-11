@@ -2275,9 +2275,9 @@
   "baseplate.connectorSample.tip4": "Fant du riktig passform? Still «Koblingspassform» til den forskyvningen.",
   "baseplate.connectorSample.exportComplete": "Passprøve eksportert",
   "binDesigner.compartmentEditor.smallestOpening": "Minste åpning (mm)",
-  "binDesigner.compartmentEditor.openingWidth": "Bredde",
-  "binDesigner.compartmentEditor.openingDepth": "Dybde",
-  "binDesigner.compartmentEditor.grid": "Rutenett",
+  "binDesigner.compartmentEditor.openingWidth": "Bredde (mm)",
+  "binDesigner.compartmentEditor.openingDepth": "Dybde (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Rundes opp for å fylle beholderen jevnt · ytterrom er bredere",
-  "binDesigner.compartmentEditor.maxGridReached": "Maks {max} på tvers"
+  "binDesigner.compartmentEditor.maxGridReached": "Maks {max} på tvers",
+  "binDesigner.compartmentEditor.setBySize": "Etter størrelse"
 }

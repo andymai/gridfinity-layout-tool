@@ -5,11 +5,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { getInteriorDims } from '@/features/bin-designer/utils/dividerAngle';
-import {
-  formatCompactMm,
-  minUniformCavity,
-  solveCountForMinCavity,
-} from '@/features/bin-designer/utils/compartmentDimensions';
+import { solveCountForMinCavity } from '@/features/bin-designer/utils/compartmentDimensions';
 import { CompartmentEditor } from './CompartmentEditor';
 
 const TWO_BY_TWO = {
@@ -35,9 +31,10 @@ describe('CompartmentEditor', () => {
     });
   });
 
-  it('renders the unified sizing panel', () => {
+  it('renders the grid steppers as the primary control', () => {
     render(<CompartmentEditor />);
-    expect(screen.getByText(/smallest opening/i)).toBeInTheDocument();
+    expect(screen.getByText(/columns/i)).toBeInTheDocument();
+    expect(screen.getByText(/rows/i)).toBeInTheDocument();
     expect(screen.getByRole('spinbutton', { name: /columns/i })).toBeInTheDocument();
     expect(screen.getByRole('spinbutton', { name: /rows/i })).toBeInTheDocument();
   });
@@ -48,33 +45,29 @@ describe('CompartmentEditor', () => {
     expect(screen.queryByRole('button', { name: /^by size$/i })).toBeNull();
   });
 
-  it('shows size inputs and grid steppers together (width, depth, columns, rows)', () => {
+  it('keeps manual sizing collapsed as an advanced option by default', () => {
     render(<CompartmentEditor />);
-    // Default 1x1 grid: no 2D editor, no divider-height control — exactly four
-    // numeric inputs: width, depth, columns, rows.
-    expect(screen.getByRole('spinbutton', { name: /width/i })).toBeInTheDocument();
-    expect(screen.getByRole('spinbutton', { name: /depth/i })).toBeInTheDocument();
-    expect(screen.getAllByRole('spinbutton')).toHaveLength(4);
+    expect(screen.getByRole('button', { name: /set by size/i })).toBeInTheDocument();
+    // The mm size inputs are not rendered until the user opts in.
+    expect(screen.queryByRole('spinbutton', { name: /width \(mm\)/i })).toBeNull();
+    expect(screen.queryByRole('spinbutton', { name: /depth \(mm\)/i })).toBeNull();
   });
 
-  it('width field shows the achieved smallest opening, not a stale target', () => {
-    useDesignerStore.setState({
-      params: {
-        ...DEFAULT_BIN_PARAMS,
-        compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 1, cells: [0, 1] },
-      },
-    });
+  it('reveals the mm size inputs when "Set by size" is expanded', () => {
     render(<CompartmentEditor />);
-    const expected = formatCompactMm(minUniformCavity(interior.innerW, 2, thickness));
-    expect(screen.getByRole('spinbutton', { name: /width/i })).toHaveValue(Number(expected));
+    fireEvent.click(screen.getByRole('button', { name: /set by size/i }));
+    expect(screen.getByRole('spinbutton', { name: /width \(mm\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton', { name: /depth \(mm\)/i })).toBeInTheDocument();
+    expect(screen.getByText(/tile the bin evenly/i)).toBeInTheDocument();
   });
 
-  it('typing a min width snaps the column count via the fit-guarantee solver', () => {
+  it('typing a min width in the advanced sizer snaps the column count', () => {
     const setCompartmentGrid = vi.fn();
     useDesignerStore.setState({ params: DEFAULT_BIN_PARAMS, setCompartmentGrid });
     render(<CompartmentEditor />);
+    fireEvent.click(screen.getByRole('button', { name: /set by size/i }));
 
-    const widthInput = screen.getByRole('spinbutton', { name: /width/i });
+    const widthInput = screen.getByRole('spinbutton', { name: /width \(mm\)/i });
     fireEvent.change(widthInput, { target: { value: '20' } });
     fireEvent.blur(widthInput);
 
@@ -91,16 +84,13 @@ describe('CompartmentEditor', () => {
     );
   });
 
-  it('typing a width at least the full interior collapses to a single column', () => {
-    const setCompartmentGrid = vi.fn();
-    useDesignerStore.setState({ params: DEFAULT_BIN_PARAMS, setCompartmentGrid });
+  it('does not expose accessible names that collide with the bin dimensions', () => {
+    // CompartmentEditor renders inside ParameterPanel alongside bin Width/Depth
+    // controls; the advanced size inputs must not duplicate those names.
     render(<CompartmentEditor />);
-
-    const widthInput = screen.getByRole('spinbutton', { name: /width/i });
-    fireEvent.change(widthInput, { target: { value: String(Math.round(interior.innerW)) } });
-    fireEvent.blur(widthInput);
-
-    expect(setCompartmentGrid).toHaveBeenCalledWith(1, DEFAULT_BIN_PARAMS.compartments.rows);
+    fireEvent.click(screen.getByRole('button', { name: /set by size/i }));
+    expect(screen.queryByLabelText('Width')).toBeNull();
+    expect(screen.queryByLabelText('Depth')).toBeNull();
   });
 
   it('updates columns when the grid stepper changes', () => {
@@ -111,11 +101,6 @@ describe('CompartmentEditor', () => {
     fireEvent.change(cols, { target: { value: '3' } });
     fireEvent.blur(cols);
     expect(setCompartmentGrid).toHaveBeenCalledWith(3, DEFAULT_BIN_PARAMS.compartments.rows);
-  });
-
-  it('shows the tile-evenly explanation caption', () => {
-    render(<CompartmentEditor />);
-    expect(screen.getByText(/tile the bin evenly/i)).toBeInTheDocument();
   });
 
   it('shows 2D grid editor when grid is larger than 1x1', () => {

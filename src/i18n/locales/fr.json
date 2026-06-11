@@ -2275,9 +2275,9 @@
   "baseplate.connectorSample.tip4": "Vous avez trouvé le bon ajustement ? Réglez « Ajustement du connecteur » sur cette valeur.",
   "baseplate.connectorSample.exportComplete": "Échantillon d'ajustement exporté",
   "binDesigner.compartmentEditor.smallestOpening": "Plus petite ouverture (mm)",
-  "binDesigner.compartmentEditor.openingWidth": "Largeur",
-  "binDesigner.compartmentEditor.openingDepth": "Profondeur",
-  "binDesigner.compartmentEditor.grid": "Grille",
+  "binDesigner.compartmentEditor.openingWidth": "Largeur (mm)",
+  "binDesigner.compartmentEditor.openingDepth": "Profondeur (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Arrondi à la hausse pour remplir le bac uniformément · les compartiments de bord sont plus larges",
-  "binDesigner.compartmentEditor.maxGridReached": "Max. {max} en largeur"
+  "binDesigner.compartmentEditor.maxGridReached": "Max. {max} en largeur",
+  "binDesigner.compartmentEditor.setBySize": "Par taille"
 }

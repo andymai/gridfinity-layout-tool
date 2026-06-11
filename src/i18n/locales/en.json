@@ -2276,9 +2276,9 @@
   "binDesigner.handles.heightAria": "Handle height",
   "binDesigner.handles.countAria": "Handle count",
   "binDesigner.compartmentEditor.smallestOpening": "Smallest opening (mm)",
-  "binDesigner.compartmentEditor.openingWidth": "Width",
-  "binDesigner.compartmentEditor.openingDepth": "Depth",
-  "binDesigner.compartmentEditor.grid": "Grid",
+  "binDesigner.compartmentEditor.openingWidth": "Width (mm)",
+  "binDesigner.compartmentEditor.openingDepth": "Depth (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Rounds up to tile the bin evenly · edge compartments are wider",
-  "binDesigner.compartmentEditor.maxGridReached": "Max {max} across"
+  "binDesigner.compartmentEditor.maxGridReached": "Max {max} across",
+  "binDesigner.compartmentEditor.setBySize": "Set by size"
 }

@@ -2275,9 +2275,9 @@
   "baseplate.connectorSample.tip4": "Hittade du rätt passning? Ställ in «Kopplingspassning» på den förskjutningen.",
   "baseplate.connectorSample.exportComplete": "Passprov exporterat",
   "binDesigner.compartmentEditor.smallestOpening": "Minsta öppning (mm)",
-  "binDesigner.compartmentEditor.openingWidth": "Bredd",
-  "binDesigner.compartmentEditor.openingDepth": "Djup",
-  "binDesigner.compartmentEditor.grid": "Rutnät",
+  "binDesigner.compartmentEditor.openingWidth": "Bredd (mm)",
+  "binDesigner.compartmentEditor.openingDepth": "Djup (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Avrundas uppåt för att fylla lådan jämnt · kantfack är bredare",
-  "binDesigner.compartmentEditor.maxGridReached": "Max {max} på bredden"
+  "binDesigner.compartmentEditor.maxGridReached": "Max {max} på bredden",
+  "binDesigner.compartmentEditor.setBySize": "Efter storlek"
 }

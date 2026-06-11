@@ -2275,9 +2275,9 @@
   "baseplate.connectorSample.tip4": "De juiste pasvorm gevonden? Stel «Connectorpasvorm» in op die offset.",
   "baseplate.connectorSample.exportComplete": "Pasvormmonster geëxporteerd",
   "binDesigner.compartmentEditor.smallestOpening": "Kleinste opening (mm)",
-  "binDesigner.compartmentEditor.openingWidth": "Breedte",
-  "binDesigner.compartmentEditor.openingDepth": "Diepte",
-  "binDesigner.compartmentEditor.grid": "Raster",
+  "binDesigner.compartmentEditor.openingWidth": "Breedte (mm)",
+  "binDesigner.compartmentEditor.openingDepth": "Diepte (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Wordt naar boven afgerond om de bak gelijkmatig te vullen · randvakken zijn breder",
-  "binDesigner.compartmentEditor.maxGridReached": "Max. {max} breed"
+  "binDesigner.compartmentEditor.maxGridReached": "Max. {max} breed",
+  "binDesigner.compartmentEditor.setBySize": "Op grootte"
 }
