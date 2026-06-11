@@ -2279,5 +2279,6 @@
   "binDesigner.compartmentEditor.openingDepth": "Profondeur (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Arrondi à la hausse pour remplir le bac uniformément · les compartiments de bord sont plus larges",
   "binDesigner.compartmentEditor.maxGridReached": "Max. {max} en largeur",
-  "binDesigner.compartmentEditor.setBySize": "Par taille"
+  "binDesigner.compartmentEditor.setBySize": "Par taille",
+  "binDesigner.compartmentEditor.sizeReadout": "Compartiment ≈ {width} × {depth} mm"
 }

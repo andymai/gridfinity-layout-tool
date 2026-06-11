@@ -2280,5 +2280,6 @@
   "binDesigner.compartmentEditor.openingDepth": "Depth (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Rounds up to tile the bin evenly · edge compartments are wider",
   "binDesigner.compartmentEditor.maxGridReached": "Max {max} across",
-  "binDesigner.compartmentEditor.setBySize": "Set by size"
+  "binDesigner.compartmentEditor.setBySize": "Set by size",
+  "binDesigner.compartmentEditor.sizeReadout": "Compartment ≈ {width} × {depth} mm"
 }

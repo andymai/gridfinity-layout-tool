@@ -2279,5 +2279,6 @@
   "binDesigner.compartmentEditor.openingDepth": "Djup (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Avrundas uppåt för att fylla lådan jämnt · kantfack är bredare",
   "binDesigner.compartmentEditor.maxGridReached": "Max {max} på bredden",
-  "binDesigner.compartmentEditor.setBySize": "Efter storlek"
+  "binDesigner.compartmentEditor.setBySize": "Efter storlek",
+  "binDesigner.compartmentEditor.sizeReadout": "Fack ≈ {width} × {depth} mm"
 }

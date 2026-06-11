@@ -5,7 +5,10 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
 import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { getInteriorDims } from '@/features/bin-designer/utils/dividerAngle';
-import { solveCountForMinCavity } from '@/features/bin-designer/utils/compartmentDimensions';
+import {
+  minUniformCavity,
+  solveCountForMinCavity,
+} from '@/features/bin-designer/utils/compartmentDimensions';
 import { CompartmentEditor } from './CompartmentEditor';
 
 const TWO_BY_TWO = {
@@ -37,6 +40,17 @@ describe('CompartmentEditor', () => {
     expect(screen.getByText(/rows/i)).toBeInTheDocument();
     expect(screen.getByRole('spinbutton', { name: /columns/i })).toBeInTheDocument();
     expect(screen.getByRole('spinbutton', { name: /rows/i })).toBeInTheDocument();
+  });
+
+  it('always shows the resulting compartment size without hovering or expanding', () => {
+    useDesignerStore.setState({ params: TWO_BY_TWO });
+    render(<CompartmentEditor />);
+    const w = Math.round(minUniformCavity(interior.innerW, 2, thickness) * 10) / 10;
+    const d = Math.round(minUniformCavity(interior.innerD, 2, thickness) * 10) / 10;
+    const readout = screen.getByText(/≈/);
+    expect(readout.textContent).toContain(String(w));
+    expect(readout.textContent).toContain(String(d));
+    expect(readout.textContent).toMatch(/mm/);
   });
 
   it('has no By count / By size mode toggle', () => {

@@ -2279,5 +2279,6 @@
   "binDesigner.compartmentEditor.openingDepth": "Tiefe (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Wird aufgerundet, um die Box gleichmäßig zu füllen · Randfächer sind breiter",
   "binDesigner.compartmentEditor.maxGridReached": "Max. {max} quer",
-  "binDesigner.compartmentEditor.setBySize": "Nach Größe"
+  "binDesigner.compartmentEditor.setBySize": "Nach Größe",
+  "binDesigner.compartmentEditor.sizeReadout": "Fach ≈ {width} × {depth} mm"
 }

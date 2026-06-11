@@ -2279,5 +2279,6 @@
   "binDesigner.compartmentEditor.openingDepth": "奥行き (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "ビンを均等に分割するため切り上げられます · 端の区画は広くなります",
   "binDesigner.compartmentEditor.maxGridReached": "最大 {max} 列",
-  "binDesigner.compartmentEditor.setBySize": "サイズで指定"
+  "binDesigner.compartmentEditor.setBySize": "サイズで指定",
+  "binDesigner.compartmentEditor.sizeReadout": "区画 ≈ {width} × {depth} mm"
 }

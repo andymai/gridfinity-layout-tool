@@ -2279,5 +2279,6 @@
   "binDesigner.compartmentEditor.openingDepth": "Глибина (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Округлюється вгору, щоб рівномірно заповнити контейнер · крайні відсіки ширші",
   "binDesigner.compartmentEditor.maxGridReached": "Макс. {max} у ряд",
-  "binDesigner.compartmentEditor.setBySize": "За розміром"
+  "binDesigner.compartmentEditor.setBySize": "За розміром",
+  "binDesigner.compartmentEditor.sizeReadout": "Відсік ≈ {width} × {depth} mm"
 }

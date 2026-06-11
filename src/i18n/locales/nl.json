@@ -2279,5 +2279,6 @@
   "binDesigner.compartmentEditor.openingDepth": "Diepte (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Wordt naar boven afgerond om de bak gelijkmatig te vullen · randvakken zijn breder",
   "binDesigner.compartmentEditor.maxGridReached": "Max. {max} breed",
-  "binDesigner.compartmentEditor.setBySize": "Op grootte"
+  "binDesigner.compartmentEditor.setBySize": "Op grootte",
+  "binDesigner.compartmentEditor.sizeReadout": "Vak ≈ {width} × {depth} mm"
 }

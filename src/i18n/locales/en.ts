@@ -2618,6 +2618,7 @@ const en: Record<string, string> = {
     'Compartment {n}, {dimension}, click to split',
   'binDesigner.compartmentEditor.compartmentAria': 'Compartment {n}, {dimension}',
   'binDesigner.compartmentEditor.cellAria': 'Cell {col}, {row}',
+  'binDesigner.compartmentEditor.sizeReadout': 'Compartment ≈ {width} × {depth} mm',
   'binDesigner.compartmentEditor.setBySize': 'Set by size',
   'binDesigner.compartmentEditor.smallestOpening': 'Smallest opening (mm)',
   'binDesigner.compartmentEditor.openingWidth': 'Width (mm)',

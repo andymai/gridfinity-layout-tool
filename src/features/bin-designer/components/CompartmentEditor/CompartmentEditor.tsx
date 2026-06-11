@@ -507,6 +507,20 @@ export function CompartmentEditor() {
           </div>
         </div>
 
+        {/* Always-visible readout of the resulting compartment size, so the
+            actual mm dimensions are legible at a glance — no hover required —
+            whether the grid was set by the steppers or by size. Shows the
+            smallest (worst-case interior) compartment; edges may be wider. */}
+        <p className="text-xs tabular-nums text-content-secondary" aria-live="polite">
+          {atMaxGrid
+            ? `${t('binDesigner.compartmentEditor.maxGridReached', { max: DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID })} · `
+            : ''}
+          {t('binDesigner.compartmentEditor.sizeReadout', {
+            width: achievedMinW,
+            depth: achievedMinD,
+          })}
+        </p>
+
         {/* Advanced: set the grid by a minimum compartment size in mm. */}
         <div>
           <button
@@ -566,12 +580,8 @@ export function CompartmentEditor() {
                 </div>
               </div>
               {/* Explains why typed sizes round up and discloses the edge
-                  asymmetry; announces the grid cap. aria-live so the note is
-                  read out as the achieved size changes. */}
-              <p aria-live="polite" className="text-[11px] text-content-tertiary">
-                {atMaxGrid
-                  ? `${t('binDesigner.compartmentEditor.maxGridReached', { max: DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID })} · `
-                  : ''}
+                  asymmetry (the grid cap is announced in the readout above). */}
+              <p className="text-[11px] text-content-tertiary">
                 {t('binDesigner.compartmentEditor.tileEvenlyNote')}
               </p>
             </div>
