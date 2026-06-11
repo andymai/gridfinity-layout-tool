@@ -20,7 +20,10 @@ import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
-import { compartmentCavity } from '@/features/bin-designer/utils/compartmentDimensions';
+import {
+  compartmentCavity,
+  formatCompactMm,
+} from '@/features/bin-designer/utils/compartmentDimensions';
 import { getCompartmentCount } from '@/features/bin-designer/utils/compartments';
 import { calculateDividerHeight, resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { useThreeColors } from '@/shared/hooks/useThemeEffect';
@@ -36,8 +39,7 @@ const FONT_SIZE = 3.5;
 type Vec3 = [number, number, number];
 
 function formatMm(value: number): string {
-  const rounded = Math.round(value * 10) / 10;
-  return `${Number.isInteger(rounded) ? rounded : rounded.toFixed(1)}mm`;
+  return `${formatCompactMm(value)}mm`;
 }
 
 export function CompartmentDimensions() {
@@ -61,23 +63,12 @@ export function CompartmentDimensions() {
     const cavity = compartmentCavity(compartments, hoveredCompartmentId, innerW, innerD);
     if (!cavity) return null;
 
-    const { cols, rows } = compartments;
-    const pitchX = innerW / cols;
-    const pitchY = innerD / rows;
-
-    // Footprint span of the compartment (pitch-based), then center the cavity
-    // (wall-subtracted) inside it. Row 0 = front = −Y (matches the generator).
-    const footLeft = -innerW / 2 + cavity.minCol * pitchX;
-    const footRight = -innerW / 2 + (cavity.maxCol + 1) * pitchX;
-    const footFront = -innerD / 2 + cavity.minRow * pitchY;
-    const footBack = -innerD / 2 + (cavity.maxRow + 1) * pitchY;
-    const cx = (footLeft + footRight) / 2;
-    const cy = (footFront + footBack) / 2;
-
-    const xLeft = cx - cavity.width / 2;
-    const xRight = cx + cavity.width / 2;
-    const yFront = cy - cavity.depth / 2;
-    const yBack = cy + cavity.depth / 2;
+    // Exact cavity extents (centered coords) from the generator model — edge
+    // compartments are wider and offset from their cell, so use the true opening
+    // rather than centering the cavity inside the pitch footprint.
+    const { xMin: xLeft, xMax: xRight, yMin: yFront, yMax: yBack } = cavity;
+    const cx = (xLeft + xRight) / 2;
+    const cy = (yFront + yBack) / 2;
 
     // Height annotation tracks the resolved divider height (the wall that
     // actually separates this compartment), matching the readout's "H".

@@ -152,7 +152,9 @@ export function CompartmentEditor() {
   // draw that one compartment's dimension lines. Cleared while dragging (the
   // ghost-merge preview takes over) and on unmount (cleanup nulls it).
   useEffect(() => {
-    const id = hoverIdx !== null && !isDragging ? cells[hoverIdx] : null;
+    // Guard hoverIdx against the current grid: a resize can leave a stale
+    // hoverIdx pointing past the regenerated cells array.
+    const id = hoverIdx !== null && !isDragging && hoverIdx < cells.length ? cells[hoverIdx] : null;
     setHoveredCompartmentId(id);
     return () => {
       setHoveredCompartmentId(null);
@@ -441,7 +443,7 @@ export function CompartmentEditor() {
   const currentWidthCavity = singleCellCavity(interiorW, cols, thickness);
   const currentDepthCavity = singleCellCavity(interiorD, rows, thickness);
   const hoveredCavity =
-    hoverIdx !== null && !isDragging
+    hoverIdx !== null && !isDragging && hoverIdx < cells.length
       ? compartmentCavity(compartments, cells[hoverIdx], interiorW, interiorD)
       : null;
   const summaryW = formatCompactMm(hoveredCavity?.width ?? currentWidthCavity);

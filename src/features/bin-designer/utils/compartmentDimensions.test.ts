@@ -3,7 +3,6 @@ import {
   compartmentCavity,
   singleCellCavity,
   solveCountForTargetCavity,
-  spanCavity,
 } from './compartmentDimensions';
 import { createUniformGrid, mergeCells } from './compartments';
 import type { CompartmentConfig } from '../types';
@@ -13,28 +12,13 @@ describe('singleCellCavity', () => {
     expect(singleCellCavity(100, 1, 1.2)).toBe(100);
   });
 
-  it('subtracts internal divider walls before splitting', () => {
+  it('subtracts internal divider walls before splitting (average cavity)', () => {
     // 4 cells, 3 walls of 1.2mm: (100 - 3.6) / 4 = 24.1
     expect(singleCellCavity(100, 4, 1.2)).toBeCloseTo(24.1, 6);
   });
 
   it('treats non-positive counts as the full span', () => {
     expect(singleCellCavity(100, 0, 1.2)).toBe(100);
-  });
-});
-
-describe('spanCavity', () => {
-  it('equals the full interior when the span covers every cell', () => {
-    expect(spanCavity(100, 4, 1.2, 4)).toBeCloseTo(100, 6);
-  });
-
-  it('re-absorbs internal walls for a multi-cell span', () => {
-    // 2 cells out of 4: 2 * 24.1 + 1 * 1.2 = 49.4
-    expect(spanCavity(100, 4, 1.2, 2)).toBeCloseTo(49.4, 6);
-  });
-
-  it('matches singleCellCavity for a span of one', () => {
-    expect(spanCavity(100, 4, 1.2, 1)).toBeCloseTo(singleCellCavity(100, 4, 1.2), 6);
   });
 });
 
@@ -73,11 +57,26 @@ describe('compartmentCavity', () => {
       id: 0,
       width: 100,
       depth: 80,
+      xMin: -50,
+      xMax: 50,
+      yMin: -40,
+      yMax: 40,
       minCol: 0,
       maxCol: 0,
       minRow: 0,
       maxRow: 0,
     });
+  });
+
+  it('insets half a wall only on interior edges (generator model)', () => {
+    // 4 cols, innerW 100, t 1.2 -> cellW 25, half 0.6.
+    // Edge cell 0: inset only on its right (interior) side -> width 25 - 0.6 = 24.4.
+    const config = createUniformGrid(4, 1, 1.2);
+    const edge = compartmentCavity(config, 0, 100, 80);
+    expect(edge?.width).toBeCloseTo(24.4, 6);
+    // Interior cell 1: inset on both sides -> 25 - 1.2 = 23.8.
+    const interior = compartmentCavity(config, 1, 100, 80);
+    expect(interior?.width).toBeCloseTo(23.8, 6);
   });
 
   it('returns null for an absent compartment id', () => {
@@ -87,10 +86,12 @@ describe('compartmentCavity', () => {
 
   it('grows when cells are merged across columns', () => {
     const config = createUniformGrid(4, 1, 1.2);
-    // merge the first two columns
+    // merge the first two columns -> spans cols 0..1 (edge on the left).
     const merged = mergeCells(config, [0, 1]) as CompartmentConfig;
     const cavity = compartmentCavity(merged, 0, 154, 80);
-    expect(cavity?.width).toBeCloseTo(spanCavity(154, 4, 1.2, 2), 6);
+    // cellW 38.5; spans 2 cells from the left wall, inset half (0.6) on the
+    // right interior edge only: 2*38.5 - 0.6 = 76.4.
+    expect(cavity?.width).toBeCloseTo(76.4, 6);
     expect(cavity?.depth).toBeCloseTo(80, 6);
   });
 });

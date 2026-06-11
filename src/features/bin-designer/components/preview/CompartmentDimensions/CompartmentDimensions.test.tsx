@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { resetAllStores } from '@/test/testUtils';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS, DEFAULT_UI_STATE } from '@/features/bin-designer/constants';
 import { createUniformGrid } from '@/features/bin-designer/utils/compartments';
@@ -34,6 +35,7 @@ function setStore(hoveredCompartmentId: number | null, cols: number, rows: numbe
 describe('CompartmentDimensions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetAllStores();
   });
 
   it('renders nothing when no compartment is hovered', () => {
