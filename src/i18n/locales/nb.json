@@ -2278,7 +2278,7 @@
   "binDesigner.compartmentEditor.openingWidth": "Bredde (mm)",
   "binDesigner.compartmentEditor.openingDepth": "Dybde (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Rundes opp for å fylle beholderen jevnt · ytterrom er bredere",
-  "binDesigner.compartmentEditor.maxGridReached": "Maks {max} på tvers",
+  "binDesigner.compartmentEditor.maxGridReached": "Maks {max} per side",
   "binDesigner.compartmentEditor.setBySize": "Etter størrelse",
   "binDesigner.compartmentEditor.sizeReadout": "Rom ≈ {width} × {depth} mm"
 }

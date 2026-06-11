@@ -53,6 +53,24 @@ describe('CompartmentEditor', () => {
     expect(readout.textContent).toMatch(/mm/);
   });
 
+  it('surfaces the grid-cap hint in the readout when an axis hits the max grid', () => {
+    const max = DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID;
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        compartments: {
+          ...DEFAULT_BIN_PARAMS.compartments,
+          cols: max,
+          rows: 1,
+          cells: Array.from({ length: max }, (_, i) => i),
+        },
+      },
+    });
+    render(<CompartmentEditor />);
+    const readout = screen.getByText(/≈/);
+    expect(readout.textContent).toContain(`Max ${max} per side`);
+  });
+
   it('has no By count / By size mode toggle', () => {
     render(<CompartmentEditor />);
     expect(screen.queryByRole('button', { name: /^by count$/i })).toBeNull();

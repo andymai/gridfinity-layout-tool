@@ -2278,7 +2278,7 @@
   "binDesigner.compartmentEditor.openingWidth": "Ancho (mm)",
   "binDesigner.compartmentEditor.openingDepth": "Profundidad (mm)",
   "binDesigner.compartmentEditor.tileEvenlyNote": "Se redondea hacia arriba para llenar la caja de forma uniforme · los compartimentos de los bordes son más anchos",
-  "binDesigner.compartmentEditor.maxGridReached": "Máx. {max} de ancho",
+  "binDesigner.compartmentEditor.maxGridReached": "Máx. {max} por lado",
   "binDesigner.compartmentEditor.setBySize": "Por tamaño",
   "binDesigner.compartmentEditor.sizeReadout": "Compartimento ≈ {width} × {depth} mm"
 }

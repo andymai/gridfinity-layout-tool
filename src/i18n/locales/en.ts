@@ -2625,7 +2625,7 @@ const en: Record<string, string> = {
   'binDesigner.compartmentEditor.openingDepth': 'Depth (mm)',
   'binDesigner.compartmentEditor.tileEvenlyNote':
     'Rounds up to tile the bin evenly · edge compartments are wider',
-  'binDesigner.compartmentEditor.maxGridReached': 'Max {max} across',
+  'binDesigner.compartmentEditor.maxGridReached': 'Max {max} per side',
 
   // Handles aria-labels
   'binDesigner.handles.cornerRadiusAria': 'Handle corner radius',
