@@ -2192,8 +2192,6 @@
   "binDesigner.compartmentEditor.gridModeSize": "By size",
   "binDesigner.compartmentEditor.targetWidth": "Compartment width (mm)",
   "binDesigner.compartmentEditor.targetDepth": "Compartment depth (mm)",
-  "binDesigner.compartmentEditor.cavitySummary": "≈ {w} × {d} × {h} mm",
-  "binDesigner.compartmentEditor.cavityExact": "{w} × {d} × {h} mm",
   "binDesigner.handles.cornerRadiusAria": "Handle corner radius",
   "binDesigner.handles.verticalPositionAria": "Handle vertical position",
   "gridEditor.resize.westAria": "Resize left edge",

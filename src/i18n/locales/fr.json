@@ -224,8 +224,6 @@
   "binDesigner.colors.zone.text": "Texte gravé",
   "binDesigner.columns": "Colonnes",
   "binDesigner.compartmentEditor.cellAria": "Cellule {col}, {row}",
-  "binDesigner.compartmentEditor.cavityExact": "{w} × {d} × {h} mm",
-  "binDesigner.compartmentEditor.cavitySummary": "≈ {w} × {d} × {h} mm",
   "binDesigner.compartmentEditor.gridMode": "Disposition",
   "binDesigner.compartmentEditor.gridModeCount": "Par nombre",
   "binDesigner.compartmentEditor.gridModeSize": "Par taille",

@@ -26,8 +26,6 @@ describe('GridCell', () => {
         isSplittable={false}
         isDragging={false}
         config={makeConfig()}
-        interiorW={100}
-        interiorD={80}
         previewColor={previewColor}
         onPointerDown={vi.fn()}
         onPointerEnter={vi.fn()}
@@ -37,9 +35,8 @@ describe('GridCell', () => {
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
-  it('shows the cavity size (mm, W×D) on a compartment anchor cell', () => {
-    // 2x2 grid where all cells share id=0 (one big merged compartment) so the
-    // cavity spans the full interior: 100 × 80.
+  it('shows the cell-span label on a multi-cell compartment anchor cell', () => {
+    // 2x2 grid where all cells share id=0 (one big merged compartment)
     const config = makeConfig({ cells: [0, 0, 0, 0] });
     // idx=2 is row=1,col=0 — visual top-left under flex-col-reverse
     render(
@@ -51,15 +48,13 @@ describe('GridCell', () => {
         isSplittable
         isDragging={false}
         config={config}
-        interiorW={100}
-        interiorD={80}
         previewColor={previewColor}
         onPointerDown={vi.fn()}
         onPointerEnter={vi.fn()}
         onPointerLeave={vi.fn()}
       />
     );
-    expect(screen.getByText('100×80')).toBeInTheDocument();
+    expect(screen.getByText('2×2')).toBeInTheDocument();
   });
 
   it('marks aria-pressed when selected', () => {
@@ -72,8 +67,6 @@ describe('GridCell', () => {
         isSplittable={false}
         isDragging
         config={makeConfig()}
-        interiorW={100}
-        interiorD={80}
         previewColor={previewColor}
         onPointerDown={vi.fn()}
         onPointerEnter={vi.fn()}

@@ -2623,8 +2623,6 @@ const en: Record<string, string> = {
   'binDesigner.compartmentEditor.gridModeSize': 'By size',
   'binDesigner.compartmentEditor.targetWidth': 'Compartment width (mm)',
   'binDesigner.compartmentEditor.targetDepth': 'Compartment depth (mm)',
-  'binDesigner.compartmentEditor.cavitySummary': '≈ {w} × {d} × {h} mm',
-  'binDesigner.compartmentEditor.cavityExact': '{w} × {d} × {h} mm',
 
   // Handles aria-labels
   'binDesigner.handles.cornerRadiusAria': 'Handle corner radius',

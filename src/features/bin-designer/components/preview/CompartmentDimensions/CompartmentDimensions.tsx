@@ -76,6 +76,10 @@ export function CompartmentDimensions() {
     const dividerH = resolveCompartmentDividerHeight(compartments.dividerHeight, autoHeight);
     const topZ = floorZ + dividerH;
 
+    // All three measurement lines meet at the compartment's front-left-top
+    // corner (the near corner from the default camera). Labels and end-caps sit
+    // INSIDE the cavity so they read against the open compartment instead of
+    // colliding with neighbouring compartments or the taller perimeter walls.
     return {
       width: {
         line: [
@@ -83,14 +87,14 @@ export function CompartmentDimensions() {
           [xRight, yFront, topZ],
         ] as [Vec3, Vec3],
         capLeft: [
-          [xLeft, yFront - END_CAP, topZ],
+          [xLeft, yFront, topZ],
           [xLeft, yFront + END_CAP, topZ],
         ] as [Vec3, Vec3],
         capRight: [
-          [xRight, yFront - END_CAP, topZ],
+          [xRight, yFront, topZ],
           [xRight, yFront + END_CAP, topZ],
         ] as [Vec3, Vec3],
-        labelPos: [cx, yFront - LABEL_GAP, topZ] as Vec3,
+        labelPos: [cx, yFront + LABEL_GAP, topZ] as Vec3,
         label: formatMm(cavity.width),
       },
       depth: {
@@ -99,30 +103,30 @@ export function CompartmentDimensions() {
           [xLeft, yBack, topZ],
         ] as [Vec3, Vec3],
         capFront: [
-          [xLeft - END_CAP, yFront, topZ],
+          [xLeft, yFront, topZ],
           [xLeft + END_CAP, yFront, topZ],
         ] as [Vec3, Vec3],
         capBack: [
-          [xLeft - END_CAP, yBack, topZ],
+          [xLeft, yBack, topZ],
           [xLeft + END_CAP, yBack, topZ],
         ] as [Vec3, Vec3],
-        labelPos: [xLeft - LABEL_GAP, cy, topZ] as Vec3,
+        labelPos: [xLeft + LABEL_GAP, cy, topZ] as Vec3,
         label: formatMm(cavity.depth),
       },
       height: {
         line: [
-          [xRight, yBack, floorZ],
-          [xRight, yBack, topZ],
+          [xLeft, yFront, floorZ],
+          [xLeft, yFront, topZ],
         ] as [Vec3, Vec3],
         capBottom: [
-          [xRight - END_CAP, yBack, floorZ],
-          [xRight + END_CAP, yBack, floorZ],
+          [xLeft, yFront, floorZ],
+          [xLeft + END_CAP, yFront, floorZ],
         ] as [Vec3, Vec3],
         capTop: [
-          [xRight - END_CAP, yBack, topZ],
-          [xRight + END_CAP, yBack, topZ],
+          [xLeft, yFront, topZ],
+          [xLeft + END_CAP, yFront, topZ],
         ] as [Vec3, Vec3],
-        labelPos: [xRight + LABEL_GAP, yBack, floorZ + dividerH / 2] as Vec3,
+        labelPos: [xLeft + LABEL_GAP, yFront + LABEL_GAP, floorZ + dividerH / 2] as Vec3,
         label: formatMm(dividerH),
       },
     };
@@ -148,7 +152,7 @@ export function CompartmentDimensions() {
       <Line points={geometry.width.line} {...lineProps} />
       <Line points={geometry.width.capLeft} {...lineProps} />
       <Line points={geometry.width.capRight} {...lineProps} />
-      <Text position={geometry.width.labelPos} anchorX="center" anchorY="top" {...textProps}>
+      <Text position={geometry.width.labelPos} anchorX="center" anchorY="middle" {...textProps}>
         {geometry.width.label}
       </Text>
 
@@ -158,7 +162,7 @@ export function CompartmentDimensions() {
       <Line points={geometry.depth.capBack} {...lineProps} />
       <Text
         position={geometry.depth.labelPos}
-        anchorX="right"
+        anchorX="center"
         anchorY="middle"
         rotation={[0, 0, Math.PI / 2]}
         {...textProps}

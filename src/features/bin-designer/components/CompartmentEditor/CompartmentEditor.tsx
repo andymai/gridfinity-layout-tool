@@ -20,13 +20,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
-import {
-  DESIGNER_CONSTRAINTS,
-  GRIDFINITY,
-  WALL_THICKNESS_OPTIONS,
-} from '@/features/bin-designer/constants';
+import { DESIGNER_CONSTRAINTS, WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { StepperControl } from '@/shared/components/StepperControl';
-import { RulerIcon } from '@/design-system/Icon';
 import { SnappingSlider } from '../controls/SnappingSlider';
 import type { SnappingSliderOption } from '../controls/SnappingSlider';
 import {
@@ -36,12 +31,9 @@ import {
   cellIndex,
 } from '@/features/bin-designer/utils/compartments';
 import {
-  compartmentCavity,
-  formatCompactMm,
   singleCellCavity,
   solveCountForTargetCavity,
 } from '@/features/bin-designer/utils/compartmentDimensions';
-import { calculateDividerHeight, resolveCompartmentDividerHeight } from '@/shared/utils/slotMath';
 import { getInteriorDims } from '@/features/bin-designer/utils/dividerAngle';
 import { useTranslation } from '@/i18n';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -66,11 +58,6 @@ export function CompartmentEditor() {
     depth,
     gridUnitMm,
     wallThickness,
-    height,
-    heightUnitMm,
-    baseStyle,
-    stackingLip,
-    dividerHeight,
     dividerTiltPreview,
     selectedDividerKey,
     hoveredDividerKey,
@@ -90,11 +77,6 @@ export function CompartmentEditor() {
       depth: s.params.depth,
       gridUnitMm: s.params.gridUnitMm,
       wallThickness: s.params.wallThickness,
-      height: s.params.height,
-      heightUnitMm: s.params.heightUnitMm,
-      baseStyle: s.params.base.style,
-      stackingLip: s.params.base.stackingLip,
-      dividerHeight: s.params.compartments.dividerHeight,
       dividerTiltPreview: s.ui.dividerTiltPreview,
       selectedDividerKey: s.ui.selectedDividerKey,
       hoveredDividerKey: s.ui.hoveredDividerKey,
@@ -123,17 +105,6 @@ export function CompartmentEditor() {
   });
 
   const { cols, rows, thickness, cells } = compartments;
-
-  // Usable vertical height of compartments = resolved divider height. Mirrors
-  // DividerHeightControl so the summary/3D readout's H matches that control.
-  // Memoized like DividerHeightControl — calling the slotMath helpers inline in
-  // the render body trips React Compiler's manual-memoization preservation.
-  const dividerHeightMm = useMemo(() => {
-    const totalH = height * heightUnitMm;
-    const wallHeight = baseStyle === 'flat' ? totalH : totalH - GRIDFINITY.SOCKET_HEIGHT;
-    const autoDividerHeight = calculateDividerHeight({ height: 'auto' }, wallHeight, stackingLip);
-    return resolveCompartmentDividerHeight(dividerHeight, autoDividerHeight);
-  }, [height, heightUnitMm, baseStyle, stackingLip, dividerHeight]);
 
   // Preview color synced with 3D preview (cross-tab + same-window CustomEvent)
   const previewColor = usePreviewColor();
@@ -438,20 +409,10 @@ export function CompartmentEditor() {
   const compartmentCount = getCompartmentCount(compartments);
   const hasMergedCompartments = compartmentCount < cols * rows;
 
-  // Cavity readout (mm): the hovered compartment when one is hovered, else the
-  // uniform single-cell size. H is the same for every compartment.
+  // Current average cavity per axis — drives the by-size input values (the mm
+  // dimensions themselves are shown in the 3D preview, not here).
   const currentWidthCavity = singleCellCavity(interiorW, cols, thickness);
   const currentDepthCavity = singleCellCavity(interiorD, rows, thickness);
-  const hoveredCavity =
-    hoverIdx !== null && !isDragging && hoverIdx < cells.length
-      ? compartmentCavity(compartments, cells[hoverIdx], interiorW, interiorD)
-      : null;
-  const summaryW = formatCompactMm(hoveredCavity?.width ?? currentWidthCavity);
-  const summaryD = formatCompactMm(hoveredCavity?.depth ?? currentDepthCavity);
-  const summaryH = formatCompactMm(dividerHeightMm);
-  const summaryText = hoveredCavity
-    ? t('binDesigner.compartmentEditor.cavityExact', { w: summaryW, d: summaryD, h: summaryH })
-    : t('binDesigner.compartmentEditor.cavitySummary', { w: summaryW, d: summaryD, h: summaryH });
 
   // Check if hovered cell is in a multi-cell compartment (splittable)
   const hoveredIsSplittable = useMemo(() => {
@@ -692,8 +653,6 @@ export function CompartmentEditor() {
                             compartmentId
                           )}
                           config={compartments}
-                          interiorW={interiorW}
-                          interiorD={interiorD}
                           previewColor={previewColor}
                           onPointerDown={handleCellPointerDown}
                           onPointerEnter={handleCellPointerEnter}
@@ -731,13 +690,6 @@ export function CompartmentEditor() {
                 rows={rows}
               />
             )}
-          </div>
-
-          {/* Cavity dimensions readout — follows the hovered compartment, else
-              shows the uniform cell size. Pairs with the 3D dimension lines. */}
-          <div className="mt-3 flex items-center gap-1.5 text-xs text-content-tertiary">
-            <RulerIcon size="xs" />
-            <span className="tabular-nums">{summaryText}</span>
           </div>
         </section>
       )}

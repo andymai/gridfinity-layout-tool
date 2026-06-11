@@ -224,8 +224,6 @@
   "binDesigner.colors.zone.text": "Гравірований текст",
   "binDesigner.columns": "Стовпці",
   "binDesigner.compartmentEditor.cellAria": "Клітинка {col}, {row}",
-  "binDesigner.compartmentEditor.cavityExact": "{w} × {d} × {h} mm",
-  "binDesigner.compartmentEditor.cavitySummary": "≈ {w} × {d} × {h} mm",
   "binDesigner.compartmentEditor.gridMode": "Розташування",
   "binDesigner.compartmentEditor.gridModeCount": "За кількістю",
   "binDesigner.compartmentEditor.gridModeSize": "За розміром",
