@@ -3,11 +3,18 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DividerHeightControl } from './DividerHeightControl';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
+import { calculateDividerHeight } from '@/shared/utils/slotMath';
 import { resetAllStores } from '@/test/testUtils';
 
-// Default bin wall height: height(6u) × 7mm − socket(4.5mm) = 37.5mm. The
-// stacking lip is off by default, so the full interior (auto) height == 37.5.
-const FULL_HEIGHT = 37.5;
+// Derive the real "auto" (full interior) height from the defaults using the
+// same helpers the component does, so the assertions actually pin the bound
+// rather than passing against an arbitrarily large constant.
+const FULL_HEIGHT = calculateDividerHeight(
+  { height: 'auto' },
+  binDimensions(DEFAULT_BIN_PARAMS).wallHeight,
+  DEFAULT_BIN_PARAMS.base.stackingLip
+);
 
 describe('DividerHeightControl', () => {
   beforeEach(() => {

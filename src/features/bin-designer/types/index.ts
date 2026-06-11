@@ -201,9 +201,12 @@ export interface CompartmentConfig {
    * the floor and are truncated flat; it is clamped to
    * `[MIN_COMPARTMENT_DIVIDER_HEIGHT, interior height]` at generation.
    *
-   * A numeric value also forces the additive divider-wall path (the cut-based
-   * multi-cavity shell can't express a divider that stops short of the rim),
-   * mirroring how `dividerOverrides` already opt out of that path.
+   * A numeric value below the full interior height always forces the additive
+   * divider-wall path (the cut-based multi-cavity shell can't express a divider
+   * that stops short of the rim). This differs from `dividerOverrides`, which
+   * only fall back to the additive path for some layouts; a partial height
+   * always does. A numeric value that clamps up to the full interior height is
+   * treated as full and keeps the cut-path.
    */
   readonly dividerHeight?: number | 'auto';
 }

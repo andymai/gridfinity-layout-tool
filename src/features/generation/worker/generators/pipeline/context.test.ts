@@ -274,5 +274,14 @@ describe('createInitialContext', () => {
       const ctx = createInitialContext(fourCompartments({ dividerHeight: 'auto' }));
       expect(ctx.dimensions.compartmentsBakedIntoShell).toBe(true);
     });
+
+    it('keeps the cut path when a numeric height clamps up to the full interior height', () => {
+      // No-lip 4x4x3 bin: wallHeight 16 == full interior height. A numeric value
+      // at/above that is effectively full, so it should NOT pay for the slower
+      // additive path or bust the cut-path cache bucket.
+      const ctx = createInitialContext(fourCompartments({ dividerHeight: 999 }));
+      expect(ctx.dimensions.interiorHeight).toBe(16);
+      expect(ctx.dimensions.compartmentsBakedIntoShell).toBe(true);
+    });
   });
 });

@@ -96,10 +96,16 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
       compartmentCavitiesAreViableWithOverrides(params, innerW, innerD));
   // A partial divider height can't be expressed by the cut-based multi-cavity
   // shell (cut pockets reach the rim, so the leftover divider is always full
-  // height). Fall back to the additive divider-wall path — which builds short
-  // wall boxes from the floor — exactly as tilt overrides already do.
+  // height). A numeric height below the full interior height therefore always
+  // routes to the additive divider-wall path (short wall boxes from the floor).
+  // A numeric value that clamps up to the full interior height is treated as
+  // full so it keeps the faster cut-path. (Contrast tilt overrides, which only
+  // fall back to the additive path for some layouts — see overridesAllowCutPath.)
+  const { dividerHeight } = params.compartments;
   const dividerHeightIsFull =
-    params.compartments.dividerHeight === undefined || params.compartments.dividerHeight === 'auto';
+    dividerHeight === undefined ||
+    dividerHeight === 'auto' ||
+    (typeof dividerHeight === 'number' && dividerHeight >= interiorHeight);
   const compartmentsBakedIntoShell =
     !isSlotted &&
     !solid &&
