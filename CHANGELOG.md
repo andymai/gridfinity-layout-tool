@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.161.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.160.1...gridfinity-layout-tool-v4.161.0) (2026-06-11)
+
+
+### Features
+
+* **bin-designer:** add interior divider height control ([#2097](https://github.com/andymai/gridfinity-layout-tool/issues/2097)) ([72c119e](https://github.com/andymai/gridfinity-layout-tool/commit/72c119ea20c5ee426bcb2b7027d79c098a5ea1b3))
+
 ## [4.160.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.160.0...gridfinity-layout-tool-v4.160.1) (2026-06-10)
 
 
