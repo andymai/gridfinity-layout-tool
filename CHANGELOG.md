@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.164.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.163.1...gridfinity-layout-tool-v4.164.0) (2026-06-11)
+
+
+### Features
+
+* **bin-designer:** unify compartment sizing into one size-led panel ([#2107](https://github.com/andymai/gridfinity-layout-tool/issues/2107)) ([70b1de7](https://github.com/andymai/gridfinity-layout-tool/commit/70b1de78fddc1d5eedd38a4c57bf0111b2218156))
+
 ## [4.163.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.163.0...gridfinity-layout-tool-v4.163.1) (2026-06-11)
 
 
