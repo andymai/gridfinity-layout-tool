@@ -2618,12 +2618,13 @@ const en: Record<string, string> = {
     'Compartment {n}, {dimension}, click to split',
   'binDesigner.compartmentEditor.compartmentAria': 'Compartment {n}, {dimension}',
   'binDesigner.compartmentEditor.cellAria': 'Cell {col}, {row}',
-  'binDesigner.compartmentEditor.gridMode': 'Layout',
-  'binDesigner.compartmentEditor.gridModeCount': 'By count',
-  'binDesigner.compartmentEditor.gridModeSize': 'By size',
-  'binDesigner.compartmentEditor.targetWidth': 'Compartment width (mm)',
-  'binDesigner.compartmentEditor.targetDepth': 'Compartment depth (mm)',
-  'binDesigner.compartmentEditor.fitActual': '≥ {value} mm ({delta})',
+  'binDesigner.compartmentEditor.smallestOpening': 'Smallest opening (mm)',
+  'binDesigner.compartmentEditor.openingWidth': 'Width',
+  'binDesigner.compartmentEditor.openingDepth': 'Depth',
+  'binDesigner.compartmentEditor.grid': 'Grid',
+  'binDesigner.compartmentEditor.tileEvenlyNote':
+    'Rounds up to tile the bin evenly · edge compartments are wider',
+  'binDesigner.compartmentEditor.maxGridReached': 'Max {max} across',
 
   // Handles aria-labels
   'binDesigner.handles.cornerRadiusAria': 'Handle corner radius',

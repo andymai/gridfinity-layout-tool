@@ -224,12 +224,6 @@
   "binDesigner.colors.zone.text": "Graverad text",
   "binDesigner.columns": "Kolumner",
   "binDesigner.compartmentEditor.cellAria": "Cell {col}, {row}",
-  "binDesigner.compartmentEditor.fitActual": "≥ {value} mm ({delta})",
-  "binDesigner.compartmentEditor.gridMode": "Indelning",
-  "binDesigner.compartmentEditor.gridModeCount": "Efter antal",
-  "binDesigner.compartmentEditor.gridModeSize": "Efter storlek",
-  "binDesigner.compartmentEditor.targetDepth": "Fackdjup (mm)",
-  "binDesigner.compartmentEditor.targetWidth": "Fackbredd (mm)",
   "binDesigner.compartmentEditor.clickToSplit": "Klicka för att dela",
   "binDesigner.compartmentEditor.compartmentAria": "Fack {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Fack {n}, {dimension}, klicka för att dela",
@@ -2279,5 +2273,11 @@
   "baseplate.connectorSample.tip2": "Använd samma skrivare, filament och munstycke som du skriver ut bottenplattan med.",
   "baseplate.connectorSample.tip3": "Varje provbit är märkt med sin stil (DT / DK / SC) och passningsförskjutning.",
   "baseplate.connectorSample.tip4": "Hittade du rätt passning? Ställ in «Kopplingspassning» på den förskjutningen.",
-  "baseplate.connectorSample.exportComplete": "Passprov exporterat"
+  "baseplate.connectorSample.exportComplete": "Passprov exporterat",
+  "binDesigner.compartmentEditor.smallestOpening": "Minsta öppning (mm)",
+  "binDesigner.compartmentEditor.openingWidth": "Bredd",
+  "binDesigner.compartmentEditor.openingDepth": "Djup",
+  "binDesigner.compartmentEditor.grid": "Rutnät",
+  "binDesigner.compartmentEditor.tileEvenlyNote": "Avrundas uppåt för att fylla lådan jämnt · kantfack är bredare",
+  "binDesigner.compartmentEditor.maxGridReached": "Max {max} på bredden"
 }

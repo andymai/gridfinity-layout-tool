@@ -215,8 +215,7 @@
     "layouts.announce.fallbackNameCapitalized",
     "binExamples.popular",
     "binExamples.description",
-    "binExamples.dimensions",
-    "binDesigner.compartmentEditor.fitActual"
+    "binExamples.dimensions"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

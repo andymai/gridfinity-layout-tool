@@ -224,12 +224,6 @@
   "binDesigner.colors.zone.text": "Texto gravado",
   "binDesigner.columns": "Colunas",
   "binDesigner.compartmentEditor.cellAria": "Célula {col}, {row}",
-  "binDesigner.compartmentEditor.fitActual": "≥ {value} mm ({delta})",
-  "binDesigner.compartmentEditor.gridMode": "Disposição",
-  "binDesigner.compartmentEditor.gridModeCount": "Por quantidade",
-  "binDesigner.compartmentEditor.gridModeSize": "Por tamanho",
-  "binDesigner.compartmentEditor.targetDepth": "Profundidade do compartimento (mm)",
-  "binDesigner.compartmentEditor.targetWidth": "Largura do compartimento (mm)",
   "binDesigner.compartmentEditor.clickToSplit": "Clique para dividir",
   "binDesigner.compartmentEditor.compartmentAria": "Compartimento {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Compartimento {n}, {dimension}, clique para dividir",
@@ -2279,5 +2273,11 @@
   "baseplate.connectorSample.tip2": "Use a mesma impressora, filamento e bico com que você imprimirá a placa base.",
   "baseplate.connectorSample.tip3": "Cada amostra é rotulada com seu estilo (DT / DK / SC) e ajuste de encaixe.",
   "baseplate.connectorSample.tip4": "Encontrou o encaixe certo? Defina «Encaixe do conector» com esse valor.",
-  "baseplate.connectorSample.exportComplete": "Amostra de encaixe exportada"
+  "baseplate.connectorSample.exportComplete": "Amostra de encaixe exportada",
+  "binDesigner.compartmentEditor.smallestOpening": "Menor abertura (mm)",
+  "binDesigner.compartmentEditor.openingWidth": "Largura",
+  "binDesigner.compartmentEditor.openingDepth": "Profundidade",
+  "binDesigner.compartmentEditor.grid": "Grade",
+  "binDesigner.compartmentEditor.tileEvenlyNote": "Arredondado para cima para preencher a caixa uniformemente · os compartimentos das bordas são mais largos",
+  "binDesigner.compartmentEditor.maxGridReached": "Máx. {max} de largura"
 }

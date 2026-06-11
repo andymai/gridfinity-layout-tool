@@ -224,12 +224,6 @@
   "binDesigner.colors.zone.text": "Гравірований текст",
   "binDesigner.columns": "Стовпці",
   "binDesigner.compartmentEditor.cellAria": "Клітинка {col}, {row}",
-  "binDesigner.compartmentEditor.fitActual": "≥ {value} mm ({delta})",
-  "binDesigner.compartmentEditor.gridMode": "Розташування",
-  "binDesigner.compartmentEditor.gridModeCount": "За кількістю",
-  "binDesigner.compartmentEditor.gridModeSize": "За розміром",
-  "binDesigner.compartmentEditor.targetDepth": "Глибина відсіку (mm)",
-  "binDesigner.compartmentEditor.targetWidth": "Ширина відсіку (mm)",
   "binDesigner.compartmentEditor.clickToSplit": "Натисніть, щоб розділити",
   "binDesigner.compartmentEditor.compartmentAria": "Відсік {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Відсік {n}, {dimension}, натисніть, щоб розділити",
@@ -2279,5 +2273,11 @@
   "baseplate.connectorSample.tip2": "Використовуйте той самий принтер, філамент і сопло, що й для опорної плити.",
   "baseplate.connectorSample.tip3": "Кожен зразок позначено стилем (DT / DK / SC) і зміщенням припасування.",
   "baseplate.connectorSample.tip4": "Знайшли потрібне припасування? Встановіть «Припасування з’єднувача» на це зміщення.",
-  "baseplate.connectorSample.exportComplete": "Зразок припасування експортовано"
+  "baseplate.connectorSample.exportComplete": "Зразок припасування експортовано",
+  "binDesigner.compartmentEditor.smallestOpening": "Найменший отвір (mm)",
+  "binDesigner.compartmentEditor.openingWidth": "Ширина",
+  "binDesigner.compartmentEditor.openingDepth": "Глибина",
+  "binDesigner.compartmentEditor.grid": "Сітка",
+  "binDesigner.compartmentEditor.tileEvenlyNote": "Округлюється вгору, щоб рівномірно заповнити контейнер · крайні відсіки ширші",
+  "binDesigner.compartmentEditor.maxGridReached": "Макс. {max} у ряд"
 }

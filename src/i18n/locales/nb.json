@@ -224,12 +224,6 @@
   "binDesigner.colors.zone.text": "Gravert tekst",
   "binDesigner.columns": "Kolonner",
   "binDesigner.compartmentEditor.cellAria": "Celle {col}, {row}",
-  "binDesigner.compartmentEditor.fitActual": "≥ {value} mm ({delta})",
-  "binDesigner.compartmentEditor.gridMode": "Oppsett",
-  "binDesigner.compartmentEditor.gridModeCount": "Etter antall",
-  "binDesigner.compartmentEditor.gridModeSize": "Etter størrelse",
-  "binDesigner.compartmentEditor.targetDepth": "Romdybde (mm)",
-  "binDesigner.compartmentEditor.targetWidth": "Rombredde (mm)",
   "binDesigner.compartmentEditor.clickToSplit": "Klikk for å dele",
   "binDesigner.compartmentEditor.compartmentAria": "Rom {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Rom {n}, {dimension}, klikk for å dele",
@@ -2279,5 +2273,11 @@
   "baseplate.connectorSample.tip2": "Bruk samme skriver, filament og dyse som du skal skrive ut bunnplaten med.",
   "baseplate.connectorSample.tip3": "Hver prøvebit er merket med stil (DT / DK / SC) og passforskyvning.",
   "baseplate.connectorSample.tip4": "Fant du riktig passform? Still «Koblingspassform» til den forskyvningen.",
-  "baseplate.connectorSample.exportComplete": "Passprøve eksportert"
+  "baseplate.connectorSample.exportComplete": "Passprøve eksportert",
+  "binDesigner.compartmentEditor.smallestOpening": "Minste åpning (mm)",
+  "binDesigner.compartmentEditor.openingWidth": "Bredde",
+  "binDesigner.compartmentEditor.openingDepth": "Dybde",
+  "binDesigner.compartmentEditor.grid": "Rutenett",
+  "binDesigner.compartmentEditor.tileEvenlyNote": "Rundes opp for å fylle beholderen jevnt · ytterrom er bredere",
+  "binDesigner.compartmentEditor.maxGridReached": "Maks {max} på tvers"
 }

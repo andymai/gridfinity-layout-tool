@@ -224,12 +224,6 @@
   "binDesigner.colors.zone.text": "Texte gravé",
   "binDesigner.columns": "Colonnes",
   "binDesigner.compartmentEditor.cellAria": "Cellule {col}, {row}",
-  "binDesigner.compartmentEditor.fitActual": "≥ {value} mm ({delta})",
-  "binDesigner.compartmentEditor.gridMode": "Disposition",
-  "binDesigner.compartmentEditor.gridModeCount": "Par nombre",
-  "binDesigner.compartmentEditor.gridModeSize": "Par taille",
-  "binDesigner.compartmentEditor.targetDepth": "Profondeur du compartiment (mm)",
-  "binDesigner.compartmentEditor.targetWidth": "Largeur du compartiment (mm)",
   "binDesigner.compartmentEditor.clickToSplit": "Cliquer pour diviser",
   "binDesigner.compartmentEditor.compartmentAria": "Compartiment {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Compartiment {n}, {dimension}, cliquer pour diviser",
@@ -2279,5 +2273,11 @@
   "baseplate.connectorSample.tip2": "Utilisez la même imprimante, le même filament et la même buse que pour la plaque de base.",
   "baseplate.connectorSample.tip3": "Chaque échantillon est étiqueté avec son style (DT / DK / SC) et son ajustement.",
   "baseplate.connectorSample.tip4": "Vous avez trouvé le bon ajustement ? Réglez « Ajustement du connecteur » sur cette valeur.",
-  "baseplate.connectorSample.exportComplete": "Échantillon d'ajustement exporté"
+  "baseplate.connectorSample.exportComplete": "Échantillon d'ajustement exporté",
+  "binDesigner.compartmentEditor.smallestOpening": "Plus petite ouverture (mm)",
+  "binDesigner.compartmentEditor.openingWidth": "Largeur",
+  "binDesigner.compartmentEditor.openingDepth": "Profondeur",
+  "binDesigner.compartmentEditor.grid": "Grille",
+  "binDesigner.compartmentEditor.tileEvenlyNote": "Arrondi à la hausse pour remplir le bac uniformément · les compartiments de bord sont plus larges",
+  "binDesigner.compartmentEditor.maxGridReached": "Max. {max} en largeur"
 }

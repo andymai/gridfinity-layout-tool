@@ -224,12 +224,6 @@
   "binDesigner.colors.zone.text": "Texto grabado",
   "binDesigner.columns": "Columnas",
   "binDesigner.compartmentEditor.cellAria": "Celda {col}, {row}",
-  "binDesigner.compartmentEditor.fitActual": "≥ {value} mm ({delta})",
-  "binDesigner.compartmentEditor.gridMode": "Disposición",
-  "binDesigner.compartmentEditor.gridModeCount": "Por cantidad",
-  "binDesigner.compartmentEditor.gridModeSize": "Por tamaño",
-  "binDesigner.compartmentEditor.targetDepth": "Profundidad del compartimento (mm)",
-  "binDesigner.compartmentEditor.targetWidth": "Ancho del compartimento (mm)",
   "binDesigner.compartmentEditor.clickToSplit": "Clic para dividir",
   "binDesigner.compartmentEditor.compartmentAria": "Compartimento {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Compartimento {n}, {dimension}, clic para dividir",
@@ -2279,5 +2273,11 @@
   "baseplate.connectorSample.tip2": "Usa la misma impresora, filamento y boquilla con los que imprimirás la placa base.",
   "baseplate.connectorSample.tip3": "Cada cupón está etiquetado con su estilo (DT / DK / SC) y su ajuste.",
   "baseplate.connectorSample.tip4": "¿Encontraste el ajuste adecuado? Establece «Ajuste del conector» en ese valor.",
-  "baseplate.connectorSample.exportComplete": "Muestra de ajuste exportada"
+  "baseplate.connectorSample.exportComplete": "Muestra de ajuste exportada",
+  "binDesigner.compartmentEditor.smallestOpening": "Abertura más pequeña (mm)",
+  "binDesigner.compartmentEditor.openingWidth": "Ancho",
+  "binDesigner.compartmentEditor.openingDepth": "Profundidad",
+  "binDesigner.compartmentEditor.grid": "Cuadrícula",
+  "binDesigner.compartmentEditor.tileEvenlyNote": "Se redondea hacia arriba para llenar la caja de forma uniforme · los compartimentos de los bordes son más anchos",
+  "binDesigner.compartmentEditor.maxGridReached": "Máx. {max} de ancho"
 }

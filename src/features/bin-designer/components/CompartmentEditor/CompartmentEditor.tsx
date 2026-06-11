@@ -22,6 +22,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
 import { DESIGNER_CONSTRAINTS, WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { StepperControl } from '@/shared/components/StepperControl';
+import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { SnappingSlider } from '../controls/SnappingSlider';
 import type { SnappingSliderOption } from '../controls/SnappingSlider';
 import {
@@ -31,7 +32,6 @@ import {
   cellIndex,
 } from '@/features/bin-designer/utils/compartments';
 import {
-  formatCompactMm,
   minUniformCavity,
   solveCountForMinCavity,
 } from '@/features/bin-designer/utils/compartmentDimensions';
@@ -46,8 +46,6 @@ import { DividerTiltSubsection } from './DividerTiltSubsection';
 import { rowKeyOf } from './useDividerTiltSubsection';
 
 const EMPTY_HIGHLIGHT_SET: ReadonlySet<number> = new Set();
-
-const GRID_MODES = ['count', 'size'] as const;
 
 export function CompartmentEditor() {
   const t = useTranslation();
@@ -109,15 +107,6 @@ export function CompartmentEditor() {
 
   // Preview color synced with 3D preview (cross-tab + same-window CustomEvent)
   const previewColor = usePreviewColor();
-
-  // Whether the grid is set by cell count (cols/rows) or target size (mm).
-  const [sizeMode, setSizeMode] = useState<'count' | 'size'>('count');
-
-  // By-size targets the user typed (the field holds the target, not the achieved
-  // size, so we can show how far the fit-guarantee landed from it). Null until
-  // the user enters size mode, then seeded from the current grid.
-  const [targetW, setTargetW] = useState<number | null>(null);
-  const [targetD, setTargetD] = useState<number | null>(null);
 
   // Selection state for drag-to-merge
   const [selection, setSelection] = useState<Set<number>>(new Set());
@@ -347,17 +336,19 @@ export function CompartmentEditor() {
     [cols, rows, setCompartmentGrid]
   );
 
-  // By-size mode (fit-guarantee): pick the largest count whose tightest
-  // compartment stays >= the requested mm, so every compartment is at least
-  // that size. setCompartmentGrid regenerates the uniform grid (it validates min
-  // cell size and silently no-ops if the target is infeasible).
+  // Size-led entry (fit-guarantee): typing a minimum opening picks the largest
+  // count whose tightest compartment stays >= the requested mm, so every
+  // compartment is at least that size. The mm fields are a solver entry point —
+  // they don't store a target; the grid (cols/rows) is the single source of
+  // truth, and the fields always reflect the achieved smallest opening.
+  // setCompartmentGrid regenerates the uniform grid (it validates min cell size
+  // and silently no-ops if the target is infeasible).
   const applyTargetWidth = useCallback(
     (target: number) => {
       const clamped = Math.min(
         interiorW,
         Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE, target)
       );
-      setTargetW(clamped);
       setCompartmentGrid(
         solveCountForMinCavity(
           interiorW,
@@ -379,7 +370,6 @@ export function CompartmentEditor() {
         interiorD,
         Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE, target)
       );
-      setTargetD(clamped);
       setCompartmentGrid(
         cols,
         solveCountForMinCavity(
@@ -394,14 +384,6 @@ export function CompartmentEditor() {
     },
     [interiorD, thickness, cols, setCompartmentGrid]
   );
-
-  // Entering size mode seeds the targets from the current grid so the fields
-  // show a sensible starting value (and zero delta) before the user types.
-  const enterSizeMode = useCallback(() => {
-    setTargetW(Math.round(minUniformCavity(interiorW, cols, thickness) * 10) / 10);
-    setTargetD(Math.round(minUniformCavity(interiorD, rows, thickness) * 10) / 10);
-    setSizeMode('size');
-  }, [interiorW, interiorD, cols, rows, thickness]);
 
   const handleThicknessChange = useCallback(
     (newThickness: number) => {
@@ -418,23 +400,24 @@ export function CompartmentEditor() {
   const compartmentCount = getCompartmentCount(compartments);
   const hasMergedCompartments = compartmentCount < cols * rows;
 
-  // By-size readouts: the smallest (guaranteed) compartment per axis, and the
-  // delta from the user's typed target. With fit-guarantee the achieved minimum
-  // is normally >= target (positive delta); it goes negative only when even one
-  // compartment can't reach the target (target larger than the interior).
-  const achievedMinW = minUniformCavity(interiorW, cols, thickness);
-  const achievedMinD = minUniformCavity(interiorD, rows, thickness);
-  const fitNote = (achieved: number, target: number | null): string | null => {
-    if (target === null) return null;
-    const d = Math.round((achieved - target) * 10) / 10;
-    const delta = `${d >= 0 ? '+' : '−'}${formatCompactMm(Math.abs(d))}`;
-    return t('binDesigner.compartmentEditor.fitActual', {
-      value: formatCompactMm(achieved),
-      delta,
-    });
-  };
-  const fitNoteW = fitNote(achievedMinW, targetW);
-  const fitNoteD = fitNote(achievedMinD, targetD);
+  // The mm fields show the smallest (worst-case interior) opening per axis — the
+  // value the fit-guarantee is measured against. Rounded to 0.1mm for display so
+  // the field never shows a stale or contradictory number relative to the grid.
+  const achievedMinW = Math.round(minUniformCavity(interiorW, cols, thickness) * 10) / 10;
+  const achievedMinD = Math.round(minUniformCavity(interiorD, rows, thickness) * 10) / 10;
+
+  // Surface the grid cap so a too-small entry that clamps at the max isn't a
+  // silent surprise (e.g. typing 5mm into a large bin tops out at 12 across).
+  const atMaxGrid =
+    cols >= DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID ||
+    rows >= DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID;
+
+  // Standalone styling for the size inputs (StepperControl owns its own input
+  // styling, but the mm fields are bare DeferredNumberInputs).
+  const sizeInputClass =
+    stepperVariant === 'mobile'
+      ? 'input w-full h-12 text-center font-semibold tabular-nums'
+      : 'w-full h-8 rounded border border-stroke-subtle bg-surface text-center text-sm tabular-nums text-content-secondary';
 
   // Check if hovered cell is in a multi-cell compartment (splittable)
   const hoveredIsSplittable = useMemo(() => {
@@ -483,116 +466,92 @@ export function CompartmentEditor() {
 
   return (
     <div className="space-y-5">
-      {/* Bin Grid controls (above the 2D layout) */}
-      <section className="space-y-3">
-        {/* Mode toggle: set the grid by cell count, or by target compartment size (mm) */}
-        <div className="flex items-center justify-between">
+      {/* Unified sizing panel: one source of truth (cols×rows). The mm fields are
+          a size-led entry point that snaps the count via the fit-guarantee
+          solver; the grid steppers adjust the same count. Both derive from
+          cols/rows, so the panel never shows two disagreeing numbers. */}
+      <section className="space-y-4">
+        {/* Smallest opening (mm): type a minimum size to fit an object. */}
+        <div className="space-y-2">
           <span className="text-xs text-content-tertiary">
-            {t('binDesigner.compartmentEditor.gridMode')}
+            {t('binDesigner.compartmentEditor.smallestOpening')}
           </span>
-          <div className="flex gap-0.5">
-            {GRID_MODES.map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => (mode === 'size' ? enterSizeMode() : setSizeMode('count'))}
-                className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                  sizeMode === mode
-                    ? 'bg-accent text-on-accent'
-                    : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
-                }`}
-              >
-                {mode === 'count'
-                  ? t('binDesigner.compartmentEditor.gridModeCount')
-                  : t('binDesigner.compartmentEditor.gridModeSize')}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {sizeMode === 'count' ? (
           <div className="grid grid-cols-2 gap-3">
             <div>
               <span className="mb-1 block text-xs text-content-tertiary">
-                {t('binDesigner.columns')}
+                {t('binDesigner.compartmentEditor.openingWidth')}
               </span>
-              <StepperControl
-                value={cols}
-                onChange={handleColsChange}
-                onStep={handleColsStep}
-                min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
-                max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
-                step={1}
-                variant={stepperVariant}
-                ariaLabel={t('binDesigner.columns')}
-              />
-            </div>
-            <div>
-              <span className="mb-1 block text-xs text-content-tertiary">
-                {t('binDesigner.rows')}
-              </span>
-              <StepperControl
-                value={rows}
-                onChange={handleRowsChange}
-                onStep={handleRowsStep}
-                min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
-                max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
-                step={1}
-                variant={stepperVariant}
-                ariaLabel={t('binDesigner.rows')}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <span className="mb-1 block text-xs text-content-tertiary">
-                {t('binDesigner.compartmentEditor.targetWidth')}
-              </span>
-              <StepperControl
-                value={targetW ?? Math.round(achievedMinW * 10) / 10}
+              <DeferredNumberInput
+                value={achievedMinW}
                 onChange={applyTargetWidth}
-                onStep={(delta) => applyTargetWidth((targetW ?? achievedMinW) + delta)}
                 min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}
                 max={Math.round(interiorW)}
                 step={1}
-                inputDecimals={1}
-                variant={stepperVariant}
-                ariaLabel={t('binDesigner.compartmentEditor.targetWidth')}
+                decimals={1}
+                className={sizeInputClass}
+                aria-label={t('binDesigner.compartmentEditor.openingWidth')}
               />
-              {fitNoteW && (
-                <span className="mt-1 block text-[11px] tabular-nums text-content-tertiary">
-                  {fitNoteW}
-                </span>
-              )}
             </div>
             <div>
               <span className="mb-1 block text-xs text-content-tertiary">
-                {t('binDesigner.compartmentEditor.targetDepth')}
+                {t('binDesigner.compartmentEditor.openingDepth')}
               </span>
-              <StepperControl
-                value={targetD ?? Math.round(achievedMinD * 10) / 10}
+              <DeferredNumberInput
+                value={achievedMinD}
                 onChange={applyTargetDepth}
-                onStep={(delta) => applyTargetDepth((targetD ?? achievedMinD) + delta)}
                 min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}
                 max={Math.round(interiorD)}
                 step={1}
-                inputDecimals={1}
-                variant={stepperVariant}
-                ariaLabel={t('binDesigner.compartmentEditor.targetDepth')}
+                decimals={1}
+                className={sizeInputClass}
+                aria-label={t('binDesigner.compartmentEditor.openingDepth')}
               />
-              {fitNoteD && (
-                <span className="mt-1 block text-[11px] tabular-nums text-content-tertiary">
-                  {fitNoteD}
-                </span>
-              )}
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Height (mm) lives with the size inputs; it proxies the same divider
-            height value as the control in the lower section. */}
-        {sizeMode === 'size' && compartmentCount > 1 && <DividerHeightControl />}
+        {/* Grid (count): direct cols×rows control, derived from the same state. */}
+        <div className="space-y-2">
+          <span className="text-xs text-content-tertiary">
+            {t('binDesigner.compartmentEditor.grid')}
+          </span>
+          <div className="grid grid-cols-2 gap-3">
+            <StepperControl
+              value={cols}
+              onChange={handleColsChange}
+              onStep={handleColsStep}
+              min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
+              max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
+              step={1}
+              variant={stepperVariant}
+              ariaLabel={t('binDesigner.columns')}
+            />
+            <StepperControl
+              value={rows}
+              onChange={handleRowsChange}
+              onStep={handleRowsStep}
+              min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
+              max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
+              step={1}
+              variant={stepperVariant}
+              ariaLabel={t('binDesigner.rows')}
+            />
+          </div>
+        </div>
+
+        {/* Explains why typed sizes round up, discloses the edge asymmetry, and
+            announces the grid cap. aria-live so the readout is announced as the
+            grid changes. */}
+        <p aria-live="polite" className="text-[11px] text-content-tertiary">
+          {atMaxGrid
+            ? `${t('binDesigner.compartmentEditor.maxGridReached', { max: DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID })} · `
+            : ''}
+          {t('binDesigner.compartmentEditor.tileEvenlyNote')}
+        </p>
+
+        {/* Divider height lives with the sizing panel so the W×D×H story reads
+            together (only meaningful once there are dividers to size). */}
+        {compartmentCount > 1 && <DividerHeightControl />}
       </section>
 
       {/* 2D Layout editor (hidden when 1x1 grid) */}
@@ -720,7 +679,8 @@ export function CompartmentEditor() {
         </section>
       )}
 
-      {/* Wall thickness + divider height (only when there are dividers) */}
+      {/* Wall thickness (only when there are dividers). Divider height lives with
+          the sizing panel above so the W×D×H story reads together. */}
       {compartmentCount > 1 && (
         <section className="space-y-4">
           <SnappingSlider
@@ -730,8 +690,6 @@ export function CompartmentEditor() {
             options={thicknessOptions}
             unit="mm"
           />
-          {/* In size mode the height field is grouped with the size inputs above. */}
-          {sizeMode === 'count' && <DividerHeightControl />}
         </section>
       )}
 

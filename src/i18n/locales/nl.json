@@ -224,12 +224,6 @@
   "binDesigner.colors.zone.text": "Gegraveerde tekst",
   "binDesigner.columns": "Kolommen",
   "binDesigner.compartmentEditor.cellAria": "Cel {col}, {row}",
-  "binDesigner.compartmentEditor.fitActual": "≥ {value} mm ({delta})",
-  "binDesigner.compartmentEditor.gridMode": "Indeling",
-  "binDesigner.compartmentEditor.gridModeCount": "Op aantal",
-  "binDesigner.compartmentEditor.gridModeSize": "Op grootte",
-  "binDesigner.compartmentEditor.targetDepth": "Vakdiepte (mm)",
-  "binDesigner.compartmentEditor.targetWidth": "Vakbreedte (mm)",
   "binDesigner.compartmentEditor.clickToSplit": "Klik om te splitsen",
   "binDesigner.compartmentEditor.compartmentAria": "Compartiment {n}, {dimension}",
   "binDesigner.compartmentEditor.compartmentAriaSplittable": "Compartiment {n}, {dimension}, klik om te splitsen",
@@ -2279,5 +2273,11 @@
   "baseplate.connectorSample.tip2": "Gebruik dezelfde printer, hetzelfde filament en dezelfde nozzle als waarmee je de basisplaat print.",
   "baseplate.connectorSample.tip3": "Elk monster is gelabeld met zijn stijl (DT / DK / SC) en pasvorm-offset.",
   "baseplate.connectorSample.tip4": "De juiste pasvorm gevonden? Stel «Connectorpasvorm» in op die offset.",
-  "baseplate.connectorSample.exportComplete": "Pasvormmonster geëxporteerd"
+  "baseplate.connectorSample.exportComplete": "Pasvormmonster geëxporteerd",
+  "binDesigner.compartmentEditor.smallestOpening": "Kleinste opening (mm)",
+  "binDesigner.compartmentEditor.openingWidth": "Breedte",
+  "binDesigner.compartmentEditor.openingDepth": "Diepte",
+  "binDesigner.compartmentEditor.grid": "Raster",
+  "binDesigner.compartmentEditor.tileEvenlyNote": "Wordt naar boven afgerond om de bak gelijkmatig te vullen · randvakken zijn breder",
+  "binDesigner.compartmentEditor.maxGridReached": "Max. {max} breed"
 }
