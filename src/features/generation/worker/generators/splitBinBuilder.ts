@@ -211,10 +211,10 @@ function splitSolidIntoPieces(
   // socket Z-offset applied in generateBin), shifted down by
   // LIP_FUSE_OVERLAP to ensure a volumetric overlap for clean fusing.
   //
-  // Pass cellMask + overhang so the lip footprint matches the body: rectangular
-  // bins are unaffected, but custom shapes (L/U) and overhung bins would
-  // otherwise get a full-rectangle, nominal-size lip that juts past or falls
-  // short of the actual body edge once fused per-piece.
+  // Pass cellMask + overhang so the lip footprint matches the body. A no-op for
+  // a plain rectangular bin with no overhang; for a custom shape (L/U) or any
+  // overhang it avoids a full-rectangle, nominal-size lip that juts past or
+  // falls short of the actual body edge once fused per-piece.
   let lipSolid: Shape3D | undefined;
   if (hasLip) {
     const lipBase = buildTopShape(

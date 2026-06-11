@@ -12,7 +12,7 @@
  * Both surface as a "missing / broken stacking lip" on the split pieces.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
-import { DEFAULT_BIN_PARAMS, GRIDFINITY } from '@/shared/constants/bin';
+import { DEFAULT_BIN_PARAMS } from '@/shared/constants/bin';
 import { DEFAULT_SPLIT_CONNECTOR_CONFIG } from '@/features/bin-designer/constants/defaults';
 import type { BinParams, SplitConnectorConfig } from '@/shared/types/bin';
 import type { CellMask } from '@/shared/utils/cellMask';
@@ -42,10 +42,10 @@ const L_SHAPE_MASK: CellMask = {
 };
 
 function computeWallTopZ(params: BinParams): number {
-  return params.height * GRIDFINITY.HEIGHT_UNIT;
+  return params.height * params.heightUnitMm;
 }
 
-/** Count vertices that fall strictly inside the given world-XY rectangle. */
+/** Count vertices that fall within the given world-XY rectangle (inclusive bounds). */
 function countVerticesInRect(
   vertices: Float32Array,
   xMin: number,
