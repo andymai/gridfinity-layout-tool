@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.163.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.162.0...gridfinity-layout-tool-v4.163.0) (2026-06-11)
+
+
+### Features
+
+* **baseplate:** expose fractional edge controls in baseplate generator ([#2102](https://github.com/andymai/gridfinity-layout-tool/issues/2102)) ([c554695](https://github.com/andymai/gridfinity-layout-tool/commit/c554695062421c04b2a064ce13b1506475053cc4))
+
 ## [4.162.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.161.1...gridfinity-layout-tool-v4.162.0) (2026-06-11)
 
 
