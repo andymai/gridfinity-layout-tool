@@ -224,6 +224,7 @@
   "binDesigner.colors.zone.text": "Texte gravé",
   "binDesigner.columns": "Colonnes",
   "binDesigner.compartmentEditor.cellAria": "Cellule {col}, {row}",
+  "binDesigner.compartmentEditor.fitActual": "≥ {value} mm ({delta})",
   "binDesigner.compartmentEditor.gridMode": "Disposition",
   "binDesigner.compartmentEditor.gridModeCount": "Par nombre",
   "binDesigner.compartmentEditor.gridModeSize": "Par taille",

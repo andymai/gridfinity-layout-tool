@@ -224,6 +224,7 @@
   "binDesigner.colors.zone.text": "Gegraveerde tekst",
   "binDesigner.columns": "Kolommen",
   "binDesigner.compartmentEditor.cellAria": "Cel {col}, {row}",
+  "binDesigner.compartmentEditor.fitActual": "≥ {value} mm ({delta})",
   "binDesigner.compartmentEditor.gridMode": "Indeling",
   "binDesigner.compartmentEditor.gridModeCount": "Op aantal",
   "binDesigner.compartmentEditor.gridModeSize": "Op grootte",

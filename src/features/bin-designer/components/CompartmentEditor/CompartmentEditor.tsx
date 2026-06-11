@@ -31,8 +31,9 @@ import {
   cellIndex,
 } from '@/features/bin-designer/utils/compartments';
 import {
-  singleCellCavity,
-  solveCountForTargetCavity,
+  formatCompactMm,
+  minUniformCavity,
+  solveCountForMinCavity,
 } from '@/features/bin-designer/utils/compartmentDimensions';
 import { getInteriorDims } from '@/features/bin-designer/utils/dividerAngle';
 import { useTranslation } from '@/i18n';
@@ -111,6 +112,12 @@ export function CompartmentEditor() {
 
   // Whether the grid is set by cell count (cols/rows) or target size (mm).
   const [sizeMode, setSizeMode] = useState<'count' | 'size'>('count');
+
+  // By-size targets the user typed (the field holds the target, not the achieved
+  // size, so we can show how far the fit-guarantee landed from it). Null until
+  // the user enters size mode, then seeded from the current grid.
+  const [targetW, setTargetW] = useState<number | null>(null);
+  const [targetD, setTargetD] = useState<number | null>(null);
 
   // Selection state for drag-to-merge
   const [selection, setSelection] = useState<Set<number>>(new Set());
@@ -340,26 +347,19 @@ export function CompartmentEditor() {
     [cols, rows, setCompartmentGrid]
   );
 
-  const clampGrid = useCallback(
-    (n: number) =>
-      Math.min(
-        DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID,
-        Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID, n)
-      ),
-    []
-  );
-
-  // By-size mode: pick the column/row count whose resulting cavity is closest
-  // to the requested mm, then let setCompartmentGrid regenerate the uniform grid
-  // (it validates min cell size and silently no-ops if the target is infeasible).
+  // By-size mode (fit-guarantee): pick the largest count whose tightest
+  // compartment stays >= the requested mm, so every compartment is at least
+  // that size. setCompartmentGrid regenerates the uniform grid (it validates min
+  // cell size and silently no-ops if the target is infeasible).
   const applyTargetWidth = useCallback(
     (target: number) => {
       const clamped = Math.min(
         interiorW,
         Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE, target)
       );
+      setTargetW(clamped);
       setCompartmentGrid(
-        solveCountForTargetCavity(
+        solveCountForMinCavity(
           interiorW,
           thickness,
           clamped,
@@ -379,9 +379,10 @@ export function CompartmentEditor() {
         interiorD,
         Math.max(DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE, target)
       );
+      setTargetD(clamped);
       setCompartmentGrid(
         cols,
-        solveCountForTargetCavity(
+        solveCountForMinCavity(
           interiorD,
           thickness,
           clamped,
@@ -393,6 +394,14 @@ export function CompartmentEditor() {
     },
     [interiorD, thickness, cols, setCompartmentGrid]
   );
+
+  // Entering size mode seeds the targets from the current grid so the fields
+  // show a sensible starting value (and zero delta) before the user types.
+  const enterSizeMode = useCallback(() => {
+    setTargetW(Math.round(minUniformCavity(interiorW, cols, thickness) * 10) / 10);
+    setTargetD(Math.round(minUniformCavity(interiorD, rows, thickness) * 10) / 10);
+    setSizeMode('size');
+  }, [interiorW, interiorD, cols, rows, thickness]);
 
   const handleThicknessChange = useCallback(
     (newThickness: number) => {
@@ -409,10 +418,23 @@ export function CompartmentEditor() {
   const compartmentCount = getCompartmentCount(compartments);
   const hasMergedCompartments = compartmentCount < cols * rows;
 
-  // Current average cavity per axis — drives the by-size input values (the mm
-  // dimensions themselves are shown in the 3D preview, not here).
-  const currentWidthCavity = singleCellCavity(interiorW, cols, thickness);
-  const currentDepthCavity = singleCellCavity(interiorD, rows, thickness);
+  // By-size readouts: the smallest (guaranteed) compartment per axis, and the
+  // delta from the user's typed target. With fit-guarantee the achieved minimum
+  // is normally >= target (positive delta); it goes negative only when even one
+  // compartment can't reach the target (target larger than the interior).
+  const achievedMinW = minUniformCavity(interiorW, cols, thickness);
+  const achievedMinD = minUniformCavity(interiorD, rows, thickness);
+  const fitNote = (achieved: number, target: number | null): string | null => {
+    if (target === null) return null;
+    const d = Math.round((achieved - target) * 10) / 10;
+    const delta = `${d >= 0 ? '+' : '−'}${formatCompactMm(Math.abs(d))}`;
+    return t('binDesigner.compartmentEditor.fitActual', {
+      value: formatCompactMm(achieved),
+      delta,
+    });
+  };
+  const fitNoteW = fitNote(achievedMinW, targetW);
+  const fitNoteD = fitNote(achievedMinD, targetD);
 
   // Check if hovered cell is in a multi-cell compartment (splittable)
   const hoveredIsSplittable = useMemo(() => {
@@ -473,7 +495,7 @@ export function CompartmentEditor() {
               <button
                 key={mode}
                 type="button"
-                onClick={() => setSizeMode(mode)}
+                onClick={() => (mode === 'size' ? enterSizeMode() : setSizeMode('count'))}
                 className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
                   sizeMode === mode
                     ? 'bg-accent text-on-accent'
@@ -528,12 +550,9 @@ export function CompartmentEditor() {
                 {t('binDesigner.compartmentEditor.targetWidth')}
               </span>
               <StepperControl
-                value={Math.round(currentWidthCavity * 10) / 10}
+                value={targetW ?? Math.round(achievedMinW * 10) / 10}
                 onChange={applyTargetWidth}
-                onStep={(delta) => {
-                  setCompartmentGrid(clampGrid(cols - delta), rows);
-                  setSelection(new Set());
-                }}
+                onStep={(delta) => applyTargetWidth((targetW ?? achievedMinW) + delta)}
                 min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}
                 max={Math.round(interiorW)}
                 step={1}
@@ -541,18 +560,20 @@ export function CompartmentEditor() {
                 variant={stepperVariant}
                 ariaLabel={t('binDesigner.compartmentEditor.targetWidth')}
               />
+              {fitNoteW && (
+                <span className="mt-1 block text-[11px] tabular-nums text-content-tertiary">
+                  {fitNoteW}
+                </span>
+              )}
             </div>
             <div>
               <span className="mb-1 block text-xs text-content-tertiary">
                 {t('binDesigner.compartmentEditor.targetDepth')}
               </span>
               <StepperControl
-                value={Math.round(currentDepthCavity * 10) / 10}
+                value={targetD ?? Math.round(achievedMinD * 10) / 10}
                 onChange={applyTargetDepth}
-                onStep={(delta) => {
-                  setCompartmentGrid(cols, clampGrid(rows - delta));
-                  setSelection(new Set());
-                }}
+                onStep={(delta) => applyTargetDepth((targetD ?? achievedMinD) + delta)}
                 min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_SIZE}
                 max={Math.round(interiorD)}
                 step={1}
@@ -560,6 +581,11 @@ export function CompartmentEditor() {
                 variant={stepperVariant}
                 ariaLabel={t('binDesigner.compartmentEditor.targetDepth')}
               />
+              {fitNoteD && (
+                <span className="mt-1 block text-[11px] tabular-nums text-content-tertiary">
+                  {fitNoteD}
+                </span>
+              )}
             </div>
           </div>
         )}

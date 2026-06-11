@@ -46,24 +46,28 @@ export interface CompartmentCavity {
 }
 
 /**
- * Average usable cavity of a uniform `count`-way split along an axis. This is
- * the mean of the per-compartment cavities (interior cells lose a full wall,
- * edge cells lose only a half), so it's the right representative for the by-size
- * solver and the uniform summary — not the size of any one specific cell.
+ * Smallest usable cavity in a uniform `count`-way split along an axis — i.e. the
+ * size of the tightest compartment. Interior cells lose a full wall (half on
+ * each side); edge cells lose only a half. So for `count >= 3` the minimum is an
+ * interior cell (`pitch - thickness`); for `count === 2` both cells are edges
+ * (`pitch - thickness/2`); for `count <= 1` there are no dividers (full span).
+ * This is the value a "fits my object" guarantee must be measured against.
  */
-export function singleCellCavity(innerDim: number, count: number, thickness: number): number {
-  if (count <= 0) return innerDim;
-  const dividers = count > 1 ? (count - 1) * thickness : 0;
-  return (innerDim - dividers) / count;
+export function minUniformCavity(innerDim: number, count: number, thickness: number): number {
+  if (count <= 1) return innerDim;
+  const pitch = innerDim / count;
+  return count >= 3 ? pitch - thickness : pitch - thickness / 2;
 }
 
 /**
- * Pick the cell count in `[minCount, maxCount]` whose resulting average cavity
- * is closest to `targetCavity`. Ties resolve to the smaller count (fewer, larger
- * compartments) since the loop only replaces on a strict improvement. Counts
- * that would collapse the cavity to ≤ 0 are skipped.
+ * Fit-guarantee solver: the LARGEST count in `[minCount, maxCount]` whose
+ * tightest compartment is still `>= targetCavity`. Packs as many compartments as
+ * fit while keeping every one at least the requested size. Falls back to
+ * `minCount` when even that can't reach the target (target larger than the
+ * interior). `minUniformCavity` decreases monotonically in `count`, so we can
+ * stop at the first count that drops below the target.
  */
-export function solveCountForTargetCavity(
+export function solveCountForMinCavity(
   innerDim: number,
   thickness: number,
   targetCavity: number,
@@ -71,15 +75,9 @@ export function solveCountForTargetCavity(
   maxCount: number
 ): number {
   let best = minCount;
-  let bestErr = Infinity;
   for (let count = minCount; count <= maxCount; count++) {
-    const cavity = singleCellCavity(innerDim, count, thickness);
-    if (cavity <= 0) break;
-    const error = Math.abs(cavity - targetCavity);
-    if (error < bestErr) {
-      bestErr = error;
-      best = count;
-    }
+    if (minUniformCavity(innerDim, count, thickness) >= targetCavity) best = count;
+    else break;
   }
   return best;
 }

@@ -224,6 +224,7 @@
   "binDesigner.colors.zone.text": "Graverad text",
   "binDesigner.columns": "Kolumner",
   "binDesigner.compartmentEditor.cellAria": "Cell {col}, {row}",
+  "binDesigner.compartmentEditor.fitActual": "≥ {value} mm ({delta})",
   "binDesigner.compartmentEditor.gridMode": "Indelning",
   "binDesigner.compartmentEditor.gridModeCount": "Efter antal",
   "binDesigner.compartmentEditor.gridModeSize": "Efter storlek",

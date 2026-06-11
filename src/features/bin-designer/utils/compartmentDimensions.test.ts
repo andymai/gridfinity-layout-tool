@@ -1,51 +1,47 @@
 import { describe, expect, it } from 'vitest';
 import {
   compartmentCavity,
-  singleCellCavity,
-  solveCountForTargetCavity,
+  minUniformCavity,
+  solveCountForMinCavity,
 } from './compartmentDimensions';
 import { createUniformGrid, mergeCells } from './compartments';
 import type { CompartmentConfig } from '../types';
 
-describe('singleCellCavity', () => {
+describe('minUniformCavity', () => {
   it('returns the full interior for a single cell', () => {
-    expect(singleCellCavity(100, 1, 1.2)).toBe(100);
+    expect(minUniformCavity(100, 1, 1.2)).toBe(100);
   });
 
-  it('subtracts internal divider walls before splitting (average cavity)', () => {
-    // 4 cells, 3 walls of 1.2mm: (100 - 3.6) / 4 = 24.1
-    expect(singleCellCavity(100, 4, 1.2)).toBeCloseTo(24.1, 6);
+  it('subtracts a half wall per cell for a two-way split (both edges)', () => {
+    // 2 cells: pitch 50, each loses half the single divider -> 50 - 0.6 = 49.4
+    expect(minUniformCavity(100, 2, 1.2)).toBeCloseTo(49.4, 6);
   });
 
-  it('treats non-positive counts as the full span', () => {
-    expect(singleCellCavity(100, 0, 1.2)).toBe(100);
+  it('uses the interior cell (full wall) as the minimum for 3+ cells', () => {
+    // 4 cells: pitch 25, interior cell loses a full wall -> 25 - 1.2 = 23.8
+    expect(minUniformCavity(100, 4, 1.2)).toBeCloseTo(23.8, 6);
   });
 });
 
-describe('solveCountForTargetCavity', () => {
-  it('picks the count whose cavity is closest to the target', () => {
-    // interior 154, t=1.2: 3 -> 50.5, 4 -> 37.6. target 40 -> 4
-    expect(solveCountForTargetCavity(154, 1.2, 40, 1, 12)).toBe(4);
+describe('solveCountForMinCavity', () => {
+  it('packs as many compartments as fit while keeping each >= target', () => {
+    // interior 100, t=1.2: min cavity by count -> 1:100, 2:49.4, 3:32.1, 4:23.8.
+    // target 30 -> largest count with min >= 30 is 3 (32.1), since 4 (23.8) < 30.
+    expect(solveCountForMinCavity(100, 1.2, 30, 1, 12)).toBe(3);
   });
 
-  it('resolves exact divisions', () => {
-    // interior 100, t=0: target 25 -> exactly 4
-    expect(solveCountForTargetCavity(100, 0, 25, 1, 12)).toBe(4);
+  it('rounds DOWN the count rather than ever going below target', () => {
+    // interior 81, t=1.2: 2 -> 39.9 (< 40). So target 40 -> only count 1 fits.
+    expect(solveCountForMinCavity(81, 1.2, 40, 1, 12)).toBe(1);
   });
 
-  it('clamps to the minimum count for very large targets', () => {
-    expect(solveCountForTargetCavity(154, 1.2, 500, 1, 12)).toBe(1);
+  it('falls back to the minimum count when the target exceeds the interior', () => {
+    expect(solveCountForMinCavity(100, 1.2, 500, 1, 12)).toBe(1);
   });
 
-  it('breaks ties toward the smaller (larger-compartment) count', () => {
-    // interior 12, t=0: 2 -> 6, 3 -> 4; target 5 is equidistant -> smaller (2)
-    expect(solveCountForTargetCavity(12, 0, 5, 1, 12)).toBe(2);
-  });
-
-  it('never returns a count whose cavity collapses to zero', () => {
-    // interior 3, walls 3mm: count 2 collapses the cavity to 0 (skipped), so
-    // only count 1 (cavity 3) survives even though the target is tiny.
-    expect(solveCountForTargetCavity(3, 3, 1, 1, 12)).toBe(1);
+  it('respects the maximum count for tiny targets', () => {
+    // target 1mm fits far more than 12; clamp to maxCount.
+    expect(solveCountForMinCavity(100, 0, 1, 1, 12)).toBe(12);
   });
 });
 
