@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.163.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.163.0...gridfinity-layout-tool-v4.163.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* **bin-designer:** keep stacking lip on split custom-shape and overhung bins ([#2105](https://github.com/andymai/gridfinity-layout-tool/issues/2105)) ([7fb37a6](https://github.com/andymai/gridfinity-layout-tool/commit/7fb37a61792d1cd553e8495fd428ae74712d99d5))
+
 ## [4.163.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.162.0...gridfinity-layout-tool-v4.163.0) (2026-06-11)
 
 
