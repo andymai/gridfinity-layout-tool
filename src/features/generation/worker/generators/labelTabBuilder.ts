@@ -193,6 +193,12 @@ function clipToOuterFootprint(
   dims: TabBuildDimensions
 ): Shape3D {
   const { innerW, innerD, wallThickness, shelfTopZ, tabHeight } = dims;
+
+  // A tab corner can only poke past the rounded outer corner when
+  // wt < R·(1 − 1/√2); at or above that the intersect is a guaranteed no-op,
+  // so skip the boolean for the common (default 1.2mm) wall.
+  if (wallThickness >= BOX_CORNER_RADIUS * (1 - Math.SQRT1_2)) return tabs;
+
   const outerW = innerW + 2 * wallThickness;
   const outerD = innerD + 2 * wallThickness;
   try {

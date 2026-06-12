@@ -6,8 +6,8 @@
  * inner-wall planes, so a full-width tab's square corner sits outside the
  * rounded wall whenever `wt < BOX_CORNER_RADIUS·(1 − 1/√2) ≈ 1.10mm` — i.e.
  * for the 0.4 / 0.6 / 0.8mm wall-thickness presets. Most visible on small
- * bins, where the tab reaches both corners (Reddit report). `clipToOuter
- * Footprint` trims the slivers flush with the wall.
+ * bins, where the tab reaches both corners (Reddit report).
+ * `clipToOuterFootprint` trims the slivers flush with the wall.
  *
  * Footprint is taken from the NO-label bin (the with-label bbox would be
  * inflated by the overhang itself); a self-baseline over the no-label mesh
