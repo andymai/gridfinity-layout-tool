@@ -5,8 +5,20 @@
  * at the back edge of each compartment.
  */
 
-import { draw, unwrap, fuseAll, fuse, cut, intersect, translate, withScope, clone } from 'brepjs';
+import {
+  draw,
+  drawRoundedRectangle,
+  unwrap,
+  fuseAll,
+  fuse,
+  cut,
+  intersect,
+  translate,
+  withScope,
+  clone,
+} from 'brepjs';
 import type { Shape3D, ValidSolid, Drawing, DisposalScope } from 'brepjs';
+import { BOX_CORNER_RADIUS } from './generatorConstants';
 import type { BinParams, TextStyleDefaults, TextStyleOverride } from '@/shared/types/bin';
 import {
   compartmentHasTiltedBackWall,
@@ -152,8 +164,49 @@ function buildLabelTabsInScope(
   }
 
   if (allTabs.length === 0) return null;
-  if (allTabs.length === 1) return allTabs[0]; // already scope-registered
-  return scope.register(unwrap(fuseAll(allTabs as ValidSolid[])));
+  const assembled =
+    allTabs.length === 1
+      ? allTabs[0] // already scope-registered
+      : scope.register(unwrap(fuseAll(allTabs as ValidSolid[])));
+
+  return clipToOuterFootprint(scope, assembled, dims);
+}
+
+/**
+ * Clip the assembled tabs to the bin's outer rounded-corner footprint.
+ *
+ * Tabs are axis-aligned rectangles anchored to the nominal flat inner-wall
+ * planes, so a wall-touching corner can poke past the bin's rounded outer
+ * corner. This happens when `wt < BOX_CORNER_RADIUS·(1 − 1/√2) ≈ 1.10mm`:
+ * the square corner sits outside the rounded wall and juts into open air.
+ * It's most visible on small bins, where a full-width tab reaches both
+ * corners and the fixed-size poke is a large fraction of the short wall.
+ *
+ * Intersecting with a prism of the outer footprint trims those slivers flush
+ * with the wall. It's a no-op for thicker walls and for interior-divider tabs
+ * that never reach the perimeter. Best-effort: keep the un-clipped tabs if the
+ * boolean throws (mirrors the per-tab support/text fallbacks above).
+ */
+function clipToOuterFootprint(
+  scope: DisposalScope,
+  tabs: Shape3D,
+  dims: TabBuildDimensions
+): Shape3D {
+  const { innerW, innerD, wallThickness, shelfTopZ, tabHeight } = dims;
+  const outerW = innerW + 2 * wallThickness;
+  const outerD = innerD + 2 * wallThickness;
+  try {
+    const footprint = scope.register(
+      sketch(
+        drawRoundedRectangle(outerW, outerD, BOX_CORNER_RADIUS),
+        'XY',
+        shelfTopZ - tabHeight - 0.1
+      ).extrude(tabHeight + 0.2)
+    );
+    return scope.register(unwrap(intersect(tabs as ValidSolid, footprint as ValidSolid)));
+  } catch {
+    return tabs;
+  }
 }
 
 /**
