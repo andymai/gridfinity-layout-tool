@@ -341,7 +341,8 @@ export function buildBaseplateSolid(
     totalW,
     totalD,
     slabOffsetX,
-    slabOffsetY
+    slabOffsetY,
+    forExport
   );
 
   if (nubs.length > 0 || connHoles.length > 0) {

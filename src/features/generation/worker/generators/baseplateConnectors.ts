@@ -51,8 +51,9 @@ import {
   sketch,
 } from './generatorTypes';
 import type { SnapClipLevels } from '@/shared/constants/connectors';
-import { computeCellBoundariesMm } from './cellDecomposition';
+import { computeCellBoundariesMm, decomposeCells } from './cellDecomposition';
 import { buildSingleCellSocket } from './socketBuilder';
+import { getPocketTemplate } from './baseplatePockets';
 
 /**
  * Half the separation between the tongue and groove of a paired connector,
@@ -64,13 +65,102 @@ import { buildSingleCellSocket } from './socketBuilder';
  */
 const PAIR_HALF_OFFSET = 4;
 
+/** Origin-centred cell spans (centre + size mm) along one grid axis. */
+interface CellSpan {
+  readonly center: number;
+  readonly size: number;
+}
+
+/**
+ * Cell centres + sizes along an axis, origin-centred to match the slab pockets
+ * (which are placed at {@link forEachCell} positions). Honours `fractionalEdge`
+ * so a half-cell at the start shifts the full cells like the pockets do.
+ */
+function cellSpansMm(
+  axisUnits: number,
+  gridUnitMm: number,
+  fractionalEdge: 'start' | 'end' = 'end'
+): CellSpan[] {
+  const cells = decomposeCells(axisUnits);
+  if (fractionalEdge === 'start') cells.reverse();
+  const totalMm = axisUnits * gridUnitMm;
+  const spans: CellSpan[] = [];
+  let pos = 0;
+  for (const u of cells) {
+    const size = u * gridUnitMm;
+    spans.push({ center: pos + size / 2 - totalMm / 2, size });
+    pos += size;
+  }
+  return spans;
+}
+
+/**
+ * Subtract the neighbouring piece's bin sockets from a fused dovetail tongue.
+ *
+ * The gridfinity socket mouth opens to the full cell at the slab top
+ * (`INSET_TOP = 0`), so a flat-topped tongue protruding across the seam pokes
+ * into the open socket where the neighbour's bin foot seats — worst in paired
+ * (`preferIdenticalPieces`) mode, where the tongue is offset `PAIR_HALF_OFFSET`
+ * (= the socket corner radius) onto the fully-open straight edge of the mouth.
+ *
+ * Cutting the actual socket pocket(s) back out of the tongue trims it to the
+ * grid's wall region, so the assembled plate's top matches an un-split plate and
+ * bins seat flush. The tongue keeps its sub-funnel material (the socket recedes
+ * with depth), so the dovetail still locks. Mirrors {@link relieveClipForSockets}.
+ *
+ * The neighbour column lies one full grid unit beyond the seam (`neighborProtrude`);
+ * only sockets the tongue actually reaches (within `reach` of its boundary
+ * position) are subtracted.
+ */
+function relieveTongueForSockets(
+  tongue: Shape3D,
+  bpTongue: number,
+  neighborProtrude: number,
+  protrudeAxis: 'x' | 'y',
+  boundaryCells: readonly CellSpan[],
+  gridUnitMm: number,
+  magnetHoles: boolean,
+  forExport: boolean
+): Shape3D {
+  // Tongue half-width at the tip plus its groove clearance and a small margin —
+  // the boundary-axis reach over which a neighbour socket can touch the tongue.
+  const reach = TONGUE_TIP_HALF + TONGUE_CLEARANCE + 0.5;
+  // Match the slab's pocket depth: through-cut without magnets, blind (socket
+  // region only) with magnets so the tongue keeps its floor/joint material.
+  const throughCut = !magnetHoles;
+  const cutters: ValidSolid[] = [];
+  for (const cell of boundaryCells) {
+    if (cell.center - cell.size / 2 >= bpTongue + reach) continue;
+    if (cell.center + cell.size / 2 <= bpTongue - reach) continue;
+    // Neighbour cell: full grid unit along the protrude axis, this cell's size
+    // along the boundary axis (the grid is continuous across the seam).
+    const pocket =
+      protrudeAxis === 'x'
+        ? getPocketTemplate(gridUnitMm, cell.size, forExport, throughCut)
+        : getPocketTemplate(cell.size, gridUnitMm, forExport, throughCut);
+    const pos: [number, number, number] =
+      protrudeAxis === 'x'
+        ? [neighborProtrude, cell.center, 0]
+        : [cell.center, neighborProtrude, 0];
+    const positioned = translate(pocket, pos);
+    pocket.delete();
+    cutters.push(positioned as ValidSolid);
+  }
+  if (cutters.length === 0) return tongue;
+  const relieved = unwrap(cutAll(tongue as ValidSolid, cutters));
+  for (const c of cutters) c.delete();
+  if (relieved !== tongue) tongue.delete();
+  return relieved;
+}
+
 export function buildConnectors(
   params: BaseplateParams,
   totalHeight: number,
   totalW: number,
   totalD: number,
   slabOffsetX: number,
-  slabOffsetY: number
+  slabOffsetY: number,
+  forExport: boolean = true
 ): { nubs: Shape3D[]; holes: Shape3D[] } {
   const { edges, connectorNubs, invertDovetails, preferIdenticalPieces } = params;
   const tongues: Shape3D[] = [];
@@ -118,6 +208,12 @@ export function buildConnectors(
   const yBoundaries = computeCellBoundariesMm(params.depth, gridUnit, params.fractionalEdgeY);
   const xBoundaries = computeCellBoundariesMm(params.width, gridUnit, params.fractionalEdgeX);
 
+  // Cell layout along each edge's boundary axis — used to subtract the
+  // neighbouring piece's sockets from each tongue (the grid is continuous across
+  // the seam, so the neighbour column shares this piece's boundary-axis cells).
+  const yCellSpans = cellSpansMm(params.depth, gridUnit, params.fractionalEdgeY);
+  const xCellSpans = cellSpansMm(params.width, gridUnit, params.fractionalEdgeX);
+
   type Side = 'left' | 'right' | 'front' | 'back';
 
   /**
@@ -140,6 +236,7 @@ export function buildConnectors(
     maleOffsetSign: -1 | 1;
     wallPos: number;
     boundaries: readonly number[];
+    boundaryCells: readonly CellSpan[];
     protrudeAxis: 'x' | 'y';
     protrudeDir: -1 | 1;
   }> = [
@@ -149,6 +246,7 @@ export function buildConnectors(
       maleOffsetSign: 1,
       wallPos: -halfW + slabOffsetX,
       boundaries: yBoundaries,
+      boundaryCells: yCellSpans,
       protrudeAxis: 'x',
       protrudeDir: -1,
     },
@@ -158,6 +256,7 @@ export function buildConnectors(
       maleOffsetSign: -1,
       wallPos: halfW + slabOffsetX,
       boundaries: yBoundaries,
+      boundaryCells: yCellSpans,
       protrudeAxis: 'x',
       protrudeDir: 1,
     },
@@ -167,6 +266,7 @@ export function buildConnectors(
       maleOffsetSign: -1,
       wallPos: -halfD + slabOffsetY,
       boundaries: xBoundaries,
+      boundaryCells: xCellSpans,
       protrudeAxis: 'y',
       protrudeDir: -1,
     },
@@ -176,10 +276,30 @@ export function buildConnectors(
       maleOffsetSign: 1,
       wallPos: halfD + slabOffsetY,
       boundaries: xBoundaries,
+      boundaryCells: xCellSpans,
       protrudeAxis: 'y',
       protrudeDir: 1,
     },
   ];
+
+  // Trim a freshly-built tongue back to the wall region so it can't poke into
+  // the neighbouring piece's open sockets across the seam (`bpTongue` is the
+  // tongue's centre along the edge's boundary axis).
+  const relieveTongue = (
+    tongue: Shape3D,
+    bpTongue: number,
+    def: (typeof edgeDefs)[number]
+  ): Shape3D =>
+    relieveTongueForSockets(
+      tongue,
+      bpTongue,
+      def.wallPos + def.protrudeDir * (gridUnit / 2),
+      def.protrudeAxis,
+      def.boundaryCells,
+      gridUnit,
+      params.magnetHoles,
+      forExport
+    );
 
   for (const def of edgeDefs) {
     if (edges[def.side] !== 'join' || def.boundaries.length === 0) continue;
@@ -205,10 +325,10 @@ export function buildConnectors(
       } else if (paired) {
         const mBp = bp + def.maleOffsetSign * PAIR_HALF_OFFSET;
         const fBp = bp - def.maleOffsetSign * PAIR_HALF_OFFSET;
-        tongues.push(makeTongue(pt, w, mBp, d, P, bW, tW, totalHeight));
+        tongues.push(relieveTongue(makeTongue(pt, w, mBp, d, P, bW, tW, totalHeight), mBp, def));
         grooves.push(makeGroove(pt, w, fBp, d, P, bW, tW, cl, ext, totalHeight));
       } else if (def.isMale) {
-        tongues.push(makeTongue(pt, w, bp, d, P, bW, tW, totalHeight));
+        tongues.push(relieveTongue(makeTongue(pt, w, bp, d, P, bW, tW, totalHeight), bp, def));
       } else {
         grooves.push(makeGroove(pt, w, bp, d, P, bW, tW, cl, ext, totalHeight));
       }
