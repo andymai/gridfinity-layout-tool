@@ -13,7 +13,11 @@ import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
 import { useDesignerStore } from '../store';
 import { useBinDefaultsStore } from '../store/binDefaults';
-import { saveDefaultParams, clearDefaultParams } from '../storage/defaultParamsStorage';
+import {
+  saveDefaultParams,
+  clearDefaultParams,
+  hasCustomDefault as storageHasCustomDefault,
+} from '../storage/defaultParamsStorage';
 
 export interface UseBinDefaults {
   /** Whether a custom default for new bins is currently stored (reactive). */
@@ -30,6 +34,7 @@ export function useBinDefaults(): UseBinDefaults {
   const hasCustomDefault = useBinDefaultsStore((s) => s.hasCustomDefault);
   const markSaved = useBinDefaultsStore((s) => s.markSaved);
   const markCleared = useBinDefaultsStore((s) => s.markCleared);
+  const refresh = useBinDefaultsStore((s) => s.refresh);
 
   const setCurrentAsDefault = useCallback(() => {
     const result = saveDefaultParams(useDesignerStore.getState().params);
@@ -43,9 +48,11 @@ export function useBinDefaults(): UseBinDefaults {
 
   const resetToFactory = useCallback(() => {
     // Idempotent: surfaces like the command palette can invoke this with no
-    // custom default stored. Report that honestly rather than claiming a
-    // reset happened.
-    if (!useBinDefaultsStore.getState().hasCustomDefault) {
+    // custom default stored. Decide from localStorage (the source of truth),
+    // not the reactive mirror, which could be stale if another tab changed it.
+    if (!storageHasCustomDefault()) {
+      // Reconcile a stale mirror (e.g. cleared in another tab) before reporting.
+      refresh();
       addToast({ message: t('binDesigner.alreadyFactoryDefaults'), type: 'info', duration: 2000 });
       return;
     }
@@ -56,7 +63,7 @@ export function useBinDefaults(): UseBinDefaults {
       type: 'success',
       duration: 2000,
     });
-  }, [addToast, t, markCleared]);
+  }, [addToast, t, markCleared, refresh]);
 
   return { hasCustomDefault, setCurrentAsDefault, resetToFactory };
 }

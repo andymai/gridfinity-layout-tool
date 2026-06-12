@@ -4,13 +4,13 @@ import { renderHook, act } from '@testing-library/react';
 import { useBinDefaultCommandBridge } from './useBinDefaultCommandBridge';
 import { useBinDefaultsStore } from '../store/binDefaults';
 import { hasCustomDefault } from '../storage/defaultParamsStorage';
-import { useToastStore } from '@/core/store/toast';
+import { resetAllStores } from '@/test/testUtils';
 
 describe('useBinDefaultCommandBridge', () => {
   beforeEach(() => {
+    resetAllStores();
     localStorage.clear();
     useBinDefaultsStore.setState({ hasCustomDefault: false });
-    useToastStore.setState({ toasts: [] });
   });
 
   it('saves the default when the set-default window event fires', () => {

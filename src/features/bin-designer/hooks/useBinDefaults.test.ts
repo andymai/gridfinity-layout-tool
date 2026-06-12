@@ -5,12 +5,17 @@ import { useBinDefaults } from './useBinDefaults';
 import { useBinDefaultsStore } from '../store/binDefaults';
 import { hasCustomDefault } from '../storage/defaultParamsStorage';
 import { useToastStore } from '@/core/store/toast';
+import { resetAllStores } from '@/test/testUtils';
 
 describe('useBinDefaults', () => {
   beforeEach(() => {
+    // resetAllStores() resets the shared stores (incl. toast). binDefaults and
+    // localStorage are reset explicitly since it does not cover them. Assertions
+    // here check default presence (a boolean), not specific captured params, so
+    // the designer store's params (not reset by resetAllStores) don't matter.
+    resetAllStores();
     localStorage.clear();
     useBinDefaultsStore.setState({ hasCustomDefault: false });
-    useToastStore.setState({ toasts: [] });
   });
 
   it('setCurrentAsDefault persists, flips the flag, and toasts success', () => {

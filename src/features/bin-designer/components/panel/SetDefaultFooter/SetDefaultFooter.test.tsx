@@ -3,13 +3,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SetDefaultFooter } from './SetDefaultFooter';
 import { useBinDefaultsStore } from '@/features/bin-designer/store/binDefaults';
 import { hasCustomDefault } from '@/features/bin-designer/storage/defaultParamsStorage';
-import { useToastStore } from '@/core/store/toast';
+import { resetAllStores } from '@/test/testUtils';
 
 describe('SetDefaultFooter', () => {
   beforeEach(() => {
+    resetAllStores();
     localStorage.clear();
     useBinDefaultsStore.setState({ hasCustomDefault: false });
-    useToastStore.setState({ toasts: [] });
   });
 
   it('renders the set-as-default action', () => {
