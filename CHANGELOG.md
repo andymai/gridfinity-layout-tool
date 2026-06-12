@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.166.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.165.0...gridfinity-layout-tool-v4.166.0) (2026-06-12)
+
+
+### Features
+
+* **bin-designer:** surface "default for new bins" across discovery points ([#2114](https://github.com/andymai/gridfinity-layout-tool/issues/2114)) ([d1e851b](https://github.com/andymai/gridfinity-layout-tool/commit/d1e851b312097b2c611b44cbdb8fa1dc9be88cb5))
+
 ## [4.165.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.164.1...gridfinity-layout-tool-v4.165.0) (2026-06-12)
 
 
