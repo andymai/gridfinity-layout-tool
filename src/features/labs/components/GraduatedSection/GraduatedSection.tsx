@@ -35,7 +35,9 @@ export function GraduatedSection({ features }: GraduatedSectionProps) {
               <CheckCircleIcon className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
               <div>
                 <div className="text-sm font-medium text-content">{feature.name}</div>
-                <div className="text-xs text-success mt-0.5">{t('labs.nowAvailableToEveryone')}</div>
+                <div className="text-xs text-success mt-0.5">
+                  {t('labs.nowAvailableToEveryone')}
+                </div>
               </div>
             </div>
           ))}

@@ -35,7 +35,9 @@ export function EmptyState({ variant }: EmptyStateProps) {
 
         {/* Creation hint */}
         <div className="mx-4 p-3 rounded-lg text-left bg-surface-elevated border border-stroke-subtle">
-          <p className="text-sm font-medium mb-2 text-content-secondary">{t('inspector.empty.howToCreate')}</p>
+          <p className="text-sm font-medium mb-2 text-content-secondary">
+            {t('inspector.empty.howToCreate')}
+          </p>
           <ul className="text-sm space-y-1.5 text-content-tertiary">
             <li className="flex items-start gap-2">
               <span className="text-accent">1.</span>

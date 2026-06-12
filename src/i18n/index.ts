@@ -14,7 +14,13 @@
  * ```
  */
 
-export { LocaleProvider, useTranslation, useLocale, useFormatting, getStaticTranslation } from './context';
+export {
+  LocaleProvider,
+  useTranslation,
+  useLocale,
+  useFormatting,
+  getStaticTranslation,
+} from './context';
 export type { TFunction } from './context';
 export { detectBrowserLocale } from './detection';
 export { SUPPORTED_LOCALES, isLocale } from './types';

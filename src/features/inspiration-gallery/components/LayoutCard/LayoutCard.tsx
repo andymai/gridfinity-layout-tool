@@ -75,7 +75,10 @@ export function LayoutCard({
       {/* Metadata row: bins, size */}
       <div className="flex items-center mt-1.5">
         <span className="text-sm text-content-tertiary">
-          {t('gallery.card.metadata', { bins: metrics.binCount, size: `${metrics.drawerSize.width}×${metrics.drawerSize.depth}` })}
+          {t('gallery.card.metadata', {
+            bins: metrics.binCount,
+            size: `${metrics.drawerSize.width}×${metrics.drawerSize.depth}`,
+          })}
         </span>
       </div>
     </div>

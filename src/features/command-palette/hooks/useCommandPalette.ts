@@ -8,24 +8,27 @@ import { useState, useEffect, useCallback } from 'react';
 export function useCommandPalette({ disabled = false }: { disabled?: boolean } = {}) {
   const [open, setOpen] = useState(false);
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (disabled) return;
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (disabled) return;
 
-    // Ignore if in input/textarea or contenteditable
-    if (
-      e.target instanceof HTMLInputElement ||
-      e.target instanceof HTMLTextAreaElement ||
-      (e.target instanceof HTMLElement && e.target.isContentEditable)
-    ) {
-      return;
-    }
+      // Ignore if in input/textarea or contenteditable
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target instanceof HTMLElement && e.target.isContentEditable)
+      ) {
+        return;
+      }
 
-    // ⌘K / Ctrl+K to open
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      setOpen(true);
-    }
-  }, [disabled]);
+      // ⌘K / Ctrl+K to open
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setOpen(true);
+      }
+    },
+    [disabled]
+  );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

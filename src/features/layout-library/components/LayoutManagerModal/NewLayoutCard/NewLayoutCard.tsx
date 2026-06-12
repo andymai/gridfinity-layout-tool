@@ -43,9 +43,7 @@ export function NewLayoutCard({ onCreate }: NewLayoutCardProps) {
 
       {/* Metadata row - matches LayoutGridItem structure */}
       <div className="flex items-center mt-0.5">
-        <span className="text-sm text-content-tertiary">
-          {t('layouts.createNewLayoutHint')}
-        </span>
+        <span className="text-sm text-content-tertiary">{t('layouts.createNewLayoutHint')}</span>
       </div>
 
       {/* Placeholder for modified date row - matches LayoutGridItem height */}
