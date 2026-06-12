@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.167.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.167.1...gridfinity-layout-tool-v4.167.2) (2026-06-12)
+
+
+### Bug Fixes
+
+* **label-tabs:** trim tab corners flush with the bin's rounded outer wall ([#2122](https://github.com/andymai/gridfinity-layout-tool/issues/2122)) ([a5e10b5](https://github.com/andymai/gridfinity-layout-tool/commit/a5e10b5f0a196d3ce0b8c8566cdd78fc2f7f3a41))
+
 ## [4.167.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.167.0...gridfinity-layout-tool-v4.167.1) (2026-06-12)
 
 
