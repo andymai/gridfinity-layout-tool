@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.164.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.164.0...gridfinity-layout-tool-v4.164.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* **bin-designer:** keep scoop and label support inside the rounded bin corners ([#2109](https://github.com/andymai/gridfinity-layout-tool/issues/2109)) ([2dd27ba](https://github.com/andymai/gridfinity-layout-tool/commit/2dd27ba7b9fc9e8118c8f309a8d25eb456dcd598))
+
 ## [4.164.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.163.1...gridfinity-layout-tool-v4.164.0) (2026-06-11)
 
 
