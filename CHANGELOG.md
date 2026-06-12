@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.167.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.167.0...gridfinity-layout-tool-v4.167.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* **baseplate:** relieve split dovetail tongues from neighbour sockets ([#2119](https://github.com/andymai/gridfinity-layout-tool/issues/2119)) ([ed40dae](https://github.com/andymai/gridfinity-layout-tool/commit/ed40dae23e0338f19931cdb8c967f83c95b972ac))
+
 ## [4.167.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.166.0...gridfinity-layout-tool-v4.167.0) (2026-06-12)
 
 
