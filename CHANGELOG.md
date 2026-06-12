@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.167.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.166.0...gridfinity-layout-tool-v4.167.0) (2026-06-12)
+
+
+### Features
+
+* **design-system:** add 16 primitives and extend dialog compound component ([#2111](https://github.com/andymai/gridfinity-layout-tool/issues/2111)) ([ca73706](https://github.com/andymai/gridfinity-layout-tool/commit/ca737069cef9694e8c67f7709911744d98caaac6))
+
 ## [4.166.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.165.0...gridfinity-layout-tool-v4.166.0) (2026-06-12)
 
 
