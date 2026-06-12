@@ -24,6 +24,7 @@ import type { BaseplateParams } from '@/shared/types/bin';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { buildConnectors } from './baseplateConnectors';
 import { buildSingleCellSocket } from './socketBuilder';
+import { decomposeCells } from './cellDecomposition';
 import { SOCKET_HEIGHT, MAGNET_FLOOR, CLEARANCE } from './generatorConstants';
 
 const vol = (s: Parameters<typeof measureVolume>[0]): number => {
@@ -58,8 +59,10 @@ const defaults = (o: Partial<BaseplateParams> = {}): BaseplateParams => ({
 
 /**
  * Total overlap volume between the fused tongues and the neighbouring piece's
- * bin feet across a left-hand seam. Each neighbour cell sits one grid unit
- * beyond the seam wall (−totalW/2 − GU/2) at every cell-row centre.
+ * bin feet across a left-hand seam. The neighbour column sits one grid unit
+ * beyond the seam wall (−totalW/2 − GU/2); its feet are placed at the real
+ * cell-decomposition centres (so this holds for fractional depths too) and each
+ * foot is sized to its cell (cell − CLEARANCE).
  */
 function tongueFootOverlap(params: BaseplateParams): { overlap: number; tongueVol: number } {
   const GU = params.gridUnitMm;
@@ -69,16 +72,22 @@ function tongueFootOverlap(params: BaseplateParams): { overlap: number; tongueVo
   const { nubs } = buildConnectors(params, totalHeight, totalW, totalD, 0, 0);
   try {
     const tongueVol = nubs.reduce((sum, n) => sum + vol(n), 0);
-    const footSz = GU - CLEARANCE;
-    const rows = Math.round(params.depth);
     const nx = -totalW / 2 - GU / 2;
     let overlap = 0;
-    for (let r = 0; r < rows; r++) {
-      const cy = -totalD / 2 + GU / 2 + r * GU;
-      const foot = translate(buildSingleCellSocket(footSz, footSz), [nx, cy, 0]);
+    let pos = 0;
+    for (const u of decomposeCells(params.depth)) {
+      const sizeMm = u * GU;
+      const cy = pos + sizeMm / 2 - totalD / 2;
+      pos += sizeMm;
+      const socket = buildSingleCellSocket(GU - CLEARANCE, sizeMm - CLEARANCE);
+      const foot = translate(socket, [nx, cy, 0]);
+      socket.delete(); // translate returns a new shape; free the pre-translate one
       for (const tongue of nubs) {
         const i = intersect(tongue, foot);
-        if (isOk(i)) overlap += vol(i.value);
+        if (isOk(i)) {
+          overlap += vol(i.value);
+          i.value.delete();
+        }
       }
       foot.delete();
     }
