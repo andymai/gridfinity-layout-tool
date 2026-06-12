@@ -10,4 +10,6 @@ export {
   DEFAULT_UI_STATE,
   DEFAULT_HISTORY,
   migrateParams,
+  extractStyleDefaults,
+  STYLE_DEFAULT_OMIT_KEYS,
 } from './defaults';

@@ -7,7 +7,8 @@
  */
 
 import { useCallback, useEffect, useState, useMemo, useRef } from 'react';
-import { isOk } from '@/core/result';
+import type { MouseEvent as ReactMouseEvent } from 'react';
+import { isOk, getUserMessage } from '@/core/result';
 import {
   listDesigns,
   deleteDesign,
@@ -15,6 +16,12 @@ import {
   saveDesign,
   updateDesignTags,
 } from '@/features/bin-designer/storage/DesignerStorage';
+import {
+  saveDefaultParams,
+  clearDefaultParams,
+  hasCustomDefault,
+} from '@/features/bin-designer/storage';
+import { Menu } from '@/design-system';
 import { collectTags, filterByTags, toggleTag } from '@/features/bin-designer/utils/tagFilter';
 import { normalizeTags, tagsEqual } from '@/features/bin-designer/utils/tags';
 import { TagFilterBar } from './TagFilterBar';
@@ -73,6 +80,12 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     null
   );
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  // Overflow ("...") menu for new-bin default management.
+  const [optionsMenu, setOptionsMenu] = useState<{
+    open: boolean;
+    position: { x: number; y: number };
+  }>({ open: false, position: { x: 0, y: 0 } });
+  const [customDefaultActive, setCustomDefaultActive] = useState(false);
   const selection = useDesignSelection();
   const itemRefs = useRef<Map<string, HTMLDivElement | HTMLLIElement>>(new Map());
   const gridRef = useRef<HTMLDivElement>(null);
@@ -118,6 +131,8 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     setActiveTags([]);
     setTagEdit(null);
     setShowBulkDeleteConfirm(false);
+    setOptionsMenu((s) => ({ ...s, open: false }));
+    setCustomDefaultActive(hasCustomDefault());
     selection.exit();
   } else if (!open && prevOpen) {
     setPrevOpen(false);
@@ -240,6 +255,37 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     addToast({ message: t('binDesigner.newDesignCreated'), type: 'success', duration: 2000 });
     onClose();
   }, [newDesign, syncUrlToDesign, addToast, onClose, t]);
+
+  const handleOpenOptionsMenu = useCallback((e: ReactMouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    // Anchor the menu to the button's lower-left; Menu.Root clamps to the
+    // viewport so it never runs off the right edge of the screen.
+    setOptionsMenu({ open: true, position: { x: rect.left, y: rect.bottom + 4 } });
+  }, []);
+
+  const closeOptionsMenu = useCallback(() => {
+    setOptionsMenu((s) => ({ ...s, open: false }));
+  }, []);
+
+  const handleSetAsDefault = useCallback(() => {
+    const result = saveDefaultParams(useDesignerStore.getState().params);
+    if (isOk(result)) {
+      setCustomDefaultActive(true);
+      addToast({ message: t('binDesigner.savedAsDefault'), type: 'success', duration: 2000 });
+    } else {
+      addToast({ message: getUserMessage(result.error), type: 'error', duration: 4000 });
+    }
+  }, [addToast, t]);
+
+  const handleResetFactoryDefaults = useCallback(() => {
+    clearDefaultParams();
+    setCustomDefaultActive(false);
+    addToast({
+      message: t('binDesigner.factoryDefaultsRestored'),
+      type: 'success',
+      duration: 2000,
+    });
+  }, [addToast, t]);
 
   const handleRename = useCallback(
     async (design: SavedDesign, newName: string) => {
@@ -528,6 +574,40 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
               {t('binDesigner.newDesign')}
             </button>
             <button
+              type="button"
+              onClick={handleOpenOptionsMenu}
+              className="relative rounded-md p-1.5 text-content-secondary border border-stroke transition-colors hover:bg-surface-hover hover:text-content"
+              aria-label={
+                customDefaultActive
+                  ? `${t('binDesigner.moreOptions')} — ${t('binDesigner.customDefaultActive')}`
+                  : t('binDesigner.moreOptions')
+              }
+              aria-haspopup="menu"
+              aria-expanded={optionsMenu.open}
+              title={t('binDesigner.moreOptions')}
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 5v.01M12 12v.01M12 19v.01"
+                />
+              </svg>
+              {customDefaultActive && (
+                <span
+                  className="absolute right-0.5 top-0.5 h-2 w-2 rounded-full bg-accent ring-2 ring-surface-secondary"
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+            <button
               onClick={onClose}
               className="rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
               aria-label={t('common.close')}
@@ -768,6 +848,54 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
         onConfirm={() => void handleBulkDelete()}
         onCancel={() => setShowBulkDeleteConfirm(false)}
       />
+      <Menu.Root
+        open={optionsMenu.open}
+        onClose={closeOptionsMenu}
+        position={optionsMenu.position}
+        className="min-w-[18rem]"
+      >
+        {customDefaultActive && (
+          <div
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-content-tertiary"
+            aria-hidden="true"
+          >
+            <span className="h-2 w-2 rounded-full bg-accent" />
+            {t('binDesigner.customDefaultActive')}
+          </div>
+        )}
+        <Menu.Item
+          icon={
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          }
+          onClick={handleSetAsDefault}
+        >
+          {t('binDesigner.setAsDefault')}
+        </Menu.Item>
+        <Menu.Divider />
+        <Menu.Item
+          icon={
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          }
+          disabled={!customDefaultActive}
+          onClick={handleResetFactoryDefaults}
+        >
+          {t('binDesigner.resetFactoryDefaults')}
+        </Menu.Item>
+      </Menu.Root>
     </div>
   );
 }

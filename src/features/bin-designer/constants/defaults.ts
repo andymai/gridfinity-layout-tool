@@ -581,3 +581,36 @@ export function migrateParams(params: MigrateParamsInput): BinParams {
     },
   };
 }
+
+/**
+ * Per-design geometry keys that are NOT carried into a user's custom
+ * "default for new bins". These describe a *specific* bin, not a reusable
+ * style, so they reset to the factory baseline on every new design.
+ *
+ * Implemented as a denylist (rather than an allowlist of style keys) so
+ * that future style parameters added to `BinParams` automatically flow
+ * into saved user defaults without anyone remembering to update a list.
+ *
+ * `migrateParams()` backfills each of these from `DEFAULT_BIN_PARAMS` when a
+ * stored partial is loaded, so stripping them is a safe reset-to-factory.
+ */
+export const STYLE_DEFAULT_OMIT_KEYS = [
+  'cellMask',
+  'compartments',
+  'cutouts',
+  'inserts',
+  'handles',
+  'walls',
+  'overhang',
+] as const satisfies readonly (keyof BinParams)[];
+
+/**
+ * Extract the style/feature preferences from a full set of bin params,
+ * dropping per-design geometry (see `STYLE_DEFAULT_OMIT_KEYS`). The result
+ * is a partial suitable for persisting as the user's default for new bins;
+ * `migrateParams()` re-completes it on load.
+ */
+export function extractStyleDefaults(params: BinParams): Partial<BinParams> {
+  const omit = new Set<string>(STYLE_DEFAULT_OMIT_KEYS);
+  return Object.fromEntries(Object.entries(params).filter(([key]) => !omit.has(key)));
+}

@@ -34,7 +34,7 @@ import {
   remapDividerOverrides,
 } from '../../utils/compartments';
 import { validateCompartmentSizes } from '../../utils/validation';
-import { defaultsForNewDesign, pushHistoryEntry } from '../helpers';
+import { defaultsForNewDesign, paramsNeedHalfGridMode, pushHistoryEntry } from '../helpers';
 import {
   MASK_CELLS_PER_UNIT,
   type CellMask,
@@ -122,6 +122,12 @@ export function createParamSlice(set: Set, get: Get) {
       set((state) => {
         pushHistoryEntry(state);
         state.params = { ...defaultsForNewDesign() };
+        // Keep UI toggles in sync with the resolved params: a custom default
+        // may carry fractional dimensions (→ half-grid mode), and defaults
+        // always strip `cellMask` (→ shape editor closed). Without this the
+        // toggles would leak the previous design's state (issue #1752).
+        state.ui.halfGridMode = paramsNeedHalfGridMode(state.params);
+        state.ui.shapeEditorOpen = false;
       });
     },
 

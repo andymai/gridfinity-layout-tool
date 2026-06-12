@@ -1,6 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { DEFAULT_BIN_PARAMS } from '@/features/bin-designer/constants';
+import {
+  saveDefaultParams,
+  clearDefaultParams,
+} from '@/features/bin-designer/storage/defaultParamsStorage';
 import type { SavedDesign } from '@/features/bin-designer/types';
 import type { CellMask } from '@/shared/utils/cellMask';
 import type { DesignId } from '@/core/types';
@@ -193,5 +197,84 @@ describe('persistenceSlice.newDesign — coupling with layout-level half-grid mo
     } finally {
       useHalfGridModeStore.setState({ halfGridMode: false });
     }
+  });
+});
+
+describe('newDesign / resetToDefaults — custom "default for new bins"', () => {
+  // This file runs in the node env (no DOM), so stub an in-memory
+  // localStorage for the custom-default storage layer used by these tests.
+  const memStore = new Map<string, string>();
+  const localStorageMock: Storage = {
+    getItem: (key) => memStore.get(key) ?? null,
+    setItem: (key, value) => void memStore.set(key, value),
+    removeItem: (key) => void memStore.delete(key),
+    clear: () => memStore.clear(),
+    key: (index) => [...memStore.keys()][index] ?? null,
+    get length() {
+      return memStore.size;
+    },
+  };
+
+  beforeEach(() => {
+    memStore.clear();
+    vi.stubGlobal('localStorage', localStorageMock);
+    useDesignerStore.setState(useDesignerStore.getInitialState());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    memStore.clear();
+  });
+
+  it('newDesign starts from the saved custom default (style carried, geometry reset)', () => {
+    saveDefaultParams({
+      ...DEFAULT_BIN_PARAMS,
+      width: 1,
+      depth: 5,
+      wallThickness: 2.4,
+      scoop: { ...DEFAULT_BIN_PARAMS.scoop, enabled: true },
+      // Per-design geometry that must NOT carry into new bins.
+      compartments: { cols: 2, rows: 2, thickness: 1.6, cells: [0, 1, 2, 3] },
+    });
+
+    useDesignerStore.getState().newDesign();
+    const params = useDesignerStore.getState().params;
+
+    expect(params.width).toBe(1);
+    expect(params.depth).toBe(5);
+    expect(params.wallThickness).toBe(2.4);
+    expect(params.scoop.enabled).toBe(true);
+    // Geometry reset to factory.
+    expect(params.compartments).toEqual(DEFAULT_BIN_PARAMS.compartments);
+  });
+
+  it('newDesign derives halfGridMode from a fractional custom default', () => {
+    saveDefaultParams({ ...DEFAULT_BIN_PARAMS, width: 1.5, depth: 2 });
+    useDesignerStore.getState().newDesign();
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(true);
+    expect(useDesignerStore.getState().ui.shapeEditorOpen).toBe(false);
+  });
+
+  it('newDesign leaves halfGridMode off for an integer custom default', () => {
+    saveDefaultParams({ ...DEFAULT_BIN_PARAMS, width: 3, depth: 3 });
+    useDesignerStore.getState().newDesign();
+    expect(useDesignerStore.getState().ui.halfGridMode).toBe(false);
+  });
+
+  it('resetToDefaults applies the custom default and syncs halfGridMode', () => {
+    saveDefaultParams({ ...DEFAULT_BIN_PARAMS, width: 1.5, depth: 2 });
+    useDesignerStore.getState().resetToDefaults();
+    const state = useDesignerStore.getState();
+    expect(state.params.width).toBe(1.5);
+    expect(state.ui.halfGridMode).toBe(true);
+    expect(state.ui.shapeEditorOpen).toBe(false);
+  });
+
+  it('falls back to factory defaults once the custom default is cleared', () => {
+    saveDefaultParams({ ...DEFAULT_BIN_PARAMS, width: 1, depth: 5 });
+    clearDefaultParams();
+    useDesignerStore.getState().newDesign();
+    expect(useDesignerStore.getState().params.width).toBe(DEFAULT_BIN_PARAMS.width);
+    expect(useDesignerStore.getState().params.depth).toBe(DEFAULT_BIN_PARAMS.depth);
   });
 });

@@ -1,9 +1,60 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_BIN_PARAMS, DISABLED_WALL_CUTOUT, migrateParams } from '../constants/defaults';
+import {
+  DEFAULT_BIN_PARAMS,
+  DISABLED_WALL_CUTOUT,
+  migrateParams,
+  extractStyleDefaults,
+  STYLE_DEFAULT_OMIT_KEYS,
+} from '../constants/defaults';
 import { GRIDFINITY, DESIGNER_CONSTRAINTS } from '../constants/gridfinity';
 import { validateBinParams } from '../utils/validation';
 import { expectOk } from '@/test/testUtils';
 import type { BinParams } from '../types';
+
+describe('extractStyleDefaults', () => {
+  it('omits every per-design geometry key', () => {
+    const result = extractStyleDefaults(DEFAULT_BIN_PARAMS);
+    for (const key of STYLE_DEFAULT_OMIT_KEYS) {
+      expect(result).not.toHaveProperty(key);
+    }
+  });
+
+  it('keeps reusable style and dimension preferences', () => {
+    const params: BinParams = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 1.5,
+      depth: 3,
+      height: 6,
+      wallThickness: 2.4,
+    };
+    const result = extractStyleDefaults(params);
+    expect(result.width).toBe(1.5);
+    expect(result.depth).toBe(3);
+    expect(result.height).toBe(6);
+    expect(result.wallThickness).toBe(2.4);
+    expect(result.base).toEqual(DEFAULT_BIN_PARAMS.base);
+    expect(result.label).toEqual(DEFAULT_BIN_PARAMS.label);
+    expect(result.lid).toEqual(DEFAULT_BIN_PARAMS.lid);
+    expect(result.featureColors).toEqual(DEFAULT_BIN_PARAMS.featureColors);
+  });
+
+  it('does not mutate the input params', () => {
+    const before = JSON.stringify(DEFAULT_BIN_PARAMS);
+    extractStyleDefaults(DEFAULT_BIN_PARAMS);
+    expect(JSON.stringify(DEFAULT_BIN_PARAMS)).toBe(before);
+  });
+
+  it('produces a partial that migrateParams re-completes to a valid bin', () => {
+    const partial = extractStyleDefaults({
+      ...DEFAULT_BIN_PARAMS,
+      compartments: { cols: 2, rows: 2, thickness: 1.6, cells: [0, 1, 2, 3] },
+    });
+    const completed = migrateParams(partial);
+    expectOk(validateBinParams(completed));
+    // Stripped compartments fall back to the factory single cell.
+    expect(completed.compartments).toEqual(DEFAULT_BIN_PARAMS.compartments);
+  });
+});
 
 describe('DEFAULT_BIN_PARAMS', () => {
   it('should pass validation', () => {

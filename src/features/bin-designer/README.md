@@ -51,6 +51,7 @@ graph TB
 - `store/cutoutSelection.ts` — cutout editor selection state
 - `hooks/useGeneration.ts` — triggers geometry regeneration via bridge (bin + optional companion lid)
 - `storage/DesignerStorage.ts` — IndexedDB persistence for saved designs (incl. optional `tags`; `updateDesignTags` replaces a design's tag set)
+- `storage/defaultParamsStorage.ts` — user's custom "default for new bins" (localStorage). Stores a style-only `Partial<BinParams>` (per-design geometry stripped via `extractStyleDefaults`/`STYLE_DEFAULT_OMIT_KEYS`); `loadDefaultParams` re-completes it via `migrateParams`. Read at the single `defaultsForNewDesign()` chokepoint so `newDesign`/`resetToDefaults` both honor it
 - `constants/` — Gridfinity geometry constants, default params, designer constraints
 - `types/` — TypeScript types for designer state, cutouts, compartments, lid config
 - `utils/` — validation, print estimates, file naming, design JSON serialization

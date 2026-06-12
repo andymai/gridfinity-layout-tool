@@ -68,9 +68,12 @@ export function createPersistenceSlice(set: Set) {
         state.pendingBinLink = null;
         state.needsThumbnailUpdate = false;
         state.generation.epoch += 1;
-        // Reset UI toggles that are derived from params so the new design
-        // starts clean instead of inheriting the previous session's state.
-        state.ui.halfGridMode = false;
+        // Reset UI toggles that are derived from params. These are normally
+        // off for a fresh bin, but a user's custom default may carry
+        // fractional dimensions — derive halfGridMode from the resolved
+        // params so the toggle never desyncs from the geometry. The shape
+        // editor stays closed: defaults always strip `cellMask`.
+        state.ui.halfGridMode = paramsNeedHalfGridMode(state.params);
         state.ui.shapeEditorOpen = false;
         setPendingMeshCache(null);
       });

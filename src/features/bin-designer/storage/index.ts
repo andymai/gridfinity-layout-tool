@@ -8,3 +8,9 @@ export {
   updateDesignParams,
   closeDesignerDb,
 } from './DesignerStorage';
+export {
+  saveDefaultParams,
+  loadDefaultParams,
+  clearDefaultParams,
+  hasCustomDefault,
+} from './defaultParamsStorage';

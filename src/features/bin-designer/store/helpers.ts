@@ -10,29 +10,37 @@
 import { current, type Draft } from 'immer';
 import type { BinParams, DesignerState, HistoryEntry, CachedMesh, Cutout } from '../types';
 import { DEFAULT_BIN_PARAMS, DESIGNER_CONSTRAINTS } from '../constants';
+import { loadDefaultParams } from '../storage/defaultParamsStorage';
 import { evictIfNeeded } from './meshCacheManager';
 import { isFractional } from '@/core/constants';
 import { hasHalfBinDetail, isPartialMask } from '@/shared/utils/cellMask';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 
 /**
- * Seed `DEFAULT_BIN_PARAMS` with `base.halfSockets = true` when the
- * layout-level half-grid mode is active. Skip for flat-floor bins — the
- * `halfSockets ⇔ flat-floor` mutual-exclusion constraint takes precedence,
- * and a user who switches to flat floor made an explicit choice that
- * shouldn't be overridden by a mode toggle elsewhere (issue #1752).
+ * Resolve the parameters a fresh bin starts from.
+ *
+ * Layered, in order of precedence:
+ * 1. The user's saved "default for new bins" (style-only) if present,
+ *    otherwise the hardcoded factory `DEFAULT_BIN_PARAMS`.
+ * 2. `base.halfSockets = true` when the layout-level half-grid mode is
+ *    active. Skipped for flat-floor bins — the `halfSockets ⇔ flat-floor`
+ *    mutual-exclusion constraint takes precedence, and a user who switched
+ *    to a flat floor made an explicit choice that shouldn't be overridden
+ *    by a mode toggle elsewhere (issue #1752). The check reads the
+ *    *resolved* base style so a custom flat-floor default is also honored.
  *
  * Called from `newDesign` and `resetToDefaults` so both fresh-start paths
- * pick up the coupling without re-implementing it.
+ * pick up the user default + coupling without re-implementing it.
  */
-export function defaultsForNewDesign(): typeof DEFAULT_BIN_PARAMS {
+export function defaultsForNewDesign(): BinParams {
+  const base = loadDefaultParams() ?? DEFAULT_BIN_PARAMS;
   const halfGridOn = useHalfGridModeStore.getState().halfGridMode;
-  if (!halfGridOn || DEFAULT_BIN_PARAMS.base.style === 'flat') {
-    return DEFAULT_BIN_PARAMS;
+  if (!halfGridOn || base.base.style === 'flat') {
+    return base;
   }
   return {
-    ...DEFAULT_BIN_PARAMS,
-    base: { ...DEFAULT_BIN_PARAMS.base, halfSockets: true },
+    ...base,
+    base: { ...base.base, halfSockets: true },
   };
 }
 
