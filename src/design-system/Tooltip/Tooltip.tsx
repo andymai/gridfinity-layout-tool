@@ -1,9 +1,13 @@
-import { useId, useState } from 'react';
-import type { KeyboardEvent, ReactNode } from 'react';
+import { cloneElement, isValidElement, useId, useState } from 'react';
+import type { KeyboardEvent, ReactElement, ReactNode } from 'react';
 import { cn } from '../cn';
 import { interactiveTransition } from '../variants';
 
 type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
+
+function mergeDescribedBy(existing: string | undefined, id: string): string {
+  return existing ? `${existing} ${id}` : id;
+}
 
 const placementClasses: Record<TooltipPlacement, string> = {
   top: 'bottom-full left-1/2 -translate-x-1/2 mb-1.5',
@@ -92,11 +96,23 @@ export function Tooltip({
     }
   };
 
+  // Screen readers compute descriptions from the focused trigger element, not
+  // ancestors, so aria-describedby must live on the child itself.
+  const canAnnotateChild = isValidElement(children);
+  const trigger = canAnnotateChild
+    ? cloneElement(children as ReactElement<{ 'aria-describedby'?: string }>, {
+        'aria-describedby': mergeDescribedBy(
+          (children as ReactElement<{ 'aria-describedby'?: string }>).props['aria-describedby'],
+          id
+        ),
+      })
+    : children;
+
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- listeners only toggle tooltip visibility; the interactive child keeps its own semantics
     <span
       className="relative inline-flex"
-      aria-describedby={id}
+      aria-describedby={canAnnotateChild ? undefined : id}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => {
         setHovered(false);
@@ -109,7 +125,7 @@ export function Tooltip({
       }}
       onKeyDown={handleKeyDown}
     >
-      {children}
+      {trigger}
       <span
         role="tooltip"
         id={id}
@@ -119,7 +135,9 @@ export function Tooltip({
           'px-2 py-1 text-xs text-content',
           interactiveTransition,
           placementClasses[placement],
-          visible ? 'visible opacity-100' : 'invisible opacity-0',
+          // opacity-only hiding keeps the description in the accessibility
+          // tree (visibility:hidden would remove it).
+          visible ? 'opacity-100' : 'opacity-0',
           '[@media(hover:none)]:hidden'
         )}
         style={{ transitionDelay: visible ? `${delayMs}ms` : '0ms' }}

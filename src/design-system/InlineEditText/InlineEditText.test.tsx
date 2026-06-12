@@ -59,6 +59,29 @@ describe('InlineEditText', () => {
     expect(screen.getByRole('button', { name: 'Rename layout' })).toHaveTextContent('My Layout');
   });
 
+  it('ignores the native blur browsers fire when Escape unmounts the input', () => {
+    const onCommit = vi.fn();
+    render(<InlineEditText {...defaultProps} onCommit={onCommit} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Rename layout' }));
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, { target: { value: 'Discarded' } });
+    fireEvent.keyDown(input, { key: 'Escape' });
+    fireEvent.blur(input);
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('commits again after a revert when editing is re-entered', () => {
+    const onCommit = vi.fn();
+    render(<InlineEditText {...defaultProps} onCommit={onCommit} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Rename layout' }));
+    fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Escape' });
+    fireEvent.click(screen.getByRole('button', { name: 'Rename layout' }));
+    const input = screen.getByRole('textbox');
+    fireEvent.change(input, { target: { value: 'Second try' } });
+    fireEvent.blur(input);
+    expect(onCommit).toHaveBeenCalledWith('Second try');
+  });
+
   it('commits the fallback when the trimmed input is empty', () => {
     const onCommit = vi.fn();
     render(<InlineEditText {...defaultProps} onCommit={onCommit} fallback="Untitled layout" />);

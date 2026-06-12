@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useCallback,
   useId,
@@ -66,7 +67,9 @@ function subscribeToDialogStack(listener: () => void): () => void {
  * focus-trap behavior so nested dialogs don't fight over keyboard input.
  */
 export function useDialogStack(id: string, active: boolean): { depth: number; isTopmost: boolean } {
-  useEffect(() => {
+  // useLayoutEffect so depth/isTopmost are correct on first paint when
+  // multiple dialogs mount open together.
+  useLayoutEffect(() => {
     if (!active) return;
     registerDialog(id);
     return () => unregisterDialog(id);
@@ -101,7 +104,7 @@ function useDialogContext() {
   }
   return context;
 }
-const overlayVariants = cva(['fixed inset-0 z-50', 'bg-overlay-dark', 'animate-fade-in']);
+const overlayVariants = cva(['fixed inset-0', 'bg-overlay-dark', 'animate-fade-in']);
 
 const contentVariants = cva(
   [
@@ -317,12 +320,17 @@ export function useFocusTrap(
 
 // Body Scroll Lock Hook
 
-export function useBodyScrollLock(isLocked: boolean): void {
-  useEffect(() => {
-    if (!isLocked) return;
+// Reference-counted so concurrent dialogs closing in any order can't restore
+// stale captured styles (non-LIFO close previously unlocked under an open
+// dialog, then re-locked the body permanently).
+let bodyScrollLockCount = 0;
+let bodyScrollOriginalOverflow = '';
+let bodyScrollOriginalPaddingRight = '';
 
-    const originalOverflow = document.body.style.overflow;
-    const originalPaddingRight = document.body.style.paddingRight;
+function acquireBodyScrollLock(): void {
+  if (bodyScrollLockCount === 0) {
+    bodyScrollOriginalOverflow = document.body.style.overflow;
+    bodyScrollOriginalPaddingRight = document.body.style.paddingRight;
 
     // Calculate scrollbar width to prevent layout shift
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -331,11 +339,23 @@ export function useBodyScrollLock(isLocked: boolean): void {
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
+  }
+  bodyScrollLockCount += 1;
+}
 
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.paddingRight = originalPaddingRight;
-    };
+function releaseBodyScrollLock(): void {
+  bodyScrollLockCount = Math.max(0, bodyScrollLockCount - 1);
+  if (bodyScrollLockCount === 0) {
+    document.body.style.overflow = bodyScrollOriginalOverflow;
+    document.body.style.paddingRight = bodyScrollOriginalPaddingRight;
+  }
+}
+
+export function useBodyScrollLock(isLocked: boolean): void {
+  useEffect(() => {
+    if (!isLocked) return;
+    acquireBodyScrollLock();
+    return releaseBodyScrollLock;
   }, [isLocked]);
 }
 
@@ -663,7 +683,8 @@ function DialogHeader({
 
   const hasTitle = title !== undefined && title !== null;
 
-  useEffect(() => {
+  // useLayoutEffect so aria-labelledby is wired before first paint.
+  useLayoutEffect(() => {
     if (!hasTitle) return;
     return registerTitle();
   }, [hasTitle, registerTitle]);
@@ -734,7 +755,8 @@ export interface DialogBodyProps {
 function DialogBody({ children, className, padding = 'default', scroll = true }: DialogBodyProps) {
   const { descriptionId, registerDescription } = useDialogContext();
 
-  useEffect(() => registerDescription(), [registerDescription]);
+  // useLayoutEffect so aria-describedby is wired before first paint.
+  useLayoutEffect(() => registerDescription(), [registerDescription]);
 
   return (
     <div id={descriptionId} className={cn(bodyVariants({ padding, scroll }), className)}>

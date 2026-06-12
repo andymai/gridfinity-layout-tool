@@ -672,6 +672,27 @@ describe('Dialog', () => {
       unmount();
       expect(document.body.style.overflow).toBe('');
     });
+
+    it('keeps body locked when concurrent dialogs close in non-LIFO order', () => {
+      const first = render(
+        <Dialog.Root open={true} onClose={vi.fn()}>
+          <Dialog.Header title="First" />
+          <Dialog.Body>First</Dialog.Body>
+        </Dialog.Root>
+      );
+      const second = render(
+        <Dialog.Root open={true} onClose={vi.fn()}>
+          <Dialog.Header title="Second" />
+          <Dialog.Body>Second</Dialog.Body>
+        </Dialog.Root>
+      );
+
+      first.unmount();
+      expect(document.body.style.overflow).toBe('hidden');
+
+      second.unmount();
+      expect(document.body.style.overflow).toBe('');
+    });
   });
 });
 

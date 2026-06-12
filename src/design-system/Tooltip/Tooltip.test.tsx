@@ -20,7 +20,7 @@ describe('Tooltip', () => {
           <button type="button">Trigger</button>
         </Tooltip>
       );
-      expect(screen.getByRole('tooltip')).toHaveClass('invisible', 'opacity-0');
+      expect(screen.getByRole('tooltip')).toHaveClass('opacity-0');
     });
 
     it('renders the shortcut in mono kbd styling', () => {
@@ -77,7 +77,7 @@ describe('Tooltip', () => {
         </Tooltip>
       );
       fireEvent.focus(screen.getByRole('button'));
-      expect(screen.getByRole('tooltip')).toHaveClass('visible', 'opacity-100');
+      expect(screen.getByRole('tooltip')).toHaveClass('opacity-100');
     });
 
     it('hides again when the trigger loses focus', () => {
@@ -89,7 +89,7 @@ describe('Tooltip', () => {
       const button = screen.getByRole('button');
       fireEvent.focus(button);
       fireEvent.blur(button);
-      expect(screen.getByRole('tooltip')).toHaveClass('invisible', 'opacity-0');
+      expect(screen.getByRole('tooltip')).toHaveClass('opacity-0');
     });
 
     it('becomes visible on hover and hides on leave', () => {
@@ -100,9 +100,9 @@ describe('Tooltip', () => {
       );
       const wrapper = screen.getByRole('tooltip').parentElement as HTMLElement;
       fireEvent.mouseEnter(wrapper);
-      expect(screen.getByRole('tooltip')).toHaveClass('visible', 'opacity-100');
+      expect(screen.getByRole('tooltip')).toHaveClass('opacity-100');
       fireEvent.mouseLeave(wrapper);
-      expect(screen.getByRole('tooltip')).toHaveClass('invisible', 'opacity-0');
+      expect(screen.getByRole('tooltip')).toHaveClass('opacity-0');
     });
 
     it('hides on Escape while focused', () => {
@@ -114,7 +114,7 @@ describe('Tooltip', () => {
       const button = screen.getByRole('button');
       fireEvent.focus(button);
       fireEvent.keyDown(button, { key: 'Escape' });
-      expect(screen.getByRole('tooltip')).toHaveClass('invisible', 'opacity-0');
+      expect(screen.getByRole('tooltip')).toHaveClass('opacity-0');
     });
 
     it('can show again after Escape dismissal once focus is lost and regained', () => {
@@ -128,7 +128,7 @@ describe('Tooltip', () => {
       fireEvent.keyDown(button, { key: 'Escape' });
       fireEvent.blur(button);
       fireEvent.focus(button);
-      expect(screen.getByRole('tooltip')).toHaveClass('visible', 'opacity-100');
+      expect(screen.getByRole('tooltip')).toHaveClass('opacity-100');
     });
 
     it('applies the show delay only while visible', () => {
@@ -145,16 +145,30 @@ describe('Tooltip', () => {
   });
 
   describe('accessibility', () => {
-    it('wires aria-describedby on the wrapper to the tooltip id', () => {
+    it('wires aria-describedby on the trigger element to the tooltip id', () => {
       render(
         <Tooltip content="Undo">
           <button type="button">Trigger</button>
         </Tooltip>
       );
       const tooltip = screen.getByRole('tooltip');
-      const wrapper = tooltip.parentElement as HTMLElement;
+      const trigger = screen.getByRole('button', { name: 'Trigger' });
       expect(tooltip.id).not.toBe('');
-      expect(wrapper).toHaveAttribute('aria-describedby', tooltip.id);
+      expect(trigger).toHaveAttribute('aria-describedby', tooltip.id);
+      expect(tooltip.parentElement).not.toHaveAttribute('aria-describedby');
+    });
+
+    it('merges the tooltip id into an existing aria-describedby on the trigger', () => {
+      render(
+        <Tooltip content="Undo">
+          <button type="button" aria-describedby="existing-id">
+            Trigger
+          </button>
+        </Tooltip>
+      );
+      const tooltip = screen.getByRole('tooltip');
+      const trigger = screen.getByRole('button', { name: 'Trigger' });
+      expect(trigger).toHaveAttribute('aria-describedby', `existing-id ${tooltip.id}`);
     });
 
     it('works around disabled triggers without blocking them', () => {

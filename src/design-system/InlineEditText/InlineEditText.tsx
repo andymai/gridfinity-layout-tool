@@ -94,6 +94,9 @@ export function InlineEditText({
   const inputRef = useRef<HTMLInputElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef(false);
+  // Browsers (not jsdom) fire a native blur when the focused input is removed
+  // from the DOM, so Escape-revert would otherwise commit the stale draft.
+  const revertedRef = useRef(false);
 
   useEffect(() => {
     if (isEditing) {
@@ -107,11 +110,13 @@ export function InlineEditText({
   }, [isEditing]);
 
   const enterEdit = (): void => {
+    revertedRef.current = false;
     setDraft(value);
     setIsEditing(true);
   };
 
   const commit = (): void => {
+    if (revertedRef.current) return;
     const next = draft.trim() || fallback || value;
     if (next !== value) {
       onCommit(next);
@@ -120,6 +125,7 @@ export function InlineEditText({
   };
 
   const revert = (): void => {
+    revertedRef.current = true;
     setDraft(value);
     setIsEditing(false);
   };
