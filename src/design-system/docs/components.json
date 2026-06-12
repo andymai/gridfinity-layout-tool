@@ -97,6 +97,44 @@
         "requirements": ["aria-label or label required"]
       }
     },
+    "CheckboxRow": {
+      "description": "Full-row checkbox with hover surface and trailing slot",
+      "category": "primitive",
+      "file": "CheckboxRow/CheckboxRow.tsx",
+      "props": {
+        "label": {
+          "type": "string",
+          "description": "Visible label text for the row"
+        },
+        "checked": {
+          "type": "boolean",
+          "description": "Whether the row is checked"
+        },
+        "onChange": {
+          "type": "(checked: boolean) => void",
+          "description": "Called with the toggled value"
+        },
+        "trailing": {
+          "type": "ReactNode",
+          "description": "Trailing slot before the checkbox (count Badge, etc.)"
+        },
+        "disabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Disable interaction"
+        },
+        "indent": {
+          "type": "boolean",
+          "default": false,
+          "description": "Nested sub-option indent with left guide border"
+        }
+      },
+      "accessibility": {
+        "role": "checkbox",
+        "keyboardNav": ["Space", "Enter"],
+        "requirements": ["single accessible checkbox; inner visual is aria-hidden"]
+      }
+    },
     "Input": {
       "description": "Text input with optional icons",
       "category": "primitive",
@@ -451,6 +489,59 @@
         "AlertTriangleIcon",
         "InfoIcon"
       ]
+    },
+    "Tabs": {
+      "description": "ARIA tablist with roving tabindex, keyboard navigation, and wired panels",
+      "category": "composite",
+      "file": "Tabs/Tabs.tsx",
+      "compound": true,
+      "subcomponents": ["Tabs.Root", "Tabs.List", "Tabs.Panel"],
+      "props": {
+        "tabs": {
+          "type": "TabItem[]",
+          "required": true,
+          "description": "Tabs to render: id, label, aria-label, badge, disabled"
+        },
+        "activeTab": {
+          "type": "string",
+          "required": true,
+          "description": "Id of the selected tab"
+        },
+        "onChange": {
+          "type": "(id: string) => void",
+          "required": true,
+          "description": "Selection handler for click and keyboard"
+        },
+        "aria-label": {
+          "type": "string",
+          "required": true,
+          "description": "Accessible name for the tablist"
+        },
+        "orientation": {
+          "type": "enum",
+          "values": ["horizontal", "vertical"],
+          "default": "horizontal"
+        },
+        "visual": {
+          "type": "enum",
+          "values": ["underline", "rail", "pill"],
+          "default": "underline"
+        },
+        "fullWidth": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "accessibility": {
+        "role": "tablist",
+        "features": [
+          "roving tabindex",
+          "arrow-key navigation per orientation",
+          "Home/End",
+          "disabled tabs skipped"
+        ],
+        "ariaAttributes": ["aria-orientation", "aria-selected", "aria-controls", "aria-labelledby"]
+      }
     }
   },
   "tokens": {

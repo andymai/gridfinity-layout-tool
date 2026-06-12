@@ -84,6 +84,41 @@ Toggle control for boolean values.
 
 ---
 
+## CheckboxRow
+
+Full-row checkbox: the entire row is the interactive checkbox, with a hover surface, optional trailing slot, and a display-only Checkbox visual.
+
+### Props
+
+| Prop       | Type                         | Default | Description                                       |
+| ---------- | ---------------------------- | ------- | ------------------------------------------------- |
+| `label`    | `string`                     | -       | Visible label text for the row                    |
+| `checked`  | `boolean`                    | -       | Whether the row is checked                        |
+| `onChange` | `(checked: boolean) => void` | -       | Called with the toggled value                     |
+| `trailing` | `ReactNode`                  | -       | Trailing slot before the checkbox (count Badge)   |
+| `disabled` | `boolean`                    | `false` | Disable interaction                               |
+| `indent`   | `boolean`                    | `false` | Nested sub-option indent with a left guide border |
+
+### Examples
+
+```tsx
+// Basic row
+<CheckboxRow label="Include labels" checked={includeLabels} onChange={setIncludeLabels} />
+
+// With a trailing count badge
+<CheckboxRow
+  label="Layer 1"
+  checked={selected}
+  onChange={setSelected}
+  trailing={<Badge>12</Badge>}
+/>
+
+// Nested sub-option
+<CheckboxRow indent label="Bin notes" checked={withNotes} onChange={setWithNotes} />
+```
+
+---
+
 ## Input
 
 Text input with optional icons.
@@ -582,4 +617,90 @@ Base SVG icon component.
 <Icon size="md">
   <path d="M12 2L2 7l10 5 10-5-10-5z" />
 </Icon>
+```
+
+---
+
+## Tabs
+
+ARIA-correct tabbed interface with roving tabindex and keyboard navigation.
+
+### Compound Components
+
+- `Tabs.Root` - Context provider wiring tab/panel ids (aria-controls / aria-labelledby)
+- `Tabs.List` - The tablist of tab buttons
+- `Tabs.Panel` - Content panel for one tab
+
+### Tabs.List Props
+
+| Prop          | Type                              | Default        | Description                                            |
+| ------------- | --------------------------------- | -------------- | ------------------------------------------------------ |
+| `tabs`        | `TabItem<T>[]`                    | **required**   | Tabs to render, in order                               |
+| `activeTab`   | `T`                               | **required**   | Id of the selected tab                                 |
+| `onChange`    | `(id: T) => void`                 | **required**   | Selection handler (click and keyboard)                 |
+| `aria-label`  | `string`                          | **required**   | Accessible name for the tablist                        |
+| `orientation` | `'horizontal' \| 'vertical'`      | `'horizontal'` | Layout and arrow-key axis                              |
+| `visual`      | `'underline' \| 'rail' \| 'pill'` | `'underline'`  | Active style: underline, side rail (vertical), or pill |
+| `fullWidth`   | `boolean`                         | `false`        | flex-1 equal-width tabs                                |
+| `className`   | `string`                          | -              | Additional tablist classes                             |
+
+### TabItem
+
+| Prop         | Type        | Default | Description                               |
+| ------------ | ----------- | ------- | ----------------------------------------- |
+| `id`         | `T`         | -       | Stable tab identifier                     |
+| `label`      | `ReactNode` | -       | Text, icon + label, or icon-only          |
+| `aria-label` | `string`    | -       | Accessible name (required when icon-only) |
+| `badge`      | `ReactNode` | -       | Trailing content such as a count          |
+| `disabled`   | `boolean`   | -       | Disabled tabs are skipped by keyboard nav |
+
+### Tabs.Panel Props
+
+| Prop          | Type      | Default      | Description                           |
+| ------------- | --------- | ------------ | ------------------------------------- |
+| `tabId`       | `string`  | **required** | Id of the tab this panel belongs to   |
+| `activeTab`   | `string`  | **required** | Id of the selected tab                |
+| `keepMounted` | `boolean` | `false`      | Keep mounted but hidden when inactive |
+| `className`   | `string`  | -            | Additional panel classes              |
+
+### Examples
+
+```tsx
+// Underline tabs with panels
+<Tabs.Root>
+  <Tabs.List
+    tabs={[
+      { id: 'general', label: 'General' },
+      { id: 'display', label: 'Display' },
+    ]}
+    activeTab={tab}
+    onChange={setTab}
+    aria-label="Settings"
+  />
+  <Tabs.Panel tabId="general" activeTab={tab}>General settings</Tabs.Panel>
+  <Tabs.Panel tabId="display" activeTab={tab} keepMounted>Display settings</Tabs.Panel>
+</Tabs.Root>
+
+// Vertical rail (settings sidebar)
+<Tabs.List
+  tabs={tabs}
+  activeTab={tab}
+  onChange={setTab}
+  aria-label="Settings"
+  orientation="vertical"
+  visual="rail"
+/>
+
+// Equal-width pills with a count badge
+<Tabs.List
+  tabs={[
+    { id: 'all', label: 'All', badge: 12 },
+    { id: 'mine', label: 'Mine', badge: 3 },
+  ]}
+  activeTab={tab}
+  onChange={setTab}
+  aria-label="Filter"
+  visual="pill"
+  fullWidth
+/>
 ```

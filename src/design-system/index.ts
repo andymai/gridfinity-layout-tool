@@ -80,6 +80,42 @@ export type { ProgressBarProps } from './ProgressBar';
 export { Slider } from './Slider';
 export type { SliderProps } from './Slider';
 
+// IconButton
+export { IconButton } from './IconButton';
+export type { IconButtonProps } from './IconButton';
+
+// Tooltip
+export { Tooltip } from './Tooltip';
+export type { TooltipProps } from './Tooltip';
+
+// Card
+export { Card } from './Card';
+export type { CardProps } from './Card';
+
+// Badge
+export { Badge } from './Badge';
+export type { BadgeProps } from './Badge';
+
+// SegmentedControl
+export { SegmentedControl } from './SegmentedControl';
+export type { SegmentedControlProps, SegmentedControlOption } from './SegmentedControl';
+
+// Alert
+export { Alert } from './Alert';
+export type { AlertProps } from './Alert';
+
+// Kbd
+export { Kbd } from './Kbd';
+export type { KbdProps } from './Kbd';
+
+// Textarea
+export { Textarea } from './Textarea';
+export type { TextareaProps } from './Textarea';
+
+// ColorSwatch
+export { ColorSwatch } from './ColorSwatch';
+export type { ColorSwatchProps } from './ColorSwatch';
+
 // Composite Components
 
 // Stepper
@@ -90,13 +126,55 @@ export type { StepperProps } from './Stepper';
 export { Collapsible } from './Collapsible';
 export type { CollapsibleProps } from './Collapsible';
 
-// Dialog (compound: Dialog.Root, Dialog.Header, Dialog.Body, Dialog.Footer) + ConfirmDialog
-export { Dialog, ConfirmDialog } from './Dialog';
+// Field
+export { Field } from './Field';
+export type { FieldProps } from './Field';
+
+// EmptyState
+export { EmptyState } from './EmptyState';
+export type { EmptyStateProps } from './EmptyState';
+
+// Tabs (compound: Tabs.Root, Tabs.List, Tabs.Panel)
+export { Tabs } from './Tabs';
+export type { TabItem, TabsListProps, TabsPanelProps, TabsRootProps } from './Tabs';
+
+// CopyButton + CopyField
+export { CopyButton, CopyField } from './CopyButton';
+export type { CopyButtonProps, CopyFieldProps } from './CopyButton';
+
+// NavRow
+export { NavRow } from './NavRow';
+export type { NavRowProps } from './NavRow';
+
+// InlineEditText
+export { InlineEditText } from './InlineEditText';
+export type { InlineEditTextProps } from './InlineEditText';
+
+// CheckboxRow
+export { CheckboxRow } from './CheckboxRow';
+export type { CheckboxRowProps } from './CheckboxRow';
+
+// Dialog (compound: Root, Header, SubHeader, Body, Split, Sidebar, Pane, Footer) + ConfirmDialog + overlay behavior hooks
+export {
+  Dialog,
+  ConfirmDialog,
+  useFocusTrap,
+  useBodyScrollLock,
+  useDialogStack,
+  registerDialog,
+  unregisterDialog,
+  isTopmostDialog,
+} from './Dialog';
 export type {
   DialogProps,
   DialogHeaderProps,
+  DialogSubHeaderProps,
   DialogBodyProps,
+  DialogSplitProps,
+  DialogSidebarProps,
+  DialogPaneProps,
   DialogFooterProps,
+  DialogInitialFocus,
   ConfirmDialogProps,
 } from './Dialog';
 
