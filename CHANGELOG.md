@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.165.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.164.1...gridfinity-layout-tool-v4.165.0) (2026-06-12)
+
+
+### Features
+
+* **bin-designer:** set current settings as default for new bins ([#2112](https://github.com/andymai/gridfinity-layout-tool/issues/2112)) ([29a81d1](https://github.com/andymai/gridfinity-layout-tool/commit/29a81d1ff91bda4550b551a9c2140b94fb61a369))
+
 ## [4.164.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.164.0...gridfinity-layout-tool-v4.164.1) (2026-06-12)
 
 
