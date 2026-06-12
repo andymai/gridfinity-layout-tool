@@ -26,6 +26,7 @@ import { SplitOptionsSection } from '../panel/SplitOptionsSection';
 import { StickyGroupHeader } from '../panel/StickyGroupHeader';
 import { ColorsSection } from '../panel/ColorsSection';
 import { FeatureGate } from '../panel/FeatureGate';
+import { SetDefaultFooter } from '../panel/SetDefaultFooter';
 import { useShapeGroupSummary } from './useShapeGroupSummary';
 import { useInteriorGroupSummary } from './useInteriorGroupSummary';
 import { useBaseGroupSummary } from './useBaseGroupSummary';
@@ -220,6 +221,10 @@ export function ParameterPanel() {
             </svg>
           </button>
         </div>
+
+        {/* Capture the current settings as the default for new bins, right
+            where the user has been editing them. */}
+        <SetDefaultFooter />
 
         <AttributionFooter />
       </div>

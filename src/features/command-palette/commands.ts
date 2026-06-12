@@ -295,6 +295,18 @@ export const COMMAND_DEFINITIONS: CommandDefinition[] = [
     category: 'bins',
     keywords: ['staging', 'temporary', 'hold'],
   },
+  {
+    id: 'set-bin-default',
+    labelKey: 'commandPalette.setBinDefault',
+    category: 'bins',
+    keywords: ['default', 'defaults', 'preferences', 'template', 'new bins', 'starting'],
+  },
+  {
+    id: 'reset-bin-default',
+    labelKey: 'commandPalette.resetBinDefault',
+    category: 'bins',
+    keywords: ['default', 'defaults', 'factory', 'reset', 'revert', 'new bins'],
+  },
 
   {
     id: 'toggle-half-bin',

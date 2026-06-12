@@ -1,0 +1,1 @@
+export { SetDefaultFooter } from './SetDefaultFooter';

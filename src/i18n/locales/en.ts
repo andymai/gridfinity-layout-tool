@@ -726,6 +726,10 @@ const en: Record<string, string> = {
   // Default Categories
   'settings.defaultCategories': 'Default Categories',
   'settings.defaultCategoriesHint': 'Categories used when creating new layouts:',
+  'settings.binDefaults.title': 'New bin defaults',
+  'settings.binDefaults.hint':
+    'The starting settings for new bins in the Bin Designer. Set them from the designer or command palette.',
+  'settings.binDefaults.usingFactory': 'Using factory defaults',
   'settings.usingBuiltInCategories': 'Using built-in defaults ({count})',
   'settings.usingCustomCategories': 'Using custom defaults ({count})',
   'settings.saveCategoriesAsDefaults': 'Save Current Categories as Defaults',
@@ -1911,6 +1915,7 @@ const en: Record<string, string> = {
   'binDesigner.savedAsDefault': 'Saved as the default for new bins',
   'binDesigner.resetFactoryDefaults': 'Reset to factory defaults',
   'binDesigner.factoryDefaultsRestored': 'Factory defaults restored',
+  'binDesigner.alreadyFactoryDefaults': 'Already using factory defaults',
   'binDesigner.customDefaultActive': 'Custom default active',
   'binDesigner.noSavedDesignsYet': 'No saved designs yet',
   'binDesigner.or': 'or',
@@ -2257,6 +2262,8 @@ const en: Record<string, string> = {
   'commandPalette.prevCategory': 'Previous Category',
   'commandPalette.nextCategory': 'Next Category',
   'commandPalette.moveToStash': 'Move to Stash',
+  'commandPalette.setBinDefault': 'Set current settings as default for new bins',
+  'commandPalette.resetBinDefault': 'Reset bin defaults to factory',
 
   // Tool commands
   'commandPalette.toggleHalfBin': 'Toggle Half-Bin Mode',

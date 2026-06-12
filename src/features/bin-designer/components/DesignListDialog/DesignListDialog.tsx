@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import { isOk, getUserMessage } from '@/core/result';
+import { isOk } from '@/core/result';
 import {
   listDesigns,
   deleteDesign,
@@ -16,12 +16,8 @@ import {
   saveDesign,
   updateDesignTags,
 } from '@/features/bin-designer/storage/DesignerStorage';
-import {
-  saveDefaultParams,
-  clearDefaultParams,
-  hasCustomDefault,
-} from '@/features/bin-designer/storage';
 import { Menu } from '@/design-system';
+import { useBinDefaults } from '../../hooks';
 import { collectTags, filterByTags, toggleTag } from '@/features/bin-designer/utils/tagFilter';
 import { normalizeTags, tagsEqual } from '@/features/bin-designer/utils/tags';
 import { TagFilterBar } from './TagFilterBar';
@@ -85,7 +81,11 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     open: boolean;
     position: { x: number; y: number };
   }>({ open: false, position: { x: 0, y: 0 } });
-  const [customDefaultActive, setCustomDefaultActive] = useState(false);
+  const {
+    hasCustomDefault: customDefaultActive,
+    setCurrentAsDefault,
+    resetToFactory,
+  } = useBinDefaults();
   const selection = useDesignSelection();
   const itemRefs = useRef<Map<string, HTMLDivElement | HTMLLIElement>>(new Map());
   const gridRef = useRef<HTMLDivElement>(null);
@@ -132,7 +132,6 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
     setTagEdit(null);
     setShowBulkDeleteConfirm(false);
     setOptionsMenu((s) => ({ ...s, open: false }));
-    setCustomDefaultActive(hasCustomDefault());
     selection.exit();
   } else if (!open && prevOpen) {
     setPrevOpen(false);
@@ -266,26 +265,6 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
   const closeOptionsMenu = useCallback(() => {
     setOptionsMenu((s) => ({ ...s, open: false }));
   }, []);
-
-  const handleSetAsDefault = useCallback(() => {
-    const result = saveDefaultParams(useDesignerStore.getState().params);
-    if (isOk(result)) {
-      setCustomDefaultActive(true);
-      addToast({ message: t('binDesigner.savedAsDefault'), type: 'success', duration: 2000 });
-    } else {
-      addToast({ message: getUserMessage(result.error), type: 'error', duration: 4000 });
-    }
-  }, [addToast, t]);
-
-  const handleResetFactoryDefaults = useCallback(() => {
-    clearDefaultParams();
-    setCustomDefaultActive(false);
-    addToast({
-      message: t('binDesigner.factoryDefaultsRestored'),
-      type: 'success',
-      duration: 2000,
-    });
-  }, [addToast, t]);
 
   const handleRename = useCallback(
     async (design: SavedDesign, newName: string) => {
@@ -874,7 +853,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
               />
             </svg>
           }
-          onClick={handleSetAsDefault}
+          onClick={setCurrentAsDefault}
         >
           {t('binDesigner.setAsDefault')}
         </Menu.Item>
@@ -891,7 +870,7 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
             </svg>
           }
           disabled={!customDefaultActive}
-          onClick={handleResetFactoryDefaults}
+          onClick={resetToFactory}
         >
           {t('binDesigner.resetFactoryDefaults')}
         </Menu.Item>

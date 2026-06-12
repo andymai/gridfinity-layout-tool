@@ -26,7 +26,9 @@ export {
   useDesignThumbnail,
   clearThumbnailCache,
   updateThumbnailCache,
+  useBinDefaults,
 } from './hooks';
+export type { UseBinDefaults } from './hooks';
 
 // --- Utils ---
 export { generateFileName } from './utils';

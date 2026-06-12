@@ -31,6 +31,7 @@ import { getStagingBins, getLayerBins } from '@/shared/utils';
 import { findBinById } from '@/shared/utils/entity';
 import { useAlignBins } from '@/shared/hooks/useAlignBins';
 import { useSelectionActions } from '@/shared/hooks/useSelectionActions';
+import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { isOk, isErr } from '@/core/result';
 import type { BinId } from '@/core/types';
 import { binId } from '@/core/types';
@@ -49,6 +50,9 @@ export function dispatchWindowEvent(name: string): void {
  */
 export function useActionHandlers(): Record<string, ActionHandler> {
   const t = useTranslation();
+
+  // Gate designer-only commands (bin defaults) to the /designer route.
+  const { isDesignerRoute } = useDesignerRouting();
 
   const layout = useLayoutStore((s) => s.layout);
   const { undo, redo, canUndo, canRedo } = useHistoryStore(
@@ -359,6 +363,16 @@ export function useActionHandlers(): Record<string, ActionHandler> {
       'next-bin': cycleBinInLayer(1),
       'prev-category': cycleCategory(-1),
       'next-category': cycleCategory(1),
+      // Bin-designer defaults. "Current settings" only exists in the designer,
+      // so these are unavailable elsewhere. The action map can't import the
+      // bin-designer feature (cross-feature boundary), so it bridges via a
+      // window event that `DesignerPage` listens for.
+      'set-bin-default': isDesignerRoute
+        ? () => dispatchWindowEvent('bin-designer:set-default')
+        : null,
+      'reset-bin-default': isDesignerRoute
+        ? () => dispatchWindowEvent('bin-designer:reset-default')
+        : null,
       'move-to-stash': hasBinsSelected
         ? () => {
             batch(() => {
@@ -479,5 +493,6 @@ export function useActionHandlers(): Record<string, ActionHandler> {
     matchHeight,
     addToast,
     t,
+    isDesignerRoute,
   ]);
 }

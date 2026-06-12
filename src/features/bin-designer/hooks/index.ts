@@ -10,6 +10,9 @@ export { useGeneration } from './useGeneration';
 export { useThumbnailCapture } from './useThumbnailCapture';
 export { useUnsavedWarning } from './useUnsavedWarning';
 export { useCustomBins } from './useCustomBins';
+export { useBinDefaults } from './useBinDefaults';
+export type { UseBinDefaults } from './useBinDefaults';
+export { useBinDefaultCommandBridge } from './useBinDefaultCommandBridge';
 export {
   useDesignThumbnail,
   clearThumbnailCache,

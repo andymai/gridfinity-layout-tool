@@ -19,6 +19,7 @@ import { useAutoSave } from '@/features/bin-designer/hooks/useAutoSave';
 import { useThumbnailCapture } from '@/features/bin-designer/hooks/useThumbnailCapture';
 import { useDesignerUrlSync } from '@/features/bin-designer/hooks/useDesignerUrlSync';
 import { useUnsavedWarning } from '@/features/bin-designer/hooks/useUnsavedWarning';
+import { useBinDefaultCommandBridge } from '@/features/bin-designer/hooks/useBinDefaultCommandBridge';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { DesignerHeader } from './DesignerHeader';
@@ -60,6 +61,9 @@ export function DesignerPage() {
 
   // Warn before closing tab with unsaved changes
   useUnsavedWarning();
+
+  // Bridge command-palette "bin default" commands (window events) to actions
+  useBinDefaultCommandBridge();
 
   const { isDesktop, isMobile, isLandscape } = useResponsive();
   const cutoutEditorOpen = useDesignerStore((s) => s.ui.cutoutEditorOpen);

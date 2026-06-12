@@ -11,6 +11,7 @@ import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
+import { useBinDefaults } from '@/features/bin-designer';
 import { useTranslation } from '@/i18n';
 
 export function DefaultsTab() {
@@ -37,6 +38,11 @@ export function DefaultsTab() {
     handleSaveCategoriesAsDefaults,
     hasCustomCategoryDefaults,
   } = useDrawerSettings();
+
+  // Bin Designer "default for new bins" — status + reset only. Capturing the
+  // current settings happens in the designer/command palette (live params).
+  const { hasCustomDefault: hasCustomBinDefault, resetToFactory: resetBinDefault } =
+    useBinDefaults();
 
   const updatePrintSetting = <K extends keyof PrintSettings>(key: K, value: PrintSettings[K]) => {
     updateSetting('printSettings', { ...settings.printSettings, [key]: value });
@@ -355,6 +361,37 @@ export function DefaultsTab() {
             </button>
           )}
         </div>
+      </section>
+
+      {/* Divider */}
+      <hr className="border-stroke-subtle" />
+
+      {/* Bin Designer defaults Section */}
+      <section>
+        <h3 className="text-base font-semibold text-content mb-1">
+          {t('settings.binDefaults.title')}
+        </h3>
+        <p className="text-xs text-content-tertiary mb-3">{t('settings.binDefaults.hint')}</p>
+        <div className="text-sm text-content-secondary mb-4 p-3 rounded-lg bg-surface-elevated border border-stroke-subtle">
+          <div className="flex items-center gap-2 text-xs text-content-tertiary">
+            {hasCustomBinDefault ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-accent flex-shrink-0" />
+                {t('binDesigner.customDefaultActive')}
+              </>
+            ) : (
+              t('settings.binDefaults.usingFactory')
+            )}
+          </div>
+        </div>
+        {hasCustomBinDefault && (
+          <button
+            onClick={resetBinDefault}
+            className="text-sm py-2 px-3 rounded-lg text-content-tertiary hover:text-content hover:bg-surface-hover border border-stroke-subtle transition-colors"
+          >
+            {t('binDesigner.resetFactoryDefaults')}
+          </button>
+        )}
       </section>
 
       {/* Copy from current layout confirmation */}

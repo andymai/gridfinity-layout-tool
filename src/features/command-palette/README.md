@@ -44,6 +44,13 @@ graph TB
 - Shortcuts from `@/core/constants.SHORTCUTS`
 - Frecency tracking persisted to localStorage (`gridfinity-command-palette-frecency-v2`)
 - Actions wired at runtime in CommandPalette component (access to stores/mutations)
+- **Route/context gating**: a command is unavailable when its action resolves to
+  `null` in `useActionHandlers` — e.g. `set-bin-default`/`reset-bin-default` are
+  gated to the `/designer` route via `useDesignerRouting`
+- **Cross-feature actions**: this feature must not import other features
+  (boundary rule), so commands reach them via `dispatchWindowEvent` — host
+  features listen (e.g. the designer's `useBinDefaultCommandBridge` handles
+  `bin-designer:set-default` / `bin-designer:reset-default`)
 
 ## Frecency Algorithm
 
