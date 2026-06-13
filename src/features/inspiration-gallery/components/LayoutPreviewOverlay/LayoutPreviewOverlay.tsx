@@ -5,6 +5,7 @@ import { LayoutThumbnailWithLabels } from '../LayoutThumbnailWithLabels';
 import { THEME_CONFIG } from '../../types';
 import { INSPIRATION_LAYOUTS } from '../../data';
 import type { InspirationLayout } from '../../types';
+import { Button, IconButton, ArrowLeftIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface LayoutPreviewOverlayProps {
@@ -92,21 +93,13 @@ export function LayoutPreviewOverlay({
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-stroke-subtle shrink-0">
           <div className="flex items-center gap-3">
-            <button
+            <IconButton
               ref={closeButtonRef}
               onClick={onClose}
-              className="p-2 text-content-secondary hover:text-content hover:bg-surface rounded-lg transition-colors"
               aria-label={t('gallery.backToGallery')}
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-            </button>
+              <ArrowLeftIcon className="w-5 h-5" />
+            </IconButton>
             <h2 id="preview-title" className="text-lg md:text-xl font-bold text-content">
               {name}
             </h2>
@@ -196,10 +189,11 @@ export function LayoutPreviewOverlay({
                 </h3>
                 <div className="flex gap-2">
                   {relatedLayouts.map((related) => (
-                    <button
+                    <Button
                       key={related.id}
+                      variant="ghost"
                       onClick={() => onSelectRelated(related)}
-                      className="flex-1 p-2 rounded-lg bg-surface hover:bg-surface-hover border border-stroke-subtle hover:border-stroke transition-colors text-left"
+                      className="flex-1 flex-col items-stretch p-2 rounded-lg bg-surface hover:bg-surface-hover border border-stroke-subtle hover:border-stroke text-left"
                     >
                       <div className="aspect-[3/4] bg-surface-secondary rounded mb-1.5 flex items-center justify-center overflow-hidden p-1">
                         <LayoutThumbnailWithLabels
@@ -218,7 +212,7 @@ export function LayoutPreviewOverlay({
                         {related.metrics.binCount}
                         {t('gallery.bins')}
                       </div>
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -232,38 +226,14 @@ export function LayoutPreviewOverlay({
             <p className="text-sm text-content-secondary">
               {t('gallery.useAsAStartingPointCustomizeToFitYo')}
             </p>
-            <button
+            <Button
+              variant="primary"
+              loading={isImporting}
               onClick={onUseLayout}
-              disabled={isImporting}
-              className="btn btn-primary px-6 shrink-0"
+              className="px-6 shrink-0"
             >
-              {isImporting ? (
-                <>
-                  <svg
-                    className="animate-spin motion-reduce:animate-none -ml-1 mr-2 h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Adding...
-                </>
-              ) : (
-                t('gallery.useAsStartingPoint')
-              )}
-            </button>
+              {isImporting ? 'Adding...' : t('gallery.useAsStartingPoint')}
+            </Button>
           </div>
         </div>
       </div>

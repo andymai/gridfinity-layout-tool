@@ -7,6 +7,7 @@ import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import type { LayoutPreview } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 interface LayoutQuickSwitchProps {
   onManage: () => void;
@@ -60,7 +61,7 @@ function Thumb({ preview, size, className }: ThumbProps) {
 }
 
 const MENU_ITEM_CLASS =
-  'flex w-full items-center gap-2 px-2.5 py-2 text-left text-sm text-content-secondary transition-colors hover:bg-surface-hover hover:text-content';
+  'w-full justify-start gap-2 rounded-none px-2.5 py-2 text-left text-sm font-normal text-content-secondary hover:bg-surface-hover hover:text-content';
 
 interface MenuActionProps {
   onClick: () => void;
@@ -69,9 +70,9 @@ interface MenuActionProps {
 
 function MenuAction({ onClick, children }: MenuActionProps) {
   return (
-    <button role="menuitem" onClick={onClick} className={MENU_ITEM_CLASS}>
+    <Button variant="ghost" fullWidth role="menuitem" onClick={onClick} className={MENU_ITEM_CLASS}>
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -126,16 +127,17 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
 
   return (
     <div ref={containerRef} className="relative">
-      <button
+      <Button
+        variant="ghost"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content"
+        className="h-auto gap-1.5 px-1.5 py-1 text-content-secondary hover:bg-surface-hover hover:text-content"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={t('header.switchLayout', { name: triggerName })}
       >
         <Thumb preview={triggerPreview} size={30} className="h-6 w-8" />
         <Icon name="chevron" className="h-3.5 w-3.5" />
-      </button>
+      </Button>
 
       {open && (
         <div
@@ -145,12 +147,14 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
           {library.entries.map((entry) => {
             const isActive = entry.id === activeLayoutId;
             return (
-              <button
+              <Button
                 key={entry.id}
+                variant="ghost"
+                fullWidth
                 role="menuitem"
                 aria-current={isActive ? 'true' : undefined}
                 onClick={() => void handleSwitch(entry.id)}
-                className={`flex w-full items-center gap-2.5 px-2.5 py-2 text-left text-sm transition-colors hover:bg-surface-hover ${
+                className={`justify-start gap-2.5 rounded-none px-2.5 py-2 text-left text-sm font-normal hover:bg-surface-hover ${
                   isActive ? 'text-content' : 'text-content-secondary'
                 }`}
               >
@@ -159,7 +163,7 @@ export function LayoutQuickSwitch({ onManage }: LayoutQuickSwitchProps) {
                   {entry.name}
                 </span>
                 {isActive && <Icon name="check" className="h-4 w-4 flex-shrink-0 text-accent" />}
-              </button>
+              </Button>
             );
           })}
 

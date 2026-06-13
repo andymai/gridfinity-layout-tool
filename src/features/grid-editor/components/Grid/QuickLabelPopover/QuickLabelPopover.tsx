@@ -7,6 +7,7 @@ import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import { batch } from '@/core/cqrs';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { IconButton, XIcon } from '@/design-system';
 
 /**
  * Small popover that appears near a bin for quick label editing.
@@ -152,21 +153,16 @@ function QuickLabelPopoverInner({ binId }: { binId: string }) {
               style={{ minWidth: '200px' }}
             />
             {value && (
-              <button
+              <IconButton
+                size="sm"
+                touchTarget={false}
                 type="button"
                 onClick={handleClear}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2"
                 aria-label={t('common.clear')}
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+                <XIcon className="w-4 h-4" />
+              </IconButton>
             )}
           </div>
 

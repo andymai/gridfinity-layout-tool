@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useRef } from 'react';
+import { Button } from '@/design-system';
 import { WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 
@@ -76,9 +77,10 @@ export function ThicknessSelector({
         {WALL_THICKNESS_OPTIONS.map((option) => {
           const isActive = Math.abs(option - value) < 0.001;
           return (
-            <button
+            <Button
               key={option}
               type="button"
+              variant="ghost"
               role="radio"
               tabIndex={isActive ? 0 : -1}
               aria-checked={isActive}
@@ -88,7 +90,7 @@ export function ThicknessSelector({
               className={`flex-1 tabular-nums ${getSegmentClass(isActive)}`}
             >
               {option}
-            </button>
+            </Button>
           );
         })}
       </div>

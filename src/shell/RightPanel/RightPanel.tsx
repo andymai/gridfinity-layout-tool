@@ -6,6 +6,7 @@ import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { exportPrintListTSV } from '@/core/storage';
 import { trackEvent } from '@/shared/analytics/posthog';
+import { Button, IconButton } from '@/design-system';
 import { ConfirmDialog, CollapsibleSection } from '@/shared/components';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
@@ -83,9 +84,9 @@ export function RightPanel() {
         style={{ width: '48px' }}
       >
         <div className="flex flex-col items-center py-2">
-          <button
+          <IconButton
+            size="sm"
             onClick={toggle}
-            className="btn btn-ghost btn-icon"
             title={t('rightPanel.expandPanel')}
             aria-label={t('rightPanel.expandRightPanel')}
           >
@@ -94,16 +95,17 @@ export function RightPanel() {
                 <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
               ))}
             </svg>
-          </button>
+          </IconButton>
         </div>
       </aside>
     );
   }
 
   const collapseButton = (
-    <button
+    <IconButton
+      size="sm"
       onClick={toggle}
-      className="flex-shrink-0 p-2 rounded-md transition-colors text-content-tertiary hover:bg-surface-hover hover:text-content"
+      className="flex-shrink-0 text-content-tertiary"
       title={t('rightPanel.collapsePanel')}
       aria-label={t('rightPanel.collapseRightPanel')}
     >
@@ -112,7 +114,7 @@ export function RightPanel() {
           <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
         ))}
       </svg>
-    </button>
+    </IconButton>
   );
 
   return (
@@ -130,12 +132,14 @@ export function RightPanel() {
         <div className="flex items-center gap-3 px-4 py-2">
           {collapseButton}
           <div className="flex gap-1" role="tablist">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               id="tab-inspector"
               role="tab"
               aria-selected={activeTab === 'inspector'}
               aria-controls="tabpanel-inspector"
-              className={`text-xs font-semibold uppercase tracking-wider px-2 py-1 rounded transition-colors ${
+              className={`font-semibold uppercase tracking-wider rounded hover:bg-transparent ${
                 activeTab === 'inspector'
                   ? 'text-accent bg-accent-muted'
                   : 'text-content-tertiary hover:text-content-secondary'
@@ -143,13 +147,15 @@ export function RightPanel() {
               onClick={() => setActiveTab('inspector')}
             >
               {t('rightPanel.inspector')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               id="tab-history"
               role="tab"
               aria-selected={activeTab === 'history'}
               aria-controls="tabpanel-history"
-              className={`text-xs font-semibold uppercase tracking-wider px-2 py-1 rounded transition-colors ${
+              className={`font-semibold uppercase tracking-wider rounded hover:bg-transparent ${
                 activeTab === 'history'
                   ? 'text-accent bg-accent-muted'
                   : 'text-content-tertiary hover:text-content-secondary'
@@ -157,7 +163,7 @@ export function RightPanel() {
               onClick={() => setActiveTab('history')}
             >
               {t('rightPanel.historyTab')}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -219,8 +225,9 @@ export function RightPanel() {
               <div
                 className={`flex items-center justify-between px-4 py-3 ${printListExpanded ? 'border-b border-stroke-subtle' : ''}`}
               >
-                <button
-                  className="flex items-center gap-2 transition-colors bg-transparent"
+                <Button
+                  variant="ghost"
+                  className="gap-2 px-0 py-0 bg-transparent hover:bg-transparent"
                   onClick={() => setPrintListExpanded(!printListExpanded)}
                   aria-expanded={printListExpanded}
                 >
@@ -241,11 +248,12 @@ export function RightPanel() {
                   {printList.rows.length > 0 && (
                     <span className="badge badge-info">{printList.totalBins}</span>
                   )}
-                </button>
+                </Button>
                 {printList.rows.length > 0 && (
                   <div className="flex items-center gap-1">
                     {/* Copy button */}
-                    <button
+                    <IconButton
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         const tsv = exportPrintListTSV(printList.rows, {
@@ -257,7 +265,6 @@ export function RightPanel() {
                         trackEvent('ui.layoutExported', { format: 'tsv' });
                         setTimeout(() => setCopyFeedback(false), 2000);
                       }}
-                      className="btn btn-ghost p-1.5 min-w-0 min-h-0"
                       title={t('rightPanel.copyTSV')}
                       aria-label={t('rightPanel.copyBinListAsTsv')}
                     >
@@ -296,7 +303,7 @@ export function RightPanel() {
                           ))}
                         </svg>
                       )}
-                    </button>
+                    </IconButton>
                   </div>
                 )}
               </div>

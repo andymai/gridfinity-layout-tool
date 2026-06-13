@@ -123,9 +123,9 @@ describe('CutoutsSection', () => {
     render(<CutoutsSection />);
     fireEvent.click(screen.getByText('binDesigner.cutouts.clearAll'));
 
-    // Click the confirm button in the dialog (the one with btn-danger class)
+    // Click the confirm button in the dialog (the one with danger variant)
     const dialog = screen.getByRole('dialog');
-    const confirmBtn = dialog.querySelector('button.btn-danger');
+    const confirmBtn = dialog.querySelector('button.to-danger');
     expect(confirmBtn).not.toBeNull();
     fireEvent.click(confirmBtn!);
 

@@ -38,7 +38,7 @@ describe('ContextMenuItem', () => {
     render(<ContextMenuItem icon={mockIcon} label="Disabled" onClick={vi.fn()} disabled />);
     const button = screen.getByRole('menuitem');
     expect(button).toBeDisabled();
-    expect(button).toHaveClass('opacity-50');
+    expect(button).toHaveClass('disabled:opacity-50');
   });
 
   it('does not call onClick when disabled', () => {

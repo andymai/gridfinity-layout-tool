@@ -10,6 +10,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
 import { formatDimensions } from '../../../domain';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 export function SyncDimensionsDialog() {
@@ -155,18 +156,12 @@ export function SyncDimensionsDialog() {
 
         {/* Actions */}
         <div className="flex gap-2 justify-end">
-          <button
-            onClick={handleCancel}
-            className="btn btn-secondary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
-          >
+          <Button variant="secondary" onClick={handleCancel}>
             {t('common.cancel')}
-          </button>
-          <button
-            onClick={() => void handleSync()}
-            className="btn btn-primary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
-          >
+          </Button>
+          <Button variant="primary" onClick={() => void handleSync()}>
             {t('designLinking.syncDialog.sync')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>,

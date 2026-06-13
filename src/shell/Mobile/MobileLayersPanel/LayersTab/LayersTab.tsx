@@ -13,6 +13,7 @@ import { isOk, isErr, getUserMessage } from '@/core/result';
 import { useToastStore } from '@/core/store/toast';
 import { useResultToast } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
+import { Button, IconButton, PlusIcon, MinusIcon } from '@/design-system';
 import { calculateLayerAutoExpansion } from '@/features/layers/utils/layerAutoExpansion';
 import { batch } from '@/core/cqrs';
 
@@ -268,8 +269,10 @@ export function LayersTab() {
               }`}
             >
               {/* Layer info - tappable to select */}
-              <button
-                className="flex-1 min-w-0 text-left py-1"
+              <Button
+                variant="ghost"
+                touchTarget={false}
+                className="flex-1 min-w-0 flex-col items-start text-left py-1 px-0 hover:bg-transparent"
                 onClick={() => handleSelectLayer(layer.id)}
               >
                 <span
@@ -289,54 +292,43 @@ export function LayersTab() {
                   {t('mobile.layers.binCount', { count: binCount })}
                   {hasMultipleLayers ? ` · ${layerCoverage}%` : ''}
                 </span>
-              </button>
+              </Button>
 
               {/* Height control - compact */}
               <div className="flex items-center gap-1">
-                <button
+                <IconButton
+                  size="lg"
                   onClick={() => handleHeightChange(layer.id, -1)}
                   disabled={layer.height <= CONSTRAINTS.MIN_LAYER_HEIGHT}
-                  className="w-10 h-10 flex items-center justify-center rounded-md text-content-tertiary active:bg-surface-hover disabled:opacity-50 transition-colors"
+                  className="w-10 h-10 text-content-tertiary active:bg-surface-hover"
                   aria-label={t('layers.decreaseHeight', { name: layer.name })}
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M20 12H4"
-                    />
-                  </svg>
-                </button>
+                  <MinusIcon size="sm" />
+                </IconButton>
                 <span
                   className="text-center text-xs font-medium text-content-secondary tabular-nums whitespace-nowrap min-w-[2ch]"
                   title={t('layers.heightTooltip')}
                 >
                   {layer.height}u
                 </span>
-                <button
+                <IconButton
+                  size="lg"
                   onClick={() => handleHeightChange(layer.id, 1)}
-                  className="w-10 h-10 flex items-center justify-center rounded-md text-content-tertiary active:bg-surface-hover transition-colors"
+                  className="w-10 h-10 text-content-tertiary active:bg-surface-hover"
                   aria-label={t('layers.increaseHeight', { name: layer.name })}
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                </button>
+                  <PlusIcon size="sm" />
+                </IconButton>
               </div>
 
               {/* Reorder buttons - only for active layer when multiple layers */}
               {isActive && hasMultipleLayers && (
                 <div className="flex items-center">
-                  <button
+                  <IconButton
+                    touchTarget={false}
                     onClick={() => handleMoveLayer(displayIndex, 'up')}
                     disabled={displayIndex === 0}
-                    className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-50 transition-colors"
+                    className="w-8 h-8 text-content-tertiary hover:text-content"
                     aria-label={t('mobile.moveLayerUp')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -347,11 +339,12 @@ export function LayersTab() {
                         d="M5 15l7-7 7 7"
                       />
                     </svg>
-                  </button>
-                  <button
+                  </IconButton>
+                  <IconButton
+                    touchTarget={false}
                     onClick={() => handleMoveLayer(displayIndex, 'down')}
                     disabled={displayIndex === layers.length - 1}
-                    className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-content disabled:opacity-50 transition-colors"
+                    className="w-8 h-8 text-content-tertiary hover:text-content"
                     aria-label={t('mobile.moveLayerDown')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -362,15 +355,17 @@ export function LayersTab() {
                         d="M19 9l-7 7-7-7"
                       />
                     </svg>
-                  </button>
+                  </IconButton>
                 </div>
               )}
 
               {/* Delete */}
               {layers.length > 1 && (
-                <button
+                <IconButton
+                  touchTarget={false}
+                  variant="dangerGhost"
                   onClick={() => handleDeleteLayer(layer.id)}
-                  className="w-8 h-8 flex items-center justify-center text-content-tertiary hover:text-error transition-colors"
+                  className="w-8 h-8 text-content-tertiary"
                   aria-label={t('mobile.deleteLayer')}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -381,7 +376,7 @@ export function LayersTab() {
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                     />
                   </svg>
-                </button>
+                </IconButton>
               )}
             </div>
           );
@@ -417,12 +412,15 @@ export function LayersTab() {
       </div>
 
       {/* Add layer button */}
-      <button onClick={handleAddLayer} disabled={!canAddLayer} className="btn btn-primary w-full">
-        <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
+      <Button
+        variant="primary"
+        fullWidth
+        onClick={handleAddLayer}
+        disabled={!canAddLayer}
+        leftIcon={<PlusIcon />}
+      >
         {t('layers.addLayer')}
-      </button>
+      </Button>
 
       <ConfirmDialog
         isOpen={deleteLayerId !== null}
@@ -478,22 +476,26 @@ export function LayersTab() {
                 autoFocus
               />
               <div className="flex gap-2 mt-4">
-                <button
+                <Button
+                  variant="secondary"
+                  fullWidth
                   onClick={() => {
                     setRenameLayerId(null);
                     setRenameValue('');
                   }}
-                  className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
+                  className="flex-1 py-3 text-content-secondary bg-surface rounded-lg"
                 >
                   {t('common.cancel')}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="primary"
+                  fullWidth
                   onClick={handleRenameConfirm}
                   disabled={!renameValue.trim()}
-                  className="flex-1 py-3 text-on-dark font-medium bg-accent rounded-lg disabled:opacity-50"
+                  className="flex-1 py-3 text-on-dark bg-accent rounded-lg disabled:opacity-50"
                 >
                   {t('common.rename')}
-                </button>
+                </Button>
               </div>
             </div>
           </div>,

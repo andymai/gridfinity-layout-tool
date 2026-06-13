@@ -330,9 +330,9 @@ describe('SharedLayoutBanner', () => {
 
       // Click discard to show dialog
       fireEvent.click(screen.getByRole('button', { name: /Discard/i }));
-      // Confirm in dialog (the btn-danger button inside the dialog)
+      // Confirm in dialog (the danger-variant button inside the dialog)
       const dialog = screen.getByRole('dialog');
-      const confirmButton = dialog.querySelector('.btn-danger') as HTMLElement;
+      const confirmButton = dialog.querySelector('.to-danger') as HTMLElement;
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
@@ -347,7 +347,7 @@ describe('SharedLayoutBanner', () => {
       fireEvent.click(screen.getByRole('button', { name: /Discard/i }));
       // Confirm in dialog
       const dialog = screen.getByRole('dialog');
-      const confirmButton = dialog.querySelector('.btn-danger') as HTMLElement;
+      const confirmButton = dialog.querySelector('.to-danger') as HTMLElement;
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
@@ -364,7 +364,7 @@ describe('SharedLayoutBanner', () => {
       fireEvent.click(screen.getByRole('button', { name: /Discard/i }));
       // Confirm in dialog
       const dialog = screen.getByRole('dialog');
-      const confirmButton = dialog.querySelector('.btn-danger') as HTMLElement;
+      const confirmButton = dialog.querySelector('.to-danger') as HTMLElement;
       fireEvent.click(confirmButton);
 
       // Check that layout store was updated (handleDiscard is async)

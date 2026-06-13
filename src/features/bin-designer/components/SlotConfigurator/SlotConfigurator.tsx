@@ -12,6 +12,7 @@ import { useDesignerStore } from '@/features/bin-designer/store';
 import { DESIGNER_CONSTRAINTS, GRIDFINITY } from '@/features/bin-designer/constants';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
 import { StepperControl } from '@/shared/components/StepperControl';
+import { Button } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import {
   calculateSlotPositions,
@@ -143,20 +144,21 @@ export function SlotConfigurator() {
         <span className="text-xs text-content-tertiary">{t('binDesigner.slotDirection')}</span>
         <div className="flex gap-0.5">
           {directions.map((direction) => (
-            <button
+            <Button
               key={direction}
               type="button"
+              variant="ghost"
               onClick={() => setDirection(direction)}
               className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
                 activeDirection === direction
-                  ? 'bg-accent text-on-accent'
+                  ? 'bg-accent text-on-accent hover:bg-accent'
                   : 'border border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover'
               }`}
             >
               {direction === 'vertical'
                 ? t('binDesigner.slotVertical')
                 : t('binDesigner.slotHorizontal')}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

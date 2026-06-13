@@ -11,6 +11,7 @@ import { trackEvent } from '@/shared/analytics/posthog';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
+import { Button, IconButton, XIcon } from '@/design-system';
 import { CloudShareTab } from '../CloudShareTab';
 
 interface ShareModalProps {
@@ -124,78 +125,73 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
           <h2 id="share-modal-title" className="text-2xl font-bold text-content">
             {t('share.title')}
           </h2>
-          <button
+          <IconButton
             onClick={onClose}
-            className="p-2 -m-2 rounded-md text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
+            touchTarget={false}
+            className="-m-2 text-content-tertiary hover:text-content"
             aria-label={t('common.close')}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
+            <XIcon size="md" />
+          </IconButton>
         </div>
 
         {/* Tab selector */}
         <div className="flex gap-1 mb-4 bg-surface rounded-lg p-1" role="tablist">
           {/* Cloud tab hidden when collaborative_editing is enabled (uses ShareButton instead) */}
           {!isCollabEnabled && (
-            <button
+            <Button
+              variant="ghost"
               role="tab"
               aria-selected={activeTab === 'cloud'}
               onClick={() => handleTabChange('cloud')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 hover:bg-transparent ${
                 activeTab === 'cloud'
                   ? 'bg-accent text-on-dark'
                   : 'text-content-secondary hover:text-content hover:bg-surface-hover'
               }`}
             >
               {t('share.tabs.cloud')}
-            </button>
+            </Button>
           )}
-          <button
+          <Button
+            variant="ghost"
             role="tab"
             aria-selected={activeTab === 'url'}
             onClick={() => handleTabChange('url')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 hover:bg-transparent ${
               activeTab === 'url'
                 ? 'bg-accent text-on-dark'
                 : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }`}
           >
             {t('share.tabs.link')}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             role="tab"
             aria-selected={activeTab === 'file'}
             onClick={() => handleTabChange('file')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 hover:bg-transparent ${
               activeTab === 'file'
                 ? 'bg-accent text-on-dark'
                 : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }`}
           >
             {t('share.tabs.file')}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             role="tab"
             aria-selected={activeTab === 'json'}
             onClick={() => handleTabChange('json')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 hover:bg-transparent ${
               activeTab === 'json'
                 ? 'bg-accent text-on-dark'
                 : 'text-content-secondary hover:text-content hover:bg-surface-hover'
             }`}
           >
             {t('share.tabs.json')}
-          </button>
+          </Button>
         </div>
 
         {/* Tab content */}
@@ -221,9 +217,9 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                   onClick={() => urlInputRef.current?.select()}
                   className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm"
                 />
-                <button onClick={handleCopyURL} className="btn btn-primary px-4">
+                <Button variant="primary" onClick={handleCopyURL}>
                   {copied ? t('common.copied') : t('common.copy')}
-                </button>
+                </Button>
               </div>
               <div className="text-xs text-content-tertiary">{t('share.link.longUrlNote')}</div>
             </div>
@@ -261,9 +257,9 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                       })}
                     </div>
                   </div>
-                  <button onClick={handleDownload} className="btn btn-primary">
+                  <Button variant="primary" onClick={handleDownload}>
                     {t('common.download')}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -279,9 +275,9 @@ function ShareModalContent({ onClose, layoutId }: { onClose: () => void; layoutI
                 onClick={() => jsonTextareaRef.current?.select()}
                 className="flex-1 bg-surface text-content p-3 rounded font-mono text-xs resize-none min-h-[200px]"
               />
-              <button onClick={handleCopyJSON} className="btn btn-primary self-start">
+              <Button variant="primary" onClick={handleCopyJSON} className="self-start">
                 {copied ? t('share.json.copied') : t('share.json.copy')}
-              </button>
+              </Button>
             </div>
           )}
         </div>

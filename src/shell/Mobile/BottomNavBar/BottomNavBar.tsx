@@ -1,4 +1,5 @@
 import { useMobileStore } from '@/core/store';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface NavItem {
@@ -99,10 +100,11 @@ export function BottomNavBar() {
         const isActive = activeMobilePanel === item.id;
         const label = getLabel(item.id);
         return (
-          <button
+          <Button
             key={item.id}
+            variant="ghost"
             onClick={() => toggleMobilePanel(item.id)}
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors"
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 rounded-none hover:bg-transparent"
             style={{
               color: isActive ? 'var(--color-primary)' : 'var(--text-tertiary)',
               backgroundColor: isActive ? 'var(--bg-hover)' : 'transparent',
@@ -112,7 +114,7 @@ export function BottomNavBar() {
           >
             {item.icon}
             <span className="text-xs">{label}</span>
-          </button>
+          </Button>
         );
       })}
     </nav>

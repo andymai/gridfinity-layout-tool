@@ -19,6 +19,7 @@ import type { InspirationLayout, InspirationTheme } from '../../types';
 import { ThemeFilterPills } from '../ThemeFilterPills';
 import { LayoutCard } from '../LayoutCard';
 import { LayoutPreviewOverlay } from '../LayoutPreviewOverlay';
+import { Button, IconButton, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface InspirationGalleryProps {
@@ -329,23 +330,15 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
                   />
                 </div>
               )}
-              <button
+              <IconButton
                 ref={closeButtonRef}
                 onClick={() =>
                   handleCloseGallery(templateApplied ? 'applied_template' : 'dismissed')
                 }
-                className="p-1.5 text-content-secondary hover:text-content hover:bg-surface rounded-lg transition-colors"
                 aria-label={t('common.close')}
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+                <XIcon className="w-5 h-5" />
+              </IconButton>
             </div>
           </div>
           {/* Filter row */}
@@ -400,12 +393,14 @@ function InspirationGalleryContent({ onClose }: { onClose: () => void }) {
                 />
               </svg>
               <p className="text-content-secondary mb-2">{t('gallery.empty')}</p>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setSelectedTheme('all')}
-                className="text-sm text-accent hover:underline"
+                className="px-0 text-accent hover:bg-transparent hover:underline"
               >
                 {t('gallery.browseAllLayouts')}
-              </button>
+              </Button>
             </div>
           )}
         </div>

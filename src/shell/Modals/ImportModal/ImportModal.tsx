@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react';
 import { validateImport } from '@/shared/utils/validation';
 import { decodeLayoutFromURL } from '@/core/storage';
 import type { Layout } from '@/core/types';
+import { Button, IconButton, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface ImportModalProps {
@@ -152,23 +153,14 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
             <h2 id="import-modal-title" className="text-2xl font-bold text-content">
               {t('layouts.import.title')}
             </h2>
-            <button
+            <IconButton
               onClick={onClose}
-              className="p-2 -m-2 rounded-md text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors"
+              touchTarget={false}
+              className="-m-2 text-content-tertiary hover:text-content"
               aria-label={t('layouts.import.closeImportDialog')}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
+              <XIcon size="md" />
+            </IconButton>
           </div>
 
           <div className="flex-1 flex flex-col gap-4 overflow-hidden">
@@ -182,12 +174,9 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
                 className="hidden"
                 aria-label={t('layouts.import.selectJsonFileToImport')}
               />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 bg-surface-hover hover:bg-surface-active text-content rounded transition-colors"
-              >
+              <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
                 {t('layouts.import.browseFiles')}
-              </button>
+              </Button>
             </div>
 
             {/* Textarea */}
@@ -240,16 +229,16 @@ function ImportModalContent({ onClose, onImport }: Omit<ImportModalProps, 'isOpe
 
           {/* Action Buttons */}
           <div className="flex gap-3 mt-6">
-            <button
+            <Button
+              variant="primary"
               onClick={handleImport}
               disabled={!!errors.length || !jsonText.trim()}
-              className="btn btn-primary"
             >
               {t('common.import')}
-            </button>
-            <button onClick={onClose} className="btn btn-secondary">
+            </Button>
+            <Button variant="secondary" onClick={onClose}>
               {t('common.cancel')}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

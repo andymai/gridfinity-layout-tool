@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import type { LayoutEntry } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import { useTwoClickDelete } from '@/shared/components';
+import { Button, IconButton } from '@/design-system';
 
 interface LayoutActionsProps {
   entry: LayoutEntry;
@@ -105,9 +106,11 @@ export function LayoutActions({
       onClick={(e) => e.stopPropagation()}
     >
       {/* Download Button */}
-      <button
+      <IconButton
+        size="sm"
+        touchTarget={false}
         onClick={handleAction(onDownload)}
-        className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface transition-colors"
+        className="text-content-tertiary hover:bg-surface hover:text-content"
         title={t('common.download')}
         aria-label={`${t('common.download')} ${entry.name}`}
       >
@@ -125,21 +128,17 @@ export function LayoutActions({
             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
           />
         </svg>
-      </button>
+      </IconButton>
 
       {/* Overflow Menu Button */}
       <div className="relative">
-        <button
+        <IconButton
           ref={menuButtonRef}
+          size="sm"
+          touchTarget={false}
+          pressed={isMenuOpen}
           onClick={handleMenuToggle}
-          className={`
-            p-1.5 rounded transition-colors
-            ${
-              isMenuOpen
-                ? 'bg-surface text-content'
-                : 'text-content-tertiary hover:text-content hover:bg-surface'
-            }
-          `}
+          className="text-content-tertiary hover:bg-surface hover:text-content"
           aria-label={`More actions for ${entry.name}`}
           aria-expanded={isMenuOpen}
           aria-haspopup="menu"
@@ -147,7 +146,7 @@ export function LayoutActions({
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
           </svg>
-        </button>
+        </IconButton>
 
         {/* Dropdown Menu - rendered via portal to escape modal's transform */}
         {isMenuOpen &&
@@ -158,10 +157,12 @@ export function LayoutActions({
               style={menuStyle}
               className="w-40 bg-surface-elevated border border-stroke rounded-lg shadow-lg py-1 z-50"
             >
-              <button
+              <Button
+                variant="ghost"
+                fullWidth
                 role="menuitem"
                 onClick={handleAction(onRename)}
-                className="w-full px-3 py-2 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+                className="justify-start rounded-none px-3 py-2 text-left text-sm font-normal text-content hover:bg-surface"
               >
                 <svg
                   className="w-4 h-4 text-content-secondary"
@@ -178,11 +179,13 @@ export function LayoutActions({
                   />
                 </svg>
                 {t('common.rename')}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
+                fullWidth
                 role="menuitem"
                 onClick={handleAction(onDuplicate)}
-                className="w-full px-3 py-2 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+                className="justify-start rounded-none px-3 py-2 text-left text-sm font-normal text-content hover:bg-surface"
               >
                 <svg
                   className="w-4 h-4 text-content-secondary"
@@ -199,12 +202,14 @@ export function LayoutActions({
                   />
                 </svg>
                 {t('common.duplicate')}
-              </button>
+              </Button>
               {/* Copy Link */}
-              <button
+              <Button
+                variant="ghost"
+                fullWidth
                 role="menuitem"
                 onClick={handleAction(onCopyLink)}
-                className="w-full px-3 py-2 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+                className="justify-start rounded-none px-3 py-2 text-left text-sm font-normal text-content hover:bg-surface"
               >
                 <svg
                   className="w-4 h-4 text-content-secondary"
@@ -221,18 +226,20 @@ export function LayoutActions({
                   />
                 </svg>
                 {t('share.copyLink')}
-              </button>
+              </Button>
               {!isOnlyLayout && (
                 <>
                   <div className="border-t border-stroke my-1" />
-                  <button
+                  <Button
+                    variant="ghost"
+                    fullWidth
                     role="menuitem"
                     onClick={handleDelete}
                     className={`
-                      w-full px-3 py-2 text-left text-sm flex flex-col gap-0.5 transition-colors
+                      flex-col items-start gap-0.5 rounded-none px-3 py-2 text-left text-sm font-normal
                       ${
                         isConfirmingDelete
-                          ? 'bg-danger text-on-dark'
+                          ? 'bg-danger text-on-dark hover:bg-danger'
                           : 'text-danger hover:bg-surface'
                       }
                     `}
@@ -259,7 +266,7 @@ export function LayoutActions({
                         {t('layouts.binsWillBeDeleted', { count: entry.preview.binCount })}
                       </span>
                     )}
-                  </button>
+                  </Button>
                 </>
               )}
             </div>,

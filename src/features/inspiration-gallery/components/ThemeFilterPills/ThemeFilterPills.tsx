@@ -1,5 +1,6 @@
 import { THEME_CONFIG } from '../../types';
 import type { InspirationTheme } from '../../types';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface ThemeFilterPillsProps {
@@ -34,18 +35,18 @@ export function ThemeFilterPills({
         const count = themeCounts[theme];
 
         return (
-          <button
+          <Button
+            variant="ghost"
             type="button"
             key={theme}
             role="tab"
             aria-selected={isSelected}
             onClick={() => onThemeChange(theme)}
             className={`
-              flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium
-              transition-all duration-150 whitespace-nowrap
+              gap-1.5 px-3 py-1.5 rounded-full whitespace-nowrap
               ${
                 isSelected
-                  ? 'bg-accent text-on-dark shadow-sm'
+                  ? 'bg-accent text-on-dark shadow-sm hover:bg-accent'
                   : 'bg-surface text-content-secondary hover:text-content hover:bg-surface-hover'
               }
             `}
@@ -72,7 +73,7 @@ export function ThemeFilterPills({
             >
               {count}
             </span>
-          </button>
+          </Button>
         );
       })}
     </div>

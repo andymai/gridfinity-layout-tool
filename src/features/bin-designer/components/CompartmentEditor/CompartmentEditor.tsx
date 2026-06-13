@@ -21,6 +21,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
 import { DESIGNER_CONSTRAINTS, WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
+import { Button } from '@/design-system';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { SnappingSlider } from '../controls/SnappingSlider';
@@ -523,11 +524,12 @@ export function CompartmentEditor() {
 
         {/* Advanced: set the grid by a minimum compartment size in mm. */}
         <div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setShowSizer((v) => !v)}
             aria-expanded={showSizer}
-            className="flex items-center gap-1 text-[11px] font-medium text-content-secondary hover:text-content"
+            className="flex items-center gap-1 rounded-none px-0 py-0 hover:bg-transparent text-[11px] font-medium text-content-secondary hover:text-content"
           >
             <svg
               className={`h-3 w-3 transition-transform ${showSizer ? 'rotate-90' : ''}`}
@@ -540,7 +542,7 @@ export function CompartmentEditor() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
             {t('binDesigner.compartmentEditor.setBySize')}
-          </button>
+          </Button>
 
           {showSizer && (
             <div className="mt-2 space-y-2 border-l border-stroke-subtle pl-3">
@@ -607,14 +609,15 @@ export function CompartmentEditor() {
               {instructionText}
             </p>
             {hasMergedCompartments && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={handleReset}
-                className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+                className="rounded-none px-0 py-0 hover:bg-transparent text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
                 aria-label={t('binDesigner.resetCompartmentLayoutToUniformGrid')}
               >
                 {t('common.reset')}
-              </button>
+              </Button>
             )}
           </div>
           <div

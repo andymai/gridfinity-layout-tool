@@ -1,4 +1,5 @@
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 interface NewLayoutCardProps {
   onCreate: () => void;
@@ -12,13 +13,13 @@ export function NewLayoutCard({ onCreate }: NewLayoutCardProps) {
   const t = useTranslation();
 
   return (
-    <button
+    <Button
+      variant="ghost"
       onClick={onCreate}
       className="
-        group w-full text-left bg-surface-secondary rounded-lg p-2
-        border-2 border-dashed border-stroke
+        group block h-auto w-full text-left bg-surface-secondary rounded-lg p-2
+        border-2 border-dashed border-stroke font-normal
         hover:border-accent hover:bg-surface-tertiary
-        transition-colors cursor-pointer
         focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
       "
       aria-label={t('layouts.newLayout')}
@@ -53,6 +54,6 @@ export function NewLayoutCard({ onCreate }: NewLayoutCardProps) {
 
       {/* Placeholder for action buttons row - matches LayoutGridItem height */}
       <div className="mt-1.5 h-8" aria-hidden="true" />
-    </button>
+    </Button>
   );
 }

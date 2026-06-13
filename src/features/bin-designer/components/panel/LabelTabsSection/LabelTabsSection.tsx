@@ -8,7 +8,7 @@
 import { FeatureToggle } from '../FeatureToggle';
 import { StepperControl } from '@/shared/components/StepperControl';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import { Input, Select, InfoIcon } from '@/design-system';
+import { Button, Input, Select, InfoIcon } from '@/design-system';
 import type { SelectOption } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
@@ -61,15 +61,17 @@ export function LabelTabsSection() {
           {EDGES_OPTIONS.map((option) => {
             const current = state.label.edges ?? 'back';
             return (
-              <button
+              <Button
                 key={option}
                 type="button"
+                variant="ghost"
+                touchTarget={false}
                 onClick={() => handlers.setTabEdges(option)}
                 aria-pressed={current === option}
                 className={`flex-1 ${getSegmentClass(current === option)}`}
               >
                 {t(`binDesigner.tabEdges.${option}`)}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -77,13 +79,16 @@ export function LabelTabsSection() {
           <div className="mt-1 flex items-start gap-2 text-xs text-warning">
             <InfoIcon size="xs" className="mt-0.5 shrink-0" />
             <span className="flex-1">{t('binDesigner.tabBothCollisionWarning')}</span>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
+              touchTarget={false}
               onClick={handlers.autoFixDimensions}
-              className="shrink-0 font-medium text-accent hover:text-accent/80 transition-colors"
+              className="shrink-0 px-0 font-medium text-accent hover:bg-transparent hover:text-accent/80"
             >
               {t('binDesigner.tabAutoFix')}
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -219,15 +224,17 @@ export function LabelTabsSection() {
             className={SEGMENT_GROUP_CLASS}
           >
             {ALIGNMENT_OPTIONS.map((option) => (
-              <button
+              <Button
                 key={option}
                 type="button"
+                variant="ghost"
+                touchTarget={false}
                 onClick={() => handlers.setTabAlignment(option)}
                 aria-pressed={state.label.alignment === option}
                 className={`flex-1 ${getSegmentClass(state.label.alignment === option)}`}
               >
                 {t(`binDesigner.alignment.${option}`)}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -240,15 +247,17 @@ export function LabelTabsSection() {
         </span>
         <div role="group" aria-label={t('binDesigner.tabSupport')} className={SEGMENT_GROUP_CLASS}>
           {SUPPORT_OPTIONS.map((option) => (
-            <button
+            <Button
               key={option}
               type="button"
+              variant="ghost"
+              touchTarget={false}
               onClick={() => handlers.setTabSupport(option)}
               aria-pressed={state.label.support === option}
               className={`flex-1 ${getSegmentClass(state.label.support === option)}`}
             >
               {t(`binDesigner.tabSupport.${option}`)}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -274,15 +283,17 @@ export function LabelTabsSection() {
               className={SEGMENT_GROUP_CLASS}
             >
               {MODE_OPTIONS.map((option) => (
-                <button
+                <Button
                   key={option}
                   type="button"
+                  variant="ghost"
+                  touchTarget={false}
                   onClick={() => handlers.setTextMode(option)}
                   aria-pressed={state.textDefaults.mode === option}
                   className={`flex-1 ${getSegmentClass(state.textDefaults.mode === option)}`}
                 >
                   {t(`binDesigner.textMode.${option}`)}
-                </button>
+                </Button>
               ))}
             </div>
             {state.textDefaults.mode === 'through-cut' && (

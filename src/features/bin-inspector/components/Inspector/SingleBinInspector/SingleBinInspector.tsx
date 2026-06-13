@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
+import { Button, IconButton, XIcon } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { getBinLocationContext } from '@/shared/utils/binLocation';
@@ -78,21 +79,16 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           {t('inspector.bin', { width: formatDim(bin.width), depth: formatDim(bin.depth) })}
         </h2>
         {onClose && (
-          <button
+          <IconButton
+            size="sm"
+            touchTarget={false}
             type="button"
             onClick={onClose}
-            className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+            className="w-7 h-7"
             aria-label={t('inspector.deselectBin')}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+            <XIcon className="w-4 h-4" />
+          </IconButton>
         )}
       </div>
 
@@ -117,13 +113,14 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           </div>
 
           {/* Flip button */}
-          <button
+          <IconButton
+            variant="secondary"
+            size={isMobile ? 'lg' : 'sm'}
+            touchTarget={isMobile}
             type="button"
             onClick={rotateBin}
             className={
-              isMobile
-                ? 'btn btn-secondary w-12 h-12 p-0 flex-shrink-0'
-                : 'flex-shrink-0 h-8 w-8 flex items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:text-content hover:bg-surface-hover transition-colors'
+              isMobile ? 'w-12 h-12 flex-shrink-0' : 'flex-shrink-0 h-8 w-8 text-content-tertiary'
             }
             title={t('inspector.swapDimensions')}
             aria-label={t('inspector.swapWidthAndDepth')}
@@ -141,7 +138,7 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
                 d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
               />
             </svg>
-          </button>
+          </IconButton>
 
           {/* Depth control */}
           <div className="flex-1">
@@ -346,21 +343,23 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
         {/* Actions */}
         <div className="flex gap-2">
           {canMoveToStaging && (
-            <button
+            <Button
+              variant="secondary"
               type="button"
               onClick={moveToStaging}
-              className={`btn btn-secondary flex-1 ${isMobile ? 'h-12' : ''}`}
+              className={`flex-1 ${isMobile ? 'h-12' : ''}`}
             >
               {t('inspector.toStash')}
-            </button>
+            </Button>
           )}
-          <button
+          <Button
+            variant="danger"
             type="button"
             onClick={requestDelete}
-            className={`btn btn-danger flex-1 ${isMobile ? 'h-12' : ''}`}
+            className={`flex-1 ${isMobile ? 'h-12' : ''}`}
           >
             {t('common.delete')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

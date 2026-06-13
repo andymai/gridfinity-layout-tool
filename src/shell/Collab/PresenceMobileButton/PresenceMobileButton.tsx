@@ -7,6 +7,7 @@
  */
 
 import type { ConnectionStatus } from '@/shared/hooks/usePresence';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 const PEOPLE_EMOJI = '👥';
@@ -34,28 +35,21 @@ export function PresenceMobileButton({
 }: PresenceMobileButtonProps) {
   const t = useTranslation();
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="sm"
       onClick={onPress}
-      className={`
-        flex items-center gap-1.5 px-2 py-1
-        rounded-md text-sm font-medium
-        text-content-secondary hover:text-content
-        hover:bg-surface-hover transition-colors
-        ${className}
-      `.trim()}
+      className={`gap-1.5 ${className}`.trim()}
       aria-label={t('collab.mobileButton.ariaLabel', { count: participantCount })}
       title={t('collab.mobileButton.title', { count: participantCount })}
     >
-      {/* People emoji */}
       <span className="text-base" aria-hidden="true">
         {PEOPLE_EMOJI}
       </span>
 
-      {/* Count */}
       <span>{participantCount}</span>
 
-      {/* Connection indicator */}
       <ConnectionIndicator status={status} size="sm" />
-    </button>
+    </Button>
   );
 }

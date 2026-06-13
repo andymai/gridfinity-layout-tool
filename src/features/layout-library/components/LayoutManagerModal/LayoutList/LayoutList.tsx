@@ -9,6 +9,7 @@ import { useTranslation } from '@/i18n';
 import { ViewModeToggle } from '../ViewModeToggle';
 import type { ViewMode } from '../ViewModeToggle';
 import type { SortOption } from '../index';
+import { IconButton, XIcon } from '@/design-system';
 
 /** Threshold for showing search bar */
 const SEARCH_THRESHOLD = 6;
@@ -259,26 +260,15 @@ export function LayoutList({
               aria-label={t('layouts.searchLayouts')}
             />
             {searchQuery && (
-              <button
+              <IconButton
+                size="sm"
+                touchTarget={false}
                 onClick={() => handleSearchChange('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-content-tertiary hover:text-content"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-content-tertiary hover:bg-transparent hover:text-content"
                 aria-label={t('layouts.clearSearch')}
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+                <XIcon className="w-4 h-4" />
+              </IconButton>
             )}
           </div>
         )}

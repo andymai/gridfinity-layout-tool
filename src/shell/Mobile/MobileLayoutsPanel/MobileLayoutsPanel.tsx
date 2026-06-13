@@ -23,6 +23,7 @@ import type { Layout } from '@/core/types';
 import { layoutId } from '@/core/types';
 import { isOk } from '@/core/result';
 import { useTranslation, useFormatting } from '@/i18n';
+import { Button } from '@/design-system';
 import { SvgIcon, ActionSheet, ShareOptionButton, ICON_PATHS } from './MobileLayoutsPanelParts';
 import { LayoutListItem, findEntry } from './MobileLayoutsListItem';
 import { MobileCloudSharePanel } from './MobileCloudSharePanel';
@@ -291,9 +292,11 @@ export function MobileLayoutsPanel() {
         ))}
       </div>
 
-      <button
+      <Button
+        variant="ghost"
+        fullWidth
         onClick={() => setShowInspirationGallery(true)}
-        className="w-full flex items-center gap-3 mt-4 p-3 rounded-xl bg-gradient-to-r from-accent/10 to-purple-500/10 border border-accent/20 active:scale-[0.98] transition-transform"
+        className="flex items-center gap-3 mt-4 p-3 rounded-xl bg-gradient-to-r from-accent/10 to-purple-500/10 border border-accent/20 active:scale-[0.98] hover:bg-gradient-to-r"
       >
         <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center shrink-0">
           <SvgIcon path={ICON_PATHS.grid} className="w-5 h-5 text-accent" />
@@ -305,12 +308,17 @@ export function MobileLayoutsPanel() {
           </div>
         </div>
         <SvgIcon path={ICON_PATHS.chevronRight} className="w-4 h-4 text-content-tertiary" />
-      </button>
+      </Button>
 
-      <button onClick={handleCreateNew} className="btn btn-secondary w-full mt-3 h-12">
-        <SvgIcon path={ICON_PATHS.plus} className="w-5 h-5 mr-2" />
+      <Button
+        variant="secondary"
+        fullWidth
+        onClick={handleCreateNew}
+        className="mt-3 h-12"
+        leftIcon={<SvgIcon path={ICON_PATHS.plus} className="w-5 h-5" />}
+      >
         {t('layouts.newLayout')}
-      </button>
+      </Button>
 
       <ConfirmDialog
         isOpen={deleteLayoutId !== null}
@@ -351,12 +359,14 @@ export function MobileLayoutsPanel() {
               description={t('share.file.saveAsFile')}
             />
           </div>
-          <button
+          <Button
+            variant="ghost"
+            fullWidth
             onClick={() => setShareMenuId(null)}
-            className="w-full mt-4 py-3 text-content-secondary font-medium"
+            className="mt-4 py-3 text-content-secondary hover:bg-transparent"
           >
             {t('common.cancel')}
-          </button>
+          </Button>
         </ActionSheet>
       )}
 
@@ -384,19 +394,23 @@ export function MobileLayoutsPanel() {
             autoFocus
           />
           <div className="flex gap-2 mt-4">
-            <button
+            <Button
+              variant="secondary"
+              fullWidth
               onClick={dismissRename}
-              className="flex-1 py-3 text-content-secondary font-medium bg-surface rounded-lg"
+              className="flex-1 py-3 text-content-secondary bg-surface rounded-lg"
             >
               {t('common.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              fullWidth
               onClick={handleRenameConfirm}
               disabled={!renameValue.trim()}
-              className="flex-1 py-3 text-on-dark font-medium bg-accent rounded-lg disabled:opacity-50"
+              className="flex-1 py-3 text-on-dark bg-accent rounded-lg disabled:opacity-50"
             >
               {t('common.rename')}
-            </button>
+            </Button>
           </div>
         </ActionSheet>
       )}

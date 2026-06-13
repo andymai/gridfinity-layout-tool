@@ -13,6 +13,7 @@ import { splitBinsByLocation } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { findBinsByIds } from '@/shared/utils/entity';
 import type { BinId, CategoryId, GridUnits, LayerId } from '@/core/types';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface MultiBinContextMenuProps {
@@ -143,9 +144,11 @@ export function MultiBinContextMenu({
       <div className="py-1">
         {/* Change Category */}
         <div>
-          <button
+          <Button
+            variant="ghost"
+            fullWidth
             onClick={() => setShowCategoryPicker(!showCategoryPicker)}
-            className="w-full px-4 py-3 flex items-center justify-between transition-colors text-content hover:bg-surface-hover"
+            className="px-4 py-3 flex items-center justify-between rounded-none text-content hover:bg-surface-hover"
           >
             <div className="flex items-center gap-3">
               <svg
@@ -176,18 +179,20 @@ export function MultiBinContextMenu({
                 d="M19 9l-7 7-7-7"
               />
             </svg>
-          </button>
+          </Button>
           {showCategoryPicker && (
             <div className="px-2 py-1 bg-surface-secondary">
               {layout.categories.map((category) => (
-                <button
+                <Button
                   key={category.id}
+                  variant="ghost"
+                  fullWidth
                   onClick={() => handleChangeCategory(category.id)}
-                  className="w-full px-3 py-2 flex items-center gap-2 rounded transition-colors hover:bg-surface-hover"
+                  className="px-3 py-2 flex items-center justify-start gap-2 rounded hover:bg-surface-hover"
                 >
                   <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: category.color }} />
                   <span className="text-sm text-content">{category.name}</span>
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -196,9 +201,11 @@ export function MultiBinContextMenu({
         {/* Move All to Layer */}
         {canMoveToLayer && (
           <div>
-            <button
+            <Button
+              variant="ghost"
+              fullWidth
               onClick={() => setShowLayerPicker(!showLayerPicker)}
-              className="w-full px-4 py-3 flex items-center justify-between transition-colors text-content hover:bg-surface-hover"
+              className="px-4 py-3 flex items-center justify-between rounded-none text-content hover:bg-surface-hover"
             >
               <div className="flex items-center gap-3">
                 <svg
@@ -229,20 +236,22 @@ export function MultiBinContextMenu({
                   d="M19 9l-7 7-7-7"
                 />
               </svg>
-            </button>
+            </Button>
             {showLayerPicker && (
               <div className="px-2 py-1 bg-surface-secondary">
                 {layout.layers.map((layer) => (
-                  <button
+                  <Button
                     key={layer.id}
+                    variant="ghost"
+                    fullWidth
                     onClick={() => handleMoveToLayer(layer.id)}
-                    className="w-full px-3 py-2 text-left rounded transition-colors hover:bg-surface-hover"
+                    className="px-3 py-2 flex-col items-start text-left rounded hover:bg-surface-hover"
                   >
                     <div className="text-sm text-content">{layer.name}</div>
                     <div className="text-xs text-content-tertiary">
                       {t('mobile.contextMenu.minHeight', { height: layer.height })}
                     </div>
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from '@/i18n';
+import { Button, IconButton } from '@/design-system';
 import { useTwoClickDelete } from '@/shared/components';
 import type { SavedDesign } from '../../types';
 
@@ -102,11 +103,13 @@ export function DesignActions({
 
   return (
     <div className="relative" role="presentation" onClick={(e) => e.stopPropagation()}>
-      <button
+      <IconButton
         ref={menuButtonRef}
+        size="sm"
+        touchTarget={false}
         onClick={handleMenuToggle}
         className={`
-          p-1.5 rounded transition-colors
+          h-auto w-auto p-1.5 rounded transition-colors
           ${
             isMenuOpen
               ? 'bg-surface text-content'
@@ -120,7 +123,7 @@ export function DesignActions({
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
         </svg>
-      </button>
+      </IconButton>
 
       {isMenuOpen &&
         createPortal(
@@ -132,10 +135,12 @@ export function DesignActions({
           >
             {/* Load (only if not active) */}
             {!isActive && (
-              <button
+              <Button
+                variant="ghost"
+                fullWidth
                 role="menuitem"
                 onClick={handleAction(onLoad)}
-                className="w-full px-3 py-2.5 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+                className="w-full px-3 py-2.5 justify-start text-left text-sm text-content hover:bg-surface flex items-center gap-2"
               >
                 <svg
                   className="w-4 h-4 text-content-secondary"
@@ -152,14 +157,16 @@ export function DesignActions({
                   />
                 </svg>
                 {t('binDesigner.load')}
-              </button>
+              </Button>
             )}
 
             {/* Download JSON */}
-            <button
+            <Button
+              variant="ghost"
+              fullWidth
               role="menuitem"
               onClick={handleAction(onDownloadJSON)}
-              className="w-full px-3 py-2.5 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+              className="w-full px-3 py-2.5 justify-start text-left text-sm text-content hover:bg-surface flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4 text-content-secondary"
@@ -176,13 +183,15 @@ export function DesignActions({
                 />
               </svg>
               {t('binDesigner.downloadJSON')}
-            </button>
+            </Button>
 
             {/* Rename */}
-            <button
+            <Button
+              variant="ghost"
+              fullWidth
               role="menuitem"
               onClick={handleAction(onRename)}
-              className="w-full px-3 py-2.5 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+              className="w-full px-3 py-2.5 justify-start text-left text-sm text-content hover:bg-surface flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4 text-content-secondary"
@@ -199,13 +208,15 @@ export function DesignActions({
                 />
               </svg>
               {t('common.rename')}
-            </button>
+            </Button>
 
             {/* Edit tags */}
-            <button
+            <Button
+              variant="ghost"
+              fullWidth
               role="menuitem"
               onClick={handleAction(onEditTags)}
-              className="w-full px-3 py-2.5 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+              className="w-full px-3 py-2.5 justify-start text-left text-sm text-content hover:bg-surface flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4 text-content-secondary"
@@ -222,13 +233,15 @@ export function DesignActions({
                 />
               </svg>
               {t('binDesigner.tags.editAction')}
-            </button>
+            </Button>
 
             {/* Duplicate */}
-            <button
+            <Button
+              variant="ghost"
+              fullWidth
               role="menuitem"
               onClick={handleAction(onDuplicate)}
-              className="w-full px-3 py-2.5 text-left text-sm text-content hover:bg-surface flex items-center gap-2"
+              className="w-full px-3 py-2.5 justify-start text-left text-sm text-content hover:bg-surface flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4 text-content-secondary"
@@ -245,16 +258,18 @@ export function DesignActions({
                 />
               </svg>
               {t('common.duplicate')}
-            </button>
+            </Button>
 
             {/* Delete */}
             <div className="border-t border-stroke my-1" />
-            <button
+            <Button
+              variant="ghost"
+              fullWidth
               role="menuitem"
               onClick={handleDelete}
               className={`
-                w-full px-3 py-2.5 text-left text-sm flex flex-col gap-0.5 transition-colors
-                ${isConfirmingDelete ? 'bg-danger text-on-dark' : 'text-danger hover:bg-surface'}
+                w-full px-3 py-2.5 justify-start text-left text-sm flex flex-col gap-0.5 transition-colors
+                ${isConfirmingDelete ? 'bg-danger text-on-dark hover:bg-danger' : 'text-danger hover:bg-surface'}
               `}
             >
               <span className="flex items-center gap-2">
@@ -274,7 +289,7 @@ export function DesignActions({
                 </svg>
                 {isConfirmingDelete ? t('binDesigner.confirmDelete') : t('common.delete')}
               </span>
-            </button>
+            </Button>
           </div>,
           document.body
         )}

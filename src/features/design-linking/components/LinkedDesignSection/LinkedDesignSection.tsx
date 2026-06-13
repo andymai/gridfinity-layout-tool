@@ -12,6 +12,7 @@ import { useLinkedDesign, useBinLinking, useQuickExport } from '../../hooks';
 import { useLinkingStore } from '../../store';
 import { ConfirmDialog } from '@/shared/components';
 import { useDesignThumbnail } from '@/features/bin-designer';
+import { Button, IconButton, PlusIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { Bin } from '@/core/types';
 
@@ -113,35 +114,32 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
           </span>
         </div>
         <div className="flex gap-2">
-          <button
+          <Button
+            variant="secondary"
             onClick={() => showCreateDesignDialog(bin.id)}
-            className={`btn btn-secondary flex-1 ${buttonHeight} flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
+            leftIcon={<PlusIcon size="sm" />}
+            className={`flex-1 ${buttonHeight}`}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
             {t('designLinking.inspector.createDesign')}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="secondary"
             onClick={() => showLinkDesignDialog(bin.id, bin.width, bin.depth, bin.height)}
-            className={`btn btn-secondary flex-1 ${buttonHeight} flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
+            className={`flex-1 ${buttonHeight}`}
             title={t('designLinking.inspector.linkExistingTooltip')}
+            leftIcon={
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                />
+              </svg>
+            }
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-              />
-            </svg>
             {t('designLinking.inspector.linkExisting')}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -178,12 +176,14 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
               {t('designLinking.inspector.designDeleted')}
             </span>
           </div>
-          <button
+          <Button
+            variant="secondary"
+            fullWidth
             onClick={() => unlinkBin(bin.id)}
-            className={`btn btn-secondary w-full ${buttonHeight} text-sm`}
+            className={buttonHeight}
           >
             {t('designLinking.inspector.unlink')}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -209,9 +209,10 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
 
       <div className="flex items-center gap-3">
         {/* Thumbnail with link indicator */}
-        <button
+        <Button
+          variant="ghost"
           onClick={handleThumbnailClick}
-          className={`${thumbSize} flex-shrink-0 rounded-md overflow-hidden relative hover:ring-2 hover:ring-accent/50 transition-all focus:outline-none focus:ring-2 focus:ring-accent`}
+          className={`${thumbSize} flex-shrink-0 p-0 rounded-md overflow-hidden relative block hover:bg-transparent hover:ring-2 hover:ring-accent/50`}
           title={t('designLinking.inspector.clickToEdit')}
         >
           {thumbnail ? (
@@ -249,7 +250,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
               />
             </svg>
           </div>
-        </button>
+        </Button>
 
         {/* Name and dimensions */}
         <div className="flex-1 min-w-0">
@@ -263,44 +264,32 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
       {/* Action buttons - icon + label */}
       <div className="flex items-center gap-2">
         {/* Edit button with label */}
-        <button
+        <Button
+          variant="secondary"
           onClick={() => editLinkedDesign(linkedDesign.id)}
-          className={`btn btn-secondary flex-1 ${actionButtonClass} flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
-        >
-          <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-            />
-          </svg>
-          {t('designLinking.inspector.editDesign')}
-        </button>
-
-        {/* Export button with label */}
-        <button
-          onClick={handleExport}
-          disabled={isExporting}
-          className={`btn btn-secondary flex-1 ${actionButtonClass} flex items-center justify-center gap-1.5 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
-        >
-          {isExporting ? (
-            <svg className={`${iconSize} animate-spin`} fill="none" viewBox="0 0 24 24">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
+          className={`flex-1 ${actionButtonClass}`}
+          leftIcon={
+            <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
               />
             </svg>
-          ) : (
+          }
+        >
+          {t('designLinking.inspector.editDesign')}
+        </Button>
+
+        {/* Export button with label */}
+        <Button
+          variant="secondary"
+          onClick={handleExport}
+          disabled={isExporting}
+          loading={isExporting}
+          className={`flex-1 ${actionButtonClass}`}
+          leftIcon={
             <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -309,19 +298,23 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
             </svg>
-          )}
+          }
+        >
           {t('common.export')}
-        </button>
+        </Button>
 
         {/* Overflow menu button */}
         <div className="relative">
-          <button
+          <IconButton
             ref={menuButtonRef}
+            variant="secondary"
             onClick={() => setMenuOpen(!menuOpen)}
-            className={`btn btn-secondary ${isMobile ? 'h-9 w-9' : 'h-7 w-7'} p-0 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary`}
+            touchTarget={false}
+            className={isMobile ? 'h-9 w-9' : 'h-7 w-7'}
             title={t('common.moreOptions')}
             aria-haspopup="true"
             aria-expanded={menuOpen}
+            aria-label={t('common.moreOptions')}
           >
             <svg className={iconSize} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -331,7 +324,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
                 d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
               />
             </svg>
-          </button>
+          </IconButton>
 
           {/* Dropdown menu */}
           {menuOpen && (
@@ -340,9 +333,10 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
               className="absolute right-0 mt-1 w-40 py-1 bg-surface-secondary border border-stroke rounded-lg shadow-lg z-10"
               role="menu"
             >
-              <button
+              <Button
+                variant="ghost"
                 onClick={handleUnlink}
-                className="w-full px-3 py-2 text-left text-sm text-content hover:bg-surface-hover flex items-center gap-2 transition-colors"
+                className="w-full justify-start rounded-none px-3 py-2 text-left text-sm font-normal text-content hover:bg-surface-hover"
                 role="menuitem"
               >
                 <svg
@@ -365,10 +359,11 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
                   />
                 </svg>
                 {t('designLinking.inspector.unlink')}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={handleDelete}
-                className="w-full px-3 py-2 text-left text-sm text-status-error hover:bg-surface-hover flex items-center gap-2 transition-colors"
+                className="w-full justify-start rounded-none px-3 py-2 text-left text-sm font-normal text-status-error hover:bg-surface-hover"
                 role="menuitem"
               >
                 <svg
@@ -385,7 +380,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
                   />
                 </svg>
                 {t('designLinking.inspector.deleteDesign')}
-              </button>
+              </Button>
             </div>
           )}
         </div>

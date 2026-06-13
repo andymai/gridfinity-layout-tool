@@ -1,4 +1,5 @@
 import { useState, useId, type ReactNode } from 'react';
+import { Button } from '@/design-system';
 
 interface CollapsibleSectionProps {
   /** Section title */
@@ -62,15 +63,15 @@ export function CollapsibleSection({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <button
-          type="button"
-          className="flex items-center gap-2 bg-transparent rounded hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-accent"
+        <Button
+          variant="ghost"
           onClick={() => {
             setHasToggled(true);
             setExpanded(!expanded);
           }}
           aria-expanded={expanded}
           aria-controls={contentId}
+          className="justify-start gap-2 rounded px-0 py-0 font-normal hover:bg-transparent hover:opacity-80"
         >
           <svg
             className={`w-3.5 h-3.5 transition-transform duration-200 text-content-tertiary ${expanded ? 'rotate-0' : '-rotate-90'}`}
@@ -83,7 +84,7 @@ export function CollapsibleSection({
           {icon && <span className="flex-shrink-0 text-content-tertiary">{icon}</span>}
           <span className={headerClass}>{title}</span>
           {badge}
-        </button>
+        </Button>
         {actions}
       </div>
       {summary && !expanded && (

@@ -1,3 +1,4 @@
+import { IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface TabletPanelTriggersProps {
@@ -23,9 +24,10 @@ export function TabletPanelTriggers({
     <>
       {/* Left panel trigger - top-left corner */}
       {!leftPanelOpen && (
-        <button
+        <IconButton
+          size="lg"
           onClick={onOpenLeftPanel}
-          className="fixed top-16 left-4 z-30 flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
+          className="fixed top-16 left-4 z-30 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
           style={{
             background: 'var(--color-surface-elevated)',
             border: '1px solid var(--border-default)',
@@ -49,14 +51,15 @@ export function TabletPanelTriggers({
               d="M4 5h16M4 12h16m-7 7h7"
             />
           </svg>
-        </button>
+        </IconButton>
       )}
 
       {/* Right panel trigger - top-right corner */}
       {!rightPanelOpen && (
-        <button
+        <IconButton
+          size="lg"
           onClick={onOpenRightPanel}
-          className="fixed top-16 right-4 z-30 flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
+          className="fixed top-16 right-4 z-30 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95"
           style={{
             background: 'var(--color-surface-elevated)',
             border: '1px solid var(--border-default)',
@@ -80,7 +83,7 @@ export function TabletPanelTriggers({
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-        </button>
+        </IconButton>
       )}
     </>
   );

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useLabsStore } from '@/core/store';
 import { getFeature } from '@/core/labs';
+import { Button } from '@/design-system';
 import { SparklesIcon } from '../icons';
 import { useTranslation } from '@/i18n';
 
@@ -18,9 +19,11 @@ export function LabsButton() {
   }, [enabledFeatures]);
 
   return (
-    <button
+    <Button
+      variant="ghost"
+      fullWidth
       onClick={openDrawer}
-      className="flex items-center gap-2 w-full px-3 py-2 text-content-secondary hover:text-content hover:bg-surface-hover rounded-md transition-colors"
+      className="justify-start gap-2 px-3 py-2 font-normal text-content-secondary"
       aria-label={`Open Labs experimental features${enabledCount > 0 ? `, ${enabledCount} enabled` : ''}`}
     >
       <SparklesIcon className="w-[18px] h-[18px] flex-shrink-0" />
@@ -33,6 +36,6 @@ export function LabsButton() {
           {enabledCount > 9 ? t('common.overflowCount') : enabledCount}
         </span>
       )}
-    </button>
+    </Button>
   );
 }

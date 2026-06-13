@@ -4,6 +4,7 @@ import { useSettingsStore } from '@/core/store';
 import { useContextMenu } from '@/shared/hooks/useContextMenu';
 import { useTranslation } from '@/i18n';
 import { ContextMenuContainer, ContextMenuItem } from '@/shared/components/ContextMenu';
+import { Button, IconButton } from '@/design-system';
 import { openSTLSearch, formatDimension } from '@/shared/utils/stlSearch';
 import type { STLSearchSite } from '@/core/store/settings';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
@@ -145,47 +146,54 @@ export function STLSearchDropdown({
     <>
       {/* Trigger button */}
       {variant === 'button' && (
-        <button
+        <Button
           ref={triggerRef}
+          variant="ghost"
+          size="sm"
           type="button"
           onClick={handleClick}
-          className={`btn btn-ghost gap-1.5 text-content-secondary hover:text-content ${className}`}
+          className={`gap-1.5 text-content-secondary ${className}`}
           aria-label={t('stlSearch.searchFor', {
             width: formatDimension(width),
             depth: formatDimension(depth),
           })}
           aria-expanded={isSingleSite ? undefined : isOpen}
           aria-haspopup={isSingleSite ? undefined : 'menu'}
+          leftIcon={<SearchIcon className="w-4 h-4" />}
+          rightIcon={
+            !isSingleSite ? <ChevronIcon className="w-3 h-3" isOpen={isOpen} /> : undefined
+          }
         >
-          <SearchIcon className="w-4 h-4" />
           {isSingleSite
             ? t('stlSearch.findOnSite', { site: enabledSites[0].name })
             : t('stlSearch.findSTL')}
-          {!isSingleSite && <ChevronIcon className="w-3 h-3" isOpen={isOpen} />}
-        </button>
+        </Button>
       )}
 
       {variant === 'icon' && (
-        <button
+        <IconButton
           ref={triggerRef}
+          size="sm"
           type="button"
           onClick={handleClick}
-          className={`btn btn-ghost p-1.5 text-content-tertiary hover:text-content ${className}`}
+          className={`text-content-tertiary ${className}`}
           aria-label={iconTooltip}
           aria-expanded={isSingleSite ? undefined : isOpen}
           aria-haspopup={isSingleSite ? undefined : 'menu'}
           title={iconTooltip}
         >
           <SearchIcon className="w-4 h-4" />
-        </button>
+        </IconButton>
       )}
 
       {variant === 'menu-item' && (
-        <button
+        <Button
           ref={triggerRef}
+          variant="ghost"
+          fullWidth
           type="button"
           onClick={handleClick}
-          className={`w-full px-4 py-3 flex items-center gap-3 text-content hover:bg-surface-hover ${className}`}
+          className={`justify-start px-4 py-3 gap-3 rounded-none text-content hover:bg-surface-hover ${className}`}
           aria-label={t('stlSearch.searchFor', {
             width: formatDimension(width),
             depth: formatDimension(depth),
@@ -202,7 +210,7 @@ export function STLSearchDropdown({
           {!isSingleSite && (
             <ChevronRightIcon className="w-4 h-4 text-content-tertiary flex-shrink-0" />
           )}
-        </button>
+        </Button>
       )}
 
       {/* Dropdown menu - portaled to escape BottomSheet transforms on mobile */}

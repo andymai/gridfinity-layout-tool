@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CONSTRAINTS, RESERVED_PROPERTY_KEYS } from '@/core/constants';
+import { Button, IconButton, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface CustomPropertiesEditorProps {
@@ -133,11 +134,12 @@ export function CustomPropertiesEditor({
             : t('inspector.customProperties')}
         </label>
         {!isAdding && (
-          <button
+          <Button
+            variant="ghost"
             type="button"
             onClick={() => setIsAdding(true)}
             disabled={atMaxProperties}
-            className="text-xs text-accent hover:text-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-xs text-accent hover:text-accent-hover px-0 py-0 hover:bg-transparent"
             aria-label={t('inspector.addCustomProperty')}
             title={
               atMaxProperties
@@ -148,7 +150,7 @@ export function CustomPropertiesEditor({
             }
           >
             {t('inspector.add')}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -159,27 +161,18 @@ export function CustomPropertiesEditor({
             <div key={key}>
               <div className="flex items-center gap-2 mb-1">
                 <label className="text-xs text-content-secondary flex-shrink-0">{key}</label>
-                <button
+                <IconButton
+                  variant="dangerGhost"
+                  size="sm"
+                  touchTarget={false}
                   type="button"
                   onClick={() => handleDelete(key)}
-                  className="ml-auto p-1 text-content-tertiary hover:text-error transition-colors"
+                  className="ml-auto text-content-tertiary"
                   title={t('inspector.customProps.deleteProperty')}
                   aria-label={`Delete ${key}`}
                 >
-                  <svg
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
+                  <XIcon className="w-3.5 h-3.5" />
+                </IconButton>
               </div>
               <input
                 type="text"
@@ -237,21 +230,23 @@ export function CustomPropertiesEditor({
             </div>
           )}
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="primary"
               type="button"
               onClick={handleAdd}
               disabled={!newKey.trim() || !newValue.trim()}
-              className={`btn btn-primary flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
+              className={`flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
             >
               {t('common.add')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               type="button"
               onClick={handleCancelAdd}
-              className={`btn btn-ghost flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
+              className={`flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
             >
               {t('common.cancel')}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -270,15 +265,16 @@ export function CustomPropertiesEditor({
           </div>
           <div className="flex flex-wrap gap-1.5">
             {availableSuggestions.slice(0, 6).map((key) => (
-              <button
+              <Button
                 key={key}
+                variant="secondary"
                 type="button"
                 onClick={() => handleQuickAdd(key)}
-                className="text-xs px-2 py-1 rounded bg-surface-secondary hover:bg-surface-elevated text-content-secondary hover:text-content transition-colors border border-stroke-subtle"
+                className="text-xs px-2 py-1 text-content-secondary hover:text-content"
                 title={t('inspector.addProperty', { key })}
               >
                 {t('inspector.addPrefix', { key })}
-              </button>
+              </Button>
             ))}
             {availableSuggestions.length > 6 && (
               <span className="text-xs text-content-disabled px-1 py-1">

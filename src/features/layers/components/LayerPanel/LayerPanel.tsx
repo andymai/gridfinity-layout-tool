@@ -8,6 +8,7 @@ import { getGridBins, getLayerBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { IconButton, PlusIcon } from '@/design-system';
 import { isOk, isErr } from '@/core/result';
 import { useToastStore } from '@/core/store';
 import { useResultToast } from '@/shared/hooks';
@@ -181,17 +182,17 @@ export function LayerPanel() {
   };
 
   const addLayerButton = (
-    <button
+    <IconButton
+      size="sm"
+      touchTarget={false}
       onClick={handleAddLayer}
       disabled={!canAddLayer}
-      className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+      className="w-7 h-7"
       title={getAddLayerTitle()}
       aria-label={t('layers.addNewLayer')}
     >
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-      </svg>
-    </button>
+      <PlusIcon className="w-4 h-4" />
+    </IconButton>
   );
 
   return (

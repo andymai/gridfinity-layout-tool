@@ -11,6 +11,7 @@ import { gridUnits } from '@/core/types';
 import { getLayerBins } from '@/shared/utils';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { SizeSelectorPopover } from './SizeSelectorPopover';
 import { batch } from '@/core/cqrs';
@@ -130,13 +131,13 @@ export function ActiveLayerPanel() {
       {/* Compact toolbar — 3 full-width rows */}
       <div className="flex flex-col gap-1.5">
         {/* Row 1: Size selector */}
-        <button
+        <Button
           ref={sizeButtonRef}
+          variant="secondary"
+          fullWidth
           onClick={handleSizeButtonClick}
-          className={`btn w-full justify-center text-sm h-8 gap-1.5 ${
-            paintSize
-              ? 'bg-accent/15 border-accent/60 text-accent hover:bg-accent/25'
-              : 'btn-secondary'
+          className={`text-sm h-8 gap-1.5 ${
+            paintSize ? 'bg-accent/15 border-accent/60 text-accent hover:bg-accent/25' : ''
           }`}
           title={
             paintSize
@@ -165,7 +166,7 @@ export function ActiveLayerPanel() {
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-        </button>
+        </Button>
 
         {/* Status strip: makes paint mode unmistakable while a size is loaded */}
         {paintSize && (
@@ -192,19 +193,23 @@ export function ActiveLayerPanel() {
 
         {/* Row 2: Fill — shows "Fill with NxN" when size selected, "Fill gaps" otherwise */}
         {paintSize ? (
-          <button
+          <Button
+            variant="primary"
+            fullWidth
             onClick={handleFill}
-            className="btn btn-primary w-full justify-center text-sm h-8"
+            className="text-sm h-8"
             title={t('layers.fillTitle', { width: paintSize.width, depth: paintSize.depth })}
           >
             {t('layers.fillWith')}
             {paintSize.width}×{paintSize.depth}
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
+            variant="secondary"
+            fullWidth
             onClick={handleFillGaps}
             disabled={emptyCells === 0}
-            className="btn btn-secondary w-full justify-center text-sm h-8 gap-1.5"
+            className="text-sm h-8 gap-1.5"
             title={
               emptyCells > 0
                 ? t('layers.fillGapsTitle', { count: emptyCells })
@@ -220,14 +225,16 @@ export function ActiveLayerPanel() {
               />
             </svg>
             {emptyCells > 0 ? t('layers.fillGaps', { count: emptyCells }) : t('layers.noGaps')}
-          </button>
+          </Button>
         )}
 
         {/* Row 3: Clear layer */}
-        <button
+        <Button
+          variant="ghost"
+          fullWidth
           onClick={() => setShowClearConfirm(true)}
           disabled={layerBins.length === 0}
-          className="btn btn-ghost w-full justify-center text-sm h-8 gap-1.5 text-error hover:bg-error/10"
+          className="text-sm h-8 gap-1.5 text-error hover:bg-error/10"
           title={
             layerBins.length > 0
               ? t('layers.clearBinsTitle', { count: layerBins.length })
@@ -245,7 +252,7 @@ export function ActiveLayerPanel() {
           {layerBins.length > 0
             ? t('layers.clearBins', { count: layerBins.length })
             : t('layers.noBins')}
-        </button>
+        </Button>
       </div>
 
       {/* Size selector popover */}

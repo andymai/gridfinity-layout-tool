@@ -15,6 +15,7 @@ import { useTranslation } from '@/i18n';
 import { categoryId as toCategoryId } from '@/core/types';
 import type { CategoryId } from '@/core/types';
 import { batch } from '@/core/cqrs';
+import { Button, IconButton, PlusIcon, XIcon } from '@/design-system';
 
 interface ColorPaletteGridProps {
   selectedColor: string;
@@ -28,19 +29,26 @@ function ColorPaletteGrid({ selectedColor, onColorSelect, t }: ColorPaletteGridP
       {CATEGORY_COLOR_PALETTE.map(({ color, nameKey }) => {
         const name = t(nameKey);
         return (
-          <button
+          <IconButton
             key={color}
+            size="sm"
+            touchTarget={false}
             onClick={() => onColorSelect(color)}
-            className="w-6 h-6 rounded transition-all duration-150 hover:scale-110 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-accent"
+            className="w-6 h-6 hover:scale-110 hover:bg-transparent"
             style={{
-              backgroundColor: color,
               boxShadow:
                 selectedColor === color ? '0 0 0 2px var(--color-primary)' : 'var(--shadow-sm)',
             }}
             title={name}
             aria-label={t('categories.setColorTo', { name })}
-            aria-pressed={selectedColor === color}
-          />
+            pressed={selectedColor === color}
+          >
+            <span
+              className="block w-full h-full rounded"
+              style={{ backgroundColor: color }}
+              aria-hidden="true"
+            />
+          </IconButton>
         );
       })}
     </div>
@@ -234,13 +242,14 @@ export function CategoriesPanel() {
 
   const actionButtons = (
     <div className="flex items-center gap-1">
-      <button
+      <IconButton
+        size="sm"
+        touchTarget={false}
         onClick={() => setShowSaveCategoriesConfirm(true)}
-        className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+        className="w-7 h-7"
         title={t('categories.saveAsDefaultsTitle')}
         aria-label={t('categories.saveAsDefaults')}
       >
-        {/* Pin icon */}
         <svg
           className="w-4 h-4"
           viewBox="0 0 24 24"
@@ -250,18 +259,18 @@ export function CategoriesPanel() {
         >
           <path d="M12 17v5M9 3h6v2l-1 1v4l3 3v2H7v-2l3-3V6L9 5V3z" />
         </svg>
-      </button>
-      <button
+      </IconButton>
+      <IconButton
+        size="sm"
+        touchTarget={false}
         onClick={handleAddCategory}
         disabled={!canAddCategory}
-        className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+        className="w-7 h-7"
         title={t('categories.addCategory')}
         aria-label={t('categories.addCategory')}
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
-      </button>
+        <PlusIcon className="w-4 h-4" />
+      </IconButton>
     </div>
   );
 
@@ -318,21 +327,24 @@ export function CategoriesPanel() {
                     <div className="flex items-center justify-between text-xs text-content-tertiary mt-0.5">
                       <span>{t('categories.clickOutsideToClose')}</span>
                       {canDelete && (
-                        <button
+                        <Button
+                          variant="ghost"
                           onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
-                          className="text-content-tertiary hover:text-error transition-colors"
+                          className="text-content-tertiary hover:text-error px-0 py-0 hover:bg-transparent"
                           aria-label={t('categories.deleteCategory')}
                         >
                           {t('common.delete')}
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
                 ) : (
                   <>
                     {/* Color swatch with checkmark overlay - click to open quick color picker */}
-                    <button
-                      className="relative w-5 h-5 rounded flex-shrink-0 shadow-sm transition-all duration-150 hover:scale-110 hover:ring-2 hover:ring-accent/50 focus-visible:ring-2 focus-visible:ring-accent"
+                    <IconButton
+                      size="sm"
+                      touchTarget={false}
+                      className="relative w-5 h-5 flex-shrink-0 shadow-sm hover:scale-110 hover:ring-2 hover:ring-accent/50 hover:bg-transparent"
                       style={{ backgroundColor: category.color }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -360,7 +372,7 @@ export function CategoriesPanel() {
                           />
                         </svg>
                       )}
-                    </button>
+                    </IconButton>
 
                     {colorPickerId === category.id && (
                       <div
@@ -380,8 +392,9 @@ export function CategoriesPanel() {
                       </div>
                     )}
                     {/* Category name - click to select, double-click to edit */}
-                    <button
-                      className="flex-1 min-w-0 text-left"
+                    <Button
+                      variant="ghost"
+                      className="flex-1 min-w-0 text-left justify-start px-0 py-0 hover:bg-transparent"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleCategorySelect(category.id, category.name);
@@ -409,15 +422,17 @@ export function CategoriesPanel() {
                       }
                     >
                       <span className="text-sm truncate text-content block">{category.name}</span>
-                    </button>
+                    </Button>
                     {/* Edit button - appears on hover */}
-                    <button
+                    <IconButton
+                      size="sm"
+                      touchTarget={false}
                       onClick={(e) => {
                         e.stopPropagation();
                         setColorPickerId(null);
                         setEditingId(category.id);
                       }}
-                      className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-1.5 -my-1 rounded hover:bg-surface-elevated transition-opacity flex-shrink-0 focus-visible:ring-2 focus-visible:ring-accent"
+                      className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 -my-1 flex-shrink-0"
                       title={t('categories.editCategory')}
                       aria-label={t('categories.editCategoryAria', { name: category.name })}
                     >
@@ -434,29 +449,20 @@ export function CategoriesPanel() {
                           d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                         />
                       </svg>
-                    </button>
+                    </IconButton>
                     {/* Delete button - appears on hover for unused categories */}
                     {canDelete && (
-                      <button
+                      <IconButton
+                        variant="dangerGhost"
+                        size="sm"
+                        touchTarget={false}
                         onClick={(e) => handleDeleteCategory(category.id, category.name, e)}
-                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-1.5 -my-1 rounded text-content-tertiary hover:text-error hover:bg-error/10 transition-all flex-shrink-0 focus-visible:ring-2 focus-visible:ring-accent"
+                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 -my-1 text-content-tertiary flex-shrink-0"
                         title={t('categories.deleteCategory')}
                         aria-label={t('categories.deleteCategoryAria', { name: category.name })}
                       >
-                        <svg
-                          className="w-3.5 h-3.5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
+                        <XIcon className="w-3.5 h-3.5" />
+                      </IconButton>
                     )}
                     {/* Bin count badge - only rendered when category has bins */}
                     {binCount > 0 && (

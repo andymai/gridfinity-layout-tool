@@ -11,6 +11,7 @@
 
 import { useId, useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 import { SliderThumb } from '@/design-system/Slider';
 
 export interface SnappingSliderOption {
@@ -296,19 +297,20 @@ export function SnappingSlider({
             const showLabel = KEY_VALUES.has(option.value) || isActive;
             if (!showLabel) return null;
             return (
-              <button
+              <Button
                 key={option.value}
                 type="button"
+                variant="ghost"
                 onClick={() => handleTickClick(option.value)}
                 disabled={disabled}
-                className={`absolute -translate-x-1/2 min-h-[36px] flex items-end pb-0.5 text-[11px] tabular-nums transition-colors ${
+                className={`absolute -translate-x-1/2 min-h-[36px] flex items-end pb-0.5 rounded-none px-0 hover:bg-transparent text-[11px] tabular-nums transition-colors ${
                   disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:text-content'
                 } ${isActive ? 'font-semibold text-accent' : 'text-content-tertiary'}`}
                 style={{ left: `${getPosition(option.value)}%` }}
                 aria-label={t('snappingSlider.select', { value: option.value, unit })}
               >
                 {option.value}
-              </button>
+              </Button>
             );
           })}
         </div>

@@ -7,6 +7,7 @@ import { isOk } from '@/core/result';
 import { layoutId } from '@/core/types';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { useResponsive } from '@/shared/hooks';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { INSPIRATION_LAYOUTS } from '@/features/inspiration-gallery/data';
 import { LayoutThumbnailWithLabels } from '@/features/inspiration-gallery/components/LayoutThumbnailWithLabels';
@@ -200,15 +201,16 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
             <p className="text-sm text-content-secondary mb-8 max-w-xs">
               {t('onboarding.welcome.desktopNudge')}
             </p>
-            <button
+            <Button
+              variant="primary"
               onClick={() => onClose('blank')}
-              className="btn btn-primary px-8 py-2.5 text-sm font-semibold rounded-lg"
+              className="px-8 py-2.5 text-sm font-semibold rounded-lg"
               disabled={isImporting}
               // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
               autoFocus
             >
               {t('onboarding.welcome.startDesigning')}
-            </button>
+            </Button>
           </div>
         ) : (
           /* Desktop — hero + template showcase (unchanged) */
@@ -221,15 +223,16 @@ function WelcomeModalContent({ onClose }: { onClose: (method: 'template' | 'blan
               <p className="text-sm text-content-secondary mb-6">
                 {t('onboarding.welcome.subtitle')}
               </p>
-              <button
+              <Button
+                variant="primary"
                 onClick={() => onClose('blank')}
-                className="btn btn-primary px-8 py-2.5 text-sm font-semibold rounded-lg"
+                className="px-8 py-2.5 text-sm font-semibold rounded-lg"
                 disabled={isImporting}
                 // eslint-disable-next-line jsx-a11y/no-autofocus -- Intentional autofocus for modal/dialog UX
                 autoFocus
               >
                 {t('onboarding.welcome.startBlank')}
-              </button>
+              </Button>
             </div>
 
             {/* Showcase — "here's what people build" */}

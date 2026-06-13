@@ -9,6 +9,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { Button, IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import {
@@ -141,14 +142,17 @@ function AutoArrangePopover({
 
   return (
     <div ref={popoverRef} className="relative">
-      <button
+      <Button
         type="button"
-        className="rounded p-1 text-[11px] text-content-secondary hover:bg-surface-hover hover:text-content transition-colors"
+        variant="ghost"
+        size="sm"
+        touchTarget={false}
+        className="text-[11px] text-content-secondary"
         onClick={() => setOpen(!open)}
         title={t('binDesigner.cutouts.autoArrange')}
       >
         {t('binDesigner.cutouts.autoArrange')}
-      </button>
+      </Button>
       {open && (
         <div className="absolute top-full left-0 z-50 mt-1 rounded-lg border border-stroke-subtle bg-surface-elevated p-2 shadow-lg">
           <div className="flex flex-col gap-1.5">
@@ -166,16 +170,19 @@ function AutoArrangePopover({
                 />
                 mm
               </label>
-              <button
+              <Button
                 type="button"
-                className="rounded bg-accent px-2 py-0.5 text-[11px] font-medium text-on-accent hover:bg-accent/90 transition-colors"
+                variant="primary"
+                size="sm"
+                touchTarget={false}
+                className="text-[11px]"
                 onClick={() => {
                   onArrange(gap, staggered);
                   setOpen(false);
                 }}
               >
                 {t('binDesigner.cutouts.autoArrange')}
-              </button>
+              </Button>
             </div>
             <label className="flex items-center gap-1.5 text-[11px] text-content-tertiary cursor-pointer">
               <input
@@ -339,31 +346,36 @@ export function WorkspaceHeader({
     icon: React.ReactNode,
     isDisabled = false
   ) => (
-    <button
+    <IconButton
       type="button"
-      className="rounded p-1 text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      size="sm"
+      touchTarget={false}
+      className="text-content-tertiary"
       onClick={onClick}
       title={title}
       aria-label={title}
       disabled={isDisabled || disabled}
     >
       {icon}
-    </button>
+    </IconButton>
   );
 
   const textBtn = (onClick: () => void, label: string, danger = false, isDisabled = false) => (
-    <button
+    <Button
       type="button"
-      className={`rounded px-2 py-0.5 text-[11px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+      variant={danger ? 'danger' : 'ghost'}
+      size="sm"
+      touchTarget={false}
+      className={
         danger
-          ? 'text-red-400 hover:bg-red-500/10'
-          : 'text-content-secondary hover:bg-surface-hover hover:text-content'
-      }`}
+          ? 'text-[11px] text-red-400 bg-transparent hover:bg-red-500/10'
+          : 'text-[11px] text-content-secondary'
+      }
       onClick={onClick}
       disabled={isDisabled || disabled}
     >
       {label}
-    </button>
+    </Button>
   );
   const renderMainRowActions = () => {
     if (selection.size === 0) {
@@ -483,11 +495,13 @@ export function WorkspaceHeader({
           </span>
 
           <div className="flex items-center gap-0.5">
-            <button
+            <IconButton
               type="button"
+              size="sm"
+              touchTarget={false}
+              className="text-content-secondary"
               onClick={onUndo}
               disabled={!canUndo}
-              className="rounded p-1 text-content-secondary hover:text-content disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               title={t('binDesigner.cutoutEditor.undo')}
               aria-label={t('binDesigner.cutoutEditor.undo')}
             >
@@ -505,12 +519,14 @@ export function WorkspaceHeader({
                   d="M4 9h10.5a5.5 5.5 0 0 1 0 11H12"
                 />
               </svg>
-            </button>
-            <button
+            </IconButton>
+            <IconButton
               type="button"
+              size="sm"
+              touchTarget={false}
+              className="text-content-secondary"
               onClick={onRedo}
               disabled={!canRedo}
-              className="rounded p-1 text-content-secondary hover:text-content disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               title={t('binDesigner.cutoutEditor.redo')}
               aria-label={t('binDesigner.cutoutEditor.redo')}
             >
@@ -528,7 +544,7 @@ export function WorkspaceHeader({
                   d="M20 9H9.5a5.5 5.5 0 0 0 0 11H12"
                 />
               </svg>
-            </button>
+            </IconButton>
           </div>
 
           {cursorWorldPos && (
@@ -544,30 +560,37 @@ export function WorkspaceHeader({
 
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="flex items-center gap-0.5 rounded border border-stroke-subtle bg-surface-elevated">
-            <button
+            <IconButton
               type="button"
+              size="sm"
+              touchTarget={false}
+              className="text-content-secondary"
               onClick={onZoomOut}
-              className="px-1.5 py-0.5 text-xs text-content-secondary hover:text-content transition-colors"
               title={t('binDesigner.cutoutEditor.zoomOut')}
               aria-label={t('binDesigner.cutoutEditor.zoomOut')}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
               </svg>
-            </button>
-            <button
+            </IconButton>
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
+              touchTarget={false}
+              className="min-w-[3.5rem] px-1 text-[11px] text-content-secondary tabular-nums"
               onClick={onFitToView}
-              className="min-w-[3.5rem] px-1 py-0.5 text-[11px] font-medium text-content-secondary hover:text-content tabular-nums transition-colors"
               title={t('binDesigner.cutoutEditor.fitToView')}
               aria-label={t('binDesigner.cutoutEditor.fitToView')}
             >
               {zoomPercent}%
-            </button>
-            <button
+            </Button>
+            <IconButton
               type="button"
+              size="sm"
+              touchTarget={false}
+              className="text-content-secondary"
               onClick={onZoomIn}
-              className="px-1.5 py-0.5 text-xs text-content-secondary hover:text-content transition-colors"
               title={t('binDesigner.cutoutEditor.zoomIn')}
               aria-label={t('binDesigner.cutoutEditor.zoomIn')}
             >
@@ -579,14 +602,16 @@ export function WorkspaceHeader({
                   d="M12 4v16m8-8H4"
                 />
               </svg>
-            </button>
+            </IconButton>
           </div>
 
           {onShowHelp && (
-            <button
+            <IconButton
               type="button"
+              size="sm"
+              touchTarget={false}
+              className="text-content-tertiary"
               onClick={onShowHelp}
-              className="rounded p-1.5 text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors"
               title={t('binDesigner.cutoutEditor.showHelp')}
               aria-label={t('binDesigner.cutoutEditor.showHelp')}
             >
@@ -601,16 +626,19 @@ export function WorkspaceHeader({
                 <path strokeLinecap="round" d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
                 <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
-            </button>
+            </IconButton>
           )}
 
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="sm"
+            touchTarget={false}
+            className="px-4 font-semibold"
             onClick={() => setCutoutEditorOpen(false)}
-            className="rounded-md px-4 py-1.5 text-xs font-semibold bg-accent text-on-accent hover:bg-accent/90 shadow-sm transition-colors"
           >
             {t('binDesigner.cutoutEditor.done')}
-          </button>
+          </Button>
         </div>
 
         <ConfirmDialog

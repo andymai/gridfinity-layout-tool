@@ -8,6 +8,7 @@ import type { CategoryId } from '@/core/types';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { isOk } from '@/core/result';
+import { Button, IconButton, PlusIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { batch } from '@/core/cqrs';
 
@@ -160,8 +161,9 @@ export function MobileCategoriesPanel() {
                   {/* Color grid */}
                   <div className="grid grid-cols-6 gap-2">
                     {CATEGORY_COLOR_PALETTE.map(({ color, nameKey }) => (
-                      <button
+                      <IconButton
                         key={color}
+                        size="lg"
                         onClick={() => handleUpdateColor(category.id, color)}
                         className="w-10 h-10 rounded-lg transition-transform active:scale-95"
                         style={{
@@ -172,27 +174,38 @@ export function MobileCategoriesPanel() {
                               : 'var(--shadow-sm)',
                         }}
                         aria-label={t(nameKey)}
-                      />
+                      >
+                        <span />
+                      </IconButton>
                     ))}
                   </div>
 
                   {/* Actions */}
                   <div className="flex gap-2 pt-2">
-                    <button
+                    <Button
+                      variant={canDelete ? 'danger' : 'secondary'}
+                      fullWidth
                       onClick={() => handleDelete(category.id, category.name)}
-                      className={`btn flex-1 ${canDelete ? 'btn-danger' : 'btn-secondary opacity-50'}`}
+                      className={`flex-1 ${canDelete ? '' : 'opacity-50'}`}
                     >
                       {t('common.delete')}
                       {binCount > 0 ? ` (${binCount} bins)` : ''}
-                    </button>
-                    <button onClick={() => setEditingId(null)} className="btn btn-secondary flex-1">
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      fullWidth
+                      onClick={() => setEditingId(null)}
+                      className="flex-1"
+                    >
                       {t('common.done')}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
-                <button
-                  className="w-full p-4 flex items-center gap-3"
+                <Button
+                  variant="ghost"
+                  fullWidth
+                  className="p-4 flex items-center gap-3 justify-start rounded-none hover:bg-transparent"
                   onClick={() => handleSelectCategory(category.id, category.name)}
                   aria-label={
                     selectedBinIds.length > 0
@@ -220,12 +233,13 @@ export function MobileCategoriesPanel() {
                       {t('layouts.active')}
                     </span>
                   )}
-                  <button
+                  <IconButton
+                    size="lg"
                     onClick={(e) => {
                       e.stopPropagation();
                       setEditingId(category.id);
                     }}
-                    className="btn btn-ghost w-10 h-10 p-0"
+                    className="w-10 h-10"
                     aria-label={t('categories.editCategory')}
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -236,8 +250,8 @@ export function MobileCategoriesPanel() {
                         d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                       />
                     </svg>
-                  </button>
-                </button>
+                  </IconButton>
+                </Button>
               )}
             </div>
           );
@@ -245,16 +259,16 @@ export function MobileCategoriesPanel() {
       </div>
 
       {/* Add category button */}
-      <button
+      <Button
+        variant="primary"
+        fullWidth
         onClick={handleAddCategory}
         disabled={!canAddCategory}
-        className="btn btn-primary w-full mt-4"
+        className="mt-4"
+        leftIcon={<PlusIcon />}
       >
-        <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
         {t('categories.addCategory')}
-      </button>
+      </Button>
 
       <ConfirmDialog
         isOpen={deleteConfirm !== null}

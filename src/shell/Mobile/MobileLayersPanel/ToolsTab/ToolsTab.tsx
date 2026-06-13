@@ -12,6 +12,7 @@ import { useMutations } from '@/shared/contexts';
 import { useToastStore } from '@/core/store/toast';
 import { getLayerBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 // Square sizes (matching desktop ActiveLayerPanel)
@@ -136,11 +137,12 @@ export function ToolsTab() {
     const previewHeight = d * 5;
 
     return (
-      <button
+      <Button
+        variant="ghost"
         onClick={() => togglePaintSize({ width: w, depth: d })}
-        className={`flex flex-col items-center justify-end gap-1 min-h-[56px] p-2 rounded transition-colors ${
+        className={`flex flex-col items-center justify-end gap-1 min-h-[56px] p-2 rounded ${
           isActive
-            ? 'bg-accent/20 ring-2 ring-accent'
+            ? 'bg-accent/20 ring-2 ring-accent hover:bg-accent/20'
             : 'bg-surface-elevated hover:bg-surface-hover'
         }`}
         aria-label={t('mobile.tools.selectForPaint', {
@@ -162,7 +164,7 @@ export function ToolsTab() {
         >
           {w}×{d}
         </span>
-      </button>
+      </Button>
     );
   };
 
@@ -186,9 +188,11 @@ export function ToolsTab() {
         <span className="text-xs text-content-tertiary uppercase tracking-wide">
           {t('layers.rectangles')}
         </span>
-        <button
+        <Button
+          variant="ghost"
+          touchTarget={false}
           onClick={() => setRotated(!rotated)}
-          className="text-xs text-content-tertiary hover:text-content flex items-center gap-1.5 px-2 py-1 rounded transition-colors"
+          className="text-xs text-content-tertiary hover:text-content flex items-center gap-1.5 px-2 py-1 rounded"
           aria-label={t(rotated ? 'mobile.tools.switchToWide' : 'mobile.tools.switchToTall')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -200,7 +204,7 @@ export function ToolsTab() {
             />
           </svg>
           {t(rotated ? 'layers.tall' : 'layers.wide')}
-        </button>
+        </Button>
       </div>
       <div className="grid grid-cols-5 gap-2">
         {RECTANGLE_SIZES.map(({ w, d }) => {
@@ -213,51 +217,61 @@ export function ToolsTab() {
       <div className="mt-6 space-y-2">
         {/* Fill with selected size (conditional) */}
         {paintSize && (
-          <button
+          <Button
+            variant="primary"
+            fullWidth
             onClick={() => handleFill(paintSize.width, paintSize.depth)}
-            className="btn btn-primary w-full h-11 justify-center"
+            className="h-11 justify-center"
           >
             {t('mobile.tools.fillWithSize', { width: paintSize.width, depth: paintSize.depth })}
-          </button>
+          </Button>
         )}
 
         {/* Fill Gaps */}
-        <button
+        <Button
+          variant="secondary"
+          fullWidth
           onClick={handleFillGaps}
           disabled={emptyCells === 0}
-          className="btn btn-secondary w-full h-11 justify-center"
+          className="h-11 justify-center"
+          leftIcon={
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+              />
+            </svg>
+          }
         >
-          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-            />
-          </svg>
           {emptyCells > 0
             ? t('mobile.tools.fillGaps', { count: emptyCells })
             : t('mobile.tools.noGaps')}
-        </button>
+        </Button>
 
         {/* Clear Layer */}
-        <button
+        <Button
+          variant="ghost"
+          fullWidth
           onClick={() => setShowClearConfirm(true)}
           disabled={layerBins.length === 0}
-          className="btn btn-ghost w-full h-11 justify-center text-error hover:bg-error/10"
+          className="h-11 justify-center text-error hover:bg-error/10"
+          leftIcon={
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          }
         >
-          <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-            />
-          </svg>
           {layerBins.length > 0
             ? t('mobile.tools.clearBins', { count: layerBins.length })
             : t('mobile.tools.noBins')}
-        </button>
+        </Button>
       </div>
 
       {/* Clear confirmation dialog */}

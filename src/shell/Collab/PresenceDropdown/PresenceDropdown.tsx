@@ -9,6 +9,7 @@ import { useRef, useEffect, useLayoutEffect, useCallback, useState } from 'react
 import type { Participant, ConnectionStatus } from '@/shared/hooks/usePresence';
 import { PresenceAvatarList } from '../PresenceAvatarList';
 import { ConnectionIndicator } from '../ConnectionIndicator';
+import { IconButton, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 /** Minimum distance from viewport edge */
@@ -164,20 +165,15 @@ export function PresenceDropdown({
           </span>
           <ConnectionIndicator status={status} size="sm" />
         </div>
-        <button
+        <IconButton
+          size="sm"
+          touchTarget={false}
           onClick={onClose}
-          className="text-content-tertiary hover:text-content transition-colors p-1 -m-1"
+          className="-m-1 text-content-tertiary"
           aria-label={t('common.close')}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
+          <XIcon size="sm" />
+        </IconButton>
       </div>
 
       {/* Participant list */}

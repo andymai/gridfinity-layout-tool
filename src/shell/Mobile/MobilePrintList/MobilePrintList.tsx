@@ -5,6 +5,7 @@ import { usePrintList } from '@/features/print-export/hooks/usePrintList';
 import { useLayoutStore } from '@/core/store';
 import { PrintListSummary, PrintListEmpty } from '@/features/print-export/components';
 import { SplitPreview } from '@/shell/Print/SplitPreview';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 const OVERFLOW_PREFIX = '+';
@@ -48,7 +49,7 @@ export function MobilePrintList() {
         </span>
         <div className="flex items-center gap-2">
           {/* Copy button */}
-          <button onClick={handleCopy} className="btn btn-ghost btn-sm gap-1.5">
+          <Button variant="ghost" size="sm" onClick={handleCopy} className="gap-1.5">
             {copyFeedback ? (
               <>
                 <svg
@@ -79,7 +80,7 @@ export function MobilePrintList() {
                 {t('common.copy')}
               </>
             )}
-          </button>
+          </Button>
         </div>
       </div>
 

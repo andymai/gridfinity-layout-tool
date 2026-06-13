@@ -7,7 +7,7 @@ import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
-import { activePress } from '@/design-system';
+import { activePress, Button, IconButton } from '@/design-system';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
@@ -123,34 +123,40 @@ export function Header({ saveStatus }: HeaderProps) {
             }}
           />
         ) : (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleNameClick}
-            className={`px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] ${activePress} text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]`}
+            className={`hover:scale-[1.02] ${activePress} text-content-secondary truncate max-w-[200px]`}
             title={t('header.editLayoutName')}
           >
             {layout.name}
-          </button>
+          </Button>
         )}
 
         <LayoutQuickSwitch onManage={() => setShowLayoutManager(true)} />
 
         {/* Print Button */}
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => setPrintModalOpen(true)}
-          className={`px-2 py-1.5 text-sm leading-none rounded-md transition-all ${activePress} text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5`}
+          className={`gap-1.5 ${activePress} text-content-secondary`}
           title={t('header.printLayout')}
           aria-label={t('header.printLayout')}
+          leftIcon={
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+              />
+            </svg>
+          }
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-            />
-          </svg>
           {!isTablet && <span className="hidden sm:inline">{t('header.print')}</span>}
-        </button>
+        </Button>
       </div>
 
       <div className="flex items-center gap-1 flex-shrink-0">
@@ -213,10 +219,10 @@ export function Header({ saveStatus }: HeaderProps) {
 
         {/* Undo/Redo buttons */}
         <div className="flex items-center">
-          <button
+          <IconButton
+            size="sm"
             onClick={undo}
             disabled={!canUndo}
-            className="btn btn-ghost btn-icon"
             title={t('header.undoAction', { mod: modKey })}
             aria-label={t('header.undo', { mod: modKey })}
           >
@@ -228,11 +234,11 @@ export function Header({ saveStatus }: HeaderProps) {
                 d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
               />
             </svg>
-          </button>
-          <button
+          </IconButton>
+          <IconButton
+            size="sm"
             onClick={redo}
             disabled={!canRedo}
-            className="btn btn-ghost btn-icon"
             title={t('header.redoAction', { mod: modKey })}
             aria-label={t('header.redo', { mod: modKey })}
           >
@@ -244,7 +250,7 @@ export function Header({ saveStatus }: HeaderProps) {
                 d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
               />
             </svg>
-          </button>
+          </IconButton>
         </div>
 
         {/* Share button and presence avatars (only visible when collaborative_editing flag is enabled) */}

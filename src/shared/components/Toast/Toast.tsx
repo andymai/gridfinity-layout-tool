@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { Button, IconButton } from '@/design-system';
 import type { Toast, ToastType } from '@/core/store/toast';
 import { useToastStore } from '@/core/store/toast';
 import { useResponsive } from '@/shared/hooks';
@@ -167,38 +168,43 @@ function ToastItem({ toast, position, onRemove }: ToastItemProps) {
         <div className="text-sm leading-relaxed whitespace-pre-wrap pr-1">{toast.message}</div>
         {toast.action && (
           <div className="mt-2 flex items-center gap-3">
-            <button
+            <Button
+              variant="ghost"
               onClick={() => {
                 void toast.action?.onClick();
                 handleDismiss();
               }}
-              className="text-sm font-medium underline underline-offset-2 opacity-90 hover:opacity-100 transition-opacity"
+              className="h-auto rounded-none px-0 py-0 text-sm font-medium underline underline-offset-2 opacity-90 hover:bg-transparent hover:text-current hover:opacity-100"
             >
               {toast.action.label}
-            </button>
+            </Button>
             {toast.secondaryAction && (
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => {
                   void toast.secondaryAction?.onClick();
                   handleDismiss();
                 }}
-                className="text-sm font-medium underline underline-offset-2 opacity-75 hover:opacity-100 transition-opacity"
+                className="h-auto rounded-none px-0 py-0 text-sm font-medium underline underline-offset-2 opacity-75 hover:bg-transparent hover:text-current hover:opacity-100"
               >
                 {toast.secondaryAction.label}
-              </button>
+              </Button>
             )}
           </div>
         )}
       </div>
 
       {/* Close button */}
-      <button
+      <IconButton
+        variant="ghost"
+        size="sm"
+        touchTarget={false}
         onClick={handleDismiss}
-        className="absolute top-1/2 -translate-y-1/2 right-1 p-2 flex items-center justify-center rounded-md text-current opacity-60 hover:opacity-100 hover:bg-white/10 transition-all focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:opacity-100"
+        className="absolute top-1/2 right-1 -translate-y-1/2 p-2 text-current opacity-60 hover:bg-white/10 hover:text-current hover:opacity-100 focus-visible:opacity-100"
         aria-label={t('toast.dismissNotification')}
       >
         <CloseIcon />
-      </button>
+      </IconButton>
 
       {/* Progress bar */}
       {toast.duration > 0 && (

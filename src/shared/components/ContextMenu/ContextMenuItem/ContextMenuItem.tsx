@@ -1,3 +1,5 @@
+import { Button, cn } from '@/design-system';
+
 interface ContextMenuItemProps {
   /** Icon element to display (SVG) */
   icon: React.ReactNode;
@@ -31,16 +33,19 @@ export function ContextMenuItem({
   disabled = false,
 }: ContextMenuItemProps) {
   return (
-    <button
+    <Button
+      variant="ghost"
+      fullWidth
       role="menuitem"
       onClick={onClick}
       disabled={disabled}
-      className={`w-full px-4 py-3 flex items-center gap-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent ${
-        destructive ? 'text-error hover:bg-surface-hover' : 'text-content hover:bg-surface-hover'
-      } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={cn(
+        'justify-start gap-3 rounded-none px-4 py-3 font-normal',
+        destructive ? 'text-error' : 'text-content'
+      )}
     >
-      <div className={`w-5 h-5 ${destructive ? '' : 'text-content-tertiary'}`}>{icon}</div>
+      <div className={cn('w-5 h-5', !destructive && 'text-content-tertiary')}>{icon}</div>
       {label}
-    </button>
+    </Button>
   );
 }

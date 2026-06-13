@@ -6,6 +6,7 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { SliderInput } from '../../controls/SliderInput';
 import { clampRotationToBounds, flipCutoutHorizontal, flipCutoutVertical } from './geometry';
@@ -201,67 +202,83 @@ export function CutoutPropertyPanel({
 
       <div className="space-y-2">
         <div className="flex gap-1.5 pt-1">
-          <button
+          <Button
             type="button"
-            className="flex items-center gap-1 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="secondary"
+            size="sm"
+            touchTarget={false}
+            className="text-content-secondary"
+            leftIcon={
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M7 1v12M3 4l-2 3 2 3M11 4l2 3-2 3" />
+              </svg>
+            }
             onClick={() => onUpdate(cutout.id, flipCutoutHorizontal(cutout))}
             disabled={disabled || cutout.locked}
             title={t('binDesigner.cutouts.flipHorizontal')}
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M7 1v12M3 4l-2 3 2 3M11 4l2 3-2 3" />
-            </svg>
             {t('binDesigner.cutouts.flipHorizontal')}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="flex items-center gap-1 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="secondary"
+            size="sm"
+            touchTarget={false}
+            className="text-content-secondary"
+            leftIcon={
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M1 7h12M4 3L7 1l3 2M4 11l3 2 3-2" />
+              </svg>
+            }
             onClick={() => onUpdate(cutout.id, flipCutoutVertical(cutout))}
             disabled={disabled || cutout.locked}
             title={t('binDesigner.cutouts.flipVertical')}
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M1 7h12M4 3L7 1l3 2M4 11l3 2 3-2" />
-            </svg>
             {t('binDesigner.cutouts.flipVertical')}
-          </button>
+          </Button>
         </div>
 
         <div className="flex gap-2">
-          <button
+          <Button
             type="button"
-            className="flex-1 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="secondary"
+            size="sm"
+            fullWidth
+            touchTarget={false}
+            className="flex-1 text-content-secondary"
             onClick={() => onDuplicate([cutout.id])}
             disabled={disabled}
           >
             {t('common.duplicate')}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="rounded border border-red-500/30 bg-surface-elevated px-2 py-1 text-xs text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="danger"
+            size="sm"
+            touchTarget={false}
             onClick={() => onRemove(cutout.id)}
             disabled={disabled}
           >
             {t('common.delete')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

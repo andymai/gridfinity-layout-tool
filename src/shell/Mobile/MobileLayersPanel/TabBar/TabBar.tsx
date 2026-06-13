@@ -1,3 +1,5 @@
+import { Button } from '@/design-system';
+
 /**
  * Reusable tab bar component for mobile panels.
  * Touch-optimized with 44px minimum touch targets.
@@ -20,19 +22,21 @@ export function TabBar<T extends TabId>({ tabs, activeTab, onChange }: TabBarPro
   return (
     <div className="flex gap-1 mb-4 bg-surface rounded-lg p-1" role="tablist">
       {tabs.map((tab) => (
-        <button
+        <Button
           key={tab.id}
+          variant="ghost"
+          fullWidth
           role="tab"
           aria-selected={activeTab === tab.id}
           onClick={() => onChange(tab.id as T)}
-          className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors min-h-[44px] ${
+          className={`flex-1 py-3 px-4 rounded-md min-h-[44px] ${
             activeTab === tab.id
-              ? 'bg-accent text-on-dark'
+              ? 'bg-accent text-on-dark hover:bg-accent'
               : 'text-content-secondary hover:text-content hover:bg-surface-hover'
           }`}
         >
           {tab.label}
-        </button>
+        </Button>
       ))}
     </div>
   );

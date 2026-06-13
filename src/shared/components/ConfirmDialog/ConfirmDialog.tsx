@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { Button } from '@/design-system';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -114,18 +115,18 @@ export function ConfirmDialog({
         </p>
 
         <div className="flex gap-3 justify-end">
-          <button ref={cancelButtonRef} onClick={onCancel} className="btn btn-secondary">
+          <Button ref={cancelButtonRef} variant="secondary" onClick={onCancel}>
             {cancelText}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={destructive ? 'danger' : 'primary'}
             onClick={() => {
               onConfirm();
               onCancel();
             }}
-            className={`btn ${destructive ? 'btn-danger' : 'btn-primary'}`}
           >
             {confirmText}
-          </button>
+          </Button>
         </div>
       </div>
     </div>,

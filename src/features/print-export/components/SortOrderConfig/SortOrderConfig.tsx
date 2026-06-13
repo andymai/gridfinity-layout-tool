@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { Checkbox } from '@/shared/components/Checkbox';
 import type { BinListSortOrder, SortFieldConfig, BinSortField } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
+import { IconButton } from '@/design-system';
 
 /**
  * Maps sort fields to their translation keys.
@@ -224,11 +225,13 @@ function SortFieldItem({
 
       {/* Up/Down buttons for accessibility */}
       <div className="flex gap-0.5">
-        <button
+        <IconButton
           type="button"
+          size="sm"
+          touchTarget={false}
           onClick={onMoveUp}
           disabled={isFirst}
-          className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="text-content-tertiary hover:bg-surface-hover hover:text-content"
           title={t('print.sort.moveUp')}
           aria-label={t('print.sort.moveFieldUp', { field: t(SORT_FIELD_KEYS[config.field]) })}
         >
@@ -241,12 +244,14 @@ function SortFieldItem({
           >
             <path d="M18 15l-6-6-6 6" />
           </svg>
-        </button>
-        <button
+        </IconButton>
+        <IconButton
           type="button"
+          size="sm"
+          touchTarget={false}
           onClick={onMoveDown}
           disabled={isLast}
-          className="p-1.5 rounded text-content-tertiary hover:text-content hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="text-content-tertiary hover:bg-surface-hover hover:text-content"
           title={t('print.sort.moveDown')}
           aria-label={t('print.sort.moveFieldDown', { field: t(SORT_FIELD_KEYS[config.field]) })}
         >
@@ -259,7 +264,7 @@ function SortFieldItem({
           >
             <path d="M6 9l6 6 6-6" />
           </svg>
-        </button>
+        </IconButton>
       </div>
     </div>
   );

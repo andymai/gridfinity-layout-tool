@@ -27,13 +27,14 @@ export function BulkActionBar({
       <span className="text-sm font-medium text-content">
         {t('binDesigner.bulk.selected', { count })}
       </span>
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={onSelectAll}
-        className="text-xs font-medium text-accent hover:underline"
+        className="rounded-none px-0 py-0 hover:bg-transparent text-xs font-medium text-accent hover:underline"
       >
         {t('binDesigner.bulk.selectAll')}
-      </button>
+      </Button>
       <div className="ml-auto flex items-center gap-2">
         <Button variant="secondary" size="sm" onClick={onTag} disabled={none}>
           {t('binDesigner.bulk.tag')}

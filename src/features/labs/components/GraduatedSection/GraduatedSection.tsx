@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FeatureFlag } from '@/core/labs';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface GraduatedSectionProps {
@@ -14,16 +15,18 @@ export function GraduatedSection({ features }: GraduatedSectionProps) {
 
   return (
     <section className="mt-6 pt-4 border-t border-dashed border-stroke-subtle">
-      <button
+      <Button
+        variant="ghost"
+        fullWidth
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 w-full text-left text-sm font-medium text-content-secondary hover:text-content transition-colors"
+        className="justify-start gap-2 px-0 text-left text-sm font-medium text-content-secondary hover:bg-transparent"
         aria-expanded={isExpanded}
       >
         <ChevronIcon
           className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
         />
         <span>{t('labs.whatsNew', { count: features.length })}</span>
-      </button>
+      </Button>
 
       {isExpanded && (
         <div className="mt-3 space-y-2">

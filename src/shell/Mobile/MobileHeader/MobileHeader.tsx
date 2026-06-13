@@ -7,6 +7,7 @@ import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
 import { PresenceAvatars } from '@/shell/Collab';
 import type { SaveStatus } from '@/shared/hooks';
+import { Button, IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
@@ -118,13 +119,15 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
               className="w-full px-2 py-1 rounded text-sm text-center bg-surface-elevated border border-accent text-content"
             />
           ) : (
-            <button
+            <Button
+              variant="ghost"
+              fullWidth
               onClick={() => toggleMobilePanel('layouts')}
               onContextMenu={(e) => {
                 e.preventDefault();
                 handleNameClick();
               }}
-              className="w-full text-sm truncate py-1 rounded transition-colors text-content flex items-center justify-center gap-1"
+              className="text-sm truncate py-1 rounded text-content flex items-center justify-center gap-1 hover:bg-transparent"
               aria-label={t('mobile.header.openLayoutsPanel')}
             >
               <span className="truncate">{layout.name}</span>
@@ -141,7 +144,7 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
                   d="M19 9l-7 7-7-7"
                 />
               </svg>
-            </button>
+            </Button>
           )}
         </div>
 
@@ -175,10 +178,9 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
               </svg>
             </div>
           )}
-          <button
+          <IconButton
             onClick={undo}
             disabled={!canUndo}
-            className="btn btn-ghost btn-icon"
             aria-label={canUndo ? t('common.undo') : t('mobile.header.nothingToUndo')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -189,11 +191,10 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
                 d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
               />
             </svg>
-          </button>
-          <button
+          </IconButton>
+          <IconButton
             onClick={redo}
             disabled={!canRedo}
-            className="btn btn-ghost btn-icon"
             aria-label={canRedo ? t('common.redo') : t('mobile.header.nothingToRedo')}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -204,10 +205,9 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
                 d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
               />
             </svg>
-          </button>
-          <button
+          </IconButton>
+          <IconButton
             onClick={onMenuClick}
-            className="btn btn-ghost btn-icon"
             aria-label={t('sidebar.openSettings')}
             title={t('mobile.settings')}
           >
@@ -216,7 +216,7 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
                 <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
               ))}
             </svg>
-          </button>
+          </IconButton>
         </div>
       </header>
     </div>

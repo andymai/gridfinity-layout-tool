@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from '@/i18n';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
+import { Button } from '@/design-system';
 import type { SharePermission } from '@/core/types';
 
 interface CloudShareTabProps {
@@ -108,9 +109,9 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
           </select>
         </div>
 
-        <button onClick={handleShare} className="btn btn-primary w-full">
+        <Button variant="primary" fullWidth onClick={handleShare}>
           {t('share.cloud.publish')}
-        </button>
+        </Button>
 
         <div className="text-xs text-content-tertiary border-t border-stroke-subtle pt-3 mt-3">
           Note: Cloud shares are snapshots. Changes you make locally won't affect the shared
@@ -136,9 +137,9 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
         </div>
 
         <div className="flex gap-2">
-          <button onClick={handleCopyUrl} className="btn btn-primary flex-1">
+          <Button variant="primary" onClick={handleCopyUrl} className="flex-1">
             {urlCopied ? t('share.cloud.linkCopied') : t('share.cloud.copyLink')}
-          </button>
+          </Button>
           <select
             value={localPermission}
             onChange={(e) => handlePermissionChange(e.target.value as SharePermission)}
@@ -150,12 +151,13 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
           </select>
         </div>
 
-        <button
+        <Button
+          variant="ghost"
           onClick={() => setShowDeleteConfirm(true)}
-          className="text-sm text-content-tertiary hover:text-error transition-colors"
+          className="px-0 py-0 hover:bg-transparent text-content-tertiary hover:text-error"
         >
           {t('share.cloud.unpublish')}
-        </button>
+        </Button>
 
         {showDeleteConfirm && (
           <div className="bg-error/10 border border-error/30 rounded-lg p-3 space-y-2">
@@ -163,15 +165,12 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
               Are you sure you want to delete this share? The link will stop working.
             </p>
             <div className="flex gap-2">
-              <button
-                onClick={handleDelete}
-                className="btn btn-secondary text-error border-error hover:bg-error hover:text-white"
-              >
+              <Button variant="danger" onClick={handleDelete}>
                 {t('common.delete')}
-              </button>
-              <button onClick={() => setShowDeleteConfirm(false)} className="btn btn-secondary">
+              </Button>
+              <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
                 {t('common.cancel')}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -242,9 +241,9 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
               onClick={() => urlInputRef.current?.select()}
               className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm"
             />
-            <button onClick={handleCopyUrl} className="btn btn-primary px-4">
+            <Button variant="primary" onClick={handleCopyUrl}>
               {urlCopied ? t('share.cloud.linkCopied') : t('common.copy')}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -253,12 +252,12 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button onClick={onClose} className="btn btn-primary">
+          <Button variant="primary" onClick={onClose}>
             {t('common.done')}
-          </button>
-          <button onClick={reset} className="btn btn-secondary">
+          </Button>
+          <Button variant="secondary" onClick={reset}>
             {t('share.shareAnother')}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -283,12 +282,12 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
         <p className="text-sm text-content-secondary">{error.message}</p>
 
         <div className="flex gap-3">
-          <button onClick={reset} className="btn btn-primary">
+          <Button variant="primary" onClick={reset}>
             {t('error.tryAgain')}
-          </button>
-          <button onClick={onSwitchToUrlTab} className="btn btn-secondary">
+          </Button>
+          <Button variant="secondary" onClick={onSwitchToUrlTab}>
             {t('share.useShareLinkInstead')}
-          </button>
+          </Button>
         </div>
       </div>
     );

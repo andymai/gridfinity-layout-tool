@@ -12,6 +12,7 @@ import { listDesigns, type SavedDesign } from '@/features/bin-designer';
 import { useShallow } from 'zustand/react/shallow';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
+import { Button, IconButton, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 export function LinkDesignDialog() {
@@ -143,26 +144,14 @@ export function LinkDesignDialog() {
               {t('designLinking.linkDialog.footprint', { width, depth })}
             </p>
           </div>
-          <button
+          <IconButton
             onClick={handleCancel}
-            className="rounded-md p-1.5 text-content-secondary hover:bg-surface-hover hover:text-content transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+            touchTarget={false}
+            className="text-content-secondary hover:text-content"
             aria-label={t('common.close')}
           >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+            <XIcon size="md" />
+          </IconButton>
         </div>
 
         {/* Search input - shown when enough designs */}
@@ -191,20 +180,15 @@ export function LinkDesignDialog() {
                 className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface border border-stroke rounded-md transition-colors"
               />
               {searchQuery && (
-                <button
+                <IconButton
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-content-tertiary hover:text-content transition-colors"
+                  size="sm"
+                  touchTarget={false}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-content-tertiary hover:text-content"
                   aria-label={t('common.clear')}
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
+                  <XIcon size="sm" />
+                </IconButton>
               )}
             </div>
           </div>
@@ -305,9 +289,10 @@ export function LinkDesignDialog() {
 
                 return (
                   <li key={design.id}>
-                    <button
+                    <Button
+                      variant="ghost"
                       onClick={() => handleSelect(design)}
-                      className="w-full flex items-center gap-3 rounded-lg border border-stroke-subtle px-3 py-2 transition-colors hover:bg-surface-hover hover:border-stroke text-left focus:outline-none focus:ring-2 focus:ring-accent focus:ring-inset"
+                      className="w-full flex items-center justify-start gap-3 rounded-lg border border-stroke-subtle px-3 py-2 hover:bg-surface-hover hover:border-stroke text-left font-normal"
                     >
                       {/* Thumbnail */}
                       <div className="w-12 h-12 rounded-md overflow-hidden bg-surface-elevated flex-shrink-0 relative">
@@ -372,7 +357,7 @@ export function LinkDesignDialog() {
                           d="M9 5l7 7-7 7"
                         />
                       </svg>
-                    </button>
+                    </Button>
                   </li>
                 );
               })}
@@ -382,9 +367,9 @@ export function LinkDesignDialog() {
 
         {/* Footer - compact */}
         <div className="flex justify-end gap-2 border-t border-stroke-subtle px-4 py-3 flex-shrink-0">
-          <button onClick={handleCancel} className="btn btn-secondary h-8 text-sm px-3">
+          <Button variant="secondary" onClick={handleCancel}>
             {t('common.cancel')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>,

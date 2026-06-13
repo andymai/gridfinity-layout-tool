@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import type { SharedWithMeEntry } from '@/core/types';
 import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import { useTranslation, useFormatting } from '@/i18n';
+import { IconButton } from '@/design-system';
 
 interface SharedWithMeItemProps {
   entry: SharedWithMeEntry;
@@ -131,62 +132,38 @@ export function SharedWithMeItem({
         {/* Action Buttons */}
         <div className="flex-shrink-0 flex items-center gap-1">
           {/* Open button */}
-          <button
+          <IconButton
+            size="sm"
+            touchTarget={false}
+            loading={isLoading}
             onClick={(e) => {
               e.stopPropagation();
               onOpen();
             }}
             disabled={isLoading || isDeleted}
-            className={`
-              p-2 rounded transition-colors
-              ${
-                isLoading || isDeleted
-                  ? 'text-content-tertiary cursor-not-allowed'
-                  : 'text-content-secondary hover:text-content hover:bg-surface'
-              }
-            `}
+            className="text-content-secondary hover:bg-surface hover:text-content disabled:text-content-tertiary"
             title={isDeleted ? t('layouts.layoutDeleted') : t('layouts.openLayout')}
             aria-label={isDeleted ? t('layouts.layoutDeleted') : t('layouts.openLayout')}
           >
-            {isLoading ? (
-              <svg
-                className="w-4 h-4 animate-spin motion-reduce:animate-none"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                />
-              </svg>
-            )}
-          </button>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+          </IconButton>
 
           {/* Remove button */}
-          <button
+          <IconButton
+            size="sm"
+            touchTarget={false}
             onClick={(e) => {
               e.stopPropagation();
               onRemove();
             }}
-            className="p-2 rounded text-content-secondary hover:text-error hover:bg-surface transition-colors"
+            className="text-content-secondary hover:bg-surface hover:text-error"
             title={t('layouts.removeFromList')}
             aria-label={t('layouts.removeFromList')}
           >
@@ -198,7 +175,7 @@ export function SharedWithMeItem({
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
+          </IconButton>
         </div>
       </div>
     </div>

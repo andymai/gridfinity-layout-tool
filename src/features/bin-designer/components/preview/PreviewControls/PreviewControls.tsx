@@ -6,6 +6,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
+import { Button, IconButton } from '@/design-system';
 import { CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import {
@@ -85,11 +86,12 @@ function ColorPickerContent({
   return (
     <div className="grid grid-cols-7 gap-1.5">
       {CATEGORY_COLOR_PALETTE.map(({ color, nameKey }) => (
-        <button
+        <Button
           key={color}
           type="button"
+          variant="ghost"
           onClick={() => onColorSelect(color)}
-          className={`rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
+          className={`h-auto w-auto rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
             previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
           }`}
           aria-label={t('colors.colorAriaLabel', { name: t(nameKey) })}
@@ -102,7 +104,7 @@ function ColorPickerContent({
             }`}
             style={{ backgroundColor: color }}
           />
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -178,13 +180,16 @@ export function PreviewControls({
               const Icon = VIEW_MODE_ICONS[mode];
               const isActive = splitViewMode === mode;
               return (
-                <button
+                <Button
                   key={mode}
                   type="button"
+                  variant="ghost"
+                  size="sm"
+                  touchTarget={false}
                   onClick={() => onSplitViewModeChange(mode)}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+                  className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors min-h-[28px] touch-manipulation ${
                     isActive
-                      ? 'bg-accent text-on-accent'
+                      ? 'bg-accent text-on-accent hover:bg-accent'
                       : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                   }`}
                   aria-pressed={isActive}
@@ -195,7 +200,7 @@ export function PreviewControls({
                       ? t('binDesigner.splitAssembled')
                       : t('binDesigner.splitExploded')}
                   </span>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -207,13 +212,16 @@ export function PreviewControls({
             const Icon = PRESET_ICONS[key];
             const isActive = activePreset === key;
             return (
-              <button
+              <Button
                 key={key}
                 type="button"
+                variant="ghost"
+                size="sm"
+                touchTarget={false}
                 onClick={() => onCameraPreset(key)}
-                className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+                className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors min-h-[28px] touch-manipulation ${
                   isActive
-                    ? 'bg-accent text-on-accent'
+                    ? 'bg-accent text-on-accent hover:bg-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
                 title={`${label} view (${shortcut})`}
@@ -227,7 +235,7 @@ export function PreviewControls({
                 >
                   {shortcut}
                 </kbd>
-              </button>
+              </Button>
             );
           })}
 
@@ -235,24 +243,30 @@ export function PreviewControls({
           <div className="w-px h-5 bg-stroke-subtle/50" />
 
           {/* Reset button */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
             onClick={onResetView}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            className="flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content min-h-[28px] touch-manipulation"
             title={t('binDesigner.resetView')}
             aria-label={t('binDesigner.resetCameraViewKeyboardShortcutR')}
           >
             <IconReset />
             <span>{t('common.reset')}</span>
-          </button>
+          </Button>
 
           {/* Wireframe toggle */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
             onClick={onWireframeToggle}
-            className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+            className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors min-h-[28px] touch-manipulation ${
               wireframe
-                ? 'bg-accent text-on-accent'
+                ? 'bg-accent text-on-accent hover:bg-accent'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
             }`}
             title={t('binDesigner.toggleWireframe')}
@@ -261,15 +275,18 @@ export function PreviewControls({
           >
             <IconWireframe />
             <span>{t('binDesigner.wire')}</span>
-          </button>
+          </Button>
 
           {/* X-ray toggle */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
             onClick={onXrayToggle}
-            className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+            className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors min-h-[28px] touch-manipulation ${
               xray
-                ? 'bg-accent text-on-accent'
+                ? 'bg-accent text-on-accent hover:bg-accent'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
             }`}
             title={t('binDesigner.toggleXray')}
@@ -278,13 +295,16 @@ export function PreviewControls({
           >
             <IconXray />
             <span>{t('binDesigner.xray')}</span>
-          </button>
+          </Button>
 
           {/* Projection toggle (perspective ↔ orthographic) */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
             onClick={onProjectionToggle}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            className="flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content min-h-[28px] touch-manipulation"
             title={t('binDesigner.toggleProjection')}
             aria-label={t('binDesigner.toggleProjectionKeyboardShortcut')}
             aria-pressed={projection === 'orthographic'}
@@ -295,7 +315,7 @@ export function PreviewControls({
                 ? t('binDesigner.projectionPerspective')
                 : t('binDesigner.projectionOrthographic')}
             </span>
-          </button>
+          </Button>
 
           {/* Color picker (hidden in multi-color mode) */}
           {!hideColorPicker && (
@@ -304,10 +324,13 @@ export function PreviewControls({
               <div className="w-px h-5 bg-stroke-subtle/50" />
 
               {/* Color picker button */}
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
+                touchTarget={false}
                 onClick={() => setColorPickerOpen((v) => !v)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+                className="flex items-center gap-1.5 rounded-none px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content min-h-[28px] touch-manipulation"
                 title={t('binDesigner.changePreviewColor')}
                 aria-label={t('binDesigner.changePreviewColor')}
                 aria-expanded={colorPickerOpen}
@@ -317,7 +340,7 @@ export function PreviewControls({
                   style={{ backgroundColor: previewColor }}
                 />
                 <span>{t('common.color')}</span>
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -343,13 +366,15 @@ export function PreviewControls({
               const Icon = VIEW_MODE_ICONS[mode];
               const isActive = splitViewMode === mode;
               return (
-                <button
+                <Button
                   key={mode}
                   type="button"
+                  variant="ghost"
+                  touchTarget={false}
                   onClick={() => onSplitViewModeChange(mode)}
-                  className={`flex items-center justify-center gap-1 min-w-[44px] min-h-[44px] px-3 py-2 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+                  className={`flex items-center justify-center gap-1 rounded-none min-w-[44px] min-h-[44px] px-3 py-2 text-[11px] font-medium transition-colors touch-manipulation ${
                     isActive
-                      ? 'bg-accent text-on-accent'
+                      ? 'bg-accent text-on-accent hover:bg-accent'
                       : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                   }`}
                   aria-pressed={isActive}
@@ -360,7 +385,7 @@ export function PreviewControls({
                       ? t('binDesigner.splitAssembled')
                       : t('binDesigner.splitExploded')}
                   </span>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -371,21 +396,22 @@ export function PreviewControls({
             const Icon = PRESET_ICONS[key];
             const isActive = activePreset === key;
             return (
-              <button
+              <IconButton
                 key={key}
                 type="button"
+                touchTarget={false}
+                pressed={isActive}
                 onClick={() => onCameraPreset(key)}
-                className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+                className={`flex items-center justify-center rounded-none min-w-[44px] min-h-[44px] p-2 transition-colors touch-manipulation ${
                   isActive
-                    ? 'bg-accent text-on-accent'
+                    ? 'bg-accent text-on-accent hover:bg-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
                 title={`${label} view (${shortcut})`}
                 aria-label={`${label} camera view`}
-                aria-pressed={isActive}
               >
                 <Icon />
-              </button>
+              </IconButton>
             );
           })}
 
@@ -393,59 +419,63 @@ export function PreviewControls({
           <div className="w-px h-5 bg-stroke-subtle/50" />
 
           {/* Reset */}
-          <button
+          <IconButton
             type="button"
+            touchTarget={false}
             onClick={onResetView}
-            className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+            className="flex items-center justify-center rounded-none min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content touch-manipulation"
             title={t('binDesigner.resetView')}
             aria-label={t('binDesigner.resetCameraViewKeyboardShortcutR')}
           >
             <IconReset />
-          </button>
+          </IconButton>
 
           {/* Wireframe */}
-          <button
+          <IconButton
             type="button"
+            touchTarget={false}
+            pressed={wireframe}
             onClick={onWireframeToggle}
-            className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+            className={`flex items-center justify-center rounded-none min-w-[44px] min-h-[44px] p-2 transition-colors touch-manipulation ${
               wireframe
-                ? 'bg-accent text-on-accent'
+                ? 'bg-accent text-on-accent hover:bg-accent'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
             }`}
             title={t('binDesigner.toggleWireframe')}
             aria-label={t('binDesigner.toggleWireframeModeKeyboardShortcut')}
-            aria-pressed={wireframe}
           >
             <IconWireframe />
-          </button>
+          </IconButton>
 
           {/* X-ray */}
-          <button
+          <IconButton
             type="button"
+            touchTarget={false}
+            pressed={xray}
             onClick={onXrayToggle}
-            className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+            className={`flex items-center justify-center rounded-none min-w-[44px] min-h-[44px] p-2 transition-colors touch-manipulation ${
               xray
-                ? 'bg-accent text-on-accent'
+                ? 'bg-accent text-on-accent hover:bg-accent'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
             }`}
             title={t('binDesigner.toggleXray')}
             aria-label={t('binDesigner.toggleXrayKeyboardShortcut')}
-            aria-pressed={xray}
           >
             <IconXray />
-          </button>
+          </IconButton>
 
           {/* Projection toggle */}
-          <button
+          <IconButton
             type="button"
+            touchTarget={false}
+            pressed={projection === 'orthographic'}
             onClick={onProjectionToggle}
-            className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+            className="flex items-center justify-center rounded-none min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content touch-manipulation"
             title={t('binDesigner.toggleProjection')}
             aria-label={t('binDesigner.toggleProjectionKeyboardShortcut')}
-            aria-pressed={projection === 'orthographic'}
           >
             {projection === 'perspective' ? <IconPerspective /> : <IconOrthographic />}
-          </button>
+          </IconButton>
 
           {/* Color picker (hidden in multi-color mode) */}
           {!hideColorPicker && (
@@ -454,10 +484,11 @@ export function PreviewControls({
               <div className="flex-1" />
 
               {/* Color picker */}
-              <button
+              <IconButton
                 type="button"
+                touchTarget={false}
                 onClick={() => setColorPickerOpen((v) => !v)}
-                className="flex items-center justify-center min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation"
+                className="flex items-center justify-center rounded-none min-w-[44px] min-h-[44px] p-2 text-content-secondary transition-colors hover:bg-surface-hover hover:text-content touch-manipulation"
                 title={t('binDesigner.changePreviewColor')}
                 aria-label={t('binDesigner.changePreviewColor')}
                 aria-expanded={colorPickerOpen}
@@ -466,7 +497,7 @@ export function PreviewControls({
                   className="inline-block h-4 w-4 rounded border border-stroke-subtle/50"
                   style={{ backgroundColor: previewColor }}
                 />
-              </button>
+              </IconButton>
             </>
           )}
         </div>

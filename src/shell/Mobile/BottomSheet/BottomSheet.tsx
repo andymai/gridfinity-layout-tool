@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useMobileStore } from '@/core/store';
+import { IconButton, XIcon } from '@/design-system';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 
@@ -221,20 +222,9 @@ export function BottomSheet({ children, title }: BottomSheetProps) {
           {/* Title row */}
           <div className="w-full flex items-center justify-between px-4">
             <h2 className="text-base font-medium text-content">{title}</h2>
-            <button
-              onClick={closeMobilePanel}
-              className="btn btn-ghost btn-icon"
-              aria-label={t('mobile.bottomSheet.closePanel')}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+            <IconButton onClick={closeMobilePanel} aria-label={t('mobile.bottomSheet.closePanel')}>
+              <XIcon />
+            </IconButton>
           </div>
         </div>
 

@@ -5,6 +5,7 @@ import { decodeLayoutFromURL, isArchiveFormat } from '@/core/storage';
 import type { Layout } from '@/core/types';
 import type { LayoutArchive } from '@/core/storage';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 interface ImportViewProps {
   onImport: (layout: Layout) => void;
@@ -258,12 +259,9 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
           {isDragging ? t('layouts.dropFileHere') : t('layouts.dragDropJson')}
         </p>
         <p className="text-content-tertiary text-sm mb-4">{t('layouts.or')}</p>
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="px-4 py-2 bg-surface-secondary hover:bg-surface border border-stroke text-content text-sm rounded-lg transition-colors"
-        >
+        <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
           {t('layouts.browseFiles')}
-        </button>
+        </Button>
       </div>
 
       {/* Divider */}
@@ -280,12 +278,14 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
             {t('layouts.layoutJson')}
           </label>
           {jsonText && (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleClear}
-              className="text-xs text-content-tertiary hover:text-content"
+              className="h-auto px-0 py-0 text-content-tertiary hover:bg-transparent hover:text-content"
             >
               {t('common.clear')}
-            </button>
+            </Button>
           )}
         </div>
         <textarea
@@ -377,28 +377,27 @@ export function ImportView({ onImport, onImportArchive, onCancel }: ImportViewPr
       {/* Action Buttons */}
       <div className="flex gap-3 pt-4 border-t border-stroke">
         {validArchive ? (
-          <button
+          <Button
+            variant="primary"
             onClick={handleImportArchive}
             disabled={!onImportArchive}
-            className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 disabled:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-on-dark rounded-lg transition-colors text-sm font-medium"
+            className="flex-1"
           >
             {t('layouts.importAll', { count: validArchive.layouts.length })}
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
+            variant="primary"
             onClick={handleImport}
             disabled={!validLayout}
-            className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 disabled:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-on-dark rounded-lg transition-colors text-sm font-medium"
+            className="flex-1"
           >
             {t('layouts.importLayout')}
-          </button>
+          </Button>
         )}
-        <button
-          onClick={onCancel}
-          className="py-2.5 px-4 bg-surface-secondary hover:bg-surface border border-stroke text-content rounded-lg transition-colors text-sm"
-        >
+        <Button variant="secondary" onClick={onCancel}>
           {t('common.cancel')}
-        </button>
+        </Button>
       </div>
     </div>
   );

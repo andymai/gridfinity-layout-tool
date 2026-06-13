@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import type { KeyboardEvent } from 'react';
 import { useTranslation } from '@/i18n';
-import { Input } from '@/design-system';
+import { Input, IconButton, XIcon } from '@/design-system';
 import { MAX_TAGS, normalizeTags } from '@/features/bin-designer/utils/tags';
 
 interface TagInputProps {
@@ -52,27 +52,16 @@ export function TagInput({ value, onChange }: TagInputProps) {
                 <span className="max-w-[10rem] truncate" title={tag}>
                   {tag}
                 </span>
-                <button
+                <IconButton
                   type="button"
+                  size="sm"
+                  touchTarget={false}
                   onClick={() => removeTag(tag)}
-                  className="rounded-full p-0.5 text-content-tertiary hover:bg-surface hover:text-content"
+                  className="h-auto w-auto rounded-full p-0.5 text-content-tertiary hover:bg-surface hover:text-content"
                   aria-label={t('binDesigner.tags.remove', { tag })}
                 >
-                  <svg
-                    className="h-3 w-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
+                  <XIcon className="h-3 w-3" />
+                </IconButton>
               </span>
             </li>
           ))}

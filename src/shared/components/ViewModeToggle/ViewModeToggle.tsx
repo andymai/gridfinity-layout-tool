@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { IconButton } from '@/design-system';
 
 export type ViewMode = 'list' | 'grid';
 
@@ -44,12 +45,10 @@ export function ViewModeToggle({
     [onChange]
   );
 
-  const buttonClass = (isSelected: boolean): string =>
-    `p-1.5 rounded-md transition-colors leading-none ${
-      isSelected
-        ? 'bg-accent text-on-dark'
-        : 'text-content-secondary hover:text-content hover:bg-surface-secondary'
-    }`;
+  const selectedClass = (isSelected: boolean): string =>
+    isSelected
+      ? 'bg-accent text-on-dark'
+      : 'text-content-secondary hover:text-content hover:bg-surface-secondary';
 
   return (
     <div
@@ -59,13 +58,16 @@ export function ViewModeToggle({
       aria-label={ariaLabel}
       onKeyDown={handleKeyDown}
     >
-      <button
+      <IconButton
         type="button"
+        variant="ghost"
+        size="sm"
+        touchTarget={false}
         role="radio"
         aria-checked={value === 'list'}
         tabIndex={value === 'list' ? 0 : -1}
         onClick={() => onChange('list')}
-        className={buttonClass(value === 'list')}
+        className={selectedClass(value === 'list')}
         aria-label={listLabel}
         title={listLabel}
       >
@@ -83,14 +85,17 @@ export function ViewModeToggle({
             d="M4 6h16M4 10h16M4 14h16M4 18h16"
           />
         </svg>
-      </button>
-      <button
+      </IconButton>
+      <IconButton
         type="button"
+        variant="ghost"
+        size="sm"
+        touchTarget={false}
         role="radio"
         aria-checked={value === 'grid'}
         tabIndex={value === 'grid' ? 0 : -1}
         onClick={() => onChange('grid')}
-        className={buttonClass(value === 'grid')}
+        className={selectedClass(value === 'grid')}
         aria-label={gridLabel}
         title={gridLabel}
       >
@@ -108,7 +113,7 @@ export function ViewModeToggle({
             d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"
           />
         </svg>
-      </button>
+      </IconButton>
     </div>
   );
 }

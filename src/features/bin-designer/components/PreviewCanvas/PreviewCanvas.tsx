@@ -65,6 +65,7 @@ import { detectWebGL, WebGLFallback, WebGLErrorBoundary } from '@/shared/webgl';
 import { ColorToolOverlay } from './ColorToolOverlay';
 import type { ColorZone } from '@/features/bin-designer/types/featureColors';
 import { PipetteIcon } from '@/design-system/Icon';
+import { IconButton } from '@/design-system';
 import { useSwapZoneWithToast } from '../../hooks/useSwapZoneWithToast';
 
 const PREVIEW_COLOR_KEY = 'gridfinity-designer-preview-color';
@@ -521,8 +522,9 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
               button is paired with one in the Colors panel header; both
               enter eyedropper mode. */}
           {!hideChrome && showColors && (
-            <button
+            <IconButton
               type="button"
+              touchTarget={false}
               onClick={() => setColorTool(colorTool === 'eyedropper' ? null : 'eyedropper')}
               className={`absolute bottom-3 left-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border shadow-md backdrop-blur transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                 colorTool === 'eyedropper'
@@ -534,7 +536,7 @@ export function PreviewCanvas({ hideChrome = false }: PreviewCanvasProps = {}) {
               title={t('binDesigner.colors.eyedropper.enter')}
             >
               <PipetteIcon size="sm" />
-            </button>
+            </IconButton>
           )}
 
           {/* Banner + click-anchored picker — rendered above canvas. The

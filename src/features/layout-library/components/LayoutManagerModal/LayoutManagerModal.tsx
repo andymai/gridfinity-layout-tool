@@ -15,6 +15,7 @@ import { downloadArchive, importArchive } from '@/core/storage';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
+import { Button, IconButton, ArrowLeftIcon, XIcon } from '@/design-system';
 
 export type SortOption = 'recent' | 'name' | 'size' | 'binCount';
 
@@ -271,26 +272,15 @@ function LayoutManagerModalContent({
         <div className="flex justify-between items-center border-b border-stroke-subtle px-6 py-4">
           <div className="flex items-center gap-3">
             {activeTab === 'import' && (
-              <button
+              <IconButton
+                size="sm"
+                touchTarget={false}
                 onClick={() => setActiveTab('layouts')}
-                className="p-1 text-content-secondary hover:text-content transition-colors rounded hover:bg-surface"
+                className="text-content-secondary hover:bg-surface hover:text-content"
                 aria-label={t('layouts.backToLayouts')}
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
+                <ArrowLeftIcon className="w-5 h-5" />
+              </IconButton>
             )}
             <h2 id="layout-manager-title" className="text-2xl font-bold text-content">
               {activeTab === 'layouts' ? t('layouts.layouts') : t('common.import')}
@@ -299,46 +289,36 @@ function LayoutManagerModalContent({
           <div className="flex items-center gap-2">
             {activeTab === 'layouts' && (
               <>
-                <button
+                <Button
+                  variant="secondary"
                   onClick={handleExportAll}
                   disabled={isExporting}
-                  className="rounded-md border border-stroke bg-surface px-3 py-1.5 text-sm font-medium text-content transition-colors hover:bg-surface-hover disabled:opacity-50"
+                  className="px-3 py-1.5 text-sm"
                 >
                   {isExporting ? t('common.exporting') : t('layouts.exportAll')}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="secondary"
                   onClick={() => setActiveTab('import')}
-                  className="rounded-md border border-stroke bg-surface px-3 py-1.5 text-sm font-medium text-content transition-colors hover:bg-surface-hover"
+                  className="px-3 py-1.5 text-sm"
                 >
                   {t('common.import')}
-                </button>
-                <button
-                  onClick={handleCreate}
-                  className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover"
-                >
+                </Button>
+                <Button variant="primary" onClick={handleCreate} className="px-3 py-1.5 text-sm">
                   {t('layouts.newLayout')}
-                </button>
+                </Button>
               </>
             )}
-            <button
+            <IconButton
               ref={closeButtonRef}
+              size="sm"
+              touchTarget={false}
               onClick={onClose}
-              className="p-1 text-content-secondary hover:text-content transition-colors rounded hover:bg-surface"
+              className="text-content-secondary hover:bg-surface hover:text-content"
               aria-label={t('layouts.closeLayoutsDialog')}
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+              <XIcon className="w-6 h-6" />
+            </IconButton>
           </div>
         </div>
 

@@ -6,6 +6,7 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
+import { Button, cn } from '@/design-system';
 import { useLocale, SUPPORTED_LOCALES, useTranslation } from '@/i18n';
 import type { Locale } from '@/i18n';
 import { useSettingsStore } from '@/core/store';
@@ -87,10 +88,12 @@ export function LanguageSelector() {
 
   return (
     <div className="relative">
-      <button
+      <Button
         ref={buttonRef}
+        variant="ghost"
+        size="sm"
         onClick={() => setIsOpen(!isOpen)}
-        className="btn btn-ghost px-2 py-1.5 text-sm gap-1 text-content-secondary hover:text-content flex items-center"
+        className="gap-1 px-2 text-content-secondary hover:text-content"
         title={t('header.changeLanguage')}
         aria-label={t('header.changeLanguage')}
         aria-expanded={isOpen}
@@ -108,7 +111,7 @@ export function LanguageSelector() {
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
-      </button>
+      </Button>
 
       {isOpen && (
         <div
@@ -120,14 +123,15 @@ export function LanguageSelector() {
           {SUPPORTED_LOCALES.map((loc) => {
             const isSelected = locale === loc.code;
             return (
-              <button
+              <Button
                 key={loc.code}
+                variant="ghost"
+                fullWidth
                 onClick={() => handleLocaleSelect(loc.code)}
-                className={`w-full px-3 py-2 text-sm text-left flex items-center justify-between gap-2 transition-colors ${
-                  isSelected
-                    ? 'bg-accent/10 text-accent'
-                    : 'text-content-secondary hover:bg-surface-hover hover:text-content'
-                }`}
+                className={cn(
+                  'justify-between gap-2 rounded-none px-3 py-2 text-sm font-normal',
+                  isSelected ? 'bg-accent/10 text-accent' : 'text-content-secondary'
+                )}
                 role="option"
                 aria-selected={isSelected}
               >
@@ -139,7 +143,7 @@ export function LanguageSelector() {
                   <span>{loc.nativeName}</span>
                 </div>
                 {isSelected && <CheckIcon className="w-4 h-4 text-accent flex-shrink-0" />}
-              </button>
+              </Button>
             );
           })}
         </div>

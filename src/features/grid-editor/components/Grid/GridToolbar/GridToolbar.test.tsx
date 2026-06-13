@@ -311,7 +311,7 @@ describe('GridToolbar', () => {
 
       const cubeIcon = container.querySelector('path[d*="M21 8a2 2 0"]');
       const button = cubeIcon?.closest('button');
-      expect(button).toHaveClass('btn-primary');
+      expect(button).toHaveClass('text-on-accent');
     });
 
     it('applies ghost button styling when preview is hidden', () => {
@@ -321,7 +321,7 @@ describe('GridToolbar', () => {
 
       const cubeIcon = container.querySelector('path[d*="M21 8a2 2 0"]');
       const button = cubeIcon?.closest('button');
-      expect(button).toHaveClass('btn-ghost');
+      expect(button).toHaveClass('bg-transparent');
     });
   });
 

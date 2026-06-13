@@ -8,6 +8,7 @@
 
 import { useState, useRef } from 'react';
 import type { Participant, ConnectionStatus } from '@/shared/hooks/usePresence';
+import { Button } from '@/design-system';
 import { PresenceAvatar } from '../PresenceAvatar';
 import { ConnectionIndicator } from '../ConnectionIndicator';
 import { PresenceDropdown } from '../PresenceDropdown';
@@ -65,23 +66,17 @@ export function PresenceAvatarBar({
         </div>
 
         {/* Overflow button or click target */}
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => setIsDropdownOpen((prev) => !prev)}
-          className={`
-            ml-1 px-2 py-1 rounded-md text-xs font-medium
-            transition-colors
-            ${
-              isDropdownOpen
-                ? 'bg-surface-hover text-content'
-                : 'text-content-secondary hover:text-content hover:bg-surface-hover'
-            }
-          `.trim()}
+          className={`ml-1 ${isDropdownOpen ? 'bg-surface-hover text-content' : ''}`.trim()}
           aria-expanded={isDropdownOpen}
           aria-haspopup="dialog"
           title={`${participants.length} collaborators - click to see all`}
         >
           {hasOverflow ? `+${overflowCount} more` : `${participants.length}`}
-        </button>
+        </Button>
       </div>
 
       {/* Dropdown */}

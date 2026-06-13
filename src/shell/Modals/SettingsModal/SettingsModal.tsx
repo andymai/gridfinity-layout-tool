@@ -16,7 +16,7 @@ import { IntegrationsTab } from './tabs/IntegrationsTab/IntegrationsTab';
 import { PrivacyTab } from './tabs/PrivacyTab/PrivacyTab';
 import { StorageTab } from './tabs/StorageTab/StorageTab';
 import { LabsTab } from './tabs/LabsTab/LabsTab';
-import { ICON_PATHS } from '@/shared/constants/iconPaths';
+import { Button, IconButton, XIcon } from '@/design-system';
 import type { SettingsModalProps, SettingsTabId } from './types';
 
 const STYLES = {
@@ -123,25 +123,14 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
             <h2 id="settings-title" style={STYLES.title}>
               {t('settings.title')}
             </h2>
-            <button
+            <IconButton
               ref={closeButtonRef}
               onClick={onClose}
-              className="btn btn-ghost btn-icon"
-              style={{ minWidth: 'auto', minHeight: 'auto' }}
+              touchTarget={false}
               aria-label={t('common.close')}
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {ICON_PATHS.close.map((d) => (
-                  <path
-                    key={d}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d={d}
-                  />
-                ))}
-              </svg>
-            </button>
+              <XIcon size="md" />
+            </IconButton>
           </div>
 
           {/* Tab layout */}
@@ -162,22 +151,24 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
           {/* Footer */}
           <div className="flex items-center justify-between px-6 py-3 border-t border-stroke-subtle text-xs">
             <div className="text-content-tertiary space-x-3">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setShowResetConfirm(true)}
-                className="hover:text-content transition-colors"
+                className="h-auto p-0 text-xs font-normal hover:bg-transparent hover:text-content"
               >
                 {t('settings.resetTabDefaults')}
-              </button>
+              </Button>
               <span className="text-content-disabled">·</span>
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => {
                   resetOnboarding();
                   addToast(t('toast.onboardingReset'), 'info');
                 }}
-                className="hover:text-content transition-colors"
+                className="h-auto p-0 text-xs font-normal hover:bg-transparent hover:text-content"
               >
                 {t('settings.resetOnboarding')}
-              </button>
+              </Button>
             </div>
             <div className="text-content-disabled space-x-3">
               <a

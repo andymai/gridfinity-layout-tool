@@ -16,6 +16,7 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 import { UserDock } from '@/shared/components/UserDock';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
@@ -232,17 +233,19 @@ export function MobileSettingsPanel() {
             </p>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            fullWidth
             onClick={resetGridfinityStandard}
             disabled={
               gridUnitMm === CONSTRAINTS.GRID_UNIT_MM_DEFAULT &&
               heightUnitMm === CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT
             }
-            className="w-full text-sm py-2 px-3 rounded-lg text-content-secondary hover:text-content hover:bg-surface-hover border border-stroke-subtle transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-content-secondary disabled:hover:bg-transparent"
+            className="text-sm py-2 px-3 rounded-lg text-content-secondary hover:text-content hover:bg-surface-hover border border-stroke-subtle disabled:cursor-not-allowed disabled:hover:text-content-secondary disabled:hover:bg-transparent"
           >
             {t('settings.resetGridfinityStandard')}
-          </button>
+          </Button>
 
           <div className="text-sm text-right text-content-disabled">
             {t('mobile.settings.maxBinSize')}
@@ -253,9 +256,11 @@ export function MobileSettingsPanel() {
 
       {/* App Settings Link */}
       <section>
-        <button
+        <Button
+          variant="ghost"
+          fullWidth
           onClick={() => openSettingsModal()}
-          className="w-full flex items-center justify-between px-4 py-3 bg-surface-elevated rounded-lg hover:bg-surface-hover transition-colors"
+          className="flex items-center justify-between px-4 py-3 bg-surface-elevated rounded-lg hover:bg-surface-hover"
         >
           <div className="flex items-center gap-3">
             <svg
@@ -291,7 +296,7 @@ export function MobileSettingsPanel() {
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </Button>
       </section>
 
       {/* Info */}

@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
+import { Button, IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import {
   computeBounds,
@@ -214,15 +215,17 @@ export function AlignmentToolbar({
   };
 
   const alignButton = (type: AlignType, label: string) => (
-    <button
+    <IconButton
       type="button"
-      className="rounded p-1.5 text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors"
+      size="sm"
+      touchTarget={false}
+      className="text-content-tertiary"
       onClick={() => handleAlign(type)}
       title={label}
       aria-label={label}
     >
       <AlignIcon type={type} />
-    </button>
+    </IconButton>
   );
 
   return (
@@ -243,57 +246,70 @@ export function AlignmentToolbar({
 
       {/* Distribution buttons */}
       <div className="flex gap-2">
-        <button
+        <Button
           type="button"
-          className="flex items-center gap-1.5 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="secondary"
+          size="sm"
+          touchTarget={false}
+          className="text-content-secondary"
+          leftIcon={
+            <svg
+              className="h-3.5 w-3.5"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <line x1="1" y1="1" x2="1" y2="13" />
+              <line x1="7" y1="3" x2="7" y2="11" />
+              <line x1="13" y1="1" x2="13" y2="13" />
+            </svg>
+          }
           onClick={handleDistributeH}
           disabled={selectedIds.length < 3}
           title={t('binDesigner.cutouts.distributeH')}
         >
-          <svg
-            className="h-3.5 w-3.5"
-            viewBox="0 0 14 14"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <line x1="1" y1="1" x2="1" y2="13" />
-            <line x1="7" y1="3" x2="7" y2="11" />
-            <line x1="13" y1="1" x2="13" y2="13" />
-          </svg>
           {t('binDesigner.cutouts.distributeH')}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className="flex items-center gap-1.5 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="secondary"
+          size="sm"
+          touchTarget={false}
+          className="text-content-secondary"
+          leftIcon={
+            <svg
+              className="h-3.5 w-3.5"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <line x1="1" y1="1" x2="13" y2="1" />
+              <line x1="3" y1="7" x2="11" y2="7" />
+              <line x1="1" y1="13" x2="13" y2="13" />
+            </svg>
+          }
           onClick={handleDistributeV}
           disabled={selectedIds.length < 3}
           title={t('binDesigner.cutouts.distributeV')}
         >
-          <svg
-            className="h-3.5 w-3.5"
-            viewBox="0 0 14 14"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <line x1="1" y1="1" x2="13" y2="1" />
-            <line x1="3" y1="7" x2="11" y2="7" />
-            <line x1="1" y1="13" x2="13" y2="13" />
-          </svg>
           {t('binDesigner.cutouts.distributeV')}
-        </button>
+        </Button>
       </div>
 
       {/* Auto-arrange */}
       <div className="flex items-center gap-2">
-        <button
+        <Button
           type="button"
-          className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors"
+          variant="secondary"
+          size="sm"
+          touchTarget={false}
+          className="text-content-secondary"
           onClick={handleAutoArrange}
         >
           {t('binDesigner.cutouts.autoArrange')}
-        </button>
+        </Button>
         <label className="flex items-center gap-1 text-[11px] text-content-tertiary">
           {t('binDesigner.cutouts.gap')}
           <input
@@ -346,28 +362,37 @@ export function AlignmentToolbar({
 
       {/* Actions */}
       <div className="flex flex-wrap gap-2">
-        <button
+        <Button
           type="button"
-          className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors"
+          variant="secondary"
+          size="sm"
+          touchTarget={false}
+          className="text-content-secondary"
           onClick={handleCenterInBin}
         >
           {t('binDesigner.cutouts.centerInBin')}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors"
+          variant="secondary"
+          size="sm"
+          touchTarget={false}
+          className="text-content-secondary"
           onClick={() => onDuplicate(selectedIds)}
         >
           {t('common.duplicate')}
-        </button>
+        </Button>
         {hasGroup && (
-          <button
+          <Button
             type="button"
-            className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors"
+            variant="secondary"
+            size="sm"
+            touchTarget={false}
+            className="text-content-secondary"
             onClick={() => onUngroup(selectedIds)}
           >
             {t('binDesigner.cutouts.ungroup')}
-          </button>
+          </Button>
         )}
       </div>
     </div>

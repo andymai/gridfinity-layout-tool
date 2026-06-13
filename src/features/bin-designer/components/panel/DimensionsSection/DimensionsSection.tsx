@@ -8,6 +8,7 @@
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { StepperControl } from '@/shared/components/StepperControl';
+import { IconButton } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -38,10 +39,12 @@ export function DimensionsSection() {
         </div>
 
         {/* Swap button */}
-        <button
+        <IconButton
           type="button"
+          variant="secondary"
+          touchTarget={false}
           onClick={handlers.handleSwapDimensions}
-          className={`flex ${isMobile ? 'h-12 w-12' : 'h-8 w-8'} flex-shrink-0 items-center justify-center rounded border border-stroke-subtle bg-surface-elevated text-content-tertiary transition-colors hover:bg-surface-hover hover:text-content`}
+          className={`${isMobile ? 'h-12 w-12' : 'h-8 w-8'} flex-shrink-0 text-content-tertiary`}
           title={t('inspector.swapDimensions')}
           aria-label={t('inspector.swapWidthAndDepth')}
         >
@@ -58,7 +61,7 @@ export function DimensionsSection() {
               d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
             />
           </svg>
-        </button>
+        </IconButton>
 
         {/* Depth */}
         <div className="flex-1 min-w-0">

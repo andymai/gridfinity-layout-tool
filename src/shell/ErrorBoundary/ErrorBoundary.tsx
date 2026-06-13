@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
+import { Button } from '@/design-system';
 import { captureException, track3DRenderError } from '@/shared/analytics/posthog';
 import { downloadArchive } from '@/core/storage';
 import { useLibraryStore } from '@/core/store/library';
@@ -116,21 +117,21 @@ export class ErrorBoundary extends Component<Props, State> {
             )}
             {/* eslint-disable i18next/no-literal-string -- translation keys */}
             <div className="flex flex-wrap gap-3 justify-center">
-              <button onClick={this.handleReset} className="btn btn-secondary">
+              <Button variant="secondary" onClick={this.handleReset}>
                 {getStaticTranslation('errorBoundary.tryAgain')}
-              </button>
+              </Button>
               {canUndo && (
-                <button onClick={this.handleUndo} className="btn btn-secondary">
+                <Button variant="secondary" onClick={this.handleUndo}>
                   {getStaticTranslation('errorBoundary.undoLastChange')}
-                </button>
+                </Button>
               )}
-              <button
+              <Button
+                variant="primary"
                 onClick={this.handleDownloadBackup}
-                className="btn btn-primary"
                 disabled={backupState === 'working'}
               >
                 {getStaticTranslation('errorBoundary.downloadBackup')}
-              </button>
+              </Button>
             </div>
             {backupState === 'done' && (
               <p className="text-sm text-success mt-4">

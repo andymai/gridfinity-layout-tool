@@ -15,157 +15,45 @@
 #
 
 # App-level components
-src/App.tsx
-src/shell/Collab/PresenceAvatarBar/PresenceAvatarBar.tsx
-src/shell/Collab/PresenceDropdown/PresenceDropdown.tsx
-src/shell/Collab/PresenceMobileButton/PresenceMobileButton.tsx
-src/shell/ErrorBoundary/ErrorBoundary.tsx
-src/shell/Header/Header.tsx
-src/shell/PanelErrorBoundary/PanelErrorBoundary.tsx
-src/shell/RightPanel/RightPanel.tsx
-src/shell/Sidebar/Sidebar.tsx
-src/shell/STLSearchDropdown/STLSearchDropdown.tsx
 
 # Mobile components
-src/shell/Mobile/BottomNavBar/BottomNavBar.tsx
-src/shell/Mobile/BottomSheet/BottomSheet.tsx
-src/shell/Mobile/MobileCategoriesPanel/MobileCategoriesPanel.tsx
-src/shell/Mobile/MobileGridToolbar/MobileGridToolbar.tsx
-src/shell/Mobile/MobileHeader/MobileHeader.tsx
-src/shell/Mobile/MobileHelpModal/MobileHelpModal.tsx
-src/shell/Mobile/MobileLayersPanel/LayersTab/LayersTab.tsx
-src/shell/Mobile/MobileLayersPanel/TabBar/TabBar.tsx
-src/shell/Mobile/MobileLayersPanel/ToolsTab/ToolsTab.tsx
-src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanel.tsx
-src/shell/Mobile/MobilePrintList/MobilePrintList.tsx
-src/shell/Mobile/MobileSettingsPanel/MobileSettingsPanel.tsx
-src/shell/Mobile/MultiBinContextMenu/MultiBinContextMenu.tsx
 
 # Tablet components
-src/shell/Tablet/TabletPanelTriggers/TabletPanelTriggers.tsx
 
 # Modal components
-src/shell/Modals/BinListModal/BinListDashboard/BinListDashboard.tsx
-src/shell/Modals/BinListModal/BinListFilters/BinListFilters.tsx
-src/shell/Modals/BinListModal/BinListModal.tsx
-src/shell/Modals/BinListModal/BulkActions/BulkActions.tsx
-src/shell/Modals/BinListModal/MobileBinList/MobileBinList.tsx
-src/shell/Modals/HalfBinModeBlockedModal/HalfBinModeBlockedModal.tsx
-src/shell/Modals/HelpModal/HelpModal.tsx
-src/shell/Modals/ImportModal/ImportModal.tsx
-src/shell/Modals/SettingsModal/SettingsModal.tsx
-src/shell/Modals/SettingsModal/TabNavigation/TabNavigation.tsx
-src/shell/Modals/SettingsModal/tabs/DefaultsTab/DefaultsTab.tsx
-src/shell/Modals/WelcomeModal/WelcomeModal.tsx
 
 # Bin designer feature
-src/features/bin-designer/components/CartDialog/CartDialog.tsx
-src/features/bin-designer/components/CompartmentEditor/CompartmentEditor.tsx
-src/features/bin-designer/components/controls/SnappingSlider/SnappingSlider.tsx
-src/features/bin-designer/components/controls/ThicknessSelector/ThicknessSelector.tsx
-src/features/bin-designer/components/DesignActions/DesignActions.tsx
-src/features/bin-designer/components/DesignerPage/DesignerPage.tsx
-src/features/bin-designer/components/DesignImportView/DesignImportView.tsx
-src/features/bin-designer/components/DesignListDialog/DesignListDialog.tsx
-src/features/bin-designer/components/ExportDialog/ExportDialog.tsx
-src/features/bin-designer/components/panel/DimensionsSection/DimensionsSection.tsx
-src/features/bin-designer/components/panel/FeatureToggle/FeatureToggle.tsx
-src/features/bin-designer/components/panel/InteriorSection/InteriorSection.tsx
-src/features/bin-designer/components/panel/LabelTabsSection/LabelTabsSection.tsx
-src/features/bin-designer/components/panel/CutoutsSection/AlignmentToolbar.tsx
-src/features/bin-designer/components/panel/CutoutsSection/CutoutPropertyPanel.tsx
-src/features/bin-designer/components/panel/CutoutsSection/CutoutShapeToolbar.tsx
-src/features/bin-designer/components/panel/CutoutsSection/CutoutContextMenu.tsx
-src/features/bin-designer/components/panel/CutoutsSection/CutoutsSection.tsx
-src/features/bin-designer/components/CutoutWorkspace/InspectorPanel.tsx
 src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
 src/features/bin-designer/components/panel/WallsSection/PatternSelector.tsx
-src/features/bin-designer/components/preview/PreviewControls/PreviewControls.tsx
-src/features/bin-designer/components/preview/PreviewSkeleton/PreviewSkeleton.tsx
-src/features/bin-designer/components/PreviewCanvas/PreviewCanvas.tsx
-src/features/bin-designer/components/ShareDialog/ShareDialog.tsx
-src/features/bin-designer/components/SlotConfigurator/SlotConfigurator.tsx
 
 # Bin inspector feature
-src/features/bin-inspector/components/Inspector/CustomPropertiesEditor/CustomPropertiesEditor.tsx
-src/features/bin-inspector/components/Inspector/MultiBinInspector/MultiBinInspector.tsx
-src/features/bin-inspector/components/Inspector/SingleBinInspector/SingleBinInspector.tsx
 
 # Categories feature
-src/features/categories/components/CategoriesPanel/CategoriesPanel.tsx
 
 # Cloud share feature
 src/features/cloud-share/components/CloudShareTab/CloudShareTab.tsx
-src/features/cloud-share/components/ShareButton/ShareButton.tsx
-src/features/cloud-share/components/SharedLayoutBanner/SharedLayoutBanner.tsx
-src/features/cloud-share/components/ShareModal/ShareModal.tsx
 
 # Design linking feature
-src/features/design-linking/components/Dialogs/CreateDesignDialog/CreateDesignDialog.tsx
-src/features/design-linking/components/Dialogs/DeleteDesignWarningDialog/DeleteDesignWarningDialog.tsx
-src/features/design-linking/components/Dialogs/LinkDesignDialog/LinkDesignDialog.tsx
-src/features/design-linking/components/Dialogs/SyncDimensionsDialog/SyncDimensionsDialog.tsx
-src/features/design-linking/components/LinkedDesignSection/LinkedDesignSection.tsx
 
 # Grid editor feature
-src/features/grid-editor/components/Grid/GridAxisLabels/GridAxisLabels.tsx
-src/features/grid-editor/components/Grid/GridToolbar/GridToolbar.tsx
-src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreview.tsx
-src/features/grid-editor/components/Grid/QuickLabelPopover/QuickLabelPopover.tsx
 
 # Inspiration gallery feature
-src/features/inspiration-gallery/components/InspirationGallery/InspirationGallery.tsx
-src/features/inspiration-gallery/components/LayoutPreviewOverlay/LayoutPreviewOverlay.tsx
-src/features/inspiration-gallery/components/ThemeFilterPills/ThemeFilterPills.tsx
 
 # Labs feature
-src/features/labs/components/FeatureCard/FeatureCard.tsx
-src/features/labs/components/GraduatedSection/GraduatedSection.tsx
-src/features/labs/components/LabsButton/LabsButton.tsx
-src/features/labs/components/LabsDrawer/LabsDrawer.tsx
 
 # Layers feature
-src/features/layers/components/ActiveLayerPanel/ActiveLayerPanel.tsx
-src/features/layers/components/LayerPanel/LayerPanel.tsx
 
 # Layout library feature
-src/features/layout-library/components/LayoutManagerModal/ImportView/ImportView.tsx
-src/features/layout-library/components/LayoutManagerModal/LayoutActions/LayoutActions.tsx
 src/features/layout-library/components/LayoutManagerModal/LayoutList/LayoutList.tsx
-src/features/layout-library/components/LayoutManagerModal/LayoutManagerModal.tsx
-src/features/layout-library/components/LayoutManagerModal/NewLayoutCard/NewLayoutCard.tsx
-src/features/layout-library/components/LayoutManagerModal/SharedWithMeItem/SharedWithMeItem.tsx
 
 # Name suggestions feature
-src/features/name-suggestions/components/NameFieldHighlight/NameFieldHighlight.tsx
-src/features/name-suggestions/components/SuggestionPopover/SuggestionPopover.tsx
 
 # Print export feature
-src/features/print-export/components/PrintModal/PrintModal.tsx
-src/features/print-export/components/SortOrderConfig/SortOrderConfig.tsx
 
 # Staging feature
-src/features/staging/components/Staging/Staging.tsx
 
 # i18n
-src/i18n/context.tsx
 
 # Shared components
-src/shared/components/CompactNumberInput/CompactNumberInput.tsx
-src/shared/components/BulkIncrementControl/BulkIncrementControl.tsx
-src/shared/components/CollapsibleSection/CollapsibleSection.tsx
-src/shared/components/ConfirmDialog/ConfirmDialog.tsx
-src/shared/components/ContextMenu/ContextMenuItem/ContextMenuItem.tsx
-src/shared/components/ItemListShell/ItemSearch/ItemSearch.tsx
 src/shared/components/ItemListShell/SortDropdown/SortDropdown.tsx
-src/shared/components/LanguageSelector/LanguageSelector.tsx
 src/shared/components/SelectDropdown/SelectDropdown.tsx
-src/shared/components/StepperControl/StepperControl.tsx
-src/shared/components/Toast/Toast.tsx
-src/shared/components/ToolSwitcher/ToolSwitcher.tsx
-src/shared/components/TwoClickDeleteButton/TwoClickDeleteButton.tsx
-src/shared/components/ViewModeToggle/ViewModeToggle.tsx
-src/features/bin-designer/components/DesignListDialog/TagInput/TagInput.tsx
-src/features/bin-designer/components/DesignListDialog/TagFilterBar/TagFilterBar.tsx
-src/features/bin-designer/components/DesignListDialog/BulkActionBar/BulkActionBar.tsx
-src/features/layout-library/components/LayoutQuickSwitch/LayoutQuickSwitch.tsx

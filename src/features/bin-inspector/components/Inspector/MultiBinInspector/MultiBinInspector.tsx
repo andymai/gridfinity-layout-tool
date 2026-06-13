@@ -5,6 +5,7 @@ import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBi
 import type { Layer } from '@/core/types';
 import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { BulkIncrementControl } from '@/shared/components/BulkIncrementControl';
+import { Button, IconButton, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface MultiBinInspectorProps {
@@ -120,21 +121,16 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         </div>
         <h2 className="flex-1 text-lg font-semibold text-content">{t('inspector.binsSelected')}</h2>
         {onClose && (
-          <button
+          <IconButton
+            size="sm"
+            touchTarget={false}
             type="button"
             onClick={onClose}
-            className="btn btn-ghost w-7 h-7 p-0 min-w-0 min-h-0"
+            className="w-7 h-7"
             aria-label={t('inspector.deselectAllBins')}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+            <XIcon className="w-4 h-4" />
+          </IconButton>
         )}
       </div>
 
@@ -223,13 +219,14 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
               {t('inspector.customProperties')}
             </label>
             {!showPropertyForm && (
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={() => setShowPropertyForm(true)}
-                className="text-xs text-accent hover:text-accent-hover transition-colors"
+                className="text-xs text-accent hover:text-accent-hover px-0 py-0 hover:bg-transparent"
               >
                 {t('inspector.setProperty')}
-              </button>
+              </Button>
             )}
           </div>
           {showPropertyForm ? (
@@ -267,7 +264,8 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                 aria-label={t('inspector.propertyValue')}
               />
               <div className="flex gap-2">
-                <button
+                <Button
+                  variant="primary"
                   type="button"
                   onClick={() => {
                     if (propertyKey.trim()) {
@@ -278,21 +276,22 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
                     }
                   }}
                   disabled={!propertyKey.trim()}
-                  className={`btn btn-primary flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
+                  className={`flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
                 >
                   {t('inspector.setOnAll')}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
                   type="button"
                   onClick={() => {
                     setPropertyKey('');
                     setPropertyValue('');
                     setShowPropertyForm(false);
                   }}
-                  className={`btn btn-ghost flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
+                  className={`flex-1 ${isMobile ? 'h-10' : 'h-8'}`}
                 >
                   {t('common.cancel')}
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -305,21 +304,23 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
         {/* Actions */}
         <div className="flex gap-2">
           {canMoveToStaging && (
-            <button
+            <Button
+              variant="secondary"
               type="button"
               onClick={moveToStaging}
-              className={`btn btn-secondary flex-1 ${isMobile ? 'h-12' : ''}`}
+              className={`flex-1 ${isMobile ? 'h-12' : ''}`}
             >
               {t('inspector.toStash')}
-            </button>
+            </Button>
           )}
-          <button
+          <Button
+            variant="danger"
             type="button"
             onClick={requestDelete}
-            className={`btn btn-danger flex-1 ${isMobile ? 'h-12' : ''}`}
+            className={`flex-1 ${isMobile ? 'h-12' : ''}`}
           >
             {t('inspector.deleteAll')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

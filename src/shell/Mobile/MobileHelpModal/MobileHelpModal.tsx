@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { IconButton, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { getAllHelpEntries } from '@/shell/Modals/HelpModal/helpEntryAggregator';
@@ -122,20 +123,14 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
             <h2 id="mobile-help-title" style={STYLES.title}>
               {t('mobile.help')}
             </h2>
-            <button
+            <IconButton
+              size="lg"
               onClick={handleClose}
-              className="btn btn-ghost w-10 h-10 p-0"
+              className="w-10 h-10"
               aria-label={t('common.close')}
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+              <XIcon />
+            </IconButton>
           </div>
 
           {/* Search */}
@@ -161,9 +156,11 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
               className="w-full pl-9 pr-9 py-2 text-sm rounded-md bg-surface border border-stroke-subtle text-content placeholder:text-content-tertiary"
             />
             {searchQuery && (
-              <button
+              <IconButton
+                size="sm"
+                touchTarget={false}
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-content-tertiary hover:text-content"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-content-tertiary hover:text-content"
                 aria-label={t('layouts.clearSearch')}
               >
                 <svg
@@ -184,7 +181,7 @@ export function MobileHelpModal({ isOpen, onClose }: MobileHelpModalProps) {
                     />
                   ))}
                 </svg>
-              </button>
+              </IconButton>
             )}
           </div>
 

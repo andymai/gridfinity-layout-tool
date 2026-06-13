@@ -11,6 +11,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLinkingStore } from '../../../store';
 import { useBinLinking } from '../../../hooks';
 import { formatDimensions } from '../../../domain';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 export function CreateDesignDialog() {
@@ -135,14 +136,15 @@ export function CreateDesignDialog() {
                 autoFocus
               />
               {binLabel && (
-                <button
+                <Button
+                  variant="secondary"
                   type="button"
                   onClick={handleUseBinLabel}
-                  className="btn btn-secondary text-sm whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
+                  className="whitespace-nowrap"
                   title={t('designLinking.createDialog.useLabelTooltip', { label: binLabel })}
                 >
                   {t('designLinking.createDialog.useLabel')}
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -163,20 +165,12 @@ export function CreateDesignDialog() {
 
           {/* Actions */}
           <div className="flex gap-2 justify-end">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="btn btn-secondary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
-            >
+            <Button variant="secondary" type="button" onClick={handleCancel}>
               {t('common.cancel')}
-            </button>
-            <button
-              type="submit"
-              className="btn btn-primary h-8 text-sm px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1 focus:ring-offset-surface-secondary"
-              disabled={!name.trim()}
-            >
+            </Button>
+            <Button variant="primary" type="submit" disabled={!name.trim()}>
               {t('designLinking.createDialog.create')}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

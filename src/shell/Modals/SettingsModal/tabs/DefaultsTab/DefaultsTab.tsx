@@ -12,6 +12,7 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { useBinDefaults } from '@/features/bin-designer';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 export function DefaultsTab() {
@@ -209,12 +210,14 @@ export function DefaultsTab() {
         </div>
 
         {/* Copy from current layout */}
-        <button
+        <Button
+          variant="ghost"
+          fullWidth
           onClick={() => setShowCopyConfirm(true)}
-          className="w-full mt-4 text-sm py-2 px-3 rounded-lg bg-surface-elevated hover:bg-surface-hover text-content-secondary hover:text-content border border-stroke-subtle transition-colors"
+          className="mt-4 text-sm py-2 px-3 rounded-lg bg-surface-elevated hover:bg-surface-hover text-content-secondary hover:text-content border border-stroke-subtle"
         >
           {t('settings.copyFromCurrentLayout')}
-        </button>
+        </Button>
       </section>
 
       {/* Divider */}
@@ -346,19 +349,21 @@ export function DefaultsTab() {
           </div>
         </div>
         <div className="flex gap-2">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setShowSaveCategoriesConfirm(true)}
-            className="flex-1 text-sm py-2 px-3 rounded-lg bg-surface-elevated hover:bg-surface-hover text-content-secondary hover:text-content border border-stroke-subtle transition-colors"
+            className="flex-1 text-sm py-2 px-3 rounded-lg bg-surface-elevated hover:bg-surface-hover text-content-secondary hover:text-content border border-stroke-subtle"
           >
             {t('settings.saveCategoriesAsDefaults')}
-          </button>
+          </Button>
           {hasCustomCategoryDefaults && (
-            <button
+            <Button
+              variant="ghost"
               onClick={() => updateSetting('defaultCategories', null)}
-              className="text-sm py-2 px-3 rounded-lg text-content-tertiary hover:text-content hover:bg-surface-hover border border-stroke-subtle transition-colors"
+              className="text-sm py-2 px-3 rounded-lg text-content-tertiary hover:text-content hover:bg-surface-hover border border-stroke-subtle"
             >
               {t('settings.resetToBuiltIn')}
-            </button>
+            </Button>
           )}
         </div>
       </section>
@@ -385,12 +390,13 @@ export function DefaultsTab() {
           </div>
         </div>
         {hasCustomBinDefault && (
-          <button
+          <Button
+            variant="ghost"
             onClick={resetBinDefault}
-            className="text-sm py-2 px-3 rounded-lg text-content-tertiary hover:text-content hover:bg-surface-hover border border-stroke-subtle transition-colors"
+            className="text-sm py-2 px-3 rounded-lg text-content-tertiary hover:text-content hover:bg-surface-hover border border-stroke-subtle"
           >
             {t('binDesigner.resetFactoryDefaults')}
-          </button>
+          </Button>
         )}
       </section>
 

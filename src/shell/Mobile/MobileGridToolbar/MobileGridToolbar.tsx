@@ -2,6 +2,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useViewStore, useSelectionStore, useInteractionStore, useMobileStore } from '@/core/store';
 import { CONSTRAINTS } from '@/core/constants';
+import { Button, IconButton, PlusIcon, MinusIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface MobileGridToolbarProps {
@@ -44,9 +45,10 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
   return (
     <div className="flex items-center justify-between px-3 py-2 flex-shrink-0 bg-surface-secondary border-b border-stroke-subtle gap-2 overflow-x-auto">
       {/* Left: Layer indicator (tappable) */}
-      <button
+      <Button
+        variant="secondary"
         onClick={() => toggleMobilePanel('layers')}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors bg-surface-elevated border border-stroke-subtle"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-elevated border border-stroke-subtle"
       >
         <div className="w-2 h-2 rounded-full flex-shrink-0 bg-accent" />
         <span className="font-medium truncate max-w-[80px] text-sm text-content">
@@ -60,13 +62,14 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
-      </button>
+      </Button>
 
       {/* Center: Paint mode indicator (if active) */}
       {paintSize && (
-        <button
+        <Button
+          variant="ghost"
           onClick={() => setPaintSize(null)}
-          className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-accent text-accent text-xs font-medium"
+          className="flex items-center gap-1.5 px-2 py-1 rounded-md border border-accent text-accent text-xs"
           style={{ backgroundColor: 'var(--color-primary-muted)' }}
           aria-label={t('toolbar.exitPaintMode')}
         >
@@ -87,15 +90,18 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
-        </button>
+        </Button>
       )}
 
       {/* Right: Baseplate + 3D preview + Zoom controls */}
       <div className="flex items-center gap-1 flex-shrink-0">
         {/* 3D Preview toggle */}
-        <button
+        <IconButton
+          variant="secondary"
+          size="lg"
+          pressed={showIsometricPreview}
           onClick={toggleIsometricPreview}
-          className={`btn ${showIsometricPreview ? 'btn-primary' : 'btn-secondary'} w-10 h-10 p-0`}
+          className="w-10 h-10"
           aria-label={
             showIsometricPreview ? t('toolbar.hide3dPreview') : t('toolbar.show3dPreview')
           }
@@ -109,34 +115,35 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
               d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
             />
           </svg>
-        </button>
-        <button
+        </IconButton>
+        <IconButton
+          variant="secondary"
+          size="lg"
           onClick={zoomOut}
           disabled={!canZoomOut}
-          className="btn btn-secondary w-10 h-10 p-0"
+          className="w-10 h-10"
           aria-label={t('toolbar.zoomOut')}
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-          </svg>
-        </button>
-        <button
+          <MinusIcon />
+        </IconButton>
+        <Button
+          variant="secondary"
           onClick={onFitToScreen}
-          className="btn btn-secondary px-3 h-10"
+          className="px-3 h-10"
           aria-label={t('toolbar.fitToScreen')}
         >
           <span className="text-sm font-medium">{Math.round(zoom * 100)}%</span>
-        </button>
-        <button
+        </Button>
+        <IconButton
+          variant="secondary"
+          size="lg"
           onClick={zoomIn}
           disabled={!canZoomIn}
-          className="btn btn-secondary w-10 h-10 p-0"
+          className="w-10 h-10"
           aria-label={t('toolbar.zoomIn')}
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
+          <PlusIcon />
+        </IconButton>
       </div>
     </div>
   );

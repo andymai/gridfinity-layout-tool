@@ -8,6 +8,7 @@
 import type { ReactNode } from 'react';
 import type { CutoutShape } from '@/features/bin-designer/types';
 import type { InteractionMode } from './useCutoutInteraction';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 /** Styled tooltip wrapper for vertical toolbar buttons */
@@ -112,8 +113,10 @@ export function CutoutShapeToolbar({
       {wrap(
         t('binDesigner.cutouts.pointerTool'),
         'V',
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          touchTarget={false}
           className={`${btnBase} ${isPointerActive ? btnActive : btnInactive}`}
           onClick={() => onSelectShape({ type: 'idle' })}
           aria-label={t('binDesigner.cutouts.pointerTool')}
@@ -129,14 +132,16 @@ export function CutoutShapeToolbar({
             <path d="M3 1l8 5.5-3.5.5L5 11z" />
           </svg>
           {!vertical && t('binDesigner.cutouts.pointerTool')}
-        </button>
+        </Button>
       )}
 
       {wrap(
         t('binDesigner.cutouts.addRectangle'),
         'R',
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          touchTarget={false}
           className={`${btnBase} ${activeShape === 'rectangle' ? btnActive : btnInactive}`}
           onClick={() => handleClick('rectangle')}
           aria-label={t('binDesigner.cutouts.addRectangle')}
@@ -152,15 +157,17 @@ export function CutoutShapeToolbar({
             <rect x="1" y="2" width="12" height="10" rx="1" />
           </svg>
           {!vertical && t('binDesigner.cutouts.addRectangle')}
-        </button>
+        </Button>
       )}
 
       {/* eslint-disable i18next/no-literal-string -- shortcut key identifiers, not translatable */}
       {wrap(
         t('binDesigner.cutouts.addCircle'),
         'C',
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          touchTarget={false}
           className={`${btnBase} ${activeShape === 'circle' ? btnActive : btnInactive}`}
           onClick={() => handleClick('circle')}
           aria-label={t('binDesigner.cutouts.addCircle')}
@@ -176,14 +183,16 @@ export function CutoutShapeToolbar({
             <circle cx="7" cy="7" r="5.5" />
           </svg>
           {!vertical && t('binDesigner.cutouts.addCircle')}
-        </button>
+        </Button>
       )}
 
       {wrap(
         t('binDesigner.cutouts.addPolygon'),
         'G',
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          touchTarget={false}
           className={`${btnBase} ${activeShape === 'polygon' ? btnActive : btnInactive}`}
           onClick={() => handleClick('polygon')}
           aria-label={t('binDesigner.cutouts.addPolygon')}
@@ -201,14 +210,16 @@ export function CutoutShapeToolbar({
             <path d="M3.5 1.5h7L13 7l-2.5 5.5h-7L1 7z" />
           </svg>
           {!vertical && t('binDesigner.cutouts.addPolygon')}
-        </button>
+        </Button>
       )}
 
       {wrap(
         t('binDesigner.cutouts.addSlot'),
         'S',
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          touchTarget={false}
           className={`${btnBase} ${activeShape === 'slot' ? btnActive : btnInactive}`}
           onClick={() => handleClick('slot')}
           aria-label={t('binDesigner.cutouts.addSlot')}
@@ -225,14 +236,16 @@ export function CutoutShapeToolbar({
             <rect x="1" y="4" width="12" height="6" rx="3" />
           </svg>
           {!vertical && t('binDesigner.cutouts.addSlot')}
-        </button>
+        </Button>
       )}
 
       {wrap(
         t('binDesigner.cutouts.penTool'),
         'P',
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          touchTarget={false}
           className={`${btnBase} ${activeShape === 'path' ? btnActive : btnInactive}`}
           onClick={() => handleClick('path')}
           aria-label={t('binDesigner.cutouts.penTool')}
@@ -260,15 +273,17 @@ export function CutoutShapeToolbar({
             <circle cx="9" cy="12" r="1" fill="none" strokeWidth="1" />
           </svg>
           {!vertical && t('binDesigner.cutouts.penTool')}
-        </button>
+        </Button>
       )}
 
       {onImportSvg &&
         wrap(
           t('binDesigner.cutouts.importSvg'),
           'I',
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            touchTarget={false}
             className={`${btnBase} ${btnInactive}`}
             onClick={onImportSvg}
             aria-label={t('binDesigner.cutouts.importSvg')}
@@ -290,7 +305,7 @@ export function CutoutShapeToolbar({
               <path d="M2 9v2.5a1 1 0 001 1h8a1 1 0 001-1V9" />
             </svg>
             {!vertical && t('binDesigner.cutouts.importSvg')}
-          </button>
+          </Button>
         )}
 
       <div
@@ -302,8 +317,10 @@ export function CutoutShapeToolbar({
       {wrap(
         t('binDesigner.cutouts.rulerTool'),
         'M',
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          touchTarget={false}
           className={`${btnBase} ${isRulerActive ? btnActive : btnInactive}`}
           onClick={() => onSelectShape(isRulerActive ? { type: 'idle' } : { type: 'ruler-ready' })}
           aria-label={t('binDesigner.cutouts.rulerTool')}
@@ -323,7 +340,7 @@ export function CutoutShapeToolbar({
             <line x1="12.5" y1="5" x2="12.5" y2="9" />
           </svg>
           {!vertical && t('binDesigner.cutouts.rulerTool')}
-        </button>
+        </Button>
       )}
       {/* eslint-enable i18next/no-literal-string */}
 
@@ -333,8 +350,10 @@ export function CutoutShapeToolbar({
         }
       />
 
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        touchTarget={false}
         className={`${btnBase} ${snapEnabled ? btnActive : btnInactive}`}
         onClick={() => onSnapToggle(!snapEnabled)}
         title={t('binDesigner.cutouts.snapToGrid')}
@@ -349,11 +368,13 @@ export function CutoutShapeToolbar({
           <path d="M1 1h4v4H1zM9 1h4v4H9zM1 9h4v4H1zM9 9h4v4H9z" />
         </svg>
         {!vertical && t('binDesigner.cutouts.snapToGrid')}
-      </button>
+      </Button>
 
       {snapEnabled && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          touchTarget={false}
           className={`${btnBase} ${btnInactive}`}
           onClick={handleGridSizeCycle}
           title={`${t('binDesigner.gridSize')}: ${gridSize}mm`}
@@ -361,7 +382,7 @@ export function CutoutShapeToolbar({
           <span className={vertical ? 'text-[10px] font-mono' : 'text-xs font-mono'}>
             {gridSize}mm
           </span>
-        </button>
+        </Button>
       )}
 
       {activeShape !== null && !vertical && (

@@ -9,6 +9,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from '@/i18n';
+import { Button, IconButton, XIcon } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { STYLES, getModifierKey } from './helpModalStyles';
 import { SHORTCUT_CATEGORIES } from './helpModalShortcutData';
@@ -109,50 +110,37 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
             <h2 id="help-title" style={STYLES.title}>
               {t('help.title')}
             </h2>
-            <button
-              onClick={onClose}
-              className="btn btn-ghost btn-icon"
-              style={STYLES.buttonCompact}
-              aria-label={t('common.close')}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {ICON_PATHS.close.map((d) => (
-                  <path
-                    key={d}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d={d}
-                  />
-                ))}
-              </svg>
-            </button>
+            <IconButton onClick={onClose} touchTarget={false} aria-label={t('common.close')}>
+              <XIcon size="md" />
+            </IconButton>
           </div>
 
           {/* Tab bar and search */}
           <div className="px-6 py-3 border-b border-stroke-subtle flex items-center gap-4">
             {!isSearching && (
               <div className="flex gap-1">
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setActiveTab('shortcuts')}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
+                  className={`px-3 py-1.5 text-sm font-medium ${
                     activeTab === 'shortcuts'
-                      ? 'bg-accent/20 text-accent'
+                      ? 'bg-accent/20 text-accent hover:bg-accent/20 hover:text-accent'
                       : 'text-content-secondary hover:text-content hover:bg-surface-hover'
                   }`}
                 >
                   {t('help.shortcuts')}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
                   onClick={() => setActiveTab('tips')}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent ${
+                  className={`px-3 py-1.5 text-sm font-medium ${
                     activeTab === 'tips'
-                      ? 'bg-accent/20 text-accent'
+                      ? 'bg-accent/20 text-accent hover:bg-accent/20 hover:text-accent'
                       : 'text-content-secondary hover:text-content hover:bg-surface-hover'
                   }`}
                 >
                   {t('help.tipsInfo')}
-                </button>
+                </Button>
               </div>
             )}
 
@@ -182,23 +170,15 @@ export function HelpModal({ isOpen, onClose, isTablet = false }: HelpModalProps)
                   className="w-full pl-9 pr-3 py-1.5 text-sm rounded-md bg-surface border border-stroke-subtle text-content placeholder:text-content-tertiary"
                 />
                 {searchQuery && (
-                  <button
+                  <IconButton
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-content-tertiary hover:text-content focus-visible:ring-2 focus-visible:ring-accent"
+                    size="sm"
+                    touchTarget={false}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-content-tertiary hover:text-content"
                     aria-label={t('layouts.clearSearch')}
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      {ICON_PATHS.close.map((d) => (
-                        <path
-                          key={d}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d={d}
-                        />
-                      ))}
-                    </svg>
-                  </button>
+                    <XIcon size="sm" />
+                  </IconButton>
                 )}
               </div>
             </div>
@@ -303,9 +283,9 @@ function SearchResultsList({
     return (
       <div className="text-center py-10 px-4 space-y-4">
         <p className="text-content-tertiary text-sm">{t('help.noResultsFor', { query })}</p>
-        <button type="button" onClick={openCommandPalette} className="btn btn-secondary btn-sm">
+        <Button type="button" variant="secondary" size="sm" onClick={openCommandPalette}>
           {t('help.openCommandPaletteWithQuery')}
-        </button>
+        </Button>
       </div>
     );
   }

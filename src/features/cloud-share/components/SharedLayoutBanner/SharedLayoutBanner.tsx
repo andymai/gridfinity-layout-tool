@@ -13,6 +13,7 @@ import { useResultToast } from '@/shared/hooks';
 import { layoutId as toLayoutId } from '@/core/types';
 import { ConfirmDialog } from '@/shared/components';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 /**
@@ -167,18 +168,20 @@ export function SharedLayoutBanner() {
       </div>
 
       <div className="flex items-center gap-2">
-        <button
+        <Button
+          variant="ghost"
           onClick={handleSave}
-          className="px-3 py-1.5 text-sm font-medium rounded-md bg-surface text-content hover:bg-surface-hover transition-colors"
+          className="px-3 bg-surface text-content hover:bg-surface-hover"
         >
           {t('share.banner.saveToMyLayouts')}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
           onClick={() => setShowDiscardConfirm(true)}
-          className="px-3 py-1.5 text-sm font-medium rounded-md bg-on-accent/15 hover:bg-on-accent/25 transition-colors"
+          className="px-3 bg-on-accent/15 hover:bg-on-accent/25"
         >
           {t('share.banner.discardConfirm')}
-        </button>
+        </Button>
       </div>
 
       <ConfirmDialog

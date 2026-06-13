@@ -285,7 +285,7 @@ export function LocaleProvider({ children, initialLocale, onLocaleChange }: Loca
  * @example
  * ```tsx
  * const t = useTranslation();
- * return <button>{t('common.save')}</button>;
+ * return <span>{t('common.save')}</span>;
  * ```
  */
 export function useTranslation(): TFunction {

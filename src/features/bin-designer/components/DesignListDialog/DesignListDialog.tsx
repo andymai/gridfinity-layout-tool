@@ -16,7 +16,7 @@ import {
   saveDesign,
   updateDesignTags,
 } from '@/features/bin-designer/storage/DesignerStorage';
-import { Menu } from '@/design-system';
+import { Menu, Button, IconButton, XIcon, PlusIcon } from '@/design-system';
 import { useBinDefaults } from '../../hooks';
 import { collectTags, filterByTags, toggleTag } from '@/features/bin-designer/utils/tagFilter';
 import { normalizeTags, tagsEqual } from '@/features/bin-designer/utils/tags';
@@ -533,29 +533,34 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
           <h2 className="text-lg font-semibold text-content">{t('binDesigner.savedDesigns')}</h2>
           <div className="flex flex-wrap items-center gap-2">
             {!showImport && designs.length > 0 && !selection.active && (
-              <button
+              <Button
+                variant="secondary"
                 onClick={() => selection.enter()}
                 className="rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content border border-stroke transition-colors hover:bg-surface-hover"
               >
                 {t('binDesigner.select')}
-              </button>
+              </Button>
             )}
-            <button
+            <Button
+              variant="secondary"
               onClick={() => setShowImport(true)}
               className="rounded-md bg-surface-secondary px-3 py-1.5 text-sm font-medium text-content border border-stroke transition-colors hover:bg-surface-hover"
             >
               {t('common.import')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
               onClick={handleNewDesign}
               className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover"
             >
               {t('binDesigner.newDesign')}
-            </button>
-            <button
+            </Button>
+            <IconButton
               type="button"
+              size="md"
+              touchTarget={false}
               onClick={handleOpenOptionsMenu}
-              className="relative rounded-md p-1.5 text-content-secondary border border-stroke transition-colors hover:bg-surface-hover hover:text-content"
+              className="relative h-auto w-auto rounded-md p-1.5 text-content-secondary border border-stroke transition-colors hover:bg-surface-hover hover:text-content"
               aria-label={
                 customDefaultActive
                   ? `${t('binDesigner.moreOptions')} — ${t('binDesigner.customDefaultActive')}`
@@ -585,27 +590,16 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
                   aria-hidden="true"
                 />
               )}
-            </button>
-            <button
+            </IconButton>
+            <IconButton
+              size="sm"
+              touchTarget={false}
               onClick={onClose}
-              className="rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
+              className="h-auto w-auto rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
               aria-label={t('common.close')}
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+              <XIcon className="h-5 w-5" />
+            </IconButton>
           </div>
         </div>
 
@@ -652,26 +646,14 @@ export function DesignListDialog({ open, onClose }: DesignListDialogProps) {
               <p className="mt-1 text-xs text-content-disabled">
                 {t('binDesigner.changesAreSavedAutomaticallyAsYouDe')}
               </p>
-              <button
+              <Button
+                variant="primary"
                 onClick={handleNewDesign}
                 className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover"
+                leftIcon={<PlusIcon className="h-4 w-4" />}
               >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
                 {t('binDesigner.startANewDesign')}
-              </button>
+              </Button>
             </div>
           ) : (
             <ItemListShell

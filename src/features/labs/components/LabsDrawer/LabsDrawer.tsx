@@ -6,6 +6,7 @@ import { EngineSelector, KERNEL_FEATURE_IDS } from '../EngineSelector';
 import { FeatureCard } from '../FeatureCard';
 import { GraduatedSection } from '../GraduatedSection';
 import { SparklesIcon, CloseIcon } from '../icons';
+import { IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 export function LabsDrawer() {
@@ -75,14 +76,14 @@ export function LabsDrawer() {
               <SparklesIcon className="w-5 h-5 text-accent" />
               <h2 className="text-lg font-semibold text-content">{t('labs.labs')}</h2>
             </div>
-            <button
+            <IconButton
               ref={closeButtonRef}
               onClick={closeDrawer}
-              className="p-2 -mr-2 rounded-md text-content-secondary hover:text-content hover:bg-surface-hover transition-colors"
+              className="-mr-2"
               aria-label={t('labs.closeLabs')}
             >
               <CloseIcon className="w-5 h-5" />
-            </button>
+            </IconButton>
           </header>
 
           <div className="flex-1 overflow-y-auto scrollbar-thin p-6">

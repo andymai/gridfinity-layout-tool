@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useCallback } from 'react';
+import { Button } from '@/design-system';
 import { ShortcutBadge } from '@/shared/components/ShortcutBadge/ShortcutBadge';
 
 export interface ContextMenuAction {
@@ -67,11 +68,15 @@ export function CutoutContextMenu({ x, y, actions, onClose }: CutoutContextMenuP
       >
         {actions.map((action, index) => (
           <div key={index}>
-            <button
+            <Button
               type="button"
-              className={`w-full flex items-center justify-between gap-4 px-3 py-1.5 text-xs transition-colors ${
+              variant="ghost"
+              size="sm"
+              fullWidth
+              touchTarget={false}
+              className={`justify-between gap-4 rounded-none px-3 py-1.5 ${
                 action.disabled
-                  ? 'text-content-tertiary cursor-not-allowed opacity-50'
+                  ? 'text-content-tertiary'
                   : action.danger
                     ? 'text-red-400 hover:text-red-300 hover:bg-surface-hover'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
@@ -88,7 +93,7 @@ export function CutoutContextMenu({ x, y, actions, onClose }: CutoutContextMenuP
                   className="opacity-60"
                 />
               )}
-            </button>
+            </Button>
             {action.dividerAfter && <div className="border-t border-stroke-subtle my-1" />}
           </div>
         ))}

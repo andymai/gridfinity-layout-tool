@@ -12,6 +12,7 @@ import { useResponsive } from '@/shared/hooks';
 import { BASE_CELL_SIZE, DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { getStagingBins } from '@/shared/utils';
 import { ConfirmDialog } from '@/shared/components';
+import { Button } from '@/design-system';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
 import { useTranslation } from '@/i18n';
 import type { BinId } from '@/core/types';
@@ -460,9 +461,10 @@ export function Staging() {
 
       {/* Header with collapse toggle */}
       <div className="flex items-center justify-between px-4 pt-2 pb-2">
-        <button
+        <Button
           type="button"
-          className="flex items-center gap-2 bg-transparent rounded hover:opacity-80 transition-opacity focus-visible:ring-2 focus-visible:ring-accent"
+          variant="ghost"
+          className="h-auto gap-2 rounded bg-transparent px-0 py-0 font-normal transition-opacity hover:bg-transparent hover:opacity-80"
           onClick={handleToggleExpand}
           aria-expanded={isExpanded}
           aria-controls="staging-stash-panel"
@@ -493,22 +495,25 @@ export function Staging() {
           <span className="px-1.5 py-0.5 rounded text-xs bg-surface-hover text-content-tertiary">
             {t('staging.binCount', { count: stagingBins.length })}
           </span>
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="ghost"
           onClick={() => setShowClearConfirm(true)}
-          className="btn btn-ghost flex items-center gap-1.5 px-2 py-1.5 text-xs text-content-tertiary"
+          className="h-auto gap-1.5 px-2 py-1.5 text-xs font-normal text-content-tertiary"
+          leftIcon={
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          }
         >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-            />
-          </svg>
           {t('staging.clearAll')}
-        </button>
+        </Button>
       </div>
 
       {/* Collapsible staging grid content */}

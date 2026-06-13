@@ -13,6 +13,7 @@ import { migrateParams } from '@/features/bin-designer/constants/defaults';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
+import { Button, IconButton, XIcon, CheckIcon } from '@/design-system';
 
 interface ShareDialogProps {
   open: boolean;
@@ -128,26 +129,15 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-content">{t('binDesigner.shareDesign')}</h2>
-          <button
+          <IconButton
+            size="sm"
+            touchTarget={false}
             onClick={onClose}
-            className="rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
+            className="h-auto w-auto rounded-md p-1 text-content-secondary hover:bg-surface-hover hover:text-content"
             aria-label={t('common.close')}
           >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+            <XIcon className="h-5 w-5" />
+          </IconButton>
         </div>
 
         {/* Share section */}
@@ -159,26 +149,29 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
             </p>
 
             {status === 'idle' && (
-              <button
+              <Button
+                fullWidth
                 onClick={handleShare}
-                className="flex w-full items-center justify-center gap-2 rounded-md bg-info px-4 py-2 text-sm font-medium text-white transition-colors hover:brightness-110"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-info px-4 py-2 text-sm font-medium text-white transition-colors hover:brightness-110 hover:bg-info"
+                leftIcon={
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    />
+                  </svg>
+                }
               >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                  />
-                </svg>
                 {t('binDesigner.createShareLink')}
-              </button>
+              </Button>
             )}
 
             {status === 'sharing' && (
@@ -219,26 +212,14 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
                     aria-label={t('binDesigner.shareUrl')}
                     onClick={(e) => (e.target as HTMLInputElement).select()}
                   />
-                  <button
+                  <Button
+                    variant="secondary"
                     onClick={handleCopy}
                     className="flex items-center gap-1 rounded-md bg-surface-secondary px-3 py-2 text-xs font-medium text-content transition-colors hover:bg-surface-hover"
                   >
                     {copied ? (
                       <>
-                        <svg
-                          className="h-4 w-4 text-green-500"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
+                        <CheckIcon className="h-4 w-4 text-green-500" />
                         {t('binDesigner.copied')}
                       </>
                     ) : (
@@ -260,7 +241,7 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
                         {t('common.copy')}
                       </>
                     )}
-                  </button>
+                  </Button>
                 </div>
                 <p className="text-[10px] text-content-tertiary">
                   This link is permanent. Anyone with the link can load this design.
@@ -293,13 +274,14 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
                   if (e.key === 'Enter') void handleLoad();
                 }}
               />
-              <button
+              <Button
+                variant="secondary"
                 onClick={handleLoad}
                 disabled={!loadInput.trim() || status === 'loading'}
                 className="rounded-md bg-surface-secondary px-3 py-2 text-xs font-medium text-content transition-colors hover:bg-surface-hover disabled:opacity-50"
               >
                 {status === 'loading' ? t('binDesigner.loading') : t('binDesigner.load')}
-              </button>
+              </Button>
             </div>
           </div>
 

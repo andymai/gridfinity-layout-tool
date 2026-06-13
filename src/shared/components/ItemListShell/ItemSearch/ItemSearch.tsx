@@ -1,3 +1,4 @@
+import { IconButton, XIcon } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 
 interface ItemSearchProps {
@@ -44,24 +45,17 @@ export function ItemSearch({
         aria-label={ariaLabel}
       />
       {value && (
-        <button
-          onClick={() => onChange('')}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-content-tertiary hover:text-content transition-colors"
-          aria-label={clearAriaLabel}
+        <IconButton
           type="button"
+          variant="ghost"
+          size="sm"
+          touchTarget={false}
+          onClick={() => onChange('')}
+          aria-label={clearAriaLabel}
+          className="absolute right-2 top-1/2 -translate-y-1/2"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            {ICON_PATHS.close.map((d) => (
-              <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-            ))}
-          </svg>
-        </button>
+          <XIcon />
+        </IconButton>
       )}
     </div>
   );

@@ -8,6 +8,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { Button } from '@/design-system';
 import { cn } from '@/design-system/cn';
 
 interface CompactNumberInputProps {
@@ -186,12 +187,13 @@ export function CompactNumberInput({
           aria-label={label}
         />
       ) : (
-        <button
+        <Button
+          variant="ghost"
           type="button"
           onClick={startEditing}
           disabled={disabled}
           className={cn(
-            'min-w-0 flex-1 select-none pr-1 text-right text-xs tabular-nums outline-none',
+            'h-full min-w-0 flex-1 select-none justify-end rounded-none px-0 pr-1 py-0 text-right text-xs font-normal tabular-nums hover:bg-transparent',
             indeterminate ? 'text-content-tertiary' : 'text-content',
             !disabled && 'cursor-text',
             scrubbing && 'text-accent'
@@ -203,7 +205,7 @@ export function CompactNumberInput({
           }
         >
           {indeterminate ? MIXED_GLYPH : formatValue(value)}
-        </button>
+        </Button>
       )}
       {unit && <span className="select-none pr-1.5 text-[10px] text-content-disabled">{unit}</span>}
     </div>

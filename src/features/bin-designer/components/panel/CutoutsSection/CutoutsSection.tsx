@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import { CutoutEditor } from './CutoutEditor';
@@ -36,13 +37,17 @@ export function CutoutsSection() {
       <CutoutEditor />
 
       {cutoutCount > 0 && (
-        <button
+        <Button
           type="button"
-          className="w-full rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-tertiary hover:bg-surface-hover hover:text-content transition-colors"
+          variant="ghost"
+          size="sm"
+          fullWidth
+          touchTarget={false}
+          className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-tertiary hover:bg-surface-hover hover:text-content"
           onClick={() => setClearConfirm(true)}
         >
           {t('binDesigner.cutouts.clearAll')}
-        </button>
+        </Button>
       )}
 
       <ConfirmDialog

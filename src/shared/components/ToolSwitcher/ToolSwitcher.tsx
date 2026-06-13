@@ -2,6 +2,7 @@
  * Segmented control for switching between Layout, Bins, and Baseplate Generator.
  */
 
+import { Button } from '@/design-system';
 import { useDesignerRouting } from '@/shared/hooks/useDesignerRouting';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useTranslation } from '@/i18n';
@@ -101,8 +102,9 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
         aria-label={t('toolSwitcher.activeTool')}
       >
         {TOOLS.map(({ id, labelKey, switchKey, iconPaths }) => (
-          <button
+          <Button
             key={id}
+            variant="ghost"
             role="tab"
             aria-selected={activeTool === id}
             aria-label={t(labelKey)}
@@ -116,7 +118,7 @@ export function ToolSwitcher({ compact = false, iconOnly = false }: ToolSwitcher
               ))}
             </svg>
             {!iconOnly && t(labelKey)}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

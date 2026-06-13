@@ -10,6 +10,7 @@ import type { ChangeEvent, DragEvent } from 'react';
 import { parseDesignJSON } from '@/features/bin-designer/utils/designJson';
 import type { BinParams } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 interface DesignImportViewProps {
   onImport: (design: { name: string; params: BinParams }) => void;
@@ -177,12 +178,13 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
           {isDragging ? t('layouts.dropFileHere') : t('binDesigner.dragDropDesignJson')}
         </p>
         <p className="text-content-tertiary text-sm mb-4">{t('layouts.or')}</p>
-        <button
+        <Button
+          variant="secondary"
           onClick={() => fileInputRef.current?.click()}
           className="px-4 py-2 bg-surface-secondary hover:bg-surface border border-stroke text-content text-sm rounded-lg transition-colors"
         >
           {t('layouts.browseFiles')}
-        </button>
+        </Button>
       </div>
 
       {/* Divider */}
@@ -199,12 +201,13 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
             {t('binDesigner.designJson')}
           </label>
           {jsonText && (
-            <button
+            <Button
+              variant="ghost"
               onClick={handleClear}
-              className="text-xs text-content-tertiary hover:text-content"
+              className="rounded-none px-0 py-0 hover:bg-transparent text-xs text-content-tertiary hover:text-content"
             >
               {t('common.clear')}
-            </button>
+            </Button>
           )}
         </div>
         <textarea
@@ -266,19 +269,21 @@ export function DesignImportView({ onImport, onCancel }: DesignImportViewProps) 
 
       {/* Action Buttons */}
       <div className="flex gap-3 pt-4 border-t border-stroke">
-        <button
+        <Button
+          variant="primary"
           onClick={handleImport}
           disabled={!validDesign}
           className="flex-1 py-2.5 px-4 bg-accent hover:bg-accent/90 disabled:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-on-dark rounded-lg transition-colors text-sm font-medium"
         >
           {t('binDesigner.importAndLoad')}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="secondary"
           onClick={onCancel}
           className="py-2.5 px-4 bg-surface-secondary hover:bg-surface border border-stroke text-content rounded-lg transition-colors text-sm"
         >
           {t('common.cancel')}
-        </button>
+        </Button>
       </div>
     </div>
   );

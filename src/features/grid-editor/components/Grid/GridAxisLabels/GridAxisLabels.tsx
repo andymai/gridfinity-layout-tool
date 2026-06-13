@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { Button } from '@/design-system';
 import { useViewStore } from '@/core/store/view';
 import type { GridAxisLabelsState } from '@/features/grid-editor/hooks/useGridAxisLabels';
 
@@ -85,10 +86,12 @@ export const RowLabels = memo(function RowLabels({
         const label = typeof num === 'number' && num % 1 !== 0 ? num.toFixed(1) : num;
 
         return (
-          <button
+          <Button
+            variant="ghost"
             key={`row-${num}`}
             type="button"
-            className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
+            touchTarget={false}
+            className="group select-none rounded-none font-medium text-content-tertiary tabular-nums hover:bg-transparent hover:text-content cursor-pointer"
             style={{
               width: labelWidth,
               height: rowHeight,
@@ -104,7 +107,7 @@ export const RowLabels = memo(function RowLabels({
             aria-label={`Select bins in row ${label}`}
           >
             {labelFontSize > 0 && label}
-          </button>
+          </Button>
         );
       })}
     </div>
@@ -160,10 +163,12 @@ export const ColumnLabels = memo(function ColumnLabels({
         const label = typeof num === 'number' && num % 1 !== 0 ? num.toFixed(1) : num;
 
         return (
-          <button
+          <Button
+            variant="ghost"
             key={`col-${num}`}
             type="button"
-            className="group flex items-center justify-center select-none transition-colors font-medium text-content-tertiary tabular-nums bg-transparent border-0 cursor-pointer hover:text-content"
+            touchTarget={false}
+            className="group select-none rounded-none font-medium text-content-tertiary tabular-nums hover:bg-transparent hover:text-content cursor-pointer"
             style={{
               width: colWidth,
               height: columnLabelHeight,
@@ -179,7 +184,7 @@ export const ColumnLabels = memo(function ColumnLabels({
             aria-label={`Select bins in column ${label}`}
           >
             {labelFontSize > 0 && label}
-          </button>
+          </Button>
         );
       })}
     </div>

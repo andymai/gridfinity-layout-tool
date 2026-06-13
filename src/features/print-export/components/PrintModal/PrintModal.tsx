@@ -12,6 +12,7 @@ import type { LayerId } from '@/core/types';
 import { PrintLayout } from '../PrintLayout';
 import { SortOrderConfig } from '../SortOrderConfig';
 import { Checkbox } from '@/shared/components/Checkbox';
+import { Button, IconButton, XIcon } from '@/design-system';
 import { getBinCountByLayer } from '@/features/print-export/utils/printLayout';
 import { getDisplayLayers } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -231,20 +232,9 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
             <h2 id="print-modal-title" style={STYLES.title}>
               {t('print.title')}
             </h2>
-            <button
-              onClick={onClose}
-              className="btn btn-ghost btn-icon"
-              aria-label={t('common.close')}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+            <IconButton onClick={onClose} aria-label={t('common.close')}>
+              <XIcon className="w-5 h-5" />
+            </IconButton>
           </div>
 
           {/* Content */}
@@ -256,13 +246,15 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                 <div className="flex items-center justify-between mb-3">
                   <h3 style={STYLES.sectionHeader}>{t('common.layers')}</h3>
                   {layout.layers.length > 1 && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={selectAllLayers}
-                      className="text-xs text-accent hover:underline"
+                      className="h-auto px-0 py-0 text-xs text-accent hover:bg-transparent hover:underline"
                       disabled={allLayersSelected}
                     >
                       {t('common.all')}
-                    </button>
+                    </Button>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -409,17 +401,18 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                   </div>
                   <div className="flex gap-1">
                     {ORIENTATION_OPTIONS.map((o) => (
-                      <button
+                      <Button
                         key={o}
+                        variant="ghost"
                         onClick={() => updatePrintSetting('orientation', o)}
-                        className={`flex-1 text-xs py-1.5 px-2 rounded-md transition-colors ${
+                        className={`h-auto flex-1 rounded-md px-2 py-1.5 text-xs ${
                           printViewSettings.orientation === o
-                            ? 'bg-accent text-white font-medium'
+                            ? 'bg-accent font-medium text-white hover:bg-accent'
                             : 'bg-surface-hover text-content-secondary hover:text-content'
                         }`}
                       >
                         {t(`print.${o}`)}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                   <div className="mt-2">
@@ -469,24 +462,26 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                 {t('print.selectAtLeastOneLayerToPrint')}
               </span>
             )}
-            <button onClick={onClose} className="btn btn-secondary">
+            <Button variant="secondary" onClick={onClose}>
               {t('common.cancel')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
               onClick={() => window.print()}
               disabled={noLayersSelected}
-              className="btn btn-primary flex items-center gap-2"
+              leftIcon={
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                  />
+                </svg>
+              }
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                />
-              </svg>
               {t('print.printNow')}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

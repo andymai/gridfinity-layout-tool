@@ -1,4 +1,5 @@
 import { useRef, useCallback } from 'react';
+import { Button } from '@/design-system';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
 import { TAB_DEFINITIONS } from '../tabDefinitions';
@@ -55,23 +56,24 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
-            <button
+            <Button
               key={tab.id}
+              variant="ghost"
               tabIndex={isActive ? 0 : -1}
               role="tab"
               aria-selected={isActive}
               aria-controls={`settings-tabpanel-${tab.id}`}
               id={`settings-tab-${tab.id}`}
               onClick={() => onTabChange(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-2.5 text-sm whitespace-nowrap transition-colors flex-shrink-0 ${
+              className={`gap-1.5 rounded-none px-3 py-2.5 text-sm whitespace-nowrap flex-shrink-0 ${
                 isActive
-                  ? 'text-accent border-b-2 border-accent font-medium'
-                  : 'text-content-tertiary hover:text-content-secondary'
+                  ? 'text-accent border-b-2 border-accent font-medium hover:bg-transparent hover:text-accent'
+                  : 'text-content-tertiary hover:bg-transparent hover:text-content-secondary'
               }`}
             >
               <Icon className="w-5 h-5" />
               <span>{t(tab.labelKey)}</span>
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -92,23 +94,25 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
         return (
-          <button
+          <Button
             key={tab.id}
+            variant="ghost"
+            fullWidth
             tabIndex={isActive ? 0 : -1}
             role="tab"
             aria-selected={isActive}
             aria-controls={`settings-tabpanel-${tab.id}`}
             id={`settings-tab-${tab.id}`}
             onClick={() => onTabChange(tab.id)}
-            className={`w-full flex items-center gap-2 px-4 py-2 text-sm text-left transition-colors ${
+            className={`justify-start gap-2 rounded-none px-4 py-2 text-sm font-normal ${
               isActive
-                ? 'bg-surface-elevated text-content font-medium border-l-2 border-accent'
+                ? 'bg-surface-elevated text-content font-medium border-l-2 border-accent hover:bg-surface-elevated hover:text-content'
                 : 'text-content-tertiary hover:text-content-secondary hover:bg-surface-hover'
             }`}
           >
             <Icon className="w-5 h-5 flex-shrink-0" />
             <span>{t(tab.labelKey)}</span>
-          </button>
+          </Button>
         );
       })}
     </div>
