@@ -20,11 +20,6 @@ minimumReleaseAgeExclude:
   - '@vercel/*'
   - '@protobufjs/*'
   - protobufjs
-  # TODO: remove after 2026-05-26 once these have aged past the 7-day window.
-  - dompurify
-  - lru-cache
-  - preact
-  - tsx
   # esbuild 0.28.1 (2026-06-11) is the first version patched against
   # GHSA-gv7w-rqvm-qjhr and GHSA-g7r4-m6w7-qqqr; allow it (and its native
   # binary packages) through before the 7-day window elapses.
