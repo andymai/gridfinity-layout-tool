@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.167.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.167.2...gridfinity-layout-tool-v4.167.3) (2026-06-13)
+
+
+### Bug Fixes
+
+* **generation:** raise generation timeout ceiling to 3 min ([#2132](https://github.com/andymai/gridfinity-layout-tool/issues/2132)) ([7e476cd](https://github.com/andymai/gridfinity-layout-tool/commit/7e476cd26c0b87e4c3d08be92ffe84bf22eb565b))
+
 ## [4.167.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.167.1...gridfinity-layout-tool-v4.167.2) (2026-06-12)
 
 
