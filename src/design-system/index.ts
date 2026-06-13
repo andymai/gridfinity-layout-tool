@@ -82,6 +82,7 @@ export type { SliderProps } from './Slider';
 
 // SliderInput (label + slider + editable value badge)
 export { SliderInput } from './SliderInput';
+export type { SliderInputProps } from './SliderInput';
 
 // IconButton
 export { IconButton } from './IconButton';

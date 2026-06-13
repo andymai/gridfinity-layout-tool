@@ -11,7 +11,7 @@ import { Slider } from '../Slider';
 import { cn } from '../cn';
 import { interactiveTransition } from '../variants';
 
-interface SliderInputProps {
+export interface SliderInputProps {
   /** Display label */
   label: string;
   /** Current value */
