@@ -66,7 +66,7 @@ export interface FieldProps {
  *
  * @example
  * <Field label="Width">
- *   <StepperControl value={width} onChange={setWidth} />
+ *   <Stepper value={width} onChange={setWidth} />
  * </Field>
  *
  * @example

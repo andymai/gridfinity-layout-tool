@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';
-import { Button, IconButton } from '@/design-system';
+import { Button, IconButton, Stepper } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
@@ -11,7 +11,6 @@ import { LayerPanel } from '@/features/layers/components/LayerPanel';
 import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
-import { StepperControl } from '@/shared/components/StepperControl';
 import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
@@ -326,15 +325,15 @@ export function Sidebar() {
                       >
                         {t('common.width')}
                       </label>
-                      <StepperControl
+                      <Stepper
                         value={drawer.width}
                         onChange={handleDrawerWidthInput}
                         onStep={handleDrawerWidthChange}
                         min={0.5}
                         max={CONSTRAINTS.GRID_MAX}
                         step={widthStep}
-                        variant="compact"
-                        ariaLabel={t('sidebar.drawerWidthAria')}
+                        size="sm"
+                        aria-label={t('sidebar.drawerWidthAria')}
                       />
                     </div>
                     <div>
@@ -344,15 +343,15 @@ export function Sidebar() {
                       >
                         {t('common.depth')}
                       </label>
-                      <StepperControl
+                      <Stepper
                         value={drawer.depth}
                         onChange={handleDrawerDepthInput}
                         onStep={handleDrawerDepthChange}
                         min={0.5}
                         max={CONSTRAINTS.GRID_MAX}
                         step={depthStep}
-                        variant="compact"
-                        ariaLabel={t('sidebar.drawerDepthAria')}
+                        size="sm"
+                        aria-label={t('sidebar.drawerDepthAria')}
                       />
                     </div>
                     <div>
@@ -362,13 +361,13 @@ export function Sidebar() {
                       >
                         {t('common.height')}
                       </label>
-                      <StepperControl
+                      <Stepper
                         value={drawer.height}
                         onStep={handleDrawerHeightChange}
                         min={1}
                         max={CONSTRAINTS.GRID_MAX}
-                        variant="compact"
-                        ariaLabel={t('sidebar.drawerHeightAria')}
+                        size="sm"
+                        aria-label={t('sidebar.drawerHeightAria')}
                         displayValue={`${drawer.height}u`}
                       />
                     </div>

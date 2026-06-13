@@ -1,12 +1,11 @@
 import { Suspense } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
-import { Button, IconButton, Select, XIcon } from '@/design-system';
+import { Button, IconButton, Select, Stepper, XIcon } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { getBinLocationContext } from '@/shared/utils/binLocation';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
-import { StepperControl } from '@/shared/components/StepperControl';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
 import { useTranslation } from '@/i18n';
@@ -99,15 +98,15 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('common.width')}
             </label>
-            <StepperControl
+            <Stepper
               value={bin.width}
               onChange={(val) => updateField('width', val)}
               onStep={(delta) => updateField('width', bin.width + delta * stepSize)}
               min={minSize}
               max={layout.drawer.width}
               step={stepSize}
-              variant={variant}
-              ariaLabel="Bin width"
+              size={isMobile ? 'lg' : 'md'}
+              aria-label={t('common.width')}
             />
           </div>
 
@@ -146,15 +145,15 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('common.depth')}
             </label>
-            <StepperControl
+            <Stepper
               value={bin.depth}
               onChange={(val) => updateField('depth', val)}
               onStep={(delta) => updateField('depth', bin.depth + delta * stepSize)}
               min={minSize}
               max={layout.drawer.depth}
               step={stepSize}
-              variant={variant}
-              ariaLabel="Bin depth"
+              size={isMobile ? 'lg' : 'md'}
+              aria-label={t('common.depth')}
             />
           </div>
         </div>
@@ -178,13 +177,13 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('common.height')}
             </label>
-            <StepperControl
+            <Stepper
               value={bin.height}
               onStep={(delta) => updateField('height', bin.height + delta)}
               min={constraints.minHeight}
               max={constraints.maxHeight}
-              variant={variant}
-              ariaLabel={t('inspector.single.heightAria')}
+              size={isMobile ? 'lg' : 'md'}
+              aria-label={t('inspector.single.heightAria')}
               displayValue={`${bin.height}u`}
             />
             <div className="mt-1 space-y-0.5 text-[10px] text-content-disabled">
@@ -217,15 +216,15 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
               >
                 {t('inspector.clearance')}
               </label>
-              <StepperControl
+              <Stepper
                 value={bin.clearanceHeight || 0}
                 onStep={(delta) =>
                   updateField('clearanceHeight', (bin.clearanceHeight || 0) + delta)
                 }
                 min={0}
                 max={constraints.maxClearance}
-                variant={variant}
-                ariaLabel={t('inspector.single.clearanceAria')}
+                size={isMobile ? 'lg' : 'md'}
+                aria-label={t('inspector.single.clearanceAria')}
                 displayValue={`${bin.clearanceHeight || 0}u`}
               />
               <div className="text-center mt-1 text-[10px] text-content-disabled">

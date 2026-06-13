@@ -21,8 +21,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useSettingsStore } from '@/core/store/settings';
 import { DESIGNER_CONSTRAINTS, WALL_THICKNESS_OPTIONS } from '@/features/bin-designer/constants';
-import { Button } from '@/design-system';
-import { StepperControl } from '@/shared/components/StepperControl';
+import { Button, Stepper } from '@/design-system';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { SnappingSlider } from '../controls/SnappingSlider';
 import type { SnappingSliderOption } from '../controls/SnappingSlider';
@@ -51,7 +50,7 @@ const EMPTY_HIGHLIGHT_SET: ReadonlySet<number> = new Set();
 export function CompartmentEditor() {
   const t = useTranslation();
   const { isMobile } = useResponsive();
-  const stepperVariant = isMobile ? 'mobile' : 'desktop';
+  const stepperSize = isMobile ? 'lg' : 'md';
   const {
     compartments,
     width,
@@ -416,10 +415,10 @@ export function CompartmentEditor() {
     cols >= DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID ||
     rows >= DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID;
 
-  // Standalone styling for the size inputs (StepperControl owns its own input
+  // Standalone styling for the size inputs (the Stepper owns its own input
   // styling, but the mm fields are bare DeferredNumberInputs).
   const sizeInputClass =
-    stepperVariant === 'mobile'
+    stepperSize === 'lg'
       ? 'input w-full h-12 text-center font-semibold tabular-nums'
       : 'w-full h-8 rounded border border-stroke-subtle bg-surface text-center text-sm tabular-nums text-content-secondary';
 
@@ -480,30 +479,30 @@ export function CompartmentEditor() {
             <span className="mb-1 block text-xs text-content-tertiary">
               {t('binDesigner.columns')}
             </span>
-            <StepperControl
+            <Stepper
               value={cols}
               onChange={handleColsChange}
               onStep={handleColsStep}
               min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
               max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
               step={1}
-              variant={stepperVariant}
-              ariaLabel={t('binDesigner.columns')}
+              size={stepperSize}
+              aria-label={t('binDesigner.columns')}
             />
           </div>
           <div>
             <span className="mb-1 block text-xs text-content-tertiary">
               {t('binDesigner.rows')}
             </span>
-            <StepperControl
+            <Stepper
               value={rows}
               onChange={handleRowsChange}
               onStep={handleRowsStep}
               min={DESIGNER_CONSTRAINTS.MIN_COMPARTMENT_GRID}
               max={DESIGNER_CONSTRAINTS.MAX_COMPARTMENT_GRID}
               step={1}
-              variant={stepperVariant}
-              ariaLabel={t('binDesigner.rows')}
+              size={stepperSize}
+              aria-label={t('binDesigner.rows')}
             />
           </div>
         </div>

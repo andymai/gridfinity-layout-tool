@@ -10,7 +10,7 @@
 import type { Cutout } from '@/features/bin-designer/types';
 import { CLEARANCE_SHAPES, CHAMFER_SHAPES, maxEntryChamfer } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
-import { StepperControl } from '@/shared/components/StepperControl';
+import { Stepper } from '@/design-system';
 import type { FitCue } from './cutoutSectionVisibility';
 
 /** Stepper increment for fit fields — coarse enough to tune by clicking, while
@@ -116,15 +116,15 @@ function FitStepRow({
         {label}
         <span className="ml-1 text-content-tertiary">{unit}</span>
       </span>
-      <StepperControl
-        variant="compact"
+      <Stepper
+        size="sm"
         value={value}
         onChange={(v) => onChange(clamp(v))}
         onStep={(delta) => onChange(clamp(value + delta * FIT_STEP))}
         min={min}
         max={max}
         step={FIT_STEP}
-        ariaLabel={label}
+        aria-label={label}
         disabled={disabled}
       />
     </div>

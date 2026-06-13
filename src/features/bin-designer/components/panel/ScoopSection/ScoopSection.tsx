@@ -6,7 +6,7 @@
  */
 
 import { FeatureToggle } from '../FeatureToggle';
-import { StepperControl } from '@/shared/components/StepperControl';
+import { Stepper } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { useScoopSection } from './useScoopSection';
 
@@ -35,7 +35,7 @@ export function ScoopSection() {
           </button>
         </div>
         {!state.isAutoRadius && (
-          <StepperControl
+          <Stepper
             value={state.manualRadius}
             onChange={handlers.setRadius}
             onStep={(delta) =>
@@ -52,8 +52,8 @@ export function ScoopSection() {
             min={DESIGNER_CONSTRAINTS.MIN_SCOOP_RADIUS}
             max={DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS}
             step={DESIGNER_CONSTRAINTS.SCOOP_RADIUS_STEP}
-            variant="desktop"
-            ariaLabel={t('binDesigner.scoop.radiusAria')}
+            size="md"
+            aria-label={t('binDesigner.scoop.radiusAria')}
           />
         )}
         {state.isAutoRadius && (

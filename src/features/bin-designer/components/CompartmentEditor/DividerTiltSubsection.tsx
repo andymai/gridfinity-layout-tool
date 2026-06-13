@@ -4,7 +4,7 @@ import { Popover } from '@/design-system/Popover';
 import { Slider } from '@/design-system/Slider';
 import { Switch } from '@/design-system/Switch';
 import { Collapsible } from '@/design-system/Collapsible';
-import { StepperControl } from '@/shared/components/StepperControl';
+import { Stepper } from '@/design-system';
 import { useSettingsStore } from '@/core/store/settings';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
 import {
@@ -273,15 +273,15 @@ function InspectorView({
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between">
           <span className="text-[11px] text-content-tertiary">{angleLabel}</span>
-          <StepperControl
+          <Stepper
             value={angleDeg}
             onChange={(v) => handlers.commitTilt(row, { angleDeg: v, shiftMm })}
             onStep={(delta) => handlers.commitTilt(row, { angleDeg: angleDeg + delta, shiftMm })}
             min={-ANGLE_UI_MAX_DEG}
             max={ANGLE_UI_MAX_DEG}
             step={1}
-            variant="desktop"
-            ariaLabel={angleLabel}
+            size="md"
+            aria-label={angleLabel}
             disabled={disabled}
           />
         </div>
@@ -326,7 +326,7 @@ function InspectorView({
           <span className="text-[11px] text-content-tertiary">
             {t('binDesigner.angledDividers.shiftLabel')}
           </span>
-          <StepperControl
+          <Stepper
             value={shiftMm}
             onChange={(v) => handlers.commitTilt(row, { angleDeg, shiftMm: v })}
             onStep={(delta) =>
@@ -335,8 +335,8 @@ function InspectorView({
             min={shiftRange.offsetMin}
             max={shiftRange.offsetMax}
             step={SHIFT_UI_STEP_MM}
-            variant="desktop"
-            ariaLabel={t('binDesigner.angledDividers.shiftLabel')}
+            size="md"
+            aria-label={t('binDesigner.angledDividers.shiftLabel')}
             disabled={disabled}
           />
         </div>

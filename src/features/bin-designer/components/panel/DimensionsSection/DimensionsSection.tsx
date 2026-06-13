@@ -7,8 +7,7 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { StepperControl } from '@/shared/components/StepperControl';
-import { IconButton } from '@/design-system';
+import { IconButton, Stepper } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -18,6 +17,7 @@ export function DimensionsSection() {
   const { state, handlers, t } = useDimensionsSection();
   const { isMobile } = useResponsive();
   const stepperVariant = isMobile ? 'mobile' : 'desktop';
+  const stepperSize = isMobile ? 'lg' : 'md';
 
   return (
     <div className="space-y-3">
@@ -26,15 +26,15 @@ export function DimensionsSection() {
         {/* Width */}
         <div className="flex-1 min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">{t('common.width')}</span>
-          <StepperControl
+          <Stepper
             value={state.width}
             onChange={(v) => handlers.setParam('width', v)}
             onStep={handlers.handleWidthStep}
             min={state.minWidth}
             max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
             step={state.dimensionStep}
-            variant={stepperVariant}
-            ariaLabel="Width"
+            size={stepperSize}
+            aria-label={t('common.width')}
           />
         </div>
 
@@ -66,15 +66,15 @@ export function DimensionsSection() {
         {/* Depth */}
         <div className="flex-1 min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">{t('common.depth')}</span>
-          <StepperControl
+          <Stepper
             value={state.depth}
             onChange={(v) => handlers.setParam('depth', v)}
             onStep={handlers.handleDepthStep}
             min={state.minDepth}
             max={DESIGNER_CONSTRAINTS.MAX_DIMENSION}
             step={state.dimensionStep}
-            variant={stepperVariant}
-            ariaLabel="Depth"
+            size={stepperSize}
+            aria-label={t('common.depth')}
           />
         </div>
       </div>
@@ -93,15 +93,15 @@ export function DimensionsSection() {
           <span className="text-xs text-content-tertiary">{t('common.height')}</span>
           <span className="text-[11px] tabular-nums text-content-tertiary">{state.height}u</span>
         </div>
-        <StepperControl
+        <Stepper
           value={state.height}
           onChange={(v) => handlers.setParam('height', v)}
           onStep={handlers.handleHeightStep}
           min={DESIGNER_CONSTRAINTS.MIN_HEIGHT}
           max={DESIGNER_CONSTRAINTS.MAX_HEIGHT}
           step={DESIGNER_CONSTRAINTS.HEIGHT_STEP}
-          variant={stepperVariant}
-          ariaLabel="Height"
+          size={stepperSize}
+          aria-label={t('common.height')}
         />
       </div>
 

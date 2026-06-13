@@ -145,8 +145,8 @@ describe('BaseplatePanel', () => {
   it('renders dimensions section with steppers and click-to-edit mm summary (no padding)', () => {
     render(<BaseplatePanel />);
     // Steppers carry grid units; mm summary lives below them as the click-to-edit target
-    expect(screen.getByRole('textbox', { name: 'baseplate.gridWidth' })).toHaveValue('4');
-    expect(screen.getByRole('textbox', { name: 'baseplate.gridDepth' })).toHaveValue('6');
+    expect(screen.getByRole('spinbutton', { name: 'baseplate.gridWidth' })).toHaveValue(4);
+    expect(screen.getByRole('spinbutton', { name: 'baseplate.gridDepth' })).toHaveValue(6);
     const editBtn = screen.getByRole('button', { name: 'baseplate.editDimensions' });
     expect(editBtn).toHaveTextContent(/168\s*×\s*252\s*mm/);
   });
@@ -425,18 +425,18 @@ describe('BaseplatePanel', () => {
 
     it('renders width/depth steppers disabled when synced with layout', () => {
       render(<BaseplatePanel />);
-      const widthStepper = screen.getByRole('textbox', { name: 'baseplate.gridWidth' });
-      const depthStepper = screen.getByRole('textbox', { name: 'baseplate.gridDepth' });
+      const widthStepper = screen.getByRole('spinbutton', { name: 'baseplate.gridWidth' });
+      const depthStepper = screen.getByRole('spinbutton', { name: 'baseplate.gridDepth' });
       expect(widthStepper).toBeDisabled();
       expect(depthStepper).toBeDisabled();
     });
 
     it('shows drawer values in steppers when synced with layout', () => {
       render(<BaseplatePanel />);
-      const widthStepper = screen.getByRole('textbox', { name: 'baseplate.gridWidth' });
-      const depthStepper = screen.getByRole('textbox', { name: 'baseplate.gridDepth' });
-      expect(widthStepper).toHaveValue('4');
-      expect(depthStepper).toHaveValue('6');
+      const widthStepper = screen.getByRole('spinbutton', { name: 'baseplate.gridWidth' });
+      const depthStepper = screen.getByRole('spinbutton', { name: 'baseplate.gridDepth' });
+      expect(widthStepper).toHaveValue(4);
+      expect(depthStepper).toHaveValue(6);
     });
 
     it('enables steppers when sync-with-layout is unchecked', () => {
@@ -449,12 +449,12 @@ describe('BaseplatePanel', () => {
       render(<BaseplatePanel />);
       const checkbox = screen.getByRole('checkbox', { name: 'baseplate.syncWithLayout' });
       expect(checkbox).not.toBeChecked();
-      const widthStepper = screen.getByRole('textbox', { name: 'baseplate.gridWidth' });
-      const depthStepper = screen.getByRole('textbox', { name: 'baseplate.gridDepth' });
+      const widthStepper = screen.getByRole('spinbutton', { name: 'baseplate.gridWidth' });
+      const depthStepper = screen.getByRole('spinbutton', { name: 'baseplate.gridDepth' });
       expect(widthStepper).not.toBeDisabled();
       expect(depthStepper).not.toBeDisabled();
-      expect(widthStepper).toHaveValue('8');
-      expect(depthStepper).toHaveValue('10');
+      expect(widthStepper).toHaveValue(8);
+      expect(depthStepper).toHaveValue(10);
     });
 
     it('initializes custom dims from drawer when unchecking sync-with-layout', () => {

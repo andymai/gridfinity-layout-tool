@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { Stepper } from './Stepper';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { act, render, screen, fireEvent } from '@testing-library/react';
+import { Stepper, DEFERRED_COMMIT_DELAY_MS } from './Stepper';
 
 const defaultProps = {
   value: 5,
@@ -26,7 +26,30 @@ describe('Stepper', () => {
   describe('input mode', () => {
     it('renders an input with the value', () => {
       render(<Stepper {...defaultProps} onChange={vi.fn()} />);
-      expect(screen.getByRole('textbox')).toHaveValue('5');
+      expect(screen.getByRole('spinbutton')).toHaveValue(5);
+    });
+
+    it('commits a clamped value on Enter', () => {
+      const onChange = vi.fn();
+      render(<Stepper {...defaultProps} onChange={onChange} max={10} />);
+      const input = screen.getByRole('spinbutton');
+      fireEvent.change(input, { target: { value: '99' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(onChange).toHaveBeenCalledWith(10);
+    });
+
+    it('preserves off-grid typed values (no snap to step)', () => {
+      const onChange = vi.fn();
+      render(<Stepper {...defaultProps} onChange={onChange} step={0.5} inputDecimals={2} />);
+      const input = screen.getByRole('spinbutton');
+      fireEvent.change(input, { target: { value: '5.25' } });
+      fireEvent.blur(input);
+      expect(onChange).toHaveBeenCalledWith(5.25);
+    });
+
+    it('renders fractional values at the given precision', () => {
+      render(<Stepper {...defaultProps} value={5.5} onChange={vi.fn()} inputDecimals={2} />);
+      expect(screen.getByRole('spinbutton')).toHaveValue(5.5);
     });
   });
 
@@ -75,6 +98,78 @@ describe('Stepper', () => {
       const ref = vi.fn();
       render(<Stepper {...defaultProps} ref={ref} displayValue={5} />);
       expect(ref).toHaveBeenCalledWith(expect.any(HTMLDivElement));
+    });
+  });
+
+  describe("commitMode: 'deferred'", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    });
+
+    it('coalesces rapid clicks into a single onStep call', () => {
+      const onStep = vi.fn();
+      render(
+        <Stepper {...defaultProps} onStep={onStep} onChange={vi.fn()} commitMode="deferred" />
+      );
+      const increase = screen.getByLabelText('Increase Quantity');
+
+      fireEvent.click(increase);
+      fireEvent.click(increase);
+      fireEvent.click(increase);
+      expect(onStep).not.toHaveBeenCalled();
+
+      act(() => {
+        vi.advanceTimersByTime(DEFERRED_COMMIT_DELAY_MS);
+      });
+
+      expect(onStep).toHaveBeenCalledTimes(1);
+      expect(onStep).toHaveBeenCalledWith(3);
+    });
+
+    it('shows the optimistic value while the commit is pending', () => {
+      render(
+        <Stepper {...defaultProps} onStep={vi.fn()} onChange={vi.fn()} commitMode="deferred" />
+      );
+      const increase = screen.getByLabelText('Increase Quantity');
+      fireEvent.click(increase);
+      fireEvent.click(increase);
+      expect(screen.getByRole('spinbutton')).toHaveValue(7);
+    });
+
+    it('drops the pending delta if the value changes externally', () => {
+      const onStep = vi.fn();
+      const { rerender } = render(
+        <Stepper {...defaultProps} onStep={onStep} onChange={vi.fn()} commitMode="deferred" />
+      );
+      fireEvent.click(screen.getByLabelText('Increase Quantity'));
+
+      rerender(
+        <Stepper
+          {...defaultProps}
+          value={9}
+          onStep={onStep}
+          onChange={vi.fn()}
+          commitMode="deferred"
+        />
+      );
+
+      act(() => {
+        vi.advanceTimersByTime(DEFERRED_COMMIT_DELAY_MS);
+      });
+
+      expect(onStep).not.toHaveBeenCalled();
+    });
+
+    it("fires onStep synchronously when commitMode is 'immediate'", () => {
+      const onStep = vi.fn();
+      render(<Stepper {...defaultProps} onStep={onStep} displayValue={5} />);
+      fireEvent.click(screen.getByLabelText('Increase Quantity'));
+      expect(onStep).toHaveBeenCalledWith(1);
     });
   });
 });

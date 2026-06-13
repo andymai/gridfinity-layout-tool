@@ -6,9 +6,8 @@
  */
 
 import { FeatureToggle } from '../FeatureToggle';
-import { StepperControl } from '@/shared/components/StepperControl';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
-import { Button, Input, Select, InfoIcon } from '@/design-system';
+import { Button, Input, Select, Stepper, InfoIcon } from '@/design-system';
 import type { SelectOption } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
@@ -100,7 +99,7 @@ export function LabelTabsSection() {
           <span className="mb-1 block text-xs text-content-tertiary">
             {t('binDesigner.tabWidth')}
           </span>
-          <StepperControl
+          <Stepper
             value={state.label.width}
             onChange={handlers.setTabWidth}
             onStep={(delta) =>
@@ -117,15 +116,15 @@ export function LabelTabsSection() {
             min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_WIDTH}
             max={DESIGNER_CONSTRAINTS.MAX_LABEL_TAB_WIDTH}
             step={DESIGNER_CONSTRAINTS.LABEL_TAB_WIDTH_STEP}
-            variant="desktop"
-            ariaLabel={t('binDesigner.labelTabs.widthAria')}
+            size="md"
+            aria-label={t('binDesigner.labelTabs.widthAria')}
           />
         </div>
         <div className="min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
             {t('binDesigner.tabDepth')}
           </span>
-          <StepperControl
+          <Stepper
             value={state.label.depth}
             onChange={handlers.setTabDepth}
             onStep={(delta) =>
@@ -142,15 +141,15 @@ export function LabelTabsSection() {
             min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_DEPTH}
             max={state.tabDepthMax}
             step={DESIGNER_CONSTRAINTS.LABEL_TAB_DEPTH_STEP}
-            variant="desktop"
-            ariaLabel={t('binDesigner.labelTabs.depthAria')}
+            size="md"
+            aria-label={t('binDesigner.labelTabs.depthAria')}
           />
         </div>
         <div className="min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
             {t('binDesigner.tabHeight')}
           </span>
-          <StepperControl
+          <Stepper
             value={state.tabHeightMm}
             onChange={handlers.setTabHeight}
             onStep={(delta) =>
@@ -167,15 +166,15 @@ export function LabelTabsSection() {
             min={state.tabHeightMin}
             max={state.tabHeightMax}
             step={DESIGNER_CONSTRAINTS.LABEL_TAB_HEIGHT_STEP}
-            variant="desktop"
-            ariaLabel={t('binDesigner.labelTabs.heightAria')}
+            size="md"
+            aria-label={t('binDesigner.labelTabs.heightAria')}
           />
         </div>
         <div className="min-w-0">
           <span className="mb-1 block text-xs text-content-tertiary">
             {t('binDesigner.tabInset')}
           </span>
-          <StepperControl
+          <Stepper
             value={state.label.inset ?? 0}
             onChange={handlers.setTabInset}
             onStep={(delta) =>
@@ -192,8 +191,8 @@ export function LabelTabsSection() {
             min={DESIGNER_CONSTRAINTS.MIN_LABEL_TAB_INSET}
             max={state.tabInsetMax}
             step={DESIGNER_CONSTRAINTS.LABEL_TAB_INSET_STEP}
-            variant="desktop"
-            ariaLabel={t('binDesigner.labelTabs.insetAria')}
+            size="md"
+            aria-label={t('binDesigner.labelTabs.insetAria')}
           />
         </div>
       </div>
@@ -339,7 +338,7 @@ export function LabelTabsSection() {
                 <span className="mb-1 block text-xs text-content-tertiary">
                   {t('binDesigner.textDepth')}
                 </span>
-                <StepperControl
+                <Stepper
                   value={state.textDefaults.depth}
                   onChange={handlers.setTextDepth}
                   onStep={(delta) =>
@@ -353,8 +352,8 @@ export function LabelTabsSection() {
                   min={TEXT_DEPTH_MIN}
                   max={TEXT_DEPTH_MAX}
                   step={TEXT_DEPTH_STEP}
-                  variant="desktop"
-                  ariaLabel={t('binDesigner.textDepth')}
+                  size="md"
+                  aria-label={t('binDesigner.textDepth')}
                 />
               </div>
             )}

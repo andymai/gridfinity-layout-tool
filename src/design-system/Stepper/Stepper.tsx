@@ -1,8 +1,11 @@
-import { forwardRef, useId, useState, useCallback, type ReactNode } from 'react';
+import { forwardRef, useId, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../cn';
 import { PlusIcon, MinusIcon } from '../Icon';
 import { focusRing, disabledStyles, interactiveTransition } from '../variants';
+
+/** Idle window for coalescing step clicks in `'deferred'` commit mode. */
+export const DEFERRED_COMMIT_DELAY_MS = 250;
 const containerVariants = cva(['inline-flex items-center'], {
   variants: {
     size: {
@@ -106,80 +109,66 @@ type StepperVariantProps = VariantProps<typeof containerVariants>;
 // Deferred Input Hook
 
 /**
- * Hook for deferred number input - allows users to clear and retype
- * without triggering onChange until blur or Enter.
- *
- * Uses computed display value during render (no effects) to avoid
- * React anti-patterns with setState in useEffect.
+ * Deferred number input — lets users fully clear and retype a value without
+ * onChange firing until blur or Enter. Clamps to [min, max] on commit but does
+ * NOT snap to `step`, so off-grid entries (e.g. a 0.25mm tolerance) survive.
  */
-function useDeferredValue(
+function useDeferredNumberInput(
   externalValue: number,
   onChange: ((value: number) => void) | undefined,
   min: number,
   max: number,
-  step: number
+  decimals: number
 ) {
-  // localValue only stores user's typed input while focused
-  const [localValue, setLocalValue] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
+  const fmt = useCallback(
+    (val: number): string => (val % 1 === 0 ? String(val) : val.toFixed(decimals)),
+    [decimals]
+  );
 
-  // Compute display value during render - no effect needed
-  const displayValue = isFocused ? localValue : formatNumber(externalValue);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalValue(e.target.value);
-  };
-
-  const handleFocus = () => {
-    // Initialize local value with current external value when focusing
-    setLocalValue(formatNumber(externalValue));
-    setIsFocused(true);
-  };
+  const [localValue, setLocalValue] = useState(() => fmt(externalValue));
+  // Resync on external change (undo/redo, stepper buttons) during render rather
+  // than in an effect: a guarded setState in render bails out and re-runs in a
+  // single pass instead of the two-render cascade an effect would produce.
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [lastSynced, setLastSynced] = useState(externalValue);
+  if (externalValue !== lastSynced) {
+    setLastSynced(externalValue);
+    setLocalValue(fmt(externalValue));
+  }
 
   const commit = useCallback(() => {
-    setIsFocused(false);
     if (!onChange) return;
+    // Skip when text is unchanged so focus+blur on an out-of-range value doesn't
+    // silently clamp it and emit an undo entry — data stays put until edited.
+    if (localValue === fmt(externalValue)) return;
 
     const parsed = parseFloat(localValue);
-    if (isNaN(parsed)) {
-      // Invalid input - just unfocus, displayValue will show externalValue
-      return;
+    if (!isNaN(parsed)) {
+      const clamped = Math.max(min, Math.min(max, parsed));
+      onChange(clamped);
+      setLocalValue(fmt(clamped));
+    } else {
+      setLocalValue(fmt(externalValue));
     }
+  }, [localValue, min, max, onChange, externalValue, fmt]);
 
-    // Clamp and snap to step
-    const snapped = Math.round(parsed / step) * step;
-    const clamped = Math.max(min, Math.min(max, snapped));
-
-    onChange(clamped);
-  }, [localValue, onChange, min, max, step]);
-
-  const handleBlur = () => {
-    commit();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       commit();
-      (e.target as HTMLInputElement).blur();
+      e.currentTarget.blur();
     } else if (e.key === 'Escape') {
-      // Cancel edit - unfocus and displayValue will revert to externalValue
-      setIsFocused(false);
-      (e.target as HTMLInputElement).blur();
+      setLocalValue(fmt(externalValue));
+      e.currentTarget.blur();
     }
   };
 
   return {
-    value: displayValue,
-    onChange: handleChange,
-    onFocus: handleFocus,
-    onBlur: handleBlur,
+    value: localValue,
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => setLocalValue(e.target.value),
+    onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select(),
+    onBlur: commit,
     onKeyDown: handleKeyDown,
   };
-}
-
-function formatNumber(n: number): string {
-  // Show decimals only if fractional
-  return Number.isInteger(n) ? n.toString() : n.toFixed(1);
 }
 
 // Stepper Component
@@ -217,6 +206,22 @@ export interface StepperProps extends StepperVariantProps {
    * @default 1
    */
   step?: number;
+
+  /**
+   * Decimal places used to render fractional values in the input.
+   * @default 1
+   */
+  inputDecimals?: number;
+
+  /**
+   * Controls when step-button clicks flow through to `onStep`:
+   * - `'immediate'` (default): every click calls `onStep` synchronously.
+   * - `'deferred'`: clicks accumulate locally for {@link DEFERRED_COMMIT_DELAY_MS}
+   *   before flushing as a single `onStep(totalDelta)`. Use for heavy params
+   *   where each click triggers a slow regeneration.
+   * @default 'immediate'
+   */
+  commitMode?: 'immediate' | 'deferred';
 
   /**
    * If provided, shows a static display instead of an input.
@@ -293,20 +298,67 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
       min,
       max,
       step = 1,
+      inputDecimals = 1,
       size = 'md',
       displayValue,
       'aria-label': ariaLabel,
       disabled = false,
+      commitMode = 'immediate',
       className,
     },
     ref
   ) => {
     const inputId = useId();
 
-    const deferredInput = useDeferredValue(value, onChange, min, max, step);
+    // Deferred commit accumulates +/- clicks into `pendingDelta` and flushes it
+    // as a single onStep after a short idle. The UI shows the optimistic value
+    // so the user gets feedback while an expensive downstream regen is held off.
+    const [pendingDelta, setPendingDelta] = useState(0);
+    const [lastSeenValue, setLastSeenValue] = useState(value);
+    const onStepRef = useRef(onStep);
+    useEffect(() => {
+      onStepRef.current = onStep;
+    }, [onStep]);
 
-    const isDecreaseDisabled = disabled || value <= min;
-    const isIncreaseDisabled = disabled || value >= max;
+    // External value updates (commit landed, undo/redo) invalidate the
+    // optimistic delta. Reset during render per React's "adjust state on prop
+    // change" pattern; the `if` guard prevents an infinite loop.
+    if (value !== lastSeenValue) {
+      setLastSeenValue(value);
+      if (pendingDelta !== 0) setPendingDelta(0);
+    }
+
+    useEffect(() => {
+      if (commitMode !== 'deferred' || pendingDelta === 0) return;
+      const timer = setTimeout(() => {
+        onStepRef.current(pendingDelta);
+        setPendingDelta(0);
+      }, DEFERRED_COMMIT_DELAY_MS);
+      return () => clearTimeout(timer);
+    }, [commitMode, pendingDelta]);
+
+    const handleStep = (delta: number) => {
+      if (commitMode === 'immediate') onStep(delta);
+      else setPendingDelta((prev) => prev + delta);
+    };
+
+    // Optimistic value for display, clamped so a pending deferred commit can't
+    // visually overshoot the bounds.
+    const optimisticValue =
+      commitMode === 'deferred' && pendingDelta !== 0
+        ? Math.max(min, Math.min(max, value + pendingDelta * step))
+        : value;
+
+    const deferredInput = useDeferredNumberInput(
+      optimisticValue,
+      onChange,
+      min,
+      max,
+      inputDecimals
+    );
+
+    const isDecreaseDisabled = disabled || optimisticValue <= min;
+    const isIncreaseDisabled = disabled || optimisticValue >= max;
 
     const iconConfig = {
       sm: { className: 'w-2.5 h-2.5', strokeWidth: 2.5 },
@@ -321,7 +373,7 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
         {/* Decrease button */}
         <button
           type="button"
-          onClick={() => onStep(-1)}
+          onClick={() => handleStep(-1)}
           disabled={isDecreaseDisabled}
           className={buttonVariants({ size, position: 'left' })}
           aria-label={`Decrease ${ariaLabel}`}
@@ -337,8 +389,11 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
         {showInput ? (
           <input
             id={inputId}
-            type="text"
+            type="number"
             inputMode="decimal"
+            step={step}
+            min={min}
+            max={max}
             disabled={disabled}
             className={inputVariants({ size })}
             aria-label={ariaLabel}
@@ -346,14 +401,14 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
           />
         ) : (
           <span className={displayVariants({ size })} aria-label={ariaLabel}>
-            {displayValue ?? value}
+            {displayValue ?? optimisticValue}
           </span>
         )}
 
         {/* Increase button */}
         <button
           type="button"
-          onClick={() => onStep(1)}
+          onClick={() => handleStep(1)}
           disabled={isIncreaseDisabled}
           className={buttonVariants({ size, position: 'right' })}
           aria-label={`Increase ${ariaLabel}`}

@@ -9,14 +9,13 @@ import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { HalfGridModeBlockedModal } from '@/shell/Modals';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
-import { StepperControl } from '@/shared/components/StepperControl';
 import { Checkbox } from '@/shared/components/Checkbox';
 import { SectionHeader } from '@/shared/components/SectionHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import { useTranslation } from '@/i18n';
-import { Button } from '@/design-system';
+import { Button, Stepper } from '@/design-system';
 import { UserDock } from '@/shared/components/UserDock';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
@@ -89,30 +88,30 @@ export function MobileSettingsPanel() {
           {/* Width */}
           <div>
             <label className="block text-sm mb-1 text-content-tertiary">{t('common.width')}</label>
-            <StepperControl
+            <Stepper
               value={drawer.width}
               onChange={handleDrawerWidthInput}
               onStep={handleDrawerWidthChange}
               min={0.5}
               max={CONSTRAINTS.GRID_MAX}
               step={widthStep}
-              variant="mobile"
-              ariaLabel={t('sidebar.drawerWidthAria')}
+              size="lg"
+              aria-label={t('sidebar.drawerWidthAria')}
             />
           </div>
 
           {/* Depth */}
           <div>
             <label className="block text-sm mb-1 text-content-tertiary">{t('common.depth')}</label>
-            <StepperControl
+            <Stepper
               value={drawer.depth}
               onChange={handleDrawerDepthInput}
               onStep={handleDrawerDepthChange}
               min={0.5}
               max={CONSTRAINTS.GRID_MAX}
               step={depthStep}
-              variant="mobile"
-              ariaLabel={t('sidebar.drawerDepthAria')}
+              size="lg"
+              aria-label={t('sidebar.drawerDepthAria')}
             />
           </div>
         </div>
@@ -120,13 +119,13 @@ export function MobileSettingsPanel() {
         {/* Height */}
         <div>
           <label className="block text-sm mb-1 text-content-tertiary">{t('common.height')}</label>
-          <StepperControl
+          <Stepper
             value={drawer.height}
             onStep={handleDrawerHeightChange}
             min={1}
             max={CONSTRAINTS.GRID_MAX}
-            variant="mobile"
-            ariaLabel={t('sidebar.drawerHeightAria')}
+            size="lg"
+            aria-label={t('sidebar.drawerHeightAria')}
             displayValue={`${drawer.height}u`}
           />
         </div>

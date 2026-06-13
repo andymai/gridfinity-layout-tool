@@ -16,7 +16,7 @@ import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { binDimensions } from '@/features/bin-designer/utils/binDimensions';
-import { StepperControl } from '@/shared/components/StepperControl';
+import { Stepper } from '@/design-system';
 import {
   calculateDividerHeight,
   resolveCompartmentDividerHeight,
@@ -28,7 +28,7 @@ import { useResponsive } from '@/shared/hooks/useResponsive';
 export function DividerHeightControl() {
   const t = useTranslation();
   const { isMobile } = useResponsive();
-  const stepperVariant = isMobile ? 'mobile' : 'desktop';
+  const stepperSize = isMobile ? 'lg' : 'md';
 
   const { params, setCompartmentDividerHeight } = useDesignerStore(
     useShallow((s) => ({
@@ -56,7 +56,7 @@ export function DividerHeightControl() {
       <span className="mb-1 block text-xs text-content-tertiary">
         {t('binDesigner.dividerHeight')}
       </span>
-      <StepperControl
+      <Stepper
         value={currentValue}
         displayValue={
           isAuto ? `${t('binDesigner.dividerAutoHeight')} (${maxRounded}mm)` : undefined
@@ -83,9 +83,9 @@ export function DividerHeightControl() {
         min={MIN_COMPARTMENT_DIVIDER_HEIGHT}
         max={maxRounded}
         step={1}
-        variant={stepperVariant}
+        size={stepperSize}
         commitMode="deferred"
-        ariaLabel={t('binDesigner.dividerHeight')}
+        aria-label={t('binDesigner.dividerHeight')}
       />
     </div>
   );

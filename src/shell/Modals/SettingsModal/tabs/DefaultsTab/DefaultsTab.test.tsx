@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type * as DesignSystem from '@/design-system';
 import { DefaultsTab } from './DefaultsTab';
 
 const mockUpdateSetting = vi.hoisted(() => vi.fn());
@@ -62,11 +63,15 @@ vi.mock('@/shared/hooks/useDrawerSettings', () => ({
   }),
 }));
 
-vi.mock('@/shared/components/StepperControl', () => ({
-  StepperControl: ({ ariaLabel }: { ariaLabel: string }) => (
-    <div data-testid={`stepper-${ariaLabel}`}>{ariaLabel}</div>
-  ),
-}));
+vi.mock('@/design-system', async (importActual) => {
+  const actual = await importActual<typeof DesignSystem>();
+  return {
+    ...actual,
+    Stepper: ({ 'aria-label': ariaLabel }: { 'aria-label': string }) => (
+      <div data-testid={`stepper-${ariaLabel}`}>{ariaLabel}</div>
+    ),
+  };
+});
 
 vi.mock('@/shared/components/DeferredNumberInput', () => ({
   DeferredNumberInput: ({ id }: { id: string }) => <input data-testid={`input-${id}`} />,

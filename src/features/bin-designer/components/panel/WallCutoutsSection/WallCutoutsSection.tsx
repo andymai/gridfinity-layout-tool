@@ -7,6 +7,7 @@
  * handle section via panel/shared so the two panels read identically.
  */
 
+import { useTranslation } from '@/i18n';
 import { FeatureToggle } from '../FeatureToggle';
 import {
   ShapePicker,
@@ -57,6 +58,7 @@ function SizeControls({
   heightLabel: string;
   step: number;
 }) {
+  const t = useTranslation();
   const widthMm = cfg.widthMm ?? 1;
   const isMmMode = cfg.widthMm !== null;
 
@@ -72,8 +74,8 @@ function SizeControls({
           min={1}
           max={500}
           step={1}
-          variant="desktop"
-          ariaLabel="Span mm"
+          size="md"
+          aria-label={t('binDesigner.wallCutouts.spanMmAria')}
           commitMode="deferred"
         />
       ) : (
@@ -88,8 +90,8 @@ function SizeControls({
           min={0}
           max={100}
           step={step}
-          variant="desktop"
-          ariaLabel="Span %"
+          size="md"
+          aria-label={t('binDesigner.wallCutouts.spanPercentAria')}
           commitMode="deferred"
         />
       )}
@@ -115,8 +117,8 @@ function SizeControls({
           min={0}
           max={100}
           step={step}
-          variant="desktop"
-          ariaLabel="Height %"
+          size="md"
+          aria-label={t('binDesigner.wallCutouts.heightPercentAria')}
           commitMode="deferred"
         />
       )}
@@ -169,8 +171,8 @@ function PositionDisclosure({
             min={-50}
             max={50}
             step={OFFSET_STEP}
-            variant="desktop"
-            ariaLabel="Offset mm"
+            size="md"
+            aria-label={t('binDesigner.wallCutouts.offsetMmAria')}
             commitMode="deferred"
           />
         </div>

@@ -37,7 +37,6 @@ graph TB
 | `ConfirmDialog`            | Modal with focus trap, Escape handling, portal rendering                 |
 | `Toast` / `ToastContainer` | Auto-dismiss notifications with pause-on-hover                           |
 | `Checkbox`                 | Custom styled, desktop/mobile variants, display-only mode                |
-| `StepperControl`           | Increment/decrement with +/- buttons                                     |
 | `ContextMenu*`             | Framework for consistent right-click menus                               |
 | `CollapsibleSection`       | Expandable container with arrow indicator                                |
 

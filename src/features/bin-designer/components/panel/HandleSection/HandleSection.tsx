@@ -80,8 +80,8 @@ export function HandleSection() {
           min={C.MIN_HANDLE_WIDTH}
           max={C.MAX_HANDLE_WIDTH}
           step={C.HANDLE_WIDTH_STEP}
-          variant="desktop"
-          ariaLabel={side ? `${side} handle width` : t('binDesigner.handles.widthAria')}
+          size="md"
+          aria-label={side ? `${side} handle width` : t('binDesigner.handles.widthAria')}
         />
         <StepperField
           label={t('binDesigner.handles.height')}
@@ -96,8 +96,8 @@ export function HandleSection() {
           min={C.MIN_HANDLE_HEIGHT}
           max={C.MAX_HANDLE_HEIGHT}
           step={C.HANDLE_HEIGHT_STEP}
-          variant="desktop"
-          ariaLabel={side ? `${side} handle height` : t('binDesigner.handles.heightAria')}
+          size="md"
+          aria-label={side ? `${side} handle height` : t('binDesigner.handles.heightAria')}
         />
       </div>
     );
@@ -188,8 +188,8 @@ export function HandleSection() {
                         min={C.MIN_HANDLE_CORNER_RADIUS}
                         max={C.MAX_HANDLE_CORNER_RADIUS}
                         step={C.HANDLE_CORNER_RADIUS_STEP}
-                        variant="desktop"
-                        ariaLabel={t('binDesigner.handles.cornerRadiusAria')}
+                        size="md"
+                        aria-label={t('binDesigner.handles.cornerRadiusAria')}
                       />
                     </div>
                   )}
@@ -234,8 +234,8 @@ export function HandleSection() {
                     min={Math.round(C.MIN_HANDLE_VERTICAL_POSITION * 100)}
                     max={Math.round(C.MAX_HANDLE_VERTICAL_POSITION * 100)}
                     step={Math.round(C.HANDLE_VERTICAL_POSITION_STEP * 100)}
-                    variant="desktop"
-                    ariaLabel={t('binDesigner.handles.verticalPositionAria')}
+                    size="md"
+                    aria-label={t('binDesigner.handles.verticalPositionAria')}
                   />
                   <StepperField
                     label={t('binDesigner.handles.count')}
@@ -249,8 +249,8 @@ export function HandleSection() {
                     min={C.MIN_HANDLE_COUNT}
                     max={C.MAX_HANDLE_COUNT}
                     step={1}
-                    variant="desktop"
-                    ariaLabel={t('binDesigner.handles.countAria')}
+                    size="md"
+                    aria-label={t('binDesigner.handles.countAria')}
                   />
                 </div>
               </AdvancedDisclosure>
