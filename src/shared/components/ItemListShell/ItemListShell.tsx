@@ -127,6 +127,7 @@ export function ItemListShell<T>({
             onValueChange={onSortChange}
             aria-label={sortAriaLabel}
             size="sm"
+            className="text-sm"
           />
           {showViewToggle && (
             <ViewModeToggle

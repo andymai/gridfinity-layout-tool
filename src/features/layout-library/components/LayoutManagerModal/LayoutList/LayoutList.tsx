@@ -383,6 +383,7 @@ export function LayoutList({
             ]}
             aria-label={t('layouts.sortBy')}
             size="sm"
+            className="text-sm"
           />
           {showViewToggle && <ViewModeToggle value={viewMode} onChange={onViewModeChange} />}
         </div>
