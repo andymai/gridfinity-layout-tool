@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.168.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.167.3...gridfinity-layout-tool-v4.168.0) (2026-06-13)
+
+
+### Features
+
+* **design-system:** add fullWidth variant to Stepper ([#2136](https://github.com/andymai/gridfinity-layout-tool/issues/2136)) ([c25d2fa](https://github.com/andymai/gridfinity-layout-tool/commit/c25d2fa6f6c61c1492df7692ee3025f8a29bed28))
+
 ## [4.167.3](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.167.2...gridfinity-layout-tool-v4.167.3) (2026-06-13)
 
 
