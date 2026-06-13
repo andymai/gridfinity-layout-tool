@@ -233,6 +233,13 @@ export interface StepperProps extends StepperVariantProps {
   commitMode?: 'immediate' | 'deferred';
 
   /**
+   * Stretch the control to fill its container instead of hugging its content.
+   * The +/- buttons keep their fixed width; the input/display absorbs the slack.
+   * @default false
+   */
+  fullWidth?: boolean | null;
+
+  /**
    * If provided, shows a static display instead of an input.
    * Useful for values that should only change via steppers.
    *
