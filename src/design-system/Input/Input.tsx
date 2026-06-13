@@ -208,7 +208,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         />
 
         {rightIcon && (
-          <span className={iconWrapperVariants({ size, position: 'right' })}>{rightIcon}</span>
+          // Sizes to its content (not a fixed icon box) so an interactive
+          // clear button gets real space instead of bleeding over the field.
+          <span className="mr-2 inline-flex flex-shrink-0 items-center text-content-tertiary">
+            {rightIcon}
+          </span>
         )}
       </div>
     );
