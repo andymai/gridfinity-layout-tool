@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { CONSTRAINTS } from '@/core/constants';
 import { clearAllAppData } from '@/core/storage/clearAppData';
@@ -182,13 +183,9 @@ function ClearAllDataButton() {
 
   return (
     <>
-      <button
-        type="button"
-        className="px-3 py-1.5 text-sm rounded-md border border-error text-error hover:bg-error/10 transition-colors"
-        onClick={() => setShowConfirm(true)}
-      >
+      <Button type="button" variant="danger" size="sm" onClick={() => setShowConfirm(true)}>
         {t('settings.storage.clearAllData')}
-      </button>
+      </Button>
       <ConfirmDialog
         isOpen={showConfirm}
         title={t('settings.storage.clearAllData')}

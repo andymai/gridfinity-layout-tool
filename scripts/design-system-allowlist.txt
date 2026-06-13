@@ -96,4 +96,3 @@ src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsListItem.tsx
 src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanelParts.tsx
 src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedModal.tsx
 src/shell/Modals/SettingsModal/tabs/AppearanceTab/AppearanceTab.tsx
-src/shell/Modals/SettingsModal/tabs/StorageTab/StorageTab.tsx
