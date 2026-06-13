@@ -89,8 +89,6 @@ src/shared/components/FeatureToggle/FeatureToggle.tsx
 src/shared/components/FractionalEdgeToggle/FractionalEdgeToggle.tsx
 src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
 src/shared/components/PrintBedInput/PrintBedInput.tsx
-src/shared/components/SegmentedControl/SegmentedControl.tsx
-src/shared/components/SliderInput/SliderInput.tsx
 src/shared/components/StickyGroupHeader/StickyGroupHeader.tsx
 src/shared/components/UserDock/UserDock.tsx
 src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
