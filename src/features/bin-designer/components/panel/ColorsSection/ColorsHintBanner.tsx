@@ -5,6 +5,7 @@
  */
 
 import { useShallow } from 'zustand/react/shallow';
+import { IconButton } from '@/design-system';
 import { InfoIcon, XIcon } from '@/design-system/Icon';
 import { useSettingsStore } from '@/core/store';
 import { useTranslation } from '@/i18n';
@@ -30,17 +31,19 @@ export function ColorsHintBanner() {
     >
       <InfoIcon size="sm" className="mt-0.5 shrink-0 text-info" />
       <p className="flex-1 leading-snug">{t('binDesigner.colors.firstTimeHint')}</p>
-      <button
-        type="button"
+      <IconButton
+        variant="ghost"
+        size="sm"
+        touchTarget={false}
         onClick={() => {
           updateSettings({ dismissedHints: [...dismissedHints, HINT_ID] });
         }}
-        className="shrink-0 rounded p-0.5 text-content-tertiary hover:bg-surface-hover hover:text-content-secondary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+        className="shrink-0"
         aria-label={t('binDesigner.colors.firstTimeHint.dismiss')}
         title={t('binDesigner.colors.firstTimeHint.dismiss')}
       >
         <XIcon size="sm" />
-      </button>
+      </IconButton>
     </div>
   );
 }

@@ -48,7 +48,6 @@ src/features/bin-designer/components/ExportDialog/SlicerHandoffPreview.tsx
 src/features/bin-designer/components/panel/ColorsSection/ColorGroup.tsx
 src/features/bin-designer/components/panel/ColorsSection/ColorPicker.tsx
 src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.tsx
-src/features/bin-designer/components/panel/ColorsSection/ColorsHintBanner.tsx
 src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
 src/features/bin-designer/components/panel/ColorsSection/ColorZoneRow.tsx
 src/features/bin-designer/components/panel/ColorsSection/LipZoneRow.tsx
