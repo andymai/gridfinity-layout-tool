@@ -160,6 +160,7 @@ export function Sidebar() {
         <div className="flex flex-col items-center h-full py-2">
           <IconButton
             size="sm"
+            touchTarget={false}
             onClick={toggle}
             title={t('sidebar.expandPanel')}
             aria-label={t('sidebar.expandLeftPanel')}
@@ -189,6 +190,7 @@ export function Sidebar() {
             </h2>
             <IconButton
               size="sm"
+              touchTarget={false}
               onClick={() => setShowSettingsModal(true)}
               className="text-content-tertiary"
               title={t('sidebar.settings')}
@@ -208,6 +210,7 @@ export function Sidebar() {
             </IconButton>
             <IconButton
               size="sm"
+              touchTarget={false}
               onClick={toggle}
               className="text-content-tertiary"
               title={t('sidebar.collapsePanel')}

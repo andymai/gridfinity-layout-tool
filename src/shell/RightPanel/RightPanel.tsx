@@ -86,6 +86,7 @@ export function RightPanel() {
         <div className="flex flex-col items-center py-2">
           <IconButton
             size="sm"
+            touchTarget={false}
             onClick={toggle}
             title={t('rightPanel.expandPanel')}
             aria-label={t('rightPanel.expandRightPanel')}
@@ -104,6 +105,7 @@ export function RightPanel() {
   const collapseButton = (
     <IconButton
       size="sm"
+      touchTarget={false}
       onClick={toggle}
       className="flex-shrink-0 text-content-tertiary"
       title={t('rightPanel.collapsePanel')}
@@ -254,6 +256,7 @@ export function RightPanel() {
                     {/* Copy button */}
                     <IconButton
                       size="sm"
+                      touchTarget={false}
                       onClick={(e) => {
                         e.stopPropagation();
                         const tsv = exportPrintListTSV(printList.rows, {
