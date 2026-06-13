@@ -344,7 +344,7 @@ export function CategoriesPanel() {
                     <IconButton
                       size="sm"
                       touchTarget={false}
-                      className="relative w-5 h-5 flex-shrink-0 shadow-sm hover:scale-110 hover:ring-2 hover:ring-accent/50 hover:bg-transparent"
+                      className="relative w-5 h-5 rounded flex-shrink-0 shadow-sm hover:scale-110 hover:ring-2 hover:ring-accent/50 hover:bg-transparent"
                       style={{ backgroundColor: category.color }}
                       onClick={(e) => {
                         e.stopPropagation();
