@@ -181,7 +181,7 @@ export function Sidebar() {
         // Expanded state
         <div className="flex flex-col h-full animate-fade-in">
           <div
-            className={`flex items-center gap-3 px-4 py-[7.5px] border-b border-stroke-subtle transition-shadow duration-200 ${
+            className={`flex items-center gap-3 px-4 h-[47px] border-b border-stroke-subtle transition-shadow duration-200 ${
               isScrolled ? 'shadow-elevated' : ''
             }`}
           >

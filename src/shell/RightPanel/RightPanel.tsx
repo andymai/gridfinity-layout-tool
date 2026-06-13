@@ -127,11 +127,11 @@ export function RightPanel() {
     >
       {/* Header with tabs */}
       <div
-        className={`flex flex-col border-b border-stroke-subtle transition-shadow duration-200 ${
+        className={`flex flex-col h-[47px] border-b border-stroke-subtle transition-shadow duration-200 ${
           isScrolled ? 'shadow-elevated' : ''
         }`}
       >
-        <div className="flex items-center gap-3 px-4 py-[7.5px]">
+        <div className="flex items-center gap-3 px-4 h-full">
           {collapseButton}
           <div className="flex gap-1" role="tablist">
             <Button
