@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.168.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.168.0...gridfinity-layout-tool-v4.168.1) (2026-06-13)
+
+
+### Bug Fixes
+
+* **deps:** force esbuild to 0.28.1 to clear OSV advisories ([#2138](https://github.com/andymai/gridfinity-layout-tool/issues/2138)) ([b8a4ae7](https://github.com/andymai/gridfinity-layout-tool/commit/b8a4ae7724688e71291ac6e01dcfe0364cc008af))
+
 ## [4.168.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.167.3...gridfinity-layout-tool-v4.168.0) (2026-06-13)
 
 
