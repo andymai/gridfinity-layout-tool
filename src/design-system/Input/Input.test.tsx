@@ -30,6 +30,28 @@ describe('Input', () => {
       render(<Input rightIcon={<span data-testid="right" />} aria-label="Search" />);
       expect(screen.getByTestId('right')).toBeInTheDocument();
     });
+
+    it('keeps interactive right-icon content accessible (not aria-hidden)', () => {
+      render(
+        <Input
+          aria-label="Search"
+          rightIcon={
+            <button type="button" aria-label="Clear">
+              x
+            </button>
+          }
+        />
+      );
+      // A clear button passed as rightIcon must remain operable by assistive tech.
+      expect(screen.getByRole('button', { name: 'Clear' })).toBeInTheDocument();
+    });
+  });
+
+  describe('full width', () => {
+    it('applies w-full to the wrapper when fullWidth is set', () => {
+      const { container } = render(<Input fullWidth aria-label="Search" />);
+      expect(container.firstChild).toHaveClass('w-full');
+    });
   });
 
   describe('error state', () => {

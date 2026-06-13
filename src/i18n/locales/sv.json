@@ -1384,6 +1384,7 @@
   "inspector.setProperty": "Sätt egenskap",
   "inspector.setTheSamePropertyOnAllSelectedBins": "Sätt samma egenskap på alla markerade fack",
   "inspector.single.categoryAria": "Bin-kategori",
+  "inspector.single.layerAria": "Bin-lager",
   "inspector.single.clearanceAria": "Bin-frihöjd",
   "inspector.single.heightAria": "Bin-höjd",
   "inspector.split.message": "Detta {width}×{depth}-fack ({widthMm}×{depthMm}mm) överskrider din utskriftsbädd ({bedSize}mm). Det kommer att delas i mindre delar för utskrift.",

@@ -40,7 +40,6 @@ graph TB
 | `StepperControl`           | Increment/decrement with +/- buttons                                     |
 | `ContextMenu*`             | Framework for consistent right-click menus                               |
 | `CollapsibleSection`       | Expandable container with arrow indicator                                |
-| `SelectDropdown`           | Dropdown select for option picking                                       |
 
 ## Key Hooks (`hooks/`)
 

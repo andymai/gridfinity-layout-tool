@@ -103,6 +103,27 @@ describe('Select', () => {
     });
   });
 
+  describe('left icon', () => {
+    it('renders a custom left icon when provided', () => {
+      render(
+        <Select options={options} leftIcon={<svg data-testid="left-icon" />} aria-label="Choice" />
+      );
+      expect(screen.getByTestId('left-icon')).toBeInTheDocument();
+    });
+
+    it('prefers color swatch over left icon when both are set', () => {
+      render(
+        <Select
+          options={options}
+          colorSwatch="#ff0000"
+          leftIcon={<svg data-testid="left-icon" />}
+          aria-label="Choice"
+        />
+      );
+      expect(screen.queryByTestId('left-icon')).not.toBeInTheDocument();
+    });
+  });
+
   describe('ref forwarding', () => {
     it('forwards ref to select element', () => {
       const ref = vi.fn();

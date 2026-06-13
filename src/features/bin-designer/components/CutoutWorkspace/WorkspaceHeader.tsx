@@ -9,7 +9,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import type { Cutout, GroupOp, ReorderDirection } from '@/features/bin-designer/types';
 import { useDesignerStore } from '@/features/bin-designer/store';
-import { Button, IconButton } from '@/design-system';
+import { Button, Checkbox, IconButton, Input } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog/ConfirmDialog';
 import {
@@ -159,14 +159,15 @@ function AutoArrangePopover({
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-1 text-[11px] text-content-tertiary whitespace-nowrap">
                 {t('binDesigner.cutouts.gap')}
-                <input
+                <Input
                   type="number"
                   value={gap}
                   onChange={(e) => setGap(Math.max(0, Number(e.target.value)))}
-                  className="w-12 rounded border border-stroke-subtle bg-surface px-1.5 py-0.5 text-xs text-content"
                   min={0}
                   max={20}
                   step={0.5}
+                  size="sm"
+                  wrapperClassName="w-12"
                 />
                 mm
               </label>
@@ -184,15 +185,12 @@ function AutoArrangePopover({
                 {t('binDesigner.cutouts.autoArrange')}
               </Button>
             </div>
-            <label className="flex items-center gap-1.5 text-[11px] text-content-tertiary cursor-pointer">
-              <input
-                type="checkbox"
-                checked={staggered}
-                onChange={(e) => setStaggered(e.target.checked)}
-                className="rounded border-stroke-subtle"
-              />
-              {t('binDesigner.cutouts.staggered')}
-            </label>
+            <Checkbox
+              checked={staggered}
+              onChange={setStaggered}
+              label={t('binDesigner.cutouts.staggered')}
+              size="sm"
+            />
           </div>
         </div>
       )}

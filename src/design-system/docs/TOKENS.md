@@ -117,7 +117,7 @@ Icon-only buttons get a 44px `touchTarget` by default (per Apple HIG).
 | `md` | ~36px \* | `py-2 px-3` |
 | `lg` | 48px     | `px-5`      |
 
-\* `md` uses intrinsic height from `py-2` padding (~36px with `text-sm`), matching production `SelectDropdown`.
+\* `md` uses intrinsic height from `py-2` padding (~36px with `text-sm`), matching the production `Select`.
 
 ## Size Tokens
 

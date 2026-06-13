@@ -3,9 +3,8 @@ import { STAGING_ID, DEFAULT_CATEGORY_COLOR, CONSTRAINTS } from '@/core/constant
 import { getGridBins } from '@/shared/utils';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import type { Layer } from '@/core/types';
-import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { BulkIncrementControl } from '@/shared/components/BulkIncrementControl';
-import { Button, IconButton, XIcon } from '@/design-system';
+import { Button, IconButton, Select, XIcon } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface MultiBinInspectorProps {
@@ -144,16 +143,15 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
           <label className={`block ${labelSize} text-content-tertiary`}>
             {t('common.category')}
           </label>
-          <SelectDropdown
+          <Select
             value={commonCategory || ''}
-            onChange={updateMultiCategory}
+            onValueChange={updateMultiCategory}
             options={categories.map((c) => ({ id: c.id, name: c.name }))}
-            placeholder={
-              !commonCategory ? { value: '', label: getMixedLabel(), disabled: true } : undefined
-            }
+            placeholder={!commonCategory ? getMixedLabel() : undefined}
             colorSwatch={categoryColor}
-            ariaLabel={t('inspector.multi.categoryAria')}
-            variant={variant}
+            aria-label={t('inspector.multi.categoryAria')}
+            size={variant === 'mobile' ? 'lg' : 'md'}
+            fullWidth
           />
         </div>
 
@@ -163,21 +161,18 @@ export function MultiBinInspector({ inspector, variant, onClose }: MultiBinInspe
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('inspector.layer')}
             </label>
-            <SelectDropdown
+            <Select
               value={commonLayer?.id || ''}
-              onChange={updateMultiLayer}
+              onValueChange={updateMultiLayer}
               options={layout.layers.map((l) => ({
                 id: l.id,
                 name: l.name,
-                suffix: l.id === commonLayer?.id ? ' (current)' : '',
+                suffix: l.id === commonLayer?.id ? '(current)' : '',
               }))}
-              placeholder={
-                !commonLayer
-                  ? { value: '', label: getMixedLayerLabel(), disabled: true }
-                  : undefined
-              }
-              ariaLabel={t('inspector.multi.layerAria')}
-              variant={variant}
+              placeholder={!commonLayer ? getMixedLayerLabel() : undefined}
+              aria-label={t('inspector.multi.layerAria')}
+              size={variant === 'mobile' ? 'lg' : 'md'}
+              fullWidth
             />
           </div>
         )}

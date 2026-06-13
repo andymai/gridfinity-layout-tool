@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from '@/i18n';
 import { useCloudShare } from '@/features/cloud-share/hooks/useCloudShare';
 import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
-import { Button } from '@/design-system';
+import { Button, Input, Select } from '@/design-system';
 import type { SharePermission } from '@/core/types';
 
 interface CloudShareTabProps {
@@ -98,15 +98,15 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
           <label htmlFor="permission" className="text-sm text-content-secondary whitespace-nowrap">
             {t('share.cloud.permissionsLabel')}
           </label>
-          <select
+          <Select
             id="permission"
             value={localPermission}
-            onChange={(e) => setLocalPermission(e.target.value as SharePermission)}
-            className="bg-surface text-content px-3 py-2 rounded border border-stroke"
-          >
-            <option value="view">{t('share.cloud.viewOnly')}</option>
-            <option value="edit">{t('share.cloud.canEdit')}</option>
-          </select>
+            onValueChange={(value) => setLocalPermission(value as SharePermission)}
+            options={[
+              { id: 'view', name: t('share.cloud.viewOnly') },
+              { id: 'edit', name: t('share.cloud.canEdit') },
+            ]}
+          />
         </div>
 
         <Button variant="primary" fullWidth onClick={handleShare}>
@@ -140,15 +140,15 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
           <Button variant="primary" onClick={handleCopyUrl} className="flex-1">
             {urlCopied ? t('share.cloud.linkCopied') : t('share.cloud.copyLink')}
           </Button>
-          <select
+          <Select
             value={localPermission}
-            onChange={(e) => handlePermissionChange(e.target.value as SharePermission)}
-            className="btn btn-secondary"
+            onValueChange={(value) => handlePermissionChange(value as SharePermission)}
+            options={[
+              { id: 'view', name: t('share.cloud.viewOnly') },
+              { id: 'edit', name: t('share.cloud.canEdit') },
+            ]}
             aria-label={t('share.cloud.permissions')}
-          >
-            <option value="view">{t('share.cloud.viewOnly')}</option>
-            <option value="edit">{t('share.cloud.canEdit')}</option>
-          </select>
+          />
         </div>
 
         <Button
@@ -233,13 +233,15 @@ export function CloudShareTab({ layoutId, onClose, onSwitchToUrlTab }: CloudShar
         <div className="space-y-2">
           <label className="text-sm text-content-secondary">{t('share.cloud.shareLink')}</label>
           <div className="flex gap-2">
-            <input
+            <Input
               ref={urlInputRef}
               type="text"
               value={result.url}
               readOnly
               onClick={() => urlInputRef.current?.select()}
-              className="flex-1 bg-surface text-content p-3 rounded font-mono text-sm"
+              className="font-mono"
+              wrapperClassName="flex-1"
+              aria-label={t('share.cloud.shareLink')}
             />
             <Button variant="primary" onClick={handleCopyUrl}>
               {urlCopied ? t('share.cloud.linkCopied') : t('common.copy')}

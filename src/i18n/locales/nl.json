@@ -1384,6 +1384,7 @@
   "inspector.setProperty": "Eigenschap instellen",
   "inspector.setTheSamePropertyOnAllSelectedBins": "Dezelfde eigenschap instellen op alle geselecteerde bins",
   "inspector.single.categoryAria": "Bin-categorie",
+  "inspector.single.layerAria": "Bin-laag",
   "inspector.single.clearanceAria": "Bin-vrije ruimte",
   "inspector.single.heightAria": "Bin-hoogte",
   "inspector.split.message": "Deze {width}×{depth} bin ({widthMm}×{depthMm}mm) is groter dan je print bed ({bedSize}mm). Hij wordt gesplitst in kleinere stukken voor het printen.",

@@ -22,6 +22,9 @@ const inputWrapperVariants = cva(
         md: 'py-2',
         lg: 'h-12',
       },
+      fullWidth: {
+        true: 'w-full',
+      },
       error: {
         true: 'border-error focus-within:border-error focus-within:ring-error',
       },
@@ -89,7 +92,9 @@ export interface InputProps
 
   /**
    * Icon or element displayed at the end of the input.
-   * Commonly used for clear buttons or validation icons.
+   * Commonly used for clear buttons or validation icons. Not hidden from
+   * assistive tech, so interactive content (e.g. a clear button) stays
+   * operable — pass a decorative icon's own `aria-hidden` if needed.
    */
   rightIcon?: React.ReactNode;
 
@@ -167,6 +172,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       leftIcon,
       rightIcon,
       disabled,
+      fullWidth,
       className,
       wrapperClassName,
       id: providedId,
@@ -178,7 +184,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const id = providedId ?? generatedId;
 
     return (
-      <div className={cn(inputWrapperVariants({ size, error, disabled }), wrapperClassName)}>
+      <div
+        className={cn(inputWrapperVariants({ size, error, disabled, fullWidth }), wrapperClassName)}
+      >
         {leftIcon && (
           <span className={iconWrapperVariants({ size, position: 'left' })} aria-hidden="true">
             {leftIcon}
@@ -200,9 +208,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         />
 
         {rightIcon && (
-          <span className={iconWrapperVariants({ size, position: 'right' })} aria-hidden="true">
-            {rightIcon}
-          </span>
+          <span className={iconWrapperVariants({ size, position: 'right' })}>{rightIcon}</span>
         )}
       </div>
     );

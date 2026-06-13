@@ -1384,6 +1384,7 @@
   "inspector.setProperty": "Eigenschaft setzen",
   "inspector.setTheSamePropertyOnAllSelectedBins": "Dieselbe Eigenschaft auf alle ausgewählten Bins setzen",
   "inspector.single.categoryAria": "Bin-Kategorie",
+  "inspector.single.layerAria": "Bin-Ebene",
   "inspector.single.clearanceAria": "Bin-Freiraum",
   "inspector.single.heightAria": "Bin-Höhe",
   "inspector.split.message": "Dieses {width}×{depth} Bin ({widthMm}×{depthMm}mm) überschreitet Ihr print bed ({bedSize}mm). Es wird für den Druck in kleinere Stücke aufgeteilt.",

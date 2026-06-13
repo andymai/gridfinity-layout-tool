@@ -1,13 +1,12 @@
 import { Suspense } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
-import { Button, IconButton, XIcon } from '@/design-system';
+import { Button, IconButton, Select, XIcon } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { getBinLocationContext } from '@/shared/utils/binLocation';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
 import { SplitWarning } from '../SplitWarning';
 import { StepperControl } from '@/shared/components/StepperControl';
-import { SelectDropdown } from '@/shared/components/SelectDropdown';
 import { CustomPropertiesEditor } from '../CustomPropertiesEditor';
 import { STLSearchDropdown } from '@/shell/STLSearchDropdown';
 import { useTranslation } from '@/i18n';
@@ -254,13 +253,14 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
           <label className={`block ${labelSize} text-content-tertiary`}>
             {t('common.category')}
           </label>
-          <SelectDropdown
+          <Select
             value={bin.category}
-            onChange={(value) => updateField('category', value)}
+            onValueChange={(value) => updateField('category', value)}
             options={categories.map((c) => ({ id: c.id, name: c.name }))}
             colorSwatch={category?.color || DEFAULT_CATEGORY_COLOR}
-            ariaLabel={t('inspector.single.categoryAria')}
-            variant={variant}
+            aria-label={t('inspector.single.categoryAria')}
+            size={variant === 'mobile' ? 'lg' : 'md'}
+            fullWidth
           />
         </div>
 
@@ -270,16 +270,17 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('inspector.layer')}
             </label>
-            <SelectDropdown
+            <Select
               value={bin.layerId}
-              onChange={moveToLayer}
+              onValueChange={moveToLayer}
               options={layout.layers.map((l) => ({
                 id: l.id,
                 name: l.name,
-                suffix: l.id === layer?.id ? ' (current)' : '',
+                suffix: l.id === layer?.id ? '(current)' : '',
               }))}
-              ariaLabel="Bin layer"
-              variant={variant}
+              aria-label={t('inspector.single.layerAria')}
+              size={variant === 'mobile' ? 'lg' : 'md'}
+              fullWidth
             />
           </div>
         )}

@@ -5,6 +5,7 @@
  * Patterns are mutually exclusive — only one can be active at a time.
  */
 
+import { Select } from '@/design-system';
 import type { WallPatternType } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 
@@ -72,38 +73,18 @@ export function PatternSelector({
       <label htmlFor="pattern-selector" className="text-xs text-content-secondary mb-2 block">
         {t('binDesigner.walls.pattern.label')}
       </label>
-      <div className="relative">
-        <div className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
-          <SelectedIcon className="w-4 h-4 text-content-primary" />
-        </div>
-        <select
-          id="pattern-selector"
-          value={selectedPattern ?? 'none'}
-          onChange={handleChange}
-          disabled={disabled}
-          className="w-full appearance-none rounded-md bg-surface-secondary text-content-primary text-sm py-2 pl-9 pr-8 border border-stroke-subtle disabled:cursor-not-allowed"
-        >
-          {PATTERN_OPTIONS.map(({ value, labelKey }) => (
-            <option key={value ?? 'none'} value={value ?? 'none'}>
-              {t(labelKey)}
-            </option>
-          ))}
-        </select>
-        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
-          <svg
-            className="w-4 h-4 text-content-secondary"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              fillRule="evenodd"
-              d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </div>
-      </div>
+      <Select
+        id="pattern-selector"
+        value={selectedPattern ?? 'none'}
+        onChange={handleChange}
+        disabled={disabled}
+        options={PATTERN_OPTIONS.map(({ value, labelKey }) => ({
+          id: value ?? 'none',
+          name: t(labelKey),
+        }))}
+        leftIcon={<SelectedIcon className="w-4 h-4 text-content-primary" />}
+        fullWidth
+      />
       {disabled && disabledReason && (
         <p className="text-[11px] text-content-tertiary mt-1.5">{disabledReason}</p>
       )}

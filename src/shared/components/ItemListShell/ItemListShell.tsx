@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react';
+import { Select } from '@/design-system';
 import { ViewModeToggle } from '../ViewModeToggle';
 import { ItemSearch } from './ItemSearch';
-import { SortDropdown } from './SortDropdown';
 import type { ItemListShellProps } from './types';
 
 /** Default threshold for showing search bar */
@@ -121,11 +121,12 @@ export function ItemListShell<T>({
       <div className="pt-3 mt-3 border-t border-stroke text-sm text-content-tertiary flex items-center justify-between">
         <span>{footer}</span>
         <div className="flex items-center gap-2">
-          <SortDropdown
-            options={sortOptions}
+          <Select
+            options={sortOptions.map((o) => ({ id: o.value, name: o.label }))}
             value={sortValue}
-            onChange={onSortChange}
-            ariaLabel={sortAriaLabel}
+            onValueChange={onSortChange}
+            aria-label={sortAriaLabel}
+            size="sm"
           />
           {showViewToggle && (
             <ViewModeToggle

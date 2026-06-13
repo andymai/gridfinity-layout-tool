@@ -1,6 +1,6 @@
 pnpm exec lint-staged
 pnpm run check:boundaries:staged
-# pnpm run check:design-system:staged  # disabled — design system not ready yet
+pnpm run check:design-system:staged
 pnpm run check:i18n
 pnpm run check:i18n:values
 pnpm run check:i18n:interpolation

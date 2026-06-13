@@ -1384,6 +1384,7 @@
   "inspector.setProperty": "Встановити властивість",
   "inspector.setTheSamePropertyOnAllSelectedBins": "Встановити ту саму властивість для всіх вибраних бінів",
   "inspector.single.categoryAria": "Категорія біна",
+  "inspector.single.layerAria": "Шар біна",
   "inspector.single.clearanceAria": "Зазор біна",
   "inspector.single.heightAria": "Висота біна",
   "inspector.split.message": "Цей бін {width}×{depth} ({widthMm}×{depthMm}мм) перевищує розмір вашого друкарського стола ({bedSize}мм). Його буде поділено на менші частини для друку.",

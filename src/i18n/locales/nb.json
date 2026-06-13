@@ -1384,6 +1384,7 @@
   "inspector.setProperty": "Sett egenskap",
   "inspector.setTheSamePropertyOnAllSelectedBins": "Sett samme egenskap på alle valgte bins",
   "inspector.single.categoryAria": "Bin-kategori",
+  "inspector.single.layerAria": "Bin-lag",
   "inspector.single.clearanceAria": "Bin-klaring",
   "inspector.single.heightAria": "Bin-høyde",
   "inspector.split.message": "Denne {width}×{depth} bin ({widthMm}×{depthMm}mm) overskrider din print bed ({bedSize}mm). Den vil bli delt i mindre deler for utskrift.",

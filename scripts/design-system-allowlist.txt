@@ -1,7 +1,9 @@
 # Design System Migration Allowlist
 #
 # Files listed here are grandfathered in and may use raw HTML elements.
-# These should be migrated to use @/design-system components gradually.
+# The check:design-system gate is ENABLED — new raw elements are blocked,
+# but these pre-existing files are exempt until migrated. Migrate gradually
+# and delete each file from this list once it uses @/design-system.
 #
 # To migrate a file:
 # 1. Replace raw <button> with <Button>
@@ -12,48 +14,79 @@
 #
 # Import design system components:
 #   import { Button, Checkbox, Select, Input } from '@/design-system';
-#
 
-# App-level components
-
-# Mobile components
-
-# Tablet components
-
-# Modal components
-
-# Bin designer feature
-src/features/bin-designer/components/CutoutWorkspace/WorkspaceHeader.tsx
-src/features/bin-designer/components/panel/WallsSection/PatternSelector.tsx
-
-# Bin inspector feature
-
-# Categories feature
-
-# Cloud share feature
-src/features/cloud-share/components/CloudShareTab/CloudShareTab.tsx
-
-# Design linking feature
-
-# Grid editor feature
-
-# Inspiration gallery feature
-
-# Labs feature
-
-# Layers feature
-
-# Layout library feature
-src/features/layout-library/components/LayoutManagerModal/LayoutList/LayoutList.tsx
-
-# Name suggestions feature
-
-# Print export feature
-
-# Staging feature
-
-# i18n
-
-# Shared components
-src/shared/components/ItemListShell/SortDropdown/SortDropdown.tsx
-src/shared/components/SelectDropdown/SelectDropdown.tsx
+src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+src/features/baseplate/components/BaseplatePanel/EditableDimensions.tsx
+src/features/baseplate/components/BaseplatePanel/SplitViewStrip.tsx
+src/features/baseplate/components/BaseplatePreview/BaseplatePreviewControls.tsx
+src/features/baseplate/components/PaddingAnchor/PaddingAnchor.tsx
+src/features/baseplate/components/PaddingStepper/PaddingStepper.tsx
+src/features/bin-designer/components/CompartmentEditor/DividerHitTargets.tsx
+src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
+src/features/bin-designer/components/CutoutWorkspace/CutoutBoardSettings.tsx
+src/features/bin-designer/components/CutoutWorkspace/CutoutQuickstartOverlay.tsx
+src/features/bin-designer/components/CutoutWorkspace/CutoutScoopControls.tsx
+src/features/bin-designer/components/CutoutWorkspace/InspectorDock.tsx
+src/features/bin-designer/components/CutoutWorkspace/SingleCutoutInspector.tsx
+src/features/bin-designer/components/DesignerPage/DesignerHeader.tsx
+src/features/bin-designer/components/ExampleGallery/ExampleGallery.tsx
+src/features/bin-designer/components/ExampleGallery/ExamplePreviewOverlay.tsx
+src/features/bin-designer/components/ExampleGallery/TechniqueFilterPills.tsx
+src/features/bin-designer/components/ExportDialog/SlicerHandoffPreview.tsx
+src/features/bin-designer/components/panel/ColorsSection/ColorGroup.tsx
+src/features/bin-designer/components/panel/ColorsSection/ColorPicker.tsx
+src/features/bin-designer/components/panel/ColorsSection/ColorsActionsMenu.tsx
+src/features/bin-designer/components/panel/ColorsSection/ColorsHintBanner.tsx
+src/features/bin-designer/components/panel/ColorsSection/ColorsSection.tsx
+src/features/bin-designer/components/panel/ColorsSection/ColorZoneRow.tsx
+src/features/bin-designer/components/panel/ColorsSection/LipZoneRow.tsx
+src/features/bin-designer/components/panel/CutoutsSection/ArrangeControls.tsx
+src/features/bin-designer/components/panel/CutoutsSection/CutoutArrayControls.tsx
+src/features/bin-designer/components/panel/CutoutsSection/CutoutPresetChips.tsx
+src/features/bin-designer/components/panel/CutoutsSection/PathfinderControls.tsx
+src/features/bin-designer/components/panel/CutoutsSection/TransformControls.tsx
+src/features/bin-designer/components/panel/HandleSection/HandleSection.tsx
+src/features/bin-designer/components/panel/InteriorSection/InteriorModeCard.tsx
+src/features/bin-designer/components/panel/LidSection/LidSection.tsx
+src/features/bin-designer/components/panel/ScoopSection/ScoopSection.tsx
+src/features/bin-designer/components/panel/SetDefaultFooter/SetDefaultFooter.tsx
+src/features/bin-designer/components/panel/ShapeSection/ShapeGrid.tsx
+src/features/bin-designer/components/panel/ShapeSection/ShapeSection.tsx
+src/features/bin-designer/components/panel/shared/AdvancedDisclosure.tsx
+src/features/bin-designer/components/panel/shared/ShapePicker.tsx
+src/features/bin-designer/components/panel/shared/SideSelector.tsx
+src/features/bin-designer/components/panel/WallCutoutsSection/WallCutoutsSection.tsx
+src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
+src/features/bin-designer/components/PerfOverlay/PerfOverlay.tsx
+src/features/bin-designer/components/PreviewCanvas/ColorToolOverlay.tsx
+src/features/bin-designer/components/PreviewCanvas/previewCanvasOverlays.tsx
+src/features/cloud-share/components/ShareButton/DeleteShareConfirm.tsx
+src/features/cloud-share/components/ShareButton/ShareLinkSection.tsx
+src/features/cloud-share/components/ShareButton/SharePopover.tsx
+src/features/grid-editor/components/Grid/IsometricPreview/ExplodedLayerGroup/LayerLabel.tsx
+src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreviewControls.tsx
+src/features/grid-editor/components/Grid/SelectionToolbar/SelectionToolbar.tsx
+src/features/layers/components/ActiveLayerPanel/SizeSelectorPopover.tsx
+src/features/layers/components/LayerPanel/HeightCrossSectionDiagram.tsx
+src/features/snapshots/components/SnapshotEntry/SnapshotEntry.tsx
+src/features/snapshots/components/SnapshotHistory/SnapshotHistory.tsx
+src/shared/components/ExperimentalKernelBadge/ExperimentalKernelBadge.tsx
+src/shared/components/ExportDialog/ExportDialog.tsx
+src/shared/components/ExportDialog/ExportSupportPrompt.tsx
+src/shared/components/FeatureToggle/FeatureToggle.tsx
+src/shared/components/FractionalEdgeToggle/FractionalEdgeToggle.tsx
+src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
+src/shared/components/PrintBedInput/PrintBedInput.tsx
+src/shared/components/SegmentedControl/SegmentedControl.tsx
+src/shared/components/SliderInput/SliderInput.tsx
+src/shared/components/StickyGroupHeader/StickyGroupHeader.tsx
+src/shared/components/UserDock/UserDock.tsx
+src/shell/InitErrorFallback/InitErrorFallback.tsx
+src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
+src/shell/Mobile/MobileLayoutsPanel/MobileCloudSharePanel.tsx
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsListItem.tsx
+src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanelParts.tsx
+src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedModal.tsx
+src/shell/Modals/HelpModal/HelpSearchResultRow.tsx
+src/shell/Modals/SettingsModal/tabs/AppearanceTab/AppearanceTab.tsx
+src/shell/Modals/SettingsModal/tabs/StorageTab/StorageTab.tsx

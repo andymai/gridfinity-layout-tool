@@ -1384,6 +1384,7 @@
   "inspector.setProperty": "プロパティを設定",
   "inspector.setTheSamePropertyOnAllSelectedBins": "選択中のすべてのビンに同じプロパティを設定",
   "inspector.single.categoryAria": "ビンのカテゴリー",
+  "inspector.single.layerAria": "ビンのレイヤー",
   "inspector.single.clearanceAria": "ビンのクリアランス",
   "inspector.single.heightAria": "ビンの高さ",
   "inspector.split.message": "この{width}×{depth}ビン({widthMm}×{depthMm}mm)はプリントベッド({bedSize}mm)を超えています。印刷のためより小さいパーツに分割されます。",

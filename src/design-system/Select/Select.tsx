@@ -1,4 +1,4 @@
-import { forwardRef, useId } from 'react';
+import { forwardRef, useId, type ReactNode } from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../cn';
 import { ChevronDownIcon } from '../Icon';
@@ -36,8 +36,8 @@ const selectVariants = cva(
       fullWidth: {
         true: 'w-full',
       },
-      hasColorSwatch: {
-        true: 'pl-8', // Space for color swatch
+      hasStartAdornment: {
+        true: 'pl-8', // Space for a leading swatch or icon
       },
       error: {
         true: 'border-error focus:border-error',
@@ -49,7 +49,7 @@ const selectVariants = cva(
   }
 );
 
-type SelectVariantProps = Omit<VariantProps<typeof selectVariants>, 'hasColorSwatch' | 'error'>;
+type SelectVariantProps = Omit<VariantProps<typeof selectVariants>, 'hasStartAdornment' | 'error'>;
 
 export interface SelectOption {
   /**
@@ -92,6 +92,13 @@ export interface SelectProps
    * - undefined: No swatch shown
    */
   colorSwatch?: string | null;
+
+  /**
+   * Icon or node displayed at the start of the select.
+   * Use for non-color adornments (e.g. a preview glyph). Ignored when
+   * `colorSwatch` is set — the swatch takes the start slot.
+   */
+  leftIcon?: ReactNode;
 
   /**
    * Error state styling.
@@ -147,6 +154,15 @@ export interface SelectProps
  * />
  *
  * @example
+ * // With a custom leading icon (non-color adornment)
+ * <Select
+ *   value={pattern}
+ *   onValueChange={setPattern}
+ *   options={patterns}
+ *   leftIcon={<HoneycombIcon className="w-4 h-4" />}
+ * />
+ *
+ * @example
  * // Full width
  * <Select
  *   fullWidth
@@ -161,6 +177,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       options,
       placeholder,
       colorSwatch,
+      leftIcon,
       size = 'md',
       fullWidth,
       error,
@@ -176,6 +193,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     const generatedId = useId();
     const id = providedId ?? generatedId;
     const hasColorSwatch = colorSwatch !== undefined;
+    const hasStartAdornment = hasColorSwatch || Boolean(leftIcon);
 
     const iconSize = {
       sm: 'w-3 h-3',
@@ -190,18 +208,24 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 
     return (
       <div className={selectWrapperVariants({ fullWidth })}>
-        {/* Color swatch indicator */}
-        {hasColorSwatch && (
+        {/* Start adornment: color swatch takes precedence over a custom icon */}
+        {hasStartAdornment && (
           <div
-            className={cn(
-              'absolute left-2.5 top-1/2 -translate-y-1/2',
-              'w-4 h-4 rounded',
-              'pointer-events-none',
-              colorSwatch ? '' : 'bg-surface-hover border border-stroke-subtle'
-            )}
-            style={colorSwatch ? { backgroundColor: colorSwatch } : undefined}
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center pointer-events-none"
             aria-hidden="true"
-          />
+          >
+            {hasColorSwatch ? (
+              <span
+                className={cn(
+                  'w-4 h-4 rounded',
+                  colorSwatch ? '' : 'bg-surface-hover border border-stroke-subtle'
+                )}
+                style={colorSwatch ? { backgroundColor: colorSwatch } : undefined}
+              />
+            ) : (
+              leftIcon
+            )}
+          </div>
         )}
 
         <select
@@ -209,7 +233,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           id={id}
           disabled={disabled}
           aria-invalid={error || undefined}
-          className={cn(selectVariants({ size, fullWidth, hasColorSwatch, error }), className)}
+          className={cn(selectVariants({ size, fullWidth, hasStartAdornment, error }), className)}
           onChange={handleChange}
           {...props}
         >

@@ -2749,6 +2749,7 @@ const en: Record<string, string> = {
   'inspector.single.heightAria': 'Bin height',
   'inspector.single.clearanceAria': 'Bin clearance',
   'inspector.single.categoryAria': 'Bin category',
+  'inspector.single.layerAria': 'Bin layer',
 
   // Bin-designer section aria-labels
   'binDesigner.scoop.radiusAria': 'Scoop radius',

@@ -9,7 +9,7 @@ import { useTranslation } from '@/i18n';
 import { ViewModeToggle } from '../ViewModeToggle';
 import type { ViewMode } from '../ViewModeToggle';
 import type { SortOption } from '../index';
-import { IconButton, XIcon } from '@/design-system';
+import { IconButton, Input, Select, SearchIcon, XIcon } from '@/design-system';
 
 /** Threshold for showing search bar */
 const SEARCH_THRESHOLD = 6;
@@ -235,42 +235,29 @@ export function LayoutList({
       <div className="space-y-4 pb-4">
         {/* Search (appears with 6+ layouts) */}
         {showSearch && (
-          <div className="relative">
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <input
-              ref={searchRef}
-              type="text"
-              value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder={t('layouts.searchPlaceholder')}
-              className="w-full pl-9 pr-8 py-2 bg-surface border border-stroke rounded-lg text-sm text-content placeholder:text-content-tertiary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
-              aria-label={t('layouts.searchLayouts')}
-            />
-            {searchQuery && (
-              <IconButton
-                size="sm"
-                touchTarget={false}
-                onClick={() => handleSearchChange('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-content-tertiary hover:bg-transparent hover:text-content"
-                aria-label={t('layouts.clearSearch')}
-              >
-                <XIcon className="w-4 h-4" />
-              </IconButton>
-            )}
-          </div>
+          <Input
+            ref={searchRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder={t('layouts.searchPlaceholder')}
+            aria-label={t('layouts.searchLayouts')}
+            fullWidth
+            leftIcon={<SearchIcon className="w-4 h-4" aria-hidden="true" />}
+            rightIcon={
+              searchQuery ? (
+                <IconButton
+                  size="sm"
+                  touchTarget={false}
+                  onClick={() => handleSearchChange('')}
+                  className="text-content-tertiary hover:bg-transparent hover:text-content"
+                  aria-label={t('layouts.clearSearch')}
+                >
+                  <XIcon className="w-4 h-4" />
+                </IconButton>
+              ) : undefined
+            }
+          />
         )}
       </div>
 
@@ -385,33 +372,18 @@ export function LayoutList({
       <div className="mt-4 pt-4 border-t border-stroke text-sm text-content-tertiary flex items-center justify-between">
         <span>{t('layouts.layoutCount', { count: entries.length })}</span>
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e) => onSortChange(e.target.value as SortOption)}
-              className="appearance-none pl-3 pr-8 py-1.5 bg-surface border border-stroke rounded-lg text-sm text-content focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent cursor-pointer"
-              aria-label={t('layouts.sortBy')}
-            >
-              <option value="recent">{t('layouts.sortRecent')}</option>
-              <option value="name">{t('layouts.sortName')}</option>
-              <option value="size">{t('layouts.sortSize')}</option>
-              <option value="binCount">{t('layouts.sortBinCount')}</option>
-            </select>
-            <svg
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-content-tertiary pointer-events-none"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
+          <Select
+            value={sortBy}
+            onValueChange={(value) => onSortChange(value as SortOption)}
+            options={[
+              { id: 'recent', name: t('layouts.sortRecent') },
+              { id: 'name', name: t('layouts.sortName') },
+              { id: 'size', name: t('layouts.sortSize') },
+              { id: 'binCount', name: t('layouts.sortBinCount') },
+            ]}
+            aria-label={t('layouts.sortBy')}
+            size="sm"
+          />
           {showViewToggle && <ViewModeToggle value={viewMode} onChange={onViewModeChange} />}
         </div>
       </div>
