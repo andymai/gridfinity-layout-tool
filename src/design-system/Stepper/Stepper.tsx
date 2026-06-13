@@ -130,8 +130,10 @@ function useDeferredNumberInput(
   // than in an effect: a guarded setState in render bails out and re-runs in a
   // single pass instead of the two-render cascade an effect would produce.
   // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  // Only resync in input mode: when onChange is absent the input isn't rendered,
+  // so a render-time setState there would just burn an extra pass for nothing.
   const [lastSynced, setLastSynced] = useState(externalValue);
-  if (externalValue !== lastSynced) {
+  if (onChange && externalValue !== lastSynced) {
     setLastSynced(externalValue);
     setLocalValue(fmt(externalValue));
   }
