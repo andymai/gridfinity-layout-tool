@@ -181,7 +181,7 @@ export function Sidebar() {
         // Expanded state
         <div className="flex flex-col h-full animate-fade-in">
           <div
-            className={`flex items-center gap-3 px-4 py-2 border-b border-stroke-subtle transition-shadow duration-200 ${
+            className={`flex items-center gap-3 px-4 py-[7.5px] border-b border-stroke-subtle transition-shadow duration-200 ${
               isScrolled ? 'shadow-elevated' : ''
             }`}
           >
@@ -192,7 +192,7 @@ export function Sidebar() {
               size="sm"
               touchTarget={false}
               onClick={() => setShowSettingsModal(true)}
-              className="text-content-tertiary"
+              className="h-8 w-8 text-content-tertiary"
               title={t('sidebar.settings')}
               aria-label={t('sidebar.openSettings')}
             >
@@ -212,7 +212,7 @@ export function Sidebar() {
               size="sm"
               touchTarget={false}
               onClick={toggle}
-              className="text-content-tertiary"
+              className="h-8 w-8 text-content-tertiary"
               title={t('sidebar.collapsePanel')}
               aria-label={t('sidebar.collapseLeftPanel')}
             >

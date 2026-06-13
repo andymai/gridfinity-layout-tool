@@ -107,7 +107,7 @@ export function RightPanel() {
       size="sm"
       touchTarget={false}
       onClick={toggle}
-      className="flex-shrink-0 text-content-tertiary"
+      className="flex-shrink-0 h-8 w-8 text-content-tertiary"
       title={t('rightPanel.collapsePanel')}
       aria-label={t('rightPanel.collapseRightPanel')}
     >
@@ -131,7 +131,7 @@ export function RightPanel() {
           isScrolled ? 'shadow-elevated' : ''
         }`}
       >
-        <div className="flex items-center gap-3 px-4 py-2">
+        <div className="flex items-center gap-3 px-4 py-[7.5px]">
           {collapseButton}
           <div className="flex gap-1" role="tablist">
             <Button
