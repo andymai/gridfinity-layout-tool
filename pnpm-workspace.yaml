@@ -25,6 +25,12 @@ minimumReleaseAgeExclude:
   - lru-cache
   - preact
   - tsx
+  # esbuild 0.28.1 (2026-06-11) is the first version patched against
+  # GHSA-gv7w-rqvm-qjhr and GHSA-g7r4-m6w7-qqqr; allow it (and its native
+  # binary packages) through before the 7-day window elapses.
+  # TODO: remove after 2026-06-18 once 0.28.1 has aged past the window.
+  - esbuild
+  - '@esbuild/*'
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
 # Packages that need to build are listed in allowBuilds.
@@ -63,3 +69,4 @@ overrides:
   'vitest-axe>lodash-es': '^4.18.1'
   'picomatch@>=4.0.0 <4.0.4': '^4.0.4'
   '@vercel/python-analysis>smol-toml': '^1.6.1'
+  esbuild: '0.28.1'
