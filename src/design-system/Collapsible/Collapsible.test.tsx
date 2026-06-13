@@ -6,7 +6,7 @@ describe('Collapsible', () => {
   describe('uncontrolled mode', () => {
     it('starts expanded by default', () => {
       render(<Collapsible title="Settings">Content</Collapsible>);
-      expect(screen.getByRole('region')).toHaveAttribute('aria-hidden', 'false');
+      expect(screen.getByRole('region')).not.toHaveAttribute('inert');
     });
 
     it('starts collapsed when defaultExpanded is false', () => {
@@ -15,7 +15,7 @@ describe('Collapsible', () => {
           Content
         </Collapsible>
       );
-      expect(screen.getByRole('region', { hidden: true })).toHaveAttribute('aria-hidden', 'true');
+      expect(screen.getByRole('region', { hidden: true })).toHaveAttribute('inert');
     });
 
     it('toggles on click', () => {
@@ -23,10 +23,10 @@ describe('Collapsible', () => {
       const trigger = screen.getByRole('button', { name: /Settings/ });
 
       fireEvent.click(trigger);
-      expect(screen.getByRole('region', { hidden: true })).toHaveAttribute('aria-hidden', 'true');
+      expect(screen.getByRole('region', { hidden: true })).toHaveAttribute('inert');
 
       fireEvent.click(trigger);
-      expect(screen.getByRole('region')).toHaveAttribute('aria-hidden', 'false');
+      expect(screen.getByRole('region')).not.toHaveAttribute('inert');
     });
   });
 
@@ -37,7 +37,7 @@ describe('Collapsible', () => {
           Content
         </Collapsible>
       );
-      expect(screen.getByRole('region')).toHaveAttribute('aria-hidden', 'false');
+      expect(screen.getByRole('region')).not.toHaveAttribute('inert');
     });
 
     it('calls onExpandedChange on toggle', () => {
