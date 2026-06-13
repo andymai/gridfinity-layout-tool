@@ -96,10 +96,11 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
       {/* Right: Baseplate + 3D preview + Zoom controls */}
       <div className="flex items-center gap-1 flex-shrink-0">
         {/* 3D Preview toggle */}
-        <IconButton
-          variant="secondary"
+        <Button
+          iconOnly
+          variant={showIsometricPreview ? 'primary' : 'secondary'}
           size="lg"
-          pressed={showIsometricPreview}
+          aria-pressed={showIsometricPreview}
           onClick={toggleIsometricPreview}
           className="w-10 h-10"
           aria-label={
@@ -115,7 +116,7 @@ export function MobileGridToolbar({ onFitToScreen }: MobileGridToolbarProps) {
               d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
             />
           </svg>
-        </IconButton>
+        </Button>
         <IconButton
           variant="secondary"
           size="lg"

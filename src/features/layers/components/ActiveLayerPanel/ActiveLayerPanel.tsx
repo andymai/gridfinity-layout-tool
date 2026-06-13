@@ -133,11 +133,11 @@ export function ActiveLayerPanel() {
         {/* Row 1: Size selector */}
         <Button
           ref={sizeButtonRef}
-          variant="secondary"
+          variant={paintSize ? 'ghost' : 'secondary'}
           fullWidth
           onClick={handleSizeButtonClick}
           className={`text-sm h-8 gap-1.5 ${
-            paintSize ? 'bg-accent/15 border-accent/60 text-accent hover:bg-accent/25' : ''
+            paintSize ? 'bg-accent/15 border border-accent/60 text-accent hover:bg-accent/25' : ''
           }`}
           title={
             paintSize

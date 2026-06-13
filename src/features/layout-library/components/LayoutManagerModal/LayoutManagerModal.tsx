@@ -317,7 +317,7 @@ function LayoutManagerModalContent({
               className="text-content-secondary hover:bg-surface hover:text-content"
               aria-label={t('layouts.closeLayoutsDialog')}
             >
-              <XIcon className="w-6 h-6" />
+              <XIcon className="w-5 h-5" />
             </IconButton>
           </div>
         </div>

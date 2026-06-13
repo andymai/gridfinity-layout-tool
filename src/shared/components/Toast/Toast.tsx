@@ -174,7 +174,7 @@ function ToastItem({ toast, position, onRemove }: ToastItemProps) {
                 void toast.action?.onClick();
                 handleDismiss();
               }}
-              className="h-auto rounded-none px-0 py-0 text-sm font-medium underline underline-offset-2 opacity-90 hover:bg-transparent hover:text-current hover:opacity-100"
+              className="h-auto rounded-none px-0 py-0 text-sm font-medium text-current underline underline-offset-2 opacity-90 hover:bg-transparent hover:text-current hover:opacity-100"
             >
               {toast.action.label}
             </Button>
@@ -185,7 +185,7 @@ function ToastItem({ toast, position, onRemove }: ToastItemProps) {
                   void toast.secondaryAction?.onClick();
                   handleDismiss();
                 }}
-                className="h-auto rounded-none px-0 py-0 text-sm font-medium underline underline-offset-2 opacity-75 hover:bg-transparent hover:text-current hover:opacity-100"
+                className="h-auto rounded-none px-0 py-0 text-sm font-medium text-current underline underline-offset-2 opacity-75 hover:bg-transparent hover:text-current hover:opacity-100"
               >
                 {toast.secondaryAction.label}
               </Button>

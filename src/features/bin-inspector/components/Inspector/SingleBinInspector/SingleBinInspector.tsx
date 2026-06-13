@@ -114,13 +114,15 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
           {/* Flip button */}
           <IconButton
-            variant="secondary"
+            variant={isMobile ? 'secondary' : 'ghost'}
             size={isMobile ? 'lg' : 'sm'}
             touchTarget={isMobile}
             type="button"
             onClick={rotateBin}
             className={
-              isMobile ? 'w-12 h-12 flex-shrink-0' : 'flex-shrink-0 h-8 w-8 text-content-tertiary'
+              isMobile
+                ? 'w-12 h-12 flex-shrink-0'
+                : 'flex-shrink-0 h-8 w-8 rounded-sm border border-stroke-subtle bg-surface-elevated text-content-tertiary hover:bg-surface-hover hover:text-content'
             }
             title={t('inspector.swapDimensions')}
             aria-label={t('inspector.swapWidthAndDepth')}
