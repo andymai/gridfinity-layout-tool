@@ -93,6 +93,24 @@ describe('Stepper', () => {
     });
   });
 
+  describe('fullWidth', () => {
+    it('stretches the container when fullWidth is set', () => {
+      const ref = vi.fn();
+      render(<Stepper {...defaultProps} ref={ref} displayValue={5} fullWidth />);
+      const container = ref.mock.calls[0][0] as HTMLDivElement;
+      expect(container).toHaveClass('flex', 'w-full');
+      expect(container).not.toHaveClass('inline-flex');
+    });
+
+    it('stays inline by default', () => {
+      const ref = vi.fn();
+      render(<Stepper {...defaultProps} ref={ref} displayValue={5} />);
+      const container = ref.mock.calls[0][0] as HTMLDivElement;
+      expect(container).toHaveClass('inline-flex');
+      expect(container).not.toHaveClass('w-full');
+    });
+  });
+
   describe('ref forwarding', () => {
     it('forwards ref to container', () => {
       const ref = vi.fn();

@@ -100,6 +100,7 @@ export function DimensionsSection() {
           max={DESIGNER_CONSTRAINTS.MAX_HEIGHT}
           step={DESIGNER_CONSTRAINTS.HEIGHT_STEP}
           size={stepperSize}
+          fullWidth
           aria-label={t('common.height')}
         />
       </div>

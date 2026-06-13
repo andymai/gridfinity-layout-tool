@@ -66,4 +66,21 @@ test.describe('Stepper visual', () => {
     );
     await expect(component).toHaveScreenshot('stepper-at-max.png');
   });
+
+  test('full width', async ({ mount }) => {
+    const component = await mount(
+      <div style={{ width: 320 }}>
+        <Stepper
+          value={5}
+          onChange={noop}
+          onStep={noop}
+          min={1}
+          max={10}
+          fullWidth
+          aria-label="Height"
+        />
+      </div>
+    );
+    await expect(component).toHaveScreenshot('stepper-full-width.png');
+  });
 });

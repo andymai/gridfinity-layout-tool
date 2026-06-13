@@ -6,16 +6,23 @@ import { focusRing, disabledStyles, interactiveTransition } from '../variants';
 
 /** Idle window for coalescing step clicks in `'deferred'` commit mode. */
 export const DEFERRED_COMMIT_DELAY_MS = 250;
-const containerVariants = cva(['inline-flex items-center'], {
+const containerVariants = cva(['items-center'], {
   variants: {
     size: {
       sm: 'h-6',
       md: 'h-8',
       lg: 'h-12',
     },
+    fullWidth: {
+      // The input/display carries `flex-1`, so stretching the container lets the
+      // middle element absorb the extra width while the buttons stay fixed.
+      true: 'flex w-full',
+      false: 'inline-flex',
+    },
   },
   defaultVariants: {
     size: 'md',
+    fullWidth: false,
   },
 });
 
@@ -302,6 +309,7 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
       step = 1,
       inputDecimals = 1,
       size = 'md',
+      fullWidth = false,
       displayValue,
       'aria-label': ariaLabel,
       disabled = false,
@@ -371,7 +379,7 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
     const showInput = displayValue === undefined && onChange;
 
     return (
-      <div ref={ref} className={cn(containerVariants({ size }), className)}>
+      <div ref={ref} className={cn(containerVariants({ size, fullWidth }), className)}>
         {/* Decrease button */}
         <button
           type="button"
