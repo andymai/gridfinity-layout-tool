@@ -164,8 +164,10 @@ describe('computeGenerationTimeoutMs', () => {
   });
 
   it('caps a large-footprint hex bin at the maximum timeout', () => {
+    // 20×20×20 hex: raw budget (base + hex + 384-cell footprint + 8 height
+    // buckets ≈ 261s) exceeds the 180s ceiling, so it clamps to MAX.
     const t = computeGenerationTimeoutMs(
-      params({ width: 16, depth: 16, height: 6, wallPattern: HEX_ON })
+      params({ width: 20, depth: 20, height: 20, wallPattern: HEX_ON })
     );
     expect(t).toBe(MAX_TIMEOUT_MS);
   });
@@ -295,7 +297,9 @@ describe('computeBaseplateTimeoutMs', () => {
     expect(computeBaseplateTimeoutMs(rest)).toBe(BASE_TIMEOUT_MS + BASEPLATE_LIGHTWEIGHT_BONUS_MS);
   });
 
-  it('has a higher ceiling than bins (dense magnet grids outlast bin pipelines)', () => {
-    expect(BASEPLATE_MAX_TIMEOUT_MS).toBeGreaterThan(MAX_TIMEOUT_MS);
+  it('shares the 3-minute hard ceiling with bins', () => {
+    // Honeycomb bins are now the heaviest pipeline, so baseplates no longer get a
+    // higher ceiling than bins — both clamp at the agreed 3-minute cap.
+    expect(BASEPLATE_MAX_TIMEOUT_MS).toBe(MAX_TIMEOUT_MS);
   });
 });

@@ -57,8 +57,21 @@ export const HEIGHT_BONUS_FLOOR_UNITS = 4;
 /** Height-unit bucket size for bonus steps. */
 export const HEIGHT_BONUS_BUCKET_UNITS = 2;
 
-/** Hard ceiling — protects users from runaway WASM OOM loops. */
-export const MAX_TIMEOUT_MS = 90_000;
+/**
+ * Hard ceiling — protects users from runaway WASM OOM loops while still giving
+ * legitimately complex bins room to finish.
+ *
+ * Raised from 90s to 180s (#timeouts): measured generation of heavy honeycomb
+ * bins runs well past 90s on the single-threaded OCCT pipeline — e.g. a 4×4×8
+ * honeycomb bin's pattern cut alone is ~14s and a tall 6×6×20 is ~3min. The
+ * boolean `pattern_cut` stage is ~82% of total and scales super-linearly, so the
+ * batch cut is already near-optimal and can't be meaningfully parallelized
+ * (splitting the solid forces a recombine that costs more than it saves). Until
+ * the pattern cut itself is optimized, a 3-minute ceiling stops the bulk of
+ * spurious timeouts on bins that would otherwise finish. 3 minutes is the agreed
+ * upper bound on how long a user should wait (with progress + cancel).
+ */
+export const MAX_TIMEOUT_MS = 180_000;
 
 function hasAnyActiveCutoutSide(params: BinParams): boolean {
   const { walls } = params;
@@ -124,12 +137,13 @@ export const BASEPLATE_CONNECTOR_BONUS_MS = 10_000;
 export const BASEPLATE_LIGHTWEIGHT_BONUS_MS = 5_000;
 
 /**
- * Hard ceiling for baseplates. Higher than {@link MAX_TIMEOUT_MS} because
- * dense magnet grids (10u+ with holes) legitimately run longer than any
- * bin shape does — the batched-cut pipeline is serial per batch and OCCT
- * numerical precision work dominates.
+ * Hard ceiling for baseplates. Unified with {@link MAX_TIMEOUT_MS} at the agreed
+ * 3-minute cap: honeycomb bins are now the heaviest pipeline (their pattern cut
+ * can reach ~3min), so baseplates no longer warrant a higher ceiling than bins.
+ * Baseplate raw budgets max out near ~105s anyway (magnet bonus is capped), so
+ * this is a defensive clamp that is effectively never hit.
  */
-export const BASEPLATE_MAX_TIMEOUT_MS = 120_000;
+export const BASEPLATE_MAX_TIMEOUT_MS = 180_000;
 
 /**
  * Compute the timeout budget for a baseplate generation, in milliseconds.
