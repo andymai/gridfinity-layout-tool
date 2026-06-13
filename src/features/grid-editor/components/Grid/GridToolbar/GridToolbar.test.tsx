@@ -1,3 +1,4 @@
+import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GridToolbar } from './GridToolbar';
@@ -14,17 +15,15 @@ vi.mock('@/shared/analytics/posthog', () => ({
 }));
 
 // Mock Checkbox component
-vi.mock('@/shared/components/Checkbox', () => ({
-  Checkbox: ({ checked, variant }: { checked: boolean; variant: string }) => (
-    <input
-      type="checkbox"
-      checked={checked}
-      data-variant={variant}
-      readOnly
-      data-testid="checkbox"
-    />
-  ),
-}));
+vi.mock('@/design-system', async (importActual) => {
+  const actual = await importActual<typeof DesignSystem>();
+  return {
+    ...actual,
+    Checkbox: ({ checked, size }: { checked: boolean; size: string }) => (
+      <input type="checkbox" checked={checked} data-size={size} readOnly data-testid="checkbox" />
+    ),
+  };
+});
 
 describe('GridToolbar', () => {
   const mockZoomState: GridZoomState = {

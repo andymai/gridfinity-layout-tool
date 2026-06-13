@@ -1,3 +1,4 @@
+import type * as DesignSystem from '@/design-system';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AppearanceTab } from './AppearanceTab';
@@ -26,11 +27,15 @@ vi.mock('@/core/store', () => ({
     }),
 }));
 
-vi.mock('@/shared/components/Checkbox', () => ({
-  Checkbox: ({ checked }: { checked: boolean }) => (
-    <input type="checkbox" checked={checked} readOnly />
-  ),
-}));
+vi.mock('@/design-system', async (importActual) => {
+  const actual = await importActual<typeof DesignSystem>();
+  return {
+    ...actual,
+    Checkbox: ({ checked }: { checked: boolean }) => (
+      <input type="checkbox" checked={checked} readOnly />
+    ),
+  };
+});
 
 describe('AppearanceTab', () => {
   beforeEach(() => {

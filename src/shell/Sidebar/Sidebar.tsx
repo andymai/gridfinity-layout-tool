@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';
-import { Button, IconButton, Stepper } from '@/design-system';
+import { Button, Checkbox, IconButton, Stepper } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
@@ -16,7 +16,6 @@ import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
-import { Checkbox } from '@/shared/components/Checkbox';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FractionalEdgeToggle } from '@/shared/components/FractionalEdgeToggle';
 import { UserDock } from '@/shared/components/UserDock';
@@ -410,7 +409,7 @@ export function Sidebar() {
                         H
                       </kbd>
                     </div>
-                    <Checkbox checked={halfGridMode} variant="desktop" />
+                    <Checkbox checked={halfGridMode} size="md" />
                   </div>
 
                   {/* Fractional edge position toggles - only shown when dimensions are fractional */}

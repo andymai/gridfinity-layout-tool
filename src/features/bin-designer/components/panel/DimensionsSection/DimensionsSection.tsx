@@ -7,16 +7,15 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { IconButton, Stepper } from '@/design-system';
+import { Checkbox, IconButton, Stepper } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
-import { Checkbox } from '@/shared/components/Checkbox';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useDimensionsSection } from './useDimensionsSection';
 
 export function DimensionsSection() {
   const { state, handlers, t } = useDimensionsSection();
   const { isMobile } = useResponsive();
-  const checkboxVariant = isMobile ? 'mobile' : 'desktop';
+  const checkboxSize = isMobile ? 'lg' : 'md';
   const stepperSize = isMobile ? 'lg' : 'md';
 
   return (
@@ -125,7 +124,7 @@ export function DimensionsSection() {
         >
           {t('binDesigner.halfBinMode')}
         </span>
-        <Checkbox checked={state.halfGridMode} variant={checkboxVariant} />
+        <Checkbox checked={state.halfGridMode} size={checkboxSize} />
       </div>
     </div>
   );

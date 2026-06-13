@@ -1,7 +1,7 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import type { STLSearchSite } from '@/core/store/settings';
-import { Checkbox } from '@/shared/components/Checkbox';
+import { Checkbox } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 export function IntegrationsTab() {
@@ -79,7 +79,7 @@ function ToggleRow({
       >
         {name}
       </span>
-      <Checkbox checked={enabled} variant="desktop" />
+      <Checkbox checked={enabled} size="md" />
     </div>
   );
 }

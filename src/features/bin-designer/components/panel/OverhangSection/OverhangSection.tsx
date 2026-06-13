@@ -9,7 +9,7 @@
  */
 
 import { SliderInput } from '@/shared/components/SliderInput';
-import { Checkbox } from '@/shared/components/Checkbox';
+import { Checkbox } from '@/design-system';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { FeatureGate } from '../FeatureGate';

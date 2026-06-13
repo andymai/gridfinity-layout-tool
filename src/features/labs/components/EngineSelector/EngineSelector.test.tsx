@@ -46,15 +46,15 @@ describe('EngineSelector', () => {
 
   it('marks Default (occt-wasm) as active when the brepkit flag is off', () => {
     render(<EngineSelector />);
-    expect(getSegment('labs.engine.segmentDefault')).toHaveAttribute('aria-pressed', 'true');
-    expect(getSegment('labs.engine.segmentBrepkit')).toHaveAttribute('aria-pressed', 'false');
+    expect(getSegment('labs.engine.segmentDefault')).toHaveAttribute('aria-checked', 'true');
+    expect(getSegment('labs.engine.segmentBrepkit')).toHaveAttribute('aria-checked', 'false');
   });
 
   it('reflects BrepKit when brepkit_kernel is enabled', () => {
     setBrepkitEnabled(true);
     render(<EngineSelector />);
-    expect(getSegment('labs.engine.segmentBrepkit')).toHaveAttribute('aria-pressed', 'true');
-    expect(getSegment('labs.engine.segmentDefault')).toHaveAttribute('aria-pressed', 'false');
+    expect(getSegment('labs.engine.segmentBrepkit')).toHaveAttribute('aria-checked', 'true');
+    expect(getSegment('labs.engine.segmentDefault')).toHaveAttribute('aria-checked', 'false');
   });
 
   it('switching to BrepKit enables brepkit_kernel', () => {

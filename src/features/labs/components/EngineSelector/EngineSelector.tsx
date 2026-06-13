@@ -1,4 +1,4 @@
-import { SegmentedControl } from '@/shared/components/SegmentedControl';
+import { SegmentedControl } from '@/design-system';
 import { useLabsStore, useToastStore } from '@/core/store';
 import { getFeature, type FeatureFlag } from '@/core/labs';
 import { trackEvent } from '@/shared/analytics/posthog/trackEvent';
@@ -77,7 +77,7 @@ export function EngineSelector() {
         options={options}
         value={current}
         onChange={handleChange}
-        ariaLabel={t('labs.engine.ariaLabel')}
+        aria-label={t('labs.engine.ariaLabel')}
       />
 
       <p className="mt-3 text-[13px] text-content-secondary leading-relaxed">

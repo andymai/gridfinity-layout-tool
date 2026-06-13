@@ -36,7 +36,6 @@ graph TB
 | `ItemListShell`            | Generic searchable, sortable, filterable list container (grid/list view) |
 | `ConfirmDialog`            | Modal with focus trap, Escape handling, portal rendering                 |
 | `Toast` / `ToastContainer` | Auto-dismiss notifications with pause-on-hover                           |
-| `Checkbox`                 | Custom styled, desktop/mobile variants, display-only mode                |
 | `ContextMenu*`             | Framework for consistent right-click menus                               |
 | `CollapsibleSection`       | Expandable container with arrow indicator                                |
 

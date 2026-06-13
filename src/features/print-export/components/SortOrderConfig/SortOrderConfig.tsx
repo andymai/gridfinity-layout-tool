@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react';
-import { Checkbox } from '@/shared/components/Checkbox';
 import type { BinListSortOrder, SortFieldConfig, BinSortField } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
-import { IconButton } from '@/design-system';
+import { Checkbox, IconButton } from '@/design-system';
 
 /**
  * Maps sort fields to their translation keys.
@@ -213,7 +212,7 @@ function SortFieldItem({
         >
           {t(SORT_FIELD_KEYS[config.field])}
         </span>
-        <Checkbox checked={config.enabled} variant="desktop" />
+        <Checkbox checked={config.enabled} size="md" />
       </div>
 
       {/* Priority indicator for enabled fields - show position among enabled fields only */}

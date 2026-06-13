@@ -11,8 +11,7 @@ import { useTranslation } from '@/i18n';
 import type { LayerId } from '@/core/types';
 import { PrintLayout } from '../PrintLayout';
 import { SortOrderConfig } from '../SortOrderConfig';
-import { Checkbox } from '@/shared/components/Checkbox';
-import { Button, IconButton, XIcon } from '@/design-system';
+import { Button, Checkbox, IconButton, XIcon } from '@/design-system';
 import { getBinCountByLayer } from '@/features/print-export/utils/printLayout';
 import { getDisplayLayers } from '@/shared/utils';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -285,7 +284,7 @@ export function PrintModal({ isOpen, onClose }: PrintModalProps) {
                         <span className="text-xs text-content-tertiary">
                           {t('print.binCount', { count: binCount })}
                         </span>
-                        <Checkbox checked={isChecked} variant="desktop" />
+                        <Checkbox checked={isChecked} size="md" />
                       </div>
                     );
                   })}
@@ -523,7 +522,7 @@ function CheckboxOption({
       <span className={`text-sm ${checked ? 'text-content' : 'text-content-secondary'}`}>
         {label}
       </span>
-      <Checkbox checked={checked} variant="desktop" />
+      <Checkbox checked={checked} size="md" />
     </div>
   );
 }

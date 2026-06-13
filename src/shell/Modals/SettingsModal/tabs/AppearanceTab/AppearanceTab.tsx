@@ -1,6 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
-import { Checkbox } from '@/shared/components/Checkbox';
+import { Checkbox } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { UserSettings } from '@/core/store/settings';
 
@@ -95,7 +95,7 @@ function ToggleRow({
         </span>
         {hint && <p className="text-xs text-content-disabled mt-0.5">{hint}</p>}
       </div>
-      <Checkbox checked={checked} variant="desktop" />
+      <Checkbox checked={checked} size="md" />
     </div>
   );
 }

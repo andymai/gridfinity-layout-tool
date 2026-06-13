@@ -1,6 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
-import { Checkbox } from '@/shared/components/Checkbox';
+import { Checkbox } from '@/design-system';
 import {
   optInAnalytics,
   optOutAnalytics,
@@ -64,7 +64,7 @@ export function PrivacyTab() {
             </span>
             <p className="text-xs text-content-disabled mt-0.5">{t('settings.helpImproveHint')}</p>
           </div>
-          <Checkbox checked={analyticsEnabled} variant="desktop" />
+          <Checkbox checked={analyticsEnabled} size="md" />
         </div>
       </section>
     </div>

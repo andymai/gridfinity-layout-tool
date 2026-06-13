@@ -2,7 +2,6 @@
 // Reusable UI primitives with no domain coupling
 
 export { AttributionFooter } from './AttributionFooter';
-export { Checkbox } from './Checkbox';
 export { CollapsibleSection } from './CollapsibleSection';
 export { ConfirmDialog } from './ConfirmDialog';
 export { ContextMenuContainer, ContextMenuItem, ContextMenuDivider } from './ContextMenu';

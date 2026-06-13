@@ -2,8 +2,15 @@ import { memo, useState, useEffect, useRef, type RefObject } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useInteractionStore } from '@/core/store/interaction';
-import { Checkbox } from '@/shared/components/Checkbox';
-import { Button, IconButton, ChevronDownIcon, MinusIcon, PlusIcon, XIcon } from '@/design-system';
+import {
+  Button,
+  Checkbox,
+  IconButton,
+  ChevronDownIcon,
+  MinusIcon,
+  PlusIcon,
+  XIcon,
+} from '@/design-system';
 import { trackEvent } from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
 import type { Layer } from '@/core/types';
@@ -218,7 +225,7 @@ export const GridToolbar = memo(function GridToolbar({
             <span className={showOtherLayers ? 'text-content' : 'text-content-secondary'}>
               {t('toolbar.showLayersBelow')}
             </span>
-            <Checkbox checked={showOtherLayers} variant="desktop" />
+            <Checkbox checked={showOtherLayers} size="md" />
           </div>
         )}
 
@@ -338,7 +345,7 @@ export const GridToolbar = memo(function GridToolbar({
                     <span className={showOtherLayers ? 'text-content' : 'text-content-secondary'}>
                       {t('toolbar.showLayersBelow')}
                     </span>
-                    <Checkbox checked={showOtherLayers} variant="desktop" />
+                    <Checkbox checked={showOtherLayers} size="md" />
                   </div>
                 )}
               </div>
