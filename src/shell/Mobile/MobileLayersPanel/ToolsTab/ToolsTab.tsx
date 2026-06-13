@@ -256,7 +256,7 @@ export function ToolsTab() {
           fullWidth
           onClick={() => setShowClearConfirm(true)}
           disabled={layerBins.length === 0}
-          className="h-11 justify-center text-error hover:bg-error/10"
+          className="h-11 justify-center text-error hover:bg-error/10 hover:text-error"
           leftIcon={
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path

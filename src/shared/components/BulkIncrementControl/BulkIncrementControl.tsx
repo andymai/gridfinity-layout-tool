@@ -40,7 +40,7 @@ export function BulkIncrementControl({
         disabled={decreaseDisabled}
         aria-label={`Decrease ${ariaLabelPrefix}`}
       >
-        <MinusIcon />
+        <MinusIcon size="sm" />
       </IconButton>
       <span className={`flex-1 text-center font-semibold ${valueSize} text-content`}>
         {displayValue}
@@ -52,7 +52,7 @@ export function BulkIncrementControl({
         disabled={increaseDisabled}
         aria-label={`Increase ${ariaLabelPrefix}`}
       >
-        <PlusIcon />
+        <PlusIcon size="sm" />
       </IconButton>
     </div>
   );

@@ -269,7 +269,7 @@ export function DesignActions({
               onClick={handleDelete}
               className={`
                 w-full px-3 py-2.5 justify-start text-left text-sm flex flex-col gap-0.5 transition-colors
-                ${isConfirmingDelete ? 'bg-danger text-on-dark hover:bg-danger' : 'text-danger hover:bg-surface'}
+                ${isConfirmingDelete ? 'bg-danger text-on-dark hover:bg-danger' : 'text-danger hover:bg-surface hover:text-danger'}
               `}
             >
               <span className="flex items-center gap-2">

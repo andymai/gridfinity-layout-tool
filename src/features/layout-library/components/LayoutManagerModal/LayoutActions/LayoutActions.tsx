@@ -240,7 +240,7 @@ export function LayoutActions({
                       ${
                         isConfirmingDelete
                           ? 'bg-danger text-on-dark hover:bg-danger'
-                          : 'text-danger hover:bg-surface'
+                          : 'text-danger hover:bg-surface hover:text-danger'
                       }
                     `}
                   >

@@ -234,7 +234,7 @@ export function ActiveLayerPanel() {
           fullWidth
           onClick={() => setShowClearConfirm(true)}
           disabled={layerBins.length === 0}
-          className="text-sm h-8 gap-1.5 text-error hover:bg-error/10"
+          className="text-sm h-8 gap-1.5 text-error hover:bg-error/10 hover:text-error"
           title={
             layerBins.length > 0
               ? t('layers.clearBinsTitle', { count: layerBins.length })

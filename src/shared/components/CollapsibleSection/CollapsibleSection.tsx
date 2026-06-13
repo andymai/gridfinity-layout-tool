@@ -64,6 +64,7 @@ export function CollapsibleSection({
     <div>
       <div className="flex items-center justify-between">
         <Button
+          type="button"
           variant="ghost"
           onClick={() => {
             setHasToggled(true);

@@ -84,7 +84,9 @@ export function TwoClickDeleteButton({
     [disabled, isConfirming, onDelete]
   );
 
-  const stateStyles = effectiveConfirming ? 'text-on-dark' : 'text-danger hover:bg-surface';
+  const stateStyles = effectiveConfirming
+    ? 'text-on-dark'
+    : 'text-danger hover:bg-surface hover:text-danger';
 
   return (
     <Button

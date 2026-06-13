@@ -212,11 +212,11 @@ export function StepperControl({
 
   const decreaseButtonClass = isMobile
     ? `${buttonBaseClass} rounded-r-none`
-    : `${buttonBaseClass} rounded-l border-r-0`;
+    : `${buttonBaseClass} rounded-l rounded-r-none border-r-0`;
 
   const increaseButtonClass = isMobile
     ? `${buttonBaseClass} rounded-l-none`
-    : `${buttonBaseClass} rounded-r border-l-0`;
+    : `${buttonBaseClass} rounded-r rounded-l-none border-l-0`;
 
   // Container height
   const heightClass = isCompact ? 'h-6' : isMobile ? '' : 'h-8';

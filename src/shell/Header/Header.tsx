@@ -221,6 +221,7 @@ export function Header({ saveStatus }: HeaderProps) {
         <div className="flex items-center">
           <IconButton
             size="sm"
+            touchTarget={false}
             onClick={undo}
             disabled={!canUndo}
             title={t('header.undoAction', { mod: modKey })}
@@ -237,6 +238,7 @@ export function Header({ saveStatus }: HeaderProps) {
           </IconButton>
           <IconButton
             size="sm"
+            touchTarget={false}
             onClick={redo}
             disabled={!canRedo}
             title={t('header.redoAction', { mod: modKey })}

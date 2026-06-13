@@ -41,7 +41,7 @@ export function ContextMenuItem({
       disabled={disabled}
       className={cn(
         'justify-start gap-3 rounded-none px-4 py-3 font-normal',
-        destructive ? 'text-error' : 'text-content'
+        destructive ? 'text-error hover:text-error' : 'text-content'
       )}
     >
       <div className={cn('w-5 h-5', !destructive && 'text-content-tertiary')}>{icon}</div>
