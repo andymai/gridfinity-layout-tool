@@ -164,6 +164,7 @@ export function MobileCategoriesPanel() {
                       <IconButton
                         key={color}
                         size="lg"
+                        touchTarget={false}
                         onClick={() => handleUpdateColor(category.id, color)}
                         className="w-10 h-10 rounded-lg transition-transform active:scale-95"
                         style={{

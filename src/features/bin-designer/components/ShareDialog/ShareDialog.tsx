@@ -151,8 +151,9 @@ export function ShareDialog({ open, onClose }: ShareDialogProps) {
             {status === 'idle' && (
               <Button
                 fullWidth
+                variant="ghost"
                 onClick={handleShare}
-                className="flex w-full items-center justify-center gap-2 rounded-md bg-info px-4 py-2 text-sm font-medium text-white transition-colors hover:brightness-110 hover:bg-info"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-info px-4 py-2 text-sm font-medium text-white transition-colors hover:brightness-110 hover:bg-info hover:text-white"
                 leftIcon={
                   <svg
                     className="h-4 w-4"

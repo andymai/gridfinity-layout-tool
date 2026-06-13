@@ -127,7 +127,7 @@ export function Header({ saveStatus }: HeaderProps) {
             variant="ghost"
             size="sm"
             onClick={handleNameClick}
-            className={`hover:scale-[1.02] ${activePress} text-content-secondary truncate max-w-[200px]`}
+            className={`px-3 py-1.5 h-auto text-sm hover:scale-[1.02] ${activePress} text-content-secondary truncate max-w-[200px]`}
             title={t('header.editLayoutName')}
           >
             {layout.name}
@@ -141,7 +141,7 @@ export function Header({ saveStatus }: HeaderProps) {
           variant="ghost"
           size="sm"
           onClick={() => setPrintModalOpen(true)}
-          className={`gap-1.5 ${activePress} text-content-secondary`}
+          className={`px-2 py-1.5 h-auto text-sm gap-1.5 ${activePress} text-content-secondary`}
           title={t('header.printLayout')}
           aria-label={t('header.printLayout')}
           leftIcon={

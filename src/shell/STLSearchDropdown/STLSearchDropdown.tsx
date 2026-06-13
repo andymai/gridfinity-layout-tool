@@ -174,6 +174,7 @@ export function STLSearchDropdown({
         <IconButton
           ref={triggerRef}
           size="sm"
+          touchTarget={false}
           type="button"
           onClick={handleClick}
           className={`text-content-tertiary ${className}`}

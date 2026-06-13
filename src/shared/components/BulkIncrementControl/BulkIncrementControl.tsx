@@ -36,6 +36,8 @@ export function BulkIncrementControl({
       <IconButton
         variant="secondary"
         size={btnSize}
+        touchTarget={false}
+        className={isMobile ? undefined : 'h-10 w-10'}
         onClick={() => onStep(-1)}
         disabled={decreaseDisabled}
         aria-label={`Decrease ${ariaLabelPrefix}`}
@@ -48,6 +50,8 @@ export function BulkIncrementControl({
       <IconButton
         variant="secondary"
         size={btnSize}
+        touchTarget={false}
+        className={isMobile ? undefined : 'h-10 w-10'}
         onClick={() => onStep(1)}
         disabled={increaseDisabled}
         aria-label={`Increase ${ariaLabelPrefix}`}
