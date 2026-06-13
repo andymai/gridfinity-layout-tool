@@ -263,13 +263,13 @@ export function DesignActions({
             {/* Delete */}
             <div className="border-t border-stroke my-1" />
             <Button
-              variant="ghost"
+              variant={isConfirmingDelete ? 'danger' : 'ghost'}
               fullWidth
               role="menuitem"
               onClick={handleDelete}
               className={`
                 w-full px-3 py-2.5 justify-start text-left text-sm flex flex-col gap-0.5 transition-colors
-                ${isConfirmingDelete ? 'bg-danger text-on-dark hover:bg-danger' : 'text-danger hover:bg-surface hover:text-danger'}
+                ${isConfirmingDelete ? '' : 'text-danger hover:bg-surface hover:text-danger'}
               `}
             >
               <span className="flex items-center gap-2">

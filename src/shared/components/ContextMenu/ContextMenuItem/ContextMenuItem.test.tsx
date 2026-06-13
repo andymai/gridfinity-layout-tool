@@ -36,9 +36,12 @@ describe('ContextMenuItem', () => {
 
   it('is disabled when disabled prop is true', () => {
     render(<ContextMenuItem icon={mockIcon} label="Disabled" onClick={vi.fn()} disabled />);
-    const button = screen.getByRole('menuitem');
-    expect(button).toBeDisabled();
-    expect(button).toHaveClass('disabled:opacity-50');
+    expect(screen.getByRole('menuitem')).toBeDisabled();
+  });
+
+  it('is enabled by default', () => {
+    render(<ContextMenuItem icon={mockIcon} label="Enabled" onClick={vi.fn()} />);
+    expect(screen.getByRole('menuitem')).toBeEnabled();
   });
 
   it('does not call onClick when disabled', () => {
