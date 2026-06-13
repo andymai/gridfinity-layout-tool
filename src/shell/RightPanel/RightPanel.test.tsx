@@ -780,7 +780,7 @@ describe('RightPanel', () => {
       const { container } = render(<RightPanel />);
 
       // Shadow class is on the header wrapper (parent of the tab bar)
-      const headerWrapper = container.querySelector('[class*="flex flex-col border-b"]');
+      const headerWrapper = container.querySelector('[class*="flex flex-col"][class*="border-b"]');
       expect(headerWrapper).not.toHaveClass('shadow-elevated');
     });
 
@@ -794,7 +794,7 @@ describe('RightPanel', () => {
       }
 
       // Shadow class is on the header wrapper (parent of the tab bar)
-      const headerWrapper = container.querySelector('[class*="flex flex-col border-b"]');
+      const headerWrapper = container.querySelector('[class*="flex flex-col"][class*="border-b"]');
       expect(headerWrapper?.className).toContain('shadow');
     });
   });
