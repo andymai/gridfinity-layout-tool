@@ -14,6 +14,17 @@
 #
 # Import design system components:
 #   import { Button, Checkbox, Select, Input } from '@/design-system';
+#
+# Migration policy (clean swaps only): migrate raw buttons that map directly
+# to <Button>/<IconButton> while preserving exact appearance. Most remaining
+# entries are intentionally raw — bespoke controls that do NOT map cleanly:
+# segmented controls / connected toolbars / pills with an active bg-accent
+# state, role=radio|tab grids with roving tabindex, custom toggle switches,
+# sliders, color-swatch grids, and connected steppers. Forcing these into
+# Button/IconButton breaks a11y semantics (e.g. aria-pressed on a radio) or
+# needs many className overrides for no visual gain. Adopt the DS
+# SegmentedControl/primitive for those in a dedicated effort rather than a
+# button-by-button swap.
 
 src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
 src/features/baseplate/components/BaseplatePanel/EditableDimensions.tsx
@@ -81,12 +92,10 @@ src/shared/components/SegmentedControl/SegmentedControl.tsx
 src/shared/components/SliderInput/SliderInput.tsx
 src/shared/components/StickyGroupHeader/StickyGroupHeader.tsx
 src/shared/components/UserDock/UserDock.tsx
-src/shell/InitErrorFallback/InitErrorFallback.tsx
 src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
 src/shell/Mobile/MobileLayoutsPanel/MobileCloudSharePanel.tsx
 src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsListItem.tsx
 src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanelParts.tsx
 src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedModal.tsx
-src/shell/Modals/HelpModal/HelpSearchResultRow.tsx
 src/shell/Modals/SettingsModal/tabs/AppearanceTab/AppearanceTab.tsx
 src/shell/Modals/SettingsModal/tabs/StorageTab/StorageTab.tsx

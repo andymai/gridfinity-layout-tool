@@ -1,5 +1,7 @@
 /* eslint-disable i18next/no-literal-string -- Catastrophic fallback; i18n may not be available */
 
+import { Button } from '@/design-system';
+
 /** Shown when IndexedDB initialization fails and the app cannot load saved data. */
 export function InitErrorFallback({ error }: { error: Error }) {
   return (
@@ -29,9 +31,9 @@ export function InitErrorFallback({ error }: { error: Error }) {
         <pre className="text-left text-xs rounded-lg p-3 mb-4 overflow-auto max-h-24 text-error bg-surface-elevated border border-stroke-subtle">
           {error.message}
         </pre>
-        <button onClick={() => window.location.reload()} className="btn btn-primary">
+        <Button variant="primary" onClick={() => window.location.reload()}>
           Reload
-        </button>
+        </Button>
         <p className="text-xs text-content-tertiary mt-4">
           If reloading doesn&rsquo;t help, your browser&rsquo;s stored data for this site may be
           corrupted. You can clear it from your browser&rsquo;s site settings to recover. That
