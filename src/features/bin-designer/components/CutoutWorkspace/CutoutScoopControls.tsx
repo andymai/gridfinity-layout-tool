@@ -16,7 +16,7 @@ import type { Cutout, CutoutScoopEdges } from '@/features/bin-designer/types';
 import { DEFAULT_SCOOP_EDGES } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
-import { SliderInput } from '@/shared/components/SliderInput';
+import { SliderInput } from '@/design-system';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 
 interface CutoutScoopControlsProps {

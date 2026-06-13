@@ -8,7 +8,6 @@ import type { Cutout, CutoutArrayConfig, CutoutTextSide } from '@/features/bin-d
 import { TEXT_MAX_LENGTH } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
-import { SliderInput } from '@/shared/components/SliderInput';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 import { clampRotationToBounds } from '../panel/CutoutsSection/geometry';
 import { CutoutScoopControls } from './CutoutScoopControls';
@@ -24,7 +23,7 @@ import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
-import { Input } from '@/design-system';
+import { Input, SliderInput } from '@/design-system';
 
 const SIDE_OPTIONS: readonly CutoutTextSide[] = ['top', 'bottom', 'left', 'right'] as const;
 

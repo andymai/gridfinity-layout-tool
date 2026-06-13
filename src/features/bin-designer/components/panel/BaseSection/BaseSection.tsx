@@ -8,7 +8,7 @@
  */
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
-import { SliderInput } from '../../controls/SliderInput';
+import { SliderInput } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import { useTranslation } from '@/i18n';
 import { useBaseSection } from './useBaseSection';

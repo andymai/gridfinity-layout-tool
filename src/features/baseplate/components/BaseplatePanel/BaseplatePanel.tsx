@@ -27,7 +27,7 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
-import { SliderInput } from '@/shared/components/SliderInput';
+import { SliderInput } from '@/design-system';
 import { UserDock } from '@/shared/components/UserDock';
 import { AttributionFooter } from '@/shared/components/AttributionFooter';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';

@@ -1,3 +1,4 @@
+import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CutoutScoopControls } from './CutoutScoopControls';
@@ -25,7 +26,8 @@ vi.mock('@/shared/components/CompactNumberInput', () => ({
   ),
 }));
 
-vi.mock('@/shared/components/SliderInput', () => ({
+vi.mock('@/design-system', async () => ({
+  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
   SliderInput: ({
     label,
     value,

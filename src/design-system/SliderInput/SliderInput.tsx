@@ -7,9 +7,9 @@
  */
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { Slider } from '@/design-system/Slider';
-import { cn } from '@/design-system/cn';
-import { interactiveTransition } from '@/design-system/variants';
+import { Slider } from '../Slider';
+import { cn } from '../cn';
+import { interactiveTransition } from '../variants';
 
 interface SliderInputProps {
   /** Display label */

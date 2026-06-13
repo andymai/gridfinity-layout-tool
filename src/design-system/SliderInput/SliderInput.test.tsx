@@ -138,4 +138,13 @@ describe('SliderInput', () => {
 
     expect(onChange).toHaveBeenCalledWith(7.5);
   });
+
+  it('slider keyboard interaction calls onChange', () => {
+    const onChange = vi.fn();
+    render(<SliderInput {...defaultProps} value={5} step={1} onChange={onChange} />);
+
+    const slider = screen.getByRole('slider');
+    fireEvent.keyDown(slider, { key: 'ArrowRight' });
+    expect(onChange).toHaveBeenCalledWith(6);
+  });
 });

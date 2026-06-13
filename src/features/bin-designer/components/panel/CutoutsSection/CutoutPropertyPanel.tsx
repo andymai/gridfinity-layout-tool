@@ -6,9 +6,8 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import { Button } from '@/design-system';
+import { Button, SliderInput } from '@/design-system';
 import { useTranslation } from '@/i18n';
-import { SliderInput } from '../../controls/SliderInput';
 import { clampRotationToBounds, flipCutoutHorizontal, flipCutoutVertical } from './geometry';
 import { CutoutScoopControls } from '../../CutoutWorkspace/CutoutScoopControls';
 import { CutoutShapeControls } from './CutoutShapeControls';

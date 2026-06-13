@@ -1,3 +1,4 @@
+import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { InspectorContent } from './InspectorContent';
@@ -27,7 +28,8 @@ vi.mock('@/shared/components/CompactNumberInput', () => ({
   ),
 }));
 
-vi.mock('@/shared/components/SliderInput', () => ({
+vi.mock('@/design-system', async () => ({
+  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
   SliderInput: ({ label, value }: { label: string; value: number }) => (
     <input data-testid={`slider-input-${label}`} data-label={label} value={value} readOnly />
   ),

@@ -22,7 +22,7 @@ import { AlignmentToolbar } from './AlignmentToolbar';
 import { CutoutContextMenu } from './CutoutContextMenu';
 import type { ContextMenuAction } from './CutoutContextMenu';
 import { CutoutEmptyState } from './CutoutEmptyState';
-import { SliderInput } from '../../controls/SliderInput';
+import { SliderInput } from '@/design-system';
 
 /** Canvas width in CSS pixels (fits 288px sidebar) */
 const CANVAS_WIDTH = 248;

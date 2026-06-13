@@ -80,6 +80,9 @@ export type { ProgressBarProps } from './ProgressBar';
 export { Slider } from './Slider';
 export type { SliderProps } from './Slider';
 
+// SliderInput (label + slider + editable value badge)
+export { SliderInput } from './SliderInput';
+
 // IconButton
 export { IconButton } from './IconButton';
 export type { IconButtonProps } from './IconButton';

@@ -1,6 +1,6 @@
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
 import { useTranslation } from '@/i18n';
-import { SliderInput } from '@/shared/components/SliderInput';
+import { SliderInput } from '@/design-system';
 
 interface CornerRadii {
   readonly tl: number;

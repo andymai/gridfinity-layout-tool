@@ -1,3 +1,4 @@
+import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import type { Cutout } from '@/features/bin-designer/types';
@@ -7,7 +8,8 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
-vi.mock('../../controls/SliderInput', () => ({
+vi.mock('@/design-system', async () => ({
+  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
   SliderInput: ({
     label,
     value,
