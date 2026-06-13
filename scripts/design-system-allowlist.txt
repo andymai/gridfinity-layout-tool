@@ -21,8 +21,9 @@
 # segmented controls / connected toolbars / pills with an active bg-accent
 # state, role=radio|tab grids with roving tabindex, custom toggle switches,
 # sliders, color-swatch grids, and connected steppers. Forcing these into
-# Button/IconButton breaks a11y semantics (e.g. aria-pressed on a radio) or
-# needs many className overrides for no visual gain. Adopt the DS
+# Button/IconButton breaks a11y semantics (e.g. IconButton emits aria-pressed
+# where a role=radio needs aria-checked) or needs many className overrides for
+# no visual gain. Adopt the DS
 # SegmentedControl/primitive for those in a dedicated effort rather than a
 # button-by-button swap.
 

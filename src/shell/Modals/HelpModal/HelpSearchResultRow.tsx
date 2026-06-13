@@ -48,6 +48,7 @@ export function HelpSearchResultRow({
         <ShortcutKeyCaps entry={entry} modifierKey={modifierKey} />
       ) : entry.kind === 'feature' && showJumpButton ? (
         <Button
+          type="button"
           variant="secondary"
           className="shrink-0"
           onClick={() => {
