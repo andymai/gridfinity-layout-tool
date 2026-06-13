@@ -16,7 +16,7 @@ import { useDimensionsSection } from './useDimensionsSection';
 export function DimensionsSection() {
   const { state, handlers, t } = useDimensionsSection();
   const { isMobile } = useResponsive();
-  const stepperVariant = isMobile ? 'mobile' : 'desktop';
+  const checkboxVariant = isMobile ? 'mobile' : 'desktop';
   const stepperSize = isMobile ? 'lg' : 'md';
 
   return (
@@ -125,7 +125,7 @@ export function DimensionsSection() {
         >
           {t('binDesigner.halfBinMode')}
         </span>
-        <Checkbox checked={state.halfGridMode} variant={stepperVariant} />
+        <Checkbox checked={state.halfGridMode} variant={checkboxVariant} />
       </div>
     </div>
   );
