@@ -1,3 +1,4 @@
+import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { LayerPanel } from '@/features/layers/components/LayerPanel';
@@ -6,9 +7,10 @@ import { useSelectionStore } from '@/core/store/selection';
 import { resetAllStores } from '@/test/testUtils';
 import type { Layer } from '@/core/types';
 
-// Mock CollapsibleSection to simplify testing
-vi.mock('@/shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({
+// Mock Collapsible to simplify testing
+vi.mock('@/design-system', async () => ({
+  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
+  Collapsible: ({
     children,
     title,
     actions,

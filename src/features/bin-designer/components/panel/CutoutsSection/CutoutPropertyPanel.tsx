@@ -6,7 +6,7 @@
  */
 
 import type { Cutout } from '@/features/bin-designer/types';
-import { Button, SliderInput } from '@/design-system';
+import { Button, Collapsible, SliderInput } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { clampRotationToBounds, flipCutoutHorizontal, flipCutoutVertical } from './geometry';
 import { CutoutScoopControls } from '../../CutoutWorkspace/CutoutScoopControls';
@@ -17,7 +17,6 @@ import { hasFitControls, formatFitSummary, canArray } from './cutoutSectionVisib
 import { CutoutArrayControls } from './CutoutArrayControls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
 import type { FitCue } from './cutoutSectionVisibility';
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 
 interface CutoutPropertyPanelProps {
   readonly cutout: Cutout;
@@ -53,7 +52,7 @@ export function CutoutPropertyPanel({
       <div className="border-b border-stroke-subtle pb-2">
         <CutoutShapeBadge cutout={cutout} />
       </div>
-      <CollapsibleSection title={t('binDesigner.cutouts.section.transform')} variant="small">
+      <Collapsible title={t('binDesigner.cutouts.section.transform')} size="sm">
         <div className="space-y-1">
           <SliderInput
             label={t('binDesigner.cutouts.positionX')}
@@ -123,9 +122,9 @@ export function CutoutPropertyPanel({
             disabled={disabled}
           />
         </div>
-      </CollapsibleSection>
+      </Collapsible>
 
-      <CollapsibleSection title={t('binDesigner.cutouts.section.shape')} variant="small">
+      <Collapsible title={t('binDesigner.cutouts.section.shape')} size="sm">
         <div className="space-y-1">
           {cutout.shape === 'rectangle' && (
             <SliderInput
@@ -153,12 +152,12 @@ export function CutoutPropertyPanel({
             onUpdate={(patch) => onUpdate(cutout.id, patch)}
           />
         </div>
-      </CollapsibleSection>
+      </Collapsible>
 
       {hasFitControls(cutout) && (
-        <CollapsibleSection
+        <Collapsible
           title={t('binDesigner.cutouts.section.fit')}
-          variant="small"
+          size="sm"
           defaultExpanded={false}
           summary={formatFitSummary(cutout, {
             clearance: t('binDesigner.cutouts.clearance'),
@@ -172,13 +171,13 @@ export function CutoutPropertyPanel({
             onCueChange={onFitCue}
             disabled={disabled}
           />
-        </CollapsibleSection>
+        </Collapsible>
       )}
 
       {canArray(cutout) && (
-        <CollapsibleSection
+        <Collapsible
           title={t('binDesigner.cutouts.section.array')}
-          variant="small"
+          size="sm"
           defaultExpanded={false}
           summary={
             cutout.array
@@ -196,7 +195,7 @@ export function CutoutPropertyPanel({
             onFlatten={() => onFlattenArray?.(cutout.id)}
             disabled={disabled}
           />
-        </CollapsibleSection>
+        </Collapsible>
       )}
 
       <div className="space-y-2">

@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { Collapsible } from '@/design-system';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
@@ -26,7 +26,7 @@ export function PhysicalUnitsSection() {
   }, []);
 
   return (
-    <CollapsibleSection
+    <Collapsible
       title={t('binDesigner.physicalUnits')}
       expanded={expanded}
       onExpandedChange={setExpanded}
@@ -89,6 +89,6 @@ export function PhysicalUnitsSection() {
           />
         </SettingsRow>
       </div>
-    </CollapsibleSection>
+    </Collapsible>
   );
 }

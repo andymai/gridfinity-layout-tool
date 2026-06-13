@@ -1,3 +1,4 @@
+import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CategoriesPanel } from '@/features/categories/components/CategoriesPanel';
@@ -27,9 +28,10 @@ vi.mock('@/shared/components/ConfirmDialog', () => ({
     ) : null,
 }));
 
-// Mock CollapsibleSection to show content directly
-vi.mock('@/shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({
+// Mock Collapsible to show content directly
+vi.mock('@/design-system', async () => ({
+  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
+  Collapsible: ({
     children,
     title,
     actions,

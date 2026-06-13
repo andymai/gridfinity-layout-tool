@@ -3,7 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useViewStore } from '@/core/store/view';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
 import { CONSTRAINTS } from '@/core/constants';
-import { Button, Checkbox, IconButton, Stepper } from '@/design-system';
+import { Button, Checkbox, Collapsible, IconButton, Stepper } from '@/design-system';
 import { RulerIcon } from '@/design-system/Icon';
 import type { SettingsTabId } from '@/shell/Modals/SettingsModal/types';
 import { ActiveLayerPanel } from '@/features/layers/components/ActiveLayerPanel';
@@ -12,7 +12,6 @@ import { CategoriesPanel } from '@/features/categories/components/CategoriesPane
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { HalfGridModeBlockedModal } from '@/shell/Modals';
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { LoadingFallback } from '@/shared/components/LoadingFallback';
 import { useResponsive } from '@/shared/hooks';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
@@ -308,9 +307,9 @@ export function Sidebar() {
 
             {/* Grid Size */}
             <div data-grid-size-panel className="mt-auto">
-              <CollapsibleSection
+              <Collapsible
                 title={t('sidebar.gridSize')}
-                variant="default"
+                size="md"
                 expanded={gridSizeExpanded}
                 onExpandedChange={setGridSizeExpanded}
               >
@@ -445,14 +444,14 @@ export function Sidebar() {
                     </div>
                   )}
                 </div>
-              </CollapsibleSection>
+              </Collapsible>
             </div>
 
             {/* Physical Units */}
             <div data-units-panel className="border-t border-stroke-subtle">
-              <CollapsibleSection
+              <Collapsible
                 title={t('sidebar.physicalUnits')}
-                variant="default"
+                size="md"
                 expanded={physicalUnitsExpanded}
                 onExpandedChange={setPhysicalUnitsExpanded}
               >
@@ -531,7 +530,7 @@ export function Sidebar() {
                     {t('settings.resetGridfinityStandard')}
                   </Button>
                 </div>
-              </CollapsibleSection>
+              </Collapsible>
             </div>
 
             {/* Learn — internal links to content pages. Real <a href> so Google passes

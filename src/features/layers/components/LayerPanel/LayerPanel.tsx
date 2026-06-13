@@ -7,8 +7,7 @@ import { CONSTRAINTS } from '@/core/constants';
 import { getGridBins, getLayerBins } from '@/shared/utils';
 import { getDisplayLayers } from '@/shared/utils/collision';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
-import { IconButton, PlusIcon } from '@/design-system';
+import { Collapsible, IconButton, PlusIcon } from '@/design-system';
 import { isOk, isErr } from '@/core/result';
 import { useToastStore } from '@/core/store';
 import { useResultToast } from '@/shared/hooks';
@@ -197,7 +196,7 @@ export function LayerPanel() {
 
   return (
     <div>
-      <CollapsibleSection title={t('common.layers')} variant="default" actions={addLayerButton}>
+      <Collapsible title={t('common.layers')} size="md" actions={addLayerButton}>
         <div className="mb-3">
           <HeightCrossSectionDiagram
             layers={displayLayers}
@@ -260,7 +259,7 @@ export function LayerPanel() {
             </svg>
           )}
         </div>
-      </CollapsibleSection>
+      </Collapsible>
 
       <ConfirmDialog
         isOpen={deleteLayerId !== null}

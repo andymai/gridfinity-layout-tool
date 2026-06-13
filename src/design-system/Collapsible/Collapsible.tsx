@@ -237,6 +237,9 @@ export const Collapsible = forwardRef<HTMLDivElement, CollapsibleProps>(
           role="region"
           aria-labelledby={triggerId}
           aria-hidden={!expanded}
+          // Keep collapsed content out of the tab order and AT reach, not just
+          // visually hidden — otherwise hidden controls stay focusable.
+          inert={!expanded ? true : undefined}
           className={cn(
             'overflow-hidden',
             hasToggled && 'transition-all duration-200',

@@ -1,3 +1,4 @@
+import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Sidebar } from '@/shell/Sidebar';
@@ -20,8 +21,9 @@ vi.mock('@/features/categories/components/CategoriesPanel', () => ({
   CategoriesPanel: () => <div data-testid="categories-panel">CategoriesPanel</div>,
 }));
 
-vi.mock('@/shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({ children, title }: { children: React.ReactNode; title: string }) => (
+vi.mock('@/design-system', async () => ({
+  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
+  Collapsible: ({ children, title }: { children: React.ReactNode; title: string }) => (
     <div data-testid={`collapsible-${title.toLowerCase().replace(/\s+/g, '-')}`}>
       <div>{title}</div>
       <div>{children}</div>

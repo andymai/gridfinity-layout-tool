@@ -6,8 +6,8 @@ import { DEFAULT_CATEGORY_COLOR } from '@/core/constants';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { exportPrintListTSV } from '@/core/storage';
 import { trackEvent } from '@/shared/analytics/posthog';
-import { Button, IconButton } from '@/design-system';
-import { ConfirmDialog, CollapsibleSection } from '@/shared/components';
+import { Button, Collapsible, IconButton } from '@/design-system';
+import { ConfirmDialog } from '@/shared/components';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { useTranslation } from '@/i18n';
@@ -194,7 +194,7 @@ export function RightPanel() {
           <div id="tabpanel-inspector" role="tabpanel" aria-labelledby="tab-inspector">
             {/* Selection Panel - Collapsible */}
             <div className="px-4 py-3 border-b border-stroke-subtle">
-              <CollapsibleSection
+              <Collapsible
                 title={
                   isMultiSelect
                     ? t('rightPanel.multiSelection')
@@ -202,7 +202,7 @@ export function RightPanel() {
                       ? t('rightPanel.binProperties')
                       : t('rightPanel.selection')
                 }
-                variant="default"
+                size="md"
               >
                 {isMultiSelect ? (
                   <MultiBinInspector
@@ -219,7 +219,7 @@ export function RightPanel() {
                 ) : (
                   <EmptyState variant="desktop" />
                 )}
-              </CollapsibleSection>
+              </Collapsible>
             </div>
 
             {/* Print List - Collapsible */}

@@ -7,7 +7,6 @@ import { useMutations } from '@/shared/contexts';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, CATEGORY_COLOR_PALETTE } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useToastStore } from '@/core/store/toast';
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
 import { isOk, isErr } from '@/core/result';
 import { useResultToast } from '@/shared/hooks';
 import { mlTracking } from '@/shared/analytics/useMLTracking';
@@ -15,7 +14,7 @@ import { useTranslation } from '@/i18n';
 import { categoryId as toCategoryId } from '@/core/types';
 import type { CategoryId } from '@/core/types';
 import { batch } from '@/core/cqrs';
-import { Button, IconButton, PlusIcon, XIcon } from '@/design-system';
+import { Button, Collapsible, IconButton, PlusIcon, XIcon } from '@/design-system';
 
 interface ColorPaletteGridProps {
   selectedColor: string;
@@ -276,7 +275,7 @@ export function CategoriesPanel() {
 
   return (
     <div>
-      <CollapsibleSection title={t('common.categories')} variant="default" actions={actionButtons}>
+      <Collapsible title={t('common.categories')} size="md" actions={actionButtons}>
         <div className="space-y-1">
           {categories.map((category) => {
             const isActive = category.id === activeCategoryId;
@@ -481,7 +480,7 @@ export function CategoriesPanel() {
             );
           })}
         </div>
-      </CollapsibleSection>
+      </Collapsible>
 
       <ConfirmDialog
         isOpen={deleteConfirm !== null}

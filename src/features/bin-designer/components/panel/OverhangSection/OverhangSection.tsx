@@ -8,8 +8,7 @@
  * bins.
  */
 
-import { Checkbox, SliderInput } from '@/design-system';
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
+import { Checkbox, Collapsible, SliderInput } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { FeatureGate } from '../FeatureGate';
 import { useOverhangSection, type OverhangSide } from './useOverhangSection';
@@ -25,9 +24,9 @@ export function OverhangSection() {
   ];
 
   return (
-    <CollapsibleSection
+    <Collapsible
       title={t('binDesigner.overhang.title')}
-      variant="small"
+      size="sm"
       defaultExpanded={false}
       summary={meta.summary}
     >
@@ -89,6 +88,6 @@ export function OverhangSection() {
           </p>
         </div>
       </FeatureGate>
-    </CollapsibleSection>
+    </Collapsible>
   );
 }

@@ -22,8 +22,7 @@ import {
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
-import { CollapsibleSection } from '@/shared/components/CollapsibleSection';
-import { Input, SliderInput } from '@/design-system';
+import { Collapsible, Input, SliderInput } from '@/design-system';
 
 const SIDE_OPTIONS: readonly CutoutTextSide[] = ['top', 'bottom', 'left', 'right'] as const;
 
@@ -78,7 +77,7 @@ export function SingleCutoutInspector({
         <CutoutShapeBadge cutout={cutout} />
       </div>
       <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
-        <CollapsibleSection title={t('binDesigner.cutouts.section.transform')} variant="small">
+        <Collapsible title={t('binDesigner.cutouts.section.transform')} size="sm">
           <div className="grid grid-cols-2 gap-1">
             <CompactNumberInput
               label="X"
@@ -144,11 +143,11 @@ export function SingleCutoutInspector({
               disabled={disabled}
             />
           </div>
-        </CollapsibleSection>
+        </Collapsible>
       </div>
 
       <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
-        <CollapsibleSection title={t('binDesigner.cutouts.section.shape')} variant="small">
+        <Collapsible title={t('binDesigner.cutouts.section.shape')} size="sm">
           <div className="space-y-1.5">
             {cutout.shape === 'rectangle' && (
               <SliderInput
@@ -177,14 +176,14 @@ export function SingleCutoutInspector({
               onUpdate={(patch) => onUpdate(cutout.id, patch)}
             />
           </div>
-        </CollapsibleSection>
+        </Collapsible>
       </div>
 
       {hasFitControls(cutout) && (
         <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
-          <CollapsibleSection
+          <Collapsible
             title={t('binDesigner.cutouts.section.fit')}
-            variant="small"
+            size="sm"
             summary={formatFitSummary(cutout, {
               clearance: t('binDesigner.cutouts.clearance'),
               chamfer: t('binDesigner.cutouts.chamfer'),
@@ -197,15 +196,15 @@ export function SingleCutoutInspector({
               onCueChange={onFitCue}
               disabled={disabled}
             />
-          </CollapsibleSection>
+          </Collapsible>
         </div>
       )}
 
       {canArray(cutout) && (
         <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
-          <CollapsibleSection
+          <Collapsible
             title={t('binDesigner.cutouts.section.array')}
-            variant="small"
+            size="sm"
             summary={
               cutout.array ? formatArraySummary(cutout.array) : t('binDesigner.cutouts.array.off')
             }
@@ -218,19 +217,19 @@ export function SingleCutoutInspector({
               onFlatten={() => onFlattenArray?.(cutout.id)}
               disabled={disabled}
             />
-          </CollapsibleSection>
+          </Collapsible>
         </div>
       )}
 
       <div className="-mx-4 border-b border-stroke-subtle px-4 pt-2 pb-3">
-        <CollapsibleSection title={t('binDesigner.cutouts.section.label')} variant="small">
+        <Collapsible title={t('binDesigner.cutouts.section.label')} size="sm">
           <CutoutEngraveLabelControls
             key={`${cutout.id}-text`}
             cutout={cutout}
             disabled={disabled}
             onUpdate={(patch) => onUpdate(cutout.id, patch)}
           />
-        </CollapsibleSection>
+        </Collapsible>
       </div>
     </>
   );

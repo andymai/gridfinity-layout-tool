@@ -1,3 +1,4 @@
+import type * as DesignSystem from '@/design-system';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RightPanel } from '@/shell/RightPanel';
@@ -49,9 +50,10 @@ vi.mock('@/features/print-export/components', () => ({
   PrintListEmpty: () => <div data-testid="print-list-empty">No bins to print</div>,
 }));
 
-// Mock CollapsibleSection
-vi.mock('@/shared/components/CollapsibleSection', () => ({
-  CollapsibleSection: ({ title, children }: { title: string; children: React.ReactNode }) => (
+// Mock Collapsible
+vi.mock('@/design-system', async () => ({
+  ...(await vi.importActual<typeof DesignSystem>('@/design-system')),
+  Collapsible: ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div data-testid="collapsible-section">
       <div data-testid="collapsible-title">{title}</div>
       {children}
