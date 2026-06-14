@@ -213,43 +213,56 @@ export default defineConfig({
           // Default Vite chunk naming
           return 'assets/[name]-[hash].js';
         },
-        // Use function-based manualChunks for more reliable splitting
-        manualChunks(id) {
-          // Pin foundational constants/types into a dedicated leaf chunk that
-          // imports nothing from other app chunks. Many modules read these at
-          // module-init time (Zod schemas, store creators, etc); keeping them
-          // in a leaf chunk guarantees they are fully evaluated before any
-          // dependent chunk runs, eliminating chunk-level static-import cycles
-          // that would otherwise leave imported bindings undefined. See #1466.
-          if (
-            id.endsWith('/src/core/constants.ts') ||
-            id.endsWith('/src/core/types.ts') ||
-            id.includes('packages/branded-types/src/')
-          ) {
-            return 'core-foundation';
-          }
-          // Three.js ecosystem - only loaded when 3D preview is used
-          if (id.includes('node_modules/three/')) {
-            return 'three';
-          }
-          if (id.includes('node_modules/@react-three/')) {
-            return 'react-three';
-          }
-          // Liveblocks - only loaded when collaborative editing is used (Labs feature)
-          if (id.includes('node_modules/@liveblocks/')) {
-            return 'liveblocks';
-          }
-          // State management
-          if (id.includes('node_modules/zustand/') || id.includes('node_modules/immer/')) {
-            return 'state';
-          }
-          // Core React runtime - split out for better caching
-          if (id.includes('node_modules/react-dom/') || id.includes('node_modules/react/')) {
-            return 'react-vendor';
-          }
-          // Note: posthog-js is dynamically imported in src/shared/analytics/posthog.ts
-          // so it automatically gets its own chunk without needing manualChunks config
+        // Rolldown's native chunking API. The Rollup-compat `manualChunks`
+        // function only hints at names — Rolldown still co-located the shared
+        // eager react-dom with the lazy three.js/drei stack, forcing the whole
+        // ~360 kB 3D chunk onto first paint. `advancedChunks` groups are honored
+        // deterministically: react-vendor (eager) is split from the 3D rendering
+        // libs (lazy), and three core is its own lazy chunk. Higher priority wins.
+        advancedChunks: {
+          groups: [
+            // Pin foundational constants/types into a leaf chunk that imports
+            // nothing from other app chunks. Many modules read these at module-init
+            // time (Zod schemas, store creators), so a leaf chunk guarantees they
+            // evaluate before dependents — avoiding chunk-level static-import cycles
+            // that leave imported bindings undefined. See #1466.
+            {
+              name: 'core-foundation',
+              priority: 100,
+              test: (id: string) =>
+                id.endsWith('/src/core/constants.ts') ||
+                id.endsWith('/src/core/types.ts') ||
+                id.includes('packages/branded-types/src/'),
+            },
+            // Core React runtime — eager, shared by every UI chunk. HIGHEST vendor
+            // priority so the shared react-dom is pinned here and NOT absorbed into
+            // the lazy 3D chunk (which would force the whole 3D stack onto first
+            // paint, since every UI chunk needs react-dom).
+            {
+              name: 'react-vendor',
+              priority: 95,
+              test: /[\\/]node_modules[\\/](?:react|react-dom|scheduler|use-sync-external-store|react-reconciler)[\\/]/,
+            },
+            // State management — eager. Priority ABOVE three-render because drei
+            // also depends on zustand; without this, the shared zustand module gets
+            // placed in the 3D chunk and the eager app stores then import it from
+            // there, dragging three-render onto first paint.
+            { name: 'state', priority: 92, test: /[\\/]node_modules[\\/](?:zustand|immer)[\\/]/ },
+            // 3D stack (three core + fiber/drei/troika/three-stdlib) — only loaded
+            // when a 3D preview mounts. three core and the renderers are always
+            // loaded together, so keeping them in ONE chunk avoids duplicating
+            // three's modules across two lazy chunks.
+            {
+              name: 'three-render',
+              priority: 90,
+              test: /[\\/]node_modules[\\/](?:three[\\/]|@react-three[\\/]|three-stdlib[\\/]|troika-[^\\/]+[\\/]|bidi-js[\\/]|webgl-sdf-generator[\\/]|maath[\\/]|meshline[\\/]|camera-controls[\\/]|stats\.js[\\/]|stats-gl[\\/]|suspend-react[\\/]|its-fine[\\/]|react-use-measure[\\/]|tunnel-rat[\\/]|@use-gesture[\\/]|potpack[\\/])/,
+            },
+            // Liveblocks — only loaded when collaborative editing is active (Labs).
+            { name: 'liveblocks', priority: 80, test: /[\\/]node_modules[\\/]@liveblocks[\\/]/ },
+          ],
         },
+        // Note: posthog-js is dynamically imported in src/shared/analytics/posthog.ts
+        // so it automatically gets its own chunk without needing chunk config.
       },
     },
   },

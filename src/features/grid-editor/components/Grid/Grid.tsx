@@ -29,7 +29,6 @@ import { RowLabels, ColumnLabels } from './GridAxisLabels';
 import { DrawerResizeHandles } from './DrawerResizeHandles';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { PanelErrorBoundary } from '@/shell/PanelErrorBoundary';
-import { CollabCursors, CollabGhosts, CollabSelectionRings } from '@/shell/Collab';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { useCollabPresence } from '@/shared/hooks/useCollabPresence';
 import { useTranslation } from '@/i18n';
@@ -42,6 +41,18 @@ const IsometricPreview = lazyWithRetry(() =>
 // Lazy load mobile toolbar (only used on mobile)
 const MobileGridToolbar = lazyWithRetry(() =>
   import('@/shell/Mobile').then(namedExport('MobileGridToolbar'))
+);
+
+// Collab overlays pull the Liveblocks client; collaboration is opt-in, so load
+// them only when a session is active instead of in the eager Grid bundle.
+const CollabCursors = lazyWithRetry(() =>
+  import('@/shell/Collab/CollabCursors').then(namedExport('CollabCursors'))
+);
+const CollabGhosts = lazyWithRetry(() =>
+  import('@/shell/Collab/CollabGhosts').then(namedExport('CollabGhosts'))
+);
+const CollabSelectionRings = lazyWithRetry(() =>
+  import('@/shell/Collab/CollabSelectionRings').then(namedExport('CollabSelectionRings'))
 );
 
 /**
@@ -370,12 +381,15 @@ export function Grid({ shouldShowDrawTutorial = false }: GridProps) {
                     onStartResize={startResize}
                   />
                   <Overlay cellSize={cellSize} gap={gap} />
-                  {/* Collaborative selection rings - shows bins selected by other users */}
-                  {isCollaborative && <CollabSelectionRings />}
-                  {/* Collaborative ghosts overlay - shows other users' operations */}
-                  {isCollaborative && <CollabGhosts />}
-                  {/* Collaborative cursors overlay - shows other users' cursors */}
-                  {isCollaborative && <CollabCursors />}
+                  {/* Collaborative overlays — selection rings, operation ghosts, and
+                      remote cursors. Lazy-loaded with the Liveblocks client. */}
+                  {isCollaborative && (
+                    <Suspense fallback={null}>
+                      <CollabSelectionRings />
+                      <CollabGhosts />
+                      <CollabCursors />
+                    </Suspense>
+                  )}
 
                   {/* Empty state overlay */}
                   {isEmpty &&

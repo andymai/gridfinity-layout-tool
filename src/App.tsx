@@ -107,7 +107,7 @@ const CollabProvider = lazyWithRetry(() =>
   import('@/shell/Collab/CollabProvider').then(namedExport('CollabProvider'))
 );
 const BinExampleGallery = lazyWithRetry(() =>
-  import('@/features/bin-designer').then(namedExport('ExampleGallery'))
+  import('@/features/bin-designer/components/ExampleGallery').then(namedExport('ExampleGallery'))
 );
 
 let hasRenderedInitialLayout = false;

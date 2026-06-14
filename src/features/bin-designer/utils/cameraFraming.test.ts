@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { Vector3 } from 'three';
 import {
   ISOMETRIC_DIRECTION,
   FRAME_FILL,
@@ -9,9 +8,9 @@ import { GRIDFINITY } from '@/features/bin-designer/constants/gridfinity';
 
 describe('cameraFraming', () => {
   describe('ISOMETRIC_DIRECTION', () => {
-    it('is a normalized Vector3 with length approximately 1', () => {
-      expect(ISOMETRIC_DIRECTION).toBeInstanceOf(Vector3);
-      const length = ISOMETRIC_DIRECTION.length();
+    it('is a normalized direction with length approximately 1', () => {
+      const { x, y, z } = ISOMETRIC_DIRECTION;
+      const length = Math.hypot(x, y, z);
       expect(length).toBeCloseTo(1, 10);
     });
 

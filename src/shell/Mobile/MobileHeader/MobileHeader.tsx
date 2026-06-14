@@ -1,16 +1,21 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { useLayoutStore } from '@/core/store/layout';
 import { useMobileStore } from '@/core/store';
 import { useHistoryStore } from '@/core/cqrs/undo/historyStore';
 import { useMutations } from '@/shared/contexts';
 import { useCollabMode } from '@/shared/hooks/useCollabMode';
 import { CONSTRAINTS } from '@/core/constants';
-import { PresenceAvatars } from '@/shell/Collab';
+import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
 import type { SaveStatus } from '@/shared/hooks';
 import { Button, IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
+
+// Lazy: presence avatars pull the Liveblocks client; collab is opt-in.
+const PresenceAvatars = lazyWithRetry(() =>
+  import('@/shell/Collab/PresenceAvatars').then(namedExport('PresenceAvatars'))
+);
 
 interface MobileHeaderProps {
   onMenuClick: () => void;
@@ -151,7 +156,11 @@ export function MobileHeader({ onMenuClick, saveStatus }: MobileHeaderProps) {
         {/* Right: Save status + Undo/Redo + Settings */}
         <div className="flex items-center gap-1 flex-shrink-0">
           {/* Presence indicator (only when actually in collaborative mode, inside RoomProvider) */}
-          {isCollaborative && <PresenceAvatars />}
+          {isCollaborative && (
+            <Suspense fallback={null}>
+              <PresenceAvatars />
+            </Suspense>
+          )}
 
           {/* Save status indicator (icon only on mobile) */}
           {saveStatus !== 'idle' && (

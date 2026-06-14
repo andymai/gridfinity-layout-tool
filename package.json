@@ -72,10 +72,20 @@
       "limit": "190 kB"
     },
     {
+      "name": "Eager initial JS (gzip)",
+      "path": [
+        "dist/assets/main-*.js",
+        "dist/assets/react-vendor-*.js",
+        "dist/assets/state-*.js"
+      ],
+      "gzip": true,
+      "limit": "260 kB"
+    },
+    {
       "name": "Total JS (gzip)",
       "path": "dist/assets/*.js",
       "gzip": true,
-      "limit": "1800 kB"
+      "limit": "1900 kB"
     }
   ],
   "dependencies": {

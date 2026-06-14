@@ -20,7 +20,6 @@ import {
   MobileLayoutsPanel,
   BinContextMenuWrapper,
 } from '@/shell/Mobile';
-import { PresenceAvatarList } from '@/shell/Collab';
 
 // Lazy load design-linking dialogs
 const DesignLinkingDialogs = lazyWithRetry(() =>
@@ -28,10 +27,11 @@ const DesignLinkingDialogs = lazyWithRetry(() =>
     namedExport('DesignLinkingDialogs')
   )
 );
-import { usePresence } from '@/shared/hooks/usePresence';
-import { useCollabMode } from '@/shared/hooks/useCollabMode';
+// Participants panel pulls the Liveblocks client (usePresence); collab is opt-in.
+const ParticipantsPanel = lazyWithRetry(() =>
+  import('@/shell/Collab/ParticipantsPanel').then(namedExport('ParticipantsPanel'))
+);
 import type { SaveStatus } from '@/shared/hooks';
-import { useTranslation } from '@/i18n';
 import { useOnboarding } from '@/features/onboarding';
 
 // Lazy load mobile help modal (with retry for chunk load failures)
@@ -112,28 +112,6 @@ export function MobileLayout({
 }
 
 /**
- * Participants panel content that safely calls usePresence().
- * Only mounted when in collaborative mode (inside RoomProvider).
- */
-function ParticipantsPanel() {
-  const t = useTranslation();
-  const { isCollaborative } = useCollabMode();
-  const { participants } = usePresence();
-
-  // Safety check - should not reach here if not collaborative,
-  // but guard just in case
-  if (!isCollaborative) {
-    return (
-      <div className="px-4 py-8 text-center text-content-secondary text-sm">
-        {t('layout.collaborativeEditingIsNotActive')}
-      </div>
-    );
-  }
-
-  return <PresenceAvatarList participants={participants} className="px-2" />;
-}
-
-/**
  * Mobile panel content based on active panel type.
  */
 function MobilePanelContent({ panel }: { panel: string }) {
@@ -152,7 +130,11 @@ function MobilePanelContent({ panel }: { panel: string }) {
       case 'layouts':
         return <MobileLayoutsPanel />;
       case 'participants':
-        return <ParticipantsPanel />;
+        return (
+          <Suspense fallback={null}>
+            <ParticipantsPanel />
+          </Suspense>
+        );
       default:
         return null;
     }

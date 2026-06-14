@@ -16,7 +16,11 @@ export { useGridTemplate } from './useGridTemplate';
 export type { GridTemplateState, UseGridTemplateOptions } from './useGridTemplate';
 export { useDrawerSettings } from './useDrawerSettings';
 export type { UseDrawerSettingsReturn } from './useDrawerSettings';
-export { useBinGeometry, createBinGeometry } from './useBinGeometry';
+// useBinGeometry / createBinGeometry import the full `three` namespace and are
+// only used inside the lazy IsometricPreview 3D subtree (via deep imports). Not
+// re-exported here: this barrel is eagerly imported (layout-library → App), so a
+// re-export would pull three core onto first paint. Deep-import them at the 3D
+// call sites instead.
 export { useLayoutSwitcher } from './useLayoutSwitcher';
 export { useSelectionActions } from './useSelectionActions';
 export { useAlignBins } from './useAlignBins';
@@ -47,5 +51,7 @@ export { useCollabMode, getCollabMode } from './useCollabMode';
 export type { CollabModeState } from './useCollabMode';
 export { useCollabPresence } from './useCollabPresence';
 export type { CollabPresenceActions } from './useCollabPresence';
-export { useCollabSync } from './useCollabSync';
-export { useCollabLayout, useCollabLayoutSelector } from './useCollabLayout';
+// useCollabSync / useCollabLayout import the Liveblocks client (@/liveblocks.config)
+// at module load. This barrel is statically imported by eager code (layout-library
+// → App), so re-exporting them pulled the ~63 kB Liveblocks chunk onto first paint.
+// They're only used inside the lazy CollabProvider subtree — deep-import them there.

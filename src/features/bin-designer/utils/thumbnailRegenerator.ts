@@ -9,7 +9,7 @@
  * if one is active) and releases it when done.
  */
 
-import * as THREE from 'three';
+import type { WebGLRenderer, BufferGeometry, MeshStandardMaterial } from 'three';
 import { bridgeManager } from '@/shared/generation/bridge';
 import type { BinParams } from '@/features/bin-designer/types';
 import { LID_FIT_CLEARANCE } from '@/features/bin-designer/types';
@@ -48,7 +48,10 @@ export async function regenerateThumbnail(
   options: RegenerateOptions = {}
 ): Promise<string | null> {
   const { signal, color = DEFAULT_COLOR } = options;
-  let renderer: THREE.WebGLRenderer | null = null;
+  // three is loaded on demand: this offscreen renderer only runs during background
+  // thumbnail regeneration (idle time), so three core stays out of the eager bundle.
+  const THREE = await import('three');
+  let renderer: WebGLRenderer | null = null;
   // Track whether `acquire()` actually returned before incrementing the
   // bridge's ref-count obligation on our side. BridgeManager.acquire()
   // decrements its own refCount on init failure, so a blanket `release()`
@@ -83,7 +86,7 @@ export async function regenerateThumbnail(
     }
 
     // Build edge geometry from pre-computed BREP edges (from worker)
-    let edgesGeometry: THREE.BufferGeometry | null = null;
+    let edgesGeometry: BufferGeometry | null = null;
     if (edgeVertices.length > 0) {
       edgesGeometry = new THREE.BufferGeometry();
       edgesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
@@ -91,8 +94,8 @@ export async function regenerateThumbnail(
 
     // Lid mesh + edges (rendered at closed position when params.lid.enabled
     // and the worker produced a lid). Matches LidMesh.tsx's mated formula.
-    let lidGeometry: THREE.BufferGeometry | null = null;
-    let lidEdgesGeometry: THREE.BufferGeometry | null = null;
+    let lidGeometry: BufferGeometry | null = null;
+    let lidEdgesGeometry: BufferGeometry | null = null;
     const lidGroupZ =
       lidMesh && params.lid.enabled && params.base.stackingLip
         ? binLipTopWorldZ(params.height, params.heightUnitMm, params.base.stackingLip) -
@@ -176,7 +179,7 @@ export async function regenerateThumbnail(
     // Lid mesh rendered at its closed/mated position (lidOffsetMm = 0). Opaque
     // here — there's no exploded-view affordance in a thumbnail, so the lid
     // simply hides the cavity it sits over.
-    let lidMaterial: THREE.MeshStandardMaterial | null = null;
+    let lidMaterial: MeshStandardMaterial | null = null;
     if (lidGeometry && lidGroupZ !== null) {
       lidMaterial = new THREE.MeshStandardMaterial({
         color,
@@ -218,7 +221,13 @@ export async function regenerateThumbnail(
       heightUnitMm
     );
 
-    const cameraPos = ISOMETRIC_DIRECTION.clone().multiplyScalar(idealDistance).add(binCenter);
+    const cameraPos = new THREE.Vector3(
+      ISOMETRIC_DIRECTION.x,
+      ISOMETRIC_DIRECTION.y,
+      ISOMETRIC_DIRECTION.z
+    )
+      .multiplyScalar(idealDistance)
+      .add(binCenter);
     camera.position.copy(cameraPos);
     camera.lookAt(binCenter);
     camera.updateProjectionMatrix();

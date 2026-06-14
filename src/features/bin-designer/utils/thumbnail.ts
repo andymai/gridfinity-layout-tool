@@ -423,7 +423,13 @@ export function captureThumbnailAtPreset(
     const savedQuaternion = previewCamera.quaternion.clone();
 
     // Move to isometric preset
-    const targetPosition = ISOMETRIC_DIRECTION.clone().multiplyScalar(idealDistance).add(binCenter);
+    const targetPosition = new Vector3(
+      ISOMETRIC_DIRECTION.x,
+      ISOMETRIC_DIRECTION.y,
+      ISOMETRIC_DIRECTION.z
+    )
+      .multiplyScalar(idealDistance)
+      .add(binCenter);
     previewCamera.position.copy(targetPosition);
     previewCamera.up.set(0, 0, 1);
     previewCamera.lookAt(binCenter);

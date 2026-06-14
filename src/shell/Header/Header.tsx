@@ -13,7 +13,6 @@ import { ShareButton } from '@/features/cloud-share/components/ShareButton';
 import { ShareModal } from '@/features/cloud-share/components/ShareModal';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { LayoutQuickSwitch } from '@/features/layout-library';
-import { PresenceAvatars } from '../Collab';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
@@ -29,6 +28,12 @@ const LayoutManagerModal = lazyWithRetry(() =>
 );
 const PrintModal = lazyWithRetry(() =>
   import('@/features/print-export/components/PrintModal').then(namedExport('PrintModal'))
+);
+// Presence avatars pull the Liveblocks client. Collaboration is opt-in (off by
+// default), so keep it out of the eager Header bundle — load only when a collab
+// session is actually active.
+const PresenceAvatars = lazyWithRetry(() =>
+  import('../Collab/PresenceAvatars').then(namedExport('PresenceAvatars'))
 );
 
 interface HeaderProps {
@@ -259,7 +264,11 @@ export function Header({ saveStatus }: HeaderProps) {
         {isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
         <ShareButton />
         {/* Only render PresenceAvatars when actually in collab mode (inside RoomProvider) */}
-        {isCollabEnabled && isCollaborative && <PresenceAvatars className="ml-2" />}
+        {isCollabEnabled && isCollaborative && (
+          <Suspense fallback={null}>
+            <PresenceAvatars className="ml-2" />
+          </Suspense>
+        )}
         {isCollabEnabled && <div className="w-px h-6 bg-stroke-subtle mx-2" />}
 
         {/* Divider before external links (only when collab is disabled) */}
