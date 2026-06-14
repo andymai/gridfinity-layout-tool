@@ -64,6 +64,14 @@ export function generatePrintGuide(input: PrintGuideInput): string {
   return sections.join('\n\n');
 }
 
+/**
+ * Standalone stack-print note for single-piece exports that have no split
+ * piece table (e.g. one plate stacked into several capped-height towers).
+ */
+export function generateStackPrintNote(stack: StackPrintParams): string {
+  return `${generateStackingSection(stack)}\n\n${generateFooter()}`;
+}
+
 function generateStackingSection(stack: StackPrintParams): string {
   const interfaceLine =
     stack.mode === 'sacrificialSheet'

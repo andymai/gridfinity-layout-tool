@@ -61,6 +61,11 @@ export function StackPrintSection({
   const sets = stackPrint?.sets ?? STACK_PRINT_DEFAULT_SETS;
   const gapMm: Mm = stackPrint?.gapMm ?? mm(STACK_PRINT_DEFAULT_GAP_MM);
   const mode: StackPrintMode = stackPrint?.mode ?? 'airGap';
+  const isSheet = mode === 'sacrificialSheet';
+  const gapLabel = t(
+    isSheet ? 'baseplate.stackPrint.sheet.label' : 'baseplate.stackPrint.gap.label'
+  );
+  const gapInfo = t(isSheet ? 'baseplate.stackPrint.sheet.info' : 'baseplate.stackPrint.gap.info');
 
   const plan = useMemo(
     () => (enabled ? planPhysicalStacks(groups, sets) : []),
@@ -135,19 +140,7 @@ export function StackPrintSection({
                   />
                 </SettingsRow>
 
-                <SettingsRow
-                  label={
-                    mode === 'sacrificialSheet'
-                      ? t('baseplate.stackPrint.sheet.label')
-                      : t('baseplate.stackPrint.gap.label')
-                  }
-                  tooltip={
-                    mode === 'sacrificialSheet'
-                      ? t('baseplate.stackPrint.sheet.info')
-                      : t('baseplate.stackPrint.gap.info')
-                  }
-                  unit="mm"
-                >
+                <SettingsRow label={gapLabel} tooltip={gapInfo} unit="mm">
                   <Stepper
                     size="sm"
                     value={gapMm}
@@ -157,7 +150,7 @@ export function StackPrintSection({
                     step={0.1}
                     inputDecimals={1}
                     displayValue={`${gapMm.toFixed(1)} mm`}
-                    aria-label={t('baseplate.stackPrint.gap.label')}
+                    aria-label={gapLabel}
                   />
                 </SettingsRow>
 

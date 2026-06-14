@@ -26,7 +26,7 @@ import { buildFullParams } from '../utils/buildFullParams';
 import { groupPiecesByFingerprint } from '../utils/pieceFingerprint';
 import { assignGroupNames } from '../utils/pieceNaming';
 import { countConnectorKeys } from '../utils/connectorKeys';
-import { generatePrintGuide } from '../utils/printGuide';
+import { generatePrintGuide, generateStackPrintNote } from '../utils/printGuide';
 import { generateBaseplateFileName, toNamingParams } from '../utils/fileNaming';
 import { FORMAT_MIME_TYPES, triggerDownload } from '@/shared/generation/exportUtils';
 import type { ExportFileFormat } from '@/shared/types/bin';
@@ -69,13 +69,24 @@ function convertStlTo3mf(stlData: ArrayBuffer, name: string): Blob {
   return export3MF(vertices, normals, { name, printSettings: printSettingsFor3MF() });
 }
 
+/** Parse a binary STL into a triangle soup, or throw a user-facing error. */
+function parseStlSoup(stlData: ArrayBuffer): { vertices: Float32Array; normals: Float32Array } {
+  const parseResult = parseSTLBinary(stlData);
+  if (isErr(parseResult)) {
+    throw new Error(getUserMessage(parseResult.error));
+  }
+  return parseResult.value;
+}
+
 /**
- * Build a stacked file from a single-plate STL: bakes `copies` flipped plates
- * (separated by air gap or separator sheet) into real geometry. STL stays
- * single material; 3MF carries the separator sheet on a second filament.
+ * Build a stacked file from an already-parsed single-plate soup: bakes `copies`
+ * flipped plates (separated by air gap or separator sheet) into real geometry.
+ * STL stays single material; 3MF carries the separator sheet on a second
+ * filament. The source is parsed once by the caller so capped multi-tower
+ * exports don't re-parse the same mesh per tower.
  */
 function buildStackedFileBlob(
-  stlData: ArrayBuffer,
+  source: { vertices: Float32Array; normals: Float32Array },
   name: string,
   copies: number,
   format: 'stl' | '3mf',
@@ -83,11 +94,7 @@ function buildStackedFileBlob(
   plateColor: string,
   separatorColor: string
 ): Blob {
-  const parseResult = parseSTLBinary(stlData);
-  if (isErr(parseResult)) {
-    throw new Error(getUserMessage(parseResult.error));
-  }
-  const { vertices, normals } = parseResult.value;
+  const { vertices, normals } = source;
   const includeSheets = stack.mode === 'sacrificialSheet' && format === '3mf';
   const soup = buildStackExportSoup(vertices, normals, copies, stack, { includeSheets });
 
@@ -224,6 +231,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             const stlData = uniqueExports[i];
 
             if (stack && stackEnabled) {
+              const source = parseStlSoup(stlData);
               const towers = planPhysicalStacks(
                 [{ label: name, quantity: group.indices.length }],
                 sets
@@ -231,7 +239,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
               for (let s = 0; s < towers.length; s++) {
                 const label = towers.length > 1 ? `${name}_${s + 1}` : name;
                 const blob = buildStackedFileBlob(
-                  stlData,
+                  source,
                   `${baseNameNoExt}_${label}`,
                   towers[s].copies,
                   format,
@@ -304,10 +312,11 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           // Single piece, stacked. `sets` copies split into towers under the
           // height cap — a single tower downloads directly, several go in a ZIP.
           const stlResult = await bridge.exportBaseplate(fullParams, 'stl');
+          const source = parseStlSoup(stlResult.data);
           const towers = planPhysicalStacks([{ label: 'plate', quantity: 1 }], sets);
           if (towers.length === 1) {
             const blob = buildStackedFileBlob(
-              stlResult.data,
+              source,
               baseNameNoExt,
               towers[0].copies,
               format,
@@ -321,7 +330,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
             for (let s = 0; s < towers.length; s++) {
               const label = `${s + 1}`;
               const blob = buildStackedFileBlob(
-                stlResult.data,
+                source,
                 `${baseNameNoExt}_${label}`,
                 towers[s].copies,
                 format,
@@ -331,7 +340,9 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
               );
               pieces.push({ data: await blob.arrayBuffer(), label });
             }
-            const zip = packagePiecesAsZip(pieces, baseNameNoExt, extension, []);
+            const zip = packagePiecesAsZip(pieces, baseNameNoExt, extension, [
+              { name: 'print-guide.txt', content: generateStackPrintNote(stack) },
+            ]);
             triggerDownload(zip, `${baseNameNoExt}.zip`);
           }
         } else {
