@@ -220,7 +220,7 @@ describe('BaseplatePanel', () => {
 
   it('renders magnet toggle as switch', () => {
     render(<BaseplatePanel />);
-    expect(screen.getByRole('switch')).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: /magnet/i })).toBeInTheDocument();
   });
 
   describe('connector fit offset (issue #2024)', () => {

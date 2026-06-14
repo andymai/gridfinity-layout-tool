@@ -128,69 +128,6 @@ describe('ExportDialog', () => {
     expect(screen.getByText('Download Dividers')).toBeInTheDocument();
   });
 
-  describe('stackOptions (issue #1642)', () => {
-    const stackProps = (overrides: Partial<NonNullable<ExportDialogProps['stackOptions']>> = {}) =>
-      ({
-        label: 'Copies per part',
-        description: 'Stack vertically',
-        value: 1,
-        onChange: vi.fn(),
-        min: 1,
-        max: 20,
-        ...overrides,
-      }) as NonNullable<ExportDialogProps['stackOptions']>;
-
-    it('does not render the stack input when stackOptions is null', () => {
-      render(<ExportDialog {...defaultProps} stackOptions={null} />);
-      expect(screen.queryByLabelText('Copies per part')).not.toBeInTheDocument();
-    });
-
-    it('renders a numeric input bound to the provided value', () => {
-      render(<ExportDialog {...defaultProps} stackOptions={stackProps({ value: 3 })} />);
-      const input = screen.getByLabelText('Copies per part');
-      expect(input).toHaveAttribute('type', 'number');
-      expect(input.value).toBe('3');
-    });
-
-    it('forwards parsed integer changes to onChange', () => {
-      const onChange = vi.fn();
-      render(<ExportDialog {...defaultProps} stackOptions={stackProps({ onChange })} />);
-      fireEvent.change(screen.getByLabelText('Copies per part'), { target: { value: '5' } });
-      expect(onChange).toHaveBeenCalledWith(5);
-    });
-
-    it('clamps values above max', () => {
-      const onChange = vi.fn();
-      render(<ExportDialog {...defaultProps} stackOptions={stackProps({ onChange, max: 10 })} />);
-      fireEvent.change(screen.getByLabelText('Copies per part'), { target: { value: '99' } });
-      expect(onChange).toHaveBeenCalledWith(10);
-    });
-
-    it('clamps values below min', () => {
-      const onChange = vi.fn();
-      render(<ExportDialog {...defaultProps} stackOptions={stackProps({ onChange, min: 1 })} />);
-      fireEvent.change(screen.getByLabelText('Copies per part'), { target: { value: '0' } });
-      expect(onChange).toHaveBeenCalledWith(1);
-    });
-
-    it('ignores unparseable input rather than firing NaN', () => {
-      const onChange = vi.fn();
-      render(<ExportDialog {...defaultProps} stackOptions={stackProps({ onChange })} />);
-      fireEvent.change(screen.getByLabelText('Copies per part'), { target: { value: '' } });
-      expect(onChange).not.toHaveBeenCalled();
-    });
-
-    it('renders the description text when provided', () => {
-      render(
-        <ExportDialog
-          {...defaultProps}
-          stackOptions={stackProps({ description: 'Stack vertically for slicer batching' })}
-        />
-      );
-      expect(screen.getByText('Stack vertically for slicer batching')).toBeInTheDocument();
-    });
-  });
-
   describe('formatStates', () => {
     it('marks disabled formats with aria-disabled and exposes the reason as a tooltip', () => {
       render(

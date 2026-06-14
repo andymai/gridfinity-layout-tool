@@ -17,8 +17,11 @@ import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { FootprintGrid } from '@/shared/components/preview/FootprintGrid';
 import { BinAxisLabels } from '@/shared/components/preview/BinAxisLabels';
 import { GradientBackground } from '@/shared/components/preview/GradientBackground';
+import { useLayoutStore } from '@/core/store/layout';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { SplitBaseplateMeshes } from './SplitBaseplateMeshes';
+import { StackedBaseplateMeshes } from './StackedBaseplateMeshes';
+import { StackSeparationSlider } from './StackSeparationSlider';
 import { ConnectorKeyMeshes } from './ConnectorKeyMeshes';
 import { GhostPaddingOutline } from './GhostPaddingOutline';
 import { useResponsive } from '@/shared/hooks/useResponsive';
@@ -154,7 +157,22 @@ export function BaseplatePreview({
 
   const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
 
-  const maxOrbitDistance = useMemo(
+  // Stack-print preview: replaces the assembled plate with flipped towers.
+  const stackPrint = useLayoutStore((s) => s.layout.baseplateParams?.stackPrint);
+  const stackEnabled = stackPrint?.enabled === true;
+  const [separationMm, setSeparationMm] = useState(0);
+  const [stackBounds, setStackBounds] = useState<{
+    widthMm: number;
+    depthMm: number;
+    heightMm: number;
+  } | null>(null);
+  const handleStackBounds = useCallback(
+    (b: { widthMm: number; depthMm: number; heightMm: number }) => setStackBounds(b),
+    []
+  );
+  const targetZ = stackEnabled && stackBounds ? stackBounds.heightMm / 2 : totalH / 2;
+
+  const baseMaxOrbitDistance = useMemo(
     () =>
       calculateMaxOrbitDistance(
         calculateIdealDistance(
@@ -170,6 +188,12 @@ export function BaseplatePreview({
       ),
     [width, depth, gridUnitMm, paddingLeft, paddingRight, paddingFront, paddingBack]
   );
+  // A stack is far taller/wider than one plate — let the camera pull back enough
+  // to see the whole tower field.
+  const maxOrbitDistance =
+    stackEnabled && stackBounds
+      ? Math.max(baseMaxOrbitDistance, stackBounds.heightMm * 4, stackBounds.widthMm * 3)
+      : baseMaxOrbitDistance;
 
   const hasAnyMesh = isSplit ? hasSplitMeshes : hasMesh;
   const hasError = wasmStatus === 'error' || generationStatus === 'error';
@@ -248,7 +272,7 @@ export function BaseplatePreview({
                 <CameraRig
                   projection={projection}
                   initialPosition={[100, -100, 80]}
-                  target={[0, 0, totalH / 2]}
+                  target={[0, 0, targetZ]}
                   far={20_000}
                 />
 
@@ -267,7 +291,14 @@ export function BaseplatePreview({
                   paddingBack={paddingBack}
                 />
 
-                {isSplit ? (
+                {stackPrint && stackEnabled ? (
+                  <StackedBaseplateMeshes
+                    stack={stackPrint}
+                    color={filamentColor}
+                    separationMm={separationMm}
+                    onBounds={handleStackBounds}
+                  />
+                ) : isSplit ? (
                   <>
                     <SplitBaseplateMeshes
                       totalWidthUnits={width}
@@ -282,41 +313,47 @@ export function BaseplatePreview({
                   <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} xray={xray} />
                 )}
 
-                {/* Ghost outline only in assembled mode -- exploded scatters pieces beyond slab bounds */}
-                {splitViewMode !== 'exploded' && (
-                  <GhostPaddingOutline
-                    width={width}
-                    depth={depth}
-                    gridUnitMm={gridUnitMm}
-                    paddingLeft={paddingLeft}
-                    paddingRight={paddingRight}
-                    paddingFront={paddingFront}
-                    paddingBack={paddingBack}
-                    isGenerating={generationStatus === 'generating'}
-                  />
-                )}
-
-                <FootprintGrid width={width} depth={depth} gridUnitMm={gridUnitMm} />
-                {/* Hide measurement labels in exploded mode -- pieces scatter beyond these positions */}
-                {splitViewMode !== 'exploded' && (
+                {/* Single-plate overlays (ghost, grid, dimensions) don't apply to
+                    the stacked tower layout — hide them while stacking. */}
+                {!stackEnabled && (
                   <>
-                    <BinAxisLabels width={width} depth={depth} gridUnitMm={gridUnitMm} />
-                    <DimensionLabels
-                      width={width}
-                      depth={depth}
-                      gridUnitMm={gridUnitMm}
-                      paddingLeft={paddingLeft}
-                      paddingRight={paddingRight}
-                      paddingFront={paddingFront}
-                      paddingBack={paddingBack}
-                    />
+                    {/* Ghost outline only in assembled mode -- exploded scatters pieces beyond slab bounds */}
+                    {splitViewMode !== 'exploded' && (
+                      <GhostPaddingOutline
+                        width={width}
+                        depth={depth}
+                        gridUnitMm={gridUnitMm}
+                        paddingLeft={paddingLeft}
+                        paddingRight={paddingRight}
+                        paddingFront={paddingFront}
+                        paddingBack={paddingBack}
+                        isGenerating={generationStatus === 'generating'}
+                      />
+                    )}
+
+                    <FootprintGrid width={width} depth={depth} gridUnitMm={gridUnitMm} />
+                    {/* Hide measurement labels in exploded mode -- pieces scatter beyond these positions */}
+                    {splitViewMode !== 'exploded' && (
+                      <>
+                        <BinAxisLabels width={width} depth={depth} gridUnitMm={gridUnitMm} />
+                        <DimensionLabels
+                          width={width}
+                          depth={depth}
+                          gridUnitMm={gridUnitMm}
+                          paddingLeft={paddingLeft}
+                          paddingRight={paddingRight}
+                          paddingFront={paddingFront}
+                          paddingBack={paddingBack}
+                        />
+                      </>
+                    )}
                   </>
                 )}
 
                 <OrbitControls
                   ref={controlsRef}
                   makeDefault
-                  target={[0, 0, totalH / 2]}
+                  target={[0, 0, targetZ]}
                   enableDamping
                   dampingFactor={0.12}
                   rotateSpeed={0.8}
@@ -331,6 +368,10 @@ export function BaseplatePreview({
               </Canvas>
             </WebGLErrorBoundary>
           </PanelErrorBoundary>
+
+          {stackEnabled && hasAnyMesh && (
+            <StackSeparationSlider value={separationMm} onChange={setSeparationMm} />
+          )}
         </div>
       )}
 

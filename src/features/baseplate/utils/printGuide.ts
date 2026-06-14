@@ -8,9 +8,11 @@
  */
 
 import type { BaseplateParams } from '@/shared/types/bin';
+import type { StackPrintParams } from '@/core/types';
 import type { BaseplatePiece, BaseplateTiling } from '../types/tiling';
 import type { PieceGroup } from './pieceFingerprint';
 import { colToLetter } from './splitPlanner';
+import { planPhysicalStacks } from './stackPrint';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import {
   TONGUE_PROTRUSION,
@@ -33,21 +35,26 @@ export interface PrintGuideInput {
   readonly baseFileName: string;
   /** Dovetail key part, when present — printed `count` times. */
   readonly connectorKey?: { readonly fileName: string; readonly count: number };
+  /** Stack-print config, when enabled — each file is a pre-stacked tower. */
+  readonly stackPrint?: StackPrintParams;
 }
 
 export function generatePrintGuide(input: PrintGuideInput): string {
   const { tiling, groups, groupNames, parentParams, fileExtension, baseFileName, connectorKey } =
     input;
+  const stackPrint = input.stackPrint?.enabled ? input.stackPrint : undefined;
 
   const sections = [
     generateHeader(tiling, parentParams, groupNames.size),
+    ...(stackPrint ? [generateStackingSection(stackPrint)] : []),
     generatePieceTable(
       groups,
       groupNames,
       parentParams,
       tiling.pieces,
       fileExtension,
-      baseFileName
+      baseFileName,
+      stackPrint
     ),
     ...(connectorKey ? [generateConnectorKeySection(connectorKey, parentParams)] : []),
     generateGridMap(tiling, groups, groupNames),
@@ -55,6 +62,28 @@ export function generatePrintGuide(input: PrintGuideInput): string {
   ];
 
   return sections.join('\n\n');
+}
+
+function generateStackingSection(stack: StackPrintParams): string {
+  const interfaceLine =
+    stack.mode === 'sacrificialSheet'
+      ? `  Each seam holds a ${stack.gapMm}mm sheet of a second (dissimilar) filament so`
+      : `  Each plate is separated by a ${stack.gapMm}mm air gap so the layers`;
+  const peelLine =
+    stack.mode === 'sacrificialSheet'
+      ? '  the plates peel apart cleanly. Flex the stack to crack each plate free, then'
+      : '  do not fuse. Flex the stack to crack each plate free along the gaps, then';
+  return [
+    '─── Stack printing ──────────────────────────────',
+    '',
+    '  Each file is a ready-made VERTICAL STACK — print it ONCE to get all of its',
+    '  plates. The stack prints UPSIDE DOWN (pockets facing the bed) to minimise',
+    '  contact between plates.',
+    '',
+    interfaceLine,
+    peelLine,
+    '  remove any interface material from the pocket faces.',
+  ].join('\n');
 }
 
 function generateConnectorKeySection(
@@ -172,7 +201,8 @@ function generatePieceTable(
   parentParams: BaseplateParams,
   pieces: readonly BaseplatePiece[],
   ext: string,
-  baseName: string
+  baseName: string,
+  stackPrint?: StackPrintParams
 ): string {
   const lines = ['─── Pieces ──────────────────────────────────────', ''];
 
@@ -243,9 +273,7 @@ function generatePieceTable(
     }
 
     const fileName = `${baseName}_${name}${ext}`;
-    const copyText = count === 1 ? 'Print 1 copy' : `Print ${count} copies`;
-
-    lines.push(`  ${name} (${fileName})`);
+    lines.push(stackPrint ? `  ${name}` : `  ${name} (${fileName})`);
     lines.push(`    Grid:      ${params.width} × ${params.depth} units`);
     lines.push(
       `    Size:      ${widthMm.toFixed(1)} × ${depthMm.toFixed(1)} × ${heightMm.toFixed(1)} mm`
@@ -253,7 +281,23 @@ function generatePieceTable(
     if (features.length > 0) {
       lines.push(`    Features:  ${features.join(', ')}`);
     }
-    lines.push(`    ${copyText} → ${positions}`);
+
+    if (stackPrint) {
+      // Each physical stack is one file; an over-tall group splits into several.
+      const towers = planPhysicalStacks([{ label: name, quantity: count }], stackPrint.sets);
+      for (let s = 0; s < towers.length; s++) {
+        const label = towers.length > 1 ? `${name}_${s + 1}` : name;
+        const copies = towers[s].copies;
+        const towerH = copies * heightMm + (copies - 1) * stackPrint.gapMm;
+        lines.push(
+          `    ${baseName}_${label}${ext} — print once = ${copies} plate${copies === 1 ? '' : 's'} (stack ${towerH.toFixed(1)}mm tall)`
+        );
+      }
+      lines.push(`    Assembles: ${positions}`);
+    } else {
+      const copyText = count === 1 ? 'Print 1 copy' : `Print ${count} copies`;
+      lines.push(`    ${copyText} → ${positions}`);
+    }
     lines.push('');
   }
 

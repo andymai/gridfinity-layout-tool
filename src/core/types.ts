@@ -32,6 +32,50 @@ export interface Layout {
  * second = horizontal (l/c/r). 'custom' means user-edited per-side, no anchor. */
 export type PaddingAnchor = 'tl' | 'tc' | 'tr' | 'ml' | 'c' | 'mr' | 'bl' | 'bc' | 'br' | 'custom';
 
+/**
+ * Separation strategy for vertically stack-printed baseplates.
+ * - 'airGap': single-material — a thin air gap between copies that any printer/format honors.
+ * - 'sacrificialSheet': multi-material — a thin full-footprint sheet of a second filament
+ *   between copies whose chemical incompatibility prevents bonding (requires 3MF + multi-material).
+ */
+export type StackPrintMode = 'airGap' | 'sacrificialSheet';
+
+/**
+ * Vertical stack-print configuration (experimental). When enabled, each group
+ * of identical baseplate pieces is duplicated along Z (flipped upside down to
+ * minimize contact overhangs) with a separation interface at each seam, so a
+ * whole drawer's worth of plates prints in one job.
+ *
+ * `sets` multiplies every group's required quantity: for a split drawer it's
+ * "how many complete drawers"; for a single-piece plate it's simply "how many
+ * copies". Each physical stack is capped at `STACK_PRINT_MAX_STACK_HEIGHT`
+ * copies, so an over-tall group splits into several stacks.
+ *
+ * Connectors are auto-disabled while enabled (their barbs/dovetails are
+ * unsupportable overhangs in a vertical stack).
+ */
+export interface StackPrintParams {
+  readonly enabled: boolean;
+  /** Complete-set multiplier applied to each identical-piece group's quantity. */
+  readonly sets: number;
+  /** Air gap (mm) between copies in 'airGap' mode; ignored in 'sacrificialSheet' mode. */
+  readonly gapMm: Mm;
+  readonly mode: StackPrintMode;
+}
+
+/** Default air gap / sheet thickness between stacked copies — one 0.2mm layer. */
+export const STACK_PRINT_DEFAULT_GAP_MM = 0.2;
+/** Default complete-set multiplier when stacking is first enabled. */
+export const STACK_PRINT_DEFAULT_SETS = 1;
+/** Inclusive bounds on the complete-set multiplier. */
+export const STACK_PRINT_MIN_SETS = 1;
+export const STACK_PRINT_MAX_SETS = 20;
+/** Max copies in a single physical stack before it splits into another stack. */
+export const STACK_PRINT_MAX_STACK_HEIGHT = 8;
+/** Inclusive bounds on the separation gap / sheet thickness (mm). */
+export const STACK_PRINT_MIN_GAP_MM = 0.1;
+export const STACK_PRINT_MAX_GAP_MM = 1.0;
+
 /** Baseplate generation parameters stored per-layout.
  * Width/depth/gridUnitMm are derived from the layout's drawer at generation time unless
  * syncWithLayout is false, in which case baseplateWidth/baseplateDepth override drawer dims.
@@ -103,6 +147,12 @@ export interface BaseplateParams {
   readonly fractionalEdgeX?: FractionalEdge;
   /** Which edge carries the half-unit row when baseplateDepth is fractional and syncWithLayout is false. Defaults to 'end' (top). */
   readonly fractionalEdgeY?: FractionalEdge;
+  /**
+   * Vertical stack-print configuration (experimental). When enabled, exports a
+   * single job of `count` flipped, separated copies. Auto-disables connectors.
+   * Omitted/undefined = no stacking (single baseplate).
+   */
+  readonly stackPrint?: StackPrintParams;
 }
 
 /** Position of fractional edge when drawer has half-unit dimensions */

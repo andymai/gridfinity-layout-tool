@@ -23,7 +23,7 @@ import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useBaseplateRouting } from '@/shared/hooks/useBaseplateRouting';
 import { useBaseplateGeneration } from '../../hooks/useBaseplateGeneration';
 import { useBaseplateExport } from '../../hooks/useBaseplateExport';
-import { useBaseplatePageStore, MAX_STACK_COPIES } from '../../store/baseplatePageStore';
+import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNaming';
 import { buildFullParams } from '../../utils/buildFullParams';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
@@ -96,13 +96,24 @@ export function BaseplatePage() {
   const exportFileNameConfig = useBaseplatePageStore((s) => s.exportFileNameConfig);
   const setExportFileNameConfig = useBaseplatePageStore((s) => s.setExportFileNameConfig);
   const tiling = useBaseplatePageStore((s) => s.tiling);
-  const stackCopies = useBaseplatePageStore((s) => s.stackCopies);
-  const setStackCopies = useBaseplatePageStore((s) => s.setStackCopies);
 
   const [splitEnabled, setSplitEnabled] = useState(true);
   const [justExported, setJustExported] = useState(false);
 
-  const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
+  // Sacrificial-sheet stacking assigns a second filament, which only 3MF can
+  // carry — force 3MF and disable STL/STEP so the sheet can't be silently lost.
+  const sacrificialSheet =
+    baseplateParams.stackPrint?.enabled === true &&
+    baseplateParams.stackPrint.mode === 'sacrificialSheet';
+  const activeFormat: ExportFileFormat = sacrificialSheet
+    ? '3mf'
+    : (exportFileNameConfig.format ?? 'stl');
+  const formatStates = sacrificialSheet
+    ? {
+        stl: { disabled: true, reason: t('baseplate.stackPrint.needs3mf') },
+        step: { disabled: true, reason: t('baseplate.stackPrint.needs3mf') },
+      }
+    : undefined;
 
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
 
@@ -284,6 +295,7 @@ export function BaseplatePage() {
         open={exportDialogOpen}
         onClose={closeExportDialog}
         activeFormat={activeFormat}
+        formatStates={formatStates}
         fileNameConfig={exportFileNameConfig}
         onFileNameConfigChange={setExportFileNameConfig}
         fileName={fileName}
@@ -302,18 +314,6 @@ export function BaseplatePage() {
                 checkboxLabel: t('baseplate.export.enableSplit'),
                 checked: splitEnabled,
                 onCheckedChange: setSplitEnabled,
-              }
-            : null
-        }
-        stackOptions={
-          activeFormat === '3mf'
-            ? {
-                label: t('baseplate.export.stackCopies'),
-                description: t('baseplate.export.stackCopiesDescription'),
-                value: stackCopies,
-                onChange: setStackCopies,
-                min: 1,
-                max: MAX_STACK_COPIES,
               }
             : null
         }

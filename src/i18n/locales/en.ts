@@ -1301,9 +1301,6 @@ const en: Record<string, string> = {
   'baseplate.export.threeDModel': '3D Model',
   'baseplate.export.threeDModelDescription': 'Export a printable baseplate model',
   'baseplate.export.dedupSuccess': 'Baseplate exported ({unique} unique pieces, {total} total)',
-  'baseplate.export.stackCopies': 'Copies per part',
-  'baseplate.export.stackCopiesDescription':
-    'Stack vertical copies of each baseplate piece in the 3MF for slicer batching.',
   'baseplate.generation.dedupProgress':
     'Refining {unique} unique pieces ({skipped} duplicates skipped)',
 
@@ -2102,6 +2099,33 @@ const en: Record<string, string> = {
     'Your printer nozzle diameter. Dovetail keys and snap clips scale to it so they stay printable on wider nozzles. Geometry is unchanged at 0.4mm.',
   'baseplate.connectorNozzleNotice':
     'Sized for a {nozzle}mm nozzle — dovetail keys and snap clips are enlarged to stay printable.',
+  'baseplate.stackPrint.section': 'Stack for printing',
+  'baseplate.stackPrint.badge': 'Experimental',
+  'baseplate.stackPrint.enable': 'Print as a vertical stack',
+  'baseplate.stackPrint.hint':
+    'Test a small stack (2–3 plates) on your printer first to dial in separation before committing to a tall stack.',
+  'baseplate.stackPrint.summary': '{stacks} stacks · {plates} plates',
+  'baseplate.stackPrint.mode.label': 'Separation',
+  'baseplate.stackPrint.mode.info':
+    "How stacked plates stay separate. An air gap works on any printer; a sacrificial sheet prints a second filament between plates that won't bond to them.",
+  'baseplate.stackPrint.mode.airGap': 'Air gap (single material)',
+  'baseplate.stackPrint.mode.sacrificialSheet': 'Sacrificial sheet (multi-material)',
+  'baseplate.stackPrint.sets.label': 'Sets',
+  'baseplate.stackPrint.sets.info':
+    'How many complete drawers to print. Each identical-piece group is stacked by the quantity your drawer needs, times this.',
+  'baseplate.stackPrint.gap.label': 'Gap',
+  'baseplate.stackPrint.gap.info':
+    'Air gap between stacked plates. About 0.2mm (one layer) is typical; increase it if plates fuse together.',
+  'baseplate.stackPrint.sheet.label': 'Sheet thickness',
+  'baseplate.stackPrint.sheet.info':
+    'Thickness of the dissimilar-material sheet printed between plates. About two layers (0.4mm) is typical.',
+  'baseplate.stackPrint.connectorsDisabled':
+    "Connectors are turned off while stacking — their overhangs can't print in a vertical stack.",
+  'baseplate.stackPrint.needs3mf':
+    'Multi-material stacking exports as 3MF so each filament is assigned correctly.',
+  'baseplate.stackPrint.separate': 'Separate',
+  'baseplate.stackPrint.together': 'Together',
+  'baseplate.stackPrint.separationSlider': 'Separate the print stack to inspect it',
   'baseplate.wasmLoadFailed': 'Failed to load 3D engine',
   'baseplate.generationFailed': 'Baseplate generation failed',
   'baseplate.errorRetryHint':

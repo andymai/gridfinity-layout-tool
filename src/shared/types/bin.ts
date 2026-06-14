@@ -5,6 +5,8 @@
  * This barrel export allows other features (e.g., generation) to
  * depend on these types without a cross-feature import violation.
  */
+import type { StackPrintParams } from '@/core/types';
+
 export type {
   ExportFileFormat,
   FileNameStyle,
@@ -186,4 +188,11 @@ export interface BaseplateParams {
     readonly bl: number;
     readonly br: number;
   };
+  /**
+   * Vertical stack-print configuration (experimental). Replication is applied at
+   * the mesh/export level (not in the BREP solid), so the generator builds one
+   * plate and the preview/export layers duplicate it. Connectors must be
+   * stripped by the caller before reaching here. Omit for a single plate.
+   */
+  readonly stackPrint?: StackPrintParams;
 }

@@ -9,7 +9,7 @@
  * 4. Split pieces mini-map (only when baseplate is split across print beds)
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
@@ -40,7 +40,11 @@ import { SplitViewStrip } from './SplitViewStrip';
 import { CornerRadiusControl } from './CornerRadiusControl';
 import { GridDimensionStepper } from './GridDimensionStepper';
 import { ConnectorSampleButton } from './ConnectorSampleButton';
+import { StackPrintSection } from './StackPrintSection';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
+import { buildFullParams } from '../../utils/buildFullParams';
+import { stackGroupsFromTiling } from '../../utils/stackPrint';
+import type { StackPrintParams } from '@/core/types';
 import { PADDING_MAX } from '../PaddingStepper';
 import { Stepper } from '@/design-system/Stepper';
 import {
@@ -123,6 +127,47 @@ export function BaseplatePanel() {
 
   const halfGridMode = useHalfGridModeStore((s) => s.halfGridMode);
   const [printSettingsExpanded, setPrintSettingsExpanded] = useState(true);
+
+  // Resolve the full generation params + identical-piece groups so the stack
+  // section can show how many physical stacks a drawer needs (auto-count).
+  const fullParams = useMemo(
+    () =>
+      buildFullParams(
+        baseplateParams,
+        drawerWidth,
+        drawerDepth,
+        gridUnitMm,
+        drawerFractionalEdgeX,
+        drawerFractionalEdgeY,
+        nozzleSizeMm
+      ),
+    [
+      baseplateParams,
+      drawerWidth,
+      drawerDepth,
+      gridUnitMm,
+      drawerFractionalEdgeX,
+      drawerFractionalEdgeY,
+      nozzleSizeMm,
+    ]
+  );
+  const stackGroups = useMemo(
+    () => stackGroupsFromTiling(tiling, fullParams),
+    [tiling, fullParams]
+  );
+
+  // Enabling stacking strips connectors — their dovetails/barbs are
+  // unsupportable overhangs in a vertical stack (see StackPrintParams).
+  const setStackPrint = useCallback(
+    (next: StackPrintParams | undefined) => {
+      if (next?.enabled) {
+        updateParams({ stackPrint: next, connectorNubs: false, connectorStyle: undefined });
+      } else {
+        updateParams({ stackPrint: next });
+      }
+    },
+    [updateParams]
+  );
 
   useEffect(() => {
     const handler = () => setPrintSettingsExpanded(true);
@@ -536,7 +581,15 @@ export function BaseplatePanel() {
           </div>
         </StickyGroupHeader>
 
-        {/* 3. Print Settings — advanced, rarely changed */}
+        {/* 3. Stack for printing — experimental, prints a drawer's plates as vertical stacks */}
+        <StackPrintSection
+          stackPrint={baseplateParams.stackPrint}
+          groups={stackGroups}
+          isSplit={tiling?.isSplit ?? false}
+          onChange={setStackPrint}
+        />
+
+        {/* 4. Print Settings — advanced, rarely changed */}
         <StickyGroupHeader
           title={t('baseplate.sectionPrintSettings')}
           summary={formatPrintSettingsSummary(

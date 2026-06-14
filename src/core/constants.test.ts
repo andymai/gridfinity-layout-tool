@@ -333,6 +333,31 @@ describe('migrateBaseplateParams', () => {
     expect(result.connectorNubs).toBeUndefined();
   });
 
+  it('preserves and clamps a persisted stackPrint config', () => {
+    const base = {
+      magnetHoles: false,
+      magnetDiameter: 6.5,
+      magnetDepth: 2,
+      paddingLeft: 0,
+      paddingRight: 0,
+      paddingFront: 0,
+      paddingBack: 0,
+    };
+    const result = migrateBaseplateParams({
+      ...base,
+      stackPrint: { enabled: true, sets: 999, gapMm: 5, mode: 'sacrificialSheet' },
+    });
+    expect(result.stackPrint).toEqual({
+      enabled: true,
+      sets: 20, // clamped to STACK_PRINT_MAX_SETS
+      gapMm: 1, // clamped to STACK_PRINT_MAX_GAP_MM
+      mode: 'sacrificialSheet',
+    });
+    // Absent or malformed → undefined
+    expect(migrateBaseplateParams(base).stackPrint).toBeUndefined();
+    expect(migrateBaseplateParams({ ...base, stackPrint: { sets: 3 } }).stackPrint).toBeUndefined();
+  });
+
   it('preserves connectorStyle when dovetail key', () => {
     const stored = {
       magnetHoles: false,

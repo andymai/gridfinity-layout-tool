@@ -24,7 +24,11 @@ function makeParams(overrides: Partial<BaseplateParams> = {}): BaseplateParams {
   };
 }
 
-function buildGuide(params: BaseplateParams, printBed = 256) {
+function buildGuide(
+  params: BaseplateParams,
+  printBed = 256,
+  stackPrint?: BaseplateParams['stackPrint']
+) {
   const tiling = computeBaseplateTiling(params, printBed);
   const groups = groupPiecesByFingerprint(tiling.pieces, params);
   const groupNames = assignGroupNames(groups, tiling.pieces);
@@ -35,6 +39,7 @@ function buildGuide(params: BaseplateParams, printBed = 256) {
     parentParams: params,
     fileExtension: '.stl',
     baseFileName: 'gridfinity-baseplate',
+    stackPrint,
   });
 }
 
@@ -266,5 +271,31 @@ describe('generatePrintGuide', () => {
     // Key base clearance 0.075 + 0.05 = 0.125/side → 0.25mm total.
     expect(guide).toContain('Fit offset +0.05mm applied');
     expect(guide).toContain('0.25mm total clearance');
+  });
+
+  it('describes stacked towers and the upside-down/peel workflow when stacking', () => {
+    // 18×18 with 2mm padding splits into multiple identical pieces.
+    const params = makeParams({
+      width: 18,
+      depth: 18,
+      paddingLeft: 2,
+      paddingRight: 2,
+      paddingFront: 2,
+      paddingBack: 2,
+    });
+    const guide = buildGuide(params, 256, {
+      enabled: true,
+      sets: 1,
+      gapMm: 0.2 as never,
+      mode: 'sacrificialSheet',
+    });
+
+    expect(guide).toContain('Stack printing');
+    expect(guide).toContain('UPSIDE DOWN');
+    expect(guide).toContain('dissimilar) filament'); // sacrificial-sheet wording
+    expect(guide).toContain('print once =');
+    expect(guide).toContain('Assembles:');
+    // The misleading "Print N copies" instruction must NOT appear when stacking.
+    expect(guide).not.toMatch(/Print \d+ copies →/);
   });
 });

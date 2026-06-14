@@ -3,12 +3,21 @@ import type {
   Category,
   BaseplateParams,
   PaddingAnchor,
+  StackPrintParams,
   BinId,
   LayoutId,
   LayerId,
   CategoryId,
 } from './types';
 import { binId, layerId, categoryId, mm, gridUnits, heightUnits } from './types';
+import {
+  STACK_PRINT_MIN_SETS,
+  STACK_PRINT_MAX_SETS,
+  STACK_PRINT_MIN_GAP_MM,
+  STACK_PRINT_MAX_GAP_MM,
+  STACK_PRINT_DEFAULT_GAP_MM,
+  STACK_PRINT_DEFAULT_SETS,
+} from './types';
 import { CONNECTOR_FIT_OFFSET_MIN, CONNECTOR_FIT_OFFSET_MAX } from '@/shared/constants/connectors';
 export const CONSTRAINTS = {
   GRID_MIN: 0.5, // Minimum drawer dimension (supports half-unit increments)
@@ -262,6 +271,7 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
     };
   }
   // Validate and clamp all fields from persisted/imported data
+  const stackPrint = migrateStackPrint(obj.stackPrint);
   const radii = obj.cornerRadii;
   const hasRadii =
     radii !== null &&
@@ -329,6 +339,28 @@ export function migrateBaseplateParams(stored: unknown): BaseplateParams {
           },
         }
       : {}),
+    ...(stackPrint ? { stackPrint } : {}),
+  };
+}
+
+/** Validate + clamp a persisted stackPrint config, or undefined if absent/invalid. */
+function migrateStackPrint(value: unknown): StackPrintParams | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const o = value as Record<string, unknown>;
+  if (typeof o.enabled !== 'boolean') return undefined;
+  const mode = o.mode === 'sacrificialSheet' ? 'sacrificialSheet' : 'airGap';
+  return {
+    enabled: o.enabled,
+    sets: clampNumber(o.sets, STACK_PRINT_MIN_SETS, STACK_PRINT_MAX_SETS, STACK_PRINT_DEFAULT_SETS),
+    gapMm: mm(
+      clampNumber(
+        o.gapMm,
+        STACK_PRINT_MIN_GAP_MM,
+        STACK_PRINT_MAX_GAP_MM,
+        STACK_PRINT_DEFAULT_GAP_MM
+      )
+    ),
+    mode,
   };
 }
 

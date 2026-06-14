@@ -17,9 +17,6 @@ type WasmStatus = 'unloaded' | 'loading' | 'ready' | 'error';
 /** View mode for split baseplates: assembled (no gaps) or exploded (gaps between pieces). */
 export type SplitViewMode = 'assembled' | 'exploded';
 
-/** Upper bound for the 3MF stack-copies stepper. Mirrored by the UI's `max` attr. */
-export const MAX_STACK_COPIES = 20;
-
 interface MeshResult {
   readonly vertices: Float32Array | null;
   readonly normals: Float32Array | null;
@@ -100,8 +97,6 @@ interface BaseplatePageState {
   exportFileNameConfig: ExportFileNameConfig;
   /** Progress for multi-piece export: null when not exporting */
   exportProgress: { current: number; total: number } | null;
-  /** 3MF export only: number of vertical copies stacked per part. Default 1. */
-  stackCopies: number;
 
   setGenerationStatus: (status: GenerationStatus) => void;
   setGenerationResult: (result: MeshResult) => void;
@@ -118,7 +113,6 @@ interface BaseplatePageState {
   setExportFileNameConfig: (config: ExportFileNameConfig) => void;
   setExportProgress: (progress: { current: number; total: number } | null) => void;
   setDedupStats: (stats: DedupStats | null) => void;
-  setStackCopies: (copies: number) => void;
 }
 
 export const useBaseplatePageStore = create<BaseplatePageState>()(
@@ -140,7 +134,6 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     exportDialogOpen: false,
     exportFileNameConfig: { style: 'descriptive', customName: '', format: 'stl' },
     exportProgress: null,
-    stackCopies: 1,
 
     setGenerationStatus: (status) => {
       set((state) => {
@@ -235,16 +228,6 @@ export const useBaseplatePageStore = create<BaseplatePageState>()(
     setDedupStats: (stats) => {
       set((state) => {
         state.dedupStats = stats;
-      });
-    },
-
-    setStackCopies: (copies) => {
-      set((state) => {
-        // Math.floor(NaN) / Math.max(1, NaN) both return NaN, which would
-        // poison every downstream comparison. Default unsafe input to 1.
-        state.stackCopies = Number.isFinite(copies)
-          ? Math.min(MAX_STACK_COPIES, Math.max(1, Math.floor(copies)))
-          : 1;
       });
     },
   }))
