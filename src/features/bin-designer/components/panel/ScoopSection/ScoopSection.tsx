@@ -53,6 +53,7 @@ export function ScoopSection() {
             max={DESIGNER_CONSTRAINTS.MAX_SCOOP_RADIUS}
             step={DESIGNER_CONSTRAINTS.SCOOP_RADIUS_STEP}
             size="md"
+            fullWidth
             aria-label={t('binDesigner.scoop.radiusAria')}
           />
         )}

@@ -85,6 +85,7 @@ export function DividerHeightControl() {
         step={1}
         size={stepperSize}
         commitMode="deferred"
+        fullWidth
         aria-label={t('binDesigner.dividerHeight')}
       />
     </div>

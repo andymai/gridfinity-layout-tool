@@ -124,6 +124,7 @@ export function MobileSettingsPanel() {
             min={1}
             max={CONSTRAINTS.GRID_MAX}
             size="lg"
+            fullWidth
             aria-label={t('sidebar.drawerHeightAria')}
             displayValue={`${drawer.height}u`}
           />

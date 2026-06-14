@@ -184,6 +184,7 @@ export function SlotConfigurator() {
           max={DESIGNER_CONSTRAINTS.MAX_SLOT_PITCH}
           step={DESIGNER_CONSTRAINTS.SLOT_PITCH_STEP}
           size="md"
+          fullWidth
           aria-label={t('binDesigner.slotSpacing')}
         />
       </div>
@@ -230,6 +231,7 @@ export function SlotConfigurator() {
           max={maxHeightRounded}
           step={1}
           size="md"
+          fullWidth
           aria-label={t('binDesigner.dividerHeight')}
         />
       </div>
