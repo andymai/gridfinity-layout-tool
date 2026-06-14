@@ -47,9 +47,6 @@ const FORMAT_EXTENSIONS: Record<ExportFileFormat, string> = {
   '3mf': '.3mf',
 };
 
-/** Accent filament for the sacrificial interface sheet (distinct from plate). */
-const SHEET_COLOR = '#ff7a00';
-
 function printSettingsFor3MF() {
   const printSettings = useSettingsStore.getState().settings.printSettings;
   return {
@@ -74,8 +71,8 @@ function convertStlTo3mf(stlData: ArrayBuffer, name: string): Blob {
 
 /**
  * Build a stacked file from a single-plate STL: bakes `copies` flipped plates
- * (separated by air gap or sacrificial sheet) into real geometry. STL stays
- * single material; 3MF carries the sacrificial sheet on a second filament.
+ * (separated by air gap or separator sheet) into real geometry. STL stays
+ * single material; 3MF carries the separator sheet on a second filament.
  */
 function buildStackedFileBlob(
   stlData: ArrayBuffer,
@@ -83,7 +80,8 @@ function buildStackedFileBlob(
   copies: number,
   format: 'stl' | '3mf',
   stack: StackPrintParams,
-  plateColor: string
+  plateColor: string,
+  separatorColor: string
 ): Blob {
   const parseResult = parseSTLBinary(stlData);
   if (isErr(parseResult)) {
@@ -101,7 +99,7 @@ function buildStackedFileBlob(
 
   const colorConfig = soup.materialIndices
     ? {
-        materials: [{ color: plateColor }, { color: SHEET_COLOR }],
+        materials: [{ color: plateColor }, { color: separatorColor }],
         triangleMaterialIndices: soup.materialIndices,
       }
     : undefined;
@@ -161,6 +159,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       const stackEnabled = stack?.enabled === true && format !== 'step';
       const sets = stack?.sets ?? 1;
       const plateColor = useSettingsStore.getState().settings.baseplateFilamentColor;
+      const separatorColor = useSettingsStore.getState().settings.baseplateSeparatorColor;
 
       try {
         const fullParams = buildFullParams(
@@ -237,7 +236,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
                   towers[s].copies,
                   format,
                   stack,
-                  plateColor
+                  plateColor,
+                  separatorColor
                 );
                 pieces.push({ data: await blob.arrayBuffer(), label });
               }
@@ -312,7 +312,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
               towers[0].copies,
               format,
               stack,
-              plateColor
+              plateColor,
+              separatorColor
             );
             triggerDownload(blob, baseName);
           } else {
@@ -325,7 +326,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
                 towers[s].copies,
                 format,
                 stack,
-                plateColor
+                plateColor,
+                separatorColor
               );
               pieces.push({ data: await blob.arrayBuffer(), label });
             }

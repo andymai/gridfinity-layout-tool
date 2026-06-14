@@ -261,6 +261,9 @@ export interface UserSettings {
   /** Filament color for the baseplate 3D preview. */
   baseplateFilamentColor: string;
 
+  /** Second-filament color for the stack-print separator sheet (preview + 3MF). */
+  baseplateSeparatorColor: string;
+
   /**
    * One-time UI hints that have been dismissed.
    * Replaces individual localStorage keys for hint tracking.
@@ -358,6 +361,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
 
   // Baseplate 3D preview
   baseplateFilamentColor: '#d4d8dc',
+  baseplateSeparatorColor: '#ff7a00',
 
   // Dismissed hints
   dismissedHints: [],

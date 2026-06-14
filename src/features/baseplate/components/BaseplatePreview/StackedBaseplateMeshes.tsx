@@ -1,7 +1,7 @@
 /**
  * Stack-print preview: renders the baseplate as flipped vertical towers (one per
  * physical print job) matching the export, separated by an interactive slider.
- * Sacrificial interface sheets render in an accent material.
+ * Separator sheets render translucent in the second-filament color.
  */
 
 import { useEffect, useMemo } from 'react';
@@ -21,19 +21,13 @@ import {
 } from '../../utils/stackPrint';
 import { buildStackPreviewMeshes, type StackPreviewTower } from '../../utils/stackPreview';
 
-const FALLBACK_ACCENT = '#f59e0b';
-
 const EMPTY_GEO = { vertices: null, normals: null, indices: null, edgeVertices: null } as const;
-
-function accentHex(): string {
-  if (typeof document === 'undefined') return FALLBACK_ACCENT;
-  const raw = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim();
-  return raw || FALLBACK_ACCENT;
-}
 
 interface StackedBaseplateMeshesProps {
   readonly stack: StackPrintParams;
   readonly color: string;
+  /** Second-filament color for the separator sheets. */
+  readonly separatorColor: string;
   /** Extra explode distance (mm) from the preview slider; 0 = true export gap. */
   readonly separationMm: number;
   /** Reports layout extents so the parent can frame the camera. */
@@ -58,6 +52,7 @@ function toMeshArrays(mesh: {
 export function StackedBaseplateMeshes({
   stack,
   color,
+  separatorColor,
   separationMm,
   onBounds,
 }: StackedBaseplateMeshesProps) {
@@ -135,8 +130,6 @@ export function StackedBaseplateMeshes({
 
   if (!preview || !plateGeo.geometry) return null;
 
-  const sheetColor = accentHex();
-
   return (
     <>
       <mesh geometry={plateGeo.geometry}>
@@ -155,12 +148,16 @@ export function StackedBaseplateMeshes({
 
       {sheetGeo.geometry && (
         <mesh geometry={sheetGeo.geometry} renderOrder={2}>
+          {/* Translucent so the separator sheets read as removable waste. */}
           <meshStandardMaterial
-            color={sheetColor}
-            emissive={sheetColor}
-            emissiveIntensity={0.15}
+            color={separatorColor}
+            emissive={separatorColor}
+            emissiveIntensity={0.2}
             roughness={0.6}
             metalness={0}
+            transparent
+            opacity={0.55}
+            depthWrite={false}
             polygonOffset
             polygonOffsetFactor={-2}
             polygonOffsetUnits={-2}

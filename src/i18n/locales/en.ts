@@ -2107,18 +2107,19 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.summary': '{stacks} stacks · {plates} plates',
   'baseplate.stackPrint.mode.label': 'Separation',
   'baseplate.stackPrint.mode.info':
-    "How stacked plates stay separate. An air gap works on any printer; a sacrificial sheet prints a second filament between plates that won't bond to them.",
+    "How stacked plates stay separate. An air gap works on any printer; a separator sheet prints a second filament between plates that won't bond to them.",
   'baseplate.stackPrint.mode.airGap': 'Air gap (single material)',
-  'baseplate.stackPrint.mode.sacrificialSheet': 'Sacrificial sheet (multi-material)',
+  'baseplate.stackPrint.mode.sacrificialSheet': 'Separator sheet (multi-material)',
   'baseplate.stackPrint.sets.label': 'Sets',
   'baseplate.stackPrint.sets.info':
     'How many complete drawers to print. Each identical-piece group is stacked by the quantity your drawer needs, times this.',
   'baseplate.stackPrint.gap.label': 'Gap',
   'baseplate.stackPrint.gap.info':
     'Air gap between stacked plates. About 0.2mm (one layer) is typical; increase it if plates fuse together.',
-  'baseplate.stackPrint.sheet.label': 'Sheet thickness',
+  'baseplate.stackPrint.sheet.label': 'Separator thickness',
   'baseplate.stackPrint.sheet.info':
-    'Thickness of the dissimilar-material sheet printed between plates. About two layers (0.4mm) is typical.',
+    'Thickness of the separator sheet printed between plates. About two layers (0.4mm) is typical.',
+  'baseplate.stackPrint.separatorColor': 'Separator color',
   'baseplate.stackPrint.connectorsDisabled':
     "Connectors are turned off while stacking — their overhangs can't print in a vertical stack.",
   'baseplate.stackPrint.needs3mf':

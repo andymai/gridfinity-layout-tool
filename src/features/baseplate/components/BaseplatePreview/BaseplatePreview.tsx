@@ -66,6 +66,7 @@ export function BaseplatePreview({
   const invalidateRef = useRef<(() => void) | null>(null);
   const { isDesktop } = useResponsive();
   const filamentColor = useSettingsStore((s) => s.settings.baseplateFilamentColor);
+  const separatorColor = useSettingsStore((s) => s.settings.baseplateSeparatorColor);
   const webgl = detectWebGL();
 
   const {
@@ -295,6 +296,7 @@ export function BaseplatePreview({
                   <StackedBaseplateMeshes
                     stack={stackPrint}
                     color={filamentColor}
+                    separatorColor={separatorColor}
                     separationMm={separationMm}
                     onBounds={handleStackBounds}
                   />

@@ -15,6 +15,8 @@ import {
   STACK_PRINT_MIN_GAP_MM,
   STACK_PRINT_MAX_GAP_MM,
 } from '@/core/types';
+import { FILAMENT_COLORS } from '@/core/constants';
+import { useSettingsStore } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
 import { SettingsRow } from '@/shared/components/SettingsRow';
@@ -53,6 +55,8 @@ export function StackPrintSection({
   onChange,
 }: StackPrintSectionProps) {
   const t = useTranslation();
+  const separatorColor = useSettingsStore((s) => s.settings.baseplateSeparatorColor);
+  const updateSetting = useSettingsStore((s) => s.updateSetting);
   const enabled = stackPrint?.enabled === true;
   const sets = stackPrint?.sets ?? STACK_PRINT_DEFAULT_SETS;
   const gapMm: Mm = stackPrint?.gapMm ?? mm(STACK_PRINT_DEFAULT_GAP_MM);
@@ -156,6 +160,36 @@ export function StackPrintSection({
                     aria-label={t('baseplate.stackPrint.gap.label')}
                   />
                 </SettingsRow>
+
+                {mode === 'sacrificialSheet' && (
+                  <div className="space-y-1.5">
+                    <div className="text-[11px] font-medium text-content-secondary">
+                      {t('baseplate.stackPrint.separatorColor')}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1.5" role="listbox">
+                      {FILAMENT_COLORS.map(({ color, nameKey }) => (
+                        <button
+                          key={color}
+                          type="button"
+                          role="option"
+                          aria-selected={separatorColor === color}
+                          aria-label={t('colors.colorAriaLabel', { name: t(nameKey) })}
+                          onClick={() => updateSetting('baseplateSeparatorColor', color)}
+                          className={`rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
+                            separatorColor === color ? 'bg-surface-hover ring-2 ring-accent' : ''
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-5 w-5 rounded border transition-transform hover:scale-105 ${
+                              separatorColor === color ? 'border-accent' : 'border-stroke-subtle/50'
+                            }`}
+                            style={{ backgroundColor: color }}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {isSplit && (
                   <div className="rounded bg-warning/10 px-2.5 py-1.5 text-[11px] leading-relaxed text-warning">

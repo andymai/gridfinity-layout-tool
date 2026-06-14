@@ -37,7 +37,12 @@ const stack: StackPrintParams = { enabled: true, sets: 3, gapMm: 0.2 as never, m
 describe('StackedBaseplateMeshes', () => {
   it('renders nothing when no plate mesh is available yet', () => {
     const { container } = render(
-      <StackedBaseplateMeshes stack={stack} color="#ffffff" separationMm={0} />
+      <StackedBaseplateMeshes
+        stack={stack}
+        color="#ffffff"
+        separatorColor="#ff7a00"
+        separationMm={0}
+      />
     );
     expect(container).toBeEmptyDOMElement();
   });
