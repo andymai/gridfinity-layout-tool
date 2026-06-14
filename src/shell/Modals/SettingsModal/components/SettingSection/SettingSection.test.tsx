@@ -1,11 +1,12 @@
-import type * as DesignSystem from '@/design-system';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SettingSection } from './SettingSection';
 import { SettingsNavProvider } from '../../SettingsModalContext';
 
 const mockResetSettingKeys = vi.hoisted(() => vi.fn());
+const mockUpdateSettings = vi.hoisted(() => vi.fn());
 const mockAddToast = vi.hoisted(() => vi.fn());
+const mockSettings = vi.hoisted(() => ({ theme: 'dark', accentColor: 'amber' }));
 
 vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
@@ -13,7 +14,11 @@ vi.mock('@/i18n', () => ({
 
 vi.mock('@/core/store', () => ({
   useSettingsStore: Object.assign(() => undefined, {
-    getState: () => ({ resetSettingKeys: mockResetSettingKeys }),
+    getState: () => ({
+      settings: mockSettings,
+      resetSettingKeys: mockResetSettingKeys,
+      updateSettings: mockUpdateSettings,
+    }),
   }),
 }));
 
@@ -24,30 +29,10 @@ vi.mock('@/core/store/toast', () => ({
   INITIAL_TOAST_STATE: {},
 }));
 
-vi.mock('@/design-system', async (importActual) => {
-  const actual = await importActual<typeof DesignSystem>();
-  return {
-    ...actual,
-    ConfirmDialog: ({
-      isOpen,
-      onConfirm,
-      confirmText,
-    }: {
-      isOpen: boolean;
-      onConfirm: () => void;
-      confirmText: string;
-    }) =>
-      isOpen ? (
-        <button data-testid="confirm" onClick={onConfirm}>
-          {confirmText}
-        </button>
-      ) : null,
-  };
-});
-
 describe('SettingSection', () => {
   beforeEach(() => {
     mockResetSettingKeys.mockClear();
+    mockUpdateSettings.mockClear();
     mockAddToast.mockClear();
   });
 
@@ -71,16 +56,28 @@ describe('SettingSection', () => {
     expect(screen.queryByText('settings.section.reset')).not.toBeInTheDocument();
   });
 
-  it('resets the given keys after confirmation and toasts', () => {
+  it('resets the given keys immediately (no confirmation) and toasts', () => {
     render(
       <SettingSection id="x" title="X" resetKeys={['theme', 'accentColor']}>
         <p>content</p>
       </SettingSection>
     );
     fireEvent.click(screen.getByText('settings.section.reset'));
-    fireEvent.click(screen.getByTestId('confirm'));
     expect(mockResetSettingKeys).toHaveBeenCalledWith(['theme', 'accentColor']);
-    expect(mockAddToast).toHaveBeenCalled();
+    expect(mockAddToast).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers an Undo action that restores the previous values', () => {
+    render(
+      <SettingSection id="x" title="X" resetKeys={['theme', 'accentColor']}>
+        <p>content</p>
+      </SettingSection>
+    );
+    fireEvent.click(screen.getByText('settings.section.reset'));
+    const toast = mockAddToast.mock.calls[0][0];
+    expect(toast.action.label).toBe('common.undo');
+    toast.action.onClick();
+    expect(mockUpdateSettings).toHaveBeenCalledWith({ theme: 'dark', accentColor: 'amber' });
   });
 
   it('invokes a custom onReset instead of the store when provided', () => {
@@ -91,7 +88,6 @@ describe('SettingSection', () => {
       </SettingSection>
     );
     fireEvent.click(screen.getByText('settings.section.reset'));
-    fireEvent.click(screen.getByTestId('confirm'));
     expect(onReset).toHaveBeenCalled();
     expect(mockResetSettingKeys).not.toHaveBeenCalled();
   });

@@ -2,10 +2,68 @@ import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import type { PrintSettings } from '@/shared/printSettings';
-import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { SettingsRow } from '@/shared/components/SettingsRow';
+import { Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
+
+type NumericPrintKey = 'filamentCostPerKg' | 'layerHeightMm' | 'infillPercent' | 'nozzleSizeMm';
+
+interface PrintFieldConfig {
+  key: NumericPrintKey;
+  labelKey: string;
+  unit: string;
+  min: number;
+  max: number;
+  step: number;
+  decimals: number;
+}
+
+const PRINT_FIELDS: PrintFieldConfig[] = [
+  {
+    key: 'filamentCostPerKg',
+    labelKey: 'settings.filamentCostPerKg',
+    unit: '$/kg',
+    min: PRINT_SETTINGS_CONSTRAINTS.COST_MIN,
+    max: PRINT_SETTINGS_CONSTRAINTS.COST_MAX,
+    step: PRINT_SETTINGS_CONSTRAINTS.COST_STEP,
+    decimals: 0,
+  },
+  {
+    key: 'layerHeightMm',
+    labelKey: 'settings.printLayerHeight',
+    unit: 'mm',
+    min: PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MIN,
+    max: PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MAX,
+    step: PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_STEP,
+    decimals: 2,
+  },
+  {
+    key: 'infillPercent',
+    labelKey: 'settings.infillPercent',
+    unit: '%',
+    min: PRINT_SETTINGS_CONSTRAINTS.INFILL_MIN,
+    max: PRINT_SETTINGS_CONSTRAINTS.INFILL_MAX,
+    step: PRINT_SETTINGS_CONSTRAINTS.INFILL_STEP,
+    decimals: 0,
+  },
+  {
+    key: 'nozzleSizeMm',
+    labelKey: 'settings.nozzleSize',
+    unit: 'mm',
+    min: PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN,
+    max: PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX,
+    step: PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP,
+    decimals: 1,
+  },
+];
+
+// Round to the field's precision before clamping so stepping fractional values
+// (e.g. 0.08 + 0.04) doesn't accumulate floating-point drift.
+const clampRound = (value: number, min: number, max: number, decimals: number): number => {
+  const rounded = Number(value.toFixed(decimals));
+  return Math.max(min, Math.min(max, rounded));
+};
 
 export function PrintTab() {
   const t = useTranslation();
@@ -17,7 +75,7 @@ export function PrintTab() {
     }))
   );
 
-  const updatePrintSetting = <K extends keyof PrintSettings>(key: K, value: PrintSettings[K]) => {
+  const setPrintValue = (key: NumericPrintKey, value: PrintSettings[NumericPrintKey]) => {
     updateSetting('printSettings', { ...printSettings, [key]: value });
   };
 
@@ -30,86 +88,31 @@ export function PrintTab() {
         resetKeys={['printSettings']}
       >
         <div className="space-y-3 text-xs text-content-secondary">
-          <SettingsRow
-            label={t('settings.filamentCostPerKg')}
-            htmlFor="filamentCostPerKg"
-            unit="$/kg"
-          >
-            <DeferredNumberInput
-              id="filamentCostPerKg"
-              value={printSettings.filamentCostPerKg}
-              onChange={(value) =>
-                updatePrintSetting(
-                  'filamentCostPerKg',
-                  Math.max(
-                    PRINT_SETTINGS_CONSTRAINTS.COST_MIN,
-                    Math.min(PRINT_SETTINGS_CONSTRAINTS.COST_MAX, value)
-                  )
-                )
-              }
-              min={PRINT_SETTINGS_CONSTRAINTS.COST_MIN}
-              max={PRINT_SETTINGS_CONSTRAINTS.COST_MAX}
-              step={PRINT_SETTINGS_CONSTRAINTS.COST_STEP}
-              className="input w-14 px-1 py-0.5 text-right text-xs"
-            />
-          </SettingsRow>
-          <SettingsRow label={t('settings.printLayerHeight')} htmlFor="printLayerHeight" unit="mm">
-            <DeferredNumberInput
-              id="printLayerHeight"
-              value={printSettings.layerHeightMm}
-              onChange={(value) =>
-                updatePrintSetting(
-                  'layerHeightMm',
-                  Math.max(
-                    PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MIN,
-                    Math.min(PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MAX, value)
-                  )
-                )
-              }
-              min={PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MIN}
-              max={PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MAX}
-              step={PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_STEP}
-              className="input w-14 px-1 py-0.5 text-right text-xs"
-            />
-          </SettingsRow>
-          <SettingsRow label={t('settings.infillPercent')} htmlFor="infillPercent" unit="%">
-            <DeferredNumberInput
-              id="infillPercent"
-              value={printSettings.infillPercent}
-              onChange={(value) =>
-                updatePrintSetting(
-                  'infillPercent',
-                  Math.max(
-                    PRINT_SETTINGS_CONSTRAINTS.INFILL_MIN,
-                    Math.min(PRINT_SETTINGS_CONSTRAINTS.INFILL_MAX, value)
-                  )
-                )
-              }
-              min={PRINT_SETTINGS_CONSTRAINTS.INFILL_MIN}
-              max={PRINT_SETTINGS_CONSTRAINTS.INFILL_MAX}
-              step={PRINT_SETTINGS_CONSTRAINTS.INFILL_STEP}
-              className="input w-14 px-1 py-0.5 text-right text-xs"
-            />
-          </SettingsRow>
-          <SettingsRow label={t('settings.nozzleSize')} htmlFor="nozzleSize" unit="mm">
-            <DeferredNumberInput
-              id="nozzleSize"
-              value={printSettings.nozzleSizeMm}
-              onChange={(value) =>
-                updatePrintSetting(
-                  'nozzleSizeMm',
-                  Math.max(
-                    PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN,
-                    Math.min(PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX, value)
-                  )
-                )
-              }
-              min={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN}
-              max={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX}
-              step={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP}
-              className="input w-14 px-1 py-0.5 text-right text-xs"
-            />
-          </SettingsRow>
+          {PRINT_FIELDS.map((field) => {
+            const value = printSettings[field.key];
+            return (
+              <SettingsRow key={field.key} label={t(field.labelKey)} unit={field.unit}>
+                <Stepper
+                  size="sm"
+                  value={value}
+                  min={field.min}
+                  max={field.max}
+                  step={field.step}
+                  inputDecimals={field.decimals}
+                  onChange={(next) =>
+                    setPrintValue(field.key, clampRound(next, field.min, field.max, field.decimals))
+                  }
+                  onStep={(delta) =>
+                    setPrintValue(
+                      field.key,
+                      clampRound(value + delta * field.step, field.min, field.max, field.decimals)
+                    )
+                  }
+                  aria-label={t(field.labelKey)}
+                />
+              </SettingsRow>
+            );
+          })}
         </div>
       </SettingSection>
     </div>

@@ -2317,7 +2317,5 @@
   "settings.search.keywords.labs": "experimentell, Beta, Funktions-Flags",
   "settings.section.reset": "Zurücksetzen",
   "settings.section.resetAria": "{section} auf Standard zurücksetzen",
-  "settings.section.resetTitle": "{section} zurücksetzen",
-  "settings.section.resetConfirm": "{section} auf Standardwerte zurücksetzen? Andere Einstellungen bleiben unverändert.",
   "settings.section.resetDone": "{section} auf Standard zurückgesetzt"
 }

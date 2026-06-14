@@ -1,3 +1,4 @@
+import type * as DesignSystem from '@/design-system';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { PrintTab } from './PrintTab';
@@ -27,9 +28,15 @@ vi.mock('@/core/store', () => ({
     }),
 }));
 
-vi.mock('@/shared/components/DeferredNumberInput', () => ({
-  DeferredNumberInput: ({ id }: { id: string }) => <input data-testid={`input-${id}`} />,
-}));
+vi.mock('@/design-system', async (importActual) => {
+  const actual = await importActual<typeof DesignSystem>();
+  return {
+    ...actual,
+    Stepper: ({ 'aria-label': ariaLabel }: { 'aria-label': string }) => (
+      <div data-testid={`stepper-${ariaLabel}`}>{ariaLabel}</div>
+    ),
+  };
+});
 
 vi.mock('@/shared/components/SettingsRow', () => ({
   SettingsRow: ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -43,11 +50,11 @@ describe('PrintTab', () => {
     expect(screen.getByText('settings.printEstimates')).toBeInTheDocument();
   });
 
-  it('renders inputs for cost, layer height, infill, and nozzle', () => {
+  it('renders a stepper for cost, layer height, infill, and nozzle', () => {
     render(<PrintTab />);
-    expect(screen.getByTestId('input-filamentCostPerKg')).toBeInTheDocument();
-    expect(screen.getByTestId('input-printLayerHeight')).toBeInTheDocument();
-    expect(screen.getByTestId('input-infillPercent')).toBeInTheDocument();
-    expect(screen.getByTestId('input-nozzleSize')).toBeInTheDocument();
+    expect(screen.getByTestId('stepper-settings.filamentCostPerKg')).toBeInTheDocument();
+    expect(screen.getByTestId('stepper-settings.printLayerHeight')).toBeInTheDocument();
+    expect(screen.getByTestId('stepper-settings.infillPercent')).toBeInTheDocument();
+    expect(screen.getByTestId('stepper-settings.nozzleSize')).toBeInTheDocument();
   });
 });

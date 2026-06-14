@@ -1,4 +1,3 @@
-import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { DEFAULT_CATEGORIES } from '@/core/constants';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -11,12 +10,7 @@ import { SettingSection } from '../../components/SettingSection/SettingSection';
 export function CategoriesTab() {
   const t = useTranslation();
 
-  const { settings, updateSetting } = useSettingsStore(
-    useShallow((state) => ({
-      settings: state.settings,
-      updateSetting: state.updateSetting,
-    }))
-  );
+  const settings = useSettingsStore((state) => state.settings);
 
   const {
     currentCategories,
@@ -37,7 +31,7 @@ export function CategoriesTab() {
         id="default-categories"
         title={t('settings.defaultCategories')}
         hint={t('settings.defaultCategoriesHint')}
-        onReset={() => updateSetting('defaultCategories', null)}
+        resetKeys={['defaultCategories']}
         resetDisabled={!hasCustomCategoryDefaults}
       >
         <div className="mb-4 rounded-lg border border-stroke-subtle bg-surface-elevated p-3 text-sm text-content-secondary">

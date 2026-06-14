@@ -29,8 +29,9 @@ export function GeneralTab() {
         onReset={selectAuto}
         resetDisabled={settingsLocale === 'auto'}
       >
-        <div className="space-y-1.5" role="radiogroup" aria-label={t('settings.language')}>
+        <div className="space-y-1" role="radiogroup" aria-label={t('settings.language')}>
           <SelectableCard
+            compact
             selected={settingsLocale === 'auto'}
             onSelect={selectAuto}
             label={t('settings.autoDetect')}
@@ -38,6 +39,7 @@ export function GeneralTab() {
           {SUPPORTED_LOCALES.map((loc) => (
             <SelectableCard
               key={loc.code}
+              compact
               selected={locale === loc.code && settingsLocale !== 'auto'}
               onSelect={() => {
                 updateSetting('locale', loc.code);

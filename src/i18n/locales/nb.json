@@ -2317,7 +2317,5 @@
   "settings.search.keywords.labs": "eksperimentell, beta, funksjonsflagg",
   "settings.section.reset": "Tilbakestill",
   "settings.section.resetAria": "Tilbakestill {section} til standard",
-  "settings.section.resetTitle": "Tilbakestill {section}",
-  "settings.section.resetConfirm": "Tilbakestille {section} til standardverdiene? Andre innstillinger forblir uendret.",
   "settings.section.resetDone": "{section} tilbakestilt til standard"
 }

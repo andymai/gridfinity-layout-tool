@@ -2317,7 +2317,5 @@
   "settings.search.keywords.labs": "expérimental, bêta, indicateurs de fonctionnalités",
   "settings.section.reset": "Réinitialiser",
   "settings.section.resetAria": "Réinitialiser {section} aux valeurs par défaut",
-  "settings.section.resetTitle": "Réinitialiser {section}",
-  "settings.section.resetConfirm": "Réinitialiser {section} à ses valeurs par défaut ? Les autres réglages ne changent pas.",
   "settings.section.resetDone": "{section} réinitialisée aux valeurs par défaut"
 }

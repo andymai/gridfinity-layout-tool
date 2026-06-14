@@ -237,9 +237,12 @@ export function ToastContainer() {
   // Position: top-center on mobile, bottom-right on tablet/desktop
   const position = isMobile ? 'top' : 'bottom';
 
+  // z-[60] keeps toasts above modal dialogs (Dialog overlay/content sit at
+  // z-50/51+, nested confirms higher) so notifications fired from inside a
+  // modal — e.g. settings section reset/undo — stay visible.
   const containerClasses = isMobile
-    ? 'fixed top-0 left-0 right-0 z-50 flex flex-col items-center gap-2 p-3 pt-[max(12px,env(safe-area-inset-top))]'
-    : 'fixed bottom-4 right-4 z-50 flex flex-col gap-2';
+    ? 'fixed top-0 left-0 right-0 z-[60] flex flex-col items-center gap-2 p-3 pt-[max(12px,env(safe-area-inset-top))]'
+    : 'fixed bottom-4 right-4 z-[60] flex flex-col gap-2';
 
   const toastWidth = isMobile ? 'w-full max-w-md' : 'w-80';
 

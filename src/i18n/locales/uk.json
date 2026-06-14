@@ -2317,7 +2317,5 @@
   "settings.search.keywords.labs": "експериментальне, бета, прапорці функцій",
   "settings.section.reset": "Скинути",
   "settings.section.resetAria": "Скинути {section} до значень за замовчуванням",
-  "settings.section.resetTitle": "Скинути {section}",
-  "settings.section.resetConfirm": "Скинути {section} до значень за замовчуванням? Інші налаштування не зміняться.",
   "settings.section.resetDone": "{section} скинуто до значень за замовчуванням"
 }

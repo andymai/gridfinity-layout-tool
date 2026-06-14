@@ -2317,7 +2317,5 @@
   "settings.search.keywords.labs": "experimental, beta, sinalizadores de recursos",
   "settings.section.reset": "Redefinir",
   "settings.section.resetAria": "Redefinir {section} para os padrões",
-  "settings.section.resetTitle": "Redefinir {section}",
-  "settings.section.resetConfirm": "Redefinir {section} para os valores padrão? As outras configurações permanecem inalteradas.",
   "settings.section.resetDone": "{section} redefinida para os padrões"
 }

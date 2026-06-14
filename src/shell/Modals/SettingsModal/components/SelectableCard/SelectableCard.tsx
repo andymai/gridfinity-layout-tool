@@ -10,6 +10,8 @@ interface SelectableCardProps {
   description?: string;
   /** Optional visual preview rendered above the label (e.g. theme mock). */
   preview?: ReactNode;
+  /** Tighter padding for dense lists without previews (e.g. the language list). */
+  compact?: boolean;
   /** Accessible name; defaults to `label`. */
   'aria-label'?: string;
   className?: string;
@@ -26,6 +28,7 @@ export function SelectableCard({
   label,
   description,
   preview,
+  compact = false,
   'aria-label': ariaLabel,
   className,
 }: SelectableCardProps) {
@@ -43,7 +46,8 @@ export function SelectableCard({
         }
       }}
       className={cn(
-        'group flex cursor-pointer flex-col gap-2 rounded-lg border p-2.5 text-left transition-colors',
+        'group flex cursor-pointer flex-col gap-2 rounded-lg border text-left transition-colors',
+        compact ? 'px-3 py-1.5' : 'p-2.5',
         'outline-none focus-visible:ring-2 focus-visible:ring-accent',
         selected
           ? 'border-accent bg-surface-elevated'

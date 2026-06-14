@@ -70,6 +70,7 @@ export function SettingsSearch({ query, onQueryChange }: SettingsSearchProps) {
         onKeyDown={handleKeyDown}
         fullWidth
         size="sm"
+        className="pl-2"
         leftIcon={<SearchIcon />}
         rightIcon={
           query ? (

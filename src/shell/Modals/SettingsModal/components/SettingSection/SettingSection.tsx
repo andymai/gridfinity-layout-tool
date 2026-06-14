@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react';
-import { Button, ConfirmDialog, RotateCcwIcon } from '@/design-system';
+import type { ReactNode } from 'react';
+import { Button, RotateCcwIcon } from '@/design-system';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
@@ -19,11 +19,15 @@ interface SettingSectionProps {
   /** Danger styling for the title (e.g. Storage "Clear all data"). */
   tone?: 'default' | 'danger';
   /**
-   * Settings keys this section owns. When provided, a Reset control appears and
-   * restores exactly these keys to their defaults.
+   * Settings keys this section owns. When provided, a Reset control appears that
+   * restores exactly these keys to their defaults — applied immediately with an
+   * Undo toast (the reset is non-destructive, so no confirmation prompt).
    */
   resetKeys?: (keyof UserSettings)[];
-  /** Custom reset handler; overrides `resetKeys` (for non-UserSettings resets). */
+  /**
+   * Custom reset handler; overrides `resetKeys` (for non-UserSettings resets).
+   * Applied immediately; the handler owns its own user feedback.
+   */
   onReset?: () => void;
   /** Hide/disable the reset control (e.g. already at defaults). */
   resetDisabled?: boolean;
@@ -48,7 +52,6 @@ export function SettingSection({
 }: SettingSectionProps) {
   const t = useTranslation();
   const { highlightedSectionId } = useSettingsNav();
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const isHighlighted = highlightedSectionId === id;
   const canReset = (onReset || (resetKeys && resetKeys.length > 0)) && !resetDisabled;
@@ -56,11 +59,27 @@ export function SettingSection({
   const handleReset = () => {
     if (onReset) {
       onReset();
-    } else if (resetKeys) {
-      useSettingsStore.getState().resetSettingKeys(resetKeys);
+      return;
     }
-    setShowResetConfirm(false);
-    useToastStore.getState().addToast(t('settings.section.resetDone', { section: title }), 'info');
+    if (!resetKeys) return;
+
+    // Snapshot the owned keys so the reset can be undone from the toast.
+    const previous = useSettingsStore.getState().settings;
+    const snapshot = Object.fromEntries(
+      resetKeys.map((key) => [key, previous[key]])
+    ) as Partial<UserSettings>;
+
+    useSettingsStore.getState().resetSettingKeys(resetKeys);
+    useToastStore.getState().addToast({
+      message: t('settings.section.resetDone', { section: title }),
+      type: 'info',
+      action: {
+        label: t('common.undo'),
+        onClick: () => {
+          useSettingsStore.getState().updateSettings(snapshot);
+        },
+      },
+    });
   };
 
   return (
@@ -87,7 +106,7 @@ export function SettingSection({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowResetConfirm(true)}
+            onClick={handleReset}
             className="flex-shrink-0 gap-1 text-xs text-content-tertiary hover:text-content"
             aria-label={t('settings.section.resetAria', { section: title })}
           >
@@ -97,17 +116,6 @@ export function SettingSection({
         )}
       </div>
       {children}
-
-      {canReset && (
-        <ConfirmDialog
-          isOpen={showResetConfirm}
-          title={t('settings.section.resetTitle', { section: title })}
-          message={t('settings.section.resetConfirm', { section: title })}
-          confirmText={t('settings.section.reset')}
-          onConfirm={handleReset}
-          onCancel={() => setShowResetConfirm(false)}
-        />
-      )}
     </section>
   );
 }

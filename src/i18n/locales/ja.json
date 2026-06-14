@@ -2317,7 +2317,5 @@
   "settings.search.keywords.labs": "実験的, ベータ, 機能フラグ",
   "settings.section.reset": "リセット",
   "settings.section.resetAria": "{section} をデフォルトにリセット",
-  "settings.section.resetTitle": "{section} をリセット",
-  "settings.section.resetConfirm": "{section} をデフォルト値にリセットしますか？他の設定は変更されません。",
   "settings.section.resetDone": "{section} をデフォルトにリセットしました"
 }

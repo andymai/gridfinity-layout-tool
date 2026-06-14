@@ -2317,7 +2317,5 @@
   "settings.search.keywords.labs": "experimental, beta, indicadores de funciones",
   "settings.section.reset": "Restablecer",
   "settings.section.resetAria": "Restablecer {section} a los valores predeterminados",
-  "settings.section.resetTitle": "Restablecer {section}",
-  "settings.section.resetConfirm": "¿Restablecer {section} a sus valores predeterminados? Los demás ajustes no cambian.",
   "settings.section.resetDone": "{section} restablecida a los valores predeterminados"
 }

@@ -2317,7 +2317,5 @@
   "settings.search.keywords.labs": "experimentell, beta, funktionsflaggor",
   "settings.section.reset": "Återställ",
   "settings.section.resetAria": "Återställ {section} till standard",
-  "settings.section.resetTitle": "Återställ {section}",
-  "settings.section.resetConfirm": "Återställa {section} till standardvärdena? Andra inställningar påverkas inte.",
   "settings.section.resetDone": "{section} återställd till standard"
 }

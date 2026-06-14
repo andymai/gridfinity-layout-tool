@@ -2317,7 +2317,5 @@
   "settings.search.keywords.labs": "experimenteel, bèta, functievlaggen",
   "settings.section.reset": "Resetten",
   "settings.section.resetAria": "{section} terugzetten naar standaard",
-  "settings.section.resetTitle": "{section} resetten",
-  "settings.section.resetConfirm": "{section} terugzetten naar de standaardwaarden? Andere instellingen blijven ongewijzigd.",
   "settings.section.resetDone": "{section} teruggezet naar standaard"
 }

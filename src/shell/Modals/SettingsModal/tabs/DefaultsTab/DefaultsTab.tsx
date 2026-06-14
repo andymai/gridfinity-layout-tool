@@ -3,7 +3,6 @@ import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { CONSTRAINTS } from '@/core/constants';
-import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -12,6 +11,8 @@ import { Button, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { SettingSection } from '../../components/SettingSection/SettingSection';
 import type { UserSettings } from '@/core/store/settings';
+
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
 const LAYOUT_DEFAULT_KEYS: (keyof UserSettings)[] = [
   'defaultDrawerWidth',
@@ -141,23 +142,29 @@ export function DefaultsTab() {
           </div>
 
           {/* Layer Height / Print Bed / Grid Unit as SettingsRow */}
-          <SettingsRow
-            label={t('settings.defaultLayerHeight')}
-            htmlFor="defaultLayerHeight"
-            unit="u"
-          >
-            <DeferredNumberInput
-              id="defaultLayerHeight"
+          <SettingsRow label={t('settings.defaultLayerHeight')} unit="u">
+            <Stepper
+              size="sm"
               value={settings.defaultLayerHeight}
+              min={CONSTRAINTS.MIN_LAYER_HEIGHT}
+              max={CONSTRAINTS.GRID_MAX}
               onChange={(value) =>
                 updateSetting(
                   'defaultLayerHeight',
-                  Math.max(CONSTRAINTS.MIN_LAYER_HEIGHT, Math.min(CONSTRAINTS.GRID_MAX, value))
+                  clamp(value, CONSTRAINTS.MIN_LAYER_HEIGHT, CONSTRAINTS.GRID_MAX)
                 )
               }
-              min={CONSTRAINTS.MIN_LAYER_HEIGHT}
-              max={CONSTRAINTS.GRID_MAX}
-              className="input w-14 px-1 py-0.5 text-right text-xs"
+              onStep={(delta) =>
+                updateSetting(
+                  'defaultLayerHeight',
+                  clamp(
+                    settings.defaultLayerHeight + delta,
+                    CONSTRAINTS.MIN_LAYER_HEIGHT,
+                    CONSTRAINTS.GRID_MAX
+                  )
+                )
+              }
+              aria-label={t('settings.defaultLayerHeight')}
             />
           </SettingsRow>
           <SettingsRow
@@ -180,14 +187,29 @@ export function DefaultsTab() {
             />
           </SettingsRow>
           <div>
-            <SettingsRow label={t('settings.defaultGridUnit')} htmlFor="defaultGridUnit" unit="mm">
-              <DeferredNumberInput
-                id="defaultGridUnit"
+            <SettingsRow label={t('settings.defaultGridUnit')} unit="mm">
+              <Stepper
+                size="sm"
                 value={settings.defaultGridUnitMm}
-                onChange={(value) => updateSetting('defaultGridUnitMm', value)}
                 min={CONSTRAINTS.GRID_UNIT_MM_MIN}
                 max={CONSTRAINTS.GRID_UNIT_MM_MAX}
-                className="input w-14 px-1 py-0.5 text-right text-xs"
+                onChange={(value) =>
+                  updateSetting(
+                    'defaultGridUnitMm',
+                    clamp(value, CONSTRAINTS.GRID_UNIT_MM_MIN, CONSTRAINTS.GRID_UNIT_MM_MAX)
+                  )
+                }
+                onStep={(delta) =>
+                  updateSetting(
+                    'defaultGridUnitMm',
+                    clamp(
+                      settings.defaultGridUnitMm + delta,
+                      CONSTRAINTS.GRID_UNIT_MM_MIN,
+                      CONSTRAINTS.GRID_UNIT_MM_MAX
+                    )
+                  )
+                }
+                aria-label={t('settings.defaultGridUnit')}
               />
             </SettingsRow>
             <p className="mt-0.5 text-[10px] text-content-tertiary">

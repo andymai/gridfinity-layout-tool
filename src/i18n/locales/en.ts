@@ -772,9 +772,6 @@ const en: Record<string, string> = {
   // Per-section reset
   'settings.section.reset': 'Reset',
   'settings.section.resetAria': 'Reset {section} to defaults',
-  'settings.section.resetTitle': 'Reset {section}',
-  'settings.section.resetConfirm':
-    'Reset {section} to its default values? Other settings are unchanged.',
   'settings.section.resetDone': '{section} reset to defaults',
 
   // Appearance tab
