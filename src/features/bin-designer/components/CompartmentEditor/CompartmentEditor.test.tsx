@@ -150,6 +150,37 @@ describe('CompartmentEditor', () => {
     expect(screen.getByRole('application')).toHaveClass('overflow-hidden');
   });
 
+  // The grid mirrors the bin's true top-view proportions (no 0.5–2 clamp),
+  // scaled to fit a fixed envelope. The width cap is derived from the height
+  // budget (300px) times the true aspect, which keeps deep bins within budget.
+  it('renders a wide bin at its true proportions, capped by the width envelope', () => {
+    const WIDE = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 210,
+      depth: 42, // 5:1, well past the old 2x clamp
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 2, cells: [0, 1, 2, 3] },
+    };
+    useDesignerStore.setState({ params: WIDE });
+    render(<CompartmentEditor />);
+    const grid = screen.getByRole('application');
+    expect(grid.style.aspectRatio).toBe('5 / 1');
+    expect(grid.style.maxWidth).toBe('360px'); // min(360, 300*5)
+  });
+
+  it('keeps a deep bin within the height envelope by capping its width', () => {
+    const DEEP = {
+      ...DEFAULT_BIN_PARAMS,
+      width: 42,
+      depth: 210, // 1:5
+      compartments: { ...DEFAULT_BIN_PARAMS.compartments, cols: 2, rows: 2, cells: [0, 1, 2, 3] },
+    };
+    useDesignerStore.setState({ params: DEEP });
+    render(<CompartmentEditor />);
+    const grid = screen.getByRole('application');
+    expect(grid.style.aspectRatio).toBe('0.2 / 1');
+    expect(grid.style.maxWidth).toBe('60px'); // min(360, 300*0.2)
+  });
+
   it('does not show 2D grid editor when grid is 1x1', () => {
     render(<CompartmentEditor />);
     expect(screen.queryByRole('application')).not.toBeInTheDocument();

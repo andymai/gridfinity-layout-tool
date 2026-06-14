@@ -47,6 +47,10 @@ import { rowKeyOf } from './useDividerTiltSubsection';
 
 const EMPTY_HIGHLIGHT_SET: ReadonlySet<number> = new Set();
 
+// Bounding box the 2D grid is scaled to fit, at the bin's true proportions.
+const GRID_ENVELOPE_W_PX = 360;
+const GRID_ENVELOPE_H_PX = 300;
+
 export function CompartmentEditor() {
   const t = useTranslation();
   const { isMobile } = useResponsive();
@@ -443,8 +447,12 @@ export function CompartmentEditor() {
     return t('binDesigner.compartmentEditor.dragOrClick');
   }, [isDragging, selection.size, selectionAction, hoveredIsSplittable, t]);
 
-  // Compute aspect ratio from bin dimensions, clamped to avoid extreme shapes
-  const aspectRatio = depth > 0 ? Math.min(2, Math.max(0.5, width / depth)) : 1;
+  // Render the grid at the bin's true top-view proportions, scaled to fit a
+  // fixed envelope. Capping width to `MAX_H * aspect` keeps the derived height
+  // within budget while preserving the real shape — so deep bins stay legible
+  // instead of ballooning, and the box never overflows onto the controls above.
+  const aspectRatio = depth > 0 ? width / depth : 1;
+  const gridMaxWidthPx = Math.min(GRID_ENVELOPE_W_PX, GRID_ENVELOPE_H_PX * aspectRatio);
 
   // Build wall thickness options for SnappingSlider
   const thicknessOptions: SnappingSliderOption[] = useMemo(
@@ -621,8 +629,8 @@ export function CompartmentEditor() {
           </div>
           <div
             ref={gridRef}
-            className="relative mx-auto max-w-[360px] select-none overflow-hidden rounded-lg border-2 border-stroke-subtle bg-surface-elevated p-2"
-            style={{ aspectRatio }}
+            className="relative mx-auto w-full select-none overflow-hidden rounded-lg border-2 border-stroke-subtle bg-surface-elevated p-2"
+            style={{ aspectRatio, maxWidth: `${gridMaxWidthPx}px` }}
             role="application"
             aria-label={`Compartment grid, ${cols} columns by ${rows} rows`}
             aria-describedby="compartment-grid-instructions"
