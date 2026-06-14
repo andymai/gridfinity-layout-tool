@@ -629,7 +629,7 @@ export function CompartmentEditor() {
           </div>
           <div
             ref={gridRef}
-            className="relative mx-auto w-full select-none overflow-hidden rounded-lg border-2 border-stroke-subtle bg-surface-elevated p-2"
+            className="relative mr-auto w-full select-none overflow-hidden rounded-lg border-2 border-stroke-subtle bg-surface-elevated p-2"
             style={{ aspectRatio, maxWidth: `${gridMaxWidthPx}px` }}
             role="application"
             aria-label={`Compartment grid, ${cols} columns by ${rows} rows`}
