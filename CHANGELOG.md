@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.170.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.169.1...gridfinity-layout-tool-v4.170.0) (2026-06-14)
+
+
+### Features
+
+* **settings:** redesign settings modal — DS Dialog, grouped tabs, search, per-section reset ([#2147](https://github.com/andymai/gridfinity-layout-tool/issues/2147)) ([7bd34c4](https://github.com/andymai/gridfinity-layout-tool/commit/7bd34c44f38fea1165ae33a3d8f37d95117e3dc8))
+
 ## [4.169.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.169.0...gridfinity-layout-tool-v4.169.1) (2026-06-14)
 
 
