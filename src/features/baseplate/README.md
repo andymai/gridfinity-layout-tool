@@ -25,10 +25,15 @@ graph TB
 - `components/BaseplatePanel.tsx` — parameter controls: grid size, padding, magnets, split mini-map
 - `components/BaseplatePreview.tsx` — Three.js 3D preview with assembled/exploded split views
 - `hooks/useBaseplateGeneration.ts` — two-phase lifecycle: synchronous direct-mesh preview (sub-100ms) + async BREP swap once WASM bridge ready, epoch-based stale detection
-- `hooks/useBaseplateExport.ts` — export pipeline: single-piece or parallel split with ZIP packaging; 3MF format optionally stacks N copies of each part via 3MF instancing
+- `hooks/useBaseplateExport.ts` — export pipeline: single-piece or parallel split with ZIP packaging; when stack printing is on, bakes real stacked geometry per physical stack (see Stack printing)
 - `store/baseplatePageStore.ts` — ephemeral UI state (generation status, tiling, piece selection)
+- `components/BaseplatePanel/StackPrintSection.tsx` — "Stack for printing" panel section (experimental)
+- `components/BaseplatePreview/StackedBaseplateMeshes.tsx` + `StackSeparationSlider.tsx` — flipped-tower preview + explode slider
 - `utils/splitPlanner.ts` — 2D optimal tiling: partitions grid into print-bed-sized pieces
-- `utils/buildFullParams.ts` — resolves sync mode: drawer dims vs custom width/depth
+- `utils/buildFullParams.ts` — resolves sync mode (drawer dims vs custom width/depth); strips connectors when stack printing is on
+- `utils/stackPrint.ts` — stack planning (groups → capped physical stacks) + mesh flip/translate/replicate + interface-sheet builder
+- `utils/stackExport.ts` — bakes a stack into export triangle soup (+ per-triangle material indices for sacrificial sheets)
+- `utils/stackPreview.ts` — lays flipped towers out in a centered row for the 3D preview
 - `utils/fileNaming.ts` — descriptive/compact/custom filename generation
 - `constants.ts` — MAX_BASEPLATE_DIMENSION (16), EXPLODE_GAP_MM (10), piece color palette
 
@@ -42,6 +47,8 @@ graph TB
 - **Ephemeral store**: `baseplatePageStore` resets on unmount; persistent params live in layout store
 - **Connector fit offset (`connectorFitOffset`, issue #2024)**: a signed mm value (±0.3, 0.05 step, default 0) the user dials in the panel's connector section to compensate for printer/filament variation. It only shifts the female groove clearance — the tongue/key stay nominal — and is clamped so effective clearance never goes negative (`effectiveClearance` in `@/shared/constants/connectors`, the single source of truth shared by the worker, cache keys, and print guide). Positive = looser, negative = tighter
 - **`preferIdenticalPieces` (opt-in, gated behind `connectorNubs`)**: palindromic chunk sizes + doubled (M+F) dovetail connectors + canonical-edge fingerprinting let opposite-corner pieces share one generated mesh. Each placement gets a `placementRotationDeg` (0 or 180); the 3D preview rotates the canonical mesh around the piece center and the print guide annotates rotated positions with "(rotate 180°)"
+- **Stack printing (`StackPrintParams`, experimental)**: `baseplateParams.stackPrint` (`{ enabled, sets, gapMm, mode }`) prints a drawer's plates fast as flipped vertical stacks. Each identical-piece group stacks to `groupQuantity × sets` copies, split into multiple physical stacks once a tower exceeds `STACK_PRINT_MAX_STACK_HEIGHT` (`planPhysicalStacks`). `mode: 'airGap'` separates copies by an air gap; `mode: 'sacrificialSheet'` prints a thin dissimilar-material sheet at each seam (a 2nd filament via 3MF per-triangle material indices) — so sacrificial-sheet mode **forces 3MF** (STL/STEP disabled in the export dialog). Replication is mesh-level (`utils/stackPrint`/`stackExport`/`stackPreview`): the BREP generator builds one plate, then flip/translate/replicate transforms produce the towers for both preview and export — the generator is untouched. The preview shows flipped towers (matching the printed orientation) with a `StackSeparationSlider` to explode them; sacrificial sheets render in the theme **accent color** to distinguish the second material.
+- **Connector auto-disable under stacking**: connector overhangs can't print in a vertical stack, so `buildFullParams` strips `connectorNubs`/`connectorStyle` whenever `stackPrint.enabled` — **functionally, without mutating stored params**, so the user's connector settings return intact when stacking is turned off. The panel hides the connector controls meanwhile.
 - **Padding anchor pad**: `PaddingSchematic` frames four mm steppers around a central `PaddingAnchor` 3×3 pad. Each outer cell is a directional arrow (a single `ArrowLeftIcon` rotated in 45° steps via `ARROW_ROTATION`) pointing at the drawer corner/edge it anchors to; the center cell is a target glyph. Picking a cell redistributes total padding through `computeAnchoredPaddings`; editing any stepper flips the anchor to `custom`, surfaced as a caption
 
 ## Gotchas
