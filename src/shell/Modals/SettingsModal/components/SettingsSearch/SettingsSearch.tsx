@@ -92,24 +92,32 @@ export function SettingsSearch({ query, onQueryChange }: SettingsSearchProps) {
         role="combobox"
         aria-expanded={open}
         aria-controls={listboxId}
+        aria-activedescendant={
+          open && results.length > 0 ? `${listboxId}-opt-${activeIndex}` : undefined
+        }
         aria-autocomplete="list"
       />
 
-      {open && (
-        <div
-          id={listboxId}
-          role="listbox"
-          className="absolute inset-x-0 top-full z-10 mt-1 max-h-72 overflow-y-auto rounded-lg border border-stroke bg-surface-secondary py-1 shadow-xl scrollbar-thin"
-        >
-          {results.length === 0 ? (
-            <p className="px-3 py-2 text-sm text-content-tertiary">
-              {t('settings.search.noResults', { query })}
-            </p>
-          ) : (
-            results.map((result, index) => (
+      {open &&
+        (results.length === 0 ? (
+          // Kept out of the listbox: a listbox must only contain role="option".
+          <div
+            role="status"
+            className="absolute inset-x-0 top-full z-10 mt-1 rounded-lg border border-stroke bg-surface-secondary px-3 py-2 text-sm text-content-tertiary shadow-xl"
+          >
+            {t('settings.search.noResults', { query })}
+          </div>
+        ) : (
+          <div
+            id={listboxId}
+            role="listbox"
+            className="absolute inset-x-0 top-full z-10 mt-1 max-h-72 overflow-y-auto rounded-lg border border-stroke bg-surface-secondary py-1 shadow-xl scrollbar-thin"
+          >
+            {results.map((result, index) => (
               // eslint-disable-next-line jsx-a11y/click-events-have-key-events -- listbox option; keyboard is handled on the combobox input (Arrow/Enter), options aren't individually focusable
               <div
                 key={`${result.tabId}:${result.id}`}
+                id={`${listboxId}-opt-${index}`}
                 role="option"
                 aria-selected={index === activeIndex}
                 tabIndex={-1}
@@ -124,10 +132,9 @@ export function SettingsSearch({ query, onQueryChange }: SettingsSearchProps) {
                   {t('settings.search.inTab', { tab: result.tabLabel })}
                 </span>
               </div>
-            ))
-          )}
-        </div>
-      )}
+            ))}
+          </div>
+        ))}
     </div>
   );
 }

@@ -8,7 +8,7 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
-vi.mock('zustand/shallow', () => ({
+vi.mock('zustand/react/shallow', () => ({
   useShallow: (fn: unknown) => fn,
 }));
 

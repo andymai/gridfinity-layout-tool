@@ -94,7 +94,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   },
 
   resetSettings: () => {
-    const newSettings = { ...DEFAULT_SETTINGS };
+    // Deep clone so live state never aliases DEFAULT_SETTINGS' nested
+    // arrays/objects (consistent with resetSettingKeys' per-key cloning).
+    const newSettings = structuredClone(DEFAULT_SETTINGS);
     set({ settings: newSettings });
     return saveSettings(newSettings);
   },

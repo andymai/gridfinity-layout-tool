@@ -1,8 +1,10 @@
 import type { SettingsTabId } from './types';
 
 /**
- * A searchable settings section. `id` must match the `id` of the corresponding
- * `<SettingSection>` so search results can scroll it into view.
+ * A searchable settings section. `id` must match the DOM `id` of the section's
+ * anchor element so search results can scroll it into view. That anchor is
+ * usually a `<SettingSection id=...>`, but any element with a matching `id`
+ * works too (e.g. AccountTab's wrapper `<div id="account">`).
  */
 export interface SettingsRegistryEntry {
   id: string;
