@@ -141,6 +141,15 @@ describe('CompartmentEditor', () => {
     expect(screen.getByRole('application')).toBeInTheDocument();
   });
 
+  // The grid stacks rows with flex-col-reverse, so content that exceeds the
+  // aspect-ratio box overflows out the *top* — over the steppers above it.
+  // overflow-hidden must clip that spill.
+  it('clips the grid so it cannot overflow onto the controls above', () => {
+    useDesignerStore.setState({ params: TWO_BY_TWO });
+    render(<CompartmentEditor />);
+    expect(screen.getByRole('application')).toHaveClass('overflow-hidden');
+  });
+
   it('does not show 2D grid editor when grid is 1x1', () => {
     render(<CompartmentEditor />);
     expect(screen.queryByRole('application')).not.toBeInTheDocument();

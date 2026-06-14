@@ -134,7 +134,7 @@ export function GridCell({
 
   return (
     <div
-      className="relative touch-manipulation min-w-[28px] min-h-[28px]"
+      className="relative touch-manipulation min-w-0 min-h-0"
       role="button"
       tabIndex={0}
       aria-label={cellLabel}

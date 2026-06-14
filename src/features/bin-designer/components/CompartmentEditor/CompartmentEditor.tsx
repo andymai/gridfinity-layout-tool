@@ -621,7 +621,7 @@ export function CompartmentEditor() {
           </div>
           <div
             ref={gridRef}
-            className="relative mx-auto max-w-[360px] select-none rounded-lg border-2 border-stroke-subtle bg-surface-elevated p-2"
+            className="relative mx-auto max-w-[360px] select-none overflow-hidden rounded-lg border-2 border-stroke-subtle bg-surface-elevated p-2"
             style={{ aspectRatio }}
             role="application"
             aria-label={`Compartment grid, ${cols} columns by ${rows} rows`}
@@ -652,7 +652,7 @@ export function CompartmentEditor() {
                 return (
                   <div
                     key={dataRow}
-                    className="grid flex-1"
+                    className="grid min-h-0 min-w-0 flex-1"
                     style={{
                       gridTemplateColumns: `repeat(${cols}, 1fr)`,
                     }}
