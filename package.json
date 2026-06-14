@@ -76,7 +76,8 @@
       "path": [
         "dist/assets/main-*.js",
         "dist/assets/react-vendor-*.js",
-        "dist/assets/state-*.js"
+        "dist/assets/state-*.js",
+        "dist/assets/core-foundation-*.js"
       ],
       "gzip": true,
       "limit": "260 kB"

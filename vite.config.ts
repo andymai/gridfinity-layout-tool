@@ -217,8 +217,8 @@ export default defineConfig({
         // function only hints at names — Rolldown still co-located the shared
         // eager react-dom with the lazy three.js/drei stack, forcing the whole
         // ~360 kB 3D chunk onto first paint. `advancedChunks` groups are honored
-        // deterministically: react-vendor (eager) is split from the 3D rendering
-        // libs (lazy), and three core is its own lazy chunk. Higher priority wins.
+        // deterministically: react-vendor (eager) is split from the lazy 3D stack
+        // (three core + renderers, grouped together). Higher priority wins.
         advancedChunks: {
           groups: [
             // Pin foundational constants/types into a leaf chunk that imports

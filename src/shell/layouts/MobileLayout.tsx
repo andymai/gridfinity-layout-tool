@@ -20,6 +20,8 @@ import {
   MobileLayoutsPanel,
   BinContextMenuWrapper,
 } from '@/shell/Mobile';
+import type { SaveStatus } from '@/shared/hooks';
+import { useOnboarding } from '@/features/onboarding';
 
 // Lazy load design-linking dialogs
 const DesignLinkingDialogs = lazyWithRetry(() =>
@@ -31,9 +33,6 @@ const DesignLinkingDialogs = lazyWithRetry(() =>
 const ParticipantsPanel = lazyWithRetry(() =>
   import('@/shell/Collab/ParticipantsPanel').then(namedExport('ParticipantsPanel'))
 );
-import type { SaveStatus } from '@/shared/hooks';
-import { useOnboarding } from '@/features/onboarding';
-
 // Lazy load mobile help modal (with retry for chunk load failures)
 const MobileHelpModal = lazyWithRetry(() =>
   import('@/shell/Mobile/MobileHelpModal').then(namedExport('MobileHelpModal'))
