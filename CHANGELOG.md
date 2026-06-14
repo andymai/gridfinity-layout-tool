@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.169.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.168.2...gridfinity-layout-tool-v4.169.0) (2026-06-14)
+
+
+### Features
+
+* **bin-designer:** show compartment grid at true bin proportions (fixes stepper overlap) ([#2143](https://github.com/andymai/gridfinity-layout-tool/issues/2143)) ([1fabd57](https://github.com/andymai/gridfinity-layout-tool/commit/1fabd571fce6a6a6cb923386b20e68b2f3194bb9))
+
 ## [4.168.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.168.1...gridfinity-layout-tool-v4.168.2) (2026-06-14)
 
 
