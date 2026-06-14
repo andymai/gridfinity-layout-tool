@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.168.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.168.1...gridfinity-layout-tool-v4.168.2) (2026-06-14)
+
+
+### Performance
+
+* **bundle:** cut eager initial JS 904→353KB by lazy-loading the 3D + collab stacks ([#2141](https://github.com/andymai/gridfinity-layout-tool/issues/2141)) ([401cd6d](https://github.com/andymai/gridfinity-layout-tool/commit/401cd6d5361b3af4d369948911b45dd1de2e2cd8))
+
 ## [4.168.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.168.0...gridfinity-layout-tool-v4.168.1) (2026-06-13)
 
 
