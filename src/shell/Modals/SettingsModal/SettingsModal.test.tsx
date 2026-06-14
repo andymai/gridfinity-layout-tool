@@ -31,14 +31,29 @@ vi.mock('./TabNavigation/TabNavigation', () => ({
 vi.mock('./tabs/GeneralTab/GeneralTab', () => ({
   GeneralTab: () => <div data-testid="general-tab">General</div>,
 }));
+vi.mock('./tabs/AppearanceTab/AppearanceTab', () => ({
+  AppearanceTab: () => <div data-testid="appearance-tab">Appearance</div>,
+}));
+vi.mock('./tabs/AccountTab/AccountTab', () => ({
+  AccountTab: () => <div data-testid="account-tab">Account</div>,
+}));
 vi.mock('./tabs/DefaultsTab/DefaultsTab', () => ({
   DefaultsTab: () => <div data-testid="defaults-tab">Defaults</div>,
+}));
+vi.mock('./tabs/PrintTab/PrintTab', () => ({
+  PrintTab: () => <div data-testid="print-tab">Print</div>,
+}));
+vi.mock('./tabs/CategoriesTab/CategoriesTab', () => ({
+  CategoriesTab: () => <div data-testid="categories-tab">Categories</div>,
 }));
 vi.mock('./tabs/IntegrationsTab/IntegrationsTab', () => ({
   IntegrationsTab: () => <div data-testid="integrations-tab">Integrations</div>,
 }));
 vi.mock('./tabs/PrivacyTab/PrivacyTab', () => ({
   PrivacyTab: () => <div data-testid="privacy-tab">Privacy</div>,
+}));
+vi.mock('./tabs/StorageTab/StorageTab', () => ({
+  StorageTab: () => <div data-testid="storage-tab">Storage</div>,
 }));
 vi.mock('./tabs/LabsTab/LabsTab', () => ({
   LabsTab: () => <div data-testid="labs-tab">Labs</div>,
@@ -118,8 +133,8 @@ describe('SettingsModal', () => {
 
   it('clicking overlay calls onClose', () => {
     render(<SettingsModal isOpen={true} onClose={mockOnClose} />);
-    // The overlay is the outermost presentation div (backdrop with onClick={onClose})
-    const overlay = screen.getAllByRole('presentation')[0];
+    // The DS Dialog overlay is the backdrop with onClick={onClose}.
+    const overlay = screen.getByTestId('dialog-overlay');
     fireEvent.click(overlay);
     expect(mockOnClose).toHaveBeenCalled();
   });

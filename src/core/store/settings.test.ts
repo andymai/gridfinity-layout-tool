@@ -141,6 +141,47 @@ describe('settings store', () => {
     });
   });
 
+  describe('resetSettingKeys', () => {
+    it('resets only the listed keys, leaving others untouched', () => {
+      const { updateSettings, resetSettingKeys } = useSettingsStore.getState();
+
+      updateSettings({
+        defaultDrawerWidth: 50,
+        defaultPrintBedSize: 400,
+        defaultZoom: 2,
+      });
+
+      resetSettingKeys(['defaultDrawerWidth', 'defaultPrintBedSize']);
+
+      const settings = useSettingsStore.getState().settings;
+      expect(settings.defaultDrawerWidth).toBe(DEFAULT_SETTINGS.defaultDrawerWidth);
+      expect(settings.defaultPrintBedSize).toBe(DEFAULT_SETTINGS.defaultPrintBedSize);
+      // Not in the list — preserved.
+      expect(settings.defaultZoom).toBe(2);
+    });
+
+    it('clones array defaults so live state never aliases DEFAULT_SETTINGS', () => {
+      const { updateSetting, resetSettingKeys } = useSettingsStore.getState();
+      updateSetting('stlSearchSites', []);
+
+      resetSettingKeys(['stlSearchSites']);
+
+      const sites = useSettingsStore.getState().settings.stlSearchSites;
+      expect(sites).toEqual(DEFAULT_SETTINGS.stlSearchSites);
+      expect(sites).not.toBe(DEFAULT_SETTINGS.stlSearchSites);
+    });
+
+    it('persists the reset to localStorage', () => {
+      const { updateSetting, resetSettingKeys } = useSettingsStore.getState();
+      updateSetting('defaultDrawerWidth', 50);
+
+      resetSettingKeys(['defaultDrawerWidth']);
+
+      const savedData = JSON.parse(localStorageMock.mock._store['gridfinity-settings-v1']);
+      expect(savedData.defaultDrawerWidth).toBe(DEFAULT_SETTINGS.defaultDrawerWidth);
+    });
+  });
+
   describe('saveCurrentAsDefaults', () => {
     it('saves drawer dimensions and settings', () => {
       const { saveCurrentAsDefaults } = useSettingsStore.getState();

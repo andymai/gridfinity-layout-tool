@@ -1,6 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
-import { Checkbox } from '@/design-system';
+import { Switch } from '@/design-system';
 import {
   optInAnalytics,
   optOutAnalytics,
@@ -8,6 +8,7 @@ import {
   isTrackingOptOut,
 } from '@/shared/analytics/posthog';
 import { useTranslation } from '@/i18n';
+import { SettingSection } from '../../components/SettingSection/SettingSection';
 
 export function PrivacyTab() {
   const t = useTranslation();
@@ -21,10 +22,9 @@ export function PrivacyTab() {
 
   const browserPrivacySignal = isTrackingOptOut();
 
-  const handlePrivacyToggle = () => {
-    const newValue = !analyticsEnabled;
-    updateSetting('analyticsEnabled', newValue);
-    if (newValue) {
+  const setAnalytics = (enabled: boolean) => {
+    updateSetting('analyticsEnabled', enabled);
+    if (enabled) {
       optInAnalytics();
     } else {
       optOutAnalytics();
@@ -34,39 +34,24 @@ export function PrivacyTab() {
 
   return (
     <div className="space-y-8">
-      {/* Analytics Toggle */}
-      <section>
-        <h3 className="text-base font-semibold text-content mb-3">{t('settings.privacy')}</h3>
+      <SettingSection id="privacy-analytics" title={t('settings.privacy')}>
         {browserPrivacySignal && !analyticsEnabled && (
-          <p className="text-xs text-content-secondary bg-surface-secondary rounded-md px-3 py-2 mb-3">
+          <p className="mb-3 rounded-md bg-surface-secondary px-3 py-2 text-xs text-content-secondary">
             {t('settings.browserPrivacySignal')}
           </p>
         )}
-        <div
-          className="flex items-center justify-between text-sm cursor-pointer group rounded-md p-1 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface"
-          onClick={handlePrivacyToggle}
-          role="checkbox"
-          tabIndex={0}
-          aria-checked={analyticsEnabled}
-          aria-label={t('settings.toggleUsageData')}
-          onKeyDown={(e) => {
-            if (e.key === ' ' || e.key === 'Enter') {
-              e.preventDefault();
-              handlePrivacyToggle();
-            }
-          }}
-        >
+        <div className="flex items-center justify-between gap-3">
           <div>
-            <span
-              className={`${analyticsEnabled ? 'text-content' : 'text-content-tertiary'} group-hover:text-content transition-colors`}
-            >
-              {t('settings.helpImprove')}
-            </span>
-            <p className="text-xs text-content-disabled mt-0.5">{t('settings.helpImproveHint')}</p>
+            <span className="text-sm text-content">{t('settings.helpImprove')}</span>
+            <p className="mt-0.5 text-xs text-content-disabled">{t('settings.helpImproveHint')}</p>
           </div>
-          <Checkbox checked={analyticsEnabled} size="md" />
+          <Switch
+            checked={analyticsEnabled}
+            onChange={setAnalytics}
+            aria-label={t('settings.toggleUsageData')}
+          />
         </div>
-      </section>
+      </SettingSection>
     </div>
   );
 }

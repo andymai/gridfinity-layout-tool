@@ -692,7 +692,6 @@ const en: Record<string, string> = {
     'Save current settings as defaults for new layouts?\n\nDrawer: {width}×{depth}×{height}u\nLayer height: {layerHeight}u\nPrint bed: {printBed}mm\nGrid unit: {gridUnit}mm',
   'settings.stlSearch': 'STL Search',
   'settings.stlSearchHint': 'Choose which sites to search for Gridfinity STL files:',
-  'settings.toggleSite': 'Toggle {name}',
   'settings.privacy': 'Privacy',
   'settings.helpImprove': 'Help improve suggestions',
   'settings.helpImproveHint': 'Share bin sizes and placement patterns (no personal data)',
@@ -733,7 +732,6 @@ const en: Record<string, string> = {
   'settings.usingBuiltInCategories': 'Using built-in defaults ({count})',
   'settings.usingCustomCategories': 'Using custom defaults ({count})',
   'settings.saveCategoriesAsDefaults': 'Save Current Categories as Defaults',
-  'settings.resetToBuiltIn': 'Reset to built-in',
   'settings.confirmSaveCategories.title': 'Save Categories as Defaults',
   'settings.confirmSaveCategories.message':
     'Save these {count} categories as defaults for new layouts?',
@@ -741,11 +739,43 @@ const en: Record<string, string> = {
   // Settings tabs
   'settings.tabs.general': 'General',
   'settings.tabs.appearance': 'Appearance',
-  'settings.tabs.defaults': 'Defaults',
+  'settings.tabs.defaults': 'Layout Defaults',
+  'settings.tabs.print': 'Print & Material',
+  'settings.tabs.categories': 'Categories & Bins',
   'settings.tabs.integrations': 'STL Search',
   'settings.tabs.privacy': 'Privacy',
   'settings.tabs.storage': 'Storage',
   'settings.tabs.labs': 'Labs',
+
+  // Settings sidebar groups
+  'settings.groups.preferences': 'Preferences',
+  'settings.groups.defaults': 'Defaults',
+  'settings.groups.data': 'Account & Data',
+  'settings.groups.advanced': 'Advanced',
+
+  // Settings search
+  'settings.search.placeholder': 'Search settings…',
+  'settings.search.noResults': 'No settings match “{query}”',
+  'settings.search.inTab': 'in {tab}',
+  'settings.search.keywords.language': 'locale, translation, internationalization',
+  'settings.search.keywords.theme': 'dark, light, system, color scheme',
+  'settings.search.keywords.motion': 'animation, transitions, accessibility',
+  'settings.search.keywords.layout':
+    'drawer, dimensions, grid unit, print bed, width, depth, height',
+  'settings.search.keywords.print': 'filament, nozzle, infill, layer height, cost, material',
+  'settings.search.keywords.account': 'sign in, sync, login, profile, delete account',
+  'settings.search.keywords.privacy': 'analytics, telemetry, tracking, data',
+  'settings.search.keywords.storageDanger': 'clear data, reset, delete, wipe',
+  'settings.search.keywords.stl': 'printables, makerworld, thangs, model search',
+  'settings.search.keywords.labs': 'experimental, beta, feature flags',
+
+  // Per-section reset
+  'settings.section.reset': 'Reset',
+  'settings.section.resetAria': 'Reset {section} to defaults',
+  'settings.section.resetTitle': 'Reset {section}',
+  'settings.section.resetConfirm':
+    'Reset {section} to its default values? Other settings are unchanged.',
+  'settings.section.resetDone': '{section} reset to defaults',
 
   // Appearance tab
   'settings.theme': 'Theme',

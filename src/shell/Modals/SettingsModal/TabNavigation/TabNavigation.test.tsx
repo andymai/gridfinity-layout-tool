@@ -13,6 +13,8 @@ vi.mock('@/i18n', () => ({
   useTranslation: () => (key: string) => key,
 }));
 
+const TAB_COUNT = 10;
+
 describe('TabNavigation', () => {
   const onTabChange = vi.fn();
 
@@ -25,32 +27,41 @@ describe('TabNavigation', () => {
       mockUseResponsive.mockReturnValue({ isMobile: false });
     });
 
-    it('renders all 8 tabs with vertical orientation', () => {
+    it('renders all 10 tabs with vertical orientation', () => {
       render(<TabNavigation activeTab="general" onTabChange={onTabChange} />);
       const tablist = screen.getByRole('tablist');
       expect(tablist).toHaveAttribute('aria-orientation', 'vertical');
-      const tabs = screen.getAllByRole('tab');
-      expect(tabs).toHaveLength(8);
+      expect(screen.getAllByRole('tab')).toHaveLength(TAB_COUNT);
+    });
+
+    it('renders sidebar group headers', () => {
+      render(<TabNavigation activeTab="general" onTabChange={onTabChange} />);
+      expect(screen.getByText('settings.groups.preferences')).toBeInTheDocument();
+      expect(screen.getByText('settings.groups.defaults')).toBeInTheDocument();
+      expect(screen.getByText('settings.groups.data')).toBeInTheDocument();
+      expect(screen.getByText('settings.groups.advanced')).toBeInTheDocument();
     });
 
     it('marks the active tab with aria-selected', () => {
       render(<TabNavigation activeTab="privacy" onTabChange={onTabChange} />);
-      const tabs = screen.getAllByRole('tab');
-      const privacyTab = tabs.find((tab) => tab.textContent === 'settings.tabs.privacy');
+      const privacyTab = screen
+        .getAllByRole('tab')
+        .find((tab) => tab.textContent === 'settings.tabs.privacy');
       expect(privacyTab).toHaveAttribute('aria-selected', 'true');
     });
 
     it('calls onTabChange when a tab is clicked', () => {
       render(<TabNavigation activeTab="general" onTabChange={onTabChange} />);
-      const tabs = screen.getAllByRole('tab');
-      fireEvent.click(tabs[4]); // integrations tab (after account was inserted at index 2)
-      expect(onTabChange).toHaveBeenCalledWith('integrations');
+      const printTab = screen
+        .getAllByRole('tab')
+        .find((tab) => tab.textContent === 'settings.tabs.print');
+      fireEvent.click(printTab!);
+      expect(onTabChange).toHaveBeenCalledWith('print');
     });
 
     it('supports arrow key navigation (down/up)', () => {
       render(<TabNavigation activeTab="general" onTabChange={onTabChange} />);
-      const tablist = screen.getByRole('tablist');
-      fireEvent.keyDown(tablist, { key: 'ArrowDown' });
+      fireEvent.keyDown(screen.getByRole('tablist'), { key: 'ArrowDown' });
       expect(onTabChange).toHaveBeenCalledWith('appearance');
     });
   });
@@ -64,21 +75,18 @@ describe('TabNavigation', () => {
       render(<TabNavigation activeTab="general" onTabChange={onTabChange} />);
       const tablist = screen.getByRole('tablist');
       expect(tablist).not.toHaveAttribute('aria-orientation');
-      const tabs = screen.getAllByRole('tab');
-      expect(tabs).toHaveLength(8);
+      expect(screen.getAllByRole('tab')).toHaveLength(TAB_COUNT);
     });
 
     it('supports arrow key navigation (left/right)', () => {
       render(<TabNavigation activeTab="defaults" onTabChange={onTabChange} />);
-      const tablist = screen.getByRole('tablist');
-      fireEvent.keyDown(tablist, { key: 'ArrowRight' });
-      expect(onTabChange).toHaveBeenCalledWith('integrations');
+      fireEvent.keyDown(screen.getByRole('tablist'), { key: 'ArrowRight' });
+      expect(onTabChange).toHaveBeenCalledWith('print');
     });
 
     it('wraps around from last to first tab', () => {
       render(<TabNavigation activeTab="labs" onTabChange={onTabChange} />);
-      const tablist = screen.getByRole('tablist');
-      fireEvent.keyDown(tablist, { key: 'ArrowRight' });
+      fireEvent.keyDown(screen.getByRole('tablist'), { key: 'ArrowRight' });
       expect(onTabChange).toHaveBeenCalledWith('general');
     });
   });

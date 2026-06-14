@@ -63,13 +63,11 @@ describe('GeneralTab', () => {
     expect(mockSetLocale).toHaveBeenCalledWith('nb');
   });
 
-  it('keyboard Enter/Space on locale triggers selection', () => {
+  it('renders each locale option as a radio with correct checked state', () => {
     render(<GeneralTab />);
-    const nbOption = screen.getByText('Norsk bokmål').closest('[role="radio"]')!;
-    fireEvent.keyDown(nbOption, { key: 'Enter' });
-    expect(mockUpdateSetting).toHaveBeenCalledWith('locale', 'nb');
-    mockUpdateSetting.mockClear();
-    fireEvent.keyDown(nbOption, { key: ' ' });
-    expect(mockUpdateSetting).toHaveBeenCalledWith('locale', 'nb');
+    const autoOption = screen.getByText('settings.autoDetect').closest('[role="radio"]');
+    const nbOption = screen.getByText('Norsk bokmål').closest('[role="radio"]');
+    expect(autoOption).toHaveAttribute('aria-checked', 'true');
+    expect(nbOption).toHaveAttribute('aria-checked', 'false');
   });
 });

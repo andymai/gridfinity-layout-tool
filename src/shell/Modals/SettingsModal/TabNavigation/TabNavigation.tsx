@@ -2,8 +2,8 @@ import { useRef, useCallback } from 'react';
 import { Button } from '@/design-system';
 import { useResponsive } from '@/shared/hooks';
 import { useTranslation } from '@/i18n';
-import { TAB_DEFINITIONS } from '../tabDefinitions';
-import type { SettingsTabId } from '../types';
+import { TAB_DEFINITIONS, TAB_GROUPS } from '../tabDefinitions';
+import type { SettingsTabId, TabDefinition } from '../types';
 
 interface TabNavigationProps {
   activeTab: SettingsTabId;
@@ -15,32 +15,66 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const t = useTranslation();
   const navRef = useRef<HTMLDivElement>(null);
 
+  // Arrow-key navigation walks the flattened tab order so it works uniformly
+  // across sidebar groups (desktop) and the horizontal scroller (mobile).
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       const currentIndex = TAB_DEFINITIONS.findIndex((tab) => tab.id === activeTab);
+      const count = TAB_DEFINITIONS.length;
       let nextIndex = -1;
 
-      if (isMobile) {
-        if (e.key === 'ArrowRight') nextIndex = (currentIndex + 1) % TAB_DEFINITIONS.length;
-        else if (e.key === 'ArrowLeft')
-          nextIndex = (currentIndex - 1 + TAB_DEFINITIONS.length) % TAB_DEFINITIONS.length;
-      } else {
-        if (e.key === 'ArrowDown') nextIndex = (currentIndex + 1) % TAB_DEFINITIONS.length;
-        else if (e.key === 'ArrowUp')
-          nextIndex = (currentIndex - 1 + TAB_DEFINITIONS.length) % TAB_DEFINITIONS.length;
-      }
+      const forward = isMobile ? 'ArrowRight' : 'ArrowDown';
+      const backward = isMobile ? 'ArrowLeft' : 'ArrowUp';
+
+      if (e.key === forward) nextIndex = (currentIndex + 1) % count;
+      else if (e.key === backward) nextIndex = (currentIndex - 1 + count) % count;
 
       if (nextIndex >= 0) {
         e.preventDefault();
         const nextTab = TAB_DEFINITIONS[nextIndex];
         onTabChange(nextTab.id);
-        // Focus the next tab button
         const buttons = navRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]');
         buttons?.[nextIndex]?.focus();
       }
     },
     [activeTab, onTabChange, isMobile]
   );
+
+  const renderTabButton = (tab: TabDefinition, variant: 'desktop' | 'mobile') => {
+    const Icon = tab.icon;
+    const isActive = activeTab === tab.id;
+    const base = 'rounded-none text-sm';
+    const styles =
+      variant === 'mobile'
+        ? `gap-1.5 px-3 py-2.5 whitespace-nowrap flex-shrink-0 ${
+            isActive
+              ? 'text-accent border-b-2 border-accent font-medium hover:bg-transparent hover:text-accent'
+              : 'text-content-tertiary hover:bg-transparent hover:text-content-secondary'
+          }`
+        : `justify-start gap-2 px-4 py-2 font-normal ${
+            isActive
+              ? 'bg-surface-elevated text-content font-medium border-l-2 border-accent hover:bg-surface-elevated hover:text-content'
+              : 'text-content-tertiary hover:text-content-secondary hover:bg-surface-hover'
+          }`;
+
+    return (
+      <Button
+        key={tab.id}
+        variant="ghost"
+        fullWidth={variant === 'desktop'}
+        role="tab"
+        tabIndex={isActive ? 0 : -1}
+        aria-selected={isActive}
+        aria-controls={`settings-tabpanel-${tab.id}`}
+        id={`settings-tab-${tab.id}`}
+        onClick={() => onTabChange(tab.id)}
+        className={`${base} ${styles}`}
+      >
+        <Icon className="h-5 w-5 flex-shrink-0" />
+        <span>{t(tab.labelKey)}</span>
+      </Button>
+    );
+  };
 
   if (isMobile) {
     return (
@@ -52,30 +86,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
         className="flex overflow-x-auto border-b border-stroke-subtle scrollbar-none"
         onKeyDown={handleKeyDown}
       >
-        {TAB_DEFINITIONS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <Button
-              key={tab.id}
-              variant="ghost"
-              tabIndex={isActive ? 0 : -1}
-              role="tab"
-              aria-selected={isActive}
-              aria-controls={`settings-tabpanel-${tab.id}`}
-              id={`settings-tab-${tab.id}`}
-              onClick={() => onTabChange(tab.id)}
-              className={`gap-1.5 rounded-none px-3 py-2.5 text-sm whitespace-nowrap flex-shrink-0 ${
-                isActive
-                  ? 'text-accent border-b-2 border-accent font-medium hover:bg-transparent hover:text-accent'
-                  : 'text-content-tertiary hover:bg-transparent hover:text-content-secondary'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span>{t(tab.labelKey)}</span>
-            </Button>
-          );
-        })}
+        {TAB_DEFINITIONS.map((tab) => renderTabButton(tab, 'mobile'))}
       </div>
     );
   }
@@ -87,34 +98,17 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
       tabIndex={0}
       aria-label={t('settings.title')}
       aria-orientation="vertical"
-      className="w-40 flex-shrink-0 border-r border-stroke-subtle py-2"
+      className="h-full w-44 flex-shrink-0 overflow-y-auto border-r border-stroke-subtle py-2 scrollbar-thin"
       onKeyDown={handleKeyDown}
     >
-      {TAB_DEFINITIONS.map((tab) => {
-        const Icon = tab.icon;
-        const isActive = activeTab === tab.id;
-        return (
-          <Button
-            key={tab.id}
-            variant="ghost"
-            fullWidth
-            tabIndex={isActive ? 0 : -1}
-            role="tab"
-            aria-selected={isActive}
-            aria-controls={`settings-tabpanel-${tab.id}`}
-            id={`settings-tab-${tab.id}`}
-            onClick={() => onTabChange(tab.id)}
-            className={`justify-start gap-2 rounded-none px-4 py-2 text-sm font-normal ${
-              isActive
-                ? 'bg-surface-elevated text-content font-medium border-l-2 border-accent hover:bg-surface-elevated hover:text-content'
-                : 'text-content-tertiary hover:text-content-secondary hover:bg-surface-hover'
-            }`}
-          >
-            <Icon className="w-5 h-5 flex-shrink-0" />
-            <span>{t(tab.labelKey)}</span>
-          </Button>
-        );
-      })}
+      {TAB_GROUPS.map((group) => (
+        <div key={group.labelKey} className="mb-2">
+          <p className="px-4 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-content-disabled">
+            {t(group.labelKey)}
+          </p>
+          {group.tabs.map((tab) => renderTabButton(tab, 'desktop'))}
+        </div>
+      ))}
     </div>
   );
 }

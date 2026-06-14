@@ -1,8 +1,10 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
-import { Checkbox } from '@/design-system';
+import { Switch } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { UserSettings } from '@/core/store/settings';
+import { SettingSection } from '../../components/SettingSection/SettingSection';
+import { SelectableCard } from '../../components/SelectableCard/SelectableCard';
 
 type ThemeOption = UserSettings['theme'];
 type AccentOption = UserSettings['accentColor'];
@@ -21,81 +23,65 @@ const ACCENT_COLORS: { id: AccentOption; hex: string }[] = [
 
 const DENSITY_OPTIONS: DensityOption[] = ['compact', 'default', 'comfortable'];
 
-function RadioItem({
-  selected,
-  label,
-  onSelect,
-}: {
-  selected: boolean;
-  label: string;
-  onSelect: () => void;
-}) {
+// Fixed palettes so each card previews its own theme regardless of the active one.
+const THEME_PALETTES: Record<'light' | 'dark', { bg: string; surface: string; line: string }> = {
+  light: { bg: '#f4f4f5', surface: '#ffffff', line: '#d4d4d8' },
+  dark: { bg: '#18181b', surface: '#27272a', line: '#3f3f46' },
+};
+
+function ThemePreview({ theme }: { theme: ThemeOption }) {
+  if (theme === 'system') {
+    return (
+      <div className="flex h-14 overflow-hidden rounded-md border border-stroke-subtle">
+        <div className="flex-1" style={{ backgroundColor: THEME_PALETTES.light.bg }}>
+          <MiniWindow palette={THEME_PALETTES.light} />
+        </div>
+        <div className="flex-1" style={{ backgroundColor: THEME_PALETTES.dark.bg }}>
+          <MiniWindow palette={THEME_PALETTES.dark} />
+        </div>
+      </div>
+    );
+  }
+  const palette = THEME_PALETTES[theme];
   return (
     <div
-      className={`flex items-center justify-between text-sm cursor-pointer rounded-md p-2 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent ${
-        selected ? 'bg-surface-elevated border border-accent/30' : 'hover:bg-surface-hover'
-      }`}
-      onClick={onSelect}
-      role="radio"
-      tabIndex={0}
-      aria-checked={selected}
-      onKeyDown={(e) => {
-        if (e.key === ' ' || e.key === 'Enter') {
-          e.preventDefault();
-          onSelect();
-        }
-      }}
+      className="h-14 overflow-hidden rounded-md border border-stroke-subtle"
+      style={{ backgroundColor: palette.bg }}
     >
-      <span className={selected ? 'text-content' : 'text-content-secondary'}>{label}</span>
-      {selected && (
-        <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-      )}
+      <MiniWindow palette={palette} />
     </div>
   );
 }
 
-function ToggleRow({
-  checked,
-  label,
-  hint,
-  disabled = false,
-  onToggle,
-}: {
-  checked: boolean;
-  label: string;
-  hint?: string;
-  disabled?: boolean;
-  onToggle: () => void;
-}) {
+function MiniWindow({ palette }: { palette: { surface: string; line: string } }) {
+  return (
+    <div className="space-y-1 p-1.5">
+      <div className="h-2 rounded-sm" style={{ backgroundColor: palette.surface }} />
+      <div className="h-1.5 w-2/3 rounded-sm" style={{ backgroundColor: palette.line }} />
+      <div className="h-1.5 w-1/2 rounded-sm" style={{ backgroundColor: palette.line }} />
+    </div>
+  );
+}
+
+function AccentPreview({ hex }: { hex: string }) {
+  return (
+    <div className="flex h-14 items-center justify-center gap-2 rounded-md border border-stroke-subtle bg-surface">
+      <span className="h-6 w-12 rounded-md" style={{ backgroundColor: hex }} />
+      <span className="h-3 w-3 rounded-full" style={{ backgroundColor: hex }} />
+    </div>
+  );
+}
+
+function DensityPreview({ density }: { density: DensityOption }) {
+  const gap = density === 'compact' ? 'gap-0.5' : density === 'comfortable' ? 'gap-2' : 'gap-1';
+  const barHeight = density === 'compact' ? 'h-1.5' : density === 'comfortable' ? 'h-3' : 'h-2';
   return (
     <div
-      className={`flex items-center justify-between text-sm group rounded-md p-1 -m-1 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface ${
-        disabled ? 'opacity-40 cursor-default' : 'cursor-pointer'
-      }`}
-      onClick={disabled ? undefined : onToggle}
-      role="checkbox"
-      tabIndex={disabled ? -1 : 0}
-      aria-checked={checked}
-      aria-disabled={disabled || undefined}
-      onKeyDown={(e) => {
-        if (disabled) return;
-        if (e.key === ' ' || e.key === 'Enter') {
-          e.preventDefault();
-          onToggle();
-        }
-      }}
+      className={`flex h-14 flex-col justify-center rounded-md border border-stroke-subtle bg-surface px-2 ${gap}`}
     >
-      <div>
-        <span
-          className={`${checked ? 'text-content' : 'text-content-tertiary'} ${disabled ? '' : 'group-hover:text-content'} transition-colors`}
-        >
-          {label}
-        </span>
-        {hint && <p className="text-xs text-content-disabled mt-0.5">{hint}</p>}
-      </div>
-      <Checkbox checked={checked} size="md" />
+      {[0, 1, 2].map((i) => (
+        <div key={i} className={`${barHeight} rounded-sm bg-stroke`} />
+      ))}
     </div>
   );
 }
@@ -115,78 +101,66 @@ export function AppearanceTab() {
 
   return (
     <div className="space-y-8">
-      {/* Theme */}
-      <section>
-        <h3 className="text-base font-semibold text-content mb-3">{t('settings.theme')}</h3>
-        <div className="space-y-1" role="radiogroup" aria-label={t('settings.theme')}>
+      <SettingSection id="theme" title={t('settings.theme')} resetKeys={['theme']}>
+        <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label={t('settings.theme')}>
           {THEME_OPTIONS.map((option) => (
-            <RadioItem
+            <SelectableCard
               key={option}
               selected={theme === option}
-              label={t(`settings.theme.${option}`)}
               onSelect={() => updateSetting('theme', option)}
+              label={t(`settings.theme.${option}`)}
+              preview={<ThemePreview theme={option} />}
             />
           ))}
         </div>
-      </section>
+      </SettingSection>
 
-      {/* Accent Color */}
-      <section>
-        <h3 className="text-base font-semibold text-content mb-3">{t('settings.accentColor')}</h3>
+      <SettingSection id="accent" title={t('settings.accentColor')} resetKeys={['accentColor']}>
         <div
           className="grid grid-cols-3 gap-2"
           role="radiogroup"
           aria-label={t('settings.accentColor')}
         >
           {ACCENT_COLORS.map((color) => (
-            <button
+            <SelectableCard
               key={color.id}
-              onClick={() => updateSetting('accentColor', color.id)}
-              role="radio"
-              aria-checked={accentColor === color.id}
-              aria-label={t(`settings.accentColor.${color.id}`)}
-              className={`flex items-center gap-2 p-2 rounded-md border transition-colors text-left ${
-                accentColor === color.id
-                  ? 'border-accent bg-surface-elevated'
-                  : 'border-stroke-subtle hover:bg-surface-hover'
-              }`}
-            >
-              <div
-                className="w-4 h-4 rounded-full flex-shrink-0"
-                style={{ backgroundColor: color.hex }}
-              />
-              <span className="text-sm text-content-secondary truncate">
-                {t(`settings.accentColor.${color.id}`)}
-              </span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* UI Density */}
-      <section>
-        <h3 className="text-base font-semibold text-content mb-3">{t('settings.uiDensity')}</h3>
-        <div className="space-y-1" role="radiogroup" aria-label={t('settings.uiDensity')}>
-          {DENSITY_OPTIONS.map((option) => (
-            <RadioItem
-              key={option}
-              selected={uiDensity === option}
-              label={t(`settings.uiDensity.${option}`)}
-              onSelect={() => updateSetting('uiDensity', option)}
+              selected={accentColor === color.id}
+              onSelect={() => updateSetting('accentColor', color.id)}
+              label={t(`settings.accentColor.${color.id}`)}
+              preview={<AccentPreview hex={color.hex} />}
             />
           ))}
         </div>
-      </section>
+      </SettingSection>
 
-      {/* Reduce Motion */}
-      <section>
-        <ToggleRow
-          checked={reduceMotion}
-          label={t('settings.reduceMotion')}
-          hint={t('settings.reduceMotionHint')}
-          onToggle={() => updateSetting('reduceMotion', !reduceMotion)}
-        />
-      </section>
+      <SettingSection id="density" title={t('settings.uiDensity')} resetKeys={['uiDensity']}>
+        <div
+          className="grid grid-cols-3 gap-2"
+          role="radiogroup"
+          aria-label={t('settings.uiDensity')}
+        >
+          {DENSITY_OPTIONS.map((option) => (
+            <SelectableCard
+              key={option}
+              selected={uiDensity === option}
+              onSelect={() => updateSetting('uiDensity', option)}
+              label={t(`settings.uiDensity.${option}`)}
+              preview={<DensityPreview density={option} />}
+            />
+          ))}
+        </div>
+      </SettingSection>
+
+      <SettingSection id="motion" title={t('settings.reduceMotion')} resetKeys={['reduceMotion']}>
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-content-secondary">{t('settings.reduceMotionHint')}</span>
+          <Switch
+            checked={reduceMotion}
+            onChange={(checked) => updateSetting('reduceMotion', checked)}
+            aria-label={t('settings.reduceMotion')}
+          />
+        </div>
+      </SettingSection>
     </div>
   );
 }

@@ -131,11 +131,6 @@ describe('DefaultsTab', () => {
     expect(screen.getByText('settings.copyFromCurrentLayout')).toBeInTheDocument();
   });
 
-  it('renders default categories section', () => {
-    render(<DefaultsTab />);
-    expect(screen.getByText('settings.defaultCategories')).toBeInTheDocument();
-  });
-
   it('clicking copy-from-layout button shows confirm dialog', () => {
     render(<DefaultsTab />);
     const copyBtn = screen.getByText('settings.copyFromCurrentLayout');
@@ -143,16 +138,8 @@ describe('DefaultsTab', () => {
     expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
   });
 
-  it('renders category color chips from defaults', () => {
+  it('does not render category sections (moved to Categories tab)', () => {
     render(<DefaultsTab />);
-    // With defaultCategories: null, it falls back to DEFAULT_CATEGORIES from constants
-    // The component renders (settings.defaultCategories ?? DEFAULT_CATEGORIES)
-    expect(screen.getByText('settings.usingBuiltInCategories')).toBeInTheDocument();
-  });
-
-  it('shows reset-to-built-in button when hasCustomCategoryDefaults is true', () => {
-    mockDrawerState.hasCustomCategoryDefaults = true;
-    render(<DefaultsTab />);
-    expect(screen.getByText('settings.resetToBuiltIn')).toBeInTheDocument();
+    expect(screen.queryByText('settings.defaultCategories')).not.toBeInTheDocument();
   });
 });

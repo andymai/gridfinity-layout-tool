@@ -1,32 +1,26 @@
-import { useState, useEffect, useRef, type CSSProperties } from 'react';
-import { createPortal } from 'react-dom';
-import { useResponsive } from '@/shared/hooks';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
 import { useTranslation } from '@/i18n';
-import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { Button, Dialog, ConfirmDialog } from '@/design-system';
 import { resetOnboarding } from '@/features/onboarding';
 import { TabNavigation } from './TabNavigation/TabNavigation';
+import { SettingsSearch } from './components/SettingsSearch/SettingsSearch';
+import { SettingsNavProvider } from './SettingsModalContext';
 import { useSettingsTab } from './hooks/useSettingsTab';
 import { GeneralTab } from './tabs/GeneralTab/GeneralTab';
 import { AppearanceTab } from './tabs/AppearanceTab/AppearanceTab';
 import { AccountTab } from './tabs/AccountTab/AccountTab';
 import { DefaultsTab } from './tabs/DefaultsTab/DefaultsTab';
+import { PrintTab } from './tabs/PrintTab/PrintTab';
+import { CategoriesTab } from './tabs/CategoriesTab/CategoriesTab';
 import { IntegrationsTab } from './tabs/IntegrationsTab/IntegrationsTab';
 import { PrivacyTab } from './tabs/PrivacyTab/PrivacyTab';
 import { StorageTab } from './tabs/StorageTab/StorageTab';
 import { LabsTab } from './tabs/LabsTab/LabsTab';
-import { Button, IconButton, XIcon } from '@/design-system';
 import type { SettingsModalProps, SettingsTabId } from './types';
 
-const STYLES = {
-  overlay: { backgroundColor: 'var(--overlay-dark)' } as CSSProperties,
-  title: {
-    fontSize: 'var(--text-2xl)',
-    fontWeight: 'var(--font-bold)',
-    color: 'var(--text-primary)',
-  } as CSSProperties,
-} as const;
+const HIGHLIGHT_DURATION_MS = 1600;
 
 function renderTab(tabId: SettingsTabId) {
   switch (tabId) {
@@ -38,6 +32,10 @@ function renderTab(tabId: SettingsTabId) {
       return <AccountTab />;
     case 'defaults':
       return <DefaultsTab />;
+    case 'print':
+      return <PrintTab />;
+    case 'categories':
+      return <CategoriesTab />;
     case 'integrations':
       return <IntegrationsTab />;
     case 'privacy':
@@ -51,13 +49,47 @@ function renderTab(tabId: SettingsTabId) {
 
 export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProps) {
   const t = useTranslation();
-  const { isMobile } = useResponsive();
-  const modalRef = useRef<HTMLDivElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { activeTab, setActiveTab } = useSettingsTab(initialTab);
+  const [query, setQuery] = useState('');
+  const [highlightedSectionId, setHighlightedSectionId] = useState<string | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const resetSettings = useSettingsStore((state) => state.resetSettings);
   const addToast = useToastStore((state) => state.addToast);
+  const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const navigateToSection = useCallback(
+    (tabId: SettingsTabId, sectionId?: string) => {
+      setActiveTab(tabId);
+      setHighlightedSectionId(sectionId ?? null);
+      if (highlightTimer.current) clearTimeout(highlightTimer.current);
+      if (sectionId) {
+        highlightTimer.current = setTimeout(
+          () => setHighlightedSectionId(null),
+          HIGHLIGHT_DURATION_MS
+        );
+      }
+    },
+    [setActiveTab]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimer.current) clearTimeout(highlightTimer.current);
+    };
+  }, []);
+
+  // Scroll the targeted section into view after its tab has rendered. Runs on
+  // the next frame so the freshly-mounted tab DOM exists. Works for any anchor
+  // with a matching id (SettingSection or a plain wrapper like AccountTab).
+  useEffect(() => {
+    if (!highlightedSectionId) return;
+    const raf = requestAnimationFrame(() => {
+      document
+        .getElementById(highlightedSectionId)
+        ?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [highlightedSectionId]);
 
   const handleResetAll = () => {
     resetSettings();
@@ -65,92 +97,61 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
     addToast(t('settings.resetAllConfirmed'), 'info');
   };
 
-  // Handle escape key and body scroll lock
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    closeButtonRef.current?.focus();
-    document.body.style.overflow = 'hidden';
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = '';
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 flex items-center justify-center z-50 animate-fade-in"
-      style={STYLES.overlay}
-      onClick={onClose}
-      role="presentation"
-    >
-      <div
-        role="presentation"
-        className={isMobile ? 'w-full h-full' : ''}
-        onClick={(e) => e.stopPropagation()}
+  const legalLinks = (
+    <div className="space-x-3 text-xs text-content-disabled">
+      <a
+        href="/privacy"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="transition-colors hover:text-content-tertiary"
       >
-        <div
-          ref={modalRef}
-          className={`flex flex-col animate-scale-in ${
-            isMobile ? 'w-full h-full' : 'w-[48rem] h-[85vh]'
-          }`}
-          style={{
-            backgroundColor: 'var(--bg-secondary)',
-            ...(isMobile
-              ? {}
-              : {
-                  border: '1px solid var(--border-default)',
-                  borderRadius: 'var(--radius-xl)',
-                  boxShadow: 'var(--shadow-xl)',
-                }),
-          }}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="settings-title"
-        >
-          {/* Header */}
-          <div className="flex justify-between items-center p-6 pb-4 border-b border-stroke-subtle">
-            <h2 id="settings-title" style={STYLES.title}>
-              {t('settings.title')}
-            </h2>
-            <IconButton
-              ref={closeButtonRef}
-              onClick={onClose}
-              touchTarget={false}
-              aria-label={t('common.close')}
-            >
-              <XIcon size="md" />
-            </IconButton>
-          </div>
+        {t('settings.privacyPolicy')}
+      </a>
+      <span>·</span>
+      <a
+        href="/terms"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="transition-colors hover:text-content-tertiary"
+      >
+        {t('settings.termsOfService')}
+      </a>
+    </div>
+  );
 
-          {/* Tab layout */}
-          <div className={`flex-1 flex overflow-hidden ${isMobile ? 'flex-col' : 'flex-row'}`}>
-            <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+  return (
+    <Dialog.Root
+      open={isOpen}
+      onClose={onClose}
+      size="3xl"
+      height="fixed"
+      fullScreen="mobile"
+      closeOnOverlayClick
+    >
+      <SettingsNavProvider value={{ navigateToSection, highlightedSectionId }}>
+        <Dialog.Header title={t('settings.title')} bordered closeAriaLabel={t('common.close')} />
+        <Dialog.SubHeader>
+          <SettingsSearch query={query} onQueryChange={setQuery} />
+        </Dialog.SubHeader>
+        <Dialog.Split>
+          <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+          <Dialog.Pane>
             <div
-              className="flex-1 overflow-y-auto scrollbar-thin p-6"
+              key={activeTab}
+              className="animate-fade-in"
               role="tabpanel"
               id={`settings-tabpanel-${activeTab}`}
               aria-labelledby={`settings-tab-${activeTab}`}
             >
-              <div key={activeTab} className="animate-fade-in">
-                {renderTab(activeTab)}
-              </div>
+              {renderTab(activeTab)}
             </div>
-          </div>
-
-          {/* Footer */}
-          <div className="flex items-center justify-between px-6 py-3 border-t border-stroke-subtle text-xs">
-            <div className="text-content-tertiary space-x-3">
+          </Dialog.Pane>
+        </Dialog.Split>
+        <Dialog.Footer
+          justify="between"
+          bordered
+          leading={
+            <div className="space-x-3 text-xs text-content-tertiary">
               <Button
                 variant="ghost"
                 onClick={() => setShowResetConfirm(true)}
@@ -170,38 +171,20 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
                 {t('settings.resetOnboarding')}
               </Button>
             </div>
-            <div className="text-content-disabled space-x-3">
-              <a
-                href="/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-content-tertiary transition-colors"
-              >
-                {t('settings.privacyPolicy')}
-              </a>
-              <span>·</span>
-              <a
-                href="/terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-content-tertiary transition-colors"
-              >
-                {t('settings.termsOfService')}
-              </a>
-            </div>
-          </div>
+          }
+        >
+          {legalLinks}
+        </Dialog.Footer>
 
-          <ConfirmDialog
-            isOpen={showResetConfirm}
-            title={t('settings.resetTabDefaults')}
-            message={t('settings.confirmResetAll')}
-            confirmText={t('common.apply')}
-            onConfirm={handleResetAll}
-            onCancel={() => setShowResetConfirm(false)}
-          />
-        </div>
-      </div>
-    </div>,
-    document.body
+        <ConfirmDialog
+          isOpen={showResetConfirm}
+          title={t('settings.resetTabDefaults')}
+          message={t('settings.confirmResetAll')}
+          confirmText={t('common.apply')}
+          onConfirm={handleResetAll}
+          onCancel={() => setShowResetConfirm(false)}
+        />
+      </SettingsNavProvider>
+    </Dialog.Root>
   );
 }

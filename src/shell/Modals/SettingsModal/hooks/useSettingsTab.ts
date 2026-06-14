@@ -1,8 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
+import { TAB_DEFINITIONS } from '../tabDefinitions';
 import type { SettingsTabId } from '../types';
 
 const STORAGE_KEY = 'gridfinity-settings-active-tab';
-const VALID_TABS: SettingsTabId[] = ['general', 'defaults', 'integrations', 'privacy', 'labs'];
+
+// Derived from TAB_DEFINITIONS so newly added tabs can never silently fail to
+// restore from sessionStorage (the previous hardcoded list omitted several).
+const VALID_TABS: SettingsTabId[] = TAB_DEFINITIONS.map((tab) => tab.id);
 
 function isValidTab(value: unknown): value is SettingsTabId {
   return typeof value === 'string' && VALID_TABS.includes(value as SettingsTabId);

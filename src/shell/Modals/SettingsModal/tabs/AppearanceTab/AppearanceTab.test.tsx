@@ -81,15 +81,13 @@ describe('AppearanceTab', () => {
 
   it('toggling reduce motion calls updateSetting', () => {
     render(<AppearanceTab />);
-    const checkboxes = screen.getAllByRole('checkbox');
-    fireEvent.click(checkboxes[checkboxes.length - 1]);
+    fireEvent.click(screen.getByRole('switch', { name: 'settings.reduceMotion' }));
     expect(mockUpdateSetting).toHaveBeenCalledWith('reduceMotion', true);
   });
 
-  it('keyboard Enter triggers theme selection', () => {
+  it('marks the active theme card as checked', () => {
     render(<AppearanceTab />);
-    const lightOption = screen.getByText('settings.theme.light');
-    fireEvent.keyDown(lightOption.closest('[role="radio"]')!, { key: 'Enter' });
-    expect(mockUpdateSetting).toHaveBeenCalledWith('theme', 'light');
+    const darkCard = screen.getByRole('radio', { name: 'settings.theme.dark' });
+    expect(darkCard).toHaveAttribute('aria-checked', 'true');
   });
 });

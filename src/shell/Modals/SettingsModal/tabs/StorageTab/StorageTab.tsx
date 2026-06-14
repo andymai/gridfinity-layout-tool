@@ -4,6 +4,7 @@ import { useTranslation } from '@/i18n';
 import { CONSTRAINTS } from '@/core/constants';
 import { clearAllAppData } from '@/core/storage/clearAppData';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
+import { SettingSection } from '../../components/SettingSection/SettingSection';
 import { useStorageInfo } from './useStorageInfo';
 
 function formatBytes(bytes: number): string {
@@ -57,22 +58,19 @@ export function StorageTab() {
   return (
     <div className="space-y-8">
       {/* Storage Status */}
-      <section>
-        <h3 className="text-base font-semibold text-content mb-3">
-          {t('settings.storage.status')}
-        </h3>
+      <SettingSection id="storage-status" title={t('settings.storage.status')}>
         <div className="flex items-center gap-2 text-sm">
-          <span className={`inline-block w-2 h-2 rounded-full ${statusDotColor}`} />
+          <span className={`inline-block h-2 w-2 rounded-full ${statusDotColor}`} />
           <span className="text-content">{statusLabel}</span>
         </div>
         {!info.loading && (
-          <p className="text-xs text-content-disabled mt-1">
+          <p className="mt-1 text-xs text-content-disabled">
             {isHealthy
               ? t('settings.storage.statusHealthyHint')
               : t('settings.storage.statusLimitedHint')}
           </p>
         )}
-      </section>
+      </SettingSection>
 
       {/* Layout Count */}
       <section>
@@ -147,20 +145,17 @@ export function StorageTab() {
       </section>
 
       {/* Danger Zone */}
-      <section>
-        <h3 className="text-base font-semibold text-error mb-3">
-          {t('settings.storage.dangerZone')}
-        </h3>
+      <SettingSection id="storage-danger" title={t('settings.storage.dangerZone')} tone="danger">
         <div className="flex items-center justify-between">
           <div className="text-sm">
             <span className="text-content">{t('settings.storage.clearAllData')}</span>
-            <p className="text-xs text-content-disabled mt-0.5">
+            <p className="mt-0.5 text-xs text-content-disabled">
               {t('settings.storage.clearAllDataHint')}
             </p>
           </div>
           <ClearAllDataButton />
         </div>
-      </section>
+      </SettingSection>
     </div>
   );
 }

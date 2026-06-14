@@ -2,17 +2,27 @@ import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useSettingsStore } from '@/core/store';
 import { useToastStore } from '@/core/store/toast';
-import { CONSTRAINTS, DEFAULT_CATEGORIES } from '@/core/constants';
-import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
-import type { PrintSettings } from '@/shared/printSettings';
+import { CONSTRAINTS } from '@/core/constants';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { PrintBedInput } from '@/shared/components/PrintBedInput';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
 import { useDrawerSettings } from '@/shared/hooks/useDrawerSettings';
-import { useBinDefaults } from '@/features/bin-designer';
 import { Button, Stepper } from '@/design-system';
 import { useTranslation } from '@/i18n';
+import { SettingSection } from '../../components/SettingSection/SettingSection';
+import type { UserSettings } from '@/core/store/settings';
+
+const LAYOUT_DEFAULT_KEYS: (keyof UserSettings)[] = [
+  'defaultDrawerWidth',
+  'defaultDrawerDepth',
+  'defaultDrawerHeight',
+  'defaultLayerHeight',
+  'defaultPrintBedSize',
+  'defaultPrintBedDepth',
+  'defaultGridUnitMm',
+  'defaultHeightUnitMm',
+];
 
 export function DefaultsTab() {
   const t = useTranslation();
@@ -27,26 +37,7 @@ export function DefaultsTab() {
   );
 
   // Read current layout values for "Copy from current" feature
-  const {
-    drawer,
-    gridUnitMm,
-    printBedSize,
-    activeLayerHeight,
-    currentCategories,
-    showSaveCategoriesConfirm,
-    setShowSaveCategoriesConfirm,
-    handleSaveCategoriesAsDefaults,
-    hasCustomCategoryDefaults,
-  } = useDrawerSettings();
-
-  // Bin Designer "default for new bins" — status + reset only. Capturing the
-  // current settings happens in the designer/command palette (live params).
-  const { hasCustomDefault: hasCustomBinDefault, resetToFactory: resetBinDefault } =
-    useBinDefaults();
-
-  const updatePrintSetting = <K extends keyof PrintSettings>(key: K, value: PrintSettings[K]) => {
-    updateSetting('printSettings', { ...settings.printSettings, [key]: value });
-  };
+  const { drawer, gridUnitMm, printBedSize, activeLayerHeight } = useDrawerSettings();
 
   const handleCopyFromLayout = () => {
     updateSetting('defaultDrawerWidth', drawer.width);
@@ -61,18 +52,17 @@ export function DefaultsTab() {
 
   return (
     <div className="space-y-6">
-      {/* Dimension Defaults */}
-      <section>
-        <h3 className="text-base font-semibold text-content mb-1">
-          {t('settings.defaultPreferences')}
-        </h3>
-        <p className="text-xs text-content-tertiary mb-3">{t('settings.defaultPreferencesHint')}</p>
-
-        <div className="text-xs text-content-secondary space-y-3">
+      <SettingSection
+        id="layout-dimensions"
+        title={t('settings.defaultPreferences')}
+        hint={t('settings.defaultPreferencesHint')}
+        resetKeys={LAYOUT_DEFAULT_KEYS}
+      >
+        <div className="space-y-3 text-xs text-content-secondary">
           {/* Width / Depth / Height in compact 3-column grid */}
           <div className="grid grid-cols-3 gap-1.5">
             <div>
-              <label className="block text-content-tertiary mb-1">{t('common.width')}</label>
+              <label className="mb-1 block text-content-tertiary">{t('common.width')}</label>
               <Stepper
                 value={settings.defaultDrawerWidth}
                 onChange={(value) =>
@@ -98,7 +88,7 @@ export function DefaultsTab() {
               />
             </div>
             <div>
-              <label className="block text-content-tertiary mb-1">{t('common.depth')}</label>
+              <label className="mb-1 block text-content-tertiary">{t('common.depth')}</label>
               <Stepper
                 value={settings.defaultDrawerDepth}
                 onChange={(value) =>
@@ -124,7 +114,7 @@ export function DefaultsTab() {
               />
             </div>
             <div>
-              <label className="block text-content-tertiary mb-1">{t('common.height')}</label>
+              <label className="mb-1 block text-content-tertiary">{t('common.height')}</label>
               <Stepper
                 value={settings.defaultDrawerHeight}
                 onChange={(value) =>
@@ -167,7 +157,7 @@ export function DefaultsTab() {
               }
               min={CONSTRAINTS.MIN_LAYER_HEIGHT}
               max={CONSTRAINTS.GRID_MAX}
-              className="input w-14 py-0.5 px-1 text-xs text-right"
+              className="input w-14 px-1 py-0.5 text-right text-xs"
             />
           </SettingsRow>
           <SettingsRow
@@ -197,10 +187,10 @@ export function DefaultsTab() {
                 onChange={(value) => updateSetting('defaultGridUnitMm', value)}
                 min={CONSTRAINTS.GRID_UNIT_MM_MIN}
                 max={CONSTRAINTS.GRID_UNIT_MM_MAX}
-                className="input w-14 py-0.5 px-1 text-xs text-right"
+                className="input w-14 px-1 py-0.5 text-right text-xs"
               />
             </SettingsRow>
-            <p className="text-[10px] text-content-tertiary mt-0.5">
+            <p className="mt-0.5 text-[10px] text-content-tertiary">
               {t('settings.gridfinityStandardMm', {
                 value: CONSTRAINTS.GRID_UNIT_MM_DEFAULT,
               })}
@@ -213,191 +203,11 @@ export function DefaultsTab() {
           variant="ghost"
           fullWidth
           onClick={() => setShowCopyConfirm(true)}
-          className="mt-4 text-sm py-2 px-3 rounded-lg bg-surface-elevated hover:bg-surface-hover text-content-secondary hover:text-content border border-stroke-subtle"
+          className="mt-4 rounded-lg border border-stroke-subtle bg-surface-elevated px-3 py-2 text-sm text-content-secondary hover:bg-surface-hover hover:text-content"
         >
           {t('settings.copyFromCurrentLayout')}
         </Button>
-      </section>
-
-      {/* Divider */}
-      <hr className="border-stroke-subtle" />
-
-      {/* Print Estimates Section */}
-      <section>
-        <h3 className="text-base font-semibold text-content mb-1">
-          {t('settings.printEstimates')}
-        </h3>
-        <p className="text-xs text-content-tertiary mb-3">{t('settings.printEstimatesHint')}</p>
-
-        <div className="text-xs text-content-secondary space-y-3">
-          <SettingsRow
-            label={t('settings.filamentCostPerKg')}
-            htmlFor="filamentCostPerKg"
-            unit="$/kg"
-          >
-            <DeferredNumberInput
-              id="filamentCostPerKg"
-              value={settings.printSettings.filamentCostPerKg}
-              onChange={(value) =>
-                updatePrintSetting(
-                  'filamentCostPerKg',
-                  Math.max(
-                    PRINT_SETTINGS_CONSTRAINTS.COST_MIN,
-                    Math.min(PRINT_SETTINGS_CONSTRAINTS.COST_MAX, value)
-                  )
-                )
-              }
-              min={PRINT_SETTINGS_CONSTRAINTS.COST_MIN}
-              max={PRINT_SETTINGS_CONSTRAINTS.COST_MAX}
-              step={PRINT_SETTINGS_CONSTRAINTS.COST_STEP}
-              className="input w-14 py-0.5 px-1 text-xs text-right"
-            />
-          </SettingsRow>
-          <SettingsRow label={t('settings.printLayerHeight')} htmlFor="printLayerHeight" unit="mm">
-            <DeferredNumberInput
-              id="printLayerHeight"
-              value={settings.printSettings.layerHeightMm}
-              onChange={(value) =>
-                updatePrintSetting(
-                  'layerHeightMm',
-                  Math.max(
-                    PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MIN,
-                    Math.min(PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MAX, value)
-                  )
-                )
-              }
-              min={PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MIN}
-              max={PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_MAX}
-              step={PRINT_SETTINGS_CONSTRAINTS.LAYER_HEIGHT_STEP}
-              className="input w-14 py-0.5 px-1 text-xs text-right"
-            />
-          </SettingsRow>
-          <SettingsRow label={t('settings.infillPercent')} htmlFor="infillPercent" unit="%">
-            <DeferredNumberInput
-              id="infillPercent"
-              value={settings.printSettings.infillPercent}
-              onChange={(value) =>
-                updatePrintSetting(
-                  'infillPercent',
-                  Math.max(
-                    PRINT_SETTINGS_CONSTRAINTS.INFILL_MIN,
-                    Math.min(PRINT_SETTINGS_CONSTRAINTS.INFILL_MAX, value)
-                  )
-                )
-              }
-              min={PRINT_SETTINGS_CONSTRAINTS.INFILL_MIN}
-              max={PRINT_SETTINGS_CONSTRAINTS.INFILL_MAX}
-              step={PRINT_SETTINGS_CONSTRAINTS.INFILL_STEP}
-              className="input w-14 py-0.5 px-1 text-xs text-right"
-            />
-          </SettingsRow>
-          <SettingsRow label={t('settings.nozzleSize')} htmlFor="nozzleSize" unit="mm">
-            <DeferredNumberInput
-              id="nozzleSize"
-              value={settings.printSettings.nozzleSizeMm}
-              onChange={(value) =>
-                updatePrintSetting(
-                  'nozzleSizeMm',
-                  Math.max(
-                    PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN,
-                    Math.min(PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX, value)
-                  )
-                )
-              }
-              min={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN}
-              max={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX}
-              step={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP}
-              className="input w-14 py-0.5 px-1 text-xs text-right"
-            />
-          </SettingsRow>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <hr className="border-stroke-subtle" />
-
-      {/* Default Categories Section */}
-      <section>
-        <h3 className="text-base font-semibold text-content mb-1">
-          {t('settings.defaultCategories')}
-        </h3>
-        <p className="text-xs text-content-tertiary mb-3">{t('settings.defaultCategoriesHint')}</p>
-        <div className="text-sm text-content-secondary mb-4 p-3 rounded-lg bg-surface-elevated border border-stroke-subtle">
-          <div className="text-xs text-content-tertiary mb-2">
-            {hasCustomCategoryDefaults
-              ? t('settings.usingCustomCategories', {
-                  count: settings.defaultCategories?.length ?? 0,
-                })
-              : t('settings.usingBuiltInCategories', { count: DEFAULT_CATEGORIES.length })}
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {(settings.defaultCategories ?? DEFAULT_CATEGORIES).map((cat) => (
-              <div
-                key={cat.id}
-                className="flex items-center gap-1.5 px-2 py-1 rounded bg-surface-hover"
-              >
-                <span
-                  className="w-3 h-3 rounded-sm shadow-sm flex-shrink-0"
-                  style={{ backgroundColor: cat.color }}
-                />
-                <span className="text-xs text-content-secondary truncate max-w-[80px]">
-                  {cat.name}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => setShowSaveCategoriesConfirm(true)}
-            className="flex-1 text-sm py-2 px-3 rounded-lg bg-surface-elevated hover:bg-surface-hover text-content-secondary hover:text-content border border-stroke-subtle"
-          >
-            {t('settings.saveCategoriesAsDefaults')}
-          </Button>
-          {hasCustomCategoryDefaults && (
-            <Button
-              variant="ghost"
-              onClick={() => updateSetting('defaultCategories', null)}
-              className="text-sm py-2 px-3 rounded-lg text-content-tertiary hover:text-content hover:bg-surface-hover border border-stroke-subtle"
-            >
-              {t('settings.resetToBuiltIn')}
-            </Button>
-          )}
-        </div>
-      </section>
-
-      {/* Divider */}
-      <hr className="border-stroke-subtle" />
-
-      {/* Bin Designer defaults Section */}
-      <section>
-        <h3 className="text-base font-semibold text-content mb-1">
-          {t('settings.binDefaults.title')}
-        </h3>
-        <p className="text-xs text-content-tertiary mb-3">{t('settings.binDefaults.hint')}</p>
-        <div className="text-sm text-content-secondary mb-4 p-3 rounded-lg bg-surface-elevated border border-stroke-subtle">
-          <div className="flex items-center gap-2 text-xs text-content-tertiary">
-            {hasCustomBinDefault ? (
-              <>
-                <span className="w-2 h-2 rounded-full bg-accent flex-shrink-0" />
-                {t('binDesigner.customDefaultActive')}
-              </>
-            ) : (
-              t('settings.binDefaults.usingFactory')
-            )}
-          </div>
-        </div>
-        {hasCustomBinDefault && (
-          <Button
-            variant="ghost"
-            onClick={resetBinDefault}
-            className="text-sm py-2 px-3 rounded-lg text-content-tertiary hover:text-content hover:bg-surface-hover border border-stroke-subtle"
-          >
-            {t('binDesigner.resetFactoryDefaults')}
-          </Button>
-        )}
-      </section>
+      </SettingSection>
 
       {/* Copy from current layout confirmation */}
       <ConfirmDialog
@@ -414,17 +224,6 @@ export function DefaultsTab() {
         confirmText={t('settings.confirmCopyFromLayout.confirm')}
         onConfirm={handleCopyFromLayout}
         onCancel={() => setShowCopyConfirm(false)}
-      />
-
-      <ConfirmDialog
-        isOpen={showSaveCategoriesConfirm}
-        title={t('settings.confirmSaveCategories.title')}
-        message={`${t('settings.confirmSaveCategories.message', {
-          count: currentCategories.length,
-        })}\n\n${currentCategories.map((c) => c.name).join(', ')}`}
-        confirmText={t('common.save')}
-        onConfirm={handleSaveCategoriesAsDefaults}
-        onCancel={() => setShowSaveCategoriesConfirm(false)}
       />
     </div>
   );

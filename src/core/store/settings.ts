@@ -24,6 +24,17 @@ export {
 } from './settings.types';
 export { normalizeSortOrder } from './settings.normalize';
 
+/**
+ * Restore a single key to its default, cloning array defaults so the shared
+ * DEFAULT_SETTINGS arrays are never aliased into live state. Generic over a
+ * single key K so the assignment type-checks (a union key would widen to never).
+ */
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- K links target/key/value so the assignment type-checks; a union key would widen to never.
+function restoreDefault<K extends keyof UserSettings>(target: UserSettings, key: K): void {
+  const value = DEFAULT_SETTINGS[key];
+  target[key] = Array.isArray(value) ? (value.slice() as UserSettings[K]) : value;
+}
+
 interface SettingsState {
   settings: UserSettings;
 
@@ -41,6 +52,13 @@ interface SettingsState {
   updateSettings: (updates: Partial<UserSettings>) => Result<void, StorageError>;
   /** Reset all settings to defaults. Returns Result indicating persistence success. */
   resetSettings: () => Result<void, StorageError>;
+
+  /**
+   * Reset a subset of settings to their defaults (per-section reset). Each
+   * listed key is restored from DEFAULT_SETTINGS; all other settings are left
+   * untouched. Returns Result indicating persistence success.
+   */
+  resetSettingKeys: (keys: (keyof UserSettings)[]) => Result<void, StorageError>;
 
   /** Save current layout defaults. Returns Result indicating persistence success. */
   saveCurrentAsDefaults: (
@@ -77,6 +95,15 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
 
   resetSettings: () => {
     const newSettings = { ...DEFAULT_SETTINGS };
+    set({ settings: newSettings });
+    return saveSettings(newSettings);
+  },
+
+  resetSettingKeys: (keys) => {
+    const newSettings = { ...get().settings };
+    for (const key of keys) {
+      restoreDefault(newSettings, key);
+    }
     set({ settings: newSettings });
     return saveSettings(newSettings);
   },

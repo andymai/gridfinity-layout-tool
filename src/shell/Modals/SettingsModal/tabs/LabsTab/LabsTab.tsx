@@ -10,6 +10,7 @@ import {
   SparklesIcon,
 } from '@/features/labs/components';
 import { useTranslation } from '@/i18n';
+import { SettingSection } from '../../components/SettingSection/SettingSection';
 
 export function LabsTab() {
   const t = useTranslation();
@@ -32,13 +33,12 @@ export function LabsTab() {
 
   return (
     <div className="space-y-8">
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <SparklesIcon className="w-5 h-5 text-accent" />
-          <h3 className="text-base font-semibold text-content">{t('settings.labs')}</h3>
-        </div>
-        <p className="text-sm text-content-tertiary mb-4">{t('settings.labsHint')}</p>
-
+      <SettingSection
+        id="labs"
+        title={t('settings.labs')}
+        hint={t('settings.labsHint')}
+        icon={<SparklesIcon className="h-5 w-5 text-accent" />}
+      >
         <div className="mb-3">
           <EngineSelector />
         </div>
@@ -55,15 +55,15 @@ export function LabsTab() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-6 text-content-tertiary">
-            <SparklesIcon className="w-10 h-10 mx-auto mb-2 opacity-50" />
+          <div className="py-6 text-center text-content-tertiary">
+            <SparklesIcon className="mx-auto mb-2 h-10 w-10 opacity-50" />
             <p className="text-sm">{t('settings.labsEmpty')}</p>
-            <p className="text-xs mt-1">{t('settings.labsCheckBack')}</p>
+            <p className="mt-1 text-xs">{t('settings.labsCheckBack')}</p>
           </div>
         )}
 
         <GraduatedSection features={graduatedFeatures} />
-      </section>
+      </SettingSection>
     </div>
   );
 }

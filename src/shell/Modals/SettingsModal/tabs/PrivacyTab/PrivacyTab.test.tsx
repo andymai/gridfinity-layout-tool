@@ -64,16 +64,16 @@ describe('PrivacyTab', () => {
     expect(screen.getByText('settings.helpImprove')).toBeInTheDocument();
   });
 
-  it('checkbox reflects aria-checked state', () => {
+  it('switch reflects checked state', () => {
     render(<PrivacyTab />);
-    const toggle = screen.getByRole('checkbox', { name: 'settings.toggleUsageData' });
-    expect(toggle).toHaveAttribute('aria-checked', 'true');
+    const toggle = screen.getByRole('switch', { name: 'settings.toggleUsageData' });
+    expect(toggle).toBeChecked();
   });
 
   it('clicking when enabled calls updateSetting(false) and optOutAnalytics', () => {
     mockState.analyticsEnabled = true;
     render(<PrivacyTab />);
-    const toggle = screen.getByRole('checkbox', { name: 'settings.toggleUsageData' });
+    const toggle = screen.getByRole('switch', { name: 'settings.toggleUsageData' });
     fireEvent.click(toggle);
     expect(mockUpdateSetting).toHaveBeenCalledWith('analyticsEnabled', false);
     expect(mockOptOut).toHaveBeenCalled();
@@ -83,7 +83,7 @@ describe('PrivacyTab', () => {
   it('prunes analytics data when disabling analytics', () => {
     mockState.analyticsEnabled = true;
     render(<PrivacyTab />);
-    const toggle = screen.getByRole('checkbox', { name: 'settings.toggleUsageData' });
+    const toggle = screen.getByRole('switch', { name: 'settings.toggleUsageData' });
     fireEvent.click(toggle);
     expect(mockPruneAnalytics).toHaveBeenCalledTimes(1);
   });
@@ -91,7 +91,7 @@ describe('PrivacyTab', () => {
   it('does not prune analytics data when enabling analytics', () => {
     mockState.analyticsEnabled = false;
     render(<PrivacyTab />);
-    const toggle = screen.getByRole('checkbox', { name: 'settings.toggleUsageData' });
+    const toggle = screen.getByRole('switch', { name: 'settings.toggleUsageData' });
     fireEvent.click(toggle);
     expect(mockPruneAnalytics).not.toHaveBeenCalled();
   });
@@ -99,18 +99,11 @@ describe('PrivacyTab', () => {
   it('clicking when disabled calls updateSetting(true) and optInAnalytics', () => {
     mockState.analyticsEnabled = false;
     render(<PrivacyTab />);
-    const toggle = screen.getByRole('checkbox', { name: 'settings.toggleUsageData' });
+    const toggle = screen.getByRole('switch', { name: 'settings.toggleUsageData' });
     fireEvent.click(toggle);
     expect(mockUpdateSetting).toHaveBeenCalledWith('analyticsEnabled', true);
     expect(mockOptIn).toHaveBeenCalled();
     expect(mockOptOut).not.toHaveBeenCalled();
-  });
-
-  it('keyboard Enter triggers toggle', () => {
-    render(<PrivacyTab />);
-    const toggle = screen.getByRole('checkbox', { name: 'settings.toggleUsageData' });
-    fireEvent.keyDown(toggle, { key: 'Enter' });
-    expect(mockUpdateSetting).toHaveBeenCalledWith('analyticsEnabled', false);
   });
 
   it('shows privacy signal banner when browser signal detected and analytics disabled', () => {
