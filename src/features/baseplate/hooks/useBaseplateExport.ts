@@ -163,6 +163,14 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       // Stack-printing config (persisted in baseplateParams). STEP is a CAD
       // interchange format with no slicer stacking notion, so it never stacks.
       const stack = baseplateParams.stackPrint;
+      // Separator-sheet stacking needs per-object material assignment, which only
+      // 3MF carries. The export dialog forces 3MF, but guard here too so a
+      // programmatic/stale caller can't silently drop the separator sheet.
+      if (stack?.enabled && stack.mode === 'sacrificialSheet' && format !== '3mf') {
+        setIsExporting(false);
+        useToastStore.getState().addToast(t('baseplate.stackPrint.needs3mf'), 'error');
+        return false;
+      }
       const stackEnabled = stack?.enabled === true && format !== 'step';
       const sets = stack?.sets ?? 1;
       const plateColor = useSettingsStore.getState().settings.baseplateFilamentColor;

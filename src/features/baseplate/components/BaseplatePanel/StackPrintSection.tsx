@@ -159,7 +159,11 @@ export function StackPrintSection({
                     <div className="text-[11px] font-medium text-content-secondary">
                       {t('baseplate.stackPrint.separatorColor')}
                     </div>
-                    <div className="grid grid-cols-7 gap-1.5" role="listbox">
+                    <div
+                      className="grid grid-cols-7 gap-1.5"
+                      role="listbox"
+                      aria-label={t('baseplate.stackPrint.separatorColor')}
+                    >
                       {FILAMENT_COLORS.map(({ color, nameKey }) => (
                         <button
                           key={color}
