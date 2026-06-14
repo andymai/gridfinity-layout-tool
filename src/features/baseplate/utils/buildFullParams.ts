@@ -23,6 +23,11 @@ export function buildFullParams(
   const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
   const depth = synced ? drawerDepth : (stored.baseplateDepth ?? drawerDepth);
 
+  // Stack printing strips connectors (their overhangs can't print in a vertical
+  // stack). Done here rather than by mutating stored params, so the user's
+  // connector settings return intact when stacking is turned off.
+  const stackingOn = stored.stackPrint?.enabled === true;
+
   return {
     width,
     depth,
@@ -38,10 +43,10 @@ export function buildFullParams(
     fractionalEdgeX: synced ? fractionalEdgeX : (stored.fractionalEdgeX ?? 'end'),
     fractionalEdgeY: synced ? fractionalEdgeY : (stored.fractionalEdgeY ?? 'end'),
     overTile: stored.overTile,
-    connectorNubs: stored.connectorNubs,
+    connectorNubs: stackingOn ? false : stored.connectorNubs,
     invertDovetails: stored.invertDovetails,
     preferIdenticalPieces: stored.preferIdenticalPieces,
-    connectorStyle: stored.connectorStyle,
+    connectorStyle: stackingOn ? undefined : stored.connectorStyle,
     connectorFitOffset: stored.connectorFitOffset,
     lightweight: stored.lightweight,
     cornerRadius: stored.cornerRadius,

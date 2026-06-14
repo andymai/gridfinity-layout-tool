@@ -58,7 +58,7 @@ export interface StackPrintParams {
   readonly enabled: boolean;
   /** Complete-set multiplier applied to each identical-piece group's quantity. */
   readonly sets: number;
-  /** Air gap (mm) between copies in 'airGap' mode; ignored in 'sacrificialSheet' mode. */
+  /** Separation between copies (mm): air gap in air-gap mode, sheet thickness in sheet mode. */
   readonly gapMm: Mm;
   readonly mode: StackPrintMode;
 }
@@ -148,8 +148,9 @@ export interface BaseplateParams {
   /** Which edge carries the half-unit row when baseplateDepth is fractional and syncWithLayout is false. Defaults to 'end' (top). */
   readonly fractionalEdgeY?: FractionalEdge;
   /**
-   * Vertical stack-print configuration (experimental). When enabled, exports a
-   * single job of `count` flipped, separated copies. Auto-disables connectors.
+   * Vertical stack-print configuration (experimental). When enabled, each
+   * identical-piece group exports as flipped, separated vertical stacks sized
+   * to the quantity the drawer needs (× `sets`). Auto-disables connectors.
    * Omitted/undefined = no stacking (single baseplate).
    */
   readonly stackPrint?: StackPrintParams;

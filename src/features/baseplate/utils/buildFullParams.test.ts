@@ -150,4 +150,40 @@ describe('buildFullParams', () => {
       expect(result.fractionalEdgeY).toBe('end');
     });
   });
+
+  describe('stack-print connector stripping', () => {
+    const withConnectors = {
+      ...storedBase,
+      connectorNubs: true,
+      connectorStyle: 'dovetailKey' as const,
+    };
+
+    it('passes connectors through when stacking is off', () => {
+      const result = buildFullParams(withConnectors, 10, 8, 42, 'end', 'end');
+      expect(result.connectorNubs).toBe(true);
+      expect(result.connectorStyle).toBe('dovetailKey');
+    });
+
+    it('strips connectors when stacking is enabled (without mutating stored)', () => {
+      const stored = {
+        ...withConnectors,
+        stackPrint: { enabled: true, sets: 2, gapMm: 0.2 as never, mode: 'airGap' as const },
+      };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.connectorNubs).toBe(false);
+      expect(result.connectorStyle).toBeUndefined();
+      // Stored params are untouched, so connectors return when stacking is off.
+      expect(stored.connectorNubs).toBe(true);
+      expect(stored.connectorStyle).toBe('dovetailKey');
+    });
+
+    it('keeps connectors when stackPrint exists but is disabled', () => {
+      const stored = {
+        ...withConnectors,
+        stackPrint: { enabled: false, sets: 1, gapMm: 0.2 as never, mode: 'airGap' as const },
+      };
+      const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
+      expect(result.connectorNubs).toBe(true);
+    });
+  });
 });

@@ -156,18 +156,14 @@ export function BaseplatePanel() {
     [tiling, fullParams]
   );
 
-  // Enabling stacking strips connectors — their dovetails/barbs are
-  // unsupportable overhangs in a vertical stack (see StackPrintParams).
+  // Stacking strips connectors functionally (in buildFullParams), not by
+  // mutating stored params — so the user's connector settings return intact
+  // when stacking is turned off. The connector controls are hidden meanwhile.
   const setStackPrint = useCallback(
-    (next: StackPrintParams | undefined) => {
-      if (next?.enabled) {
-        updateParams({ stackPrint: next, connectorNubs: false, connectorStyle: undefined });
-      } else {
-        updateParams({ stackPrint: next });
-      }
-    },
+    (next: StackPrintParams | undefined) => updateParams({ stackPrint: next }),
     [updateParams]
   );
+  const stackEnabled = baseplateParams.stackPrint?.enabled === true;
 
   useEffect(() => {
     const handler = () => setPrintSettingsExpanded(true);
@@ -445,7 +441,7 @@ export function BaseplatePanel() {
           }
         >
           <div className="space-y-3 px-4 py-3">
-            {tiling?.isSplit && (
+            {tiling?.isSplit && !stackEnabled && (
               <>
                 <SettingsRow label={t('baseplate.connectors.label')}>
                   <Select
