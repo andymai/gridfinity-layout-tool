@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.169.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.169.0...gridfinity-layout-tool-v4.169.1) (2026-06-14)
+
+
+### Bug Fixes
+
+* **stepper:** stretch solo steppers to full width ([#2145](https://github.com/andymai/gridfinity-layout-tool/issues/2145)) ([16a810c](https://github.com/andymai/gridfinity-layout-tool/commit/16a810c16be454197a27dc8e6bfc2e63acfafefa))
+
 ## [4.169.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.168.2...gridfinity-layout-tool-v4.169.0) (2026-06-14)
 
 
