@@ -39,7 +39,7 @@ export function StackSampleButton() {
       if (!succeeded) return;
       useToastStore
         .getState()
-        .addToast(t('baseplate.connectorSample.exportComplete'), 'success', 3000);
+        .addToast(t('baseplate.stackPrint.sampleExportComplete'), 'success', 3000);
       setOpen(false);
     });
   }, [downloadSample, activeFormat, baseName, t]);

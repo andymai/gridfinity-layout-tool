@@ -5,7 +5,7 @@
  * controls (via `renderExpanded`). Single-select, rendered as a radiogroup.
  */
 
-import type { ReactNode } from 'react';
+import { useCallback, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { cn } from '@/design-system/cn';
 import { useTranslation } from '@/i18n';
 import {
@@ -58,12 +58,41 @@ interface ConnectorPickerProps {
 
 export function ConnectorPicker({ value, onChange, renderExpanded }: ConnectorPickerProps) {
   const t = useTranslation();
+  const groupRef = useRef<HTMLDivElement>(null);
+
+  // Radio keyboard model: arrows/Home/End move the selection and focus, matching
+  // the design-system SegmentedControl.
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLDivElement>) => {
+      const index = OPTIONS.findIndex((o) => o.value === value);
+      let next: number;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next = (index + 1) % OPTIONS.length;
+      else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft')
+        next = (index - 1 + OPTIONS.length) % OPTIONS.length;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = OPTIONS.length - 1;
+      else return;
+      e.preventDefault();
+      if (next !== index) onChange(OPTIONS[next].value);
+      const radios = groupRef.current?.querySelectorAll<HTMLButtonElement>('[role="radio"]');
+      radios?.[next]?.focus();
+    },
+    [value, onChange]
+  );
+
   return (
     <div className="space-y-1.5">
       <div className="text-[11px] font-medium uppercase tracking-wide text-content-tertiary">
         {t('baseplate.connectors.label')}
       </div>
-      <div role="radiogroup" aria-label={t('baseplate.connectors.label')} className="space-y-1.5">
+      <div
+        ref={groupRef}
+        role="radiogroup"
+        aria-label={t('baseplate.connectors.label')}
+        tabIndex={-1}
+        onKeyDown={handleKeyDown}
+        className="space-y-1.5"
+      >
         {OPTIONS.map(({ value: optionValue, titleKey, descKey, Icon }) => {
           const selected = optionValue === value;
           const expanded = selected ? renderExpanded?.(optionValue) : null;
@@ -82,6 +111,7 @@ export function ConnectorPicker({ value, onChange, renderExpanded }: ConnectorPi
                 role="radio"
                 aria-checked={selected}
                 aria-label={t(titleKey)}
+                tabIndex={selected ? 0 : -1}
                 onClick={() => {
                   if (!selected) onChange(optionValue);
                 }}

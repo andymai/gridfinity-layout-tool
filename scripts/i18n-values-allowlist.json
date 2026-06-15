@@ -225,7 +225,8 @@
     "baseplate.stackPrint.sampleButton",
     "baseplate.stackPrint.sampleTitle",
     "baseplate.stackPrint.sampleDescription",
-    "baseplate.stackPrint.hint"
+    "baseplate.stackPrint.hint",
+    "baseplate.stackPrint.sampleExportComplete"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

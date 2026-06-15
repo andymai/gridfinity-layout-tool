@@ -72,8 +72,8 @@ export function buildStackPreviewMeshes(
   // Cell size = (largest tower footprint, rounded up to whole grid units) +
   // TOWER_GAP_UNITS, so every cell spans a whole number of grid cells and each
   // tower's edges fall on grid lines (see TOWER_GAP_UNITS).
-  const maxWidthUnits = Math.max(...measured.map((m) => Math.round(m.width / gridUnitMm)), 1);
-  const maxDepthUnits = Math.max(...measured.map((m) => Math.round(m.depth / gridUnitMm)), 1);
+  const maxWidthUnits = Math.max(...measured.map((m) => Math.ceil(m.width / gridUnitMm)), 1);
+  const maxDepthUnits = Math.max(...measured.map((m) => Math.ceil(m.depth / gridUnitMm)), 1);
   const cellW = (maxWidthUnits + TOWER_GAP_UNITS) * gridUnitMm;
   const cellD = (maxDepthUnits + TOWER_GAP_UNITS) * gridUnitMm;
 

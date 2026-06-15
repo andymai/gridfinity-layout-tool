@@ -12,7 +12,7 @@
  *                 where the spatial schematic implies the meaning and width must stay narrow.
  */
 
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import { cn } from '@/design-system/cn';
 import { Stepper } from '@/design-system/Stepper';
 import { useTranslation } from '@/i18n';
@@ -35,9 +35,11 @@ export const PaddingStepper = forwardRef<HTMLDivElement, PaddingStepperProps>(
     ref
   ) {
     const t = useTranslation();
+    const inputId = useId();
 
     const stepper = (
       <Stepper
+        id={inputId}
         size={orientation === 'vertical' ? 'sm' : 'md'}
         orientation={orientation}
         value={value}
@@ -64,7 +66,11 @@ export const PaddingStepper = forwardRef<HTMLDivElement, PaddingStepperProps>(
     // front, left, right) is labeled consistently.
     return (
       <div ref={ref} className={cn('flex w-fit flex-col items-center gap-0.5', className)}>
-        {label !== undefined && <span className="text-xs text-content-tertiary">{label}</span>}
+        {label !== undefined && (
+          <label htmlFor={inputId} className="text-xs text-content-tertiary">
+            {label}
+          </label>
+        )}
         {stepper}
       </div>
     );

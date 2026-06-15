@@ -42,4 +42,22 @@ describe('ConnectorPicker', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'baseplate.connectorStyle.snapClip' }));
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  it('uses roving tabindex (only the selected radio is tabbable)', () => {
+    render(<ConnectorPicker value="dovetail" onChange={vi.fn()} />);
+    expect(
+      screen.getByRole('radio', { name: 'baseplate.connectorStyle.dovetail' })
+    ).toHaveAttribute('tabindex', '0');
+    expect(screen.getByRole('radio', { name: 'baseplate.connectors.none' })).toHaveAttribute(
+      'tabindex',
+      '-1'
+    );
+  });
+
+  it('moves selection with arrow keys', () => {
+    const onChange = vi.fn();
+    render(<ConnectorPicker value="none" onChange={onChange} />);
+    fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'ArrowDown' });
+    expect(onChange).toHaveBeenCalledWith('dovetail');
+  });
 });

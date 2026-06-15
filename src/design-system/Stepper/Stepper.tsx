@@ -322,6 +322,12 @@ export interface StepperProps extends StepperVariantProps {
   'aria-label': string;
 
   /**
+   * Optional id applied to the inner input, so a caller can render an associated
+   * `<label htmlFor={id}>`. Falls back to a generated id.
+   */
+  id?: string;
+
+  /**
    * Accessible label for the decrease button.
    * @default `Decrease ${ariaLabel}`
    */
@@ -406,10 +412,12 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
       disabled = false,
       commitMode = 'immediate',
       className,
+      id,
     },
     ref
   ) => {
-    const inputId = useId();
+    const generatedId = useId();
+    const inputId = id ?? generatedId;
     const isVertical = orientation === 'vertical';
 
     // Deferred commit accumulates +/- clicks into `pendingDelta` and flushes it

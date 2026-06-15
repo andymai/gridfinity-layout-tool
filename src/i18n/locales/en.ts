@@ -2116,6 +2116,7 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.hint':
     'Prints all of a drawer’s plates as one vertical tower with an air gap between them, so they print in a single job and snap apart afterward.',
   'baseplate.stackPrint.sampleButton': 'Print fit sample',
+  'baseplate.stackPrint.sampleExportComplete': 'Stack fit sample exported',
   'baseplate.stackPrint.sampleTitle': 'Stack fit sample',
   'baseplate.stackPrint.sampleDescription':
     'A single stack of two 1×1 plates to dial in the air-gap separation before printing a full stack.',
