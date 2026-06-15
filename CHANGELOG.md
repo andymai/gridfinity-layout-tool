@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.171.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.171.0...gridfinity-layout-tool-v4.171.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* **i18n:** allowlist nb 'plate' singular to unblock main Quality ([#2151](https://github.com/andymai/gridfinity-layout-tool/issues/2151)) ([f8496f9](https://github.com/andymai/gridfinity-layout-tool/commit/f8496f95ada78e6821ce957022a3f26a49abb322))
+
 ## [4.171.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.170.0...gridfinity-layout-tool-v4.171.0) (2026-06-15)
 
 
