@@ -2317,7 +2317,7 @@
   "settings.section.resetAria": "Скинути {section} до значень за замовчуванням",
   "settings.section.resetDone": "{section} скинуто до значень за замовчуванням",
   "baseplate.stackPrint.badge": "Experimental",
-  "baseplate.stackPrint.enable": "Друкувати вертикальним стосом",
+  "baseplate.stackPrint.enable": "Вертикальний стос",
   "baseplate.stackPrint.hint": "Нижня плита друкується лицьовою стороною вгору, а решта — догори дном, розділені тонким повітряним зазором, щоб стос можна було розламати. Спершу випробуйте невеликий стос (2–3 плити), щоб налаштувати зазор.",
   "baseplate.stackPrint.summary": "{stacks} стосів · {plates} пластин",
   "baseplate.stackPrint.exportBanner": "Друк стосами: {stacks} стосів ({plates} пластин) експортуються як ZIP із посібником із друку.",

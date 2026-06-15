@@ -2317,7 +2317,7 @@
   "settings.section.resetAria": "{section} terugzetten naar standaard",
   "settings.section.resetDone": "{section} teruggezet naar standaard",
   "baseplate.stackPrint.badge": "Experimental",
-  "baseplate.stackPrint.enable": "Als verticale stapel printen",
+  "baseplate.stackPrint.enable": "Verticale stapel",
   "baseplate.stackPrint.hint": "De onderste plaat wordt met de goede kant boven geprint en de rest ondersteboven, gescheiden door een dunne luchtspleet zodat de stapel uit elkaar breekt. Test eerst een kleine stapel (2–3 platen) om de spleet af te stellen.",
   "baseplate.stackPrint.summary": "{stacks} stapels · {plates} platen",
   "baseplate.stackPrint.exportBanner": "Gestapeld printen: {stacks} stapels ({plates} platen) worden geëxporteerd als een ZIP met printgids.",

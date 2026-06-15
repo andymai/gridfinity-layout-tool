@@ -2317,7 +2317,7 @@
   "settings.section.resetAria": "Tilbakestill {section} til standard",
   "settings.section.resetDone": "{section} tilbakestilt til standard",
   "baseplate.stackPrint.badge": "Experimental",
-  "baseplate.stackPrint.enable": "Skriv ut som vertikal stabel",
+  "baseplate.stackPrint.enable": "Vertikal stabel",
   "baseplate.stackPrint.hint": "Den nederste platen skrives ut med riktig side opp og resten opp ned, atskilt av et tynt luftmellomrom så tårnet kan brekkes fra hverandre. Test en liten stabel (2–3 plater) først for å justere mellomrommet.",
   "baseplate.stackPrint.summary": "{stacks} stabler · {plates} plater",
   "baseplate.stackPrint.exportBanner": "Stabelutskrift: {stacks} stabler ({plates} plater) eksporteres som en ZIP med utskriftsguide.",

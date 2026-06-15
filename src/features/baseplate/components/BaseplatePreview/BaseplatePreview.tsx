@@ -376,9 +376,11 @@ export function BaseplatePreview({
       )}
 
       {/* Camera controls + view toggle overlay */}
+      {/* Assembled/Exploded is for split pieces; stack mode shows towers with
+          their own separation slider instead, so hide that toggle there. */}
       <BaseplatePreviewControls
         activePreset={activePreset}
-        isSplit={isSplit}
+        isSplit={isSplit && !stackEnabled}
         splitViewMode={splitViewMode}
         filamentColor={filamentColor}
         projection={projection}

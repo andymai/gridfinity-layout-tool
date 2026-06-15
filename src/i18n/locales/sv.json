@@ -2317,7 +2317,7 @@
   "settings.section.resetAria": "Återställ {section} till standard",
   "settings.section.resetDone": "{section} återställd till standard",
   "baseplate.stackPrint.badge": "Experimental",
-  "baseplate.stackPrint.enable": "Skriv ut som vertikal stapel",
+  "baseplate.stackPrint.enable": "Vertikal stapel",
   "baseplate.stackPrint.hint": "Den nedersta plattan skrivs ut med rätt sida upp och resten upp och ner, åtskilda av en tunn luftspalt så att tornet kan brytas isär. Testa en liten stapel (2–3 plattor) först för att ställa in spalten.",
   "baseplate.stackPrint.summary": "{stacks} staplar · {plates} plattor",
   "baseplate.stackPrint.exportBanner": "Stapelutskrift: {stacks} staplar ({plates} plattor) exporteras som en ZIP med utskriftsguide.",

@@ -58,7 +58,7 @@ export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSe
   };
 
   const badge = (
-    <span className="rounded-full bg-info/15 px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-info uppercase">
+    <span className="inline-flex items-center rounded bg-info-muted px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-info">
       {t('baseplate.stackPrint.badge')}
     </span>
   );

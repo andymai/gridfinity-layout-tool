@@ -2317,7 +2317,7 @@
   "settings.section.resetAria": "Redefinir {section} para os padrões",
   "settings.section.resetDone": "{section} redefinida para os padrões",
   "baseplate.stackPrint.badge": "Experimental",
-  "baseplate.stackPrint.enable": "Imprimir como pilha vertical",
+  "baseplate.stackPrint.enable": "Pilha vertical",
   "baseplate.stackPrint.hint": "A placa inferior é impressa com o lado direito para cima e as demais de cabeça para baixo, separadas por uma fina folga de ar para que a pilha se solte. Teste primeiro uma pilha pequena (2–3 placas) para ajustar a folga.",
   "baseplate.stackPrint.summary": "{stacks} pilhas · {plates} placas",
   "baseplate.stackPrint.exportBanner": "Impressão empilhada: {stacks} pilhas ({plates} placas) são exportadas em um ZIP com guia de impressão.",

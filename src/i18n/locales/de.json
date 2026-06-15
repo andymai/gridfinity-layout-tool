@@ -2317,7 +2317,7 @@
   "settings.section.resetAria": "{section} auf Standard zurücksetzen",
   "settings.section.resetDone": "{section} auf Standard zurückgesetzt",
   "baseplate.stackPrint.badge": "Experimental",
-  "baseplate.stackPrint.enable": "Als vertikalen Stapel drucken",
+  "baseplate.stackPrint.enable": "Vertikaler Stapel",
   "baseplate.stackPrint.hint": "Die unterste Platte wird richtig herum gedruckt, der Rest kopfüber, getrennt durch einen dünnen Luftspalt, damit sich der Turm auseinanderbrechen lässt. Teste zuerst einen kleinen Stapel (2–3 Platten), um den Spalt einzustellen.",
   "baseplate.stackPrint.summary": "{stacks} Stapel · {plates} Platten",
   "baseplate.stackPrint.exportBanner": "Stapeldruck: {stacks} Stapel ({plates} Platten) werden als ZIP mit Druckanleitung exportiert.",

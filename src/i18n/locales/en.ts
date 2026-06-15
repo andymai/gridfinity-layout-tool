@@ -2103,7 +2103,7 @@ const en: Record<string, string> = {
   'baseplate.connectorNozzleNotice':
     'Sized for a {nozzle}mm nozzle — dovetail keys and snap clips are enlarged to stay printable.',
   'baseplate.stackPrint.badge': 'Experimental',
-  'baseplate.stackPrint.enable': 'Print as a vertical stack',
+  'baseplate.stackPrint.enable': 'Vertical stack',
   'baseplate.stackPrint.hint':
     'The bottom plate prints right-side up and the rest upside down, separated by a thin air gap so the tower snaps apart. Test a small stack (2–3 plates) first to dial in the gap.',
   'baseplate.stackPrint.summary': '{stacks} stacks · {plates} plates',

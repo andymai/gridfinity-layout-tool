@@ -2317,7 +2317,7 @@
   "settings.section.resetAria": "Réinitialiser {section} aux valeurs par défaut",
   "settings.section.resetDone": "{section} réinitialisée aux valeurs par défaut",
   "baseplate.stackPrint.badge": "Experimental",
-  "baseplate.stackPrint.enable": "Imprimer en pile verticale",
+  "baseplate.stackPrint.enable": "Pile verticale",
   "baseplate.stackPrint.hint": "La plaque du bas s'imprime à l'endroit et les autres à l'envers, séparées par un fin interstice d'air pour que la pile se détache. Testez d'abord une petite pile (2–3 plaques) pour régler l'interstice.",
   "baseplate.stackPrint.summary": "{stacks} piles · {plates} plaques",
   "baseplate.stackPrint.exportBanner": "Impression empilée : {stacks} piles ({plates} plaques) exportées dans un ZIP avec guide d'impression.",

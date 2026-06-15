@@ -2317,7 +2317,7 @@
   "settings.section.resetAria": "{section} をデフォルトにリセット",
   "settings.section.resetDone": "{section} をデフォルトにリセットしました",
   "baseplate.stackPrint.badge": "Experimental",
-  "baseplate.stackPrint.enable": "垂直スタックとして印刷",
+  "baseplate.stackPrint.enable": "縦積み",
   "baseplate.stackPrint.hint": "一番下のプレートは表向き、残りは上下逆さまに印刷され、薄いエアギャップで分かれているため積み重ねを割って外せます。まず小さなスタック（2〜3枚）でギャップを調整してください。",
   "baseplate.stackPrint.summary": "{stacks} スタック · {plates} 枚",
   "baseplate.stackPrint.exportBanner": "積層印刷：{stacks} スタック（{plates} 枚）を印刷ガイド付きZIPとしてエクスポートします。",
