@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.173.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.173.0...gridfinity-layout-tool-v4.173.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* **baseplate:** snap-clip resists pull-apart via seam-side retaining wall ([#2162](https://github.com/andymai/gridfinity-layout-tool/issues/2162)) ([a421808](https://github.com/andymai/gridfinity-layout-tool/commit/a421808b8e7166da5a7b7027797b58e06dbe3782))
+
 ## [4.173.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.172.1...gridfinity-layout-tool-v4.173.0) (2026-06-15)
 
 
