@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.178.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.177.1...gridfinity-layout-tool-v4.178.0) (2026-06-15)
+
+
+### Features
+
+* **baseplate:** stack-print UX polish ([#2186](https://github.com/andymai/gridfinity-layout-tool/issues/2186)) ([407785b](https://github.com/andymai/gridfinity-layout-tool/commit/407785b00bc12a27b2c9d87c6fd53e83256e2c42))
+
 ## [4.177.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.177.0...gridfinity-layout-tool-v4.177.1) (2026-06-15)
 
 
