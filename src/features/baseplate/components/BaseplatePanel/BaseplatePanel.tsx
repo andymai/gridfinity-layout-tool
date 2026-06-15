@@ -19,7 +19,6 @@ import { PRINT_SETTINGS_CONSTRAINTS } from '@/shared/printSettings';
 import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { Checkbox } from '@/design-system/Checkbox/Checkbox';
-import { Select } from '@/design-system/Select';
 import { RulerIcon, LayoutGridIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import { StickyGroupHeader } from '@/shared/components/StickyGroupHeader';
@@ -41,6 +40,8 @@ import { CornerRadiusControl } from './CornerRadiusControl';
 import { GridDimensionStepper } from './GridDimensionStepper';
 import { ConnectorSampleButton } from './ConnectorSampleButton';
 import { StackPrintSection } from './StackPrintSection';
+import { ConnectorPicker } from './ConnectorPicker';
+import type { ConnectorChoice } from './ConnectorPicker';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
 import { buildFullParams } from '../../utils/buildFullParams';
 import { stackGroupsFromTiling } from '../../utils/stackPrint';
@@ -441,64 +442,51 @@ export function BaseplatePanel() {
           >
             <div className="space-y-3 px-4 py-3">
               {tiling?.isSplit && (
-                <>
-                  <SettingsRow label={t('baseplate.connectors.label')}>
-                    <Select
-                      size="sm"
-                      value={
-                        baseplateParams.connectorNubs === true
-                          ? (baseplateParams.connectorStyle ?? 'dovetail')
-                          : 'none'
-                      }
-                      onValueChange={(v) => {
-                        if (v === 'none') {
-                          updateParams({ connectorNubs: false, connectorStyle: undefined });
-                          return;
-                        }
-                        // 'dovetail' is the default, stored as undefined.
-                        updateParams({
-                          connectorNubs: true,
-                          connectorStyle: v === 'dovetailKey' || v === 'snapClip' ? v : undefined,
-                        });
-                      }}
-                      options={[
-                        { id: 'none', name: t('baseplate.connectors.none') },
-                        { id: 'dovetail', name: t('baseplate.connectorStyle.dovetail') },
-                        { id: 'dovetailKey', name: t('baseplate.connectorStyle.dovetailKey') },
-                        { id: 'snapClip', name: t('baseplate.connectorStyle.snapClip') },
-                      ]}
-                      aria-label={t('baseplate.connectors.label')}
-                    />
-                  </SettingsRow>
-                  {baseplateParams.connectorNubs === true && (
-                    <>
-                      <SettingsRow
-                        label={t('baseplate.connectorFit.label')}
-                        tooltip={t('baseplate.connectorFit.info')}
-                        unit="mm"
-                      >
-                        <Stepper
-                          size="sm"
-                          value={baseplateParams.connectorFitOffset ?? 0}
-                          onStep={(delta) => {
-                            const next = snapConnectorFitOffset(
-                              (baseplateParams.connectorFitOffset ?? 0) +
-                                delta * CONNECTOR_FIT_OFFSET_STEP
-                            );
-                            updateParam('connectorFitOffset', next === 0 ? undefined : next);
-                          }}
-                          min={CONNECTOR_FIT_OFFSET_MIN}
-                          max={CONNECTOR_FIT_OFFSET_MAX}
-                          step={CONNECTOR_FIT_OFFSET_STEP}
-                          displayValue={formatConnectorFitOffset(
-                            baseplateParams.connectorFitOffset ?? 0
-                          )}
-                          aria-label={t('baseplate.connectorFit.label')}
-                        />
-                      </SettingsRow>
-                      {baseplateParams.connectorStyle !== 'dovetailKey' &&
-                        baseplateParams.connectorStyle !== 'snapClip' &&
-                        baseplateParams.preferIdenticalPieces !== true && (
+                <ConnectorPicker
+                  value={
+                    baseplateParams.connectorNubs === true
+                      ? (baseplateParams.connectorStyle ?? 'dovetail')
+                      : 'none'
+                  }
+                  onChange={(v: ConnectorChoice) => {
+                    if (v === 'none') {
+                      updateParams({ connectorNubs: false, connectorStyle: undefined });
+                      return;
+                    }
+                    // 'dovetail' is the default, stored as undefined.
+                    updateParams({
+                      connectorNubs: true,
+                      connectorStyle: v === 'dovetailKey' || v === 'snapClip' ? v : undefined,
+                    });
+                  }}
+                  renderExpanded={(style) =>
+                    style === 'none' ? null : (
+                      <div className="space-y-3">
+                        <SettingsRow
+                          label={t('baseplate.connectorFit.label')}
+                          tooltip={t('baseplate.connectorFit.info')}
+                          unit="mm"
+                        >
+                          <Stepper
+                            size="sm"
+                            value={baseplateParams.connectorFitOffset ?? 0}
+                            onStep={(delta) => {
+                              const next = snapConnectorFitOffset(
+                                (baseplateParams.connectorFitOffset ?? 0) +
+                                  delta * CONNECTOR_FIT_OFFSET_STEP
+                              );
+                              updateParam('connectorFitOffset', next === 0 ? undefined : next);
+                            }}
+                            min={CONNECTOR_FIT_OFFSET_MIN}
+                            max={CONNECTOR_FIT_OFFSET_MAX}
+                            step={CONNECTOR_FIT_OFFSET_STEP}
+                            displayValue={formatConnectorFitOffset(
+                              baseplateParams.connectorFitOffset ?? 0
+                            )}
+                            aria-label={t('baseplate.connectorFit.label')}
+                          />
+                        </SettingsRow>
+                        {style === 'dovetail' && baseplateParams.preferIdenticalPieces !== true && (
                           <Checkbox
                             checked={baseplateParams.invertDovetails === true}
                             onChange={(checked) =>
@@ -507,95 +495,86 @@ export function BaseplatePanel() {
                             label={t('baseplate.dovetails.invert')}
                           />
                         )}
-                      <Checkbox
-                        checked={baseplateParams.preferIdenticalPieces === true}
-                        onChange={(checked) =>
-                          updateParam('preferIdenticalPieces', checked || undefined)
-                        }
-                        label={t('baseplate.preferIdenticalPieces')}
-                      />
-                      <SettingsRow
-                        label={t('settings.nozzleSize')}
-                        tooltip={t('baseplate.nozzleSizeTooltip')}
-                        unit="mm"
-                      >
-                        <DeferredNumberInput
-                          value={nozzleSizeMm}
-                          onChange={handleNozzleChange}
-                          min={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN}
-                          max={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX}
-                          step={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP}
-                          className="input w-14 py-0.5 px-1 text-xs text-right"
-                          aria-label={t('settings.nozzleSize')}
+                        <Checkbox
+                          checked={baseplateParams.preferIdenticalPieces === true}
+                          onChange={(checked) =>
+                            updateParam('preferIdenticalPieces', checked || undefined)
+                          }
+                          label={t('baseplate.preferIdenticalPieces')}
                         />
-                      </SettingsRow>
-                      <ConnectorSampleButton />
-                      {nozzleSizeMm > NOZZLE_BASELINE && (
-                        <p className="text-[11px] leading-relaxed text-content-tertiary">
-                          {t('baseplate.connectorNozzleNotice', { nozzle: nozzleSizeMm })}
-                        </p>
-                      )}
-                    </>
-                  )}
-                </>
+                        <ConnectorSampleButton />
+                        {nozzleSizeMm > NOZZLE_BASELINE && (
+                          <p className="text-[11px] leading-relaxed text-content-tertiary">
+                            {t('baseplate.connectorNozzleNotice', { nozzle: nozzleSizeMm })}
+                          </p>
+                        )}
+                      </div>
+                    )
+                  }
+                />
               )}
-              <FeatureToggle
-                label={t('baseplate.magnetHoles')}
-                checked={baseplateParams.magnetHoles}
-                onChange={() => updateParam('magnetHoles', !baseplateParams.magnetHoles)}
-                valueSummary={`\u00f8${baseplateParams.magnetDiameter}mm \u00d7 ${baseplateParams.magnetDepth}mm`}
-              >
-                <SliderInput
-                  label={t('baseplate.magnetDiameter')}
-                  value={baseplateParams.magnetDiameter}
-                  onChange={(v) => updateParam('magnetDiameter', mm(v))}
-                  min={1}
-                  max={20}
-                  step={0.1}
-                  unit="mm"
-                  info={t('baseplate.magnetDiameterInfo')}
+              <div className="border-t border-stroke-subtle pt-3">
+                <FeatureToggle
+                  label={t('baseplate.magnetHoles')}
+                  checked={baseplateParams.magnetHoles}
+                  onChange={() => updateParam('magnetHoles', !baseplateParams.magnetHoles)}
+                  valueSummary={`\u00f8${baseplateParams.magnetDiameter}mm \u00d7 ${baseplateParams.magnetDepth}mm`}
+                >
+                  <SliderInput
+                    label={t('baseplate.magnetDiameter')}
+                    value={baseplateParams.magnetDiameter}
+                    onChange={(v) => updateParam('magnetDiameter', mm(v))}
+                    min={1}
+                    max={20}
+                    step={0.1}
+                    unit="mm"
+                    info={t('baseplate.magnetDiameterInfo')}
+                  />
+                  <SliderInput
+                    label={t('baseplate.magnetDepth')}
+                    value={baseplateParams.magnetDepth}
+                    onChange={(v) => updateParam('magnetDepth', mm(v))}
+                    min={0.5}
+                    max={10}
+                    step={0.1}
+                    unit="mm"
+                    info={t('baseplate.magnetDepthInfo')}
+                  />
+                </FeatureToggle>
+              </div>
+              <div className="border-t border-stroke-subtle pt-3">
+                <CornerRadiusControl
+                  cornerRadius={baseplateParams.cornerRadius}
+                  cornerRadii={baseplateParams.cornerRadii}
+                  maxRadius={
+                    gridUnitMm / 2 +
+                    Math.min(
+                      Math.min(baseplateParams.paddingLeft, baseplateParams.paddingRight),
+                      Math.min(baseplateParams.paddingFront, baseplateParams.paddingBack)
+                    )
+                  }
+                  onUniformChange={(r) => {
+                    updateParam('cornerRadius', mm(r));
+                    updateParam('cornerRadii', undefined);
+                  }}
+                  onPerCornerChange={(radii) => {
+                    updateParam('cornerRadii', {
+                      tl: mm(radii.tl),
+                      tr: mm(radii.tr),
+                      bl: mm(radii.bl),
+                      br: mm(radii.br),
+                    });
+                  }}
                 />
-                <SliderInput
-                  label={t('baseplate.magnetDepth')}
-                  value={baseplateParams.magnetDepth}
-                  onChange={(v) => updateParam('magnetDepth', mm(v))}
-                  min={0.5}
-                  max={10}
-                  step={0.1}
-                  unit="mm"
-                  info={t('baseplate.magnetDepthInfo')}
-                />
-              </FeatureToggle>
-              <CornerRadiusControl
-                cornerRadius={baseplateParams.cornerRadius}
-                cornerRadii={baseplateParams.cornerRadii}
-                maxRadius={
-                  gridUnitMm / 2 +
-                  Math.min(
-                    Math.min(baseplateParams.paddingLeft, baseplateParams.paddingRight),
-                    Math.min(baseplateParams.paddingFront, baseplateParams.paddingBack)
-                  )
-                }
-                onUniformChange={(r) => {
-                  updateParam('cornerRadius', mm(r));
-                  updateParam('cornerRadii', undefined);
-                }}
-                onPerCornerChange={(radii) => {
-                  updateParam('cornerRadii', {
-                    tl: mm(radii.tl),
-                    tr: mm(radii.tr),
-                    bl: mm(radii.bl),
-                    br: mm(radii.br),
-                  });
-                }}
-              />
+              </div>
             </div>
           </StickyGroupHeader>
         )}
 
-        {/* 4. Print Settings — advanced, rarely changed */}
+        {/* 4. Physical Units — grid unit, print bed, nozzle, build height. Mirrors the
+            "Physical Units" section in the bin designer and layout sidebars. */}
         <StickyGroupHeader
-          title={t('baseplate.sectionPrintSettings')}
+          title={t('common.physicalUnits')}
           summary={formatPrintSettingsSummary(
             gridUnitMm,
             printBedSize,
@@ -637,6 +616,23 @@ export function BaseplatePanel() {
                   />
                 </SettingsRow>
               </HelpTargetMarker>
+              <SettingsRow
+                label={t('settings.nozzleSize')}
+                htmlFor="bp-nozzleSize"
+                tooltip={t('baseplate.nozzleSizeTooltip')}
+                unit="mm"
+              >
+                <DeferredNumberInput
+                  id="bp-nozzleSize"
+                  value={nozzleSizeMm}
+                  onChange={handleNozzleChange}
+                  min={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN}
+                  max={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX}
+                  step={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP}
+                  className="input w-14 py-0.5 px-1 text-xs text-right"
+                  aria-label={t('settings.nozzleSize')}
+                />
+              </SettingsRow>
               <SettingsRow
                 label={t('baseplate.maxPrintHeight')}
                 htmlFor="bp-maxPrintHeight"

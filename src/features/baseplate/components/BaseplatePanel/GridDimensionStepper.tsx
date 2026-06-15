@@ -22,7 +22,7 @@ export function GridDimensionStepper({
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-content-tertiary">{label}</span>
       <Stepper
-        size="sm"
+        size="md"
         value={value}
         onChange={onChange}
         onStep={(delta) =>

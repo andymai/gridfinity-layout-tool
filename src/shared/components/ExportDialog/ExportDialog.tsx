@@ -301,26 +301,31 @@ export function ExportDialog({
 
             {extras}
 
-            {/* Vertical Stacking */}
-            {/* Export Progress */}
-            {exportProgress && (
+            {/* Export Progress. Determinate when `exportProgress` is supplied;
+                otherwise an indeterminate bar covers single async exports (e.g.
+                the connector fit sample) so the dialog always shows progress. */}
+            {(exportProgress || isExporting) && (
               <div className="mb-4">
                 <div className="mb-1.5 text-xs text-content-secondary">
-                  {exportProgress.label ??
-                    t('export.progressLabel', {
-                      current: exportProgress.current,
-                      total: exportProgress.total,
-                    })}
+                  {exportProgress
+                    ? (exportProgress.label ??
+                      t('export.progressLabel', {
+                        current: exportProgress.current,
+                        total: exportProgress.total,
+                      }))
+                    : t('export.exporting')}
                 </div>
                 <ProgressBar
                   value={progressPercent}
                   size="sm"
                   label={
-                    exportProgress.label ??
-                    t('export.progressLabel', {
-                      current: exportProgress.current,
-                      total: exportProgress.total,
-                    })
+                    exportProgress
+                      ? (exportProgress.label ??
+                        t('export.progressLabel', {
+                          current: exportProgress.current,
+                          total: exportProgress.total,
+                        }))
+                      : t('export.exporting')
                   }
                 />
               </div>
@@ -352,7 +357,6 @@ export function ExportDialog({
               aria-busy={isExporting || undefined}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-info px-4 py-2.5 text-sm font-medium text-white transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
             >
-              {isExporting && !exportProgress && <ExportSpinner />}
               {resolvedDownloadLabel}
             </button>
 

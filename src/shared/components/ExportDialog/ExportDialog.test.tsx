@@ -65,6 +65,16 @@ describe('ExportDialog', () => {
     expect(screen.getByText(/3.*8/)).toBeInTheDocument();
   });
 
+  it('shows an indeterminate progress bar while exporting without granular progress', () => {
+    render(<ExportDialog {...defaultProps} isExporting />);
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
+
+  it('shows no progress bar when idle', () => {
+    render(<ExportDialog {...defaultProps} />);
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+  });
+
   it('shows split banner when provided', () => {
     const onCheckedChange = vi.fn();
     render(

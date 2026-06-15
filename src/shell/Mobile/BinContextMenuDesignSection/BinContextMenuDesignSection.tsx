@@ -1,4 +1,5 @@
 import { ContextMenuItem, ContextMenuDivider } from '@/shared/components/ContextMenu';
+import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
 import { useLinkedDesign, useBinLinking, useLinkingStore } from '@/features/design-linking';
 import { useTranslation } from '@/i18n';
 import type { Bin } from '@/core/types';
@@ -49,9 +50,7 @@ export function BinContextMenuDesignSection({ bin, onClose }: BinContextMenuDesi
         <span className="text-xs font-medium text-content-secondary">
           {t('designLinking.menu.sectionTitle')}
         </span>
-        <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
-          {t('settings.experimental')}
-        </span>
+        <ExperimentalBadge />
       </div>
       {hasLink && linkedDesign ? (
         // Valid link - show edit and unlink options

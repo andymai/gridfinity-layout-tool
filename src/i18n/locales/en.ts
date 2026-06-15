@@ -35,6 +35,7 @@ const en: Record<string, string> = {
   'common.cancel': 'Cancel',
   'common.delete': 'Delete',
   'common.close': 'Close',
+  'common.physicalUnits': 'Physical Units',
   'common.loading': 'Loading...',
 
   // Error boundary (used via getStaticTranslation, not hooks)
@@ -231,7 +232,6 @@ const en: Record<string, string> = {
   'sidebar.inspirationHint': 'Get ideas for your drawer',
   'sidebar.gridSize': 'Grid Size',
   'sidebar.halfBinMode': 'Half-grid mode',
-  'sidebar.physicalUnits': 'Physical Units',
   'sidebar.bottom': 'Bottom',
   'sidebar.collapseLeftPanel': 'Collapse left panel',
   'sidebar.expandLeftPanel': 'Expand left panel',
@@ -1565,12 +1565,10 @@ const en: Record<string, string> = {
   'binDesigner.attachmentDisablesFlatFloor': 'Attachment holes require sockets',
   'binDesigner.solidDisablesCavity': 'Not available for solid bins',
   'binDesigner.stylesMutuallyExclusive': 'Only one bin style can be active',
-  'binDesigner.physicalUnits': 'Physical Units',
   'binDesigner.group.shape': 'Shape',
   'binDesigner.group.interior': 'Interior',
   'binDesigner.group.base': 'Base',
   'binDesigner.group.colors': 'Multi-Color',
-  'binDesigner.multiColor.experimental': 'Experimental',
   'binDesigner.multiColor.enableHint':
     'Assign different filaments to bin parts and export a multi-color 3MF.',
   'binDesigner.colors.body': 'Body',
@@ -2080,7 +2078,6 @@ const en: Record<string, string> = {
   'baseplate.overTileKeptSolid': 'Too small, kept solid: {sides}',
   'baseplate.sectionBase': 'Base',
   'baseplate.sectionView': 'View',
-  'baseplate.sectionPrintSettings': 'Print Settings',
   'baseplate.splitInfo': '{count} pieces',
   'baseplate.splitReason': 'Split to fit {printBed}mm print bed',
   'baseplate.paddingHint': 'Reducing {axis} padding by {mm}mm would save {count} piece(s)',
@@ -2101,7 +2098,6 @@ const en: Record<string, string> = {
     'Your printer nozzle diameter. Dovetail keys and snap clips scale to it so they stay printable on wider nozzles. Geometry is unchanged at 0.4mm.',
   'baseplate.connectorNozzleNotice':
     'Sized for a {nozzle}mm nozzle — dovetail keys and snap clips are enlarged to stay printable.',
-  'baseplate.stackPrint.badge': 'Experimental',
   'baseplate.stackPrint.enable': 'Vertical stack',
   'baseplate.stackPrint.stacks.one': '{count} stack',
   'baseplate.stackPrint.stacks.other': '{count} stacks',
@@ -2117,6 +2113,12 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.separate': 'Separate',
   'baseplate.stackPrint.together': 'Together',
   'baseplate.stackPrint.separationSlider': 'Separate the print stack to inspect it',
+  'baseplate.stackPrint.hint':
+    'Prints all of a drawer’s plates as one vertical tower with an air gap between them, so they print in a single job and snap apart afterward.',
+  'baseplate.stackPrint.sampleButton': 'Print fit sample',
+  'baseplate.stackPrint.sampleTitle': 'Stack fit sample',
+  'baseplate.stackPrint.sampleDescription':
+    'A single stack of two 1×1 plates to dial in the air-gap separation before printing a full stack.',
   'baseplate.wasmLoadFailed': 'Failed to load 3D engine',
   'baseplate.generationFailed': 'Baseplate generation failed',
   'baseplate.errorRetryHint':
@@ -2132,11 +2134,15 @@ const en: Record<string, string> = {
   'baseplate.connectorStyle.dovetail': 'Dovetail',
   'baseplate.connectorStyle.dovetailKey': 'Dovetail key',
   'baseplate.connectorStyle.snapClip': 'Snap clip',
-  'baseplate.connectorFit.label': 'Connector fit',
+  'baseplate.connectorDesc.none': 'Pieces sit loose',
+  'baseplate.connectorDesc.dovetail': 'Printed sliding joint',
+  'baseplate.connectorDesc.dovetailKey': 'Separate bowtie key',
+  'baseplate.connectorDesc.snapClip': 'Snap-in seam clip',
+  'baseplate.connectorFit.label': 'Tolerance',
   'baseplate.connectorFit.info':
     'Adjusts the connector gap (mm) to tune fit for your printer and filament. Higher = looser, lower = tighter.',
   'baseplate.dovetails.invert': 'Invert dovetails',
-  'baseplate.preferIdenticalPieces': 'Fewer unique parts (rotate to fit)',
+  'baseplate.preferIdenticalPieces': 'Fewer unique parts',
   'baseplate.connectorSample.button': 'Print fit sample',
   'baseplate.connectorSample.dialogTitle': 'Connector fit sample',
   'baseplate.connectorSample.dialogDescription':

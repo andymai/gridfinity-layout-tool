@@ -186,9 +186,9 @@ describe('BaseplatePanel', () => {
     expect(screen.getByText('baseplate.inclPadding')).toBeInTheDocument();
   });
 
-  it('renders print settings section', () => {
+  it('renders physical units section', () => {
     render(<BaseplatePanel />);
-    expect(screen.getByText('baseplate.sectionPrintSettings')).toBeInTheDocument();
+    expect(screen.getByText('common.physicalUnits')).toBeInTheDocument();
   });
 
   it('renders unified dimensions section', () => {
@@ -303,9 +303,7 @@ describe('BaseplatePanel', () => {
         connectorNubs: false,
       };
       render(<BaseplatePanel />);
-      expect(screen.getByRole('combobox', { name: 'baseplate.connectors.label' })).toHaveValue(
-        'none'
-      );
+      expect(screen.getByRole('radio', { name: 'baseplate.connectors.none' })).toBeChecked();
     });
 
     it('reflects the active connector style when enabled', () => {
@@ -315,9 +313,9 @@ describe('BaseplatePanel', () => {
         connectorStyle: 'snapClip',
       };
       render(<BaseplatePanel />);
-      expect(screen.getByRole('combobox', { name: 'baseplate.connectors.label' })).toHaveValue(
-        'snapClip'
-      );
+      expect(
+        screen.getByRole('radio', { name: 'baseplate.connectorStyle.snapClip' })
+      ).toBeChecked();
     });
 
     it('disables connectors when "none" is selected', () => {
@@ -327,9 +325,7 @@ describe('BaseplatePanel', () => {
         connectorStyle: 'snapClip',
       };
       render(<BaseplatePanel />);
-      fireEvent.change(screen.getByRole('combobox', { name: 'baseplate.connectors.label' }), {
-        target: { value: 'none' },
-      });
+      fireEvent.click(screen.getByRole('radio', { name: 'baseplate.connectors.none' }));
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({ connectorNubs: false, connectorStyle: undefined })
       );
@@ -341,9 +337,7 @@ describe('BaseplatePanel', () => {
         connectorNubs: false,
       };
       render(<BaseplatePanel />);
-      fireEvent.change(screen.getByRole('combobox', { name: 'baseplate.connectors.label' }), {
-        target: { value: 'snapClip' },
-      });
+      fireEvent.click(screen.getByRole('radio', { name: 'baseplate.connectorStyle.snapClip' }));
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({ connectorNubs: true, connectorStyle: 'snapClip' })
       );
@@ -355,9 +349,7 @@ describe('BaseplatePanel', () => {
         connectorNubs: false,
       };
       render(<BaseplatePanel />);
-      fireEvent.change(screen.getByRole('combobox', { name: 'baseplate.connectors.label' }), {
-        target: { value: 'dovetail' },
-      });
+      fireEvent.click(screen.getByRole('radio', { name: 'baseplate.connectorStyle.dovetail' }));
       expect(mockSetBaseplateParams).toHaveBeenCalledWith(
         expect.objectContaining({ connectorNubs: true, connectorStyle: undefined })
       );

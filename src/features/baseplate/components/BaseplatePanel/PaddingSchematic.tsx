@@ -69,14 +69,15 @@ export function PaddingSchematic({
         />
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-stretch gap-1.5">
         <PaddingStepper
           orientation="vertical"
+          label={t('baseplate.paddingLeft')}
           aria-label={t('baseplate.paddingLeft')}
           value={baseplateParams.paddingLeft}
           onChange={(v) => handlePaddingChange('paddingLeft', v)}
         />
-        <div className="flex min-h-16 flex-1 flex-col rounded-md border border-stroke-subtle bg-surface-secondary/50">
+        <div className="flex flex-1 flex-col justify-center rounded-md border border-stroke-subtle bg-surface-secondary/50">
           <div className="flex-1">
             <PaddingAnchor
               value={anchor}
@@ -84,12 +85,7 @@ export function PaddingSchematic({
               showClampWarning={showClampWarning}
             />
           </div>
-          <div
-            role="status"
-            aria-live="polite"
-            aria-atomic
-            className="flex h-4 items-center justify-center text-[10px] leading-none text-content-tertiary"
-          >
+          <div role="status" aria-live="polite" aria-atomic className="sr-only">
             {/* Non-breaking space (not '') keeps the row height without making the
                 live region announce a blank update when the anchor leaves custom. */}
             {anchor === 'custom' ? t('baseplate.paddingAnchor.custom') : ' '}
@@ -97,6 +93,7 @@ export function PaddingSchematic({
         </div>
         <PaddingStepper
           orientation="vertical"
+          label={t('baseplate.paddingRight')}
           aria-label={t('baseplate.paddingRight')}
           value={baseplateParams.paddingRight}
           onChange={(v) => handlePaddingChange('paddingRight', v)}

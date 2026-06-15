@@ -27,6 +27,7 @@ import { PipetteIcon } from '@/design-system/Icon';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
 import { FeatureToggle } from '../FeatureToggle';
+import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
 import { ColorZoneRow } from './ColorZoneRow';
 import { ColorGroup } from './ColorGroup';
 import { ColorsHintBanner } from './ColorsHintBanner';
@@ -240,11 +241,7 @@ export function ColorsSection() {
         label={t('binDesigner.group.colors')}
         checked={multiColorEnabled}
         onChange={handleToggleMultiColor}
-        badge={
-          <span className="rounded bg-warning-muted px-1.5 py-0.5 text-[10px] font-medium text-warning">
-            {t('binDesigner.multiColor.experimental')}
-          </span>
-        }
+        badge={<ExperimentalBadge />}
         primaryControls={
           <>
             <div className="flex items-center justify-end gap-2">

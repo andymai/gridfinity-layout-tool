@@ -105,7 +105,7 @@ export function StackedBaseplateMeshes({
       if (arrays) towers.push({ mesh: arrays, copies: physical.copies });
     }
     if (towers.length === 0) return null;
-    return buildStackPreviewMeshes(towers, stack, separationMm);
+    return buildStackPreviewMeshes(towers, stack, separationMm, gridUnitMm);
   }, [
     baseplateParams,
     drawerWidth,

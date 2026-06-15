@@ -1,7 +1,6 @@
 {
   "maxShortValueLength": 3,
   "keys": [
-    "baseplate.stackPrint.badge",
     "baseplate.stackPrint.plates.one",
     "settings.search.inTab",
     "binDesigner.projectionPerspective",
@@ -218,7 +217,15 @@
     "layouts.announce.fallbackNameCapitalized",
     "binExamples.popular",
     "binExamples.description",
-    "binExamples.dimensions"
+    "binExamples.dimensions",
+    "baseplate.connectorDesc.none",
+    "baseplate.connectorDesc.dovetail",
+    "baseplate.connectorDesc.dovetailKey",
+    "baseplate.connectorDesc.snapClip",
+    "baseplate.stackPrint.sampleButton",
+    "baseplate.stackPrint.sampleTitle",
+    "baseplate.stackPrint.sampleDescription",
+    "baseplate.stackPrint.hint"
   ],
   "valuePatterns": [
     "^\\{[\\w,\\s]+\\}$",

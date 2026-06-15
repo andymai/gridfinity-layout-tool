@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { PaddingStepper } from './PaddingStepper';
-import { formatMm, PADDING_BUTTON_STEP, PADDING_MAX, PADDING_MIN, roundMm } from './constants';
+import { PADDING_BUTTON_STEP, PADDING_MAX, PADDING_MIN, roundMm } from './constants';
 
 // Mock i18n: render `Increase {label}` / `Decrease {label}` from the en.ts pattern
 // so test assertions stay readable. Real translation keys are tested separately
@@ -42,32 +42,11 @@ describe('roundMm', () => {
   });
 });
 
-describe('formatMm', () => {
-  it('renders integers without decimals', () => {
-    expect(formatMm(5)).toBe('5');
-    expect(formatMm(0)).toBe('0');
-  });
-
-  it('drops trailing zeros for fractional values', () => {
-    expect(formatMm(5.5)).toBe('5.5');
-    expect(formatMm(5.25)).toBe('5.25');
-  });
-
-  it('rounds to 2 decimals', () => {
-    expect(formatMm(5.555)).toBe('5.56');
-    expect(formatMm(5.001)).toBe('5');
-  });
-
-  it('absorbs floating-point noise (e.g. 0.1 + 0.2)', () => {
-    expect(formatMm(0.1 + 0.2)).toBe('0.3');
-  });
-});
-
 describe('PaddingStepper', () => {
   describe('rendering', () => {
     it('renders horizontal layout with input and +/- buttons', () => {
       render(<PaddingStepper {...baseProps} onChange={vi.fn()} />);
-      expect(screen.getByRole('textbox', { name: 'Front padding' })).toHaveValue('5');
+      expect(screen.getByRole('spinbutton', { name: 'Front padding' })).toHaveValue(5);
       expect(screen.getByRole('button', { name: 'Increase Front padding' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Decrease Front padding' })).toBeInTheDocument();
     });
@@ -81,7 +60,7 @@ describe('PaddingStepper', () => {
           onChange={vi.fn()}
         />
       );
-      expect(screen.getByRole('textbox', { name: 'Left padding' })).toHaveValue('3');
+      expect(screen.getByRole('spinbutton', { name: 'Left padding' })).toHaveValue(3);
       expect(screen.getByRole('button', { name: 'Increase Left padding' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Decrease Left padding' })).toBeInTheDocument();
     });
@@ -99,7 +78,7 @@ describe('PaddingStepper', () => {
 
     it('formats fractional values without trailing zeros', () => {
       render(<PaddingStepper {...baseProps} value={5.5} onChange={vi.fn()} />);
-      expect(screen.getByRole('textbox', { name: 'Front padding' })).toHaveValue('5.5');
+      expect(screen.getByRole('spinbutton', { name: 'Front padding' })).toHaveValue(5.5);
     });
   });
 
@@ -170,7 +149,7 @@ describe('PaddingStepper', () => {
     it('commits typed value on Enter', () => {
       const onChange = vi.fn();
       render(<PaddingStepper {...baseProps} value={5} onChange={onChange} />);
-      const input = screen.getByRole('textbox', { name: 'Front padding' });
+      const input = screen.getByRole('spinbutton', { name: 'Front padding' });
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: '7.5' } });
       fireEvent.keyDown(input, { key: 'Enter' });
@@ -180,7 +159,7 @@ describe('PaddingStepper', () => {
     it('commits typed value on Blur', () => {
       const onChange = vi.fn();
       render(<PaddingStepper {...baseProps} value={5} onChange={onChange} />);
-      const input = screen.getByRole('textbox', { name: 'Front padding' });
+      const input = screen.getByRole('spinbutton', { name: 'Front padding' });
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: '12.34' } });
       fireEvent.blur(input);
@@ -190,7 +169,7 @@ describe('PaddingStepper', () => {
     it('reverts typed value on Escape (does not commit)', () => {
       const onChange = vi.fn();
       render(<PaddingStepper {...baseProps} value={5} onChange={onChange} />);
-      const input = screen.getByRole('textbox', { name: 'Front padding' });
+      const input = screen.getByRole('spinbutton', { name: 'Front padding' });
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: '99' } });
       fireEvent.keyDown(input, { key: 'Escape' });
@@ -200,7 +179,7 @@ describe('PaddingStepper', () => {
     it('Enter blurs the input and does not double-commit on subsequent blur', () => {
       const onChange = vi.fn();
       render(<PaddingStepper {...baseProps} value={5} onChange={onChange} />);
-      const input = screen.getByRole('textbox', { name: 'Front padding' });
+      const input = screen.getByRole('spinbutton', { name: 'Front padding' });
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: '7' } });
       fireEvent.keyDown(input, { key: 'Enter' });
@@ -213,7 +192,7 @@ describe('PaddingStepper', () => {
     it('clamps typed values above PADDING_MAX silently', () => {
       const onChange = vi.fn();
       render(<PaddingStepper {...baseProps} value={5} onChange={onChange} />);
-      const input = screen.getByRole('textbox', { name: 'Front padding' });
+      const input = screen.getByRole('spinbutton', { name: 'Front padding' });
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: '500' } });
       fireEvent.keyDown(input, { key: 'Enter' });
@@ -223,7 +202,7 @@ describe('PaddingStepper', () => {
     it('clamps typed values below PADDING_MIN silently', () => {
       const onChange = vi.fn();
       render(<PaddingStepper {...baseProps} value={5} onChange={onChange} />);
-      const input = screen.getByRole('textbox', { name: 'Front padding' });
+      const input = screen.getByRole('spinbutton', { name: 'Front padding' });
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: '-10' } });
       fireEvent.keyDown(input, { key: 'Enter' });
@@ -233,7 +212,7 @@ describe('PaddingStepper', () => {
     it('snaps typed values to 0.01 mm step with no float noise', () => {
       const onChange = vi.fn();
       render(<PaddingStepper {...baseProps} value={5} onChange={onChange} />);
-      const input = screen.getByRole('textbox', { name: 'Front padding' });
+      const input = screen.getByRole('spinbutton', { name: 'Front padding' });
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: '5.555' } });
       fireEvent.keyDown(input, { key: 'Enter' });
@@ -244,7 +223,7 @@ describe('PaddingStepper', () => {
     it('ignores NaN input (does not commit)', () => {
       const onChange = vi.fn();
       render(<PaddingStepper {...baseProps} value={5} onChange={onChange} />);
-      const input = screen.getByRole('textbox', { name: 'Front padding' });
+      const input = screen.getByRole('spinbutton', { name: 'Front padding' });
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: 'abc' } });
       fireEvent.keyDown(input, { key: 'Enter' });
@@ -254,7 +233,7 @@ describe('PaddingStepper', () => {
     it('ignores empty input on commit (does not commit)', () => {
       const onChange = vi.fn();
       render(<PaddingStepper {...baseProps} value={5} onChange={onChange} />);
-      const input = screen.getByRole('textbox', { name: 'Front padding' });
+      const input = screen.getByRole('spinbutton', { name: 'Front padding' });
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: '' } });
       fireEvent.keyDown(input, { key: 'Enter' });
@@ -264,16 +243,16 @@ describe('PaddingStepper', () => {
     it('shows external value when not focused, even after typing+escape', () => {
       const onChange = vi.fn();
       render(<PaddingStepper {...baseProps} value={5} onChange={onChange} />);
-      const input = screen.getByRole('textbox', { name: 'Front padding' });
+      const input = screen.getByRole('spinbutton', { name: 'Front padding' });
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: '99' } });
       fireEvent.keyDown(input, { key: 'Escape' });
-      expect(input).toHaveValue('5');
+      expect(input).toHaveValue(5);
     });
 
     it('disables input when disabled prop is true', () => {
       render(<PaddingStepper {...baseProps} value={5} disabled onChange={vi.fn()} />);
-      expect(screen.getByRole('textbox', { name: 'Front padding' })).toBeDisabled();
+      expect(screen.getByRole('spinbutton', { name: 'Front padding' })).toBeDisabled();
     });
   });
 
@@ -288,7 +267,7 @@ describe('PaddingStepper', () => {
           onChange={onChange}
         />
       );
-      const input = screen.getByRole('textbox', { name: 'Left padding' });
+      const input = screen.getByRole('spinbutton', { name: 'Left padding' });
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: '8.25' } });
       fireEvent.keyDown(input, { key: 'Enter' });

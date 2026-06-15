@@ -11,8 +11,3 @@ export const PADDING_MAX = 100;
 export function roundMm(v: number): number {
   return Math.round(v * 100) / 100;
 }
-
-/** Format mm: round to 2 decimals, drop trailing zeros (e.g. 5 → "5", 5.5 → "5.5", 5.25 → "5.25"). */
-export function formatMm(v: number): string {
-  return String(roundMm(v));
-}

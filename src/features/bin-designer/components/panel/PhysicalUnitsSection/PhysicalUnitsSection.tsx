@@ -27,7 +27,7 @@ export function PhysicalUnitsSection() {
 
   return (
     <Collapsible
-      title={t('binDesigner.physicalUnits')}
+      title={t('common.physicalUnits')}
       expanded={expanded}
       onExpandedChange={setExpanded}
       summary={meta.summary}

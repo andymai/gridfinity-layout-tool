@@ -6,21 +6,41 @@ import { focusRing, disabledStyles, interactiveTransition } from '../variants';
 
 /** Idle window for coalescing step clicks in `'deferred'` commit mode. */
 export const DEFERRED_COMMIT_DELAY_MS = 250;
-const containerVariants = cva(['items-center'], {
+const containerVariants = cva([], {
   variants: {
+    orientation: {
+      horizontal: 'items-center',
+      vertical: 'inline-flex flex-col items-stretch',
+    },
     size: {
-      sm: 'h-6',
-      md: 'h-8',
-      lg: 'h-12',
+      sm: '',
+      md: '',
+      lg: '',
     },
     fullWidth: {
-      // The input/display carries `flex-1`, so stretching the container lets the
-      // middle element absorb the extra width while the buttons stay fixed.
-      true: 'flex w-full',
-      false: 'inline-flex',
+      true: '',
+      false: '',
     },
   },
+  compoundVariants: [
+    // Horizontal lays the whole control out as one fixed-height row; the
+    // input/display carries `flex-1`, so the middle element absorbs extra width
+    // while the buttons stay fixed. Vertical stacks three fixed-height cells, so
+    // the container takes no overall height of its own.
+    { orientation: 'horizontal', size: 'sm', class: 'h-6' },
+    { orientation: 'horizontal', size: 'md', class: 'h-8' },
+    { orientation: 'horizontal', size: 'lg', class: 'h-12' },
+    { orientation: 'horizontal', fullWidth: true, class: 'flex w-full' },
+    { orientation: 'horizontal', fullWidth: false, class: 'inline-flex' },
+    // Vertical is a slim side control. A number input defaults to ~20ch of
+    // intrinsic width, and the cells use `w-full` (not flex-1), so without an
+    // explicit container width that preferred width inflates the column. Pin it.
+    { orientation: 'vertical', size: 'sm', class: 'w-8' },
+    { orientation: 'vertical', size: 'md', class: 'w-10' },
+    { orientation: 'vertical', size: 'lg', class: 'w-12' },
+  ],
   defaultVariants: {
+    orientation: 'horizontal',
     size: 'md',
     fullWidth: false,
   },
@@ -52,6 +72,8 @@ const buttonVariants = cva(
       position: {
         left: 'rounded-l-md rounded-r-none border-r-0',
         right: 'rounded-r-md rounded-l-none border-l-0',
+        top: 'w-full rounded-t-md rounded-b-none border-b-0',
+        bottom: 'w-full rounded-b-md rounded-t-none border-t-0',
       },
     },
     defaultVariants: {
@@ -62,50 +84,73 @@ const buttonVariants = cva(
 
 const inputVariants = cva(
   [
-    'flex-1',
-    'h-full',
     'bg-surface',
-    'border-y border-stroke-subtle',
     'text-center',
     'tabular-nums',
     'outline-none',
+    // Hide the native number-input spin buttons — the Stepper has its own +/-
+    // buttons, and the native arrows add width and visual clutter.
+    '[appearance:textfield]',
+    '[&::-webkit-inner-spin-button]:appearance-none',
+    '[&::-webkit-outer-spin-button]:appearance-none',
     interactiveTransition,
     ...focusRing,
     ...disabledStyles,
   ],
   {
     variants: {
+      orientation: {
+        horizontal: 'flex-1 h-full border-y border-stroke-subtle',
+        vertical: 'w-full border-x border-stroke-subtle',
+      },
+      // Width floors live in compoundVariants per orientation: horizontal needs
+      // room for the value between the buttons; vertical is a slim side control,
+      // so it gets a tighter floor (just enough for the mm value).
       size: {
-        sm: 'text-xs min-w-[34px]',
-        md: 'text-sm min-w-[38px]',
-        lg: 'text-base font-semibold min-w-[48px] border-stroke',
+        sm: 'text-xs',
+        md: 'text-sm',
+        lg: 'text-base font-semibold border-stroke',
       },
     },
+    compoundVariants: [
+      { orientation: 'horizontal', size: 'sm', class: 'min-w-[34px]' },
+      { orientation: 'horizontal', size: 'md', class: 'min-w-[38px]' },
+      { orientation: 'horizontal', size: 'lg', class: 'min-w-[48px]' },
+      { orientation: 'vertical', size: 'sm', class: 'h-6 min-w-[28px]' },
+      { orientation: 'vertical', size: 'md', class: 'h-8 min-w-[32px]' },
+      { orientation: 'vertical', size: 'lg', class: 'h-12 min-w-[40px]' },
+    ],
     defaultVariants: {
+      orientation: 'horizontal',
       size: 'md',
     },
   }
 );
 
 const displayVariants = cva(
-  [
-    'flex items-center justify-center',
-    'flex-1',
-    'h-full',
-    'bg-surface',
-    'border-y border-stroke-subtle',
-    'tabular-nums',
-    'select-none',
-  ],
+  ['flex items-center justify-center', 'bg-surface', 'tabular-nums', 'select-none'],
   {
     variants: {
+      orientation: {
+        horizontal: 'flex-1 h-full border-y border-stroke-subtle',
+        vertical: 'w-full border-x border-stroke-subtle',
+      },
       size: {
-        sm: 'text-xs text-content-secondary min-w-[34px]',
-        md: 'text-sm text-content-secondary min-w-[38px]',
-        lg: 'text-base font-semibold text-content min-w-[48px] border-stroke',
+        sm: 'text-xs text-content-secondary',
+        md: 'text-sm text-content-secondary',
+        lg: 'text-base font-semibold text-content border-stroke',
       },
     },
+    compoundVariants: [
+      { orientation: 'horizontal', size: 'sm', class: 'min-w-[34px]' },
+      { orientation: 'horizontal', size: 'md', class: 'min-w-[38px]' },
+      { orientation: 'horizontal', size: 'lg', class: 'min-w-[48px]' },
+      { orientation: 'vertical', size: 'sm', class: 'h-6 min-w-[28px]' },
+      { orientation: 'vertical', size: 'md', class: 'h-8 min-w-[32px]' },
+      { orientation: 'vertical', size: 'lg', class: 'h-12 min-w-[40px]' },
+    ],
     defaultVariants: {
+      orientation: 'horizontal',
       size: 'md',
     },
   }
@@ -128,11 +173,16 @@ function useDeferredNumberInput(
   decimals: number
 ) {
   const fmt = useCallback(
-    (val: number): string => (val % 1 === 0 ? String(val) : val.toFixed(decimals)),
+    // Round to `decimals` then strip trailing zeros so 5.5 stays "5.5" (not
+    // "5.50") even when two decimals of precision are allowed.
+    (val: number): string => String(Number(val.toFixed(decimals))),
     [decimals]
   );
 
   const [localValue, setLocalValue] = useState(() => fmt(externalValue));
+  // Enter/Escape blur the input programmatically after already committing or
+  // reverting; this ref tells the resulting onBlur to skip a second commit.
+  const skipBlurCommitRef = useRef(false);
   // Resync on external change (undo/redo, stepper buttons) during render rather
   // than in an effect: a guarded setState in render bails out and re-runs in a
   // single pass instead of the two-render cascade an effect would produce.
@@ -164,18 +214,29 @@ function useDeferredNumberInput(
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       commit();
+      skipBlurCommitRef.current = true;
       e.currentTarget.blur();
     } else if (e.key === 'Escape') {
       setLocalValue(fmt(externalValue));
+      skipBlurCommitRef.current = true;
       e.currentTarget.blur();
     }
+  };
+
+  const handleBlur = () => {
+    // Enter/Escape already committed or reverted before blurring — don't repeat it.
+    if (skipBlurCommitRef.current) {
+      skipBlurCommitRef.current = false;
+      return;
+    }
+    commit();
   };
 
   return {
     value: localValue,
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => setLocalValue(e.target.value),
     onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select(),
-    onBlur: commit,
+    onBlur: handleBlur,
     onKeyDown: handleKeyDown,
   };
 }
@@ -233,8 +294,16 @@ export interface StepperProps extends StepperVariantProps {
   commitMode?: 'immediate' | 'deferred';
 
   /**
+   * Layout direction. `'vertical'` stacks [+] / value / [−] for spatial controls
+   * (e.g. edge padding flanking a schematic). `'horizontal'` is [−] value [+].
+   * @default 'horizontal'
+   */
+  orientation?: 'horizontal' | 'vertical' | null;
+
+  /**
    * Stretch the control to fill its container instead of hugging its content.
    * The +/- buttons keep their fixed width; the input/display absorbs the slack.
+   * Horizontal only.
    * @default false
    */
   fullWidth?: boolean | null;
@@ -251,6 +320,18 @@ export interface StepperProps extends StepperVariantProps {
    * Accessibility label for the stepper.
    */
   'aria-label': string;
+
+  /**
+   * Accessible label for the decrease button.
+   * @default `Decrease ${ariaLabel}`
+   */
+  decreaseLabel?: string;
+
+  /**
+   * Accessible label for the increase button.
+   * @default `Increase ${ariaLabel}`
+   */
+  increaseLabel?: string;
 
   /**
    * Disable the entire control.
@@ -294,15 +375,15 @@ export interface StepperProps extends StepperVariantProps {
  * />
  *
  * @example
- * // Large touch-friendly stepper
+ * // Vertical (spatial padding control)
  * <Stepper
- *   size="lg"
- *   value={quantity}
- *   onStep={(delta) => setQuantity(q => q + delta)}
- *   min={1}
+ *   orientation="vertical"
+ *   value={padding}
+ *   onChange={setPadding}
+ *   onStep={(delta) => setPadding(p => p + delta * 0.25)}
+ *   min={0}
  *   max={100}
- *   displayValue={quantity}
- *   aria-label="Quantity"
+ *   aria-label="Left padding"
  * />
  */
 export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
@@ -316,9 +397,12 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
       step = 1,
       inputDecimals = 1,
       size = 'md',
+      orientation = 'horizontal',
       fullWidth = false,
       displayValue,
       'aria-label': ariaLabel,
+      decreaseLabel,
+      increaseLabel,
       disabled = false,
       commitMode = 'immediate',
       className,
@@ -326,6 +410,7 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
     ref
   ) => {
     const inputId = useId();
+    const isVertical = orientation === 'vertical';
 
     // Deferred commit accumulates +/- clicks into `pendingDelta` and flushes it
     // as a single onStep after a short idle. The UI shows the optimistic value
@@ -377,65 +462,79 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
     const isDecreaseDisabled = disabled || optimisticValue <= min;
     const isIncreaseDisabled = disabled || optimisticValue >= max;
 
+    // 12px is the smallest a stroked +/- glyph renders crisply — a 10px glyph
+    // lands on sub-pixel boundaries and reads blurry — so `sm` shares the `md`
+    // icon size rather than scaling down.
     const iconConfig = {
-      sm: { className: 'w-2.5 h-2.5', strokeWidth: 2.5 },
+      sm: { className: 'w-3 h-3', strokeWidth: 2.5 },
       md: { className: 'w-3 h-3', strokeWidth: 2.5 },
       lg: { className: 'w-5 h-5', strokeWidth: 2 },
     }[size ?? 'md'];
 
     const showInput = displayValue === undefined && onChange;
 
+    const decreaseButton = (
+      <button
+        type="button"
+        onClick={() => handleStep(-1)}
+        disabled={isDecreaseDisabled}
+        className={buttonVariants({ size, position: isVertical ? 'bottom' : 'left' })}
+        aria-label={decreaseLabel ?? `Decrease ${ariaLabel}`}
+      >
+        <MinusIcon
+          size="sm"
+          className={iconConfig.className}
+          strokeWidth={iconConfig.strokeWidth}
+        />
+      </button>
+    );
+
+    const increaseButton = (
+      <button
+        type="button"
+        onClick={() => handleStep(1)}
+        disabled={isIncreaseDisabled}
+        className={buttonVariants({ size, position: isVertical ? 'top' : 'right' })}
+        aria-label={increaseLabel ?? `Increase ${ariaLabel}`}
+      >
+        <PlusIcon size="sm" className={iconConfig.className} strokeWidth={iconConfig.strokeWidth} />
+      </button>
+    );
+
+    const middle = showInput ? (
+      <input
+        id={inputId}
+        type="number"
+        inputMode="decimal"
+        step={step}
+        min={min}
+        max={max}
+        disabled={disabled}
+        className={inputVariants({ orientation, size })}
+        aria-label={ariaLabel}
+        {...deferredInput}
+      />
+    ) : (
+      <span className={displayVariants({ orientation, size })} aria-label={ariaLabel}>
+        {displayValue ?? optimisticValue}
+      </span>
+    );
+
     return (
-      <div ref={ref} className={cn(containerVariants({ size, fullWidth }), className)}>
-        {/* Decrease button */}
-        <button
-          type="button"
-          onClick={() => handleStep(-1)}
-          disabled={isDecreaseDisabled}
-          className={buttonVariants({ size, position: 'left' })}
-          aria-label={`Decrease ${ariaLabel}`}
-        >
-          <MinusIcon
-            size="sm"
-            className={iconConfig.className}
-            strokeWidth={iconConfig.strokeWidth}
-          />
-        </button>
-
-        {/* Input or display */}
-        {showInput ? (
-          <input
-            id={inputId}
-            type="number"
-            inputMode="decimal"
-            step={step}
-            min={min}
-            max={max}
-            disabled={disabled}
-            className={inputVariants({ size })}
-            aria-label={ariaLabel}
-            {...deferredInput}
-          />
+      <div ref={ref} className={cn(containerVariants({ orientation, size, fullWidth }), className)}>
+        {isVertical ? (
+          <>
+            {increaseButton}
+            {middle}
+            {decreaseButton}
+          </>
         ) : (
-          <span className={displayVariants({ size })} aria-label={ariaLabel}>
-            {displayValue ?? optimisticValue}
-          </span>
+          <>
+            {decreaseButton}
+            {middle}
+            {increaseButton}
+          </>
         )}
-
-        {/* Increase button */}
-        <button
-          type="button"
-          onClick={() => handleStep(1)}
-          disabled={isIncreaseDisabled}
-          className={buttonVariants({ size, position: 'right' })}
-          aria-label={`Increase ${ariaLabel}`}
-        >
-          <PlusIcon
-            size="sm"
-            className={iconConfig.className}
-            strokeWidth={iconConfig.strokeWidth}
-          />
-        </button>
       </div>
     );
   }

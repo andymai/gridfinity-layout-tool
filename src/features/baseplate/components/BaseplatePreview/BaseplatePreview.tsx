@@ -199,6 +199,12 @@ export function BaseplatePreview({
       ? Math.max(baseMaxOrbitDistance, stackBounds.heightMm * 4, stackBounds.widthMm * 3)
       : baseMaxOrbitDistance;
 
+  // The footprint grid renders in every mode (including stacking) so the scene
+  // always reads as "parts on a build plate". In stack mode it's sized to the
+  // tower field so the grid reaches under every tower, not just one plate.
+  const gridWidthUnits = stackEnabled && stackBounds ? stackBounds.widthMm / gridUnitMm : width;
+  const gridDepthUnits = stackEnabled && stackBounds ? stackBounds.depthMm / gridUnitMm : depth;
+
   // In stack mode the canvas renders StackedBaseplateMeshes instead of
   // BaseplateMesh/SplitBaseplateMeshes. Gate visibility on stackBounds so
   // the canvas only becomes opaque once the tower preview has been built and
@@ -324,8 +330,16 @@ export function BaseplatePreview({
                   <BaseplateMesh color={filamentColor} isPreview={hasDirectPreview} xray={xray} />
                 )}
 
-                {/* Single-plate overlays (ghost, grid, dimensions) don't apply to
-                    the stacked tower layout — hide them while stacking. */}
+                {/* Footprint grid renders in every mode so the scene always reads
+                    as parts on a build plate (in stack mode it spans the towers). */}
+                <FootprintGrid
+                  width={gridWidthUnits}
+                  depth={gridDepthUnits}
+                  gridUnitMm={gridUnitMm}
+                />
+
+                {/* Remaining single-plate overlays (ghost, dimensions) don't apply
+                    to the stacked tower layout — hide them while stacking. */}
                 {!stackEnabled && (
                   <>
                     {/* Ghost outline only in assembled mode -- exploded scatters pieces beyond slab bounds */}
@@ -342,7 +356,6 @@ export function BaseplatePreview({
                       />
                     )}
 
-                    <FootprintGrid width={width} depth={depth} gridUnitMm={gridUnitMm} />
                     {/* Hide measurement labels in exploded mode -- pieces scatter beyond these positions */}
                     {splitViewMode !== 'exploded' && (
                       <>

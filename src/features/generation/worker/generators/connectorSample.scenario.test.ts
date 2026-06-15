@@ -2,13 +2,13 @@
 /**
  * Scenario tests for the connector fit-sample tray (calibration card).
  *
- * The tray sweeps all three connector styles across a fit-offset ladder, each
- * cell a mated pair of abstract coupons, plus one shared loose key/clip per
- * key/clip row. Verified against the real OCCT kernel:
+ * The tray builds one row for the selected connector style across a fit-offset
+ * ladder, each cell a mated pair of abstract coupons, plus one shared loose
+ * key/clip for the key/clip styles. Verified against the real OCCT kernel:
  *   1. every piece is a valid, positive-volume solid,
  *   2. the exported STL is watertight (each coupon's groove/pocket + embossed
  *      label fuse cleanly — no boundary/non-manifold edges) and bed-resting, and
- *   3. the piece count matches the documented grid (3×5 pairs + 2 loose parts).
+ *   3. the piece count matches the selected style (5 pairs, +1 loose for key/clip).
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { measureVolume } from 'brepjs';
@@ -88,12 +88,12 @@ describe('connectorSample — fit-sample tray', () => {
   const TEST_TIMEOUT_MS = 120_000;
 
   it(
-    'builds the documented grid of valid, positive-volume pieces',
+    'builds only the selected style row of valid, positive-volume pieces',
     () => {
+      // Default integral dovetail: 5 offsets × 2 coupons, no loose part = 10.
       const pieces = buildConnectorSampleTray(defaults());
       try {
-        // 3 styles × 5 offsets × 2 coupons + 1 key + 1 clip = 32 pieces.
-        expect(pieces).toHaveLength(32);
+        expect(pieces).toHaveLength(10);
         for (const piece of pieces) {
           const v = vol(piece);
           expect(Number.isFinite(v)).toBe(true);
@@ -101,6 +101,23 @@ describe('connectorSample — fit-sample tray', () => {
         }
       } finally {
         for (const p of pieces) p.delete();
+      }
+    },
+    TEST_TIMEOUT_MS
+  );
+
+  it(
+    'adds one shared loose part for the key/clip styles',
+    () => {
+      // 5 offsets × 2 coupons + 1 shared loose part = 11.
+      for (const style of ['dovetailKey', 'snapClip'] as const) {
+        const pieces = buildConnectorSampleTray(defaults({ connectorStyle: style }));
+        try {
+          expect(pieces, style).toHaveLength(11);
+          for (const piece of pieces) expect(vol(piece)).toBeGreaterThan(0);
+        } finally {
+          for (const p of pieces) p.delete();
+        }
       }
     },
     TEST_TIMEOUT_MS
@@ -137,7 +154,7 @@ describe('connectorSample — fit-sample tray', () => {
     () => {
       const pieces = buildConnectorSampleTray(defaults({ magnetHoles: true, magnetDepth: 2.4 }));
       try {
-        expect(pieces).toHaveLength(32);
+        expect(pieces).toHaveLength(10);
         for (const piece of pieces) {
           expect(vol(piece)).toBeGreaterThan(0);
         }

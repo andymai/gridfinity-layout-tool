@@ -44,10 +44,10 @@ describe('PaddingSchematic', () => {
     render(
       <PaddingSchematic baseplateParams={params} updateParam={vi.fn()} updateParams={vi.fn()} />
     );
-    expect(screen.getByLabelText('baseplate.paddingBack')).toHaveValue('2');
-    expect(screen.getByLabelText('baseplate.paddingFront')).toHaveValue('3');
-    expect(screen.getByLabelText('baseplate.paddingLeft')).toHaveValue('1.5');
-    expect(screen.getByLabelText('baseplate.paddingRight')).toHaveValue('4.25');
+    expect(screen.getByLabelText('baseplate.paddingBack')).toHaveValue(2);
+    expect(screen.getByLabelText('baseplate.paddingFront')).toHaveValue(3);
+    expect(screen.getByLabelText('baseplate.paddingLeft')).toHaveValue(1.5);
+    expect(screen.getByLabelText('baseplate.paddingRight')).toHaveValue(4.25);
   });
 
   it('calls updateParam with the correct key when each side is changed via typed input', () => {

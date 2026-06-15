@@ -14,8 +14,13 @@ import {
   type StackMeshArrays,
 } from './stackPrint';
 
-/** Gap (mm) between adjacent towers in the preview layout. */
-const TOWER_SPACING_MM = 12;
+/**
+ * Empty grid units kept around each tower so its cell spans a whole number of
+ * grid cells. An even gap (one unit of margin per side) lands the tower's own
+ * edges on grid lines, so towers sit squarely on the scene's footprint grid —
+ * whether there's one tower or many.
+ */
+const TOWER_GAP_UNITS = 2;
 
 export interface StackPreviewTower {
   readonly mesh: StackMeshArrays;
@@ -41,7 +46,8 @@ const EMPTY: StackMeshArrays = {
 export function buildStackPreviewMeshes(
   towers: readonly StackPreviewTower[],
   stack: StackPrintParams,
-  separationMm: number
+  separationMm: number,
+  gridUnitMm: number
 ): StackPreviewResult {
   if (towers.length === 0) {
     return { plates: EMPTY, widthMm: 0, depthMm: 0, heightMm: 0 };
@@ -63,8 +69,13 @@ export function buildStackPreviewMeshes(
   // keeps the grid aligned; each tower is centered in its cell.
   const cols = Math.ceil(Math.sqrt(measured.length));
   const rows = Math.ceil(measured.length / cols);
-  const cellW = Math.max(...measured.map((m) => m.width)) + TOWER_SPACING_MM;
-  const cellD = Math.max(...measured.map((m) => m.depth)) + TOWER_SPACING_MM;
+  // Cell size = (largest tower footprint, rounded up to whole grid units) +
+  // TOWER_GAP_UNITS, so every cell spans a whole number of grid cells and each
+  // tower's edges fall on grid lines (see TOWER_GAP_UNITS).
+  const maxWidthUnits = Math.max(...measured.map((m) => Math.round(m.width / gridUnitMm)), 1);
+  const maxDepthUnits = Math.max(...measured.map((m) => Math.round(m.depth / gridUnitMm)), 1);
+  const cellW = (maxWidthUnits + TOWER_GAP_UNITS) * gridUnitMm;
+  const cellD = (maxDepthUnits + TOWER_GAP_UNITS) * gridUnitMm;
 
   const plateLayers: StackMeshArrays[] = [];
   let maxHeight = 0;

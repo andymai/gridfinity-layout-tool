@@ -28,6 +28,7 @@
 # button-by-button swap.
 
 src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
+src/features/baseplate/components/BaseplatePanel/ConnectorPicker.tsx
 src/features/baseplate/components/BaseplatePanel/EditableDimensions.tsx
 src/features/baseplate/components/BaseplatePanel/SplitViewStrip.tsx
 src/features/baseplate/components/BaseplatePreview/BaseplatePreviewControls.tsx

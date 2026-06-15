@@ -13,6 +13,7 @@ import { useLinkingStore } from '../../store';
 import { ConfirmDialog } from '@/shared/components';
 import { useDesignThumbnail } from '@/features/bin-designer';
 import { Button, IconButton, PlusIcon } from '@/design-system';
+import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
 import { useTranslation } from '@/i18n';
 import type { Bin } from '@/core/types';
 
@@ -109,9 +110,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
           <label className={`${textSize} text-content-tertiary`}>
             {t('designLinking.inspector.linkedDesign')}
           </label>
-          <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
-            {t('settings.experimental')}
-          </span>
+          <ExperimentalBadge />
         </div>
         <div className="flex gap-2">
           <Button
@@ -153,9 +152,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
           <label className={`${textSize} text-content-tertiary`}>
             {t('designLinking.inspector.linkedDesign')}
           </label>
-          <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
-            {t('settings.experimental')}
-          </span>
+          <ExperimentalBadge />
         </div>
         <div className="p-3 rounded-lg bg-status-warning/10 border border-status-warning/30">
           <div className="flex items-center gap-2 mb-2">
@@ -202,9 +199,7 @@ export function LinkedDesignSection({ bin, variant }: LinkedDesignSectionProps) 
         <label className={`${textSize} text-content-tertiary`}>
           {t('designLinking.inspector.linkedDesign')}
         </label>
-        <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
-          {t('settings.experimental')}
-        </span>
+        <ExperimentalBadge />
       </div>
 
       <div className="flex items-center gap-3">

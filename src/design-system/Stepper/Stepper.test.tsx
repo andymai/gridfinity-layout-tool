@@ -91,6 +91,39 @@ describe('Stepper', () => {
       expect(screen.getByLabelText('Decrease Quantity')).toBeInTheDocument();
       expect(screen.getByLabelText('Increase Quantity')).toBeInTheDocument();
     });
+
+    it('uses custom increase/decrease labels when provided', () => {
+      render(
+        <Stepper
+          {...defaultProps}
+          displayValue={5}
+          increaseLabel="More padding"
+          decreaseLabel="Less padding"
+        />
+      );
+      expect(screen.getByLabelText('More padding')).toBeInTheDocument();
+      expect(screen.getByLabelText('Less padding')).toBeInTheDocument();
+    });
+  });
+
+  describe('orientation: vertical', () => {
+    it('stacks as a column with increase on top, decrease on bottom', () => {
+      const ref = vi.fn();
+      render(<Stepper {...defaultProps} ref={ref} orientation="vertical" displayValue={5} />);
+      const container = ref.mock.calls[0][0] as HTMLDivElement;
+      expect(container).toHaveClass('flex-col');
+      // Increase button precedes decrease button in DOM order (visually on top).
+      const increase = screen.getByLabelText('Increase Quantity');
+      const decrease = screen.getByLabelText('Decrease Quantity');
+      expect(increase.compareDocumentPosition(decrease)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it('steps the same way as horizontal', () => {
+      const onStep = vi.fn();
+      render(<Stepper {...defaultProps} onStep={onStep} orientation="vertical" displayValue={5} />);
+      fireEvent.click(screen.getByLabelText('Increase Quantity'));
+      expect(onStep).toHaveBeenCalledWith(1);
+    });
   });
 
   describe('fullWidth', () => {

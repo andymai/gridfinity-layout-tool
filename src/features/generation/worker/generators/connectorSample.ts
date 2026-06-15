@@ -2,9 +2,10 @@
  * Connector fit-sample tray ("calibration card").
  *
  * A single printable tray that lets makers dial in their connector fit before
- * committing to a full split baseplate. Laid out as a grid:
+ * committing to a full split baseplate. It builds one row for the *selected*
+ * connector style (the other styles would be wasted print):
  *
- *   rows  = the three connector styles (dovetail / dovetailKey / snapClip)
+ *   row   = the selected connector style (dovetail / dovetailKey / snapClip)
  *   cols  = a fit-offset ladder (-0.10 … +0.10 mm, centered on nominal)
  *
  * Each grid cell is a MATED PAIR of small abstract coupons carrying the real
@@ -241,7 +242,14 @@ export function buildConnectorSampleTray(rawParams: BaseplateParams): Shape3D[] 
   const totalHeight = couponHeight(params);
   const gridUnitMm = params.gridUnitMm;
 
-  const nRows = SAMPLE_STYLES.length;
+  // Only build the row for the connector style the user actually picked — a
+  // calibration card for the other two styles is wasted geometry/print time.
+  // `connectorStyle` is undefined for the default integral dovetail.
+  const selectedKey = params.connectorStyle ?? 'dovetail';
+  const matched = SAMPLE_STYLES.filter((s) => s.key === selectedKey);
+  const styles = matched.length > 0 ? matched : [SAMPLE_STYLES[0]];
+
+  const nRows = styles.length;
   const nCols = SAMPLE_OFFSETS.length;
   // Center the grid on the origin (columns 0..nCols include the loose column).
   const originX = -(nCols * COL_PITCH) / 2;
@@ -249,7 +257,7 @@ export function buildConnectorSampleTray(rawParams: BaseplateParams): Shape3D[] 
 
   const pieces: Shape3D[] = [];
 
-  SAMPLE_STYLES.forEach((style, r) => {
+  styles.forEach((style, r) => {
     const cellY = originY - r * ROW_PITCH;
     const frontWallY = cellY - SEAM_GAP / 2; // +Y face of the front coupon
     const backWallY = cellY + SEAM_GAP / 2; // -Y face of the back coupon
@@ -333,8 +341,14 @@ export async function exportConnectorSample(
       const data = await blob.arrayBuffer();
       return { data, fileName: `${name}.step` };
     }
-    const tol = tolerance ?? 0.01;
-    const angTol = angularTolerance ?? 5;
+    // Coarse deflection by default: the fit-critical dovetail/groove/pocket faces
+    // are all planar (tessellated exactly at any tolerance), so the fine 0.01mm
+    // default only multiplies triangles on the rounded corners and the embossed
+    // ID labels — which turned this small tray into a ~31MB, multi-minute export.
+    // 0.05mm / 10° matches the connector-clip mesh and keeps labels legible while
+    // cutting the file size and mesh time dramatically.
+    const tol = tolerance ?? 0.05;
+    const angTol = angularTolerance ?? 10;
     const meshResult = mesh(lifted, { tolerance: tol, angularTolerance: angTol });
     const data = buildBaseplateSTL(meshResult, name);
     return { data, fileName: `${name}.stl` };

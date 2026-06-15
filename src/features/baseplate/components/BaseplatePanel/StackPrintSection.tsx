@@ -17,6 +17,8 @@ import { useSettingsStore } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
+import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
+import { StackSampleButton } from './StackSampleButton';
 import { Stepper } from '@/design-system/Stepper';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { planPhysicalStacks, stackHeightCap, type StackGroup } from '../../utils/stackPrint';
@@ -57,21 +59,19 @@ export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSe
     onChange({ enabled: true, gapMm, ...next });
   };
 
-  const badge = (
-    <span className="inline-flex items-center rounded bg-info-muted px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-info">
-      {t('baseplate.stackPrint.badge')}
-    </span>
-  );
-
   return (
     <div className="border-b border-stroke-subtle px-4 py-3">
       <FeatureToggle
         label={t('baseplate.stackPrint.enable')}
-        badge={badge}
+        badge={<ExperimentalBadge />}
         checked={enabled}
         onChange={() => onChange(enabled ? undefined : DEFAULT_STACK_PRINT)}
         primaryControls={
           <>
+            <p className="text-[11px] leading-relaxed text-content-secondary">
+              {t('baseplate.stackPrint.hint')}
+            </p>
+
             <SettingsRow
               label={t('baseplate.stackPrint.gap.label')}
               tooltip={t('baseplate.stackPrint.gap.info')}
@@ -109,6 +109,8 @@ export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSe
             <p className="text-[11px] leading-relaxed text-content-tertiary">
               {t('baseplate.stackPrint.featuresOff')}
             </p>
+
+            <StackSampleButton />
           </>
         }
       />

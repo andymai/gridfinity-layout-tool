@@ -450,7 +450,7 @@ export function Sidebar() {
             {/* Physical Units */}
             <div data-units-panel className="border-t border-stroke-subtle">
               <Collapsible
-                title={t('sidebar.physicalUnits')}
+                title={t('common.physicalUnits')}
                 size="md"
                 expanded={physicalUnitsExpanded}
                 onExpandedChange={setPhysicalUnitsExpanded}
