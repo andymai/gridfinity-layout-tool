@@ -65,7 +65,10 @@ export function StackSeparationSlider({ value, onChange }: StackSeparationSlider
   );
 
   const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    e.currentTarget.releasePointerCapture(e.pointerId);
+    // releasePointerCapture throws if capture was already lost/cancelled.
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
     setIsDragging(false);
   }, []);
 

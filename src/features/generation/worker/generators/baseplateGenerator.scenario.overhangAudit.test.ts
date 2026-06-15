@@ -71,7 +71,9 @@ function triNormalArea(
   const cx = ay * bz - az * by;
   const cy = az * bx - ax * bz;
   const cz = ax * by - ay * bx;
-  const len = Math.hypot(cx, cy, cz) || 1;
+  const len = Math.hypot(cx, cy, cz);
+  // A degenerate (zero-area) triangle contributes no area and no orientation.
+  if (len === 0) return { nx: 0, ny: 0, nz: 0, area: 0 };
   return { nx: cx / len, ny: cy / len, nz: cz / len, area: len / 2 };
 }
 

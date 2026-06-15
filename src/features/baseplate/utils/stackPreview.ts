@@ -1,7 +1,7 @@
 /**
  * Build the 3D-preview geometry for a stack-print job: flipped towers laid out in
- * a centered row, with `separationMm` exploding copies apart without changing the
- * exported gap. Sacrificial sheets return as a separate mesh for accent rendering.
+ * a centered, roughly-square grid, with `separationMm` exploding copies apart
+ * without changing the exported gap. Separator sheets return as a separate mesh.
  */
 
 import type { StackPrintParams } from '@/core/types';

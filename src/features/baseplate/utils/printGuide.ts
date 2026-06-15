@@ -83,7 +83,11 @@ function generateStackingSection(stack: StackPrintParams): string {
   const peelLine =
     stack.mode === 'sacrificialSheet'
       ? '  the plates peel apart cleanly. Flex the stack to crack each plate free, then'
-      : '  do not fuse. Flex the stack to crack each plate free along the gaps, then';
+      : '  do not fuse. Flex the stack to crack each plate free along the gaps —';
+  const finishLine =
+    stack.mode === 'sacrificialSheet'
+      ? '  remove the separator sheet from the pocket faces.'
+      : '  the plates are then ready to assemble.';
   return [
     '─── Stack printing ──────────────────────────────',
     '',
@@ -93,7 +97,7 @@ function generateStackingSection(stack: StackPrintParams): string {
     '',
     interfaceLine,
     peelLine,
-    '  remove any interface material from the pocket faces.',
+    finishLine,
   ].join('\n');
 }
 

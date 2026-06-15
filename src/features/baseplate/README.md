@@ -30,10 +30,10 @@ graph TB
 - `components/BaseplatePanel/StackPrintSection.tsx` — "Stack for printing" panel section (experimental)
 - `components/BaseplatePreview/StackedBaseplateMeshes.tsx` + `StackSeparationSlider.tsx` — flipped-tower preview + explode slider
 - `utils/splitPlanner.ts` — 2D optimal tiling: partitions grid into print-bed-sized pieces
-- `utils/buildFullParams.ts` — resolves sync mode (drawer dims vs custom width/depth); strips connectors when stack printing is on
+- `utils/buildFullParams.ts` — resolves sync mode (drawer dims vs custom width/depth); strips connectors, magnet holes, and corner rounding when stack printing is on
 - `utils/stackPrint.ts` — stack planning (groups → capped physical stacks) + mesh flip/translate/replicate + interface-sheet builder
 - `utils/stackExport.ts` — bakes a stack into export triangle soup (+ per-triangle material indices for separator sheets)
-- `utils/stackPreview.ts` — lays flipped towers out in a centered row for the 3D preview
+- `utils/stackPreview.ts` — lays flipped towers out in a centered, roughly-square grid for the 3D preview
 - `utils/fileNaming.ts` — descriptive/compact/custom filename generation
 - `constants.ts` — MAX_BASEPLATE_DIMENSION (16), EXPLODE_GAP_MM (10), piece color palette
 
