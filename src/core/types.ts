@@ -48,11 +48,13 @@ export type StackPrintMode = 'airGap' | 'sacrificialSheet';
  *
  * `sets` multiplies every group's required quantity: for a split drawer it's
  * "how many complete drawers"; for a single-piece plate it's simply "how many
- * copies". Each physical stack is capped at `STACK_PRINT_MAX_STACK_HEIGHT`
- * copies, so an over-tall group splits into several stacks.
+ * copies". Each physical stack is capped at how many tiles fit the printer's
+ * build height (`stackHeightCap`, from `settings.printSettings.maxPrintHeightMm`),
+ * so an over-tall group splits into several stacks.
  *
- * Connectors are auto-disabled while enabled (their barbs/dovetails are
- * unsupportable overhangs in a vertical stack).
+ * Connectors, magnet holes, and corner rounding are auto-disabled while enabled
+ * (overhangs that can't print, and per-tile differences that would break the
+ * uniform-tile assumption stacking relies on).
  */
 export interface StackPrintParams {
   readonly enabled: boolean;
