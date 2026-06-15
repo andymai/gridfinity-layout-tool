@@ -71,9 +71,14 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     reason: 'binDesigner.lightweightDisablesCutouts',
   },
   {
-    description: 'Cutouts incompatible with lightweight floor',
+    // Cutouts only cut the floor in solid mode; the array persists as inert data
+    // after switching back to a cavity style, so gate on `style === 'solid'` —
+    // otherwise dormant cutouts would block re-selecting lightweight (and you
+    // can't enable lightweight to clear them, a deadlock). Enabling lightweight
+    // clears any leftover cutouts via the reverse rule above.
+    description: 'Cutouts incompatible with lightweight floor (solid mode)',
     source: 'cutouts',
-    when: (p) => p.cutouts.length > 0,
+    when: (p) => p.style === 'solid' && p.cutouts.length > 0,
     disables: ['base.lightweight'],
     reason: 'binDesigner.cutoutsDisableLightweight',
   },

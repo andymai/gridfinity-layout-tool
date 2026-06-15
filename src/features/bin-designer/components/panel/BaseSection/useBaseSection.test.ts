@@ -117,6 +117,34 @@ describe('useBaseSection', () => {
     expect(useDesignerStore.getState().params.base.lightweight).toBe(false);
   });
 
+  it('lightweight stays selectable with leftover cutouts after leaving solid mode', () => {
+    // Cutouts persist as inert data once the bin returns to a cavity style; they
+    // must not block re-selecting lightweight (regression: deadlock — couldn't
+    // enable lightweight to clear them because they blocked it).
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, style: 'standard', cutouts: [{ id: 'c1' } as never] },
+    });
+    const { result } = renderHook(() => useBaseSection());
+    expect(result.current.handlers.lightweightDisabledReason).toBeUndefined();
+
+    act(() => {
+      result.current.handlers.toggleLightweight();
+    });
+
+    const p = useDesignerStore.getState().params;
+    expect(p.base.lightweight).toBe(true);
+    // Enabling lightweight clears the dormant cutouts via the reverse rule.
+    expect(p.cutouts).toEqual([]);
+  });
+
+  it('cutouts still block lightweight in solid mode', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, style: 'solid', cutouts: [{ id: 'c1' } as never] },
+    });
+    const { result } = renderHook(() => useBaseSection());
+    expect(result.current.handlers.lightweightDisabledReason).toBeTruthy();
+  });
+
   it('enabling flat clears lightweight (mutually exclusive — flat has no socket)', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true } },
