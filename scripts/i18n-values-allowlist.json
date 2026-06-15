@@ -2,6 +2,7 @@
   "maxShortValueLength": 3,
   "keys": [
     "baseplate.stackPrint.badge",
+    "baseplate.stackPrint.plates.one",
     "settings.search.inTab",
     "binDesigner.projectionPerspective",
     "baseplate.projectionPerspective",
