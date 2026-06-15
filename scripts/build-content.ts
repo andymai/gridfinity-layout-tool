@@ -17,8 +17,13 @@ const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 function parseFrontmatter(raw: string): { data: Record<string, unknown>; content: string } {
   const match = FRONTMATTER_RE.exec(raw);
   if (!match) return { data: {}, content: raw };
-  const data = (yaml.load(match[1]) ?? {}) as Record<string, unknown>;
-  return { data, content: raw.slice(match[0].length) };
+  const content = raw.slice(match[0].length);
+  const parsed = yaml.load(match[1]);
+  if (parsed == null) return { data: {}, content };
+  if (typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('frontmatter must be a YAML mapping');
+  }
+  return { data: parsed as Record<string, unknown>, content };
 }
 
 const CONTENT_DIR = path.join(process.cwd(), 'content');
@@ -750,7 +755,16 @@ function processFile(
   availableLocales: ReadonlySet<Locale>
 ): void {
   const fileContent = fs.readFileSync(filePath, 'utf-8');
-  const { data, content } = parseFrontmatter(fileContent);
+  let parsed: { data: Record<string, unknown>; content: string };
+  try {
+    parsed = parseFrontmatter(fileContent);
+  } catch (err) {
+    console.error(
+      `Failed to parse frontmatter in ${filePath}: ${err instanceof Error ? err.message : String(err)}`
+    );
+    process.exit(1);
+  }
+  const { data, content } = parsed;
   const frontmatter = data as Frontmatter;
 
   if (!frontmatter.title || !frontmatter.description) {

@@ -26,9 +26,11 @@ minimumReleaseAgeExclude:
   # TODO: remove after 2026-06-18 once 0.28.1 has aged past the window.
   - esbuild
   - '@esbuild/*'
-  # dompurify 3.4.9 (2026-06-10) patches GHSA-vxr8-fq34-vvx9 (Trusted Types
-  # policy survives clearConfig); allow it through before the 7-day window.
-  # TODO: remove after 2026-06-17 once 3.4.9 has aged past the window.
+  # dompurify >=3.4.9 patches GHSA-vxr8-fq34-vvx9 (Trusted Types policy
+  # survives clearConfig); the override resolves to the latest 3.4.x. Excluded
+  # so the patched release can land before its 7-day cooldown elapses.
+  # TODO: remove once the resolved dompurify version has aged past the window
+  # (3.4.10 published 2026-06-12 -> 2026-06-19).
   - dompurify
 
 # Blocks Shai-Hulud-class worms that spread via npm lifecycle scripts.
