@@ -55,7 +55,12 @@ export interface StackPrintParams {
 
 /** Default air gap between stacked copies — one 0.2mm layer. */
 export const STACK_PRINT_DEFAULT_GAP_MM = 0.2;
-/** Max copies in a single physical stack before it splits into another stack. */
+/**
+ * Fallback cap on copies per physical stack, used only when no build-height
+ * limit is supplied. The real per-stack cap is `stackHeightCap()`, derived from
+ * the printer build height (`settings.printSettings.maxPrintHeightMm`), and can
+ * exceed this on tall printers.
+ */
 export const STACK_PRINT_MAX_STACK_HEIGHT = 8;
 /** Inclusive bounds on the separation gap (mm). */
 export const STACK_PRINT_MIN_GAP_MM = 0.1;

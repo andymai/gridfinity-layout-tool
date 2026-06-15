@@ -214,7 +214,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           }
 
           // One file per unique shape. When stacking, each unique piece is baked
-          // into towers of the needed quantity (group size × sets), split into
+          // into towers of the quantity the drawer needs (group size), split into
           // multiple files when a stack exceeds the printable height cap.
           const pieces: { data: ArrayBuffer; label: string }[] = [];
           for (let i = 0; i < uniqueGroups.length; i++) {
@@ -300,8 +300,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           const result = await bridge.exportBaseplate(fullParams, 'step');
           triggerDownload(new Blob([result.data], { type: FORMAT_MIME_TYPES.step }), baseName);
         } else if (stack && stackEnabled) {
-          // Single piece, stacked. `sets` copies split into towers under the
-          // height cap — a single tower downloads directly, several go in a ZIP.
+          // Single piece, stacked into one tower (split under the height cap) —
+          // a single tower downloads directly, several go in a ZIP.
           const stlResult = await bridge.exportBaseplate(fullParams, 'stl');
           const source = parseStlSoup(stlResult.data);
           const towers = planPhysicalStacks([{ label: 'plate', quantity: 1 }], stackCap);
