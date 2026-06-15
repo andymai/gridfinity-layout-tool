@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.175.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.174.2...gridfinity-layout-tool-v4.175.0) (2026-06-15)
+
+
+### Features
+
+* **baseplate:** document multi-material separation for vertical stacks ([#2176](https://github.com/andymai/gridfinity-layout-tool/issues/2176)) ([32a464c](https://github.com/andymai/gridfinity-layout-tool/commit/32a464cc9a77aae2f983d75e22f5e0b27ad91b4a))
+
 ## [4.174.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.174.1...gridfinity-layout-tool-v4.174.2) (2026-06-15)
 
 
