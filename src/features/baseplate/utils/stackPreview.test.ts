@@ -52,17 +52,17 @@ describe('buildStackPreviewMeshes', () => {
     );
     const b = meshBounds(out.plates.vertices);
     // 2 towers -> 2 cols x 1 row. Cells snap to whole grid units: a 20mm-wide
-    // tower rounds to 1 unit, + TOWER_GAP_UNITS (2) = 3 units → cellW 3*42=126.
-    // Centered cols at ±63; each 20mm tower spans ±10 -> X bounds [-73, 73].
-    expect(b.minX).toBeCloseTo(-73, 4);
-    expect(b.maxX).toBeCloseTo(73, 4);
-    expect(out.widthMm).toBeCloseTo(252, 4);
+    // tower rounds to 1 unit, + TOWER_GAP_UNITS (1) = 2 units → cellW 2*42=84.
+    // Centered cols at ±42; each 20mm tower spans ±10 -> X bounds [-52, 52].
+    expect(b.minX).toBeCloseTo(-52, 4);
+    expect(b.maxX).toBeCloseTo(52, 4);
+    expect(out.widthMm).toBeCloseTo(168, 4);
   });
 
   // Towers tile into a roughly-square grid (cols = ceil(sqrt(n))), centered on
   // origin — a single off-screen row was the "single line" preview bug. Cells
   // snap to whole grid units so towers align to the scene grid: 20×30 plate →
-  // 1×1 units → (1+2)×(1+2) = 3×3 cells = 126×126mm.
+  // 1×1 units → (1+1)×(1+1) = 2×2 cells = 84×84mm.
   describe('grid layout (parameterized)', () => {
     const cases = [
       { towers: 1, cols: 1, rows: 1 },
@@ -80,8 +80,8 @@ describe('buildStackPreviewMeshes', () => {
         0,
         42
       );
-      expect(out.widthMm).toBeCloseTo(cols * 126, 4);
-      expect(out.depthMm).toBeCloseTo(rows * 126, 4);
+      expect(out.widthMm).toBeCloseTo(cols * 84, 4);
+      expect(out.depthMm).toBeCloseTo(rows * 84, 4);
       // Centered on origin in X and Y.
       const b = meshBounds(out.plates.vertices);
       expect(b.minX).toBeCloseTo(-b.maxX, 3);

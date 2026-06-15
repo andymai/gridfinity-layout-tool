@@ -15,12 +15,13 @@ import {
 } from './stackPrint';
 
 /**
- * Empty grid units kept around each tower so its cell spans a whole number of
- * grid cells. An even gap (one unit of margin per side) lands the tower's own
- * edges on grid lines, so towers sit squarely on the scene's footprint grid —
- * whether there's one tower or many.
+ * Empty grid units of clearance between towers. Added to each tower's
+ * whole-unit footprint so every cell still spans an integer number of grid
+ * cells (keeping towers on the scene's footprint grid), while one unit of
+ * separation reads clearly as "separate printed pieces" without leaving an
+ * empty grid cell of dead space around each tower.
  */
-const TOWER_GAP_UNITS = 2;
+const TOWER_GAP_UNITS = 1;
 
 export interface StackPreviewTower {
   readonly mesh: StackMeshArrays;
