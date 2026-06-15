@@ -15,7 +15,7 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { measureVolume, translate, intersect, cutAll, draw } from 'brepjs';
-import type { ValidSolid } from 'brepjs';
+import type { Shape3D, ValidSolid } from 'brepjs';
 import { isOk, unwrap } from '@/core/result';
 import { initBrepjs } from './__kernel-tests__/wasmInit';
 import { buildSnapClip, makeSnapPocket } from './baseplateConnectors';
@@ -29,7 +29,12 @@ const vol = (s: Parameters<typeof measureVolume>[0]): number => {
 
 const overlap = (a: ValidSolid, b: ValidSolid): number => {
   const i = intersect(a, b);
-  return isOk(i) ? vol(i.value) : 0;
+  // Fail loudly rather than returning 0 — a swallowed boolean error would let the
+  // "seated clearance fit" assertion pass spuriously.
+  if (!isOk(i)) throw new Error('intersect failed');
+  const v = vol(i.value);
+  i.value.delete();
+  return v;
 };
 
 beforeAll(async () => {
@@ -57,6 +62,7 @@ describe('snap-clip pull-apart capture (issue #1610 follow-up)', () => {
     const cutters = makeSnapPocket(ptX, 0, 0, -1, lv) as ValidSolid[];
     const plate = unwrap(cutAll(box as ValidSolid, cutters));
     cutters.forEach((c) => c.delete());
+    if ((plate as Shape3D) !== box) box.delete();
     return plate;
   }
 
@@ -66,10 +72,16 @@ describe('snap-clip pull-apart capture (issue #1610 follow-up)', () => {
     // Seated: a clearance fit, so essentially no interference (sub-tolerance
     // contact from the fillet/corner mismatch between the crisp pocket and the
     // filleted clip is expected).
-    expect(overlap(clip, rightPlateWithPocket()), 'seated clearance fit').toBeLessThan(0.2);
+    const seated = rightPlateWithPocket();
+    expect(overlap(clip, seated), 'seated clearance fit').toBeLessThan(0.2);
+    seated.delete();
 
     // Pulled away from the seam: the clip must now bear against the plate.
-    const pulled = translate(rightPlateWithPocket(), [PULL, 0, 0]);
+    const plate = rightPlateWithPocket();
+    const pulled = translate(plate, [PULL, 0, 0]);
+    plate.delete();
     expect(overlap(clip, pulled), 'clip blocks pull-apart').toBeGreaterThan(0.5);
+    pulled.delete();
+    clip.delete();
   }, 60_000);
 });

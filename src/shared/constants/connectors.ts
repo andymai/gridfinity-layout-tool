@@ -106,7 +106,10 @@ export const SNAP_CLIP = {
    *  nominal seam-side wall thickness: the pocket leaves plate solid out to here. */
   GAP_HALF: 1.0,
   /** Leg thickness across the seam (mm). Trimmed from the original 1.2 so the
-   *  wider GAP_HALF keeps the same outer face (`GAP_HALF + LEG_W`) and bin clearance. */
+   *  wider GAP_HALF keeps the same outer face (`GAP_HALF + LEG_W` = 1.95) at the
+   *  0.4mm baseline, preserving bin clearance. On wider nozzles `scaleFeature`
+   *  floors leg width to 2× the nozzle, so the outer face grows by the GAP_HALF
+   *  increase (~0.25mm) — acceptable on the rarer big-nozzle snap clips. */
   LEG_W: 0.95,
   /** Height of the seam-side retaining wall below the bridge (mm) — the band the
    *  leg's inner face bears against. Tall for a substantial grip, but clamped
