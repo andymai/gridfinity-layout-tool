@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.171.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.170.0...gridfinity-layout-tool-v4.171.0) (2026-06-15)
+
+
+### Features
+
+* **baseplate:** add stack-printable baseplates ([#2149](https://github.com/andymai/gridfinity-layout-tool/issues/2149)) ([01e3db2](https://github.com/andymai/gridfinity-layout-tool/commit/01e3db266900b6c3b1e1fa95ad73d60474ce95b2))
+
 ## [4.170.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.169.1...gridfinity-layout-tool-v4.170.0) (2026-06-14)
 
 
