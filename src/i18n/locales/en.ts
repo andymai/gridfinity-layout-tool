@@ -2114,18 +2114,18 @@ const en: Record<string, string> = {
     'Stack printing: {stacks} stacks ({plates} plates) export as a ZIP with a print guide.',
   'baseplate.stackPrint.gap.label': 'Gap',
   'baseplate.stackPrint.gap.info':
-    'Air gap between stacked plates — about 0.2mm (one layer). Keep your slicer’s layer height at or below this gap, or the plates fuse. No supports needed — any slicer reproduces the gap. Test a small stack first to fine-tune it.',
+    'Air gap between stacked plates, about 0.2mm (one layer). Keep your slicer’s layer height at or below this gap or the plates fuse. No supports needed. Test a small stack first to fine-tune it.',
   'baseplate.stackPrint.tips.heading': 'Tips for separating',
   'baseplate.stackPrint.tips.single.heading': 'Single material',
   'baseplate.stackPrint.tips.single.body':
     'Slide a flat-head screwdriver into the gap and twist gently.',
   'baseplate.stackPrint.tips.multi.heading': 'Multi-material',
   'baseplate.stackPrint.tips.multi.body':
-    'Use PETG between PLA plates (or PLA between PETG) — they don’t bond, so the stack lifts apart cleanly. Raise the gap to ~0.4mm first.',
+    'Use PETG between PLA plates (or PLA between PETG). They don’t bond, so the stack lifts apart cleanly. Raise the gap to ~0.4mm first.',
   'baseplate.stackPrint.tips.multi.prusa':
-    'PrusaSlicer: Support → Everywhere, Top contact Z distance=0, Top interface layers=1–2, Support material/raft interface extruder=non-stick filament.',
+    'Support: Everywhere, Top contact Z: 0, interface layers: 1-2, interface extruder: non-stick filament.',
   'baseplate.stackPrint.tips.multi.bambu':
-    'Bambu/Orca: Support → Normal (auto), Interface filament=non-stick, Top Z distance=0, Top interface layers=1–2.',
+    'Support: Normal, interface filament: non-stick, Top Z: 0, interface layers: 1-2.',
   'baseplate.stackPrint.separate': 'Separate',
   'baseplate.stackPrint.together': 'Together',
   'baseplate.stackPrint.separationSlider': 'Separate the print stack to inspect it',

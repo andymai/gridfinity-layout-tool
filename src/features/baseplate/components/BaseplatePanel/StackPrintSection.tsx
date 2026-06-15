@@ -88,8 +88,12 @@ export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionPro
                   {t('baseplate.stackPrint.tips.multi.heading')}
                 </p>
                 <p>{t('baseplate.stackPrint.tips.multi.body')}</p>
-                <p>{t('baseplate.stackPrint.tips.multi.prusa')}</p>
-                <p>{t('baseplate.stackPrint.tips.multi.bambu')}</p>
+                <p>
+                  <strong>PrusaSlicer</strong> {t('baseplate.stackPrint.tips.multi.prusa')}
+                </p>
+                <p>
+                  <strong>Bambu / Orca</strong> {t('baseplate.stackPrint.tips.multi.bambu')}
+                </p>
               </div>
             </div>
 
