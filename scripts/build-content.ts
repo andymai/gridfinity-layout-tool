@@ -10,7 +10,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { marked } from 'marked';
-import matter from 'gray-matter';
+import yaml from 'js-yaml';
+
+const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
+
+function parseFrontmatter(raw: string): { data: Record<string, unknown>; content: string } {
+  const match = FRONTMATTER_RE.exec(raw);
+  if (!match) return { data: {}, content: raw };
+  const data = (yaml.load(match[1]) ?? {}) as Record<string, unknown>;
+  return { data, content: raw.slice(match[0].length) };
+}
 
 const CONTENT_DIR = path.join(process.cwd(), 'content');
 const OUTPUT_DIR = path.join(process.cwd(), 'public');
@@ -741,7 +750,7 @@ function processFile(
   availableLocales: ReadonlySet<Locale>
 ): void {
   const fileContent = fs.readFileSync(filePath, 'utf-8');
-  const { data, content } = matter(fileContent);
+  const { data, content } = parseFrontmatter(fileContent);
   const frontmatter = data as Frontmatter;
 
   if (!frontmatter.title || !frontmatter.description) {
