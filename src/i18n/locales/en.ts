@@ -2110,29 +2110,27 @@ const en: Record<string, string> = {
   'baseplate.connectorNozzleNotice':
     'Sized for a {nozzle}mm nozzle — dovetail keys and snap clips are enlarged to stay printable.',
   'baseplate.stackPrint.enable': 'Vertical stack',
-  'baseplate.stackPrint.stacks.one': '{count} stack',
-  'baseplate.stackPrint.stacks.other': '{count} stacks',
-  'baseplate.stackPrint.plates.one': '{count} plate',
-  'baseplate.stackPrint.plates.other': '{count} plates',
   'baseplate.stackPrint.exportBanner':
     'Stack printing: {stacks} stacks ({plates} plates) export as a ZIP with a print guide.',
   'baseplate.stackPrint.gap.label': 'Gap',
   'baseplate.stackPrint.gap.info':
     'Air gap between stacked plates — about 0.2mm (one layer). Keep your slicer’s layer height at or below this gap, or the plates fuse. No supports needed — any slicer reproduces the gap. Test a small stack first to fine-tune it.',
-  'baseplate.stackPrint.featuresOff':
-    'Connectors, magnet holes, and corner rounding are turned off while stacking.',
-  'baseplate.stackPrint.multiMaterial.title': 'Clean separation (multi-material)',
-  'baseplate.stackPrint.multiMaterial.intro':
-    'Optional, for AMS / multi-material printers. Fill each gap with a peel-away support interface in a non-stick filament — PETG against PLA releases cleanly — so the plates lift apart without prying. First raise the gap above to about 0.4mm to give the interface room.',
-  'baseplate.stackPrint.multiMaterial.prusa':
-    'PrusaSlicer: enable “Generate support material”, uncheck “Support on build plate only”, set “Top contact Z distance” to 0 and “Top interface layers” to 1–2, then set the “Support material/raft interface extruder” (Multiple Extruders page) to the non-stick filament.',
-  'baseplate.stackPrint.multiMaterial.bambu':
-    'Bambu Studio / Orca: enable Support, set “Interface filament” to the non-stick filament, “Top Z distance” to 0, and the top interface layers to 1–2.',
+  'baseplate.stackPrint.tips.heading': 'Tips for separating',
+  'baseplate.stackPrint.tips.single.heading': 'Single material',
+  'baseplate.stackPrint.tips.single.body':
+    'Slide a flat-head screwdriver into the gap and twist gently.',
+  'baseplate.stackPrint.tips.multi.heading': 'Multi-material',
+  'baseplate.stackPrint.tips.multi.body':
+    'Use PETG between PLA plates (or PLA between PETG) — they don’t bond, so the stack lifts apart cleanly. Raise the gap to ~0.4mm first.',
+  'baseplate.stackPrint.tips.multi.prusa':
+    'PrusaSlicer: Support → Everywhere, Top contact Z distance=0, Top interface layers=1–2, Support material/raft interface extruder=non-stick filament.',
+  'baseplate.stackPrint.tips.multi.bambu':
+    'Bambu/Orca: Support → Normal (auto), Interface filament=non-stick, Top Z distance=0, Top interface layers=1–2.',
   'baseplate.stackPrint.separate': 'Separate',
   'baseplate.stackPrint.together': 'Together',
   'baseplate.stackPrint.separationSlider': 'Separate the print stack to inspect it',
   'baseplate.stackPrint.hint':
-    'Prints all of a drawer’s plates as one vertical tower with an air gap between them, so they print in a single job — in any slicer, with no supports — and snap apart afterward. Keep your layer height at or below the gap so the plates don’t fuse.',
+    'Prints all drawer plates as a vertical stack with gaps between them. Plates snap apart after printing.',
   'baseplate.stackPrint.sampleButton': 'Print fit sample',
   'baseplate.stackPrint.sampleExportComplete': 'Stack fit sample exported',
   'baseplate.stackPrint.sampleTitle': 'Stack fit sample',

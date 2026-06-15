@@ -5,7 +5,6 @@
  * the parent when this is enabled. Rendered as a plain (non-collapsible) block.
  */
 
-import { useMemo } from 'react';
 import { mm } from '@/core/types';
 import type { Mm, StackPrintParams } from '@/core/types';
 import {
@@ -13,21 +12,14 @@ import {
   STACK_PRINT_MIN_GAP_MM,
   STACK_PRINT_MAX_GAP_MM,
 } from '@/core/types';
-import { useSettingsStore } from '@/core/store/settings';
 import { useTranslation } from '@/i18n';
 import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
 import { StackSampleButton } from './StackSampleButton';
-import { Collapsible } from '@/design-system/Collapsible';
 import { Stepper } from '@/design-system/Stepper';
-import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
-import { planPhysicalStacks, stackHeightCap, type StackGroup } from '../../utils/stackPrint';
-
 interface StackPrintSectionProps {
   readonly stackPrint: StackPrintParams | undefined;
-  /** Identical-piece groups the drawer needs (label + quantity). */
-  readonly groups: readonly StackGroup[];
   readonly onChange: (next: StackPrintParams | undefined) => void;
 }
 
@@ -43,18 +35,10 @@ const DEFAULT_STACK_PRINT: StackPrintParams = {
   gapMm: mm(STACK_PRINT_DEFAULT_GAP_MM),
 };
 
-export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSectionProps) {
+export function StackPrintSection({ stackPrint, onChange }: StackPrintSectionProps) {
   const t = useTranslation();
-  const maxPrintHeightMm = useSettingsStore((s) => s.settings.printSettings.maxPrintHeightMm);
   const enabled = stackPrint?.enabled === true;
   const gapMm: Mm = stackPrint?.gapMm ?? mm(STACK_PRINT_DEFAULT_GAP_MM);
-
-  const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, gapMm);
-  const plan = useMemo(
-    () => (enabled ? planPhysicalStacks(groups, cap) : []),
-    [enabled, groups, cap]
-  );
-  const totalCopies = plan.reduce((sum, s) => sum + s.copies, 0);
 
   const patch = (next: Partial<StackPrintParams>): void => {
     onChange({ enabled: true, gapMm, ...next });
@@ -91,37 +75,23 @@ export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSe
               />
             </SettingsRow>
 
-            <p className="text-[11px] text-content-tertiary">
-              {t(
-                plan.length === 1
-                  ? 'baseplate.stackPrint.stacks.one'
-                  : 'baseplate.stackPrint.stacks.other',
-                { count: plan.length }
-              )}
-              {' · '}
-              {t(
-                totalCopies === 1
-                  ? 'baseplate.stackPrint.plates.one'
-                  : 'baseplate.stackPrint.plates.other',
-                { count: totalCopies }
-              )}
-            </p>
-
-            <p className="text-[11px] leading-relaxed text-content-tertiary">
-              {t('baseplate.stackPrint.featuresOff')}
-            </p>
-
-            <Collapsible
-              title={t('baseplate.stackPrint.multiMaterial.title')}
-              size="sm"
-              defaultExpanded={false}
-            >
-              <div className="space-y-2 text-[11px] leading-relaxed text-content-secondary">
-                <p>{t('baseplate.stackPrint.multiMaterial.intro')}</p>
-                <p>{t('baseplate.stackPrint.multiMaterial.prusa')}</p>
-                <p>{t('baseplate.stackPrint.multiMaterial.bambu')}</p>
+            <div className="space-y-2 rounded border border-info/30 bg-info-muted px-2.5 py-2 text-[11px] leading-relaxed text-content-secondary">
+              <p className="font-semibold text-info">{t('baseplate.stackPrint.tips.heading')}</p>
+              <div className="space-y-0.5">
+                <p className="font-medium text-content">
+                  {t('baseplate.stackPrint.tips.single.heading')}
+                </p>
+                <p>{t('baseplate.stackPrint.tips.single.body')}</p>
               </div>
-            </Collapsible>
+              <div className="space-y-0.5">
+                <p className="font-medium text-content">
+                  {t('baseplate.stackPrint.tips.multi.heading')}
+                </p>
+                <p>{t('baseplate.stackPrint.tips.multi.body')}</p>
+                <p>{t('baseplate.stackPrint.tips.multi.prusa')}</p>
+                <p>{t('baseplate.stackPrint.tips.multi.bambu')}</p>
+              </div>
+            </div>
 
             <StackSampleButton />
           </>

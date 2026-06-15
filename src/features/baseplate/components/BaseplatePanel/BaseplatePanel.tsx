@@ -9,7 +9,7 @@
  * 4. Split pieces mini-map (only when baseplate is split across print beds)
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useLayoutStore } from '@/core/store/layout';
 import { useSettingsStore } from '@/core/store/settings';
@@ -43,8 +43,6 @@ import { StackPrintSection } from './StackPrintSection';
 import { ConnectorPicker } from './ConnectorPicker';
 import type { ConnectorChoice } from './ConnectorPicker';
 import { resolveOverTileStatus } from '../../utils/overTileStatus';
-import { buildFullParams } from '../../utils/buildFullParams';
-import { stackGroupsFromTiling } from '../../utils/stackPrint';
 import type { StackPrintParams } from '@/core/types';
 import { PADDING_MAX } from '../PaddingStepper';
 import { Stepper } from '@/design-system/Stepper';
@@ -135,34 +133,6 @@ export function BaseplatePanel() {
 
   const halfGridMode = useHalfGridModeStore((s) => s.halfGridMode);
   const [printSettingsExpanded, setPrintSettingsExpanded] = useState(true);
-
-  // Resolve the full generation params + identical-piece groups so the stack
-  // section can show how many physical stacks a drawer needs (auto-count).
-  const fullParams = useMemo(
-    () =>
-      buildFullParams(
-        baseplateParams,
-        drawerWidth,
-        drawerDepth,
-        gridUnitMm,
-        drawerFractionalEdgeX,
-        drawerFractionalEdgeY,
-        nozzleSizeMm
-      ),
-    [
-      baseplateParams,
-      drawerWidth,
-      drawerDepth,
-      gridUnitMm,
-      drawerFractionalEdgeX,
-      drawerFractionalEdgeY,
-      nozzleSizeMm,
-    ]
-  );
-  const stackGroups = useMemo(
-    () => stackGroupsFromTiling(tiling, fullParams),
-    [tiling, fullParams]
-  );
 
   // Stacking strips connectors functionally (in buildFullParams), not by
   // mutating stored params — so the user's connector settings return intact
@@ -422,11 +392,7 @@ export function BaseplatePanel() {
 
         {/* 2. Stack for printing — experimental. Placed above Base because
             enabling it strips and hides the Base controls below. */}
-        <StackPrintSection
-          stackPrint={baseplateParams.stackPrint}
-          groups={stackGroups}
-          onChange={setStackPrint}
-        />
+        <StackPrintSection stackPrint={baseplateParams.stackPrint} onChange={setStackPrint} />
 
         {/* 3. Base — connectors, magnets, corner radius. Hidden entirely while
             stacking (which strips all of them; the Stack section's notice says

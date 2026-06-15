@@ -28,6 +28,12 @@ export interface StackPreviewTower {
   readonly copies: number;
 }
 
+export interface StackPreviewTowerLayout {
+  readonly centerX: number;
+  readonly centerY: number;
+  readonly heightMm: number;
+}
+
 export interface StackPreviewResult {
   /** All plate copies across all towers. */
   readonly plates: StackMeshArrays;
@@ -35,6 +41,8 @@ export interface StackPreviewResult {
   readonly widthMm: number;
   readonly depthMm: number;
   readonly heightMm: number;
+  /** Per-tower scene positions, aligned with the input towers array. */
+  readonly towerLayouts: readonly StackPreviewTowerLayout[];
 }
 
 const EMPTY: StackMeshArrays = {
@@ -51,7 +59,7 @@ export function buildStackPreviewMeshes(
   gridUnitMm: number
 ): StackPreviewResult {
   if (towers.length === 0) {
-    return { plates: EMPTY, widthMm: 0, depthMm: 0, heightMm: 0 };
+    return { plates: EMPTY, widthMm: 0, depthMm: 0, heightMm: 0, towerLayouts: [] };
   }
 
   const measured = towers.map((tower) => {
@@ -79,6 +87,7 @@ export function buildStackPreviewMeshes(
   const cellD = (maxDepthUnits + TOWER_GAP_UNITS) * gridUnitMm;
 
   const plateLayers: StackMeshArrays[] = [];
+  const towerLayouts: StackPreviewTowerLayout[] = [];
   let maxHeight = 0;
 
   measured.forEach((m, idx) => {
@@ -98,7 +107,9 @@ export function buildStackPreviewMeshes(
     }
 
     const n = Math.max(1, Math.floor(m.tower.copies));
-    maxHeight = Math.max(maxHeight, (n - 1) * stride + m.plateHeight);
+    const towerHeight = (n - 1) * stride + m.plateHeight;
+    maxHeight = Math.max(maxHeight, towerHeight);
+    towerLayouts.push({ centerX, centerY, heightMm: towerHeight });
   });
 
   return {
@@ -106,5 +117,6 @@ export function buildStackPreviewMeshes(
     widthMm: cols * cellW,
     depthMm: rows * cellD,
     heightMm: maxHeight,
+    towerLayouts,
   };
 }
