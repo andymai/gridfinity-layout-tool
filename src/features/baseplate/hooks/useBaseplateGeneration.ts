@@ -63,8 +63,7 @@ function buildPieceMeshEntry(
     widthUnits: number;
     depthUnits: number;
     placementRotationDeg: 0 | 180;
-  },
-  source: 'direct' | 'brep'
+  }
 ): PieceMeshEntry {
   return {
     label: piece.label,
@@ -77,7 +76,6 @@ function buildPieceMeshEntry(
       edgeVertices: result.mesh.edgeVertices,
       error: null,
       timingMs: result.timingMs,
-      source,
     },
     offsetX: piece.gridOffsetX,
     offsetY: piece.gridOffsetY,
@@ -105,12 +103,11 @@ function fillGroupMeshEntries(
   meshEntries: PieceMeshEntry[],
   group: { indices: readonly number[] },
   pieces: BaseplateTiling['pieces'],
-  result: GenerationResult,
-  source: 'direct' | 'brep'
+  result: GenerationResult
 ): void {
   group.indices.forEach((pieceIdx, j) => {
     const pieceResult = j === 0 ? result : cloneGenerationResult(result);
-    meshEntries[pieceIdx] = buildPieceMeshEntry(pieceResult, pieces[pieceIdx], source);
+    meshEntries[pieceIdx] = buildPieceMeshEntry(pieceResult, pieces[pieceIdx]);
   });
 }
 
@@ -129,7 +126,7 @@ function cloneGenerationResult(result: GenerationResult): GenerationResult {
 }
 
 /** Single-mesh store payload for the unsplit baseplate (draft and BREP share this shape). */
-function toSingleMesh(result: GenerationResult, source: 'direct' | 'brep') {
+function toSingleMesh(result: GenerationResult) {
   return {
     vertices: result.mesh.vertices,
     normals: result.mesh.normals,
@@ -137,7 +134,6 @@ function toSingleMesh(result: GenerationResult, source: 'direct' | 'brep') {
     edgeVertices: result.mesh.edgeVertices,
     error: null,
     timingMs: result.timingMs,
-    source,
   };
 }
 
@@ -338,7 +334,7 @@ export function useBaseplateGeneration(): void {
           if (generationEpochRef.current !== epoch) return tiling;
 
           const timingMs = performance.now() - directMeshStartRef.current;
-          setGenerationResult(toSingleMesh({ mesh, timingMs }, 'direct'));
+          setGenerationResult(toSingleMesh({ mesh, timingMs }));
           setPieceMeshes([]);
         } else {
           // Split: generate one direct-mesh per unique piece group, clone for duplicates.
@@ -350,7 +346,7 @@ export function useBaseplateGeneration(): void {
           for (const group of groups.values()) {
             const mesh = generateBaseplateDirect(group.params, NO_OP_PROGRESS);
             const result = { mesh, timingMs: 0 };
-            fillGroupMeshEntries(meshEntries, group, tiling.pieces, result, 'direct');
+            fillGroupMeshEntries(meshEntries, group, tiling.pieces, result);
           }
 
           if (generationEpochRef.current !== epoch) return tiling;
@@ -412,7 +408,7 @@ export function useBaseplateGeneration(): void {
         if (!tiling.isSplit) {
           const result = await preview.generateBaseplate(fullParams, NO_OP_PROGRESS);
           if (!stillCurrent()) return true;
-          setGenerationResult(toSingleMesh(result, 'direct'));
+          setGenerationResult(toSingleMesh(result));
           setPieceMeshes([]);
         } else {
           const groups = groupPiecesByFingerprint(tiling.pieces, fullParams);
@@ -423,7 +419,7 @@ export function useBaseplateGeneration(): void {
           for (const group of groups.values()) {
             const baseResult = await preview.generateBaseplate(group.params, NO_OP_PROGRESS);
             if (!stillCurrent()) return true;
-            fillGroupMeshEntries(meshEntries, group, tiling.pieces, baseResult, 'direct');
+            fillGroupMeshEntries(meshEntries, group, tiling.pieces, baseResult);
           }
 
           if (!stillCurrent()) return true;
@@ -472,7 +468,7 @@ export function useBaseplateGeneration(): void {
           const result = await bridge.generateBaseplate(fullParams, NO_OP_PROGRESS);
           if (generationEpochRef.current !== epoch) return;
 
-          setGenerationResult(toSingleMesh(result, 'brep'));
+          setGenerationResult(toSingleMesh(result));
           setPieceMeshes([]);
           setConnectorKeyMesh(null);
           setGenerationStatus('complete');
@@ -514,13 +510,7 @@ export function useBaseplateGeneration(): void {
           const meshEntries: PieceMeshEntry[] = new Array(totalCount);
           for (let groupIdx = 0; groupIdx < uniqueGroups.length; groupIdx++) {
             const group = uniqueGroups[groupIdx];
-            fillGroupMeshEntries(
-              meshEntries,
-              group,
-              tiling.pieces,
-              uniqueResults[groupIdx],
-              'brep'
-            );
+            fillGroupMeshEntries(meshEntries, group, tiling.pieces, uniqueResults[groupIdx]);
           }
 
           setSplitProgress(null);

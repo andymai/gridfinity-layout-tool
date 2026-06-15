@@ -27,6 +27,7 @@
 import type { BaseplateParams } from '@/shared/types/bin';
 import { CONSTRAINTS } from '@/core/constants';
 import { resolveCornerRadii } from './generatorConstants';
+import { creaseEdges } from './utils';
 import type { MeshData } from '../../bridge/types';
 import {
   SOCKET_HEIGHT,
@@ -233,7 +234,13 @@ export function generateBaseplateDirect(
   onProgress('base', 0.9);
   checkCancelled(signal);
 
-  const result = mb.build();
+  const built = mb.build();
+  // Dihedral creases give the instant draft the same edge overlay as the BREP
+  // render; the builder omits edges. Flat-shaded verts are welded by position.
+  const result: MeshData = {
+    ...built,
+    edgeVertices: creaseEdges({ vertices: built.vertices, triangles: built.indices }),
+  };
   onProgress('base', 1);
 
   return result;
