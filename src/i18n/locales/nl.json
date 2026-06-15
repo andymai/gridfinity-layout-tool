@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.separate": "Scheiden",
   "baseplate.stackPrint.together": "Samen",
   "baseplate.stackPrint.separationSlider": "Scheid de printstapel om hem te inspecteren",
-  "baseplate.stackPrint.separatorColor": "Scheidingskleur"
+  "baseplate.stackPrint.separatorColor": "Scheidingskleur",
+  "baseplate.stackPrint.magnetsDisabled": "Magneetgaten zijn uitgeschakeld tijdens stapelen — de holtes zouden moeten bruggen bij ondersteboven printen.",
+  "baseplate.stackPrint.connectorsMagnetsDisabled": "Verbindingen en magneetgaten zijn uitgeschakeld tijdens stapelen — ze printen niet schoon in een verticale stapel."
 }

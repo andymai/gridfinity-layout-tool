@@ -50,7 +50,6 @@ export function buildStackPreviewMeshes(
     return { plates: EMPTY, sheets: null, widthMm: 0, depthMm: 0, heightMm: 0 };
   }
 
-  // Pre-measure each tower so the row can be centered on X.
   const measured = towers.map((tower) => {
     const b = meshBounds(tower.mesh.vertices);
     return {
@@ -61,26 +60,34 @@ export function buildStackPreviewMeshes(
       plateHeight: b.maxZ - b.minZ,
     };
   });
-  const totalWidth =
-    measured.reduce((sum, m) => sum + m.width, 0) + TOWER_SPACING_MM * (measured.length - 1);
-  const maxDepth = Math.max(...measured.map((m) => m.depth));
+
+  // Lay the towers in a roughly-square grid (a single row reads as a confusing
+  // off-screen line once a drawer splits into many pieces). Uniform cell size
+  // keeps the grid aligned; each tower is centered in its cell.
+  const cols = Math.ceil(Math.sqrt(measured.length));
+  const rows = Math.ceil(measured.length / cols);
+  const cellW = Math.max(...measured.map((m) => m.width)) + TOWER_SPACING_MM;
+  const cellD = Math.max(...measured.map((m) => m.depth)) + TOWER_SPACING_MM;
 
   const plateLayers: StackMeshArrays[] = [];
   const sheetLayers: StackMeshArrays[] = [];
   const wantSheets = stack.mode === 'sacrificialSheet';
   let maxHeight = 0;
-  let cursorX = -totalWidth / 2;
 
-  for (const m of measured) {
+  measured.forEach((m, idx) => {
     const n = Math.max(1, Math.floor(m.tower.copies));
     const stride = stackStrideMm(m.plateHeight, stack) + Math.max(0, separationMm);
-    // Center this tower's footprint at cursorX + width/2; drop so it starts at Z=0.
-    const centerX = cursorX + m.width / 2;
+    const col = idx % cols;
+    const row = Math.floor(idx / cols);
+    const centerX = (col - (cols - 1) / 2) * cellW;
+    const centerY = ((rows - 1) / 2 - row) * cellD;
     const dx = centerX - (m.bounds.minX + m.bounds.maxX) / 2;
+    const dy = centerY - (m.bounds.minY + m.bounds.maxY) / 2;
+    // Flip upside down (matches the printed orientation) and drop to Z=0.
     const flipped = translateMesh(
       flipMeshUpsideDown(m.tower.mesh, (m.bounds.minZ + m.bounds.maxZ) / 2),
       dx,
-      0,
+      dy,
       -m.bounds.minZ
     );
 
@@ -92,8 +99,8 @@ export function buildStackPreviewMeshes(
       const footprint = {
         minX: m.bounds.minX + dx,
         maxX: m.bounds.maxX + dx,
-        minY: m.bounds.minY,
-        maxY: m.bounds.maxY,
+        minY: m.bounds.minY + dy,
+        maxY: m.bounds.maxY + dy,
       };
       for (let j = 0; j < n - 1; j++) {
         const bottomZ = j * stride + m.plateHeight;
@@ -102,14 +109,13 @@ export function buildStackPreviewMeshes(
     }
 
     maxHeight = Math.max(maxHeight, (n - 1) * stride + m.plateHeight);
-    cursorX += m.width + TOWER_SPACING_MM;
-  }
+  });
 
   return {
     plates: concatMeshes(plateLayers),
     sheets: sheetLayers.length > 0 ? concatMeshes(sheetLayers) : null,
-    widthMm: totalWidth,
-    depthMm: maxDepth,
+    widthMm: cols * cellW,
+    depthMm: rows * cellD,
     heightMm: maxHeight,
   };
 }

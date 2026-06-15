@@ -49,7 +49,15 @@ export function computePieceFingerprint(params: BaseplateParams): string {
     params.cornerRadius === undefined ? 'cr:default' : `cr:${params.cornerRadius}`,
   ];
 
-  if (params.edges) {
+  // Edge classification (exterior vs join) only affects geometry through
+  // connectors (placed on join edges) and corner rounding (only exterior
+  // corners round). With neither, pieces that differ only by edge label are
+  // byte-identical — so omit it and let them dedupe (key for stack-print tiles,
+  // where connectors + rounding are stripped). Padding is captured separately,
+  // so padded edge pieces still differ from interior ones.
+  const noRounding = params.cornerRadius === 0 && params.cornerRadii === undefined;
+  const edgesAffectGeometry = params.connectorNubs === true || !noRounding;
+  if (params.edges && edgesAffectGeometry) {
     const e = params.preferIdenticalPieces ? canonicalizeEdges(params.edges) : params.edges;
     parts.push(`el:${e.left}`, `er:${e.right}`, `ef:${e.front}`, `eb:${e.back}`);
   }

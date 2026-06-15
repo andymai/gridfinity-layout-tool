@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.separate": "Séparer",
   "baseplate.stackPrint.together": "Ensemble",
   "baseplate.stackPrint.separationSlider": "Séparer la pile d’impression pour l’inspecter",
-  "baseplate.stackPrint.separatorColor": "Couleur du séparateur"
+  "baseplate.stackPrint.separatorColor": "Couleur du séparateur",
+  "baseplate.stackPrint.magnetsDisabled": "Les trous d’aimants sont désactivés lors de l’empilage : les cavités nécessiteraient des ponts en impression à l’envers.",
+  "baseplate.stackPrint.connectorsMagnetsDisabled": "Les connecteurs et les trous d’aimants sont désactivés lors de l’empilage : ils ne s’impriment pas proprement dans une pile verticale."
 }

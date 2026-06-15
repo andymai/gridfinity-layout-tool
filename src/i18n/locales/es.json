@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.separate": "Separar",
   "baseplate.stackPrint.together": "Juntas",
   "baseplate.stackPrint.separationSlider": "Separa la pila de impresión para inspeccionarla",
-  "baseplate.stackPrint.separatorColor": "Color del separador"
+  "baseplate.stackPrint.separatorColor": "Color del separador",
+  "baseplate.stackPrint.magnetsDisabled": "Los orificios para imanes se desactivan al apilar: los huecos requerirían puentes al imprimir boca abajo.",
+  "baseplate.stackPrint.connectorsMagnetsDisabled": "Los conectores y los orificios para imanes se desactivan al apilar: no se imprimen limpiamente en una pila vertical."
 }

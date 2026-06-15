@@ -15,6 +15,7 @@ describe('StackPrintSection', () => {
         stackPrint={undefined}
         groups={groups}
         isSplit={false}
+        hadMagnets={false}
         onChange={vi.fn()}
       />
     );
@@ -29,6 +30,7 @@ describe('StackPrintSection', () => {
         stackPrint={undefined}
         groups={groups}
         isSplit={false}
+        hadMagnets={false}
         onChange={onChange}
       />
     );
@@ -41,7 +43,13 @@ describe('StackPrintSection', () => {
   it('disables stacking (onChange undefined) when toggled off', () => {
     const onChange = vi.fn();
     render(
-      <StackPrintSection stackPrint={enabled} groups={groups} isSplit={false} onChange={onChange} />
+      <StackPrintSection
+        stackPrint={enabled}
+        groups={groups}
+        isSplit={false}
+        hadMagnets={false}
+        onChange={onChange}
+      />
     );
     fireEvent.click(screen.getByRole('switch', { name: /vertical stack/i }));
     expect(onChange).toHaveBeenCalledWith(undefined);
@@ -49,7 +57,13 @@ describe('StackPrintSection', () => {
 
   it('shows the test-a-small-stack hint and a live summary when enabled', () => {
     render(
-      <StackPrintSection stackPrint={enabled} groups={groups} isSplit={false} onChange={vi.fn()} />
+      <StackPrintSection
+        stackPrint={enabled}
+        groups={groups}
+        isSplit={false}
+        hadMagnets={false}
+        onChange={vi.fn()}
+      />
     );
     expect(screen.getByText(/Test a small stack/i)).toBeInTheDocument();
     // 1 group * 3 sets = 3 plates in 1 stack
@@ -62,6 +76,7 @@ describe('StackPrintSection', () => {
         stackPrint={{ ...enabled, mode: 'sacrificialSheet' }}
         groups={groups}
         isSplit={false}
+        hadMagnets={false}
         onChange={vi.fn()}
       />
     );
@@ -69,7 +84,28 @@ describe('StackPrintSection', () => {
   });
 
   it('warns that connectors are disabled when the plate is split', () => {
-    render(<StackPrintSection stackPrint={enabled} groups={groups} isSplit onChange={vi.fn()} />);
+    render(
+      <StackPrintSection
+        stackPrint={enabled}
+        groups={groups}
+        isSplit
+        hadMagnets={false}
+        onChange={vi.fn()}
+      />
+    );
     expect(screen.getByText(/Connectors are turned off/i)).toBeInTheDocument();
+  });
+
+  it('warns that magnet holes are disabled when the plate has magnets', () => {
+    render(
+      <StackPrintSection
+        stackPrint={enabled}
+        groups={groups}
+        isSplit={false}
+        hadMagnets
+        onChange={vi.fn()}
+      />
+    );
+    expect(screen.getByText(/Magnet holes are turned off/i)).toBeInTheDocument();
   });
 });

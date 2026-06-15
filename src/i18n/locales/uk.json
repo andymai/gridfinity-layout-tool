@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.separate": "Розділити",
   "baseplate.stackPrint.together": "Разом",
   "baseplate.stackPrint.separationSlider": "Розділіть стос друку для огляду",
-  "baseplate.stackPrint.separatorColor": "Колір розділювача"
+  "baseplate.stackPrint.separatorColor": "Колір розділювача",
+  "baseplate.stackPrint.magnetsDisabled": "Отвори для магнітів вимкнено під час складання — кишені потребували б містків під час друку догори дном.",
+  "baseplate.stackPrint.connectorsMagnetsDisabled": "З’єднувачі та отвори для магнітів вимкнено під час складання — вони не друкуються чисто у вертикальному стосі."
 }

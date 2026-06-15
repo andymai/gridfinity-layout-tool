@@ -23,9 +23,11 @@ export function buildFullParams(
   const width = synced ? drawerWidth : (stored.baseplateWidth ?? drawerWidth);
   const depth = synced ? drawerDepth : (stored.baseplateDepth ?? drawerDepth);
 
-  // Stack printing strips connectors (their overhangs can't print in a vertical
-  // stack). Done here rather than by mutating stored params, so the user's
-  // connector settings return intact when stacking is turned off.
+  // Stack printing strips connectors AND magnet holes: connectors are
+  // unsupportable overhangs in a vertical stack, and magnet pockets become
+  // downward bridges when printed upside down (audited ~10% bridge area, vs 0%
+  // for a magnet-free plate). Done here rather than by mutating stored params,
+  // so the user's settings return intact when stacking is turned off.
   const stackingOn = stored.stackPrint?.enabled === true;
 
   return {
@@ -33,7 +35,7 @@ export function buildFullParams(
     depth,
     gridUnitMm,
     nozzleSizeMm,
-    magnetHoles: stored.magnetHoles,
+    magnetHoles: stackingOn ? false : stored.magnetHoles,
     magnetDiameter: stored.magnetDiameter,
     magnetDepth: stored.magnetDepth,
     paddingLeft: stored.paddingLeft,
@@ -49,7 +51,10 @@ export function buildFullParams(
     connectorStyle: stackingOn ? undefined : stored.connectorStyle,
     connectorFitOffset: stored.connectorFitOffset,
     lightweight: stored.lightweight,
-    cornerRadius: stored.cornerRadius,
-    cornerRadii: stored.cornerRadii,
+    // Corner rounding only applies to the assembled drawer's outer corners, so
+    // it makes the corner tiles differ from the rest. Stacking wants uniform,
+    // interchangeable tiles, so square them off (also restored when off).
+    cornerRadius: stackingOn ? 0 : stored.cornerRadius,
+    cornerRadii: stackingOn ? undefined : stored.cornerRadii,
   };
 }

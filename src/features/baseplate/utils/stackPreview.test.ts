@@ -55,7 +55,7 @@ describe('buildStackPreviewMeshes', () => {
     expect(out.sheets!.indices.length).toBe(72);
   });
 
-  it('lays multiple towers in a row centered on X', () => {
+  it('lays multiple towers in a centered grid', () => {
     const out = buildStackPreviewMeshes(
       [
         { mesh: plate(), copies: 1 },
@@ -65,9 +65,10 @@ describe('buildStackPreviewMeshes', () => {
       0
     );
     const b = meshBounds(out.plates.vertices);
-    // two 20mm-wide towers + 12mm gap = 52mm, centered -> [-26, 26]
+    // 2 towers -> 2 cols x 1 row. cellW = 20 + 12 = 32; centered cols at ±16,
+    // each 20mm-wide tower spans ±10 -> overall X bounds [-26, 26], width 2*32=64.
     expect(b.minX).toBeCloseTo(-26, 4);
     expect(b.maxX).toBeCloseTo(26, 4);
-    expect(out.widthMm).toBeCloseTo(52, 4);
+    expect(out.widthMm).toBeCloseTo(64, 4);
   });
 });

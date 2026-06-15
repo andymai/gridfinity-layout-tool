@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.separate": "離す",
   "baseplate.stackPrint.together": "密着",
   "baseplate.stackPrint.separationSlider": "印刷スタックを離して確認する",
-  "baseplate.stackPrint.separatorColor": "セパレーターの色"
+  "baseplate.stackPrint.separatorColor": "セパレーターの色",
+  "baseplate.stackPrint.magnetsDisabled": "積み重ね中は磁石穴が無効になります。上下逆さまに印刷するとポケットにブリッジが必要になるためです。",
+  "baseplate.stackPrint.connectorsMagnetsDisabled": "積み重ね中はコネクタと磁石穴が無効になります。垂直スタックではきれいに印刷できないためです。"
 }

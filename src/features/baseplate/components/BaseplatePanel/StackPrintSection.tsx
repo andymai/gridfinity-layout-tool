@@ -31,6 +31,8 @@ interface StackPrintSectionProps {
   readonly groups: readonly StackGroup[];
   /** Whether the plate is split (drives the connector-disabled warning). */
   readonly isSplit: boolean;
+  /** Whether the stored config has magnets on (drives the magnet-disabled warning). */
+  readonly hadMagnets: boolean;
   readonly onChange: (next: StackPrintParams | undefined) => void;
 }
 
@@ -52,6 +54,7 @@ export function StackPrintSection({
   stackPrint,
   groups,
   isSplit,
+  hadMagnets,
   onChange,
 }: StackPrintSectionProps) {
   const t = useTranslation();
@@ -188,9 +191,15 @@ export function StackPrintSection({
                   </div>
                 )}
 
-                {isSplit && (
+                {(isSplit || hadMagnets) && (
                   <div className="rounded bg-warning/10 px-2.5 py-1.5 text-[11px] leading-relaxed text-warning">
-                    {t('baseplate.stackPrint.connectorsDisabled')}
+                    {t(
+                      isSplit && hadMagnets
+                        ? 'baseplate.stackPrint.connectorsMagnetsDisabled'
+                        : hadMagnets
+                          ? 'baseplate.stackPrint.magnetsDisabled'
+                          : 'baseplate.stackPrint.connectorsDisabled'
+                    )}
                   </div>
                 )}
                 {mode === 'sacrificialSheet' && (

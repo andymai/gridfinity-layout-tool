@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.separate": "Trennen",
   "baseplate.stackPrint.together": "Zusammen",
   "baseplate.stackPrint.separationSlider": "Druckstapel zum Prüfen auseinanderziehen",
-  "baseplate.stackPrint.separatorColor": "Trennfarbe"
+  "baseplate.stackPrint.separatorColor": "Trennfarbe",
+  "baseplate.stackPrint.magnetsDisabled": "Magnetlöcher sind beim Stapeln deaktiviert – die Taschen müssten beim Druck über Kopf überbrückt werden.",
+  "baseplate.stackPrint.connectorsMagnetsDisabled": "Verbinder und Magnetlöcher sind beim Stapeln deaktiviert – sie lassen sich in einem vertikalen Stapel nicht sauber drucken."
 }

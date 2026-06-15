@@ -524,33 +524,35 @@ export function BaseplatePanel() {
                 )}
               </>
             )}
-            <FeatureToggle
-              label={t('baseplate.magnetHoles')}
-              checked={baseplateParams.magnetHoles}
-              onChange={() => updateParam('magnetHoles', !baseplateParams.magnetHoles)}
-              valueSummary={`\u00f8${baseplateParams.magnetDiameter}mm \u00d7 ${baseplateParams.magnetDepth}mm`}
-            >
-              <SliderInput
-                label={t('baseplate.magnetDiameter')}
-                value={baseplateParams.magnetDiameter}
-                onChange={(v) => updateParam('magnetDiameter', mm(v))}
-                min={1}
-                max={20}
-                step={0.1}
-                unit="mm"
-                info={t('baseplate.magnetDiameterInfo')}
-              />
-              <SliderInput
-                label={t('baseplate.magnetDepth')}
-                value={baseplateParams.magnetDepth}
-                onChange={(v) => updateParam('magnetDepth', mm(v))}
-                min={0.5}
-                max={10}
-                step={0.1}
-                unit="mm"
-                info={t('baseplate.magnetDepthInfo')}
-              />
-            </FeatureToggle>
+            {!stackEnabled && (
+              <FeatureToggle
+                label={t('baseplate.magnetHoles')}
+                checked={baseplateParams.magnetHoles}
+                onChange={() => updateParam('magnetHoles', !baseplateParams.magnetHoles)}
+                valueSummary={`\u00f8${baseplateParams.magnetDiameter}mm \u00d7 ${baseplateParams.magnetDepth}mm`}
+              >
+                <SliderInput
+                  label={t('baseplate.magnetDiameter')}
+                  value={baseplateParams.magnetDiameter}
+                  onChange={(v) => updateParam('magnetDiameter', mm(v))}
+                  min={1}
+                  max={20}
+                  step={0.1}
+                  unit="mm"
+                  info={t('baseplate.magnetDiameterInfo')}
+                />
+                <SliderInput
+                  label={t('baseplate.magnetDepth')}
+                  value={baseplateParams.magnetDepth}
+                  onChange={(v) => updateParam('magnetDepth', mm(v))}
+                  min={0.5}
+                  max={10}
+                  step={0.1}
+                  unit="mm"
+                  info={t('baseplate.magnetDepthInfo')}
+                />
+              </FeatureToggle>
+            )}
             <CornerRadiusControl
               cornerRadius={baseplateParams.cornerRadius}
               cornerRadii={baseplateParams.cornerRadii}
@@ -582,6 +584,7 @@ export function BaseplatePanel() {
           stackPrint={baseplateParams.stackPrint}
           groups={stackGroups}
           isSplit={tiling?.isSplit ?? false}
+          hadMagnets={baseplateParams.magnetHoles}
           onChange={setStackPrint}
         />
 

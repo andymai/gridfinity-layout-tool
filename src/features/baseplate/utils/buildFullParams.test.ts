@@ -151,39 +151,43 @@ describe('buildFullParams', () => {
     });
   });
 
-  describe('stack-print connector stripping', () => {
-    const withConnectors = {
+  describe('stack-print feature stripping (connectors + magnets)', () => {
+    // storedBase has magnetHoles: true.
+    const withFeatures = {
       ...storedBase,
       connectorNubs: true,
       connectorStyle: 'dovetailKey' as const,
     };
 
-    it('passes connectors through when stacking is off', () => {
-      const result = buildFullParams(withConnectors, 10, 8, 42, 'end', 'end');
+    it('passes connectors and magnets through when stacking is off', () => {
+      const result = buildFullParams(withFeatures, 10, 8, 42, 'end', 'end');
       expect(result.connectorNubs).toBe(true);
       expect(result.connectorStyle).toBe('dovetailKey');
+      expect(result.magnetHoles).toBe(true);
     });
 
-    it('strips connectors when stacking is enabled (without mutating stored)', () => {
+    it('strips connectors and magnets when stacking is enabled (without mutating stored)', () => {
       const stored = {
-        ...withConnectors,
+        ...withFeatures,
         stackPrint: { enabled: true, sets: 2, gapMm: 0.2 as never, mode: 'airGap' as const },
       };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.connectorNubs).toBe(false);
       expect(result.connectorStyle).toBeUndefined();
-      // Stored params are untouched, so connectors return when stacking is off.
+      expect(result.magnetHoles).toBe(false); // magnet pockets bridge when flipped
+      // Stored params are untouched, so the features return when stacking is off.
       expect(stored.connectorNubs).toBe(true);
-      expect(stored.connectorStyle).toBe('dovetailKey');
+      expect(stored.magnetHoles).toBe(true);
     });
 
-    it('keeps connectors when stackPrint exists but is disabled', () => {
+    it('keeps connectors and magnets when stackPrint exists but is disabled', () => {
       const stored = {
-        ...withConnectors,
+        ...withFeatures,
         stackPrint: { enabled: false, sets: 1, gapMm: 0.2 as never, mode: 'airGap' as const },
       };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.connectorNubs).toBe(true);
+      expect(result.magnetHoles).toBe(true);
     });
   });
 });

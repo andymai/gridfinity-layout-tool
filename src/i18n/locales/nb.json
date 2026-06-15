@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.separate": "Skill",
   "baseplate.stackPrint.together": "Samlet",
   "baseplate.stackPrint.separationSlider": "Skill utskriftsstabelen for å inspisere den",
-  "baseplate.stackPrint.separatorColor": "Skillefarge"
+  "baseplate.stackPrint.separatorColor": "Skillefarge",
+  "baseplate.stackPrint.magnetsDisabled": "Magnethull er slått av under stabling – lommene måtte broes når de skrives ut opp ned.",
+  "baseplate.stackPrint.connectorsMagnetsDisabled": "Koblinger og magnethull er slått av under stabling – de skrives ikke rent ut i en vertikal stabel."
 }

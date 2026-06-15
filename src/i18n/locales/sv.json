@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.separate": "Separera",
   "baseplate.stackPrint.together": "Ihop",
   "baseplate.stackPrint.separationSlider": "Separera utskriftsstapeln för att inspektera den",
-  "baseplate.stackPrint.separatorColor": "Separatorfärg"
+  "baseplate.stackPrint.separatorColor": "Separatorfärg",
+  "baseplate.stackPrint.magnetsDisabled": "Magnethål är avstängda vid stapling – fickorna skulle behöva bryggas vid utskrift upp och ner.",
+  "baseplate.stackPrint.connectorsMagnetsDisabled": "Kopplingar och magnethål är avstängda vid stapling – de skrivs inte ut rent i en vertikal stapel."
 }

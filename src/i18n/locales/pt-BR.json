@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.separate": "Separar",
   "baseplate.stackPrint.together": "Juntas",
   "baseplate.stackPrint.separationSlider": "Separe a pilha de impressão para inspecioná-la",
-  "baseplate.stackPrint.separatorColor": "Cor do separador"
+  "baseplate.stackPrint.separatorColor": "Cor do separador",
+  "baseplate.stackPrint.magnetsDisabled": "Os furos para ímãs são desativados ao empilhar: as cavidades precisariam de pontes ao imprimir de cabeça para baixo.",
+  "baseplate.stackPrint.connectorsMagnetsDisabled": "Os conectores e os furos para ímãs são desativados ao empilhar: não imprimem de forma limpa em uma pilha vertical."
 }
