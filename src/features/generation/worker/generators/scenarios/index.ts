@@ -35,6 +35,7 @@ import { permutationMatrix } from './permutationMatrix';
 import { regressions } from './regressions';
 import { solidCutoutMatrix } from './solidCutoutMatrix';
 import { pathfinderOps } from './pathfinderOps';
+import { lightweight } from './lightweight';
 
 export type { ScenarioCase } from '../__kernel-tests__/scenarioTypes';
 
@@ -71,4 +72,5 @@ export const ALL_SCENARIOS: readonly ScenarioCase[] = [
   ...regressions,
   ...solidCutoutMatrix,
   ...pathfinderOps,
+  ...lightweight,
 ];

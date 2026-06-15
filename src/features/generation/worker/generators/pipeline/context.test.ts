@@ -51,16 +51,16 @@ describe('createInitialContext', () => {
     expect(ctx.dimensions.wallHeight).toBe(21); // No socket deduction for flat
   });
 
-  it('produces versioned shellKey with v6 prefix including gridUnitMm and compartments segment', () => {
+  it('produces versioned shellKey with v7 prefix including lightweight + scoop segments', () => {
     const ctx = createInitialContext(createTestParams());
 
-    // shellKey uses buildCacheKey with v6 prefix, gridUnitMm, quantized floats,
-    // a 'rect' mask segment (no cellMask), a 'none' compartments segment
-    // (single-compartment default — no multi-cavity cut path), and a trailing
-    // overhang segment ('0' when there's no overhang). v6 bumped from v5 when
-    // the compartments segment was added (#1753).
+    // shellKey uses buildCacheKey with v7 prefix, gridUnitMm, quantized floats,
+    // a `lightweight` flag, a 'rect' mask segment (no cellMask), a 'none'
+    // compartments segment, a 'none' lite-scoop segment, and a trailing overhang
+    // segment ('0' when there's no overhang). v7 bumped from v6 when lightweight
+    // (and its scoop-dependent floor openings) were added.
     const expected = [
-      'v6',
+      'v7',
       2,
       2,
       42, // gridUnitMm
@@ -73,10 +73,12 @@ describe('createInitialContext', () => {
       3,
       16,
       1.2,
-      false,
-      false,
+      false, // stackingLip
+      false, // solid
+      false, // lightweight
       'rect',
-      'none',
+      'none', // compartments segment
+      'none', // lite-scoop segment
       '0', // overhang segment (no overhang)
     ].join('|');
 
