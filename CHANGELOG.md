@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.171.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.171.1...gridfinity-layout-tool-v4.171.2) (2026-06-15)
+
+
+### Bug Fixes
+
+* **baseplate:** fix stack preview dark background + letterboxing ([#2154](https://github.com/andymai/gridfinity-layout-tool/issues/2154)) ([36515e8](https://github.com/andymai/gridfinity-layout-tool/commit/36515e819bf19e81b7860b8d889d2aae5678dd43))
+
 ## [4.171.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.171.0...gridfinity-layout-tool-v4.171.1) (2026-06-15)
 
 
