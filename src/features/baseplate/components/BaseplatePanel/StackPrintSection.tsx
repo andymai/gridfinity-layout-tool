@@ -72,10 +72,6 @@ export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSe
         onChange={() => onChange(enabled ? undefined : DEFAULT_STACK_PRINT)}
         primaryControls={
           <>
-            <p className="text-[11px] leading-relaxed text-content-tertiary">
-              {t('baseplate.stackPrint.hint')}
-            </p>
-
             <SettingsRow
               label={t('baseplate.stackPrint.gap.label')}
               tooltip={t('baseplate.stackPrint.gap.info')}
@@ -94,15 +90,20 @@ export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSe
               />
             </SettingsRow>
 
-            <div className="rounded bg-warning/10 px-2.5 py-1.5 text-[11px] leading-relaxed text-warning">
-              {t('baseplate.stackPrint.featuresOff')}
-            </div>
-            <div className="rounded bg-info/10 px-2.5 py-1.5 text-[11px] leading-relaxed text-info">
-              {t('baseplate.stackPrint.separationTip')}
-            </div>
-
             <p className="text-[11px] text-content-tertiary">
               {t('baseplate.stackPrint.summary', { stacks: plan.length, plates: totalCopies })}
+            </p>
+
+            <p className="text-[11px] leading-relaxed text-content-tertiary">
+              {t('baseplate.stackPrint.hint')}
+            </p>
+
+            <p className="text-[11px] leading-relaxed text-warning/90">
+              {t('baseplate.stackPrint.featuresOff')}
+            </p>
+
+            <p className="text-[11px] leading-relaxed text-content-tertiary">
+              {t('baseplate.stackPrint.separationTip')}
             </p>
           </>
         }

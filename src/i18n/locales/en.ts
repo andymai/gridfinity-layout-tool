@@ -2104,8 +2104,7 @@ const en: Record<string, string> = {
     'Sized for a {nozzle}mm nozzle — dovetail keys and snap clips are enlarged to stay printable.',
   'baseplate.stackPrint.badge': 'Experimental',
   'baseplate.stackPrint.enable': 'Vertical stack',
-  'baseplate.stackPrint.hint':
-    'The bottom plate prints right-side up and the rest upside down, separated by a thin air gap so the tower snaps apart. Test a small stack (2–3 plates) first to dial in the gap.',
+  'baseplate.stackPrint.hint': 'Test a small stack (2–3 plates) first to dial in the gap.',
   'baseplate.stackPrint.summary': '{stacks} stacks · {plates} plates',
   'baseplate.stackPrint.exportBanner':
     'Stack printing: {stacks} stacks ({plates} plates) export as a ZIP with a print guide.',
@@ -2113,9 +2112,9 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.gap.info':
     'Air gap between stacked plates. About 0.2mm (one layer) is typical; increase it if plates fuse together.',
   'baseplate.stackPrint.separationTip':
-    'For easier separation, enable your slicer’s support interface in a non-stick second filament (PETG, or “Support for PLA”) to fill the gap.',
+    'For easy separation, fill the gap with a slicer support interface in PETG or “Support for PLA”.',
   'baseplate.stackPrint.featuresOff':
-    'Connectors, magnet holes, and corner rounding are turned off while stacking, so every tile is identical and prints support-free.',
+    'Connectors, magnet holes, and corner rounding are turned off while stacking.',
   'baseplate.stackPrint.separate': 'Separate',
   'baseplate.stackPrint.together': 'Together',
   'baseplate.stackPrint.separationSlider': 'Separate the print stack to inspect it',
