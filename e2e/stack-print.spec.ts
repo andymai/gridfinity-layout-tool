@@ -1,8 +1,8 @@
 /**
  * E2E coverage for the "Stack for printing" baseplate feature — exercises the
- * real panel/preview/export flows that unit tests can't: split-dependent
- * stacking, the build-height cap, feature stripping + restore, separator-sheet
- * mode, the preview slider, and export-format gating.
+ * real panel/preview flows that unit tests can't: split-dependent stacking,
+ * dedup, the build-height cap, feature stripping + restore, and the preview
+ * separation slider.
  */
 import type { Page } from '@playwright/test';
 import { test, expect } from './fixtures';
@@ -37,7 +37,7 @@ function stackSwitch(page: Page) {
 async function summaryText(page: Page): Promise<string> {
   return (
     (await page
-      .getByText(/\d+ stacks · \d+ plates/i)
+      .getByText(/\d+ stacks? · \d+ plates?/i)
       .first()
       .textContent()) ?? ''
   );
@@ -52,7 +52,7 @@ test.beforeEach(async ({ page }) => {
 test('a single unsplit plate has nothing to stack', async ({ page }) => {
   await setDimensions(page, 2); // 84mm, fits any bed → unsplit, one plate
   await stackSwitch(page).click();
-  await expect(page.getByText(/1 stacks · 1 plates/i)).toBeVisible();
+  await expect(page.getByText(/1 stack · 1 plate/i)).toBeVisible();
 });
 
 test('an evenly-tiled drawer dedupes into few tall stacks', async ({ page }) => {
@@ -61,7 +61,7 @@ test('an evenly-tiled drawer dedupes into few tall stacks', async ({ page }) => 
   await page.waitForTimeout(800);
   await stackSwitch(page).click();
   // Default 250mm build height fits all 16 in one tower.
-  await expect(page.getByText(/1 stacks · 16 plates/i)).toBeVisible();
+  await expect(page.getByText(/1 stack · 16 plates/i)).toBeVisible();
 });
 
 test('an unevenly-tiled drawer does not fully consolidate', async ({ page }) => {
@@ -81,7 +81,7 @@ test('build height drives the per-stack cap', async ({ page }) => {
   await setBed(page, 180);
   await page.waitForTimeout(800);
   await stackSwitch(page).click();
-  await expect(page.getByText(/1 stacks · 16 plates/i)).toBeVisible();
+  await expect(page.getByText(/1 stack · 16 plates/i)).toBeVisible();
 
   await setBuildHeight(page, 50); // ~9 tiles fit → 16 splits into 2 stacks
   await expect(page.getByText(/2 stacks · 16 plates/i)).toBeVisible();

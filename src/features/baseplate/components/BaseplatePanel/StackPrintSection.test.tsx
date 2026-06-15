@@ -32,8 +32,8 @@ describe('StackPrintSection', () => {
 
   it('shows a live stack summary when enabled', () => {
     render(<StackPrintSection stackPrint={enabled} groups={groups} onChange={vi.fn()} />);
-    // 1 group of quantity 1 → 1 plate in 1 stack
-    expect(screen.getByText(/1 stacks · 1 plates/i)).toBeInTheDocument();
+    // 1 group of quantity 1 → 1 plate in 1 stack (singular)
+    expect(screen.getByText(/1 stack · 1 plate/i)).toBeInTheDocument();
   });
 
   it('shows the features-off notice (connectors, magnets, rounding) when enabled', () => {

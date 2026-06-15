@@ -91,7 +91,19 @@ export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSe
             </SettingsRow>
 
             <p className="text-[11px] text-content-tertiary">
-              {t('baseplate.stackPrint.summary', { stacks: plan.length, plates: totalCopies })}
+              {t(
+                plan.length === 1
+                  ? 'baseplate.stackPrint.stacks.one'
+                  : 'baseplate.stackPrint.stacks.other',
+                { count: plan.length }
+              )}
+              {' · '}
+              {t(
+                totalCopies === 1
+                  ? 'baseplate.stackPrint.plates.one'
+                  : 'baseplate.stackPrint.plates.other',
+                { count: totalCopies }
+              )}
             </p>
 
             <p className="text-[11px] leading-relaxed text-content-tertiary">

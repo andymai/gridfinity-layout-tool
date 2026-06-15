@@ -2104,7 +2104,10 @@ const en: Record<string, string> = {
     'Sized for a {nozzle}mm nozzle — dovetail keys and snap clips are enlarged to stay printable.',
   'baseplate.stackPrint.badge': 'Experimental',
   'baseplate.stackPrint.enable': 'Vertical stack',
-  'baseplate.stackPrint.summary': '{stacks} stacks · {plates} plates',
+  'baseplate.stackPrint.stacks.one': '{count} stack',
+  'baseplate.stackPrint.stacks.other': '{count} stacks',
+  'baseplate.stackPrint.plates.one': '{count} plate',
+  'baseplate.stackPrint.plates.other': '{count} plates',
   'baseplate.stackPrint.exportBanner':
     'Stack printing: {stacks} stacks ({plates} plates) export as a ZIP with a print guide.',
   'baseplate.stackPrint.gap.label': 'Gap',
