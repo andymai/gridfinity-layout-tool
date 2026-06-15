@@ -106,9 +106,6 @@ function buildCellPads(
  *   region so a foot crossed by a divider keeps a solid core under the divider —
  *   the divider then rests on solid material instead of bridging the cup recess.
  *   Pass the union of compartment cavities; omit for single-compartment bins.
- * @param keepSolidDrawings Optional footprints (same frame) that must stay SOLID
- *   even though they sit inside the open cavity — scoop-ramp bands. Subtracted
- *   from the hollow region so the ramp rests on solid feet.
  */
 export function buildLightweightBase(
   gridW: number,
@@ -124,8 +121,7 @@ export function buildLightweightBase(
   halfSockets = false,
   gridUnitMm: number = SIZE,
   cellMask?: CellMask,
-  openFloorDrawings?: readonly Drawing[],
-  keepSolidDrawings?: readonly Drawing[]
+  openFloorDrawings?: readonly Drawing[]
 ): LightweightBase {
   const usingMask = isPartialMask(cellMask);
   const cellInMask = (
@@ -170,20 +166,13 @@ export function buildLightweightBase(
       }
     };
 
-    // cavityClip = where feet MAY hollow (open compartment floor). keepSolidClip
-    // = sub-regions that must stay solid even inside the cavity (scoop bands).
-    // The void/opening is intersected with the former and cut by the latter, so
-    // a divider OR a scoop ramp always rests on a solid foot core (no bridge).
+    // cavityClip = where feet MAY hollow (open compartment floor). The void and
+    // floor opening are intersected with it so a foot crossed by a divider keeps
+    // a solid core under the divider (no bridge over the recess).
     const cavityClip = buildClipPrism(openFloorDrawings);
-    const keepSolidClip = cavityClip ? buildClipPrism(keepSolidDrawings) : null;
     const clipRegion = (solidShape: Shape3D): Shape3D => {
-      let r = unwrap(intersect(solidShape, scope.register(unwrap(clone(cavityClip as Shape3D)))));
+      const r = unwrap(intersect(solidShape, scope.register(unwrap(clone(cavityClip as Shape3D)))));
       if (solidShape !== r) solidShape.delete();
-      if (keepSolidClip) {
-        const cutKept = unwrap(cut(r, scope.register(unwrap(clone(keepSolidClip)))));
-        if (cutKept !== r) r.delete();
-        r = cutKept;
-      }
       return r;
     };
 

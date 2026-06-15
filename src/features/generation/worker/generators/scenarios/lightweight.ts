@@ -93,12 +93,6 @@ export const lightweight: ScenarioCase[] = [
       compartments: { cols: 2, rows: 2, thickness: 1.2, cells: [0, 1, 2, 3] },
     },
   }),
-  // Scoop keep-solid clip: feet under the ramp stay solid.
-  defineScenario('lightweight', '2×1 lite + scoop', {
-    assert: 'structural',
-    forExport: true,
-    params: { width: 2, depth: 1, base: lite, scoop: { enabled: true, radius: 'auto' } },
-  }),
 
   // It actually did something: lite differs from the solid-floor standard bin.
   defineScenario('lightweight', '2×2 lite differs from standard', {

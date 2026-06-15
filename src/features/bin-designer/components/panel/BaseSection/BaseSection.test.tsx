@@ -17,7 +17,8 @@ describe('BaseSection', () => {
     expect(screen.getByText('Magnet holes')).toBeInTheDocument();
     expect(screen.getByText('Screw holes')).toBeInTheDocument();
     expect(screen.getByText('Stacking lip')).toBeInTheDocument();
-    expect(screen.getByText('Flat floor (no socket)')).toBeInTheDocument();
+    expect(screen.getByText('Flat base (no socket)')).toBeInTheDocument();
+    expect(screen.getByText('Lightweight floor')).toBeInTheDocument();
   });
 
   it('disables magnet and screw toggles when flat floor is active', () => {

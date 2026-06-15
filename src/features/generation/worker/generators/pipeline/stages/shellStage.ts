@@ -13,7 +13,7 @@
  */
 
 import { unwrap, fuse, cut, translate, withScope, getKernelCapabilities } from 'brepjs';
-import type { DisposalScope, Shape3D, ValidSolid, Drawing } from 'brepjs';
+import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket, buildOverhangFeet } from '../../socketBuilder';
@@ -30,7 +30,6 @@ import {
   hasMultipleCompartments,
 } from '../../compartmentBuilder';
 import { isPartialMask } from '@/shared/utils/cellMask';
-import { buildScoopFloorFootprints } from '../../scoopRampBuilder';
 import { getShellCache, setShellCache } from '../../shapeCache';
 import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
@@ -55,31 +54,22 @@ export const shellStage: PipelineStage = {
     let liteBase: LightweightBase | null = null;
     let floorOpenings: Shape3D | null = null;
     if (dim.lightweight && !dim.isFlat) {
-      // Open-cavity floor for clipping cup recesses away from anything that rests
-      // on the floor — divider walls AND scoop ramps — so those features keep a
-      // solid foot core beneath them (no bridge over the recess). Only for hollow
-      // bins with rectangular compartments; tilted/polygon layouts fall back to
-      // no clip (best-effort). The scoop band is subtracted from each cavity.
-      const liteCanClip =
-        !dim.solid && compartmentsAreRectangular(params) && !isPartialMask(params.cellMask);
-      const scoopFootprints = liteCanClip
-        ? buildScoopFloorFootprints(
-            params,
-            dim.innerW,
-            dim.innerD,
-            dim.wallHeight,
-            params.wallThickness
-          )
-        : [];
-      const offset = (d: Drawing): Drawing =>
-        dim.innerOffsetX !== 0 || dim.innerOffsetY !== 0
-          ? d.translate(dim.innerOffsetX, dim.innerOffsetY)
-          : d;
+      // Open-cavity floor for clipping cup recesses away from divider walls, so a
+      // divider crossing a cup keeps a solid foot core beneath it (no bridge over
+      // the recess). Only for hollow bins with rectangular compartments; tilted/
+      // polygon layouts fall back to no clip (best-effort). (Scoops are mutually
+      // exclusive with lightweight, so no scoop band to preserve here.)
       const openFloorDrawings =
-        liteCanClip && (hasMultipleCompartments(params) || scoopFootprints.length > 0)
-          ? buildCompartmentCavityDrawings(params, dim.innerW, dim.innerD).map(offset)
+        !dim.solid &&
+        hasMultipleCompartments(params) &&
+        compartmentsAreRectangular(params) &&
+        !isPartialMask(params.cellMask)
+          ? buildCompartmentCavityDrawings(params, dim.innerW, dim.innerD).map((d) =>
+              dim.innerOffsetX !== 0 || dim.innerOffsetY !== 0
+                ? d.translate(dim.innerOffsetX, dim.innerOffsetY)
+                : d
+            )
           : undefined;
-      const keepSolidDrawings = openFloorDrawings ? scoopFootprints.map(offset) : undefined;
       liteBase = buildLightweightBase(
         params.width,
         params.depth,
@@ -94,8 +84,7 @@ export const shellStage: PipelineStage = {
         dim.halfSockets,
         params.gridUnitMm,
         params.cellMask,
-        openFloorDrawings,
-        keepSolidDrawings
+        openFloorDrawings
       );
       floorOpenings = liteBase.floorOpenings;
     }

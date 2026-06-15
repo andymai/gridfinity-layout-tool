@@ -7,7 +7,6 @@
 
 import {
   draw,
-  drawRectangle,
   drawRoundedRectangle,
   translate,
   withScope,
@@ -16,7 +15,7 @@ import {
   fuseAll,
   intersect,
 } from 'brepjs';
-import type { Shape3D, ValidSolid, DisposalScope, Drawing } from 'brepjs';
+import type { Shape3D, ValidSolid, DisposalScope } from 'brepjs';
 import type { BinParams } from '@/shared/types/bin';
 import { sketch } from './meshUtils';
 import {
@@ -212,77 +211,6 @@ function buildScoopRampsInScope(
   return fused;
 }
 
-/**
- * Footprint rectangles (inner-cavity coords, centered on origin) covering the
- * floor each scoop ramp sits on: per compartment, a front band of width `compW`
- * and depth `lipOffset + radius` plus a small margin. The lightweight base
- * subtracts these from its open-floor clip region so the feet under a scoop stay
- * solid — otherwise the ramp underside would bridge the hollow cup recesses.
- *
- * Mirrors the placement math in {@link buildScoopRampsInScope}; returns [] when
- * no scoop is present (disabled, non-standard style, or every radius resolves 0).
- */
-export function buildScoopFloorFootprints(
-  params: BinParams,
-  innerW: number,
-  innerD: number,
-  wallHeight: number,
-  wallThickness: number
-): Drawing[] {
-  if (!params.scoop.enabled || params.style !== 'standard') return [];
-
-  const hasLip = params.base.stackingLip;
-  const interiorHeight = computeInteriorHeight(wallHeight, hasLip, LIP_SMALL_TAPER);
-  const { cols, rows, cells } = params.compartments;
-  const cellW = innerW / cols;
-  const cellD = innerD / rows;
-  // Oversize the kept-solid band past the ramp footprint on every side: keeps a
-  // recess edge from landing exactly under the ramp lip, and (critical) pushes
-  // the rect's edges off the compartment-cavity edges so the downstream boolean
-  // never sees coincident faces (POINT_NOT_ON_CURVE on a 2D cut).
-  const MARGIN = wallThickness;
-
-  const processed = new Set<number>();
-  const rects: Drawing[] = [];
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const compId = cells[row * cols + col];
-      if (processed.has(compId)) continue;
-      processed.add(compId);
-      if (compartmentHasTiltedEdge(params.compartments, compId)) continue;
-      const bounds = findCompartmentBounds(compId, cols, rows, cells);
-      if (!bounds) continue;
-      const { minCol, maxCol, minRow, maxRow } = bounds;
-      const compCols = maxCol - minCol + 1;
-      const compRows = maxRow - minRow + 1;
-      const compW = compCols * cellW;
-      const compD = compRows * cellD;
-      const isMinRow = minRow === 0;
-      const lipOffset = computeLipOffset(hasLip, isMinRow, LIP_TAPER_WIDTH, wallThickness);
-      const radius = resolveScoopRadius(
-        params.scoop.radius,
-        compW,
-        compD,
-        isMinRow,
-        hasLip,
-        wallHeight,
-        interiorHeight,
-        lipOffset
-      );
-      if (radius === 0) continue;
-      // Band from (frontEdgeY − MARGIN) to (frontEdgeY + lipOffset + radius +
-      // MARGIN); width oversized by MARGIN each side so edges clear the cavity.
-      const depth = lipOffset + radius + 2 * MARGIN;
-      const width = compW + 2 * MARGIN;
-      const compCenterX = -innerW / 2 + (minCol + compCols / 2) * cellW;
-      const frontEdgeY = -innerD / 2 + minRow * cellD;
-      const centerY = frontEdgeY + (lipOffset + radius) / 2;
-      rects.push(drawRectangle(width, depth).translate(compCenterX, centerY));
-    }
-  }
-  return rects;
-}
-
 // --- FeatureBuilder protocol ---
 
 import type { FeatureBuilder } from './pipeline/featureBuilder';
@@ -293,7 +221,10 @@ export const scoopRampsFeature: FeatureBuilder = {
   name: 'scoopRamps',
   tag: FeatureTag.SCOOP,
   target: 'fuse',
-  shouldBuild: (ctx) => !ctx.dimensions.isSlotted,
+  // Lightweight floors have no solid material for a ramp to rest on (it would
+  // bridge the cup recesses), so the scoop is mutually exclusive with lightweight
+  // in the UI; suppress it here too for any legacy design carrying both.
+  shouldBuild: (ctx) => !ctx.dimensions.isSlotted && !ctx.dimensions.lightweight,
   cacheKey: (ctx) => {
     const { dimensions: dim, params } = ctx;
     return compactKey(

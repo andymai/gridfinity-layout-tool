@@ -25,7 +25,7 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
 
   'base.lightweight': {
     key: 'base.lightweight',
-    label: 'Lightweight Base',
+    label: 'Lightweight Floor',
     isEnabled: (p) => p.base.lightweight,
     apply: (p, enabled) => ({ base: { ...p.base, lightweight: enabled } }),
   },

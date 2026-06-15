@@ -98,16 +98,6 @@ describe('lightweight floor overhang probe (dividers)', () => {
           compartments: { cols: 1, rows: 1, thickness: 1.2, cells: [0] },
         }),
       },
-      // Scoop ramp rises from the floor at the compartment front — audit whether
-      // it bridges over a cup recess on the lite floor.
-      {
-        name: 'solid floor, scoop',
-        params: make({ width: 2, depth: 1, base: solid, scoop: { enabled: true, radius: 'auto' } }),
-      },
-      {
-        name: 'LITE floor, scoop',
-        params: make({ width: 2, depth: 1, base: lite, scoop: { enabled: true, radius: 'auto' } }),
-      },
     ];
     const rows: string[] = [];
     const support: Record<string, number> = {};
@@ -146,8 +136,5 @@ describe('lightweight floor overhang probe (dividers)', () => {
     expect(support['LITE floor, no dividers']).toBeLessThan(
       support['solid floor, mid-cell dividers'] + MARGIN
     );
-    // Scoop ramps must rest on solid feet too (keep-solid clip). Without it the
-    // ramp underside bridged the recesses: 52 → ~943mm².
-    expect(support['LITE floor, scoop']).toBeLessThan(support['solid floor, scoop'] + MARGIN);
   }, 120000);
 });

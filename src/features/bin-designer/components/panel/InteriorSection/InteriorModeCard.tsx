@@ -49,7 +49,24 @@ const MODE_CONFIG: Record<BinStyle, ModeConfig> = {
 
 function SolidModeContent() {
   const setCutoutEditorOpen = useDesignerStore((s) => s.setCutoutEditorOpen);
+  const lightweight = useDesignerStore((s) => s.params.base.lightweight);
   const t = useTranslation();
+
+  // Cutouts cut into the solid top, which is incompatible with a lightweight
+  // floor (mutually exclusive in the constraint engine) — disable the editor
+  // entry with a reason instead of opening it.
+  if (lightweight) {
+    return (
+      <div className="w-full rounded-lg border border-stroke-subtle bg-surface/40 p-3 text-left opacity-70">
+        <span className="text-xs font-semibold text-content-secondary">
+          {t('binDesigner.editCutouts')}
+        </span>
+        <p className="mt-0.5 text-[10px] leading-relaxed text-content-tertiary">
+          {t('binDesigner.lightweightDisablesCutouts')}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <button

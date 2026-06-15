@@ -103,6 +103,20 @@ describe('useBaseSection', () => {
     expect(base.style).toBe('magnet');
   });
 
+  it('lightweight is greyed out with a reason when a scoop is present', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, scoop: { enabled: true, radius: 'auto' } },
+    });
+    const { result } = renderHook(() => useBaseSection());
+    expect(result.current.handlers.lightweightDisabledReason).toBeTruthy();
+
+    act(() => {
+      result.current.handlers.toggleLightweight();
+    });
+    // Blocked: scoop must be cleared first.
+    expect(useDesignerStore.getState().params.base.lightweight).toBe(false);
+  });
+
   it('enabling flat clears lightweight (mutually exclusive — flat has no socket)', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true } },

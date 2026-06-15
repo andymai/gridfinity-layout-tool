@@ -131,11 +131,6 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // only in dividers must not share a cached body.
   const compartmentsKey =
     compartmentsBakedIntoShell || lightweight ? buildCompartmentsCacheKey(params) : 'none';
-  // Lightweight floor openings are also clipped around scoop ramps, so the
-  // cached body depends on the scoop for lite bins (it doesn't otherwise — the
-  // scoop is a separate fuse feature with its own cache key).
-  const liteScoopKey =
-    lightweight && params.scoop.enabled ? `scoop:${String(params.scoop.radius)}` : 'none';
 
   const shellKey = compactKey(
     buildCacheKey(
@@ -157,7 +152,6 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
       lightweight,
       maskKeySegment,
       compartmentsKey,
-      liteScoopKey,
       overhangKey(overhang)
     )
   );
