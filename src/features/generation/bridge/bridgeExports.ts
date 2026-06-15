@@ -13,6 +13,7 @@ import type { WorkerMessage, ExportFormat } from './types';
 import {
   computeBaseplateExportTimeoutMs,
   computeExportTimeoutMs,
+  computeGenerationTimeoutMs,
   EXPORT_MAX_TIMEOUT_MS,
 } from './generationTimeout';
 import type {
@@ -169,7 +170,10 @@ export function generateSplitPreview(
   return runExport<SplitPreviewResult>(
     ctx,
     'splitPreview',
-    computeExportTimeoutMs(params),
+    // Interactive preview (re-runs as the user drags cut planes), not a
+    // user-committed export — keep the 3-minute preview clamp so a wedged
+    // worker is cancelled promptly rather than after the 15-minute export cap.
+    computeGenerationTimeoutMs(params),
     (requestId) => ({
       type: 'GENERATE_SPLIT_PREVIEW',
       payload: {
@@ -194,7 +198,8 @@ export function generateSplitPreviewRange(
   return runExport<SplitPreviewResult>(
     ctx,
     'splitPreview',
-    computeExportTimeoutMs(params),
+    // Interactive preview (see generateSplitPreview) — preview clamp, not export.
+    computeGenerationTimeoutMs(params),
     (requestId) => ({
       type: 'GENERATE_SPLIT_PREVIEW_RANGE',
       payload: {

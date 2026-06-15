@@ -191,20 +191,15 @@ export const BASEPLATE_LIGHTWEIGHT_BONUS_MS = 5_000;
 export const BASEPLATE_MAX_TIMEOUT_MS = 180_000;
 
 /**
- * Compute the timeout budget for a baseplate generation, in milliseconds.
+ * Uncapped complexity budget for a baseplate, in milliseconds — the raw sum of
+ * the base budget plus every applicable bonus, before any ceiling is applied.
+ * Shared by the preview and export budgets (see {@link binRawBudgetMs}).
  *
  * Formula:
  *   BASE_TIMEOUT_MS
  * + min(BASEPLATE_MAGNET_BONUS_CAP_MS, ceil(w) * ceil(d) * BASEPLATE_MAGNET_MS_PER_CELL)  [if magnetHoles]
  * + BASEPLATE_CONNECTOR_BONUS_MS  [if connectorNubs]
  * + BASEPLATE_LIGHTWEIGHT_BONUS_MS  [if lightweight]
- *
- * Clamped to `[BASE_TIMEOUT_MS, BASEPLATE_MAX_TIMEOUT_MS]`.
- */
-/**
- * Uncapped complexity budget for a baseplate, in milliseconds — the raw sum of
- * the base budget plus every applicable bonus, before any ceiling is applied.
- * Shared by the preview and export budgets (see {@link binRawBudgetMs}).
  */
 function baseplateRawBudgetMs(params: BaseplateParams): number {
   // Defensive against transient bad inputs — mid-edit UI state can briefly
