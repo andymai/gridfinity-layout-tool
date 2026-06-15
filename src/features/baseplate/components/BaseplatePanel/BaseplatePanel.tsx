@@ -64,11 +64,11 @@ function snapConnectorFitOffset(value: number): number {
   return Math.round(clamped * 100) / 100;
 }
 
-/** Signed mm label for the connector fit offset, e.g. "+0.05 mm", "0 mm". */
+/** Signed label for the connector fit offset, e.g. "+0.05", "0". The "mm" unit is rendered outside the stepper. */
 function formatConnectorFitOffset(value: number): string {
-  if (value === 0) return '0 mm';
+  if (value === 0) return '0';
   const sign = value > 0 ? '+' : '−'; // U+2212 minus for typographic consistency
-  return `${sign}${Math.abs(value)} mm`;
+  return `${sign}${Math.abs(value)}`;
 }
 
 export function BaseplatePanel() {
@@ -416,25 +416,6 @@ export function BaseplatePanel() {
                 </div>
               )}
             </div>
-
-            {/* Nozzle size — scales connector/lock features so they stay printable. */}
-            <div className="border-t border-stroke-subtle pt-3">
-              <SettingsRow
-                label={t('settings.nozzleSize')}
-                tooltip={t('baseplate.nozzleSizeTooltip')}
-                unit="mm"
-              >
-                <DeferredNumberInput
-                  value={nozzleSizeMm}
-                  onChange={handleNozzleChange}
-                  min={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN}
-                  max={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX}
-                  step={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP}
-                  className="input w-14 py-0.5 px-1 text-xs text-right"
-                  aria-label={t('settings.nozzleSize')}
-                />
-              </SettingsRow>
-            </div>
           </div>
         </StickyGroupHeader>
 
@@ -494,6 +475,7 @@ export function BaseplatePanel() {
                       <SettingsRow
                         label={t('baseplate.connectorFit.label')}
                         tooltip={t('baseplate.connectorFit.info')}
+                        unit="mm"
                       >
                         <Stepper
                           size="sm"
@@ -532,6 +514,21 @@ export function BaseplatePanel() {
                         }
                         label={t('baseplate.preferIdenticalPieces')}
                       />
+                      <SettingsRow
+                        label={t('settings.nozzleSize')}
+                        tooltip={t('baseplate.nozzleSizeTooltip')}
+                        unit="mm"
+                      >
+                        <DeferredNumberInput
+                          value={nozzleSizeMm}
+                          onChange={handleNozzleChange}
+                          min={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MIN}
+                          max={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_MAX}
+                          step={PRINT_SETTINGS_CONSTRAINTS.NOZZLE_SIZE_STEP}
+                          className="input w-14 py-0.5 px-1 text-xs text-right"
+                          aria-label={t('settings.nozzleSize')}
+                        />
+                      </SettingsRow>
                       <ConnectorSampleButton />
                       {nozzleSizeMm > NOZZLE_BASELINE && (
                         <p className="text-[11px] leading-relaxed text-content-tertiary">
