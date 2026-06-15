@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.174.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.173.1...gridfinity-layout-tool-v4.174.0) (2026-06-15)
+
+
+### Features
+
+* **baseplate:** refine generator panel, connectors, and stack/fit-sample exports ([#2169](https://github.com/andymai/gridfinity-layout-tool/issues/2169)) ([a58015c](https://github.com/andymai/gridfinity-layout-tool/commit/a58015caa398e6c5fc686f4c4adb091121570e1f))
+
 ## [4.173.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.173.0...gridfinity-layout-tool-v4.173.1) (2026-06-15)
 
 
