@@ -115,4 +115,42 @@ describe('useSplitOptionsSection', () => {
     const { result } = renderHook(() => useSplitOptionsSection());
     expect(result.current.splitAxis).toBe('both');
   });
+
+  it('marks the alignment connector unavailable on lightweight bins', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 8,
+        base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true },
+      },
+    });
+    const { result } = renderHook(() => useSplitOptionsSection());
+    expect(result.current.alignmentUnavailable).toBe(true);
+  });
+
+  it('toggleEnabled is a no-op when lightweight (floor scarf has no solid floor)', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        width: 8,
+        splitConnectors: { ...DEFAULT_SPLIT_CONNECTOR_CONFIG, enabled: false },
+        base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true },
+      },
+    });
+    const { result } = renderHook(() => useSplitOptionsSection());
+
+    act(() => {
+      result.current.handlers.toggleEnabled();
+    });
+
+    expect(useDesignerStore.getState().params.splitConnectors?.enabled).toBe(false);
+  });
+
+  it('keeps the alignment connector available on a non-flat lightweight=false bin', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, width: 8 },
+    });
+    const { result } = renderHook(() => useSplitOptionsSection());
+    expect(result.current.alignmentUnavailable).toBe(false);
+  });
 });

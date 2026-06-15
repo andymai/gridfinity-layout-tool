@@ -1661,6 +1661,8 @@ const en: Record<string, string> = {
   'binDesigner.splitAxisDepth': 'depth',
   'binDesigner.splitAxisBoth': 'width × depth',
   'binDesigner.splitConnectors': 'Alignment connectors',
+  'binDesigner.splitConnectorsUnavailableLightweight':
+    'Unavailable on lightweight bins — the shelled floor has no solid material for the scarf. Use wall connectors instead.',
   'binDesigner.splitWallConnectors': 'Wall connectors',
   'binDesigner.splitConnectorNozzleNotice':
     'Sized for a {nozzle}mm nozzle — connectors are enlarged to stay printable; very small pieces may omit them.',
@@ -1915,6 +1917,8 @@ const en: Record<string, string> = {
   'binDesigner.halfBinMode': 'Half-grid mode',
   'binDesigner.halfBinModeEnable05Grid': 'Half-grid mode: enable 0.5 grid unit precision',
   'binDesigner.halfSockets': 'Half sockets',
+  'binDesigner.lightweight': 'Lightweight base',
+  'binDesigner.lightweightHint': 'Exposes grid inside',
   'binDesigner.heightUnit': 'Height unit',
   'binDesigner.load': 'Load',
   'binDesigner.loading': 'Loading',

@@ -12,11 +12,13 @@
  * went non-manifold (GH #2085); see the socket-deferral note below.
  */
 
-import { unwrap, fuse, translate, withScope, getKernelCapabilities } from 'brepjs';
-import type { DisposalScope, Shape3D } from 'brepjs';
+import { unwrap, fuse, cut, translate, withScope, getKernelCapabilities } from 'brepjs';
+import type { DisposalScope, Shape3D, ValidSolid, Drawing } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
 import { buildBaseSocket, buildOverhangFeet } from '../../socketBuilder';
+import { buildLightweightBase } from '../../lightweightBaseBuilder';
+import type { LightweightBase } from '../../lightweightBaseBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
 import { buildBinBoxWithLip } from '../../integratedLipBuilder';
 import { maskHasHoles } from '../../maskPolygon';
@@ -24,7 +26,11 @@ import { hasOverhang } from '../../overhang';
 import {
   buildCompartmentCavityDrawings,
   buildCompartmentsCacheKey,
+  compartmentsAreRectangular,
+  hasMultipleCompartments,
 } from '../../compartmentBuilder';
+import { isPartialMask } from '@/shared/utils/cellMask';
+import { buildScoopFloorFootprints } from '../../scoopRampBuilder';
 import { getShellCache, setShellCache } from '../../shapeCache';
 import { LIP_OVERLAP } from '../../generatorConstants';
 import { FeatureTag } from '../../featureTags';
@@ -40,6 +46,59 @@ export const shellStage: PipelineStage = {
 
   execute(ctx: PipelineContext): PipelineContext {
     const { params, dimensions: dim, signal, onProgress, originToTag } = ctx;
+
+    // ── LIGHTWEIGHT BASE — shelled cups replace the solid socket. ────────────
+    // Built up-front because its `floorOpenings` must be cut into the body
+    // *before* the body is cached, while its `base` (cups) is the deferred
+    // socket used in the socket section below. Solid bins open the cups
+    // downward (no floor opening — the solid body keeps its floor).
+    let liteBase: LightweightBase | null = null;
+    let floorOpenings: Shape3D | null = null;
+    if (dim.lightweight && !dim.isFlat) {
+      // Open-cavity floor for clipping cup recesses away from anything that rests
+      // on the floor — divider walls AND scoop ramps — so those features keep a
+      // solid foot core beneath them (no bridge over the recess). Only for hollow
+      // bins with rectangular compartments; tilted/polygon layouts fall back to
+      // no clip (best-effort). The scoop band is subtracted from each cavity.
+      const liteCanClip =
+        !dim.solid && compartmentsAreRectangular(params) && !isPartialMask(params.cellMask);
+      const scoopFootprints = liteCanClip
+        ? buildScoopFloorFootprints(
+            params,
+            dim.innerW,
+            dim.innerD,
+            dim.wallHeight,
+            params.wallThickness
+          )
+        : [];
+      const offset = (d: Drawing): Drawing =>
+        dim.innerOffsetX !== 0 || dim.innerOffsetY !== 0
+          ? d.translate(dim.innerOffsetX, dim.innerOffsetY)
+          : d;
+      const openFloorDrawings =
+        liteCanClip && (hasMultipleCompartments(params) || scoopFootprints.length > 0)
+          ? buildCompartmentCavityDrawings(params, dim.innerW, dim.innerD).map(offset)
+          : undefined;
+      const keepSolidDrawings = openFloorDrawings ? scoopFootprints.map(offset) : undefined;
+      liteBase = buildLightweightBase(
+        params.width,
+        params.depth,
+        params.wallThickness,
+        dim.withMagnet,
+        dim.withScrew,
+        params.base.magnetDiameter / 2,
+        params.base.magnetDepth,
+        params.base.screwDiameter / 2,
+        dim.solid ? 'down' : 'up',
+        true, // full 5-section foot profile, matching buildBaseSocket here
+        dim.halfSockets,
+        params.gridUnitMm,
+        params.cellMask,
+        openFloorDrawings,
+        keepSolidDrawings
+      );
+      floorOpenings = liteBase.floorOpenings;
+    }
 
     // ── BODY (box + optional lip) — cached by shellKey. ──────────────────────
     // `getShellCache` returns a metadata-preserving clone so BASE/LIP face-origin
@@ -78,7 +137,7 @@ export const shellStage: PipelineStage = {
         getKernelCapabilities().tessellationModel === 'build-time' &&
         !(params.cellMask && maskHasHoles(params.cellMask));
 
-      const built = withScope((scope: DisposalScope) => {
+      let built = withScope((scope: DisposalScope) => {
         if (integratedLip) {
           try {
             const integrated = buildBinBoxWithLip(
@@ -141,9 +200,25 @@ export const shellStage: PipelineStage = {
         return binBody; // no lip
       });
 
+      // Lightweight (hollow bins): open the body floor so the cavity sees each
+      // cup recess. Consumed here on the cache-miss path; the cut result is what
+      // gets cached, so a later cache hit already has the openings baked in.
+      if (floorOpenings) {
+        const opened = unwrap(cut(built as ValidSolid, floorOpenings as ValidSolid));
+        if (opened !== built) built.delete();
+        built = opened;
+        floorOpenings.delete();
+        floorOpenings = null;
+      }
+
       setShellCache(dim.shellKey, built);
       // Metadata-preserving clone for the context (cache keeps `built`).
       body = translate(built, [0, 0, 0]);
+    }
+
+    // Cache hit already has the floor openings baked in — drop the unused tool.
+    if (floorOpenings) {
+      floorOpenings.delete();
     }
 
     // Flat bins have no base socket — the body IS the whole shell.
@@ -154,19 +229,25 @@ export const shellStage: PipelineStage = {
     // ── BASE SOCKET — built separately (its own cache), optionally + feet. ───
     checkCancelled(signal);
     onProgress?.('features', 0.4);
-    let socket = buildBaseSocket(
-      params.width,
-      params.depth,
-      dim.withMagnet,
-      dim.withScrew,
-      params.base.magnetDiameter / 2,
-      params.base.magnetDepth,
-      params.base.screwDiameter / 2,
-      true, // Always use full 5-section socket profile (OCCT v8 is fast enough)
-      dim.halfSockets,
-      params.gridUnitMm,
-      params.cellMask
-    );
+    // Lightweight: the shelled cups (built up-front) stand in for the solid
+    // socket. They fuse into the body at export and mesh alongside it at
+    // preview exactly like the socket — they only meet the body at the floor
+    // interface, never feature-cut.
+    let socket = liteBase
+      ? liteBase.base
+      : buildBaseSocket(
+          params.width,
+          params.depth,
+          dim.withMagnet,
+          dim.withScrew,
+          params.base.magnetDiameter / 2,
+          params.base.magnetDepth,
+          params.base.screwDiameter / 2,
+          true, // Always use full 5-section socket profile (OCCT v8 is fast enough)
+          dim.halfSockets,
+          params.gridUnitMm,
+          params.cellMask
+        );
     // `withScope` can't wrap this section (it must yield TWO survivors — body
     // and socket — on the preview path), so dispose manually on any throw to
     // match the exception-safety the scoped code had: a failed OCCT fuse must

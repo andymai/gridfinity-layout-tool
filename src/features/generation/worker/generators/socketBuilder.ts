@@ -64,7 +64,7 @@ import {
  */
 export const MIN_FOOT_TILE_MM = MIN_PRINTABLE_TILE_MM;
 
-function forEachSocketCell(
+export function forEachSocketCell(
   gridW: number,
   gridD: number,
   mask: CellMask | undefined,

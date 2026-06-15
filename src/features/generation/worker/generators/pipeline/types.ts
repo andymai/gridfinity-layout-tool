@@ -26,6 +26,14 @@ export interface BinDimensions {
   readonly totalHeight: number;
   readonly isFlat: boolean;
   readonly halfSockets: boolean;
+  /**
+   * True when the base is shelled to a uniform `wallThickness` (Gridfinity
+   * Lite): the cavity floor follows the socket taper and the grid shape is
+   * exposed on the interior. Forced false for flat bins (no socket to shell).
+   * Magnet/screw pads are retained as solid islands when `withMagnet`/
+   * `withScrew` are set. See `lightweightBaseBuilder`.
+   */
+  readonly lightweight: boolean;
   readonly solid: boolean;
   readonly isSlotted: boolean;
   readonly hasLip: boolean;

@@ -45,6 +45,9 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // decomposing every cell unnecessarily.
   const halfSockets = params.base.halfSockets && !isFlat;
   const solid = params.base.solid;
+  // Lightweight shells the socket region; a flat bin has no socket, so the
+  // flag is inert there. migrateParams backfills the field on legacy designs.
+  const lightweight = params.base.lightweight && !isFlat;
   const wallHeight = isFlat ? totalHeight : totalHeight - SOCKET_HEIGHT;
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive fallback for backwards compatibility
@@ -123,11 +126,20 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
   // compartments segment is "none" unless the bin uses the multi-cavity
   // cut path, so single-compartment bins keep their existing cache bucket.
   const maskKeySegment = isPartialMask(cellMask) ? hashMask(cellMask) : 'rect';
-  const compartmentsKey = compartmentsBakedIntoShell ? buildCompartmentsCacheKey(params) : 'none';
+  // Lightweight bins also depend on the compartment layout: the body floor
+  // openings are clipped away from divider walls, so two lite bins differing
+  // only in dividers must not share a cached body.
+  const compartmentsKey =
+    compartmentsBakedIntoShell || lightweight ? buildCompartmentsCacheKey(params) : 'none';
+  // Lightweight floor openings are also clipped around scoop ramps, so the
+  // cached body depends on the scoop for lite bins (it doesn't otherwise — the
+  // scoop is a separate fuse feature with its own cache key).
+  const liteScoopKey =
+    lightweight && params.scoop.enabled ? `scoop:${String(params.scoop.radius)}` : 'none';
 
   const shellKey = compactKey(
     buildCacheKey(
-      'v6',
+      'v7',
       quantize(params.width),
       quantize(params.depth),
       quantize(gridUnit),
@@ -142,8 +154,10 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
       quantize(params.wallThickness),
       params.base.stackingLip,
       solid,
+      lightweight,
       maskKeySegment,
       compartmentsKey,
+      liteScoopKey,
       overhangKey(overhang)
     )
   );
@@ -157,6 +171,7 @@ function deriveDimensions(params: BinParams, _forExport: boolean): BinDimensions
     totalHeight,
     isFlat,
     halfSockets,
+    lightweight,
     solid,
     isSlotted,
     hasLip,

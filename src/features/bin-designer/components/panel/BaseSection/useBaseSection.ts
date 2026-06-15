@@ -57,6 +57,10 @@ export function useBaseSection() {
     updateBase({ stackingLip: !base.stackingLip });
   }, [base.stackingLip, updateBase]);
 
+  const toggleLightweight = useCallback(() => {
+    updateBase({ lightweight: !base.lightweight });
+  }, [base.lightweight, updateBase]);
+
   const toggleHalfSockets = useCallback(() => {
     if (!hasHalfSockets && !halfSocketsStatus.available) return;
     const { params: resolved } = resolveConstraints(params, {
@@ -96,11 +100,12 @@ export function useBaseSection() {
   );
 
   return {
-    state: { base, hasMagnet, hasScrew, isFlat, hasHalfSockets },
+    state: { base, hasMagnet, hasScrew, isFlat, hasHalfSockets, hasLightweight: base.lightweight },
     handlers: {
       toggleMagnet,
       toggleScrew,
       toggleStackingLip,
+      toggleLightweight,
       toggleHalfSockets,
       toggleFlat,
       setMagnetDiameter,

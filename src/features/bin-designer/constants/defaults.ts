@@ -284,6 +284,7 @@ export const DEFAULT_BIN_PARAMS: BinParams = {
     stackingLip: true,
     solid: false,
     halfSockets: false,
+    lightweight: false,
   },
   style: 'standard',
   compartments: {

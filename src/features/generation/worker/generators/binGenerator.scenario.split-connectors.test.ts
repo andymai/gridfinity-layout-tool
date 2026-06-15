@@ -269,4 +269,26 @@ describe('split connector geometry in preview meshes', () => {
       ).toBeGreaterThan(0);
     }
   }, 120000);
+
+  it('lightweight bin: floor scarf is auto-disabled so the split still builds', () => {
+    // The 45° floor scarf needs a solid floor; a lite base is shelled + hollow,
+    // so the scarf would land in a cup recess and can fail the loft. splitBin
+    // forces the floor scarf off for lite bins — generation must stay valid.
+    const generateSplitPreview = getGenerateSplitPreview();
+    const liteParams: BinParams = {
+      ...OVERSIZED_PARAMS,
+      base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true },
+    };
+    const result = generateSplitPreview(
+      liteParams,
+      CUT_PLANES_X,
+      CUT_PLANES_Y,
+      DEFAULT_SPLIT_CONNECTOR_CONFIG // alignment connector "on" — must be ignored on lite
+    );
+    expect(result.pieces).toHaveLength(2);
+    for (const piece of result.pieces) {
+      expect(piece.vertices.length).toBeGreaterThan(0);
+      expect(hasNoNaNOrInfinity(piece.vertices)).toBe(true);
+    }
+  }, 120000);
 });

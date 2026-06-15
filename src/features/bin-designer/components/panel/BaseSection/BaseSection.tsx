@@ -83,6 +83,13 @@ export function BaseSection() {
         onChange={handlers.toggleHalfSockets}
         disabledReason={handlers.halfSocketsDisabledReason}
       />
+
+      <FeatureToggle
+        label={t('binDesigner.lightweight')}
+        checked={state.hasLightweight}
+        onChange={handlers.toggleLightweight}
+        valueSummary={t('binDesigner.lightweightHint')}
+      />
     </div>
   );
 }

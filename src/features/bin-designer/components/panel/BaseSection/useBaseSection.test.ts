@@ -75,6 +75,34 @@ describe('useBaseSection', () => {
     expect(useDesignerStore.getState().params.base.magnetDiameter).toBe(6.5);
   });
 
+  it('toggleLightweight flips the boolean and exposes it as state', () => {
+    const { result } = renderHook(() => useBaseSection());
+
+    expect(result.current.state.hasLightweight).toBe(false);
+
+    act(() => {
+      result.current.handlers.toggleLightweight();
+    });
+
+    expect(useDesignerStore.getState().params.base.lightweight).toBe(true);
+    expect(result.current.state.hasLightweight).toBe(true);
+  });
+
+  it('lightweight coexists with magnet style (allow-all, no constraint clearing)', () => {
+    const { result } = renderHook(() => useBaseSection());
+
+    act(() => {
+      result.current.handlers.toggleLightweight();
+    });
+    act(() => {
+      result.current.handlers.toggleMagnet();
+    });
+
+    const base = useDesignerStore.getState().params.base;
+    expect(base.lightweight).toBe(true);
+    expect(base.style).toBe('magnet');
+  });
+
   it('setScrewDiameter updates screwDiameter directly', () => {
     const { result } = renderHook(() => useBaseSection());
 

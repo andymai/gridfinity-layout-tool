@@ -192,7 +192,15 @@ function splitSolidIntoPieces(
   const outerW = params.width * gridUnitMm - CLEARANCE;
   const outerD = params.depth * gridUnitMm - CLEARANCE;
 
-  const connectorConfig = splitConnectorConfig ?? params.splitConnectors;
+  // Lightweight bins have no solid floor for the 45° floor scarf to bite into —
+  // cut planes are shifted mid-cell, landing over the hollow cup recesses, so the
+  // scarf loft has little/no material (fragmented, weak, or a failed loft). Force
+  // the floor scarf off and keep wall "key" connectors (those sit in the solid
+  // walls and are unaffected).
+  const rawConnectorConfig = splitConnectorConfig ?? params.splitConnectors;
+  const liteBase = params.base.lightweight && params.base.style !== 'flat';
+  const connectorConfig =
+    rawConnectorConfig && liteBase ? { ...rawConnectorConfig, enabled: false } : rawConnectorConfig;
 
   // Bin geometry context for connector placement
   const isFlat = params.base.style === 'flat';

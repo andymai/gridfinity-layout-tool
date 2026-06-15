@@ -10,18 +10,27 @@ import { NOZZLE_BASELINE } from '@/shared/printSettings/connectorScaling';
 export type SplitAxis = 'width' | 'depth' | 'both';
 
 export function useSplitOptionsSection() {
-  const { width, depth, gridUnitMm, splitConnectors, splitViewMode, setParam, setSplitViewMode } =
-    useDesignerStore(
-      useShallow((s) => ({
-        width: s.params.width,
-        depth: s.params.depth,
-        gridUnitMm: s.params.gridUnitMm,
-        splitConnectors: s.params.splitConnectors,
-        splitViewMode: s.ui.splitViewMode,
-        setParam: s.setParam,
-        setSplitViewMode: s.setSplitViewMode,
-      }))
-    );
+  const {
+    width,
+    depth,
+    gridUnitMm,
+    base,
+    splitConnectors,
+    splitViewMode,
+    setParam,
+    setSplitViewMode,
+  } = useDesignerStore(
+    useShallow((s) => ({
+      width: s.params.width,
+      depth: s.params.depth,
+      gridUnitMm: s.params.gridUnitMm,
+      base: s.params.base,
+      splitConnectors: s.params.splitConnectors,
+      splitViewMode: s.ui.splitViewMode,
+      setParam: s.setParam,
+      setSplitViewMode: s.setSplitViewMode,
+    }))
+  );
 
   const { defaultPrintBedSize, defaultPrintBedDepth, nozzleSizeMm } = useSettingsStore(
     useShallow((s) => ({
@@ -55,9 +64,17 @@ export function useSplitOptionsSection() {
 
   const config = splitConnectors ?? DEFAULT_SPLIT_CONNECTOR_CONFIG;
 
+  // The alignment connector is a 45° floor scarf that needs a solid floor; a
+  // lightweight base is shelled + hollow (cut planes land over the cup recesses),
+  // so the worker force-disables it for lite bins. Surface that in the UI and
+  // block the toggle so it doesn't look enabled-but-ignored. Wall connectors
+  // live in the solid walls and stay available.
+  const alignmentUnavailable = base.lightweight && base.style !== 'flat';
+
   const toggleEnabled = useCallback(() => {
+    if (alignmentUnavailable) return;
     setParam('splitConnectors', { ...config, enabled: !config.enabled });
-  }, [config, setParam]);
+  }, [alignmentUnavailable, config, setParam]);
 
   const toggleWallConnector = useCallback(() => {
     const next = config.wallConnector === 'key' ? 'none' : 'key';
@@ -89,5 +106,6 @@ export function useSplitOptionsSection() {
     handlers,
     nozzleSizeMm,
     showNozzleNotice,
+    alignmentUnavailable,
   };
 }

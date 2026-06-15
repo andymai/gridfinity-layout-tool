@@ -10,8 +10,16 @@ const AXIS_KEYS = {
 
 export function SplitOptionsSection() {
   const t = useTranslation();
-  const { needsSplit, pieceCount, splitAxis, config, handlers, nozzleSizeMm, showNozzleNotice } =
-    useSplitOptionsSection();
+  const {
+    needsSplit,
+    pieceCount,
+    splitAxis,
+    config,
+    handlers,
+    nozzleSizeMm,
+    showNozzleNotice,
+    alignmentUnavailable,
+  } = useSplitOptionsSection();
 
   if (!needsSplit) return null;
 
@@ -26,8 +34,11 @@ export function SplitOptionsSection() {
 
       <FeatureToggle
         label={t('binDesigner.splitConnectors')}
-        checked={config.enabled}
+        checked={config.enabled && !alignmentUnavailable}
         onChange={handlers.toggleEnabled}
+        disabledReason={
+          alignmentUnavailable ? t('binDesigner.splitConnectorsUnavailableLightweight') : undefined
+        }
       />
 
       <FeatureToggle

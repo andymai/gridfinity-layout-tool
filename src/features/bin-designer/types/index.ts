@@ -137,6 +137,13 @@ export interface BaseConfig {
   readonly solid: boolean;
   /** When true, subdivides each cell into 0.5×0.5 half sockets instead of full 1×1 sockets. */
   readonly halfSockets: boolean;
+  /**
+   * When true, the base is shelled to a uniform `wallThickness` instead of a
+   * solid floor + feet: the cavity floor follows the inside of the socket
+   * taper, exposing the grid shape on the interior and saving filament
+   * ("Gridfinity Lite"). Magnet/screw pads are retained as solid islands.
+   */
+  readonly lightweight: boolean;
 }
 
 /** Divider configuration for compartment splitting (legacy — use CompartmentConfig) */
