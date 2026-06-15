@@ -2333,6 +2333,10 @@
   "baseplate.stackPrint.sampleTitle": "Amostra de encaixe da pilha",
   "baseplate.stackPrint.sampleDescription": "Uma única pilha de duas placas 1×1 para ajustar a folga de ar antes de imprimir uma pilha completa.",
   "baseplate.stackPrint.featuresOff": "Conectores, furos de ímã e arredondamento de cantos são desativados ao empilhar.",
+  "baseplate.stackPrint.multiMaterial.title": "Separação limpa (multimaterial)",
+  "baseplate.stackPrint.multiMaterial.intro": "Opcional, para impressoras AMS/multimaterial. Preencha cada folga com uma interface de suporte destacável em um filamento antiaderente — PETG contra PLA solta de forma limpa — para que as placas se separem sem alavancar. Primeiro aumente a folga acima para cerca de 0,4 mm para dar espaço à interface.",
+  "baseplate.stackPrint.multiMaterial.prusa": "PrusaSlicer: ative «Generate support material», desmarque «Support on build plate only», defina «Top contact Z distance» como 0 e «Top interface layers» como 1–2 e atribua o extrusor da interface de suporte ao filamento antiaderente.",
+  "baseplate.stackPrint.multiMaterial.bambu": "Bambu Studio / Orca: ative o suporte, defina «Interface filament» como o filamento antiaderente, «Top Z distance» como 0 e as camadas de interface superiores como 1–2.",
   "baseplate.maxPrintHeight": "Altura de impressão",
   "baseplate.maxPrintHeightTooltip": "A altura Z máxima da sua impressora. O empilhamento encaixa quantas placas por pilha isso permitir."
 }

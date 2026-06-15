@@ -2333,6 +2333,10 @@
   "baseplate.stackPrint.sampleTitle": "積み重ねのフィットサンプル",
   "baseplate.stackPrint.sampleDescription": "1×1プレート2枚の積み重ねを1つだけ印刷し、フルスタックを印刷する前にエアギャップを調整できます。",
   "baseplate.stackPrint.featuresOff": "積み重ね中はコネクタ、磁石穴、角の丸めがオフになります。",
+  "baseplate.stackPrint.multiMaterial.title": "きれいに分離（マルチマテリアル）",
+  "baseplate.stackPrint.multiMaterial.intro": "任意。AMS／マルチマテリアルプリンター向けです。各すき間を、くっつきにくいフィラメントのはがせるサポートインターフェースで埋めると（PLAに対するPETGはきれいにはがれます）、こじらずにプレートを分離できます。まず上のギャップを約0.4mmに広げ、インターフェースの余地を確保してください。",
+  "baseplate.stackPrint.multiMaterial.prusa": "PrusaSlicer：「Generate support material」をオン、「Support on build plate only」をオフ、「Top contact Z distance」を0、「Top interface layers」を1〜2に設定し、サポートインターフェースのエクストルーダーをくっつきにくいフィラメントに割り当てます。",
+  "baseplate.stackPrint.multiMaterial.bambu": "Bambu Studio／Orca：サポートを有効にし、「Interface filament」をくっつきにくいフィラメント、「Top Z distance」を0、上部インターフェース層を1〜2に設定します。",
   "baseplate.maxPrintHeight": "造形高さ",
   "baseplate.maxPrintHeightTooltip": "プリンターの最大Z高さ。積み重ね印刷はこの範囲でできるだけ多くのベースプレートを1スタックに収めます。"
 }

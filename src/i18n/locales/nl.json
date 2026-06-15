@@ -2333,6 +2333,10 @@
   "baseplate.stackPrint.sampleTitle": "Pasvormmonster stapel",
   "baseplate.stackPrint.sampleDescription": "Eén enkele stapel van twee 1×1-platen om de luchtspleet af te stellen voordat je een volledige stapel print.",
   "baseplate.stackPrint.featuresOff": "Connectoren, magneetgaten en hoekafronding zijn uitgeschakeld tijdens het stapelen.",
+  "baseplate.stackPrint.multiMaterial.title": "Schone scheiding (multimateriaal)",
+  "baseplate.stackPrint.multiMaterial.intro": "Optioneel, voor AMS-/multimateriaalprinters. Vul elke spleet met een afpelbare support-interface in een antiaanbakfilament – PETG tegen PLA laat schoon los – zodat de platen zonder wrikken loskomen. Verhoog eerst de spleet hierboven naar ongeveer 0,4 mm om de interface ruimte te geven.",
+  "baseplate.stackPrint.multiMaterial.prusa": "PrusaSlicer: zet «Generate support material» aan, vink «Support on build plate only» uit, zet «Top contact Z distance» op 0 en «Top interface layers» op 1–2, en stel de support-interface-extruder in op het antiaanbakfilament.",
+  "baseplate.stackPrint.multiMaterial.bambu": "Bambu Studio / Orca: schakel Support in, stel «Interface filament» in op het antiaanbakfilament, «Top Z distance» op 0 en de bovenste interfacelagen op 1–2.",
   "baseplate.maxPrintHeight": "Bouwhoogte",
   "baseplate.maxPrintHeightTooltip": "De maximale Z-hoogte van je printer. Stapelen past zoveel grondplaten per stapel als dit toelaat."
 }

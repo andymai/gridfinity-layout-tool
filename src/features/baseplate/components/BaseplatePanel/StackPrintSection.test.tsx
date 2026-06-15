@@ -42,4 +42,9 @@ describe('StackPrintSection', () => {
       screen.getByText(/Connectors, magnet holes, and corner rounding are turned off/i)
     ).toBeInTheDocument();
   });
+
+  it('offers the multi-material clean-separation disclosure when enabled', () => {
+    render(<StackPrintSection stackPrint={enabled} groups={groups} onChange={vi.fn()} />);
+    expect(screen.getByText(/Clean separation \(multi-material\)/i)).toBeInTheDocument();
+  });
 });

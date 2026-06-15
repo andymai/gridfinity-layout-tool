@@ -2107,19 +2107,26 @@ const en: Record<string, string> = {
     'Stack printing: {stacks} stacks ({plates} plates) export as a ZIP with a print guide.',
   'baseplate.stackPrint.gap.label': 'Gap',
   'baseplate.stackPrint.gap.info':
-    'Air gap between stacked plates — about 0.2mm (one layer). Test a small stack first to dial it in. For easy separation, fill the gap with a slicer support interface in PETG or “Support for PLA”.',
+    'Air gap between stacked plates — about 0.2mm (one layer). Keep your slicer’s layer height at or below this gap, or the plates fuse. No supports needed — any slicer reproduces the gap. Test a small stack first to fine-tune it.',
   'baseplate.stackPrint.featuresOff':
     'Connectors, magnet holes, and corner rounding are turned off while stacking.',
+  'baseplate.stackPrint.multiMaterial.title': 'Clean separation (multi-material)',
+  'baseplate.stackPrint.multiMaterial.intro':
+    'Optional, for AMS / multi-material printers. Fill each gap with a peel-away support interface in a non-stick filament — PETG against PLA releases cleanly — so the plates lift apart without prying. First raise the gap above to about 0.4mm to give the interface room.',
+  'baseplate.stackPrint.multiMaterial.prusa':
+    'PrusaSlicer: enable “Generate support material”, uncheck “Support on build plate only”, set “Top contact Z distance” to 0 and “Top interface layers” to 1–2, then set the “Support material/raft interface extruder” (Multiple Extruders page) to the non-stick filament.',
+  'baseplate.stackPrint.multiMaterial.bambu':
+    'Bambu Studio / Orca: enable Support, set “Interface filament” to the non-stick filament, “Top Z distance” to 0, and the top interface layers to 1–2.',
   'baseplate.stackPrint.separate': 'Separate',
   'baseplate.stackPrint.together': 'Together',
   'baseplate.stackPrint.separationSlider': 'Separate the print stack to inspect it',
   'baseplate.stackPrint.hint':
-    'Prints all of a drawer’s plates as one vertical tower with an air gap between them, so they print in a single job and snap apart afterward.',
+    'Prints all of a drawer’s plates as one vertical tower with an air gap between them, so they print in a single job — in any slicer, with no supports — and snap apart afterward. Keep your layer height at or below the gap so the plates don’t fuse.',
   'baseplate.stackPrint.sampleButton': 'Print fit sample',
   'baseplate.stackPrint.sampleExportComplete': 'Stack fit sample exported',
   'baseplate.stackPrint.sampleTitle': 'Stack fit sample',
   'baseplate.stackPrint.sampleDescription':
-    'A single stack of two 1×1 plates to dial in the air-gap separation before printing a full stack.',
+    'A single stack of two 1×1 plates to fine-tune the air-gap separation before printing a full stack.',
   'baseplate.wasmLoadFailed': 'Failed to load 3D engine',
   'baseplate.generationFailed': 'Baseplate generation failed',
   'baseplate.errorRetryHint':

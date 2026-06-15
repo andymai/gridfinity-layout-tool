@@ -2333,6 +2333,10 @@
   "baseplate.stackPrint.sampleTitle": "Muestra de ajuste de la pila",
   "baseplate.stackPrint.sampleDescription": "Una sola pila de dos placas 1×1 para ajustar la separación del espacio de aire antes de imprimir una pila completa.",
   "baseplate.stackPrint.featuresOff": "Los conectores, los orificios para imanes y el redondeo de esquinas se desactivan al apilar.",
+  "baseplate.stackPrint.multiMaterial.title": "Separación limpia (multimaterial)",
+  "baseplate.stackPrint.multiMaterial.intro": "Opcional, para impresoras AMS/multimaterial. Rellena cada hueco con una interfaz de soporte despegable en un filamento antiadherente —PETG contra PLA se separa de forma limpia— para que las placas se separen sin hacer palanca. Primero sube el hueco de arriba a unos 0,4 mm para dar espacio a la interfaz.",
+  "baseplate.stackPrint.multiMaterial.prusa": "PrusaSlicer: activa «Generate support material», desactiva «Support on build plate only», pon «Top contact Z distance» en 0 e «Top interface layers» en 1–2, y asigna el extrusor de la interfaz de soporte al filamento antiadherente.",
+  "baseplate.stackPrint.multiMaterial.bambu": "Bambu Studio / Orca: activa el soporte, asigna «Interface filament» al filamento antiadherente, «Top Z distance» a 0 y las capas de interfaz superiores a 1–2.",
   "baseplate.maxPrintHeight": "Altura de impresión",
   "baseplate.maxPrintHeightTooltip": "La altura Z máxima de tu impresora. El apilado encaja tantas placas por pila como esto permita."
 }

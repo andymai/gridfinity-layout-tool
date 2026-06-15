@@ -19,6 +19,7 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { ExperimentalBadge } from '@/shared/components/ExperimentalBadge';
 import { StackSampleButton } from './StackSampleButton';
+import { Collapsible } from '@/design-system/Collapsible';
 import { Stepper } from '@/design-system/Stepper';
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import { planPhysicalStacks, stackHeightCap, type StackGroup } from '../../utils/stackPrint';
@@ -109,6 +110,18 @@ export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSe
             <p className="text-[11px] leading-relaxed text-content-tertiary">
               {t('baseplate.stackPrint.featuresOff')}
             </p>
+
+            <Collapsible
+              title={t('baseplate.stackPrint.multiMaterial.title')}
+              size="sm"
+              defaultExpanded={false}
+            >
+              <div className="space-y-2 text-[11px] leading-relaxed text-content-secondary">
+                <p>{t('baseplate.stackPrint.multiMaterial.intro')}</p>
+                <p>{t('baseplate.stackPrint.multiMaterial.prusa')}</p>
+                <p>{t('baseplate.stackPrint.multiMaterial.bambu')}</p>
+              </div>
+            </Collapsible>
 
             <StackSampleButton />
           </>

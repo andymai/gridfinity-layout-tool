@@ -2333,6 +2333,10 @@
   "baseplate.stackPrint.sampleTitle": "Зразок припасування стосу",
   "baseplate.stackPrint.sampleDescription": "Один стос із двох пластин 1×1, щоб налаштувати повітряний зазор перед друком повного стосу.",
   "baseplate.stackPrint.featuresOff": "Конектори, отвори для магнітів і заокруглення кутів вимкнені під час стосування.",
+  "baseplate.stackPrint.multiMaterial.title": "Чисте розділення (мультиматеріал)",
+  "baseplate.stackPrint.multiMaterial.intro": "Необов'язково, для AMS-/мультиматеріальних принтерів. Заповніть кожен проміжок знімним інтерфейсом підтримки з антипригарного філаменту — PETG поверх PLA відділяється чисто — щоб пластини роз'єднувалися без підважування. Спершу збільште проміжок вище приблизно до 0,4 мм, щоб дати місце інтерфейсу.",
+  "baseplate.stackPrint.multiMaterial.prusa": "PrusaSlicer: увімкніть «Generate support material», зніміть «Support on build plate only», встановіть «Top contact Z distance» на 0 та «Top interface layers» на 1–2, а потім призначте екструдер інтерфейсу підтримки на антипригарний філамент.",
+  "baseplate.stackPrint.multiMaterial.bambu": "Bambu Studio / Orca: увімкніть підтримку, встановіть «Interface filament» на антипригарний філамент, «Top Z distance» на 0, а верхні шари інтерфейсу на 1–2.",
   "baseplate.maxPrintHeight": "Висота друку",
   "baseplate.maxPrintHeightTooltip": "Максимальна висота Z вашого принтера. Складання вміщує стільки пластин на стос, скільки це дозволяє."
 }
