@@ -2329,7 +2329,7 @@
   "baseplate.stackPrint.enable": "Vertikal stapel",
   "baseplate.stackPrint.exportBanner": "Stapelutskrift: {stacks} staplar ({plates} plattor) exporteras som en ZIP med utskriftsguide.",
   "baseplate.stackPrint.gap.label": "Spalt",
-  "baseplate.stackPrint.gap.info": "Luftgap mellan staplade plattor, ungefär 0,2 mm (ett lager). Håll slicer-lagerhi över detta gap eller plattorna smälter samman. Inga stöd behövs. Testa med en liten stapel först.",
+  "baseplate.stackPrint.gap.info": "Luftgap mellan staplade plattor, ungefär 0,2 mm (ett lager). Håll slicerns lagerhöjd vid eller under detta gap, annars smälter plattorna samman. Inga stöd behövs. Testa med en liten stapel först.",
   "baseplate.stackPrint.tips.heading": "Tips för att separera",
   "baseplate.stackPrint.tips.single.heading": "Enstaka material",
   "baseplate.stackPrint.tips.single.body": "Skjut in en spårskruvmejsel i gapet och vrid försiktigt.",
