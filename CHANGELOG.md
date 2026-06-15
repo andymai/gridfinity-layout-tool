@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.174.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.174.1...gridfinity-layout-tool-v4.174.2) (2026-06-15)
+
+
+### Bug Fixes
+
+* tighten grid-size stepper and stacked-baseplate preview spacing ([#2174](https://github.com/andymai/gridfinity-layout-tool/issues/2174)) ([d918f95](https://github.com/andymai/gridfinity-layout-tool/commit/d918f95278d1a58b28657d3a0dc7aa9245dd3384))
+
 ## [4.174.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.174.0...gridfinity-layout-tool-v4.174.1) (2026-06-15)
 
 
