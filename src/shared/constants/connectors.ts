@@ -90,16 +90,30 @@ export function effectiveClearance(
  * inward past the pocket throat, then splay out so the barbs catch the chamber
  * ledge. Mirror grooves on both seam sides form the blind pockets.
  *
- * Validated standalone via brepjs-verify: clip is a valid solid, and the seated
- * clip clears the pockets with zero interference (fuse-volume == tiles + clip).
+ * Pull-apart resistance: the pocket leaves a solid seam-side WALL intact in the
+ * upper band (the leg root, which barely flexes), so a leg's inner face bears
+ * against it — pulling the plates apart rams that wall into the leg like a real
+ * staple. The lower band stays open to the seam so the leg tip can still pinch
+ * inward to seat the barb. The legs sit `GAP_HALF` off the seam, leaving room for
+ * the wall, with `LEG_W` trimmed to keep the original outer footprint (so the
+ * clip still clears the bin feet in the cells flanking the seam).
+ *
  * The depths below are clamped to the slab height at build time so the snap
  * still seats on a thin baseplate and deepens automatically on taller bases.
  */
 export const SNAP_CLIP = {
-  /** Half-width of the central flex slot (inner leg face sits at ±this). */
-  GAP_HALF: 0.75,
-  /** Leg thickness across the seam (mm). */
-  LEG_W: 1.2,
+  /** Half-width of the central flex slot (inner leg face sits at ±this). Also the
+   *  nominal seam-side wall thickness: the pocket leaves plate solid out to here. */
+  GAP_HALF: 1.0,
+  /** Leg thickness across the seam (mm). Trimmed from the original 1.2 so the
+   *  wider GAP_HALF keeps the same outer face (`GAP_HALF + LEG_W`) and bin clearance. */
+  LEG_W: 0.95,
+  /** Height of the seam-side retaining wall below the bridge (mm) — the band the
+   *  leg's inner face bears against. Tall for a substantial grip, but clamped
+   *  above the catch ledge (never eats the snap) and leaving enough free leg below
+   *  to flex: the leg only deflects in its lower span, so the upper band the wall
+   *  fills barely moves on insertion. */
+  BEAR_DEPTH: 1.2,
   /** Outward barb protrusion past the leg face = engagement depth (mm). */
   BARB_DEPTH: 0.45,
   /** Top bridge thickness; also the flush-recess depth in the slab top (mm). */
@@ -149,6 +163,12 @@ export interface SnapClipLevels {
   readonly throatDepthX: number;
   /** Pocket chamber outer-wall depth into the piece (mm). */
   readonly chamberDepthX: number;
+  /** Seam-side wall depth into the piece in the bearing band (= GAP_HALF − cl);
+   *  the leg's inner face bears against this for pull-apart resistance. */
+  readonly bearWallX: number;
+  /** Bottom Z of the seam-side bearing band (negative), clamped above the catch
+   *  ledge so it never eats the snap. Above this the pocket leaves the wall solid. */
+  readonly bearBottomZ: number;
 }
 
 /**
@@ -181,6 +201,10 @@ export function snapClipLevels(
   const barbTip = legOuter + barbDepth;
   const viable =
     legBottom - SNAP_CLIP.BRIDGE_THK >= SNAP_CLIP.MIN_LEG && catchZ < -SNAP_CLIP.BRIDGE_THK;
+  // Retaining wall: plate left solid out to the leg's inner face (minus clearance)
+  // from the bridge underside down to the bearing-band bottom — clamped above the
+  // catch ledge so it never eats the snap chamber.
+  const bearBottomZ = Math.max(-(SNAP_CLIP.BRIDGE_THK + SNAP_CLIP.BEAR_DEPTH), catchZ);
   return {
     viable,
     cl,
@@ -193,5 +217,7 @@ export function snapClipLevels(
     barbTip,
     throatDepthX: legOuter + cl,
     chamberDepthX: barbTip + cl,
+    bearWallX: SNAP_CLIP.GAP_HALF - cl,
+    bearBottomZ,
   };
 }

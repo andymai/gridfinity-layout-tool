@@ -413,13 +413,21 @@ export function buildDovetailKey(totalHeight: number): Shape3D {
 /**
  * Blind snap-clip pocket on one seam side: a narrow throat (top → ledge) over a
  * wider chamber (ledge → floor). The throat passes the leg but blocks the barb;
- * the barb springs into the chamber and catches the ledge. Returned as two
- * stacked cutters (throat, chamber) to subtract from the slab. Mirror of the
- * snap clip's leg cross-section; pocket carries the clearance.
+ * the barb springs into the chamber and catches the ledge.
  *
- * Levels come from the shared `snapClipLevels` so the pocket, the clip, and the
- * seated-clip preview can't drift. Proven standalone with brepjs-verify: at the
- * thin 5mm slab the seated clip clears the pockets with zero interference.
+ * The throat is cut in three Z-bands so a RETAINING WALL is left solid between
+ * the seam and the leg's inner face — the wall the leg bears against to resist
+ * pull-apart (the two seam sides' walls meet at the seam, nesting between the
+ * clip's prongs):
+ *   - bridge recess (top → −BRIDGE_THK): open across the seam so the flush bridge
+ *     clears it,
+ *   - bearing band (−BRIDGE_THK → bearBottomZ): inner edge stops at `bearWallX`,
+ *     leaving the wall solid where the leg root barely flexes,
+ *   - lower throat (bearBottomZ → ledge): open to the seam again so the leg tip
+ *     can still pinch inward to seat the barb.
+ * The chamber below stays open for the sprung barb. Returned as four stacked
+ * cutters. Levels come from the shared `snapClipLevels` so pocket, clip, and
+ * preview can't drift.
  */
 export function makeSnapPocket(
   pt: (wall: number, bp: number) => [number, number],
@@ -430,20 +438,31 @@ export function makeSnapPocket(
 ): Shape3D[] {
   const ext = COPLANAR_MARGIN;
   const ov = COPLANAR_OVERLAP;
+  const br = SNAP_CLIP.BRIDGE_THK;
   const halfL = SNAP_CLIP.LEG_L / 2 + lv.cl;
-  const rect = (depthX: number) =>
-    draw(pt(w + d * ext, bp + halfL))
-      .lineTo(pt(w - d * depthX, bp + halfL))
-      .lineTo(pt(w - d * depthX, bp - halfL))
-      .lineTo(pt(w + d * ext, bp - halfL))
+  // Box from cross-seam depth `innerX`→`outerX` into the piece (innerX = −ext
+  // reaches past the seam = open; innerX = bearWallX leaves the retaining wall).
+  const rect = (innerX: number, outerX: number) =>
+    draw(pt(w - d * innerX, bp + halfL))
+      .lineTo(pt(w - d * outerX, bp + halfL))
+      .lineTo(pt(w - d * outerX, bp - halfL))
+      .lineTo(pt(w - d * innerX, bp - halfL))
       .close();
-  // Throat: from just above the top (Z=+margin) down to the ledge (Z=catchZ).
-  const throat = sketch(rect(lv.throatDepthX), 'XY', ext).extrude(-(ext - lv.catchZ));
-  // Chamber: from just above the ledge down to the pocket floor (sealed).
-  const chamber = sketch(rect(lv.chamberDepthX), 'XY', lv.catchZ + ov).extrude(
+  // Bridge recess: open across the seam for the flush bridge channel.
+  const recess = sketch(rect(-ext, lv.throatDepthX), 'XY', ext).extrude(-(ext + br));
+  // Bearing band: inner wall at bearWallX leaves the retaining wall solid.
+  const bearing = sketch(rect(lv.bearWallX, lv.throatDepthX), 'XY', -br + ov).extrude(
+    lv.bearBottomZ - (-br + ov)
+  );
+  // Lower throat: open to the seam again so the leg tip can flex inward.
+  const lowerThroat = sketch(rect(-ext, lv.throatDepthX), 'XY', lv.bearBottomZ + ov).extrude(
+    lv.catchZ - (lv.bearBottomZ + ov)
+  );
+  // Chamber: ledge → sealed floor, wider outer wall for the sprung barb.
+  const chamber = sketch(rect(-ext, lv.chamberDepthX), 'XY', lv.catchZ + ov).extrude(
     -(lv.catchZ + ov + lv.pocketDepth)
   );
-  return [throat, chamber];
+  return [recess, bearing, lowerThroat, chamber];
 }
 
 /** Per-side gap between the relieved clip and the nominal seated bin foot (mm). */
