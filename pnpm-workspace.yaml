@@ -67,7 +67,7 @@ overrides:
   dompurify: '^3.4.9'
   '@babel/core@<7.29.6': '^7.29.6'
   'js-yaml@<4.2.0': '^4.2.0'
-  protobufjs: '^7.5.8'
+  protobufjs: '^7.6.3'
   'eslint-plugin-i18next>lodash': '^4.18.1'
   'vitest-axe>lodash-es': '^4.18.1'
   'picomatch@>=4.0.0 <4.0.4': '^4.0.4'
