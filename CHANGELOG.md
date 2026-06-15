@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.176.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.175.0...gridfinity-layout-tool-v4.176.0) (2026-06-15)
+
+
+### Features
+
+* **bin-designer:** lightweight floor option ([#2177](https://github.com/andymai/gridfinity-layout-tool/issues/2177)) ([5e03b0f](https://github.com/andymai/gridfinity-layout-tool/commit/5e03b0f254951fe1c006405dadc2142b8c26c806))
+
 ## [4.175.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.174.2...gridfinity-layout-tool-v4.175.0) (2026-06-15)
 
 
