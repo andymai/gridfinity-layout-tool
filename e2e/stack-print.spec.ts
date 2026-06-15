@@ -113,12 +113,6 @@ test('stacking hides magnet + corner-radius controls and restores them on disabl
   await expect(magnetAgain).toBeChecked();
 });
 
-test('stacking shows the slicer support-interface separation tip', async ({ page }) => {
-  await setDimensions(page, 2);
-  await stackSwitch(page).click();
-  await expect(page.getByText(/support interface/i)).toBeVisible();
-});
-
 test('the preview separation slider appears only while stacking', async ({ page }) => {
   await setDimensions(page, 2);
   await expect(page.getByRole('slider', { name: /Separate the print stack/i })).toHaveCount(0);

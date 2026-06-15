@@ -30,16 +30,10 @@ describe('StackPrintSection', () => {
     expect(onChange).toHaveBeenCalledWith(undefined);
   });
 
-  it('shows the test-a-small-stack hint and a live summary when enabled', () => {
+  it('shows a live stack summary when enabled', () => {
     render(<StackPrintSection stackPrint={enabled} groups={groups} onChange={vi.fn()} />);
-    expect(screen.getByText(/Test a small stack/i)).toBeInTheDocument();
     // 1 group of quantity 1 → 1 plate in 1 stack
     expect(screen.getByText(/1 stacks · 1 plates/i)).toBeInTheDocument();
-  });
-
-  it('shows the slicer support-interface separation tip when enabled', () => {
-    render(<StackPrintSection stackPrint={enabled} groups={groups} onChange={vi.fn()} />);
-    expect(screen.getByText(/support interface/i)).toBeInTheDocument();
   });
 
   it('shows the features-off notice (connectors, magnets, rounding) when enabled', () => {

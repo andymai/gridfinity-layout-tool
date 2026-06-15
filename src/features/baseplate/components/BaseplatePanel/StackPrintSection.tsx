@@ -85,7 +85,7 @@ export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSe
                 max={STACK_PRINT_MAX_GAP_MM}
                 step={0.1}
                 inputDecimals={1}
-                displayValue={`${gapMm.toFixed(1)} mm`}
+                displayValue={gapMm.toFixed(1)}
                 aria-label={t('baseplate.stackPrint.gap.label')}
               />
             </SettingsRow>
@@ -95,15 +95,7 @@ export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSe
             </p>
 
             <p className="text-[11px] leading-relaxed text-content-tertiary">
-              {t('baseplate.stackPrint.hint')}
-            </p>
-
-            <p className="text-[11px] leading-relaxed text-warning/90">
               {t('baseplate.stackPrint.featuresOff')}
-            </p>
-
-            <p className="text-[11px] leading-relaxed text-content-tertiary">
-              {t('baseplate.stackPrint.separationTip')}
             </p>
           </>
         }

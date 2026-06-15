@@ -2104,15 +2104,12 @@ const en: Record<string, string> = {
     'Sized for a {nozzle}mm nozzle — dovetail keys and snap clips are enlarged to stay printable.',
   'baseplate.stackPrint.badge': 'Experimental',
   'baseplate.stackPrint.enable': 'Vertical stack',
-  'baseplate.stackPrint.hint': 'Test a small stack (2–3 plates) first to dial in the gap.',
   'baseplate.stackPrint.summary': '{stacks} stacks · {plates} plates',
   'baseplate.stackPrint.exportBanner':
     'Stack printing: {stacks} stacks ({plates} plates) export as a ZIP with a print guide.',
   'baseplate.stackPrint.gap.label': 'Gap',
   'baseplate.stackPrint.gap.info':
-    'Air gap between stacked plates. About 0.2mm (one layer) is typical; increase it if plates fuse together.',
-  'baseplate.stackPrint.separationTip':
-    'For easy separation, fill the gap with a slicer support interface in PETG or “Support for PLA”.',
+    'Air gap between stacked plates — about 0.2mm (one layer). Test a small stack first to dial it in. For easy separation, fill the gap with a slicer support interface in PETG or “Support for PLA”.',
   'baseplate.stackPrint.featuresOff':
     'Connectors, magnet holes, and corner rounding are turned off while stacking.',
   'baseplate.stackPrint.separate': 'Separate',
