@@ -331,6 +331,7 @@ export function Sidebar() {
                         max={CONSTRAINTS.GRID_MAX}
                         step={widthStep}
                         size="sm"
+                        fullWidth
                         aria-label={t('sidebar.drawerWidthAria')}
                       />
                     </div>
@@ -349,6 +350,7 @@ export function Sidebar() {
                         max={CONSTRAINTS.GRID_MAX}
                         step={depthStep}
                         size="sm"
+                        fullWidth
                         aria-label={t('sidebar.drawerDepthAria')}
                       />
                     </div>
@@ -365,6 +367,7 @@ export function Sidebar() {
                         min={1}
                         max={CONSTRAINTS.GRID_MAX}
                         size="sm"
+                        fullWidth
                         aria-label={t('sidebar.drawerHeightAria')}
                         displayValue={`${drawer.height}u`}
                       />
