@@ -5,9 +5,8 @@
  *
  * Each target.surface is one of:
  *   - 'binDesigner:shape'    — Shape group (dimensions, shape, walls, lid)
- *   - 'binDesigner:colors'   — Multi-color group
  *   - 'binDesigner:interior' — Interior dividers, label tabs, scoop
- *   - 'binDesigner:base'     — Base attachments, physical units
+ *   - 'binDesigner:base'     — Base attachments, multi-color, physical units
  *
  * The ParameterPanel listens for `help-jump:binDesigner:*` events and
  * expands the corresponding StickyGroupHeader before the dispatcher
@@ -65,7 +64,7 @@ export const helpEntries: FeatureHelpEntry[] = [
     keywordsKey: 'help.target.binDesigner.colors.keywords',
     category: 'colors',
     routes: ['designer'],
-    target: { surface: 'binDesigner:colors', controlId: 'bd-colors' },
+    target: { surface: 'binDesigner:base', controlId: 'bd-colors' },
   },
   {
     id: 'feature/bin-designer/interior',
