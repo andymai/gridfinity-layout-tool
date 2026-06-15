@@ -581,7 +581,6 @@
   "binDesigner.loadingSharedDesign": "Cargando diseño compartido",
   "binDesigner.moreActionsForDesign": "Más acciones para {name}",
   "binDesigner.multiColor.enableHint": "Asigna diferentes filamentos a las partes del bin y exporta un 3MF multicolor.",
-  "binDesigner.multiColor.enableLabel": "Activar multicolor",
   "binDesigner.multiColor.experimental": "Experimental",
   "binDesigner.newDesign": "Nuevo Diseño",
   "binDesigner.newDesignConfirm": "¿Iniciar un nuevo diseño? Tu diseño actual se guarda y se puede cargar más tarde.",

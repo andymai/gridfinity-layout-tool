@@ -413,6 +413,8 @@ export interface WallConfig {
  * `front`/`back` are -Y/+Y.
  */
 export interface OverhangConfig {
+  /** Absent (legacy designs) → enabled is inferred from any non-zero side. */
+  readonly enabled?: boolean;
   readonly left: number;
   readonly right: number;
   readonly front: number;

@@ -30,11 +30,6 @@ export function ShapeSection() {
       label={t('binDesigner.shape.customShape')}
       checked={state.editingEnabled}
       onChange={handlers.toggleEditingEnabled}
-      badge={
-        <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning-muted text-warning">
-          {t('settings.experimental')}
-        </span>
-      }
       primaryControls={
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">

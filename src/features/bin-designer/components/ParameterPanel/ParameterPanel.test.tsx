@@ -90,10 +90,8 @@ describe('ParameterPanel', () => {
   it('shows mm info for dimensions', () => {
     render(<ParameterPanel />);
 
-    // Default width=2, depth=2, height=3 shows combined dimensions
-    // Format: "84 × 84 × 21 mm" (using gridUnitMm=42, heightUnitMm=7).
-    // Appears in both the section body and the always-visible header summary.
-    expect(screen.getAllByText(/84\s*×\s*84\s*×\s*21\s*mm/)).toHaveLength(2);
+    // 84 × 84 × 21 mm = width 2 / depth 2 / height 3 at gridUnitMm 42, heightUnitMm 7.
+    expect(screen.getByText(/84\s*×\s*84\s*×\s*21\s*mm/)).toBeInTheDocument();
   });
 
   it('swap button swaps width and depth values', () => {

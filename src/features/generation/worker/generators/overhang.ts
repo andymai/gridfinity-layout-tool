@@ -44,6 +44,7 @@ export interface OverhangExpansion {
 /** Clamp an `OverhangConfig` to outward-only values; absent → all zero. */
 export function resolveOverhang(overhang: OverhangConfig | undefined): ResolvedOverhang {
   if (!overhang) return ZERO;
+  if (overhang.enabled === false) return ZERO;
   return {
     left: Math.max(0, overhang.left),
     right: Math.max(0, overhang.right),

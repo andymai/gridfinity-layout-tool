@@ -26,6 +26,20 @@ describe('resolveOverhang', () => {
     expect(resolveOverhang({ left: 5, right: 0, front: 0, back: 0, feet: true }).feet).toBe(true);
     expect(resolveOverhang({ left: 5, right: 0, front: 0, back: 0 }).feet).toBe(false);
   });
+
+  it('returns zero when explicitly disabled, retaining nothing in the resolved value', () => {
+    expect(resolveOverhang({ left: 5, right: 5, front: 5, back: 5, enabled: false })).toEqual({
+      left: 0,
+      right: 0,
+      front: 0,
+      back: 0,
+      feet: false,
+    });
+  });
+
+  it('applies per-side values when enabled is omitted (legacy configs)', () => {
+    expect(resolveOverhang({ left: 3, right: 0, front: 0, back: 0 }).left).toBe(3);
+  });
 });
 
 describe('hasOverhang', () => {

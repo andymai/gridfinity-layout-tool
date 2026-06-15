@@ -3,14 +3,14 @@
  *
  * Grows the bin walls + stacking lip outward to fill the centering gap a
  * non-integral grid leaves in a drawer. Feet stay at the nominal footprint
- * (flat bottom under the overhang) unless the feet toggle is enabled.
- * Collapsed by default — a niche/advanced control. Suppressed for custom-shape
- * bins.
+ * (flat bottom under the overhang) unless the feet toggle is enabled. A feature
+ * toggle gates the per-side controls; per-side values are retained while off.
+ * Suppressed for custom-shape bins.
  */
 
-import { Checkbox, Collapsible, SliderInput } from '@/design-system';
+import { Checkbox, SliderInput } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
-import { FeatureGate } from '../FeatureGate';
+import { FeatureToggle } from '../FeatureToggle';
 import { useOverhangSection, type OverhangSide } from './useOverhangSection';
 
 export function OverhangSection() {
@@ -24,16 +24,16 @@ export function OverhangSection() {
   ];
 
   return (
-    <Collapsible
-      title={t('binDesigner.overhang.title')}
-      defaultExpanded={false}
-      summary={meta.summary}
-    >
-      <p className="mb-3 text-[11px] leading-relaxed text-content-tertiary">
-        {t('binDesigner.overhang.hint')}
-      </p>
-      <FeatureGate disabled={state.isCustomShape} reason={meta.disabledReason ?? ''}>
-        <div className="space-y-3">
+    <FeatureToggle
+      label={t('binDesigner.overhang.title')}
+      checked={state.enabled}
+      onChange={handlers.toggle}
+      disabledReason={meta.disabledReason}
+      primaryControls={
+        <>
+          <p className="text-[11px] leading-relaxed text-content-tertiary">
+            {t('binDesigner.overhang.hint')}
+          </p>
           {sides.map(({ side, label }) => (
             // Wrapper relays hover + keyboard focus to the 3D wall highlight
             // without touching the shared SliderInput primitive (onFocus/onBlur
@@ -57,7 +57,7 @@ export function OverhangSection() {
             </div>
           ))}
           <div
-            className="group flex cursor-pointer items-center justify-between pt-1"
+            className="group flex cursor-pointer items-center justify-between"
             onMouseEnter={state.hasOverhang ? () => handlers.setHovered('feet') : undefined}
             onMouseLeave={state.hasOverhang ? () => handlers.setHovered(null) : undefined}
             onFocus={state.hasOverhang ? () => handlers.setHovered('feet') : undefined}
@@ -85,8 +85,8 @@ export function OverhangSection() {
           <p className="text-[11px] leading-relaxed text-content-tertiary">
             {t('binDesigner.overhang.feetHint')}
           </p>
-        </div>
-      </FeatureGate>
-    </Collapsible>
+        </>
+      }
+    />
   );
 }

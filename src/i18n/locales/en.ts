@@ -1571,7 +1571,6 @@ const en: Record<string, string> = {
   'binDesigner.group.base': 'Base',
   'binDesigner.group.colors': 'Multi-Color',
   'binDesigner.multiColor.experimental': 'Experimental',
-  'binDesigner.multiColor.enableLabel': 'Enable multi-color',
   'binDesigner.multiColor.enableHint':
     'Assign different filaments to bin parts and export a multi-color 3MF.',
   'binDesigner.colors.body': 'Body',
@@ -1939,7 +1938,7 @@ const en: Record<string, string> = {
     'Start a new design? Your current design is saved and can be loaded later.',
   'binDesigner.newDesignCreated': 'New design created',
   'binDesigner.moreOptions': 'More options',
-  'binDesigner.setAsDefault': 'Set current settings as default for new bins',
+  'binDesigner.setAsDefault': 'Set as default for new bins',
   'binDesigner.savedAsDefault': 'Saved as the default for new bins',
   'binDesigner.resetFactoryDefaults': 'Reset to factory defaults',
   'binDesigner.factoryDefaultsRestored': 'Factory defaults restored',

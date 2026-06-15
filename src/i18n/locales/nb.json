@@ -581,7 +581,6 @@
   "binDesigner.loadingSharedDesign": "Laster delt design",
   "binDesigner.moreActionsForDesign": "Flere handlinger for {name}",
   "binDesigner.multiColor.enableHint": "Tildel ulike filamenter til delene av bingen og eksporter en flerfarget 3MF-fil.",
-  "binDesigner.multiColor.enableLabel": "Aktiver flerfarget",
   "binDesigner.multiColor.experimental": "Eksperimentell",
   "binDesigner.newDesign": "Nytt design",
   "binDesigner.newDesignConfirm": "Starte et nytt design? Det nåværende designet ditt er lagret og kan lastes inn igjen senere.",

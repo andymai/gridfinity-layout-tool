@@ -179,6 +179,7 @@ export function createParamSlice(set: Set, get: Get) {
           front: Math.max(0, next.front),
           back: Math.max(0, next.back),
           feet: next.feet ?? false,
+          ...(next.enabled !== undefined ? { enabled: next.enabled } : {}),
         };
       });
     },

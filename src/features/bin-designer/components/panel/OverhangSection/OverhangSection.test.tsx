@@ -14,6 +14,12 @@ describe('OverhangSection', () => {
   });
 
   it('renders the four per-side controls', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: { left: 0, right: 0, front: 0, back: 0, enabled: true },
+      },
+    });
     render(<OverhangSection />);
     expect(screen.getByText('Overhang')).toBeDefined();
     expect(screen.getByText('Left')).toBeDefined();
@@ -22,15 +28,22 @@ describe('OverhangSection', () => {
     expect(screen.getByText('Back')).toBeDefined();
   });
 
-  it('shows a summary once a side has a non-zero overhang', () => {
+  it('treats a legacy non-zero overhang as enabled and reveals the controls', () => {
     useDesignerStore.setState({
       params: { ...DEFAULT_BIN_PARAMS, overhang: { left: 3, right: 0, front: 0, back: 2 } },
     });
     render(<OverhangSection />);
-    expect(screen.getByText(/L3/)).toBeDefined();
+    expect(screen.getByText('Left')).toBeDefined();
+    expect(screen.getByText('Back')).toBeDefined();
   });
 
   it('sets and clears the hovered side on pointer enter/leave', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: { left: 0, right: 0, front: 0, back: 0, enabled: true },
+      },
+    });
     render(<OverhangSection />);
     // React derives onMouseEnter/Leave from delegated mouseover/mouseout.
     const left = screen.getByText('Left');
@@ -41,6 +54,12 @@ describe('OverhangSection', () => {
   });
 
   it('does not target the feet region when there is no overhang', () => {
+    useDesignerStore.setState({
+      params: {
+        ...DEFAULT_BIN_PARAMS,
+        overhang: { left: 0, right: 0, front: 0, back: 0, enabled: true },
+      },
+    });
     render(<OverhangSection />);
     fireEvent.mouseOver(screen.getByText('Feet under overhang'));
     // Feet toggle is disabled without overhang → hover stays null.
@@ -67,7 +86,6 @@ describe('OverhangSection', () => {
       params: { ...DEFAULT_BIN_PARAMS, width: 2, depth: 2, cellMask: mask },
     });
     render(<OverhangSection />);
-    const gate = document.querySelector('[aria-disabled="true"]');
-    expect(gate).not.toBeNull();
+    expect(screen.getByRole('switch')).toBeDisabled();
   });
 });

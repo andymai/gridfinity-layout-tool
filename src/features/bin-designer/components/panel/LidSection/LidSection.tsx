@@ -77,11 +77,6 @@ export function LidSection() {
       onChange={handlers.toggleEnabled}
       disabledReason={state.disabledReason}
       valueSummary={state.valueSummary}
-      badge={
-        <span className="rounded bg-warning-muted px-1.5 py-0.5 text-[10px] font-medium text-warning">
-          {t('settings.experimental')}
-        </span>
-      }
     >
       {/* Print-time hint — the mating cavity and click rails are
           downward-facing overhangs that need supports for a clean print. */}

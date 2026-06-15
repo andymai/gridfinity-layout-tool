@@ -67,7 +67,7 @@ export function DimensionsSection() {
       </div>
 
       {/* Physical dimensions display */}
-      <div className="flex items-center gap-1.5 text-xs text-content-tertiary">
+      <div className="flex items-center justify-center gap-1.5 text-xs text-content-tertiary">
         <RulerIcon size="xs" />
         <span className="tabular-nums">
           {state.widthMm.toFixed(0)} × {state.depthMm.toFixed(0)} × {state.heightMm.toFixed(0)} mm

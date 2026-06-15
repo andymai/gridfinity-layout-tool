@@ -581,7 +581,6 @@
   "binDesigner.loadingSharedDesign": "Завантаження спільного дизайну",
   "binDesigner.moreActionsForDesign": "Більше дій для {name}",
   "binDesigner.multiColor.enableHint": "Призначте різні філаменти для частин контейнера і експортуйте багатоколірний файл 3MF.",
-  "binDesigner.multiColor.enableLabel": "Увімкнути багатоколірний режим",
   "binDesigner.multiColor.experimental": "Експериментальний",
   "binDesigner.newDesign": "Новий дизайн",
   "binDesigner.newDesignConfirm": "Почати новий дизайн? Ваш поточний дизайн збережено й може бути завантажений пізніше.",

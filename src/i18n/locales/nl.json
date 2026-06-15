@@ -581,7 +581,6 @@
   "binDesigner.loadingSharedDesign": "Gedeeld design laden",
   "binDesigner.moreActionsForDesign": "Meer acties voor {name}",
   "binDesigner.multiColor.enableHint": "Wijs verschillende filamenten toe aan bakonderdelen en exporteer een meerkleurig 3MF-bestand.",
-  "binDesigner.multiColor.enableLabel": "Meerkleurig inschakelen",
   "binDesigner.multiColor.experimental": "Experimenteel",
   "binDesigner.newDesign": "Nieuw design",
   "binDesigner.newDesignConfirm": "Een nieuw ontwerp starten? Je huidige ontwerp is opgeslagen en kan later worden geladen.",

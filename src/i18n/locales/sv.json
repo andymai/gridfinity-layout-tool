@@ -581,7 +581,6 @@
   "binDesigner.loadingSharedDesign": "Laddar delad design",
   "binDesigner.moreActionsForDesign": "Fler åtgärder för {name}",
   "binDesigner.multiColor.enableHint": "Tilldela olika filament till bin-delar och exportera en flerfärgad 3MF-fil.",
-  "binDesigner.multiColor.enableLabel": "Aktivera flerfärgad",
   "binDesigner.multiColor.experimental": "Experimentell",
   "binDesigner.newDesign": "Ny design",
   "binDesigner.newDesignConfirm": "Starta en ny design? Din nuvarande design är sparad och kan laddas senare.",

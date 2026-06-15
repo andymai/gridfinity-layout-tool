@@ -581,7 +581,6 @@
   "binDesigner.loadingSharedDesign": "Chargement du design partagé",
   "binDesigner.moreActionsForDesign": "Plus d'actions pour {name}",
   "binDesigner.multiColor.enableHint": "Assignez différents filaments aux pièces du bac et exportez un 3MF multicolore.",
-  "binDesigner.multiColor.enableLabel": "Activer le multicolore",
   "binDesigner.multiColor.experimental": "Expérimental",
   "binDesigner.newDesign": "Nouveau Design",
   "binDesigner.newDesignConfirm": "Commencer un nouveau design ? Votre design actuel est sauvegardé et peut être chargé ultérieurement.",

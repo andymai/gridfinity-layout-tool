@@ -581,7 +581,6 @@
   "binDesigner.loadingSharedDesign": "共有デザインを読み込み中",
   "binDesigner.moreActionsForDesign": "{name}のその他の操作",
   "binDesigner.multiColor.enableHint": "ビンの各パーツに異なるフィラメントを割り当てて、マルチカラー3MFをエクスポートします。",
-  "binDesigner.multiColor.enableLabel": "マルチカラーを有効化",
   "binDesigner.multiColor.experimental": "試験的",
   "binDesigner.newDesign": "新しいデザイン",
   "binDesigner.newDesignConfirm": "新しいデザインを開始しますか?現在のデザインは保存され、後で読み込み可能です。",

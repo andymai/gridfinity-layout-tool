@@ -60,14 +60,12 @@ export function ParameterPanel() {
   // Group expansion state — controlled so help-modal deep-links can force a
   // section open before the dispatcher scrolls and pulses its target.
   const [shapeExpanded, setShapeExpanded] = useState(true);
-  const [colorsExpanded, setColorsExpanded] = useState(true);
   const [interiorExpanded, setInteriorExpanded] = useState(true);
   const [baseExpanded, setBaseExpanded] = useState(true);
 
   useEffect(() => {
     const handlers: Record<string, () => void> = {
       [helpJumpEventName('binDesigner:shape')]: () => setShapeExpanded(true),
-      [helpJumpEventName('binDesigner:colors')]: () => setColorsExpanded(true),
       [helpJumpEventName('binDesigner:interior')]: () => setInteriorExpanded(true),
       [helpJumpEventName('binDesigner:base')]: () => setBaseExpanded(true),
     };
@@ -113,28 +111,12 @@ export function ParameterPanel() {
               </PanelSection>
             )}
             <PanelSection helpTarget="bd-walls">
-              {/* Wall thickness works for any footprint; pattern/cutouts/handle
-                  gate themselves inside WallsSection. */}
               <WallsSection />
-            </PanelSection>
-            <PanelSection helpTarget="bd-lid">
-              {/* Lid is a companion piece auto-fit to the bin's lip. Internally
-                  gated when params.base.stackingLip is off (lid mates with lip). */}
-              <LidSection />
+              <div data-help-target="bd-lid" className="mt-4">
+                <LidSection />
+              </div>
             </PanelSection>
           </div>
-        </StickyGroupHeader>
-
-        {/* Multi-Color group — between Shape and Interior */}
-        <StickyGroupHeader
-          title={t('binDesigner.group.colors')}
-          expanded={colorsExpanded}
-          onExpandedChange={setColorsExpanded}
-          badge={t('binDesigner.multiColor.experimental')}
-        >
-          <PanelSection helpTarget="bd-colors">
-            <ColorsSection />
-          </PanelSection>
         </StickyGroupHeader>
 
         {/* Interior group */}
@@ -175,6 +157,9 @@ export function ParameterPanel() {
           <div className="divide-y divide-stroke-subtle/50">
             <PanelSection helpTarget="bd-base">
               <BaseSection />
+            </PanelSection>
+            <PanelSection helpTarget="bd-colors">
+              <ColorsSection />
             </PanelSection>
             <PanelSection helpTarget="bd-physical-units">
               <PhysicalUnitsSection />

@@ -194,7 +194,7 @@ export function SnappingSlider({
     <div className={disabled ? 'opacity-50' : ''}>
       {/* Label row with prominent value */}
       <div className="mb-3 flex items-center justify-between">
-        <label htmlFor={id} className="text-xs font-medium text-content-secondary">
+        <label htmlFor={id} className="text-xs text-content-secondary">
           {label}
         </label>
         <span

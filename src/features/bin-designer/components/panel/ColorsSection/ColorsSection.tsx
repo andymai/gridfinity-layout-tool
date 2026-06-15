@@ -26,6 +26,7 @@ import { useTranslation } from '@/i18n';
 import { PipetteIcon } from '@/design-system/Icon';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
+import { FeatureToggle } from '../FeatureToggle';
 import { ColorZoneRow } from './ColorZoneRow';
 import { ColorGroup } from './ColorGroup';
 import { ColorsHintBanner } from './ColorsHintBanner';
@@ -229,166 +230,152 @@ export function ColorsSection() {
     [startTransaction, commitTransaction, updateFeatureColors]
   );
 
-  const enableLabel = t('binDesigner.multiColor.enableLabel');
   const handleToggleMultiColor = useCallback(() => {
     updateFeatureColors({ enabled: !multiColorEnabled });
   }, [multiColorEnabled, updateFeatureColors]);
 
   return (
     <div className="space-y-2">
-      {/* Top toggle row — gates the zone editor below */}
-      <div className="flex items-center justify-between py-1.5">
-        <span className="text-xs text-content-secondary">{enableLabel}</span>
-        <div className="flex items-center gap-2">
-          {multiColorEnabled && (
-            <button
-              type="button"
-              onClick={() => setColorTool(colorTool === 'eyedropper' ? null : 'eyedropper')}
-              aria-pressed={colorTool === 'eyedropper'}
-              aria-label={t('binDesigner.colors.eyedropper.enter')}
-              title={t('binDesigner.colors.eyedropper.enter')}
-              className={`flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset ${
-                colorTool === 'eyedropper' ? SEGMENT_ACTIVE : SEGMENT_INACTIVE
-              }`}
-            >
-              <PipetteIcon size="sm" />
-            </button>
-          )}
-          {multiColorEnabled && (
-            <ColorsActionsMenu
-              featureColors={featureColors}
-              onMatchAllToBody={handleMatchAllToBody}
-              onApplyPalette={handleApplyPalette}
-            />
-          )}
-          <button
-            type="button"
-            role="switch"
-            aria-checked={multiColorEnabled}
-            aria-label={enableLabel}
-            onClick={handleToggleMultiColor}
-            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
-              multiColorEnabled ? 'bg-accent' : 'bg-stroke-subtle'
-            }`}
-          >
-            <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
-                multiColorEnabled ? 'translate-x-6' : 'translate-x-0.5'
-              }`}
-            />
-          </button>
-        </div>
-      </div>
+      <FeatureToggle
+        label={t('binDesigner.group.colors')}
+        checked={multiColorEnabled}
+        onChange={handleToggleMultiColor}
+        badge={
+          <span className="rounded bg-warning-muted px-1.5 py-0.5 text-[10px] font-medium text-warning">
+            {t('binDesigner.multiColor.experimental')}
+          </span>
+        }
+        primaryControls={
+          <>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setColorTool(colorTool === 'eyedropper' ? null : 'eyedropper')}
+                aria-pressed={colorTool === 'eyedropper'}
+                aria-label={t('binDesigner.colors.eyedropper.enter')}
+                title={t('binDesigner.colors.eyedropper.enter')}
+                className={`flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset ${
+                  colorTool === 'eyedropper' ? SEGMENT_ACTIVE : SEGMENT_INACTIVE
+                }`}
+              >
+                <PipetteIcon size="sm" />
+              </button>
+              <ColorsActionsMenu
+                featureColors={featureColors}
+                onMatchAllToBody={handleMatchAllToBody}
+                onApplyPalette={handleApplyPalette}
+              />
+            </div>
 
+            <ColorsHintBanner />
+
+            <ColorGroup title={t('binDesigner.colors.group.exterior')}>
+              {renderZone(
+                'body',
+                t('binDesigner.colors.body'),
+                featureColors.body,
+                DEFAULT_FEATURE_COLOR_CONFIG.body,
+                (hex) => updateFeatureColors({ body: hex })
+              )}
+              {hasLip && (
+                // Lip uses the umbrella 'lip' hover target so the whole lip
+                // glows on row hover. The picker writes the chosen hex into
+                // all four corner slots — the per-corner schema stays valid
+                // and the per-corner UI can be restored without a migration.
+                <ColorZoneRow
+                  zone="lip"
+                  label={t('binDesigner.colors.lip')}
+                  color={lipColor}
+                  defaultColor={DEFAULT_FEATURE_COLOR_CONFIG.lip.frontLeft}
+                  otherColors={buildOtherColors('lip:frontLeft', colorsByZone)}
+                  bodyColor={featureColors.body}
+                  recentColors={recentColors}
+                  onChange={(hex) => {
+                    remember(hex);
+                    updateFeatureColors({
+                      lip: {
+                        frontLeft: hex,
+                        frontRight: hex,
+                        backRight: hex,
+                        backLeft: hex,
+                      },
+                    });
+                  }}
+                  onHover={setHoveredColorZone}
+                  onGestureStart={startTransaction}
+                  onGestureEnd={commitTransaction}
+                  // During swap mode, route the lip click into the state machine
+                  // through `lip:frontLeft` — the canonical representative for
+                  // the now-single-color lip (mirror-on-write means picking any
+                  // corner spreads to all four). Without this override the row
+                  // would open the picker mid-swap.
+                  onClickOverride={
+                    swapActive ? () => swapZoneWithToast('lip:frontLeft') : undefined
+                  }
+                />
+              )}
+              {hasBase &&
+                renderZone(
+                  'base',
+                  t('binDesigner.colors.base'),
+                  featureColors.base,
+                  DEFAULT_FEATURE_COLOR_CONFIG.base,
+                  (hex) => updateFeatureColors({ base: hex })
+                )}
+            </ColorGroup>
+
+            <ColorGroup
+              title={t('binDesigner.colors.group.interior')}
+              visible={hasScoop || hasDividers}
+              growthTick={interiorGrowthTick}
+            >
+              {hasScoop &&
+                renderZone(
+                  'scoop',
+                  t('binDesigner.colors.scoop'),
+                  featureColors.scoop,
+                  DEFAULT_FEATURE_COLOR_CONFIG.scoop,
+                  (hex) => updateFeatureColors({ scoop: hex })
+                )}
+              {hasDividers &&
+                renderZone(
+                  'dividers',
+                  t('binDesigner.colors.dividers'),
+                  featureColors.dividers,
+                  DEFAULT_FEATURE_COLOR_CONFIG.dividers,
+                  (hex) => updateFeatureColors({ dividers: hex })
+                )}
+            </ColorGroup>
+
+            <ColorGroup
+              title={t('binDesigner.colors.group.addons')}
+              visible={hasLabelTabs || hasLid}
+              growthTick={addonsGrowthTick}
+            >
+              {hasLabelTabs &&
+                renderZone(
+                  'labelTab',
+                  t('binDesigner.colors.labelTab'),
+                  featureColors.labelTab,
+                  DEFAULT_FEATURE_COLOR_CONFIG.labelTab,
+                  (hex) => updateFeatureColors({ labelTab: hex })
+                )}
+              {hasLid &&
+                renderZone(
+                  'lid',
+                  t('binDesigner.colors.lid'),
+                  featureColors.lid,
+                  DEFAULT_FEATURE_COLOR_CONFIG.lid,
+                  (hex) => updateFeatureColors({ lid: hex })
+                )}
+            </ColorGroup>
+          </>
+        }
+      />
       {!multiColorEnabled && (
         <p className="text-[11px] text-content-tertiary leading-snug">
           {t('binDesigner.multiColor.enableHint')}
         </p>
-      )}
-
-      {multiColorEnabled && (
-        <>
-          <ColorsHintBanner />
-
-          <ColorGroup title={t('binDesigner.colors.group.exterior')}>
-            {renderZone(
-              'body',
-              t('binDesigner.colors.body'),
-              featureColors.body,
-              DEFAULT_FEATURE_COLOR_CONFIG.body,
-              (hex) => updateFeatureColors({ body: hex })
-            )}
-            {hasLip && (
-              // Lip uses the umbrella 'lip' hover target so the whole lip
-              // glows on row hover. The picker writes the chosen hex into
-              // all four corner slots — the per-corner schema stays valid
-              // and the per-corner UI can be restored without a migration.
-              <ColorZoneRow
-                zone="lip"
-                label={t('binDesigner.colors.lip')}
-                color={lipColor}
-                defaultColor={DEFAULT_FEATURE_COLOR_CONFIG.lip.frontLeft}
-                otherColors={buildOtherColors('lip:frontLeft', colorsByZone)}
-                bodyColor={featureColors.body}
-                recentColors={recentColors}
-                onChange={(hex) => {
-                  remember(hex);
-                  updateFeatureColors({
-                    lip: {
-                      frontLeft: hex,
-                      frontRight: hex,
-                      backRight: hex,
-                      backLeft: hex,
-                    },
-                  });
-                }}
-                onHover={setHoveredColorZone}
-                onGestureStart={startTransaction}
-                onGestureEnd={commitTransaction}
-                // During swap mode, route the lip click into the state machine
-                // through `lip:frontLeft` — the canonical representative for
-                // the now-single-color lip (mirror-on-write means picking any
-                // corner spreads to all four). Without this override the row
-                // would open the picker mid-swap.
-                onClickOverride={swapActive ? () => swapZoneWithToast('lip:frontLeft') : undefined}
-              />
-            )}
-            {hasBase &&
-              renderZone(
-                'base',
-                t('binDesigner.colors.base'),
-                featureColors.base,
-                DEFAULT_FEATURE_COLOR_CONFIG.base,
-                (hex) => updateFeatureColors({ base: hex })
-              )}
-          </ColorGroup>
-
-          <ColorGroup
-            title={t('binDesigner.colors.group.interior')}
-            visible={hasScoop || hasDividers}
-            growthTick={interiorGrowthTick}
-          >
-            {hasScoop &&
-              renderZone(
-                'scoop',
-                t('binDesigner.colors.scoop'),
-                featureColors.scoop,
-                DEFAULT_FEATURE_COLOR_CONFIG.scoop,
-                (hex) => updateFeatureColors({ scoop: hex })
-              )}
-            {hasDividers &&
-              renderZone(
-                'dividers',
-                t('binDesigner.colors.dividers'),
-                featureColors.dividers,
-                DEFAULT_FEATURE_COLOR_CONFIG.dividers,
-                (hex) => updateFeatureColors({ dividers: hex })
-              )}
-          </ColorGroup>
-
-          <ColorGroup
-            title={t('binDesigner.colors.group.addons')}
-            visible={hasLabelTabs || hasLid}
-            growthTick={addonsGrowthTick}
-          >
-            {hasLabelTabs &&
-              renderZone(
-                'labelTab',
-                t('binDesigner.colors.labelTab'),
-                featureColors.labelTab,
-                DEFAULT_FEATURE_COLOR_CONFIG.labelTab,
-                (hex) => updateFeatureColors({ labelTab: hex })
-              )}
-            {hasLid &&
-              renderZone(
-                'lid',
-                t('binDesigner.colors.lid'),
-                featureColors.lid,
-                DEFAULT_FEATURE_COLOR_CONFIG.lid,
-                (hex) => updateFeatureColors({ lid: hex })
-              )}
-          </ColorGroup>
-        </>
       )}
     </div>
   );

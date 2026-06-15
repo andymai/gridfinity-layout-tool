@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useTranslation } from '@/i18n';
@@ -47,27 +47,21 @@ export function useOverhangSection() {
   }, [isCustomShape, setHoveredOverhangSide]);
 
   const total = overhang.left + overhang.right + overhang.front + overhang.back;
+  const hasOverhang = total > 0;
+  const enabled = overhang.enabled ?? hasOverhang;
 
-  const summary = useMemo(() => {
-    if (isCustomShape || total <= 0) return undefined;
-    // Compact axis-code chip (only non-zero sides), e.g. "L3 B2 mm". The codes
-    // L/R/F/B + mm are glanceable, not translatable prose.
-    const parts: string[] = [];
-    if (overhang.left > 0) parts.push(`L${overhang.left}`);
-    if (overhang.right > 0) parts.push(`R${overhang.right}`);
-    if (overhang.front > 0) parts.push(`F${overhang.front}`);
-    if (overhang.back > 0) parts.push(`B${overhang.back}`);
-    return `${parts.join(' ')} mm`;
-  }, [isCustomShape, total, overhang]);
+  const toggle = useCallback(() => {
+    updateOverhang({ enabled: !enabled });
+  }, [enabled, updateOverhang]);
 
   // Overhang is suppressed for custom-shape (mask) bins in the generator, so
   // surface that as a disabled state rather than silently ignoring input.
   const disabledReason = isCustomShape ? t('binDesigner.shape.custom.hint') : undefined;
 
   return {
-    state: { overhang, isCustomShape, feet: overhang.feet ?? false, hasOverhang: total > 0 },
-    handlers: { setSide, toggleFeet, setHovered },
-    meta: { summary, disabledReason },
+    state: { overhang, isCustomShape, feet: overhang.feet ?? false, hasOverhang, enabled },
+    handlers: { setSide, toggleFeet, setHovered, toggle },
+    meta: { disabledReason },
     t,
   };
 }
