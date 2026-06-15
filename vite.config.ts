@@ -6,6 +6,7 @@ import wasm from 'vite-plugin-wasm';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath, URL } from 'node:url';
 import { versionPlugin } from './scripts/vite-plugin-version';
+import { contentRoutesPlugin } from './scripts/vite-plugin-content-routes';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -44,6 +45,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     versionPlugin(),
+    contentRoutesPlugin(),
     VitePWA({
       // 'prompt' so the smoke gate (src/shared/pwa/smokeGate.ts) controls activation.
       // With 'autoUpdate' the new SW would auto-skip-waiting on install, defeating the gate.
