@@ -8,7 +8,7 @@
  * The slab extends asymmetrically when padding differs per side.
  */
 
-import { useRef, useCallback, useMemo, useState } from 'react';
+import { useRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { useShallow } from 'zustand/react/shallow';
@@ -170,6 +170,10 @@ export function BaseplatePreview({
     (b: { widthMm: number; depthMm: number; heightMm: number }) => setStackBounds(b),
     []
   );
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing opacity gate to stackEnabled toggle; stale bounds cause a dark-flash on re-entry
+    if (!stackEnabled) setStackBounds(null);
+  }, [stackEnabled]);
   const targetZ = stackEnabled && stackBounds ? stackBounds.heightMm / 2 : totalH / 2;
 
   const baseMaxOrbitDistance = useMemo(

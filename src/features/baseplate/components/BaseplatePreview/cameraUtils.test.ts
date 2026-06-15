@@ -153,7 +153,7 @@ describe('cameraUtils', () => {
       const max = calculateMaxOrbitDistance(ideal);
       const far = calculateFarPlane(max);
 
-      // Bounding sphere of the baseplate (slab + socket height).
+      // Bounding sphere of the baseplate footprint (width only, height not framed).
       const halfW = (50 * 42 + 100 + 100) / 2;
       const boundingRadius = Math.sqrt(2 * halfW * halfW);
 
