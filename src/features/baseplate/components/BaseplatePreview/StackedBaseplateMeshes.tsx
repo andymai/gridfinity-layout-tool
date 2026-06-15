@@ -1,7 +1,6 @@
 /**
- * Stack-print preview: renders the baseplate as flipped vertical towers (one per
- * physical print job) matching the export, separated by an interactive slider.
- * Separator sheets render translucent in the second-filament color.
+ * Stack-print preview: renders each baseplate tower (bottom plate upright, the
+ * rest flipped) the way it prints, separated by an interactive slider.
  */
 
 import { useEffect, useMemo } from 'react';
@@ -28,8 +27,6 @@ const EMPTY_GEO = { vertices: null, normals: null, indices: null, edgeVertices: 
 interface StackedBaseplateMeshesProps {
   readonly stack: StackPrintParams;
   readonly color: string;
-  /** Second-filament color for the separator sheets. */
-  readonly separatorColor: string;
   /** Extra explode distance (mm) from the preview slider; 0 = true export gap. */
   readonly separationMm: number;
   /** Reports layout extents so the parent can frame the camera. */
@@ -54,7 +51,6 @@ function toMeshArrays(mesh: {
 export function StackedBaseplateMeshes({
   stack,
   color,
-  separatorColor,
   separationMm,
   onBounds,
 }: StackedBaseplateMeshesProps) {
@@ -94,7 +90,7 @@ export function StackedBaseplateMeshes({
     );
     const groups = stackGroupsFromTiling(tiling, fullParams);
     const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, stack.gapMm);
-    const plan = planPhysicalStacks(groups, stack.sets, cap);
+    const plan = planPhysicalStacks(groups, cap);
     const isSplit = tiling?.isSplit ?? false;
 
     const towers: StackPreviewTower[] = [];
@@ -131,7 +127,6 @@ export function StackedBaseplateMeshes({
   }, [preview, onBounds, widthMm, depthMm, heightMm]);
 
   const plateGeo = useMeshGeometry(preview ? preview.plates : EMPTY_GEO);
-  const sheetGeo = useMeshGeometry(preview?.sheets ?? EMPTY_GEO);
 
   if (!preview || !plateGeo.geometry) return null;
 
@@ -149,25 +144,6 @@ export function StackedBaseplateMeshes({
         <lineSegments geometry={plateGeo.edgesGeometry} renderOrder={1}>
           <lineBasicMaterial {...EDGE_MATERIAL_PROPS} />
         </lineSegments>
-      )}
-
-      {sheetGeo.geometry && (
-        <mesh geometry={sheetGeo.geometry} renderOrder={2}>
-          {/* Translucent so the separator sheets read as removable waste. */}
-          <meshStandardMaterial
-            color={separatorColor}
-            emissive={separatorColor}
-            emissiveIntensity={0.2}
-            roughness={0.6}
-            metalness={0}
-            transparent
-            opacity={0.55}
-            depthWrite={false}
-            polygonOffset
-            polygonOffsetFactor={-2}
-            polygonOffsetUnits={-2}
-          />
-        </mesh>
       )}
     </>
   );

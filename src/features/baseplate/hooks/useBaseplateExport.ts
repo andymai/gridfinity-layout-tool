@@ -81,23 +81,19 @@ function parseStlSoup(stlData: ArrayBuffer): { vertices: Float32Array; normals: 
 
 /**
  * Build a stacked file from an already-parsed single-plate soup: bakes `copies`
- * flipped plates (separated by air gap or separator sheet) into real geometry.
- * STL stays single material; 3MF carries the separator sheet on a second
- * filament. The source is parsed once by the caller so capped multi-tower
- * exports don't re-parse the same mesh per tower.
+ * plates (bottom upright, the rest flipped, separated by an air gap) into real
+ * geometry. Single-material in both STL and 3MF. The source is parsed once by
+ * the caller so capped multi-tower exports don't re-parse the same mesh.
  */
 function buildStackedFileBlob(
   source: { vertices: Float32Array; normals: Float32Array },
   name: string,
   copies: number,
   format: 'stl' | '3mf',
-  stack: StackPrintParams,
-  plateColor: string,
-  separatorColor: string
+  stack: StackPrintParams
 ): Blob {
   const { vertices, normals } = source;
-  const includeSheets = stack.mode === 'sacrificialSheet' && format === '3mf';
-  const soup = buildStackExportSoup(vertices, normals, copies, stack, { includeSheets });
+  const soup = buildStackExportSoup(vertices, normals, copies, stack);
 
   if (format === 'stl') {
     return new Blob([buildSTLBuffer(soup.vertices, soup.normals, name)], {
@@ -105,16 +101,9 @@ function buildStackedFileBlob(
     });
   }
 
-  const colorConfig = soup.materialIndices
-    ? {
-        materials: [{ color: plateColor }, { color: separatorColor }],
-        triangleMaterialIndices: soup.materialIndices,
-      }
-    : undefined;
   return export3MF(soup.vertices, soup.normals, {
     name,
     printSettings: printSettingsFor3MF(),
-    colorConfig,
   });
 }
 
@@ -164,18 +153,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       // Stack-printing config (persisted in baseplateParams). STEP is a CAD
       // interchange format with no slicer stacking notion, so it never stacks.
       const stack = baseplateParams.stackPrint;
-      // Separator-sheet stacking needs per-object material assignment, which only
-      // 3MF carries. The export dialog forces 3MF, but guard here too so a
-      // programmatic/stale caller can't silently drop the separator sheet.
-      if (stack?.enabled && stack.mode === 'sacrificialSheet' && format !== '3mf') {
-        setIsExporting(false);
-        useToastStore.getState().addToast(t('baseplate.stackPrint.needs3mf'), 'error');
-        return false;
-      }
       const stackEnabled = stack?.enabled === true && format !== 'step';
-      const sets = stack?.sets ?? 1;
-      const plateColor = useSettingsStore.getState().settings.baseplateFilamentColor;
-      const separatorColor = useSettingsStore.getState().settings.baseplateSeparatorColor;
       const stackCap = stackHeightCap(
         useSettingsStore.getState().settings.printSettings.maxPrintHeightMm,
         GRIDFINITY_SPEC.SOCKET_HEIGHT,
@@ -248,7 +226,6 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
               const source = parseStlSoup(stlData);
               const towers = planPhysicalStacks(
                 [{ label: name, quantity: group.indices.length }],
-                sets,
                 stackCap
               );
               for (let s = 0; s < towers.length; s++) {
@@ -258,9 +235,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
                   `${baseNameNoExt}_${label}`,
                   towers[s].copies,
                   format,
-                  stack,
-                  plateColor,
-                  separatorColor
+                  stack
                 );
                 pieces.push({ data: await blob.arrayBuffer(), label });
               }
@@ -329,16 +304,14 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           // height cap — a single tower downloads directly, several go in a ZIP.
           const stlResult = await bridge.exportBaseplate(fullParams, 'stl');
           const source = parseStlSoup(stlResult.data);
-          const towers = planPhysicalStacks([{ label: 'plate', quantity: 1 }], sets, stackCap);
+          const towers = planPhysicalStacks([{ label: 'plate', quantity: 1 }], stackCap);
           if (towers.length === 1) {
             const blob = buildStackedFileBlob(
               source,
               baseNameNoExt,
               towers[0].copies,
               format,
-              stack,
-              plateColor,
-              separatorColor
+              stack
             );
             triggerDownload(blob, baseName);
           } else {
@@ -350,9 +323,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
                 `${baseNameNoExt}_${label}`,
                 towers[s].copies,
                 format,
-                stack,
-                plateColor,
-                separatorColor
+                stack
               );
               pieces.push({ data: await blob.arrayBuffer(), label });
             }

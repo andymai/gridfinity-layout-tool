@@ -11,12 +11,9 @@ import type {
 } from './types';
 import { binId, layerId, categoryId, mm, gridUnits, heightUnits } from './types';
 import {
-  STACK_PRINT_MIN_SETS,
-  STACK_PRINT_MAX_SETS,
   STACK_PRINT_MIN_GAP_MM,
   STACK_PRINT_MAX_GAP_MM,
   STACK_PRINT_DEFAULT_GAP_MM,
-  STACK_PRINT_DEFAULT_SETS,
 } from './types';
 import { CONNECTOR_FIT_OFFSET_MIN, CONNECTOR_FIT_OFFSET_MAX } from '@/shared/constants/connectors';
 export const CONSTRAINTS = {
@@ -348,10 +345,8 @@ function migrateStackPrint(value: unknown): StackPrintParams | undefined {
   if (!value || typeof value !== 'object') return undefined;
   const o = value as Record<string, unknown>;
   if (typeof o.enabled !== 'boolean') return undefined;
-  const mode = o.mode === 'sacrificialSheet' ? 'sacrificialSheet' : 'airGap';
   return {
     enabled: o.enabled,
-    sets: clampNumber(o.sets, STACK_PRINT_MIN_SETS, STACK_PRINT_MAX_SETS, STACK_PRINT_DEFAULT_SETS),
     gapMm: mm(
       clampNumber(
         o.gapMm,
@@ -360,7 +355,6 @@ function migrateStackPrint(value: unknown): StackPrintParams | undefined {
         STACK_PRINT_DEFAULT_GAP_MM
       )
     ),
-    mode,
   };
 }
 

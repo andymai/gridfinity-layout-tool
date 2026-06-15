@@ -1,14 +1,15 @@
 import { describe, it, expect } from 'vitest';
+import { mm } from '@/core/types';
 import type { StackPrintParams } from '@/core/types';
 import {
   planPhysicalStacks,
   stackHeightCap,
   stackStrideMm,
-  translateMeshZ,
+  translateMesh,
   flipMeshUpsideDown,
   concatMeshes,
   meshBounds,
-  buildInterfaceSheetMesh,
+  buildTowerLayers,
   type StackMeshArrays,
 } from './stackPrint';
 
@@ -23,13 +24,8 @@ function sampleMesh(): StackMeshArrays {
 }
 
 describe('planPhysicalStacks', () => {
-  it('multiplies group quantity by sets', () => {
-    const stacks = planPhysicalStacks([{ label: 'A', quantity: 3 }], 2, 8);
-    expect(stacks).toEqual([{ label: 'A', copies: 6 }]);
-  });
-
   it('splits a group taller than the cap into multiple stacks', () => {
-    const stacks = planPhysicalStacks([{ label: 'A', quantity: 18 }], 1, 8);
+    const stacks = planPhysicalStacks([{ label: 'A', quantity: 18 }], 8);
     expect(stacks).toEqual([
       { label: 'A', copies: 8 },
       { label: 'A', copies: 8 },
@@ -43,7 +39,6 @@ describe('planPhysicalStacks', () => {
         { label: 'A', quantity: 6 },
         { label: 'B', quantity: 2 },
       ],
-      1,
       8
     );
     expect(stacks).toEqual([
@@ -52,10 +47,11 @@ describe('planPhysicalStacks', () => {
     ]);
   });
 
-  it('skips zero/negative quantities and clamps bad sets to 1', () => {
+  it('skips zero/negative quantities and clamps a bad cap to 1', () => {
     expect(planPhysicalStacks([{ label: 'A', quantity: 0 }], 3)).toEqual([]);
-    expect(planPhysicalStacks([{ label: 'A', quantity: 2 }], Number.NaN, 8)).toEqual([
-      { label: 'A', copies: 2 },
+    expect(planPhysicalStacks([{ label: 'A', quantity: 2 }], Number.NaN)).toEqual([
+      { label: 'A', copies: 1 },
+      { label: 'A', copies: 1 },
     ]);
   });
 
@@ -64,90 +60,32 @@ describe('planPhysicalStacks', () => {
     const cases: {
       name: string;
       groups: Group[];
-      sets: number;
       cap?: number;
       expected: number[]; // tower copies, in order
     }[] = [
-      { name: 'empty groups', groups: [], sets: 1, expected: [] },
-      {
-        name: 'single tile, one set',
-        groups: [{ label: 'A', quantity: 1 }],
-        sets: 1,
-        expected: [1],
-      },
-      { name: 'exact cap', groups: [{ label: 'A', quantity: 8 }], sets: 1, cap: 8, expected: [8] },
-      {
-        name: 'one over cap',
-        groups: [{ label: 'A', quantity: 9 }],
-        sets: 1,
-        cap: 8,
-        expected: [8, 1],
-      },
-      {
-        name: 'two full caps',
-        groups: [{ label: 'A', quantity: 16 }],
-        sets: 1,
-        cap: 8,
-        expected: [8, 8],
-      },
-      {
-        name: 'sets multiplies then caps',
-        groups: [{ label: 'A', quantity: 5 }],
-        sets: 2,
-        cap: 8,
-        expected: [8, 2],
-      },
-      {
-        name: 'zero quantity skipped',
-        groups: [{ label: 'A', quantity: 0 }],
-        sets: 5,
-        expected: [],
-      },
-      {
-        name: 'negative quantity skipped',
-        groups: [{ label: 'A', quantity: -3 }],
-        sets: 1,
-        expected: [],
-      },
+      { name: 'empty groups', groups: [], expected: [] },
+      { name: 'single tile', groups: [{ label: 'A', quantity: 1 }], expected: [1] },
+      { name: 'exact cap', groups: [{ label: 'A', quantity: 8 }], cap: 8, expected: [8] },
+      { name: 'one over cap', groups: [{ label: 'A', quantity: 9 }], cap: 8, expected: [8, 1] },
+      { name: 'two full caps', groups: [{ label: 'A', quantity: 16 }], cap: 8, expected: [8, 8] },
+      { name: 'over one cap', groups: [{ label: 'A', quantity: 10 }], cap: 8, expected: [8, 2] },
+      { name: 'zero quantity skipped', groups: [{ label: 'A', quantity: 0 }], expected: [] },
+      { name: 'negative quantity skipped', groups: [{ label: 'A', quantity: -3 }], expected: [] },
       {
         name: 'fractional quantity floored',
         groups: [{ label: 'A', quantity: 3.9 }],
-        sets: 1,
-        cap: 8,
-        expected: [3],
-      },
-      {
-        name: 'fractional sets floored',
-        groups: [{ label: 'A', quantity: 2 }],
-        sets: 2.9,
-        cap: 8,
-        expected: [4],
-      },
-      {
-        name: 'sets=0 clamps to 1',
-        groups: [{ label: 'A', quantity: 3 }],
-        sets: 0,
-        cap: 8,
-        expected: [3],
-      },
-      {
-        name: 'sets negative clamps to 1',
-        groups: [{ label: 'A', quantity: 3 }],
-        sets: -4,
         cap: 8,
         expected: [3],
       },
       {
         name: 'NaN cap clamps to 1',
         groups: [{ label: 'A', quantity: 3 }],
-        sets: 1,
         cap: Number.NaN,
         expected: [1, 1, 1],
       },
       {
         name: 'cap=1 → one tower per copy',
         groups: [{ label: 'A', quantity: 3 }],
-        sets: 1,
         cap: 1,
         expected: [1, 1, 1],
       },
@@ -157,21 +95,16 @@ describe('planPhysicalStacks', () => {
           { label: 'A', quantity: 10 },
           { label: 'B', quantity: 1 },
         ],
-        sets: 1,
         cap: 8,
         expected: [8, 2, 1],
       },
     ];
 
-    it.each(cases)('$name → $expected', ({ groups, sets, cap, expected }) => {
-      const towers = planPhysicalStacks(groups, sets, cap);
+    it.each(cases)('$name → $expected', ({ groups, cap, expected }) => {
+      const towers = planPhysicalStacks(groups, cap);
       expect(towers.map((t) => t.copies)).toEqual(expected);
-      // Total baked copies must equal sum(floor(qty)>0 * floor(sets>=1)).
-      const safeSets = Number.isFinite(sets) ? Math.max(1, Math.floor(sets)) : 1;
-      const wantTotal = groups.reduce(
-        (s, g) => s + Math.max(0, Math.floor(g.quantity)) * safeSets,
-        0
-      );
+      // Total baked copies must equal sum(floor(qty)>0).
+      const wantTotal = groups.reduce((s, g) => s + Math.max(0, Math.floor(g.quantity)), 0);
       expect(towers.reduce((s, t) => s + t.copies, 0)).toBe(wantTotal);
     });
   });
@@ -210,21 +143,16 @@ describe('stackHeightCap', () => {
 });
 
 describe('stackStrideMm', () => {
-  const airGap: StackPrintParams = { enabled: true, sets: 1, gapMm: 0.2, mode: 'airGap' };
-  const sheet: StackPrintParams = { enabled: true, sets: 1, gapMm: 0.3, mode: 'sacrificialSheet' };
+  const airGap: StackPrintParams = { enabled: true, gapMm: mm(0.2) };
 
-  it('adds gapMm to plate height in air-gap mode', () => {
+  it('adds the air gap to plate height', () => {
     expect(stackStrideMm(14.5, airGap)).toBeCloseTo(14.7, 5);
-  });
-
-  it('adds gapMm (the sheet thickness) to plate height in sacrificial-sheet mode', () => {
-    expect(stackStrideMm(14.5, sheet)).toBeCloseTo(14.8, 5);
   });
 });
 
 describe('mesh transforms', () => {
-  it('translateMeshZ shifts only Z of vertices and edges', () => {
-    const out = translateMeshZ(sampleMesh(), 5);
+  it('translateMesh shifts vertices and edges by (dx, dy, dz)', () => {
+    const out = translateMesh(sampleMesh(), 0, 0, 5);
     expect(Array.from(out.vertices)).toEqual([0, 0, 5, 1, 0, 5, 0, 1, 5]);
     expect(Array.from(out.edgeVertices)).toEqual([0, 0, 5, 1, 0, 5]);
     expect(Array.from(out.normals)).toEqual([0, 0, 1, 0, 0, 1, 0, 0, 1]);
@@ -247,27 +175,41 @@ describe('mesh transforms', () => {
   });
 });
 
-describe('buildInterfaceSheetMesh', () => {
-  it('builds a closed box inset within the footprint at the requested Z', () => {
-    const sheet = buildInterfaceSheetMesh(
-      { minX: 0, maxX: 100, minY: 0, maxY: 50 },
-      0.4,
-      14.5,
-      0.5
-    );
-    // 6 faces * 2 triangles = 12 triangles
-    expect(sheet.indices.length).toBe(36);
-    const b = meshBounds(sheet.vertices);
-    expect(b.minX).toBeCloseTo(0.5, 5);
-    expect(b.maxX).toBeCloseTo(99.5, 5);
-    expect(b.minY).toBeCloseTo(0.5, 5);
-    expect(b.maxY).toBeCloseTo(49.5, 5);
-    expect(b.minZ).toBeCloseTo(14.5, 5);
-    expect(b.maxZ).toBeCloseTo(14.9, 5);
+describe('buildTowerLayers', () => {
+  /** A 10mm-tall plate, footprint X[0,20] Y[0,30], with a down-facing normal. */
+  function plate(): StackMeshArrays {
+    return {
+      vertices: new Float32Array([0, 0, 0, 20, 0, 0, 0, 30, 0, 0, 0, 10, 20, 0, 10, 0, 30, 10]),
+      normals: new Float32Array([0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1]),
+      indices: new Uint32Array([0, 1, 2, 3, 4, 5]),
+      edgeVertices: new Float32Array(0),
+    };
+  }
+
+  it('keeps the bottom plate upright and flips the rest, all sharing one XY footprint', () => {
+    const layers = buildTowerLayers(plate(), 3, 10.2);
+    expect(layers).toHaveLength(3);
+    // Bottom plate: upright at Z[0,10], normal unchanged (down-facing).
+    const b0 = meshBounds(layers[0].vertices);
+    expect(b0.minZ).toBeCloseTo(0, 5);
+    expect(b0.maxZ).toBeCloseTo(10, 5);
+    expect(layers[0].normals[2]).toBeCloseTo(-1, 5);
+    // Second plate: flipped (down normal becomes up), lifted by one stride.
+    const b1 = meshBounds(layers[1].vertices);
+    expect(b1.minZ).toBeCloseTo(10.2, 5);
+    expect(layers[1].normals[2]).toBeCloseTo(1, 5);
+    // All copies keep the source XY footprint (flip re-aligns the negated Y).
+    for (const layer of layers) {
+      const b = meshBounds(layer.vertices);
+      expect(b.minX).toBeCloseTo(0, 5);
+      expect(b.maxX).toBeCloseTo(20, 5);
+      expect(b.minY).toBeCloseTo(0, 5);
+      expect(b.maxY).toBeCloseTo(30, 5);
+    }
   });
 
-  it('produces a watertight vertex count (24 verts: 4 per face)', () => {
-    const sheet = buildInterfaceSheetMesh({ minX: 0, maxX: 10, minY: 0, maxY: 10 }, 0.4, 0);
-    expect(sheet.vertices.length).toBe(72); // 24 verts * 3
+  it('clamps copies to at least 1', () => {
+    expect(buildTowerLayers(plate(), 0, 10.2)).toHaveLength(1);
+    expect(buildTowerLayers(plate(), 3.9, 10.2)).toHaveLength(3);
   });
 });

@@ -76,28 +76,25 @@ export function generateStackPrintNote(stack: StackPrintParams): string {
 }
 
 function generateStackingSection(stack: StackPrintParams): string {
-  const interfaceLine =
-    stack.mode === 'sacrificialSheet'
-      ? `  Each seam holds a ${stack.gapMm}mm sheet of a second (dissimilar) filament so`
-      : `  Each plate is separated by a ${stack.gapMm}mm air gap so the layers`;
-  const peelLine =
-    stack.mode === 'sacrificialSheet'
-      ? '  the plates peel apart cleanly. Flex the stack to crack each plate free, then'
-      : '  do not fuse. Flex the stack to crack each plate free along the gaps —';
-  const finishLine =
-    stack.mode === 'sacrificialSheet'
-      ? '  remove the separator sheet from the pocket faces.'
-      : '  the plates are then ready to assemble.';
+  const gap = stack.gapMm;
   return [
     '─── Stack printing ──────────────────────────────',
     '',
     '  Each file is a ready-made VERTICAL STACK — print it ONCE to get all of its',
-    '  plates. The stack prints UPSIDE DOWN (pockets facing the bed) to minimise',
-    '  contact between plates.',
+    '  plates in a single job.',
     '',
-    interfaceLine,
-    peelLine,
-    finishLine,
+    '  ORIENTATION — print exactly as oriented in the file. The bottom plate is',
+    '  right-side up (solid bed adhesion); every plate above it is flipped upside',
+    '  down so the stack prints without supports. Do not lay it flat or re-orient.',
+    '',
+    `  SEPARATION — a ${gap}mm air gap sits between every plate so they don't fuse.`,
+    '  After printing, flex the stack or work a thin flat-head screwdriver into',
+    '  each gap to crack the plates apart. Go gently.',
+    '',
+    '  EASIER SEPARATION (multi-material printers, optional) — in your slicer,',
+    '  enable the support interface and assign it a non-stick second filament',
+    `  (PETG, or "Support for PLA"). The slicer fills the ${gap}mm gap with one`,
+    '  peel-away layer. This is a slicer setting, not part of this model.',
   ].join('\n');
 }
 
@@ -300,11 +297,7 @@ function generatePieceTable(
 
     if (stackPrint) {
       // Each physical stack is one file; an over-tall group splits into several.
-      const towers = planPhysicalStacks(
-        [{ label: name, quantity: count }],
-        stackPrint.sets,
-        stackCap
-      );
+      const towers = planPhysicalStacks([{ label: name, quantity: count }], stackCap);
       for (let s = 0; s < towers.length; s++) {
         const label = towers.length > 1 ? `${name}_${s + 1}` : name;
         const copies = towers[s].copies;

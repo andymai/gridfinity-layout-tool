@@ -30,22 +30,20 @@ export interface PhysicalStack {
 }
 
 /**
- * Plan the physical stacks for a drawer. Each group needs `quantity * sets`
- * copies; a group taller than `maxStackHeight` is split across several stacks
- * (e.g. 18 copies, cap 8 -> 8 + 8 + 2). Groups/quantities at or below zero are
- * skipped. Returns one entry per physical tower to print.
+ * Plan the physical stacks for a drawer. Each group needs `quantity` copies; a
+ * group taller than `maxStackHeight` is split across several stacks (e.g. 18
+ * copies, cap 8 -> 8 + 8 + 2). Groups/quantities at or below zero are skipped.
+ * Returns one entry per physical tower to print.
  */
 export function planPhysicalStacks(
   groups: readonly StackGroup[],
-  sets: number,
   maxStackHeight: number = STACK_PRINT_MAX_STACK_HEIGHT
 ): PhysicalStack[] {
-  const safeSets = Number.isFinite(sets) ? Math.max(1, Math.floor(sets)) : 1;
   const cap = Number.isFinite(maxStackHeight) ? Math.max(1, Math.floor(maxStackHeight)) : 1;
   const stacks: PhysicalStack[] = [];
 
   for (const group of groups) {
-    let remaining = Math.max(0, Math.floor(group.quantity)) * safeSets;
+    let remaining = Math.max(0, Math.floor(group.quantity));
     while (remaining > 0) {
       const copies = Math.min(cap, remaining);
       stacks.push({ label: group.label, copies });
@@ -88,17 +86,39 @@ export function stackGroupsFromTiling(
 }
 
 /**
- * Z stride (mm) between successive copies in a stack: plate height plus the
- * separation interface. `gapMm` sizes the interface in both modes — an air gap
- * in air-gap mode, the dissimilar-material sheet thickness in sheet mode.
+ * Z stride (mm) between successive copies in a stack: plate height plus the air
+ * gap that lets the printed tower snap apart.
  */
 export function stackStrideMm(plateHeightMm: number, stack: StackPrintParams): number {
   return plateHeightMm + Math.max(0, stack.gapMm);
 }
 
-/** Translate a copy of the mesh buffers along Z by `dzMm` (positions + edges). */
-export function translateMeshZ(mesh: StackMeshArrays, dzMm: number): StackMeshArrays {
-  return translateMesh(mesh, 0, 0, dzMm);
+/**
+ * Build the meshes for one printed tower of `copies` plates. The bottom plate
+ * stays upright (best bed adhesion, no overhang); every plate above it is
+ * flipped upside down — community practice that minimizes overhangs while the
+ * air gap lets the tower snap apart (see the baseplate README). All copies share
+ * the same XY footprint and the bottom sits at Z=0.
+ */
+export function buildTowerLayers(
+  base: StackMeshArrays,
+  copies: number,
+  strideMm: number
+): StackMeshArrays[] {
+  const n = Math.max(1, Math.floor(copies));
+  const b = meshBounds(base.vertices);
+  const midZ = (b.minZ + b.maxZ) / 2;
+  // Upright, floored to Z=0.
+  const upright = translateMesh(base, 0, 0, -b.minZ);
+  // Flipped about its own mid-plane. The flip negates Y, so re-add (minY+maxY)
+  // to land the mirrored footprint back on the upright one, then floor to Z=0.
+  const flipped = translateMesh(flipMeshUpsideDown(base, midZ), 0, b.minY + b.maxY, -b.minZ);
+  const layers: StackMeshArrays[] = [];
+  for (let i = 0; i < n; i++) {
+    const src = i === 0 ? upright : flipped;
+    layers.push(i === 0 ? src : translateMesh(src, 0, 0, i * strideMm));
+  }
+  return layers;
 }
 
 /** Translate a copy of the mesh buffers by (dx, dy, dz) (positions + edges). */
@@ -213,99 +233,4 @@ export function meshBounds(vertices: Float32Array): {
     if (z > maxZ) maxZ = z;
   }
   return { minX, maxX, minY, maxY, minZ, maxZ };
-}
-
-/**
- * Build a thin rectangular sacrificial interface sheet spanning the plate's XY
- * footprint, with its bottom face at `bottomZMm`. A small inset keeps the
- * sheet's square corners inside the plate's rounded outer wall so it never
- * pokes past the footprint. Returned as a closed box mesh (12 triangles).
- */
-export function buildInterfaceSheetMesh(
-  footprint: { minX: number; maxX: number; minY: number; maxY: number },
-  thicknessMm: number,
-  bottomZMm: number,
-  insetMm = 0.5
-): StackMeshArrays {
-  const x0 = footprint.minX + insetMm;
-  const x1 = footprint.maxX - insetMm;
-  const y0 = footprint.minY + insetMm;
-  const y1 = footprint.maxY - insetMm;
-  const z0 = bottomZMm;
-  const z1 = bottomZMm + Math.max(0, thicknessMm);
-
-  // 8 corners, duplicated per face so each face carries a flat normal.
-  const corners: ReadonlyArray<readonly [number, number, number]> = [
-    [x0, y0, z0],
-    [x1, y0, z0],
-    [x1, y1, z0],
-    [x0, y1, z0],
-    [x0, y0, z1],
-    [x1, y0, z1],
-    [x1, y1, z1],
-    [x0, y1, z1],
-  ];
-  // Each face: 4 corner indices (CCW seen from outside) + outward normal.
-  const faces: ReadonlyArray<{
-    idx: readonly [number, number, number, number];
-    n: readonly [number, number, number];
-  }> = [
-    { idx: [0, 3, 2, 1], n: [0, 0, -1] }, // bottom
-    { idx: [4, 5, 6, 7], n: [0, 0, 1] }, // top
-    { idx: [0, 1, 5, 4], n: [0, -1, 0] }, // front
-    { idx: [2, 3, 7, 6], n: [0, 1, 0] }, // back
-    { idx: [1, 2, 6, 5], n: [1, 0, 0] }, // right
-    { idx: [3, 0, 4, 7], n: [-1, 0, 0] }, // left
-  ];
-
-  const vertices = new Float32Array(faces.length * 4 * 3);
-  const normals = new Float32Array(faces.length * 4 * 3);
-  const indices = new Uint32Array(faces.length * 6);
-  let v = 0;
-  let ii = 0;
-  faces.forEach((face, f) => {
-    const baseVertex = f * 4;
-    for (let c = 0; c < 4; c++) {
-      const [cx, cy, cz] = corners[face.idx[c]];
-      vertices[v] = cx;
-      vertices[v + 1] = cy;
-      vertices[v + 2] = cz;
-      normals[v] = face.n[0];
-      normals[v + 1] = face.n[1];
-      normals[v + 2] = face.n[2];
-      v += 3;
-    }
-    indices[ii] = baseVertex;
-    indices[ii + 1] = baseVertex + 1;
-    indices[ii + 2] = baseVertex + 2;
-    indices[ii + 3] = baseVertex;
-    indices[ii + 4] = baseVertex + 2;
-    indices[ii + 5] = baseVertex + 3;
-    ii += 6;
-  });
-
-  // Edge wireframe: the 12 box edges (24 line-segment endpoints).
-  const edgePairs: ReadonlyArray<readonly [number, number]> = [
-    [0, 1],
-    [1, 2],
-    [2, 3],
-    [3, 0],
-    [4, 5],
-    [5, 6],
-    [6, 7],
-    [7, 4],
-    [0, 4],
-    [1, 5],
-    [2, 6],
-    [3, 7],
-  ];
-  const edgeVertices = new Float32Array(edgePairs.length * 2 * 3);
-  let e = 0;
-  for (const [a, b] of edgePairs) {
-    edgeVertices.set(corners[a], e);
-    edgeVertices.set(corners[b], e + 3);
-    e += 6;
-  }
-
-  return { vertices, normals, indices, edgeVertices };
 }

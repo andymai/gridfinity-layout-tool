@@ -2102,31 +2102,20 @@ const en: Record<string, string> = {
     'Your printer nozzle diameter. Dovetail keys and snap clips scale to it so they stay printable on wider nozzles. Geometry is unchanged at 0.4mm.',
   'baseplate.connectorNozzleNotice':
     'Sized for a {nozzle}mm nozzle — dovetail keys and snap clips are enlarged to stay printable.',
-  'baseplate.stackPrint.section': 'Stack for printing',
   'baseplate.stackPrint.badge': 'Experimental',
   'baseplate.stackPrint.enable': 'Print as a vertical stack',
   'baseplate.stackPrint.hint':
-    'Test a small stack (2–3 plates) on your printer first to dial in separation before committing to a tall stack.',
+    'The bottom plate prints right-side up and the rest upside down, separated by a thin air gap so the tower snaps apart. Test a small stack (2–3 plates) first to dial in the gap.',
   'baseplate.stackPrint.summary': '{stacks} stacks · {plates} plates',
-  'baseplate.stackPrint.mode.label': 'Separation',
-  'baseplate.stackPrint.mode.info':
-    "How stacked plates stay separate. An air gap works on any printer; a separator sheet prints a second filament between plates that won't bond to them.",
-  'baseplate.stackPrint.mode.airGap': 'Air gap (single material)',
-  'baseplate.stackPrint.mode.sacrificialSheet': 'Separator sheet (multi-material)',
-  'baseplate.stackPrint.sets.label': 'Sets',
-  'baseplate.stackPrint.sets.info':
-    'How many complete drawers to print. Each identical-piece group is stacked by the quantity your drawer needs, times this.',
+  'baseplate.stackPrint.exportBanner':
+    'Stack printing: {stacks} stacks ({plates} plates) export as a ZIP with a print guide.',
   'baseplate.stackPrint.gap.label': 'Gap',
   'baseplate.stackPrint.gap.info':
     'Air gap between stacked plates. About 0.2mm (one layer) is typical; increase it if plates fuse together.',
-  'baseplate.stackPrint.sheet.label': 'Separator thickness',
-  'baseplate.stackPrint.sheet.info':
-    'Thickness of the separator sheet printed between plates. About two layers (0.4mm) is typical.',
-  'baseplate.stackPrint.separatorColor': 'Separator color',
+  'baseplate.stackPrint.separationTip':
+    'For easier separation, enable your slicer’s support interface in a non-stick second filament (PETG, or “Support for PLA”) to fill the gap.',
   'baseplate.stackPrint.featuresOff':
     'Connectors, magnet holes, and corner rounding are turned off while stacking, so every tile is identical and prints support-free.',
-  'baseplate.stackPrint.needs3mf':
-    'Multi-material stacking exports as 3MF so each filament is assigned correctly.',
   'baseplate.stackPrint.separate': 'Separate',
   'baseplate.stackPrint.together': 'Together',
   'baseplate.stackPrint.separationSlider': 'Separate the print stack to inspect it',

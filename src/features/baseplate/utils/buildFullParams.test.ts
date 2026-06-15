@@ -169,7 +169,7 @@ describe('buildFullParams', () => {
     it('strips connectors and magnets when stacking is enabled (without mutating stored)', () => {
       const stored = {
         ...withFeatures,
-        stackPrint: { enabled: true, sets: 2, gapMm: 0.2 as never, mode: 'airGap' as const },
+        stackPrint: { enabled: true, gapMm: 0.2 as never },
       };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.connectorNubs).toBe(false);
@@ -183,7 +183,7 @@ describe('buildFullParams', () => {
     it('keeps connectors and magnets when stackPrint exists but is disabled', () => {
       const stored = {
         ...withFeatures,
-        stackPrint: { enabled: false, sets: 1, gapMm: 0.2 as never, mode: 'airGap' as const },
+        stackPrint: { enabled: false, gapMm: 0.2 as never },
       };
       const result = buildFullParams(stored, 10, 8, 42, 'end', 'end');
       expect(result.connectorNubs).toBe(true);

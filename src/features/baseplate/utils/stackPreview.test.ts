@@ -14,27 +14,19 @@ function plate(): StackMeshArrays {
   };
 }
 
-const airGap: StackPrintParams = { enabled: true, sets: 1, gapMm: mm(0.2), mode: 'airGap' };
-const sheet: StackPrintParams = {
-  enabled: true,
-  sets: 1,
-  gapMm: mm(0.2),
-  mode: 'sacrificialSheet',
-};
+const airGap: StackPrintParams = { enabled: true, gapMm: mm(0.2) };
 
 describe('buildStackPreviewMeshes', () => {
   it('returns empty geometry for no towers', () => {
     const out = buildStackPreviewMeshes([], airGap, 0);
     expect(out.plates.vertices.length).toBe(0);
-    expect(out.sheets).toBeNull();
     expect(out.heightMm).toBe(0);
   });
 
-  it('stacks a single tower of N copies (air gap, no sheets)', () => {
+  it('stacks a single tower of N copies', () => {
     const out = buildStackPreviewMeshes([{ mesh: plate(), copies: 3 }], airGap, 0);
     // 2 triangles * 3 copies = 6 triangles -> 6 indices * 3 = 18 index entries
     expect(out.plates.indices.length).toBe(18);
-    expect(out.sheets).toBeNull();
     // height = 2*(10+0.2)+10 = 30.4
     expect(out.heightMm).toBeCloseTo(30.4, 4);
     const b = meshBounds(out.plates.vertices);
@@ -46,13 +38,6 @@ describe('buildStackPreviewMeshes', () => {
     const base = buildStackPreviewMeshes([{ mesh: plate(), copies: 2 }], airGap, 0);
     const exploded = buildStackPreviewMeshes([{ mesh: plate(), copies: 2 }], airGap, 20);
     expect(exploded.heightMm).toBeGreaterThan(base.heightMm + 19);
-  });
-
-  it('emits accent sheets between copies in sacrificial mode', () => {
-    const out = buildStackPreviewMeshes([{ mesh: plate(), copies: 3 }], sheet, 0);
-    expect(out.sheets).not.toBeNull();
-    // 2 sheets * 12 triangles = 24 triangles -> 72 index entries
-    expect(out.sheets!.indices.length).toBe(72);
   });
 
   it('lays multiple towers in a centered grid', () => {

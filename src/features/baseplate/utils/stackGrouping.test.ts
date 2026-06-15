@@ -10,12 +10,12 @@ function plan(stored: CoreBaseplateParams, units: number, bedMm: number) {
   const full = buildFullParams(stored, units, units, 42, 'end', 'end');
   const tiling = computeBaseplateTiling(full, bedMm);
   const groups = stackGroupsFromTiling(tiling, full);
-  return { tiling, groups, towers: planPhysicalStacks(groups, 1) };
+  return { tiling, groups, towers: planPhysicalStacks(groups) };
 }
 
 const stacking: CoreBaseplateParams = {
   ...DEFAULT_BASEPLATE_PARAMS,
-  stackPrint: { enabled: true, sets: 1, gapMm: 0.2 as never, mode: 'airGap' },
+  stackPrint: { enabled: true, gapMm: 0.2 as never },
 };
 
 describe('stack-print grouping', () => {

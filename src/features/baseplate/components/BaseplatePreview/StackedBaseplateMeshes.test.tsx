@@ -32,17 +32,12 @@ vi.mock('../../store/baseplatePageStore', () => ({
 
 import { StackedBaseplateMeshes } from './StackedBaseplateMeshes';
 
-const stack: StackPrintParams = { enabled: true, sets: 3, gapMm: 0.2 as never, mode: 'airGap' };
+const stack: StackPrintParams = { enabled: true, gapMm: 0.2 as never };
 
 describe('StackedBaseplateMeshes', () => {
   it('renders nothing when no plate mesh is available yet', () => {
     const { container } = render(
-      <StackedBaseplateMeshes
-        stack={stack}
-        color="#ffffff"
-        separatorColor="#ff7a00"
-        separationMm={0}
-      />
+      <StackedBaseplateMeshes stack={stack} color="#ffffff" separationMm={0} />
     );
     expect(container).toBeEmptyDOMElement();
   });

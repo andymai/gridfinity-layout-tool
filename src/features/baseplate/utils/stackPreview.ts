@@ -1,16 +1,15 @@
 /**
- * Build the 3D-preview geometry for a stack-print job: flipped towers laid out in
- * a centered, roughly-square grid, with `separationMm` exploding copies apart
- * without changing the exported gap. Separator sheets return as a separate mesh.
+ * Build the 3D-preview geometry for a stack-print job: each tower (bottom plate
+ * upright, the rest flipped) laid out in a centered, roughly-square grid, with
+ * `separationMm` exploding copies apart without changing the exported gap.
  */
 
 import type { StackPrintParams } from '@/core/types';
 import {
-  flipMeshUpsideDown,
+  buildTowerLayers,
   translateMesh,
   concatMeshes,
   meshBounds,
-  buildInterfaceSheetMesh,
   stackStrideMm,
   type StackMeshArrays,
 } from './stackPrint';
@@ -24,10 +23,8 @@ export interface StackPreviewTower {
 }
 
 export interface StackPreviewResult {
-  /** All plate copies across all towers (single material). */
+  /** All plate copies across all towers. */
   readonly plates: StackMeshArrays;
-  /** Sacrificial interface sheets, or null in air-gap mode. */
-  readonly sheets: StackMeshArrays | null;
   /** Overall layout extents, for camera framing. */
   readonly widthMm: number;
   readonly depthMm: number;
@@ -47,7 +44,7 @@ export function buildStackPreviewMeshes(
   separationMm: number
 ): StackPreviewResult {
   if (towers.length === 0) {
-    return { plates: EMPTY, sheets: null, widthMm: 0, depthMm: 0, heightMm: 0 };
+    return { plates: EMPTY, widthMm: 0, depthMm: 0, heightMm: 0 };
   }
 
   const measured = towers.map((tower) => {
@@ -70,55 +67,30 @@ export function buildStackPreviewMeshes(
   const cellD = Math.max(...measured.map((m) => m.depth)) + TOWER_SPACING_MM;
 
   const plateLayers: StackMeshArrays[] = [];
-  const sheetLayers: StackMeshArrays[] = [];
-  const wantSheets = stack.mode === 'sacrificialSheet';
   let maxHeight = 0;
 
   measured.forEach((m, idx) => {
-    const n = Math.max(1, Math.floor(m.tower.copies));
     const stride = stackStrideMm(m.plateHeight, stack) + Math.max(0, separationMm);
     const col = idx % cols;
     const row = Math.floor(idx / cols);
     const centerX = (col - (cols - 1) / 2) * cellW;
     const centerY = ((rows - 1) / 2 - row) * cellD;
+
+    // Build the tower (bottom upright, rest flipped, XY-aligned to the source
+    // footprint, bottom at Z=0), then recenter it on its grid cell.
+    const layers = buildTowerLayers(m.tower.mesh, m.tower.copies, stride);
     const midX = (m.bounds.minX + m.bounds.maxX) / 2;
     const midY = (m.bounds.minY + m.bounds.maxY) / 2;
-    const dx = centerX - midX;
-    // The flip negates Y (rotation about X), so the post-flip centroid is -midY;
-    // add midY to land the flipped tower's centre on centerY.
-    const dy = centerY + midY;
-    // Flip upside down (matches the printed orientation) and drop to Z=0.
-    const flipped = translateMesh(
-      flipMeshUpsideDown(m.tower.mesh, (m.bounds.minZ + m.bounds.maxZ) / 2),
-      dx,
-      dy,
-      -m.bounds.minZ
-    );
-
-    for (let i = 0; i < n; i++) {
-      plateLayers.push(i === 0 ? flipped : translateMesh(flipped, 0, 0, i * stride));
+    for (const layer of layers) {
+      plateLayers.push(translateMesh(layer, centerX - midX, centerY - midY, 0));
     }
 
-    if (wantSheets && n > 1) {
-      // Footprint after flip (Y negated) + translate.
-      const footprint = {
-        minX: m.bounds.minX + dx,
-        maxX: m.bounds.maxX + dx,
-        minY: dy - m.bounds.maxY,
-        maxY: dy - m.bounds.minY,
-      };
-      for (let j = 0; j < n - 1; j++) {
-        const bottomZ = j * stride + m.plateHeight;
-        sheetLayers.push(buildInterfaceSheetMesh(footprint, stack.gapMm, bottomZ));
-      }
-    }
-
+    const n = Math.max(1, Math.floor(m.tower.copies));
     maxHeight = Math.max(maxHeight, (n - 1) * stride + m.plateHeight);
   });
 
   return {
     plates: concatMeshes(plateLayers),
-    sheets: sheetLayers.length > 0 ? concatMeshes(sheetLayers) : null,
     widthMm: cols * cellW,
     depthMm: rows * cellD,
     heightMm: maxHeight,

@@ -345,17 +345,18 @@ describe('migrateBaseplateParams', () => {
     };
     const result = migrateBaseplateParams({
       ...base,
-      stackPrint: { enabled: true, sets: 999, gapMm: 5, mode: 'sacrificialSheet' },
+      // `mode` is a dropped legacy field — migration ignores it.
+      stackPrint: { enabled: true, gapMm: 5, mode: 'sacrificialSheet' },
     });
     expect(result.stackPrint).toEqual({
       enabled: true,
-      sets: 20, // clamped to STACK_PRINT_MAX_SETS
       gapMm: 1, // clamped to STACK_PRINT_MAX_GAP_MM
-      mode: 'sacrificialSheet',
     });
     // Absent or malformed → undefined
     expect(migrateBaseplateParams(base).stackPrint).toBeUndefined();
-    expect(migrateBaseplateParams({ ...base, stackPrint: { sets: 3 } }).stackPrint).toBeUndefined();
+    expect(
+      migrateBaseplateParams({ ...base, stackPrint: { gapMm: 3 } }).stackPrint
+    ).toBeUndefined();
   });
 
   it('preserves connectorStyle when dovetail key', () => {

@@ -26,6 +26,9 @@ import { useBaseplateExport } from '../../hooks/useBaseplateExport';
 import { useBaseplatePageStore } from '../../store/baseplatePageStore';
 import { generateBaseplateFileName, toNamingParams } from '../../utils/fileNaming';
 import { buildFullParams } from '../../utils/buildFullParams';
+import { stackGroupsFromTiling, planPhysicalStacks, stackHeightCap } from '../../utils/stackPrint';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { STACK_PRINT_DEFAULT_GAP_MM } from '@/core/types';
 import { BaseplatePanel } from '../BaseplatePanel/BaseplatePanel';
 import { BaseplatePreview } from '../BaseplatePreview/BaseplatePreview';
 import {
@@ -100,22 +103,10 @@ export function BaseplatePage() {
   const [splitEnabled, setSplitEnabled] = useState(true);
   const [justExported, setJustExported] = useState(false);
 
-  // Sacrificial-sheet stacking assigns a second filament, which only 3MF can
-  // carry — force 3MF and disable STL/STEP so the sheet can't be silently lost.
-  const sacrificialSheet =
-    baseplateParams.stackPrint?.enabled === true &&
-    baseplateParams.stackPrint.mode === 'sacrificialSheet';
-  const activeFormat: ExportFileFormat = sacrificialSheet
-    ? '3mf'
-    : (exportFileNameConfig.format ?? 'stl');
-  const formatStates = sacrificialSheet
-    ? {
-        stl: { disabled: true, reason: t('baseplate.stackPrint.needs3mf') },
-        step: { disabled: true, reason: t('baseplate.stackPrint.needs3mf') },
-      }
-    : undefined;
+  const activeFormat: ExportFileFormat = exportFileNameConfig.format ?? 'stl';
 
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  const maxPrintHeightMm = useSettingsStore((s) => s.settings.printSettings.maxPrintHeightMm);
 
   const fullParams = useMemo(
     () =>
@@ -144,9 +135,27 @@ export function BaseplatePage() {
     [fullParams, activeFormat, exportFileNameConfig]
   );
 
-  const showSplitBanner = tiling?.isSplit === true && activeFormat !== 'step';
-  const useSplitExport = showSplitBanner && splitEnabled;
-  const displayExtension = useSplitExport ? '.zip' : FORMAT_EXTENSIONS[activeFormat];
+  // Stacking exports one file per physical tower (dedup collapses identical
+  // tiles first), so the "exceeds bed → N pieces" framing no longer applies —
+  // describe the stacks instead. STEP never stacks.
+  const stackEnabled = baseplateParams.stackPrint?.enabled === true && activeFormat !== 'step';
+  const stackGapMm = baseplateParams.stackPrint?.gapMm ?? STACK_PRINT_DEFAULT_GAP_MM;
+  const stackPlan = useMemo(() => {
+    if (!stackEnabled || !tiling) return [];
+    const groups = stackGroupsFromTiling(tiling, fullParams);
+    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, stackGapMm);
+    return planPhysicalStacks(groups, cap);
+  }, [stackEnabled, tiling, fullParams, maxPrintHeightMm, stackGapMm]);
+  const stackFileCount = stackPlan.length;
+  const stackPlateCount = stackPlan.reduce((sum, s) => sum + s.copies, 0);
+
+  // Split-into-pieces banner only when NOT stacking (stacking has its own).
+  const showSplitBanner = !stackEnabled && tiling?.isSplit === true && activeFormat !== 'step';
+  // When stacking, a split drawer always takes the per-tower export path; the
+  // user can't opt out, so there's no split checkbox to gate it.
+  const useSplitExport = stackEnabled ? tiling?.isSplit === true : showSplitBanner && splitEnabled;
+  const isZipExport = stackEnabled ? stackFileCount > 1 : useSplitExport;
+  const displayExtension = isZipExport ? '.zip' : FORMAT_EXTENSIONS[activeFormat];
 
   const handleDownload = useCallback(() => {
     void downloadBaseplate(activeFormat, useSplitExport).then((succeeded) => {
@@ -295,7 +304,6 @@ export function BaseplatePage() {
         open={exportDialogOpen}
         onClose={closeExportDialog}
         activeFormat={activeFormat}
-        formatStates={formatStates}
         fileNameConfig={exportFileNameConfig}
         onFileNameConfigChange={setExportFileNameConfig}
         fileName={fileName}
@@ -314,6 +322,16 @@ export function BaseplatePage() {
                 checkboxLabel: t('baseplate.export.enableSplit'),
                 checked: splitEnabled,
                 onCheckedChange: setSplitEnabled,
+              }
+            : null
+        }
+        warningBanner={
+          stackEnabled && stackFileCount > 1
+            ? {
+                message: t('baseplate.stackPrint.exportBanner', {
+                  stacks: stackFileCount,
+                  plates: stackPlateCount,
+                }),
               }
             : null
         }

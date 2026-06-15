@@ -49,16 +49,10 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('canvas').first()).toBeVisible({ timeout: 120_000 });
 });
 
-test('single unsplit plate stacks the requested number of copies', async ({ page }) => {
-  await setDimensions(page, 2); // 84mm, fits any bed → unsplit
+test('a single unsplit plate has nothing to stack', async ({ page }) => {
+  await setDimensions(page, 2); // 84mm, fits any bed → unsplit, one plate
   await stackSwitch(page).click();
   await expect(page.getByText(/1 stacks · 1 plates/i)).toBeVisible();
-
-  // Bump Sets 1 → 3.
-  const inc = page.getByRole('button', { name: /Increase Sets/i });
-  await inc.click();
-  await inc.click();
-  await expect(page.getByText(/1 stacks · 3 plates/i)).toBeVisible();
 });
 
 test('an evenly-tiled drawer dedupes into few tall stacks', async ({ page }) => {
@@ -119,18 +113,10 @@ test('stacking hides magnet + corner-radius controls and restores them on disabl
   await expect(magnetAgain).toBeChecked();
 });
 
-test('separator-sheet mode reveals the 3MF notice and second-material color picker', async ({
-  page,
-}) => {
+test('stacking shows the slicer support-interface separation tip', async ({ page }) => {
   await setDimensions(page, 2);
   await stackSwitch(page).click();
-
-  // Air-gap default: no 3MF notice, no separator color picker.
-  await expect(page.getByRole('listbox', { name: /Separator color/i })).toHaveCount(0);
-
-  await page.getByRole('combobox', { name: /Separation/i }).selectOption('sacrificialSheet');
-  await expect(page.getByText(/exports as 3MF/i)).toBeVisible();
-  await expect(page.getByRole('listbox', { name: /Separator color/i })).toBeVisible();
+  await expect(page.getByText(/support interface/i)).toBeVisible();
 });
 
 test('the preview separation slider appears only while stacking', async ({ page }) => {
@@ -139,19 +125,4 @@ test('the preview separation slider appears only while stacking', async ({ page 
 
   await stackSwitch(page).click();
   await expect(page.getByRole('slider', { name: /Separate the print stack/i })).toBeVisible();
-});
-
-test('separator-sheet mode disables STL/STEP in the export dialog', async ({ page }) => {
-  await setDimensions(page, 2);
-  await stackSwitch(page).click();
-  await page.getByRole('combobox', { name: /Separation/i }).selectOption('sacrificialSheet');
-
-  // Wait for generation so the export button enables.
-  const exportBtn = page.getByRole('button', { name: /^Export$/i });
-  await expect(exportBtn).toBeEnabled({ timeout: 60_000 });
-  await exportBtn.click();
-
-  await expect(page.getByRole('radio', { name: 'STL' })).toHaveAttribute('aria-disabled', 'true');
-  await expect(page.getByRole('radio', { name: 'STEP' })).toHaveAttribute('aria-disabled', 'true');
-  await expect(page.getByRole('radio', { name: '3MF' })).toHaveAttribute('aria-checked', 'true');
 });

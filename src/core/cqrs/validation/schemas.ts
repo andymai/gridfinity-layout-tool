@@ -10,12 +10,7 @@
 
 import * as z from 'zod';
 import { CONSTRAINTS } from '@/core/constants';
-import {
-  STACK_PRINT_MIN_SETS,
-  STACK_PRINT_MAX_SETS,
-  STACK_PRINT_MIN_GAP_MM,
-  STACK_PRINT_MAX_GAP_MM,
-} from '@/core/types';
+import { STACK_PRINT_MIN_GAP_MM, STACK_PRINT_MAX_GAP_MM } from '@/core/types';
 import type { CommandType } from '../commands';
 import {
   libraryCreateEntrySchema,
@@ -245,9 +240,7 @@ const baseplateParamsSchema = z.object({
   stackPrint: z
     .object({
       enabled: z.boolean(),
-      sets: z.number().min(STACK_PRINT_MIN_SETS).max(STACK_PRINT_MAX_SETS),
       gapMm: z.number().min(STACK_PRINT_MIN_GAP_MM).max(STACK_PRINT_MAX_GAP_MM),
-      mode: z.enum(['airGap', 'sacrificialSheet']),
     })
     .optional(),
 });

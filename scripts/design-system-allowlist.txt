@@ -30,7 +30,6 @@
 src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
 src/features/baseplate/components/BaseplatePanel/EditableDimensions.tsx
 src/features/baseplate/components/BaseplatePanel/SplitViewStrip.tsx
-src/features/baseplate/components/BaseplatePanel/StackPrintSection.tsx
 src/features/baseplate/components/BaseplatePreview/BaseplatePreviewControls.tsx
 src/features/baseplate/components/PaddingAnchor/PaddingAnchor.tsx
 src/features/baseplate/components/PaddingStepper/PaddingStepper.tsx

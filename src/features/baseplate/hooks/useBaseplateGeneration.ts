@@ -207,6 +207,10 @@ export function selectGenerationTriggers(state: LayoutStoreState) {
     cornerRadii: bp.cornerRadii,
     invertDovetails: bp.invertDovetails,
     preferIdenticalPieces: bp.preferIdenticalPieces,
+    // Toggling stacking strips connectors/magnets/rounding in `buildFullParams`,
+    // so it must re-run generation — otherwise the preview keeps the pre-strip
+    // mesh (rounded corners + magnet holes that the export no longer has).
+    stackEnabled: bp.stackPrint?.enabled ?? false,
   };
 }
 
