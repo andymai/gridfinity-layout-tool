@@ -19,8 +19,7 @@ export function useBaseGroupSummary(): string {
     if (hasMagnet) parts.push(`${base.magnetDiameter}mm magnets`);
     if (hasScrew) parts.push(`M${base.screwDiameter} screws`);
     if (base.stackingLip) parts.push('Lip');
-    if (base.lightweight) parts.push('Lightweight');
 
     return parts.length > 0 ? parts.join(' \u2022 ') : 'Standard (no attachment)';
-  }, [base.style, base.magnetDiameter, base.screwDiameter, base.stackingLip, base.lightweight]);
+  }, [base.style, base.magnetDiameter, base.screwDiameter, base.stackingLip]);
 }

@@ -26,12 +26,16 @@ export function useBaseSection() {
   const screwStatus = getFeatureStatus(params, 'base.screw');
   const flatStatus = getFeatureStatus(params, 'base.flat');
   const halfSocketsStatus = getFeatureStatus(params, 'base.halfSockets');
+  const lightweightStatus = getFeatureStatus(params, 'base.lightweight');
 
   const magnetDisabledReason = magnetStatus.reason ? t(magnetStatus.reason) : undefined;
   const screwDisabledReason = screwStatus.reason ? t(screwStatus.reason) : undefined;
   const flatDisabledReason = flatStatus.reason ? t(flatStatus.reason) : undefined;
   const halfSocketsDisabledReason = halfSocketsStatus.reason
     ? t(halfSocketsStatus.reason)
+    : undefined;
+  const lightweightDisabledReason = lightweightStatus.reason
+    ? t(lightweightStatus.reason)
     : undefined;
 
   const toggleMagnet = useCallback(() => {
@@ -58,8 +62,13 @@ export function useBaseSection() {
   }, [base.stackingLip, updateBase]);
 
   const toggleLightweight = useCallback(() => {
-    updateBase({ lightweight: !base.lightweight });
-  }, [base.lightweight, updateBase]);
+    if (!base.lightweight && !lightweightStatus.available) return;
+    const { params: resolved } = resolveConstraints(params, {
+      feature: 'base.lightweight',
+      enabled: !base.lightweight,
+    });
+    setParams(resolved);
+  }, [params, base.lightweight, lightweightStatus.available, setParams]);
 
   const toggleHalfSockets = useCallback(() => {
     if (!hasHalfSockets && !halfSocketsStatus.available) return;
@@ -115,6 +124,7 @@ export function useBaseSection() {
       screwDisabledReason,
       flatDisabledReason,
       halfSocketsDisabledReason,
+      lightweightDisabledReason,
     },
   };
 }

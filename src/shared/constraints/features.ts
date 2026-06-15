@@ -23,6 +23,13 @@ export const FEATURE_MANIFESTS: Record<FeatureKey, FeatureManifest> = {
     apply: (p, enabled) => ({ base: { ...p.base, halfSockets: enabled } }),
   },
 
+  'base.lightweight': {
+    key: 'base.lightweight',
+    label: 'Lightweight Base',
+    isEnabled: (p) => p.base.lightweight,
+    apply: (p, enabled) => ({ base: { ...p.base, lightweight: enabled } }),
+  },
+
   'base.magnet': {
     key: 'base.magnet',
     label: 'Magnet Holes',

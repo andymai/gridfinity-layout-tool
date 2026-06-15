@@ -36,6 +36,20 @@ export const CONSTRAINT_RULES: readonly ConstraintRule[] = [
     reason: 'binDesigner.halfSocketsDisablesFlatFloor',
   },
   {
+    description: 'Flat base disables lightweight (no socket floor to shell)',
+    source: 'base.flat',
+    when: (p) => p.base.style === 'flat',
+    disables: ['base.lightweight'],
+    reason: 'binDesigner.flatFloorDisablesLightweight',
+  },
+  {
+    description: 'Lightweight incompatible with flat floor',
+    source: 'base.lightweight',
+    when: (p) => p.base.lightweight,
+    disables: ['base.flat'],
+    reason: 'binDesigner.lightweightDisablesFlatFloor',
+  },
+  {
     description: 'Attachment holes incompatible with flat floor',
     source: 'base.magnet',
     when: (p) => p.base.style === 'magnet' || p.base.style === 'magnet_and_screw',

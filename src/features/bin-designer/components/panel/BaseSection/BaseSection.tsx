@@ -88,7 +88,7 @@ export function BaseSection() {
         label={t('binDesigner.lightweight')}
         checked={state.hasLightweight}
         onChange={handlers.toggleLightweight}
-        valueSummary={t('binDesigner.lightweightHint')}
+        disabledReason={handlers.lightweightDisabledReason}
       />
     </div>
   );

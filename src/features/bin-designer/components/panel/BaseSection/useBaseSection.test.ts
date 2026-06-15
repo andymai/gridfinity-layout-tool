@@ -103,6 +103,35 @@ describe('useBaseSection', () => {
     expect(base.style).toBe('magnet');
   });
 
+  it('enabling flat clears lightweight (mutually exclusive — flat has no socket)', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, lightweight: true } },
+    });
+    const { result } = renderHook(() => useBaseSection());
+
+    act(() => {
+      result.current.handlers.toggleFlat();
+    });
+
+    const base = useDesignerStore.getState().params.base;
+    expect(base.style).toBe('flat');
+    expect(base.lightweight).toBe(false);
+  });
+
+  it('lightweight is greyed out with a reason on a flat base', () => {
+    useDesignerStore.setState({
+      params: { ...DEFAULT_BIN_PARAMS, base: { ...DEFAULT_BIN_PARAMS.base, style: 'flat' } },
+    });
+    const { result } = renderHook(() => useBaseSection());
+    expect(result.current.handlers.lightweightDisabledReason).toBeTruthy();
+
+    act(() => {
+      result.current.handlers.toggleLightweight();
+    });
+    // Blocked: can't enable lightweight on a flat base.
+    expect(useDesignerStore.getState().params.base.lightweight).toBe(false);
+  });
+
   it('setScrewDiameter updates screwDiameter directly', () => {
     const { result } = renderHook(() => useBaseSection());
 

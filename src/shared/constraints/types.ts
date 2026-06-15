@@ -3,6 +3,7 @@ import type { BinParams } from '@/shared/types/bin';
 /** Top-level feature keys that can participate in constraints. */
 export type FeatureKey =
   | 'base.halfSockets'
+  | 'base.lightweight'
   | 'base.magnet'
   | 'base.screw'
   | 'base.flat'
