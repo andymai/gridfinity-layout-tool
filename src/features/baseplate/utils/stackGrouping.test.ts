@@ -41,4 +41,37 @@ describe('stack-print grouping', () => {
     expect(groups.length).toBeGreaterThan(1);
     expect(towers.length).toBeGreaterThan(1);
   });
+
+  // 180mm bed / 42mm grid → max 4-unit tiles. Square drawers divisible by 4
+  // tile evenly into identical pieces (dedupe to 1 group when stacking); others
+  // split unevenly and stay multi-group.
+  describe('drawer × bed dedup matrix (stacking)', () => {
+    const evenCases = [
+      { units: 4, bed: 180, split: false }, // fits the bed, single plate
+      { units: 8, bed: 180, split: true },
+      { units: 12, bed: 180, split: true },
+      { units: 16, bed: 180, split: true },
+    ];
+    it.each(evenCases)('$units×$units @ $bedmm → one stackable group', ({ units, bed, split }) => {
+      const { tiling, groups, towers } = plan(stacking, units, bed);
+      expect(tiling.isSplit).toBe(split);
+      expect(groups).toHaveLength(1);
+      // All pieces are identical, so every printed copy belongs to that group.
+      expect(groups[0].quantity).toBe(tiling.pieces.length);
+      expect(towers.reduce((s, t) => s + t.copies, 0)).toBe(tiling.pieces.length);
+    });
+
+    const unevenCases = [
+      { units: 14, bed: 180 }, // 4+4+3+3
+      { units: 10, bed: 180 }, // 4+3+3
+      { units: 16, bed: 256 }, // 6+6+4
+    ];
+    it.each(unevenCases)('$units×$units @ $bedmm → stays multi-group', ({ units, bed }) => {
+      const { groups, towers } = plan(stacking, units, bed);
+      expect(groups.length).toBeGreaterThan(1);
+      // No copies are lost or duplicated regardless of grouping.
+      const totalPieces = groups.reduce((s, g) => s + g.quantity, 0);
+      expect(towers.reduce((s, t) => s + t.copies, 0)).toBe(totalPieces);
+    });
+  });
 });

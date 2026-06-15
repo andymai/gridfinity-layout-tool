@@ -71,4 +71,32 @@ describe('buildStackPreviewMeshes', () => {
     expect(b.maxX).toBeCloseTo(26, 4);
     expect(out.widthMm).toBeCloseTo(64, 4);
   });
+
+  // Towers tile into a roughly-square grid (cols = ceil(sqrt(n))), centered on
+  // origin — a single off-screen row was the "single line" preview bug. Plate
+  // footprint 20×30 → cellW 32, cellD 42.
+  describe('grid layout (parameterized)', () => {
+    const cases = [
+      { towers: 1, cols: 1, rows: 1 },
+      { towers: 2, cols: 2, rows: 1 },
+      { towers: 3, cols: 2, rows: 2 },
+      { towers: 4, cols: 2, rows: 2 },
+      { towers: 5, cols: 3, rows: 2 },
+      { towers: 9, cols: 3, rows: 3 },
+      { towers: 16, cols: 4, rows: 4 },
+    ];
+    it.each(cases)('$towers towers → ${cols}×${rows} grid, centered', ({ towers, cols, rows }) => {
+      const out = buildStackPreviewMeshes(
+        Array.from({ length: towers }, () => ({ mesh: plate(), copies: 1 })),
+        airGap,
+        0
+      );
+      expect(out.widthMm).toBeCloseTo(cols * 32, 4);
+      expect(out.depthMm).toBeCloseTo(rows * 42, 4);
+      // Centered on origin in X and Y.
+      const b = meshBounds(out.plates.vertices);
+      expect(b.minX).toBeCloseTo(-b.maxX, 3);
+      expect(b.minY).toBeCloseTo(-b.maxY, 3);
+    });
+  });
 });

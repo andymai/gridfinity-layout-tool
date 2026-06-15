@@ -81,8 +81,12 @@ export function buildStackPreviewMeshes(
     const row = Math.floor(idx / cols);
     const centerX = (col - (cols - 1) / 2) * cellW;
     const centerY = ((rows - 1) / 2 - row) * cellD;
-    const dx = centerX - (m.bounds.minX + m.bounds.maxX) / 2;
-    const dy = centerY - (m.bounds.minY + m.bounds.maxY) / 2;
+    const midX = (m.bounds.minX + m.bounds.maxX) / 2;
+    const midY = (m.bounds.minY + m.bounds.maxY) / 2;
+    const dx = centerX - midX;
+    // The flip negates Y (rotation about X), so the post-flip centroid is -midY;
+    // add midY to land the flipped tower's centre on centerY.
+    const dy = centerY + midY;
     // Flip upside down (matches the printed orientation) and drop to Z=0.
     const flipped = translateMesh(
       flipMeshUpsideDown(m.tower.mesh, (m.bounds.minZ + m.bounds.maxZ) / 2),
@@ -96,11 +100,12 @@ export function buildStackPreviewMeshes(
     }
 
     if (wantSheets && n > 1) {
+      // Footprint after flip (Y negated) + translate.
       const footprint = {
         minX: m.bounds.minX + dx,
         maxX: m.bounds.maxX + dx,
-        minY: m.bounds.minY + dy,
-        maxY: m.bounds.maxY + dy,
+        minY: dy - m.bounds.maxY,
+        maxY: dy - m.bounds.minY,
       };
       for (let j = 0; j < n - 1; j++) {
         const bottomZ = j * stride + m.plateHeight;

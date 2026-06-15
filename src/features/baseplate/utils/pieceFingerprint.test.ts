@@ -307,4 +307,86 @@ describe('groupPiecesByFingerprint', () => {
     );
     expect(fpOff).not.toBe(fpOn);
   });
+
+  // Edge classification only affects geometry through connectors (placed on join
+  // edges) and corner rounding (only exterior corners round). When neither is
+  // active, pieces that differ ONLY by edge label are byte-identical and must
+  // share a fingerprint (so stack-print tiles dedupe); otherwise they must not.
+  describe('edge-label dedup matrix', () => {
+    const corner = {
+      left: 'exterior' as const,
+      right: 'join' as const,
+      front: 'exterior' as const,
+      back: 'join' as const,
+    };
+    const interior = {
+      left: 'join' as const,
+      right: 'join' as const,
+      front: 'join' as const,
+      back: 'join' as const,
+    };
+    const radii = { tl: 2.5, tr: 2.5, bl: 2.5, br: 2.5 };
+
+    const cases: {
+      name: string;
+      overrides: Partial<BaseplateParams>;
+      sameFingerprint: boolean;
+    }[] = [
+      {
+        name: 'no connectors, square corners (radius 0)',
+        overrides: { cornerRadius: 0 },
+        sameFingerprint: true,
+      },
+      {
+        name: 'no connectors, default rounding (undefined)',
+        overrides: {},
+        sameFingerprint: false,
+      },
+      {
+        name: 'no connectors, explicit rounding (2.5mm)',
+        overrides: { cornerRadius: 2.5 },
+        sameFingerprint: false,
+      },
+      {
+        name: 'no connectors, per-corner radii set',
+        overrides: { cornerRadius: 0, cornerRadii: radii },
+        sameFingerprint: false,
+      },
+      {
+        name: 'connectors on, square corners',
+        overrides: { cornerRadius: 0, connectorNubs: true },
+        sameFingerprint: false,
+      },
+      {
+        name: 'connectors on, rounding on',
+        overrides: { cornerRadius: 2.5, connectorNubs: true },
+        sameFingerprint: false,
+      },
+    ];
+
+    it.each(cases)('$name → sameFingerprint=$sameFingerprint', ({ overrides, sameFingerprint }) => {
+      const base = makeParams({ width: 4, depth: 4, ...overrides });
+      const fpCorner = computePieceFingerprint({ ...base, edges: corner });
+      const fpInterior = computePieceFingerprint({ ...base, edges: interior });
+      if (sameFingerprint) {
+        expect(fpCorner).toBe(fpInterior);
+      } else {
+        expect(fpCorner).not.toBe(fpInterior);
+      }
+    });
+
+    it('still distinguishes padded edge tiles from interior tiles (padding keyed separately)', () => {
+      // Square corners + no connectors would dedupe by edges — but different
+      // padding must still split them.
+      const padded = makeParams({
+        width: 4,
+        depth: 4,
+        cornerRadius: 0,
+        paddingLeft: 5,
+        edges: corner,
+      });
+      const plain = makeParams({ width: 4, depth: 4, cornerRadius: 0, edges: interior });
+      expect(computePieceFingerprint(padded)).not.toBe(computePieceFingerprint(plain));
+    });
+  });
 });

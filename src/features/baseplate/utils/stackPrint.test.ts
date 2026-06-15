@@ -57,6 +57,123 @@ describe('planPhysicalStacks', () => {
       { label: 'A', copies: 2 },
     ]);
   });
+
+  describe('edge cases (parameterized)', () => {
+    type Group = { label: string; quantity: number };
+    const cases: {
+      name: string;
+      groups: Group[];
+      sets: number;
+      cap?: number;
+      expected: number[]; // tower copies, in order
+    }[] = [
+      { name: 'empty groups', groups: [], sets: 1, expected: [] },
+      {
+        name: 'single tile, one set',
+        groups: [{ label: 'A', quantity: 1 }],
+        sets: 1,
+        expected: [1],
+      },
+      { name: 'exact cap', groups: [{ label: 'A', quantity: 8 }], sets: 1, cap: 8, expected: [8] },
+      {
+        name: 'one over cap',
+        groups: [{ label: 'A', quantity: 9 }],
+        sets: 1,
+        cap: 8,
+        expected: [8, 1],
+      },
+      {
+        name: 'two full caps',
+        groups: [{ label: 'A', quantity: 16 }],
+        sets: 1,
+        cap: 8,
+        expected: [8, 8],
+      },
+      {
+        name: 'sets multiplies then caps',
+        groups: [{ label: 'A', quantity: 5 }],
+        sets: 2,
+        cap: 8,
+        expected: [8, 2],
+      },
+      {
+        name: 'zero quantity skipped',
+        groups: [{ label: 'A', quantity: 0 }],
+        sets: 5,
+        expected: [],
+      },
+      {
+        name: 'negative quantity skipped',
+        groups: [{ label: 'A', quantity: -3 }],
+        sets: 1,
+        expected: [],
+      },
+      {
+        name: 'fractional quantity floored',
+        groups: [{ label: 'A', quantity: 3.9 }],
+        sets: 1,
+        cap: 8,
+        expected: [3],
+      },
+      {
+        name: 'fractional sets floored',
+        groups: [{ label: 'A', quantity: 2 }],
+        sets: 2.9,
+        cap: 8,
+        expected: [4],
+      },
+      {
+        name: 'sets=0 clamps to 1',
+        groups: [{ label: 'A', quantity: 3 }],
+        sets: 0,
+        cap: 8,
+        expected: [3],
+      },
+      {
+        name: 'sets negative clamps to 1',
+        groups: [{ label: 'A', quantity: 3 }],
+        sets: -4,
+        cap: 8,
+        expected: [3],
+      },
+      {
+        name: 'NaN cap clamps to 1',
+        groups: [{ label: 'A', quantity: 3 }],
+        sets: 1,
+        cap: Number.NaN,
+        expected: [1, 1, 1],
+      },
+      {
+        name: 'cap=1 → one tower per copy',
+        groups: [{ label: 'A', quantity: 3 }],
+        sets: 1,
+        cap: 1,
+        expected: [1, 1, 1],
+      },
+      {
+        name: 'mixed groups, mixed caps',
+        groups: [
+          { label: 'A', quantity: 10 },
+          { label: 'B', quantity: 1 },
+        ],
+        sets: 1,
+        cap: 8,
+        expected: [8, 2, 1],
+      },
+    ];
+
+    it.each(cases)('$name → $expected', ({ groups, sets, cap, expected }) => {
+      const towers = planPhysicalStacks(groups, sets, cap);
+      expect(towers.map((t) => t.copies)).toEqual(expected);
+      // Total baked copies must equal sum(floor(qty)>0 * floor(sets>=1)).
+      const safeSets = Number.isFinite(sets) ? Math.max(1, Math.floor(sets)) : 1;
+      const wantTotal = groups.reduce(
+        (s, g) => s + Math.max(0, Math.floor(g.quantity)) * safeSets,
+        0
+      );
+      expect(towers.reduce((s, t) => s + t.copies, 0)).toBe(wantTotal);
+    });
+  });
 });
 
 describe('stackStrideMm', () => {
