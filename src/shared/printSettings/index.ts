@@ -55,6 +55,8 @@ export interface PrintSettings {
   readonly infillPercent: number;
   /** Nozzle diameter in mm (affects wall thickness and print speed) */
   readonly nozzleSizeMm: number;
+  /** Printer max build height in mm (Z) — caps how many baseplates a stack fits. */
+  readonly maxPrintHeightMm: number;
 }
 
 /** Default print settings matching the calibration baseline. */
@@ -63,6 +65,7 @@ export const DEFAULT_PRINT_SETTINGS: PrintSettings = {
   layerHeightMm: BASELINE_LAYER_HEIGHT,
   infillPercent: BASELINE_INFILL,
   nozzleSizeMm: 0.4,
+  maxPrintHeightMm: 250,
 };
 
 /** Validation constraints for print settings inputs. */
@@ -79,6 +82,9 @@ export const PRINT_SETTINGS_CONSTRAINTS = {
   NOZZLE_SIZE_MIN: 0.2,
   NOZZLE_SIZE_MAX: 1.0,
   NOZZLE_SIZE_STEP: 0.2,
+  MAX_PRINT_HEIGHT_MIN: 40,
+  MAX_PRINT_HEIGHT_MAX: 1000,
+  MAX_PRINT_HEIGHT_STEP: 10,
 } as const;
 /**
  * Scale a baseline print time by the user's print settings.

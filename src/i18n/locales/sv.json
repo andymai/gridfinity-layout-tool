@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.together": "Ihop",
   "baseplate.stackPrint.separationSlider": "Separera utskriftsstapeln för att inspektera den",
   "baseplate.stackPrint.separatorColor": "Separatorfärg",
-  "baseplate.stackPrint.featuresOff": "Kopplingar, magnethål och hörnrundning är avstängda vid stapling, så att varje platta är identisk och skrivs ut utan stöd."
+  "baseplate.stackPrint.featuresOff": "Kopplingar, magnethål och hörnrundning är avstängda vid stapling, så att varje platta är identisk och skrivs ut utan stöd.",
+  "baseplate.maxPrintHeight": "Bygghöjd",
+  "baseplate.maxPrintHeightTooltip": "Din skrivares max Z-höjd. Stapling får plats med så många bottenplattor per stapel som detta tillåter."
 }

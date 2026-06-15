@@ -37,6 +37,8 @@ export interface PrintGuideInput {
   readonly connectorKey?: { readonly fileName: string; readonly count: number };
   /** Stack-print config, when enabled — each file is a pre-stacked tower. */
   readonly stackPrint?: StackPrintParams;
+  /** Max tiles per stack (from the printer's build height). */
+  readonly stackCap?: number;
 }
 
 export function generatePrintGuide(input: PrintGuideInput): string {
@@ -54,7 +56,8 @@ export function generatePrintGuide(input: PrintGuideInput): string {
       tiling.pieces,
       fileExtension,
       baseFileName,
-      stackPrint
+      stackPrint,
+      input.stackCap
     ),
     ...(connectorKey ? [generateConnectorKeySection(connectorKey, parentParams)] : []),
     generateGridMap(tiling, groups, groupNames),
@@ -210,7 +213,8 @@ function generatePieceTable(
   pieces: readonly BaseplatePiece[],
   ext: string,
   baseName: string,
-  stackPrint?: StackPrintParams
+  stackPrint?: StackPrintParams,
+  stackCap?: number
 ): string {
   const lines = ['─── Pieces ──────────────────────────────────────', ''];
 
@@ -292,7 +296,11 @@ function generatePieceTable(
 
     if (stackPrint) {
       // Each physical stack is one file; an over-tall group splits into several.
-      const towers = planPhysicalStacks([{ label: name, quantity: count }], stackPrint.sets);
+      const towers = planPhysicalStacks(
+        [{ label: name, quantity: count }],
+        stackPrint.sets,
+        stackCap
+      );
       for (let s = 0; s < towers.length; s++) {
         const label = towers.length > 1 ? `${name}_${s + 1}` : name;
         const copies = towers[s].copies;

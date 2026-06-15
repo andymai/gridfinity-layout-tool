@@ -112,6 +112,13 @@ export function BaseplatePanel() {
     const current = useSettingsStore.getState().settings.printSettings;
     useSettingsStore.getState().updateSetting('printSettings', { ...current, nozzleSizeMm: value });
   }, []);
+  const maxPrintHeightMm = useSettingsStore((s) => s.settings.printSettings.maxPrintHeightMm);
+  const handleMaxHeightChange = useCallback((value: number) => {
+    const current = useSettingsStore.getState().settings.printSettings;
+    useSettingsStore
+      .getState()
+      .updateSetting('printSettings', { ...current, maxPrintHeightMm: value });
+  }, []);
 
   const updateParams = useCallback((patch: Partial<BaseplateParams>) => {
     const current = useLayoutStore.getState().layout.baseplateParams ?? DEFAULT_BASEPLATE_PARAMS;
@@ -632,6 +639,23 @@ export function BaseplatePanel() {
                   />
                 </SettingsRow>
               </HelpTargetMarker>
+              <SettingsRow
+                label={t('baseplate.maxPrintHeight')}
+                htmlFor="bp-maxPrintHeight"
+                unit="mm"
+                tooltip={t('baseplate.maxPrintHeightTooltip')}
+              >
+                <DeferredNumberInput
+                  id="bp-maxPrintHeight"
+                  value={maxPrintHeightMm}
+                  onChange={handleMaxHeightChange}
+                  min={PRINT_SETTINGS_CONSTRAINTS.MAX_PRINT_HEIGHT_MIN}
+                  max={PRINT_SETTINGS_CONSTRAINTS.MAX_PRINT_HEIGHT_MAX}
+                  step={PRINT_SETTINGS_CONSTRAINTS.MAX_PRINT_HEIGHT_STEP}
+                  className="input w-14 py-0.5 px-1 text-xs text-right"
+                  aria-label={t('baseplate.maxPrintHeight')}
+                />
+              </SettingsRow>
             </div>
           </div>
         </StickyGroupHeader>

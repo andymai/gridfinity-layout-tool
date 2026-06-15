@@ -22,7 +22,7 @@ vi.mock('@/core/store/layout', () => ({
 }));
 vi.mock('@/core/store/settings', () => ({
   useSettingsStore: (selector: (s: unknown) => unknown) =>
-    selector({ settings: { printSettings: { nozzleSizeMm: 0.4 } } }),
+    selector({ settings: { printSettings: { nozzleSizeMm: 0.4, maxPrintHeightMm: 250 } } }),
 }));
 
 const pageState = { tiling: null, generation: { mesh: null }, pieceMeshes: [] };

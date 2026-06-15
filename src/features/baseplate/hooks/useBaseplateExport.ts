@@ -15,7 +15,8 @@ import { getActiveBridge, workerPoolManager } from '@/shared/generation/bridge';
 import { export3MF, buildSTLBuffer } from '@/shared/generation/export';
 import { parseSTLBinary } from '@/shared/generation/stlParser';
 import { buildStackExportSoup } from '../utils/stackExport';
-import { planPhysicalStacks } from '../utils/stackPrint';
+import { planPhysicalStacks, stackHeightCap } from '../utils/stackPrint';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 import type { StackPrintParams } from '@/core/types';
 import { packagePiecesAsZip } from '@/shared/generation/zipExport';
 import { isErr, getUserMessage } from '@/core/result';
@@ -175,6 +176,11 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
       const sets = stack?.sets ?? 1;
       const plateColor = useSettingsStore.getState().settings.baseplateFilamentColor;
       const separatorColor = useSettingsStore.getState().settings.baseplateSeparatorColor;
+      const stackCap = stackHeightCap(
+        useSettingsStore.getState().settings.printSettings.maxPrintHeightMm,
+        GRIDFINITY_SPEC.SOCKET_HEIGHT,
+        stack?.gapMm ?? 0.2
+      );
 
       try {
         const fullParams = buildFullParams(
@@ -242,7 +248,8 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
               const source = parseStlSoup(stlData);
               const towers = planPhysicalStacks(
                 [{ label: name, quantity: group.indices.length }],
-                sets
+                sets,
+                stackCap
               );
               for (let s = 0; s < towers.length; s++) {
                 const label = towers.length > 1 ? `${name}_${s + 1}` : name;
@@ -293,6 +300,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
                 ? { fileName: `${baseNameNoExt}_key${extension}`, count: keyCount }
                 : undefined,
             stackPrint: stackEnabled ? stack : undefined,
+            stackCap,
           });
 
           const zip = packagePiecesAsZip(pieces, baseNameNoExt, extension, [
@@ -321,7 +329,7 @@ export function useBaseplateExport(): UseBaseplateExportReturn {
           // height cap — a single tower downloads directly, several go in a ZIP.
           const stlResult = await bridge.exportBaseplate(fullParams, 'stl');
           const source = parseStlSoup(stlResult.data);
-          const towers = planPhysicalStacks([{ label: 'plate', quantity: 1 }], sets);
+          const towers = planPhysicalStacks([{ label: 'plate', quantity: 1 }], sets, stackCap);
           if (towers.length === 1) {
             const blob = buildStackedFileBlob(
               source,

@@ -23,7 +23,8 @@ import { SettingsRow } from '@/shared/components/SettingsRow';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { Select } from '@/design-system/Select';
 import { Stepper } from '@/design-system/Stepper';
-import { planPhysicalStacks, type StackGroup } from '../../utils/stackPrint';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
+import { planPhysicalStacks, stackHeightCap, type StackGroup } from '../../utils/stackPrint';
 
 interface StackPrintSectionProps {
   readonly stackPrint: StackPrintParams | undefined;
@@ -49,6 +50,7 @@ const DEFAULT_STACK_PRINT: StackPrintParams = {
 export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSectionProps) {
   const t = useTranslation();
   const separatorColor = useSettingsStore((s) => s.settings.baseplateSeparatorColor);
+  const maxPrintHeightMm = useSettingsStore((s) => s.settings.printSettings.maxPrintHeightMm);
   const updateSetting = useSettingsStore((s) => s.updateSetting);
   const enabled = stackPrint?.enabled === true;
   const sets = stackPrint?.sets ?? STACK_PRINT_DEFAULT_SETS;
@@ -60,9 +62,10 @@ export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSe
   );
   const gapInfo = t(isSheet ? 'baseplate.stackPrint.sheet.info' : 'baseplate.stackPrint.gap.info');
 
+  const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, gapMm);
   const plan = useMemo(
-    () => (enabled ? planPhysicalStacks(groups, sets) : []),
-    [enabled, groups, sets]
+    () => (enabled ? planPhysicalStacks(groups, sets, cap) : []),
+    [enabled, groups, sets, cap]
   );
   const totalCopies = plan.reduce((sum, s) => sum + s.copies, 0);
   const summary = enabled

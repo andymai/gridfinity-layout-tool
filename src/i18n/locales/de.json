@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.together": "Zusammen",
   "baseplate.stackPrint.separationSlider": "Druckstapel zum Prüfen auseinanderziehen",
   "baseplate.stackPrint.separatorColor": "Trennfarbe",
-  "baseplate.stackPrint.featuresOff": "Verbinder, Magnetlöcher und Eckenrundung sind beim Stapeln deaktiviert, damit jede Kachel identisch ist und stützfrei druckt."
+  "baseplate.stackPrint.featuresOff": "Verbinder, Magnetlöcher und Eckenrundung sind beim Stapeln deaktiviert, damit jede Kachel identisch ist und stützfrei druckt.",
+  "baseplate.maxPrintHeight": "Bauhöhe",
+  "baseplate.maxPrintHeightTooltip": "Die maximale Z-Höhe deines Druckers. Der Stapeldruck passt so viele Grundplatten pro Stapel ein, wie das zulässt."
 }

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { StackPrintParams } from '@/core/types';
 import {
   planPhysicalStacks,
+  stackHeightCap,
   stackStrideMm,
   translateMeshZ,
   flipMeshUpsideDown,
@@ -173,6 +174,38 @@ describe('planPhysicalStacks', () => {
       );
       expect(towers.reduce((s, t) => s + t.copies, 0)).toBe(wantTotal);
     });
+  });
+});
+
+describe('stackHeightCap', () => {
+  // 5mm tile (magnets stripped) + 0.2mm gap → 5.2mm stride.
+  const cases: { name: string; maxZ: number; tile: number; gap: number; cap: number }[] = [
+    { name: '250mm printer fits ~48 tiles', maxZ: 250, tile: 5, gap: 0.2, cap: 48 },
+    { name: '180mm printer fits ~34', maxZ: 180, tile: 5, gap: 0.2, cap: 34 },
+    { name: 'short 40mm printer fits 7', maxZ: 40, tile: 5, gap: 0.2, cap: 7 },
+    { name: 'exactly one tile', maxZ: 5, tile: 5, gap: 0.2, cap: 1 },
+    { name: 'below one tile clamps to 1', maxZ: 4, tile: 5, gap: 0.2, cap: 1 },
+    { name: 'zero Z clamps to 1', maxZ: 0, tile: 5, gap: 0.2, cap: 1 },
+    { name: 'no gap → tighter packing', maxZ: 250, tile: 5, gap: 0, cap: 50 },
+    { name: 'negative gap treated as 0', maxZ: 200, tile: 5, gap: -1, cap: 40 },
+    { name: 'zero stride clamps to 1', maxZ: 250, tile: 0, gap: 0, cap: 1 },
+    { name: 'NaN tile height clamps to 1', maxZ: 250, tile: Number.NaN, gap: 0.2, cap: 1 },
+  ];
+
+  it.each(cases)('$name', ({ maxZ, tile, gap, cap }) => {
+    expect(stackHeightCap(maxZ, tile, gap)).toBe(cap);
+  });
+
+  it('the resulting stack never exceeds the build height', () => {
+    const tile = 5;
+    const gap = 0.2;
+    for (const maxZ of [40, 100, 180, 250, 400]) {
+      const n = stackHeightCap(maxZ, tile, gap);
+      const stackHeight = n * tile + (n - 1) * gap; // n tiles, n-1 gaps
+      expect(stackHeight).toBeLessThanOrEqual(maxZ + 1e-9);
+      // And one more tile would overflow (unless we're already at the floor of 1).
+      if (n > 1) expect((n + 1) * tile + n * gap).toBeGreaterThan(maxZ);
+    }
   });
 });
 

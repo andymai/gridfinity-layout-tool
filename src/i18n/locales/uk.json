@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.together": "Разом",
   "baseplate.stackPrint.separationSlider": "Розділіть стос друку для огляду",
   "baseplate.stackPrint.separatorColor": "Колір розділювача",
-  "baseplate.stackPrint.featuresOff": "З’єднувачі, отвори для магнітів і заокруглення кутів вимкнено під час складання, тож кожна плитка однакова й друкується без підпор."
+  "baseplate.stackPrint.featuresOff": "З’єднувачі, отвори для магнітів і заокруглення кутів вимкнено під час складання, тож кожна плитка однакова й друкується без підпор.",
+  "baseplate.maxPrintHeight": "Висота друку",
+  "baseplate.maxPrintHeightTooltip": "Максимальна висота Z вашого принтера. Складання вміщує стільки пластин на стос, скільки це дозволяє."
 }

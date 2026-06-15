@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.together": "Samen",
   "baseplate.stackPrint.separationSlider": "Scheid de printstapel om hem te inspecteren",
   "baseplate.stackPrint.separatorColor": "Scheidingskleur",
-  "baseplate.stackPrint.featuresOff": "Verbindingen, magneetgaten en hoekafronding zijn uitgeschakeld tijdens stapelen, zodat elke tegel identiek is en zonder supports print."
+  "baseplate.stackPrint.featuresOff": "Verbindingen, magneetgaten en hoekafronding zijn uitgeschakeld tijdens stapelen, zodat elke tegel identiek is en zonder supports print.",
+  "baseplate.maxPrintHeight": "Bouwhoogte",
+  "baseplate.maxPrintHeightTooltip": "De maximale Z-hoogte van je printer. Stapelen past zoveel grondplaten per stapel als dit toelaat."
 }

@@ -57,6 +57,18 @@ export function planPhysicalStacks(
 }
 
 /**
+ * How many flipped tiles fit in one stack on a printer `maxZmm` tall. A stack of
+ * n tiles is `n*tileHeight + (n-1)*gap` tall; returns the largest n that fits,
+ * clamped to ≥1 (one tile always fits — it already fits the bed footprint).
+ */
+export function stackHeightCap(maxZmm: number, tileHeightMm: number, gapMm: number): number {
+  const gap = Math.max(0, gapMm);
+  const stride = tileHeightMm + gap;
+  if (!Number.isFinite(stride) || stride <= 0) return 1;
+  return Math.max(1, Math.floor((maxZmm + gap) / stride));
+}
+
+/**
  * Derive the identical-piece groups a drawer needs. For a single (unsplit)
  * plate that's one group of quantity 1; for a split plate each fingerprint
  * group contributes its piece count, labelled by its first piece (e.g. "A1").

@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.together": "密着",
   "baseplate.stackPrint.separationSlider": "印刷スタックを離して確認する",
   "baseplate.stackPrint.separatorColor": "セパレーターの色",
-  "baseplate.stackPrint.featuresOff": "積み重ね中はコネクタ、磁石穴、角の丸めが無効になり、すべてのタイルが同一でサポートなしで印刷できます。"
+  "baseplate.stackPrint.featuresOff": "積み重ね中はコネクタ、磁石穴、角の丸めが無効になり、すべてのタイルが同一でサポートなしで印刷できます。",
+  "baseplate.maxPrintHeight": "造形高さ",
+  "baseplate.maxPrintHeightTooltip": "プリンターの最大Z高さ。積み重ね印刷はこの範囲でできるだけ多くのベースプレートを1スタックに収めます。"
 }

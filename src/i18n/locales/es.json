@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.together": "Juntas",
   "baseplate.stackPrint.separationSlider": "Separa la pila de impresión para inspeccionarla",
   "baseplate.stackPrint.separatorColor": "Color del separador",
-  "baseplate.stackPrint.featuresOff": "Los conectores, los orificios para imanes y el redondeo de esquinas se desactivan al apilar, para que cada pieza sea idéntica y se imprima sin soportes."
+  "baseplate.stackPrint.featuresOff": "Los conectores, los orificios para imanes y el redondeo de esquinas se desactivan al apilar, para que cada pieza sea idéntica y se imprima sin soportes.",
+  "baseplate.maxPrintHeight": "Altura de impresión",
+  "baseplate.maxPrintHeightTooltip": "La altura Z máxima de tu impresora. El apilado encaja tantas placas por pila como esto permita."
 }

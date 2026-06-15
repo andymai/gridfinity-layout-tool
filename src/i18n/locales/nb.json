@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.together": "Samlet",
   "baseplate.stackPrint.separationSlider": "Skill utskriftsstabelen for å inspisere den",
   "baseplate.stackPrint.separatorColor": "Skillefarge",
-  "baseplate.stackPrint.featuresOff": "Koblinger, magnethull og hjørneavrunding er slått av under stabling, slik at hver flis er identisk og skrives ut uten støtter."
+  "baseplate.stackPrint.featuresOff": "Koblinger, magnethull og hjørneavrunding er slått av under stabling, slik at hver flis er identisk og skrives ut uten støtter.",
+  "baseplate.maxPrintHeight": "Byggehøyde",
+  "baseplate.maxPrintHeightTooltip": "Skriverens maks Z-høyde. Stabling får plass til så mange grunnplater per stabel som dette tillater."
 }

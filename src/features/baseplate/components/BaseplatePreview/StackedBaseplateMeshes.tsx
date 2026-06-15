@@ -17,9 +17,11 @@ import { buildFullParams } from '../../utils/buildFullParams';
 import {
   stackGroupsFromTiling,
   planPhysicalStacks,
+  stackHeightCap,
   type StackMeshArrays,
 } from '../../utils/stackPrint';
 import { buildStackPreviewMeshes, type StackPreviewTower } from '../../utils/stackPreview';
+import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 const EMPTY_GEO = { vertices: null, normals: null, indices: null, edgeVertices: null } as const;
 
@@ -74,6 +76,7 @@ export function StackedBaseplateMeshes({
     }))
   );
   const nozzleSizeMm = useSettingsStore((s) => s.settings.printSettings.nozzleSizeMm);
+  const maxPrintHeightMm = useSettingsStore((s) => s.settings.printSettings.maxPrintHeightMm);
 
   const tiling = useBaseplatePageStore((s) => s.tiling);
   const singleMesh = useBaseplatePageStore((s) => s.generation.mesh);
@@ -90,7 +93,8 @@ export function StackedBaseplateMeshes({
       nozzleSizeMm
     );
     const groups = stackGroupsFromTiling(tiling, fullParams);
-    const plan = planPhysicalStacks(groups, stack.sets);
+    const cap = stackHeightCap(maxPrintHeightMm, GRIDFINITY_SPEC.SOCKET_HEIGHT, stack.gapMm);
+    const plan = planPhysicalStacks(groups, stack.sets, cap);
     const isSplit = tiling?.isSplit ?? false;
 
     const towers: StackPreviewTower[] = [];
@@ -111,6 +115,7 @@ export function StackedBaseplateMeshes({
     fractionalEdgeX,
     fractionalEdgeY,
     nozzleSizeMm,
+    maxPrintHeightMm,
     tiling,
     singleMesh,
     pieceMeshes,

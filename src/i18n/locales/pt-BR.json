@@ -2336,5 +2336,7 @@
   "baseplate.stackPrint.together": "Juntas",
   "baseplate.stackPrint.separationSlider": "Separe a pilha de impressão para inspecioná-la",
   "baseplate.stackPrint.separatorColor": "Cor do separador",
-  "baseplate.stackPrint.featuresOff": "Conectores, furos para ímãs e arredondamento de cantos são desativados ao empilhar, para que cada peça seja idêntica e imprima sem suportes."
+  "baseplate.stackPrint.featuresOff": "Conectores, furos para ímãs e arredondamento de cantos são desativados ao empilhar, para que cada peça seja idêntica e imprima sem suportes.",
+  "baseplate.maxPrintHeight": "Altura de impressão",
+  "baseplate.maxPrintHeightTooltip": "A altura Z máxima da sua impressora. O empilhamento encaixa quantas placas por pilha isso permitir."
 }

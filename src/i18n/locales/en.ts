@@ -2095,6 +2095,9 @@ const en: Record<string, string> = {
   'baseplate.magnetDepthInfo': '2mm for typical 6\u00d72mm magnets',
   'baseplate.gridUnitTooltip': 'Width of one grid square (standard: 42mm)',
   'baseplate.printBedTooltip': 'Baseplates larger than this are split automatically.',
+  'baseplate.maxPrintHeight': 'Build height',
+  'baseplate.maxPrintHeightTooltip':
+    "Your printer's max Z height. Stack printing fits as many baseplates per stack as this allows.",
   'baseplate.nozzleSizeTooltip':
     'Your printer nozzle diameter. Dovetail keys and snap clips scale to it so they stay printable on wider nozzles. Geometry is unchanged at 0.4mm.',
   'baseplate.connectorNozzleNotice':
