@@ -665,8 +665,9 @@ export function BaseplatePanel() {
             printBedSize={printBedSize}
           />
         )}
+
+        <AttributionFooter />
       </div>
-      <AttributionFooter />
       {cloudSyncEnabled && <UserDock />}
     </div>
   );

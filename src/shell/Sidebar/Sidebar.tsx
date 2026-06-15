@@ -472,11 +472,6 @@ export function Sidebar() {
                         className="input w-14 py-0.5 px-1 text-xs text-right"
                       />
                     </SettingsRow>
-                    <p className="text-[10px] text-content-tertiary mt-0.5">
-                      {t('settings.gridfinityStandardMm', {
-                        value: CONSTRAINTS.GRID_UNIT_MM_DEFAULT,
-                      })}
-                    </p>
                   </div>
                   <div data-help-target="height-unit">
                     <SettingsRow
@@ -494,11 +489,6 @@ export function Sidebar() {
                         className="input w-14 py-0.5 px-1 text-xs text-right"
                       />
                     </SettingsRow>
-                    <p className="text-[10px] text-content-tertiary mt-0.5">
-                      {t('settings.gridfinityStandardMm', {
-                        value: CONSTRAINTS.HEIGHT_UNIT_MM_DEFAULT,
-                      })}
-                    </p>
                   </div>
                   <div data-help-target="print-bed-size">
                     <SettingsRow

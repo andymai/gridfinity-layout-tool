@@ -55,15 +55,6 @@ export function AttributionFooter() {
       </a>{' '}
       ·{' '}
       <a
-        href="https://github.com/andymai/gridfinity-layout-tool"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-content-tertiary hover:underline"
-      >
-        {t('sidebar.github')}
-      </a>{' '}
-      ·{' '}
-      <a
         href="/privacy"
         target="_blank"
         rel="noopener noreferrer"
