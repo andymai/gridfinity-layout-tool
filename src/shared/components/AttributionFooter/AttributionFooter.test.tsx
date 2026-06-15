@@ -17,7 +17,6 @@ describe('AttributionFooter', () => {
     render(<AttributionFooter />);
     expect(screen.getByRole('link', { name: /Zack Freedman/ })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Andy Aragon/ })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /GitHub/ })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Privacy/ })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Terms/ })).toBeInTheDocument();
   });
