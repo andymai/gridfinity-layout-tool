@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.172.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.172.0...gridfinity-layout-tool-v4.172.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* **bin-designer:** make overhang, multi-color & lid feature toggles; sidebar polish ([#2158](https://github.com/andymai/gridfinity-layout-tool/issues/2158)) ([56a0963](https://github.com/andymai/gridfinity-layout-tool/commit/56a0963a5807c1e258b2c2ad7480305f1ce421bd))
+
 ## [4.172.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.171.2...gridfinity-layout-tool-v4.172.0) (2026-06-15)
 
 
