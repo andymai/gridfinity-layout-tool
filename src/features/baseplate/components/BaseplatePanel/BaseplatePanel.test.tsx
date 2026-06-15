@@ -234,7 +234,7 @@ describe('BaseplatePanel', () => {
 
     it('renders the Connector fit stepper only when connectors are enabled', () => {
       render(<BaseplatePanel />);
-      expect(screen.getByLabelText('baseplate.connectorFit.label')).toHaveTextContent('0 mm');
+      expect(screen.getByLabelText('baseplate.connectorFit.label')).toHaveTextContent('0');
     });
 
     it('hides the Connector fit stepper when connectors are disabled', () => {
@@ -288,7 +288,7 @@ describe('BaseplatePanel', () => {
         connectorFitOffset: 0.1,
       };
       render(<BaseplatePanel />);
-      expect(screen.getByLabelText('baseplate.connectorFit.label')).toHaveTextContent('+0.1 mm');
+      expect(screen.getByLabelText('baseplate.connectorFit.label')).toHaveTextContent('+0.1');
     });
   });
 
