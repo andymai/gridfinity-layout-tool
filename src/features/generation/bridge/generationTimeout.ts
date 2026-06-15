@@ -73,6 +73,31 @@ export const HEIGHT_BONUS_BUCKET_UNITS = 2;
  */
 export const MAX_TIMEOUT_MS = 180_000;
 
+/**
+ * Multiplier applied to the complexity-derived budget when the request is a
+ * user-initiated **export** rather than a live preview.
+ *
+ * The preview ceilings ({@link MAX_TIMEOUT_MS}, {@link BASEPLATE_MAX_TIMEOUT_MS})
+ * are tuned for "how long a user should wait while iterating" on a *reference*
+ * machine. An export is different on two axes: the user has explicitly committed
+ * to it (clicked Export, will wait, can cancel) AND it runs on *their* hardware,
+ * which can be several times slower than the machine these budgets were measured
+ * on — a low-end laptop or a throttled mobile browser can easily take 3–4× as
+ * long on the single-threaded OCCT pipeline. A flat multiplier models exactly
+ * that hardware gap while preserving the relative ordering the complexity budget
+ * already encodes (a hex bin still gets proportionally more than a trivial one).
+ */
+export const EXPORT_TIMEOUT_MULTIPLIER = 4;
+
+/**
+ * Hard ceiling for exports — set far above the 3-minute preview cap because an
+ * export is terminal and cancellable, so the only job of this clamp is to stop a
+ * genuinely-wedged WASM heap from hanging forever, not to bound interactive
+ * wait. 15 minutes comfortably covers the heaviest known pipeline (a 6×6×20
+ * honeycomb's ~3-minute pattern cut, ×4 for slow hardware ≈ 12 min) with margin.
+ */
+export const EXPORT_MAX_TIMEOUT_MS = 900_000;
+
 function hasAnyActiveCutoutSide(params: BinParams): boolean {
   const { walls } = params;
   if (!walls.enabled) return false;
@@ -86,16 +111,17 @@ function hasAnyActiveCutoutSide(params: BinParams): boolean {
 }
 
 /**
- * Compute the timeout budget for a bin generation, in milliseconds.
- *
- * Clamped to `[BASE_TIMEOUT_MS, MAX_TIMEOUT_MS]`.
+ * Uncapped complexity budget for a bin, in milliseconds — the raw sum of the
+ * base budget plus every applicable bonus, before any ceiling is applied. Kept
+ * separate from the clamping so preview and export can share one cost model and
+ * differ only in their ceiling (and the export multiplier).
  */
-export function computeGenerationTimeoutMs(params: BinParams): number {
+function binRawBudgetMs(params: BinParams): number {
   // Defensive against transient bad inputs — mid-edit UI state can briefly
   // present NaN/negative dimensions. setTimeout(NaN) coerces to 0ms, which would
   // cancel the request before the worker can run. Floor bad dims to 0 (no
-  // footprint/height bonus) and clamp the result below. Mirrors
-  // computeBaseplateTimeoutMs.
+  // footprint/height bonus); callers clamp to BASE below. Mirrors
+  // baseplateRawBudgetMs.
   const safeWidth = Number.isFinite(params.width) && params.width > 0 ? params.width : 0;
   const safeDepth = Number.isFinite(params.depth) && params.depth > 0 ? params.depth : 0;
   const safeHeight = Number.isFinite(params.height) && params.height > 0 ? params.height : 0;
@@ -119,9 +145,28 @@ export function computeGenerationTimeoutMs(params: BinParams): number {
   const heightBuckets = Math.floor(heightOverFloor / HEIGHT_BONUS_BUCKET_UNITS);
   timeout += heightBuckets * HEIGHT_BONUS_MS;
 
-  // Clamp to [BASE, MAX] — the guards above keep `timeout` finite, and this
-  // makes the documented contract self-enforcing.
-  return Math.max(BASE_TIMEOUT_MS, Math.min(MAX_TIMEOUT_MS, timeout));
+  return timeout;
+}
+
+/**
+ * Compute the timeout budget for a live bin **preview** generation, in
+ * milliseconds. Clamped to `[BASE_TIMEOUT_MS, MAX_TIMEOUT_MS]`.
+ */
+export function computeGenerationTimeoutMs(params: BinParams): number {
+  // The raw budget is finite by construction (guards in binRawBudgetMs), so this
+  // clamp also makes the documented contract self-enforcing.
+  return Math.max(BASE_TIMEOUT_MS, Math.min(MAX_TIMEOUT_MS, binRawBudgetMs(params)));
+}
+
+/**
+ * Compute the timeout budget for a user-initiated bin **export**, in
+ * milliseconds. Same complexity cost model as the preview, scaled by
+ * {@link EXPORT_TIMEOUT_MULTIPLIER} for slower user hardware and clamped to
+ * `[BASE_TIMEOUT_MS, EXPORT_MAX_TIMEOUT_MS]`.
+ */
+export function computeExportTimeoutMs(params: BinParams): number {
+  const scaled = binRawBudgetMs(params) * EXPORT_TIMEOUT_MULTIPLIER;
+  return Math.max(BASE_TIMEOUT_MS, Math.min(EXPORT_MAX_TIMEOUT_MS, scaled));
 }
 
 /** Per-cell cost of magnet-hole boolean subtractions, in ms. */
@@ -156,7 +201,12 @@ export const BASEPLATE_MAX_TIMEOUT_MS = 180_000;
  *
  * Clamped to `[BASE_TIMEOUT_MS, BASEPLATE_MAX_TIMEOUT_MS]`.
  */
-export function computeBaseplateTimeoutMs(params: BaseplateParams): number {
+/**
+ * Uncapped complexity budget for a baseplate, in milliseconds — the raw sum of
+ * the base budget plus every applicable bonus, before any ceiling is applied.
+ * Shared by the preview and export budgets (see {@link binRawBudgetMs}).
+ */
+function baseplateRawBudgetMs(params: BaseplateParams): number {
   // Defensive against transient bad inputs — mid-edit UI state can briefly
   // present NaN/negative dimensions. The generator's sanitizeParams will
   // reject them, but the bridge computes this timeout first and setTimeout
@@ -181,7 +231,29 @@ export function computeBaseplateTimeoutMs(params: BaseplateParams): number {
     timeout += BASEPLATE_LIGHTWEIGHT_BONUS_MS;
   }
 
-  // Clamp to [BASE, MAX]. Redundant given the guards above, but makes the
-  // documented contract self-enforcing if bonuses are ever signed or reworked.
-  return Math.max(BASE_TIMEOUT_MS, Math.min(BASEPLATE_MAX_TIMEOUT_MS, timeout));
+  return timeout;
+}
+
+/**
+ * Compute the timeout budget for a live baseplate **preview** generation, in
+ * milliseconds. Clamped to `[BASE_TIMEOUT_MS, BASEPLATE_MAX_TIMEOUT_MS]`.
+ */
+export function computeBaseplateTimeoutMs(params: BaseplateParams): number {
+  // The raw budget is finite by construction (guards in baseplateRawBudgetMs),
+  // so this clamp also makes the documented contract self-enforcing.
+  return Math.max(
+    BASE_TIMEOUT_MS,
+    Math.min(BASEPLATE_MAX_TIMEOUT_MS, baseplateRawBudgetMs(params))
+  );
+}
+
+/**
+ * Compute the timeout budget for a user-initiated baseplate **export**, in
+ * milliseconds. Same complexity cost model as the preview, scaled by
+ * {@link EXPORT_TIMEOUT_MULTIPLIER} for slower user hardware and clamped to
+ * `[BASE_TIMEOUT_MS, EXPORT_MAX_TIMEOUT_MS]`.
+ */
+export function computeBaseplateExportTimeoutMs(params: BaseplateParams): number {
+  const scaled = baseplateRawBudgetMs(params) * EXPORT_TIMEOUT_MULTIPLIER;
+  return Math.max(BASE_TIMEOUT_MS, Math.min(EXPORT_MAX_TIMEOUT_MS, scaled));
 }

@@ -14,7 +14,11 @@ import {
   HEX_FOOTPRINT_BONUS_FLOOR_CELLS,
   HEIGHT_BONUS_MS,
   MAX_TIMEOUT_MS,
+  EXPORT_TIMEOUT_MULTIPLIER,
+  EXPORT_MAX_TIMEOUT_MS,
   computeBaseplateTimeoutMs,
+  computeBaseplateExportTimeoutMs,
+  computeExportTimeoutMs,
   computeGenerationTimeoutMs,
 } from './generationTimeout';
 
@@ -301,5 +305,99 @@ describe('computeBaseplateTimeoutMs', () => {
     // Honeycomb bins are now the heaviest pipeline, so baseplates no longer get a
     // higher ceiling than bins — both clamp at the agreed 3-minute cap.
     expect(BASEPLATE_MAX_TIMEOUT_MS).toBe(MAX_TIMEOUT_MS);
+  });
+});
+
+describe('computeExportTimeoutMs', () => {
+  it('scales a trivial bin by the export multiplier', () => {
+    // raw = BASE (30s); export = BASE × multiplier. Exports run on the user's
+    // possibly-slow hardware and are user-committed + cancellable, so they get a
+    // far more generous budget than the live preview.
+    expect(computeExportTimeoutMs(params({ height: 3 }))).toBe(
+      BASE_TIMEOUT_MS * EXPORT_TIMEOUT_MULTIPLIER
+    );
+  });
+
+  it('preserves the complexity ordering — a hex bin still gets more than a plain one', () => {
+    const plain = computeExportTimeoutMs(params({ height: 3 }));
+    const hex = computeExportTimeoutMs(params({ height: 3, wallPattern: HEX_ON }));
+    expect(hex).toBeGreaterThan(plain);
+    // Specifically: (BASE + hex bonus) × multiplier.
+    expect(hex).toBe((BASE_TIMEOUT_MS + HEX_PATTERN_BONUS_MS) * EXPORT_TIMEOUT_MULTIPLIER);
+  });
+
+  it('runs well past the preview ceiling for heavy bins', () => {
+    // A bin that clamps to the 3-minute preview cap should get a much larger
+    // export budget — the whole point of the change.
+    const t = computeExportTimeoutMs(
+      params({ width: 20, depth: 20, height: 20, wallPattern: HEX_ON })
+    );
+    expect(t).toBeGreaterThan(MAX_TIMEOUT_MS);
+  });
+
+  it('caps at the export ceiling', () => {
+    // 20×20×20 hex raw ≈ 261s; ×4 ≈ 1044s, above the 900s export ceiling → clamp.
+    const t = computeExportTimeoutMs(
+      params({ width: 20, depth: 20, height: 20, wallPattern: HEX_ON })
+    );
+    expect(t).toBe(EXPORT_MAX_TIMEOUT_MS);
+  });
+
+  it('clamps non-finite or invalid dimensions into the supported range', () => {
+    const cases = [
+      params({ width: Number.NaN, depth: 8, height: 6, wallPattern: HEX_ON }),
+      params({ width: 8, depth: Number.POSITIVE_INFINITY, height: 6, wallPattern: HEX_ON }),
+      params({ width: -4, depth: 8, height: 6, wallPattern: HEX_ON }),
+      params({ width: 8, depth: 8, height: Number.NaN, wallPattern: HEX_ON }),
+    ];
+    for (const p of cases) {
+      const t = computeExportTimeoutMs(p);
+      expect(Number.isFinite(t)).toBe(true);
+      expect(t).toBeGreaterThanOrEqual(BASE_TIMEOUT_MS);
+      expect(t).toBeLessThanOrEqual(EXPORT_MAX_TIMEOUT_MS);
+    }
+  });
+});
+
+describe('computeBaseplateExportTimeoutMs', () => {
+  it('scales a plain baseplate by the export multiplier', () => {
+    expect(computeBaseplateExportTimeoutMs(bpParams())).toBe(
+      BASE_TIMEOUT_MS * EXPORT_TIMEOUT_MULTIPLIER
+    );
+  });
+
+  it('scales the magnet bonus alongside the base', () => {
+    // (BASE + 9-cell magnet bonus) × multiplier.
+    const t = computeBaseplateExportTimeoutMs(bpParams({ width: 3, depth: 3, magnetHoles: true }));
+    expect(t).toBe(
+      (BASE_TIMEOUT_MS + 9 * BASEPLATE_MAGNET_MS_PER_CELL) * EXPORT_TIMEOUT_MULTIPLIER
+    );
+  });
+
+  it('never exceeds the export ceiling regardless of input', () => {
+    const t = computeBaseplateExportTimeoutMs(
+      bpParams({
+        width: 1000,
+        depth: 1000,
+        magnetHoles: true,
+        connectorNubs: true,
+        lightweight: true,
+      })
+    );
+    expect(t).toBeLessThanOrEqual(EXPORT_MAX_TIMEOUT_MS);
+  });
+
+  it('clamps non-finite and invalid dimensions into the supported range', () => {
+    const cases = [
+      bpParams({ width: Number.NaN, depth: 3, magnetHoles: true }),
+      bpParams({ width: 3, depth: Number.POSITIVE_INFINITY, magnetHoles: true }),
+      bpParams({ width: -1, depth: 3, magnetHoles: true }),
+    ];
+    for (const p of cases) {
+      const t = computeBaseplateExportTimeoutMs(p);
+      expect(Number.isFinite(t)).toBe(true);
+      expect(t).toBeGreaterThanOrEqual(BASE_TIMEOUT_MS);
+      expect(t).toBeLessThanOrEqual(EXPORT_MAX_TIMEOUT_MS);
+    }
   });
 });

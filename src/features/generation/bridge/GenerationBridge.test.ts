@@ -440,8 +440,9 @@ describe('GenerationBridge', () => {
       ) as { payload: { requestId: string } };
       expect(exportMsg).toBeDefined();
 
-      // Default bin timeout is at least BASE (30s); advance well past it.
-      await vi.advanceTimersByTimeAsync(120_000);
+      // Export timeout is the complexity budget (BASE 30s for a default bin)
+      // scaled by EXPORT_TIMEOUT_MULTIPLIER (×4 = 120s); advance well past it.
+      await vi.advanceTimersByTimeAsync(180_000);
 
       const result = await settled;
       expect(result).toBeInstanceOf(Error);
