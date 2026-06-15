@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.176.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.176.0...gridfinity-layout-tool-v4.176.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* **deps:** resolve dompurify, js-yaml, and @babel/core security alerts ([#2180](https://github.com/andymai/gridfinity-layout-tool/issues/2180)) ([62b7e22](https://github.com/andymai/gridfinity-layout-tool/commit/62b7e22a97c81feaf3f233a530c7b021d1415e48))
+
 ## [4.176.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.175.0...gridfinity-layout-tool-v4.176.0) (2026-06-15)
 
 
