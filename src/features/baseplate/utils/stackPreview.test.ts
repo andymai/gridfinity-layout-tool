@@ -21,6 +21,7 @@ describe('buildStackPreviewMeshes', () => {
     const out = buildStackPreviewMeshes([], airGap, 0, 42);
     expect(out.plates.vertices.length).toBe(0);
     expect(out.heightMm).toBe(0);
+    expect(out.towerLayouts).toHaveLength(0);
   });
 
   it('stacks a single tower of N copies', () => {
@@ -32,6 +33,10 @@ describe('buildStackPreviewMeshes', () => {
     const b = meshBounds(out.plates.vertices);
     expect(b.minZ).toBeCloseTo(0, 4);
     expect(b.maxZ).toBeCloseTo(30.4, 4);
+    expect(out.towerLayouts).toHaveLength(1);
+    expect(out.towerLayouts[0].centerX).toBeCloseTo(0, 4);
+    expect(out.towerLayouts[0].centerY).toBeCloseTo(0, 4);
+    expect(out.towerLayouts[0].heightMm).toBeCloseTo(30.4, 4);
   });
 
   it('adds the separation slider distance to the stride', () => {
@@ -57,6 +62,10 @@ describe('buildStackPreviewMeshes', () => {
     expect(b.minX).toBeCloseTo(-52, 4);
     expect(b.maxX).toBeCloseTo(52, 4);
     expect(out.widthMm).toBeCloseTo(168, 4);
+    // towerLayouts must align 1:1 with the input towers array.
+    expect(out.towerLayouts).toHaveLength(2);
+    expect(out.towerLayouts[0].centerX).toBeCloseTo(-42, 4);
+    expect(out.towerLayouts[1].centerX).toBeCloseTo(42, 4);
   });
 
   // Towers tile into a roughly-square grid (cols = ceil(sqrt(n))), centered on

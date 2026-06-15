@@ -103,15 +103,22 @@ export function StackedBaseplateMeshes({
     const isSplit = tiling?.isSplit ?? false;
 
     const towers: StackPreviewTower[] = [];
+    const filteredPlan: typeof plan = [];
     for (const physical of plan) {
       const source = isSplit
         ? pieceMeshes.find((p) => p.label === physical.label)?.mesh
         : singleMesh;
       const arrays = source ? toMeshArrays(source) : null;
-      if (arrays) towers.push({ mesh: arrays, copies: physical.copies });
+      if (arrays) {
+        towers.push({ mesh: arrays, copies: physical.copies });
+        filteredPlan.push(physical);
+      }
     }
     if (towers.length === 0) return null;
-    return { meshes: buildStackPreviewMeshes(towers, stack, separationMm, gridUnitMm), plan };
+    return {
+      meshes: buildStackPreviewMeshes(towers, stack, separationMm, gridUnitMm),
+      plan: filteredPlan,
+    };
   }, [
     baseplateParams,
     drawerWidth,
@@ -141,8 +148,6 @@ export function StackedBaseplateMeshes({
 
   if (!meshResult || !plateGeo.geometry) return null;
 
-  const isSinglePieceType = new Set(plan.map((p) => p.label)).size <= 1;
-
   return (
     <>
       <mesh geometry={plateGeo.geometry}>
@@ -161,7 +166,7 @@ export function StackedBaseplateMeshes({
       {meshResult.towerLayouts.map((layout, idx) => {
         const entry = plan[idx];
         if (!entry) return null;
-        const label = isSinglePieceType ? `×${entry.copies}` : `${entry.label}  ×${entry.copies}`;
+        const label = `×${entry.copies}`;
         return (
           <Text
             key={idx}
