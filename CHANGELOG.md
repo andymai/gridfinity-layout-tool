@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.177.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.177.0...gridfinity-layout-tool-v4.177.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* **deps:** bump protobufjs to 7.6.3 for GHSA-wcpc-wj8m-hjx6 and GHSA-f38q-mgvj-vph7 ([#2183](https://github.com/andymai/gridfinity-layout-tool/issues/2183)) ([f06fd71](https://github.com/andymai/gridfinity-layout-tool/commit/f06fd711acc7a25e2076afca6ef67e16c5268d74))
+
 ## [4.177.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.176.1...gridfinity-layout-tool-v4.177.0) (2026-06-15)
 
 
