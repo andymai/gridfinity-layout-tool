@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.174.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.174.0...gridfinity-layout-tool-v4.174.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* **sidebar:** non-sticky footer, trim attribution, and dev content-route parity ([#2172](https://github.com/andymai/gridfinity-layout-tool/issues/2172)) ([119e29c](https://github.com/andymai/gridfinity-layout-tool/commit/119e29c52bac62054893e02c930e140b19a70a3d))
+
 ## [4.174.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.173.1...gridfinity-layout-tool-v4.174.0) (2026-06-15)
 
 
