@@ -26,11 +26,10 @@ export function OverhangSection() {
   return (
     <Collapsible
       title={t('binDesigner.overhang.title')}
-      size="sm"
       defaultExpanded={false}
       summary={meta.summary}
     >
-      <p className="mb-3 mt-1 text-[11px] leading-relaxed text-content-tertiary">
+      <p className="mb-3 text-[11px] leading-relaxed text-content-tertiary">
         {t('binDesigner.overhang.hint')}
       </p>
       <FeatureGate disabled={state.isCustomShape} reason={meta.disabledReason ?? ''}>

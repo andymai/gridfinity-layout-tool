@@ -18,7 +18,7 @@ export function BaseSection() {
   const t = useTranslation();
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-3">
       <FeatureToggle
         label="Stacking lip"
         checked={state.base.stackingLip}

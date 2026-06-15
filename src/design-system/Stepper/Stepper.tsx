@@ -76,9 +76,9 @@ const inputVariants = cva(
   {
     variants: {
       size: {
-        sm: 'text-xs min-w-[40px]',
-        md: 'text-sm min-w-[48px]',
-        lg: 'text-base font-semibold min-w-[64px] border-stroke',
+        sm: 'text-xs min-w-[34px]',
+        md: 'text-sm min-w-[38px]',
+        lg: 'text-base font-semibold min-w-[48px] border-stroke',
       },
     },
     defaultVariants: {
@@ -100,9 +100,9 @@ const displayVariants = cva(
   {
     variants: {
       size: {
-        sm: 'text-xs text-content-secondary min-w-[40px]',
-        md: 'text-sm text-content-secondary min-w-[48px]',
-        lg: 'text-base font-semibold text-content min-w-[64px] border-stroke',
+        sm: 'text-xs text-content-secondary min-w-[34px]',
+        md: 'text-sm text-content-secondary min-w-[38px]',
+        lg: 'text-base font-semibold text-content min-w-[48px] border-stroke',
       },
     },
     defaultVariants: {

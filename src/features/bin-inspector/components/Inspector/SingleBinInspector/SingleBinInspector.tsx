@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { CONSTRAINTS, DEFAULT_CATEGORY_COLOR, STAGING_ID } from '@/core/constants';
 import { Button, IconButton, Select, Stepper, XIcon } from '@/design-system';
-import { RulerIcon } from '@/design-system/Icon';
+import { ArrowLeftRightIcon, RulerIcon } from '@/design-system/Icon';
 import { useHalfGridModeStore } from '@/core/store/halfGridMode';
 import { getBinLocationContext } from '@/shared/utils/binLocation';
 import type { UseBinInspectorReturn } from '@/features/bin-inspector/hooks/useBinInspector';
@@ -92,9 +92,9 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
 
       <div className="space-y-4">
         {/* Size inputs with flip button between */}
-        <div className="flex items-end gap-2">
+        <div className="flex items-end justify-center gap-2">
           {/* Width control */}
-          <div className="flex-1">
+          <div className="flex flex-col">
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('common.width')}
             </label>
@@ -125,23 +125,11 @@ export function SingleBinInspector({ inspector, variant, onClose }: SingleBinIns
             title={t('inspector.swapDimensions')}
             aria-label={t('inspector.swapWidthAndDepth')}
           >
-            <svg
-              className={isMobile ? 'w-5 h-5' : 'w-3 h-3'}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={isMobile ? 2 : 2.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-              />
-            </svg>
+            <ArrowLeftRightIcon size={isMobile ? 'md' : 'xs'} />
           </IconButton>
 
           {/* Depth control */}
-          <div className="flex-1">
+          <div className="flex flex-col">
             <label className={`block ${labelSize} text-content-tertiary`}>
               {t('common.depth')}
             </label>

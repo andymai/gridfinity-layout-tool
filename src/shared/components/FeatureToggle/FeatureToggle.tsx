@@ -53,8 +53,10 @@ export function FeatureToggle({
 
   return (
     <div>
-      {/* Toggle row */}
-      <div className="flex items-center justify-between py-1.5">
+      {/* Toggle row — vertical rhythm is owned by the parent container
+          (PanelSection leading / a stacking `space-y`), not this row, so a
+          toggle never adds padding on top of an already-padded section. */}
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xs text-content-secondary">{label}</span>
           {!disabledReason && comingSoon && (

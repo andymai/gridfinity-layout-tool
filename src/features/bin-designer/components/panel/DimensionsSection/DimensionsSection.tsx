@@ -8,7 +8,7 @@
 
 import { DESIGNER_CONSTRAINTS } from '@/features/bin-designer/constants';
 import { Checkbox, IconButton, Stepper } from '@/design-system';
-import { RulerIcon } from '@/design-system/Icon';
+import { ArrowLeftRightIcon, RulerIcon } from '@/design-system/Icon';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { useDimensionsSection } from './useDimensionsSection';
 
@@ -21,9 +21,9 @@ export function DimensionsSection() {
   return (
     <div className="space-y-3">
       {/* Width and Depth on same row with swap button */}
-      <div className="flex items-end gap-2">
+      <div className="flex items-end justify-center gap-2">
         {/* Width */}
-        <div className="flex-1 min-w-0">
+        <div className="flex flex-col">
           <span className="mb-1 block text-xs text-content-tertiary">{t('common.width')}</span>
           <Stepper
             value={state.width}
@@ -47,23 +47,11 @@ export function DimensionsSection() {
           title={t('inspector.swapDimensions')}
           aria-label={t('inspector.swapWidthAndDepth')}
         >
-          <svg
-            className="h-3 w-3"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2.5}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-            />
-          </svg>
+          <ArrowLeftRightIcon size={isMobile ? 'md' : 'xs'} />
         </IconButton>
 
         {/* Depth */}
-        <div className="flex-1 min-w-0">
+        <div className="flex flex-col">
           <span className="mb-1 block text-xs text-content-tertiary">{t('common.depth')}</span>
           <Stepper
             value={state.depth}
@@ -107,7 +95,7 @@ export function DimensionsSection() {
 
       {/* Half-bin mode toggle */}
       <div
-        className="group flex items-center justify-between pt-2 cursor-pointer rounded-md px-1 -mx-1 py-1 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+        className="group flex items-center justify-between cursor-pointer rounded-md px-1 -mx-1 py-1 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
         onClick={handlers.toggleHalfGridMode}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {

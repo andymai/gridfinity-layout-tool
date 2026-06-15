@@ -30,25 +30,19 @@ export function WallsSection() {
         unit="mm"
         tip={t('binDesigner.wallThickness.nozzleTip')}
       />
-      <div className="space-y-4">
-        <div className="pt-3 border-t border-stroke-subtle/50">
-          <PatternSelector
-            selectedPattern={state.patternEnabled ? state.pattern : null}
-            onChange={handlers.handlePatternChange}
-            disabled={state.patternDisabled}
-            disabledReason={state.patternDisabledReason}
-          />
-          {state.patternPartialNote && state.patternEnabled && (
-            <p className="text-[11px] text-content-tertiary mt-1">{state.patternPartialNote}</p>
-          )}
-        </div>
-        <div className="pt-3 border-t border-stroke-subtle/50">
-          <WallCutoutsSection />
-        </div>
-        <div className="pt-3 border-t border-stroke-subtle/50">
-          <HandleSection />
-        </div>
+      <div>
+        <PatternSelector
+          selectedPattern={state.patternEnabled ? state.pattern : null}
+          onChange={handlers.handlePatternChange}
+          disabled={state.patternDisabled}
+          disabledReason={state.patternDisabledReason}
+        />
+        {state.patternPartialNote && state.patternEnabled && (
+          <p className="text-[11px] text-content-tertiary mt-1">{state.patternPartialNote}</p>
+        )}
       </div>
+      <WallCutoutsSection />
+      <HandleSection />
     </div>
   );
 }

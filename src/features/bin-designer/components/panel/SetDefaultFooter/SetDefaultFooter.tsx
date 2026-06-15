@@ -16,7 +16,7 @@ export function SetDefaultFooter() {
   const { hasCustomDefault, setCurrentAsDefault } = useBinDefaults();
 
   return (
-    <div className="px-4 py-3 border-b border-stroke-subtle">
+    <div className="px-4 py-3">
       <button
         type="button"
         onClick={setCurrentAsDefault}
