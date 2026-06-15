@@ -33,7 +33,7 @@ graph TB
 - `utils/buildFullParams.ts` — resolves sync mode (drawer dims vs custom width/depth); strips connectors, magnet holes, and corner rounding when stack printing is on
 - `utils/stackPrint.ts` — stack planning (groups → capped physical stacks) + `buildTowerLayers` (bottom plate upright, the rest flipped, all XY-aligned)
 - `utils/stackExport.ts` — bakes a stack into export triangle soup (single material)
-- `utils/stackPreview.ts` — lays the towers out in a centered, roughly-square grid for the 3D preview
+- `utils/stackPreview.ts` — lays the towers out in a centered, roughly-square grid for the 3D preview. `TOWER_GAP_UNITS` (1) is the whole-unit clearance between adjacent towers — one grid unit (~42mm) reads as "separate printed pieces" while keeping every cell on the scene's integer footprint grid
 - `utils/fileNaming.ts` — descriptive/compact/custom filename generation
 - `constants.ts` — MAX_BASEPLATE_DIMENSION (16), EXPLODE_GAP_MM (10), piece color palette
 
