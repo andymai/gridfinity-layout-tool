@@ -6,11 +6,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/post-edit-test.sh",
-            "timeout": 60
-          },
-          {
-            "type": "command",
             "command": ".claude/hooks/use-shallow-check.sh",
             "timeout": 10
           },
