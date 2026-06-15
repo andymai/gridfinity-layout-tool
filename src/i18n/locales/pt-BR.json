@@ -2331,12 +2331,10 @@
   "baseplate.stackPrint.gap.info": "Folga de ar entre placas empilhadas. Cerca de 0,2 mm (uma camada) é o típico; aumente se as placas se fundirem.",
   "baseplate.stackPrint.sheet.label": "Espessura do separador",
   "baseplate.stackPrint.sheet.info": "Espessura da folha separadora impressa entre as placas. Cerca de duas camadas (0,4 mm) é o típico.",
-  "baseplate.stackPrint.connectorsDisabled": "Os conectores são desativados ao empilhar — suas saliências não podem ser impressas em uma pilha vertical.",
   "baseplate.stackPrint.needs3mf": "O empilhamento multimaterial é exportado como 3MF para atribuir cada filamento corretamente.",
   "baseplate.stackPrint.separate": "Separar",
   "baseplate.stackPrint.together": "Juntas",
   "baseplate.stackPrint.separationSlider": "Separe a pilha de impressão para inspecioná-la",
   "baseplate.stackPrint.separatorColor": "Cor do separador",
-  "baseplate.stackPrint.magnetsDisabled": "Os furos para ímãs são desativados ao empilhar: as cavidades precisariam de pontes ao imprimir de cabeça para baixo.",
-  "baseplate.stackPrint.connectorsMagnetsDisabled": "Os conectores e os furos para ímãs são desativados ao empilhar: não imprimem de forma limpa em uma pilha vertical."
+  "baseplate.stackPrint.featuresOff": "Conectores, furos para ímãs e arredondamento de cantos são desativados ao empilhar, para que cada peça seja idêntica e imprima sem suportes."
 }

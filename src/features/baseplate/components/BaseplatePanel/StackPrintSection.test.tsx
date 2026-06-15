@@ -10,30 +10,14 @@ const enabled: StackPrintParams = { enabled: true, sets: 3, gapMm: 0.2 as never,
 
 describe('StackPrintSection', () => {
   it('renders the section header with the experimental badge', () => {
-    render(
-      <StackPrintSection
-        stackPrint={undefined}
-        groups={groups}
-        isSplit={false}
-        hadMagnets={false}
-        onChange={vi.fn()}
-      />
-    );
+    render(<StackPrintSection stackPrint={undefined} groups={groups} onChange={vi.fn()} />);
     expect(screen.getByText(/Stack for printing/i)).toBeInTheDocument();
     expect(screen.getByText(/Experimental/i)).toBeInTheDocument();
   });
 
   it('enables stacking with air-gap defaults when toggled on', () => {
     const onChange = vi.fn();
-    render(
-      <StackPrintSection
-        stackPrint={undefined}
-        groups={groups}
-        isSplit={false}
-        hadMagnets={false}
-        onChange={onChange}
-      />
-    );
+    render(<StackPrintSection stackPrint={undefined} groups={groups} onChange={onChange} />);
     fireEvent.click(screen.getByRole('switch', { name: /vertical stack/i }));
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({ enabled: true, mode: 'airGap', sets: expect.any(Number) })
@@ -42,29 +26,13 @@ describe('StackPrintSection', () => {
 
   it('disables stacking (onChange undefined) when toggled off', () => {
     const onChange = vi.fn();
-    render(
-      <StackPrintSection
-        stackPrint={enabled}
-        groups={groups}
-        isSplit={false}
-        hadMagnets={false}
-        onChange={onChange}
-      />
-    );
+    render(<StackPrintSection stackPrint={enabled} groups={groups} onChange={onChange} />);
     fireEvent.click(screen.getByRole('switch', { name: /vertical stack/i }));
     expect(onChange).toHaveBeenCalledWith(undefined);
   });
 
   it('shows the test-a-small-stack hint and a live summary when enabled', () => {
-    render(
-      <StackPrintSection
-        stackPrint={enabled}
-        groups={groups}
-        isSplit={false}
-        hadMagnets={false}
-        onChange={vi.fn()}
-      />
-    );
+    render(<StackPrintSection stackPrint={enabled} groups={groups} onChange={vi.fn()} />);
     expect(screen.getByText(/Test a small stack/i)).toBeInTheDocument();
     // 1 group * 3 sets = 3 plates in 1 stack
     expect(screen.getByText(/1 stacks · 3 plates/i)).toBeInTheDocument();
@@ -75,37 +43,16 @@ describe('StackPrintSection', () => {
       <StackPrintSection
         stackPrint={{ ...enabled, mode: 'sacrificialSheet' }}
         groups={groups}
-        isSplit={false}
-        hadMagnets={false}
         onChange={vi.fn()}
       />
     );
     expect(screen.getByText(/3MF/i)).toBeInTheDocument();
   });
 
-  it('warns that connectors are disabled when the plate is split', () => {
-    render(
-      <StackPrintSection
-        stackPrint={enabled}
-        groups={groups}
-        isSplit
-        hadMagnets={false}
-        onChange={vi.fn()}
-      />
-    );
-    expect(screen.getByText(/Connectors are turned off/i)).toBeInTheDocument();
-  });
-
-  it('warns that magnet holes are disabled when the plate has magnets', () => {
-    render(
-      <StackPrintSection
-        stackPrint={enabled}
-        groups={groups}
-        isSplit={false}
-        hadMagnets
-        onChange={vi.fn()}
-      />
-    );
-    expect(screen.getByText(/Magnet holes are turned off/i)).toBeInTheDocument();
+  it('shows the features-off notice (connectors, magnets, rounding) when enabled', () => {
+    render(<StackPrintSection stackPrint={enabled} groups={groups} onChange={vi.fn()} />);
+    expect(
+      screen.getByText(/Connectors, magnet holes, and corner rounding are turned off/i)
+    ).toBeInTheDocument();
   });
 });

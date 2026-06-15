@@ -2331,12 +2331,10 @@
   "baseplate.stackPrint.gap.info": "Espace d’air entre les plaques empilées. Environ 0,2 mm (une couche) est typique ; augmentez-le si les plaques fusionnent.",
   "baseplate.stackPrint.sheet.label": "Épaisseur de séparation",
   "baseplate.stackPrint.sheet.info": "Épaisseur de la feuille de séparation imprimée entre les plaques. Environ deux couches (0,4 mm) est typique.",
-  "baseplate.stackPrint.connectorsDisabled": "Les connecteurs sont désactivés lors de l’empilage : leurs porte-à-faux ne s’impriment pas dans une pile verticale.",
   "baseplate.stackPrint.needs3mf": "L’empilage multi-matériau s’exporte en 3MF pour attribuer correctement chaque filament.",
   "baseplate.stackPrint.separate": "Séparer",
   "baseplate.stackPrint.together": "Ensemble",
   "baseplate.stackPrint.separationSlider": "Séparer la pile d’impression pour l’inspecter",
   "baseplate.stackPrint.separatorColor": "Couleur du séparateur",
-  "baseplate.stackPrint.magnetsDisabled": "Les trous d’aimants sont désactivés lors de l’empilage : les cavités nécessiteraient des ponts en impression à l’envers.",
-  "baseplate.stackPrint.connectorsMagnetsDisabled": "Les connecteurs et les trous d’aimants sont désactivés lors de l’empilage : ils ne s’impriment pas proprement dans une pile verticale."
+  "baseplate.stackPrint.featuresOff": "Les connecteurs, les trous d’aimants et l’arrondi des coins sont désactivés lors de l’empilage, pour que chaque tuile soit identique et s’imprime sans supports."
 }

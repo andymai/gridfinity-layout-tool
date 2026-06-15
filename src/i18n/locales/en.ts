@@ -2120,12 +2120,8 @@ const en: Record<string, string> = {
   'baseplate.stackPrint.sheet.info':
     'Thickness of the separator sheet printed between plates. About two layers (0.4mm) is typical.',
   'baseplate.stackPrint.separatorColor': 'Separator color',
-  'baseplate.stackPrint.connectorsDisabled':
-    "Connectors are turned off while stacking — their overhangs can't print in a vertical stack.",
-  'baseplate.stackPrint.magnetsDisabled':
-    'Magnet holes are turned off while stacking — the pockets would need bridging when printed upside down.',
-  'baseplate.stackPrint.connectorsMagnetsDisabled':
-    "Connectors and magnet holes are turned off while stacking — they can't print cleanly in a vertical stack.",
+  'baseplate.stackPrint.featuresOff':
+    'Connectors, magnet holes, and corner rounding are turned off while stacking, so every tile is identical and prints support-free.',
   'baseplate.stackPrint.needs3mf':
     'Multi-material stacking exports as 3MF so each filament is assigned correctly.',
   'baseplate.stackPrint.separate': 'Separate',

@@ -553,29 +553,31 @@ export function BaseplatePanel() {
                 />
               </FeatureToggle>
             )}
-            <CornerRadiusControl
-              cornerRadius={baseplateParams.cornerRadius}
-              cornerRadii={baseplateParams.cornerRadii}
-              maxRadius={
-                gridUnitMm / 2 +
-                Math.min(
-                  Math.min(baseplateParams.paddingLeft, baseplateParams.paddingRight),
-                  Math.min(baseplateParams.paddingFront, baseplateParams.paddingBack)
-                )
-              }
-              onUniformChange={(r) => {
-                updateParam('cornerRadius', mm(r));
-                updateParam('cornerRadii', undefined);
-              }}
-              onPerCornerChange={(radii) => {
-                updateParam('cornerRadii', {
-                  tl: mm(radii.tl),
-                  tr: mm(radii.tr),
-                  bl: mm(radii.bl),
-                  br: mm(radii.br),
-                });
-              }}
-            />
+            {!stackEnabled && (
+              <CornerRadiusControl
+                cornerRadius={baseplateParams.cornerRadius}
+                cornerRadii={baseplateParams.cornerRadii}
+                maxRadius={
+                  gridUnitMm / 2 +
+                  Math.min(
+                    Math.min(baseplateParams.paddingLeft, baseplateParams.paddingRight),
+                    Math.min(baseplateParams.paddingFront, baseplateParams.paddingBack)
+                  )
+                }
+                onUniformChange={(r) => {
+                  updateParam('cornerRadius', mm(r));
+                  updateParam('cornerRadii', undefined);
+                }}
+                onPerCornerChange={(radii) => {
+                  updateParam('cornerRadii', {
+                    tl: mm(radii.tl),
+                    tr: mm(radii.tr),
+                    bl: mm(radii.bl),
+                    br: mm(radii.br),
+                  });
+                }}
+              />
+            )}
           </div>
         </StickyGroupHeader>
 
@@ -583,8 +585,6 @@ export function BaseplatePanel() {
         <StackPrintSection
           stackPrint={baseplateParams.stackPrint}
           groups={stackGroups}
-          isSplit={tiling?.isSplit ?? false}
-          hadMagnets={baseplateParams.magnetHoles}
           onChange={setStackPrint}
         />
 

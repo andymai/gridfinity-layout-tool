@@ -2331,12 +2331,10 @@
   "baseplate.stackPrint.gap.info": "Luftspalte mellom stablede plater. Omtrent 0,2 mm (ett lag) er vanlig; øk den hvis platene smelter sammen.",
   "baseplate.stackPrint.sheet.label": "Skilletykkelse",
   "baseplate.stackPrint.sheet.info": "Tykkelsen på skillearket som skrives ut mellom platene. Omtrent to lag (0,4 mm) er vanlig.",
-  "baseplate.stackPrint.connectorsDisabled": "Koblinger er slått av under stabling – uthengene deres kan ikke skrives ut i en vertikal stabel.",
   "baseplate.stackPrint.needs3mf": "Flermateriale-stabling eksporteres som 3MF slik at hvert filament tilordnes riktig.",
   "baseplate.stackPrint.separate": "Skill",
   "baseplate.stackPrint.together": "Samlet",
   "baseplate.stackPrint.separationSlider": "Skill utskriftsstabelen for å inspisere den",
   "baseplate.stackPrint.separatorColor": "Skillefarge",
-  "baseplate.stackPrint.magnetsDisabled": "Magnethull er slått av under stabling – lommene måtte broes når de skrives ut opp ned.",
-  "baseplate.stackPrint.connectorsMagnetsDisabled": "Koblinger og magnethull er slått av under stabling – de skrives ikke rent ut i en vertikal stabel."
+  "baseplate.stackPrint.featuresOff": "Koblinger, magnethull og hjørneavrunding er slått av under stabling, slik at hver flis er identisk og skrives ut uten støtter."
 }

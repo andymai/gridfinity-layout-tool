@@ -29,10 +29,6 @@ interface StackPrintSectionProps {
   readonly stackPrint: StackPrintParams | undefined;
   /** Identical-piece groups the drawer needs (label + quantity). */
   readonly groups: readonly StackGroup[];
-  /** Whether the plate is split (drives the connector-disabled warning). */
-  readonly isSplit: boolean;
-  /** Whether the stored config has magnets on (drives the magnet-disabled warning). */
-  readonly hadMagnets: boolean;
   readonly onChange: (next: StackPrintParams | undefined) => void;
 }
 
@@ -50,13 +46,7 @@ const DEFAULT_STACK_PRINT: StackPrintParams = {
   mode: 'airGap',
 };
 
-export function StackPrintSection({
-  stackPrint,
-  groups,
-  isSplit,
-  hadMagnets,
-  onChange,
-}: StackPrintSectionProps) {
+export function StackPrintSection({ stackPrint, groups, onChange }: StackPrintSectionProps) {
   const t = useTranslation();
   const separatorColor = useSettingsStore((s) => s.settings.baseplateSeparatorColor);
   const updateSetting = useSettingsStore((s) => s.updateSetting);
@@ -191,17 +181,9 @@ export function StackPrintSection({
                   </div>
                 )}
 
-                {(isSplit || hadMagnets) && (
-                  <div className="rounded bg-warning/10 px-2.5 py-1.5 text-[11px] leading-relaxed text-warning">
-                    {t(
-                      isSplit && hadMagnets
-                        ? 'baseplate.stackPrint.connectorsMagnetsDisabled'
-                        : hadMagnets
-                          ? 'baseplate.stackPrint.magnetsDisabled'
-                          : 'baseplate.stackPrint.connectorsDisabled'
-                    )}
-                  </div>
-                )}
+                <div className="rounded bg-warning/10 px-2.5 py-1.5 text-[11px] leading-relaxed text-warning">
+                  {t('baseplate.stackPrint.featuresOff')}
+                </div>
                 {mode === 'sacrificialSheet' && (
                   <div className="rounded bg-info/10 px-2.5 py-1.5 text-[11px] leading-relaxed text-info">
                     {t('baseplate.stackPrint.needs3mf')}

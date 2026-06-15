@@ -2331,12 +2331,10 @@
   "baseplate.stackPrint.gap.info": "Hueco de aire entre placas apiladas. Unos 0,2 mm (una capa) es lo habitual; auméntalo si las placas se fusionan.",
   "baseplate.stackPrint.sheet.label": "Grosor del separador",
   "baseplate.stackPrint.sheet.info": "Grosor de la lámina separadora impresa entre las placas. Unas dos capas (0,4 mm) es lo habitual.",
-  "baseplate.stackPrint.connectorsDisabled": "Los conectores se desactivan al apilar: sus voladizos no se pueden imprimir en una pila vertical.",
   "baseplate.stackPrint.needs3mf": "El apilado multimaterial se exporta como 3MF para asignar correctamente cada filamento.",
   "baseplate.stackPrint.separate": "Separar",
   "baseplate.stackPrint.together": "Juntas",
   "baseplate.stackPrint.separationSlider": "Separa la pila de impresión para inspeccionarla",
   "baseplate.stackPrint.separatorColor": "Color del separador",
-  "baseplate.stackPrint.magnetsDisabled": "Los orificios para imanes se desactivan al apilar: los huecos requerirían puentes al imprimir boca abajo.",
-  "baseplate.stackPrint.connectorsMagnetsDisabled": "Los conectores y los orificios para imanes se desactivan al apilar: no se imprimen limpiamente en una pila vertical."
+  "baseplate.stackPrint.featuresOff": "Los conectores, los orificios para imanes y el redondeo de esquinas se desactivan al apilar, para que cada pieza sea idéntica y se imprima sin soportes."
 }

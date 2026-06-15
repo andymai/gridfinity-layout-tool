@@ -2331,12 +2331,10 @@
   "baseplate.stackPrint.gap.info": "Luftspalt mellan staplade plattor. Cirka 0,2 mm (ett lager) är typiskt; öka den om plattorna smälter samman.",
   "baseplate.stackPrint.sheet.label": "Separeringstjocklek",
   "baseplate.stackPrint.sheet.info": "Tjockleken på separeringsarket som skrivs ut mellan plattorna. Cirka två lager (0,4 mm) är typiskt.",
-  "baseplate.stackPrint.connectorsDisabled": "Kopplingar är avstängda vid stapling – deras utskjutningar kan inte skrivas ut i en vertikal stapel.",
   "baseplate.stackPrint.needs3mf": "Flermaterialstapling exporteras som 3MF så att varje filament tilldelas korrekt.",
   "baseplate.stackPrint.separate": "Separera",
   "baseplate.stackPrint.together": "Ihop",
   "baseplate.stackPrint.separationSlider": "Separera utskriftsstapeln för att inspektera den",
   "baseplate.stackPrint.separatorColor": "Separatorfärg",
-  "baseplate.stackPrint.magnetsDisabled": "Magnethål är avstängda vid stapling – fickorna skulle behöva bryggas vid utskrift upp och ner.",
-  "baseplate.stackPrint.connectorsMagnetsDisabled": "Kopplingar och magnethål är avstängda vid stapling – de skrivs inte ut rent i en vertikal stapel."
+  "baseplate.stackPrint.featuresOff": "Kopplingar, magnethål och hörnrundning är avstängda vid stapling, så att varje platta är identisk och skrivs ut utan stöd."
 }

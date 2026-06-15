@@ -2331,12 +2331,10 @@
   "baseplate.stackPrint.gap.info": "Luftspalt zwischen gestapelten Platten. Etwa 0,2 mm (eine Schicht) ist üblich; erhöhe ihn, wenn Platten verschmelzen.",
   "baseplate.stackPrint.sheet.label": "Trennblattdicke",
   "baseplate.stackPrint.sheet.info": "Dicke des Trennblatts, das zwischen den Platten gedruckt wird. Etwa zwei Schichten (0,4 mm) sind üblich.",
-  "baseplate.stackPrint.connectorsDisabled": "Verbinder sind beim Stapeln deaktiviert – ihre Überhänge lassen sich in einem vertikalen Stapel nicht drucken.",
   "baseplate.stackPrint.needs3mf": "Mehrmaterial-Stapeldruck wird als 3MF exportiert, damit jedes Filament korrekt zugewiesen wird.",
   "baseplate.stackPrint.separate": "Trennen",
   "baseplate.stackPrint.together": "Zusammen",
   "baseplate.stackPrint.separationSlider": "Druckstapel zum Prüfen auseinanderziehen",
   "baseplate.stackPrint.separatorColor": "Trennfarbe",
-  "baseplate.stackPrint.magnetsDisabled": "Magnetlöcher sind beim Stapeln deaktiviert – die Taschen müssten beim Druck über Kopf überbrückt werden.",
-  "baseplate.stackPrint.connectorsMagnetsDisabled": "Verbinder und Magnetlöcher sind beim Stapeln deaktiviert – sie lassen sich in einem vertikalen Stapel nicht sauber drucken."
+  "baseplate.stackPrint.featuresOff": "Verbinder, Magnetlöcher und Eckenrundung sind beim Stapeln deaktiviert, damit jede Kachel identisch ist und stützfrei druckt."
 }
