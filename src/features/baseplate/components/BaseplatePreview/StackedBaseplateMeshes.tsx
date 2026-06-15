@@ -23,6 +23,7 @@ import { buildStackPreviewMeshes, type StackPreviewTower } from '../../utils/sta
 import { GRIDFINITY_SPEC } from '@/shared/printSettings/gridfinityGeometry';
 
 const EMPTY_GEO = { vertices: null, normals: null, indices: null, edgeVertices: null } as const;
+const EMPTY_F32 = new Float32Array(0);
 
 interface StackedBaseplateMeshesProps {
   readonly stack: StackPrintParams;
@@ -44,9 +45,9 @@ function toMeshArrays(mesh: {
     vertices: mesh.vertices,
     // null normals → empty array; stack transform is a no-op on zero elements,
     // and useMeshGeometry falls back to flat shading when normals.length === 0.
-    normals: mesh.normals ?? new Float32Array(0),
+    normals: mesh.normals ?? EMPTY_F32,
     indices: mesh.indices,
-    edgeVertices: mesh.edgeVertices ?? new Float32Array(0),
+    edgeVertices: mesh.edgeVertices ?? EMPTY_F32,
   };
 }
 
