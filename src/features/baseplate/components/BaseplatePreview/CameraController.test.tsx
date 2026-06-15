@@ -70,7 +70,7 @@ vi.mock('@react-three/fiber', () => ({
   useThree: () => ({
     camera: mocks.staleCamera,
     invalidate: vi.fn(),
-    size: { height: 600 },
+    size: { width: 800, height: 600 },
     get: () => ({ camera: mocks.liveCamera }),
   }),
   useFrame: vi.fn(),
@@ -78,20 +78,29 @@ vi.mock('@react-three/fiber', () => ({
 
 const { CameraController } = await import('./CameraController');
 
-function renderController() {
+function renderController(
+  overrides: Partial<{
+    width: number;
+    depth: number;
+    stackEnabled: boolean;
+    stackBounds: { widthMm: number; depthMm: number; heightMm: number } | null;
+  }> = {}
+) {
   const controlsRef: RefObject<OrbitControlsType | null> = createRef<OrbitControlsType>();
   const invalidateRef: RefObject<(() => void) | null> = createRef<() => void>();
   return render(
     <CameraController
       controlsRef={controlsRef}
       invalidateRef={invalidateRef}
-      width={5}
-      depth={5}
+      width={overrides.width ?? 5}
+      depth={overrides.depth ?? 5}
       gridUnitMm={42}
       paddingLeft={0}
       paddingRight={0}
       paddingFront={0}
       paddingBack={0}
+      stackEnabled={overrides.stackEnabled}
+      stackBounds={overrides.stackBounds}
     />
   );
 }
@@ -120,5 +129,18 @@ describe('CameraController', () => {
 
     expect(mocks.liveCamera.updateProjectionMatrix).toHaveBeenCalled();
     expect(mocks.staleCamera.updateProjectionMatrix).not.toHaveBeenCalled();
+  });
+
+  it('accepts stackEnabled and stackBounds props without throwing', () => {
+    expect(() =>
+      renderController({
+        stackEnabled: true,
+        stackBounds: { widthMm: 200, depthMm: 200, heightMm: 80 },
+      })
+    ).not.toThrow();
+  });
+
+  it('renders without stack props (backward compat defaults)', () => {
+    expect(() => renderController()).not.toThrow();
   });
 });

@@ -195,7 +195,12 @@ export function BaseplatePreview({
       ? Math.max(baseMaxOrbitDistance, stackBounds.heightMm * 4, stackBounds.widthMm * 3)
       : baseMaxOrbitDistance;
 
-  const hasAnyMesh = isSplit ? hasSplitMeshes : hasMesh;
+  // In stack mode the canvas renders StackedBaseplateMeshes instead of
+  // BaseplateMesh/SplitBaseplateMeshes. Gate visibility on stackBounds so
+  // the canvas only becomes opaque once the tower preview has been built and
+  // its dimensions reported — otherwise the gradient background shows through
+  // while StackedBaseplateMeshes is still constructing or returns null.
+  const hasAnyMesh = stackEnabled ? stackBounds !== null : isSplit ? hasSplitMeshes : hasMesh;
   const hasError = wasmStatus === 'error' || generationStatus === 'error';
   const isWasmLoading = !hasError && wasmStatus !== 'ready';
   const isGenerating = generationStatus === 'generating';
@@ -289,6 +294,8 @@ export function BaseplatePreview({
                   paddingRight={paddingRight}
                   paddingFront={paddingFront}
                   paddingBack={paddingBack}
+                  stackEnabled={stackEnabled}
+                  stackBounds={stackBounds}
                 />
 
                 {stackPrint && stackEnabled ? (

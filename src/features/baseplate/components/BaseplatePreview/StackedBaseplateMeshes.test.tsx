@@ -25,7 +25,18 @@ vi.mock('@/core/store/settings', () => ({
     selector({ settings: { printSettings: { nozzleSizeMm: 0.4, maxPrintHeightMm: 250 } } }),
 }));
 
-const pageState = { tiling: null, generation: { mesh: null }, pieceMeshes: [] };
+const pageState: {
+  tiling: null;
+  generation: {
+    mesh: {
+      vertices: Float32Array | null;
+      normals: Float32Array | null;
+      indices: Uint32Array | null;
+      edgeVertices: Float32Array | null;
+    } | null;
+  };
+  pieceMeshes: unknown[];
+} = { tiling: null, generation: { mesh: null }, pieceMeshes: [] };
 vi.mock('../../store/baseplatePageStore', () => ({
   useBaseplatePageStore: (selector: (s: unknown) => unknown) => selector(pageState),
 }));
@@ -40,5 +51,27 @@ describe('StackedBaseplateMeshes', () => {
       <StackedBaseplateMeshes stack={stack} color="#ffffff" separationMm={0} />
     );
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('calls onBounds when mesh has null normals (defensive toMeshArrays)', () => {
+    // Direct-mesh previews always carry normals from MeshData, but the type
+    // allows null. toMeshArrays must not reject on null normals — otherwise
+    // towers stays empty, onBounds never fires, and the canvas stays dark.
+    pageState.generation.mesh = {
+      vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+      normals: null,
+      indices: new Uint32Array([0, 1, 2]),
+      edgeVertices: new Float32Array(0),
+    };
+    const onBounds = vi.fn();
+    render(
+      <StackedBaseplateMeshes stack={stack} color="#ffffff" separationMm={0} onBounds={onBounds} />
+    );
+    // Stack is built (1 copy) → onBounds fires with valid dimensions.
+    expect(onBounds).toHaveBeenCalledWith(
+      expect.objectContaining({ widthMm: expect.any(Number), heightMm: expect.any(Number) })
+    );
+    // Restore
+    pageState.generation.mesh = null;
   });
 });

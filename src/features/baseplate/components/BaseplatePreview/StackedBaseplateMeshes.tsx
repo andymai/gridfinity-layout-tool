@@ -39,10 +39,12 @@ function toMeshArrays(mesh: {
   indices: Uint32Array | null;
   edgeVertices: Float32Array | null;
 }): StackMeshArrays | null {
-  if (!mesh.vertices || !mesh.normals || !mesh.indices) return null;
+  if (!mesh.vertices || !mesh.indices) return null;
   return {
     vertices: mesh.vertices,
-    normals: mesh.normals,
+    // null normals → empty array; stack transform is a no-op on zero elements,
+    // and useMeshGeometry falls back to flat shading when normals.length === 0.
+    normals: mesh.normals ?? new Float32Array(0),
     indices: mesh.indices,
     edgeVertices: mesh.edgeVertices ?? new Float32Array(0),
   };

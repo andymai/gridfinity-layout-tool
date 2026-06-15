@@ -10,6 +10,7 @@ import {
   CAMERA_PRESETS,
   easeOutCubic,
   calculateIdealDistance,
+  calculateStackIdealDistance,
   calculateMaxOrbitDistance,
   calculateFarPlane,
 } from './cameraUtils';
@@ -40,6 +41,8 @@ export function CameraController({
   paddingRight,
   paddingFront,
   paddingBack,
+  stackEnabled = false,
+  stackBounds = null,
 }: {
   controlsRef: RefObject<OrbitControlsType | null>;
   invalidateRef: RefObject<(() => void) | null>;
@@ -50,6 +53,8 @@ export function CameraController({
   paddingRight: number;
   paddingFront: number;
   paddingBack: number;
+  stackEnabled?: boolean;
+  stackBounds?: { widthMm: number; depthMm: number; heightMm: number } | null;
 }) {
   const { camera, invalidate, size, get } = useThree();
   const initializedRef = useRef(false);
@@ -60,22 +65,43 @@ export function CameraController({
   }, [invalidate, invalidateRef]);
 
   const fov = 45;
-  const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
+  const aspect = size.width > 0 && size.height > 0 ? size.width / size.height : 1;
+
+  const stackActive = stackEnabled && stackBounds !== null && (stackBounds?.heightMm ?? 0) > 0;
+  const totalH = stackActive && stackBounds ? stackBounds.heightMm : GRIDFINITY_SPEC.SOCKET_HEIGHT;
   const binCenter = useMemo(() => new THREE.Vector3(0, 0, totalH / 2), [totalH]);
-  const idealDistance = useMemo(
-    () =>
-      calculateIdealDistance(
-        width,
-        depth,
-        gridUnitMm,
-        paddingLeft,
-        paddingRight,
-        paddingFront,
-        paddingBack,
+  const idealDistance = useMemo(() => {
+    if (stackActive && stackBounds) {
+      return calculateStackIdealDistance(
+        stackBounds.widthMm,
+        stackBounds.depthMm,
+        stackBounds.heightMm,
         fov
-      ),
-    [width, depth, gridUnitMm, paddingLeft, paddingRight, paddingFront, paddingBack]
-  );
+      );
+    }
+    return calculateIdealDistance(
+      width,
+      depth,
+      gridUnitMm,
+      paddingLeft,
+      paddingRight,
+      paddingFront,
+      paddingBack,
+      fov,
+      aspect
+    );
+  }, [
+    width,
+    depth,
+    gridUnitMm,
+    paddingLeft,
+    paddingRight,
+    paddingFront,
+    paddingBack,
+    aspect,
+    stackActive,
+    stackBounds,
+  ]);
 
   // Keep the far plane ahead of the user's zoom-out range. Without this,
   // the geometry's farthest corner clips off-screen at maximum zoom for

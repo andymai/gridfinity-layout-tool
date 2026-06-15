@@ -38,6 +38,8 @@ export function useBaseplatePresetTransition(
       const fov = 45;
       const totalH = GRIDFINITY_SPEC.SOCKET_HEIGHT;
       const binCenter = new THREE.Vector3(0, 0, totalH / 2);
+      const aspect =
+        camera instanceof THREE.PerspectiveCamera && camera.aspect > 0 ? camera.aspect : 1;
       const idealDistance = calculateIdealDistance(
         width,
         depth,
@@ -46,7 +48,8 @@ export function useBaseplatePresetTransition(
         paddingRight,
         paddingFront,
         paddingBack,
-        fov
+        fov,
+        aspect
       );
 
       const direction = new THREE.Vector3(...CAMERA_PRESETS[preset]).normalize();
