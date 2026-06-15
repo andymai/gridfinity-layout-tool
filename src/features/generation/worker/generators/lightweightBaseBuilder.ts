@@ -74,9 +74,13 @@ export interface LightweightBase {
  * pocket plus {@link MAGNET_FLOOR}, sitting on the cup's closed end.
  *
  * Returned pads are positioned in cell-local coordinates (caller translates by
- * the cell center). `openDir` decides which end is closed (and thus where the
- * pad sits): `'up'` cups close at the bottom (pads rise from Z=-SOCKET_HEIGHT),
- * `'down'` cups close at the top (pads hang from Z=0).
+ * the cell center). Both directions anchor the pad at the foot bottom
+ * (Z=-SOCKET_HEIGHT) because the magnet/screw always enters from there — that's
+ * where the drill cutters live. `'up'` (hollow) cups close at the bottom, so a
+ * short `holeFloorDepth` boss sits on the closed floor; `'down'` (solid) cups
+ * open at the bottom, so the pad spans the full SOCKET_HEIGHT to tie the magnet
+ * boss up to the solid body above (otherwise it'd float). Either way the drill
+ * intersects the pad and the pocket is cut.
  */
 function buildCellPads(
   scope: DisposalScope,
@@ -85,11 +89,10 @@ function buildCellPads(
   openDir: LightweightOpenDirection
 ): Shape3D[] {
   const padRadius = holeRadius + PAD_MARGIN;
-  const padHeight = holeFloorDepth;
+  const padHeight = openDir === 'up' ? holeFloorDepth : SOCKET_HEIGHT;
   const pads: Shape3D[] = [];
   for (const [dx, dy] of MAGNET_OFFSETS) {
-    const z = openDir === 'up' ? -SOCKET_HEIGHT : -padHeight;
-    pads.push(translate(scope.register(cylinder(padRadius, padHeight)), [dx, dy, z]));
+    pads.push(translate(scope.register(cylinder(padRadius, padHeight)), [dx, dy, -SOCKET_HEIGHT]));
   }
   return pads;
 }

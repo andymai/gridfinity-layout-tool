@@ -46,6 +46,14 @@ export const lightweight: ScenarioCase[] = [
     params: { width: 2, depth: 2, style: 'solid', base: { ...lite, solid: true } },
   }),
 
+  // Solid lite + magnets: pads anchor at the foot bottom so the pocket is cut
+  // (the downward-open cups must still receive the magnet from below).
+  defineScenario('lightweight', '2×2 lite solid bin + magnet', {
+    assert: 'structural',
+    forExport: true,
+    params: { width: 2, depth: 2, style: 'solid', base: { ...lite, solid: true, style: 'magnet' } },
+  }),
+
   // Fractional footprint (1.5×1) — fractional feet still shell.
   defineScenario('lightweight', '1.5×1 lite (fractional)', {
     assert: 'structural',
