@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.173.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.172.1...gridfinity-layout-tool-v4.173.0) (2026-06-15)
+
+
+### Features
+
+* **baseplate:** match bin designer edgeline quality in 3D preview ([#2160](https://github.com/andymai/gridfinity-layout-tool/issues/2160)) ([228faa1](https://github.com/andymai/gridfinity-layout-tool/commit/228faa132dab36efe2c5923fb70f17c88918c7b3))
+
 ## [4.172.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.172.0...gridfinity-layout-tool-v4.172.1) (2026-06-15)
 
 
