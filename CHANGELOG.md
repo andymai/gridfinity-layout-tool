@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.177.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.176.1...gridfinity-layout-tool-v4.177.0) (2026-06-15)
+
+
+### Features
+
+* **export:** grant exports a far higher timeout ceiling ([#2181](https://github.com/andymai/gridfinity-layout-tool/issues/2181)) ([b854db6](https://github.com/andymai/gridfinity-layout-tool/commit/b854db6923f737756fa6162446f4e3c41f05fb72))
+
 ## [4.176.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.176.0...gridfinity-layout-tool-v4.176.1) (2026-06-15)
 
 
