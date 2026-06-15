@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.172.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.171.2...gridfinity-layout-tool-v4.172.0) (2026-06-15)
+
+
+### Features
+
+* **baseplate:** move nozzle size into connector controls, externalize fit offset unit ([#2155](https://github.com/andymai/gridfinity-layout-tool/issues/2155)) ([03fe1c6](https://github.com/andymai/gridfinity-layout-tool/commit/03fe1c64d832cb0f67ad4ff473fa2da187bf7644))
+
 ## [4.171.2](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.171.1...gridfinity-layout-tool-v4.171.2) (2026-06-15)
 
 
