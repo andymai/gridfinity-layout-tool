@@ -11,6 +11,7 @@
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { IconButton } from '@/design-system';
 import { Popover } from '@/design-system/Popover/Popover';
 import { XIcon } from '@/design-system/Icon';
 import { useDesignerStore } from '@/features/bin-designer/store';
@@ -179,7 +180,10 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
             <span className="hidden text-content-tertiary sm:inline">
               {t('binDesigner.colors.eyedropper.hint')}
             </span>
-            <button
+            <IconButton
+              variant="ghost"
+              size="sm"
+              touchTarget={false}
               type="button"
               onClick={() => {
                 // Close any open picker atomically with the tool exit, otherwise
@@ -188,7 +192,7 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
                 onClosePicker();
                 setColorTool(null);
               }}
-              className="-mr-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-content-tertiary hover:bg-surface-hover hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="-mr-1 h-6 w-6 rounded-full text-content-tertiary hover:bg-surface-hover hover:text-content"
               aria-label={
                 colorTool === 'eyedropper'
                   ? t('binDesigner.colors.eyedropper.exit')
@@ -196,7 +200,7 @@ export function ColorToolOverlay({ onClosePicker }: ColorToolOverlayProps) {
               }
             >
               <XIcon size="sm" />
-            </button>
+            </IconButton>
           </div>
         </div>
       )}

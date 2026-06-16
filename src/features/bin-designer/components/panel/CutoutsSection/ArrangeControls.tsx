@@ -7,6 +7,7 @@
 
 import type { ReorderDirection } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
 
 interface ArrangeControlsProps {
@@ -25,8 +26,9 @@ export function ArrangeControls({
   const allDisabled = disabled || noSelection;
 
   const btn = (direction: ReorderDirection, label: string, content: React.ReactNode) => (
-    <button
+    <Button
       type="button"
+      variant="ghost"
       className={getSegmentClass(false, { size: 'icon' })}
       onClick={() => onReorder(selectedIds, direction)}
       title={label}
@@ -34,7 +36,7 @@ export function ArrangeControls({
       disabled={allDisabled}
     >
       {content}
-    </button>
+    </Button>
   );
 
   return (

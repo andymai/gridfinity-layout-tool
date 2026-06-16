@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { Button } from '@/design-system';
 import { DimensionsSection } from '../panel/DimensionsSection';
 import { ShapeSection } from '../panel/ShapeSection';
 import { InteriorSection } from '../panel/InteriorSection';
@@ -169,7 +170,8 @@ export function ParameterPanel() {
 
         {/* Design Showcase entry — opens the bin-example gallery (below Physical Units) */}
         <div className="px-4 py-3 border-b border-stroke-subtle">
-          <button
+          <Button
+            variant="ghost"
             onClick={openExampleGallery}
             className="w-full flex items-center gap-3 text-left p-3 rounded-lg bg-gradient-to-r from-accent/10 to-info/10 hover:from-accent/20 hover:to-info/20 border border-accent/20 transition-all group"
           >
@@ -202,7 +204,7 @@ export function ParameterPanel() {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Capture the current settings as the default for new bins, right

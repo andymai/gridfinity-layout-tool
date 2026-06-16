@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FILAMENT_PRESET_COLORS } from '@/core/constants';
 import { Input } from '@/design-system/Input/Input';
+import { Button, IconButton } from '@/design-system';
 import { CheckIcon, PipetteIcon, RotateCcwIcon, SparklesIcon } from '@/design-system/Icon';
 import { useTranslation } from '@/i18n';
 import type { HoverableZone } from '@/features/bin-designer/types/featureColors';
@@ -138,11 +139,12 @@ export function ColorPicker({
           {FILAMENT_PRESET_COLORS.map(({ color: presetColor, name }) => {
             const isSelected = color.toLowerCase() === presetColor.toLowerCase();
             return (
-              <button
+              <Button
                 key={presetColor}
+                variant="ghost"
                 type="button"
                 onClick={() => commitColor(presetColor)}
-                className={`relative w-8 h-8 rounded-md border transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
+                className={`relative w-8 h-8 rounded-md border transition-transform hover:scale-105 hover:bg-transparent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
                   isSelected
                     ? 'ring-2 ring-accent border-accent'
                     : 'border-stroke-subtle/50 hover:border-stroke'
@@ -158,7 +160,7 @@ export function ColorPicker({
                     className="absolute inset-0 m-auto text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.7)]"
                   />
                 )}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -171,7 +173,10 @@ export function ColorPicker({
             {t('binDesigner.colors.usedInDesign')}
           </p>
           {bodyColor && (
-            <button
+            <IconButton
+              variant="ghost"
+              size="sm"
+              touchTarget={false}
               type="button"
               onClick={handleSuggest}
               className="flex items-center gap-1 text-[10px] text-content-tertiary hover:text-content-secondary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent rounded px-1"
@@ -179,7 +184,7 @@ export function ColorPicker({
               aria-label={t('binDesigner.colors.suggest')}
             >
               <SparklesIcon size="sm" className="text-accent" />
-            </button>
+            </IconButton>
           )}
         </div>
         {otherColors.length === 0 && suggestions.length === 0 && recentColors.length === 0 ? (
@@ -265,7 +270,10 @@ export function ColorPicker({
             />
           </label>
 
-          <button
+          <IconButton
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
             type="button"
             onClick={() => commitColor(defaultColor)}
             disabled={isAtDefault}
@@ -274,7 +282,7 @@ export function ColorPicker({
             aria-label={t('binDesigner.colors.resetToDefault')}
           >
             <RotateCcwIcon size="sm" />
-          </button>
+          </IconButton>
         </div>
         {hexError && (
           <p className="text-[10px] text-error mt-1.5">{t('binDesigner.colors.hexInvalid')}</p>
@@ -296,10 +304,11 @@ function ColorSwatch({
   accent?: boolean;
 }) {
   return (
-    <button
+    <Button
+      variant="ghost"
       type="button"
       onClick={onClick}
-      className={`w-6 h-6 rounded-md border transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
+      className={`w-6 h-6 rounded-md border transition-transform hover:scale-105 hover:bg-transparent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
         accent
           ? 'border-accent/60 hover:border-accent'
           : 'border-stroke-subtle/50 hover:border-stroke'

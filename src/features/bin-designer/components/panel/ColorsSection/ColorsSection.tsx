@@ -24,6 +24,7 @@ import type { ColorZone, FeatureColorConfig } from '@/features/bin-designer/type
 import type { SavedColorPalette } from '@/core/store/settings.types';
 import { useTranslation } from '@/i18n';
 import { PipetteIcon } from '@/design-system/Icon';
+import { IconButton } from '@/design-system';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 import { useSwapZoneWithToast } from '@/features/bin-designer/hooks/useSwapZoneWithToast';
 import { FeatureToggle } from '../FeatureToggle';
@@ -245,10 +246,13 @@ export function ColorsSection() {
         primaryControls={
           <>
             <div className="flex items-center justify-end gap-2">
-              <button
+              <IconButton
+                variant="ghost"
+                size="sm"
+                touchTarget={false}
                 type="button"
                 onClick={() => setColorTool(colorTool === 'eyedropper' ? null : 'eyedropper')}
-                aria-pressed={colorTool === 'eyedropper'}
+                pressed={colorTool === 'eyedropper'}
                 aria-label={t('binDesigner.colors.eyedropper.enter')}
                 title={t('binDesigner.colors.eyedropper.enter')}
                 className={`flex h-6 w-6 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset ${
@@ -256,7 +260,7 @@ export function ColorsSection() {
                 }`}
               >
                 <PipetteIcon size="sm" />
-              </button>
+              </IconButton>
               <ColorsActionsMenu
                 featureColors={featureColors}
                 onMatchAllToBody={handleMatchAllToBody}

@@ -1,3 +1,4 @@
+import { Button } from '@/design-system';
 import type { ExampleDesign, ExampleTechnique } from '@/features/bin-designer/types/exampleGallery';
 import { TECHNIQUE_CONFIG } from '@/features/bin-designer/types/exampleGallery';
 import { useTranslation } from '@/i18n';
@@ -19,7 +20,8 @@ export function TechniqueFilterPills({ examples, selected, onChange }: Technique
       aria-label={t('binExamples.filterByTechnique')}
       className="flex flex-wrap gap-2"
     >
-      <button
+      <Button
+        variant="ghost"
         type="button"
         role="tab"
         aria-selected={selected === null}
@@ -43,12 +45,13 @@ export function TechniqueFilterPills({ examples, selected, onChange }: Technique
           />
         </svg>
         {t('binExamples.all')}
-      </button>
+      </Button>
 
       {techniques.map((technique) => {
         const isSelected = selected === technique;
         return (
-          <button
+          <Button
+            variant="ghost"
             type="button"
             key={technique}
             role="tab"
@@ -65,7 +68,7 @@ export function TechniqueFilterPills({ examples, selected, onChange }: Technique
             `}
           >
             {t(TECHNIQUE_CONFIG[technique].labelKey)}
-          </button>
+          </Button>
         );
       })}
     </div>

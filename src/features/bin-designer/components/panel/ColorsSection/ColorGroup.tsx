@@ -10,6 +10,7 @@
 
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { ChevronDownIcon } from '@/design-system/Icon';
+import { Button } from '@/design-system';
 
 interface ColorGroupProps {
   title: string;
@@ -46,7 +47,8 @@ export function ColorGroup({
 
   return (
     <div>
-      <button
+      <Button
+        variant="ghost"
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-content-secondary py-1 -mx-1 px-1 rounded hover:bg-surface-hover transition-colors"
@@ -55,7 +57,7 @@ export function ColorGroup({
       >
         <span>{title}</span>
         <ChevronDownIcon size="sm" className={`transition-transform ${open ? '' : '-rotate-90'}`} />
-      </button>
+      </Button>
       <div
         id={regionId}
         className={`grid transition-[grid-template-rows] duration-150 ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}

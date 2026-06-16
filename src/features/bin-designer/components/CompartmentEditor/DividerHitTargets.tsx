@@ -15,6 +15,7 @@
  * they stay round.
  */
 
+import { Button } from '@/design-system';
 import type { CompartmentConfig, DividerTiltPreview } from '@/features/bin-designer/types';
 import type { EligibleDivider } from '@/features/bin-designer/utils/compartments';
 import { computeSegmentSpan, overlayLineGeom, type SegmentSpan } from './dividerOverlayGeom';
@@ -172,8 +173,9 @@ function DividerHitLine({
 
   return (
     <>
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onPointerEnter={onHoverEnter}
         onPointerLeave={onHoverLeave}
         onFocus={onHoverEnter}
@@ -181,7 +183,7 @@ function DividerHitLine({
         onClick={onClick}
         aria-label={label}
         aria-pressed={isSelected}
-        className="pointer-events-auto absolute cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+        className="pointer-events-auto absolute cursor-pointer hover:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
         style={containerStyle}
       />
       <span

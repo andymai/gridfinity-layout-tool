@@ -15,6 +15,7 @@ import { useMemo } from 'react';
 import type { Cutout, GroupOp } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
+import { Button } from '@/design-system';
 import { applyGroupOp } from './booleanGeometry';
 import { resolveActiveOp } from './pathfinderHelpers';
 import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
@@ -158,9 +159,10 @@ export function PathfinderControls({
         const label = t(`binDesigner.cutouts.pathfinder.${labelKey}` as const);
         const isActive = active?.op === op;
         return (
-          <button
+          <Button
             key={op}
             type="button"
+            variant="ghost"
             className={getSegmentClass(isActive, { size: 'sm' })}
             onClick={() => handleClick(op)}
             disabled={allDisabled}
@@ -170,7 +172,7 @@ export function PathfinderControls({
           >
             {icon}
             {!compact && <span>{label}</span>}
-          </button>
+          </Button>
         );
       })}
     </div>

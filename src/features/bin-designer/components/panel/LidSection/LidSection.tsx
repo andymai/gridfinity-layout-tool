@@ -8,6 +8,7 @@
  */
 
 import { FeatureToggle } from '../FeatureToggle';
+import { Button } from '@/design-system';
 import { Switch } from '@/design-system/Switch';
 import { RulerIcon } from '@/design-system/Icon';
 import { SnappingSlider } from '../../controls/SnappingSlider';
@@ -54,14 +55,15 @@ function CompatibilityIssue({
       <span className={`mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full ${dotColor}`} />
       <span className="flex-1">{message}</span>
       {fixable && (
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={() => onFix(issue.id)}
           aria-label={t('binDesigner.lid.compat.fixAriaLabel', { detail: message })}
           className="shrink-0 rounded border border-stroke-subtle bg-surface-elevated px-1.5 py-0.5 text-[10px] font-medium text-content-secondary hover:bg-surface-hover"
         >
           {t('binDesigner.lid.compat.fixButton')}
-        </button>
+        </Button>
       )}
     </li>
   );
@@ -166,9 +168,10 @@ export function LidSection() {
                 })
               : undefined;
             return (
-              <button
+              <Button
                 key={side}
                 type="button"
+                variant="ghost"
                 role="switch"
                 aria-checked={effectiveActive}
                 aria-disabled={isAutoDisabled}
@@ -184,7 +187,7 @@ export function LidSection() {
                 }`}
               >
                 {t(`binDesigner.lid.side.${side}`)}
-              </button>
+              </Button>
             );
           })}
         </div>

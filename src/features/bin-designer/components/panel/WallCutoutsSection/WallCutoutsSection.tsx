@@ -8,6 +8,7 @@
  */
 
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 import { FeatureToggle } from '../FeatureToggle';
 import {
   ShapePicker,
@@ -97,13 +98,14 @@ function SizeControls({
       )}
 
       {/* %/mm unit toggle for the span */}
-      <button
+      <Button
         type="button"
+        variant="secondary"
         onClick={() => handlers.setSideWidthMm(side, isMmMode ? null : 30)}
         className="shrink-0 rounded-md border border-stroke-subtle bg-surface-elevated px-1.5 py-1 text-xs font-medium text-content-secondary transition-colors hover:bg-surface-hover"
       >
         {isMmMode ? 'mm' : '%'}
-      </button>
+      </Button>
 
       {!hideDepth && (
         <StepperField
@@ -235,8 +237,9 @@ export function WallCutoutsSection() {
           {activeSides.length > 0 && (
             <>
               <div className="flex items-center gap-1.5">
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={handlers.toggleLinked}
                   className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
                     linked
@@ -248,7 +251,7 @@ export function WallCutoutsSection() {
                   {linked
                     ? t('binDesigner.wallCutouts.linked')
                     : t('binDesigner.wallCutouts.independent')}
-                </button>
+                </Button>
               </div>
 
               {/* Shared controls (linked mode) */}

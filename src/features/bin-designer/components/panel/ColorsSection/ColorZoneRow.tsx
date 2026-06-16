@@ -8,6 +8,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Popover } from '@/design-system/Popover/Popover';
+import { Button } from '@/design-system';
 import { ChevronDownIcon } from '@/design-system/Icon';
 import { ColorPicker } from './ColorPicker';
 import type { HoverableZone } from '@/features/bin-designer/types/featureColors';
@@ -80,8 +81,9 @@ export function ColorZoneRow({
 
   return (
     <>
-      <button
+      <Button
         ref={buttonRef}
+        variant="ghost"
         type="button"
         onClick={handleClick}
         onPointerEnter={() => onHover(zone)}
@@ -104,7 +106,7 @@ export function ColorZoneRow({
           size="sm"
           className="-rotate-90 text-content-tertiary transition-transform group-hover:translate-x-0.5"
         />
-      </button>
+      </Button>
 
       {isOpen && (
         <Popover anchorRef={buttonRef} isOpen onClose={handleClose} placement="bottom-start">

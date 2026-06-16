@@ -6,6 +6,7 @@
  */
 
 import { useState, type ReactNode } from 'react';
+import { Button } from '@/design-system';
 import { ChevronIcon } from './icons';
 
 interface AdvancedDisclosureProps {
@@ -28,7 +29,8 @@ export function AdvancedDisclosure({
 
   return (
     <div>
-      <button
+      <Button
+        variant="ghost"
         type="button"
         onClick={() => setManualOpen((prev) => !prev)}
         aria-expanded={isOpen}
@@ -37,7 +39,7 @@ export function AdvancedDisclosure({
         <ChevronIcon open={isOpen} />
         <span>{label}</span>
         {summary && <span className="font-medium text-content-secondary">{summary}</span>}
-      </button>
+      </Button>
 
       {isOpen && <div className="ml-3.5 mt-2 space-y-2">{children}</div>}
     </div>

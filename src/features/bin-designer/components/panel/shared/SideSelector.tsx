@@ -11,6 +11,8 @@
  * reads as off and shows an explanatory tooltip.
  */
 
+import { Button } from '@/design-system';
+
 /** The four selectable walls, in their physical screen positions. */
 export type Side = 'left' | 'right' | 'front' | 'back';
 
@@ -58,8 +60,9 @@ export function SideSelector({ sides, onToggle, ariaLabel }: SideSelectorProps) 
         // never appear enabled.
         const isOn = active && !disabled;
         return (
-          <button
+          <Button
             key={side}
+            variant="ghost"
             type="button"
             role="switch"
             aria-checked={isOn}
@@ -69,7 +72,7 @@ export function SideSelector({ sides, onToggle, ariaLabel }: SideSelectorProps) 
             className={`${SIDE_CELL[side]} ${CHIP_BASE} ${isOn ? CHIP_ON : CHIP_OFF}`}
           >
             {label}
-          </button>
+          </Button>
         );
       })}
 
