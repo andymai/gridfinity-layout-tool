@@ -26,7 +26,13 @@ export function runScanBoot(): void {
   const initialLocale: Locale = saved !== 'auto' && isLocale(saved) ? saved : detectBrowserLocale();
   document.documentElement.lang = initialLocale === 'pt-BR' ? 'pt' : initialLocale;
 
-  const token = getScanToken() ?? '';
+  const token = getScanToken();
+  if (!token) {
+    // No valid token — this route only makes sense with one. Send them home
+    // rather than mounting a capture page that would POST to a tokenless URL.
+    window.location.replace('/');
+    return;
+  }
 
   createRoot(rootElement).render(
     <ErrorBoundary>
