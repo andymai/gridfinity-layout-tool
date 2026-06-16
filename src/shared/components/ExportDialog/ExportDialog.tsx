@@ -478,7 +478,7 @@ function FormatSelector({
                 disabled
                   ? 'cursor-not-allowed bg-surface text-content-disabled opacity-50'
                   : isActive
-                    ? 'bg-accent-muted text-accent'
+                    ? 'bg-accent-muted text-accent hover:bg-accent-muted hover:text-accent'
                     : 'bg-surface text-content-secondary hover:bg-surface-hover'
               }`}
             >
@@ -507,7 +507,7 @@ function NameStyleButton({
       aria-pressed={active}
       className={`rounded-md px-3 py-2 text-xs font-medium ${
         active
-          ? 'bg-accent-muted text-accent'
+          ? 'bg-accent-muted text-accent hover:bg-accent-muted hover:text-accent'
           : 'bg-surface text-content-secondary hover:bg-surface-hover'
       }`}
     >

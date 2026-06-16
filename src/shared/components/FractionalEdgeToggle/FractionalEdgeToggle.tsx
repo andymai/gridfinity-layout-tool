@@ -19,7 +19,7 @@ export function FractionalEdgeToggle({
   endTitle: string;
   endLabel: string;
 }) {
-  const activeClass = 'bg-accent text-on-dark';
+  const activeClass = 'bg-accent text-on-dark hover:bg-accent hover:text-on-dark';
   const inactiveClass = 'bg-surface-elevated text-content-tertiary hover:bg-surface-hover';
 
   return (
