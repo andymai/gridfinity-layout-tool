@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { Button, Select } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { SharePermission } from '@/core/types';
 
@@ -42,11 +43,10 @@ export function ShareLinkSection({
           onClick={() => inputRef.current?.select()}
           className="flex-1 bg-surface text-content text-xs px-3 py-2 rounded border border-stroke focus:outline-none font-mono truncate"
         />
-        <button
+        <Button
+          variant={urlCopied ? 'secondary' : 'primary'}
           onClick={onCopyUrl}
-          className={`btn px-3 text-sm whitespace-nowrap ${
-            urlCopied ? 'btn-secondary text-success' : 'btn-primary'
-          }`}
+          className={`px-3 text-sm whitespace-nowrap ${urlCopied ? 'text-success' : ''}`}
         >
           {urlCopied ? (
             <span className="flex items-center gap-1">
@@ -63,7 +63,7 @@ export function ShareLinkSection({
           ) : (
             t('common.copy')
           )}
-        </button>
+        </Button>
       </div>
 
       {readOnlyPermission ? (
@@ -72,16 +72,19 @@ export function ShareLinkSection({
           {permission}
         </div>
       ) : (
-        <select
+        <Select
+          fullWidth
           value={permission}
-          onChange={(e) => {
-            onPermissionChange(e.target.value as SharePermission);
+          onValueChange={(v) => {
+            onPermissionChange(v as SharePermission);
           }}
-          className="w-full bg-surface text-content text-sm px-3 py-2 rounded border border-stroke"
-        >
-          <option value="view">{t('share.anyoneWithLinkCanView')}</option>
-          <option value="edit">{t('share.anyoneWithLinkCanEdit')}</option>
-        </select>
+          options={[
+            { id: 'view', name: t('share.anyoneWithLinkCanView') },
+            { id: 'edit', name: t('share.anyoneWithLinkCanEdit') },
+          ]}
+          aria-label={t('share.anyoneWithLinkCan')}
+          className="text-sm"
+        />
       )}
     </>
   );

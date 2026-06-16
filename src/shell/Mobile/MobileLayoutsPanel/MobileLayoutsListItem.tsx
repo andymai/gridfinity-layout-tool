@@ -7,6 +7,7 @@
  */
 
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import type { LayoutEntry } from '@/core/types';
 import {
@@ -95,8 +96,9 @@ export function LayoutListItem({
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        <button
-          className="w-full p-4 text-left"
+        <Button
+          variant="ghost"
+          className="w-full p-4 text-left justify-start rounded-none hover:bg-transparent"
           onClick={() => onSelect(entry.id)}
           aria-current={isActive ? 'true' : undefined}
         >
@@ -132,7 +134,7 @@ export function LayoutListItem({
               )}
             </div>
           </div>
-        </button>
+        </Button>
 
         {isActive && (
           <ActiveLayoutActions

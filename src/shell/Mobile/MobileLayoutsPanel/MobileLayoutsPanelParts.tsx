@@ -8,6 +8,8 @@
  */
 
 import { createPortal } from 'react-dom';
+import { Button, IconButton, Select } from '@/design-system';
+import type { SelectOption } from '@/design-system';
 import type { SharePermission } from '@/core/types';
 import { useTranslation } from '@/i18n';
 
@@ -91,7 +93,8 @@ export function ShareOptionButton({
   description,
 }: ShareOptionButtonProps) {
   return (
-    <button
+    <Button
+      variant="ghost"
       onClick={onClick}
       className="w-full flex items-center gap-3 p-4 bg-surface rounded-lg active:bg-surface-hover"
     >
@@ -102,7 +105,7 @@ export function ShareOptionButton({
         <div className="font-medium text-content">{title}</div>
         <div className="text-sm text-content-secondary">{description}</div>
       </div>
-    </button>
+    </Button>
   );
 }
 
@@ -122,14 +125,15 @@ export function SwipeActionButton({
   disabled,
 }: SwipeActionButtonProps) {
   return (
-    <button
+    <IconButton
+      variant="ghost"
       onClick={onClick}
-      className={`w-15 flex items-center justify-center ${bgColor} text-on-dark`}
+      className={`w-15 h-full rounded-none ${bgColor} text-on-dark`}
       aria-label={label}
       disabled={disabled}
     >
       <SvgIcon path={iconPath} />
-    </button>
+    </IconButton>
   );
 }
 
@@ -157,14 +161,15 @@ export function ActiveLayoutActions({
   return (
     <div className="flex items-center gap-2 px-4 pb-4">
       {actions.map((action) => (
-        <button
+        <Button
           key={action.label}
+          variant="secondary"
           onClick={() => action.handler(entryId)}
-          className="btn btn-secondary flex-1 h-11"
+          className="flex-1 h-11"
         >
           <SvgIcon path={action.icon} className="w-4 h-4 mr-1.5" />
           {action.label}
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -216,16 +221,18 @@ export function PermissionSelect({
   className,
 }: PermissionSelectProps) {
   const t = useTranslation();
+  const options: SelectOption[] = [
+    { id: 'view', name: t('mobile.layouts.anyoneCanView') },
+    { id: 'edit', name: t('mobile.layouts.anyoneCanEdit') },
+  ];
   return (
-    <select
+    <Select
       id={id}
       value={value}
-      onChange={(e) => onChange(e.target.value as SharePermission)}
-      className={`flex-1 bg-surface text-content px-3 py-2 rounded border border-stroke ${className ?? ''}`}
+      onValueChange={(v) => onChange(v as SharePermission)}
+      options={options}
+      className={`flex-1 ${className ?? ''}`}
       aria-label={ariaLabel}
-    >
-      <option value="view">{t('mobile.layouts.anyoneCanView')}</option>
-      <option value="edit">{t('mobile.layouts.anyoneCanEdit')}</option>
-    </select>
+    />
   );
 }

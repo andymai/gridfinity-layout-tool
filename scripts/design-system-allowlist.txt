@@ -72,9 +72,6 @@ src/features/bin-designer/components/ParameterPanel/ParameterPanel.tsx
 src/features/bin-designer/components/PerfOverlay/PerfOverlay.tsx
 src/features/bin-designer/components/PreviewCanvas/ColorToolOverlay.tsx
 src/features/bin-designer/components/PreviewCanvas/previewCanvasOverlays.tsx
-src/features/cloud-share/components/ShareButton/DeleteShareConfirm.tsx
-src/features/cloud-share/components/ShareButton/ShareLinkSection.tsx
-src/features/cloud-share/components/ShareButton/SharePopover.tsx
 src/features/grid-editor/components/Grid/IsometricPreview/ExplodedLayerGroup/LayerLabel.tsx
 src/features/grid-editor/components/Grid/IsometricPreview/IsometricPreviewControls.tsx
 src/features/grid-editor/components/Grid/SelectionToolbar/SelectionToolbar.tsx
@@ -91,9 +88,3 @@ src/shared/components/HeaderSupportLinks/HeaderSupportLinks.tsx
 src/shared/components/PrintBedInput/PrintBedInput.tsx
 src/shared/components/StickyGroupHeader/StickyGroupHeader.tsx
 src/shared/components/UserDock/UserDock.tsx
-src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
-src/shell/Mobile/MobileLayoutsPanel/MobileCloudSharePanel.tsx
-src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsListItem.tsx
-src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanelParts.tsx
-src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedModal.tsx
-src/shell/Modals/SettingsModal/tabs/AppearanceTab/AppearanceTab.tsx
