@@ -22,6 +22,7 @@ import type { CacheStats } from './lruCache';
 import { LRUCache } from './lruCache';
 import { buildCacheKey, quantize, compactKey } from './cacheKeyUtils';
 import { GRIDFINITY } from '@/shared/constants/bin';
+import { clearSocketMeshCache } from './socketMeshCache';
 
 /** Dispose callback for LRU caches holding WASM-backed shapes. */
 const disposeShape = (_key: string, shape: Shape3D): void => {
@@ -222,6 +223,7 @@ export function clearAllCaches(): void {
   for (const cache of featureToolCaches.values()) {
     cache.dispose();
   }
+  clearSocketMeshCache();
   if (patternTemplateCache) {
     patternTemplateCache.shape.delete();
     patternTemplateCache = null;

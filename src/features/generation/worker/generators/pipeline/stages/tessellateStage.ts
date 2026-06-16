@@ -14,6 +14,7 @@ import { toIndexedMeshData, mergeShapeMeshes, concatFloat32 } from '../../utils/
 import { creaseEdges } from '../../utils';
 import { computeTessellationTolerances } from '../../utils/tolerances';
 import { setLastSolid } from '../../shapeCache';
+import { getSocketMesh, setSocketMesh, socketMeshKey } from '../../socketMeshCache';
 import { keepOuterShell } from '../../utils/outerShell';
 
 export const tessellateStage: PipelineStage = {
@@ -81,15 +82,27 @@ export const tessellateStage: PipelineStage = {
     // separately and concatenate: the socket is never feature-cut and only
     // meets the body at a hidden interface, so the merged mesh is visually
     // identical to the fused shell (though not watertight at the seam).
-    const { deferredSolid } = ctx;
+    const { deferredSolid, deferredSolidKey } = ctx;
     if (deferredSolid) {
       try {
-        const socketMesh = mesh(deferredSolid, { tolerance, angularTolerance });
-        shapeMesh = mergeShapeMeshes(shapeMesh, socketMesh);
-        const socketEdges = buildTime
-          ? creaseEdges(socketMesh)
-          : meshEdges(deferredSolid, { tolerance, angularTolerance: edgeAngular }).lines;
-        edgeLines = concatFloat32(edgeLines, socketEdges);
+        // Reuse the socket's mesh across edits that don't change its geometry or
+        // the tessellation tolerance — the dominant case during interactive
+        // design, where the body's features change but the base does not. A null
+        // key (lightweight base) always re-meshes.
+        const cacheKey = deferredSolidKey
+          ? socketMeshKey(deferredSolidKey, tolerance, angularTolerance, buildTime)
+          : null;
+        let cached = cacheKey ? getSocketMesh(cacheKey) : null;
+        if (!cached) {
+          const socketMesh = mesh(deferredSolid, { tolerance, angularTolerance });
+          const socketEdges = buildTime
+            ? creaseEdges(socketMesh)
+            : meshEdges(deferredSolid, { tolerance, angularTolerance: edgeAngular }).lines;
+          cached = { mesh: socketMesh, edgeLines: socketEdges };
+          if (cacheKey) setSocketMesh(cacheKey, cached);
+        }
+        shapeMesh = mergeShapeMeshes(shapeMesh, cached.mesh);
+        edgeLines = concatFloat32(edgeLines, cached.edgeLines);
       } finally {
         // Dispose even if mesh/meshEdges throws, so the WASM handle never leaks.
         deferredSolid.delete();

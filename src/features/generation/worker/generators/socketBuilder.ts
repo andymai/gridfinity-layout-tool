@@ -247,6 +247,42 @@ function batchFuseAndCut(cellSockets: Shape3D[], holeTools: Shape3D[]): Shape3D 
  *
  * @param forExport If true, uses full 5-section socket profile. Preview uses 3-section.
  */
+/**
+ * Cache key for the base socket shape produced by {@link buildBaseSocket}.
+ *
+ * Exposed so the tessellate stage can key a *mesh* cache off the exact same
+ * geometry identity the shape cache uses — without re-deriving (and risking
+ * drift from) the masking logic below.
+ */
+export function baseSocketShapeKey(
+  gridW: number,
+  gridD: number,
+  withMagnet: boolean,
+  withScrew: boolean,
+  magnetRadius: number,
+  magnetDepth: number,
+  screwRadius: number,
+  forExport: boolean,
+  halfSockets: boolean,
+  gridUnitMm: number,
+  cellMask?: CellMask
+): string {
+  const usingMask = isPartialMask(cellMask);
+  return socketCacheKey(
+    gridW,
+    gridD,
+    withMagnet,
+    withScrew,
+    magnetRadius,
+    magnetDepth,
+    screwRadius,
+    forExport,
+    halfSockets,
+    gridUnitMm,
+    usingMask ? hashMask(cellMask) : undefined
+  );
+}
+
 export function buildBaseSocket(
   gridW: number,
   gridD: number,
@@ -265,7 +301,7 @@ export function buildBaseSocket(
   const usingMask = isPartialMask(cellMask);
 
   // Check socket cache -- skip entire build if params haven't changed
-  const key = socketCacheKey(
+  const key = baseSocketShapeKey(
     gridW,
     gridD,
     withMagnet,
@@ -276,7 +312,7 @@ export function buildBaseSocket(
     forExport,
     halfSockets,
     gridUnitMm,
-    usingMask ? hashMask(cellMask) : undefined
+    cellMask
   );
   const cached = getSocketCache(key);
   if (cached) {

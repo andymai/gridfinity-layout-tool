@@ -6,7 +6,7 @@ interface FaceGroup {
   faceId: number;
   origin: number;
 }
-interface ShapeMesh {
+export interface ShapeMesh {
   vertices: Float32Array;
   normals: Float32Array;
   uvs: Float32Array;

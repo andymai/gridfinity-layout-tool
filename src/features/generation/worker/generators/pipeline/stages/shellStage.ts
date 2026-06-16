@@ -16,13 +16,13 @@ import { unwrap, fuse, cut, translate, withScope, getKernelCapabilities } from '
 import type { DisposalScope, Shape3D, ValidSolid } from 'brepjs';
 import type { PipelineContext, PipelineStage } from '../types';
 import { checkCancelled, isAbortError } from '../../utils/abort';
-import { buildBaseSocket, buildOverhangFeet } from '../../socketBuilder';
+import { buildBaseSocket, buildOverhangFeet, baseSocketShapeKey } from '../../socketBuilder';
 import { buildLightweightBase } from '../../lightweightBaseBuilder';
 import type { LightweightBase } from '../../lightweightBaseBuilder';
 import { buildBinBox, buildTopShape } from '../../boxBuilder';
 import { buildBinBoxWithLip } from '../../integratedLipBuilder';
 import { maskHasHoles } from '../../maskPolygon';
-import { hasOverhang } from '../../overhang';
+import { hasOverhang, overhangKey } from '../../overhang';
 import {
   buildCompartmentCavityDrawings,
   buildCompartmentsCacheKey,
@@ -242,6 +242,7 @@ export const shellStage: PipelineStage = {
     // match the exception-safety the scoped code had: a failed OCCT fuse must
     // not leak the body/socket/feet WASM handles.
     let feet: Shape3D | null = null;
+    let feetFused = false;
     try {
       if (dim.overhang.feet && hasOverhang(dim.overhang)) {
         feet = buildOverhangFeet(params.width, params.depth, dim.overhang, params.gridUnitMm, true);
@@ -251,6 +252,7 @@ export const shellStage: PipelineStage = {
           feet.delete();
           feet = null;
           socket = withFeet;
+          feetFused = true;
         }
       }
       collectOrigins(socket, FeatureTag.SOCKET, originToTag);
@@ -267,7 +269,25 @@ export const shellStage: PipelineStage = {
       // final socket fuse (onto the featured body) stays manifold. The socket is
       // never feature-cut — it only meets the body at the hidden floor interface
       // — so order is geometrically equivalent, just numerically robust.
-      return { ...ctx, solid: body, deferredSolid: socket };
+      // The lightweight base (shelled cups) isn't a standard socket, so it can't
+      // share the socket mesh cache — leave its key null to force a fresh mesh.
+      const deferredSolidKey = liteBase
+        ? null
+        : `${baseSocketShapeKey(
+            params.width,
+            params.depth,
+            dim.withMagnet,
+            dim.withScrew,
+            params.base.magnetDiameter / 2,
+            params.base.magnetDepth,
+            params.base.screwDiameter / 2,
+            true,
+            dim.halfSockets,
+            params.gridUnitMm,
+            params.cellMask
+          )}|${feetFused ? overhangKey(dim.overhang) : 'nofeet'}`;
+
+      return { ...ctx, solid: body, deferredSolid: socket, deferredSolidKey };
     } catch (e: unknown) {
       socket.delete();
       body.delete();
