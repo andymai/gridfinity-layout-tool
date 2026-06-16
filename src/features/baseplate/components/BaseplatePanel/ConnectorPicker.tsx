@@ -117,7 +117,7 @@ export function ConnectorPicker({ value, onChange, renderExpanded }: ConnectorPi
                 onClick={() => {
                   if (!selected) onChange(optionValue);
                 }}
-                className="flex h-auto w-full cursor-pointer items-start gap-3 bg-transparent p-0 text-left font-normal hover:bg-transparent focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent"
+                className="flex h-auto w-full cursor-pointer items-start justify-start gap-3 bg-transparent p-0 text-left font-normal hover:bg-transparent focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent"
               >
                 <div className="mt-0.5 flex-shrink-0 text-content-secondary">
                   <Icon />

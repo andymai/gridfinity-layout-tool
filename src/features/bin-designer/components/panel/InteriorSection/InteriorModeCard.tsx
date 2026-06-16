@@ -74,7 +74,7 @@ function SolidModeContent() {
       type="button"
       variant="ghost"
       onClick={() => setCutoutEditorOpen(true)}
-      className="w-full rounded-lg bg-gradient-to-r from-accent/10 to-info/10 hover:from-accent/20 hover:to-info/20 border border-accent/20 p-3 text-left transition-all group"
+      className="group h-auto w-full justify-start rounded-lg border border-accent/20 bg-gradient-to-r from-accent/10 to-info/10 p-3 text-left font-normal transition-all hover:from-accent/20 hover:to-info/20 hover:bg-transparent"
     >
       <div className="flex w-full items-center gap-3">
         {/* Mini illustration: top-view of a bin with cutout shapes */}
@@ -134,7 +134,7 @@ export function InteriorModeCard({ mode, isExpanded, onSelect }: InteriorModeCar
         type="button"
         variant="ghost"
         onClick={onSelect}
-        className="flex w-full cursor-pointer items-start gap-3 text-left"
+        className="flex h-auto w-full cursor-pointer items-start justify-start gap-3 bg-transparent p-0 text-left font-normal hover:bg-transparent"
       >
         <div className="mt-0.5">{config.icon}</div>
         <div className="flex-1 min-w-0">
