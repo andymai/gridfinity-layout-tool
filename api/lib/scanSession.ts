@@ -68,5 +68,16 @@ export function validateScanSvg(input: unknown): ScanSvgValidation {
     };
   }
 
+  // A cutout outline is paths/shapes only. Reject external-reference elements
+  // and href attributes (`<image>`, `<use>`, `href`/`xlink:href`) so a crafted
+  // upload can't make the desktop fetch external resources when previewing.
+  if (/<(?:image|use|foreignObject)\b/i.test(svg) || /\b(?:xlink:)?href\s*=/i.test(svg)) {
+    return {
+      valid: false,
+      code: ErrorCode.CONTENT_BLOCKED,
+      error: 'Outline contains disallowed elements',
+    };
+  }
+
   return { valid: true, svg };
 }

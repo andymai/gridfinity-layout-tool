@@ -49,7 +49,9 @@ export function useScanSession(active: boolean, onSvg: (svg: string) => void): S
         if (aborted()) return;
         if (res.status === 404) {
           stopPolling();
-          setPhase('expired');
+          // Don't flip to "expired" if the outline was already delivered (a late
+          // in-flight poll can 404 once the session expires post-pickup).
+          if (!delivered) setPhase('expired');
           return;
         }
         if (!res.ok) return;

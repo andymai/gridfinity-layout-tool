@@ -59,4 +59,15 @@ describe('validateScanSvg', () => {
       if (!result.valid) expect(result.code).toBe('CONTENT_BLOCKED');
     }
   });
+
+  it('rejects external-reference elements and href attributes', () => {
+    const withImage = '<svg xmlns="..."><image href="https://x/y.png"/><path d="M0 0Z"/></svg>';
+    const withUse = '<svg xmlns="..."><use xlink:href="#a"/><path d="M0 0Z"/></svg>';
+    const withHref = '<svg xmlns="..."><a href="https://x"><path d="M0 0Z"/></a></svg>';
+    for (const svg of [withImage, withUse, withHref]) {
+      const result = validateScanSvg(svg);
+      expect(result.valid).toBe(false);
+      if (!result.valid) expect(result.code).toBe('CONTENT_BLOCKED');
+    }
+  });
 });
