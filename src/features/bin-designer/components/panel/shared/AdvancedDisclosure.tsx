@@ -34,7 +34,7 @@ export function AdvancedDisclosure({
         type="button"
         onClick={() => setManualOpen((prev) => !prev)}
         aria-expanded={isOpen}
-        className="flex items-center gap-1.5 px-0 py-0 text-xs font-normal text-content-tertiary transition-colors hover:text-content-secondary"
+        className="flex items-center gap-1.5 px-0 py-0 text-xs font-normal text-content-tertiary transition-colors hover:bg-transparent hover:text-content-secondary"
       >
         <ChevronIcon open={isOpen} />
         <span>{label}</span>
