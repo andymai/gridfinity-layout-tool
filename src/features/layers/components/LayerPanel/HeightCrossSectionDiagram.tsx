@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import type { KeyboardEvent } from 'react';
 import type { Layer, LayerId } from '@/core/types';
 import { CONSTRAINTS } from '@/core/constants';
+import { IconButton } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 const HEIGHT_EXPONENT = 0.55;
@@ -369,13 +370,16 @@ export function HeightCrossSectionDiagram({
                         className="flex items-center gap-1 ml-1 flex-shrink-0"
                         onDoubleClick={(e) => e.stopPropagation()}
                       >
-                        <button
+                        <IconButton
+                          variant="ghost"
+                          size="sm"
+                          touchTarget={false}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDebouncedHeightChange(layer.id, -1);
                           }}
                           disabled={previewHeight <= CONSTRAINTS.MIN_LAYER_HEIGHT}
-                          className="w-5 h-5 flex items-center justify-center rounded text-content-disabled hover:text-content hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          className="w-5 h-5 !px-0 !py-0 rounded text-content-disabled hover:text-content hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           aria-label={t('layers.decreaseHeight', { name: layer.name })}
                         >
                           <svg
@@ -391,7 +395,7 @@ export function HeightCrossSectionDiagram({
                               d="M20 12H4"
                             />
                           </svg>
-                        </button>
+                        </IconButton>
                         <span
                           className="text-[10px] tabular-nums min-w-[20px] text-center"
                           style={{
@@ -402,12 +406,15 @@ export function HeightCrossSectionDiagram({
                         >
                           {previewHeight}u
                         </span>
-                        <button
+                        <IconButton
+                          variant="ghost"
+                          size="sm"
+                          touchTarget={false}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDebouncedHeightChange(layer.id, 1);
                           }}
-                          className="w-5 h-5 flex items-center justify-center rounded text-content-disabled hover:text-content hover:bg-surface-hover transition-colors"
+                          className="w-5 h-5 !px-0 !py-0 rounded text-content-disabled hover:text-content hover:bg-surface-hover transition-colors"
                           aria-label={t('layers.increaseHeight', { name: layer.name })}
                         >
                           <svg
@@ -423,15 +430,18 @@ export function HeightCrossSectionDiagram({
                               d="M12 4v16m8-8H4"
                             />
                           </svg>
-                        </button>
+                        </IconButton>
 
                         {hasMultipleLayers && (
-                          <button
+                          <IconButton
+                            variant="dangerGhost"
+                            size="sm"
+                            touchTarget={false}
                             onClick={(e) => {
                               e.stopPropagation();
                               onDeleteLayer(layer.id);
                             }}
-                            className="w-5 h-5 flex items-center justify-center rounded text-content-disabled hover:text-error hover:bg-surface-hover transition-colors ml-1"
+                            className="w-5 h-5 !px-0 !py-0 rounded text-content-disabled transition-colors ml-1"
                             title={t('layers.deleteTooltip')}
                             aria-label={t('layers.deleteLayerAria', { name: layer.name })}
                           >
@@ -448,7 +458,7 @@ export function HeightCrossSectionDiagram({
                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                               />
                             </svg>
-                          </button>
+                          </IconButton>
                         )}
 
                         {showGrip && !isEditing && <GripIcon className="ml-0.5" />}

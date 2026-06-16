@@ -8,6 +8,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from '@/i18n';
+import { IconButton, Select } from '@/design-system';
 import type { BinId, CategoryId, LayerId, Category, Layer } from '@/core/types';
 import type { AlignEdge } from '@/shared/utils/alignBins';
 import { ConfirmDialog } from '@/shared/components/ConfirmDialog';
@@ -112,15 +113,20 @@ export function SelectionToolbar({
 
         {/* Category section */}
         {categories.map((cat) => (
-          <button
+          <IconButton
             key={cat.id}
             type="button"
-            className="h-4 w-4 rounded-full border border-stroke-subtle transition-transform hover:scale-125"
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
+            className="h-4 w-4 !min-h-0 !min-w-0 rounded-full border border-stroke-subtle transition-transform hover:scale-125"
             style={{ backgroundColor: cat.color }}
             onClick={() => onSetCategory(cat.id)}
             title={t('selectionToolbar.setCategory', { name: cat.name })}
             aria-label={t('selectionToolbar.setCategory', { name: cat.name })}
-          />
+          >
+            <span aria-hidden="true" />
+          </IconButton>
         ))}
 
         <Divider />
@@ -159,9 +165,12 @@ export function SelectionToolbar({
 
         {/* Move to layer */}
         {otherLayers.length > 0 && (
-          <select
-            className="h-6 rounded border border-stroke-subtle bg-surface-secondary px-1 text-[11px] text-content-secondary hover:bg-surface-hover transition-colors cursor-pointer"
+          <Select
+            size="sm"
+            className="h-6 text-[11px] text-content-secondary"
             value=""
+            placeholder={t('selectionToolbar.moveToLayer')}
+            options={otherLayers.map((layer) => ({ id: layer.id, name: layer.name }))}
             onChange={(e) => {
               if (e.target.value) {
                 onMoveToLayer(e.target.value as LayerId);
@@ -170,16 +179,7 @@ export function SelectionToolbar({
             }}
             title={t('selectionToolbar.moveToLayer')}
             aria-label={t('selectionToolbar.moveToLayer')}
-          >
-            <option value="" disabled>
-              {t('selectionToolbar.moveToLayer')}
-            </option>
-            {otherLayers.map((layer) => (
-              <option key={layer.id} value={layer.id}>
-                {layer.name}
-              </option>
-            ))}
-          </select>
+          />
         )}
 
         {/* Move to stash */}
@@ -250,19 +250,18 @@ function ToolbarButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
+    <IconButton
       type="button"
-      className={`rounded p-1.5 transition-colors ${
-        destructive
-          ? 'text-error hover:bg-error/10'
-          : 'text-content-tertiary hover:bg-surface-hover hover:text-content'
-      }`}
+      variant={destructive ? 'dangerGhost' : 'ghost'}
+      size="sm"
+      touchTarget={false}
+      className={destructive ? 'p-1.5 text-error' : 'p-1.5'}
       onClick={onClick}
       title={label}
       aria-label={label}
     >
       {children}
-    </button>
+    </IconButton>
   );
 }
 

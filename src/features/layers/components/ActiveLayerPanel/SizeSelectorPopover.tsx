@@ -1,5 +1,5 @@
 import { useState, type RefObject } from 'react';
-import { Popover } from '@/design-system';
+import { Button, Popover } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { useTranslation } from '@/i18n';
 
@@ -50,11 +50,13 @@ function SizeButton({
   const previewHeight = d * 4;
 
   return (
-    <button
+    <Button
+      variant="ghost"
       onClick={onClick}
-      className={`flex flex-col items-center justify-end gap-1 h-[52px] p-1.5 rounded-lg border transition-colors ${
+      touchTarget={false}
+      className={`flex flex-col items-center justify-end gap-1 h-[52px] p-1.5 rounded-lg border font-normal transition-colors ${
         isActive
-          ? 'bg-accent/20 border-accent/40 ring-1 ring-accent/50'
+          ? 'bg-accent/20 border-accent/40 ring-1 ring-accent/50 hover:bg-accent/20'
           : 'border-transparent hover:bg-surface-hover hover:border-stroke-subtle'
       }`}
       aria-label={t('layers.paintSizeAriaLabel', {
@@ -77,7 +79,7 @@ function SizeButton({
       >
         {w}×{d}
       </span>
-    </button>
+    </Button>
   );
 }
 
@@ -148,7 +150,10 @@ export function SizeSelectorPopover({
           <span className="text-[11px] font-medium text-content-secondary uppercase tracking-wider">
             {t('layers.rectangles')}
           </span>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
             onClick={() => setRotated(!rotated)}
             className="text-[11px] text-content-tertiary hover:text-content flex items-center gap-1 transition-colors rounded px-1.5 py-0.5 hover:bg-surface-hover"
             title={rotated ? t('layers.showingTall') : t('layers.showingWide')}
@@ -163,7 +168,7 @@ export function SizeSelectorPopover({
               />
             </svg>
             {rotated ? t('layers.tall') : t('layers.wide')}
-          </button>
+          </Button>
         </div>
         <div className="grid grid-cols-5 gap-1">
           {RECTANGLE_SIZES.map(({ w, d }) => {

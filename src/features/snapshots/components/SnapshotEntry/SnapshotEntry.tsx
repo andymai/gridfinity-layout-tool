@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Button, IconButton } from '@/design-system';
 import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import { useRelativeTime } from '../../hooks/useRelativeTime';
 import { useTranslation } from '@/i18n';
@@ -75,16 +76,19 @@ export function SnapshotEntry({
             aria-label={t('snapshots.editLabel')}
           />
         ) : (
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => {
               setEditValue(snapshot.label ?? '');
               setIsEditing(true);
             }}
-            className="text-xs font-medium text-content truncate block max-w-full bg-transparent text-left"
+            className="text-xs font-medium text-content truncate block max-w-full bg-transparent hover:bg-transparent text-left !px-0 h-auto"
             title={t('snapshots.editLabel')}
           >
             {snapshot.label ?? t('snapshots.autoSaved')}
-          </button>
+          </Button>
         )}
 
         <div className="text-[11px] text-content-tertiary mt-0.5">
@@ -97,16 +101,23 @@ export function SnapshotEntry({
       </div>
 
       <div className="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-        <button
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => onRestore(snapshot.id)}
-          className="text-xs px-2 py-1 rounded bg-transparent text-accent hover:bg-accent-muted transition-colors"
+          className="text-xs font-normal px-2 py-1 rounded text-accent hover:bg-accent-muted hover:text-accent h-auto"
           aria-label={t('snapshots.restore')}
         >
           {t('snapshots.restore')}
-        </button>
-        <button
+        </Button>
+        <IconButton
+          type="button"
+          variant="dangerGhost"
+          size="sm"
+          touchTarget={false}
           onClick={() => onDelete(snapshot.id)}
-          className="p-1 rounded bg-transparent text-content-tertiary hover:text-[var(--color-error)] hover:bg-surface-hover transition-colors"
+          className="text-content-tertiary"
           aria-label={t('snapshots.deleteSnapshot')}
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -114,7 +125,7 @@ export function SnapshotEntry({
               <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
             ))}
           </svg>
-        </button>
+        </IconButton>
       </div>
     </div>
   );

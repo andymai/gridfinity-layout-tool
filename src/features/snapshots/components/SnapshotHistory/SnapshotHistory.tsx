@@ -9,6 +9,7 @@ import { restoreSnapshot, createLayoutEntry, deleteSnapshotById } from '@/core/s
 import { SHARED_PREVIEW_ID } from '@/core/constants';
 import { useTranslation } from '@/i18n';
 import { isOk } from '@/core/result';
+import { Button } from '@/design-system';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
 import { SnapshotEntry } from '../SnapshotEntry/SnapshotEntry';
 import { RestoreDialog } from '../RestoreDialog/RestoreDialog';
@@ -199,13 +200,16 @@ export function SnapshotHistory() {
         <p className="text-sm text-content-secondary">{t('snapshots.empty')}</p>
         <p className="text-xs text-content-tertiary mt-1">{t('snapshots.emptyDescription')}</p>
         {isEditable && layout.bins.length > 0 && (
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={handleCreateSnapshotNow}
-            className="mt-3 text-xs text-accent hover:text-accent-hover transition-colors bg-transparent"
+            className="mt-3 text-xs font-normal text-accent hover:bg-transparent hover:text-accent-hover h-auto !px-0"
             data-testid="create-snapshot-now"
           >
             {t('snapshots.createSnapshotNow')}
-          </button>
+          </Button>
         )}
       </div>
     );
@@ -217,19 +221,24 @@ export function SnapshotHistory() {
         <span className="text-xs font-medium text-content-secondary uppercase tracking-wider">
           {t('snapshots.title')}
         </span>
-        <button
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
           onClick={handleSaveCheckpoint}
-          className="flex items-center gap-1 text-xs text-accent hover:text-accent-hover transition-colors bg-transparent"
+          leftIcon={
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {ICON_PATHS.plus.map((d) => (
+                <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+              ))}
+            </svg>
+          }
+          className="text-xs font-normal text-accent hover:bg-transparent hover:text-accent-hover h-auto !px-0"
           aria-label={t('snapshots.saveCheckpoint')}
           data-testid="save-checkpoint"
         >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {ICON_PATHS.plus.map((d) => (
-              <path key={d} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-            ))}
-          </svg>
           {t('snapshots.saveCheckpoint')}
-        </button>
+        </Button>
       </div>
 
       <div className="flex flex-col" data-testid="snapshot-history">

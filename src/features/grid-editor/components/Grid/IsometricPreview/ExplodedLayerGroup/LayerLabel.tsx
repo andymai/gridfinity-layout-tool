@@ -1,4 +1,5 @@
 import { Html } from '@react-three/drei';
+import { Button } from '@/design-system';
 import type { LayerId } from '@/core/types';
 
 interface LayerLabelProps {
@@ -31,14 +32,15 @@ export function LayerLabel({
       zIndexRange={[50, 0]}
       style={{ pointerEvents: 'none' }}
     >
-      <button
+      <Button
+        variant="ghost"
         onClick={(e) => {
           e.stopPropagation();
           onLayerClick(layerId);
         }}
         className={`rounded-md px-2 py-1 text-xs font-medium cursor-pointer whitespace-nowrap border transition-all ${
           isActive
-            ? 'bg-accent text-on-dark border-accent shadow-sm'
+            ? 'bg-accent text-on-dark border-accent shadow-sm hover:bg-accent hover:text-on-dark'
             : 'bg-surface-elevated/80 text-content-tertiary border-stroke-subtle hover:bg-surface-hover hover:text-content-secondary'
         }`}
         style={{
@@ -48,7 +50,7 @@ export function LayerLabel({
         }}
       >
         {layerName} · {layerHeightMm}mm
-      </button>
+      </Button>
     </Html>
   );
 }

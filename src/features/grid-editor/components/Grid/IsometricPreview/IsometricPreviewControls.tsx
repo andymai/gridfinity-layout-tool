@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 import type { LayerViewMode } from '@/core/store/view';
 import type { SceneHandle } from './Scene';
 import type { Layer } from '@/core/types';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 
 interface IsometricPreviewControlsProps {
@@ -52,14 +53,13 @@ export function IsometricPreviewControls({
         }`}
       >
         {/* Isometric view - 3D cube */}
-        <button
+        <Button
+          variant="ghost"
           onClick={(e) => {
             e.stopPropagation();
             sceneRef.current?.setPreset('isometric');
           }}
-          className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
-          }`}
+          className={isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'}
           title={t('grid.isometricView')}
         >
           <svg
@@ -76,16 +76,15 @@ export function IsometricPreviewControls({
             />
           </svg>
           {isPreviewExpanded && !isMobile && <span className="text-xs font-medium">3D</span>}
-        </button>
+        </Button>
         {/* Front view - rectangle wider than tall */}
-        <button
+        <Button
+          variant="ghost"
           onClick={(e) => {
             e.stopPropagation();
             sceneRef.current?.setPreset('front');
           }}
-          className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
-          }`}
+          className={isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'}
           title={t('grid.frontView')}
         >
           <svg
@@ -101,16 +100,15 @@ export function IsometricPreviewControls({
           {isPreviewExpanded && !isMobile && (
             <span className="text-xs font-medium">{t('grid.front')}</span>
           )}
-        </button>
+        </Button>
         {/* Side view - rectangle taller than wide */}
-        <button
+        <Button
+          variant="ghost"
           onClick={(e) => {
             e.stopPropagation();
             sceneRef.current?.setPreset('side');
           }}
-          className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
-          }`}
+          className={isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'}
           title={t('grid.sideView')}
         >
           <svg
@@ -126,14 +124,15 @@ export function IsometricPreviewControls({
           {isPreviewExpanded && !isMobile && (
             <span className="text-xs font-medium">{t('grid.side')}</span>
           )}
-        </button>
+        </Button>
         {/* Banana for scale toggle */}
-        <button
+        <Button
+          variant="ghost"
           onClick={(e) => {
             e.stopPropagation();
             updateBananaScale(!showBananaScale);
           }}
-          className={`btn btn-ghost ${
+          className={`${
             isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
           } ${showBananaScale ? 'text-yellow-400' : ''}`}
           title={t('grid.bananaForScale')}
@@ -143,7 +142,7 @@ export function IsometricPreviewControls({
           {isPreviewExpanded && !isMobile && (
             <span className="text-xs font-medium">{t('grid.bananaForScale')}</span>
           )}
-        </button>
+        </Button>
       </div>
 
       {/* Layer view mode selector - segmented control, only show when multiple layers */}
@@ -156,15 +155,16 @@ export function IsometricPreviewControls({
           }`}
         >
           {/* Focus - show only active layer */}
-          <button
+          <Button
+            variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               setLayerViewMode('focus');
             }}
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
-                ? `btn ${layerViewMode === 'focus' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
-                : `w-7 h-7 ${layerViewMode === 'focus' ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
+                ? `gap-2 px-3 py-2 rounded-md ${layerViewMode === 'focus' ? 'bg-accent text-on-dark hover:bg-accent' : ''}`
+                : `w-7 h-7 p-0 ${layerViewMode === 'focus' ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
             }`}
             title={t('grid.focusShowOnlyActiveLayer')}
           >
@@ -181,17 +181,18 @@ export function IsometricPreviewControls({
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
             </svg>
             {isPreviewExpanded && !isMobile && <span className="text-xs">{t('grid.focus')}</span>}
-          </button>
+          </Button>
           {/* Stack - show active layer and below */}
-          <button
+          <Button
+            variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               setLayerViewMode('stack');
             }}
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
-                ? `btn ${layerViewMode === 'stack' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
-                : `w-7 h-7 ${layerViewMode === 'stack' ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
+                ? `gap-2 px-3 py-2 rounded-md ${layerViewMode === 'stack' ? 'bg-accent text-on-dark hover:bg-accent' : ''}`
+                : `w-7 h-7 p-0 ${layerViewMode === 'stack' ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
             }`}
             title={t('grid.stackShowActiveLayerAndBelow')}
           >
@@ -209,17 +210,18 @@ export function IsometricPreviewControls({
               <path d="M2 12l10 5 10-5" />
             </svg>
             {isPreviewExpanded && !isMobile && <span className="text-xs">{t('grid.stack')}</span>}
-          </button>
+          </Button>
           {/* All - show all layers */}
-          <button
+          <Button
+            variant="ghost"
             onClick={(e) => {
               e.stopPropagation();
               setLayerViewMode('all');
             }}
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
-                ? `btn ${layerViewMode === 'all' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
-                : `w-7 h-7 ${layerViewMode === 'all' ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
+                ? `gap-2 px-3 py-2 rounded-md ${layerViewMode === 'all' ? 'bg-accent text-on-dark hover:bg-accent' : ''}`
+                : `w-7 h-7 p-0 ${layerViewMode === 'all' ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
             }`}
             title={t('grid.allShowAllLayers')}
           >
@@ -238,7 +240,7 @@ export function IsometricPreviewControls({
               <path d="M2 12l10 5 10-5" />
             </svg>
             {isPreviewExpanded && !isMobile && <span className="text-xs">{t('grid.all')}</span>}
-          </button>
+          </Button>
           {/* Explode — separate layers vertically (desktop only) */}
           {!isMobile && !isTablet && (
             <>
@@ -246,15 +248,16 @@ export function IsometricPreviewControls({
               <div
                 className={`${isPreviewExpanded ? 'w-px h-6 mx-0.5' : 'w-px h-4 mx-0'} bg-stroke-subtle/50 self-center`}
               />
-              <button
+              <Button
+                variant="ghost"
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleExplodedView();
                 }}
                 className={`flex items-center justify-center transition-colors ${
                   isPreviewExpanded
-                    ? `btn ${isExplodedView ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
-                    : `w-7 h-7 ${isExplodedView ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
+                    ? `gap-2 px-3 py-2 rounded-md ${isExplodedView ? 'bg-accent text-on-dark hover:bg-accent' : ''}`
+                    : `w-7 h-7 p-0 ${isExplodedView ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
                 }`}
                 title={t('grid.explodedView.toggle')}
               >
@@ -275,7 +278,7 @@ export function IsometricPreviewControls({
                 {isPreviewExpanded && (
                   <span className="text-xs">{t('grid.explodedView.label')}</span>
                 )}
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -288,14 +291,13 @@ export function IsometricPreviewControls({
         }`}
       >
         {/* Expand/Collapse button */}
-        <button
+        <Button
+          variant="ghost"
           onClick={(e) => {
             e.stopPropagation();
             togglePreviewExpanded();
           }}
-          className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
-          }`}
+          className={isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'}
           title={isPreviewExpanded ? t('grid.preview.collapse') : t('grid.preview.expand')}
         >
           {isPreviewExpanded ? (
@@ -325,9 +327,10 @@ export function IsometricPreviewControls({
               />
             </svg>
           )}
-        </button>
+        </Button>
         {/* Close button */}
-        <button
+        <Button
+          variant="ghost"
           onClick={(e) => {
             e.stopPropagation();
             if (isPreviewExpanded) {
@@ -336,9 +339,7 @@ export function IsometricPreviewControls({
               toggleIsometricPreview();
             }
           }}
-          className={`btn btn-ghost ${
-            isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'
-          }`}
+          className={isPreviewExpanded && !isMobile ? 'gap-2 px-3 py-2' : 'w-8 h-8 p-0'}
           title={isPreviewExpanded ? t('grid.preview.collapse') : t('grid.preview.close')}
         >
           <svg
@@ -357,7 +358,7 @@ export function IsometricPreviewControls({
           {isPreviewExpanded && !isMobile && (
             <span className="text-xs font-medium">{t('common.close')}</span>
           )}
-        </button>
+        </Button>
       </div>
 
       {/* Keyboard shortcuts indicator - only shown in expanded mode on desktop */}
