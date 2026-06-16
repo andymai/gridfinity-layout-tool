@@ -125,7 +125,7 @@ export function SelectionToolbar({
             title={t('selectionToolbar.setCategory', { name: cat.name })}
             aria-label={t('selectionToolbar.setCategory', { name: cat.name })}
           >
-            <span className="sr-only">{t('selectionToolbar.setCategory', { name: cat.name })}</span>
+            <span aria-hidden="true" />
           </IconButton>
         ))}
 

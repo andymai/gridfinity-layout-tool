@@ -441,7 +441,7 @@ export function HeightCrossSectionDiagram({
                               e.stopPropagation();
                               onDeleteLayer(layer.id);
                             }}
-                            className="w-5 h-5 !px-0 !py-0 rounded text-content-disabled hover:text-error hover:bg-surface-hover transition-colors ml-1"
+                            className="w-5 h-5 !px-0 !py-0 rounded text-content-disabled transition-colors ml-1"
                             title={t('layers.deleteTooltip')}
                             aria-label={t('layers.deleteLayerAria', { name: layer.name })}
                           >

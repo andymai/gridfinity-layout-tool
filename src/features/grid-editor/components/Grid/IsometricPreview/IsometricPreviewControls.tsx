@@ -163,8 +163,8 @@ export function IsometricPreviewControls({
             }}
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
-                ? `btn ${layerViewMode === 'focus' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
-                : `w-7 h-7 ${layerViewMode === 'focus' ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
+                ? `gap-2 px-3 py-2 rounded-md ${layerViewMode === 'focus' ? 'bg-accent text-on-dark hover:bg-accent' : ''}`
+                : `w-7 h-7 ${layerViewMode === 'focus' ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
             }`}
             title={t('grid.focusShowOnlyActiveLayer')}
           >
@@ -191,8 +191,8 @@ export function IsometricPreviewControls({
             }}
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
-                ? `btn ${layerViewMode === 'stack' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
-                : `w-7 h-7 ${layerViewMode === 'stack' ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
+                ? `gap-2 px-3 py-2 rounded-md ${layerViewMode === 'stack' ? 'bg-accent text-on-dark hover:bg-accent' : ''}`
+                : `w-7 h-7 ${layerViewMode === 'stack' ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
             }`}
             title={t('grid.stackShowActiveLayerAndBelow')}
           >
@@ -220,8 +220,8 @@ export function IsometricPreviewControls({
             }}
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
-                ? `btn ${layerViewMode === 'all' ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
-                : `w-7 h-7 ${layerViewMode === 'all' ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
+                ? `gap-2 px-3 py-2 rounded-md ${layerViewMode === 'all' ? 'bg-accent text-on-dark hover:bg-accent' : ''}`
+                : `w-7 h-7 ${layerViewMode === 'all' ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
             }`}
             title={t('grid.allShowAllLayers')}
           >
@@ -256,8 +256,8 @@ export function IsometricPreviewControls({
                 }}
                 className={`flex items-center justify-center transition-colors ${
                   isPreviewExpanded
-                    ? `btn ${isExplodedView ? 'btn-primary' : 'btn-ghost'} gap-2 px-3 py-2 rounded-md`
-                    : `w-7 h-7 ${isExplodedView ? 'bg-accent text-on-dark' : 'hover:bg-surface-elevated'}`
+                    ? `gap-2 px-3 py-2 rounded-md ${isExplodedView ? 'bg-accent text-on-dark hover:bg-accent' : ''}`
+                    : `w-7 h-7 ${isExplodedView ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
                 }`}
                 title={t('grid.explodedView.toggle')}
               >
