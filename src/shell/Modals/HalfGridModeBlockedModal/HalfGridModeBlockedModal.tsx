@@ -194,7 +194,11 @@ export function HalfGridModeBlockedModal({
               variant="primary"
               onClick={handleRemediate}
               loading={isRemediating}
-              aria-label={t('halfBinMode.remediate.ariaLabel', { count: violation.count })}
+              aria-label={
+                isRemediating
+                  ? undefined
+                  : t('halfBinMode.remediate.ariaLabel', { count: violation.count })
+              }
               rightIcon={
                 isRemediating ? undefined : (
                   <svg
