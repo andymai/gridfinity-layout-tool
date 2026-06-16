@@ -122,6 +122,18 @@ export const FEATURE_FLAGS = [
     graduatedAt: '2026-06',
     requiresRefresh: false,
   },
+  {
+    id: 'scan_with_phone',
+    name: 'Scan a Tool with Your Phone',
+    description:
+      "Scan a real tool with your phone's camera and turn its outline into a cutout. Lay the tool next to a bank card and the cutout is sized to scale automatically.",
+    status: 'experimental',
+    risk: 'medium',
+    warning:
+      'Early feature. Works best on flat tools on a plain, high-contrast background; tracing accuracy varies with lighting and angle.',
+    addedAt: '2026-06',
+    requiresRefresh: false,
+  },
 ] as const satisfies readonly FeatureFlag[];
 
 export type FeatureId = (typeof FEATURE_FLAGS)[number]['id'];
