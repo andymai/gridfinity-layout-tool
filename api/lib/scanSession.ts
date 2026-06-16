@@ -23,8 +23,8 @@ export interface ScanSessionRecord {
   readonly createdAt: string;
 }
 
-/** Tokens are `crypto.randomUUID()` (v4). */
-const TOKEN_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Tokens are `crypto.randomUUID()` (v4) — matches the `/scan/:token` rewrite. */
+const TOKEN_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function isValidScanToken(token: unknown): token is string {
   return typeof token === 'string' && TOKEN_RE.test(token);

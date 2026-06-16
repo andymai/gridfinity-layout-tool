@@ -37,6 +37,7 @@ export function useScanSession(active: boolean, onSvg: (svg: string) => void): S
     // constant `false` across the awaits below (it is flipped on cleanup).
     const aborted = (): boolean => signal.aborted;
     let interval: ReturnType<typeof setInterval> | null = null;
+    let delivered = false;
     const stopPolling = (): void => {
       if (interval) clearInterval(interval);
       interval = null;
@@ -54,7 +55,9 @@ export function useScanSession(active: boolean, onSvg: (svg: string) => void): S
         if (!res.ok) return;
         const data = (await res.json()) as { status: string; svg?: string };
         if (aborted()) return;
-        if (data.status === 'ready' && data.svg) {
+        if (data.status === 'ready' && data.svg && !delivered) {
+          // Guard against overlapping polls delivering the (idempotent) result twice.
+          delivered = true;
           stopPolling();
           onSvgRef.current(data.svg);
         }

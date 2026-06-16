@@ -7,7 +7,7 @@
  * scale, so the user confirms the longest side in mm before it becomes a cutout.
  */
 
-import { useCallback, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Dialog, Button, Input, Spinner } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
@@ -42,6 +42,19 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const fieldId = useId();
   const [stage, setStage] = useState<Stage>({ kind: 'awaiting' });
+
+  // Preview via a Blob URL rather than a data: URL — avoids encoding a
+  // potentially multi-MB SVG into a string on every render.
+  const reviewSvg = stage.kind === 'review' ? stage.svg : null;
+  const previewUrl = useMemo(
+    () =>
+      reviewSvg ? URL.createObjectURL(new Blob([reviewSvg], { type: 'image/svg+xml' })) : null,
+    [reviewSvg]
+  );
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   const handleClose = useCallback(() => {
     setStage({ kind: 'awaiting' });
@@ -163,7 +176,7 @@ export function ScanWithPhoneDialog({ open, onClose }: ScanWithPhoneDialogProps)
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-center rounded-md border border-stroke-subtle bg-surface-elevated p-3">
               <img
-                src={`data:image/svg+xml;utf8,${encodeURIComponent(stage.svg)}`}
+                src={previewUrl ?? undefined}
                 alt={t('binDesigner.cutouts.scanImport.previewAlt')}
                 className="max-h-48 w-auto"
               />

@@ -37,7 +37,11 @@ function uploadSvg(svg: string): void {
 }
 
 describe('ScanWithPhoneDialog', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    URL.createObjectURL = vi.fn(() => 'blob:mock');
+    URL.revokeObjectURL = vi.fn();
+  });
 
   it('shows the upload affordance in the awaiting state', () => {
     render(<ScanWithPhoneDialog open onClose={vi.fn()} />);

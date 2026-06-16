@@ -26,7 +26,7 @@ import { connectDesignLinking } from '@/features/design-linking/subscribers';
 import { InitErrorFallback } from '@/shell/InitErrorFallback';
 import { isSmokeMode } from '@/shared/utils/smokeMode';
 import { installTranslationDomGuard } from '@/shared/utils/translationDomGuard';
-import { isScanPath } from '@/features/scan-capture/scanRouting';
+import { isScanPath } from '@/features/scan-capture';
 
 // Browser page-translation rewraps text nodes under React, which otherwise
 // crashes the reconciler with insertBefore/removeChild NotFoundError. Install

@@ -13,8 +13,10 @@ import { detectBrowserLocale } from '@/i18n/detection';
 import { isLocale } from '@/i18n/types';
 import type { Locale } from '@/i18n/types';
 import { useSettingsStore } from '@/core/store/settings';
+import { getScanToken } from '@/features/scan-capture';
+// ScanPage is imported from its module (not the feature barrel) so the tracer
+// it pulls stays in this lazy chunk and never leaks into the eager main bundle.
 import { ScanPage } from '@/features/scan-capture/components/ScanPage';
-import { getScanToken } from '@/features/scan-capture/scanRouting';
 
 export function runScanBoot(): void {
   const rootElement = document.getElementById('root');

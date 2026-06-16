@@ -12,7 +12,9 @@ interface ScanQrCodeProps {
 }
 
 export function ScanQrCode({ url, size = 192, alt }: ScanQrCodeProps) {
-  const [dataUrl, setDataUrl] = useState<string | null>(null);
+  // Tie the generated image to the url it was made for, so a url change never
+  // briefly shows the previous session's QR.
+  const [generated, setGenerated] = useState<{ url: string; dataUrl: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -23,15 +25,17 @@ export function ScanQrCode({ url, size = 192, alt }: ScanQrCodeProps) {
       try {
         const qrcode = await import('qrcode');
         const out = await qrcode.toDataURL(url, { margin: 1, width: size * 2 });
-        if (!isCancelled()) setDataUrl(out);
+        if (!isCancelled()) setGenerated({ url, dataUrl: out });
       } catch {
-        // Leave the QR blank; the dialog still shows the copyable link.
+        // Leave the QR blank; the dialog still shows the link below it.
       }
     })();
     return () => {
       cancelled = true;
     };
   }, [url, size]);
+
+  const dataUrl = generated?.url === url ? generated.dataUrl : null;
 
   return (
     <div
