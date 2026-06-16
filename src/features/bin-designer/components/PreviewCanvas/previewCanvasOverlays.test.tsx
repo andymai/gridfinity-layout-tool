@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TouchHint } from './previewCanvasOverlays';
 import { useSettingsStore } from '@/core/store/settings';
+import { resetAllStores } from '@/test/testUtils';
 
 vi.mock('@/shared/hooks/useResponsive', () => ({
   useResponsive: () => ({ isTouchDevice: true, isDesktop: false, isMobile: true, isTablet: false }),
@@ -9,6 +10,7 @@ vi.mock('@/shared/hooks/useResponsive', () => ({
 
 describe('TouchHint', () => {
   beforeEach(() => {
+    resetAllStores();
     useSettingsStore.setState({
       settings: {
         ...useSettingsStore.getState().settings,

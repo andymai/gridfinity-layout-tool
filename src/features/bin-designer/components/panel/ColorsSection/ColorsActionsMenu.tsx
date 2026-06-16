@@ -237,7 +237,7 @@ export function ColorsActionsMenu({
                       touchTarget={false}
                       type="button"
                       onClick={() => handleDelete(palette.id)}
-                      className="flex h-7 w-7 items-center justify-center rounded text-content-tertiary hover:bg-surface-hover hover:text-error focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                      className="flex h-7 w-7 items-center justify-center rounded text-content-tertiary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                       aria-label={t('binDesigner.colors.deletePalette')}
                       title={t('binDesigner.colors.deletePalette')}
                     >

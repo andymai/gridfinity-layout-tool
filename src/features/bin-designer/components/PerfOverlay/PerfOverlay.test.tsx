@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PerfOverlay } from './PerfOverlay';
 import { useDesignerStore } from '@/features/bin-designer/store';
+import { resetAllStores } from '@/test/testUtils';
 import type { PerfSnapshot } from '@/shared/types/generation';
 
 const enabled = vi.hoisted(() => ({ value: true }));
@@ -20,6 +21,7 @@ const SNAPSHOT: PerfSnapshot = {
 
 describe('PerfOverlay', () => {
   beforeEach(() => {
+    resetAllStores();
     enabled.value = true;
     useDesignerStore.getState().clearPerfHistory();
   });

@@ -199,7 +199,7 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
                 touchTarget={false}
                 onClick={onDelete}
                 disabled={!onDelete}
-                className={`${ICON_BTN} hover:text-danger`}
+                className={`${ICON_BTN} hover:bg-error-muted hover:text-error`}
                 aria-label={t('binDesigner.cutoutEditor.delete')}
                 title={t('binDesigner.cutoutEditor.delete')}
               >

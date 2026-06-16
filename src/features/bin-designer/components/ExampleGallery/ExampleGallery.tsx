@@ -187,7 +187,7 @@ export function ExampleGallery({ onClose }: ExampleGalleryProps) {
               <Button
                 variant="ghost"
                 onClick={() => setFilters(DEFAULT_FILTERS)}
-                className="text-sm text-accent hover:underline"
+                className="text-sm text-accent hover:bg-transparent hover:underline"
               >
                 {t('binExamples.clearFilters')}
               </Button>
