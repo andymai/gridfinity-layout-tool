@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { Button } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import { useTranslation } from '@/i18n';
 import {
@@ -106,8 +107,9 @@ export function ConnectorPicker({ value, onChange, renderExpanded }: ConnectorPi
                   : 'border-stroke-subtle bg-surface-elevated hover:bg-surface-hover'
               )}
             >
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 role="radio"
                 aria-checked={selected}
                 aria-label={t(titleKey)}
@@ -115,7 +117,7 @@ export function ConnectorPicker({ value, onChange, renderExpanded }: ConnectorPi
                 onClick={() => {
                   if (!selected) onChange(optionValue);
                 }}
-                className="flex w-full cursor-pointer items-start gap-3 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent"
+                className="flex h-auto w-full cursor-pointer items-start gap-3 bg-transparent p-0 text-left font-normal hover:bg-transparent focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent"
               >
                 <div className="mt-0.5 flex-shrink-0 text-content-secondary">
                   <Icon />
@@ -124,7 +126,7 @@ export function ConnectorPicker({ value, onChange, renderExpanded }: ConnectorPi
                   <h4 className="text-sm font-medium text-content-primary">{t(titleKey)}</h4>
                   <p className="mt-0.5 text-xs text-content-secondary">{t(descKey)}</p>
                 </div>
-              </button>
+              </Button>
 
               {expanded && (
                 <div className="mt-3 border-t border-stroke-subtle pt-3">{expanded}</div>

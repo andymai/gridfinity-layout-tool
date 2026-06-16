@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Button } from '@/design-system';
 import { PencilIcon } from '@/design-system/Icon';
 
 /** Format mm for display: minimum needed decimals, no trailing zeros. */
@@ -165,10 +166,11 @@ export function EditableDimensions({
   }
 
   return (
-    <button
+    <Button
+      variant="ghost"
       type="button"
       onClick={enterEditMode}
-      className={`group inline-flex cursor-pointer items-center gap-1 underline decoration-dotted decoration-content-tertiary underline-offset-4 hover:decoration-content-secondary focus-visible:decoration-accent ${restClass} ${className ?? ''}`}
+      className={`group inline-flex cursor-pointer items-center gap-1 !px-0 !py-0 underline decoration-dotted decoration-content-tertiary underline-offset-4 hover:decoration-content-secondary focus-visible:decoration-accent ${restClass} ${className ?? ''}`}
       aria-label={ariaLabel}
     >
       <span>
@@ -178,6 +180,6 @@ export function EditableDimensions({
         size="xs"
         className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
       />
-    </button>
+    </Button>
   );
 }

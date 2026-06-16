@@ -27,13 +27,6 @@
 # SegmentedControl/primitive for those in a dedicated effort rather than a
 # button-by-button swap.
 
-src/features/baseplate/components/BaseplatePage/BaseplatePage.tsx
-src/features/baseplate/components/BaseplatePanel/ConnectorPicker.tsx
-src/features/baseplate/components/BaseplatePanel/EditableDimensions.tsx
-src/features/baseplate/components/BaseplatePanel/SplitViewStrip.tsx
-src/features/baseplate/components/BaseplatePreview/BaseplatePreviewControls.tsx
-src/features/baseplate/components/PaddingAnchor/PaddingAnchor.tsx
-src/features/baseplate/components/PaddingStepper/PaddingStepper.tsx
 src/features/bin-designer/components/CompartmentEditor/DividerHitTargets.tsx
 src/features/bin-designer/components/CompartmentEditor/DividerTiltSubsection.tsx
 src/features/bin-designer/components/CutoutWorkspace/CutoutBoardSettings.tsx
