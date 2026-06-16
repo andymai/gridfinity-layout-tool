@@ -476,7 +476,7 @@ function FormatSelector({
               title={disabled ? reason : undefined}
               className={`rounded-md px-4 py-2.5 text-sm font-semibold ${
                 disabled
-                  ? 'cursor-not-allowed bg-surface text-content-disabled opacity-50'
+                  ? 'cursor-not-allowed aria-disabled:pointer-events-auto bg-surface text-content-disabled opacity-50'
                   : isActive
                     ? 'bg-accent-muted text-accent hover:bg-accent-muted hover:text-accent'
                     : 'bg-surface text-content-secondary hover:bg-surface-hover'

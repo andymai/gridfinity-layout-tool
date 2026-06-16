@@ -78,7 +78,7 @@ export function StickyGroupHeader({
         )}
         {summary && (
           <span
-            className={`ml-auto min-w-0 truncate text-xs tabular-nums transition-colors ${
+            className={`ml-auto min-w-0 truncate text-xs font-normal tabular-nums transition-colors ${
               expanded ? 'text-content-tertiary/70' : 'text-content-tertiary'
             }`}
           >
