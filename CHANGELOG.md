@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.179.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.178.1...gridfinity-layout-tool-v4.179.0) (2026-06-16)
+
+
+### Features
+
+* **bin-designer:** scan a tool with your phone to create a cutout ([#2197](https://github.com/andymai/gridfinity-layout-tool/issues/2197)) ([ea31d79](https://github.com/andymai/gridfinity-layout-tool/commit/ea31d79d9d11a56b5838697436ebb279a9a00959))
+
 ## [4.178.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.178.0...gridfinity-layout-tool-v4.178.1) (2026-06-16)
 
 
