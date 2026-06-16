@@ -15,7 +15,10 @@ export type RateLimitAction =
   | 'auth.callback'
   | 'auth.read'
   | 'sync.write'
-  | 'sync.read';
+  | 'sync.read'
+  | 'scan.create'
+  | 'scan.upload'
+  | 'scan.poll';
 
 /**
  * Parse Redis URL using WHATWG URL API to avoid deprecated url.parse().
@@ -56,6 +59,11 @@ const RATE_LIMITS: Record<RateLimitAction, RateLimitConfig> = {
   // protect against runaway clients.
   'sync.write': { limit: 60, windowSeconds: 60 }, // 60/minute per user
   'sync.read': { limit: 240, windowSeconds: 60 }, // 240/minute per user
+  // Phone-scan handoff — keyed by client IP. Create/upload are one-shot per
+  // scan; poll is generous because the desktop polls every ~1.5s while waiting.
+  'scan.create': { limit: 30, windowSeconds: 60 }, // 30/minute per IP
+  'scan.upload': { limit: 30, windowSeconds: 60 }, // 30/minute per IP
+  'scan.poll': { limit: 240, windowSeconds: 60 }, // 240/minute per IP
 };
 
 interface RateLimitResult {

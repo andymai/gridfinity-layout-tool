@@ -26,6 +26,7 @@ import { connectDesignLinking } from '@/features/design-linking/subscribers';
 import { InitErrorFallback } from '@/shell/InitErrorFallback';
 import { isSmokeMode } from '@/shared/utils/smokeMode';
 import { installTranslationDomGuard } from '@/shared/utils/translationDomGuard';
+import { isScanPath } from '@/features/scan-capture/scanRouting';
 
 // Browser page-translation rewraps text nodes under React, which otherwise
 // crashes the reconciler with insertBefore/removeChild NotFoundError. Install
@@ -54,6 +55,10 @@ if (isSmokeMode()) {
       }
     });
   // Stop here — don't initialize analytics or mount React
+} else if (isScanPath()) {
+  // Lightweight phone capture route. Mounted from its own chunk so it never
+  // pulls the editor, the 3D bundle, or the layout/library store hydration.
+  void import('./shell/scanBoot').then(({ runScanBoot }) => runScanBoot());
 } else {
   // Initialize Posthog analytics (no-op in dev)
   initAnalytics();

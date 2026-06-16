@@ -1,0 +1,128 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ok, err } from '@/core/result';
+import { ScanPage } from './ScanPage';
+
+const mockDecode = vi.fn();
+const mockTrace = vi.fn();
+vi.mock('@/shared/scanTrace', () => ({
+  decodeImageToImageData: (...args: unknown[]) => mockDecode(...args),
+  traceScene: (...args: unknown[]) => mockTrace(...args),
+  pointsToSvgPath: () => 'M0 0 L10 0 L10 10',
+}));
+
+vi.mock('@/i18n', () => ({
+  useTranslation: () => (key: string) => key,
+}));
+
+const TOKEN = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
+const IMAGE = { width: 24, height: 20, data: new Uint8ClampedArray(24 * 20 * 4) };
+const PTS = [
+  { x: 0, y: 0 },
+  { x: 25, y: 0 },
+  { x: 25, y: 45 },
+];
+// A scene with a detected card → millimetre output.
+const SCENE_MM = {
+  imagePoints: PTS,
+  outputPoints: PTS,
+  units: 'mm' as const,
+  card: {
+    corners: [
+      { x: 1, y: 1 },
+      { x: 9, y: 1 },
+      { x: 9, y: 6 },
+      { x: 1, y: 6 },
+    ] as const,
+    fitness: 0.97,
+  },
+};
+// A scene with no card → pixel output, desktop will ask for the size.
+const SCENE_PX = { imagePoints: PTS, outputPoints: PTS, units: 'px' as const, card: null };
+
+function selectPhoto(): void {
+  const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+  const file = new File(['x'], 'photo.jpg', { type: 'image/jpeg' });
+  Object.defineProperty(input, 'files', { value: [file], configurable: true });
+  fireEvent.change(input);
+}
+
+describe('ScanPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    URL.createObjectURL = vi.fn(() => 'blob:mock');
+    URL.revokeObjectURL = vi.fn();
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('starts on the capture screen', () => {
+    render(<ScanPage token={TOKEN} />);
+    expect(screen.getByText('scan.takePhoto')).toBeInTheDocument();
+  });
+
+  it('traces a photo and shows the review overlay', async () => {
+    mockDecode.mockResolvedValue(IMAGE);
+    mockTrace.mockReturnValue(ok(SCENE_MM));
+    render(<ScanPage token={TOKEN} />);
+
+    selectPhoto();
+
+    expect(await screen.findByText('scan.review.title')).toBeInTheDocument();
+    expect(screen.getByText('scan.use')).toBeInTheDocument();
+    // Two overlays: the tool outline and the detected-card highlight.
+    expect(document.querySelectorAll('polygon')).toHaveLength(2);
+    // The measured millimetre readout proves the card path produced real units.
+    expect(screen.getByText('binDesigner.cutouts.scanImport.resultSize')).toBeInTheDocument();
+    expect(screen.getByText('scan.cardMeasured')).toBeInTheDocument();
+  });
+
+  it('shows the no-card hint and a single overlay when no card is detected', async () => {
+    mockDecode.mockResolvedValue(IMAGE);
+    mockTrace.mockReturnValue(ok(SCENE_PX));
+    render(<ScanPage token={TOKEN} />);
+
+    selectPhoto();
+
+    expect(await screen.findByText('scan.noCardHint')).toBeInTheDocument();
+    expect(document.querySelectorAll('polygon')).toHaveLength(1);
+  });
+
+  it('uploads the outline and confirms it was sent', async () => {
+    mockDecode.mockResolvedValue(IMAGE);
+    mockTrace.mockReturnValue(ok(SCENE_MM));
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<ScanPage token={TOKEN} />);
+    selectPhoto();
+    fireEvent.click(await screen.findByText('scan.use'));
+
+    expect(await screen.findByText('scan.sent.title')).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/scan-session/${TOKEN}`,
+      expect.objectContaining({ method: 'POST' })
+    );
+  });
+
+  it('shows a no-object error when tracing fails', async () => {
+    mockDecode.mockResolvedValue(IMAGE);
+    mockTrace.mockReturnValue(err({ code: 'NO_OBJECT' }));
+    render(<ScanPage token={TOKEN} />);
+
+    selectPhoto();
+
+    expect(await screen.findByText('scan.error.noObject')).toBeInTheDocument();
+  });
+
+  it('reports an expired session when the upload 404s', async () => {
+    mockDecode.mockResolvedValue(IMAGE);
+    mockTrace.mockReturnValue(ok(SCENE_MM));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 404 }));
+
+    render(<ScanPage token={TOKEN} />);
+    selectPhoto();
+    fireEvent.click(await screen.findByText('scan.use'));
+
+    expect(await screen.findByText('scan.error.expired')).toBeInTheDocument();
+  });
+});

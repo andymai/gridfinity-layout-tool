@@ -44,6 +44,8 @@ interface CutoutShapeToolbarProps {
   readonly vertical?: boolean;
   /** Callback to trigger SVG file import. When omitted, the button is hidden. */
   readonly onImportSvg?: () => void;
+  /** Callback to open the scan-with-phone dialog. When omitted, the button is hidden. */
+  readonly onScanWithPhone?: () => void;
 }
 
 export function CutoutShapeToolbar({
@@ -55,6 +57,7 @@ export function CutoutShapeToolbar({
   onGridSizeChange,
   vertical = false,
   onImportSvg,
+  onScanWithPhone,
 }: CutoutShapeToolbarProps) {
   const t = useTranslation();
   // Derive which tool is "active" across all transient interaction states
@@ -305,6 +308,39 @@ export function CutoutShapeToolbar({
               <path d="M2 9v2.5a1 1 0 001 1h8a1 1 0 001-1V9" />
             </svg>
             {!vertical && t('binDesigner.cutouts.importSvg')}
+          </Button>
+        )}
+
+      {onScanWithPhone &&
+        wrap(
+          t('binDesigner.cutouts.scanImport.title'),
+          'K',
+          <Button
+            type="button"
+            variant="ghost"
+            touchTarget={false}
+            className={`${btnBase} ${btnInactive}`}
+            onClick={onScanWithPhone}
+            aria-label={t('binDesigner.cutouts.scanImport.title')}
+            title={!vertical ? t('binDesigner.cutouts.scanImport.title') : undefined}
+          >
+            <svg
+              className={iconSize}
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {/* Phone body */}
+              <rect x="3.5" y="1" width="7" height="12" rx="1.5" />
+              {/* Camera lens */}
+              <circle cx="7" cy="4" r="0.75" fill="currentColor" stroke="none" />
+              {/* Home indicator */}
+              <path d="M6 11.25h2" />
+            </svg>
+            {!vertical && t('binDesigner.cutouts.scanImport.buttonLabel')}
           </Button>
         )}
 

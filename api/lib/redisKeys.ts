@@ -11,6 +11,7 @@
  *   share:lastAccessed:{id}         → ISO timestamp of last GET for a share
  *   ratelimit:{action}:{scope}      → sliding-window rate-limit counter
  *   session:{token}                 → user session record (sync feature)
+ *   scan:session:{token}            → ephemeral phone-scan handoff (traced SVG)
  *   users:{uid}:sessions            → SET of session tokens owned by a user
  *   users:{uid}:profile             → user profile (email, provider, etc.)
  *   users:{uid}:index:{kind}        → HASH of a user's synced layouts/designs
@@ -42,6 +43,11 @@ export function rateLimitKey(action: string, scope: string): string {
 /** Sync user-session record. */
 export function sessionKey(token: string): string {
   return `session:${token}`;
+}
+
+/** Ephemeral phone-scan handoff record (traced SVG awaiting desktop pickup). */
+export function scanSessionKey(token: string): string {
+  return `scan:session:${token}`;
 }
 
 /** SET of session tokens for a user (for cascade invalidation on sign-out / account delete). */

@@ -251,4 +251,45 @@ describe('CutoutShapeToolbar', () => {
     fireEvent.click(screen.getByTitle('binDesigner.cutouts.importSvg'));
     expect(onImportSvg).toHaveBeenCalledOnce();
   });
+
+  it('renders the scan-with-phone button when onScanWithPhone is provided', () => {
+    render(
+      <CutoutShapeToolbar
+        mode={idleMode}
+        onSelectShape={vi.fn()}
+        snapEnabled={true}
+        onSnapToggle={vi.fn()}
+        onScanWithPhone={vi.fn()}
+      />
+    );
+    expect(screen.getByTitle('binDesigner.cutouts.scanImport.title')).toBeInTheDocument();
+  });
+
+  it('does not render the scan-with-phone button when onScanWithPhone is not provided', () => {
+    render(
+      <CutoutShapeToolbar
+        mode={idleMode}
+        onSelectShape={vi.fn()}
+        snapEnabled={true}
+        onSnapToggle={vi.fn()}
+      />
+    );
+    expect(screen.queryByTitle('binDesigner.cutouts.scanImport.title')).not.toBeInTheDocument();
+  });
+
+  it('calls onScanWithPhone when the scan button is clicked', () => {
+    const onScanWithPhone = vi.fn();
+    render(
+      <CutoutShapeToolbar
+        mode={idleMode}
+        onSelectShape={vi.fn()}
+        snapEnabled={true}
+        onSnapToggle={vi.fn()}
+        onScanWithPhone={onScanWithPhone}
+      />
+    );
+
+    fireEvent.click(screen.getByTitle('binDesigner.cutouts.scanImport.title'));
+    expect(onScanWithPhone).toHaveBeenCalledOnce();
+  });
 });

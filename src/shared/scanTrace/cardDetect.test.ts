@@ -1,0 +1,137 @@
+import { describe, it, expect } from 'vitest';
+import { detectCardQuad } from './cardDetect';
+import { rectifyPoints } from './perspective';
+import type { ImageDataLike, Point } from './types';
+
+// A tilted pinhole camera over the world z=0 plane — the geometry the detector
+// (and its aspect check) assumes. Principal point at the image centre.
+const F = 600;
+const CXP = 180;
+const CYP = 130;
+const DIST = 520;
+const camera = makeCamera(0.32, 0.2);
+
+function makeCamera(tiltX: number, tiltY: number) {
+  const cxr = Math.cos(tiltX);
+  const sxr = Math.sin(tiltX);
+  const cyr = Math.cos(tiltY);
+  const syr = Math.sin(tiltY);
+  const r = [
+    [cyr, 0, syr],
+    [sxr * syr, cxr, -sxr * cyr],
+    [-cxr * syr, sxr, cxr * cyr],
+  ];
+  return (x: number, y: number): Point => {
+    const xc = r[0][0] * x + r[0][1] * y;
+    const yc = r[1][0] * x + r[1][1] * y;
+    const zc = r[2][0] * x + r[2][1] * y + DIST;
+    return { x: (F * xc) / zc + CXP, y: (F * yc) / zc + CYP };
+  };
+}
+
+const project = (pts: Point[]): Point[] => pts.map((p) => camera(p.x, p.y));
+
+// Landscape ISO card centred at the origin; L-shaped tool (25 × 45 mm) beside
+// it; a square decoy to test that aspect rejects non-cards.
+const CARD_MM: Point[] = [
+  { x: -42.8, y: -26.99 },
+  { x: 42.8, y: -26.99 },
+  { x: 42.8, y: 26.99 },
+  { x: -42.8, y: 26.99 },
+];
+const TOOL_MM: Point[] = [
+  { x: 60, y: -22 },
+  { x: 85, y: -22 },
+  { x: 85, y: -7 },
+  { x: 70, y: -7 },
+  { x: 70, y: 23 },
+  { x: 60, y: 23 },
+];
+const SQUARE_MM: Point[] = [
+  { x: 60, y: -20 },
+  { x: 100, y: -20 },
+  { x: 100, y: 20 },
+  { x: 60, y: 20 },
+];
+
+function pointInPolygon(p: Point, poly: Point[]): boolean {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i];
+    const b = poly[j];
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+function render(
+  layers: Array<{ poly: Point[]; value: number }>,
+  width = 360,
+  height = 260
+): ImageDataLike {
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const o = (y * width + x) * 4;
+      let v = 15;
+      for (const layer of layers) {
+        if (pointInPolygon({ x, y }, layer.poly)) {
+          v = layer.value;
+          break;
+        }
+      }
+      data[o] = data[o + 1] = data[o + 2] = v;
+      data[o + 3] = 255;
+    }
+  }
+  return { width, height, data };
+}
+
+function bbox(points: readonly Point[]): { w: number; h: number } {
+  const xs = points.map((p) => p.x);
+  const ys = points.map((p) => p.y);
+  return { w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+}
+
+describe('detectCardQuad (end-to-end, pinhole projection)', () => {
+  it('finds the card and rectifies the tool to true millimetres', () => {
+    const image = render([
+      { poly: project(CARD_MM), value: 235 },
+      { poly: project(TOOL_MM), value: 150 },
+    ]);
+
+    const detection = detectCardQuad(image);
+    expect(detection).not.toBeNull();
+    if (!detection) return;
+    expect(detection.fitness).toBeGreaterThan(0.9);
+
+    const toolImg = project(TOOL_MM);
+    const out = bbox(rectifyPoints(toolImg, detection.homography));
+    expect(Math.abs(out.w - 25)).toBeLessThan(2.5);
+    expect(Math.abs(out.h - 45)).toBeLessThan(2.5);
+  });
+
+  it('rejects a square: aspect check keeps a non-card quad from being the reference', () => {
+    // Only a square in frame — its aspect (~1.0) fails the card check.
+    const image = render([{ poly: project(SQUARE_MM), value: 150 }]);
+    expect(detectCardQuad(image)).toBeNull();
+  });
+
+  it('picks the card, not a square decoy, when both are present', () => {
+    const image = render([
+      { poly: project(CARD_MM), value: 235 },
+      { poly: project(SQUARE_MM), value: 150 },
+    ]);
+    const detection = detectCardQuad(image);
+    expect(detection).not.toBeNull();
+    if (!detection) return;
+    // The chosen corners match the projected card, not the square.
+    const card = project(CARD_MM);
+    detection.corners.forEach((c) => {
+      const nearCard = card.some((e) => Math.hypot(c.x - e.x, c.y - e.y) < 4);
+      expect(nearCard).toBe(true);
+    });
+  });
+});
