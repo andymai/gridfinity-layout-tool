@@ -220,6 +220,8 @@ export function SharePopover({ buttonRef, cloudShare }: SharePopoverProps) {
         <div className="text-sm text-content-secondary truncate flex-1 mr-2">{layoutName}</div>
         <IconButton
           variant="ghost"
+          size="sm"
+          touchTarget={false}
           onClick={onClose}
           className="text-content-tertiary hover:text-content"
           aria-label={t('common.close')}

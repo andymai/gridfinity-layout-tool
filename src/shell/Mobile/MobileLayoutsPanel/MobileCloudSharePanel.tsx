@@ -148,7 +148,7 @@ export function MobileCloudSharePanel({
               <span className="font-medium">{t('share.failedToShare')}</span>
             </div>
             <p className="text-sm text-content-secondary">{error.message}</p>
-            <Button variant="primary" fullWidth onClick={reset} className="py-3">
+            <Button variant="primary" fullWidth onClick={reset} className="py-3 rounded-lg">
               {t('mobile.layouts.tryAgain')}
             </Button>
           </div>
@@ -173,10 +173,10 @@ export function MobileCloudSharePanel({
             </p>
 
             <div className="flex gap-2">
-              <Button variant="primary" onClick={handleCopyUrl} className="flex-1 py-3">
+              <Button variant="primary" onClick={handleCopyUrl} className="flex-1 py-3 rounded-lg">
                 {urlCopied ? t('common.copied') : t('mobile.layouts.copyLinkAgain')}
               </Button>
-              <Button variant="secondary" onClick={onClose} className="flex-1 py-3">
+              <Button variant="secondary" onClick={onClose} className="flex-1 py-3 rounded-lg">
                 {t('common.done')}
               </Button>
             </div>
@@ -201,7 +201,7 @@ export function MobileCloudSharePanel({
               />
             </div>
 
-            <Button variant="primary" fullWidth onClick={handleShare} className="py-3">
+            <Button variant="primary" fullWidth onClick={handleShare} className="py-3 rounded-lg">
               {t('share.shareToCloud')}
             </Button>
           </div>
@@ -221,7 +221,7 @@ export function MobileCloudSharePanel({
               </p>
             </div>
 
-            <Button variant="primary" fullWidth onClick={handleCopyUrl} className="py-3">
+            <Button variant="primary" fullWidth onClick={handleCopyUrl} className="py-3 rounded-lg">
               {urlCopied ? t('common.copied') : t('share.copyLink')}
             </Button>
 
@@ -238,7 +238,7 @@ export function MobileCloudSharePanel({
               variant="ghost"
               fullWidth
               onClick={handleDelete}
-              className="py-2 text-sm text-content-tertiary hover:text-error"
+              className="py-2 text-sm font-normal text-content-tertiary hover:text-error hover:bg-transparent"
             >
               {t('mobile.layouts.deleteShare')}
             </Button>

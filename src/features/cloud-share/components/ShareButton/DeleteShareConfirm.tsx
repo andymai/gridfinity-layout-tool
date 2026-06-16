@@ -26,7 +26,7 @@ export function DeleteShareConfirm({ isDeleting, onConfirm }: DeleteShareConfirm
           e.stopPropagation();
           setShowConfirm(true);
         }}
-        className="text-sm text-content-tertiary hover:text-error transition-colors"
+        className="text-sm font-normal text-content-tertiary hover:text-error hover:bg-transparent transition-colors"
       >
         {t('share.deleteShareLink')}
       </Button>
