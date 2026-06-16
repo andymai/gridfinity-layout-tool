@@ -50,13 +50,12 @@ function ColorPickerContent({
   return (
     <div className="grid grid-cols-7 gap-1.5">
       {FILAMENT_COLORS.map(({ color, nameKey }) => (
-        <IconButton
+        <Button
           key={color}
           type="button"
           variant="ghost"
-          touchTarget={false}
           onClick={() => onColorSelect(color)}
-          className={`rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
+          className={`h-auto w-auto rounded-md p-0.5 transition-colors hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:outline-none ${
             previewColor === color ? 'ring-2 ring-accent bg-surface-hover' : ''
           }`}
           aria-label={t('colors.colorAriaLabel', { name: t(nameKey) })}
@@ -69,7 +68,7 @@ function ColorPickerContent({
             }`}
             style={{ backgroundColor: color }}
           />
-        </IconButton>
+        </Button>
       ))}
     </div>
   );
