@@ -54,9 +54,9 @@ function SizeButton({
       variant="ghost"
       onClick={onClick}
       touchTarget={false}
-      className={`flex flex-col items-center justify-end gap-1 h-[52px] p-1.5 rounded-lg border transition-colors ${
+      className={`flex flex-col items-center justify-end gap-1 h-[52px] p-1.5 rounded-lg border font-normal transition-colors ${
         isActive
-          ? 'bg-accent/20 border-accent/40 ring-1 ring-accent/50'
+          ? 'bg-accent/20 border-accent/40 ring-1 ring-accent/50 hover:bg-accent/20'
           : 'border-transparent hover:bg-surface-hover hover:border-stroke-subtle'
       }`}
       aria-label={t('layers.paintSizeAriaLabel', {

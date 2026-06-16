@@ -40,7 +40,7 @@ export function LayerLabel({
         }}
         className={`rounded-md px-2 py-1 text-xs font-medium cursor-pointer whitespace-nowrap border transition-all ${
           isActive
-            ? 'bg-accent text-on-dark border-accent shadow-sm hover:bg-accent'
+            ? 'bg-accent text-on-dark border-accent shadow-sm hover:bg-accent hover:text-on-dark'
             : 'bg-surface-elevated/80 text-content-tertiary border-stroke-subtle hover:bg-surface-hover hover:text-content-secondary'
         }`}
         style={{

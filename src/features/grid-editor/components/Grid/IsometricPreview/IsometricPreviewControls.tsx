@@ -164,7 +164,7 @@ export function IsometricPreviewControls({
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
                 ? `gap-2 px-3 py-2 rounded-md ${layerViewMode === 'focus' ? 'bg-accent text-on-dark hover:bg-accent' : ''}`
-                : `w-7 h-7 ${layerViewMode === 'focus' ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
+                : `w-7 h-7 p-0 ${layerViewMode === 'focus' ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
             }`}
             title={t('grid.focusShowOnlyActiveLayer')}
           >
@@ -192,7 +192,7 @@ export function IsometricPreviewControls({
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
                 ? `gap-2 px-3 py-2 rounded-md ${layerViewMode === 'stack' ? 'bg-accent text-on-dark hover:bg-accent' : ''}`
-                : `w-7 h-7 ${layerViewMode === 'stack' ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
+                : `w-7 h-7 p-0 ${layerViewMode === 'stack' ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
             }`}
             title={t('grid.stackShowActiveLayerAndBelow')}
           >
@@ -221,7 +221,7 @@ export function IsometricPreviewControls({
             className={`flex items-center justify-center transition-colors ${
               isPreviewExpanded && !isMobile
                 ? `gap-2 px-3 py-2 rounded-md ${layerViewMode === 'all' ? 'bg-accent text-on-dark hover:bg-accent' : ''}`
-                : `w-7 h-7 ${layerViewMode === 'all' ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
+                : `w-7 h-7 p-0 ${layerViewMode === 'all' ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
             }`}
             title={t('grid.allShowAllLayers')}
           >
@@ -257,7 +257,7 @@ export function IsometricPreviewControls({
                 className={`flex items-center justify-center transition-colors ${
                   isPreviewExpanded
                     ? `gap-2 px-3 py-2 rounded-md ${isExplodedView ? 'bg-accent text-on-dark hover:bg-accent' : ''}`
-                    : `w-7 h-7 ${isExplodedView ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
+                    : `w-7 h-7 p-0 ${isExplodedView ? 'bg-accent text-on-dark hover:bg-accent' : 'hover:bg-surface-elevated'}`
                 }`}
                 title={t('grid.explodedView.toggle')}
               >

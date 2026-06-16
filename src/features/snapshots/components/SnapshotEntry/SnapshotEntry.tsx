@@ -84,7 +84,7 @@ export function SnapshotEntry({
               setEditValue(snapshot.label ?? '');
               setIsEditing(true);
             }}
-            className="text-xs font-medium text-content truncate block max-w-full bg-transparent text-left !px-0 h-auto"
+            className="text-xs font-medium text-content truncate block max-w-full bg-transparent hover:bg-transparent text-left !px-0 h-auto"
             title={t('snapshots.editLabel')}
           >
             {snapshot.label ?? t('snapshots.autoSaved')}
@@ -106,7 +106,7 @@ export function SnapshotEntry({
           variant="ghost"
           size="sm"
           onClick={() => onRestore(snapshot.id)}
-          className="text-xs font-normal px-2 py-1 rounded text-accent hover:bg-accent-muted h-auto"
+          className="text-xs font-normal px-2 py-1 rounded text-accent hover:bg-accent-muted hover:text-accent h-auto"
           aria-label={t('snapshots.restore')}
         >
           {t('snapshots.restore')}
