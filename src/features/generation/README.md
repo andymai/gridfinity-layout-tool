@@ -70,6 +70,7 @@ graph TB
 - `worker/generators/generatorTypes.ts` — barrel re-export of constants/utilities
 - `worker/generators/hexGrid.ts` — hex grid layout calculations
 - `worker/generators/shapeCache.ts` — LRU cache for BREP solids
+- `worker/generators/socketMeshCache.ts` — LRU cache for the deferred socket's tessellated mesh (triangles + edge lines), keyed by socket geometry identity + tolerance; reused across edits that don't change the base
 - `worker/generators/patterns/` — pattern system (honeycomb, registry)
 - `worker/generators/scenarios/` — test scenario data by category
 - `export/stlExporter.ts` — STL file export
@@ -84,7 +85,7 @@ Composable stages in `pipeline/stages/`, orchestrated by `pipeline/runner.ts`:
 2. **Features** (`featuresStage`) — compartments, inserts, slots, labels, scoops, wall cutouts, patterns (cut the body only; the socket is never feature-cut)
 3. **Boolean** (`booleanStage`) — batch fuse additive + cut subtractive via `fuseAllBisect` / `cutAllBisect` (n-way batch first, recursive bisect on failure)
 4. **Translate** (`translateStage`) — Z-offset for socket-based bins (applied to `solid` **and** `deferredSolid` so they stay aligned)
-5. **Tessellate** (`tessellateStage`) — dynamic quality mesh + edge extraction; meshes `deferredSolid` separately and concatenates via `mergeShapeMeshes` (visually identical to the fused shell — socket meets the body only at a hidden interface)
+5. **Tessellate** (`tessellateStage`) — dynamic quality mesh + edge extraction; meshes `deferredSolid` separately and concatenates via `mergeShapeMeshes` (visually identical to the fused shell — socket meets the body only at a hidden interface). The socket mesh is cached by geometry identity (`socketMeshCache`, keyed via `deferredSolidKey`) so non-dimension edits skip re-tessellating the base.
 
 ## Worker Protocol
 

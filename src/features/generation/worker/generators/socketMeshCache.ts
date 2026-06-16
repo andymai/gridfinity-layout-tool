@@ -54,4 +54,7 @@ export function getSocketMeshCacheStats(): CacheStats {
 
 export function clearSocketMeshCache(): void {
   socketMeshCache.dispose();
+  // Reset hit/miss/eviction counters too, so perf diagnostics read after a
+  // kernel switch (clearAllCaches) don't carry stale cross-kernel totals.
+  socketMeshCache.resetStats();
 }

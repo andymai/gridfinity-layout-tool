@@ -67,4 +67,18 @@ describe('socket mesh cache', () => {
     expect(getSocketMesh(key)).toBeNull();
     expect(getSocketMeshCacheStats().size).toBe(0);
   });
+
+  it('resets hit/miss counters on clear (no stale cross-kernel totals)', () => {
+    const key = socketMeshKey('geo', 0.1, 8, false);
+    setSocketMesh(key, fakeEntry());
+    getSocketMesh(key); // hit
+    getSocketMesh(socketMeshKey('absent', 0.1, 8, false)); // miss
+    expect(getSocketMeshCacheStats().hits + getSocketMeshCacheStats().misses).toBeGreaterThan(0);
+
+    clearSocketMeshCache();
+    const stats = getSocketMeshCacheStats();
+    expect(stats.hits).toBe(0);
+    expect(stats.misses).toBe(0);
+    expect(stats.evictions).toBe(0);
+  });
 });
