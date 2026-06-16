@@ -103,7 +103,7 @@ export function ShareOptionButton({
       </div>
       <div className="text-left">
         <div className="font-medium text-content">{title}</div>
-        <div className="text-sm text-content-secondary">{description}</div>
+        <div className="text-sm font-normal text-content-secondary">{description}</div>
       </div>
     </Button>
   );

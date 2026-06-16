@@ -122,12 +122,12 @@ export function LayoutListItem({
 
               <LayoutPreviewInfo entry={entry} />
 
-              <div className="text-xs text-content-tertiary mt-0.5">
+              <div className="text-xs font-normal text-content-tertiary mt-0.5">
                 {formatRelativeDate(entry.modifiedAt)}
               </div>
 
               {entry.forkedFrom && (
-                <div className="text-xs text-content-disabled">
+                <div className="text-xs font-normal text-content-disabled">
                   {t('layouts.forkedFrom')}
                   {entry.forkedFrom.name}
                 </div>
@@ -160,7 +160,7 @@ function LayoutPreviewInfo({ entry }: { entry: LayoutEntry }) {
   const { preview } = entry;
 
   return (
-    <div className="flex items-center gap-3 text-sm text-content-secondary">
+    <div className="flex items-center gap-3 text-sm font-normal text-content-secondary">
       <span className="flex items-center gap-1">
         <SvgIcon path={ICON_PATHS.grid} className="w-4 h-4" />
         {preview.drawerWidth}×{preview.drawerDepth}

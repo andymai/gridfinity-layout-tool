@@ -250,7 +250,7 @@ export function MobileCloudSharePanel({
             variant="ghost"
             fullWidth
             onClick={onClose}
-            className="mt-4 py-3 text-content-secondary"
+            className="mt-4 py-3 text-content-secondary hover:bg-transparent hover:text-content-secondary"
           >
             {t('common.cancel')}
           </Button>
