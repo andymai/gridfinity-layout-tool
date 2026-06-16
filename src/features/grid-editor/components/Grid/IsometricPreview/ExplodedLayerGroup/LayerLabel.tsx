@@ -1,4 +1,5 @@
 import { Html } from '@react-three/drei';
+import { Button } from '@/design-system';
 import type { LayerId } from '@/core/types';
 
 interface LayerLabelProps {
@@ -31,7 +32,8 @@ export function LayerLabel({
       zIndexRange={[50, 0]}
       style={{ pointerEvents: 'none' }}
     >
-      <button
+      <Button
+        variant="ghost"
         onClick={(e) => {
           e.stopPropagation();
           onLayerClick(layerId);
@@ -48,7 +50,7 @@ export function LayerLabel({
         }}
       >
         {layerName} · {layerHeightMm}mm
-      </button>
+      </Button>
     </Html>
   );
 }
