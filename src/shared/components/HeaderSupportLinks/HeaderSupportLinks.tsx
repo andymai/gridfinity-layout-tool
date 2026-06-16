@@ -63,7 +63,7 @@ export function HeaderSupportLinks() {
       <Button
         variant="ghost"
         onClick={handleFeedbackClick}
-        className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
+        className="px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
         title={t('header.sendFeedback')}
         aria-label={t('header.sendFeedback')}
       >
@@ -82,7 +82,7 @@ export function HeaderSupportLinks() {
       <Button
         variant="ghost"
         onClick={handleHelpClick}
-        className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
+        className="px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
         title={t('header.showHelp')}
         aria-label={t('header.helpAndShortcuts')}
       >
@@ -118,7 +118,7 @@ export function HeaderSupportLinks() {
       <Button
         variant="primary"
         onClick={handleKofiClick}
-        className="btn btn-primary px-3 py-1.5 text-sm leading-none flex items-center gap-1.5"
+        className="px-3 py-1.5 text-sm leading-none flex items-center gap-1.5"
         style={{ color: '#fff', textShadow: '0 1px 1px rgba(34, 34, 34, 0.15)' }}
         title={t('header.supportOnKofi')}
         aria-label={t('header.supportOnKofi')}
