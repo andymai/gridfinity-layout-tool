@@ -164,9 +164,9 @@ export function BaseplatePreviewControls({
                   type="button"
                   variant="ghost"
                   onClick={() => onViewModeChange(value)}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+                  className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
                     isActive
-                      ? 'bg-accent text-on-accent'
+                      ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
                       : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                   }`}
                   aria-pressed={isActive}
@@ -190,9 +190,9 @@ export function BaseplatePreviewControls({
                 type="button"
                 variant="ghost"
                 onClick={() => onCameraPreset(key)}
-                className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+                className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
                   isActive
-                    ? 'bg-accent text-on-accent'
+                    ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
                 title={t(labelKey)}
@@ -213,7 +213,7 @@ export function BaseplatePreviewControls({
             type="button"
             variant="ghost"
             onClick={onResetView}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            className="flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
             title={t('baseplate.resetView')}
             aria-label={t('baseplate.resetView')}
           >
@@ -226,9 +226,9 @@ export function BaseplatePreviewControls({
             type="button"
             variant="ghost"
             onClick={onToggleXray}
-            className={`flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
+            className={`flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation ${
               xray
-                ? 'bg-accent text-on-accent'
+                ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
                 : 'text-content-secondary hover:bg-surface-hover hover:text-content'
             }`}
             title={t('baseplate.toggleXray')}
@@ -244,7 +244,7 @@ export function BaseplatePreviewControls({
             type="button"
             variant="ghost"
             onClick={onToggleProjection}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            className="flex items-center gap-1 rounded-none px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
             title={t('baseplate.toggleProjection')}
             aria-label={t('baseplate.toggleProjectionKeyboardShortcut')}
             aria-pressed={projection === 'orthographic'}
@@ -265,7 +265,7 @@ export function BaseplatePreviewControls({
             type="button"
             variant="ghost"
             onClick={() => setColorPickerOpen((v) => !v)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
+            className="flex items-center gap-1.5 rounded-none px-2.5 py-1.5 text-[11px] font-medium text-content-secondary transition-colors hover:bg-surface-hover hover:text-content focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none min-h-[28px] touch-manipulation"
             title={t('baseplate.filamentColor')}
             aria-label={t('baseplate.filamentColor')}
             aria-expanded={colorPickerOpen}
@@ -307,9 +307,9 @@ export function BaseplatePreviewControls({
                 type="button"
                 variant="ghost"
                 onClick={() => onViewModeChange(value)}
-                className={`flex items-center justify-center gap-1 px-3 min-h-[44px] text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
+                className={`flex items-center justify-center gap-1 rounded-none px-3 min-h-[44px] text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
                   isActive
-                    ? 'bg-accent text-on-accent'
+                    ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
                     : 'text-content-secondary hover:bg-surface-hover hover:text-content'
                 }`}
                 aria-pressed={isActive}
@@ -335,7 +335,7 @@ export function BaseplatePreviewControls({
               onClick={() => onCameraPreset(key)}
               className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
                 isActive
-                  ? 'bg-accent text-on-accent'
+                  ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
                   : 'text-content-secondary hover:bg-surface-hover hover:text-content'
               }`}
               title={t(labelKey)}
@@ -369,7 +369,7 @@ export function BaseplatePreviewControls({
           onClick={onToggleXray}
           className={`flex items-center justify-center min-w-[44px] min-h-[44px] p-2 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:outline-none touch-manipulation ${
             xray
-              ? 'bg-accent text-on-accent'
+              ? 'bg-accent text-on-accent hover:bg-accent hover:text-on-accent'
               : 'text-content-secondary hover:bg-surface-hover hover:text-content'
           }`}
           title={t('baseplate.toggleXray')}

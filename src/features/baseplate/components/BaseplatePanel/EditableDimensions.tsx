@@ -170,7 +170,7 @@ export function EditableDimensions({
       variant="ghost"
       type="button"
       onClick={enterEditMode}
-      className={`group inline-flex cursor-pointer items-center gap-1 !px-0 !py-0 underline decoration-dotted decoration-content-tertiary underline-offset-4 hover:decoration-content-secondary focus-visible:decoration-accent ${restClass} ${className ?? ''}`}
+      className={`group inline-flex cursor-pointer items-center gap-1 !px-0 !py-0 underline decoration-dotted decoration-content-tertiary underline-offset-4 hover:bg-transparent hover:text-content-secondary hover:decoration-content-secondary focus-visible:decoration-accent ${restClass} ${className ?? ''}`}
       aria-label={ariaLabel}
     >
       <span>

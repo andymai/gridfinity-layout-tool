@@ -128,7 +128,7 @@ export function PaddingAnchor({
             className={cn(
               'flex h-5 w-5 items-center justify-center rounded-md border !px-0 !py-0',
               selected
-                ? 'border-content bg-content text-surface'
+                ? 'border-content bg-content text-surface hover:bg-content hover:text-surface'
                 : 'border-transparent text-content-tertiary hover:border-stroke-subtle hover:bg-surface-hover hover:text-content-secondary',
               'disabled:cursor-not-allowed disabled:opacity-50',
               interactiveTransition,

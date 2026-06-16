@@ -75,7 +75,7 @@ export function SplitViewStrip({
                   variant="ghost"
                   type="button"
                   touchTarget={false}
-                  className={`flex items-center justify-center rounded border bg-surface-elevated !px-0 py-1 text-[10px] font-mono font-normal transition-shadow ${
+                  className={`flex items-center justify-center rounded border bg-surface-elevated !px-0 py-1 text-[10px] font-mono font-normal transition-shadow hover:bg-surface-elevated ${
                     isSelected
                       ? 'ring-2 ring-accent border-accent text-content-primary'
                       : isHovered
