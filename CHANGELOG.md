@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.178.1](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.178.0...gridfinity-layout-tool-v4.178.1) (2026-06-16)
+
+
+### Performance
+
+* **generation:** cache deferred socket tessellation across edits ([#2194](https://github.com/andymai/gridfinity-layout-tool/issues/2194)) ([3e8e08f](https://github.com/andymai/gridfinity-layout-tool/commit/3e8e08f0d2ec4e68506d4b4eccc38100ac9c1521))
+
 ## [4.178.0](https://github.com/andymai/gridfinity-layout-tool/compare/gridfinity-layout-tool-v4.177.1...gridfinity-layout-tool-v4.178.0) (2026-06-15)
 
 
