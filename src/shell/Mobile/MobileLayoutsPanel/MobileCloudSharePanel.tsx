@@ -17,6 +17,7 @@ import { formatShareDate } from '@/features/cloud-share/utils/cloudShare';
 import type { SharePermission } from '@/core/types';
 import { useTranslation } from '@/i18n';
 import type { TFunction } from '@/i18n';
+import { Button } from '@/design-system';
 import { SvgIcon, LoadingSpinner, PermissionSelect, ICON_PATHS } from './MobileLayoutsPanelParts';
 
 function getLoadingLabel(status: CloudShareStatus, t: TFunction): string {
@@ -147,12 +148,9 @@ export function MobileCloudSharePanel({
               <span className="font-medium">{t('share.failedToShare')}</span>
             </div>
             <p className="text-sm text-content-secondary">{error.message}</p>
-            <button
-              onClick={reset}
-              className="w-full py-3 bg-accent text-on-dark font-medium rounded-lg"
-            >
+            <Button variant="primary" fullWidth onClick={reset} className="py-3 rounded-lg">
               {t('mobile.layouts.tryAgain')}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -175,18 +173,12 @@ export function MobileCloudSharePanel({
             </p>
 
             <div className="flex gap-2">
-              <button
-                onClick={handleCopyUrl}
-                className="flex-1 py-3 bg-accent text-on-dark font-medium rounded-lg"
-              >
+              <Button variant="primary" onClick={handleCopyUrl} className="flex-1 py-3 rounded-lg">
                 {urlCopied ? t('common.copied') : t('mobile.layouts.copyLinkAgain')}
-              </button>
-              <button
-                onClick={onClose}
-                className="flex-1 py-3 bg-surface text-content font-medium rounded-lg"
-              >
+              </Button>
+              <Button variant="secondary" onClick={onClose} className="flex-1 py-3 rounded-lg">
                 {t('common.done')}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -209,12 +201,9 @@ export function MobileCloudSharePanel({
               />
             </div>
 
-            <button
-              onClick={handleShare}
-              className="w-full py-3 bg-accent text-on-dark font-medium rounded-lg"
-            >
+            <Button variant="primary" fullWidth onClick={handleShare} className="py-3 rounded-lg">
               {t('share.shareToCloud')}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -232,12 +221,9 @@ export function MobileCloudSharePanel({
               </p>
             </div>
 
-            <button
-              onClick={handleCopyUrl}
-              className="w-full py-3 bg-accent text-on-dark font-medium rounded-lg"
-            >
+            <Button variant="primary" fullWidth onClick={handleCopyUrl} className="py-3 rounded-lg">
               {urlCopied ? t('common.copied') : t('share.copyLink')}
-            </button>
+            </Button>
 
             <div className="flex items-center gap-3">
               <PermissionSelect
@@ -248,19 +234,26 @@ export function MobileCloudSharePanel({
               />
             </div>
 
-            <button
+            <Button
+              variant="ghost"
+              fullWidth
               onClick={handleDelete}
-              className="w-full py-2 text-sm text-content-tertiary hover:text-error transition-colors"
+              className="py-2 text-sm font-normal text-content-tertiary hover:text-error hover:bg-transparent"
             >
               {t('mobile.layouts.deleteShare')}
-            </button>
+            </Button>
           </div>
         )}
 
         {status !== 'success' && (
-          <button onClick={onClose} className="w-full mt-4 py-3 text-content-secondary font-medium">
+          <Button
+            variant="ghost"
+            fullWidth
+            onClick={onClose}
+            className="mt-4 py-3 text-content-secondary hover:bg-transparent hover:text-content-secondary"
+          >
             {t('common.cancel')}
-          </button>
+          </Button>
         )}
       </div>
     </div>

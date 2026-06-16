@@ -27,13 +27,4 @@
 # SegmentedControl/primitive for those in a dedicated effort rather than a
 # button-by-button swap.
 
-src/features/cloud-share/components/ShareButton/DeleteShareConfirm.tsx
-src/features/cloud-share/components/ShareButton/ShareLinkSection.tsx
-src/features/cloud-share/components/ShareButton/SharePopover.tsx
 src/shared/components/PrintBedInput/PrintBedInput.tsx
-src/shell/Mobile/BinContextMenu/BinContextMenu.tsx
-src/shell/Mobile/MobileLayoutsPanel/MobileCloudSharePanel.tsx
-src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsListItem.tsx
-src/shell/Mobile/MobileLayoutsPanel/MobileLayoutsPanelParts.tsx
-src/shell/Modals/HalfGridModeBlockedModal/HalfGridModeBlockedModal.tsx
-src/shell/Modals/SettingsModal/tabs/AppearanceTab/AppearanceTab.tsx

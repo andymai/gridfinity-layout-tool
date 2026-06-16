@@ -7,6 +7,7 @@
  */
 
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 import { LayoutThumbnail } from '@/shell/LayoutThumbnail';
 import type { LayoutEntry } from '@/core/types';
 import {
@@ -95,8 +96,9 @@ export function LayoutListItem({
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        <button
-          className="w-full p-4 text-left"
+        <Button
+          variant="ghost"
+          className="w-full p-4 text-left justify-start rounded-none hover:bg-transparent"
           onClick={() => onSelect(entry.id)}
           aria-current={isActive ? 'true' : undefined}
         >
@@ -120,19 +122,19 @@ export function LayoutListItem({
 
               <LayoutPreviewInfo entry={entry} />
 
-              <div className="text-xs text-content-tertiary mt-0.5">
+              <div className="text-xs font-normal text-content-tertiary mt-0.5">
                 {formatRelativeDate(entry.modifiedAt)}
               </div>
 
               {entry.forkedFrom && (
-                <div className="text-xs text-content-disabled">
+                <div className="text-xs font-normal text-content-disabled">
                   {t('layouts.forkedFrom')}
                   {entry.forkedFrom.name}
                 </div>
               )}
             </div>
           </div>
-        </button>
+        </Button>
 
         {isActive && (
           <ActiveLayoutActions
@@ -158,7 +160,7 @@ function LayoutPreviewInfo({ entry }: { entry: LayoutEntry }) {
   const { preview } = entry;
 
   return (
-    <div className="flex items-center gap-3 text-sm text-content-secondary">
+    <div className="flex items-center gap-3 text-sm font-normal text-content-secondary">
       <span className="flex items-center gap-1">
         <SvgIcon path={ICON_PATHS.grid} className="w-4 h-4" />
         {preview.drawerWidth}×{preview.drawerDepth}

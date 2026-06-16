@@ -23,6 +23,7 @@ import { findBinById } from '@/shared/utils/entity';
 import { isOk } from '@/core/result';
 import { useTranslation } from '@/i18n';
 import { lazyWithRetry, namedExport } from '@/shared/utils/lazyWithRetry';
+import { Button } from '@/design-system';
 import type { Bin, GridUnits, LayerId } from '@/core/types';
 
 const BinContextMenuDesignSection = lazyWithRetry(() =>
@@ -246,7 +247,8 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
 
         {isInStash && (
           <div>
-            <button
+            <Button
+              variant="ghost"
               onClick={() => {
                 if (layout.layers.length === 1) {
                   handleMoveToGrid(layout.layers[0].id);
@@ -254,7 +256,7 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
                   setShowLayerPicker(!showLayerPicker);
                 }
               }}
-              className="w-full px-4 py-3 flex items-center justify-between transition-colors text-content hover:bg-surface-hover"
+              className="w-full px-4 py-3 flex items-center justify-between rounded-none font-normal text-content hover:bg-surface-hover"
             >
               <div className="flex items-center gap-3">
                 <svg
@@ -287,20 +289,21 @@ export function BinContextMenu({ bin, position, onClose, source }: BinContextMen
                   />
                 </svg>
               )}
-            </button>
+            </Button>
             {showLayerPicker && (
               <div className="px-2 py-1 bg-surface-secondary">
                 {layout.layers.map((layer) => (
-                  <button
+                  <Button
                     key={layer.id}
+                    variant="ghost"
                     onClick={() => handleMoveToGrid(layer.id)}
-                    className="w-full px-3 py-2 text-left rounded transition-colors hover:bg-surface-hover"
+                    className="w-full px-3 py-2 text-left justify-start items-start flex-col rounded font-normal hover:bg-surface-hover"
                   >
                     <div className="text-sm text-content">{layer.name}</div>
                     <div className="text-xs text-content-tertiary">
                       {t('mobile.contextMenu.minHeight', { height: layer.height })}
                     </div>
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}

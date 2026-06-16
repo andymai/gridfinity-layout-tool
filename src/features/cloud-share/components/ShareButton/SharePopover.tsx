@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Button, IconButton, Select } from '@/design-system';
 import {
   useLayoutStore,
   useToastStore,
@@ -217,9 +218,12 @@ export function SharePopover({ buttonRef, cloudShare }: SharePopoverProps) {
     >
       <div className="flex items-center justify-between mb-3">
         <div className="text-sm text-content-secondary truncate flex-1 mr-2">{layoutName}</div>
-        <button
+        <IconButton
+          variant="ghost"
+          size="sm"
+          touchTarget={false}
           onClick={onClose}
-          className="text-content-tertiary hover:text-content transition-colors p-1 -m-1"
+          className="text-content-tertiary hover:text-content"
           aria-label={t('common.close')}
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -230,7 +234,7 @@ export function SharePopover({ buttonRef, cloudShare }: SharePopoverProps) {
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
-        </button>
+        </IconButton>
       </div>
 
       {(status === 'sharing' || status === 'updating') && (
@@ -265,34 +269,39 @@ export function SharePopover({ buttonRef, cloudShare }: SharePopoverProps) {
       {status === 'error' && error && (
         <div className="space-y-3">
           <div className="text-sm text-error">{error.message}</div>
-          <button onClick={reset} className="btn btn-secondary w-full text-sm">
+          <Button variant="secondary" fullWidth onClick={reset} className="text-sm">
             {t('error.tryAgain')}
-          </button>
+          </Button>
         </div>
       )}
 
       {status === 'idle' && !showSharedState && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <select
+            <Select
+              fullWidth
               value={localPermission}
-              onChange={(e) => {
-                setLocalPermission(e.target.value as SharePermission);
+              onValueChange={(v) => {
+                setLocalPermission(v as SharePermission);
               }}
-              className="flex-1 bg-surface text-content text-sm px-3 py-2 rounded border border-stroke"
-            >
-              <option value="view">{t('share.anyoneWithLinkCanView')}</option>
-              <option value="edit">{t('share.anyoneWithLinkCanEdit')}</option>
-            </select>
+              options={[
+                { id: 'view', name: t('share.anyoneWithLinkCanView') },
+                { id: 'edit', name: t('share.anyoneWithLinkCanEdit') },
+              ]}
+              aria-label={t('share.anyoneWithLinkCan')}
+              className="flex-1 text-sm"
+            />
           </div>
-          <button
+          <Button
+            variant="primary"
+            fullWidth
             onClick={() => {
               void handleShare();
             }}
-            className="btn btn-primary w-full text-sm"
+            className="text-sm"
           >
             {t('share.createShareLink')}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -323,9 +332,9 @@ export function SharePopover({ buttonRef, cloudShare }: SharePopoverProps) {
           )}
 
           <div className="pt-2">
-            <button onClick={onClose} className="btn btn-secondary w-full text-sm">
+            <Button variant="secondary" fullWidth onClick={onClose} className="text-sm">
               {t('common.done')}
-            </button>
+            </Button>
           </div>
         </div>
       )}
