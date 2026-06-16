@@ -1,30 +1,12 @@
 # Design System Migration Allowlist
 #
-# Files listed here are grandfathered in and may use raw HTML elements.
-# The check:design-system gate is ENABLED — new raw elements are blocked,
-# but these pre-existing files are exempt until migrated. Migrate gradually
-# and delete each file from this list once it uses @/design-system.
+# Files listed here are grandfathered in and may use raw HTML elements
+# (<button>, <select>, <input type="checkbox">, text <input>). The
+# check:design-system gate is ENABLED — any new raw element is blocked.
 #
-# To migrate a file:
-# 1. Replace raw <button> with <Button>
-# 2. Replace raw <select> with <Select>
-# 3. Replace <input type="checkbox"> with <Checkbox>
-# 4. Replace text <input> with <Input>
-# 5. Remove the file from this list
+# Migration is complete: there are no grandfathered files. Feature and
+# component code uses the design system:
+#   import { Button, IconButton, Select, Input, Checkbox } from '@/design-system';
 #
-# Import design system components:
-#   import { Button, Checkbox, Select, Input } from '@/design-system';
-#
-# Migration policy (clean swaps only): migrate raw buttons that map directly
-# to <Button>/<IconButton> while preserving exact appearance. Most remaining
-# entries are intentionally raw — bespoke controls that do NOT map cleanly:
-# segmented controls / connected toolbars / pills with an active bg-accent
-# state, role=radio|tab grids with roving tabindex, custom toggle switches,
-# sliders, color-swatch grids, and connected steppers. Forcing these into
-# Button/IconButton breaks a11y semantics (e.g. IconButton emits aria-pressed
-# where a role=radio needs aria-checked) or needs many className overrides for
-# no visual gain. Adopt the DS
-# SegmentedControl/primitive for those in a dedicated effort rather than a
-# button-by-button swap.
-
-src/shared/components/PrintBedInput/PrintBedInput.tsx
+# To grant a temporary exception, add the file path below (one per line),
+# then delete it once the file is migrated.

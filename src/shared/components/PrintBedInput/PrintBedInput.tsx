@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { Button } from '@/design-system';
 import { DeferredNumberInput } from '@/shared/components/DeferredNumberInput';
 import { useTranslation } from '@/i18n';
 
@@ -82,8 +83,10 @@ export function PrintBedInput({
   const btnClass = `flex-shrink-0 rounded border border-stroke-subtle text-content-secondary hover:text-content hover:bg-surface-hover hover:border-stroke transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent ${isCompact ? 'p-0.5' : 'p-1'}`;
 
   const linkButton = (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      touchTarget={false}
       onClick={handleToggleLink}
       className={btnClass}
       aria-label={
@@ -105,7 +108,7 @@ export function PrintBedInput({
           UNLINK_ICON_PATHS.map((d) => <path key={d} d={d} />)
         )}
       </svg>
-    </button>
+    </Button>
   );
 
   if (showSingleInput) {
