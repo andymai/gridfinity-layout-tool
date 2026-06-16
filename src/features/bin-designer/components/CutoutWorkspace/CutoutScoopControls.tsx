@@ -87,7 +87,7 @@ export function CutoutScoopControls({
             type="button"
             variant="ghost"
             onClick={() => setExpanded(true)}
-            className="text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80 transition-colors"
+            className="px-0 py-0 text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80 transition-colors"
             disabled={disabled}
           >
             {t('binDesigner.cutouts.scoopSplit')}
@@ -117,7 +117,7 @@ export function CutoutScoopControls({
           type="button"
           variant="ghost"
           onClick={handleCollapse}
-          className="text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80 transition-colors"
+          className="px-0 py-0 text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80 transition-colors"
           disabled={disabled}
         >
           {t('binDesigner.cutouts.scoopUniform')}

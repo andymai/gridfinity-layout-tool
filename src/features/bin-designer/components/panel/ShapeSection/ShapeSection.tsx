@@ -52,7 +52,7 @@ export function ShapeSection() {
               variant="ghost"
               onClick={handlers.resetShape}
               disabled={!state.isCustom}
-              className="ml-auto text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80 disabled:cursor-not-allowed disabled:opacity-50"
+              className="ml-auto px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {t('common.reset')}
             </Button>

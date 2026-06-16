@@ -61,7 +61,7 @@ export function DividerTiltSubsection() {
               type="button"
               variant="ghost"
               onClick={handlers.resetAll}
-              className="text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
+              className="px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
             >
               {t('binDesigner.angledDividers.resetAll')}
             </Button>
@@ -251,7 +251,7 @@ function InspectorView({
           type="button"
           variant="ghost"
           onClick={() => handlers.selectDivider(null)}
-          className="flex items-center gap-1 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
+          className="flex items-center gap-1 px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
         >
           <ArrowLeftIcon size="xs" />
           {t('binDesigner.angledDividers.backToList')}
@@ -261,7 +261,7 @@ function InspectorView({
             type="button"
             variant="ghost"
             onClick={() => handlers.resetRow(row)}
-            className="flex items-center gap-1 text-[11px] font-medium text-content-tertiary transition-colors hover:bg-transparent hover:text-content-secondary"
+            className="flex items-center gap-1 px-0 py-0 text-[11px] font-medium text-content-tertiary transition-colors hover:bg-transparent hover:text-content-secondary"
           >
             <RotateCcwIcon size="xs" />
             {t('binDesigner.angledDividers.resetToStraight')}

@@ -86,7 +86,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
               <Button
                 variant="ghost"
                 onClick={handleNameClick}
-                className="inline-block px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
+                className="inline-block px-3 py-1.5 text-sm font-normal rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
                 title={t('binDesigner.clickToRename')}
               >
                 {designName}
@@ -210,7 +210,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
               onTouchMove={handleNameTouchEnd}
               onTouchEnd={handleNameTouchEnd}
               onTouchCancel={handleNameTouchEnd}
-              className="flex-1 mx-3 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-sm rounded-md text-content-secondary bg-transparent hover:bg-surface-hover"
+              className="flex-1 mx-3 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-sm font-normal rounded-md text-content-secondary bg-transparent hover:bg-surface-hover"
               title={t('binDesigner.clickToRename')}
             >
               <span className="truncate">{designName}</span>

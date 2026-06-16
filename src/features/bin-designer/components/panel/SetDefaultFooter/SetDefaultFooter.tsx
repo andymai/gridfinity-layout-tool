@@ -22,7 +22,7 @@ export function SetDefaultFooter() {
         type="button"
         variant="ghost"
         onClick={setCurrentAsDefault}
-        className="flex w-full items-center gap-2 rounded-md py-1 text-left text-xs text-content-secondary transition-colors hover:text-content"
+        className="flex w-full items-center gap-2 rounded-md px-0 py-1 text-left text-xs font-normal text-content-secondary transition-colors hover:text-content"
       >
         <svg
           className="h-4 w-4 flex-shrink-0"
