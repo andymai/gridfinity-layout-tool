@@ -13,7 +13,7 @@ import {
   ARRAY_MIN_RADIUS,
 } from '@/shared/utils/cutoutArray';
 import { useTranslation } from '@/i18n';
-import { Checkbox, Stepper } from '@/design-system';
+import { Button, Checkbox, Stepper } from '@/design-system';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
 
 interface CutoutArrayControlsProps {
@@ -44,14 +44,15 @@ export function CutoutArrayControls({
 
   if (!array) {
     return (
-      <button
+      <Button
         type="button"
+        variant="ghost"
         className="w-full rounded border border-stroke-subtle bg-surface-elevated px-2 py-1.5 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
         onClick={() => onUpdate({ array: defaultArrayConfig(cutout.width, cutout.depth) })}
         disabled={disabled}
       >
         {t('binDesigner.cutouts.array.create')}
-      </button>
+      </Button>
     );
   }
 
@@ -66,10 +67,11 @@ export function CutoutArrayControls({
         aria-label={t('binDesigner.cutouts.section.array')}
       >
         {CUTOUT_ARRAY_MODES.map((mode: CutoutArrayMode) => (
-          <button
+          <Button
             key={mode}
             role="tab"
             type="button"
+            variant="ghost"
             aria-selected={array.mode === mode}
             className={`flex flex-1 items-center justify-center gap-1 rounded-md px-1.5 py-1.5 text-[11px] font-medium transition-all leading-none ${
               array.mode === mode
@@ -82,7 +84,7 @@ export function CutoutArrayControls({
           >
             <ArrayModeIcon mode={mode} />
             {t(`binDesigner.cutouts.array.mode.${mode}`)}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -183,23 +185,25 @@ export function CutoutArrayControls({
       </div>
 
       <div className="flex gap-1.5">
-        <button
+        <Button
           type="button"
+          variant="ghost"
           className="flex-1 rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
           onClick={onFlatten}
           disabled={disabled}
         >
           {t('binDesigner.cutouts.array.flatten')}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="ghost"
           className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
           onClick={() => onUpdate({ array: undefined })}
           disabled={disabled}
           title={t('binDesigner.cutouts.array.remove')}
         >
           {t('binDesigner.cutouts.array.remove')}
-        </button>
+        </Button>
       </div>
     </div>
   );

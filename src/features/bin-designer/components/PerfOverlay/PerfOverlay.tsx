@@ -13,6 +13,7 @@
 
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { Button } from '@/design-system';
 import { useDesignerStore } from '@/features/bin-designer/store';
 import { useFeatureFlag } from '@/shared/hooks/useFeatureFlag';
 import type { PerfSnapshot, PerfSubstepEntry } from '@/shared/types/generation';
@@ -71,13 +72,14 @@ function Header({
         <span className="text-text-primary text-sm">{fmtMs(totalMs)}</span>
         <span className="text-text-tertiary">({sampleCount})</span>
       </div>
-      <button
+      <Button
+        variant="ghost"
         type="button"
         onClick={onClear}
-        className="text-text-tertiary hover:text-text-primary underline underline-offset-2"
+        className="text-text-tertiary hover:text-text-primary hover:bg-transparent underline underline-offset-2"
       >
         clear
-      </button>
+      </Button>
     </div>
   );
 }

@@ -6,6 +6,7 @@
  */
 
 import { useId, useState } from 'react';
+import { Button } from '@/design-system';
 import { ChevronDownIcon } from '@/design-system/Icon';
 import {
   ZONE_ORDER,
@@ -63,7 +64,8 @@ export function SlicerHandoffPreview({
 
   return (
     <div className="mb-4 rounded-lg border border-stroke-subtle bg-surface">
-      <button
+      <Button
+        variant="ghost"
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between px-3 py-2 text-left text-xs font-medium text-content-secondary hover:bg-surface-hover rounded-lg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
@@ -86,7 +88,7 @@ export function SlicerHandoffPreview({
           size="sm"
           className={`text-content-tertiary transition-transform ${open ? '' : '-rotate-90'}`}
         />
-      </button>
+      </Button>
 
       {open && (
         <div id={panelId} className="border-t border-stroke-subtle/60 px-3 py-2.5 space-y-2">

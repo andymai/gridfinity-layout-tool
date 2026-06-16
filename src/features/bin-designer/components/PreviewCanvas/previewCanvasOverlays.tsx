@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { IconButton } from '@/design-system';
 import { useSettingsStore } from '@/core/store/settings';
 import { useResponsive } from '@/shared/hooks/useResponsive';
 import { usePrefersReducedMotion } from '@/shared/hooks/usePrefersReducedMotion';
@@ -45,9 +46,11 @@ export function TouchHint() {
         <span>{t('binDesigner.pinchToZoom')}</span>
         <span className="h-3 w-px bg-white/30" />
         <span>{t('binDesigner.doubleTapToReset')}</span>
-        <button
+        <IconButton
+          variant="ghost"
+          touchTarget={false}
           onClick={dismiss}
-          className="ml-1 flex items-center justify-center rounded-full p-2 hover:bg-white/20 min-w-[36px] min-h-[36px]"
+          className="ml-1 rounded-full p-2 hover:bg-white/20 min-w-[36px] min-h-[36px]"
           aria-label={t('binDesigner.dismissTouchHints')}
         >
           <svg
@@ -59,7 +62,7 @@ export function TouchHint() {
           >
             <path d="M3 3l6 6M9 3l-6 6" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
-        </button>
+        </IconButton>
       </div>
     </div>
   );

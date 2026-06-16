@@ -1,5 +1,6 @@
 import { useRef, useCallback, useEffect, useMemo } from 'react';
 import type { KeyboardEvent, PointerEvent } from 'react';
+import { Button } from '@/design-system';
 import { MASK_CELLS_PER_UNIT, type CellMask } from '@/shared/utils/cellMask';
 import {
   getPreviewBorderColor,
@@ -246,8 +247,9 @@ function ShapeCell({
   if (isAtLeft) shadowParts.push(`inset ${W}px 0 0 0 ${stroke}`);
 
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
       role="gridcell"
       aria-rowindex={ariaRowIndex}
       aria-colindex={ariaColIndex}

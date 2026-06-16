@@ -16,7 +16,7 @@ import type { Cutout, CutoutScoopEdges } from '@/features/bin-designer/types';
 import { DEFAULT_SCOOP_EDGES } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { CompactNumberInput } from '@/shared/components/CompactNumberInput';
-import { SliderInput } from '@/design-system';
+import { Button, SliderInput } from '@/design-system';
 import { SEGMENT_ACTIVE, SEGMENT_INACTIVE } from '@/shared/components/segmentedControlClasses';
 
 interface CutoutScoopControlsProps {
@@ -83,14 +83,15 @@ export function CutoutScoopControls({
           disabled={disabled}
         />
         {supportsSplit && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setExpanded(true)}
-            className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+            className="px-0 py-0 text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80 transition-colors"
             disabled={disabled}
           >
             {t('binDesigner.cutouts.scoopSplit')}
-          </button>
+          </Button>
         )}
       </div>
     );
@@ -112,14 +113,15 @@ export function CutoutScoopControls({
         <span className="text-xs text-content-tertiary">
           {t('binDesigner.cutouts.scoopRadius')}
         </span>
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={handleCollapse}
-          className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+          className="px-0 py-0 text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80 transition-colors"
           disabled={disabled}
         >
           {t('binDesigner.cutouts.scoopUniform')}
-        </button>
+        </Button>
       </div>
       <div className="grid grid-cols-2 gap-1">
         <CompactNumberInput
@@ -192,8 +194,9 @@ interface EdgeChipProps {
 
 function EdgeChip({ label, ariaLabel, on, disabled, onToggle }: EdgeChipProps) {
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
       onClick={onToggle}
       disabled={disabled}
       aria-label={ariaLabel}
@@ -203,6 +206,6 @@ function EdgeChip({ label, ariaLabel, on, disabled, onToggle }: EdgeChipProps) {
       }`}
     >
       {label}
-    </button>
+    </Button>
   );
 }

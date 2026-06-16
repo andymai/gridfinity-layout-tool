@@ -13,6 +13,7 @@
 import { useState } from 'react';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 import { flipSelectionHorizontal, flipSelectionVertical } from './geometryFlips';
 import { buildGroupRotationUpdates } from './pathfinderHelpers';
 import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
@@ -57,8 +58,9 @@ export function TransformControls({
   };
 
   const btn = (onClick: () => void, label: string, content: React.ReactNode) => (
-    <button
+    <Button
       type="button"
+      variant="ghost"
       className={getSegmentClass(false, { size: 'icon' })}
       onClick={onClick}
       title={label}
@@ -66,7 +68,7 @@ export function TransformControls({
       disabled={allDisabled}
     >
       {content}
-    </button>
+    </Button>
   );
 
   return (

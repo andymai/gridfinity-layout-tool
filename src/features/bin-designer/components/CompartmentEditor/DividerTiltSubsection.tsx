@@ -4,7 +4,7 @@ import { Popover } from '@/design-system/Popover';
 import { Slider } from '@/design-system/Slider';
 import { Switch } from '@/design-system/Switch';
 import { Collapsible } from '@/design-system/Collapsible';
-import { Stepper } from '@/design-system';
+import { Button, IconButton, Stepper } from '@/design-system';
 import { useSettingsStore } from '@/core/store/settings';
 import { getCompartmentBounds } from '@/features/bin-designer/utils/compartments';
 import {
@@ -57,13 +57,14 @@ export function DividerTiltSubsection() {
         </div>
         <div className="flex items-center gap-2">
           {enabled && hasAnyOverride && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={handlers.resetAll}
-              className="text-[11px] font-medium text-accent transition-colors hover:text-accent/80"
+              className="px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
             >
               {t('binDesigner.angledDividers.resetAll')}
-            </button>
+            </Button>
           )}
           <Switch
             checked={enabled}
@@ -133,16 +134,19 @@ function InfoPopoverButton({ t }: { readonly t: Translate }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button
+      <IconButton
         ref={buttonRef}
         type="button"
+        variant="ghost"
+        size="sm"
+        touchTarget={false}
         onClick={() => setOpen((prev) => !prev)}
         aria-label={t('binDesigner.angledDividers.helpButtonLabel')}
         aria-expanded={open}
-        className="flex h-4 w-4 items-center justify-center rounded-full text-content-tertiary transition-colors hover:text-content-secondary"
+        className="h-4 w-4 rounded-full text-content-tertiary hover:bg-transparent hover:text-content-secondary"
       >
         <InfoIcon size="xs" />
-      </button>
+      </IconButton>
       <Popover
         anchorRef={buttonRef}
         isOpen={open}
@@ -184,14 +188,15 @@ function DividerRow({ row, compartments, isHovered, handlers, t }: DividerRowPro
           : 'border-stroke-subtle hover:border-stroke-subtle/80'
       }`}
     >
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={() => handlers.selectDivider(row.key)}
         aria-label={t('binDesigner.angledDividers.editRowLabel', {
           a: String(row.compartmentA + 1),
           b: String(row.compartmentB + 1),
         })}
-        className="flex flex-1 items-center gap-2 px-2 py-1.5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[-2px]"
+        className="flex flex-1 items-center gap-2 px-2 py-1.5 text-left hover:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-[-2px]"
       >
         <DividerMiniDiagram compartments={compartments} row={row} />
         <span className="text-xs font-medium text-content-secondary tabular-nums">{rowLabel}</span>
@@ -202,7 +207,7 @@ function DividerRow({ row, compartments, isHovered, handlers, t }: DividerRowPro
             })}
           </span>
         )}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -242,23 +247,25 @@ function InspectorView({
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={() => handlers.selectDivider(null)}
-          className="flex items-center gap-1 text-[11px] font-medium text-accent transition-colors hover:text-accent/80"
+          className="flex items-center gap-1 px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80"
         >
           <ArrowLeftIcon size="xs" />
           {t('binDesigner.angledDividers.backToList')}
-        </button>
+        </Button>
         {row.hasTilt && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => handlers.resetRow(row)}
-            className="flex items-center gap-1 text-[11px] font-medium text-content-tertiary transition-colors hover:text-content-secondary"
+            className="flex items-center gap-1 px-0 py-0 text-[11px] font-medium text-content-tertiary transition-colors hover:bg-transparent hover:text-content-secondary"
           >
             <RotateCcwIcon size="xs" />
             {t('binDesigner.angledDividers.resetToStraight')}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -300,9 +307,10 @@ function InspectorView({
         />
         <div className="flex flex-wrap gap-1">
           {ANGLE_PRESETS_DEG.map((preset) => (
-            <button
+            <Button
               key={preset}
               type="button"
+              variant="ghost"
               disabled={disabled}
               onClick={() => handlers.commitTilt(row, { angleDeg: preset, shiftMm })}
               className={`rounded border px-1.5 py-0.5 text-[11px] font-medium tabular-nums transition-colors disabled:opacity-40 ${
@@ -312,7 +320,7 @@ function InspectorView({
               }`}
             >
               {t('binDesigner.angledDividers.badgeAngle', { angle: String(preset) })}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

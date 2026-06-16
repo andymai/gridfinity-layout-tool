@@ -22,7 +22,7 @@ import {
 import type { FitCue } from '../panel/CutoutsSection/cutoutSectionVisibility';
 import { CutoutArrayControls } from '../panel/CutoutsSection/CutoutArrayControls';
 import { arrayInstanceCount } from '@/shared/utils/cutoutArray';
-import { Collapsible, Input, SliderInput } from '@/design-system';
+import { Button, Collapsible, Input, SliderInput } from '@/design-system';
 
 const SIDE_OPTIONS: readonly CutoutTextSide[] = ['top', 'bottom', 'left', 'right'] as const;
 
@@ -276,16 +276,17 @@ function CutoutEngraveLabelControls({
         className={SEGMENT_GROUP_CLASS}
       >
         {SIDE_OPTIONS.map((opt) => (
-          <button
+          <Button
             key={opt}
             type="button"
+            variant="ghost"
             disabled={disabled}
             onClick={() => onUpdate({ textSide: opt })}
             aria-pressed={side === opt}
             className={`flex-1 py-0.5 text-[10px] leading-none ${getSegmentClass(side === opt)}`}
           >
             {t(`binDesigner.cutoutTextSide.${opt}`)}
-          </button>
+          </Button>
         ))}
       </div>
       {cutout.engraveLabel && (

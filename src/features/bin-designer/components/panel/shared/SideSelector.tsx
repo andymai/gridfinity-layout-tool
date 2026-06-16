@@ -11,6 +11,8 @@
  * reads as off and shows an explanatory tooltip.
  */
 
+import { Button } from '@/design-system';
+
 /** The four selectable walls, in their physical screen positions. */
 export type Side = 'left' | 'right' | 'front' | 'back';
 
@@ -44,7 +46,7 @@ const CHIP_BASE =
   'disabled:cursor-not-allowed disabled:opacity-50';
 
 /** Filled accent button when on. */
-const CHIP_ON = 'border-accent bg-accent text-on-accent';
+const CHIP_ON = 'border-accent bg-accent text-on-accent hover:bg-accent hover:text-on-accent';
 /** Bordered surface button when off — clearly a button, clearly not selected. */
 const CHIP_OFF =
   'border-stroke-subtle bg-surface-elevated text-content-secondary hover:bg-surface-hover hover:text-content';
@@ -58,8 +60,9 @@ export function SideSelector({ sides, onToggle, ariaLabel }: SideSelectorProps) 
         // never appear enabled.
         const isOn = active && !disabled;
         return (
-          <button
+          <Button
             key={side}
+            variant="ghost"
             type="button"
             role="switch"
             aria-checked={isOn}
@@ -69,7 +72,7 @@ export function SideSelector({ sides, onToggle, ariaLabel }: SideSelectorProps) 
             className={`${SIDE_CELL[side]} ${CHIP_BASE} ${isOn ? CHIP_ON : CHIP_OFF}`}
           >
             {label}
-          </button>
+          </Button>
         );
       })}
 

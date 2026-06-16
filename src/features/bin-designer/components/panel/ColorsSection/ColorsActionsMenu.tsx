@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Popover } from '@/design-system/Popover/Popover';
+import { Button, IconButton } from '@/design-system';
 import {
   ArrowLeftRightIcon,
   CheckIcon,
@@ -110,8 +111,11 @@ export function ColorsActionsMenu({
 
   return (
     <>
-      <button
+      <IconButton
         ref={triggerRef}
+        variant="ghost"
+        size="sm"
+        touchTarget={false}
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="flex h-6 w-6 items-center justify-center rounded text-content-tertiary hover:bg-surface-hover hover:text-content-secondary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
@@ -121,7 +125,7 @@ export function ColorsActionsMenu({
         title={t('binDesigner.colors.actions')}
       >
         <MoreHorizontalIcon size="sm" />
-      </button>
+      </IconButton>
 
       {open && (
         <Popover anchorRef={triggerRef} isOpen onClose={closeMenu} placement="bottom-end">
@@ -163,7 +167,10 @@ export function ColorsActionsMenu({
                   aria-label={t('binDesigner.colors.savePalette.prompt')}
                   maxLength={COLOR_PALETTE_CONSTRAINTS.NAME_MAX_LENGTH}
                 />
-                <button
+                <IconButton
+                  variant="ghost"
+                  size="sm"
+                  touchTarget={false}
                   type="button"
                   onClick={commitSave}
                   disabled={draftName.trim() === ''}
@@ -172,15 +179,18 @@ export function ColorsActionsMenu({
                   title={t('binDesigner.colors.savePalette')}
                 >
                   <CheckIcon size="sm" />
-                </button>
-                <button
+                </IconButton>
+                <IconButton
+                  variant="ghost"
+                  size="sm"
+                  touchTarget={false}
                   type="button"
                   onClick={() => setSaveMode(false)}
                   className="flex h-7 w-7 items-center justify-center rounded text-content-tertiary hover:bg-surface-hover hover:text-content-secondary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                   aria-label={t('binDesigner.colors.firstTimeHint.dismiss')}
                 >
                   <XIcon size="sm" />
-                </button>
+                </IconButton>
               </div>
             ) : (
               <MenuButton
@@ -205,7 +215,8 @@ export function ColorsActionsMenu({
               <ul className="max-h-40 overflow-y-auto">
                 {palettes.map((palette) => (
                   <li key={palette.id} className="flex items-center gap-1">
-                    <button
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={() => {
                         onApplyPalette(palette);
@@ -216,19 +227,22 @@ export function ColorsActionsMenu({
                       title={t('binDesigner.colors.applyPalette')}
                     >
                       <PaletteSwatch palette={palette} />
-                      <span className="flex-1 truncate text-content-secondary group-hover:text-content">
+                      <span className="flex-1 truncate font-normal text-content-secondary group-hover:text-content">
                         {palette.name}
                       </span>
-                    </button>
-                    <button
+                    </Button>
+                    <IconButton
+                      variant="dangerGhost"
+                      size="sm"
+                      touchTarget={false}
                       type="button"
                       onClick={() => handleDelete(palette.id)}
-                      className="flex h-7 w-7 items-center justify-center rounded text-content-tertiary hover:bg-surface-hover hover:text-error focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                      className="flex h-7 w-7 items-center justify-center rounded text-content-tertiary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                       aria-label={t('binDesigner.colors.deletePalette')}
                       title={t('binDesigner.colors.deletePalette')}
                     >
                       <TrashIcon size="sm" />
-                    </button>
+                    </IconButton>
                   </li>
                 ))}
               </ul>
@@ -252,7 +266,8 @@ function MenuButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
+    <Button
+      variant="ghost"
       type="button"
       onClick={onClick}
       disabled={disabled}
@@ -260,8 +275,8 @@ function MenuButton({
       className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-content-secondary hover:bg-surface-hover hover:text-content focus-visible:bg-surface-hover focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
     >
       <span className="text-content-tertiary">{icon}</span>
-      <span className="flex-1">{children}</span>
-    </button>
+      <span className="flex-1 font-normal">{children}</span>
+    </Button>
   );
 }
 

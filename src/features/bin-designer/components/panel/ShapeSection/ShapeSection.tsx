@@ -7,6 +7,7 @@
  * flipping the toggle on without painting doesn't slow anything down.
  */
 import { useCallback } from 'react';
+import { Button } from '@/design-system';
 import { FeatureToggle } from '@/shared/components/FeatureToggle';
 import { useShapeSection } from './useShapeSection';
 import { ShapeGrid } from './ShapeGrid';
@@ -35,24 +36,26 @@ export function ShapeSection() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-content-tertiary">{t('binDesigner.shape.presets')}</span>
             {state.presets.map((p) => (
-              <button
+              <Button
                 key={p.id}
                 type="button"
+                variant="secondary"
                 onClick={() => handlers.applyPreset(p.id)}
                 disabled={!p.available}
                 className="rounded border border-stroke-subtle bg-surface-elevated px-2 py-1 text-xs text-content transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {p.label}
-              </button>
+              </Button>
             ))}
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={handlers.resetShape}
               disabled={!state.isCustom}
-              className="ml-auto text-[11px] font-medium text-accent transition-colors hover:text-accent/80 disabled:cursor-not-allowed disabled:opacity-50"
+              className="ml-auto px-0 py-0 text-[11px] font-medium text-accent transition-colors hover:bg-transparent hover:text-accent/80 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {t('common.reset')}
-            </button>
+            </Button>
           </div>
           <p className="text-[11px] text-content-tertiary">{t('binDesigner.shape.gridHelp')}</p>
           <ShapeGrid

@@ -9,6 +9,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 import { cn } from '@/design-system/cn';
 import type { CutoutSizePreset } from './cutoutShapePresets';
 
@@ -54,9 +55,10 @@ export function CutoutPresetChips({
         {shown.map((preset) => {
           const active = activeMm !== undefined && Math.abs(activeMm - preset.mm) < 0.01;
           return (
-            <button
+            <Button
               key={preset.id}
               type="button"
+              variant="ghost"
               disabled={disabled}
               onClick={() => onPick(preset.mm)}
               title={preset.label}
@@ -64,17 +66,20 @@ export function CutoutPresetChips({
               aria-label={preset.label}
               className={cn(
                 CHIP_BASE,
-                active ? 'border-accent bg-accent/15 text-accent' : CHIP_INACTIVE,
+                active
+                  ? 'border-accent bg-accent/15 text-accent hover:bg-accent/15 hover:text-accent'
+                  : CHIP_INACTIVE,
                 disabled && 'cursor-not-allowed opacity-50'
               )}
             >
               {chipLabel(preset)}
-            </button>
+            </Button>
           );
         })}
         {restCount > 0 && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             disabled={disabled}
             onClick={() => setExpanded((v) => !v)}
             aria-expanded={expanded}
@@ -99,7 +104,7 @@ export function CutoutPresetChips({
             >
               <path d="M3 4.5L6 7.5L9 4.5" />
             </svg>
-          </button>
+          </Button>
         )}
       </div>
     </div>

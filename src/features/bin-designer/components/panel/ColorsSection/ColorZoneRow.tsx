@@ -8,6 +8,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Popover } from '@/design-system/Popover/Popover';
+import { Button } from '@/design-system';
 import { ChevronDownIcon } from '@/design-system/Icon';
 import { ColorPicker } from './ColorPicker';
 import type { HoverableZone } from '@/features/bin-designer/types/featureColors';
@@ -80,8 +81,9 @@ export function ColorZoneRow({
 
   return (
     <>
-      <button
+      <Button
         ref={buttonRef}
+        variant="ghost"
         type="button"
         onClick={handleClick}
         onPointerEnter={() => onHover(zone)}
@@ -98,13 +100,15 @@ export function ColorZoneRow({
           className="w-6 h-6 rounded-md border border-stroke-subtle/60 shrink-0 shadow-inner transition-transform group-hover:scale-105"
           style={{ backgroundColor: color }}
         />
-        <span className="flex-1 text-left text-xs text-content-secondary">{label}</span>
-        <span className="font-mono text-[11px] text-content-secondary tabular-nums">{color}</span>
+        <span className="flex-1 text-left text-xs font-normal text-content-secondary">{label}</span>
+        <span className="font-mono text-[11px] font-normal text-content-secondary tabular-nums">
+          {color}
+        </span>
         <ChevronDownIcon
           size="sm"
           className="-rotate-90 text-content-tertiary transition-transform group-hover:translate-x-0.5"
         />
-      </button>
+      </Button>
 
       {isOpen && (
         <Popover anchorRef={buttonRef} isOpen onClose={handleClose} placement="bottom-start">

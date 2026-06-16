@@ -6,6 +6,7 @@
  * `segmentedControlClasses` so every feature panel's shape rail reads identically.
  */
 
+import { Button } from '@/design-system';
 import { getSegmentClass, SEGMENT_GROUP_CLASS } from '@/shared/components/segmentedControlClasses';
 
 export interface ShapeOption<T extends string> {
@@ -31,15 +32,16 @@ export function ShapePicker<T extends string>({
       {options.map((opt) => {
         const isActive = value === opt.value;
         return (
-          <button
+          <Button
             key={opt.value}
+            variant="ghost"
             type="button"
             aria-pressed={isActive}
             onClick={() => onChange(opt.value)}
             className={`flex-1 ${getSegmentClass(isActive)}`}
           >
             {opt.label}
-          </button>
+          </Button>
         );
       })}
     </div>

@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useRef, useState } from 'react';
+import { IconButton } from '@/design-system';
 import type { Cutout } from '@/features/bin-designer/types';
 import { useTranslation } from '@/i18n';
 import { ICON_PATHS } from '@/shared/constants/iconPaths';
@@ -114,8 +115,11 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
   if (collapsed) {
     return (
       <aside className="flex w-12 flex-shrink-0 flex-col items-center border-l border-stroke-subtle bg-surface-secondary py-2">
-        <button
+        <IconButton
           type="button"
+          variant="ghost"
+          size="sm"
+          touchTarget={false}
           onClick={toggleCollapsed}
           className={ICON_BTN}
           aria-expanded={false}
@@ -123,7 +127,7 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
           title={t('binDesigner.cutoutEditor.inspectorExpand')}
         >
           <Icon paths={ICON_PATHS.chevronDoubleLeft} />
-        </button>
+        </IconButton>
         <span
           className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-content-tertiary"
           style={{ writingMode: 'vertical-rl' }}
@@ -161,8 +165,11 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
         }`}
       >
         <div className="flex items-center gap-2 px-4 py-2">
-          <button
+          <IconButton
             type="button"
+            variant="ghost"
+            size="sm"
+            touchTarget={false}
             onClick={toggleCollapsed}
             className={ICON_BTN}
             aria-expanded
@@ -170,14 +177,17 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
             title={t('binDesigner.cutoutEditor.inspectorCollapse')}
           >
             <Icon paths={ICON_PATHS.chevronDoubleRight} />
-          </button>
+          </IconButton>
           <span className="text-xs font-semibold uppercase tracking-wider text-content-secondary">
             {t('binDesigner.cutoutEditor.inspectorTitle')}
           </span>
           {hasSelection && (
             <div className="ml-auto flex items-center gap-0.5">
-              <button
+              <IconButton
                 type="button"
+                variant="ghost"
+                size="sm"
+                touchTarget={false}
                 onClick={onDuplicate}
                 disabled={!onDuplicate}
                 className={ICON_BTN}
@@ -185,17 +195,20 @@ export function InspectorDock({ board, onDuplicate, onDelete, ...content }: Insp
                 title={t('binDesigner.cutoutEditor.duplicate')}
               >
                 <Icon paths={ICON_PATHS.duplicate} />
-              </button>
-              <button
+              </IconButton>
+              <IconButton
                 type="button"
+                variant="dangerGhost"
+                size="sm"
+                touchTarget={false}
                 onClick={onDelete}
                 disabled={!onDelete}
-                className={`${ICON_BTN} hover:text-danger`}
+                className={`${ICON_BTN} hover:bg-error-muted hover:text-error`}
                 aria-label={t('binDesigner.cutoutEditor.delete')}
                 title={t('binDesigner.cutoutEditor.delete')}
               >
                 <Icon paths={ICON_PATHS.trash} />
-              </button>
+              </IconButton>
             </div>
           )}
         </div>

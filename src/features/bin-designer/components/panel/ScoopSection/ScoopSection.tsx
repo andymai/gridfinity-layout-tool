@@ -6,7 +6,7 @@
  */
 
 import { FeatureToggle } from '../FeatureToggle';
-import { Stepper } from '@/design-system';
+import { Button, Stepper } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { useScoopSection } from './useScoopSection';
 
@@ -25,14 +25,15 @@ export function ScoopSection() {
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xs text-content-tertiary">{t('binDesigner.scoopRadius')}</span>
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={handlers.toggleAutoRadius}
-            className="text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+            className="px-0 py-0 text-[11px] font-medium text-accent hover:bg-transparent hover:text-accent/80 transition-colors"
           >
             {/* eslint-disable-next-line i18next/no-literal-string -- 'Auto' button label; full-string i18n for this site is tracked as separate debt */}
             {state.isAutoRadius ? `${t('binDesigner.scoopRadius')}: Auto` : 'Auto'}
-          </button>
+          </Button>
         </div>
         {!state.isAutoRadius && (
           <Stepper

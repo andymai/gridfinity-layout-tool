@@ -18,6 +18,7 @@ import {
   type SideState,
 } from '../shared';
 import { RulerIcon } from '@/design-system/Icon';
+import { Button } from '@/design-system';
 import { DESIGNER_CONSTRAINTS } from '../../../constants';
 import { useHandleSection, HANDLE_SIDES } from './useHandleSection';
 import type { HandleCutoutShape, HandleWallSide } from '@/features/bin-designer/types';
@@ -138,18 +139,19 @@ export function HandleSection() {
             <>
               {/* Linked/independent toggle */}
               <div className="flex items-center gap-1.5">
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={handlers.toggleLinked}
                   className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
                     linked
-                      ? 'bg-accent/10 text-accent'
+                      ? 'bg-accent/10 text-accent hover:bg-accent/10 hover:text-accent'
                       : 'bg-surface-secondary text-content-tertiary hover:text-content-secondary'
                   }`}
                 >
                   <LinkIcon linked={linked} />
                   {linked ? t('binDesigner.handles.linked') : t('binDesigner.handles.independent')}
-                </button>
+                </Button>
               </div>
 
               {/* Shared controls (linked mode) */}

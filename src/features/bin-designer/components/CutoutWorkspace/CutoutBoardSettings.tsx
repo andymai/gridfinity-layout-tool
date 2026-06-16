@@ -4,7 +4,7 @@
  * controls (snap, grid size) plus the read-only board footprint.
  */
 
-import { Checkbox } from '@/design-system';
+import { Button, Checkbox } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { getSegmentClass } from '@/shared/components/segmentedControlClasses';
 
@@ -66,15 +66,16 @@ export function CutoutBoardSettings({
               className="inline-flex gap-0.5 rounded-lg bg-surface-tertiary p-0.5"
             >
               {GRID_SIZES.map((size) => (
-                <button
+                <Button
                   key={size}
                   type="button"
+                  variant="ghost"
                   onClick={() => onGridSizeChange(size)}
                   aria-pressed={gridSize === size}
                   className={`px-2 tabular-nums leading-none ${getSegmentClass(gridSize === size)}`}
                 >
                   {fmt(size)}
-                </button>
+                </Button>
               ))}
             </div>
           </div>

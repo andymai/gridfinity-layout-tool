@@ -5,6 +5,7 @@
  * Mobile/Tablet: Compact ToolSwitcher + name (tap=list, long-press=rename) | save status + action buttons
  */
 
+import { Button, IconButton } from '@/design-system';
 import { ToolSwitcher } from '@/shared/components/ToolSwitcher';
 import { HeaderSupportLinks } from '@/shared/components/HeaderSupportLinks';
 import { useDesignerStore } from '@/features/bin-designer/store/designer';
@@ -82,19 +83,21 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 }}
               />
             ) : (
-              <button
+              <Button
+                variant="ghost"
                 onClick={handleNameClick}
-                className="inline-block px-3 py-1.5 text-sm rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
+                className="inline-block px-3 py-1.5 text-sm font-normal rounded-md transition-all hover:scale-[1.02] text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content truncate max-w-[200px]"
                 title={t('binDesigner.clickToRename')}
               >
                 {designName}
-              </button>
+              </Button>
             )}
 
             {/* Designs switcher button */}
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setDesignListOpen(true)}
-              className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+              className="px-2 py-1.5 text-sm font-normal rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
               title={t('binDesigner.openDesignList')}
               aria-label={t('binDesigner.openDesignList')}
             >
@@ -107,13 +110,14 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 />
               </svg>
               <span className="hidden lg:inline">{t('binDesigner.designs')}</span>
-            </button>
+            </Button>
 
             {/* Export button */}
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setExportDialogOpen(true)}
               disabled={!canExport}
-              className="px-2 py-1.5 text-sm rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
+              className="px-2 py-1.5 text-sm font-normal rounded-md transition-all text-content-secondary bg-transparent hover:bg-surface-hover hover:text-content flex items-center gap-1.5"
               title={t('binDesigner.exportSTL')}
               aria-label={t('binDesigner.exportBinAsStl')}
             >
@@ -126,17 +130,18 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                 />
               </svg>
               <span className="hidden lg:inline">{t('common.export')}</span>
-            </button>
+            </Button>
           </div>
 
           <div className="flex items-center gap-1 flex-shrink-0">
             <SaveStatusIndicator status={saveStatus} />
 
             <div className="flex items-center">
-              <button
+              <IconButton
+                variant="ghost"
+                touchTarget={false}
                 onClick={undo}
                 disabled={!canUndo}
-                className="btn btn-ghost btn-icon"
                 title={`Undo (${MOD_KEY}+Z)`}
                 aria-label={`Undo (${MOD_KEY}+Z)`}
               >
@@ -148,11 +153,12 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                     d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
                   />
                 </svg>
-              </button>
-              <button
+              </IconButton>
+              <IconButton
+                variant="ghost"
+                touchTarget={false}
                 onClick={redo}
                 disabled={!canRedo}
-                className="btn btn-ghost btn-icon"
                 title={`Redo (${MOD_KEY}+Y)`}
                 aria-label={`Redo (${MOD_KEY}+Y)`}
               >
@@ -164,7 +170,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                     d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
                   />
                 </svg>
-              </button>
+              </IconButton>
             </div>
 
             <div className="w-px h-6 bg-stroke-subtle mx-2" />
@@ -193,7 +199,8 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
               }}
             />
           ) : (
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setDesignListOpen(true)}
               onContextMenu={(e) => {
                 e.preventDefault();
@@ -203,7 +210,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
               onTouchMove={handleNameTouchEnd}
               onTouchEnd={handleNameTouchEnd}
               onTouchCancel={handleNameTouchEnd}
-              className="flex-1 mx-3 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-sm rounded-md text-content-secondary bg-transparent hover:bg-surface-hover"
+              className="flex-1 mx-3 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-sm font-normal rounded-md text-content-secondary bg-transparent hover:bg-surface-hover"
               title={t('binDesigner.clickToRename')}
             >
               <span className="truncate">{designName}</span>
@@ -220,16 +227,16 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                   d="M19 9l-7 7-7-7"
                 />
               </svg>
-            </button>
+            </Button>
           )}
 
           <div className="flex items-center gap-0.5 flex-shrink-0">
             <SaveStatusIndicator status={saveStatus} compact />
 
             {/* Designs button */}
-            <button
+            <IconButton
+              variant="ghost"
               onClick={() => setDesignListOpen(true)}
-              className="btn btn-ghost btn-icon"
               title={t('binDesigner.savedDesigns')}
               aria-label={t('binDesigner.openDesignList')}
             >
@@ -241,11 +248,11 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                   d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                 />
               </svg>
-            </button>
+            </IconButton>
 
             {/* Export button */}
-            <button
-              className="btn btn-ghost btn-icon"
+            <IconButton
+              variant="ghost"
               onClick={() => setExportDialogOpen(true)}
               disabled={!canExport}
               aria-label={t('binDesigner.exportBinAsStl')}
@@ -263,13 +270,13 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                   d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"
                 />
               </svg>
-            </button>
+            </IconButton>
 
             {/* Undo/Redo */}
-            <button
+            <IconButton
+              variant="ghost"
               onClick={undo}
               disabled={!canUndo}
-              className="btn btn-ghost btn-icon"
               aria-label={`Undo (${MOD_KEY}+Z)`}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -280,11 +287,11 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                   d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
                 />
               </svg>
-            </button>
-            <button
+            </IconButton>
+            <IconButton
+              variant="ghost"
               onClick={redo}
               disabled={!canRedo}
-              className="btn btn-ghost btn-icon"
               aria-label={`Redo (${MOD_KEY}+Y)`}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -295,7 +302,7 @@ export function DesignerHeader({ isDesktop, nameEditor }: DesignerHeaderProps) {
                   d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"
                 />
               </svg>
-            </button>
+            </IconButton>
           </div>
         </>
       )}

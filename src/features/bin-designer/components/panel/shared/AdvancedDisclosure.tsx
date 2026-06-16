@@ -6,6 +6,7 @@
  */
 
 import { useState, type ReactNode } from 'react';
+import { Button } from '@/design-system';
 import { ChevronIcon } from './icons';
 
 interface AdvancedDisclosureProps {
@@ -28,16 +29,17 @@ export function AdvancedDisclosure({
 
   return (
     <div>
-      <button
+      <Button
+        variant="ghost"
         type="button"
         onClick={() => setManualOpen((prev) => !prev)}
         aria-expanded={isOpen}
-        className="flex items-center gap-1.5 text-xs text-content-tertiary transition-colors hover:text-content-secondary"
+        className="flex items-center gap-1.5 px-0 py-0 text-xs font-normal text-content-tertiary transition-colors hover:bg-transparent hover:text-content-secondary"
       >
         <ChevronIcon open={isOpen} />
         <span>{label}</span>
         {summary && <span className="font-medium text-content-secondary">{summary}</span>}
-      </button>
+      </Button>
 
       {isOpen && <div className="ml-3.5 mt-2 space-y-2">{children}</div>}
     </div>

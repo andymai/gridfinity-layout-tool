@@ -4,6 +4,7 @@
  */
 
 import { ChevronDownIcon } from '@/design-system/Icon';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import type { HoverableZone, LipColorConfig } from '@/features/bin-designer/types/featureColors';
 
@@ -27,7 +28,8 @@ export function LipZoneRow({
 }: LipZoneRowProps) {
   const t = useTranslation();
   return (
-    <button
+    <Button
+      variant="ghost"
       type="button"
       onClick={onToggleExpand}
       onPointerEnter={() => onHover('lip')}
@@ -46,8 +48,8 @@ export function LipZoneRow({
         <span style={{ backgroundColor: corners.frontRight }} />
       </span>
       <span className="flex flex-1 flex-col text-left leading-tight">
-        <span className="text-xs text-content-secondary">{label}</span>
-        <span className="text-[10px] text-content-tertiary">
+        <span className="text-xs font-normal text-content-secondary">{label}</span>
+        <span className="text-[10px] font-normal text-content-tertiary">
           {t('binDesigner.colors.lip.fourCorners')}
         </span>
       </span>
@@ -55,6 +57,6 @@ export function LipZoneRow({
         size="sm"
         className={`text-content-tertiary transition-transform ${isExpanded ? '' : '-rotate-90'}`}
       />
-    </button>
+    </Button>
   );
 }

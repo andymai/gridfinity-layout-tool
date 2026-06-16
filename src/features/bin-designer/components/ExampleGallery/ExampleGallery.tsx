@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Button, IconButton } from '@/design-system';
 import { EXAMPLE_DESIGNS } from '@/features/bin-designer/data/examples';
 import type { ExampleDesign } from '@/features/bin-designer/types/exampleGallery';
 import { useTranslation } from '@/i18n';
@@ -113,8 +114,9 @@ export function ExampleGallery({ onClose }: ExampleGalleryProps) {
 
             <div className="flex items-center gap-2">
               {/* Close */}
-              <button
+              <IconButton
                 ref={closeButtonRef}
+                variant="ghost"
                 onClick={onClose}
                 className="p-1.5 text-content-secondary hover:text-content hover:bg-surface rounded-lg transition-colors"
                 aria-label={t('common.close')}
@@ -127,7 +129,7 @@ export function ExampleGallery({ onClose }: ExampleGalleryProps) {
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
-              </button>
+              </IconButton>
             </div>
           </div>
 
@@ -182,12 +184,13 @@ export function ExampleGallery({ onClose }: ExampleGalleryProps) {
                 />
               </svg>
               <p className="text-content-secondary mb-2">{t('binExamples.empty')}</p>
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setFilters(DEFAULT_FILTERS)}
-                className="text-sm text-accent hover:underline"
+                className="px-0 py-0 text-sm font-normal text-accent hover:bg-transparent hover:underline"
               >
                 {t('binExamples.clearFilters')}
-              </button>
+              </Button>
             </div>
           )}
         </div>
