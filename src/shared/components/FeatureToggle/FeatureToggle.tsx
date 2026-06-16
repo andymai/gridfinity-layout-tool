@@ -75,7 +75,7 @@ export function FeatureToggle({
           aria-label={label}
           onClick={onChange}
           disabled={isDisabled}
-          className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
+          className={`relative inline-flex h-7 w-12 items-center rounded-full px-0 py-0 transition-colors hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
             isDisabled
               ? 'cursor-not-allowed bg-stroke-subtle opacity-50'
               : checked
@@ -112,7 +112,7 @@ export function FeatureToggle({
               onClick={() => setCustomizeOpen(!customizeOpen)}
               aria-expanded={customizeOpen}
               aria-controls={contentId}
-              className="text-xs font-medium text-accent py-2 -my-2 hover:text-accent/80 transition-colors"
+              className="text-xs font-medium text-accent px-0 py-2 -my-2 h-auto hover:bg-transparent hover:text-accent/80 transition-colors"
             >
               {customizeOpen ? t('common.done') : (customizeLabel ?? t('common.customize'))}
             </Button>

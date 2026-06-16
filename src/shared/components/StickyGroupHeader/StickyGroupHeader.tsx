@@ -18,7 +18,7 @@ interface StickyGroupHeaderBaseProps {
   summary?: string;
   /** Optional short label rendered as a pill next to the title (e.g. "Experimental").
    *  Typed as `string` so the badge can't accidentally hold an interactive element
-   *  inside the collapse `<span>`. */
+   *  inside the collapse `<Button>`. */
   badge?: string;
   children: ReactNode;
 }
