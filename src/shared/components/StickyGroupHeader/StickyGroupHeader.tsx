@@ -9,6 +9,7 @@
  */
 
 import { useState, useId, type ReactNode } from 'react';
+import { Button } from '@/design-system';
 import { ChevronDownIcon } from '@/design-system/Icon';
 
 interface StickyGroupHeaderBaseProps {
@@ -17,7 +18,7 @@ interface StickyGroupHeaderBaseProps {
   summary?: string;
   /** Optional short label rendered as a pill next to the title (e.g. "Experimental").
    *  Typed as `string` so the badge can't accidentally hold an interactive element
-   *  inside the collapse `<button>`. */
+   *  inside the collapse `<Button>`. */
   badge?: string;
   children: ReactNode;
 }
@@ -51,9 +52,11 @@ export function StickyGroupHeader({
 
   return (
     <div className="border-b border-stroke-subtle">
-      <button
+      <Button
         type="button"
-        className="sticky top-0 z-10 flex w-full items-center gap-2 backdrop-blur-sm bg-surface-secondary/90 border-b border-stroke-subtle/50 px-4 py-3 hover:bg-surface-hover/50 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
+        variant="ghost"
+        touchTarget={false}
+        className="sticky top-0 z-10 flex w-full items-center justify-start gap-2 rounded-none backdrop-blur-sm bg-surface-secondary/90 border-b border-stroke-subtle/50 px-4 py-3 hover:bg-surface-hover/50 transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
         onClick={() => {
           setHasToggled(true);
           setExpanded(!expanded);
@@ -75,14 +78,14 @@ export function StickyGroupHeader({
         )}
         {summary && (
           <span
-            className={`ml-auto min-w-0 truncate text-xs tabular-nums transition-colors ${
+            className={`ml-auto min-w-0 truncate text-xs font-normal tabular-nums transition-colors ${
               expanded ? 'text-content-tertiary/70' : 'text-content-tertiary'
             }`}
           >
             {summary}
           </span>
         )}
-      </button>
+      </Button>
 
       <div
         id={contentId}

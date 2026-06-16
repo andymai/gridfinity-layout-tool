@@ -8,6 +8,7 @@
 
 import { useState, useId, type ReactNode } from 'react';
 import { useTranslation } from '@/i18n';
+import { Button } from '@/design-system';
 
 interface FeatureToggleProps {
   /** Display label for the feature */
@@ -66,14 +67,15 @@ export function FeatureToggle({
           )}
           {badge}
         </div>
-        <button
+        <Button
+          variant="ghost"
           type="button"
           role="switch"
           aria-checked={isActive}
           aria-label={label}
           onClick={onChange}
           disabled={isDisabled}
-          className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
+          className={`relative inline-flex h-7 w-12 items-center justify-start rounded-full px-0 py-0 transition-colors hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
             isDisabled
               ? 'cursor-not-allowed bg-stroke-subtle opacity-50'
               : checked
@@ -86,7 +88,7 @@ export function FeatureToggle({
               isActive ? 'translate-x-6' : 'translate-x-0.5'
             }`}
           />
-        </button>
+        </Button>
       </div>
 
       {/* Disabled reason text */}
@@ -104,15 +106,16 @@ export function FeatureToggle({
             {valueSummary && !customizeOpen && (
               <span className="text-[11px] text-content-tertiary">{valueSummary}</span>
             )}
-            <button
+            <Button
+              variant="ghost"
               type="button"
               onClick={() => setCustomizeOpen(!customizeOpen)}
               aria-expanded={customizeOpen}
               aria-controls={contentId}
-              className="text-xs font-medium text-accent py-2 -my-2 hover:text-accent/80 transition-colors"
+              className="text-xs font-medium text-accent px-0 py-2 -my-2 h-auto hover:bg-transparent hover:text-accent/80 transition-colors"
             >
               {customizeOpen ? t('common.done') : (customizeLabel ?? t('common.customize'))}
-            </button>
+            </Button>
           </div>
 
           {/* Inline expand for detailed controls */}

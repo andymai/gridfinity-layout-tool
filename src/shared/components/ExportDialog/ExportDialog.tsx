@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
+import { Button } from '@/design-system';
 import { Dialog } from '@/design-system/Dialog';
 import { ProgressBar } from '@/design-system/ProgressBar';
 import { useTranslation } from '@/i18n';
@@ -351,25 +352,28 @@ export function ExportDialog({
             )}
 
             {/* Primary Download Button */}
-            <button
+            <Button
+              variant="primary"
+              fullWidth
               onClick={onDownload}
-              disabled={!canExport || isExporting}
-              aria-busy={isExporting || undefined}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-info px-4 py-2.5 text-sm font-medium text-white transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:bg-surface-elevated disabled:text-content-disabled"
+              disabled={!canExport}
+              loading={isExporting}
             >
               {resolvedDownloadLabel}
-            </button>
+            </Button>
 
             {/* Secondary Download Button */}
             {secondaryDownload?.visible && (
-              <button
+              <Button
+                variant="secondary"
+                fullWidth
+                className="mt-2"
                 onClick={secondaryDownload.onClick}
-                disabled={isExporting || secondaryDownload.isExporting}
-                className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-info bg-transparent px-4 py-2.5 text-sm font-medium text-info transition-colors hover:bg-info-muted disabled:cursor-not-allowed disabled:border-stroke-subtle disabled:text-content-disabled"
+                disabled={isExporting}
+                loading={secondaryDownload.isExporting}
               >
-                {secondaryDownload.isExporting && <ExportSpinner />}
                 {secondaryDownload.label}
-              </button>
+              </Button>
             )}
 
             {/* No mesh warning */}
@@ -458,8 +462,9 @@ function FormatSelector({
           const disabled = isDisabled(fmt);
           const reason = formatStates?.[fmt]?.reason;
           return (
-            <button
+            <Button
               key={fmt}
+              variant="ghost"
               type="button"
               role="radio"
               tabIndex={isActive ? 0 : -1}
@@ -469,16 +474,16 @@ function FormatSelector({
                 if (!disabled) onChange(fmt);
               }}
               title={disabled ? reason : undefined}
-              className={`rounded-md px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+              className={`rounded-md px-4 py-2.5 text-sm font-semibold ${
                 disabled
-                  ? 'cursor-not-allowed bg-surface text-content-disabled opacity-50'
+                  ? 'cursor-not-allowed aria-disabled:pointer-events-auto bg-surface text-content-disabled opacity-50'
                   : isActive
-                    ? 'bg-accent-muted text-accent'
+                    ? 'bg-accent-muted text-accent hover:bg-accent-muted hover:text-accent'
                     : 'bg-surface text-content-secondary hover:bg-surface-hover'
               }`}
             >
               {FORMAT_LABELS[fmt]}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -496,17 +501,18 @@ function NameStyleButton({
   label: string;
 }) {
   return (
-    <button
+    <Button
+      variant="ghost"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-md px-3 py-2 text-xs font-medium transition-colors ${
+      className={`rounded-md px-3 py-2 text-xs font-medium ${
         active
-          ? 'bg-accent-muted text-accent'
+          ? 'bg-accent-muted text-accent hover:bg-accent-muted hover:text-accent'
           : 'bg-surface text-content-secondary hover:bg-surface-hover'
       }`}
     >
       {label}
-    </button>
+    </Button>
   );
 }
 
@@ -516,23 +522,5 @@ function EstimateRow({ label, value }: { label: string; value: string }) {
       <span className="text-content-tertiary">{label}</span>
       <span className="font-medium text-content">{value}</span>
     </>
-  );
-}
-
-function ExportSpinner() {
-  return (
-    <svg
-      className="h-4 w-4 animate-spin motion-reduce:animate-none"
-      fill="none"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-      />
-    </svg>
   );
 }

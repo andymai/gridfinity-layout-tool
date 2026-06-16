@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Button } from '@/design-system';
 import { useTranslation } from '@/i18n';
 import { useToastStore } from '@/core/store/toast';
 import { trackEvent } from '@/shared/analytics/posthog';
@@ -59,7 +60,8 @@ export function HeaderSupportLinks() {
       <LanguageSelector />
 
       {/* Feedback — opens GitHub Issues + thank-you toast with Ko-fi mention */}
-      <button
+      <Button
+        variant="ghost"
         onClick={handleFeedbackClick}
         className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
         title={t('header.sendFeedback')}
@@ -74,10 +76,11 @@ export function HeaderSupportLinks() {
           />
         </svg>
         <span className="hidden lg:inline">{t('header.sendFeedback')}</span>
-      </button>
+      </Button>
 
       {/* Help */}
-      <button
+      <Button
+        variant="ghost"
         onClick={handleHelpClick}
         className="btn btn-ghost px-2.5 py-1.5 text-sm leading-none text-content-secondary flex items-center gap-1.5"
         title={t('header.showHelp')}
@@ -92,7 +95,7 @@ export function HeaderSupportLinks() {
           />
         </svg>
         <span className="hidden lg:inline">{t('header.help')}</span>
-      </button>
+      </Button>
 
       {/* GitHub */}
       <a
@@ -112,7 +115,8 @@ export function HeaderSupportLinks() {
       {/* Ko-fi support — the official Widget_2 button reproduced natively (the site's
           CSP blocks the remote ko-fi script). Accent fill via btn-primary, official
           animated cup logo, white label like the widget. */}
-      <button
+      <Button
+        variant="primary"
         onClick={handleKofiClick}
         className="btn btn-primary px-3 py-1.5 text-sm leading-none flex items-center gap-1.5"
         style={{ color: '#fff', textShadow: '0 1px 1px rgba(34, 34, 34, 0.15)' }}
@@ -121,7 +125,7 @@ export function HeaderSupportLinks() {
       >
         <img src="/kofi-cup.png" alt="" aria-hidden="true" className="kofi-cup-wiggle h-4 w-auto" />
         <span className="hidden xl:inline">{t('header.supportOnKofi')}</span>
-      </button>
+      </Button>
     </>
   );
 }
