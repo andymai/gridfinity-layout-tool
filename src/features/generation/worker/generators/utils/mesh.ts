@@ -1,6 +1,6 @@
 import type { MeshData } from '../../../bridge/types';
 
-interface FaceGroup {
+export interface FaceGroup {
   start: number;
   count: number;
   faceId: number;

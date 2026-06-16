@@ -90,10 +90,11 @@ export interface PipelineContext {
   /**
    * Geometry-identity key for {@link deferredSolid}, used by the tessellate
    * stage to cache the socket's mesh across edits that don't change the base.
-   * Null when the deferred solid isn't a cacheable standard socket (e.g. the
-   * lightweight-base path), which forces a fresh tessellation.
+   * Always present: `null` when there is no deferred solid yet or it isn't a
+   * cacheable standard socket (e.g. the lightweight-base path), which forces a
+   * fresh tessellation.
    */
-  readonly deferredSolidKey?: string | null;
+  readonly deferredSolidKey: string | null;
   /** Face provenance tracking — intentionally mutable (passed by reference) */
   readonly originToTag: Map<number, number>;
   /** Additive feature shapes to fuse into the bin */

@@ -197,6 +197,7 @@ export function createInitialContext(
     onProgress,
     solid: null,
     deferredSolid: null,
+    deferredSolidKey: null,
     originToTag: new Map<number, number>(),
     fuseTargets: [],
     cutTargets: [],
