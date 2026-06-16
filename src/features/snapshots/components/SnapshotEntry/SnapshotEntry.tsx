@@ -106,7 +106,7 @@ export function SnapshotEntry({
           variant="ghost"
           size="sm"
           onClick={() => onRestore(snapshot.id)}
-          className="text-xs px-2 py-1 text-accent hover:bg-accent-muted h-auto"
+          className="text-xs font-normal px-2 py-1 rounded text-accent hover:bg-accent-muted h-auto"
           aria-label={t('snapshots.restore')}
         >
           {t('snapshots.restore')}

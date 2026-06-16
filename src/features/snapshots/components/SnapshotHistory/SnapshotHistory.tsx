@@ -205,7 +205,7 @@ export function SnapshotHistory() {
             variant="ghost"
             size="sm"
             onClick={handleCreateSnapshotNow}
-            className="mt-3 text-xs text-accent hover:text-accent-hover h-auto"
+            className="mt-3 text-xs font-normal text-accent hover:bg-transparent hover:text-accent-hover h-auto !px-0"
             data-testid="create-snapshot-now"
           >
             {t('snapshots.createSnapshotNow')}
@@ -233,7 +233,7 @@ export function SnapshotHistory() {
               ))}
             </svg>
           }
-          className="text-xs text-accent hover:text-accent-hover h-auto"
+          className="text-xs font-normal text-accent hover:bg-transparent hover:text-accent-hover h-auto !px-0"
           aria-label={t('snapshots.saveCheckpoint')}
           data-testid="save-checkpoint"
         >
