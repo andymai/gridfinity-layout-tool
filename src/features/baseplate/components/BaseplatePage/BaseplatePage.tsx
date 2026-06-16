@@ -219,7 +219,7 @@ export function BaseplatePage() {
             variant="ghost"
             onClick={() => setExportDialogOpen(true)}
             disabled={!canExport || isExporting}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-content-secondary transition-all bg-transparent hover:bg-surface-hover hover:text-content disabled:opacity-50 disabled:pointer-events-none"
+            className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-normal text-content-secondary transition-all bg-transparent hover:bg-surface-hover hover:text-content disabled:opacity-50 disabled:pointer-events-none"
             title={t('common.export')}
             aria-label={t('common.export')}
           >

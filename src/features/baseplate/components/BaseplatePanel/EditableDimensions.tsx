@@ -52,7 +52,7 @@ export function EditableDimensions({
 }: EditableDimensionsProps) {
   const restClass =
     variant === 'secondary'
-      ? 'text-xs tabular-nums text-content-secondary'
+      ? 'text-xs font-normal tabular-nums text-content-secondary'
       : 'text-sm font-semibold tabular-nums text-content';
   const separatorClass =
     variant === 'secondary' ? 'text-xs text-content-tertiary' : 'text-sm text-content-secondary';
